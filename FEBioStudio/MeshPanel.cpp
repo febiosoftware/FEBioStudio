@@ -162,6 +162,7 @@ ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po
 void ModifierThread::run()
 {
 	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
+	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
 	emit resultReady(bsuccess);
 }
 
@@ -195,7 +196,7 @@ REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "Boundary Layer" , EDI
 REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert Mesh"   , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach Elements", EDIT_ELEMENT);
-REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
 REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
 REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDIT_FACE);
@@ -372,8 +373,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (activeObject->GetFEMesh())
 	{
 		GObject* o = activeObject;
-		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
-		if (n > 0)
+		if (o->CanDeleteMesh() == false)
 		{
 			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
 			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
@@ -398,8 +398,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		Update();
 		CMainWindow* w = GetMainWindow();
-		w->UpdateGLControlBar();
 		w->UpdateModel(activeObject, false);
+		w->Update();
 		w->RedrawGL();
 
 		// clear any highlights
@@ -422,8 +422,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (activeObject->GetFEMesh())
 	{
 		GObject* o = activeObject;
-		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
-		if (n > 0)
+		if (o->CanDeleteMesh() == false)
 		{
 			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
 			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
@@ -475,6 +474,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		}
 	}
 
+	Update();
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();

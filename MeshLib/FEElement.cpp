@@ -530,6 +530,9 @@ bool FEElement_::is_equal(FEElement_& e)
 	switch (Type())
 	{
 	case FE_BEAM2:
+		if ((n[0] != m[0]) && (n[0] != m[1]) && (n[0] != m[2])) return false;
+		if ((n[1] != m[0]) && (n[1] != m[1]) && (n[1] != m[2])) return false;
+		break;
 	case FE_TRI3:
     case FE_TRI6:
 		if ((n[0]!=m[0])&&(n[0]!=m[1])&&(n[0]!=m[2])) return false;
@@ -708,11 +711,12 @@ bool FEElement_::is_equal(FEElement_& e)
 // to simplify copying the common element data.
 void FEElement_::copy(const FEElement_& el)
 {
-	SetFEState(el.GetFEState());
+	SetState(el.GetState());
 
 	m_gid = el.m_gid;
 	m_traits = el.m_traits;
 	m_nid = el.m_nid;
+	m_ntag = el.m_ntag;
 
 	m_fiber = el.m_fiber;
 	m_Q = el.m_Q;

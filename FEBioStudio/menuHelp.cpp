@@ -66,6 +66,11 @@ void CMainWindow::on_actionFEBioTM_triggered()
 	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioTheory-4-0/TM40.html"));
 }
 
+void CMainWindow::on_actionFBSManual_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioStudio-2-0/FSM20.html"));
+}
+
 void CMainWindow::on_actionFEBioForum_triggered()
 {
 	QDesktopServices::openUrl(QUrl("https://forums.febio.org/"));
@@ -105,7 +110,7 @@ void CMainWindow::on_actionAbout_triggered()
 		<p><b>%1</b></p>\
 		<p>Weiss Lab, University of Utah</p>\
 		<p>Ateshian Lab, Columbia University</p>\
-		<p>Copyright (c) 2019 - 2022, All rights reserved</p>\
+		<p>Copyright (c) 2007 - 2024, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
 		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>\
@@ -117,7 +122,7 @@ void CMainWindow::on_actionAbout_triggered()
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");
 	about.setText(txt);
-    QPixmap FEBStd = QPixmap(":/icons/FEBioStudio_large.png");
+    QPixmap FEBStd = QPixmap(":/icons/FEBioStudio.png");
     FEBStd.setDevicePixelRatio(devicePixelRatio());
 	about.setIconPixmap(FEBStd);
 	about.exec();

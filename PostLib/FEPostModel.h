@@ -100,6 +100,9 @@ public:
 	public:
 		vec3d	m_r1;
 		vec3d	m_r2;
+
+		vec3d	m_r01;
+		vec3d	m_r02;
 	};
 
 public:
@@ -158,7 +161,7 @@ public:
 	void AddState(FEState* pFEState);
 
 	//! Add a new state at time
-	void AddState(float ftime);
+	void AddState(float ftime, int nstatus = 0, bool interpolateData = false);
 
 	//! insert a state at a particular time
 	void InsertState(FEState* ps, float f);
@@ -190,6 +193,9 @@ public:
 	// Get the field variable name
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
 
+	// interpolate data between its neighbors
+	void InterpolateStateData(FEState* ps);
+
 public:
 	//! get the bounding box
 	BOX GetBoundingBox() { return m_bbox; }
@@ -205,6 +211,9 @@ public:
 
 	// get the nodal coordinates of an element at time
 	void GetElementCoords(int iel, int ntime, vec3f* r);
+
+	// project a point onto the mesh
+	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfollow);
 
 	// evaluate scalar functions
 	void EvaluateNode   (int n, int ntime, int nfield, NODEDATA& d);

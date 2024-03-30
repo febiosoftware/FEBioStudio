@@ -35,15 +35,19 @@ DEALINGS IN THE SOFTWARE.
 class CImageSITK : public C3DImage
 {
 public:
-    CImageSITK();
-    CImageSITK(int nx, int ny, int nz);
-    ~CImageSITK();
+    static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
+    static bool WriteSITKImage(C3DImage* img, const std::string& filename);
 
-    bool LoadFromFile(std::string, bool isDicom);
-    bool LoadFromStack(std::vector<std::string> filenames);
+public:
+    CImageSITK();
+    CImageSITK(int nx, int ny, int nz, int pixelType = CImage::UINT_8);
+    ~CImageSITK();
 
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;
+
+    mat3d GetOrientation() override;
+    void SetOrientation(mat3d& orientation) override;
 
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();
@@ -52,35 +56,11 @@ public:
     itk::simple::Image GetSItkImage();
     void SetItkImage(itk::simple::Image image);
 
-    void Update();
-
 private:
-    bool ParseImageHeader();
-
-    int ReadScalarImage();
-
-    template<class TImage>
-    bool ReadImage();
-
-    void GetNamesForSequence();
-
     void FinalizeImage();
 
-
 private:
-    const char* m_filename;
-
-    bool m_delBuffer;
-    // const char* m_imageFilename;
-    // ImageFileType m_type;
-    // IOPixelType pixelType;
-    // IOComponentType componentType;
-    // itk::SmartPointer<FinalImageType> originalImage;
-    // typename FinalImageType::Pointer finalImage;
-
     itk::simple::Image m_sitkImage;
-
-    // std::vector<std::string> sequenceFiles;
 };
 
 #endif

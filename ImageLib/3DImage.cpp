@@ -30,31 +30,18 @@ SOFTWARE.*/
 #include <math.h>
 #include <memory>
 #include <cstring>
-
-//-----------------------------------------------------------------------------
-// find the power of 2 that is closest to n
-int closest_pow2(int n)
-{
-	const int PMIN = 16;
-	const int PMAX = 512;
-	int p = (int)pow(2.0, (int)(0.5 + log((double)n) / log(2.0)));
-	if (p < PMIN) p = PMIN;
-	if (p > PMAX) p = PMAX;
-	return p;
-}
+#include <string>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-C3DImage::C3DImage()
+C3DImage::C3DImage() : m_pb(nullptr), m_cx(0), m_cy(0), m_cz(0), m_bps(1),
+    m_pixelType(CImage::UINT_8), m_box(0, 0, 0, 1, 1, 1), m_orientation(mat3d::identity())
 {
-	m_pb = 0;
-	m_cx = m_cy = m_cz = 0; 
-	m_bps = 1;
-    m_pixelType = UINT_8;
-
-    m_box = BOX(0., 0., 0., 1., 1., 1.);
+	m_maxValue = 1;
+	m_minValue = 0;
 }
 
 C3DImage::~C3DImage()
@@ -65,11 +52,11 @@ C3DImage::~C3DImage()
 void C3DImage::CleanUp()
 {
 	if(m_pb) delete [] m_pb;
-	m_pb = 0;
+	m_pb = nullptr;
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixelType)
+bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int pixelType)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
@@ -82,33 +69,33 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixe
 
         m_pixelType = pixelType;
 
-        if(pixelType == INT_8 || pixelType == UINT_8)
-        {
-            m_bps = 1;
-        }
-        else if(pixelType == INT_16 || pixelType == UINT_16)
-        {
-            m_bps = 2;
-        }
-        else if(pixelType == INT_RGB8 || pixelType == UINT_RGB8)
-        {
-            m_bps = 3;
-        }
-        else if(pixelType == INT_RGB16 || pixelType == UINT_RGB16)
-        {
-            m_bps = 6;
-        }
-        else
-        {
-            assert(false);
-        }
+		switch (pixelType)
+		{
+		case CImage::INT_8     : m_bps = 1; break;
+        case CImage::UINT_8    : m_bps = 1; break;
+        case CImage::INT_16    :
+        case CImage::UINT_16   : m_bps = 2; break;
+        case CImage::INT_32    :
+        case CImage::UINT_32   : m_bps = 4; break;
+        case CImage::INT_RGB8  :
+        case CImage::UINT_RGB8 : m_bps = 3; break;
+        case CImage::INT_RGB16 :
+        case CImage::UINT_RGB16: m_bps = 6; break;
+        case CImage::REAL_32   : m_bps = 4; break;
+        case CImage::REAL_64   : m_bps = 8; break;
+		default:
+			assert(false);
+		}
 
         if(data == nullptr)
         {
-            if(dataSize == 0)
-                m_pb = new Byte[nx*ny*nz*m_bps];
+			if (dataSize == 0)
+			{
+				uint64_t newSize = (uint64_t)nx * (uint64_t)ny * (uint64_t)nz * (uint64_t)m_bps;
+				m_pb = new uint8_t[newSize];
+			}
             else
-                m_pb = new Byte[dataSize];
+                m_pb = new uint8_t[dataSize];
 
             if (m_pb == nullptr) return false;
         }
@@ -123,89 +110,119 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixe
 	return true;
 }
 
-// BitBlt assumes that the 3D and 2D images have the same resolution !
-void C3DImage::BitBlt(CImage& im, int nslice)
+bool C3DImage::IsRGB()
 {
-	// go to the beginning of the slice
-	Byte* ps = m_pb + nslice*m_cx*m_cy;
-	Byte* pd = im.GetBytes();
-
-	// copy image data
-	int n = m_cx*m_cy;
-	for (int i=0; i<n; i++) *pd++ = *ps++;
+    return m_pixelType == CImage::INT_RGB8 || m_pixelType == CImage::UINT_RGB8 
+        || m_pixelType == CImage::INT_RGB16 || m_pixelType == CImage::UINT_RGB16;
 }
 
-void C3DImage::StretchBlt(CImage& im, int nslice)
+std::string C3DImage::PixelTypeString()
 {
-	Byte* pd = im.GetBytes();
-
-	int nx = im.Width();
-	int ny = im.Height();
-
-	int i0 = 0;
-	int j0 = 0;
-
-	Byte* p0, *p1, *p2, *p3;
-	int h0, h1, h2, h3;
-	int w = 0, h = 0;
-
-	int Hx = nx - 1;
-	int Hy = ny - 1;
-	int H = Hx*Hy;
-
-	for (int y=0; y<ny; y++)
-	{
-		i0 = 0;
-		w = 0;
-
-		while (y*(m_cy-1)>(j0+1)*(ny-1)) { j0++; h -= (ny-1); }
-
-		p0 = nslice*m_cx*m_cy + m_pb + (j0*m_cx);
-		p1 = p0 + 1;
-		p2 = p0 + m_cx;
-		p3 = p2 + 1;
-
-		for (int x=0; x<nx; x++)
-		{
-			while (x*(m_cx-1)>(i0+1)*(nx-1)) { i0++; w -= (nx-1); p0++; p1++; p2++; p3++; }
-
-			h0 = (Hx - w)*(Hy - h);
-			h1 = w*(Hy - h);
-			h2 = (Hx - w)*h;
-			h3 = w*h;
-
-			*pd++ = (h0*p0[0] + h1*p1[0] + h2*p2[0] + h3*p3[0])/H;
-
-			w += (m_cx-1);
-		}
-
-		h += (m_cy-1);
-	}
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        return "8-bit Unsigned Integer";
+    case CImage::INT_8:
+        return "8-bit Signed Integer";
+    case CImage::UINT_16:
+        return "16-bit Unsigned Integer";
+    case CImage::INT_16:
+        return "16-bit Signed Integer";
+    case CImage::UINT_32:
+        return "32-bit Unsigned Integer";
+    case CImage::INT_32:
+        return "32-bit Signed Integer";
+    case CImage::UINT_RGB8:
+        return "8-bit Unsigned Integer RGB";
+    case CImage::INT_RGB8:
+        return "8-bit Signed Integer RGB";
+    case CImage::UINT_RGB16:
+        return "16-bit Unsigned Integer RGB";
+    case CImage::INT_RGB16:
+        return "16-bit Signed Integer RGB";
+    case CImage::REAL_32:
+        return "32-bit Real";
+    case CImage::REAL_64:
+        return "64-bit Real";
+    default:
+        assert(false);
+    }
+	return "(unknown)";
 }
 
-void C3DImage::StretchBlt(C3DImage& im)
+double C3DImage::Value(int i, int j, int k, int channel)
 {
-	int nx = im.Width();
-	int ny = im.Height();
-	int nz = im.Depth();
-	Byte* pb = im.m_pb;
-	for (int k=0; k<nz; ++k)
-		for (int j=0; j<ny; ++j)
-			for (int i=0; i<nx; ++i, ++pb)
-			{
-				double r = (double) i / (double) (nx - 1);
-				double s = (double) j / (double) (ny - 1);
-				double t = (double) k / (double) (nz - 1);
-				*pb = Peek(r, s, t);
-			}
+    double h;
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+    {
+        h = m_pb[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::INT_8:
+    {
+        h = ((char*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::UINT_16:
+    {
+        h = ((uint16_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::INT_16:
+    {
+        h = ((int16_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        h = ((uint32_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::INT_32:
+    {
+        h = ((int32_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::UINT_RGB8:
+    {
+        h = m_pb[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case CImage::INT_RGB8:
+    {
+        h = ((char*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case CImage::UINT_RGB16:
+    {
+        h = ((uint16_t*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case CImage::INT_RGB16:
+    {
+        h = ((int16_t*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case CImage::REAL_32:
+    {
+        h = ((float*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::REAL_64:
+    {
+        h = ((double*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    }
+
+    return h;
 }
 
-
-Byte C3DImage::Value(double fx, double fy, int nz)
+double C3DImage::Value(double fx, double fy, int nz, int channel)
 {
 	double r, s;
-
-	Byte* pb = m_pb + nz*m_cx*m_cy;
 
 	int ix = (int) ((m_cx-1)*fx);
 	int iy = (int) ((m_cy-1)*fy);
@@ -214,18 +231,125 @@ Byte C3DImage::Value(double fx, double fy, int nz)
 	if (iy == (m_cy - 1)) { iy--; s = 1; } else s = 2*(((m_cy-1)*fy) - iy)-1;
 
 	double h;
-	h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
-	h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
-	h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
-	h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+    {
+        uint8_t* pb = m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::INT_8:
+    {
+        char* pb = (char*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::UINT_16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::INT_16:
+    {
+        int16_t* pb = (int16_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        uint32_t* pb = (uint32_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::INT_32:
+    {
+        int32_t* pb = (int32_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::UINT_RGB8:
+    {
+        uint8_t* pb = (uint8_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case CImage::INT_RGB8:
+    {
+        int8_t* pb = (int8_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case CImage::UINT_RGB16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case CImage::INT_RGB16:
+    {
+        int16_t* pb = (int16_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case CImage::REAL_32:
+    {
+        float* pb = (float*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::REAL_64:
+    {
+        double* pb = (double*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    }
 
-	return (Byte)(0.25*h);
+	return 0.25*h;
 }
 
-Byte C3DImage::Peek(double r, double s, double t)
+double C3DImage::Peek(double r, double s, double t, int channel)
 {
-	static int n1,n2,n3,n4,n5,n6,n7,n8;
-	static double h1,h2,h3,h4,h5,h6,h7,h8;
+	int n1,n2,n3,n4,n5,n6,n7,n8;
+	double h1,h2,h3,h4,h5,h6,h7,h8;
 
 	if (r < 0) r = 0; if (r > 1) r = 1;
 	if (s < 0) s = 0; if (s > 1) s = 1;
@@ -239,14 +363,29 @@ Byte C3DImage::Peek(double r, double s, double t)
 	s = 2.0*(s*(m_cy-1) - j) - 1.0;
 	t = 2.0*(t*(m_cz-1) - k) - 1.0;
 
-	n1 = i + j*m_cx + k*m_cx*m_cy;
-	n2 = n1 + 1;
-	n3 = n2 + m_cx;
-	n4 = n3 - 1;
-	n5 = n1 + (m_cz > 1 ? m_cx*m_cy : 0);
-	n6 = n5 + 1;
-	n7 = n6 + m_cx;
-	n8 = n7 - 1;
+    if(IsRGB())
+    {
+        n1 = (i + j*m_cx + k*m_cx*m_cy) + channel;
+        n2 = n1 + 3;
+        n3 = n2 + m_cx*3;
+        n4 = n3 - 3;
+        n5 = n1 + (m_cz > 1 ? m_cx*m_cy*3 : 0);
+        n6 = n5 + 3;
+        n7 = n6 + m_cx*3;
+        n8 = n7 - 3;
+    }
+    else
+    {
+        n1 = i + j*m_cx + k*m_cx*m_cy;
+        n2 = n1 + 1;
+        n3 = n2 + m_cx;
+        n4 = n3 - 1;
+        n5 = n1 + (m_cz > 1 ? m_cx*m_cy : 0);
+        n6 = n5 + 1;
+        n7 = n6 + m_cx;
+        n8 = n7 - 1;
+    }
+	
 
 	h1 = (1-r)*(1-s)*(1-t);
 	h2 = (1+r)*(1-s)*(1-t);
@@ -256,257 +395,647 @@ Byte C3DImage::Peek(double r, double s, double t)
 	h6 = (1+r)*(1-s)*(1+t);
 	h7 = (1+r)*(1+s)*(1+t);
 	h8 = (1-r)*(1+s)*(1+t);
-	
-	Byte* pb = m_pb;
+    
+    double val;
 
-	return (Byte)((h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125);
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+    {
+        uint8_t* pb = m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_8:
+    {
+        char* pb = (char*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::UINT_16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_16:
+    {
+        int16_t* pb = (int16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        uint32_t* pb = (uint32_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_32:
+    {
+        int32_t* pb = (int32_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::UINT_RGB8:
+    {
+        uint8_t* pb = m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_RGB8:
+    {
+        char* pb = (char*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::UINT_RGB16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_RGB16:
+    {
+        int16_t* pb = (int16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::REAL_32:
+    {
+        float* pb = (float*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::REAL_64:
+    {
+        double* pb = (double*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    }
+
+    return val;
 }
 
-
-void C3DImage::Histogram(int* pdf)
+double C3DImage::ValueAtGlobalPos(vec3d pos, int channel)
 {
-	int i;
-	for (i=0; i<256; i++) pdf[i] = 0;
+    vec3d locPos = m_orientation.transpose()*(pos - vec3d(m_box.x0, m_box.y0, m_box.z0));
+    double relX = locPos.x/(m_box.x1 - m_box.x0);
+    double relY = locPos.y/(m_box.y1 - m_box.y0);
+    double relZ = locPos.z/(m_box.z1 - m_box.z0);
 
-	Byte* pb = m_pb;
-	int nsize = m_cx*m_cy*m_cz;
+    if(relX < 0 || relX > 1 ||
+        relY < 0 || relY > 1 ||
+        relZ < 0 || relZ > 1 )
+    {
+        return 0;
+    }
 
-	for (i=0; i<nsize; i++) pdf[ *pb++ ]++;
+	if (Depth() == 1)
+	{
+		return Value(relX, relY, 0, channel);
+	}
+	else
+	{
+		return Peek(relX, relY, relZ, channel);
+	}
+}
+
+template <class pType> 
+void C3DImage::CopySliceX(pType* dest, int n, int channels)
+{
+    pType* ps;
+    pType* orig = (pType*)m_pb;
+
+    for (int z=0; z<m_cz; z++)
+    {
+        ps = orig + z*m_cx*m_cy*channels + n*channels;
+        for (int y=0; y<m_cy; y++, ps += m_cx*channels)
+        {
+            for(int ch = 0; ch < channels; ch++) *dest++ = ps[ch];
+        } 
+    }
 }
 
 void C3DImage::GetSliceX(CImage& im, int n)
 {
 	// create image data
-	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
+	if ((im.Width() != m_cy) || (im.Height() != m_cz) || im.PixelType() != m_pixelType) 
+        im.Create(m_cy, m_cz, nullptr, m_pixelType);
 
-	Byte* ps;
-	Byte* pd = im.GetBytes();
+    assert(im.PixelType() == m_pixelType);
 
-	// copy image data
-	for (int z=0; z<m_cz; z++)
-	{
-		ps = m_pb + z*m_cx*m_cy + n;
-		for (int y=0; y<m_cy; y++, ps += m_cx)	*pd++ = *ps;
-	}
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        CopySliceX<uint8_t>(im.GetBytes(), n);
+        break;
+    case CImage::INT_8:
+        CopySliceX<int8_t>((int8_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_16:
+        CopySliceX<uint16_t>((uint16_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_16:
+        CopySliceX<int16_t>((int16_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_32:
+        CopySliceX<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceX<int32_t>((int32_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_RGB8:
+        CopySliceX<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySliceX<int8_t>((int8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySliceX<uint16_t>((uint16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySliceX<int16_t>((int16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::REAL_32:
+        CopySliceX<float>((float*)im.GetBytes(), n);
+        break;
+    case CImage::REAL_64:
+        CopySliceX<double>((double*)im.GetBytes(), n);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+template <class pType> void C3DImage::CopySliceY(pType* dest, int n, int channels)
+{
+    pType* ps;
+    pType* orig = (pType*) m_pb;
+
+    for (int z=0; z<m_cz; z++)
+    {
+        ps = orig + z*m_cx*m_cy*channels + n*m_cx*channels;
+        for (int x=0; x<m_cx; x++, ps+=channels)
+        {
+            for(int ch = 0; ch < channels; ch++) *dest++ = ps[ch];
+        } 
+    }
 }
 
 void C3DImage::GetSliceY(CImage& im, int n)
 {
 	// create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
+	if ((im.Width() != m_cx) || (im.Height() != m_cz) || im.PixelType() != m_pixelType) 
+        im.Create(m_cx, m_cz, nullptr, m_pixelType);
 
-	Byte* ps;
-	Byte* pd = im.GetBytes();
+    assert(im.PixelType() == m_pixelType);
 
-	// copy image data
-	for (int z=0; z<m_cz; z++)
-	{
-		ps = m_pb + z*m_cx*m_cy + n*m_cx;
-		for (int x=0; x<m_cx; x++, ps++) *pd++ = *ps;
-	}
+	switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        CopySliceY<uint8_t>(im.GetBytes(), n);
+        break;
+    case CImage::INT_8:
+        CopySliceY<int8_t>((int8_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_16:
+        CopySliceY<uint16_t>((uint16_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_16:
+        CopySliceY<int16_t>((int16_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_32:
+        CopySliceY<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceY<int32_t>((int32_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_RGB8:
+        CopySliceY<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySliceY<int8_t>((int8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySliceY<uint16_t>((uint16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySliceY<int16_t>((int16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::REAL_32:
+        CopySliceY<float>((float*)im.GetBytes(), n);
+        break;
+    case CImage::REAL_64:
+        CopySliceY<double>((double*)im.GetBytes(), n);
+        break;
+    default:
+        assert(false);
+    }
+	
+}
+
+template <class pType> void C3DImage::CopySliceZ(pType* dest, int n, int channels)
+{
+    pType* orig = (pType*) m_pb;
+    pType* ps = orig + n*m_cx*m_cy*channels;
+
+    for (int i=0; i<m_cx*m_cy*channels; i++, ps++) *dest++ = *ps;
 }
 
 void C3DImage::GetSliceZ(CImage& im, int n)
 {
 	// create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
+	if ((im.Width() != m_cx) || (im.Height() != m_cy) || im.PixelType() != m_pixelType) 
+        im.Create(m_cx, m_cy, nullptr, m_pixelType);
 
-	// copy image data
-	Byte* pd = im.GetBytes();
-	Byte* ps = m_pb + n*m_cx*m_cy;
+    assert(im.PixelType() == m_pixelType);
 
-	for (int i=0; i<m_cx*m_cy; i++, ps++) *pd++ = *ps;
+	switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        CopySliceZ<uint8_t>(im.GetBytes(), n);
+        break;
+    case CImage::INT_8:
+        CopySliceZ<int8_t>((int8_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_16:
+        CopySliceZ<uint16_t>((uint16_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_16:
+        CopySliceZ<int16_t>((int16_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_32:
+        CopySliceZ<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceZ<int32_t>((int32_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_RGB8:
+        CopySliceZ<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySliceZ<int8_t>((int8_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySliceZ<uint16_t>((uint16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySliceZ<int16_t>((int16_t*)im.GetBytes(), n, 3);
+        break;
+    case CImage::REAL_32:
+        CopySliceZ<float>((float*)im.GetBytes(), n);
+        break;
+    case CImage::REAL_64:
+        CopySliceZ<double>((double*)im.GetBytes(), n);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+template <class pType> void C3DImage::CopySampledSliceX(pType* dest, double f, int channels)
+{  
+    for (int z = 0; z<m_cz; z++)
+    {
+        double fz = z / (double) (m_cz - 1.0);
+        for (int y = 0; y<m_cy; y++)
+        {
+            double fy = y / (double) (m_cy - 1.0);
+
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(f, fy, fz, ch);
+        }
+    }
 }
 
 void C3DImage::GetSampledSliceX(CImage& im, double f)
 {
 	// create image data
-	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
+	if ((im.Width() != m_cy) || (im.Height() != m_cz) || im.PixelType() != m_pixelType) 
+        im.Create(m_cy, m_cz, nullptr, m_pixelType);
 
-	Byte* pd = im.GetBytes();
+    assert(im.PixelType() == m_pixelType);
 
-	// copy image data
-	for (int z = 0; z<m_cz; z++)
-	{
-		double fz = z / (double) (m_cz - 1.0);
-		for (int y = 0; y<m_cy; y++)
-		{
-			double fy = y / (double) (m_cy - 1.0);
-			*pd++ = Peek(f, fy, fz);
-		}
-	}
+	switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        CopySampledSliceX<uint8_t>(im.GetBytes(), f);
+        break;
+    case CImage::INT_8:
+        CopySampledSliceX<int8_t>((int8_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_16:
+        CopySampledSliceX<uint16_t>((uint16_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_16:
+        CopySampledSliceX<int16_t>((int16_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_32:
+        CopySampledSliceX<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceX<int32_t>((int32_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_RGB8:
+        CopySampledSliceX<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySampledSliceX<int8_t>((int8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySampledSliceX<uint16_t>((uint16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySampledSliceX<int16_t>((int16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::REAL_32:
+        CopySampledSliceX<float>((float*)im.GetBytes(), f);
+        break;
+    case CImage::REAL_64:
+        CopySampledSliceX<double>((double*)im.GetBytes(), f);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+template <class pType> void C3DImage::CopySampledSliceY(pType* dest, double f, int channels)
+{  
+    for (int z = 0; z<m_cz; z++)
+    {
+        double fz = z / (double)(m_cz - 1.0);
+        for (int x = 0; x<m_cx; x++)
+        {
+            double fx = x / (double)(m_cx - 1.0);
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, f, fz, ch);
+            *dest++ = (pType)Peek(fx, f, fz, 1);
+            *dest++ = (pType)Peek(fx, f, fz, 2);
+        }
+    }
 }
 
 void C3DImage::GetSampledSliceY(CImage& im, double f)
 {
 	// create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
+	if ((im.Width() != m_cx) || (im.Height() != m_cz) || im.PixelType() != m_pixelType) 
+        im.Create(m_cx, m_cz, nullptr, m_pixelType);
 
-	Byte* pd = im.GetBytes();
+    assert(im.PixelType() == m_pixelType);
 
-	// copy image data
-	for (int z = 0; z<m_cz; z++)
-	{
-		double fz = z / (double)(m_cz - 1.0);
-		for (int x = 0; x<m_cx; x++)
-		{
-			double fx = x / (double)(m_cx - 1.0);
-			*pd++ = Peek(fx, f, fz);
-		}
-	}
+	switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        CopySampledSliceY<uint8_t>(im.GetBytes(), f);
+        break;
+    case CImage::INT_8:
+        CopySampledSliceY<int8_t>((int8_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_16:
+        CopySampledSliceY<uint16_t>((uint16_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_16:
+        CopySampledSliceY<int16_t>((int16_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_32:
+        CopySampledSliceY<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceY<int32_t>((int32_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_RGB8:
+        CopySampledSliceY<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySampledSliceY<int8_t>((int8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySampledSliceY<uint16_t>((uint16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySampledSliceY<int16_t>((int16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::REAL_32:
+        CopySampledSliceY<float>((float*)im.GetBytes(), f);
+        break;
+    case CImage::REAL_64:
+        CopySampledSliceY<double>((double*)im.GetBytes(), f);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+template <class pType> void C3DImage::CopySampledSliceZ(pType* dest, double f, int channels)
+{
+    if (Depth() == 1)
+    {
+        for (int y = 0; y < m_cy; y++)
+        {
+            double fy = y / (double)(m_cy - 1.0);
+            for (int x = 0; x < m_cx; x++)
+            {
+                double fx = x / (double)(m_cx - 1.0);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Value(fx, fy, 0, ch);
+            }
+        }
+    }
+    else
+    {
+        for (int y = 0; y < m_cy; y++)
+        {
+            double fy = y / (double)(m_cy - 1.0);
+            for (int x = 0; x < m_cx; x++)
+            {
+                double fx = x / (double)(m_cx - 1.0);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, fy, f, ch);
+            }
+        }
+    }
 }
 
 void C3DImage::GetSampledSliceZ(CImage& im, double f)
 {
 	// create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
+	if ((im.Width() != m_cx) || (im.Height() != m_cy) || im.PixelType() != m_pixelType) 
+        im.Create(m_cx, m_cy, nullptr, m_pixelType);
 
-	// copy image data
-	Byte* pd = im.GetBytes();
+    assert(im.PixelType() == m_pixelType);
 
-	if (Depth() == 1)
-	{
-		for (int y = 0; y < m_cy; y++)
-		{
-			double fy = y / (double)(m_cy - 1.0);
-			for (int x = 0; x < m_cx; x++)
-			{
-				double fx = x / (double)(m_cx - 1.0);
-				*pd++ = Value(fx, fy, 0);
-			}
-		}
-	}
-	else
-	{
-		for (int y = 0; y < m_cy; y++)
-		{
-			double fy = y / (double)(m_cy - 1.0);
-			for (int x = 0; x < m_cx; x++)
-			{
-				double fx = x / (double)(m_cx - 1.0);
-				*pd++ = Peek(fx, fy, f);
-			}
-		}
-	}
-}
-
-void C3DImage::GetThresholdedSliceX(CImage& im, int n, int min, int max)
-{
-    // create image data
-	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
-
-	Byte* ps;
-	Byte* pd = im.GetBytes();
-
-	// copy image data
-	for (int z=0; z<m_cz; z++)
-	{
-		ps = m_pb + z*m_cx*m_cy + n;
-		for (int y=0; y<m_cy; y++, ps += m_cx)
-        {
-            if(*ps < min)
-            {
-                *pd = 0;
-            }
-            else if (*ps > max)
-            {
-                *pd = 255;
-            }
-            else
-            {
-                *pd = 255 * (float)(*ps - min)/(max-min);
-            }
-            
-            *pd++;
-        }
-	}
-}
-
-void C3DImage::GetThresholdedSliceY(CImage& im, int n, int min, int max)
-{
-    // create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
-
-	Byte* ps;
-	Byte* pd = im.GetBytes();
-
-	// copy image data
-	for (int z=0; z<m_cz; z++)
-	{
-		ps = m_pb + z*m_cx*m_cy + n*m_cx;
-		for (int x=0; x<m_cx; x++, ps++)
-        {
-            if(*ps < min)
-            {
-                *pd = 0;
-            }
-            else if (*ps > max)
-            {
-                *pd = 255;
-            }
-            else
-            {
-                *pd = 255 * (float)(*ps - min)/(max-min);
-            }
-            
-            *pd++;
-        }
-	}
-}
-
-void C3DImage::GetThresholdedSliceZ(CImage& im, int n, int min, int max)
-{
-    // create image data
-	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
-
-	// copy image data
-	Byte* pd = im.GetBytes();
-	Byte* ps = m_pb + n*m_cx*m_cy;
-
-	for (int i=0; i<m_cx*m_cy; i++, ps++)
+	switch (m_pixelType)
     {
-        if(*ps < min)
-            {
-                *pd = 0;
-            }
-            else if (*ps > max)
-            {
-                *pd = 255;
-            }
-            else
-            {
-                *pd = 255 * (float)(*ps - min)/(max-min);
-            }
-            
-            *pd++;
+    case CImage::UINT_8:
+        CopySampledSliceZ<uint8_t>(im.GetBytes(), f);
+        break;
+    case CImage::INT_8:
+        CopySampledSliceZ<int8_t>((int8_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_16:
+        CopySampledSliceZ<uint16_t>((uint16_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_16:
+        CopySampledSliceZ<int16_t>((int16_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_32:
+        CopySampledSliceZ<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceZ<int32_t>((int32_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_RGB8:
+        CopySampledSliceZ<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB8:
+        CopySampledSliceZ<int8_t>((int8_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::UINT_RGB16:
+        CopySampledSliceZ<uint16_t>((uint16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::INT_RGB16:
+        CopySampledSliceZ<int16_t>((int16_t*)im.GetBytes(), f, 3);
+        break;
+    case CImage::REAL_32:
+        CopySampledSliceZ<float>((float*)im.GetBytes(), f);
+        break;
+    case CImage::REAL_64:
+        CopySampledSliceZ<double>((double*)im.GetBytes(), f);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+template <class pType> void C3DImage::CalcMinMaxValue()
+{
+    size_t N  = m_cx*m_cy*m_cz;
+    if(IsRGB())
+    {
+        N *= 3;
     }
 
+    pType* data = (pType*)m_pb;
+
+    double maxValue = data[0], minValue = data[0];
+    #pragma omp parallel shared(maxValue, minValue) firstprivate(data)
+	{
+		double threadMax = data[0], threadMin = data[0];
+        #pragma omp for
+		for (int i = 0; i < N; ++i)
+		{
+			if (data[i] > threadMax) threadMax = data[i];
+			if (data[i] < threadMin) threadMin = data[i];
+		}
+        
+        #pragma omp critical
+		{
+			if (threadMax > maxValue) maxValue = threadMax;
+			if (threadMin < minValue) minValue = threadMin;
+		}
+	}
+
+	m_maxValue = maxValue;
+	m_minValue = minValue;
 }
 
-void C3DImage::Invert()
+void C3DImage::GetMinMax(double& min, double& max, bool recalc)
 {
-	int n = m_cx*m_cy*m_cz;
-	for (int i=0; i<n; i++) m_pb[i] = 255 - m_pb[i];
+    if(recalc)
+    {
+        switch (m_pixelType)
+        {
+        case CImage::UINT_8:
+            CalcMinMaxValue<uint8_t>();
+            break;
+        case CImage::INT_8:
+            CalcMinMaxValue<int8_t>();
+            break;
+        case CImage::UINT_16:
+            CalcMinMaxValue<uint16_t>();
+            break;
+        case CImage::INT_16:
+            CalcMinMaxValue<int16_t>();
+            break;
+        case CImage::UINT_32:
+            CalcMinMaxValue<uint32_t>();
+            break;
+        case CImage::INT_32:
+            CalcMinMaxValue<int32_t>();
+            break;
+        case CImage::UINT_RGB8:
+            CalcMinMaxValue<uint8_t>();
+            break;
+        case CImage::INT_RGB8:
+            CalcMinMaxValue<int8_t>();
+            break;
+        case CImage::UINT_RGB16:
+            CalcMinMaxValue<uint16_t>();
+            break;
+        case CImage::INT_RGB16:
+            CalcMinMaxValue<int16_t>();
+            break;
+        case CImage::REAL_32:
+            CalcMinMaxValue<float>();
+            break;
+        case CImage::REAL_64:
+            CalcMinMaxValue<double>();
+            break;
+        default:
+            assert(false);
+        }
+    }
+
+    min = m_minValue;
+    max = m_maxValue;
 }
+
+template <class pType> void C3DImage::ZeroTemplate(int channels)
+{
+    pType* data = (pType*)m_pb;
+    int n = m_cx*m_cy*m_cz*channels;
+    for (int i=0; i<n; i++) data[i] = 0;
+}
+
 
 void C3DImage::Zero()
 {
-	int n = m_cx*m_cy*m_cz;
-	for (int i=0; i<n; i++) m_pb[i] = 0;
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        ZeroTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        ZeroTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        ZeroTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        ZeroTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        ZeroTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        ZeroTemplate<int32_t>();
+        break;
+    case CImage::UINT_RGB8:
+        ZeroTemplate<uint8_t>(3);
+        break;
+    case CImage::INT_RGB8:
+        ZeroTemplate<int8_t>(3);
+        break;
+    case CImage::UINT_RGB16:
+        ZeroTemplate<uint16_t>(3);
+        break;
+    case CImage::INT_RGB16:
+        ZeroTemplate<int16_t>(3);
+        break;
+    case CImage::REAL_32:
+        ZeroTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        ZeroTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
 }
-
-void C3DImage::FlipZ()
-{
-	int nsize = m_cx*m_cy;
-	Byte* buf = new Byte[nsize];
-	for (int i = 0; i < m_cz / 2; ++i)
-	{
-		Byte* slice0 = m_pb + i*nsize;
-		Byte* slice1 = m_pb + (m_cz - i - 1)*nsize;
-		memcpy(buf, slice0, nsize);
-		memcpy(slice0, slice1, nsize);
-		memcpy(slice1, buf, nsize);
-	}
-    delete[] buf;
-}
-

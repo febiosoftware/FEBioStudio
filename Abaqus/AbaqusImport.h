@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FileReader.h>
+#include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include "AbaqusModel.h"
 
@@ -64,6 +64,8 @@ public:
 
 	bool Load(const char* szfile);
 
+	bool UpdateData(bool bsave) override;
+
 protected:
 	// read a line and increment line counter
 	bool read_line(char* szline, FILE* fp);
@@ -82,9 +84,11 @@ protected:
 
 	// build a surface
 	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
+	FSSurface* find_surface(AbaqusModel::SURFACE* ps);
 
 	// build a nodeset
 	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
+	FSNodeSet* find_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);
@@ -108,6 +112,7 @@ protected:
 	bool read_boundary           (char* szline, FILE* fp);
 	bool read_dsload             (char* szline, FILE* fp);
 	bool read_solid_section      (char* szline, FILE* fp);
+	bool read_shell_section      (char* szline, FILE* fp);
 	bool read_static             (char* szline, FILE* fp);
 	bool read_orientation        (char* szline, FILE* fp);
 	bool read_distribution       (char* szline, FILE* fp);

@@ -2634,6 +2634,7 @@ const char* ElementTypeString(int ntype)
 	case FE_PENTA15: sztype = "penta15"; break;
     case FE_PYRA13 : sztype = "pyra13"; break;
 	case FE_BEAM2  : sztype = "line2"; break;
+	case FE_BEAM3  : sztype = "line3"; break;
 	default:
 		assert(false);
 	}
@@ -2929,8 +2930,8 @@ void FEBioExport25::WriteSurfaceDataSection()
 				XMLElement tag("SurfaceData");
 				tag.add_attribute("name", sd.GetName().c_str());
 
-				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if (sd.GetDataType() == DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
+				else if (sd.GetDataType() == DATA_TYPE::DATA_VEC3) tag.add_attribute("datatype", "vector");
 
 				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 

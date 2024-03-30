@@ -365,6 +365,16 @@ void GLLegendBar::SetDivisions(int n)
 	m_pMap->SetDivisions(n);
 }
 
+bool GLLegendBar::SmoothTexture() const
+{
+	return m_pMap->GetSmooth();
+}
+
+void GLLegendBar::SetSmoothTexture(bool b)
+{
+	m_pMap->SetSmooth(b);
+}
+
 void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 {
 	QColor c1 = toQColor(m_bgFillColor[0]);
@@ -418,6 +428,7 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 
@@ -573,6 +584,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 
@@ -728,6 +740,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);

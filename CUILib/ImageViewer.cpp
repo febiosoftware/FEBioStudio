@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QGraphicsView>
 #include <QBoxLayout>
 #include <QSlider>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <QGraphicsScene>
 #include <QPixmap>

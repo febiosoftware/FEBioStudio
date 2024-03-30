@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
+#include "Logger.h"
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
@@ -121,7 +122,6 @@ GObject* CAbstractTool::GetActiveObject()
 //-----------------------------------------------------------------------------
 CBasicTool::CBasicTool(CMainWindow* wnd, const QString& s, unsigned int flags) : CAbstractTool(wnd, s)
 {
-	m_list = 0;
 	m_form = 0;
 	m_flags = flags;
 	m_applyText = "Apply";
@@ -136,16 +136,13 @@ void CBasicTool::SetApplyButtonText(const QString& text)
 //-----------------------------------------------------------------------------
 QWidget* CBasicTool::createUi()
 {
-	m_list = this;
-	if (m_list == 0) return 0;
-
 	QWidget* pw = new QWidget;
 	QVBoxLayout* pl = new QVBoxLayout(pw);
 	pw->setLayout(pl);
 
 	m_form = new CPropertyListForm;
 	m_form->setBackgroundRole(QPalette::Light);
-	m_form->setPropertyList(m_list);
+	m_form->setPropertyList(this);
 	pl->addWidget(m_form);
 
 	if (m_flags & HAS_APPLY_BUTTON)
@@ -167,6 +164,11 @@ QWidget* CBasicTool::createUi()
 //-----------------------------------------------------------------------------
 bool CBasicTool::SetErrorString(const QString& err)
 {
+	if (err.isEmpty() == false)
+	{
+		QString msg = QString("[%1]%2\n").arg(name()).arg(err);
+		CLogger::AddLogEntry(msg);
+	}
 	m_err = err;
 	return err.isEmpty();
 }

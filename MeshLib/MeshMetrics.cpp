@@ -49,16 +49,16 @@ int FTHEX20[6][8] = {
 	{ 0, 1, 5, 4, 8, 17, 12, 16 },
 	{ 1, 2, 6, 5, 9, 18, 13, 17 },
 	{ 2, 3, 7, 6, 10, 19, 14, 18 },
-	{ 0, 4, 7, 3, 16, 15, 19, 11 },
-	{ 0, 3, 2, 1, 11, 10, 9, 8 },
+	{ 3, 0, 4, 7, 11, 16, 15, 19 },
+	{ 3, 2, 1, 0, 10, 9, 8, 11 },
 	{ 4, 5, 6, 7, 12, 13, 14, 15 } };
 
 int FTHEX27[6][9] = {
 	{ 0, 1, 5, 4, 8, 17, 12, 16, 20 },
 	{ 1, 2, 6, 5, 9, 18, 13, 17, 21 },
 	{ 2, 3, 7, 6, 10, 19, 14, 18, 22 },
-	{ 0, 4, 7, 3, 16, 15, 19, 11, 23 },
-	{ 0, 3, 2, 1, 11, 10, 9, 8, 24 },
+	{ 3, 0, 4, 7, 11, 16, 15, 19, 23 },
+	{ 3, 2, 1, 0, 10, 9, 8, 11, 24 },
 	{ 4, 5, 6, 7, 12, 13, 14, 15, 25 } };
 
 int FTPENTA[5][4] = {
@@ -499,6 +499,27 @@ double TriQuality(const FSMesh& mesh, const FSElement& el)
 	for (int i = 0; i<3; ++i) r[i] = mesh.Node(el.m_node[i]).r;
 
 	return TriangleQuality(r);
+}
+
+//-----------------------------------------------------------------------------
+double TriMaxDihedralAngle(const FSMesh& mesh, const FSElement& el)
+{
+	if (el.IsType(FE_TRI3) == false) return 0.;
+
+	if (el.m_face[0] < 0) return 0;
+	const FSFace& f = mesh.Face(el.m_face[0]);
+
+	double maxAngle = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (f.m_nbr[i] >= 0)
+		{
+			const FSFace& fi = mesh.Face(f.m_nbr[i]);
+			double a = acos(f.m_fn * fi.m_fn);
+			if (a > maxAngle) maxAngle = a;
+		}
+	}
+	return maxAngle * 180.0 / PI;
 }
 
 //-----------------------------------------------------------------------------

@@ -149,7 +149,7 @@ void CPostToolBar::Update()
 
 	// rebuild the menu
 	Post::FEPostModel* pfem = doc->GetFSModel();
-	ui->m_selectData->BuildMenu(pfem, Post::DATA_SCALAR);
+	ui->m_selectData->BuildMenu(pfem, Post::TENSOR_SCALAR);
 	ui->m_selectData->blockSignals(true);
 	ui->m_selectData->setCurrentValue(map->GetEvalField());
 	ui->m_selectData->blockSignals(false);

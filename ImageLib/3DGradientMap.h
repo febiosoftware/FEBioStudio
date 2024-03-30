@@ -40,6 +40,10 @@ public:
 	vec3f Value(int i, int j, int k);
 
 private:
+    template<class pType>
+    vec3f ValueTemplate(int i, int j, int k);
+
+private:
 	C3DImage&	m_im;
 	BOX	m_box;
 };

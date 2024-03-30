@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GOCCObject.h>
+#include <GeomLib/GCurveObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <FSCore/FSObjectList.h>
 #include <FEMLib/GDiscreteObject.h>
@@ -39,6 +40,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/MeshLayer.h>
+#include <map>
 
 
 using std::stringstream;
@@ -240,7 +242,7 @@ void GModel::Imp::ValidateNames(GObject* po)
 			while (it.isValid())
 			{
 				GPart* pgi = it;
-				if (pgi->GetName() == newName)
+				if (pgi && (pgi->GetName() == newName))
 				{
 					bok = false;
 					stringstream ss;
@@ -569,7 +571,6 @@ GPart* GModel::Part(int n)
 }
 
 //-----------------------------------------------------------------------------
-
 GPart* GModel::FindPart(int nid)
 {
 	for (int i=0; i<Objects(); ++i)
@@ -581,6 +582,18 @@ GPart* GModel::FindPart(int nid)
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+GPart* GModel::FindPart(const std::string& name)
+{
+	const char* szname = name.c_str();
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		GPart* pg = po->FindPartFromName(szname);
+		if (pg) return pg;
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -1258,6 +1271,7 @@ GObject* BuildObject(int ntype)
 	case GCYLINDRICAL_PATCH : po = new GCylindricalPatch(); break;
 	case GMULTI_BLOCK       : po = new GMultiBox(); break;
 	case GMULTI_PATCH       : po = new GMultiPatch(); break;
+	case GCURVE_OBJECT      : po = new GCurveObject(); break;
 	}
 
 	assert(po);
@@ -1454,6 +1468,16 @@ int GModel::PartLists() const { return (int)imp->m_GPart.Size(); }
 GPartList* GModel::PartList(int n) { return imp->m_GPart[n]; }
 
 //-----------------------------------------------------------------------------
+GPartList* GModel::FindPartList(const std::string& name)
+{
+	for (int i = 0; i < imp->m_GPart.Size(); ++i)
+	{
+		if (imp->m_GPart[i]->GetName() == name) return imp->m_GPart[i];
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 
 int GModel::RemovePartList(GPartList *pg)
 {
@@ -1557,12 +1581,12 @@ void GModel::RemoveNamedSelections()
 
 //-----------------------------------------------------------------------------
 
-template <class T> void clearList(FSObjectList<T>& l)
+template <class T> void clearList(FSObjectList<T>& l, std::function<bool(T*)> f)
 {
 	if (l.IsEmpty()) return;
 	for (int i=0; i<l.Size();)
 	{
-		if (l[i]->size() == 0)
+		if (f(l[i]))
 		{
 			l.Remove(l[i]);
 		}
@@ -1572,15 +1596,30 @@ template <class T> void clearList(FSObjectList<T>& l)
 
 void GModel::RemoveEmptySelections()
 {
-	clearList(imp->m_GPart);
-	clearList(imp->m_GFace);
-	clearList(imp->m_GEdge);
-	clearList(imp->m_GNode);
+	clearList<GPartList>(imp->m_GPart, [](GPartList* pg) { return (pg->size() == 0);} );
+	clearList<GFaceList>(imp->m_GFace, [](GFaceList* pg) { return (pg->size() == 0);} );
+	clearList<GEdgeList>(imp->m_GEdge, [](GEdgeList* pg) { return (pg->size() == 0);} );
+	clearList<GNodeList>(imp->m_GNode, [](GNodeList* pg) { return (pg->size() == 0);} );
 
 	for (int i=0; i<Objects(); ++i)
 	{
 		GObject* po = Object(i);
 		po->RemoveEmptyFEGroups();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GModel::RemoveUnusedSelections()
+{
+	clearList<GPartList>(imp->m_GPart, [](GPartList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GFaceList>(imp->m_GFace, [](GFaceList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GEdgeList>(imp->m_GEdge, [](GEdgeList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GNodeList>(imp->m_GNode, [](GNodeList* pg) { return (pg->GetReferenceCount() == 0); });
+
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		po->RemoveUnusedFEGroups();
 	}
 }
 
@@ -1688,7 +1727,6 @@ void GModel::ShowPart(GPart* pg, bool bshow)
 	}
 }
 
-//-----------------------------------------------------------------------------
 bool GModel::DeletePart(GPart* pg)
 {
 	if (pg == nullptr) return false;
@@ -1697,7 +1735,28 @@ bool GModel::DeletePart(GPart* pg)
 	else return false;
 }
 
-//-----------------------------------------------------------------------------
+bool GModel::DeleteParts(std::vector<GPart*>& partList)
+{
+	if (partList.empty()) return true;
+	if (partList.size() == 1) return DeletePart(partList[0]);
+
+	// sort the parts by object
+	std::map<GMeshObject*, std::vector<GPart*> > objmap;
+	for (GPart* pg : partList)
+	{
+		GMeshObject* po = dynamic_cast<GMeshObject*>(pg->Object());
+		if (po == nullptr) return false;
+		objmap[po].push_back(pg);
+	}
+
+	for (auto it : objmap)
+	{
+		GMeshObject* po = it.first;
+		if (po->DeleteParts(it.second) == false) return false;
+	}
+	return true;
+}
+
 void GModel::ShowAllObjects()
 {
 	for (int i = 0; i<Objects(); ++i) ShowObject(Object(i));
@@ -1953,6 +2012,32 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 			return ponew;
 		}
 
+		// see if the objects are all curveobjects
+		bool allCurves = true;
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			GCurveObject* pc = dynamic_cast<GCurveObject*>(sel->Object(i));
+			if (pc == nullptr)
+			{
+				allCurves = false;
+				break;
+			}
+		}
+
+		if (allCurves)
+		{
+			GCurveObject* poa = dynamic_cast<GCurveObject*>(sel->Object(0)); assert(poa);
+			GCurveObject* ponew = dynamic_cast<GCurveObject*>(poa->Clone());
+			ponew->SetName(newObjectName.c_str());
+
+			for (int i = 1; i < sel->Count(); ++i)
+			{
+				GCurveObject* po = dynamic_cast<GCurveObject*>(sel->Object(i));
+				ponew->Merge(po);
+			}
+
+			return ponew;
+		}
 
 		// make sure all objects have meshes
 		for (int i = 0; i<sel->Count(); ++i)

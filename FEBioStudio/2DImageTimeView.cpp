@@ -34,8 +34,10 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "Document.h"
 #include "IconProvider.h"
-#include "ImageSliceView.h"
+#include "ImageSlice.h"
+#include <ImageLib/3DImage.h>
 #include "2DImageTimeView.h"
+#include "DlgPixelInspector.h"
 
 class Ui::C2DImageTimeView
 {
@@ -100,9 +102,12 @@ C2DImageTimeView::C2DImageTimeView(CMainWindow* wnd)
 {
     ui->setup(this);
 
+    m_infoSlice = ui->slice;
+
     connect(ui->actionPlayPause, &QAction::triggered, this, &C2DImageTimeView::on_actionPlayPause_triggered);
     connect(ui->timer, &QTimer::timeout, this, &C2DImageTimeView::on_timer_timeout);
     connect(ui->interval, &QSpinBox::valueChanged, this, &C2DImageTimeView::on_interval_valueChanged);
+    connect(ui->slice, &CImageSlice::focusChanged, this, &C2DImageTimeView::on_slice_clicked);
 }
 
 void C2DImageTimeView::Update()
@@ -111,7 +116,7 @@ void C2DImageTimeView::Update()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        if(doc->GetUIViewMode() == CGLDocument::TIME_VIEW_2D)
         {
             ui->slice->Update();
         }
@@ -120,7 +125,14 @@ void C2DImageTimeView::Update()
 
 void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
 {
-    Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(obj);
+    CImageModel* img = dynamic_cast<CImageModel*>(obj);
+
+    // Forces recalc of min and max values on the image
+    if(img && img->Get3DImage())
+    {
+        double min, max;
+        img->Get3DImage()->GetMinMax(min, max);
+    }
 
     ui->slice->SetImage(img);
 
@@ -150,7 +162,7 @@ void C2DImageTimeView::on_timer_timeout()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        if(doc->GetUIViewMode() == CGLDocument::TIME_VIEW_2D)
         {
             int index = ui->slice->GetIndex() + 1;
 
@@ -160,6 +172,12 @@ void C2DImageTimeView::on_timer_timeout()
             }
 
             ui->slice->SetIndex(index);
+            
+            if(m_inspector)
+            {
+                UpdatePixelInfo();
+                m_inspector->UpdateData();
+            }
 
             return;
         }
@@ -175,5 +193,16 @@ void C2DImageTimeView::on_interval_valueChanged()
     {
         ui->timer->stop();
         ui->timer->start(ui->interval->value());
+    }
+}
+
+void C2DImageTimeView::on_slice_clicked(int direction, QPoint pos)
+{
+    m_infoPoint = pos;
+
+    if(m_inspector)
+    {
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
     }
 }

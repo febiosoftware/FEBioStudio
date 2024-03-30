@@ -44,7 +44,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -55,7 +54,9 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageModel;
 class CImageSliceView;
+class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 
@@ -68,21 +69,11 @@ namespace Ui {
 namespace Post {
 	class CGLModel;
 	class CGLObject;
-	class CImageModel;
 }
 
 class CMainWindow : public QMainWindow
 {
 	Q_OBJECT
-
-public:
-	enum Config {
-		HTML_CONFIG,		// html documument (i.e. welcome page)
-		MODEL_CONFIG,		// model document	(i.e. fsm file)
-		POST_CONFIG,		// post document	(i.e. xplt file)
-		TEXT_CONFIG,		// text document	(i.e. raw feb file)
-        XML_CONFIG,		    // text document	(i.e. feb file)
-	};
 
 public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
@@ -124,12 +115,6 @@ public:
 	// show the log panel
 	void ShowLogPanel();
 
-	// add to the log 
-	void AddLogEntry(const QString& txt);
-
-	// add to the output window
-	void AddOutputEntry(const QString& txt);
-
 	// clear the log
 	void ClearLog();
 
@@ -144,9 +129,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-    // get the image panel
-	CImagePanel* GetImagePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -195,6 +177,13 @@ public:
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
 
+	// febio config file
+	bool GetLoadConfigFlag();
+	QString GetConfigFileName();
+
+	void SetLoadConfigFlag(bool b);
+	void SetConfigFileName(QString s);
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
@@ -205,6 +194,9 @@ public:
 
 	//! Update the window content
 	void Update(QWidget* psend = 0, bool breset = false);
+
+	// update the mesh inspector (if it is visible)
+	void UpdateMeshInspector(bool breset);
 
 	//! Update the GL control bar
 	void UpdateGLControlBar();
@@ -252,9 +244,6 @@ public:
 
 	// build the context menu for the GLView
 	void BuildContextMenu(QMenu& menu);
-
-	// Update the physics menu based on active modules
-	void UpdatePhysicsUi();
 
 	// clear the recent files list
 	void ClearRecentFilesList();
@@ -317,9 +306,17 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
-	bool ImportImage(Post::CImageModel* imgModel);
+	bool ImportImage(CImageModel* imgModel);
+
+	QString CurrentWorkingDirectory();
 
 public slots:
+    // add to the log 
+	void AddLogEntry(const QString& txt);
+
+	// add to the output window
+	void AddOutputEntry(const QString& txt);
+
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
 	void on_actionOpenProject_triggered();
@@ -340,6 +337,7 @@ public slots:
 	void on_actionImportDICOMImage_triggered();
 	void on_actionImportTiffImage_triggered();
 	void on_actionImportOMETiffImage_triggered();
+    void on_actionImportNrrdImage_triggered();
 	void on_actionImportImageSequence_triggered();
     void on_actionImportImageOther_triggered();
 	void on_actionConvertFeb_triggered();
@@ -376,6 +374,7 @@ public slots:
 	void on_actionDetach_triggered();
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
+	void on_actionAssignSelection_triggered();
 	void on_actionFaceToElem_triggered();
 	void on_actionSurfaceToFaces_triggered();
 	void on_actionSelectOverlap_triggered();
@@ -412,6 +411,7 @@ public slots:
 	void on_actionAddMeshDataMap_triggered();
 	void on_actionAddMeshDataGenerator_triggered();
 	void on_actionAddStep_triggered();
+	void on_actionStepViewer_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
@@ -432,9 +432,8 @@ public slots:
 	void on_actionFEBioInfo_triggered();
 	void on_actionFEBioPlugins_triggered();
 	void on_actionOptions_triggered();
-#ifdef _DEBUG
 	void on_actionLayerInfo_triggered();
-#endif
+
 	// Post menu actions
 	void on_actionPlaneCut_triggered();
 	void on_actionMirrorPlane_triggered();
@@ -451,9 +450,12 @@ public slots:
 	void on_actionMarchingCubes_triggered();
 	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
+	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();
+	void on_actionScatter_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
 	void on_actionIntegrate_triggered();
@@ -483,6 +485,10 @@ public slots:
 	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
+	void on_actionShowRigidBodies_toggled(bool b);
+	void on_actionShowRigidJoints_toggled(bool b);
+	void on_actionShowRigidLabels_toggled(bool b);
+	void on_actionToggleTagInfo_triggered();
 	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();
@@ -505,6 +511,7 @@ public slots:
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioUM_triggered();
 	void on_actionFEBioTM_triggered();
+	void on_actionFBSManual_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
 	void on_actionFEBioPubs_triggered();
@@ -583,6 +590,8 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
+	void onShowPartSelector();
+
 	void checkJobProgress();
 
 	void OnSelectMeshLayer(QAction* ac);
@@ -632,6 +641,7 @@ public slots:
 
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();
+    C2DImageTimeView* GetC2DImageTimeView();
 
 	void UpdateGraphs(bool breset);
 

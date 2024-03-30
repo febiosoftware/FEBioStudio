@@ -257,7 +257,46 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			}
 		}
 	}
-	else
+	else if (IS_FACE_FIELD(m_nvec))
+	{
+		pm->TagAllFaces(0);
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& f = pm->Face(i);
+			FEElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
+			if (pe)
+			{
+				Material* mat = ps->GetMaterial(pe->m_MatID);
+				if (mat->benable && (m_bshowHidden || mat->visible()))
+				{
+					f.m_ntag = 1;
+				}
+			}
+		}
+
+		if (m_bshowHidden == false)
+		{
+			// make sure no vector is drawn for hidden faces
+			for (int i = 0; i < pm->Faces(); ++i)
+			{
+				FSFace& face = pm->Face(i);
+				if (face.IsVisible() == false) face.m_ntag = 0;
+			}
+		}
+
+		// render the vectors at the face's center
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if ((frand() <= m_dens) && face.m_ntag)
+			{
+				vec3f r = to_vec3f(pm->FaceCenter(face));
+				vec3f v = m_val[i];
+				RenderVector(r, v, pglyph);
+			}
+		}
+	}
+	else if (IS_NODE_FIELD(m_nvec))
 	{
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
@@ -346,7 +385,10 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	glPushMatrix();
 
 	glTranslatef(r.x, r.y, r.z);
-	quatd q(vec3d(0,0,1), to_vec3d(v));
+	quatd q;
+	vec3d V = to_vec3d(v);
+	if (V * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
+	else q = quatd(vec3d(0, 0, 1), to_vec3d(v));
 	float w = q.GetAngle();
 	if (fabs(w) > 1e-6)
 	{
@@ -468,6 +510,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 
 		int ND = 0;
 		if (IS_ELEM_FIELD(m_nvec)) ND = pm->Elements();
+		if (IS_FACE_FIELD(m_nvec)) ND = pm->Faces();
 		else ND = pm->Nodes();
 
 		vector<vec3f>& data0 = m_map.State(n0);
@@ -541,6 +584,15 @@ void CGLVectorPlot::UpdateState(int nstate)
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
 				val[i] = pfem->EvaluateElemVector(i, nstate, m_nvec);
+				float L = val[i].Length();
+				if (L > rng.y) rng.y = L;
+			}
+		}
+		else if (IS_FACE_FIELD(m_nvec))
+		{
+			for (int i = 0; i < pm->Faces(); ++i)
+			{
+				bool b = pfem->EvaluateFaceVector(i, nstate, m_nvec, val[i]);
 				float L = val[i].Length();
 				if (L > rng.y) rng.y = L;
 			}

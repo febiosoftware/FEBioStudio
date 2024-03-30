@@ -209,6 +209,10 @@ public:
 
 	virtual bool IsValid() const;
 
+	// check if the object has any dependencies.
+	virtual bool CanDelete() const;
+	virtual bool CanDeleteMesh() const;
+
 public:
 	bool IsFaceVisible(const GFace* pf) const;
 
@@ -263,6 +267,7 @@ public:
 	void ClearFEGroups();
 
 	void RemoveEmptyFEGroups();
+	void RemoveUnusedFEGroups();
 
 	GNode* FindNodeFromTag(int ntag);
 

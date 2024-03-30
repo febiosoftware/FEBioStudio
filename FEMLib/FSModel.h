@@ -77,6 +77,8 @@ public:
 	void DeleteAllLoadControllers();
 	void DeleteAllMeshDataGenerators();
 
+	void RemoveUnusedLoadControllers();
+
 	// clear the selections of all the bc, loads, etc.
 	void ClearSelections();
 

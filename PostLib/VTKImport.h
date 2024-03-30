@@ -71,6 +71,9 @@ protected:
 	bool	m_readingPointData;
 	bool	m_readingCellData;
 
+	double	m_currentTime;
+	int		m_fileCount;
+
 	VTKModel* m_vtk;
 };
 }

@@ -114,6 +114,8 @@ C4PointAngleTool::C4PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "4 Point 
 	m_node[2] = 0;
 	m_node[3] = 0;
 	m_angle = 0.0;
+
+	SetInfo("Calculates the angle (in degrees) between 2 lines: the line through nodes 1 and 2, and the line through nodes 3 and 4.");
 }
 
 //-----------------------------------------------------------------------------

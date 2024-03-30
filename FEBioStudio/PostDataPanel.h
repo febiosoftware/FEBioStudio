@@ -54,6 +54,7 @@ public:
 
 public:
 	bool selectionOnly() const;
+	bool writeConnectivity() const;
 	int stateOutputOption() const;
 	QString stateList() const;
 
@@ -127,10 +128,13 @@ public:
 
 	QString getNewName();
 
-	int getNewFormat();
+	int getNewDataFormat();
+	int getNewDataClass();
 
 	double GetScaleFactor();
 	vec3d  GetVecScaleFactor();
+
+	int GetGradientConfiguration();
 
 public:
 	int	m_nflt;

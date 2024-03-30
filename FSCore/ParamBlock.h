@@ -137,6 +137,8 @@ public:
 	void SetLoadCurveID(int lcid);
 	int GetLoadCurveID() const;
 
+	int GetArraySize() const;
+
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
 	const char* GetEnumNames() const { return m_szenum; }
@@ -253,6 +255,7 @@ public:
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
+	int				m_nsize;	// size of array parameters (other types should ignore this value)
 	const char*		m_szunit;	// scientific unit (see FECore\units.h)
 	int				m_nstate;	// parameter state
 
@@ -561,6 +564,8 @@ public:
 	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
+	void Copy(const ParamBlock& pb);
+
 public:
 	int SetActiveGroup(const char* szgroup);
 	bool SetActiveGroup(int n);
@@ -677,6 +682,9 @@ public:
 	vec3d  GetParamVec3d(const char* szparam) { return GetParam(szparam)->GetVec3dValue(); }
 	std::vector<int>    GetParamArrayInt   (const char* szparam) { return GetParam(szparam)->GetArrayIntValue(); }
 	std::vector<double> GetParamArrayDouble(const char* szparam) { return GetParam(szparam)->GetArrayDoubleValue(); }
+
+public:
+	int SetActiveGroup(const char* szgroup) { return m_Param.SetActiveGroup(szgroup); }
 
 public:
 	ParamBlock& GetParamBlock() { return m_Param; }

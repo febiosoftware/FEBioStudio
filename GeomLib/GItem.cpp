@@ -176,7 +176,11 @@ bool GEdge::operator==(const GEdge& e)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
+GNode* GEdge::Node(int i)
+{
+	return m_po->Node(m_node[i]);
+}
+
 double GEdge::Length()
 {
 	double L = 0;
@@ -532,7 +536,11 @@ bool GPart::Update(bool b)
 			GFace* pf = po->Face(i);
 			if ((pf->m_nPID[0] == id) || (pf->m_nPID[1] == id))
 			{
-				for (int k : pf->m_node) po->Node(k)->m_ntag = 1;
+				for (int k : pf->m_node)
+				{
+					GNode* pn = po->Node(k);
+					if (pn) po->Node(k)->m_ntag = 1;
+				}
 			}
 		}
 

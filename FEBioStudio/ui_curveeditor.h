@@ -135,7 +135,7 @@ public:
 		lcWidget->setLayout(lcLayout);
 
 		stack = new QStackedWidget;
-		stack->addWidget(new QLabel("(no contoller)"));
+		stack->addWidget(new QLabel("(no controller)"));
 		stack->addWidget(plot);
 		stack->addWidget(math);
 		stack->addWidget(math2);

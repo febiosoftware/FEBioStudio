@@ -60,21 +60,27 @@ public:
 
 private slots:
 	void on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
+	void on_postModel_itemClicked(QTreeWidgetItem* item, int column);
 	void on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int column);
 	void on_nameEdit_editingFinished();
 	void on_deleteButton_clicked();
 	void on_props_dataChanged();
-	void on_enabled_stateChanged(int nstate);
 	void OnSelectNodes();
 	void OnSelectFaces();
 	void OnSelectElements();
 	void OnHideElements();
 	void OnShowAllElements();
 	void OnMoveUpInRenderingQueue();
+	void OnMoveToGroup();
 	void OnMoveDownInRenderingQueue();
 	void OnExportImage();
 	void OnExportMCSurface();
 	void OnExportProbeData();
+	void OnImportCurveProbePoints();
+	void OnCurveProbePlotData();
+	void OnCurveProbePlotTimeAveragedData();
+	void OnExportMusclePathData();
+	void OnSwapMusclePathEndPoints();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

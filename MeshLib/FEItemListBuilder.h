@@ -118,6 +118,8 @@ public:
 
 	int operator [] (size_t n) const { return m_Item[n]; }
 
+	bool HasItem(int n) const;
+
 public:
 	int GetReferenceCount() const;
 	void IncRef();

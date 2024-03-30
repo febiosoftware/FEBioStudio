@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QHeaderView>
+#include <QLineEdit>
 #include <QCoreApplication>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"

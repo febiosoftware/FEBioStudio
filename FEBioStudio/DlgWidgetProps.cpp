@@ -327,6 +327,8 @@ public:
 	QComboBox* placement;
 	QComboBox* orientation;
 	QDoubleSpinBox* plineThick;
+	QSpinBox* pdivs;
+	QCheckBox* psmooth;
 
 	// background
 	QComboBox* pbgstyle;
@@ -366,6 +368,9 @@ public:
 				plineThick->setRange(0.0, 100.0);
 				pol->addRow("Orientation", orientation);
 				pol->addRow("Line thickness", plineThick);
+				pol->addRow("Divisions", pdivs = new QSpinBox);
+				pol->addRow("Smooth texture", psmooth = new QCheckBox);
+				pdivs->setRange(1, 100);
 				labelsPageLayout->addLayout(pol);
 				plabelFont = new CFontWidget;
 				labelsPageLayout->addWidget(plabelFont);
@@ -421,6 +426,8 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 	ui->pprec->setValue(pb->GetPrecision());
 	ui->orientation->setCurrentIndex(pb->Orientation());
 	ui->plineThick->setValue(pb->LineThickness());
+	ui->pdivs->setValue(pb->GetDivisions());
+	ui->psmooth->setChecked(pb->SmoothTexture());
 
 	QFont labelFont = pb->get_font();
 	ui->plabelFont->setFont(labelFont, toQColor(pb->get_fg_color()));
@@ -459,6 +466,8 @@ void CDlgLegendProps::apply()
 	pb->set_bg_line_color(toGLColor(ui->bglinecol->color()));
 
 	pb->SetLineThickness((float)ui->plineThick->value());
+	pb->SetDivisions(ui->pdivs->value());
+	pb->SetSmoothTexture(ui->psmooth->isChecked());
 
 	if (oldOrient != newOrient)
 	{

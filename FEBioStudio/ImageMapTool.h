@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "Tool.h"
 #include <vector>
-#include <FECore/MathObject.h>
+#include <QComboBox>
 
 class UIImageMapTool;
 
@@ -43,16 +43,17 @@ public:
 
 private slots:
 	void OnCreate();
-    void on_filter_currentIndexchanged(int index);
+    void on_useFilter_stateChanged(int state);
+    void on_methodBox_currentIndexChanged(int index);
+    void on_projectSurface_stateChanged(int state);
 
 private:
 	void Clear();
+    
 
 private:
     friend class UIImageMapTool;
 
 	UIImageMapTool*	ui;
 	GObject*	m_po;
-
-    MSimpleExpression m_math;
 };

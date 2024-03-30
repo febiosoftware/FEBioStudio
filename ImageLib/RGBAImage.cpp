@@ -41,7 +41,7 @@ CRGBAImage::CRGBAImage()
 
 CRGBAImage::CRGBAImage(int nx, int ny)
 {
-	m_pb = new Byte[nx*ny * 4];
+	m_pb = new uint8_t[nx*ny * 4];
 	for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
 
 	m_cx = nx;
@@ -53,7 +53,7 @@ CRGBAImage::CRGBAImage(const CRGBAImage& im)
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
 
-	m_pb = new Byte[m_cx*m_cy * 4];
+	m_pb = new uint8_t[m_cx*m_cy * 4];
 	memcpy(m_pb, im.m_pb, m_cx*m_cy * 4);
 }
 
@@ -64,7 +64,7 @@ CRGBAImage& CRGBAImage::operator = (const CRGBAImage& im)
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
 
-	m_pb = new Byte[m_cx*m_cy * 4];
+	m_pb = new uint8_t[m_cx*m_cy * 4];
 	memcpy(m_pb, im.m_pb, m_cx*m_cy * 4);
 
 	return (*this);
@@ -79,7 +79,7 @@ void CRGBAImage::Create(int nx, int ny)
 {
 	if (m_pb) delete[] m_pb;
 
-	m_pb = new Byte[nx*ny * 4];
+	m_pb = new uint8_t[nx*ny * 4];
 	for (int i = 0; i<nx*ny * 4; i++) m_pb[i] = 0;
 
 	m_cx = nx;
@@ -88,7 +88,7 @@ void CRGBAImage::Create(int nx, int ny)
 
 void CRGBAImage::StretchBlt(CRGBAImage& im)
 {
-	Byte* pd = im.m_pb;
+	uint8_t* pd = im.m_pb;
 
 	int nx = im.Width();
 	int ny = im.Height();
@@ -96,7 +96,7 @@ void CRGBAImage::StretchBlt(CRGBAImage& im)
 	int i0 = 0;
 	int j0 = 0;
 
-	Byte* p0, *p1, *p2, *p3;
+	uint8_t* p0, *p1, *p2, *p3;
 	int h0, h1, h2, h3;
 	int w = 0, h = 0;
 

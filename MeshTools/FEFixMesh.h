@@ -37,4 +37,5 @@ public:
 
 public:
 	bool RemoveDuplicateEdges  (FSMesh* pm);
+	bool RemoveIsolatedVertices(FSMesh* pm);
 };

@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <QScrollBar>
 #include <QBoxLayout>
 #include <QSplitter>
-#include <QToolButton>
 #include <QCheckBox>
 #include <QStackedLayout>
 #include <QStackedWidget>
@@ -61,7 +60,6 @@ SOFTWARE.*/
 #include <QUrl>
 #include <QMimeData>
 #include <QFileIconProvider>
-#include <JlCompress.h>
 #include <QStandardPaths>
 #include "ToolBox.h"
 #include "PublicationWidgetView.h"
@@ -311,7 +309,7 @@ public:
 		{
 			iconName = "FEBioStudio";
 		}
-		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
+		else if(name.endsWith(".fs2") || name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
 		{
 			iconName = "PreView";
 		}

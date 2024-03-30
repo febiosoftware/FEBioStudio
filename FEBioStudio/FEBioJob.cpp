@@ -38,6 +38,8 @@ SOFTWARE.*/
 #endif
 
 #include <iostream>
+#include <chrono>
+using namespace std::chrono;
 
 //-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
@@ -128,6 +130,18 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 CDocument* CFEBioJob::GetDocument()
 {
 	return m_doc;
+}
+
+void CFEBioJob::StartTimer()
+{
+	time_point<steady_clock> tp = steady_clock::now();
+	m_tic = m_toc = duration_cast< duration<double> >(tp.time_since_epoch()).count();
+}
+
+void CFEBioJob::StopTimer()
+{
+	time_point<steady_clock> tp = steady_clock::now();
+	m_toc = duration_cast<duration<double>>(tp.time_since_epoch()).count();
 }
 
 void CFEBioJob::SetProgress(double pct)

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "Document.h"
 #include "PostDocument.h"
+#include "DocManager.h"
 #include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionUndoViewChange_triggered()
@@ -53,7 +54,7 @@ void CMainWindow::on_actionZoomExtents_triggered()
 
 void CMainWindow::on_actionViewCapture_toggled(bool bchecked)
 {
-	GetGLView()->showSafeFrame(bchecked);
+	GetGLView()->ShowSafeFrame(bchecked);
 	RedrawGL();
 }
 
@@ -162,6 +163,47 @@ void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionShowRigidBodies_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_brigid = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidJoints_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_bjoint = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidLabels_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_showRigidLabels = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionToggleTagInfo_triggered()
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	int n = view.m_ntagInfo;
+	view.m_ntagInfo = (n + 1) % 3;
+	RedrawGL();
+}
+
 void CMainWindow::on_actionToggleLight_triggered()
 {
 	CDocument* doc = GetDocument();
@@ -242,7 +284,7 @@ void CMainWindow::on_actionViewVPSave_triggered()
 
 	static int n = 0; n++;
 	char szname[64] = { 0 };
-	sprintf(szname, "ViewPoint%02d", n);
+	snprintf(szname, sizeof szname, "ViewPoint%02d", n);
 	t.SetName(szname);
 	GLCameraTransform* vp = view.AddCameraKey(t);
 	ui->postPanel->Update();
@@ -288,10 +330,11 @@ void CMainWindow::on_actionSyncViews_triggered()
 	CGLCamera& cam = view.GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
-	int views = ui->tab->views();
-	for (int i = 0; i < views; ++i)
+	CDocManager* DM = GetDocManager();
+	int docs = DM->Documents();
+	for (int i = 0; i < docs; ++i)
 	{
-		CGLDocument* doci = dynamic_cast<CGLDocument*>(ui->tab->getDocument(i));
+		CGLDocument* doci = dynamic_cast<CGLDocument*>(DM->GetDocument(i));
 		if (doci && (doci != doc))
 		{
 			CGView& viewi = *doci->GetView();
@@ -309,7 +352,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 
 void CMainWindow::on_actionToggleConnected_triggered()
 {
-	ui->glw->glc->toggleSelectConnected();
+	ui->centralWidget->glw->glc->toggleSelectConnected();
 }
 
 void CMainWindow::on_actionToggleFPS_triggered()

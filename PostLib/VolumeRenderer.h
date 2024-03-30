@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include <GLLib/GLMesh.h>
 
-namespace Post {
-
 class CImageModel;
+
+namespace Post {
 
 class CVolumeRenderer : public CGLImageRenderer
 {
@@ -54,7 +54,6 @@ private:
 
 private:
 	unsigned int m_texID;
-	unsigned int m_prgID;
     float 	m_IscaleMin;
     float 	m_Iscale;
 	bool	m_vrInit;

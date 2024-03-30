@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include "GLModel.h"
 #include <MeshLib/hex.h>
+#include <MeshTools/FESelection.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -208,14 +209,42 @@ void CGLPlaneCutPlot::GetNormalizedEquations(double a[4])
 
 //-----------------------------------------------------------------------------
 // Return the plane normal
-vec3d CGLPlaneCutPlot::GetPlaneNormal()
+vec3d CGLPlaneCutPlot::GetPlaneNormal() const
 {
 	return m_normal;
+}
+
+void CGLPlaneCutPlot::SetPlaneNormal(const vec3d& n)
+{
+	m_normal = n;
+	m_normal.Normalize();
+	SetFloatValue(NORMAL_X, m_normal.x);
+	SetFloatValue(NORMAL_Y, m_normal.y);
+	SetFloatValue(NORMAL_Z, m_normal.z);
 }
 
 float CGLPlaneCutPlot::GetPlaneOffset()
 {
 	return (float) m_offset;
+}
+
+void CGLPlaneCutPlot::SetPlaneOffset(float a)
+{
+	m_offset = a;
+	SetFloatValue(OFFSET, a);
+}
+
+float CGLPlaneCutPlot::GetOffsetScale() const
+{
+	return m_scl;
+}
+
+vec3d CGLPlaneCutPlot::GetPlanePosition() const
+{
+	vec3d p = m_T.GetPosition();
+	vec3d N = GetPlaneNormal(); N.Normalize();
+	p += N * (m_scl * m_offset);
+	return p;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -278,9 +307,9 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
 		glDisable(GL_LIGHTING);
 		DisableClipPlanes();
-		rc.m_cam->LineDrawMode(true);
+//		rc.m_cam->LineDrawMode(true);
 		RenderPlane();
-		rc.m_cam->LineDrawMode(false);
+//		rc.m_cam->LineDrawMode(false);
 		EnableClipPlanes();
 		glPopAttrib();
 	}
@@ -1004,7 +1033,6 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	float ev[8];
 	vec3d ex[8];
-	int   en[8];
 
 	vec3d r[4];
 	float v[4];
@@ -1017,7 +1045,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	GetNormalizedEquations(a);
 	vec3d norm = GetPlaneNormal();
 
-	double ref = a[3];
+	double ref = -a[3];
 
 	// repeat over all elements
 	for (int i=0; i<pm->Elements(); ++i)
@@ -1049,10 +1077,10 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FSNode& node = pm->Node(el.m_node[nt[k]]);
-				en[k] = el.m_node[k];
-				ev[k] = ps->m_NODE[en[k]].m_val;
-				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);
+				int m = el.m_node[nt[k]];
+				FSNode& node = pm->Node(m);
+				ev[k] = ps->m_NODE[m].m_val;
+				ex[k] = to_vec3d(ps->m_NODE[m].m_rt);
 			}
 
 			// calculate the case of the element
@@ -1122,6 +1150,10 @@ void CGLPlaneCutPlot::RenderPlane()
 	{
 		vec3d v = q.GetVector();
 		glRotatef(w*180/PI, v.x, v.y, v.z);
+	}
+	else if (vec3d(0, 0, 1) * norm <= -0.99999)
+	{
+		glRotatef(180, 1, 0, 0);
 	}
 
 	glRotatef(m_rot, 0, 0, 1);
@@ -1241,4 +1273,73 @@ bool CGLPlaneCutPlot::IsInsideClipRegion(const vec3d& r)
 		}
 	}
 	return true;
+}
+
+class PlaneCutPlotSelection : public FESelection
+{
+public:	
+	PlaneCutPlotSelection(CGLPlaneCutPlot* pc) : FESelection(SELECT_OBJECTS), m_pc(pc) { Update(); }
+
+public:
+	void Invert() {}
+	void Translate(vec3d dr)
+	{
+		quatd Q = GetOrientation();
+		Q.Inverse().RotateVector(dr);
+		double dL = dr.z;
+		float a = m_pc->GetPlaneOffset();
+		float s = m_pc->GetOffsetScale();
+		a += dL / s;
+		a = (a > 1.f ? 1.f : (a < -1.f ? -1.f : a));
+		m_pc->SetPlaneOffset(a);
+		Update();
+	}
+
+	void Rotate(quatd q, vec3d c) 
+	{
+		vec3d N = m_pc->GetPlaneNormal();
+		quatd Q = GetOrientation();
+		q = Q.Inverse() * q * Q;
+		q.RotateVector(N);
+		m_pc->SetPlaneNormal(N);
+		Update();
+	}
+	void Scale(double s, vec3d dr, vec3d c) {}
+
+	quatd GetOrientation() 
+	{
+		vec3d N = m_pc->GetPlaneNormal();
+		return quatd(vec3d(0,0,1), N); 
+	}
+
+	FEItemListBuilder* CreateItemList() { return nullptr; }
+
+	void Update() 
+	{
+		vec3d r = m_pc->GetPlanePosition();
+		m_box = BOX(r, r);
+		m_box.Inflate(m_pc->GetOffsetScale());
+
+		m_pc->UpdatePlaneCut();
+	}
+
+	int Count() { return 1; }
+
+private:
+	CGLPlaneCutPlot* m_pc;
+};
+
+bool CGLPlaneCutPlot::Intersects(Ray& ray, Intersection& q)
+{
+	return true;
+}
+
+FESelection* CGLPlaneCutPlot::SelectComponent(int index)
+{
+	return new PlaneCutPlotSelection(this);
+}
+
+void CGLPlaneCutPlot::ClearSelection()
+{
+
 }

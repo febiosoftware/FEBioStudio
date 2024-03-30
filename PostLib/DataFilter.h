@@ -51,7 +51,8 @@ bool DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand);
 
 //-----------------------------------------------------------------------------
 // Calculate the gradient of a scale field
-bool DataGradient(FEPostModel& fem, int vecField, int sclField);
+// (set config to 0 for material, to 1 for spatial gradient)
+bool DataGradient(FEPostModel& fem, int vecField, int sclField, int config = 1);
 
 //-----------------------------------------------------------------------------
 // Calculate the fractional anisotropy of a tensor field
@@ -63,7 +64,7 @@ ModelDataField* DataComponent(FEPostModel& fem, ModelDataField* dataField, int n
 
 //-----------------------------------------------------------------------------
 // convert between formats
-ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name);
+ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newClass, int newFormat, const std::string& name);
 
 //-----------------------------------------------------------------------------
 ModelDataField* DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name);

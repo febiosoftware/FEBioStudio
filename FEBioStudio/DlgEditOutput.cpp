@@ -44,8 +44,9 @@ SOFTWARE.*/
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QHeaderView>
-#include <QMessageBox>
 #include <QInputDialog>
+#include <QCompleter>
+#include "CustomLineEdit.h"
 #include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddSelection
@@ -107,7 +108,7 @@ public:
 	QComboBox* logType;
 	QTableWidget* table;
 	QComboBox* logList;
-	QLineEdit* logEdit;
+	CustomLineEdit* logEdit;
 
 	vector<CPlotVariable>	m_plt;
 
@@ -165,16 +166,19 @@ public:
 
 		// --- log file tab
 		logType = new QComboBox;
-		logType->addItem("Node");
-		logType->addItem("Element");
-		logType->addItem("Rigid body");
-        logType->addItem("Rigid connector");
+		logType->addItem("Node", FSLogData::LD_NODE);
+		logType->addItem("Face", FSLogData::LD_FACE);
+		logType->addItem("Element", FSLogData::LD_ELEM);
+		logType->addItem("Rigid body", FSLogData::LD_RIGID);
+		logType->addItem("Rigid connector", FSLogData::LD_CNCTR);
 
 		logList = new QComboBox;
 
 		QLabel* info = new QLabel("Enter a semi-colon delimited list of variables:");
 
-		logEdit = new QLineEdit;
+		logEdit = new CustomLineEdit;
+		logEdit->setWrapQuotes(false);
+		logEdit->setDelimiter(";");
 
 		QPushButton* addLogItem = new QPushButton("Add");
 		QPushButton* remLogItem = new QPushButton("Remove");
@@ -556,12 +560,29 @@ void CDlgEditOutput::UpdateLogItemList()
 	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
-	int ntype = ui->logType->currentIndex();
+	int ntype = ui->logType->currentData().toInt();
 
 	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
 	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
 	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-    if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+
+	std::vector<FEBio::FEBioClassInfo> info;
+	switch (ntype)
+	{
+	case FSLogData::LD_NODE : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
+	case FSLogData::LD_FACE : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
+	case FSLogData::LD_ELEM : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
+	case FSLogData::LD_RIGID: info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
+	case FSLogData::LD_CNCTR: info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
+	}
+	
+	QStringList sl;
+	for (int i = 0; i < info.size(); ++i) sl << info[i].sztype;
+
+	QCompleter* c = new QCompleter(sl);
+	c->popup()->setMinimumWidth(100);
+	ui->logEdit->setMultipleCompleter(c);
 
 	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
@@ -621,6 +642,26 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
+	else if (ntype == FSLogData::LD_FACE)
+	{
+		// add surfaces
+		for (int i = 0; i < mdl.FaceLists(); ++i)
+		{
+			GFaceList* pg = mdl.FaceList(i);
+			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
+		}
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			int NS = po->FESurfaces();
+			for (int i = 0; i < NS; ++i)
+			{
+				FSSurface* ps = po->GetFESurface(i);
+				ui->logList->addItem(QString::fromStdString(ps->GetName()), ps->GetID());
+			}
+		}
+	}
 	else if (ntype == FSLogData::LD_RIGID)
 	{
 		int M = fem.Materials();
@@ -650,13 +691,15 @@ void CDlgEditOutput::UpdateLogItemList()
 
 void CDlgEditOutput::onLogAdd()
 {
-	// extract the data
-	int ntype = ui->logType->currentIndex();
+	// extract the data class
+	int ntype = ui->logType->currentData().toInt();
 
+	// extract the list index
 	int nlist = -1;
 	if (ui->logList->currentIndex() != -1)
 		nlist = ui->logList->currentData().toInt();
 
+	// get the data name
 	QString data = ui->logEdit->text();
 	if (data.isEmpty())
 	{

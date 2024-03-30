@@ -124,6 +124,9 @@ public:
 	// find a part based on its ID
 	GPart* FindPart(int nid);
 
+	// find a part based on its name
+	GPart* FindPart(const std::string& partName);
+
 	// --- surface functions ---
 
 	// return the total nr of surfaces
@@ -183,6 +186,7 @@ public:
 	int RemovePartList(GPartList* pg);
 	int PartLists() const;
 	GPartList* PartList(int n);
+	GPartList* FindPartList(const std::string& name);
 
 	// --- GFaceList ---
 	void AddFaceList(GFaceList* pg);
@@ -216,6 +220,7 @@ public:
 
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
+	void RemoveUnusedSelections();
 
 	// if match is true, the list of parts with this material is returend.
 	// if match is false, the list of parts that don't have this material is returned.
@@ -258,6 +263,7 @@ public:
 	void ShowAllParts(GObject* po);
 
 	bool DeletePart(GPart* pg);
+	bool DeleteParts(std::vector<GPart*>& partList);
 
 public:
 	int MeshLayers() const; 

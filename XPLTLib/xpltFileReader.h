@@ -58,6 +58,8 @@ public:
 	int warnings() const { return (int) m_wrng.size(); }
 	int warning(int n) const { return m_wrng[n]; }
 
+	int FileVersion() const;
+
 protected:
 	xpltFileReader*		m_xplt;
 	xpltArchive&		m_ar;

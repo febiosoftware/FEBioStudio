@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "InputWidgets.h"
 #include <FSCore/math3d.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GCurveObject.h>
 #include <FEMLib/GDiscreteObject.h>
 #include "ToolBox.h"
 #include <FSCore/ClassDescriptor.h>
@@ -254,10 +255,12 @@ CCreateLoftSurface::CCreateLoftSurface(CCreatePanel* parent) : CCreatePane(paren
 	m_divs = new QSpinBox;
 	m_divs->setRange(1, 100);
 	m_divs->setValue(1);
+	m_smooth = new QCheckBox("smooth interpolation"); m_smooth->setChecked(true);
 	layout->addWidget(pl);
 	layout->addWidget(m_list);
 	layout->addWidget(m_combo);
 	layout->addWidget(m_divs);
+	layout->addWidget(m_smooth);
 	layout->addStretch();
 
 	setLayout(layout);
@@ -322,7 +325,9 @@ FSObject* CCreateLoftSurface::Create()
 	FELoftMesher loft;
 	loft.setElementType(nelem);
 	loft.setDivisions(m_divs->value());
+	loft.setSmooth(m_smooth->isChecked());
 	FSSurfaceMesh* mesh = loft.Apply(curves);
+	if (mesh == nullptr) return nullptr;
 
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(mesh);
 
@@ -354,6 +359,7 @@ CGeoModifierPane::CGeoModifierPane(CCreatePanel* parent, ClassDescriptor* pcd) :
 	setCreatePolicy(CCreatePane::REPLACE_ACTIVE_OBJECT);
 
 	m_pcd = pcd;
+	m_mod = nullptr;
 
 	m_params = new CPropertyListForm;
 
@@ -399,8 +405,12 @@ FSObject* CGeoModifierPane::Create()
 	if (m_mod == nullptr) return nullptr;
 
 	// create a clone of this object
-	GPLCObject* newObject = new GPLCObject;
-	newObject->Copy(activeObject);
+	GObject* newObject = nullptr;
+	if (dynamic_cast<GCurveObject*>(activeObject)) newObject = activeObject->Clone();
+	else {
+		newObject = new GPLCObject;
+		newObject->Copy(activeObject);
+	}
 
 	m_mod->Apply(newObject);
 

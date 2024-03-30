@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
@@ -99,10 +99,7 @@ class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
 enum class ImageFileType;
-
-namespace Post {
-	class CImageModel;
-}
+class CImageModel;
 
 //-----------------------------------------------------------------------------
 // Class that can be used to monitor changes to the document
@@ -275,12 +272,20 @@ protected:
 class CGLDocument : public CUndoDocument
 {
 public:
+	enum UI_VIEW_MODE
+	{
+		MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
+	};
+
+public:
 	CGLDocument(CMainWindow* wnd);
 	~CGLDocument();
 
 	bool SaveDocument() override;
 
 	bool AutoSaveDocument() override;
+
+	void Activate() override;
 
 	// set/get the file reader
 	void SetFileReader(FileReader* fileReader);
@@ -308,6 +313,13 @@ public:
 
 	static std::string GetTypeString(FSObject* po);
 
+	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
+	void SetUIViewMode(UI_VIEW_MODE vm) { m_uiMode = vm; }
+
+	// return the current selection
+	FESelection* GetCurrentSelection();
+	void SetCurrentSelection(FESelection* psel);
+
 	virtual void UpdateSelection(bool breport = true);
 
 	virtual GObject* GetActiveObject();
@@ -316,16 +328,14 @@ public:
 
 	CGLScene* GetScene();
 
-	virtual FESelection* GetCurrentSelection() { return nullptr; }
-
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
 
 public:
 	int ImageModels() const;
-	virtual void AddImageModel(Post::CImageModel* img);
-	Post::CImageModel* GetImageModel(int i);
+	virtual void AddImageModel(CImageModel* img);
+	CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 
 public:
@@ -347,15 +357,19 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	CGView				m_view;
 	CGLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state
 
+	UI_VIEW_MODE m_uiMode;
+
 	std::string		m_info;
 	int				m_units;
 
-	FSObjectList<Post::CImageModel>	m_img;
+	// current selection
+	FESelection* m_psel;
+
+	FSObjectList<CImageModel>	m_img;
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;

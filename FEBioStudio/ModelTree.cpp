@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <GeomLib/GObject.h>
 #include <PostGL/GLModel.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
@@ -53,16 +53,37 @@ SOFTWARE.*/
 #include "SSHThread.h"
 #include "SSHHandler.h"
 #include "Logger.h"
+#include "IconProvider.h"
 
+// list of warnings generated
+#define WARNING_NONE				0
+#define WARNING_OBJECT_NOT_MESHED	1
+#define WARNING_BC_NO_SELECTION		2
+#define WARNING_BC_INVALID_REF		3
+#define WARNING_NO_STEPS			4
+#define WARNING_MAT_NOT_ASSIGNED	5	
+#define WARNING_MAT_NO_PROPS		6
+#define WARNING_CONTACT_INCOMPLETE	7
+#define WARNING_JOB_NO_FEB			8
+#define WARNING_LC_NOT_USED			9
+#define WARNING_SEL_NOT_USED		10
+#define WARNING_IMAGE_NO_LOAD		11
+
+// base class for object validators
+// - define warning IDs (see list above)
+// - override the IsValid and GetErrorString functions
+// - override the GetWarningID function
 class CObjectValidator
 {
 public:
-	CObjectValidator(){}
+	CObjectValidator() {}
 	virtual ~CObjectValidator(){}
 
 	virtual QString GetErrorString() const = 0;
 
 	virtual bool IsValid() = 0;
+
+	virtual unsigned int GetWarningID() const = 0;
 };
 
 class CGObjectValidator : public CObjectValidator
@@ -70,13 +91,18 @@ class CGObjectValidator : public CObjectValidator
 public:
 	CGObjectValidator(GObject* po) : m_po(po){}
 
-	QString GetErrorString() const { return "Object is not meshed"; }
+	QString GetErrorString() const { 
+		QString name = QString::fromStdString(m_po->GetName());
+		return QString("\"%1\" is not meshed").arg(name);
+	}
 
 	bool IsValid()
 	{
 		if ((m_po == 0) || (m_po->GetFEMesh() == 0)) return false;
 		return true;
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_OBJECT_NOT_MESHED; };
 
 private:
 	GObject* m_po;
@@ -89,9 +115,9 @@ public:
 
 	QString GetErrorString() const 
 	{ 
-		if      (m_err == 1) return "No selection assigned"; 
-		else if (m_err == 2) return "Contains invalid references";
-		else if (m_err == 3) return "no degree of freedom selected";
+		QString name = QString::fromStdString(m_pbc->GetName());
+		if      (m_err == 1) return QString("No selection assigned to bc \"%1\"").arg(name);
+		else if (m_err == 2) return QString("Bc \"%1\" contains invalid references").arg(name);
 		return "No problems";
 	}
 
@@ -103,18 +129,15 @@ public:
 		if ((m_pbc->GetMeshItemType() != 0) && 
 			((item==0) || (item->size() == 0))) { m_err = 1; return false; }
 		else if (item && (item->IsValid() == false)) { m_err = 2; return false; }
-
-		FSFixedDOF* fix = dynamic_cast<FSFixedDOF*>(m_pbc);
-		if (fix)
-		{
-			if (fix->GetBC() == 0)
-			{
-				m_err = 3;
-				return false;
-			}
-		}
 		return true;
 	}
+
+	unsigned int GetWarningID() const override { 
+		if (m_err == 1) return WARNING_BC_NO_SELECTION;
+		if (m_err == 2) return WARNING_BC_INVALID_REF;
+		return WARNING_NONE;
+	};
+
 
 private:
 	FSDomainComponent* m_pbc;
@@ -135,6 +158,8 @@ public:
 		return (nsteps > 0);
 	}
 
+	unsigned int GetWarningID() const override { return WARNING_NO_STEPS; };
+
 private:
 	FSModel*	m_fem;
 };
@@ -146,11 +171,18 @@ public:
 
 	QString GetErrorString() const 
 	{ 
+		QString name = QString::fromStdString(m_mat->GetName());
 		if (m_err == 0) return "";
-		if (m_err == 1) return "Material not assigned yet"; 
-		if (m_err == 2) return "No material properties";
+		if (m_err == 1) return QString("Material \"%1\" not assigned yet").arg(name); 
+		if (m_err == 2) return QString("Material \"%1\" has no properties").arg(name);
 		return "unknown error";
 	}
+
+	unsigned int GetWarningID() const override {
+		if (m_err == 1) return WARNING_MAT_NOT_ASSIGNED;
+		if (m_err == 2) return WARNING_MAT_NO_PROPS;
+		return WARNING_NONE;
+	};
 
 	bool IsValid()
 	{
@@ -193,7 +225,10 @@ class CContactValidator : public CObjectValidator
 public:
 	CContactValidator(FSPairedInterface* pci) : m_pci(pci) {}
 
-	QString GetErrorString() const { return "primary/secondary not specified"; }
+	QString GetErrorString() const { 
+		QString name = QString::fromStdString(m_pci->GetName());
+		return QString("primary/secondary not specified for \"%1\"").arg(name);
+	}
 
 	bool IsValid()
 	{
@@ -205,29 +240,10 @@ public:
 		return true;
 	}
 
+	unsigned int GetWarningID() const override { return WARNING_CONTACT_INCOMPLETE; };
+
 private:
 	FSPairedInterface*	m_pci;
-};
-
-class CRigidInterfaceValidator : public CObjectValidator
-{
-public:
-	CRigidInterfaceValidator(FSRigidInterface* ri) : m_ri(ri) {}
-
-	QString GetErrorString() const 
-	{ 
-		if (m_ri->GetRigidBody() == nullptr) return "No rigid body assigned"; 
-		else if (m_ri->GetItemList() == nullptr) return "No selection assigned";
-		else return "";
-	}
-
-	bool IsValid() 
-	{ 
-		return ((m_ri->GetRigidBody() != nullptr) && (m_ri->GetItemList() != nullptr)); 
-	}
-
-private:
-	FSRigidInterface*	m_ri;
 };
 
 class CJobValidator : public CObjectValidator
@@ -243,10 +259,13 @@ public:
 		QFileInfo fi(QString::fromStdString(febFile));
 		if (fi.exists() == false)
 		{
-			return QString("feb file does not exist.");
+			QString name = QString::fromStdString(m_job->GetName());
+			return QString("Job \"%1\" : feb file does not exist.").arg(name);
 		}
 		else return "";
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_JOB_NO_FEB; };
 
 	bool IsValid()
 	{
@@ -269,8 +288,11 @@ public:
 	QString GetErrorString() const override
 	{
 		if (m_plc && m_plc->GetReferenceCount() > 0) return "";
-		return "Load controller is not used.";
+		QString name = QString::fromStdString(m_plc->GetName());
+		return QString("Load controller \"%1\" is not used.").arg(name);
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_LC_NOT_USED; };
 
 	bool IsValid() override
 	{
@@ -289,8 +311,11 @@ public:
 	QString GetErrorString() const override
 	{
 		if (m_pl && m_pl->GetReferenceCount() > 0) return "";
-		return "Named selection is not used.";
+		QString name = QString::fromStdString(m_pl->GetName());
+		return QString("Named selection \"%1\" is not used.").arg(name);
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_SEL_NOT_USED; };
 
 	bool IsValid() override
 	{
@@ -301,7 +326,28 @@ private:
 	FEItemListBuilder* m_pl;
 };
 
+class CImageModelValidator : public CObjectValidator
+{
+public:
+	CImageModelValidator(CImageModel* img) : m_img(img) {}
 
+	QString GetErrorString() const override
+	{
+		if ((m_img == nullptr) || (m_img->Get3DImage() == nullptr))
+			return "Failed to load image data.";
+		return "";
+	}
+
+	unsigned int GetWarningID() const override { return WARNING_IMAGE_NO_LOAD; };
+
+	bool IsValid() override
+	{
+		return ((m_img != nullptr) && (m_img->Get3DImage() != nullptr));
+	}
+
+private:
+	CImageModel* m_img;
+};
 
 //=============================================================================
 class CFEBioJobProps : public CPropertyList
@@ -454,7 +500,7 @@ class CModelProps : public CPropertyList
 public:
 	CModelProps(Post::CGLModel* fem) : m_fem(fem)
 	{
-		addProperty("Element subdivions", CProperty::Int)->setIntRange(0, 100).setAutoValue(true);
+		addProperty("Element subdivisions", CProperty::Int)->setIntRange(0, 10).setAutoValue(true);
 		addProperty("Render mode", CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
 		addProperty("Render undeformed outline", CProperty::Bool);
 		addProperty("Outline color", CProperty::Color);
@@ -508,30 +554,6 @@ public:
 private:
 	Post::CGLModel*	m_fem;
 };
-
-//-----------------------------------------------------------------------------
-QIcon createIcon(GLColor c)
-{
-	QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
-	QColor c1 = c2.lighter();
-	QColor c3 = c2.darker();
-
-	QRadialGradient g(QPointF(8, 8), 12);
-	g.setColorAt(0.0, c1);
-	g.setColorAt(0.2, c2);
-	g.setColorAt(1.0, c3);
-
-	QPixmap pix(24, 24);
-	pix.fill(Qt::transparent);
-	QPainter p(&pix);
-	p.setRenderHint(QPainter::Antialiasing);
-	p.setPen(Qt::PenStyle::NoPen);
-	p.setBrush(QBrush(g));
-	p.drawEllipse(2, 2, 20, 20);
-	p.end();
-
-	return QIcon(pix);
-}
 
 //=============================================================================
 
@@ -683,7 +705,7 @@ void CModelTree::contextMenuEvent(QContextMenuEvent* ev)
 	}
 }
 
-QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FSObject* po, CPropertyList* props, CObjectValidator* val, int flags)
+QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FSObject* po, CPropertyList* props, CObjectValidator* val, int flags, const char* szicon)
 {
 	QTreeWidgetItem* t2 = (parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(this));
 
@@ -694,7 +716,9 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 
 	if (val && (val->IsValid() == false))
 	{
-		t2->setIcon(0, QIcon(":/icons/warning.png"));
+		if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, Emblem::Caution));
+		else t2->setIcon(0, QIcon(":/icons/warning.png"));
+
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
 		if (m_view) m_view->IncWarningCount();
@@ -709,14 +733,19 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 				s.erase(s.begin() + 37, s.end());
 				s.append("...");
 			}
-			t2->setIcon(0, QIcon(":/icons/info.png"));
+			if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, "info"));
+			else t2->setIcon(0, QIcon(":/icons/info.png"));
 			t2->setToolTip(0, QString::fromStdString(s));
+		}
+		else if (szicon)
+		{
+			t2->setIcon(0, CIconProvider::GetIcon(szicon));
 		}
 	}
 
 	t2->setData(0, Qt::UserRole, (int)m_data.size());
 
-	CModelTreeItem it = { po, props, val, flags, ntype };
+	CModelTreeItem it = { po, props, val, flags, ntype, szicon };
 	m_data.push_back(it);
 
 	return t2;
@@ -730,6 +759,25 @@ void CModelTree::ClearData()
 		if (m_data[i].val  ) delete m_data[i].val;
 	}
 	m_data.clear();
+}
+
+QStringList CModelTree::GetAllWarnings()
+{
+	QStringList errs;
+	for (int i = 0; i < m_data.size(); ++i)
+	{
+		CObjectValidator* val = m_data[i].val;
+		if (val)
+		{
+			if (val->IsValid() == false)
+			{
+				uint id = val->GetWarningID();
+				QString msg = QString("W%1 : %2").arg(id, 3, 10, QChar('0')).arg(val->GetErrorString());
+				errs.push_back(msg);
+			}
+		}
+	}
+	return errs;
 }
 
 void CModelTree::UpdateItem(QTreeWidgetItem* item)
@@ -765,7 +813,18 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 	{
 		if (val->IsValid() == false)
 		{
-			item->setIcon(0, QIcon(":/icons/warning.png"));
+			if (dynamic_cast<GMaterial*>(po))
+			{
+				GMaterial* m = dynamic_cast<GMaterial*>(po);
+				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24);
+				item->setIcon(0, CIconProvider::CreateIcon(icon, Emblem::Caution));
+			}
+			else
+			{
+				if (m_data[n].szicon) item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon, Emblem::Caution));
+				else item->setIcon(0, QIcon(":/icons/warning.png"));
+			}
+
 			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 			return;
 		}
@@ -779,7 +838,8 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			s.erase(s.begin() + 37, s.end());
 			s.append("...");
 		}
-		item->setIcon(0, QIcon(":/icons/info.png"));
+		if (m_data[n].szicon) item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon, "info"));
+		else item->setIcon(0, QIcon(":/icons/info.png"));
 		item->setToolTip(0, QString::fromStdString(s));
 	}
 	else
@@ -787,7 +847,12 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
-			item->setIcon(0, createIcon(m->Diffuse()));
+			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24));
+		}
+		else if (m_data[n].szicon)
+		{
+			item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon));
+			item->setToolTip(0, QString());
 		}
 		else
 		{
@@ -1214,8 +1279,8 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 {
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
-		Post::CImageModel* img = doc->GetImageModel(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), 0);
+		CImageModel* img = doc->GetImageModel(i);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), new CImageModelValidator(img));
 	}
 }
 
@@ -1283,6 +1348,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 {
 	QTreeWidgetItem* t2, *t3, *t4;
 
+	// max nr. of items in a branch
+	const int MAX_BRANCH_ITEM = 10000;
+
 	// get the model
 	GModel& model = fem.GetModel();
 
@@ -1316,7 +1384,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Surfaces", MT_FACE_LIST, po->Faces(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NF = po->Faces();
-		if (NF > 1000) NF = 1000;
+		if (NF > MAX_BRANCH_ITEM) NF = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NF; ++j)
 		{
 			GFace* pg = po->Face(j);
@@ -1327,7 +1395,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Edges", MT_EDGE_LIST, po->Edges(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NE = po->Edges();
-		if (NE > 1000) NE = 1000;
+		if (NE > MAX_BRANCH_ITEM) NE = MAX_BRANCH_ITEM;
 		for (int j=0; j<NE; ++j)
 		{
 			GEdge* pg = po->Edge(j);
@@ -1338,7 +1406,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Nodes", MT_NODE_LIST, po->Nodes(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NN = po->Nodes();
-		if (NN > 1000) NN = 1000;
+		if (NN > MAX_BRANCH_ITEM) NN = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NN; ++j)
 		{
 			GNode* pg = po->Node(j);
@@ -1366,7 +1434,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GPartList* pg = model.PartList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectPart");
 	}
 
 	int gsurfs = model.FaceLists();
@@ -1374,7 +1442,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GFaceList* pg = model.FaceList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectSurface");
 	}
 
 	int gedges = model.EdgeLists();
@@ -1382,7 +1450,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GEdgeList* pg = model.EdgeList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectCurves");
 	}
 
 	int gnodes = model.NodeLists();
@@ -1390,7 +1458,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GNodeList* pg = model.NodeList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectNodes");
 	}
 
 	// add the mesh groups
@@ -1406,7 +1474,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSNodeSet* pg = po->GetFENodeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selNode");
 			}
 		}
 	}
@@ -1423,7 +1491,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSSurface* pg = po->GetFESurface(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selFace");
 			}
 		}
 	}
@@ -1440,7 +1508,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSEdgeSet* pg = po->GetFEEdgeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selEdge");
 			}
 		}
 	}
@@ -1457,7 +1525,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSElemSet* pg = po->GetFEElemSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selElem");
 			}
 		}
 	}
@@ -1474,7 +1542,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSPartSet* pg = po->GetFEPartSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selElem");
 			}
 		}
 	}
@@ -1597,7 +1665,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
 				CObjectValidator* val = nullptr;
-				if (dynamic_cast<FSInitialNodalDOF*>(pic))
+				if (dynamic_cast<FSInitialCondition*>(pic))
 				{
 					val = new CBCValidator(pic);
 				}
@@ -1639,7 +1707,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
-					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), new CRigidInterfaceValidator(pi), flags);
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), nullptr, flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1873,7 +1941,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	if (topLevel)
 	{
 		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat->GetMaterialProperties()), new CMaterialValidator(&fem, gmat));
-		t2->setIcon(0, createIcon(gmat->Diffuse()));
+		UpdateItem(t2);
 	}
 	else
 		t2 = AddTreeItem(item, name, 0, 0, pmat, new CMaterialProps(fem, pmat));

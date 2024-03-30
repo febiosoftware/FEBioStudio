@@ -120,6 +120,7 @@ SOFTWARE.*/
 #define CID_PRJ_OUTPUT_VAR_DOMAINID	0x00020315
 //#define CID_PRJ_OUTPUT_VAR_MODULE	0x00020316	// obsolete
 #define CID_PRJ_OUTPUT_VAR_CUSTOM	0x00020317
+#define CID_PRJ_OUTPUT_VAR_DOMAINTYPE	0x00020318	// added in FS 2.3
 #define CID_PRJ_LOGDATA				0x00020400
 #define CID_PRJ_LOGDATA_ITEM		0x00020401
 #define CID_PRJ_LOGDATA_TYPE		0x00020402
@@ -307,6 +308,7 @@ SOFTWARE.*/
 #define CID_MESH_NODE				0x00090100
 #define CID_MESH_NODE_GID			0x00090101
 #define CID_MESH_NODE_POSITION		0x00090102
+#define CID_MESH_NODE_NID			0x00090103 // new in fbs 2.4
 
 #define CID_MESH_ELEMENT			0x00090200
 #define CID_MESH_ELEMENT_TYPE		0x00090201
@@ -317,6 +319,7 @@ SOFTWARE.*/
 //#define CID_MESH_ELEMENT_MATERIAL	0x00090206 // --> obsolete 1.9.1
 #define CID_MESH_ELEMENT_Q_ACTIVE	0x00090207
 #define CID_MESH_ELEMENT_Q			0x00090208
+#define CID_MESH_ELEMENT_EID		0x00090209 // new in fbs 2.4
 
 #define CID_MESH_FACE				0x00090300
 #define CID_MESH_FACE_TYPE			0x00090301
@@ -377,6 +380,9 @@ SOFTWARE.*/
 #define CID_PROPERTY					0x000C1001
 #define CID_PROPERTY_NAME				0x000C1002
 #define CID_PROPERTY_ITEM				0x000C1003
+
+// model components
+#define CID_COMPONENT_ACTIVE			0x000C2001
 
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000
@@ -634,6 +640,7 @@ SOFTWARE.*/
 #define GCYLINDRICAL_PATCH	0x0027	// from FS 1.0
 #define GBOX_IN_BOX			0x0028	// from FS 1.0
 #define GMULTI_PATCH		0x0029	// from FS 1.7
+#define GCURVE_OBJECT		0x002A	// from FS 2.5
 
 //--------------------------------------------------------
 // Modifier types

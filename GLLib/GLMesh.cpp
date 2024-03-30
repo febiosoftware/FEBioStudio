@@ -37,6 +37,7 @@ SOFTWARE.*/
 #endif
 #include <MeshLib/GMesh.h>
 #include <map>
+#include <algorithm>
 #include "GLCamera.h"
 
 GLMesh::GLMesh(unsigned int mode)
@@ -333,10 +334,10 @@ void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 	delete[] m_ind;
 
 	unsigned int faces = m_vertexCount / 3; assert((m_vertexCount % 3) == 0);
-	std::map<double, int> zmap;
 
 	// first, build a list of faces
 	vec3d r[3];
+	std::vector<pair<double, int> > zmap(faces);
 	for (int i = 0; i < faces; ++i)
 	{
 		r[0] = vec3d(m_vr[9 * i], m_vr[9 * i + 1], m_vr[9 * i + 2]);
@@ -350,12 +351,15 @@ void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 		vec3d q = cam.WorldToCam(o);
 
 		// add it to the z-list
-		zmap[q.z] = i;
+		zmap[i] = pair<double, int>(q.z, i);
 	}
+
+	// sort it
+	std::sort(zmap.begin(), zmap.end(), [](const pair<double, int>& a, const pair<double, int>& b) { return a.first < b.first; });
 
 	// build the new index list
 	m_ind = new unsigned int[3 * faces];
-	std::map<double, int>::iterator it = zmap.begin();
+	std::vector< pair<double, int> >::iterator it = zmap.begin();
 	for (int i = 0; i < faces; ++i, ++it)
 	{
 		int n = it->second;

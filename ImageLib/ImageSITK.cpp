@@ -28,23 +28,158 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "ImageSITK.h"
-
-#ifdef HAS_ITK
 #include <FSCore/FSDir.h>
 
+#ifdef HAS_ITK
+#include <sitkImportImageFilter.h>
+#include <sitkImageFileWriter.h>
+
+
+
 namespace sitk = itk::simple;
+
+itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
+{
+    BOX box = img->GetBoundingBox();
+    unsigned int nx = img->Width();
+    unsigned int ny = img->Height();
+    unsigned int nz = img->Depth();
+    mat3d orientation = img->GetOrientation();
+
+    sitk::ImportImageFilter filter;    
+    filter.SetSize({nx, ny, nz});
+    filter.SetOrigin({box.x0, box.y0, box.z0});
+    filter.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
+
+    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
+        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+    filter.SetDirection(orient);
+
+    switch (img->PixelType())
+    {
+    case CImage::UINT_8:
+        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes());
+        break;
+    case CImage::INT_8:
+        filter.SetBufferAsInt8((int8_t*)img->GetBytes());
+        break;
+    case CImage::UINT_16:
+        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes());
+        break;
+    case CImage::INT_16:
+        filter.SetBufferAsInt16((int16_t*)img->GetBytes());
+        break;
+    case CImage::UINT_32:
+        filter.SetBufferAsUInt32((uint32_t*)img->GetBytes());
+        break;
+    case CImage::INT_32:
+        filter.SetBufferAsInt32((int32_t*)img->GetBytes());
+        break;
+    case CImage::UINT_RGB8:
+        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes(), 3);
+        break;
+    case CImage::INT_RGB8:
+        filter.SetBufferAsInt8((int8_t*)img->GetBytes(), 3);
+        break;
+    case CImage::UINT_RGB16:
+        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes(), 3);
+        break;
+    case CImage::INT_RGB16:
+        filter.SetBufferAsInt16((int16_t*)img->GetBytes(), 3);
+        break;
+    case CImage::REAL_32:
+        filter.SetBufferAsFloat((float*)img->GetBytes());
+        break;
+    case CImage::REAL_64:
+        filter.SetBufferAsDouble((double*)img->GetBytes());
+        break;
+    default:
+        assert(false);
+    }
+
+    return filter.Execute();
+}
+
+bool CImageSITK::WriteSITKImage(C3DImage* img, const std::string& filename)
+{
+    itk::simple::Image itkImage;
+
+    if(!dynamic_cast<CImageSITK*>(img))
+    {
+        itkImage = SITKImageFrom3DImage(img);
+    }
+    else
+    {
+        itkImage = dynamic_cast<CImageSITK*>(img)->GetSItkImage();
+    }
+
+    sitk::ImageFileWriter writer;
+    writer.SetFileName(filename);
+
+    try
+    {
+        writer.Execute(itkImage);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+
+        return false;
+    }
+    
+    return true;
+}
 
 CImageSITK::CImageSITK()
 {
 
 }
 
-CImageSITK::CImageSITK(int nx, int ny, int nz)
-    : m_sitkImage(nx, ny, nz, sitk::sitkUInt8)
+CImageSITK::CImageSITK(int nx, int ny, int nz, int pixelType)
 {
-    m_cx = nx;
-    m_cy = ny;
-    m_cz = nz;
+    switch (pixelType)
+    {
+    case CImage::UINT_8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
+        break;
+    case CImage::INT_8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt8);
+        break;
+    case CImage::UINT_16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt16);
+        break;
+    case CImage::INT_16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt16);
+        break;
+    case CImage::UINT_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt32);
+        break;
+    case CImage::INT_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt32);
+        break;
+    case CImage::UINT_RGB8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt8);
+        break;
+    case CImage::INT_RGB8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt8);
+        break;
+    case CImage::UINT_RGB16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt16);
+        break;
+    case CImage::INT_RGB16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt16);
+        break;
+    case CImage::REAL_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat32);
+        break;
+    case CImage::REAL_64:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat64);
+        break;
+    default:
+        assert(false);
+    }
+
+    m_pixelType = pixelType;
 
     FinalizeImage();
 }
@@ -54,120 +189,9 @@ CImageSITK::~CImageSITK()
     m_pb = nullptr;
 }
 
-bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
-{
-    m_filename = filename.c_str();
-
-    if(isDicom)
-    {
-        sitk::ImageSeriesReader reader;
-
-        string absolutePath = FSDir::fileDir(filename);
-        const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames(absolutePath);
-        reader.SetFileNames( dicom_names );
-
-        m_sitkImage = reader.Execute();
-    }
-    else
-    {
-        sitk::ImageFileReader reader;
-        reader.SetFileName(filename);
-
-        m_sitkImage = reader.Execute();
-    }
-
-    if(m_sitkImage.GetPixelID() != sitk::sitkUInt8)
-    {
-        sitk::RescaleIntensityImageFilter rescaleFiler;
-        rescaleFiler.SetOutputMinimum(0);
-        rescaleFiler.SetOutputMaximum(255);
-        m_sitkImage = rescaleFiler.Execute(m_sitkImage);
-
-        try
-        {
-            sitk::CastImageFilter castFilter;
-            castFilter.SetOutputPixelType(sitk::sitkUInt8);
-            m_sitkImage = castFilter.Execute(m_sitkImage);
-        }
-        catch(itk::simple::GenericException& e)
-        {
-            throw std::runtime_error("FEBio Studio is not currently capable of reading multichannel images.");
-        }
-        
-        
-    }
-
-    FinalizeImage();
-
-    return true;
-}
-
-bool CImageSITK::LoadFromStack(std::vector<std::string> filenames)
-{
-    m_filename = filenames[0].c_str();
-
-    sitk::RescaleIntensityImageFilter rescaleFiler;
-    rescaleFiler.SetOutputMinimum(0);
-    rescaleFiler.SetOutputMaximum(255);
-        
-    sitk::CastImageFilter castFilter;
-    castFilter.SetOutputPixelType(sitk::sitkUInt8);
-
-    sitk::ImageFileReader reader;
-    reader.SetFileName(filenames[0]);
-    sitk::Image slice = reader.Execute();
-
-    unsigned int nx = slice.GetWidth();
-    unsigned int ny = slice.GetHeight();
-    unsigned int nz = filenames.size();
-
-    m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
-    Byte* imgBytes = m_sitkImage.GetBufferAsUInt8();
-
-    // std::cout << slice.GetPixelID() << std::endl;
-    // std::vector<uint32_t> index = {0,0};
-    // std::cout << slice.GetPixelAsVectorUInt8(index).size() << std::endl;
-
-    if(slice.GetPixelID() != sitk::sitkUInt8)
-    {
-        slice = rescaleFiler.Execute(slice);
-        slice = castFilter.Execute(slice);
-    }
-
-    Byte* sliceBytes = slice.GetBufferAsUInt8();
-
-    for(int index = 0; index < nx*ny; index++)
-    {
-        imgBytes[index] = sliceBytes[index];
-    }
-    
-    for(int name = 1; name < filenames.size(); name++)
-    {
-        reader.SetFileName(filenames[name]);
-        slice = reader.Execute();
-
-        if(slice.GetPixelID() != sitk::sitkUInt8)
-        {
-            slice = rescaleFiler.Execute(slice);
-            slice = castFilter.Execute(slice);
-        }
-
-        sliceBytes = slice.GetBufferAsUInt8();
-
-        for(int index = nx*ny*name; index < nx*ny*(name+1); index++)
-        {
-            imgBytes[index] = sliceBytes[index];
-        }
-    }
-
-    FinalizeImage();
-
-    return true;
-}
-
 void CImageSITK::FinalizeImage()
 {
-    m_pb = m_sitkImage.GetBufferAsUInt8();
+    m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
 
     m_cx = m_sitkImage.GetWidth();
     m_cy = m_sitkImage.GetHeight();
@@ -180,7 +204,7 @@ BOX CImageSITK::GetBoundingBox()
 	std::vector<double> origin = m_sitkImage.GetOrigin();
 	std::vector<double> spacing = m_sitkImage.GetSpacing();
 
-	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0]+origin[0],spacing[1]*size[1]+origin[1],spacing[2]*size[2]+origin[2]);
 }
 
 void CImageSITK::SetBoundingBox(BOX& box)
@@ -190,12 +214,31 @@ void CImageSITK::SetBoundingBox(BOX& box)
     std::vector<unsigned int> size = m_sitkImage.GetSize();
 
 	try {
-	    m_sitkImage.SetSpacing({box.x1/size[0], box.y1/size[1], box.z1/size[2]});
+	    m_sitkImage.SetSpacing({(box.x1 - box.x0)/size[0], (box.y1 - box.y0)/size[1], (box.z1 - box.z0)/size[2]});
 	}
 	catch (...)
 	{
 		// ITK doesn't like zero spacing.
 	}
+
+    C3DImage::SetBoundingBox(box);
+}
+
+mat3d CImageSITK::GetOrientation()
+{
+    std::vector<double> orient = m_sitkImage.GetDirection();
+
+    return mat3d(orient[0], orient[1], orient[2], orient[3], orient[4], orient[5], orient[6], orient[7], orient[8]);
+}
+
+void CImageSITK::SetOrientation(mat3d& orientation)
+{
+    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
+        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+
+    m_sitkImage.SetDirection(orient);
+
+    C3DImage::SetOrientation(orientation);
 }
 
 std::vector<unsigned int> CImageSITK::GetSize()
@@ -220,22 +263,72 @@ itk::simple::Image CImageSITK::GetSItkImage()
 
 void CImageSITK::SetItkImage(itk::simple::Image image)
 {
-    if(image.GetPixelID() != sitk::sitkUInt8)
-    {
-        sitk::CastImageFilter castFilter;
-        castFilter.SetOutputPixelType(sitk::sitkUInt8);
-        m_sitkImage = castFilter.Execute(image);
-    }
-    else
-    {
-        m_sitkImage = image;
-    }
+    m_sitkImage = image;
 
     m_cx = m_sitkImage.GetWidth();
-    m_cy = m_sitkImage.GetHeight();;
-    m_cz = m_sitkImage.GetDepth();;
+    m_cy = m_sitkImage.GetHeight();
+    m_cz = m_sitkImage.GetDepth();
+    if(m_cz == 0) m_cz = 1;
 
-    m_pb = m_sitkImage.GetBufferAsUInt8();
+    // These 2 functions set these values so that if they're used internally, they're right
+    m_box = GetBoundingBox();
+    m_orientation = GetOrientation();
+
+    m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
+
+    switch (m_sitkImage.GetPixelID())
+    {
+    case sitk::sitkInt8:
+        m_pixelType = CImage::INT_8;
+        m_bps = 1;
+        break;
+    case sitk::sitkUInt8:
+        m_pixelType = CImage::UINT_8;
+        m_bps = 1;
+        break;
+    case sitk::sitkInt16:
+        m_pixelType = CImage::INT_16;
+        m_bps = 2;
+        break;
+    case sitk::sitkUInt16:
+        m_pixelType = CImage::UINT_16;
+        m_bps = 2;
+        break;
+    case sitk::sitkInt32:
+        m_pixelType = CImage::INT_32;
+        m_bps = 4;
+        break;
+    case sitk::sitkUInt32:
+        m_pixelType = CImage::UINT_32;
+        m_bps = 4;
+        break;
+    case sitk::sitkVectorInt8:
+        m_pixelType = CImage::INT_RGB8;
+        m_bps = 3;
+        break;
+    case sitk::sitkVectorUInt8:
+        m_pixelType = CImage::UINT_RGB8;
+        m_bps = 3;
+        break;
+    case sitk::sitkVectorInt16:
+        m_pixelType = CImage::INT_RGB16;
+        m_bps = 6;
+        break;
+    case sitk::sitkVectorUInt16:
+        m_pixelType = CImage::UINT_RGB16;
+        m_bps = 6;
+        break;
+    case sitk::sitkFloat32:
+        m_pixelType = CImage::REAL_32;
+        m_bps = 4;
+        break;
+    case sitk::sitkFloat64:
+        m_pixelType = CImage::REAL_64;
+        m_bps = 8;
+        break;
+    default:
+        break;
+    }
 }
 
 #endif

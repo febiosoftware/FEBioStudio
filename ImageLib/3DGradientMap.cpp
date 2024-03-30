@@ -40,9 +40,11 @@ C3DGradientMap::~C3DGradientMap()
 {
 }
 
-vec3f C3DGradientMap::Value(int i, int j, int k)
+template<class pType> vec3f C3DGradientMap::ValueTemplate(int i, int j, int k)
 {
-	// get the image dimensions
+    pType* data = (pType*)m_im.GetBytes();
+
+    // get the image dimensions
 	int nx = m_im.Width();
 	int ny = m_im.Height();
 	int nz = m_im.Depth();
@@ -51,23 +53,56 @@ vec3f C3DGradientMap::Value(int i, int j, int k)
 	float dyi = (ny - 1.f) / (float)m_box.Height();
 	float dzi = (nz - 1.f) / (float)m_box.Depth();
 
-	// calculate the gradient
+    // calculate the gradient
 	vec3f r;
 
-	// x-component
-	if (i == 0) r.x = ((float)m_im.value(i + 1, j, k) - (float)m_im.value(i, j, k)) * dxi;
-	else if (i == nx - 1) r.x = ((float)m_im.value(i, j, k) - (float)m_im.value(i - 1, j, k)) * dxi;
-	else r.x = ((float)m_im.value(i + 1, j, k) - (float)m_im.value(i - 1, j, k)) * (0.5f*dxi);
+    // x-component
+	if (i == 0) r.x = ((float)data[nx*(k*ny + j) + i + 1] - (float)data[nx*(k*ny + j) + i]) * dxi;
+	else if (i == nx - 1) r.x = ((float)data[nx*(k*ny + j) + i] - (float)data[nx*(k*ny + j) + i - 1]) * dxi;
+	else r.x = ((float)data[nx*(k*ny + j) + i + 1] - (float)data[nx*(k*ny + j) + i - 1]) * (0.5f*dxi);
 
 	// y-component
-	if (j == 0) r.y = ((float)m_im.value(i, j + 1, k) - (float)m_im.value(i, j, k)) * dyi;
-	else if (j == ny - 1) r.y = ((float)m_im.value(i, j, k) - (float)m_im.value(i, j - 1, k)) * dyi;
-	else r.y = ((float)m_im.value(i, j + 1, k) - (float)m_im.value(i, j - 1, k)) * (0.5f*dyi);
+	if (j == 0) r.y = ((float)data[nx*(k*ny + j + 1) + i] - (float)data[nx*(k*ny + j) + i]) * dyi;
+	else if (j == ny - 1) r.y = ((float)data[nx*(k*ny + j) + i] - (float)data[nx*(k*ny + j - 1) + i]) * dyi;
+	else r.y = ((float)data[nx*(k*ny + j + 1) + i] - (float)data[nx*(k*ny + j - 1) + i]) * (0.5f*dyi);
 
 	// z-component
-	if (k == 0) r.z = ((float)m_im.value(i, j, k + 1) - (float)m_im.value(i, j, k)) * dzi;
-	else if (k == nz - 1) r.z = ((float)m_im.value(i, j, k) - (float)m_im.value(i, j, k - 1)) * dzi;
-	else r.z = ((float)m_im.value(i, j, k + 1) - (float)m_im.value(i, j, k - 1)) * (0.5f*dzi);
+	if (k == 0) r.z = ((float)data[nx*((k + 1)*ny + j) + i] - (float)data[nx*(k*ny + j) + i]) * dzi;
+	else if (k == nz - 1) r.z = ((float)data[nx*(k*ny + j) + i] - (float)data[nx*((k - 1)*ny + j) + i]) * dzi;
+	else r.z = ((float)data[nx*((k + 1)*ny + j) + i] - (float)data[nx*((k - 1)*ny + j) + i]) * (0.5f*dzi);
 
-	return r;
+    return r;
+}
+
+vec3f C3DGradientMap::Value(int i, int j, int k)
+{
+	switch (m_im.PixelType())
+    {
+    case CImage::UINT_8:
+        return ValueTemplate<uint8_t>(i, j, k);
+    case CImage::INT_8:
+        return ValueTemplate<int8_t>(i, j, k);
+    case CImage::UINT_16:
+        return ValueTemplate<uint16_t>(i, j, k);
+    case CImage::INT_16:
+        return ValueTemplate<int16_t>(i, j, k);
+    case CImage::UINT_32:
+        return ValueTemplate<uint16_t>(i, j, k);
+    case CImage::INT_32:
+        return ValueTemplate<int16_t>(i, j, k);
+    case CImage::UINT_RGB8:
+        return ValueTemplate<uint8_t>(i, j, k);
+    case CImage::INT_RGB8:
+        return ValueTemplate<int8_t>(i, j, k);
+    case CImage::UINT_RGB16:
+        return ValueTemplate<uint16_t>(i, j, k);
+    case CImage::INT_RGB16:
+        return ValueTemplate<int16_t>(i, j, k);
+    case CImage::REAL_32:
+        return ValueTemplate<float>(i, j, k);
+    case CImage::REAL_64:
+        return ValueTemplate<double>(i, j, k);
+    default:
+        assert(false);
+    }
 }

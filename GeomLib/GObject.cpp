@@ -120,6 +120,31 @@ void GObject::Copy(GObject* po)
 	GBaseObject::Copy(po);
 }
 
+bool GObject::CanDelete() const
+{
+	// see if any of the nodes are required
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		if (Node(i)->IsRequired()) return false;
+	}
+	return CanDeleteMesh();
+}
+
+bool GObject::CanDeleteMesh() const
+{
+	const FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return true;
+
+	// Check if there are any mesh dependencies.
+	// Note that part-sets aren't checked since they don't reference the mesh directly.
+	if (FENodeSets() > 0) return false;
+	if (FESurfaces() > 0) return false;
+	if (FEEdgeSets() > 0) return false;
+	if (FEElemSets() > 0) return false;
+
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 // return type of Object
 int GObject::GetType() const { return imp->m_ntype; }
@@ -217,14 +242,14 @@ void GObject::ClearFEGroups()
 //-----------------------------------------------------------------------------
 // Remove groups that are empty.
 
-template <class T> void clearVector(FSObjectList<T>& v)
+template <class T> void clearVector(FSObjectList<T>& v, std::function<bool(T*)> f)
 {
 	if (v.IsEmpty()) return;
 
 	for (size_t i=0; i<v.Size(); )
 	{
 		T* o = v[i];
-		if (o->size() == 0)
+		if (f(o))
 		{
 			v.Remove(o);
 		}
@@ -234,11 +259,20 @@ template <class T> void clearVector(FSObjectList<T>& v)
 
 void GObject::RemoveEmptyFEGroups()
 {
-	clearVector(imp->m_pFEPartSet);
-	clearVector(imp->m_pFEElemSet);
-	clearVector(imp->m_pFESurface);
-	clearVector(imp->m_pFEEdgeSet);
-	clearVector(imp->m_pFENodeSet);
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->size() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->size() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->size() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->size() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->size() == 0); });
+}
+
+void GObject::RemoveUnusedFEGroups()
+{
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
 }
 
 //-----------------------------------------------------------------------------
@@ -428,20 +462,12 @@ void GObject::AssignMaterial(int matid)
 }
 
 //-----------------------------------------------------------------------------
-// Assign a material to a part. The nid parameter is the global ID of the part.
-// The pm parameter is a pointer to the material.
-// Note that we also assign the material ID to the elements of the mesh, if there
-// is a mesh.
+// Assign a material to a part. The partid parameter is the global ID of the part,
+// matId is the global material ID
 void GObject::AssignMaterial(int partid, int matid)
 {
-	GPart* pg = FindPart(partid);
-	assert(pg);
-	int gid = -1;
-	if (pg) 
-	{
-		pg->SetMaterialID(matid);
-		gid = pg->GetLocalID();
-	}
+	GPart* pg = FindPart(partid); assert(pg);
+	if (pg) pg->SetMaterialID(matid);
 }
 
 //-----------------------------------------------------------------------------
@@ -991,22 +1017,6 @@ void GObject::Save(OArchive &ar)
 		ar.BeginChunk(CID_OBJ_FEMESHER);
 		{
 			int ntype = mesher->Type();
-			ar.BeginChunk(ntype);
-			{
-				GetFEMesher()->Save(ar);
-			}
-			ar.EndChunk();
-		}
-		ar.EndChunk();
-	}
-
-	// save the mesher object
-	if (GetFEMesher())
-	{
-		ar.BeginChunk(CID_OBJ_FEMESHER);
-		{
-			int ntype = 0;
-//			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
 			ar.BeginChunk(ntype);
 			{
 				GetFEMesher()->Save(ar);

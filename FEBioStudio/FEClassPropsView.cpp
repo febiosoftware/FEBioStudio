@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include "IconProvider.h"
 #include <FEMLib/FSModel.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
@@ -49,6 +48,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QCheckBox>
 #include <FSCore/FSCore.h>
+#include <GeomLib/GModel.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 using namespace std;
@@ -100,6 +100,35 @@ void CPropertySelector::onSelectionChanged(int n)
 			emit currentDataChanged(n);
 		}
 	}
+}
+
+//=================================================================================
+CSurfacePropertySelector::CSurfacePropertySelector(GModel& m, FSProperty* pp, QWidget* parent) : QComboBox(parent), m_mdl(m)
+{
+	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pp->GetComponent()); assert(pms);
+	if (pms)
+	{
+		FEItemListBuilder* pg = pms->GetItemList();
+		m_surfList = m.AllNamedSelections(DOMAIN_SURFACE);
+		int n = -1;
+		for (int i=0; i<m_surfList.size(); ++i)
+		{
+			FEItemListBuilder* pi = m_surfList[i];
+			addItem(QString::fromStdString(pi->GetName()));
+			if (pi == pg) n = i;
+		}
+		setCurrentIndex(n);
+		m_pp = pp;
+		QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onSelectionChanged(int)));
+	}
+	else m_pp = nullptr;
+}
+
+void CSurfacePropertySelector::onSelectionChanged(int n)
+{
+	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(m_pp->GetComponent()); assert(pms);
+	if (pms) pms->SetItemList(n >= 0 ? m_surfList[n] : nullptr);
+	emit currentDataChanged(n);
 }
 
 //=================================================================================
@@ -183,7 +212,21 @@ public:
 					{
 						if (m_index == -1)
 						{
-							return QString("<b>parameter:</b> <code>%1</code>").arg(p.GetShortName());
+							QString toolTip = QString("<p><b>parameter:</b> <code>%1</code></p>").arg(p.GetShortName());
+							if (p.IsVolatile())
+							{
+								if (p.GetLoadCurveID() > 0)
+								{
+									FSModel* fem = GetFSModel();
+									FSLoadController* plc = fem->GetLoadControllerFromID(p.GetLoadCurveID());
+									if (plc)
+									{
+										toolTip += QString("<p><b>load controller: </b>%1</p>").arg(QString::fromStdString(plc->GetName()));
+									}
+								}
+								else toolTip += QString("<p><b>load controller: </b>(none)</p>");
+							}
+							return toolTip;
 						}
 						return QVariant();
 					}
@@ -1025,7 +1068,7 @@ public:
 		{
 			QColor c;
 			Shape s = Shape::Circle;
-			bool bicon = true;
+			bool bicon = false;
 			if (item->isParameter()) 
 			{ 
 				if (item->m_index == -1)
@@ -1036,21 +1079,20 @@ public:
 						if (p->GetLoadCurveID() > 0)
 						{
 							assert(p->IsVolatile());
-							c = QColor::fromRgb(0, 255, 0);
+							return CIconProvider::GetIcon("curve");
 						}
-						else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
-						else bicon = false;
 					}
-					else c = QColor::fromRgb(0, 0, 0);
-					s = Shape::Circle;
 				}
-				else bicon = false;
 			}
-			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
-			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
+			else
+			{
+				bicon = true;
+				if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
+				if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
+			}
 
 			if (bicon)
-				return CIconProvider::BuildPixMap(c, s, 12);
+				return CIconProvider::BuildPixMap(c, s);
 			else
 			{
 				QPixmap pix(12, 12);
@@ -1372,30 +1414,19 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 
 				int nclass = prop.GetSuperClassID();
 
-				CPropertySelector* pc = new CPropertySelector(&prop, pcbi, parent);
-
-				// fill the combo box
-/*				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
-				pc->clear();
-				int classes = classInfo.size();
-				for (int i = 0; i < classes; ++i)
+				if (nclass == FESURFACE_ID)
 				{
-					FEBio::FEBioClassInfo& ci = classInfo[i];
-					pc->addItem(ci.sztype, ci.classId);
+					GModel& m = item->GetFSModel()->GetModel();
+					CSurfacePropertySelector* pc = new CSurfacePropertySelector(m, &prop, parent);
+					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+					return pc;
 				}
-				pc->model()->sort(0);
-
-				// add a remove option
-				pc->insertSeparator(pc->count());
-				pc->addItem("(remove)", -2);
-
-				// see if the current option is in the list and selected it if so
-				int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
-				pc->setCurrentIndex(n);
-*/
-				QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
-
-				return pc;
+				else
+				{
+					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, parent);
+					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+					return pc;
+				}
 			}
 		}
 	}
@@ -1733,7 +1764,6 @@ public:
 
 	CCurveEditWidget* plt;
 	CMathEditWidget* math;
-	CMeshSelectionBox* sel;
 
 	FSMeshSelection* m_pms;
 
@@ -1747,7 +1777,6 @@ public:
 		stack = new QStackedWidget;
 		stack->addWidget(plt  = new CCurveEditWidget);
 		stack->addWidget(math = new CMathEditWidget);
-		stack->addWidget(sel = new CMeshSelectionBox(wnd));
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
@@ -1816,18 +1845,6 @@ public:
 			else stack->hide();
 		}
 	}
-
-	void SetMeshSelection(FSMeshSelection* pms)
-	{
-		m_pms = pms;
-		if (pms == nullptr) stack->hide();
-		else
-		{
-			sel->SetSelection(pms);
-			stack->setCurrentIndex(2);
-			stack->show();
-		}
-	}
 };
 
 FEClassEdit::FEClassEdit(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
@@ -1852,12 +1869,6 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 	{
 		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(p->GetComponent());
 		ui->SetFunction1D(pf);
-	}
-	else if (p->GetSuperClassID() == FESURFACE_ID)
-	{
-		ui->SetFunction1D(nullptr);
-		FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(p->GetComponent());
-		ui->SetMeshSelection(pms); return;
 	}
 	else ui->SetFunction1D(nullptr);
 }

@@ -426,7 +426,14 @@ bool GFaceList::IsValid() const
 //-----------------------------------------------------------------------------
 // GPartList
 //-----------------------------------------------------------------------------
-GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG)
+
+// TODO: Temporarily removing face flag, since generating surfaces from parts is causing
+//       some issues on export. 
+//GPartList::GPartList(GModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG) {}
+GPartList::GPartList(GModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG) {}
+
+GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG)
+//GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);

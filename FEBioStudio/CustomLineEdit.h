@@ -36,6 +36,9 @@ public:
 
     void setMultipleCompleter(QCompleter* completer);
 
+	void setWrapQuotes(bool b);
+	void setDelimiter(QString d);
+
 protected:
     void keyPressEvent(QKeyEvent* e);
 
@@ -49,5 +52,7 @@ private slots:
 
 private:
     QCompleter* c;
+	QString m_delim;
+	bool	m_wrapQuotes;	// wrap quotes if string has spaces
 };
 

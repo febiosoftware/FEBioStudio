@@ -180,21 +180,6 @@ private:
 	QLabel* m_dataFmt;
 };
 
-class CDlgPickNamedSelection : public QDialog
-{
-public:
-	CDlgPickNamedSelection(QWidget* parent);
-
-	void setNameList(const QStringList& names);
-	void setSelection(const QString& name);
-
-	QString getSelection();
-
-private:
-	QListWidget* m_list;
-};
-
-
 class CModelPropsPanel : public QWidget
 {
 	Q_OBJECT
@@ -209,6 +194,8 @@ public:
 	void Update();
 
 	void Refresh();
+
+	void AssignCurrentSelection();
 
 private slots:
 	void on_select1_addButtonClicked();

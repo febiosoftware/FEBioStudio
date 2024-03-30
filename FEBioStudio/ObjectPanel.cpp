@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ObjectPanel.h"
-#include <QLineEdit>
-#include <QLabel>
 #include <QPushButton>
 #include <QGridLayout>
 #include <QFormLayout>

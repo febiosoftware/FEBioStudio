@@ -63,14 +63,13 @@ void replace(string& s, const string& sub, const string& rep)
 
 FSDir::FSDir(const string& path) : m_path(path)
 {
-	polish(m_path);
+	m_path = polish(path);
 }
 
 void FSDir::setMacro(const string& def, const string& val)
 {
-	string v(val);
-	polish(v);
-	m_defs[def] = val;
+	string v = polish(val);
+	m_defs[def] = v;
 }
 
 std::string FSDir::expandMacros(bool expandSymbolicLinks) { return expandMacros(m_path); }
@@ -100,8 +99,7 @@ std::string FSDir::expandMacros(const std::string& path, bool expandSymbolicLink
 		}
 	}
 
-	polish(s);
-	return s;
+	return polish(s);
 }
 
 std::string FSDir::makeRelative(const std::string& path) { return makeRelative(m_path, path); }

@@ -2914,6 +2914,7 @@ FSCDFPower::FSCDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
     AddScienceParam(1, UNIT_NONE, "mu0"   , "constant mu0");
     AddScienceParam(0, UNIT_NONE, "mu1"   , "power coefficient mu1");
+    AddScienceParam(1, UNIT_NONE, "scale" , "scale factor for argument");
 }
 
 //=============================================================================
@@ -3244,6 +3245,18 @@ FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterialProp(FE_REL
 }
 
 //=============================================================================
+// Relaxation power distortion user
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxPowDistUser, MODULE_MECH, FE_RELAX_POW_DIST_USER, FE_MAT_RV_RELAX, "relaxation-power-dist-user", 0);
+
+FSRelaxPowDistUser::FSRelaxPowDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_POW_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
+	AddProperty("beta", FE_MAT_1DFUNC);
+}
+
+//=============================================================================
 // Relaxation Prony
 //=============================================================================
 
@@ -3526,7 +3539,7 @@ bool FEBioMaterial::HasMaterialAxes() const
 
 mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
 {
-	mat3d Q; Q.zero();
+	mat3d Q = mat3d::identity();
 
 	const FSProperty* pm = FindProperty("mat_axis");
 	if (pm)
@@ -3538,7 +3551,6 @@ mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
 			Q = matAxis->GetMatAxis(el);
 		}
 	}
-	else Q = mat3d::identity();
 
 	return Q;
 }

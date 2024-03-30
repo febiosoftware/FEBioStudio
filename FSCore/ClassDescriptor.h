@@ -54,7 +54,9 @@ public:
 	ClassDescriptor(Class_Type ntype, int cid, const char* szname, const char* szres, unsigned int flag = 0);
 	virtual ~ClassDescriptor();
 
-	virtual FSObject* Create() = 0;
+	virtual FSObject* CreateInstance() = 0;
+
+	FSObject* Create();
 
 	virtual bool IsType(FSObject* po) = 0;
 
@@ -86,7 +88,7 @@ template <class theClass> class ClassDescriptor_T : public ClassDescriptor
 {
 public:
 	ClassDescriptor_T(Class_Type ntype, int cid, const char* szname,  const char* szres, unsigned int flag) : ClassDescriptor(ntype, cid, szname, szres, flag){}
-	FSObject* Create() { m_ncount++; return new theClass(); }
+	FSObject* CreateInstance() { m_ncount++; return new theClass(); }
 
 	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
 };

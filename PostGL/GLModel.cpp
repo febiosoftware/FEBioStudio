@@ -75,8 +75,6 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	m_doZSorting = true;
 
-	m_brenderPlotObjects = true;
-
 	m_renderInnerSurface = true;
 
 	m_bshowMesh = true;
@@ -108,7 +106,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F)
+		if ((*pd)->Type() == DATA_VEC3)
 		{
 			std::string sname = (*pd)->GetName();
 			if ((sname == "displacement") || (sname == "Displacement")) ndisp = i;
@@ -325,7 +323,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F) ++nv;
+		if ((*pd)->Type() == DATA_VEC3) ++nv;
 		if ((*pd)->GetName() == szvectorField) ndisp = i;
 	}
 
@@ -567,7 +565,7 @@ void CGLModel::Render(CGLContext& rc)
 	RenderDecorations();
 
 	// render all the objects
-	if (m_brenderPlotObjects) RenderObjects(rc);
+	RenderObjects(rc);
 }
 
 //-----------------------------------------------------------------------------
@@ -657,6 +655,8 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
 	{
+		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
+
 		glEnable(GL_TEXTURE_1D);
 
 		glColor3ub(255, 255, 255);
@@ -676,17 +676,7 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible)
-				{
-					vec3d r0 = mesh.Node(edge.n0).r;
-					vec3d r1 = mesh.Node(edge.n1).r;
-
-					float t0 = edge.tex[0];
-					float t1 = edge.tex[1];
-
-					glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
-					glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
-				}
+				if (bvisible) RenderDiscreteElement(edge);
 			}
 		}
 		glEnd();
@@ -715,13 +705,7 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible)
-			{
-				vec3d r0 = mesh.Node(edge.n0).r;
-				vec3d r1 = mesh.Node(edge.n1).r;
-				glVertex3d(r0.x, r0.y, r0.z);
-				glVertex3d(r1.x, r1.y, r1.z);
-			}
+			if (bvisible) RenderDiscreteElement(edge);
 		}
 	}
 	glEnd();
@@ -735,16 +719,57 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			vec3d r0 = mesh.Node(edge.n0).r;
-			vec3d r1 = mesh.Node(edge.n1).r;
-
-			glVertex3d(r0.x, r0.y, r0.z);
-			glVertex3d(r1.x, r1.y, r1.z);
+			RenderDiscreteElement(edge);
 		}
 	}
 	glEnd();
 
 	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteElement(GLEdge::EDGE& edge)
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	if (pe == nullptr) return;
+
+	if (pe->Type() == FE_BEAM2)
+	{
+		float t0 = edge.tex[0];
+		float t1 = edge.tex[1];
+		vec3d r0 = mesh.Node(edge.n0).r;
+		vec3d r1 = mesh.Node(edge.n1).r;
+		glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
+		glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
+	}
+	else if (pe->Type() == FE_BEAM3)
+	{
+		vec3d r[3];
+		r[0] = mesh.Node(pe->m_node[0]).r;
+		r[1] = mesh.Node(pe->m_node[1]).r;
+		r[2] = mesh.Node(pe->m_node[2]).r;
+		float t[3];
+		t[0] = edge.tex[0];
+		t[1] = edge.tex[1];
+		t[2] = 0.5f * (t[0] + t[1]);
+		vec3d rp = r[0];
+		float tp = t[0];
+		const int NDIV = 12;
+		for (int n = 1; n <= NDIV; ++n)
+		{
+			float w = -1.f + (n / (float)NDIV) * 2.f;
+			float H[3] = { 0.5f * w * (w - 1.f), 0.5f * w * (w + 1.f), 1.f - w * w };
+			vec3d rn = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
+			float tn = t[0] * H[0] + t[1] * H[1] + t[2] * H[2];
+
+			glTexCoord1d(tp); glVertex3d(rp.x, rp.y, rp.z);
+			glTexCoord1d(tn); glVertex3d(rn.x, rn.y, rn.z);
+
+			rp = rn;
+			tp = tn;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -777,11 +802,12 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 	double Lmin = sqrt(L2min);
 
 	double f = m_render.m_bSolidBeamRadius;
-	double W = Lmin*0.25*f;
+	double W = f;// Lmin * 0.25 * f;
 
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
 	{
+		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
 		glEnable(GL_TEXTURE_1D);
 
 		glColor3ub(255, 255, 255);
@@ -800,14 +826,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible)
-				{
-					vec3d r0 = mesh.Node(edge.n0).r;
-					vec3d r1 = mesh.Node(edge.n1).r;
-					float t0 = edge.tex[0];
-					float t1 = edge.tex[1];
-					glx::drawCappedCylinder(r0, r1, W, t0, t1);
-				}
+				if (bvisible) RenderDiscreteElementAsSolid(edge, W);
 			}
 		}
 	}
@@ -836,12 +855,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible)
-			{
-				vec3d r0 = mesh.Node(edge.n0).r;
-				vec3d r1 = mesh.Node(edge.n1).r;
-				glx::drawCappedCylinder(r0, r1, W);
-			}
+			if (bvisible) RenderDiscreteElementAsSolid(edge, W);
 		}
 	}
 
@@ -883,15 +897,54 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			vec3d r0 = mesh.Node(edge.n0).r;
-			vec3d r1 = mesh.Node(edge.n1).r;
-			glx::drawCappedCylinder(r0, r1, W);
+			RenderDiscreteElementAsSolid(edge, W);
 		}
 	}
 
 	glPopAttrib();
 }
 
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteElementAsSolid(GLEdge::EDGE& edge, double W)
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	if (pe == nullptr) return;
+
+	if (pe->Type() == FE_BEAM2)
+	{
+		vec3d r0 = mesh.Node(edge.n0).r;
+		vec3d r1 = mesh.Node(edge.n1).r;
+		float t0 = edge.tex[0];
+		float t1 = edge.tex[1];
+
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawCappedCylinder(r0, r1, W, t0, t1, 16, leftCap, rightCap);
+	}
+	else if (pe->Type() == FE_BEAM3)
+	{
+		vec3d r[3];
+		r[0] = mesh.Node(pe->m_node[0]).r;
+		r[1] = mesh.Node(pe->m_node[1]).r;
+		r[2] = mesh.Node(pe->m_node[2]).r;
+		const int NDIV = 12;
+		vector<vec3d> p(NDIV + 1);
+		for (int n = 0; n <= NDIV; ++n)
+		{
+			float w = -1.f + (n / (float)NDIV) * 2.f;
+			float H[3] = { 0.5f * w * (w - 1.f), 0.5f * w * (w + 1.f), 1.f - w * w };
+			p[n] = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
+		}
+
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawSmoothPath(p, W, edge.tex[0], edge.tex[1], leftCap, rightCap);
+	}
+}
 
 //-----------------------------------------------------------------------------
 void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
@@ -1749,7 +1802,18 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	for (int i = 0; i < faceList.size(); ++i)
 	{
 		FSFace& f = pm->Face(faceList[i]);
-		if (f.IsVisible())
+
+		// NOTE: we don't want to draw outline of eroded elements.
+		//       What I should do is flag eroded elements and faces as hidden
+		//       so we don't need to do this elaborate check.
+		bool faceVisible = f.IsVisible();
+		if (faceVisible)
+		{
+			int eid = f.m_elem[0].eid;
+			if (eid >= 0) faceVisible = (pm->Element(eid).IsEroded() == false);
+		}
+		
+		if (faceVisible)
 		{
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
@@ -1769,7 +1833,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						bdraw = true;
 					}
-					else
+					else if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
 					{
 						vec3d n1 = to_vec3d(f.m_fn);
 						vec3d n2 = to_vec3d(f2.m_fn);
@@ -1956,8 +2020,12 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 			FSFace& face = dom.Face(i);
 			if (face.IsVisible())
 			{
-				// okay, we got one, so let's render it
-				m_render.RenderFaceOutline(face, pm);
+				// don't render lines on eroded elements
+				if ((face.m_elem[0].eid >= 0) && (pm->Element(face.m_elem[0].eid).IsEroded() == false))
+				{
+					// okay, we got one, so let's render it
+					m_render.RenderFaceOutline(face, pm);
+				}
 			}
 		}
 	}
@@ -2252,6 +2320,9 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 
+	bool renderRB = rc.m_settings.m_brigid;
+	bool renderRJ = rc.m_settings.m_bjoint;
+
 	for (int i = 0; i < fem->PointObjects(); ++i)
 	{
 		Post::FEPostModel::PointObject & ob = *fem->GetPointObject(i);
@@ -2267,15 +2338,15 @@ void CGLModel::RenderObjects(CGLContext& rc)
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderRigidBody(R); break;
-			case 2: glx::renderJoint(R); break;
-			case 3: glx::renderJoint(R); break;
-			case 4: glx::renderPrismaticJoint(R); break;
-			case 5: glx::renderRevoluteJoint(R); break;
-			case 6: glx::renderCylindricalJoint(R); break;
-			case 7: glx::renderPlanarJoint(R); break;
+			case 1: if (renderRB) glx::renderRigidBody(R); break;
+			case 2: if (renderRJ) glx::renderJoint(R); break;
+			case 3: if (renderRJ) glx::renderJoint(R); break;
+			case 4: if (renderRJ) glx::renderPrismaticJoint(R); break;
+			case 5: if (renderRJ) glx::renderRevoluteJoint(R); break;
+			case 6: if (renderRJ) glx::renderCylindricalJoint(R); break;
+			case 7: if (renderRJ) glx::renderPlanarJoint(R); break;
 			default:
-				glx::renderAxis(R);
+				if (renderRB) glx::renderAxis(R);
 			}
 			glPopMatrix();
 		}
@@ -2284,7 +2355,7 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	for (int i = 0; i < fem->LineObjects(); ++i)
 	{
 		Post::FEPostModel::LineObject & ob = *fem->GetLineObject(i);
-		if (ob.IsActive())
+		if (ob.IsActive() && renderRJ)
 		{
 			glPushMatrix();
 			glx::translate(ob.m_pos);
@@ -2292,12 +2363,16 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 			vec3d a = ob.m_r1;
 			vec3d b = ob.m_r2;
+			double Lt = sqrt((a - b) * (a - b));
+
+			double L0 = sqrt((ob.m_r01 - ob.m_r02) * (ob.m_r01 - ob.m_r02));
+			if (L0 == 0) L0 = Lt;
 
 			GLColor c = ob.Color();
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderSpring(a, b, R); break;
+			case 1: glx::renderSpring(a, b, R, (R == 0 ? 25 : L0 / R)); break;
 			case 2: glx::renderDamper(a, b, R); break;
 			case 4: glx::renderContractileForce(a, b, R); break;
 			default:
@@ -2408,7 +2483,7 @@ int CGLModel::GetSubDivisions()
 		if (ndivs > 10) ndivs = 10;
 		if (ndivs <  1) ndivs = 1;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if (ndivs > 2) ndivs = 2;
 #endif
 
@@ -2712,6 +2787,73 @@ void CGLModel::ShowMaterial(int nmat)
 	UpdateSelectionLists();
 }
 
+// Show elements with a certain material ID
+void CGLModel::UpdateMeshVisibility()
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	Post::FEPostModel& fem = *GetFSModel();
+
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& e = mesh.ElementRef(i);
+		if (e.m_MatID >= 0)
+		{
+			Post::Material* mat = fem.GetMaterial(e.m_MatID);
+			e.Show(mat->bvisible);
+		}
+	}
+
+	// show faces
+	int NF = mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = mesh.Face(i);
+		bool bshow = false;
+		if (f.IsExternal())
+		{
+			if (mesh.ElementRef(f.m_elem[0].eid).IsInvisible() == false) bshow = true;
+		}
+		else
+		{
+			FEElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
+			FEElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
+			if (!e0.IsInvisible() || !e1.IsInvisible()) bshow = true;
+		}
+		f.Show(bshow);
+	}
+
+	// show nodes
+	int NN = mesh.Nodes();
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = 0;
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		if (el.IsInvisible() == false)
+		{
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		node.Show(node.m_ntag == 1);
+	}
+
+	// show edges
+	int NL = mesh.Edges();
+	for (int i = 0; i < NL; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		if ((mesh.Node(edge.n[0]).IsInvisible() == false) &&
+			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
+		else edge.Show(false);
+	}
+
+	UpdateSelectionLists();
+}
+
 //-----------------------------------------------------------------------------
 // Enable elements with a certain mat ID
 void CGLModel::UpdateMeshState()
@@ -2746,6 +2888,7 @@ void CGLModel::UpdateMeshState()
 		FSFace& f = mesh.Face(i);
 		f.Disable();
 		if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
+		else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
 	}
 }
 
@@ -3522,7 +3665,7 @@ void CGLModel::UpdateEdge()
 	for (int i=0; i<mesh->Elements(); ++i)
 	{
 		FEElement_& el = mesh->ElementRef(i);
-		if ((el.Type() == FE_BEAM2)||(el.Type() == FE_BEAM3))
+		if (el.IsBeam())
 		{
 			GLEdge::EDGE edge;
 			edge.n0 = el.m_node[0];
@@ -3703,11 +3846,16 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 	UpdateSelectionLists();
 }
 
-void CGLModel::AddPlot(CGLPlot* pplot)
+void CGLModel::AddPlot(CGLPlot* pplot, bool update)
 {
 	pplot->SetModel(this);
 	m_pPlot.Add(pplot);
-	pplot->Update(CurrentTimeIndex(), 0.f, true);
+	if (update) pplot->Update(CurrentTimeIndex(), 0.f, true);
+}
+
+void CGLModel::RemovePlot(Post::CGLPlot* pplot)
+{
+	m_pPlot.Remove(pplot);
 }
 
 void CGLModel::ClearPlots()
@@ -3724,6 +3872,7 @@ void CGLModel::MovePlotUp(Post::CGLPlot* plot)
 			CGLPlot* prv = m_pPlot[i - 1];
 			m_pPlot.Set(i - 1, plot);
 			m_pPlot.Set(i, prv);
+			return;
 		}
 	}
 }
@@ -3737,6 +3886,7 @@ void CGLModel::MovePlotDown(Post::CGLPlot* plot)
 			CGLPlot* nxt = m_pPlot[i + 1];
 			m_pPlot.Set(i, nxt);
 			m_pPlot.Set(i + 1, plot);
+			return;
 		}
 	}
 }
@@ -3759,4 +3909,37 @@ int CGLModel::DiscreteEdges()
 GLEdge::EDGE& CGLModel::DiscreteEdge(int i)
 {
 	return m_edge.Edge(i);
+}
+
+//=================================================================
+GLPlotIterator::GLPlotIterator(CGLModel* mdl)
+{
+	m_n = 0;
+	if (mdl && mdl->Plots())
+	{
+		for (int i = 0; i < mdl->Plots(); ++i)
+		{
+			Post::CGLPlot* plot = mdl->Plot(i);
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (pg)
+			{
+				for (int j = 0; j<pg->Plots(); ++j)
+				{
+					m_plt.push_back(pg->GetPlot(j));
+				}
+			}
+			else m_plt.push_back(plot);
+		}
+	}
+}
+
+void GLPlotIterator::operator ++ ()
+{
+	if ((m_n >= 0) && (m_n <= m_plt.size())) m_n++;
+}
+
+GLPlotIterator::operator CGLPlot* ()
+{
+	if ((m_n >= 0) && (m_n < m_plt.size())) return m_plt[m_n];
+	else return nullptr;
 }

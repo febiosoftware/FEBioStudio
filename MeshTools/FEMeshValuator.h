@@ -30,7 +30,27 @@ SOFTWARE.*/
 
 class FEMeshValuator
 {
-	enum { MAX_DEFAULT_FIELDS = 13 };
+public:
+	// When adding a new data field, do so before the MAX_DEFAULT_FIELDS value.
+	enum DataFields {
+		ELEMENT_VOLUME,
+		JACOBIAN,
+		SHELL_THICKNESS,
+		SHELL_AREA,
+		TET_QUALITY,
+		TET_MIN_DIHEDRAL_ANGLE,
+		TET_MAX_DIHEDRAL_ANGLE,
+		TRIANGLE_QUALITY,
+		TRIANGLE_MAX_DIHEDRAL_ANGLE,
+		TET10_MID_NODE_OFFSET,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		PRINC_CURVE_1,
+		PRINC_CURVE_2,
+		// This last value is equal to the number of fields above.
+		// This must remain the last value in this enum!
+		MAX_DEFAULT_FIELDS
+	};
 
 public:
 	// constructor
@@ -42,6 +62,9 @@ public:
 	// evaluate just one element
 	double EvaluateElement(int i, int nfield, int* err = 0);
 	double EvaluateNode(int i, int nfield, int* err = 0);
+
+	// get the list of all datafield names
+	static std::vector< std::string > GetDataFieldNames();
 
 public:
 	void SetCurvatureLevels(int levels);
@@ -59,11 +82,24 @@ private:
 
 class FESurfaceMeshValuator
 {
-	enum { MAX_DEFAULT_FIELDS = 4 };
+	// When adding a new data field, do so before the MAX_DEFAULT_FIELDS value.
+	enum DataFields {
+		FACE_AREA,
+		TRIANGLE_QUALITY,
+		TRIANGLE_MAX_DIHEDRAL_ANGLE,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		// This last value is equal to the number of fields above.
+		// This must remain the last value in this enum!
+		MAX_DEFAULT_FIELDS
+	};
 
 public:
 	// constructor
 	FESurfaceMeshValuator(FSSurfaceMesh& mesh);
+
+	// get the list of all datafield names
+	static std::vector< std::string > GetDataFieldNames();
 
 	// evaluate the particular data field
 	bool Evaluate(int nfield, Mesh_Data& data);

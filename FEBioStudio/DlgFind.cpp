@@ -177,7 +177,7 @@ void CDlgFind::accept()
 
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.
-// Note: the numbers are converted to zero-base
+// Note: the numbers are assumed to be positive
 bool string_to_int_list(QString listString, std::vector<int>& list)
 {
 	// remove all spaces
@@ -193,8 +193,8 @@ bool string_to_int_list(QString listString, std::vector<int>& list)
 	int n0 = -1, n1 = -1, nn = -1;
 	do
 	{
-		if      (n0 < 0) n0 = (int) atoi(ch) - 1;
-		else if (n1 < 0) n1 = (int) atoi(ch) - 1;
+		if      (n0 < 0) n0 = (int) atoi(ch);
+		else if (n1 < 0) n1 = (int) atoi(ch);
 		else if (nn < 0) nn = (int) atoi(ch);
 
 		while (isdigit(*ch)) ++ch;

@@ -678,6 +678,20 @@ protected:
 	bool			m_badd;			// add to current selection
 };
 
+//-----------------------------------------------------------------------------
+class CCmdUnSelectDiscreteElements : public CCommand
+{
+public:
+	CCmdUnSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList);
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	GDiscreteElementSet* m_ps;	// pointer to discrete element set
+	vector<int>		m_elemList;		// list of discrete objects to select
+	vector<bool>	m_bold;			// old selection state of surfaces
+};
 
 //-----------------------------------------------------------------------------
 

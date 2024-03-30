@@ -31,7 +31,6 @@ SOFTWARE.*/
 
 GGrid::GGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {
-	m_pview = 0;
 	m_scale = .1f; 
 }
 
@@ -91,7 +90,7 @@ void GGrid::Render(CGLContext& renderContext)
 
 	// determine the colors for the major axis
 	GLColor cx, cy;
-	View_Mode view = m_pview->GetViewMode();
+	View_Mode view = renderContext.m_view->GetViewMode();
 	switch (view)
 	{
 	case VIEW_USER:

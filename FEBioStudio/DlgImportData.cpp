@@ -219,6 +219,24 @@ QList<QStringList> CDlgImportData::GetValues()
     return values;
 }
 
+QList<QList<double> > CDlgImportData::GetDoubleValues()
+{
+	QList<QStringList> strVals = GetValues();
+
+	QList<QList<double> > vals;
+	for (QStringList& s : strVals)
+	{
+		QList<double> row;
+		for (QString& si : s)
+		{
+			double a = si.toDouble();
+			row.push_back(a);
+		}
+		vals.push_back(row);
+	}
+	return vals;
+}
+
 void CDlgImportData::calcValues()
 {
     ui->values.clear();

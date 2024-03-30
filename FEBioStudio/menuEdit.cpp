@@ -44,9 +44,11 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QInputDialog>
 #include <GeomLib/GPrimitive.h>
+#include <GeomLib/GCurveObject.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
+#include "TextDocument.h"
 #include <sstream>
 
 using std::stringstream;
@@ -92,15 +94,18 @@ void CMainWindow::on_actionInvertSelection_triggered()
 
 void CMainWindow::on_actionClearSelection_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FESelection* ps = doc->GetCurrentSelection();
-	if (ps && ps->Size())
+	if ((ps == nullptr) || (ps->Size() == 0)) return;
+
+	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+	if (modelDoc)
 	{
 		int item = doc->GetItemMode();
 		int nsel = doc->GetSelectionMode();
-		GModel* mdl = doc->GetGModel();
+		GModel* mdl = modelDoc->GetGModel();
 		GObject* po = doc->GetActiveObject();
 		FSMesh* pm = (po ? po->GetFEMesh() : 0);
 		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
@@ -125,9 +130,25 @@ void CMainWindow::on_actionClearSelection_triggered()
 		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
 		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
 		}
-
-		Update();
 	}
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+	if (postDoc)
+	{
+		int item = doc->GetItemMode();
+		GObject* po = doc->GetActiveObject();
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+		FSLineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
+		switch (item)
+		{
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, 0, 0, false)); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pmb, 0, 0, false)); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
+		}
+	}
+	Update();
 }
 
 void CMainWindow::on_actionDeleteSelection_triggered()
@@ -136,9 +157,9 @@ void CMainWindow::on_actionDeleteSelection_triggered()
     if(xmlDoc)
     {
         // see if the focus is on the xml tree
-        if(ui->xmlTree->hasFocus())
+        if(ui->centralWidget->xmlTree->hasFocus())
         {
-            ui->xmlTree->on_removeSelectedRow_triggered();
+            ui->centralWidget->xmlTree->on_removeSelectedRow_triggered();
             return;
         }
     }
@@ -200,35 +221,19 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 		if (nanswer == QMessageBox::Yes)
 		{
 			GPartSelection::Iterator it(sel);
-			vector<int> pid(n);
-			for (int i = 0; i < n; ++i, ++it)
+			std::vector<GPart*> partList;
+			for (int i = 0; i < n; ++i, ++it) partList.push_back(it);
+			
+			if (partList.empty() == false)
 			{
-				pid[i] = it->GetID();
-			}
-
-			for (int i = 0; i < n; ++i)
-			{
-				GPart* pg = m.FindPart(pid[i]); assert(pg);
-				if (pg)
+				if (m.DeleteParts(partList) == false)
 				{
-					std::string partName = pg->GetName();
-					if (m.DeletePart(pg) == false)
-					{
-						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(partName)).arg(pid[i]);
-						QMessageBox::critical(this, "FEBio Studio", err);
-						break;
-					}
+					QMessageBox::critical(this, "FEBio Studio", "There was a problem with deleting these parts.");
 				}
-				else
-				{
-					QString err; err = QString("Cannot find part with ID %1.").arg(pid[i]);
-					QMessageBox::critical(this, "FEBio Studio", err);
-					break;
-				}
-			}
 
-			// TODO: This cannot be undone at the moment
-			doc->ClearCommandStack();
+				// TODO: This cannot be undone at the moment
+				doc->ClearCommandStack();
+			}
 		}
 	}
 	else
@@ -239,9 +244,20 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			int nsel = doc->GetSelectionMode();
 			if (nsel == SELECT_OBJECT)
 			{
-				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				FSModel* ps = doc->GetFSModel();
 				GModel& model = ps->GetModel();
+				// first see if we can delete the objects
+				for (int i = 0; i < model.Objects(); ++i)
+				{
+					GObject* po = model.Object(i);
+					if (po->CanDelete() == false)
+					{
+						QMessageBox::warning(this, "FEBio Studio", "This selection cannot be deleted since other model components depend on it.");
+						return;
+					}
+				}
+
+				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				for (int i = 0; i<model.Objects(); ++i)
 				{
 					GObject* po = model.Object(i);
@@ -434,7 +450,94 @@ void CMainWindow::on_actionFind_triggered()
 		vector<int> items;
 		if (dlg.m_method == 0)
 		{
-			items = dlg.m_item;
+			if (dynamic_cast<CPostDocument*>(doc))
+			{
+				if (nitem == ITEM_NODE)
+				{
+					int NN = pm->Nodes();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+				else if (nitem == ITEM_ELEM)
+				{
+					int NE = pm->Elements();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+				else if (nitem == ITEM_FACE)
+				{
+					// make zero-based
+					items = dlg.m_item;
+					for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+				}
+			}
+			else
+			{
+				// convert node IDs to indices
+				items = dlg.m_item;
+				if (nitem == ITEM_NODE)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->NodeIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Nodes())) items[i] = n;
+					}
+				}
+				else if (nitem == ITEM_ELEM)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->ElementIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Elements())) items[i] = n;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < items.size(); ++i) items[i] = items[i] - 1;
+				}
+			}
 		}
 		else if (dlg.m_method == 1)
 		{
@@ -596,19 +699,19 @@ void CMainWindow::on_actionNameSelection_triggered()
 	int item = doc->GetItemMode();
 	switch (item)
 	{
-	case ITEM_ELEM: sprintf(szname, "Part%02d", nparts); break;
-	case ITEM_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-	case ITEM_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-	case ITEM_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+	case ITEM_ELEM: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+	case ITEM_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+	case ITEM_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+	case ITEM_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 	case ITEM_MESH:
 	{
 		int nsel = doc->GetSelectionMode();
 		switch (nsel)
 		{
-		case SELECT_PART: sprintf(szname, "Part%02d", nparts); break;
-		case SELECT_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-		case SELECT_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-		case SELECT_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+		case SELECT_PART: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+		case SELECT_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+		case SELECT_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+		case SELECT_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 		default:
 			return;
 		}
@@ -1031,49 +1134,89 @@ void CMainWindow::on_actionMerge_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	// make sure we have an object selection
+	// make sure we have an object or a node selection
 	FESelection* currentSelection = doc->GetCurrentSelection();
-	if (currentSelection->Type() != SELECT_OBJECTS)
+	if ((currentSelection->Type() != SELECT_OBJECTS) && (currentSelection->Type() != SELECT_NODES))
 	{
-		QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
+		QMessageBox::critical(this, "Merge", "Cannot merge selection.");
 		return;
 	}
+
 	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
-	if ((sel == nullptr) || (sel->Count() < 2))
+	if (sel)
 	{
-		QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
-		return;
+		if (sel->Count() < 2)
+		{
+			QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
+			return;
+		}
+
+		CDlgMergeObjects dlg(this);
+		if (dlg.exec() == QDialog::Rejected) return;
+
+		// merge the objects
+		GModel& m = *doc->GetGModel();
+		GObject* newObject = m.MergeSelectedObjects(sel, dlg.m_name, dlg.m_weld, dlg.m_tol);
+		if (newObject == 0)
+		{
+			QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
+			return;
+		}
+
+		// we need to delete the selected objects and add the new object
+		// create the command that will do the attaching
+		CCmdGroup* pcmd = new CCmdGroup("Attach");
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			// remove the old object
+			GObject* po = sel->Object(i);
+			pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+		}
+		// add the new object
+		pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
+
+		// perform the operation
+		doc->DoCommand(pcmd);
+
+		// update UI
+		Update(0, true);
 	}
 
-	CDlgMergeObjects dlg(this);
-	if (dlg.exec() == QDialog::Rejected) return;
-
-	// merge the objects
-	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.MergeSelectedObjects(sel, dlg.m_name, dlg.m_weld, dlg.m_tol);
-	if (newObject == 0)
+	GNodeSelection* nodeSel = dynamic_cast<GNodeSelection*>(currentSelection);
+	if (nodeSel)
 	{
-		QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
-		return;
-	}
+		// make sure there is work to do
+		if (nodeSel->Count() == 1)
+		{
+			QMessageBox::critical(this, "Merge", "More than one need needs to be selected.");
+			return;
+		}
 
-	// we need to delete the selected objects and add the new object
-	// create the command that will do the attaching
-	CCmdGroup* pcmd = new CCmdGroup("Attach");
-	for (int i = 0; i<sel->Count(); ++i)
-	{
-		// remove the old object
-		GObject* po = sel->Object(i);
+		// make sure all nodes belong to the same object
+		GObject* po = GetActiveObject();
+		GNodeSelection::Iterator it(nodeSel);
+		for (int i = 0; i < nodeSel->Count(); ++i, ++it)
+		{
+			GNode* pn = it;
+			if (pn->Object() != po)
+			{
+				QMessageBox::critical(this, "Merge", "Cannot merge selection.");
+				return;
+			}
+		}
+
+		// we can only do this for curve objects for now
+		GCurveObject* pco = dynamic_cast<GCurveObject*>(po);
+		if (pco == nullptr) { QMessageBox::critical(this, "Merge", "Cannot merge selection."); return; }
+
+		GCurveObject* pco_new(pco);
+		pco_new->MergeNodes(nodeSel);
+
+		GModel& m = *doc->GetGModel();
+		CCmdGroup* pcmd = new CCmdGroup("Merge");
 		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+		pcmd->AddCommand(new CCmdAddAndSelectObject(&m, pco_new));
 	}
-	// add the new object
-	pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
-
-	// perform the operation
-	doc->DoCommand(pcmd);
-
-	// update UI
-	Update(0, true);
 }
 
 void CMainWindow::on_actionDetach_triggered()
@@ -1434,11 +1577,11 @@ void CMainWindow::on_actionFindTxt_triggered()
 	{
 		ui->m_lastFindText = txt;
 
-		if (ui->xmlEdit->find(txt) == false)
+		if (ui->centralWidget->xmlEdit->find(txt) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1449,11 +1592,11 @@ void CMainWindow::on_actionFindAgain_triggered()
 
 	if (ui->m_lastFindText.isEmpty() == false)
 	{
-		if (ui->xmlEdit->find(ui->m_lastFindText) == false)
+		if (ui->centralWidget->xmlEdit->find(ui->m_lastFindText) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1461,19 +1604,19 @@ void CMainWindow::on_actionToggleComment_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->toggleLineComment();
+	ui->centralWidget->xmlEdit->toggleLineComment();
 }
 
 void CMainWindow::on_actionDuplicateLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->duplicateLine();
+	ui->centralWidget->xmlEdit->duplicateLine();
 }
 
 void CMainWindow::on_actionDeleteLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->deleteLine();
+	ui->centralWidget->xmlEdit->deleteLine();
 }

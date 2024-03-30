@@ -43,7 +43,8 @@ class LoadCurve;
 enum ChartStyle
 {
 	LINECHART_PLOT,
-	BARCHART_PLOT
+	BARCHART_PLOT,
+	DENSITY_PLOT
 };
 
 //-----------------------------------------------------------------------------
@@ -219,12 +220,12 @@ protected:
 	bool isSelected(int ndata, int npoint);
 
 public:
-	QPointF ScreenToView(const QPoint& p);
+	QPointF ScreenToView(const QPointF& p);
 	QRectF ScreenToView(const QRect& rt);
-	QPoint ViewToScreen(const QPointF& p);
+	QPointF ViewToScreen(const QPointF& p);
 
-	int ViewToScreenX(double x) const;
-	int ViewToScreenY(double x) const;
+	double ViewToScreenX(double x) const;
+	double ViewToScreenY(double x) const;
 
 	void SetBackgroundImage(QImage* img);
 
@@ -236,6 +237,7 @@ protected:
 
 	void draw_linechart(QPainter& p, CPlotData& data);
 	void draw_barchart(QPainter& p, CPlotData& data);
+	void draw_densityplot(QPainter& p, CPlotData& data);
 
 public slots:
 	void OnZoomToWidth();
@@ -355,7 +357,6 @@ public slots:
 	void on_plot_backgroundImageChanged();
 	void on_plot_doneZoomToRect();
 	void on_plot_regionSelected(QRect);
-	void on_plot_doneSelectingRect(QRect);
 	void on_xval_textEdited();
 	void on_yval_textEdited();
 	void on_deletePoint_clicked();

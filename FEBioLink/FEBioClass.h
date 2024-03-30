@@ -168,6 +168,7 @@ namespace FEBio {
 	FEBeamFormulation*   CreateBeamFormulation  (const std::string& typeStr, FSModel* fem);
 	FSVec3dValuator*     CreateVec3dValuator    (const std::string& typeStr, FSModel* fem);
 	FSMat3dValuator*     CreateMat3dValuator    (const std::string& typeStr, FSModel* fem);
+	FSGenericClass*      CreateLinearSolver     (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);
@@ -210,8 +211,9 @@ namespace FEBio {
 	};
 
 	int runModel(const std::string& fileName, 
-		FEBioOutputHandler* outputHandler = nullptr,
-		FEBioProgressTracker* progressTracker = nullptr);
+		FEBioOutputHandler* outputHandler,
+		FEBioProgressTracker* progressTracker,
+		std::string& report);
 
 	void TerminateRun();
 

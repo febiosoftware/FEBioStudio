@@ -46,6 +46,10 @@ public:
 	BOX GetBoundingBox();
 
 private:
+	// Don't want the sections on the post side. 
+	void UpdateSections() override {}
+
+private:
 	Post::CGLModel* m_glm;
 };
 

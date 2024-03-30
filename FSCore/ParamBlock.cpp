@@ -35,6 +35,7 @@ Param::Param()
 { 
 	m_nID = -1; 
 	m_ntype = Param_UNDEF; 
+	m_nsize = 0;
 	m_pd = 0;
 	m_lc = -1; 
 	m_szbrev = m_szname = m_szenum = 0; 
@@ -195,7 +196,7 @@ Param* Param::MakeVariable(bool b)
 {
 	if (b)
 	{
-		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D) || (m_ntype == Param_MAT3DS) || (m_ntype == Param_MATH));
+		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_ARRAY_DOUBLE) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D) || (m_ntype == Param_MAT3DS) || (m_ntype == Param_MATH));
 		m_varType = m_ntype;
 	}
 	else m_varType = Param_UNDEF;
@@ -251,8 +252,8 @@ void Param::SetParamType(Param_Type t)
 	case Param_STD_VECTOR_INT   : m_pd = new std::vector<int>(); break;
 	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
 	case Param_STD_VECTOR_VEC2D : m_pd = new std::vector<vec2d>(); break;
-	case Param_ARRAY_INT   : m_pd = new std::vector<int   >(); break;
-	case Param_ARRAY_DOUBLE: m_pd = new std::vector<double>(); break;
+	case Param_ARRAY_INT   : m_pd = new std::vector<int   >(m_nsize); break;
+	case Param_ARRAY_DOUBLE: m_pd = new std::vector<double>(m_nsize); break;
 	default:
 		assert(false);
 	}
@@ -268,6 +269,13 @@ void Param::SetLoadCurveID(int lcid)
 int Param::GetLoadCurveID() const
 {
 	return m_lc;
+}
+
+//-----------------------------------------------------------------------------
+int Param::GetArraySize() const
+{
+	if ((m_ntype == Param_ARRAY_DOUBLE) || (m_ntype == Param_ARRAY_INT)) return m_nsize;
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -307,6 +315,7 @@ Param::Param(const Param& p)
 {
 	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
+	m_nsize = p.m_nsize;
 	m_szbrev = p.m_szbrev;
 	m_szname = p.m_szname;
 	m_szunit = p.m_szunit;
@@ -362,6 +371,7 @@ Param& Param::operator = (const Param& p)
 	clear();
 //	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
+	m_nsize = p.m_nsize;
 //	m_szbrev = p.m_szbrev;
 //	m_szname = p.m_szname;
 //	m_szenum = p.m_szenum;
@@ -410,6 +420,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_pd = pi;
 	assert((ntype == Param_INT) || (ntype == Param_CHOICE));
 	m_ntype = ntype;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -437,6 +448,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	*pi = n;
 	m_pd = pi;
 	m_ntype = Param_INT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -464,6 +476,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	*pd = d;
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -491,6 +504,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	*pd = d;
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -518,6 +532,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	*pb = b;
 	m_pd = pb;
 	m_ntype = Param_BOOL;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -545,6 +560,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	*pv = v;
 	m_pd = pv;
 	m_ntype = Param_VEC3D;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -573,6 +589,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	*pv = v;
 	m_pd = pv;
 	m_ntype = Param_VEC2I;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -601,6 +618,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	*pv = v;
 	m_pd = pv;
 	m_ntype = Param_MAT3D;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -628,6 +646,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	*pv = v;
 	m_pd = pv;
 	m_ntype = Param_MAT3DS;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -654,6 +673,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	GLColor* pc = new GLColor(c);
 	m_pd = pc;
 	m_ntype = Param_COLOR;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -680,6 +700,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	std::vector<int>* pc = new std::vector<int>(v);
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_INT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -705,6 +726,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	std::vector<double>* pc = new std::vector<double>(v);
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_DOUBLE;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -730,6 +752,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	std::vector<vec2d>* pc = new std::vector<vec2d>(v);
 	m_pd = pc;
 	m_ntype = Param_STD_VECTOR_VEC2D;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -756,6 +779,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	*pv = val;
 	m_pd = pv;
 	m_ntype = Param_STRING;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -785,6 +809,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 
 	m_pd = pc;
 	m_ntype = Param_ARRAY_INT;
+	m_nsize = nsize;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -814,6 +839,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 
 	m_pd = pc;
 	m_ntype = Param_ARRAY_DOUBLE;
+	m_nsize = nsize;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -841,6 +867,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	*pi = n;
 	m_pd = pi;
 	m_ntype = Param_INT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -868,6 +895,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	*pd = d;
 	m_pd = pd;
 	m_ntype = Param_FLOAT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -895,6 +923,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_pd = pd;
 	*pd = d;
 	m_ntype = Param_FLOAT;
+	m_nsize = 0;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -938,7 +967,7 @@ void Param::SetArrayDoubleValue(const std::vector<double>& v)
 {
 	assert(m_ntype == Param_ARRAY_DOUBLE);
 	auto& d = val<std::vector<double> >();
-	if (d.empty()) { d = v; return; }
+	if (d.empty()) { d = v; m_nsize = v.size(); return; }
 	assert(d.size() == v.size());
 	int n = MIN(d.size(), v.size());
 	for (int i = 0; i < n; ++i) d[i] = v[i];
@@ -1016,6 +1045,18 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 
 	return *this;
 }
+
+void ParamBlock::Copy(const ParamBlock& b)
+{
+	assert(b.m_Param.size() == m_Param.size());
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& p = *m_Param[i];
+		p = s;
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 void ParamBlock::ClearParamGroups()
@@ -1268,8 +1309,20 @@ void ParamContainer::LoadParam(IArchive& ar)
 			{
 				if (param->IsVariable())
 				{
-					param->SetParamType(p.GetParamType());
-					*param = p;
+					// We used to store array parameters as vectors, but
+					// now we can store array parameters correctly. So, we
+					// need to check for that and convert. 
+					if ((param->GetParamType() == Param_ARRAY_DOUBLE) && (p.GetParamType() == Param_VEC3D))
+					{
+						assert(param->GetArraySize() == 3);
+						vec3d v = p.GetVec3dValue();
+						std::vector<double> d{ v.x, v.y, v.z };
+						param->SetArrayDoubleValue(d);
+					}
+					else {
+						param->SetParamType(p.GetParamType());
+						*param = p;
+					}
 				}
 				else if ((param->GetParamType() == Param_STRING) && (p.GetParamType() == Param_MATH))
 				{
@@ -1313,7 +1366,7 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 
 void ParamContainer::MapParams(const ParamContainer& pc)
 {
-	for (int i = 0; i < Parameters(); ++i)
+	for (int i = 0; i < pc.Parameters(); ++i)
 	{
 		const Param& pi = pc.GetParam(i);
 		Param* p = GetParam(pi.GetShortName());

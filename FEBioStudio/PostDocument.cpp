@@ -311,8 +311,9 @@ bool CPostDocument::Initialize()
 		BOX box = GetBoundingBox();
 
 		// reset the camera
-		m_view.Reset();
-		CGLCamera& cam = m_view.GetCamera();
+		CGView& view = *GetView();
+		view.Reset();
+		CGLCamera& cam = view.GetCamera();
 		cam.Reset();
 		cam.SetTargetDistance(box.Radius() * 3);
 		cam.SetTarget(box.Center());
@@ -444,16 +445,16 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 		CGView* pview = GetView();
 		pview->DeleteKey(pt);
 	}
-	else if (dynamic_cast<Post::CImageModel*>(po))
+	else if (dynamic_cast<CImageModel*>(po))
 	{
-		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+		CImageModel* img = dynamic_cast<CImageModel*>(po);
 		m_img.Remove(img);
 		delete img;
 	}
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po))
 	{
 		Post::CGLImageRenderer* ir = dynamic_cast<Post::CGLImageRenderer*>(po);
-		Post::CImageModel* img = ir->GetImageModel();
+		CImageModel* img = ir->GetImageModel();
 		img->RemoveRenderer(ir);
 	}
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po))
@@ -486,7 +487,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
 	}
 	else return "";
 }
@@ -619,8 +620,8 @@ BOX CPostDocument::GetSelectionBox()
 
 	return box;
 }
-
-FESelection* CPostDocument::GetCurrentSelection()
+/*
+void CPostDocument::UpdateSelection(bool breport)
 {
 	if (m_sel) { delete m_sel; m_sel = nullptr; }
 
@@ -634,9 +635,8 @@ FESelection* CPostDocument::GetCurrentSelection()
 	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
 	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
 	}
-
-	return m_sel;
 }
+*/
 
 std::string CPostDocument::GetFileName()
 {
@@ -663,6 +663,24 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl) mdl->UpdateSelectionLists();
+
+	// delete old selection
+	if (m_psel) delete m_psel;
+	m_psel = nullptr;
+
+	// figure out if there is a mesh selected
+	GObject* po = GetActiveObject();
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
+	FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+	FSLineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
+
+	switch (m_vs.nitem)
+	{
+	case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+	case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
+	case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
+	case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
+	}
 
 	emit selectionChanged();
 }

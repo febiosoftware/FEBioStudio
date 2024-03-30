@@ -53,6 +53,7 @@ private slots:
 	void on_addButton_clicked();
 	void on_editButton_clicked();
 	void on_deleteButton_clicked();
+	void on_filterButton_clicked();
 
 private:
 	Ui::CStatePanel* ui;
@@ -72,6 +73,8 @@ public:
 	int		m_nstates;
 	double	m_minTime;
 	double	m_maxTime;
+	int		m_status;
+	bool	m_interpolate;
 
 private:
 	Ui::CDlgAddState* ui;

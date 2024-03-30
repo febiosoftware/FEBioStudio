@@ -114,8 +114,6 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 {
 	SetIcon(":/icons/FEBioStudio.png");
 
-	m_psel = nullptr;
-
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
@@ -143,6 +141,8 @@ void CModelDocument::Clear()
 //-----------------------------------------------------------------------------
 void CModelDocument::Activate()
 {
+	CGLDocument::Activate();
+
 	m_context->Pull();
 
 	// reset active module
@@ -210,11 +210,35 @@ BOX CModelDocument::GetModelBox()
 	return box;
 }
 
-//-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
 {
 	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po));
 	GetMainWindow()->Update(0, true);
+}
+
+void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)
+{
+	// get all the parts out since we don't want to process those one by one
+	std::vector<GPart*> partList;
+	for (int i = 0; i < objList.size(); ++i)
+	{
+		GPart* pg = dynamic_cast<GPart*>(objList[i]);
+		if (pg)
+		{
+			partList.push_back(pg);
+			objList[i] = nullptr;
+		}
+	}
+
+	if (!partList.empty())
+	{
+		GetGModel()->DeleteParts(partList);
+	}
+
+	for (int i = 0; i < (int)objList.size(); ++i)
+	{
+		if (objList[i]) DeleteObject(objList[i]);
+	}
 }
 
 void CModelDocument::DeleteObject(FSObject* po)
@@ -268,6 +292,14 @@ void CModelDocument::DeleteObject(FSObject* po)
 	else if (dynamic_cast<GObject*>(po))
 	{
 		GObject* obj = dynamic_cast<GObject*>(po);
+
+		// check to see if there are any required nodes
+		if (obj->CanDelete() == false)
+		{
+			QMessageBox::warning(m_wnd, "FEBio Studio", "This object cannot be deleted since other model components depend on it.");
+			return;
+		}
+
 		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
 	}
 	else if (po->GetParent())
@@ -282,7 +314,15 @@ void CModelDocument::DeleteObject(FSObject* po)
 */
 		}
 
-		if (dynamic_cast<FSModelComponent*>(po))
+		if (dynamic_cast<FSLoadController*>(po))
+		{
+			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+			if (plc->GetReferenceCount() > 0)
+				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
+			else
+				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+		}
+		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
@@ -723,20 +763,20 @@ void CModelDocument::UpdateSelection(bool report)
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
-			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(gm, pm); break;
-			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(gm, pm); break;
-			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(gm, pm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
+			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
+			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
 			}
 		}
 		else
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
-			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(gm, pmb); break;
-			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(gm, plm); break;
-			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(gm, plm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(pmb); break;
+			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(plm); break;
+			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(plm); break;
 			}
 		}
 	}
@@ -750,8 +790,6 @@ void CModelDocument::UpdateSelection(bool report)
 }
 
 //-----------------------------------------------------------------------------
-FESelection* CModelDocument::GetCurrentSelection() { return m_psel; }
-
 void CModelDocument::HideCurrentSelection()
 {
 	if (GetItemMode() == ITEM_MESH)
@@ -967,10 +1005,10 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 	}
 
 	// make sure the modifier succeeded
-	if (newMesh == 0) return false;
+	if ((newMesh == nullptr) && !modifier.AllowNullMesh()) return false;
 
 	// clear the selection
-	if (clearSel) newMesh->ClearFaceSelection();
+	if (clearSel && newMesh) newMesh->ClearFaceSelection();
 
 	// swap the meshes
 	string ss = modifier.GetName();

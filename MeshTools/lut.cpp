@@ -477,6 +477,7 @@ int ET_PYRA13[8][3] = {
 
 //-----------------------------------------------------------------------------
 // Face lookup table for HEX20 elements
+/* NOTE: This is inconsistent with how faces are defined in FEElement class, but this isn't used. 
 int FACE_HEX20[6][8] = {
 	{ 5, 1, 2, 6 },
 	{ 3, 0, 4, 7 },
@@ -485,6 +486,7 @@ int FACE_HEX20[6][8] = {
 	{ 4, 5, 6, 7 },
 	{ 3, 2, 1, 0 }
 };
+*/
 
 //-----------------------------------------------------------------------------
 // Edge lookup table for HEX20 elements

@@ -29,12 +29,18 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
+#include <QGridLayout>
 #include <QDialogButtonBox>
 #include <QValidator>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLabel>
+#include <ImageLib/3DImage.h>
 
 class Ui::CDlgRAWImport
 {
 public:
+	QComboBox* im;
 	QLineEdit*	nx;
 	QLineEdit*	ny;
 	QLineEdit*	nz;
@@ -46,35 +52,51 @@ public:
 	QLineEdit*	w;
 	QLineEdit*	h;
 	QLineEdit*	d;
+    QCheckBox*  swap;
 
 public:
 	void setupUi(QWidget* parent)
 	{
 		QVBoxLayout* lo = new QVBoxLayout;
+        // enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
+
+		im = new QComboBox; im->addItems(QStringList() << "8-bit unsigned" << "8-bit signed" << "16-bit unsigned" 
+            << "16-bit signed" << "8-bit unsigned RGB" << "8-bit signed RGB" << "16-bit unsigned RGB" 
+            << "16-bit signed RGB" << "32-bit real" << "64-bit real");
+
 		nx = new QLineEdit; nx->setValidator(new QIntValidator(1, 4096));
 		ny = new QLineEdit; ny->setValidator(new QIntValidator(1, 4096));
 		nz = new QLineEdit; nz->setValidator(new QIntValidator(1, 4096));
 
-		x0 = new QLineEdit; x0->setValidator(new QDoubleValidator);
-		y0 = new QLineEdit; y0->setValidator(new QDoubleValidator);
-		z0 = new QLineEdit; z0->setValidator(new QDoubleValidator);
+		x0 = new QLineEdit; x0->setValidator(new QDoubleValidator); x0->setText(QString::number(0.0));
+		y0 = new QLineEdit; y0->setValidator(new QDoubleValidator); y0->setText(QString::number(0.0));
+		z0 = new QLineEdit; z0->setValidator(new QDoubleValidator); z0->setText(QString::number(0.0));
 
-		w = new QLineEdit; w->setValidator(new QDoubleValidator);
-		h = new QLineEdit; h->setValidator(new QDoubleValidator);
-		d = new QLineEdit; d->setValidator(new QDoubleValidator);
+		w = new QLineEdit; w->setValidator(new QDoubleValidator); w->setText(QString::number(1.0));
+		h = new QLineEdit; h->setValidator(new QDoubleValidator); h->setText(QString::number(1.0));
+		d = new QLineEdit; d->setValidator(new QDoubleValidator); d->setText(QString::number(1.0));
 
-		QFormLayout* form = new QFormLayout;
-		form->addRow("nx", nx);
-		form->addRow("ny", ny);
-		form->addRow("nz", nz);
-		form->addRow("x0", x0);
-		form->addRow("y0", y0);
-		form->addRow("z0", z0);
-		form->addRow("width", w);
-		form->addRow("height", h);
-		form->addRow("depth", d);
+        swap = new QCheckBox;
+        swap->setChecked(false);
 
-		lo->addLayout(form);
+		int row = 0;
+		QGridLayout* grid = new QGridLayout;
+		grid->addWidget(new QLabel("Image type:"  ), row, 0, Qt::AlignRight); grid->addWidget(im, row, 1, 1, 2); row++;
+		grid->addWidget(new QLabel("<b>Image dimensions:</b>"), row, 0); row++;
+		grid->addWidget(new QLabel("width:" ), row, 0, Qt::AlignRight); grid->addWidget(nx, row, 1); grid->addWidget(new QLabel("pixels"), row, 2); row++;
+		grid->addWidget(new QLabel("height:"), row, 0, Qt::AlignRight); grid->addWidget(ny, row, 1); grid->addWidget(new QLabel("pixels"), row, 2); row++;
+		grid->addWidget(new QLabel("slices:"), row, 0, Qt::AlignRight); grid->addWidget(nz, row, 1); row++;
+		grid->addWidget(new QLabel("<b>Physical dimensions:</b>"), row, 0); row++;
+		grid->addWidget(new QLabel("x0:"), row, 0, Qt::AlignRight); grid->addWidget(x0, row, 1); row++;
+		grid->addWidget(new QLabel("y0:"), row, 0, Qt::AlignRight); grid->addWidget(y0, row, 1); row++;
+		grid->addWidget(new QLabel("z0:"), row, 0, Qt::AlignRight); grid->addWidget(z0, row, 1); row++;
+		grid->addWidget(new QLabel("width:" ), row, 0, Qt::AlignRight); grid->addWidget(w, row, 1); row++;
+		grid->addWidget(new QLabel("height:"), row, 0, Qt::AlignRight); grid->addWidget(h, row, 1); row++;
+		grid->addWidget(new QLabel("depth:" ), row, 0, Qt::AlignRight); grid->addWidget(d, row, 1); row++;
+        grid->addWidget(new QLabel("<b>Misc:</b>"), row, 0); row++;
+        grid->addWidget(new QLabel("Swap endianness:" ), row, 0, Qt::AlignRight); grid->addWidget(swap, row, 1); row++;
+
+		lo->addLayout(grid);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		lo->addWidget(bb);
@@ -104,6 +126,10 @@ void CDlgRAWImport::accept()
 	m_w = ui->w->text().toDouble();
 	m_h = ui->h->text().toDouble();
 	m_d = ui->d->text().toDouble();
+
+    m_type = ui->im->currentIndex();
+
+    m_swapEndianness = ui->swap->isChecked();
 
 	QDialog::accept();
 }

@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/FEElementData.h>
@@ -69,6 +69,7 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
+#include "DlgPickNamedSelection.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -298,10 +299,10 @@ void CMeshDataInfoPanel::setType(int data)
 {
 	switch (data)
 	{
-	case FEMeshData::NODE_DATA   : m_type->setText("Node data"   ); break;
-	case FEMeshData::SURFACE_DATA: m_type->setText("Surface data"); break;
-	case FEMeshData::ELEMENT_DATA: m_type->setText("Element data"); break;
-	case FEMeshData::PART_DATA   : m_type->setText("Part data"   ); break;
+	case NODE_DATA: m_type->setText("Node data"   ); break;
+	case FACE_DATA: m_type->setText("Surface data"); break;
+	case ELEM_DATA: m_type->setText("Element data"); break;
+	case PART_DATA: m_type->setText("Part data"   ); break;
 	default:
 		m_type->setText("(unknown)");
 	}
@@ -311,9 +312,9 @@ void CMeshDataInfoPanel::setDataType(int ndatatype)
 {
 	switch (ndatatype)
 	{
-	case FEMeshData::DATA_SCALAR: m_dataType->setText("scalar"); break;
-	case FEMeshData::DATA_VEC3D : m_dataType->setText("vec3"); break;
-	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
+	case DATA_SCALAR: m_dataType->setText("scalar"); break;
+	case DATA_VEC3 : m_dataType->setText("vec3"); break;
+	case DATA_MAT3 : m_dataType->setText("mat3"); break;
 	default:
 		m_dataType->setText("(unknown)");
 	}
@@ -323,9 +324,9 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 {
 	switch (ndataformat)
 	{
-	case FEMeshData::DATA_ITEM: m_dataFmt->setText("item"); break;
-	case FEMeshData::DATA_NODE: m_dataFmt->setText("node"); break;
-	case FEMeshData::DATA_MULT: m_dataFmt->setText("mult"); break;
+	case DATA_ITEM: m_dataFmt->setText("item"); break;
+	case DATA_NODE: m_dataFmt->setText("node"); break;
+	case DATA_MULT: m_dataFmt->setText("mult"); break;
 	default:
 		m_dataFmt->setText("(unknown)");
 	}
@@ -334,43 +335,6 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 void CMeshDataInfoPanel::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
-}
-
-//=============================================================================
-CDlgPickNamedSelection::CDlgPickNamedSelection(QWidget* parent) : QDialog(parent)
-{
-	setWindowTitle("Choose Selection");
-
-	QVBoxLayout* l = new QVBoxLayout;
-
-	l->addWidget(m_list = new QListWidget);
-
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-	l->addWidget(bb);
-
-	setLayout(l);
-
-	QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
-	QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
-}
-
-void CDlgPickNamedSelection::setNameList(const QStringList& names)
-{
-	m_list->clear();
-	m_list->addItems(names);
-}
-
-void CDlgPickNamedSelection::setSelection(const QString& name)
-{
-	auto l = m_list->findItems(name, Qt::MatchExactly);
-	if (l.empty() == false) m_list->setCurrentItem(l.at(0));
-}
-
-QString CDlgPickNamedSelection::getSelection()
-{
-	QListWidgetItem* it = m_list->currentItem();
-	if (it == nullptr) return QString();
-	else return it->text();
 }
 
 //=============================================================================
@@ -464,6 +428,7 @@ public:
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
 		propStack->addWidget(math2);
+        propStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
 		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");
@@ -669,7 +634,7 @@ public:
 	}
 
 
-	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
+	void showImagePanel(bool b, CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
@@ -682,10 +647,6 @@ public:
 		else if ((b == false) && m_showImageTools)
 		{
 			m_showImageTools = false;
-
-            imageProps->Update(nullptr);
-            imageFilters->SetImageModel(nullptr);
-			histoView->SetImageModel(nullptr);
 		}
 		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
 	}
@@ -782,6 +743,11 @@ void CModelPropsPanel::Refresh()
 	}
 }
 
+void CModelPropsPanel::AssignCurrentSelection()
+{
+	addSelection(0);
+}
+
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
 {
 	if ((po == 0) && (props == 0))
@@ -793,10 +759,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	{
 		ui->showProperties(true);
 		ui->showImagePanel(false);
-		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		// CImageSource* imgSrc = dynamic_cast<CImageSource*>(po);
 		// if (imgSrc)
 		// {
-		// 	Post::CImageModel* img = imgSrc->GetImageModel();
+		// 	CImageModel* img = imgSrc->GetImageModel();
 		// 	if (img)
 		// 	{
 		// 		ui->showPropsPanel(false);
@@ -805,7 +771,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		// 	}
 		// }
 
-        Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+        CImageModel* img = dynamic_cast<CImageModel*>(po);
         if(img)
         {
             ui->showPropsPanel(false);
@@ -1085,7 +1051,7 @@ void CModelPropsPanel::addSelection(int n)
 			{
 				// make sure it's a part list
 				GPartList* partList = dynamic_cast<GPartList*>(pg);
-				if (pg == nullptr)
+				if (partList == nullptr)
 				{
 					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
 					delete pg;
@@ -1109,6 +1075,10 @@ void CModelPropsPanel::addSelection(int n)
 					return;
 				}
 
+				// don't forget to add it to the object
+				GObject* po = pd->GetMesh()->GetGObject();
+				po->AddFEPartSet(partSet);
+
 				// ok, we're good
 				delete pg;
 				pg = partSet;
@@ -1119,13 +1089,20 @@ void CModelPropsPanel::addSelection(int n)
 			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
 			if (pmc || pmd)
 			{
-				pg->SetName(m_currentObject->GetName());
+				string s = m_currentObject->GetName();
+				if (pil->ItemLists() == 2)
+				{
+					if (n == 0) s += "Primary";
+					else s += "Secondary";
+				}
+				pg->SetName(s);
 				mdl.AddNamedSelection(pg);
-				emit modelChanged();
 			}
 
 			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
-			SetSelection(0, pil->GetItemList(n));
+			SetSelection(n, pil->GetItemList(n));
+
+			emit modelChanged();
 		}
 		else
 		{
@@ -1158,7 +1135,7 @@ void CModelPropsPanel::addSelection(int n)
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
 			}
-			SetSelection(0, pl);
+			SetSelection(n, pl);
 			pil->SetItemList(pl, n);
 			delete pg;
 		}
@@ -1192,7 +1169,7 @@ void CModelPropsPanel::addSelection(int n)
 				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 			}
 		}
-		SetSelection(0, pl);
+		SetSelection(n, pl);
 
 		// don't forget to clean up
 		delete pg;
@@ -1314,13 +1291,8 @@ void CModelPropsPanel::on_select2_pickClicked() { PickSelection(1); }
 
 void CModelPropsPanel::PickSelection(int n)
 {
-	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
-	if (pmc == nullptr) return;
-
-	FSModel* fem = pmc->GetFSModel();
-	if (fem == nullptr) return;
-
-	GModel& gm = fem->GetModel();
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if (pdoc == nullptr) return;
 
 	IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
 
@@ -1328,6 +1300,8 @@ void CModelPropsPanel::PickSelection(int n)
 	int meshType = -1;
 	if (hil) meshType = hil->GetMeshItemType();
 	else return;
+
+	GModel& gm = *pdoc->GetGModel();
 
 	// build the candidate list
 	QStringList names;
@@ -1345,6 +1319,11 @@ void CModelPropsPanel::PickSelection(int n)
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 
 		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if (meshType & FE_PART_FLAG)
+	{
+		auto l = gm.AllNamedSelections(DOMAIN_PART);
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 	}
 

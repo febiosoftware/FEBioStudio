@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include "FECoreMesh.h"
 #include <GeomLib/FSGroup.h>
-#include <MeshLib/FEMeshData.h>
+#include "FEMeshData.h"
+#include "Mesh_Data.h"
 #include <vector>
 #include <set>
 #include <string>
@@ -40,59 +41,6 @@ class FENodeData;
 class FESurfaceData;
 class FEElementData;
 class FEPartData;
-
-//-----------------------------------------------------------------------------
-class Mesh_Data
-{
-	struct DATA
-	{
-		double	val[FSElement::MAX_NODES];	// nodal values for element
-		int		nval;						// number of nodal values (should equal nr of nodes for corresponding element)
-		int		tag;
-	};
-
-public:
-	Mesh_Data();
-	Mesh_Data(const Mesh_Data& d);
-	void operator = (const Mesh_Data& d);
-
-	void Clear();
-
-	void Init(FSMesh* mesh, double initVal, int initTag);
-	void Init(FSSurfaceMesh* mesh, double initVal, int initTag);
-
-	bool IsValid() const { return (m_data.empty() == false); }
-
-	DATA& operator[](size_t n) { return m_data[n]; }
-
-	// get the current element value
-	double GetElementValue(int elem, int node) const { return m_data[elem].val[node]; }
-
-	// get the average element value
-	double GetElementAverageValue(int elem);
-
-	// get the data tag
-	int GetElementDataTag(int n) const { return m_data[n].tag; }
-
-	// set the element's node value
-	void SetElementValue(int elem, int node, double v) { m_data[elem].val[node] = v; }
-
-	// set the element (average) value
-	void SetElementValue(int elem, double v);
-
-	// set the data tag
-	void SetElementDataTag(int n, int tag) { m_data[n].tag = tag; }
-
-	// update the range of values
-	void UpdateValueRange();
-
-	// get the value range
-	void GetValueRange(double& vmin, double& vmax) const;
-
-public:
-	std::vector<DATA>		m_data;		//!< element values
-	double	m_min, m_max;				//!< value range of element data
-};
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
@@ -142,12 +90,35 @@ public:
 	// This assumes that all mesh items are created and partitioned!
 	void BuildMesh() override;
 
+	// update the mesh
+	void UpdateMesh() override;
+
 	// reconstruct the mesh
 	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
 
 	int CountSelectedElements() const;
 
-protected: // Helper functions for updating mesh data structures
+	// return node index from its nodal ID
+	int NodeIndexFromID(int nid);
+
+	// re-generate nodal IDs (startID must be larger than 0!)
+	// returns one larger than the largets ID that was assigned
+	int GenerateNodalIDs(int startID = 1);
+
+	void BuildNLT();
+	void ClearNLT();
+
+	// return element index from its element ID
+	int ElementIndexFromID(int eid);
+
+	// (re-)generate element IDs (startID must be larger than 0!)
+	// returns one larger than the largets ID that was assigned
+	int GenerateElementIDs(int startID = 1);
+
+	void BuildELT();
+	void ClearELT();
+
+public: // Helper functions for updating mesh data structures
 	void RebuildElementData();
 	void RebuildFaceData();
 	void RebuildEdgeData();
@@ -186,6 +157,7 @@ public:
 
 	// extract faces and return as new mesh
 	FSMesh* ExtractFaces(bool selectedOnly);
+    FSSurfaceMesh* ExtractFacesAsSurface(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
@@ -196,11 +168,13 @@ public:
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);
 
-	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
-	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
-	FEElementData* AddElementDataField(const std::string& name, FSElemSet* part, FEMeshData::DATA_TYPE dataType);
-	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, FEMeshData::DATA_TYPE dataType);
+	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, DATA_TYPE dataType);
+	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, DATA_TYPE dataType);
+	FEElementData* AddElementDataField(const std::string& name, FSElemSet* part, DATA_TYPE dataType);
+	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, DATA_TYPE dataType);
 	void ClearMeshData();
+
+	FEPartData* FindPartDataField(const std::string& name);
 
 	Mesh_Data& GetMeshData();
 
@@ -222,6 +196,14 @@ protected:
 
 	// data fields
 	std::vector<FEMeshData*>		m_meshData;
+
+	// Node index look up table
+	std::vector<int> m_NLT;	// node ID lookup table
+	int m_nltmin;			// the min ID
+
+	// Element index look up table
+	std::vector<int> m_ELT;	// Element ID lookup table
+	int m_eltmin;			// the min ID
 
 	friend class FEMeshBuilder;
 };

@@ -61,5 +61,13 @@ void FEBio::InitFEBioLibrary()
 
 void FEBio::SetActiveProject(FSProject* prj)
 {
+	if (prj == nullptr) SetActiveModule(-1);
+	else SetActiveModule(prj->GetModule());
 	fbsUpdater.SetActiveProject(prj);
+}
+
+bool FEBio::ConfigureFEBio(const char* szfilename)
+{
+	FEBioConfig config;
+	return febio::Configure(szfilename, config);
 }

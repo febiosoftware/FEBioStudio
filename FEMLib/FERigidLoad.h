@@ -40,6 +40,9 @@ public:
 
 	int Type() const { return m_type; }
 
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 private:
 	int	m_type;
 };
@@ -48,8 +51,9 @@ class FEBioRigidLoad : public FSRigidLoad
 {
 public:
 	FEBioRigidLoad(FSModel* ps, int nstep = 0);
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	void SetMaterialID(int n) override;
 	int GetMaterialID() const override;
@@ -68,6 +72,9 @@ public:
 	virtual int GetMaterialID() const = 0;
 
 	int Type() const { return m_type; }
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	int	m_type;
@@ -98,6 +105,9 @@ public:
 
 	int Type() const { return m_type; }
 
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 private:
 	int	m_type;
 };
@@ -106,8 +116,9 @@ class FEBioRigidIC : public FSRigidIC
 {
 public:
 	FEBioRigidIC(FSModel* ps, int nstep = 0);
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	void SetMaterialID(int n) override;
 	int GetMaterialID() const override;

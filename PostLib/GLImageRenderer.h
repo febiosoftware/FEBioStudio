@@ -27,15 +27,16 @@ SOFTWARE.*/
 #pragma once
 #include "GLObject.h"
 
-namespace Post {
-
 class CImageModel;
+
+namespace Post {
 
 class CGLImageRenderer : public CGLVisual
 {
 public:
 	CGLImageRenderer(CImageModel* img = nullptr);
 
+    void SetImageModel(CImageModel* img);
 	CImageModel* GetImageModel();
 
 private:

@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
 using namespace std;
@@ -332,10 +331,45 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	FEDataManager* pdm = fem.GetDataManager();
 	pdm->Clear();
 
-	// read nodal variables
+	// read global variables
 	int nfields = 0;
 	int i;
-	int nv = (int)m_dic.m_Node.size();
+	int nv = (int)m_dic.m_Glb.size();
+	for (i = 0; i < nv; ++i)
+	{
+		DICT_ITEM& it = m_dic.m_Glb[i];
+		it.index = nfields++;
+
+		// add global field
+		Post::ModelDataField* pdf = nullptr;
+		switch (it.ntype)
+		{
+		case FLOAT  : pdf = new FEDataField_T<Post::FEGlobalData_T<float  > >(&fem, EXPORT_DATA); break;
+		case VEC3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<vec3f  > >(&fem, EXPORT_DATA); break;
+		case MAT3FS : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fs > >(&fem, EXPORT_DATA); break;
+		case MAT3FD : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fd > >(&fem, EXPORT_DATA); break;
+		case TENS4FS: pdf = new FEDataField_T<Post::FEGlobalData_T<tens4fs> >(&fem, EXPORT_DATA); break;
+		case MAT3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3f  > >(&fem, EXPORT_DATA); break;
+		case ARRAY:
+		{
+			FEArrayDataField* data = new FEArrayDataField(&fem, OBJECT_DATA, DATA_REGION, Post::EXPORT_DATA);
+			data->SetArraySize(it.arraySize);
+			data->SetArrayNames(it.arrayNames);
+			pdf = data;
+		}
+		break;
+		default:
+			return errf("Error while reading dictionary.");
+		}
+		if (pdf == nullptr) return false;
+
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
+
+		pdm->AddDataField(pdf, it.szname);
+	}
+
+	// read nodal variables
+	nv = (int)m_dic.m_Node.size();
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Node[i];
@@ -353,7 +387,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		case MAT3F  : pdf = new FEDataField_T<Post::FENodeData<mat3f  > >(&fem, EXPORT_DATA); break;
 		case ARRAY:
 		{
-			FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_NODE, DATA_ITEM, EXPORT_DATA);
+			FEArrayDataField* data = new FEArrayDataField(&fem, NODE_DATA, DATA_ITEM, EXPORT_DATA);
 			data->SetArraySize(it.arraySize);
 			data->SetArrayNames(it.arrayNames);
 			pdf = data;
@@ -391,7 +425,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_NODE, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_NODE, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -415,7 +449,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_ITEM, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_ITEM, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -423,7 +457,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 				break;
 				case ARRAY_VEC3F:
 				{
-					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, CLASS_ELEM, EXPORT_DATA);
+					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, ELEM_DATA, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -439,12 +473,12 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 					return false;
@@ -520,12 +554,12 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -558,7 +592,8 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		if (pdm->FindDataField("Lagrange strain") == -1)
+			pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         , "L");
 		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" , "L");
 	}
@@ -569,7 +604,9 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure", "P");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
 		}
 	}
 
@@ -766,12 +803,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 						m_ar.CloseChunk();
 					}
 
-					Data_Type dataType;
-					switch (ndataType)
-					{
-					case DATA_FLOAT: dataType = DATA_FLOAT; break;
-					case DATA_VEC3F: dataType = DATA_VEC3F; break;
-					}
+					DATA_TYPE dataType = (DATA_TYPE) ndataType;
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
@@ -802,7 +834,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			Post::FEPostModel::LineObject*  ob = new Post::FEPostModel::LineObject;
 
 			char sz[DI_NAME_SIZE] = { 0 };
-			float r[6];
+			float r[6] = { 0.f };
 			int ntag = 0;
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
@@ -825,12 +857,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 						m_ar.CloseChunk();
 					}
 
-					Data_Type dataType;
-					switch (ndataType)
-					{
-					case DATA_FLOAT: dataType = DATA_FLOAT; break;
-					case DATA_VEC3F: dataType = DATA_VEC3F; break;
-					}
+					DATA_TYPE dataType = (DATA_TYPE) ndataType;
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
@@ -843,8 +870,8 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 			ob->SetName(sz);
 			ob->m_tag = ntag;
-			ob->m_r1 = vec3d(r[0], r[1], r[2]);
-			ob->m_r2 = vec3d(r[3], r[4], r[5]);
+			ob->m_r1 = ob->m_r01 = vec3d(r[0], r[1], r[2]);
+			ob->m_r2 = ob->m_r02 = vec3d(r[3], r[4], r[5]);
 			ob->SetColor(GLColor(255, 0, 0));
 			fem.AddLineObject(ob);
 		}
@@ -1002,6 +1029,7 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
                     case PLT_ELEM_QUAD9  : ne =  9; break;
 					case PLT_ELEM_PYRA5  : ne =  5; break;
                     case PLT_ELEM_PYRA13 : ne = 13; break;
+                    case PLT_ELEM_LINE3  : ne =  3; break;
 					default:
 						assert(false);
 						return errf("Error while reading Domain section");
@@ -1355,6 +1383,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			case PLT_ELEM_QUAD9  : etype = FE_QUAD9 ; break;
 			case PLT_ELEM_PYRA5  : etype = FE_PYRA5 ; break;
             case PLT_ELEM_PYRA13 : etype = FE_PYRA13; break;
+            case PLT_ELEM_LINE3  : etype = FE_BEAM3; break;
 			}
 			el.SetType(etype);
 			int ne = el.Nodes();
@@ -1362,15 +1391,27 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		}
 	}
 
-	// read the nodal coordinates
 	NN = m_xmesh.nodes();
-	for (int i=0; i<NN; i++)
+	// read the nodal coordinates
+	if (FileVersion() < 0x0033)
 	{
-		FSNode& n = pmesh->Node(i);
-		NODE& N = m_xmesh.node(i);
-
-		// assign coordinates
-		n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = i + 1;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = N.id;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
 	}
 
 	// set the enabled-ness of the elements and the nodes
@@ -1618,6 +1659,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 					int objId = -1;
 
 					FEPostModel::PlotObject* po = nullptr;
+					Post::OBJ_POINT_DATA* pd = nullptr;
 
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
@@ -1629,42 +1671,46 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 							objId -= 1;
 
 							po = fem.GetPointObject(objId);
+							if ((objId >= 0) && (objId < ps->m_objPt.size()))
+								pd = &(ps->m_objPt[objId]);
 						}
 						else if (nid == PLT_OBJECT_POS)
 						{
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_objPt[objId].pos = vec3d(r[0], r[1], r[2]);
+							if (pd) pd->pos = vec3d(r[0], r[1], r[2]);
 						}
 						else if (nid == PLT_OBJECT_ROT)
 						{
 							assert(objId != -1);
 							float q[4];
 							m_ar.read(q, 4);
-							ps->m_objPt[objId].rot = quatd(q[0], q[1], q[2], q[3]);
+							if (pd) pd->rot = quatd(q[0], q[1], q[2], q[3]);
 						}
 						else if (nid == PLT_POINT_COORD)
 						{
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_objPt[objId].m_rt = vec3d(r[0], r[1], r[2]);
+							if (pd) pd->m_rt = vec3d(r[0], r[1], r[2]);
 						}
 						else if (nid == PLT_OBJECT_DATA)
 						{
 							while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 							{
 								int nv = m_ar.GetChunkID();
-
-								assert((nv >= 0) && (nv < po->m_data.size()));
-
-								ObjectData* pd = m_pstate->m_objPt[objId].data;
-
-								switch (po->m_data[nv]->Type())
+								if (po)
 								{
-								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
-								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+									assert((nv >= 0) && (nv < po->m_data.size()));
+
+									ObjectData* pd = m_pstate->m_objPt[objId].data;
+
+									switch (po->m_data[nv]->Type())
+									{
+									case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
+									case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+									}
 								}
 
 								m_ar.CloseChunk();
@@ -1722,8 +1768,8 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 
 								switch (po->m_data[nv]->Type())
 								{
-								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
-								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
 								}
 
 								m_ar.CloseChunk();
@@ -1744,7 +1790,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 	{
 		FEDataManager& dm = *fem.GetDataManager();
 		int n = dm.FindDataField("shell thickness");
-		Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(ps->m_Data[n]);
+		Post::FEElementData<float,DATA_MULT>& df = dynamic_cast<Post::FEElementData<float,DATA_MULT>&>(ps->m_Data[n]);
 		Post::FEPostMesh& mesh = *GetCurrentMesh();
 		int NE = mesh.Elements();
 		float h[FSElement::MAX_NODES] = {0.f};
@@ -1766,7 +1812,100 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader3::ReadGlobalData(FEPostModel& fem, FEState* pstate)
 {
-	return false;
+	FEDataManager& dm = *fem.GetDataManager();
+	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
+		{
+			int nv = -1;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
+				else if (nid == PLT_STATE_VAR_DATA)
+				{
+					nv--;
+					assert((nv >= 0) && (nv < (int)m_dic.m_Glb.size()));
+					if ((nv < 0) || (nv >= (int)m_dic.m_Glb.size())) return errf("Failed reading global data");
+
+					DICT_ITEM it = m_dic.m_Glb[nv];
+					int nfield = dm.FindDataField(it.szname);
+					int ndata = 0;
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						int ns = m_ar.GetChunkID();
+						assert(ns == 0);
+
+						if (it.ntype == FLOAT)
+						{
+							float a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(pstate->m_Data[nfield]);
+							df.setValue(a);
+						}
+						else if (it.ntype == VEC3F)
+						{
+							vec3f a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<vec3f>& dv = dynamic_cast<Post::FEGlobalData_T<vec3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3FS)
+						{
+							mat3fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3fs>& dv = dynamic_cast<Post::FEGlobalData_T<mat3fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == TENS4FS)
+						{
+							tens4fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<tens4fs>& dv = dynamic_cast<Post::FEGlobalData_T<tens4fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3F)
+						{
+							mat3f a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3f>& dv = dynamic_cast<Post::FEGlobalData_T<mat3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == ARRAY)
+						{
+							Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(pstate->m_Data[nfield]);
+							int n = dv.components();
+							vector<float> a(n);
+							m_ar.read(a);
+							dv.setData(a);
+						}
+						else
+						{
+							assert(false);
+							return errf("Error while reading node data");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else
+				{
+					assert(false);
+					return errf("Error while reading node data");
+				}
+				m_ar.CloseChunk();
+			}
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading node data");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -2200,7 +2339,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<float> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(s);
+			Post::FEElementData<float,DATA_MULT>& df = dynamic_cast<Post::FEElementData<float,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		}
 		break;
@@ -2209,7 +2348,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<vec3f> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<vec3f,DATA_COMP>& df = dynamic_cast<Post::FEElementData<vec3f,DATA_COMP>&>(s);
+			Post::FEElementData<vec3f,DATA_MULT>& df = dynamic_cast<Post::FEElementData<vec3f,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -2218,7 +2357,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<mat3fs> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3fs,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3fs,DATA_COMP>&>(s);
+			Post::FEElementData<mat3fs,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3fs,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -2227,7 +2366,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<mat3fd> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3fd,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3fd,DATA_COMP>&>(s);
+			Post::FEElementData<mat3fd,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3fd,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -2236,7 +2375,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<mat3f> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3f,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3f,DATA_COMP>&>(s);
+			Post::FEElementData<mat3f,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3f,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -2245,7 +2384,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 			vector<tens4fs> a(nsize), d(NE);
 			m_ar.read(a);
             
-			Post::FEElementData<tens4fs,DATA_COMP>& df = dynamic_cast<Post::FEElementData<tens4fs,DATA_COMP>&>(s);
+			Post::FEElementData<tens4fs,DATA_MULT>& df = dynamic_cast<Post::FEElementData<tens4fs,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
         break;
@@ -2354,7 +2493,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 	{
 	case FLOAT:
 		{
-			FEFaceData<float,DATA_COMP>& df = dynamic_cast<FEFaceData<float,DATA_COMP>&>(data);
+			FEFaceData<float,DATA_MULT>& df = dynamic_cast<FEFaceData<float,DATA_MULT>&>(data);
 			vector<float> a(NFM*NF);
 			m_ar.read(a);
 			float v[10];
@@ -2369,7 +2508,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;
 	case VEC3F:
 		{
-			FEFaceData<vec3f,DATA_COMP>& df = dynamic_cast<FEFaceData<vec3f,DATA_COMP>&>(data);
+			FEFaceData<vec3f,DATA_MULT>& df = dynamic_cast<FEFaceData<vec3f,DATA_MULT>&>(data);
 			vector<vec3f> a(NFM*NF);
 			m_ar.read(a);
 			vec3f v[10];
@@ -2384,7 +2523,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;
 	case MAT3FS:
 		{
-			FEFaceData<mat3fs,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3fs,DATA_COMP>&>(data);
+			FEFaceData<mat3fs,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3fs,DATA_MULT>&>(data);
 			vector<mat3fs> a(4*NF);
 			m_ar.read(a);
 			mat3fs v[10];
@@ -2399,7 +2538,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;
 	case MAT3F:
 		{
-			FEFaceData<mat3f,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3f,DATA_COMP>&>(data);
+			FEFaceData<mat3f,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3f,DATA_MULT>&>(data);
 			vector<mat3f> a(4*NF);
 			m_ar.read(a);
 			mat3f v[10];
@@ -2414,7 +2553,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;
 	case MAT3FD:
 		{
-			FEFaceData<mat3fd,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3fd,DATA_COMP>&>(data);
+			FEFaceData<mat3fd,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3fd,DATA_MULT>&>(data);
 			vector<mat3fd> a(4*NF);
 			m_ar.read(a);
 			mat3fd v[10];
@@ -2429,7 +2568,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;	
     case TENS4FS:
 		{
-			FEFaceData<tens4fs,DATA_COMP>& df = dynamic_cast<FEFaceData<tens4fs,DATA_COMP>&>(data);
+			FEFaceData<tens4fs,DATA_MULT>& df = dynamic_cast<FEFaceData<tens4fs,DATA_MULT>&>(data);
 			vector<tens4fs> a(4*NF);
 			m_ar.read(a);
 			tens4fs v[10];

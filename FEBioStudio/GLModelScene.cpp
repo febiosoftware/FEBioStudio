@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLView.h"
 #include "ModelDocument.h"
+#include "GLHighlighter.h"
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
@@ -33,6 +34,7 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <FEMLib/FELoad.h>
 #include <MeshLib/MeshMetrics.h>
 #include <ImageLib/RGBImage.h>
 #include <QImageReader>
@@ -75,9 +77,30 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
 
+BOX CGLModelScene::GetBoundingBox()
+{
+	BOX box;
+	if (m_doc) box = m_doc->GetModelBox();
+	return box;
+}
+
+BOX CGLModelScene::GetSelectionBox()
+{
+	BOX box;
+	if (m_doc)
+	{
+		FESelection* ps = m_doc->GetCurrentSelection();
+		if (ps && ps->Size() != 0)
+		{
+			box = ps->GetBoundingBox();
+		}
+	}
+	return box;
+}
+
 void CGLModelScene::Render(CGLContext& rc)
 {
-	if (m_doc == nullptr) return;
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
 	CGLView* glview = rc.m_view; assert(glview);
 	if (glview == nullptr) return;
@@ -92,8 +115,6 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		GMesh* planecut = glview->PlaneCutMesh();
-		if (planecut == nullptr) glview->UpdatePlaneCut();
 		if (glview->PlaneCutMode() == 0)
 		{
 			// render the plane cut first
@@ -105,73 +126,63 @@ void CGLModelScene::Render(CGLContext& rc)
 		}
 	}
 
-	// render the model
-	if (m_doc->IsValid())
+	// render the (solid) model
+	if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel(rc);
+
+	// render discrete objects
+	if (view.m_showDiscrete)
 	{
-		// render the (solid) model
-		if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel(rc);
-
-		// render discrete objects
-		if (view.m_showDiscrete)
-		{
-			RenderDiscrete(rc);
-		}
-
-		// render selected box
-		RenderSelectionBox(rc);
-
-		cam.LineDrawMode(true);
-		cam.Transform();
-
-		// Render mesh lines
-		//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
-		if (view.m_bmesh) RenderMeshLines(rc);
-
-		if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
-		{
-			// don't draw feature edges in edge mode, since the edges are the feature edges
-			// (Don't draw feature edges when we are rendering FE edges)
-			int nselect = m_doc->GetSelectionMode();
-			if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
-		}
-
-		cam.LineDrawMode(false);
-		cam.Transform();
+		RenderDiscrete(rc);
 	}
+
+	// render selected box
+	RenderSelectionBox(rc);
+
+	cam.LineDrawMode(true);
+	cam.Transform();
+
+	// Render mesh lines
+	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
+	if (view.m_bmesh) RenderMeshLines(rc);
+
+	if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
+	{
+		// don't draw feature edges in edge mode, since the edges are the feature edges
+		// (Don't draw feature edges when we are rendering FE edges)
+		int nselect = m_doc->GetSelectionMode();
+		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
+	}
+
+	cam.LineDrawMode(false);
+	cam.Transform();
 
 	// render physics
-	if (m_doc->IsValid())
-	{
-		if (view.m_brigid) RenderRigidBodies(rc);
-		if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
-		if (view.m_bwall ) RenderRigidWalls(rc);
-		if (view.m_bfiber) RenderMaterialFibers(rc);
-		if (view.m_blma  ) RenderLocalMaterialAxes(rc);
-	}
+	if (view.m_brigid) RenderRigidBodies(rc);
+	if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
+	if (view.m_bwall ) RenderRigidWalls(rc);
+	if (view.m_bfiber) RenderMaterialFibers(rc);
+	if (view.m_blma  ) RenderLocalMaterialAxes(rc);
 
 	// render the selected parts
-	if (m_doc->IsValid())
+	GModel& model = *m_doc->GetGModel();
+	int nsel = m_doc->GetSelectionMode();
+	if (nitem == ITEM_MESH)
 	{
-		GModel& model = *m_doc->GetGModel();
-		int nsel = m_doc->GetSelectionMode();
-		if (nitem == ITEM_MESH)
+		for (int i = 0; i < model.Objects(); ++i)
 		{
-			for (int i = 0; i < model.Objects(); ++i)
+			GObject* po = model.Object(i);
+			if (po->IsVisible() && po->IsValid())
 			{
-				GObject* po = model.Object(i);
-				if (po->IsVisible() && po->IsValid())
+				glPushMatrix();
+				SetModelView(po);
+				switch (nsel)
 				{
-					glPushMatrix();
-					SetModelView(po);
-					switch (nsel)
-					{
-					case SELECT_PART: RenderSelectedParts(rc, po); break;
-					case SELECT_FACE: RenderSelectedSurfaces(rc, po); break;
-					case SELECT_EDGE: RenderSelectedEdges(rc, po); break;
-					case SELECT_NODE: RenderSelectedNodes(rc, po); break;
-					}
-					glPopMatrix();
+				case SELECT_PART: RenderSelectedParts(rc, po); break;
+				case SELECT_FACE: RenderSelectedSurfaces(rc, po); break;
+				case SELECT_EDGE: RenderSelectedEdges(rc, po); break;
+				case SELECT_NODE: RenderSelectedNodes(rc, po); break;
 				}
+				glPopMatrix();
 			}
 		}
 	}
@@ -183,20 +194,106 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	// render the tags
 	if (view.m_bTags) glview->RenderTags();
+
+	// render the grid
+	if (view.m_bgrid ) m_grid.Render(rc);
+
+	// render the image data
+	glview->RenderImageData();
+
+	// render the decorations
+	glview->RenderDecorations();
+
+	// render the highlights
+	GLHighlighter::draw();
+
+	// render 3D cursor
+	if (m_doc->GetItemMode() == ITEM_MESH)
+	{
+		glview->Render3DCursor();
+	}
 }
 
-//-----------------------------------------------------------------------------
+void TagFaces(GFaceList& faceList, int tag)
+{
+	std::vector<GFace*> faces = faceList.GetFaceList();
+	for (auto pf : faces) pf->m_ntag = tag;
+}
+
+// TODO: This is currently called every time we render the scene (with color mode set to physics)!
+void TagFacesByPhysics(FSModel& fem)
+{
+	GModel& model = fem.GetModel();
+
+	// Clear all the tags
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible() && po->IsValid())
+		{
+			for (int j = 0; j < po->Faces(); ++j)
+			{
+				GFace* pf = po->Face(j);
+				pf->m_ntag = 0;
+			}
+		}
+	}
+
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* step = fem.GetStep(i);
+		for (int j = 0; j < step->BCs(); ++j)
+		{
+			FSBoundaryCondition* pbc = step->BC(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pbc->GetItemList());
+			if (faceList) TagFaces(*faceList, 1);
+		}
+		for (int j = 0; j < step->ICs(); ++j)
+		{
+			FSInitialCondition* pic = step->IC(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pic->GetItemList());
+			if (faceList) TagFaces(*faceList, 2);
+		}
+		for (int j = 0; j < step->Loads(); ++j)
+		{
+			FSLoad* pl = step->Load(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pl->GetItemList());
+			if (faceList) TagFaces(*faceList, 3);
+		}
+
+		for (int j = 0; j < step->Interfaces(); ++j)
+		{
+			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(step->Interface(j));
+			if (pi)
+			{
+				GFaceList* faceList = dynamic_cast<GFaceList*>(pi->GetItemList(0));
+				if (faceList) TagFaces(*faceList, 4);
+
+				faceList = dynamic_cast<GFaceList*>(pi->GetItemList(1));
+				if (faceList) TagFaces(*faceList, 5);
+			}
+		}
+	}
+}
+
 void CGLModelScene::RenderModel(CGLContext& rc)
 {
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
+	FSModel* ps = pdoc->GetFSModel();
+	if (ps == nullptr) return;
+	GModel& model = ps->GetModel();
 
 	// we don't use backface culling when drawing
 	glDisable(GL_CULL_FACE);
+	
+	GLViewSettings& view = rc.m_settings;
+	if (view.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+	{
+		// Tag all faces depending on how they are used in a model component
+		TagFacesByPhysics(*ps);
+	}
 
-	// get the model
-	FSModel* ps = pdoc->GetFSModel();
-	GModel& model = ps->GetModel();
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -233,7 +330,17 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(rc, po);
+			if (view.m_bcontour && (poa == po))
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
+				else RenderObject(rc, po);
+			}
+			else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else RenderObject(rc, po);
+			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				RenderFEElements(rc, po);
@@ -898,9 +1005,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 
@@ -976,9 +1083,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 
@@ -1239,9 +1346,12 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 		{
 			GNode* nj = po->Node(j);
 			int nid = nj->GetID();
-			if ((minId == -1) || (nid < minId)) minId = nid;
-			if ((maxId == -1) || (nid > maxId)) maxId = nid;
-			nodes.push_back(nj);
+			if (nid != -1)
+			{
+				if ((minId == -1) || (nid < minId)) minId = nid;
+				if ((maxId == -1) || (nid > maxId)) maxId = nid;
+				nodes.push_back(nj);
+			}
 		}
 	}
 
@@ -1279,8 +1389,8 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
 			if (pg)
 			{
-				GNode* pn0 = lut[ps->m_node[0] - minId];
-				GNode* pn1 = lut[ps->m_node[1] - minId];
+				GNode* pn0 = lut[pg->m_node[0] - minId];
+				GNode* pn1 = lut[pg->m_node[1] - minId];
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
 
@@ -1385,10 +1495,12 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			glPushMatrix();
 			SetModelView(po);
 
-			GMesh& m = *po->GetRenderMesh();
-			renderer.RenderGLEdges(&m);
-
-			renderer.RenderOutline(rc, &m);
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				renderer.RenderGLEdges(m);
+				renderer.RenderOutline(rc, m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+			}
 
 			glPopMatrix();
 		}
@@ -1448,7 +1560,7 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
@@ -1472,20 +1584,22 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 // render non-selected edges
 void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 {
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
+
 	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 255);
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected() == false)
 		{
-			renderer.RenderGLEdges(&m, i);
+			renderer.RenderGLEdges(m, i);
 		}
 	}
 	glPopAttrib();
@@ -1495,6 +1609,9 @@ void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 // render selected edges
 void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 {
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -1503,14 +1620,13 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected())
 		{
-			renderer.RenderGLEdges(&m, i);
+			renderer.RenderGLEdges(m, i);
 
 			GNode* n0 = po->Node(e.m_node[0]);
 			GNode* n1 = po->Node(e.m_node[1]);
@@ -1529,7 +1645,7 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// Render FE edges onto GMesh edges to make sure they are consistent
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
@@ -1563,8 +1679,8 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
@@ -1591,7 +1707,22 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				SetMatProps(rc, pg);
+				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				{
+					SetDefaultMatProps();
+					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+					switch (f.m_ntag)
+					{
+					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
+					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
+					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
+					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
+					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
+					}
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+				}
+				else SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1605,7 +1736,9 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 				// render the face
 				renderer.RenderGLMesh(pm, n);
 
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
+				if ((vs.m_transparencyMode != 0) ||
+					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}
@@ -1619,8 +1752,8 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
@@ -1637,7 +1770,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 			}
 		}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		// Render the GFace nodes and the FE surfaces to make sure the 
 		// GMesh and the FE mesh are consisten
 
@@ -1740,8 +1873,8 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render non-selected parts
 	GPart* pgmat = 0; // the part that defines the material
@@ -1798,6 +1931,8 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 {
 	if (!po->IsVisible()) return;
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
@@ -1806,7 +1941,6 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		GMesh& m = *po->GetRenderMesh();
 		int NF = po->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
@@ -1816,7 +1950,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 			GPart* p2 = po->Part(pf->m_nPID[2]);
 			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
 			{
-				renderer.RenderGLMesh(&m, i);
+				renderer.RenderGLMesh(m, i);
 			}
 		}
 	}
@@ -1843,9 +1977,8 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
-	assert(pm);
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
@@ -1876,7 +2009,22 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				SetMatProps(rc, pg);
+				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				{
+					SetDefaultMatProps();
+					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+					switch (f.m_ntag)
+					{ 
+					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
+					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
+					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
+					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact
+					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
+					}
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+				}
+				else SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1890,7 +2038,9 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 				// render the face
 				renderer.RenderGLMesh(pm, n);
 
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
+				if ((vs.m_transparencyMode != 0) ||
+					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}
@@ -1992,7 +2142,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
 
 	GLMeshRender& renderer = GetMeshRenderer();
@@ -2311,15 +2461,55 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 
-	GLColor col = po->GetColor();
-	SetMatProps(0);
-	glColor3ub(col.r, col.g, col.b);
+	Mesh_Data& data = surfaceMesh->GetMeshData();
+	bool showContour = (view.m_bcontour && data.IsValid());
 
 	// render the unselected faces
-	// Note that we do not render internal faces
-	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
-		return (!face.IsSelected() && face.IsVisible());
-		});
+	if (showContour)
+	{
+		// Color is determined by data and colormap
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
+
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
+		colorMap.SetRange((float)vmin, (float)vmax);
+
+		SetMatProps(0);
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFESurfaceMeshFaces(surfaceMesh, [&](const FSFace& face, GLColor* c) {
+			int i = face.m_ntag;
+
+			if (face.IsVisible() && !face.IsSelected())
+			{
+				int ne = face.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					if (data.GetElementDataTag(i) > 0)
+						c[j] = colorMap.map(data.GetElementValue(i, j));
+					else
+						c[j] = GLColor(212, 212, 212);
+				}
+
+				// render the face
+				return true;
+			}
+			return false;
+			});
+	}
+	else
+	{
+		GLColor col = po->GetColor();
+		SetMatProps(0);
+		glColor3ub(col.r, col.g, col.b);
+
+		// render the unselected faces
+		// Note that we do not render internal faces
+		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
+			return (!face.IsSelected() && face.IsVisible());
+			});
+	}
 
 	// render the selected faces
 	// override some settings
@@ -2506,12 +2696,13 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		double vmin, vmax;
 		data.GetValueRange(vmin, vmax);
 
-		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 		
 		glEnable(GL_COLOR_MATERIAL);
 
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
 				int i = el.m_ntag;
 				if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 				if (el.IsBeam()) hasBeamElements = true;
@@ -2521,7 +2712,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 					GPart* pg = po->Part(el.m_gid);
 					if (pg->IsVisible())
 					{
-						GLColor c[FSElement::MAX_NODES];
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
 						{
@@ -2537,6 +2727,62 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				}
 				return false;
 			});
+	}
+	else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+	{
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
+			int i = el.m_ntag;
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
+				{
+					GLColor col;
+					const int a = 212;
+					const int b = 106;
+					const int d =  53;
+					switch (el.Type())
+					{
+					case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
+					case FE_TRI3   : col = GLColor(0, a, a); break;
+					case FE_TRI6   : col = GLColor(0, b, b); break;
+					case FE_TRI7   : col = GLColor(0, b, d); break;
+					case FE_TRI10  : col = GLColor(0, d, d); break;
+					case FE_QUAD4  : col = GLColor(a, a, 0); break;
+					case FE_QUAD8  : col = GLColor(b, b, 0); break;
+					case FE_QUAD9  : col = GLColor(d, d, 0); break;
+					case FE_TET4   : col = GLColor(0, a, 0); break;
+					case FE_TET5   : col = GLColor(0, a, 0); break;
+					case FE_TET10  : col = GLColor(0, b, 0); break;
+					case FE_TET15  : col = GLColor(0, b, 0); break;
+					case FE_TET20  : col = GLColor(0, d, 0); break;
+					case FE_HEX8   : col = GLColor(a, 0, 0); break;
+					case FE_HEX20  : col = GLColor(b, 0, 0); break;
+					case FE_HEX27  : col = GLColor(b, 0, 0); break;
+					case FE_PENTA6 : col = GLColor(0, 0, a); break;
+					case FE_PENTA15: col = GLColor(0, 0, b); break;
+					case FE_PYRA5  : col = GLColor(0, 0, a); break;
+					case FE_PYRA13 : col = GLColor(0, 0, b); break;
+					case FE_BEAM2  : col = GLColor(a, a, a); break;
+					case FE_BEAM3  : col = GLColor(b, b, b); break;
+					default:
+						col = GLColor(255, 255, 255); break;
+					}
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) c[j] = col;
+
+					// render the element
+					return true;
+				}
+			}
+			return false;
+			});
+
 	}
 	else
 	{
@@ -2629,7 +2875,7 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2662,7 +2908,7 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2696,7 +2942,7 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2856,6 +3102,21 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
 	}
 	break;
+	case OBJECT_COLOR_MODE::FSELEMENT_TYPE:
+	{
+		// We should only get here if the object is not active, or it is not meshed
+		SetDefaultMatProps();
+		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
+	case OBJECT_COLOR_MODE::PHYSICS_TYPE:
+	{
+		SetDefaultMatProps();
+		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
 	}
 }
 
@@ -2876,7 +3137,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 		if (pm && pm->IsRigid())
 		{
 			GLTAG tag;
-			tag.ntag = 0;
+			tag.c = GLColor(255, 255, 0);
 
 			// We'll position the rigid body glyph, either in the center of rigid part,
 			// or in the center_of_mass parameter if the override_com is true.
@@ -2891,7 +3152,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 				strncpy(tag.sztag, name.c_str(), l);
 				tag.sztag[l] = 0;
 			}
-			else sprintf(tag.sztag, "_no_name");
+			else snprintf(tag.sztag, sizeof tag.sztag, "_no_name");
 			vtag.push_back(tag);
 		}
 	}

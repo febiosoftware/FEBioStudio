@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSCore.h>
 
 //=======================================================================================
-CObjectProps::CObjectProps(FSObject* po)
+CObjectProps::CObjectProps(FSBase* po)
 {
 	m_po = 0;
 	if (po) BuildParamList(po);
@@ -180,22 +180,34 @@ QStringList CObjectProps::GetEnumValues(const char* ch)
 	return ops;
 }
 
-void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
+void CObjectProps::BuildParamList(FSBase* po, bool showNonPersistent)
 {
 	m_po = po;
 	m_params.clear();
 	int NP = po->Parameters();
+	int ng = -1;
+	ParamBlock& PB = po->GetParamBlock();
 	for (int i = 0; i<NP; ++i)
 	{
 		Param& p = po->GetParam(i);
 		if ((showNonPersistent || p.IsPersistent()) && (p.IsEditable() || p.IsVisible()))
 		{
+			if (p.GetParameterGroup() != ng)
+			{
+				ng = p.GetParameterGroup();
+				const char* sz = PB.GetParameterGroupName(ng);
+				if (sz)
+				{
+					addProperty(sz, CProperty::Group);
+					m_params.push_back(nullptr);
+				}
+			}
 			AddParameter(p);
 		}
 	}
 }
 
-void CObjectProps::AddParameterList(FSObject* po)
+void CObjectProps::AddParameterList(FSBase* po)
 {
 	int NP = po->Parameters();
 	for (int i = 0; i < NP; ++i)
@@ -295,8 +307,8 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 
 QVariant CObjectProps::GetPropertyValue(int i)
 {
-	Param& p = *m_params[i];
-	return GetPropertyValue(p);
+	Param* p = m_params[i];
+	return (p ? GetPropertyValue(*p) : QVariant());
 }
 
 void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
