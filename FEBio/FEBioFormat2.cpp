@@ -182,6 +182,7 @@ void FEBioFormat2::ParseGeometryNodes(FEBioInputModel::Part& part, XMLTag& tag)
 	{
 		FSNode& node = pm->Node(N0 + i);
 		tag.value(node.r);
+		node.m_nid = i + 1;
 		++tag;
 	}
 }
@@ -285,7 +286,7 @@ void FEBioFormat2::ParseGeometryElements(FEBioInputModel::Part& part, XMLTag& ta
 		{
 			el.m_nid = tag.AttributeValue<int>("id", -1);
 			tag.value(n, el.Nodes());
-			for (int j = 0; j<el.Nodes(); ++j) el.m_node[j] = n[j] - 1;
+			for (int j = 0; j<el.Nodes(); ++j) el.m_node[j] = n[j];
 		}
 		else throw XMLReader::InvalidTag(tag);
 
@@ -611,6 +612,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	else
 	{
 		pg = new FSNodeSet(po);
+		po->AddFENodeSet(pg);
 	}
 
 	// read the node list
@@ -655,6 +657,8 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		{
 			if (pg == nullptr) {
 				pg = new FSNodeSet(po); pg->add(nodeList);
+				po->AddFENodeSet(pg);
+				pg->SetName(szname);
 			}
 
 			int rdof = (bc >> 3);
@@ -1015,7 +1019,7 @@ FSSurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 			tag.value(nf, N);
 
 			vector<int> node(N);
-			for (int j = 0; j<N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j<N; ++j) node[j] = nf[j];
 			surf.m_face.push_back(node);
 
 			++tag;
@@ -1062,6 +1066,7 @@ void FEBioFormat2::ParseLoadPressure(FSStep* pstep, XMLTag& tag)
 		else if (tag == "surface")
 		{
 			FSSurface* psurf = ParseLoadSurface(tag);
+			if (psurf->GetName().empty()) psurf->SetName(szname);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
