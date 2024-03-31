@@ -384,6 +384,8 @@ public:
 	QStringList m_recentProjects;
 	QStringList m_recentPlugins;
 
+	QString m_envMapFile;
+
 	vector<CLaunchConfig>		m_launch_configs;
 
 	CFEBioJobManager* m_jobManager;

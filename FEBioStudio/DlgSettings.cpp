@@ -213,6 +213,8 @@ public:
 		addProperty("Render shadows", CProperty::Bool);
 		addProperty("Shadow intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Light direction"  , CProperty::Vec3);
+		addProperty("Environment map"  , CProperty::Resource);
+		addProperty("Use environment map"  , CProperty::Bool);
 
 		m_blight = true;
 		m_diffuse = 0.7f;
@@ -232,6 +234,8 @@ public:
 		case 3: return m_bshadow; break;
 		case 4: return m_shadow; break;
 		case 5: return vecToString(m_pos); break;
+		case 6: return m_envmap; break;
+		case 7: return m_useEV; break;
 		}
 		return v;
 	}
@@ -246,6 +250,8 @@ public:
 		case 3: m_bshadow = v.toBool(); break;
 		case 4: m_shadow = v.toFloat(); break;
 		case 5: m_pos = stringToVec(v.toString()); break;
+		case 6: m_envmap = v.toString(); break;
+		case 7: m_useEV = v.toBool(); break;
 		}
 	}
 
@@ -256,6 +262,8 @@ public:
 	bool	m_bshadow;
 	float	m_shadow;
 	vec3f	m_pos;
+	QString m_envmap;
+	bool	m_useEV;
 };
 
 //-----------------------------------------------------------------------------
@@ -1100,11 +1108,16 @@ void CDlgSettings::UpdateSettings()
 	ui->m_light->m_bshadow = view.m_bShadows;
 	ui->m_light->m_shadow = view.m_shadow_intensity;
 	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
+	ui->m_light->m_envmap = m_pwnd->GetEnvironmentMap();
+	ui->m_light->m_useEV = view.m_use_environment_map;
 
-	CGLCamera* cam = glview->GetCamera();
-	ui->m_cam->m_banim = true;
-	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
-	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+	if (glview)
+	{
+		CGLCamera* cam = glview->GetCamera();
+		ui->m_cam->m_banim = true;
+		ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
+		ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+	}
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
 
@@ -1214,6 +1227,8 @@ void CDlgSettings::apply()
 	view.m_bShadows  = ui->m_light->m_bshadow;
 	view.m_shadow_intensity = ui->m_light->m_shadow;
 	if (glview) glview->SetLightPosition(ui->m_light->m_pos);
+	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
+	view.m_use_environment_map = ui->m_light->m_useEV;
 
 	CGLCamera* cam = glview->GetCamera();
 	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);

@@ -71,8 +71,6 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
-	m_envtex = 0;
-	m_bshowEnv = true;
 }
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
@@ -1982,7 +1980,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	if (m_bshowEnv) ActivateEnvironmentMap();
+	if (vs.m_use_environment_map) ActivateEnvironmentMap();
 
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
@@ -2045,7 +2043,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 		}
 	}
 
-	if (m_bshowEnv) DeactivateEnvironmentMap();
+	if (vs.m_use_environment_map) DeactivateEnvironmentMap();
 
 	if (NF == 0)
 	{
@@ -2064,68 +2062,6 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 	{
 		RenderBeamParts(rc, po);
 	}
-}
-
-void CGLModelScene::ActivateEnvironmentMap()
-{
-	if (m_envtex == 0) LoadEnvironmentMap();
-	if (m_envtex == 0) return;
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_envtex);
-	glEnable(GL_TEXTURE_GEN_S);
-	glEnable(GL_TEXTURE_GEN_T);
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-}
-
-void CGLModelScene::DeactivateEnvironmentMap()
-{
-	if (m_envtex == 0) return;
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-	glDisable(GL_TEXTURE_2D);
-}
-
-void CGLModelScene::LoadEnvironmentMap()
-{
-	if (m_envtex != 0) return;
-
-	// try to load the image
-	QImage img;
-	bool berr = img.load("C:\\Users\\Steve\\Pictures\\HDR\\OIP2_blur.jpg");
-	if (berr == false) return;
-
-	uchar* d = img.bits();
-	int nx = img.width();
-	int ny = img.height();
-
-	// we need to flip and invert colors
-	GLubyte* buf = new GLubyte[nx * ny * 3];
-
-	GLubyte* b = buf;
-	for (int j=ny-1; j>=0; --j)
-		for (int i = 0; i < nx; ++i, b += 3)
-		{
-			GLubyte* s = d + (j * (4 * nx) + 4 * i);
-			b[0] = s[2];
-			b[1] = s[1];
-			b[2] = s[0];
-		}
-
-	glGenTextures(1, &m_envtex);
-	glBindTexture(GL_TEXTURE_2D, m_envtex);
-	// set texture parameter for 2D textures
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nx, ny, 0, GL_RGB, GL_UNSIGNED_BYTE, buf);
-
-	delete[] buf;
 }
 
 void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
