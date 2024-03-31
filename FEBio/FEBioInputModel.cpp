@@ -1048,7 +1048,6 @@ void FEBioInputModel::UpdateGeometry()
 	for (int i=0; i<Parts(); ++i)
 	{
 		Part& part = GetPart(i);
-		part.Update();
 		FSMesh* mesh = part.GetFEMesh();
 		mesh->RebuildMesh();
 	}

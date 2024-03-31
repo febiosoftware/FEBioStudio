@@ -153,6 +153,7 @@ bool FEBioFormat2::ParseGeometrySection(XMLTag& tag)
 
 	// add a new instance
 	assert(febio.Instances() == 0);
+	part.Update();
 	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(&part);
 	febio.AddInstance(instance);
 
