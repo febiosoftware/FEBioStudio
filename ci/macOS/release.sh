@@ -140,8 +140,19 @@ zip -r $UPLOAD_DIR/sdk.zip libintel
 cd $GITHUB_WORKSPACE
 
 # Create installer
+rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 arch -x86_64 /Applications/InstallBuilder\ Enterprise\ 23.11.0/bin/Builder.app/Contents/MacOS/osx-x86_64 build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
 
+INSTALLER_NAME=$(ls /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/)
+
 mkdir $UPLOAD_DIR/installer
-cp -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*.app $UPLOAD_DIR/installer
+cp -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/$INSTALLER_NAME $UPLOAD_DIR/installer
 rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
+
+# Notarize installer
+cd $UPLOAD_DIR/installer
+zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
+xcrun notarytool submit -p notarytool-profile $INSTALLER_NAME.zip --wait
+xcrun stapler staple $INSTALLER_NAME
+rm $INSTALLER_NAME.zip
+cd $GITHUB_WORKSPACE
