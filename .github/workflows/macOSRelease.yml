@@ -1,4 +1,7 @@
 on:
+  push:
+    branches:
+      - ci/releaseWorkflows
   workflow_dispatch:
     inputs:
       fbsVer:
