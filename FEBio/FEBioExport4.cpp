@@ -585,7 +585,15 @@ bool FEBioExport4::Write(const char* szfile)
 		// open the file
 		if (!m_xml.open(szfile)) return errf("Failed opening file %s", szfile);
 
-		if (m_writeNotes) WriteNote(&mdl);
+		if (m_writeNotes)
+		{
+			WriteNote(&mdl);
+			if (bsingle_step)
+			{
+				FSStep& step = *fem.GetStep(1);
+				WriteNote(&step);
+			}
+		}
 
 		// set modified formats
 		XMLElement::intFormat = "%d";
