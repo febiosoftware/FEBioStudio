@@ -1,7 +1,4 @@
 on:
-  push:
-    branches:
-      - ci/releaseWorkflow
   workflow_dispatch:
     inputs:
       fbsVer:
@@ -12,7 +9,7 @@ on:
         type: string
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-release.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-release.yml@releaseWorkflow
     with:
       febioVer: ${{inputs.febioVer}}
       fbsVer: ${{inputs.fbsVer}}
