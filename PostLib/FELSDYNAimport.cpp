@@ -357,7 +357,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "Displacement");
 		ndata[1] = nd; 
-		fem.SetDisplacementField(BUILD_FIELD(1, nd, 0));
+		fem.SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, nd, 0));
 		nd++;
 	}
 
