@@ -559,7 +559,7 @@ void RegressionUi::draw(QPainter& p)
 
 	int func = m_fnc->currentIndex();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i = sr.left(); i < sr.right(); i += 2)
 	{
@@ -591,6 +591,13 @@ void RegressionUi::Update()
 	for (int i = 0; i < nplots; ++i)
 	{
 		QString l = m_graph->getPlotData(i).label();
+		if (l.isEmpty())
+		{
+			if (nplots == 1)
+				l = QString("<all>");
+			else
+				l = QString("<data%1>").arg(i+1);
+		}
 		m_src->addItem(l);
 	}
 	m_src->addItem("<selection>");
@@ -696,7 +703,7 @@ void MathPlot::draw(QPainter& p)
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i=sr.left(); i < sr.right(); i += 2)
 	{
@@ -845,7 +852,13 @@ void DataOptions::Update()
 	for (int i = 0; i < n; ++i)
 	{
 		CPlotData& di = ui->m_graph->getPlotData(i);
-		ui->m_data->addItem(di.label());
+		QString l = di.label();
+		if (l.isEmpty())
+		{
+			if (n == 1) l = QString("<data>");
+			else l = QString("<data%1>").arg(i + 1);
+		}
+		ui->m_data->addItem(l);
 	}
 }
 
@@ -856,7 +869,7 @@ void CGraphWidget::paintEvent(QPaintEvent* pe)
 	CPlotWidget::paintEvent(pe);
 
 	QPainter p(this);
-	p.setClipRect(m_screenRect);
+	p.setClipRect(m_plotRect);
 	p.setRenderHint(QPainter::Antialiasing, true);
 	for (size_t i = 0; i<m_tools.size(); ++i)
 	{
@@ -1588,7 +1601,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				sourceNames << QString::fromStdString((*pdf)->GetName());
 			}
@@ -1641,9 +1654,9 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		if (plot == LINE_PLOT)
 			SetXDataSelector(new CTimeStepSelector(), 0);
 		else
-			SetXDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+			SetXDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
@@ -1773,7 +1786,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -1886,7 +1899,7 @@ void CModelGraphWindow::setDataSource(int n)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -1924,7 +1937,7 @@ void CModelGraphWindow::setDataSource(int n)
 					{
 						if (probe->TrackModelData())
 						{
-							SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+							SetYDataSelector(new CModelDataSelector(&fem, Post::TENSOR_SCALAR));
 						}
 						else
 						{
@@ -2015,7 +2028,7 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 	for (int j = 0; j < nsteps; ++j)
 	{
 		Post::FEState* state = fem.GetState(j + m_firstState);
-		Post::OBJECT_DATA& pointData = state->GetObjectData(nobj);
+		Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
 
 		Post::ObjectData* data = pointData.data;
 
@@ -2031,12 +2044,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 
 		switch (dataField->Type())
 		{
-		case Post::DATA_FLOAT:
+		case DATA_SCALAR:
 		{
 			val = data->get<float>(ndata);
 		}
 		break;
-		case Post::DATA_VEC3F:
+		case DATA_VEC3:
 		{
 			vec3f v = data->get<vec3f>(ndata);
 			val = component(v, ncomp);
@@ -2645,6 +2658,7 @@ void CModelGraphWindow::addSelectedElems()
 
 //-----------------------------------------------------------------------------
 // Calculate time history of a node
+
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();

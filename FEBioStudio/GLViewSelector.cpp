@@ -149,45 +149,45 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
-	FSLineMesh* lineMesh = po->GetEditableLineMesh();
-	if (lineMesh == 0) return;
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	if (pm)
+	// ignore exterior option for surface meshes
+	if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
 	{
-		// ignore exterior option for surface meshes
-		if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
+		if (view.m_bcullSel)
 		{
-			if (view.m_bcullSel)
-			{
-				// NOTE: This tags front facing nodes. Should rename function. 
-				TagBackfacingNodes(*pm);
-			}
-			else
-			{
-				// tag all exterior nodes
-				for (int i = 0; i < pm->Nodes(); ++i)
-				{
-					FSNode& node = pm->Node(i);
-					if (node.IsExterior()) node.m_ntag = 0;
-					else node.m_ntag = -1;
-				}
-			}
+			// NOTE: This tags front facing nodes. Should rename function. 
+			TagBackfacingNodes(*pm);
 		}
 		else
-			pm->TagAllNodes(0);
+		{
+			// tag all exterior nodes
+			for (int i = 0; i < pm->Nodes(); ++i)
+			{
+				FSNode& node = pm->Node(i);
+				if (node.IsExterior()) node.m_ntag = 0;
+				else node.m_ntag = -1;
+			}
+		}
 	}
-	else lineMesh->TagAllNodes(0);
+	else
+		pm->TagAllNodes(0);
 
 	double* a = m_glv->PlaneCoordinates();
 
 	vector<int> selectedNodes;
-	for (int i = 0; i < lineMesh->Nodes(); ++i)
+	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FSNode& node = lineMesh->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -500,7 +500,13 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	// activate the gl rendercontext
 	m_glv->makeCurrent();
@@ -600,7 +606,13 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME : pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	// activate the gl rendercontext
 	m_glv->makeCurrent();
@@ -1001,31 +1013,13 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	Intersection q;
 	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
 
+	// see if the intersection with the plane cut is closer
 	if (bfound && m_glv->ShowPlaneCut())
 	{
 		vec3d p = po->GetTransform().LocalToGlobal(q.point);
-
-		// see if the intersection lies behind the plane cut. 
-		double* a = m_glv->PlaneCoordinates();
-		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
-		if (d < 0)
-		{
-			// find the intersection with the plane cut
-			bfound = FindFaceIntersection(ray, *m_glv->PlaneCutMesh(), q);
-
-			if (bfound)
-			{
-				// conver the index from a face index into an element index
-				int nface = q.m_index;
-				if ((nface >= 0) && (nface < m_glv->PlaneCutMesh()->Faces()))
-				{
-					GMesh::FACE& face = m_glv->PlaneCutMesh()->Face(nface);
-					q.m_index = face.eid;
-					if (q.m_index < 0) bfound = false;
-				}
-				else bfound = false;
-			}
-		}
+		GLPlaneCut& planeCut = m_glv->GetPlaneCut();
+		bool bintersect = planeCut.Intersect(p, ray, q);
+		if (bintersect) bfound = bintersect;
 	}
 
 	// the selection command that will be executed
@@ -1234,7 +1228,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			// see if the edge intersects
 			bool bfound = intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt);
 
-			if (bfound && m_glv->PlaneCutMesh())
+			if (bfound && m_glv->ShowPlaneCut())
 			{
 				// make sure one point is in front of plane
 				double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
@@ -1441,19 +1435,40 @@ void GLViewSelector::SelectObjects(int x, int y)
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
 	GObject* closestObject = 0;
 	Intersection q;
 	double minDist = 0;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible() && IntersectObject(po, ray, q))
+		if (po->IsVisible())
 		{
-			double distance = ray.direction * (q.point - ray.origin);
-			if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
+			if (IntersectObject(po, ray, q))
 			{
-				closestObject = po;
-				minDist = distance;
+				double distance = ray.direction * (q.point - ray.origin);
+				if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
+				{
+					closestObject = po;
+					minDist = distance;
+				}
+			}
+			else
+			{
+				// if this is a line object, we'll need to use a different strategy
+				double zmin;
+				if (SelectClosestEdge(po, transform, rt, zmin))
+				{
+					if ((closestObject == nullptr) || (zmin < minDist))
+					{
+						closestObject = po;
+						minDist = zmin;
+					}
+				}
 			}
 		}
 	}
@@ -1664,6 +1679,47 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
 }
 
+GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin)
+{
+	GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+	if (mesh == nullptr) return nullptr;
+
+	Transform& T = po->GetTransform();
+
+	double* a = m_glv->PlaneCoordinates();
+
+	GEdge* closestEdge = nullptr;
+	zmin = 0.0;
+
+	int edges = mesh->Edges();
+	for (int j = 0; j < edges; ++j)
+	{
+		GMesh::EDGE& edge = mesh->Edge(j);
+
+		vec3d r0 = T.LocalToGlobal(mesh->Node(edge.n[0]).r);
+		vec3d r1 = T.LocalToGlobal(mesh->Node(edge.n[1]).r);
+
+		double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+		double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+
+		if ((m_glv->ShowPlaneCut() == false) || ((d0 > 0) || (d1 > 0)))
+		{
+			vec3d p0 = transform.WorldToScreen(r0);
+			vec3d p1 = transform.WorldToScreen(r1);
+
+			if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+			{
+				if ((closestEdge == nullptr) || (p0.z < zmin))
+				{
+					closestEdge = po->Edge(edge.pid);
+					zmin = p0.z;
+				}
+			}
+		}
+	}
+	return closestEdge;
+}
+
 //-----------------------------------------------------------------------------
 // select edges
 void GLViewSelector::SelectEdges(int x, int y)
@@ -1698,34 +1754,14 @@ void GLViewSelector::SelectEdges(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
-			if (mesh)
+			double z;
+			GEdge* pe = SelectClosestEdge(po, transform, rt, z);
+			if (pe)
 			{
-				int edges = mesh->Edges();
-				for (int j = 0; j < edges; ++j)
+				if ((closestEdge == nullptr) || (z < zmin))
 				{
-					GMesh::EDGE& edge = mesh->Edge(j);
-
-					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
-
-					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
-					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
-
-					if ((m_glv->ShowPlaneCut() == false) || ((d0 > 0) || (d1 > 0)))
-					{
-						vec3d p0 = transform.WorldToScreen(r0);
-						vec3d p1 = transform.WorldToScreen(r1);
-
-						if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
-						{
-							if ((closestEdge == 0) || (p0.z < zmin))
-							{
-								closestEdge = po->Edge(edge.pid);
-								zmin = p0.z;
-							}
-						}
-					}
+					closestEdge = pe;
+					zmin = z;
 				}
 			}
 		}
@@ -1733,7 +1769,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 
 	CCommand* pcmd = 0;
 	string edgeName = "<Empty>";
-	if (closestEdge != 0)
+	if (closestEdge != nullptr)
 	{
 		int index = closestEdge->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
@@ -2351,21 +2387,23 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 				{
 					GFace* gface = po->Face(face.pid);
 					GPart* part = po->Part(gface->m_nPID[0]);
-
-					int pid = part->GetID();
-
-					// make sure that this surface is not added yet
-					bool bfound = false;
-					for (int k = 0; k < selectedParts.size(); ++k)
+					if (part && part->IsVisible())
 					{
-						if (selectedParts[k] == pid)
-						{
-							bfound = true;
-							break;
-						}
-					}
+						int pid = part->GetID();
 
-					if (bfound == false) selectedParts.push_back(pid);
+						// make sure that this surface is not added yet
+						bool bfound = false;
+						for (int k = 0; k < selectedParts.size(); ++k)
+						{
+							if (selectedParts[k] == pid)
+							{
+								bfound = true;
+								break;
+							}
+						}
+
+						if (bfound == false) selectedParts.push_back(pid);
+					}
 				}
 			}
 		}

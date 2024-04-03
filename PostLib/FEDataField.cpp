@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-ModelDataField::ModelDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
+ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, DATA_FORMAT nfmt, DATA_CLASS ncls, unsigned int flag)
 {
 	m_fem = fem;
 	m_ntype = ntype;
@@ -59,64 +59,60 @@ const char* ModelDataField::TypeStr() const
 {
 	switch (m_ntype)
 	{
-	case DATA_FLOAT: return "float"; break;
-	case DATA_VEC3F: return "vec3f"; break;
-	case DATA_MAT3F: return "mat3f"; break;
-	case DATA_MAT3D: return "mat3d"; break;
-	case DATA_MAT3FS: return "mat3fs"; break;
-	case DATA_MAT3FD: return "mat3fd"; break;
-	case DATA_TENS4FS: return "tens4fs"; break;
-	case DATA_ARRAY: return "array"; break;
-	case DATA_ARRAY_VEC3F: return "array<vec3>"; break;
+	case DATA_SCALAR     : return "float"; break;
+	case DATA_VEC3      : return "vec3f"; break;
+	case DATA_MAT3      : return "mat3f"; break;
+	case DATA_MAT3S     : return "mat3fs"; break;
+	case DATA_MAT3SD    : return "mat3fd"; break;
+	case DATA_TENS4S    : return "tens4fs"; break;
+	case DATA_ARRAY      : return "array<float>"; break;
+	case DATA_ARRAY_VEC3: return "array<vec3>"; break;
 	};
 	return "unknown";
 }
 
 int ModelDataField::components(Data_Tensor_Type ntype)
 {
-	if (ntype == DATA_SCALAR)
+	if (ntype == TENSOR_SCALAR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 1; break;
-		case DATA_VEC3F: return 7; break;
-		case DATA_MAT3F: return 10; break;
-		case DATA_MAT3D: return 10; break;
-		case DATA_MAT3FS: return 18; break;
-		case DATA_MAT3FD: return 3; break;
-		case DATA_TENS4FS: return 21; break;
-		case DATA_ARRAY: return GetArraySize(); break;
-		case DATA_ARRAY_VEC3F: return GetArraySize()*4; break;
+		case DATA_SCALAR     : return 1; break;
+		case DATA_VEC3      : return 7; break;
+		case DATA_MAT3      : return 10; break;
+		case DATA_MAT3S     : return 18; break;
+		case DATA_MAT3SD    : return 3; break;
+		case DATA_TENS4S    : return 21; break;
+		case DATA_ARRAY      : return GetArraySize(); break;
+		case DATA_ARRAY_VEC3: return GetArraySize()*4; break;
 		}
 	}
-	else if (ntype == DATA_VECTOR)
+	else if (ntype == TENSOR_VECTOR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 0; break;
-		case DATA_VEC3F: return 1; break;
-		case DATA_MAT3F: return 3; break;
-		case DATA_MAT3D: return 3; break;
-		case DATA_MAT3FS: return 3; break;
-		case DATA_MAT3FD: return 0; break;
-		case DATA_TENS4FS: return 0; break;
-		case DATA_ARRAY: return 0; break;
-		case DATA_ARRAY_VEC3F: return GetArraySize(); break;
+		case DATA_SCALAR     : return 0; break;
+		case DATA_VEC3      : return 1; break;
+		case DATA_MAT3      : return 3; break;
+		case DATA_MAT3S     : return 3; break;
+		case DATA_MAT3SD    : return 0; break;
+		case DATA_TENS4S    : return 0; break;
+		case DATA_ARRAY      : return 0; break;
+		case DATA_ARRAY_VEC3: return GetArraySize(); break;
 		}
 	}
-	else if (ntype == DATA_TENSOR2)
+	else if (ntype == TENSOR_TENSOR2)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 0; break;
-		case DATA_VEC3F: return 0; break;
-		case DATA_MAT3F: return 1; break;
-		case DATA_MAT3D: return 1; break;
-		case DATA_MAT3FS: return 1; break;
-		case DATA_MAT3FD: return 1; break;
-		case DATA_TENS4FS: return 0; break;
-		case DATA_ARRAY: return 0; break;
-		case DATA_ARRAY_VEC3F: return 0; break;
+		case DATA_SCALAR     : return 0; break;
+		case DATA_VEC3      : return 0; break;
+		case DATA_MAT3      : return 1; break;
+		case DATA_MAT3S     : return 1; break;
+		case DATA_MAT3SD    : return 1; break;
+		case DATA_TENS4S    : return 0; break;
+		case DATA_ARRAY      : return 0; break;
+		case DATA_ARRAY_VEC3: return 0; break;
 		}
 	}
 	return 0;
@@ -124,49 +120,46 @@ int ModelDataField::components(Data_Tensor_Type ntype)
 
 int ModelDataField::dataComponents(Data_Tensor_Type ntype)
 {
-	if (ntype == DATA_SCALAR)
+	if (ntype == TENSOR_SCALAR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 1; break;
-		case DATA_VEC3F: return 3; break;
-		case DATA_MAT3F: return 9; break;
-		case DATA_MAT3D: return 9; break;
-		case DATA_MAT3FS: return 6; break;
-		case DATA_MAT3FD: return 3; break;
-		case DATA_TENS4FS: return 21; break;
-		case DATA_ARRAY: return GetArraySize(); break;
-		case DATA_ARRAY_VEC3F: return GetArraySize() * 3; break;
+		case DATA_SCALAR     : return 1; break;
+		case DATA_VEC3      : return 3; break;
+		case DATA_MAT3      : return 9; break;
+		case DATA_MAT3S     : return 6; break;
+		case DATA_MAT3SD    : return 3; break;
+		case DATA_TENS4S    : return 21; break;
+		case DATA_ARRAY      : return GetArraySize(); break;
+		case DATA_ARRAY_VEC3: return GetArraySize() * 3; break;
 		}
 	}
-	else if (ntype == DATA_VECTOR)
+	else if (ntype == TENSOR_VECTOR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 0; break;
-		case DATA_VEC3F: return 1; break;
-		case DATA_MAT3F: return 3; break;
-		case DATA_MAT3D: return 3; break;
-		case DATA_MAT3FS: return 3; break;
-		case DATA_MAT3FD: return 0; break;
-		case DATA_TENS4FS: return 0; break;
-		case DATA_ARRAY: return 0; break;
-		case DATA_ARRAY_VEC3F: return GetArraySize(); break;
+		case DATA_SCALAR     : return 0; break;
+		case DATA_VEC3      : return 1; break;
+		case DATA_MAT3      : return 3; break;
+		case DATA_MAT3S     : return 3; break;
+		case DATA_MAT3SD    : return 0; break;
+		case DATA_TENS4S    : return 0; break;
+		case DATA_ARRAY      : return 0; break;
+		case DATA_ARRAY_VEC3: return GetArraySize(); break;
 		}
 	}
-	else if (ntype == DATA_TENSOR2)
+	else if (ntype == TENSOR_TENSOR2)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return 0; break;
-		case DATA_VEC3F: return 0; break;
-		case DATA_MAT3F: return 1; break;
-		case DATA_MAT3D: return 1; break;
-		case DATA_MAT3FS: return 1; break;
-		case DATA_MAT3FD: return 1; break;
-		case DATA_TENS4FS: return 0; break;
-		case DATA_ARRAY: return 0; break;
-		case DATA_ARRAY_VEC3F: return 0; break;
+		case DATA_SCALAR     : return 0; break;
+		case DATA_VEC3      : return 0; break;
+		case DATA_MAT3      : return 1; break;
+		case DATA_MAT3S     : return 1; break;
+		case DATA_MAT3SD    : return 1; break;
+		case DATA_TENS4S    : return 0; break;
+		case DATA_ARRAY      : return 0; break;
+		case DATA_ARRAY_VEC3: return 0; break;
 		}
 	}
 	return 0;
@@ -179,12 +172,12 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 
 	char szline[256] = { 0 };
 
-	if (ntype == DATA_SCALAR)
+	if (ntype == TENSOR_SCALAR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_FLOAT: return name; break;
-		case DATA_VEC3F:
+		case DATA_SCALAR: return name; break;
+		case DATA_VEC3:
 		{
 			if (ncomp == 0) sprintf(szline, "X - %s", sz);
 			else if (ncomp == 1) sprintf(szline, "Y - %s", sz);
@@ -196,8 +189,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			return szline;
 		}
 		break;
-		case DATA_MAT3F:
-		case DATA_MAT3D:
+		case DATA_MAT3:
 		{
 			if (ncomp == 0) sprintf(szline, "XX - %s", sz);
 			else if (ncomp == 1) sprintf(szline, "XY - %s", sz);
@@ -212,7 +204,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			return szline;
 		}
 		break;
-		case DATA_MAT3FS:
+		case DATA_MAT3S:
 		{
 			if (ncomp == 0) sprintf(szline, "X - %s", sz);
 			else if (ncomp == 1) sprintf(szline, "Y - %s", sz);
@@ -235,7 +227,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			return szline;
 		}
 		break;
-		case DATA_MAT3FD:
+		case DATA_MAT3SD:
 		{
 			if (ncomp == 0) sprintf(szline, "1 - %s", sz);
 			else if (ncomp == 1) sprintf(szline, "2 - %s", sz);
@@ -243,7 +235,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			return szline;
 		}
 		break;
-		case DATA_TENS4FS:
+		case DATA_TENS4S:
 		{
 			if (ncomp == 0) sprintf(szline, "XXXX - %s", sz);
 			else if (ncomp == 1) sprintf(szline, "XXYY - %s", sz);
@@ -282,7 +274,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 				return szline;
 			}
 			break;
-		case DATA_ARRAY_VEC3F:
+		case DATA_ARRAY_VEC3:
 			{
 				int index = ncomp / 4;
 				int m = ncomp % 4;
@@ -313,12 +305,12 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			break;
 		}
 	}
-	else if (ntype == DATA_VECTOR)
+	else if (ntype == TENSOR_VECTOR)
 	{
 		switch (m_ntype)
 		{
-		case DATA_VEC3F: return name; break;
-		case DATA_MAT3FS:
+		case DATA_VEC3: return name; break;
+		case DATA_MAT3S:
 			{
 				if      (ncomp == 0) sprintf(szline, "1 Principal %s", sz);
 				else if (ncomp == 1) sprintf(szline, "2 Principal %s", sz);
@@ -326,8 +318,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 				return szline;
 			}
 		break;
-		case DATA_MAT3F:
-		case DATA_MAT3D:
+		case DATA_MAT3:
 			{
 				if      (ncomp == 0) sprintf(szline, "column 1 %s", sz);
 				else if (ncomp == 1) sprintf(szline, "column 2 %s", sz);
@@ -335,7 +326,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 				return szline;
 			}
 		break;
-		case DATA_ARRAY_VEC3F:
+		case DATA_ARRAY_VEC3:
 			{
 				const string& arr = m_arrayNames[ncomp];
 				if (m_arrayNames.size() == m_arraySize)
@@ -351,14 +342,13 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 		break;
 		}
 	}
-	else if (ntype == DATA_TENSOR2)
+	else if (ntype == TENSOR_TENSOR2)
 	{
 		switch (m_ntype)
 		{
-		case DATA_MAT3FS: return name; break;
-		case DATA_MAT3FD: return name; break;
-		case DATA_MAT3D : return name; break;
-		case DATA_MAT3F : return name; break;
+		case DATA_MAT3  : return name; break;
+		case DATA_MAT3S : return name; break;
+		case DATA_MAT3SD: return name; break;
 		}
 	}
 
@@ -378,7 +368,7 @@ const char* ModelDataField::GetUnits() const
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
@@ -396,22 +386,22 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
-	case CLASS_NODE: return new FENodeArrayData(pstate, GetArraySize()); break;
-	case CLASS_ELEM: 
+	case NODE_DATA: return new FENodeArrayData(pstate, GetArraySize()); break;
+	case ELEM_DATA: 
 		switch (Format())
 		{
 		case DATA_ITEM: return new FEElemArrayDataItem(pstate, GetArraySize(), this); break;
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
-	case CLASS_OBJECT: return new FEGlobalArrayData(pstate, GetArraySize()); break;
+	case OBJECT_DATA: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
 	return 0;
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3, DATA_ITEM, c, flag)
 {
 }
 
@@ -429,7 +419,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
-	case CLASS_ELEM: return new FEElemArrayVec3Data(pstate, GetArraySize(), this); break;
+	case ELEM_DATA: return new FEElemArrayVec3Data(pstate, GetArraySize(), this); break;
 	}
 	assert(false);
 	return 0;
@@ -488,24 +478,24 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				FEState& s = *fem.GetState( states[n] );
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				switch (d.GetType())
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
 					FENodeData_T<float>* pf = dynamic_cast<FENodeData_T<float>*>(&d);
 					float f; pf->eval(i, &f);
 					fprintf(fp, "%g", f);
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
 					FENodeData_T<vec3f>* pf = dynamic_cast<FENodeData_T<vec3f>*>(&d);
 					vec3f f; pf->eval(i, &f);
 					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
 				}
 				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
 					FENodeData_T<mat3fs>* pf = dynamic_cast<FENodeData_T<mat3fs>*>(&d);
 					mat3fs f; pf->eval(i, &f);
@@ -577,12 +567,12 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				FEState& s = *fem.GetState( states[n] );
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				if (fmt == DATA_ITEM)
 				{
 					switch (d.GetType())
 					{
-					case DATA_FLOAT:
+					case DATA_SCALAR:
 					{
 						FEFaceData_T<float, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&d);
 						if (pf->active(i))
@@ -593,7 +583,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 						else bwrite = false;
 					}
 					break;
-					case DATA_VEC3F:
+					case DATA_VEC3:
 					{
 						FEFaceData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>*>(&d);
 						if (pf->active(i))
@@ -604,7 +594,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 						else bwrite = false;
 					}
 					break;
-					case DATA_MAT3FS:
+					case DATA_MAT3S:
 					{
 						FEFaceData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>*>(&d);
 						if (pf->active(i))
@@ -617,15 +607,15 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					break;
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
 					int nn = face.Nodes();
 
 				switch (d.GetType())
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
-					FEFaceData_T<float, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<float, DATA_COMP>*>(&d);
+					FEFaceData_T<float, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<float, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						float v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -636,9 +626,9 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					else bwrite = false;
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
-					FEFaceData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_COMP>*>(&d);
+					FEFaceData_T<vec3f, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -649,9 +639,9 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					else bwrite = false;
 				}
 				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
-					FEFaceData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_COMP>*>(&d);
+					FEFaceData_T<mat3fs, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -672,7 +662,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 
 				switch (d.GetType())
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
 					FEFaceData_T<float, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<float, DATA_NODE>*>(&d);
 					if (pf->active(i))
@@ -685,7 +675,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					else bwrite = false;
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
 					FEFaceData_T<vec3f, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_NODE>*>(&d);
 					if (pf->active(i))
@@ -698,7 +688,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					else bwrite = false;
 				}
 				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
 					FEFaceData_T<mat3fs, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_NODE>*>(&d);
 					if (pf->active(i))
@@ -778,26 +768,26 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 				FEState& s = *fem.GetState(states[n]);
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				if (fmt == DATA_ITEM)
 				{
 					switch (d.GetType())
 					{
-					case DATA_FLOAT:
+					case DATA_SCALAR:
 					{
 						FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
 						float f; pf->eval(i, &f);
 						fprintf(fp, "%g", f);
 					}
 					break;
-					case DATA_VEC3F:
+					case DATA_VEC3:
 					{
 						FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
 						vec3f f; pf->eval(i, &f);
 						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
 					}
 					break;
-					case DATA_MAT3FS:
+					case DATA_MAT3S:
 					{
 						FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
 						mat3fs f; pf->eval(i, &f);
@@ -824,46 +814,37 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 						assert(false);
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
 					int nn = el.Nodes();
 
 					switch (d.GetType())
 					{
-					case DATA_FLOAT:
+					case DATA_SCALAR:
 					{
-						FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
+						FEElemData_T<float, DATA_MULT>* pf = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&d);
 						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
 						fprintf(fp, "%g", f);
 					}
 					break;
-					case DATA_VEC3F:
+					case DATA_VEC3:
 					{
-						FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
+						FEElemData_T<vec3f, DATA_MULT>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_MULT>*>(&d);
 						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
 						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
 					}
 					break;
-					case DATA_MAT3FS:
+					case DATA_MAT3S:
 					{
-						FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
+						FEElemData_T<mat3fs, DATA_MULT>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>*>(&d);
 						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
 						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-					}
-					break;
-					case DATA_MAT3D:
-					{
-						FEElemData_T<mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3d, DATA_COMP>*>(&d);
-						mat3d v[FSElement::MAX_NODES]; pf->eval(i, v);
-						mat3d f; f.zero();
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
-						fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
 					}
 					break;
 					}
@@ -1041,13 +1022,12 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT  : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
-	case DATA_VEC3F  : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem, EXPORT_DATA); ND =  3; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FENodeData<mat3d  > >(&fem, EXPORT_DATA); ND =  9; break;
-	case DATA_MAT3F  : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem, EXPORT_DATA); ND =  9; break;
-	case DATA_MAT3FS : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem, EXPORT_DATA); ND =  6; break;
-	case DATA_MAT3FD : pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem, EXPORT_DATA); ND =  3; break;
-	case DATA_TENS4FS: pdf = new FEDataField_T<FENodeData<tens4fs> >(&fem, EXPORT_DATA); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem, EXPORT_DATA); ND =  9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem, EXPORT_DATA); ND =  6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FENodeData<tens4fs> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)
@@ -1099,43 +1079,37 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 				// get the datafield
 				switch (ntype)
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
 					FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[ndf - 1]);
 					df[node] = f[0];
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
 					FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(ps->m_Data[ndf - 1]);
 					df[node] = vec3f(f[0], f[1], f[2]);
 				}
 				break;
-				case DATA_MAT3D:
-				{
-					FENodeData<mat3d>& df = dynamic_cast<FENodeData<mat3d>&>(ps->m_Data[ndf - 1]);
-					df[node] = mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]);
-				}
-				break;
-				case DATA_MAT3F:
+				case DATA_MAT3:
 				{
 					FENodeData<mat3f>& df = dynamic_cast<FENodeData<mat3f>&>(ps->m_Data[ndf - 1]);
 					df[node] = mat3f(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]);
 				}
 				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
 					FENodeData<mat3fs>& df = dynamic_cast<FENodeData<mat3fs>&>(ps->m_Data[ndf - 1]);
 					df[node] = mat3fs(f[0], f[1], f[2], f[3], f[4], f[5]);
 				}
 				break;
-				case DATA_MAT3FD:
+				case DATA_MAT3SD:
 				{
 					FENodeData<mat3fd>& df = dynamic_cast<FENodeData<mat3fd>&>(ps->m_Data[ndf - 1]);
 					df[node] = mat3fd(f[0], f[1], f[2]);
 				}
 				break;
-				case DATA_TENS4FS:
+				case DATA_TENS4S:
 				{
 					FENodeData<tens4fs>& df = dynamic_cast<FENodeData<tens4fs>&>(ps->m_Data[ndf - 1]);
 					df[node] = tens4fs(f);
@@ -1167,13 +1141,12 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT  : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
-	case DATA_VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
-	case DATA_MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FEFaceData<mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
-	case DATA_MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
-	case DATA_TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)
@@ -1225,43 +1198,37 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 				// get the datafield
 				switch (ntype)
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
 					FEFaceData<float, DATA_ITEM>& df = dynamic_cast<FEFaceData<float, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, f[0]);
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
 					FEFaceData<vec3f, DATA_ITEM>& df = dynamic_cast<FEFaceData<vec3f, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, vec3f(f[0], f[1], f[2]));
 				}
 				break;
-				case DATA_MAT3F:
+				case DATA_MAT3:
 				{
 					FEFaceData<mat3f, DATA_ITEM>& df = dynamic_cast<FEFaceData<mat3f, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, mat3f(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
 				}
 				break;
-				case DATA_MAT3D:
-				{
-					FEFaceData<mat3d, DATA_ITEM>& df = dynamic_cast<FEFaceData<mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
-					df.add(nface, mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
-				}
-				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
 					FEFaceData<mat3fs, DATA_ITEM>& df = dynamic_cast<FEFaceData<mat3fs, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, mat3fs(f[0], f[1], f[2], f[3], f[4], f[5]));
 				}
 				break;
-				case DATA_MAT3FD:
+				case DATA_MAT3SD:
 				{
 					FEFaceData<mat3fd, DATA_ITEM>& df = dynamic_cast<FEFaceData<mat3fd, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, mat3fd(f[0], f[1], f[2]));
 				}
 				break;
-				case DATA_TENS4FS:
+				case DATA_TENS4S:
 				{
 					FEFaceData<tens4fs, DATA_ITEM>& df = dynamic_cast<FEFaceData<tens4fs, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nface, tens4fs(f));
@@ -1293,13 +1260,12 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT  : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
-	case DATA_VEC3F  : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
-	case DATA_MAT3F  : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FEElementData<mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3FS : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
-	case DATA_MAT3FD : pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
-	case DATA_TENS4FS: pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)
@@ -1351,43 +1317,37 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 				// get the datafield
 				switch (ntype)
 				{
-				case DATA_FLOAT:
+				case DATA_SCALAR:
 				{
 					FEElementData<float, DATA_ITEM>& df = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, f[0]);
 				}
 				break;
-				case DATA_VEC3F:
+				case DATA_VEC3:
 				{
 					FEElementData<vec3f, DATA_ITEM>& df = dynamic_cast<FEElementData<vec3f, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, vec3f(f[0], f[1], f[2]));
 				}
 				break;
-				case DATA_MAT3F:
+				case DATA_MAT3:
 				{
 					FEElementData<mat3f, DATA_ITEM>& df = dynamic_cast<FEElementData<mat3f, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, mat3f(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
 				}
 				break;
-				case DATA_MAT3D:
-				{
-					FEElementData<mat3d, DATA_ITEM>& df = dynamic_cast<FEElementData<mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
-					df.add(nelem, mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
-				}
-				break;
-				case DATA_MAT3FS:
+				case DATA_MAT3S:
 				{
 					FEElementData<mat3fs, DATA_ITEM>& df = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, mat3fs(f[0], f[1], f[2], f[3], f[4], f[5]));
 				}
 				break;
-				case DATA_MAT3FD:
+				case DATA_MAT3SD:
 				{
 					FEElementData<mat3fd, DATA_ITEM>& df = dynamic_cast<FEElementData<mat3fd, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, mat3fd(f[0], f[1], f[2]));
 				}
 				break;
-				case DATA_TENS4FS:
+				case DATA_TENS4S:
 				{
 					FEElementData<tens4fs, DATA_ITEM>& df = dynamic_cast<FEElementData<tens4fs, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
 					df.add(nelem, tens4fs(f));

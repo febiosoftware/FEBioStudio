@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <FECore/fecore_enum.h>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioInterface.h>
+#include <exception>
+#include <sstream>
 
 //=============================================================================
 // FSAxisMaterial
@@ -725,8 +727,14 @@ void FSMaterial::Load(IArchive &ar)
 								if (prop)
 								{
 									FSModelComponent* pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, fem); assert(pmc);
-									pmc->Load(ar);
-									prop->AddComponent(pmc);
+									try {
+										pmc->Load(ar);
+										prop->AddComponent(pmc);
+									}
+									catch (...)
+									{
+										delete pmc;
+									}
 								}
 								break;
 							}
@@ -928,18 +936,35 @@ void FEBioMaterialProperty::Save(OArchive& ar)
 void FEBioMaterialProperty::Load(IArchive& ar)
 {
 	TRACE("FEBioMaterial::Load");
+	bool errorFlag = false;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FSMaterialProperty::Load(ar); break;
+		case CID_FEBIO_META_DATA:
+		{
+			try {
+				LoadClassMetaData(this, ar);
+			}
+			catch (std::runtime_error e)
+			{
+				ar.log(e.what());
+				errorFlag = true;
+			}
+		}
+		break;
+		case CID_FEBIO_BASE_DATA:
+			if (!errorFlag) FSMaterialProperty::Load(ar); 
+			break;
 		default:
 			assert(false);
 		}
 		ar.CloseChunk();
 	}
+
+	if (errorFlag) throw std::runtime_error("Failed to load component");
+
 	// We call this to make sure that the FEBio class has the same parameters
 	UpdateData(true);
 }

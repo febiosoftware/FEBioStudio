@@ -35,18 +35,23 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <QDir>
 
+// in GMaterial.cpp
+extern GLColor col[GMaterial::MAX_COLORS];
+
 #include <iostream>
 
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
+	m_snap = true;
+	m_type = 0;
+	m_tol = 1e-6;
+	m_bintersect = false;
+
 	addResourceProperty(&m_fileName, "Filename");
+	addBoolProperty(&m_snap, "Snap end-points to geometry");
 	addDoubleProperty(&m_tol, "Snap tolerance");
 	addBoolProperty(&m_bintersect, "Check for intersections");
 	addEnumProperty(&m_type, "Element type")->setEnumValues(QStringList() << "Linear spring" << "Nonlinear spring" << "Hill spring" << "Linear truss");
-
-	m_type = 0;
-	m_tol = 1e-6;
-	m_bintersect = true;
 }
 
 bool CImportSpringsTool::OnApply()
@@ -67,6 +72,13 @@ bool CImportSpringsTool::OnApply()
 
 	// check if we have springs
 	if (m_springs.empty()) return SetErrorString("The file did not contain any springs or was not properly formatted.");
+
+	// process the springs
+	int newNodes = ProcessSprings(mo);
+	if (newNodes > 0)
+	{
+		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(newNodes));
+	}
 
 	// apply the springs
 	if (mo)
@@ -187,14 +199,14 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	FSMesh* m = po->GetFEMesh();
 	int N = m->Nodes();
 	imin = -1;
+	vec3d r_local = m->GlobalToLocal(r);
 	for (int i = 0; i < N; ++i)
 	{
 		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
-			vec3d ri = m->LocalToGlobal(ni.r);
-
-			double l2 = (r - ri).SqrLength();
+			vec3d dr = r_local - ni.r;
+			double l2 = dr.SqrLength();
 			if ((imin == -1) || (l2 < l2min))
 			{
 				imin = i;
@@ -208,6 +220,81 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	}
 
 	return -1;
+}
+
+int findPoint(const vector<pair<vec3d, int>>& points, const vec3d& r)
+{
+	const double eps = 1e-12;
+	int n = -1;
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		const vec3d& ri = points[i].first;
+		if ((ri - r).Length() < eps)
+		{
+			n = (int)i;
+			break;
+		}
+	}
+	return n;
+}
+
+int CImportSpringsTool::ProcessSprings(GMeshObject* po)
+{
+	// process intersections first
+	if (m_bintersect)
+	{
+		for (size_t i = 0; i < m_springs.size(); ++i)
+		{
+			SPRING& spring = m_springs[i];
+			Intersect(po, spring);
+		}
+	}
+
+	// build node list
+	vector<pair<vec3d, int>> rt;
+	for (SPRING& s : m_springs)
+	{
+		s.n0 = findPoint(rt, s.r0);
+		if (s.n0 == -1) { rt.push_back({ s.r0, -1 }); s.n0 = rt.size() - 1; }
+		else rt[s.n0].second -= 1;
+
+		s.n1 = findPoint(rt, s.r1);
+		if (s.n1 == -1) { rt.push_back({ s.r1, 1 }); s.n1 = rt.size() - 1; }
+		else rt[s.n1].second += 1;
+	}
+
+	// add unique nodes to object (only snap end-points)
+	if (m_snap)
+	{
+		for (auto& rt_i : rt)
+		{
+			int n = -1;
+			if (rt_i.second > 0)
+			{
+				// this is an end node, so first try to snap it
+				n = findNode(po, rt_i.first, m_tol);
+			}
+			rt_i.second = n;
+		}
+	}
+
+	int newNodes = 0;
+	for (auto& rt_i : rt)
+	{
+		if (rt_i.second == -1)
+		{
+			rt_i.second = po->AddNode(rt_i.first); 
+			newNodes++; 
+		}
+	}
+
+	for (SPRING& s : m_springs)
+	{
+		s.n0 = rt[s.n0].second;
+		s.n1 = rt[s.n1].second;
+	}
+
+	return newNodes;
 }
 
 bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
@@ -237,31 +324,16 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	// add the discrete set to the model
 	gm->AddDiscreteObject(dset);
 
-	int notFound = 0;
 	for (size_t i = 0; i < m_springs.size(); ++i)
 	{
-		SPRING spring = m_springs[i];
-
-		// check for intersections first
-		if (m_bintersect)
-		{
-			Intersect(po, spring);
-		}
-
-		// see if the node exists
-		int na = findNode(po, spring.r0, m_tol);
-		if (na == -1) { notFound++;  na = po->AddNode(spring.r0); }
-		int nb = findNode(po, spring.r1, m_tol);
-		if (nb == -1) { notFound++; nb = po->AddNode(spring.r1); }
-
+		SPRING& spring = m_springs[i];
+	
 		// add it to the discrete element set
-		dset->AddElement(na, nb);
+		dset->AddElement(spring.n0, spring.n1);
 	}
 
-	if (notFound > 0)
-	{
-		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(notFound));
-	}
+	int n = gm->DiscreteObjects();
+	dset->SetColor(col[n % GMaterial::MAX_COLORS]);
 
 	return true;
 }
@@ -276,27 +348,6 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 	QString baseName = file.baseName();
 
 	FSMesh& m = *po->GetFEMesh();
-
-	int notFound = 0;
-	for (size_t i = 0; i < m_springs.size(); ++i)
-	{
-		SPRING& spring = m_springs[i];
-
-		// check for intersections first
-		if (m_bintersect)
-		{
-			Intersect(po, spring);
-		}
-
-		// see if the node exists
-		int na = findNode(po, spring.r0, m_tol);
-		if (na == -1) { notFound++;  na = po->AddNode(spring.r0); }
-		int nb = findNode(po, spring.r1, m_tol);
-		if (nb == -1) { notFound++; nb = po->AddNode(spring.r1); }
-
-		spring.n0 = na;
-		spring.n1 = nb;
-	}
 
 	// add new elements to the mesh
 	int gid = m.CountElementPartitions();
@@ -339,11 +390,6 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 
 	FEBeamFormulation* bf = FEBio::CreateBeamFormulation("linear-truss", fem);
 	pb->SetElementFormulation(bf);
-
-	if (notFound > 0)
-	{
-		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(notFound));
-	}
 
 	return true;
 }

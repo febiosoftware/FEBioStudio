@@ -44,10 +44,8 @@ SOFTWARE.*/
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEInitialCondition.h>
-#include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
-#include <FEMLib/FSModel.h>
 #include <sstream>
 using namespace FEBio;
 
@@ -864,11 +862,12 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, std::string& report)
 {
 	terminateRun = false;
 
 	FEBioModel fem;
+	fem.CreateReport(true);
 
 	// attach the output handler
 	if (outputHandler)
@@ -893,7 +892,9 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, F
 			return false;
 		}
 
-		return febio::RunModel(fem, &ops);
+		int returnCode = febio::RunModel(fem, &ops);
+		report = fem.GetReport();
+		return returnCode;
 	}
 	catch (...)
 	{

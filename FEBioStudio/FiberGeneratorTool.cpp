@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QLabel>
 #include <QHeaderView>
-#include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
 
@@ -343,7 +342,7 @@ void CFiberGeneratorTool::OnApply()
 	// create node data
 	FENodeData data(m_po);
 	data.Create(&nodeSet, 0.0);
-	for (int i = 0; i < NN; i++) data.SetScalar(i, val[i]);
+	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;
@@ -409,8 +408,13 @@ void CFiberGeneratorTool::OnApply()
 
 			FEPartData* pdata = new FEPartData(po->GetFEMesh());
 			pdata->SetName(mapName.toStdString());
-			pdata->Create(partSet, FEMeshData::DATA_VEC3D, FEMeshData::DATA_ITEM);
+			pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
 			pm->AddMeshDataField(pdata);
+
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				pm->Element(i).m_ntag = i;
+			}
 
 			FEElemList* elemList = pdata->BuildElemList();
 			int NE = elemList->Size();
@@ -419,10 +423,7 @@ void CFiberGeneratorTool::OnApply()
 			for (int i = 0; i < NE; ++i, ++it)
 			{
 				FEElement_& el = *it->m_pi;
-				if (el.m_ntag == 1)
-				{
-					pdata->FEMeshData::set(n++, grad[i]);
-				}
+				pdata->FEMeshData::set(n++, grad[el.m_ntag]);
 			}
 			delete elemList;
 

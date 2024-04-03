@@ -305,6 +305,7 @@ void FSProject::Load(IArchive &ar)
 {
 	TRACE("FSProject::Load");
 
+	int moduleId = FEBio::GetModuleId("solid");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -314,21 +315,24 @@ void FSProject::Load(IArchive &ar)
 		case CID_PRJ_MODULES: { 
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
-			int moduleId = MapOldToNewModules(oldModuleId);
-			// if the moduleID == -1, then this file likely requires a plugin
-			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
-			SetModule(moduleId);
+			moduleId = MapOldToNewModules(oldModuleId);
 		} 
 		break;
 		case CID_PRJ_MODULE_NAME:
 		{
 			string modName;
 			ar.read(modName);
-			int moduleId = FEBio::GetModuleId(modName); assert(moduleId > 0);
-			SetModule(moduleId);
+			moduleId = FEBio::GetModuleId(modName); assert(moduleId > 0);
 		}
 		break;
-		case CID_FEM        : m_fem.Load(ar); break;
+		case CID_FEM        : 
+		{
+			// if the moduleID == -1, then this file likely requires a plugin
+			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
+			SetModule(moduleId);
+			m_fem.Load(ar);
+		}
+		break;
 		case CID_PRJ_OUTPUT : m_plt.Load(ar); break;
 		case CID_PRJ_LOGDATA: m_log.Load(ar); break;
 		}
@@ -500,7 +504,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSSoluteNaturalFlux         , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_NATURAL_FLUX      , "Solute natural flux");
 	REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FELOAD_ID            , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient");
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	REGISTER_FE_CLASS(FSSBMPointSource, MODULE_MULTIPHASIC, FELOAD_ID, FE_SBM_POINT_SOURCE, "SBM point source");
 #endif
 
@@ -648,6 +652,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid rate of deformation", true);
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("nodal fluid flux", true);
 	}
     else if (strcmp(szmod, "fluid-solutes") == 0)
     {
@@ -741,21 +746,21 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			}
 			else if ((pi->GetParamType() == Param_CHOICE) && (p.GetParamType() == Param_INT))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from int to choice (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
 			else if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_CHOICE))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
 			else if ((p.GetParamType() == Param_VEC3D) && (pi->GetParamType() == Param_ARRAY_DOUBLE) && (pi->size() == 3))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from vec3d to double[3] (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				vec3d v = p.GetVec3dValue();
@@ -766,7 +771,7 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			{
 				string s = p.GetMathString();
 				pi->SetStringValue(s);
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting math string to string (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 			}
@@ -2022,6 +2027,8 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 	febStep.SetParamInt("output_level", ops.output_level);
 	febStep.SetParamBool("adaptor_re_solve", ops.adapter_re_solve);
 
+	febStep.SetInfo(ops.sztitle);
+
 	// auto time stepper settings
 	FSProperty* timeStepperProp = febStep.FindProperty("time_stepper");
 	FSCoreBase* timeStepper = timeStepperProp->GetComponent(0);
@@ -2088,13 +2095,17 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 					switch (qnmethod)
 					{
 					case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
-					case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
+					case 1: 
+					case 2: 
+						qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
 					default:
 						assert(false);
 					}
-					qnProp->SetComponent(qnSolver);
-
-					qnSolver->SetParamInt("max_ups", ops.ilimit);
+					if (qnSolver)
+					{
+						qnProp->SetComponent(qnSolver);
+						qnSolver->SetParamInt("max_ups", ops.ilimit);
+					}
 				}
 				else
 				{

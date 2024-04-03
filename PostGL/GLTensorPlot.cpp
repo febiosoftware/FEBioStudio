@@ -248,7 +248,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 				{
 				case VEC_EIGEN:
 				{
-					mat3f m = pfem->EvaluateElemTensor(i, ntime, m_ntensor, DATA_MAT3FS);
+					mat3f m = pfem->EvaluateElemTensor(i, ntime, m_ntensor, DATA_MAT3S);
 
 					mat3fs s = m.sym();
 					s.eigen(t.r, t.l);
@@ -326,7 +326,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 				{
 				case VEC_EIGEN:
 				{
-					mat3f m = pfem->EvaluateNodeTensor(i, ntime, m_ntensor, DATA_MAT3FS);
+					mat3f m = pfem->EvaluateNodeTensor(i, ntime, m_ntensor, DATA_MAT3S);
 
 					mat3fs s = m.sym();
 					s.eigen(t.r, t.l);

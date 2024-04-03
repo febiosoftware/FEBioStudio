@@ -106,7 +106,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F)
+		if ((*pd)->Type() == DATA_VEC3)
 		{
 			std::string sname = (*pd)->GetName();
 			if ((sname == "displacement") || (sname == "Displacement")) ndisp = i;
@@ -115,7 +115,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	if (ndisp != -1)
 	{
-		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
+		ps->SetDisplacementField(BUILD_FIELD( DATA_CLASS::NODE_DATA, ndisp, 0));
 		m_pdis = new CGLDisplacementMap(this);
 	}
 
@@ -323,7 +323,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F) ++nv;
+		if ((*pd)->Type() == DATA_VEC3) ++nv;
 		if ((*pd)->GetName() == szvectorField) ndisp = i;
 	}
 
@@ -2483,7 +2483,7 @@ int CGLModel::GetSubDivisions()
 		if (ndivs > 10) ndivs = 10;
 		if (ndivs <  1) ndivs = 1;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if (ndivs > 2) ndivs = 2;
 #endif
 
@@ -2782,6 +2782,73 @@ void CGLModel::ShowMaterial(int nmat)
 		FSEdge& edge = mesh.Edge(i);
 		if ((mesh.Node(edge.n[0]).IsInvisible() == false) &&
 			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
+	}
+
+	UpdateSelectionLists();
+}
+
+// Show elements with a certain material ID
+void CGLModel::UpdateMeshVisibility()
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	Post::FEPostModel& fem = *GetFSModel();
+
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& e = mesh.ElementRef(i);
+		if (e.m_MatID >= 0)
+		{
+			Post::Material* mat = fem.GetMaterial(e.m_MatID);
+			e.Show(mat->bvisible);
+		}
+	}
+
+	// show faces
+	int NF = mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = mesh.Face(i);
+		bool bshow = false;
+		if (f.IsExternal())
+		{
+			if (mesh.ElementRef(f.m_elem[0].eid).IsInvisible() == false) bshow = true;
+		}
+		else
+		{
+			FEElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
+			FEElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
+			if (!e0.IsInvisible() || !e1.IsInvisible()) bshow = true;
+		}
+		f.Show(bshow);
+	}
+
+	// show nodes
+	int NN = mesh.Nodes();
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = 0;
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		if (el.IsInvisible() == false)
+		{
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		node.Show(node.m_ntag == 1);
+	}
+
+	// show edges
+	int NL = mesh.Edges();
+	for (int i = 0; i < NL; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		if ((mesh.Node(edge.n[0]).IsInvisible() == false) &&
+			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
+		else edge.Show(false);
 	}
 
 	UpdateSelectionLists();

@@ -211,8 +211,9 @@ namespace FEBio {
 	};
 
 	int runModel(const std::string& fileName, 
-		FEBioOutputHandler* outputHandler = nullptr,
-		FEBioProgressTracker* progressTracker = nullptr);
+		FEBioOutputHandler* outputHandler,
+		FEBioProgressTracker* progressTracker,
+		std::string& report);
 
 	void TerminateRun();
 

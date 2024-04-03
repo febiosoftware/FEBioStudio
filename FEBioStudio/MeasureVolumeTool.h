@@ -45,6 +45,7 @@ public:
 private:
 	double	m_vol;		// volume of selection
 	int		m_nformula;	// choose formula
+	int		m_faceCount;
 
 	friend class Props;
 };

@@ -27,18 +27,18 @@ SOFTWARE.*/
 #include "FEItemListBuilder.h"
 
 
-FEMeshData::FEMeshData(FEMeshData::DATA_CLASS dataClass)
-	: m_dataClass(dataClass), m_pMesh(0), m_dataType(FEMeshData::DATA_TYPE::DATA_SCALAR)
+FEMeshData::FEMeshData(DATA_CLASS dataClass)
+	: m_dataClass(dataClass), m_pMesh(0), m_dataType(DATA_TYPE::DATA_SCALAR)
 {
 	m_dataFmt = DATA_ITEM;
-	m_dataSize = 0;
+	m_itemSize = 0;
 
 	switch (m_dataClass)
 	{
-	case NODE_DATA   : SetMeshItemType(MESH_ITEM_FLAGS::FE_NODE_FLAG); break;
-	case SURFACE_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_FACE_FLAG); break;
-	case ELEMENT_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_ELEM_FLAG); break;
-	case PART_DATA   : SetMeshItemType(MESH_ITEM_FLAGS::FE_PART_FLAG); break;
+	case NODE_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_NODE_FLAG); break;
+	case FACE_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_FACE_FLAG); break;
+	case ELEM_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_ELEM_FLAG); break;
+	case PART_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_PART_FLAG); break;
 	default:
 		assert(false);
 	}
@@ -48,19 +48,54 @@ FEMeshData::~FEMeshData()
 {
 }
 
-FEMeshData::DATA_CLASS FEMeshData::GetDataClass() const
+DATA_CLASS FEMeshData::GetDataClass() const
 {
 	return m_dataClass;
 }
 
-FEMeshData::DATA_TYPE FEMeshData::GetDataType() const
+DATA_TYPE FEMeshData::GetDataType() const
 {
 	return m_dataType;
 }
 
-FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
+DATA_FORMAT FEMeshData::GetDataFormat() const
 {
 	return m_dataFmt;
+}
+
+int FEMeshData::DataSize() const
+{
+	return (int)m_data.size();
+}
+
+// nr of data items
+int FEMeshData::DataItems() const
+{
+	assert(m_itemSize > 0);
+	if (m_itemSize == 0) return 0;
+	return (int)m_data.size() / m_itemSize;
+}
+
+int FEMeshData::ItemSize() const
+{
+	return m_itemSize;
+}
+
+void FEMeshData::SetDataFormat(DATA_FORMAT dataFormat)
+{
+	m_dataFmt = dataFormat;
+}
+
+void FEMeshData::SetDataType(DATA_TYPE dataType)
+{
+	assert(m_itemSize == 0);
+	m_dataType = dataType;
+	switch (dataType)
+	{
+	case DATA_SCALAR: m_itemSize = 1; break;
+	case DATA_VEC3 : m_itemSize = 3; break;
+	case DATA_MAT3 : m_itemSize = 9; break;
+	}
 }
 
 FSMesh* FEMeshData::GetMesh() const

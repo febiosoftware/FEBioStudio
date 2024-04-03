@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
 using namespace std;
@@ -326,7 +325,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		case MAT3F  : pdf = new FEDataField_T<Post::FENodeData<mat3f  > >(&fem, EXPORT_DATA); break;
 		case ARRAY:
 		{
-			FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_NODE, DATA_ITEM, EXPORT_DATA);
+			FEArrayDataField* data = new FEArrayDataField(&fem, NODE_DATA, DATA_ITEM, EXPORT_DATA);
 			data->SetArraySize(it.arraySize);
 			data->SetArrayNames(it.arrayNames);
 			pdf = data;
@@ -362,7 +361,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_NODE, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_NODE, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -386,7 +385,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_ITEM, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_ITEM, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -394,7 +393,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				break;
 				case ARRAY_VEC3F:
 				{
-					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, CLASS_ELEM, EXPORT_DATA);
+					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, ELEM_DATA, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -410,12 +409,12 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 					return false;
@@ -490,12 +489,12 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_COMP> >(&fem, EXPORT_DATA); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_COMP> >(&fem, EXPORT_DATA); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_COMP> >(&fem, EXPORT_DATA); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -1265,7 +1264,7 @@ bool XpltReader2::ReadStateSection(FEPostModel& fem)
 	{
 		FEDataManager& dm = *fem.GetDataManager();
 		int n = dm.FindDataField("shell thickness");
-		Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(ps->m_Data[n]);
+		Post::FEElementData<float,DATA_MULT>& df = dynamic_cast<Post::FEElementData<float,DATA_MULT>&>(ps->m_Data[n]);
 		Post::FEPostMesh& mesh = *GetCurrentMesh();
 		int NE = mesh.Elements();
 		float h[FSElement::MAX_NODES] = {0.f};
@@ -1721,7 +1720,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<float> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(s);
+			Post::FEElementData<float,DATA_MULT>& df = dynamic_cast<Post::FEElementData<float,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		}
 		break;
@@ -1730,7 +1729,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<vec3f> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<vec3f,DATA_COMP>& df = dynamic_cast<Post::FEElementData<vec3f,DATA_COMP>&>(s);
+			Post::FEElementData<vec3f,DATA_MULT>& df = dynamic_cast<Post::FEElementData<vec3f,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -1739,7 +1738,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<mat3fs> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3fs,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3fs,DATA_COMP>&>(s);
+			Post::FEElementData<mat3fs,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3fs,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -1748,7 +1747,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<mat3fd> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3fd,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3fd,DATA_COMP>&>(s);
+			Post::FEElementData<mat3fd,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3fd,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -1757,7 +1756,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<mat3f> a(nsize), d(NE);
 			m_ar.read(a);
 
-			Post::FEElementData<mat3f,DATA_COMP>& df = dynamic_cast<Post::FEElementData<mat3f,DATA_COMP>&>(s);
+			Post::FEElementData<mat3f,DATA_MULT>& df = dynamic_cast<Post::FEElementData<mat3f,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
 		break;
@@ -1766,7 +1765,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 			vector<tens4fs> a(nsize), d(NE);
 			m_ar.read(a);
             
-			Post::FEElementData<tens4fs,DATA_COMP>& df = dynamic_cast<Post::FEElementData<tens4fs,DATA_COMP>&>(s);
+			Post::FEElementData<tens4fs,DATA_MULT>& df = dynamic_cast<Post::FEElementData<tens4fs,DATA_MULT>&>(s);
 			for (int i=0; i<NE; ++i) df.add(dom.elem[i].index, ne, &a[i*ne]);
 		};
         break;
@@ -1875,7 +1874,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 	{
 	case FLOAT:
 		{
-			FEFaceData<float,DATA_COMP>& df = dynamic_cast<FEFaceData<float,DATA_COMP>&>(data);
+			FEFaceData<float,DATA_MULT>& df = dynamic_cast<FEFaceData<float,DATA_MULT>&>(data);
 			vector<float> a(NFM*NF);
 			m_ar.read(a);
 			float v[10];
@@ -1890,7 +1889,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 		break;
 	case VEC3F:
 		{
-			FEFaceData<vec3f,DATA_COMP>& df = dynamic_cast<FEFaceData<vec3f,DATA_COMP>&>(data);
+			FEFaceData<vec3f,DATA_MULT>& df = dynamic_cast<FEFaceData<vec3f,DATA_MULT>&>(data);
 			vector<vec3f> a(NFM*NF);
 			m_ar.read(a);
 			vec3f v[10];
@@ -1905,7 +1904,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 		break;
 	case MAT3FS:
 		{
-			FEFaceData<mat3fs,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3fs,DATA_COMP>&>(data);
+			FEFaceData<mat3fs,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3fs,DATA_MULT>&>(data);
 			vector<mat3fs> a(4*NF);
 			m_ar.read(a);
 			mat3fs v[10];
@@ -1920,7 +1919,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 		break;
 	case MAT3F:
 		{
-			FEFaceData<mat3f,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3f,DATA_COMP>&>(data);
+			FEFaceData<mat3f,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3f,DATA_MULT>&>(data);
 			vector<mat3f> a(4*NF);
 			m_ar.read(a);
 			mat3f v[10];
@@ -1935,7 +1934,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 		break;
 	case MAT3FD:
 		{
-			FEFaceData<mat3fd,DATA_COMP>& df = dynamic_cast<FEFaceData<mat3fd,DATA_COMP>&>(data);
+			FEFaceData<mat3fd,DATA_MULT>& df = dynamic_cast<FEFaceData<mat3fd,DATA_MULT>&>(data);
 			vector<mat3fd> a(4*NF);
 			m_ar.read(a);
 			mat3fd v[10];
@@ -1950,7 +1949,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 		break;	
     case TENS4FS:
 		{
-			FEFaceData<tens4fs,DATA_COMP>& df = dynamic_cast<FEFaceData<tens4fs,DATA_COMP>&>(data);
+			FEFaceData<tens4fs,DATA_MULT>& df = dynamic_cast<FEFaceData<tens4fs,DATA_MULT>&>(data);
 			vector<tens4fs> a(4*NF);
 			m_ar.read(a);
 			tens4fs v[10];

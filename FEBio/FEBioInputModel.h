@@ -371,6 +371,16 @@ public:
 
 		void Update();
 
+		int GlobalToLocalNodeIndex(int globalID);
+		void GlobalToLocalNodeIndex(std::vector<int>& nodeList);
+
+		int GlobalToLocalElementIndex(int globalID);
+		void GlobalToLocalElementIndex(std::vector<int>& elemList);
+
+	private:
+		void BuildNLT();
+		void BuildELT();
+
 	public:
 		FEBioMesh				m_mesh;
 		string					m_name;
@@ -384,6 +394,12 @@ public:
 		std::vector<DiscreteSet>	m_des;
 		std::vector<SurfacePair>	m_spr;
 		std::vector<DomainList>		m_domlist;
+
+		std::vector<int> m_NLT;
+		int m_nltoff = 0;
+
+		std::vector<int> m_ELT;
+		int m_eltoff = 0;
 
 	private: // don't allow copying
 		Part(const Part& p){}

@@ -545,7 +545,7 @@ void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildElementData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// make sure element data is valid
 	assert(ValidateElements());
 #endif
@@ -565,7 +565,7 @@ void FSMesh::RebuildElementData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildFaceData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateFaces());
 #endif
 
@@ -584,7 +584,7 @@ void FSMesh::RebuildFaceData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildEdgeData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateEdges());
 #endif
 	// mark the exterior edges
@@ -1741,7 +1741,7 @@ void FSMesh::Save(OArchive &ar)
 				FEMeshData* meshData = m_meshData[n];
 				switch (meshData->GetDataClass())
 				{
-				case FEMeshData::NODE_DATA:
+				case NODE_DATA:
 				{
 					FENodeData* map = dynamic_cast<FENodeData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_NODE_DATA);
@@ -1751,7 +1751,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::SURFACE_DATA:
+				case FACE_DATA:
 				{
 					FESurfaceData* map = dynamic_cast<FESurfaceData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_SURFACE_DATA);
@@ -1761,7 +1761,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::ELEMENT_DATA:
+				case ELEM_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_ELEM_DATA);
@@ -1771,7 +1771,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::PART_DATA:
+				case PART_DATA:
 				{
 					FEPartData* map = dynamic_cast<FEPartData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_PART_DATA);
@@ -2467,7 +2467,7 @@ void FSMesh::AddMeshDataField(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
+FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
 	data->Create(nodeset, 0.0, dataType);
@@ -2477,33 +2477,43 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEM
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
+FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
+	data->Create(this, surface, dataType, DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(this, part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;
 }
 
 //-----------------------------------------------------------------------------
-FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshData::DATA_TYPE dataType)
+FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, DATA_TYPE dataType)
 {
 	FEPartData* map = new FEPartData(this);
-	map->Create(part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;
+}
+
+FEPartData* FSMesh::FindPartDataField(const std::string& name)
+{
+	for (FEMeshData* pd : m_meshData)
+	{
+		FEPartData* partData = dynamic_cast<FEPartData*>(pd);
+		if (pd && (pd->GetName() == name)) return partData;
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -2639,6 +2649,7 @@ void FSMesh::BuildNLT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearNLT()
 {
+	if (m_NLT.empty()) return;
 	m_NLT.clear();
 	m_nltmin = 0;
 	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
@@ -2681,6 +2692,7 @@ void FSMesh::BuildELT()
 	for (int i = 1; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		if (nid < 1) return;
 		if (nid > maxid) maxid = nid;
 		if (nid < minid) minid = nid;
 	}
@@ -2691,19 +2703,14 @@ void FSMesh::BuildELT()
 
 	// Figure out the size
 	int nsize = maxid - minid + 1;
-	if (nsize < NE)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearELT();
-		return;
-	}
+	assert(nsize >= NE);
 
 	// Ok, look's like we're good to go
 	m_ELT.assign(nsize, -1);
 	for (int i = 0; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
 		m_ELT[nid - minid] = i;
 	}
 	m_eltmin = minid;
@@ -2712,7 +2719,10 @@ void FSMesh::BuildELT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearELT()
 {
-	m_ELT.clear();
-	m_eltmin = 0;
-	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	if (m_ELT.empty() == false)
+	{
+		m_ELT.clear();
+		m_eltmin = 0;
+		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	}
 }

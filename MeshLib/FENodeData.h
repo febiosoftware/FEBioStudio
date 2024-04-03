@@ -36,19 +36,12 @@ class FENodeData : public FEMeshData
 {
 public:
 	FENodeData(GObject* po);
-	FENodeData(GObject* po, FEMeshData::DATA_TYPE dataType);
+	FENodeData(GObject* po, DATA_TYPE dataType);
 
-	void Create(FSNodeSet* nset, double v = 0.0, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	void Create(FSNodeSet* nset, double v = 0.0, DATA_TYPE dataType = DATA_SCALAR);
 
 	// size of data field
 	int Size() const { return (int)m_data.size(); }
-
-	// get/set
-	double GetScalar(size_t i) const;
-	void SetScalar(size_t i, double v);
-
-	vec3d GetVec3d(size_t i) const;
-	void SetVec3d(size_t i, const vec3d& v);
 
 	void SetItemList(FEItemListBuilder* pl, int n = 0) override;
 
@@ -63,22 +56,3 @@ private:
 	FENodeData(const FENodeData& d);
 	FENodeData& operator = (const FENodeData& d);
 };
-
-inline double FENodeData::GetScalar(size_t i) const { assert(m_dataType == FEMeshData::DATA_SCALAR); return m_data[i]; }
-inline void FENodeData::SetScalar(size_t i, double v) { assert(m_dataType == FEMeshData::DATA_SCALAR); m_data[i] = v; }
-
-inline vec3d FENodeData::GetVec3d(size_t i) const
-{ 
-	assert(m_dataType == FEMeshData::DATA_VEC3D);
-	const double* d = &m_data[3 * i];
-	return vec3d(d[0], d[1], d[2]); 
-}
-
-inline void FENodeData::SetVec3d(size_t i, const vec3d& v)
-{
-	assert(m_dataType == FEMeshData::DATA_VEC3D);
-	double* d = &m_data[3 * i];
-	d[0] = v.x;
-	d[1] = v.y;
-	d[2] = v.z;
-}

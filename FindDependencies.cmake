@@ -1,13 +1,8 @@
 # Qt
-find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets REQUIRED) 
 
-if(Qt_Ver VERSION_EQUAL 6)
-  find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
-endif()
-mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
-    ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
-    ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
-    ${Qt_Version}WidgetsTools_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
+mark_as_advanced(Qt6_DIR Qt6Core_DIR Qt6CoreTools_DIR Qt6DBusTools_DIR Qt6DBus_DIR Qt6GuiTools_DIR 
+    Qt6Gui_DIR Qt6Network_DIR Qt6OpenGLWidgets_DIR Qt6OpenGL_DIR Qt6WidgetsTools_DIR Qt6Widgets_DIR)
 
 # FEBio
 # Find FEBio SDK or git repo automatically
@@ -476,64 +471,55 @@ endif()
 set(SSL_DBG_LIB_DIR CACHE PATH "Path to the OpenSSL debug lib directory")
 mark_as_advanced(SSL_DBG_LIB_DIR)
 
-# QuaZip
-if(Qt_Ver VERSION_EQUAL 6)
-    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip quazip1-qt6d)
-else()
-    set(QUAZIP_NAMES quazip5 quazip)
-endif()
-
+# LibZip
 if(WIN32)
-	find_path(QUAZIP_INC quazip.h
+	find_path(LIBZIP_INC zip.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
-        DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB 
-        NAMES ${QUAZIP_NAMES} 
+		PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
+        DOC "LibZip include directory")
+	find_library(LIBZIP_LIB zip
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "QuaZip library path")
+		DOC "LibZip library path")
 elseif(APPLE)
-	find_path(QUAZIP_INC quazip.h
-        PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
-		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB 
-        NAMES ${QUAZIP_NAMES}  
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
-		DOC "QuaZip library path")
+	find_path(LIBZIP_INC zip.h
+        PATHS /usr/include/* /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
+		DOC "LibZip include directory")
+	find_library(LIBZIP_LIB zip
+        PATHS /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "lib" "libzip/lib" "build" "build/lib" "Release" "Debug"
+		DOC "LibZip library path")
 else()
-	find_path(QUAZIP_INC quazip.h
-        PATHS /usr/local/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
-        PATH_SUFFIXES "quazip" "quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
-		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB
-        NAMES ${QUAZIP_NAMES}
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/* 
-        PATH_SUFFIXES "lib" "lib64" "quazip/lib" "quazip/build/quazip" "build" "build/lib" "Release" "Debug"
-		DOC "QuaZip library path")
+	find_path(LIBZIP_INC zip.h
+        PATHS /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
+        PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
+		DOC "LibZip include directory")
+	find_library(LIBZIP_LIB zip
+        PATHS /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/* 
+        PATH_SUFFIXES "lib" "lib64" "libzip/lib" "libzip/build/libzip" "build" "build/lib" "Release" "Debug"
+		DOC "LibZip library path")
 endif()
 
-if(QUAZIP_LIB)
-    get_filename_component(QUAZIP_NAME ${QUAZIP_LIB} NAME)
-    get_filename_component(QUAZIP_TEMP ${QUAZIP_LIB} DIRECTORY)
-    set(QUAZIP_LIB_DIR ${QUAZIP_TEMP} CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
-    unset(QUAZIP_TEMP)
-    unset(QUAZIP_LIB CACHE)
+if(LIBZIP_LIB)
+    get_filename_component(LIBZIP_NAME ${LIBZIP_LIB} NAME)
+    get_filename_component(LIBZIP_TEMP ${LIBZIP_LIB} DIRECTORY)
+    set(LIBZIP_LIB_DIR ${LIBZIP_TEMP} CACHE PATH "Path to the LibZip lib directory (e.g. /opt/libzip/lib)")
+    unset(LIBZIP_TEMP)
+    unset(LIBZIP_LIB CACHE)
 else()
-	set(QUAZIP_LIB_DIR "QUAZIP_LIB_DIR-NOTFOUND" CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
-    unset(QUAZIP_LIB CACHE)
+	set(LIBZIP_LIB_DIR "LIBZIP_LIB_DIR-NOTFOUND" CACHE PATH "Path to the LibZip lib directory (e.g. /opt/libzip/lib)")
+    unset(LIBZIP_LIB CACHE)
 endif()
 
-if(QUAZIP_INC AND QUAZIP_LIB_DIR)		
-    mark_as_advanced(QUAZIP_INC QUAZIP_LIB_DIR)
+if(LIBZIP_INC AND LIBZIP_LIB_DIR)		
+    mark_as_advanced(LIBZIP_INC LIBZIP_LIB_DIR)
 else()
-    mark_as_advanced(CLEAR QUAZIP_INC QUAZIP_LIB_DIR)
+    mark_as_advanced(CLEAR LIBZIP_INC LIBZIP_LIB_DIR)
 endif()
 
-set(QUAZIP_DBG_LIB_DIR CACHE PATH "Path to the QuaZip debug lib directory")
-mark_as_advanced(QUAZIP_DBG_LIB_DIR)
+set(LIBZIP_DBG_LIB_DIR CACHE PATH "Path to the LibZip debug lib directory")
+mark_as_advanced(LIBZIP_DBG_LIB_DIR)
 
 # SQLite
 if(WIN32)
@@ -572,7 +558,7 @@ else()
     mark_as_advanced(CLEAR SQLITE_INC SQLITE_LIB_DIR)
 endif()
 
-if(SQLITE_INC AND SQLITE_LIB_DIR AND QUAZIP_INC AND QUAZIP_LIB_DIR)		
+if(SQLITE_INC AND SQLITE_LIB_DIR AND LIBZIP_INC AND LIBZIP_LIB_DIR)		
 	option(MODEL_REPO "Build code to connect to the Model Repository." ON)
 else()
     SET(MODEL_REPO OFF CACHE BOOL "Build code to connect to the Model Repository." FORCE)

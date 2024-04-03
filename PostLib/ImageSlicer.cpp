@@ -352,23 +352,26 @@ void CImageSlicer::Render(CGLContext& rc)
 	//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glColor4d(1, 1, 1, 1);
 
-	double x[4], y[4], z[4];
+	vec3d r0(0,0,0);
+	vec3d r1 = box.r1() - box.r0();
+
+	double x[4] = { 0 }, y[4] = { 0 }, z[4] = { 0 };
 	switch (nop)
 	{
 	case 0:
-		x[0] = x[1] = x[2] = x[3] = box.x0 + off*(box.x1 - box.x0);
-		y[0] = y[3] = box.y1;  y[1] = y[2] = box.y0;
-		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
+		x[0] = x[1] = x[2] = x[3] = r0.x + off*(r1.x - r0.x);
+		y[0] = y[3] = r1.y;  y[1] = y[2] = r0.y;
+		z[0] = z[1] = r0.z;  z[2] = z[3] = r1.z;
 		break;
 	case 1:
-		y[0] = y[1] = y[2] = y[3] = box.y0 + off*(box.y1 - box.y0);
-		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
-		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
+		y[0] = y[1] = y[2] = y[3] = r0.y + off*(r1.y - r0.y);
+		x[0] = x[3] = r1.x;  x[1] = x[2] = r0.x;
+		z[0] = z[1] = r0.z;  z[2] = z[3] = r1.z;
 		break;
 	case 2:
-		z[0] = z[1] = z[2] = z[3] = box.z0 + off*(box.z1 - box.z0);
-		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
-		y[0] = y[1] = box.y0;  y[2] = y[3] = box.y1;
+		z[0] = z[1] = z[2] = z[3] = r0.z + off*(r1.z - r0.z);
+		x[0] = x[3] = r1.x;  x[1] = x[2] = r0.x;
+		y[0] = y[1] = r0.y;  y[2] = y[3] = r1.y;
 		break;
 	}
 

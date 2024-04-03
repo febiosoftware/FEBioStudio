@@ -357,7 +357,7 @@ bool PostSessionFileReader::parse_datafield(XMLTag& tag)
 
 bool PostSessionFileReader::parse_mesh_nodeset(XMLTag& tag)
 {
-	const char* szname = tag.AttributeValue("name");
+	string name = tag.AttributeValue("name");
 	vector<int> nodeList;
 	++tag;
 	do {
@@ -374,7 +374,7 @@ bool PostSessionFileReader::parse_mesh_nodeset(XMLTag& tag)
 	if (po)
 	{
 		FSNodeSet* pg = new FSNodeSet(po, nodeList);
-		pg->SetName(szname);
+		pg->SetName(name);
 		po->AddFENodeSet(pg);
 	}
 
@@ -383,7 +383,7 @@ bool PostSessionFileReader::parse_mesh_nodeset(XMLTag& tag)
 
 bool PostSessionFileReader::parse_mesh_edgeset(XMLTag& tag)
 {
-	const char* szname = tag.AttributeValue("name");
+	string name = tag.AttributeValue("name");
 	vector<int> edgeList;
 	++tag;
 	do {
@@ -400,7 +400,7 @@ bool PostSessionFileReader::parse_mesh_edgeset(XMLTag& tag)
 	if (po)
 	{
 		FSEdgeSet* pg = new FSEdgeSet(po, edgeList);
-		pg->SetName(szname);
+		pg->SetName(name);
 		po->AddFEEdgeSet(pg);
 	}
 
@@ -409,7 +409,7 @@ bool PostSessionFileReader::parse_mesh_edgeset(XMLTag& tag)
 
 bool PostSessionFileReader::parse_mesh_surface(XMLTag& tag)
 {
-	const char* szname = tag.AttributeValue("name");
+	string name = tag.AttributeValue("name");
 	vector<int> faceList;
 	++tag;
 	do {
@@ -426,7 +426,7 @@ bool PostSessionFileReader::parse_mesh_surface(XMLTag& tag)
 	if (po)
 	{
 		FSSurface* pg = new FSSurface(po, faceList);
-		pg->SetName(szname);
+		pg->SetName(name);
 		po->AddFESurface(pg);
 	}
 
@@ -435,7 +435,7 @@ bool PostSessionFileReader::parse_mesh_surface(XMLTag& tag)
 
 bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 {
-	const char* szname = tag.AttributeValue("name");
+	string name = tag.AttributeValue("name");
 	vector<int> elemList;
 	++tag;
 	do {
@@ -452,7 +452,7 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 	if (po)
 	{
 		FSElemSet* pg = new FSElemSet(po, elemList);
-		pg->SetName(szname);
+		pg->SetName(name);
 		po->AddFEElemSet(pg);
 	}
 
@@ -730,10 +730,10 @@ void PostSessionFileWriter::WriteModel()
 			}
 			xml.close_branch();
 		}
-		else
+		else if (openFileReader)
 		{
 			// save plot file
-			std::string plotFile = m_doc->GetDocFilePath();
+			std::string plotFile = currentDir.relativeFilePath(QString::fromStdString(openFileReader->GetFileName())).toStdString();
 			XMLElement plt("model");
 			plt.add_attribute("file", plotFile);
 			xml.add_empty(plt);

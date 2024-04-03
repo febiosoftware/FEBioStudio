@@ -116,7 +116,7 @@ void C2DImageTimeView::Update()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        if(doc->GetUIViewMode() == CGLDocument::TIME_VIEW_2D)
         {
             ui->slice->Update();
         }
@@ -162,7 +162,7 @@ void C2DImageTimeView::on_timer_timeout()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        if(doc->GetUIViewMode() == CGLDocument::TIME_VIEW_2D)
         {
             int index = ui->slice->GetIndex() + 1;
 

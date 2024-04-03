@@ -73,7 +73,7 @@ public:
 
 		QFormLayout* f2 = new QFormLayout;
 		f2->addRow("select test:", m_test);
-		f2->addRow("strain:", m_strain = new QLineEdit); m_strain->setValidator(new QDoubleValidator(0.01, 1.0, 5));
+		f2->addRow("strain:", m_strain = new QLineEdit); m_strain->setValidator(new QDoubleValidator(-1, 1, 5));
 		f2->addRow("simulation time:", m_time  = new QLineEdit); m_time->setValidator(new QDoubleValidator(0.01, 1000, 5));
 		f2->addRow("time step:"      , m_steps = new QLineEdit); m_steps->setValidator(new QDoubleValidator(0.001, 100, 5));
 
@@ -84,18 +84,19 @@ public:
 		m_props = new FEClassEdit(m_wnd);
 
 		QPushButton* pb = new QPushButton("Run test");
+		QPushButton* pc = new QPushButton("Clear graph");
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addLayout(f1);
 		l->addWidget(m_props);
 		l->addLayout(f2);
 		l->addWidget(pb);
+		l->addWidget(pc);
 
 		QWidget* wl = new QWidget;
 		wl->setLayout(l);
 
 		plot = new CPlotWidget;
-		plot->showLegend(false);
 
 		QSplitter* split = new QSplitter;
 		split->setOrientation(Qt::Horizontal);
@@ -111,7 +112,15 @@ public:
 		dlg->setLayout(h);
 
 		QObject::connect(pb, SIGNAL(clicked()), dlg, SLOT(onRun()));
+		QObject::connect(pc, SIGNAL(clicked()), dlg, SLOT(onClear()));
 		QObject::connect(m_mat, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onMatChanged(int)));
+		QObject::connect(m_test, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onTestChanged(int)));
+	}
+
+	void clearGraph()
+	{
+		plot->clear();
+		plot->update();
 	}
 };
 
@@ -123,7 +132,9 @@ CDlgMaterialTest::CDlgMaterialTest(CMainWindow* wnd)	: QDialog(wnd), ui(new UIDl
 	ui->setup(this);
 
 	ui->m_test->addItem("uni-axial");
-//	ui->m_test->addItem("simple shear");
+	ui->m_test->addItem("biaxial");
+	ui->m_test->addItem("triaxial");
+	ui->m_test->addItem("simple shear");
 
 	CModelDocument* doc = wnd->GetModelDocument();
 	if (doc)
@@ -136,6 +147,11 @@ CDlgMaterialTest::CDlgMaterialTest(CMainWindow* wnd)	: QDialog(wnd), ui(new UIDl
 			ui->m_mat->addItem(QString::fromStdString(pm->GetName()));
 		}
 	}
+}
+
+void CDlgMaterialTest::onClear()
+{
+	ui->clearGraph();
 }
 
 void CDlgMaterialTest::onRun()
@@ -159,9 +175,15 @@ void CDlgMaterialTest::onRun()
 
 	MaterialTest mt;
 	mt.mat = pm;
-	mt.test = ui->m_test->currentText().toStdString();
+	mt.testName = ui->m_test->currentText().toStdString();
 	mt.strain = ui->m_strain->text().toDouble();
 	mt.time   = ui->m_time->text().toDouble();
+
+	mt.yvalName = "sx";
+	if (mt.testName == "simple shear")
+		mt.xvalName = "Exz";
+	else
+		mt.xvalName = "Ex";
 
 	double dt = ui->m_steps->text().toDouble();
 	if (dt <= 0.0)
@@ -176,29 +198,33 @@ void CDlgMaterialTest::onRun()
 		return;
 	}
 
-	ui->plot->clear();
-	ui->plot->setTitle("");
-	ui->plot->setDrawAxesLabels(false);
-
 	std::vector<pair<double, double> > data;
 	if (FEBio::RunMaterialTest(mt, data))
 	{
+		int N = ui->plot->plots();
+		QString s = QString::number(N + 1);
 		CPlotData* pltData = new CPlotData;
+		pltData->setLabel(s);
 		for (int i = 0; i < data.size(); ++i)
 		{
 			pltData->addPoint(data[i].first, data[i].second);
 		}
+		pltData->setMarkerType(MarkerType::NO_MARKER);
 		ui->plot->addPlotData(pltData);
 		ui->plot->OnZoomToFit();
 
 		QString unit = Units::GetUnitString(doc->GetUnitSystem(), Units::PRESSURE);
 
-		ui->plot->setXAxisLabel("Ex");
-		ui->plot->setYAxisLabel(QString("sx [%1]").arg(unit));
+		QString xstr = QString::fromStdString(mt.xvalName);
+		QString ystr = QString::fromStdString(mt.yvalName);
+
+		ui->plot->setXAxisLabel(xstr);
+		ui->plot->setYAxisLabel(QString("%1 [%2]").arg(ystr).arg(unit));
 		ui->plot->setDrawAxesLabels(true);
 
 		QString title = QString("%1 - %2").arg(ui->m_mat->currentText()).arg(ui->m_test->currentText());
 		ui->plot->setTitle(title);
+		ui->plot->update();
 	}
 	else
 	{
@@ -221,4 +247,11 @@ void CDlgMaterialTest::onMatChanged(int n)
 	GMaterial* mat = fem->GetMaterial(n);
 
 	ui->m_props->SetFEClass(mat->GetMaterialProperties(), fem);
+}
+
+void CDlgMaterialTest::onTestChanged(int n)
+{
+	ui->clearGraph();
+	ui->plot->setTitle("");
+	ui->plot->setDrawAxesLabels(false);
 }

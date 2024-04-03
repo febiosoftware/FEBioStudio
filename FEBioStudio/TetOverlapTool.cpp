@@ -35,6 +35,8 @@ CTetOverlapTool::CTetOverlapTool(CMainWindow* wnd) : CBasicTool(wnd, "Tet Overla
 {
 	m_ncount = 0;
 	addIntProperty(&m_ncount, "Overlapping tets")->setFlags(CProperty::Visible);
+
+	SetInfo("Finds tet elements that overlap. Overlapping tets are selected.");
 }
 
 // method called when user presses Apply button (optional)

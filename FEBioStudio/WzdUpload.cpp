@@ -44,7 +44,6 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QDialogButtonBox>
 #include <QLabel>
-#include <QFrame>
 #include <QFileInfo>
 #include <QApplication>
 #include <QLocale>

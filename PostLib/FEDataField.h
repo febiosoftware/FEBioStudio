@@ -49,7 +49,7 @@ enum DataFieldFlags {
 class ModelDataField : public FSObject
 {
 public:
-	ModelDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, DATA_FORMAT nfmt, DATA_CLASS ncls, unsigned int flag);
 
 	virtual ~ModelDataField();
 
@@ -60,13 +60,13 @@ public:
 	virtual FEMeshData* CreateData(FEState* pstate) = 0;
 
 	//! type identifier
-	Data_Type Type() { return m_ntype; }
+	DATA_TYPE Type() { return m_ntype; }
 
 	// Format identifier
-	Data_Format Format() const { return m_nfmt; }
+	DATA_FORMAT Format() const { return m_nfmt; }
 
 	// Class Identifier
-	Data_Class DataClass() const { return m_nclass; }
+	DATA_CLASS DataClass() const { return m_nclass; }
 
 	//! Set the field ID
 	void SetFieldID(int nid) { m_nfield = nid; }
@@ -104,9 +104,9 @@ public:
 
 protected:
 	int				m_nfield;	//!< field ID
-	Data_Type		m_ntype;	//!< data type
-	Data_Format		m_nfmt;		//!< data format
-	Data_Class		m_nclass;	//!< data class
+	DATA_TYPE		m_ntype;	//!< data type
+	DATA_FORMAT		m_nfmt;		//!< data format
+	DATA_CLASS		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
 	std::string		m_units;	//!< units
 
@@ -141,7 +141,7 @@ typedef std::vector<ModelDataField*>::iterator FEDataFieldPtr;
 class FEArrayDataField : public ModelDataField
 {
 public:
-	FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag = 0);
+	FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f, unsigned int flag = 0);
 
 	ModelDataField* Clone() const override;
 
@@ -152,7 +152,7 @@ public:
 class FEArrayVec3DataField : public ModelDataField
 {
 public:
-	FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag = 0);
+	FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c, unsigned int flag = 0);
 
 	ModelDataField* Clone() const override;
 
@@ -180,7 +180,7 @@ bool AddElemDataFromFile(FEPostModel& fem, const char* szfile, const char* sznam
 class PlotObjectData : public ModelDataField
 {
 public:
-	PlotObjectData(FEPostModel* fem, Data_Type ntype) : ModelDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+	PlotObjectData(FEPostModel* fem, DATA_TYPE ntype) : ModelDataField(fem, ntype, DATA_ITEM, OBJECT_DATA, 0) {}
 
 	ModelDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }

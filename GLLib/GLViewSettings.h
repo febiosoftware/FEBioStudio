@@ -33,7 +33,8 @@ enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
 	OBJECT_COLOR,
 	MATERIAL_TYPE,
-	FSELEMENT_TYPE
+	FSELEMENT_TYPE,
+	PHYSICS_TYPE
 };
 
 //-----------------------------------------------------------------------------
@@ -50,6 +51,14 @@ enum BackgroundStyle {
 	BG_COLOR2 = 1,
 	BG_HORIZONTAL = 2,
 	BG_VERTICAL = 3
+};
+
+
+// Tag Info options
+enum TagInfoOption {
+	NO_TAG_INFO,
+	TAG_ITEM,
+	TAG_ITEM_AND_NODES
 };
 
 //-----------------------------------------------------------------------------
@@ -127,6 +136,7 @@ struct GLViewSettings
 	float	m_shadow_intensity;	// shadow intensity
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
+	bool	m_use_environment_map;	// use the environment map (if one is provided)
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only

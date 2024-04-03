@@ -684,7 +684,7 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 
 				switch (data->GetDataClass())
 				{
-				case FEMeshData::NODE_DATA:
+				case NODE_DATA:
 				{
 					FENodeData* map = dynamic_cast<FENodeData*>(data); assert(map);
 					FEItemListBuilder* pg = map->GetItemList();
@@ -696,7 +696,7 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 					}
 				}
 				break;
-				case FEMeshData::ELEMENT_DATA:
+				case ELEM_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FSElemSet* pg = map->GetElementSet();
@@ -722,7 +722,7 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 					}
 				}
 				break;
-				case FEMeshData::PART_DATA:
+				case PART_DATA:
 				{
 					// We don't create element sets for part data since we already have the corresponding element sets
 					// in the mesh. 
@@ -3696,11 +3696,11 @@ void FEBioExport3::WriteElementDataFields()
 								{
 									el.set_attribute(nid, lid++);
 
-									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+									if (data.GetDataFormat() == DATA_ITEM)
 									{
 										el.value(data[j]);
 									}
-									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+									else if (data.GetDataFormat() == DATA_MULT)
 									{
 										int nn = pe->Nodes();
 										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
@@ -3744,8 +3744,8 @@ void FEBioExport3::WriteSurfaceDataSection()
 				XMLElement tag("SurfaceData");
 				tag.add_attribute("name", sd.GetName().c_str());
 
-				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if (sd.GetDataType() == DATA_SCALAR) tag.add_attribute("datatype", "scalar");
+				else if (sd.GetDataType() == DATA_VEC3) tag.add_attribute("datatype", "vector");
 
 				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
@@ -3797,8 +3797,8 @@ void FEBioExport3::WriteNodeDataSection()
 				XMLElement tag("NodeData");
 				tag.add_attribute("name", nd.GetName().c_str());
 
-				if      (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("datatype", "vector");
+				if      (nd.GetDataType() == DATA_SCALAR) tag.add_attribute("datatype", "scalar");
+				else if (nd.GetDataType() == DATA_VEC3 ) tag.add_attribute("datatype", "vector");
 
 				FEItemListBuilder* pitem = nd.GetItemList();
 				tag.add_attribute("node_set", GetNodeSetName(pitem));
@@ -3813,8 +3813,8 @@ void FEBioExport3::WriteNodeDataSection()
 					{
 						el.set_attribute(n1, nid++);
 
-						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.GetScalar(i));
-						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.GetVec3d (i));
+						if      (nd.GetDataType() == DATA_SCALAR) el.value(nd.getScalar(i));
+						else if (nd.GetDataType() == DATA_VEC3 ) el.value(nd.getVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}

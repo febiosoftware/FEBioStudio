@@ -94,6 +94,8 @@ public:
 	bool Load() override;
 
 private:
+	bool ReadPhysicalNames();
+	bool ReadParametrizations();
 	bool ReadEntities();
 	bool ReadNodes();
 	bool ReadElements();
@@ -524,18 +526,18 @@ bool GMeshLegacyFormat::ReadElements()
 		case 2: // triangle
 			if (nread != 3 + ntags + 3) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_TRI3;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
 			m_Face.push_back(el);
 			break;
 		case 3: // quad
 			if (nread != 3 + ntags + 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_QUAD4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
+			el.node[3] = m[3];
 			m_Face.push_back(el);
 			break;
 		}
@@ -546,78 +548,78 @@ bool GMeshLegacyFormat::ReadElements()
 		case 4: // tetrahedron
 			if (nread != 3 + ntags + 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_TET4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
+			el.node[3] = m[3];
 			m_Elem.push_back(el);
 			break;
 		case 5: // hexahedrons
 			if (nread != 3 + ntags + 8) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_HEX8;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[6] - 1;
-			el.node[7] = m[7] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
+			el.node[3] = m[3];
+			el.node[4] = m[4];
+			el.node[5] = m[5];
+			el.node[6] = m[6];
+			el.node[7] = m[7];
 			m_Elem.push_back(el);
 			break;
 		case 6: // pentahedron
 			if (nread != 3 + ntags + 6) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_PENTA6;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
+			el.node[3] = m[3];
+			el.node[4] = m[4];
+			el.node[5] = m[5];
 			m_Elem.push_back(el);
 			break;
 		case 7: // 5-node pyramid
 			if (nread != 3 + ntags + 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_PYRA5;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
+			el.node[0] = m[0];
+			el.node[1] = m[1];
+			el.node[2] = m[2];
+			el.node[3] = m[3];
+			el.node[4] = m[4];
 			m_Elem.push_back(el);
 			break;
         case 11: // 10-node tetrahedron
             if (nread != 3 + ntags + 10) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
             el.ntype = FE_TET10;
-            el.node[0] = m[0] - 1;
-            el.node[1] = m[1] - 1;
-            el.node[2] = m[2] - 1;
-            el.node[3] = m[3] - 1;
-            el.node[4] = m[4] - 1;
-            el.node[5] = m[5] - 1;
-            el.node[6] = m[6] - 1;
-            el.node[7] = m[7] - 1;
-            el.node[8] = m[9] - 1;
-            el.node[9] = m[8] - 1;
+            el.node[0] = m[0];
+            el.node[1] = m[1];
+            el.node[2] = m[2];
+            el.node[3] = m[3];
+            el.node[4] = m[4];
+            el.node[5] = m[5];
+            el.node[6] = m[6];
+            el.node[7] = m[7];
+            el.node[8] = m[9];
+            el.node[9] = m[8];
 			m_Elem.push_back(el);
             break;
         case 14: // 14-node pyramid
             {
                 if (nread != 3 + ntags + 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
                 el.ntype = FE_PYRA13;
-                el.node[0] = m[0] - 1;
-                el.node[1] = m[1] - 1;
-                el.node[2] = m[2] - 1;
-                el.node[3] = m[3] - 1;
-                el.node[4] = m[4] - 1;
-                el.node[ 5] = m[ 5] - 1;
-                el.node[ 6] = m[ 8] - 1;
-                el.node[ 7] = m[10] - 1;
-                el.node[ 8] = m[ 6] - 1;
-                el.node[ 9] = m[ 7] - 1;
-                el.node[10] = m[ 9] - 1;
-                el.node[11] = m[11] - 1;
-                el.node[12] = m[12] - 1;
+                el.node[0] = m[0];
+                el.node[1] = m[1];
+                el.node[2] = m[2];
+                el.node[3] = m[3];
+                el.node[4] = m[4];
+                el.node[ 5] = m[ 5];
+                el.node[ 6] = m[ 8];
+                el.node[ 7] = m[10];
+                el.node[ 8] = m[ 6];
+                el.node[ 9] = m[ 7];
+                el.node[10] = m[ 9];
+                el.node[11] = m[11];
+                el.node[12] = m[12];
 				m_Elem.push_back(el);
             }
                 break;
@@ -625,19 +627,19 @@ bool GMeshLegacyFormat::ReadElements()
             {
                 if (nread != 3 + ntags + 13) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
                 el.ntype = FE_PYRA13;
-                el.node[0] = m[0] - 1;
-                el.node[1] = m[1] - 1;
-                el.node[2] = m[2] - 1;
-                el.node[3] = m[3] - 1;
-                el.node[4] = m[4] - 1;
-                el.node[ 5] = m[ 5] - 1;
-                el.node[ 6] = m[ 8] - 1;
-                el.node[ 7] = m[10] - 1;
-                el.node[ 8] = m[ 6] - 1;
-                el.node[ 9] = m[ 7] - 1;
-                el.node[10] = m[ 9] - 1;
-                el.node[11] = m[11] - 1;
-                el.node[12] = m[12] - 1;
+                el.node[0] = m[0];
+                el.node[1] = m[1];
+                el.node[2] = m[2];
+                el.node[3] = m[3];
+                el.node[4] = m[4];
+                el.node[ 5] = m[ 5];
+                el.node[ 6] = m[ 8];
+                el.node[ 7] = m[10];
+                el.node[ 8] = m[ 6];
+                el.node[ 9] = m[ 7];
+                el.node[10] = m[ 9];
+                el.node[11] = m[11];
+                el.node[12] = m[12];
 				m_Elem.push_back(el);
             }
             break;
@@ -645,26 +647,26 @@ bool GMeshLegacyFormat::ReadElements()
 			{
 				if (nread != 3 + ntags + 20) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
 				el.ntype = FE_TET20;
-				el.node[ 0] = m[ 0] - 1;
-				el.node[ 1] = m[ 1] - 1;
-				el.node[ 2] = m[ 2] - 1;
-				el.node[ 3] = m[ 3] - 1;
-				el.node[ 4] = m[ 4] - 1;
-				el.node[ 5] = m[ 5] - 1;
-				el.node[ 6] = m[ 6] - 1;
-				el.node[ 7] = m[ 7] - 1;
-				el.node[ 8] = m[ 9] - 1;
-				el.node[ 9] = m[ 8] - 1;
-				el.node[10] = m[11] - 1;
-				el.node[11] = m[10] - 1;
-				el.node[12] = m[15] - 1;
-				el.node[13] = m[14] - 1;
-				el.node[14] = m[13] - 1;
-				el.node[15] = m[12] - 1;
-				el.node[16] = m[17] - 1;
-				el.node[17] = m[19] - 1;
-				el.node[18] = m[18] - 1;
-				el.node[19] = m[16] - 1;
+				el.node[ 0] = m[ 0];
+				el.node[ 1] = m[ 1];
+				el.node[ 2] = m[ 2];
+				el.node[ 3] = m[ 3];
+				el.node[ 4] = m[ 4];
+				el.node[ 5] = m[ 5];
+				el.node[ 6] = m[ 6];
+				el.node[ 7] = m[ 7];
+				el.node[ 8] = m[ 9];
+				el.node[ 9] = m[ 8];
+				el.node[10] = m[11];
+				el.node[11] = m[10];
+				el.node[12] = m[15];
+				el.node[13] = m[14];
+				el.node[14] = m[13];
+				el.node[15] = m[12];
+				el.node[16] = m[17];
+				el.node[17] = m[19];
+				el.node[18] = m[18];
+				el.node[19] = m[16];
 
 				m_Elem.push_back(el);
 			}
@@ -714,9 +716,11 @@ bool GMeshNewFormat::Load()
 	const char* szline = nullptr;
 	while (szline = nextLine())
 	{
-		if      (isKey(szline, "$Entities"  )) ret = ReadEntities();
-		else if (isKey(szline, "$Nodes"     )) ret = ReadNodes();
-		else if (isKey(szline, "$Elements"  )) ret = ReadElements();
+		if      (isKey(szline, "$PhysicalNames"   )) ret = ReadEntities();
+		else if (isKey(szline, "$Entities"        )) ret = ReadEntities();
+		else if (isKey(szline, "$Nodes"           )) ret = ReadNodes();
+		else if (isKey(szline, "$Elements"        )) ret = ReadElements();
+		else if (isKey(szline, "$Parametrizations")) ret = ReadParametrizations();
 		else
 		{
 			// we didn't recognize the section
@@ -726,6 +730,18 @@ bool GMeshNewFormat::Load()
 		if (ret == false) return false;
 	}
 
+	return true;
+}
+
+bool GMeshNewFormat::ReadPhysicalNames()
+{
+	while (readLine("$EndPhysicalNames") == false);
+	return true;
+}
+
+bool GMeshNewFormat::ReadParametrizations()
+{
+	while (readLine("$EndParametrizations") == false);
 	return true;
 }
 

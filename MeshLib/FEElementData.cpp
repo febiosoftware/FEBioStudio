@@ -30,66 +30,56 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(ELEM_DATA)
 {
 	m_scale = 1.0;
 	SetMesh(mesh);
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(ELEM_DATA)
 {
 	SetMesh(mesh);
-	m_dataType = dataType;
-	m_dataFmt = dataFormat;
-	m_dataSize = 0;
+	SetDataFormat(dataFormat);
+	SetDataType(dataType);
 	m_maxNodesPerElem = 0;
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
+void FEElementData::Create(FSMesh* pm, FSElemSet* part, DATA_TYPE dataType, DATA_FORMAT dataFormat)
 {
 	SetMesh(pm);
-	m_dataType = dataType;
-	m_dataFmt = dataFormat;
-	m_dataSize = ItemSize();
+	SetDataFormat(dataFormat);
+	SetDataType(dataType);
 	SetItemList(part);
 }
 
 //-----------------------------------------------------------------------------
 void FEElementData::AllocateData()
 {
-	m_dataSize = 0;
-	switch (m_dataType)
-	{
-	case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
-	case FEMeshData::DATA_VEC3D: m_dataSize = 3; break;
-	case FEMeshData::DATA_MAT3D: m_dataSize = 9; break;
-	default:
-		assert(false);
-		return;
-	}
-
 	FSElemSet* elemSet = GetElementSet();
+
+	int itemSize = ItemSize();
+	assert(itemSize > 0);
 
 	m_data.clear();
 	if (elemSet)
 	{
 		int bufSize = 0;
 		int elems = elemSet->size();
-		switch (m_dataFmt)
+		switch (GetDataFormat())
 		{
-		case FEMeshData::DATA_NODE:
+		case DATA_NODE:
 		{
 			FSNodeList* pnl = elemSet->BuildNodeList();
-			bufSize = m_dataSize * pnl->Size();
+			bufSize = itemSize * pnl->Size();
 			delete pnl;
 		}
 		break;
-		case FEMeshData::DATA_ITEM:
-			bufSize = m_dataSize * elems;
+		case DATA_ITEM:
+			bufSize = itemSize * elems;
 			break;
-		case FEMeshData::DATA_MULT:
+		case DATA_MULT:
 		{
 			m_maxNodesPerElem = 0;
 			for (int i = 0; i < elems; ++i)
@@ -98,7 +88,7 @@ void FEElementData::AllocateData()
 				int ne = pe->Nodes();
 				if (ne > m_maxNodesPerElem) m_maxNodesPerElem = ne;
 			}
-			bufSize = m_maxNodesPerElem * m_dataSize;
+			bufSize = m_maxNodesPerElem * itemSize;
 		}
 		break;
 		}
@@ -108,7 +98,7 @@ void FEElementData::AllocateData()
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA) {}
+FEElementData::FEElementData(const FEElementData& d) : FEMeshData(ELEM_DATA) {}
 void FEElementData::operator = (const FEElementData& d) {}
 
 //-----------------------------------------------------------------------------
@@ -124,7 +114,7 @@ void FEElementData::SetItemList(FEItemListBuilder* item, int n)
 //-----------------------------------------------------------------------------
 void FEElementData::FillRandomBox(double fmin, double fmax)
 {
-	assert(m_dataType == DATA_SCALAR);
+	assert(GetDataType() == DATA_SCALAR);
 	int N = (int)m_data.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -147,47 +137,16 @@ double FEElementData::GetScaleFactor() const
 }
 
 //-----------------------------------------------------------------------------
-int FEElementData::ItemSize() const
-{
-	switch (m_dataType)
-	{
-	case DATA_SCALAR: return 1; break;
-	case DATA_VEC3D : return 3; break;
-	case DATA_MAT3D : return 9; break;
-	default:
-		assert(false);
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void FEElementData::get(int n, double* d)
-{
-	assert((m_dataSize > 0) && (m_dataSize == ItemSize()));
-	for (int i = 0; i < m_dataSize; ++i)
-		d[i] = m_data[m_dataSize * n + i];
-}
-
-//-----------------------------------------------------------------------------
-void FEElementData::set(int n, const mat3d& v)
-{
-	assert(m_dataType == DATA_MAT3D);
-	assert(m_dataSize == 9);
-	int m = 0;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j, ++m)
-			m_data[9 * n + m] = v(i, j);
-}
-
-//-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
+	int dataType = (int) GetDataType();
+	int dataFmt  = (int) GetDataFormat();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
-	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
-	ar.WriteChunk(CID_MESH_DATA_FORMAT, (int)m_dataFmt);
-	ar.WriteChunk(CID_MESH_DATA_SCALE, m_scale);
+	ar.WriteChunk(CID_MESH_DATA_NAME  , szname);
+	ar.WriteChunk(CID_MESH_DATA_TYPE  , dataType);
+	ar.WriteChunk(CID_MESH_DATA_FORMAT, dataFmt);
+	ar.WriteChunk(CID_MESH_DATA_SCALE , m_scale);
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
@@ -214,13 +173,13 @@ void FEElementData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			m_dataType = (FEMeshData::DATA_TYPE) dType;
+			SetDataType((DATA_TYPE) dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{
 			int dFmt;
 			ar.read(dFmt);
-			m_dataFmt = (FEMeshData::DATA_FORMAT)dFmt;
+			SetDataFormat((DATA_FORMAT)dFmt);
 		}
 		else if (nid == CID_MESH_DATA_SCALE)
 		{
@@ -256,22 +215,21 @@ void FEElementData::Load(IArchive& ar)
 }
 
 //=============================================================================
-FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(PART_DATA)
 {
 	SetMesh(mesh);
 	m_maxElemItems = 1;
 }
 
-FEPartData::FEPartData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFmt) : FEMeshData(PART_DATA)
 {
 	SetMesh(mesh);
-	m_dataType = dataType;
-	m_dataFmt = dataFmt;
-	m_dataSize = 0;
+	SetDataFormat(dataFmt);
+	SetDataType(dataType);
 	m_maxElemItems = 0;
 }
 
-FEPartData::FEPartData(const FEPartData& d) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(const FEPartData& d) : FEMeshData(PART_DATA)
 {
 
 }
@@ -282,15 +240,13 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 }
 
 // create a data field
-bool FEPartData::Create(FSPartSet* partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
+bool FEPartData::Create(FSPartSet* partList, DATA_TYPE dataType, DATA_FORMAT dataFmt)
 {
 	FSMesh* mesh = GetMesh();
 	assert(mesh);
 	m_data.clear();
-
-	m_dataType = dataType;
-	m_dataFmt = dataFmt;
-
+	SetDataFormat(dataFmt);
+	SetDataType(dataType);
 	SetItemList(partList);
 
 	return true;
@@ -320,31 +276,23 @@ void FEPartData::AllocateData()
 		}
 	}
 
-	m_dataSize = 0;
-	switch (m_dataType)
-	{
-	case DATA_SCALAR: m_dataSize = 1; break;
-	case DATA_VEC3D : m_dataSize = 3; break;
-	case DATA_MAT3D : m_dataSize = 9; break;
-	default:
-		assert(false);
-	}
+	int itemSize = ItemSize();
 
-	if (m_dataFmt == DATA_ITEM)
+	switch (GetDataFormat())
 	{
-		m_maxElemItems = 1;
-	}
-	else if (m_dataFmt == DATA_NODE)
-	{
-		m_maxElemItems = 1;
-	}
-	else if (m_dataFmt == DATA_MULT)
+	case DATA_ITEM: m_maxElemItems = 1; break;
+	case DATA_NODE: m_maxElemItems = 1; break;
+	case DATA_MULT:
 	{
 		m_maxElemItems = maxNodes;
 		nsize *= maxNodes;
 	}
+	break;
+	default:
+		assert(false);
+	}
 
-	m_data.resize(nsize*m_dataSize);
+	m_data.resize(nsize* itemSize);
 }
 
 FEElemList* FEPartData::BuildElemList()
@@ -378,6 +326,16 @@ void FEPartData::SetItemList(FEItemListBuilder* item, int n)
 	AllocateData();
 }
 
+bool FEPartData::AddPart(int localPartID)
+{
+	FSPartSet* ps = GetPartSet();
+	if (ps == nullptr) return false;
+	if (ps->HasItem(localPartID)) return false;
+	ps->add(localPartID);
+	AllocateData();
+	return true;
+}
+
 int FEPartData::GetElementIndex(int nelem) { return m_lut[nelem]; }
 
 FSPartSet* FEPartData::GetPartSet()
@@ -385,20 +343,16 @@ FSPartSet* FEPartData::GetPartSet()
 	return dynamic_cast<FSPartSet*>(GetItemList());
 }
 
-// size of data field
-int FEPartData::Size() const
-{ 
-	return (int)m_data.size(); 
-}
-
 void FEPartData::Save(OArchive& ar)
 {
+	int dataType = (int) GetDataType();
+	int dataFmt  = (int) GetDataFormat();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
-	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
-	ar.WriteChunk(CID_MESH_DATA_FORMAT, (int)m_dataFmt);
-	ar.WriteChunk(CID_MESH_DATA_DPI, (int)m_maxElemItems);
+	ar.WriteChunk(CID_MESH_DATA_NAME  , szname);
+	ar.WriteChunk(CID_MESH_DATA_TYPE  , dataType);
+	ar.WriteChunk(CID_MESH_DATA_FORMAT, dataFmt);
+	ar.WriteChunk(CID_MESH_DATA_DPI   , (int)m_maxElemItems);
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
@@ -424,13 +378,13 @@ void FEPartData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			m_dataType = (FEMeshData::DATA_TYPE) dType;
+			SetDataType((DATA_TYPE)dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{
 			int fType;
 			ar.read(fType);
-			m_dataFmt = (FEMeshData::DATA_FORMAT) fType;
+			SetDataFormat((DATA_FORMAT) fType);
 		}
 		else if (nid == CID_MESH_DATA_DPI)
 		{

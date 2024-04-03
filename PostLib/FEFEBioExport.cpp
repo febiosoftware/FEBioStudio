@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEFEBioExport.h"
 #include <XML/XMLWriter.h>
 #include "FEPostModel.h"
+#include <map>
 using namespace Post;
 
 // defined in FEBio/FEBioExport.h
@@ -154,6 +155,144 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 			}
 		}
 		xml.close_branch(); // Geometry
+	}
+	xml.close_branch(); // febio_spec
+	xml.close();
+
+	return true;
+}
+
+struct DomainInfo
+{
+	int	elemClass;
+	int matId;
+	std::string name;
+};
+
+bool FEFEBioExport4::Save(FEPostModel& fem, const char* szfile)
+{
+	int nmat = fem.Materials();
+
+	FEState* pst = fem.CurrentState();
+	FEPostMesh* pm = pst->GetFEMesh();
+	int NE = pm->Elements();
+
+	XMLWriter xml;
+	if (xml.open(szfile) == false) return false;
+
+	XMLElement el;
+
+	el.name("febio_spec");
+	el.add_attribute("version", "4.0");
+	xml.add_branch(el);
+	{
+		std::vector<DomainInfo> domainInfo;
+		xml.add_branch("Mesh");
+		{
+			XMLElement nodes("Nodes");
+			nodes.add_attribute("name", "Object1");
+			xml.add_branch(nodes);
+			{
+				el.clear();
+				el.name("node");
+				int n1 = el.add_attribute("id", "");
+				for (int i = 0; i < pm->Nodes(); ++i)
+				{
+					vec3f& r = pst->m_NODE[i].m_rt;
+					el.set_attribute(n1, i + 1);
+					el.value(r);
+					xml.add_leaf(el, false);
+				}
+			}
+			xml.close_branch(); // Nodes
+
+			// loop over all materials
+			int np = 0;
+			for (int m = 0; m < nmat; ++m)
+			{
+				for (int i = 0; i < NE; ++i) pm->ElementRef(i).m_ntag = 0;
+
+				int i0 = 0;
+				while (i0 < NE)
+				{
+					// find the first element of this part
+					for (int i = i0; i < NE; ++i, ++i0)
+					{
+						FEElement_& elm = pm->ElementRef(i);
+						if ((elm.m_ntag == 0) &&
+							(elm.m_MatID == m)) break;
+					}
+					if (i0 >= NE) break;
+
+					// create a part for this material+element type combo
+					char sz[256] = { 0 };
+					sprintf(sz, "Part%d", np + 1);
+					XMLElement part("Elements");
+					part.add_attribute("name", sz);
+
+					// get the element type
+					FEElement_& el0 = pm->ElementRef(i0);
+					const char* szeltype = elementTypeStr(el0.Type());
+					if (szeltype == 0) return false;
+
+					part.add_attribute("type", szeltype);
+
+					domainInfo.push_back({ el0.Class(), el0.m_MatID, sz });
+
+					// now export all the elements of this material and type
+					xml.add_branch(part);
+					{
+						int n[FSElement::MAX_NODES];
+						XMLElement el("elem");
+						int n1 = el.add_attribute("id", "");
+						for (int i = i0; i < pm->Elements(); ++i)
+						{
+							FEElement_& elm = pm->ElementRef(i);
+							if ((elm.m_MatID == m) && (elm.Type() == el0.Type()))
+							{
+								for (int j = 0; j < elm.Nodes(); ++j) n[j] = elm.m_node[j] + 1;
+
+								el.set_attribute(n1, i + 1);
+								el.value(n, elm.Nodes());
+								xml.add_leaf(el, false);
+
+								elm.m_ntag = 1;
+							}
+						}
+					}
+					xml.close_branch();
+
+					np++;
+				}
+			}
+		}
+		xml.close_branch(); // Mesh
+
+		xml.add_branch("MeshDomains");
+		{
+			for (DomainInfo& dom : domainInfo)
+			{
+				if (dom.elemClass == ELEM_SOLID)
+				{
+					XMLElement xmldom("SolidDomain");
+					xmldom.add_attribute("name", dom.name);
+					xml.add_empty(xmldom);
+				}
+				else if (dom.elemClass == ELEM_SHELL)
+				{
+					XMLElement xmldom("ShellDomain");
+					xmldom.add_attribute("name", dom.name);
+					xml.add_empty(xmldom);
+				}
+				else if (dom.elemClass == ELEM_BEAM)
+				{
+					XMLElement xmldom("BeamDomain");
+					xmldom.add_attribute("name", dom.name);
+					xml.add_empty(xmldom);
+				}
+			}
+		}
+		xml.close_branch(); // MeshDomains
 	}
 	xml.close_branch(); // febio_spec
 	xml.close();

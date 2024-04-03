@@ -157,10 +157,10 @@ void FEMeshValuator::Evaluate(int nfield)
 			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
 			switch (meshData->GetDataClass())
 			{
-			case FEMeshData::NODE_DATA:
+			case NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				if (nodeData.GetDataType() == FEMeshData::DATA_SCALAR)
+				if (nodeData.GetDataType() == DATA_SCALAR)
 				{
 					FSMesh* mesh = nodeData.GetMesh();
 					for (int i = 0; i < mesh->Elements(); ++i)
@@ -169,7 +169,7 @@ void FEMeshValuator::Evaluate(int nfield)
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
 						{
-							double val = nodeData.GetScalar(el.m_node[j]);
+							double val = nodeData.getScalar(el.m_node[j]);
 							data.SetElementValue(i, j, val);
 						}
 						data.SetElementDataTag(i, 1);
@@ -177,10 +177,10 @@ void FEMeshValuator::Evaluate(int nfield)
 				}
 			}
 			break;
-			case FEMeshData::SURFACE_DATA:
+			case FACE_DATA:
 				// TODO: Not sure what to do here. 
 				break;
-			case FEMeshData::ELEMENT_DATA:
+			case ELEM_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
 				const FSElemSet* pg = elemData.GetElementSet();
@@ -194,10 +194,10 @@ void FEMeshValuator::Evaluate(int nfield)
 				}
 			}
 			break;
-			case FEMeshData::PART_DATA:
+			case PART_DATA:
 			{
 				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
-				if (partData.GetDataType() == FEMeshData::DATA_SCALAR)
+				if (partData.GetDataType() == DATA_SCALAR)
 				{
 					FEElemList* pg = partData.BuildElemList();
 					if (pg)
@@ -209,12 +209,12 @@ void FEMeshValuator::Evaluate(int nfield)
 							int elemId = it->m_lid;
 							data.SetElementDataTag(elemId, 1);
 
-							if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
+							if (partData.GetDataFormat() == DATA_ITEM)
 							{
 								double val = partData.GetValue(i, 0);
 								data.SetElementValue(elemId, val);
 							}
-							else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
+							else if (partData.GetDataFormat() == DATA_MULT)
 							{
 								FEElement_* pe = it->m_pi;
 								int nn = pe->Nodes();

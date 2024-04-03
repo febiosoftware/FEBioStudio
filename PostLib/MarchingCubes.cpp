@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "stdafx.h"
 #ifdef WIN32
 #include <Windows.h>
 #include <gl/GL.h>
@@ -239,6 +238,8 @@ void CMarchingCubes::CreateSurface()
 	C3DImage& im3d = *m_8bitImage;
 
 	BOX b = im.GetBoundingBox();
+	vec3f r0 = to_vec3f(b.r0());
+	vec3f r1 = to_vec3f(b.r1());
 
 	int NX = im3d.Width();
 	int NY = im3d.Height();
@@ -317,14 +318,14 @@ void CMarchingCubes::CreateSurface()
 					if ((ncase != 0) && (ncase != 255))
 					{
 						// get the corners
-						r[0].x = b.x0 + i      *dxi; r[0].y = b.y0 + j      *dyi; r[0].z = b.z0 + k      *dzi;
-						r[1].x = b.x0 + (i + 1)*dxi; r[1].y = b.y0 + j      *dyi; r[1].z = b.z0 + k      *dzi;
-						r[2].x = b.x0 + (i + 1)*dxi; r[2].y = b.y0 + (j + 1)*dyi; r[2].z = b.z0 + k      *dzi;
-						r[3].x = b.x0 + i      *dxi; r[3].y = b.y0 + (j + 1)*dyi; r[3].z = b.z0 + k      *dzi;
-						r[4].x = b.x0 + i      *dxi; r[4].y = b.y0 + j      *dyi; r[4].z = b.z0 + (k + 1)*dzi;
-						r[5].x = b.x0 + (i + 1)*dxi; r[5].y = b.y0 + j      *dyi; r[5].z = b.z0 + (k + 1)*dzi;
-						r[6].x = b.x0 + (i + 1)*dxi; r[6].y = b.y0 + (j + 1)*dyi; r[6].z = b.z0 + (k + 1)*dzi;
-						r[7].x = b.x0 + i      *dxi; r[7].y = b.y0 + (j + 1)*dyi; r[7].z = b.z0 + (k + 1)*dzi;
+						r[0].x = r0.x + i      *dxi; r[0].y = r0.y + j      *dyi; r[0].z = r0.z + k      *dzi;
+						r[1].x = r0.x + (i + 1)*dxi; r[1].y = r0.y + j      *dyi; r[1].z = r0.z + k      *dzi;
+						r[2].x = r0.x + (i + 1)*dxi; r[2].y = r0.y + (j + 1)*dyi; r[2].z = r0.z + k      *dzi;
+						r[3].x = r0.x + i      *dxi; r[3].y = r0.y + (j + 1)*dyi; r[3].z = r0.z + k      *dzi;
+						r[4].x = r0.x + i      *dxi; r[4].y = r0.y + j      *dyi; r[4].z = r0.z + (k + 1)*dzi;
+						r[5].x = r0.x + (i + 1)*dxi; r[5].y = r0.y + j      *dyi; r[5].z = r0.z + (k + 1)*dzi;
+						r[6].x = r0.x + (i + 1)*dxi; r[6].y = r0.y + (j + 1)*dyi; r[6].z = r0.z + (k + 1)*dzi;
+						r[7].x = r0.x + i      *dxi; r[7].y = r0.y + (j + 1)*dyi; r[7].z = r0.z + (k + 1)*dzi;
 
 						// calculate gradients
 						if (m_bsmooth)
@@ -409,7 +410,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(1.f, 0.f, 0.f);
 
-			float x = (i == 0 ? b.x0 : b.x1);
+			float x = (i == 0 ? r0.x : r1.x);
 
 			for (int k = 0; k < NZ - 1; k++)
 			{
@@ -422,10 +423,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i, j, k + 1);
 
 					// get the corners
-					r[0].x = x; r[0].y = b.y0 + j      *dyi; r[0].z = b.z0 + k*dzi;
-					r[1].x = x; r[1].y = b.y0 + (j + 1)*dyi; r[1].z = b.z0 + k*dzi;
-					r[2].x = x; r[2].y = b.y0 + (j + 1)*dyi; r[2].z = b.z0 + (k + 1)*dzi;
-					r[3].x = x; r[3].y = b.y0 + j      *dyi; r[3].z = b.z0 + (k + 1)*dzi;
+					r[0].x = x; r[0].y = r0.y + j      *dyi; r[0].z = r0.z + k*dzi;
+					r[1].x = x; r[1].y = r0.y + (j + 1)*dyi; r[1].z = r0.z + k*dzi;
+					r[2].x = x; r[2].y = r0.y + (j + 1)*dyi; r[2].z = r0.z + (k + 1)*dzi;
+					r[3].x = x; r[3].y = r0.y + j      *dyi; r[3].z = r0.z + (k + 1)*dzi;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);
@@ -438,7 +439,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(0.f, -1.f, 0.f);
 
-			float y = (j == 0 ? b.y0 : b.y1);
+			float y = (j == 0 ? r0.y : r1.y);
 
 			for (int k = 0; k < NZ - 1; k++)
 			{
@@ -451,10 +452,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i  , j, k + 1);
 
 					// get the corners
-					r[0].x = b.x0 + i    *dxi; r[0].y = y; r[0].z = b.z0 + k*dzi;
-					r[1].x = b.x0 + (i+1)*dxi; r[1].y = y; r[1].z = b.z0 + k*dzi;
-					r[2].x = b.x0 + (i+1)*dxi; r[2].y = y; r[2].z = b.z0 + (k + 1)*dzi;
-					r[3].x = b.x0 + i    *dxi; r[3].y = y; r[3].z = b.z0 + (k + 1)*dzi;
+					r[0].x = r0.x + i    *dxi; r[0].y = y; r[0].z = r0.z + k*dzi;
+					r[1].x = r0.x + (i+1)*dxi; r[1].y = y; r[1].z = r0.z + k*dzi;
+					r[2].x = r0.x + (i+1)*dxi; r[2].y = y; r[2].z = r0.z + (k + 1)*dzi;
+					r[3].x = r0.x + i    *dxi; r[3].y = y; r[3].z = r0.z + (k + 1)*dzi;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);
@@ -467,7 +468,7 @@ void CMarchingCubes::CreateSurface()
 		{
 			vec3f faceNormal(0.f, 0.f, 1.f);
 
-			float z = (k == 0 ? b.z0 : b.z1);
+			float z = (k == 0 ? r0.z : r1.z);
 
 			for (int j = 0; j < NY - 1; ++j)
 			{
@@ -480,10 +481,10 @@ void CMarchingCubes::CreateSurface()
 					val[3] = im3d.GetByte(i    , j + 1, k);
 
 					// get the corners
-					r[0].x = b.x0 + i      *dxi; r[0].y = b.y0 + j      *dyi; r[0].z = z;
-					r[1].x = b.x0 + (i + 1)*dxi; r[1].y = b.y0 + j      *dyi; r[1].z = z;
-					r[2].x = b.x0 + (i + 1)*dxi; r[2].y = b.y0 + (j + 1)*dyi; r[2].z = z;
-					r[3].x = b.x0 + i      *dxi; r[3].y = b.y0 + (j + 1)*dyi; r[3].z = z;
+					r[0].x = r0.x + i      *dxi; r[0].y = r0.y + j      *dyi; r[0].z = z;
+					r[1].x = r0.x + (i + 1)*dxi; r[1].y = r0.y + j      *dyi; r[1].z = z;
+					r[2].x = r0.x + (i + 1)*dxi; r[2].y = r0.y + (j + 1)*dyi; r[2].z = z;
+					r[3].x = r0.x + i      *dxi; r[3].y = r0.y + (j + 1)*dyi; r[3].z = z;
 
 					// add the triangles
 					AddSurfaceTris(mesh, val, r, faceNormal);

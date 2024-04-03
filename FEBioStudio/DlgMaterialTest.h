@@ -39,7 +39,9 @@ public:
 
 public slots:
 	void onRun();
+	void onClear();
 	void onMatChanged(int n);
+	void onTestChanged(int n);
 
 private:
 	UIDlgMaterialTest* ui;

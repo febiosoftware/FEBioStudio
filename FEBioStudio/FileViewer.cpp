@@ -267,7 +267,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 			}
 			QAction* aci = groupMenu->addAction("(none)", groupmap, SLOT(map())); groupmap->setMapping(aci, -1);
 			menu.addAction(groupMenu->menuAction());
-			connect(groupmap, SIGNAL(mapped(int)), this, SLOT(onMoveToGroup(int)));
+			connect(groupmap, SIGNAL(mappedInt(int)), this, SLOT(onMoveToGroup(int)));
 		}
 
 		menu.addAction("Add file ...", this, SLOT(onAddFile()));
@@ -648,7 +648,7 @@ void CFileViewer::onImportFolder()
 		{
 			QString path = folders.at(0);
 
-			QDirIterator it(path, { "*.fsm", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+			QDirIterator it(path, { "*.fs2", "*.fsm", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot);
 			while (it.hasNext())
 			{
 				QString file = it.next();

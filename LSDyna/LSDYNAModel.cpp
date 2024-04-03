@@ -228,6 +228,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 
 			pe->SetType(is.n[3] == is.n[2] ? FE_TRI3 : FE_QUAD4);
 			pe->m_gid = is.pid;
+			pe->m_nid = is.eid;
 
 			pe->m_node[0] = NodeIndex(is.n[0]); if (pe->m_node[0] < 0) return false;
 			pe->m_node[1] = NodeIndex(is.n[1]); if (pe->m_node[1] < 0) return false;

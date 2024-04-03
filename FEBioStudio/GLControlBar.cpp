@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QToolButton>
 #include <QButtonGroup>
-#include <QValidator>
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
@@ -244,7 +243,7 @@ void CGLControlBar::Update()
 	ui->y->setText(QString::number(pivot.y));
 	ui->z->setText(QString::number(pivot.z));
 
-	bool pivotMode = view->GetPivotMode();
+	bool pivotMode = view->GetPivotUserMode();
 
 	ui->x->setReadOnly(!pivotMode);
 	ui->y->setReadOnly(!pivotMode);
@@ -350,13 +349,13 @@ void CGLControlBar::onPivotChanged()
 {
 	vec3d p = ui->getPivot();
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivot(p);
+	view->SetPivotPosition(p);
 }
 
 void CGLControlBar::onPivotClicked(bool b)
 {
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivotMode(b);
+	view->SetPivotUserMode(b);
 	Update();
 }
 
@@ -442,6 +441,7 @@ void CGLControlBar::onBrushSelect(bool b)
 {
 	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bselbrush = b;
+	ui->m_wnd->RedrawGL();
 }
 
 void CGLControlBar::toggleSelectConnected()

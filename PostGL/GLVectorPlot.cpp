@@ -385,7 +385,10 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	glPushMatrix();
 
 	glTranslatef(r.x, r.y, r.z);
-	quatd q(vec3d(0,0,1), to_vec3d(v));
+	quatd q;
+	vec3d V = to_vec3d(v);
+	if (V * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
+	else q = quatd(vec3d(0, 0, 1), to_vec3d(v));
 	float w = q.GetAngle();
 	if (fabs(w) > 1e-6)
 	{

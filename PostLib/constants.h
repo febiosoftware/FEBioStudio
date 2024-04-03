@@ -28,10 +28,10 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // the following macros can be used to identifiy the type of the field
-#define IS_NODE_FIELD(m) ((m) & 0x00010000? true:false )
-#define IS_FACE_FIELD(m) ((m) & 0x00020000? true:false )
-#define IS_ELEM_FIELD(m) ((m) & 0x00040000? true:false )
-#define IS_EDGE_FIELD(m) ((m) & 0x00080000? true:false )
+#define IS_NODE_FIELD(m) (((m) >> 16) == 0)
+#define IS_FACE_FIELD(m) (((m) >> 16) == 1)
+#define IS_ELEM_FIELD(m) (((m) >> 16) == 2)
+#define IS_EDGE_FIELD(m) (((m) >> 16) == 4)
 
 #define IS_VALID(m) ((IS_NODE_FIELD(m))||(IS_FACE_FIELD(m))||(IS_ELEM_FIELD(m))||(IS_EDGE_FIELD(m)))
 

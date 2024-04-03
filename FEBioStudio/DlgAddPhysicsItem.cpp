@@ -73,10 +73,11 @@ public:
 		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
 
 		type = new QTreeWidget;
-		type->setColumnCount(2);
-		type->setHeaderLabels(QStringList() << "Type" << "Module");
+		type->setColumnCount(3);
+		type->setHeaderLabels(QStringList() << "Type" << "Category" << "Module");
 		type->header()->setStretchLastSection(true);
 		type->header()->resizeSection(0, 400);
+		type->header()->resizeSection(1, 200);
 
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
@@ -120,7 +121,7 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	: CHelpDialog(parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
-	setMinimumSize(600, 400);
+	setMinimumSize(800, 600);
 
 	ui->m_superID = superID;
 	ui->m_baseClassID = baseClassID;
@@ -192,9 +193,15 @@ void CDlgAddPhysicsItem::Update()
 
 				if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
 				{
+					std::string s = FEBio::GetBaseClassName(fac.baseClassId); assert(s.empty() == false);
+					std::string bs = FSCore::beautify_string(s.c_str());
+
 					QTreeWidgetItem* item = new QTreeWidgetItem(ui->type);
 					item->setText(0, type);
-					item->setText(1, fac.szmod);
+					item->setText(1, QString::fromStdString(bs));
+					const char* szmod = fac.szmod;
+					if ((szmod == nullptr) || (szmod[0] == 0)) szmod = "(core)";
+					item->setText(2, szmod);
 					item->setData(0, Qt::UserRole, fac.classId);
 				}
 			}
