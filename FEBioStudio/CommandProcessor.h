@@ -33,6 +33,7 @@ class CMainWindow;
 class CDocument;
 class CModelDocument;
 class CPostDocument;
+class FSMesh;
 
 //! The command input class is used to provide a mechanism for the command processor
 //! to interact with the user. In GUI mode, this will ofen result in a dialog box
@@ -101,15 +102,17 @@ public: // command functions
 	bool cmd_prev   (QStringList ops);
 	bool cmd_reset  (QStringList ops);
 	bool cmd_save   (QStringList ops);
-	bool cmd_stop   (QStringList ops);
+	bool cmd_sel    (QStringList ops);
 	bool cmd_selpart(QStringList ops);
 	bool cmd_selsurf(QStringList ops);
+	bool cmd_stop   (QStringList ops);
 
 private: // error messages
 	bool Error(const QString& msg) { m_output = msg; return false; }
 	bool Success(const QString& msg) { m_output = msg; return true; }
 
 	bool NoActiveDoc() { return Error("No model active."); }
+	bool NoActiveMesh() { return Error("No active mesh."); }
 	bool GLViewIsNull() { return Error("Graphics View not available."); }
 	bool InvalidArgsCount() { return Error("Invalid number of arguments."); }
 	bool CommandCancelled() { return Error("Command was cancelled."); }
@@ -124,6 +127,7 @@ private:
 	CDocument* GetActiveDocument();
 	CModelDocument* GetModelDocument();
 	CPostDocument* GetPostDocument();
+	FSMesh* GetActiveMesh();
 
 private:
 	CommandInput* m_cmdInput;

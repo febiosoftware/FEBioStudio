@@ -255,9 +255,10 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput) : m
 	m_cmds.push_back({ "prev"   , &CommandProcessor::cmd_prev   , "Display the previous timestep" });
 	m_cmds.push_back({ "reset"  , &CommandProcessor::cmd_reset  , "reset all options to their defaults." });
 	m_cmds.push_back({ "save"   , &CommandProcessor::cmd_save   , "save the current model" });
-	m_cmds.push_back({ "stop"   , &CommandProcessor::cmd_stop   , "Stops the animation." });
+	m_cmds.push_back({ "sel"    , &CommandProcessor::cmd_sel    , "select an item of the active mesh"});
 	m_cmds.push_back({ "selpart", &CommandProcessor::cmd_selpart, "select a part",  });
 	m_cmds.push_back({ "selsurf", &CommandProcessor::cmd_selsurf, "select a surface" });
+	m_cmds.push_back({ "stop"   , &CommandProcessor::cmd_stop   , "Stops the animation." });
 }
 
 CDocument* CommandProcessor::GetActiveDocument()
@@ -273,6 +274,15 @@ CModelDocument* CommandProcessor::GetModelDocument()
 CPostDocument* CommandProcessor::GetPostDocument()
 {
 	return dynamic_cast<CPostDocument*>(GetActiveDocument());
+}
+
+FSMesh* CommandProcessor::GetActiveMesh()
+{
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetActiveDocument());
+	if (doc == nullptr) return nullptr;
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return nullptr;
+	return po->GetFEMesh();
 }
 
 bool CommandProcessor::ProcessCommandLine(QString cmdLine)
@@ -973,10 +983,50 @@ bool CommandProcessor::cmd_save(QStringList ops)
 	return true;
 }
 
-bool CommandProcessor::cmd_stop(QStringList ops)
+bool CommandProcessor::cmd_sel(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
-	m_wnd->on_actionPlay_toggled(false);
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetActiveDocument());
+	if (doc == nullptr) return NoActiveDoc();
+
+	if (ValidateArgs(ops, 0, 1) == false) return false;
+	FSMesh* pm = GetActiveMesh();
+	if (pm == nullptr) return NoActiveMesh();
+
+	std::string id = ops[0].toStdString();
+	int mode = 0;
+	if      (id[0] == 'E') mode = ITEM_ELEM;
+	else if (id[0] == 'F') mode = ITEM_FACE;
+	else if (id[0] == 'N') mode = ITEM_NODE;
+	else if (id[0] == 'L') mode = ITEM_EDGE;
+	else return Error("Unrecognized item identifier.");
+
+	int nid = atoi(id.c_str() + 1);
+
+	if (mode == ITEM_ELEM)
+	{
+		int index = pm->ElementIndexFromID(nid);
+		if (index < 0) return Error("Invalid element ID.");
+		doc->DoCommand(new CCmdSelectElements(pm, &index, 1, false));
+	}
+	else if (mode == ITEM_FACE)
+	{
+		int index = nid - 1;
+		if (index < 0) return Error("Invalid face ID.");
+		doc->DoCommand(new CCmdSelectFaces(pm, &index, 1, false));
+	}
+	else if (mode == ITEM_NODE)
+	{
+		int index = pm->NodeIndexFromID(nid);
+		if (index < 0) return Error("Invalid node ID.");
+		doc->DoCommand(new CCmdSelectFENodes(pm, &index, 1, false));
+	}
+	else if (mode == ITEM_EDGE)
+	{
+		int index = nid - 1;
+		if (index < 0) return Error("Invalid edge ID.");
+		doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
+	}
+
 	return true;
 }
 
@@ -1015,6 +1065,13 @@ bool CommandProcessor::cmd_selsurf(QStringList ops)
 	int index = pf->GetID();
 	m_wnd->on_actionSelectSurfaces_toggled(true);
 	doc->DoCommand(new CCmdSelectSurface(gm, &index, 1, false), name);
+	return true;
+}
+
+bool CommandProcessor::cmd_stop(QStringList ops)
+{
+	if (!ValidateArgs(ops, 0, 0)) return false;
+	m_wnd->on_actionPlay_toggled(false);
 	return true;
 }
 
