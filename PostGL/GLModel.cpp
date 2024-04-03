@@ -115,7 +115,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	if (ndisp != -1)
 	{
-		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
+		ps->SetDisplacementField(BUILD_FIELD( DATA_CLASS::NODE_DATA, ndisp, 0));
 		m_pdis = new CGLDisplacementMap(this);
 	}
 

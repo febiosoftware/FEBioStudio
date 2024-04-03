@@ -58,6 +58,8 @@ enum DATA_CLASS {
 	ELEM_DATA,
 	PART_DATA,
 
+	EDGE_DATA,
+
 	// from post namespace
 	OBJECT_DATA
 };
