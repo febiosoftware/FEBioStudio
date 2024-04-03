@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEMeshData.h>
 #include <PostLib/constants.h>
+#include <PostLib/FEDistanceMap.h>
 
 #include <iostream>
 
@@ -54,7 +55,23 @@ FEPostModel* readPlotFile(std::string filename)
 
     reader.Load(filename.c_str());
 
+    model->SetDisplacementField(BUILD_FIELD(Data_Class::CLASS_NODE, 0, 0));
+
     return model;
+}
+
+ModelDataField* runDistanceMap(FEPostModel* model, std::vector<int>& sel1, std::vector<int>& sel2, bool sign)
+{
+    FEDistanceMap* distanceMap = new FEDistanceMap(model, 0);
+    model->AddDataField(distanceMap);
+    
+    distanceMap->SetSelection1(sel1);
+    distanceMap->SetSelection2(sel2);
+    distanceMap->SetSigned(sign);
+
+    distanceMap->Apply();
+
+    return distanceMap;
 }
 
 void init_FBSPost(pybind11::module& m)
@@ -62,6 +79,7 @@ void init_FBSPost(pybind11::module& m)
     pybind11::module post = m.def_submodule("post", "Module used to interact with plot files");
 
     post.def("readPlotFile", &readPlotFile);
+    post.def("runDistanceMap", &runDistanceMap);
 
     pybind11::class_<FEPostModel>(post, "FEPostModel")
         .def("GetFEMesh", &FEPostModel::GetFEMesh, pybind11::return_value_policy::reference)
@@ -99,10 +117,11 @@ void init_FBSPost(pybind11::module& m)
         .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, pybind11::return_value_policy::reference)
         .def("FindDataField", &FEDataManager::FindDataField);
 
-    pybind11::class_<ModelDataField>(post, "ModelDataField")
+    pybind11::class_<ModelDataField, std::unique_ptr<ModelDataField, pybind11::nodelete>>(post, "ModelDataField")
         .def("components", &ModelDataField::components)
         .def("componentName", &ModelDataField::componentName)
-        .def("GetName", &ModelDataField::GetName);
+        .def("GetName", &ModelDataField::GetName)
+        .def("SetName", &ModelDataField::SetName);
 
     pybind11::class_<FEState>(post, "FEState")
         .def_readonly("NodeData", &FEState::m_NODE, pybind11::return_value_policy::reference)
