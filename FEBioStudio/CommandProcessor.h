@@ -70,6 +70,7 @@ public: // command functions
 	bool cmd_addbc  (QStringList ops);
 	bool cmd_addbl  (QStringList ops);
 	bool cmd_addci  (QStringList ops);
+	bool cmd_adddata(QStringList ops);
 	bool cmd_addmat (QStringList ops);
 	bool cmd_addnl  (QStringList ops);
 	bool cmd_addsl  (QStringList ops);

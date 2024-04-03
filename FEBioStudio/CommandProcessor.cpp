@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <FEBio/FEBioExport4.h>
 #include <PostLib/FEFEBioExport.h>
+#include <PostLib/FEPostModel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshTools/FEMesher.h>
@@ -223,6 +224,7 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput) : m
 	m_cmds.push_back({ "addbc"  , &CommandProcessor::cmd_addbc  , "adds a boundary condition to the current model" });
 	m_cmds.push_back({ "addbl"  , &CommandProcessor::cmd_addbl  , "adds a body load to the current model" });
 	m_cmds.push_back({ "addci"  , &CommandProcessor::cmd_addci  , "adds a contact interface to the current model" });
+	m_cmds.push_back({ "adddata", &CommandProcessor::cmd_adddata, "add a standard datafield to the post model." });
 	m_cmds.push_back({ "addmat" , &CommandProcessor::cmd_addmat , "adds a material to the model" });
 	m_cmds.push_back({ "addnl"  , &CommandProcessor::cmd_addnl  , "adds a nodal load to the current model" });
 	m_cmds.push_back({ "addsl"  , &CommandProcessor::cmd_addsl  , "adds a surface load to the current model" });
@@ -429,6 +431,27 @@ bool CommandProcessor::cmd_addci(QStringList ops)
 		doc->DoCommand(new CCmdAddInterface(step, pci), pci->GetNameAndType());
 		m_wnd->UpdateModel(pci);
 	}
+	return true;
+}
+
+bool CommandProcessor::cmd_adddata(QStringList ops)
+{
+	if (!ValidateArgs(ops, 0, 1)) return false;
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return NoActiveDoc();
+	Post::FEPostModel* fem = doc->GetFSModel();
+	if (fem == nullptr) return NoActiveDoc();
+
+	std::string datafieldName = ops[0].toStdString();
+
+	// TODO: Can I do this elsewhere or somehow avoid?
+	Post::InitStandardDataFields();
+
+	if (Post::AddStandardDataField(*fem, datafieldName) == false)
+	{
+		return Error(QString("Unknown datafield name \"%1\"").arg(ops[0]));
+	}
+	m_wnd->Update(nullptr, true);
 	return true;
 }
 
