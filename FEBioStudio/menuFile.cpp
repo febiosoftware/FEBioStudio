@@ -426,6 +426,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new IGESFileImport(prj);
 	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new VTKimport(prj);
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
+	if (ext.compare("vtp", Qt::CaseInsensitive) == 0) return new VTPimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
 		RAWToMeshImport* reader = new RAWToMeshImport(prj);

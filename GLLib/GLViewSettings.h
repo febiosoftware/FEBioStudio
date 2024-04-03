@@ -136,6 +136,7 @@ struct GLViewSettings
 	float	m_shadow_intensity;	// shadow intensity
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
+	bool	m_use_environment_map;	// use the environment map (if one is provided)
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only

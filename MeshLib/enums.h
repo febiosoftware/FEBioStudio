@@ -23,36 +23,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "FEMeshData.h"
-#include <vector>
 
-class FEItemListBuilder;
-class GObject;
-class FSNodeSet;
+// Data type enum
+// NOTE: this is serialized. Don't change order!
+enum DATA_TYPE {
+	DATA_SCALAR,		// scalar (1 comp)
+	DATA_VEC3,			// 3D vector (3 comp)
+	DATA_MAT3,			// 3D Matrix (9 comp)
 
-class FENodeData : public FEMeshData
-{
-public:
-	FENodeData(GObject* po);
-	FENodeData(GObject* po, DATA_TYPE dataType);
+	// from post namespace
+	DATA_MAT3S,			// 3D symmetric Matrix (6 comp)
+	DATA_MAT3SD,		// 3D diagonal Matrix (3 comp)
+	DATA_TENS4S,		// 6D symmetric Matrix (21 comp)
+	DATA_ARRAY,			// variable array (see ModelDataField::GetArraySize())
+	DATA_ARRAY_VEC3		// variable array of 3D vectors (comp =  3*ModelDataField::GetArraySize())
+};
 
-	void Create(FSNodeSet* nset, double v = 0.0, DATA_TYPE dataType = DATA_SCALAR);
+// Data format enum
+// NOTE: this is serialized. Don't change order!
+enum DATA_FORMAT {
+	DATA_ITEM,	// one value per mesh item
+	DATA_NODE,	// one value for each node of selection
+	DATA_MULT,	// multiple values for each mesh item: one value for each node of that item
 
-	// size of data field
-	int Size() const { return (int)m_data.size(); }
+	// from post namespace
+	DATA_REGION // one value for all the items of the region
+};
 
-	void SetItemList(FEItemListBuilder* pl, int n = 0) override;
+// Data class 
+enum DATA_CLASS {
+	NODE_DATA,
+	FACE_DATA,
+	ELEM_DATA,
+	PART_DATA,
 
-public:
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+	EDGE_DATA,
 
-private:
-	GObject*		m_po;
-
-private:
-	FENodeData(const FENodeData& d);
-	FENodeData& operator = (const FENodeData& d);
+	// from post namespace
+	OBJECT_DATA
 };

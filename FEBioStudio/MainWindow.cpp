@@ -1970,6 +1970,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
 		rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 		rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -2105,6 +2106,9 @@ void CMainWindow::readSettings()
 
 		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 		GLWidget::set_default_font(font);
+
+		QString envmap = settings.value("environmentMap").toString();
+		ui->m_envMapFile = envmap;
 
 		if (vs.m_defaultFGColorOption != 0)
 		{
@@ -3514,6 +3518,16 @@ void CMainWindow::toggleOrtho()
 QStringList CMainWindow::GetRecentFileList()
 {
 	return ui->m_recentFiles;
+}
+
+QString CMainWindow::GetEnvironmentMap()
+{
+	return ui->m_envMapFile;
+}
+
+void CMainWindow::SetEnvironmentMap(const QString& filename)
+{
+	ui->m_envMapFile = filename;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()

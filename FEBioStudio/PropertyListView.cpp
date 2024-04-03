@@ -227,7 +227,7 @@ public:
 					std::string s;
 					if (fem)
 					{
-						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_SCALAR);
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::TENSOR_SCALAR);
 					}
 					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
@@ -242,7 +242,7 @@ public:
 					std::string s;
 					if (fem)
 					{
-						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_VECTOR);
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::TENSOR_VECTOR);
 					}
 					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
@@ -257,7 +257,7 @@ public:
 					std::string s;
 					if (fem)
 					{
-						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_TENSOR2);
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::TENSOR_TENSOR2);
 					}
 					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
@@ -467,7 +467,7 @@ public:
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
 				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
-				if (fem) pc->BuildMenu(fem, Post::DATA_SCALAR);
+				if (fem) pc->BuildMenu(fem, Post::TENSOR_SCALAR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -477,7 +477,7 @@ public:
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
 				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
-				if (fem) pc->BuildMenu(fem, Post::DATA_VECTOR);
+				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -487,7 +487,7 @@ public:
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
 				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
-				if (fem) pc->BuildMenu(fem, Post::DATA_TENSOR2);
+				if (fem) pc->BuildMenu(fem, Post::TENSOR_TENSOR2);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));

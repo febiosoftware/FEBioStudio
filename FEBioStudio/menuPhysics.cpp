@@ -795,13 +795,13 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 
 		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-			if (dlg.GetType() != FEMeshData::SURFACE_DATA)
+			if (dlg.GetType() != FACE_DATA)
 			{
 				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
 				return;
 			}
 
-			FEMeshData::DATA_TYPE dataType = dlg.GetDataType();
+			DATA_TYPE dataType = dlg.GetDataType();
 			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
 			gen->SetName(name.toStdString());
 			fem->AddMeshDataGenerator(gen);
@@ -812,10 +812,10 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 			FEMeshData* data = nullptr;
 			switch (dlg.GetType())
 			{
-			case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
-			case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-			case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-			case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
+			case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
 			}
 
 			if (data)

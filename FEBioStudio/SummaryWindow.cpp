@@ -83,7 +83,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	{
 		if (doc->IsValid())
 		{
-			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
+			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::TENSOR_SCALAR));
 		}
 		else return;
 	}

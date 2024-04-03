@@ -408,7 +408,7 @@ void CFiberGeneratorTool::OnApply()
 
 			FEPartData* pdata = new FEPartData(po->GetFEMesh());
 			pdata->SetName(mapName.toStdString());
-			pdata->Create(partSet, FEMeshData::DATA_VEC3D, FEMeshData::DATA_ITEM);
+			pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
 			pm->AddMeshDataField(pdata);
 
 			for (int i = 0; i < pm->Elements(); ++i)

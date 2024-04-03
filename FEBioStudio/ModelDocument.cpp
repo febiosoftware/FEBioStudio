@@ -118,6 +118,7 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
 
 	SetFileWriter(new CModelFileWriter(this));
 

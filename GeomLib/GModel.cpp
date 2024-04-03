@@ -1287,6 +1287,7 @@ GObject* BuildObject(int ntype)
 	case GMULTI_BLOCK       : po = new GMultiBox(); break;
 	case GMULTI_PATCH       : po = new GMultiPatch(); break;
 	case GCURVE_OBJECT      : po = new GCurveObject(); break;
+	case GBOX_IN_BOX        : po = new GBoxInBox(); break;
 	}
 
 	assert(po);

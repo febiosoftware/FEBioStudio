@@ -387,7 +387,7 @@ public:
 		double pct = job->GetProgress();
 		if (status == CFEBioJob::COMPLETED) pct = 100.0;
 		else pct = (int)(pct * 10 + 0.5) / 10.0;
-		completion->setText(QString("%1 pct.").arg(pct));
+		completion->setText(QString("%1 %").arg(pct));
 
 		QString report = QString::fromStdString(job->m_jobReport);
 		QStringList warningsAndErrors = report.split(QChar('\n'));
