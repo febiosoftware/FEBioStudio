@@ -11,8 +11,6 @@ APP_BUDLE=$FBS_REPO/cmbuild/bin/FEBioStudio.app
 # Build repos
 
 cd $FEBIO_REPO
-FEBIO_VER=$(git describe)
-export FEBIO_VER=${FEBIO_VER:1}
 ./ci/macOS/build.sh
 ./ci/macOS/create-sdk.sh
 
@@ -26,8 +24,6 @@ cd $HEAT_REPO
 
 ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
 cd $FBS_REPO
-FBS_VER=$(git describe)
-export FBS_VER=${FBS_VER:1}
 ./ci/macOS/build.sh
 
 cd $GITHUB_WORKSPACE
