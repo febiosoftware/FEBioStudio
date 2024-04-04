@@ -27,20 +27,20 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
-FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(GObject* po) : FEMeshData(NODE_DATA)
 {
 	m_po = po;
 	if (po) SetMesh(po->GetFEMesh());
 }
 
-FENodeData::FENodeData(GObject* po, FEMeshData::DATA_TYPE dataType) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(GObject* po, DATA_TYPE dataType) : FEMeshData(NODE_DATA)
 {
 	m_po = po;
 	SetDataType(dataType);
 	if (po) SetMesh(po->GetFEMesh());
 }
 
-FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(const FENodeData& d) : FEMeshData(NODE_DATA)
 {
 	assert(false);
 }
@@ -51,7 +51,7 @@ FENodeData& FENodeData::operator=(const FENodeData& d)
 	return *this;
 }
 
-void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataType)
+void FENodeData::Create(FSNodeSet* nset, double v, DATA_TYPE dataType)
 {
 	FSHasOneItemList::SetItemList(nset);
 	SetDataType(dataType);
@@ -106,7 +106,7 @@ void FENodeData::Load(IArchive& ar)
 		{
 			int dataType = 0;
 			ar.read(dataType);
-			SetDataType((FEMeshData::DATA_TYPE) dataType);
+			SetDataType((DATA_TYPE) dataType);
 		}
 		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
 		{

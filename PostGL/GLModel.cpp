@@ -106,7 +106,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F)
+		if ((*pd)->Type() == DATA_VEC3)
 		{
 			std::string sname = (*pd)->GetName();
 			if ((sname == "displacement") || (sname == "Displacement")) ndisp = i;
@@ -115,7 +115,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	if (ndisp != -1)
 	{
-		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
+		ps->SetDisplacementField(BUILD_FIELD( DATA_CLASS::NODE_DATA, ndisp, 0));
 		m_pdis = new CGLDisplacementMap(this);
 	}
 
@@ -323,7 +323,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 	int ndisp = -1;
 	for (int i=0; i<pdm->DataFields(); ++i, ++pd)
 	{
-		if ((*pd)->Type() == DATA_VEC3F) ++nv;
+		if ((*pd)->Type() == DATA_VEC3) ++nv;
 		if ((*pd)->GetName() == szvectorField) ndisp = i;
 	}
 
@@ -333,9 +333,9 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 	m_pdis = new CGLDisplacementMap(this);
 	if (ndisp != -1)
 	{
-		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
+		ps->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, ndisp, 0));
 	}
-	else ps->SetDisplacementField(0);
+	else ps->SetDisplacementField(-1);
 
 	ResetAllStates();
 
@@ -346,7 +346,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 bool CGLModel::HasDisplacementMap()
 {
 	if (m_pdis == 0) return false;
-	return (GetFSModel()->GetDisplacementField() != 0);
+	return (GetFSModel()->GetDisplacementField() >= 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -451,7 +451,7 @@ void CGLModel::ToggleVisibleElements()
 void CGLModel::RemoveDisplacementMap()
 {
 	FEPostModel* ps = GetFSModel();
-	ps->SetDisplacementField(0);
+	ps->SetDisplacementField(-1);
 	delete m_pdis;
 	m_pdis = 0;
 

@@ -170,7 +170,10 @@ void CGLPostScene::Render(CGLContext& rc)
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
+	GLViewSettings& view = glview->GetViewSettings();
+	if (view.m_use_environment_map) ActivateEnvironmentMap();
 	glm->Render(rc);
+	if (view.m_use_environment_map) DeactivateEnvironmentMap();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -179,7 +182,6 @@ void CGLPostScene::Render(CGLContext& rc)
 	if (glview->TrackModeActive()) glview->RenderTrack();
 
 	// render the tags
-	GLViewSettings& view = glview->GetViewSettings();
 	if (view.m_bTags) glview->RenderTags();
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();

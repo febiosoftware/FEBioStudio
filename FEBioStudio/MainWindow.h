@@ -675,6 +675,9 @@ public:
 	QStringList GetRecentProjectsList();
 	QStringList GetRecentPluginsList();
 
+	QString GetEnvironmentMap();
+	void SetEnvironmentMap(const QString& filename);
+
 	void AddRecentPlugin(const QString& fileName);
 
 	QString ProjectFolder();

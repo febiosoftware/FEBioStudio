@@ -243,6 +243,7 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
 
 	SetItemMode(ITEM_ELEM);
 
@@ -487,7 +488,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
 	}
 	else return "";
 }

@@ -301,10 +301,10 @@ void CMeshDataInfoPanel::setType(int data)
 {
 	switch (data)
 	{
-	case FEMeshData::NODE_DATA   : m_type->setText("Node data"   ); break;
-	case FEMeshData::SURFACE_DATA: m_type->setText("Surface data"); break;
-	case FEMeshData::ELEMENT_DATA: m_type->setText("Element data"); break;
-	case FEMeshData::PART_DATA   : m_type->setText("Part data"   ); break;
+	case NODE_DATA: m_type->setText("Node data"   ); break;
+	case FACE_DATA: m_type->setText("Surface data"); break;
+	case ELEM_DATA: m_type->setText("Element data"); break;
+	case PART_DATA: m_type->setText("Part data"   ); break;
 	default:
 		m_type->setText("(unknown)");
 	}
@@ -314,9 +314,9 @@ void CMeshDataInfoPanel::setDataType(int ndatatype)
 {
 	switch (ndatatype)
 	{
-	case FEMeshData::DATA_SCALAR: m_dataType->setText("scalar"); break;
-	case FEMeshData::DATA_VEC3D : m_dataType->setText("vec3"); break;
-	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
+	case DATA_SCALAR: m_dataType->setText("scalar"); break;
+	case DATA_VEC3 : m_dataType->setText("vec3"); break;
+	case DATA_MAT3 : m_dataType->setText("mat3"); break;
 	default:
 		m_dataType->setText("(unknown)");
 	}
@@ -326,9 +326,9 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 {
 	switch (ndataformat)
 	{
-	case FEMeshData::DATA_ITEM: m_dataFmt->setText("item"); break;
-	case FEMeshData::DATA_NODE: m_dataFmt->setText("node"); break;
-	case FEMeshData::DATA_MULT: m_dataFmt->setText("mult"); break;
+	case DATA_ITEM: m_dataFmt->setText("item"); break;
+	case DATA_NODE: m_dataFmt->setText("node"); break;
+	case DATA_MULT: m_dataFmt->setText("mult"); break;
 	default:
 		m_dataFmt->setText("(unknown)");
 	}

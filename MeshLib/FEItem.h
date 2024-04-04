@@ -26,66 +26,63 @@ SOFTWARE.*/
 
 #pragma once
 
-//-----------------------------------------------------------------------------
-// FE State Flags
-#define FE_HIDDEN		0x01		// was the item hidden by the user
-#define FE_SELECTED		0x02		// is the item currently selected ?
-#define FE_DISABLED		0x04		// should the item be evaluated ?
-#define FE_ACTIVE		0x08		// does the item contain data?
-#define FE_INVISIBLE	0x10		// is the item invisible because the parent material was hidden? 
-#define FE_ERODED		0x20		// the item is "eroded" and should be treated as no longer present
-#define FE_EXTERIOR		0x40		// the item is "exterior"
-#define FE_REQUIRED		0x80		// the item is required and should not be deleted during mesh operations
-// Even when not hidden, the item may not be shown since e.g. the material is hidden
-
-//-----------------------------------------------------------------------------
 // base class for mesh item classes.
-//
 class MeshItem
 {
+private:
+	// Item flags
+	// Even when not hidden, the item may not be shown since e.g. the material is hidden
+	enum {
+		// State Flags
+		ITEM_HIDDEN    = 0x01,		// was the item hidden by the user
+		ITEM_SELECTED  = 0x02,		// is the item currently selected ?
+		ITEM_DISABLED  = 0x04,		// should the item be evaluated ?
+		ITEM_ACTIVE    = 0x08,		// does the item contain data?
+		ITEM_INVISIBLE = 0x10,		// is the item invisible because the parent material was hidden? 
+		ITEM_ERODED    = 0x20,		// the item is "eroded" and should be treated as no longer present
+		ITEM_EXTERIOR  = 0x40,		// the item is "exterior"
+		ITEM_REQUIRED  = 0x80		// the item is required and should not be deleted during mesh operations
+	};
 public:
 	MeshItem() { m_state = 0; m_nid = -1; m_gid = 0; m_ntag = 0; }
 	virtual ~MeshItem() {}
 
-	bool IsHidden() const { return ((m_state & FE_HIDDEN) != 0); }
-	bool IsSelected() const { return ((m_state & FE_SELECTED) != 0); }
-	bool IsDisabled() const { return ((m_state & FE_DISABLED) != 0); }
-	bool IsActive() const { return ((m_state & FE_ACTIVE) != 0); }
-	bool IsInvisible() const { return ((m_state & FE_INVISIBLE) != 0); }
+	bool IsHidden() const { return ((m_state & ITEM_HIDDEN) != 0); }
+	bool IsSelected() const { return ((m_state & ITEM_SELECTED) != 0); }
+	bool IsDisabled() const { return ((m_state & ITEM_DISABLED) != 0); }
+	bool IsActive() const { return ((m_state & ITEM_ACTIVE) != 0); }
+	bool IsInvisible() const { return ((m_state & ITEM_INVISIBLE) != 0); }
 
-	void Select() { m_state = m_state | FE_SELECTED; }
-	void Unselect() { m_state = m_state & ~FE_SELECTED; }
+	void Select() { m_state = m_state | ITEM_SELECTED; }
+	void Unselect() { m_state = m_state & ~ITEM_SELECTED; }
 
-	void Hide() { m_state = (m_state | FE_HIDDEN) & ~FE_SELECTED; }
-	void Unhide() { m_state = m_state & ~FE_HIDDEN; }
+	void Hide() { m_state = (m_state | ITEM_HIDDEN) & ~ITEM_SELECTED; }
+	void Unhide() { m_state = m_state & ~ITEM_HIDDEN; }
 
-	void Enable() { m_state = m_state & ~FE_DISABLED; }
-	void Disable() { m_state = m_state | FE_DISABLED; }
+	void Enable() { m_state = m_state & ~ITEM_DISABLED; }
+	void Disable() { m_state = m_state | ITEM_DISABLED; }
 
-	void Activate() { m_state = m_state | FE_ACTIVE; }
-	void Deactivate() { m_state = m_state & ~FE_ACTIVE; }
+	void Activate() { m_state = m_state | ITEM_ACTIVE; }
+	void Deactivate() { m_state = m_state & ~ITEM_ACTIVE; }
 
-	void SetEroded(bool b) { if (b) m_state = m_state | FE_ERODED; else m_state = m_state & ~FE_ERODED; }
-	bool IsEroded() const { return ((m_state & FE_ERODED) != 0); }
+	void SetEroded(bool b) { if (b) m_state = m_state | ITEM_ERODED; else m_state = m_state & ~ITEM_ERODED; }
+	bool IsEroded() const { return ((m_state & ITEM_ERODED) != 0); }
 
-	void SetExterior(bool b) { if (b) m_state = m_state | FE_EXTERIOR; else m_state = m_state & ~FE_EXTERIOR; }
-	bool IsExterior() const { return ((m_state & FE_EXTERIOR) != 0); }
+	void SetExterior(bool b) { if (b) m_state = m_state | ITEM_EXTERIOR; else m_state = m_state & ~ITEM_EXTERIOR; }
+	bool IsExterior() const { return ((m_state & ITEM_EXTERIOR) != 0); }
 
-	bool IsRequired() const { return ((m_state & FE_REQUIRED) != 0); }
-	void SetRequired(bool b) { if (b) m_state = m_state | FE_REQUIRED; else m_state = m_state & ~FE_REQUIRED; }
+	bool IsRequired() const { return ((m_state & ITEM_REQUIRED) != 0); }
+	void SetRequired(bool b) { if (b) m_state = m_state | ITEM_REQUIRED; else m_state = m_state & ~ITEM_REQUIRED; }
 
 	bool IsEnabled() const { return (IsDisabled() == false); }
 
 	void Show(bool bshow = true)
 	{
-		if (bshow) m_state = m_state & ~FE_INVISIBLE;
-		else m_state = (m_state | FE_INVISIBLE) & ~FE_SELECTED;
+		if (bshow) m_state = m_state & ~ITEM_INVISIBLE;
+		else m_state = (m_state | ITEM_INVISIBLE) & ~ITEM_SELECTED;
 	}
 
 	bool IsVisible() const { return (IsInvisible() == false) && (IsHidden() == false) && (IsEroded() == false); }
-
-	unsigned int GetFEState() const { return m_state; }
-	void SetFEState(unsigned int state) { m_state = state; }
 
 	int GetID() const { return m_nid; }
 	void SetID(int nid) { m_nid = nid; }
@@ -96,5 +93,9 @@ public:
 	int	m_nid;
 
 protected:
-	unsigned int m_state;	// the state flag of the mesh(-item)
+	unsigned int GetState() const { return m_state; }
+	void SetState(unsigned int state) { m_state = state; }
+
+private:
+	unsigned int m_state;	// the state flag of the mesh item
 };

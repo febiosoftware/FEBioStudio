@@ -94,11 +94,11 @@ private:
 	std::vector<int>	off;
 };
 
-class OBJECT_DATA
+class OBJECTDATA
 {
 public:
-	OBJECT_DATA() { data = nullptr; }
-	virtual ~OBJECT_DATA() {}
+	OBJECTDATA() { data = nullptr; }
+	virtual ~OBJECTDATA() {}
 
 public:
 	vec3d	pos;
@@ -106,13 +106,13 @@ public:
 	ObjectData*		data;
 };
 
-class OBJ_POINT_DATA : public OBJECT_DATA
+class OBJ_POINT_DATA : public OBJECTDATA
 {
 public:
 	vec3d	m_rt;
 };
 
-struct OBJ_LINE_DATA : public OBJECT_DATA
+struct OBJ_LINE_DATA : public OBJECTDATA
 {
 public:
 	vec3d	m_r1;
@@ -148,7 +148,7 @@ public:
 
 	FEPostModel* GetFSModel() { return m_fem; }
 
-	OBJECT_DATA& GetObjectData(int n);
+	OBJECTDATA& GetObjectData(int n);
 
 	void RebuildData();
 

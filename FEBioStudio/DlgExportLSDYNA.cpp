@@ -45,12 +45,12 @@ public:
 	void setup(QDialog* dlg)
 	{
 		QFormLayout* form = new QFormLayout;
-		form->addRow(m_flag[0] = new QCheckBox("stress"        ), m_code[0] = new CDataFieldSelector); m_code[0]->BuildMenu(m_fem, Data_Tensor_Type::DATA_TENSOR2);
-		form->addRow(m_flag[1] = new QCheckBox("plastic strain"), m_code[1] = new CDataFieldSelector); m_code[1]->BuildMenu(m_fem, Data_Tensor_Type::DATA_SCALAR);
-		form->addRow(m_flag[2] = new QCheckBox("displacement"  ), m_code[2] = new CDataFieldSelector); m_code[2]->BuildMenu(m_fem, Data_Tensor_Type::DATA_VECTOR);
-		form->addRow(m_flag[3] = new QCheckBox("velocity"      ), m_code[3] = new CDataFieldSelector); m_code[3]->BuildMenu(m_fem, Data_Tensor_Type::DATA_VECTOR);
-		form->addRow(m_flag[4] = new QCheckBox("acceleration"  ), m_code[4] = new CDataFieldSelector); m_code[4]->BuildMenu(m_fem, Data_Tensor_Type::DATA_VECTOR);
-		form->addRow(m_flag[5] = new QCheckBox("temperature"   ), m_code[5] = new CDataFieldSelector); m_code[5]->BuildMenu(m_fem, Data_Tensor_Type::DATA_SCALAR);
+		form->addRow(m_flag[0] = new QCheckBox("stress"        ), m_code[0] = new CDataFieldSelector); m_code[0]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_TENSOR2);
+		form->addRow(m_flag[1] = new QCheckBox("plastic strain"), m_code[1] = new CDataFieldSelector); m_code[1]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_SCALAR);
+		form->addRow(m_flag[2] = new QCheckBox("displacement"  ), m_code[2] = new CDataFieldSelector); m_code[2]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_VECTOR);
+		form->addRow(m_flag[3] = new QCheckBox("velocity"      ), m_code[3] = new CDataFieldSelector); m_code[3]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_VECTOR);
+		form->addRow(m_flag[4] = new QCheckBox("acceleration"  ), m_code[4] = new CDataFieldSelector); m_code[4]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_VECTOR);
+		form->addRow(m_flag[5] = new QCheckBox("temperature"   ), m_code[5] = new CDataFieldSelector); m_code[5]->BuildMenu(m_fem, Data_Tensor_Type::TENSOR_SCALAR);
 
 		if (m_code[0]->setCurrentValue("stress"        )) m_flag[0]->setChecked(true);
 		if (m_code[1]->setCurrentValue("plastic strain")) m_flag[1]->setChecked(true);

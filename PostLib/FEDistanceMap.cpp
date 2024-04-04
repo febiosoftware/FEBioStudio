@@ -34,7 +34,7 @@ SOFTWARE.*/
 using namespace std;
 
 //-----------------------------------------------------------------------------
-Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, 0)
 { 
 	m_tol = 0.01; 
 	m_bsigned = false; 

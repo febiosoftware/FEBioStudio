@@ -35,6 +35,9 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <FEMLib/FELoad.h>
+#include <MeshLib/MeshMetrics.h>
+#include <ImageLib/RGBImage.h>
+#include <QImageReader>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -68,7 +71,6 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
-
 }
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
@@ -1978,6 +1980,8 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
+	if (vs.m_use_environment_map) ActivateEnvironmentMap();
+
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
 	int NF = po->Faces();
@@ -2038,6 +2042,8 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			}
 		}
 	}
+
+	if (vs.m_use_environment_map) DeactivateEnvironmentMap();
 
 	if (NF == 0)
 	{

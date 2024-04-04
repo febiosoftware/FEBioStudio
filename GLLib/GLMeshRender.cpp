@@ -1147,15 +1147,14 @@ void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET4(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
-	for (int i = 0; i<4; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		bool bdraw = true;
 		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 		if (pen == 0)
 		{
@@ -1169,27 +1168,28 @@ void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n1 = pf->m_nn[0];
 				n2 = pf->m_nn[1];
 				n3 = pf->m_nn[2];
+
+				glNormal3f(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3f(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+				glNormal3f(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 			}
-			else bdraw = false;
 		}
 		else
 		{
-			r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
+			if ((!pen->IsVisible()) || (pen->IsSelected() && bsel))
+			{
+				r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
+				r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
+				r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
 
-			vec3d n = (r2 - r1) ^ (r3 - r1);
-			n.Normalize();
-			n1 = n2 = n3 = to_vec3f(n);
+				vec3d n = (r2 - r1) ^ (r3 - r1);
+				n.Normalize();
 
-			bdraw = (!pen->IsVisible()) || (pen->IsSelected() && bsel);
-		}
-
-		if (bdraw)
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+				glNormal3d(n.x, n.y, n.z);
+				glVertex3d(r1.x, r1.y, r1.z);
+				glVertex3d(r2.x, r2.y, r2.z);
+				glVertex3d(r3.x, r3.y, r3.z);
+			}
 		}
 	}
 }
@@ -1204,7 +1204,6 @@ void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	GLColor c[3];
 	for (int i = 0; i<4; ++i)
 	{
-		bool bdraw = true;
 		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 		if ((pen == 0) || (!pen->IsVisible()))
 		{
@@ -2045,6 +2044,53 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 {
 	if (surfID == -1)
 	{
+		glBegin(GL_TRIANGLES);
+		{
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				vec3d r[3];
+				r[0] = pm->Node(f.n[0]).r;
+				r[1] = pm->Node(f.n[1]).r;
+				r[2] = pm->Node(f.n[2]).r;
+				glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].r, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
+				glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].r, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
+				glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].r, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+			}
+		}
+		glEnd();
+	}
+	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
+	{
+		pair<int, int> fil = pm->m_FIL[surfID];
+		int NF = fil.second;
+		if (NF > 0)
+		{
+			glBegin(GL_TRIANGLES);
+			{
+				for (int i = 0; i < NF; ++i)
+				{
+					const GMesh::FACE& f = pm->Face(i + fil.first);
+					vec3d r[3];
+					r[0] = pm->Node(f.n[0]).r;
+					r[1] = pm->Node(f.n[1]).r;
+					r[2] = pm->Node(f.n[2]).r;
+					glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].r, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
+					glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].r, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
+					glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].r, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+				}
+			}
+			glEnd();
+		}
+	}
+}
+
+/*
+void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
+{
+	if (surfID == -1)
+	{
 		m_glmesh.CreateFromGMesh(*pm);
 	}
 	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
@@ -2058,6 +2104,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 
 	m_glmesh.Render();
 }
+*/
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)

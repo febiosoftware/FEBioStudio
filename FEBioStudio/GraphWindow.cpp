@@ -1601,7 +1601,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				sourceNames << QString::fromStdString((*pdf)->GetName());
 			}
@@ -1654,9 +1654,9 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		if (plot == LINE_PLOT)
 			SetXDataSelector(new CTimeStepSelector(), 0);
 		else
-			SetXDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+			SetXDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
@@ -1690,12 +1690,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	// get the field data
 	m_dataX = GetCurrentXValue();
 	m_dataY = GetCurrentYValue();
-	if ((nplotType != LINE_PLOT) && (m_dataX <= 0))
+	if ((nplotType != LINE_PLOT) && (m_dataX < 0))
 	{
 		ClearPlots();
 		return;
 	}
-	if (m_dataY <= 0)
+	if (m_dataY < 0)
 	{
 		ClearPlots();
 		return;
@@ -1786,7 +1786,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -1899,7 +1899,7 @@ void CModelGraphWindow::setDataSource(int n)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -1937,7 +1937,7 @@ void CModelGraphWindow::setDataSource(int n)
 					{
 						if (probe->TrackModelData())
 						{
-							SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+							SetYDataSelector(new CModelDataSelector(&fem, Post::TENSOR_SCALAR));
 						}
 						else
 						{
@@ -2028,7 +2028,7 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 	for (int j = 0; j < nsteps; ++j)
 	{
 		Post::FEState* state = fem.GetState(j + m_firstState);
-		Post::OBJECT_DATA& pointData = state->GetObjectData(nobj);
+		Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
 
 		Post::ObjectData* data = pointData.data;
 
@@ -2044,12 +2044,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 
 		switch (dataField->Type())
 		{
-		case Post::DATA_FLOAT:
+		case DATA_SCALAR:
 		{
 			val = data->get<float>(ndata);
 		}
 		break;
-		case Post::DATA_VEC3F:
+		case DATA_VEC3:
 		{
 			vec3f v = data->get<vec3f>(ndata);
 			val = component(v, ncomp);
