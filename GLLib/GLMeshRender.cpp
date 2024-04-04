@@ -1147,15 +1147,14 @@ void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET4(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
-	for (int i = 0; i<4; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		bool bdraw = true;
 		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 		if (pen == 0)
 		{
@@ -1169,27 +1168,28 @@ void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n1 = pf->m_nn[0];
 				n2 = pf->m_nn[1];
 				n3 = pf->m_nn[2];
+
+				glNormal3f(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3f(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+				glNormal3f(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 			}
-			else bdraw = false;
 		}
 		else
 		{
-			r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
+			if ((!pen->IsVisible()) || (pen->IsSelected() && bsel))
+			{
+				r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
+				r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
+				r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
 
-			vec3d n = (r2 - r1) ^ (r3 - r1);
-			n.Normalize();
-			n1 = n2 = n3 = to_vec3f(n);
+				vec3d n = (r2 - r1) ^ (r3 - r1);
+				n.Normalize();
 
-			bdraw = (!pen->IsVisible()) || (pen->IsSelected() && bsel);
-		}
-
-		if (bdraw)
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+				glNormal3d(n.x, n.y, n.z);
+				glVertex3d(r1.x, r1.y, r1.z);
+				glVertex3d(r2.x, r2.y, r2.z);
+				glVertex3d(r3.x, r3.y, r3.z);
+			}
 		}
 	}
 }
@@ -1204,7 +1204,6 @@ void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	GLColor c[3];
 	for (int i = 0; i<4; ++i)
 	{
-		bool bdraw = true;
 		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 		if ((pen == 0) || (!pen->IsVisible()))
 		{
