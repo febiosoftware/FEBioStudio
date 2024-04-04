@@ -835,7 +835,7 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
     }
 
     GMesh* mesh = nullptr;
-	if (showMesh == 1) mesh = &odf->m_remesh;
+	if ((showMesh == 1) || cam->IsMoving()) mesh = &odf->m_remesh;
 	else mesh = &odf->m_mesh;
 
 	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
