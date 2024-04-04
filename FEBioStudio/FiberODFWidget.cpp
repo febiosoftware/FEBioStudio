@@ -945,7 +945,7 @@ void CFiberODFWidget::on_copyEFD_triggered()
 
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(datamapName);
-    pdata->Create(partSet, FEMeshData::DATA_VEC3D, FEMeshData::DATA_ITEM);
+    pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
     pm->AddMeshDataField(pdata);
 
     FEElemList* elemList = pdata->BuildElemList();
