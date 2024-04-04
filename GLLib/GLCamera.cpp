@@ -82,6 +82,8 @@ void CGLCamera::Reset()
 	m_bortho = false;
 
 	m_depthScale = 0.9999;
+
+	m_isMoving = false;
 }
 
 //-----------------------------------------------------------------------------
