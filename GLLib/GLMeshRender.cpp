@@ -2044,6 +2044,53 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 {
 	if (surfID == -1)
 	{
+		glBegin(GL_TRIANGLES);
+		{
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				vec3d r[3];
+				r[0] = pm->Node(f.n[0]).r;
+				r[1] = pm->Node(f.n[1]).r;
+				r[2] = pm->Node(f.n[2]).r;
+				glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].r, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
+				glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].r, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
+				glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].r, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+			}
+		}
+		glEnd();
+	}
+	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
+	{
+		pair<int, int> fil = pm->m_FIL[surfID];
+		int NF = fil.second;
+		if (NF > 0)
+		{
+			glBegin(GL_TRIANGLES);
+			{
+				for (int i = 0; i < NF; ++i)
+				{
+					const GMesh::FACE& f = pm->Face(i + fil.first);
+					vec3d r[3];
+					r[0] = pm->Node(f.n[0]).r;
+					r[1] = pm->Node(f.n[1]).r;
+					r[2] = pm->Node(f.n[2]).r;
+					glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].r, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
+					glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].r, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
+					glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].r, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+				}
+			}
+			glEnd();
+		}
+	}
+}
+
+/*
+void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
+{
+	if (surfID == -1)
+	{
 		m_glmesh.CreateFromGMesh(*pm);
 	}
 	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
@@ -2057,6 +2104,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 
 	m_glmesh.Render();
 }
+*/
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
