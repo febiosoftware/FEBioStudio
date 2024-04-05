@@ -210,7 +210,6 @@ public:
 	void Render3DCursor();
 	void RenderTags();
 	void RenderTags(std::vector<GLTAG>& tags);
-	void RenderImageData();
 	void RenderTrack();
 	void RenderDecorations();
 

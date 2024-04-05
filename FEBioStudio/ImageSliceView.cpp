@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include "ImageSlice.h"
 
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
-    : QWidget(parent), m_wnd(wnd), m_imgModel(nullptr), m_xSlicer(nullptr), m_ySlicer(nullptr), m_zSlicer(nullptr)
+    : QWidget(parent), m_wnd(wnd), m_imgModel(nullptr), m_slicer(nullptr)
 {
     m_layout = new QGridLayout;
 
@@ -47,10 +47,6 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_ySlice = new CImageSlice(CImageSlice::Y);
     m_zSlice = new CImageSlice(CImageSlice::Z);
     m_infoSlice = m_xSlice;
-
-    m_xSlicer.SetOrientation(0);
-    m_ySlicer.SetOrientation(1);
-    m_zSlicer.SetOrientation(2);
 
     m_layout->addWidget(m_xSlice, 0, 0);
     m_layout->addWidget(m_ySlice, 0, 1);
@@ -90,11 +86,7 @@ void CImageSliceView::Update()
 
 void CImageSliceView::RenderSlicers(CGLContext& rc)
 {
-    if(!m_xSlicer.GetImageModel() || !m_ySlicer.GetImageModel() || !m_zSlicer.GetImageModel()) return;
- 
-    m_xSlicer.Render(rc);
-    m_ySlicer.Render(rc);
-    m_zSlicer.Render(rc);
+	m_slicer.Render(rc);
 }
 
 void CImageSliceView::SetInspector(CDlgPixelInspector* inspector)
@@ -120,9 +112,7 @@ void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
         m_imgModel->Get3DImage()->GetMinMax(min, max);
     }
 
-    m_xSlicer.SetImageModel(m_imgModel);
-    m_ySlicer.SetImageModel(m_imgModel);
-    m_zSlicer.SetImageModel(m_imgModel);
+    m_slicer.SetImageModel(m_imgModel);
 
     m_xSlice->SetImage(m_imgModel);
     m_ySlice->SetImage(m_imgModel);
@@ -150,23 +140,14 @@ void CImageSliceView::SliceUpdated(int direction, float offset)
 
     if(!doc) return;
     
-    switch (direction)
-    {
-    case CImageSlice::X:
-        m_xSlicer.SetOffset(offset);
-        m_xSlicer.SetImageSlice(m_xSlice->GetDisplaySlice());
-        break;
-    case CImageSlice::Y:
-        m_ySlicer.SetOffset(offset);
-        m_ySlicer.SetImageSlice(m_ySlice->GetDisplaySlice());
-        break;
-    case CImageSlice::Z:
-        m_zSlicer.SetOffset(offset);
-        m_zSlicer.SetImageSlice(m_zSlice->GetDisplaySlice());
-        break;
-    default:
-        break;
-    }
+	CImage* img = nullptr;
+	switch (direction)
+	{
+	case CImageSlice::X: img = m_xSlice->GetDisplaySlice(); break;
+	case CImageSlice::Y: img = m_ySlice->GetDisplaySlice(); break;
+	case CImageSlice::Z: img = m_zSlice->GetDisplaySlice(); break;
+	}
+	if (img) m_slicer.SetSliceImage(direction, offset, img);
 
     m_glView->repaint();
 
@@ -207,4 +188,23 @@ void CImageSliceView::SliceClicked(int direction, QPoint point)
         UpdatePixelInfo();
         m_inspector->UpdateData();
     }
+}
+
+CImageSliceViewRender::CImageSliceViewRender(CImageSliceView* sliceView) : m_sliceView(sliceView)
+{
+
+}
+
+void CImageSliceViewRender::Render(CGLContext& rc)
+{
+	if (m_sliceView == nullptr) return;
+	if (!m_sliceView->isVisible()) return;
+	
+	// only call the slice view render function
+	// if the image model is the active one. 
+	CImageModel* img = GetImageModel();
+	if (img && (img == m_sliceView->GetImageModel()))
+	{
+		m_sliceView->RenderSlicers(rc);
+	}
 }
