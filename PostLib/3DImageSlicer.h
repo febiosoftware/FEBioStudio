@@ -23,23 +23,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "GLObject.h"
-
-class CImageModel;
+#include "ImageSlicer.h"
 
 namespace Post {
 
-class CGLImageRenderer : public CGLVisual
-{
-public:
-	CGLImageRenderer(CImageModel* img = nullptr);
+	// Class that combines three image slices
+	class C3DImageSlicer : public CGLImageRenderer
+	{
+	public:
+		C3DImageSlicer(CImageModel* img);
 
-	virtual void SetImageModel(CImageModel* img);
-	CImageModel* GetImageModel();
+		void Render(CGLContext& rc) override;
 
-private:
-	CImageModel*	m_img;
-};
+		void SetImageModel(CImageModel* img) override;
+
+		void SetSliceImage(int slice, float offset, CImage* img);
+
+	private:
+		CImageSlicer m_xSlicer;
+		CImageSlicer m_ySlicer;
+		CImageSlicer m_zSlicer;
+	};
+
 }

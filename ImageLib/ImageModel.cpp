@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include <fstream>
 #include <assert.h>
+#include <GLLib/glx.h>
+#include <GLLib/GLContext.h>
 
 using namespace Post;
 
@@ -92,20 +94,53 @@ void CImageModel::ShowBox(bool b)
 
 void CImageModel::Render(CGLContext& rc)
 {
-	// render the volume image data if present
-	if (IsActive())
+	if (IsActive() == false) return;
+
+	glPushMatrix();
+
+	BOX box = GetBoundingBox();
+	vec3d r0 = box.r0();
+	vec3d r1 = box.r1();
+	glTranslated(r0.x, r0.y, r0.z);
+
+	mat3d Q = GetOrientation();
+
+	double q[16] = {
+		Q(0,0), Q(1,0), Q(2,0), 0.0,
+		Q(0,1), Q(1,1), Q(2,1), 0.0,
+		Q(0,2), Q(1,2), Q(2,2), 0.0,
+		0.0, 0.0, 0.0, 1.0
+	};
+	glMultMatrixd(q);
+
+	if (ShowBox())
 	{
-		for (int j = 0; j < ImageRenderers(); ++j)
+		BOX box = GetBoundingBox();
+		vec3d r0 = box.r0();
+		vec3d r1 = box.r1();
+		BOX localBox(vec3d(0, 0, 0), r1 - r0);
+		glColor3ub(255, 128, 128);
+		glx::renderBox(localBox, false);
+	}
+
+	// render the volume image data if present
+	for (int j = 0; j < ImageRenderers(); ++j)
+	{
+		Post::CGLImageRenderer* pir = GetImageRenderer(j);
+		if (pir && pir->IsActive())
 		{
-			Post::CGLImageRenderer* pir = GetImageRenderer(j);
-			if (pir && pir->IsActive())
-			{
-//				if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
-//				else CGLPlaneCutPlot::DisableClipPlanes();
-				pir->Render(rc);
-			}
+//			if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
+//			else CGLPlaneCutPlot::DisableClipPlanes();
+			pir->Render(rc);
 		}
 	}
+
+    for(int j = 0; j < ImageAnalyses(); j++)
+    {
+        GetImageAnalysis(j)->render(rc.m_cam);
+    }
+
+	glPopMatrix();
 }
 
 void CImageModel::ApplyFilters()

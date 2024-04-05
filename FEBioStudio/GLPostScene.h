@@ -40,5 +40,8 @@ public:
 	BOX GetSelectionBox() override;
 
 private:
+	void RenderImageData(CGLContext& rc);
+
+private:
 	CPostDocument* m_doc;
 };

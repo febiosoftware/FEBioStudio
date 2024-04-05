@@ -197,7 +197,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (view.m_bgrid ) m_grid.Render(rc);
 
 	// render the image data
-	glview->RenderImageData();
+	RenderImageData(rc);
 
 	// render the decorations
 	glview->RenderDecorations();
@@ -3096,4 +3096,15 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 	if (nsel == 0) return;
 
 	glview->RenderTags(vtag);
+}
+
+void CGLModelScene::RenderImageData(CGLContext& rc)
+{
+	if (m_doc->IsValid() == false) return;
+
+	for (int i = 0; i < m_doc->ImageModels(); ++i)
+	{
+		CImageModel* img = m_doc->GetImageModel(i);
+		if (img->IsActive()) img->Render(rc);
+	}
 }
