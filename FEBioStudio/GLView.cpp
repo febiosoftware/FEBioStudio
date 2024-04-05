@@ -1431,6 +1431,11 @@ void CGLView::RenderScene()
 				}
 				else m_legend->hide();
 			}
+
+            // draw the other widgets
+			int layer = mdoc->GetWidgetLayer();
+			m_Widget->SetActiveLayer(layer);
+			m_Widget->DrawWidgets(&painter);
 		}
 	}
 	else
@@ -1445,7 +1450,7 @@ void CGLView::RenderScene()
 			if (m_psubtitle) m_psubtitle->show();
 
 			// draw the other widgets
-			int layer = postDoc->GetGLModel()->m_layer;
+			int layer = postDoc->GetWidgetLayer();
 			m_Widget->SetActiveLayer(layer);
 			m_Widget->DrawWidgets(&painter);
 		}

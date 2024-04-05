@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FEElementData.h>
 #include <FSCore/FSDir.h>
+#include <GLWLib/GLWidgetManager.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
 #include <QDateTime>
@@ -530,6 +531,11 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_psel = nullptr;
 
 	m_scene = nullptr;
+
+    static int layer = 1;
+	m_widgetLayer = layer++;
+
+    CGLWidgetManager::GetInstance()->SetActiveLayer(m_widgetLayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -587,6 +593,11 @@ CGView* CGLDocument::GetView()
 CGLScene* CGLDocument::GetScene()
 {
 	return m_scene;
+}
+
+int CGLDocument::GetWidgetLayer()
+{
+    return m_widgetLayer;
 }
 
 std::string CGLDocument::GetTypeString(FSObject* po)
