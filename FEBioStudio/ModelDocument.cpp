@@ -213,6 +213,15 @@ BOX CModelDocument::GetModelBox()
 	return box;
 }
 
+std::string CModelDocument::GetRenderString()
+{
+	FSModel* ps = GetFSModel();
+	GModel& model = ps->GetModel();
+	int activeLayer = model.GetActiveMeshLayer();
+	string s = string("  Mesh Layer > ") + model.GetMeshLayerName(activeLayer);
+	return s;
+}
+
 void CModelDocument::AddObject(GObject* po)
 {
 	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po));

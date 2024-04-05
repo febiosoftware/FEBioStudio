@@ -244,6 +244,8 @@ protected:
 
 	void RenderScene() override;
 
+	void RenderCanvas(CGLContext& rc);
+
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
 	Snap_Mode GetSnapMode() { return m_nsnap; }
@@ -261,6 +263,8 @@ public:
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
+
+	void setLegendRange(float vmin, float vmax);
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -318,6 +322,7 @@ protected:
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
+	double	m_fps;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;

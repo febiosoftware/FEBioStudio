@@ -1517,7 +1517,7 @@ void CMainWindow::on_actionSelect_toggled(bool b)
 
 void CMainWindow::on_actionTranslate_toggled(bool b)
 {
-	CGLDocument* doc = GetGLDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_MOVE);
@@ -1526,7 +1526,7 @@ void CMainWindow::on_actionTranslate_toggled(bool b)
 
 void CMainWindow::on_actionRotate_toggled(bool b)
 {
-	CGLDocument* doc = GetGLDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_ROTATE);
@@ -1535,7 +1535,7 @@ void CMainWindow::on_actionRotate_toggled(bool b)
 
 void CMainWindow::on_actionScale_toggled(bool b)
 {
-	CGLDocument* doc = GetGLDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_SCALE);

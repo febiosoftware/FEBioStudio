@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <GeomLib/GCurveMeshObject.h>
 #include "GLHighlighter.h"
 #include "GLCursor.h"
 #include <math.h>
@@ -50,14 +49,12 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMenu>
 #include <QMessageBox>
-#include <ImageLib/ImageModel.h>
 #include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
-#include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 using namespace std::chrono;
@@ -331,6 +328,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_btrack = false;
 
 	m_showFPS = false;
+	m_fps = 0.0;
 
 	Reset();
 
@@ -451,7 +449,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	int y = (int)ev->position().y();
 
 	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
+//	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
@@ -541,7 +539,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		if (mdoc)
 		{
 			FESelection* ps = mdoc->GetCurrentSelection();
-			if (ps && ((m_coord == COORD_LOCAL)|| postDoc))
+			if (ps && (m_coord == COORD_LOCAL))
 			{
 				quatd q = ps->GetOrientation();
 				q.RotateVector(m_ds);
@@ -721,9 +719,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			quatd q = cam.GetOrientation();
 
 			q.Inverse().RotateVector(dr);
-			FESelection* ps = nullptr;
-			if (mdoc) ps = mdoc->GetCurrentSelection();
-			else if (postDoc) ps = postDoc->GetCurrentSelection();
+			FESelection* ps = pdoc->GetCurrentSelection();
 			if (ps)
 			{
 				if ((m_coord == COORD_LOCAL) || postDoc) ps->GetOrientation().Inverse().RotateVector(dr);
@@ -782,9 +778,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(f, vec3d(0, 1, 0));
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(f, vec3d(0, 0, 1));
 
-				FESelection* ps = nullptr;
-				if (mdoc) ps = mdoc->GetCurrentSelection();
-				else if (postDoc) ps = postDoc->GetCurrentSelection();
+				FESelection* ps = pdoc->GetCurrentSelection();
 				if (ps)
 				{
 					if ((m_coord == COORD_LOCAL) || postDoc)
@@ -1224,7 +1218,7 @@ void CGLView::initializeGL()
 
 		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 		m_pframe->set_layer(0); // permanent widget
@@ -1347,10 +1341,13 @@ void CGLView::RenderDecorations()
 	}
 }
 
+void CGLView::setLegendRange(float vmin, float vmax)
+{
+	if (m_legend) m_legend->SetRange((float)vmin, (float)vmax);
+}
+
 void CGLView::RenderScene()
 {
-	time_point<steady_clock> startTime = steady_clock::now();
-
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
@@ -1366,7 +1363,14 @@ void CGLView::RenderScene()
 
 	PositionCamera();
 
-	if (scene) scene->Render(rc);
+	if (scene)
+	{
+		time_point<steady_clock> startTime = steady_clock::now();
+		scene->Render(rc);
+		time_point<steady_clock> stopTime = steady_clock::now();
+		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
+		m_fps = (sec != 0 ? 1.0 / sec : 0);
+	}
 
 	RenderPivot();
 
@@ -1382,81 +1386,7 @@ void CGLView::RenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// update the triad
-	if (m_ptriad) m_ptriad->setOrientation(cam.GetOrientation());
-
-	// We must turn off culling before we use the QPainter, otherwise
-	// drawing using QPainter doesn't work correctly.
-	glDisable(GL_CULL_FACE);
-
-	// render the GL widgets
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = m_pWnd->GetModelDocument();
-		if (mdoc && m_Widget)
-		{
-			FSModel* ps = mdoc->GetFSModel();
-			GModel& model = ps->GetModel();
-
-			if (m_ptitle) m_ptitle->hide();
-			if (m_psubtitle) m_psubtitle->hide();
-
-			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-			int activeLayer = model.GetActiveMeshLayer();
-			const std::string& s = model.GetMeshLayerName(activeLayer);
-			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
-			if (m_ptriad) m_Widget->DrawWidget(m_ptriad, &painter);
-			if (m_pframe && m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
-
-			if (m_legend)
-			{
-				if (view.m_bcontour)
-				{
-					GObject* po = mdoc->GetActiveObject();
-					FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
-					if (pm)
-					{
-						Mesh_Data& data = pm->GetMeshData();
-						double vmin, vmax;
-						data.GetValueRange(vmin, vmax);
-						if (vmin == vmax) vmax++;
-						m_legend->SetRange((float)vmin, (float)vmax);
-						m_legend->show();
-						m_Widget->DrawWidget(m_legend, &painter);
-					}
-				}
-				else m_legend->hide();
-			}
-
-            // draw the other widgets
-			int layer = mdoc->GetWidgetLayer();
-			m_Widget->SetActiveLayer(layer);
-			m_Widget->DrawWidgets(&painter);
-		}
-	}
-	else
-	{
-		if (postDoc->IsValid() && m_Widget)
-		{
-			// make sure the model legend bar is hidden
-			m_legend->hide();
-
-			// make sure the titles are visible
-			if (m_ptitle) m_ptitle->show();
-			if (m_psubtitle) m_psubtitle->show();
-
-			// draw the other widgets
-			int layer = postDoc->GetWidgetLayer();
-			m_Widget->SetActiveLayer(layer);
-			m_Widget->DrawWidgets(&painter);
-		}
-	}
-
-	painter.end();
+	RenderCanvas(rc);
 
 	if (m_recorder.IsRecording())
 	{
@@ -1468,11 +1398,52 @@ void CGLView::RenderScene()
 			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
+}
+
+void CGLView::RenderCanvas(CGLContext& rc)
+{
+	// We must turn off culling before we use the QPainter, otherwise
+	// drawing using QPainter doesn't work correctly.
+	glDisable(GL_CULL_FACE);
+
+	// render the GL widgets
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	std::string renderString = doc->GetRenderString();
+	if (!renderString.empty())
+	{
+		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
+		painter.drawText(0, 15, QString::fromStdString(renderString));
+	}
+
+	// draw the GL widgets
+	if (m_Widget)
+	{
+		// update the triad
+		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
+
+		if (m_ptitle)
+		{
+			if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
+		}
+		if (m_psubtitle)
+		{
+			if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
+		}
+		if (m_legend)
+		{
+			if (doc->ShowLegend()) m_legend->show(); else m_legend->hide();
+		}
+
+		int layer = doc->GetWidgetLayer();
+		m_Widget->SetActiveLayer(layer);
+		m_Widget->DrawWidgets(&painter);
+	}
 
 	if (m_recorder.IsPaused())
 	{
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 		QTextOption to;
 		QFont font = painter.font();
 		font.setPointSize(24);
@@ -1480,26 +1451,21 @@ void CGLView::RenderScene()
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rect(), "Recording paused", to);
-		painter.end();
 	}
 
 	// stop time
-	time_point<steady_clock> stopTime = steady_clock::now();
-
-	double sec = duration_cast< duration<double> >(stopTime - startTime).count();
 	if (m_showFPS)
 	{
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 		QTextOption to;
 		QFont font = painter.font();
 		font.setPointSize(12);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
-		painter.end();
+		painter.drawText(rect(), QString("FPS: %1").arg(m_fps), to);
 	}
+
+	painter.end();
 }
 
 void CGLView::Render3DCursor()
@@ -1827,6 +1793,9 @@ void CGLView::RenderPivot()
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
+	int ntrans = pdoc->GetTransformMode();
+	if (ntrans == TRANSFORM_NONE) return;
+
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
 
@@ -1867,7 +1836,6 @@ void CGLView::RenderPivot()
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = true;
 	if ((nitem == ITEM_MESH) && (nsel != SELECT_OBJECT)) bact = false;
-	int ntrans = pdoc->GetTransformMode();
 	m_pivot.Render(ntrans, d, bact);
 
 	// restore the modelview matrix

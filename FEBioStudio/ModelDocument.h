@@ -71,6 +71,8 @@ public:
 
 	BOX GetModelBox();
 
+	std::string GetRenderString() override;
+
 public:
 	void Activate() override;
 	void Deactivate() override;

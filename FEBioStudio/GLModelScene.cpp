@@ -210,6 +210,26 @@ void CGLModelScene::Render(CGLContext& rc)
 	{
 		glview->Render3DCursor();
 	}
+
+	// see if we need to draw the legend bar for the mesh inspector
+	if (view.m_bcontour)
+	{
+		GObject* po = m_doc->GetActiveObject();
+		FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
+		if (pm)
+		{
+			Mesh_Data& data = pm->GetMeshData();
+			double vmin, vmax;
+			data.GetValueRange(vmin, vmax);
+			if (vmin == vmax) vmax++;
+			if (rc.m_view)
+			{
+				rc.m_view->setLegendRange((float)vmin, (float)vmax);
+			}
+			m_doc->ShowLegend(true);
+		}
+	}
+	else m_doc->ShowLegend(false);
 }
 
 void TagFaces(GFaceList& faceList, int tag)

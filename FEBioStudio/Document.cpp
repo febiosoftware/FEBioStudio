@@ -532,6 +532,10 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 
 	m_scene = nullptr;
 
+	m_showTitle = false;
+	m_showSubtitle = false;
+	m_showLegend = false;
+
     static int layer = 1;
 	m_widgetLayer = layer++;
 
@@ -556,6 +560,11 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
+}
+
+std::string CGLDocument::GetRenderString()
+{
+	return std::string();
 }
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }

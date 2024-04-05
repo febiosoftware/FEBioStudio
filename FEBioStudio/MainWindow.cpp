@@ -2546,13 +2546,6 @@ void CMainWindow::RedrawGL()
 }
 
 //-----------------------------------------------------------------------------
-//! Zoom to an FSObject
-void CMainWindow::ZoomTo(const BOX& box)
-{
-	GetGLView()->ZoomTo(box);
-}
-
-//-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectObjects_toggled(bool b)
 {
 	CGLDocument* doc = GetGLDocument();
@@ -3607,7 +3600,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		{
 			ShowInModelViewer(imgModel);
 		}
-		ZoomTo(imgModel->GetBoundingBox());
+		GetGLView()->ZoomTo(imgModel->GetBoundingBox());
 
 		return true;
 	}
