@@ -1142,14 +1142,14 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 	XMLAtt* nset = tag.AttributePtr("node_set");
 
-	FEMeshData::DATA_TYPE dataType;
+	DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+		else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
 		else return false;
 	}
-	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+	else dataType = DATA_TYPE::DATA_SCALAR;
 
 	const char* szgen = tag.AttributeValue("type", true);
 
@@ -1187,14 +1187,14 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 				tag.AttributePtr("lid")->value(lid);
 				switch (dataType)
 				{
-				case FEMeshData::DATA_SCALAR:
+				case DATA_SCALAR:
 				{
 					double val = 0.0;
 					tag.value(val);
 					nodeData->setScalar(lid - 1, val);
 				}
 				break;
-				case FEMeshData::DATA_VEC3D:
+				case DATA_VEC3:
 				{
 					vec3d val;
 					tag.value(val);
@@ -1222,33 +1222,80 @@ bool FEBioFormat4::ParseSurfaceDataSection(XMLTag& tag)
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 	XMLAtt* surf = tag.AttributePtr("surface");
+	XMLAtt* type = tag.AttributePtr("type");
 
-	FEMeshData::DATA_TYPE dataType;
-	if (dataTypeAtt)
+	if (type)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-		else return false;
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		FSMeshDataGenerator* gen = nullptr;
+		const char* sztype = type->cvalue();
+		if (strcmp(sztype, "const") == 0)
+		{
+			// "const" data generator needs to be handled differently
+			DATA_TYPE dataType = DATA_TYPE::DATA_SCALAR;
+			if (dataTypeAtt)
+			{
+				if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+				else if (*dataTypeAtt == "mat3"  ) dataType = DATA_TYPE::DATA_MAT3;
+				else return false;
+			}
+			FSConstFaceDataGenerator* constGen = new FSConstFaceDataGenerator(fem, dataType);
+			gen = constGen;
+		}
+		else
+		{
+			// allocate febio data generator
+			gen = FEBio::CreateFaceDataGenerator(sztype, fem);
+		}
+
+		if (gen)
+		{
+			XMLAtt* name = tag.AttributePtr("name");
+			gen->SetName(name->cvalue());
+
+			const char* szset = surf->cvalue();
+			GMeshObject* po = feb.GetInstance(0)->GetGObject();
+			FSSurface* ps = feb.FindNamedSurface(surf->cvalue());
+
+			gen->SetItemList(ps);
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else ParseUnknownAttribute(tag, "type");
 	}
-	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-
-	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
-	FSMesh* feMesh = feSurf->GetMesh();
-
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	else
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		DATA_TYPE dataType;
+		if (dataTypeAtt)
+		{
+			if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+			else return false;
+		}
+		else dataType = DATA_TYPE::DATA_SCALAR;
 
-		(*sd)[lid - 1] = val;
+		FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
+		FSMesh* feMesh = feSurf->GetMesh();
 
+		FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+
+		double val;
+		int lid;
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			(*sd)[lid - 1] = val;
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	return true;
 }
@@ -1424,15 +1471,15 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 		XMLAtt* set = tag.AttributePtr("elem_set");
 
-		FEMeshData::DATA_TYPE dataType;
+		DATA_TYPE dataType;
 		if (dataTypeAtt)
 		{
-			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
+			if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+			else if (*dataTypeAtt == "mat3"  ) dataType = DATA_TYPE::DATA_MAT3;
 			else return false;
 		}
-		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+		else dataType = DATA_TYPE::DATA_SCALAR;
 
 		GObject* po = feb.GetInstance(0)->GetGObject();
 		FSMesh* mesh = po->GetFEMesh();
@@ -1486,7 +1533,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			}
 		}
 
-		if (dataType == FEMeshData::DATA_SCALAR)
+		if (dataType == DATA_SCALAR)
 		{
 			double val;
 			int lid;
@@ -1501,7 +1548,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (dataType == FEMeshData::DATA_VEC3D)
+		else if (dataType == DATA_VEC3)
 		{
 			vec3d val;
 			int lid;
@@ -1514,7 +1561,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (dataType == FEMeshData::DATA_MAT3D)
+		else if (dataType == DATA_MAT3)
 		{
 			mat3d val;
 			int lid;
@@ -1886,10 +1933,11 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
-				if (pg->GetName().empty()) pg->SetName(szbuf);
-
-				// process initial condition
-				pic->SetItemList(pg);
+				else
+				{
+					if (pg->GetName().empty()) pg->SetName(szname);
+					pic->SetItemList(pg);
+				}
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
 				ParseModelComponent(pic, tag);

@@ -243,6 +243,7 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
 
 	SetItemMode(ITEM_ELEM);
 
@@ -487,7 +488,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
 	}
 	else return "";
 }
@@ -663,6 +664,24 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl) mdl->UpdateSelectionLists();
+
+	// delete old selection
+	if (m_psel) delete m_psel;
+	m_psel = nullptr;
+
+	// figure out if there is a mesh selected
+	GObject* po = GetActiveObject();
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
+	FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+	FSLineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
+
+	switch (m_vs.nitem)
+	{
+	case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+	case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
+	case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
+	case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
+	}
 
 	emit selectionChanged();
 }

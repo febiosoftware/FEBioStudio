@@ -1741,7 +1741,7 @@ void FSMesh::Save(OArchive &ar)
 				FEMeshData* meshData = m_meshData[n];
 				switch (meshData->GetDataClass())
 				{
-				case FEMeshData::NODE_DATA:
+				case NODE_DATA:
 				{
 					FENodeData* map = dynamic_cast<FENodeData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_NODE_DATA);
@@ -1751,7 +1751,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::SURFACE_DATA:
+				case FACE_DATA:
 				{
 					FESurfaceData* map = dynamic_cast<FESurfaceData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_SURFACE_DATA);
@@ -1761,7 +1761,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::ELEMENT_DATA:
+				case ELEM_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_ELEM_DATA);
@@ -1771,7 +1771,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::PART_DATA:
+				case PART_DATA:
 				{
 					FEPartData* map = dynamic_cast<FEPartData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_PART_DATA);
@@ -2467,7 +2467,7 @@ void FSMesh::AddMeshDataField(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
+FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
 	data->Create(nodeset, 0.0, dataType);
@@ -2477,30 +2477,30 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEM
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
+FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
+	data->Create(this, surface, dataType, DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(this, part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;
 }
 
 //-----------------------------------------------------------------------------
-FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshData::DATA_TYPE dataType)
+FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, DATA_TYPE dataType)
 {
 	FEPartData* map = new FEPartData(this);
-	map->Create(part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;

@@ -193,6 +193,17 @@ void CMainWindow::on_actionShowRigidLabels_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionToggleTagInfo_triggered()
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	int n = view.m_ntagInfo;
+	view.m_ntagInfo = (n + 1) % 3;
+	RedrawGL();
+}
+
 void CMainWindow::on_actionToggleLight_triggered()
 {
 	CDocument* doc = GetDocument();

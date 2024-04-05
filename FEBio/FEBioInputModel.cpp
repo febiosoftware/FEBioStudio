@@ -1723,6 +1723,17 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 				FEItemListBuilder* pg = po->GetFEElemSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
+
+			// the element set can also refer to a part
+			GModel& gm = GetFSModel().GetModel();
+			GPart* part = po->FindPartFromName(sname.c_str());
+			if (part)
+			{
+				GPartList* pg = new GPartList(&gm);
+				pg->add(part->GetID());
+				gm.AddPartList(pg);
+				return pg;
+			}
 		}
 
 		if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)

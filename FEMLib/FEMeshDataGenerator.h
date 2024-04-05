@@ -1,6 +1,7 @@
 #pragma once
 #include "FEModelComponent.h"
 #include <MeshLib/IHasItemList.h>
+#include <MeshLib/FEMeshData.h>
 
 class FEItemListBuilder;
 
@@ -10,15 +11,21 @@ enum MeshDataGeneratorType
 	FE_FEBIO_EDGEDATA_GENERATOR = 2,
 	FE_FEBIO_FACEDATA_GENERATOR = 3,
 	FE_FEBIO_ELEMDATA_GENERATOR = 4,
+
+	FE_CONST_FACEDATA_GENERATOR = 5
 };
 
-// TODO: serialization!!
 class FSMeshDataGenerator : public FSModelComponent, public FSHasOneItemList
 {
+	enum { LIST_ID, PARAMS };
+
 public:
 	FSMeshDataGenerator(FSModel* fem, int ntype);
 
 	int Type() const;
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	int	m_ntype;
@@ -99,6 +106,19 @@ public:
 private:
 	int			m_nUID;		// unique ID
 	static	int	m_nref;
+};
+
+class FSConstFaceDataGenerator : public FSFaceDataGenerator
+{
+public:
+	FSConstFaceDataGenerator(FSModel* fem);
+	FSConstFaceDataGenerator(FSModel* fem, DATA_TYPE dataType);
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	void BuildParameterList(int dataType);
 };
 
 class FEBioFaceDataGenerator : public FSFaceDataGenerator

@@ -212,7 +212,21 @@ public:
 					{
 						if (m_index == -1)
 						{
-							return QString("<b>parameter:</b> <code>%1</code>").arg(p.GetShortName());
+							QString toolTip = QString("<p><b>parameter:</b> <code>%1</code></p>").arg(p.GetShortName());
+							if (p.IsVolatile())
+							{
+								if (p.GetLoadCurveID() > 0)
+								{
+									FSModel* fem = GetFSModel();
+									FSLoadController* plc = fem->GetLoadControllerFromID(p.GetLoadCurveID());
+									if (plc)
+									{
+										toolTip += QString("<p><b>load controller: </b>%1</p>").arg(QString::fromStdString(plc->GetName()));
+									}
+								}
+								else toolTip += QString("<p><b>load controller: </b>(none)</p>");
+							}
+							return toolTip;
 						}
 						return QVariant();
 					}
@@ -1054,7 +1068,7 @@ public:
 		{
 			QColor c;
 			Shape s = Shape::Circle;
-			bool bicon = true;
+			bool bicon = false;
 			if (item->isParameter()) 
 			{ 
 				if (item->m_index == -1)
@@ -1065,21 +1079,20 @@ public:
 						if (p->GetLoadCurveID() > 0)
 						{
 							assert(p->IsVolatile());
-							c = QColor::fromRgb(0, 255, 0);
+							return CIconProvider::GetIcon("curve");
 						}
-						else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
-						else bicon = false;
 					}
-					else c = QColor::fromRgb(0, 0, 0);
-					s = Shape::Circle;
 				}
-				else bicon = false;
 			}
-			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
-			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
+			else
+			{
+				bicon = true;
+				if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
+				if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
+			}
 
 			if (bicon)
-				return CIconProvider::BuildPixMap(c, s, 12);
+				return CIconProvider::BuildPixMap(c, s);
 			else
 			{
 				QPixmap pix(12, 12);

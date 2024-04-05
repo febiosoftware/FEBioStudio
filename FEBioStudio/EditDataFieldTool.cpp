@@ -111,7 +111,7 @@ void CEditDataFieldTool::OnApply()
 	if ((n >= 0) && (n < pm->MeshDataFields()))
 	{
 		FEPartData* pd = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
-		if (pd && (pd->GetDataFormat() == FEMeshData::DATA_ITEM) && (pd->GetDataType() == FEMeshData::DATA_SCALAR))
+		if (pd && (pd->GetDataFormat() == DATA_ITEM) && (pd->GetDataType() == DATA_SCALAR))
 		{
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
@@ -123,7 +123,7 @@ void CEditDataFieldTool::OnApply()
 				}
 			}
 		}
-		else if (pd && (pd->GetDataFormat() == FEMeshData::DATA_MULT) && (pd->GetDataType() == FEMeshData::DATA_SCALAR))
+		else if (pd && (pd->GetDataFormat() == DATA_MULT) && (pd->GetDataType() == DATA_SCALAR))
 		{
 			for (int i = 0; i < pm->Elements(); ++i)
 			{

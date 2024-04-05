@@ -65,6 +65,9 @@ public:
 	// select an item list
 	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
 
+	// assign the current selection to the currently selected item in the tree
+	void AssignCurrentSelection();
+
 	// set the current item
 	void SetCurrentItem(int item);
 	void SetCurrentItem(CModelTreeItem& item);
@@ -149,6 +152,7 @@ public slots:
 	void OnCopyConstraint();
 	void OnCopyRigidBC();
 	void OnCopyRigidIC();
+	void OnCopyRigidLoad();
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();

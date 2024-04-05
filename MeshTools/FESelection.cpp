@@ -696,39 +696,38 @@ FEItemListBuilder* GEdgeSelection::CreateItemList()
 
 GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
 {
-	m_ps = pg->GetGModel();
-	GModel& m = *m_ps;
+	GModel& m = *pg->GetGModel();
+	m_pn = nullptr;
 	m_node = -1;
-	m_pn = 0;
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i)
 	{
 		GNode* pn = m.Node(i);
 		if (pn->IsSelected())
 		{
-			m_pn = pn;
-			m_node = i;
-			break;
+			m_sel.push_back(pn);
 		}
+	}
+	if (m_sel.empty() == false)
+	{
+		m_pn = m_sel[0];
+		m_node = 0;
 	}
 }
 
 GNodeSelection::Iterator& GNodeSelection::Iterator::operator ++()
 {
 	assert(m_pn);
-	GModel& m = *m_ps;
-	int N = m.Nodes();
-	for (int i=m_node+1; i<N; ++i)
+	if (m_node < m_sel.size() - 1)
 	{
-		GNode* pn = m.Node(i);
-		if (pn->IsSelected())
-		{
-			m_pn = pn;
-			m_node = i;
-			break;
-		}
+		m_node++;
+		m_pn = m_sel[m_node];
 	}
-
+	else
+	{
+		m_node = m_sel.size();
+		m_pn = nullptr;
+	}
 	return (*this);
 }
 
@@ -1031,6 +1030,12 @@ void FEElementSelection::Iterator::operator ++()
 	do { m_pelem = m_pm->ElementPtr(m_n++); } while (m_pelem && !m_pelem->IsSelected());
 }
 
+FEElementSelection::FEElementSelection(FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) 
+{ 
+	m_pMesh = pm; 
+	Update(); 
+}
+
 int FEElementSelection::Count()
 {
 	return (int)m_item.size();
@@ -1271,6 +1276,12 @@ int FEElementSelection::ElementID(int i)
 //////////////////////////////////////////////////////////////////////
 // FEFaceSelection
 //////////////////////////////////////////////////////////////////////
+
+FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FESelection(SELECT_FE_FACES)
+{ 
+	m_pMesh = pm; 
+	Update(); 
+}
 
 int FEFaceSelection::Count()
 {
@@ -1513,6 +1524,12 @@ FEFaceSelection::Iterator FEFaceSelection::begin()
 // FEEdgeSelection
 //////////////////////////////////////////////////////////////////////
 
+FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) 
+{ 
+	m_pMesh = pm; 
+	Update(); 
+}
+
 int FEEdgeSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
@@ -1745,6 +1762,12 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 //////////////////////////////////////////////////////////////////////
 // FENodeSelection
 //////////////////////////////////////////////////////////////////////
+
+FENodeSelection::FENodeSelection(FSLineMesh* pm) : FESelection(SELECT_FE_NODES)
+{ 
+	m_pMesh = pm; 
+	Update(); 
+}
 
 int FENodeSelection::Count()
 {

@@ -302,7 +302,8 @@ bool xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
 				(void)inflateEnd(&im.strm);
-				return ret;
+//				return ret;
+				return false;
 			}
 			have = CHUNK - im.strm.avail_out;
 

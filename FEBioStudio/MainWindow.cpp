@@ -1241,7 +1241,6 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	else
 	{
 		if ((file.m_flags & QueuedFile::RELOAD_DOCUMENT) == 0) Reset();
-		UpdatePhysicsUi();
 		UpdateModel();
 		UpdateToolbar();
 		UpdatePostToolbar();
@@ -1824,7 +1823,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		// give the build panels a chance to react first
 		if (ui->buildPanel->OnEscapeEvent()) return;
 
-		CModelDocument* doc = GetModelDocument();
+		CGLDocument* doc = GetGLDocument();
 		if (doc)
 		{
 			// if the build panel didn't process it, clear selection
@@ -1833,6 +1832,12 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			{
 				if (doc->GetItemMode() != ITEM_MESH) doc->SetItemMode(ITEM_MESH);
 				else ui->SetSelectionMode(SELECT_OBJECT);
+				CGLView* glv = GetGLView();
+				if (glv)
+				{
+					GLViewSettings& vs = glv->GetViewSettings();
+					vs.m_bselbrush = false;
+				}
 				Update();
 				UpdateUI();
 			}
@@ -1966,6 +1971,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
 		rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 		rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -2101,6 +2107,9 @@ void CMainWindow::readSettings()
 
 		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 		GLWidget::set_default_font(font);
+
+		QString envmap = settings.value("environmentMap").toString();
+		ui->m_envMapFile = envmap;
 
 		if (vs.m_defaultFGColorOption != 0)
 		{
@@ -2439,6 +2448,7 @@ void CMainWindow::OnPostObjectStateChanged()
 	if (mdl == nullptr) return;
 	bool b = mdl->GetColorMap()->IsActive();
 	ui->postToolBar->CheckColorMap(b);
+	mdl->Update(false);
 	RedrawGL();
 }
 
@@ -2844,24 +2854,6 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	else if (ac->text() == "By physics"      ) vs.m_objectColor = OBJECT_COLOR_MODE::PHYSICS_TYPE;
 
 	RedrawGL();
-}
-
-//-----------------------------------------------------------------------------
-// Update the physics menu based on active modules
-void CMainWindow::UpdatePhysicsUi()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	FSProject& prj = doc->GetProject();
-	int module = prj.GetModule();
-
-//	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
-//	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
-//	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
-//	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
-//	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
-//	ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------
@@ -3527,6 +3519,16 @@ void CMainWindow::toggleOrtho()
 QStringList CMainWindow::GetRecentFileList()
 {
 	return ui->m_recentFiles;
+}
+
+QString CMainWindow::GetEnvironmentMap()
+{
+	return ui->m_envMapFile;
+}
+
+void CMainWindow::SetEnvironmentMap(const QString& filename)
+{
+	ui->m_envMapFile = filename;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()

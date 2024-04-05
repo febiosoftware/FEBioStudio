@@ -459,7 +459,7 @@ void FEBioFormat25::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag
 		{
 			int n[2];
 			tag.value(n, 2);
-			ds.Add(n[0] - 1, n[1] - 1);
+			ds.Add(n[0], n[1]);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -771,7 +771,7 @@ bool FEBioFormat25::ParseNodeData(XMLTag& tag)
 	const char* szname = tag.AttributeValue("name");
 
 	FSMesh* mesh = pg->GetMesh();
-	FENodeData* pd = mesh->AddNodeDataField(szname, pg, FEMeshData::DATA_SCALAR);
+	FENodeData* pd = mesh->AddNodeDataField(szname, pg, DATA_SCALAR);
 
 	double val;
 	int lid;
@@ -1023,7 +1023,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				{
 					FSMesh* mesh = pg->GetMesh();
 					pg->GetGObject()->AddFEElemSet(pg);
-					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
+					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, DATA_SCALAR);
 
 					double scale = tag.AttributeValue("scale", 1.0);
 					pd->SetScaleFactor(scale);
@@ -1058,9 +1058,9 @@ bool FEBioFormat25::ParseSurfaceData(XMLTag& tag)
 	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* surf = tag.AttributePtr("surface");
 
-	FEMeshData::DATA_TYPE dataType;
-	if ((dataTypeAtt == nullptr) || (*dataTypeAtt == "scalar")) dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-	else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+	DATA_TYPE dataType;
+	if ((dataTypeAtt == nullptr) || (*dataTypeAtt == "scalar")) dataType = DATA_SCALAR;
+	else if (*dataTypeAtt == "vector") dataType = DATA_VEC3;
 	else return false;
 
 	FSSurface* feSurf = feb.BuildFESurface(surf->cvalue());

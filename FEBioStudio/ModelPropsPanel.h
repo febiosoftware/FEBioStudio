@@ -195,6 +195,8 @@ public:
 
 	void Refresh();
 
+	void AssignCurrentSelection();
+
 private slots:
 	void on_select1_addButtonClicked();
 	void on_select1_subButtonClicked();

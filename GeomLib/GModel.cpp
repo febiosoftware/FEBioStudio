@@ -1272,6 +1272,7 @@ GObject* BuildObject(int ntype)
 	case GMULTI_BLOCK       : po = new GMultiBox(); break;
 	case GMULTI_PATCH       : po = new GMultiPatch(); break;
 	case GCURVE_OBJECT      : po = new GCurveObject(); break;
+	case GBOX_IN_BOX        : po = new GBoxInBox(); break;
 	}
 
 	assert(po);
@@ -2012,6 +2013,32 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 			return ponew;
 		}
 
+		// see if the objects are all curveobjects
+		bool allCurves = true;
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			GCurveObject* pc = dynamic_cast<GCurveObject*>(sel->Object(i));
+			if (pc == nullptr)
+			{
+				allCurves = false;
+				break;
+			}
+		}
+
+		if (allCurves)
+		{
+			GCurveObject* poa = dynamic_cast<GCurveObject*>(sel->Object(0)); assert(poa);
+			GCurveObject* ponew = dynamic_cast<GCurveObject*>(poa->Clone());
+			ponew->SetName(newObjectName.c_str());
+
+			for (int i = 1; i < sel->Count(); ++i)
+			{
+				GCurveObject* po = dynamic_cast<GCurveObject*>(sel->Object(i));
+				ponew->Merge(po);
+			}
+
+			return ponew;
+		}
 
 		// make sure all objects have meshes
 		for (int i = 0; i<sel->Count(); ++i)
