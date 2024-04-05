@@ -2006,6 +2006,8 @@ void CFiberODFAnalysis::Load(IArchive& ar)
     for(int i = 0; i < m_ODFs.size(); i++)
     {
         auto odf = m_ODFs[i];
+
+        if(!odf->IsValid()) continue;
         
         // Recalc ODF based on spherical harmonics
         (*T).mult(odf->m_sphHarmonics, odf->m_odf);
