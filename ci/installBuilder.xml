@@ -1,7 +1,7 @@
 <project>
     <shortName>FEBioStudio</shortName>
     <fullName>FEBioStudio</fullName>
-    <version>${env(FBS_VER)}</version>
+    <version>FBS_VER</version>
     <installerFilename>${product_shortname}_${platform_name}_${product_version}_FEBio_${febio_version}.${platform_exec_suffix}</installerFilename>
     <licenseFile>${FEBioRepo}/Documentation/FEBio_EULA_4.txt</licenseFile>
     <leftImage>${FBSRepo}/Documentation/InstallerImages/Left Side Image.png</leftImage>
@@ -519,7 +519,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <name>febio_version</name>
             <description></description>
             <explanation></explanation>
-            <value>${env(FEBIO_VER)}</value>
+            <value>FEBIO_VER</value>
             <default></default>
             <allowEmptyValue>1</allowEmptyValue>
             <ask>0</ask>
@@ -529,7 +529,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <name>febio_sdk_version</name>
             <description></description>
             <explanation></explanation>
-            <value>${env(SDK_VER)}</value>
+            <value>FEBIO_VER</value>
             <default></default>
             <allowEmptyValue>1</allowEmptyValue>
             <ask>0</ask>

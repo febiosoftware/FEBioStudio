@@ -258,6 +258,17 @@ zip -r $UPLOAD_DIR/sdk.zip include
 zip -r $UPLOAD_DIR/sdk.zip lib
 cd $GITHUB_WORKSPACE
 
+# Set FEBio and FBS versions in installBuilder.xml
+while IFS='' read -r a; do
+    echo "${a//FEBIO_VER/$FEBIO_VER}"
+done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
+mv $FBS_REPO/ci/installBuilder.xml{.t,}
+
+while IFS='' read -r a; do
+    echo "${a//FBS_VER/$FBS_VER}"
+done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
+mv $FBS_REPO/ci/installBuilder.xml{.t,}
+
 # Create installer
 builder build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
 

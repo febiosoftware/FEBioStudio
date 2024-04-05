@@ -225,6 +225,10 @@ cp $FEBIO_REPO\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
 # zip sdk
 Compress-Archive -Path release\sdk\* -DestinationPath upload\sdk.zip
 
+# Set FEBio and FBS versions in installBuilder.xml
+(Get-Content $FBS_REPO\ci\installBuilder.xml).Replace('FEBIO_VER', $FEBIO_VER) | Set-Content $FBS_REPO\ci\installBuilder.xml
+(Get-Content $FBS_REPO\ci\installBuilder.xml).Replace('FBS_VER', $FBS_VER) | Set-Content $FBS_REPO\ci\installBuilder.xml
+
 # Create installer
 cd $env:GITHUB_WORKSPACE
 $env:FEBIO_REPO = $FEBIO_REPO
