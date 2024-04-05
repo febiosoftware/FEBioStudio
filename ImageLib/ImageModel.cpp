@@ -46,7 +46,7 @@ using namespace Post;
 
 enum SaveIDs { BASE = 0, IMAGESOURCE, FILTERS, ANALYSES, VIEWSETTINGS};
 
-CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
+CImageModel::CImageModel(CGLDocument* doc, Post::CGLModel* mdl) : m_doc(doc), CGLObject(mdl)
 {
 	m_showBox = true;
 	m_img = nullptr;
