@@ -203,9 +203,9 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 {
 	clear();
 
-	CImageSITK* imgSITK = dynamic_cast<CImageSITK*>(m_img->Get3DImage());
-	if (!imgSITK) return;
-	sitk::Image img = sitk::Cast(imgSITK->GetSItkImage(), sitk::sitkUInt32);
+    sitk::Image img = CImageSITK::SITKImageFrom3DImage(m_img->Get3DImage());
+	
+    img = sitk::Cast(img, sitk::sitkUInt32);
 	auto size = img.GetSize();
 
 	// get the requested subdivisions
@@ -270,10 +270,9 @@ void CFiberODFAnalysis::run()
 	// generate the subvolumes
 	if (m_ODFs.empty()) GenerateSubVolumes();
 
-    CImageSITK* imgSITK = dynamic_cast<CImageSITK*>(m_img->Get3DImage());
-    if(!imgSITK) return;
+    sitk::Image img = CImageSITK::SITKImageFrom3DImage(m_img->Get3DImage());
 
-    sitk::Image img = sitk::Cast(imgSITK->GetSItkImage(), sitk::sitkUInt32);
+    img = sitk::Cast(img, sitk::sitkUInt32);
 
     int xDiv = GetIntValue(XDIV);
     int yDiv = GetIntValue(YDIV);

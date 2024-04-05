@@ -38,6 +38,11 @@ namespace sitk = itk::simple;
 
 itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
 {
+    if(dynamic_cast<CImageSITK*>(img))
+    {
+        return dynamic_cast<CImageSITK*>(img)->GetSItkImage();
+    }
+
     BOX box = img->GetBoundingBox();
     unsigned int nx = img->Width();
     unsigned int ny = img->Height();
@@ -49,8 +54,8 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     filter.SetOrigin({box.x0, box.y0, box.z0});
     filter.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
 
-    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
-        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+    std::vector<double> orient {orientation[0][0], orientation[0][1], orientation[0][2], orientation[1][0], 
+        orientation[1][1], orientation[1][2], orientation[2][0], orientation[2][1], orientation[2][2]};
     filter.SetDirection(orient);
 
     switch (img->PixelType())
