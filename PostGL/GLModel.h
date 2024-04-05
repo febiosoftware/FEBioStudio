@@ -394,8 +394,6 @@ public:
 	bool		m_bshowMesh;
 	bool		m_doZSorting;
 
-	unsigned int	m_layer;
-
 protected:
 	FEPostModel*			m_ps;
 	vector<GLSurface*>		m_innerSurface;
