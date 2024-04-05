@@ -60,12 +60,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	m_lastMesh = nullptr;
 
-	static int layer = 1;
-	m_layer = layer++;
-
 	m_stol = 60.0;
-
-	CGLWidgetManager::GetInstance()->SetActiveLayer(m_layer);
 
 	m_bnorm = false;
 	m_scaleNormals = 1.0;

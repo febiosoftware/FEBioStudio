@@ -328,6 +328,8 @@ public:
 
 	CGLScene* GetScene();
 
+    int GetWidgetLayer();
+
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
@@ -373,6 +375,8 @@ protected:
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
+
+    unsigned int	m_widgetLayer;
 };
 
 // helper class for getting selections without the need to access the document
