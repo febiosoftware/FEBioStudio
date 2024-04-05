@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
+RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 
-#. "/opt/intel/oneapi/setvars.sh" --force
 . $(dirname $0)/cmake.sh
 
 main() {
@@ -11,7 +11,12 @@ main() {
 	make -j $(sysctl -n hw.ncpu)
 	popd
 
-	./$(dirname $0)/postBuild.sh
+	if [ "$RUN_POST_BUILD" = true ]; then
+		echo "Running postbuild.sh"
+		 ./$(dirname $0)/postBuild.sh
+	else
+		echo "Skipping postbuild.sh"
+	fi
 }
 
 main

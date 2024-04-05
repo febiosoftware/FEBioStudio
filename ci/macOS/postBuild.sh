@@ -32,6 +32,6 @@ fi
 
 macdeployqt $FBS_DIR/cmbuild/bin/FEBioStudio.app -executable=$FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/MacOS/FEBioStudioUpdater
 
-cp /Users/gitRunner/local/x86_64/lib/libTKOffset.7.7.dylib $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
-cp /Users/gitRunner/local/x86_64/lib//libTKXDEIGES.7.7.dylib $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
-cp /Users/gitRunner/local/x86_64/lib//libTKXDESTEP.7.7.dylib $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
+cp "$HOME/local/x86_64/lib/libTKOffset.7.7.dylib" $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
+cp "$HOME/local/x86_64/lib//libTKXDEIGES.7.7.dylib" $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks
+cp "$HOME/local/x86_64/lib//libTKXDESTEP.7.7.dylib" $FBS_DIR/cmbuild/bin/FEBioStudio.app/Contents/Frameworks

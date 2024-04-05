@@ -3,16 +3,19 @@ on:
   push:
     branches:
       - ci/develop
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@develop
     with:
-      runTests: false
       package-name: febio-studio
       requires-sdk: true
       sdk-config: |
         {
           "sdk_path": "ci/develop",
-          "version": "v4.5",
+          "version": "v4.6",
         }
     secrets: inherit
