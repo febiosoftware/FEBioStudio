@@ -233,9 +233,6 @@ public:
 	//! redraw the GLView
 	void RedrawGL();
 
-	//! Zoom in on a box
-	void ZoomTo(const BOX& box);
-
 	// set a message on the status bar
 	void SetStatusMessage(const QString& message);
 

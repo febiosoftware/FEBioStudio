@@ -65,7 +65,7 @@ void FEPostModel::PlotObject::SetColor(const GLColor& c)
 // constructor
 FEPostModel::FEPostModel()
 {
-	m_ndisp = 0;
+	m_ndisp = -1;
 	m_pDM = new FEDataManager(this);
 
 	m_nTime = 0;
@@ -1216,7 +1216,7 @@ vec3f FEPostModel::NodePosition(int n, int ntime)
 		FERefState& ref = *state->m_ref;
 		FEPostMesh* mesh = state->GetFEMesh();
 		r = ref.m_Node[n].m_rt;
-		if (m_ndisp) r += EvaluateNodeVector(n, ntime, m_ndisp);
+		if (m_ndisp >= 0) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else
 	{

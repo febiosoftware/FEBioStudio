@@ -31,8 +31,10 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <FEMLib/FEUserMaterial.h>
+#include <PostLib/VolumeRenderer.h>
 #include "Commands.h"
 #include "MainWindow.h"
+#include "ImageSliceView.h"
 #include "ModelFileWriter.h"
 #include <QMessageBox>
 #include <GeomLib/GModel.h>
@@ -209,6 +211,15 @@ BOX CModelDocument::GetModelBox()
 	}
 
 	return box;
+}
+
+std::string CModelDocument::GetRenderString()
+{
+	FSModel* ps = GetFSModel();
+	GModel& model = ps->GetModel();
+	int activeLayer = model.GetActiveMeshLayer();
+	string s = string("  Mesh Layer > ") + model.GetMeshLayerName(activeLayer);
+	return s;
 }
 
 void CModelDocument::AddObject(GObject* po)
@@ -723,6 +734,25 @@ void CModelDocument::SetUnitSystem(int unitSystem)
         if (pP) pP->SetFloatValue(Units::Convert(pP->GetFloatValue(), UNIT_PRESSURE, Units::SI, unitSystem));
 
 	}
+}
+
+void CModelDocument::AddImageModel(CImageModel* imgModel)
+{
+	CGLDocument::AddImageModel(imgModel);
+
+	// Add default image renderers
+	CMainWindow* wnd = GetMainWindow();
+	if (wnd)
+	{
+		CImageSliceView* sliceView = wnd->GetImageSliceView();
+		CImageSliceViewRender* sr = new CImageSliceViewRender(sliceView);
+		sr->SetImageModel(imgModel);
+		imgModel->AddImageRenderer(sr);
+	}
+
+	Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imgModel);
+	vr->Create();
+	imgModel->AddImageRenderer(vr);
 }
 
 //-----------------------------------------------------------------------------

@@ -89,6 +89,8 @@ private:
 	void RenderNormals(CGLContext& rc, GObject* po, double scale);
 	void RenderRigidLabels(CGLContext& rc);
 
+	void RenderImageData(CGLContext& rc);
+
 private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);

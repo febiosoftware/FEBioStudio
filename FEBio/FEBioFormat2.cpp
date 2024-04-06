@@ -259,8 +259,12 @@ void FEBioFormat2::ParseGeometryElements(FEBioInputModel::Part& part, XMLTag& ta
 	char sztmp[256] = {0};
 	if (szname == 0)
 	{
-		sprintf(sztmp, "Part%d", part.Domains() + 1);
-		szname = sztmp;
+		szname = tag.AttributeValue("name", true);
+		if (szname == 0)
+		{
+			sprintf(sztmp, "Part%d", part.Domains() + 1);
+			szname = sztmp;
+		}
 	}
 
 	// add domain to list

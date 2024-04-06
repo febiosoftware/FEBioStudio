@@ -329,6 +329,17 @@ public:
 	CGLScene* GetScene();
 
 public:
+	int GetWidgetLayer();
+	bool ShowTitle() const { return m_showTitle; }
+	bool ShowSubtitle() const { return m_showSubtitle; }
+	bool ShowLegend() const { return m_showLegend; }
+
+	void ShowLegend(bool b) { m_showLegend = b; }
+
+	// This string will be shown in top-left corner
+	virtual std::string GetRenderString();
+
+public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
 
@@ -373,6 +384,12 @@ protected:
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
+
+	// GL widget parameters
+	unsigned int	m_widgetLayer;
+	bool	m_showTitle;
+	bool	m_showSubtitle;
+	bool	m_showLegend;
 };
 
 // helper class for getting selections without the need to access the document

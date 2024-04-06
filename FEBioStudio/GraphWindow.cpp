@@ -1690,12 +1690,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	// get the field data
 	m_dataX = GetCurrentXValue();
 	m_dataY = GetCurrentYValue();
-	if ((nplotType != LINE_PLOT) && (m_dataX <= 0))
+	if ((nplotType != LINE_PLOT) && (m_dataX < 0))
 	{
 		ClearPlots();
 		return;
 	}
-	if (m_dataY <= 0)
+	if (m_dataY < 0)
 	{
 		ClearPlots();
 		return;

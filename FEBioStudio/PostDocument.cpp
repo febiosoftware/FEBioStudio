@@ -247,6 +247,10 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 
 	SetItemMode(ITEM_ELEM);
 
+	// we do want to show the title and subtitle for post docs.
+	m_showTitle = true;
+	m_showSubtitle = true;
+
 	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 

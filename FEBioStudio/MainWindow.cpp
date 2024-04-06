@@ -2546,13 +2546,6 @@ void CMainWindow::RedrawGL()
 }
 
 //-----------------------------------------------------------------------------
-//! Zoom to an FSObject
-void CMainWindow::ZoomTo(const BOX& box)
-{
-	GetGLView()->ZoomTo(box);
-}
-
-//-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectObjects_toggled(bool b)
 {
 	CGLDocument* doc = GetGLDocument();
@@ -3589,19 +3582,25 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 
 	if (dlg.exec())
 	{
-		if (imgModel->GetImageSource()->GetName().empty())
+		std::string name = imgModel->GetImageSource()->GetName();
+		if (name.empty())
 		{
 			std::stringstream ss;
 			ss << "ImageModel" << n++;
-			imgModel->SetName(ss.str());
+			name = ss.str();
 		}
-		else
-		{
-			imgModel->SetName(imgModel->GetImageSource()->GetName());
-		}
+		imgModel->SetName(name);
 
 		// add it to the project
 		doc->AddImageModel(imgModel);
+
+		Update(0, true);
+		// only for model docs
+		if (dynamic_cast<CModelDocument*>(doc))
+		{
+			ShowInModelViewer(imgModel);
+		}
+		GetGLView()->ZoomTo(imgModel->GetBoundingBox());
 
 		return true;
 	}
@@ -3621,32 +3620,8 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 
         if(!ImportImage(imageModel))
         {
-            delete imageModel;
-            imageModel = nullptr;
+			delete imageModel;
         }
-
-		if(imageModel)
-		{
-			Update(0, true);
-			ZoomTo(imageModel->GetBoundingBox());
-
-			// only for model docs
-			if (dynamic_cast<CModelDocument*>(doc))
-			{
-				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-				vr->Create();
-				imageModel->AddImageRenderer(vr);
-
-				Update(0, true);
-				ShowInModelViewer(imageModel);
-			}
-			else
-			{
-				Update(0, true);
-			}
-			ZoomTo(imageModel->GetBoundingBox());
-		}
-
 	}
 #else
 	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type) {}
