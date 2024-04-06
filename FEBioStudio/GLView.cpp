@@ -325,8 +325,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 {
 	m_bsnap = false;
 
-	m_btrack = false;
-
 	m_showFPS = false;
 	m_fps = 0.0;
 
@@ -447,9 +445,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
-
-	// get the active view
-//	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
@@ -578,9 +573,6 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
-
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// let the widget manager handle it first
 	if (but1 && (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1)))
@@ -722,7 +714,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			FESelection* ps = pdoc->GetCurrentSelection();
 			if (ps)
 			{
-				if ((m_coord == COORD_LOCAL) || postDoc) ps->GetOrientation().Inverse().RotateVector(dr);
+				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) dr.y = dr.z = 0;
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) dr.x = dr.z = 0;
@@ -731,7 +723,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_YZ) dr.x = 0;
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XZ) dr.y = 0;
 
-				if ((m_coord == COORD_LOCAL) || postDoc) dr = ps->GetOrientation() * dr;
+				if (m_coord == COORD_LOCAL) dr = ps->GetOrientation() * dr;
 
 				m_rg += dr;
 				if (bctrl)
@@ -781,7 +773,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				FESelection* ps = pdoc->GetCurrentSelection();
 				if (ps)
 				{
-					if ((m_coord == COORD_LOCAL) || postDoc)
+					if (m_coord == COORD_LOCAL)
 					{
 						quatd qs = ps->GetOrientation();
 						q = qs * q * qs.Inverse();
@@ -840,9 +832,6 @@ void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
@@ -879,6 +868,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	// which mesh is active (surface or volume)
 	int meshMode = m_pWnd->GetMeshMode();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc) meshMode = MESH_MODE_VOLUME;
 
 	m_bextrude = false;
@@ -1245,7 +1235,7 @@ void CGLView::Reset()
 	repaint();
 }
 
-void CGLView::UpdateWidgets(bool bposition)
+void CGLView::UpdateWidgets()
 {
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
@@ -1255,19 +1245,11 @@ void CGLView::UpdateWidgets(bool bposition)
 		if (m_ptitle)
 		{
 			m_ptitle->fit_to_size();
-
-			if (bposition)
-				m_ptitle->resize(0, 0, m_ptitle->w(), m_ptitle->h());
-
-			m_ptitle->fit_to_size();
 			Y = m_ptitle->y() + m_ptitle->h();
 		}
 
 		if (m_psubtitle)
 		{
-			if (bposition)
-				m_psubtitle->resize(0, Y, m_psubtitle->w(), m_psubtitle->h());
-
 			m_psubtitle->fit_to_size();
 
 			// set a min width for the subtitle otherwise the time values may get cropped
@@ -1360,8 +1342,6 @@ void CGLView::RenderScene()
 	rc.m_view = this;
 	rc.m_cam = &cam;
 	rc.m_settings = view;
-
-	PositionCamera();
 
 	if (scene)
 	{
@@ -1530,158 +1510,6 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 	return a;
 }
 
-void CGLView::PositionCamera()
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	// position the camera
-	CGLCamera& cam = scene->GetView().GetCamera();
-	cam.Transform();
-
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-	// see if we need to track anything
-	if (pdoc->IsValid() && m_btrack)
-	{
-		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-		int NN = pm->Nodes();
-		int* nt = m_ntrack;
-		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
-
-		Post::FEPostModel& fem = *pdoc->GetFSModel();
-
-		vec3d a = pm->Node(nt[0]).r;
-		vec3d b = pm->Node(nt[1]).r;
-		vec3d c = pm->Node(nt[2]).r;
-
-		vec3d e1 = (b - a);
-		vec3d e3 = e1 ^ (c - a);
-		vec3d e2 = e3^e1;
-		e1.Normalize();
-		e2.Normalize();
-		e3.Normalize();
-
-		vec3d r0 = cam.GetPosition();
-		vec3d r1 = a;
-
-		// undo camera translation
-		glTranslatef(r0.x, r0.y, r0.z);
-
-		// set current orientation
-		mat3d Q;
-		Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
-		Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
-		Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
-
-		// setup the rotation matrix that rotates back to the original
-		// tracking orientation
-		mat3d R = m_rot0*Q.inverse();
-
-		// note that we need to pass the transpose to OGL
-		GLfloat m[4][4] = { 0 };
-		m[3][3] = 1.f;
-		m[0][0] = R[0][0]; m[0][1] = R[1][0]; m[0][2] = R[2][0];
-		m[1][0] = R[0][1]; m[1][1] = R[1][1]; m[1][2] = R[2][1];
-		m[2][0] = R[0][2]; m[2][1] = R[1][2]; m[2][2] = R[2][2];
-		glMultMatrixf(&m[0][0]);
-
-		// center camera on track point
-		glTranslatef(-r1.x, -r1.y, -r1.z);
-
-		m_rc.m_btrack = true;
-		m_rc.m_track_pos = r1;
-
-		// This would make the plane cut relative to the element coordinate system
-		m_rc.m_track_rot = quatd(R);
-	}
-	else m_rc.m_btrack = false;
-}
-
-void CGLView::SetTrackingData(int n[3])
-{
-	// store the nodes to track
-	m_ntrack[0] = n[0];
-	m_ntrack[1] = n[1];
-	m_ntrack[2] = n[2];
-
-	// get the current nodal positions
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-	int NN = pm->Nodes();
-	int* nt = m_ntrack;
-	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
-
-	Post::FEPostModel& fem = *pdoc->GetFSModel();
-	vec3d a = pm->Node(nt[0]).r;
-	vec3d b = pm->Node(nt[1]).r;
-	vec3d c = pm->Node(nt[2]).r;
-
-	// setup orthogonal basis
-	vec3d e1 = (b - a);
-	vec3d e3 = e1 ^ (c - a);
-	vec3d e2 = e3^e1;
-	e1.Normalize();
-	e2.Normalize();
-	e3.Normalize();
-
-	// create matrix form
-	mat3d Q;
-	Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
-	Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
-	Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
-
-	// store as quat
-	m_rot0 = Q;
-}
-
-void CGLView::TrackSelection(bool b)
-{
-	if (b == false)
-	{
-		m_btrack = false;
-	}
-	else
-	{
-		m_btrack = false;
-		CPostDocument* pdoc = m_pWnd->GetPostDocument();
-		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
-
-		int nmode = model->GetSelectionMode();
-		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-		if (nmode == Post::SELECT_ELEMS)
-		{
-			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
-			if (selElems.size() > 0)
-			{
-				FEElement_& el = *selElems[0];
-				int* n = el.m_node;
-				int m[3] = { n[0], n[1], n[2] };
-				SetTrackingData(m);
-				m_btrack = true;
-			}
-		}
-		else if (nmode == Post::SELECT_NODES)
-		{
-			int ns = 0;
-			int m[3];
-			for (int i = 0; i<pm->Nodes(); ++i)
-			{
-				if (pm->Node(i).IsSelected()) m[ns++] = i;
-				if (ns == 3)
-				{
-					SetTrackingData(m);
-					m_btrack = true;
-					break;
-				}
-			}
-		}
-	}
-}
-
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
@@ -1735,54 +1563,6 @@ void CGLView::ClearCommandStack()
 int CGLView::GetMeshMode()
 {
 	return m_pWnd->GetMeshMode();
-}
-
-bool CGLView::TrackModeActive()
-{
-	return m_btrack;
-}
-
-void CGLView::RenderTrack()
-{
-	if (m_btrack == false) return;
-
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-	int* nt = m_ntrack;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	vec3d a = pm->Node(nt[0]).r;
-	vec3d b = pm->Node(nt[1]).r;
-	vec3d c = pm->Node(nt[2]).r;
-
-	vec3d e1 = (b - a);
-	vec3d e3 = e1 ^ (c - a);
-	vec3d e2 = e3^e1;
-	double l = e1.Length();
-	e1.Normalize();
-	e2.Normalize();
-	e3.Normalize();
-
-	vec3d A, B, C;
-	A = a + e1*l;
-	B = a + e2*l;
-	C = a + e3*l;
-
-	glColor3ub(255, 0, 255);
-	glBegin(GL_LINES);
-	{
-		glVertex3f(a.x, a.y, a.z); glVertex3f(A.x, A.y, A.z);
-		glVertex3f(a.x, a.y, a.z); glVertex3f(B.x, B.y, B.z);
-		glVertex3f(a.x, a.y, a.z); glVertex3f(C.x, C.y, C.z);
-	}
-	glEnd();
-
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------

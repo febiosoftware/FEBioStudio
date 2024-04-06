@@ -194,12 +194,6 @@ public:
 	// zoom to the models extents
 	void ZoomExtents(bool banimate = true);
 
-	// position the camera
-	void PositionCamera();
-
-	// toggle track selection feature
-	void TrackSelection(bool b);
-
 	// render functions
 public:
 	// other rendering functions
@@ -210,10 +204,7 @@ public:
 	void Render3DCursor();
 	void RenderTags();
 	void RenderTags(std::vector<GLTAG>& tags);
-	void RenderTrack();
 	void RenderDecorations();
-
-	bool TrackModeActive();
 
 	void ShowSafeFrame(bool b);
 
@@ -256,7 +247,7 @@ private:
 public:
 	QImage CaptureScreen();
 
-	void UpdateWidgets(bool bposition = true);
+	void UpdateWidgets();
 
 	bool isTitleVisible() const;
 	void showTitle(bool b);
@@ -302,9 +293,6 @@ public:
 	int PlaneCutMode();
 
 	double* PlaneCoordinates();
-
-protected:
-	void SetTrackingData(int n[3]);
 
 protected slots:
 	void repaintEvent();
@@ -363,11 +351,6 @@ protected:
 	bool	m_showContextMenu;
 
 private:
-	// tracking
-	bool	m_btrack;
-	int		m_ntrack[3];
-	mat3d	m_rot0;
-
 	vector<GDecoration*>	m_deco;
 
 public:

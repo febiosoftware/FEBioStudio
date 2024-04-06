@@ -28,11 +28,13 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
+#include <GLLib/glx.h>
 #include "PostObject.h"
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
 {
-
+	m_ntrack[0] = m_ntrack[1] = m_ntrack[2] = -1;
+	m_trackScale = 1.0;
 }
 
 BOX CGLPostScene::GetBoundingBox()
@@ -86,7 +88,14 @@ void CGLPostScene::Render(CGLContext& rc)
 	glPushMatrix();
 	glLoadIdentity();
 
-	glview->PositionCamera();
+	// we need to update the tracking target before we position the camera
+	double trackScale = 1;
+	if (cam.IsTracking())
+	{
+		UpdateTracking();
+	}
+
+	cam.PositionInScene();
 
 	glDisable(GL_CULL_FACE);
 
@@ -175,11 +184,15 @@ void CGLPostScene::Render(CGLContext& rc)
 	glm->Render(rc);
 	if (view.m_use_environment_map) DeactivateEnvironmentMap();
 
+	// update and render the tracking
+	if (cam.IsTracking())
+	{
+		CTrackingTarget& track = rc.m_cam->GetTrackingTarget();
+		glx::renderAxes(m_trackScale, track.m_trgPos, track.m_trgRot, GLColor(255, 0, 255));
+	}
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-
-	// render the tracking
-	if (glview->TrackModeActive()) glview->RenderTrack();
 
 	// render the tags
 	if (view.m_bTags) glview->RenderTags();
@@ -200,5 +213,110 @@ void CGLPostScene::RenderImageData(CGLContext& rc)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
 		if (img->IsActive()) img->Render(rc);
+	}
+}
+
+void CGLPostScene::UpdateTracking()
+{
+	CGLCamera& cam = GetCamera();
+	if ((m_ntrack[0] >= 0) && (m_ntrack[1] >= 0) && (m_ntrack[2] >= 0))
+	{
+		FSMeshBase* pm = m_doc->GetPostObject()->GetFEMesh();
+		CTrackingTarget& track = cam.GetTrackingTarget();
+		int* nt = m_ntrack;
+		vec3d a = pm->Node(nt[0]).r;
+		vec3d b = pm->Node(nt[1]).r;
+		vec3d c = pm->Node(nt[2]).r;
+
+		track.m_trgPos = a;
+
+		vec3d e1 = (b - a);
+		vec3d e3 = e1 ^ (c - a);
+		vec3d e2 = e3 ^ e1;
+		m_trackScale = e1.Length();
+		e1.Normalize();
+		e2.Normalize();
+		e3.Normalize();
+		mat3d Q = mat3d(e1, e2, e3);
+		track.m_trgRot = quatd(Q);
+	}
+	else cam.StopTracking();
+}
+
+void CGLPostScene::ToggleTrackSelection()
+{
+	CGLCamera& cam = GetCamera();
+
+	if (cam.IsTracking())
+	{
+		cam.StopTracking();
+	}
+	else
+	{
+		CTrackingTarget& trg = cam.GetTrackingTarget();
+		trg.m_btrack = false;
+
+		CPostObject* po = m_doc->GetPostObject();
+		Post::CGLModel* model = m_doc->GetGLModel(); assert(model);
+
+		int m[3] = { -1, -1, -1 };
+		int nmode = model->GetSelectionMode();
+		FSMeshBase* pm = po->GetFEMesh();
+		if (nmode == Post::SELECT_ELEMS)
+		{
+			const vector<FEElement_*> selElems = model->GetElementSelection();
+			if (selElems.size() > 0)
+			{
+				FEElement_& el = *selElems[0];
+				int* n = el.m_node;
+				m[0] = n[0]; m[1] = n[1]; m[2] = n[2];
+				trg.m_btrack = true;
+			}
+		}
+		else if (nmode == Post::SELECT_NODES)
+		{
+			int ns = 0;
+			for (int i = 0; i < pm->Nodes(); ++i)
+			{
+				if (pm->Node(i).IsSelected()) m[ns++] = i;
+				if (ns == 3)
+				{
+					trg.m_btrack = true;
+					break;
+				}
+			}
+		}
+
+		if (trg.m_btrack)
+		{
+			// store the nodes to track
+			m_ntrack[0] = m[0];
+			m_ntrack[1] = m[1];
+			m_ntrack[2] = m[2];
+
+			// get the current nodal positions
+			FSMeshBase* pm = po->GetFEMesh();
+			int NN = pm->Nodes();
+			int* nt = m_ntrack;
+			if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
+
+			vec3d a = pm->Node(nt[0]).r;
+			vec3d b = pm->Node(nt[1]).r;
+			vec3d c = pm->Node(nt[2]).r;
+
+			// setup orthogonal basis
+			vec3d e1 = (b - a);
+			vec3d e3 = e1 ^ (c - a);
+			vec3d e2 = e3 ^ e1;
+			e1.Normalize();
+			e2.Normalize();
+			e3.Normalize();
+
+			// create matrix form
+			mat3d Q(e1, e2, e3);
+
+			// store as quat
+			trg.m_trgRot0 = Q;
+		}
 	}
 }

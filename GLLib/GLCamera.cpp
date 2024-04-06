@@ -144,7 +144,7 @@ void CGLCamera::LineDrawMode(bool b)
 
 //-----------------------------------------------------------------------------
 // This sets up the GL matrix transformation for rendering
-void CGLCamera::Transform()
+void CGLCamera::PositionInScene()
 {
 	// reset the modelview matrix mode
 	glMatrixMode(GL_MODELVIEW);
@@ -164,6 +164,36 @@ void CGLCamera::Transform()
 
 	// translate to world coordinates
 	glx::translate(-GetPosition());
+
+	if (IsTracking())
+	{
+		CTrackingTarget& track = m_track;
+
+		vec3d a = track.m_trgPos;
+		quatd q = track.m_trgRot;
+		quatd q0 = track.m_trgRot0;
+
+		vec3d r0 = GetPosition();
+		vec3d r1 = a;
+
+		// undo camera translation
+		glTranslatef(r0.x, r0.y, r0.z);
+
+		// setup the rotation matrix that rotates back to the original
+		// tracking orientation
+		mat3d R = (q0 * q.Inverse()).RotationMatrix();
+
+		// note that we need to pass the transpose to OGL
+		GLfloat m[4][4] = { 0 };
+		m[3][3] = 1.f;
+		m[0][0] = R[0][0]; m[0][1] = R[1][0]; m[0][2] = R[2][0];
+		m[1][0] = R[0][1]; m[1][1] = R[1][1]; m[1][2] = R[2][1];
+		m[2][0] = R[0][2]; m[2][1] = R[1][2]; m[2][2] = R[2][2];
+		glMultMatrixf(&m[0][0]);
+
+		// center camera on track point
+		glTranslatef(-r1.x, -r1.y, -r1.z);
+	}
 }
 
 //-----------------------------------------------------------------------------

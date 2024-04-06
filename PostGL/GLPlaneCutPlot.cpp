@@ -256,10 +256,16 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 
 	// see if we are tracking or not
 	vec3d r = m_T.GetPosition();
-	if (rc.m_btrack)
+	if (rc.m_cam && rc.m_cam->IsTracking())
 	{
-		m_T.SetPosition(-rc.m_track_pos);
-		m_T.SetRotation(rc.m_track_rot);
+		CTrackingTarget& track = rc.m_cam->GetTrackingTarget();
+		m_T.SetPosition(-track.m_trgPos);
+
+		// TODO: Hmmm, doesn't seem to be working correctly.
+		quatd q = track.m_trgRot;
+		quatd q0 = track.m_trgRot0;
+		quatd Q = q0 * q.Inverse();
+		m_T.SetRotation(Q);
 	}
 	else
 	{

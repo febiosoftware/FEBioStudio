@@ -110,6 +110,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	int nitem = m_doc->GetItemMode();
 
 	CGLCamera& cam = *rc.m_cam;
+	cam.PositionInScene();
 
 	if (glview->ShowPlaneCut())
 	{
@@ -137,7 +138,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	RenderSelectionBox(rc);
 
 	cam.LineDrawMode(true);
-	cam.Transform();
+	cam.PositionInScene();
 
 	// Render mesh lines
 	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
@@ -152,7 +153,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	}
 
 	cam.LineDrawMode(false);
-	cam.Transform();
+	cam.PositionInScene();
 
 	// render physics
 	if (view.m_brigid) RenderRigidBodies(rc);
@@ -376,11 +377,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			RenderObject(rc, po);
 			cam.LineDrawMode(true);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 			RenderEdges(rc, po);
 			cam.LineDrawMode(false);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 		}
 		break;
@@ -388,11 +389,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			RenderObject(rc, po);
 			cam.LineDrawMode(true);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 			RenderNodes(rc, po);
 			cam.LineDrawMode(false);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 		}
 		break;
@@ -424,11 +425,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				{
 					RenderFEFaces(rc, po);
 					cam.LineDrawMode(true);
-					cam.Transform();
+					cam.PositionInScene();
 					SetModelView(po);
 					RenderFEEdges(rc, po);
 					cam.LineDrawMode(false);
-					cam.Transform();
+					cam.PositionInScene();
 				}
 				else if (item == ITEM_NODE)
 				{
@@ -446,11 +447,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				{
 					RenderSurfaceMeshFaces(rc, po);
 					cam.LineDrawMode(true);
-					cam.Transform();
+					cam.PositionInScene();
 					SetModelView(po);
 					RenderSurfaceMeshEdges(rc, po);
 					cam.LineDrawMode(false);
-					cam.Transform();
+					cam.PositionInScene();
 				}
 				else if (item == ITEM_NODE)
 				{
