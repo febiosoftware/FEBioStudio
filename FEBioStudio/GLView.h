@@ -226,8 +226,6 @@ public:
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
 	void AllocateDefaultWidgets(bool b);
 
-	int GetMeshMode();
-
 protected:
 	void initializeGL() override;
 	void resizeGL(int w, int h) override;

@@ -316,6 +316,8 @@ public:
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
 	void SetUIViewMode(UI_VIEW_MODE vm) { m_uiMode = vm; }
 
+	virtual int GetMeshMode() { return MESH_MODE_VOLUME; }
+
 	// return the current selection
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);

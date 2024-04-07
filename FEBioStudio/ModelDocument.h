@@ -73,6 +73,8 @@ public:
 
 	std::string GetRenderString() override;
 
+	int GetMeshMode() override;
+
 public:
 	void Activate() override;
 	void Deactivate() override;

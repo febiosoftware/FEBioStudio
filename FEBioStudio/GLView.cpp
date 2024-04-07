@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include "CreatePanel.h"
 #include "ModelDocument.h"
 #include <GeomLib/GObject.h>
-#include <GeomLib/GSurfaceMeshObject.h>
 #include "GLHighlighter.h"
 #include "GLCursor.h"
 #include <math.h>
@@ -49,12 +48,8 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMenu>
 #include <QMessageBox>
-#include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
-#include <PostGL/GLModel.h>
-#include <GeomLib/GModel.h>
 #include "Commands.h"
-#include "PostObject.h"
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 using namespace std::chrono;
@@ -867,9 +862,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	}
 
 	// which mesh is active (surface or volume)
-	int meshMode = m_pWnd->GetMeshMode();
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc) meshMode = MESH_MODE_VOLUME;
+	int meshMode = pdoc->GetMeshMode();
 
 	m_bextrude = false;
 
@@ -1051,7 +1044,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0,1,0));
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0,0,1));
 
-				if ((m_coord == COORD_LOCAL) || postDoc)
+				if (m_coord == COORD_LOCAL)
 				{
 					quatd qs = ps->GetOrientation();
 					q = qs*q*qs.Inverse();
@@ -1553,11 +1546,6 @@ void CGLView::RedoViewChange()
 void CGLView::ClearCommandStack()
 {
 	m_Cmd.Clear();
-}
-
-int CGLView::GetMeshMode()
-{
-	return m_pWnd->GetMeshMode();
 }
 
 //-----------------------------------------------------------------------------

@@ -407,7 +407,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	else
 	{
 		// get the mesh mode
-		int meshMode = glview->GetMeshMode();
+		int meshMode = m_doc->GetMeshMode();
 
 		if (po == poa)
 		{
