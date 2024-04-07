@@ -322,7 +322,6 @@ protected:
 	bool	m_bshift;
 	bool	m_bctrl;
 	bool	m_bsel;		// selection mode
-	bool	m_bextrude;	// extrusion mode
 
 public:
 	bool	m_bpick;

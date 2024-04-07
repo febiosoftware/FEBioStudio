@@ -604,6 +604,11 @@ CGLScene* CGLDocument::GetScene()
 	return m_scene;
 }
 
+void CGLDocument::Update()
+{
+
+}
+
 int CGLDocument::GetWidgetLayer()
 {
     return m_widgetLayer;

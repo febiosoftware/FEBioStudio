@@ -330,6 +330,8 @@ public:
 
 	CGLScene* GetScene();
 
+	virtual void Update();
+
 public:
 	int GetWidgetLayer();
 	bool ShowTitle() const { return m_showTitle; }

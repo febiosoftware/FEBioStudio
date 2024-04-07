@@ -75,6 +75,8 @@ public:
 
 	int GetMeshMode() override;
 
+	void Update() override;
+
 public:
 	void Activate() override;
 	void Deactivate() override;

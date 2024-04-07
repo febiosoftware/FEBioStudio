@@ -685,7 +685,10 @@ void CPostDocument::UpdateSelection(bool report)
 	case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
 	case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
 	case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
+	default:
+		return;
 	}
+	if (m_psel) m_psel->SetMovable(false);
 
 	emit selectionChanged();
 }

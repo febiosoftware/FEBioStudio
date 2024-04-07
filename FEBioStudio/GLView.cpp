@@ -470,8 +470,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	Qt::MouseButton but = ev->button();
 
-	m_bextrude = false;
-
 	int pivotMode = m_pivot.GetSelectionMode();
 
 	if (but == Qt::LeftButton)
@@ -485,15 +483,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			return;
 		}
 		if ((m_bshift || m_bctrl) && (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)) m_bsel = true;
-		if ((pivotMode != PIVOT_SELECTION_MODE::SELECT_NONE) && m_bshift && (ntrans == TRANSFORM_MOVE))
-		{
-			GMeshObject* po = dynamic_cast<GMeshObject*>(pdoc->GetActiveObject());
-			int nmode = pdoc->GetItemMode();
-			if (po && (nmode == ITEM_FACE))
-			{
-				m_bextrude = true;
-			}
-		}
 	}
 	else m_bsel = false;
 
@@ -525,15 +514,11 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		}
 		else m_ds = vec3d(1, 1, 1);
 
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc)
+		FESelection* ps = pdoc->GetCurrentSelection();
+		if (ps && (m_coord == COORD_LOCAL))
 		{
-			FESelection* ps = mdoc->GetCurrentSelection();
-			if (ps && (m_coord == COORD_LOCAL))
-			{
-				quatd q = ps->GetOrientation();
-				q.RotateVector(m_ds);
-			}
+			quatd q = ps->GetOrientation();
+			q.RotateVector(m_ds);
 		}
 
 		m_ds.Normalize();
@@ -547,8 +532,6 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 {
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
-
-	CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -686,19 +669,6 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1)
 		{
-			if (m_bextrude)
-			{
-				GMeshObject* po = dynamic_cast<GMeshObject*>(pdoc->GetActiveObject());
-				if (po)
-				{
-					FEExtrudeFaces mod;
-					mod.SetExtrusionDistance(0.0);
-					mdoc->ApplyFEModifier(mod, po, 0, false);
-				}
-
-				m_bextrude = false;
-			}
-
 			double f = 0.0012f*(double) cam.GetFinalTargetDistance();
 
 			vec3d dr = vec3d(f*(x - m_x1), f*(m_y1 - y), 0);
@@ -799,7 +769,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				df = st / m_st;
 			}
 			m_st *= df;
-			FESelection* ps = mdoc->GetCurrentSelection();
+			FESelection* ps = pdoc->GetCurrentSelection();
 			ps->Scale(df, m_ds, GetPivotPosition());
 
 			m_pWnd->UpdateGLControlBar();
@@ -863,8 +833,6 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	// which mesh is active (surface or volume)
 	int meshMode = pdoc->GetMeshMode();
-
-	m_bextrude = false;
 
 	AddRegionPoint(x, y);
 
@@ -961,19 +929,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					delete preg;
 				}
 
-				CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-				if (mdoc)
-				{
-					FESelection* psel = mdoc->GetCurrentSelection();
-					if (psel)
-					{
-						if (psel->Size() && view.m_bhide)
-						{
-							pdoc->DoCommand(new CCmdHideSelection(mdoc));
-						}
-					}
-					emit selectionChanged();
-				}
+				emit selectionChanged();
 				m_pWnd->Update(0, false);
 
 				repaint();
@@ -1027,13 +983,11 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	}
 	else 
 	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc == nullptr) return;
-		FESelection* ps = mdoc->GetCurrentSelection();
-		CCommand* cmd = 0;
+		FESelection* ps = pdoc->GetCurrentSelection();
+		CCommand* cmd = nullptr;
 		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 		{
-			cmd = new CCmdTranslateSelection(mdoc, m_rt);
+			cmd = new CCmdTranslateSelection(pdoc, m_rt);
 		}
 		else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
 		{
@@ -1051,13 +1005,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				}
 
 				q.MakeUnit();
-				cmd = new CCmdRotateSelection(mdoc, q, GetPivotPosition());
+				cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
 				m_wt = 0;
 			}
 		}
 		else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
 		{
-			cmd = new CCmdScaleSelection(mdoc, m_st, m_ds, GetPivotPosition());
+			cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
 			m_st = m_sa = 1;
 		}
 
@@ -1065,7 +1019,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			string s = ps->GetName();
 			pdoc->AddCommand(cmd, s);
-			mdoc->GetGModel()->UpdateBoundingBox();
+			pdoc->Update();
 		}
 
 		// TODO: Find a better way to update the GMesh when necessary. 
