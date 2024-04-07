@@ -168,12 +168,6 @@ public:
 	void SetOrthoProjection(bool b);
 
 public:
-	bool IsTracking() const { return m_track.IsActive(); }
-	CTrackingTarget& GetTrackingTarget() { return m_track; }
-	void StartTracking() { m_track.m_btrack = true; }
-	void StopTracking() { m_track.m_btrack = false; }
-
-public:
 	VecInterpolator		m_pos;	// position of target in global coordinates
 	VecInterpolator		m_trg;	// position of target in local coordinates
 	QuatInterpolator	m_rot;	// orientation of camera
@@ -185,7 +179,4 @@ private:
 	bool	m_bortho;
 
 	double	m_depthScale;	// depth scale for line drawing
-
-private:
-	CTrackingTarget m_track;
 };
