@@ -44,6 +44,8 @@ public:
 private:
 	void RenderImageData(CGLContext& rc);
 
+	void RenderTags(CGLContext& rc);
+
 	void UpdateTracking();
 
 private:

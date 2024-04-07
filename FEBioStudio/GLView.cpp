@@ -1237,28 +1237,23 @@ void CGLView::Reset()
 
 void CGLView::UpdateWidgets()
 {
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
-	if (postDoc && postDoc->IsValid())
+	int Y = 0;
+	if (m_ptitle)
 	{
-		int Y = 0;
-		if (m_ptitle)
-		{
-			m_ptitle->fit_to_size();
-			Y = m_ptitle->y() + m_ptitle->h();
-		}
-
-		if (m_psubtitle)
-		{
-			m_psubtitle->fit_to_size();
-
-			// set a min width for the subtitle otherwise the time values may get cropped
-			if (m_psubtitle->w() < 150)
-				m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
-		}
-
-		repaint();
+		m_ptitle->fit_to_size();
+		Y = m_ptitle->y() + m_ptitle->h();
 	}
+
+	if (m_psubtitle)
+	{
+		m_psubtitle->fit_to_size();
+		
+		// set a min width for the subtitle otherwise the time values may get cropped
+		if (m_psubtitle->w() < 150)
+			m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
+	}
+
+	repaint();
 }
 
 bool CGLView::isTitleVisible() const
@@ -1602,7 +1597,6 @@ void CGLView::RenderPivot()
 	// orient the manipulator
 	// (we always use local for post docs)
 	int orient = m_coord;
-	if (dynamic_cast<CPostDocument*>(pdoc)) orient = COORD_LOCAL;
 	if (orient == COORD_LOCAL)
 	{
 		quatd q = ps->GetOrientation();
@@ -2198,7 +2192,7 @@ void CGLView::SetPivotPosition(const vec3d& r)
 quatd CGLView::GetPivotRotation()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
-	if ((doc && (m_coord == COORD_LOCAL)) || dynamic_cast<CPostDocument*>(GetDocument()))
+	if (doc && (m_coord == COORD_LOCAL))
 	{
 		FESelection* ps = doc->GetCurrentSelection();
 		if (ps) return ps->GetOrientation();
@@ -2294,198 +2288,9 @@ void CGLView::ZoomExtents(bool banimate)
 	repaint();
 }
 
-//-----------------------------------------------------------------------------
-//! Render the tags on the selected items.
-void CGLView::RenderTags()
-{
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetViewSettings();
-
-	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
-
-	FSMesh* pm = po->GetFEMesh();
-	FSMeshBase* pmb = pm;
-	if (pm == nullptr)
-	{
-		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-		if (pso) pmb = pso->GetSurfaceMesh();
-		if (pmb == nullptr) return;
-	}
-
-	// create the tag array.
-	// We add a tag for each selected item
-	GLTAG tag;
-	vector<GLTAG> vtag;
-
-	// clear the node tags
-	int NN = pmb->Nodes();
-	for (int i = 0; i < NN; ++i) pmb->Node(i).m_ntag = 0;
-
-	int mode = doc->GetItemMode();
-
-	GLColor extcol(255, 255, 0);
-	GLColor intcol(255, 0, 0);
-
-	// process elements
-	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
-	{
-		if ((mode == ITEM_ELEM) && pm)
-		{
-			int NE = pm->Elements();
-			for (int i = 0; i < NE; i++)
-			{
-				FEElement_& el = pm->Element(i);
-				if (el.IsSelected())
-				{
-					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-					tag.c = extcol;
-					int nid = el.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-					vtag.push_back(tag);
-
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process faces
-		if (mode == ITEM_FACE)
-		{
-			int NF = pmb->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& f = pmb->Face(i);
-				if (f.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
-					tag.c = (f.IsExternal() ? extcol : intcol);
-					int nid = f.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-					vtag.push_back(tag);
-
-					int nf = f.Nodes();
-					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process edges
-		if (mode == ITEM_EDGE)
-		{
-			int NC = pmb->Edges();
-			for (int i = 0; i < NC; i++)
-			{
-				FSEdge& edge = pmb->Edge(i);
-				if (edge.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
-					tag.c = extcol;
-					int nid = edge.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-					vtag.push_back(tag);
-
-					int ne = edge.Nodes();
-					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process nodes
-		if (mode == ITEM_NODE)
-		{
-			for (int i = 0; i < NN; i++)
-			{
-				FSNode& node = pmb->Node(i);
-				if (node.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(node.r);
-					tag.c = (node.IsExterior() ? extcol : intcol);
-					int nid = node.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-					vtag.push_back(tag);
-				}
-			}
-		}
-
-		// add additional nodes
-		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
-		{
-			for (int i = 0; i < NN; i++)
-			{
-				FSNode& node = pmb->Node(i);
-				if (node.m_ntag == 1)
-				{
-					tag.r = pmb->LocalToGlobal(node.r);
-					tag.c = (node.IsExterior() ? extcol : intcol);
-					int n = node.GetID();
-					if (n < 0) n = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-					vtag.push_back(tag);
-				}
-			}
-		}
-	}
-
-	// render object labels
-	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-	if (postDoc && view.m_showRigidLabels)
-	{
-		bool renderRB = view.m_brigid;
-		bool renderRJ = view.m_bjoint;
-		Post::FEPostModel* fem = postDoc->GetFSModel();
-		for (int i = 0; i < fem->PointObjects(); ++i)
-		{
-			Post::FEPostModel::PointObject& ob = *fem->GetPointObject(i);
-			if (ob.IsActive())
-			{
-				if (((ob.m_tag == 1) && renderRB) ||
-					((ob.m_tag  > 1) && renderRJ))
-				{
-					tag.r = ob.m_pos;
-					tag.c = ob.Color();
-					snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-					vtag.push_back(tag);
-				}
-			}
-		}
-
-		for (int i = 0; i < fem->LineObjects(); ++i)
-		{
-			Post::FEPostModel::LineObject& ob = *fem->GetLineObject(i);
-			if (ob.IsActive() && renderRJ)
-			{
-				vec3d a = ob.m_r1;
-				vec3d b = ob.m_r2;
-
-				tag.r = (a + b) * 0.5;
-				tag.c = ob.Color();
-				snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-				vtag.push_back(tag);
-			}
-		}
-	}
-
-	// if we don't have any tags, just return
-	if (vtag.empty()) return;
-
-	// limit the number of tags to render
-	const int MAX_TAGS = 100;
-	int nsel = (int)vtag.size();
-	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
-
-	RenderTags(vtag);
-}
-
 void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 {
+	if (vtag.empty()) return;
 	int nsel = (int)vtag.size();
 
 	// find out where the tags are on the screen
