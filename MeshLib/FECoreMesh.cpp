@@ -1589,3 +1589,32 @@ void ForAllElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f)
 		f(el);
 	}
 }
+
+void ForAllSelectedElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f)
+{
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		if (el.IsSelected()) f(el);
+	}
+}
+
+void ForAllSelectedNodes(FSCoreMesh& mesh, std::function<void(FSNode& node)> f)
+{
+	int NN = mesh.Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		if (node.IsSelected()) f(node);
+	}
+}
+
+void ForAllTaggedNodes(FSCoreMesh& mesh, int tag, std::function<void(FSNode& node)> f)
+{
+	int NN = mesh.Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		if (node.m_ntag == tag) f(node);
+	}
+}
