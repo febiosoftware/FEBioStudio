@@ -1,22 +1,20 @@
-name: CI - Windows Push
-
+name: CI - Windows Pull Request
 on:
-  workflow_dispatch:
-  push:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - closed
     branches:
-      - ci/develop
-
+      - 'ci/**'
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable-push.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable-pull-request.yml@develop
     with:
-      aws-ami-id: ami-0b18c665dbe9efa75
-      aws-sg-id: sg-0ca7912782cf1538b
-      aws-instance-type: c5a.8xlarge
-      runTests: false
       package-name: febio-studio
       requires-sdk: true
       sdk-config: |
