@@ -5,7 +5,6 @@ on:
       - opened
       - edited
       - synchronize
-      - closed
     branches:
       - 'ci/**'
 permissions:
@@ -15,6 +14,9 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable-pull-request.yml@develop
     with:
+      aws-ami-id: ami-0b18c665dbe9efa75
+      aws-sg-id: sg-0ca7912782cf1538b
+      aws-instance-type: c5a.8xlarge
       package-name: febio-studio
       requires-sdk: true
       sdk-config: |
