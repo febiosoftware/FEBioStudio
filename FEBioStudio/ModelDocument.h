@@ -71,6 +71,12 @@ public:
 
 	BOX GetModelBox();
 
+	std::string GetRenderString() override;
+
+	int GetMeshMode() override;
+
+	void Update() override;
+
 public:
 	void Activate() override;
 	void Deactivate() override;
@@ -87,6 +93,9 @@ public:
 	// helper function for applying a modifier
 	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
+
+public:
+	void AddImageModel(CImageModel* imgModel) override;
 
 public: // selection
 	void UpdateSelection(bool report = true) override;

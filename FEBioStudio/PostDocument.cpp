@@ -243,8 +243,13 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
 
 	SetItemMode(ITEM_ELEM);
+
+	// we do want to show the title and subtitle for post docs.
+	m_showTitle = true;
+	m_showSubtitle = true;
 
 	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
@@ -487,7 +492,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
 	}
 	else return "";
 }
@@ -680,7 +685,10 @@ void CPostDocument::UpdateSelection(bool report)
 	case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
 	case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
 	case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
+	default:
+		return;
 	}
+	if (m_psel) m_psel->SetMovable(false);
 
 	emit selectionChanged();
 }

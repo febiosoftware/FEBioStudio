@@ -2027,6 +2027,8 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 	febStep.SetParamInt("output_level", ops.output_level);
 	febStep.SetParamBool("adaptor_re_solve", ops.adapter_re_solve);
 
+	febStep.SetInfo(ops.sztitle);
+
 	// auto time stepper settings
 	FSProperty* timeStepperProp = febStep.FindProperty("time_stepper");
 	FSCoreBase* timeStepper = timeStepperProp->GetComponent(0);

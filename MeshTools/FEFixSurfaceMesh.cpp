@@ -49,6 +49,7 @@ FSTaskProgress FEFixSurfaceMesh::GetProgress()
 //-----------------------------------------------------------------------------
 FSSurfaceMesh* FEFixSurfaceMesh::Apply(FSSurfaceMesh* pm)
 {
+	m_mod = nullptr;
 	ClearError();
 
 	// create a copy of the mesh
@@ -332,6 +333,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 		// copy the error string
 		string err = fill.GetErrorString();
 		if (err.empty() == false) SetError(err.c_str());
+		m_mod = nullptr;
 	}
 	else if (pm->IsType(FE_FACE_QUAD4))
 	{
@@ -342,6 +344,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 		// copy the error string
 		string err = fill.GetErrorString();
 		if (err.empty() == false) SetError(err.c_str());
+		m_mod = nullptr;
 	}
 	else
 	{
@@ -353,7 +356,6 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 	pm->RebuildMesh();
 
 	// all done
-	m_mod = nullptr;
 	return true;
 }
 

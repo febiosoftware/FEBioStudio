@@ -78,7 +78,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	if (glview == nullptr) return;
 
 	int nfield = m_glm->GetColorMap()->GetEvalField();
-	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::Data_Tensor_Type::TENSOR_SCALAR);
 
 
 	// Update GLWidget string table for post rendering
@@ -108,7 +108,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	glPushMatrix();
 	glLoadIdentity();
 
-	glview->PositionCamera();
+	cam.PositionInScene();
 
 	glDisable(GL_CULL_FACE);
 
@@ -197,20 +197,138 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-	// render the tracking
-	if (glview->TrackModeActive()) glview->RenderTrack();
-
 	// render the tags
 	GLViewSettings& view = glview->GetViewSettings();
-	if (view.m_bTags) glview->RenderTags();
+	if (view.m_bTags) RenderTags(rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
 
-	// render the image data
-	glview->RenderImageData();
-
 	// render the decorations
 	glview->RenderDecorations();
+}
+
+void CGLMonitorScene::RenderTags(CGLContext& rc)
+{
+	if (rc.m_view == nullptr) return;
+	GLViewSettings& view = rc.m_settings;
+
+	GObject* po = m_doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FSMesh* pm = po->GetFEMesh();
+
+	// create the tag array.
+	// We add a tag for each selected item
+	GLTAG tag;
+	vector<GLTAG> vtag;
+
+	// clear the node tags
+	pm->TagAllNodes(0);
+
+	int mode = m_doc->GetItemMode();
+
+	GLColor extcol(255, 255, 0);
+	GLColor intcol(255, 0, 0);
+
+	// process elements
+	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
+	{
+		if ((mode == ITEM_ELEM) && pm)
+		{
+			ForAllSelectedElements(*pm, [&](FEElement_& el) {
+				GLTAG tag;
+				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
+				tag.c = extcol;
+				int nid = el.GetID();
+				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
+				vtag.push_back(tag);
+
+				int ne = el.Nodes();
+				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+				});
+		}
+
+		// process faces
+		if (mode == ITEM_FACE)
+		{
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				FSFace& f = pm->Face(i);
+				if (f.IsSelected())
+				{
+					tag.r = pm->LocalToGlobal(pm->FaceCenter(f));
+					tag.c = (f.IsExternal() ? extcol : intcol);
+					int nid = f.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
+					vtag.push_back(tag);
+
+					int nf = f.Nodes();
+					for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+				}
+			}
+		}
+
+		// process edges
+		if (mode == ITEM_EDGE)
+		{
+			int NC = pm->Edges();
+			for (int i = 0; i < NC; i++)
+			{
+				FSEdge& edge = pm->Edge(i);
+				if (edge.IsSelected())
+				{
+					tag.r = pm->LocalToGlobal(pm->EdgeCenter(edge));
+					tag.c = extcol;
+					int nid = edge.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
+					vtag.push_back(tag);
+
+					int ne = edge.Nodes();
+					for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
+				}
+			}
+		}
+
+		// process nodes
+		if (mode == ITEM_NODE)
+		{
+			ForAllSelectedNodes(*pm, [&](FSNode& node) {
+				GLTAG tag;
+				tag.r = pm->LocalToGlobal(node.r);
+				tag.c = (node.IsExterior() ? extcol : intcol);
+				int nid = node.GetID();
+				snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
+				vtag.push_back(tag);
+				});
+		}
+
+		// add additional nodes
+		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+		{
+			ForAllTaggedNodes(*pm, 1, [&](FSNode& node) {
+				GLTAG tag;
+				tag.r = pm->LocalToGlobal(node.r);
+				tag.c = (node.IsExterior() ? extcol : intcol);
+				int n = node.GetID();
+				snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
+				vtag.push_back(tag);
+				});
+		}
+	}
+
+	// if we don't have any tags, just return
+	if (vtag.empty()) return;
+
+	// limit the number of tags to render
+	const int MAX_TAGS = 100;
+	int nsel = (int)vtag.size();
+	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
+
+	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
+	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLMonitorScene::InitScene(FEModel* fem)
@@ -395,12 +513,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
 		default:
 			assert(false);
 			break;
@@ -410,12 +528,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
 		default:
 			assert(false);
 			break;
@@ -425,12 +543,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
 		default:
 			assert(false);
 			break;
@@ -664,7 +782,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 				{
 					if (dataType == Var_Type::PLT_FLOAT)
 					{
-						Post::FEElementData<float, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_ITEM>&>(meshData);
+						Post::FEElementData<float, DATA_ITEM>& d = dynamic_cast<Post::FEElementData<float, DATA_ITEM>&>(meshData);
 						for (int i = 0; i < NE; ++i, ++elementCounter)
 						{
 							if (d.active(elementCounter))
@@ -679,7 +797,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 					}
 					else if (dataType == Var_Type::PLT_VEC3F)
 					{
-						Post::FEElementData<vec3f, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<vec3f, Post::DATA_ITEM>&>(meshData);
+						Post::FEElementData<vec3f, DATA_ITEM>& d = dynamic_cast<Post::FEElementData<vec3f, DATA_ITEM>&>(meshData);
 						for (int i = 0; i < NE; ++i, ++elementCounter)
 						{
 							vec3f v = a.get<vec3f>(i);
@@ -695,7 +813,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 					}
 					else if (dataType == Var_Type::PLT_MAT3FS)
 					{
-						Post::FEElementData<mat3fs, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<mat3fs, Post::DATA_ITEM>&>(meshData);
+						Post::FEElementData<mat3fs, DATA_ITEM>& d = dynamic_cast<Post::FEElementData<mat3fs, DATA_ITEM>&>(meshData);
 						for (int i = 0; i < NE; ++i, ++elementCounter)
 						{
 							mat3fs m = a.get<mat3fs>(i);
@@ -718,7 +836,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 
 					if (dataType == Var_Type::PLT_FLOAT)
 					{
-						Post::FEElementData<float, Post::DATA_COMP>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_COMP>&>(meshData);
+						Post::FEElementData<float, DATA_MULT>& d = dynamic_cast<Post::FEElementData<float, DATA_MULT>&>(meshData);
 						for (int i = 0; i < NE; ++i, ++elementCounter)
 						{
 							if (d.active(elementCounter))
@@ -742,7 +860,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 template <class T>
 void mapSurfaceData_ITEM(Post::FEMeshData& meshData, FESurface& surf, FSNodeFaceList& NFT, FEDataStream& a)
 {
-	Post::FEFaceData<T, Post::DATA_ITEM>& d = dynamic_cast<Post::FEFaceData<T, Post::DATA_ITEM>&>(meshData);
+	Post::FEFaceData<T, DATA_ITEM>& d = dynamic_cast<Post::FEFaceData<T, DATA_ITEM>&>(meshData);
 	int NF = surf.Elements();
 	for (int i = 0; i < NF; ++i)
 	{

@@ -167,6 +167,8 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(ne
 
 	m_scene = new CGLMonitorScene(this);
 	m_bValid = false;
+	m_showTitle = true;
+	m_showSubtitle = true;
 
 	connect(this, &FEBioMonitorDoc::outputReady, this, &FEBioMonitorDoc::readOutput);
 	connect(this, &FEBioMonitorDoc::updateViews, this, &FEBioMonitorDoc::onUpdateViews);

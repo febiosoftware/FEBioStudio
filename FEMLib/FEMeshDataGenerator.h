@@ -112,7 +112,7 @@ class FSConstFaceDataGenerator : public FSFaceDataGenerator
 {
 public:
 	FSConstFaceDataGenerator(FSModel* fem);
-	FSConstFaceDataGenerator(FSModel* fem, FEMeshData::DATA_TYPE dataType);
+	FSConstFaceDataGenerator(FSModel* fem, DATA_TYPE dataType);
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;

@@ -42,10 +42,5 @@ public:
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
 
-	// the following is needed by planecuts that track the selection
-	bool	m_btrack;		// tracking is on
-	vec3d	m_track_pos;	// tracked position
-	quatd	m_track_rot;	// tracked orientation
-
 	GLViewSettings	m_settings;
 };

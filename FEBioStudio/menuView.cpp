@@ -30,7 +30,9 @@ SOFTWARE.*/
 #include "Document.h"
 #include "PostDocument.h"
 #include "DocManager.h"
+#include "PostObject.h"
 #include <PostGL/GLModel.h>
+#include "GLPostScene.h"
 
 void CMainWindow::on_actionUndoViewChange_triggered()
 {
@@ -266,9 +268,14 @@ void CMainWindow::on_actionSnap3D_triggered()
 	RedrawGL();
 }
 
-void CMainWindow::on_actionTrack_toggled(bool b)
+void CMainWindow::on_actionTrack_triggered()
 {
-	GetGLView()->TrackSelection(b);
+	CPostDocument* pdoc = GetPostDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	CGLPostScene* scene = dynamic_cast<CGLPostScene*>(pdoc->GetScene());
+	if (scene) scene->ToggleTrackSelection();
+
 	RedrawGL();
 }
 

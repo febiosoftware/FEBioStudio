@@ -63,7 +63,8 @@ void FEDataManager::AddDataField(ModelDataField* pd, const std::string& name, co
 	if (name.empty() == false) pd->SetName(name);
 	if (szunits) pd->SetUnits(szunits);
 	m_Data.push_back(pd);
-	pd->SetFieldID(BUILD_FIELD(pd->DataClass(), DataFields()-1, 0));
+	int fieldID = BUILD_FIELD(pd->DataClass(), DataFields() - 1, 0);
+	pd->SetFieldID(fieldID);
 }
 
 void FEDataManager::DeleteDataField(ModelDataField* pd)

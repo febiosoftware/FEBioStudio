@@ -23,36 +23,50 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "stdafx.h"
+#include "3DImageSlicer.h"
 
-#pragma once
-#include "FEMeshData.h"
-#include <vector>
+using namespace Post;
 
-class FEItemListBuilder;
-class GObject;
-class FSNodeSet;
-
-class FENodeData : public FEMeshData
+C3DImageSlicer::C3DImageSlicer(CImageModel* img) : 
+	m_xSlicer(nullptr),
+	m_ySlicer(nullptr),
+	m_zSlicer(nullptr)
 {
-public:
-	FENodeData(GObject* po);
-	FENodeData(GObject* po, DATA_TYPE dataType);
+	m_xSlicer.SetOrientation(0);
+	m_ySlicer.SetOrientation(1);
+	m_zSlicer.SetOrientation(2);
+}
 
-	void Create(FSNodeSet* nset, double v = 0.0, DATA_TYPE dataType = DATA_SCALAR);
+void C3DImageSlicer::SetImageModel(CImageModel* img)
+{
+	CGLImageRenderer::SetImageModel(img);
+	m_xSlicer.SetImageModel(img);
+	m_ySlicer.SetImageModel(img);
+	m_zSlicer.SetImageModel(img);
+}
 
-	// size of data field
-	int Size() const { return (int)m_data.size(); }
+void C3DImageSlicer::SetSliceImage(int slice, float offset, CImage* img)
+{
+	CImageSlicer* p = nullptr;
+	switch (slice)
+	{
+	case 0: p = &m_xSlicer; break;
+	case 1: p = &m_ySlicer; break;
+	case 2: p = &m_zSlicer; break;
+	default:
+		return;
+	}
 
-	void SetItemList(FEItemListBuilder* pl, int n = 0) override;
+	p->SetOffset(offset);
+	p->SetImageSlice(img);
+}
 
-public:
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+void C3DImageSlicer::Render(CGLContext& rc)
+{
+	if (GetImageModel() == nullptr) return;
 
-private:
-	GObject*		m_po;
-
-private:
-	FENodeData(const FENodeData& d);
-	FENodeData& operator = (const FENodeData& d);
-};
+	m_xSlicer.Render(rc);
+	m_ySlicer.Render(rc);
+	m_zSlicer.Render(rc);
+}

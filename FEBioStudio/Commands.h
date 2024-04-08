@@ -348,13 +348,13 @@ private:
 class CCmdTranslateSelection : public CCommand
 {
 public:
-	CCmdTranslateSelection(CModelDocument* doc, vec3d dr);
+	CCmdTranslateSelection(CGLDocument* doc, vec3d dr);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument* m_doc;
+	CGLDocument* m_doc;
 	vec3d	m_dr;
 	int		m_item;	// item mode
 };
@@ -364,13 +364,13 @@ protected:
 class CCmdRotateSelection : public CCommand
 {
 public:
-	CCmdRotateSelection(CModelDocument* doc, quatd q, vec3d rc);
+	CCmdRotateSelection(CGLDocument* doc, quatd q, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	quatd	m_q;
 	vec3d	m_rc;
 	int		m_item;	// item mode
@@ -381,13 +381,13 @@ protected:
 class CCmdScaleSelection : public CCommand
 {
 public:
-	CCmdScaleSelection(CModelDocument* doc, double s, vec3d dr, vec3d rc);
+	CCmdScaleSelection(CGLDocument* doc, double s, vec3d dr, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	double	m_s;
 	vec3d	m_dr;
 	vec3d	m_rc;

@@ -52,6 +52,8 @@ public:
 
 	void Render(CGLContext& rc) override;
 
+	void RenderTags(CGLContext& rc);
+
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override;
 

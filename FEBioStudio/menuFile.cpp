@@ -437,6 +437,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new IGESFileImport(prj);
 	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new VTKimport(prj);
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
+	if (ext.compare("vtp", Qt::CaseInsensitive) == 0) return new VTPimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
 		RAWToMeshImport* reader = new RAWToMeshImport(prj);
@@ -1571,8 +1572,6 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	if (filedlg.exec())
 	{
-		CImageModel* imageModel = nullptr;
-		
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
 		{
@@ -1581,37 +1580,13 @@ void CMainWindow::on_actionImportRawImage_triggered()
             // we pass the relative path to the image model
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
-            imageModel = new CImageModel(nullptr);
+			CImageModel* imageModel = new CImageModel(nullptr);
             imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
 
             if(!ImportImage(imageModel))
             {
                 delete imageModel;
-                imageModel = nullptr;
             }
-
-		}
-
-		if(imageModel)
-		{
-			Update(0, true);
-			ZoomTo(imageModel->GetBoundingBox());
-
-			// only for model docs
-			if (dynamic_cast<CModelDocument*>(doc))
-			{
-				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-				vr->Create();
-				imageModel->AddImageRenderer(vr);
-
-				Update(0, true);
-				ShowInModelViewer(imageModel);
-			}
-			else
-			{
-				Update(0, true);
-			}
-			ZoomTo(imageModel->GetBoundingBox());
 		}
 	}
 }
@@ -1690,35 +1665,11 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 		CImageModel* imageModel = new CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
-
 		if (!ImportImage(imageModel))
 		{
 			delete imageModel;
-			imageModel = nullptr;
 			return;
 		}
-
-		// take the name from the source
-		imageModel->SetName(FSDir::fileName(fileName));
-
-		Update(0, true);
-		ZoomTo(imageModel->GetBoundingBox());
-
-		// only for model docs
-		if (dynamic_cast<CModelDocument*>(doc))
-		{
-			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-			vr->Create();
-			imageModel->AddImageRenderer(vr);
-
-			Update(0, true);
-			ShowInModelViewer(imageModel);
-		}
-		else
-		{
-			Update(0, true);
-		}
-		ZoomTo(imageModel->GetBoundingBox());
 	}
 }
 
@@ -1820,36 +1771,11 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         CImageModel* imageModel = new CImageModel(nullptr);
         imageModel->SetImageSource(new CITKSeriesImageSource(imageModel, stdFiles));
-
         if(!ImportImage(imageModel))
         {
             delete imageModel;
-            imageModel = nullptr;
-        }
-
-        if(imageModel)
-        {
-            Update(0, true);
-            ZoomTo(imageModel->GetBoundingBox());
-
-            // only for model docs
-            if (dynamic_cast<CModelDocument*>(doc))
-            {
-                Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-                vr->Create();
-                imageModel->AddImageRenderer(vr);
-
-                Update(0, true);
-                ShowInModelViewer(imageModel);
-            }
-            else
-            {
-                Update(0, true);
-            }
-            ZoomTo(imageModel->GetBoundingBox());
         }
     }
-
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

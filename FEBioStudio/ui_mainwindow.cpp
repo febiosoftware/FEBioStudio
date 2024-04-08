@@ -310,7 +310,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
 	actionToggleTagInfo = addAction("Toggle Tag info", "actionToggleTagInfo"); actionToggleTagInfo->setShortcut(Qt::Key_I);
 	QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
-	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
+	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setShortcut(Qt::Key_Y);
 	QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
 	actionToggleLight = addAction("Toggle Lighting", "actionToggleLight", "light");
 	actionFront = addAction("Front", "actionFront"); actionFront->setShortcut(Qt::Key_8 | Qt::KeypadModifier);
@@ -888,7 +888,7 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	menuWindows->addAction(dock8->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock8);
 
-	QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+	QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock9->setObjectName("dockImageSettings");
 	imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 	dock9->setWidget(imageSettingsPanel);
 	menuWindows->addAction(dock9->toggleViewAction());

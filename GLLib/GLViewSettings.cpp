@@ -56,7 +56,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_bconn = false;
 	m_bmax = true;
 	m_bpart = true;
-	m_bhide = false;
 	m_bext = false;
 	m_bsoft = false;
 	m_fconn = 30.f;
@@ -105,6 +104,7 @@ void GLViewSettings::Defaults(int ntheme)
 	m_shadow_intensity = 0.5f;
 	m_ambient = 0.09f;
 	m_diffuse = 0.8f;
+	m_use_environment_map = false;
 
 	m_transparencyMode = 0; // = off
 	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;

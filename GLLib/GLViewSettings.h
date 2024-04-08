@@ -69,7 +69,6 @@ struct GLViewSettings
 	bool	m_bconn;	//!< select connected
 	bool	m_bmax;		//!< max angle constraint for select connected
 	bool	m_bpart;	//!< respect partition boundaries flag
-	bool	m_bhide;	//!< auto hide
 	bool	m_bext;		//!< ignore interior nodes
 	bool	m_bsoft;	//!< soft selection mode
 	bool	m_bcullSel;	//!< ignore backfacing when selecting
@@ -136,6 +135,7 @@ struct GLViewSettings
 	float	m_shadow_intensity;	// shadow intensity
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
+	bool	m_use_environment_map;	// use the environment map (if one is provided)
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only

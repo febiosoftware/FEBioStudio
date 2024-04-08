@@ -371,9 +371,9 @@ public:
 			{
 				switch (pd->DataClass())
 				{
-				case Post::CLASS_NODE: return QString("NODE"); break;
-				case Post::CLASS_FACE: return QString("FACE"); break;
-				case Post::CLASS_ELEM: return QString("ELEM"); break;
+				case NODE_DATA: return QString("NODE"); break;
+				case FACE_DATA: return QString("FACE"); break;
+				case ELEM_DATA: return QString("ELEM"); break;
 				default:
 					assert(false);
 					return QString("(unknown");
@@ -383,10 +383,10 @@ public:
 			{
 				switch (pd->Format())
 				{
-				case Post::DATA_NODE: return QString("NODE"); break;
-				case Post::DATA_ITEM: return QString("ITEM"); break;
-				case Post::DATA_COMP: return QString("MIXED"); break;
-				case Post::DATA_REGION: return QString("REGION"); break;
+				case DATA_NODE  : return QString("NODE"); break;
+				case DATA_ITEM  : return QString("ITEM"); break;
+				case DATA_MULT  : return QString("MIXED"); break;
+				case DATA_REGION: return QString("REGION"); break;
 				default:
 					assert(false);
 					return QString("(unknown)");
@@ -729,31 +729,31 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 {
 	ui->src->setText(QString::fromStdString(pdf->GetName()));
 
-	m_nsc = pdf->dataComponents(Post::DATA_SCALAR);
+	m_nsc = pdf->dataComponents(Post::TENSOR_SCALAR);
 	for (int i = 0; i < 9; ++i) m_scale[i] = 1.0;
 
 	ui->comp->clear();
-	int n = pdf->components(Post::DATA_SCALAR);
+	int n = pdf->components(Post::TENSOR_SCALAR);
 	for (int i = 0; i<n; ++i)
 	{
-		std::string cname = pdf->componentName(i, Post::DATA_SCALAR);
+		std::string cname = pdf->componentName(i, Post::TENSOR_SCALAR);
 		ui->comp->addItem(QString::fromStdString(cname));
 	}
 
-	Post::Data_Format frm = pdf->Format();
+	DATA_FORMAT frm = pdf->Format();
 	ui->convFmt->clear();
-	if (frm != Post::DATA_ITEM) ui->convFmt->addItem("ITEM", (int)Post::DATA_ITEM);
-	if (frm != Post::DATA_NODE) ui->convFmt->addItem("NODE", (int)Post::DATA_NODE);
+	if (frm != DATA_ITEM) ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
+	if (frm != DATA_NODE) ui->convFmt->addItem("NODE", (int)DATA_NODE);
 
-	Post::Data_Class cls = pdf->DataClass();
+	DATA_CLASS cls = pdf->DataClass();
 	ui->convClass->clear();
 
-	if      (cls == Post::CLASS_FACE) ui->convClass->addItem("Face", (int)Post::CLASS_FACE);
-	else if (cls == Post::CLASS_NODE) ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
-	else if (cls == Post::CLASS_ELEM)
+	if      (cls == FACE_DATA) ui->convClass->addItem("Face", (int)FACE_DATA);
+	else if (cls == NODE_DATA) ui->convClass->addItem("Node", (int)NODE_DATA);
+	else if (cls == ELEM_DATA)
 	{
-		ui->convClass->addItem("Elem", (int)Post::CLASS_ELEM);
-		ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
+		ui->convClass->addItem("Elem", (int)ELEM_DATA);
+		ui->convClass->addItem("Node", (int)NODE_DATA);
 	}
 }
 
@@ -1140,7 +1140,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				if ((pdi != pdf) &&
 					(pdi->DataClass() == pdf->DataClass()) &&
 					(pdi->Format() == pdf->Format()) &&
-					((pdi->Type() == pdf->Type()) || (pdi->Type() == Post::DATA_FLOAT)))
+					((pdi->Type() == pdf->Type()) || (pdi->Type() == DATA_SCALAR)))
 				{
 					dataNames.push_back(name);
 					dataIds.push_back(i);
@@ -1168,7 +1168,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 0:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					if (pdf->Type() == Post::DATA_VEC3F)
+					if (pdf->Type() == DATA_VEC3)
 						bret = DataScaleVec3(fem, newData->GetFieldID(), dlg.GetVecScaleFactor());
 					else
 						bret = DataScale(fem, newData->GetFieldID(), dlg.GetScaleFactor());
@@ -1209,7 +1209,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				break;
 				case 5:
 				{
-					newData = new Post::FEDataField_T<Post::FEElementData<float, Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA);
+					newData = new Post::FEDataField_T<Post::FEElementData<float, DATA_ITEM> >(&fem, Post::EXPORT_DATA);
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 

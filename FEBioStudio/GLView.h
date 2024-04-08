@@ -194,12 +194,6 @@ public:
 	// zoom to the models extents
 	void ZoomExtents(bool banimate = true);
 
-	// position the camera
-	void PositionCamera();
-
-	// toggle track selection feature
-	void TrackSelection(bool b);
-
 	// render functions
 public:
 	// other rendering functions
@@ -208,13 +202,8 @@ public:
 	void RenderPivot();
 
 	void Render3DCursor();
-	void RenderTags();
 	void RenderTags(std::vector<GLTAG>& tags);
-	void RenderImageData();
-	void RenderTrack();
 	void RenderDecorations();
-
-	bool TrackModeActive();
 
 	void ShowSafeFrame(bool b);
 
@@ -237,13 +226,13 @@ public:
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
 	void AllocateDefaultWidgets(bool b);
 
-	int GetMeshMode();
-
 protected:
 	void initializeGL() override;
 	void resizeGL(int w, int h) override;
 
 	void RenderScene() override;
+
+	void RenderCanvas(CGLContext& rc);
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -255,13 +244,15 @@ private:
 public:
 	QImage CaptureScreen();
 
-	void UpdateWidgets(bool bposition = true);
+	void UpdateWidgets();
 
 	bool isTitleVisible() const;
 	void showTitle(bool b);
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
+
+	void setLegendRange(float vmin, float vmax);
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -300,9 +291,6 @@ public:
 
 	double* PlaneCoordinates();
 
-protected:
-	void SetTrackingData(int n[3]);
-
 public slots:
 	void updateView();
 
@@ -319,6 +307,7 @@ protected:
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
+	double	m_fps;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;
@@ -333,7 +322,6 @@ protected:
 	bool	m_bshift;
 	bool	m_bctrl;
 	bool	m_bsel;		// selection mode
-	bool	m_bextrude;	// extrusion mode
 
 public:
 	bool	m_bpick;
@@ -359,11 +347,6 @@ protected:
 	bool	m_showContextMenu;
 
 private:
-	// tracking
-	bool	m_btrack;
-	int		m_ntrack[3];
-	mat3d	m_rot0;
-
 	vector<GDecoration*>	m_deco;
 
 public:

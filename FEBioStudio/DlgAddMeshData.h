@@ -46,9 +46,9 @@ public:
 	CDlgAddMeshData(QWidget* parent);
 
 	QString GetName();
-	FEMeshData::DATA_CLASS GetType();
-	FEMeshData::DATA_TYPE GetDataType();
-	FEMeshData::DATA_FORMAT GetFormat();
+	DATA_CLASS GetType();
+	DATA_TYPE GetDataType();
+	DATA_FORMAT GetFormat();
 
 	DataInitializer GetDataInitializer();
 

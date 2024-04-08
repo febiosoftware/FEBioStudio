@@ -227,7 +227,7 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 	for (int i = 0; i<N; ++i)
 	{
 		FSFace& face = m_mesh.Face(pf[i]);
-		if (face.Nodes() == nn)
+		if (face.Nodes() > nn)
 		{
 			bool bfound = true;
 			for (int j = 0; j < nn; ++j)
@@ -751,6 +751,18 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 					}
 					serr << "\n";
 				}
+				issuesFound++;
+			}
+
+			if (meshFace.Nodes() != localFace.size())
+			{
+				serr << "\tfacet {";
+				for (int j = 0; j < globalFace.size(); ++j)
+				{
+					serr << globalFace[j];
+					if (j != globalFace.size() - 1) serr << ",";
+				}
+				serr << "} found but different shape.\n";
 				issuesFound++;
 			}
 

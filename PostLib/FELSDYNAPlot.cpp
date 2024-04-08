@@ -795,7 +795,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 			{
 				if (bflag[0])
 				{
-					mat3f m = fem.EvaluateElemTensor(i, l, ncode[0], DATA_MAT3FS);
+					mat3f m = fem.EvaluateElemTensor(i, l, ncode[0], DATA_MAT3S);
 					mat3fs a = m.sym();
 					s[ 0] = a.x;
 					s[ 1] = a.y;
@@ -834,7 +834,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 				if (bflag[0])
 				{
 					// mid-surface stresses
-					mat3f m = fem.EvaluateElemTensor(i, l, ncode[0], DATA_MAT3FS);
+					mat3f m = fem.EvaluateElemTensor(i, l, ncode[0], DATA_MAT3S);
 					mat3fs a = m.sym();
 					s[ 0] = a.x;
 					s[ 1] = a.y;

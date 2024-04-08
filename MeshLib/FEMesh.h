@@ -168,10 +168,10 @@ public:
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);
 
-	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
-	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
-	FEElementData* AddElementDataField(const std::string& name, FSElemSet* part, FEMeshData::DATA_TYPE dataType);
-	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, FEMeshData::DATA_TYPE dataType);
+	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, DATA_TYPE dataType);
+	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, DATA_TYPE dataType);
+	FEElementData* AddElementDataField(const std::string& name, FSElemSet* part, DATA_TYPE dataType);
+	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, DATA_TYPE dataType);
 	void ClearMeshData();
 
 	FEPartData* FindPartDataField(const std::string& name);

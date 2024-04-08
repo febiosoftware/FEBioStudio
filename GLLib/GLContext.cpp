@@ -31,7 +31,6 @@ CGLContext::CGLContext()
 {
 	m_cam = nullptr;
 	m_view = nullptr;
-	m_btrack = false;
 	m_x = m_y = 0;
 }
 
