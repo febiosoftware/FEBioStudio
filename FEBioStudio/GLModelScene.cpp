@@ -110,6 +110,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	int nitem = m_doc->GetItemMode();
 
 	CGLCamera& cam = *rc.m_cam;
+	cam.PositionInScene();
 
 	if (glview->ShowPlaneCut())
 	{
@@ -137,7 +138,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	RenderSelectionBox(rc);
 
 	cam.LineDrawMode(true);
-	cam.Transform();
+	cam.PositionInScene();
 
 	// Render mesh lines
 	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
@@ -152,7 +153,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	}
 
 	cam.LineDrawMode(false);
-	cam.Transform();
+	cam.PositionInScene();
 
 	// render physics
 	if (view.m_brigid) RenderRigidBodies(rc);
@@ -191,7 +192,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (view.m_showRigidLabels) RenderRigidLabels(rc);
 
 	// render the tags
-	if (view.m_bTags) glview->RenderTags();
+	if (view.m_bTags) RenderTags(rc);
 
 	// render the grid
 	if (view.m_bgrid ) m_grid.Render(rc);
@@ -376,11 +377,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			RenderObject(rc, po);
 			cam.LineDrawMode(true);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 			RenderEdges(rc, po);
 			cam.LineDrawMode(false);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 		}
 		break;
@@ -388,11 +389,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			RenderObject(rc, po);
 			cam.LineDrawMode(true);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 			RenderNodes(rc, po);
 			cam.LineDrawMode(false);
-			cam.Transform();
+			cam.PositionInScene();
 			SetModelView(po);
 		}
 		break;
@@ -406,7 +407,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	else
 	{
 		// get the mesh mode
-		int meshMode = glview->GetMeshMode();
+		int meshMode = m_doc->GetMeshMode();
 
 		if (po == poa)
 		{
@@ -424,11 +425,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				{
 					RenderFEFaces(rc, po);
 					cam.LineDrawMode(true);
-					cam.Transform();
+					cam.PositionInScene();
 					SetModelView(po);
 					RenderFEEdges(rc, po);
 					cam.LineDrawMode(false);
-					cam.Transform();
+					cam.PositionInScene();
 				}
 				else if (item == ITEM_NODE)
 				{
@@ -446,11 +447,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				{
 					RenderSurfaceMeshFaces(rc, po);
 					cam.LineDrawMode(true);
-					cam.Transform();
+					cam.PositionInScene();
 					SetModelView(po);
 					RenderSurfaceMeshEdges(rc, po);
 					cam.LineDrawMode(false);
-					cam.Transform();
+					cam.PositionInScene();
 				}
 				else if (item == ITEM_NODE)
 				{
@@ -3074,6 +3075,153 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	}
 	break;
 	}
+}
+
+void CGLModelScene::RenderTags(CGLContext& rc)
+{
+	if (rc.m_view == nullptr) return;
+	GLViewSettings& view = rc.m_settings;
+
+	GObject* po = m_doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
+	if (pm == nullptr)
+	{
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso) pmb = pso->GetSurfaceMesh();
+		if (pmb == nullptr) return;
+	}
+
+	// create the tag array.
+	// We add a tag for each selected item
+	GLTAG tag;
+	vector<GLTAG> vtag;
+
+	// clear the node tags
+	pmb->TagAllNodes(0);
+	int NN = pmb->Nodes();
+
+	int mode = m_doc->GetItemMode();
+
+	GLColor extcol(255, 255, 0);
+	GLColor intcol(255, 0, 0);
+
+	// process elements
+	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
+	{
+		if ((mode == ITEM_ELEM) && pm)
+		{
+			int NE = pm->Elements();
+			for (int i = 0; i < NE; i++)
+			{
+				FEElement_& el = pm->Element(i);
+				if (el.IsSelected())
+				{
+					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
+					tag.c = extcol;
+					int nid = el.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
+					vtag.push_back(tag);
+
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+				}
+			}
+		}
+
+		// process faces
+		if (mode == ITEM_FACE)
+		{
+			int NF = pmb->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				FSFace& f = pmb->Face(i);
+				if (f.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
+					tag.c = (f.IsExternal() ? extcol : intcol);
+					int nid = f.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
+					vtag.push_back(tag);
+
+					int nf = f.Nodes();
+					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
+				}
+			}
+		}
+
+		// process edges
+		if (mode == ITEM_EDGE)
+		{
+			int NC = pmb->Edges();
+			for (int i = 0; i < NC; i++)
+			{
+				FSEdge& edge = pmb->Edge(i);
+				if (edge.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
+					tag.c = extcol;
+					int nid = edge.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
+					vtag.push_back(tag);
+
+					int ne = edge.Nodes();
+					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
+				}
+			}
+		}
+
+		// process nodes
+		if (mode == ITEM_NODE)
+		{
+			for (int i = 0; i < NN; i++)
+			{
+				FSNode& node = pmb->Node(i);
+				if (node.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int nid = node.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
+					vtag.push_back(tag);
+				}
+			}
+		}
+
+		// add additional nodes
+		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+		{
+			for (int i = 0; i < NN; i++)
+			{
+				FSNode& node = pmb->Node(i);
+				if (node.m_ntag == 1)
+				{
+					tag.r = pmb->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int n = node.GetID();
+					if (n < 0) n = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
+					vtag.push_back(tag);
+				}
+			}
+		}
+	}
+
+	// if we don't have any tags, just return
+	if (vtag.empty()) return;
+
+	// limit the number of tags to render
+	const int MAX_TAGS = 100;
+	int nsel = (int)vtag.size();
+	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
+
+	rc.m_view->RenderTags(vtag);
 }
 
 void CGLModelScene::RenderRigidLabels(CGLContext& rc)

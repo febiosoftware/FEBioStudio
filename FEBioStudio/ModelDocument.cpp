@@ -213,6 +213,16 @@ BOX CModelDocument::GetModelBox()
 	return box;
 }
 
+int CModelDocument::GetMeshMode()
+{
+	return (m_wnd ? m_wnd->GetMeshMode() : MESH_MODE_VOLUME);
+}
+
+void CModelDocument::Update()
+{
+	GetGModel()->UpdateBoundingBox();
+}
+
 std::string CModelDocument::GetRenderString()
 {
 	FSModel* ps = GetFSModel();

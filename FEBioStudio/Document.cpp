@@ -536,10 +536,10 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_showSubtitle = false;
 	m_showLegend = false;
 
-    static int layer = 1;
+	static int layer = 1;
 	m_widgetLayer = layer++;
 
-    CGLWidgetManager::GetInstance()->SetActiveLayer(m_widgetLayer);
+	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -602,6 +602,11 @@ CGView* CGLDocument::GetView()
 CGLScene* CGLDocument::GetScene()
 {
 	return m_scene;
+}
+
+void CGLDocument::Update()
+{
+
 }
 
 int CGLDocument::GetWidgetLayer()

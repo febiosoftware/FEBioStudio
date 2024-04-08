@@ -116,7 +116,7 @@ template<class pType> void GetValues(C3DImage* im, histogram& values)
 	int ny = im->Height();
 	int nz = im->Depth();
 
-#pragma omp parallel shared(histogram) firstprivate(data)
+#pragma omp parallel firstprivate(data)
 	{
 		std::vector<uint64_t> ytmp(bins, 0);
 

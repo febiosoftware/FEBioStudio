@@ -39,9 +39,23 @@ public:
 
 	BOX GetSelectionBox() override;
 
+	void ToggleTrackSelection();
+
 private:
 	void RenderImageData(CGLContext& rc);
 
+	void RenderTags(CGLContext& rc);
+
+	void UpdateTracking();
+
 private:
 	CPostDocument* m_doc;
+
+	bool	m_btrack;
+	int		m_ntrack[3];	// used for tracking
+	double	m_trackScale;
+	vec3d	m_trgPos;
+	quatd	m_trgRot0;
+	quatd	m_trgRot;
+	quatd	m_trgRotDelta;
 };

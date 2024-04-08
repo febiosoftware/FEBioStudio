@@ -254,19 +254,10 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	// make sure we have a clip plane ID assigned
 	if (m_nclip == -1) return;
 
-	// see if we are tracking or not
 	vec3d r = m_T.GetPosition();
-	if (rc.m_btrack)
-	{
-		m_T.SetPosition(-rc.m_track_pos);
-		m_T.SetRotation(rc.m_track_rot);
-	}
-	else
-	{
-		BOX box = GetModel()->GetFSModel()->GetBoundingBox();
-		m_T.SetPosition(-box.Center());
-		m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
-	}
+	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
+	m_T.SetPosition(-box.Center());
+	m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 
 	if (m_bupdateSlice || ((r == m_T.GetPosition()) == false))
 	{

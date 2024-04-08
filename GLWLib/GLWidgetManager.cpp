@@ -44,7 +44,8 @@ void CGLWidgetManager::AttachToView(QOpenGLWidget *pview)
 
 CGLWidgetManager::CGLWidgetManager()
 {
-	m_layer = 0;
+	m_editLayer = 0;
+	m_renderLayer = 0;
 }
 
 CGLWidgetManager::CGLWidgetManager(const CGLWidgetManager& m) {}
@@ -54,10 +55,16 @@ CGLWidgetManager::~CGLWidgetManager()
 
 }
 
-void CGLWidgetManager::SetActiveLayer(int l)
+void CGLWidgetManager::SetRenderLayer(int l)
 {
-	m_layer = l;
+	m_renderLayer = l;
 }
+
+void CGLWidgetManager::SetEditLayer(int l)
+{
+	m_editLayer = l;
+}
+
 // Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
 void CGLWidgetManager::CheckWidgetBounds()
 {
@@ -96,7 +103,7 @@ void CGLWidgetManager::CheckWidgetBounds()
 
 void CGLWidgetManager::AddWidget(GLWidget* pw, int layer)
 {
-	pw->set_layer((layer < 0 ? m_layer : layer));
+	pw->set_layer((layer < 0 ? m_editLayer : layer));
 	m_Widget.push_back(pw);
 }
 
@@ -127,7 +134,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 		for (int i=0; i<(int) m_Widget.size(); ++i)
 		{
 			GLWidget* pw = m_Widget[i];
-			if (((pw->layer() == 0) || (pw->layer() == m_layer)) && pw->visible() && pw->is_inside(x,y))
+			if (((pw->layer() == 0) || (pw->layer() == m_renderLayer)) && pw->visible() && pw->is_inside(x,y))
 			{
 				m_Widget[i]->set_focus();
 				bsel = true;
@@ -249,7 +256,7 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
 	{
 		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_layer)))
+		if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_renderLayer)))
 		{
 			DrawWidget(pw, painter);
 		}

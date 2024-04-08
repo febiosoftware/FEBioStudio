@@ -56,7 +56,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_bconn = false;
 	m_bmax = true;
 	m_bpart = true;
-	m_bhide = false;
 	m_bext = false;
 	m_bsoft = false;
 	m_fconn = 30.f;

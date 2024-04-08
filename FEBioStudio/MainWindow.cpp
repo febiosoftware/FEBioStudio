@@ -2387,7 +2387,7 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->centralWidget->tab->setActiveView(n);
-	GetGLView()->UpdateWidgets(false);
+	GetGLView()->UpdateWidgets();
 	UpdateUIConfig();
 }
 
@@ -2412,7 +2412,7 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 	ui->centralWidget->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
-	glview->UpdateWidgets(false);
+	glview->UpdateWidgets();
 }
 
 //-----------------------------------------------------------------------------

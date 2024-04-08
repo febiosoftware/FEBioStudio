@@ -69,7 +69,6 @@ struct GLViewSettings
 	bool	m_bconn;	//!< select connected
 	bool	m_bmax;		//!< max angle constraint for select connected
 	bool	m_bpart;	//!< respect partition boundaries flag
-	bool	m_bhide;	//!< auto hide
 	bool	m_bext;		//!< ignore interior nodes
 	bool	m_bsoft;	//!< soft selection mode
 	bool	m_bcullSel;	//!< ignore backfacing when selecting
