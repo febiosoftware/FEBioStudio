@@ -1572,7 +1572,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
             // we pass the relative path to the image model
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
-			CImageModel* imageModel = new CImageModel(doc, nullptr);
+			CImageModel* imageModel = new CImageModel(nullptr);
             imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
 
             if(!ImportImage(imageModel))
@@ -1655,7 +1655,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		// we pass the relative path to the image model
 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
-		CImageModel* imageModel = new CImageModel(doc, nullptr);
+		CImageModel* imageModel = new CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
 		if (!ImportImage(imageModel))
 		{
@@ -1761,7 +1761,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         CGLDocument* doc = GetGLDocument();
 
-        CImageModel* imageModel = new CImageModel(doc, nullptr);
+        CImageModel* imageModel = new CImageModel(nullptr);
         imageModel->SetImageSource(new CITKSeriesImageSource(imageModel, stdFiles));
         if(!ImportImage(imageModel))
         {

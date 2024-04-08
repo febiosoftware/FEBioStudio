@@ -265,7 +265,7 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 
 void CGLWidgetManager::DrawWidgetsInLayer(QPainter* painter, int layer)
 {
-	SetActiveLayer(layer);
+	SetRenderLayer(layer);
 	for (int i = 0; i < (int)m_Widget.size(); ++i)
 	{
 		GLWidget* pw = m_Widget[i];

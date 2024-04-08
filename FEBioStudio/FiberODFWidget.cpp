@@ -174,7 +174,7 @@ void CFiberGLWidget::paintGL()
 	glLoadIdentity();
 
     m_cam.SetTargetDistance(50);
-    m_cam.Transform();
+    m_cam.PositionInScene();
 
 	if (m_analysis && m_ODF) m_analysis->renderODFMesh(m_ODF, &m_cam);
 

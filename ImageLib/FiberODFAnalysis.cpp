@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
-#include <FEBioStudio/Document.h>
 #ifdef min
 #undef min
 #endif
@@ -141,7 +140,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 	m_pbar->ShowTitle(true);
 	m_pbar->hide();
 
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar, img->GetDocument()->GetWidgetLayer());
+	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()

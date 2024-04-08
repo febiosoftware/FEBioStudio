@@ -3619,7 +3619,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
         // we pass the relative path to the image model
 	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-		CImageModel* imageModel = new CImageModel(doc, nullptr);
+		CImageModel* imageModel = new CImageModel(nullptr);
         imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
 
         if(!ImportImage(imageModel))

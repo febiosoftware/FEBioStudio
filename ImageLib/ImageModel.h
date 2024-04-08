@@ -44,12 +44,11 @@ namespace Post
 
 class CImageSource;
 class C3DImage;
-class CGLDocument;
 
 class CImageModel : public Post::CGLObject
 {
 public:
-	CImageModel(CGLDocument* doc, Post::CGLModel* mdl);
+	CImageModel(Post::CGLModel* mdl);
 	~CImageModel();
 
     void SetImageSource(CImageSource* imgSource);
@@ -97,8 +96,6 @@ public:
 
 	C3DImage* Get3DImage();
 
-    CGLDocument* GetDocument() { return m_doc; }
-
 public:
 	bool ExportRAWImage(const std::string& filename);
     bool ExportSITKImage(const std::string& filename);
@@ -112,6 +109,4 @@ private:
 	CImageSource*	m_img;
 
     CImageViewSettings viewSettings;
-
-    CGLDocument* m_doc;
 };

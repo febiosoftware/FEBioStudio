@@ -819,7 +819,7 @@ void CGLDocument::LoadResources(IArchive& ar)
 		{
 		case CID_RESOURCE_IMAGEMODEL:
 		{
-			CImageModel* img = new CImageModel(this, nullptr);
+			CImageModel* img = new CImageModel(nullptr);
 			m_img.Add(img);
 			img->Load(ar);
 		}
