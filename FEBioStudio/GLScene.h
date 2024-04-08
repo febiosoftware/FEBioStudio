@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <GLLib/GView.h>
 #include "GGrid.h"
+#include <QString>
 
 class CGLContext;
 
@@ -54,7 +55,15 @@ public:
 	quatd GetGridOrientation() { return m_grid.m_q; }
 	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
 
+	void SetEnvironmentMap(QString filename) { m_envMap = filename; }
+	void ActivateEnvironmentMap();
+	void DeactivateEnvironmentMap();
+	void LoadEnvironmentMap();
+
 protected:
 	CGView	m_view;
 	GGrid	m_grid;		// the grid object
+
+	unsigned int	m_envtex;	// enironment texture ID
+	QString m_envMap; // file name used for environment mapping 
 };

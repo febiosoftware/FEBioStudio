@@ -127,6 +127,7 @@ void MeshingThread::run()
 	m_mesher = m_po->GetFEMesher();
 	if (m_mesher) m_mesher->SetErrorMessage("");
 	FSMesh* mesh = m_po->BuildMesh();
+	if (m_mesher && (mesh == nullptr)) SetErrorString(QString::fromStdString(m_mesher->GetErrorMessage()));
 	emit resultReady(mesh != nullptr);
 }
 

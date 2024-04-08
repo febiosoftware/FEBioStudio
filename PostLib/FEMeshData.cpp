@@ -314,11 +314,11 @@ mat2d deform_grad_2d(FEPostModel& fem, int n, double r, double s, int nstate, in
 
 //-----------------------------------------------------------------------------
 // Deformation gradient
-DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
+DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3f, DATA_MULT>(pm, pdf)
 {
 }
 
-void DeformationGradient::eval(int n, mat3d* pv)
+void DeformationGradient::eval(int n, mat3f* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -326,7 +326,7 @@ void DeformationGradient::eval(int n, mat3d* pv)
 	// if this is not a solid element, return 0
 	if (e.IsSolid() == false)
 	{
-		mat3d z; z.zero();
+		mat3f z; z.zero();
 		int N = e.Nodes();
 		for (int i=0; i<N; ++i) pv[i] = z;
 		return;
@@ -344,7 +344,8 @@ void DeformationGradient::eval(int n, mat3d* pv)
 		e.iso_coord(i, q);
 
 		// get the deformation gradient
-		pv[i] = deform_grad(*GetFSModel(), n, q[0], q[1], q[2], nstate);
+		mat3d F = deform_grad(*GetFSModel(), n, q[0], q[1], q[2], nstate);
+		pv[i] = to_mat3f(F);
 	}
 }
 
@@ -2048,7 +2049,7 @@ void ElemPressure::eval(int n, float* pv)
 //=============================================================================
 // Element nodal pressure
 //-----------------------------------------------------------------------------
-ElemNodalPressure::ElemNodalPressure(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
+ElemNodalPressure::ElemNodalPressure(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_MULT>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();
@@ -2064,7 +2065,7 @@ void ElemNodalPressure::eval(int n, float* pv)
 
 	// get stress field
 	FEMeshData& rd = state.m_Data[m_nstress];
-	FEElemData_T<mat3fs,DATA_COMP>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_COMP>&>(rd);
+	FEElemData_T<mat3fs,DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_MULT>&>(rd);
 
 	// get number of nodes for this element
 	int neln = state.GetFEMesh()->ElementRef(n).Nodes();

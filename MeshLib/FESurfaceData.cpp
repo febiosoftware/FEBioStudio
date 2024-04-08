@@ -28,12 +28,12 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
-FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA)
+FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FACE_DATA)
 {
 	SetMesh(mesh);
 }
 
-FESurfaceData::FESurfaceData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::SURFACE_DATA)
+FESurfaceData::FESurfaceData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(FACE_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFormat);
@@ -46,10 +46,10 @@ FESurfaceData::~FESurfaceData()
 	
 }
 
-FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA) {}
+FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FACE_DATA) {}
 void FESurfaceData::operator = (const FESurfaceData& d) {}
 
-void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
+void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, DATA_TYPE dataType, DATA_FORMAT dataFormat)
 {
 	SetMesh(mesh);
 	FSHasOneItemList::SetItemList(surface);
@@ -77,17 +77,17 @@ void FESurfaceData::AllocateData()
 		int itemSize = ItemSize();
 		switch (GetDataFormat())
 		{
-		case FEMeshData::DATA_NODE:
+		case DATA_NODE:
 		{
 			FSNodeList* pnl = surface->BuildNodeList();
 			bufSize = itemSize * pnl->Size();
 			delete pnl;
 		}
 		break;
-		case FEMeshData::DATA_ITEM:
+		case DATA_ITEM:
 			bufSize = itemSize * faces;
 			break;
-		case FEMeshData::DATA_MULT:
+		case DATA_MULT:
 		{
 			m_maxNodesPerFacet = 0;
 			for (int i = 0; i < faces; ++i)
@@ -138,13 +138,13 @@ void FESurfaceData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			SetDataType((FEMeshData::DATA_TYPE) dType);
+			SetDataType((DATA_TYPE) dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{
 			int dFmt;
 			ar.read(dFmt);
-			SetDataFormat((FEMeshData::DATA_FORMAT)dFmt);
+			SetDataFormat((DATA_FORMAT)dFmt);
 		}
 		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
 		{

@@ -86,47 +86,22 @@ CDlgAddMeshData::CDlgAddMeshData(QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshD
 }
 
 QString CDlgAddMeshData::GetName() { return ui->m_name->text(); }
-FEMeshData::DATA_CLASS CDlgAddMeshData::GetType()
+DATA_CLASS CDlgAddMeshData::GetType()
 { 
 	int n = ui->m_type->currentIndex(); 
-	switch (n)
-	{
-	case FEMeshData::NODE_DATA: return FEMeshData::NODE_DATA; break;
-	case FEMeshData::SURFACE_DATA: return FEMeshData::SURFACE_DATA; break;
-	case FEMeshData::ELEMENT_DATA: return FEMeshData::ELEMENT_DATA; break;
-	case FEMeshData::PART_DATA: return FEMeshData::PART_DATA; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::NODE_DATA;
+	return (DATA_CLASS)n;
 }
 
-FEMeshData::DATA_TYPE CDlgAddMeshData::GetDataType() 
+DATA_TYPE CDlgAddMeshData::GetDataType() 
 { 
 	int n = ui->m_data->currentIndex();
-	switch (n)
-	{
-	case FEMeshData::DATA_SCALAR: return FEMeshData::DATA_SCALAR; break;
-	case FEMeshData::DATA_VEC3D : return FEMeshData::DATA_VEC3D; break;
-	case FEMeshData::DATA_MAT3D : return FEMeshData::DATA_MAT3D; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::DATA_SCALAR;
+	return (DATA_TYPE)n;
 }
 
-FEMeshData::DATA_FORMAT CDlgAddMeshData::GetFormat() 
+DATA_FORMAT CDlgAddMeshData::GetFormat() 
 { 
 	int n = ui->m_fmt->currentIndex(); 
-	switch (n)
-	{
-	case FEMeshData::DATA_ITEM: return FEMeshData::DATA_ITEM; break;
-	case FEMeshData::DATA_NODE: return FEMeshData::DATA_NODE; break;
-	case FEMeshData::DATA_MULT: return FEMeshData::DATA_MULT; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::DATA_NODE;
+	return (DATA_FORMAT)n;
 }
 
 CDlgAddMeshData::DataInitializer CDlgAddMeshData::GetDataInitializer()
@@ -165,13 +140,13 @@ public:
 public:
 	void setup(QDialog* dlg)
 	{
-		FEMeshData::DATA_TYPE dataType = m_data->GetDataType();
+		DATA_TYPE dataType = m_data->GetDataType();
 		int ncols = 0;
 		switch (dataType)
 		{
-		case FEMeshData::DATA_SCALAR: ncols = 1; break;
-		case FEMeshData::DATA_VEC3D : ncols = 3; break;
-		case FEMeshData::DATA_MAT3D : ncols = 9; break;
+		case DATA_SCALAR: ncols = 1; break;
+		case DATA_VEC3 : ncols = 3; break;
+		case DATA_MAT3 : ncols = 9; break;
 		}
 
 		QVBoxLayout* layout = new QVBoxLayout;
@@ -199,8 +174,8 @@ public:
 		if (ncols == 3) m_table->setHorizontalHeaderLabels(QStringList() << "x" << "y" << "z");
 		if (ncols == 9) m_table->setHorizontalHeaderLabels(QStringList() << "xx" << "xy" << "xz" << "yx" << "yy" << "yz" << "zx" << "zy" << "zz");
 
-		FEMeshData::DATA_CLASS dataClass = m_data->GetDataClass();
-		if (dataClass == FEMeshData::NODE_DATA)
+		DATA_CLASS dataClass = m_data->GetDataClass();
+		if (dataClass == NODE_DATA)
 		{
 			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(m_data->GetItemList());
 			if (pg)

@@ -357,13 +357,13 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "Displacement");
 		ndata[1] = nd; 
-		fem.SetDisplacementField(BUILD_FIELD(1, nd, 0));
+		fem.SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, nd, 0));
 		nd++;
 	}
 
 	if (m_bshellthick)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElementData<float ,DATA_COMP> >(&fem, EXPORT_DATA), "shell thickness");
+		pdm->AddDataField(new FEDataField_T<FEElementData<float ,DATA_MULT> >(&fem, EXPORT_DATA), "shell thickness");
 	}
 
 	// we need a single state
@@ -394,7 +394,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 			pd[i].m_h[3] = (float) h[3];
 		}
 
-		FEElementData<float,DATA_COMP>& d = dynamic_cast<FEElementData<float,DATA_COMP>&>(ps->m_Data[0]);
+		FEElementData<float,DATA_MULT>& d = dynamic_cast<FEElementData<float,DATA_MULT>&>(ps->m_Data[0]);
 		pe = m_shell.begin();
 		float h[4];
 		for (int i=0; i<(int) m_shell.size(); ++i, ++pe)

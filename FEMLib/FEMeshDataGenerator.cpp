@@ -180,7 +180,7 @@ FSConstFaceDataGenerator::FSConstFaceDataGenerator(FSModel* fem) : FSFaceDataGen
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
-FSConstFaceDataGenerator::FSConstFaceDataGenerator(FSModel* fem, FEMeshData::DATA_TYPE dataType) : FSFaceDataGenerator(fem, FE_CONST_FACEDATA_GENERATOR)
+FSConstFaceDataGenerator::FSConstFaceDataGenerator(FSModel* fem, DATA_TYPE dataType) : FSFaceDataGenerator(fem, FE_CONST_FACEDATA_GENERATOR)
 {
 	SetTypeString("const");
 	SetMeshItemType(FE_FACE_FLAG);
@@ -197,9 +197,9 @@ void FSConstFaceDataGenerator::BuildParameterList(int dataType)
 
 	switch (dataType)
 	{
-	case FEMeshData::DATA_SCALAR: AddDoubleParam(0.0, "value"); break;
-	case FEMeshData::DATA_VEC3D : AddVecParam(vec3d(0, 0, 0), "value"); break;
-	case FEMeshData::DATA_MAT3D : AddMat3dParam(mat3d(), "value"); break;
+	case DATA_SCALAR: AddDoubleParam(0.0, "value"); break;
+	case DATA_VEC3  : AddVecParam(vec3d(0, 0, 0), "value"); break;
+	case DATA_MAT3  : AddMat3dParam(mat3d(), "value"); break;
 	default:
 		assert(false);
 	}

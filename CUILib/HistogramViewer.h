@@ -31,6 +31,8 @@ class CImageModel;
 class CPlotWidget;
 class QSpinBox;
 
+typedef std::vector<std::pair<double, double> > histogram;
+
 class CHistogramViewer : public QWidget
 {
 	Q_OBJECT
@@ -46,8 +48,7 @@ public slots:
     void Update();
 
 private:
-    template<class pType>
-    void GetValues(int bins, std::vector<double>& xVals, std::vector<uint64_t>& yVals);
+	void CalculateHistogram(histogram& values);
 
 private:
 	CImageModel*	m_img;

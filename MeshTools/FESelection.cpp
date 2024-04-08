@@ -43,6 +43,7 @@ SOFTWARE.*/
 FESelection::FESelection(int ntype) : m_ntype(ntype)
 {
 	m_nsize = -1;
+	m_movable = true;
 }
 
 FESelection::~FESelection()

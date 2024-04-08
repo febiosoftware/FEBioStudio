@@ -58,6 +58,9 @@ public:
 
 	int Type() const { return m_ntype; }
 
+	bool IsMovable() const { return m_movable; }
+	void SetMovable(bool b) { m_movable = b; }
+
 	BOX GetBoundingBox() { return m_box; }
 	vec3d GetPivot() { return m_box.Center(); };
 	int Size();
@@ -88,6 +91,7 @@ protected:
 	BOX		m_box;
 	int		m_nsize;
 	int		m_ntype;
+	bool	m_movable;
 };
 
 inline int FESelection::Size()
