@@ -1360,7 +1360,7 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		}
 
 		int layer = doc->GetWidgetLayer();
-		m_Widget->SetActiveLayer(layer);
+		m_Widget->SetRenderLayer(layer);
 		m_Widget->DrawWidgets(&painter);
 	}
 
