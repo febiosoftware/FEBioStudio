@@ -299,7 +299,7 @@ void GLPlaneCut::Render()
 
 		CGLCamera& cam = *m_glview->GetCamera();
 		cam.LineDrawMode(true);
-		cam.Transform();
+		cam.PositionInScene();
 
 		mr.RenderGLEdges(m_planeCut, 0);
 		glDisable(GL_DEPTH_TEST);
@@ -307,7 +307,7 @@ void GLPlaneCut::Render()
 		mr.RenderGLEdges(m_planeCut, 1);
 
 		cam.LineDrawMode(false);
-		cam.Transform();
+		cam.PositionInScene();
 	}
 	glPopAttrib();
 }

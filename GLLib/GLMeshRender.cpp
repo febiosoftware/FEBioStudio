@@ -2076,9 +2076,9 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 					r[0] = pm->Node(f.n[0]).r;
 					r[1] = pm->Node(f.n[1]).r;
 					r[2] = pm->Node(f.n[2]).r;
-					glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
-					glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
-					glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+					glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glVertex3d(r[0].x, r[0].y, r[0].z);
+					glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glVertex3d(r[1].x, r[1].y, r[1].z);
+					glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glVertex3d(r[2].x, r[2].y, r[2].z);
 				}
 			}
 			glEnd();

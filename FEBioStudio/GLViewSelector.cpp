@@ -150,7 +150,7 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	if (po == 0) return;
 
 	FSMeshBase* pm = nullptr;
-	switch (m_glv->GetMeshMode())
+	switch (pdoc->GetMeshMode())
 	{
 	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
 	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
@@ -501,7 +501,7 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 	if (po == 0) return;
 
 	FSMeshBase* pm = nullptr;
-	switch (m_glv->GetMeshMode())
+	switch (pdoc->GetMeshMode())
 	{
 	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
 	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
@@ -607,7 +607,7 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	if (po == 0) return;
 
 	FSMeshBase* pm = nullptr;
-	switch (m_glv->GetMeshMode())
+	switch (pdoc->GetMeshMode())
 	{
 	case MESH_MODE_VOLUME : pm = po->GetFEMesh(); break;
 	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;

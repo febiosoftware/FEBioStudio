@@ -454,7 +454,7 @@ void CCmdTransformObject::UnExecute() { Execute(); }
 // CCmdTranslateSelection
 //////////////////////////////////////////////////////////////////////
 
-CCmdTranslateSelection::CCmdTranslateSelection(CModelDocument* doc, vec3d dr) : CCommand("Translate")
+CCmdTranslateSelection::CCmdTranslateSelection(CGLDocument* doc, vec3d dr) : CCommand("Translate")
 {
 	m_doc = doc;
 	m_dr = dr;
@@ -463,20 +463,20 @@ CCmdTranslateSelection::CCmdTranslateSelection(CModelDocument* doc, vec3d dr) : 
 void CCmdTranslateSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Translate(m_dr);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 void CCmdTranslateSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Translate(-m_dr);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 //////////////////////////////////////////////////////////////////////
 // CCmdRotateSelection
 //////////////////////////////////////////////////////////////////////
 
-CCmdRotateSelection::CCmdRotateSelection(CModelDocument* doc, quatd q, vec3d rc) : CCommand("Rotate")
+CCmdRotateSelection::CCmdRotateSelection(CGLDocument* doc, quatd q, vec3d rc) : CCommand("Rotate")
 {
 	m_doc = doc;
 	m_q = q;
@@ -486,20 +486,20 @@ CCmdRotateSelection::CCmdRotateSelection(CModelDocument* doc, quatd q, vec3d rc)
 void CCmdRotateSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Rotate(m_q, m_rc);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 void CCmdRotateSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Rotate(m_q.Inverse(), m_rc);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 //////////////////////////////////////////////////////////////////////
 // CCmdScaleSelection
 //////////////////////////////////////////////////////////////////////
 
-CCmdScaleSelection::CCmdScaleSelection(CModelDocument* doc, double s, vec3d dr, vec3d rc) : CCommand("Scale")
+CCmdScaleSelection::CCmdScaleSelection(CGLDocument* doc, double s, vec3d dr, vec3d rc) : CCommand("Scale")
 {
 	m_doc = doc;
 	m_s = s;
@@ -510,13 +510,13 @@ CCmdScaleSelection::CCmdScaleSelection(CModelDocument* doc, double s, vec3d dr, 
 void CCmdScaleSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Scale(m_s, m_dr, m_rc);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 void CCmdScaleSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Scale(1 / m_s, m_dr, m_rc);
-	m_doc->GetGModel()->UpdateBoundingBox();
+	m_doc->Update();
 }
 
 //=============================================================================

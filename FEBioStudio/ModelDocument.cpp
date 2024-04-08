@@ -213,6 +213,25 @@ BOX CModelDocument::GetModelBox()
 	return box;
 }
 
+int CModelDocument::GetMeshMode()
+{
+	return (m_wnd ? m_wnd->GetMeshMode() : MESH_MODE_VOLUME);
+}
+
+void CModelDocument::Update()
+{
+	GetGModel()->UpdateBoundingBox();
+}
+
+std::string CModelDocument::GetRenderString()
+{
+	FSModel* ps = GetFSModel();
+	GModel& model = ps->GetModel();
+	int activeLayer = model.GetActiveMeshLayer();
+	string s = string("  Mesh Layer > ") + model.GetMeshLayerName(activeLayer);
+	return s;
+}
+
 void CModelDocument::AddObject(GObject* po)
 {
 	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po));

@@ -2387,7 +2387,7 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->centralWidget->tab->setActiveView(n);
-	GetGLView()->UpdateWidgets(false);
+	GetGLView()->UpdateWidgets();
 	UpdateUIConfig();
 }
 
@@ -2412,7 +2412,7 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 	ui->centralWidget->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
-	glview->UpdateWidgets(false);
+	glview->UpdateWidgets();
 }
 
 //-----------------------------------------------------------------------------
@@ -2543,13 +2543,6 @@ void CMainWindow::RedrawGL()
 	CGLView* view = GetGLView();
 	if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
 	view->repaint();
-}
-
-//-----------------------------------------------------------------------------
-//! Zoom to an FSObject
-void CMainWindow::ZoomTo(const BOX& box)
-{
-	GetGLView()->ZoomTo(box);
 }
 
 //-----------------------------------------------------------------------------
@@ -3611,7 +3604,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		{
 			ShowInModelViewer(imgModel);
 		}
-		ZoomTo(imgModel->GetBoundingBox());
+		GetGLView()->ZoomTo(imgModel->GetBoundingBox());
 
 		return true;
 	}

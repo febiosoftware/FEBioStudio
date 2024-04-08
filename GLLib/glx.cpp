@@ -1176,6 +1176,39 @@ void glx::renderAxis(double R)
 	glEnd();
 }
 
+void glx::renderAxes(double R, const vec3d& pos, const quatd& q, GLColor c)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	vec3d e1 = q * vec3d(1, 0, 0);
+	vec3d e2 = q * vec3d(0, 1, 0);
+	vec3d e3 = q * vec3d(0, 0, 1);
+
+	vec3d A, B, C;
+	A = pos + e1 * R;
+	B = pos + e2 * R;
+	C = pos + e3 * R;
+
+	glBegin(GL_POINTS);
+	{
+		glVertex3f(pos.x, pos.y, pos.z);
+	}
+	glEnd();
+
+	glx::glcolor(c);
+	glBegin(GL_LINES);
+	{
+		glVertex3f(pos.x, pos.y, pos.z); glVertex3f(A.x, A.y, A.z);
+		glVertex3f(pos.x, pos.y, pos.z); glVertex3f(B.x, B.y, B.z);
+		glVertex3f(pos.x, pos.y, pos.z); glVertex3f(C.x, C.y, C.z);
+	}
+	glEnd();
+
+	glPopAttrib();
+}
+
 void glx::renderJoint(double R)
 {
 	glBegin(GL_LINES);

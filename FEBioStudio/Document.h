@@ -316,6 +316,8 @@ public:
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
 	void SetUIViewMode(UI_VIEW_MODE vm) { m_uiMode = vm; }
 
+	virtual int GetMeshMode() { return MESH_MODE_VOLUME; }
+
 	// return the current selection
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
@@ -328,7 +330,18 @@ public:
 
 	CGLScene* GetScene();
 
-    int GetWidgetLayer();
+	virtual void Update();
+
+public:
+	int GetWidgetLayer();
+	bool ShowTitle() const { return m_showTitle; }
+	bool ShowSubtitle() const { return m_showSubtitle; }
+	bool ShowLegend() const { return m_showLegend; }
+
+	void ShowLegend(bool b) { m_showLegend = b; }
+
+	// This string will be shown in top-left corner
+	virtual std::string GetRenderString();
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -377,7 +390,11 @@ protected:
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
 
-    unsigned int	m_widgetLayer;
+	// GL widget parameters
+	unsigned int	m_widgetLayer;
+	bool	m_showTitle;
+	bool	m_showSubtitle;
+	bool	m_showLegend;
 };
 
 // helper class for getting selections without the need to access the document

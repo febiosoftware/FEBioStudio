@@ -146,7 +146,7 @@ void CGLCamera::LineDrawMode(bool b)
 
 //-----------------------------------------------------------------------------
 // This sets up the GL matrix transformation for rendering
-void CGLCamera::Transform()
+void CGLCamera::PositionInScene()
 {
 	// reset the modelview matrix mode
 	glMatrixMode(GL_MODELVIEW);

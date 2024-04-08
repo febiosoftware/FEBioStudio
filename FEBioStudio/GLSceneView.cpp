@@ -205,7 +205,7 @@ void CGLSceneView::RenderScene()
 	if (scene)
 	{
 		CGLCamera& cam = scene->GetCamera();
-		cam.Transform();
+		cam.PositionInScene();
 
 		CGLContext rc;
 		rc.m_cam = &cam;

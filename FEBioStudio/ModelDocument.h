@@ -71,6 +71,12 @@ public:
 
 	BOX GetModelBox();
 
+	std::string GetRenderString() override;
+
+	int GetMeshMode() override;
+
+	void Update() override;
+
 public:
 	void Activate() override;
 	void Deactivate() override;

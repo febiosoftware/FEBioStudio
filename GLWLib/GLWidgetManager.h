@@ -59,7 +59,8 @@ public:
 	void DrawWidgetsInLayer(QPainter* painter, int layer);
 	void DrawWidget(GLWidget* widget, QPainter* painter);
 
-	void SetActiveLayer(int l);
+	void SetRenderLayer(int l);
+	void SetEditLayer(int l);
 
 	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
 	void CheckWidgetBounds();
@@ -70,7 +71,9 @@ protected:
 protected:
 	QOpenGLWidget*			m_pview;
 	std::vector<GLWidget*>	m_Widget;
-	unsigned int			m_layer;
+
+	unsigned int			m_renderLayer;	// layer used for rendering
+	unsigned int			m_editLayer;	// default layer used when adding widgets
 
 private:
 	CGLWidgetManager();

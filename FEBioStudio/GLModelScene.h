@@ -91,6 +91,8 @@ private:
 
 	void RenderImageData(CGLContext& rc);
 
+	void RenderTags(CGLContext& rc);
+
 private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
