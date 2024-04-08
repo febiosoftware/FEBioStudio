@@ -23,23 +23,50 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "stdafx.h"
+#include "3DImageSlicer.h"
 
-#pragma once
-#include "GLObject.h"
+using namespace Post;
 
-class CImageModel;
-
-namespace Post {
-
-class CGLImageRenderer : public CGLVisual
+C3DImageSlicer::C3DImageSlicer(CImageModel* img) : 
+	m_xSlicer(nullptr),
+	m_ySlicer(nullptr),
+	m_zSlicer(nullptr)
 {
-public:
-	CGLImageRenderer(CImageModel* img = nullptr);
+	m_xSlicer.SetOrientation(0);
+	m_ySlicer.SetOrientation(1);
+	m_zSlicer.SetOrientation(2);
+}
 
-	virtual void SetImageModel(CImageModel* img);
-	CImageModel* GetImageModel();
+void C3DImageSlicer::SetImageModel(CImageModel* img)
+{
+	CGLImageRenderer::SetImageModel(img);
+	m_xSlicer.SetImageModel(img);
+	m_ySlicer.SetImageModel(img);
+	m_zSlicer.SetImageModel(img);
+}
 
-private:
-	CImageModel*	m_img;
-};
+void C3DImageSlicer::SetSliceImage(int slice, float offset, CImage* img)
+{
+	CImageSlicer* p = nullptr;
+	switch (slice)
+	{
+	case 0: p = &m_xSlicer; break;
+	case 1: p = &m_ySlicer; break;
+	case 2: p = &m_zSlicer; break;
+	default:
+		return;
+	}
+
+	p->SetOffset(offset);
+	p->SetImageSlice(img);
+}
+
+void C3DImageSlicer::Render(CGLContext& rc)
+{
+	if (GetImageModel() == nullptr) return;
+
+	m_xSlicer.Render(rc);
+	m_ySlicer.Render(rc);
+	m_zSlicer.Render(rc);
 }

@@ -237,9 +237,6 @@ public:
 	//! redraw the GLView
 	void RedrawGL();
 
-	//! Zoom in on a box
-	void ZoomTo(const BOX& box);
-
 	// set a message on the status bar
 	void SetStatusMessage(const QString& message);
 
@@ -509,7 +506,7 @@ public slots:
     void on_actionIsometric_triggered();
 	void on_actionRenderMode_toggled(bool b);
 	void on_actionSnap3D_triggered();
-	void on_actionTrack_toggled(bool b);
+	void on_actionTrack_triggered();
 	void on_actionViewVPSave_triggered();
 	void on_actionViewVPPrev_triggered();
 	void on_actionViewVPNext_triggered();

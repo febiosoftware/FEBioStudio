@@ -307,7 +307,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
 	actionToggleTagInfo = addAction("Toggle Tag info", "actionToggleTagInfo"); actionToggleTagInfo->setShortcut(Qt::Key_I);
 	QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
-	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
+	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setShortcut(Qt::Key_Y);
 	QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
 	actionToggleLight = addAction("Toggle Lighting", "actionToggleLight", "light");
 	actionFront = addAction("Front", "actionFront"); actionFront->setShortcut(Qt::Key_8 | Qt::KeypadModifier);

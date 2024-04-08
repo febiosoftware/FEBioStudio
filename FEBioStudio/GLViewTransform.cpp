@@ -31,8 +31,10 @@ SOFTWARE.*/
 
 GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PMi(4, 4), q(4, 0.0), c(4, 0.0)
 {
+	CGLCamera* cam = view->GetCamera();
+	if (cam == nullptr) return;
 	view->SetupProjection();
-	view->PositionCamera();
+	cam->PositionInScene();
 
 	double p[16], m[16];
 	glGetDoublev(GL_PROJECTION_MATRIX, p);

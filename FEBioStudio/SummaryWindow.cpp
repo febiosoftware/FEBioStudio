@@ -98,7 +98,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 
 	// get the current data field
 	int ndata = GetCurrentYValue();
-	if (ndata <= 0) return;
+	if (ndata < 0) return;
 
 	// store current data
 	m_ncurrentData = ndata;

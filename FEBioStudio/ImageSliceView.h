@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <QWidget>
-#include <PostLib/ImageSlicer.h>
+#include <PostLib/3DImageSlicer.h>
 #include "PixelInfoSource.h"
 
 class QGridLayout;
@@ -75,9 +75,18 @@ public:
     CImageSlice* m_ySlice;
     CImageSlice* m_zSlice;
 
-    Post::CImageSlicer m_xSlicer;
-    Post::CImageSlicer m_ySlicer;
-    Post::CImageSlicer m_zSlicer;
+    Post::C3DImageSlicer m_slicer;
 
     CGLView* m_glView;
+};
+
+class CImageSliceViewRender : public Post::CGLImageRenderer
+{
+public:
+	CImageSliceViewRender(CImageSliceView* sliceView);
+
+	void Render(CGLContext& rc) override;
+
+private:
+	CImageSliceView* m_sliceView;
 };
