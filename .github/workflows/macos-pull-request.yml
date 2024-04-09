@@ -13,9 +13,8 @@ permissions:
 jobs:
   test_job:
     steps:
-      - name: uname:
-        run: |
-          uname -a
+      - name: uname
+        run: uname -a
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-pull-request.yml@develop
     with:
