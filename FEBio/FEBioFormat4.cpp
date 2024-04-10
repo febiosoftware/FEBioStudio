@@ -465,13 +465,10 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		dom->SetElementFormulation(eform);
 
 		// read the domain parameters
-		if (tag.isleaf() == false)
-		{
-			if (eform)
-				ReadParameters(*eform, tag);
-			else
-				ParseUnknownAttribute(tag, "type");
-		}
+		if (eform)
+			ParseModelComponent(eform, tag);
+		else if (!tag.isleaf())
+			ParseUnknownAttribute(tag, "type");
 	}
 }
 
