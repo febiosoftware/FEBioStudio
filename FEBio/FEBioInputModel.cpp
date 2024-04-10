@@ -227,7 +227,8 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 	for (int i = 0; i<N; ++i)
 	{
 		FSFace& face = m_mesh.Face(pf[i]);
-		if (face.Nodes() > nn)
+		int nf = face.Nodes();
+		if ((nf == nn) || ((nf == 6) && (nn == 3)))
 		{
 			bool bfound = true;
 			for (int j = 0; j < nn; ++j)
