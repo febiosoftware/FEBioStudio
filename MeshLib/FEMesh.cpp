@@ -1646,6 +1646,7 @@ void FSMesh::Save(OArchive &ar)
 	int elemsets = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
+	int edgesets = po->FEEdgeSets();
 
 	// write the element sets
 	if (elemsets > 0)
@@ -1700,6 +1701,26 @@ void FSMesh::Save(OArchive &ar)
 
 				// store the group data
 				ar.BeginChunk(CID_MESH_SURFACE);
+				{
+					pg->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	if (edgesets > 0)
+	{
+		ar.BeginChunk(CID_MESH_EDGESET_SECTION);
+		{
+			for (int i = 0; i < edgesets; ++i)
+			{
+				// get the boundary condition
+				FSEdgeSet* pg = po->GetFEEdgeSet(i);
+
+				// store the group data
+				ar.BeginChunk(CID_MESH_EDGESET);
 				{
 					pg->Save(ar);
 				}
@@ -2339,6 +2360,22 @@ void FSMesh::Load(IArchive& ar)
 				}			
 			}
 			break;
+		case CID_MESH_EDGESET_SECTION:
+		{
+			// TODO: move to GObject serialization
+			FSEdgeSet* pg = 0;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				pg = 0;
+				assert(ar.GetChunkID() == CID_MESH_EDGESET);
+				pg = new FSEdgeSet(po);
+				pg->Load(ar);
+				po->AddFEEdgeSet(pg);
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_MESH_NSET_SECTION:
 			{
 				// TODO: move to GObject serialization

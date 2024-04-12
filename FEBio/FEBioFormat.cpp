@@ -2752,6 +2752,18 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 							pms->SetItemList(surf);
 						}
 					}
+					else if (prop->GetSuperClassID() == FEEDGE_ID)
+					{
+						const char* edgeName = tag.szvalue();
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop->GetComponent());
+
+						GMeshObject* po = GetFEBioModel().GetInstance(0)->GetGObject();
+						if (po)
+						{
+							FSEdgeSet* set = po->FindFEEdgeSet(edgeName);
+							pms->SetItemList(set);
+						}
+					}
 					else
 					{
 						// see if the type attribute is defined

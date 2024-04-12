@@ -939,6 +939,13 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 			if (pg->GetID() == nid) return pg;
 		}
 
+		N = po->FEEdgeSets();
+		for (i = 0; i < N; ++i)
+		{
+			pg = po->GetFEEdgeSet(i);
+			if (pg->GetID() == nid) return pg;
+		}
+
 		N = po->FENodeSets();
 		for (i = 0; i<N; ++i)
 		{
@@ -1105,6 +1112,15 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 			for (int i = 0; i<po->FESurfaces(); ++i)
 			{
 				FEItemListBuilder*pg = po->GetFESurface(i);
+				list.push_back(pg);
+			}
+		}
+
+		if (ntype == DOMAIN_EDGE)
+		{
+			for (int i = 0; i < po->FEEdgeSets(); ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
 				list.push_back(pg);
 			}
 		}

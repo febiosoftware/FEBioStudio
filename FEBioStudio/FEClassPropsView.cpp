@@ -103,17 +103,19 @@ void CPropertySelector::onSelectionChanged(int n)
 }
 
 //=================================================================================
-CSurfacePropertySelector::CSurfacePropertySelector(GModel& m, FSProperty* pp, QWidget* parent) : QComboBox(parent), m_mdl(m)
+CMeshItemPropertySelector::CMeshItemPropertySelector(GModel& m, FSProperty* pp, DOMAIN_TYPE domainType, QWidget* parent) : QComboBox(parent), m_mdl(m)
 {
+	m_domainType = domainType;
+
 	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pp->GetComponent()); assert(pms);
 	if (pms)
 	{
 		FEItemListBuilder* pg = pms->GetItemList();
-		m_surfList = m.AllNamedSelections(DOMAIN_SURFACE);
+		m_itemList = m.AllNamedSelections(m_domainType);
 		int n = -1;
-		for (int i=0; i<m_surfList.size(); ++i)
+		for (int i=0; i< m_itemList.size(); ++i)
 		{
-			FEItemListBuilder* pi = m_surfList[i];
+			FEItemListBuilder* pi = m_itemList[i];
 			addItem(QString::fromStdString(pi->GetName()));
 			if (pi == pg) n = i;
 		}
@@ -124,10 +126,10 @@ CSurfacePropertySelector::CSurfacePropertySelector(GModel& m, FSProperty* pp, QW
 	else m_pp = nullptr;
 }
 
-void CSurfacePropertySelector::onSelectionChanged(int n)
+void CMeshItemPropertySelector::onSelectionChanged(int n)
 {
 	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(m_pp->GetComponent()); assert(pms);
-	if (pms) pms->SetItemList(n >= 0 ? m_surfList[n] : nullptr);
+	if (pms) pms->SetItemList(n >= 0 ? m_itemList[n] : nullptr);
 	emit currentDataChanged(n);
 }
 
@@ -502,6 +504,18 @@ public:
 				{
 					FSProperty& prop = m_pc->GetProperty(m_propId);
 					if (prop.GetSuperClassID() == FESURFACE_ID)
+					{
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
+						if (pms)
+						{
+							FEItemListBuilder* pi = pms->GetItemList();
+							if (pi == nullptr) return QString("(empty)");
+							string s = pi->GetName();
+							if (s.empty()) return QString("(unnamed)");
+							else return QString::fromStdString(s);
+						}
+					}
+					else if (prop.GetSuperClassID() == FEEDGE_ID)
 					{
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
@@ -1417,7 +1431,14 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				if (nclass == FESURFACE_ID)
 				{
 					GModel& m = item->GetFSModel()->GetModel();
-					CSurfacePropertySelector* pc = new CSurfacePropertySelector(m, &prop, parent);
+					CMeshItemPropertySelector* pc = new CMeshItemPropertySelector(m, &prop, DOMAIN_TYPE::DOMAIN_SURFACE, parent);
+					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
+					return pc;
+				}
+				else if (nclass == FEEDGE_ID)
+				{
+					GModel& m = item->GetFSModel()->GetModel();
+					CMeshItemPropertySelector* pc = new CMeshItemPropertySelector(m, &prop, DOMAIN_TYPE::DOMAIN_EDGE, parent);
 					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 					return pc;
 				}

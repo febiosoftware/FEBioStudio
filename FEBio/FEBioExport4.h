@@ -292,6 +292,7 @@ protected:
 protected:
 	const char* GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists = false);
 	string GetNodeSetName(FEItemListBuilder* pl);
+	const char* GetEdgeSetName(FEItemListBuilder* pl);
 	string GetElementSetName(FEItemListBuilder* pl);
 
 	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);

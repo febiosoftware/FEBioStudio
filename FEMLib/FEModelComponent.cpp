@@ -108,6 +108,75 @@ bool FSModelComponent::UpdateData(bool bsave)
 	return false;
 }
 
+void FSModelComponent::SaveProperties(OArchive& ar)
+{
+	for (int i = 0; i < Properties(); ++i)
+	{
+		FSProperty& prop = GetProperty(i);
+		ar.BeginChunk(CID_PROPERTY);
+		{
+			// store the property name
+			ar.WriteChunk(CID_PROPERTY_NAME, prop.GetName());
+
+			// store the property data
+			for (int j = 0; j < prop.Size(); ++j)
+			{
+				FSCoreBase* pc = prop.GetComponent(j);
+				if (pc)
+				{
+					string typeStr = pc->GetTypeString();
+					ar.WriteChunk(CID_PROPERTY_TYPE, typeStr);
+					ar.BeginChunk(CID_PROPERTY_DATA);
+					{
+						pc->Save(ar);
+					}
+					ar.EndChunk();
+				}
+			}
+		}
+		ar.EndChunk();
+	}
+}
+
+void FSModelComponent::LoadProperties(IArchive& ar)
+{
+	FSModel* fem = GetFSModel();
+	FSProperty* pc = nullptr;
+	string typeString;
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int cid = ar.GetChunkID();
+		if (cid == CID_PROPERTY)
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int cid = ar.GetChunkID();
+				switch (cid)
+				{
+				case CID_PROPERTY_NAME:
+				{
+					std::string propName;
+					ar.read(propName);
+					pc = FindProperty(propName); assert(pc);
+				}
+				break;
+				case CID_PROPERTY_TYPE: ar.read(typeString); break;
+				case CID_PROPERTY_DATA:
+				{
+					FSModelComponent* pmc = FEBio::CreateFSClass(pc->GetSuperClassID(), -1, fem); assert(pmc);
+					pmc->Load(ar);
+					pc->AddComponent(pmc);
+				}
+				break;
+				default:
+					assert(false);
+				}
+				ar.CloseChunk();
+			}
+		}
+		ar.CloseChunk();
+	}
+}
 
 //==============================================================================
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar)
