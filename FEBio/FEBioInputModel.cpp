@@ -493,7 +493,7 @@ FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& na
 int FEBioInputModel::Part::GlobalToLocalNodeIndex(int globalID)
 {
 	assert(m_NLT.empty() == false);
-	assert((globalID - m_nltoff) < m_NLT.size());
+	assert((globalID - m_nltoff) < (int)m_NLT.size());
 	return m_NLT[globalID - m_nltoff];
 }
 
