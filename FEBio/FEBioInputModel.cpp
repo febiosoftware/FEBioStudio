@@ -227,7 +227,8 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 	for (int i = 0; i<N; ++i)
 	{
 		FSFace& face = m_mesh.Face(pf[i]);
-		if (face.Nodes() > nn)
+		int nf = face.Nodes();
+		if ((nf == nn) || ((nf == 6) && (nn == 3)))
 		{
 			bool bfound = true;
 			for (int j = 0; j < nn; ++j)
@@ -492,7 +493,7 @@ FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& na
 int FEBioInputModel::Part::GlobalToLocalNodeIndex(int globalID)
 {
 	assert(m_NLT.empty() == false);
-	assert((globalID - m_nltoff) < m_NLT.size());
+	assert((globalID - m_nltoff) < (int)m_NLT.size());
 	return m_NLT[globalID - m_nltoff];
 }
 
@@ -504,7 +505,7 @@ void FEBioInputModel::Part::GlobalToLocalNodeIndex(std::vector<int>& nodeList)
 int FEBioInputModel::Part::GlobalToLocalElementIndex(int globalID)
 {
 	assert(m_ELT.empty() == false);
-	assert((globalID - m_eltoff) < m_ELT.size());
+	assert((globalID - m_eltoff) < (int)m_ELT.size());
 	return m_NLT[globalID - m_eltoff];
 }
 

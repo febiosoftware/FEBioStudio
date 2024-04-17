@@ -177,6 +177,8 @@ protected:
     bool gestureEvent     (QNativeGestureEvent* ev);
     bool event            (QEvent* event) override;
 
+	void keyPressEvent(QKeyEvent* ev) override;
+
 signals:
 	void pointPicked(const vec3d& p);
 	void selectionChanged();

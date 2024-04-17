@@ -1130,6 +1130,33 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
+void CGLView::keyPressEvent(QKeyEvent* ev)
+{
+	if (((ev->key() == Qt::Key_X) || (ev->key() == Qt::Key_Y) || (ev->key() == Qt::Key_Z)) && (ev->modifiers() & Qt::ALT))
+	{
+		ev->accept();
+
+		double s = (ev->modifiers() & Qt::SHIFT ? -1 : 1);
+
+		CGLCamera* cam = GetCamera();
+
+		quatd dq;
+		switch (ev->key())
+		{
+		case Qt::Key_X: dq = quatd(s * PI * 0.5, vec3d(1, 0, 0)); break;
+		case Qt::Key_Y: dq = quatd(s * PI * 0.5, vec3d(0, 1, 0)); break;
+		case Qt::Key_Z: dq = quatd(s * PI * 0.5, vec3d(0, 0, 1)); break;
+			break;
+		}
+
+		quatd q0 = cam->GetOrientation();
+		quatd q = q0 * dq * q0.Inverse();
+
+		cam->Orbit(q);
+		update();
+	}
+}
+
 void CGLView::initializeGL()
 {
 	CGLSceneView::initializeGL();

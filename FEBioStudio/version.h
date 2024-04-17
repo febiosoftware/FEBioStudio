@@ -52,8 +52,9 @@ SOFTWARE.*/
 // 4.0: new version starting with FEBio Studio 2.
 // 4.1: Item components are no longer stored on the model components. Added FSPartSet. New mesh storage format.
 // 4.2: Node and element IDs are now stored in the fs2 file. 
+// 4.3: Storing properties of domain components. Storing edgesets.
 #define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
-#define SAVE_VERSION	0x00040002
+#define SAVE_VERSION	0x00040003
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D

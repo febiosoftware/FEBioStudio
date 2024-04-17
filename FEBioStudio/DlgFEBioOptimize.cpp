@@ -65,6 +65,7 @@ public:
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
 		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(new QLabel("Select the parameter to add:"));
 		l->addWidget(tree);
 		l->addWidget(bb);
 
@@ -74,7 +75,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), w, SLOT(reject()));
 	}
 
-	void AddMaterial(FSMaterial* mat, QTreeWidgetItem* item)
+	void AddMaterial(FSCoreBase* mat, QTreeWidgetItem* item)
 	{
 		for (int j = 0; j < mat->Parameters(); ++j)
 		{
@@ -90,7 +91,7 @@ public:
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)
 			{
-				FSMaterial* mj = mat->GetMaterialProperty(j, k);
+				FSCoreBase* mj = prop.GetComponent(k);
 				if (mj)
 				{
 					QString matName = propName;
