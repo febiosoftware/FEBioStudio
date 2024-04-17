@@ -592,3 +592,18 @@ int AbaqusModel::FindAmplitude(const char* szname) const
 	}
 	return -1;
 }
+
+void AbaqusModel::AddContactPair(CONTACT_PAIR& cp)
+{
+	m_ContactPair.push_back(cp);
+}
+
+int AbaqusModel::ContactPairs() const
+{
+	return (int)m_ContactPair.size();
+}
+
+const AbaqusModel::CONTACT_PAIR& AbaqusModel::GetContactPair(int n) const
+{
+	return m_ContactPair[n];
+}

@@ -258,6 +258,8 @@ void CModelViewer::on_searchButton_toggled(bool b)
 void CModelViewer::on_syncButton_clicked()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	GModel& mdl = *pdoc->GetGModel();
 	FESelection* sel = pdoc->GetCurrentSelection();
 	if (sel) 

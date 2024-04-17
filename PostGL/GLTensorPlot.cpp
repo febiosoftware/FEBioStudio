@@ -655,12 +655,14 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 		glPushMatrix();
 
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
-		float l0 = L*.9;
-		float l1 = L*.2;
-		float r0 = L*0.05;
-		float r1 = L*0.15;
-
 		vec3f v = t.r[i];
+		if (L < 0) { v = -v; L = -L; }
+
+		float l0 = L * .9;
+		float l1 = L * .2;
+		float r0 = L * 0.05;
+		float r1 = L * 0.15;
+
 		quatd q = quatd(vec3d(0,0,1), to_vec3d(v));
 		float w = q.GetAngle();
 		if (fabs(w) > 1e-6)

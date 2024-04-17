@@ -389,6 +389,14 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		pc = pms;
 	}
 	break;
+	case FEEDGE_ID:
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_EDGE_FLAG);
+		pms->SetSuperClassID(FEEDGE_ID);
+		pc = pms;
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -632,7 +640,15 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 					pms->SetSuperClassID(FEDOMAIN_ID);
 					fsp->AddComponent(pms);
 				}
-		*/		else if (prop.size() != 0)
+		*/		
+		if (prop.GetSuperClassID() == FEEDGE_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+			pms->SetMeshItemType(FE_EDGE_FLAG);
+			pms->SetSuperClassID(FEEDGE_ID);
+			fsp->AddComponent(pms);
+		}
+		else if (prop.size() != 0)
 		{
 			FECoreBase* pci = prop.get(0);
 
@@ -1292,6 +1308,14 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 		FSMeshSelection* pms = new FSMeshSelection(fem);
 		pms->SetMeshItemType(FE_FACE_FLAG);
 		pms->SetSuperClassID(FESURFACE_ID);
+		return pms;
+	}
+	break;
+	case FEEDGE_ID:
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_EDGE_FLAG);
+		pms->SetSuperClassID(FEEDGE_ID);
 		return pms;
 	}
 	break;
