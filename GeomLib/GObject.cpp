@@ -288,7 +288,21 @@ FSSurface* GObject::FindFESurface(const string& name)
 	}
 
 	// sorry, no luck
-	return 0;
+	return nullptr;
+}
+
+// Find a surface from its name.
+// Returns NULL if the surface cannot be found
+FSEdgeSet* GObject::FindFEEdgeSet(const string& name)
+{
+	for (size_t i = 0; i < imp->m_pFESurface.Size(); ++i)
+	{
+		FSEdgeSet* psi = imp->m_pFEEdgeSet[i];
+		if (psi->GetName() == name) return psi;
+	}
+
+	// sorry, no luck
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

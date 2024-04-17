@@ -257,6 +257,7 @@ public:
 	FSGroup* FindFEGroup(int nid);
 
 	FSSurface* FindFESurface(const string& szname);
+	FSEdgeSet* FindFEEdgeSet(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
 	void ClearFEPartSets();

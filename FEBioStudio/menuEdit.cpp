@@ -1402,6 +1402,72 @@ void CMainWindow::on_actionSyncSelection_triggered()
 	ui->modelViewer->on_syncButton_clicked();
 }
 
+void CMainWindow::on_actionCopySelection_triggered()
+{
+	ui->m_copySrc = GetGLDocument();
+}
+
+void CMainWindow::on_actionPasteSelection_triggered()
+{
+	CGLDocument* src = ui->m_copySrc;
+	if (FindView(src) == -1) 
+	{ 
+		ui->m_copySrc = nullptr;  
+		QMessageBox::critical(this, "FEBio Studio", "Failed to copy source selection.");
+		return;
+	}
+
+	CGLDocument* dst = GetGLDocument();
+	if (dst == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to copy selection to current document.");
+		return;
+	}
+
+	if (src == dst)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Cannot copy. Source and destination are the same.");
+		return;
+	}
+
+	FESelection* selSrc = src->GetCurrentSelection();
+	if (selSrc == nullptr) { QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. No active source selection."); return; }
+
+	if (selSrc->Type() == SELECT_FE_ELEMENTS)
+	{
+		GObject* po = dst->GetActiveObject();
+		if (po == nullptr) { QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. No destination object selected."); return; }
+
+		FSMesh* pm = po->GetFEMesh();
+		if (pm == nullptr) { QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. Destination object has no mesh."); return; }
+
+		FSElemSet* elemSet = dynamic_cast<FSElemSet*>(selSrc->CreateItemList()); assert(elemSet);
+		if (elemSet)
+		{
+			std::vector<int> elementIndices = elemSet->CopyItems();
+			delete elemSet;
+
+			int NE = pm->Elements();
+			for (int n : elementIndices)
+			{
+				if ((n < 0) || (n >= NE))
+				{
+					QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. Destination not compatible.");
+					return;
+				}
+			}
+			SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
+			dst->DoCommand(new CCmdSelectElements(pm, elementIndices, false));
+			RedrawGL();
+		}
+	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to copy selection.");
+	}
+
+}
+
 void CMainWindow::on_actionSelectIsolatedVertices_triggered()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());

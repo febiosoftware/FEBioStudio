@@ -432,6 +432,9 @@ public:
 	QString m_lastFindText;
 
 public:
+	CGLDocument* m_copySrc = nullptr; // source for copy selection operation
+
+public:
 	vector<CUIConfig*>	m_configs;
 	unsigned int m_activeConfig = Ui::Config::EMPTY_CONFIG;
 

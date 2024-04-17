@@ -140,6 +140,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionHideSelection = addAction("Hide Selection", "actionHideSelection"); actionHideSelection->setShortcut(Qt::Key_H);
 	QAction* actionHideUnselected = addAction("Hide Unselected", "actionHideUnselected"); actionHideUnselected->setShortcut(Qt::ShiftModifier | Qt::Key_H);
 	QAction* actionSyncSelection = addAction("Sync selection", "actionSyncSelection"); actionSyncSelection->setShortcut(Qt::AltModifier | Qt::Key_F);
+	QAction* actionCopySelection = addAction("Copy selection", "actionCopySelection");
+	QAction* actionPasteSelection = addAction("Paste selection", "actionPasteSelection");
 	QAction* actionUnhideAll = addAction("Unhide All", "actionUnhideAll");
 	QAction* actionFind = addAction("Find ...", "actionFind"); //actionFind->setShortcut(Qt::ControlModifier | Qt::Key_F);
 	QAction* actionSelectRange = addAction("Select Range ...", "actionSelectRange");
@@ -469,6 +471,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	moreSelection->addAction(actionGrowSelection);
 	moreSelection->addAction(actionShrinkSelection);
 	moreSelection->addAction(actionSyncSelection);
+	moreSelection->addAction(actionCopySelection);
+	moreSelection->addAction(actionPasteSelection);
 
 	// Edit menu
 	menuBar->addAction(menuEdit->menuAction());

@@ -35,6 +35,10 @@ public:
 	bool UpdateData(bool bsave) override;
 
 protected:
+	void SaveProperties(OArchive& ar);
+	void LoadProperties(IArchive& ar);
+
+protected:
 	FSModel*	m_fem;
 	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
 	void*		m_febClass;			// The FEBio class
