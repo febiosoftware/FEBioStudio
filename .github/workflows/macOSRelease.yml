@@ -9,7 +9,7 @@ on:
         type: string
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-release.yml@ci/releaseWorkflow
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-release.yml@develop
     with:
       febioVer: ${{inputs.febioVer}}
       fbsVer: ${{inputs.fbsVer}}
