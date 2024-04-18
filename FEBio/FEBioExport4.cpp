@@ -586,7 +586,7 @@ bool FEBioExport4::Write(const char* szfile)
 		// analysis-step and if that step does not define
 		// any BCs, Loads, interfaces or RCs.
 		int ntype = -1;
-		bool bsingle_step = (m_nsteps <= 1);
+		bool bsingle_step = false;
 		if (m_nsteps == 2)
 		{
 			FSStep* pstep = fem.GetStep(1);
