@@ -133,11 +133,21 @@ for item in ${sdkLibs[@]}; do
     cp $FEBIO_REPO/cmbuild/lib/$item $RELEASE_DIR/sdk/lib
 done
 
-
 cd $RELEASE_DIR/sdk
 zip -r $UPLOAD_DIR/sdk.zip include
 zip -r $UPLOAD_DIR/sdk.zip libintel
 cd $GITHUB_WORKSPACE
+
+# Set FEBio and FBS versions in installBuilder.xml
+while IFS='' read -r a; do
+    echo "${a//FEBIO_VER/$FEBIO_VER}"
+done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
+mv $FBS_REPO/ci/installBuilder.xml{.t,}
+
+while IFS='' read -r a; do
+    echo "${a//FBS_VER/$FBS_VER}"
+done < $FBS_REPO/ci/installBuilder.xml > $FBS_REPO/ci/installBuilder.xml.t
+mv $FBS_REPO/ci/installBuilder.xml{.t,}
 
 # Create installer
 rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
@@ -152,7 +162,7 @@ rm -r /Applications/InstallBuilder\ Enterprise\ 23.11.0/output/*
 # Notarize installer
 cd $UPLOAD_DIR/installer
 zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
-xcrun notarytool submit -p notarytool-profile $INSTALLER_NAME.zip --wait
+xcrun notarytool submit --apple-id $MACOS_SIGN_ID --team-id $MACOS_SIGN_TEAM --password $MACOS_SIGN_PWD $INSTALLER_NAME.zip --wait
 xcrun stapler staple $INSTALLER_NAME
 rm $INSTALLER_NAME.zip
 cd $GITHUB_WORKSPACE
