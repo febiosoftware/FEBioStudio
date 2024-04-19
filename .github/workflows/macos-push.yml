@@ -1,4 +1,4 @@
-name: CI - MacOS Push
+name: CI - macOS Push
 
 on:
   workflow_dispatch:

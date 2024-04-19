@@ -1,3 +1,5 @@
+name: CI - macOS Release
+
 on:
   workflow_dispatch:
     inputs:
