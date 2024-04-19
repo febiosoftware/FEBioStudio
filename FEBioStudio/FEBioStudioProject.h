@@ -139,7 +139,7 @@ public:
 
 	QStringList GetFilePaths();
 
-	void AddGroup(const QString& groupName, int parentId);
+	ProjectItem* AddGroup(const QString& groupName, int parentId = -1);
 
 	void MoveToGroup(int itemId, int groupId);
 

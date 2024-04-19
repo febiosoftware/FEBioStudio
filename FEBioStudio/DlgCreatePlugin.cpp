@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ResourceEdit.h"
 #include "plugin_templates.h"
+#include "FEBioStudioProject.h"
 
 //=============================================================================
 class CDlgCreatePluginUI
@@ -93,6 +94,12 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(ne
 	setMinimumSize(QSize(600, 300));
 	ui->m_wnd = parent;
 	ui->setup(this);
+
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj)
+	{
+		ui->m_path->setResourceName(prj->GetProjectPath());
+	}
 }
 
 bool GenerateFile(const QString& fileName, const QString& content)
@@ -148,6 +155,20 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
 	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
 	if (!GenerateFile(cmake, cmakeText)) return false;
+
+	// add plugin to project
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj)
+	{
+		FEBioStudioProject::ProjectItem* grp = prj->AddGroup(config.name);
+		if (grp)
+		{
+			grp->AddFile(cmake);
+			grp->AddFile(main);
+			grp->AddFile(header);
+			grp->AddFile(source);
+		}
+	}
 
 	return true;
 }

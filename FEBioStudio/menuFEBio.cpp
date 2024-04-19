@@ -317,7 +317,10 @@ void CMainWindow::on_actionFEBioPlugins_triggered()
 void CMainWindow::on_actionCreatePlugin_triggered()
 {
 	CDlgCreatePlugin dlg(this);
-	dlg.exec();
+	if (dlg.exec())
+	{
+		ui->fileViewer->Update();
+	}
 }
 
 void CMainWindow::on_actionFEBioTangent_triggered()
