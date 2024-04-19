@@ -2371,8 +2371,7 @@ void CMainWindow::UpdateUIConfig()
 	}
 	else
 	{
-		// TODO: Huh?? 
-		ui->setUIConfig(Ui::Config::HTML_CONFIG);
+		ui->setUIConfig(Ui::Config::EMPTY_CONFIG);
 	}
 }
 

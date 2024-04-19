@@ -2720,6 +2720,8 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 		}
 		else ParseUnknownTag(tag);
 
+		pmc->UpdateData(false);
+
 		return;
 	}
 

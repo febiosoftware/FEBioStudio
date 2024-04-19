@@ -892,7 +892,7 @@ void FEBioFormat3::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& tag
 		{
 			int nid = tag.AttributeValue<int>("id", -1);
 			if (nid == -1) throw XMLReader::MissingAttribute(tag, "id");
-			list.push_back(nid - 1);
+			list.push_back(nid);
 		}
 		else if (tag == "node_set")
 		{

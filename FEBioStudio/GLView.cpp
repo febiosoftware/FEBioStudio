@@ -1155,6 +1155,7 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 		cam->Orbit(q);
 		update();
 	}
+	else ev->ignore();
 }
 
 void CGLView::initializeGL()
