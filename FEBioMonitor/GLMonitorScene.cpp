@@ -504,6 +504,14 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem, Post::EXPORT_DATA); break;
 		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem, Post::EXPORT_DATA); break;
 		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem, Post::EXPORT_DATA); break;
+		case PLT_ARRAY:
+		{
+			Post::FEArrayDataField* data = new Post::FEArrayDataField(fem, NODE_DATA, DATA_ITEM, Post::EXPORT_DATA);
+			data->SetArraySize(ps->GetArraysize());
+			data->SetArrayNames(ps->GetArrayNames());
+			pdf = data;
+		}
+		break;
 		default:
 			assert(false);
 			break;
@@ -655,12 +663,16 @@ void CGLMonitorScene::UpdateStateData(bool addState)
 	m_postModel->SetCurrentTimeIndex(m_postModel->GetStates() - 1);
 
 	Post::FEState* ps = m_postModel->CurrentState();
+	if (!addState) ps->m_time = m_doc->GetTimeValue();
+
 	FEMesh& febioMesh = m_fem->GetMesh();
 	for (int i = 0; i < febioMesh.Nodes(); ++i)
 	{
 		FENode& feNode = febioMesh.Node(i);
 		ps->m_NODE[i].m_rt = to_vec3f(feNode.m_rt);
 	}
+
+	UpdateModelData();
 
 	UpdateScene();
 }
@@ -677,8 +689,7 @@ void CGLMonitorScene::UpdateScene()
 	ps->GetFEMesh()->UpdateNormals();
 
 	m_postModel->UpdateBoundingBox();
-
-	UpdateModelData();
+	m_glm->Update(true);
 }
 
 void CGLMonitorScene::UpdateDataField(FEPlotData* dataField, Post::FEMeshData& meshData)
@@ -702,7 +713,6 @@ void CGLMonitorScene::UpdateModelData()
 		Post::FEMeshData& meshData = ps->m_Data[n];
 		UpdateDataField(pd, meshData);
 	}
-	m_glm->Update(true);
 }
 
 void CGLMonitorScene::UpdateNodalData(FEPlotData* pd, Post::FEMeshData& meshData)
@@ -733,6 +743,11 @@ void CGLMonitorScene::UpdateNodalData(FEPlotData* pd, Post::FEMeshData& meshData
 		{
 			Post::FENodeData<mat3fs>& d = dynamic_cast<Post::FENodeData<mat3fs>&>(meshData);
 			for (int i = 0; i < N; ++i) d[i] = a.get<mat3fs>(i);
+		}
+		else if (dataType == Var_Type::PLT_ARRAY)
+		{
+			Post::FENodeArrayData& d = dynamic_cast<Post::FENodeArrayData&>(meshData);
+			d.setData(a.data());
 		}
 		else assert(false);
 	}
