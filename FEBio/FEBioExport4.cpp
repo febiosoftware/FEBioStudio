@@ -266,6 +266,17 @@ void FEBioExport4::AddEdgeSet(const std::string& name, FEItemListBuilder* pl)
 	m_pEdge.push_back(NamedItemList(name, pl));
 }
 
+const char* FEBioExport4::GetEdgeSetName(FEItemListBuilder* pl)
+{
+	// search the nodesets first
+	int N = (int)m_pEdge.size();
+	for (int i = 0; i < N; ++i)
+		if (m_pEdge[i].m_list == pl) return m_pEdge[i].m_name.c_str();
+
+	assert(false);
+	return "";
+}
+
 //-----------------------------------------------------------------------------
 void FEBioExport4::AddSurface(const std::string& name, FEItemListBuilder* pl)
 {
@@ -575,7 +586,7 @@ bool FEBioExport4::Write(const char* szfile)
 		// analysis-step and if that step does not define
 		// any BCs, Loads, interfaces or RCs.
 		int ntype = -1;
-		bool bsingle_step = (m_nsteps <= 1);
+		bool bsingle_step = false;
 		if (m_nsteps == 2)
 		{
 			FSStep* pstep = fem.GetStep(1);
@@ -902,7 +913,15 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	if (dynamic_cast<FSMeshSelection*>(pm))
 	{
 		FSMeshSelection* sel = dynamic_cast<FSMeshSelection*>(pm);
-		const char* szname = GetSurfaceName(sel->GetItemList());
+		const char* szname = nullptr;
+		switch (sel->GetSuperClassID())
+		{
+		case FEEDGE_ID   : szname = GetEdgeSetName(sel->GetItemList()); break;
+		case FESURFACE_ID: szname = GetSurfaceName(sel->GetItemList()); break;
+		default:
+			assert(false);
+		}
+		if (szname == nullptr) throw FEBioExportError();
 		el.value(szname);
 		m_xml.add_leaf(el);
 		return;

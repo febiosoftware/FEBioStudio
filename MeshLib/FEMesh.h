@@ -211,4 +211,9 @@ protected:
 double bias(double b, double x);
 double gain(double g, double x);
 
-FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);
+namespace MeshTools {
+
+	FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);
+
+	std::vector<int> GetConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax);
+}

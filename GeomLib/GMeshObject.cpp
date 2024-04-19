@@ -60,7 +60,7 @@ GMeshObject::GMeshObject(FSSurfaceMesh* pm) : GObject(GMESH_OBJECT)
 	// update the object
 	if (pm)
 	{
-		SetFEMesh(ConvertSurfaceToMesh(pm));
+		SetFEMesh(MeshTools::ConvertSurfaceToMesh(pm));
 		if (pm->Nodes()) Update();
 	}
 }

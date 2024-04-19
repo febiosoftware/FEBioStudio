@@ -593,7 +593,7 @@ Online Resources
 \series default
 : Some links to online FEBio resources, such as the FEBio Knowledgebase,
  where you can find tutorials on FEBio Studio.
- Clicking a link here will open the corresponding webpage in a web browser.
+ Clicking a link here will open the corresponding page in a web browser.
  
 \end_layout
 
@@ -614,7 +614,7 @@ A new model can be started either by clicking the
 New Model...
 
 \emph default
- link on the Welcom page, or selecting the 
+ link on the Welcome page, or selecting the 
 \emph on
 File
 \backslash
@@ -635,8 +635,8 @@ reference "sec:mylabel3"
  are shown.
  For instance, if the Structural Mechanics template is chosen, the Physics
  menu will only show options that can be applied to a mechanics model.
- After selecting a template, and optionally chosing a name for the new model,
- click OK to close this dialog and return to FEBio Studio.
+ After selecting a template, and optionally choosing a name for the new
+ model, click OK to close this dialog and return to FEBio Studio.
  The UI will look something like the figure below.
  
 \end_layout
@@ -760,7 +760,7 @@ Open Model
  menu.
  You can also open recent models from the list shown on the Welcome Page.
  Clicking a link in the Recent section will open the model.
- FEBio Studio also supports drap-and-drop for supported file formats.
+ FEBio Studio also supports drag-and-drop for supported file formats.
  For instance, you can drag a model file from Windows Explorer and drop
  it on FEBio Studio to open it.
  
@@ -1214,7 +1214,7 @@ When running a model in FEBio, a new item is added to the model tree with
 
 \begin_layout Standard
 When you open a plot file in FEBio Studio you will notice that the UI changes.
- The Model and Build panels will dissapear and the Post panel will appear.
+ The Model and Build panels will disappear and the Post panel will appear.
  The Build toolbar is also replaced by the Post toolbar.
  The Post panel has somewhat the same purpose as the Model panel and displays
  a tree structure of the contents of the plot file.
@@ -1825,7 +1825,7 @@ Model File
 \emph on
 Open Recent: 
 \emph default
-Open a recently opended model file.
+Open a recently opened model file.
  
 \end_layout
 
@@ -2170,7 +2170,7 @@ The Physics menu offers the following menu items:
 \begin_layout Itemize
 
 \emph on
-Add Nocal BC
+Add Nodal BC
 \emph default
 : Apply a boundary condition to a selection of nodes.
  
@@ -2521,7 +2521,7 @@ Mesh Diagnostics
 \begin_layout Itemize
 
 \emph on
-Unit Convertor
+Unit Converter
 \emph default
 : Convert quantities between different units.
  
@@ -2530,7 +2530,7 @@ Unit Convertor
 \begin_layout Itemize
 
 \emph on
-Elasticity Convertor
+Elasticity Converter
 \emph default
 : convert between parameter for defining elastic materials.
  
@@ -2542,7 +2542,7 @@ Elasticity Convertor
 Material Test
 \emph default
 : A tool that can be used to run simple scenarios (e.g.
- uniaxial testing) on one of the materials in the model.
+ uni-axial testing) on one of the materials in the model.
  
 \end_layout
 
@@ -2640,7 +2640,7 @@ Zoom to Selection
 \begin_layout Itemize
 
 \emph on
-Orthographics Projection
+Orthographic Projection
 \emph default
 : Toggles between orthographic or perspective projection mode.
  
@@ -2767,7 +2767,7 @@ cursor to selection
 Track selection
 \emph default
 : when active, keeps the camera focused on the current selection.
- (only used on Pos side.)
+ (only used on Post side.)
 \end_layout
 
 \begin_layout Itemize
@@ -2926,14 +2926,14 @@ FEBio Studio Manual
 \emph on
 FEBio Forums:
 \emph default
- Opens the FEBio forum webpage in an external web browser.
+ Opens the FEBio forum website in an external web browser.
  
 \end_layout
 
 \begin_layout Itemize
 
 \emph on
-FEBio Pulications: 
+FEBio Publications: 
 \emph default
 Opens a web page with a list of publications that have used FEBio.
  
@@ -2945,7 +2945,7 @@ Opens a web page with a list of publications that have used FEBio.
 Submit a bug report
 \emph default
 : Allows users to generate and submit bug reports that will be posted to
- the github issues page.
+ the GitHub issues page.
  
 \end_layout
 
@@ -5565,7 +5565,7 @@ The
 \emph on
 Refresh
 \emph default
- button will connect to the model repository server, and redownload the
+ button will connect to the model repository server, and re-download the
  project tree and metadata, effectively refreshing the panel.
 \end_layout
 
@@ -5710,7 +5710,7 @@ Expand
 \end_layout
 
 \begin_layout Subsection
-Managinig Your Uploads
+Managing Your Uploads
 \end_layout
 
 \begin_layout Standard
@@ -5764,7 +5764,7 @@ Upload
 \emph default
  button will open the 
 \emph on
-Upload/Modfiy Wizard
+Upload/Modify Wizard
 \emph default
  (see Section 
 \begin_inset CommandInset ref
@@ -5823,7 +5823,7 @@ Modify Project
  button will allow you to edit the currently selected project.
  It will open the 
 \emph on
-Upload/Modfiy Dialog
+Upload/Modify Dialog
 \emph default
  (see Section 
 \begin_inset CommandInset ref
@@ -5910,7 +5910,7 @@ The fields in this dialog are meant to help our team determine if your account
 OK
 \emph default
 , the request will sent to our team.
- You should recieve an email at the specified address once you have been
+ You should receive an email at the specified address once you have been
  given permission to upload.
  
 \end_layout
@@ -5918,7 +5918,7 @@ OK
 \begin_layout Standard
 Please note that this is not an automated process.
  As such, allow for 1-2 business days for the request to be processed.
- If you do not recieve a response in that time, please resend the request
+ If you do not receive a response in that time, please resend the request
  in the same manner.
 \end_layout
 
@@ -6045,7 +6045,7 @@ Project Name
 Description
 \emph default
 : Provide a description of your project as a whole (descriptions of individual
- files can be given on the second page fo the wizard).
+ files can be given on the second page of the wizard).
  Please be thorough, providing at least a few sentences.
  A user should be able to understand the purpose of your project simply
  by reading the description.
@@ -6182,7 +6182,7 @@ First and second pages of the dialog.
 \end_inset
 
 This dialog allows you to search for publications and add them to your project.
- You may either search by DOI (the recommened approach), or by search term.
+ You may either search by DOI (the recommended approach), or by search term.
  Once the dialog has found possible candidates based on your search criteria,
  it will display them in a list below the search boxes.
  To select one, click the blue checkbox button.
@@ -7038,7 +7038,7 @@ The
 \emph on
 Measure Tool 
 \emph default
-can be accessed from the main toolbar and offers various tools for measurings
+can be accessed from the main toolbar and offers various tools for measuring
  distances, angles, areas, and more.
  
 \end_layout
@@ -7656,7 +7656,7 @@ Render Shadows:
 \begin_layout Itemize
 
 \series bold
-Shadow Intensisty: 
+Shadow Intensity: 
 \series default
 Sets the intensity of the shadows (0 black, 1 fully transparent)
 \end_layout
@@ -7674,7 +7674,7 @@ Palette Options
 \end_layout
 
 \begin_layout Standard
-The  palette defines the default colors that are assigned to diferent parts.
+The  palette defines the default colors that are assigned to different parts.
  Different palettes can be chosen, as well as loaded, or saved.
  A custom palette can be created from the current model.
  
@@ -7710,7 +7710,7 @@ as the root tag.
 Palette 
 \emph default
 tag.
- This tag requies a 
+ This tag requires a 
 \emph on
 name 
 \emph default
@@ -7767,7 +7767,7 @@ The Physics options control how certain model components are displayed in
 \series bold
 Show rigid joints
 \series default
-: Sets whether or not to show glyps representing the rigid joints in the
+: Sets whether or not to show glyphs representing the rigid joints in the
  model.
  
 \end_layout
@@ -7912,7 +7912,7 @@ Clear undo stack on save
 \series bold
 Theme
 \series default
-: Set the overal UI theme.
+: Set the overall UI theme.
  If this setting is changed, you need to restart FEBio Studio to see the
  effect.
  
@@ -8041,12 +8041,12 @@ Update to Latest Release:
 \series bold
 Update to Development Version:
 \series default
- FEBio Studio and FEBio are in almost daily development, and a new developement
+ FEBio Studio and FEBio are in almost daily development, and a new development
  version of the software is made available each night.
  This button will initiate a check to see if there are any updates available
  to the latest development version.
- Please note that while these versions contain the latest bugfixes and features,
- they are potentially unstable.
+ Please note that while these versions contain the latest bug fixes and
+ features, they are potentially unstable.
  
 \end_layout
 
@@ -8213,7 +8213,7 @@ Open Model File
 \end_layout
 
 \begin_layout Standard
-Several formats are supported, inlcuding:
+Several formats are supported, including:
 \end_layout
 
 \begin_layout Itemize
@@ -8540,7 +8540,7 @@ button to create the primitive and add it to the model.
 \end_layout
 
 \begin_layout Standard
-After a primitve is created, its parameters can be changed in the 
+After a primitive is created, its parameters can be changed in the 
 \emph on
 Edit 
 \emph default
@@ -8586,10 +8586,10 @@ name "subsec:editing"
 \begin_layout Standard
 The 
 \emph on
-Edit panel
+Edit 
 \emph default
-, one of the panels on the Build panel, gives access to the object's creation
- parameters and editing options.
+panel, one of the panels on the Build panel, gives access to the object's
+ creation parameters and editing options.
 \end_layout
 
 \begin_layout Standard
@@ -8709,11 +8709,11 @@ The surface of an editable surface can be partitioned (i.e.
 \end_layout
 
 \begin_layout Standard
-The auto-partition tool paritions the geometry into surfaces by identifying
+The auto-partition tool partitions the geometry into surfaces by identifying
  the crease edges.
  A crease edge is an edge between two surface facets whose normals make
  an angle that is larger than the crease angle.
- To manually create surface paritions, use the Partition tool instead.
+ To manually create surface partitions, use the Partition tool instead.
  
 \end_layout
 
@@ -9044,8 +9044,11 @@ Weld Nodes
 \end_layout
 
 \begin_layout Standard
-The Weld Nodes tools merges the selected nodes that are within the specified
- tolerance.
+The 
+\emph on
+Weld Nodes
+\emph default
+ tool merges the selected nodes that are within the specified tolerance.
  Any edges or faces that collapse as a result, will be removed from the
  mesh as well.
  
@@ -9680,7 +9683,7 @@ Fix Mesh
 \end_layout
 
 \begin_layout Standard
-Thsi tool offers several options for repairing common problems in volume
+This tool offers several options for repairing common problems in volume
  meshes.
  
 \end_layout
@@ -9690,9 +9693,9 @@ Inflate
 \end_layout
 
 \begin_layout Standard
-Create a biased mesh in an existing tetrahedral mesh, by inflating (extruding)
- the selected surface inward, producing pentahedral elements, then remeshing
- the inner domain with TetGen.
+Create a biased mesh in an existing tetrahedral mesh, by extruding the selected
+ surface inward, producing pentahedral elements, then remeshing the inner
+ domain with TetGen.
  This can be useful for analyzing boundary layer responses in the vicinity
  of the selected surface.
 \end_layout
@@ -9719,7 +9722,7 @@ distance
 \series bold
 segments
 \series default
-: the top layer elements will be divided in this many segments.
+: The top layer elements will be divided into this many segments.
  
 \end_layout
 
@@ -9728,7 +9731,7 @@ segments
 \series bold
 mesh bias
 \series default
-: sets the gradation level of the inserted elements.
+: Sets the gradation level of the inserted elements.
  
 \end_layout
 
@@ -9746,7 +9749,7 @@ symmetric mesh bias
 \series bold
 weld tolerance
 \series default
-: the inner domain is welded to the inflated mesh domain using this tolerance.
+: The inner domain is welded to the inflated mesh domain using this tolerance.
 \end_layout
 
 \begin_layout Itemize
@@ -9754,8 +9757,18 @@ weld tolerance
 \series bold
 crease angle
 \series default
-: the two domains are rebuilt into a single domain (as describedin Rebuild
- Mesh), using the selected crease angle.
+: The two domains are rebuilt into a single domain (as described in the
+ section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Rebuild-Mesh"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ below), using the selected crease angle.
 \end_layout
 
 \begin_layout Subsubsection
@@ -9885,6 +9898,13 @@ This tool is useful when the auto-partition tool did not create a desirable
 
 \begin_layout Subsubsection
 Rebuild Mesh
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Rebuild-Mesh"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -11285,9 +11305,9 @@ Nonlinear constraints
 
 \begin_layout Standard
 Aside from contact, FEBio offers several types of nonlinear constraints
- that in some way constrains the solution of the finite element problem.
- In FEBio Studio, these constraints are differeniated based on whether they
- apply to surfaces or to volumetric bodies.
+ that in some way constrain the solution of the finite element problem.
+ In FEBio Studio, these constraints are differentiated based on whether
+ they apply to surfaces or to volumetric bodies.
  Constraints that don't quite fit in either category are referred to as
  general constraints.
  
@@ -11312,7 +11332,7 @@ surface constraint
  displacement for a structural mechanics problem) at a surface.
  To add a surface constraint, go to the menu 
 \emph on
-Phyics/Add Surface Constraint, 
+Physics/Add Surface Constraint, 
 \emph default
 or right-click on the 
 \emph on
@@ -11396,7 +11416,7 @@ body constraint
  volumetric body part.
  To add a body constraint, go to the menu 
 \emph on
-Phyics/Add Body Constraint, 
+Physics/Add Body Constraint, 
 \emph default
 or right-click on the 
 \emph on
@@ -11434,7 +11454,7 @@ general constraint
  constrains the solution of the finite element problem in some special way.
  To add a general constraint, go to the menu 
 \emph on
-Phyics/Add Body Constraint, 
+Physics/Add Body Constraint, 
 \emph default
 or right-click on the 
 \emph on
@@ -12129,7 +12149,7 @@ must point curve
 \begin_layout Itemize
 
 \emph on
-Agressiveness
+Aggressiveness
 \emph default
 : When set to 1, the time step size will be scaled by the 
 \emph on
@@ -12147,7 +12167,7 @@ Cutback
 : scale factor for reducing time step size.
  Only used when 
 \emph on
-agressiveness
+aggressiveness
 \emph default
  is set to 1.
  
@@ -12986,7 +13006,7 @@ name "fig:launch-config-edit"
 \end_layout
 
 \begin_layout Standard
-The left side of the dialog shows your exisiting configurations.
+The left side of the dialog shows your existing configurations.
  To add a new configuration click the plus icon below the list of configurations.
  To remove a configuration, select it in the list, and then click the minus
  icon.
@@ -13081,8 +13101,8 @@ Remote Directory
 \emph default
 : The remote directory to which your FEBio input file will be copied, and
  which will act as the working directory for your FEBio run.
- Unless otherwise specifed in your input file, your log and plot files will
- be created here.
+ Unless otherwise specified in your input file, your log and plot files
+ will be created here.
  This directory need not exist, and will be created automatically if it
  does not.
 \end_layout
@@ -13106,7 +13126,7 @@ SLURM Queue
 Remote
 \emph default
  type, along with a text box in which a PBS or SLURM script may be edited.
- At launch, the contents of this text box are put into a file, transfered
+ At launch, the contents of this text box are put into a file, transferred
  via SFTP to the remote server, and run with either the 
 \emph on
 qsub
@@ -13161,7 +13181,7 @@ ${FEBIO_PATH}
 \emph on
 Remote Executable
 \emph default
- field in the launch configuratoin.
+ field in the launch configuration.
 \end_layout
 
 \end_deeper
@@ -13210,7 +13230,7 @@ Lines starting with the '#' symbol are comments and will be ignored.
 \end_layout
 
 \begin_layout Itemize
-Emtpy lines are ignored.
+Empty lines are ignored.
 \end_layout
 
 \begin_layout Itemize
@@ -13227,7 +13247,7 @@ The script written in this field is not a bash script, but rather a set
 \end_layout
 
 \begin_layout Itemize
-This launch configuration type allows for great flexability.
+This launch configuration type allows for great flexibility.
  Using it, you can do pre and post processing of your FEBio jobs on a remote
  server with the click of a single button.
  Use this launch configuration type with caution, as it does not have any
@@ -14927,7 +14947,7 @@ To rotate view up/down by small increment
 \begin_inset Text
 
 \begin_layout Plain Layout
-Up/Down arraw key
+Up/Down arrow key
 \end_layout
 
 \end_inset
@@ -14941,7 +14961,7 @@ Up/Down arraw key
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Mouse and keyboard shorcuts to control view.
+Mouse and keyboard shortcuts to control view.
  
 \begin_inset CommandInset label
 LatexCommand label
@@ -16393,7 +16413,7 @@ Show legend -
 \begin_layout Itemize
 
 \emph on
-Legen Orientation:
+Legend Orientation:
 \emph default
  sets the orientation of the legend bar (horizontal or vertical) 
 \end_layout
@@ -16430,7 +16450,7 @@ button in the Model Viewer.
 \begin_layout Standard
 The color map displays scalar values.
  For tensor variables, the user can select the sub-components of the tensor
- as well as some typical scalar quantatities that can be derived from the
+ as well as some typical scalar quantities that can be derived from the
  tensor.
  The following tables explain these components for the different tensor
  types.
@@ -17473,7 +17493,7 @@ selects the data field that will be used to calculate the isosurfaces.
 \emph on
 Allow clipping:
 \emph default
- If yes, iso-surfaces will be clipped by any active plane cuts.
+ If yes, isosurfaces will be clipped by any active plane cuts.
  
 \end_layout
 
@@ -17803,7 +17823,7 @@ Streamline Plot
 \end_layout
 
 \begin_layout Standard
-Streamlines are useful for visualing fluid flows.
+Streamlines are useful for visualizing fluid flows.
  The streamlines are calculated by integrating a vector field at particular
  seed points.
  The seed points are determined automatically based on the vector field.
@@ -17879,7 +17899,7 @@ Sets how the range of the corresponding colormap is determined.
 \begin_layout Itemize
 
 \series bold
-Rande divisions: 
+Range divisions: 
 \series default
 Sets the number of intervals for the colormap (and associated legend)
 \end_layout
@@ -17919,7 +17939,7 @@ Particle Flow Plot
 \end_layout
 
 \begin_layout Standard
-Particle flows are useful for visualing fluid flows.
+Particle flows are useful for visualizing fluid flows.
  The particles are seeded at the influx boundary of the flow, which is determine
 d automatically.
  Everywhere the flow enters the mesh, a seed point is placed at the center
@@ -18902,7 +18922,11 @@ file
 \emph default
 attribute.
  This is used for creating models using a specialized tool.
- This can be used for instance for creating models via the kinemat tool.
+ This can be used for instance for creating models via the 
+\emph on
+Kinemat
+\emph default
+ tool.
  See the examples below for how this works.
  
 \end_layout
@@ -18916,7 +18940,7 @@ The
 \emph on
 material 
 \emph default
-tag allows users to set defaut material properties for the materials that
+tag allows users to set default material properties for the materials that
  were automatically created when reading the model file.
  The following table shows a list of available material parameters.
  
@@ -20318,9 +20342,9 @@ Lighting effect
 \begin_layout Itemize
 
 \emph on
-Lighting strenght 
+Lighting strength 
 \emph default
-- The strenght of the ligthing effect, as a value between 0 and 1.
+- The strength of the lighting effect, as a value between 0 and 1.
  
 \end_layout
 
