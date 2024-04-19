@@ -1191,7 +1191,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			}
 			else ui->addToRecentFiles(file.m_fileName);
 
-			ui->commandWnd->LogCommand(QString("open \"%1\"").arg(file.m_fileName));
+			ui->commandWnd->LogCommand(CCommandLine("open", file.m_fileName));
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
@@ -3167,6 +3167,11 @@ void CMainWindow::OnSelectionTransformed()
 		ui->buildPanel->Update(false);
 	}
 	RedrawGL();
+}
+
+CCommandWindow* CMainWindow::GetCommandWindow()
+{
+	return ui->commandWnd;
 }
 
 // remove a graph from the list

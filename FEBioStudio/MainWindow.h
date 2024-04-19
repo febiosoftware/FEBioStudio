@@ -60,6 +60,7 @@ class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 class CModelViewer;
+class CCommandWindow;
 
 enum class ImageFileType;
 
@@ -265,6 +266,8 @@ public:
 
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
+
+	CCommandWindow* GetCommandWindow();
 
 private:
 	void writeSettings();

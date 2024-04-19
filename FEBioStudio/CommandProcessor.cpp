@@ -225,8 +225,10 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
 	m_cmds.push_back({ "addbl"  , &CommandProcessor::cmd_addbl  , "adds a body load to the current model" });
 	m_cmds.push_back({ "addci"  , &CommandProcessor::cmd_addci  , "adds a contact interface to the current model" });
 	m_cmds.push_back({ "adddata", &CommandProcessor::cmd_adddata, "add a standard datafield to the post model." });
+	m_cmds.push_back({ "addic"  , &CommandProcessor::cmd_addic  , "add an initial conidition to the current model." });
 	m_cmds.push_back({ "addmat" , &CommandProcessor::cmd_addmat , "adds a material to the model" });
 	m_cmds.push_back({ "addnl"  , &CommandProcessor::cmd_addnl  , "adds a nodal load to the current model" });
+	m_cmds.push_back({ "addnlc" , &CommandProcessor::cmd_addnlc , "adds a nonlinear constraint to the current model" });
 	m_cmds.push_back({ "addsl"  , &CommandProcessor::cmd_addsl  , "adds a surface load to the current model" });
 	m_cmds.push_back({ "addstep", &CommandProcessor::cmd_addstep, "adds a step to the current model" });
 	m_cmds.push_back({ "anim"   , &CommandProcessor::cmd_anim   , "animate the model" });
@@ -356,7 +358,11 @@ CMD_RETURN_CODE CommandProcessor::cmd_addbc(QStringList ops)
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ops.isEmpty()) m_wnd->on_actionAddNodalBC_triggered();
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddNodalBC_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSProject& prj = doc->GetProject();
@@ -387,7 +393,11 @@ CMD_RETURN_CODE CommandProcessor::cmd_addbl(QStringList ops)
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ops.isEmpty()) m_wnd->on_actionAddBodyLoad_triggered();
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddBodyLoad_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSProject& prj = doc->GetProject();
@@ -418,7 +428,11 @@ CMD_RETURN_CODE CommandProcessor::cmd_addci(QStringList ops)
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ops.isEmpty()) m_wnd->on_actionAddContact_triggered();
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddContact_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSProject& prj = doc->GetProject();
@@ -465,11 +479,50 @@ CMD_RETURN_CODE CommandProcessor::cmd_adddata(QStringList ops)
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
+CMD_RETURN_CODE CommandProcessor::cmd_addic(QStringList ops)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return NoActiveDoc();
+
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddIC_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
+	else
+	{
+		FSProject& prj = doc->GetProject();
+		FSModel& fem = prj.GetFSModel();
+
+		std::string typeStr = ops[0].toStdString();
+		FSInitialCondition* pic = FEBio::CreateInitialCondition(typeStr, &fem);
+		if (pic == nullptr) return Error(QString("Can't create initial condition type: %1").arg(ops[0]));
+		FEBio::InitDefaultProps(pic);
+		pic->SetName(defaultICName(&fem, pic));
+
+		ops.pop_front();
+		if (SetParameters(pic, ops) == false)
+		{
+			delete pic;
+			return InvalidArgsCount();
+		}
+
+		FSStep* step = fem.GetStep(0);
+		doc->DoCommand(new CCmdAddIC(step, pic), pic->GetNameAndType());
+		m_wnd->UpdateModel(pic);
+	}
+	return CMD_RETURN_CODE::CMD_SUCCESS;
+}
+
 CMD_RETURN_CODE CommandProcessor::cmd_addmat(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
-	if (ops.empty()) m_wnd->on_actionAddMaterial_triggered();
+	if (ops.empty())
+	{
+		m_wnd->on_actionAddMaterial_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSModel* fem = doc->GetFSModel();
@@ -496,7 +549,11 @@ CMD_RETURN_CODE CommandProcessor::cmd_addnl(QStringList ops)
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ops.isEmpty()) m_wnd->on_actionAddNodalLoad_triggered();
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddNodalLoad_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSProject& prj = doc->GetProject();
@@ -522,12 +579,51 @@ CMD_RETURN_CODE CommandProcessor::cmd_addnl(QStringList ops)
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
+CMD_RETURN_CODE CommandProcessor::cmd_addnlc(QStringList ops)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return NoActiveDoc();
+
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddGenericNLC_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
+	else
+	{
+		FSProject& prj = doc->GetProject();
+		FSModel& fem = prj.GetFSModel();
+
+		std::string typeStr = ops[0].toStdString();
+		FSModelConstraint* pnlc = FEBio::CreateNLConstraint(typeStr, &fem);
+		if (pnlc == nullptr) return Error(QString("Can't create nonlinear constraint type: %1").arg(ops[0]));
+		FEBio::InitDefaultProps(pnlc);
+		pnlc->SetName(defaultConstraintName(&fem, pnlc));
+
+		ops.pop_front();
+		if (SetParameters(pnlc, ops) == false)
+		{
+			delete pnlc;
+			return InvalidArgsCount();
+		}
+
+		FSStep* step = fem.GetStep(0);
+		doc->DoCommand(new CCmdAddConstraint(step, pnlc), pnlc->GetNameAndType());
+		m_wnd->UpdateModel(pnlc);
+	}
+	return CMD_RETURN_CODE::CMD_SUCCESS;
+}
+
 CMD_RETURN_CODE CommandProcessor::cmd_addsl(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ops.isEmpty()) m_wnd->on_actionAddSurfLoad_triggered();
+	if (ops.isEmpty())
+	{
+		m_wnd->on_actionAddSurfLoad_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		FSProject& prj = doc->GetProject();

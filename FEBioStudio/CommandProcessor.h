@@ -63,8 +63,10 @@ public: // command functions
 	CMD_RETURN_CODE cmd_addbl  (QStringList ops);
 	CMD_RETURN_CODE cmd_addci  (QStringList ops);
 	CMD_RETURN_CODE cmd_adddata(QStringList ops);
+	CMD_RETURN_CODE cmd_addic  (QStringList ops);
 	CMD_RETURN_CODE cmd_addmat (QStringList ops);
 	CMD_RETURN_CODE cmd_addnl  (QStringList ops);
+	CMD_RETURN_CODE cmd_addnlc (QStringList ops);
 	CMD_RETURN_CODE cmd_addsl  (QStringList ops);
 	CMD_RETURN_CODE cmd_addstep(QStringList ops);
 	CMD_RETURN_CODE cmd_anim   (QStringList ops);

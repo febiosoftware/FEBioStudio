@@ -180,7 +180,7 @@ void CMainWindow::on_actionNewModel_triggered()
 			{
 				QString modulename(FEBio::GetModuleName(dlg.GetSelection()));
 				QString documentName = QString::fromStdString(docName);
-				ui->commandWnd->LogCommand(QString("new %1 %2").arg(modulename).arg(documentName));
+				ui->commandWnd->LogCommand(CCommandLine("new", modulename, documentName));
 			}
 		}
 	}

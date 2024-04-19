@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
+#include "CommandWindow.h"
 
 class CSurfaceMesherProps : public CObjectProps
 {
@@ -406,6 +407,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
+
+		w->GetCommandWindow()->LogCommand(CCommandLine("genmesh"));
 	}
 }
 

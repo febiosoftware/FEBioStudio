@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
+#include "CommandWindow.h"
 
 //------------------------------------------------------------------------------------------------------------
 REGISTER_CLASS2(GBox               , CLASS_OBJECT, "box"            , ":/icons/box.png"          , 0);
@@ -192,6 +193,8 @@ void CCreatePanel::on_create_clicked()
 
 			// make sure the object is visible
 			wnd->GetGLView()->ZoomSelection(false);
+
+			wnd->GetCommandWindow()->LogCommand({ "create", po->GetTypeString() });
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{

@@ -36,6 +36,54 @@ SOFTWARE.*/
 #include "CommandProcessor.h"
 #include "version.h"
 
+CCommandLine::CCommandLine() {}
+
+CCommandLine::CCommandLine(const QString& cmd) : m_cmd(cmd) {}
+
+CCommandLine::CCommandLine(const QString& cmd, const QString& arg1)
+{
+	m_cmd = cmd;
+	AddArgument(arg1);
+}
+
+CCommandLine::CCommandLine(const QString& cmd, const QString& arg1, const QString& arg2)
+{
+	m_cmd = cmd;
+	AddArgument(arg1);
+	AddArgument(arg2);
+}
+
+CCommandLine::CCommandLine(std::initializer_list<QString> initList)
+{
+	CCommandLine& T = *this;
+	for (const auto& t : initList)
+	{
+		T << t;
+	}
+}
+
+CCommandLine& CCommandLine::operator << (const QString& s)
+{
+	if (m_cmd.isEmpty()) { m_cmd = s; return *this; }
+	else return AddArgument(s);
+}
+
+CCommandLine& CCommandLine::AddCommand(const QString& cmd)
+{
+	m_cmd += ";" + cmd;
+	return *this;
+}
+
+CCommandLine& CCommandLine::AddArgument(const QString& arg)
+{
+	m_cmd += " ";
+	if (arg.contains(' '))
+		m_cmd += "\"" + arg + "\"";
+	else
+		m_cmd += arg;
+	return *this;
+}
+
 class Ui::CCommandWindow
 {
 public:
@@ -204,10 +252,13 @@ void CCommandWindow::OnEnter()
 	}
 }
 
-void CCommandWindow::LogCommand(QString cmd)
+void CCommandWindow::LogCommand(const CCommandLine& cmd)
 {
+	QString str = cmd.GetCommandString();
 	// TODO: Do some minimal validation perhaps?
-	ui->Log(cmd);
+	QStringList commands = str.split(";");
+	for (QString commandString : commands)
+		ui->Log(commandString);
 }
 
 void CCommandWindow::OnSave()

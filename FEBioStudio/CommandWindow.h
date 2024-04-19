@@ -25,12 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QWidget>
+#include <initializer_list>
 
 class CMainWindow;
 
 namespace Ui {
 	class CCommandWindow;
 }
+
+class CCommandLine
+{
+public:
+	CCommandLine();
+	CCommandLine(const QString& cmd);
+	CCommandLine(const QString& cmd, const QString& arg1);
+	CCommandLine(const QString& cmd, const QString& arg1, const QString& arg2);
+	CCommandLine(std::initializer_list<QString> initList);
+
+	CCommandLine& operator << (const QString& s);
+
+	CCommandLine& AddArgument(const QString& arg);
+	CCommandLine& AddCommand(const QString& cmd);
+
+	QString GetCommandString() const { return m_cmd; }
+
+private:
+	QString	m_cmd;
+};
 
 class CCommandWindow : public QWidget
 {
@@ -44,7 +65,7 @@ public:
 
 	void showEvent(QShowEvent* ev) override;
 
-	void LogCommand(QString cmd);
+	void LogCommand(const CCommandLine& cmd);
 
 public slots:
 	void OnEnter();
