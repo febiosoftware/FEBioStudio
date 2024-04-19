@@ -56,7 +56,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	m_range.mintype = m_range.maxtype = m_defaultRngType;
 	m_rmin = m_rmax = vec3d(0, 0, 0);
 
-	m_nfield = 0;
+	m_nfield = -1;
 	m_breset = true;
 	m_bDispNodeVals = true;
 
@@ -134,10 +134,12 @@ void CGLColorMap::SetEvalField(int n)
 {
 	if (n != m_nfield)
 	{
-		if (m_nfield == 0) m_pbar->show();
 		m_nfield = n;
 		m_breset = true;
 		UpdateData(false);
+
+		if (m_nfield == -1) m_pbar->hide();
+		else m_pbar->show();
 	}
 }
 
@@ -533,7 +535,7 @@ void CGLColorMap::UpdateState(int ntime, bool breset)
 	{
 		// This may happen after an update if fields are deleted.
 		// reset the field code
-		m_nfield = BUILD_FIELD(1, 0, 0);
+		m_nfield = -1;
 		breset = true;
 	}
 
