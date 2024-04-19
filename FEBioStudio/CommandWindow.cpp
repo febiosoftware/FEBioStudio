@@ -204,15 +204,14 @@ void CCommandWindow::OnEnter()
 		QString cmd = cmdAndOps[0];
 		QStringList ops = cmdAndOps; ops.pop_front();
 
-		bool b = ui->cmd->RunCommand(cmd, ops);
+		CMD_RETURN_CODE returnCode = ui->cmd->RunCommand(cmd, ops);
 		QString msg = ui->cmd->GetCommandOutput();
-		if (b)
+		if (returnCode != CMD_RETURN_CODE::CMD_ERROR)
 		{
 			if (msg.isEmpty()) msg = str;
 			ui->Output(msg);
 			ui->input->clear();
-			// don't log help command
-			if (cmd != "help")
+			if (returnCode != CMD_RETURN_CODE::CMD_IGNORE)
 				ui->Log(str);
 		}
 		else

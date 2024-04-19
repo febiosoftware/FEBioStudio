@@ -285,16 +285,16 @@ FSMesh* CommandProcessor::GetActiveMesh()
 	return po->GetFEMesh();
 }
 
-bool CommandProcessor::ProcessCommandLine(QString cmdLine)
+CMD_RETURN_CODE CommandProcessor::ProcessCommandLine(QString cmdLine)
 {
 	QStringList cmdAndOps = ParseCommandLine(cmdLine);
-	if (cmdAndOps.empty()) return (m_output.isEmpty());
+	if (cmdAndOps.empty()) return (m_output.isEmpty() ? CMD_RETURN_CODE::CMD_SUCCESS : CMD_RETURN_CODE::CMD_ERROR);
 	QString cmd = cmdAndOps[0];
 	QStringList ops = cmdAndOps; ops.pop_front();
 	return RunCommand(cmd, ops);
 }
 
-bool CommandProcessor::RunCommand(QString cmd, QStringList ops)
+CMD_RETURN_CODE CommandProcessor::RunCommand(QString cmd, QStringList ops)
 {
 	m_output.clear();
 	for (auto& entry : m_cmds)
@@ -351,7 +351,7 @@ QStringList CommandProcessor::ParseCommandLine(QString cmd)
 	return out;
 }
 
-bool CommandProcessor::cmd_addbc(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addbc(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -379,10 +379,10 @@ bool CommandProcessor::cmd_addbc(QStringList ops)
 		doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 		m_wnd->UpdateModel(pbc);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addbl(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addbl(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -410,10 +410,10 @@ bool CommandProcessor::cmd_addbl(QStringList ops)
 		doc->DoCommand(new CCmdAddLoad(step, pbl), pbl->GetNameAndType());
 		m_wnd->UpdateModel(pbl);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addci(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addci(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -441,12 +441,12 @@ bool CommandProcessor::cmd_addci(QStringList ops)
 		doc->DoCommand(new CCmdAddInterface(step, pci), pci->GetNameAndType());
 		m_wnd->UpdateModel(pci);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_adddata(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_adddata(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 1)) return false;
+	if (!ValidateArgs(ops, 0, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	Post::FEPostModel* fem = doc->GetFSModel();
@@ -462,10 +462,10 @@ bool CommandProcessor::cmd_adddata(QStringList ops)
 		return Error(QString("Unknown datafield name \"%1\"").arg(ops[0]));
 	}
 	m_wnd->Update(nullptr, true);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addmat(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addmat(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -488,10 +488,10 @@ bool CommandProcessor::cmd_addmat(QStringList ops)
 		doc->DoCommand(new CCmdAddMaterial(fem, gmat), gmat->GetNameAndType());
 		m_wnd->UpdateModel(gmat);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addnl(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addnl(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -519,10 +519,10 @@ bool CommandProcessor::cmd_addnl(QStringList ops)
 		doc->DoCommand(new CCmdAddLoad(step, pbc), pbc->GetNameAndType());
 		m_wnd->UpdateModel(pbc);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addsl(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addsl(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -550,10 +550,10 @@ bool CommandProcessor::cmd_addsl(QStringList ops)
 		doc->DoCommand(new CCmdAddLoad(step, pbc), pbc->GetNameAndType());
 		m_wnd->UpdateModel(pbc);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_addstep(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_addstep(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -566,19 +566,19 @@ bool CommandProcessor::cmd_addstep(QStringList ops)
 	ps->SetName(name);
 	doc->DoCommand(new CCmdAddStep(fem, ps, -1));
 	m_wnd->UpdateModel(ps);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_anim(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_anim(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionPlay_toggled(true);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_assign(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_assign(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 1)) return false;
+	if (!ValidateArgs(ops, 0, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops.empty())
 		m_wnd->on_actionAssignSelection_triggered();
 	else
@@ -589,67 +589,67 @@ bool CommandProcessor::cmd_assign(QStringList ops)
 		else return Error(QString("Can't assign to target %1").arg(ops[0]));
 		m_wnd->GetModelViewer()->AssignCurrentSelection(n);
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_bgcol(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_bgcol(QStringList ops)
 {
 	if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 	GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
-	if (!ValidateArgs(ops, { 1, 3 })) return false;
+	if (!ValidateArgs(ops, { 1, 3 })) return CMD_RETURN_CODE::CMD_ERROR;
 	GLColor newCol;
-	if (!CmdToColor(ops, newCol)) return false;
+	if (!CmdToColor(ops, newCol)) return CMD_RETURN_CODE::CMD_ERROR;
 	vs.m_col1 = vs.m_col2 = newCol;
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_bgcol1(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_bgcol1(QStringList ops)
 {
 	if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 	GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
-	if (!ValidateArgs(ops, { 1, 3 })) return false;
+	if (!ValidateArgs(ops, { 1, 3 })) return CMD_RETURN_CODE::CMD_ERROR;
 	GLColor newCol;
-	if (!CmdToColor(ops, newCol)) return false;
+	if (!CmdToColor(ops, newCol)) return CMD_RETURN_CODE::CMD_ERROR;
 	vs.m_col1 = newCol;
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_bgcol2(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_bgcol2(QStringList ops)
 {
 	if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 	GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
-	if (!ValidateArgs(ops, { 1, 3 })) return false;
+	if (!ValidateArgs(ops, { 1, 3 })) return CMD_RETURN_CODE::CMD_ERROR;
 	GLColor newCol;
-	if (!CmdToColor(ops, newCol)) return false;
+	if (!CmdToColor(ops, newCol)) return CMD_RETURN_CODE::CMD_ERROR;
 	vs.m_col2 = newCol;
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_bgstyle(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_bgstyle(QStringList ops)
 {
 	if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 	GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
-	if (!ValidateArgs(ops, 1, 1)) return false;
+	if (!ValidateArgs(ops, 1, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 	QString style = ops[0];
 	QStringList bgops; bgops << "color1" << "color2" << "horizontal" << "vertical";
 	int n = bgops.indexOf(style);
 	if (n == -1) return Error(QString("invalid argument: %1").arg(ops[0]));
 	vs.m_nbgstyle = n;
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_close(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_close(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 0) == false) return false;
+	if (ValidateArgs(ops, 0, 0) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->CloseView(GetActiveDocument());
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_cmd(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_cmd(QStringList ops)
 {
 	QString cmdFile;
 	if (ops.empty())
@@ -667,7 +667,7 @@ bool CommandProcessor::cmd_cmd(QStringList ops)
 			QStringList files = dlg.selectedFiles();
 			cmdFile = files.first();
 		}
-		else return true;
+		else return CMD_RETURN_CODE::CMD_SUCCESS;
 	}
 	else cmdFile = ops[0];
 	if (!cmdFile.isEmpty())
@@ -678,9 +678,9 @@ bool CommandProcessor::cmd_cmd(QStringList ops)
 	return Error("Failed to run command file.");
 }
 
-bool CommandProcessor::cmd_create(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_create(QStringList ops)
 {
-	if (ValidateArgs(ops, 1, -1) == false) return false;
+	if (!ValidateArgs(ops, 1, -1)) return CMD_RETURN_CODE::CMD_ERROR;
 
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
@@ -706,21 +706,21 @@ bool CommandProcessor::cmd_create(QStringList ops)
 	doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), po), po->GetNameAndType());
 	m_wnd->on_actionZoomExtents_triggered();
 	m_wnd->UpdateModel(po);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_exit(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_exit(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 0) == false) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionExit_triggered();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_export(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_export(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
-	if (ValidateArgs(ops, { 0, 2 }) == false) return false;
+	if (!ValidateArgs(ops, { 0, 2 })) return CMD_RETURN_CODE::CMD_ERROR;
 
 	QString fileName;
 	QString format = "feb";
@@ -747,12 +747,12 @@ bool CommandProcessor::cmd_export(QStringList ops)
 		m_output = "export feb \"" + fileName + "\"";
 	}
 	else return Error("Unrecognized format.");
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_expgeo(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_expgeo(QStringList ops)
 {
-	if (ValidateArgs(ops, { 0, 2 }) == false) return false;
+	if (!ValidateArgs(ops, { 0, 2 })) return CMD_RETURN_CODE::CMD_ERROR;
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
@@ -780,42 +780,42 @@ bool CommandProcessor::cmd_expgeo(QStringList ops)
 	}
 	else return Error("Unrecognized format.");
 
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_fgcol(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_fgcol(QStringList ops)
 {
 	if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 	GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
-	if (!ValidateArgs(ops, { 1, 3 })) return false;
+	if (!ValidateArgs(ops, { 1, 3 })) return CMD_RETURN_CODE::CMD_ERROR;
 	GLColor newCol;
-	if (!CmdToColor(ops, newCol)) return false;
+	if (!CmdToColor(ops, newCol)) return CMD_RETURN_CODE::CMD_ERROR;
 	vs.m_fgcol = newCol;
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_first(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_first(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionFirst_triggered();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_grid(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_grid(QStringList ops)
 {
-	if (!ValidateArgs(ops, 1, 1)) return false;
+	if (!ValidateArgs(ops, 1, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops[0] == "on")
 		m_wnd->on_actionShowGrid_toggled(true);
 	else if (ops[0] == "off")
 		m_wnd->on_actionShowGrid_toggled(false);
 	else Error("Invalid command option");
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_help(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_help(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 1) == false) return false;
+	if (!ValidateArgs(ops, 0, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops.empty())
 	{
 		m_output = "available commands:\n";
@@ -836,30 +836,30 @@ bool CommandProcessor::cmd_help(QStringList ops)
 			}
 		}
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_IGNORE;
 }
 
-bool CommandProcessor::cmd_import(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_import(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 1) == false) return false;
+	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops.isEmpty())
 		m_wnd->on_actionImportGeometry_triggered();
 	else
 		m_wnd->ImportFiles(QStringList() << ops[0]);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_job(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_job(QStringList ops)
 {
 	if (ops.empty())
 	{
 		m_wnd->on_actionFEBioRun_triggered();
-		return true;
+		return CMD_RETURN_CODE::CMD_SUCCESS;
 	}
 	return InvalidArgsCount();
 }
 
-bool CommandProcessor::cmd_genmesh(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_genmesh(QStringList ops)
 {
 	GObject* po = m_wnd->GetActiveObject();
 	if (po == nullptr) return Error("No active object.");
@@ -871,19 +871,19 @@ bool CommandProcessor::cmd_genmesh(QStringList ops)
 	}
 	po->BuildMesh();
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_last(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_last(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionLast_triggered();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_new(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_new(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 1) == false) return false;
+	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops.empty())
 		m_wnd->on_actionNewModel_triggered();
 	else
@@ -903,19 +903,19 @@ bool CommandProcessor::cmd_new(QStringList ops)
 		}
 		else return Error(QString("Don't know module \"%1\"").arg(ops[0]));
 	}
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_next(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_next(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionNext_triggered();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_open(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_open(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 2) == false) return false;
+	if (!ValidateArgs(ops, 0, 2)) return CMD_RETURN_CODE::CMD_ERROR;
 
 	QString fileName;
 	if (ops.empty())
@@ -940,17 +940,17 @@ bool CommandProcessor::cmd_open(QStringList ops)
 
 	m_output = "open \"" + fileName + "\"";
 	m_wnd->OpenFile(fileName, false, false, false);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_prev(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_prev(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionPrev_triggered();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_reset(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_reset(QStringList ops)
 {
 	CGLView* glview = m_wnd->GetGLView();
 	if (glview == nullptr) return GLViewIsNull();
@@ -958,12 +958,12 @@ bool CommandProcessor::cmd_reset(QStringList ops)
 	int ntheme = m_wnd->currentTheme();
 	view.Defaults(ntheme);
 	m_wnd->RedrawGL();
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_save(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_save(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 1) == false) return false;
+	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	QString fileName;
 	if (ops.empty())
 	{
@@ -980,15 +980,15 @@ bool CommandProcessor::cmd_save(QStringList ops)
 	m_wnd->UpdateTab(doc);
 	m_output = "save \"" + fileName + "\"";
 
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_sel(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
 {
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetActiveDocument());
 	if (doc == nullptr) return NoActiveDoc();
 
-	if (ValidateArgs(ops, 0, 1) == false) return false;
+	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	FSMesh* pm = GetActiveMesh();
 	if (pm == nullptr) return NoActiveMesh();
 
@@ -1027,14 +1027,14 @@ bool CommandProcessor::cmd_sel(QStringList ops)
 		doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
 	}
 
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_selpart(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_selpart(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
-	if (!ValidateArgs(ops, 1, 1)) return false;
+	if (!ValidateArgs(ops, 1, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 
 	GModel* gm = doc->GetGModel();
 	if (gm == nullptr) return Error("No model active.");
@@ -1046,14 +1046,14 @@ bool CommandProcessor::cmd_selpart(QStringList ops)
 	int index = pg->GetID();
 	m_wnd->on_actionSelectParts_toggled(true);
 	doc->DoCommand(new CCmdSelectPart(gm, &index, 1, false), name);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_selsurf(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_selsurf(QStringList ops)
 {
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
-	if (!ValidateArgs(ops, 1, 1)) return false;
+	if (!ValidateArgs(ops, 1, 1)) return CMD_RETURN_CODE::CMD_ERROR;
 
 	GModel* gm = doc->GetGModel();
 	if (gm == nullptr) return Error("No model active.");
@@ -1065,17 +1065,17 @@ bool CommandProcessor::cmd_selsurf(QStringList ops)
 	int index = pf->GetID();
 	m_wnd->on_actionSelectSurfaces_toggled(true);
 	doc->DoCommand(new CCmdSelectSurface(gm, &index, 1, false), name);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::cmd_stop(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_stop(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 0)) return false;
+	if (!ValidateArgs(ops, 0, 0)) return CMD_RETURN_CODE::CMD_ERROR;
 	m_wnd->on_actionPlay_toggled(false);
-	return true;
+	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-bool CommandProcessor::RunCommandFile(QString cmdFile, QStringList ops)
+CMD_RETURN_CODE CommandProcessor::RunCommandFile(QString cmdFile, QStringList ops)
 {
 	QFile file(cmdFile);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) 
@@ -1095,7 +1095,7 @@ bool CommandProcessor::RunCommandFile(QString cmdFile, QStringList ops)
 			QString r = "%" + QString("%1").arg(n++);
 			cmdLine.replace(r, s);
 		}
-		if (ProcessCommandLine(cmdLine) == false)
+		if (ProcessCommandLine(cmdLine) == CMD_RETURN_CODE::CMD_ERROR)
 		{
 			QString msg = QString("Error at line %1:\n%2").arg(lineCount).arg(m_output);
 			return Error(msg);
@@ -1107,8 +1107,8 @@ bool CommandProcessor::RunCommandFile(QString cmdFile, QStringList ops)
 bool CommandProcessor::ValidateArgs(const QStringList& ops, int minargs, int maxargs)
 {
 	int N = ops.size();
-	if ((minargs >= 0) && (N < minargs)) return Error("Insufficient number of arguments.");
-	if ((maxargs >= 0) && (N > maxargs)) return Error("Too many arguments.");
+	if ((minargs >= 0) && (N < minargs)) { Error("Insufficient number of arguments."); return false; }
+	if ((maxargs >= 0) && (N > maxargs)) { Error("Too many arguments."); return false; }
 	return true;
 }
 
@@ -1119,7 +1119,8 @@ bool CommandProcessor::ValidateArgs(const QStringList& ops, const std::vector<in
 	{
 		if (i == N) return true;
 	}
-	return Error("Incorrect number of arguments.");
+	Error("Incorrect number of arguments.");
+	return false;
 }
 
 bool CommandProcessor::CmdToColor(QStringList ops, GLColor& c)
@@ -1128,7 +1129,11 @@ bool CommandProcessor::CmdToColor(QStringList ops, GLColor& c)
 	{
 		QString& colName = ops[0];
 		if (colorTable.find(colName) != colorTable.cend()) c = colorTable[colName];
-		else return Error(QString("Don't know color %1").arg(colName));
+		else
+		{
+			Error(QString("Don't know color %1").arg(colName));
+			return false;
+		}
 	}
 	else if (ops.size() == 3)
 	{

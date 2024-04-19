@@ -50,78 +50,84 @@ public:
 	virtual QString GetExportFEModelFilename(QString& formatOption) = 0;
 };
 
+enum class CMD_RETURN_CODE {
+	CMD_ERROR,
+	CMD_SUCCESS,
+	CMD_IGNORE
+};
+
 class CommandProcessor
 {
 private:
 	struct CCommandDescriptor
 	{
 		QString name;	// name of command
-		bool(CommandProcessor::* f)(QStringList);
+		CMD_RETURN_CODE (CommandProcessor::* f)(QStringList);
 		QString brief;	// brief description
 	};
 
 public:
 	CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput);
 	QString GetCommandOutput() { return m_output; }
-	bool ProcessCommandLine(QString cmdLine);
-	bool RunCommand(QString cmd, QStringList ops);
+	CMD_RETURN_CODE ProcessCommandLine(QString cmdLine);
+	CMD_RETURN_CODE RunCommand(QString cmd, QStringList ops);
 	QStringList ParseCommandLine(QString cmd);
 
 public: // command functions
-	bool cmd_addbc  (QStringList ops);
-	bool cmd_addbl  (QStringList ops);
-	bool cmd_addci  (QStringList ops);
-	bool cmd_adddata(QStringList ops);
-	bool cmd_addmat (QStringList ops);
-	bool cmd_addnl  (QStringList ops);
-	bool cmd_addsl  (QStringList ops);
-	bool cmd_addstep(QStringList ops);
-	bool cmd_anim   (QStringList ops);
-	bool cmd_assign (QStringList ops);
-	bool cmd_bgcol  (QStringList ops);
-	bool cmd_bgcol1 (QStringList ops);
-	bool cmd_bgcol2 (QStringList ops);
-	bool cmd_bgstyle(QStringList ops);
-	bool cmd_close  (QStringList ops);
-	bool cmd_cmd    (QStringList ops);
-	bool cmd_create (QStringList ops);
-	bool cmd_exit   (QStringList ops);
-	bool cmd_export (QStringList ops);
-	bool cmd_expgeo (QStringList ops);
-	bool cmd_fgcol  (QStringList ops);
-	bool cmd_first  (QStringList ops);
-	bool cmd_grid   (QStringList ops);
-	bool cmd_help   (QStringList ops);
-	bool cmd_import (QStringList ops);
-	bool cmd_job    (QStringList ops);
-	bool cmd_genmesh(QStringList ops);
-	bool cmd_last   (QStringList ops);
-	bool cmd_new    (QStringList ops);
-	bool cmd_next   (QStringList ops);
-	bool cmd_open   (QStringList ops);
-	bool cmd_prev   (QStringList ops);
-	bool cmd_reset  (QStringList ops);
-	bool cmd_save   (QStringList ops);
-	bool cmd_sel    (QStringList ops);
-	bool cmd_selpart(QStringList ops);
-	bool cmd_selsurf(QStringList ops);
-	bool cmd_stop   (QStringList ops);
+	CMD_RETURN_CODE cmd_addbc  (QStringList ops);
+	CMD_RETURN_CODE cmd_addbl  (QStringList ops);
+	CMD_RETURN_CODE cmd_addci  (QStringList ops);
+	CMD_RETURN_CODE cmd_adddata(QStringList ops);
+	CMD_RETURN_CODE cmd_addmat (QStringList ops);
+	CMD_RETURN_CODE cmd_addnl  (QStringList ops);
+	CMD_RETURN_CODE cmd_addsl  (QStringList ops);
+	CMD_RETURN_CODE cmd_addstep(QStringList ops);
+	CMD_RETURN_CODE cmd_anim   (QStringList ops);
+	CMD_RETURN_CODE cmd_assign (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol  (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol1 (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol2 (QStringList ops);
+	CMD_RETURN_CODE cmd_bgstyle(QStringList ops);
+	CMD_RETURN_CODE cmd_close  (QStringList ops);
+	CMD_RETURN_CODE cmd_cmd    (QStringList ops);
+	CMD_RETURN_CODE cmd_create (QStringList ops);
+	CMD_RETURN_CODE cmd_exit   (QStringList ops);
+	CMD_RETURN_CODE cmd_export (QStringList ops);
+	CMD_RETURN_CODE cmd_expgeo (QStringList ops);
+	CMD_RETURN_CODE cmd_fgcol  (QStringList ops);
+	CMD_RETURN_CODE cmd_first  (QStringList ops);
+	CMD_RETURN_CODE cmd_grid   (QStringList ops);
+	CMD_RETURN_CODE cmd_help   (QStringList ops);
+	CMD_RETURN_CODE cmd_import (QStringList ops);
+	CMD_RETURN_CODE cmd_job    (QStringList ops);
+	CMD_RETURN_CODE cmd_genmesh(QStringList ops);
+	CMD_RETURN_CODE cmd_last   (QStringList ops);
+	CMD_RETURN_CODE cmd_new    (QStringList ops);
+	CMD_RETURN_CODE cmd_next   (QStringList ops);
+	CMD_RETURN_CODE cmd_open   (QStringList ops);
+	CMD_RETURN_CODE cmd_prev   (QStringList ops);
+	CMD_RETURN_CODE cmd_reset  (QStringList ops);
+	CMD_RETURN_CODE cmd_save   (QStringList ops);
+	CMD_RETURN_CODE cmd_sel    (QStringList ops);
+	CMD_RETURN_CODE cmd_selpart(QStringList ops);
+	CMD_RETURN_CODE cmd_selsurf(QStringList ops);
+	CMD_RETURN_CODE cmd_stop   (QStringList ops);
 
 private: // error messages
-	bool Error(const QString& msg) { m_output = msg; return false; }
-	bool Success(const QString& msg) { m_output = msg; return true; }
+	CMD_RETURN_CODE Error(const QString& msg) { m_output = msg; return CMD_RETURN_CODE::CMD_ERROR; }
+	CMD_RETURN_CODE Success(const QString& msg) { m_output = msg; return CMD_RETURN_CODE::CMD_SUCCESS; }
 
-	bool NoActiveDoc() { return Error("No model active."); }
-	bool NoActiveMesh() { return Error("No active mesh."); }
-	bool GLViewIsNull() { return Error("Graphics View not available."); }
-	bool InvalidArgsCount() { return Error("Invalid number of arguments."); }
-	bool CommandCancelled() { return Error("Command was cancelled."); }
+	CMD_RETURN_CODE NoActiveDoc() { return Error("No model active."); }
+	CMD_RETURN_CODE NoActiveMesh() { return Error("No active mesh."); }
+	CMD_RETURN_CODE GLViewIsNull() { return Error("Graphics View not available."); }
+	CMD_RETURN_CODE InvalidArgsCount() { return Error("Invalid number of arguments."); }
+	CMD_RETURN_CODE CommandCancelled() { return Error("Command was cancelled."); }
 
 private:
 	bool ValidateArgs(const QStringList& ops, int minargs = -1, int maxargs = -1);
 	bool ValidateArgs(const QStringList& ops, const std::vector<int>& validSizes);
 	bool CmdToColor(QStringList ops, GLColor& c);
-	bool RunCommandFile(QString cmdFile, QStringList ops);
+	CMD_RETURN_CODE RunCommandFile(QString cmdFile, QStringList ops);
 
 private:
 	CDocument* GetActiveDocument();
