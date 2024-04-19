@@ -139,6 +139,7 @@ public:
 	unsigned int pauseEvents;
 	int		currentEvent;
 	int		debugLevel;
+	bool	recordStates;
 	QMutex	mutex;
 	Timer	timer;
 	FEBioModel* fem = nullptr;
@@ -164,6 +165,7 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(ne
 	m->pauseTime = 0.0;
 	m->time = 0.0;
 	m->debugLevel = 0;
+	m->recordStates = false;
 
 	m_scene = new CGLMonitorScene(this);
 	m_bValid = false;
@@ -253,6 +255,16 @@ void FEBioMonitorDoc::SetDebugLevel(int n)
 {
 	m->debugLevel = n;
 	if (m->fem) m->fem->SetDebugLevel(n);
+}
+
+void FEBioMonitorDoc::SetRecordStatesFlag(bool b)
+{
+	m->recordStates = b;
+}
+
+bool FEBioMonitorDoc::GetRecordStatesFlag() const
+{
+	return m->recordStates;
 }
 
 void FEBioMonitorDoc::RunJob()
@@ -430,6 +442,14 @@ Post::CGLModel* FEBioMonitorDoc::GetGLModel()
 	return scene->GetGLModel();
 }
 
+Post::FEPostModel* FEBioMonitorDoc::GetFSModel()
+{
+	if (IsValid() == false) return nullptr;
+	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(GetScene());
+	if (scene == nullptr) return nullptr;
+	return scene->GetFSModel();
+}
+
 GObject* FEBioMonitorDoc::GetActiveObject()
 {
 	if (!IsValid()) return nullptr;
@@ -454,6 +474,14 @@ bool FEBioMonitorDoc::AddDataField(const std::string& dataField)
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
 	if (scene == nullptr) return false;
 	return scene->AddDataField(dataField);
+}
+
+void FEBioMonitorDoc::SetCurrentState(int n)
+{
+	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
+	if (scene == nullptr) return;
+	scene->GetFSModel()->SetCurrentTimeIndex(n);
+	scene->UpdateScene();
 }
 
 QString eventToString(int nevent)
@@ -496,7 +524,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		emit modelInitialized();
 		break;
 	default:
-		scene->UpdateScene();
+		scene->UpdateStateData(m->recordStates);
 		break;
 	}
 
@@ -512,7 +540,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
-	emit updateViews();
+	emit updateViews(false);
 	modelIsUpdating.wait(&m->mutex);
 
 	constexpr double eps = std::numeric_limits<double>::epsilon();
@@ -521,6 +549,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	{
 		m->outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();
+		emit updateViews(true);
 		m->isPaused = true;
 		jobIsPaused.wait(&m->mutex);
 		m->isPaused = false;
@@ -543,11 +572,11 @@ void FEBioMonitorDoc::onModelInitialized()
 	wnd->UpdateGLControlBar();
 }
 
-void FEBioMonitorDoc::onUpdateViews()
+void FEBioMonitorDoc::onUpdateViews(bool b)
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->GetGLView()->updateView();
-	wnd->GetFEBioMonitorPanel()->Update(false);
+	wnd->GetFEBioMonitorPanel()->Update(b);
 	wnd->GetFEBioMonitorView()->Update(false);
 
 	modelIsUpdating.wakeAll();

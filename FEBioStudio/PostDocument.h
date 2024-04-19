@@ -142,6 +142,8 @@ public: // overrides for CGLModelDocument
 
 	Post::CGLModel* GetGLModel() override;
 
+	Post::FEPostModel* GetFSModel() override;
+
 public:
 	int GetStates();
 
@@ -150,8 +152,6 @@ public:
 	int GetActiveState();
 
 	void SetDataField(int n);
-
-	Post::FEPostModel* GetFSModel();
 
 	bool MergeFEModel(Post::FEPostModel* fem);
 

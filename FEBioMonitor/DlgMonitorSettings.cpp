@@ -46,6 +46,7 @@ private:
 	QCheckBox* m_enablePauseTime;
 	CFloatInput* m_pauseTime;
 	QComboBox* m_debugMode;
+	QCheckBox* m_recordStates;
 
 public:
 	int m_fileMode = 0;
@@ -87,6 +88,9 @@ public:
 		l->addLayout(h);
 		m_debugMode->addItems(QStringList() << "0 (off)" << "1" << "2");
 
+		m_recordStates = new QCheckBox("record states");
+		l->addWidget(m_recordStates);
+
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
@@ -122,6 +126,9 @@ public:
 
 	int GetDebugLevel() const { return m_debugMode->currentIndex(); }
 	void SetDebugLevel(int n) { m_debugMode->setCurrentIndex(n); }
+
+	void SetRecordStatesFlag(bool b) { m_recordStates->setChecked(b); }
+	bool GetRecordStatesFlag() { return m_recordStates->isChecked(); }
 };
 
 CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
@@ -145,6 +152,7 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 	ui->SetPauseTime(doc->GetPauseTime());
 	ui->EnablePauseTime(doc->IsPauseTimeEnabled());
 	ui->SetDebugLevel(doc->GetDebugLevel());
+	ui->SetRecordStatesFlag(doc->GetRecordStatesFlag());
 }
 
 void CDlgMonitorSettings::CanEditFilename(bool b)
@@ -186,6 +194,7 @@ void CDlgMonitorSettings::accept()
 	m_doc->SetPauseEvents(ui->GetPauseEvents());
 	m_doc->SetPauseTime(ui->GetPauseTime(), ui->IsPauseTimeEnabled());
 	m_doc->SetDebugLevel(ui->GetDebugLevel());
+	m_doc->SetRecordStatesFlag(ui->GetRecordStatesFlag());
 
 	QDialog::accept();
 }

@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/MaterialPanel.h"
 #include "../FEBioStudio/PostDataPanel.h"
 #include "../FEBioStudio/PostModelPanel.h"
+#include "../FEBioStudio/StatePanel.h"
 #include "FEBioModelPanel.h"
 #include <QBoxLayout>
 #include <QLabel>
@@ -42,6 +43,7 @@ public:
 	CPostDataPanel* dataPanel;
 	CPostModelPanel* viewPanel;
 	CFEBioModelPanel* febioPanel;
+	CStatePanel* statePanel;
 
 public:
 	void setup(CFEBioMonitorPanel* w)
@@ -54,6 +56,7 @@ public:
 		tab->addTab(viewPanel  = new CPostModelPanel (wnd), "View");
 		tab->addTab(matPanel   = new CMaterialPanel  (wnd), "Materials");
 		tab->addTab(dataPanel  = new CPostDataPanel  (wnd), "Data");
+		tab->addTab(statePanel = new CStatePanel     (wnd), "States");
 
 		l->addWidget(tab);
 		w->setLayout(l);
@@ -72,6 +75,7 @@ void CFEBioMonitorPanel::Update(bool breset)
 	ui->viewPanel ->Update(breset);
 	ui->matPanel  ->Update(breset);
 	ui->dataPanel ->Update(breset);
+	ui->statePanel->Update(breset);
 }
  
 void CFEBioMonitorPanel::Clear()

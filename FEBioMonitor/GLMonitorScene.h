@@ -48,6 +48,7 @@ public:
 	~CGLMonitorScene();
 
 	void InitScene(FEModel* fem);
+	void UpdateStateData(bool addState);
 	void UpdateScene();
 
 	void Render(CGLContext& rc) override;
@@ -62,6 +63,8 @@ public:
 
 	// get the post model
 	Post::CGLModel* GetGLModel() { return m_glm; }
+
+	Post::FEPostModel* GetFSModel() { return m_postModel; }
 
 	bool AddDataField(const std::string& fieldName);
 

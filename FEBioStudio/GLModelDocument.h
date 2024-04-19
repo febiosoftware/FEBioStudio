@@ -28,6 +28,7 @@ SOFTWARE.*/
 
 namespace Post {
 	class CGLModel;
+	class FEPostModel;
 }
 
 // A document that holds on to a Post::CGLModel
@@ -37,5 +38,7 @@ public:
 	CGLModelDocument(CMainWindow* wnd) : CGLDocument(wnd) {}
 
 	virtual Post::CGLModel* GetGLModel() = 0;
+
+	virtual Post::FEPostModel* GetFSModel() = 0;
 
 };

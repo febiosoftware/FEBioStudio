@@ -88,7 +88,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	GLWidget::addToStringTable("$(filename)", filename.toStdString());
 	GLWidget::addToStringTable("$(datafield)", dataFieldName);
 	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
-	GLWidget::addToStringTable("$(time)", m_doc->GetTimeValue());
+	GLWidget::addToStringTable("$(time)", m_postModel->CurrentTime());
 
 	// We need this for rendering post docs
 	glEnable(GL_COLOR_MATERIAL);
@@ -340,7 +340,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 
 	BuildMesh();
 	BuildGLModel();
-	UpdateScene();
+	UpdateStateData(false);
 	BOX box = GetBoundingBox();
 	if (box.IsValid())
 	{
@@ -642,21 +642,38 @@ void CGLMonitorScene::BuildGLModel()
 	m_postObj->UpdateMesh();
 }
 
-void CGLMonitorScene::UpdateScene()
+void CGLMonitorScene::UpdateStateData(bool addState)
 {
 	QMutexLocker lock(&m_mutex);
 
 	if (m_fem == nullptr) return;
 
-	Post::FEState* ps = m_postModel->GetState(0);
+	if (addState)
+	{
+		m_postModel->AddState(new Post::FEState(m_doc->GetTimeValue(), m_postModel, m_postModel->GetFEMesh(0)));
+	}
+	m_postModel->SetCurrentTimeIndex(m_postModel->GetStates() - 1);
+
+	Post::FEState* ps = m_postModel->CurrentState();
 	FEMesh& febioMesh = m_fem->GetMesh();
 	for (int i = 0; i < febioMesh.Nodes(); ++i)
 	{
 		FENode& feNode = febioMesh.Node(i);
 		ps->m_NODE[i].m_rt = to_vec3f(feNode.m_rt);
-		ps->GetFEMesh()->Node(i).r = feNode.m_rt; // TODO: How can I use the states?
 	}
-	m_postModel->UpdateMeshState(0);
+
+	UpdateScene();
+}
+
+void CGLMonitorScene::UpdateScene()
+{
+	Post::FEState* ps = m_postModel->CurrentState();
+	FSMesh* pm = ps->GetFEMesh();
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		ps->GetFEMesh()->Node(i).r = to_vec3d(ps->m_NODE[i].m_rt);
+	}
+	m_postModel->UpdateMeshState(m_postModel->CurrentTimeIndex());
 	ps->GetFEMesh()->UpdateNormals();
 
 	m_postModel->UpdateBoundingBox();
@@ -678,7 +695,7 @@ void CGLMonitorScene::UpdateDataField(FEPlotData* dataField, Post::FEMeshData& m
 
 void CGLMonitorScene::UpdateModelData()
 {
-	Post::FEState* ps = m_postModel->GetState(0);
+	Post::FEState* ps = m_postModel->CurrentState();
 	for (int n=0; n<m_dataFields.size(); ++n)
 	{
 		FEPlotData* pd = m_dataFields[n];

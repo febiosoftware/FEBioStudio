@@ -111,6 +111,9 @@ public:
 	int GetDebugLevel() const;
 	void SetDebugLevel(int debugLevel);
 
+	void SetRecordStatesFlag(bool b);
+	bool GetRecordStatesFlag() const;
+
 public:
 	void RunJob();
 
@@ -149,6 +152,8 @@ private:
 public: // overrides for CGLModelDocument
 	Post::CGLModel* GetGLModel() override;
 
+	Post::FEPostModel* GetFSModel() override;
+
 	GObject* GetActiveObject() override;
 
 public:
@@ -159,19 +164,21 @@ public:
 
 	bool AddDataField(const std::string& dataField);
 
+	void SetCurrentState(int n);
+
 private:
 	void updateWindowTitle();
 
 private slots:
 	void onJobFinished(bool b);
 	void onModelInitialized();
-	void onUpdateViews();
+	void onUpdateViews(bool b);
 	void readOutput();
 
 signals:
 	void outputReady();
 	void modelInitialized();
-	void updateViews();
+	void updateViews(bool b);
 
 private:
 	Imp* m;

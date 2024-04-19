@@ -985,8 +985,15 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 void CMainWindow::SetCurrentState(int n)
 {
 	CPostDocument* doc = GetPostDocument();
-	if (doc == nullptr) return;
-	ui->postToolBar->SetSpinValue(n + 1);
+	if (doc)
+		ui->postToolBar->SetSpinValue(n + 1);
+
+	FEBioMonitorDoc* mdoc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+	if (mdoc && mdoc->IsPaused())
+	{
+		mdoc->SetCurrentState(n);
+		RedrawGL();
+	}
 }
 
 //-----------------------------------------------------------------------------
