@@ -189,27 +189,45 @@ void CFEBioMonitorView::Update(bool reset)
 
 		if (addNorm0)
 		{
-			double R0 = log10(info.m_R0);
-			Rdata.addPoint(counter, R0);
+			if (info.m_R0 > 0)
+			{
+				double R0 = log10(info.m_R0);
+				Rdata.addPoint(counter, R0);
+			}
 
-			double E0 = log10(info.m_E0);
-			Edata.addPoint(counter, E0);
+			if (info.m_E0 > 0)
+			{
+				double E0 = log10(info.m_E0);
+				Edata.addPoint(counter, E0);
+			}
 
-			double U0 = log10(info.m_U0);
-			Udata.addPoint(counter, U0);
+			if (info.m_U0 > 0)
+			{
+				double U0 = log10(info.m_U0);
+				Udata.addPoint(counter, U0);
+			}
 
 			addNorm0 = false;
 			counter++;
 		}
 
-		double Rt = log10(info.m_Rt);
-		Rdata.addPoint(counter, Rt);
+		if (info.m_Rt > 0)
+		{
+			double Rt = log10(info.m_Rt);
+			Rdata.addPoint(counter, Rt);
+		}
 
-		double Et = log10(info.m_Et);
-		Edata.addPoint(counter, Et);
+		if (info.m_Et > 0)
+		{
+			double Et = log10(info.m_Et);
+			Edata.addPoint(counter, Et);
+		}
 
-		double Ut = log10(info.m_Ut);
-		Udata.addPoint(counter, Ut);
+		if (info.m_Ut > 0)
+		{
+			double Ut = log10(info.m_Ut);
+			Udata.addPoint(counter, Ut);
+		}
 
 		ui->plot->OnZoomToFit();
 		ui->plot->update();
