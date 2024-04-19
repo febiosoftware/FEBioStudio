@@ -36,36 +36,6 @@ SOFTWARE.*/
 #include "CommandProcessor.h"
 #include "version.h"
 
-class CGUICmdInput : public CommandInput
-{
-public:
-	CGUICmdInput(CMainWindow* wnd) : m_wnd(wnd) {}
-
-public:
-	QString GetOpenModelFilename()
-	{
-		return m_wnd->GetOpenModelFilename();
-	}
-
-	QString GetSaveModelFilename()
-	{
-		return m_wnd->GetSaveModelFilename();
-	}
-
-	QString GetExportGeometryFilename(QString& formatOption)
-	{
-		return m_wnd->GetExportGeometryFilename(formatOption);
-	}
-
-	QString GetExportFEModelFilename(QString& formatOption)
-	{
-		return m_wnd->GetExportFEModelFilename(formatOption);
-	}
-
-private:
-	CMainWindow* m_wnd;
-};
-
 class Ui::CCommandWindow
 {
 public:
@@ -76,7 +46,6 @@ public:
 	QPlainTextEdit* log = nullptr;
 
 	CommandProcessor* cmd = nullptr;
-	CGUICmdInput* cmdIn = nullptr;
 
 public:
 	void setup(::CCommandWindow* w)
@@ -164,14 +133,13 @@ public:
 CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CCommandWindow)
 {
 	ui->m_wnd = wnd;
-	ui->cmdIn = new CGUICmdInput(wnd);
-	ui->cmd = new CommandProcessor(wnd, ui->cmdIn);
+	ui->cmd = new CommandProcessor(wnd);
 	ui->setup(this);
 }
 
 CCommandWindow::~CCommandWindow()
 {
-	delete ui->cmdIn;
+	
 }
 
 void CCommandWindow::Show()
@@ -234,6 +202,12 @@ void CCommandWindow::OnEnter()
 			ui->input->clear();
 		}
 	}
+}
+
+void CCommandWindow::LogCommand(QString cmd)
+{
+	// TODO: Do some minimal validation perhaps?
+	ui->Log(cmd);
 }
 
 void CCommandWindow::OnSave()

@@ -1190,6 +1190,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				FSDir::setMacro("ProjectDir", ".");
 			}
 			else ui->addToRecentFiles(file.m_fileName);
+
+			ui->commandWnd->LogCommand(QString("open \"%1\"").arg(file.m_fileName));
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{

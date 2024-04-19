@@ -44,6 +44,8 @@ public:
 
 	void showEvent(QShowEvent* ev) override;
 
+	void LogCommand(QString cmd);
+
 public slots:
 	void OnEnter();
 	void OnSave();

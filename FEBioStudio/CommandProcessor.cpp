@@ -219,7 +219,7 @@ static bool SetParameters(FSObject* pc, const QStringList& ops)
 	return true;
 }
 
-CommandProcessor::CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput) : m_wnd(wnd), m_cmdInput(cmdinput)
+CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
 {
 	m_cmds.push_back({ "addbc"  , &CommandProcessor::cmd_addbc  , "adds a boundary condition to the current model" });
 	m_cmds.push_back({ "addbl"  , &CommandProcessor::cmd_addbl  , "adds a body load to the current model" });
@@ -727,8 +727,8 @@ CMD_RETURN_CODE CommandProcessor::cmd_export(QStringList ops)
 
 	if (ops.empty())
 	{
-		fileName = m_cmdInput->GetExportFEModelFilename(format);
-		if (fileName.isEmpty()) return CommandCancelled();
+		m_wnd->on_actionExportFEModel_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
 	}
 	else
 	{
@@ -760,8 +760,8 @@ CMD_RETURN_CODE CommandProcessor::cmd_expgeo(QStringList ops)
 	QString fmt = "feb";
 	if (ops.empty())
 	{
-		fileName = m_cmdInput->GetExportGeometryFilename(fmt);
-		if (fileName.isEmpty()) return CommandCancelled();
+		m_wnd->on_actionExportGeometry_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
 	}
 	else
 	{
@@ -883,9 +883,12 @@ CMD_RETURN_CODE CommandProcessor::cmd_last(QStringList ops)
 
 CMD_RETURN_CODE CommandProcessor::cmd_new(QStringList ops)
 {
-	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
+	if (ValidateArgs(ops, 0, 2) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	if (ops.empty())
+	{
 		m_wnd->on_actionNewModel_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
+	}
 	else
 	{
 		CDocManager* dm = m_wnd->GetDocManager();
@@ -895,6 +898,7 @@ CMD_RETURN_CODE CommandProcessor::cmd_new(QStringList ops)
 			CModelDocument* doc = dm->CreateNewDocument(moduleID);
 			if (doc)
 			{
+				if (ops.size() == 2) doc->SetDocTitle(ops[1].toStdString());
 				int units = doc->GetUnitSystem();
 				Units::SetUnitSystem(units);
 				m_wnd->AddDocument(doc);
@@ -920,8 +924,8 @@ CMD_RETURN_CODE CommandProcessor::cmd_open(QStringList ops)
 	QString fileName;
 	if (ops.empty())
 	{
-		fileName = m_cmdInput->GetOpenModelFilename();
-		if (fileName.isEmpty()) return CommandCancelled();
+		m_wnd->on_actionOpen_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
 	}
 	else fileName = ops[0];
 
@@ -967,8 +971,8 @@ CMD_RETURN_CODE CommandProcessor::cmd_save(QStringList ops)
 	QString fileName;
 	if (ops.empty())
 	{
-		fileName = m_cmdInput->GetSaveModelFilename();
-		if (fileName.isEmpty()) return CommandCancelled();
+		m_wnd->on_actionSaveAs_triggered();
+		return CMD_RETURN_CODE::CMD_IGNORE;
 	}
 	else
 		fileName = ops[0];

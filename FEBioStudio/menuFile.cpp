@@ -125,6 +125,7 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
 #include "units.h"
+#include <FEBioLink/FEBioModule.h>
 
 using std::stringstream;
 
@@ -174,9 +175,15 @@ void CMainWindow::on_actionNewModel_triggered()
 			int units = doc->GetUnitSystem();
 			Units::SetUnitSystem(units);
 			AddDocument(doc);
+
+			if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
+			{
+				QString modulename(FEBio::GetModuleName(dlg.GetSelection()));
+				QString documentName = QString::fromStdString(docName);
+				ui->commandWnd->LogCommand(QString("new %1 %2").arg(modulename).arg(documentName));
+			}
 		}
 	}
-	else return;
 }
 
 void CMainWindow::on_actionNewProject_triggered()

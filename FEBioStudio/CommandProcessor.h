@@ -35,21 +35,6 @@ class CModelDocument;
 class CPostDocument;
 class FSMesh;
 
-//! The command input class is used to provide a mechanism for the command processor
-//! to interact with the user. In GUI mode, this will ofen result in a dialog box
-//! being presented. In CLI mode, the user can add the inputs on the command line. 
-class CommandInput
-{
-public:
-	CommandInput() {}
-	virtual ~CommandInput() {}
-
-	virtual QString GetOpenModelFilename() = 0; // return the filename of the model file to open
-	virtual QString GetSaveModelFilename() = 0; // return the filename of the model file to save
-	virtual QString GetExportGeometryFilename(QString& formatOption) = 0;
-	virtual QString GetExportFEModelFilename(QString& formatOption) = 0;
-};
-
 enum class CMD_RETURN_CODE {
 	CMD_ERROR,
 	CMD_SUCCESS,
@@ -67,7 +52,7 @@ private:
 	};
 
 public:
-	CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput);
+	CommandProcessor(CMainWindow* wnd);
 	QString GetCommandOutput() { return m_output; }
 	CMD_RETURN_CODE ProcessCommandLine(QString cmdLine);
 	CMD_RETURN_CODE RunCommand(QString cmd, QStringList ops);
@@ -136,7 +121,6 @@ private:
 	FSMesh* GetActiveMesh();
 
 private:
-	CommandInput* m_cmdInput;
 	CMainWindow* m_wnd; // TODO: remove
 	QString m_output;
 	std::vector<CCommandDescriptor> m_cmds;
