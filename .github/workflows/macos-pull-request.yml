@@ -18,7 +18,7 @@ jobs:
       requires-sdk: true
       sdk-config: |
         {
-          "sdk_path": "ci/develop",
+          "sdk_path": "develop",
           "version": "v4.6",
         }
     secrets: inherit
