@@ -269,11 +269,12 @@ if (WIN32)
 
     set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
-    # FindDependencies is already appending Release to the path
-    #-    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
-    #-    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
-    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR})
-    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR})
+    # FindDependencies is already appending Release to the path -- (SM) Nope, looks like we do have to set this
+    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
+    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
+    #(SM) The ones below don't work
+    #set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR})
+    #set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR})
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
         findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
