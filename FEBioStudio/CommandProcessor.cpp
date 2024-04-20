@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshTools/FEMesher.h>
+#include <MeshLib/FEMesh.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GPrimitive.h>
@@ -221,46 +222,47 @@ static bool SetParameters(FSObject* pc, const QStringList& ops)
 
 CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
 {
-	m_cmds.push_back({ "addbc"  , &CommandProcessor::cmd_addbc  , "adds a boundary condition to the current model" });
-	m_cmds.push_back({ "addbl"  , &CommandProcessor::cmd_addbl  , "adds a body load to the current model" });
-	m_cmds.push_back({ "addci"  , &CommandProcessor::cmd_addci  , "adds a contact interface to the current model" });
-	m_cmds.push_back({ "adddata", &CommandProcessor::cmd_adddata, "add a standard datafield to the post model." });
-	m_cmds.push_back({ "addic"  , &CommandProcessor::cmd_addic  , "add an initial conidition to the current model." });
-	m_cmds.push_back({ "addmat" , &CommandProcessor::cmd_addmat , "adds a material to the model" });
-	m_cmds.push_back({ "addnl"  , &CommandProcessor::cmd_addnl  , "adds a nodal load to the current model" });
-	m_cmds.push_back({ "addnlc" , &CommandProcessor::cmd_addnlc , "adds a nonlinear constraint to the current model" });
-	m_cmds.push_back({ "addsl"  , &CommandProcessor::cmd_addsl  , "adds a surface load to the current model" });
-	m_cmds.push_back({ "addstep", &CommandProcessor::cmd_addstep, "adds a step to the current model" });
-	m_cmds.push_back({ "anim"   , &CommandProcessor::cmd_anim   , "animate the model" });
-	m_cmds.push_back({ "assign" , &CommandProcessor::cmd_assign , "assigns the current selection to the active item in the model tree" });
-	m_cmds.push_back({ "bgcol"  , &CommandProcessor::cmd_bgcol  , "set both background colors" });
-	m_cmds.push_back({ "bgcol1" , &CommandProcessor::cmd_bgcol1 , "set background color 1" });
-	m_cmds.push_back({ "bgcol2" , &CommandProcessor::cmd_bgcol2 , "set background color 2" });
-	m_cmds.push_back({ "bgstyle", &CommandProcessor::cmd_bgstyle, "set background style" });
-	m_cmds.push_back({ "close"  , &CommandProcessor::cmd_close  , "closes the current model" });
-	m_cmds.push_back({ "cmd"    , &CommandProcessor::cmd_cmd    , "run a command script" });
-	m_cmds.push_back({ "create" , &CommandProcessor::cmd_create , "add a primitive to the current model" });
-	m_cmds.push_back({ "exit"   , &CommandProcessor::cmd_exit   , "closes FEBio Studio" });
-	m_cmds.push_back({ "export" , &CommandProcessor::cmd_export , "Export model to file" });
-	m_cmds.push_back({ "expgeo" , &CommandProcessor::cmd_expgeo , "Export selected geometry model to file" });
-	m_cmds.push_back({ "fgcol"  , &CommandProcessor::cmd_fgcol  , "sets the foreground color" });
-	m_cmds.push_back({ "first"  , &CommandProcessor::cmd_first  , "Display the first timestep" });
-	m_cmds.push_back({ "grid"   , &CommandProcessor::cmd_grid   , "turn the grid in the Graphics View on or off" });
-	m_cmds.push_back({ "help"   , &CommandProcessor::cmd_help   , "show help" });
-	m_cmds.push_back({ "import" , &CommandProcessor::cmd_import , "import a geometry file" });
-	m_cmds.push_back({ "job"    , &CommandProcessor::cmd_job    , "run the model in FEBio" });
-	m_cmds.push_back({ "genmesh", &CommandProcessor::cmd_genmesh, "generate mesh for currently selected object." });
-	m_cmds.push_back({ "last"   , &CommandProcessor::cmd_last   , "Display the last timestep" });
-	m_cmds.push_back({ "new"    , &CommandProcessor::cmd_new    , "create a new model" });
-	m_cmds.push_back({ "next"   , &CommandProcessor::cmd_next   , "Display the next timestep" });
-	m_cmds.push_back({ "open"   , &CommandProcessor::cmd_open   , "open a file" });
-	m_cmds.push_back({ "prev"   , &CommandProcessor::cmd_prev   , "Display the previous timestep" });
-	m_cmds.push_back({ "reset"  , &CommandProcessor::cmd_reset  , "reset all options to their defaults." });
-	m_cmds.push_back({ "save"   , &CommandProcessor::cmd_save   , "save the current model" });
-	m_cmds.push_back({ "sel"    , &CommandProcessor::cmd_sel    , "select an item of the active mesh"});
-	m_cmds.push_back({ "selpart", &CommandProcessor::cmd_selpart, "select a part",  });
-	m_cmds.push_back({ "selsurf", &CommandProcessor::cmd_selsurf, "select a surface" });
-	m_cmds.push_back({ "stop"   , &CommandProcessor::cmd_stop   , "Stops the animation." });
+	m_cmds.push_back({ "addbc"     , &CommandProcessor::cmd_addbc     , "adds a boundary condition to the current model" });
+	m_cmds.push_back({ "addbl"     , &CommandProcessor::cmd_addbl     , "adds a body load to the current model" });
+	m_cmds.push_back({ "addci"     , &CommandProcessor::cmd_addci     , "adds a contact interface to the current model" });
+	m_cmds.push_back({ "adddata"   , &CommandProcessor::cmd_adddata   , "add a standard datafield to the post model." });
+	m_cmds.push_back({ "addic"     , &CommandProcessor::cmd_addic     , "add an initial conidition to the current model." });
+	m_cmds.push_back({ "addmat"    , &CommandProcessor::cmd_addmat    , "adds a material to the model" });
+	m_cmds.push_back({ "addnl"     , &CommandProcessor::cmd_addnl     , "adds a nodal load to the current model" });
+	m_cmds.push_back({ "addnlc"    , &CommandProcessor::cmd_addnlc    , "adds a nonlinear constraint to the current model" });
+	m_cmds.push_back({ "addsl"     , &CommandProcessor::cmd_addsl     , "adds a surface load to the current model" });
+	m_cmds.push_back({ "addstep"   , &CommandProcessor::cmd_addstep   , "adds a step to the current model" });
+	m_cmds.push_back({ "anim"      , &CommandProcessor::cmd_anim      , "animate the model" });
+	m_cmds.push_back({ "assign"    , &CommandProcessor::cmd_assign    , "assigns the current selection to the active item in the model tree" });
+	m_cmds.push_back({ "bgcol"     , &CommandProcessor::cmd_bgcol     , "set both background colors" });
+	m_cmds.push_back({ "bgcol1"    , &CommandProcessor::cmd_bgcol1    , "set background color 1" });
+	m_cmds.push_back({ "bgcol2"    , &CommandProcessor::cmd_bgcol2    , "set background color 2" });
+	m_cmds.push_back({ "bgstyle"   , &CommandProcessor::cmd_bgstyle   , "set background style" });
+	m_cmds.push_back({ "close"     , &CommandProcessor::cmd_close     , "closes the current model" });
+	m_cmds.push_back({ "cmd"       , &CommandProcessor::cmd_cmd       , "run a command script" });
+	m_cmds.push_back({ "create"    , &CommandProcessor::cmd_create    , "add a primitive to the current model" });
+	m_cmds.push_back({ "exit"      , &CommandProcessor::cmd_exit      , "closes FEBio Studio" });
+	m_cmds.push_back({ "export"    , &CommandProcessor::cmd_export    , "Export model to file" });
+	m_cmds.push_back({ "expgeo"    , &CommandProcessor::cmd_expgeo    , "Export selected geometry model to file" });
+	m_cmds.push_back({ "fgcol"     , &CommandProcessor::cmd_fgcol     , "sets the foreground color" });
+	m_cmds.push_back({ "first"     , &CommandProcessor::cmd_first     , "Display the first timestep" });
+	m_cmds.push_back({ "grid"      , &CommandProcessor::cmd_grid      , "turn the grid in the Graphics View on or off" });
+	m_cmds.push_back({ "help"      , &CommandProcessor::cmd_help      , "show help" });
+	m_cmds.push_back({ "import"    , &CommandProcessor::cmd_import    , "import a geometry file" });
+	m_cmds.push_back({ "job"       , &CommandProcessor::cmd_job       , "run the model in FEBio" });
+	m_cmds.push_back({ "genmesh"   , &CommandProcessor::cmd_genmesh   , "generate mesh for currently selected object." });
+	m_cmds.push_back({ "last"      , &CommandProcessor::cmd_last      , "Display the last timestep" });
+	m_cmds.push_back({ "new"       , &CommandProcessor::cmd_new       , "create a new model" });
+	m_cmds.push_back({ "next"      , &CommandProcessor::cmd_next      , "Display the next timestep" });
+	m_cmds.push_back({ "open"      , &CommandProcessor::cmd_open      , "open a file" });
+	m_cmds.push_back({ "prev"      , &CommandProcessor::cmd_prev      , "Display the previous timestep" });
+	m_cmds.push_back({ "reset"     , &CommandProcessor::cmd_reset     , "reset all options to their defaults." });
+	m_cmds.push_back({ "save"      , &CommandProcessor::cmd_save      , "save the current model" });
+	m_cmds.push_back({ "sel"       , &CommandProcessor::cmd_sel       , "select an item of the active mesh"});
+	m_cmds.push_back({ "selconnect", &CommandProcessor::cmd_selconnect, "set the select-connected options"});
+	m_cmds.push_back({ "selpart"   , &CommandProcessor::cmd_selpart   , "select a part",  });
+	m_cmds.push_back({ "selsurf"   , &CommandProcessor::cmd_selsurf   , "select a surface" });
+	m_cmds.push_back({ "stop"      , &CommandProcessor::cmd_stop      , "Stops the animation." });
 }
 
 CDocument* CommandProcessor::GetActiveDocument()
@@ -1088,6 +1090,10 @@ CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetActiveDocument());
 	if (doc == nullptr) return NoActiveDoc();
 
+	CGLView* glv = m_wnd->GetGLView();
+	if (glv == nullptr) return GLViewIsNull();
+	GLViewSettings& vs = glv->GetViewSettings();
+
 	if (ValidateArgs(ops, 0, 1) == false) return CMD_RETURN_CODE::CMD_ERROR;
 	FSMesh* pm = GetActiveMesh();
 	if (pm == nullptr) return NoActiveMesh();
@@ -1106,27 +1112,82 @@ CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
 	{
 		int index = pm->ElementIndexFromID(nid);
 		if (index < 0) return Error("Invalid element ID.");
-		doc->DoCommand(new CCmdSelectElements(pm, &index, 1, false));
+
+		if (vs.m_bconn)
+		{
+			std::vector<int> elemList = MeshTools::GetConnectedElements(pm, index, vs.m_fconn, vs.m_bpart, vs.m_bext, vs.m_bmax);
+			if (!elemList.empty())
+				doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
+		}
+		else
+			doc->DoCommand(new CCmdSelectElements(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_FACE)
 	{
 		int index = nid - 1;
 		if (index < 0) return Error("Invalid face ID.");
-		doc->DoCommand(new CCmdSelectFaces(pm, &index, 1, false));
+		if (vs.m_bconn)
+		{
+			std::vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, vs.m_fconn, vs.m_bpart);
+			if (!faceList.empty())
+				doc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
+		}
+		else
+			doc->DoCommand(new CCmdSelectFaces(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_NODE)
 	{
 		int index = pm->NodeIndexFromID(nid);
 		if (index < 0) return Error("Invalid node ID.");
-		doc->DoCommand(new CCmdSelectFENodes(pm, &index, 1, false));
+		if (vs.m_bconn)
+		{
+			std::vector<int> nodeList = MeshTools::GetConnectedNodes(pm, index, vs.m_fconn, vs.m_bmax);
+			if (!nodeList.empty())
+				doc->DoCommand(new CCmdSelectFENodes(pm, nodeList, false));
+		}
+		else
+			doc->DoCommand(new CCmdSelectFENodes(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_EDGE)
 	{
 		int index = nid - 1;
 		if (index < 0) return Error("Invalid edge ID.");
-		doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
+		if (vs.m_bconn)
+		{
+			std::vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, vs.m_fconn, vs.m_bmax);
+			if (!edgeList.empty())
+				doc->DoCommand(new CCmdSelectFEEdges(pm, edgeList, false));
+		}
+		else
+			doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
 	}
 
+	return CMD_RETURN_CODE::CMD_SUCCESS;
+}
+
+CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
+{
+	if (!ValidateArgs(ops, 0, 2)) return CMD_RETURN_CODE::CMD_ERROR;
+	CGLView* glv = m_wnd->GetGLView();
+	if (glv == nullptr) return GLViewIsNull();
+
+	GLViewSettings& vs = glv->GetViewSettings();
+	if (ops.size() == 0) vs.m_bconn = !vs.m_bconn;
+	if (ops.size() == 1)
+	{
+		bool ok = false;
+		int n = ops[0].toInt(&ok);
+		if (!ok || (n != 0) || (n != 1)) return InvalidArgument();
+		vs.m_bconn = (n == 1);
+	}
+	if (ops.size() == 2)
+	{
+		bool ok = false;
+		float w = ops[1].toFloat(&ok);
+		if (!ok || (w < 0.0)) return InvalidArgument();
+		vs.m_fconn = w;
+	}
+	m_wnd->UpdateGLControlBar();
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 

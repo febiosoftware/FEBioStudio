@@ -59,46 +59,47 @@ public:
 	QStringList ParseCommandLine(QString cmd);
 
 public: // command functions
-	CMD_RETURN_CODE cmd_addbc  (QStringList ops);
-	CMD_RETURN_CODE cmd_addbl  (QStringList ops);
-	CMD_RETURN_CODE cmd_addci  (QStringList ops);
-	CMD_RETURN_CODE cmd_adddata(QStringList ops);
-	CMD_RETURN_CODE cmd_addic  (QStringList ops);
-	CMD_RETURN_CODE cmd_addmat (QStringList ops);
-	CMD_RETURN_CODE cmd_addnl  (QStringList ops);
-	CMD_RETURN_CODE cmd_addnlc (QStringList ops);
-	CMD_RETURN_CODE cmd_addsl  (QStringList ops);
-	CMD_RETURN_CODE cmd_addstep(QStringList ops);
-	CMD_RETURN_CODE cmd_anim   (QStringList ops);
-	CMD_RETURN_CODE cmd_assign (QStringList ops);
-	CMD_RETURN_CODE cmd_bgcol  (QStringList ops);
-	CMD_RETURN_CODE cmd_bgcol1 (QStringList ops);
-	CMD_RETURN_CODE cmd_bgcol2 (QStringList ops);
-	CMD_RETURN_CODE cmd_bgstyle(QStringList ops);
-	CMD_RETURN_CODE cmd_close  (QStringList ops);
-	CMD_RETURN_CODE cmd_cmd    (QStringList ops);
-	CMD_RETURN_CODE cmd_create (QStringList ops);
-	CMD_RETURN_CODE cmd_exit   (QStringList ops);
-	CMD_RETURN_CODE cmd_export (QStringList ops);
-	CMD_RETURN_CODE cmd_expgeo (QStringList ops);
-	CMD_RETURN_CODE cmd_fgcol  (QStringList ops);
-	CMD_RETURN_CODE cmd_first  (QStringList ops);
-	CMD_RETURN_CODE cmd_grid   (QStringList ops);
-	CMD_RETURN_CODE cmd_help   (QStringList ops);
-	CMD_RETURN_CODE cmd_import (QStringList ops);
-	CMD_RETURN_CODE cmd_job    (QStringList ops);
-	CMD_RETURN_CODE cmd_genmesh(QStringList ops);
-	CMD_RETURN_CODE cmd_last   (QStringList ops);
-	CMD_RETURN_CODE cmd_new    (QStringList ops);
-	CMD_RETURN_CODE cmd_next   (QStringList ops);
-	CMD_RETURN_CODE cmd_open   (QStringList ops);
-	CMD_RETURN_CODE cmd_prev   (QStringList ops);
-	CMD_RETURN_CODE cmd_reset  (QStringList ops);
-	CMD_RETURN_CODE cmd_save   (QStringList ops);
-	CMD_RETURN_CODE cmd_sel    (QStringList ops);
-	CMD_RETURN_CODE cmd_selpart(QStringList ops);
-	CMD_RETURN_CODE cmd_selsurf(QStringList ops);
-	CMD_RETURN_CODE cmd_stop   (QStringList ops);
+	CMD_RETURN_CODE cmd_addbc     (QStringList ops);
+	CMD_RETURN_CODE cmd_addbl     (QStringList ops);
+	CMD_RETURN_CODE cmd_addci     (QStringList ops);
+	CMD_RETURN_CODE cmd_adddata   (QStringList ops);
+	CMD_RETURN_CODE cmd_addic     (QStringList ops);
+	CMD_RETURN_CODE cmd_addmat    (QStringList ops);
+	CMD_RETURN_CODE cmd_addnl     (QStringList ops);
+	CMD_RETURN_CODE cmd_addnlc    (QStringList ops);
+	CMD_RETURN_CODE cmd_addsl     (QStringList ops);
+	CMD_RETURN_CODE cmd_addstep   (QStringList ops);
+	CMD_RETURN_CODE cmd_anim      (QStringList ops);
+	CMD_RETURN_CODE cmd_assign    (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol     (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol1    (QStringList ops);
+	CMD_RETURN_CODE cmd_bgcol2    (QStringList ops);
+	CMD_RETURN_CODE cmd_bgstyle   (QStringList ops);
+	CMD_RETURN_CODE cmd_close     (QStringList ops);
+	CMD_RETURN_CODE cmd_cmd       (QStringList ops);
+	CMD_RETURN_CODE cmd_create    (QStringList ops);
+	CMD_RETURN_CODE cmd_exit      (QStringList ops);
+	CMD_RETURN_CODE cmd_export    (QStringList ops);
+	CMD_RETURN_CODE cmd_expgeo    (QStringList ops);
+	CMD_RETURN_CODE cmd_fgcol     (QStringList ops);
+	CMD_RETURN_CODE cmd_first     (QStringList ops);
+	CMD_RETURN_CODE cmd_grid      (QStringList ops);
+	CMD_RETURN_CODE cmd_help      (QStringList ops);
+	CMD_RETURN_CODE cmd_import    (QStringList ops);
+	CMD_RETURN_CODE cmd_job       (QStringList ops);
+	CMD_RETURN_CODE cmd_genmesh   (QStringList ops);
+	CMD_RETURN_CODE cmd_last      (QStringList ops);
+	CMD_RETURN_CODE cmd_new       (QStringList ops);
+	CMD_RETURN_CODE cmd_next      (QStringList ops);
+	CMD_RETURN_CODE cmd_open      (QStringList ops);
+	CMD_RETURN_CODE cmd_prev      (QStringList ops);
+	CMD_RETURN_CODE cmd_reset     (QStringList ops);
+	CMD_RETURN_CODE cmd_save      (QStringList ops);
+	CMD_RETURN_CODE cmd_sel       (QStringList ops);
+	CMD_RETURN_CODE cmd_selconnect(QStringList ops);
+	CMD_RETURN_CODE cmd_selpart   (QStringList ops);
+	CMD_RETURN_CODE cmd_selsurf   (QStringList ops);
+	CMD_RETURN_CODE cmd_stop      (QStringList ops);
 
 private: // error messages
 	CMD_RETURN_CODE Error(const QString& msg) { m_output = msg; return CMD_RETURN_CODE::CMD_ERROR; }
@@ -108,6 +109,7 @@ private: // error messages
 	CMD_RETURN_CODE NoActiveMesh() { return Error("No active mesh."); }
 	CMD_RETURN_CODE GLViewIsNull() { return Error("Graphics View not available."); }
 	CMD_RETURN_CODE InvalidArgsCount() { return Error("Invalid number of arguments."); }
+	CMD_RETURN_CODE InvalidArgument() { return Error("Invalid argument."); }
 	CMD_RETURN_CODE CommandCancelled() { return Error("Command was cancelled."); }
 
 private:
