@@ -259,8 +259,9 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
 	m_cmds.push_back({ "reset"     , &CommandProcessor::cmd_reset     , "reset all options to their defaults." });
 	m_cmds.push_back({ "save"      , &CommandProcessor::cmd_save      , "save the current model" });
 	m_cmds.push_back({ "sel"       , &CommandProcessor::cmd_sel       , "select an item of the active mesh"});
-	m_cmds.push_back({ "selconnect", &CommandProcessor::cmd_selconnect, "set the select-connected options"});
-	m_cmds.push_back({ "selpart"   , &CommandProcessor::cmd_selpart   , "select a part",  });
+	m_cmds.push_back({ "selconnect", &CommandProcessor::cmd_selconnect, "select connected mesh items"});
+	m_cmds.push_back({ "selpart"   , &CommandProcessor::cmd_selpart   , "select a part"});
+	m_cmds.push_back({ "selpath"   , &CommandProcessor::cmd_selpath   , "select mesh items via a path"});
 	m_cmds.push_back({ "selsurf"   , &CommandProcessor::cmd_selsurf   , "select a surface" });
 	m_cmds.push_back({ "stop"      , &CommandProcessor::cmd_stop      , "Stops the animation." });
 }
@@ -1112,82 +1113,85 @@ CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
 	{
 		int index = pm->ElementIndexFromID(nid);
 		if (index < 0) return Error("Invalid element ID.");
-
-		if (vs.m_bconn)
-		{
-			std::vector<int> elemList = MeshTools::GetConnectedElements(pm, index, vs.m_fconn, vs.m_bpart, vs.m_bext, vs.m_bmax);
-			if (!elemList.empty())
-				doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
-		}
-		else
-			doc->DoCommand(new CCmdSelectElements(pm, &index, 1, false));
+		doc->DoCommand(new CCmdSelectElements(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_FACE)
 	{
 		int index = nid - 1;
 		if (index < 0) return Error("Invalid face ID.");
-		if (vs.m_bconn)
-		{
-			std::vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, vs.m_fconn, vs.m_bpart);
-			if (!faceList.empty())
-				doc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
-		}
-		else
-			doc->DoCommand(new CCmdSelectFaces(pm, &index, 1, false));
+		doc->DoCommand(new CCmdSelectFaces(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_NODE)
 	{
 		int index = pm->NodeIndexFromID(nid);
 		if (index < 0) return Error("Invalid node ID.");
-		if (vs.m_bconn)
-		{
-			std::vector<int> nodeList = MeshTools::GetConnectedNodes(pm, index, vs.m_fconn, vs.m_bmax);
-			if (!nodeList.empty())
-				doc->DoCommand(new CCmdSelectFENodes(pm, nodeList, false));
-		}
-		else
-			doc->DoCommand(new CCmdSelectFENodes(pm, &index, 1, false));
+		doc->DoCommand(new CCmdSelectFENodes(pm, &index, 1, false));
 	}
 	else if (mode == ITEM_EDGE)
 	{
 		int index = nid - 1;
 		if (index < 0) return Error("Invalid edge ID.");
-		if (vs.m_bconn)
-		{
-			std::vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, vs.m_fconn, vs.m_bmax);
-			if (!edgeList.empty())
-				doc->DoCommand(new CCmdSelectFEEdges(pm, edgeList, false));
-		}
-		else
-			doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
+		doc->DoCommand(new CCmdSelectFEEdges(pm, &index, 1, false));
 	}
 
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
-CMD_RETURN_CODE CommandProcessor::cmd_sel(QStringList ops)
+CMD_RETURN_CODE CommandProcessor::cmd_selconnect(QStringList ops)
 {
-	if (!ValidateArgs(ops, 0, 2)) return CMD_RETURN_CODE::CMD_ERROR;
-	CGLView* glv = m_wnd->GetGLView();
-	if (glv == nullptr) return GLViewIsNull();
+	if (!ValidateArgs(ops, 2, 2)) return CMD_RETURN_CODE::CMD_ERROR;
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetActiveDocument());
+	if (doc == nullptr) return NoActiveDoc();
 
-	GLViewSettings& vs = glv->GetViewSettings();
-	if (ops.size() == 0) vs.m_bconn = !vs.m_bconn;
-	if (ops.size() == 1)
+	FSMesh* pm = GetActiveMesh();
+	if (pm == nullptr) return NoActiveMesh();
+
+	bool ok = false;
+	float w = ops[0].toFloat(&ok);
+	if (!ok || (w < 0.0)) return InvalidArgument();
+	
+	std::string id = ops[1].toStdString();
+	int mode = 0;
+	if      (id[0] == 'E') mode = ITEM_ELEM;
+	else if (id[0] == 'F') mode = ITEM_FACE;
+	else if (id[0] == 'N') mode = ITEM_NODE;
+	else if (id[0] == 'L') mode = ITEM_EDGE;
+	else return Error("Unrecognized item identifier.");
+	int nid = atoi(id.c_str() + 1);
+
+	if (mode == ITEM_ELEM)
 	{
-		bool ok = false;
-		int n = ops[0].toInt(&ok);
-		if (!ok || (n != 0) || (n != 1)) return InvalidArgument();
-		vs.m_bconn = (n == 1);
+		int index = pm->ElementIndexFromID(nid);
+		if (index < 0) return Error("Invalid element ID.");
+		std::vector<int> elemList = MeshTools::GetConnectedElements(pm, index, w, true, false, true);
+		if (!elemList.empty())
+			doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
 	}
-	if (ops.size() == 2)
+	else if (mode == ITEM_FACE)
 	{
-		bool ok = false;
-		float w = ops[1].toFloat(&ok);
-		if (!ok || (w < 0.0)) return InvalidArgument();
-		vs.m_fconn = w;
+		int index = nid - 1;
+		if (index < 0) return Error("Invalid face ID.");
+		std::vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, w, true);
+		if (!faceList.empty())
+			doc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
 	}
-	m_wnd->UpdateGLControlBar();
+	else if (mode == ITEM_NODE)
+	{
+		int index = pm->NodeIndexFromID(nid);
+		if (index < 0) return Error("Invalid node ID.");
+		std::vector<int> nodeList = MeshTools::GetConnectedNodes(pm, index, w, true);
+		if (!nodeList.empty())
+			doc->DoCommand(new CCmdSelectFENodes(pm, nodeList, false));
+	}
+	else if (mode == ITEM_EDGE)
+	{
+		int index = nid - 1;
+		if (index < 0) return Error("Invalid edge ID.");
+		std::vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, w, true);
+		if (!edgeList.empty())
+			doc->DoCommand(new CCmdSelectFEEdges(pm, edgeList, false));
+	}
+
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 
@@ -1207,6 +1211,45 @@ CMD_RETURN_CODE CommandProcessor::cmd_selpart(QStringList ops)
 	int index = pg->GetID();
 	m_wnd->on_actionSelectParts_toggled(true);
 	doc->DoCommand(new CCmdSelectPart(gm, &index, 1, false), name);
+	return CMD_RETURN_CODE::CMD_SUCCESS;
+}
+
+CMD_RETURN_CODE CommandProcessor::cmd_selpath(QStringList ops)
+{
+	if (!ValidateArgs(ops, 2, 2)) return CMD_RETURN_CODE::CMD_ERROR;
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetActiveDocument());
+	if (doc == nullptr) return NoActiveDoc();
+
+	FSMesh* pm = GetActiveMesh();
+	if (pm == nullptr) return NoActiveMesh();
+
+	std::string id0 = ops[0].toStdString();
+	int mode0 = 0;
+	if      (id0[0] == 'E') mode0 = ITEM_ELEM;
+	else if (id0[0] == 'F') mode0 = ITEM_FACE;
+	else if (id0[0] == 'N') mode0 = ITEM_NODE;
+	else if (id0[0] == 'L') mode0 = ITEM_EDGE;
+	else return Error("Unrecognized item identifier.");
+	int nid0 = atoi(id0.c_str() + 1);
+
+	std::string id1 = ops[1].toStdString();
+	int mode1 = 0;
+	if      (id1[0] == 'E') mode1 = ITEM_ELEM;
+	else if (id1[0] == 'F') mode1 = ITEM_FACE;
+	else if (id1[0] == 'N') mode1 = ITEM_NODE;
+	else if (id1[0] == 'L') mode1 = ITEM_EDGE;
+	else return Error("Unrecognized item identifier.");
+	int nid1 = atoi(id1.c_str() + 1);
+	if (mode0 != mode1) return InvalidArgument();
+	if (mode0 != ITEM_NODE) return InvalidArgument();
+
+	int index0 = pm->NodeIndexFromID(nid0);
+	int index1 = pm->NodeIndexFromID(nid1);
+	if ((index0 < 0) || (index1 < 0)) return Error("Invalid node ID.");
+	std::vector<int> nodeList = MeshTools::GetConnectedNodesByPath(pm, index0, index1);
+	if (!nodeList.empty())
+		doc->DoCommand(new CCmdSelectFENodes(pm, nodeList, false));
+
 	return CMD_RETURN_CODE::CMD_SUCCESS;
 }
 

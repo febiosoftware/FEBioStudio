@@ -98,6 +98,7 @@ public: // command functions
 	CMD_RETURN_CODE cmd_sel       (QStringList ops);
 	CMD_RETURN_CODE cmd_selconnect(QStringList ops);
 	CMD_RETURN_CODE cmd_selpart   (QStringList ops);
+	CMD_RETURN_CODE cmd_selpath   (QStringList ops);
 	CMD_RETURN_CODE cmd_selsurf   (QStringList ops);
 	CMD_RETURN_CODE cmd_stop      (QStringList ops);
 
