@@ -849,94 +849,6 @@ void GLViewSelector::Finish()
 }
 
 //-----------------------------------------------------------------------------
-vector<int> FindConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax)
-{
-	FEElement_* pe, * pe2;
-	int elems = pm->Elements();
-	vector<int> elemList; elemList.reserve(elems);
-
-	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-	std::stack<FEElement_*> stack;
-
-	// push the first element to the stack
-	pe = pm->ElementPtr(startIndex);
-	pe->m_ntag = -1;
-	elemList.push_back(startIndex);
-	stack.push(pe);
-
-	double tr = -2;
-	vec3d t(0, 0, 0);
-	if (pe->IsShell())
-	{
-		assert(pe->m_face[0] >= 0);
-		t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI * fconn / 180.0);
-	}
-
-	// get the respect partition boundary flag
-	int gid = pe->m_gid;
-
-	// now push the rest
-	int n;
-	while (!stack.empty())
-	{
-		pe = stack.top(); stack.pop();
-
-		// solid elements
-		n = pe->Faces();
-		for (int i = 0; i < n; ++i)
-			if (pe->m_nbr[i] >= 0)
-			{
-				pe2 = pm->ElementPtr(pe->m_nbr[i]);
-				if (pe2->m_ntag >= 0 && pe2->IsVisible())
-				{
-					if ((exteriorOnly == false) || pe2->IsExterior())
-					{
-						int fid2 = -1;
-						if (pe->m_face[i] >= 0)
-						{
-							FSFace& f2 = pm->Face(pe->m_face[i]);
-							fid2 = f2.m_gid;
-						}
-
-						if ((bpart == false) || ((pe2->m_gid == gid) && (fid2 == -1)))
-						{
-							elemList.push_back(pe2->m_ntag);
-							pe2->m_ntag = -1;
-							stack.push(pe2);
-						}
-					}
-				}
-			}
-
-		// shell elements
-		n = pe->Edges();
-		for (int i = 0; i < n; ++i)
-			if (pe->m_nbr[i] >= 0)
-			{
-				pe2 = pm->ElementPtr(pe->m_nbr[i]);
-				if (pe2->m_ntag >= 0 && pe2->IsVisible())
-				{
-					int eface = pe2->m_face[0]; assert(eface >= 0);
-					if (eface >= 0)
-					{
-						if ((bmax == false) || (pm->Face(eface).m_fn * to_vec3f(t) >= tr))
-						{
-							if ((bpart == false) || (pe2->m_gid == gid))
-							{
-								elemList.push_back(pe2->m_ntag);
-								pe2->m_ntag = -1;
-								stack.push(pe2);
-							}
-						}
-					}
-				}
-			}
-	}
-
-	return elemList;
-}
-
-//-----------------------------------------------------------------------------
 int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, Intersection& q)
 {
 	FSMesh* pm = po->GetFEMesh();
@@ -1044,11 +956,13 @@ void GLViewSelector::SelectFEElements(int x, int y)
 		int index = q.m_index;
 		if (view.m_bconn)
 		{
-			vector<int> pint = FindConnectedElements(pm, index, view.m_fconn, view.m_bpart, view.m_bext, view.m_bmax);
-			int N = (int)pint.size();
+			vector<int> elemList = MeshTools::GetConnectedElements(pm, index, view.m_fconn, view.m_bpart, view.m_bext, view.m_bmax);
 
-			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &pint[0], N);
-			else pcmd = new CCmdSelectElements(pm, &pint[0], N, m_bshift);
+			if (!elemList.empty())
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
+				else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+			}
 		}
 		else
 		{
@@ -1253,60 +1167,12 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 	{
 		if (view.m_bconn)
 		{
-			vector<int> pint(pm->Edges());
-			int m = 0;
-
-			for (int i = 0; i < pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FSEdge*> stack;
-
-			FSNodeEdgeList NEL(pm);
-
-			// push the first face to the stack
-			FSEdge* pe = pm->EdgePtr(index);
-			pint[m++] = index;
-			pe->m_ntag = -1;
-			stack.push(pe);
-
-			int gid = pe->m_gid;
-
-			// setup the direction vector
-			vec3d& r0 = pm->Node(pe->n[0]).r;
-			vec3d& r1 = pm->Node(pe->n[1]).r;
-			vec3d t1 = r1 - r0; t1.Normalize();
-
-			// angle tolerance
-			double wtol = 1.000001 * cos(PI * view.m_fconn / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
-
-			// now push the rest
-			while (!stack.empty())
+			vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, view.m_fconn, view.m_bmax);
+			if (!edgeList.empty())
 			{
-				pe = stack.top(); stack.pop();
-
-				for (int i = 0; i < 2; ++i)
-				{
-					int n = NEL.Edges(pe->n[i]);
-					for (int j = 0; j < n; ++j)
-					{
-						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
-						if (edgeID >= 0)
-						{
-							FSEdge* pe2 = pm->EdgePtr(edgeID);
-							vec3d& r0 = pm->Node(pe2->n[0]).r;
-							vec3d& r1 = pm->Node(pe2->n[1]).r;
-							vec3d t2 = r1 - r0; t2.Normalize();
-							if (pe2->IsVisible() && ((view.m_bmax == false) || (fabs(t1 * t2) >= wtol)) && ((gid == -1) || (pe2->m_gid == gid)))
-							{
-								pint[m++] = pe2->m_ntag;
-								pe2->m_ntag = -1;
-								stack.push(pe2);
-							}
-						}
-					}
-				}
+				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
 			}
-
-			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &pint[0], m);
-			else pcmd = new CCmdSelectFEEdges(pm, &pint[0], m, m_bshift);
 		}
 		else
 		{
@@ -2231,14 +2097,14 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 
 			if (view.m_bselpath == false)
 			{
-				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
+				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax, 1);
 				lastIndex = -1;
 			}
 			else
 			{
 				if ((lastIndex != -1) && (lastIndex != index))
 				{
-					MeshTools::TagNodesByShortestPath(pm, lastIndex, index);
+					MeshTools::TagNodesByShortestPath(pm, lastIndex, index, 1);
 					lastIndex = index;
 				}
 				else
@@ -2700,35 +2566,31 @@ void GLViewSelector::SelectFENodes(int x, int y)
 	{
 		if (view.m_bconn && pm)
 		{
-			vector<int> pint(pm->Nodes(), 0);
-
+			vector<int> nodeList;
 			if (view.m_bselpath == false)
 			{
-				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
+				nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
 				lastIndex = -1;
 			}
 			else
 			{
 				if ((lastIndex != -1) && (lastIndex != index))
 				{
-					MeshTools::TagNodesByShortestPath(pm, lastIndex, index);
+					nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
 					lastIndex = index;
 				}
 				else
 				{
-					pm->TagAllNodes(0);
-					pm->Node(index).m_ntag = 1;
+					nodeList.push_back(index);
 					lastIndex = index;
 				}
 			}
 
-			// fill the pint array
-			int m = 0;
-			for (int i = 0; i < pm->Nodes(); ++i)
-				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
-
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
-			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
+			if (!nodeList.empty())
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
+				else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+			}
 		}
 		else
 		{

@@ -11,7 +11,6 @@
 *.sln.docstates
 moc_*
 qrc_*
-cmbuild*/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -33,7 +32,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-build5/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -389,23 +387,5 @@ MigrationBackup/
 
 # VS Code
 .vscode/
-
-# Documentation
-Documentation/Doxygen/doc
-Documentation/htmlManual
-Documentation/doc
-
-# Python stuff
-PyLib
-Documentation/htmlManual
-
-# macOS Stuff
-.DS_Store
-*/.DS_Store
-
-febio-sdk
-febio4-sdk
-*.zip
-third-party-deps
-.envrc
-.terraform
+build/
+cmbuild*/

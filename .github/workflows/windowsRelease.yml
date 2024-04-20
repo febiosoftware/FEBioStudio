@@ -1,0 +1,25 @@
+name: CI - Windows Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      fbsVer:
+        required: true
+        type: string
+      febioVer:
+        required: true
+        type: string
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+jobs:
+  call_workflow:
+    uses: febiosoftware/febio-workflows/.github/workflows/windows-release.yml@develop
+    with:
+      febioVer: ${{inputs.febioVer}}
+      fbsVer: ${{inputs.fbsVer}}
+      aws-ami-id: ami-0b18c665dbe9efa75
+      aws-sg-id: sg-0ca7912782cf1538b
+    secrets: inherit

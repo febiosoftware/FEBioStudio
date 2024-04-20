@@ -1,0 +1,26 @@
+name: CI - Linux Push
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+jobs:
+  call_workflow:
+    uses: febiosoftware/febio-workflows/.github/workflows/linux-reusable-push.yml@develop
+    with:
+      aws-ami-id: ami-0590ebdb5afffb782
+      aws-sg-id: sg-0ca7912782cf1538b
+      runTests: false
+      package-name: febio-studio
+      requires-sdk: true
+      sdk-config: |
+        {
+          "sdk_path": "develop",
+          "version": "v4.6",
+        }
+    secrets: inherit
