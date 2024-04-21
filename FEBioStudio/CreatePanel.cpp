@@ -193,8 +193,8 @@ void CCreatePanel::on_create_clicked()
 
 			// make sure the object is visible
 			wnd->GetGLView()->ZoomSelection(false);
-
-			wnd->GetCommandWindow()->LogCommand({ "create", po->GetTypeString() });
+			
+			CCommandLogger::Log({ "create", po->GetTypeString() });
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{

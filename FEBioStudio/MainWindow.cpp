@@ -1191,7 +1191,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			}
 			else ui->addToRecentFiles(file.m_fileName);
 
-			ui->commandWnd->LogCommand(CCommandLine("open", file.m_fileName));
+			CCommandLogger::Log({ "open", file.m_fileName });
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{

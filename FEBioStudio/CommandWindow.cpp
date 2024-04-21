@@ -38,6 +38,8 @@ SOFTWARE.*/
 
 CCommandLine::CCommandLine() {}
 
+CCommandLine::CCommandLine(const char* szcmd) : m_cmd(szcmd) {}
+
 CCommandLine::CCommandLine(const QString& cmd) : m_cmd(cmd) {}
 
 CCommandLine::CCommandLine(const QString& cmd, const QString& arg1)

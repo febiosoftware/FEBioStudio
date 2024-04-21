@@ -408,7 +408,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
 
-		w->GetCommandWindow()->LogCommand(CCommandLine("genmesh"));
+		CCommandLogger::Log("genmesh");
 	}
 }
 

@@ -116,7 +116,7 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 
 			CCommandLine cmd("addbc", pbc->GetTypeString());
 			if (psel) cmd.AddCommand("assign");
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -172,7 +172,7 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 
 			CCommandLine cmd("addbc", pbc->GetTypeString());
 			if (psel) cmd.AddCommand("assign");
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -203,7 +203,7 @@ void CMainWindow::on_actionAddGeneralBC_triggered()
 			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
 
-			ui->commandWnd->LogCommand(CCommandLine("addbc", pbc->GetTypeString()));
+			CCommandLogger::Log(CCommandLine("addbc", pbc->GetTypeString()));
 		}
 	}
 }
@@ -264,7 +264,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 			CCommandLine cmd("addnl", pnl->GetTypeString());
 			if (psel) cmd.AddCommand("assign");
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -320,7 +320,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 			CCommandLine cmd("addsl", psl->GetTypeString());
 			if (psel) cmd.AddCommand("assign");
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -352,7 +352,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			UpdateModel(pbl);
 
 			CCommandLine cmd("addbl", pbl->GetTypeString());
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -432,7 +432,7 @@ void CMainWindow::on_actionAddIC_triggered()
 
 			CCommandLine cmd("addic", pic->GetTypeString());
 			if (psel) cmd.AddCommand("assign");
-			ui->commandWnd->LogCommand(cmd);
+			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -490,7 +490,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			doc->DoCommand(new CCmdAddInterface(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
 
-			ui->commandWnd->LogCommand({ "addci", pi->GetTypeString()});
+			CCommandLogger::Log({ "addci", pi->GetTypeString()});
 		}
 	}
 }
@@ -521,7 +521,7 @@ void CMainWindow::on_actionAddGenericNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			ui->commandWnd->LogCommand({ "addnlc", pi->GetTypeString() });
+			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }
@@ -572,7 +572,7 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			ui->commandWnd->LogCommand({ "addnlc", pi->GetTypeString() });
+			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }
@@ -603,7 +603,7 @@ void CMainWindow::on_actionAddBodyNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			ui->commandWnd->LogCommand({ "addnlc", pi->GetTypeString() });
+			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }

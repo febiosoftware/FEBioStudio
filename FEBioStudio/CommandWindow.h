@@ -37,6 +37,7 @@ class CCommandLine
 {
 public:
 	CCommandLine();
+	CCommandLine(const char* szcmd);
 	CCommandLine(const QString& cmd);
 	CCommandLine(const QString& cmd, const QString& arg1);
 	CCommandLine(const QString& cmd, const QString& arg1, const QString& arg2);
