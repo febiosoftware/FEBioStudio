@@ -84,6 +84,13 @@ CCommandLine& CCommandLine::AddArgument(const QString& arg)
 	return *this;
 }
 
+CCommandWindow* CCommandLogger::m_wnd = nullptr;
+void CCommandLogger::Log(const CCommandLine& cmd)
+{
+	assert(m_wnd);
+	if (m_wnd) m_wnd->LogCommand(cmd);
+}
+
 class Ui::CCommandWindow
 {
 public:
@@ -183,6 +190,7 @@ CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(pare
 	ui->m_wnd = wnd;
 	ui->cmd = new CommandProcessor(wnd);
 	ui->setup(this);
+	CCommandLogger::SetCommandWindow(this);
 }
 
 CCommandWindow::~CCommandWindow()

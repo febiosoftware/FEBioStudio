@@ -53,6 +53,20 @@ private:
 	QString	m_cmd;
 };
 
+class CCommandWindow;
+
+class CCommandLogger
+{
+public:
+	static void SetCommandWindow(CCommandWindow* wnd) { m_wnd = wnd; }
+
+	static void Log(const CCommandLine& cmd);
+
+private:
+	CCommandLogger() {}
+	static CCommandWindow* m_wnd;
+};
+
 class CCommandWindow : public QWidget
 {
 	Q_OBJECT
