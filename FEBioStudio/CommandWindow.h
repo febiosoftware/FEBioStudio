@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <initializer_list>
+#include <FSCore/ParamBlock.h>
 
 class CMainWindow;
 
@@ -44,6 +45,7 @@ public:
 	CCommandLine(std::initializer_list<QString> initList);
 
 	CCommandLine& operator << (const QString& s);
+	CCommandLine& operator << (const QStringList& args);
 
 	CCommandLine& AddArgument(const QString& arg);
 	CCommandLine& AddCommand(const QString& cmd);
@@ -67,6 +69,8 @@ private:
 	CCommandLogger() {}
 	static CCommandWindow* m_wnd;
 };
+
+QStringList Stringify(const ParamContainer& PL);
 
 class CCommandWindow : public QWidget
 {

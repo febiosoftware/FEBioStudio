@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FECore/MathObject.h>
 #include "CommandProcessor.h"
 #include "version.h"
+#include "PropertyList.h"
 
 CCommandLine::CCommandLine() {}
 
@@ -70,6 +71,16 @@ CCommandLine& CCommandLine::operator << (const QString& s)
 	else return AddArgument(s);
 }
 
+CCommandLine& CCommandLine::operator << (const QStringList& args)
+{
+	for (const QString& s : args)
+	{
+		if (m_cmd.isEmpty()) m_cmd = s;
+		else AddArgument(s);
+	}
+	return *this;
+}
+
 CCommandLine& CCommandLine::AddCommand(const QString& cmd)
 {
 	m_cmd += ";" + cmd;
@@ -91,6 +102,29 @@ void CCommandLogger::Log(const CCommandLine& cmd)
 {
 	assert(m_wnd);
 	if (m_wnd) m_wnd->LogCommand(cmd);
+}
+
+QStringList Stringify(const ParamContainer& PL)
+{
+	QStringList out;
+	int n = PL.Parameters();
+	for (int i = 0; i < n; ++i)
+	{
+		const Param& p = PL.GetParam(i);
+		switch (p.GetParamType())
+		{
+		case Param_INT   : out << QString::number(p.GetIntValue()); break;
+		case Param_BOOL  : out << (p.GetBoolValue() ? "1" : "0"); break;
+		case Param_FLOAT : out << QString::number(p.GetFloatValue()); break;
+		case Param_VEC3D : out << Vec3dToString(p.GetVec3dValue()); break;
+		case Param_MAT3D : out << Mat3dToString(p.GetMat3dValue()); break;
+		case Param_MAT3DS: out << Mat3dsToString(p.GetMat3dsValue()); break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+	return out;
 }
 
 class Ui::CCommandWindow

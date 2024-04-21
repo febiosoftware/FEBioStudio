@@ -193,8 +193,9 @@ void CCreatePanel::on_create_clicked()
 
 			// make sure the object is visible
 			wnd->GetGLView()->ZoomSelection(false);
-			
-			CCommandLogger::Log({ "create", po->GetTypeString() });
+
+			CCommandLine cmd("create");
+			CCommandLogger::Log(cmd << po->GetTypeString() << Stringify(*po));
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{
