@@ -1180,6 +1180,8 @@ void CMainWindow::on_actionMerge_triggered()
 
 		// update UI
 		Update(0, true);
+
+		return;
 	}
 
 	GNodeSelection* nodeSel = dynamic_cast<GNodeSelection*>(currentSelection);
