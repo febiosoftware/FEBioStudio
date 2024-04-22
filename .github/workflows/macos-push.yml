@@ -15,6 +15,7 @@ jobs:
     with:
       package-name: febio-studio
       requires-sdk: true
+      post-build: true
       sdk-config: |
         {
           "sdk_path": "develop",
