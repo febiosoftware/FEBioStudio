@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -270,16 +270,16 @@ if (WIN32)
     set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        find_library(TEMP NAMES ${libName} 
+        find_library(TEMP NAMES ${name} 
             PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Debug NO_DEFAULT_PATH)
         list(APPEND FEBio_DEBUG_LIBS ${TEMP})
         unset(TEMP CACHE)
     endforeach(name)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        find_library(TEMP NAMES ${libName} 
+        find_library(TEMP NAMES ${name} 
             PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
-        list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
+        list(APPEND FEBio_RELEASE_LIBS ${TEMP})
         unset(TEMP CACHE)
     endforeach(name)
 
