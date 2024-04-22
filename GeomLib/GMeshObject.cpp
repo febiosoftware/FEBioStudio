@@ -1440,8 +1440,21 @@ GMeshObject* GMeshObject::DetachSelection()
 		if (el.m_MatID >= 0)
 		{
 			int pid = el.m_gid;
-			GPart* pg = newObject->Part(pid);
-			pg->SetMaterialID(el.m_MatID);
+			GPart* pg = newObject->Part(pid); assert(pg);
+			if (pg) pg->SetMaterialID(el.m_MatID);
+		}
+	}
+
+	// do the same for the old object
+	pm = oldMesh;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_MatID >= 0)
+		{
+			int pid = el.m_gid;
+			GPart* pg = Part(pid); assert(pg);
+			if (pg) pg->SetMaterialID(el.m_MatID);
 		}
 	}
 
