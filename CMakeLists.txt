@@ -269,39 +269,19 @@ if (WIN32)
 
     set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
-    # FindDependencies is already appending Release to the path -- (SM) Nope, looks like we do have to set this
-    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
-    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
-
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        find_library(TEMP NAMES ${libName} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Debug NO_DEFAULT_PATH)
+        list(APPEND FEBio_DEBUG_LIBS ${TEMP})
+        unset(TEMP CACHE)
     endforeach(name)
 
-    # compatability for CI workflow
-    if(NOT FEBio_DEBUG_LIBS)
-        foreach(name IN LISTS FEBio_LIB_NAMES)
-            findLib(FEBio_LIB_DIR FEBio_LIB ${name})
-            list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
-            unset(FEBio_LIB)
-        endforeach(name)
-    endif()
-
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
+        find_library(TEMP NAMES ${libName} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
         list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        unset(TEMP CACHE)
     endforeach(name)
-
-    # compatability for CI workflow
-    if(NOT FEBio_RELEASE_LIBS)
-        foreach(name IN LISTS FEBio_LIB_NAMES)
-            findLib(FEBio_LIB_DIR FEBio_LIB ${name})
-            list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
-            unset(FEBio_LIB)
-        endforeach(name)
-    endif()
 
     unset(FEBio_LIB_NAMES)
 else()
@@ -670,7 +650,6 @@ target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
-
     foreach(name IN LISTS FEBio_RELEASE_LIBS)
         target_link_libraries(${FBS_BIN_NAME} optimized ${name})
     endforeach()
