@@ -272,9 +272,6 @@ if (WIN32)
     # FindDependencies is already appending Release to the path -- (SM) Nope, looks like we do have to set this
     set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
     set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
-    #(SM) The ones below don't work
-    #set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR})
-    #set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR})
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
         findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
@@ -282,11 +279,29 @@ if (WIN32)
         unset(FEBio_LIB)
     endforeach(name)
 
+    # compatability for CI workflow
+    if(NOT FEBio_DEBUG_LIBS)
+        foreach(name IN LISTS FEBio_LIB_NAMES)
+            findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+            list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
+            unset(FEBio_LIB)
+        endforeach(name)
+    endif()
+
     foreach(name IN LISTS FEBio_LIB_NAMES)
         findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
         list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
         unset(FEBio_LIB)
     endforeach(name)
+
+    # compatability for CI workflow
+    if(NOT FEBio_RELEASE_LIBS)
+        foreach(name IN LISTS FEBio_LIB_NAMES)
+            findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+            list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
+            unset(FEBio_LIB)
+        endforeach(name)
+    endif()
 
     unset(FEBio_LIB_NAMES)
 else()
