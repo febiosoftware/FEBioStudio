@@ -6,7 +6,7 @@ on:
       - edited
       - synchronize
     branches:
-      - 'ci/**'
+      - 'develop'
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
@@ -19,9 +19,4 @@ jobs:
       aws-instance-type: c5a.8xlarge
       package-name: febio-studio
       requires-sdk: true
-      sdk-config: |
-        {
-          "sdk_path": "develop",
-          "version": "v4.6",
-        }
     secrets: inherit
