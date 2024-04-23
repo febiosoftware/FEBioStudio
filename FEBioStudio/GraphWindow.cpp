@@ -1656,7 +1656,17 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		else
 			SetXDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
+		int dataField = -1;
+		CPostDocument* doc = GetPostDoc();
+		if (doc)
+		{
+			Post::CGLColorMap* map = doc->GetGLModel()->GetColorMap();
+			if (map)
+			{
+				dataField = map->GetEvalField();
+			}
+		}
+		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR), dataField);
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
