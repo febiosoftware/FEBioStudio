@@ -20,5 +20,6 @@ jobs:
       sdk-config: |
         {
           "sdk_path": "ci/develop",
+          "version": "v4.5"
         }
     secrets: inherit
