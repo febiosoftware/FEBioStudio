@@ -7,6 +7,7 @@ RUN_POST_BUILD=${RUN_POST_BUILD:=true}
 main() {
 	# TODO: Figure out why it's not generating correctly on first attempt
 	run_cmake
+	echo "Short circuiting build for quick failure!"; exit 1
 	pushd cmbuild
 	make -j $(sysctl -n hw.ncpu)
 	popd
