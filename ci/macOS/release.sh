@@ -165,4 +165,6 @@ zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
 xcrun notarytool submit --apple-id $MACOS_SIGN_ID --team-id $MACOS_SIGN_TEAM --password $MACOS_SIGN_PWD $INSTALLER_NAME.zip --wait
 xcrun stapler staple $INSTALLER_NAME
 rm $INSTALLER_NAME.zip
+zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
+rm -r $INSTALLER_NAME
 cd $GITHUB_WORKSPACE
