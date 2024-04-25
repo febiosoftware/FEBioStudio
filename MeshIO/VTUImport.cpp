@@ -285,13 +285,7 @@ public:
 			int n0 = (n > 0 ? m_cell_offsets.m_values_int[n - 1] : 0);
 			int n1 = m_cell_offsets.m_values_int[n];
 			cell.m_numNodes = n1 - n0;
-			switch (cell.m_numNodes)
-			{
-			case 3: cell.m_cellType = VTKCell::VTK_TRIANGLE; break;
-			case 4: cell.m_cellType = VTKCell::VTK_QUAD; break;
-			default:
-				assert(false);
-			}
+			cell.m_cellType = VTKCell::VTK_POLYGON;
 			int m = cell.m_numNodes;
 			for (int i = 0; i < m; ++i)
 			{
@@ -316,7 +310,7 @@ public:
 	}
 
 public:
-	int	m_numPoints;
+	int m_numPoints;
 	int m_numCells;
 
 	VTKDataArray	m_points;
@@ -667,6 +661,8 @@ bool VTKFileReader::ParsePiece(XMLTag& tag, VTKModel& vtk)
 	VTKPiece piece;
 	piece.m_numPoints = tag.AttributeValue<int>("NumberOfPoints", 0);
 	piece.m_numCells  = tag.AttributeValue<int>("NumberOfCells", 0);
+	if (piece.m_numCells == 0)
+		piece.m_numCells = tag.AttributeValue<int>("NumberOfPolys", 0);
 
 	++tag;
 	do
@@ -707,9 +703,8 @@ bool VTKFileReader::ParsePoints(XMLTag& tag, VTKPiece& piece)
 			if (points.m_numComps != 3) return false;
 		}
 		else tag.skip();
+		++tag;
 	} while (!tag.isend());
-
-	++tag;
 
 	return true;
 }
@@ -739,8 +734,6 @@ bool VTKFileReader::ParseCells(XMLTag& tag, VTKPiece& piece)
 		else tag.skip();
 	} 
 	while (!tag.isend());
-
-	++tag;
 
 	return true;
 }
@@ -895,7 +888,41 @@ bool VTKFileReader::BuildMesh(VTKModel& vtk)
 	
 		// get the number of nodes and elements
 		int nodes = piece.Points();
-		int elems = piece.Cells();
+
+		int elems = 0;
+		for (int i = 0; i < piece.Cells(); i++)
+		{
+			VTKCell cell = piece.Cell(i);
+			switch (cell.m_cellType)
+			{
+			case VTKCell::VTK_TRIANGLE  : elems += 1; break;
+			case VTKCell::VTK_QUAD      : elems += 1; break;
+			case VTKCell::VTK_TETRA     : elems += 1; break;
+			case VTKCell::VTK_HEXAHEDRON: elems += 1; break;
+			case VTKCell::VTK_WEDGE     : elems += 1; break;
+			case VTKCell::VTK_PYRAMID   : elems += 1; break;
+			case VTKCell::VTK_POLYGON:
+			{
+				switch (cell.m_numNodes)
+				{
+				case 0:
+				case 1:
+				case 2:
+					return errf("Error trying to build mesh");
+					break;
+				case 3:
+				case 4:
+					elems += 1;
+					break;
+				default:
+					elems += cell.m_numNodes - 2;
+				}
+			}
+			break;
+			default:
+				return errf("Error trying to build mesh");
+			}
+		}
 
 		// create a new mesh
 		FSMesh* pm = new FSMesh();
@@ -909,31 +936,68 @@ bool VTKFileReader::BuildMesh(VTKModel& vtk)
 		}
 
 		// copy element data
-		for (int i = 0; i < elems; ++i)
+		elems = 0;
+		for (int i = 0; i < piece.Cells(); ++i)
 		{
-			FSElement& el = pm->Element(i);
-
 			VTKCell cell = piece.Cell(i);
 
-			el.m_gid = cell.m_label; assert(el.m_gid >= 0);
-			if (el.m_gid < 0) el.m_gid = 0;
-
-			switch (cell.m_cellType)
+			if (cell.m_cellType == VTKCell::VTK_POLYGON)
 			{
-			case VTKCell::VTK_TRIANGLE  : el.SetType(FE_TRI3); break;
-			case VTKCell::VTK_QUAD      : el.SetType(FE_QUAD4); break;
-			case VTKCell::VTK_TETRA     : el.SetType(FE_TET4); break;
-			case VTKCell::VTK_HEXAHEDRON: el.SetType(FE_HEX8); break;
-			case VTKCell::VTK_WEDGE     : el.SetType(FE_PENTA6); break;
-			case VTKCell::VTK_PYRAMID   : el.SetType(FE_PYRA5); break;
-			default:
-				delete pm;
-				return errf("Error trying to build mesh");
+				if (cell.m_numNodes == 3)
+				{
+					FSElement& el = pm->Element(elems++);
+					el.m_gid = cell.m_label; assert(el.m_gid >= 0);
+					if (el.m_gid < 0) el.m_gid = 0;
+					el.SetType(FE_TRI3);
+					for (int j = 0; j < 3; ++j) el.m_node[j] = cell.m_node[j];
+				}
+				else if (cell.m_numNodes == 4)
+				{
+					FSElement& el = pm->Element(elems++);
+					el.m_gid = cell.m_label; assert(el.m_gid >= 0);
+					if (el.m_gid < 0) el.m_gid = 0;
+					el.SetType(FE_QUAD4);
+					for (int j = 0; j < 4; ++j) el.m_node[j] = cell.m_node[j];
+				}
+				else
+				{
+					// Simple triangulation algorithm. Assumes polygon is convex.
+					int* n = cell.m_node;
+					for (int j = 0; j < cell.m_numNodes - 2; ++j)
+					{
+						FSElement& el = pm->Element(elems++);
+						el.SetType(FE_TRI3);
+						el.m_gid = cell.m_label; assert(el.m_gid >= 0);
+						if (el.m_gid < 0) el.m_gid = 0;
+						el.m_node[0] = n[0];
+						el.m_node[1] = n[j+1];
+						el.m_node[2] = n[j+2];
+					}
+				}
 			}
+			else
+			{
+				FSElement& el = pm->Element(elems++);
+				el.m_gid = cell.m_label; assert(el.m_gid >= 0);
+				if (el.m_gid < 0) el.m_gid = 0;
 
-			int nn = el.Nodes();
-			assert(nn == cell.m_numNodes);
-			for (int j = 0; j < nn; ++j) el.m_node[j] = cell.m_node[j];
+				switch (cell.m_cellType)
+				{
+				case VTKCell::VTK_TRIANGLE  : el.SetType(FE_TRI3); break;
+				case VTKCell::VTK_QUAD      : el.SetType(FE_QUAD4); break;
+				case VTKCell::VTK_TETRA     : el.SetType(FE_TET4); break;
+				case VTKCell::VTK_HEXAHEDRON: el.SetType(FE_HEX8); break;
+				case VTKCell::VTK_WEDGE     : el.SetType(FE_PENTA6); break;
+				case VTKCell::VTK_PYRAMID   : el.SetType(FE_PYRA5); break;
+				default:
+					delete pm;
+					return errf("Error trying to build mesh");
+				}
+
+				int nn = el.Nodes();
+				assert(nn == cell.m_numNodes);
+				for (int j = 0; j < nn; ++j) el.m_node[j] = cell.m_node[j];
+			}
 		}
 
 		pm->RebuildMesh();
