@@ -1,0 +1,9 @@
+name: CI - macOS Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call_workflow:
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-release.yml@develop
+    secrets: inherit

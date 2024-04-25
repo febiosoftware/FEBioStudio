@@ -180,7 +180,7 @@
         <!-- macOS -->
         <actionGroup>
             <actionList>
-                <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
+                <setInstallerVariable name="autoUpdate.xml" value="${FBSRepo}/cmbuild/bin/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
             </actionList>
             <ruleList>
                 <platformTest type="osx"/>
