@@ -16,4 +16,9 @@ jobs:
     with:
       package-name: febio-studio
       requires-sdk: true
+      sdk-config: |
+        {
+          "sdk_path": "develop",
+          "version": "v4.6",
+        }
     secrets: inherit
