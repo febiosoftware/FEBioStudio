@@ -6,7 +6,7 @@ on:
       - edited
       - synchronize
     branches:
-      - 'ci/**'
+      - 'develop'
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
@@ -16,7 +16,6 @@ jobs:
     with:
       package-name: febio-studio
       requires-sdk: true
-      post-build: true
       sdk-config: |
         {
           "sdk_path": "develop",
