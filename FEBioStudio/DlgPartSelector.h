@@ -44,11 +44,15 @@ public:
 
 	void closeEvent(QCloseEvent* e) override;
 
+	void accept() override;
+	void reject() override;
+
 private slots:
 	void onItemClicked(QTableWidgetItem* it);
 	void onFilterChanged();
 	void onShowAll();
 	void onHideAll();
+	void onSelect();
 	void onSelectionChanged();
 
 private:

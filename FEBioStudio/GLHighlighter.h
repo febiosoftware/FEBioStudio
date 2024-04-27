@@ -88,6 +88,8 @@ public:
 	// set the color for the picked items
 	static void SetPickColor(GLColor c);
 
+	static BOX GetBoundingBox();
+
 private:
 	// constructor
 	GLHighlighter();

@@ -34,8 +34,8 @@ GLHighlighter GLHighlighter::m_This;
 
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
-	m_activeColor = GLColor(0, 255, 255);
-	m_pickColor   = GLColor(0, 0, 255);
+	m_activeColor = GLColor(100, 255, 255);
+	m_pickColor   = GLColor(0, 200, 200);
 }
 
 void GLHighlighter::AttachToView(CGLView* view)
@@ -245,7 +245,7 @@ void GLHighlighter::draw()
 
 	GLMeshRender renderer;
 
-    for (GItem* item : m_This.m_item)
+	for (GItem* item : m_This.m_item)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(item);
 		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
@@ -277,4 +277,70 @@ void GLHighlighter::draw()
 	glLineWidth(line_old);
 
 	glPopAttrib();
+}
+
+BOX GLHighlighter::GetBoundingBox()
+{
+	BOX box;
+	for (GItem* item : m_This.m_item)
+	{
+		GNode* node = dynamic_cast<GNode*>(item);
+		if (node)
+		{
+			box += node->Position();
+		}
+
+		GEdge* edge = dynamic_cast<GEdge*>(item);
+		if (edge)
+		{
+			GNode* n0 = edge->Node(0);
+			GNode* n1 = edge->Node(1);
+			if (n0) box += n0->Position();
+			if (n1) box += n1->Position();
+		}
+
+		GFace* face = dynamic_cast<GFace*>(item);
+		if (face)
+		{
+			GObject* po = dynamic_cast<GObject*>(face->Object());
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				for (int i=0; i<m->Faces(); ++i)
+				{ 
+					GMesh::FACE& f = m->Face(i);
+					if (f.pid == face->GetLocalID())
+					{
+						vec3d r0 = m->Node(f.n[0]).r; box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = m->Node(f.n[1]).r; box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = m->Node(f.n[2]).r; box += po->GetTransform().LocalToGlobal(r2);
+					}
+				}
+			}
+		}
+
+		GPart* part = dynamic_cast<GPart*>(item);
+		if (part)
+		{
+			GObject* po = dynamic_cast<GObject*>(part->Object());
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				int pid = part->GetLocalID();
+				for (int i = 0; i < m->Faces(); ++i)
+				{
+					GMesh::FACE& f = m->Face(i);
+					GFace* face = po->Face(f.pid);
+					if ((face->m_nPID[0] == pid) || (face->m_nPID[1] == pid))
+					{
+						vec3d r0 = m->Node(f.n[0]).r; box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = m->Node(f.n[1]).r; box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = m->Node(f.n[2]).r; box += po->GetTransform().LocalToGlobal(r2);
+					}
+				}
+			}
+		}
+	}
+
+	return box;
 }

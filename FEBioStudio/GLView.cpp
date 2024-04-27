@@ -2353,7 +2353,8 @@ void CGLView::ZoomSelection(bool forceZoom)
 	if (scene == nullptr) return;
 
 	// get the selection's bounding box
-	BOX box = scene->GetSelectionBox();
+	BOX box = GLHighlighter::GetBoundingBox();
+	box += scene->GetSelectionBox();
 	if (box.IsValid())
 	{
 		double f = box.GetMaxExtent();
