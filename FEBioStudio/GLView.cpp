@@ -579,6 +579,14 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			{
 				HighlightNode(x, y);
 			}
+			else if (pdoc->GetSelectionMode() == SELECT_FACE)
+			{
+				HighlightSurface(x, y);
+			}
+			else if (pdoc->GetSelectionMode() == SELECT_PART)
+			{
+				HighlightPart(x, y);
+			}
 		}
 		ev->accept();
 
@@ -2037,6 +2045,169 @@ void CGLView::HighlightNode(int x, int y)
 		}
 	}
 	if (closestNode != nullptr) GLHighlighter::SetActiveItem(closestNode);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightSurface(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// get the fe model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	// set up selection buffer
+	int nsize = 5 * model.Edges();
+	if (nsize == 0) return;
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	// convert the point to a ray
+	Ray ray = transform.PointToRay(x, y);
+
+	double* a = PlaneCoordinates();
+	int Objects = model.Objects();
+	GFace* closestSurface = nullptr;
+	double minDist = 0;
+	Intersection q;
+	for (int i = 0; i < Objects; ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			if (mesh)
+			{
+				int NF = mesh->Faces();
+				for (int j = 0; j < NF; ++j)
+				{
+					GMesh::FACE& face = mesh->Face(j);
+					GFace* gface = po->Face(face.pid);
+					if (po->IsFaceVisible(gface) && !gface->IsSelected())
+					{
+						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
+						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
+						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r * 0.99999);
+						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r * 0.99999);
+						vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r * 0.99999);
+
+						Triangle tri = { r0, r1, r2 };
+						if (IntersectTriangle(ray, tri, q))
+						{
+							if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+							{
+								double distance = ray.direction * (q.point - ray.origin);
+								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+								{
+									if ((gface->IsSelected() == false) || (m_bctrl))
+									{
+										closestSurface = po->Face(face.pid);
+										minDist = distance;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestSurface != nullptr) GLHighlighter::SetActiveItem(closestSurface);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightPart(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// Get the model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	if (model.Parts() == 0) return;
+
+	// convert the point to a ray
+	makeCurrent();
+	GLViewTransform transform(this);
+	Ray ray = transform.PointToRay(x, y);
+
+	GPart* closestPart = 0;
+	Intersection q;
+	double minDist = 0;
+	double* a = PlaneCoordinates();
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			GMesh* mesh = po->GetRenderMesh();
+			if (mesh)
+			{
+				int NF = mesh->Faces();
+				for (int j = 0; j < NF; ++j)
+				{
+					GMesh::FACE& face = mesh->Face(j);
+
+					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+					vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+
+					Triangle tri = { r0, r1, r2 };
+					if (IntersectTriangle(ray, tri, q))
+					{
+						if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+						{
+							double distance = ray.direction * (q.point - ray.origin);
+							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
+							{
+								GFace* gface = po->Face(face.pid);
+								int pid = gface->m_nPID[0];
+								GPart* part = po->Part(pid);
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								{
+									closestPart = part;
+									minDist = distance;
+								}
+								else if (gface->m_nPID[1] >= 0)
+								{
+									pid = gface->m_nPID[1];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+								else if (gface->m_nPID[2] >= 0)
+								{
+									pid = gface->m_nPID[2];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestPart != nullptr) GLHighlighter::SetActiveItem(closestPart);
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 

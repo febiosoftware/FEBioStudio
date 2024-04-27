@@ -170,12 +170,69 @@ void drawNode(GLMeshRender& renderer, GNode* node, GLColor c)
 	glPopMatrix();
 }
 
+void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(face->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
+		renderer.RenderGLMesh(mesh, face->GetLocalID());
+		renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
+		renderer.RenderSurfaceOutline(rc, mesh, face->GetLocalID());
+	}
+	glPopAttrib();
+}
+
+void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(part->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+
+	int pid = part->GetLocalID();
+
+	// TODO: Make sure that the part's face list is populated!
+//	if (part->Faces() == 0) return;
+	vector<int> faceList; faceList.reserve(po->Faces());
+	for (int i = 0; i < po->Faces(); ++i)
+	{
+		GFace* face = po->Face(i);
+		if ((face->m_nPID[0] == pid) || (face->m_nPID[1] == pid)) faceList.push_back(i);
+	}
+	if (faceList.empty()) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		for (int surfID : faceList)
+		{
+			renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
+			renderer.RenderGLMesh(mesh, surfID);
+			renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
+			renderer.RenderSurfaceOutline(rc, mesh, surfID);
+		}
+	}
+	glPopAttrib();
+}
+
 void GLHighlighter::draw()
 {
 	if (m_This.m_item.empty() && (m_This.m_activeItem == 0)) return;
 
 	CGLView* view = m_This.m_view;
 	if (view == 0) return;
+
+	CGLContext rc;
+	rc.m_view = view;
+	rc.m_cam = view->GetCamera();
+	rc.m_settings = view->GetViewSettings();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -195,6 +252,12 @@ void GLHighlighter::draw()
 
 		GNode* node = dynamic_cast<GNode*>(item);
 		if (node) drawNode(renderer, node, m_This.m_pickColor);
+
+		GFace* face = dynamic_cast<GFace*>(item);
+		if (face) drawFace(rc, renderer, face, m_This.m_pickColor);
+
+		GPart* part = dynamic_cast<GPart*>(item);
+		if (part) drawPart(rc, renderer, part, m_This.m_pickColor);
 	}
 
 	if (m_This.m_activeItem)
@@ -204,6 +267,12 @@ void GLHighlighter::draw()
 
 		GNode* node = dynamic_cast<GNode*>(m_This.m_activeItem);
 		if (node) drawNode(renderer, node, m_This.m_activeColor);
+
+		GFace* face = dynamic_cast<GFace*>(m_This.m_activeItem);
+		if (face) drawFace(rc, renderer, face, m_This.m_activeColor);
+
+		GPart* part = dynamic_cast<GPart*>(m_This.m_activeItem);
+		if (part) drawPart(rc, renderer, part, m_This.m_activeColor);
 	}
 	glLineWidth(line_old);
 

@@ -165,6 +165,7 @@ void GLMeshRender::SetRenderMode(RenderMode mode)
 		glEnable(GL_POLYGON_STIPPLE);
 		break;
 	case OutlineMode:
+		glDisable(GL_POLYGON_STIPPLE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		break;
