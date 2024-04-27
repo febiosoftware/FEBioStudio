@@ -1455,6 +1455,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 
 	GLViewSettings& vs = rc.m_settings;
 	GLColor c = vs.m_mcol;
+	glEnable(GL_COLOR_MATERIAL);
 	glColor3ub(c.r, c.g, c.b);
 
 	for (int i = 0; i < model.Objects(); ++i)
@@ -1953,6 +1954,21 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> facesToRender; facesToRender.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* pf = po->Face(i);
+		GPart* p0 = po->Part(pf->m_nPID[0]);
+		GPart* p1 = po->Part(pf->m_nPID[1]);
+		GPart* p2 = po->Part(pf->m_nPID[2]);
+		if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
+		{
+			facesToRender.push_back(i);
+		}
+	}
+	if (facesToRender.empty()) return;
+
 	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -1960,20 +1976,25 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : facesToRender)
 		{
-			GFace* pf = po->Face(i);
-			GPart* p0 = po->Part(pf->m_nPID[0]);
-			GPart* p1 = po->Part(pf->m_nPID[1]);
-			GPart* p2 = po->Part(pf->m_nPID[2]);
-			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
-			{
-				renderer.RenderGLMesh(m, i);
-			}
+			renderer.RenderGLMesh(m, surfId);
 		}
 	}
 	glPopAttrib();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		SetMatProps(0);
+		glColor3ub(0, 0, 200);
+		for (int surfId : facesToRender)
+		{
+			renderer.RenderSurfaceOutline(rc, m, surfId);
+		}
+	}
+	glPopAttrib();
+
 }
 
 //-----------------------------------------------------------------------------

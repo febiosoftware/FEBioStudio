@@ -2227,6 +2227,81 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 	lineMesh.Render();
 }
 
+void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID)
+{
+	// get some settings
+	CGLCamera& cam = *rc.m_cam;
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
+
+	// this array will collect all points to render
+	vector<vec3d> points; points.reserve(1024);
+
+	pair<int, int> fil = pm->m_FIL[surfID];
+	int NF = fil.second;
+	if (NF > 0)
+	{
+		// loop over all faces
+		for (int i = 0; i < NF; ++i)
+		{
+			const GMesh::FACE& f = pm->Face(i + fil.first);
+			for (int j = 0; j < 3; ++j)
+			{
+				bool bdraw = false;
+
+				if (f.nbr[j] < 0)
+				{
+					bdraw = true;
+				}
+				else
+				{
+					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+					vec3d n1 = f.fn;
+					vec3d n2 = f2.fn;
+
+					if (cam.IsOrtho())
+					{
+						q.RotateVector(n1);
+						q.RotateVector(n2);
+						if (n1.z * n2.z <= 0) bdraw = true;
+					}
+					else
+					{
+						int a = j;
+						int b = (j + 1) % 3;
+						vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r) * 0.5;
+						vec3d pc = p - c;
+						double d1 = pc * n1;
+						double d2 = pc * n2;
+						if (d1 * d2 <= 0) bdraw = true;
+					}
+				}
+
+				if (bdraw)
+				{
+					int a = f.n[j];
+					int b = f.n[(j + 1) % 3];
+					if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+					points.push_back(pm->Node(a).r);
+					points.push_back(pm->Node(b).r);
+				}
+			}
+		}
+	}
+	if (points.empty()) return;
+
+	// build the line mesh
+	GLLineMesh lineMesh;
+	lineMesh.Create(points.size() / 2);
+	lineMesh.BeginMesh();
+	for (auto& p : points) lineMesh.AddVertex(p);
+	lineMesh.EndMesh();
+
+	// render the active edges
+	lineMesh.Render();
+}
+
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 {
