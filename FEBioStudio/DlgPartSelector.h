@@ -38,7 +38,11 @@ private:
 	class UI;
 
 public:
-	CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd);
+	CDlgPartSelector(CMainWindow* wnd);
+
+	void SetDocument(CModelDocument* doc);
+
+	void closeEvent(QCloseEvent* e) override;
 
 private slots:
 	void onItemClicked(QTableWidgetItem* it);

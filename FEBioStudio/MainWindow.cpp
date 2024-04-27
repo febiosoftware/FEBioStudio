@@ -3387,8 +3387,9 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 void CMainWindow::onShowPartSelector()
 {
 	CModelDocument* doc = GetModelDocument();
-	CDlgPartSelector dlg(doc, this);
-	dlg.exec();
+	if (doc->GetSelectionMode() != SELECT_PART)
+		on_actionSelectParts_toggled(true);
+	ui->showPartSelector(doc);
 }
 
 void CMainWindow::checkJobProgress()

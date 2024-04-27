@@ -112,6 +112,13 @@ public:
 		updateList();
 	}
 
+	void clear()
+	{
+		list->clear();
+		doc = nullptr;
+		gm = nullptr;
+	}
+
 	void updateList()
 	{
 		list->clear();
@@ -231,21 +238,27 @@ public:
 	}
 };
 
-CDlgPartSelector::CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
+CDlgPartSelector::CDlgPartSelector(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
 {
 	setWindowTitle("Part Selector");
 	setMinimumSize(800, 600);
 	ui->setup(wnd, this);
+}
+
+void CDlgPartSelector::SetDocument(CModelDocument* doc)
+{
 	ui->doc = doc;
-
-	if (doc->GetSelectionMode() != SELECT_PART)
-		wnd->on_actionSelectParts_toggled(true);
-
 	if (doc)
 	{
 		GModel* gm = doc->GetGModel();
 		ui->buildList(gm);
 	}
+	else ui->clear();
+}
+
+void CDlgPartSelector::closeEvent(QCloseEvent* e)
+{
+	ui->clear();
 }
 
 void CDlgPartSelector::onItemClicked(QTableWidgetItem* it)
