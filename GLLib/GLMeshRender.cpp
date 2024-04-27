@@ -2256,24 +2256,32 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID)
 				else
 				{
 					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-					vec3d n1 = f.fn;
-					vec3d n2 = f2.fn;
 
-					if (cam.IsOrtho())
+					if (f.pid != f2.pid)
 					{
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0) bdraw = true;
+						bdraw = true;
 					}
 					else
 					{
-						int a = j;
-						int b = (j + 1) % 3;
-						vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r) * 0.5;
-						vec3d pc = p - c;
-						double d1 = pc * n1;
-						double d2 = pc * n2;
-						if (d1 * d2 <= 0) bdraw = true;
+						vec3d n1 = f.fn;
+						vec3d n2 = f2.fn;
+
+						if (cam.IsOrtho())
+						{
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0) bdraw = true;
+						}
+						else
+						{
+							int a = j;
+							int b = (j + 1) % 3;
+							vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r) * 0.5;
+							vec3d pc = p - c;
+							double d1 = pc * n1;
+							double d2 = pc * n2;
+							if (d1 * d2 <= 0) bdraw = true;
+						}
 					}
 				}
 

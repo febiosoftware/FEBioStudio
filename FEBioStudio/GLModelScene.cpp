@@ -1775,19 +1775,26 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> selectedSurfaces; selectedSurfaces.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace& f = *po->Face(i);
+		if (f.IsSelected())
+		{
+			selectedSurfaces.push_back(i);
+		}
+	}
+	if (selectedSurfaces.empty()) return;
+
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	{
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : selectedSurfaces)
 		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				renderer.RenderGLMesh(pm, i);
-			}
+			renderer.RenderGLMesh(pm, surfId);
 		}
 
 #ifndef NDEBUG
@@ -1872,6 +1879,18 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 		}
 #endif
 		glDisable(GL_POLYGON_STIPPLE);
+	}
+	glPopAttrib();
+
+	// render the selected faces
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(0, 0, 255);
+		for (int surfId : selectedSurfaces)
+		{
+			renderer.RenderSurfaceOutline(rc, pm, surfId);
+		}
 	}
 	glPopAttrib();
 }
