@@ -3502,6 +3502,49 @@ void CMainWindow::UpdateProgress(int n)
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
+
+	IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
+	if (il)
+	{
+		GLHighlighter::ClearHighlights();
+		int itemLists = il->ItemLists();
+		for (int i = 0; i < itemLists; ++i)
+		{
+			FEItemListBuilder* pg = il->GetItemList(i);
+			GPartList* partList = dynamic_cast<GPartList*>(pg);
+			if (partList)
+			{
+				vector<GPart*> parts = partList->GetPartList();
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part);
+			}
+
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+			if (faceList)
+			{
+				vector<GFace*> faces = faceList->GetFaceList();
+				for (GFace* face : faces)
+					GLHighlighter::PickItem(face);
+			}
+
+			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+			if (edgeList)
+			{
+				vector<GEdge*> edges = edgeList->GetEdgeList();
+				for (GEdge* edge : edges)
+					GLHighlighter::PickItem(edge);
+			}
+
+			GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+			if (nodeList)
+			{
+				vector<GNode*> nodes = nodeList->GetNodeList();
+				for (GNode* node : nodes)
+					GLHighlighter::PickItem(node);
+			}
+		}
+		RedrawGL();
+	}
 }
 
 void CMainWindow::toggleOrtho()

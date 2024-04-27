@@ -331,7 +331,9 @@ BOX GLHighlighter::GetBoundingBox()
 				{
 					GMesh::FACE& f = m->Face(i);
 					GFace* face = po->Face(f.pid);
-					if ((face->m_nPID[0] == pid) || (face->m_nPID[1] == pid))
+					if ((face->m_nPID[0] == pid) || 
+						(face->m_nPID[1] == pid) ||
+						(face->m_nPID[2] == pid))
 					{
 						vec3d r0 = m->Node(f.n[0]).r; box += po->GetTransform().LocalToGlobal(r0);
 						vec3d r1 = m->Node(f.n[1]).r; box += po->GetTransform().LocalToGlobal(r1);

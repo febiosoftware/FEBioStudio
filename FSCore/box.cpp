@@ -135,6 +135,7 @@ BOX BOX::operator + (const BOX& b)
 //-----------------------------------------------------------------------------
 BOX& BOX::operator += (const BOX& b)
 {
+	if (!b.IsValid()) return *this;
 	if (m_valid)
 	{
 		x0 = MIN(x0, b.x0);
