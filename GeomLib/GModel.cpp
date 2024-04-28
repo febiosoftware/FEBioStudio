@@ -1677,6 +1677,7 @@ void GModel::SelectObjects(const vector<int>& objList)
 // show or hide a list of parts
 void GModel::ShowParts(const vector<int>& partList, bool bshow, bool bselect)
 {
+	for (int i = 0; i < Objects(); ++i) Object(i)->m_ntag = 0;
 	int N = (int)partList.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -1684,13 +1685,22 @@ void GModel::ShowParts(const vector<int>& partList, bool bshow, bool bselect)
 		GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);
 		if (po) 
 		{
+			po->m_ntag = 1;
 			if (bshow) 
 			{
-				po->ShowPart(*pg, bshow);
+				pg->ShowItem();
 				if (bselect) pg->Select();
 			}
-			else po->ShowPart(*pg, false);
+			else
+			{
+				pg->HideItem();
+			}
 		}
+	}
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		if (po->m_ntag == 1) po->UpdateItemVisibility();
 	}
 }
 
