@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <PostGL/GLModel.h>
+#include "GLHighlighter.h"
 
 //-----------------------------------------------------------------------------
 GLViewSelector::GLViewSelector(CGLView* glview) : m_glv(glview) 
@@ -1460,6 +1461,7 @@ void GLViewSelector::SelectParts(int x, int y)
 	}
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, partName);
 }
 
@@ -1542,6 +1544,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
 }
 
@@ -1645,6 +1648,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, edgeName);
 }
 
@@ -1719,6 +1723,7 @@ void GLViewSelector::SelectNodes(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, nodeName);
 }
 
