@@ -1138,6 +1138,17 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
+template <class T> std::vector<T*> itemlist_cast(std::vector<GItem*>& items)
+{
+	std::vector<T*> castedItems;
+	for (GItem* p : items)
+	{
+		T* tp = dynamic_cast<T*>(p);
+		if (tp) castedItems.push_back(tp);
+	}
+	return castedItems;
+}
+
 void CGLView::keyPressEvent(QKeyEvent* ev)
 {
 	if (((ev->key() == Qt::Key_X) || (ev->key() == Qt::Key_Y) || (ev->key() == Qt::Key_Z)) && (ev->modifiers() & Qt::ALT))
@@ -1162,6 +1173,65 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 
 		cam->Orbit(q);
 		update();
+	}
+	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		int selectMode = doc->GetSelectionMode();
+		
+		std::vector<GItem*> items = GLHighlighter::GetItems();
+		if (items.empty()) { ev->ignore(); return; }
+		GLHighlighter::ClearHighlights();
+
+		if (selectMode == SelectionMode::SELECT_PART)
+		{
+			std::vector<GPart*> partList = itemlist_cast<GPart>(items);
+			if (!partList.empty())
+			{
+				vector<int> partIDs;
+				for (GPart* p : partList) partIDs.push_back(p->GetID());
+				doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), partIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_FACE)
+		{
+			std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
+			if (!faceList.empty())
+			{
+				vector<int> faceIDs;
+				for (GFace* f : faceList) faceIDs.push_back(f->GetID());
+				doc->DoCommand(new CCmdSelectSurface(doc->GetGModel(), faceIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_EDGE)
+		{
+			std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
+			if (!edgeList.empty())
+			{
+				vector<int> edgeIDs;
+				for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
+				doc->DoCommand(new CCmdSelectEdge(doc->GetGModel(), edgeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_NODE)
+		{
+			std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
+			if (!nodeList.empty())
+			{
+				vector<int> nodeIDs;
+				for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
+				doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), nodeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else ev->ignore();
 	}
 	else ev->ignore();
 }

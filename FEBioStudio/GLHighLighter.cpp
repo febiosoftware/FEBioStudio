@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
 
-GLHighlighter GLHighlighter::m_This;
+GLHighlighter GLHighlighter::This;
 
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
@@ -40,32 +40,32 @@ GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 
 void GLHighlighter::AttachToView(CGLView* view)
 {
-	m_This.m_view = view;
+	This.m_view = view;
 	if (view) view->repaint();
 }
 
 void GLHighlighter::SetActiveItem(GItem* item)
 {
-	if (item != m_This.m_activeItem)
+	if (item != This.m_activeItem)
 	{
-		m_This.m_activeItem = item;
-		if (m_This.m_view) m_This.m_view->repaint();
-		emit m_This.activeItemChanged();
+		This.m_activeItem = item;
+		if (This.m_view) This.m_view->repaint();
+		emit This.activeItemChanged();
 	}
 }
 
 void GLHighlighter::PickActiveItem()
 {
-	GItem* pick = m_This.m_activeItem;
+	GItem* pick = This.m_activeItem;
 	
 	// make sure this item is not already picked
-	for (int i=0; i<(int)m_This.m_item.size(); ++i)
-		if (m_This.m_item[i] == pick) return;
+	for (int i=0; i<(int)This.m_item.size(); ++i)
+		if (This.m_item[i] == pick) return;
 
-	m_This.m_activeItem = 0;
-	m_This.m_item.push_back(pick);
-	if (m_This.m_view) m_This.m_view->repaint();
-	emit m_This.itemPicked(pick);
+	This.m_activeItem = 0;
+	This.m_item.push_back(pick);
+	if (This.m_view) This.m_view->repaint();
+	emit This.itemPicked(pick);
 }
 
 void GLHighlighter::PickItem(GItem* item)
@@ -73,31 +73,31 @@ void GLHighlighter::PickItem(GItem* item)
 	if (item == 0) return;
 	
 	// make sure this item is not already picked
-	for (int i = 0; i<(int)m_This.m_item.size(); ++i)
-		if (m_This.m_item[i] == item) return;
+	for (int i = 0; i<(int)This.m_item.size(); ++i)
+		if (This.m_item[i] == item) return;
 
-	m_This.m_activeItem = 0;
-	m_This.m_item.push_back(item);
-	emit m_This.itemPicked(item);
+	This.m_activeItem = 0;
+	This.m_item.push_back(item);
+	emit This.itemPicked(item);
 }
 
 
 GItem* GLHighlighter::GetActiveItem()
 { 
-	return m_This.m_activeItem; 
+	return This.m_activeItem; 
 }
 
 QString GLHighlighter::GetActiveItemName()
 {
-	if (m_This.m_activeItem) return QString::fromStdString(m_This.m_activeItem->GetName());
+	if (This.m_activeItem) return QString::fromStdString(This.m_activeItem->GetName());
 	else return QString("");
 }
 
 void GLHighlighter::ClearHighlights()
 {
-	m_This.m_item.clear();
-	m_This.m_activeItem = nullptr;
-	if (m_This.m_view) m_This.m_view->repaint();
+	This.m_item.clear();
+	This.m_activeItem = nullptr;
+	if (This.m_view) This.m_view->repaint();
 }
 
 void GLHighlighter::setHighlightType(int type)
@@ -107,13 +107,13 @@ void GLHighlighter::setHighlightType(int type)
 
 void GLHighlighter::setTracking(bool b)
 {
-	m_This.m_btrack = b;
-	if (m_This.m_view) m_This.m_view->repaint();
+	This.m_btrack = b;
+	if (This.m_view) This.m_view->repaint();
 }
 
 bool GLHighlighter::IsTracking()
 {
-	return m_This.m_btrack;
+	return This.m_btrack;
 }
 
 void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
@@ -224,9 +224,9 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 
 void GLHighlighter::draw()
 {
-	if (m_This.m_item.empty() && (m_This.m_activeItem == 0)) return;
+	if (This.m_item.empty() && (This.m_activeItem == 0)) return;
 
-	CGLView* view = m_This.m_view;
+	CGLView* view = This.m_view;
 	if (view == 0) return;
 
 	CGLContext rc;
@@ -245,34 +245,34 @@ void GLHighlighter::draw()
 
 	GLMeshRender renderer;
 
-	for (GItem* item : m_This.m_item)
+	for (GItem* item : This.m_item)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(item);
-		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
+		if (edge) drawEdge(renderer, edge, This.m_pickColor);
 
 		GNode* node = dynamic_cast<GNode*>(item);
-		if (node) drawNode(renderer, node, m_This.m_pickColor);
+		if (node) drawNode(renderer, node, This.m_pickColor);
 
 		GFace* face = dynamic_cast<GFace*>(item);
-		if (face) drawFace(rc, renderer, face, m_This.m_pickColor);
+		if (face) drawFace(rc, renderer, face, This.m_pickColor);
 
 		GPart* part = dynamic_cast<GPart*>(item);
-		if (part) drawPart(rc, renderer, part, m_This.m_pickColor);
+		if (part) drawPart(rc, renderer, part, This.m_pickColor);
 	}
 
-	if (m_This.m_activeItem)
+	if (This.m_activeItem)
 	{
-		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
-		if (edge) drawEdge(renderer, edge, m_This.m_activeColor);
+		GEdge* edge = dynamic_cast<GEdge*>(This.m_activeItem);
+		if (edge) drawEdge(renderer, edge, This.m_activeColor);
 
-		GNode* node = dynamic_cast<GNode*>(m_This.m_activeItem);
-		if (node) drawNode(renderer, node, m_This.m_activeColor);
+		GNode* node = dynamic_cast<GNode*>(This.m_activeItem);
+		if (node) drawNode(renderer, node, This.m_activeColor);
 
-		GFace* face = dynamic_cast<GFace*>(m_This.m_activeItem);
-		if (face) drawFace(rc, renderer, face, m_This.m_activeColor);
+		GFace* face = dynamic_cast<GFace*>(This.m_activeItem);
+		if (face) drawFace(rc, renderer, face, This.m_activeColor);
 
-		GPart* part = dynamic_cast<GPart*>(m_This.m_activeItem);
-		if (part) drawPart(rc, renderer, part, m_This.m_activeColor);
+		GPart* part = dynamic_cast<GPart*>(This.m_activeItem);
+		if (part) drawPart(rc, renderer, part, This.m_activeColor);
 	}
 	glLineWidth(line_old);
 
@@ -282,7 +282,7 @@ void GLHighlighter::draw()
 BOX GLHighlighter::GetBoundingBox()
 {
 	BOX box;
-	for (GItem* item : m_This.m_item)
+	for (GItem* item : This.m_item)
 	{
 		GNode* node = dynamic_cast<GNode*>(item);
 		if (node)
@@ -345,4 +345,9 @@ BOX GLHighlighter::GetBoundingBox()
 	}
 
 	return box;
+}
+
+std::vector<GItem*> GLHighlighter::GetItems()
+{
+	return This.m_item;
 }

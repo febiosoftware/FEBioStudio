@@ -44,7 +44,7 @@ class GLHighlighter : public QObject
 
 public:
 	// return an instance of this highlighter (this class is a singleton)
-	static GLHighlighter* Instance() { return &m_This; }
+	static GLHighlighter* Instance() { return &This; }
 
 	// Attach the highlighter to a CGLView
 	// This must be done prior to any highlighting.
@@ -90,6 +90,8 @@ public:
 
 	static BOX GetBoundingBox();
 
+	static std::vector<GItem*> GetItems();
+
 private:
 	// constructor
 	GLHighlighter();
@@ -110,5 +112,5 @@ private:
 	GLColor			m_pickColor;		// color of picked items
 
 	// the one-and-only highlighter
-	static GLHighlighter m_This;
+	static GLHighlighter This;
 };
