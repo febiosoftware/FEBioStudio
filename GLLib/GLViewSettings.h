@@ -129,6 +129,8 @@ struct GLViewSettings
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
 
+	bool	m_selectAndHide;
+
 	// lighting settings
 	bool	m_bLighting;	// use lighting or not
 	bool	m_bShadows;		// use shadows or not

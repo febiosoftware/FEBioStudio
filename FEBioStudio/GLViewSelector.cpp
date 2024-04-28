@@ -433,8 +433,15 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
-	else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
+	if (view.m_selectAndHide)
+	{
+		pcmd = new CCmdHideElements(pm, selectedElements);
+	}
+	else
+	{
+		if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
+		else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
+	}
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -961,32 +968,46 @@ void GLViewSelector::SelectFEElements(int x, int y)
 
 			if (!elemList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
-				else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+				if (view.m_selectAndHide)
+				{
+					pcmd = new CCmdHideElements(pm, elemList);
+				}
+				else
+				{
+					if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
+					else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+				}
 			}
 		}
 		else
 		{
 			int num = (int)index;
-			if (m_bctrl)
-				pcmd = new CCmdUnselectElements(pm, &num, 1);
+			if (view.m_selectAndHide)
+			{
+				pcmd = new CCmdHideElements(pm, { num });
+			}
 			else
 			{
-				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
-
-				// print value of currently selected element
-				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
-				if (postDoc && postDoc->IsValid())
+				if (m_bctrl)
+					pcmd = new CCmdUnselectElements(pm, &num, 1);
+				else
 				{
-					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
-					if (cmap && cmap->IsActive())
+					pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
+
+					// print value of currently selected element
+					CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+					if (postDoc && postDoc->IsValid())
 					{
-						Post::FEPostModel* fem = postDoc->GetFSModel();
-						Post::FEState* state = fem->CurrentState();
-						double val = state->m_ELEM[num].m_val;
-						FSElement& el = pm->Element(num);
-						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
-						CLogger::AddLogEntry(txt);
+						Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+						if (cmap && cmap->IsActive())
+						{
+							Post::FEPostModel* fem = postDoc->GetFSModel();
+							Post::FEState* state = fem->CurrentState();
+							double val = state->m_ELEM[num].m_val;
+							FSElement& el = pm->Element(num);
+							QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
+							CLogger::AddLogEntry(txt);
+						}
 					}
 				}
 			}
@@ -1345,9 +1366,17 @@ void GLViewSelector::SelectObjects(int x, int y)
 	string objName;
 	if (closestObject != 0)
 	{
-		if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
-		else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
 		objName = closestObject->GetName();
+		GLViewSettings& vs = m_glv->GetViewSettings();
+		if (vs.m_selectAndHide)
+		{
+			pcmd = new CCmdHideObject(closestObject, true);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
+			else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
+		}
 	}
 	else if ((m_bctrl == false) && (m_bshift == false))
 	{
@@ -1449,10 +1478,18 @@ void GLViewSelector::SelectParts(int x, int y)
 	string partName;
 	if (closestPart != 0)
 	{
-		int index = closestPart->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
-		else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
 		partName = closestPart->GetName();
+		int index = closestPart->GetID();
+		GLViewSettings& vs = m_glv->GetViewSettings();
+		if (vs.m_selectAndHide)
+		{
+			pcmd = new CCmdHideParts(&model, closestPart);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
+			else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
+		}
 	}
 	else if ((m_bctrl == false) && (m_bshift == false))
 	{
@@ -2235,7 +2272,8 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	vector<int> selectedParts;
+	std::list<GPart*> selectedParts;
+	vector<int> selectedPartIds;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2266,24 +2304,38 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 						bool bfound = false;
 						for (int k = 0; k < selectedParts.size(); ++k)
 						{
-							if (selectedParts[k] == pid)
+							if (selectedPartIds[k] == pid)
 							{
 								bfound = true;
 								break;
 							}
 						}
 
-						if (bfound == false) selectedParts.push_back(pid);
+						if (bfound == false)
+						{
+							selectedPartIds.push_back(pid);
+							selectedParts.push_back(part);
+						}
 					}
 				}
 			}
 		}
 	}
 
-	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedParts);
-	else pcmd = new CCmdSelectPart(&model, selectedParts, m_bshift);
-	if (pcmd) pdoc->DoCommand(pcmd);
+	if (!selectedParts.empty())
+	{
+		CCommand* pcmd = 0;
+		if (view.m_selectAndHide)
+		{
+			pcmd = new CCmdHideParts(&model, selectedParts);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedPartIds);
+			else pcmd = new CCmdSelectPart(&model, selectedPartIds, m_bshift);
+		}
+		if (pcmd) pdoc->DoCommand(pcmd);
+	}
 }
 
 void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
