@@ -103,6 +103,7 @@ public:
 
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
+	void on_modelSearch_itemChanged();
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
 	void on_selectButton_clicked();
 	void on_deleteButton_clicked();

@@ -3545,6 +3545,12 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 		}
 		RedrawGL();
 	}
+	else if (dynamic_cast<GItem*>(po))
+	{
+		GLHighlighter::ClearHighlights();
+		GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
+		RedrawGL();
+	}
 }
 
 void CMainWindow::toggleOrtho()

@@ -142,6 +142,7 @@ public:
 
 		// search widget
 		m_search = new CModelSearch(wnd, tree);
+		m_search->setObjectName("modelSearch");
 
 		// stacked widget
 		m_stack = new QStackedWidget;
