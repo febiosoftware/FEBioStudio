@@ -97,9 +97,11 @@ public:
 
 	void UpdateCurrentItem();
 
-    void SetFilter(int index);
+	void SetFilter(int index);
 
 	void IncWarningCount();
+
+	bool IsHighlightSelectionEnabled() const;
 
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
@@ -110,6 +112,7 @@ public slots:
 	void on_searchButton_toggled(bool b);
 	void on_syncButton_clicked();
 	void on_refreshButton_clicked();
+	void on_highlightButton_toggled(bool);
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);

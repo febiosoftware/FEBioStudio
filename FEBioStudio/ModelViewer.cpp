@@ -383,6 +383,16 @@ void CModelViewer::on_refreshButton_clicked()
 	Update(false);
 }
 
+bool CModelViewer::IsHighlightSelectionEnabled() const
+{
+	return ui->highlightButton->isChecked();
+}
+
+void CModelViewer::on_highlightButton_toggled(bool b)
+{
+	emit currentObjectChanged(GetCurrentObject());
+}
+
 void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object

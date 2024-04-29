@@ -35,7 +35,8 @@ GLHighlighter GLHighlighter::This;
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
 	m_activeColor = GLColor(100, 255, 255);
-	m_pickColor   = GLColor(0, 200, 200);
+	m_pickColor[0] = GLColor(0, 200, 200);
+	m_pickColor[1] = GLColor(200, 0, 200);
 }
 
 void GLHighlighter::AttachToView(CGLView* view)
@@ -60,24 +61,24 @@ void GLHighlighter::PickActiveItem()
 	
 	// make sure this item is not already picked
 	for (int i=0; i<(int)This.m_item.size(); ++i)
-		if (This.m_item[i] == pick) return;
+		if (This.m_item[i].item == pick) return;
 
-	This.m_activeItem = 0;
-	This.m_item.push_back(pick);
+	This.m_activeItem = nullptr;
+	This.m_item.push_back({ pick, 0 });
 	if (This.m_view) This.m_view->repaint();
 	emit This.itemPicked(pick);
 }
 
-void GLHighlighter::PickItem(GItem* item)
+void GLHighlighter::PickItem(GItem* item, int colorMode)
 {
 	if (item == 0) return;
 	
 	// make sure this item is not already picked
 	for (int i = 0; i<(int)This.m_item.size(); ++i)
-		if (This.m_item[i] == item) return;
+		if (This.m_item[i].item == item) return;
 
 	This.m_activeItem = 0;
-	This.m_item.push_back(item);
+	This.m_item.push_back({ item, colorMode });
 	emit This.itemPicked(item);
 }
 
@@ -176,6 +177,10 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 	if (po == 0) return;
 	GMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
 	glPushAttrib(GL_ENABLE_BIT);
 	{
 		glEnable(GL_COLOR_MATERIAL);
@@ -186,6 +191,8 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 		renderer.RenderSurfaceOutline(rc, mesh, face->GetLocalID());
 	}
 	glPopAttrib();
+
+	glPopMatrix();
 }
 
 void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
@@ -207,6 +214,9 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	}
 	if (faceList.empty()) return;
 
+	glPushMatrix();
+	SetModelView(po);
+
 	glPushAttrib(GL_ENABLE_BIT);
 	{
 		glEnable(GL_COLOR_MATERIAL);
@@ -220,6 +230,8 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 		}
 	}
 	glPopAttrib();
+
+	glPopMatrix();
 }
 
 void GLHighlighter::draw()
@@ -245,19 +257,21 @@ void GLHighlighter::draw()
 
 	GLMeshRender renderer;
 
-	for (GItem* item : This.m_item)
+	for (Item& item : This.m_item)
 	{
-		GEdge* edge = dynamic_cast<GEdge*>(item);
-		if (edge) drawEdge(renderer, edge, This.m_pickColor);
+		GItem* it = item.item;
+		GLColor& c = This.m_pickColor[item.color];
+		GEdge* edge = dynamic_cast<GEdge*>(it);
+		if (edge) drawEdge(renderer, edge, c);
 
-		GNode* node = dynamic_cast<GNode*>(item);
-		if (node) drawNode(renderer, node, This.m_pickColor);
+		GNode* node = dynamic_cast<GNode*>(it);
+		if (node) drawNode(renderer, node, c);
 
-		GFace* face = dynamic_cast<GFace*>(item);
-		if (face) drawFace(rc, renderer, face, This.m_pickColor);
+		GFace* face = dynamic_cast<GFace*>(it);
+		if (face) drawFace(rc, renderer, face, c);
 
-		GPart* part = dynamic_cast<GPart*>(item);
-		if (part) drawPart(rc, renderer, part, This.m_pickColor);
+		GPart* part = dynamic_cast<GPart*>(it);
+		if (part) drawPart(rc, renderer, part, c);
 	}
 
 	if (This.m_activeItem)
@@ -282,15 +296,16 @@ void GLHighlighter::draw()
 BOX GLHighlighter::GetBoundingBox()
 {
 	BOX box;
-	for (GItem* item : This.m_item)
+	for (Item& item : This.m_item)
 	{
-		GNode* node = dynamic_cast<GNode*>(item);
+		GItem* it = item.item;
+		GNode* node = dynamic_cast<GNode*>(it);
 		if (node)
 		{
 			box += node->Position();
 		}
 
-		GEdge* edge = dynamic_cast<GEdge*>(item);
+		GEdge* edge = dynamic_cast<GEdge*>(it);
 		if (edge)
 		{
 			GNode* n0 = edge->Node(0);
@@ -299,7 +314,7 @@ BOX GLHighlighter::GetBoundingBox()
 			if (n1) box += n1->Position();
 		}
 
-		GFace* face = dynamic_cast<GFace*>(item);
+		GFace* face = dynamic_cast<GFace*>(it);
 		if (face)
 		{
 			GObject* po = dynamic_cast<GObject*>(face->Object());
@@ -319,7 +334,7 @@ BOX GLHighlighter::GetBoundingBox()
 			}
 		}
 
-		GPart* part = dynamic_cast<GPart*>(item);
+		GPart* part = dynamic_cast<GPart*>(it);
 		if (part)
 		{
 			GObject* po = dynamic_cast<GObject*>(part->Object());
@@ -347,7 +362,7 @@ BOX GLHighlighter::GetBoundingBox()
 	return box;
 }
 
-std::vector<GItem*> GLHighlighter::GetItems()
+std::vector<GLHighlighter::Item> GLHighlighter::GetItems()
 {
 	return This.m_item;
 }

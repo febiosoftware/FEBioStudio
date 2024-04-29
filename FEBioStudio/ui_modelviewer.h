@@ -80,6 +80,7 @@ public:
 	WarningLabel* m_errs;
 
 	QToolButton* srcButton;
+	QToolButton* highlightButton;
 
 	bool	m_blockUpdate;
 
@@ -118,6 +119,14 @@ public:
 		refreshButton->setObjectName("refreshButton");
 		refreshButton->setAutoRaise(true);
 		refreshButton->setToolTip("<font color=\"black\">Refresh");
+
+		highlightButton = new QToolButton;
+		highlightButton->setIcon(QIcon(":/icons/select_highlight.png"));
+		highlightButton->setObjectName("highlightButton");
+		highlightButton->setAutoRaise(true);
+		highlightButton->setToolTip("<font color=\"black\">Toggle selection highlighting");
+		highlightButton->setCheckable(true);
+		highlightButton->setChecked(true);
 
 		// filter box
 		m_filter = new QComboBox;
@@ -169,6 +178,7 @@ public:
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;
 		buttonLayout->addWidget(selectButton);
+		buttonLayout->addWidget(highlightButton);
 		buttonLayout->addWidget(deleteButton);
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);

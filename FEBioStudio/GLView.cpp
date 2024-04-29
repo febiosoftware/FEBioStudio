@@ -1138,12 +1138,12 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
-template <class T> std::vector<T*> itemlist_cast(std::vector<GItem*>& items)
+template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
 {
 	std::vector<T*> castedItems;
-	for (GItem* p : items)
+	for (GLHighlighter::Item& it : items)
 	{
-		T* tp = dynamic_cast<T*>(p);
+		T* tp = dynamic_cast<T*>(it.item);
 		if (tp) castedItems.push_back(tp);
 	}
 	return castedItems;
@@ -1179,7 +1179,7 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 		int selectMode = doc->GetSelectionMode();
 		
-		std::vector<GItem*> items = GLHighlighter::GetItems();
+		std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
 		if (items.empty()) { ev->ignore(); return; }
 		GLHighlighter::ClearHighlights();
 

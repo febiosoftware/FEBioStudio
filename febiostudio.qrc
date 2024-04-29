@@ -193,5 +193,6 @@
         <file>icons/disabled.png</file>
         <file>icons/bend.png</file>
         <file>icons/select_hide.png</file>
+        <file>icons/select_highlight.png</file>
 	</qresource>
 </RCC>

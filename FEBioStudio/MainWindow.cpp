@@ -2515,6 +2515,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
 
+	// clear highlights, just to be safe
+	GLHighlighter::ClearHighlights();
+
 	// close the view and update UI
 	ui->centralWidget->tab->closeView(n);
 	UpdateUIConfig();
@@ -3498,57 +3501,65 @@ void CMainWindow::UpdateProgress(int n)
 	ui->progressBar->setValue(n);
 }
 
-
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
 
-	IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
-	if (il)
+	if (ui->modelViewer->IsHighlightSelectionEnabled())
 	{
-		GLHighlighter::ClearHighlights();
-		int itemLists = il->ItemLists();
-		for (int i = 0; i < itemLists; ++i)
+		IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
+		if (il)
 		{
-			FEItemListBuilder* pg = il->GetItemList(i);
-			GPartList* partList = dynamic_cast<GPartList*>(pg);
-			if (partList)
+			GLHighlighter::ClearHighlights();
+			int itemLists = il->ItemLists();
+			for (int i = 0; i < itemLists; ++i)
 			{
-				vector<GPart*> parts = partList->GetPartList();
-				for (GPart* part : parts)
-					GLHighlighter::PickItem(part);
-			}
+				int colorMode = (i == 0 ? 0 : 1);
+				FEItemListBuilder* pg = il->GetItemList(i);
+				GPartList* partList = dynamic_cast<GPartList*>(pg);
+				if (partList)
+				{
+					vector<GPart*> parts = partList->GetPartList();
+					for (GPart* part : parts)
+						GLHighlighter::PickItem(part, colorMode);
+				}
 
-			GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
-			if (faceList)
-			{
-				vector<GFace*> faces = faceList->GetFaceList();
-				for (GFace* face : faces)
-					GLHighlighter::PickItem(face);
-			}
+				GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+				if (faceList)
+				{
+					vector<GFace*> faces = faceList->GetFaceList();
+					for (GFace* face : faces)
+						GLHighlighter::PickItem(face, colorMode);
+				}
 
-			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
-			if (edgeList)
-			{
-				vector<GEdge*> edges = edgeList->GetEdgeList();
-				for (GEdge* edge : edges)
-					GLHighlighter::PickItem(edge);
-			}
+				GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+				if (edgeList)
+				{
+					vector<GEdge*> edges = edgeList->GetEdgeList();
+					for (GEdge* edge : edges)
+						GLHighlighter::PickItem(edge, colorMode);
+				}
 
-			GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
-			if (nodeList)
-			{
-				vector<GNode*> nodes = nodeList->GetNodeList();
-				for (GNode* node : nodes)
-					GLHighlighter::PickItem(node);
+				GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+				if (nodeList)
+				{
+					vector<GNode*> nodes = nodeList->GetNodeList();
+					for (GNode* node : nodes)
+						GLHighlighter::PickItem(node, colorMode);
+				}
 			}
+			RedrawGL();
 		}
-		RedrawGL();
+		else if (dynamic_cast<GItem*>(po))
+		{
+			GLHighlighter::ClearHighlights();
+			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
+			RedrawGL();
+		}
 	}
-	else if (dynamic_cast<GItem*>(po))
+	else
 	{
 		GLHighlighter::ClearHighlights();
-		GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
 		RedrawGL();
 	}
 }
