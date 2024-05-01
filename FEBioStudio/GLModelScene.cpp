@@ -1502,6 +1502,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
+	glDepthFunc(GL_LEQUAL);
 	glColor3ub(0, 0, 0);
 
 	FSModel* ps = doc->GetFSModel();

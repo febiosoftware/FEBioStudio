@@ -2506,6 +2506,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		else it++;
 	}
 
+	// clear highlights, just to be safe
+	GLHighlighter::ClearHighlights();
+
 	ui->ShowDefaultBackground();
 	ui->centralWidget->xmlEdit->setDocument(nullptr);
 
@@ -2516,9 +2519,6 @@ void CMainWindow::CloseView(int n, bool forceClose)
 
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
-
-	// clear highlights, just to be safe
-	GLHighlighter::ClearHighlights();
 
 	// close the view and update UI
 	ui->centralWidget->tab->closeView(n);
