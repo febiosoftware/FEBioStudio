@@ -326,9 +326,9 @@ BOX GLHighlighter::GetBoundingBox()
 					GMesh::FACE& f = m->Face(i);
 					if (f.pid == face->GetLocalID())
 					{
-						vec3d r0 = m->Node(f.n[0]).r; box += po->GetTransform().LocalToGlobal(r0);
-						vec3d r1 = m->Node(f.n[1]).r; box += po->GetTransform().LocalToGlobal(r1);
-						vec3d r2 = m->Node(f.n[2]).r; box += po->GetTransform().LocalToGlobal(r2);
+						vec3d r0 = to_vec3d(m->Node(f.n[0]).r); box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = to_vec3d(m->Node(f.n[1]).r); box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = to_vec3d(m->Node(f.n[2]).r); box += po->GetTransform().LocalToGlobal(r2);
 					}
 				}
 			}
@@ -350,9 +350,9 @@ BOX GLHighlighter::GetBoundingBox()
 						(face->m_nPID[1] == pid) ||
 						(face->m_nPID[2] == pid))
 					{
-						vec3d r0 = m->Node(f.n[0]).r; box += po->GetTransform().LocalToGlobal(r0);
-						vec3d r1 = m->Node(f.n[1]).r; box += po->GetTransform().LocalToGlobal(r1);
-						vec3d r2 = m->Node(f.n[2]).r; box += po->GetTransform().LocalToGlobal(r2);
+						vec3d r0 = to_vec3d(m->Node(f.n[0]).r); box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = to_vec3d(m->Node(f.n[1]).r); box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = to_vec3d(m->Node(f.n[2]).r); box += po->GetTransform().LocalToGlobal(r2);
 					}
 				}
 			}

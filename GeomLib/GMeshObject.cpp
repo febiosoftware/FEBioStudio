@@ -732,7 +732,7 @@ void GMeshObject::BuildGMesh()
 	for (int i=0; i<NN; ++i)
 	{
 		FSNode& node = pm->Node(i);
-		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(node.r, i, node.m_gid);
+		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(to_vec3f(node.r), i, node.m_gid);
 	}
 
 	// create edges

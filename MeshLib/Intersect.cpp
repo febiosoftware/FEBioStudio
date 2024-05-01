@@ -247,9 +247,9 @@ bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q)
 	{
 		const GMesh::FACE& face = mesh.Face(i);
 
-		rn[0] = mesh.Node(face.n[0]).r;
-		rn[1] = mesh.Node(face.n[1]).r;
-		rn[2] = mesh.Node(face.n[2]).r;
+		rn[0] = to_vec3d(mesh.Node(face.n[0]).r);
+		rn[1] = to_vec3d(mesh.Node(face.n[1]).r);
+		rn[2] = to_vec3d(mesh.Node(face.n[2]).r);
 
 		bool bfound = false;
 		Triangle tri = { rn[0], rn[1], rn[2] };

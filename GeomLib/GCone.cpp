@@ -149,8 +149,8 @@ void GCone::BuildGMesh()
 	m.Create(NN, NF, NE);
 
 	// --- create nodes ---
-	m.Node(0   ).r = vec3d(0,0,0);
-	m.Node(NN-1).r = vec3d(0,0,h);
+	m.Node(0   ).r = vec3f(0,0,0);
+	m.Node(NN-1).r = vec3f(0,0,h);
 
 	// bottom face
 	int nn = 1;
@@ -163,7 +163,7 @@ void GCone::BuildGMesh()
 			double cw = cos(w);
 			double sw = sin(w);
 			double r = (j+1)*r0/NR;
-			n0.r = vec3d(r*cw, r*sw, 0);
+			n0.r = vec3f(r*cw, r*sw, 0);
 		}
 	}
 
@@ -179,7 +179,7 @@ void GCone::BuildGMesh()
 			double w = 2.0*i*PI/ND;
 			double cw = cos(w);
 			double sw = sin(w);
-			n0.r = vec3d(rj*cw, rj*sw, hj);
+			n0.r = vec3f(rj*cw, rj*sw, hj);
 		}
 	}
 
@@ -194,7 +194,7 @@ void GCone::BuildGMesh()
 			double cw = cos(w);
 			double sw = sin(w);
 			double r = (j+1)*r1/NR;
-			n0.r = vec3d(r*cw, r*sw, h);
+			n0.r = vec3f(r*cw, r*sw, h);
 		}
 	}
 	assert(nn+1 == NN);
@@ -213,8 +213,8 @@ void GCone::BuildGMesh()
 			f.n[2] = 1 + i;
 			f.pid = 4;
 			f.sid = 0;
-			f.fn = vec3d(0,0,-1);
-			f.nn[0] = f.nn[1] = f.nn[2] = vec3d(0,0,-1);
+			f.fn = vec3f(0,0,-1);
+			f.vn[0] = f.vn[1] = f.vn[2] = vec3f(0,0,-1);
 		}
 
 		for (j=0; j<NR-1; ++j)
@@ -325,8 +325,6 @@ void GCone::BuildGMesh()
 			e.pid = 4 + 4*i/ND;
 		}
 		assert(ne == NE);
-		m.Update();
 	}
-	m.UpdateBoundingBox();
-	m.UpdateNormals();
+	m.Update();
 }

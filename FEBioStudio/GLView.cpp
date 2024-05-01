@@ -2038,8 +2038,8 @@ void CGLView::HighlightEdge(int x, int y)
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
-						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
+						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
+						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
 						vec3d p0 = transform.WorldToScreen(r0);
 						vec3d p1 = transform.WorldToScreen(r1);
@@ -2166,9 +2166,9 @@ void CGLView::HighlightSurface(int x, int y)
 					{
 						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
 						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
-						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r * 0.99999);
-						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r * 0.99999);
-						vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r * 0.99999);
+						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r * 0.99999));
+						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r * 0.99999));
+						vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r * 0.99999));
 
 						Triangle tri = { r0, r1, r2 };
 						if (IntersectTriangle(ray, tri, q))
@@ -2230,9 +2230,9 @@ void CGLView::HighlightPart(int x, int y)
 				{
 					GMesh::FACE& face = mesh->Face(j);
 
-					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-					vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))

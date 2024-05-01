@@ -82,10 +82,8 @@ void CPostObject::UpdateMesh()
 			GMesh::NODE& nd = mesh->Node(i);
 			FSNode& ns = postMesh->Node(nd.nid);
 
-			nd.r = ns.r;
+			nd.r = to_vec3f(ns.r);
 		}
-		//		mesh->Update();
-		mesh->UpdateBoundingBox();
-		mesh->UpdateNormals();
+		mesh->Update();
 	}
 }

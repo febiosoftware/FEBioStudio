@@ -162,8 +162,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 	double v0 = 0;
 	double v1 = 2*PI;
 
-	m.Node(0   ).r = vec3d( 0,   0,  -Rc-wt);
-	m.Node(NN/2).r = vec3d( 0,   0,  -Rc+wt);
+	m.Node(0   ).r = vec3f( 0,   0,  -Rc-wt);
+	m.Node(NN/2).r = vec3f( 0,   0,  -Rc+wt);
 
 	// outside
 	for (int j=1; j<=NZ;++j)
@@ -182,7 +182,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			double z = (Rc + wt)*su;
 
 			GMesh::NODE& n = m.Node((j-1)*NS+i+1);
-			n.r = vec3d(x, y, z);
+			n.r = vec3f(x, y, z);
 		}
 	}
 
@@ -203,7 +203,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			double z = (Rc - wt)*su;
 
 			GMesh::NODE& n = m.Node((j-1)*NS + i + 1 + NN/2);
-			n.r = vec3d(x, y, z);
+			n.r = vec3f(x, y, z);
 		}
 	}
 
@@ -332,10 +332,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 				e.pid = 12+k*4+i/(NS/4);
 			}
 		}
-		m.Update();
 	}
-	m.UpdateNormals();
-	m.UpdateBoundingBox();
+	m.Update();
 }
 
 int GTruncatedEllipsoid::NodeIndex(int i, int j, int NS)

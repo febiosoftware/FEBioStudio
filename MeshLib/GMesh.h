@@ -43,8 +43,8 @@ class GMesh
 public:
 	struct NODE
 	{
-		vec3d	r;		// nodal position
-		vec3d	n;		// normal (but not really)
+		vec3f	r;		// nodal position
+		vec3f	n;		// normal (but not really)
 		int		tag;	// multipurpose tag
 		int		pid;	// GNode parent local ID
 		int		nid;	// Node index of FSNode (in case a mesh object created this GMesh)
@@ -58,16 +58,17 @@ public:
 
 	struct FACE
 	{
-		int		n[3];	// nodes
-		int		nbr[3];	// neighbor faces
 		int		pid;	// GFace parent local id
 		int		eid;	// element ID of GFace (or -1 if not applicable)
 		int		sid;	// smoothing groupd ID
-		int		tag;	// multipurpose tag
-		vec3d	fn;		// face normal
-		vec3d	nn[3];	// node normals
-		GLColor	c[3];	// node colors
 		bool	bext;	// external flag
+		int		tag;	// multipurpose tag
+		int		n[3];	// nodes
+		int		nbr[3];	// neighbor faces
+		vec3f	fn;		// face normal
+		vec3f	vn[3];	// node normals
+		vec3f	vr[3];	// nodal coordinates
+		GLColor	c[3];	// node colors
 	};
 
 public:
@@ -93,25 +94,23 @@ public:
 
 	bool IsEmpty() const { return m_Node.empty(); }
 
-	void UpdateNormals(int* pid, int nsize);
-	void UpdateNormals();
-
 	BOX GetBoundingBox() { return m_box; }
-	void UpdateBoundingBox();
 
 	void Attach(GMesh& m, bool bupdate = true);
 
 public:
-	int	AddNode(const vec3d& r, int groupID = 0);
-	int	AddNode(const vec3d& r, int nodeID, int groupID);
+	int	AddNode(const vec3f& r, int groupID = 0);
+	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
 	void AddFace(int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);
-	void AddFace(vec3d* r, int gid = 0, int smoothId = 0, bool bext = true);
+	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 
 protected:
 	void FindNeighbors();
+	void UpdateBoundingBox();
+	void UpdateNormals();
 
 protected:
 	BOX				m_box;
