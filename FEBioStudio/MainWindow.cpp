@@ -3505,12 +3505,12 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
 
+	GLHighlighter::ClearHighlights();
 	if (ui->modelViewer->IsHighlightSelectionEnabled())
 	{
 		IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
 		if (il)
 		{
-			GLHighlighter::ClearHighlights();
 			int itemLists = il->ItemLists();
 			for (int i = 0; i < itemLists; ++i)
 			{
@@ -3548,20 +3548,13 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 						GLHighlighter::PickItem(node, colorMode);
 				}
 			}
-			RedrawGL();
 		}
 		else if (dynamic_cast<GItem*>(po))
 		{
-			GLHighlighter::ClearHighlights();
 			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
-			RedrawGL();
 		}
 	}
-	else
-	{
-		GLHighlighter::ClearHighlights();
-		RedrawGL();
-	}
+	RedrawGL();
 }
 
 void CMainWindow::toggleOrtho()
