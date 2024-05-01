@@ -364,8 +364,8 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			{
 				RenderFEElements(rc, po);
 
-				GLColor c = view.m_mcol;
-				glColor3ub(c.r, c.g, c.b);
+				GLColor c = view.m_meshColor;
+				glColor4ub(c.r, c.g, c.b, c.a);
 				RenderMeshLines(rc, po);
 			}
 			else RenderObject(rc, po);
@@ -1454,9 +1454,9 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	int nitem = pdoc->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	GLColor c = vs.m_mcol;
+	GLColor c = vs.m_meshColor;
 	glEnable(GL_COLOR_MATERIAL);
-	glColor3ub(c.r, c.g, c.b);
+	glColor4ub(c.r, c.g, c.b, c.a);
 
 	for (int i = 0; i < model.Objects(); ++i)
 	{

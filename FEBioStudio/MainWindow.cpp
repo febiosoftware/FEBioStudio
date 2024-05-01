@@ -1958,7 +1958,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-		settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
+		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -2092,7 +2092,9 @@ void CMainWindow::readSettings()
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
 		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
 		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-		vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
+		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
+		// alpha component used to not be stored so set it to default if zero
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 128;
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
