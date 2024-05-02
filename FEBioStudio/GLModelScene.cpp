@@ -1894,7 +1894,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 		glColor3ub(0, 0, 255);
 		for (int surfId : selectedSurfaces)
 		{
-			renderer.RenderSurfaceOutline(rc, pm, surfId);
+			renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
 		}
 	}
 	glPopAttrib();
@@ -2014,7 +2014,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		glColor3ub(0, 0, 200);
 		for (int surfId : facesToRender)
 		{
-			renderer.RenderSurfaceOutline(rc, m, surfId);
+			renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
 		}
 	}
 	glPopAttrib();

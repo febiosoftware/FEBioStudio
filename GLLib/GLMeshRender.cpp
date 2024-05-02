@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <FECore/FETransform.h>
 
 // drawing routines for faces
 // Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
@@ -2220,7 +2221,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 	lineMesh.Render();
 }
 
-void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID)
+void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID)
 {
 	// get some settings
 	CGLCamera& cam = *rc.m_cam;
@@ -2256,8 +2257,8 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID)
 					}
 					else
 					{
-						vec3d n1 = to_vec3d(f.fn);
-						vec3d n2 = to_vec3d(f2.fn);
+						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+						vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
 
 						if (cam.IsOrtho())
 						{
@@ -2269,7 +2270,9 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID)
 						{
 							int a = j;
 							int b = (j + 1) % 3;
-							vec3d c = to_vec3d((pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r) * 0.5);
+							vec3d ra = T.LocalToGlobal(to_vec3d(pm->Node(f.n[a]).r));
+							vec3d rb = T.LocalToGlobal(to_vec3d(pm->Node(f.n[b]).r));
+							vec3d c = (ra + rb) * 0.5;
 							vec3d pc = p - c;
 							double d1 = pc * n1;
 							double d2 = pc * n2;

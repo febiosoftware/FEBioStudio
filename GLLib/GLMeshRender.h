@@ -39,6 +39,7 @@ class FSMeshBase;
 class GMesh;
 class CGLContext;
 class FSMesh;
+class Transform;
 
 class GLMeshRender
 {
@@ -74,7 +75,7 @@ public:
 	void RenderGLMesh(GMesh* pm, int nid = -1);
 	void RenderGLEdges(GMesh* pm, int nid = -1);
 	void RenderOutline(CGLContext& rc, GMesh* pm, bool outline = false);
-	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, int surfID);
+	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
