@@ -92,7 +92,7 @@ void GLViewSettings::Defaults(int ntheme)
 
 	m_meshColor = GLColor(0, 0, 128, 128);
 	m_fgcol = GLColor(0, 0, 0);
-	m_node_size = 7.f;
+	m_node_size = 3.f;
 	m_line_size = 1.0f;
 	m_bline_smooth = true;
 	m_bpoint_smooth = true;

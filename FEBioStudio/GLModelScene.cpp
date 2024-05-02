@@ -1471,7 +1471,11 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 				if (nitem == ITEM_ELEM)
 					RenderMeshLines(rc, po);
 				else if (nitem == ITEM_MESH)
-					renderer.RenderMeshLines(pm);
+				{
+					GMesh* lineMesh = po->GetLineRenderMesh();
+					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
+					else renderer.RenderMeshLines(pm);
+				}
 				else if (nitem != ITEM_EDGE)
 					renderer.RenderMeshLines(po->GetEditableMesh());
 				glPopMatrix();
@@ -2228,7 +2232,6 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 		// check the cull
 		if (view.m_bcull)
 		{
-			vec3d f;
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = pm->Face(i);
@@ -2236,7 +2239,7 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 				for (int j = 0; j < n; ++j)
 				{
 					vec3d nn = to_vec3d(face.m_nn[j]);
-					f = q * nn;
+					vec3d f = q * nn;
 					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 				}
 			}

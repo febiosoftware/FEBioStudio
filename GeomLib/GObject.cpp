@@ -50,6 +50,7 @@ public:
 		m_pmesh   = nullptr;
 		m_pMesher = nullptr;
 		m_pGMesh  = nullptr;
+		m_glLineMesh = nullptr;
 
 		m_col = GLColor(200, 200, 200);
 
@@ -63,6 +64,7 @@ public:
 		delete m_pmesh;	m_pmesh = nullptr;
 		delete m_pMesher; m_pMesher = nullptr;
 		delete m_pGMesh; m_pGMesh = nullptr;
+		delete m_glLineMesh; m_glLineMesh = nullptr;
 	}
 
 public:
@@ -74,6 +76,7 @@ public:
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
 	GMesh*		m_pGMesh;	//!< the mesh for rendering
+	GMesh*		m_glLineMesh;	//!< mesh for rendering mesh lines
 
 	FSObjectList<FSElemSet>		m_pFEElemSet;
 	FSObjectList<FSSurface>		m_pFESurface;
@@ -188,6 +191,48 @@ void GObject::SetFEMesher(FEMesher *pmesher)
 void GObject::SetFEMesh(FSMesh* pm)
 {
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
+
+	// rebuild the line mesh
+	delete imp->m_glLineMesh; imp->m_glLineMesh = nullptr;
+	if (pm)
+	{
+		BuildLineRenderMesh();
+	}
+}
+
+void GObject::BuildLineRenderMesh()
+{
+	delete imp->m_glLineMesh; imp->m_glLineMesh = nullptr;
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	imp->m_glLineMesh = new GMesh;
+	GMesh& gm = *imp->m_glLineMesh;
+	gm.Create(pm->Nodes(), 0, 0);
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+	}
+
+	int NF = pm->Faces();
+	for (int i = 0; i < NF; i++)
+	{
+		const FSFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			int ne = face.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				int j1 = (j + 1) % ne;
+				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+				{
+					int m[2] = { face.n[j], face.n[j1] };
+					gm.AddEdge(m, 2);
+				}
+			}
+		}
+	}
+	gm.Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -526,6 +571,7 @@ bool GObject::Update(bool b)
 {
 	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
 	BuildGMesh();
+	BuildLineRenderMesh();
 	return GBaseObject::Update(b);
 }
 
@@ -616,6 +662,11 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 GMesh*	GObject::GetRenderMesh()
 { 
 	return imp->m_pGMesh;
+}
+
+GMesh* GObject::GetLineRenderMesh()
+{
+	return imp->m_glLineMesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -808,6 +859,9 @@ void GObject::UpdateItemVisibility()
 
 		mesh->UpdateItemVisibility();
 	}
+
+	// rebuild render meshes
+	BuildLineRenderMesh();
 }
 
 //-----------------------------------------------------------------------------

@@ -190,8 +190,8 @@ void glx::line(const vec3d& a, const vec3d& b)
 //-----------------------------------------------------------------------------
 void glx::line(const vec3f& a, const vec3f& b)
 {
-	glVertex3f(a.x, a.y, a.z);
-	glVertex3f(b.x, b.y, b.z);
+	glVertex3fv(&a.x);
+	glVertex3fv(&b.x);
 }
 
 //-----------------------------------------------------------------------------

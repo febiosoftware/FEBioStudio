@@ -2313,10 +2313,13 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
 
+	int NN = mesh->Nodes();
+	vector<int> selectedNodes; selectedNodes.reserve(NN);
+
 	glBegin(GL_POINTS);
 	{
 		// render unselected nodes first
-		glColor3ub(0, 0, 255);
+		glColor4ub(0, 0, 255, 128);
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			FSNode& node = mesh->Node(i);
@@ -2324,27 +2327,28 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 			{
 				if (node.IsSelected() == false)
 					glx::vertex3d(node.r);
+				else
+					selectedNodes.push_back(i);
 			}
 		}
 	}
 	glEnd();
-
-	// render selected nodes next
-	glDisable(GL_DEPTH_TEST);
-	glBegin(GL_POINTS);
+	
+	if (!selectedNodes.empty())
 	{
-		glColor3ub(255, 0, 0);
-		for (int i = 0; i < mesh->Nodes(); ++i)
+		// render selected nodes next
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_POINTS);
 		{
-			FSNode& node = mesh->Node(i);
-			if (node.m_ntag)
+			glColor3ub(255, 0, 0);
+			for (int i : selectedNodes)
 			{
-				if (node.IsSelected())
-					glx::vertex3d(node.r);
+				FSNode& node = mesh->Node(i);
+				glx::vertex3d(node.r);
 			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glPointSize(old_size);
 
@@ -2420,7 +2424,24 @@ void GLMeshRender::RenderUnselectedFEEdges(FSLineMesh* pm)
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
+void GLMeshRender::RenderMeshLines(const GMesh& m)
+{
+	int NE = m.Edges();
+	if (NE == 0) return;
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glBegin(GL_LINES);
+	for (int i = 0; i < NE; i++)
+	{
+		const GMesh::EDGE& e = m.Edge(i);
+		vec3f a = m.Node(e.n[0]).r;
+		vec3f b = m.Node(e.n[1]).r;
+		glx::line(a, b);
+	}
+	glEnd();
+	glPopAttrib();
+}
+
 void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 {
 	if (pm == 0) return;

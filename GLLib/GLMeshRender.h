@@ -86,6 +86,8 @@ public:
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
 
+	void RenderMeshLines(const GMesh& m);
+
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
 
