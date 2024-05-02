@@ -3549,6 +3549,53 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 					for (GNode* node : nodes)
 						GLHighlighter::PickItem(node, colorMode);
 				}
+
+				FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+				if (meshSelection)
+				{
+					GLHighlighter::PickItem(meshSelection, colorMode);
+				}
+			}
+		}
+		else if (dynamic_cast<FEItemListBuilder*>(po))
+		{
+			FEItemListBuilder* pg = dynamic_cast<FEItemListBuilder*>(po);
+			GPartList* partList = dynamic_cast<GPartList*>(pg);
+			if (partList)
+			{
+				vector<GPart*> parts = partList->GetPartList();
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part);
+			}
+
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+			if (faceList)
+			{
+				vector<GFace*> faces = faceList->GetFaceList();
+				for (GFace* face : faces)
+					GLHighlighter::PickItem(face);
+			}
+
+			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+			if (edgeList)
+			{
+				vector<GEdge*> edges = edgeList->GetEdgeList();
+				for (GEdge* edge : edges)
+					GLHighlighter::PickItem(edge);
+			}
+
+			GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+			if (nodeList)
+			{
+				vector<GNode*> nodes = nodeList->GetNodeList();
+				for (GNode* node : nodes)
+					GLHighlighter::PickItem(node);
+			}
+
+			FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+			if (meshSelection)
+			{
+				GLHighlighter::PickItem(meshSelection);
 			}
 		}
 		else if (dynamic_cast<GItem*>(po))

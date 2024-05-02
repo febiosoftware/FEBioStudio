@@ -2376,6 +2376,23 @@ void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNo
 	glPointSize(old_size);
 }
 
+void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList)
+{
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	glBegin(GL_POINTS);
+	{
+		for (int i : nodeList)
+		{
+			FSNode& node = mesh.Node(i);
+			glx::vertex3d(node.r);
+		}
+	}
+	glEnd();
+	glPointSize(old_size);
+}
+
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f)
 {

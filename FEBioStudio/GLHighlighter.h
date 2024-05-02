@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <GeomLib/GItem.h>
+#include <GeomLib/FSGroup.h>
 #include <QtCore/QObject>
 
 //-------------------------------------------------------------------
@@ -44,7 +45,7 @@ class GLHighlighter : public QObject
 
 public:
 	struct Item {
-		GItem* item;
+		FSObject* item = nullptr; // this should only be a GItem or FSGroup
 		int	color;
 	};
 
@@ -66,6 +67,7 @@ public:
 
 	// "pick" an item
 	static void PickItem(GItem* item, int colorMode = 0);
+	static void PickItem(FSGroup* item, int colorMode = 0);
 
 	// return the currently acite item
 	static GItem* GetActiveItem();

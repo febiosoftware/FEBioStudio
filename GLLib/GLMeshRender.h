@@ -80,6 +80,7 @@ public:
 public:
 	void RenderFENodes(FSLineMesh* mesh);
 	void RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f);
+	void RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList);
 
 public:
 	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);

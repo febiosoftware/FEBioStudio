@@ -82,6 +82,17 @@ void GLHighlighter::PickItem(GItem* item, int colorMode)
 	emit This.itemPicked(item);
 }
 
+void GLHighlighter::PickItem(FSGroup* item, int colorMode)
+{
+	if (item == nullptr) return;
+
+	// make sure this item is not already picked
+	for (int i = 0; i < (int)This.m_item.size(); ++i)
+		if (This.m_item[i].item == item) return;
+
+	This.m_activeItem = nullptr;
+	This.m_item.push_back({ item, colorMode });
+}
 
 GItem* GLHighlighter::GetActiveItem()
 { 
@@ -234,6 +245,58 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	glPopMatrix();
 }
 
+void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c)
+{
+	FSMesh* mesh = nodeSet->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	int NF = nodeSet->size();
+	if (NF == 0) return;
+
+	glPushMatrix();
+	SetModelView(po);
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		std::vector<int> nodeList = nodeSet->CopyItems();
+		renderer.RenderFENodes(*mesh, nodeList);
+	}
+	glPopAttrib();
+
+	glPopMatrix();
+}
+
+void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLColor c)
+{
+	FSMesh* mesh = surf->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	int NF = surf->size();
+	if (NF == 0) return;
+
+	glPushMatrix();
+	SetModelView(po);
+	renderer.PushState();
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		std::vector<int> faceList = surf->CopyItems();
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		renderer.RenderFEFaces(mesh, faceList);
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		renderer.RenderFEFacesOutline(mesh, faceList);
+	}
+	renderer.PopState();
+
+	glPopMatrix();
+}
+
 void GLHighlighter::draw()
 {
 	if (This.m_item.empty() && (This.m_activeItem == 0)) return;
@@ -259,7 +322,7 @@ void GLHighlighter::draw()
 
 	for (Item& item : This.m_item)
 	{
-		GItem* it = item.item;
+		FSObject* it = item.item;
 		GLColor& c = This.m_pickColor[item.color];
 		GEdge* edge = dynamic_cast<GEdge*>(it);
 		if (edge) drawEdge(renderer, edge, c);
@@ -272,6 +335,12 @@ void GLHighlighter::draw()
 
 		GPart* part = dynamic_cast<GPart*>(it);
 		if (part) drawPart(rc, renderer, part, c);
+
+		FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(it);
+		if (nodeSet) drawFENodeSet(rc, renderer, nodeSet, c);
+
+		FSSurface* surf = dynamic_cast<FSSurface*>(it);
+		if (surf) drawFESurface(rc, renderer, surf, c);
 	}
 
 	if (This.m_activeItem)
@@ -298,7 +367,7 @@ BOX GLHighlighter::GetBoundingBox()
 	BOX box;
 	for (Item& item : This.m_item)
 	{
-		GItem* it = item.item;
+		FSObject* it = item.item;
 		GNode* node = dynamic_cast<GNode*>(it);
 		if (node)
 		{
