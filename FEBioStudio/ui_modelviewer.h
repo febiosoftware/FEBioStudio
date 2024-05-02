@@ -126,7 +126,7 @@ public:
 		highlightButton->setAutoRaise(true);
 		highlightButton->setToolTip("<font color=\"black\">Toggle selection highlighting");
 		highlightButton->setCheckable(true);
-		highlightButton->setChecked(true);
+		highlightButton->setChecked(false);
 
 		// filter box
 		m_filter = new QComboBox;

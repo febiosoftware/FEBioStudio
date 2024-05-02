@@ -2094,7 +2094,7 @@ void CMainWindow::readSettings()
 		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
 		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
 		// alpha component used to not be stored so set it to default if zero
-		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 128;
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();

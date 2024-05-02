@@ -90,7 +90,7 @@ void GLViewSettings::Defaults(int ntheme)
 		m_defaultFGColor = GLColor(255, 255, 255);
 	}
 
-	m_meshColor = GLColor(0, 0, 128, 128);
+	m_meshColor = GLColor(0, 0, 128, 64);
 	m_fgcol = GLColor(0, 0, 0);
 	m_node_size = 3.f;
 	m_line_size = 1.0f;
