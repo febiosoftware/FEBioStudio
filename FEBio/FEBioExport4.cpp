@@ -202,27 +202,8 @@ string FEBioExport4::GetNodeSetName(FEItemListBuilder* pl)
 		FEItemListBuilder* pli = m_pPSet[i].m_list;
 		if (pli == pl)
 		{
-			int n = pli->size();
-			if (n == 1)
-			{
-				// part lists with only one item are currently not written.
-				// Instead, the part name has to be used
-				GPartList* pgl = dynamic_cast<GPartList*>(pli);
-				if (pgl)
-				{
-					std::vector<GPart*> partList = pgl->GetPartList();
-					if (partList.size() == 1)
-					{
-						string partName = partList[0]->GetName();
-						return string("@elem_set:") + partName;
-					}
-				}
-			}
-			else
-			{
-				string setName = m_pPSet[i].m_name;
-				return string("@part_list:") + setName;
-			}
+			string setName = m_pPSet[i].m_name;
+			return string("@part_list:") + setName;
 		}
 	}
 
@@ -1470,35 +1451,32 @@ void FEBioExport4::WriteGeometryPartLists()
 		FEItemListBuilder* pl = it.m_list;
 
 		// we don't write part lists that have only one part
-		if (pl && (pl->size() > 1))
+		if (dynamic_cast<GPartList*>(pl))
 		{
-			if (dynamic_cast<GPartList*>(pl))
+			std::vector<int> partIDs = pl->CopyItems();
+			bool bfirst = true;
+			for (int id : partIDs)
 			{
-				std::vector<int> partIDs = pl->CopyItems();
-				bool bfirst = true;
-				for (int id : partIDs)
-				{
-					if (bfirst == false) ss << ","; else bfirst = false;
-					GPart* pg = mdl.FindPart(id); assert(pg);
-					if (pg) ss << pg->GetName();
-				}
+				if (bfirst == false) ss << ","; else bfirst = false;
+				GPart* pg = mdl.FindPart(id); assert(pg);
+				if (pg) ss << pg->GetName();
 			}
-			else if (dynamic_cast<FSPartSet*>(pl))
-			{
-				FSPartSet* ps = dynamic_cast<FSPartSet*>(pl);
-				bool bfirst = true;
-				for (int n = 0; n<ps->size(); ++n)
-				{
-					if (bfirst == false) ss << ","; else bfirst = false;
-					GPart* pg = ps->GetPart(n); assert(pg);
-					if (pg) ss << pg->GetName();
-				}
-			}
-			else { assert(false); }
-			string s = ss.str();
-			el.value(s);
-			m_xml.add_leaf(el);
 		}
+		else if (dynamic_cast<FSPartSet*>(pl))
+		{
+			FSPartSet* ps = dynamic_cast<FSPartSet*>(pl);
+			bool bfirst = true;
+			for (int n = 0; n<ps->size(); ++n)
+			{
+				if (bfirst == false) ss << ","; else bfirst = false;
+				GPart* pg = ps->GetPart(n); assert(pg);
+				if (pg) ss << pg->GetName();
+			}
+		}
+		else { assert(false); }
+		string s = ss.str();
+		el.value(s);
+		m_xml.add_leaf(el);
 	}
 }
 
