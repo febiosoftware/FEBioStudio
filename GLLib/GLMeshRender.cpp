@@ -2175,36 +2175,34 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 			}
 			else if (outline)
 			{
-				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-				vec3d n1 = to_vec3d(f.fn);
-				vec3d n2 = to_vec3d(f2.fn);
+				int j1 = (j + 1) % 3;
+				if (f.n[j] < f.n[j1])
+				{
+					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+					vec3d n1 = to_vec3d(f.fn);
+					vec3d n2 = to_vec3d(f2.fn);
 
-				if (cam.IsOrtho())
-				{
-					q.RotateVector(n1);
-					q.RotateVector(n2);
-					if (n1.z * n2.z <= 0) bdraw = true;
-				}
-				else
-				{
-					int a = j;
-					int b = (j + 1) % 3;
-					vec3d c = to_vec3d((pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r)* 0.5);
-					vec3d pc = p - c;
-					double d1 = pc * n1;
-					double d2 = pc * n2;
-					if (d1 * d2 <= 0) bdraw = true;
+					if (cam.IsOrtho())
+					{
+						q.RotateVector(n1);
+						q.RotateVector(n2);
+						if (n1.z * n2.z <= 0) bdraw = true;
+					}
+					else
+					{
+						vec3d c = to_vec3d((f.vr[j] + f.vr[j1]) * 0.5f);
+						vec3d pc = p - c;
+						double d1 = pc * n1;
+						double d2 = pc * n2;
+						if (d1 * d2 <= 0) bdraw = true;
+					}
 				}
 			}
 
 			if (bdraw)
 			{
-				int a = f.n[j];
-				int b = f.n[(j + 1) % 3];
-				if (a > b) { a ^= b; b ^= a; a ^= b; }
-
-				points.push_back(pm->Node(a).r);
-				points.push_back(pm->Node(b).r);
+				points.push_back(f.vr[j]);
+				points.push_back(f.vr[(j+1)%3]);
 			}
 		}
 	}
@@ -2454,9 +2452,7 @@ void GLMeshRender::RenderMeshLines(const GMesh& m)
 	for (int i = 0; i < NE; i++)
 	{
 		const GMesh::EDGE& e = m.Edge(i);
-		vec3f a = m.Node(e.n[0]).r;
-		vec3f b = m.Node(e.n[1]).r;
-		glx::line(a, b);
+		glx::line(e.vr[0], e.vr[1]);
 	}
 	glEnd();
 	glPopAttrib();

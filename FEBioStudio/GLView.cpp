@@ -2154,34 +2154,43 @@ void CGLView::HighlightSurface(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Ray localRay;
+			Transform& T = po->GetTransform();
+			localRay.origin = T.GlobalToLocal(ray.origin);
+			localRay.direction = T.GlobalToLocalNormal(ray.direction);
 			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
-				int NF = mesh->Faces();
-				for (int j = 0; j < NF; ++j)
+				int surfs = po->Faces();
+				for (int k = 0; k < surfs; ++k)
 				{
-					GMesh::FACE& face = mesh->Face(j);
-					GFace* gface = po->Face(face.pid);
-					if (po->IsFaceVisible(gface) && !gface->IsSelected())
+					GFace* gface = po->Face(k);
+					if (gface->IsVisible() && !gface->IsSelected())
 					{
-						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
-						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
-						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r * 0.99999));
-						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r * 0.99999));
-						vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r * 0.99999));
-
-						Triangle tri = { r0, r1, r2 };
-						if (IntersectTriangle(ray, tri, q))
+						int NF = mesh->m_FIL[k].second;
+						int N0 = mesh->m_FIL[k].first;
+						for (int j = 0; j < NF; ++j)
 						{
-							if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+							GMesh::FACE& face = mesh->Face(j + N0);
+
+							vec3d r0 = to_vec3d(face.vr[0]);
+							vec3d r1 = to_vec3d(face.vr[1]);
+							vec3d r2 = to_vec3d(face.vr[2]);
+
+							Triangle tri = { r0, r1, r2, to_vec3d(face.fn)};
+							if (IntersectTriangle(localRay, tri, q, false))
 							{
-								double distance = ray.direction * (q.point - ray.origin);
-								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+								vec3d q1 = T.LocalToGlobal(q.point);
+								if ((ShowPlaneCut() == false) || (q1.x * a[0] + q1.y * a[1] + q1.z * a[2] + a[3] > 0))
 								{
-									if ((gface->IsSelected() == false) || (m_bctrl))
+									double distance = ray.direction * (q1 - ray.origin);
+									if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
 									{
-										closestSurface = po->Face(face.pid);
-										minDist = distance;
+										if ((gface->IsSelected() == false) || (m_bctrl))
+										{
+											closestSurface = po->Face(face.pid);
+											minDist = distance;
+										}
 									}
 								}
 							}

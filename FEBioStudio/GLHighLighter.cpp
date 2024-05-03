@@ -42,7 +42,7 @@ GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 void GLHighlighter::AttachToView(CGLView* view)
 {
 	This.m_view = view;
-	if (view) view->repaint();
+	if (view) view->update();
 }
 
 void GLHighlighter::SetActiveItem(GItem* item)
@@ -50,8 +50,8 @@ void GLHighlighter::SetActiveItem(GItem* item)
 	if (item != This.m_activeItem)
 	{
 		This.m_activeItem = item;
-		if (This.m_view) This.m_view->repaint();
-		emit This.activeItemChanged();
+		if (This.m_view) This.m_view->update();
+//		emit This.activeItemChanged(); // doesn't look anything is listening so why send it?
 	}
 }
 
@@ -65,7 +65,7 @@ void GLHighlighter::PickActiveItem()
 
 	This.m_activeItem = nullptr;
 	This.m_item.push_back({ pick, 0 });
-	if (This.m_view) This.m_view->repaint();
+	if (This.m_view) This.m_view->update();
 	emit This.itemPicked(pick);
 }
 
@@ -109,7 +109,7 @@ void GLHighlighter::ClearHighlights()
 {
 	This.m_item.clear();
 	This.m_activeItem = nullptr;
-	if (This.m_view) This.m_view->repaint();
+	if (This.m_view) This.m_view->update();
 }
 
 void GLHighlighter::setHighlightType(int type)
@@ -120,7 +120,7 @@ void GLHighlighter::setHighlightType(int type)
 void GLHighlighter::setTracking(bool b)
 {
 	This.m_btrack = b;
-	if (This.m_view) This.m_view->repaint();
+	if (This.m_view) This.m_view->update();
 }
 
 bool GLHighlighter::IsTracking()

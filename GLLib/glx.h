@@ -52,7 +52,6 @@ void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor
 void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
 void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
 void line(const vec3d& a, const vec3d& b);
-void line(const vec3f& a, const vec3f& b);
 
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
@@ -103,6 +102,8 @@ inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3d(n.x,
 inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
 
 inline void glcolor(const GLColor& c) { glColor3ub(c.r, c.g, c.b); }
+
+inline void line(const vec3f& a, const vec3f& b) { glVertex3fv(&a.x); glVertex3fv(&b.x); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
 void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);

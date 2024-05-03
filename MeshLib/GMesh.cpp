@@ -427,6 +427,13 @@ void GMesh::Update()
 			m_EIL[0].first = 0;
 			for (int i=1; i<EID; ++i) m_EIL[i].first = m_EIL[i-1].first + m_EIL[i-1].second;
 		}
+
+		for (int i = 0; i < NE; ++i)
+		{
+			EDGE& edge = m_Edge[i];
+			edge.vr[0] = m_Node[edge.n[0]].r;
+			edge.vr[1] = m_Node[edge.n[1]].r;
+		}
 	}
 
 	UpdateBoundingBox();

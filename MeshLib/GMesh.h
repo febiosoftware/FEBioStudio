@@ -52,8 +52,9 @@ public:
 
 	struct EDGE
 	{
-		int		n[2];	// nodes
 		int		pid;	// GEdge parent local id
+		int		n[2];	// nodes
+		vec3f	vr[2];	// nodal coordinates
 	};
 
 	struct FACE
