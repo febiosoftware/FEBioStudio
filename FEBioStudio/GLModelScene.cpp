@@ -423,7 +423,9 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				}
 				else if (item == ITEM_EDGE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm) RenderFEFacesFromGMesh(rc, po);
+					else RenderFEFaces(rc, po);
 					cam.LineDrawMode(true);
 					cam.PositionInScene();
 					SetModelView(po);
@@ -433,7 +435,9 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				}
 				else if (item == ITEM_NODE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm) RenderFEFacesFromGMesh(rc, po);
+					else RenderFEFaces(rc, po);
 					RenderFENodes(rc, po);
 				}
 			}
@@ -1472,7 +1476,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 					RenderMeshLines(rc, po);
 				else if (nitem == ITEM_MESH)
 				{
-					GMesh* lineMesh = po->GetLineRenderMesh();
+					GMesh* lineMesh = po->GetFERenderMesh();
 					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
 					else renderer.RenderMeshLines(pm);
 				}
@@ -2204,57 +2208,13 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 	if (pm)
 	{
 		int N = pm->Nodes();
-		int NF = pm->Faces();
-		int NE = pm->Elements();
-
-		// reset all tags
-		for (int i = 0; i < N; ++i) pm->Node(i).m_ntag = 1;
-
-		// make sure we render all isolated nodes
-		for (int i = 0; i < NE; ++i)
+		for (int i = 0; i < N; ++i)
 		{
-			FSElement& el = pm->Element(i);
-			int n = el.Nodes();
-			for (int j = 0; j < n; ++j) pm->Node(el.m_node[j]).m_ntag = 0;
+			FSNode& node = pm->Node(i);
+			if (!node.IsVisible() ||
+				(view.m_bext && !node.IsExterior())) node.m_ntag = 0;
+			else node.m_ntag = 1;
 		}
-
-		// check visibility
-		for (int i = 0; i < NE; ++i)
-		{
-			FSElement& el = pm->Element(i);
-			if (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()))
-			{
-				int n = el.Nodes();
-				for (int j = 0; j < n; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-			}
-		}
-
-		// check the cull
-		if (view.m_bcull)
-		{
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = pm->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j < n; ++j)
-				{
-					vec3d nn = to_vec3d(face.m_nn[j]);
-					vec3d f = q * nn;
-					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
-				}
-			}
-		}
-
-		// check the ext criteria
-		if (view.m_bext)
-		{
-			for (int i = 0; i < N; ++i)
-			{
-				FSNode& node = pm->Node(i);
-				if (!node.IsExterior()) node.m_ntag = 0;
-			}
-		}
-
 		renderer.RenderFENodes(pm);
 	}
 	else
@@ -2316,7 +2276,46 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 	}
 }
 
-//-----------------------------------------------------------------------------
+void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
+{
+	GMesh* gm = po->GetFERenderMesh(); assert(gm);
+	if (gm == nullptr) return;
+
+	GLViewSettings& vs = rc.m_settings;
+
+	SetDefaultMatProps();
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+	switch (vs.m_objectColor)
+	{
+	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
+	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
+	{
+		// TODO: I think this may crash when all FE faces of a surface are hidden,
+		// since in that case, no corresponding partition is made for the GMesh. 
+		glDisable(GL_COLOR_MATERIAL);
+		for (int i = 0; i < po->Faces(); ++i)
+		{
+			GFace* face = po->Face(i);
+			if (face->IsVisible())
+			{
+				GPart* part = po->Part(face->m_nPID[0]);
+				if (!part->IsVisible() && (face->m_nPID[1] >= 0))
+					part = po->Part(face->m_nPID[1]);
+				SetMatProps(rc, part);
+				m_renderer.RenderGLMesh(gm, i);
+			}
+		}
+	}
+	break;
+	case OBJECT_COLOR_MODE::OBJECT_COLOR:
+		m_renderer.RenderGLMesh(gm, po->GetColor());
+		break;
+	default:
+		m_renderer.RenderGLMesh(gm);
+	}
+}
+
 void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 {
 	CModelDocument* doc = m_doc;
@@ -2647,13 +2646,13 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	glDisable(GL_LIGHTING);
 
 	// render the unselected edges
-	glColor3ub(0, 0, 255);
+	glColor4ub(0, 0, 255, 128);
 	renderer.RenderUnselectedFEEdges(pm);
 
 	// render the selected edges
 	// override some settings
 	glDisable(GL_CULL_FACE);
-	glColor3ub(255, 0, 0);
+	glColor4ub(255, 0, 0, 128);
 	renderer.RenderSelectedFEEdges(pm);
 
 	glPopAttrib();

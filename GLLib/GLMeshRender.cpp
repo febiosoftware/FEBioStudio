@@ -2041,42 +2041,80 @@ void GLMeshRender::RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLMesh(GMesh* pm)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		int NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			GMesh::FACE& f = pm->Face(i);
+			glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
+			glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
+			glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderGLMesh(GMesh* pm, GLColor c)
+{
+	glColor4ub(c.r, c.g, c.b, c.a);
+	glBegin(GL_TRIANGLES);
+	{
+		int NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			GMesh::FACE& f = pm->Face(i);
+			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> func)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		int NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			GMesh::FACE& f = pm->Face(i);
+			f.tag = i;
+			func(f);
+			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+		}
+	}
+	glEnd();
+}
+
 void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 {
-	if (surfID == -1)
+	if ((surfID < 0) || (surfID >= (int)pm->m_FIL.size()))
+	{
+		assert(false);
+		return;
+	}
+
+	pair<int, int> fil = pm->m_FIL[surfID];
+	int NF = fil.second;
+	if (NF > 0)
 	{
 		glBegin(GL_TRIANGLES);
 		{
-			int NF = pm->Faces();
 			for (int i = 0; i < NF; ++i)
 			{
-				GMesh::FACE& f = pm->Face(i);
-				glNormal3f(f.vn[0].x, f.vn[0].y, f.vn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3f(f.vr[0].x, f.vr[0].y, f.vr[0].z);
-				glNormal3f(f.vn[1].x, f.vn[1].y, f.vn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3f(f.vr[1].x, f.vr[1].y, f.vr[1].z);
-				glNormal3f(f.vn[2].x, f.vn[2].y, f.vn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3f(f.vr[2].x, f.vr[2].y, f.vr[2].z);
+				const GMesh::FACE& f = pm->Face(i + fil.first);
+				glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+				glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+				glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
 			}
 		}
 		glEnd();
-	}
-	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
-	{
-		pair<int, int> fil = pm->m_FIL[surfID];
-		int NF = fil.second;
-		if (NF > 0)
-		{
-			glBegin(GL_TRIANGLES);
-			{
-				for (int i = 0; i < NF; ++i)
-				{
-					const GMesh::FACE& f = pm->Face(i + fil.first);
-					glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-					glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-					glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-				}
-			}
-			glEnd();
-		}
 	}
 }
 

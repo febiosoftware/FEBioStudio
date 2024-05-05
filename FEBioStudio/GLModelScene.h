@@ -75,7 +75,9 @@ private:
 	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);
-	void RenderMeshLines    (CGLContext& rc, GObject* pm);
+	void RenderMeshLines    (CGLContext& rc, GObject* po);
+
+	void RenderFEFacesFromGMesh(CGLContext& rc, GObject* po);
 
 	void RenderAllBeamElements       (CGLContext& rc, GObject* po);
 	void RenderUnselectedBeamElements(CGLContext& rc, GObject* po);

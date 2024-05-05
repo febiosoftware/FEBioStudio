@@ -179,8 +179,8 @@ public:
 	// get the render mesh
 	GMesh*	GetRenderMesh();
 
-	// get the mesh for rendering mesh lines
-	GMesh* GetLineRenderMesh();
+	// get the mesh for rendering the FE mesh
+	GMesh* GetFERenderMesh();
 
 	// get the local bounding box 
 	BOX GetLocalBox() const;
@@ -225,7 +225,9 @@ protected:
 
 	void SetValidFlag(bool b);
 
-	void BuildLineRenderMesh();
+	void BuildFERenderMesh();
+
+	void UpdateFERenderMesh();
 
 public:
 	// --- G R O U P S ---

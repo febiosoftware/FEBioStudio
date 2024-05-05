@@ -142,7 +142,7 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext)
 }
 
 //-----------------------------------------------------------------------------
-void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
+void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext)
 {
 	switch (nodes)
 	{

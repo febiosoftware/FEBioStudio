@@ -50,7 +50,7 @@ public:
 		m_pmesh   = nullptr;
 		m_pMesher = nullptr;
 		m_pGMesh  = nullptr;
-		m_glLineMesh = nullptr;
+		m_glFaceMesh = nullptr;
 
 		m_col = GLColor(200, 200, 200);
 
@@ -64,7 +64,7 @@ public:
 		delete m_pmesh;	m_pmesh = nullptr;
 		delete m_pMesher; m_pMesher = nullptr;
 		delete m_pGMesh; m_pGMesh = nullptr;
-		delete m_glLineMesh; m_glLineMesh = nullptr;
+		delete m_glFaceMesh; m_glFaceMesh = nullptr;
 	}
 
 public:
@@ -75,8 +75,8 @@ public:
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GMesh*		m_pGMesh;	//!< the mesh for rendering
-	GMesh*		m_glLineMesh;	//!< mesh for rendering mesh lines
+	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
+	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
 
 	FSObjectList<FSElemSet>		m_pFEElemSet;
 	FSObjectList<FSSurface>		m_pFESurface;
@@ -157,7 +157,12 @@ int GObject::GetType() const { return imp->m_ntype; }
 GLColor GObject::GetColor() const { return imp->m_col; }
 
 //-----------------------------------------------------------------------------
-void GObject::SetColor(const GLColor& c) { imp->m_col = c; }
+void GObject::SetColor(const GLColor& c) 
+{ 
+	imp->m_col = c; 
+
+	UpdateFERenderMesh();
+}
 
 //-----------------------------------------------------------------------------
 // retrieve the mesher
@@ -193,21 +198,21 @@ void GObject::SetFEMesh(FSMesh* pm)
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
 
 	// rebuild the line mesh
-	delete imp->m_glLineMesh; imp->m_glLineMesh = nullptr;
+	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
 	if (pm)
 	{
-		BuildLineRenderMesh();
+		BuildFERenderMesh();
 	}
 }
 
-void GObject::BuildLineRenderMesh()
+void GObject::BuildFERenderMesh()
 {
-	delete imp->m_glLineMesh; imp->m_glLineMesh = nullptr;
+	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	imp->m_glLineMesh = new GMesh;
-	GMesh& gm = *imp->m_glLineMesh;
+	imp->m_glFaceMesh = new GMesh;
+	GMesh& gm = *imp->m_glFaceMesh;
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
@@ -220,6 +225,8 @@ void GObject::BuildLineRenderMesh()
 		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
 		{
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior());
+
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -232,7 +239,27 @@ void GObject::BuildLineRenderMesh()
 			}
 		}
 	}
+	// NOTE: since we only add the visible faces, note that the partitions created in this mesh
+	// may not correspond to the surfaces of the geometry object
 	gm.Update();
+
+	UpdateFERenderMesh();
+}
+
+void GObject::UpdateFERenderMesh()
+{
+	if (imp->m_glFaceMesh == nullptr) return;
+	GMesh& gm = *imp->m_glFaceMesh;
+
+	// assign default color
+	GLColor c = GetColor();
+	int NF = gm.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		gm.Face(i).c[0] = c;
+		gm.Face(i).c[1] = c;
+		gm.Face(i).c[2] = c;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -571,7 +598,7 @@ bool GObject::Update(bool b)
 {
 	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
 	BuildGMesh();
-	BuildLineRenderMesh();
+	BuildFERenderMesh();
 	return GBaseObject::Update(b);
 }
 
@@ -664,9 +691,9 @@ GMesh*	GObject::GetRenderMesh()
 	return imp->m_pGMesh;
 }
 
-GMesh* GObject::GetLineRenderMesh()
+GMesh* GObject::GetFERenderMesh()
 {
-	return imp->m_glLineMesh;
+	return imp->m_glFaceMesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -861,7 +888,7 @@ void GObject::UpdateItemVisibility()
 	}
 
 	// rebuild render meshes
-	BuildLineRenderMesh();
+	BuildFERenderMesh();
 }
 
 //-----------------------------------------------------------------------------
