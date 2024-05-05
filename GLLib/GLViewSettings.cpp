@@ -109,5 +109,4 @@ void GLViewSettings::Defaults(int ntheme)
 	m_use_environment_map = false;
 
 	m_transparencyMode = 0; // = off
-	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 }

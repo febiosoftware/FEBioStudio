@@ -2057,15 +2057,15 @@ void GLMeshRender::RenderGLMesh(GMesh* pm)
 	glEnd();
 }
 
-void GLMeshRender::RenderGLMesh(GMesh* pm, GLColor c)
+void GLMeshRender::RenderGLMesh(GMesh& mesh, GLColor c)
 {
 	glColor4ub(c.r, c.g, c.b, c.a);
 	glBegin(GL_TRIANGLES);
 	{
-		int NF = pm->Faces();
+		int NF = mesh.Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			GMesh::FACE& f = pm->Face(i);
+			GMesh::FACE& f = mesh.Face(i);
 			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
 			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
 			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);

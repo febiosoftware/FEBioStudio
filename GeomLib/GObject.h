@@ -227,8 +227,6 @@ protected:
 
 	void BuildFERenderMesh();
 
-	void UpdateFERenderMesh();
-
 public:
 	// --- G R O U P S ---
 	int FEPartSets() const;

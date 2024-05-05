@@ -96,7 +96,6 @@ public:
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
-		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
 		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
 		addColorProperty(&m_defaultFGColor, "Custom text color");
@@ -111,7 +110,6 @@ public:
 	double	m_scaleNormal;
     int     m_nconv;
 	int		m_ntrans;
-	int		m_nobjcol;
 	bool	m_dozsorting;
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
@@ -1083,7 +1081,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
-	ui->m_display->m_nobjcol = view.m_objectColor;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
 	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
 	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
@@ -1182,7 +1179,6 @@ void CDlgSettings::apply()
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
     view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
-	view.m_objectColor = ui->m_display->m_nobjcol;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
 	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);

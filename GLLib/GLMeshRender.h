@@ -74,7 +74,7 @@ public:
 
 public:
 	void RenderGLMesh(GMesh* pm);
-	void RenderGLMesh(GMesh* pm, GLColor c);
+	void RenderGLMesh(GMesh& pm, GLColor c);
 	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
 
 	void RenderGLMesh(GMesh* pm, int surfID);

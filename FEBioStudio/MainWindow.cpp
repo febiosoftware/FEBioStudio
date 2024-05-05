@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
+#include "GLModelScene.h"
 
 extern GLColor col[];
 
@@ -2766,14 +2767,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
 		menu.addAction(display->menuAction());
 
-		QMenu* colorMode = new QMenu("Color mode");
-		a = colorMode->addAction("Default"         ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
-		a = colorMode->addAction("By object"       ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
-		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
-		a = colorMode->addAction("By element type" ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
-		a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
-		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
-		menu.addAction(colorMode->menuAction());
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene)
+		{
+			OBJECT_COLOR_MODE mode = scene->ObjectColorMode();
+			QMenu* colorMode = new QMenu("Color mode");
+			a = colorMode->addAction("Default"         ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
+			a = colorMode->addAction("By object"       ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
+			a = colorMode->addAction("By material type"); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
+			a = colorMode->addAction("By element type" ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
+			a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+			menu.addAction(colorMode->menuAction());
+		}
 
 		menu.addSeparator();
 
@@ -2842,13 +2848,17 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
 
-	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
-	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
-	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
-	else if (ac->text() == "By element type" ) vs.m_objectColor = OBJECT_COLOR_MODE::FSELEMENT_TYPE;
-	else if (ac->text() == "By physics"      ) vs.m_objectColor = OBJECT_COLOR_MODE::PHYSICS_TYPE;
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+	if (scene == nullptr) return;
+
+	if      (ac->text() == "Default"         ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
+	else if (ac->text() == "By object"       ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
+	else if (ac->text() == "By material type") scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
+	else if (ac->text() == "By element type" ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+	else if (ac->text() == "By physics"      ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
 
 	RedrawGL();
 }

@@ -71,6 +71,7 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
+	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 }
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
@@ -307,7 +308,7 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 	glDisable(GL_CULL_FACE);
 	
 	GLViewSettings& view = rc.m_settings;
-	if (view.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+	if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 	{
 		// Tag all faces depending on how they are used in a model component
 		TagFacesByPhysics(*ps);
@@ -355,7 +356,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
 				else RenderObject(rc, po);
 			}
-			else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+			else if (m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 			{
 				if (po->GetFEMesh()) RenderFEElements(rc, po);
 				else RenderObject(rc, po);
@@ -1736,7 +1737,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 				{
 					SetDefaultMatProps();
 					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
@@ -1766,7 +1767,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 				renderer.RenderGLMesh(pm, n);
 
 				if ((vs.m_transparencyMode != 0) ||
-					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					(m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
 					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
@@ -2077,7 +2078,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 				{
 					SetDefaultMatProps();
 					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
@@ -2107,7 +2108,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 				renderer.RenderGLMesh(pm, n);
 
 				if ((vs.m_transparencyMode != 0) ||
-					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					(m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
 					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
@@ -2286,34 +2287,171 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 	SetDefaultMatProps();
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
-	switch (vs.m_objectColor)
+	switch (m_objectColor)
 	{
-	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
-	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
-	{
-		// TODO: I think this may crash when all FE faces of a surface are hidden,
-		// since in that case, no corresponding partition is made for the GMesh. 
-		glDisable(GL_COLOR_MATERIAL);
-		for (int i = 0; i < po->Faces(); ++i)
-		{
-			GFace* face = po->Face(i);
-			if (face->IsVisible())
-			{
-				GPart* part = po->Part(face->m_nPID[0]);
-				if (!part->IsVisible() && (face->m_nPID[1] >= 0))
-					part = po->Part(face->m_nPID[1]);
-				SetMatProps(rc, part);
-				m_renderer.RenderGLMesh(gm, i);
-			}
-		}
-	}
-	break;
-	case OBJECT_COLOR_MODE::OBJECT_COLOR:
-		m_renderer.RenderGLMesh(gm, po->GetColor());
-		break;
+	case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderMeshByDefault     (rc, *po, *gm); break;
+	case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor (rc, *po, *gm); break;
+	case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByMaterialType(rc, *po, *gm); break;
+	case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByPhysics     (rc, *po, *gm); break;
+	case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType (rc, *po, *gm); break;
 	default:
 		m_renderer.RenderGLMesh(gm);
 	}
+}
+
+void CGLModelScene::RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
+	FSModel* fem = m_doc->GetFSModel();
+
+	glDisable(GL_COLOR_MATERIAL);
+	SetDefaultMatProps();
+
+	GLColor c;
+	int NF = o.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* face = o.Face(i);
+		if (face->IsVisible())
+		{
+			GPart* pg = o.Part(face->m_nPID[0]);
+			if (!pg->IsVisible() && (face->m_nPID[1] >= 0))
+				pg = o.Part(face->m_nPID[1]);
+
+			GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
+			SetMatProps(gmat);
+
+			m_renderer.RenderGLMesh(&mesh, i);
+		}
+	}
+}
+
+void CGLModelScene::RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	m_renderer.RenderGLMesh(mesh, o.GetColor());
+}
+
+void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
+	FSModel* fem = m_doc->GetFSModel();
+
+	glDisable(GL_COLOR_MATERIAL);
+	SetDefaultMatProps();
+
+	GLColor c;
+	int NF = o.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* face = o.Face(i);
+		if (face->IsVisible())
+		{
+			GPart* pg = o.Part(face->m_nPID[0]);
+			if (!pg->IsVisible() && (face->m_nPID[1] >= 0))
+				pg = o.Part(face->m_nPID[1]);
+
+			GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
+			if (gmat == nullptr) c = GLColor(200, 200, 200);
+			else
+			{
+				FSMaterial* pm = gmat->GetMaterialProperties();
+				if (pm == nullptr) c = GLColor(0, 0, 0);
+				else if (pm->IsRigid()) c = GLColor(210, 200, 164);
+				else c = GLColor(200, 128, 128);
+			}
+			GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+			col[0] = (float)c.r / 255.f;
+			col[1] = (float)c.g / 255.f;
+			col[2] = (float)c.b / 255.f;
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+
+			m_renderer.RenderGLMesh(&mesh, i);
+		}
+	}
+}
+
+void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	SetDefaultMatProps();
+	glDisable(GL_COLOR_MATERIAL);
+
+	int NF = o.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* face = o.Face(i);
+		if (face->IsVisible())
+		{
+			GPart* pg = o.Part(face->m_nPID[0]);
+			if (!pg->IsVisible() && (face->m_nPID[1] >= 0))
+				pg = o.Part(face->m_nPID[1]);
+
+			GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+			switch (face->m_ntag)
+			{
+			case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+			case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
+			case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
+			case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
+			case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
+			case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
+			}
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+
+			m_renderer.RenderGLMesh(&mesh, i);
+
+			if (face->m_ntag == 0)
+				glDisable(GL_POLYGON_STIPPLE);
+		}
+	}
+}
+
+void CGLModelScene::RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	FSMesh* pm = o.GetFEMesh();
+	if (pm == nullptr) return;
+
+	m_renderer.RenderGLMesh(&mesh, [&](const GMesh::FACE& face) {
+		GLColor col;
+		if (face.fid >= 0)
+		{
+			FSFace& f = pm->Face(face.fid);
+			FEElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
+			if (pe)
+			{
+				const int a = 212;
+				const int b = 106;
+				const int d =  53;
+				switch (pe->Type())
+				{
+				case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
+				case FE_TRI3   : col = GLColor(0, a, a); break;
+				case FE_TRI6   : col = GLColor(0, b, b); break;
+				case FE_TRI7   : col = GLColor(0, b, d); break;
+				case FE_TRI10  : col = GLColor(0, d, d); break;
+				case FE_QUAD4  : col = GLColor(a, a, 0); break;
+				case FE_QUAD8  : col = GLColor(b, b, 0); break;
+				case FE_QUAD9  : col = GLColor(d, d, 0); break;
+				case FE_TET4   : col = GLColor(0, a, 0); break;
+				case FE_TET5   : col = GLColor(0, a, 0); break;
+				case FE_TET10  : col = GLColor(0, b, 0); break;
+				case FE_TET15  : col = GLColor(0, b, 0); break;
+				case FE_TET20  : col = GLColor(0, d, 0); break;
+				case FE_HEX8   : col = GLColor(a, 0, 0); break;
+				case FE_HEX20  : col = GLColor(b, 0, 0); break;
+				case FE_HEX27  : col = GLColor(b, 0, 0); break;
+				case FE_PENTA6 : col = GLColor(0, 0, a); break;
+				case FE_PENTA15: col = GLColor(0, 0, b); break;
+				case FE_PYRA5  : col = GLColor(0, 0, a); break;
+				case FE_PYRA13 : col = GLColor(0, 0, b); break;
+				case FE_BEAM2  : col = GLColor(a, a, a); break;
+				case FE_BEAM3  : col = GLColor(b, b, b); break;
+				default:
+					col = GLColor(255, 255, 255); break;
+				}
+			}
+		}
+		glColor3ub(col.r, col.g, col.b);
+	});
 }
 
 void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
@@ -2728,7 +2866,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				return false;
 			});
 	}
-	else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+	else if (m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 	{
 		glEnable(GL_COLOR_MATERIAL);
 
@@ -3052,7 +3190,7 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
 
-	switch (vs.m_objectColor)
+	switch (m_objectColor)
 	{
 	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
 	{
@@ -3318,4 +3456,14 @@ void CGLModelScene::RenderImageData(CGLContext& rc)
 		CImageModel* img = m_doc->GetImageModel(i);
 		if (img->IsActive()) img->Render(rc);
 	}
+}
+
+void CGLModelScene::SetObjectColorMode(OBJECT_COLOR_MODE colorMode)
+{
+	m_objectColor = colorMode;
+}
+
+OBJECT_COLOR_MODE CGLModelScene::ObjectColorMode() const
+{
+	return m_objectColor;
 }

@@ -60,8 +60,9 @@ public:
 	struct FACE
 	{
 		int		pid;	// GFace parent local id
-		int		eid;	// element ID of GFace (or -1 if not applicable)
-		int		sid;	// smoothing groupd ID
+		int		fid;	// face ID of FSace in parent mesh (or -1 if not applicable)
+		int		eid;	// element ID (used by planecut algorithm)
+		int		sid;	// smoothing group ID
 		bool	bext;	// external flag
 		int		tag;	// multipurpose tag
 		int		n[3];	// nodes
@@ -70,6 +71,7 @@ public:
 		vec3f	vn[3];	// node normals
 		vec3f	vr[3];	// nodal coordinates
 		GLColor	c[3];	// node colors
+		float	t[3];	// texture coordinates
 	};
 
 public:
@@ -103,8 +105,8 @@ public:
 	int	AddNode(const vec3f& r, int groupID = 0);
 	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
-	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
-	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);
+	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1);
+	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1);
 	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 

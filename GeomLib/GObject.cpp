@@ -160,8 +160,6 @@ GLColor GObject::GetColor() const { return imp->m_col; }
 void GObject::SetColor(const GLColor& c) 
 { 
 	imp->m_col = c; 
-
-	UpdateFERenderMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -225,7 +223,7 @@ void GObject::BuildFERenderMesh()
 		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
 		{
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior());
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i);
 
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
@@ -242,24 +240,6 @@ void GObject::BuildFERenderMesh()
 	// NOTE: since we only add the visible faces, note that the partitions created in this mesh
 	// may not correspond to the surfaces of the geometry object
 	gm.Update();
-
-	UpdateFERenderMesh();
-}
-
-void GObject::UpdateFERenderMesh()
-{
-	if (imp->m_glFaceMesh == nullptr) return;
-	GMesh& gm = *imp->m_glFaceMesh;
-
-	// assign default color
-	GLColor c = GetColor();
-	int NF = gm.Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		gm.Face(i).c[0] = c;
-		gm.Face(i).c[1] = c;
-		gm.Face(i).c[2] = c;
-	}
 }
 
 //-----------------------------------------------------------------------------

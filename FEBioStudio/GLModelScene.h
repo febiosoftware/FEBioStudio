@@ -27,6 +27,14 @@ SOFTWARE.*/
 #include "Document.h"
 #include <GLLib/GLMeshRender.h>
 
+enum OBJECT_COLOR_MODE {
+	DEFAULT_COLOR,
+	OBJECT_COLOR,
+	MATERIAL_TYPE,
+	FSELEMENT_TYPE,
+	PHYSICS_TYPE
+};
+
 class CModelDocument;
 class GPart;
 
@@ -42,6 +50,10 @@ public:
 	BOX GetBoundingBox() override;
 
 	BOX GetSelectionBox() override;
+
+	void SetObjectColorMode(OBJECT_COLOR_MODE colorMode);
+
+	OBJECT_COLOR_MODE ObjectColorMode() const;
 
 private:
 	void RenderModel(CGLContext& rc);
@@ -96,6 +108,13 @@ private:
 	void RenderTags(CGLContext& rc);
 
 private:
+	void RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh);
+
+private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
 	void SetMatProps(CGLContext& rc, GPart* pg);
@@ -106,4 +125,6 @@ private:
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;
+	
+	OBJECT_COLOR_MODE	m_objectColor;
 };
