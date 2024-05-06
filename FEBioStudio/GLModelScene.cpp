@@ -420,7 +420,13 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				}
 				else if (item == ITEM_FACE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm)
+					{
+						RenderFEFacesFromGMesh(rc, po);
+						RenderSelectedFEFaces(rc, po);
+					}
+					else RenderFEFaces(rc, po);
 				}
 				else if (item == ITEM_EDGE)
 				{
@@ -2562,21 +2568,27 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	RenderAllBeamElements(rc, po);
 
 	// render the selected faces
-	renderer.PushState();
-	{
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3ub(255, 0, 0);
-		renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
-
-		// render the selected face outline
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3ub(255, 255, 0);
-		renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
-	}
-	renderer.PopState();
+	RenderSelectedFEFaces(rc, po);
 }
 
-//-----------------------------------------------------------------------------
+void CGLModelScene::RenderSelectedFEFaces(CGLContext& rc, GObject* po)
+{
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+	m_renderer.PushState();
+	{
+		m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		glColor3ub(255, 0, 0);
+		m_renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
+
+		// render the selected face outline
+		m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(255, 255, 0);
+		m_renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
+	}
+	m_renderer.PopState();
+}
+
 void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 {
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);

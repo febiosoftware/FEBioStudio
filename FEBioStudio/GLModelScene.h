@@ -89,6 +89,8 @@ private:
 	void RenderFENodes      (CGLContext& rc, GObject* po);
 	void RenderMeshLines    (CGLContext& rc, GObject* po);
 
+	void RenderSelectedFEFaces(CGLContext& rc, GObject* po);
+
 	void RenderFEFacesFromGMesh(CGLContext& rc, GObject* po);
 
 	void RenderAllBeamElements       (CGLContext& rc, GObject* po);
