@@ -118,7 +118,7 @@ void CGLModelScene::Render(CGLContext& rc)
 		if (glview->PlaneCutMode() == 0)
 		{
 			// render the plane cut first
-			glview->RenderPlaneCut();
+			glview->RenderPlaneCut(rc);
 
 			// then turn on the clipping plane before rendering the other geometry
 			glClipPlane(GL_CLIP_PLANE0, glview->PlaneCoordinates());

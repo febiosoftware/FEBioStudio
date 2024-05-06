@@ -494,6 +494,14 @@ GObject* GModel::FindObject(const string& name)
 	return 0;
 }
 
+GObject* GModel::GetActiveObject()
+{
+	GObject* po = nullptr;
+	GObjectSelection sel(this);
+	if (sel.Count() == 1) po = sel.Object(0);
+	return po;
+}
+
 //-----------------------------------------------------------------------------
 
 int GModel::FindObjectIndex(GObject* po)

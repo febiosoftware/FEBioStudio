@@ -316,7 +316,7 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_planeCut(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -2648,7 +2648,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
 	}
 	else
 	{
@@ -2731,7 +2731,7 @@ double* CGLView::PlaneCoordinates()
 	return m_planeCut.GetPlaneCoordinates();
 }
 
-void CGLView::RenderPlaneCut()
+void CGLView::RenderPlaneCut(CGLContext& rc)
 {
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -2739,7 +2739,7 @@ void CGLView::RenderPlaneCut()
 	if (m_planeCut.IsValid() == false)
 	{
 		FSModel& fem = *doc->GetFSModel();
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
 	}
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
@@ -2747,7 +2747,7 @@ void CGLView::RenderPlaneCut()
 	glColor3ub(200, 0, 200);
 	glx::renderBox(box, false);
 
-	m_planeCut.Render();
+	m_planeCut.Render(rc);
 }
 
 void CGLView::ToggleFPS()

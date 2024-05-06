@@ -42,11 +42,26 @@ extern int LUT[256][15];
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
 
-void GLPlaneCut::BuildPlaneCut(FSModel& fem)
+GLPlaneCut::GLPlaneCut()
+{
+
+}
+
+void GLPlaneCut::Clear() 
+{ 
+	delete m_planeCut; 
+	m_planeCut = nullptr; 
+}
+
+bool GLPlaneCut::IsValid() const 
+{ 
+	return (m_planeCut != nullptr); 
+}
+
+void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 {
 	GModel& mdl = fem.GetModel();
-	GLViewSettings& vs = m_glview->GetViewSettings();
-	GObject* poa = m_glview->GetActiveObject();
+	GObject* poa = mdl.GetActiveObject();
 	double vmin, vmax;
 
 	if (mdl.Objects() == 0) return;
@@ -61,7 +76,8 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 	m_planeCut = new GMesh;
 	GMesh* planeCut = m_planeCut;
 
-	Post::CColorMap& colormap = m_glview->GetColorMap();
+	// TODO: swith to texture
+	Post::CColorMap colormap;
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -76,9 +92,9 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 
 			bool showContour = false;
 			Mesh_Data& data = mesh->GetMeshData();
-			if ((po == poa) && (vs.m_bcontour))
+			if ((po == poa) && (showMeshData))
 			{
-				showContour = (vs.m_bcontour && data.IsValid());
+				showContour = (showMeshData && data.IsValid());
 				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
 			}
 
@@ -106,7 +122,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 						else
 						{
 							matId = -1;
-							c = defaultColor;
+							c = po->GetColor();
 						}
 					}
 
@@ -145,7 +161,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 							if (data.GetElementDataTag(i) > 0)
 								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
 							else
-								ec[k] = GLColor(212, 212, 212);
+								ec[k] = defaultColor;
 						}
 					}
 
@@ -266,7 +282,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render()
+void GLPlaneCut::Render(CGLContext& rc)
 {
 	if (m_planeCut == nullptr) return;
 
@@ -291,13 +307,13 @@ void GLPlaneCut::Render()
 	mr.SetFaceColor(false);
 	mr.RenderGLMesh(m_planeCut, 1);
 
-	if (m_glview->GetViewSettings().m_bmesh)
+	if (rc.m_settings.m_bmesh)
 	{
 		glDisable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
 		glColor3ub(0, 0, 0);
 
-		CGLCamera& cam = *m_glview->GetCamera();
+		CGLCamera& cam = *rc.m_cam;
 		cam.LineDrawMode(true);
 		cam.PositionInScene();
 
