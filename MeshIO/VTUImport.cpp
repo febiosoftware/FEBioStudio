@@ -133,7 +133,8 @@ public:
 		UINT8,
 		INT32,
 		INT64,
-		FLOAT32
+		FLOAT32,
+		FLOAT64,
 	};
 
 	enum Format
@@ -164,7 +165,8 @@ public:
 	{
 		switch (m_type)
 		{
-		case FLOAT32: return (m_values_float.size() / m_numComps); break;
+		case FLOAT32:
+		case FLOAT64: return (m_values_float.size() / m_numComps); break;
 		case UINT8:
 		case INT32:
 		case INT64:
@@ -403,7 +405,7 @@ public:
 		if (m_headerSize == 64) b += 8;
 
 		size_t m = m_bufSize / 4; assert((m_bufSize % 4) == 0);
-		d.resize(m, 0.f);
+		d.resize(m, 0);
 		for (size_t i = 0; i < m; ++i)
 		{
 			d[i] = *((int*)b);
@@ -418,7 +420,7 @@ public:
 		if (m_headerSize == 64) b += 8;
 
 		size_t m = m_bufSize / 8; assert((m_bufSize % 8) == 0);
-		d.resize(m, 0.f);
+		d.resize(m, 0);
 		for (size_t i = 0; i < m; ++i)
 		{
 			d[i] = *((long int*)b);
@@ -699,7 +701,8 @@ bool VTKFileReader::ParsePoints(XMLTag& tag, VTKPiece& piece)
 			VTKDataArray& points = piece.m_points;
 			if (ParseDataArray(tag, points) == false) return false;
 
-			if (points.m_type != VTKDataArray::FLOAT32) return false;
+			if ((points.m_type != VTKDataArray::FLOAT32) &&
+				(points.m_type != VTKDataArray::FLOAT64)) return false;
 			if (points.m_numComps != 3) return false;
 		}
 		else tag.skip();
@@ -732,6 +735,7 @@ bool VTKFileReader::ParseCells(XMLTag& tag, VTKPiece& piece)
 			}
 		}
 		else tag.skip();
+		++tag;
 	} 
 	while (!tag.isend());
 
@@ -781,6 +785,7 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 	// get the type
 	const char* sztype = tag.AttributeValue("type");
 	if      (strcmp(sztype, "Float32") == 0) vtkDataArray.m_type = VTKDataArray::FLOAT32;
+	else if (strcmp(sztype, "Float64") == 0) vtkDataArray.m_type = VTKDataArray::FLOAT64;
 	else if (strcmp(sztype, "UInt8"  ) == 0) vtkDataArray.m_type = VTKDataArray::UINT8;
 	else if (strcmp(sztype, "Int64"  ) == 0) vtkDataArray.m_type = VTKDataArray::INT64;
 	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = VTKDataArray::INT64;
@@ -792,7 +797,8 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 	// get the value
 	if (vtkDataArray.m_format == VTKDataArray::ASCII)
 	{
-		if (vtkDataArray.m_type == VTKDataArray::FLOAT32)
+		if ((vtkDataArray.m_type == VTKDataArray::FLOAT32) ||
+			(vtkDataArray.m_type == VTKDataArray::FLOAT64))
 		{
 			tag.value(vtkDataArray.m_values_float);
 		}
@@ -826,7 +832,7 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 		// decode the buffer
 		std::vector<unsigned char> out(l, 0);
 		unsigned char* d = out.data();
-		int n = base64_decode(buf.data(), l, d, l);
+		size_t n = base64_decode(buf.data(), l, d, l);
 
 		// skip header (should be size of array)
 		size_t headerSize = 0;
@@ -845,6 +851,28 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 			{
 				v[i] = *((float*)d);
 				d += 4;
+			}
+		}
+		else if (vtkDataArray.m_type == VTKDataArray::FLOAT64)
+		{
+			std::vector<double>& v = vtkDataArray.m_values_float;
+			size_t m = n / 8;
+			v.resize(m);
+			for (int i = 0; i < m; ++i)
+			{
+				v[i] = *((double*)d);
+				d += 8;
+			}
+		}
+		else if (vtkDataArray.m_type == VTKDataArray::UINT8)
+		{
+			std::vector<int>& v = vtkDataArray.m_values_int;
+			size_t m = n;
+			v.resize(m);
+			for (int i = 0; i < m; ++i)
+			{
+				v[i] = *((unsigned char*)d);
+				d += 1;
 			}
 		}
 		else if (vtkDataArray.m_type == VTKDataArray::INT32)
@@ -887,7 +915,7 @@ bool VTKFileReader::BuildMesh(VTKModel& vtk)
 		VTKPiece& piece = vtk.Piece(n);
 	
 		// get the number of nodes and elements
-		int nodes = piece.Points();
+		int nodes = (int) piece.Points();
 
 		int elems = 0;
 		for (int i = 0; i < piece.Cells(); i++)
