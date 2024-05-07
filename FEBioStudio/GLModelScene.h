@@ -55,6 +55,8 @@ public:
 
 	OBJECT_COLOR_MODE ObjectColorMode() const;
 
+	void Update() override;
+
 private:
 	void RenderModel(CGLContext& rc);
 	void RenderGObject(CGLContext& rc, GObject* po);
@@ -123,6 +125,9 @@ private:
 
 	// set some default GL material properties
 	void SetDefaultMatProps();
+
+	// apply the mesh data to an object's render mesh
+	void MapMeshData(GObject* po);
 
 private:
 	CModelDocument* m_doc;

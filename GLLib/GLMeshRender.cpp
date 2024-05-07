@@ -2045,13 +2045,27 @@ void GLMeshRender::RenderGLMesh(GMesh* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		int NF = pm->Faces();
-		for (int i = 0; i < NF; ++i)
+		if (m_bfaceColor)
 		{
-			GMesh::FACE& f = pm->Face(i);
-			glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
-			glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
-			glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
+				glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
+				glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
+			}
+		}
+		else
+		{
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+				glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+				glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+			}
 		}
 	}
 	glEnd();

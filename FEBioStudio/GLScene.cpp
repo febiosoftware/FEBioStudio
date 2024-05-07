@@ -37,6 +37,11 @@ CGLScene::~CGLScene() {}
 
 CGView& CGLScene::GetView() { return m_view; }
 
+void CGLScene::Update()
+{
+
+}
+
 void CGLScene::ActivateEnvironmentMap()
 {
 	if (m_envtex == 0) LoadEnvironmentMap();
