@@ -23,24 +23,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include "VTKFileReader.h"
 
-// reader for unstructured grid files
-class VTUimport : public FSFileImport
-{
-public:
-	VTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+namespace VTK {
 
-// reader for polygon files
-class VTPimport : public FSFileImport
-{
+	// File reader for VTP polygon files
+	class VTPFileReader : public VTKFileReader
+	{
+	public:
+		VTPFileReader();
+		bool Load(const char* szfile) override;
+	};
 
-public:
-	VTPimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+}

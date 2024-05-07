@@ -23,24 +23,59 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "VTPFileReader.h"
+#include <XML/XMLReader.h>
+using namespace VTK;
 
-#pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
-
-// reader for unstructured grid files
-class VTUimport : public FSFileImport
-{
-public:
-	VTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
-
-// reader for polygon files
-class VTPimport : public FSFileImport
+VTPFileReader::VTPFileReader()
 {
 
-public:
-	VTPimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+}
+
+bool VTPFileReader::Load(const char* szfile)
+{
+	m_vtk.Clear();
+
+	// Open the file
+	XMLReader xml;
+	if (xml.Open(szfile, false) == false) return false;
+
+	// get the VTKFile tag
+	XMLTag tag;
+	if (xml.FindTag("VTKFile", tag) == false) return false;
+	if (ParseFileHeader(tag) == false) return false;
+
+	// this file is for PolyData only
+	if (m_type != PolyData) return false;
+
+	vtkAppendedData data;
+
+	// parse the file
+	try {
+		++tag;
+		do
+		{
+			if (tag == "PolyData")
+			{
+				if (ParsePolyData(tag, m_vtk) == false) return false;
+			}
+			else if (tag == "AppendedData")
+			{
+				if (ParseAppendedData(tag, data) == false) return false;
+			}
+			else return false;
+			++tag;
+		} while (!tag.isend());
+	}
+	catch (...)
+	{
+		assert(false);
+	}
+
+	xml.Close();
+
+	// process the appended arrays
+	if (ProcessDataArrays(m_vtk, data) == false) return false;
+
+	return true;
+}
