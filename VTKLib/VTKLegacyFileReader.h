@@ -27,55 +27,37 @@ SOFTWARE.*/
 #include <FSCore/FileReader.h>
 #include "VTKModel.h"
 
-class XMLTag;
-
 namespace VTK {
 
-	// Base class for reading XML formatted VTK files
-	class VTKFileReader : public FileReader
+	class vtkLegacyFileReader : public FileReader
 	{
-	protected:
-		enum vtkByteOrder {
-			LittleEndian,
-			BigEndian
-		};
-
-		enum vtkCompressor {
-			NoCompression,
-			ZLibCompression
-		};
-
-		enum vtkDataType {
-			UInt32,
-			UInt64,
-			Float32
-		};
-
 	public:
-		const VTK::vtkModel& GetVTKModel() const;
+		vtkLegacyFileReader();
+
+		bool Load(const char* szfilename) override;
+
+		const vtkModel& GetVTKModel() const;
 
 	protected:
-		VTKFileReader();
+		bool nextLine();
+
+		bool read_POINTS(VTK::vtkPiece& vtk);
+		bool read_LINES(VTK::vtkPiece& vtk);
+		bool read_POLYGONS(VTK::vtkPiece& vtk);
+		bool read_CELLS(VTK::vtkPiece& vtk);
+		bool read_CELL_TYPES(VTK::vtkPiece& vtk);
+		bool read_POINT_DATA(VTK::vtkPiece& vtk);
+		bool read_CELL_DATA(VTK::vtkPiece& vtk);
+		bool read_NORMALS(VTK::vtkPiece& vtk);
+		bool read_FIELD(VTK::vtkPiece& vtk);
+
+		bool checkLine(const char* sz);
+
+		int parseLine(std::vector<std::string>& str);
 
 	protected:
-		bool ParseFileHeader(XMLTag& tag);
-		bool ParseUnstructuredGrid(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePolyData(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePiece(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePoints(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParseCells(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParsePolys(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParseDataArray(XMLTag& tag, VTK::vtkDataArray& vtkDataArray);
-		bool ParseAppendedData(XMLTag& tag, VTK::vtkAppendedData& vtkAppendedData);
-		bool ProcessAppendedDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
-		bool ProcessDataArrays(VTK::vtkModel& vtk, VTK::vtkAppendedData& data);
-
-	protected:
-		vtkDataFileType	m_type;
-		std::string m_version;
-		vtkByteOrder m_byteOrder;
-		vtkDataType m_headerType;
-		vtkCompressor m_compressor;
 		vtkModel m_vtk;
+		vtkDataFileType	m_dataFileType;
+		char	m_szline[256];
 	};
 }

@@ -25,14 +25,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <vector>
+#include <string>
+#include <assert.h>
 
 namespace VTK {
+
+	struct vtkPoint
+	{
+		double x, y, z;
+	};
+
+	enum vtkDataFileType {
+		Invalid,
+		UnstructuredGrid,
+		PolyData
+	};
 
 	class vtkDataArray
 	{
 	public:
 		enum Types
 		{
+			INT8,
 			UINT8,
 			INT32,
 			INT64,
@@ -70,6 +84,7 @@ namespace VTK {
 			{
 			case FLOAT32:
 			case FLOAT64: return (m_values_float.size() / m_numComps); break;
+			case INT8:
 			case UINT8:
 			case INT32:
 			case INT64:
@@ -86,6 +101,13 @@ namespace VTK {
 
 		void get(int n, double* v) const { *v = m_values_float[n]; }
 		void get(int n, int* v) const { *v = m_values_int[n]; }
+
+		void init(vtkDataArray::Format format, vtkDataArray::Types type, int components)
+		{
+			m_format = format;
+			m_type = type;
+			m_numComps = components;
+		}
 
 	public:
 		int	m_type;
@@ -113,6 +135,7 @@ namespace VTK {
 
 		enum CellType
 		{
+			VTK_INVALID = 0,
 			VTK_VERTEX = 1,
 			VTK_POLY_VERTEX = 2,
 			VTK_LINE = 3,
@@ -175,10 +198,10 @@ namespace VTK {
 		size_t Points() const { return m_points.size(); }
 		size_t Cells() const { return m_cell_offsets.size(); }
 
-		vec3d Point(int n) const
+		vtkPoint Point(int n) const
 		{
 			vtkDataArrayReader<double> p(m_points);
-			return vec3d(p[3 * n], p[3 * n + 1], p[3 * n + 2]);
+			return vtkPoint{ p[3 * n], p[3 * n + 1], p[3 * n + 2] };
 		}
 
 		vtkCell Cell(int n) const
@@ -187,10 +210,12 @@ namespace VTK {
 
 			if (m_cell_types.empty())
 			{
+				// This is for POLYDATA files
 				int n0 = (n > 0 ? m_cell_offsets.m_values_int[n - 1] : 0);
 				int n1 = m_cell_offsets.m_values_int[n];
 				cell.m_numNodes = n1 - n0;
-				cell.m_cellType = vtkCell::VTK_POLYGON;
+				if (cell.m_numNodes == 2) cell.m_cellType = vtkCell::VTK_LINE;
+				else cell.m_cellType = vtkCell::VTK_POLYGON;
 				int m = cell.m_numNodes;
 				for (int i = 0; i < m; ++i)
 				{
@@ -199,6 +224,7 @@ namespace VTK {
 			}
 			else
 			{
+				// This is for UNSTRUCTURED GRID files
 				m_cell_types.get(n, &cell.m_cellType);
 
 				int n0 = (n == 0 ? 0 : m_cell_offsets.m_values_int[n - 1]);
@@ -214,9 +240,13 @@ namespace VTK {
 			return cell;
 		}
 
+		std::string name() const { return m_name; }
+
 	public:
 		int m_numPoints;
 		int m_numCells;
+
+		std::string	m_name;
 
 		vtkDataArray	m_points;
 		vtkDataArray	m_cell_connect;

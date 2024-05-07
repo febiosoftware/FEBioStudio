@@ -24,58 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/FileReader.h>
 #include "VTKModel.h"
+#include <MeshLib/FEMesh.h>
 
-class XMLTag;
+namespace VTKTools {
 
-namespace VTK {
-
-	// Base class for reading XML formatted VTK files
-	class VTKFileReader : public FileReader
-	{
-	protected:
-		enum vtkByteOrder {
-			LittleEndian,
-			BigEndian
-		};
-
-		enum vtkCompressor {
-			NoCompression,
-			ZLibCompression
-		};
-
-		enum vtkDataType {
-			UInt32,
-			UInt64,
-			Float32
-		};
-
-	public:
-		const VTK::vtkModel& GetVTKModel() const;
-
-	protected:
-		VTKFileReader();
-
-	protected:
-		bool ParseFileHeader(XMLTag& tag);
-		bool ParseUnstructuredGrid(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePolyData(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePiece(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePoints(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParseCells(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParsePolys(XMLTag& tag, VTK::vtkPiece& piece);
-		bool ParseDataArray(XMLTag& tag, VTK::vtkDataArray& vtkDataArray);
-		bool ParseAppendedData(XMLTag& tag, VTK::vtkAppendedData& vtkAppendedData);
-		bool ProcessAppendedDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
-		bool ProcessDataArrays(VTK::vtkModel& vtk, VTK::vtkAppendedData& data);
-
-	protected:
-		vtkDataFileType	m_type;
-		std::string m_version;
-		vtkByteOrder m_byteOrder;
-		vtkDataType m_headerType;
-		vtkCompressor m_compressor;
-		vtkModel m_vtk;
-	};
+	FSMesh* BuildFEMesh(const VTK::vtkPiece& vtkMesh);
 }
