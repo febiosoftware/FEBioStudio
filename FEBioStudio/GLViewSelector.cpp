@@ -435,7 +435,7 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 	CCommand* pcmd = 0;
 	if (view.m_selectAndHide)
 	{
-		pcmd = new CCmdHideElements(pm, selectedElements);
+		pcmd = new CCmdHideElements(po, selectedElements);
 	}
 	else
 	{
@@ -970,7 +970,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 			{
 				if (view.m_selectAndHide)
 				{
-					pcmd = new CCmdHideElements(pm, elemList);
+					pcmd = new CCmdHideElements(po, elemList);
 				}
 				else
 				{
@@ -984,7 +984,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 			int num = (int)index;
 			if (view.m_selectAndHide)
 			{
-				pcmd = new CCmdHideElements(pm, { num });
+				pcmd = new CCmdHideElements(po, { num });
 			}
 			else
 			{

@@ -905,7 +905,7 @@ void CModelDocument::HideUnselected()
 				FSElement& el = pm->Element(i);
 				if (el.IsSelected() == false) elemList.push_back(i);
 			}
-			DoCommand(new CCmdHideElements(pm, elemList));
+			DoCommand(new CCmdHideElements(po, elemList));
 		}
 		else if (itemMode == ITEM_FACE)
 		{

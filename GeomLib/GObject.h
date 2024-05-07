@@ -28,9 +28,7 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include <FSCore/box.h>
 #include <vector>
-//using namespace std;
 
-//-----------------------------------------------------------------------------
 // forward declarations
 class FSElemSet;
 class FSSurface;
@@ -187,6 +185,9 @@ public:
 
 	// get the global bounding box
 	BOX GetGlobalBox() const;
+
+public:
+	void ShowElements(std::vector<int>& elemList, bool show);
 
 public:
 	// show the object

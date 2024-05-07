@@ -237,6 +237,32 @@ void GObject::BuildFERenderMesh()
 			}
 		}
 	}
+
+	// add the exposed surface from hidden elements
+	int maxSurfID = Faces(); // we assign this ID to the exposed surface
+	FSFace face;
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsVisible())
+		{
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				if (el.m_nbr[j] >= 0)
+				{
+					FSElement& elj = pm->Element(el.m_nbr[j]);
+					if (!elj.IsVisible())
+					{
+						el.GetFace(j, face);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID, 0, false, -1);
+					}
+				}
+			}
+		}
+	}
+
 	// NOTE: since we only add the visible faces, note that the partitions created in this mesh
 	// may not correspond to the surfaces of the geometry object
 	gm.Update();
@@ -1465,6 +1491,16 @@ void GObject::Reindex()
 		stringstream ss;
 		ss << "Node" << pg->GetID();
 		pg->SetName(ss.str());
+	}
+}
+
+void GObject::ShowElements(vector<int>& elemList, bool show)
+{
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		mesh->ShowElements(elemList, show);
+		BuildFERenderMesh();
 	}
 }
 

@@ -2326,20 +2326,30 @@ void CCmdShowParts::UnExecute()
 // CCmdHideElements
 //////////////////////////////////////////////////////////////////////
 
+CCmdHideElements::CCmdHideElements(GObject* po, const vector<int>& elemList) : CCommand("Hide")
+{
+	m_po = po;
+	m_mesh = po->GetFEMesh();
+	m_elemList = elemList;
+}
+
 CCmdHideElements::CCmdHideElements(FSMesh* mesh, const vector<int>& elemList) : CCommand("Hide")
 {
+	m_po = nullptr;
 	m_mesh = mesh;
 	m_elemList = elemList;
 }
 
 void CCmdHideElements::Execute()
 {
-	m_mesh->ShowElements(m_elemList, false);
+	if (m_po) m_po->ShowElements(m_elemList, false);
+	else m_mesh->ShowElements(m_elemList, false);
 }
 
 void CCmdHideElements::UnExecute()
 {
-	m_mesh->ShowElements(m_elemList, true);
+	if (m_po) m_po->ShowElements(m_elemList, true);
+	else m_mesh->ShowElements(m_elemList, true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2445,8 +2455,7 @@ void CCmdHideSelection::Execute()
 		break;
 	case ITEM_ELEM:
 	{
-		FSMesh* pm = po->GetFEMesh();
-		if (pm) pm->ShowElements(m_item, false);
+		po->ShowElements(m_item, false);
 	}
 	break;
 	case ITEM_FACE:
@@ -2482,7 +2491,7 @@ void CCmdHideSelection::UnExecute()
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			pm->ShowElements(m_item);
+			po->ShowElements(m_item, true);
 			pm->SelectElements(m_item);
 		}
 	}

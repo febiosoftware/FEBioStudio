@@ -416,7 +416,13 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			{
 				if (item == ITEM_ELEM)
 				{
-					RenderFEElements(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm)
+					{
+						RenderFEFacesFromGMesh(rc, po);
+					}
+					else
+						RenderFEElements(rc, po);
 				}
 				else if (item == ITEM_FACE)
 				{
@@ -2337,6 +2343,11 @@ void CGLModelScene::RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh)
 
 			m_renderer.RenderGLMesh(&mesh, i);
 		}
+	}
+
+	if (m_doc->GetItemMode() == ITEM_ELEM)
+	{
+		m_renderer.RenderGLMesh(&mesh, NF);
 	}
 }
 

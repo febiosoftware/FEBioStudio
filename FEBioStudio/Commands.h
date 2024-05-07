@@ -1050,12 +1050,14 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
+	CCmdHideElements(GObject* po, const vector<int>& elemList);
 	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GObject*		m_po;
 	FSMesh*			m_mesh;
 	vector<int>		m_elemList;
 };
