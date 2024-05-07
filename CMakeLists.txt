@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,23 +31,24 @@ endif()
 
 if(NOT CMAKE_PREFIX_PATH)
     if(WIN32)
-        find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
-            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-            PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
-            DOC "Qt CMake Directory"
-            NO_DEFAULT_PATH)
+      find_path(Qt_TEMP Qt6/Qt6Config.cmake
+        PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
+        PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
+        PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
+        DOC "Qt CMake Directory"
+        NO_DEFAULT_PATH)
     elseif(APPLE)
         find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
-            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
-                $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/*
+              $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
             PATH_SUFFIXES "clang_64"
             DOC "Qt6 CMake Directory"
             NO_DEFAULT_PATH)
     else()
-        find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+        find_path(Qt_TEMP cmake/Qt6/Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                 $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-            PATH_SUFFIXES "gcc_64"
+            PATH_SUFFIXES "gcc_64" "lib"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     endif()
@@ -72,6 +73,10 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
 endif()
 
 ##### Search for library and include directories #####
+
+if(WIN32)
+  list(APPEND CMAKE_PREFIX_PATH ${DEPENDENCIES})
+endif()
 
 include(FindDependencies.cmake)
 
@@ -273,19 +278,20 @@ if (WIN32)
     set(FEBio_DEBUG_LIBS "")
     set(FEBio_RELEASE_LIBS "")
 
-    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
-    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
+    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        find_library(TEMP NAMES ${name} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Debug NO_DEFAULT_PATH)
+        list(APPEND FEBio_DEBUG_LIBS ${TEMP})
+        unset(TEMP CACHE)
     endforeach(name)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        find_library(TEMP NAMES ${name} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
+        list(APPEND FEBio_RELEASE_LIBS ${TEMP})
+        unset(TEMP CACHE)
     endforeach(name)
 
     unset(FEBio_LIB_NAMES)
@@ -317,10 +323,12 @@ if(WIN32)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
     
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)
     endif()
+    add_compile_options(-w)
     
 else()
 	add_definitions(-DLINUX)
@@ -419,16 +427,13 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink VTKLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
 endforeach(name)
 
 ##### Add binaries #####
-
-# Linking the Qt libraries also pulls in the include files
-link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
 
 # set the name of the executable
 if (WIN32)
@@ -451,6 +456,7 @@ elseif(APPLE)
 	
 	add_executable(${FBS_BIN_NAME} MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+
 else()
 	add_executable(${FBS_BIN_NAME} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
@@ -518,6 +524,17 @@ endif()
 
 
 ##### Link Libraries #####
+
+# Linking the Qt libraries also pulls in the include files
+target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(CUILib Qt6::Widgets)
+target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(PostGL Qt6::Gui)
+target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(FSCore Qt6::Core)
+target_link_libraries(MeshIO Qt6::Core)
+target_link_libraries(MeshTools Qt6::Core)
+target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
 
 if(WIN32)
 elseif(APPLE)
@@ -640,11 +657,8 @@ endif()
 
 target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
 
-if(APPLE)
-    target_link_libraries(${FBS_BIN_NAME} ${GLEW_SHARED_LIBRARY_RELEASE} ${GLEW_LIBRARIES})
-else()
-    target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES})
-endif()
+
+target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
 
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
@@ -671,3 +685,39 @@ else()
     target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
 
+option(BUILD_UPDATER "Build updater" OFF)
+if(BUILD_UPDATER)
+    if(WIN32)
+        add_definitions(-DWIN32)
+    elseif(APPLE)
+        add_definitions(-D__APPLE__)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+    else()
+        add_definitions(-DLINUX)
+
+        set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
+        set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
+    endif()
+
+    set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
+        Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
+        FEBioStudio/ServerSettings.cpp)
+
+    add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
+    set_property(TARGET FEBioStudioUpdater PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudioUpdater_autogen)
+
+    add_executable(mvUtil "Updater/mvUtil.cpp")
+    set_property(TARGET mvUtil PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/mvUtil_autogen)
+
+    if(WIN32)
+        SET_TARGET_PROPERTIES(FEBioStudioUpdater PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS")
+        SET_TARGET_PROPERTIES(mvUtil PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator'\"")
+        target_link_options(FEBioStudioUpdater PRIVATE "/entry:mainCRTStartup")
+    endif()
+
+    target_include_directories(FEBioStudioUpdater PRIVATE "Updater")
+
+    findLib(FEBio_LIB_DIR XML_LIB xml)
+
+    target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
+endif()

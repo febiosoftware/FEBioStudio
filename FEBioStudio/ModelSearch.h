@@ -61,6 +61,9 @@ protected slots:
 	void onItemDoubleClicked(QTableWidgetItem* item);
 	void onItemClicked(QTableWidgetItem* item);
 
+signals:
+	void itemChanged();
+
 private:
 	CModelViewer*	m_view;
 	CModelTree*		m_tree;

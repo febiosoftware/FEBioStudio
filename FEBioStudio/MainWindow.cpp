@@ -1958,7 +1958,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-		settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
+		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -2092,7 +2092,9 @@ void CMainWindow::readSettings()
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
 		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
 		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-		vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
+		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
+		// alpha component used to not be stored so set it to default if zero
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -2349,8 +2351,7 @@ void CMainWindow::UpdateUIConfig()
 	}
 	else
 	{
-		// TODO: Huh?? 
-		ui->setUIConfig(Ui::Config::HTML_CONFIG);
+		ui->setUIConfig(Ui::Config::EMPTY_CONFIG);
 	}
 }
 
@@ -2504,6 +2505,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		}
 		else it++;
 	}
+
+	// clear highlights, just to be safe
+	GLHighlighter::ClearHighlights();
 
 	ui->ShowDefaultBackground();
 	ui->centralWidget->xmlEdit->setDocument(nullptr);
@@ -3388,8 +3392,9 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 void CMainWindow::onShowPartSelector()
 {
 	CModelDocument* doc = GetModelDocument();
-	CDlgPartSelector dlg(doc, this);
-	dlg.exec();
+	if (doc->GetSelectionMode() != SELECT_PART)
+		on_actionSelectParts_toggled(true);
+	ui->showPartSelector(doc);
 }
 
 void CMainWindow::checkJobProgress()
@@ -3498,10 +3503,107 @@ void CMainWindow::UpdateProgress(int n)
 	ui->progressBar->setValue(n);
 }
 
-
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
+
+	GLHighlighter::ClearHighlights();
+	if (ui->modelViewer->IsHighlightSelectionEnabled())
+	{
+		IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
+		if (il)
+		{
+			int itemLists = il->ItemLists();
+			for (int i = 0; i < itemLists; ++i)
+			{
+				int colorMode = (i == 0 ? 0 : 1);
+				FEItemListBuilder* pg = il->GetItemList(i);
+				GPartList* partList = dynamic_cast<GPartList*>(pg);
+				if (partList)
+				{
+					vector<GPart*> parts = partList->GetPartList();
+					for (GPart* part : parts)
+						GLHighlighter::PickItem(part, colorMode);
+				}
+
+				GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+				if (faceList)
+				{
+					vector<GFace*> faces = faceList->GetFaceList();
+					for (GFace* face : faces)
+						GLHighlighter::PickItem(face, colorMode);
+				}
+
+				GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+				if (edgeList)
+				{
+					vector<GEdge*> edges = edgeList->GetEdgeList();
+					for (GEdge* edge : edges)
+						GLHighlighter::PickItem(edge, colorMode);
+				}
+
+				GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+				if (nodeList)
+				{
+					vector<GNode*> nodes = nodeList->GetNodeList();
+					for (GNode* node : nodes)
+						GLHighlighter::PickItem(node, colorMode);
+				}
+
+				FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+				if (meshSelection)
+				{
+					GLHighlighter::PickItem(meshSelection, colorMode);
+				}
+			}
+		}
+		else if (dynamic_cast<FEItemListBuilder*>(po))
+		{
+			FEItemListBuilder* pg = dynamic_cast<FEItemListBuilder*>(po);
+			GPartList* partList = dynamic_cast<GPartList*>(pg);
+			if (partList)
+			{
+				vector<GPart*> parts = partList->GetPartList();
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part);
+			}
+
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+			if (faceList)
+			{
+				vector<GFace*> faces = faceList->GetFaceList();
+				for (GFace* face : faces)
+					GLHighlighter::PickItem(face);
+			}
+
+			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+			if (edgeList)
+			{
+				vector<GEdge*> edges = edgeList->GetEdgeList();
+				for (GEdge* edge : edges)
+					GLHighlighter::PickItem(edge);
+			}
+
+			GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+			if (nodeList)
+			{
+				vector<GNode*> nodes = nodeList->GetNodeList();
+				for (GNode* node : nodes)
+					GLHighlighter::PickItem(node);
+			}
+
+			FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+			if (meshSelection)
+			{
+				GLHighlighter::PickItem(meshSelection);
+			}
+		}
+		else if (dynamic_cast<GItem*>(po))
+		{
+			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
+		}
+	}
+	RedrawGL();
 }
 
 void CMainWindow::toggleOrtho()

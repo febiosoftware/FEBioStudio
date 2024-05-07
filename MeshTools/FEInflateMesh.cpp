@@ -117,7 +117,7 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
     FETetGenModifier mytg;
     mytg.SetElementSize(h);
     mytg.SetSplitFaces(false);
-    FSMesh* lumen = ConvertSurfaceToMesh(innerSurf);
+    FSMesh* lumen = MeshTools::ConvertSurfaceToMesh(innerSurf);
 	if (lumen == nullptr) { SetError("Failed to convert surface to mesh."); return nullptr; }
     lumen = mytg.Apply(lumen);
 	if (lumen == nullptr) { SetError("Failed to create tetmesh."); return nullptr; }

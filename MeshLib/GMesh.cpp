@@ -59,7 +59,7 @@ void GMesh::Clear()
 }
 
 //-----------------------------------------------------------------------------
-int GMesh::AddNode(const vec3d& r, int gid)
+int GMesh::AddNode(const vec3f& r, int gid)
 {
 	NODE v;
 	v.r = r;
@@ -70,7 +70,7 @@ int GMesh::AddNode(const vec3d& r, int gid)
 }
 
 //-----------------------------------------------------------------------------
-int GMesh::AddNode(const vec3d& r, int nodeID, int gid)
+int GMesh::AddNode(const vec3f& r, int nodeID, int gid)
 {
 	NODE v;
 	v.r = r;
@@ -228,7 +228,7 @@ void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
 }
 
 //-----------------------------------------------------------------------------
-void GMesh::AddFace(vec3d* r, int gid, int smoothId, bool bext)
+void GMesh::AddFace(vec3f* r, int gid, int smoothId, bool bext)
 {
 	int n[3];
 	n[0] = AddNode(r[0]);
@@ -241,76 +241,22 @@ void GMesh::AddFace(vec3d* r, int gid, int smoothId, bool bext)
 //-----------------------------------------------------------------------------
 void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 {
-	int n0 = AddNode(to_vec3d(r[0]));
-	int n1 = AddNode(to_vec3d(r[1]));
-	int n2 = AddNode(to_vec3d(r[2]));
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
 
 	FACE face;
 	face.n[0] = n0;
 	face.n[1] = n1;
 	face.n[2] = n2;
-	face.nn[0] = to_vec3d(n[0]);
-	face.nn[1] = to_vec3d(n[1]);
-	face.nn[2] = to_vec3d(n[2]);
+	face.vn[0] = n[0];
+	face.vn[1] = n[1];
+	face.vn[2] = n[2];
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
 	face.c[0] = face.c[1] = face.c[2] = c;
 	m_Face.push_back(face);
-}
-
-//-----------------------------------------------------------------------------
-// Update normals for specific faces that have a pid that is inside gid
-//
-void GMesh::UpdateNormals(int* pid, int nsize)
-{
-	int NN = (int) m_Node.size(), i;
-	for (i=0; i<NN; ++i) { m_Node[i].n = vec3d(0,0,0); m_Node[i].tag = 0; }
-
-	int NF = (int)m_Face.size();
-	for (i=0; i<NF; ++i)
-	{
-		FACE& f = m_Face[i];
-		f.tag = 0;
-		for (int k=0; k<nsize; ++k)
-		{
-			if (pid[k] == f.pid)
-			{
-				NODE& n0 = m_Node[f.n[0]];
-				NODE& n1 = m_Node[f.n[1]];
-				NODE& n2 = m_Node[f.n[2]];
-
-				n0.tag = 1;
-				n1.tag = 1;
-				n2.tag = 1;
-
-				vec3d& r0 = n0.r;
-				vec3d& r1 = n1.r;
-				vec3d& r2 = n2.r;
-
-				vec3d fn = (r1 - r0)^(r2 - r0);
-				fn.Normalize();
-				f.fn = fn;
-
-				n0.n += fn;
-				n1.n += fn;
-				n2.n += fn;
-
-				f.tag = 1;
-				break;
-			}
-		}
-	}
-
-	for (i=0; i<NN; ++i) if (m_Node[i].tag) m_Node[i].n.Normalize();
-
-	for (i=0; i<NF; ++i)
-	{
-		FACE& f = m_Face[i];
-		if (f.tag)
-		{
-			f.nn[0] = m_Node[f.n[0]].n;
-			f.nn[1] = m_Node[f.n[1]].n;
-			f.nn[2] = m_Node[f.n[2]].n;
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -329,14 +275,14 @@ void GMesh::UpdateNormals()
 		f.tag = -1;
 
 		// calculate the face normal
-		vec3d& r0 = Node(f.n[0]).r;
-		vec3d& r1 = Node(f.n[1]).r;
-		vec3d& r2 = Node(f.n[2]).r;
+		vec3f& r0 = Node(f.n[0]).r;
+		vec3f& r1 = Node(f.n[1]).r;
+		vec3f& r2 = Node(f.n[2]).r;
 		f.fn = (r1 - r0)^(r2 - r0);
 	}
 
 	//calculate the node normals
-	vector<vec3d> norm(NN, vec3d(0,0,0));
+	vector<vec3f> norm(NN, vec3f(0,0,0));
 
 	vector<FACE*> F(NF);
 	int FC = 0;
@@ -352,9 +298,9 @@ void GMesh::UpdateNormals()
 			for (int j = 0; j<FC; ++j)
 			{
 				FACE* pf2 = F[j];
-				norm[pf2->n[0]] = vec3d(0, 0, 0);
-				norm[pf2->n[1]] = vec3d(0, 0, 0);
-				norm[pf2->n[2]] = vec3d(0, 0, 0);
+				norm[pf2->n[0]] = vec3f(0, 0, 0);
+				norm[pf2->n[1]] = vec3f(0, 0, 0);
+				norm[pf2->n[2]] = vec3f(0, 0, 0);
 			}
 			FC = 0;
 
@@ -394,9 +340,9 @@ void GMesh::UpdateNormals()
 			{
 				FACE* pf2 = F[j];
 				assert(pf2->tag == nsg);
-				pf2->nn[0] = norm[pf2->n[0]];
-				pf2->nn[1] = norm[pf2->n[1]];
-				pf2->nn[2] = norm[pf2->n[2]];
+				pf2->vn[0] = norm[pf2->n[0]];
+				pf2->vn[1] = norm[pf2->n[1]];
+				pf2->vn[2] = norm[pf2->n[2]];
 			}
 
 			++nsg;
@@ -408,53 +354,11 @@ void GMesh::UpdateNormals()
 	{
 		FACE& f = m_Face[i];
 		f.fn.Normalize();
-		f.nn[0].Normalize();
-		f.nn[1].Normalize();
-		f.nn[2].Normalize();
+		f.vn[0].Normalize();
+		f.vn[1].Normalize();
+		f.vn[2].Normalize();
 	}
 }
-
-/*
-//-----------------------------------------------------------------------------
-// Update normals for all faces using smoothing groups
-void GMesh::UpdateNormals()
-{
-	int NN = m_Node.size(), i;
-	for (i=0; i<NN; ++i) m_Node[i].n = vec3d(0,0,0);
-
-	int NF = m_Face.size();
-	for (i=0; i<NF; ++i)
-	{
-		FACE& f = m_Face[i];
-
-		NODE& n0 = m_Node[f.n[0]];
-		NODE& n1 = m_Node[f.n[1]];
-		NODE& n2 = m_Node[f.n[2]];
-
-		vec3d& r0 = n0.r;
-		vec3d& r1 = n1.r;
-		vec3d& r2 = n2.r;
-
-		vec3d fn = (r1 - r0)^(r2 - r0);
-		fn.Normalize();
-		f.fn = fn;
-
-		n0.n += fn;
-		n1.n += fn;
-		n2.n += fn;
-	}
-
-	for (i=0; i<NN; ++i) m_Node[i].n.Normalize();
-
-	for (i=0; i<NF; ++i)
-	{
-		FACE& f = m_Face[i];
-		f.nn[0] = m_Node[f.n[0]].n;
-		f.nn[1] = m_Node[f.n[1]].n;
-		f.nn[2] = m_Node[f.n[2]].n;
-	}
-}
-*/
 
 //-----------------------------------------------------------------------------
 bool CmpFace(GMesh::FACE f1, GMesh::FACE f2)
@@ -490,6 +394,14 @@ void GMesh::Update()
 		}
 		m_FIL[0].first = 0;
 		for (int i=1; i<FID; ++i) m_FIL[i].first = m_FIL[i-1].first + m_FIL[i-1].second;
+
+		for (int i = 0; i < NF; ++i)
+		{
+			FACE& face = m_Face[i];
+			face.vr[0] = m_Node[face.n[0]].r;
+			face.vr[1] = m_Node[face.n[1]].r;
+			face.vr[2] = m_Node[face.n[2]].r;
+		}
 	}
 
 	int NE = (int)m_Edge.size();
@@ -514,6 +426,13 @@ void GMesh::Update()
 			}
 			m_EIL[0].first = 0;
 			for (int i=1; i<EID; ++i) m_EIL[i].first = m_EIL[i-1].first + m_EIL[i-1].second;
+		}
+
+		for (int i = 0; i < NE; ++i)
+		{
+			EDGE& edge = m_Edge[i];
+			edge.vr[0] = m_Node[edge.n[0]].r;
+			edge.vr[1] = m_Node[edge.n[1]].r;
 		}
 	}
 
@@ -645,7 +564,7 @@ void GMesh::UpdateBoundingBox()
 		m_box.z0 = m_box.z1 = m_Node[0].r.z;
 
 		int N = (int) m_Node.size();
-		for (int i=0; i<N; ++i) m_box += m_Node[i].r;
+		for (int i=0; i<N; ++i) m_box += to_vec3d(m_Node[i].r);
 	}
 }
 

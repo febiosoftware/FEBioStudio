@@ -349,6 +349,15 @@ public:
 		int				m_ampl = -1;
 	};
 
+	struct CONTACT_PAIR
+	{
+		string	name;
+		string surf1;
+		string surf2;
+
+		double friction = 0.0;
+	};
+
 	// Steps
 	struct STEP
 	{
@@ -464,6 +473,11 @@ public:
 	const Amplitude& GetAmplitude(int n) const;
 	int FindAmplitude(const char* szname) const;
 
+public:
+	void AddContactPair(CONTACT_PAIR& cp);
+	int ContactPairs() const;
+	const CONTACT_PAIR& GetContactPair(int n) const;
+
 private:
 	FSModel*	m_fem;		// the model
 
@@ -480,4 +494,5 @@ private:	// physics
 	list<STEP>			m_Step;			// steps
 	STEP*				m_currentStep;	// current step
 	std::vector<Amplitude>		m_Amp;
+	std::vector<CONTACT_PAIR>	m_ContactPair;
 };

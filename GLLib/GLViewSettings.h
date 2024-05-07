@@ -110,7 +110,7 @@ struct GLViewSettings
 
 	GLColor	m_col1, m_col2;		//!< background colors
 	GLColor	m_fgcol;			//!< foreground color
-	GLColor	m_mcol;				//!< mesh line color
+	GLColor	m_meshColor;		//!< mesh line color
 	int		m_nbgstyle;			//!< back ground style
 	float	m_node_size;		//!< size of nodes when displayed
 	float	m_line_size;		//!< line size
@@ -128,6 +128,8 @@ struct GLViewSettings
 
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
+
+	bool	m_selectAndHide;
 
 	// lighting settings
 	bool	m_bLighting;	// use lighting or not

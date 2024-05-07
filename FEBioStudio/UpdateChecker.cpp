@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QXmlStreamReader>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextEdit>
 #include <QDialogButtonBox>
 #include <QPushButton>
@@ -41,32 +42,12 @@ SOFTWARE.*/
 #include "ServerSettings.h"
 #include "version.h"
 
-#ifdef WIN32
-	#define URL_BASE "/update2/FEBioStudio2/Windows"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
-	#define UPDATER_BASE "/update2/Updater2/Windows"
-	#define REL_ROOT "\\..\\"
-	#define UPDATER "/FEBioStudioUpdater.exe"
-#elif __APPLE__
-	#define URL_BASE "/update2/FEBioStudio2/macOS"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
-	#define UPDATER_BASE "/update2/Updater2/macOS"
-	#define REL_ROOT "/../../../"
-	#define UPDATER "/FEBioStudioUpdater"
-#else
-	#define URL_BASE "/update2/FEBioStudio2/Linux"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
-	#define UPDATER_BASE "/update2/Updater2/Linux"
-	#define REL_ROOT "/../"
-	#define UPDATER "/FEBioStudioUpdater"
-#endif
-
-
 #include <iostream>
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
     : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
-	devChannel(false), updaterUpdateCheck(false), doingUpdaterUpdate(false), urlBase(URL_BASE), updaterBase(UPDATER_BASE)
+	devChannel(false), updaterUpdateCheck(false), doingUpdaterUpdate(false), urlBase(URL_BASE), updaterBase(UPDATER_BASE),
+    m_askSDK(false), m_getSDK(nullptr)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
@@ -110,10 +91,11 @@ bool CUpdateWidget::NetworkAccessibleCheck()
 	return true;
 }
 
-void CUpdateWidget::checkForUpdate(bool dev, bool upCheck)
+void CUpdateWidget::checkForUpdate(bool dev, bool checkSDK, bool upCheck)
 {
 	updaterUpdateCheck = upCheck;
 	devChannel = dev;
+    m_askSDK = checkSDK;
 
 	if(updaterUpdateCheck)
 	{
@@ -216,6 +198,13 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 						else if(reader.name() == RELEASEMSG)
 						{
 							release.releaseMsg = reader.readElementText();
+						}
+                        else if(reader.name() == SDK)
+						{
+                            release.hasSDK = true;
+                            
+                            release.sdk.size = reader.attributes().value("size").toLongLong();
+							release.sdk.name = reader.readElementText();
 						}
 						else if(reader.name() == FEBFILES)
 						{
@@ -320,6 +309,7 @@ void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
+        return;
 	}
 
 	QXmlStreamReader reader(r->readAll());
@@ -438,6 +428,8 @@ void CUpdateWidget::ReadLastUpdateInfo()
 
 void CUpdateWidget::showUpdateInfo()
 {
+    bool newSDK = false;
+    
     // Find unique files that need to be downloaded or deleted
     for(auto release : releases)
     {
@@ -458,6 +450,13 @@ void CUpdateWidget::showUpdateInfo()
                 {
                     deleteFiles.append(file);
                 }
+            }
+
+            // Only grab the latest sdk
+            if(release.hasSDK && !newSDK)
+            {
+                newSDK = true;
+                m_sdk = release.sdk;
             }
         }
     }
@@ -561,8 +560,19 @@ void CUpdateWidget::showUpdateInfo()
 	}
 
     layout->addStretch(10);
-    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
 
+    if(m_askSDK && newSDK)
+    {
+        bool hasSDK = QFileInfo::exists(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk");
+
+        QString msg("Download FEBio SDK (%1)");
+        if(hasSDK) msg = "Update FEBio SDK (%1)";
+
+        layout->addWidget(m_getSDK = new QCheckBox(msg.arg(locale().formattedDataSize(m_sdk.size))));
+        m_getSDK->setChecked(hasSDK);
+    }
+
+    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
     
     emit ready(true);
 }

@@ -134,7 +134,7 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 			bar->show();
 		}
 
-		if (oldvec != m_nvec) Update();
+		Update();
 	}
 	else
 	{

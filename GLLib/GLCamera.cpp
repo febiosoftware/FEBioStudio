@@ -81,8 +81,6 @@ void CGLCamera::Reset()
 	m_bdecal = false;
 	m_bortho = false;
 
-	m_depthScale = 0.9999;
-
 	m_isMoving = false;
 }
 
@@ -140,8 +138,11 @@ void CGLCamera::Update(bool bhit)
 // set line-draw or decal mode
 void CGLCamera::LineDrawMode(bool b)
 { 
-	m_bdecal = b; 
-	glDepthRange(0.0, (b ? m_depthScale : 1.0));
+	m_bdecal = b;
+	if (m_bdecal)
+		glPolygonOffset(0, 0);
+	else
+		glPolygonOffset(1, 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -156,7 +157,10 @@ void CGLCamera::PositionInScene()
 	vec3d r = Target();
 	
 	// zoom-in a little when in decal mode
-//	if (m_bdecal) r.z *= .999;
+	if (m_bdecal)
+		glPolygonOffset(0, 0);
+	else
+		glPolygonOffset(1, 1);
 
 	// position the target in camera coordinates
 	glx::translate(-r);

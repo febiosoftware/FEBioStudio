@@ -162,7 +162,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 						if (*pf == -1) break;
 
 						// calculate nodal positions
-						vec3d r[3];
+						vec3f r[3];
 						float w1, w2, w;
 						for (int k = 0; k < 3; k++)
 						{
@@ -177,7 +177,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 							else
 								w = 0.f;
 
-							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+							r[k] = to_vec3f(ex[n1] * (1 - w) + ex[n2] * w);
 						}
 
 						int nf = planeCut->Faces();

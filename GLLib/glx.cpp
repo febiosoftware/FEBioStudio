@@ -188,13 +188,6 @@ void glx::line(const vec3d& a, const vec3d& b)
 }
 
 //-----------------------------------------------------------------------------
-void glx::line(const vec3f& a, const vec3f& b)
-{
-	glVertex3f(a.x, a.y, a.z);
-	glVertex3f(b.x, b.y, b.z);
-}
-
-//-----------------------------------------------------------------------------
 void glx::drawArc(const vec3d& c, double R, double w0, double w1, int N)
 {
 	glBegin(GL_LINE_STRIP);

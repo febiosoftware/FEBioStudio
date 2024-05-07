@@ -1022,6 +1022,7 @@ protected:
 class CCmdHideParts : public CCommand
 {
 public:
+	CCmdHideParts(GModel* model, GPart* part);
 	CCmdHideParts(GModel* model, std::list<GPart*> partList);
 
 	void Execute();

@@ -106,7 +106,7 @@ GMesh* triangulate(GTriangulate& c)
 	for (int i=0; i<N; ++i)
 	{
 		GMesh::NODE& n = pm->Node(i);
-		n.r = c.Node(i).r;
+		n.r = to_vec3f(c.Node(i).r);
 		n.pid = c.Node(i).nid;
 		c.Node(i).ntag = i+1;
 	}
@@ -411,10 +411,10 @@ GMesh* triangulate(GFace& face)
 	// Position the face at the correct position
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		vec3d r = pm->Node(i).r;
+		vec3d r = to_vec3d(pm->Node(i).r);
 		qi.RotateVector(r);
 		r += rc;
-		pm->Node(i).r = r;
+		pm->Node(i).r = to_vec3f(r);
 	}
 
 	// set the proper face IDs

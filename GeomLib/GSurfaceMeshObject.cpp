@@ -402,7 +402,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		FSNode& node = pm->Node(i);
-		gmesh->AddNode(node.r, node.m_gid);
+		gmesh->AddNode(to_vec3f(node.r), node.m_gid);
 	}
 
 	// create edges
@@ -1014,7 +1014,7 @@ FSSurfaceMesh* createSurfaceMesh(GMesh* glmesh)
 	{
 		FSNode& nodei = pm->Node(i);
 		const GMesh::NODE& glnode = glmesh->Node(i);
-		nodei.r = glnode.r;
+		nodei.r = to_vec3d(glnode.r);
 	}
 
 	for (int i = 0; i < NF; ++i)

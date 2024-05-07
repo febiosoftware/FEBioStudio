@@ -38,7 +38,6 @@ SOFTWARE.*/
 #define stricmp strcmp
 #endif
 
-//=============================================================================
 template <> void string_to_type<vec2i>(const std::string& s, vec2i& v)
 {
 	sscanf(s.c_str(), "%d,%d", &v.x, &v.y);
@@ -2720,6 +2719,8 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 		}
 		else ParseUnknownTag(tag);
 
+		pmc->UpdateData(false);
+
 		return;
 	}
 
@@ -2750,6 +2751,18 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						{
 							FSSurface* surf = po->FindFESurface(surfName);
 							pms->SetItemList(surf);
+						}
+					}
+					else if (prop->GetSuperClassID() == FEEDGE_ID)
+					{
+						const char* edgeName = tag.szvalue();
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop->GetComponent());
+
+						GMeshObject* po = GetFEBioModel().GetInstance(0)->GetGObject();
+						if (po)
+						{
+							FSEdgeSet* set = po->FindFEEdgeSet(edgeName);
+							pms->SetItemList(set);
 						}
 					}
 					else

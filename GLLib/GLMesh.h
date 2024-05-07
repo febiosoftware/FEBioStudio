@@ -87,6 +87,7 @@ public:
 	void AddVertex(const vec3f& r);
 	void AddVertex(const vec3d& r);
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
+	void AddVertex(const vec3f& r, const vec3f& n, const GLColor& c);
 	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
 	void AddVertex(const vec3f& r, float tex);
@@ -177,6 +178,14 @@ inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
+	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
+}
+
+inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 

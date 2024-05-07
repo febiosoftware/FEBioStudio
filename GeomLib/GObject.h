@@ -179,6 +179,9 @@ public:
 	// get the render mesh
 	GMesh*	GetRenderMesh();
 
+	// get the mesh for rendering mesh lines
+	GMesh* GetLineRenderMesh();
+
 	// get the local bounding box 
 	BOX GetLocalBox() const;
 
@@ -222,6 +225,8 @@ protected:
 
 	void SetValidFlag(bool b);
 
+	void BuildLineRenderMesh();
+
 public:
 	// --- G R O U P S ---
 	int FEPartSets() const;
@@ -257,6 +262,7 @@ public:
 	FSGroup* FindFEGroup(int nid);
 
 	FSSurface* FindFESurface(const string& szname);
+	FSEdgeSet* FindFEEdgeSet(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
 	void ClearFEPartSets();

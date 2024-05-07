@@ -53,11 +53,11 @@ public:
 	{
 		r = ((c >> 24) & 0xFF);
 		g = ((c >> 16) & 0xFF);
-		b = ((c >> 8) & 0xFF);
-		a = 255;
+		b = ((c >>  8) & 0xFF);
+		a = ((c      ) & 0xFF);
 	}
 
-	unsigned int to_uint() { return (int)(((((r << 8) | g) << 8) | b) << 8); }
+	unsigned int to_uint() { return (unsigned int)((r << 24) | (g << 16) | (b << 8) | a); }
 
 	static GLColor White() { return GLColor(255, 255, 255); }
 	static GLColor FromRGBf(float r, float g, float b) { return GLColor((uint8_t)(r*255.f), (uint8_t)(g*255.f), (uint8_t)(b*255.f)); }

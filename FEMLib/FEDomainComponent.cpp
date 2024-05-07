@@ -47,6 +47,15 @@ void FSDomainComponent::Save(OArchive& ar)
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveProperties(ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -70,6 +79,9 @@ void FSDomainComponent::Load(IArchive& ar)
 		case SELECTION_TYPE: { unsigned int itemType = 0; ar.read(itemType); SetMeshItemType(itemType); } break;
 		case PARAMS:
 			ParamContainer::Load(ar);
+			break;
+		case CID_PROPERTY_LIST:
+			LoadProperties(ar);
 			break;
 		case LIST_ID:
 		{

@@ -1646,6 +1646,7 @@ void FSMesh::Save(OArchive &ar)
 	int elemsets = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
+	int edgesets = po->FEEdgeSets();
 
 	// write the element sets
 	if (elemsets > 0)
@@ -1700,6 +1701,26 @@ void FSMesh::Save(OArchive &ar)
 
 				// store the group data
 				ar.BeginChunk(CID_MESH_SURFACE);
+				{
+					pg->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	if (edgesets > 0)
+	{
+		ar.BeginChunk(CID_MESH_EDGESET_SECTION);
+		{
+			for (int i = 0; i < edgesets; ++i)
+			{
+				// get the boundary condition
+				FSEdgeSet* pg = po->GetFEEdgeSet(i);
+
+				// store the group data
+				ar.BeginChunk(CID_MESH_EDGESET);
 				{
 					pg->Save(ar);
 				}
@@ -2339,6 +2360,22 @@ void FSMesh::Load(IArchive& ar)
 				}			
 			}
 			break;
+		case CID_MESH_EDGESET_SECTION:
+		{
+			// TODO: move to GObject serialization
+			FSEdgeSet* pg = 0;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				pg = 0;
+				assert(ar.GetChunkID() == CID_MESH_EDGESET);
+				pg = new FSEdgeSet(po);
+				pg->Load(ar);
+				po->AddFEEdgeSet(pg);
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_MESH_NSET_SECTION:
 			{
 				// TODO: move to GObject serialization
@@ -2517,7 +2554,7 @@ FEPartData* FSMesh::FindPartDataField(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
+FSMesh* MeshTools::ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 {
 	int nodes = surfaceMesh->Nodes();
 	int faces = surfaceMesh->Faces();
@@ -2725,4 +2762,91 @@ void FSMesh::ClearELT()
 		m_eltmin = 0;
 		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
 	}
+}
+
+std::vector<int> MeshTools::GetConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax)
+{
+	FEElement_* pe, * pe2;
+	int elems = pm->Elements();
+	vector<int> elemList; elemList.reserve(elems);
+
+	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
+	std::stack<FEElement_*> stack;
+
+	// push the first element to the stack
+	pe = pm->ElementPtr(startIndex);
+	pe->m_ntag = -1;
+	elemList.push_back(startIndex);
+	stack.push(pe);
+
+	double tr = -2;
+	vec3d t(0, 0, 0);
+	if (pe->IsShell())
+	{
+		assert(pe->m_face[0] >= 0);
+		t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI * fconn / 180.0);
+	}
+
+	// get the respect partition boundary flag
+	int gid = pe->m_gid;
+
+	// now push the rest
+	int n;
+	while (!stack.empty())
+	{
+		pe = stack.top(); stack.pop();
+
+		// solid elements
+		n = pe->Faces();
+		for (int i = 0; i < n; ++i)
+			if (pe->m_nbr[i] >= 0)
+			{
+				pe2 = pm->ElementPtr(pe->m_nbr[i]);
+				if (pe2->m_ntag >= 0 && pe2->IsVisible())
+				{
+					if ((exteriorOnly == false) || pe2->IsExterior())
+					{
+						int fid2 = -1;
+						if (pe->m_face[i] >= 0)
+						{
+							FSFace& f2 = pm->Face(pe->m_face[i]);
+							fid2 = f2.m_gid;
+						}
+
+						if ((bpart == false) || ((pe2->m_gid == gid) && (fid2 == -1)))
+						{
+							elemList.push_back(pe2->m_ntag);
+							pe2->m_ntag = -1;
+							stack.push(pe2);
+						}
+					}
+				}
+			}
+
+		// shell elements
+		n = pe->Edges();
+		for (int i = 0; i < n; ++i)
+			if (pe->m_nbr[i] >= 0)
+			{
+				pe2 = pm->ElementPtr(pe->m_nbr[i]);
+				if (pe2->m_ntag >= 0 && pe2->IsVisible())
+				{
+					int eface = pe2->m_face[0]; assert(eface >= 0);
+					if (eface >= 0)
+					{
+						if ((bmax == false) || (pm->Face(eface).m_fn * to_vec3f(t) >= tr))
+						{
+							if ((bpart == false) || (pe2->m_gid == gid))
+							{
+								elemList.push_back(pe2->m_ntag);
+								pe2->m_ntag = -1;
+								stack.push(pe2);
+							}
+						}
+					}
+				}
+			}
+	}
+
+	return elemList;
 }

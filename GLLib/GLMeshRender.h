@@ -39,6 +39,7 @@ class FSMeshBase;
 class GMesh;
 class CGLContext;
 class FSMesh;
+class Transform;
 
 class GLMeshRender
 {
@@ -74,16 +75,20 @@ public:
 	void RenderGLMesh(GMesh* pm, int nid = -1);
 	void RenderGLEdges(GMesh* pm, int nid = -1);
 	void RenderOutline(CGLContext& rc, GMesh* pm, bool outline = false);
+	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
 	void RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f);
+	void RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList);
 
 public:
 	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
 
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
+
+	void RenderMeshLines(const GMesh& m);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderGMeshLines(GMesh* pm);

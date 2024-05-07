@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <FECore/FETransform.h>
 
 // drawing routines for faces
 // Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
@@ -165,6 +166,7 @@ void GLMeshRender::SetRenderMode(RenderMode mode)
 		glEnable(GL_POLYGON_STIPPLE);
 		break;
 	case OutlineMode:
+		glDisable(GL_POLYGON_STIPPLE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		break;
@@ -200,7 +202,7 @@ void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEEle
 void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f)
 {
 	glBegin(GL_TRIANGLES);
-	for (size_t i : elemList)
+	for (int i : elemList)
 	{
 		FEElement_& el = mesh.Element(i);
 		if (f(el)) RenderElement(&el, &mesh, false);
@@ -2050,13 +2052,9 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 			for (int i = 0; i < NF; ++i)
 			{
 				GMesh::FACE& f = pm->Face(i);
-				vec3d r[3];
-				r[0] = pm->Node(f.n[0]).r;
-				r[1] = pm->Node(f.n[1]).r;
-				r[2] = pm->Node(f.n[2]).r;
-				glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3d(r[0].x, r[0].y, r[0].z);
-				glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3d(r[1].x, r[1].y, r[1].z);
-				glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3d(r[2].x, r[2].y, r[2].z);
+				glNormal3f(f.vn[0].x, f.vn[0].y, f.vn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3f(f.vr[0].x, f.vr[0].y, f.vr[0].z);
+				glNormal3f(f.vn[1].x, f.vn[1].y, f.vn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3f(f.vr[1].x, f.vr[1].y, f.vr[1].z);
+				glNormal3f(f.vn[2].x, f.vn[2].y, f.vn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3f(f.vr[2].x, f.vr[2].y, f.vr[2].z);
 			}
 		}
 		glEnd();
@@ -2072,13 +2070,9 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 				for (int i = 0; i < NF; ++i)
 				{
 					const GMesh::FACE& f = pm->Face(i + fil.first);
-					vec3d r[3];
-					r[0] = pm->Node(f.n[0]).r;
-					r[1] = pm->Node(f.n[1]).r;
-					r[2] = pm->Node(f.n[2]).r;
-					glNormal3f(f.nn[0].x, f.nn[0].y, f.nn[0].z); glVertex3d(r[0].x, r[0].y, r[0].z);
-					glNormal3f(f.nn[1].x, f.nn[1].y, f.nn[1].z); glVertex3d(r[1].x, r[1].y, r[1].z);
-					glNormal3f(f.nn[2].x, f.nn[2].y, f.nn[2].z); glVertex3d(r[2].x, r[2].y, r[2].z);
+					glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+					glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+					glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
 				}
 			}
 			glEnd();
@@ -2109,7 +2103,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 {
-	vec3d r0, r1;
+	vec3f r0, r1;
 	if (pm == 0) return;
 	int N = (int)pm->Edges();
 	if (N == 0) return;
@@ -2124,8 +2118,8 @@ void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 				{
 					r0 = pm->Node(e.n[0]).r;
 					r1 = pm->Node(e.n[1]).r;
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3f(r0.x, r0.y, r0.z);
+					glVertex3f(r1.x, r1.y, r1.z);
 				}
 			}
 		}
@@ -2164,7 +2158,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 	vec3d p = cam.GlobalPosition();
 
 	// this array will collect all points to render
-	vector<vec3d> points; points.reserve(1024);
+	vector<vec3f> points; points.reserve(1024);
 
 	// loop over all faces
 	for (int i = 0; i < pm->Faces(); ++i)
@@ -2181,36 +2175,34 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 			}
 			else if (outline)
 			{
-				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-				vec3d n1 = f.fn;
-				vec3d n2 = f2.fn;
+				int j1 = (j + 1) % 3;
+				if (f.n[j] < f.n[j1])
+				{
+					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+					vec3d n1 = to_vec3d(f.fn);
+					vec3d n2 = to_vec3d(f2.fn);
 
-				if (cam.IsOrtho())
-				{
-					q.RotateVector(n1);
-					q.RotateVector(n2);
-					if (n1.z * n2.z <= 0) bdraw = true;
-				}
-				else
-				{
-					int a = j;
-					int b = (j + 1) % 3;
-					vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r)* 0.5;
-					vec3d pc = p - c;
-					double d1 = pc * n1;
-					double d2 = pc * n2;
-					if (d1 * d2 <= 0) bdraw = true;
+					if (cam.IsOrtho())
+					{
+						q.RotateVector(n1);
+						q.RotateVector(n2);
+						if (n1.z * n2.z <= 0) bdraw = true;
+					}
+					else
+					{
+						vec3d c = to_vec3d((f.vr[j] + f.vr[j1]) * 0.5f);
+						vec3d pc = p - c;
+						double d1 = pc * n1;
+						double d2 = pc * n2;
+						if (d1 * d2 <= 0) bdraw = true;
+					}
 				}
 			}
 
 			if (bdraw)
 			{
-				int a = f.n[j];
-				int b = f.n[(j + 1) % 3];
-				if (a > b) { a ^= b; b ^= a; a ^= b; }
-
-				points.push_back(pm->Node(a).r);
-				points.push_back(pm->Node(b).r);
+				points.push_back(f.vr[j]);
+				points.push_back(f.vr[(j+1)%3]);
 			}
 		}
 	}
@@ -2218,7 +2210,92 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.Create(points.size() / 2);
+	lineMesh.Create((int)points.size() / 2);
+	lineMesh.BeginMesh();
+	for (auto& p : points) lineMesh.AddVertex(p);
+	lineMesh.EndMesh();
+
+	// render the active edges
+	lineMesh.Render();
+}
+
+void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID)
+{
+	// get some settings
+	CGLCamera& cam = *rc.m_cam;
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
+
+	// this array will collect all points to render
+	vector<vec3f> points; points.reserve(1024);
+
+	pair<int, int> fil = pm->m_FIL[surfID];
+	int NF = fil.second;
+	if (NF > 0)
+	{
+		// loop over all faces
+		for (int i = 0; i < NF; ++i)
+		{
+			const GMesh::FACE& f = pm->Face(i + fil.first);
+			for (int j = 0; j < 3; ++j)
+			{
+				bool bdraw = false;
+
+				if (f.nbr[j] < 0)
+				{
+					bdraw = true;
+				}
+				else
+				{
+					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+
+					if (f.pid != f2.pid)
+					{
+						bdraw = true;
+					}
+					else
+					{
+						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+						vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
+
+						if (cam.IsOrtho())
+						{
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0) bdraw = true;
+						}
+						else
+						{
+							int a = j;
+							int b = (j + 1) % 3;
+							vec3d ra = T.LocalToGlobal(to_vec3d(pm->Node(f.n[a]).r));
+							vec3d rb = T.LocalToGlobal(to_vec3d(pm->Node(f.n[b]).r));
+							vec3d c = (ra + rb) * 0.5;
+							vec3d pc = p - c;
+							double d1 = pc * n1;
+							double d2 = pc * n2;
+							if (d1 * d2 <= 0) bdraw = true;
+						}
+					}
+				}
+
+				if (bdraw)
+				{
+					int a = f.n[j];
+					int b = f.n[(j + 1) % 3];
+					if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+					points.push_back(pm->Node(a).r);
+					points.push_back(pm->Node(b).r);
+				}
+			}
+		}
+	}
+	if (points.empty()) return;
+
+	// build the line mesh
+	GLLineMesh lineMesh;
+	lineMesh.Create((int)points.size() / 2);
 	lineMesh.BeginMesh();
 	for (auto& p : points) lineMesh.AddVertex(p);
 	lineMesh.EndMesh();
@@ -2237,10 +2314,13 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
 
+	int NN = mesh->Nodes();
+	vector<int> selectedNodes; selectedNodes.reserve(NN);
+
 	glBegin(GL_POINTS);
 	{
 		// render unselected nodes first
-		glColor3ub(0, 0, 255);
+		glColor4ub(0, 0, 255, 128);
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			FSNode& node = mesh->Node(i);
@@ -2248,27 +2328,28 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 			{
 				if (node.IsSelected() == false)
 					glx::vertex3d(node.r);
+				else
+					selectedNodes.push_back(i);
 			}
 		}
 	}
 	glEnd();
-
-	// render selected nodes next
-	glDisable(GL_DEPTH_TEST);
-	glBegin(GL_POINTS);
+	
+	if (!selectedNodes.empty())
 	{
-		glColor3ub(255, 0, 0);
-		for (int i = 0; i < mesh->Nodes(); ++i)
+		// render selected nodes next
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_POINTS);
 		{
-			FSNode& node = mesh->Node(i);
-			if (node.m_ntag)
+			glColor3ub(255, 0, 0);
+			for (int i : selectedNodes)
 			{
-				if (node.IsSelected())
-					glx::vertex3d(node.r);
+				FSNode& node = mesh->Node(i);
+				glx::vertex3d(node.r);
 			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glPointSize(old_size);
 
@@ -2287,6 +2368,23 @@ void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNo
 		{
 			FSNode& node = mesh.Node(i);
 			if (f(node)) glx::vertex3d(node.r);
+		}
+	}
+	glEnd();
+	glPointSize(old_size);
+}
+
+void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList)
+{
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	glBegin(GL_POINTS);
+	{
+		for (int i : nodeList)
+		{
+			FSNode& node = mesh.Node(i);
+			glx::vertex3d(node.r);
 		}
 	}
 	glEnd();
@@ -2344,7 +2442,22 @@ void GLMeshRender::RenderUnselectedFEEdges(FSLineMesh* pm)
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
+void GLMeshRender::RenderMeshLines(const GMesh& m)
+{
+	int NE = m.Edges();
+	if (NE == 0) return;
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glBegin(GL_LINES);
+	for (int i = 0; i < NE; i++)
+	{
+		const GMesh::EDGE& e = m.Edge(i);
+		glx::line(e.vr[0], e.vr[1]);
+	}
+	glEnd();
+	glPopAttrib();
+}
+
 void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 {
 	if (pm == 0) return;
@@ -2354,8 +2467,9 @@ void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// loop over all faces
+	int NF = pm->Faces();
 	glBegin(GL_LINES);
-	for (int i = 0; i<pm->Faces(); i++)
+	for (int i = 0; i<NF; i++)
 	{
 		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
@@ -2700,7 +2814,7 @@ void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElem
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.Create(points.size() / 2);
+	lineMesh.Create((int)points.size() / 2);
 	lineMesh.BeginMesh();
 	for (auto& v : points) lineMesh.AddVertex(v);
 	lineMesh.EndMesh();
@@ -2732,7 +2846,7 @@ void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceLis
 	if (faceList.empty()) return;
 	glBegin(GL_TRIANGLES);
 	{
-		for (size_t i : faceList)
+		for (int i : faceList)
 		{
 			FSFace& face = pm->Face(i);
 			RenderFEFace(face, pm);
@@ -2746,8 +2860,8 @@ void GLMeshRender::RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace
 {
 	glBegin(GL_TRIANGLES);
 	{
-		size_t faces = pm->Faces();
-		for (size_t i = 0; i<faces; ++i)
+		int faces = (int)pm->Faces();
+		for (int i = 0; i<faces; ++i)
 		{
 			FSFace& face = pm->Face(i);
 			if (f(face)) RenderFEFace(face, pm);
@@ -2762,7 +2876,7 @@ void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceLis
 	if (faceList.empty()) return;
 	glBegin(GL_TRIANGLES);
 	{
-		for (size_t i : faceList)
+		for (int i : faceList)
 		{
 			FSFace& face = pm->Face(i);
 			if (f(face)) RenderFEFace(face, pm);
@@ -2778,7 +2892,7 @@ void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, const std::vector<int>& faceLis
 	GLColor c[FSFace::MAX_NODES];
 	glBegin(GL_TRIANGLES);
 	{
-		for (size_t i : faceList)
+		for (int i : faceList)
 		{
 			FSFace& face = pm->Face(i);
 			if (f(face, c)) RenderFace(face, pm, c);
@@ -2793,8 +2907,8 @@ void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace
 	GLColor c[FSFace::MAX_NODES];
 	glBegin(GL_TRIANGLES);
 	{
-		size_t faces = pm->Faces();
-		for (size_t i = 0; i < faces; ++i)
+		int faces = (int)pm->Faces();
+		for (int i = 0; i < faces; ++i)
 		{
 			FSFace& face = pm->Face(i);
 			if (f(face, c)) RenderFace(face, pm, c);
@@ -2810,8 +2924,8 @@ void GLMeshRender::RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(c
 	GLColor c[FSFace::MAX_NODES];
 	glBegin(GL_TRIANGLES);
 	{
-		size_t faces = pm->Faces();
-		for (size_t i = 0; i < faces; ++i)
+		int faces = pm->Faces();
+		for (int i = 0; i < faces; ++i)
 		{
 			FSFace& face = pm->Face(i);
 			face.m_ntag = i;
@@ -2826,7 +2940,7 @@ void GLMeshRender::RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(c
 void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList)
 {
 	glBegin(GL_LINES);
-	for (size_t i : faceList)
+	for (int i : faceList)
 	{
 		FSFace& face = pm->Face(i);
 		int ne = face.Edges();

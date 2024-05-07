@@ -603,7 +603,7 @@ void CCmdToggleElementVisibility::Execute()
 	for (int i = 0; i<m_mesh->Elements(); ++i)
 	{
 		FSElement& el = m_mesh->Element(i);
-		if (el.IsVisible()) el.Hide(); else el.Show();
+		if (el.IsHidden()) el.Unhide(); else el.Hide();
 	}
 	m_mesh->UpdateItemVisibility();
 }
@@ -2280,6 +2280,12 @@ void CCmdHideObject::UnExecute()
 //////////////////////////////////////////////////////////////////////
 // CCmdHidePart
 //////////////////////////////////////////////////////////////////////
+
+CCmdHideParts::CCmdHideParts(GModel* model, GPart* part) : CCommand("Hide")
+{
+	m_model = model;
+	m_partList.push_back(part);
+}
 
 CCmdHideParts::CCmdHideParts(GModel* model, std::list<GPart*> partList) : CCommand("Hide")
 {

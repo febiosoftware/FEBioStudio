@@ -140,6 +140,8 @@ public:
 
 	void HighlightNode(int x, int y);
 	void HighlightEdge(int x, int y);
+	void HighlightSurface(int x, int y);
+	void HighlightPart(int x, int y);
 
 	bool SelectPivot(int x, int y);
 
@@ -176,6 +178,8 @@ protected:
 
     bool gestureEvent     (QNativeGestureEvent* ev);
     bool event            (QEvent* event) override;
+
+	void keyPressEvent(QKeyEvent* ev) override;
 
 signals:
 	void pointPicked(const vec3d& p);

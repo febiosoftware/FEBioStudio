@@ -364,8 +364,8 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			{
 				RenderFEElements(rc, po);
 
-				GLColor c = view.m_mcol;
-				glColor3ub(c.r, c.g, c.b);
+				GLColor c = view.m_meshColor;
+				glColor4ub(c.r, c.g, c.b, c.a);
 				RenderMeshLines(rc, po);
 			}
 			else RenderObject(rc, po);
@@ -1454,8 +1454,9 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	int nitem = pdoc->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	GLColor c = vs.m_mcol;
-	glColor3ub(c.r, c.g, c.b);
+	GLColor c = vs.m_meshColor;
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4ub(c.r, c.g, c.b, c.a);
 
 	for (int i = 0; i < model.Objects(); ++i)
 	{
@@ -1470,7 +1471,11 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 				if (nitem == ITEM_ELEM)
 					RenderMeshLines(rc, po);
 				else if (nitem == ITEM_MESH)
-					renderer.RenderMeshLines(pm);
+				{
+					GMesh* lineMesh = po->GetLineRenderMesh();
+					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
+					else renderer.RenderMeshLines(pm);
+				}
 				else if (nitem != ITEM_EDGE)
 					renderer.RenderMeshLines(po->GetEditableMesh());
 				glPopMatrix();
@@ -1501,6 +1506,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
+	glDepthFunc(GL_LEQUAL);
 	glColor3ub(0, 0, 0);
 
 	FSModel* ps = doc->GetFSModel();
@@ -1774,19 +1780,26 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> selectedSurfaces; selectedSurfaces.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace& f = *po->Face(i);
+		if (f.IsSelected())
+		{
+			selectedSurfaces.push_back(i);
+		}
+	}
+	if (selectedSurfaces.empty()) return;
+
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	{
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : selectedSurfaces)
 		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				renderer.RenderGLMesh(pm, i);
-			}
+			renderer.RenderGLMesh(pm, surfId);
 		}
 
 #ifndef NDEBUG
@@ -1873,6 +1886,18 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 		glDisable(GL_POLYGON_STIPPLE);
 	}
 	glPopAttrib();
+
+	// render the selected faces
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(0, 0, 255);
+		for (int surfId : selectedSurfaces)
+		{
+			renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
+		}
+	}
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -1953,6 +1978,21 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> facesToRender; facesToRender.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* pf = po->Face(i);
+		GPart* p0 = po->Part(pf->m_nPID[0]);
+		GPart* p1 = po->Part(pf->m_nPID[1]);
+		GPart* p2 = po->Part(pf->m_nPID[2]);
+		if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
+		{
+			facesToRender.push_back(i);
+		}
+	}
+	if (facesToRender.empty()) return;
+
 	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -1960,20 +2000,25 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : facesToRender)
 		{
-			GFace* pf = po->Face(i);
-			GPart* p0 = po->Part(pf->m_nPID[0]);
-			GPart* p1 = po->Part(pf->m_nPID[1]);
-			GPart* p2 = po->Part(pf->m_nPID[2]);
-			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
-			{
-				renderer.RenderGLMesh(m, i);
-			}
+			renderer.RenderGLMesh(m, surfId);
 		}
 	}
 	glPopAttrib();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		SetMatProps(0);
+		glColor3ub(0, 0, 200);
+		for (int surfId : facesToRender)
+		{
+			renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
+		}
+	}
+	glPopAttrib();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -2187,7 +2232,6 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 		// check the cull
 		if (view.m_bcull)
 		{
-			vec3d f;
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = pm->Face(i);
@@ -2195,7 +2239,7 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 				for (int j = 0; j < n; ++j)
 				{
 					vec3d nn = to_vec3d(face.m_nn[j]);
-					f = q * nn;
+					vec3d f = q * nn;
 					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 				}
 			}

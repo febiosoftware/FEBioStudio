@@ -368,7 +368,7 @@ void GPartSelection::Update()
 			{
 				for (int j=0; j<3; ++j)
 				{
-					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(f.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(to_vec3d(pm->Node(f.n[j]).r));
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -533,7 +533,8 @@ void GFaceSelection::Update()
 			{
 				for (int j=0; j<3; ++j)
 				{
-					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(f.n[j]).r);
+					vec3d r_local = to_vec3d(pm->Node(f.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(r_local);
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -666,7 +667,8 @@ void GEdgeSelection::Update()
 			{
 				for (int j=0; j<2; ++j)
 				{
-					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(e.n[j]).r);
+					vec3d r_local = to_vec3d(pm->Node(e.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(r_local);
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;

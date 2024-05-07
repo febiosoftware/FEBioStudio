@@ -588,7 +588,7 @@ void CGLModel::RenderMeshLines(CGLContext& rc)
 
 			// set the material properties
 			GLColor c = pmat->meshcol;
-			glColor3ub(c.r, c.g, c.b);
+			glColor4ub(c.r, c.g, c.b, 128);
 			RenderMeshLines(fem, m);
 
 			rc.m_cam->LineDrawMode(false);

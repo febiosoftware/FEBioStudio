@@ -183,6 +183,4 @@ private:
 	bool	m_bortho;
 
 	bool	m_isMoving;	// camera is moving when user is moving mouse with depressed button
-
-	double	m_depthScale;	// depth scale for line drawing
 };
