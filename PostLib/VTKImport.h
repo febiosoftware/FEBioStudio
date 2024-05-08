@@ -50,7 +50,7 @@ private:
 	bool BuildState(double time, const VTK::vtkPiece& vtk);
 	bool ProcessSeries(const char* szfile);
 
-private:
+protected:
 	FEState*	m_ps;
 	double	m_currentTime;
 	int		m_fileCount;
@@ -71,6 +71,14 @@ public:
 	VTUImport(FEPostModel* fem) : VTKFileImport(fem) {}
 
 private:
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
+
+class VTMImport : public VTKFileImport
+{
+public:
+	VTMImport(FEPostModel* fem);
+
 	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
 };
 

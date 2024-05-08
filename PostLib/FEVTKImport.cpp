@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <VTKLib/VTKLegacyFileReader.h>
 #include <VTKLib/VTUFileReader.h>
 #include <VTKLib/VTKTools.h>
+#include <XML/XMLReader.h>
 
 using namespace Post;
 using namespace std;
@@ -100,6 +101,8 @@ bool VTKFileImport::ProcessSeries(const char* szfile)
 			m_fileCount++;
 			sprintf(szfilen, szfmt, m_fileCount);
 
+			m_currentTime = m_fileCount;
+
 			VTK::vtkModel vtk;
 			if (!LoadVTKModel(szfilen, vtk))
 			{
@@ -123,7 +126,6 @@ bool VTKFileImport::ProcessSeries(const char* szfile)
 				{
 					m_currentTime = atof(sztitle + 4);
 				}
-				else m_currentTime = m_fileCount;
 
 				// build the state
 				if (BuildState(m_currentTime, piece) == false) return false;
@@ -367,5 +369,88 @@ bool VTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 	}
 
 	vtk = vtuReader.GetVTKModel();
+	return true;
+}
+
+VTMImport::VTMImport(FEPostModel* fem) : VTKFileImport(fem)
+{
+}
+
+bool VTMImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	XMLReader xml;
+	if (xml.Open(szfilename, false) == false) return errf("Failed to open file.");
+
+	XMLTag tag;
+	if (xml.FindTag("VTKFile", tag) == false) return errf("This is not a valid VTK multi-block dataset file.");
+	const char* sztype = tag.AttributeValue("type");
+	if (strcmp(sztype, "vtkMultiBlockDataSet") != 0) return errf("This is not a valid VTK multi-block dataset file.");
+
+	string datafile;
+	double timeValue = 0.0;
+
+	++tag;
+	do
+	{
+		if (tag == "vtkMultiBlockDataSet")
+		{
+			++tag;
+			do
+			{
+				if (tag == "Block")
+				{
+					++tag;
+					do
+					{
+						if (tag == "DataSet")
+						{
+							datafile = tag.AttributeValue("file");
+						}
+						else tag.skip();
+						++tag;
+					} while (!tag.isend());
+
+				}
+				else tag.skip();
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (tag == "FieldData")
+		{
+			++tag;
+			do
+			{
+				if (tag == "DataArray")
+				{
+					tag.value(timeValue);
+				}
+				else tag.skip();
+				++tag;
+			} while (!tag.isend());
+
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
+
+	// extract the path from the filename
+	char filePath[512] = { 0 };
+	const char* ch = strrchr(szfilename, '/');
+	if (ch == nullptr) ch = strrchr(szfilename, '\\');
+	if (ch)
+	{
+		size_t n = ch - szfilename + 1;
+		strncpy(filePath, szfilename, n);
+	}
+
+	string dataPath = string(filePath) + datafile;
+
+	// Now let's try to read it in 
+	VTK::VTUFileReader vtuFile;
+	if (!vtuFile.Load(dataPath.c_str())) return errf("Failed to read data file");
+
+	vtk = vtuFile.GetVTKModel();
+	m_currentTime = timeValue;
+
 	return true;
 }
