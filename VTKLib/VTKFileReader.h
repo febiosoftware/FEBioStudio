@@ -65,8 +65,11 @@ namespace VTK {
 		bool ParsePoints(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParseCells(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParsePolys(XMLTag& tag, VTK::vtkPiece& piece);
+		bool ParsePointData(XMLTag& tag, VTK::vtkPiece& piece);
+		bool ParseCellData(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParseDataArray(XMLTag& tag, VTK::vtkDataArray& vtkDataArray);
 		bool ParseAppendedData(XMLTag& tag, VTK::vtkAppendedData& vtkAppendedData);
+
 		bool ProcessAppendedDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
 		bool ProcessDataArrays(VTK::vtkModel& vtk, VTK::vtkAppendedData& data);
 

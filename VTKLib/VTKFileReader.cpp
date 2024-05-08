@@ -363,6 +363,14 @@ bool VTKFileReader::ParsePiece(XMLTag& tag, vtkModel& vtk)
 		{
 			if (ParsePolys(tag, piece) == false) return false;
 		}
+		else if (tag == "PointData")
+		{
+			if (ParsePointData(tag, piece) == false) return false;
+		}
+		else if (tag == "CellData")
+		{
+			if (ParseCellData(tag, piece) == false) return false;
+		}
 		else tag.skip();
 		++tag;
 	} while (!tag.isend());
@@ -444,6 +452,40 @@ bool VTKFileReader::ParsePolys(XMLTag& tag, vtkPiece& piece)
 		++tag;
 	} while (!tag.isend());
 
+	return true;
+}
+
+bool VTKFileReader::ParsePointData(XMLTag& tag, VTK::vtkPiece& piece)
+{
+	++tag;
+	do {
+		if (tag == "DataArray")
+		{
+			vtkDataArray data;
+			data.m_name = tag.AttributeValue("Name");
+			if (ParseDataArray(tag, data) == false) return false;
+			piece.m_pointData.push_back(data);
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
+	return true;
+}
+
+bool VTKFileReader::ParseCellData(XMLTag& tag, VTK::vtkPiece& piece)
+{
+	++tag;
+	do {
+		if (tag == "DataArray")
+		{
+			vtkDataArray data;
+			data.m_name = tag.AttributeValue("Name");
+			if (ParseDataArray(tag, data) == false) return false;
+			piece.m_cellData.push_back(data);
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
 	return true;
 }
 

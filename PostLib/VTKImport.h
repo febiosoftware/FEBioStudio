@@ -33,13 +33,16 @@ namespace Post {
 
 class FEState;
 
-class VTKimport : public FEFileReader
+class VTKFileImport : public FEFileReader
 {
 public:
-	VTKimport(FEPostModel* fem);
-	~VTKimport(void);
+	VTKFileImport(FEPostModel* fem);
+	~VTKFileImport(void);
 
 	bool Load(const char* szfile) override;
+
+protected:
+	virtual bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) = 0;
 
 private:
 	bool BuildMesh(const VTK::vtkPiece& piece);
@@ -52,4 +55,23 @@ private:
 	double	m_currentTime;
 	int		m_fileCount;
 };
+
+class VTKImport : public VTKFileImport
+{
+public:
+	VTKImport(FEPostModel* fem) : VTKFileImport(fem) {}
+
+private:
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
+
+class VTUImport : public VTKFileImport
+{
+public:
+	VTUImport(FEPostModel* fem) : VTKFileImport(fem) {}
+
+private:
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
+
 }

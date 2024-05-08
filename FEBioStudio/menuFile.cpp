@@ -1517,7 +1517,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 				// create a dummy post model
 				Post::FEPostModel* dummyFem = new Post::FEPostModel;
-				Post::VTKimport vtk(dummyFem);
+				Post::VTKImport vtk(dummyFem);
 				if (vtk.Load(sfile.c_str()))
 				{
 					if (postDoc->MergeFEModel(dummyFem) == false)

@@ -30,32 +30,28 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 #include "FEState.h"
 #include <VTKLib/VTKLegacyFileReader.h>
+#include <VTKLib/VTUFileReader.h>
 #include <VTKLib/VTKTools.h>
 
 using namespace Post;
 using namespace std;
 
-VTKimport::VTKimport(FEPostModel* fem) : FEFileReader(fem)
+VTKFileImport::VTKFileImport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_ps = nullptr;
 	m_currentTime = 0.0;
 	m_fileCount = 0;
 }
 
-VTKimport::~VTKimport(void)
+VTKFileImport::~VTKFileImport(void)
 {
 }
 
-bool VTKimport::Load(const char* szfile)
+bool VTKFileImport::Load(const char* szfile)
 {
-	VTK::vtkLegacyFileReader vtkReader;
-	if (!vtkReader.Load(szfile))
-	{
-		setErrorString(vtkReader.GetErrorString());
-		return false;
-	}
+	VTK::vtkModel vtk;
+	if (!LoadVTKModel(szfile, vtk)) return false;
 
-	const VTK::vtkModel& vtk = vtkReader.GetVTKModel();
 	const VTK::vtkPiece& piece = vtk.Piece(0);
 	if (!BuildMesh(piece)) return false;
 	if (!UpdateModel(piece)) return false;
@@ -67,7 +63,7 @@ bool VTKimport::Load(const char* szfile)
 	return true;
 }
 
-bool VTKimport::ProcessSeries(const char* szfile)
+bool VTKFileImport::ProcessSeries(const char* szfile)
 {
 	FEPostModel& fem = *m_fem;
 
@@ -104,8 +100,8 @@ bool VTKimport::ProcessSeries(const char* szfile)
 			m_fileCount++;
 			sprintf(szfilen, szfmt, m_fileCount);
 
-			VTK::vtkLegacyFileReader vtkReader;
-			if (!vtkReader.Load(szfilen))
+			VTK::vtkModel vtk;
+			if (!LoadVTKModel(szfilen, vtk))
 			{
 				// Let's assume that the file was not found, so we probably 
 				// reached the end of the series. No reason to make a fuss about that. 
@@ -114,7 +110,6 @@ bool VTKimport::ProcessSeries(const char* szfile)
 			}
 			else
 			{
-				const VTK::vtkModel& vtk = vtkReader.GetVTKModel();
 				const VTK::vtkPiece& piece = vtk.Piece(0);
 
 				// some sanity checks
@@ -139,11 +134,11 @@ bool VTKimport::ProcessSeries(const char* szfile)
 	return true;
 }
 
-bool VTKimport::BuildMesh(const VTK::vtkPiece& vtk)
+bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 {
 	// create a new mesh
-	int nodes = vtk.Points();
-	int elems = vtk.Cells();
+	int nodes = (int)vtk.Points();
+	int elems = (int)vtk.Cells();
 	FEPostMesh* pm = new FEPostMesh;
 
 	// Build the FE mesh from the VTK mesh
@@ -213,7 +208,7 @@ bool VTKimport::BuildMesh(const VTK::vtkPiece& vtk)
 	return true;
 }
 
-bool VTKimport::UpdateModel(const VTK::vtkPiece& vtk)
+bool VTKFileImport::UpdateModel(const VTK::vtkPiece& vtk)
 {
 	FEPostModel& fem = *m_fem;
 	for (int i = 0; i < vtk.m_pointData.size(); ++i)
@@ -253,10 +248,10 @@ bool VTKimport::UpdateModel(const VTK::vtkPiece& vtk)
 	return true;
 }
 
-bool VTKimport::BuildState(double time, const VTK::vtkPiece& vtk)
+bool VTKFileImport::BuildState(double time, const VTK::vtkPiece& vtk)
 {
 	// add a state
-	FEState* ps = new FEState(time, m_fem, m_fem->GetFEMesh(0));
+	FEState* ps = new FEState((float)time, m_fem, m_fem->GetFEMesh(0));
 	m_ps = ps;
 
 	FEPostModel& fem = *m_fem;
@@ -346,5 +341,31 @@ bool VTKimport::BuildState(double time, const VTK::vtkPiece& vtk)
 		}
 	}
 
+	return true;
+}
+
+bool VTKImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	VTK::vtkLegacyFileReader vtkReader;
+	if (!vtkReader.Load(szfilename))
+	{
+		setErrorString(vtkReader.GetErrorString());
+		return false;
+	}
+
+	vtk = vtkReader.GetVTKModel();
+	return true;
+}
+
+bool VTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	VTK::VTUFileReader vtuReader;
+	if (!vtuReader.Load(szfilename))
+	{
+		setErrorString(vtuReader.GetErrorString());
+		return false;
+	}
+
+	vtk = vtuReader.GetVTKModel();
 	return true;
 }
