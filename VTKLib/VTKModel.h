@@ -26,7 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <string>
-#include <assert.h>
 
 namespace VTK {
 
@@ -62,52 +61,18 @@ namespace VTK {
 		};
 
 	public:
-		vtkDataArray()
-		{
-			m_type = -1;
-			m_format = ASCII;
-			m_numComps = 1;
-			m_offset = 0;
-		}
+		vtkDataArray();
 
-		void setFormat(const char* szformat)
-		{
-			if (strcmp(szformat, "ascii") == 0) m_format = Format::ASCII;
-			else if (strcmp(szformat, "binary") == 0) m_format = Format::BINARY;
-			else if (strcmp(szformat, "appended") == 0) m_format = Format::APPENDED;
-			else { assert(false); }
-		}
+		void setFormat(const char* szformat);
 
-		size_t size() const
-		{
-			switch (m_type)
-			{
-			case FLOAT32:
-			case FLOAT64: return (m_values_float.size() / m_numComps); break;
-			case INT8:
-			case UINT8:
-			case INT32:
-			case INT64:
-				return (m_values_int.size() / m_numComps); break;
-				break;
-			default:
-				assert(false);
-				break;
-			}
-			return 0;
-		}
+		size_t size() const;
 
 		bool empty() const { return m_values_int.empty(); }
 
 		void get(int n, double* v) const { *v = m_values_float[n]; }
 		void get(int n, int* v) const { *v = m_values_int[n]; }
 
-		void init(vtkDataArray::Format format, vtkDataArray::Types type, int components)
-		{
-			m_format = format;
-			m_type = type;
-			m_numComps = components;
-		}
+		void init(vtkDataArray::Format format, vtkDataArray::Types type, int components);
 
 	public:
 		int	m_type;
@@ -178,47 +143,9 @@ namespace VTK {
 		size_t Points() const { return m_points.size(); }
 		size_t Cells() const { return m_cell_offsets.size(); }
 
-		vtkPoint Point(int n) const
-		{
-			vtkDataArrayReader<double> p(m_points);
-			return vtkPoint{ p[3 * n], p[3 * n + 1], p[3 * n + 2] };
-		}
+		vtkPoint Point(int n) const;
 
-		vtkCell Cell(int n) const
-		{
-			vtkCell cell;
-
-			if (m_cell_types.empty())
-			{
-				// This is for POLYDATA files
-				int n0 = (n > 0 ? m_cell_offsets.m_values_int[n - 1] : 0);
-				int n1 = m_cell_offsets.m_values_int[n];
-				cell.m_numNodes = n1 - n0;
-				if (cell.m_numNodes == 2) cell.m_cellType = vtkCell::VTK_LINE;
-				else cell.m_cellType = vtkCell::VTK_POLYGON;
-				int m = cell.m_numNodes;
-				for (int i = 0; i < m; ++i)
-				{
-					cell.m_node[i] = m_cell_connect.m_values_int[n0 + i];
-				}
-			}
-			else
-			{
-				// This is for UNSTRUCTURED GRID files
-				m_cell_types.get(n, &cell.m_cellType);
-
-				int n0 = (n == 0 ? 0 : m_cell_offsets.m_values_int[n - 1]);
-				int n1 = m_cell_offsets.m_values_int[n];
-				cell.m_numNodes = n1 - n0;
-				int m = cell.m_numNodes;
-				for (int i = 0; i < m; ++i)
-				{
-					cell.m_node[i] = m_cell_connect.m_values_int[n0 + i];
-				}
-			}
-
-			return cell;
-		}
+		vtkCell Cell(int n) const;
 
 		std::string name() const { return m_name; }
 
