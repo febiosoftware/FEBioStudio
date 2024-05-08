@@ -25,8 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "VTKTools.h"
 
-FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
+FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys)
 {
+	FSMesh* pm = new FSMesh();
+	if (BuildFEMesh(vtkMesh, pm, splitPolys)) return pm;
+	else
+	{
+		delete pm;
+		return nullptr;
+	}
+}
+
+bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitPolys)
+{
+	if (pm == nullptr) return false;
+
 	// get the number of nodes and elements
 	int nodes = (int)vtkMesh.Points();
 
@@ -50,24 +63,26 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 			case 0:
 			case 1:
 			case 2:
-				return nullptr;
+				return false;
 				break;
 			case 3:
 			case 4:
 				elems += 1;
 				break;
 			default:
-				elems += cell.m_numNodes - 2;
+				if (splitPolys)
+					elems += cell.m_numNodes - 2;
+				else
+					return false;
 			}
 		}
 		break;
 		default:
-			return nullptr;
+			return false;
 		}
 	}
 
 	// create a new mesh
-	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// copy nodal data
@@ -135,7 +150,7 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 			case VTK::vtkCell::VTK_PYRAMID   : el.SetType(FE_PYRA5 ); break;
 			default:
 				delete pm;
-				return nullptr;
+				return false;
 			}
 
 			int nn = el.Nodes();
@@ -146,5 +161,5 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 
 	pm->RebuildMesh();
 
-	return pm;
+	return true;
 }

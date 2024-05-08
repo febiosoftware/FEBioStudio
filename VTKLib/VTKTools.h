@@ -29,5 +29,6 @@ SOFTWARE.*/
 
 namespace VTKTools {
 
-	FSMesh* BuildFEMesh(const VTK::vtkPiece& vtkMesh);
+	FSMesh* BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys = true);
+	bool BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitPolys = true);
 }

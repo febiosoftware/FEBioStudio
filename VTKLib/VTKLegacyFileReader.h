@@ -31,6 +31,12 @@ namespace VTK {
 
 	class vtkLegacyFileReader : public FileReader
 	{
+		enum DataReadMode {
+			NONE,
+			POINT_DATA,
+			CELL_DATA
+		};
+
 	public:
 		vtkLegacyFileReader();
 
@@ -41,6 +47,8 @@ namespace VTK {
 	protected:
 		bool nextLine();
 
+		bool readHeader();
+
 		bool read_POINTS(VTK::vtkPiece& vtk);
 		bool read_LINES(VTK::vtkPiece& vtk);
 		bool read_POLYGONS(VTK::vtkPiece& vtk);
@@ -50,6 +58,9 @@ namespace VTK {
 		bool read_CELL_DATA(VTK::vtkPiece& vtk);
 		bool read_NORMALS(VTK::vtkPiece& vtk);
 		bool read_FIELD(VTK::vtkPiece& vtk);
+		bool read_SCALARS(VTK::vtkPiece& vtk);
+		bool read_VECTORS(VTK::vtkPiece& vtk);
+		bool read_TENSORS(VTK::vtkPiece& vtk);
 
 		bool checkLine(const char* sz);
 
@@ -59,5 +70,6 @@ namespace VTK {
 		vtkModel m_vtk;
 		vtkDataFileType	m_dataFileType;
 		char	m_szline[256];
+		DataReadMode	m_dataReadMode;
 	};
 }

@@ -26,54 +26,30 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEFileReader.h"
+#include <VTKLib/VTKModel.h>
 #include <vector>
 
 namespace Post {
 
 class FEState;
 
-class VTKimport :	public FEFileReader
+class VTKimport : public FEFileReader
 {
-	class VTKModel;
-
 public:
 	VTKimport(FEPostModel* fem);
 	~VTKimport(void);
 
 	bool Load(const char* szfile) override;
 
-protected:
-	bool readFile(const char* szfile);
-
-	char* readLine(char* szline);
-	bool readHeader();
-	bool readDataSet  (char* szline);
-	bool readPoints   (char* szline);
-	bool readPolygons (char* szline);
-	bool readCells    (char* szline);
-	bool readCellTypes(char* szline);
-	bool readPointData(char* szline);
-	bool readCellData (char* szline);
-	bool readScalars(char* szline);
-	bool readVectors(char* szline);
-	bool readTensors(char* szline);
-	
-protected:
-	bool BuildMesh();
-	bool UpdateModel();
-	bool BuildState(double time);
+private:
+	bool BuildMesh(const VTK::vtkPiece& piece);
+	bool UpdateModel(const VTK::vtkPiece& piece);
+	bool BuildState(double time, const VTK::vtkPiece& vtk);
 	bool ProcessSeries(const char* szfile);
 
-	FEState*		m_ps;
-
-	bool	m_isPolyData;
-	bool	m_isUnstructuredGrid;
-	bool	m_readingPointData;
-	bool	m_readingCellData;
-
+private:
+	FEState*	m_ps;
 	double	m_currentTime;
 	int		m_fileCount;
-
-	VTKModel* m_vtk;
 };
 }

@@ -29,6 +29,7 @@ using namespace VTK;
 vtkLegacyFileReader::vtkLegacyFileReader()
 {
 	m_dataFileType = VTK::vtkDataFileType::Invalid;
+	m_dataReadMode = DataReadMode::NONE;
 	m_szline[0] = 0;
 }
 
@@ -43,24 +44,7 @@ bool vtkLegacyFileReader::Load(const char* szfilename)
 
 	if (!Open(szfilename, "rt")) return errf("Failed opening file %s.", szfilename);
 
-	// read the first line 
-	if (nextLine() == false) return errf("Unexpected end of file.");
-	if (checkLine("# vtk DataFile") == false) return errf("This is not a valid VTK file.");
-
-	// next line is info, so can be skipped
-	if (nextLine() == false) return errf("Unexpected end of file.");
-
-	// next line must be ASCII
-	if (nextLine() == false) return errf("Unexpected end of file.");
-	if (checkLine("ASCII") == false) return errf("Only ASCII VTK files are supported.");
-
-	// read the DATASET line
-	if (nextLine() == false) return errf("Unexpected end of file.");
-	if (checkLine("DATASET") == false) return errf("Error looking for DATASET keyword.");
-	m_dataFileType = VTK::vtkDataFileType::Invalid;
-	if (strstr(m_szline, "POLYDATA") != nullptr) m_dataFileType = VTK::vtkDataFileType::PolyData;
-	if (strstr(m_szline, "UNSTRUCTURED_GRID") != nullptr) m_dataFileType = VTK::vtkDataFileType::UnstructuredGrid;
-	if (m_dataFileType == VTK::vtkDataFileType::Invalid) return errf("Only POLYDATA and UNSTRUCTURED_GRID dataset types are supported.");
+	if (!readHeader()) return false;
 
 	// we need one piece in the model
 	vtkPiece piece;
@@ -105,6 +89,19 @@ bool vtkLegacyFileReader::Load(const char* szfilename)
 		{
 			if (read_FIELD(piece) == false)  return false;
 		}
+		else if (checkLine("SCALARS"))
+		{
+			if (read_SCALARS(piece) == false) return false;
+		}
+		else if (checkLine("VECTORS"))
+		{
+			if (read_VECTORS(piece) == false) return false;
+		}
+		else if (checkLine("TENSORS"))
+		{
+			if (read_TENSORS(piece) == false) return false;
+		}
+
 	} while (nextLine());
 
 	Close();
@@ -156,6 +153,31 @@ int vtkLegacyFileReader::parseLine(std::vector<std::string>& str)
 	if (tmp.empty() == false) str.push_back(tmp);
 
 	return (int)str.size();
+}
+
+bool vtkLegacyFileReader::readHeader()
+{
+	// read the first line 
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("# vtk DataFile") == false) return errf("This is not a valid VTK file.");
+
+	// next line is info, so can be skipped
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	m_vtk.m_title = m_szline;
+
+	// next line must be ASCII
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("ASCII") == false) return errf("Only ASCII VTK files are supported.");
+
+	// read the DATASET line
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("DATASET") == false) return errf("Error looking for DATASET keyword.");
+	m_dataFileType = VTK::vtkDataFileType::Invalid;
+	if (strstr(m_szline, "POLYDATA") != nullptr) m_dataFileType = VTK::vtkDataFileType::PolyData;
+	if (strstr(m_szline, "UNSTRUCTURED_GRID") != nullptr) m_dataFileType = VTK::vtkDataFileType::UnstructuredGrid;
+	if (m_dataFileType == VTK::vtkDataFileType::Invalid) return errf("Only POLYDATA and UNSTRUCTURED_GRID dataset types are supported.");
+
+	return true;
 }
 
 bool vtkLegacyFileReader::read_POINTS(vtkPiece& vtk)
@@ -379,6 +401,209 @@ bool vtkLegacyFileReader::read_POINT_DATA(vtkPiece& vtk)
 	int nodes = atoi(m_szline + 10);
 	if (nodes != vtk.Points()) return errf("Incorrect number of nodes specified in POINT_DATA.");
 
+	m_dataReadMode = DataReadMode::POINT_DATA;
+
+	return true;
+}
+
+bool vtkLegacyFileReader::read_SCALARS(VTK::vtkPiece& vtk)
+{
+	char szdataAttr[64] = { 0 };
+	char szdataName[64] = { 0 };
+	char szdataType[64] = { 0 };
+	int nread = sscanf(m_szline, "%s %s %s", szdataAttr, szdataName, szdataType);
+	if (nread != 3) return false;
+	if (strcmp(szdataAttr, "SCALARS") != 0) return false;
+
+	// skip the lookup table tag
+	nextLine();
+
+	vtkDataArray::Types dataType;
+	if      (strcmp(szdataType, "float" ) == 0) dataType = vtkDataArray::FLOAT32;
+	else if (strcmp(szdataType, "double") == 0) dataType = vtkDataArray::FLOAT64;
+	else if (strcmp(szdataType, "int"   ) == 0) dataType = vtkDataArray::INT32;
+	else return errf("Unsupported data type in SCALARS.");
+
+	if (m_dataReadMode == DataReadMode::POINT_DATA)
+	{
+		int points = (int)vtk.Points();
+		vtkDataArray scalars;
+		scalars.init(vtkDataArray::ASCII, vtkDataArray::FLOAT32, 1);
+		scalars.m_name = szdataName;
+		std::vector<double>& data = scalars.m_values_float;
+		data.resize(points, 0.0);
+
+		double v[9];
+		int nreadTotal = 0;
+		while (nreadTotal < points)
+		{
+			if (!nextLine()) return false;
+
+			int nread = sscanf(m_szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], &v[8]);
+			for (int j = 0; j < nread; j++)
+			{
+				data[nreadTotal++] = v[j];
+			}
+		}
+
+		vtk.m_pointData.push_back(scalars);
+	}
+	else if (m_dataReadMode == DataReadMode::CELL_DATA)
+	{
+		int cells = (int)vtk.Cells();
+		vtkDataArray scalars;
+		scalars.m_name = szdataName;
+		scalars.init(vtkDataArray::ASCII, dataType, 1);
+
+		if ((dataType == vtkDataArray::FLOAT32) || (dataType == vtkDataArray::FLOAT64))
+		{
+			std::vector<double>& data = scalars.m_values_float;
+			data.resize(cells, 0.0);
+			for (int i = 0; i < cells; ++i)
+			{
+				if (!nextLine()) return false;
+				data[i] = atof(m_szline);
+			}
+		}
+		else if (dataType == vtkDataArray::INT32)
+		{
+			std::vector<int>& data = scalars.m_values_int;
+			data.resize(cells, 0);
+			for (int i = 0; i < cells; ++i)
+			{
+				if (!nextLine()) return false;
+				data[i] = atoi(m_szline);
+			}
+		}
+		vtk.m_cellData.push_back(scalars);
+	}
+	else return false;
+
+	return true;
+}
+
+bool vtkLegacyFileReader::read_VECTORS(VTK::vtkPiece& vtk)
+{
+	char dataAttr[64] = { 0 };
+	char dataName[64] = { 0 };
+	char dataType[64] = { 0 };
+	int nread = sscanf(m_szline, "%s %s %s", dataAttr, dataName, dataType);
+	if (nread != 3) return false;
+	if (strcmp(dataAttr, "VECTORS") != 0) return false;
+
+	if (m_dataReadMode == DataReadMode::POINT_DATA)
+	{
+		int points = (int)vtk.Points();
+		vtkDataArray vectors;
+		vectors.init(vtkDataArray::ASCII, vtkDataArray::FLOAT32, 3);
+		vectors.m_name = dataName;
+		std::vector<double>& data = vectors.m_values_float;
+		data.resize(3*points, 0.0);
+
+		double v[3];
+		for (int i = 0; i < points; ++i)
+		{
+			if (!nextLine()) return false;
+
+			int nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[3*i  ] = v[0];
+			data[3*i+1] = v[1];
+			data[3*i+2] = v[2];
+		}
+
+		vtk.m_pointData.push_back(vectors);
+	}
+	else if (m_dataReadMode == DataReadMode::CELL_DATA)
+	{
+		int cells = (int)vtk.Cells();
+		vtkDataArray vectors;
+		vectors.init(vtkDataArray::ASCII, vtkDataArray::FLOAT32, 3);
+		vectors.m_name = dataName;
+		std::vector<double>& data = vectors.m_values_float;
+		data.resize(3 * cells, 0.0);
+
+		double v[3];
+		for (int i = 0; i < cells; ++i)
+		{
+			if (!nextLine()) return false;
+
+			int nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[3*i  ] = v[0];
+			data[3*i+1] = v[1];
+			data[3*i+2] = v[2];
+		}
+		vtk.m_cellData.push_back(vectors);
+	}
+	else return false;
+
+	return true;
+}
+
+bool vtkLegacyFileReader::read_TENSORS(VTK::vtkPiece& vtk)
+{
+	char dataAttr[64] = { 0 };
+	char dataName[64] = { 0 };
+	char dataType[64] = { 0 };
+	int nread = sscanf(m_szline, "%s %s %s", dataAttr, dataName, dataType);
+	if (nread != 3) return false;
+	if (strcmp(dataAttr, "TENSORS") != 0) return false;
+
+	if (m_dataReadMode == DataReadMode::POINT_DATA)
+	{
+		int points = (int)vtk.Points();
+		vtkDataArray tensors;
+		tensors.init(vtkDataArray::ASCII, vtkDataArray::FLOAT32, 9);
+		tensors.m_name = dataName;
+		std::vector<double>& data = tensors.m_values_float;
+		data.resize(9 * points, 0.0);
+
+		double v[3]; int nread;
+		for (int i = 0; i < points; ++i)
+		{
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9*i  ] = v[0]; data[9*i+1] = v[1]; data[9*i+2] = v[2];
+
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9*i+3] = v[0]; data[9*i+4] = v[1]; data[9*i+5] = v[2];
+
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9*i+6] = v[0]; data[9*i+7] = v[1]; data[9*i+8] = v[2];
+		}
+
+		vtk.m_pointData.push_back(tensors);
+	}
+	else if (m_dataReadMode == DataReadMode::CELL_DATA)
+	{
+		int cells = (int)vtk.Cells();
+		vtkDataArray tensors;
+		tensors.init(vtkDataArray::ASCII, vtkDataArray::FLOAT32, 9);
+		tensors.m_name = dataName;
+		std::vector<double>& data = tensors.m_values_float;
+		data.resize(9 * cells, 0.0);
+
+		double v[3]; int nread;
+		for (int i = 0; i < cells; ++i)
+		{
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9 * i] = v[0]; data[9 * i + 1] = v[1]; data[9 * i + 2] = v[2];
+
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9 * i + 3] = v[0]; data[9 * i + 4] = v[1]; data[9 * i + 5] = v[2];
+
+			if (!nextLine()) return false;
+			nread = sscanf(m_szline, "%lg%lg%lg", &v[0], &v[1], &v[2]);
+			data[9 * i + 6] = v[0]; data[9 * i + 7] = v[1]; data[9 * i + 8] = v[2];
+		}
+
+		vtk.m_cellData.push_back(tensors);
+	}
+	else return false;
+
 	return true;
 }
 
@@ -410,40 +635,7 @@ bool vtkLegacyFileReader::read_CELL_DATA(vtkPiece& vtkMesh)
 	int cells = atoi(m_szline + 10);
 	if (cells != vtkMesh.Cells()) return errf("Incorrect number of cells specified in CELL_DATA.");
 
-	if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
-	if (strncmp(m_szline, "SCALARS", 7) == 0)
-	{
-		std::vector<string> att;
-		parseLine(att);
-		if (att[2] == "int")
-		{
-			if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
-			if (strncmp(m_szline, "LOOKUP_TABLE", 12) == 0)
-			{
-				// read the offsets
-				int temp[9];
-				int idsRead = 0;
-				while (idsRead < cells)
-				{
-					if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
-
-					// There can be up to 9 offsets defined per line
-					int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
-					if (nread > 9)
-						return errf("An error occured while reading the nodal coordinates.");
-
-					for (int j = 0; j < nread; ++j) {
-//						VTKMesh::CELL& cell = vtkMesh.m_cellList[idsRead + j];
-//						cell.label = temp[j];
-					}
-
-					idsRead += nread;
-				}
-				assert(idsRead == cells);
-
-			}
-		}
-	}
+	m_dataReadMode = DataReadMode::CELL_DATA;
 
 	return true;
 }

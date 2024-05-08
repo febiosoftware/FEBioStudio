@@ -114,7 +114,7 @@ namespace VTK {
 		int m_format;
 		int m_numComps;
 		int	m_offset;
-
+		std::string m_name;
 		std::vector<double>		m_values_float;
 		std::vector<int>		m_values_int;
 	};
@@ -175,26 +175,6 @@ namespace VTK {
 			m_numCells = 0;
 		}
 
-		vtkPiece(const vtkPiece& piece)
-		{
-			m_numPoints = piece.m_numPoints;
-			m_numCells = piece.m_numCells;
-			m_points = piece.m_points;
-			m_cell_connect = piece.m_cell_connect;
-			m_cell_offsets = piece.m_cell_offsets;
-			m_cell_types = piece.m_cell_types;
-		}
-
-		void operator = (const vtkPiece& piece)
-		{
-			m_numPoints = piece.m_numPoints;
-			m_numCells = piece.m_numCells;
-			m_points = piece.m_points;
-			m_cell_connect = piece.m_cell_connect;
-			m_cell_offsets = piece.m_cell_offsets;
-			m_cell_types = piece.m_cell_types;
-		}
-
 		size_t Points() const { return m_points.size(); }
 		size_t Cells() const { return m_cell_offsets.size(); }
 
@@ -252,6 +232,9 @@ namespace VTK {
 		vtkDataArray	m_cell_connect;
 		vtkDataArray	m_cell_offsets;
 		vtkDataArray	m_cell_types;
+
+		std::vector<vtkDataArray>	m_pointData;
+		std::vector<vtkDataArray>	m_cellData;
 	};
 
 	class vtkAppendedData
@@ -284,6 +267,7 @@ namespace VTK {
 		void Clear() { m_pieces.clear(); }
 
 	public:
+		std::string m_title;
 		std::vector<vtkPiece>	m_pieces;
 	};
 }
