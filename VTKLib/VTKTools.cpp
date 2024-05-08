@@ -50,7 +50,7 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 			case 0:
 			case 1:
 			case 2:
-				return false;
+				return nullptr;
 				break;
 			case 3:
 			case 4:
@@ -62,7 +62,7 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 		}
 		break;
 		default:
-			return false;
+			return nullptr;
 		}
 	}
 
@@ -135,7 +135,7 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh)
 			case VTK::vtkCell::VTK_PYRAMID   : el.SetType(FE_PYRA5 ); break;
 			default:
 				delete pm;
-				return false;
+				return nullptr;
 			}
 
 			int nn = el.Nodes();
