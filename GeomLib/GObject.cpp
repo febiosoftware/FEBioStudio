@@ -223,7 +223,7 @@ void GObject::BuildFERenderMesh()
 		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
 		{
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i);
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, face.m_elem[0].eid);
 
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
@@ -253,10 +253,10 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if (!elj.IsVisible())
+					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
 					{
 						el.GetFace(j, face);
-						gm.AddFace(face.n, face.Nodes(), maxSurfID, 0, false, -1);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i);
 					}
 				}
 			}
@@ -603,6 +603,19 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 bool GObject::Update(bool b)
 {
 	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
+
+	// assign part materials to element matIDs. 
+	FSMesh* pm = GetFEMesh();
+	if (pm)
+	{
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			GPart* pg = Part(el.m_gid);
+			if (pg) el.m_MatID = pg->GetMaterialID();
+		}
+	}
+
 	BuildGMesh();
 	BuildFERenderMesh();
 	return GBaseObject::Update(b);
