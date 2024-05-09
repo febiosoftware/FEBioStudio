@@ -231,7 +231,7 @@ bool vtkLegacyFileReader::read_LINES(vtkPiece& vtk)
 
 	int elems = 0;
 	int size = 0;
-	sscanf(m_szline + 8, "%d %d", &elems, &size);
+	sscanf(m_szline + 5, "%d %d", &elems, &size);
 
 	vtk.m_cell_connect.init(vtkDataArray::ASCII, vtkDataArray::INT64, 1);
 	vtk.m_cell_offsets.init(vtkDataArray::ASCII, vtkDataArray::INT64, 1);
