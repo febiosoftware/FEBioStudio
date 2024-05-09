@@ -1019,18 +1019,28 @@ void GDiscreteSelection::Update()
 //////////////////////////////////////////////////////////////////////
 
 
-FEElementSelection::Iterator::Iterator(FSMesh* pm)
+FEElementSelection::Iterator::Iterator(FEElementSelection* sel)
 {
-	m_pm = pm;
+	m_sel = sel;
 	m_n = 0;
-	if (m_pm == 0) return;
-	do { m_pelem = m_pm->ElementPtr(m_n++); } while (m_pelem && !m_pelem->IsSelected());
+	m_pelem = nullptr;
+	if (m_sel)
+	{
+		size_t n = m_sel->Count();
+		if (n > 0)
+		{
+			m_pelem = m_sel->Element(0);
+		}
+	}
 }
 
 void FEElementSelection::Iterator::operator ++()
 {
-	if (m_pm == 0) return;
-	do { m_pelem = m_pm->ElementPtr(m_n++); } while (m_pelem && !m_pelem->IsSelected());
+	if (m_sel == nullptr) return;
+	size_t n = m_sel->Count();
+	if (m_n < n) m_n++;
+	if (m_n < n) m_pelem = m_sel->Element(m_n);
+	else m_pelem = nullptr;
 }
 
 FEElementSelection::FEElementSelection(FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) 
@@ -1046,67 +1056,50 @@ int FEElementSelection::Count()
 
 void FEElementSelection::Invert()
 {
-	if (m_pMesh == 0) return;
+	if (m_pMesh == nullptr) return;
 	int N = m_pMesh->Elements(); 
 	for (int i = 0; i < N; ++i)
 	{
-		FEElement_* pe = m_pMesh->ElementPtr(i);
-
-		if (pe->IsVisible())
+		FSElement& el = m_pMesh->Element(i);
+		if (el.IsVisible())
 		{
-			if (pe->IsSelected()) pe->Unselect();
-			else pe->Select();
+			if (el.IsSelected()) el.Unselect();
+			else el.Select();
 		}
 	}
+	Update();
 }
 
 void FEElementSelection::Update()
 {
-	if (m_pMesh == 0) return;
-	int N = m_pMesh->Elements();
-	FSNode* pn = m_pMesh->NodePtr();
-
-	GObject* po = m_pMesh->GetGObject();
-
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
 	m_item.clear();
+	if (m_pMesh == nullptr) return;
+	FSMesh& mesh = *m_pMesh;
+
+	GObject* po = mesh.GetGObject(); assert(po);
+	const Transform& T = po->GetTransform();
+
+	m_box.m_valid = false;
+
+	int N = mesh.Elements();
 	m_item.reserve(N);
 
-	int* n, l, i, j;
-	vec3d r;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
-		FEElement_* pe = m_pMesh->ElementPtr(i);
-		if (pe->IsSelected())
+		FSElement& el = mesh.Element(i);
+		if (el.IsSelected())
 		{
-			FEElement_& e = *pe;
-			n = e.m_node;
-			l = e.Nodes();
+			int* n = el.m_node;
+			int l = el.Nodes();
 			m_item.push_back(i);
-
-			for (j=0; j<l; ++j)
+			for (int j=0; j<l; ++j)
 			{
-				r = po->GetTransform().LocalToGlobal(pn[n[j]].r);
-
-				if (r.x < m_box.x0) m_box.x0 = r.x;
-				if (r.y < m_box.y0) m_box.y0 = r.y;
-				if (r.z < m_box.z0) m_box.z0 = r.z;
-
-				if (r.x > m_box.x1) m_box.x1 = r.x;
-				if (r.y > m_box.y1) m_box.y1 = r.y;
-				if (r.z > m_box.z1) m_box.z1 = r.z;
+				vec3d r_local = mesh.Node(n[j]).r;
+				vec3d r = T.LocalToGlobal(r_local);
+				m_box += r;
 			}
-
-			++m;
 		}
 	}
-
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
 }
 
 void FEElementSelection::Translate(vec3d dr)
@@ -1258,22 +1251,19 @@ FEItemListBuilder* FEElementSelection::CreateItemList()
 {
 	FSMesh* pm = GetMesh();
 	GObject* po = pm->GetGObject();
-	vector<int> elset;
-	for (int i=0; i<pm->Elements(); ++i) 
-		if (pm->Element(i).IsSelected()) elset.push_back(i);
-	return new FSElemSet(po, elset);
+	return new FSElemSet(po, m_item);
 }
 
-FEElement_* FEElementSelection::Element(int i)
+FEElement_* FEElementSelection::Element(size_t i)
 {
-	if ((i<0) || (i>=(int) m_item.size())) return 0;
+	if ((i<0) || (i>= m_item.size())) return nullptr;
 	return m_pMesh->ElementPtr(m_item[i]);
 }
 
-int FEElementSelection::ElementID(int i)
+size_t FEElementSelection::ElementIndex(size_t i)
 {
-    if ((i<0) || (i>=(int) m_item.size())) return -1;
-    return m_item[i];
+	if ((i<0) || (i>= m_item.size())) return -1;
+	return m_item[i];
 }
 
 //////////////////////////////////////////////////////////////////////

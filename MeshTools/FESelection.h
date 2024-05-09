@@ -283,7 +283,7 @@ public:
 	protected:
 		GNode*	m_pn;
 		std::vector<GNode*> m_sel;
-		int		m_node;
+		size_t	m_node;
 	};
 
 	int Next();
@@ -362,7 +362,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSMesh* pm);
+		Iterator(FEElementSelection* pm);
 
 		operator FEElement_*() { return m_pelem; }
 		FEElement_* operator -> () { return m_pelem; }
@@ -370,9 +370,9 @@ public:
 		void operator ++ ();
 
 	protected:
-		FSMesh*		m_pm;
+		FEElementSelection* m_sel;
 		FEElement_*	m_pelem;
-		int			m_n;
+		size_t	m_n;
 	};
 
 public:
@@ -389,12 +389,14 @@ public:
 
 	FEItemListBuilder* CreateItemList();
 
-	FEElement_* Element(int i);
-    int ElementID(int i);
+	FEElement_* Element(size_t i);
+	size_t ElementIndex(size_t i);
+
+	const std::vector<int>& ItemList() const { return m_item; }
 
 protected:
-	FSMesh*		m_pMesh;
-	vector<int>	m_item;
+	FSMesh*				m_pMesh;
+	std::vector<int>	m_item;
 };
 
 //-----------------------------------------------------------------------------

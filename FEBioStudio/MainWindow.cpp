@@ -1580,7 +1580,7 @@ void CMainWindow::ReportSelection()
 			{
 				FSMesh* pm = es->GetMesh();
 				FEElement_* el = es->Element(0);
-				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementID(0) + 1);
+				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementIndex(0) + 1);
 				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
 				switch (el->Type())
@@ -1641,13 +1641,13 @@ void CMainWindow::ReportSelection()
                     AddLogEntry("  nodal values: ");
                     for (int i = 0; i < n; ++i)
                     {
-                        AddLogEntry(QString::number(data.GetElementValue(es->ElementID(0), i)));
+                        AddLogEntry(QString::number(data.GetElementValue(es->ElementIndex(0), i)));
                         if (i < n - 1) AddLogEntry(", ");
                         else AddLogEntry("\n");
                     }
 
                     AddLogEntry("  avg value: ");
-                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementID(0))) + "\n");
+                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementIndex(0))) + "\n");
                 }
 			}
 		}
