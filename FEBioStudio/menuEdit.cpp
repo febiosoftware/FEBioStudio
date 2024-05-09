@@ -656,7 +656,7 @@ void CMainWindow::on_actionToggleVisible_triggered()
 			switch (nitem)
 			{
 			case ITEM_ELEM: if (pm) cmd = new CCmdToggleElementVisibility(pm); break;
-			case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(pm); break;
+			case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(pmb); break;
 			}
 		}
 

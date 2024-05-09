@@ -2210,7 +2210,7 @@ void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
+void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline)
 {
 	// get some settings
 	CGLCamera& cam = *rc.m_cam;
@@ -2239,8 +2239,8 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 				if (f.n[j] < f.n[j1])
 				{
 					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-					vec3d n1 = to_vec3d(f.fn);
-					vec3d n2 = to_vec3d(f2.fn);
+					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+					vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
 
 					if (cam.IsOrtho())
 					{
@@ -2250,7 +2250,9 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 					}
 					else
 					{
-						vec3d c = to_vec3d((f.vr[j] + f.vr[j1]) * 0.5f);
+						vec3d r1 = T.LocalToGlobal(to_vec3d(f.vr[j]));
+						vec3d r2 = T.LocalToGlobal(to_vec3d(f.vr[j1]));
+						vec3d c = (r1 + r2) * 0.5;
 						vec3d pc = p - c;
 						double d1 = pc * n1;
 						double d2 = pc * n2;

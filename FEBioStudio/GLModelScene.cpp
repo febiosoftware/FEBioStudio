@@ -1486,14 +1486,12 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 			{
 				glPushMatrix();
 				SetModelView(po);
-				if (nitem == ITEM_MESH)
+				if (nitem != ITEM_EDGE)
 				{
 					GMesh* lineMesh = po->GetFERenderMesh();
 					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
 					else renderer.RenderMeshLines(pm);
 				}
-				else if (nitem != ITEM_EDGE)
-					renderer.RenderMeshLines(po->GetEditableMesh());
 				glPopMatrix();
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
@@ -1540,7 +1538,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			if (m)
 			{
 				renderer.RenderGLEdges(m);
-				renderer.RenderOutline(rc, m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+				renderer.RenderOutline(rc, m, po->GetTransform(), (rc.m_settings.m_nrender == RENDER_WIREFRAME));
 			}
 
 			glPopMatrix();

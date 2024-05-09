@@ -257,6 +257,17 @@ void GObject::BuildFERenderMesh()
 					{
 						el.GetFace(j, face);
 						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i);
+
+						int n[FSEdge::MAX_NODES];
+						int ne = face.Edges();
+						for (int k = 0; k < ne; ++k)
+						{
+							int m = face.GetEdgeNodes(k, n);
+							if (m == 2)
+							{
+								if (n[0] < n[1]) gm.AddEdge(n, 2, -1);
+							}
+						}
 					}
 				}
 			}

@@ -79,7 +79,7 @@ public:
 
 	void RenderGLMesh(GMesh* pm, int surfID);
 	void RenderGLEdges(GMesh* pm, int nid = -1);
-	void RenderOutline(CGLContext& rc, GMesh* pm, bool outline = false);
+	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);
 	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
 public:
