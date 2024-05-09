@@ -92,6 +92,7 @@ private:
 	void RenderMeshLines    (CGLContext& rc, GObject* po);
 
 	void RenderSelectedFEFaces(CGLContext& rc, GObject* po);
+	void RenderSelectedFEElements(CGLContext& rc, GObject* po);
 
 	void RenderFEFacesFromGMesh(CGLContext& rc, GObject* po);
 

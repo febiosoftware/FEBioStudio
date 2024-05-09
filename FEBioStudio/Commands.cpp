@@ -2757,6 +2757,7 @@ void CCmdUnhideAll::Execute()
 		}
 		break;
 		}
+		po->UpdateItemVisibility();
 	}
 
 	m_bunhide = false;

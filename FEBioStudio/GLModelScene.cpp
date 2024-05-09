@@ -420,6 +420,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 					if (gm)
 					{
 						RenderFEFacesFromGMesh(rc, po);
+						RenderSelectedFEElements(rc, po);
 					}
 					else
 						RenderFEElements(rc, po);
@@ -1485,9 +1486,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 			{
 				glPushMatrix();
 				SetModelView(po);
-				if (nitem == ITEM_ELEM)
-					RenderMeshLines(rc, po);
-				else if (nitem == ITEM_MESH)
+				if (nitem == ITEM_MESH)
 				{
 					GMesh* lineMesh = po->GetFERenderMesh();
 					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
@@ -2621,6 +2620,42 @@ void CGLModelScene::RenderSelectedFEFaces(CGLContext& rc, GObject* po)
 	m_renderer.PopState();
 }
 
+void CGLModelScene::RenderSelectedFEElements(CGLContext& rc, GObject* po)
+{
+	FEElementSelection* sel = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+	if (sel == nullptr) return;
+	if (sel->GetMesh() != po->GetFEMesh()) return;
+	FSMesh* pm = sel->GetMesh();
+	const std::vector<int>& selectedElements = sel->ItemList();
+	if (selectedElements.empty()) return;
+	
+	
+	m_renderer.PushState();
+
+	m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3f(1.f, 0, 0);
+
+	bool hasBeamElements = false;
+	m_renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
+		// check for beams
+		if (el.IsBeam()) hasBeamElements = true;
+		return true;
+	});
+
+	// render a yellow highlight around selected elements
+	m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
+	glColor3f(1.f, 1.f, 0);
+	m_renderer.RenderFEElementsOutline(*pm, selectedElements);
+
+	if (hasBeamElements)
+	{
+		// render beam elements
+		RenderSelectedBeamElements(rc, po);
+	}
+
+	m_renderer.PopState();
+}
+
 void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 {
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -2867,7 +2902,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	bool showContour = (view.m_bcontour && data.IsValid());
 	
 	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-	vector<int> selectedElements;
 
 	// render the unselected faces
 	int NE = pm->Elements();
@@ -2886,7 +2920,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 
 		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
 				int i = el.m_ntag;
-				if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 				if (el.IsBeam()) hasBeamElements = true;
 
 				if (!el.IsSelected() && el.IsVisible())
@@ -2916,7 +2949,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 
 		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
 			int i = el.m_ntag;
-			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 			if (el.IsBeam()) hasBeamElements = true;
 
 			if (!el.IsSelected() && el.IsVisible())
@@ -2974,7 +3006,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 
 		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
 			int i = el.m_ntag;
-			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 			if (el.IsBeam()) hasBeamElements = true;
 
 			if (!el.IsSelected() && el.IsVisible())
@@ -3004,33 +3035,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 
 	// render the selected elements
 	if (pdoc == nullptr) return;
-	if (selectedElements.empty() == false)
-	{
-		renderer.PushState();
-		
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3f(1.f, 0, 0);
-
-		hasBeamElements = false;
-		renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
-				// check for beams
-				if (el.IsBeam()) hasBeamElements = true;
-				return true;
-			});
-
-		// render a yellow highlight around selected elements
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3f(1.f, 1.f, 0);
-		renderer.RenderFEElementsOutline(*pm, selectedElements);
-
-		if (hasBeamElements)
-		{
-			// render beam elements
-			RenderSelectedBeamElements(rc, po);
-		}
-	
-		renderer.PopState();
-	}
+	RenderSelectedFEElements(rc, po);
 }
 
 //-----------------------------------------------------------------------------
