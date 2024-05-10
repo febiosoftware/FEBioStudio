@@ -37,6 +37,7 @@ enum OBJECT_COLOR_MODE {
 
 class CModelDocument;
 class GPart;
+class GLFiberRenderer;
 
 class CGLModelScene : public CGLScene
 {
@@ -56,6 +57,8 @@ public:
 	OBJECT_COLOR_MODE ObjectColorMode() const;
 
 	void Update() override;
+
+	void UpdateFiberViz();
 
 private:
 	void RenderModel(CGLContext& rc);
@@ -133,9 +136,13 @@ private:
 	// apply the mesh data to an object's render mesh
 	void MapMeshData(GObject* po);
 
+	void BuildFiberViz(CGLContext& rc);
+
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;
 	
 	OBJECT_COLOR_MODE	m_objectColor;
+
+	GLFiberRenderer* m_fiberViz;
 };

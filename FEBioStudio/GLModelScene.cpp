@@ -72,6 +72,7 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
 	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
+	m_fiberViz = nullptr;
 }
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
@@ -152,7 +153,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (view.m_brigid) RenderRigidBodies(rc);
 	if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
 	if (view.m_bwall ) RenderRigidWalls(rc);
-	if (view.m_bfiber) RenderMaterialFibers(rc);
+	RenderMaterialFibers(rc);
 	if (view.m_blma  ) RenderLocalMaterialAxes(rc);
 
 	// render the selected parts
@@ -961,9 +962,25 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 class GLFiberRenderer
 {
 public:
-	GLFiberRenderer() {}
-	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
-	void RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
+	struct FIBER
+	{
+		GLColor c;
+		vec3d r;	// center of fiber
+		vec3d n;	// direction of fiber
+	};
+
+public:
+	GLFiberRenderer() {
+		m_fibers.reserve(4096);
+	}
+
+	void Clear() { m_fibers.clear(); }
+
+	void BuildFiberVectors(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
+	void BuildFiberVectors(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
+
+	void RenderFibers();
+	void RenderFiber(const FIBER& fiber);
 
 	void Init();
 
@@ -983,6 +1000,8 @@ private:
 	GLColor	m_defaultCol;
 	double	m_scale = 1.0;
 	GLUquadricObj* m_glyph = nullptr;
+
+	std::vector<FIBER>	m_fibers;
 };
 
 void GLFiberRenderer::Init()
@@ -1002,6 +1021,37 @@ void GLFiberRenderer::Init()
 	}
 }
 
+void GLFiberRenderer::RenderFibers()
+{
+	for (auto& fiber : m_fibers)
+		RenderFiber(fiber);
+}
+
+void GLFiberRenderer::RenderFiber(const GLFiberRenderer::FIBER& fiber)
+{
+	vec3d p0 = fiber.r - fiber.n * (m_scale * 0.5);
+	vec3d p1 = fiber.r + fiber.n * (m_scale * 0.5);
+
+	glColor3ub(fiber.c.r, fiber.c.g, fiber.c.b);
+	if (m_lineStyle == 0)
+	{
+		glVertex3d(p0.x, p0.y, p0.z);
+		glVertex3d(p1.x, p1.y, p1.z);
+	}
+	else
+	{
+		glPushMatrix();
+
+		glx::translate(p0);
+		quatd Q(vec3d(0, 0, 1), fiber.n);
+		glx::rotate(Q);
+
+		gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
+
+		glPopMatrix();
+	}
+}
+
 void GLFiberRenderer::Finish()
 {
 	if (m_lineStyle == 0)
@@ -1015,7 +1065,12 @@ void GLFiberRenderer::Finish()
 	glPopAttrib();
 }
 
-void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
+void GLFiberRenderer::BuildFiberVectors(
+	GObject* po,
+	FSMaterial* pmat, 
+	FEElementRef& rel, 
+	const vec3d& c, 
+	mat3d Q)
 {
 	if (pmat->HasFibers())
 	{
@@ -1040,32 +1095,12 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			col = GLColor(r, g, b);
 		}
 
-		vec3d p0 = c - q * (m_scale * 0.5);
-		vec3d p1 = c + q * (m_scale * 0.5);
-
-		glColor3ub(col.r, col.g, col.b);
-		if (m_lineStyle == 0)
-		{
-			glVertex3d(p0.x, p0.y, p0.z);
-			glVertex3d(p1.x, p1.y, p1.z);
-		}
-		else
-		{
-			glPushMatrix();
-
-			glx::translate(p0);
-			quatd Q(vec3d(0, 0, 1), q);
-			glx::rotate(Q);
-
-			gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
-
-			glPopMatrix();
-		}
+		m_fibers.push_back({ col, c, q });
 	}
 
 	if (pmat->HasMaterialAxes())
 	{
-		Q = Q*pmat->GetMatAxes(rel);
+		Q = Q * pmat->GetMatAxes(rel);
 	}
 
 	int index = 0;
@@ -1078,7 +1113,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			if (matj)
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-				RenderFiber(po, matj, rel, c, Q);
+				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
 			{
@@ -1086,14 +1121,20 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 				if (matProp)
 				{
 					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-					RenderFiber(po, matProp, rel, c, Q);
+					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}
 		}
 	}
 }
 
-void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
+
+void GLFiberRenderer::BuildFiberVectors(
+	GObject* po,
+	FSMaterialProperty* pmat,
+	FEElementRef& rel,
+	const vec3d& c,
+	mat3d Q)
 {
 	if (pmat->HasFibers())
 	{
@@ -1118,27 +1159,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 			col = GLColor(r, g, b);
 		}
 
-		vec3d p0 = c - q * (m_scale * 0.5);
-		vec3d p1 = c + q * (m_scale * 0.5);
-
-		glColor3ub(col.r, col.g, col.b);
-		if (m_lineStyle == 0)
-		{
-			glVertex3d(p0.x, p0.y, p0.z);
-			glVertex3d(p1.x, p1.y, p1.z);
-		}
-		else
-		{
-			glPushMatrix();
-
-			glx::translate(p0);
-			quatd Q(vec3d(0, 0, 1), q);
-			glx::rotate(Q);
-
-			gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
-
-			glPopMatrix();
-		}
+		m_fibers.push_back({ col, c, q });
 	}
 
 	int index = 0;
@@ -1151,7 +1172,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 			if (matj)
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-				RenderFiber(po, matj, rel, c, Q);
+				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
 			{
@@ -1159,39 +1180,32 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 				if (matProp)
 				{
 					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-					RenderFiber(po, matProp, rel, c, Q);
+					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}
 		}
 	}
 }
 
-void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
+void CGLModelScene::UpdateFiberViz()
 {
-	CModelDocument* pdoc = m_doc;
-	if (pdoc == nullptr) return;
+	delete m_fiberViz;
+	m_fiberViz = nullptr;
+}
 
-	CGLView* glview = rc.m_view;
-	if (glview == nullptr) return;
-
-	GLViewSettings& view = glview->GetViewSettings();
+void CGLModelScene::BuildFiberViz(CGLContext& rc)
+{
+	if (m_fiberViz == nullptr) m_fiberViz = new GLFiberRenderer();
+	else m_fiberViz->Clear();
 
 	// get the model
-	FSModel* ps = pdoc->GetFSModel();
+	FSModel* ps = m_doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
 
-	BOX box = model.GetBoundingBox();
-	double h = 0.05 * box.GetMaxExtent();
-
-	GLFiberRenderer fiberRender;
-	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
-	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
-	fiberRender.SetColorOption(view.m_fibColor);
-	fiberRender.SetLineStyle(view.m_fibLineStyle);
-
-	fiberRender.Init();
+	GLViewSettings& view = rc.m_settings;
+	m_fiberViz->SetColorOption(view.m_fibColor);
 
 	GMaterial* pgm = nullptr;
 	int matId = -1;
@@ -1224,7 +1238,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 						if (pgm)
 						{
 							pmat = pgm->GetMaterialProperties();
-							fiberRender.SetDefaultColor(pgm->Diffuse());
+							m_fiberViz->SetDefaultColor(pgm->Diffuse());
 						}
 
 						rel.m_nelem = j;
@@ -1238,15 +1252,54 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 							// to global coordinates
 							c = po->GetTransform().LocalToGlobal(c);
 
-							// render the fiber
-							fiberRender.RenderFiber(po, pmat, rel, c);
+							// add it to the pile
+							m_fiberViz->BuildFiberVectors(po, pmat, rel, c, mat3d::identity());
 						}
 					}
 				}
 			}
 		}
 	}
+}
 
+void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
+{
+	if (m_doc == nullptr) return;
+
+	GLViewSettings& view = rc.m_settings;
+
+	if (view.m_bfiber == false)
+	{
+		if (m_fiberViz)
+		{
+			delete m_fiberViz;
+			m_fiberViz = nullptr;
+		}
+		return;
+	}
+	else
+	{
+		if (m_fiberViz == nullptr)
+		{
+			BuildFiberViz(rc);
+		}
+	}
+
+	if (m_fiberViz == nullptr) return;
+
+	FSModel* ps = m_doc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	BOX box = model.GetBoundingBox();
+	double h = 0.05 * box.GetMaxExtent();
+
+	GLFiberRenderer& fiberRender = *m_fiberViz;
+	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
+	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
+	fiberRender.SetLineStyle(view.m_fibLineStyle);
+
+	fiberRender.Init();
+	fiberRender.RenderFibers();
 	fiberRender.Finish();
 }
 
