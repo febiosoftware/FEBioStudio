@@ -51,6 +51,7 @@ public slots:
 	void onXClicked();
 	void onYClicked();
 	void onZClicked();
+	void onFlipClicked();
 
 private:
 	void setOrientation(double x, double y, double z);

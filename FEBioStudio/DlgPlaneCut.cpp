@@ -55,12 +55,12 @@ public:
 		QGridLayout* g = new QGridLayout;
 		l->addLayout(g);
 
-		QPushButton *pbx, *pby, *pbz;
+		QPushButton *pbx, *pby, *pbz, *flip;
 
 		g->addWidget(new QLabel("X-normal:"), 0, 0); g->addWidget(w[0] = new CDragBox, 0, 1); g->addWidget(pbx = new QPushButton("X"), 0, 2);
 		g->addWidget(new QLabel("Y-normal:"), 1, 0); g->addWidget(w[1] = new CDragBox, 1, 1); g->addWidget(pby = new QPushButton("Y"), 1, 2);
 		g->addWidget(new QLabel("Z-normal:"), 2, 0); g->addWidget(w[2] = new CDragBox, 2, 1); g->addWidget(pbz = new QPushButton("Z"), 2, 2);
-		g->addWidget(new QLabel("offset:"  ), 3, 0); g->addWidget(w[3] = new CDragBox, 3, 1);
+		g->addWidget(new QLabel("offset:"  ), 3, 0); g->addWidget(w[3] = new CDragBox, 3, 1); g->addWidget(flip = new QPushButton("Flip"), 3, 2);
 
 		g->setColumnStretch(1, 2);
 
@@ -98,6 +98,7 @@ public:
 		QObject::connect(pbx, SIGNAL(clicked()), dlg, SLOT(onXClicked()));
 		QObject::connect(pby, SIGNAL(clicked()), dlg, SLOT(onYClicked()));
 		QObject::connect(pbz, SIGNAL(clicked()), dlg, SLOT(onZClicked()));
+		QObject::connect(flip, SIGNAL(clicked()), dlg, SLOT(onFlipClicked()));
 	}
 };
 
@@ -191,4 +192,28 @@ void CDlgPlaneCut::onYClicked()
 void CDlgPlaneCut::onZClicked()
 {
 	setOrientation(0, 0, 1);
+}
+
+void CDlgPlaneCut::onFlipClicked()
+{
+	ui->w[0]->blockSignals(true);
+	ui->w[1]->blockSignals(true);
+	ui->w[2]->blockSignals(true);
+
+	double x = ui->w[0]->value();
+	double y = ui->w[1]->value();
+	double z = ui->w[2]->value();
+	double a = ui->w[3]->value();
+
+	ui->w[0]->setValue(-x);
+	ui->w[1]->setValue(-y);
+	ui->w[2]->setValue(-z);
+	ui->w[3]->setValue(-a);
+
+	ui->w[0]->blockSignals(false);
+	ui->w[1]->blockSignals(false);
+	ui->w[2]->blockSignals(false);
+	ui->w[3]->blockSignals(false);
+
+	onDataChanged();
 }
