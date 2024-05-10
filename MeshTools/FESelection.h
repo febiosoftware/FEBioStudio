@@ -407,7 +407,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSMeshBase* pm);
+		Iterator(FEFaceSelection* pm);
 
 		operator FSFace*() { return m_pface; }
 		FSFace* operator -> () { return m_pface; }
@@ -415,29 +415,33 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSMeshBase*	m_pm;
+		FEFaceSelection*	m_psel;
 		FSFace*		m_pface;
 		int			m_n;
 	};
 
 public:
 	FEFaceSelection(FSMeshBase* pm);
-	int Count();
-	virtual void Invert();
-	virtual void Update();
-	virtual void Translate(vec3d dr);
-	virtual void Rotate(quatd q, vec3d c);
-	virtual void Scale(double s, vec3d dr, vec3d c);
-	virtual quatd GetOrientation();
-
-	FSMeshBase* GetMesh() { return m_pMesh; }
-
-	FEItemListBuilder* CreateItemList();
 
 	Iterator begin();
 
+	FSMeshBase* GetMesh() { return m_pMesh; }
+
+	FSFace* Face(size_t n);
+
+public:
+	int Count() override;
+	void Invert() override;
+	void Update() override;
+	void Translate(vec3d dr) override;
+	void Rotate(quatd q, vec3d c) override;
+	void Scale(double s, vec3d dr, vec3d c) override;
+	quatd GetOrientation() override;
+	FEItemListBuilder* CreateItemList() override;
+
 protected:
 	FSMeshBase*		m_pMesh;
+	std::vector<int>	m_item;
 };
 
 //-----------------------------------------------------------------------------

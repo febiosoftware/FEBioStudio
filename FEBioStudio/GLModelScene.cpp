@@ -3205,12 +3205,13 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process faces
 		if (mode == ITEM_FACE)
 		{
-			int NF = pmb->Faces();
-			for (int i = 0; i < NF; ++i)
+			FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(m_doc->GetCurrentSelection());
+			if (selection && selection->Count())
 			{
-				FSFace& f = pmb->Face(i);
-				if (f.IsSelected())
+				int NF = selection->Count();
+				for (int i = 0; i < NF; ++i)
 				{
+					FSFace& f = *selection->Face(i); assert(f.IsSelected());
 					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
 					tag.c = (f.IsExternal() ? extcol : intcol);
 					int nid = f.GetID();

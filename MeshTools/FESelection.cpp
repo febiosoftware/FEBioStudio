@@ -1079,11 +1079,10 @@ void FEElementSelection::Update()
 	GObject* po = mesh.GetGObject(); assert(po);
 	const Transform& T = po->GetTransform();
 
-	m_box.m_valid = false;
-
 	int N = mesh.Elements();
 	m_item.reserve(N);
 
+	BOX box;
 	for (int i=0; i<N; ++i)
 	{
 		FSElement& el = mesh.Element(i);
@@ -1094,12 +1093,12 @@ void FEElementSelection::Update()
 			m_item.push_back(i);
 			for (int j=0; j<l; ++j)
 			{
-				vec3d r_local = mesh.Node(n[j]).r;
-				vec3d r = T.LocalToGlobal(r_local);
-				m_box += r;
+				m_box += mesh.Node(n[j]).r;
 			}
 		}
 	}
+
+	m_box = LocalToGlobalBox(box, T);
 }
 
 void FEElementSelection::Translate(vec3d dr)
@@ -1276,15 +1275,15 @@ FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FESelection(SELECT_FE_FACES)
 	Update(); 
 }
 
+FSFace* FEFaceSelection::Face(size_t n)
+{
+	if (m_pMesh) return m_pMesh->FacePtr(m_item[n]);
+	else return nullptr;
+}
+
 int FEFaceSelection::Count()
 {
-	if (m_pMesh == 0) return 0;
-	int N = 0;
-	FSFace* pf = m_pMesh->FacePtr();
-	for (int i=0; i<m_pMesh->Faces(); ++i, ++pf)
-		if (pf->IsSelected()) ++N;
-
-	return N;
+	return (int)m_item.size();
 }
 
 void FEFaceSelection::Invert()
@@ -1298,48 +1297,37 @@ void FEFaceSelection::Invert()
 			if (pf->IsSelected()) pf->Unselect(); 
 			else pf->Select();
 		}
+	Update();
 }
 
 void FEFaceSelection::Update()
 {
-	if (m_pMesh == 0) return;
+	m_item.clear();
+	if (m_pMesh == nullptr) return;
+
 	int N = m_pMesh->Faces();
 	FSNode* pn = m_pMesh->NodePtr();
 	FSFace* pf = m_pMesh->FacePtr();
 	GObject* po = m_pMesh->GetGObject();
+	const Transform& T = po->GetTransform();
 
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
-	int* n, i, j;
-	vec3d r;
-	for (i=0; i<N; ++i, ++pf)
+	BOX box;
+	for (int i=0; i<N; ++i, ++pf)
 	{
 		if (pf->IsSelected())
 		{
 			FSFace& f = *pf;
-			n = f.n;
-			for (j=0; j<pf->Nodes(); ++j)
+			int* n = f.n;
+			for (int j=0; j<pf->Nodes(); ++j)
 			{
-				r = po->GetTransform().LocalToGlobal(pn[n[j]].r);
-
-				if (r.x < m_box.x0) m_box.x0 = r.x;
-				if (r.y < m_box.y0) m_box.y0 = r.y;
-				if (r.z < m_box.z0) m_box.z0 = r.z;
-
-				if (r.x > m_box.x1) m_box.x1 = r.x;
-				if (r.y > m_box.y1) m_box.y1 = r.y;
-				if (r.z > m_box.z1) m_box.z1 = r.z;
+				box += pn[n[j]].r;
 			}
-
-			++m;
+			m_item.push_back(i);
 		}
 	}
 
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
+	// convert local box to global box
+	m_box = LocalToGlobalBox(box, T);
 }
 
 void FEFaceSelection::Translate(vec3d dr)
@@ -1355,7 +1343,7 @@ void FEFaceSelection::Translate(vec3d dr)
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
 	// loop over all selected faces
-	Iterator pf(m_pMesh);
+	Iterator pf(this);
 	while (pf)
 	{
 		for (j=0; j<pf->Nodes(); ++j) pn[pf->n[j]].m_ntag = 1;
@@ -1404,7 +1392,7 @@ void FEFaceSelection::Rotate(quatd q, vec3d rc)
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
 	// loop over all selected faces
-	Iterator pf(m_pMesh);
+	Iterator pf(this);
 	while (pf)
 	{
 		for (j=0; j<pf->Nodes(); ++j) pn[pf->n[j]].m_ntag = 1;
@@ -1448,7 +1436,7 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
 	// loop over all selected faces
-	Iterator pf(m_pMesh);
+	Iterator pf(this);
 	while (pf)
 	{
 		for (j=0; j<pf->Nodes(); ++j) pn[pf->n[j]].m_ntag = 1;
@@ -1481,20 +1469,27 @@ quatd FEFaceSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEFaceSelection::Iterator::Iterator(FSMeshBase* pm)
+FEFaceSelection::Iterator::Iterator(FEFaceSelection* psel)
 { 
-	m_pm = pm;
+	m_psel = psel;
 	m_n = 0;
-	if (m_pm == 0) return;
-	do { m_pface = m_pm->FacePtr(m_n++); } while (m_pface && !m_pface->IsSelected());
+	m_pface = nullptr;
+	if (m_psel && m_psel->Count())
+	{
+		m_pface = m_psel->Face(0);
+	}
 }
 
 void FEFaceSelection::Iterator::operator ++()
 {
-	if (m_pm == 0) return;
-	do { m_pface = m_pm->FacePtr(m_n++); } while (m_pface && !m_pface->IsSelected());
+	if (m_psel)
+	{
+		int N = m_psel->Count();
+		if (m_n < N) m_n++;
+		if (m_n < N) m_pface = m_psel->Face(m_n);
+		else m_pface = nullptr;
+	}
 }
-
 
 FEItemListBuilder* FEFaceSelection::CreateItemList()
 {
@@ -1510,7 +1505,7 @@ FEItemListBuilder* FEFaceSelection::CreateItemList()
 
 FEFaceSelection::Iterator FEFaceSelection::begin()
 {
-	return Iterator(m_pMesh);
+	return Iterator(this);
 }
 
 //////////////////////////////////////////////////////////////////////

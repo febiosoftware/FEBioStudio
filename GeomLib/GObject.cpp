@@ -715,11 +715,7 @@ BOX GObject::GetLocalBox() const
 BOX GObject::GetGlobalBox() const
 {
 	BOX box = GetLocalBox();
-	vec3d r0 = vec3d(box.x0, box.y0, box.z0);
-	vec3d r1 = vec3d(box.x1, box.y1, box.z1);
-	r0 = GetTransform().LocalToGlobal(r0);
-	r1 = GetTransform().LocalToGlobal(r1);
-	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
+	return LocalToGlobalBox(box, GetTransform());
 }
 
 //-----------------------------------------------------------------------------
