@@ -166,7 +166,9 @@ public:
 	void AssignMaterial(int matid);
 
 	// assign a material to a part
-	virtual void AssignMaterial(int partid, int matid);
+	void AssignMaterial(int partid, int matid);
+
+	void AssignMaterial(GPart* part, int matid);
 
 	// render the geometry of the object (not the FE mesh)
 //	virtual void Render(GLCanvas* pc);
@@ -217,16 +219,20 @@ public:
 	virtual bool CanDelete() const;
 	virtual bool CanDeleteMesh() const;
 
+	// update the element material IDs
+	void UpdateFEElementMatIDs();
+	void UpdateFEElementMatIDs(int partIndex);
+
 public:
 	bool IsFaceVisible(const GFace* pf) const;
+
+	void BuildFERenderMesh();
 
 protected:
 	// set the render mesh
 	void SetRenderMesh(GMesh* mesh);
 
 	void SetValidFlag(bool b);
-
-	void BuildFERenderMesh();
 
 public:
 	// --- G R O U P S ---

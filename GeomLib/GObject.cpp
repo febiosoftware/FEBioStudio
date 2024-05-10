@@ -562,6 +562,7 @@ void GObject::AssignMaterial(int matid)
 		GPart& g = *m_Part[i];
 		g.SetMaterialID(matid);
 	}
+	UpdateFEElementMatIDs();
 }
 
 //-----------------------------------------------------------------------------
@@ -570,7 +571,14 @@ void GObject::AssignMaterial(int matid)
 void GObject::AssignMaterial(int partid, int matid)
 {
 	GPart* pg = FindPart(partid); assert(pg);
-	if (pg) pg->SetMaterialID(matid);
+	if (pg) AssignMaterial(pg, matid);
+}
+
+void GObject::AssignMaterial(GPart* part, int matid)
+{
+	assert(part && (part->Object() == this));
+	part->SetMaterialID(matid);
+	UpdateFEElementMatIDs(part->GetLocalID());
 }
 
 //-----------------------------------------------------------------------------
@@ -616,20 +624,39 @@ bool GObject::Update(bool b)
 	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
 
 	// assign part materials to element matIDs. 
-	FSMesh* pm = GetFEMesh();
-	if (pm)
-	{
-		for (int i = 0; i < pm->Elements(); ++i)
-		{
-			FSElement& el = pm->Element(i);
-			GPart* pg = Part(el.m_gid);
-			if (pg) el.m_MatID = pg->GetMaterialID();
-		}
-	}
+	UpdateFEElementMatIDs();
 
 	BuildGMesh();
 	BuildFERenderMesh();
 	return GBaseObject::Update(b);
+}
+
+void GObject::UpdateFEElementMatIDs()
+{
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		GPart* pg = Part(el.m_gid); assert(pg);
+		if (pg) el.m_MatID = pg->GetMaterialID();
+	}
+}
+
+void GObject::UpdateFEElementMatIDs(int partIndex)
+{
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+	if ((partIndex < 0) || (partIndex >= Parts())) return;
+
+	GPart* pg = Part(partIndex);
+	int matId = pg->GetMaterialID();
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_gid == partIndex) el.m_MatID = matId;
+	}
 }
 
 //-----------------------------------------------------------------------------

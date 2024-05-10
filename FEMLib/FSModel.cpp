@@ -1890,7 +1890,7 @@ void FSModel::DeleteAllMaterials()
 	for (int i = 0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		for (int j = 0; j<po->Parts(); ++j) po->AssignMaterial(po->Part(j)->GetID(), 0);
+		po->AssignMaterial(0);
 	}
 
 	// delete all materials

@@ -66,10 +66,6 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 
 	if (mdl.Objects() == 0) return;
 
-	// set the plane normal
-	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
-	double ref = -m_plane[3];
-
 	int edge[15][2], edgeNode[15][2], etag[15];
 
 	if (m_planeCut) delete m_planeCut;
@@ -90,6 +86,20 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 			int en[8];
 			GLColor ec[8];
 
+			const Transform& T = po->GetTransform();
+
+			// set the plane normal
+			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
+			double l = norm.Length(); if (l == 0) l = 1;
+			norm.Normalize();
+			double ref = -m_plane[3]/l;
+			vec3d o = norm * ref;
+
+			// convert to local
+			norm = T.GlobalToLocalNormal(norm);
+			o = T.GlobalToLocal(o);
+			ref = norm * o;
+
 			bool showContour = false;
 			Mesh_Data& data = mesh->GetMeshData();
 			if ((po == poa) && (showMeshData))
@@ -107,10 +117,9 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 			{
 				// render only when visible
 				FSElement& el = mesh->Element(i);
-				GPart* pg = po->Part(el.m_gid);
-				if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
+				if (el.IsVisible() && el.IsSolid())
 				{
-					int mid = pg->GetMaterialID();
+					int mid = el.m_MatID;
 					if (mid != matId)
 					{
 						GMaterial* pmat = fem.GetMaterialFromID(mid);
@@ -150,7 +159,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 					for (int k = 0; k < 8; ++k)
 					{
 						FSNode& node = mesh->Node(el.m_node[nt[k]]);
-						ex[k] = mesh->LocalToGlobal(node.r);
+						ex[k] = node.r;
 						en[k] = el.m_node[nt[k]];
 					}
 
@@ -193,7 +202,8 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 							else
 								w = 0.f;
 
-							r[k] = to_vec3f(ex[n1] * (1 - w) + ex[n2] * w);
+							vec3d rk = ex[n1] * (1 - w) + ex[n2] * w;
+							r[k] = to_vec3f(T.LocalToGlobal(rk));
 						}
 
 						int nf = planeCut->Faces();
@@ -309,9 +319,10 @@ void GLPlaneCut::Render(CGLContext& rc)
 
 	if (rc.m_settings.m_bmesh)
 	{
+		GLColor c = rc.m_settings.m_meshColor;
 		glDisable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(0, 0, 0);
+		glColor4ub(c.r, c.g, c.b, c.a);
 
 		CGLCamera& cam = *rc.m_cam;
 		cam.LineDrawMode(true);

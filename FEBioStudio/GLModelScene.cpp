@@ -115,6 +115,10 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
+		BOX box =  m_doc->GetGModel()->GetBoundingBox();
+		glColor3ub(200, 0, 200);
+		glx::renderBox(box, false);
+
 		if (glview->PlaneCutMode() == 0)
 		{
 			// render the plane cut first
@@ -352,22 +356,21 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			if (view.m_bcontour && (poa == po))
 			{
-				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
 				else RenderObject(rc, po);
 			}
 			else if (m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 			{
-				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 				else RenderObject(rc, po);
 			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
-				RenderFEElements(rc, po);
-
-				GLColor c = view.m_meshColor;
-				glColor4ub(c.r, c.g, c.b, c.a);
-				RenderMeshLines(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 			}
 			else RenderObject(rc, po);
 		}
@@ -421,9 +424,10 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 					{
 						RenderFEFacesFromGMesh(rc, po);
 						RenderSelectedFEElements(rc, po);
+
+						// TODO: Render unselected beam elements? 
+						// RenderUnselectedBeamElements(rc, po);
 					}
-					else
-						RenderFEElements(rc, po);
 				}
 				else if (item == ITEM_FACE)
 				{
@@ -2874,169 +2878,6 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-// Render the FE elements
-void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
-{
-	CModelDocument* pdoc = m_doc;
-	if (pdoc == nullptr) return;
-
-	FSMesh* pm = po->GetFEMesh(); assert(pm);
-	if (pm == 0) return;
-
-	GLMeshRender& renderer = GetMeshRenderer();
-	GLViewSettings& view = rc.m_settings;
-
-	GLColor dif;
-
-	GLColor col = po->GetColor();
-
-	int nmatid = -1;
-	dif = po->GetColor();
-	glColor3ub(dif.r, dif.g, dif.b);
-	SetMatProps(0);
-	int glmode = 0;
-
-	Mesh_Data& data = pm->GetMeshData();
-	bool showContour = (view.m_bcontour && data.IsValid());
-	
-	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-
-	// render the unselected faces
-	int NE = pm->Elements();
-	bool hasBeamElements = false;
-	if (showContour)
-	{
-		// Color is determined by data and colormap
-		double vmin, vmax;
-		data.GetValueRange(vmin, vmax);
-
-		// Create a copy so we can change the range
-		Post::CColorMap colorMap = rc.m_view->GetColorMap();
-		colorMap.SetRange((float)vmin, (float)vmax);
-		
-		glEnable(GL_COLOR_MATERIAL);
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
-				int i = el.m_ntag;
-				if (el.IsBeam()) hasBeamElements = true;
-
-				if (!el.IsSelected() && el.IsVisible())
-				{
-					GPart* pg = po->Part(el.m_gid);
-					if (pg->IsVisible())
-					{
-						int ne = el.Nodes();
-						for (int j = 0; j < ne; ++j)
-						{
-							if (data.GetElementDataTag(i) > 0)
-								c[j] = colorMap.map(data.GetElementValue(i, j));
-							else
-								c[j] = GLColor(212, 212, 212);
-						}
-
-						// render the element
-						return true;
-					}
-				}
-				return false;
-			});
-	}
-	else if (m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
-	{
-		glEnable(GL_COLOR_MATERIAL);
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
-			int i = el.m_ntag;
-			if (el.IsBeam()) hasBeamElements = true;
-
-			if (!el.IsSelected() && el.IsVisible())
-			{
-				GPart* pg = po->Part(el.m_gid);
-				if (pg->IsVisible())
-				{
-					GLColor col;
-					const int a = 212;
-					const int b = 106;
-					const int d =  53;
-					switch (el.Type())
-					{
-					case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
-					case FE_TRI3   : col = GLColor(0, a, a); break;
-					case FE_TRI6   : col = GLColor(0, b, b); break;
-					case FE_TRI7   : col = GLColor(0, b, d); break;
-					case FE_TRI10  : col = GLColor(0, d, d); break;
-					case FE_QUAD4  : col = GLColor(a, a, 0); break;
-					case FE_QUAD8  : col = GLColor(b, b, 0); break;
-					case FE_QUAD9  : col = GLColor(d, d, 0); break;
-					case FE_TET4   : col = GLColor(0, a, 0); break;
-					case FE_TET5   : col = GLColor(0, a, 0); break;
-					case FE_TET10  : col = GLColor(0, b, 0); break;
-					case FE_TET15  : col = GLColor(0, b, 0); break;
-					case FE_TET20  : col = GLColor(0, d, 0); break;
-					case FE_HEX8   : col = GLColor(a, 0, 0); break;
-					case FE_HEX20  : col = GLColor(b, 0, 0); break;
-					case FE_HEX27  : col = GLColor(b, 0, 0); break;
-					case FE_PENTA6 : col = GLColor(0, 0, a); break;
-					case FE_PENTA15: col = GLColor(0, 0, b); break;
-					case FE_PYRA5  : col = GLColor(0, 0, a); break;
-					case FE_PYRA13 : col = GLColor(0, 0, b); break;
-					case FE_BEAM2  : col = GLColor(a, a, a); break;
-					case FE_BEAM3  : col = GLColor(b, b, b); break;
-					default:
-						col = GLColor(255, 255, 255); break;
-					}
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) c[j] = col;
-
-					// render the element
-					return true;
-				}
-			}
-			return false;
-			});
-
-	}
-	else
-	{
-		// color is determined by material
-		glDisable(GL_COLOR_MATERIAL);
-		GPart* pgmat = nullptr;
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
-			int i = el.m_ntag;
-			if (el.IsBeam()) hasBeamElements = true;
-
-			if (!el.IsSelected() && el.IsVisible())
-			{
-				GPart* pg = po->Part(el.m_gid);
-				if (pg->IsVisible())
-				{
-					if (pg != pgmat)
-					{
-						SetMatProps(rc, pg);
-						pgmat = pg;
-					}
-
-					// render the element
-					return true;
-				}
-			}
-			return false;
-			});
-	}
-
-	if (hasBeamElements)
-	{
-		// render beam elements
-		RenderUnselectedBeamElements(rc, po);
-	}
-
-	// render the selected elements
-	if (pdoc == nullptr) return;
-	RenderSelectedFEElements(rc, po);
-}
-
-//-----------------------------------------------------------------------------
 void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 {
 	if (po == nullptr) return;
@@ -3341,12 +3182,13 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	{
 		if ((mode == ITEM_ELEM) && pm)
 		{
-			int NE = pm->Elements();
-			for (int i = 0; i < NE; i++)
+			FEElementSelection* selection = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+			if (selection && selection->Count())
 			{
-				FEElement_& el = pm->Element(i);
-				if (el.IsSelected())
+				int NE = selection->Count();
+				for (int i = 0; i < NE; i++)
 				{
+					FEElement_& el = *selection->Element(i); assert(el.IsSelected());
 					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 					tag.c = extcol;
 					int nid = el.GetID();

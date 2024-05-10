@@ -975,16 +975,22 @@ QVariant CPartProperties::GetPropertyValue(int i)
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	GPartSection* section = m_pg->GetSection();
 	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
 	else
 	{
-		int lid = v.toInt();
-		if (lid < 0) m_pg->SetMaterialID(-1);
-		else
+		GObject* po = dynamic_cast<GObject*>(m_pg->Object());
+		if (po)
 		{
-			GMaterial* m = m_fem->GetMaterial(lid);
-			m_pg->SetMaterialID(m->GetID());
+			int lid = v.toInt();
+			if (lid < 0)
+			{
+				po->AssignMaterial(m_pg, -1);
+			}
+			else
+			{
+				GMaterial* m = m_fem->GetMaterial(lid);
+				po->AssignMaterial(m_pg, m->GetID());
+			}
 		}
 	}
 }

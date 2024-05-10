@@ -2136,14 +2136,16 @@ CCmdAssignObjectMaterial::CCmdAssignObjectMaterial(GObject* po, int mat) : CComm
 
 void CCmdAssignObjectMaterial::Execute()
 {
-	int N = m_po->Parts();
-	for (int i = 0; i<N; ++i) m_po->AssignMaterial(m_po->Part(i)->GetID(), m_mat);
+	m_po->AssignMaterial(m_mat);
 }
 
 void CCmdAssignObjectMaterial::UnExecute()
 {
 	int N = m_po->Parts();
-	for (int i = 0; i<N; ++i) m_po->AssignMaterial(m_po->Part(i)->GetID(), m_old[i]);
+	for (int i = 0; i < N; ++i)
+	{
+		m_po->AssignMaterial(m_po->Part(i), m_old[i]);
+	}
 }
 
 //-----------------------------------------------------------------------------

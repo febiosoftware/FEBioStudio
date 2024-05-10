@@ -85,7 +85,6 @@ private:
 	void RenderBeamParts       (CGLContext& rc, GObject* po);
 
 	// rendering functions for FEMeshes
-	void RenderFEElements   (CGLContext& rc, GObject* po);
 	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);

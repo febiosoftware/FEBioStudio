@@ -1937,8 +1937,9 @@ bool CGLView::ShowPlaneCut() const
 
 void CGLView::SetPlaneCutMode(int nmode)
 {
+	bool breset = (m_planeCutMode != nmode);
 	m_planeCutMode = nmode;
-	UpdatePlaneCut(true);
+	UpdatePlaneCut(breset);
 	update();
 }
 
@@ -2701,6 +2702,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				}
 
 				mesh->UpdateItemVisibility();
+				po->BuildFERenderMesh();
 			}
 		}
 	}
@@ -2741,11 +2743,6 @@ void CGLView::RenderPlaneCut(CGLContext& rc)
 		FSModel& fem = *doc->GetFSModel();
 		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
 	}
-
-	BOX box = doc->GetGModel()->GetBoundingBox();
-
-	glColor3ub(200, 0, 200);
-	glx::renderBox(box, false);
 
 	m_planeCut.Render(rc);
 }
