@@ -111,6 +111,10 @@ private:
 
 	void RenderTags(CGLContext& rc);
 
+	void RenderPlaneCut(CGLContext& rc);
+
+	void RenderBoxCut(CGLContext& rc, const BOX& box);
+
 private:
 	void RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh);
 	void RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh);

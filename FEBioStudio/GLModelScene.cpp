@@ -115,19 +115,7 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		BOX box =  m_doc->GetGModel()->GetBoundingBox();
-		glColor3ub(200, 0, 200);
-		glx::renderBox(box, false);
-
-		if (glview->PlaneCutMode() == 0)
-		{
-			// render the plane cut first
-			glview->RenderPlaneCut(rc);
-
-			// then turn on the clipping plane before rendering the other geometry
-			glClipPlane(GL_CLIP_PLANE0, glview->PlaneCoordinates());
-			glEnable(GL_CLIP_PLANE0);
-		}
+		RenderPlaneCut(rc);
 	}
 
 	// render the (solid) model
@@ -3437,5 +3425,123 @@ void CGLModelScene::Update()
 	{
 		GObject* po = gm->GetActiveObject();
 		if (po) MapMeshData(po);
+	}
+}
+
+void CGLModelScene::RenderPlaneCut(CGLContext& rc)
+{
+	BOX box = m_doc->GetGModel()->GetBoundingBox();
+	glColor3ub(200, 0, 200);
+	glx::renderBox(box, false);
+
+	RenderBoxCut(rc, box);
+
+	if (rc.m_view->PlaneCutMode() == 0)
+	{
+		// render the plane cut first
+		rc.m_view->RenderPlaneCut(rc);
+
+		// then turn on the clipping plane before rendering the other geometry
+		glClipPlane(GL_CLIP_PLANE0, rc.m_view->PlaneCoordinates());
+		glEnable(GL_CLIP_PLANE0);
+	}
+}
+
+void CGLModelScene::RenderBoxCut(CGLContext& rc, const BOX& box)
+{
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d ex[8];
+	ex[0] = vec3d(a.x, a.y, a.z);
+	ex[1] = vec3d(b.x, a.y, a.z);
+	ex[2] = vec3d(b.x, b.y, a.z);
+	ex[3] = vec3d(a.x, b.y, a.z);
+	ex[4] = vec3d(a.x, a.y, b.z);
+	ex[5] = vec3d(b.x, a.y, b.z);
+	ex[6] = vec3d(b.x, b.y, b.z);
+	ex[7] = vec3d(a.x, b.y, b.z);
+	double R = box.GetMaxExtent();
+	if (R == 0) R = 1;
+	int ncase = 0;
+	double* plane = rc.m_view->PlaneCoordinates();
+	vec3d norm(plane[0], plane[1], plane[2]);
+	double ref = -(plane[3] - R * 0.001);
+	for (int k = 0; k < 8; ++k)
+		if (norm * ex[k] > ref) ncase |= (1 << k);
+	if ((ncase > 0) && (ncase < 255))
+	{
+		int edge[15][2], edgeNode[15][2], etag[15];
+		GMesh plane;
+		int* pf = LUT[ncase];
+		int ne = 0;
+		for (int l = 0; l < 5; l++)
+		{
+			if (*pf == -1) break;
+			vec3f r[3];
+			float w1, w2, w;
+			for (int k = 0; k < 3; k++)
+			{
+				int n1 = ET_HEX[pf[k]][0];
+				int n2 = ET_HEX[pf[k]][1];
+
+				w1 = norm * ex[n1];
+				w2 = norm * ex[n2];
+
+				if (w2 != w1)
+					w = (ref - w1) / (w2 - w1);
+				else
+					w = 0.f;
+
+				vec3d rk = ex[n1] * (1 - w) + ex[n2] * w;
+				r[k] = to_vec3f(rk);
+				plane.AddFace(r);
+			}
+			for (int k = 0; k < 3; ++k)
+			{
+				int n1 = pf[k];
+				int n2 = pf[(k + 1) % 3];
+
+				bool badd = true;
+				for (int m = 0; m < ne; ++m)
+				{
+					int m1 = edge[m][0];
+					int m2 = edge[m][1];
+					if (((n1 == m1) && (n2 == m2)) ||
+						((n1 == m2) && (n2 == m1)))
+					{
+						badd = false;
+						etag[m]++;
+						break;
+					}
+				}
+
+				if (badd)
+				{
+					edge[ne][0] = n1;
+					edge[ne][1] = n2;
+					etag[ne] = 0;
+
+					GMesh::FACE& face = plane.Face(plane.Faces() - 1);
+					edgeNode[ne][0] = face.n[k];
+					edgeNode[ne][1] = face.n[(k + 1) % 3];
+					++ne;
+				}
+			}
+			pf += 3;
+		}
+		for (int k = 0; k < ne; ++k)
+		{
+			if (etag[k] == 0)
+			{
+				plane.AddEdge(edgeNode[k], 2, 0);
+			}
+		}
+		plane.Update();
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(255, 64, 255);
+		m_renderer.RenderMeshLines(plane);
+		glPopAttrib();
 	}
 }
