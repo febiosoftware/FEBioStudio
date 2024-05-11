@@ -2160,53 +2160,51 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 }
 */
 
-//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLEdges(GMesh* pm)
+{
+	if (pm == nullptr) return;
+	int N = pm->Edges();
+	if (N == 0) return;
+	glBegin(GL_LINES);
+	{
+		for (int i = 0; i<N; ++i)
+		{
+			GMesh::EDGE& e = pm->Edge(i);
+			if ((e.pid >= 0) && (e.n[0] != -1) && (e.n[1] != -1))
+			{
+				vec3f r0 = pm->Node(e.n[0]).r;
+				vec3f r1 = pm->Node(e.n[1]).r;
+				glVertex3f(r0.x, r0.y, r0.z);
+				glVertex3f(r1.x, r1.y, r1.z);
+			}
+		}
+	}
+	glEnd();
+}
+
 void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 {
-	vec3f r0, r1;
-	if (pm == 0) return;
-	int N = (int)pm->Edges();
+	if (pm == nullptr) return;
+	int N = pm->Edges();
 	if (N == 0) return;
-	if (nid == -1)
+	if ((nid < 0) || (nid >= pm->m_EIL.size())) return;
+	glBegin(GL_LINES);
 	{
-		glBegin(GL_LINES);
+		pair<int, int> eil = pm->m_EIL[nid];
+		for (int i = 0; i < eil.second; ++i)
 		{
-			for (int i = 0; i<N; ++i)
+			GMesh::EDGE& e = pm->Edge(i + eil.first);
+			assert(e.pid == nid);
+			if ((e.n[0] != -1) && (e.n[1] != -1))
 			{
-				GMesh::EDGE& e = pm->Edge(i);
-				if ((e.pid >= 0) && (e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3f(r0.x, r0.y, r0.z);
-					glVertex3f(r1.x, r1.y, r1.z);
-				}
+				vec3f r0 = pm->Node(e.n[0]).r;
+				vec3f r1 = pm->Node(e.n[1]).r;
+				glVertex3d(r0.x, r0.y, r0.z);
+				glVertex3d(r1.x, r1.y, r1.z);
 			}
 		}
-		glEnd();
 	}
-	else if (nid < (int)pm->m_EIL.size())
-	{
-		assert(pm->m_EIL.size() > 0);
-		glBegin(GL_LINES);
-		{
-			pair<int, int> eil = pm->m_EIL[nid];
-
-			for (int i = 0; i<eil.second; ++i)
-			{
-				GMesh::EDGE& e = pm->Edge(i + eil.first);
-				assert(e.pid == nid);
-				if ((e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
+	glEnd();
 }
 
 //-----------------------------------------------------------------------------

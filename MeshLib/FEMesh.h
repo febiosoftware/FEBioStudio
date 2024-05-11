@@ -128,6 +128,7 @@ public: // Helper functions for updating mesh data structures
 	void UpdateFaceNeighbors();
 	void UpdateEdgeNeighbors();
 	void UpdateFaceElementTable();
+	void UpdateEdgeElementTable();
 
 	void UpdateNodePartitions();
 	void UpdateEdgePartitions();

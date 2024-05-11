@@ -413,9 +413,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 					{
 						RenderFEFacesFromGMesh(rc, po);
 						RenderSelectedFEElements(rc, po);
-
-						// TODO: Render unselected beam elements? 
-						// RenderUnselectedBeamElements(rc, po);
+						RenderUnselectedBeamElements(rc, po);
 					}
 				}
 				else if (item == ITEM_FACE)
@@ -2172,14 +2170,17 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	if (NF == 0)
 	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
 		// if there are no faces, render edges instead
 		int NC = po->Edges();
 		for (int n = 0; n < NC; ++n)
 		{
 			GEdge& e = *po->Edge(n);
-			if (e.IsVisible())
-				renderer.RenderGLEdges(pm, e.GetLocalID());
+//			if (e.IsVisible())
+//				renderer.RenderGLEdges(pm, e.GetLocalID());
 		}
+		glPopAttrib();
 	}
 
 	// render beam sections if feature edges are not rendered. 
@@ -2211,6 +2212,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 	GPart* pgmat = 0; // the part that defines the material
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	SetMatProps(0);
 	GLColor c = po->GetColor();
 	glColor3ub(c.r, c.g, c.b);
@@ -2962,21 +2964,20 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glColor3ub(0, 0, 0);
 
-	int NE = pm->Elements();
+	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FSElement& el = pm->Element(i);
-		if (!el.IsSelected() && el.IsVisible())
+		FSEdge& edge = pm->Edge(i);
+		if (edge.IsVisible() && (!edge.IsSelected()) && (edge.m_elem >= 0))
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
+			FSElement& el = pm->Element(edge.m_elem);
+			switch (el.Type())
 			{
-				switch (el.Type())
-				{
-				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
-				}
+			case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
+			case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 			}
 		}
 	}
