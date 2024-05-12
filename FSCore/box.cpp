@@ -239,6 +239,8 @@ vec3d BOX::r1() const
 
 BOX LocalToGlobalBox(const BOX& box, const Transform& T)
 {
+	if (!box.IsValid()) return BOX();
+
 	vec3d a = box.r0();
 	vec3d b = box.r1();
 

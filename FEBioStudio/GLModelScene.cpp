@@ -412,8 +412,8 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 					if (gm)
 					{
 						RenderFEFacesFromGMesh(rc, po);
-						RenderSelectedFEElements(rc, po);
 						RenderUnselectedBeamElements(rc, po);
+						RenderSelectedFEElements(rc, po);
 					}
 				}
 				else if (item == ITEM_FACE)
@@ -1623,6 +1623,7 @@ void CGLModelScene::RenderNodes(CGLContext& rc, GObject* po)
 // Render selected nodes
 void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 {
+	if (po == nullptr) return;
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
@@ -2691,14 +2692,13 @@ void CGLModelScene::RenderSelectedFEElements(CGLContext& rc, GObject* po)
 	m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
 	glColor3f(1.f, 1.f, 0);
 	m_renderer.RenderFEElementsOutline(*pm, selectedElements);
+	m_renderer.PopState();
 
 	if (hasBeamElements)
 	{
 		// render beam elements
 		RenderSelectedBeamElements(rc, po);
 	}
-
-	m_renderer.PopState();
 }
 
 void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
@@ -2965,7 +2965,9 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
-	glColor3ub(0, 0, 0);
+
+	GLColor c = rc.m_settings.m_meshColor;
+	glColor3ub(c.r, c.g, c.b);
 
 	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
@@ -2994,28 +2996,31 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
+	FEElementSelection* selectedElems = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+	if ((selectedElems == nullptr) || (selectedElems->Size() == 0)) return;
+	assert(selectedElems->GetMesh() == pm);
 
-	int NE = pm->Elements();
+	GMesh edgeMesh;
+	int NE = selectedElems->Count();
+	vec3f r[FSEdge::MAX_NODES];
 	for (int i = 0; i < NE; ++i)
 	{
-		FSElement& el = pm->Element(i);
-		if (el.IsSelected() && el.IsVisible())
+		FEElement_& el = *selectedElems->Element(i);
+		if (el.IsBeam())
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
-			{
-				switch (el.Type())
-				{
-				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
-				}
-			}
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j) r[j] = to_vec3f(pm->Node(el.m_node[j]).r);
+			edgeMesh.AddEdge(r, ne);
 		}
 	}
+	edgeMesh.Update();
+	if (edgeMesh.Edges() == 0) return;
 
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glColor3ub(255, 255, 0);
+	m_renderer.RenderMeshLines(edgeMesh);
 	glPopAttrib();
 }
 
@@ -3363,7 +3368,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 			else tag.r = mat->GetPosition();
 
 			string name = mat->GetName();
-			int l = name.size(); if (l > 63) l = 63;
+			size_t l = name.size(); if (l > 63) l = 63;
 			if (l > 0)
 			{
 				strncpy(tag.sztag, name.c_str(), l);
@@ -3373,9 +3378,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 			vtag.push_back(tag);
 		}
 	}
-	int nsel = vtag.size();
-	if (nsel == 0) return;
-
+	if (vtag.empty()) return;
 	glview->RenderTags(vtag);
 }
 

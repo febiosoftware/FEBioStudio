@@ -105,6 +105,7 @@ public:
 	int	AddNode(const vec3f& r, int groupID = 0);
 	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
+	void AddEdge(vec3f* r, int nodes, int groupID = 0);
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
 	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
 	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);

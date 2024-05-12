@@ -123,6 +123,49 @@ void GMesh::AddEdge(int* n, int nodes, int gid)
 	else assert(false);
 }
 
+void GMesh::AddEdge(vec3f* r, int nodes, int gid)
+{
+	EDGE e;
+	if (nodes == 2)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else if (nodes == 3)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[2]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[2]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else if (nodes == 4)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[2]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[2]);
+		e.n[1] = AddNode(r[3]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[3]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else assert(false);
+}
+
+
 //-----------------------------------------------------------------------------
 int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId)
 {

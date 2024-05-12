@@ -452,7 +452,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSLineMesh* pm);
+		Iterator(FEEdgeSelection* sel);
 
 		operator FSEdge*() { return m_pedge; }
 		FSEdge* operator -> () { return m_pedge; }
@@ -460,7 +460,7 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSLineMesh*	m_pm;
+		FEEdgeSelection*	m_sel;
 		FSEdge*		m_pedge;
 		int			m_n;
 	};
@@ -477,10 +477,13 @@ public:
 
 	FSLineMesh* GetMesh() { return m_pMesh; }
 
+	FSEdge* Edge(size_t n) { return m_pMesh->EdgePtr(m_items[n]); }
+
 	FEItemListBuilder* CreateItemList();
 
 protected:
 	FSLineMesh*		m_pMesh;
+	std::vector<int>	m_items;
 };
 
 //-----------------------------------------------------------------------------
@@ -491,7 +494,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSLineMesh* pm);
+		Iterator(FENodeSelection* pm);
 
 		operator FSNode*() { return m_pnode; }
 		FSNode* operator -> () { return m_pnode; }
@@ -499,7 +502,7 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSLineMesh*	m_pm;
+		FENodeSelection* m_psel;
 		FSNode*		m_pnode;
 		int			m_n;
 	};
@@ -520,6 +523,9 @@ public:
 
 	FENodeSelection::Iterator First();
 
+	FSNode* Node(size_t n);
+
 protected:
 	FSLineMesh*	m_pMesh;
+	std::vector<int>	m_items;
 };
