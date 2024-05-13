@@ -1080,7 +1080,6 @@ void FSMesh::UpdateEdgeElementTable()
 				}
 			}
 		}
-		assert(edge.m_elem != -1);
 	}
 }
 

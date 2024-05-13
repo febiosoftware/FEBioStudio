@@ -248,11 +248,13 @@ void GMeshObject::UpdateParts()
 
 	// figure out which parts are still used
 	vector<int> tag(nparts, 0);
+	vector<int> matids(nparts, -1);
 	for (int i=0; i<m.Elements(); ++i)
 	{
 		FSElement& el = m.Element(i);
 		assert(el.m_gid >= 0);
 		tag[el.m_gid]++;
+		matids[el.m_gid] = el.m_MatID;
 	}
 
 	int n = 0;
@@ -272,7 +274,8 @@ void GMeshObject::UpdateParts()
 		}
 		else
 		{
-			AddPart();
+			GPart* newPart = AddPart();
+			newPart->SetMaterialID(matids[n]);
 			tag[i] = n++;
 		}
 	}
