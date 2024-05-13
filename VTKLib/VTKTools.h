@@ -23,24 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include "VTKModel.h"
+#include <MeshLib/FEMesh.h>
 
-// reader for unstructured grid files
-class VTUimport : public FSFileImport
-{
-public:
-	VTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+namespace VTKTools {
 
-// reader for polygon files
-class VTPimport : public FSFileImport
-{
-
-public:
-	VTPimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+	FSMesh* BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys = true);
+	bool BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitPolys = true);
+}

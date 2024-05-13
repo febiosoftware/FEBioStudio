@@ -23,24 +23,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include <FSCore/FileReader.h>
+#include "VTKModel.h"
 
-// reader for unstructured grid files
-class VTUimport : public FSFileImport
-{
-public:
-	VTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+namespace VTK {
 
-// reader for polygon files
-class VTPimport : public FSFileImport
-{
+	class vtkLegacyFileReader : public FileReader
+	{
+		enum DataReadMode {
+			NONE,
+			POINT_DATA,
+			CELL_DATA
+		};
 
-public:
-	VTPimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+	public:
+		vtkLegacyFileReader();
+
+		bool Load(const char* szfilename) override;
+
+		const vtkModel& GetVTKModel() const;
+
+	protected:
+		bool nextLine();
+
+		bool readHeader();
+
+		bool read_POINTS(VTK::vtkPiece& vtk);
+		bool read_LINES(VTK::vtkPiece& vtk);
+		bool read_POLYGONS(VTK::vtkPiece& vtk);
+		bool read_CELLS(VTK::vtkPiece& vtk);
+		bool read_CELL_TYPES(VTK::vtkPiece& vtk);
+		bool read_POINT_DATA(VTK::vtkPiece& vtk);
+		bool read_CELL_DATA(VTK::vtkPiece& vtk);
+		bool read_NORMALS(VTK::vtkPiece& vtk);
+		bool read_FIELD(VTK::vtkPiece& vtk);
+		bool read_SCALARS(VTK::vtkPiece& vtk);
+		bool read_VECTORS(VTK::vtkPiece& vtk);
+		bool read_TENSORS(VTK::vtkPiece& vtk);
+
+		bool checkLine(const char* sz);
+
+		int parseLine(std::vector<std::string>& str);
+
+	protected:
+		vtkModel m_vtk;
+		vtkDataFileType	m_dataFileType;
+		char	m_szline[256];
+		DataReadMode	m_dataReadMode;
+	};
+}

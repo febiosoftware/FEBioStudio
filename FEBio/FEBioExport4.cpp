@@ -802,9 +802,13 @@ bool FEBioExport4::Write(const char* szfile)
 	{
 		return errf("Missing rigid body in rigid contact definition.");
 	}
+	catch (std::runtime_error e)
+	{
+		return errf(e.what());
+	}
 	catch (...)
 	{
-		return errf("An unknown exception has occured.");
+		return errf("An unknown exception has occurred.");
 	}
 
 	// close the file
@@ -1759,7 +1763,11 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	}
 
 	// make sure this part has elements
-	if (NEP == 0) return;
+	if (NEP == 0)
+	{
+		string err = "Part \"" + pg->GetName() + "\" has no elements.";
+		throw std::runtime_error(err);
+	}
 
 	// get the material
 	int nmat = 0;
