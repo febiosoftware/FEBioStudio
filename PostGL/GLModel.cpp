@@ -1076,12 +1076,16 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected elements
 	if (mode == SELECT_ELEMS)
 	{
-		glColor3ub(255, 64, 0);
-		m_render.SetRenderMode(GLMeshRender::SelectionMode);
-		m_render.RenderFEFaces(pm, [=](const FSFace& face) {
-			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-			return el.IsSelected();
-			});
+		const vector<FEElement_*>& elemSelection = GetElementSelection();
+		if (!elemSelection.empty())
+		{
+			glColor3ub(255, 64, 0);
+			m_render.SetRenderMode(GLMeshRender::SelectionMode);
+			m_render.RenderFEFaces(pm, [=](const FSFace& face) {
+				FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
+				return el.IsSelected();
+				});
+		}
 	}
 
 	// render the outline of the selected elements
@@ -1091,14 +1095,14 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// do the selected elements first
 	if (mode == SELECT_ELEMS)
 	{
-		const vector<FEElement_*> elemSelection = GetElementSelection();
+		const vector<FEElement_*>& elemSelection = GetElementSelection();
 		m_render.RenderFEElementsOutline(pm, elemSelection);
 	}
 
 	// now do the selected faces
 	if (mode == SELECT_FACES)
 	{
-		const vector<FSFace*> faceSelection = GetFaceSelection();
+		const vector<FSFace*>& faceSelection = GetFaceSelection();
 		m_render.RenderFEFacesOutline(pm, faceSelection);
 	}
 
@@ -1956,7 +1960,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.Create(points.size() / 2);
+	lineMesh.Create((int)points.size() / 2);
 	lineMesh.BeginMesh();
 	for (auto& p : points) lineMesh.AddVertex(p);
 	lineMesh.EndMesh();

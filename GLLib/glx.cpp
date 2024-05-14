@@ -501,25 +501,25 @@ void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0
 	}
 }
 
-void glx::quad4(vec3d r[4], vec3d n[4])
+void glx::quad4(const vec3d* r, const vec3f* n)
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);
 	vertex3d(r[2], n[2]); vertex3d(r[3], n[3]); vertex3d(r[0], n[0]);
 }
 
-void glx::quad4(vec3d r[4], vec3d n[4], GLColor c[4])
+void glx::quad4(const vec3d* r, const vec3f* n, const GLColor* c)
 {
 	vertex3d(r[0], n[0], c[0]); vertex3d(r[1], n[1], c[1]);	vertex3d(r[2], n[2], c[2]);
 	vertex3d(r[2], n[2], c[2]);	vertex3d(r[3], n[3], c[3]);	vertex3d(r[0], n[0], c[0]);
 }
 
-void glx::quad4(vec3d r[4], vec3f n[4], float t[4])
+void glx::quad4(const vec3d* r, const vec3f* n, const float* t)
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[1], n[1], t[1]); vertex3d(r[2], n[2], t[2]);
 	vertex3d(r[2], n[2], t[2]); vertex3d(r[3], n[3], t[3]); vertex3d(r[0], n[0], t[0]);
 }
 
-void glx::quad8(vec3d r[8], vec3f n[8], float t[8])
+void glx::quad8(const vec3d* r, const vec3f* n, const float* t)
 {
 	vertex3d(r[7], n[7], t[7]); vertex3d(r[0], n[0], t[0]); vertex3d(r[4], n[4], t[4]);
 	vertex3d(r[4], n[4], t[4]); vertex3d(r[1], n[1], t[1]); vertex3d(r[5], n[5], t[5]);
@@ -529,7 +529,7 @@ void glx::quad8(vec3d r[8], vec3f n[8], float t[8])
 	vertex3d(r[7], n[7], t[7]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
 }
 
-void glx::quad9(vec3d r[9], vec3f n[9], float t[9])
+void glx::quad9(const vec3d* r, const vec3f* n, const float* t)
 {
 	const int T[8][3] = {
 		{ 0,4,8 },{ 8,7,0 },{ 4,1,5 },{ 5,8,4 },
@@ -568,28 +568,21 @@ void glx::quad9(vec3d r[9], vec3f n[9], float t[9])
 	glNormal3f(n[T[7][2]].x, n[T[7][2]].y, n[T[7][2]].z); glTexCoord1f(t[T[7][2]]); glVertex3f(r[T[7][2]].x, r[T[7][2]].y, r[T[7][2]].z);
 }
 
-void glx::tri3(vec3d r[3], vec3f n[3])
+void glx::tri3(const vec3d* r, const vec3f* n)
 {
 	vertex3d(r[0], n[0]);
 	vertex3d(r[1], n[1]);
 	vertex3d(r[2], n[2]);
 }
 
-void glx::tri3(vec3d r[3], vec3d n[3])
-{
-	vertex3d(r[0], n[0]);
-	vertex3d(r[1], n[1]);
-	vertex3d(r[2], n[2]);
-}
-
-void glx::tri3(vec3d r[3], vec3d n[3], GLColor c[3])
+void glx::tri3(const vec3d* r, const vec3f* n, const GLColor* c)
 {
 	vertex3d(r[0], n[0], c[0]);
 	vertex3d(r[1], n[1], c[1]);
 	vertex3d(r[2], n[2], c[2]);
 }
 
-void glx::tri3(vec3d r[3], vec3f n[3], float t[3])
+void glx::tri3(const vec3d* r, const vec3f* n, const float* t)
 {
 	vertex3d(r[0], n[0], t[0]);
 	vertex3d(r[1], n[1], t[1]);

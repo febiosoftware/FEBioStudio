@@ -227,9 +227,6 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 	GLTAG tag;
 	vector<GLTAG> vtag;
 
-	// clear the node tags
-	pm->TagAllNodes(0);
-
 	int mode = m_doc->GetItemMode();
 
 	GLColor extcol(255, 255, 0);
@@ -240,22 +237,30 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 	{
 		if ((mode == ITEM_ELEM) && pm)
 		{
-			ForAllSelectedElements(*pm, [&](FEElement_& el) {
-				GLTAG tag;
-				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-				tag.c = extcol;
-				int nid = el.GetID();
-				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-				vtag.push_back(tag);
+			Post::CGLModel& glm = *m_doc->GetGLModel();
+			const vector<FEElement_*> elemSelection = glm.GetElementSelection();
+			if (!elemSelection.empty())
+			{
+				pm->TagAllNodes(0);
+				for (FEElement_* el : elemSelection)
+				{
+					GLTAG tag;
+					tag.r = pm->LocalToGlobal(pm->ElementCenter(*el));
+					tag.c = extcol;
+					int nid = el->GetID();
+					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
+					vtag.push_back(tag);
 
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-			});
+					int ne = el->Nodes();
+					for (int j = 0; j < ne; ++j) pm->Node(el->m_node[j]).m_ntag = 1;
+				};
+			}
 		}
 
 		// process faces
 		if (mode == ITEM_FACE)
 		{
+			pm->TagAllNodes(0);
 			int NF = pm->Faces();
 			for (int i = 0; i < NF; ++i)
 			{
@@ -278,6 +283,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 		// process edges
 		if (mode == ITEM_EDGE)
 		{
+			pm->TagAllNodes(0);
 			int NC = pm->Edges();
 			for (int i = 0; i < NC; i++)
 			{
@@ -300,6 +306,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 		// process nodes
 		if (mode == ITEM_NODE)
 		{
+			pm->TagAllNodes(0);
 			ForAllSelectedNodes(*pm, [&](FSNode& node) {
 				GLTAG tag;
 				tag.r = pm->LocalToGlobal(node.r);
