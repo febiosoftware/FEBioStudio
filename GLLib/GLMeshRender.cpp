@@ -2556,9 +2556,9 @@ void GLMeshRender::RenderGMeshLines(GMesh* pm)
 	for (int i = 0; i < pm->Faces(); i++)
 	{
 		GMesh::FACE& face = pm->Face(i);
-		const vec3d& r1 = pm->Node(face.n[0]).r;
-		const vec3d& r2 = pm->Node(face.n[1]).r;
-		const vec3d& r3 = pm->Node(face.n[2]).r;
+		const vec3d& r1 = to_vec3d(pm->Node(face.n[0]).r);
+		const vec3d& r2 = to_vec3d(pm->Node(face.n[1]).r);
+		const vec3d& r3 = to_vec3d(pm->Node(face.n[2]).r);
 		glx::lineLoop(r1, r2, r3);
 	} // for
 	glEnd();

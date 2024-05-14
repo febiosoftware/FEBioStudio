@@ -1191,7 +1191,7 @@ void CFiberODFAnalysis::buildMesh(CODF* odf)
 	for (int i=0; i<NPTS; ++i)
 	{
 		auto& node = mesh.Node(i);
-		node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+		node.r = vec3f(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
 	}
 
 	// create elements
@@ -1229,9 +1229,9 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 		if (bradial)
 		{
 			double val_i = val[i] / rmax;
-			node.r = vec3d(XCOORDS[i] * val_i, YCOORDS[i] * val_i, ZCOORDS[i] * val_i);
+			node.r = vec3f(XCOORDS[i] * val_i, YCOORDS[i] * val_i, ZCOORDS[i] * val_i);
 		}
-		else node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+		else node.r = vec3f(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
 	}
 
 	// update colors
@@ -1269,7 +1269,7 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
 	for (int i = 0; i < NN; ++i)
 	{
 		auto& node = mesh.Node(i);
-		node.r = nodePos[i];
+		node.r = to_vec3f(nodePos[i]);
 	}
 
     double* xCoords = new double[NN] {};
@@ -1277,7 +1277,7 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
     double* zCoords = new double[NN] {};
     for(int index = 0; index < NN; index++)
     {
-        vec3d vec = mesh.Node(index).r;
+        vec3f vec = mesh.Node(index).r;
 
         xCoords[index] = vec.x;
         yCoords[index] = vec.y;
@@ -1334,7 +1334,7 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		auto& node = mesh.Node(i);
-		node.r = odf->remeshCoord[i];
+		node.r = to_vec3f(odf->remeshCoord[i]);
 		if (bradial)
 		{
 			double val_i = (val[i] - min) * scale;
