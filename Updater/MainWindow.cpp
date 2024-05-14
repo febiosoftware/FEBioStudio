@@ -336,9 +336,7 @@ void CMainWindow::getFileReponse(QNetworkReply *r)
 	makePath(QDir::fromNativeSeparators(fileInfo.absolutePath()));
 
 	QString fileName = fileInfo.absoluteFilePath();
-
-	// If the file doesn't already exist, add it to autoUpdate.xml for deletion during uninstalltion.
-	if(!QFile::exists(fileName)) ui->updateWidget->newFiles.append(fileName);
+    addNewFile(fileName);
 
 	// If we're downloading an updater file, add the suffix ".temp"
 	if(ui->updateWidget->doingUpdaterUpdate)
@@ -434,7 +432,7 @@ void CMainWindow::getSDKResponse(QNetworkReply *r)
 
     ui->downloadFileLabel->setText("Unzipping SDK...");
 
-    ZipThread* thread = new ZipThread(zipFileName, sdkDirName);
+    ZipThread* thread = new ZipThread(this, zipFileName, sdkDirName);
 
     connect(thread, &ZipThread::progress, this, &CMainWindow::progress);
     connect(thread, &ZipThread::resultReady, this, &CMainWindow::unzipFinished);
@@ -544,6 +542,12 @@ void CMainWindow::makePath(QString path)
 	dir.mkdir(dir.absolutePath());
 
 	ui->updateWidget->newDirs.append(dir.absolutePath());
+}
+
+void CMainWindow::addNewFile(const QString filename)
+{
+    // If the file doesn't already exist, add it to autoUpdate.xml for deletion during uninstalltion.
+	if(!QFile::exists(filename)) ui->updateWidget->newFiles.append(filename);
 }
 
 void CMainWindow::downloadsFinished()

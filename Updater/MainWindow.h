@@ -16,6 +16,8 @@ class CMainWindow : public QWizard
 public:
 	CMainWindow(bool devChannel, bool updaterUpdateCheck);
 
+    void makePath(QString path);
+    void addNewFile(const QString filename);
 protected:
 	void initializePage(int id) override;
 
@@ -42,7 +44,6 @@ private:
     void getSDKResponse(QNetworkReply *r);
 
 	void deleteFiles();
-	void makePath(QString path);
 	void downloadsFinished();
 
 private:
