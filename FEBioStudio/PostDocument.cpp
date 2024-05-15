@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GModel.h>
+#include <GLWLib/GLWidgetManager.h>
 //---------------------------------------
 // NOTE: We need to include these FEBio files to make sure we get the correct
 //       implementations for the type_to_string and string_to_type functions.
@@ -297,6 +298,9 @@ bool CPostDocument::Initialize()
 	// assign default material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
+
+	// make sure the correct GLWidgetManager's edit layer is active
+	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
