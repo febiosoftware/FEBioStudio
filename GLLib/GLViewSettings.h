@@ -133,5 +133,7 @@ struct GLViewSettings
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 
+	bool m_showHighlights;
+
 	void Defaults(int ntheme = 0);
 };

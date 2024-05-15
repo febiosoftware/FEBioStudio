@@ -548,6 +548,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	m_select.SetStateModifiers(bshift, bctrl);
 
+	GLViewSettings& vs = GetViewSettings();
+
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
@@ -571,27 +573,21 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		}
 		else
 		{
-			if (pdoc->GetSelectionMode() == SELECT_EDGE)
+			if (GLHighlighter::IsTracking() || vs.m_showHighlights)
 			{
-				HighlightEdge(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_NODE)
-			{
-				HighlightNode(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_FACE)
-			{
-				HighlightSurface(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_PART)
-			{
-				HighlightPart(x, y);
+				switch (pdoc->GetSelectionMode())
+				{
+				case SELECT_EDGE: HighlightEdge(x, y); break;
+				case SELECT_NODE: HighlightNode(x, y); break;
+				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_PART: HighlightPart(x, y); break;
+				}
 			}
 		}
 		ev->accept();
 
 		// we need to repaint if brush selection is on so the brush can be redrawn
-		if (GetViewSettings().m_bselbrush)
+		if (vs.m_bselbrush)
 		{
 			m_x1 = x;
 			m_y1 = y;
@@ -610,7 +606,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1 && !m_bsel)
 		{
-			if (GetViewSettings().m_bselbrush && (bshift || bctrl))
+			if (vs.m_bselbrush && (bshift || bctrl))
 			{
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
 				repaint();

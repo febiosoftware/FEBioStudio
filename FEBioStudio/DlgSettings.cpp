@@ -92,6 +92,7 @@ public:
 		addDoubleProperty(&m_meshOpacity, "Mesh opacity")->setFloatRange(0, 1);
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
+		addBoolProperty(&m_showHighlights, "Enable highlighting");
 		QStringList vconv;
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
@@ -108,11 +109,12 @@ public:
 	double	m_meshOpacity;
 	bool	m_bnormal;
 	double	m_scaleNormal;
-    int     m_nconv;
+	int		m_nconv;
 	int		m_ntrans;
 	bool	m_dozsorting;
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
+	bool	m_showHighlights;
 };
 
 //-----------------------------------------------------------------------------
@@ -1079,6 +1081,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_lineSize = (double)view.m_line_size;
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
+	ui->m_display->m_showHighlights = view.m_showHighlights;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
@@ -1177,7 +1180,8 @@ void CDlgSettings::apply()
 	view.m_line_size = (float) ui->m_display->m_lineSize;
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
-    view.m_nconv = ui->m_display->m_nconv;
+	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
