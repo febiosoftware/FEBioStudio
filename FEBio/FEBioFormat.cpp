@@ -2542,6 +2542,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			}
 			fem.AddLogVariable(logVar);
 		}
+		else if (tag == "surface_data")
+		{
+			const char* szdata = tag.AttributeValue("data", true);
+			if (szdata == 0) szdata = "";
+
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_SURFACE, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
+			const char* szset = tag.AttributeValue("surface", true);
+			if (szset)
+			{
+				FSSurface* pg = fem.FindNamedSurface(szset);
+				if (pg)
+				{
+					GObject* po = pg->GetGObject();
+					logVar.SetGroupID(pg->GetID());
+				}
+			}
+			fem.AddLogVariable(logVar);
+		}
 		else if (tag == "rigid_body_data")
 		{
 			const char* szdata = tag.AttributeValue("data", true);
