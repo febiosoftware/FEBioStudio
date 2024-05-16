@@ -239,7 +239,6 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
-	m_sel = nullptr;
 
 	m_binit = false;
 
@@ -265,7 +264,7 @@ CPostDocument::~CPostDocument()
 
 	delete m_glm; m_glm = nullptr;
 	delete m_fem;
-	if (m_sel) delete m_sel;
+	SetCurrentSelection(nullptr);
 
 	delete m_scene;
 	m_scene = nullptr;
