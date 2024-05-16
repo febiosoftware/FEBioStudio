@@ -390,7 +390,7 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 	FEElement_* Element(size_t i);
-	size_t ElementIndex(size_t i);
+	int ElementIndex(size_t i) const;
 
 	const std::vector<int>& ItemList() const { return m_item; }
 
@@ -428,6 +428,7 @@ public:
 	FSMeshBase* GetMesh() { return m_pMesh; }
 
 	FSFace* Face(size_t n);
+	int FaceIndex(size_t n) const { return m_item[n]; }
 
 public:
 	int Count() override;
@@ -478,6 +479,7 @@ public:
 	FSLineMesh* GetMesh() { return m_pMesh; }
 
 	FSEdge* Edge(size_t n) { return m_pMesh->EdgePtr(m_items[n]); }
+	int EdgeIndex(size_t n) const { return m_items[n]; }
 
 	FEItemListBuilder* CreateItemList();
 
@@ -524,6 +526,7 @@ public:
 	FENodeSelection::Iterator First();
 
 	FSNode* Node(size_t n);
+	int NodeIndex(size_t n) const { return m_items[n]; }
 
 protected:
 	FSLineMesh*	m_pMesh;

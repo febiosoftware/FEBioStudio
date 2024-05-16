@@ -1259,7 +1259,7 @@ FEElement_* FEElementSelection::Element(size_t i)
 	return m_pMesh->ElementPtr(m_item[i]);
 }
 
-size_t FEElementSelection::ElementIndex(size_t i)
+int FEElementSelection::ElementIndex(size_t i) const
 {
 	if ((i<0) || (i>= m_item.size())) return -1;
 	return m_item[i];
@@ -1749,7 +1749,8 @@ int FENodeSelection::Count()
 FSNode* FENodeSelection::Node(size_t n)
 {
 	if (m_pMesh == nullptr) return nullptr;
-	return m_pMesh->NodePtr((int)n);
+	if (n >= m_items.size()) return nullptr;
+	return m_pMesh->NodePtr(m_items[n]);
 }
 
 FENodeSelection::Iterator FENodeSelection::First()
