@@ -88,6 +88,9 @@ public:
 	// get the local node position
 	vec3d NodeLocalPosition(int i) const;
 
+	// get the edge center
+	vec3d EdgeCenter(FSEdge& e) const;
+
 	// update the bounding box
 	void UpdateBoundingBox();
 

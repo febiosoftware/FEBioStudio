@@ -90,6 +90,11 @@ vec3d FSLineMesh::NodeLocalPosition(int i) const
 	return Node(i).r;
 }
 
+vec3d FSLineMesh::EdgeCenter(FSEdge& e) const
+{
+	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r) * 0.5f;
+}
+
 //-----------------------------------------------------------------------------
 // Updates the bounding box (in local coordinates)
 void FSLineMesh::UpdateBoundingBox()

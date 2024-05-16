@@ -398,12 +398,6 @@ vec3d FSMeshBase::FaceCenter(FSFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FSMeshBase::EdgeCenter(FSEdge& e) const
-{
-	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
-}
-
-//-----------------------------------------------------------------------------
 // area of triangle
 double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
