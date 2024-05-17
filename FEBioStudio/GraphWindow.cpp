@@ -2112,6 +2112,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 			val = component(v, ncomp);
 		}
 		break;
+		case DATA_MAT3:
+		{
+			mat3f v = data->get<mat3f>(ndata);
+			val = component(v, ncomp);
+		}
+		break;
 		default:
 			assert(false);
 		}

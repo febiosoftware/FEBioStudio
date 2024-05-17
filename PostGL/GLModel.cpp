@@ -2264,19 +2264,21 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 			glx::translate(ob.m_rt);
 
+			double size = R*ob.Scale();
+
 			GLColor c = ob.Color();
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: if (renderRB) glx::renderRigidBody(R); break;
-			case 2: if (renderRJ) glx::renderJoint(R); break;
-			case 3: if (renderRJ) glx::renderJoint(R); break;
-			case 4: if (renderRJ) glx::renderPrismaticJoint(R); break;
-			case 5: if (renderRJ) glx::renderRevoluteJoint(R); break;
-			case 6: if (renderRJ) glx::renderCylindricalJoint(R); break;
-			case 7: if (renderRJ) glx::renderPlanarJoint(R); break;
+			case 1: if (renderRB) glx::renderRigidBody(size); break;
+			case 2: if (renderRJ) glx::renderJoint(size); break;
+			case 3: if (renderRJ) glx::renderJoint(size); break;
+			case 4: if (renderRJ) glx::renderPrismaticJoint(size); break;
+			case 5: if (renderRJ) glx::renderRevoluteJoint(size); break;
+			case 6: if (renderRJ) glx::renderCylindricalJoint(size); break;
+			case 7: if (renderRJ) glx::renderPlanarJoint(size); break;
 			default:
-				if (renderRB) glx::renderAxis(R);
+				if (renderRB) glx::renderAxis(size);
 			}
 			glPopMatrix();
 		}

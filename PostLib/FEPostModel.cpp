@@ -46,6 +46,7 @@ FEPostModel* FEPostModel::m_pThis = 0;
 FEPostModel::PlotObject::PlotObject() 
 { 
 	AddColorParam(GLColor::White(), "Color");
+	AddDoubleParam(1, "Scale")->SetFloatRange(0, 100);
 	m_tag = 0; m_id = -1; 
 }
 
@@ -57,6 +58,11 @@ GLColor	FEPostModel::PlotObject::Color()
 void FEPostModel::PlotObject::SetColor(const GLColor& c)
 {
 	SetColorValue(0, c);
+}
+
+double FEPostModel::PlotObject::Scale() const
+{
+	return GetFloatValue(1);
 }
 
 //=============================================================================
@@ -1434,6 +1440,11 @@ int FEPostModel::PointObjects() const
 void FEPostModel::AddPointObject(FEPostModel::PointObject* ob)
 {
 	m_Points.push_back(ob);
+
+	for (int i = 0; i < m_State.size(); ++i)
+	{
+		m_State[i]->AddPointObjectData();
+	}
 }
 
 FEPostModel::PointObject* FEPostModel::GetPointObject(int i)
