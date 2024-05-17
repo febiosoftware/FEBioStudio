@@ -636,6 +636,12 @@ void GLMusclePath::UpdatePathData(int ntime)
 					vec3d t = pp.r - pt.r; t.Normalize();
 					path->m_data.tng = t;
 				}
+				else
+				{
+					PathData::Point& pp = path->m_points[1];
+					vec3d t = pt.r - pp.r; t.Normalize();
+					path->m_data.tng = t;
+				}
 				break;
 			}
 		}
