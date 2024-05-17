@@ -223,7 +223,13 @@ void GObject::BuildFERenderMesh()
 		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
 		{
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, face.m_elem[0].eid);
+			int eid = face.m_elem[0].eid;
+			if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+			{
+				eid = face.m_elem[1].eid;
+			}
+
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid);
 
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
