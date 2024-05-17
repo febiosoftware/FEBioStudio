@@ -1043,7 +1043,7 @@ void FEElementSelection::Iterator::operator ++()
 	else m_pelem = nullptr;
 }
 
-FEElementSelection::FEElementSelection(FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) 
+FEElementSelection::FEElementSelection(FSMesh* pm) : FESelection(SELECT_FE_ELEMS)
 { 
 	m_pMesh = pm; 
 	Update(); 

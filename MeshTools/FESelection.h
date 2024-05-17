@@ -40,7 +40,7 @@ enum SelectionType
 	SELECT_CURVES,
 	SELECT_NODES,
 	SELECT_DISCRETE_OBJECT,
-	SELECT_FE_ELEMENTS,
+	SELECT_FE_ELEMS,
 	SELECT_FE_FACES,
 	SELECT_FE_EDGES,
 	SELECT_FE_NODES
@@ -439,6 +439,8 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) override;
 	quatd GetOrientation() override;
 	FEItemListBuilder* CreateItemList() override;
+
+	const std::vector<int>& ItemList() const { return m_item; }
 
 protected:
 	FSMeshBase*		m_pMesh;

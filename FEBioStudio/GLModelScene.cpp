@@ -3201,23 +3201,10 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	GObject* po = m_doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FSMesh* pm = po->GetFEMesh();
-	FSMeshBase* pmb = pm;
-	if (pm == nullptr)
-	{
-		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-		if (pso) pmb = pso->GetSurfaceMesh();
-		if (pmb == nullptr) return;
-	}
-
 	// create the tag array.
 	// We add a tag for each selected item
 	GLTAG tag;
 	vector<GLTAG> vtag;
-
-	// clear the node tags
-	pmb->TagAllNodes(0);
-	int NN = pmb->Nodes();
 
 	int mode = m_doc->GetItemMode();
 
@@ -3225,13 +3212,17 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	GLColor intcol(255, 0, 0);
 
 	// process elements
-	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
+	FESelection* currentSelection = m_doc->GetCurrentSelection();
+	if ((view.m_ntagInfo > TagInfoOption::NO_TAG_INFO) && currentSelection)
 	{
-		if ((mode == ITEM_ELEM) && pm)
+		FSLineMesh* mesh = nullptr;
+		if (mode == ITEM_ELEM)
 		{
-			FEElementSelection* selection = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+			FEElementSelection* selection = dynamic_cast<FEElementSelection*>(currentSelection);
 			if (selection && selection->Count())
 			{
+				FSMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
 				int NE = selection->Count();
 				for (int i = 0; i < NE; i++)
 				{
@@ -3239,12 +3230,15 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 					tag.c = extcol;
 					int nid = el.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->ElementIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
 					vtag.push_back(tag);
 
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3252,22 +3246,27 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process faces
 		if (mode == ITEM_FACE)
 		{
-			FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(m_doc->GetCurrentSelection());
+			FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(currentSelection);
 			if (selection && selection->Count())
 			{
+				FSMeshBase* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
 				int NF = selection->Count();
 				for (int i = 0; i < NF; ++i)
 				{
 					FSFace& f = *selection->Face(i); assert(f.IsSelected());
-					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
+					tag.r = pm->LocalToGlobal(pm->FaceCenter(f));
 					tag.c = (f.IsExternal() ? extcol : intcol);
 					int nid = f.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->FaceIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
 					vtag.push_back(tag);
 
-					int nf = f.Nodes();
-					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int nf = f.Nodes();
+						for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3275,21 +3274,27 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process edges
 		if (mode == ITEM_EDGE)
 		{
-			int NC = pmb->Edges();
-			for (int i = 0; i < NC; i++)
+			FEEdgeSelection* selection = dynamic_cast<FEEdgeSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSEdge& edge = pmb->Edge(i);
-				if (edge.IsSelected())
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NC = selection->Size();
+				for (int i = 0; i < NC; i++)
 				{
-					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
+					FSEdge& edge = *selection->Edge(i);
+					tag.r = pm->LocalToGlobal(pm->EdgeCenter(edge));
 					tag.c = extcol;
 					int nid = edge.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->EdgeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
 					vtag.push_back(tag);
 
-					int ne = edge.Nodes();
-					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = edge.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3297,15 +3302,19 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process nodes
 		if (mode == ITEM_NODE)
 		{
-			for (int i = 0; i < NN; i++)
+			FENodeSelection* selection = dynamic_cast<FENodeSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSNode& node = pmb->Node(i);
-				if (node.IsSelected())
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NN = selection->Size();
+				for (int i = 0; i < NN; i++)
 				{
-					tag.r = pmb->LocalToGlobal(node.r);
+					FSNode& node = *selection->Node(i);
+					tag.r = pm->LocalToGlobal(node.r);
 					tag.c = (node.IsExterior() ? extcol : intcol);
 					int nid = node.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->NodeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
 					vtag.push_back(tag);
 				}
@@ -3313,14 +3322,15 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		}
 
 		// add additional nodes
-		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+		if ((view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) && mesh)
 		{
+			int NN = mesh->Nodes();
 			for (int i = 0; i < NN; i++)
 			{
-				FSNode& node = pmb->Node(i);
+				FSNode& node = mesh->Node(i);
 				if (node.m_ntag == 1)
 				{
-					tag.r = pmb->LocalToGlobal(node.r);
+					tag.r = mesh->LocalToGlobal(node.r);
 					tag.c = (node.IsExterior() ? extcol : intcol);
 					int n = node.GetID();
 					if (n < 0) n = i + 1;

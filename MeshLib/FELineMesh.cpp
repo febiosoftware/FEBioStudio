@@ -32,13 +32,6 @@ FSLineMesh::FSLineMesh() : m_pobj(0)
 }
 
 //-----------------------------------------------------------------------------
-void FSLineMesh::UpdateSelection()
-{
-	GObject* po = GetGObject();
-	if (po) po->UpdateSelection();
-}
-
-//-----------------------------------------------------------------------------
 // Tag all nodes
 void FSLineMesh::TagAllNodes(int ntag)
 {

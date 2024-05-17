@@ -1456,7 +1456,7 @@ void CMainWindow::autosave()
 void CMainWindow::autoUpdateCheck(bool update)
 {
 	ui->m_updateAvailable = update;
-    ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
+	ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
 	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n != -1)
@@ -1467,11 +1467,11 @@ void CMainWindow::autoUpdateCheck(bool update)
 
 void CMainWindow::ReportSelection()
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
 		FESelection* sel = doc->GetCurrentSelection();
-		if ((sel == 0) || (sel->Size() == 0))
+		if ((sel == nullptr) || (sel->Size() == 0))
 		{
 			ClearStatusMessage();
 			return;
@@ -1561,7 +1561,7 @@ void CMainWindow::ReportSelection()
 			else msg = QString("%1 discrete objects selected").arg(N);
 		}
 		break;
-		case SELECT_FE_ELEMENTS:
+		case SELECT_FE_ELEMS:
 		{
 			msg = QString("%1 elements selected").arg(N);
 		}
@@ -1692,77 +1692,6 @@ void CMainWindow::ReportSelection()
 					else AddLogEntry("\n");
 				}
 			}
-		}
-	}
-
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc && postDoc->IsValid())
-	{
-		Post::CGLModel* mdl = postDoc->GetGLModel();
-		int mode = mdl->GetSelectionMode();
-		switch (mode)
-		{
-		case Post::SELECT_NODES:
-		{
-			std::vector<FSNode*> sel = mdl->GetNodeSelection();
-			AddLogEntry(QString("%1 node(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_EDGES:
-		{
-			std::vector<FSEdge*> sel = mdl->GetEdgeSelection();
-			AddLogEntry(QString("%1 edge(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_FACES:
-		{
-			std::vector<FSFace*> sel = mdl->GetFaceSelection();
-			if (sel.size() == 1)
-			{
-				FSFace* f = sel[0];
-				if (f)
-				{
-					vec3f n = f->m_fn;
-					QString stype;
-					switch (f->Type())
-					{
-					case FE_FACE_TRI3 : stype = "TRI3" ; break;
-					case FE_FACE_QUAD4: stype = "QUAD4"; break;
-					case FE_FACE_TRI6 : stype = "TRI6" ; break;
-					case FE_FACE_TRI7 : stype = "TRI7" ; break;
-					case FE_FACE_QUAD8: stype = "QUAD8"; break;
-					case FE_FACE_QUAD9: stype = "QUAD9"; break;
-					case FE_FACE_TRI10: stype = "TRI10"; break;
-					default:
-						assert(false);
-						stype = "(unknown)";
-					}
-					QString nodeList;
-					int nn = f->Nodes();
-					for (int i = 0; i < nn; ++i)
-					{
-						nodeList.append(QString::number(f->n[i] + 1));
-						if (i < nn - 1) nodeList.append(", ");
-					}
-					AddLogEntry("1 face selected:\n");
-					AddLogEntry(QString("  ID    : %1\n").arg(f->GetID()));
-					AddLogEntry(QString("  type  : %1\n").arg(stype));
-					AddLogEntry(QString("  nodes : %1\n").arg(nodeList));
-					AddLogEntry(QString("  normal: %1, %2, %3\n").arg(n.x).arg(n.y).arg(n.z));
-				}
-			}
-			else
-			{
-				AddLogEntry(QString("%1 faces selected\n").arg(sel.size()));
-			}
-		}
-		break;
-		case Post::SELECT_ELEMS:
-		{
-			std::vector<FEElement_*> sel = mdl->GetElementSelection();
-			AddLogEntry(QString("%1 element(s) selected\n").arg(sel.size()));
-		}
-		break;
 		}
 	}
 }

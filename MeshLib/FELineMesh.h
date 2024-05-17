@@ -46,9 +46,6 @@ public:
 	// Should be called when mesh needs to be reconstructed
 	virtual void BuildMesh() = 0;
 
-	// updates selection state (just call's owning object's UpdateSelection())
-	virtual void UpdateSelection();
-
 public: // node interface
 
 	// access node data

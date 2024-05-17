@@ -437,12 +437,13 @@ private:
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility(FSMesh* fem);
+	CCmdToggleElementVisibility(GObject* po);
 
 	void Execute();
 	void UnExecute();
 
 private:
+	GObject* m_po;
 	FSMesh*	m_mesh;
 };
 

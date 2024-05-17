@@ -817,7 +817,8 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 		FSFace& face = mesh.Face(i);
 		if (badd) face.Select(); else face.Unselect();
 	}
-	mesh.UpdateSelection();
+	
+	pdoc->UpdateSelection(false);
 }
 
 void GLViewSelector::Finish()

@@ -945,13 +945,6 @@ void GObject::UpdateItemVisibility()
 }
 
 //-----------------------------------------------------------------------------
-// is called whenever the selection has changed (default does nothing)
-void GObject::UpdateSelection()
-{
-
-}
-
-//-----------------------------------------------------------------------------
 GNode* GObject::FindNodeFromTag(int ntag)
 {
 	int N = Nodes();

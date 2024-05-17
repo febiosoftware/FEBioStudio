@@ -210,9 +210,6 @@ public:
 	// update the visibility of items (i.e. surfaces, edges, nodes, and mesh items)
 	void UpdateItemVisibility();
 
-	// is called whenever the selection has changed (default does nothing)
-	virtual void UpdateSelection();
-
 	virtual bool IsValid() const;
 
 	// check if the object has any dependencies.
@@ -226,7 +223,7 @@ public:
 public:
 	bool IsFaceVisible(const GFace* pf) const;
 
-	void BuildFERenderMesh();
+	virtual void BuildFERenderMesh();
 
 protected:
 	// set the render mesh
