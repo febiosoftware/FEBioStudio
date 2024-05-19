@@ -838,6 +838,45 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 					return false;
 				}
 			}
+			else if ((d.GetType() == DATA_VEC3) && (s.GetType() == DATA_VEC3))
+			{
+				double (*f)(double, double) = 0;
+				if      (nop == 0) f = flt_add;
+				else if (nop == 1) f = flt_sub;
+				else
+				{
+					return false;
+				}
+
+				if (fmt == DATA_ITEM)
+				{
+					FEElementData<vec3f, DATA_ITEM>* pd = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&d);
+					FEElemData_T<vec3f, DATA_ITEM>* ps = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&s);
+					if (pd && ps)
+					{
+						int N = mesh.Elements();
+						for (int i = 0; i < N; ++i)
+						{
+							if (pd->active(i) && ps->active(i))
+							{
+								vec3f vs, vd;
+								pd->eval(i, &vd);
+								ps->eval(i, &vs);
+								float x = (float)f(vd.x, vs.x);
+								float y = (float)f(vd.y, vs.y);
+								float z = (float)f(vd.z, vs.z);
+								pd->set(i, vec3f(x,y,z));
+							}
+						}
+					}
+					else return false;
+				}
+				else return false;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		else
 		{

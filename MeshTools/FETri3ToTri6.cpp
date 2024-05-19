@@ -249,11 +249,13 @@ FSMesh* FETri3ToTri6::Apply(FSMesh* pm)
 		e1.n[0] = e0.n[0];
         e1.n[1] = e0.n[1];
         e1.n[2] = CE[i] + NN;
+        e1.m_nid = e0.m_nid;
         e1.m_gid = e0.m_gid;
         e1.m_nbr[0] = e0.m_nbr[0];
         e1.m_nbr[1] = e0.m_nbr[1];
-        e1.m_elem = e1.m_elem;
-    }
+        e1.m_elem = e0.m_elem;
+		e1.SetExterior(e0.IsExterior());
+	}
     
     // apply surface smoothing
     if (m_bsmooth)
@@ -582,11 +584,13 @@ FSMesh* FETri6ToTri3::Apply(FSMesh* pm)
 		e1.n[0] = e0.n[0];
         e1.n[1] = e0.n[1];
         e1.n[2] = -1;
+        e1.m_nid = e0.m_nid;
         e1.m_gid = e0.m_gid;
         e1.m_nbr[0] = e0.m_nbr[0];
         e1.m_nbr[1] = e0.m_nbr[1];
-        e1.m_elem = e1.m_elem;
-    }
+        e1.m_elem = e0.m_elem;
+		e1.SetExterior(e0.IsExterior());
+	}
     
 	pnew->UpdateMesh();
 

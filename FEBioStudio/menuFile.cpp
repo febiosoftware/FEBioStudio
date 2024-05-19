@@ -215,7 +215,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.dyn *.stl)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.vtu *.vtp *.vtm *.fsps *.k *.dyn *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -223,7 +223,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
-	filters << "VTK files (*.vtk)";
+	filters << "VTK files (*.vtk *.vtp *.vtu *.vtm)";
 	filters << "LSDYNA keyword (*.k *.dyn)";
 	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
@@ -1473,6 +1473,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		filters << "TetGen (*.ele)";
 		filters << "IGES (*.iges, *.igs)";
 		filters << "VTK (*.vtk)";
+		filters << "VTU (*.vtu)";
 		filters << "RAW Image (*.raw)";
 		filters << "COMSOL Mesh (*.mphtxt)";
 		filters << "PLY (*.ply)";
@@ -1525,7 +1526,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 				// create a dummy post model
 				Post::FEPostModel* dummyFem = new Post::FEPostModel;
-				Post::VTKimport vtk(dummyFem);
+				Post::VTKImport vtk(dummyFem);
 				if (vtk.Load(sfile.c_str()))
 				{
 					if (postDoc->MergeFEModel(dummyFem) == false)

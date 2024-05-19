@@ -137,7 +137,7 @@ void GLMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 		for (int j = 0; j < 3; ++j)
 		{
 			auto& vj = gmsh.Node(tri.n[j]);
-			AddVertex(vj.r, tri.nn[j], tri.c[j]);
+			AddVertex(vj.r, tri.vn[j], tri.c[j]);
 		}
 	}
 	EndMesh();
@@ -159,7 +159,7 @@ void GLMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
 		for (int j = 0; j < 3; ++j)
 		{
 			auto& vj = gmsh.Node(f.n[j]);
-			AddVertex(vj.r, f.nn[j], f.c[j]);
+			AddVertex(vj.r, f.vn[j], f.c[j]);
 		}
 	}
 	EndMesh();

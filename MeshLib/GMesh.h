@@ -43,8 +43,8 @@ class GMesh
 public:
 	struct NODE
 	{
-		vec3d	r;		// nodal position
-		vec3d	n;		// normal (but not really)
+		vec3f	r;		// nodal position
+		vec3f	n;		// normal (but not really)
 		int		tag = 0;	// multipurpose tag
 		int		pid = 0;	// GNode parent local ID
 		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GMesh)
@@ -52,22 +52,26 @@ public:
 
 	struct EDGE
 	{
-		int		n[2];	// nodes
 		int		pid = 0;	// GEdge parent local id
+		int		n[2];	// nodes
+		vec3f	vr[2];	// nodal coordinates
 	};
 
 	struct FACE
 	{
+		int		pid = 0;	// GFace parent local id
+		int		fid = 0;	// face ID of FSace in parent mesh (or -1 if not applicable)
+		int		eid = 0;	// element ID (used by planecut algorithm)
+		int		sid = 0;	// smoothing group ID
+		bool	bext = true;	// external flag
+		int		tag = 0;	// multipurpose tag
 		int		n[3];	// nodes
 		int		nbr[3];	// neighbor faces
-		int		pid = 0;	// GFace parent local id
-		int		eid = 0;	// element ID of GFace (or -1 if not applicable)
-		int		sid = 0;	// smoothing groupd ID
-		int		tag = 0;	// multipurpose tag
-		vec3d	fn;		// face normal
-		vec3d	nn[3];	// node normals
+		vec3f	fn;		// face normal
+		vec3f	vn[3];	// node normals
+		vec3f	vr[3];	// nodal coordinates
 		GLColor	c[3];	// node colors
-		bool	bext = true;	// external flag
+		float	t[3];	// texture coordinates
 	};
 
 public:
@@ -93,27 +97,28 @@ public:
 
 	bool IsEmpty() const { return m_Node.empty(); }
 
-	void UpdateNormals(int* pid, int nsize);
-	void UpdateNormals();
-
 	BOX GetBoundingBox() { return m_box; }
-	void UpdateBoundingBox();
 
 	void Attach(GMesh& m, bool bupdate = true);
 
 	void AutoSmooth(double angleDegrees);
 
 public:
-	int	AddNode(const vec3d& r, int groupID = 0);
-	int	AddNode(const vec3d& r, int nodeID, int groupID);
+	int	AddNode(const vec3f& r, int groupID = 0);
+	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
-	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
-	void AddFace(int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);
-	void AddFace(vec3d* r, int gid = 0, int smoothId = 0, bool bext = true);
+	void AddEdge(vec3f* r, int nodes, int groupID = 0);
+	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
+	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
+	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 
 protected:
 	void FindNeighbors();
+
+public:
+	void UpdateBoundingBox();
+	void UpdateNormals();
 
 protected:
 	BOX				m_box;

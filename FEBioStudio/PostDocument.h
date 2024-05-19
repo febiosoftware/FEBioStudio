@@ -225,6 +225,4 @@ private:
 	TIMESETTINGS m_timeSettings;
 
 	bool	m_binit;
-
-	FESelection* m_sel;
 };

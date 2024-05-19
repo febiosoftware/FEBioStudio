@@ -296,30 +296,12 @@ public:
 			return;
 		}
 
-		std::vector< std::string> names = FEMeshValuator::GetDataFieldNames();
-		
-		QStringList items;
-		for (string& s : names) items << QString::fromStdString(s);
-		var->clear();
-		var->addItems(items);
-
-		// Add data fields
-		if (pm && pm->MeshDataFields())
-		{
-			var->insertSeparator(var->count());
-
-			for (int i = 0; i < pm->MeshDataFields(); ++i)
-			{
-				FEMeshData& di = *pm->GetMeshDataField(i);
-				var->addItem(QString::fromStdString(di.GetName()));
-			}
-		}
-
 		// We get ever when the selection has changed, but we don't
 		// want to update when the mesh hasn't changed.
 		if (m_pm == pm) return;
 		m_pm = pm;
 
+		// build the element table
 		int n[MAX_ELEM + 1] = { 0 };
 		int NE = pm->Elements();
 		for (int i = 0; i<NE; ++i)
@@ -347,7 +329,7 @@ public:
 			case FE_PYRA5  : n[17]++; break;
 			case FE_PENTA15: n[18]++; break;
 			case FE_TET5   : n[19]++; break;
-            case FE_PYRA13 : n[20]++; break;
+			case FE_PYRA13 : n[20]++; break;
 			default:
 				assert(false);
 				n[MAX_ELEM]++; break;
@@ -376,6 +358,25 @@ public:
 			}
 		}
 		table->blockSignals(false);
+
+		// build variables list
+		std::vector< std::string> names = FEMeshValuator::GetDataFieldNames();
+		QStringList items;
+		for (string& s : names) items << QString::fromStdString(s);
+		var->clear();
+		var->addItems(items);
+
+		// Add data fields
+		if (pm && pm->MeshDataFields())
+		{
+			var->insertSeparator(var->count());
+
+			for (int i = 0; i < pm->MeshDataFields(); ++i)
+			{
+				FEMeshData& di = *pm->GetMeshDataField(i);
+				var->addItem(QString::fromStdString(di.GetName()));
+			}
+		}
 	}
 
 	void setSurfaceMesh(FSSurfaceMesh* pm)

@@ -316,7 +316,7 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_planeCut(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -548,6 +548,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	m_select.SetStateModifiers(bshift, bctrl);
 
+	GLViewSettings& vs = GetViewSettings();
+
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
@@ -571,19 +573,21 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		}
 		else
 		{
-			if (pdoc->GetSelectionMode() == SELECT_EDGE)
+			if (GLHighlighter::IsTracking() || vs.m_showHighlights)
 			{
-				HighlightEdge(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_NODE)
-			{
-				HighlightNode(x, y);
+				switch (pdoc->GetSelectionMode())
+				{
+				case SELECT_EDGE: HighlightEdge(x, y); break;
+				case SELECT_NODE: HighlightNode(x, y); break;
+				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_PART: HighlightPart(x, y); break;
+				}
 			}
 		}
 		ev->accept();
 
 		// we need to repaint if brush selection is on so the brush can be redrawn
-		if (GetViewSettings().m_bselbrush)
+		if (vs.m_bselbrush)
 		{
 			m_x1 = x;
 			m_y1 = y;
@@ -602,7 +606,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1 && !m_bsel)
 		{
-			if (GetViewSettings().m_bselbrush && (bshift || bctrl))
+			if (vs.m_bselbrush && (bshift || bctrl))
 			{
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
 				repaint();
@@ -1130,6 +1134,17 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
+template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
+{
+	std::vector<T*> castedItems;
+	for (GLHighlighter::Item& it : items)
+	{
+		T* tp = dynamic_cast<T*>(it.item);
+		if (tp) castedItems.push_back(tp);
+	}
+	return castedItems;
+}
+
 void CGLView::keyPressEvent(QKeyEvent* ev)
 {
 	if (((ev->key() == Qt::Key_X) || (ev->key() == Qt::Key_Y) || (ev->key() == Qt::Key_Z)) && (ev->modifiers() & Qt::ALT))
@@ -1154,6 +1169,65 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 
 		cam->Orbit(q);
 		update();
+	}
+	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		int selectMode = doc->GetSelectionMode();
+		
+		std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
+		if (items.empty()) { ev->ignore(); return; }
+		GLHighlighter::ClearHighlights();
+
+		if (selectMode == SelectionMode::SELECT_PART)
+		{
+			std::vector<GPart*> partList = itemlist_cast<GPart>(items);
+			if (!partList.empty())
+			{
+				vector<int> partIDs;
+				for (GPart* p : partList) partIDs.push_back(p->GetID());
+				doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), partIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_FACE)
+		{
+			std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
+			if (!faceList.empty())
+			{
+				vector<int> faceIDs;
+				for (GFace* f : faceList) faceIDs.push_back(f->GetID());
+				doc->DoCommand(new CCmdSelectSurface(doc->GetGModel(), faceIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_EDGE)
+		{
+			std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
+			if (!edgeList.empty())
+			{
+				vector<int> edgeIDs;
+				for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
+				doc->DoCommand(new CCmdSelectEdge(doc->GetGModel(), edgeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_NODE)
+		{
+			std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
+			if (!nodeList.empty())
+			{
+				vector<int> nodeIDs;
+				for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
+				doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), nodeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else ev->ignore();
 	}
 	else ev->ignore();
 }
@@ -1859,8 +1933,9 @@ bool CGLView::ShowPlaneCut() const
 
 void CGLView::SetPlaneCutMode(int nmode)
 {
+	bool breset = (m_planeCutMode != nmode);
 	m_planeCutMode = nmode;
-	UpdatePlaneCut(true);
+	UpdatePlaneCut(breset);
 	update();
 }
 
@@ -1960,8 +2035,8 @@ void CGLView::HighlightEdge(int x, int y)
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
-						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
+						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
+						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
 						vec3d p0 = transform.WorldToScreen(r0);
 						vec3d p1 = transform.WorldToScreen(r1);
@@ -2037,6 +2112,178 @@ void CGLView::HighlightNode(int x, int y)
 		}
 	}
 	if (closestNode != nullptr) GLHighlighter::SetActiveItem(closestNode);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightSurface(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// get the fe model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	// set up selection buffer
+	int nsize = 5 * model.Edges();
+	if (nsize == 0) return;
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	// convert the point to a ray
+	Ray ray = transform.PointToRay(x, y);
+
+	double* a = PlaneCoordinates();
+	int Objects = model.Objects();
+	GFace* closestSurface = nullptr;
+	double minDist = 0;
+	Intersection q;
+	for (int i = 0; i < Objects; ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			Ray localRay;
+			Transform& T = po->GetTransform();
+			localRay.origin = T.GlobalToLocal(ray.origin);
+			localRay.direction = T.GlobalToLocalNormal(ray.direction);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			if (mesh)
+			{
+				int surfs = po->Faces();
+				for (int k = 0; k < surfs; ++k)
+				{
+					GFace* gface = po->Face(k);
+					if (gface->IsVisible() && !gface->IsSelected())
+					{
+						int NF = mesh->m_FIL[k].second;
+						int N0 = mesh->m_FIL[k].first;
+						for (int j = 0; j < NF; ++j)
+						{
+							GMesh::FACE& face = mesh->Face(j + N0);
+
+							vec3d r0 = to_vec3d(face.vr[0]);
+							vec3d r1 = to_vec3d(face.vr[1]);
+							vec3d r2 = to_vec3d(face.vr[2]);
+
+							Triangle tri = { r0, r1, r2, to_vec3d(face.fn)};
+							if (IntersectTriangle(localRay, tri, q, false))
+							{
+								vec3d q1 = T.LocalToGlobal(q.point);
+								if ((ShowPlaneCut() == false) || (q1.x * a[0] + q1.y * a[1] + q1.z * a[2] + a[3] > 0))
+								{
+									double distance = ray.direction * (q1 - ray.origin);
+									if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+									{
+										if ((gface->IsSelected() == false) || (m_bctrl))
+										{
+											closestSurface = po->Face(face.pid);
+											minDist = distance;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestSurface != nullptr) GLHighlighter::SetActiveItem(closestSurface);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightPart(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// Get the model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	if (model.Parts() == 0) return;
+
+	// convert the point to a ray
+	makeCurrent();
+	GLViewTransform transform(this);
+	Ray ray = transform.PointToRay(x, y);
+
+	GPart* closestPart = 0;
+	Intersection q;
+	double minDist = 0;
+	double* a = PlaneCoordinates();
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			GMesh* mesh = po->GetRenderMesh();
+			if (mesh)
+			{
+				int NF = mesh->Faces();
+				for (int j = 0; j < NF; ++j)
+				{
+					GMesh::FACE& face = mesh->Face(j);
+
+					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+
+					Triangle tri = { r0, r1, r2 };
+					if (IntersectTriangle(ray, tri, q))
+					{
+						if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+						{
+							double distance = ray.direction * (q.point - ray.origin);
+							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
+							{
+								GFace* gface = po->Face(face.pid);
+								int pid = gface->m_nPID[0];
+								GPart* part = po->Part(pid);
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								{
+									closestPart = part;
+									minDist = distance;
+								}
+								else if (gface->m_nPID[1] >= 0)
+								{
+									pid = gface->m_nPID[1];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+								else if (gface->m_nPID[2] >= 0)
+								{
+									pid = gface->m_nPID[2];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestPart != nullptr) GLHighlighter::SetActiveItem(closestPart);
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
@@ -2182,7 +2429,8 @@ void CGLView::ZoomSelection(bool forceZoom)
 	if (scene == nullptr) return;
 
 	// get the selection's bounding box
-	BOX box = scene->GetSelectionBox();
+	BOX box = GLHighlighter::GetBoundingBox();
+	box += scene->GetSelectionBox();
 	if (box.IsValid())
 	{
 		double f = box.GetMaxExtent();
@@ -2397,7 +2645,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
 	}
 	else
 	{
@@ -2450,6 +2698,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				}
 
 				mesh->UpdateItemVisibility();
+				po->BuildFERenderMesh();
 			}
 		}
 	}
@@ -2480,7 +2729,7 @@ double* CGLView::PlaneCoordinates()
 	return m_planeCut.GetPlaneCoordinates();
 }
 
-void CGLView::RenderPlaneCut()
+void CGLView::RenderPlaneCut(CGLContext& rc)
 {
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -2488,15 +2737,10 @@ void CGLView::RenderPlaneCut()
 	if (m_planeCut.IsValid() == false)
 	{
 		FSModel& fem = *doc->GetFSModel();
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
 	}
 
-	BOX box = doc->GetGModel()->GetBoundingBox();
-
-	glColor3ub(200, 0, 200);
-	glx::renderBox(box, false);
-
-	m_planeCut.Render();
+	m_planeCut.Render(rc);
 }
 
 void CGLView::ToggleFPS()

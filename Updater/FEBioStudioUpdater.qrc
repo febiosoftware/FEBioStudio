@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/FEBioStudio.png</file>
+        <file>images/leftSide.png</file>
+	</qresource>
+</RCC>

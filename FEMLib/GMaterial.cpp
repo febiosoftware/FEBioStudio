@@ -215,7 +215,7 @@ void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
-				pg->SetMaterialID(-1);
+				po->AssignMaterial(pg, 0);
 			}
 		}
 	}
@@ -227,7 +227,8 @@ void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 		vector<GPart*> parts = partList->GetPartList();
 		for (GPart* pg : parts)
 		{
-			pg->SetMaterialID(GetID());
+			GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);
+			if (po) po->AssignMaterial(pg, GetID());
 		}
 	}
 }

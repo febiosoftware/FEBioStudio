@@ -335,28 +335,34 @@ void CMainWindow::on_actionImageWarp_triggered()
 
 void CMainWindow::on_actionAddProbe_triggered()
 {
-	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr)
+	CPostDocument* doc = GetPostDocument();
+	if ((doc == nullptr) || !doc->IsValid())
 	{
 		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
 		return;
 	}
 
 	// get the selection center
-	vec3d c = glm->GetSelectionCenter();
+	FESelection* sel = doc->GetCurrentSelection();
+	if (sel && sel->Size())
+	{
+		BOX box = sel->GetBoundingBox();
+		vec3d c = box.Center();
 
-	// create the probe and set its initial position
-	Post::GLPointProbe* probe = new Post::GLPointProbe();
-	probe->SetInitialPosition(c);
+		// create the probe and set its initial position
+		Post::GLPointProbe* probe = new Post::GLPointProbe();
+		probe->SetInitialPosition(c);
 
-	// if the current selection is a plot-group, we'll add it there
-	Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
-	if (pg) pg->AddPlot(probe);
-	else glm->AddPlot(probe);
+		// if the current selection is a plot-group, we'll add it there
+		Post::CGLModel* glm = doc->GetGLModel();
+		Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
+		if (pg) pg->AddPlot(probe);
+		else glm->AddPlot(probe);
 
-	if (GetPostDocument()) UpdatePostPanel(true, probe);
-	else Update(nullptr, true);
-	RedrawGL();
+		if (GetPostDocument()) UpdatePostPanel(true, probe);
+		else Update(nullptr, true);
+		RedrawGL();
+	}
 }
 
 void CMainWindow::on_actionAddCurveProbe_triggered()

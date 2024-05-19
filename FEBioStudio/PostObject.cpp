@@ -46,17 +46,16 @@ CPostObject::~CPostObject()
 	SetFEMesh(nullptr);
 }
 
+void CPostObject::BuildFERenderMesh()
+{
+	// NOTE: for now, we don't use this yet. But soon ...
+}
+
 BOX CPostObject::GetBoundingBox()
 {
 	FSMesh* mesh = GetFEMesh();
 	if (mesh) return mesh->GetBoundingBox();
 	else return BOX();
-}
-
-// is called whenever the selection has changed
-void CPostObject::UpdateSelection()
-{
-	m_glm->UpdateSelectionLists();
 }
 
 void CPostObject::UpdateMesh()
@@ -82,10 +81,8 @@ void CPostObject::UpdateMesh()
 			GMesh::NODE& nd = mesh->Node(i);
 			FSNode& ns = postMesh->Node(nd.nid);
 
-			nd.r = ns.r;
+			nd.r = to_vec3f(ns.r);
 		}
-		//		mesh->Update();
-		mesh->UpdateBoundingBox();
-		mesh->UpdateNormals();
+		mesh->Update();
 	}
 }

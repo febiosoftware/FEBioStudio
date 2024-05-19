@@ -141,8 +141,8 @@ void GSphere::BuildGMesh()
 
 	// ------- nodes --------
 	// top/bottom
-	m.Node(0).r = vec3d(0,0,-R);
-	m.Node(NN-1).r = vec3d(0,0,R);
+	m.Node(0).r = vec3f(0,0,-R);
+	m.Node(NN-1).r = vec3f(0,0,R);
 
 	int i, j;
 	for (i=1; i<NZ; ++i)
@@ -156,7 +156,7 @@ void GSphere::BuildGMesh()
 			double d = R*sqrt(1 - z*z);
 
 			GMesh::NODE& n = m.Node((i-1)*ND + j + 1);
-			n.r = vec3d(d*cw, d*sw, R*z);
+			n.r = vec3f(d*cw, d*sw, R*z);
 		}
 	}
 
@@ -287,8 +287,6 @@ void GSphere::BuildGMesh()
 			e.n[1] = NodeIndex(i+1, 3*ND/4, ND, NZ);
 			e.pid = 11;
 		}
-		m.Update();
 	}
-	m.UpdateNormals();
-	m.UpdateBoundingBox();
+	m.Update();
 }

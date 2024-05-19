@@ -398,12 +398,6 @@ vec3d FSMeshBase::FaceCenter(FSFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FSMeshBase::EdgeCenter(FSEdge& e) const
-{
-	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
-}
-
-//-----------------------------------------------------------------------------
 // area of triangle
 double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
@@ -713,8 +707,32 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 	}
 }
 
-//-----------------------------------------------------------------------------
-void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax)
+std::vector<int> MeshTools::GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax)
+{
+	const int TAG = 1;
+	TagConnectedNodes(pm, startNode, tolAngleDeg, bmax, TAG);
+
+	std::vector<int> nodeList;
+	nodeList.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+		if (pm->Node(i).m_ntag == TAG) nodeList.push_back(i);
+
+	return nodeList;
+}
+
+std::vector<int> MeshTools::GetConnectedNodesByPath(FSMeshBase* pm, int startNode, int endNode)
+{
+	const int TAG = 1;
+	TagNodesByShortestPath(pm, startNode, endNode, TAG);
+	std::vector<int> nodeList;
+	nodeList.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+		if (pm->Node(i).m_ntag == TAG) nodeList.push_back(i);
+
+	return nodeList;
+}
+
+void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax, int tag)
 {
 	// clear all tags
 	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
@@ -722,11 +740,11 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 	// first see if this node is a corner node
 	if (pm->Node(num).m_gid >= 0)
 	{
-		pm->Node(num).m_ntag = 1;
+		pm->Node(num).m_ntag = tag;
 	}
 	else
 	{
-		pm->Node(num).m_ntag = 1;
+		pm->Node(num).m_ntag = tag;
 
 		// see if this node belongs to an edge
 		std::stack<FSEdge*> stack;
@@ -757,7 +775,7 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 				int nn = pe->Nodes();
 				for (int i = 0; i < nn; ++i)
 				{
-					pm->Node(pe->n[i]).m_ntag = 1;
+					pm->Node(pe->n[i]).m_ntag = tag;
 				}
 
 				// push neighbours
@@ -807,7 +825,7 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 				// mark all nodes
 				for (int i = 0; i < nn; ++i)
 				{
-					pm->Node(pf->n[i]).m_ntag = 1;
+					pm->Node(pf->n[i]).m_ntag = tag;
 				}
 
 				// push neighbours
@@ -827,12 +845,12 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 }
 
 //-----------------------------------------------------------------------------
-void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
+void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1, int tag)
 {
 	if (n1 == n0) return;
 
 	pm->TagAllNodes(0);
-	pm->Node(n0).m_ntag = 1;
+	pm->Node(n0).m_ntag = tag;
 
 	vec3d r0 = pm->Node(n0).r;
 	vec3d r1 = pm->Node(n1).r;
@@ -882,7 +900,7 @@ void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 
 			if (minNode != -1)
 			{
-				pm->Node(minNode).m_ntag = 1;
+				pm->Node(minNode).m_ntag = tag;
 				n = minNode;
 				if (minNode == n1) break;
 			}
@@ -932,7 +950,7 @@ void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 
 			if (minNode != -1)
 			{
-				pm->Node(minNode).m_ntag = 1;
+				pm->Node(minNode).m_ntag = tag;
 				n = minNode;
 				if (minNode == n1) break;
 
@@ -941,4 +959,59 @@ void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 			else break;
 		} while (1);
 	}
+}
+
+std::vector<int> MeshTools::GetConnectedEdges(FSMeshBase* pm, int startEdge, double tolAngleDeg, bool bmax)
+{
+	std::vector<int> edgeList;
+	edgeList.reserve(pm->Edges());
+	for (int i = 0; i < pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
+	std::stack<FSEdge*> stack;
+
+	FSNodeEdgeList NEL(pm);
+
+	// push the first face to the stack
+	FSEdge* pe = pm->EdgePtr(startEdge);
+	edgeList.push_back(startEdge);
+	pe->m_ntag = -1;
+	stack.push(pe);
+
+	int gid = pe->m_gid;
+
+	// setup the direction vector
+	vec3d& r0 = pm->Node(pe->n[0]).r;
+	vec3d& r1 = pm->Node(pe->n[1]).r;
+	vec3d t1 = r1 - r0; t1.Normalize();
+
+	// angle tolerance
+	double wtol = 1.000001 * cos(PI * tolAngleDeg / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
+
+	// now push the rest
+	while (!stack.empty())
+	{
+		pe = stack.top(); stack.pop();
+
+		for (int i = 0; i < 2; ++i)
+		{
+			int n = NEL.Edges(pe->n[i]);
+			for (int j = 0; j < n; ++j)
+			{
+				int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
+				if (edgeID >= 0)
+				{
+					FSEdge* pe2 = pm->EdgePtr(edgeID);
+					vec3d& r0 = pm->Node(pe2->n[0]).r;
+					vec3d& r1 = pm->Node(pe2->n[1]).r;
+					vec3d t2 = r1 - r0; t2.Normalize();
+					if (pe2->IsVisible() && ((bmax == false) || (fabs(t1 * t2) >= wtol)) && ((gid == -1) || (pe2->m_gid == gid)))
+					{
+						edgeList.push_back(pe2->m_ntag);
+						pe2->m_ntag = -1;
+						stack.push(pe2);
+					}
+				}
+			}
+		}
+	}
+	return edgeList;
 }

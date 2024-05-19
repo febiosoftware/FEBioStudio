@@ -50,6 +50,7 @@ public:
 		m_pmesh   = nullptr;
 		m_pMesher = nullptr;
 		m_pGMesh  = nullptr;
+		m_glFaceMesh = nullptr;
 
 		m_col = GLColor(200, 200, 200);
 
@@ -63,6 +64,7 @@ public:
 		delete m_pmesh;	m_pmesh = nullptr;
 		delete m_pMesher; m_pMesher = nullptr;
 		delete m_pGMesh; m_pGMesh = nullptr;
+		delete m_glFaceMesh; m_glFaceMesh = nullptr;
 	}
 
 public:
@@ -73,7 +75,8 @@ public:
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GMesh*		m_pGMesh;	//!< the mesh for rendering
+	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
+	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
 
 	FSObjectList<FSElemSet>		m_pFEElemSet;
 	FSObjectList<FSSurface>		m_pFESurface;
@@ -154,7 +157,10 @@ int GObject::GetType() const { return imp->m_ntype; }
 GLColor GObject::GetColor() const { return imp->m_col; }
 
 //-----------------------------------------------------------------------------
-void GObject::SetColor(const GLColor& c) { imp->m_col = c; }
+void GObject::SetColor(const GLColor& c) 
+{ 
+	imp->m_col = c; 
+}
 
 //-----------------------------------------------------------------------------
 // retrieve the mesher
@@ -188,6 +194,95 @@ void GObject::SetFEMesher(FEMesher *pmesher)
 void GObject::SetFEMesh(FSMesh* pm)
 {
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
+
+	// rebuild the line mesh
+	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
+	if (pm)
+	{
+		BuildFERenderMesh();
+	}
+}
+
+void GObject::BuildFERenderMesh()
+{
+	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	imp->m_glFaceMesh = new GMesh;
+	GMesh& gm = *imp->m_glFaceMesh;
+	gm.Create(pm->Nodes(), 0, 0);
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+	}
+
+	int NF = pm->Faces();
+	for (int i = 0; i < NF; i++)
+	{
+		const FSFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			int eid = face.m_elem[0].eid;
+			if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+			{
+				eid = face.m_elem[1].eid;
+			}
+
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid);
+
+			int ne = face.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				int j1 = (j + 1) % ne;
+				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+				{
+					int m[2] = { face.n[j], face.n[j1] };
+					gm.AddEdge(m, 2);
+				}
+			}
+		}
+	}
+
+	// add the exposed surface from hidden elements
+	int maxSurfID = Faces(); // we assign this ID to the exposed surface
+	FSFace face;
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsVisible())
+		{
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				if (el.m_nbr[j] >= 0)
+				{
+					FSElement& elj = pm->Element(el.m_nbr[j]);
+					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
+					{
+						el.GetFace(j, face);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i);
+
+						int n[FSEdge::MAX_NODES];
+						int ne = face.Edges();
+						for (int k = 0; k < ne; ++k)
+						{
+							int m = face.GetEdgeNodes(k, n);
+							if (m == 2)
+							{
+								if (n[0] < n[1]) gm.AddEdge(n, 2, -1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// NOTE: since we only add the visible faces, note that the partitions created in this mesh
+	// may not correspond to the surfaces of the geometry object
+	gm.Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -473,6 +568,7 @@ void GObject::AssignMaterial(int matid)
 		GPart& g = *m_Part[i];
 		g.SetMaterialID(matid);
 	}
+	UpdateFEElementMatIDs();
 }
 
 //-----------------------------------------------------------------------------
@@ -481,7 +577,14 @@ void GObject::AssignMaterial(int matid)
 void GObject::AssignMaterial(int partid, int matid)
 {
 	GPart* pg = FindPart(partid); assert(pg);
-	if (pg) pg->SetMaterialID(matid);
+	if (pg) AssignMaterial(pg, matid);
+}
+
+void GObject::AssignMaterial(GPart* part, int matid)
+{
+	assert(part && (part->Object() == this));
+	part->SetMaterialID(matid);
+	UpdateFEElementMatIDs(part->GetLocalID());
 }
 
 //-----------------------------------------------------------------------------
@@ -525,8 +628,41 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 bool GObject::Update(bool b)
 {
 	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
+
+	// assign part materials to element matIDs. 
+	UpdateFEElementMatIDs();
+
 	BuildGMesh();
+	BuildFERenderMesh();
 	return GBaseObject::Update(b);
+}
+
+void GObject::UpdateFEElementMatIDs()
+{
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		GPart* pg = Part(el.m_gid); assert(pg);
+		if (pg) el.m_MatID = pg->GetMaterialID();
+	}
+}
+
+void GObject::UpdateFEElementMatIDs(int partIndex)
+{
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+	if ((partIndex < 0) || (partIndex >= Parts())) return;
+
+	GPart* pg = Part(partIndex);
+	int matId = pg->GetMaterialID();
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_gid == partIndex) el.m_MatID = matId;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -585,11 +721,7 @@ BOX GObject::GetLocalBox() const
 BOX GObject::GetGlobalBox() const
 {
 	BOX box = GetLocalBox();
-	vec3d r0 = vec3d(box.x0, box.y0, box.z0);
-	vec3d r1 = vec3d(box.x1, box.y1, box.z1);
-	r0 = GetTransform().LocalToGlobal(r0);
-	r1 = GetTransform().LocalToGlobal(r1);
-	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
+	return LocalToGlobalBox(box, GetTransform());
 }
 
 //-----------------------------------------------------------------------------
@@ -616,6 +748,11 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 GMesh*	GObject::GetRenderMesh()
 { 
 	return imp->m_pGMesh;
+}
+
+GMesh* GObject::GetFERenderMesh()
+{
+	return imp->m_glFaceMesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -808,13 +945,9 @@ void GObject::UpdateItemVisibility()
 
 		mesh->UpdateItemVisibility();
 	}
-}
 
-//-----------------------------------------------------------------------------
-// is called whenever the selection has changed (default does nothing)
-void GObject::UpdateSelection()
-{
-
+	// rebuild render meshes
+	BuildFERenderMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -1404,6 +1537,16 @@ void GObject::Reindex()
 		stringstream ss;
 		ss << "Node" << pg->GetID();
 		pg->SetName(ss.str());
+	}
+}
+
+void GObject::ShowElements(vector<int>& elemList, bool show)
+{
+	FSMesh* mesh = GetFEMesh();
+	if (mesh)
+	{
+		mesh->ShowElements(elemList, show);
+		BuildFERenderMesh();
 	}
 }
 

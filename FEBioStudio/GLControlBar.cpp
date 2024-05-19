@@ -68,14 +68,15 @@ public:
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0,0,0,0);
 
-		QToolButton* b  = addButton(QIcon(":/icons/pivot.png"), "Lock pivot");
-		QToolButton* b1 = addButton(QIcon(":/icons/snaptogrid.png"), "Snap to grid"); b1->setChecked(true);
-		QToolButton* b2 = addButton(QIcon(":/icons/snaptonode.png"), "Snap to node");
-		QToolButton* b3 = addButton(QIcon(":/icons/hide.png"), "Hide selection", false);
-		QToolButton* b4 = addButton(QIcon(":/icons/show.png"), "Show all", false);
-		QToolButton* b5 = addButton(QIcon(":/icons/toggle_visible.png"), "Toggle visibility", false);
-		QToolButton* b6 = addButton(QIcon(":/icons/zoom_select.png"), "Zoom to selection", false); 
-		QToolButton* b7 = addButton(QIcon(":/icons/zoom_all.png"), "Zoom to extents", false);
+		QToolButton* lockPivot   = addButton(QIcon(":/icons/pivot.png"), "Lock pivot");
+		QToolButton* snapToGrid  = addButton(QIcon(":/icons/snaptogrid.png"), "Snap to grid"); snapToGrid->setChecked(true);
+		QToolButton* snapToNode  = addButton(QIcon(":/icons/snaptonode.png"), "Snap to node");
+		QToolButton* hide        = addButton(QIcon(":/icons/hide.png"), "Hide selection", false);
+		QToolButton* showAll     = addButton(QIcon(":/icons/show.png"), "Show all", false);
+		QToolButton* selectHide  = addButton(QIcon(":/icons/select_hide.png"), "Select and hide", true);
+		QToolButton* toggleViz   = addButton(QIcon(":/icons/toggle_visible.png"), "Toggle visibility", false);
+		QToolButton* zoomSelect  = addButton(QIcon(":/icons/zoom_select.png"), "Zoom to selection", false); 
+		QToolButton* zoomAll = addButton(QIcon(":/icons/zoom_all.png"), "Zoom to extents", false);
 		showMesh = addButton(QIcon(":/icons/show_mesh.png"), "Toggle mesh lines", true);
 		toggleLight = addButton(QIcon(":/icons/light.png"), "Toggle light", true);
 
@@ -127,19 +128,20 @@ public:
 		edit->setLayout(hl);
 
 		// assemble tools
-		h->addWidget(b);
+		h->addWidget(lockPivot);
 
 		h->addWidget(x = new QLineEdit); x->setMaximumWidth(100); x->setValidator(new QDoubleValidator); x->setReadOnly(true);
 		h->addWidget(y = new QLineEdit); y->setMaximumWidth(100); y->setValidator(new QDoubleValidator); y->setReadOnly(true);
 		h->addWidget(z = new QLineEdit); z->setMaximumWidth(100); z->setValidator(new QDoubleValidator); z->setReadOnly(true);
 
-		h->addWidget(b1);
-		h->addWidget(b2);
-		h->addWidget(b3);
-		h->addWidget(b4);
-		h->addWidget(b5);
-		h->addWidget(b6);
-		h->addWidget(b7);
+		h->addWidget(snapToGrid);
+		h->addWidget(snapToNode);
+		h->addWidget(hide);
+		h->addWidget(showAll);
+		h->addWidget(toggleViz);
+		h->addWidget(selectHide);
+		h->addWidget(zoomSelect);
+		h->addWidget(zoomAll);
 		h->addWidget(showMesh);
 		h->addWidget(toggleLight);
 		h->addWidget(edit);
@@ -150,14 +152,15 @@ public:
 		QObject::connect(x, SIGNAL(textEdited(const QString&)), bar, SLOT(onPivotChanged()));
 		QObject::connect(y, SIGNAL(textEdited(const QString&)), bar, SLOT(onPivotChanged()));
 		QObject::connect(z, SIGNAL(textEdited(const QString&)), bar, SLOT(onPivotChanged()));
-		QObject::connect(b, SIGNAL(clicked(bool)), bar, SLOT(onPivotClicked(bool)));
-		QObject::connect(b1, SIGNAL(clicked(bool)), bar, SLOT(onSnapToGridClicked(bool)));
-		QObject::connect(b2, SIGNAL(clicked(bool)), bar, SLOT(onSnapToNodeClicked(bool)));
-		QObject::connect(b3, SIGNAL(clicked(bool)), bar, SLOT(onHideSelection(bool)));
-		QObject::connect(b4, SIGNAL(clicked(bool)), bar, SLOT(onShowAll(bool)));
-		QObject::connect(b5, SIGNAL(clicked(bool)), bar, SLOT(onToggleVisibleClicked(bool)));
-		QObject::connect(b6, SIGNAL(clicked(bool)), bar, SLOT(onZoomSelectClicked(bool)));
-		QObject::connect(b7, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
+		QObject::connect(lockPivot, SIGNAL(clicked(bool)), bar, SLOT(onPivotClicked(bool)));
+		QObject::connect(snapToGrid, SIGNAL(clicked(bool)), bar, SLOT(onSnapToGridClicked(bool)));
+		QObject::connect(snapToNode, SIGNAL(clicked(bool)), bar, SLOT(onSnapToNodeClicked(bool)));
+		QObject::connect(hide, SIGNAL(clicked(bool)), bar, SLOT(onHideSelection(bool)));
+		QObject::connect(showAll, SIGNAL(clicked(bool)), bar, SLOT(onShowAll(bool)));
+		QObject::connect(selectHide, SIGNAL(clicked(bool)), bar, SLOT(onSelectAndHide(bool)));
+		QObject::connect(toggleViz, SIGNAL(clicked(bool)), bar, SLOT(onToggleVisibleClicked(bool)));
+		QObject::connect(zoomSelect, SIGNAL(clicked(bool)), bar, SLOT(onZoomSelectClicked(bool)));
+		QObject::connect(zoomAll, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
 		QObject::connect(toggleLight, SIGNAL(clicked(bool)), bar, SLOT(onToggleLight(bool)));
 		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
@@ -385,6 +388,12 @@ void CGLControlBar::onHideSelection(bool b)
 void CGLControlBar::onShowAll(bool b)
 {
 	ui->m_wnd->on_actionUnhideAll_triggered();
+}
+
+void CGLControlBar::onSelectAndHide(bool b)
+{
+	GLViewSettings& vs = ui->m_wnd->GetGLView()->GetViewSettings();
+	vs.m_selectAndHide = b;
 }
 
 void CGLControlBar::onZoomSelectClicked(bool b)

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/Intersect.h>
+#include <MeshTools/FESelection.h>
 #include <vector>
 
 namespace Post {
@@ -47,16 +48,6 @@ enum View_Convention {
 	CONV_FR_XZ,
 	CONV_FR_XY,
 	CONV_US_XY
-};
-
-// the selection modes
-enum Selection_Mode {
-	SELECT_NODES = 1,
-	SELECT_EDGES = 2,
-	SELECT_FACES = 4,
-	SELECT_ELEMS = 8,
-	SELECT_ADD = 16,
-	SELECT_SUB = 32
 };
 
 // Selection Styles
@@ -147,9 +138,6 @@ public:
 
 	//! reset the mesh nodes
 	void ResetMesh();
-
-	//! Toggle element visibility
-	void ToggleVisibleElements();
 
 public:
 	// return internal surfaces
@@ -247,43 +235,12 @@ public:
 	void SetTimeValue(float ftime);
 
 public: // Selection
-	const vector<FSNode*>&		GetNodeSelection   () const { return m_nodeSelection; }
-	const vector<FSEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
-	const vector<FSFace*>&		GetFaceSelection   () const { return m_faceSelection; }
-	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
-	void UpdateSelectionLists(int mode = -1);
-	void ClearSelectionLists();
+	void SetSelection(FESelection* sel);
 
-	vec3d GetSelectionCenter();
-
-	void SelectNodes(vector<int>& items, bool bclear);
-	void SelectEdges(vector<int>& items, bool bclear);
-	void SelectFaces(vector<int>& items, bool bclear);
 	void SelectElements(vector<int>& items, bool bclear);
 
 	//! unhide all items
 	void UnhideAll();
-
-	//! clear selection
-	void ClearSelection();
-
-	//! select connected elements (connected via surface)
-	void SelectConnectedSurfaceElements(FEElement_& el);
-
-	//! select connected elements (connected via volume)
-	void SelectConnectedVolumeElements(FEElement_& el);
-
-	//! select connected faces
-	void SelectConnectedFaces(FSFace& f, double angleTol);
-
-	//! select connected edges
-	void SelectConnectedEdges(FSEdge& e);
-
-	//! select connected nodes on surface
-	void SelectConnectedSurfaceNodes(int n);
-
-	//! select connected nodes in volume
-	void SelectConnectedVolumeNodes(int n);
 
 	// selection
 	void SelectNodesInRange(float fmin, float fmax, bool bsel);
@@ -320,10 +277,10 @@ public: // Selection
 	// --- S E L E C T I O N ---
 
 	// get selection mode
-	int GetSelectionMode() const { return m_selectMode; }
+	int GetSelectionType() const { return m_selectType; }
 
-	// set selection mode
-	void SetSelectionMode(int mode) { m_selectMode = mode; }
+	// set selection type
+	void SetSelectionType(SelectionType mode) { m_selectType = mode; }
 
 	// get a list of selected items
 	void GetSelectionList(vector<int>& L, int mode);
@@ -333,21 +290,6 @@ public: // Selection
 
 	// set selection style
 	void SetSelectionStyle(int n) { m_selectStyle = n; }
-
-	// convert between selections
-	void ConvertSelection(int oldMode, int newMode);
-
-	//! Invert selected items
-	void InvertSelectedNodes();
-	void InvertSelectedEdges();
-	void InvertSelectedFaces();
-	void InvertSelectedElements();
-
-	// select items
-	void SelectAllNodes();
-	void SelectAllEdges();
-	void SelectAllFaces();
-	void SelectAllElements();
 
 public:
 	int DiscreteEdges();
@@ -408,10 +350,7 @@ protected:
 	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
 
 	// selected items
-	vector<FSNode*>		m_nodeSelection;
-	vector<FSEdge*>		m_edgeSelection;
-	vector<FSFace*>		m_faceSelection;
-	vector<FEElement_*>	m_elemSelection;
+	FESelection* m_selection;
 
 	GPlotList			m_pPlot;	// list of plots
 
@@ -419,8 +358,8 @@ protected:
 	std::list<GDecoration*>	m_decor;
 
 	// --- Selection ---
-	int		m_selectMode;		//!< current selection mode (node, edge, face, elem)
-	int		m_selectStyle;		//!< selection style (box, circle, rect)
+	SelectionType	m_selectType;		//!< current selection type (node, edge, face, elem)
+	int				m_selectStyle;		//!< selection style (box, circle, rect)
 };
 
 // This class provides a convenient way to loop over all the plots in a model, traversing

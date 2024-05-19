@@ -128,6 +128,7 @@ public: // Helper functions for updating mesh data structures
 	void UpdateFaceNeighbors();
 	void UpdateEdgeNeighbors();
 	void UpdateFaceElementTable();
+	void UpdateEdgeElementTable();
 
 	void UpdateNodePartitions();
 	void UpdateEdgePartitions();
@@ -211,4 +212,9 @@ protected:
 double bias(double b, double x);
 double gain(double g, double x);
 
-FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);
+namespace MeshTools {
+
+	FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);
+
+	std::vector<int> GetConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax);
+}

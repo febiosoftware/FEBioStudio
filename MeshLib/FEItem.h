@@ -47,6 +47,14 @@ public:
 	MeshItem() { m_state = 0; m_nid = -1; m_gid = 0; m_ntag = 0; }
 	virtual ~MeshItem() {}
 
+	void operator = (const MeshItem& it)
+	{
+		m_gid = it.m_gid;
+		m_nid = it.m_nid;
+		m_ntag = it.m_ntag;
+		m_state = it.m_state;
+	}
+
 	bool IsHidden() const { return ((m_state & ITEM_HIDDEN) != 0); }
 	bool IsSelected() const { return ((m_state & ITEM_SELECTED) != 0); }
 	bool IsDisabled() const { return ((m_state & ITEM_DISABLED) != 0); }

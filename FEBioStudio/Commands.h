@@ -437,12 +437,13 @@ private:
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility(FSMesh* fem);
+	CCmdToggleElementVisibility(GObject* po);
 
 	void Execute();
 	void UnExecute();
 
 private:
+	GObject* m_po;
 	FSMesh*	m_mesh;
 };
 
@@ -1021,6 +1022,7 @@ protected:
 class CCmdHideParts : public CCommand
 {
 public:
+	CCmdHideParts(GModel* model, GPart* part);
 	CCmdHideParts(GModel* model, std::list<GPart*> partList);
 
 	void Execute();
@@ -1049,12 +1051,14 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
+	CCmdHideElements(GObject* po, const vector<int>& elemList);
 	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GObject*		m_po;
 	FSMesh*			m_mesh;
 	vector<int>		m_elemList;
 };

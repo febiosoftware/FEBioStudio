@@ -189,9 +189,9 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 			{
 				FSTriMesh::FACE& face = triMesh.Face(nfaces++);
 				GMesh::FACE& fj = pm->Face(j);
-				face.r[0] = T.LocalToGlobal(pm->Node(fj.n[0]).r);
-				face.r[1] = T.LocalToGlobal(pm->Node(fj.n[1]).r);
-				face.r[2] = T.LocalToGlobal(pm->Node(fj.n[2]).r);
+				face.r[0] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[0]).r));
+				face.r[1] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[1]).r));
+				face.r[2] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[2]).r));
 
 				face.fn = (face.r[1] - face.r[0]) ^ (face.r[2] - face.r[0]);
 				face.fn.Normalize();

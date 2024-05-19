@@ -89,13 +89,14 @@ public:
 		addDoubleProperty(&m_nodeSize, "Size of nodes");
 		addDoubleProperty(&m_lineSize, "Line width");
 		addColorProperty (&m_meshColor, "Mesh color"  );
+		addDoubleProperty(&m_meshOpacity, "Mesh opacity")->setFloatRange(0, 1);
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
-        QStringList vconv;
-        vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
-        addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
+		addBoolProperty(&m_showHighlights, "Enable highlighting");
+		QStringList vconv;
+		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
+		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
-		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
 		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
 		addColorProperty(&m_defaultFGColor, "Custom text color");
@@ -105,14 +106,15 @@ public:
 	double	m_nodeSize;
 	double	m_lineSize;
 	QColor  m_meshColor;
+	double	m_meshOpacity;
 	bool	m_bnormal;
 	double	m_scaleNormal;
-    int     m_nconv;
+	int		m_nconv;
 	int		m_ntrans;
-	int		m_nobjcol;
 	bool	m_dozsorting;
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
+	bool	m_showHighlights;
 };
 
 //-----------------------------------------------------------------------------
@@ -1071,14 +1073,17 @@ void CDlgSettings::UpdateSettings()
 	ui->m_bg->m_fg = toQColor(view.m_fgcol);
 	ui->m_bg->m_nstyle = view.m_nbgstyle;
 
-	ui->m_display->m_meshColor = toQColor(view.m_mcol);
+	ui->m_display->m_meshColor = toQColor(view.m_meshColor);
+	double a = view.m_meshColor.a/255.0;
+	if (a < 0) a = 0; else if (a > 1) a = 1;
+	ui->m_display->m_meshOpacity = a;
 	ui->m_display->m_nodeSize = (double)view.m_node_size;
 	ui->m_display->m_lineSize = (double)view.m_line_size;
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
+	ui->m_display->m_showHighlights = view.m_showHighlights;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
-	ui->m_display->m_nobjcol = view.m_objectColor;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
 	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
 	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
@@ -1167,14 +1172,17 @@ void CDlgSettings::apply()
 	view.m_fgcol = toGLColor(ui->m_bg->m_fg);
 	view.m_nbgstyle = ui->m_bg->m_nstyle;
 
-	view.m_mcol = toGLColor(ui->m_display->m_meshColor);
+	view.m_meshColor = toGLColor(ui->m_display->m_meshColor);
+	int a = (int)(255.0*ui->m_display->m_meshOpacity);
+	if (a < 0) a = 0; else if (a > 255) a = 255;
+	view.m_meshColor.a = a;
 	view.m_node_size = (float) ui->m_display->m_nodeSize;
 	view.m_line_size = (float) ui->m_display->m_lineSize;
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
-    view.m_nconv = ui->m_display->m_nconv;
+	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
-	view.m_objectColor = ui->m_display->m_nobjcol;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
 	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);
@@ -1300,5 +1308,6 @@ void CDlgSettings::onReset()
 	int ntheme = m_pwnd->currentTheme();
 	view.Defaults(ntheme);
 	UpdateSettings();
+	m_pwnd->RedrawGL();
 	UpdateUI();
 }

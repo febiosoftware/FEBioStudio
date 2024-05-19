@@ -159,9 +159,8 @@ void GModifiedObject::BuildGMesh()
 	for (int i=0; i<N; ++i)
 	{
 		m_pStack->Modifier(i)->BuildGMesh(this);
-		gmesh->UpdateBoundingBox();
 	}
-	gmesh->UpdateNormals();
+	gmesh->Update();
 	SetRenderMesh(gmesh);
 }
 

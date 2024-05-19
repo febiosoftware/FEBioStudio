@@ -78,6 +78,7 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
+#include "DlgPartSelector.h"
 #include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
@@ -291,6 +292,8 @@ public:
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
+	CDlgPartSelector* partSelector = nullptr;
+
 	QStatusBar* statusBar;
 	QProgressBar* progressBar;
 
@@ -497,6 +500,8 @@ public:
 	void ShowDefaultBackground();
 
 	void setUIConfig(Ui::Config newConfig);
+
+	void showPartSelector(CModelDocument* doc);
 
 private:
 	void setRecentFileList(QStringList& dstList, const QStringList& fileList, QMenu* menu, QActionGroup* actionGroup);

@@ -1,0 +1,540 @@
+<project>
+    <shortName>FEBioStudio</shortName>
+    <fullName>FEBioStudio</fullName>
+    <version>FBS_VER</version>
+    <installerFilename>${product_shortname}_${platform_name}_${product_version}_FEBio_${febio_version}.${platform_exec_suffix}</installerFilename>
+    <licenseFile>${FEBioRepo}/Documentation/FEBio_EULA_4.txt</licenseFile>
+    <leftImage>${FBSRepo}/Documentation/InstallerImages/Left Side Image.png</leftImage>
+    <logoImage>${FBSRepo}/Documentation/InstallerImages/Logo.png</logoImage>
+    <splashImage>${FBSRepo}/Documentation/InstallerImages/Splash.png</splashImage>
+    <allowComponentSelection>1</allowComponentSelection>
+    <enableRetinaDisplayImages>1</enableRetinaDisplayImages>
+    <enableRollback>0</enableRollback>
+    <enableTimestamp>1</enableTimestamp>
+    <vendor>University of Utah</vendor>
+    <windows64bitMode>1</windows64bitMode>
+    <windowsSoftwareRegistryPrefix>${product_fullname}2</windowsSoftwareRegistryPrefix>
+    <osxSigningPkcs12File>/Users/GitRunner/osx_app_signing.p12</osxSigningPkcs12File>
+    <osxSigningPkcs12Password>${env(MACOS_PKCS12_PSWD)}</osxSigningPkcs12Password>
+    <componentList>
+        <component>
+            <name>comp_febio_studio</name>
+            <description>FEBio Studio ${product_version}</description>
+            <canBeEdited>0</canBeEdited>
+            <detailedDescription>Installs FEBio Studio version ${product_version}</detailedDescription>
+            <requiredSize>10</requiredSize>
+            <selected>1</selected>
+            <show>1</show>
+            <folderList>
+                <!-- Uninstaller - All -->
+                <folder>
+                    <description>Uninstaller Dir</description>
+                    <destination>${installdir}</destination>
+                    <name>uninstallerDir</name>
+                    <platforms>all</platforms>
+                    <shortcutList>
+                        <shortcut>
+                            <comment>Uninstall</comment>
+                            <exec>${installdir}/${uninstallerName}</exec>
+                            <icon></icon>
+                            <name>Uninstall ${product_fullname}</name>
+                            <path>${installdir}</path>
+                            <platforms>all</platforms>
+                            <runAsAdmin>0</runAsAdmin>
+                            <runInTerminal>0</runInTerminal>
+                            <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
+                            <windowsExecArgs></windowsExecArgs>
+                            <windowsIcon></windowsIcon>
+                            <windowsPath>${installdir}</windowsPath>
+                        </shortcut>
+                    </shortcutList>
+                </folder>
+                <!-- Windows -->
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>filesWin</name>
+                    <platforms>windows</platforms>
+                    <distributionFileList>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/doc</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/bin</origin>
+                        </distributionDirectory>
+                    </distributionFileList>
+                </folder>
+                <!-- Documentation - Linux -->
+                <folder>
+                    <description>Documentation</description>
+                    <destination>${installdir}/doc</destination>
+                    <name>docLin</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>${FBSRepo}/icons/FEBioStudio_large.png</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>${FBSRepo}/icons/febio.png</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>${FBSRepo}/icons/PreView.png</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>${FBSRepo}/icons/PostView.png</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+                <!-- Program Files - macOS -->
+                <folder>
+                    <description>App Bundle Dir</description>
+                    <destination>${installdir}</destination>
+                    <name>macOSAppBundleDir</name>
+                    <platforms>osx</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>${FBSRepo}/cmbuild/bin/FEBioStudio.app</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+                <!-- Program Files - Linux -->
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>filesLin</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/doc</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/bin</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/lib</origin>
+                        </distributionDirectory>
+                    </distributionFileList>
+                </folder>
+            </folderList>
+            <startMenuShortcutList>
+                <startMenuShortcut>
+                    <comment></comment>
+                    <name>FEBioStudio</name>
+                    <runAsAdmin>0</runAsAdmin>
+                    <runInTerminal>0</runInTerminal>
+                    <windowsExec>${installdir}/bin/FEBioStudio2.exe</windowsExec>
+                    <windowsExecArgs></windowsExecArgs>
+                    <windowsIcon>${installdir}/doc/febiostudio.ico</windowsIcon>
+                    <windowsPath>${installdir}</windowsPath>
+                </startMenuShortcut>
+            </startMenuShortcutList>
+        </component>
+        <component>
+            <name>comp_febio</name>
+            <description>FEBio ${febio_version}</description>
+            <canBeEdited>0</canBeEdited>
+            <detailedDescription>This installs the FEBio (version ${febio_version}) command line tools.</detailedDescription>
+            <selected>1</selected>
+            <show>1</show>
+        </component>
+        <component>
+            <name>comp_febio_sdk</name>
+            <description>FEBio SDK ${febio_sdk_version}</description>
+            <canBeEdited>1</canBeEdited>
+            <detailedDescription>This component installs the FEBio SDK, which is needed to build FEBio plugins. </detailedDescription>
+            <selected>0</selected>
+            <show>1</show>
+            <folderList>
+                <folder>
+                    <description>sdk</description>
+                    <destination>${installdir}</destination>
+                    <name>sdk</name>
+                    <platforms>all</platforms>
+                    <distributionFileList>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/sdk</origin>
+                        </distributionDirectory>
+                    </distributionFileList>
+                </folder>
+            </folderList>
+        </component>
+    </componentList>
+    <preBuildActionList>
+        <!-- All -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="febiorepo" value="${env(FEBIO_REPO)}"/>
+                <setInstallerVariable name="fbsrepo" value="${env(FBS_REPO)}"/>
+                <setInstallerVariable name="releaseDir" value="${env(RELEASE_DIR)}"/>
+            </actionList>
+        </actionGroup>
+        <!-- Windows -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </actionGroup>
+        <!-- macOS -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="autoUpdate.xml" value="${FBSRepo}/cmbuild/bin/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="osx"/>
+            </ruleList>
+        </actionGroup>
+        <!-- Linux -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
+            </actionList> 
+            <ruleList>
+                <platformTest type="linux"/>
+            </ruleList>
+        </actionGroup>
+        <!-- All -->
+        <writeFile>
+            <encoding>utf-8</encoding>
+            <path>${autoUpdate.xml}</path>
+
+            <!-- The CDATA notation allow escaping a
+            block of XML characters -->
+            <text>
+&lt;autoUpdate&gt;
+  &lt;lastUpdate&gt;&lt;/lastUpdate&gt;
+&lt;/autoUpdate&gt;
+           </text>
+        </writeFile>
+        <createTimeStamp>
+            <format>%s</format>
+            <variable>lastUpdateTime</variable>
+        </createTimeStamp>
+        <xmlFileSet>
+            <attribute></attribute>
+            <element>/autoUpdate/lastUpdate</element>
+            <file>${autoUpdate.xml}</file>
+            <value>${lastUpdateTime}</value>
+        </xmlFileSet>
+    </preBuildActionList>
+    <preInstallationActionList>
+        <!-- All -->
+        <componentSelection>
+            <select>comp_febio_sdk</select>
+            <ruleList>
+                <fileExists path="${installdir}/sdk/"/>
+            </ruleList>
+        </componentSelection>
+        <!-- Windows -->
+        <actionGroup>
+            <actionList>        
+                <registryGet>
+                    <!-- By default, InstallBuilder stores the installation directory in this key -->
+                    <key>HKEY_LOCAL_MACHINE\SOFTWARE\${project.windowsSoftwareRegistryPrefix}</key>
+                    <name>Location</name>
+                    <variable>oldLocation</variable>
+                </registryGet>
+
+                <!-- Validate if the version bundled is valid for the update -->
+                <throwError>
+                    <text>A previous installation of FEBio Studio has been detected in ${oldLocation}. You must uninstall this version before installing this new version. Aborting installation.</text>
+                    <ruleList>
+                        <fileTest condition="exists" path="${oldLocation}"/>
+                    </ruleList>
+                </throwError>
+            </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </actionGroup>
+    </preInstallationActionList>
+    <postInstallationActionList>
+        <!-- Windows -->
+        <actionGroup>
+            <actionList>
+                <registrySet>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <name></name>
+                    <type>REG_SZ</type>
+                    <value>${installdir}\bin\FEBioStudio2.exe</value>
+                </registrySet>
+                <registrySet>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <name>Path</name>
+                    <type>REG_SZ</type>
+                    <value>${installdir}\bin</value>
+                </registrySet>
+                <registrySet>
+                    <key>HKEY_CLASSES_ROOT\fbs</key>
+                    <name>URL Protocol</name>
+                    <type>REG_SZ</type>
+                    <value></value>
+                </registrySet>
+                <registrySet>
+                    <key>HKEY_CLASSES_ROOT\fbs\shell\open\command</key>
+                    <name></name>
+                    <type>REG_SZ</type>
+                    <value>"${installdir}\bin\FEBioStudio2.exe" "%1"</value>
+                </registrySet>
+                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio2.exe"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </actionGroup>
+        <!-- macOS -->
+        <actionGroup>
+            <actionList>
+                <addDirectoryToPath>
+                    <insertAt>end</insertAt>
+                    <path>${installdir}/FEBioStudio.app/Contents/MacOS</path>
+                </addDirectoryToPath>
+                <setInstallerVariable name="FBSbin" value="${installdir}/FEBioStudio.app/Contents/MacOS/FEBioStudio"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="osx"/>
+            </ruleList>
+        </actionGroup>
+        <!-- Linux -->
+        <actionGroup>
+            <actionList>
+                <!-- FEBio Studio Mime types-->
+                <writeFile>
+                    <path>${installdir}/application-x-febiostudiotypes.xml</path>
+
+                    <!-- The CDATA notation allow escaping a
+                    block of XML characters -->
+                    <text>
+&lt;mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info"&gt;
+  &lt;mime-type type="application/x-febiostudiomodel"&gt;
+    &lt;comment&gt;FEBioStudio Model File&lt;/comment&gt;
+    &lt;glob pattern="*.fsm"/&gt;
+    &lt;glob pattern="*.fs2"/&gt;
+    &lt;glob pattern="*.fsprj"/&gt;
+    &lt;glob pattern="*.prv"/&gt;
+  &lt;/mime-type&gt;
+  &lt;mime-type type="application/x-febiostudioproject"&gt;
+    &lt;comment&gt;FEBioStudio Project File&lt;/comment&gt;
+    &lt;glob pattern="*.fsp"/&gt;
+  &lt;/mime-type&gt;
+  &lt;mime-type type="application/x-febiostudioplot"&gt;
+    &lt;comment&gt;FEBioStudio Plot File&lt;/comment&gt;
+    &lt;glob pattern="*.xplt"/&gt;
+  &lt;/mime-type&gt;
+  &lt;mime-type type="application/x-febio"&gt;
+    &lt;comment&gt;FEBio Input File&lt;/comment&gt;
+    &lt;glob pattern="*.feb"/&gt;
+    &lt;sub-class-of type="text/xml"/&gt;
+  &lt;/mime-type&gt;
+&lt;/mime-info&gt;
+                   </text>
+                </writeFile>
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>install --novendor ${installdir}/application-x-febiostudiotypes.xml</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 128 ${installdir}/doc/FEBioStudio_large.png application-x-febiostudioproject</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/doc/PreView.png application-x-febiostudiomodel</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/doc/PostView.png application-x-febiostudioplot</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>install --context mimetypes --size 64 ${installdir}/doc/febio.png application-x-febio</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                
+                <!-- FEBio Studio Desktop installation-->
+                <writeFile>
+                    <encoding>utf-8</encoding>
+                    <path>${installdir}/FEBioStudio2.desktop</path>
+                    <text>
+[Desktop Entry]
+Version=${product_version}
+Encoding=UTF-8
+Name=FEBioStudio 2
+GenericName=FEBioStudio
+Comment=Pre and Post Processor for the FEBio Suite
+Exec=${installdir}/bin/FEBioStudio %U
+Icon=${installdir}/doc/FEBioStudio_large.png
+Terminal=false
+Type=Application
+Categories=Application;Science;
+MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;application/x-febiostudioplot
+                    </text>
+                </writeFile>
+                <runProgram>
+                    <program>xdg-desktop-menu</program>
+                    <programArguments>install --novendor ${installdir}/FEBioStudio2.desktop</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>default FEBioStudio2.desktop x-scheme-handler/fbs</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <addFilesToUninstaller>
+                    <files>${installdir}/FEBioStudio2.desktop</files>
+                </addFilesToUninstaller>
+                <addFilesToUninstaller>
+                    <files>${installdir}/application-x-febiostudiotypes.xml</files>
+                </addFilesToUninstaller>
+                <addDirectoryToPath>
+                    <insertAt>end</insertAt>
+                    <path>${installdir}/bin</path>
+                </addDirectoryToPath>
+                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="linux"/>
+            </ruleList>
+        </actionGroup>
+    </postInstallationActionList>
+    <preUninstallationActionList>
+        <!-- Windows -->
+        <actionGroup>
+            <actionList>
+                <registryDelete>
+                    <key>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\FEBioStudio2.exe</key>
+                    <name></name>
+                </registryDelete>
+                <registryDelete>
+                    <key>HKEY_CLASSES_ROOT\fbs</key>
+                    <name></name>
+                </registryDelete>
+                <runProgram>
+                    <program>${installdir}/bin/FEBioStudioUpdater.exe</program>
+                    <programArguments>--uninstall</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+            </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </actionGroup>
+        <!-- macOS -->
+        <actionGroup>
+            <actionList>
+                <runProgram>
+                    <abortOnError>0</abortOnError>
+                    <program>${installdir}/FEBioStudio.app/Contents/MacOS/FEBioStudioUpdater</program>
+                    <programArguments>--uninstall</programArguments>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <removeDirectoryFromPath>
+                    <path>${installdir}/FEBioStudio.app/Contents/MacOS</path>
+                </removeDirectoryFromPath>
+            </actionList>
+            <ruleList>
+                <platformTest type="osx"/>
+            </ruleList>
+        </actionGroup>
+        <!-- Linux -->
+        <actionGroup>
+            <actionList>
+                <!-- Remove Desktop Entry -->
+                <runProgram>
+                    <program>xdg-desktop-menu</program>
+                    <programArguments>uninstall --novendor ${installdir}/FEBioStudio2.desktop</programArguments>
+                </runProgram>
+                <!-- Remove FEBio Studio Mime Types -->
+                <runProgram>
+                    <program>xdg-mime</program>
+                    <programArguments>uninstall --novendor ${installdir}/application-x-febiostudiotypes.xml</programArguments>
+                </runProgram>
+                <!-- Remove FEBio Studio Mime Icons -->
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>uninstall --context mimetypes --size 128 ${installdir}/doc/FEBioStudio_large.png application-x-febiostudioproject</programArguments>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>uninstall --context mimetypes --size 64 ${installdir}/doc/PreView.png application-x-febiostudiomodel</programArguments>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>uninstall --context mimetypes --size 64 ${installdir}/doc/PostView.png application-x-febiostudioplot</programArguments>
+                </runProgram>
+                <runProgram>
+                    <program>xdg-icon-resource</program>
+                    <programArguments>uninstall --context mimetypes --size 64 ${installdir}/doc/febio.png application-x-febio</programArguments>
+                </runProgram>
+                <!-- Run auto-update uninstall -->
+                <runProgram>
+                    <program>${installdir}/bin/FEBioStudioUpdater</program>
+                    <programArguments>--uninstall</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <removeDirectoryFromPath>
+                    <path>${installdir}/bin</path>
+                </removeDirectoryFromPath>
+            </actionList>
+            <ruleList>
+                <platformTest type="linux"/>
+            </ruleList>
+        </actionGroup>
+    </preUninstallationActionList>
+    <finalPageActionList>
+        <runProgram>
+            <program>${FBSbin}</program>
+            <progressText>Launch FEBio Studio?</progressText>
+        </runProgram>
+    </finalPageActionList>
+    <parameterList>
+        <directoryParameter>
+            <name>installdir</name>
+            <description>Installer.Parameter.installdir.description</description>
+            <explanation>Installer.Parameter.installdir.explanation</explanation>
+            <value></value>
+            <default>${platform_install_prefix}/${product_shortname}</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <cliOptionName>prefix</cliOptionName>
+            <mustBeWritable>1</mustBeWritable>
+            <mustExist>0</mustExist>
+            <width>40</width>
+        </directoryParameter>
+        <stringParameter>
+            <name>febio_version</name>
+            <description></description>
+            <explanation></explanation>
+            <value>FEBIO_VER</value>
+            <default></default>
+            <allowEmptyValue>1</allowEmptyValue>
+            <ask>0</ask>
+            <width>40</width>
+        </stringParameter>
+        <stringParameter>
+            <name>febio_sdk_version</name>
+            <description></description>
+            <explanation></explanation>
+            <value>FEBIO_VER</value>
+            <default></default>
+            <allowEmptyValue>1</allowEmptyValue>
+            <ask>0</ask>
+            <width>40</width>
+        </stringParameter>
+    </parameterList>
+</project>
+

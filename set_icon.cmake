@@ -37,7 +37,7 @@ function(set_icon TARGET path_to_icon)
 #	  add_dependencies(${TARGET} icon)
 #	  set(path_to_icon ${icon-output-path})
 #	else ()
-	  set(path_to_icon ${CMAKE_SOURCE_DIR}/${path_to_icon})
+	  set(path_to_icon "\"${CMAKE_SOURCE_DIR}/${path_to_icon}\"")
 #	endif ()
 
 	# Write .res file

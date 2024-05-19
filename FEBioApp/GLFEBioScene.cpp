@@ -156,7 +156,7 @@ void GLFEBioScene::Clear()
 	{
 		FENode& feNode = m_febSurface->Node(i);
 		GMesh::NODE& gnode = m_renderMesh->Node(i);
-		gnode.r = feNode.m_r0;
+		gnode.r = to_vec3f(feNode.m_r0);
 	}
 	m_renderMesh->UpdateNormals();
 }
@@ -177,7 +177,7 @@ void GLFEBioScene::Update(double time)
 	{
 		FENode& feNode = m_febSurface->Node(i);
 		GMesh::NODE& gnode = m_renderMesh->Node(i);
-		gnode.r = feNode.m_rt;
+		gnode.r = to_vec3f(feNode.m_rt);
 
 		if (ndof >= 0) val[i] = feNode.get(ndof);
 	}
@@ -215,7 +215,7 @@ void GLFEBioScene::Update(double time)
 			GMesh::NODE& node = m_renderMesh->Node(f.n[j]);
 			double t = (val[f.n[j]] - vmin) / (vmax - vmin);
 			if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-			GLMesh::Vertex v{ to_vec3f(node.r), to_vec3f(f.nn[j]), vec3f(t,0.f,0.f), f.c[j] };
+			GLMesh::Vertex v{ node.r, f.vn[j], vec3f(t,0.f,0.f), f.c[j] };
 			m_glmesh.AddVertex(v);
 		}
 	}
@@ -290,7 +290,7 @@ void GLFEBioScene::BuildRenderMesh()
 	{
 		GMesh::NODE& gnode = mesh->Node(i);
 		FENode& fenode = surf->Node(i);
-		gnode.r = fenode.m_r0;
+		gnode.r = to_vec3f(fenode.m_r0);
 	}
 
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
@@ -339,7 +339,7 @@ void GLFEBioScene::UpdateBoundingBox()
 	BOX box;
 	if (m_renderMesh)
 	{
-		for (int i = 0; i < m_renderMesh->Nodes(); ++i) box += m_renderMesh->Node(i).r;
+		for (int i = 0; i < m_renderMesh->Nodes(); ++i) box += to_vec3d(m_renderMesh->Node(i).r);
 	}
 	m_box = box;
 }

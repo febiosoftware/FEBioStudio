@@ -299,13 +299,14 @@ void CMainWindow::on_actionHideSelection_triggered()
 	if (postDoc)
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
-		switch (mdl.GetSelectionMode())
+		switch (mdl.GetSelectionType())
 		{
-		case Post::SELECT_NODES: mdl.HideSelectedNodes(); break;
-		case Post::SELECT_EDGES: mdl.HideSelectedEdges(); break;
-		case Post::SELECT_FACES: mdl.HideSelectedFaces(); break;
-		case Post::SELECT_ELEMS: mdl.HideSelectedElements(); break;
+		case SELECT_FE_NODES: mdl.HideSelectedNodes(); break;
+		case SELECT_FE_EDGES: mdl.HideSelectedEdges(); break;
+		case SELECT_FE_FACES: mdl.HideSelectedFaces(); break;
+		case SELECT_FE_ELEMS: mdl.HideSelectedElements(); break;
 		}
+		postDoc->UpdateSelection(false);
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -328,6 +329,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
+		postDoc->UpdateSelection(false);
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -566,7 +568,7 @@ void CMainWindow::on_actionFind_triggered()
 			}
 
 			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-			if (postDoc) postDoc->GetGLModel()->UpdateSelectionLists();
+			if (postDoc) postDoc->UpdateSelection(true);
 
 			ReportSelection();
 			RedrawGL();
@@ -600,15 +602,15 @@ void CMainWindow::on_actionSelectRange_triggered()
 	if (dlg.exec())
 	{
 		CGLDocument* doc = GetGLDocument();
-		switch (model->GetSelectionMode())
+		switch (model->GetSelectionType())
 		{
-		case Post::SELECT_NODES: doc->SetItemMode(ITEM_NODE); model->SelectNodesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
-		case Post::SELECT_EDGES: doc->SetItemMode(ITEM_EDGE); model->SelectEdgesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
-		case Post::SELECT_FACES: doc->SetItemMode(ITEM_FACE); model->SelectFacesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
-		case Post::SELECT_ELEMS: doc->SetItemMode(ITEM_ELEM); model->SelectElemsInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case SELECT_FE_NODES: doc->SetItemMode(ITEM_NODE); model->SelectNodesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case SELECT_FE_EDGES: doc->SetItemMode(ITEM_EDGE); model->SelectEdgesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case SELECT_FE_FACES: doc->SetItemMode(ITEM_FACE); model->SelectFacesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case SELECT_FE_ELEMS: doc->SetItemMode(ITEM_ELEM); model->SelectElemsInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
 		}
 
-		model->UpdateSelectionLists();
+		postDoc->UpdateSelection(false);
 		postDoc->UpdateFEModel();
 		ReportSelection();
 		UpdateGLControlBar();
@@ -618,54 +620,47 @@ void CMainWindow::on_actionSelectRange_triggered()
 
 void CMainWindow::on_actionToggleVisible_triggered()
 {
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc)
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	int nsel = doc->GetSelectionMode();
+	int nitem = doc->GetItemMode();
+
+	CCommand* cmd = 0;
+	if (nitem == ITEM_MESH)
 	{
-		Post::CGLModel& mdl = *postDoc->GetGLModel();
-		mdl.ToggleVisibleElements();
-		postDoc->UpdateFEModel();
-		RedrawGL();
-	}
-	else
-	{
-		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-		int nsel = doc->GetSelectionMode();
-		int nitem = doc->GetItemMode();
-
-		GModel* mdl = doc->GetGModel();
-
-		CCommand* cmd = 0;
-		if (nitem == ITEM_MESH)
+		CModelDocument* modelDoc = GetModelDocument();
+		if (modelDoc)
 		{
+			GModel* mdl = modelDoc->GetGModel();
 			switch (nsel)
 			{
-			case SELECT_OBJECT: cmd = new CCmdToggleObjectVisibility(mdl); break;
-			case SELECT_PART: cmd = new CCmdTogglePartVisibility(mdl); break;
+			case SELECT_OBJECT  : cmd = new CCmdToggleObjectVisibility(mdl); break;
+			case SELECT_PART    : cmd = new CCmdTogglePartVisibility  (mdl); break;
 			case SELECT_DISCRETE: cmd = new CCmdToggleDiscreteVisibility(mdl); break;
 			}
 		}
-		else
+	}
+	else
+	{
+		GObject* po = doc->GetActiveObject();
+		if (po == nullptr) return;
+
+		FSMesh* pm = po->GetFEMesh();
+		FSMeshBase* pmb = po->GetEditableMesh();
+
+		switch (nitem)
 		{
-			GObject* po = doc->GetActiveObject();
-			if (po == 0) return;
-
-			FSMesh* pm = po->GetFEMesh();
-			FSMeshBase* pmb = po->GetEditableMesh();
-
-			switch (nitem)
-			{
-			case ITEM_ELEM: if (pm) cmd = new CCmdToggleElementVisibility(pm); break;
-			case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(pm); break;
-			}
+		case ITEM_ELEM: if (pm) cmd = new CCmdToggleElementVisibility(po); break;
+		case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(pmb); break;
 		}
+	}
 
-		if (cmd)
-		{
-			doc->DoCommand(cmd);
-			UpdateModel();
-			RedrawGL();
-		}
+	if (cmd)
+	{
+		doc->DoCommand(cmd);
+		UpdateModel();
+		RedrawGL();
 	}
 }
 
@@ -1180,6 +1175,8 @@ void CMainWindow::on_actionMerge_triggered()
 
 		// update UI
 		Update(0, true);
+
+		return;
 	}
 
 	GNodeSelection* nodeSel = dynamic_cast<GNodeSelection*>(currentSelection);
@@ -1225,7 +1222,7 @@ void CMainWindow::on_actionDetach_triggered()
 	if (doc == nullptr) return;
 
 	FESelection* sel = doc->GetCurrentSelection();
-	if ((sel == 0) || (sel->Size() == 0) || (sel->Type() != SELECT_FE_ELEMENTS))
+	if ((sel == 0) || (sel->Size() == 0) || (sel->Type() != SELECT_FE_ELEMS))
 	{
 		QMessageBox::warning(this, "Detach Selection", "Cannot detach this selection");
 		return;
@@ -1433,7 +1430,7 @@ void CMainWindow::on_actionPasteSelection_triggered()
 	FESelection* selSrc = src->GetCurrentSelection();
 	if (selSrc == nullptr) { QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. No active source selection."); return; }
 
-	if (selSrc->Type() == SELECT_FE_ELEMENTS)
+	if (selSrc->Type() == SELECT_FE_ELEMS)
 	{
 		GObject* po = dst->GetActiveObject();
 		if (po == nullptr) { QMessageBox::critical(this, "FEBio Studio", "Cannot copy selection. No destination object selected."); return; }

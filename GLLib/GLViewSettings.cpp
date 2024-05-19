@@ -35,6 +35,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_scaleNormals = 1.0;
 	//	m_nconv = 0; // Don't reset this, since this is read from settings file. TODO: Put this option elsewhere. 
 
+	m_selectAndHide = false;
+
 	m_bjoint = true;
 	m_bwall = true;
 	m_brigid = true;
@@ -88,9 +90,9 @@ void GLViewSettings::Defaults(int ntheme)
 		m_defaultFGColor = GLColor(255, 255, 255);
 	}
 
-	m_mcol = GLColor(0, 0, 128);
+	m_meshColor = GLColor(0, 0, 128, 64);
 	m_fgcol = GLColor(0, 0, 0);
-	m_node_size = 7.f;
+	m_node_size = 3.f;
 	m_line_size = 1.0f;
 	m_bline_smooth = true;
 	m_bpoint_smooth = true;
@@ -107,5 +109,6 @@ void GLViewSettings::Defaults(int ntheme)
 	m_use_environment_map = false;
 
 	m_transparencyMode = 0; // = off
-	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
+
+	m_showHighlights = true;
 }

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <GeomLib/GItem.h>
+#include <GeomLib/FSGroup.h>
 #include <QtCore/QObject>
 
 //-------------------------------------------------------------------
@@ -43,8 +44,14 @@ class GLHighlighter : public QObject
 	Q_OBJECT
 
 public:
+	struct Item {
+		FSObject* item = nullptr; // this should only be a GItem or FSGroup
+		int	color;
+	};
+
+public:
 	// return an instance of this highlighter (this class is a singleton)
-	static GLHighlighter* Instance() { return &m_This; }
+	static GLHighlighter* Instance() { return &This; }
 
 	// Attach the highlighter to a CGLView
 	// This must be done prior to any highlighting.
@@ -59,7 +66,8 @@ public:
 	static void PickActiveItem();
 
 	// "pick" an item
-	static void PickItem(GItem* item);
+	static void PickItem(GItem* item, int colorMode = 0);
+	static void PickItem(FSGroup* item, int colorMode = 0);
 
 	// return the currently acite item
 	static GItem* GetActiveItem();
@@ -86,7 +94,11 @@ public:
 	static void SetActiveColor(GLColor c);
 
 	// set the color for the picked items
-	static void SetPickColor(GLColor c);
+	static void SetPickColor(GLColor c, int colorMode = 0);
+
+	static BOX GetBoundingBox();
+
+	static std::vector<Item> GetItems();
 
 private:
 	// constructor
@@ -102,11 +114,11 @@ signals:
 private:
 	CGLView*		m_view;				// pointer to GL view
 	GItem*			m_activeItem;		// pointer to the active item (or zero)
-	std::vector<GItem*>	m_item;				// list of hightlighted items (except active item)
+	std::vector<Item>	m_item;				// list of hightlighted items (except active item)
 	bool			m_btrack;			// set active item via mouse tracking
 	GLColor			m_activeColor;		// color of active item
-	GLColor			m_pickColor;		// color of picked items
+	GLColor			m_pickColor[2];		// color of picked items
 
 	// the one-and-only highlighter
-	static GLHighlighter m_This;
+	static GLHighlighter This;
 };

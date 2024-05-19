@@ -113,16 +113,16 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	glDisable(GL_CULL_FACE);
 
 	// match the selection mode
-	int selectionMode = Post::SELECT_ELEMS;
+	SelectionType selectionMode = SELECT_FE_ELEMS;
 	switch (m_doc->GetItemMode())
 	{
 	case ITEM_MESH:
-	case ITEM_ELEM: selectionMode = Post::SELECT_ELEMS; break;
-	case ITEM_FACE: selectionMode = Post::SELECT_FACES; break;
-	case ITEM_EDGE: selectionMode = Post::SELECT_EDGES; break;
-	case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
+	case ITEM_ELEM: selectionMode = SELECT_FE_ELEMS; break;
+	case ITEM_FACE: selectionMode = SELECT_FE_FACES; break;
+	case ITEM_EDGE: selectionMode = SELECT_FE_EDGES; break;
+	case ITEM_NODE: selectionMode = SELECT_FE_NODES; break;
 	}
-	glm->SetSelectionMode(selectionMode);
+	glm->SetSelectionType(selectionMode);
 
 
 	if (vs.m_bShadows)
@@ -996,48 +996,11 @@ BOX CGLMonitorScene::GetBoundingBox()
 
 BOX CGLMonitorScene::GetSelectionBox()
 {
-	BOX box;
-
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
 
-	Post::FEPostMesh& mesh = *m_glm->GetActiveMesh();
-	const vector<FEElement_*> selElems = mdl->GetElementSelection();
-	for (int i = 0; i < (int)selElems.size(); ++i)
-	{
-		FEElement_& el = *selElems[i];
-		int nel = el.Nodes();
-		for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
-	}
+	FESelection* sel = m_doc->GetCurrentSelection();
+	if (sel) return sel->GetBoundingBox();
 
-	const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
-	for (int i = 0; i < (int)selFaces.size(); ++i)
-	{
-		FSFace& face = *selFaces[i];
-		int nel = face.Nodes();
-		for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
-	}
-
-	const vector<FSEdge*> selEdges = GetGLModel()->GetEdgeSelection();
-	for (int i = 0; i < (int)selEdges.size(); ++i)
-	{
-		FSEdge& edge = *selEdges[i];
-		int nel = edge.Nodes();
-		for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
-	}
-
-	const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
-	for (int i = 0; i < (int)selNodes.size(); ++i)
-	{
-		FSNode& node = *selNodes[i];
-		box += node.r;
-	}
-
-	if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
-	{
-		float R = box.Radius();
-		box.InflateTo(R, R, R);
-	}
-
-	return box;
+	return BOX();
 }

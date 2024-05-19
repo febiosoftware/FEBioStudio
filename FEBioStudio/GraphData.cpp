@@ -121,9 +121,13 @@ void CGraphData::operator = (const CGraphData& data)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void CGraphData::ClearData()
 {
 	for (int i = 0; i < m_data.size(); ++i) delete m_data[i];
 	m_data.clear();
+}
+
+void CGraphData::AddPlotData(CPlotData* plot)
+{
+	m_data.push_back(plot);
 }

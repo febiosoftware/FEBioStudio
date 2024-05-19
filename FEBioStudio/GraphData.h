@@ -172,6 +172,8 @@ public:
 
 	void ClearData();
 
+	void AddPlotData(CPlotData* plot);
+
 public:
 	QString				m_title;
 	std::vector<CPlotData*>	m_data;

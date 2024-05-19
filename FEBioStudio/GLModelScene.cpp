@@ -71,6 +71,8 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
+	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
+	m_fiberViz = nullptr;
 }
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
@@ -114,15 +116,7 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		if (glview->PlaneCutMode() == 0)
-		{
-			// render the plane cut first
-			glview->RenderPlaneCut();
-
-			// then turn on the clipping plane before rendering the other geometry
-			glClipPlane(GL_CLIP_PLANE0, glview->PlaneCoordinates());
-			glEnable(GL_CLIP_PLANE0);
-		}
+		RenderPlaneCut(rc);
 	}
 
 	// render the (solid) model
@@ -159,7 +153,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (view.m_brigid) RenderRigidBodies(rc);
 	if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
 	if (view.m_bwall ) RenderRigidWalls(rc);
-	if (view.m_bfiber) RenderMaterialFibers(rc);
+	RenderMaterialFibers(rc);
 	if (view.m_blma  ) RenderLocalMaterialAxes(rc);
 
 	// render the selected parts
@@ -308,7 +302,7 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 	glDisable(GL_CULL_FACE);
 	
 	GLViewSettings& view = rc.m_settings;
-	if (view.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+	if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 	{
 		// Tag all faces depending on how they are used in a model component
 		TagFacesByPhysics(*ps);
@@ -352,22 +346,21 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 			if (view.m_bcontour && (poa == po))
 			{
-				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
 				else RenderObject(rc, po);
 			}
-			else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+			else if (m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 			{
-				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 				else RenderObject(rc, po);
 			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
-				RenderFEElements(rc, po);
-
-				GLColor c = view.m_mcol;
-				glColor3ub(c.r, c.g, c.b);
-				RenderMeshLines(rc, po);
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
 			}
 			else RenderObject(rc, po);
 		}
@@ -416,15 +409,29 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			{
 				if (item == ITEM_ELEM)
 				{
-					RenderFEElements(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm)
+					{
+						RenderFEFacesFromGMesh(rc, po);
+						RenderUnselectedBeamElements(rc, po);
+						RenderSelectedFEElements(rc, po);
+					}
 				}
 				else if (item == ITEM_FACE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm)
+					{
+						RenderFEFacesFromGMesh(rc, po);
+						RenderSelectedFEFaces(rc, po);
+					}
+					else RenderFEFaces(rc, po);
 				}
 				else if (item == ITEM_EDGE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm) RenderFEFacesFromGMesh(rc, po);
+					else RenderFEFaces(rc, po);
 					cam.LineDrawMode(true);
 					cam.PositionInScene();
 					SetModelView(po);
@@ -434,7 +441,9 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				}
 				else if (item == ITEM_NODE)
 				{
-					RenderFEFaces(rc, po);
+					GMesh* gm = po->GetFERenderMesh();
+					if (gm) RenderFEFacesFromGMesh(rc, po);
+					else RenderFEFaces(rc, po);
 					RenderFENodes(rc, po);
 				}
 			}
@@ -952,9 +961,25 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 class GLFiberRenderer
 {
 public:
-	GLFiberRenderer() {}
-	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
-	void RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
+	struct FIBER
+	{
+		GLColor c;
+		vec3d r;	// center of fiber
+		vec3d n;	// direction of fiber
+	};
+
+public:
+	GLFiberRenderer() {
+		m_fibers.reserve(4096);
+	}
+
+	void Clear() { m_fibers.clear(); }
+
+	void BuildFiberVectors(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
+	void BuildFiberVectors(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
+
+	void RenderFibers();
+	void RenderFiber(const FIBER& fiber);
 
 	void Init();
 
@@ -974,6 +999,8 @@ private:
 	GLColor	m_defaultCol;
 	double	m_scale = 1.0;
 	GLUquadricObj* m_glyph = nullptr;
+
+	std::vector<FIBER>	m_fibers;
 };
 
 void GLFiberRenderer::Init()
@@ -993,6 +1020,37 @@ void GLFiberRenderer::Init()
 	}
 }
 
+void GLFiberRenderer::RenderFibers()
+{
+	for (auto& fiber : m_fibers)
+		RenderFiber(fiber);
+}
+
+void GLFiberRenderer::RenderFiber(const GLFiberRenderer::FIBER& fiber)
+{
+	vec3d p0 = fiber.r - fiber.n * (m_scale * 0.5);
+	vec3d p1 = fiber.r + fiber.n * (m_scale * 0.5);
+
+	glColor3ub(fiber.c.r, fiber.c.g, fiber.c.b);
+	if (m_lineStyle == 0)
+	{
+		glVertex3d(p0.x, p0.y, p0.z);
+		glVertex3d(p1.x, p1.y, p1.z);
+	}
+	else
+	{
+		glPushMatrix();
+
+		glx::translate(p0);
+		quatd Q(vec3d(0, 0, 1), fiber.n);
+		glx::rotate(Q);
+
+		gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
+
+		glPopMatrix();
+	}
+}
+
 void GLFiberRenderer::Finish()
 {
 	if (m_lineStyle == 0)
@@ -1006,7 +1064,12 @@ void GLFiberRenderer::Finish()
 	glPopAttrib();
 }
 
-void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
+void GLFiberRenderer::BuildFiberVectors(
+	GObject* po,
+	FSMaterial* pmat, 
+	FEElementRef& rel, 
+	const vec3d& c, 
+	mat3d Q)
 {
 	if (pmat->HasFibers())
 	{
@@ -1031,32 +1094,12 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			col = GLColor(r, g, b);
 		}
 
-		vec3d p0 = c - q * (m_scale * 0.5);
-		vec3d p1 = c + q * (m_scale * 0.5);
-
-		glColor3ub(col.r, col.g, col.b);
-		if (m_lineStyle == 0)
-		{
-			glVertex3d(p0.x, p0.y, p0.z);
-			glVertex3d(p1.x, p1.y, p1.z);
-		}
-		else
-		{
-			glPushMatrix();
-
-			glx::translate(p0);
-			quatd Q(vec3d(0, 0, 1), q);
-			glx::rotate(Q);
-
-			gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
-
-			glPopMatrix();
-		}
+		m_fibers.push_back({ col, c, q });
 	}
 
 	if (pmat->HasMaterialAxes())
 	{
-		Q = Q*pmat->GetMatAxes(rel);
+		Q = Q * pmat->GetMatAxes(rel);
 	}
 
 	int index = 0;
@@ -1069,7 +1112,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			if (matj)
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-				RenderFiber(po, matj, rel, c, Q);
+				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
 			{
@@ -1077,14 +1120,20 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 				if (matProp)
 				{
 					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-					RenderFiber(po, matProp, rel, c, Q);
+					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}
 		}
 	}
 }
 
-void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
+
+void GLFiberRenderer::BuildFiberVectors(
+	GObject* po,
+	FSMaterialProperty* pmat,
+	FEElementRef& rel,
+	const vec3d& c,
+	mat3d Q)
 {
 	if (pmat->HasFibers())
 	{
@@ -1109,27 +1158,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 			col = GLColor(r, g, b);
 		}
 
-		vec3d p0 = c - q * (m_scale * 0.5);
-		vec3d p1 = c + q * (m_scale * 0.5);
-
-		glColor3ub(col.r, col.g, col.b);
-		if (m_lineStyle == 0)
-		{
-			glVertex3d(p0.x, p0.y, p0.z);
-			glVertex3d(p1.x, p1.y, p1.z);
-		}
-		else
-		{
-			glPushMatrix();
-
-			glx::translate(p0);
-			quatd Q(vec3d(0, 0, 1), q);
-			glx::rotate(Q);
-
-			gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
-
-			glPopMatrix();
-		}
+		m_fibers.push_back({ col, c, q });
 	}
 
 	int index = 0;
@@ -1142,7 +1171,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 			if (matj)
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-				RenderFiber(po, matj, rel, c, Q);
+				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
 			{
@@ -1150,39 +1179,32 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 				if (matProp)
 				{
 					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-					RenderFiber(po, matProp, rel, c, Q);
+					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}
 		}
 	}
 }
 
-void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
+void CGLModelScene::UpdateFiberViz()
 {
-	CModelDocument* pdoc = m_doc;
-	if (pdoc == nullptr) return;
+	delete m_fiberViz;
+	m_fiberViz = nullptr;
+}
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
-
-	GLViewSettings& view = glview->GetViewSettings();
+void CGLModelScene::BuildFiberViz(CGLContext& rc)
+{
+	if (m_fiberViz == nullptr) m_fiberViz = new GLFiberRenderer();
+	else m_fiberViz->Clear();
 
 	// get the model
-	FSModel* ps = pdoc->GetFSModel();
+	FSModel* ps = m_doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
 
-	BOX box = model.GetBoundingBox();
-	double h = 0.05 * box.GetMaxExtent();
-
-	GLFiberRenderer fiberRender;
-	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
-	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
-	fiberRender.SetColorOption(view.m_fibColor);
-	fiberRender.SetLineStyle(view.m_fibLineStyle);
-
-	fiberRender.Init();
+	GLViewSettings& view = rc.m_settings;
+	m_fiberViz->SetColorOption(view.m_fibColor);
 
 	GMaterial* pgm = nullptr;
 	int matId = -1;
@@ -1215,7 +1237,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 						if (pgm)
 						{
 							pmat = pgm->GetMaterialProperties();
-							fiberRender.SetDefaultColor(pgm->Diffuse());
+							m_fiberViz->SetDefaultColor(pgm->Diffuse());
 						}
 
 						rel.m_nelem = j;
@@ -1229,15 +1251,54 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 							// to global coordinates
 							c = po->GetTransform().LocalToGlobal(c);
 
-							// render the fiber
-							fiberRender.RenderFiber(po, pmat, rel, c);
+							// add it to the pile
+							m_fiberViz->BuildFiberVectors(po, pmat, rel, c, mat3d::identity());
 						}
 					}
 				}
 			}
 		}
 	}
+}
 
+void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
+{
+	if (m_doc == nullptr) return;
+
+	GLViewSettings& view = rc.m_settings;
+
+	if (view.m_bfiber == false)
+	{
+		if (m_fiberViz)
+		{
+			delete m_fiberViz;
+			m_fiberViz = nullptr;
+		}
+		return;
+	}
+	else
+	{
+		if (m_fiberViz == nullptr)
+		{
+			BuildFiberViz(rc);
+		}
+	}
+
+	if (m_fiberViz == nullptr) return;
+
+	FSModel* ps = m_doc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	BOX box = model.GetBoundingBox();
+	double h = 0.05 * box.GetMaxExtent();
+
+	GLFiberRenderer& fiberRender = *m_fiberViz;
+	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
+	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
+	fiberRender.SetLineStyle(view.m_fibLineStyle);
+
+	fiberRender.Init();
+	fiberRender.RenderFibers();
 	fiberRender.Finish();
 }
 
@@ -1455,8 +1516,9 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	int nitem = pdoc->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	GLColor c = vs.m_mcol;
-	glColor3ub(c.r, c.g, c.b);
+	GLColor c = vs.m_meshColor;
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4ub(c.r, c.g, c.b, c.a);
 
 	for (int i = 0; i < model.Objects(); ++i)
 	{
@@ -1468,12 +1530,12 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 			{
 				glPushMatrix();
 				SetModelView(po);
-				if (nitem == ITEM_ELEM)
-					RenderMeshLines(rc, po);
-				else if (nitem == ITEM_MESH)
-					renderer.RenderMeshLines(pm);
-				else if (nitem != ITEM_EDGE)
-					renderer.RenderMeshLines(po->GetEditableMesh());
+				if (nitem != ITEM_EDGE)
+				{
+					GMesh* lineMesh = po->GetFERenderMesh();
+					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
+					else renderer.RenderMeshLines(pm);
+				}
 				glPopMatrix();
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
@@ -1502,6 +1564,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
+	glDepthFunc(GL_LEQUAL);
 	glColor3ub(0, 0, 0);
 
 	FSModel* ps = doc->GetFSModel();
@@ -1519,7 +1582,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			if (m)
 			{
 				renderer.RenderGLEdges(m);
-				renderer.RenderOutline(rc, m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+				renderer.RenderOutline(rc, m, po->GetTransform(), (rc.m_settings.m_nrender == RENDER_WIREFRAME));
 			}
 
 			glPopMatrix();
@@ -1561,6 +1624,7 @@ void CGLModelScene::RenderNodes(CGLContext& rc, GObject* po)
 // Render selected nodes
 void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 {
+	if (po == nullptr) return;
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
@@ -1727,7 +1791,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 				{
 					SetDefaultMatProps();
 					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
@@ -1757,7 +1821,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 				renderer.RenderGLMesh(pm, n);
 
 				if ((vs.m_transparencyMode != 0) ||
-					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					(m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
 					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
@@ -1775,19 +1839,26 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> selectedSurfaces; selectedSurfaces.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace& f = *po->Face(i);
+		if (f.IsSelected())
+		{
+			selectedSurfaces.push_back(i);
+		}
+	}
+	if (selectedSurfaces.empty()) return;
+
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	{
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : selectedSurfaces)
 		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				renderer.RenderGLMesh(pm, i);
-			}
+			renderer.RenderGLMesh(pm, surfId);
 		}
 
 #ifndef NDEBUG
@@ -1874,6 +1945,18 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 		glDisable(GL_POLYGON_STIPPLE);
 	}
 	glPopAttrib();
+
+	// render the selected faces
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(0, 0, 255);
+		for (int surfId : selectedSurfaces)
+		{
+			renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
+		}
+	}
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -1954,6 +2037,21 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
+	int NF = po->Faces();
+	vector<int> facesToRender; facesToRender.reserve(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* pf = po->Face(i);
+		GPart* p0 = po->Part(pf->m_nPID[0]);
+		GPart* p1 = po->Part(pf->m_nPID[1]);
+		GPart* p2 = po->Part(pf->m_nPID[2]);
+		if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
+		{
+			facesToRender.push_back(i);
+		}
+	}
+	if (facesToRender.empty()) return;
+
 	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -1961,20 +2059,25 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		int NF = po->Faces();
-		for (int i = 0; i < NF; ++i)
+		for (int surfId : facesToRender)
 		{
-			GFace* pf = po->Face(i);
-			GPart* p0 = po->Part(pf->m_nPID[0]);
-			GPart* p1 = po->Part(pf->m_nPID[1]);
-			GPart* p2 = po->Part(pf->m_nPID[2]);
-			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
-			{
-				renderer.RenderGLMesh(m, i);
-			}
+			renderer.RenderGLMesh(m, surfId);
 		}
 	}
 	glPopAttrib();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		SetMatProps(0);
+		glColor3ub(0, 0, 200);
+		for (int surfId : facesToRender)
+		{
+			renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
+		}
+	}
+	glPopAttrib();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -2029,7 +2132,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 				{
 					SetDefaultMatProps();
 					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
@@ -2059,7 +2162,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 				renderer.RenderGLMesh(pm, n);
 
 				if ((vs.m_transparencyMode != 0) ||
-					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					(m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
 					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
@@ -2069,14 +2172,17 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	if (NF == 0)
 	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
 		// if there are no faces, render edges instead
 		int NC = po->Edges();
 		for (int n = 0; n < NC; ++n)
 		{
 			GEdge& e = *po->Edge(n);
-			if (e.IsVisible())
-				renderer.RenderGLEdges(pm, e.GetLocalID());
+//			if (e.IsVisible())
+//				renderer.RenderGLEdges(pm, e.GetLocalID());
 		}
+		glPopAttrib();
 	}
 
 	// render beam sections if feature edges are not rendered. 
@@ -2108,6 +2214,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 	GPart* pgmat = 0; // the part that defines the material
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	SetMatProps(0);
 	GLColor c = po->GetColor();
 	glColor3ub(c.r, c.g, c.b);
@@ -2160,58 +2267,13 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 	if (pm)
 	{
 		int N = pm->Nodes();
-		int NF = pm->Faces();
-		int NE = pm->Elements();
-
-		// reset all tags
-		for (int i = 0; i < N; ++i) pm->Node(i).m_ntag = 1;
-
-		// make sure we render all isolated nodes
-		for (int i = 0; i < NE; ++i)
+		for (int i = 0; i < N; ++i)
 		{
-			FSElement& el = pm->Element(i);
-			int n = el.Nodes();
-			for (int j = 0; j < n; ++j) pm->Node(el.m_node[j]).m_ntag = 0;
+			FSNode& node = pm->Node(i);
+			if (!node.IsVisible() ||
+				(view.m_bext && !node.IsExterior())) node.m_ntag = 0;
+			else node.m_ntag = 1;
 		}
-
-		// check visibility
-		for (int i = 0; i < NE; ++i)
-		{
-			FSElement& el = pm->Element(i);
-			if (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()))
-			{
-				int n = el.Nodes();
-				for (int j = 0; j < n; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-			}
-		}
-
-		// check the cull
-		if (view.m_bcull)
-		{
-			vec3d f;
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = pm->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j < n; ++j)
-				{
-					vec3d nn = to_vec3d(face.m_nn[j]);
-					f = q * nn;
-					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
-				}
-			}
-		}
-
-		// check the ext criteria
-		if (view.m_bext)
-		{
-			for (int i = 0; i < N; ++i)
-			{
-				FSNode& node = pm->Node(i);
-				if (!node.IsExterior()) node.m_ntag = 0;
-			}
-		}
-
 		renderer.RenderFENodes(pm);
 	}
 	else
@@ -2273,7 +2335,210 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 	}
 }
 
-//-----------------------------------------------------------------------------
+void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
+{
+	GMesh* gm = po->GetFERenderMesh(); assert(gm);
+	if (gm == nullptr) return;
+
+	GLViewSettings& vs = rc.m_settings;
+	SetDefaultMatProps();
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	if (vs.m_bcontour && (po == view->GetActiveObject()))
+	{
+		m_renderer.SetFaceColor(true);
+		m_renderer.RenderGLMesh(gm);
+	}
+	else
+	{
+		switch (m_objectColor)
+		{
+		case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderMeshByDefault     (rc, *po, *gm); break;
+		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor (rc, *po, *gm); break;
+		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByMaterialType(rc, *po, *gm); break;
+		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByPhysics     (rc, *po, *gm); break;
+		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType (rc, *po, *gm); break;
+		default:
+			m_renderer.RenderGLMesh(gm);
+		}
+	}
+}
+
+void CGLModelScene::RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
+	FSModel* fem = m_doc->GetFSModel();
+
+	glDisable(GL_COLOR_MATERIAL);
+	SetDefaultMatProps();
+
+	FSMesh* pm = o.GetFEMesh();
+	if (pm == nullptr) return;
+
+	int lastMatID = -1;
+	m_renderer.RenderGLMesh(&mesh, [&](const GMesh::FACE& face) {
+			GLColor col;
+			if (face.eid >= 0)
+			{
+				FEElement_* pe = pm->ElementPtr(face.eid);
+				if (pe)
+				{
+					int matId = pe->m_MatID;
+					if (matId != lastMatID)
+					{
+						lastMatID = matId;
+						GMaterial* gmat = fem->GetMaterialFromID(matId);
+						SetMatProps(gmat);
+					}
+				}
+			}
+		});
+}
+
+void CGLModelScene::RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	m_renderer.RenderGLMesh(mesh, o.GetColor());
+}
+
+void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
+	FSModel* fem = m_doc->GetFSModel();
+
+	glDisable(GL_COLOR_MATERIAL);
+	SetDefaultMatProps();
+
+	FSMesh* pm = o.GetFEMesh();
+	if (pm == nullptr) return;
+
+	int lastMatID = -1;
+	m_renderer.RenderGLMesh(&mesh, [&](const GMesh::FACE& face) {
+		GLColor col;
+		if (face.eid >= 0)
+		{
+			FEElement_* pe = pm->ElementPtr(face.eid);
+			if (pe)
+			{
+				int matId = pe->m_MatID;
+				if (matId != lastMatID)
+				{
+					lastMatID = matId;
+					GMaterial* gmat = fem->GetMaterialFromID(matId);
+					GLfloat c[] = { 0.f, 0.f, 0.f, 1.f };
+					if (gmat == nullptr) { c[0] = c[1] = c[2] = 0.8f; }
+					else
+					{
+						FSMaterial* pm = gmat->GetMaterialProperties();
+						if      (pm == nullptr) { c[0] = c[1] = c[2] = 0.0f; }
+						else if (pm->IsRigid()) { c[0] = 0.8f; c[1] = 0.75f; c[2] = 0.7f; }
+						else { c[0] = 0.8f; c[1] = c[2] = 0.5f; }
+					}
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, c);
+				}
+			}
+		}
+	});
+}
+
+void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	SetDefaultMatProps();
+	glDisable(GL_COLOR_MATERIAL);
+
+	const int MAX_COLORS = 6;
+	GLfloat CLT[MAX_COLORS][4] = {
+		{0.9f, 0.9f, 0.9f, 1.f}, // free surface
+		{0.9f, 0.9f, 0.0f, 1.f}, // boundary conditions
+		{0.0f, 0.4f, 0.0f, 1.f}, // initial conditions
+		{0.0f, 0.9f, 0.9f, 1.f}, // loads
+		{0.9f, 0.0f, 0.9f, 1.f}, // contact primary
+		{0.3f, 0.0f, 0.3f, 1.f}  // contact secondary
+	};
+
+	int NF = o.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* face = o.Face(i);
+		if (face->IsVisible())
+		{
+			GPart* pg = o.Part(face->m_nPID[0]);
+			if (!pg->IsVisible() && (face->m_nPID[1] >= 0))
+				pg = o.Part(face->m_nPID[1]);
+
+			GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+			int n = face->m_ntag;
+			if (n == 0) glEnable(GL_POLYGON_STIPPLE);
+			if ((n >= 0) && (n < MAX_COLORS))
+			{
+				if (n == 0) glEnable(GL_POLYGON_STIPPLE);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, CLT[n]);
+			}
+
+			m_renderer.RenderGLMesh(&mesh, i);
+			if (n == 0) glDisable(GL_POLYGON_STIPPLE);
+		}
+	}
+
+	if (m_doc->GetItemMode() == ITEM_ELEM)
+	{
+		// exposed facets cannot be part of physics, so render them transparent
+		glEnable(GL_POLYGON_STIPPLE);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, CLT[0]);
+		m_renderer.RenderGLMesh(&mesh, NF);
+		glDisable(GL_POLYGON_STIPPLE);
+	}
+}
+
+void CGLModelScene::RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh)
+{
+	FSMesh* pm = o.GetFEMesh();
+	if (pm == nullptr) return;
+
+	m_renderer.RenderGLMesh(&mesh, [&](const GMesh::FACE& face) {
+		GLColor col;
+		if (face.eid >= 0)
+		{
+			FEElement_* pe = pm->ElementPtr(face.eid);
+			if (pe)
+			{
+				const int a = 212;
+				const int b = 106;
+				const int d =  53;
+				switch (pe->Type())
+				{
+				case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
+				case FE_TRI3   : col = GLColor(0, a, a); break;
+				case FE_TRI6   : col = GLColor(0, b, b); break;
+				case FE_TRI7   : col = GLColor(0, b, d); break;
+				case FE_TRI10  : col = GLColor(0, d, d); break;
+				case FE_QUAD4  : col = GLColor(a, a, 0); break;
+				case FE_QUAD8  : col = GLColor(b, b, 0); break;
+				case FE_QUAD9  : col = GLColor(d, d, 0); break;
+				case FE_TET4   : col = GLColor(0, a, 0); break;
+				case FE_TET5   : col = GLColor(0, a, 0); break;
+				case FE_TET10  : col = GLColor(0, b, 0); break;
+				case FE_TET15  : col = GLColor(0, b, 0); break;
+				case FE_TET20  : col = GLColor(0, d, 0); break;
+				case FE_HEX8   : col = GLColor(a, 0, 0); break;
+				case FE_HEX20  : col = GLColor(b, 0, 0); break;
+				case FE_HEX27  : col = GLColor(b, 0, 0); break;
+				case FE_PENTA6 : col = GLColor(0, 0, a); break;
+				case FE_PENTA15: col = GLColor(0, 0, b); break;
+				case FE_PYRA5  : col = GLColor(0, 0, a); break;
+				case FE_PYRA13 : col = GLColor(0, 0, b); break;
+				case FE_BEAM2  : col = GLColor(a, a, a); break;
+				case FE_BEAM3  : col = GLColor(b, b, b); break;
+				default:
+					col = GLColor(255, 255, 255); break;
+				}
+			}
+		}
+		glColor3ub(col.r, col.g, col.b);
+	});
+}
+
 void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 {
 	CModelDocument* doc = m_doc;
@@ -2382,21 +2647,62 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	RenderAllBeamElements(rc, po);
 
 	// render the selected faces
-	renderer.PushState();
-	{
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3ub(255, 0, 0);
-		renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
-
-		// render the selected face outline
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3ub(255, 255, 0);
-		renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
-	}
-	renderer.PopState();
+	RenderSelectedFEFaces(rc, po);
 }
 
-//-----------------------------------------------------------------------------
+void CGLModelScene::RenderSelectedFEFaces(CGLContext& rc, GObject* po)
+{
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+	m_renderer.PushState();
+	{
+		m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		glColor3ub(255, 0, 0);
+		m_renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
+
+		// render the selected face outline
+		m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(255, 255, 0);
+		m_renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
+	}
+	m_renderer.PopState();
+}
+
+void CGLModelScene::RenderSelectedFEElements(CGLContext& rc, GObject* po)
+{
+	FEElementSelection* sel = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+	if (sel == nullptr) return;
+	if (sel->GetMesh() != po->GetFEMesh()) return;
+	FSMesh* pm = sel->GetMesh();
+	const std::vector<int>& selectedElements = sel->ItemList();
+	if (selectedElements.empty()) return;
+	
+	
+	m_renderer.PushState();
+
+	m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3f(1.f, 0, 0);
+
+	bool hasBeamElements = false;
+	m_renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
+		// check for beams
+		if (el.IsBeam()) hasBeamElements = true;
+		return true;
+	});
+
+	// render a yellow highlight around selected elements
+	m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
+	glColor3f(1.f, 1.f, 0);
+	m_renderer.RenderFEElementsOutline(*pm, selectedElements);
+	m_renderer.PopState();
+
+	if (hasBeamElements)
+	{
+		// render beam elements
+		RenderSelectedBeamElements(rc, po);
+	}
+}
+
 void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 {
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -2604,209 +2910,16 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	glDisable(GL_LIGHTING);
 
 	// render the unselected edges
-	glColor3ub(0, 0, 255);
+	glColor4ub(0, 0, 255, 128);
 	renderer.RenderUnselectedFEEdges(pm);
 
 	// render the selected edges
 	// override some settings
 	glDisable(GL_CULL_FACE);
-	glColor3ub(255, 0, 0);
+	glColor4ub(255, 0, 0, 128);
 	renderer.RenderSelectedFEEdges(pm);
 
 	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// Render the FE elements
-void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
-{
-	CModelDocument* pdoc = m_doc;
-	if (pdoc == nullptr) return;
-
-	FSMesh* pm = po->GetFEMesh(); assert(pm);
-	if (pm == 0) return;
-
-	GLMeshRender& renderer = GetMeshRenderer();
-	GLViewSettings& view = rc.m_settings;
-
-	GLColor dif;
-
-	GLColor col = po->GetColor();
-
-	int nmatid = -1;
-	dif = po->GetColor();
-	glColor3ub(dif.r, dif.g, dif.b);
-	SetMatProps(0);
-	int glmode = 0;
-
-	Mesh_Data& data = pm->GetMeshData();
-	bool showContour = (view.m_bcontour && data.IsValid());
-	
-	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-	vector<int> selectedElements;
-
-	// render the unselected faces
-	int NE = pm->Elements();
-	bool hasBeamElements = false;
-	if (showContour)
-	{
-		// Color is determined by data and colormap
-		double vmin, vmax;
-		data.GetValueRange(vmin, vmax);
-
-		// Create a copy so we can change the range
-		Post::CColorMap colorMap = ((CGLView*)rc.m_view)->GetColorMap();
-		colorMap.SetRange((float)vmin, (float)vmax);
-		
-		glEnable(GL_COLOR_MATERIAL);
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
-				int i = el.m_ntag;
-				if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
-				if (el.IsBeam()) hasBeamElements = true;
-
-				if (!el.IsSelected() && el.IsVisible())
-				{
-					GPart* pg = po->Part(el.m_gid);
-					if (pg->IsVisible())
-					{
-						int ne = el.Nodes();
-						for (int j = 0; j < ne; ++j)
-						{
-							if (data.GetElementDataTag(i) > 0)
-								c[j] = colorMap.map(data.GetElementValue(i, j));
-							else
-								c[j] = GLColor(212, 212, 212);
-						}
-
-						// render the element
-						return true;
-					}
-				}
-				return false;
-			});
-	}
-	else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
-	{
-		glEnable(GL_COLOR_MATERIAL);
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
-			int i = el.m_ntag;
-			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
-			if (el.IsBeam()) hasBeamElements = true;
-
-			if (!el.IsSelected() && el.IsVisible())
-			{
-				GPart* pg = po->Part(el.m_gid);
-				if (pg->IsVisible())
-				{
-					GLColor col;
-					const int a = 212;
-					const int b = 106;
-					const int d =  53;
-					switch (el.Type())
-					{
-					case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
-					case FE_TRI3   : col = GLColor(0, a, a); break;
-					case FE_TRI6   : col = GLColor(0, b, b); break;
-					case FE_TRI7   : col = GLColor(0, b, d); break;
-					case FE_TRI10  : col = GLColor(0, d, d); break;
-					case FE_QUAD4  : col = GLColor(a, a, 0); break;
-					case FE_QUAD8  : col = GLColor(b, b, 0); break;
-					case FE_QUAD9  : col = GLColor(d, d, 0); break;
-					case FE_TET4   : col = GLColor(0, a, 0); break;
-					case FE_TET5   : col = GLColor(0, a, 0); break;
-					case FE_TET10  : col = GLColor(0, b, 0); break;
-					case FE_TET15  : col = GLColor(0, b, 0); break;
-					case FE_TET20  : col = GLColor(0, d, 0); break;
-					case FE_HEX8   : col = GLColor(a, 0, 0); break;
-					case FE_HEX20  : col = GLColor(b, 0, 0); break;
-					case FE_HEX27  : col = GLColor(b, 0, 0); break;
-					case FE_PENTA6 : col = GLColor(0, 0, a); break;
-					case FE_PENTA15: col = GLColor(0, 0, b); break;
-					case FE_PYRA5  : col = GLColor(0, 0, a); break;
-					case FE_PYRA13 : col = GLColor(0, 0, b); break;
-					case FE_BEAM2  : col = GLColor(a, a, a); break;
-					case FE_BEAM3  : col = GLColor(b, b, b); break;
-					default:
-						col = GLColor(255, 255, 255); break;
-					}
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) c[j] = col;
-
-					// render the element
-					return true;
-				}
-			}
-			return false;
-			});
-
-	}
-	else
-	{
-		// color is determined by material
-		glDisable(GL_COLOR_MATERIAL);
-		GPart* pgmat = nullptr;
-
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
-			int i = el.m_ntag;
-			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
-			if (el.IsBeam()) hasBeamElements = true;
-
-			if (!el.IsSelected() && el.IsVisible())
-			{
-				GPart* pg = po->Part(el.m_gid);
-				if (pg->IsVisible())
-				{
-					if (pg != pgmat)
-					{
-						SetMatProps(rc, pg);
-						pgmat = pg;
-					}
-
-					// render the element
-					return true;
-				}
-			}
-			return false;
-			});
-	}
-
-	if (hasBeamElements)
-	{
-		// render beam elements
-		RenderUnselectedBeamElements(rc, po);
-	}
-
-	// render the selected elements
-	if (pdoc == nullptr) return;
-	if (selectedElements.empty() == false)
-	{
-		renderer.PushState();
-		
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3f(1.f, 0, 0);
-
-		hasBeamElements = false;
-		renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
-				// check for beams
-				if (el.IsBeam()) hasBeamElements = true;
-				return true;
-			});
-
-		// render a yellow highlight around selected elements
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3f(1.f, 1.f, 0);
-		renderer.RenderFEElementsOutline(*pm, selectedElements);
-
-		if (hasBeamElements)
-		{
-			// render beam elements
-			RenderSelectedBeamElements(rc, po);
-		}
-	
-		renderer.PopState();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2853,21 +2966,22 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 
-	int NE = pm->Elements();
+	GLColor c = rc.m_settings.m_meshColor;
+	glColor3ub(c.r, c.g, c.b);
+
+	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FSElement& el = pm->Element(i);
-		if (!el.IsSelected() && el.IsVisible())
+		FSEdge& edge = pm->Edge(i);
+		if (edge.IsVisible() && (!edge.IsSelected()) && (edge.m_elem >= 0))
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
+			FSElement& el = pm->Element(edge.m_elem);
+			switch (el.Type())
 			{
-				switch (el.Type())
-				{
-				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
-				}
+			case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
+			case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 			}
 		}
 	}
@@ -2884,28 +2998,31 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
+	FEElementSelection* selectedElems = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+	if ((selectedElems == nullptr) || (selectedElems->Size() == 0)) return;
+	assert(selectedElems->GetMesh() == pm);
 
-	int NE = pm->Elements();
+	GMesh edgeMesh;
+	int NE = selectedElems->Count();
+	vec3f r[FSEdge::MAX_NODES];
 	for (int i = 0; i < NE; ++i)
 	{
-		FSElement& el = pm->Element(i);
-		if (el.IsSelected() && el.IsVisible())
+		FEElement_& el = *selectedElems->Element(i);
+		if (el.IsBeam())
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
-			{
-				switch (el.Type())
-				{
-				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
-				}
-			}
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j) r[j] = to_vec3f(pm->Node(el.m_node[j]).r);
+			edgeMesh.AddEdge(r, ne);
 		}
 	}
+	edgeMesh.Update();
+	if (edgeMesh.Edges() == 0) return;
 
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glColor3ub(255, 255, 0);
+	m_renderer.RenderMeshLines(edgeMesh);
 	glPopAttrib();
 }
 
@@ -3010,7 +3127,7 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
 
-	switch (vs.m_objectColor)
+	switch (m_objectColor)
 	{
 	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
 	{
@@ -3086,23 +3203,10 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	GObject* po = m_doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FSMesh* pm = po->GetFEMesh();
-	FSMeshBase* pmb = pm;
-	if (pm == nullptr)
-	{
-		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-		if (pso) pmb = pso->GetSurfaceMesh();
-		if (pmb == nullptr) return;
-	}
-
 	// create the tag array.
 	// We add a tag for each selected item
 	GLTAG tag;
 	vector<GLTAG> vtag;
-
-	// clear the node tags
-	pmb->TagAllNodes(0);
-	int NN = pmb->Nodes();
 
 	int mode = m_doc->GetItemMode();
 
@@ -3110,25 +3214,33 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	GLColor intcol(255, 0, 0);
 
 	// process elements
-	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
+	FESelection* currentSelection = m_doc->GetCurrentSelection();
+	if ((view.m_ntagInfo > TagInfoOption::NO_TAG_INFO) && currentSelection)
 	{
-		if ((mode == ITEM_ELEM) && pm)
+		FSLineMesh* mesh = nullptr;
+		if (mode == ITEM_ELEM)
 		{
-			int NE = pm->Elements();
-			for (int i = 0; i < NE; i++)
+			FEElementSelection* selection = dynamic_cast<FEElementSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FEElement_& el = pm->Element(i);
-				if (el.IsSelected())
+				FSMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NE = selection->Count();
+				for (int i = 0; i < NE; i++)
 				{
+					FEElement_& el = *selection->Element(i); assert(el.IsSelected());
 					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 					tag.c = extcol;
 					int nid = el.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->ElementIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
 					vtag.push_back(tag);
 
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3136,21 +3248,27 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process faces
 		if (mode == ITEM_FACE)
 		{
-			int NF = pmb->Faces();
-			for (int i = 0; i < NF; ++i)
+			FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSFace& f = pmb->Face(i);
-				if (f.IsSelected())
+				FSMeshBase* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NF = selection->Count();
+				for (int i = 0; i < NF; ++i)
 				{
-					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
+					FSFace& f = *selection->Face(i); assert(f.IsSelected());
+					tag.r = pm->LocalToGlobal(pm->FaceCenter(f));
 					tag.c = (f.IsExternal() ? extcol : intcol);
 					int nid = f.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->FaceIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
 					vtag.push_back(tag);
 
-					int nf = f.Nodes();
-					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int nf = f.Nodes();
+						for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3158,21 +3276,27 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process edges
 		if (mode == ITEM_EDGE)
 		{
-			int NC = pmb->Edges();
-			for (int i = 0; i < NC; i++)
+			FEEdgeSelection* selection = dynamic_cast<FEEdgeSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSEdge& edge = pmb->Edge(i);
-				if (edge.IsSelected())
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NC = selection->Size();
+				for (int i = 0; i < NC; i++)
 				{
-					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
+					FSEdge& edge = *selection->Edge(i);
+					tag.r = pm->LocalToGlobal(pm->EdgeCenter(edge));
 					tag.c = extcol;
 					int nid = edge.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->EdgeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
 					vtag.push_back(tag);
 
-					int ne = edge.Nodes();
-					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = edge.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -3180,15 +3304,19 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		// process nodes
 		if (mode == ITEM_NODE)
 		{
-			for (int i = 0; i < NN; i++)
+			FENodeSelection* selection = dynamic_cast<FENodeSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSNode& node = pmb->Node(i);
-				if (node.IsSelected())
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NN = selection->Size();
+				for (int i = 0; i < NN; i++)
 				{
-					tag.r = pmb->LocalToGlobal(node.r);
+					FSNode& node = *selection->Node(i);
+					tag.r = pm->LocalToGlobal(node.r);
 					tag.c = (node.IsExterior() ? extcol : intcol);
 					int nid = node.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->NodeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
 					vtag.push_back(tag);
 				}
@@ -3196,14 +3324,15 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 		}
 
 		// add additional nodes
-		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+		if ((view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) && mesh)
 		{
+			int NN = mesh->Nodes();
 			for (int i = 0; i < NN; i++)
 			{
-				FSNode& node = pmb->Node(i);
+				FSNode& node = mesh->Node(i);
 				if (node.m_ntag == 1)
 				{
-					tag.r = pmb->LocalToGlobal(node.r);
+					tag.r = mesh->LocalToGlobal(node.r);
 					tag.c = (node.IsExterior() ? extcol : intcol);
 					int n = node.GetID();
 					if (n < 0) n = i + 1;
@@ -3252,7 +3381,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 			else tag.r = mat->GetPosition();
 
 			string name = mat->GetName();
-			int l = name.size(); if (l > 63) l = 63;
+			size_t l = name.size(); if (l > 63) l = 63;
 			if (l > 0)
 			{
 				strncpy(tag.sztag, name.c_str(), l);
@@ -3262,9 +3391,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 			vtag.push_back(tag);
 		}
 	}
-	int nsel = vtag.size();
-	if (nsel == 0) return;
-
+	if (vtag.empty()) return;
 	glview->RenderTags(vtag);
 }
 
@@ -3276,5 +3403,217 @@ void CGLModelScene::RenderImageData(CGLContext& rc)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
 		if (img->IsActive()) img->Render(rc);
+	}
+}
+
+void CGLModelScene::SetObjectColorMode(OBJECT_COLOR_MODE colorMode)
+{
+	m_objectColor = colorMode;
+}
+
+OBJECT_COLOR_MODE CGLModelScene::ObjectColorMode() const
+{
+	return m_objectColor;
+}
+
+// apply the mesh data to an object's render mesh
+void CGLModelScene::MapMeshData(GObject* po)
+{
+	if (po == nullptr) return;
+	GMesh* gmsh = po->GetFERenderMesh();
+	if (gmsh == nullptr) return;
+
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	Mesh_Data& data = pm->GetMeshData();
+	if (!data.IsValid()) return;
+
+	double vmin, vmax;
+	data.GetValueRange(vmin, vmax);
+	if (vmax == vmin) vmax++;
+
+	int NN = pm->Nodes();
+	vector<double> val(NN, 0);
+
+	Post::CColorMap map;
+	map.SetRange((float)vmin, (float)vmax);
+	
+	int NF = gmsh->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GMesh::FACE& fi = gmsh->Face(i);
+		int fid = fi.fid;
+		FSFace* pf = pm->FacePtr(fid);
+		if (pf)
+		{
+			FSFace& face = *pf;
+			FSElement& el = pm->Element(face.m_elem[0].eid);
+			GPart* pg = po->Part(el.m_gid);
+			if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
+			{
+				FSElement& el1 = pm->Element(face.m_elem[1].eid);
+				pg = po->Part(el1.m_gid);
+			}
+
+			if (pg && pg->IsVisible())
+			{
+				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
+				{
+					int fnl[FSElement::MAX_NODES];
+					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
+					assert(nn == face.Nodes());
+
+					int nf = face.Nodes();
+					for (int j = 0; j < nf; ++j)
+					{
+						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
+						val[face.n[j]] = vj;
+					}
+
+					for (int j = 0; j < 3; ++j)
+					{
+						double vj = val[fi.n[j]];
+						fi.c[j] = map.map(vj);
+					}
+				}
+				else
+				{
+					GLColor col(212, 212, 212);
+					for (int j = 0; j < 3; ++j) fi.c[j] = col;
+				}
+			}
+		}
+	}
+}
+
+void CGLModelScene::Update()
+{
+	if (m_doc == nullptr) return;
+	GModel* gm = m_doc->GetGModel();
+	if (gm)
+	{
+		GObject* po = gm->GetActiveObject();
+		if (po) MapMeshData(po);
+	}
+}
+
+void CGLModelScene::RenderPlaneCut(CGLContext& rc)
+{
+	BOX box = m_doc->GetGModel()->GetBoundingBox();
+	glColor3ub(200, 0, 200);
+	glx::renderBox(box, false);
+
+	RenderBoxCut(rc, box);
+
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	if (view->PlaneCutMode() == 0)
+	{
+		// render the plane cut first
+		view->RenderPlaneCut(rc);
+
+		// then turn on the clipping plane before rendering the other geometry
+		glClipPlane(GL_CLIP_PLANE0, view->PlaneCoordinates());
+		glEnable(GL_CLIP_PLANE0);
+	}
+}
+
+void CGLModelScene::RenderBoxCut(CGLContext& rc, const BOX& box)
+{
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d ex[8];
+	ex[0] = vec3d(a.x, a.y, a.z);
+	ex[1] = vec3d(b.x, a.y, a.z);
+	ex[2] = vec3d(b.x, b.y, a.z);
+	ex[3] = vec3d(a.x, b.y, a.z);
+	ex[4] = vec3d(a.x, a.y, b.z);
+	ex[5] = vec3d(b.x, a.y, b.z);
+	ex[6] = vec3d(b.x, b.y, b.z);
+	ex[7] = vec3d(a.x, b.y, b.z);
+	double R = box.GetMaxExtent();
+	if (R == 0) R = 1;
+	int ncase = 0;
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	double* plane = view->PlaneCoordinates();
+	vec3d norm(plane[0], plane[1], plane[2]);
+	double ref = -(plane[3] - R * 0.001);
+	for (int k = 0; k < 8; ++k)
+		if (norm * ex[k] > ref) ncase |= (1 << k);
+	if ((ncase > 0) && (ncase < 255))
+	{
+		int edge[15][2], edgeNode[15][2], etag[15];
+		GMesh plane;
+		int* pf = LUT[ncase];
+		int ne = 0;
+		for (int l = 0; l < 5; l++)
+		{
+			if (*pf == -1) break;
+			vec3f r[3];
+			float w1, w2, w;
+			for (int k = 0; k < 3; k++)
+			{
+				int n1 = ET_HEX[pf[k]][0];
+				int n2 = ET_HEX[pf[k]][1];
+
+				w1 = norm * ex[n1];
+				w2 = norm * ex[n2];
+
+				if (w2 != w1)
+					w = (ref - w1) / (w2 - w1);
+				else
+					w = 0.f;
+
+				vec3d rk = ex[n1] * (1 - w) + ex[n2] * w;
+				r[k] = to_vec3f(rk);
+				plane.AddFace(r);
+			}
+			for (int k = 0; k < 3; ++k)
+			{
+				int n1 = pf[k];
+				int n2 = pf[(k + 1) % 3];
+
+				bool badd = true;
+				for (int m = 0; m < ne; ++m)
+				{
+					int m1 = edge[m][0];
+					int m2 = edge[m][1];
+					if (((n1 == m1) && (n2 == m2)) ||
+						((n1 == m2) && (n2 == m1)))
+					{
+						badd = false;
+						etag[m]++;
+						break;
+					}
+				}
+
+				if (badd)
+				{
+					edge[ne][0] = n1;
+					edge[ne][1] = n2;
+					etag[ne] = 0;
+
+					GMesh::FACE& face = plane.Face(plane.Faces() - 1);
+					edgeNode[ne][0] = face.n[k];
+					edgeNode[ne][1] = face.n[(k + 1) % 3];
+					++ne;
+				}
+			}
+			pf += 3;
+		}
+		for (int k = 0; k < ne; ++k)
+		{
+			if (etag[k] == 0)
+			{
+				plane.AddEdge(edgeNode[k], 2, 0);
+			}
+		}
+		plane.Update();
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(255, 64, 255);
+		m_renderer.RenderMeshLines(plane);
+		glPopAttrib();
 	}
 }

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GModel.h>
+#include <GLWLib/GLWidgetManager.h>
 //---------------------------------------
 // NOTE: We need to include these FEBio files to make sure we get the correct
 //       implementations for the type_to_string and string_to_type functions.
@@ -238,7 +239,6 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
-	m_sel = nullptr;
 
 	m_binit = false;
 
@@ -263,8 +263,8 @@ CPostDocument::~CPostDocument()
 	m_graphs.clear();
 
 	delete m_glm; m_glm = nullptr;
-	delete m_fem;
-	if (m_sel) delete m_sel;
+	delete m_fem; m_fem = nullptr;
+	SetCurrentSelection(nullptr);
 
 	delete m_scene;
 	m_scene = nullptr;
@@ -297,6 +297,9 @@ bool CPostDocument::Initialize()
 	// assign default material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
+
+	// make sure the correct GLWidgetManager's edit layer is active
+	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
@@ -566,82 +569,23 @@ BOX CPostDocument::GetBoundingBox()
 
 BOX CPostDocument::GetSelectionBox()
 {
+	if (!IsValid()) return BOX(-1, -1, -1, 1, 1, 1);
+
 	BOX box;
-
-	if (IsValid() == false)
+	FESelection* currentSelection = GetCurrentSelection();
+	if (currentSelection && currentSelection->Size())
 	{
-		box = BOX(-1, -1, -1, 1, 1, 1);
-		return box;
+		box = currentSelection->GetBoundingBox();
 	}
 
-	Post::CGLModel* mdl = GetGLModel();
-	if (mdl == nullptr)
+	if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
 	{
-		box = BOX(-1, -1, -1, 1, 1, 1);
-	}
-	else
-	{
-		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-		const vector<FEElement_*> selElems = mdl->GetElementSelection();
-		for (int i = 0; i < (int)selElems.size(); ++i)
-		{
-			FEElement_& el = *selElems[i];
-			int nel = el.Nodes();
-			for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
-		}
-
-		const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
-		for (int i = 0; i < (int)selFaces.size(); ++i)
-		{
-			FSFace& face = *selFaces[i];
-			int nel = face.Nodes();
-			for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
-		}
-
-		const vector<FSEdge*> selEdges = GetGLModel()->GetEdgeSelection();
-		for (int i = 0; i < (int)selEdges.size(); ++i)
-		{
-			FSEdge& edge = *selEdges[i];
-			int nel = edge.Nodes();
-			for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
-		}
-
-		const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
-		for (int i = 0; i < (int)selNodes.size(); ++i)
-		{
-			FSNode& node = *selNodes[i];
-			box += node.r;
-		}
-	}
-
-	//	if (box.IsValid())
-	{
-		if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
-		{
-			float R = box.Radius();
-			box.InflateTo(R, R, R);
-		}
+		float R = box.Radius();
+		box.InflateTo(R, R, R);
 	}
 
 	return box;
 }
-/*
-void CPostDocument::UpdateSelection(bool breport)
-{
-	if (m_sel) { delete m_sel; m_sel = nullptr; }
-
-	FSMesh* pm = GetGLModel()->GetActiveMesh();
-
-	int selectionMode = m_vs.nitem;
-	switch (selectionMode)
-	{
-	case ITEM_NODE: m_sel = new FENodeSelection(nullptr, pm); break;
-	case ITEM_EDGE: m_sel = new FEEdgeSelection(nullptr, pm); break;
-	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
-	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
-	}
-}
-*/
 
 std::string CPostDocument::GetFileName()
 {
@@ -667,9 +611,9 @@ void CPostDocument::SetInitFlag(bool b)
 void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
-	if (mdl) mdl->UpdateSelectionLists();
 
 	// delete old selection
+	if (mdl) mdl->SetSelection(nullptr); 
 	if (m_psel) delete m_psel;
 	m_psel = nullptr;
 
@@ -690,7 +634,12 @@ void CPostDocument::UpdateSelection(bool report)
 	}
 	if (m_psel) m_psel->SetMovable(false);
 
-	emit selectionChanged();
+	if (mdl) mdl->SetSelection(m_psel);
+
+	if (report)
+	{
+		emit selectionChanged();
+	}
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)

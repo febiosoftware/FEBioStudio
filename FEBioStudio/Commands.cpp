@@ -592,19 +592,24 @@ void CCmdToggleDiscreteVisibility::UnExecute()
 }
 
 //=============================================================================
-CCmdToggleElementVisibility::CCmdToggleElementVisibility(FSMesh* mesh) : CCommand("Toggle visibility")
+CCmdToggleElementVisibility::CCmdToggleElementVisibility(GObject* po) : CCommand("Toggle visibility")
 {
-	m_mesh = mesh;
+	m_po = po;
+	m_mesh = (m_po ? m_po->GetFEMesh() : nullptr);
 }
 
 void CCmdToggleElementVisibility::Execute()
 {
-	for (int i = 0; i<m_mesh->Elements(); ++i)
+	if (m_mesh)
 	{
-		FSElement& el = m_mesh->Element(i);
-		if (el.IsVisible()) el.Hide(); else el.Show();
+		for (int i = 0; i < m_mesh->Elements(); ++i)
+		{
+			FSElement& el = m_mesh->Element(i);
+			if (el.IsHidden()) el.Unhide(); else el.Hide();
+		}
+		m_mesh->UpdateItemVisibility();
+		if (m_po) m_po->BuildFERenderMesh();
 	}
-	m_mesh->UpdateItemVisibility();
 }
 
 void CCmdToggleElementVisibility::UnExecute()
@@ -1568,8 +1573,6 @@ void CCmdSelectElements::Execute()
 		int n = m_pel[i];
 		if ((n >= 0) && (n<NE)) m_pm->ElementRef(n).Select();
 	}
-
-	m_pm->UpdateSelection();
 }
 
 void CCmdSelectElements::UnExecute()
@@ -1582,8 +1585,6 @@ void CCmdSelectElements::UnExecute()
 		else
 			el.Unselect();
 	}
-
-	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1631,8 +1632,6 @@ void CCmdUnselectElements::Execute()
 {
 	FSMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
-
-	pm->UpdateSelection();
 }
 
 void CCmdUnselectElements::UnExecute()
@@ -1646,7 +1645,6 @@ void CCmdUnselectElements::UnExecute()
 		else
 			el.Unselect();
 	}
-	pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1718,8 +1716,6 @@ void CCmdSelectFaces::Execute()
 		int n = m_pface[i];
 		if ((n >= 0) && (n<NF)) m_pm->Face(n).Select();
 	}
-
-	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFaces::UnExecute()
@@ -1732,7 +1728,6 @@ void CCmdSelectFaces::UnExecute()
 		else
 			face.Unselect();
 	}
-	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1775,7 +1770,6 @@ CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face) : 
 void CCmdUnselectFaces::Execute()
 {
 	for (int i = 0; i<m_N; ++i) m_pm->Face(m_pface[i]).Unselect();
-	m_pm->UpdateSelection();
 }
 
 void CCmdUnselectFaces::UnExecute()
@@ -1788,7 +1782,6 @@ void CCmdUnselectFaces::UnExecute()
 		else
 			face.Unselect();
 	}
-	m_pm->UpdateSelection();
 }
 
 
@@ -1857,7 +1850,6 @@ void CCmdSelectFEEdges::Execute()
 		int n = m_pedge[i];
 		if ((n >= 0) && (n<NE)) m_pm->Edge(n).Select();
 	}
-	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFEEdges::UnExecute()
@@ -1870,7 +1862,6 @@ void CCmdSelectFEEdges::UnExecute()
 		else
 			edge.Unselect();
 	}
-	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1917,7 +1908,6 @@ CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge
 void CCmdUnselectFEEdges::Execute()
 {
 	for (int i = 0; i<m_N; ++i) m_pm->Edge(m_pedge[i]).Unselect();
-	m_pm->UpdateSelection();
 }
 
 void CCmdUnselectFEEdges::UnExecute()
@@ -1930,7 +1920,6 @@ void CCmdUnselectFEEdges::UnExecute()
 		else
 			edge.Unselect();
 	}
-	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2002,7 +1991,6 @@ void CCmdSelectFENodes::Execute()
 		int n = m_pn[i];
 		if ((n >= 0) && (n<NN)) m_pm->Node(n).Select();
 	}
-	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFENodes::UnExecute()
@@ -2015,7 +2003,6 @@ void CCmdSelectFENodes::UnExecute()
 		else
 			node.Unselect();
 	}
-	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2061,7 +2048,6 @@ void CCmdUnselectNodes::Execute()
 {
 	FSLineMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
-	pm->UpdateSelection();
 }
 
 void CCmdUnselectNodes::UnExecute()
@@ -2075,7 +2061,6 @@ void CCmdUnselectNodes::UnExecute()
 		else
 			node.Unselect();
 	}
-	pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2136,14 +2121,16 @@ CCmdAssignObjectMaterial::CCmdAssignObjectMaterial(GObject* po, int mat) : CComm
 
 void CCmdAssignObjectMaterial::Execute()
 {
-	int N = m_po->Parts();
-	for (int i = 0; i<N; ++i) m_po->AssignMaterial(m_po->Part(i)->GetID(), m_mat);
+	m_po->AssignMaterial(m_mat);
 }
 
 void CCmdAssignObjectMaterial::UnExecute()
 {
 	int N = m_po->Parts();
-	for (int i = 0; i<N; ++i) m_po->AssignMaterial(m_po->Part(i)->GetID(), m_old[i]);
+	for (int i = 0; i < N; ++i)
+	{
+		m_po->AssignMaterial(m_po->Part(i), m_old[i]);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2280,6 +2267,12 @@ void CCmdHideObject::UnExecute()
 // CCmdHidePart
 //////////////////////////////////////////////////////////////////////
 
+CCmdHideParts::CCmdHideParts(GModel* model, GPart* part) : CCommand("Hide")
+{
+	m_model = model;
+	m_partList.push_back(part);
+}
+
 CCmdHideParts::CCmdHideParts(GModel* model, std::list<GPart*> partList) : CCommand("Hide")
 {
 	m_model = model;
@@ -2320,20 +2313,30 @@ void CCmdShowParts::UnExecute()
 // CCmdHideElements
 //////////////////////////////////////////////////////////////////////
 
+CCmdHideElements::CCmdHideElements(GObject* po, const vector<int>& elemList) : CCommand("Hide")
+{
+	m_po = po;
+	m_mesh = po->GetFEMesh();
+	m_elemList = elemList;
+}
+
 CCmdHideElements::CCmdHideElements(FSMesh* mesh, const vector<int>& elemList) : CCommand("Hide")
 {
+	m_po = nullptr;
 	m_mesh = mesh;
 	m_elemList = elemList;
 }
 
 void CCmdHideElements::Execute()
 {
-	m_mesh->ShowElements(m_elemList, false);
+	if (m_po) m_po->ShowElements(m_elemList, false);
+	else m_mesh->ShowElements(m_elemList, false);
 }
 
 void CCmdHideElements::UnExecute()
 {
-	m_mesh->ShowElements(m_elemList, true);
+	if (m_po) m_po->ShowElements(m_elemList, true);
+	else m_mesh->ShowElements(m_elemList, true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2439,8 +2442,7 @@ void CCmdHideSelection::Execute()
 		break;
 	case ITEM_ELEM:
 	{
-		FSMesh* pm = po->GetFEMesh();
-		if (pm) pm->ShowElements(m_item, false);
+		po->ShowElements(m_item, false);
 	}
 	break;
 	case ITEM_FACE:
@@ -2476,7 +2478,7 @@ void CCmdHideSelection::UnExecute()
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			pm->ShowElements(m_item);
+			po->ShowElements(m_item, true);
 			pm->SelectElements(m_item);
 		}
 	}
@@ -2742,6 +2744,7 @@ void CCmdUnhideAll::Execute()
 		}
 		break;
 		}
+		po->UpdateItemVisibility();
 	}
 
 	m_bunhide = false;

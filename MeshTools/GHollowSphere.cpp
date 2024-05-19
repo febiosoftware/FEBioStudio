@@ -168,10 +168,10 @@ void GHollowSphere::BuildGMesh()
 
 	// ------- nodes --------
 	// top/bottom
-	m.Node(0     ).r = vec3d(0,0,-R1);
-	m.Node(NN/2-1).r = vec3d(0,0, R1);
-	m.Node(NN/2  ).r = vec3d(0,0,-R0);
-	m.Node(NN-1  ).r = vec3d(0,0, R0);
+	m.Node(0     ).r = vec3f(0,0,-R1);
+	m.Node(NN/2-1).r = vec3f(0,0, R1);
+	m.Node(NN/2  ).r = vec3f(0,0,-R0);
+	m.Node(NN-1  ).r = vec3f(0,0, R0);
 
 	int i, j;
 	for (i=1; i<NZ; ++i)
@@ -185,7 +185,7 @@ void GHollowSphere::BuildGMesh()
 			double d = R1*sqrt(1 - z*z);
 
 			GMesh::NODE& n = m.Node((i-1)*ND + j + 1);
-			n.r = vec3d(d*cw, d*sw, R1*z);
+			n.r = vec3f(d*cw, d*sw, R1*z);
 		}
 	}
 
@@ -200,7 +200,7 @@ void GHollowSphere::BuildGMesh()
 			double d = R0*sqrt(1 - z*z);
 
 			GMesh::NODE& n = m.Node(NN/2 + (i-1)*ND + j + 1);
-			n.r = vec3d(d*cw, d*sw, R0*z);
+			n.r = vec3f(d*cw, d*sw, R0*z);
 		}
 	}
 
@@ -386,8 +386,6 @@ void GHollowSphere::BuildGMesh()
 				e.pid = e0 + 11;
 			}
 		}
-		m.Update();
 	}
-	m.UpdateNormals();
-	m.UpdateBoundingBox();
+	m.Update();
 }
