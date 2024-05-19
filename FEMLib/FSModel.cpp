@@ -242,6 +242,8 @@ FSModel::FSModel() : m_skipGeometry(false)
     AddScienceParam(0, UNIT_PRESSURE, "P", "Referential absolute pressure");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
+
+	m_MLT_offset = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1136,6 +1138,7 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 			if (pmat == pold) pp->SetMaterialID(pnew->GetID());
 		}
 	}
+	ClearMLT();
 }
 
 //-----------------------------------------------------------------------------
@@ -1169,12 +1172,14 @@ GMaterial* FSModel::GetMaterial(int n)
 void FSModel::AddMaterial(GMaterial* pmat)
 {
 	m_pMat.Add(pmat); pmat->SetModel(this);
+	ClearMLT();
 }
 
 //-----------------------------------------------------------------------------
 void FSModel::InsertMaterial(int n, GMaterial* pm)
 { 
 	m_pMat.Insert(n, pm); 
+	ClearMLT();
 }
 
 //-----------------------------------------------------------------------------
@@ -1197,20 +1202,53 @@ int FSModel::DeleteMaterial(GMaterial* pmat)
 			if (pm == pmat) pp->SetMaterialID(-1);
 		}
 	}
-
+	ClearMLT();
 	return m_pMat.Remove(pmat);
 }
 
-//-----------------------------------------------------------------------------
+void FSModel::ClearMLT()
+{
+	m_MLT_offset = 0;
+	m_MLT.clear();
+}
+
+void FSModel::BuildMLT()
+{
+	if (Materials() == 0)
+	{
+		ClearMLT();
+		return;
+	}
+
+	int minId = m_pMat[0]->GetID();
+	int maxId = minId;
+	for (int i = 0; i < Materials(); ++i)
+	{
+		int mid = m_pMat[i]->GetID();
+		if (mid < minId) minId = mid;
+		if (mid > maxId) maxId = mid;
+	}
+	int mats = maxId - minId + 1;
+	m_MLT.assign(mats, nullptr);
+	m_MLT_offset = minId;
+	for (int i = 0; i < Materials(); ++i)
+	{
+		int mid = m_pMat[i]->GetID();
+		m_MLT[mid - m_MLT_offset] = m_pMat[i];
+	}
+}
+
 GMaterial* FSModel::GetMaterialFromID(int id)
 {
 	// don't bother looking of ID is invalid
 	if (id < 0) return 0;
 
-	for (int i=0; i<Materials(); ++i)
-		if (m_pMat[i]->GetID() == id) return m_pMat[i];
+	if (m_MLT.empty()) BuildMLT();
 
-	return 0;
+	id -= m_MLT_offset;
+	if ((id < 0) || (id >= m_MLT.size())) return nullptr;
+
+	return m_MLT[id];
 }
 
 //-----------------------------------------------------------------------------
@@ -1257,6 +1295,7 @@ void FSModel::Clear()
 
 	// remove all materials
 	m_pMat.Clear();
+	ClearMLT();
 
 	// remove all steps
 	m_pStep.Clear();
@@ -1851,11 +1890,12 @@ void FSModel::DeleteAllMaterials()
 	for (int i = 0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		for (int j = 0; j<po->Parts(); ++j) po->AssignMaterial(po->Part(j)->GetID(), 0);
+		po->AssignMaterial(0);
 	}
 
 	// delete all materials
 	m_pMat.Clear();
+	ClearMLT();
 }
 
 //-----------------------------------------------------------------------------

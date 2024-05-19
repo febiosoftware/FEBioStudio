@@ -52,7 +52,6 @@ void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor
 void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
 void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
 void line(const vec3d& a, const vec3d& b);
-void line(const vec3f& a, const vec3f& b);
 
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
@@ -66,16 +65,16 @@ void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.
 
 vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t);
 
-void quad4(vec3d r[4], vec3d n[4]);
-void quad4(vec3d r[4], vec3d n[4], GLColor c[4]);
-void quad4(vec3d r[4], vec3f n[4], float t[4]);
-void quad8(vec3d r[8], vec3f n[8], float t[8]);
-void quad9(vec3d r[9], vec3f n[9], float t[9]);
+void quad4(const vec3d* r, const vec3f* n);
+void quad4(const vec3d* r, const vec3f* n, const GLColor* c);
+void quad4(const vec3d* r, const vec3f* n, const float* t);
+void quad8(const vec3d* r, const vec3f* n, const float* t);
+void quad9(const vec3d* r, const vec3f* n, const float* t);
 
-void tri3(vec3d r[3], vec3f n[3]);
-void tri3(vec3d r[3], vec3d n[3]);
-void tri3(vec3d r[3], vec3d n[3], GLColor c[3]);
-void tri3(vec3d r[3], vec3f n[3], float t[3]);
+void tri3(const vec3d* r, const vec3f* n);
+void tri3(const vec3d* r, const vec3f* n);
+void tri3(const vec3d* r, const vec3f* n, const GLColor* c);
+void tri3(const vec3d* r, const vec3f* n, const float* t);
 
 void tri6(vec3d r[6], vec3f n[6], float t[6]);
 void tri7(vec3d r[7], vec3f n[7], float t[7]);
@@ -97,12 +96,15 @@ void drawBox(double wx, double wy, double wz);
 inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3f& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n) { glNormal3f(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3f(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n, const GLColor& c) { glNormal3f(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
 
 inline void glcolor(const GLColor& c) { glColor3ub(c.r, c.g, c.b); }
+
+inline void line(const vec3f& a, const vec3f& b) { glVertex3fv(&a.x); glVertex3fv(&b.x); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
 void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);

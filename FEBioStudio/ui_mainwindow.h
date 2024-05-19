@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
+#include "DlgPartSelector.h"
 #include <vector>
 
 class QProcess;
@@ -279,6 +280,8 @@ public:
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
+	CDlgPartSelector* partSelector = nullptr;
+
 	QStatusBar* statusBar;
 	QProgressBar* progressBar;
 
@@ -478,6 +481,8 @@ public:
 	void ShowDefaultBackground();
 
 	void setUIConfig(Ui::Config newConfig);
+
+	void showPartSelector(CModelDocument* doc);
 
 private:
 	void setRecentFileList(QStringList& dstList, const QStringList& fileList, QMenu* menu, QActionGroup* actionGroup);

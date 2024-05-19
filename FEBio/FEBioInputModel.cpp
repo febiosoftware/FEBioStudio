@@ -1137,7 +1137,9 @@ void FEBioInputModel::UpdateGeometry()
 
 				beamSection->SetElementFormulation(beamForm);
 			}
-        }
+
+			po->Update(false);
+		}
 	}
 }
 
@@ -1706,6 +1708,13 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 				sname = name.substr(p + 6, string::npos);
 				filter = MESH_ITEM_FLAGS::FE_PART_FLAG;
 			}
+
+			p = name.find("@part_list:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 11, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_PART_FLAG;
+			}
 		}
 	}
 
@@ -1805,6 +1814,14 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 				if (pg->GetName() == sname) return pg;
 			}
 		}
+	}
+
+	// Didn't find the part set on the objects, so try on the model
+	if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+	{
+		GModel& m = GetFSModel().GetModel();
+		GPartList* pg = m.FindPartList(sname);
+		if (pg) return pg;
 	}
 
 	return 0;

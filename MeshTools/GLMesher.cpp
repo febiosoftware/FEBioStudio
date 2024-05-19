@@ -93,7 +93,8 @@ GMesh* GLMesher::CreateMesh()
 			for (int i = 0; i < NN; ++i)
 			{
 				GNode* ni = o.Node(i);
-				gmesh->AddNode(ni->LocalPosition(), ni->GetID());
+				vec3f ri = to_vec3f(ni->LocalPosition());
+				gmesh->AddNode(ri, ni->GetID());
 			}
 			gmesh->Update();
 		}
@@ -110,8 +111,8 @@ void GLMesher::BuildEdgeLine(GMesh* glmsh, GEdge& e)
 	y[0] = o.Node(e.m_node[0])->LocalPosition();
 	y[1] = o.Node(e.m_node[1])->LocalPosition();
 	int n[2] = { 0 };
-	n[0] = glmsh->AddNode(y[0], e.m_node[0]);
-	n[1] = glmsh->AddNode(y[1], e.m_node[1]);
+	n[0] = glmsh->AddNode(to_vec3f(y[0]), e.m_node[0]);
+	n[1] = glmsh->AddNode(to_vec3f(y[1]), e.m_node[1]);
 	glmsh->AddEdge(n, 2, e.GetLocalID());
 	glmsh->Update();
 }
@@ -151,7 +152,7 @@ void GLMesher::BuildEdgeMesh(GMesh* glmsh, GEdge& e)
 		if (node.m_ntag != -1)
 		{
 			GMesh::NODE& gnode = glMesh.Node(node.m_ntag);
-			gnode.r = node.pos();
+			gnode.r = to_vec3f(node.pos());
 		}
 	}
 
@@ -226,7 +227,7 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 		for (int i = 0; i < 4; ++i)
 		{
 			GMesh::NODE& ni = m.Node(i);
-			ni.r = o.Node(f.m_node[i])->LocalPosition();
+			ni.r = to_vec3f(o.Node(f.m_node[i])->LocalPosition());
 			ni.pid = o.Node(f.m_node[i])->GetLocalID();
 		}
 
@@ -288,8 +289,8 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 			GMesh::NODE& nj = m.Node(i + (M + 1));
 
 			vec2d q = ca.Point(i / (double)M);
-			ni.r = vec3d(q.x(), q.y(), z0);
-			nj.r = ni.r + t;
+			ni.r = vec3f(q.x(), q.y(), z0);
+			nj.r = ni.r + to_vec3f(t);
 			ni.pid = -1;
 			nj.pid = -1;
 		}
@@ -379,8 +380,8 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 			GMesh::NODE& ni = m.Node(i);
 			GMesh::NODE& nj = m.Node(i + (M + 1));
 
-			ni.r = ca.Point(i / (double)M);
-			nj.r = ni.r + t;
+			ni.r = to_vec3f(ca.Point(i / (double)M));
+			nj.r = ni.r + to_vec3f(t);
 			ni.pid = -1;
 			nj.pid = -1;
 		}
@@ -470,8 +471,8 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 			GMesh::NODE& ni = m.Node(i);
 			GMesh::NODE& nj = m.Node(i + (M + 1));
 
-			ni.r = ca.Point(i / (double)M);
-			nj.r = ni.r + t;
+			ni.r = to_vec3f(ca.Point(i / (double)M));
+			nj.r = ni.r + to_vec3f(t);
 			ni.pid = -1;
 			nj.pid = -1;
 		}
@@ -612,7 +613,7 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 			p.z = z;
 
 			GMesh::NODE& n = m.Node(j * (M + 1) + i);
-			n.r = p;
+			n.r = to_vec3f(p);
 			n.pid = -1;
 		}
 
@@ -725,7 +726,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 
 			// position the center point
 			GMesh::NODE& n0 = m.Node(0);
-			n0.r = r0;
+			n0.r = to_vec3f(r0);
 			n0.pid = -1;
 
 			// create the arc points
@@ -735,7 +736,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 
 				GMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
-				n0.r = vec3d(p0.x(), y1, p0.y());
+				n0.r = vec3f(p0.x(), y1, p0.y());
 				n0.pid = -1;
 			}
 		}
@@ -751,7 +752,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 
 			// position the center point
 			GMesh::NODE& n0 = m.Node(0);
-			n0.r = r0;
+			n0.r = to_vec3f(r0);
 			n0.pid = -1;
 
 			// create the arc points
@@ -761,7 +762,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 
 				GMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
-				n0.r = vec3d(p0.x(), p0.y(), z1);
+				n0.r = vec3f(p0.x(), p0.y(), z1);
 				n0.pid = -1;
 			}
 		}
@@ -922,7 +923,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 			}
 
 			GMesh::NODE& n = m.Node(j * (M + 1) + i);
-			n.r = p;
+			n.r = to_vec3f(p);
 			n.pid = -1;
 		}
 

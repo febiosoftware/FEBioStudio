@@ -39,6 +39,8 @@ public:
 
 	CGView& GetView();
 
+	virtual void Update();
+
 	virtual void Render(CGLContext& rc) = 0;
 
 	// get the bounding box of the entire scene

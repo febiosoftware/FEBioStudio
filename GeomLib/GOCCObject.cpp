@@ -205,7 +205,7 @@ void GOCCObject::BuildGMesh()
 			GMesh::NODE& node = gmesh->Node(aNodeIter + aNodeOffset - 1);
 			gp_Pnt aPnt = aTriangulation->Node(aNodeIter);
 			aPnt.Transform(aTrsf);
-			node.r = vec3d(aPnt.X(), aPnt.Y(), aPnt.Z());
+			node.r = vec3f(aPnt.X(), aPnt.Y(), aPnt.Z());
 		}
 
 		// copy triangles
@@ -264,7 +264,6 @@ void GOCCObject::BuildGMesh()
 
 	// update the GMesh
 	gmesh->Update();
-	gmesh->UpdateNormals();
 	SetRenderMesh(gmesh);
 
 #endif // HAS_OCC

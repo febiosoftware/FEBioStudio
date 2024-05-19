@@ -60,7 +60,7 @@ GMeshObject::GMeshObject(FSSurfaceMesh* pm) : GObject(GMESH_OBJECT)
 	// update the object
 	if (pm)
 	{
-		SetFEMesh(ConvertSurfaceToMesh(pm));
+		SetFEMesh(MeshTools::ConvertSurfaceToMesh(pm));
 		if (pm->Nodes()) Update();
 	}
 }
@@ -248,11 +248,13 @@ void GMeshObject::UpdateParts()
 
 	// figure out which parts are still used
 	vector<int> tag(nparts, 0);
+	vector<int> matids(nparts, -1);
 	for (int i=0; i<m.Elements(); ++i)
 	{
 		FSElement& el = m.Element(i);
 		assert(el.m_gid >= 0);
 		tag[el.m_gid]++;
+		matids[el.m_gid] = el.m_MatID;
 	}
 
 	int n = 0;
@@ -272,7 +274,8 @@ void GMeshObject::UpdateParts()
 		}
 		else
 		{
-			AddPart();
+			GPart* newPart = AddPart();
+			newPart->SetMaterialID(matids[n]);
 			tag[i] = n++;
 		}
 	}
@@ -732,7 +735,7 @@ void GMeshObject::BuildGMesh()
 	for (int i=0; i<NN; ++i)
 	{
 		FSNode& node = pm->Node(i);
-		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(node.r, i, node.m_gid);
+		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(to_vec3f(node.r), i, node.m_gid);
 	}
 
 	// create edges
@@ -1440,8 +1443,21 @@ GMeshObject* GMeshObject::DetachSelection()
 		if (el.m_MatID >= 0)
 		{
 			int pid = el.m_gid;
-			GPart* pg = newObject->Part(pid);
-			pg->SetMaterialID(el.m_MatID);
+			GPart* pg = newObject->Part(pid); assert(pg);
+			if (pg) pg->SetMaterialID(el.m_MatID);
+		}
+	}
+
+	// do the same for the old object
+	pm = oldMesh;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_MatID >= 0)
+		{
+			int pid = el.m_gid;
+			GPart* pg = Part(pid); assert(pg);
+			if (pg) pg->SetMaterialID(el.m_MatID);
 		}
 	}
 

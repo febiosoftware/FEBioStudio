@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <GLLib/glx.h>
+#include <MeshTools/FESelection.h>
 #include "PostObject.h"
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
@@ -97,16 +98,16 @@ void CGLPostScene::Render(CGLContext& rc)
 	glDisable(GL_CULL_FACE);
 
 	// match the selection mode
-	int selectionMode = Post::SELECT_ELEMS;
+	SelectionType selectionMode = SELECT_FE_ELEMS;
 	switch (m_doc->GetItemMode())
 	{
 	case ITEM_MESH:
-	case ITEM_ELEM: selectionMode = Post::SELECT_ELEMS; break;
-	case ITEM_FACE: selectionMode = Post::SELECT_FACES; break;
-	case ITEM_EDGE: selectionMode = Post::SELECT_EDGES; break;
-	case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
+	case ITEM_ELEM: selectionMode = SELECT_FE_ELEMS; break;
+	case ITEM_FACE: selectionMode = SELECT_FE_FACES; break;
+	case ITEM_EDGE: selectionMode = SELECT_FE_EDGES; break;
+	case ITEM_NODE: selectionMode = SELECT_FE_NODES; break;
 	}
-	glm->SetSelectionMode(selectionMode);
+	glm->SetSelectionType(selectionMode);
 
 
 	if (vs.m_bShadows)
@@ -227,50 +228,67 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 	GLTAG tag;
 	vector<GLTAG> vtag;
 
-	// clear the node tags
-	pm->TagAllNodes(0);
-
 	int mode = m_doc->GetItemMode();
 
 	GLColor extcol(255, 255, 0);
 	GLColor intcol(255, 0, 0);
 
 	// process elements
-	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
+	FESelection* currentSelection = m_doc->GetCurrentSelection();
+	if ((view.m_ntagInfo > TagInfoOption::NO_TAG_INFO) && currentSelection)
 	{
-		if ((mode == ITEM_ELEM) && pm)
+		FSLineMesh* mesh = nullptr;
+		if (mode == ITEM_ELEM)
 		{
-			ForAllSelectedElements(*pm, [&](FEElement_& el) {
-				GLTAG tag;
-				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-				tag.c = extcol;
-				int nid = el.GetID();
-				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-				vtag.push_back(tag);
+			FEElementSelection* selection = dynamic_cast<FEElementSelection*>(currentSelection);
+			if (selection && selection->Count())
+			{
+				FSMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NE = selection->Count();
+				for (int i = 0; i < NE; i++)
+				{
+					FEElement_& el = *selection->Element(i); assert(el.IsSelected());
+					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
+					tag.c = extcol;
+					int nid = el.GetID();
+					if (nid < 0) nid = selection->ElementIndex(i) + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
+					vtag.push_back(tag);
 
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-			});
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					}
+				}
+			}
 		}
 
 		// process faces
 		if (mode == ITEM_FACE)
 		{
-			int NF = pm->Faces();
-			for (int i = 0; i < NF; ++i)
+			FEFaceSelection* selection = dynamic_cast<FEFaceSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSFace& f = pm->Face(i);
-				if (f.IsSelected())
+				FSMeshBase* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NF = selection->Count();
+				for (int i = 0; i < NF; ++i)
 				{
+					FSFace& f = *selection->Face(i); assert(f.IsSelected());
 					tag.r = pm->LocalToGlobal(pm->FaceCenter(f));
 					tag.c = (f.IsExternal() ? extcol : intcol);
 					int nid = f.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->FaceIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
 					vtag.push_back(tag);
 
-					int nf = f.Nodes();
-					for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int nf = f.Nodes();
+						for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -278,21 +296,27 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 		// process edges
 		if (mode == ITEM_EDGE)
 		{
-			int NC = pm->Edges();
-			for (int i = 0; i < NC; i++)
+			FEEdgeSelection* selection = dynamic_cast<FEEdgeSelection*>(currentSelection);
+			if (selection && selection->Count())
 			{
-				FSEdge& edge = pm->Edge(i);
-				if (edge.IsSelected())
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NC = selection->Size();
+				for (int i = 0; i < NC; i++)
 				{
+					FSEdge& edge = *selection->Edge(i);
 					tag.r = pm->LocalToGlobal(pm->EdgeCenter(edge));
 					tag.c = extcol;
 					int nid = edge.GetID();
-					if (nid < 0) nid = i + 1;
+					if (nid < 0) nid = selection->EdgeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
 					vtag.push_back(tag);
 
-					int ne = edge.Nodes();
-					for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
+					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+					{
+						int ne = edge.Nodes();
+						for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
+					}
 				}
 			}
 		}
@@ -300,27 +324,42 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 		// process nodes
 		if (mode == ITEM_NODE)
 		{
-			ForAllSelectedNodes(*pm, [&](FSNode& node) {
-				GLTAG tag;
-				tag.r = pm->LocalToGlobal(node.r);
-				tag.c = (node.IsExterior() ? extcol : intcol);
-				int nid = node.GetID();
-				snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-				vtag.push_back(tag);
-			});
+			FENodeSelection* selection = dynamic_cast<FENodeSelection*>(currentSelection);
+			if (selection && selection->Count())
+			{
+				FSLineMesh* pm = selection->GetMesh(); mesh = pm;
+				if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) pm->TagAllNodes(0);
+				int NN = selection->Size();
+				for (int i = 0; i < NN; i++)
+				{
+					FSNode& node = *selection->Node(i);
+					tag.r = pm->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int nid = node.GetID();
+					if (nid < 0) nid = selection->NodeIndex(i) + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
+					vtag.push_back(tag);
+				}
+			}
 		}
 
 		// add additional nodes
-		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
+		if ((view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES) && mesh)
 		{
-			ForAllTaggedNodes(*pm, 1, [&](FSNode& node) {
-				GLTAG tag;
-				tag.r = pm->LocalToGlobal(node.r);
-				tag.c = (node.IsExterior() ? extcol : intcol);
-				int n = node.GetID();
-				snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-				vtag.push_back(tag);
-			});
+			int NN = mesh->Nodes();
+			for (int i = 0; i < NN; i++)
+			{
+				FSNode& node = mesh->Node(i);
+				if (node.m_ntag == 1)
+				{
+					tag.r = mesh->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int n = node.GetID();
+					if (n < 0) n = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
+					vtag.push_back(tag);
+				}
+			}
 		}
 	}
 
@@ -427,30 +466,26 @@ void CGLPostScene::ToggleTrackSelection()
 		Post::CGLModel* model = m_doc->GetGLModel(); assert(model);
 
 		int m[3] = { -1, -1, -1 };
-		int nmode = model->GetSelectionMode();
+		int nmode = model->GetSelectionType();
 		FSMeshBase* pm = po->GetFEMesh();
-		if (nmode == Post::SELECT_ELEMS)
+		if (nmode == SELECT_FE_ELEMS)
 		{
-			const vector<FEElement_*> selElems = model->GetElementSelection();
-			if (selElems.size() > 0)
+			FEElementSelection* selElems = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
+			if (selElems && (selElems->Size() > 0))
 			{
-				FEElement_& el = *selElems[0];
+				FEElement_& el = *selElems->Element(0);
 				int* n = el.m_node;
 				m[0] = n[0]; m[1] = n[1]; m[2] = n[2];
 				m_btrack = true;
 			}
 		}
-		else if (nmode == Post::SELECT_NODES)
+		else if (nmode == SELECT_FE_NODES)
 		{
-			int ns = 0;
-			for (int i = 0; i < pm->Nodes(); ++i)
+			FENodeSelection* selNodes = dynamic_cast<FENodeSelection*>(m_doc->GetCurrentSelection());
+			if (selNodes && (selNodes->Count() >= 3))
 			{
-				if (pm->Node(i).IsSelected()) m[ns++] = i;
-				if (ns == 3)
-				{
-					m_btrack = true;
-					break;
-				}
+				for (int i = 0; i < 3; ++i) m[i] = selNodes->NodeIndex(i);
+				m_btrack = true;
 			}
 		}
 

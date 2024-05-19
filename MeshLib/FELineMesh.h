@@ -46,9 +46,6 @@ public:
 	// Should be called when mesh needs to be reconstructed
 	virtual void BuildMesh() = 0;
 
-	// updates selection state (just call's owning object's UpdateSelection())
-	virtual void UpdateSelection();
-
 public: // node interface
 
 	// access node data
@@ -87,6 +84,9 @@ public:
 
 	// get the local node position
 	vec3d NodeLocalPosition(int i) const;
+
+	// get the edge center
+	vec3d EdgeCenter(FSEdge& e) const;
 
 	// update the bounding box
 	void UpdateBoundingBox();

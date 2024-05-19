@@ -90,6 +90,8 @@ void CModelSearch::onItemClicked(QTableWidgetItem* item)
 	}
 	else
 		m_view->SetCurrentItem(-1);
+
+	emit itemChanged();
 }
 
 void CModelSearch::onItemDoubleClicked(QTableWidgetItem* item)

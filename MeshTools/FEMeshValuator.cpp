@@ -136,9 +136,14 @@ void FEMeshValuator::Evaluate(int nfield)
 				if (el.IsVisible())
 				{
 					try {
-						double val = EvaluateElement(i, nfield);
-						data.SetElementValue(i, val);
-						data.SetElementDataTag(i, 1);
+						int err = 0;
+						double val = EvaluateElement(i, nfield, &err);
+						if (err == 0)
+						{
+							data.SetElementValue(i, val);
+							data.SetElementDataTag(i, 1);
+						}
+						else data.SetElementDataTag(i, 0);
 					}
 					catch (...)
 					{
@@ -266,7 +271,10 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		if (el.IsShell()) val = FEMeshMetrics::ShellArea(m_mesh, el);
 		break;
 	case TET_QUALITY:
-		val = FEMeshMetrics::TetQuality(m_mesh, el);
+		if (el.IsType(FE_TET4) || el.IsType(FE_TET10))
+			val = FEMeshMetrics::TetQuality(m_mesh, el);
+		else
+			if (err) *err = 1;
 		break;
 	case TET_MIN_DIHEDRAL_ANGLE:
 		val = FEMeshMetrics::TetMinDihedralAngle(m_mesh, el);

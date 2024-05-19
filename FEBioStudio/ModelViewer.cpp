@@ -156,16 +156,19 @@ FSObject* CModelViewer::GetCurrentObject()
 
 void CModelViewer::UpdateObject(FSObject* po)
 {
-	ui->tree->UpdateObject(po);
-
-	if (po && (po == m_currentObject))
+	if (ui->tree->isVisible())
 	{
-		QTreeWidgetItem* current = ui->tree->currentItem();
-		if (current)
+		ui->tree->UpdateObject(po);
+
+		if (po && (po == m_currentObject))
 		{
-			int n = current->data(0, Qt::UserRole).toInt();
-			assert(ui->tree->m_data[n].obj == m_currentObject);
-			SetCurrentItem(n);
+			QTreeWidgetItem* current = ui->tree->currentItem();
+			if (current)
+			{
+				int n = current->data(0, Qt::UserRole).toInt();
+				assert(ui->tree->m_data[n].obj == m_currentObject);
+				SetCurrentItem(n);
+			}
 		}
 	}
 }
@@ -202,6 +205,12 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 	{
 		ui->tree->UpdateItem(current);
 	}
+	emit currentObjectChanged(po);
+}
+
+void CModelViewer::on_modelSearch_itemChanged()
+{
+	FSObject* po = GetCurrentObject();
 	emit currentObjectChanged(po);
 }
 
@@ -372,6 +381,16 @@ void CModelViewer::on_syncButton_clicked()
 void CModelViewer::on_refreshButton_clicked()
 {
 	Update(false);
+}
+
+bool CModelViewer::IsHighlightSelectionEnabled() const
+{
+	return ui->highlightButton->isChecked();
+}
+
+void CModelViewer::on_highlightButton_toggled(bool b)
+{
+	emit currentObjectChanged(GetCurrentObject());
 }
 
 void CModelViewer::on_selectButton_clicked()

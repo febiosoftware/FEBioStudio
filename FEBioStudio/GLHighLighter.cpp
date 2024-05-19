@@ -30,74 +30,86 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
 
-GLHighlighter GLHighlighter::m_This;
+GLHighlighter GLHighlighter::This;
 
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
-	m_activeColor = GLColor(0, 255, 255);
-	m_pickColor   = GLColor(0, 0, 255);
+	m_activeColor = GLColor(100, 255, 255);
+	m_pickColor[0] = GLColor(0, 200, 200);
+	m_pickColor[1] = GLColor(200, 0, 200);
 }
 
 void GLHighlighter::AttachToView(CGLView* view)
 {
-	m_This.m_view = view;
-	if (view) view->repaint();
+	This.m_view = view;
+	if (view) view->update();
 }
 
 void GLHighlighter::SetActiveItem(GItem* item)
 {
-	if (item != m_This.m_activeItem)
+	if (item != This.m_activeItem)
 	{
-		m_This.m_activeItem = item;
-		if (m_This.m_view) m_This.m_view->repaint();
-		emit m_This.activeItemChanged();
+		This.m_activeItem = item;
+		if (This.m_view) This.m_view->update();
+//		emit This.activeItemChanged(); // doesn't look anything is listening so why send it?
 	}
 }
 
 void GLHighlighter::PickActiveItem()
 {
-	GItem* pick = m_This.m_activeItem;
+	GItem* pick = This.m_activeItem;
 	
 	// make sure this item is not already picked
-	for (int i=0; i<(int)m_This.m_item.size(); ++i)
-		if (m_This.m_item[i] == pick) return;
+	for (int i=0; i<(int)This.m_item.size(); ++i)
+		if (This.m_item[i].item == pick) return;
 
-	m_This.m_activeItem = 0;
-	m_This.m_item.push_back(pick);
-	if (m_This.m_view) m_This.m_view->repaint();
-	emit m_This.itemPicked(pick);
+	This.m_activeItem = nullptr;
+	This.m_item.push_back({ pick, 0 });
+	if (This.m_view) This.m_view->update();
+	emit This.itemPicked(pick);
 }
 
-void GLHighlighter::PickItem(GItem* item)
+void GLHighlighter::PickItem(GItem* item, int colorMode)
 {
 	if (item == 0) return;
 	
 	// make sure this item is not already picked
-	for (int i = 0; i<(int)m_This.m_item.size(); ++i)
-		if (m_This.m_item[i] == item) return;
+	for (int i = 0; i<(int)This.m_item.size(); ++i)
+		if (This.m_item[i].item == item) return;
 
-	m_This.m_activeItem = 0;
-	m_This.m_item.push_back(item);
-	emit m_This.itemPicked(item);
+	This.m_activeItem = 0;
+	This.m_item.push_back({ item, colorMode });
+	emit This.itemPicked(item);
 }
 
+void GLHighlighter::PickItem(FSGroup* item, int colorMode)
+{
+	if (item == nullptr) return;
+
+	// make sure this item is not already picked
+	for (int i = 0; i < (int)This.m_item.size(); ++i)
+		if (This.m_item[i].item == item) return;
+
+	This.m_activeItem = nullptr;
+	This.m_item.push_back({ item, colorMode });
+}
 
 GItem* GLHighlighter::GetActiveItem()
 { 
-	return m_This.m_activeItem; 
+	return This.m_activeItem; 
 }
 
 QString GLHighlighter::GetActiveItemName()
 {
-	if (m_This.m_activeItem) return QString::fromStdString(m_This.m_activeItem->GetName());
+	if (This.m_activeItem) return QString::fromStdString(This.m_activeItem->GetName());
 	else return QString("");
 }
 
 void GLHighlighter::ClearHighlights()
 {
-	m_This.m_item.clear();
-	m_This.m_activeItem = nullptr;
-	if (m_This.m_view) m_This.m_view->repaint();
+	This.m_item.clear();
+	This.m_activeItem = nullptr;
+	if (This.m_view) This.m_view->update();
 }
 
 void GLHighlighter::setHighlightType(int type)
@@ -107,13 +119,13 @@ void GLHighlighter::setHighlightType(int type)
 
 void GLHighlighter::setTracking(bool b)
 {
-	m_This.m_btrack = b;
-	if (m_This.m_view) m_This.m_view->repaint();
+	This.m_btrack = b;
+	if (This.m_view) This.m_view->update();
 }
 
 bool GLHighlighter::IsTracking()
 {
-	return m_This.m_btrack;
+	return This.m_btrack;
 }
 
 void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
@@ -170,12 +182,132 @@ void drawNode(GLMeshRender& renderer, GNode* node, GLColor c)
 	glPopMatrix();
 }
 
+void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(face->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
+		renderer.RenderGLMesh(mesh, face->GetLocalID());
+		renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
+		renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), face->GetLocalID());
+	}
+	glPopAttrib();
+
+	glPopMatrix();
+}
+
+void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(part->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+
+	int pid = part->GetLocalID();
+
+	// TODO: Make sure that the part's face list is populated!
+//	if (part->Faces() == 0) return;
+	vector<int> faceList; faceList.reserve(po->Faces());
+	for (int i = 0; i < po->Faces(); ++i)
+	{
+		GFace* face = po->Face(i);
+		if ((face->m_nPID[0] == pid) || (face->m_nPID[1] == pid)) faceList.push_back(i);
+	}
+	if (faceList.empty()) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		for (int surfID : faceList)
+		{
+			renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
+			renderer.RenderGLMesh(mesh, surfID);
+			renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
+			renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), surfID);
+		}
+	}
+	glPopAttrib();
+
+	glPopMatrix();
+}
+
+void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c)
+{
+	FSMesh* mesh = nodeSet->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	int NF = nodeSet->size();
+	if (NF == 0) return;
+
+	glPushMatrix();
+	SetModelView(po);
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		std::vector<int> nodeList = nodeSet->CopyItems();
+		renderer.RenderFENodes(*mesh, nodeList);
+	}
+	glPopAttrib();
+
+	glPopMatrix();
+}
+
+void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLColor c)
+{
+	FSMesh* mesh = surf->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	int NF = surf->size();
+	if (NF == 0) return;
+
+	glPushMatrix();
+	SetModelView(po);
+	renderer.PushState();
+	{
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(c.r, c.g, c.b);
+		std::vector<int> faceList = surf->CopyItems();
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		renderer.RenderFEFaces(mesh, faceList);
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		renderer.RenderFEFacesOutline(mesh, faceList);
+	}
+	renderer.PopState();
+
+	glPopMatrix();
+}
+
 void GLHighlighter::draw()
 {
-	if (m_This.m_item.empty() && (m_This.m_activeItem == 0)) return;
+	if (This.m_item.empty() && (This.m_activeItem == 0)) return;
 
-	CGLView* view = m_This.m_view;
+	CGLView* view = This.m_view;
 	if (view == 0) return;
+
+	CGLContext rc;
+	rc.m_view = view;
+	rc.m_cam = view->GetCamera();
+	rc.m_settings = view->GetViewSettings();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -188,24 +320,118 @@ void GLHighlighter::draw()
 
 	GLMeshRender renderer;
 
-    for (GItem* item : m_This.m_item)
+	for (Item& item : This.m_item)
 	{
-		GEdge* edge = dynamic_cast<GEdge*>(item);
-		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
+		FSObject* it = item.item;
+		GLColor& c = This.m_pickColor[item.color];
+		GEdge* edge = dynamic_cast<GEdge*>(it);
+		if (edge) drawEdge(renderer, edge, c);
 
-		GNode* node = dynamic_cast<GNode*>(item);
-		if (node) drawNode(renderer, node, m_This.m_pickColor);
+		GNode* node = dynamic_cast<GNode*>(it);
+		if (node) drawNode(renderer, node, c);
+
+		GFace* face = dynamic_cast<GFace*>(it);
+		if (face) drawFace(rc, renderer, face, c);
+
+		GPart* part = dynamic_cast<GPart*>(it);
+		if (part) drawPart(rc, renderer, part, c);
+
+		FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(it);
+		if (nodeSet) drawFENodeSet(rc, renderer, nodeSet, c);
+
+		FSSurface* surf = dynamic_cast<FSSurface*>(it);
+		if (surf) drawFESurface(rc, renderer, surf, c);
 	}
 
-	if (m_This.m_activeItem)
+	if (This.m_activeItem)
 	{
-		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
-		if (edge) drawEdge(renderer, edge, m_This.m_activeColor);
+		GEdge* edge = dynamic_cast<GEdge*>(This.m_activeItem);
+		if (edge) drawEdge(renderer, edge, This.m_activeColor);
 
-		GNode* node = dynamic_cast<GNode*>(m_This.m_activeItem);
-		if (node) drawNode(renderer, node, m_This.m_activeColor);
+		GNode* node = dynamic_cast<GNode*>(This.m_activeItem);
+		if (node) drawNode(renderer, node, This.m_activeColor);
+
+		GFace* face = dynamic_cast<GFace*>(This.m_activeItem);
+		if (face) drawFace(rc, renderer, face, This.m_activeColor);
+
+		GPart* part = dynamic_cast<GPart*>(This.m_activeItem);
+		if (part) drawPart(rc, renderer, part, This.m_activeColor);
 	}
 	glLineWidth(line_old);
 
 	glPopAttrib();
+}
+
+BOX GLHighlighter::GetBoundingBox()
+{
+	BOX box;
+	for (Item& item : This.m_item)
+	{
+		FSObject* it = item.item;
+		GNode* node = dynamic_cast<GNode*>(it);
+		if (node)
+		{
+			box += node->Position();
+		}
+
+		GEdge* edge = dynamic_cast<GEdge*>(it);
+		if (edge)
+		{
+			GNode* n0 = edge->Node(0);
+			GNode* n1 = edge->Node(1);
+			if (n0) box += n0->Position();
+			if (n1) box += n1->Position();
+		}
+
+		GFace* face = dynamic_cast<GFace*>(it);
+		if (face)
+		{
+			GObject* po = dynamic_cast<GObject*>(face->Object());
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				for (int i=0; i<m->Faces(); ++i)
+				{ 
+					GMesh::FACE& f = m->Face(i);
+					if (f.pid == face->GetLocalID())
+					{
+						vec3d r0 = to_vec3d(m->Node(f.n[0]).r); box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = to_vec3d(m->Node(f.n[1]).r); box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = to_vec3d(m->Node(f.n[2]).r); box += po->GetTransform().LocalToGlobal(r2);
+					}
+				}
+			}
+		}
+
+		GPart* part = dynamic_cast<GPart*>(it);
+		if (part)
+		{
+			GObject* po = dynamic_cast<GObject*>(part->Object());
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				int pid = part->GetLocalID();
+				for (int i = 0; i < m->Faces(); ++i)
+				{
+					GMesh::FACE& f = m->Face(i);
+					GFace* face = po->Face(f.pid);
+					if ((face->m_nPID[0] == pid) || 
+						(face->m_nPID[1] == pid) ||
+						(face->m_nPID[2] == pid))
+					{
+						vec3d r0 = to_vec3d(m->Node(f.n[0]).r); box += po->GetTransform().LocalToGlobal(r0);
+						vec3d r1 = to_vec3d(m->Node(f.n[1]).r); box += po->GetTransform().LocalToGlobal(r1);
+						vec3d r2 = to_vec3d(m->Node(f.n[2]).r); box += po->GetTransform().LocalToGlobal(r2);
+					}
+				}
+			}
+		}
+	}
+
+	return box;
+}
+
+std::vector<GLHighlighter::Item> GLHighlighter::GetItems()
+{
+	return This.m_item;
 }

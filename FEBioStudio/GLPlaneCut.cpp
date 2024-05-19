@@ -42,18 +42,29 @@ extern int LUT[256][15];
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
 
-void GLPlaneCut::BuildPlaneCut(FSModel& fem)
+GLPlaneCut::GLPlaneCut()
+{
+
+}
+
+void GLPlaneCut::Clear() 
+{ 
+	delete m_planeCut; 
+	m_planeCut = nullptr; 
+}
+
+bool GLPlaneCut::IsValid() const 
+{ 
+	return (m_planeCut != nullptr); 
+}
+
+void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 {
 	GModel& mdl = fem.GetModel();
-	GLViewSettings& vs = m_glview->GetViewSettings();
-	GObject* poa = m_glview->GetActiveObject();
+	GObject* poa = mdl.GetActiveObject();
 	double vmin, vmax;
 
 	if (mdl.Objects() == 0) return;
-
-	// set the plane normal
-	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
-	double ref = -m_plane[3];
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
@@ -61,7 +72,8 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 	m_planeCut = new GMesh;
 	GMesh* planeCut = m_planeCut;
 
-	Post::CColorMap& colormap = m_glview->GetColorMap();
+	// TODO: swith to texture
+	Post::CColorMap colormap;
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -74,11 +86,25 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 			int en[8];
 			GLColor ec[8];
 
+			const Transform& T = po->GetTransform();
+
+			// set the plane normal
+			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
+			double l = norm.Length(); if (l == 0) l = 1;
+			norm.Normalize();
+			double ref = -m_plane[3]/l;
+			vec3d o = norm * ref;
+
+			// convert to local
+			norm = T.GlobalToLocalNormal(norm);
+			o = T.GlobalToLocal(o);
+			ref = norm * o;
+
 			bool showContour = false;
 			Mesh_Data& data = mesh->GetMeshData();
-			if ((po == poa) && (vs.m_bcontour))
+			if ((po == poa) && (showMeshData))
 			{
-				showContour = (vs.m_bcontour && data.IsValid());
+				showContour = (showMeshData && data.IsValid());
 				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
 			}
 
@@ -91,10 +117,9 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 			{
 				// render only when visible
 				FSElement& el = mesh->Element(i);
-				GPart* pg = po->Part(el.m_gid);
-				if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
+				if (el.IsVisible() && el.IsSolid())
 				{
-					int mid = pg->GetMaterialID();
+					int mid = el.m_MatID;
 					if (mid != matId)
 					{
 						GMaterial* pmat = fem.GetMaterialFromID(mid);
@@ -106,7 +131,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 						else
 						{
 							matId = -1;
-							c = defaultColor;
+							c = po->GetColor();
 						}
 					}
 
@@ -134,7 +159,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 					for (int k = 0; k < 8; ++k)
 					{
 						FSNode& node = mesh->Node(el.m_node[nt[k]]);
-						ex[k] = mesh->LocalToGlobal(node.r);
+						ex[k] = node.r;
 						en[k] = el.m_node[nt[k]];
 					}
 
@@ -145,7 +170,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 							if (data.GetElementDataTag(i) > 0)
 								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
 							else
-								ec[k] = GLColor(212, 212, 212);
+								ec[k] = defaultColor;
 						}
 					}
 
@@ -162,7 +187,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 						if (*pf == -1) break;
 
 						// calculate nodal positions
-						vec3d r[3];
+						vec3f r[3];
 						float w1, w2, w;
 						for (int k = 0; k < 3; k++)
 						{
@@ -177,7 +202,8 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 							else
 								w = 0.f;
 
-							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+							vec3d rk = ex[n1] * (1 - w) + ex[n2] * w;
+							r[k] = to_vec3f(T.LocalToGlobal(rk));
 						}
 
 						int nf = planeCut->Faces();
@@ -266,7 +292,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render()
+void GLPlaneCut::Render(CGLContext& rc)
 {
 	if (m_planeCut == nullptr) return;
 
@@ -291,13 +317,14 @@ void GLPlaneCut::Render()
 	mr.SetFaceColor(false);
 	mr.RenderGLMesh(m_planeCut, 1);
 
-	if (m_glview->GetViewSettings().m_bmesh)
+	if (rc.m_settings.m_bmesh)
 	{
+		GLColor c = rc.m_settings.m_meshColor;
 		glDisable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(0, 0, 0);
+		glColor4ub(c.r, c.g, c.b, c.a);
 
-		CGLCamera& cam = *m_glview->GetCamera();
+		CGLCamera& cam = *rc.m_cam;
 		cam.LineDrawMode(true);
 		cam.PositionInScene();
 

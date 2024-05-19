@@ -265,6 +265,8 @@ public:
     void resizeEvent(QResizeEvent* resizeEvent) override;
     void moveEvent(QMoveEvent* moveEvent) override;
 
+	void EnablePasteButton(bool b);
+
 	static QRect preferredSize();
 	static void setPreferredSize(const QRect& rt);
 
@@ -365,7 +367,8 @@ private slots:
 	void on_selectPlot_currentIndexChanged(int);
 	void on_actionSave_triggered();
 	void on_actionAddToModel_triggered();
-	void on_actionClipboard_triggered();
+	void on_actionCopy_triggered();
+	void on_actionPaste_triggered();
 	void on_actionSnapshot_triggered();
 	void on_actionProps_triggered();
 	void on_actionZoomWidth_triggered();
@@ -374,6 +377,9 @@ private slots:
 	void on_plot_regionSelected(QRect rt);
 	void on_range_optionsChanged();
 	void on_dataSource_currentIndexChanged(int);
+
+protected:
+	virtual void PasteClipboardData() {}
 
 private:
 	CMainWindow*		m_wnd;
@@ -391,14 +397,16 @@ class CDataGraphWindow : public CGraphWindow
 public:
 	CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc);
 
-	void SetData(const CGraphData* data);
+	void SetData(CGraphData* data);
 
 	void Update(bool breset = true, bool bfit = false);
 
 	void closeEvent(QCloseEvent* ev);
 
+	void PasteClipboardData() override;
+
 private:
-	const CGraphData*	m_data;
+	CGraphData*	m_data;
 };
 
 //=================================================================================================

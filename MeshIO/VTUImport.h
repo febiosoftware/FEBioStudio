@@ -28,77 +28,19 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
-class XMLTag;
-class VTKDataArray;
-class VTKPiece;
-class VTKModel;
-class VTKAppendedData;
-
-// base class for VTK file readers
-class VTKFileReader : public FSFileImport
-{
-protected:
-	enum vtkFileType {
-		UnstructuredGrid,
-		PolyData
-	};
-
-	enum vtkByteOrder {
-		LittleEndian,
-		BigEndian
-	};
-
-	enum vtkCompressor {
-		NoCompression,
-		ZLibCompression
-	};
-
-	enum vtkDataType {
-		UInt32,
-		UInt64,
-		Float32
-	};
-
-protected:
-	VTKFileReader(FSProject& prj);
-
-protected:
-	bool ParseFileHeader(XMLTag& tag);
-	bool ParseUnstructuredGrid(XMLTag& tag, VTKModel& vtk);
-	bool ParsePolyData(XMLTag& tag, VTKModel& vtk);
-	bool ParsePiece(XMLTag& tag, VTKModel& vtk);
-	bool ParsePoints(XMLTag& tag, VTKPiece& piece);
-	bool ParseCells(XMLTag& tag, VTKPiece& piece);
-	bool ParsePolys(XMLTag& tag, VTKPiece& piece);
-	bool ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray);
-	bool ParseAppendedData(XMLTag& tag, VTKAppendedData& vtkAppendedData);
-	bool ProcessProcessDataArray(VTKDataArray& ar, VTKAppendedData& data);
-	bool ProcessDataArrays(VTKModel& vtk, VTKAppendedData& data);
-
-	bool BuildMesh(VTKModel& vtk);
-
-protected:
-	vtkFileType	m_type;
-	std::string m_version;
-	vtkByteOrder m_byteOrder;
-	vtkDataType m_headerType;
-	vtkCompressor m_compressor;
-};
-
 // reader for unstructured grid files
-class VTUimport : public VTKFileReader
+class VTUimport : public FSFileImport
 {
-
 public:
 	VTUimport(FSProject& prj);
-	bool Load(const char* szfile);
+	bool Load(const char* szfile) override;
 };
 
 // reader for polygon files
-class VTPimport : public VTKFileReader
+class VTPimport : public FSFileImport
 {
 
 public:
 	VTPimport(FSProject& prj);
-	bool Load(const char* szfile);
+	bool Load(const char* szfile) override;
 };

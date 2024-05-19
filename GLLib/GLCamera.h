@@ -177,6 +177,4 @@ private:
 	double	m_speed;
 	double	m_bias;
 	bool	m_bortho;
-
-	double	m_depthScale;	// depth scale for line drawing
 };

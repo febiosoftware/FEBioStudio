@@ -116,8 +116,8 @@ void CIntegrateWindow::UpdateIntegral()
 		// update based on current selection
 		IntegrateSelection(*data);
 
-		int nview = model->GetSelectionMode();
-		snprintf(sztitle, 256, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+		int nview = model->GetSelectionType();
+		snprintf(sztitle, 256, "%s of %s", (nview == SELECT_FE_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
 	}
 	else 
 	{
@@ -173,7 +173,7 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 	data.clear();
 
 	// get view mode
-	int nview = po->GetSelectionMode();
+	int nview = po->GetSelectionType();
 
 	// make sure the color map is active
 	if (po->GetColorMap()->IsActive())
@@ -194,18 +194,18 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 
 			if (m_nconf == 0)
 			{
-				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
-				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
-				else if (nview == Post::SELECT_FACES) res = IntegrateFaces(mesh, ps);
-				else if (nview == Post::SELECT_ELEMS) res = IntegrateElems(mesh, ps);
+				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == SELECT_FE_FACES) res = IntegrateFaces(mesh, ps);
+				else if (nview == SELECT_FE_ELEMS) res = IntegrateElems(mesh, ps);
 				else assert(false);
 			}
 			else
 			{
-				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
-				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
-				else if (nview == Post::SELECT_FACES) res = IntegrateReferenceFaces(mesh, ps);
-				else if (nview == Post::SELECT_ELEMS) res = IntegrateReferenceElems(mesh, ps);
+				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == SELECT_FE_FACES) res = IntegrateReferenceFaces(mesh, ps);
+				else if (nview == SELECT_FE_ELEMS) res = IntegrateReferenceElems(mesh, ps);
 				else assert(false);
 			}
 
@@ -290,8 +290,8 @@ void CIntegrateSurfaceWindow::UpdateIntegral()
 
 	IntegrateSelection(*dataX, *dataY, *dataZ);
 
-	int nview = model->GetSelectionMode();
-	snprintf(sztitle, 256, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+	int nview = model->GetSelectionType();
+	snprintf(sztitle, 256, "%s of %s", (nview == SELECT_FE_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
 
 	SetPlotTitle(sztitle);
 	dataX->setLabel("X"); AddPlotData(dataX);

@@ -135,6 +135,7 @@ BOX BOX::operator + (const BOX& b)
 //-----------------------------------------------------------------------------
 BOX& BOX::operator += (const BOX& b)
 {
+	if (!b.IsValid()) return *this;
 	if (m_valid)
 	{
 		x0 = MIN(x0, b.x0);
@@ -234,4 +235,24 @@ vec3d BOX::r0() const
 vec3d BOX::r1() const
 {
 	return vec3d(x1, y1, z1);
+}
+
+BOX LocalToGlobalBox(const BOX& box, const Transform& T)
+{
+	if (!box.IsValid()) return BOX();
+
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+
+	BOX globalBox;
+	globalBox += T.LocalToGlobal(vec3d(a.x, a.y, a.z));
+	globalBox += T.LocalToGlobal(vec3d(a.x, a.y, a.z));
+	globalBox += T.LocalToGlobal(vec3d(b.x, a.y, a.z));
+	globalBox += T.LocalToGlobal(vec3d(b.x, b.y, a.z));
+	globalBox += T.LocalToGlobal(vec3d(a.x, b.y, a.z));
+	globalBox += T.LocalToGlobal(vec3d(a.x, a.y, b.z));
+	globalBox += T.LocalToGlobal(vec3d(b.x, a.y, b.z));
+	globalBox += T.LocalToGlobal(vec3d(b.x, b.y, b.z));
+	globalBox += T.LocalToGlobal(vec3d(a.x, b.y, b.z));
+	return globalBox;
 }

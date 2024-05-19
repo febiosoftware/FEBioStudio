@@ -80,6 +80,16 @@ void ObjectData::push_back(vec3f f)
 	data[n+2] = f.z;
 }
 
+void ObjectData::push_back(mat3f f)
+{
+	int n = nsize;
+	append(9);
+	data[n    ] = f[0][0]; data[n + 1] = f[0][1]; data[n + 2] = f[0][2];
+	data[n + 3] = f[1][0]; data[n + 4] = f[1][1]; data[n + 5] = f[1][2];
+	data[n + 6] = f[2][0]; data[n + 7] = f[2][1]; data[n + 8] = f[2][2];
+}
+
+
 FERefState::FERefState(FEPostModel* fem)
 {
 
@@ -132,33 +142,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
-	int ptObjs = fem->PointObjects();
-	m_objPt.resize(ptObjs);
-	for (int i = 0; i < ptObjs; ++i)
-	{
-		OBJ_POINT_DATA& di = m_objPt[i];
-		Post::FEPostModel::PointObject& po = *fem->GetPointObject(i);
-
-		di.pos = po.m_pos;
-		di.rot = po.m_rot;
-
-		di.m_rt = po.m_rt;
-
-		int ndata = po.m_data.size();
-		di.data = new ObjectData;
-		for (int j = 0; j < ndata; ++j)
-		{
-			Post::PlotObjectData& dj = *po.m_data[j];
-
-			switch (dj.Type())
-			{
-			case DATA_SCALAR: di.data->push_back(0.f); break;
-			case DATA_VEC3: di.data->push_back(vec3f(0.f, 0.f, 0.f)); break;
-			default:
-				assert(false);
-			}
-		}
-	}
+	AddPointObjectData();
 
 	int lnObjs = fem->LineObjects();
 	m_objLn.resize(lnObjs);
@@ -203,6 +187,38 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	{
 		ModelDataField& d = *(*it);
 		m_Data.push_back(d.CreateData(this));
+	}
+}
+
+void FEState::AddPointObjectData()
+{
+	int ptObjs = m_fem->PointObjects();
+	m_objPt.resize(ptObjs);
+	for (int i = 0; i < ptObjs; ++i)
+	{
+		OBJ_POINT_DATA& di = m_objPt[i];
+		Post::FEPostModel::PointObject& po = *m_fem->GetPointObject(i);
+
+		di.pos = po.m_pos;
+		di.rot = po.m_rot;
+
+		di.m_rt = po.m_rt;
+
+		int ndata = po.m_data.size();
+		di.data = new ObjectData;
+		for (int j = 0; j < ndata; ++j)
+		{
+			Post::PlotObjectData& dj = *po.m_data[j];
+
+			switch (dj.Type())
+			{
+			case DATA_SCALAR: di.data->push_back(0.f); break;
+			case DATA_VEC3: di.data->push_back(vec3f(0.f, 0.f, 0.f)); break;
+			case DATA_MAT3: di.data->push_back(mat3f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f)); break;
+			default:
+				assert(false);
+			}
+		}
 	}
 }
 
