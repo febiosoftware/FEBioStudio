@@ -80,6 +80,7 @@ public:
 
 	void push_back(float f);
 	void push_back(vec3f f);
+	void push_back(mat3f f);
 
 	template <class T> T get(int n) { return *((T*)(data + off[n])); }
 
@@ -151,6 +152,8 @@ public:
 	OBJECTDATA& GetObjectData(int n);
 
 	void RebuildData();
+
+	void AddPointObjectData();
 
 public:
 	float	m_time;		// time value

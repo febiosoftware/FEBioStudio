@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/FEAreaCoverage.h>
+#include <MeshTools/FESelection.h>
 #include "DlgAddEquation.h"
 
 class CCurvatureProps : public CPropertyList
@@ -894,9 +895,9 @@ void CPostDataPanel::on_AddStandard_triggered()
 		Post::FEPostModel* fem = glm->GetFSModel();
 
 		vector<int> L;
-		if (glm->GetSelectionMode() == Post::SELECT_FACES)
+		if (glm->GetSelectionType() == SELECT_FE_FACES)
 		{
-			glm->GetSelectionList(L, Post::SELECT_FACES);
+			glm->GetSelectionList(L, SELECT_FE_FACES);
 		}
 
 		if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)

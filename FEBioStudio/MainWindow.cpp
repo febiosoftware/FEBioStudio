@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
+#include "GLModelScene.h"
 
 extern GLColor col[];
 
@@ -575,6 +576,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("vtu" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("vtm" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
@@ -1035,8 +1038,18 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
-			Post::VTKimport* vtk = new Post::VTKimport(doc->GetFSModel());
+			Post::VTKImport* vtk = new Post::VTKImport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("vtu", Qt::CaseInsensitive) == 0)
+		{
+			Post::VTUImport* vtu = new Post::VTUImport(doc->GetFSModel());
+			ReadFile(doc, fileName, vtu, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("vtm", Qt::CaseInsensitive) == 0)
+		{
+			Post::VTMImport* vtm = new Post::VTMImport(doc->GetFSModel());
+			ReadFile(doc, fileName, vtm, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
 		{
@@ -1444,7 +1457,7 @@ void CMainWindow::autosave()
 void CMainWindow::autoUpdateCheck(bool update)
 {
 	ui->m_updateAvailable = update;
-    ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
+	ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
 	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n != -1)
@@ -1455,11 +1468,11 @@ void CMainWindow::autoUpdateCheck(bool update)
 
 void CMainWindow::ReportSelection()
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
 		FESelection* sel = doc->GetCurrentSelection();
-		if ((sel == 0) || (sel->Size() == 0))
+		if ((sel == nullptr) || (sel->Size() == 0))
 		{
 			ClearStatusMessage();
 			return;
@@ -1549,7 +1562,7 @@ void CMainWindow::ReportSelection()
 			else msg = QString("%1 discrete objects selected").arg(N);
 		}
 		break;
-		case SELECT_FE_ELEMENTS:
+		case SELECT_FE_ELEMS:
 		{
 			msg = QString("%1 elements selected").arg(N);
 		}
@@ -1580,7 +1593,7 @@ void CMainWindow::ReportSelection()
 			{
 				FSMesh* pm = es->GetMesh();
 				FEElement_* el = es->Element(0);
-				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementID(0) + 1);
+				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementIndex(0) + 1);
 				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
 				switch (el->Type())
@@ -1641,13 +1654,13 @@ void CMainWindow::ReportSelection()
                     AddLogEntry("  nodal values: ");
                     for (int i = 0; i < n; ++i)
                     {
-                        AddLogEntry(QString::number(data.GetElementValue(es->ElementID(0), i)));
+                        AddLogEntry(QString::number(data.GetElementValue(es->ElementIndex(0), i)));
                         if (i < n - 1) AddLogEntry(", ");
                         else AddLogEntry("\n");
                     }
 
                     AddLogEntry("  avg value: ");
-                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementID(0))) + "\n");
+                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementIndex(0))) + "\n");
                 }
 			}
 		}
@@ -1680,77 +1693,6 @@ void CMainWindow::ReportSelection()
 					else AddLogEntry("\n");
 				}
 			}
-		}
-	}
-
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc && postDoc->IsValid())
-	{
-		Post::CGLModel* mdl = postDoc->GetGLModel();
-		int mode = mdl->GetSelectionMode();
-		switch (mode)
-		{
-		case Post::SELECT_NODES:
-		{
-			std::vector<FSNode*> sel = mdl->GetNodeSelection();
-			AddLogEntry(QString("%1 node(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_EDGES:
-		{
-			std::vector<FSEdge*> sel = mdl->GetEdgeSelection();
-			AddLogEntry(QString("%1 edge(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_FACES:
-		{
-			std::vector<FSFace*> sel = mdl->GetFaceSelection();
-			if (sel.size() == 1)
-			{
-				FSFace* f = sel[0];
-				if (f)
-				{
-					vec3f n = f->m_fn;
-					QString stype;
-					switch (f->Type())
-					{
-					case FE_FACE_TRI3 : stype = "TRI3" ; break;
-					case FE_FACE_QUAD4: stype = "QUAD4"; break;
-					case FE_FACE_TRI6 : stype = "TRI6" ; break;
-					case FE_FACE_TRI7 : stype = "TRI7" ; break;
-					case FE_FACE_QUAD8: stype = "QUAD8"; break;
-					case FE_FACE_QUAD9: stype = "QUAD9"; break;
-					case FE_FACE_TRI10: stype = "TRI10"; break;
-					default:
-						assert(false);
-						stype = "(unknown)";
-					}
-					QString nodeList;
-					int nn = f->Nodes();
-					for (int i = 0; i < nn; ++i)
-					{
-						nodeList.append(QString::number(f->n[i] + 1));
-						if (i < nn - 1) nodeList.append(", ");
-					}
-					AddLogEntry("1 face selected:\n");
-					AddLogEntry(QString("  ID    : %1\n").arg(f->GetID()));
-					AddLogEntry(QString("  type  : %1\n").arg(stype));
-					AddLogEntry(QString("  nodes : %1\n").arg(nodeList));
-					AddLogEntry(QString("  normal: %1, %2, %3\n").arg(n.x).arg(n.y).arg(n.z));
-				}
-			}
-			else
-			{
-				AddLogEntry(QString("%1 faces selected\n").arg(sel.size()));
-			}
-		}
-		break;
-		case Post::SELECT_ELEMS:
-		{
-			std::vector<FEElement_*> sel = mdl->GetElementSelection();
-			AddLogEntry(QString("%1 element(s) selected\n").arg(sel.size()));
-		}
-		break;
 		}
 	}
 }
@@ -1959,7 +1901,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-		settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
+		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -2093,7 +2035,9 @@ void CMainWindow::readSettings()
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
 		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
 		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-		vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
+		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
+		// alpha component used to not be stored so set it to default if zero
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -2505,6 +2449,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		else it++;
 	}
 
+	// clear highlights, just to be safe
+	GLHighlighter::ClearHighlights();
+
 	ui->ShowDefaultBackground();
 	ui->centralWidget->xmlEdit->setDocument(nullptr);
 
@@ -2762,14 +2709,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
 		menu.addAction(display->menuAction());
 
-		QMenu* colorMode = new QMenu("Color mode");
-		a = colorMode->addAction("Default"         ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
-		a = colorMode->addAction("By object"       ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
-		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
-		a = colorMode->addAction("By element type" ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
-		a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
-		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
-		menu.addAction(colorMode->menuAction());
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene)
+		{
+			OBJECT_COLOR_MODE mode = scene->ObjectColorMode();
+			QMenu* colorMode = new QMenu("Color mode");
+			a = colorMode->addAction("Default"         ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
+			a = colorMode->addAction("By object"       ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
+			a = colorMode->addAction("By material type"); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
+			a = colorMode->addAction("By element type" ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
+			a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+			menu.addAction(colorMode->menuAction());
+		}
 
 		menu.addSeparator();
 
@@ -2838,13 +2790,17 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
 
-	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
-	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
-	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
-	else if (ac->text() == "By element type" ) vs.m_objectColor = OBJECT_COLOR_MODE::FSELEMENT_TYPE;
-	else if (ac->text() == "By physics"      ) vs.m_objectColor = OBJECT_COLOR_MODE::PHYSICS_TYPE;
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+	if (scene == nullptr) return;
+
+	if      (ac->text() == "Default"         ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
+	else if (ac->text() == "By object"       ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
+	else if (ac->text() == "By material type") scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
+	else if (ac->text() == "By element type" ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+	else if (ac->text() == "By physics"      ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
 
 	RedrawGL();
 }
@@ -3393,8 +3349,9 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 void CMainWindow::onShowPartSelector()
 {
 	CModelDocument* doc = GetModelDocument();
-	CDlgPartSelector dlg(doc, this);
-	dlg.exec();
+	if (doc->GetSelectionMode() != SELECT_PART)
+		on_actionSelectParts_toggled(true);
+	ui->showPartSelector(doc);
 }
 
 void CMainWindow::checkJobProgress()
@@ -3503,10 +3460,107 @@ void CMainWindow::UpdateProgress(int n)
 	ui->progressBar->setValue(n);
 }
 
-
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
+
+	GLHighlighter::ClearHighlights();
+	if (ui->modelViewer->IsHighlightSelectionEnabled())
+	{
+		IHasItemLists* il = dynamic_cast<IHasItemLists*>(po);
+		if (il)
+		{
+			int itemLists = il->ItemLists();
+			for (int i = 0; i < itemLists; ++i)
+			{
+				int colorMode = (i == 0 ? 0 : 1);
+				FEItemListBuilder* pg = il->GetItemList(i);
+				GPartList* partList = dynamic_cast<GPartList*>(pg);
+				if (partList)
+				{
+					vector<GPart*> parts = partList->GetPartList();
+					for (GPart* part : parts)
+						GLHighlighter::PickItem(part, colorMode);
+				}
+
+				GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+				if (faceList)
+				{
+					vector<GFace*> faces = faceList->GetFaceList();
+					for (GFace* face : faces)
+						GLHighlighter::PickItem(face, colorMode);
+				}
+
+				GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+				if (edgeList)
+				{
+					vector<GEdge*> edges = edgeList->GetEdgeList();
+					for (GEdge* edge : edges)
+						GLHighlighter::PickItem(edge, colorMode);
+				}
+
+				GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+				if (nodeList)
+				{
+					vector<GNode*> nodes = nodeList->GetNodeList();
+					for (GNode* node : nodes)
+						GLHighlighter::PickItem(node, colorMode);
+				}
+
+				FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+				if (meshSelection)
+				{
+					GLHighlighter::PickItem(meshSelection, colorMode);
+				}
+			}
+		}
+		else if (dynamic_cast<FEItemListBuilder*>(po))
+		{
+			FEItemListBuilder* pg = dynamic_cast<FEItemListBuilder*>(po);
+			GPartList* partList = dynamic_cast<GPartList*>(pg);
+			if (partList)
+			{
+				vector<GPart*> parts = partList->GetPartList();
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part);
+			}
+
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pg);
+			if (faceList)
+			{
+				vector<GFace*> faces = faceList->GetFaceList();
+				for (GFace* face : faces)
+					GLHighlighter::PickItem(face);
+			}
+
+			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(pg);
+			if (edgeList)
+			{
+				vector<GEdge*> edges = edgeList->GetEdgeList();
+				for (GEdge* edge : edges)
+					GLHighlighter::PickItem(edge);
+			}
+
+			GNodeList* nodeList = dynamic_cast<GNodeList*>(pg);
+			if (nodeList)
+			{
+				vector<GNode*> nodes = nodeList->GetNodeList();
+				for (GNode* node : nodes)
+					GLHighlighter::PickItem(node);
+			}
+
+			FSGroup* meshSelection = dynamic_cast<FSGroup*>(pg);
+			if (meshSelection)
+			{
+				GLHighlighter::PickItem(meshSelection);
+			}
+		}
+		else if (dynamic_cast<GItem*>(po))
+		{
+			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
+		}
+	}
+	RedrawGL();
 }
 
 void CMainWindow::toggleOrtho()

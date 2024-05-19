@@ -554,6 +554,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			}
 		}
 	}
+	m_po->UpdateFEElementMatIDs();
 
 	return true;
 }

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FEMeshBuilder.h>
 #include <FEBioLink/FEBioClass.h>
+#include <VTKLib/VTKLegacyFileReader.h>
 #include <QDir>
 
 // in GMaterial.cpp
@@ -106,55 +107,30 @@ bool CImportSpringsTool::ReadFile()
 bool CImportSpringsTool::ReadVTKFile()
 {
 	std::string file = m_fileName.toStdString();
-	FILE* fp = fopen(file.c_str(), "rt");
-	if (fp == nullptr) return false;
+	VTK::vtkLegacyFileReader vtk;
+	if (!vtk.Load(file.c_str())) return false;
 
-	char szline[512] = { 0 };
-	int nid;
-	double r0[3], r1[3];
-	vector<vec3d> points;
-	int readMode = -1; // 0 = read nodes, 1 = read lines
-	while (!feof(fp))
+	const VTK::vtkPiece& piece = vtk.GetVTKModel().Piece(0);
+	size_t NP = piece.Points();
+	vector<vec3d> points(NP);
+	for (size_t i = 0; i < NP; ++i)
 	{
-		if (fgets(szline, 511, fp))
-		{
-			if (strstr(szline, "POINTS"))
-			{
-				int n = atoi(szline + 6);
-				points.reserve(n);
-				readMode = 0;
-			}
-			else if (strstr(szline, "LINES"))
-			{
-				int n = atoi(szline + 5);
-				readMode = 1;
-			}
-			else if (readMode == 0)
-			{
-				float r[9];
-				int nread = sscanf(szline, "%g%g%g%g%g%g%g%g%g", r, r+1, r+2, r+3, r+4, r+5, r+6, r+7, r+8);
-				for (int i = 0; i < nread; i += 3)
-				{
-					vec3d ri(r[i], r[i + 1], r[i + 2]);
-					points.push_back(ri);
-				}
-			}
-			else if (readMode == 1)
-			{
-				int n[3];
-				int nread = sscanf(szline, "%d%d%d", n, n + 1, n + 2);
-				if (nread == 3)
-				{
-					SPRING s;
-					s.r0 = points[n[1]];
-					s.r1 = points[n[2]];
+		VTK::vtkPoint p = piece.Point(i);
+		points[i] = vec3d(p.x, p.y, p.z);
+	}
 
-					m_springs.push_back(s);
-				}
-			}
+	size_t NC = piece.Cells();
+	for (size_t i = 0; i < NC; ++i)
+	{
+		VTK::vtkCell c = piece.Cell(i);
+		if (c.m_cellType == VTK::vtkCell::VTK_LINE)
+		{
+			SPRING s;
+			s.r0 = points[c.m_node[0]];
+			s.r1 = points[c.m_node[1]];
+			m_springs.push_back(s);
 		}
 	}
-	fclose(fp);
 
 	return true;
 }

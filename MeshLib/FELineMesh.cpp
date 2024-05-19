@@ -32,13 +32,6 @@ FSLineMesh::FSLineMesh() : m_pobj(0)
 }
 
 //-----------------------------------------------------------------------------
-void FSLineMesh::UpdateSelection()
-{
-	GObject* po = GetGObject();
-	if (po) po->UpdateSelection();
-}
-
-//-----------------------------------------------------------------------------
 // Tag all nodes
 void FSLineMesh::TagAllNodes(int ntag)
 {
@@ -88,6 +81,11 @@ vec3d FSLineMesh::NodePosition(int i) const
 vec3d FSLineMesh::NodeLocalPosition(int i) const
 {
 	return Node(i).r;
+}
+
+vec3d FSLineMesh::EdgeCenter(FSEdge& e) const
+{
+	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r) * 0.5f;
 }
 
 //-----------------------------------------------------------------------------

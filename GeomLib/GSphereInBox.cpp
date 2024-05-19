@@ -116,8 +116,7 @@ bool GSphereInBox::Update(bool b)
 		n.LocalPosition() = pos;
 	}
 
-	pm->UpdateBoundingBox();
-	pm->UpdateNormals();
+	pm->Update();
 
 	return true;
 }

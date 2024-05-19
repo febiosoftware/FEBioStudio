@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -269,23 +269,18 @@ if (WIN32)
 
     set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
-    # FindDependencies is already appending Release to the path -- (SM) Nope, looks like we do have to set this
-    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
-    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
-    #(SM) The ones below don't work
-    #set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR})
-    #set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR})
-
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        find_library(TEMP NAMES ${name} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Debug NO_DEFAULT_PATH)
+        list(APPEND FEBio_DEBUG_LIBS ${TEMP})
+        unset(TEMP CACHE)
     endforeach(name)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
+        find_library(TEMP NAMES ${name} 
+            PATHS ${FEBio_LIB_DIR} PATH_SUFFIXES Release NO_DEFAULT_PATH)
+        list(APPEND FEBio_RELEASE_LIBS ${TEMP})
+        unset(TEMP CACHE)
     endforeach(name)
 
     unset(FEBio_LIB_NAMES)
@@ -419,7 +414,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink VTKLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -655,7 +650,6 @@ target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
-
     foreach(name IN LISTS FEBio_RELEASE_LIBS)
         target_link_libraries(${FBS_BIN_NAME} optimized ${name})
     endforeach()

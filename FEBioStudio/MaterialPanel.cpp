@@ -385,6 +385,7 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 				mdl.ResetAllStates();
 				doc->UpdateFEModel(true);
 			}
+			doc->UpdateSelection(false);
 			GetMainWindow()->RedrawGL();
 		}
 	}

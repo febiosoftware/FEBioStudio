@@ -340,7 +340,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 				ca = cos(a*2.0*PI);
 				sa = sin(a*2.0*PI);
 
-				vec3d r = n.r - rc;
+				vec3d r = to_vec3d(n.r) - rc;
 
 				n.r.y =  r.y*ca + r.z*sa + rc.y;
 				n.r.z = -r.y*sa + r.z*ca + rc.z;
@@ -359,7 +359,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 				ca = cos(a*2.0*PI);
 				sa = sin(a*2.0*PI);
 
-				vec3d r = n.r - rc;
+				vec3d r = to_vec3d(n.r) - rc;
 
 				n.r.x =  r.x*ca + r.z*sa + rc.x;
 				n.r.z = -r.x*sa + r.z*ca + rc.z;
@@ -377,7 +377,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 				ca = cos(a*2.0*PI);
 				sa = sin(a*2.0*PI);
 
-				vec3d r = n.r - rc;
+				vec3d r = to_vec3d(n.r) - rc;
 
 				n.r.x =  r.x*ca + r.y*sa + rc.x;
 				n.r.y = -r.x*sa + r.y*ca + rc.y;
@@ -388,8 +388,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 		assert(false);
 	}
 
-	pm->UpdateNormals();
-	pm->UpdateBoundingBox();
+	pm->Update();
 
 	return 0;
 }
@@ -553,16 +552,15 @@ GMesh* GPinchModifier::BuildGMesh(GObject* po)
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
 		GMesh::NODE& node = pm->Node(i);
-		vec3d r = node.r - c;
+		vec3d r = to_vec3d(node.r) - c;
 		double w = fabs(r.*pa)/W;
 		if (w>1) w = 1;
 		w = w*w;
 		r.*pb *= w + (1-w)*s;
-		node.r = c + r;
+		node.r = to_vec3f(c + r);
 	}
 
-	pm->UpdateNormals();
-	pm->UpdateBoundingBox();
+	pm->Update();
 
 	return 0;
 }
@@ -713,17 +711,16 @@ GMesh* GBendModifier::BuildGMesh(GObject *po)
 
 	// apply modifier to GObject
 	int N = pm->Nodes();
-	vec3d r;
 	for (int i=0; i<N; ++i)
 	{
 		GMesh::NODE& node = pm->Node(i);
-		r = node.r - m_box.Center();
+		vec3d r = to_vec3d(node.r) - m_box.Center();
 		Apply(r);
-		node.r = r + m_box.Center();
+		node.r = to_vec3f(r + m_box.Center());
 	}
 	vec3d dr = m_box.Center() - m_rc;
-	for (int i=0; i<N; ++i) pm->Node(i).r -= dr;
-	pm->UpdateBoundingBox();
+	for (int i=0; i<N; ++i) pm->Node(i).r -= to_vec3f(dr);
+	pm->Update();
 
 	return 0;
 }
@@ -851,8 +848,6 @@ GMesh* GSkewModifier::BuildGMesh(GObject* po)
 
 	vec3d rc = box.Center();
 
-	vec3d r;
-
 	double (vec3d::*pl) = 0;
 	double (vec3d::*pr) = 0;
 	double d = 0;
@@ -867,13 +862,12 @@ GMesh* GSkewModifier::BuildGMesh(GObject* po)
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
 		GMesh::NODE& node = pm->Node(i);
-		r = node.r - rc;
+		vec3d r = to_vec3d(node.r) - rc;
 		r.*pl += a*(r.*pr)*d;
-		node.r = r + rc;
+		node.r = to_vec3f(r + rc);
 	}
 
-	pm->UpdateBoundingBox();
-	pm->UpdateNormals();
+	pm->Update();
 
 	return 0;
 }

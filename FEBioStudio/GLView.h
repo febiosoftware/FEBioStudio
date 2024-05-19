@@ -140,6 +140,8 @@ public:
 
 	void HighlightNode(int x, int y);
 	void HighlightEdge(int x, int y);
+	void HighlightSurface(int x, int y);
+	void HighlightPart(int x, int y);
 
 	bool SelectPivot(int x, int y);
 
@@ -281,7 +283,7 @@ public:
 	void AddRegionPoint(int x, int y);
 
 public:
-	void RenderPlaneCut();
+	void RenderPlaneCut(CGLContext& rc);
 
 	bool ShowPlaneCut();
 

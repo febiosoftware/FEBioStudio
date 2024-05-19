@@ -251,6 +251,10 @@ protected:
 	void LoadMeshDataGenerators(IArchive& ar);
 
 protected:
+	void BuildMLT();
+	void ClearMLT();
+
+protected:
 	GModel*					m_pModel;	//!< Model geometry
 	std::vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
 
@@ -262,7 +266,10 @@ protected:
 	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
 	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
 
-    bool m_skipGeometry; //!< Skip geometry section when loading file
+	std::vector<GMaterial*>	m_MLT;	// material look-up table
+	int m_MLT_offset;
+
+	bool m_skipGeometry; //!< Skip geometry section when loading file
 };
 
 //-----------------------------------------------------------------------------

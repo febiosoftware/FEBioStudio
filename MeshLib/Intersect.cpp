@@ -33,18 +33,17 @@ bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& inters
 {
 	const double tol = 0.01;
 
-	vec3d n1 = tri.r0;
-	vec3d n2 = tri.r1;
-	vec3d n3 = tri.r2;
-
-	vec3d r0 = ray.origin;
-	vec3d nn = ray.direction;
+	const vec3d& n1 = tri.r0;
+	const vec3d& n2 = tri.r1;
+	const vec3d& n3 = tri.r2;
 
 	// calculate the triangle normal
 	vec3d fn = tri.fn;
 	if (evalNormal) { fn = (n2 - n1) ^ (n3 - n1); fn.Normalize(); }
 
 	// find the intersection of the point with the plane
+	const vec3d& r0 = ray.origin;
+	const vec3d& nn = ray.direction;
 	if (fn*nn == 0.f) return false;
 	double l = fn*(n1 - r0) / (fn*nn);
 
@@ -56,12 +55,11 @@ bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& inters
 	vec3d e2 = n3 - n1;
 
 	double A[2][2] = { { e1*e1, e1*e2 }, { e2*e1, e2*e2 } };
-	double D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-	double Ai[2][2];
-	Ai[0][0] = (A[1][1]) / D;
-	Ai[1][1] = (A[0][0]) / D;
-	Ai[0][1] = -A[0][1] / D;
-	Ai[1][0] = -A[1][0] / D;
+	double Di = 1.0/(A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+	double Ai[2][2] = {
+		{  A[1][1] * Di, -A[0][1] * Di },
+		{ -A[1][0] * Di,  A[0][0] * Di}
+	};
 
 	vec3d E1 = e1*Ai[0][0] + e2*Ai[0][1];
 	vec3d E2 = e1*Ai[1][0] + e2*Ai[1][1];
@@ -247,9 +245,9 @@ bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q)
 	{
 		const GMesh::FACE& face = mesh.Face(i);
 
-		rn[0] = mesh.Node(face.n[0]).r;
-		rn[1] = mesh.Node(face.n[1]).r;
-		rn[2] = mesh.Node(face.n[2]).r;
+		rn[0] = to_vec3d(mesh.Node(face.n[0]).r);
+		rn[1] = to_vec3d(mesh.Node(face.n[1]).r);
+		rn[2] = to_vec3d(mesh.Node(face.n[2]).r);
 
 		bool bfound = false;
 		Triangle tri = { rn[0], rn[1], rn[2] };

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <PostGL/GLModel.h>
+#include "GLHighlighter.h"
 #include "CommandWindow.h"
 
 //-----------------------------------------------------------------------------
@@ -433,8 +434,15 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
-	else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
+	if (view.m_selectAndHide)
+	{
+		pcmd = new CCmdHideElements(po, selectedElements);
+	}
+	else
+	{
+		if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
+		else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
+	}
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -810,7 +818,8 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 		FSFace& face = mesh.Face(i);
 		if (badd) face.Select(); else face.Unselect();
 	}
-	mesh.UpdateSelection();
+	
+	pdoc->UpdateSelection(false);
 }
 
 void GLViewSelector::Finish()
@@ -961,32 +970,46 @@ void GLViewSelector::SelectFEElements(int x, int y)
 
 			if (!elemList.empty())
 			{
-				if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
-				else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+				if (view.m_selectAndHide)
+				{
+					pcmd = new CCmdHideElements(po, elemList);
+				}
+				else
+				{
+					if (m_bctrl) pcmd = new CCmdUnselectElements(pm, elemList);
+					else pcmd = new CCmdSelectElements(pm, elemList, m_bshift);
+				}
 			}
 		}
 		else
 		{
 			int num = (int)index;
-			if (m_bctrl)
-				pcmd = new CCmdUnselectElements(pm, &num, 1);
+			if (view.m_selectAndHide)
+			{
+				pcmd = new CCmdHideElements(po, { num });
+			}
 			else
 			{
-				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
-
-				// print value of currently selected element
-				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
-				if (postDoc && postDoc->IsValid())
+				if (m_bctrl)
+					pcmd = new CCmdUnselectElements(pm, &num, 1);
+				else
 				{
-					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
-					if (cmap && cmap->IsActive())
+					pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
+
+					// print value of currently selected element
+					CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+					if (postDoc && postDoc->IsValid())
 					{
-						Post::FEPostModel* fem = postDoc->GetFSModel();
-						Post::FEState* state = fem->CurrentState();
-						double val = state->m_ELEM[num].m_val;
-						FSElement& el = pm->Element(num);
-						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
-						CLogger::AddLogEntry(txt);
+						Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+						if (cmap && cmap->IsActive())
+						{
+							Post::FEPostModel* fem = postDoc->GetFSModel();
+							Post::FEState* state = fem->CurrentState();
+							double val = state->m_ELEM[num].m_val;
+							FSElement& el = pm->Element(num);
+							QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
+							CLogger::AddLogEntry(txt);
+						}
 					}
 				}
 			}
@@ -1258,9 +1281,9 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 
 		if (po->Face(face.pid)->IsVisible())
 		{
-			vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-			vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-			vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+			vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+			vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+			vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 			Triangle tri = { r0, r1, r2 };
 			if (IntersectTriangle(ray, tri, qtmp))
@@ -1345,9 +1368,17 @@ void GLViewSelector::SelectObjects(int x, int y)
 	string objName;
 	if (closestObject != 0)
 	{
-		if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
-		else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
 		objName = closestObject->GetName();
+		GLViewSettings& vs = m_glv->GetViewSettings();
+		if (vs.m_selectAndHide)
+		{
+			pcmd = new CCmdHideObject(closestObject, true);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
+			else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
+		}
 	}
 	else if ((m_bctrl == false) && (m_bshift == false))
 	{
@@ -1398,9 +1429,9 @@ void GLViewSelector::SelectParts(int x, int y)
 				{
 					GMesh::FACE& face = mesh->Face(j);
 
-					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-					vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
@@ -1449,10 +1480,18 @@ void GLViewSelector::SelectParts(int x, int y)
 	string partName;
 	if (closestPart != 0)
 	{
-		int index = closestPart->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
-		else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
 		partName = closestPart->GetName();
+		int index = closestPart->GetID();
+		GLViewSettings& vs = m_glv->GetViewSettings();
+		if (vs.m_selectAndHide)
+		{
+			pcmd = new CCmdHideParts(&model, closestPart);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
+			else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
+		}
 	}
 	else if ((m_bctrl == false) && (m_bshift == false))
 	{
@@ -1461,6 +1500,7 @@ void GLViewSelector::SelectParts(int x, int y)
 	}
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, partName);
 }
 
@@ -1505,9 +1545,9 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 					{
 						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
 						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
-						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r * 0.99999);
-						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r * 0.99999);
-						vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r * 0.99999);
+						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r * 0.99999));
+						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r * 0.99999));
+						vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r * 0.99999));
 
 						Triangle tri = { r0, r1, r2 };
 						if (IntersectTriangle(ray, tri, q))
@@ -1543,6 +1583,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
 }
 
@@ -1563,8 +1604,8 @@ GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform
 	{
 		GMesh::EDGE& edge = mesh->Edge(j);
 
-		vec3d r0 = T.LocalToGlobal(mesh->Node(edge.n[0]).r);
-		vec3d r1 = T.LocalToGlobal(mesh->Node(edge.n[1]).r);
+		vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
+		vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
 		double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
 		double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
@@ -1646,6 +1687,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, edgeName);
 }
 
@@ -1720,6 +1762,7 @@ void GLViewSelector::SelectNodes(int x, int y)
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 
 	// execute command
+	GLHighlighter::ClearHighlights();
 	if (pcmd) pdoc->DoCommand(pcmd, nodeName);
 }
 
@@ -2170,9 +2213,9 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -2193,7 +2236,7 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 				{
 					GMesh::NODE& node = mesh->Node(j);
 
-					vec3d r = po->GetTransform().LocalToGlobal(node.r);
+					vec3d r = po->GetTransform().LocalToGlobal(to_vec3d(node.r));
 					vec3d p = transform.WorldToScreen(r);
 					if (region.IsInside((int)p.x, (int)p.y))
 					{
@@ -2231,7 +2274,8 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	vector<int> selectedParts;
+	std::list<GPart*> selectedParts;
+	vector<int> selectedPartIds;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2242,9 +2286,9 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -2262,24 +2306,38 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 						bool bfound = false;
 						for (int k = 0; k < selectedParts.size(); ++k)
 						{
-							if (selectedParts[k] == pid)
+							if (selectedPartIds[k] == pid)
 							{
 								bfound = true;
 								break;
 							}
 						}
 
-						if (bfound == false) selectedParts.push_back(pid);
+						if (bfound == false)
+						{
+							selectedPartIds.push_back(pid);
+							selectedParts.push_back(part);
+						}
 					}
 				}
 			}
 		}
 	}
 
-	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedParts);
-	else pcmd = new CCmdSelectPart(&model, selectedParts, m_bshift);
-	if (pcmd) pdoc->DoCommand(pcmd);
+	if (!selectedParts.empty())
+	{
+		CCommand* pcmd = 0;
+		if (view.m_selectAndHide)
+		{
+			pcmd = new CCmdHideParts(&model, selectedParts);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedPartIds);
+			else pcmd = new CCmdSelectPart(&model, selectedPartIds, m_bshift);
+		}
+		if (pcmd) pdoc->DoCommand(pcmd);
+	}
 }
 
 void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
@@ -2313,9 +2371,9 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);

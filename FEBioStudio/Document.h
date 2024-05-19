@@ -51,13 +51,15 @@ SOFTWARE.*/
 #define TRANSFORM_SCALE		4
 
 //-----------------------------------------------------------------------------
-// Selection Modes
-#define SELECT_OBJECT	1
-#define SELECT_PART		2
-#define SELECT_FACE		3
-#define SELECT_EDGE		4
-#define SELECT_NODE		5
-#define SELECT_DISCRETE	6
+// see CGLDocument::GetSelectionMode()
+enum SelectionMode {
+	SELECT_OBJECT	= 1,
+	SELECT_PART		= 2,
+	SELECT_FACE		= 3,
+	SELECT_EDGE		= 4,
+	SELECT_NODE		= 5,
+	SELECT_DISCRETE	= 6
+};
 
 //-----------------------------------------------------------------------------
 // Selection Styles

@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QHeaderView>
 #include "ModelDocument.h"
+#include "GLHighlighter.h"
+#include "Commands.h"
 
 class CDlgPartSelector::UI
 {
@@ -72,9 +74,11 @@ public:
 
 		QPushButton* showAll = new QPushButton("Show All");
 		QPushButton* hideAll = new QPushButton("Hide All");
+		QPushButton* select  = new QPushButton("Select");
 		QHBoxLayout* hbtn = new QHBoxLayout;
 		hbtn->addWidget(showAll);
 		hbtn->addWidget(hideAll);
+		hbtn->addWidget(select);
 		hbtn->addStretch();
 
 		QVBoxLayout* l = new QVBoxLayout;
@@ -93,12 +97,16 @@ public:
 		connect(flt, &QLineEdit::textChanged, dlg, &CDlgPartSelector::onFilterChanged);
 		connect(showAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onShowAll);
 		connect(hideAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onHideAll);
+		connect(select, &QPushButton::clicked, dlg, &CDlgPartSelector::onSelect);
 	}
 
 	void addItem(Item& it, int index)
 	{
 		bool isVisible = it.pg->IsVisible();
+		bool isSelected = it.pg->IsSelected();
 		QTableWidgetItem* wi = new QTableWidgetItem(it.name);
+		QFont font = wi->font();
+		if (isSelected) { font.setBold(true); wi->setFont(font); }
 		wi->setData(Qt::UserRole, index);
 		wi->setCheckState(isVisible ? Qt::Checked : Qt::Unchecked);
 		list->setItem(index, 0, wi);
@@ -110,6 +118,14 @@ public:
 	{
 		gm = geom;
 		updateList();
+	}
+
+	void clear()
+	{
+		list->clear();
+		doc = nullptr;
+		gm = nullptr;
+		GLHighlighter::ClearHighlights();
 	}
 
 	void updateList()
@@ -215,37 +231,73 @@ public:
 		wnd->RedrawGL();
 	}
 
+	void selectParts()
+	{
+		vector<int> selectedParts;
+		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
+		for (auto it : selectedItems)
+		{
+			GPart* pg = getPart(it);
+			if (pg)
+			{
+				selectedParts.push_back(pg->GetID());
+			}
+		}
+
+		GLHighlighter::ClearHighlights();
+		doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), selectedParts, false));
+
+		updateList();
+	}
+
 	void updateSelection()
 	{
-		for (GPartIterator it(*gm); it.isValid(); ++it) it->UnSelect();
+		GLHighlighter::ClearHighlights();
 
 		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
 		for (auto it : selectedItems)
 		{
 			GPart* pg = getPart(it);
-			if (pg) pg->Select();
+			if (pg) GLHighlighter::PickItem(pg);
 		}
 
-		doc->UpdateSelection(false);
 		wnd->RedrawGL();
 	}
 };
 
-CDlgPartSelector::CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
+CDlgPartSelector::CDlgPartSelector(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
 {
 	setWindowTitle("Part Selector");
 	setMinimumSize(800, 600);
 	ui->setup(wnd, this);
+}
+
+void CDlgPartSelector::SetDocument(CModelDocument* doc)
+{
 	ui->doc = doc;
-
-	if (doc->GetSelectionMode() != SELECT_PART)
-		wnd->on_actionSelectParts_toggled(true);
-
 	if (doc)
 	{
 		GModel* gm = doc->GetGModel();
 		ui->buildList(gm);
 	}
+	else ui->clear();
+}
+
+void CDlgPartSelector::accept()
+{
+	ui->clear();
+	QDialog::accept();
+}
+
+void CDlgPartSelector::reject()
+{
+	ui->clear();
+	QDialog::reject();
+}
+
+void CDlgPartSelector::closeEvent(QCloseEvent* e)
+{
+	ui->clear();
 }
 
 void CDlgPartSelector::onItemClicked(QTableWidgetItem* it)
@@ -271,6 +323,11 @@ void CDlgPartSelector::onShowAll()
 void CDlgPartSelector::onHideAll()
 {
 	ui->hideAllParts();
+}
+
+void CDlgPartSelector::onSelect()
+{
+	ui->selectParts();
 }
 
 void CDlgPartSelector::onSelectionChanged()

@@ -587,6 +587,10 @@ void FSMesh::RebuildEdgeData()
 #ifndef NDEBUG
 	assert(ValidateEdges());
 #endif
+
+	// update edge-element connectivity
+	UpdateEdgeElementTable();
+
 	// mark the exterior edges
 	MarkExteriorEdges();
 
@@ -1034,6 +1038,49 @@ void FSMesh::UpdateFaceElementTable()
 	}
 
 	MarkExteriorFaces();
+}
+
+void FSMesh::UpdateEdgeElementTable()
+{
+	int NC = Edges();
+	int NE = Elements();
+	if ((NC == 0) || (NE == 0)) return;
+
+	// clear all edge-element connectivity
+	for (int i = 0; i < NC; ++i)
+	{
+		FSEdge& e = Edge(i);
+		e.m_elem = -1;
+	}
+
+	// first build the node element table
+	// TODO: Can we do this only once and store it on the mesh?
+	FSNodeElementList NET;
+	NET.Build(this);
+
+	for (int i = 0; i < NC; ++i)
+	{
+		FSEdge& edge = Edge(i);
+
+		int n0 = edge.n[0];
+		int nval = NET.Valence(n0);
+		for (int j = 0; j < nval; ++j)
+		{
+			int eid = NET.ElementIndex(n0, j);
+			FEElement_* pej = ElementPtr(eid);
+			if (pej->IsBeam())
+			{
+				int* m = pej->m_node;
+				if (((m[0] == edge.n[0]) && (m[1] == edge.n[1])) ||
+					((m[0] == edge.n[1]) && (m[1] == edge.n[0])))
+				{
+					assert(edge.m_elem == -1);
+					edge.m_elem = eid;
+					break;
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
