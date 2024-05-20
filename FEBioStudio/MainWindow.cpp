@@ -1780,6 +1780,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 					GLViewSettings& vs = glv->GetViewSettings();
 					vs.m_bselbrush = false;
 				}
+				doc->SetTransformMode(TRANSFORM_NONE);
 				Update();
 				UpdateUI();
 			}
