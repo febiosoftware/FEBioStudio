@@ -1169,6 +1169,14 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 		FSMesh* pmnew = mod->Apply(pmold);
 		if (i != 0) delete pmold;
 		pmold = pmnew;
+
+		if (pmold == nullptr)
+		{
+			string err = mod->GetErrorString();
+			if (!err.empty()) SetError(err.c_str());
+			break;
+		}
+
 		setProgress(100.0*(i + 1.0) / (double)niter);
 	}
 
