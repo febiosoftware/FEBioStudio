@@ -330,8 +330,11 @@ public:
 	void SetLoadCurve(LoadCurve* lc);
 	LoadCurve* GetLoadCurve();
 
+	void ShowDeriv(bool b);
+
 private:
 	LoadCurve* m_lc;
+	bool	m_showDeriv;
 };
 
 //=============================================================================
@@ -374,6 +377,7 @@ public slots:
 	void on_open_clicked(bool b);
 	void on_save_clicked(bool b);
 	void on_clear_clicked();
+	void on_showDeriv_toggled(bool b);
 
 signals:
 	void dataChanged();

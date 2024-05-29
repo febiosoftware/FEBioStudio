@@ -194,5 +194,7 @@
         <file>icons/bend.png</file>
         <file>icons/select_hide.png</file>
         <file>icons/select_highlight.png</file>
+        <file>icons/deriv.png</file>
+        <file>icons/deriv_neg.png</file>
 	</qresource>
 </RCC>
