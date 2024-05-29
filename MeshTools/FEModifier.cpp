@@ -1144,15 +1144,33 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 	{
 		mod = new FETetSplitModifier;
 	}
-	if (pm->IsType(FE_HEX8))
+	if (pm->IsType(FE_HEX8) && bhex2d)
 	{
-		if (bhex2d)
+		FEHex2DSplitModifier* hexmod = new FEHex2DSplitModifier;
+		hexmod->DoSurfaceSmoothing(bsmooth);
+		mod = hexmod;
+	}
+	else
+	{
+		// The hex split modifier also works with selections.
+		// So, we only need to test if the selected elements are hex8.
+		int nsel = pm->CountSelectedElements();
+		bool isHex = false;
+		if ((nsel == 0) && pm->IsType(FE_HEX8)) isHex = true;
+		if (nsel != 0)
 		{
-			FEHex2DSplitModifier* hexmod = new FEHex2DSplitModifier;
-			hexmod->DoSurfaceSmoothing(bsmooth);
-			mod = hexmod;
+			isHex = true;
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				FSElement& el = pm->Element(i);
+				if (el.IsSelected() && !el.IsType(FE_HEX8))
+				{
+					isHex = false;
+					break;
+				}
+			}
 		}
-		else
+		if (isHex)
 		{
 			FEHexSplitModifier* hexmod = new FEHexSplitModifier;
 			hexmod->DoSurfaceSmoothing(bsmooth);

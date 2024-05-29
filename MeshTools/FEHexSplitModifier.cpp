@@ -41,9 +41,6 @@ void FEHexSplitModifier::DoSurfaceSmoothing(bool b)
 
 FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 {
-	// make sure we are dealing with a hex mesh
-	if (pm->IsType(FE_HEX8) == false) return 0;
-
 	// count the selected elements
 	int nsel = pm->CountSelectedElements();
 	if ((nsel == 0) || (nsel == pm->Elements())) return RefineMesh(pm);
@@ -52,6 +49,8 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 FSMesh* FEHexSplitModifier::RefineMesh(FSMesh* pm)
 {
+	if (pm->IsType(FE_HEX8) == false) return nullptr;
+
 	// build the edge table of the mesh (each edge will add a node)
 	FSEdgeList ET(*pm);
 	FSElementEdgeList EET(*pm, ET);
@@ -253,6 +252,12 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
+			if (!el.IsType(FE_HEX8))
+			{
+				SetError("Invalid selection.");
+				return nullptr;
+			}
+
 			el.m_ntag = 1;
 			splitElems++;
 			for (int j = 0; j < 6; ++j)
