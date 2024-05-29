@@ -43,7 +43,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 {
 	// count the selected elements
 	int nsel = pm->CountSelectedElements();
-	if ((nsel == 0) || (nsel == pm->Elements())) return RefineMesh(pm);
+	if (nsel == 0) return RefineMesh(pm);
 	else return RefineSelection(pm);
 }
 
@@ -245,8 +245,12 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 	// make sure all selected elements are connected
 	size_t NN0 = pm->Nodes();
 	size_t NE0 = pm->Elements();
+	size_t NF0 = pm->Faces();
+	size_t NC0 = pm->Edges();
 	size_t splitElems = 0;
 	pm->TagAllNodes(0);
+	pm->TagAllFaces(0);
+	pm->TagAllEdges(0);
 	for (int i = 0; i < NE0; ++i)
 	{
 		FSElement& el = pm->Element(i);
@@ -271,6 +275,11 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 			}
 
 			for (int j = 0; j < 8; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+
+			for (int j = 0; j < 6; ++j)
+			{
+				if (el.m_face[j] >= 0) pm->Face(el.m_face[j]).m_ntag = 1;
+			}
 		}
 		else el.m_ntag = 0;
 	}
@@ -292,6 +301,31 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 	size_t splitEdges = 0;
 	for (int n : edgeTag) splitEdges += n;
 
+	// count how many quads to split
+	FSFaceEdgeList FET(*pm, ET);
+	size_t splitQuads = 0;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		if (face.m_ntag == 1)
+		{
+			splitQuads++;
+		}
+	}
+
+	// count how many edges to split
+	size_t splitLines = 0;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		if ((pm->Node(edge.n[0]).m_ntag) && (pm->Node(edge.n[1]).m_ntag))
+		{
+			edge.m_ntag = 1;
+			splitLines++;
+		}
+	}
+	FSEdgeIndexList EIL(*pm, ET);
+
 	// build the face table
 	FSFaceTable FT(*pm);
 	vector<int> faceTag(FT.size(), 0);
@@ -307,6 +341,8 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 	}
 	size_t splitFaces = 0;
 	for (int n : faceTag) splitFaces += n;
+	FSFaceFaceList FFL(*pm, FT);
+
 
 	// each node and all tagged edges, faces, and elements will create a new node
 	int NN1 = NN0 + splitEdges + splitFaces + splitElems;
@@ -314,12 +350,15 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 	// each element will be split in eight
 	int NE1 = (NE0 - splitElems) +  8 * splitElems;
 
+	// each face will be split in four
+	int NF1 = (NF0 - splitQuads) + 4 * splitQuads;
+
+	// each edge will be split in 2
+	int NC1 = (NC0 - splitLines) + 2 * splitLines;
+
 	// create new mesh
 	FSMesh* pmnew = new FSMesh;
-	pmnew->Create(NN1, NE1);
-
-	// build face-edge table
-	FSFaceEdgeList FET(*pm, ET);
+	pmnew->Create(NN1, NE1, NF1, NC1);
 
 	// assign nodes
 	int n = 0;
@@ -393,6 +432,16 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 	{ 23, 26, 22, 19, 15, 25, 14,  7 },
 	{ 26, 21, 18, 22, 25, 13,  6, 14 } };
 
+	const int FLUT[4][4] = {
+	{ 0, 4, 8, 7 },
+	{ 4, 1, 5, 8 },
+	{ 8, 5, 2, 6 },
+	{ 7, 8, 6, 3 }};
+
+	const int ELUT[2][2] = {
+	{ 0, 2 },
+	{ 2, 1 } };
+
 	// create new elements
 	int m[27];
 	n = 0;
@@ -426,7 +475,66 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 		}
 	}
 
-	pmnew->RebuildMesh();
+	// create new faces
+	n = 0;
+	for (int i = 0; i < NF0; ++i)
+	{
+		FSFace& face0 = pm->Face(i);
+		if (face0.m_ntag == 0)
+		{
+			FSFace& face1 = pmnew->Face(n++);
+			face1.SetType(FE_FACE_QUAD4);
+			face1 = face0;
+		}
+		else
+		{
+			vector<int>& fel = FET[i];
+			int ffl = FFL[i];
+
+			for (int j = 0; j < 4; ++j) m[j] = face0.n[j];
+			for (int j = 0; j < 4; ++j) m[4 + j] = edgeTag[fel[j]];
+			m[8] = faceTag[ffl];
+
+			for (int j = 0; j < 4; ++j)
+			{
+				FSFace& facej = pmnew->Face(n++);
+				facej.SetType(FE_FACE_QUAD4);
+				facej.m_gid = face0.m_gid;
+				facej.m_sid = face0.m_sid;
+				for (int k = 0; k < 4; ++k) facej.n[k] = m[FLUT[j][k]];
+			}
+		}
+	}
+
+	// create new edges
+	n = 0;
+	for (int i = 0; i < NC0; ++i)
+	{
+		FSEdge& edge0 = pm->Edge(i);
+		if (edge0.m_ntag == 0)
+		{
+			FSEdge& edge1 = pmnew->Edge(n++);
+			edge1.SetType(FE_EDGE2);
+			edge1 = edge0;
+		}
+		else
+		{
+			int eel = EIL[i];
+			for (int j = 0; j < 2; ++j) m[j] = edge0.n[j];
+			m[2] = edgeTag[eel];
+
+			for (int j = 0; j < 2; ++j)
+			{
+				FSEdge& edgej = pmnew->Edge(n++);
+				edgej.SetType(FE_EDGE2);
+				edgej.m_gid = edge0.m_gid;
+				edgej.n[0] = m[ELUT[j][0]];
+				edgej.n[1] = m[ELUT[j][1]];
+			}
+		}
+	}
+
+	pmnew->BuildMesh();
 
 	// TODO: smooth surface
 
