@@ -2001,6 +2001,7 @@ public:
 		lineType->addItem("Control points");
 		lineType->addItem("Approximation");
 		lineType->addItem("Smooth step");
+        lineType->addItem("C2-smooth");
 
 		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
 		extendMode->addItem("Constant");
