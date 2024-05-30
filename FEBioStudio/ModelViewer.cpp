@@ -1155,6 +1155,13 @@ void CModelViewer::OnChangeMaterial()
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
+			FSMaterial* oldMat = gmat->TakeMaterialProperties();
+			if (oldMat)
+			{
+				FSProperty* prop = pmat->FindProperty("elastic");
+				if (prop) prop->SetComponent(oldMat);
+				else delete oldMat;
+			}
 			gmat->SetMaterialProperties(pmat);
 			Update();
 			Select(gmat);
