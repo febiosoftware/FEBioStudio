@@ -1237,34 +1237,40 @@ void CModelPropsPanel::delSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
-	FEItemListBuilder* pl = 0;
+	FEItemListBuilder* pl = nullptr;
 
-	if (dynamic_cast<IHasItemLists*>(m_currentObject))
+	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pmc)
 	{
-		IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
 		pl = pmc->GetItemList(n);
-		if (pl)
+		if (pl && (pl->GetReferenceCount() > 1))
 		{
-			if (pl->GetReferenceCount() > 1)
+			const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+			if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
 			{
-				const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
-				if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
-				{
-					return;
-				}
+				return;
 			}
-
-			CSelectionBox* sel = ui->selectionPanel(n);
-			vector<int> items;
-			sel->getSelectedItems(items);
-
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-
-			pmc->SetItemList(pl, n);
-
-			SetSelection(n, pl);
-			emit selectionChanged();
 		}
+	}
+	else
+	{
+		FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+		if (pil) pl = pil;
+	}
+
+	if (pl)
+	{
+
+		CSelectionBox* sel = ui->selectionPanel(n);
+		vector<int> items;
+		sel->getSelectedItems(items);
+
+		pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+
+		if (pmc) pmc->SetItemList(pl, n);
+
+		SetSelection(n, pl);
+		emit selectionChanged();
 	}
 }
 
