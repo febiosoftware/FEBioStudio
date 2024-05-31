@@ -426,6 +426,7 @@ public slots:
 	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
+	void on_actionFEBioCheck_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
@@ -659,7 +660,7 @@ public slots:
 	void ShowIndeterminateProgress(bool show, QString message = "");
 	void UpdateProgress(int);
 
-	bool DoModelCheck(CModelDocument* doc);
+	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
 
 	void toggleOrtho();
 

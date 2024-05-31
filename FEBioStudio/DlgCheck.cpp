@@ -37,17 +37,20 @@ public:
 	QListWidget* errList;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(QDialog* dlg, bool askRunQuestion)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 
 		errList = new QListWidget;
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Yes | QDialogButtonBox::No);
+		QDialogButtonBox* bb = nullptr;
+		if (askRunQuestion) bb = new QDialogButtonBox(QDialogButtonBox::Yes | QDialogButtonBox::No);
+		else bb = new QDialogButtonBox(QDialogButtonBox::Close);
 
 		l->addWidget(new QLabel("There are issues with this model that may prevent it from runnnig correctly in FEBio:"));
 		l->addWidget(errList);
-		l->addWidget(new QLabel("Do you wish to continue?"));
+		if (askRunQuestion)
+			l->addWidget(new QLabel("Do you wish to continue?"));
 		l->addWidget(bb);
 			
 		dlg->setLayout(l);
@@ -57,9 +60,10 @@ public:
 	}
 };
 
-CDlgCheck::CDlgCheck(QWidget* parent): QDialog(parent), ui(new Ui::CDlgCheck)
+CDlgCheck::CDlgCheck(QWidget* parent, bool askRunQuestion): QDialog(parent), ui(new Ui::CDlgCheck)
 {
-	ui->setup(this);
+	setWindowTitle("Model check");
+	ui->setup(this, askRunQuestion);
 }
 
 void CDlgCheck::SetWarnings(const std::vector<MODEL_ERROR>& errList)
