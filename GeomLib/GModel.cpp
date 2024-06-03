@@ -1604,7 +1604,18 @@ void GModel::RemoveNamedSelections()
 	ClearGroups();
 }
 
-//-----------------------------------------------------------------------------
+void GModel::RemoveMeshData()
+{
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
+		{
+			pm->ClearMeshData();
+		}
+	}
+}
 
 template <class T> void clearList(FSObjectList<T>& l, std::function<bool(T*)> f)
 {
