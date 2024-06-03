@@ -76,6 +76,47 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 	fprintf(fp, "endsolid\n");
 }
 
+bool stl_write_surface(FILE* fp, FSSurface* surf)
+{
+	std::string name = surf->GetName();
+	fprintf(fp, "solid %s\n", name.c_str());
+
+	FSMesh* pm = surf->GetMesh();
+	if (pm == nullptr) return false;
+
+	vec3d r[FSFace::MAX_NODES];
+	int NF = surf->size();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = *surf->GetFace(i);
+
+		vec3d fn = to_vec3d(face.m_fn);
+
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			vec3d& p = pm->Node(face.n[j]).r;
+			r[j] = pm->LocalToGlobal(p);
+		}
+
+		vec3d q[3];
+		switch (face.Type())
+		{
+		case FE_FACE_TRI3:
+			stl_write_face(fp, fn, r[0], r[1], r[2]);
+			break;
+		case FE_FACE_QUAD4:
+			stl_write_face(fp, fn, r[0], r[1], r[2]);
+			stl_write_face(fp, fn, r[2], r[3], r[0]);
+			break;
+		default:
+			assert(false);
+		}
+	}
+	fprintf(fp, "endsolid\n");
+
+	return true;
+}
+
 STLExport::STLExport(FSProject& prj) : FSFileExport(prj)
 {
 }
@@ -153,4 +194,14 @@ bool STLExport::Write(const char* szfile, FSMesh* pm)
 	fclose(fp);
 
 	return true;
+}
+
+bool STLExport::Write(const char* szfile, FSSurface* surf)
+{
+	if (surf == nullptr) return false;
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+	bool b = stl_write_surface(fp, surf);
+	fclose(fp);
+	return b;
 }

@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 class GObject;
 class FSMesh;
+class FSSurface;
 
 class STLExport : public FSFileExport
 {
@@ -42,4 +43,6 @@ public:
 	bool Write(const char* szfile, GObject* po);
 
 	bool Write(const char* szfile, FSMesh* pm);
+
+	bool Write(const char* szfile, FSSurface* pm);
 };
