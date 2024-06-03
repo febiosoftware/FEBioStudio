@@ -309,7 +309,7 @@ FSFace* FSSurface::GetFace(int n)
 {
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == nullptr) return nullptr;
-	return pm->FacePtr(n);
+	return pm->FacePtr(m_Item[n]);
 }
 
 FEFaceList* FSSurface::BuildFaceList()
