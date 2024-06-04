@@ -1009,6 +1009,7 @@ void CModelPropsPanel::addSelection(int n)
 {
 	// get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+	if (pdoc == nullptr) return;
 
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
