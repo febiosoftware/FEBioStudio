@@ -153,7 +153,7 @@ FEElement_* FSElemSet::GetElement(int n)
 {
 	FSMesh* m = GetMesh();
 	if (m == nullptr) return nullptr;
-	return m->ElementPtr(n);
+	return m->ElementPtr(m_Item[n]);
 }
 
 //-----------------------------------------------------------------------------
@@ -481,4 +481,11 @@ FSNodeList* FSNodeSet::BuildNodeList()
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->NodePtr(*it));
 	return ps;
+}
+
+FSNode* FSNodeSet::GetNode(size_t n)
+{
+	FSMesh* pm = m_pObj->GetFEMesh();
+	if (pm == nullptr) return nullptr;
+	return pm->NodePtr(m_Item[n]);
 }
