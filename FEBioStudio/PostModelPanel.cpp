@@ -1683,7 +1683,7 @@ void CPostModelPanel::OnExportImage()
 
 void CPostModelPanel::OnLoadTransform()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
