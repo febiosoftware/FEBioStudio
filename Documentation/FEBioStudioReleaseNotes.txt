@@ -6,6 +6,96 @@
 
 ===========================================================================
 
+ R E L E A S E   2.7   6/6/2024
+
+===========================================================================
+
+New Features:
+* Rendering of meshes has been significantly improved on the build side. Noticeable improvements are smoohter rendering of mesh lines, and significant speedup of render speed. (Use ctrl+F12 to show approximate FPS)
+* Implemented geometry highlighting for surfaces and parts. 
+* Pressing Enter (Return) now converts the highlights to a selection.
+* Added button to model viewer to toggle selection highlighting. Picked items can now be given a custom color. Fixed some issues with drawing the picked items.
+* Outlines of selections and highlights are now also rendered.
+* Added settings option to enable/disable geometry highlighting.
+* Added recursive parameter to mirror planes, which can be used to create 3/4 symmetry.
+* Added context menu option to export named surface selections to stl file.
+* Added FEBio menu option to run model check.
+* Added dropdown option to copy material properties from other materials.
+* Added option to plot derivative on point curve plots.
+* Added C2-smooth to dropdown menu for load curves
+* Added context menu option to (re)load transform for Axes plot object (used by kinemat tool.)
+* Kinemat tool now also adds triads that show the position and orientation of the kinemat transforms.
+* Added support for surface log data.
+* Added support for VTK's vtm files.
+* VTU files can now also be read on the post side.
+* Added support for some arithmetic filtering of vec3f element data.
+* Added option to flip the plane cut's normal.
+* Added option to paste plots in data graph windows.
+* Added key shortcuts for rotation 90 degrees about major axes. (e.g. Alt+X rotates 90 deg around X. Alt+Shift+X rotatest the other way. Similar shortcuts for Y and Z)
+* Added option to copy selections between open documents.
+
+Improvements:
+* Added validator for discrete element sets.
+* Hex split modifier (for selected elements) used by the Refine Mesh tool now retains mesh topology.
+* Modified hex split modifier so only selection needs to be hex.
+* Fixed plot variable specific gauge enthalpy (gage to gauge)
+* Pressing Esc also resets the transform mode.
+* Handled case in muscle path plot were the first point is the departure point. LSDyna .k model are now partitioned by material.
+* Now using VTK legacy reader in import springs tool. Also fixed bug in VTK legacy file reader related to LINES.
+* Added support for float64 data arrays and fixed some other issues with VTU import.
+* Fixed some problems with reading VTP files and added support for VTK_POLYGON (which is converted to triangles).
+* Added check to make sure that all parts have elements when exporting to FEBio4 file.
+* Implemented more efficient mechanism for rendering fibers.
+* Plane cut now shows outline of cutting plane.
+* Added select-and-hide option. Works with objects, parts, and element selections.
+* Part selector dialog is now modeless. (so users can still interact with graphics view when this dialog box is visible)
+* Y-field of graphs now default to active datafield in colormap.
+* Fixed numerous typos in user manual.
+* Added support for reading Abaqus CONTACT_PAIR keyword.
+* Added support for reading name attribute of Elements tag for older feb files.
+* Step notes are now written as model notes for single-step analyses.
+* Step title of older feb files is now retained as a note.
+* Changed "pct." to "%" sign in job monitor.
+
+Bug fixes:
+* Changed selection boxes so that they display the element or node IDs instead of the internal indices.
+* Fixed crash when trying to add a selection for non-model documents.
+* All mesh data is now removed when purging model.
+* Fixed volume strain calculation for higher-order elements. (fixes #92)
+* Fixed bug that prevented deletion of items from named selections.
+* Fixed potential crash when discrete elements get scrambled as a result from a change to the mesh.
+* Fixed problem with reading empty DiscreteSet section from feb4 file.
+* Fixed issue with import of TetGen files.
+* Fixed Recent files list Clear command
+* Fixed issue with setting X-field of plot objects in graph window.
+* Fixed some issues with reading LSdyna keywords.
+* Fixed bug reading LSdyna file with ten nodes format for solid elements.
+* Fixed problem with assigning element material IDs when reading dyn files.
+* Fixed issue that put the legend bar on the wrong plot window, when two plot files were being read in simultaneously.
+* Fixed bug where element material IDs were reset on post side.
+* Fixed crash when toggling face visibility of editable surface.
+* Fixed possible crash in evaluation of Shell jacobian. Addressed performance issue when evaluating tet quality.
+* Fixed problem importing surfaces from 2.0 format.
+* Fixed some issues with export and import of part lists from feb4 files.
+* Fixed crash in Merge objects tool.
+* Fixed issue with part materials after detaching elements.
+* Fixed crash caused by incorrect node indices in nodesets while reading v3 febs
+* Fixed issue with propagation of keypress events.
+* Vector plot is now updated after any parameter change.
+* Fixed issue with reading mat_axis using the compact format.
+* Fixed crash on febio export when no analysis steps are defined.
+* Fixed problem with selecting parameters for optimization.
+* Fixed issue when reading SolidDomain tag.
+* Fixed bug with finding facets when reconstructing surfaces from feb input file.
+* Fixed crash in sync feature when the current document is not a model document.
+* Fixed issue with rendering tensors using arrow glyphs.
+* Fixed bug in calculation of histogram.
+* Fixed some issues importing febio 2.0 files.
+
+
+
+===========================================================================
+
  R E L E A S E   2.6   3/29/2024
 
 ===========================================================================
