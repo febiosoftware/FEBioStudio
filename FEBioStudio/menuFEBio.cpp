@@ -401,6 +401,12 @@ void CMainWindow::on_actionFEBioNext_triggered()
 	}
 }
 
+void CMainWindow::on_actionFEBioCheck_triggered()
+{
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc) DoModelCheck(modelDoc, false);
+}
+
 void CMainWindow::on_actionFEBioOptimize_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

@@ -1486,9 +1486,15 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
 					else glColor3ub(c.r, c.g, c.b);
 
-					GNode* pn0 = lut[el.Node(0) - minId];
-					GNode* pn1 = lut[el.Node(1) - minId];
-					if (pn0 && pn1) RenderLine(*pn0, *pn1);
+					int n0 = el.Node(0) - minId;
+					int n1 = el.Node(1) - minId;
+					if ((n0 >= 0) && (n0 < lut.size()) &&
+						(n1 >= 0) && (n1 < lut.size()))
+					{
+						GNode* pn0 = lut[n0];
+						GNode* pn1 = lut[n1];
+						if (pn0 && pn1) RenderLine(*pn0, *pn1);
+					}
 				}
 			}
 

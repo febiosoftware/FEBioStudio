@@ -338,6 +338,7 @@ public:
 	QAction* actionFEBioMonitorSettings;
 	QAction* actionFEBioContinue;
 	QAction* actionFEBioStop;
+	QAction* actionFEBioCheck;
 	QAction* actionFEBioPause;
 	QAction* actionFEBioNext;
 

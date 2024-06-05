@@ -52,6 +52,7 @@ public:
 	public:
 		enum { MAX_LINE = 256 };		// max characters per line
 		char	m_szline[MAX_LINE];		// line read in from file
+		char	m_szkey[MAX_LINE];	// keyword if keyword, otherwise blank
 		bool	m_bfree;				// free format flag
 		char* m_ch;					// current position in line
 		int		m_nfield;				// field width

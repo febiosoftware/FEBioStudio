@@ -75,6 +75,7 @@ private slots:
 	void OnMoveDownInRenderingQueue();
 	void OnExportImage();
 	void OnExportMCSurface();
+	void OnLoadTransform();
 	void OnExportProbeData();
 	void OnImportCurveProbePoints();
 	void OnCurveProbePlotData();

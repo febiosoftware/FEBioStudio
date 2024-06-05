@@ -209,6 +209,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	// --- FEBio menu actions ---
 	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
+	actionFEBioCheck = addAction("Model check ...", "actionFEBioCheck");
 	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop", "stop");
 	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor");
 	actionFEBioMonitorSettings = addAction("FEBio Monitor Settings ...", "actionFEBioMonitorSettings", "febiomonitor");
@@ -575,6 +576,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFEBio->addAction(actionFEBioContinue);
 	menuFEBio->addAction(actionFEBioPause);
 	menuFEBio->addAction(actionFEBioNext);
+	menuFEBio->addAction(actionFEBioCheck);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);

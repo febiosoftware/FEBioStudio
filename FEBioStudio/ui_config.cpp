@@ -46,6 +46,7 @@ void Ui::CUIConfig::Apply()
 	ui->actionFEBioPause->setVisible(false);
 	ui->actionFEBioNext->setVisible(false);
 	ui->actionFEBioContinue->setVisible(false);
+	ui->actionFEBioCheck->setEnabled(false);
 
 	// disable some Tools menu items
 	ui->actionCurveEditor->setEnabled(false);
@@ -171,6 +172,7 @@ void Ui::CModelConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioCheck->setEnabled(true);
 
 	ui->actionCurveEditor->setEnabled(true);
 	ui->actionMeshInspector->setEnabled(true);
@@ -293,6 +295,7 @@ void Ui::CTextConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioCheck->setEnabled(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -330,6 +333,7 @@ void Ui::CXMLConfig::Apply()
 
 		ui->actionFEBioRun->setEnabled(true);
 		ui->actionFEBioStop->setEnabled(true);
+		ui->actionFEBioCheck->setEnabled(true);
 
 		if (xmlDoc->EditingText())
 		{

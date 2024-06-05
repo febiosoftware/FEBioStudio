@@ -102,6 +102,8 @@ public:
 	QProgressBar* fileProgress;
 	QCheckBox* relaunch;
 
+    CMainWindow() : currentIndex(0), overallSize(0), downloadedSize(0) { }
+
 	void setup(::CMainWindow* wnd, bool correctDir)
 	{
 		m_wnd = wnd;
@@ -184,6 +186,12 @@ public:
 
 public:
 	::CMainWindow* m_wnd;
+
+    QStringList newFiles;
+	QStringList newDirs;
+	int currentIndex;
+	qint64 overallSize;
+	qint64 downloadedSize;
 };
 
 
@@ -279,57 +287,45 @@ bool CMainWindow::isFileWriteable(QString filename, QString niceName)
     }
 }
 
-bool CMainWindow::NetworkAccessibleCheck()
-{
-//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
-	return true;
-}
-
 void CMainWindow::getFile()
 {
-	ui->downloadFileLabel->setText(QString("Downloading %1...").arg(ui->updateWidget->updateFiles[ui->updateWidget->currentIndex]));
-	ui->downloadOverallLabel->setText(QString("Downloading File %1 of %2").arg(ui->updateWidget->currentIndex + 1).arg(ui->updateWidget->updateFiles.size()));
+    ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->currentIndex];
+
+	ui->downloadFileLabel->setText(QString("Downloading %1...").arg(currentFile.name));
+	ui->downloadOverallLabel->setText(QString("Downloading File %1 of %2").arg(ui->currentIndex + 1).arg(ui->updateWidget->updateFiles.size()));
 
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
 	myurl.setHost(ServerSettings::URL());
 	myurl.setPort(ServerSettings::Port());
 
-	if(ui->updateWidget->doingUpdaterUpdate)
-	{
-		myurl.setPath(ui->updateWidget->updaterBase + "/" + ui->updateWidget->updateFiles[ui->updateWidget->currentIndex]);
-	}
-	else
-	{
-		myurl.setPath(ui->updateWidget->urlBase + "/" + ui->updateWidget->updateFiles[ui->updateWidget->currentIndex]);
-	}
+	myurl.setPath(currentFile.baseURL + "/" + currentFile.name);
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
-	if(NetworkAccessibleCheck())
-	{
-		QNetworkReply* reply = restclient->get(request);
+    QNetworkReply* reply = restclient->get(request);
 
-		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CMainWindow::progress);
-	}
+    QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CMainWindow::progress);
 }
 
 void CMainWindow::getFileReponse(QNetworkReply *r)
 {
+    ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->currentIndex];
+
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
 	if(statusCode != 200)
 	{
-		QMessageBox::critical(this, "Update Failed", QString("Update Failed!\n\nUnable to download %1.").arg(ui->updateWidget->updateFiles[ui->updateWidget->currentIndex]));
+		QMessageBox::critical(this, "Update Failed", QString("Update Failed!\n\nUnable to download %1.").arg(currentFile.name));
 		QApplication::quit();
 		return;
 	}
 
 	QByteArray data = r->readAll();
 
-	QFileInfo fileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + ui->updateWidget->updateFiles[ui->updateWidget->currentIndex]);
+	QFileInfo fileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name);
 
 	// Ensure that the path to the file exists. Add any newly created directories to autoUpdate.xml
 	// for deletion during uninstalltion
@@ -355,10 +351,10 @@ void CMainWindow::getFileReponse(QNetworkReply *r)
 
 	file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::WriteUser | QFileDevice::ExeUser | QFileDevice::ReadUser);
 
-	ui->updateWidget->currentIndex++;
-	ui->updateWidget->downloadedSize += data.size();
+	ui->currentIndex++;
+	ui->downloadedSize += data.size();
 
-	if(ui->updateWidget->currentIndex < ui->updateWidget->updateFiles.size())
+	if(ui->currentIndex < ui->updateWidget->updateFiles.size())
 	{
 		getFile();
 	}
@@ -384,20 +380,17 @@ void CMainWindow::getSDK()
 	myurl.setHost(ServerSettings::URL());
 	myurl.setPort(ServerSettings::Port());
 
-    myurl.setPath(ui->updateWidget->urlBase + "/" + ui->updateWidget->m_sdk.name);
+    myurl.setPath(ui->updateWidget->m_sdk.baseURL + "/" + ui->updateWidget->m_sdk.name);
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
-	if(NetworkAccessibleCheck())
-	{
-        m_downloadingSDK = true;
+    m_downloadingSDK = true;
 
-		QNetworkReply* reply = restclient->get(request);
+    QNetworkReply* reply = restclient->get(request);
 
-		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CMainWindow::progress);
-	}
+    QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CMainWindow::progress);
 }
 
 void CMainWindow::getSDKResponse(QNetworkReply *r)
@@ -487,6 +480,8 @@ void CMainWindow::updateWidgetReady(bool update, bool terminal)
     }
 
 	ui->infoPage->setComplete(true);
+    
+    ui->overallSize = ui->updateWidget->overallSize;
 }
 
 void CMainWindow::connFinished(QNetworkReply *r)
@@ -513,7 +508,7 @@ void CMainWindow::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &
 
 void CMainWindow::progress(qint64 bytesReceived, qint64 bytesTotal)
 {
-	ui->overallProgress->setValue((float)(bytesReceived + ui->updateWidget->downloadedSize)/(float)ui->updateWidget->overallSize*100);
+	ui->overallProgress->setValue((float)(bytesReceived + ui->downloadedSize)/(float)ui->overallSize*100);
 
 	ui->fileProgress->setValue((float)bytesReceived/(float)bytesTotal*100);
 }
@@ -541,13 +536,13 @@ void CMainWindow::makePath(QString path)
 
 	dir.mkdir(dir.absolutePath());
 
-	ui->updateWidget->newDirs.append(dir.absolutePath());
+	ui->newDirs.append(dir.absolutePath());
 }
 
 void CMainWindow::addNewFile(const QString filename)
 {
     // If the file doesn't already exist, add it to autoUpdate.xml for deletion during uninstalltion.
-	if(!QFile::exists(filename)) ui->updateWidget->newFiles.append(filename);
+	if(!QFile::exists(filename)) ui->newFiles.append(filename);
 }
 
 void CMainWindow::downloadsFinished()
@@ -578,7 +573,7 @@ void CMainWindow::downloadsFinished()
 		writer.add_leaf("dir", dir.toStdString().c_str());
 	}
 
-	for(auto dir : ui->updateWidget->newDirs)
+	for(auto dir : ui->newDirs)
 	{
 		writer.add_leaf("dir", dir.toStdString().c_str());
 	}
@@ -588,7 +583,7 @@ void CMainWindow::downloadsFinished()
 		writer.add_leaf("file", file.toStdString().c_str());
 	}
 
-	for(auto file : ui->updateWidget->newFiles)
+	for(auto file : ui->newFiles)
 	{
 		writer.add_leaf("file", file.toStdString().c_str());
 	}
@@ -608,8 +603,9 @@ void CMainWindow::onFinish()
 		args.push_back(QApplication::applicationDirPath() + FBSUPDATERBINARY);
 		if(m_devChannel) args.push_back("-d");
 
-		for(auto filename : ui->updateWidget->updateFiles)
+		for(auto file : ui->updateWidget->updateFiles)
 		{
+            QString& filename = file.name;
 			if(filename.contains("mvUtil")) continue;
 
 			QFileInfo fileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + filename);

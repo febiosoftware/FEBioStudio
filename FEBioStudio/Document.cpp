@@ -588,6 +588,12 @@ void CGLDocument::SetViewState(VIEW_STATE vs)
 //	if (m_wnd) m_wnd->UpdateUI();
 }
 
+void CGLDocument::SetTransformMode(TransformMode mode)
+{ 
+	m_vs.ntrans = (int)mode; 
+	UpdateSelection(false); 
+}
+
 //-----------------------------------------------------------------------------
 GObject* CGLDocument::GetActiveObject()
 {

@@ -34,6 +34,9 @@ public:
 	// clears the component list for this property
 	void Clear();
 
+	// get the parent
+	FSCoreBase* GetParent() { return m_parent; }
+
 	// set the name of the property
 	void SetName(const std::string& name);
 

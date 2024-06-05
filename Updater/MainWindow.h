@@ -35,8 +35,6 @@ private:
     bool checkBinaries();
     bool isFileWriteable(QString filename, QString niceName);
 
-	bool NetworkAccessibleCheck();
-
 	void getFile();
 	void getFileReponse(QNetworkReply *r);
 

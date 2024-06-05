@@ -463,12 +463,16 @@ void CCmdTranslateSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Translate(m_dr);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 void CCmdTranslateSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Translate(-m_dr);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -486,12 +490,16 @@ void CCmdRotateSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Rotate(m_q, m_rc);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 void CCmdRotateSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Rotate(m_q.Inverse(), m_rc);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -510,12 +518,16 @@ void CCmdScaleSelection::Execute()
 {
 	m_doc->GetCurrentSelection()->Scale(m_s, m_dr, m_rc);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 void CCmdScaleSelection::UnExecute()
 {
 	m_doc->GetCurrentSelection()->Scale(1 / m_s, m_dr, m_rc);
 	m_doc->Update();
+	GObject* po = m_doc->GetActiveObject();
+	if (po) po->UpdateFERenderMesh();
 }
 
 //=============================================================================

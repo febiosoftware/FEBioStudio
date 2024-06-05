@@ -2031,6 +2031,8 @@ void FSModel::Purge(int ops)
 {
 	if (ops == 0)
 	{
+		m_pModel->RemoveMeshData();
+
 		// clear all groups
 		m_pModel->RemoveNamedSelections();
 

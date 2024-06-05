@@ -910,6 +910,8 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 	}
 
 	BuildGMesh();
+	UpdateFEElementMatIDs();
+	BuildFERenderMesh();
 }
 
 void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double weldTolerance)

@@ -285,6 +285,35 @@ void GObject::BuildFERenderMesh()
 	gm.Update();
 }
 
+void GObject::UpdateFERenderMesh()
+{
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+	if (imp->m_glFaceMesh == nullptr) return;
+
+	GMesh& gm = *imp->m_glFaceMesh;
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+	}
+	for (int i = 0; i < gm.Faces(); ++i)
+	{
+		GMesh::FACE& face = gm.Face(i);
+		face.vr[0] = gm.Node(face.n[0]).r;
+		face.vr[1] = gm.Node(face.n[1]).r;
+		face.vr[2] = gm.Node(face.n[2]).r;
+	}
+	for (int i = 0; i < gm.Edges(); ++i)
+	{
+		GMesh::EDGE& edge = gm.Edge(i);
+		edge.vr[0] = gm.Node(edge.n[0]).r;
+		edge.vr[1] = gm.Node(edge.n[1]).r;
+	}
+
+	gm.UpdateBoundingBox();
+	gm.UpdateNormals();
+}
+
 //-----------------------------------------------------------------------------
 // set the render mesh
 void GObject::SetRenderMesh(GMesh* mesh)

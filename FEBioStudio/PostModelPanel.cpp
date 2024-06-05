@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
+#include <PostLib/FEKinemat.h>
 #include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
@@ -1397,6 +1398,15 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
+
+	Post::FEPostModel::PointObject* pointObj = dynamic_cast<Post::FEPostModel::PointObject*>(po);
+	if (pointObj && (pointObj->m_tag == 0))
+	{
+		QMenu menu(this);
+		menu.addAction("Load transform from file ...", this, SLOT(OnLoadTransform()));
+		menu.exec(ev->globalPos());
+		return;
+	}
 }
 
 void CPostModelPanel::OnSelectNodes()
@@ -1669,6 +1679,64 @@ void CPostModelPanel::OnExportImage()
             }
         }
 	}	
+}
+
+void CPostModelPanel::OnLoadTransform()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	FSObject* po = ui->currentObject();
+	Post::FEPostModel::PointObject* pointObj = dynamic_cast<Post::FEPostModel::PointObject*>(po);
+	if (pointObj == nullptr) return;
+
+	QString fileName = QFileDialog::getOpenFileName(this, "Open Kinemat file");
+	if (fileName.isEmpty() == false)
+	{
+		std::string filename = fileName.toStdString();
+		FEKinemat kine;
+		if (kine.ReadKine(filename.c_str()) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed reading file.");
+			return;
+		}
+		int NS = kine.States();
+		if (NS == 0)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "No transform data found in file.");
+			return;
+		}
+
+		int nid = pointObj->m_id;
+		if (nid < 0)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Internal error: Invalid point object ID.");
+			return;
+		}
+
+		Post::CGLModel& mdl = *glm;
+		Post::FEPostModel& fem = *mdl.GetFSModel();
+		for (int i = 0; i < fem.GetStates(); ++i)
+		{
+			Post::FEState& state = *fem.GetState(i);
+			int n = (i < NS ? i : NS - 1);
+			FEKinemat::STATE& kineState = kine.GetState(n);
+
+			vec3d p = kineState.D[0].translate();
+			mat3d Q = kineState.D[0].rotate();
+
+			Post::OBJ_POINT_DATA* pd = &(state.m_objPt[nid]);
+			pd->pos = p;
+			pd->rot = Q;
+			pd->data->set(0, to_vec3f(pd->pos));
+			pd->data->set(1, to_mat3f(Q));
+		}
+		mdl.Update(true);
+		GetMainWindow()->RedrawGL();
+	}
 }
 
 void CPostModelPanel::OnExportMCSurface()

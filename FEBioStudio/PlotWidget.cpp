@@ -1755,6 +1755,7 @@ std::vector<QPointF> CPlotWidget::SelectedPoints() const
 CCurvePlotWidget::CCurvePlotWidget(QWidget* parent) : CPlotWidget(parent)
 {
 	m_lc = nullptr;
+	m_showDeriv = false;
 	setLineSmoothing(true);
 
 	showLegend(false);
@@ -1796,6 +1797,12 @@ void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
 	}
 }
 
+void CCurvePlotWidget::ShowDeriv(bool b)
+{
+	m_showDeriv = b;
+	update();
+}
+
 LoadCurve* CCurvePlotWidget::GetLoadCurve()
 {
 	return m_lc;
@@ -1807,10 +1814,31 @@ void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
     m_lc->Update();
 
 	int N = data.size();
+	QRect rt = ScreenRect();
+
+	// draw derivative
+	if (m_showDeriv)
+	{
+		QColor c = data.lineColor().darker();
+		painter.setPen(QPen(c, data.lineWidth()));
+		QPointF p0, p1;
+		for (int i = rt.left(); i < rt.right(); i += 2)
+		{
+			p1.setX(i);
+			QPointF p = ScreenToView(p1);
+			p.setY(m_lc->derive(p.x()));
+			p1 = ViewToScreen(p);
+
+			if (i != rt.left())
+			{
+				painter.drawLine(p0, p1);
+			}
+			p0 = p1;
+		}
+	}
 
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
-	QRect rt = ScreenRect();
 	QPointF p0, p1;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
@@ -2000,6 +2028,7 @@ public:
 	QToolButton* snap2grid;
 	QHBoxLayout* pltbutton;
 	QToolButton* map2rect;
+	QToolButton* showDeriv;
 
 public:
 	QPointF					m_dragPt;
@@ -2019,6 +2048,7 @@ public:
 		lineType->addItem("Control points");
 		lineType->addItem("Approximation");
 		lineType->addItem("Smooth step");
+        lineType->addItem("C2-smooth");
 
 		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
 		extendMode->addItem("Constant");
@@ -2109,6 +2139,14 @@ public:
 		map2rect->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
 		map2rect->setToolTip("<font color=\"black\">Map to rectangle");
 
+		showDeriv = new QToolButton;
+		showDeriv->setObjectName("showDeriv");
+		showDeriv->setAutoRaise(true);
+		showDeriv->setCheckable(true);
+		showDeriv->setChecked(false);
+		showDeriv->setIcon(CIconProvider::GetIcon("deriv"));
+		showDeriv->setToolTip("<font color=\"black\">Display derivative");
+
 		QToolButton* clear = new QToolButton; clear->setObjectName("clear");
 		clear->setAutoRaise(true);
 		clear->setIcon(CIconProvider::GetIcon("delete"));
@@ -2125,6 +2163,7 @@ public:
 		pltbutton->addWidget(zoom);
 		pltbutton->addWidget(map2rect);
 		pltbutton->addWidget(clear);
+		pltbutton->addWidget(showDeriv);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
 
@@ -2828,6 +2867,11 @@ void CCurveEditWidget::on_clear_clicked()
 		plc->Clear();
 		SetLoadCurve(plc);
 	}
+}
+
+void CCurveEditWidget::on_showDeriv_toggled(bool b)
+{
+	ui->plt->ShowDeriv(b);
 }
 
 

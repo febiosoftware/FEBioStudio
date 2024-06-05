@@ -31,6 +31,7 @@ SOFTWARE.*/
 LSDynaFile::CARD::CARD(int field)
 {
 	m_szline[0] = 0;
+	m_szkey[0] = 0;
 	m_ch = 0;
 	m_bfree = false;
 	m_nfield = field;
@@ -131,7 +132,11 @@ bool LSDynaFile::CARD::nexti(int& n, int nwidth)
 
 bool LSDynaFile::CARD::operator == (const char* sz)
 {
-	return (strcmp(m_szline, sz) == 0);
+	if (sz == nullptr) return false;
+	if (m_szkey[0] == 0) return false; // only check keywords
+	size_t l = strlen(sz);
+	if (l == 0) return false;
+	return (strncmp(m_szkey, sz, l) == 0);
 }
 
 bool LSDynaFile::CARD::contains(const char* sz)
@@ -219,6 +224,22 @@ void LSDynaFile::GetCard(LSDynaFile::CARD& c)
 	c.m_ch = c.m_szline;
 
 	c.m_l = (int)strlen(c.m_szline);
+
+	c.m_szkey[0] = 0;
+	if (c.m_szline[0] == '*')
+	{
+		size_t l = 0;
+		const char* ch = m_szline;
+		while (ch && (*ch))
+		{
+			if (!isspace(*ch) && ((*ch) != ','))
+				c.m_szkey[l++] = *ch;
+			else
+				break;
+			ch++;
+		}
+		c.m_szkey[l] = 0;
+	}
 }
 
 bool LSDynaFile::NextCard(LSDynaFile::CARD& c)
