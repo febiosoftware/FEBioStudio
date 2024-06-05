@@ -1898,6 +1898,8 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
 		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
 		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
+		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
+		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
 
 		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
@@ -2032,6 +2034,8 @@ void CMainWindow::readSettings()
 		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
 		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
 		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
+		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", "").toString();
+		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", "").toString();
 
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
 		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
@@ -3737,3 +3741,9 @@ void CMainWindow::on_selectionChanged()
 {
 	ReportSelection();
 }
+
+QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
+QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }
+
+void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_settings.FEBioSDKInc = s; }
+void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_settings.FEBioSDKLib = s; }

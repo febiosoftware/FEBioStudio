@@ -217,6 +217,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
 	QAction* actionFEBioPlugins = addAction("Manage FEBio plugins ...", "actionFEBioPlugins");
+	QAction* actionCreatePlugin = addAction("Create FEBio plugin ...", "actionCreatePlugin");
 
 	// --- Tools menu ---
 	actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
@@ -575,6 +576,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
 	menuFEBio->addAction(actionFEBioPlugins);
+	menuFEBio->addAction(actionCreatePlugin);
 
 	// Post menu
 	menuBar->addAction(menuPost->menuAction());

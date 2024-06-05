@@ -165,12 +165,20 @@ public:
 	void SetLoadConfigFlag(bool b);
 	void SetConfigFileName(QString s);
 
+	QString GetSDKIncludePath() const;
+	void SetSDKIncludePath(const QString& s);
+
+	QString GetSDKLibraryPath() const;
+	void SetSDKLibraryPath(const QString& s);
+
 protected slots:
 	void editConfigFilePath();
 
 private:
 	QCheckBox* m_loadConfig = nullptr;
 	QLineEdit* m_configEdit = nullptr;
+	QLineEdit* m_sdkInc = nullptr;
+	QLineEdit* m_sdkLib = nullptr;
 };
 
 class CDlgSettings : public QDialog

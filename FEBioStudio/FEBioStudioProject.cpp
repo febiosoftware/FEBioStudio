@@ -298,12 +298,17 @@ QStringList FEBioStudioProject::GetFilePaths()
 	return filePaths;
 }
 
-void FEBioStudioProject::AddGroup(const QString& groupName, int parentId)
+FEBioStudioProject::ProjectItem* FEBioStudioProject::AddGroup(const QString& groupName, int parentId)
 {
 	FEBioStudioProject::ProjectItem* grp = FindGroup(parentId);
 	assert(grp);
-	if (grp) grp->AddGroup(groupName);
-	Save();
+	if (grp)
+	{
+		FEBioStudioProject::ProjectItem* newGroup = &grp->AddGroup(groupName);
+		Save();
+		return newGroup;
+	}
+	return nullptr;
 }
 
 FEBioStudioProject::ProjectItem* FEBioStudioProject::AddFile(const QString& file, int parent)

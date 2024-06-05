@@ -267,6 +267,13 @@ public:
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
 
+public:
+	QString GetSDKIncludePath() const;
+	void SetSDKIncludePath(const QString& s);
+
+	QString GetSDKLibraryPath() const;
+	void SetSDKLibraryPath(const QString& s);
+
 	CCommandWindow* GetCommandWindow();
 
 private:
@@ -444,6 +451,7 @@ public slots:
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
 	void on_actionFEBioPlugins_triggered();
+	void on_actionCreatePlugin_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
 

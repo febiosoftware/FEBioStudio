@@ -896,6 +896,11 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 
 	layout->addLayout(pathLayout);
 
+	QFormLayout* f = new QFormLayout;
+	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
+	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
+	layout->addLayout(f);
+	 
 	this->setLayout(layout);
 
 	QObject::connect(pathButton, SIGNAL(clicked()), this, SLOT(editConfigFilePath()));
@@ -906,6 +911,12 @@ QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text();
 
 void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
 void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
+
+QString CFEBioSettingsWidget::GetSDKIncludePath() const { return m_sdkInc->text(); }
+void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setText(s); }
+
+QString CFEBioSettingsWidget::GetSDKLibraryPath() const { return m_sdkLib->text(); }
+void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setText(s); }
 
 void CFEBioSettingsWidget::editConfigFilePath()
 {
@@ -1128,6 +1139,8 @@ void CDlgSettings::UpdateSettings()
 
 	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
 	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
+	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
+	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -1285,6 +1298,8 @@ void CDlgSettings::apply()
 
 	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
 	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
+	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
+	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
 
 	m_pwnd->RedrawGL();
 }

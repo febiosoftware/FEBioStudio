@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
+#include "DlgCreatePlugin.h"
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -319,6 +320,15 @@ void CMainWindow::on_actionFEBioPlugins_triggered()
 {
 	CDlgFEBioPlugins dlg(this);
 	dlg.exec();
+}
+
+void CMainWindow::on_actionCreatePlugin_triggered()
+{
+	CDlgCreatePlugin dlg(this);
+	if (dlg.exec())
+	{
+		ui->fileViewer->Update();
+	}
 }
 
 void CMainWindow::on_actionFEBioTangent_triggered()
