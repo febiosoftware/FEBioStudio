@@ -536,6 +536,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
+	GObject* activeObject = GetActiveObject();
+
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
 	bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
@@ -681,7 +683,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			q.Inverse().RotateVector(dr);
 			FESelection* ps = pdoc->GetCurrentSelection();
-			if (ps)
+			if (ps && ps->Size())
 			{
 				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
@@ -707,6 +709,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 				m_rt += dr;
 				ps->Translate(dr);
+
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
 				m_pWnd->OnSelectionTransformed();
 			}
@@ -740,7 +744,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(f, vec3d(0, 0, 1));
 
 				FESelection* ps = pdoc->GetCurrentSelection();
-				if (ps)
+				if (ps && ps->Size())
 				{
 					if (m_coord == COORD_LOCAL)
 					{
@@ -750,6 +754,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 					q.MakeUnit();
 					ps->Rotate(q, GetPivotPosition());
+
+					if (activeObject) activeObject->UpdateFERenderMesh();
 				}
 			}
 
@@ -761,23 +767,27 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1)
 		{
-			double df = 1 + 0.002*((m_y1 - y) + (x - m_x1));
+			double df = 1 + 0.002 * ((m_y1 - y) + (x - m_x1));
 
 			m_sa *= df;
 			if (bctrl)
 			{
 				double g = scene->GetGridScale();
 				double st;
-				st = g*((int)((m_sa - 1) / g)) + 1;
+				st = g * ((int)((m_sa - 1) / g)) + 1;
 
 				df = st / m_st;
 			}
 			m_st *= df;
 			FESelection* ps = pdoc->GetCurrentSelection();
-			ps->Scale(df, m_ds, GetPivotPosition());
+			if (ps && ps->Size())
+			{
+				ps->Scale(df, m_ds, GetPivotPosition());
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
-			m_pWnd->UpdateGLControlBar();
-			repaint();
+				m_pWnd->UpdateGLControlBar();
+				repaint();
+			}	
 		}
 	}
 

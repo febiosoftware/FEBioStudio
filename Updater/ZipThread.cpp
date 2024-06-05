@@ -52,14 +52,13 @@ void ZipThread::run()
         if (file != nullptr) {
             QFileInfo fInfo(outDir + "/" + stat.name);
 
-            // Add file to uninstall list 
-            m_wnd->addNewFile(fInfo.absolutePath());
-
             // Create path to write to and add new dirs to uninstall list
-            QDir parent = fInfo.dir();
-            m_wnd->makePath(parent.absolutePath());
+            m_wnd->makePath(fInfo.absolutePath());
+            
+            // Add file to uninstall list 
+            m_wnd->addNewFile(fInfo.absoluteFilePath());
 
-            std::ofstream output(fInfo.absolutePath().toStdString(), std::ios::binary);
+            std::ofstream output(fInfo.absoluteFilePath().toStdString(), std::ios::binary);
             char buffer[4096];
             zip_int64_t bytesRead;
 

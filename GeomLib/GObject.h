@@ -224,6 +224,7 @@ public:
 	bool IsFaceVisible(const GFace* pf) const;
 
 	virtual void BuildFERenderMesh();
+	virtual void UpdateFERenderMesh();
 
 protected:
 	// set the render mesh

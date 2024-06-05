@@ -174,5 +174,7 @@ public:
 	FEItemListBuilder* Copy();
 	void Copy(FSNodeSet* pg);
 
+	FSNode* GetNode(size_t n);
+
 	FSNodeList* BuildNodeList();
 };

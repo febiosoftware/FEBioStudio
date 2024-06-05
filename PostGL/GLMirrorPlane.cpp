@@ -45,11 +45,13 @@ CGLMirrorPlane::CGLMirrorPlane()
 	AddBoolParam(true, "show_plane");
 	AddDoubleParam(0.25, "transparency")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0.f, "offset");
+	AddBoolParam(true, "recursion");
 
 	m_plane = 0;
 	m_showPlane = true;
 	m_transparency = 0.25f;
 	m_offset = 0.f;
+	m_recursive = true;
 
 	UpdateData(false);
 }
@@ -62,6 +64,7 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 		m_showPlane = GetBoolValue(SHOW_PLANE);
 		m_transparency = GetFloatValue(TRANSPARENCY);
 		m_offset = GetFloatValue(OFFSET);
+		m_recursive = GetBoolValue(RECURSION);
 	}
 	else
 	{ 
@@ -69,6 +72,7 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 		SetBoolValue(SHOW_PLANE, m_showPlane);
 		SetFloatValue(TRANSPARENCY, m_transparency);
 		SetFloatValue(OFFSET, m_offset);
+		SetBoolValue(RECURSION, m_recursive);
 	}
 
 	return false;
@@ -79,7 +83,14 @@ int CGLMirrorPlane::m_render_id = -1;
 void CGLMirrorPlane::Render(CGLContext& rc)
 {
 	// need to make sure we are not calling this recursively
-	if ((m_render_id != -1) && (m_id >= m_render_id)) return;
+	if (m_recursive)
+	{
+		if ((m_render_id != -1) && (m_id >= m_render_id)) return;
+	}
+	else
+	{
+		if (m_render_id != -1) return;
+	}
 
 	// plane normal
 	vec3f scl;

@@ -113,6 +113,8 @@ public:
 
 protected:
 	void FindNeighbors();
+
+public:
 	void UpdateBoundingBox();
 	void UpdateNormals();
 

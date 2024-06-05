@@ -550,6 +550,34 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 				}
 			}
 		}
+		else if (item->Type() == FE_ELEMSET)
+		{
+			setCollapsed(true);
+			vector<int> items;
+			items.insert(items.end(), item->begin(), item->end());
+			FSElemSet& eset = dynamic_cast<FSElemSet&>(*item);
+			for (int i = 0; i < eset.size(); ++i)
+			{
+				FEElement_* el = eset.GetElement(i);
+				int nid = el->m_nid;
+				if (nid <= 0) nid = items[i] + 1;
+				addData(QString::number(nid), items[i], 0, false);
+			}
+		}
+		else if (item->Type() == FE_NODESET)
+		{
+			setCollapsed(true);
+			vector<int> items;
+			items.insert(items.end(), item->begin(), item->end());
+			FSNodeSet& nodeset = dynamic_cast<FSNodeSet&>(*item);
+			for (int i = 0; i < nodeset.size(); ++i)
+			{
+				FSNode* pn = nodeset.GetNode(i);
+				int nid = pn->m_nid;
+				if (nid <= 0) nid = items[i] + 1;
+				addData(QString::number(nid), items[i], 0, false);
+			}
+		}
 		else
 		{
 			setCollapsed(true);

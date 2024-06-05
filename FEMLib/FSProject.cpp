@@ -689,7 +689,7 @@ void FSProject::SetDefaultPlotVariables()
         m_plt.AddPlotVariable("fluid specific free energy", true);
         m_plt.AddPlotVariable("fluid specific entropy", true);
         m_plt.AddPlotVariable("fluid specific internal energy", true);
-        m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific gauge enthalpy", true);
         m_plt.AddPlotVariable("fluid specific free enthalpy", true);
         m_plt.AddPlotVariable("fluid specific strain energy", true);
         m_plt.AddPlotVariable("fluid stress", true);

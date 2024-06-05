@@ -294,6 +294,9 @@ bool CPostDocument::Initialize()
 	assert(m_fem);
 	m_fem->UpdateBoundingBox();
 
+	// clear any selection
+	SetCurrentSelection(nullptr);
+
 	// assign default material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);

@@ -1977,6 +1977,8 @@ void CModelGraphWindow::setDataSource(int n)
 			{
 				SetXDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
 			}
+			else if (plotType == LINE_PLOT)
+				SetXDataSelector(new CTimeStepSelector(), 0);
 
 			Update(false, true);
 		}

@@ -1780,6 +1780,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 					GLViewSettings& vs = glv->GetViewSettings();
 					vs.m_bselbrush = false;
 				}
+				doc->SetTransformMode(TRANSFORM_NONE);
 				Update();
 				UpdateUI();
 			}
@@ -3243,7 +3244,7 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-bool CMainWindow::DoModelCheck(CModelDocument* doc)
+bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 {
 	if (doc == nullptr) return false;
 
@@ -3251,7 +3252,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc)
 
 	if (warnings.empty() == false)
 	{
-		CDlgCheck dlg(this);
+		CDlgCheck dlg(this, askRunQuestion);
 		dlg.SetWarnings(warnings);
 		if (dlg.exec() == 0)
 		{

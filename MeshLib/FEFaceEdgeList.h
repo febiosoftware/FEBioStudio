@@ -112,6 +112,9 @@ public:
 
 	std::vector<int>& operator [] (int i) { return EFT[i]; }
 
+	size_t Valence(int iel) const { return EFT[iel].size(); }
+	int FaceIndex(int iel, int nface) const { return EFT[iel][nface]; }
+
 private:
 	std::vector< std::vector<int> > EFT;
 };
