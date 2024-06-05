@@ -34,7 +34,16 @@ class CGLViewer : public QWidget
 public:
 	CGLViewer(::CMainWindow* wnd);
 
-public:
+	CGLView* GetGLView() { return glview; }
+
+	void ShowControlBar();
+	void HideControlBar();
+
+	void Update();
+
+	void ToggleSelectConnected();
+
+private:
 	CGLView* glview;
 	CGLControlBar* glc;
 };

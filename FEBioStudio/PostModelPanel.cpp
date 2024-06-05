@@ -73,6 +73,7 @@ SOFTWARE.*/
 #include <CUILib/HistogramViewer.h>
 #include "GLView.h"
 #include "PostDocument.h"
+#include "GLModelDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
 #include <QFileDialog>
@@ -721,9 +722,9 @@ CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPa
 	QObject::connect(this, SIGNAL(postObjectPropsChanged(FSObject*)), pwnd, SLOT(OnPostObjectPropsChanged(FSObject*)));
 }
 
-CPostDocument* CPostModelPanel::GetActiveDocument()
+CGLModelDocument* CPostModelPanel::GetActiveDocument()
 {
-	return GetMainWindow()->GetPostDocument();
+	return dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
 }
 
 void CPostModelPanel::selectObject(FSObject* po)
@@ -779,11 +780,11 @@ void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
 void CPostModelPanel::BuildModelTree()
 {
 	ui->clear();
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if (pdoc && pdoc->IsValid())
 	{
-		Post::FEPostModel* fem = pdoc->GetFSModel();
 		Post::CGLModel* mdl = pdoc->GetGLModel();
+		Post::FEPostModel* fem = mdl->GetFSModel();
 		GObject* po = pdoc->GetActiveObject();
 
 		CModelTreeItem* pi1 = nullptr;
@@ -965,14 +966,18 @@ void CPostModelPanel::BuildModelTree()
 		}
 
 		// saved graphs
-		int n = pdoc->Graphs();
-		if (n > 0)
+		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+		if (postDoc)
 		{
-			pi1 = ui->AddItem(nullptr, nullptr, "Saved Graphs", "chart", nullptr, CModelTreeItem::ALL_FLAGS);
-			for (int i = 0; i < n; ++i)
+			int n = postDoc->Graphs();
+			if (n > 0)
 			{
-				CGraphData* gd = const_cast<CGraphData*>(pdoc->GetGraphData(i));
-				ui->AddItem(pi1, gd, QString::fromStdString(gd->GetName()));
+				pi1 = ui->AddItem(nullptr, nullptr, "Saved Graphs", "chart", nullptr, CModelTreeItem::ALL_FLAGS);
+				for (int i = 0; i < n; ++i)
+				{
+					CGraphData* gd = const_cast<CGraphData*>(postDoc->GetGraphData(i));
+					ui->AddItem(pi1, gd, QString::fromStdString(gd->GetName()));
+				}
 			}
 		}
 	}
@@ -1052,17 +1057,18 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		GetMainWindow()->RedrawGL();
 	}
 
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	CGraphData* graph = dynamic_cast<CGraphData*>(po);
 	if (graph)
 	{
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(graph->GetName()));
 		w->show();
 	}
-
-	CGLDocument* doc = GetDocument();
 
 	FSNodeSet* pn = dynamic_cast<FSNodeSet*>(po);
 	if (pn)
@@ -1153,7 +1159,8 @@ void CPostModelPanel::on_deleteButton_clicked()
 
 	FSObject* pobj = item->Object();
 
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
 
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(pobj);
 	CGraphData* graph = dynamic_cast<CGraphData*>(pobj);
@@ -1410,8 +1417,8 @@ void CPostModelPanel::OnSelectNodes()
 	Post::FSNodeSet* pg = dynamic_cast<Post::FSNodeSet*>(po);
 	if (pg)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
 		vector<int>pgl = pg->GetNodeList();
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1420,8 +1427,8 @@ void CPostModelPanel::OnSelectNodes()
 	::FSNodeSet* pg2 = dynamic_cast<::FSNodeSet*>(po);
 	if (pg2)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
 		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
@@ -1441,8 +1448,8 @@ void CPostModelPanel::OnSelectFaces()
 	Post::FSSurface* pg = dynamic_cast<Post::FSSurface*>(po);
 	if (pg)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
 		vector<int>pgl = pg->GetFaceList();
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1450,8 +1457,8 @@ void CPostModelPanel::OnSelectFaces()
 	::FSSurface* pg2 = dynamic_cast<::FSSurface*>(po);
 	if (pg2)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
 		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
@@ -1468,8 +1475,8 @@ void CPostModelPanel::OnSelectElements()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+	CGLModelDocument* pdoc = GetActiveDocument();
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
@@ -1495,8 +1502,8 @@ void CPostModelPanel::OnHideElements()
 {
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
-	CPostDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+	CGLModelDocument* pdoc = GetActiveDocument();
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 
 	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
@@ -1517,10 +1524,10 @@ void CPostModelPanel::OnHideElements()
 
 void CPostModelPanel::OnShowAllElements()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 	if (mesh)
 	{
 		ForAllElements(*mesh, [](FEElement_& el) {
@@ -1582,7 +1589,7 @@ void CPostModelPanel::OnMoveUpInRenderingQueue()
 	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
 	if (plt)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
+		CGLModelDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 		Post::GLPlotGroup* pg = plt->GetGroup();
@@ -1608,7 +1615,7 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
 	if (plt)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
+		CGLModelDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 		Post::GLPlotGroup* pg = plt->GetGroup(); 
@@ -1676,7 +1683,7 @@ void CPostModelPanel::OnExportImage()
 
 void CPostModelPanel::OnLoadTransform()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1760,7 +1767,7 @@ void CPostModelPanel::OnExportProbeData()
 	Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(ui->currentObject());
 	if (probe == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1829,7 +1836,7 @@ void CPostModelPanel::OnExportProbeData()
 
 void CPostModelPanel::OnImportCurveProbePoints()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1879,7 +1886,7 @@ void CPostModelPanel::OnExportMusclePathData()
 	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
 	if (po == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1965,6 +1972,9 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 
 void CPostModelPanel::OnCurveProbePlotData()
 {
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
@@ -1989,7 +1999,7 @@ void CPostModelPanel::OnCurveProbePlotData()
 		CGraphData* graph = new CGraphData;
 		graph->m_data.push_back(data);
 
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));
@@ -2038,7 +2048,7 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 		CGraphData* graph = new CGraphData;
 		graph->m_data.push_back(data);
 
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));

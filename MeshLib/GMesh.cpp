@@ -724,3 +724,80 @@ void GMesh::Attach(GMesh &m, bool bupdate)
 
 	if (bupdate) Update();
 }
+
+void GMesh::AutoSmooth(double angleDegrees)
+{
+	int NF = Faces();
+
+	// smoothing threshold
+	double eps = (double)cos(angleDegrees * DEG2RAD);
+
+	// clear face group ID's
+	for (FACE& face : m_Face)
+	{
+		face.sid = -1;
+	}
+
+	// calculate face normals
+	for (FACE& face : m_Face)
+	{
+		// calculate the face normals
+		vec3f& r0 = Node(face.n[0]).r;
+		vec3f& r1 = Node(face.n[1]).r;
+		vec3f& r2 = Node(face.n[2]).r;
+
+		face.fn = (r1 - r0) ^ (r2 - r0);
+		face.fn.Normalize();
+	}
+
+	// stack for tracking unprocessed faces
+	vector<FACE*> stack(NF);
+	int ns = 0;
+
+	// process all faces
+	int nsg = 0;
+	for (FACE& face : m_Face)
+	{
+		if (face.sid == -1)
+		{
+			stack[ns++] = &face;
+			while (ns > 0)
+			{
+				// pop a face
+				FACE* pf = stack[--ns];
+
+				// mark as processed
+				pf->sid = nsg;
+
+				// loop over neighbors
+				for (int j = 0; j < 3; ++j)
+				{
+					if (pf->nbr[j] >= 0)
+					{
+						FACE& face2 = Face(pf->nbr[j]);
+
+						// push unprocessed neighbour
+						if (face2.sid == -1)
+						{
+							bool badd = false;
+							if (pf->fn * face2.fn >= eps)
+							{
+								badd = true;
+							}
+
+							if (badd)
+							{
+								face2.sid = -2;
+								stack[ns++] = &face2;
+							}
+						}
+					}
+				}
+			}
+			++nsg;
+		}
+	}
+
+	// update the normals
+	UpdateNormals();
+}

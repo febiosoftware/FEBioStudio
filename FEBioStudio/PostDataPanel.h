@@ -37,6 +37,7 @@ class CPostDocument;
 
 namespace Post {
 	class ModelDataField;
+	class CGLModel;
 }
 
 namespace Ui {
@@ -84,7 +85,7 @@ public:
 	void on_props_dataChanged(bool b);
 
 private:
-	CPostDocument* GetActiveDocument();
+	Post::CGLModel* GetActiveModel();
 
 private:
 	Ui::CPostDataPanel* ui;

@@ -66,7 +66,7 @@ QString warningNoActiveModel = "Please select the view tab to which you want to 
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CPostDocument* doc = GetPostDocument();
+	CGLModelDocument* doc = dynamic_cast<CGLModelDocument*>(GetDocument());
 	if (doc== nullptr) return nullptr;
 	return doc->GetGLModel();
 }
@@ -83,7 +83,8 @@ void CMainWindow::on_actionPlaneCut_triggered()
 	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -99,7 +100,8 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -115,7 +117,8 @@ void CMainWindow::on_actionVectorPlot_triggered()
 	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -131,7 +134,8 @@ void CMainWindow::on_actionTensorPlot_triggered()
 	Post::GLTensorPlot* pp = new Post::GLTensorPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -147,7 +151,8 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -163,7 +168,8 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -179,7 +185,8 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -352,7 +359,8 @@ void CMainWindow::on_actionAddProbe_triggered()
 		if (pg) pg->AddPlot(probe);
 		else glm->AddPlot(probe);
 
-		UpdatePostPanel(true, probe);
+		if (GetPostDocument()) UpdatePostPanel(true, probe);
+		else Update(nullptr, true);
 		RedrawGL();
 	}
 }
@@ -369,7 +377,8 @@ void CMainWindow::on_actionAddCurveProbe_triggered()
 	Post::GLCurveProbe* probe = new Post::GLCurveProbe();
 	glm->AddPlot(probe);
 
-	UpdatePostPanel(true, probe);
+	if (GetPostDocument()) UpdatePostPanel(true, probe);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -385,7 +394,8 @@ void CMainWindow::on_actionAddRuler_triggered()
 	Post::GLRuler* ruler = new Post::GLRuler();
 	glm->AddPlot(ruler);
 
-	UpdatePostPanel(true, ruler);
+	if (GetPostDocument()) UpdatePostPanel(true, ruler);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -414,7 +424,8 @@ void CMainWindow::on_actionMusclePath_triggered()
 		glm->AddPlot(musclePath);
 	}
 
-	UpdatePostPanel(true, musclePath);
+	if (GetPostDocument()) UpdatePostPanel(true, musclePath);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -430,7 +441,8 @@ void CMainWindow::on_actionPlotGroup_triggered()
 	Post::GLPlotGroup* mpg = new Post::GLPlotGroup();
 	glm->AddPlot(mpg);
 
-	UpdatePostPanel(true, mpg);
+	if (GetPostDocument()) UpdatePostPanel(true, mpg);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -442,7 +454,8 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -454,7 +467,8 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 
 	RedrawGL();
 }
@@ -977,8 +991,15 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 void CMainWindow::SetCurrentState(int n)
 {
 	CPostDocument* doc = GetPostDocument();
-	if (doc == nullptr) return;
-	ui->postToolBar->SetSpinValue(n + 1);
+	if (doc)
+		ui->postToolBar->SetSpinValue(n + 1);
+
+	FEBioMonitorDoc* mdoc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+	if (mdoc && mdoc->IsPaused())
+	{
+		mdoc->SetCurrentState(n);
+		RedrawGL();
+	}
 }
 
 //-----------------------------------------------------------------------------

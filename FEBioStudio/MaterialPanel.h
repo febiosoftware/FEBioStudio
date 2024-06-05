@@ -27,10 +27,13 @@ SOFTWARE.*/
 #pragma once
 #include "WindowPanel.h"
 #include <FSCore/color.h>
-class CPostDocument;
 
 namespace Ui {
 	class CMaterialPanel;
+}
+
+namespace Post {
+	class CGLModel;
 }
 
 class MaterialProps;
@@ -47,7 +50,8 @@ public:
 	void UpdateStates();
 
 private:
-	CPostDocument* GetActiveDocument();
+	// return the currently active model
+	Post::CGLModel* GetActiveModel();
 
 private:
 	void SetItemColor(int item, GLColor c);

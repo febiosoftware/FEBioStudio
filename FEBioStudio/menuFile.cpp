@@ -125,6 +125,7 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
 #include "units.h"
+#include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
 
 using std::stringstream;
@@ -585,6 +586,13 @@ QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 		formatOption.clear();
 	}
 	return fileName;
+}
+
+void CMainWindow::OpenFEBioAppFile(const QString& fileName)
+{
+	FEBioAppDocument* feapp = new FEBioAppDocument(this);
+	feapp->SetDocFilePath(fileName.toStdString());
+	AddDocument(feapp);
 }
 
 void CMainWindow::ExportPostGeometry()

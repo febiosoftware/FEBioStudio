@@ -295,8 +295,8 @@ public:
 
 	double* PlaneCoordinates();
 
-protected slots:
-	void repaintEvent();
+public slots:
+	void updateView();
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window

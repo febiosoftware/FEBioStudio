@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "Document.h"
+#include "GLModelDocument.h"
 #include <PostLib/Material.h>
 #include "GraphData.h"
 
@@ -36,6 +36,7 @@ namespace Post {
 	class FEPostModel;
 	class CPalette;
 	class FEFileReader;
+	class CGLModel;
 }
 
 // Timer modes
@@ -115,7 +116,7 @@ protected:
 };
 
 
-class CPostDocument : public CGLDocument
+class CPostDocument : public CGLModelDocument
 {
 	Q_OBJECT
 
@@ -137,6 +138,12 @@ public:
 
 	void UpdateSelection(bool report) override;
 
+public: // overrides for CGLModelDocument
+
+	Post::CGLModel* GetGLModel() override;
+
+	Post::FEPostModel* GetFSModel() override;
+
 public:
 	int GetStates();
 
@@ -145,10 +152,6 @@ public:
 	int GetActiveState();
 
 	void SetDataField(int n);
-
-	Post::FEPostModel* GetFSModel();
-
-	Post::CGLModel* GetGLModel();
 
 	bool MergeFEModel(Post::FEPostModel* fem);
 

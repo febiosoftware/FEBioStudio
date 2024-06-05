@@ -1123,7 +1123,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	{
 		m_plotRect.setTop(m_titleRect.bottom());
 		m_plotRect.adjust(50, 0, -90, -2*fontHeight - 2);
-		p.setPen(QPen(Qt::black));
+		p.setPen(QPen(m_data.m_boxColor));
 		p.setBrush(Qt::NoBrush);
 		p.drawRect(m_plotRect);
 	}
@@ -1314,8 +1314,14 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		{
 			gy = pow(10.0, nydiv);
 			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
+			p.setPen(QPen(m_data.m_yAxisCol));
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
+	}
+	else if (m_customYAxisLabel.isEmpty() == false)
+	{
+		p.setPen(QPen(m_data.m_yAxisCol));
+		p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), m_customYAxisLabel);
 	}
 
 	// determine the x-scale
@@ -1327,8 +1333,14 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		{
 			gx = pow(10.0, nxdiv);
 			snprintf(sz, sizeof sz, "x 1e%03d", nxdiv);
+			p.setPen(QPen(m_data.m_xAxisCol));
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
+	}
+	else if (m_customXAxisLabel.isEmpty() == false)
+	{
+		p.setPen(QPen(m_data.m_xAxisCol));
+		p.drawText(x1 + 5, y1, m_customXAxisLabel);
 	}
 
 	// draw the y-labels
@@ -1346,6 +1358,9 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			if (xPos < x0) xPos = x0; else if (xPos > x1) xPos = x1;
 			break;
 		}
+
+		p.setPen(QPen(m_data.m_yAxisCol));
+
 		double fy = yscale*(int)(m_viewRect.top() / yscale);
 		while (fy < m_viewRect.bottom())
 		{
@@ -1384,6 +1399,9 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			if (yPos < y0) yPos = y0; else if (yPos > y1) yPos = y1;
 			break;
 		}
+
+		p.setPen(QPen(m_data.m_xAxisCol));
+
 		double fx = xscale*(int)(m_viewRect.left() / xscale);
 		while (fx < m_viewRect.right())
 		{

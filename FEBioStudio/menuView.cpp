@@ -359,7 +359,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 
 void CMainWindow::on_actionToggleConnected_triggered()
 {
-	ui->centralWidget->glw->glc->toggleSelectConnected();
+	ui->centralWidget->glw->ToggleSelectConnected();
 }
 
 void CMainWindow::on_actionToggleFPS_triggered()

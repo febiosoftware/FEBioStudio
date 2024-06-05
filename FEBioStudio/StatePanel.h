@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 
 class CPostDocument;
+class CGLModelDocument;
 
 namespace Ui{
 	class CStatePanel;
@@ -46,7 +47,7 @@ public:
 
 	void Update(bool breset) override;
 
-	CPostDocument* GetActiveDocument();
+	CGLModelDocument* GetActiveDocument();
 
 private slots:
 	void on_stateList_doubleClicked(const QModelIndex& index);

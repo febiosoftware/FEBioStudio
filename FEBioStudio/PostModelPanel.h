@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class QTreeWidgetItem;
-class CPostDocument;
+class CGLModelDocument;
 class FSObject;
 
 //-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ signals:
 	void postObjectPropsChanged(FSObject* po);
 
 private:
-	CPostDocument* GetActiveDocument();
+	CGLModelDocument* GetActiveDocument();
 
 	void BuildModelTree();
 

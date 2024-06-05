@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QDialogButtonBox>
 #include "PostDocument.h"
+#include "GLModelDocument.h"
 
 class CStateModel : public QAbstractTableModel
 {
@@ -269,16 +270,16 @@ CStatePanel::CStatePanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd
 	ui->setupUi(this);
 }
 
-CPostDocument* CStatePanel::GetActiveDocument()
+CGLModelDocument* CStatePanel::GetActiveDocument()
 {
-	return GetMainWindow()->GetPostDocument();
+	return dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
 }
 
 void CStatePanel::Update(bool breset)
 {
 	if (breset)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
+		CGLModelDocument* pdoc = GetActiveDocument();
 		Post::FEPostModel* fem = (pdoc ? pdoc->GetFSModel() : nullptr);
 		ui->data->SetFEModel(fem);
 	}
@@ -291,7 +292,7 @@ void CStatePanel::on_stateList_doubleClicked(const QModelIndex& index)
 
 void CStatePanel::on_addButton_clicked()
 {
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	CDlgAddState dlg(this);
@@ -319,7 +320,7 @@ void CStatePanel::on_addButton_clicked()
 
 void CStatePanel::on_editButton_clicked()
 {
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	Post::FEPostModel& fem = *doc->GetFSModel();
@@ -347,7 +348,7 @@ void CStatePanel::on_editButton_clicked()
 
 void CStatePanel::on_deleteButton_clicked()
 {
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	Post::FEPostModel& fem = *doc->GetFSModel();
@@ -381,7 +382,7 @@ void CStatePanel::on_deleteButton_clicked()
 
 void CStatePanel::on_filterButton_clicked()
 {
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	Post::FEPostModel& fem = *doc->GetFSModel();

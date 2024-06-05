@@ -43,6 +43,7 @@ CGraphData::CGraphData()
 	m_yAxisCol = QColor(0, 0, 0);
 	m_xAxisTickCol = QColor(0, 0, 0);
 	m_yAxisTickCol = QColor(0, 0, 0);
+	m_boxColor = QColor(0, 0, 0);
 
 	// X-axis format
 	m_xAxis.visible = true;

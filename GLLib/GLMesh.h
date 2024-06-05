@@ -101,7 +101,7 @@ public:
 	void EndMesh();
 
 	// create from a GMesh
-	void CreateFromGMesh(const GMesh& gmsh);
+	void CreateFromGMesh(const GMesh& gmsh, unsigned int flags = FLAG_NORMAL | FLAG_COLOR);
 	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
 
 	// render the mesh

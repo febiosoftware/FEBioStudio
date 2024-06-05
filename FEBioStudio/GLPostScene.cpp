@@ -63,7 +63,7 @@ void CGLPostScene::Render(CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	CGLView* glview = rc.m_view; assert(glview);
+	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
 	if (glview == nullptr) return;
 
 	// Update GLWidget string table for post rendering
@@ -412,7 +412,8 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 	int nsel = (int)vtag.size();
 	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
 
-	rc.m_view->RenderTags(vtag);
+	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
+	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLPostScene::UpdateTracking()

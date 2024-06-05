@@ -1356,7 +1356,7 @@ QImage CGLView::CaptureScreen()
 	else return grabFramebuffer();
 }
 
-void CGLView::repaintEvent()
+void CGLView::updateView()
 {
 	repaint();
 }

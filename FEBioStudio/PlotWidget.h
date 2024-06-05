@@ -141,6 +141,8 @@ public:
 	bool drawAxesLabels() const { return m_data.m_bdrawAxesLabels; }
 	void setDrawAxesLabels(bool b) { m_data.m_bdrawAxesLabels = b; }
 
+	void setBoxColor(const QColor& c) { m_data.m_boxColor = c; }
+
 	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
 
 	bool autoRangeUpdate() const { return m_bautoRngUpdate; }
@@ -171,6 +173,9 @@ public:
 	QString YAxisLabel() { return m_data.m_yAxis.label; }
 	void setXAxisLabel(const QString& label) { m_data.m_xAxis.label = label; }
 	void setYAxisLabel(const QString& label) { m_data.m_yAxis.label = label; }
+
+	void setCustomXAxisLabel(QString s) { m_customXAxisLabel = s; }
+	void setCustomYAxisLabel(QString s) { m_customYAxisLabel = s; }
 
 	void selectPoint(int ndata, int npoint);
 
@@ -281,6 +286,9 @@ public:
 	bool		m_bautoRngUpdate;
 	bool		m_newSelect;
 	bool		m_bdragging;
+
+	QString		m_customXAxisLabel;
+	QString		m_customYAxisLabel;
 
 	bool		m_bregionSelect;
 

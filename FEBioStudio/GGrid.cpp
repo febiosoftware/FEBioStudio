@@ -90,7 +90,7 @@ void GGrid::Render(CGLContext& renderContext)
 
 	// determine the colors for the major axis
 	GLColor cx, cy;
-	View_Mode view = renderContext.m_view->GetViewMode();
+	View_Mode view = ((CGLView*)(renderContext.m_view))->GetViewMode();
 	switch (view)
 	{
 	case VIEW_USER:

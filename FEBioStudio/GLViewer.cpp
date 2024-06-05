@@ -49,3 +49,16 @@ CGLViewer::CGLViewer(::CMainWindow* wnd)
 
 	glc->hide();
 }
+
+void CGLViewer::ShowControlBar() { glc->show(); }
+void CGLViewer::HideControlBar() { glc->hide(); }
+
+void CGLViewer::Update()
+{
+	glc->Update();
+}
+
+void CGLViewer::ToggleSelectConnected()
+{
+	glc->toggleSelectConnected();
+}

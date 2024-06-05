@@ -107,6 +107,8 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
+#include <FEBioApp/FEBioAppDocument.h>
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 
 extern GLColor col[];
 
@@ -607,7 +609,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
-
+	}
+	else if (ext.compare("fex", Qt::CaseInsensitive) == 0)
+	{
+		OpenFEBioAppFile(fileName);
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
@@ -1288,9 +1293,10 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
+	if (ui->febioMonitor && ui->febioMonitor->isVisible()) ui->febioMonitor->Update(breset);
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
-    
+
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
@@ -1332,7 +1338,7 @@ void CMainWindow::UpdateUiView()
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
-	return ui->centralWidget->glw->glview;
+	return ui->centralWidget->glw->GetGLView();
 }
 
 CImageSliceView* CMainWindow::GetImageSliceView()
@@ -1345,13 +1351,11 @@ C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
     return ui->centralWidget->timeView2D;
 }
 
-//-----------------------------------------------------------------------------
 CBuildPanel* CMainWindow::GetBuildPanel()
 {
 	return ui->buildPanel;
 }
 
-//-----------------------------------------------------------------------------
 CCreatePanel* CMainWindow::GetCreatePanel()
 {
 	return ui->buildPanel->CreatePanel();
@@ -1360,6 +1364,16 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
+}
+
+CFEBioMonitorPanel* CMainWindow::GetFEBioMonitorPanel()
+{
+	return ui->febioMonitor;
+}
+
+CFEBioMonitorView* CMainWindow::GetFEBioMonitorView()
+{
+	return ui->febioMonitorView;
 }
 
 CModelViewer* CMainWindow::GetModelViewer()
@@ -2175,7 +2189,7 @@ void CMainWindow::UpdateUI()
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
 	 */
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 	RedrawGL();
 }
 
@@ -2267,7 +2281,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 //! Updates the GLView control bar
 void CMainWindow::UpdateGLControlBar()
 {
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2296,6 +2310,14 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CXMLDocument*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::XML_CONFIG);
+	}
+	else if (dynamic_cast<FEBioAppDocument*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::APP_CONFIG);
+	}
+	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::MONITOR_CONFIG);
 	}
 	else
 	{
@@ -2463,6 +2485,11 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
 		ui->modelViewer->Clear();
+	}
+
+	if (dynamic_cast<FEBioAppDocument*>(doc))
+	{
+		ui->centralWidget->appView->removeDocument(dynamic_cast<FEBioAppDocument*>(doc));
 	}
 
 	// now, remove from the doc manager

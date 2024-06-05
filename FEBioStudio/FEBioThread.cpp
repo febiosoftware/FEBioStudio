@@ -60,7 +60,7 @@ CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : 
 {
 	m_isOutputReady = false;
 
-	QObject::connect(this, SIGNAL(finished()), this, SIGNAL(QObject::deleteLater()));
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(QObject::deleteLater()));
 	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
 	QObject::connect(this, SIGNAL(outputReady()), parent, SLOT(onReadyRead()));
 }

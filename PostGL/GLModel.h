@@ -311,11 +311,12 @@ public:
 
 	void UpdateColorMaps();
 
+	void UpdateEdge();
+
 protected:
 	void BuildInternalSurfaces();
 	void UpdateInternalSurfaces(bool eval = true);
 	void ClearInternalSurfaces();
-	void UpdateEdge();
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not

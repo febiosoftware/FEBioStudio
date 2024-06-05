@@ -177,10 +177,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	m_nField = -1;
 	m_status = 0;
 
-	// get the data manager
 	FEDataManager* pdm = fem->GetDataManager();
-
-	// Nodal data
 	int N = pdm->DataFields();
 	FEDataFieldPtr it = pdm->FirstDataField();
 	for (int i=0; i<N; ++i, ++it)

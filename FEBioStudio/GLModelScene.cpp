@@ -102,7 +102,7 @@ void CGLModelScene::Render(CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	CGLView* glview = rc.m_view; assert(glview);
+	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
 	if (glview == nullptr) return;
 
 	// We don't need this for rendering model docs
@@ -217,9 +217,10 @@ void CGLModelScene::Render(CGLContext& rc)
 			double vmin, vmax;
 			data.GetValueRange(vmin, vmax);
 			if (vmin == vmax) vmax++;
-			if (rc.m_view)
+			CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
+			if (glview)
 			{
-				rc.m_view->setLegendRange((float)vmin, (float)vmax);
+				glview->setLegendRange((float)vmin, (float)vmax);
 			}
 			m_doc->ShowLegend(true);
 		}
@@ -325,7 +326,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	CModelDocument* pdoc = m_doc;
 	GLViewSettings& view = rc.m_settings;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 
 	CGLCamera& cam = *rc.m_cam;
 	
@@ -481,7 +482,7 @@ void CGLModelScene::RenderSelectionBox(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	if (glview == nullptr) return;
 
 	GLViewSettings& view = glview->GetViewSettings();
@@ -544,7 +545,7 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	if (glview == nullptr) return;
 
 	CGLCamera& cam = *rc.m_cam;
@@ -634,7 +635,7 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	if (glview == nullptr) return;
 
 	FSModel* ps = pdoc->GetFSModel();
@@ -702,7 +703,7 @@ void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	if (glview == nullptr) return;
 
 	CGLCamera& cam = *rc.m_cam;
@@ -1306,7 +1307,7 @@ void CGLModelScene::RenderLocalMaterialAxes(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	if (glview == nullptr) return;
 
 	// get the model
@@ -1973,7 +1974,7 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
@@ -2099,7 +2100,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 
 	GLViewSettings& vs = glview->GetViewSettings();
 
@@ -2257,7 +2258,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 // Render the FE nodes
 void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 {
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 
 	GLViewSettings& view = rc.m_settings;
 	quatd q = rc.m_cam->GetOrientation();
@@ -2350,7 +2351,8 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 
-	if (vs.m_bcontour && (po == rc.m_view->GetActiveObject()))
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	if (vs.m_bcontour && (po == view->GetActiveObject()))
 	{
 		m_renderer.SetFaceColor(true);
 		m_renderer.RenderGLMesh(gm);
@@ -2740,7 +2742,7 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 		data.GetValueRange(vmin, vmax);
 
 		// Create a copy so we can change the range
-		Post::CColorMap colorMap = rc.m_view->GetColorMap();
+		Post::CColorMap colorMap = ((CGLView*)rc.m_view)->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 
 		SetMatProps(0);
@@ -3126,7 +3128,7 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	if (pg == nullptr) return;
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	GLViewSettings& vs = glview->GetViewSettings();
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
@@ -3355,7 +3357,8 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	int nsel = (int)vtag.size();
 	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
 
-	rc.m_view->RenderTags(vtag);
+	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
+	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLModelScene::RenderRigidLabels(CGLContext& rc)
@@ -3363,7 +3366,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 	FSModel* fem = m_doc->GetFSModel();
 	if (fem == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	CGLView* glview = (CGLView*)rc.m_view;
 	GLViewSettings& view = glview->GetViewSettings();
 
 	vector<GLTAG> vtag;
@@ -3509,13 +3512,14 @@ void CGLModelScene::RenderPlaneCut(CGLContext& rc)
 
 	RenderBoxCut(rc, box);
 
-	if (rc.m_view->PlaneCutMode() == 0)
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	if (view->PlaneCutMode() == 0)
 	{
 		// render the plane cut first
-		rc.m_view->RenderPlaneCut(rc);
+		view->RenderPlaneCut(rc);
 
 		// then turn on the clipping plane before rendering the other geometry
-		glClipPlane(GL_CLIP_PLANE0, rc.m_view->PlaneCoordinates());
+		glClipPlane(GL_CLIP_PLANE0, view->PlaneCoordinates());
 		glEnable(GL_CLIP_PLANE0);
 	}
 }
@@ -3536,7 +3540,8 @@ void CGLModelScene::RenderBoxCut(CGLContext& rc, const BOX& box)
 	double R = box.GetMaxExtent();
 	if (R == 0) R = 1;
 	int ncase = 0;
-	double* plane = rc.m_view->PlaneCoordinates();
+	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
+	double* plane = view->PlaneCoordinates();
 	vec3d norm(plane[0], plane[1], plane[2]);
 	double ref = -(plane[3] - R * 0.001);
 	for (int k = 0; k < 8; ++k)

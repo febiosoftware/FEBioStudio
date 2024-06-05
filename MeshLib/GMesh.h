@@ -45,26 +45,26 @@ public:
 	{
 		vec3f	r;		// nodal position
 		vec3f	n;		// normal (but not really)
-		int		tag;	// multipurpose tag
-		int		pid;	// GNode parent local ID
-		int		nid;	// Node index of FSNode (in case a mesh object created this GMesh)
+		int		tag = 0;	// multipurpose tag
+		int		pid = 0;	// GNode parent local ID
+		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GMesh)
 	};
 
 	struct EDGE
 	{
-		int		pid;	// GEdge parent local id
+		int		pid = 0;	// GEdge parent local id
 		int		n[2];	// nodes
 		vec3f	vr[2];	// nodal coordinates
 	};
 
 	struct FACE
 	{
-		int		pid;	// GFace parent local id
-		int		fid;	// face ID of FSace in parent mesh (or -1 if not applicable)
-		int		eid;	// element ID (used by planecut algorithm)
-		int		sid;	// smoothing group ID
-		bool	bext;	// external flag
-		int		tag;	// multipurpose tag
+		int		pid = 0;	// GFace parent local id
+		int		fid = 0;	// face ID of FSace in parent mesh (or -1 if not applicable)
+		int		eid = 0;	// element ID (used by planecut algorithm)
+		int		sid = 0;	// smoothing group ID
+		bool	bext = true;	// external flag
+		int		tag = 0;	// multipurpose tag
 		int		n[3];	// nodes
 		int		nbr[3];	// neighbor faces
 		vec3f	fn;		// face normal
@@ -100,6 +100,8 @@ public:
 	BOX GetBoundingBox() { return m_box; }
 
 	void Attach(GMesh& m, bool bupdate = true);
+
+	void AutoSmooth(double angleDegrees);
 
 public:
 	int	AddNode(const vec3f& r, int groupID = 0);

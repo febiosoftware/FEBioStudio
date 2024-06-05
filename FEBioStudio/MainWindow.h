@@ -59,6 +59,8 @@ class CImageSliceView;
 class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
+class CFEBioMonitorPanel;
+class CFEBioMonitorView;
 class CModelViewer;
 class CCommandWindow;
 
@@ -131,6 +133,12 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the febio monitor panel
+	CFEBioMonitorPanel* GetFEBioMonitorPanel();
+
+	// get the febio monitor graphs view
+	CFEBioMonitorView* GetFEBioMonitorView();
 
 	// get the model viewer
 	CModelViewer* GetModelViewer();
@@ -309,6 +317,7 @@ private:
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
+	void OpenFEBioAppFile(const QString& fileName);
 
 	void SavePostDoc();
 
@@ -446,6 +455,11 @@ public slots:
 	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
+	void on_actionFEBioPause_triggered();
+	void on_actionFEBioNext_triggered();
+	void on_actionFEBioContinue_triggered();
+	void on_actionFEBioMonitor_triggered();
+	void on_actionFEBioMonitorSettings_triggered();
 	void on_actionFEBioCheck_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();

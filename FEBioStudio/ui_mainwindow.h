@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QLabel>
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -59,6 +60,7 @@ SOFTWARE.*/
 #include "CommandWindow.h"
 #include "GLControlBar.h"
 #include "Document.h"
+#include <FEBioApp/FEBioAppDocument.h>
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include "LaunchConfig.h"
@@ -78,6 +80,10 @@ SOFTWARE.*/
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
 #include "DlgPartSelector.h"
+#include <FEBioApp/FEBioAppView.h>
+#include <FEBioMonitor/FEBioMonitorDoc.h>
+#include <FEBioMonitor/FEBioMonitorPanel.h>
+#include <FEBioMonitor/FEBioMonitorView.h>
 #include <vector>
 
 class QProcess;
@@ -142,7 +148,8 @@ public:
 		XML_VIEWER,
 		IMG_SLICE,
 		TIME_VIEW_2D,
-		GL_VIEWER
+		GL_VIEWER,
+		APP_VIEWER
 	};
 
 public:
@@ -155,6 +162,7 @@ public:
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
+	FEBioAppView* appView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -192,6 +200,11 @@ public:
 
 		glw = new CGLViewer(wnd);
 		stack->addWidget(glw);
+
+		appView = new FEBioAppView(wnd);
+		appView->setObjectName("appview");
+		appView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(appView);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
@@ -273,6 +286,8 @@ public:
 	::CRepositoryPanel* databasePanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
+	CFEBioMonitorPanel* febioMonitor;
+	CFEBioMonitorView* febioMonitorView;
 	::CCommandWindow* commandWnd;
 
 	// additional windows
@@ -306,6 +321,8 @@ public:
 	QToolBar* xmlToolbar;
 	QAction* actionEditXmlAsText;
 
+	QToolBar* monitorToolBar;
+
 public:
 	QActionGroup* recentFilesActionGroup;
 	QActionGroup* recentProjectsActionGroup;
@@ -322,8 +339,13 @@ public:
 
 	// FEBIO menu
 	QAction* actionFEBioRun;
+	QAction* actionFEBioMonitor;
+	QAction* actionFEBioMonitorSettings;
+	QAction* actionFEBioContinue;
 	QAction* actionFEBioStop;
 	QAction* actionFEBioCheck;
+	QAction* actionFEBioPause;
+	QAction* actionFEBioNext;
 
 	// PHYSICS menu
 	QAction* actionAddRigidConnector;

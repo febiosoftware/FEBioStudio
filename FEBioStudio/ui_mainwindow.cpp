@@ -210,9 +210,14 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* assignSelection = addAction("Assign current selection", "actionAssignSelection"); assignSelection->setShortcut(Qt::ControlModifier | Qt::Key_A);
 
 	// --- FEBio menu actions ---
-	actionFEBioRun = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
-	actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
+	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 	actionFEBioCheck = addAction("Model check ...", "actionFEBioCheck");
+	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop", "stop");
+	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor");
+	actionFEBioMonitorSettings = addAction("FEBio Monitor Settings ...", "actionFEBioMonitorSettings", "febiomonitor");
+	actionFEBioContinue = addAction("Pause FEBio", "actionFEBioContinue", "play"); actionFEBioContinue->setShortcut(Qt::ControlModifier | Qt::Key_F5);
+	actionFEBioPause   = addAction("Pause FEBio", "actionFEBioPause", "pause"); actionFEBioPause->setShortcut(Qt::ShiftModifier | Qt::Key_F5);
+	actionFEBioNext    = addAction("Advance FEBio", "actionFEBioNext", "next"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
 	QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
@@ -571,6 +576,11 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuBar->addAction(menuFEBio->menuAction());
 	menuFEBio->addAction(actionFEBioRun);
 	menuFEBio->addAction(actionFEBioStop);
+	menuFEBio->addAction(actionFEBioMonitor);
+	menuFEBio->addAction(actionFEBioMonitorSettings);
+	menuFEBio->addAction(actionFEBioContinue);
+	menuFEBio->addAction(actionFEBioPause);
+	menuFEBio->addAction(actionFEBioNext);
 	menuFEBio->addAction(actionFEBioCheck);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
@@ -814,6 +824,18 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	xmlToolbar->addSeparator();
 	xmlToolbar->addAction(actionUndo);
 	xmlToolbar->addAction(actionRedo);
+
+	// FEBio Monitor toolbar
+	monitorToolBar = new QToolBar(mainWindow);
+	monitorToolBar->setObjectName("monitorToolbar");
+	monitorToolBar->setWindowTitle("Monitor Toolbar");
+	monitorToolBar->addAction(actionFEBioMonitorSettings);
+	monitorToolBar->addAction(actionFEBioContinue);
+	monitorToolBar->addAction(actionFEBioPause);
+	monitorToolBar->addAction(actionFEBioNext);
+	monitorToolBar->addAction(actionFEBioStop);
+	mainWindow->addToolBar(Qt::TopToolBarArea, monitorToolBar);
+
 }
 
 void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
@@ -884,11 +906,23 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	menuWindows->addAction(dock9->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock9);
 
-	QDockWidget* dock10 = new QDockWidget("Command Window", m_wnd); dock10->setObjectName("dockImageSettings");
-	commandWnd = new ::CCommandWindow(wnd, dock10);
-	dock10->setWidget(commandWnd);
+	QDockWidget* dock10 = new QDockWidget("FEBio Monitor", m_wnd); dock10->setObjectName("dockFEBioMonitor");
+	febioMonitor = new CFEBioMonitorPanel(wnd, dock10);
+	dock10->setWidget(febioMonitor);
 	menuWindows->addAction(dock10->toggleViewAction());
-	m_wnd->tabifyDockWidget(dock4, dock10);
+	m_wnd->tabifyDockWidget(dock1, dock10);
+
+	QDockWidget* dock11 = new QDockWidget("FEBio Monitor Graphs", m_wnd); dock11->setObjectName("dockFEBioMonitorView");
+	febioMonitorView = new CFEBioMonitorView(wnd, dock11);
+	dock11->setWidget(febioMonitorView);
+	menuWindows->addAction(dock11->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock4, dock11);
+
+	QDockWidget* dock12 = new QDockWidget("Command Window", m_wnd); dock12->setObjectName("dockCommandWindow");
+	commandWnd = new ::CCommandWindow(wnd, dock12);
+	dock12->setWidget(commandWnd);
+	menuWindows->addAction(dock12->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock4, dock12);
 
 	// make sure the file viewer is the visible tab
 	dock1->raise();
@@ -903,6 +937,8 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CPostConfig(this));
 	m_configs.push_back(new CTextConfig(this));
 	m_configs.push_back(new CXMLConfig(this));
+	m_configs.push_back(new CAPPConfig(this));
+	m_configs.push_back(new CMonitorConfig(this));
 
 	setUIConfig(Ui::Config::EMPTY_CONFIG);
 }

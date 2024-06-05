@@ -191,6 +191,7 @@ public:
 	QColor	m_yAxisCol;
 	QColor	m_xAxisTickCol;
 	QColor	m_yAxisTickCol;
+	QColor	m_boxColor;
 
 	CPlotAxis			m_xAxis;
 	CPlotAxis			m_yAxis;

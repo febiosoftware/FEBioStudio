@@ -34,8 +34,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QToolButton>
 #include "MainWindow.h"
-#include "Document.h"
-#include "PostDocument.h"
+#include "GLModelDocument.h"
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Material.h>
@@ -208,9 +207,16 @@ CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPane
 	m_pmat = new MaterialProps;
 }
 
-CPostDocument* CMaterialPanel::GetActiveDocument()
+Post::CGLModel* CMaterialPanel::GetActiveModel()
 {
-	return GetMainWindow()->GetPostDocument();
+	CGLModelDocument* gldoc = dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
+	if ((gldoc == nullptr) || !gldoc->IsValid()) return nullptr;
+
+	// get the model and make sure the model has a valid post model
+	Post::CGLModel* glm = gldoc->GetGLModel();
+	if (glm && (glm->GetFSModel() == nullptr)) return nullptr;
+
+	return glm;
 }
 
 void CMaterialPanel::Update(bool breset)
@@ -221,13 +227,11 @@ void CMaterialPanel::Update(bool breset)
 	ui->m_prop->Update(0);
 	m_pmat->SetMaterial(0);
 
-	CPostDocument* pdoc = GetActiveDocument();
-	if (pdoc == nullptr) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem)
-	{
-		QString flt = ui->GetFilterText();
+	QString flt = ui->GetFilterText();
 
 
 		int nmat = fem->Materials();
@@ -282,15 +286,14 @@ void CMaterialPanel::Update(bool breset)
 		if (nrows > 0)
 			ui->m_list->setCurrentItem(ui->m_list->item(0, 0));
 
-		UpdateStates();
-	}
+	UpdateStates();
 }
 
 void CMaterialPanel::UpdateStates()
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem == 0) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
 	int nmat = fem->Materials();
 	int items = ui->m_list->rowCount();
@@ -322,12 +325,12 @@ void CMaterialPanel::UpdateStates()
 
 void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* prev)
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid() && current)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm && current)
 	{
 		int imat = current->data(Qt::UserRole).toInt();
 
-		Post::FEPostModel& fem = *doc->GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		if ((imat >= 0) && (imat < fem.Materials()))
 		{
 			Post::Material* pmat = fem.GetMaterial(imat);
@@ -339,15 +342,17 @@ void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* curren
 
 void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid() && item)
+	if (ui->update == false) return;
+
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm && item)
 	{
 		int nrow = item->row();
 		int ncol = item->column();
 		int imat = ui->m_list->item(nrow, 0)->data(Qt::UserRole).toInt();
 
-		Post::CGLModel& mdl = *doc->GetGLModel();
-		Post::FEPostModel& fem = *doc->GetFSModel();
+		Post::CGLModel& mdl = *glm;
+		Post::FEPostModel& fem = *mdl.GetFSModel();
 		if ((imat >= 0) && (imat < fem.Materials()) && (ncol > 0))
 		{
 			Post::Material& mat = *fem.GetMaterial(imat);
@@ -383,9 +388,8 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 			{
 				mdl.UpdateMeshState();
 				mdl.ResetAllStates();
-				doc->UpdateFEModel(true);
+				mdl.Update(true);
 			}
-			doc->UpdateSelection(false);
 			GetMainWindow()->RedrawGL();
 		}
 	}
@@ -405,9 +409,9 @@ void CMaterialPanel::on_filter_textChanged(const QString& txt)
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
 {
 	// Get the model
-	CPostDocument& doc = *GetActiveDocument();
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	// get the current material
 	QModelIndex currentIndex = ui->m_list->currentIndex();
@@ -457,6 +461,6 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		}
 	}
 
-	mdl.Update(false);
+	glm->Update(false);
 	GetMainWindow()->RedrawGL();
 }
