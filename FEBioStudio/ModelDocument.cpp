@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"
 #include "units.h"
+#include <QJsonDocument>
 
 class CModelContext
 {
@@ -322,7 +323,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 			return;
 		}
 
-		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
+		DoCommand(new CCmdDeleteGObject(GetGModel(), obj), obj->GetName());
 	}
 	else if (po->GetParent())
 	{
@@ -342,10 +343,10 @@ void CModelDocument::DeleteObject(FSObject* po)
 			if (plc->GetReferenceCount() > 0)
 				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
 			else
-				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
-			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}
@@ -399,6 +400,9 @@ void CModelDocument::DeleteAllJobs()
 //-----------------------------------------------------------------------------
 void CModelDocument::Save(OArchive& ar)
 {
+	std::string sfile = GetDocFileName();
+	AppendChangeLog(QString("saved model to %1").arg(QString::fromStdString(sfile)));
+
 	// save version info
 	unsigned int version = SAVE_VERSION;
 	ar.WriteChunk(CID_VERSION, version);
@@ -408,6 +412,11 @@ void CModelDocument::Save(OArchive& ar)
 	{
 		ar.WriteChunk(CID_MODELINFO_COMMENT, m_info);
 		ar.WriteChunk(CID_MODELINFO_UNITS  , m_units);
+
+		const ChangeLog& log = GetChangeLog();
+		QString txt = log.toJson();
+		string s = txt.toStdString();
+		if (s.empty() == false) ar.WriteChunk(CID_MODELINFO_CHANGELOG, s);
 	}
 	ar.EndChunk();
 
@@ -488,6 +497,15 @@ void CModelDocument::Load(IArchive& ar)
 				{
 					nret = ar.read(m_units);
 				}
+				else if (nid == CID_MODELINFO_CHANGELOG)
+				{
+					string s;
+					ar.read(s);
+					ChangeLog newLog;
+					newLog.fromJson(QString::fromStdString(s));
+					SetChangeLog(newLog);
+				}
+
 				ar.CloseChunk();
 			}
 		}
@@ -1087,5 +1105,5 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd, false);
+	return DoCommand(cmd, po->GetName(), false);
 }

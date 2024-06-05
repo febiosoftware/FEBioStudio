@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <QDialog>
 
 class CPostDocument;
@@ -37,7 +37,7 @@ namespace Ui{
 
 class CMainWindow;
 
-class CStatePanel : public CCommandPanel
+class CStatePanel : public CWindowPanel
 {
 	Q_OBJECT
 

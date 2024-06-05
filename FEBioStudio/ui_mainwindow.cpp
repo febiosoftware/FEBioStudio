@@ -133,6 +133,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	// --- Edit menu actions ---
 	QAction* actionUndo = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 	QAction* actionRedo = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
+	QAction* actionChangeLog = addAction("Change log ...", "actionChangeLog");
+	QAction* actionShowCmdWnd = addAction("Command Window", "actionShowCmdWnd"); actionShowCmdWnd->setShortcut(Qt::Key_F1);
 	QAction* actionInvertSelection = addAction("Invert Selection", "actionInvertSelection"); actionInvertSelection->setShortcut(Qt::AltModifier | Qt::Key_I);
 	QAction* actionClearSelection = addAction("Clear Selection", "actionClearSelection");
 	QAction* actionDeleteSelection = addAction("Delete Selection", "actionDeleteSelection"); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
@@ -474,6 +476,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuBar->addAction(menuEdit->menuAction());
 	menuEdit->addAction(actionUndo);
 	menuEdit->addAction(actionRedo);
+	menuEdit->addAction(actionChangeLog);
+	menuEdit->addAction(actionShowCmdWnd);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionInvertSelection);
 	menuEdit->addAction(actionClearSelection);
@@ -877,6 +881,12 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	dock9->setWidget(imageSettingsPanel);
 	menuWindows->addAction(dock9->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock9);
+
+	QDockWidget* dock10 = new QDockWidget("Command Window", m_wnd); dock10->setObjectName("dockImageSettings");
+	commandWnd = new ::CCommandWindow(wnd, dock10);
+	dock10->setWidget(commandWnd);
+	menuWindows->addAction(dock10->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock4, dock10);
 
 	// make sure the file viewer is the visible tab
 	dock1->raise();

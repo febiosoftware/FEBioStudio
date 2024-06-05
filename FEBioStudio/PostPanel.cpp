@@ -62,13 +62,13 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	CCommandPanel* currentPanel()
+	CWindowPanel* currentPanel()
 	{
-		return dynamic_cast<CCommandPanel*>(tab->currentWidget());
+		return dynamic_cast<CWindowPanel*>(tab->currentWidget());
 	}
 };
 
-CPostPanel::CPostPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CPostPanel)
+CPostPanel::CPostPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CPostPanel)
 {
 	ui->setup(this, wnd);
 }
@@ -81,7 +81,7 @@ void CPostPanel::Reset()
 
 void CPostPanel::Update(bool breset)
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Update(breset);
 }
 
@@ -92,7 +92,7 @@ void CPostPanel::on_postTab_currentChanged(int index)
 
 void CPostPanel::Apply()
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Apply();
 }
 

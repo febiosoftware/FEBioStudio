@@ -25,19 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 
 class QTreeWidgetItem;
 class FSObject;
 class FEItemListBuilder;
+class FSCoreBase;
+class Param;
 struct CModelTreeItem;
 
 namespace Ui {
 	class CModelViewer;
 }
 
-class CModelViewer : public CCommandPanel
+class CModelViewer : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -66,7 +68,7 @@ public:
 	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
 
 	// assign the current selection to the currently selected item in the tree
-	void AssignCurrentSelection();
+	void AssignCurrentSelection(int ntarget = 0);
 
 	// set the current item
 	void SetCurrentItem(int item);
@@ -119,6 +121,7 @@ public slots:
 	void on_props_modelChanged();
 	void on_filter_currentIndexChanged(int n);
 	void on_warnings_clicked();
+	void on_props_paramChanged(FSCoreBase* pc, Param* p);
 
 public slots:
 	// slots for model tree context menu actions

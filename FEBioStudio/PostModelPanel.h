@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 
 //-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ namespace Ui {
 }
 
 //-----------------------------------------------------------------------------
-class CPostModelPanel : public CCommandPanel
+class CPostModelPanel : public CWindowPanel
 {
 	Q_OBJECT
 

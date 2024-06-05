@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
+#include "CommandWindow.h"
 
 //-----------------------------------------------------------------------------
 GLViewSelector::GLViewSelector(CGLView* glview) : m_glv(glview) 
@@ -1577,7 +1578,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 		int index = closestSurface->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, &index, 1);
 		else pcmd = new CCmdSelectSurface(&model, &index, 1, m_bshift);
-		surfName = ps->GetName();
+		surfName = closestSurface->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
@@ -1681,7 +1682,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 		int index = closestEdge->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
 		else pcmd = new CCmdSelectEdge(&model, &index, 1, m_bshift);
-		edgeName = ps->GetName();
+		edgeName = closestEdge->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
@@ -1756,7 +1757,7 @@ void GLViewSelector::SelectNodes(int x, int y)
 		assert(closestNode->Type() != NODE_SHAPE);
 		if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, &index, 1);
 		else pcmd = new CCmdSelectNode(&model, &index, 1, m_bshift);
-		nodeName = ps->GetName();
+		nodeName = closestNode->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 
@@ -2593,6 +2594,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 
 	double* a = m_glv->PlaneCoordinates();
 	int index = -1;
+	int globalIndex = -1;
 	float zmin = 0.f;
 	int NN = pm->Nodes();
 	for (int i = 0; i < NN; ++i)
@@ -2612,6 +2614,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 					if ((index == -1) || (p.z < zmin))
 					{
 						index = i;
+						globalIndex = node.m_nid;
 						zmin = p.z;
 					}
 				}
@@ -2647,7 +2650,14 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			if (!nodeList.empty())
 			{
 				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
-				else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+				else
+				{
+					pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+
+					// log command
+					QString s = QString("N%1").arg(globalIndex);
+					CCommandLogger::Log({ "selconnect", QString::number(view.m_fconn), s});
+				}
 			}
 		}
 		else
@@ -2656,6 +2666,10 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			else
 			{
 				pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+
+				// log command
+				QString s = QString("N%1").arg(globalIndex);
+				CCommandLogger::Log({ "sel", s });
 
 				// print value of currently selected node
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);

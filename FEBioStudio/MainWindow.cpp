@@ -550,7 +550,7 @@ void CMainWindow::ReadFile(CDocument* doc, const QString& fileName, FileReader* 
 	ReadNextFileInQueue();
 }
 
-void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal)
+void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal, bool openInThread)
 {
 	// stop any animation
 	if (ui->m_isAnimating) ui->postToolBar->CheckPlayButton(false);
@@ -583,7 +583,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
-		OpenPostFile(fileName, nullptr, showLoadOptions);
+		OpenPostFile(fileName, nullptr, showLoadOptions, openInThread);
 	}
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
@@ -1001,16 +1001,8 @@ bool CMainWindow::CreateNewProject(QString fileName)
 }
 
 //-----------------------------------------------------------------------------
-CModelDocument* CMainWindow::CreateNewDocument()
-{
-	CModelDocument* doc = new CModelDocument(this);
-	doc->SetUnitSystem(ui->m_settings.defaultUnits);
-	return doc;
-}
-
-//-----------------------------------------------------------------------------
 //! Open a plot file
-void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
+void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions, bool openInThread)
 {
 	// see if this file is already open
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(FindDocument(fileName.toStdString()));
@@ -1037,7 +1029,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 				}
 			}
 			doc->SetFileReader(xplt);
-			ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
+			int flags = QueuedFile::NEW_DOCUMENT;
+			if (!openInThread) flags |= QueuedFile::NO_THREAD;
+			ReadFile(doc, fileName, doc->GetFileReader(), flags);
 
 			// add file to recent list
 			ui->addToRecentFiles(fileName);
@@ -1209,6 +1203,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				FSDir::setMacro("ProjectDir", ".");
 			}
 			else ui->addToRecentFiles(file.m_fileName);
+
+			CCommandLogger::Log({ "open", file.m_fileName });
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
@@ -1364,6 +1360,11 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
+}
+
+CModelViewer* CMainWindow::GetModelViewer()
+{
+	return ui->modelViewer;
 }
 
 //-----------------------------------------------------------------------------
@@ -2905,7 +2906,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 				FSMaterial* pmsrc = gm->GetMaterialProperties();
 				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
 				GMaterial* newMat = new GMaterial(pmnew);
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat));
+				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 				UpdateModel(newMat);
 				return;
 			}
@@ -3123,6 +3124,11 @@ void CMainWindow::OnSelectionTransformed()
 		ui->buildPanel->Update(false);
 	}
 	RedrawGL();
+}
+
+CCommandWindow* CMainWindow::GetCommandWindow()
+{
+	return ui->commandWnd;
 }
 
 // remove a graph from the list

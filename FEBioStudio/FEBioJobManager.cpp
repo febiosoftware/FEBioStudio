@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <QFormLayout>
 #include "MainWindow.h"
+#include "ModelDocument.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -166,6 +167,8 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
 		im->wnd->AddLogEntry(logmsg);
 
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
+		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
 		CDlgJobMonitor dlg(im->wnd);
 		dlg.SetFEBioJob(job);
 		if (dlg.exec())

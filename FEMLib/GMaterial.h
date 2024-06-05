@@ -83,6 +83,8 @@ public:
 
 	vec3d GetPosition() const { return m_pos; }
 
+	const char* GetTypeString() const override;
+
 public:	// IHasItemList
 	int ItemLists() const override { return 1; }
 	FEItemListBuilder* GetItemList(int n = 0) override;

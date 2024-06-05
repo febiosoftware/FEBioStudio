@@ -49,6 +49,14 @@ class CModelDocument;
 class CGLDocument;
 class CGView;
 
+class FSRigidLoad;
+class FSRigidBC;
+class FSRigidIC;
+class FSMeshAdaptor;
+class FSLoadController;
+class FEMeshData;
+class FSMeshDataGenerator;
+
 //-----------------------------------------------------------------------------
 
 class CCmdAddObject : public CCommand
@@ -132,6 +140,117 @@ protected:
 	bool				m_bdel;
 };
 
+//-----------------------------------------------------------------------------
+class CCmdAddRigidLoad : public CCommand
+{
+public:
+	CCmdAddRigidLoad(FSStep* ps, FSRigidLoad* pmc);
+	~CCmdAddRigidLoad();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*			m_ps;
+	FSRigidLoad*	m_prl;
+	bool			m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddRigidBC : public CCommand
+{
+public:
+	CCmdAddRigidBC(FSStep* ps, FSRigidBC* pmc);
+	~CCmdAddRigidBC();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*		m_ps;
+	FSRigidBC*	m_prc;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddRigidIC : public CCommand
+{
+public:
+	CCmdAddRigidIC(FSStep* ps, FSRigidIC* pmc);
+	~CCmdAddRigidIC();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*		m_ps;
+	FSRigidIC*	m_prc;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshAdaptor : public CCommand
+{
+public:
+	CCmdAddMeshAdaptor(FSStep* ps, FSMeshAdaptor* pmc);
+	~CCmdAddMeshAdaptor();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep* m_ps;
+	FSMeshAdaptor* m_pma;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddLoadController : public CCommand
+{
+public:
+	CCmdAddLoadController(FSModel* fem, FSLoadController* pmc);
+	~CCmdAddLoadController();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModel*			m_fem;
+	FSLoadController*	m_plc;
+	bool				m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshDataField : public CCommand
+{
+public:
+	CCmdAddMeshDataField(FSMesh* pm, FEMeshData* pmd);
+	~CCmdAddMeshDataField();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSMesh* m_pm;
+	FEMeshData* m_pmd;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshDataGenerator : public CCommand
+{
+public:
+	CCmdAddMeshDataGenerator(FSModel* fem, FSMeshDataGenerator* pmd);
+	~CCmdAddMeshDataGenerator();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModel* m_fem;
+	FSMeshDataGenerator* m_pmd;
+	bool				m_bdel;
+};
 
 //-----------------------------------------------------------------------------
 class CCmdAddPart : public CCommand

@@ -202,7 +202,7 @@ public:
 	}
 };
 
-CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CMaterialPanel)
+CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CMaterialPanel)
 {
 	ui->setupUi(this);
 	m_pmat = new MaterialProps;

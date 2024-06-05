@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <FSCore/color.h>
 class CPostDocument;
 
@@ -36,7 +36,7 @@ namespace Ui {
 class MaterialProps;
 class QTableWidgetItem;
 
-class CMaterialPanel : public CCommandPanel
+class CMaterialPanel : public CWindowPanel
 {
 	Q_OBJECT
 

@@ -43,6 +43,10 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveObject.h>
 #include <PostGL/GLModel.h>
@@ -77,6 +81,90 @@ void CMainWindow::on_actionRedo_triggered()
 		UpdateModel();
 		Update();
 	}
+}
+
+class CDlgChangeLog : public QDialog
+{
+private:
+	QPlainTextEdit* m_txt;
+public:
+	CDlgChangeLog(QWidget* w) : QDialog(w)
+	{
+		setWindowTitle("Changelog");
+
+		setMinimumSize(1024, 600);
+
+		m_txt = new QPlainTextEdit;
+		m_txt->setReadOnly(true);
+		m_txt->setFont(QFont("Courier", 11));
+		m_txt->setWordWrapMode(QTextOption::NoWrap);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(m_txt);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::Save);
+		bb->button(QDialogButtonBox::Close)->setDefault(true);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	void SetText(const QString& title, const QString& txt)
+	{
+		setWindowTitle(QString("Changelog [%1]").arg(title));
+		m_txt->setPlainText(txt);
+	}
+};
+
+void CMainWindow::on_actionChangeLog_triggered()
+{
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt;
+	const ChangeLog& log = doc->GetChangeLog();
+	int n = log.size();
+	int m = (int) log10(n) + 1;
+	for (int i = 0; i < n; ++i)
+	{
+		const ChangeLog::Entry& v = log.entry(i);
+		txt += QString("%1: (").arg(i + 1, m);
+		txt += v.time.toString() + ") ";
+		txt += v.txt;
+		txt += "\n";
+	}
+
+	CDlgChangeLog dlg(this);
+	dlg.SetText(QString::fromStdString(doc->GetDocFileName()), txt);
+	if (dlg.exec())
+	{
+		// this assumes the "Save" button was pressed
+		QString fileName = QFileDialog::getSaveFileName(this, "Save changelog");
+		if (fileName.isEmpty() == false)
+		{
+			QFile file(fileName);
+			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			{
+				QMessageBox::critical(this, "Save changelog", "Failed to save changelog.");
+			}
+			else
+			{
+				QTextStream out(&file);
+				out << txt;
+				file.close();
+
+				QMessageBox::information(this, "Save changelog", QString("Changelog saved successfully to:\n%1").arg(fileName));
+			}
+		}
+	}
+}
+
+void CMainWindow::on_actionShowCmdWnd_triggered()
+{
+	ui->commandWnd->Show();
 }
 
 void CMainWindow::on_actionInvertSelection_triggered()
@@ -116,19 +204,19 @@ void CMainWindow::on_actionClearSelection_triggered()
 		{
 			switch (nsel)
 			{
-			case SELECT_OBJECT: doc->DoCommand(new CCmdSelectObject(mdl, 0, false)); break;
-			case SELECT_PART: doc->DoCommand(new CCmdSelectPart(mdl, 0, 0, false)); break;
-			case SELECT_FACE: doc->DoCommand(new CCmdSelectSurface(mdl, 0, 0, false)); break;
-			case SELECT_EDGE: doc->DoCommand(new CCmdSelectEdge(mdl, 0, 0, false)); break;
-			case SELECT_NODE: doc->DoCommand(new CCmdSelectNode(mdl, 0, 0, false)); break;
-			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false)); break;
+			case SELECT_OBJECT  : doc->DoCommand(new CCmdSelectObject  (mdl, 0,    false), "<empty>"); break;
+			case SELECT_PART    : doc->DoCommand(new CCmdSelectPart    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_FACE    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_EDGE    : doc->DoCommand(new CCmdSelectEdge    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_NODE    : doc->DoCommand(new CCmdSelectNode    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false), "<empty>"); break;
 			}
 		}
 		break;
-		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, 0, 0, false)); break;
-		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pmb, 0, 0, false)); break;
-		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
-		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm , 0, 0, false), "<empty>"); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces   (pmb, 0, 0, false), "<empty>"); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges (pml, 0, 0, false), "<empty>"); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes (pml, 0, 0, false), "<empty>"); break;
 		}
 	}
 
@@ -277,10 +365,10 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (po == 0) return;
 
 			GMeshObject* pgo = dynamic_cast<GMeshObject*>(po);
-			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()));
+			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()), pgo->GetName());
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()));
+			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()), pso->GetName());
 
 			GPrimitive* pp = dynamic_cast<GPrimitive*>(po);
 			if (pp)
@@ -735,7 +823,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddPart(po, pg));
+				doc->DoCommand(new CCmdAddPart(po, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -750,7 +838,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddSurface(po, pg));
+				doc->DoCommand(new CCmdAddSurface(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -765,7 +853,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
+				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -780,7 +868,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddNodeSet(po, pg));
+				doc->DoCommand(new CCmdAddNodeSet(po, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -798,7 +886,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GPartList* pg = new GPartList(mdl, dynamic_cast<GPartSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -807,7 +895,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -816,7 +904,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GEdgeList* pg = new GEdgeList(mdl, dynamic_cast<GEdgeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg), pg->GetName());
 				++nedges;
 				UpdateModel(pg);
 			}
@@ -825,7 +913,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GNodeList* pg = new GNodeList(mdl, dynamic_cast<GNodeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -1242,7 +1330,7 @@ void CMainWindow::on_actionDetach_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}
@@ -1275,7 +1363,7 @@ void CMainWindow::on_actionExtract_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}

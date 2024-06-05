@@ -59,6 +59,8 @@ class CImageSliceView;
 class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
+class CModelViewer;
+class CCommandWindow;
 
 enum class ImageFileType;
 
@@ -129,6 +131,9 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the model viewer
+	CModelViewer* GetModelViewer();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -262,6 +267,8 @@ public:
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
 
+	CCommandWindow* GetCommandWindow();
+
 private:
 	void writeSettings();
 	void readSettings();
@@ -273,8 +280,8 @@ public:
 
 	FileReader* CreateFileReader(const QString& fileName);
 
-	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
-	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true);
+	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true, bool openInThread = true);
+	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true, bool openInThread = true);
 
 	bool SaveDocument(const QString& fileName);
 
@@ -287,7 +294,7 @@ public:
 
 	bool CreateNewProject(QString fileName);
 
-	CModelDocument* CreateNewDocument();
+	QString CurrentWorkingDirectory();
 
 private:
 	void ReadFile(QueuedFile& qfile);
@@ -305,7 +312,11 @@ private:
 
 	bool ImportImage(CImageModel* imgModel);
 
-	QString CurrentWorkingDirectory();
+public:
+	QString GetOpenModelFilename();
+	QString GetSaveModelFilename(QString currentPath = QString(), QString fileName = QString());
+	QString GetExportGeometryFilename(QString& formatOption);
+	QString GetExportFEModelFilename(QString& formatOption);
 
 public slots:
     // add to the log 
@@ -349,6 +360,8 @@ public slots:
 
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
+	void on_actionChangeLog_triggered();
+	void on_actionShowCmdWnd_triggered();
 	void on_actionInvertSelection_triggered();
 	void on_actionClearSelection_triggered();
 	void on_actionDeleteSelection_triggered();

@@ -125,6 +125,7 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
 #include "units.h"
+#include <FEBioLink/FEBioModule.h>
 
 using std::stringstream;
 
@@ -144,60 +145,45 @@ void CMainWindow::on_actionOpenProject_triggered()
 void CMainWindow::on_actionNewModel_triggered()
 {
 	// create a unique name for this model
-	int n = 1;
-	string docTitle;
 	CDocManager* dm = m_DocManager;
-	bool bok = true;
-	do
-	{
-		stringstream ss;
-		ss << "Model" << n++;
-		docTitle = ss.str();
-		bok = true;
-		for (int i = 0; i < dm->Documents(); ++i)
-		{
-			CDocument* doci = dm->GetDocument(i);
-			if ((doci->GetDocTitle() == docTitle) || (doci->GetDocFileBase() == docTitle))
-			{
-				bok = false;
-				break;
-			}
-		}
-	} while (bok == false);
+	string docName = dm->GenerateNewDocName();
 
 	// show the dialog box
 	CDlgNew dlg(this);
-	dlg.SetModelName(QString::fromStdString(docTitle));
+	dlg.SetModelName(QString::fromStdString(docName));
 	if (dlg.exec())
 	{
-		CModelDocument* doc = CreateNewDocument();
+		int units = dlg.GetUnitSystem();
+		docName = dlg.GetModelName().toStdString();
+		CModelDocument* doc = nullptr;
 		if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
 		{
-			int nmodule = dlg.GetSelection();
-			doc->GetProject().SetModule(nmodule);
+			doc = dm->CreateNewDocument(dlg.GetSelection(), docName, units);
 		}
 		else if (dlg.CreateMode() == CDlgNew::CREATE_FROM_TEMPLATE)
 		{
-			if (doc->LoadTemplate(dlg.GetSelection()) == false)
+			doc = dm->CreateDocumentFromTemplate(dlg.GetSelection(), docName, units);
+			if (doc == nullptr)
 			{
 				QMessageBox::critical(this, "New", "Failed to initialize template.");
-				delete doc;
-				doc = nullptr;
+				return;
 			}
 		}
 		assert(doc);
 		if (doc)
 		{
-			int units = dlg.GetUnitSystem();
+			int units = doc->GetUnitSystem();
 			Units::SetUnitSystem(units);
-			doc->SetUnitSystem(units);
-
-			docTitle = dlg.GetModelName().toStdString();
-			doc->SetDocTitle(docTitle);
 			AddDocument(doc);
+
+			if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
+			{
+				QString modulename(FEBio::GetModuleName(dlg.GetSelection()));
+				QString documentName = QString::fromStdString(docName);
+				CCommandLogger::Log({ "new", modulename, documentName });
+			}
 		}
 	}
-	else return;
 }
 
 void CMainWindow::on_actionNewProject_triggered()
@@ -211,7 +197,7 @@ void CMainWindow::on_actionNewProject_triggered()
 	}
 }
 
-void CMainWindow::on_actionOpen_triggered()
+QString CMainWindow::GetOpenModelFilename()
 {
 	QStringList filters;
 	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.vtu *.vtp *.vtm *.fsps *.k *.dyn *.stl)";
@@ -227,6 +213,8 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
+	QString fileName;
+
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -240,8 +228,17 @@ void CMainWindow::on_actionOpen_triggered()
 
 		// get the file name
 		QStringList files = dlg.selectedFiles();
-		QString fileName = files.first();
+		fileName = QDir::toNativeSeparators(files.first());
+	}
 
+	return fileName;
+}
+
+void CMainWindow::on_actionOpen_triggered()
+{
+	QString fileName = GetOpenModelFilename();
+	if (!fileName.isEmpty())
+	{
 		OpenFile(fileName);
 	}
 }
@@ -552,6 +549,42 @@ void CMainWindow::OpenFEBioFile(const QString& fileName)
 	xml->SetDocFilePath(fileName.toStdString());
 
 	AddDocument(xml);
+}
+
+
+QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
+{
+	QStringList filters;
+	filters 
+		<< "FEBio input files (*.feb)"
+		<< "LSDYNA Keyword (*.k)"
+		<< "STL file (*.stl)"
+		<< "PLY file (*.ply)";
+
+	QFileDialog dlg(this, "Save");
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setDirectory(CurrentWorkingDirectory());
+	dlg.setNameFilters(filters);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	if (dlg.exec() == 0) return QString();
+
+	QStringList files = dlg.selectedFiles();
+	QString fileName = files.first();
+	if (fileName.isEmpty()) return QString();
+
+	QString filter = dlg.selectedNameFilter();
+	int nfilter = filters.indexOf(filter);
+	switch (nfilter)
+	{
+	case 0: formatOption = "feb"; break;
+	case 1: formatOption = "k"; break;
+	case 2: formatOption = "stl"; break;
+	case 3: formatOption = "ply"; break;
+	default:
+		assert(false);
+		formatOption.clear();
+	}
+	return fileName;
 }
 
 void CMainWindow::ExportPostGeometry()
@@ -1126,6 +1159,27 @@ QString CMainWindow::CurrentWorkingDirectory()
 	return path;
 }
 
+QString CMainWindow::GetSaveModelFilename(QString currentPath, QString fileName)
+{
+	QFileDialog dlg;
+	dlg.setDirectory(currentPath);
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
+	dlg.setDefaultSuffix("fs2");
+	dlg.selectFile(fileName);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	fileName.clear();
+	if (dlg.exec())
+	{
+		QStringList fileNames = dlg.selectedFiles();
+		if (fileNames.empty() == false)
+		{
+			fileName = QDir::toNativeSeparators(fileNames[0]);
+		}
+	}
+	return fileName;
+}
+
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSaveAs_triggered()
 {
@@ -1184,22 +1238,13 @@ void CMainWindow::on_actionSaveAs_triggered()
 		}
 	}
 
-	QFileDialog dlg;
-	dlg.setDirectory(currentPath);
-	dlg.setFileMode(QFileDialog::AnyFile);
-	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
-    dlg.setDefaultSuffix("fs2");
-	dlg.selectFile(QString::fromStdString(fileName));
-	dlg.setAcceptMode(QFileDialog::AcceptSave);
-	if (dlg.exec())
+	QString filename = GetSaveModelFilename(currentPath, QString::fromStdString(fileName));
+	if (!filename.isEmpty())
 	{
 		// clear the jobs
 		doc->DeleteAllJobs();
-
-		QStringList fileNames = dlg.selectedFiles();
 		doc->SetFileWriter(new CModelFileWriter(doc));
-		SaveDocument(QDir::toNativeSeparators(fileNames[0]));
-
+		SaveDocument(filename);
 		UpdateModel();
 	}
 }
@@ -1274,6 +1319,40 @@ void CMainWindow::on_actionSaveProject_triggered()
 		ui->fileViewer->Update();
 		UpdateTitle();
 	}
+}
+
+QString CMainWindow::GetExportFEModelFilename(QString& formatOption)
+{
+	// supported file formats
+	QStringList filters;
+	filters << "FEBio files (*.feb)";
+	filters << "NIKE3D files (*.n)";
+
+	QFileDialog dlg(this);
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	dlg.setNameFilters(filters);
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = QDir::toNativeSeparators(files.at(0));
+
+		// get the filter
+		QString flt = dlg.selectedNameFilter();
+		int nflt = filters.indexOf(flt);
+		switch (nflt)
+		{
+		case 0: formatOption = "feb"; break;
+		case 1: formatOption = "n"; break;
+		default:
+			assert(false);
+			formatOption.clear();
+			break;
+		}
+
+		return fileName;
+	}
+	return QString();
 }
 
 void CMainWindow::on_actionExportFEModel_triggered()

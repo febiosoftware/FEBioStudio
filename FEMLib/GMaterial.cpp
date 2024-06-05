@@ -129,6 +129,11 @@ const char* GMaterial::GetFullName()
 	return sz;
 }
 
+const char* GMaterial::GetTypeString() const
+{
+	return (m_pm ? m_pm->GetTypeString() : nullptr);
+}
+
 void GMaterial::Save(OArchive &ar)
 {
 	ar.WriteChunk(CID_MAT_ID, m_nID);

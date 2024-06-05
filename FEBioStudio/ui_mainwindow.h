@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ImageSettingsPanel.h"
 #include "2DImageTimeView.h"
+#include "CommandWindow.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "PostPanel.h"
@@ -269,6 +270,7 @@ public:
 	::CRepositoryPanel* databasePanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
+	::CCommandWindow* commandWnd;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

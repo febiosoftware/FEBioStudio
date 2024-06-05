@@ -125,6 +125,9 @@ private slots:
 	void onModelDataChanged();
 	void setFilter(const QString& flt);
 
+signals:
+	void paramChanged(FSCoreBase* pc, Param* param);
+
 private:
 	FEClassPropsModel*	m_model;
 };
@@ -144,9 +147,11 @@ public:
 
 private slots:
 	void on_clicked(const QModelIndex& index);
+	void on_paramChanged(FSCoreBase* pc, Param* p);
 
 signals:
 	void clicked(const QModelIndex& index);
+	void paramChanged(FSCoreBase* pc, Param* p);
 
 private:
 	QLineEdit* m_flt;
@@ -169,6 +174,10 @@ public slots:
 	void onItemClicked(const QModelIndex& i);
 	void onMathChanged(QString s);
 	void onPlotChanged();
+	void on_paramChanged(FSCoreBase* pc, Param* p);
+
+signals:
+	void paramChanged(FSCoreBase* pc, Param* p);
 
 private:
 	FEClassEditUI* ui;

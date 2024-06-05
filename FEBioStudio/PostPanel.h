@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 
 namespace Ui {
 	class CPostPanel;
@@ -33,7 +33,7 @@ namespace Ui {
 
 class FSObject;
 
-class CPostPanel : public CCommandPanel
+class CPostPanel : public CWindowPanel
 {
 	Q_OBJECT
 

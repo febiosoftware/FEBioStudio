@@ -743,9 +743,9 @@ void CModelPropsPanel::Refresh()
 	}
 }
 
-void CModelPropsPanel::AssignCurrentSelection()
+void CModelPropsPanel::AssignCurrentSelection(int ntarget)
 {
-	addSelection(0);
+	addSelection(ntarget);
 }
 
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
@@ -1100,7 +1100,7 @@ void CModelPropsPanel::addSelection(int n)
 				mdl.AddNamedSelection(pg);
 			}
 
-			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
+			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n), m_currentObject->GetName());
 			SetSelection(n, pil->GetItemList(n));
 
 			emit modelChanged();
@@ -1132,8 +1132,9 @@ void CModelPropsPanel::addSelection(int n)
 							return;
 						}
 					}
+
 					vector<int> l = pg->CopyItems();
-					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l), m_currentObject->GetName());
 				}
 			}
 			SetSelection(n, pl);
@@ -1167,7 +1168,7 @@ void CModelPropsPanel::addSelection(int n)
 			else
 			{
 				vector<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l), m_currentObject->GetName());
 			}
 		}
 		SetSelection(n, pl);
@@ -1219,7 +1220,7 @@ void CModelPropsPanel::subSelection(int n)
 		if (pg->Type() == pl->Type())
 		{
 			vector<int> l = pg->CopyItems();
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l), m_currentObject->GetName());
 		}
 
 		if (pmc) pmc->SetItemList(pl, n);
@@ -1266,7 +1267,7 @@ void CModelPropsPanel::delSelection(int n)
 		vector<int> items;
 		sel->getSelectedItems(items);
 
-		pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items), m_currentObject->GetName());
 
 		if (pmc) pmc->SetItemList(pl, n);
 
@@ -1369,7 +1370,7 @@ void CModelPropsPanel::clearSelection(int n)
 		pl = pmc->GetItemList(n);
 		if (pl)
 		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc, n));
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc, n), m_currentObject->GetName());
 			SetSelection(n, nullptr);
 			emit selectionChanged();
 		}
@@ -1574,6 +1575,11 @@ void CModelPropsPanel::on_math2_rightExtendChanged(int n)
 	{
 		plc->SetParamInt("right_extend", n);
 	}
+}
+
+void CModelPropsPanel::on_fec_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
 }
 
 void CModelPropsPanel::on_math2_minChanged(double vmin)

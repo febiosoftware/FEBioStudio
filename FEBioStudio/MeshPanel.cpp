@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
+#include "CommandWindow.h"
 
 class CSurfaceMesherProps : public CObjectProps
 {
@@ -220,7 +221,7 @@ REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDI
 REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
 REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDIT_MESH | EDIT_SAFE);
 
-CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
+CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
 	m_mod = 0;
 	m_nid = -1;
@@ -396,6 +397,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 			QString error = QString("Meshing Failed:\n") + errMsg;
 			QMessageBox::critical(this, "Meshing", error);
 		}
+		else doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
 
 		Update();
 		CMainWindow* w = GetMainWindow();
@@ -405,6 +407,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
+
+		CCommandLogger::Log("genmesh");
 	}
 }
 
@@ -551,4 +555,24 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 
 	Update();
 	GetMainWindow()->Update(this, true);
+}
+
+void CMeshPanel::on_form_dataChanged(bool itemModified, int index)
+{
+	CPropertyList* pl = ui->form->getPropertyList();
+	if (pl == nullptr) return;
+	if ((index >= 0) && (index < pl->Properties()))
+	{
+		CProperty& p = pl->Property(index);
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc)
+		{
+			GObject* poa = doc->GetActiveObject(); assert(poa);
+			if (poa == nullptr) return;
+
+			QVariant v = pl->GetPropertyValue(index);
+			QString msg = QString("Mesher parameter %1 changed to %2 (%3)").arg(p.name).arg(v.toString()).arg(QString::fromStdString(poa->GetName()));
+			doc->AppendChangeLog(msg);
+		}
+	}
 }

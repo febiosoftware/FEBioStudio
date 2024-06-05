@@ -2530,6 +2530,13 @@ void FSMesh::RemoveMeshDataField(int i)
 }
 
 //-----------------------------------------------------------------------------
+void FSMesh::RemoveMeshDataField(FEMeshData* data)
+{
+	int n = GetMeshDataIndex(data); assert(n >= 0);
+	if (n >= 0) RemoveMeshDataField(n);
+}
+
+//-----------------------------------------------------------------------------
 int FSMesh::GetMeshDataIndex(FEMeshData* data)
 {
 	for (int i = 0; i < m_meshData.size(); ++i)

@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <GLLib/GView.h>
 #include <QObject>
 #include "Command.h"
+#include <QDateTime>
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -237,6 +238,31 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class ChangeLog
+{
+public:
+	class Entry {
+	public:
+		QString txt;
+		QDateTime time;
+	};
+
+public:
+	size_t size() const { return m_entry.size(); }
+	const Entry& entry(size_t n) const { return m_entry[n]; }
+
+	void append(const QString& s);
+
+public:
+	QString toJson() const;
+
+	void fromJson(const QString& json);
+
+private:
+	std::vector<Entry>	m_entry;
+};
+
+//-----------------------------------------------------------------------------
 // Base class for documents that use the undo stack
 class CUndoDocument : public CDocument
 {
@@ -264,12 +290,23 @@ public:
 
     virtual void UpdateSelection(bool breport = true);
 
+public:
+	//! Get the change log
+	const ChangeLog& GetChangeLog();
+
+	//! Add a string to the change log
+	void AppendChangeLog(const QString& s);
+
+protected:
+	void SetChangeLog(const ChangeLog& log);
+
 signals:
 	void doCommand(QString s);
 
 protected:
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
+	ChangeLog			m_changeLog;
 };
 
 //-----------------------------------------------------------------------------

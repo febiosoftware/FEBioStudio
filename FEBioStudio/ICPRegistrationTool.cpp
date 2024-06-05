@@ -402,7 +402,7 @@ void CICPRegistrationTool::OnApply()
 	GetMainWindow()->AddLogEntry(QString("  Translation   : %1, %2, %3\n").arg(t.x).arg(t.y).arg(t.z));
 	GetMainWindow()->AddLogEntry(QString("  Rotation      : %1, %2, %3, %4\n").arg(q.x).arg(q.y).arg(q.z).arg(q.w));
 
-	doc->DoCommand(new CCmdTransformObject(srcObj, Qs));
+	doc->DoCommand(new CCmdTransformObject(srcObj, Qs), srcObj->GetName());
 
 	GetMainWindow()->RedrawGL();
 }

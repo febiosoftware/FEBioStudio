@@ -164,6 +164,185 @@ void CCmdAddConstraint::UnExecute()
 	m_bdel = true;
 }
 
+//=============================================================================
+CCmdAddRigidLoad::CCmdAddRigidLoad(FSStep* ps, FSRigidLoad* prl) : CCommand("Add rigid load")
+{
+	m_ps = ps;
+	m_prl = prl;
+	m_bdel = true;
+}
+
+CCmdAddRigidLoad::~CCmdAddRigidLoad()
+{
+	if (m_bdel) delete m_prl;
+}
+
+void CCmdAddRigidLoad::Execute()
+{
+	// add the connector to the step
+	m_ps->AddRigidLoad(m_prl);
+	m_bdel = false;
+}
+
+void CCmdAddRigidLoad::UnExecute()
+{
+	// remove the connector from the step
+	m_ps->RemoveRigidLoad(m_prl);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddRigidBC::CCmdAddRigidBC(FSStep* ps, FSRigidBC* prc) : CCommand("Add rigid constraint")
+{
+	m_ps = ps;
+	m_prc = prc;
+	m_bdel = true;
+}
+
+CCmdAddRigidBC::~CCmdAddRigidBC()
+{
+	if (m_bdel) delete m_prc;
+}
+
+void CCmdAddRigidBC::Execute()
+{
+	// add the connector to the step
+	m_ps->AddRigidBC(m_prc);
+	m_bdel = false;
+}
+
+void CCmdAddRigidBC::UnExecute()
+{
+	// remove the connector from the step
+	m_ps->RemoveRigidBC(m_prc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddRigidIC::CCmdAddRigidIC(FSStep* ps, FSRigidIC* prc) : CCommand("Add rigid initial condition")
+{
+	m_ps = ps;
+	m_prc = prc;
+	m_bdel = true;
+}
+
+CCmdAddRigidIC::~CCmdAddRigidIC()
+{
+	if (m_bdel) delete m_prc;
+}
+
+void CCmdAddRigidIC::Execute()
+{
+	m_ps->AddRigidIC(m_prc);
+	m_bdel = false;
+}
+
+void CCmdAddRigidIC::UnExecute()
+{
+	m_ps->RemoveRigidIC(m_prc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshAdaptor::CCmdAddMeshAdaptor(FSStep* ps, FSMeshAdaptor* pma) : CCommand("Add mesh adaptor")
+{
+	m_ps = ps;
+	m_pma = pma;
+	m_bdel = true;
+}
+
+CCmdAddMeshAdaptor::~CCmdAddMeshAdaptor()
+{
+	if (m_bdel) delete m_pma;
+}
+
+void CCmdAddMeshAdaptor::Execute()
+{
+	m_ps->AddMeshAdaptor(m_pma);
+	m_bdel = false;
+}
+
+void CCmdAddMeshAdaptor::UnExecute()
+{
+	m_ps->RemoveMeshAdaptor(m_pma);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddLoadController::CCmdAddLoadController(FSModel* fem, FSLoadController* plc) : CCommand("Add load controller")
+{
+	m_fem = fem;
+	m_plc = plc;
+	m_bdel = true;
+}
+
+CCmdAddLoadController::~CCmdAddLoadController()
+{
+	if (m_bdel) delete m_plc;
+}
+
+void CCmdAddLoadController::Execute()
+{
+	m_fem->AddLoadController(m_plc);
+	m_bdel = false;
+}
+
+void CCmdAddLoadController::UnExecute()
+{
+	m_fem->RemoveLoadController(m_plc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshDataField::CCmdAddMeshDataField(FSMesh* pm, FEMeshData* pmd) : CCommand("Add mesh data")
+{
+	m_pm = pm;
+	m_pmd = pmd;
+	m_bdel = true;
+}
+
+CCmdAddMeshDataField::~CCmdAddMeshDataField()
+{
+	if (m_bdel) delete m_pmd;
+}
+
+void CCmdAddMeshDataField::Execute()
+{
+	m_pm->AddMeshDataField(m_pmd);
+	m_bdel = false;
+}
+
+void CCmdAddMeshDataField::UnExecute()
+{
+	m_pm->RemoveMeshDataField(m_pmd);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshDataGenerator::CCmdAddMeshDataGenerator(FSModel* fem, FSMeshDataGenerator* pmd) : CCommand("Add mesh data generator")
+{
+	m_fem = fem;
+	m_pmd = pmd;
+	m_bdel = true;
+}
+
+CCmdAddMeshDataGenerator::~CCmdAddMeshDataGenerator()
+{
+	if (m_bdel) delete m_pmd;
+}
+
+void CCmdAddMeshDataGenerator::Execute()
+{
+	m_fem->AddMeshDataGenerator(m_pmd);
+	m_bdel = false;
+}
+
+void CCmdAddMeshDataGenerator::UnExecute()
+{
+	m_fem->RemoveMeshDataGenerator(m_pmd);
+	m_bdel = true;
+}
+
 //////////////////////////////////////////////////////////////////////
 // CCmdAddPart
 //////////////////////////////////////////////////////////////////////
@@ -353,14 +532,14 @@ void CCmdAddGNodeGroup::UnExecute()
 
 void CCmdAddBC::Execute()
 {
-	// add the group to the mesh
+	// add the boundary condition to the step
 	m_ps->AddBC(m_pbc);
 	m_bdel = false;
 }
 
 void CCmdAddBC::UnExecute()
 {
-	// remove the mesh from the model
+	// remove the boundary condition from the step
 	m_ps->RemoveBC(m_pbc);
 	m_bdel = true;
 }
@@ -388,14 +567,12 @@ void CCmdAddIC::UnExecute()
 
 void CCmdAddLoad::Execute()
 {
-	// add the group to the mesh
 	m_ps->AddLoad(m_pfc);
 	m_bdel = false;
 }
 
 void CCmdAddLoad::UnExecute()
 {
-	// remove the mesh from the model
 	m_ps->RemoveLoad(m_pfc);
 	m_bdel = true;
 }
@@ -409,6 +586,7 @@ CCmdDeleteDiscreteObject::CCmdDeleteDiscreteObject(GModel* model, GDiscreteObjec
 	m_model = model;
 	m_pobj = po; 
 	m_bdel = false; 
+	m_npos = -1;
 }
 
 CCmdDeleteDiscreteObject::~CCmdDeleteDiscreteObject() 
@@ -2076,7 +2254,7 @@ void CCmdUnselectNodes::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
-// CCmdAssignPartMaterial
+// CCmdAssignPartMaterial (TODO: This is not used anymore)
 //////////////////////////////////////////////////////////////////////
 
 CCmdAssignPartMaterial::CCmdAssignPartMaterial(GModel* model, vector<int> npart, int nmat) : CCommand("Assign material")
@@ -2119,7 +2297,7 @@ void CCmdAssignPartMaterial::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdAssignObjectMaterial
+// CCmdAssignObjectMaterial (TODO: This is not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdAssignObjectMaterial::CCmdAssignObjectMaterial(GObject* po, int mat) : CCommand("Assign material")
@@ -2769,7 +2947,7 @@ void CCmdUnhideAll::UnExecute()
 }
 
 //=============================================================================
-// CCmdApplyFEModifier
+// CCmdApplyFEModifier (TODO: not used anymore?)
 //-----------------------------------------------------------------------------
 
 CCmdApplyFEModifier::CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -2842,7 +3020,7 @@ void CCmdApplyFEModifier::UnExecute()
 
 
 //=============================================================================
-// CCmdApplySurfaceModifier
+// CCmdApplySurfaceModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdApplySurfaceModifier::CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -3006,7 +3184,7 @@ void CCmdChangeView::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdInvertElements
+// CCmdInvertElements (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
@@ -3054,7 +3232,7 @@ void CCmdChangeObjectParams::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdChangeMesherParams
+// CCmdChangeMesherParams (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdChangeMesherParams::CCmdChangeMesherParams(GObject *po) : CCommand("Change meshing parameters")
@@ -3121,7 +3299,7 @@ void CCmdSwapObjects::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdConvertToMultiBlock
+// CCmdConvertToMultiBlock (TODO: not used?)
 //-----------------------------------------------------------------------------
 
 CCmdConvertToMultiBlock::CCmdConvertToMultiBlock(GModel* model, GObject* po) : CCommand("Convert")
@@ -3173,7 +3351,7 @@ void CCmdConvertToMultiBlock::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdAddModifier
+// CCmdAddModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdAddModifier::CCmdAddModifier(GModifiedObject* po, GModifier* pm) : CCommand("Add modifier")

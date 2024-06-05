@@ -23,43 +23,74 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include <QWidget>
+#include <initializer_list>
+#include <FSCore/ParamBlock.h>
 
-//-----------------------------------------------------------------------------
-// forward declarations
 class CMainWindow;
-class CGLDocument;
 
-//-----------------------------------------------------------------------------
-//! Base class for command panels.
-//! A command panel provides tools for displaying and modifying parts of the FE 
-//! model.  
-class CCommandPanel : public QWidget
+namespace Ui {
+	class CCommandWindow;
+}
+
+class CCommandLine
 {
 public:
-	//! constructor
-	CCommandPanel(CMainWindow* wnd, QWidget* parent = 0);
+	CCommandLine();
+	CCommandLine(const char* szcmd);
+	CCommandLine(const QString& cmd);
+	CCommandLine(const QString& cmd, const QString& arg1);
+	CCommandLine(const QString& cmd, const QString& arg1, const QString& arg2);
+	CCommandLine(std::initializer_list<QString> initList);
 
-	//! get the main window
-	CMainWindow* GetMainWindow() { return m_wnd; }
+	CCommandLine& operator << (const QString& s);
+	CCommandLine& operator << (const QStringList& args);
 
-	//! Get the main document
-	CGLDocument*	GetDocument();
+	CCommandLine& AddArgument(const QString& arg);
+	CCommandLine& AddCommand(const QString& cmd);
 
-	//! Update the command panel, since the model has changed
-	virtual void Update(bool breset = true);
-
-	//! Process Esc key event (return true if processed)
-	virtual bool OnEscapeEvent() { return false; }
-
-	//! Process Del key event (return true if processed)
-	virtual bool OnDeleteEvent() { return false; }
-
-	//! Mechanism for programmatically apply a command tool
-	virtual void Apply() {}
+	QString GetCommandString() const { return m_cmd; }
 
 private:
-	CMainWindow*	m_wnd;	//!< pointer to main window
+	QString	m_cmd;
+};
+
+class CCommandWindow;
+
+class CCommandLogger
+{
+public:
+	static void SetCommandWindow(CCommandWindow* wnd) { m_wnd = wnd; }
+
+	static void Log(const CCommandLine& cmd);
+
+private:
+	CCommandLogger() {}
+	static CCommandWindow* m_wnd;
+};
+
+QStringList Stringify(const ParamContainer& PL);
+
+class CCommandWindow : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CCommandWindow(CMainWindow* wnd, QWidget* parent = 0);
+	~CCommandWindow();
+
+	void Show();
+
+	void showEvent(QShowEvent* ev) override;
+
+	void LogCommand(const CCommandLine& cmd);
+
+public slots:
+	void OnEnter();
+	void OnSave();
+	void OnClear();
+
+private:
+	Ui::CCommandWindow* ui;
 };

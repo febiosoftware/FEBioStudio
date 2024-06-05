@@ -45,6 +45,8 @@ class QComboBox;
 class QCheckBox;
 class GDiscreteElementSet;
 class QListWidget;
+class FSCoreBase;
+class Param;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -195,7 +197,7 @@ public:
 
 	void Refresh();
 
-	void AssignCurrentSelection();
+	void AssignCurrentSelection(int ntarget=0);
 
 private slots:
 	void on_select1_addButtonClicked();
@@ -228,6 +230,7 @@ private slots:
 	void on_math2_rightExtendChanged(int n);
 	void on_math2_minChanged(double vmin);
 	void on_math2_maxChanged(double vmax);
+	void on_fec_paramChanged(FSCoreBase* pc, Param* p);
 
 	void on_plt_dataChanged();
 
@@ -248,6 +251,7 @@ signals:
 	void selectionChanged();
 	void dataChanged(bool b);
 	void modelChanged();
+	void paramChanged(FSCoreBase* pc, Param* p);
 
 private:
 	Ui::CModelPropsPanel* ui;

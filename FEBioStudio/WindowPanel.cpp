@@ -25,22 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include "MainWindow.h"
 
 //-----------------------------------------------------------------------------
-CCommandPanel::CCommandPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent), m_wnd(wnd)
+CWindowPanel::CWindowPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent), m_wnd(wnd)
 {
 }
 
 //-----------------------------------------------------------------------------
-CGLDocument* CCommandPanel::GetDocument()
+CGLDocument* CWindowPanel::GetDocument()
 {
 	return m_wnd->GetGLDocument();
 }
 
 //-----------------------------------------------------------------------------
-void CCommandPanel::Update(bool b)
+void CWindowPanel::Update(bool b)
 {
 	// by default, nothing to do
 }

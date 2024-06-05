@@ -165,6 +165,7 @@ public:
 	FEMeshData* GetMeshDataField(int i);
 	FEMeshData* FindMeshDataField(const std::string& sz);
 	void RemoveMeshDataField(int i);
+	void RemoveMeshDataField(FEMeshData* data);
 	int GetMeshDataIndex(FEMeshData* data);
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);

@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QFileInfo>
 #include <MeshIO/STLExport.h>
+#include "PropertyList.h"
 
 class CDlgWarnings : public QDialog
 {
@@ -102,7 +103,7 @@ private:
 	QPlainTextEdit* m_out = nullptr;
 };
 
-CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
+CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
 	ui->setupUi(wnd, this);
 	m_currentObject = 0;
@@ -541,9 +542,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	delete[] pi;
 }
 
-void CModelViewer::AssignCurrentSelection()
+void CModelViewer::AssignCurrentSelection(int ntarget)
 {
-	ui->props->AssignCurrentSelection();
+	ui->props->AssignCurrentSelection(ntarget);
 }
 
 void CModelViewer::UpdateSelection()
@@ -581,6 +582,52 @@ void CModelViewer::on_warnings_clicked()
 	CDlgWarnings dlg(GetMainWindow());
 	dlg.SetWarnings(warnings);
 	dlg.exec();
+}
+
+void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	if (p == nullptr) return;
+
+	FSObject* po = pc;
+	if (dynamic_cast<FSMaterial*>(po))
+	{
+		FSMaterial* mat = dynamic_cast<FSMaterial*>(po);
+		GMaterial* gm = mat->GetOwner();
+		po = gm;
+	}
+
+	QString sp;
+	if (pc) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
+	else sp = QString("\"%1\"").arg(p->GetLongName());
+
+	QString sv;
+	switch (p->GetParamType())
+	{
+	case Param_INT   : sv = QString::number(p->GetIntValue()); break;
+	case Param_FLOAT : sv = QString::number(p->GetFloatValue()); break;
+	case Param_BOOL  : sv = (p->GetBoolValue()?"Yes":"No"); break;
+	case Param_VEC3D : sv = QString::number(p->GetIntValue()); break;
+	case Param_STRING: sv = QString("\"%1\"").arg(Vec3dToString(p->GetVec3dValue())); break;
+	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
+	case Param_COLOR : break;
+	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;
+	case Param_MAT3DS: sv = Mat3dsToString(p->GetMat3dsValue()); break;
+	case Param_VEC2I : sv = Vec2iToString(p->GetVec2iValue()); break;
+	case Param_STD_VECTOR_INT   : sv = VectorIntToString(p->GetVectorIntValue());  break;
+	case Param_STD_VECTOR_DOUBLE: sv = VectorDoubleToString(p->GetVectorDoubleValue());  break;
+	case Param_STD_VECTOR_VEC2D: break;
+	case Param_ARRAY_INT: break;			// fixed size array of int
+	case Param_ARRAY_DOUBLE: break;			// fixed size array of double
+	default:
+		break;
+	}
+
+	QString msg;
+	if (sv.isEmpty()) msg = QString("parameter %1 changed.").arg(sp);
+	else msg = QString("parameter %1 changed to %2").arg(sp).arg(sv);
+	doc->AppendChangeLog(msg);
 }
 
 void CModelViewer::on_props_nameChanged(const QString& txt)
@@ -981,7 +1028,7 @@ void CModelViewer::OnSelectPartElements()
 	doc->SetItemMode(ITEM_ELEM);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the elements
 	int lid = pg->GetLocalID();
@@ -1019,7 +1066,7 @@ void CModelViewer::OnSelectSurfaceFaces()
 	doc->SetItemMode(ITEM_FACE);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the faces
 	int lid = pf->GetLocalID();
@@ -1148,7 +1195,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2));
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2), pmat2->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1274,7 +1321,7 @@ void CModelViewer::OnCopyInterface()
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddInterface(step, piCopy));
+	pdoc->DoCommand(new CCmdAddInterface(step, piCopy), piCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1299,7 +1346,7 @@ void CModelViewer::OnCopyBC()
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
-	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy));
+	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy), pbcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1324,7 +1371,7 @@ void CModelViewer::OnCopyIC()
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddIC(step, picCopy));
+	pdoc->DoCommand(new CCmdAddIC(step, picCopy), picCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1349,7 +1396,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1374,7 +1421,7 @@ void CModelViewer::OnCopyConstraint()
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1399,7 +1446,7 @@ void CModelViewer::OnCopyLoad()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
-	pdoc->DoCommand(new CCmdAddLoad(step, plCopy));
+	pdoc->DoCommand(new CCmdAddLoad(step, plCopy), plCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1524,7 +1571,11 @@ void CModelViewer::OnStepMoveUp()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n > 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n - 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n - 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}
@@ -1541,7 +1592,11 @@ void CModelViewer::OnStepMoveDown()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n < fem->Steps() - 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n + 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n + 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}

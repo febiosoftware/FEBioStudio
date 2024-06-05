@@ -27,6 +27,10 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "DocManager.h"
 #include "Document.h"
+#include "MainWindow.h"
+#include "ModelDocument.h"
+#include <string>
+#include <sstream>
 
 CDocManager::CDocManager(CMainWindow* wnd) : m_wnd(wnd)
 {
@@ -75,4 +79,54 @@ CDocument* CDocManager::GetDocument(int i)
 		return m_docList[i];
 	else
 		return nullptr;
+}
+
+std::string CDocManager::GenerateNewDocName()
+{
+	int n = 1;
+	string docTitle;
+	bool bok = true;
+	do
+	{
+		std::stringstream ss;
+		ss << "Model" << n++;
+		docTitle = ss.str();
+		bok = true;
+		for (int i = 0; i < Documents(); ++i)
+		{
+			CDocument* doci = GetDocument(i);
+			if ((doci->GetDocTitle() == docTitle) || (doci->GetDocFileBase() == docTitle))
+			{
+				bok = false;
+				break;
+			}
+		}
+	} while (bok == false);
+	return docTitle;
+}
+
+CModelDocument* CDocManager::CreateNewDocument(int moduleID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(m_wnd);
+	doc->GetProject().SetModule(moduleID);
+
+	if (name.size() == 0) name = GenerateNewDocName();
+	doc->SetDocTitle(name);
+
+	if (units == -1) units = m_wnd->GetDefaultUnitSystem();
+	doc->SetUnitSystem(units);
+	return doc;
+}
+
+CModelDocument* CDocManager::CreateDocumentFromTemplate(int templateID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(m_wnd);
+	if (doc->LoadTemplate(templateID) == false)
+	{
+		delete doc;
+		return nullptr;
+	}
+	doc->SetDocTitle(name);
+	doc->SetUnitSystem(units);
+	return doc;
 }

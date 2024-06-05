@@ -25,41 +25,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <vector>
-#include <string>
+#include <QWidget>
 
-class CDocument;
+// forward declarations
 class CMainWindow;
-class CModelDocument;
+class CGLDocument;
 
-// This class manages the currently open documents
-class CDocManager
+//! Base class for window panels.
+class CWindowPanel : public QWidget
 {
 public:
-	CDocManager(CMainWindow* wnd);
+	//! constructor
+	CWindowPanel(CMainWindow* wnd, QWidget* parent = 0);
 
-	~CDocManager();
+	//! get the main window
+	CMainWindow* GetMainWindow() { return m_wnd; }
 
-	// return the number of documents
-	int Documents() const;
+	//! Get the main document
+	CGLDocument*	GetDocument();
 
-	// add a document
-	bool AddDocument(CDocument* doc);
+	//! Update the command panel, since the model has changed
+	virtual void Update(bool breset = true);
 
-	// remove a document
-	void RemoveDocument(int i);
+	//! Process Esc key event (return true if processed)
+	virtual bool OnEscapeEvent() { return false; }
 
-	// get a document
-	CDocument* GetDocument(int i);
+	//! Process Del key event (return true if processed)
+	virtual bool OnDeleteEvent() { return false; }
 
-	// create a unique default document name 
-	std::string GenerateNewDocName();
-
-	// create a new model document
-	CModelDocument* CreateNewDocument(int moduleID, std::string name = "", int units = -1);
-	CModelDocument* CreateDocumentFromTemplate(int templateID, std::string name, int units = -1);
+	//! Mechanism for programmatically apply a command tool
+	virtual void Apply() {}
 
 private:
-	CMainWindow*	m_wnd;
-	std::vector<CDocument*>	m_docList;
+	CMainWindow*	m_wnd;	//!< pointer to main window
 };

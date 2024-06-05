@@ -713,7 +713,7 @@ public:
 	}
 };
 
-CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
+CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
 {
 	ui->setupUi(this);
 

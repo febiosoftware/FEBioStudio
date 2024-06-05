@@ -67,11 +67,52 @@ SOFTWARE.*/
 #include <sstream>
 #include <QTextStream>
 #include "units.h"
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 using std::stringstream;
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
+
+//=============================================================================
+void ChangeLog::append(const QString& s)
+{
+	QDateTime current = QDateTime::currentDateTime();
+	m_entry.push_back({ s, current });
+}
+
+QString ChangeLog::toJson() const
+{
+	QJsonArray json;
+	for (const Entry& e : m_entry)
+	{
+		QJsonObject o;
+		o["txt"] = e.txt;
+		o["time"] = e.time.toString();
+		json.push_back(o);
+	}
+
+	QJsonDocument jdoc(json);
+	QString s = jdoc.toJson(QJsonDocument::JsonFormat::Compact);
+	return s;
+}
+
+void ChangeLog::fromJson(const QString& json)
+{
+	QJsonDocument jdoc = QJsonDocument::fromJson(json.toUtf8());
+	QJsonArray ja = jdoc.array();
+	m_entry.clear();
+	for (QJsonArray::Iterator it = ja.begin(); it != ja.end(); it++)
+	{
+		QJsonValue v = *it;
+		QJsonObject o = v.toObject();
+		QString txt = o["txt"].toString();
+		QString time = o["time"].toString();
+		m_entry.push_back({ txt, QDateTime::fromString(time) });
+	}
+}
 
 //=============================================================================
 CDocObserver::CDocObserver(CDocument* doc) : m_doc(doc)
@@ -415,8 +456,10 @@ void CUndoDocument::AddCommand(CCommand* pcmd)
 	m_pCmd->AddCommand(pcmd);
 	SetModifiedFlag();
 	UpdateSelection();
+	QString msg = pcmd->GetName();
 	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
+	AppendChangeLog(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -426,11 +469,14 @@ void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
 	SetModifiedFlag();
 	UpdateSelection();
 	CMainWindow* wnd = GetMainWindow();
+
+	QString msg;
 	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
+	else 
+		msg = pcmd->GetName();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
+	AppendChangeLog(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -442,8 +488,10 @@ const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 //-----------------------------------------------------------------------------
 bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
 {
-	emit doCommand(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	QString msg = pcmd->GetName();
+	emit doCommand(QString("Executing command: %1\n").arg(msg));
 	bool ret = m_pCmd->DoCommand(pcmd);
+	AppendChangeLog(msg);
 	SetModifiedFlag();
 	if (b) UpdateSelection();
 	return ret;
@@ -452,12 +500,15 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
 //-----------------------------------------------------------------------------
 bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 {
-	CMainWindow* wnd = GetMainWindow();
+	QString msg;
 	if (s.empty() == false)
 	{
-//		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
 	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	else msg = pcmd->GetName();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
+	AppendChangeLog(msg);
 
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
@@ -478,8 +529,10 @@ void CUndoDocument::UndoCommand()
 	m_pCmd->UndoCommand();
 	SetModifiedFlag();
 	UpdateSelection();
+	QString msg = QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName));
 	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
+	wnd->AddLogEntry(msg);
+	AppendChangeLog(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -489,8 +542,10 @@ void CUndoDocument::RedoCommand()
 	m_pCmd->RedoCommand();
 	SetModifiedFlag();
 	UpdateSelection();
+	QString msg = QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName));
 	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
+	wnd->AddLogEntry(msg);
+	AppendChangeLog(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -503,6 +558,24 @@ void CUndoDocument::ClearCommandStack()
 void CUndoDocument::UpdateSelection(bool breport)
 {
 
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::AppendChangeLog(const QString& s)
+{
+	m_changeLog.append(s.simplified());
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::SetChangeLog(const ChangeLog& log)
+{
+	m_changeLog = log;
+}
+
+//-----------------------------------------------------------------------------
+const ChangeLog& CUndoDocument::GetChangeLog()
+{
+	return m_changeLog;
 }
 
 //==============================================================================

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include "DlgStartThread.h"
 
 class CMainWindow;
@@ -66,7 +66,7 @@ private:
 };
 
 
-class CEditPanel : public CCommandPanel
+class CEditPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -85,6 +85,7 @@ private slots:
 	void on_posX_editingFinished();
 	void on_posY_editingFinished();
 	void on_posZ_editingFinished();
+	void on_form_dataChanged(bool itemModified, int index);
 
 private:
 	void updateObjectPosition();
