@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 	}
 }
 
-void readXML(QStringList& files, QStringList& dirs)
+void readXML(QStringList& files, QStringList& dirs, QStringList& uninstallCmds)
 {
 	char updaterPath[1050];
 	char updaterDir[1024];
@@ -104,6 +104,21 @@ void readXML(QStringList& files, QStringList& dirs)
         {
             dirs.append(tag.m_szval.c_str());
         }
+        else if(tag == "uninstallCmds")
+        {
+            ++tag;
+            do
+            {
+                if(tag == "cmd")
+                {
+                    uninstallCmds.append(tag.m_szval.c_str());
+                }
+
+                ++tag; 
+            }
+            while(!tag.isend());
+
+        }
 
         ++tag;
     }
@@ -123,8 +138,9 @@ void uninstall()
 	{
 		QStringList files;
 		QStringList dirs;
+        QStringList cmds;
 
-		readXML(files, dirs);
+		readXML(files, dirs, cmds);
 
 		files.append("autoUpdate.xml");
 
@@ -133,12 +149,16 @@ void uninstall()
 			QFile::remove(file);
 		}
 
-
 		for(auto dir : dirs)
 		{
 			QDir temp(dir);
 			temp.removeRecursively();
 		}
+
+        for(auto cmd : cmds)
+        {
+            std::system(cmd.toStdString().c_str());
+        }
 	}
 }
 

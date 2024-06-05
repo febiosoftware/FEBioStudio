@@ -184,6 +184,8 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 
 void CUpdateWidget::parseAppXML(QXmlStreamReader& reader, bool dev)
 {
+
+
     if (reader.readNextStartElement())
 	{
 		if(reader.name() == UPDATE) 
@@ -266,6 +268,34 @@ void CUpdateWidget::parseAppXML(QXmlStreamReader& reader, bool dev)
 								if(reader.name() == FEBFILE)
 								{
 									release.deleteFiles.append(reader.readElementText());
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
+                        else if(reader.name() == INSTALLCMD)
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == COMMAND)
+								{
+									release.installCommands.append(reader.readElementText());
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
+                        else if(reader.name() == UNINSTALLCMD)
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == COMMAND)
+								{
+									release.uninstallCommands.append(reader.readElementText());
 								}
 								else
 								{
@@ -484,6 +514,19 @@ void CUpdateWidget::showUpdateInfo()
                 {
                     deleteFiles.append(file);
                 }
+            }
+
+            // replace $INSTALLDIR variable in the commands
+            QString installDir = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT)).absoluteFilePath();
+
+            for(auto cmd : release.installCommands)
+            {
+                installCmds.append(cmd.replace("$INSTALLDIR", installDir));
+            }
+
+            for(auto cmd : release.uninstallCommands)
+            {
+                uninstallCmds.append(cmd.replace("$INSTALLDIR", installDir));
             }
 
             // Only grab the latest sdk
