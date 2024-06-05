@@ -332,13 +332,16 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 				int NN = selection->Size();
 				for (int i = 0; i < NN; i++)
 				{
-					FSNode& node = *selection->Node(i);
-					tag.r = pm->LocalToGlobal(node.r);
-					tag.c = (node.IsExterior() ? extcol : intcol);
-					int nid = node.GetID();
-					if (nid < 0) nid = selection->NodeIndex(i) + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-					vtag.push_back(tag);
+					FSNode* node = selection->Node(i); assert(node);
+					if (node)
+					{
+						tag.r = pm->LocalToGlobal(node->r);
+						tag.c = (node->IsExterior() ? extcol : intcol);
+						int nid = node->GetID();
+						if (nid < 0) nid = selection->NodeIndex(i) + 1;
+						snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
+						vtag.push_back(tag);
+					}
 				}
 			}
 		}

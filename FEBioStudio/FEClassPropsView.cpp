@@ -58,14 +58,17 @@ using namespace std;
 QStringList GetEnumValues(FSModel* fem, const char* ch);
 
 //=================================================================================
-CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent) : QComboBox(parent)
+CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, int index, FSModel* fem, QWidget* parent) : QComboBox(parent)
 {
+	m_fem = fem;
 	m_pc = pc;
 	m_pp = pp;
+	m_index = index;
 
 	if (pc) addItem(pc->GetTypeString(), pc->GetClassID());
 	else addItem("(none)", -1);
 	addItem("<select...>", -3);
+	addItem("<copy  ...>", -4);
 	addItem("<remove...>", -2);
 	if (pc == nullptr) setCurrentIndex(-1);
 
@@ -99,6 +102,29 @@ void CPropertySelector::onSelectionChanged(int n)
 			setCurrentIndex(0);
 
 			emit currentDataChanged(n);
+		}
+	}
+	else if (m == -4)
+	{
+		int superID = m_pp->GetSuperClassID();
+		int baseID = m_pp->GetPropertyType();
+		QString title = QString("Copy %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		FSModelComponent* src = dynamic_cast<FSModelComponent*>(m_pp->GetParent());
+		CDlgCopyPhysicsItem dlg(title, superID, baseID, src, m_fem, this);
+		if (dlg.exec())
+		{
+			FSModelComponent* pc = dlg.GetSelectedComponent();
+			if (pc)
+			{
+				FSModelComponent* newpc = FEBio::CloneModelComponent(pc, m_fem);
+				if ((m_index < 0) || (m_pp->Size() == 0)) m_pp->AddComponent(newpc);
+				else m_pp->SetComponent(newpc, m_index);
+				int n = newpc->GetClassID();
+				this->setItemData(0, n);
+				this->setItemText(0, newpc->GetTypeString());
+				setCurrentIndex(0);
+				emit currentDataChanged(n);
+			}
 		}
 	}
 }
@@ -757,7 +783,7 @@ public:
 							if (oldprop && (oldprop->GetClassID() == classId))
 							{
 								// the type has not changed, so don't replace the property
-								return false;
+								return true;
 							}
 						}
 
@@ -1445,7 +1471,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				}
 				else
 				{
-					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, parent);
+					CPropertySelector* pc = new CPropertySelector(&prop, pcbi, item->m_index, item->GetFSModel(), parent);
 					QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 					return pc;
 				}

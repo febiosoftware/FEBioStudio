@@ -68,6 +68,7 @@ SOFTWARE.*/
 #define WARNING_LC_NOT_USED			9
 #define WARNING_SEL_NOT_USED		10
 #define WARNING_IMAGE_NO_LOAD		11
+#define WARNING_DISCRETE_SET_EMPTY	12
 
 // base class for object validators
 // - define warning IDs (see list above)
@@ -347,6 +348,31 @@ public:
 
 private:
 	CImageModel* m_img;
+};
+
+class CDiscreteSetValidator : public CObjectValidator
+{
+public:
+	CDiscreteSetValidator(GDiscreteElementSet* dset) : m_dset(dset) {}
+
+	QString GetErrorString() const override
+	{
+		QString err;
+		if (m_dset==nullptr) err = QString("nullptr!");
+		else if (m_dset->size() == 0)
+			err = QString("Discrete element set \"%1\" is empty.").arg(QString::fromStdString(m_dset->GetName()));
+		return err;
+	}
+
+	unsigned int GetWarningID() const override { return WARNING_DISCRETE_SET_EMPTY; };
+
+	bool IsValid() override
+	{
+		return (m_dset && (m_dset->size() > 0));
+	}
+
+private:
+	GDiscreteElementSet* m_dset;
 };
 
 //=============================================================================
@@ -1324,9 +1350,9 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 			FSDiscreteMaterial* dm = pg->GetMaterial();
 			if (dm)
 			{
-				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm));
+				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm), new CDiscreteSetValidator(pg));
 			}
-			else QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr);
+			else QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr, new CDiscreteSetValidator(pg));
 
 /*			for (int j = 0; j<pg->size(); ++j)
 			{
@@ -1338,6 +1364,11 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 		else if (dynamic_cast<GDeformableSpring*>(po))
 		{
 			AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, 0, po, new CObjectProps(po));
+		}
+		else if (dynamic_cast<GDiscreteElementSet*>(po))
+		{
+			GDiscreteElementSet* dset = dynamic_cast<GDiscreteElementSet*>(po);
+			AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, dset->size(), dset, 0, new CDiscreteSetValidator(dset));
 		}
 		else AddTreeItem(t1, QString::fromStdString(po->GetName()));
 	}

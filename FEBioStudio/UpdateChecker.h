@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <QSslError>
 #include <QStringList>
+#include <unordered_map>
 
 class QNetworkReply;
 class QVBoxLayout;
@@ -37,6 +38,7 @@ class QLabel;
 class QCheckBox;
 class QNetworkAccessManager;
 class QDialogButtonBox;
+class QXmlStreamReader;
 
 #ifdef WIN32
 	#define URL_BASE "/update2/FEBioStudio2/Windows"
@@ -60,7 +62,8 @@ class QDialogButtonBox;
 
 struct ReleaseFile
 {
-	QString name;
+	QString baseURL;
+    QString name;
 	qint64 size;
 };
 
@@ -105,10 +108,9 @@ private slots:
 	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
-	bool NetworkAccessibleCheck();
-
 	void checkForAppUpdate();
     void checkForAppUpdateResponse(QNetworkReply *r);
+    void parseAppXML(QXmlStreamReader& reader, bool dev);
 
 	void checkForUpdaterUpdate();
 	void checkForUpdaterUpdateResponse(QNetworkReply *r);
@@ -127,13 +129,9 @@ public:
 
     QNetworkAccessManager* restclient;
 
-    QStringList updateFiles;
+    std::vector<ReleaseFile> updateFiles;
 	QStringList deleteFiles;
-	QStringList newFiles;
-	QStringList newDirs;
-	int currentIndex;
 	qint64 overallSize;
-	qint64 downloadedSize;
 
     std::vector<Release> releases;
 	std::vector<Release> updaterReleases;
@@ -141,10 +139,9 @@ public:
 	qint64 serverTime;
 
 	bool devChannel;
+    bool devAlreadyParsed;
 	bool updaterUpdateCheck;
 	bool doingUpdaterUpdate;
-	QString urlBase;
-	QString updaterBase;
 
     bool m_askSDK;
     QCheckBox* m_getSDK;

@@ -35,7 +35,7 @@ namespace Ui {
 class CDlgCheck : public QDialog
 {
 public:
-	CDlgCheck(QWidget* parent);
+	CDlgCheck(QWidget* parent, bool askRunQuestion);
 
 	void SetWarnings(const std::vector<MODEL_ERROR>& errorList);
 

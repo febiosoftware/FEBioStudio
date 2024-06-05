@@ -107,6 +107,14 @@ FSMaterial* GMaterial::GetMaterialProperties()
 	return m_pm; 
 }
 
+FSMaterial* GMaterial::TakeMaterialProperties()
+{
+	FSMaterial* pm = m_pm;
+	m_pm = nullptr;
+	if (pm) pm->SetOwner(nullptr);
+	return pm;
+}
+
 GMaterial* GMaterial::Clone()
 {
 	FSMaterial* pmCopy = 0;

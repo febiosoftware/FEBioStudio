@@ -33,7 +33,7 @@ void LSDynaFileParser::ClearError()
 
 bool LSDynaFileParser::Error(const std::string& err)
 {
-	int line = m_ls.CurrentLineNumber();
+	size_t line = m_ls.CurrentLineNumber();
 	std::stringstream ss;
 	ss << err << " (line " << line << ")";
 	m_err += ss.str() + "\n";
@@ -74,13 +74,16 @@ bool LSDynaFileParser::ParseFile()
 			{
 				if (Read_Define_Curve_Title() == false) return Error("error while reading DEFINE_CURVE_TITLE section.");
 			}
-			else if (card == "*ELEMENT_SOLID (ten nodes format)")
+			else if (card == "*ELEMENT_SOLID")
 			{
-				if (Read_Element_Solid2() == false) return Error("error while reading ELEMENT_SOLID section.");
-			}
-			else if(card == "*ELEMENT_SOLID")
-			{
-				if (Read_Element_Solid() == false) return Error("error while reading ELEMENT_SOLID section.");
+				if (card.contains("(ten nodes format)"))
+				{
+					if (Read_Element_Solid2() == false) return Error("error while reading ELEMENT_SOLID section.");
+				}
+				else
+				{
+					if (Read_Element_Solid() == false) return Error("error while reading ELEMENT_SOLID section.");
+				}
 			}
 			else if (card == "*ELEMENT_SHELL_THICKNESS")
 			{

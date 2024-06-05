@@ -44,7 +44,7 @@ class CPropertySelector : public QComboBox
 	Q_OBJECT
 
 public:
-	CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent = nullptr);
+	CPropertySelector(FSProperty* pp, FSCoreBase* pc, int index, FSModel* fem, QWidget* parent = nullptr);
 
 public slots:
 	void onSelectionChanged(int n);
@@ -53,8 +53,10 @@ signals:
 	void currentDataChanged(int n);
 
 private:
+	FSModel* m_fem;
 	FSCoreBase* m_pc;
 	FSProperty* m_pp;
+	int m_index;
 };
 
 class CMeshItemPropertySelector : public QComboBox

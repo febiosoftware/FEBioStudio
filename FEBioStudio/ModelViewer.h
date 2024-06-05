@@ -131,6 +131,7 @@ public slots:
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnDeleteNamedSelection();
+	void OnExportFESurface();
 	void OnHideObject();
 	void OnShowObject();
 	void OnSelectObject();

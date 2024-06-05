@@ -80,7 +80,7 @@ void FEKinemat::SetRange(int n0, int n1, int ni)
 
 int FEKinemat::States() const
 {
-	return m_State.size();
+	return (int) m_State.size();
 }
 
 //-----------------------------------------------------------------------------

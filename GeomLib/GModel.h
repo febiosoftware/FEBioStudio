@@ -224,6 +224,7 @@ public:
 	int FindDiscreteObjectIndex(GDiscreteObject* po);
 	GDiscreteObject* FindDiscreteObject(const std::string& name);
 
+	void RemoveMeshData();
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
 	void RemoveUnusedSelections();

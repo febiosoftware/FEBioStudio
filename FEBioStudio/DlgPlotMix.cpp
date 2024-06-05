@@ -32,14 +32,8 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QLabel>
-#include <QLineEdit>
 #include <QDialogButtonBox>
 #include <PostLib/FEPlotMix.h>
-#include "Document.h"
-#include "InputWidgets.h"
-#include <PostLib/FEKinemat.h>
-#include <PostLib/FELSDYNAimport.h>
 #include "PostDocument.h"
 
 class CDlgPlotMixUI

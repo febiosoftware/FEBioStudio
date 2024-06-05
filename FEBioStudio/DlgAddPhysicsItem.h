@@ -28,7 +28,9 @@ SOFTWARE.*/
 #include "HelpDialog.h"
 
 class UIDlgAddPhysicsItem;
+class UIDlgCopyPhysicsItem;
 class FSModel;
+class FSModelComponent;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {
@@ -51,4 +53,17 @@ public slots:
 
 private:
 	UIDlgAddPhysicsItem*	ui;
+};
+
+class CDlgCopyPhysicsItem : public QDialog
+{
+	Q_OBJECT
+
+public:
+	CDlgCopyPhysicsItem(QString windowTitle, int superID, int baseClassID, FSModelComponent* src, FSModel* fem, QWidget* parent);
+
+	FSModelComponent* GetSelectedComponent();
+
+private:
+	UIDlgCopyPhysicsItem* ui;
 };

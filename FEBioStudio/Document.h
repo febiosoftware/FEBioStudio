@@ -45,10 +45,13 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Transform Modes
-#define TRANSFORM_NONE		1
-#define TRANSFORM_MOVE		2
-#define TRANSFORM_ROTATE	3
-#define TRANSFORM_SCALE		4
+enum TransformMode
+{
+	TRANSFORM_NONE   = 1,
+	TRANSFORM_MOVE   = 2,
+	TRANSFORM_ROTATE = 3,
+	TRANSFORM_SCALE  = 4
+};
 
 //-----------------------------------------------------------------------------
 // see CGLDocument::GetSelectionMode()
@@ -339,7 +342,7 @@ public:
 	void SetViewState(VIEW_STATE vs);
 
 	int GetTransformMode() { return m_vs.ntrans; }
-	void SetTransformMode(int mode) { m_vs.ntrans = mode; UpdateSelection(false); }
+	void SetTransformMode(TransformMode mode);
 
 	int GetSelectionMode() { return m_vs.nselect; }
 	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(false); }

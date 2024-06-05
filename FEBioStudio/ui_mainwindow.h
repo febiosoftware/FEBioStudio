@@ -320,6 +320,7 @@ public:
 	// FEBIO menu
 	QAction* actionFEBioRun;
 	QAction* actionFEBioStop;
+	QAction* actionFEBioCheck;
 
 	// PHYSICS menu
 	QAction* actionAddRigidConnector;

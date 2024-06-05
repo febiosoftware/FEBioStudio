@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
+#include <MeshIO/STLExport.h>
 #include "PropertyList.h"
 
 class CDlgWarnings : public QDialog
@@ -762,6 +763,25 @@ void CModelViewer::OnDeleteNamedSelection()
 	OnDeleteItem();
 }
 
+void CModelViewer::OnExportFESurface()
+{
+	FSSurface* surf = dynamic_cast<FSSurface*>(m_currentObject);
+	if (surf == nullptr) return;
+
+	QStringList filters;
+	filters << "STL file (*.stl)";
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Save", QString(), QString("STL ascii (*.stl)"));
+	{
+		std::string filename = fileName.toStdString();
+		FSProject dummy;
+		STLExport writer(dummy);
+		if (!writer.Write(filename.c_str(), surf))
+			QMessageBox::critical(this, "FEBio Studio", QString("Couldn't export to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+
+	}
+}
+
 void CModelViewer::OnHideObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1202,6 +1222,13 @@ void CModelViewer::OnChangeMaterial()
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
+			FSMaterial* oldMat = gmat->TakeMaterialProperties();
+			if (oldMat)
+			{
+				FSProperty* prop = pmat->FindProperty("elastic");
+				if (prop) prop->SetComponent(oldMat);
+				else delete oldMat;
+			}
 			gmat->SetMaterialProperties(pmat);
 			Update();
 			Select(gmat);
@@ -1751,9 +1778,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_FEPART_GROUP:
 	case MT_FEELEM_GROUP:
-	case MT_FEFACE_GROUP:
 	case MT_FEEDGE_GROUP:
 	case MT_FENODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
+	case MT_FEFACE_GROUP:
+		menu.addAction("Export ...", this, SLOT(OnExportFESurface()));
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
 	case MT_MATERIAL_LIST:

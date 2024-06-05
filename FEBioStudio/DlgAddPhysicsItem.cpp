@@ -33,9 +33,12 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QToolButton>
 #include <QHeaderView>
+#include <QDialogButtonBox>
+#include <QListWidget>
 #include <unordered_map>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FSProject.h>
+#include <FEMLib/FEMaterial.h>
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
@@ -245,4 +248,88 @@ void CDlgAddPhysicsItem::SetURL()
     // cout << "SUPERID " << ui->m_superID << endl;
 
     // FECoreKernel::GetInstance().List((SUPER_CLASS_ID) ui->m_superID);
+}
+
+class UIDlgCopyPhysicsItem
+{
+private:
+	QListWidget* list;
+	std::vector<FSModelComponent*> m_comp;
+
+public:
+	void setup(QDialog* dlg)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+		list = new QListWidget;
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		l->addWidget(list);
+		l->addWidget(bb);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+
+		dlg->setLayout(l);
+	}
+
+	void buildList(FSModelComponent* src, FSModel* fem, int superID, int baseClassID)
+	{
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			GMaterial* gmat = fem->GetMaterial(i);
+			FSModelComponent* pmat = gmat->GetMaterialProperties();
+			QString name = QString::fromStdString(gmat->GetName());
+			if (pmat && (pmat != src)) addToList(pmat, superID, baseClassID, name);
+		}
+	}
+
+	void addToList(FSModelComponent* pc, int superID, int baseClassID, QString rootName)
+	{
+		if (pc == nullptr) return;
+
+		if (pc->GetSuperClassID() == superID)
+		{
+			int baseId = FEBio::GetBaseClassIndex(superID, pc->GetTypeString());
+			if (baseId == baseClassID)
+			{
+				QString name = rootName + QString(" [%1]").arg(pc->GetTypeString());
+				list->addItem(name);
+				m_comp.push_back(pc);
+			}
+		}
+		for (int i = 0; i < pc->Properties(); ++i)
+		{
+			FSProperty& prop = pc->GetProperty(i);
+			QString propName = QString::fromStdString(prop.GetName());
+			for (int j = 0; j < prop.Size(); ++j)
+			{
+				FSModelComponent* pj = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+				if (pj)
+				{
+					QString name = rootName + "." + propName;
+					if (prop.Size() > 1) name += QString("[%1]").arg(j);
+					addToList(pj, superID, baseClassID, name);
+				}
+			}
+		}
+	}
+
+	FSModelComponent* selectedComponent()
+	{
+		int n = list->currentIndex().row();
+		if ((n >= 0) && (n < m_comp.size())) return m_comp[n];
+		return nullptr;
+	}
+};
+
+CDlgCopyPhysicsItem::CDlgCopyPhysicsItem(QString windowTitle, int superID, int baseClassID, FSModelComponent* src, FSModel* fem, QWidget* parent) : QDialog(parent), ui(new UIDlgCopyPhysicsItem)
+{
+	setMinimumSize(600, 400);
+	ui->setup(this);
+	if (fem) ui->buildList(src, fem, superID, baseClassID);
+}
+
+FSModelComponent* CDlgCopyPhysicsItem::GetSelectedComponent()
+{
+	return ui->selectedComponent();
 }

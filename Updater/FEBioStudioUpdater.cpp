@@ -62,17 +62,15 @@ int main(int argc, char* argv[])
 		bool updaterUpdateCheck = true;
 		for(int index = 1; index < argc; index++)
 		{
-			if(QString(argv[index]) == QString("--devChannel"))
+			if(QString(argv[index]) == QString("--devChannel") || QString(argv[index]) == QString("-d"))
 			{
 				devChannel = true;
 			}
-			else if(QString(argv[index]) == QString("--noUpdaterCheck"))
+			else if(QString(argv[index]) == QString("--noUpdaterCheck") || QString(argv[index]) == QString("-n"))
 			{
 				updaterUpdateCheck = false;
 			}
 		}
-		
-		 argc > 1 && QString(argv[1]) == QString("--devChannel");
 
 		// create the main window
 		CMainWindow wnd(devChannel, updaterUpdateCheck);

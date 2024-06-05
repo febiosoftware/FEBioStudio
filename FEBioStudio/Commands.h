@@ -475,7 +475,6 @@ public:
 protected:
 	CGLDocument* m_doc;
 	vec3d	m_dr;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------
@@ -492,7 +491,6 @@ protected:
 	CGLDocument*	m_doc;
 	quatd	m_q;
 	vec3d	m_rc;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------
@@ -510,7 +508,6 @@ protected:
 	double	m_s;
 	vec3d	m_dr;
 	vec3d	m_rc;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------

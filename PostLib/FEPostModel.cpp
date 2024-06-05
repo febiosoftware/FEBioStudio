@@ -1439,6 +1439,7 @@ int FEPostModel::PointObjects() const
 
 void FEPostModel::AddPointObject(FEPostModel::PointObject* ob)
 {
+	ob->m_id = (int)m_Points.size();
 	m_Points.push_back(ob);
 
 	for (int i = 0; i < m_State.size(); ++i)

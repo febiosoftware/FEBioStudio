@@ -3978,6 +3978,7 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 			else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
 			else if ((interpolate == "approximation" ) || (interpolate == "APPROXIMATION" )) lc.SetInterpolator(PointCurve::APPROX);
 			else if ((interpolate == "smooth step"   ) || (interpolate == "SMOOTH STEP"   )) lc.SetInterpolator(PointCurve::SMOOTH_STEP);
+            else if ((interpolate == "C2-smooth"     ) || (interpolate == "C2-SMOOTH"     )) lc.SetInterpolator(PointCurve::C2SMOOTH);
 			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "extend")

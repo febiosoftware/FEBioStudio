@@ -272,6 +272,12 @@ void CMainWindow::on_actionFEBioStop_triggered()
 	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
 }
 
+void CMainWindow::on_actionFEBioCheck_triggered()
+{
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc) DoModelCheck(modelDoc, false);
+}
+
 void CMainWindow::on_actionFEBioOptimize_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

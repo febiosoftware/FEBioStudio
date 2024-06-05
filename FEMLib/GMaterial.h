@@ -51,6 +51,7 @@ public:
 
 	void SetMaterialProperties(FSMaterial* pm);
 	FSMaterial* GetMaterialProperties();
+	FSMaterial* TakeMaterialProperties();
 
 	void SetModel(FSModel* ps) { m_ps = ps; }
 	FSModel* GetModel() { return m_ps; }
