@@ -464,9 +464,6 @@ void FEBioFormat2::ParseGeometryNodeSet(FEBioInputModel::Part& part, XMLTag& tag
 		while (!tag.isend());
 	}
 
-	// the node list is one-based, so make it zero-based
-	for (int i = 0; i<(int)list.size(); ++i) list[i] -= 1;
-
 	// create a new node set
 	part.AddNodeSet(FEBioInputModel::NodeSet(name, list));
 }
