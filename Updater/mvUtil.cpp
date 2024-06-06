@@ -10,10 +10,10 @@
 
 int main(int argc, char* argv[])
 {
-    if(argc < 3) return -1;
-
 // Ugly fix for deleting updater dependencies on Windows
 #ifdef WIN32
+    if(argc < 2) return -1;
+
     if(strcmp(argv[1], "-rm") == 0)
     {
         for (int index = 2; index < argc; index++)
@@ -33,6 +33,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 #endif
+
+    if(argc < 3) return -1;
 
     int start = 2;
     bool dev = false;

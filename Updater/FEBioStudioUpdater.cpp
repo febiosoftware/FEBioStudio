@@ -180,6 +180,9 @@ void uninstall()
 
     if(runMvUtil)
     {
+        int zero = 0;
+        QApplication app(zero, nullptr);
+
         QProcess* mvUtil = new QProcess;
         mvUtil->startDetached(QApplication::applicationDirPath() + MVUTIL, args);
     }
