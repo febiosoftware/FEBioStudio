@@ -2,6 +2,23 @@
 #include <QWizard>
 #include <QSslError>
 
+#ifdef WIN32
+#define FEBIOBINARY "\\febio4.exe"
+#define FBSBINARY "\\FEBioStudio2.exe"
+#define FBSUPDATERBINARY "\\FEBioStudioUpdater.exe"
+#define MVUTIL "\\mvUtil.exe"
+#elif __APPLE__
+#define FEBIOBINARY "/febio4"
+#define FBSBINARY "/FEBioStudio"
+#define FBSUPDATERBINARY "/FEBioStudioUpdater"
+#define MVUTIL "/mvUtil"
+#else
+#define FEBIOBINARY "/febio4"
+#define FBSBINARY "/FEBioStudio"
+#define FBSUPDATERBINARY "/FEBioStudioUpdater"
+#define MVUTIL "/mvUtil"
+#endif
+
 namespace Ui{
 class CMainWindow;
 }
