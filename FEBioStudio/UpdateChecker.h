@@ -82,6 +82,8 @@ struct Release
 	std::vector<ReleaseFile> files;
 	QStringList deleteFiles;
 	std::vector<ReleaseFile> updaterFiles;
+    QStringList installCommands;
+    QStringList uninstallCommands;
 };
 
 class CUpdateWidget : public QWidget
@@ -131,6 +133,8 @@ public:
 
     std::vector<ReleaseFile> updateFiles;
 	QStringList deleteFiles;
+    QStringList installCmds;
+    QStringList uninstallCmds;
 	qint64 overallSize;
 
     std::vector<Release> releases;
@@ -168,6 +172,9 @@ public:
 	const QString DELETEFILES  = "deleteFiles";
 	const QString AUTOUPDATE   = "autoUpdate";
 	const QString LASTUPDATE   = "lastUpdate";
+    const QString INSTALLCMD   = "installCmds";
+    const QString UNINSTALLCMD = "uninstallCmds";
+    const QString COMMAND      = "cmd";
 
 };
 
