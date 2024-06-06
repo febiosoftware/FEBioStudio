@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QApplication>
+#include <QProcess>
 #include <QIcon>
 #include <QString>
 #include <QFileInfo>
@@ -134,12 +135,12 @@ void uninstall()
 	get_app_path(updaterDir, 1023);
 	sprintf(updaterPath, "%sautoUpdate.xml", updaterDir);
 
+    QStringList files;
+    QStringList dirs;
+    QStringList cmds;
+
 	if(QFileInfo::exists(updaterPath))
 	{
-		QStringList files;
-		QStringList dirs;
-        QStringList cmds;
-
 		readXML(files, dirs, cmds);
 
 		files.append("autoUpdate.xml");
@@ -160,6 +161,32 @@ void uninstall()
             std::system(cmd.toStdString().c_str());
         }
 	}
+
+// Ugly fix for deleting updater dependencies on Windows
+#ifdef WIN32
+    QStringList args;
+    args << "-rm";
+
+    int runMvUtil = false;
+    for(auto file : files)
+    {
+        if(QFileInfo::exists(file))
+        {
+            args.push_back(file);
+
+            runMvUtil = true;
+        }
+    }
+
+    if(runMvUtil)
+    {
+        int zero = 0;
+        QApplication app(zero, nullptr);
+
+        QProcess* mvUtil = new QProcess;
+        mvUtil->startDetached(QApplication::applicationDirPath() + MVUTIL, args);
+    }
+#endif
 }
 
 CMainWindow* getMainWindow()

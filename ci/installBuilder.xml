@@ -95,6 +95,9 @@
                         <distributionFile>
                             <origin>${FBSRepo}/cmbuild/bin/FEBioStudio.app</origin>
                         </distributionFile>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/doc</origin>
+                        </distributionDirectory>
                     </distributionFileList>
                 </folder>
                 <!-- Program Files - Linux -->
