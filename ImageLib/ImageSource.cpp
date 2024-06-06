@@ -145,6 +145,11 @@ CRawImageSource::CRawImageSource(CImageModel* imgModel)
 	m_type = -1;
 }
 
+void CRawImageSource::SetFileName(const std::string& filename)
+{
+	m_filename = filename;
+}
+
 bool CRawImageSource::Load()
 {
     C3DImage* im = new C3DImage;
@@ -266,6 +271,8 @@ void CRawImageSource::Save(OArchive& ar)
     ar.WriteChunk(9, m_box.z1);
 
     ar.WriteChunk(10, m_byteSwap);
+
+	ar.WriteChunk(11, m_type);
 }
 
 void CRawImageSource::Load(IArchive& ar)
@@ -276,45 +283,22 @@ void CRawImageSource::Load(IArchive& ar)
     while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
-
 		switch (nid)
 		{
-		case 0:
-			ar.read(m_filename);
-			break;
+		case  0: ar.read(m_filename); break;
+		case  1: ar.read(m_nx); break;
+		case  2: ar.read(m_ny); break;
+		case  3: ar.read(m_nz); break;
+		case  4: ar.read(m_box.x0); break;
+		case  5: ar.read(m_box.y0); break;
+		case  6: ar.read(m_box.z0); break;
+		case  7: ar.read(m_box.x1); break;
+		case  8: ar.read(m_box.y1); break;
+		case  9: ar.read(m_box.z1); break;
+		case 10: ar.read(m_byteSwap); break;
+		case 11: ar.read(m_type); break;
 
-		case 1:
-			ar.read(m_nx);
-            break;
-        case 2:
-			ar.read(m_ny);
-            break;
-        case 3:
-			ar.read(m_nz);
-            break;
-
-        case 4:
-			ar.read(m_box.x0);
-            break;
-        case 5:
-			ar.read(m_box.y0);
-            break;
-        case 6:
-			ar.read(m_box.z0);
-            break;
-        case 7:
-			ar.read(m_box.x1);
-            break;
-        case 8:
-			ar.read(m_box.y1);
-            break;
-        case 9:
-			ar.read(m_box.z1);
-            break;
-        case 10:
-			ar.read(m_byteSwap);
-            break;
-
+		// TODO: The data below does not appear to be saved in the Save function. Does this do anything then?
         case 100:
 			ar.read(tempBox.x0);
             foundBox = true;
