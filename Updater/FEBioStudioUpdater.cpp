@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QApplication>
+#include <QProcess>
 #include <QIcon>
 #include <QString>
 #include <QFileInfo>
@@ -163,14 +164,15 @@ void uninstall()
 
 // Ugly fix for deleting updater dependencies on Windows
 #ifdef WIN32
-    QString command = QString("%1 -rm ").arg(QApplication::applicationDirPath() + MVUTIL);
+    QStringList args;
+    args << "-rm";
 
     int runMvUtil = false;
     for(auto file : files)
     {
         if(QFileInfo::exists(file))
         {
-            command = command + QString("\"%1\" ").arg(file);
+            args.push_back(file);
 
             runMvUtil = true;
         }
@@ -178,7 +180,8 @@ void uninstall()
 
     if(runMvUtil)
     {
-        std::system(command.toStdString().c_str());
+        QProcess* mvUtil = new QProcess;
+        mvUtil->startDetached(QApplication::applicationDirPath() + MVUTIL, args);
     }
 #endif
 }
