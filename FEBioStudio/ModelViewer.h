@@ -189,6 +189,7 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
+    void OnFindImage();
     void OnExportRawImage();
     void OnExportTIFF();
     void OnExportNRRD();

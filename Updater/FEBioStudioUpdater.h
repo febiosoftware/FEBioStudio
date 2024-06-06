@@ -32,7 +32,7 @@ class CMainWindow;
 class CDocument;
 
 int get_app_path (char *pname, int pathsize);
-void readXML(QStringList& files, QStringList& dirs);
+void readXML(QStringList& files, QStringList& dirs, QStringList& uninstallCmds);
 void uninstall();
 CMainWindow* getMainWindow();
 
