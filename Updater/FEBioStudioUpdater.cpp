@@ -134,12 +134,12 @@ void uninstall()
 	get_app_path(updaterDir, 1023);
 	sprintf(updaterPath, "%sautoUpdate.xml", updaterDir);
 
+    QStringList files;
+    QStringList dirs;
+    QStringList cmds;
+
 	if(QFileInfo::exists(updaterPath))
 	{
-		QStringList files;
-		QStringList dirs;
-        QStringList cmds;
-
 		readXML(files, dirs, cmds);
 
 		files.append("autoUpdate.xml");
@@ -160,6 +160,27 @@ void uninstall()
             std::system(cmd.toStdString().c_str());
         }
 	}
+
+// Ugly fix for deleting updater dependencies on Windows
+#ifdef WIN32
+    QString command = QString("%1 -rm ").arg(QApplication::applicationDirPath() + MVUTIL);
+
+    int runMvUtil = false;
+    for(auto file : files)
+    {
+        if(QFileInfo::exists(file))
+        {
+            command = command + QString("\"%1\" ").arg(file);
+
+            runMvUtil = true;
+        }
+    }
+
+    if(runMvUtil)
+    {
+        std::system(command.toStdString().c_str());
+    }
+#endif
 }
 
 CMainWindow* getMainWindow()

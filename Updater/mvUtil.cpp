@@ -12,6 +12,28 @@ int main(int argc, char* argv[])
 {
     if(argc < 3) return -1;
 
+// Ugly fix for deleting updater dependencies on Windows
+#ifdef WIN32
+    if(strcmp(argv[1], "-rm") == 0)
+    {
+        for (int index = 2; index < argc; index++)
+	    {
+            int n = 0;
+            while (std::remove(argv[index]) != 0)
+            {
+                // If the file just doesn't exist, break
+                if(errno == ENOENT) break;
+
+                _sleep(100);
+                n++;
+                if (n > 10) break;
+            }
+        }
+
+        return 0;
+    }
+#endif
+
     int start = 2;
     bool dev = false;
 
