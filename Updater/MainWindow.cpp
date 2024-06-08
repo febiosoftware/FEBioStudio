@@ -38,23 +38,6 @@
 
 #include <iostream>
 
-#ifdef WIN32
-#define FEBIOBINARY "\\febio4.exe"
-#define FBSBINARY "\\FEBioStudio2.exe"
-#define FBSUPDATERBINARY "\\FEBioStudioUpdater.exe"
-#define MVUTIL "\\mvUtil.exe"
-#elif __APPLE__
-#define FEBIOBINARY "/febio4"
-#define FBSBINARY "/FEBioStudio"
-#define FBSUPDATERBINARY "/FEBioStudioUpdater"
-#define MVUTIL "/mvUtil"
-#else
-#define FEBIOBINARY "/febio4"
-#define FBSBINARY "/FEBioStudio"
-#define FBSUPDATERBINARY "/FEBioStudioUpdater"
-#define MVUTIL "/mvUtil"
-#endif
-
 namespace Ui
 {
 class MyWizardPage : public QWizardPage
@@ -547,10 +530,17 @@ void CMainWindow::addNewFile(const QString filename)
 
 void CMainWindow::downloadsFinished()
 {
+    // Run install commands
+    for(auto cmd : ui->updateWidget->installCmds)
+    {
+        std::system(cmd.toStdString().c_str());
+    }
+
 	QStringList oldFiles;
 	QStringList oldDirs;
+    QStringList oldCmds;
 
-	readXML(oldFiles, oldDirs);
+	readXML(oldFiles, oldDirs, oldCmds);
 
 	XMLWriter writer;
 	writer.open(QString(QApplication::applicationDirPath() + "/autoUpdate.xml").toStdString().c_str());
@@ -587,6 +577,24 @@ void CMainWindow::downloadsFinished()
 	{
 		writer.add_leaf("file", file.toStdString().c_str());
 	}
+
+    if(!oldCmds.isEmpty() || !ui->updateWidget->uninstallCmds.isEmpty())
+    {
+        XMLElement uninstallCmds("uninstallCmds");
+        writer.add_branch(uninstallCmds);
+
+        for(auto cmd : oldCmds)
+        {
+            writer.add_leaf("cmd", cmd.toStdString().c_str());
+        }
+
+        for(auto cmd : ui->updateWidget->uninstallCmds)
+        {
+            writer.add_leaf("cmd", cmd.toStdString().c_str());
+        }
+
+        writer.close_branch();
+    }
 
 	writer.close_branch();
 

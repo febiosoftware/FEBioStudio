@@ -78,6 +78,17 @@ bool CImageModel::Load()
 	return true;
 }
 
+void CImageModel::Reload()
+{
+	Load();
+
+	for (int i = 0; i < ImageRenderers(); ++i)
+	{
+		Post::CGLImageRenderer* ir = GetImageRenderer(i);
+		if (ir && ir->IsActive()) ir->Reset();
+	}
+}
+
 bool CImageModel::ShowBox() const
 {
 	return m_showBox;

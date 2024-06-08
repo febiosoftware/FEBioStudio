@@ -85,6 +85,7 @@ bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int p
         case CImage::REAL_64   : m_bps = 8; break;
 		default:
 			assert(false);
+			m_pixelType = CImage::UINT_8;
 		}
 
         if(data == nullptr)

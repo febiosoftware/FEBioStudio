@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/ImageSource.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
@@ -2032,6 +2033,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_3DIMAGE:
         {
+			CImageModel* img = dynamic_cast<CImageModel*>(data->obj);
+			if (img && (img->Get3DImage() == nullptr))
+			{
+				menu.addAction("Find image ...", this, &CModelViewer::OnFindImage);
+			}
             QMenu* exportImage = menu.addMenu("Export Image");
             exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
             exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
@@ -2169,6 +2175,29 @@ void CModelViewer::OnEditMeshData()
 
 	CDlgEditMeshData dlg(data, this);
 	dlg.exec();
+}
+
+void CModelViewer::OnFindImage()
+{
+	CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+	if (img->Get3DImage()) return;
+
+	CRawImageSource* src = dynamic_cast<CRawImageSource*>(img->GetImageSource());
+	if (src)
+	{
+		QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Load Image", "", "Raw image (*.raw)");
+		if (filename.isEmpty() == false)
+		{
+			src->SetFileName(filename.toStdString());
+			img->Reload();
+			Update();
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Find image", "Finding image is currently only supported for RAW images.");
+	}
 }
 
 void CModelViewer::OnExportRawImage()

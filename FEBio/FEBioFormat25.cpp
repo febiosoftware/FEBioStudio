@@ -408,9 +408,6 @@ void FEBioFormat25::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& ta
 	if (tag.isleaf())
 	{
 		tag.value(list);
-
-		// make the list zero-based
-		for (int i = 0; i < list.size(); ++i) list[i]--;
 	}
 	else
 	{
@@ -422,7 +419,7 @@ void FEBioFormat25::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& ta
 			{
 				int nid = tag.AttributeValue<int>("id", -1);
 				if (nid == -1) throw XMLReader::MissingAttribute(tag, "id");
-				list.push_back(nid - 1);
+				list.push_back(nid);
 			}
 			else if (tag == "node_set")
 			{
