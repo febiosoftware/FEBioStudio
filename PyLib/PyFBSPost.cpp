@@ -55,7 +55,7 @@ FEPostModel* readPlotFile(std::string filename)
 
     reader.Load(filename.c_str());
 
-    model->SetDisplacementField(BUILD_FIELD(Data_Class::CLASS_NODE, 0, 0));
+    model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
 
     return model;
 }
@@ -108,9 +108,9 @@ void init_FBSPost(pybind11::module& m)
         .def("GetName", &Post::FSNodeSet::GetName);
 
     pybind11::enum_<Data_Tensor_Type>(post, "DataTensorType")
-        .value("DATA_SCALAR", DATA_SCALAR)
-        .value("DATA_VECTOR", DATA_VECTOR)
-        .value("DATA_TENSOR2", DATA_TENSOR2);
+        .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
+        .value("DATA_VECTOR", Data_Tensor_Type::TENSOR_VECTOR)
+        .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
 
     pybind11::class_<FEDataManager>(post, "FEDataManager")
         .def("DataFields", &FEDataManager::DataFields)

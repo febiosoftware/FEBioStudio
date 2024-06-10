@@ -85,9 +85,6 @@ void init_FSMesh(pybind11::module_& m)
 
         .def("Show", &MeshItem::Show)
 
-        .def("GetFEState", &MeshItem::GetFEState)
-        .def("SetFEState", &MeshItem::SetFEState)
-
         .def("GetID", &MeshItem::GetID)
         .def("SetID", &MeshItem::SetID)
 
