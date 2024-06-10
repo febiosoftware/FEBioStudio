@@ -61,7 +61,7 @@ void FSElementLibrary::InitLibrary()
 	addElement(FE_TET20  , ELEM_TET  , ELEM_SOLID, 20, 4, 0);
 	addElement(FE_TRI10  , ELEM_TRI  , ELEM_SHELL, 10, 0, 3);
 	addElement(FE_TET5   , ELEM_TET  , ELEM_SOLID,  5, 4, 0);
-    addElement(FE_PYRA13 , ELEM_PYRA , ELEM_SOLID, 13, 5, 0);
+	addElement(FE_PYRA13 , ELEM_PYRA , ELEM_SOLID, 13, 5, 0);
 }
 
 const FSElemTraits* FSElementLibrary::GetTraits(int type)

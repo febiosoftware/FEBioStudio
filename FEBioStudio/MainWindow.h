@@ -44,6 +44,7 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
+class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -133,6 +134,9 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the python panel
+	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();
@@ -293,6 +297,9 @@ public:
 	// Read a file
 	void ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags);
 
+	// Made public to expose to python interface
+	void ReadFile(QueuedFile& qfile);
+
 	FileReader* CreateFileReader(const QString& fileName);
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true, bool openInThread = true);
@@ -312,7 +319,6 @@ public:
 	QString CurrentWorkingDirectory();
 
 private:
-	void ReadFile(QueuedFile& qfile);
 
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);

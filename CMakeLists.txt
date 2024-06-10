@@ -391,6 +391,10 @@ else()
     include_directories(${GLEW_INCLUDE_DIRS})
 endif()
 
+if(USE_PYTHON)
+    include_directories(${PYBIND11_INC})
+endif()
+
 # Link ZLIB
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
@@ -414,7 +418,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioApp FEBioMonitor VTKLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioApp FEBioMonitor VTKLib PyLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -427,6 +431,11 @@ if (WIN32)
     set(FBS_BIN_NAME FEBioStudio2)
 else()
     set(FBS_BIN_NAME FEBioStudio)
+endif()
+
+if(USE_PYTHON)
+    add_definitions(-DHAS_PYTHON)
+    link_libraries(Python3::Python)
 endif()
 
 if(WIN32)
@@ -522,6 +531,7 @@ target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
 target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
+target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(FEBioApp Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 

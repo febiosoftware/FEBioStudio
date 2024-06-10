@@ -26,8 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FSDir.h"
+
+#ifndef PY_EXTERNAL
 #include <QtCore/QFileInfo>
-//using namespace std;
+#endif
+
 map<string, string>	FSDir::m_defs;
 
 #ifdef WIN32
@@ -86,6 +89,7 @@ std::string FSDir::expandMacros(const std::string& path, bool expandSymbolicLink
 		replace(s, def_i, it->second);
 	}
 
+#ifndef PY_EXTERNAL
 	// expand symbolic links
 	if (expandSymbolicLinks)
 	{
@@ -98,6 +102,7 @@ std::string FSDir::expandMacros(const std::string& path, bool expandSymbolicLink
 			s = absPath.toStdString();
 		}
 	}
+#endif
 
 	return polish(s);
 }

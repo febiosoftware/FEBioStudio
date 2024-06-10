@@ -73,6 +73,8 @@ public:
 
 	void SetSelection2(std::vector<int>& s) { m_surf2.m_face = s; }
 
+    void SetSigned(bool sign) { m_bsigned = sign; }
+
 protected:
 	// build node normal list
 	void BuildNormalList(FEDistanceMap::Surface& s);

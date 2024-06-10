@@ -1381,6 +1381,11 @@ CModelViewer* CMainWindow::GetModelViewer()
 	return ui->modelViewer;
 }
 
+CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
+{
+	return ui->pythonToolsPanel;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()
@@ -2519,9 +2524,16 @@ void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
-	CGLView* view = GetGLView();
-	if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
-	view->repaint();
+	if(QThread::currentThread() == this->thread())
+	{
+		CGLView* view = GetGLView();
+		if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
+		view->repaint();
+	}
+	else
+	{
+		QMetaObject::invokeMethod(GetGLView(), "repaint");
+	}
 }
 
 //-----------------------------------------------------------------------------

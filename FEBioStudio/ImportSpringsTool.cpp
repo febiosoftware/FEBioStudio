@@ -39,6 +39,8 @@ SOFTWARE.*/
 // in GMaterial.cpp
 extern GLColor col[GMaterial::MAX_COLORS];
 
+#include <iostream>
+
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
 	m_snap = true;
@@ -275,6 +277,8 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 {
 	// create the discrete set
 	GDiscreteSpringSet* dset = new GDiscreteSpringSet(gm);
+
+	std::cout << m_type << std::endl;
 
 	// set the spring material
 	FSModel* fem = gm->GetFSModel();

@@ -79,6 +79,7 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
+#include <PyLib/PythonToolsPanel.h>
 #include "DlgPartSelector.h"
 #include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
@@ -284,6 +285,7 @@ public:
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
+    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;

@@ -924,6 +924,15 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	menuWindows->addAction(dock12->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock12);
 
+#ifdef HAS_PYTHON
+		QDockWidget* dock13 = new QDockWidget("Python", m_wnd); dock13->setObjectName("dockPython");
+		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock13);
+		pythonToolsPanel->initPython();
+		dock13->setWidget(pythonToolsPanel);
+		menuWindows->addAction(dock13->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock3, dock13);
+#endif
+
 	// make sure the file viewer is the visible tab
 	dock1->raise();
 }

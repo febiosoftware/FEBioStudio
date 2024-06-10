@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "DlgMeshDiagnostics.h"
 #include "DlgMaterialTest.h"
 #include <QMessageBox>
+#include <QFileDialog>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>

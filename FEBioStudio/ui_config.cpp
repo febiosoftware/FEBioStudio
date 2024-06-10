@@ -89,6 +89,9 @@ void Ui::CEmptyConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
 	ui->fileViewer->parentWidget()->raise();
 
@@ -133,6 +136,9 @@ void Ui::CHTMLConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
 	ui->fileViewer->parentWidget()->raise();
 }
@@ -204,6 +210,9 @@ void Ui::CModelConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+    ui->pythonToolsPanel->parentWidget()->show();
+#endif
 
 	wnd->UpdateUiView();
 	ui->modelViewer->parentWidget()->raise();
@@ -251,6 +260,9 @@ void Ui::CPostConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+    ui->pythonToolsPanel->parentWidget()->show();
+#endif
 
 	ui->showTimeline();
 
@@ -314,6 +326,9 @@ void Ui::CTextConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 }
 
 // Configure for XML document
@@ -401,6 +416,9 @@ void Ui::CXMLConfig::Apply()
 			ui->imageSettingsPanel->parentWidget()->hide();
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+            ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
 			for (auto action : ui->xmlToolbar->actions())
 			{
