@@ -27,8 +27,17 @@ SOFTWARE.*/
 #include "Document.h"
 #include <GLLib/GLMeshRender.h>
 
+enum OBJECT_COLOR_MODE {
+	DEFAULT_COLOR,
+	OBJECT_COLOR,
+	MATERIAL_TYPE,
+	FSELEMENT_TYPE,
+	PHYSICS_TYPE
+};
+
 class CModelDocument;
 class GPart;
+class GLFiberRenderer;
 
 class CGLModelScene : public CGLScene
 {
@@ -42,6 +51,14 @@ public:
 	BOX GetBoundingBox() override;
 
 	BOX GetSelectionBox() override;
+
+	void SetObjectColorMode(OBJECT_COLOR_MODE colorMode);
+
+	OBJECT_COLOR_MODE ObjectColorMode() const;
+
+	void Update() override;
+
+	void UpdateFiberViz();
 
 private:
 	void RenderModel(CGLContext& rc);
@@ -71,11 +88,15 @@ private:
 	void RenderBeamParts       (CGLContext& rc, GObject* po);
 
 	// rendering functions for FEMeshes
-	void RenderFEElements   (CGLContext& rc, GObject* po);
 	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);
-	void RenderMeshLines    (CGLContext& rc, GObject* pm);
+	void RenderMeshLines    (CGLContext& rc, GObject* po);
+
+	void RenderSelectedFEFaces(CGLContext& rc, GObject* po);
+	void RenderSelectedFEElements(CGLContext& rc, GObject* po);
+
+	void RenderFEFacesFromGMesh(CGLContext& rc, GObject* po);
 
 	void RenderAllBeamElements       (CGLContext& rc, GObject* po);
 	void RenderUnselectedBeamElements(CGLContext& rc, GObject* po);
@@ -89,6 +110,21 @@ private:
 	void RenderNormals(CGLContext& rc, GObject* po, double scale);
 	void RenderRigidLabels(CGLContext& rc);
 
+	void RenderImageData(CGLContext& rc);
+
+	void RenderTags(CGLContext& rc);
+
+	void RenderPlaneCut(CGLContext& rc);
+
+	void RenderBoxCut(CGLContext& rc, const BOX& box);
+
+private:
+	void RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh);
+	void RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh);
+
 private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
@@ -97,7 +133,16 @@ private:
 	// set some default GL material properties
 	void SetDefaultMatProps();
 
+	// apply the mesh data to an object's render mesh
+	void MapMeshData(GObject* po);
+
+	void BuildFiberViz(CGLContext& rc);
+
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;
+	
+	OBJECT_COLOR_MODE	m_objectColor;
+
+	GLFiberRenderer* m_fiberViz;
 };

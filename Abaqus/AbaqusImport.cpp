@@ -355,6 +355,10 @@ bool AbaqusImport::parse_file(FILE* fp)
 		{
 			read_line(szline, fp);
 		}
+		else if (szicnt(szline, "*CONTACT PAIR")) // read contact pairs
+		{
+			if (!read_contact_pair(szline, fp)) return errf("Error while reading keyword CONTACT PAIR (line %d)", m_nline);
+		}
 		else if (szicnt(szline, "*INCLUDE")) // include another file
 		{
 			// get the filename
@@ -1869,6 +1873,32 @@ bool AbaqusImport::build_physics()
 		}
 	}
 
+	// add all contacts
+	for (int i = 0; i < m_inp.ContactPairs(); ++i)
+	{
+		const AbaqusModel::CONTACT_PAIR& cp = m_inp.GetContactPair(i);
+		FSTensionCompressionInterface* ci = new FSTensionCompressionInterface(&fem);
+		ci->SetName(cp.name);
+
+		if (cp.surf1.empty() == false)
+		{
+			AbaqusModel::SURFACE* s1 = m_inp.FindSurface(cp.surf1.c_str());
+			FSSurface* surf1 = find_surface(s1);
+			ci->SetPrimarySurface(surf1);
+		}
+
+		if (cp.surf2.empty() == false)
+		{
+			AbaqusModel::SURFACE* s2 = m_inp.FindSurface(cp.surf2.c_str());
+			FSSurface* surf2 = find_surface(s2);
+			ci->SetSecondarySurface(surf2);
+		}
+
+		ci->SetFloatValue(FSTensionCompressionInterface::FRICCOEFF, cp.friction);
+
+		fem.GetStep(0)->AddInterface(ci);
+	}
+
 	// clean up
 	Mat.clear();
 
@@ -2710,6 +2740,43 @@ bool AbaqusImport::read_amplitude(char* szline, FILE* fp)
 	}
 
 	m_inp.AddAmplitude(amp);
+
+	return true;
+}
+
+bool AbaqusImport::read_contact_pair(char* szline, FILE* fp)
+{
+	ATTRIBUTE att[MAX_ATTRIB];
+	parse_line(szline, att);
+
+	AbaqusModel::CONTACT_PAIR cp;
+	cp.name = att[1].szval;
+
+	read_line(szline, fp);
+	int n = parse_line(szline, att);
+	if (n == 1)
+	{
+		cp.surf1 = cp.surf2 = att[0].szatt;
+	}
+	else if (n == 2)
+	{
+		cp.surf1 = att[0].szatt;
+		cp.surf2 = att[1].szatt;
+	}
+
+	// see if there are any surface properties
+	read_line(szline, fp);
+	if (szicnt(szline, "*SURFACE INTERACTION"))
+	{
+		read_line(szline, fp);
+		if (szicnt(szline, "*FRICTION"))
+		{
+			read_line(szline, fp);
+			cp.friction = atof(szline);
+		}
+	}
+
+	m_inp.AddContactPair(cp);
 
 	return true;
 }

@@ -40,7 +40,7 @@ enum SelectionType
 	SELECT_CURVES,
 	SELECT_NODES,
 	SELECT_DISCRETE_OBJECT,
-	SELECT_FE_ELEMENTS,
+	SELECT_FE_ELEMS,
 	SELECT_FE_FACES,
 	SELECT_FE_EDGES,
 	SELECT_FE_NODES
@@ -57,6 +57,9 @@ public:
 	virtual ~FESelection();
 
 	int Type() const { return m_ntype; }
+
+	bool IsMovable() const { return m_movable; }
+	void SetMovable(bool b) { m_movable = b; }
 
 	BOX GetBoundingBox() { return m_box; }
 	vec3d GetPivot() { return m_box.Center(); };
@@ -88,6 +91,7 @@ protected:
 	BOX		m_box;
 	int		m_nsize;
 	int		m_ntype;
+	bool	m_movable;
 };
 
 inline int FESelection::Size()
@@ -279,7 +283,7 @@ public:
 	protected:
 		GNode*	m_pn;
 		std::vector<GNode*> m_sel;
-		int		m_node;
+		size_t	m_node;
 	};
 
 	int Next();
@@ -358,7 +362,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSMesh* pm);
+		Iterator(FEElementSelection* pm);
 
 		operator FEElement_*() { return m_pelem; }
 		FEElement_* operator -> () { return m_pelem; }
@@ -366,9 +370,9 @@ public:
 		void operator ++ ();
 
 	protected:
-		FSMesh*		m_pm;
+		FEElementSelection* m_sel;
 		FEElement_*	m_pelem;
-		int			m_n;
+		size_t	m_n;
 	};
 
 public:
@@ -385,12 +389,14 @@ public:
 
 	FEItemListBuilder* CreateItemList();
 
-	FEElement_* Element(int i);
-    int ElementID(int i);
+	FEElement_* Element(size_t i);
+	int ElementIndex(size_t i) const;
+
+	const std::vector<int>& ItemList() const { return m_item; }
 
 protected:
-	FSMesh*		m_pMesh;
-	vector<int>	m_item;
+	FSMesh*				m_pMesh;
+	std::vector<int>	m_item;
 };
 
 //-----------------------------------------------------------------------------
@@ -401,7 +407,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSMeshBase* pm);
+		Iterator(FEFaceSelection* pm);
 
 		operator FSFace*() { return m_pface; }
 		FSFace* operator -> () { return m_pface; }
@@ -409,29 +415,36 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSMeshBase*	m_pm;
+		FEFaceSelection*	m_psel;
 		FSFace*		m_pface;
 		int			m_n;
 	};
 
 public:
 	FEFaceSelection(FSMeshBase* pm);
-	int Count();
-	virtual void Invert();
-	virtual void Update();
-	virtual void Translate(vec3d dr);
-	virtual void Rotate(quatd q, vec3d c);
-	virtual void Scale(double s, vec3d dr, vec3d c);
-	virtual quatd GetOrientation();
-
-	FSMeshBase* GetMesh() { return m_pMesh; }
-
-	FEItemListBuilder* CreateItemList();
 
 	Iterator begin();
 
+	FSMeshBase* GetMesh() { return m_pMesh; }
+
+	FSFace* Face(size_t n);
+	int FaceIndex(size_t n) const { return m_item[n]; }
+
+public:
+	int Count() override;
+	void Invert() override;
+	void Update() override;
+	void Translate(vec3d dr) override;
+	void Rotate(quatd q, vec3d c) override;
+	void Scale(double s, vec3d dr, vec3d c) override;
+	quatd GetOrientation() override;
+	FEItemListBuilder* CreateItemList() override;
+
+	const std::vector<int>& ItemList() const { return m_item; }
+
 protected:
 	FSMeshBase*		m_pMesh;
+	std::vector<int>	m_item;
 };
 
 //-----------------------------------------------------------------------------
@@ -442,7 +455,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSLineMesh* pm);
+		Iterator(FEEdgeSelection* sel);
 
 		operator FSEdge*() { return m_pedge; }
 		FSEdge* operator -> () { return m_pedge; }
@@ -450,7 +463,7 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSLineMesh*	m_pm;
+		FEEdgeSelection*	m_sel;
 		FSEdge*		m_pedge;
 		int			m_n;
 	};
@@ -467,10 +480,14 @@ public:
 
 	FSLineMesh* GetMesh() { return m_pMesh; }
 
+	FSEdge* Edge(size_t n) { return m_pMesh->EdgePtr(m_items[n]); }
+	int EdgeIndex(size_t n) const { return m_items[n]; }
+
 	FEItemListBuilder* CreateItemList();
 
 protected:
 	FSLineMesh*		m_pMesh;
+	std::vector<int>	m_items;
 };
 
 //-----------------------------------------------------------------------------
@@ -481,7 +498,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FSLineMesh* pm);
+		Iterator(FENodeSelection* pm);
 
 		operator FSNode*() { return m_pnode; }
 		FSNode* operator -> () { return m_pnode; }
@@ -489,7 +506,7 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FSLineMesh*	m_pm;
+		FENodeSelection* m_psel;
 		FSNode*		m_pnode;
 		int			m_n;
 	};
@@ -510,6 +527,10 @@ public:
 
 	FENodeSelection::Iterator First();
 
+	FSNode* Node(size_t n);
+	int NodeIndex(size_t n) const { return m_items[n]; }
+
 protected:
 	FSLineMesh*	m_pMesh;
+	std::vector<int>	m_items;
 };

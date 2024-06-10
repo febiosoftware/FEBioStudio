@@ -42,6 +42,8 @@ public:
 
 	void Create();
 
+	void Reset() override;
+
 	void Render(CGLContext& rc) override;
 
 	void Update() override;

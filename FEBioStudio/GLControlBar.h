@@ -59,6 +59,7 @@ private slots:
 	void onIgnoreInterior(bool b);
 	void onHideSelection(bool b);
 	void onShowAll(bool b);
+	void onSelectAndHide(bool b);
 	void onZoomSelectClicked(bool b);
 	void onZoomAllClicked(bool b);
 	void onToggleMesh(bool b);

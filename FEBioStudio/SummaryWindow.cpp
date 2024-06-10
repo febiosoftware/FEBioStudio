@@ -94,11 +94,11 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	int nodes = pfe->Nodes();
 
 	// get the selection mode
-	int nmode = po->GetSelectionMode();
+	int nmode = po->GetSelectionType();
 
 	// get the current data field
 	int ndata = GetCurrentYValue();
-	if (ndata <= 0) return;
+	if (ndata < 0) return;
 
 	// store current data
 	m_ncurrentData = ndata;
@@ -116,10 +116,10 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	int neval = -1;
 	if (bsel)
 	{
-		if (nmode == Post::SELECT_NODES) neval = 0;
-		if (nmode == Post::SELECT_EDGES) neval = 1;
-		if (nmode == Post::SELECT_FACES) neval = 2;
-		if (nmode == Post::SELECT_ELEMS) neval = 3;
+		if (nmode == SELECT_FE_NODES) neval = 0;
+		if (nmode == SELECT_FE_EDGES) neval = 1;
+		if (nmode == SELECT_FE_FACES) neval = 2;
+		if (nmode == SELECT_FE_ELEMS) neval = 3;
 	}
 	else
 	{

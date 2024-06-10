@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QStyledItemDelegate>
 #include <QComboBox>
 #include <QLineEdit>
+#include <MeshLib/FEItemListBuilder.h>
 
 class FSCoreBase;
 class FSModel;
@@ -37,14 +38,13 @@ class Param;
 class FSProperty;
 class CMainWindow;
 class GModel;
-class FEItemListBuilder;
 
 class CPropertySelector : public QComboBox
 {
 	Q_OBJECT
 
 public:
-	CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent = nullptr);
+	CPropertySelector(FSProperty* pp, FSCoreBase* pc, int index, FSModel* fem, QWidget* parent = nullptr);
 
 public slots:
 	void onSelectionChanged(int n);
@@ -53,16 +53,18 @@ signals:
 	void currentDataChanged(int n);
 
 private:
+	FSModel* m_fem;
 	FSCoreBase* m_pc;
 	FSProperty* m_pp;
+	int m_index;
 };
 
-class CSurfacePropertySelector : public QComboBox
+class CMeshItemPropertySelector : public QComboBox
 {
 	Q_OBJECT
 
 public:
-	CSurfacePropertySelector(GModel& m, FSProperty* pp, QWidget* parent = nullptr);
+	CMeshItemPropertySelector(GModel& m, FSProperty* pp, DOMAIN_TYPE domainType, QWidget* parent = nullptr);
 
 public slots:
 	void onSelectionChanged(int n);
@@ -73,7 +75,8 @@ signals:
 private:
 	GModel&		m_mdl;
 	FSProperty* m_pp;
-	std::vector<FEItemListBuilder*> m_surfList;
+	DOMAIN_TYPE m_domainType;
+	std::vector<FEItemListBuilder*> m_itemList;
 };
 
 class FEClassPropsDelegate : public QStyledItemDelegate

@@ -494,6 +494,14 @@ GObject* GModel::FindObject(const string& name)
 	return 0;
 }
 
+GObject* GModel::GetActiveObject()
+{
+	GObject* po = nullptr;
+	GObjectSelection sel(this);
+	if (sel.Count() == 1) po = sel.Object(0);
+	return po;
+}
+
 //-----------------------------------------------------------------------------
 
 int GModel::FindObjectIndex(GObject* po)
@@ -939,6 +947,13 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 			if (pg->GetID() == nid) return pg;
 		}
 
+		N = po->FEEdgeSets();
+		for (i = 0; i < N; ++i)
+		{
+			pg = po->GetFEEdgeSet(i);
+			if (pg->GetID() == nid) return pg;
+		}
+
 		N = po->FENodeSets();
 		for (i = 0; i<N; ++i)
 		{
@@ -1105,6 +1120,15 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 			for (int i = 0; i<po->FESurfaces(); ++i)
 			{
 				FEItemListBuilder*pg = po->GetFESurface(i);
+				list.push_back(pg);
+			}
+		}
+
+		if (ntype == DOMAIN_EDGE)
+		{
+			for (int i = 0; i < po->FEEdgeSets(); ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1580,7 +1604,18 @@ void GModel::RemoveNamedSelections()
 	ClearGroups();
 }
 
-//-----------------------------------------------------------------------------
+void GModel::RemoveMeshData()
+{
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
+		{
+			pm->ClearMeshData();
+		}
+	}
+}
 
 template <class T> void clearList(FSObjectList<T>& l, std::function<bool(T*)> f)
 {
@@ -1661,6 +1696,7 @@ void GModel::SelectObjects(const vector<int>& objList)
 // show or hide a list of parts
 void GModel::ShowParts(const vector<int>& partList, bool bshow, bool bselect)
 {
+	for (int i = 0; i < Objects(); ++i) Object(i)->m_ntag = 0;
 	int N = (int)partList.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -1668,13 +1704,22 @@ void GModel::ShowParts(const vector<int>& partList, bool bshow, bool bselect)
 		GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);
 		if (po) 
 		{
+			po->m_ntag = 1;
 			if (bshow) 
 			{
-				po->ShowPart(*pg, bshow);
+				pg->ShowItem();
 				if (bselect) pg->Select();
 			}
-			else po->ShowPart(*pg, false);
+			else
+			{
+				pg->HideItem();
+			}
 		}
+	}
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		if (po->m_ntag == 1) po->UpdateItemVisibility();
 	}
 }
 

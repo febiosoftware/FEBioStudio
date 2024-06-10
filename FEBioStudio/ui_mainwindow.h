@@ -77,6 +77,7 @@ SOFTWARE.*/
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
 #include <PyLib/PythonToolsPanel.h>
+#include "DlgPartSelector.h"
 #include <vector>
 
 class QProcess;
@@ -278,6 +279,8 @@ public:
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
+	CDlgPartSelector* partSelector = nullptr;
+
 	QStatusBar* statusBar;
 	QProgressBar* progressBar;
 
@@ -317,6 +320,7 @@ public:
 	// FEBIO menu
 	QAction* actionFEBioRun;
 	QAction* actionFEBioStop;
+	QAction* actionFEBioCheck;
 
 	// PHYSICS menu
 	QAction* actionAddRigidConnector;
@@ -412,6 +416,9 @@ public:
 	QString m_lastFindText;
 
 public:
+	CGLDocument* m_copySrc = nullptr; // source for copy selection operation
+
+public:
 	vector<CUIConfig*>	m_configs;
 	unsigned int m_activeConfig = Ui::Config::EMPTY_CONFIG;
 
@@ -474,6 +481,8 @@ public:
 	void ShowDefaultBackground();
 
 	void setUIConfig(Ui::Config newConfig);
+
+	void showPartSelector(CModelDocument* doc);
 
 private:
 	void setRecentFileList(QStringList& dstList, const QStringList& fileList, QMenu* menu, QActionGroup* actionGroup);

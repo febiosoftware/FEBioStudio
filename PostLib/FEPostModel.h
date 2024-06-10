@@ -74,6 +74,8 @@ public:
 
 		void SetColor(const GLColor& c);
 
+		double Scale() const;
+
 	public:
 		int				m_id;
 		int				m_tag;

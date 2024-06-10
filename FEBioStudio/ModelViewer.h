@@ -97,18 +97,22 @@ public:
 
 	void UpdateCurrentItem();
 
-    void SetFilter(int index);
+	void SetFilter(int index);
 
 	void IncWarningCount();
 
+	bool IsHighlightSelectionEnabled() const;
+
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
+	void on_modelSearch_itemChanged();
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
 	void on_selectButton_clicked();
 	void on_deleteButton_clicked();
 	void on_searchButton_toggled(bool b);
 	void on_syncButton_clicked();
 	void on_refreshButton_clicked();
+	void on_highlightButton_toggled(bool);
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
@@ -124,6 +128,7 @@ public slots:
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnDeleteNamedSelection();
+	void OnExportFESurface();
 	void OnHideObject();
 	void OnShowObject();
 	void OnSelectObject();
@@ -184,6 +189,7 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
+    void OnFindImage();
     void OnExportRawImage();
     void OnExportTIFF();
     void OnExportNRRD();

@@ -31,8 +31,10 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <FEMLib/FEUserMaterial.h>
+#include <PostLib/VolumeRenderer.h>
 #include "Commands.h"
 #include "MainWindow.h"
+#include "ImageSliceView.h"
 #include "ModelFileWriter.h"
 #include <QMessageBox>
 #include <GeomLib/GModel.h>
@@ -209,6 +211,25 @@ BOX CModelDocument::GetModelBox()
 	}
 
 	return box;
+}
+
+int CModelDocument::GetMeshMode()
+{
+	return (m_wnd ? m_wnd->GetMeshMode() : MESH_MODE_VOLUME);
+}
+
+void CModelDocument::Update()
+{
+	GetGModel()->UpdateBoundingBox();
+}
+
+std::string CModelDocument::GetRenderString()
+{
+	FSModel* ps = GetFSModel();
+	GModel& model = ps->GetModel();
+	int activeLayer = model.GetActiveMeshLayer();
+	string s = string("  Mesh Layer > ") + model.GetMeshLayerName(activeLayer);
+	return s;
 }
 
 void CModelDocument::AddObject(GObject* po)
@@ -725,6 +746,25 @@ void CModelDocument::SetUnitSystem(int unitSystem)
 	}
 }
 
+void CModelDocument::AddImageModel(CImageModel* imgModel)
+{
+	CGLDocument::AddImageModel(imgModel);
+
+	// Add default image renderers
+	CMainWindow* wnd = GetMainWindow();
+	if (wnd)
+	{
+		CImageSliceView* sliceView = wnd->GetImageSliceView();
+		CImageSliceViewRender* sr = new CImageSliceViewRender(sliceView);
+		sr->SetImageModel(imgModel);
+		imgModel->AddImageRenderer(sr);
+	}
+
+	Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imgModel);
+	vr->Create();
+	imgModel->AddImageRenderer(vr);
+}
+
 //-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------
@@ -865,7 +905,7 @@ void CModelDocument::HideUnselected()
 				FSElement& el = pm->Element(i);
 				if (el.IsSelected() == false) elemList.push_back(i);
 			}
-			DoCommand(new CCmdHideElements(pm, elemList));
+			DoCommand(new CCmdHideElements(po, elemList));
 		}
 		else if (itemMode == ITEM_FACE)
 		{

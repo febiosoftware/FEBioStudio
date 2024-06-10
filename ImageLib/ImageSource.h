@@ -89,6 +89,8 @@ public:
     CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box, bool byteSwap);
     CRawImageSource(CImageModel* imgModel);
 
+	void SetFileName(const std::string& filename);
+
     bool Load() override;
 
     void Save(OArchive& ar) override;

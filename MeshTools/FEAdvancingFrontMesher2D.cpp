@@ -417,7 +417,7 @@ FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
 	{
 		FSNode& node = sm->Node(i);
 		GMesh::NODE& gnode = m.Node(i);
-		node.r = gnode.r;
+		node.r = to_vec3d(gnode.r);
 		node.m_gid = gnode.pid;
 	}
 

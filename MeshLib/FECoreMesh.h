@@ -154,3 +154,6 @@ double quad4_volume(vec3d* r, vec3d* D, bool bJ = false);
 
 // helper functions
 void ForAllElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f);
+void ForAllSelectedElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f);
+void ForAllSelectedNodes(FSCoreMesh& mesh, std::function<void(FSNode& node)> f);
+void ForAllTaggedNodes(FSCoreMesh& mesh, int tag, std::function<void(FSNode& node)> f);

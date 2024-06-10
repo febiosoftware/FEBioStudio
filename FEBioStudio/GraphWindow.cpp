@@ -66,6 +66,10 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <FECore/MathObject.h>
 #include <FECore/MObjBuilder.h>
+#include <QApplication>
+#include <QClipboard>
+#include <QtCore/QMimeData>
+#include "DlgImportData.h"
 #include "units.h"
 
 class TimeRangeOptionsUI
@@ -902,7 +906,8 @@ public:
 
 	QAction* actionSave;
 	QAction* actionAddToModel;
-	QAction* actionClipboard;
+	QAction* actionCopy;
+	QAction* actionPaste;
 	QAction* actionSnapshot;
 	QAction* actionProps;
 	QAction* actionZoomSelect;
@@ -1002,7 +1007,8 @@ public:
 
 		toolBar = new QToolBar(parent);
 		actionSave = toolBar->addAction(QIcon(QString(":/icons/save.png")), "Save to file"); actionSave->setObjectName("actionSave");
-		actionClipboard = toolBar->addAction(QIcon(QString(":/icons/clipboard.png")), "Copy to clipboard"); actionClipboard->setObjectName("actionClipboard");
+		actionCopy = toolBar->addAction(QIcon(QString(":/icons/clipboard.png")), "Copy to clipboard"); actionCopy->setObjectName("actionCopy");
+		actionPaste= toolBar->addAction(QIcon(QString(":/icons/paste.png")), "Paste from clipboard"); actionPaste->setObjectName("actionPaste");
 		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
 		actionAddToModel = toolBar->addAction(QIcon(":/icons/addtomodel.png"), "Add to model tree"); actionAddToModel->setObjectName("actionAddToModel");
 
@@ -1060,6 +1066,8 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	ui->setupUi(this, flags);
 	ui->doc = postDoc;
 
+	EnablePasteButton(false);
+
 	if ((flags & SHOW_TYPE_OPTIONS) == 0)
 	{
 		ui->actionType->setVisible(false);
@@ -1107,6 +1115,11 @@ void CGraphWindow::moveEvent(QMoveEvent* moveEvent)
 {
     QMainWindow::moveEvent(moveEvent);
     m_preferredSize = geometry();
+}
+
+void CGraphWindow::EnablePasteButton(bool b)
+{
+	ui->actionPaste->setEnabled(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -1397,10 +1410,14 @@ void CGraphWindow::on_actionAddToModel_triggered()
 	m_wnd->Update(0, true);
 }
 
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_actionClipboard_triggered()
+void CGraphWindow::on_actionCopy_triggered()
 {
 	ui->plot->OnCopyToClipboard();
+}
+
+void CGraphWindow::on_actionPaste_triggered()
+{
+	PasteClipboardData();
 }
 
 //-----------------------------------------------------------------------------
@@ -1524,15 +1541,45 @@ int CGraphWindow::currentDataSource()
 CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc, 0)
 {
 	ShowAddToModelButton(false);
+	EnablePasteButton(true);
 	m_data = nullptr;
 }
 
-void CDataGraphWindow::SetData(const CGraphData* data)
+void CDataGraphWindow::SetData(CGraphData* data)
 {
 	m_data = data;
 	GetPlotWidget()->SetGraphData(*data);
 	UpdatePlots();
 	FitPlotsToData();
+}
+
+void CDataGraphWindow::PasteClipboardData()
+{
+	QClipboard* clipboard = QApplication::clipboard();
+
+	if (!clipboard->mimeData()->hasText()) return;
+
+	QString data = clipboard->text();
+	CDlgImportData dlg(data, DataType::DOUBLE, 2);
+	if (dlg.exec())
+	{
+		QList<QStringList> values = dlg.GetValues();
+		CPlotData* plt = new CPlotData;
+		for (auto& row : values)
+		{
+			if (row.size() == 2)
+				plt->addPoint(row[0].toDouble(), row[1].toDouble());
+		}
+		if (plt->size() > 0)
+		{
+			m_data->AddPlotData(plt);
+			GetPlotWidget()->SetGraphData(*m_data);
+			UpdatePlots();
+			FitPlotsToData();
+		}
+		else
+			delete plt;
+	}
 }
 
 void CDataGraphWindow::Update(bool breset, bool bfit)
@@ -1656,7 +1703,17 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		else
 			SetXDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
+		int dataField = -1;
+		CPostDocument* doc = GetPostDoc();
+		if (doc)
+		{
+			Post::CGLColorMap* map = doc->GetGLModel()->GetColorMap();
+			if (map)
+			{
+				dataField = map->GetEvalField();
+			}
+		}
+		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR), dataField);
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
@@ -1690,12 +1747,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	// get the field data
 	m_dataX = GetCurrentXValue();
 	m_dataY = GetCurrentYValue();
-	if ((nplotType != LINE_PLOT) && (m_dataX <= 0))
+	if ((nplotType != LINE_PLOT) && (m_dataX < 0))
 	{
 		ClearPlots();
 		return;
 	}
-	if (m_dataY <= 0)
+	if (m_dataY < 0)
 	{
 		ClearPlots();
 		return;
@@ -1920,6 +1977,8 @@ void CModelGraphWindow::setDataSource(int n)
 			{
 				SetXDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
 			}
+			else if (plotType == LINE_PLOT)
+				SetXDataSelector(new CTimeStepSelector(), 0);
 
 			Update(false, true);
 		}
@@ -2052,6 +2111,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 		case DATA_VEC3:
 		{
 			vec3f v = data->get<vec3f>(ndata);
+			val = component(v, ncomp);
+		}
+		break;
+		case DATA_MAT3:
+		{
+			mat3f v = data->get<mat3f>(ndata);
 			val = component(v, ncomp);
 		}
 		break;

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QXmlStreamReader>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextEdit>
 #include <QDialogButtonBox>
 #include <QPushButton>
@@ -41,32 +42,11 @@ SOFTWARE.*/
 #include "ServerSettings.h"
 #include "version.h"
 
-#ifdef WIN32
-	#define URL_BASE "/update2/FEBioStudio2/Windows"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
-	#define UPDATER_BASE "/update2/Updater2/Windows"
-	#define REL_ROOT "\\..\\"
-	#define UPDATER "/FEBioStudioUpdater.exe"
-#elif __APPLE__
-	#define URL_BASE "/update2/FEBioStudio2/macOS"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
-	#define UPDATER_BASE "/update2/Updater2/macOS"
-	#define REL_ROOT "/../../../"
-	#define UPDATER "/FEBioStudioUpdater"
-#else
-	#define URL_BASE "/update2/FEBioStudio2/Linux"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
-	#define UPDATER_BASE "/update2/Updater2/Linux"
-	#define REL_ROOT "/../"
-	#define UPDATER "/FEBioStudioUpdater"
-#endif
-
-
 #include <iostream>
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
-    : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
-	devChannel(false), updaterUpdateCheck(false), doingUpdaterUpdate(false), urlBase(URL_BASE), updaterBase(UPDATER_BASE)
+    : QWidget(parent), restclient(new QNetworkAccessManager), overallSize(0), devChannel(false), devAlreadyParsed(false),
+    updaterUpdateCheck(false), doingUpdaterUpdate(false), m_askSDK(false), m_getSDK(nullptr)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
@@ -94,26 +74,21 @@ void CUpdateWidget::sslErrorHandler(QNetworkReply *reply, const QList<QSslError>
 
 void CUpdateWidget::connFinished(QNetworkReply *r)
 {
-	if(r->request().url().path() == urlBase + ".xml")
+	if(r->request().url().path() == QString(UPDATER_BASE) + ".xml")
+	{
+        checkForUpdaterUpdateResponse(r);
+	}
+	else
 	{
 		checkForAppUpdateResponse(r);
 	}
-	else if(r->request().url().path() == updaterBase + ".xml")
-	{
-		checkForUpdaterUpdateResponse(r);
-	}
 }
 
-bool CUpdateWidget::NetworkAccessibleCheck()
-{
-//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
-	return true;
-}
-
-void CUpdateWidget::checkForUpdate(bool dev, bool upCheck)
+void CUpdateWidget::checkForUpdate(bool dev, bool checkSDK, bool upCheck)
 {
 	updaterUpdateCheck = upCheck;
 	devChannel = dev;
+    m_askSDK = checkSDK;
 
 	if(updaterUpdateCheck)
 	{
@@ -127,7 +102,9 @@ void CUpdateWidget::checkForUpdate(bool dev, bool upCheck)
 
 void CUpdateWidget::checkForAppUpdate()
 {
-	if(devChannel)
+    QString urlBase;
+
+	if(devChannel && !devAlreadyParsed)
 	{
 		urlBase = DEV_BASE;
 	}
@@ -149,10 +126,7 @@ void CUpdateWidget::checkForAppUpdate()
 	
 	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 
-	if(NetworkAccessibleCheck())
-	{
-		restclient->get(request);
-	}
+	restclient->get(request);
 }
 
 void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
@@ -164,8 +138,6 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
         serverMessage = r->rawHeader("message");
     }
 
-	std::cout << statusCode << std::endl;
-
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
@@ -173,7 +145,48 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 
 	QXmlStreamReader reader(r->readAll());
 
-	if (reader.readNextStartElement())
+    if(devChannel && !devAlreadyParsed)
+	{
+        parseAppXML(reader, true);
+        devAlreadyParsed = true;
+		checkForAppUpdate();
+        return;
+	}
+	else
+	{
+		parseAppXML(reader, false);
+	}
+
+	ReadLastUpdateInfo();
+
+	if(releases.size() > 0)
+	{
+        serverTime = releases[0].timestamp;
+
+		if(releases[0].terminal)
+		{
+			showTerminal();
+		}
+		else if(releases[0].timestamp > lastUpdate)
+		{
+			showUpdateInfo();
+		}
+		else
+		{
+			showUpToDate();
+		}
+	}
+	else
+	{
+		showError("Failed to read release information from server.\nPlease try again later.");
+	}
+}
+
+void CUpdateWidget::parseAppXML(QXmlStreamReader& reader, bool dev)
+{
+
+
+    if (reader.readNextStartElement())
 	{
 		if(reader.name() == UPDATE) 
 		{
@@ -217,6 +230,16 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 						{
 							release.releaseMsg = reader.readElementText();
 						}
+                        else if(reader.name() == SDK)
+						{
+                            release.hasSDK = true;
+                            
+                            release.sdk.size = reader.attributes().value("size").toLongLong();
+							release.sdk.name = reader.readElementText();
+                            
+                            if(dev) release.sdk.baseURL = DEV_BASE;
+                            else release.sdk.baseURL = URL_BASE;
+						}
 						else if(reader.name() == FEBFILES)
 						{
 							while(reader.readNextStartElement())
@@ -227,7 +250,9 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 									rfile.size = reader.attributes().value("size").toLongLong();
 									rfile.name = reader.readElementText();
 
-
+                                    if(dev) rfile.baseURL = DEV_BASE;
+                                    else rfile.baseURL = URL_BASE;
+                                
 									release.files.push_back(rfile);
 								}
 								else
@@ -250,13 +275,60 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
+                        else if(reader.name() == INSTALLCMD)
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == COMMAND)
+								{
+									release.installCommands.append(reader.readElementText());
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
+                        else if(reader.name() == UNINSTALLCMD)
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == COMMAND)
+								{
+									release.uninstallCommands.append(reader.readElementText());
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
 						else
 						{
 							reader.skipCurrentElement();
 						}
 					}
 
-					if(release.active) releases.push_back(release);
+					if(release.active)
+                    {
+                        // Insertion sort based on timestamp in releases. This is only necessary
+                        // when doing a dev update, during which, the dev XML is parsed, and then
+                        // the release xml is parsed, and those releases get interleaved into the
+                        // dev releases according to their timestamp
+                        bool inserted = false;
+                        for(auto it = releases.begin(); it != releases.end(); it++)
+                        {
+                            if(release.timestamp > it->timestamp)
+                            {
+                                releases.insert(it, release);
+                                inserted = true;
+                                break;
+                            }
+                        }
+
+                        if(!inserted) releases.push_back(release);
+                    }
+                    
 				}
 				else
 				{
@@ -266,31 +338,6 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 
 		}
 	}
-
-	ReadLastUpdateInfo();
-
-	if(releases.size() > 0)
-	{
-		serverTime = releases[0].timestamp;
-
-		if(releases[0].terminal)
-		{
-			showTerminal();
-		}
-		else if(releases[0].timestamp > lastUpdate)
-		{
-			showUpdateInfo();
-		}
-		else
-		{
-			showUpToDate();
-		}
-
-	}
-	else
-	{
-		showError("Failed to read release information from server.\nPlease try again later.");
-	}
 }
 
 void CUpdateWidget::checkForUpdaterUpdate()
@@ -299,17 +346,13 @@ void CUpdateWidget::checkForUpdaterUpdate()
 	myurl.setScheme(ServerSettings::Scheme());
 	myurl.setHost(ServerSettings::URL());
 	myurl.setPort(ServerSettings::Port());
-	myurl.setPath(updaterBase + ".xml");
+	myurl.setPath(QString(UPDATER_BASE) + ".xml");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
-	if(NetworkAccessibleCheck())
-	{
-		restclient->get(request);
-	}
-
+	restclient->get(request);
 }
 
 void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
@@ -320,6 +363,7 @@ void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
+        return;
 	}
 
 	QXmlStreamReader reader(r->readAll());
@@ -354,7 +398,7 @@ void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
 									ReleaseFile rfile;
 									rfile.size = reader.attributes().value("size").toLongLong();
 									rfile.name = reader.readElementText();
-									
+                                    rfile.baseURL = UPDATER_BASE;
 
 									release.files.push_back(rfile);
 								}
@@ -438,6 +482,8 @@ void CUpdateWidget::ReadLastUpdateInfo()
 
 void CUpdateWidget::showUpdateInfo()
 {
+    bool newSDK = false;
+    
     // Find unique files that need to be downloaded or deleted
     for(auto release : releases)
     {
@@ -445,9 +491,19 @@ void CUpdateWidget::showUpdateInfo()
         {
             for(auto file : release.files)
             {
-                if(!updateFiles.contains(file.name))
+                bool duplicate = false;
+                for(auto updateFile : updateFiles)
                 {
-                    updateFiles.append(file.name);
+                    if(updateFile.name == file.name)
+                    {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                if(!duplicate)
+                {
+                    updateFiles.push_back(file);
                     overallSize += file.size;
                 }
             }
@@ -458,6 +514,26 @@ void CUpdateWidget::showUpdateInfo()
                 {
                     deleteFiles.append(file);
                 }
+            }
+
+            // replace $INSTALLDIR variable in the commands
+            QString installDir = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT)).absoluteFilePath();
+
+            for(auto cmd : release.installCommands)
+            {
+                installCmds.append(cmd.replace("$INSTALLDIR", installDir));
+            }
+
+            for(auto cmd : release.uninstallCommands)
+            {
+                uninstallCmds.append(cmd.replace("$INSTALLDIR", installDir));
+            }
+
+            // Only grab the latest sdk
+            if(release.hasSDK && !newSDK)
+            {
+                newSDK = true;
+                m_sdk = release.sdk;
             }
         }
     }
@@ -561,8 +637,19 @@ void CUpdateWidget::showUpdateInfo()
 	}
 
     layout->addStretch(10);
-    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
 
+    if(m_askSDK && newSDK)
+    {
+        bool hasSDK = QFileInfo::exists(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk");
+
+        QString msg("Download FEBio SDK (%1)");
+        if(hasSDK) msg = "Update FEBio SDK (%1)";
+
+        layout->addWidget(m_getSDK = new QCheckBox(msg.arg(locale().formattedDataSize(m_sdk.size))));
+        m_getSDK->setChecked(hasSDK);
+    }
+
+    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
     
     emit ready(true);
 }
@@ -578,11 +665,21 @@ void CUpdateWidget::showUpdaterUpdateInfo()
 		{
 			for(auto file : release.files)
 			{
-				if(!updateFiles.contains(file.name))
-				{
-					updateFiles.append(file.name);
-					overallSize += file.size;
-				}
+                bool duplicate = false;
+                for(auto updateFile : updateFiles)
+                {
+                    if(updateFile.name == file.name)
+                    {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                if(!duplicate)
+                {
+                    updateFiles.push_back(file);
+                    overallSize += file.size;
+                }
 			}
 		}
 	}

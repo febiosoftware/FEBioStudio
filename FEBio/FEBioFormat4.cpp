@@ -465,13 +465,10 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		dom->SetElementFormulation(eform);
 
 		// read the domain parameters
-		if (tag.isleaf() == false)
-		{
-			if (eform)
-				ReadParameters(*eform, tag);
-			else
-				ParseUnknownAttribute(tag, "type");
-		}
+		if (eform)
+			ParseModelComponent(eform, tag);
+		else if (!tag.isleaf())
+			ParseUnknownAttribute(tag, "type");
 	}
 }
 
@@ -749,7 +746,6 @@ void FEBioFormat4::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& tag
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag& tag)
 {
-	if (tag.isempty()) return;
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
 	FEBioInputModel::DiscreteSet ds;
@@ -757,18 +753,21 @@ void FEBioFormat4::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag&
 	ds.SetName(szname);
 	ds.SetPart(part);
 
-	++tag;
-	do
+	if (!tag.isleaf())
 	{
-		if (tag == "delem")
-		{
-			int n[2];
-			tag.value(n, 2);
-			ds.Add(n[0], n[1]);
-		}
-		else ParseUnknownTag(tag);
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			if (tag == "delem")
+			{
+				int n[2];
+				tag.value(n, 2);
+				ds.Add(n[0], n[1]);
+			}
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+	}
 
 	part->AddDiscreteSet(ds);
 }

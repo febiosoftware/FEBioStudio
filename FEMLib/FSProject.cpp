@@ -88,6 +88,7 @@ void CLogDataSettings::Save(OArchive& ar)
 			case FSLogData::LD_NODE:
 			case FSLogData::LD_ELEM:
 			case FSLogData::LD_FACE:
+			case FSLogData::LD_SURFACE:
 			{
 				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
 				if (pil)
@@ -145,11 +146,12 @@ void CLogDataSettings::Load(IArchive& ar)
 			FSLogData* ld = nullptr;
 			switch (ntype)
 			{
-			case FSLogData::LD_NODE: ld = new FSLogNodeData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_FACE: ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_ELEM: ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
-			case FSLogData::LD_RIGID: ld = new FSLogRigidData(mid); break;
-			case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(cid); break;
+			case FSLogData::LD_NODE   : ld = new FSLogNodeData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_FACE   : ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_ELEM   : ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_RIGID  : ld = new FSLogRigidData(mid); break;
+			case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(cid); break;
 			default:
 				assert(false);
 			}
@@ -687,7 +689,7 @@ void FSProject::SetDefaultPlotVariables()
         m_plt.AddPlotVariable("fluid specific free energy", true);
         m_plt.AddPlotVariable("fluid specific entropy", true);
         m_plt.AddPlotVariable("fluid specific internal energy", true);
-        m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific gauge enthalpy", true);
         m_plt.AddPlotVariable("fluid specific free enthalpy", true);
         m_plt.AddPlotVariable("fluid specific strain energy", true);
         m_plt.AddPlotVariable("fluid stress", true);

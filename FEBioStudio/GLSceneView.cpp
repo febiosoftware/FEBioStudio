@@ -36,8 +36,8 @@ static bool initGlew = false;
 CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
 {
 	QSurfaceFormat fmt = format();
-	//	fmt.setSamples(4);
-	//	setFormat(fmt);
+	fmt.setSamples(16);
+	setFormat(fmt);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
@@ -205,7 +205,7 @@ void CGLSceneView::RenderScene()
 	if (scene)
 	{
 		CGLCamera& cam = scene->GetCamera();
-		cam.Transform();
+		cam.PositionInScene();
 
 		CGLContext rc;
 		rc.m_cam = &cam;

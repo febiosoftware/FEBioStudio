@@ -348,15 +348,14 @@ private:
 class CCmdTranslateSelection : public CCommand
 {
 public:
-	CCmdTranslateSelection(CModelDocument* doc, vec3d dr);
+	CCmdTranslateSelection(CGLDocument* doc, vec3d dr);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument* m_doc;
+	CGLDocument* m_doc;
 	vec3d	m_dr;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------
@@ -364,16 +363,15 @@ protected:
 class CCmdRotateSelection : public CCommand
 {
 public:
-	CCmdRotateSelection(CModelDocument* doc, quatd q, vec3d rc);
+	CCmdRotateSelection(CGLDocument* doc, quatd q, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	quatd	m_q;
 	vec3d	m_rc;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------
@@ -381,17 +379,16 @@ protected:
 class CCmdScaleSelection : public CCommand
 {
 public:
-	CCmdScaleSelection(CModelDocument* doc, double s, vec3d dr, vec3d rc);
+	CCmdScaleSelection(CGLDocument* doc, double s, vec3d dr, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	double	m_s;
 	vec3d	m_dr;
 	vec3d	m_rc;
-	int		m_item;	// item mode
 };
 
 //-----------------------------------------------------------------------------
@@ -437,12 +434,13 @@ private:
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility(FSMesh* fem);
+	CCmdToggleElementVisibility(GObject* po);
 
 	void Execute();
 	void UnExecute();
 
 private:
+	GObject* m_po;
 	FSMesh*	m_mesh;
 };
 
@@ -1021,6 +1019,7 @@ protected:
 class CCmdHideParts : public CCommand
 {
 public:
+	CCmdHideParts(GModel* model, GPart* part);
 	CCmdHideParts(GModel* model, std::list<GPart*> partList);
 
 	void Execute();
@@ -1049,12 +1048,14 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
+	CCmdHideElements(GObject* po, const vector<int>& elemList);
 	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GObject*		m_po;
 	FSMesh*			m_mesh;
 	vector<int>		m_elemList;
 };

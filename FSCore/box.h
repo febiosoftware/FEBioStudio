@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
+#include <FECore/FETransform.h>
 
 //-----------------------------------------------------------------------------
 // Class that describes a bounding box structure
@@ -100,3 +101,5 @@ inline bool BOX::Intersects(const BOX& b) const
 	if ((b.z0 > z1) || (b.z1 < z0)) return false;
 	return true;
 }
+
+BOX LocalToGlobalBox(const BOX& box, const Transform& T);

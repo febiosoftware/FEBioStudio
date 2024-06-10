@@ -237,9 +237,6 @@ public:
 	//! redraw the GLView
 	void RedrawGL();
 
-	//! Zoom in on a box
-	void ZoomTo(const BOX& box);
-
 	// set a message on the status bar
 	void SetStatusMessage(const QString& message);
 
@@ -388,6 +385,8 @@ public slots:
 	void on_actionShrinkSelection_triggered();
 	void on_actionSelectIsolatedVertices_triggered();
 	void on_actionSyncSelection_triggered();
+	void on_actionCopySelection_triggered();
+	void on_actionPasteSelection_triggered();
 
 	void on_actionFindTxt_triggered();
 	void on_actionFindAgain_triggered();
@@ -433,6 +432,7 @@ public slots:
 	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
+	void on_actionFEBioCheck_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
@@ -505,7 +505,7 @@ public slots:
     void on_actionIsometric_triggered();
 	void on_actionRenderMode_toggled(bool b);
 	void on_actionSnap3D_triggered();
-	void on_actionTrack_toggled(bool b);
+	void on_actionTrack_triggered();
 	void on_actionViewVPSave_triggered();
 	void on_actionViewVPPrev_triggered();
 	void on_actionViewVPNext_triggered();
@@ -666,7 +666,7 @@ public slots:
 	void ShowIndeterminateProgress(bool show, QString message = "");
 	void UpdateProgress(int);
 
-	bool DoModelCheck(CModelDocument* doc);
+	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
 
 	void toggleOrtho();
 

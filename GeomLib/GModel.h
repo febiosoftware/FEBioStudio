@@ -95,6 +95,9 @@ public:
 	// find an object from its name
 	GObject* FindObject(const string& name);
 
+	// get the currently active object
+	GObject* GetActiveObject();
+
 	// find the index of an object
 	int FindObjectIndex(GObject* po);
 
@@ -218,6 +221,7 @@ public:
 	int FindDiscreteObjectIndex(GDiscreteObject* po);
 	GDiscreteObject* FindDiscreteObject(const std::string& name);
 
+	void RemoveMeshData();
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
 	void RemoveUnusedSelections();

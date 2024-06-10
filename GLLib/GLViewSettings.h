@@ -29,15 +29,6 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
-enum OBJECT_COLOR_MODE {
-	DEFAULT_COLOR,
-	OBJECT_COLOR,
-	MATERIAL_TYPE,
-	FSELEMENT_TYPE,
-	PHYSICS_TYPE
-};
-
-//-----------------------------------------------------------------------------
 // render mode
 enum RenderMode {
 	RENDER_SOLID = 0,
@@ -69,7 +60,6 @@ struct GLViewSettings
 	bool	m_bconn;	//!< select connected
 	bool	m_bmax;		//!< max angle constraint for select connected
 	bool	m_bpart;	//!< respect partition boundaries flag
-	bool	m_bhide;	//!< auto hide
 	bool	m_bext;		//!< ignore interior nodes
 	bool	m_bsoft;	//!< soft selection mode
 	bool	m_bcullSel;	//!< ignore backfacing when selecting
@@ -111,7 +101,7 @@ struct GLViewSettings
 
 	GLColor	m_col1, m_col2;		//!< background colors
 	GLColor	m_fgcol;			//!< foreground color
-	GLColor	m_mcol;				//!< mesh line color
+	GLColor	m_meshColor;		//!< mesh line color
 	int		m_nbgstyle;			//!< back ground style
 	float	m_node_size;		//!< size of nodes when displayed
 	float	m_line_size;		//!< line size
@@ -130,6 +120,8 @@ struct GLViewSettings
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
 
+	bool	m_selectAndHide;
+
 	// lighting settings
 	bool	m_bLighting;	// use lighting or not
 	bool	m_bShadows;		// use shadows or not
@@ -140,7 +132,8 @@ struct GLViewSettings
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
-	int		m_objectColor;			// 0 = default (by material), 1 = by object
+
+	bool m_showHighlights;
 
 	void Defaults(int ntheme = 0);
 };

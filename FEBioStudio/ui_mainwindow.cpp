@@ -140,6 +140,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionHideSelection = addAction("Hide Selection", "actionHideSelection"); actionHideSelection->setShortcut(Qt::Key_H);
 	QAction* actionHideUnselected = addAction("Hide Unselected", "actionHideUnselected"); actionHideUnselected->setShortcut(Qt::ShiftModifier | Qt::Key_H);
 	QAction* actionSyncSelection = addAction("Sync selection", "actionSyncSelection"); actionSyncSelection->setShortcut(Qt::AltModifier | Qt::Key_F);
+	QAction* actionCopySelection = addAction("Copy selection", "actionCopySelection");
+	QAction* actionPasteSelection = addAction("Paste selection", "actionPasteSelection");
 	QAction* actionUnhideAll = addAction("Unhide All", "actionUnhideAll");
 	QAction* actionFind = addAction("Find ...", "actionFind"); //actionFind->setShortcut(Qt::ControlModifier | Qt::Key_F);
 	QAction* actionSelectRange = addAction("Select Range ...", "actionSelectRange");
@@ -208,6 +210,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	// --- FEBio menu actions ---
 	actionFEBioRun = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 	actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
+	actionFEBioCheck = addAction("Model check ...", "actionFEBioCheck");
 	QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
@@ -305,7 +308,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
 	actionToggleTagInfo = addAction("Toggle Tag info", "actionToggleTagInfo"); actionToggleTagInfo->setShortcut(Qt::Key_I);
 	QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
-	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
+	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setShortcut(Qt::Key_Y);
 	QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
 	actionToggleLight = addAction("Toggle Lighting", "actionToggleLight", "light");
 	actionFront = addAction("Front", "actionFront"); actionFront->setShortcut(Qt::Key_8 | Qt::KeypadModifier);
@@ -464,6 +467,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	moreSelection->addAction(actionGrowSelection);
 	moreSelection->addAction(actionShrinkSelection);
 	moreSelection->addAction(actionSyncSelection);
+	moreSelection->addAction(actionCopySelection);
+	moreSelection->addAction(actionPasteSelection);
 
 	// Edit menu
 	menuBar->addAction(menuEdit->menuAction());
@@ -561,6 +566,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuBar->addAction(menuFEBio->menuAction());
 	menuFEBio->addAction(actionFEBioRun);
 	menuFEBio->addAction(actionFEBioStop);
+	menuFEBio->addAction(actionFEBioCheck);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
@@ -1151,4 +1157,11 @@ void Ui::CMainWindow::addToRecentFilesList(QStringList& dstList, const QString& 
 			dstList.push_front(fileName);
 		}
 	}
+}
+
+void Ui::CMainWindow::showPartSelector(CModelDocument* doc)
+{
+	if (partSelector == nullptr) partSelector = new CDlgPartSelector(m_wnd);
+	partSelector->SetDocument(doc);
+	partSelector->show();
 }

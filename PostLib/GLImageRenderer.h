@@ -36,8 +36,10 @@ class CGLImageRenderer : public CGLVisual
 public:
 	CGLImageRenderer(CImageModel* img = nullptr);
 
-    void SetImageModel(CImageModel* img);
+	virtual void SetImageModel(CImageModel* img);
 	CImageModel* GetImageModel();
+
+	virtual void Reset();
 
 private:
 	CImageModel*	m_img;

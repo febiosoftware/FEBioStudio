@@ -44,19 +44,24 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Transform Modes
-#define TRANSFORM_NONE		1
-#define TRANSFORM_MOVE		2
-#define TRANSFORM_ROTATE	3
-#define TRANSFORM_SCALE		4
+enum TransformMode
+{
+	TRANSFORM_NONE   = 1,
+	TRANSFORM_MOVE   = 2,
+	TRANSFORM_ROTATE = 3,
+	TRANSFORM_SCALE  = 4
+};
 
 //-----------------------------------------------------------------------------
-// Selection Modes
-#define SELECT_OBJECT	1
-#define SELECT_PART		2
-#define SELECT_FACE		3
-#define SELECT_EDGE		4
-#define SELECT_NODE		5
-#define SELECT_DISCRETE	6
+// see CGLDocument::GetSelectionMode()
+enum SelectionMode {
+	SELECT_OBJECT	= 1,
+	SELECT_PART		= 2,
+	SELECT_FACE		= 3,
+	SELECT_EDGE		= 4,
+	SELECT_NODE		= 5,
+	SELECT_DISCRETE	= 6
+};
 
 //-----------------------------------------------------------------------------
 // Selection Styles
@@ -300,7 +305,7 @@ public:
 	void SetViewState(VIEW_STATE vs);
 
 	int GetTransformMode() { return m_vs.ntrans; }
-	void SetTransformMode(int mode) { m_vs.ntrans = mode; UpdateSelection(false); }
+	void SetTransformMode(TransformMode mode);
 
 	int GetSelectionMode() { return m_vs.nselect; }
 	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(false); }
@@ -316,6 +321,8 @@ public:
 	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
 	void SetUIViewMode(UI_VIEW_MODE vm) { m_uiMode = vm; }
 
+	virtual int GetMeshMode() { return MESH_MODE_VOLUME; }
+
 	// return the current selection
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
@@ -327,6 +334,19 @@ public:
 	CGView* GetView();
 
 	CGLScene* GetScene();
+
+	virtual void Update();
+
+public:
+	int GetWidgetLayer();
+	bool ShowTitle() const { return m_showTitle; }
+	bool ShowSubtitle() const { return m_showSubtitle; }
+	bool ShowLegend() const { return m_showLegend; }
+
+	void ShowLegend(bool b) { m_showLegend = b; }
+
+	// This string will be shown in top-left corner
+	virtual std::string GetRenderString();
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -373,6 +393,12 @@ protected:
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
+
+	// GL widget parameters
+	unsigned int	m_widgetLayer;
+	bool	m_showTitle;
+	bool	m_showSubtitle;
+	bool	m_showLegend;
 };
 
 // helper class for getting selections without the need to access the document

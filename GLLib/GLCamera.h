@@ -46,6 +46,22 @@ public:
 	quatd		rot;	// rotation
 };
 
+// Base class for camera tracking targets
+class CTrackingTarget
+{
+public:
+	CTrackingTarget() {}
+
+	bool IsActive() const { return m_btrack; }
+
+public:
+	bool	m_btrack = false;
+
+	vec3d	m_trgPos;
+	quatd	m_trgRot0;
+	quatd	m_trgRot;
+};
+
 //=============================================================================
 // This class implements a camera that can be used to navigate a 3D world.
 // It uses the interpolater class to allow animatable transistions between
@@ -63,7 +79,7 @@ public:
 	void Reset();
 
 	// set the GL transformation matrix
-	void Transform();
+	void PositionInScene();
 
 	// update camera position (for animations)
 	void Update(bool bhit = false);
@@ -161,6 +177,4 @@ private:
 	double	m_speed;
 	double	m_bias;
 	bool	m_bortho;
-
-	double	m_depthScale;	// depth scale for line drawing
 };

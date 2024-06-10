@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 #include <functional>
 #include "GLMesh.h"
+#include <MeshLib/GMesh.h>
 
 class FEElement_;
 class FSNode;
@@ -39,6 +40,7 @@ class FSMeshBase;
 class GMesh;
 class CGLContext;
 class FSMesh;
+class Transform;
 
 class GLMeshRender
 {
@@ -71,19 +73,28 @@ public:
 	void PopState();
 
 public:
-	void RenderGLMesh(GMesh* pm, int nid = -1);
-	void RenderGLEdges(GMesh* pm, int nid = -1);
-	void RenderOutline(CGLContext& rc, GMesh* pm, bool outline = false);
+	void RenderGLMesh(GMesh* pm);
+	void RenderGLMesh(GMesh& pm, GLColor c);
+	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
+
+	void RenderGLMesh(GMesh* pm, int surfID);
+	void RenderGLEdges(GMesh* pm);
+	void RenderGLEdges(GMesh* pm, int nedge);
+	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);
+	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
 	void RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f);
+	void RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList);
 
 public:
 	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
 
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
+
+	void RenderMeshLines(const GMesh& m);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);

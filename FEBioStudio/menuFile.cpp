@@ -214,7 +214,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.dyn *.stl)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.vtu *.vtp *.vtm *.fsps *.k *.dyn *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -222,7 +222,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
-	filters << "VTK files (*.vtk)";
+	filters << "VTK files (*.vtk *.vtp *.vtu *.vtm)";
 	filters << "LSDYNA keyword (*.k *.dyn)";
 	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
@@ -1465,6 +1465,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		filters << "TetGen (*.ele)";
 		filters << "IGES (*.iges, *.igs)";
 		filters << "VTK (*.vtk)";
+		filters << "VTU (*.vtu)";
 		filters << "RAW Image (*.raw)";
 		filters << "COMSOL Mesh (*.mphtxt)";
 		filters << "PLY (*.ply)";
@@ -1517,7 +1518,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 				// create a dummy post model
 				Post::FEPostModel* dummyFem = new Post::FEPostModel;
-				Post::VTKimport vtk(dummyFem);
+				Post::VTKImport vtk(dummyFem);
 				if (vtk.Load(sfile.c_str()))
 				{
 					if (postDoc->MergeFEModel(dummyFem) == false)
@@ -1564,8 +1565,6 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	if (filedlg.exec())
 	{
-		CImageModel* imageModel = nullptr;
-		
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
 		{
@@ -1574,37 +1573,13 @@ void CMainWindow::on_actionImportRawImage_triggered()
             // we pass the relative path to the image model
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
-            imageModel = new CImageModel(nullptr);
+			CImageModel* imageModel = new CImageModel(nullptr);
             imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
 
             if(!ImportImage(imageModel))
             {
                 delete imageModel;
-                imageModel = nullptr;
             }
-
-		}
-
-		if(imageModel)
-		{
-			Update(0, true);
-			ZoomTo(imageModel->GetBoundingBox());
-
-			// only for model docs
-			if (dynamic_cast<CModelDocument*>(doc))
-			{
-				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-				vr->Create();
-				imageModel->AddImageRenderer(vr);
-
-				Update(0, true);
-				ShowInModelViewer(imageModel);
-			}
-			else
-			{
-				Update(0, true);
-			}
-			ZoomTo(imageModel->GetBoundingBox());
 		}
 	}
 }
@@ -1683,35 +1658,11 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 		CImageModel* imageModel = new CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
-
 		if (!ImportImage(imageModel))
 		{
 			delete imageModel;
-			imageModel = nullptr;
 			return;
 		}
-
-		// take the name from the source
-		imageModel->SetName(FSDir::fileName(fileName));
-
-		Update(0, true);
-		ZoomTo(imageModel->GetBoundingBox());
-
-		// only for model docs
-		if (dynamic_cast<CModelDocument*>(doc))
-		{
-			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-			vr->Create();
-			imageModel->AddImageRenderer(vr);
-
-			Update(0, true);
-			ShowInModelViewer(imageModel);
-		}
-		else
-		{
-			Update(0, true);
-		}
-		ZoomTo(imageModel->GetBoundingBox());
 	}
 }
 
@@ -1813,36 +1764,11 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         CImageModel* imageModel = new CImageModel(nullptr);
         imageModel->SetImageSource(new CITKSeriesImageSource(imageModel, stdFiles));
-
         if(!ImportImage(imageModel))
         {
             delete imageModel;
-            imageModel = nullptr;
-        }
-
-        if(imageModel)
-        {
-            Update(0, true);
-            ZoomTo(imageModel->GetBoundingBox());
-
-            // only for model docs
-            if (dynamic_cast<CModelDocument*>(doc))
-            {
-                Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-                vr->Create();
-                imageModel->AddImageRenderer(vr);
-
-                Update(0, true);
-                ShowInModelViewer(imageModel);
-            }
-            else
-            {
-                Update(0, true);
-            }
-            ZoomTo(imageModel->GetBoundingBox());
         }
     }
-
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

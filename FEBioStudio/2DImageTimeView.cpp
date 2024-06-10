@@ -68,7 +68,7 @@ public:
         toolbar->addAction(actionPlayPause);
         toolbar->addSeparator();
         
-        toolbar->addWidget(new QLabel("Inverval (ms):"));
+        toolbar->addWidget(new QLabel("Interval (ms):"));
 
         interval = new QSpinBox;
         interval->setMinimum(1);

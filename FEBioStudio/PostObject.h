@@ -38,12 +38,11 @@ public:
 	CPostObject(Post::CGLModel* glm);
 	~CPostObject();
 
-	// is called whenever the selection has changed
-	void UpdateSelection() override;
-
 	void UpdateMesh() override;
 
 	BOX GetBoundingBox();
+
+	void BuildFERenderMesh() override;
 
 private:
 	// Don't want the sections on the post side. 

@@ -36,8 +36,6 @@ SOFTWARE.*/
 #include "CreatePanel.h"
 #include "ModelDocument.h"
 #include <GeomLib/GObject.h>
-#include <GeomLib/GSurfaceMeshObject.h>
-#include <GeomLib/GCurveMeshObject.h>
 #include "GLHighlighter.h"
 #include "GLCursor.h"
 #include <math.h>
@@ -50,14 +48,8 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMenu>
 #include <QMessageBox>
-#include <ImageLib/ImageModel.h>
-#include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
-#include <PostGL/GLModel.h>
-#include <GeomLib/GModel.h>
 #include "Commands.h"
-#include "PostObject.h"
-#include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 using namespace std::chrono;
@@ -324,13 +316,12 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_planeCut(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
-	m_btrack = false;
-
 	m_showFPS = false;
+	m_fps = 0.0;
 
 	Reset();
 
@@ -450,9 +441,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
 	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1))
@@ -482,8 +470,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	Qt::MouseButton but = ev->button();
 
-	m_bextrude = false;
-
 	int pivotMode = m_pivot.GetSelectionMode();
 
 	if (but == Qt::LeftButton)
@@ -497,15 +483,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			return;
 		}
 		if ((m_bshift || m_bctrl) && (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)) m_bsel = true;
-		if ((pivotMode != PIVOT_SELECTION_MODE::SELECT_NONE) && m_bshift && (ntrans == TRANSFORM_MOVE))
-		{
-			GMeshObject* po = dynamic_cast<GMeshObject*>(pdoc->GetActiveObject());
-			int nmode = pdoc->GetItemMode();
-			if (po && (nmode == ITEM_FACE))
-			{
-				m_bextrude = true;
-			}
-		}
 	}
 	else m_bsel = false;
 
@@ -537,15 +514,11 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		}
 		else m_ds = vec3d(1, 1, 1);
 
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc)
+		FESelection* ps = pdoc->GetCurrentSelection();
+		if (ps && (m_coord == COORD_LOCAL))
 		{
-			FESelection* ps = mdoc->GetCurrentSelection();
-			if (ps && ((m_coord == COORD_LOCAL)|| postDoc))
-			{
-				quatd q = ps->GetOrientation();
-				q.RotateVector(m_ds);
-			}
+			quatd q = ps->GetOrientation();
+			q.RotateVector(m_ds);
 		}
 
 		m_ds.Normalize();
@@ -560,10 +533,10 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
-
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
+
+	GObject* activeObject = GetActiveObject();
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -577,12 +550,11 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	m_select.SetStateModifiers(bshift, bctrl);
 
+	GLViewSettings& vs = GetViewSettings();
+
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
-
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// let the widget manager handle it first
 	if (but1 && (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1)))
@@ -603,19 +575,21 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		}
 		else
 		{
-			if (pdoc->GetSelectionMode() == SELECT_EDGE)
+			if (GLHighlighter::IsTracking() || vs.m_showHighlights)
 			{
-				HighlightEdge(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_NODE)
-			{
-				HighlightNode(x, y);
+				switch (pdoc->GetSelectionMode())
+				{
+				case SELECT_EDGE: HighlightEdge(x, y); break;
+				case SELECT_NODE: HighlightNode(x, y); break;
+				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_PART: HighlightPart(x, y); break;
+				}
 			}
 		}
 		ev->accept();
 
 		// we need to repaint if brush selection is on so the brush can be redrawn
-		if (GetViewSettings().m_bselbrush)
+		if (vs.m_bselbrush)
 		{
 			m_x1 = x;
 			m_y1 = y;
@@ -634,7 +608,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1 && !m_bsel)
 		{
-			if (GetViewSettings().m_bselbrush && (bshift || bctrl))
+			if (vs.m_bselbrush && (bshift || bctrl))
 			{
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
 				repaint();
@@ -701,19 +675,6 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1)
 		{
-			if (m_bextrude)
-			{
-				GMeshObject* po = dynamic_cast<GMeshObject*>(pdoc->GetActiveObject());
-				if (po)
-				{
-					FEExtrudeFaces mod;
-					mod.SetExtrusionDistance(0.0);
-					mdoc->ApplyFEModifier(mod, po, 0, false);
-				}
-
-				m_bextrude = false;
-			}
-
 			double f = 0.0012f*(double) cam.GetFinalTargetDistance();
 
 			vec3d dr = vec3d(f*(x - m_x1), f*(m_y1 - y), 0);
@@ -721,12 +682,10 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			quatd q = cam.GetOrientation();
 
 			q.Inverse().RotateVector(dr);
-			FESelection* ps = nullptr;
-			if (mdoc) ps = mdoc->GetCurrentSelection();
-			else if (postDoc) ps = postDoc->GetCurrentSelection();
-			if (ps)
+			FESelection* ps = pdoc->GetCurrentSelection();
+			if (ps && ps->Size())
 			{
-				if ((m_coord == COORD_LOCAL) || postDoc) ps->GetOrientation().Inverse().RotateVector(dr);
+				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) dr.y = dr.z = 0;
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) dr.x = dr.z = 0;
@@ -735,7 +694,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_YZ) dr.x = 0;
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XZ) dr.y = 0;
 
-				if ((m_coord == COORD_LOCAL) || postDoc) dr = ps->GetOrientation() * dr;
+				if (m_coord == COORD_LOCAL) dr = ps->GetOrientation() * dr;
 
 				m_rg += dr;
 				if (bctrl)
@@ -750,6 +709,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 				m_rt += dr;
 				ps->Translate(dr);
+
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
 				m_pWnd->OnSelectionTransformed();
 			}
@@ -782,12 +743,10 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(f, vec3d(0, 1, 0));
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(f, vec3d(0, 0, 1));
 
-				FESelection* ps = nullptr;
-				if (mdoc) ps = mdoc->GetCurrentSelection();
-				else if (postDoc) ps = postDoc->GetCurrentSelection();
-				if (ps)
+				FESelection* ps = pdoc->GetCurrentSelection();
+				if (ps && ps->Size())
 				{
-					if ((m_coord == COORD_LOCAL) || postDoc)
+					if (m_coord == COORD_LOCAL)
 					{
 						quatd qs = ps->GetOrientation();
 						q = qs * q * qs.Inverse();
@@ -795,6 +754,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 					q.MakeUnit();
 					ps->Rotate(q, GetPivotPosition());
+
+					if (activeObject) activeObject->UpdateFERenderMesh();
 				}
 			}
 
@@ -806,23 +767,27 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1)
 		{
-			double df = 1 + 0.002*((m_y1 - y) + (x - m_x1));
+			double df = 1 + 0.002 * ((m_y1 - y) + (x - m_x1));
 
 			m_sa *= df;
 			if (bctrl)
 			{
 				double g = scene->GetGridScale();
 				double st;
-				st = g*((int)((m_sa - 1) / g)) + 1;
+				st = g * ((int)((m_sa - 1) / g)) + 1;
 
 				df = st / m_st;
 			}
 			m_st *= df;
-			FESelection* ps = mdoc->GetCurrentSelection();
-			ps->Scale(df, m_ds, GetPivotPosition());
+			FESelection* ps = pdoc->GetCurrentSelection();
+			if (ps && ps->Size())
+			{
+				ps->Scale(df, m_ds, GetPivotPosition());
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
-			m_pWnd->UpdateGLControlBar();
-			repaint();
+				m_pWnd->UpdateGLControlBar();
+				repaint();
+			}	
 		}
 	}
 
@@ -846,9 +811,6 @@ void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
 	int x = (int)ev->position().x();
 	int y = (int)ev->position().y();
 
@@ -884,10 +846,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	}
 
 	// which mesh is active (surface or volume)
-	int meshMode = m_pWnd->GetMeshMode();
-	if (postDoc) meshMode = MESH_MODE_VOLUME;
-
-	m_bextrude = false;
+	int meshMode = pdoc->GetMeshMode();
 
 	AddRegionPoint(x, y);
 
@@ -984,19 +943,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					delete preg;
 				}
 
-				CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-				if (mdoc)
-				{
-					FESelection* psel = mdoc->GetCurrentSelection();
-					if (psel)
-					{
-						if (psel->Size() && view.m_bhide)
-						{
-							pdoc->DoCommand(new CCmdHideSelection(mdoc));
-						}
-					}
-					emit selectionChanged();
-				}
+				emit selectionChanged();
 				m_pWnd->Update(0, false);
 
 				repaint();
@@ -1050,13 +997,11 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	}
 	else 
 	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc == nullptr) return;
-		FESelection* ps = mdoc->GetCurrentSelection();
-		CCommand* cmd = 0;
+		FESelection* ps = pdoc->GetCurrentSelection();
+		CCommand* cmd = nullptr;
 		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 		{
-			cmd = new CCmdTranslateSelection(mdoc, m_rt);
+			cmd = new CCmdTranslateSelection(pdoc, m_rt);
 		}
 		else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
 		{
@@ -1067,20 +1012,20 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0,1,0));
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0,0,1));
 
-				if ((m_coord == COORD_LOCAL) || postDoc)
+				if (m_coord == COORD_LOCAL)
 				{
 					quatd qs = ps->GetOrientation();
 					q = qs*q*qs.Inverse();
 				}
 
 				q.MakeUnit();
-				cmd = new CCmdRotateSelection(mdoc, q, GetPivotPosition());
+				cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
 				m_wt = 0;
 			}
 		}
 		else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
 		{
-			cmd = new CCmdScaleSelection(mdoc, m_st, m_ds, GetPivotPosition());
+			cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
 			m_st = m_sa = 1;
 		}
 
@@ -1088,7 +1033,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			string s = ps->GetName();
 			pdoc->AddCommand(cmd, s);
-			mdoc->GetGModel()->UpdateBoundingBox();
+			pdoc->Update();
 		}
 
 		// TODO: Find a better way to update the GMesh when necessary. 
@@ -1199,6 +1144,104 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
+template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
+{
+	std::vector<T*> castedItems;
+	for (GLHighlighter::Item& it : items)
+	{
+		T* tp = dynamic_cast<T*>(it.item);
+		if (tp) castedItems.push_back(tp);
+	}
+	return castedItems;
+}
+
+void CGLView::keyPressEvent(QKeyEvent* ev)
+{
+	if (((ev->key() == Qt::Key_X) || (ev->key() == Qt::Key_Y) || (ev->key() == Qt::Key_Z)) && (ev->modifiers() & Qt::ALT))
+	{
+		ev->accept();
+
+		double s = (ev->modifiers() & Qt::SHIFT ? -1 : 1);
+
+		CGLCamera* cam = GetCamera();
+
+		quatd dq;
+		switch (ev->key())
+		{
+		case Qt::Key_X: dq = quatd(s * PI * 0.5, vec3d(1, 0, 0)); break;
+		case Qt::Key_Y: dq = quatd(s * PI * 0.5, vec3d(0, 1, 0)); break;
+		case Qt::Key_Z: dq = quatd(s * PI * 0.5, vec3d(0, 0, 1)); break;
+			break;
+		}
+
+		quatd q0 = cam->GetOrientation();
+		quatd q = q0 * dq * q0.Inverse();
+
+		cam->Orbit(q);
+		update();
+	}
+	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		int selectMode = doc->GetSelectionMode();
+		
+		std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
+		if (items.empty()) { ev->ignore(); return; }
+		GLHighlighter::ClearHighlights();
+
+		if (selectMode == SelectionMode::SELECT_PART)
+		{
+			std::vector<GPart*> partList = itemlist_cast<GPart>(items);
+			if (!partList.empty())
+			{
+				vector<int> partIDs;
+				for (GPart* p : partList) partIDs.push_back(p->GetID());
+				doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), partIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_FACE)
+		{
+			std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
+			if (!faceList.empty())
+			{
+				vector<int> faceIDs;
+				for (GFace* f : faceList) faceIDs.push_back(f->GetID());
+				doc->DoCommand(new CCmdSelectSurface(doc->GetGModel(), faceIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_EDGE)
+		{
+			std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
+			if (!edgeList.empty())
+			{
+				vector<int> edgeIDs;
+				for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
+				doc->DoCommand(new CCmdSelectEdge(doc->GetGModel(), edgeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else if (selectMode == SelectionMode::SELECT_NODE)
+		{
+			std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
+			if (!nodeList.empty())
+			{
+				vector<int> nodeIDs;
+				for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
+				doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), nodeIDs, false));
+				repaint();
+			}
+			else ev->ignore();
+		}
+		else ev->ignore();
+	}
+	else ev->ignore();
+}
+
 void CGLView::initializeGL()
 {
 	CGLSceneView::initializeGL();
@@ -1224,7 +1267,7 @@ void CGLView::initializeGL()
 
 		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 		m_pframe->set_layer(0); // permanent widget
@@ -1251,38 +1294,25 @@ void CGLView::Reset()
 	repaint();
 }
 
-void CGLView::UpdateWidgets(bool bposition)
+void CGLView::UpdateWidgets()
 {
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
-	if (postDoc && postDoc->IsValid())
+	int Y = 0;
+	if (m_ptitle)
 	{
-		int Y = 0;
-		if (m_ptitle)
-		{
-			m_ptitle->fit_to_size();
-
-			if (bposition)
-				m_ptitle->resize(0, 0, m_ptitle->w(), m_ptitle->h());
-
-			m_ptitle->fit_to_size();
-			Y = m_ptitle->y() + m_ptitle->h();
-		}
-
-		if (m_psubtitle)
-		{
-			if (bposition)
-				m_psubtitle->resize(0, Y, m_psubtitle->w(), m_psubtitle->h());
-
-			m_psubtitle->fit_to_size();
-
-			// set a min width for the subtitle otherwise the time values may get cropped
-			if (m_psubtitle->w() < 150)
-				m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
-		}
-
-		repaint();
+		m_ptitle->fit_to_size();
+		Y = m_ptitle->y() + m_ptitle->h();
 	}
+
+	if (m_psubtitle)
+	{
+		m_psubtitle->fit_to_size();
+		
+		// set a min width for the subtitle otherwise the time values may get cropped
+		if (m_psubtitle->w() < 150)
+			m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
+	}
+
+	repaint();
 }
 
 bool CGLView::isTitleVisible() const
@@ -1347,10 +1377,13 @@ void CGLView::RenderDecorations()
 	}
 }
 
+void CGLView::setLegendRange(float vmin, float vmax)
+{
+	if (m_legend) m_legend->SetRange((float)vmin, (float)vmax);
+}
+
 void CGLView::RenderScene()
 {
-	time_point<steady_clock> startTime = steady_clock::now();
-
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
@@ -1364,9 +1397,14 @@ void CGLView::RenderScene()
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 
-	PositionCamera();
-
-	if (scene) scene->Render(rc);
+	if (scene)
+	{
+		time_point<steady_clock> startTime = steady_clock::now();
+		scene->Render(rc);
+		time_point<steady_clock> stopTime = steady_clock::now();
+		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
+		m_fps = (sec != 0 ? 1.0 / sec : 0);
+	}
 
 	RenderPivot();
 
@@ -1382,76 +1420,7 @@ void CGLView::RenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// update the triad
-	if (m_ptriad) m_ptriad->setOrientation(cam.GetOrientation());
-
-	// We must turn off culling before we use the QPainter, otherwise
-	// drawing using QPainter doesn't work correctly.
-	glDisable(GL_CULL_FACE);
-
-	// render the GL widgets
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = m_pWnd->GetModelDocument();
-		if (mdoc && m_Widget)
-		{
-			FSModel* ps = mdoc->GetFSModel();
-			GModel& model = ps->GetModel();
-
-			if (m_ptitle) m_ptitle->hide();
-			if (m_psubtitle) m_psubtitle->hide();
-
-			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-			int activeLayer = model.GetActiveMeshLayer();
-			const std::string& s = model.GetMeshLayerName(activeLayer);
-			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
-			if (m_ptriad) m_Widget->DrawWidget(m_ptriad, &painter);
-			if (m_pframe && m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
-
-			if (m_legend)
-			{
-				if (view.m_bcontour)
-				{
-					GObject* po = mdoc->GetActiveObject();
-					FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
-					if (pm)
-					{
-						Mesh_Data& data = pm->GetMeshData();
-						double vmin, vmax;
-						data.GetValueRange(vmin, vmax);
-						if (vmin == vmax) vmax++;
-						m_legend->SetRange((float)vmin, (float)vmax);
-						m_legend->show();
-						m_Widget->DrawWidget(m_legend, &painter);
-					}
-				}
-				else m_legend->hide();
-			}
-		}
-	}
-	else
-	{
-		if (postDoc->IsValid() && m_Widget)
-		{
-			// make sure the model legend bar is hidden
-			m_legend->hide();
-
-			// make sure the titles are visible
-			if (m_ptitle) m_ptitle->show();
-			if (m_psubtitle) m_psubtitle->show();
-
-			// draw the other widgets
-			int layer = postDoc->GetGLModel()->m_layer;
-			m_Widget->SetActiveLayer(layer);
-			m_Widget->DrawWidgets(&painter);
-		}
-	}
-
-	painter.end();
+	RenderCanvas(rc);
 
 	if (m_recorder.IsRecording())
 	{
@@ -1463,11 +1432,52 @@ void CGLView::RenderScene()
 			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
+}
+
+void CGLView::RenderCanvas(CGLContext& rc)
+{
+	// We must turn off culling before we use the QPainter, otherwise
+	// drawing using QPainter doesn't work correctly.
+	glDisable(GL_CULL_FACE);
+
+	// render the GL widgets
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	std::string renderString = doc->GetRenderString();
+	if (!renderString.empty())
+	{
+		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
+		painter.drawText(0, 15, QString::fromStdString(renderString));
+	}
+
+	// draw the GL widgets
+	if (m_Widget)
+	{
+		// update the triad
+		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
+
+		if (m_ptitle)
+		{
+			if (doc->ShowTitle()) m_ptitle->show(); else m_ptitle->hide();
+		}
+		if (m_psubtitle)
+		{
+			if (doc->ShowSubtitle()) m_psubtitle->show(); else m_psubtitle->hide();
+		}
+		if (m_legend)
+		{
+			if (doc->ShowLegend()) m_legend->show(); else m_legend->hide();
+		}
+
+		int layer = doc->GetWidgetLayer();
+		m_Widget->SetRenderLayer(layer);
+		m_Widget->DrawWidgets(&painter);
+	}
 
 	if (m_recorder.IsPaused())
 	{
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 		QTextOption to;
 		QFont font = painter.font();
 		font.setPointSize(24);
@@ -1475,26 +1485,21 @@ void CGLView::RenderScene()
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rect(), "Recording paused", to);
-		painter.end();
 	}
 
 	// stop time
-	time_point<steady_clock> stopTime = steady_clock::now();
-
-	double sec = duration_cast< duration<double> >(stopTime - startTime).count();
 	if (m_showFPS)
 	{
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 		QTextOption to;
 		QFont font = painter.font();
 		font.setPointSize(12);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
-		painter.end();
+		painter.drawText(rect(), QString("FPS: %1").arg(m_fps), to);
 	}
+
+	painter.end();
 }
 
 void CGLView::Render3DCursor()
@@ -1559,158 +1564,6 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 	return a;
 }
 
-void CGLView::PositionCamera()
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	// position the camera
-	CGLCamera& cam = scene->GetView().GetCamera();
-	cam.Transform();
-
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-	// see if we need to track anything
-	if (pdoc->IsValid() && m_btrack)
-	{
-		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-		int NN = pm->Nodes();
-		int* nt = m_ntrack;
-		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
-
-		Post::FEPostModel& fem = *pdoc->GetFSModel();
-
-		vec3d a = pm->Node(nt[0]).r;
-		vec3d b = pm->Node(nt[1]).r;
-		vec3d c = pm->Node(nt[2]).r;
-
-		vec3d e1 = (b - a);
-		vec3d e3 = e1 ^ (c - a);
-		vec3d e2 = e3^e1;
-		e1.Normalize();
-		e2.Normalize();
-		e3.Normalize();
-
-		vec3d r0 = cam.GetPosition();
-		vec3d r1 = a;
-
-		// undo camera translation
-		glTranslatef(r0.x, r0.y, r0.z);
-
-		// set current orientation
-		mat3d Q;
-		Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
-		Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
-		Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
-
-		// setup the rotation matrix that rotates back to the original
-		// tracking orientation
-		mat3d R = m_rot0*Q.inverse();
-
-		// note that we need to pass the transpose to OGL
-		GLfloat m[4][4] = { 0 };
-		m[3][3] = 1.f;
-		m[0][0] = R[0][0]; m[0][1] = R[1][0]; m[0][2] = R[2][0];
-		m[1][0] = R[0][1]; m[1][1] = R[1][1]; m[1][2] = R[2][1];
-		m[2][0] = R[0][2]; m[2][1] = R[1][2]; m[2][2] = R[2][2];
-		glMultMatrixf(&m[0][0]);
-
-		// center camera on track point
-		glTranslatef(-r1.x, -r1.y, -r1.z);
-
-		m_rc.m_btrack = true;
-		m_rc.m_track_pos = r1;
-
-		// This would make the plane cut relative to the element coordinate system
-		m_rc.m_track_rot = quatd(R);
-	}
-	else m_rc.m_btrack = false;
-}
-
-void CGLView::SetTrackingData(int n[3])
-{
-	// store the nodes to track
-	m_ntrack[0] = n[0];
-	m_ntrack[1] = n[1];
-	m_ntrack[2] = n[2];
-
-	// get the current nodal positions
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-	int NN = pm->Nodes();
-	int* nt = m_ntrack;
-	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
-
-	Post::FEPostModel& fem = *pdoc->GetFSModel();
-	vec3d a = pm->Node(nt[0]).r;
-	vec3d b = pm->Node(nt[1]).r;
-	vec3d c = pm->Node(nt[2]).r;
-
-	// setup orthogonal basis
-	vec3d e1 = (b - a);
-	vec3d e3 = e1 ^ (c - a);
-	vec3d e2 = e3^e1;
-	e1.Normalize();
-	e2.Normalize();
-	e3.Normalize();
-
-	// create matrix form
-	mat3d Q;
-	Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
-	Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
-	Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
-
-	// store as quat
-	m_rot0 = Q;
-}
-
-void CGLView::TrackSelection(bool b)
-{
-	if (b == false)
-	{
-		m_btrack = false;
-	}
-	else
-	{
-		m_btrack = false;
-		CPostDocument* pdoc = m_pWnd->GetPostDocument();
-		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
-
-		int nmode = model->GetSelectionMode();
-		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-		if (nmode == Post::SELECT_ELEMS)
-		{
-			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
-			if (selElems.size() > 0)
-			{
-				FEElement_& el = *selElems[0];
-				int* n = el.m_node;
-				int m[3] = { n[0], n[1], n[2] };
-				SetTrackingData(m);
-				m_btrack = true;
-			}
-		}
-		else if (nmode == Post::SELECT_NODES)
-		{
-			int ns = 0;
-			int m[3];
-			for (int i = 0; i<pm->Nodes(); ++i)
-			{
-				if (pm->Node(i).IsSelected()) m[ns++] = i;
-				if (ns == 3)
-				{
-					SetTrackingData(m);
-					m_btrack = true;
-					break;
-				}
-			}
-		}
-	}
-}
-
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
@@ -1761,102 +1614,6 @@ void CGLView::ClearCommandStack()
 	m_Cmd.Clear();
 }
 
-int CGLView::GetMeshMode()
-{
-	return m_pWnd->GetMeshMode();
-}
-
-bool CGLView::TrackModeActive()
-{
-	return m_btrack;
-}
-
-void CGLView::RenderTrack()
-{
-	if (m_btrack == false) return;
-
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
-	int* nt = m_ntrack;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	vec3d a = pm->Node(nt[0]).r;
-	vec3d b = pm->Node(nt[1]).r;
-	vec3d c = pm->Node(nt[2]).r;
-
-	vec3d e1 = (b - a);
-	vec3d e3 = e1 ^ (c - a);
-	vec3d e2 = e3^e1;
-	double l = e1.Length();
-	e1.Normalize();
-	e2.Normalize();
-	e3.Normalize();
-
-	vec3d A, B, C;
-	A = a + e1*l;
-	B = a + e2*l;
-	C = a + e3*l;
-
-	glColor3ub(255, 0, 255);
-	glBegin(GL_LINES);
-	{
-		glVertex3f(a.x, a.y, a.z); glVertex3f(A.x, A.y, A.z);
-		glVertex3f(a.x, a.y, a.z); glVertex3f(B.x, B.y, B.z);
-		glVertex3f(a.x, a.y, a.z); glVertex3f(C.x, C.y, C.z);
-	}
-	glEnd();
-
-	glPopAttrib();
-}
-
-void CGLView::RenderImageData()
-{
-	CGLDocument* doc = GetDocument();
-	if (doc->IsValid() == false) return;
-
-	for (int i = 0; i < doc->ImageModels(); ++i)
-	{
-		CImageModel* img = doc->GetImageModel(i);
-		BOX box = img->GetBoundingBox();
-		vec3d r0 = box.r0();
-		vec3d r1 = box.r1();
-		glPushMatrix();
-		{
-			glTranslated(r0.x, r0.y, r0.z);
-
-			mat3d Q = img->GetOrientation();
-
-			double q[16] = {
-				Q(0,0), Q(1,0), Q(2,0), 0.0,
-				Q(0,1), Q(1,1), Q(2,1), 0.0,
-				Q(0,2), Q(1,2), Q(2,2), 0.0,
-				0.0, 0.0, 0.0, 1.0
-			};
-			glMultMatrixd(q);
-
-			BOX localBox(vec3d(0, 0, 0), r1 - r0);
-			GLColor c(255, 128, 128);
-			glColor3ub(c.r, c.g, c.b);
-
-			// If we are in the multi-panel view, throw in the slices as well
-			if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
-			{
-				CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
-				sliceView->RenderSlicers(m_rc);
-			}
-
-			if (img->ShowBox()) glx::renderBox(localBox, false);
-			img->Render(m_rc);
-		}
-		glPopMatrix();
-	}
-}
-
 //-----------------------------------------------------------------------------
 // This function renders the manipulator at the current pivot
 //
@@ -1864,6 +1621,9 @@ void CGLView::RenderPivot()
 {
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
+
+	int ntrans = pdoc->GetTransformMode();
+	if (ntrans == TRANSFORM_NONE) return;
 
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -1891,7 +1651,6 @@ void CGLView::RenderPivot()
 	// orient the manipulator
 	// (we always use local for post docs)
 	int orient = m_coord;
-	if (dynamic_cast<CPostDocument*>(pdoc)) orient = COORD_LOCAL;
 	if (orient == COORD_LOCAL)
 	{
 		quatd q = ps->GetOrientation();
@@ -1905,7 +1664,6 @@ void CGLView::RenderPivot()
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = true;
 	if ((nitem == ITEM_MESH) && (nsel != SELECT_OBJECT)) bact = false;
-	int ntrans = pdoc->GetTransformMode();
 	m_pivot.Render(ntrans, d, bact);
 
 	// restore the modelview matrix
@@ -2185,8 +1943,9 @@ bool CGLView::ShowPlaneCut() const
 
 void CGLView::SetPlaneCutMode(int nmode)
 {
+	bool breset = (m_planeCutMode != nmode);
 	m_planeCutMode = nmode;
-	UpdatePlaneCut(true);
+	UpdatePlaneCut(breset);
 	update();
 }
 
@@ -2286,8 +2045,8 @@ void CGLView::HighlightEdge(int x, int y)
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
-						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
+						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
+						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
 						vec3d p0 = transform.WorldToScreen(r0);
 						vec3d p1 = transform.WorldToScreen(r1);
@@ -2363,6 +2122,178 @@ void CGLView::HighlightNode(int x, int y)
 		}
 	}
 	if (closestNode != nullptr) GLHighlighter::SetActiveItem(closestNode);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightSurface(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// get the fe model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	// set up selection buffer
+	int nsize = 5 * model.Edges();
+	if (nsize == 0) return;
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	// convert the point to a ray
+	Ray ray = transform.PointToRay(x, y);
+
+	double* a = PlaneCoordinates();
+	int Objects = model.Objects();
+	GFace* closestSurface = nullptr;
+	double minDist = 0;
+	Intersection q;
+	for (int i = 0; i < Objects; ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			Ray localRay;
+			Transform& T = po->GetTransform();
+			localRay.origin = T.GlobalToLocal(ray.origin);
+			localRay.direction = T.GlobalToLocalNormal(ray.direction);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			if (mesh)
+			{
+				int surfs = po->Faces();
+				for (int k = 0; k < surfs; ++k)
+				{
+					GFace* gface = po->Face(k);
+					if (gface->IsVisible() && !gface->IsSelected())
+					{
+						int NF = mesh->m_FIL[k].second;
+						int N0 = mesh->m_FIL[k].first;
+						for (int j = 0; j < NF; ++j)
+						{
+							GMesh::FACE& face = mesh->Face(j + N0);
+
+							vec3d r0 = to_vec3d(face.vr[0]);
+							vec3d r1 = to_vec3d(face.vr[1]);
+							vec3d r2 = to_vec3d(face.vr[2]);
+
+							Triangle tri = { r0, r1, r2, to_vec3d(face.fn)};
+							if (IntersectTriangle(localRay, tri, q, false))
+							{
+								vec3d q1 = T.LocalToGlobal(q.point);
+								if ((ShowPlaneCut() == false) || (q1.x * a[0] + q1.y * a[1] + q1.z * a[2] + a[3] > 0))
+								{
+									double distance = ray.direction * (q1 - ray.origin);
+									if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+									{
+										if ((gface->IsSelected() == false) || (m_bctrl))
+										{
+											closestSurface = po->Face(face.pid);
+											minDist = distance;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestSurface != nullptr) GLHighlighter::SetActiveItem(closestSurface);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
+
+void CGLView::HighlightPart(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// Get the model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	if (model.Parts() == 0) return;
+
+	// convert the point to a ray
+	makeCurrent();
+	GLViewTransform transform(this);
+	Ray ray = transform.PointToRay(x, y);
+
+	GPart* closestPart = 0;
+	Intersection q;
+	double minDist = 0;
+	double* a = PlaneCoordinates();
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			GMesh* mesh = po->GetRenderMesh();
+			if (mesh)
+			{
+				int NF = mesh->Faces();
+				for (int j = 0; j < NF; ++j)
+				{
+					GMesh::FACE& face = mesh->Face(j);
+
+					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+
+					Triangle tri = { r0, r1, r2 };
+					if (IntersectTriangle(ray, tri, q))
+					{
+						if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+						{
+							double distance = ray.direction * (q.point - ray.origin);
+							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
+							{
+								GFace* gface = po->Face(face.pid);
+								int pid = gface->m_nPID[0];
+								GPart* part = po->Part(pid);
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								{
+									closestPart = part;
+									minDist = distance;
+								}
+								else if (gface->m_nPID[1] >= 0)
+								{
+									pid = gface->m_nPID[1];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+								else if (gface->m_nPID[2] >= 0)
+								{
+									pid = gface->m_nPID[2];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (closestPart != nullptr) GLHighlighter::SetActiveItem(closestPart);
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
@@ -2488,7 +2419,7 @@ void CGLView::SetPivotPosition(const vec3d& r)
 quatd CGLView::GetPivotRotation()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
-	if ((doc && (m_coord == COORD_LOCAL)) || dynamic_cast<CPostDocument*>(GetDocument()))
+	if (doc && (m_coord == COORD_LOCAL))
 	{
 		FESelection* ps = doc->GetCurrentSelection();
 		if (ps) return ps->GetOrientation();
@@ -2508,7 +2439,8 @@ void CGLView::ZoomSelection(bool forceZoom)
 	if (scene == nullptr) return;
 
 	// get the selection's bounding box
-	BOX box = scene->GetSelectionBox();
+	BOX box = GLHighlighter::GetBoundingBox();
+	box += scene->GetSelectionBox();
 	if (box.IsValid())
 	{
 		double f = box.GetMaxExtent();
@@ -2584,198 +2516,9 @@ void CGLView::ZoomExtents(bool banimate)
 	repaint();
 }
 
-//-----------------------------------------------------------------------------
-//! Render the tags on the selected items.
-void CGLView::RenderTags()
-{
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetViewSettings();
-
-	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
-
-	FSMesh* pm = po->GetFEMesh();
-	FSMeshBase* pmb = pm;
-	if (pm == nullptr)
-	{
-		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-		if (pso) pmb = pso->GetSurfaceMesh();
-		if (pmb == nullptr) return;
-	}
-
-	// create the tag array.
-	// We add a tag for each selected item
-	GLTAG tag;
-	vector<GLTAG> vtag;
-
-	// clear the node tags
-	int NN = pmb->Nodes();
-	for (int i = 0; i < NN; ++i) pmb->Node(i).m_ntag = 0;
-
-	int mode = doc->GetItemMode();
-
-	GLColor extcol(255, 255, 0);
-	GLColor intcol(255, 0, 0);
-
-	// process elements
-	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
-	{
-		if ((mode == ITEM_ELEM) && pm)
-		{
-			int NE = pm->Elements();
-			for (int i = 0; i < NE; i++)
-			{
-				FEElement_& el = pm->Element(i);
-				if (el.IsSelected())
-				{
-					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-					tag.c = extcol;
-					int nid = el.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-					vtag.push_back(tag);
-
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process faces
-		if (mode == ITEM_FACE)
-		{
-			int NF = pmb->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& f = pmb->Face(i);
-				if (f.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
-					tag.c = (f.IsExternal() ? extcol : intcol);
-					int nid = f.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-					vtag.push_back(tag);
-
-					int nf = f.Nodes();
-					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process edges
-		if (mode == ITEM_EDGE)
-		{
-			int NC = pmb->Edges();
-			for (int i = 0; i < NC; i++)
-			{
-				FSEdge& edge = pmb->Edge(i);
-				if (edge.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
-					tag.c = extcol;
-					int nid = edge.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-					vtag.push_back(tag);
-
-					int ne = edge.Nodes();
-					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
-				}
-			}
-		}
-
-		// process nodes
-		if (mode == ITEM_NODE)
-		{
-			for (int i = 0; i < NN; i++)
-			{
-				FSNode& node = pmb->Node(i);
-				if (node.IsSelected())
-				{
-					tag.r = pmb->LocalToGlobal(node.r);
-					tag.c = (node.IsExterior() ? extcol : intcol);
-					int nid = node.GetID();
-					if (nid < 0) nid = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-					vtag.push_back(tag);
-				}
-			}
-		}
-
-		// add additional nodes
-		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
-		{
-			for (int i = 0; i < NN; i++)
-			{
-				FSNode& node = pmb->Node(i);
-				if (node.m_ntag == 1)
-				{
-					tag.r = pmb->LocalToGlobal(node.r);
-					tag.c = (node.IsExterior() ? extcol : intcol);
-					int n = node.GetID();
-					if (n < 0) n = i + 1;
-					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-					vtag.push_back(tag);
-				}
-			}
-		}
-	}
-
-	// render object labels
-	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-	if (postDoc && view.m_showRigidLabels)
-	{
-		bool renderRB = view.m_brigid;
-		bool renderRJ = view.m_bjoint;
-		Post::FEPostModel* fem = postDoc->GetFSModel();
-		for (int i = 0; i < fem->PointObjects(); ++i)
-		{
-			Post::FEPostModel::PointObject& ob = *fem->GetPointObject(i);
-			if (ob.IsActive())
-			{
-				if (((ob.m_tag == 1) && renderRB) ||
-					((ob.m_tag  > 1) && renderRJ))
-				{
-					tag.r = ob.m_pos;
-					tag.c = ob.Color();
-					snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-					vtag.push_back(tag);
-				}
-			}
-		}
-
-		for (int i = 0; i < fem->LineObjects(); ++i)
-		{
-			Post::FEPostModel::LineObject& ob = *fem->GetLineObject(i);
-			if (ob.IsActive() && renderRJ)
-			{
-				vec3d a = ob.m_r1;
-				vec3d b = ob.m_r2;
-
-				tag.r = (a + b) * 0.5;
-				tag.c = ob.Color();
-				snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-				vtag.push_back(tag);
-			}
-		}
-	}
-
-	// if we don't have any tags, just return
-	if (vtag.empty()) return;
-
-	// limit the number of tags to render
-	const int MAX_TAGS = 100;
-	int nsel = (int)vtag.size();
-	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
-
-	RenderTags(vtag);
-}
-
 void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 {
+	if (vtag.empty()) return;
 	int nsel = (int)vtag.size();
 
 	// find out where the tags are on the screen
@@ -2912,7 +2655,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
 	}
 	else
 	{
@@ -2965,6 +2708,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				}
 
 				mesh->UpdateItemVisibility();
+				po->BuildFERenderMesh();
 			}
 		}
 	}
@@ -2995,7 +2739,7 @@ double* CGLView::PlaneCoordinates()
 	return m_planeCut.GetPlaneCoordinates();
 }
 
-void CGLView::RenderPlaneCut()
+void CGLView::RenderPlaneCut(CGLContext& rc)
 {
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -3003,15 +2747,10 @@ void CGLView::RenderPlaneCut()
 	if (m_planeCut.IsValid() == false)
 	{
 		FSModel& fem = *doc->GetFSModel();
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
 	}
 
-	BOX box = doc->GetGModel()->GetBoundingBox();
-
-	glColor3ub(200, 0, 200);
-	glx::renderBox(box, false);
-
-	m_planeCut.Render();
+	m_planeCut.Render(rc);
 }
 
 void CGLView::ToggleFPS()

@@ -41,8 +41,15 @@ void FEHexSplitModifier::DoSurfaceSmoothing(bool b)
 
 FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 {
-	// make sure we are dealing with a hex mesh
-	if (pm->IsType(FE_HEX8) == false) return 0;
+	// count the selected elements
+	int nsel = pm->CountSelectedElements();
+	if (nsel == 0) return RefineMesh(pm);
+	else return RefineSelection(pm);
+}
+
+FSMesh* FEHexSplitModifier::RefineMesh(FSMesh* pm)
+{
+	if (pm->IsType(FE_HEX8) == false) return nullptr;
 
 	// build the edge table of the mesh (each edge will add a node)
 	FSEdgeList ET(*pm);
@@ -229,6 +236,307 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 		pmnew->UpdateNormals();
 	}
+
+	return pmnew;
+}
+
+FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
+{
+	// make sure all selected elements are connected
+	size_t NN0 = pm->Nodes();
+	size_t NE0 = pm->Elements();
+	size_t NF0 = pm->Faces();
+	size_t NC0 = pm->Edges();
+	size_t splitElems = 0;
+	pm->TagAllNodes(0);
+	pm->TagAllFaces(0);
+	pm->TagAllEdges(0);
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsSelected())
+		{
+			if (!el.IsType(FE_HEX8))
+			{
+				SetError("Invalid selection.");
+				return nullptr;
+			}
+
+			el.m_ntag = 1;
+			splitElems++;
+			for (int j = 0; j < 6; ++j)
+			{
+				FEElement_* elj = pm->ElementPtr(el.m_nbr[j]);
+				if (elj && (!elj->IsSelected()))
+				{
+					SetError("Invalid selection.");
+					return nullptr;
+				}
+			}
+
+			for (int j = 0; j < 8; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+
+			for (int j = 0; j < 6; ++j)
+			{
+				if (el.m_face[j] >= 0) pm->Face(el.m_face[j]).m_ntag = 1;
+			}
+		}
+		else el.m_ntag = 0;
+	}
+
+	// build the edge table of the mesh
+	// and count how many edges will be split
+	FSEdgeList ET(*pm);
+	vector<int> edgeTag(ET.size(), 0);
+	FSElementEdgeList EET(*pm, ET);
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			int ne = EET.Valence(i);
+			for (int j = 0; j < ne; ++j) edgeTag[EET.EdgeIndex(i, j)] = 1;
+		}
+	}
+	size_t splitEdges = 0;
+	for (int n : edgeTag) splitEdges += n;
+
+	// count how many quads to split
+	FSFaceEdgeList FET(*pm, ET);
+	size_t splitQuads = 0;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		if (face.m_ntag == 1)
+		{
+			splitQuads++;
+		}
+	}
+
+	// count how many edges to split
+	size_t splitLines = 0;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		if ((pm->Node(edge.n[0]).m_ntag) && (pm->Node(edge.n[1]).m_ntag))
+		{
+			edge.m_ntag = 1;
+			splitLines++;
+		}
+	}
+	FSEdgeIndexList EIL(*pm, ET);
+
+	// build the face table
+	FSFaceTable FT(*pm);
+	vector<int> faceTag(FT.size(), 0);
+	FSElementFaceList EFL(*pm, FT);
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			int nf = EFL.Valence(i);
+			for (int j = 0; j < nf; ++j) faceTag[EFL.FaceIndex(i, j)] = 1;
+		}
+	}
+	size_t splitFaces = 0;
+	for (int n : faceTag) splitFaces += n;
+	FSFaceFaceList FFL(*pm, FT);
+
+
+	// each node and all tagged edges, faces, and elements will create a new node
+	int NN1 = NN0 + splitEdges + splitFaces + splitElems;
+
+	// each element will be split in eight
+	int NE1 = (NE0 - splitElems) +  8 * splitElems;
+
+	// each face will be split in four
+	int NF1 = (NF0 - splitQuads) + 4 * splitQuads;
+
+	// each edge will be split in 2
+	int NC1 = (NC0 - splitLines) + 2 * splitLines;
+
+	// create new mesh
+	FSMesh* pmnew = new FSMesh;
+	pmnew->Create(NN1, NE1, NF1, NC1);
+
+	// assign nodes
+	int n = 0;
+	for (int i = 0; i < NN0; ++i)
+	{
+		FSNode& n1 = pmnew->Node(n++);
+		FSNode& n0 = pm->Node(i);
+		n1 = n0;
+	}
+
+	for (int i = 0; i < edgeTag.size(); ++i)
+	{
+		if (edgeTag[i] == 1)
+		{
+			edgeTag[i] = n;
+			FSNode& n1 = pmnew->Node(n++);
+
+			pair<int, int>& edge = ET[i];
+			FSNode& na = pm->Node(edge.first);
+			FSNode& nb = pm->Node(edge.second);
+
+			n1.r = (na.r + nb.r) * 0.5;
+		}
+		else edgeTag[i] = -1;
+	}
+
+	for (int i = 0; i < faceTag.size(); ++i)
+	{
+		if (faceTag[i] == 1)
+		{
+			faceTag[i] = n;
+			FSNode& n1 = pmnew->Node(n++);
+
+			FSFace& face = FT[i];
+
+			vec3d r0 = pm->Node(face.n[0]).r;
+			vec3d r1 = pm->Node(face.n[1]).r;
+			vec3d r2 = pm->Node(face.n[2]).r;
+			vec3d r3 = pm->Node(face.n[3]).r;
+
+			n1.r = (r0 + r1 + r2 + r3) * 0.25;
+		}
+		else faceTag[i] = -1;
+	}
+
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			el.m_ntag = n;
+			FSNode& n1 = pmnew->Node(n++);
+
+			FSElement& el = pm->Element(i);
+			vec3d r(0, 0, 0);
+			for (int j = 0; j < 8; ++j) r += pm->Node(el.m_node[j]).r;
+			r *= 0.125;
+
+			n1.r = r;
+		}
+		else el.m_ntag = -1;
+	}
+
+	const int LUT[8][8] = {
+	{  0,  8, 24, 11, 16, 20, 26, 23},
+	{  8,  1,  9, 24, 20, 17, 21, 26 },
+	{ 11, 24, 10,  3, 23, 26, 22, 19 },
+	{ 24,  9,  2, 10, 26, 21, 18, 22 },
+	{ 16, 20, 26, 23,  4, 12, 25, 15 },
+	{ 20, 17, 21, 26, 12,  5, 13, 25 },
+	{ 23, 26, 22, 19, 15, 25, 14,  7 },
+	{ 26, 21, 18, 22, 25, 13,  6, 14 } };
+
+	const int FLUT[4][4] = {
+	{ 0, 4, 8, 7 },
+	{ 4, 1, 5, 8 },
+	{ 8, 5, 2, 6 },
+	{ 7, 8, 6, 3 }};
+
+	const int ELUT[2][2] = {
+	{ 0, 2 },
+	{ 2, 1 } };
+
+	// create new elements
+	int m[27];
+	n = 0;
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& el0 = pm->Element(i);
+		if (el0.m_ntag < 0)
+		{
+			FSElement& el = pmnew->Element(n++);
+			el.SetType(FE_HEX8);
+			el = el0;
+		}
+		else
+		{
+			vector<int>& eel = EET[i];
+			vector<int>& fel = EFL[i];
+
+			for (int j = 0; j <  8; ++j) m[     j] = el0.m_node[j];
+			for (int j = 0; j < 12; ++j) m[ 8 + j] = edgeTag[eel[j]];
+			for (int j = 0; j <  6; ++j) m[20 + j] = faceTag[fel[j]];
+			m[26] = el0.m_ntag;
+
+			for (int j = 0; j < 8; ++j)
+			{
+				FSElement& el = pmnew->Element(n++);
+				el.m_gid = el0.m_gid;
+				el.SetType(FE_HEX8);
+
+				for (int k = 0; k < 8; ++k) el.m_node[k] = m[LUT[j][k]];
+			}
+		}
+	}
+
+	// create new faces
+	n = 0;
+	for (int i = 0; i < NF0; ++i)
+	{
+		FSFace& face0 = pm->Face(i);
+		if (face0.m_ntag == 0)
+		{
+			FSFace& face1 = pmnew->Face(n++);
+			face1.SetType(FE_FACE_QUAD4);
+			face1 = face0;
+		}
+		else
+		{
+			vector<int>& fel = FET[i];
+			int ffl = FFL[i];
+
+			for (int j = 0; j < 4; ++j) m[j] = face0.n[j];
+			for (int j = 0; j < 4; ++j) m[4 + j] = edgeTag[fel[j]];
+			m[8] = faceTag[ffl];
+
+			for (int j = 0; j < 4; ++j)
+			{
+				FSFace& facej = pmnew->Face(n++);
+				facej.SetType(FE_FACE_QUAD4);
+				facej.m_gid = face0.m_gid;
+				facej.m_sid = face0.m_sid;
+				for (int k = 0; k < 4; ++k) facej.n[k] = m[FLUT[j][k]];
+			}
+		}
+	}
+
+	// create new edges
+	n = 0;
+	for (int i = 0; i < NC0; ++i)
+	{
+		FSEdge& edge0 = pm->Edge(i);
+		if (edge0.m_ntag == 0)
+		{
+			FSEdge& edge1 = pmnew->Edge(n++);
+			edge1.SetType(FE_EDGE2);
+			edge1 = edge0;
+		}
+		else
+		{
+			int eel = EIL[i];
+			for (int j = 0; j < 2; ++j) m[j] = edge0.n[j];
+			m[2] = edgeTag[eel];
+
+			for (int j = 0; j < 2; ++j)
+			{
+				FSEdge& edgej = pmnew->Edge(n++);
+				edgej.SetType(FE_EDGE2);
+				edgej.m_gid = edge0.m_gid;
+				edgej.n[0] = m[ELUT[j][0]];
+				edgej.n[1] = m[ELUT[j][1]];
+			}
+		}
+	}
+
+	pmnew->BuildMesh();
+
+	// TODO: smooth surface
 
 	return pmnew;
 }

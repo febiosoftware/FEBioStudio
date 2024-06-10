@@ -38,13 +38,21 @@ private:
 	class UI;
 
 public:
-	CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd);
+	CDlgPartSelector(CMainWindow* wnd);
+
+	void SetDocument(CModelDocument* doc);
+
+	void closeEvent(QCloseEvent* e) override;
+
+	void accept() override;
+	void reject() override;
 
 private slots:
 	void onItemClicked(QTableWidgetItem* it);
 	void onFilterChanged();
 	void onShowAll();
 	void onHideAll();
+	void onSelect();
 	void onSelectionChanged();
 
 private:

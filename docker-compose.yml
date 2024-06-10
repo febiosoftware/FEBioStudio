@@ -1,0 +1,18 @@
+version: "3"
+services:
+  studio: &default
+    image: febiosoftware/febio:ubuntu-22.04
+    working_dir: /FEBioStudio
+    volumes:
+      - ../FEBio:/FEBio
+      - ./:/FEBioStudio
+
+  studio-dev:
+    <<: *default
+    container_name: febio-dev
+    command: bash
+
+  studio-build:
+    <<: *default
+    container_name: febio-build
+    command: bash -c "ci/linux/git-safe.sh && ci/linux/build.sh"

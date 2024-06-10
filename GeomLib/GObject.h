@@ -28,9 +28,7 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include <FSCore/box.h>
 #include <vector>
-//using namespace std;
 
-//-----------------------------------------------------------------------------
 // forward declarations
 class FSElemSet;
 class FSSurface;
@@ -168,7 +166,9 @@ public:
 	void AssignMaterial(int matid);
 
 	// assign a material to a part
-	virtual void AssignMaterial(int partid, int matid);
+	void AssignMaterial(int partid, int matid);
+
+	void AssignMaterial(GPart* part, int matid);
 
 	// render the geometry of the object (not the FE mesh)
 //	virtual void Render(GLCanvas* pc);
@@ -179,11 +179,17 @@ public:
 	// get the render mesh
 	GMesh*	GetRenderMesh();
 
+	// get the mesh for rendering the FE mesh
+	GMesh* GetFERenderMesh();
+
 	// get the local bounding box 
 	BOX GetLocalBox() const;
 
 	// get the global bounding box
 	BOX GetGlobalBox() const;
+
+public:
+	void ShowElements(std::vector<int>& elemList, bool show);
 
 public:
 	// show the object
@@ -204,17 +210,21 @@ public:
 	// update the visibility of items (i.e. surfaces, edges, nodes, and mesh items)
 	void UpdateItemVisibility();
 
-	// is called whenever the selection has changed (default does nothing)
-	virtual void UpdateSelection();
-
 	virtual bool IsValid() const;
 
 	// check if the object has any dependencies.
 	virtual bool CanDelete() const;
 	virtual bool CanDeleteMesh() const;
 
+	// update the element material IDs
+	void UpdateFEElementMatIDs();
+	void UpdateFEElementMatIDs(int partIndex);
+
 public:
 	bool IsFaceVisible(const GFace* pf) const;
+
+	virtual void BuildFERenderMesh();
+	virtual void UpdateFERenderMesh();
 
 protected:
 	// set the render mesh
@@ -257,6 +267,7 @@ public:
 	FSGroup* FindFEGroup(int nid);
 
 	FSSurface* FindFESurface(const string& szname);
+	FSEdgeSet* FindFEEdgeSet(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
 	void ClearFEPartSets();

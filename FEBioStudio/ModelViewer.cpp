@@ -50,12 +50,14 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/ImageSource.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
+#include <MeshIO/STLExport.h>
 
 class CDlgWarnings : public QDialog
 {
@@ -156,16 +158,19 @@ FSObject* CModelViewer::GetCurrentObject()
 
 void CModelViewer::UpdateObject(FSObject* po)
 {
-	ui->tree->UpdateObject(po);
-
-	if (po && (po == m_currentObject))
+	if (ui->tree->isVisible())
 	{
-		QTreeWidgetItem* current = ui->tree->currentItem();
-		if (current)
+		ui->tree->UpdateObject(po);
+
+		if (po && (po == m_currentObject))
 		{
-			int n = current->data(0, Qt::UserRole).toInt();
-			assert(ui->tree->m_data[n].obj == m_currentObject);
-			SetCurrentItem(n);
+			QTreeWidgetItem* current = ui->tree->currentItem();
+			if (current)
+			{
+				int n = current->data(0, Qt::UserRole).toInt();
+				assert(ui->tree->m_data[n].obj == m_currentObject);
+				SetCurrentItem(n);
+			}
 		}
 	}
 }
@@ -202,6 +207,12 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 	{
 		ui->tree->UpdateItem(current);
 	}
+	emit currentObjectChanged(po);
+}
+
+void CModelViewer::on_modelSearch_itemChanged()
+{
+	FSObject* po = GetCurrentObject();
 	emit currentObjectChanged(po);
 }
 
@@ -257,6 +268,8 @@ void CModelViewer::on_searchButton_toggled(bool b)
 void CModelViewer::on_syncButton_clicked()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	GModel& mdl = *pdoc->GetGModel();
 	FESelection* sel = pdoc->GetCurrentSelection();
 	if (sel) 
@@ -370,6 +383,16 @@ void CModelViewer::on_syncButton_clicked()
 void CModelViewer::on_refreshButton_clicked()
 {
 	Update(false);
+}
+
+bool CModelViewer::IsHighlightSelectionEnabled() const
+{
+	return ui->highlightButton->isChecked();
+}
+
+void CModelViewer::on_highlightButton_toggled(bool b)
+{
+	emit currentObjectChanged(GetCurrentObject());
 }
 
 void CModelViewer::on_selectButton_clicked()
@@ -692,6 +715,25 @@ void CModelViewer::OnUnhideAllParts()
 void CModelViewer::OnDeleteNamedSelection()
 {
 	OnDeleteItem();
+}
+
+void CModelViewer::OnExportFESurface()
+{
+	FSSurface* surf = dynamic_cast<FSSurface*>(m_currentObject);
+	if (surf == nullptr) return;
+
+	QStringList filters;
+	filters << "STL file (*.stl)";
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Save", QString(), QString("STL ascii (*.stl)"));
+	{
+		std::string filename = fileName.toStdString();
+		FSProject dummy;
+		STLExport writer(dummy);
+		if (!writer.Write(filename.c_str(), surf))
+			QMessageBox::critical(this, "FEBio Studio", QString("Couldn't export to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+
+	}
 }
 
 void CModelViewer::OnHideObject()
@@ -1134,6 +1176,13 @@ void CModelViewer::OnChangeMaterial()
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
+			FSMaterial* oldMat = gmat->TakeMaterialProperties();
+			if (oldMat)
+			{
+				FSProperty* prop = pmat->FindProperty("elastic");
+				if (prop) prop->SetComponent(oldMat);
+				else delete oldMat;
+			}
 			gmat->SetMaterialProperties(pmat);
 			Update();
 			Select(gmat);
@@ -1675,9 +1724,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_FEPART_GROUP:
 	case MT_FEELEM_GROUP:
-	case MT_FEFACE_GROUP:
 	case MT_FEEDGE_GROUP:
 	case MT_FENODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
+	case MT_FEFACE_GROUP:
+		menu.addAction("Export ...", this, SLOT(OnExportFESurface()));
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
 	case MT_MATERIAL_LIST:
@@ -1926,6 +1978,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_3DIMAGE:
         {
+			CImageModel* img = dynamic_cast<CImageModel*>(data->obj);
+			if (img && (img->Get3DImage() == nullptr))
+			{
+				menu.addAction("Find image ...", this, &CModelViewer::OnFindImage);
+			}
             QMenu* exportImage = menu.addMenu("Export Image");
             exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
             exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
@@ -2063,6 +2120,29 @@ void CModelViewer::OnEditMeshData()
 
 	CDlgEditMeshData dlg(data, this);
 	dlg.exec();
+}
+
+void CModelViewer::OnFindImage()
+{
+	CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+	if (img->Get3DImage()) return;
+
+	CRawImageSource* src = dynamic_cast<CRawImageSource*>(img->GetImageSource());
+	if (src)
+	{
+		QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Load Image", "", "Raw image (*.raw)");
+		if (filename.isEmpty() == false)
+		{
+			src->SetFileName(filename.toStdString());
+			img->Reload();
+			Update();
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Find image", "Finding image is currently only supported for RAW images.");
+	}
 }
 
 void CModelViewer::OnExportRawImage()

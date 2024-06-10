@@ -80,6 +80,7 @@ public:
 	WarningLabel* m_errs;
 
 	QToolButton* srcButton;
+	QToolButton* highlightButton;
 
 	bool	m_blockUpdate;
 
@@ -119,6 +120,14 @@ public:
 		refreshButton->setAutoRaise(true);
 		refreshButton->setToolTip("<font color=\"black\">Refresh");
 
+		highlightButton = new QToolButton;
+		highlightButton->setIcon(QIcon(":/icons/select_highlight.png"));
+		highlightButton->setObjectName("highlightButton");
+		highlightButton->setAutoRaise(true);
+		highlightButton->setToolTip("<font color=\"black\">Toggle selection highlighting");
+		highlightButton->setCheckable(true);
+		highlightButton->setChecked(false);
+
 		// filter box
 		m_filter = new QComboBox;
 		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs" << "Images");
@@ -142,6 +151,7 @@ public:
 
 		// search widget
 		m_search = new CModelSearch(wnd, tree);
+		m_search->setObjectName("modelSearch");
 
 		// stacked widget
 		m_stack = new QStackedWidget;
@@ -168,6 +178,7 @@ public:
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;
 		buttonLayout->addWidget(selectButton);
+		buttonLayout->addWidget(highlightButton);
 		buttonLayout->addWidget(deleteButton);
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);

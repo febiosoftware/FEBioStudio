@@ -300,6 +300,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 			else if ((n[7] == n[6]) && (n[7]==n[5])) el.SetType(FE_PENTA6);
 			else el.SetType(FE_HEX8);
 
+			el.m_gid = (ih->mid >= 0 ? ih->mid : 0); // partition on material
 			el.m_MatID = ih->mid;
 
 			el.m_node[0] = FindNode(ih->n[0]); if (el.m_node[0] < 0) return false;
@@ -325,6 +326,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 			el.m_node[1] = FindNode(is->n[1]); if (el.m_node[1] < 0) return false;
 			el.m_node[2] = FindNode(is->n[2]); if (el.m_node[2] < 0) return false;
 
+			el.m_gid = (is->mid >= 0 ? is->mid : 0); // partition on material
 			el.m_MatID = is->mid;
 
 			if (is->n[3] == is->n[2])
@@ -357,7 +359,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "Displacement");
 		ndata[1] = nd; 
-		fem.SetDisplacementField(BUILD_FIELD(1, nd, 0));
+		fem.SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, nd, 0));
 		nd++;
 	}
 
