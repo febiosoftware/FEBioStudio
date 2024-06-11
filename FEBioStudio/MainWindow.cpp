@@ -3246,6 +3246,12 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 
 	vector<MODEL_ERROR> warnings = doc->CheckModel();
 
+	if (!askRunQuestion && warnings.empty())
+	{
+		QMessageBox::information(this, "Model Check", "Model check completed. No issues found!");
+		return true;
+	}
+
 	if (warnings.empty() == false)
 	{
 		CDlgCheck dlg(this, askRunQuestion);
