@@ -616,6 +616,9 @@ void CPostDocument::UpdateSelection(bool report)
 	Post::CGLModel* mdl = GetGLModel();
 
 	// delete old selection
+	FEMeshSelection* psel = dynamic_cast<FEMeshSelection*>(m_psel);
+	if (psel == nullptr) return;
+	
 	if (mdl) mdl->SetSelection(nullptr); 
 	if (m_psel) delete m_psel;
 	m_psel = nullptr;
