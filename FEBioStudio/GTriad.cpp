@@ -29,6 +29,9 @@ SOFTWARE.*/
 #include <qopengl.h>
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
 #else
 #include <GL/glu.h>
 #endif

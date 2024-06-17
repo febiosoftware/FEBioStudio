@@ -51,6 +51,11 @@ SOFTWARE.*/
 
 #include <iostream>
 
+#ifdef WIN32
+#undef min
+#undef max
+#endif
+
 
 class VariablePopupComboBox : public QComboBox
 {
