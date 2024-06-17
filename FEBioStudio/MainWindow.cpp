@@ -230,6 +230,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 */
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
+#ifdef WIN32
+	if (ui->m_settings.uiTheme == 0)
+	{
+		// From Qt 6.5 the default style (light or dark) is taken from the Windows settings.
+		// This currently causes issues, so for now we're forcing the windowsvista style, which does not have
+		// a dark option. 
+		qApp->setStyle(QStyleFactory::create("windowsvista"));
+	}
+#endif
 #ifdef LINUX
 	if(ui->m_settings.uiTheme == 2)
 	{
