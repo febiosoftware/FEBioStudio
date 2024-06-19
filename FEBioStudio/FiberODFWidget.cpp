@@ -573,7 +573,7 @@ public:
 	void showTabs()
 	{
 		tabs->addTab(odfTab, "ODF");
-		tabs->addTab(sphHarmTab, "Sherical Harmonics");
+		tabs->addTab(sphHarmTab, "Spherical Harmonics");
 		tabs->addTab(fitTab, "Analysis");
 	}
 

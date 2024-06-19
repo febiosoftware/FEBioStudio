@@ -118,7 +118,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
-	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
+	AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
 	AddBoolParam(true, "Show Bounding boxes");
     AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
