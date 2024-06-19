@@ -31,7 +31,7 @@ namespace Post {
 
 class CGLMirrorPlane : public CGLPlot
 {
-	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET };
+	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET, RECURSION };
 
 public:
 	CGLMirrorPlane();
@@ -49,6 +49,7 @@ public:
 	float	m_transparency;
 	bool	m_showPlane;
 	float	m_offset;
+	bool	m_recursive;
 
 private:
 	vec3f	m_norm;

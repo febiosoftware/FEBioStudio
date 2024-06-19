@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
-#include <FSCore/FSLogger.h>
 #include <sstream>
 #include <limits>
 using namespace Post;
@@ -64,6 +63,11 @@ CVolumeRenderer::~CVolumeRenderer()
 }
 
 void CVolumeRenderer::Create()
+{
+	m_vrReset = true;
+}
+
+void CVolumeRenderer::Reset()
 {
 	m_vrReset = true;
 }

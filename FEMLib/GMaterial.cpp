@@ -107,6 +107,14 @@ FSMaterial* GMaterial::GetMaterialProperties()
 	return m_pm; 
 }
 
+FSMaterial* GMaterial::TakeMaterialProperties()
+{
+	FSMaterial* pm = m_pm;
+	m_pm = nullptr;
+	if (pm) pm->SetOwner(nullptr);
+	return pm;
+}
+
 GMaterial* GMaterial::Clone()
 {
 	FSMaterial* pmCopy = 0;
@@ -215,7 +223,7 @@ void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
-				pg->SetMaterialID(-1);
+				po->AssignMaterial(pg, 0);
 			}
 		}
 	}
@@ -227,7 +235,8 @@ void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 		vector<GPart*> parts = partList->GetPartList();
 		for (GPart* pg : parts)
 		{
-			pg->SetMaterialID(GetID());
+			GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);
+			if (po) po->AssignMaterial(pg, GetID());
 		}
 	}
 }

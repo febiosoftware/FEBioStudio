@@ -739,7 +739,7 @@ void RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 	for (int j = 0; j<3; j++)
 	{
 		r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
@@ -752,16 +752,16 @@ void RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
 			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
-			n[3] = to_vec3d(pf->m_nn[3]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
+			n[3] = pf->m_nn[3];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = n[3] = fn;
+			n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -780,15 +780,15 @@ void RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 		if (pen == 0)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = fn;
+			n[0] = n[1] = n[2] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -808,7 +808,7 @@ void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	FEElement_& e = *pe;
 
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 	GLColor c[4];
 	for (int j = 0; j < 3; j++)
 	{
@@ -827,16 +827,16 @@ void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
 			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
-			n[3] = to_vec3d(pf->m_nn[3]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
+			n[3] = pf->m_nn[3];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = n[3] = fn;
+			n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
@@ -859,15 +859,15 @@ void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 		if (pen == 0)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = fn;
+			n[0] = n[1] = n[2] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
@@ -1572,19 +1572,11 @@ void RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-	n[3] = to_vec3d(pf->m_nn[3]);
-
-	glx::quad4(r, n);
+	glx::quad4(r, pf->m_nn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1595,19 +1587,11 @@ void RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-	n[3] = to_vec3d(pf->m_nn[3]);
-
-	glx::quad4(r, n);
+	glx::quad4(r, pf->m_nn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1618,19 +1602,11 @@ void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-	n[3] = to_vec3d(pf->m_nn[3]);
-
-	glx::quad4(r, n, c);
+	glx::quad4(r, pf->m_nn, c);
 }
 
 //-----------------------------------------------------------------------------
@@ -1641,19 +1617,11 @@ void RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-	n[3] = to_vec3d(pf->m_nn[3]);
-
-	glx::quad4(r, n);
+	glx::quad4(r, pf->m_nn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1664,19 +1632,11 @@ void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-	n[3] = to_vec3d(pf->m_nn[3]);
-
-	glx::quad4(r, n, c);
+	glx::quad4(r, pf->m_nn, c);
 }
 
 //-----------------------------------------------------------------------------
@@ -1687,17 +1647,10 @@ void RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FSFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r[3];
-	vec3f n[3];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
-
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-
-	glx::tri3(r, n);
+	glx::tri3(r, pf->m_nn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1708,17 +1661,10 @@ void RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FSFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r[3];
-	vec3f n[3];
-
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
-
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-
-	glx::tri3(r, n);
+	glx::tri3(r, pf->m_nn);
 }
 
 //-----------------------------------------------------------------------------
@@ -1727,19 +1673,14 @@ void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 	assert(pe->IsType(FE_TRI6));
 	FEElement_& e = *pe;
 	FSFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
-	if (pf == 0) return;
-	vec3d r[3];
-	vec3d n[3];
-
-	r[0] = pm->Node(e.m_node[0]).r;
-	r[1] = pm->Node(e.m_node[1]).r;
-	r[2] = pm->Node(e.m_node[2]).r;
-
-	n[0] = to_vec3d(pf->m_nn[0]);
-	n[1] = to_vec3d(pf->m_nn[1]);
-	n[2] = to_vec3d(pf->m_nn[2]);
-
-	glx::tri3(r, n, c);
+	if (pf)
+	{
+		vec3d r[3];
+		r[0] = pm->Node(e.m_node[0]).r;
+		r[1] = pm->Node(e.m_node[1]).r;
+		r[2] = pm->Node(e.m_node[2]).r;
+		glx::tri3(r, pf->m_nn, c);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1748,7 +1689,7 @@ void RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_PYRA5));
 	FEElement_& e = *pe;
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 
 	for (int j = 0; j<4; j++)
 	{
@@ -1760,15 +1701,15 @@ void RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 		if (pen == 0)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = fn;
+			n[0] = n[1] = n[2] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -1789,16 +1730,16 @@ void RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	{
 		FSFace* pf = pm->FacePtr(e.m_face[4]);
 		assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-		n[0] = to_vec3d(pf->m_nn[0]);
-		n[1] = to_vec3d(pf->m_nn[1]);
-		n[2] = to_vec3d(pf->m_nn[2]);
-		n[3] = to_vec3d(pf->m_nn[3]);
+		n[0] = pf->m_nn[0];
+		n[1] = pf->m_nn[1];
+		n[2] = pf->m_nn[2];
+		n[3] = pf->m_nn[3];
 	}
 	else
 	{
 		vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 		fn.Normalize();
-		n[0] = n[1] = n[2] = n[3] = fn;
+		n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
 	}
 
 	if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -1813,7 +1754,7 @@ void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	assert(pe->IsType(FE_PYRA5));
 	FEElement_& e = *pe;
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 	GLColor c[4];
 
 	for (int j = 0; j < 4; j++)
@@ -1826,15 +1767,15 @@ void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 		if (pen == 0)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = fn;
+			n[0] = n[1] = n[2] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()))
@@ -1855,16 +1796,16 @@ void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	{
 		FSFace* pf = pm->FacePtr(e.m_face[4]);
 		assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-		n[0] = to_vec3d(pf->m_nn[0]);
-		n[1] = to_vec3d(pf->m_nn[1]);
-		n[2] = to_vec3d(pf->m_nn[2]);
-		n[3] = to_vec3d(pf->m_nn[3]);
+		n[0] = pf->m_nn[0];
+		n[1] = pf->m_nn[1];
+		n[2] = pf->m_nn[2];
+		n[3] = pf->m_nn[3];
 	}
 	else
 	{
 		vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 		fn.Normalize();
-		n[0] = n[1] = n[2] = n[3] = fn;
+		n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
 	}
 
 	if ((pen == 0) || (!pen->IsVisible()))
@@ -1879,7 +1820,7 @@ void RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
     assert(pe->IsType(FE_PYRA13));
     FEElement_& e = *pe;
     vec3d r[4];
-    vec3d n[4];
+    vec3f n[4];
     
         for (int j = 0; j<4; j++)
         {
@@ -1891,15 +1832,15 @@ void RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
         if (pen == 0)
         {
             FSFace* pf = pm->FacePtr(e.m_face[j]);
-            n[0] = to_vec3d(pf->m_nn[0]);
-            n[1] = to_vec3d(pf->m_nn[1]);
-            n[2] = to_vec3d(pf->m_nn[2]);
+            n[0] = pf->m_nn[0];
+            n[1] = pf->m_nn[1];
+            n[2] = pf->m_nn[2];
         }
         else
         {
             vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
             fn.Normalize();
-            n[0] = n[1] = n[2] = fn;
+            n[0] = n[1] = n[2] = to_vec3f(fn);
         }
             
         if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -1920,16 +1861,16 @@ void RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
     {
         FSFace* pf = pm->FacePtr(e.m_face[4]);
         assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-        n[0] = to_vec3d(pf->m_nn[0]);
-        n[1] = to_vec3d(pf->m_nn[1]);
-        n[2] = to_vec3d(pf->m_nn[2]);
-        n[3] = to_vec3d(pf->m_nn[3]);
+        n[0] = pf->m_nn[0];
+        n[1] = pf->m_nn[1];
+        n[2] = pf->m_nn[2];
+        n[3] = pf->m_nn[3];
     }
     else
     {
         vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
         fn.Normalize();
-        n[0] = n[1] = n[2] = n[3] = fn;
+        n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
     }
         
     if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -1944,7 +1885,7 @@ void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	assert(pe->IsType(FE_PYRA13));
 	FEElement_& e = *pe;
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 	GLColor c[4];
 
 	for (int j = 0; j < 4; j++)
@@ -1957,15 +1898,15 @@ void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 		if (pen == 0)
 		{
 			FSFace* pf = pm->FacePtr(e.m_face[j]);
-			n[0] = to_vec3d(pf->m_nn[0]);
-			n[1] = to_vec3d(pf->m_nn[1]);
-			n[2] = to_vec3d(pf->m_nn[2]);
+			n[0] = pf->m_nn[0];
+			n[1] = pf->m_nn[1];
+			n[2] = pf->m_nn[2];
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = fn;
+			n[0] = n[1] = n[2] = to_vec3f(fn);
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()))
@@ -1986,16 +1927,16 @@ void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	{
 		FSFace* pf = pm->FacePtr(e.m_face[4]);
 		assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-		n[0] = to_vec3d(pf->m_nn[0]);
-		n[1] = to_vec3d(pf->m_nn[1]);
-		n[2] = to_vec3d(pf->m_nn[2]);
-		n[3] = to_vec3d(pf->m_nn[3]);
+		n[0] = pf->m_nn[0];
+		n[1] = pf->m_nn[1];
+		n[2] = pf->m_nn[2];
+		n[3] = pf->m_nn[3];
 	}
 	else
 	{
 		vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 		fn.Normalize();
-		n[0] = n[1] = n[2] = n[3] = fn;
+		n[0] = n[1] = n[2] = n[3] = to_vec3f(fn);
 	}
 
 	if ((pen == 0) || (!pen->IsVisible()))
@@ -2041,31 +1982,91 @@ void GLMeshRender::RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
+void GLMeshRender::RenderGLMesh(GMesh* pm)
 {
-	if (surfID == -1)
+	glBegin(GL_TRIANGLES);
 	{
-		glBegin(GL_TRIANGLES);
+		if (m_bfaceColor)
 		{
 			int NF = pm->Faces();
 			for (int i = 0; i < NF; ++i)
 			{
 				GMesh::FACE& f = pm->Face(i);
-				glNormal3f(f.vn[0].x, f.vn[0].y, f.vn[0].z); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3f(f.vr[0].x, f.vr[0].y, f.vr[0].z);
-				glNormal3f(f.vn[1].x, f.vn[1].y, f.vn[1].z); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3f(f.vr[1].x, f.vr[1].y, f.vr[1].z);
-				glNormal3f(f.vn[2].x, f.vn[2].y, f.vn[2].z); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3f(f.vr[2].x, f.vr[2].y, f.vr[2].z);
+				glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
+				glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
+				glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
 			}
 		}
-		glEnd();
-	}
-	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
-	{
-		pair<int, int> fil = pm->m_FIL[surfID];
-		int NF = fil.second;
-		if (NF > 0)
+		else
 		{
-			glBegin(GL_TRIANGLES);
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+				glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+				glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+			}
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderGLMesh(GMesh& mesh, GLColor c)
+{
+	glColor4ub(c.r, c.g, c.b, c.a);
+	glBegin(GL_TRIANGLES);
+	{
+		int NF = mesh.Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			GMesh::FACE& f = mesh.Face(i);
+			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> func)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		int NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			GMesh::FACE& f = pm->Face(i);
+			f.tag = i;
+			func(f);
+			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
+{
+	if ((surfID < 0) || (surfID >= (int)pm->m_FIL.size())) return;
+	pair<int, int> fil = pm->m_FIL[surfID];
+	int NF = fil.second;
+	if (NF > 0)
+	{
+		glBegin(GL_TRIANGLES);
+		{
+			if (m_bfaceColor)
+			{
+				for (int i = 0; i < NF; ++i)
+				{
+					const GMesh::FACE& f = pm->Face(i + fil.first);
+					glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
+					glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
+					glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
+				}
+			}
+			else
 			{
 				for (int i = 0; i < NF; ++i)
 				{
@@ -2075,8 +2076,8 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 					glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
 				}
 			}
-			glEnd();
 		}
+		glEnd();
 	}
 }
 
@@ -2100,57 +2101,55 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 }
 */
 
-//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLEdges(GMesh* pm)
+{
+	if (pm == nullptr) return;
+	int N = pm->Edges();
+	if (N == 0) return;
+	glBegin(GL_LINES);
+	{
+		for (int i = 0; i<N; ++i)
+		{
+			GMesh::EDGE& e = pm->Edge(i);
+			if ((e.pid >= 0) && (e.n[0] != -1) && (e.n[1] != -1))
+			{
+				vec3f r0 = pm->Node(e.n[0]).r;
+				vec3f r1 = pm->Node(e.n[1]).r;
+				glVertex3f(r0.x, r0.y, r0.z);
+				glVertex3f(r1.x, r1.y, r1.z);
+			}
+		}
+	}
+	glEnd();
+}
+
 void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 {
-	vec3f r0, r1;
-	if (pm == 0) return;
-	int N = (int)pm->Edges();
+	if (pm == nullptr) return;
+	int N = pm->Edges();
 	if (N == 0) return;
-	if (nid == -1)
+	if ((nid < 0) || (nid >= pm->m_EIL.size())) return;
+	glBegin(GL_LINES);
 	{
-		glBegin(GL_LINES);
+		pair<int, int> eil = pm->m_EIL[nid];
+		for (int i = 0; i < eil.second; ++i)
 		{
-			for (int i = 0; i<N; ++i)
+			GMesh::EDGE& e = pm->Edge(i + eil.first);
+			assert(e.pid == nid);
+			if ((e.n[0] != -1) && (e.n[1] != -1))
 			{
-				GMesh::EDGE& e = pm->Edge(i);
-				if ((e.pid >= 0) && (e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3f(r0.x, r0.y, r0.z);
-					glVertex3f(r1.x, r1.y, r1.z);
-				}
+				vec3f r0 = pm->Node(e.n[0]).r;
+				vec3f r1 = pm->Node(e.n[1]).r;
+				glVertex3d(r0.x, r0.y, r0.z);
+				glVertex3d(r1.x, r1.y, r1.z);
 			}
 		}
-		glEnd();
 	}
-	else if (nid < (int)pm->m_EIL.size())
-	{
-		assert(pm->m_EIL.size() > 0);
-		glBegin(GL_LINES);
-		{
-			pair<int, int> eil = pm->m_EIL[nid];
-
-			for (int i = 0; i<eil.second; ++i)
-			{
-				GMesh::EDGE& e = pm->Edge(i + eil.first);
-				assert(e.pid == nid);
-				if ((e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
+	glEnd();
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
+void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline)
 {
 	// get some settings
 	CGLCamera& cam = *rc.m_cam;
@@ -2179,8 +2178,8 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 				if (f.n[j] < f.n[j1])
 				{
 					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-					vec3d n1 = to_vec3d(f.fn);
-					vec3d n2 = to_vec3d(f2.fn);
+					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+					vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
 
 					if (cam.IsOrtho())
 					{
@@ -2190,7 +2189,9 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 					}
 					else
 					{
-						vec3d c = to_vec3d((f.vr[j] + f.vr[j1]) * 0.5f);
+						vec3d r1 = T.LocalToGlobal(to_vec3d(f.vr[j]));
+						vec3d r2 = T.LocalToGlobal(to_vec3d(f.vr[j1]));
+						vec3d c = (r1 + r2) * 0.5;
 						vec3d pc = p - c;
 						double d1 = pc * n1;
 						double d2 = pc * n2;
@@ -3567,17 +3568,8 @@ void RenderQUAD9(FSMeshBase* pm, const FSFace& f)
 void RenderTRI3(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI3);
-
-	// get the nodal data
 	vec3d r[3]; pm->FaceNodePosition(f, r);
-
-	vec3f n[3];
-	pm->FaceNodeNormals(f, n);
-
-	float t[3];
-	pm->FaceNodeTexCoords(f, t);
-
-	glx::tri3(r, n, t);
+	glx::tri3(r, f.m_nn, f.m_tex);
 }
 
 //-----------------------------------------------------------------------------

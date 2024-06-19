@@ -168,6 +168,7 @@ public:
 		logType = new QComboBox;
 		logType->addItem("Node", FSLogData::LD_NODE);
 		logType->addItem("Face", FSLogData::LD_FACE);
+		logType->addItem("Surface", FSLogData::LD_SURFACE);
 		logType->addItem("Element", FSLogData::LD_ELEM);
 		logType->addItem("Rigid body", FSLogData::LD_RIGID);
 		logType->addItem("Rigid connector", FSLogData::LD_CNCTR);
@@ -511,11 +512,12 @@ void CDlgEditOutput::UpdateLogTable()
 		QString type;
 		switch (logi.Type())
 		{
-		case FSLogData::LD_NODE : type = "Node"; break;
-		case FSLogData::LD_FACE : type = "Face"; break;
-		case FSLogData::LD_ELEM : type = "Element"; break;
-		case FSLogData::LD_RIGID: type = "Rigid body"; break;
-        case FSLogData::LD_CNCTR: type = "Rigid connector"; break;
+		case FSLogData::LD_NODE    : type = "Node"; break;
+		case FSLogData::LD_FACE    : type = "Face"; break;
+		case FSLogData::LD_SURFACE : type = "Surface"; break;
+		case FSLogData::LD_ELEM    : type = "Element"; break;
+		case FSLogData::LD_RIGID   : type = "Rigid body"; break;
+        case FSLogData::LD_CNCTR   : type = "Rigid connector"; break;
 		}
 
 		QString data = QString::fromStdString(logi.GetDataString());
@@ -570,11 +572,12 @@ void CDlgEditOutput::UpdateLogItemList()
 	std::vector<FEBio::FEBioClassInfo> info;
 	switch (ntype)
 	{
-	case FSLogData::LD_NODE : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
-	case FSLogData::LD_FACE : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
-	case FSLogData::LD_ELEM : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
-	case FSLogData::LD_RIGID: info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
-	case FSLogData::LD_CNCTR: info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
+	case FSLogData::LD_NODE   : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
+	case FSLogData::LD_FACE   : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
+	case FSLogData::LD_SURFACE: info = FEBio::FindAllActiveClasses(FELOGSURFACEDATA_ID); break;
+	case FSLogData::LD_ELEM   : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
+	case FSLogData::LD_RIGID  : info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
+	case FSLogData::LD_CNCTR  : info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
 	}
 	
 	QStringList sl;
@@ -662,6 +665,26 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
+	else if (ntype == FSLogData::LD_SURFACE)
+	{
+		// add surfaces
+		for (int i = 0; i < mdl.FaceLists(); ++i)
+		{
+			GFaceList* pg = mdl.FaceList(i);
+			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
+		}
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			int NS = po->FESurfaces();
+			for (int i = 0; i < NS; ++i)
+			{
+				FSSurface* ps = po->GetFESurface(i);
+				ui->logList->addItem(QString::fromStdString(ps->GetName()), ps->GetID());
+			}
+		}
+	}
 	else if (ntype == FSLogData::LD_RIGID)
 	{
 		int M = fem.Materials();
@@ -715,11 +738,12 @@ void CDlgEditOutput::onLogAdd()
 	FSLogData* ld = nullptr;
 	switch (ntype)
 	{
-	case FSLogData::LD_NODE: ld = new FSLogNodeData(mdl.FindNamedSelection(nlist)); break;
-	case FSLogData::LD_FACE: ld = new FSLogFaceData(mdl.FindNamedSelection(nlist)); break;
-	case FSLogData::LD_ELEM: ld = new FSLogElemData(mdl.FindNamedSelection(nlist)); break;
-	case FSLogData::LD_RIGID: ld = new FSLogRigidData(nlist); break;
-	case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(nlist); break;
+	case FSLogData::LD_NODE   : ld = new FSLogNodeData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_FACE   : ld = new FSLogFaceData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_ELEM   : ld = new FSLogElemData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_RIGID  : ld = new FSLogRigidData(nlist); break;
+	case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(nlist); break;
 	}
 
 	assert(ld);

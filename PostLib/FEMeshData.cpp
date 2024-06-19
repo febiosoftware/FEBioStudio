@@ -1890,6 +1890,7 @@ void FEFacetArea::eval(int n, float* f)
 //=============================================================================
 void VolumeStrain::eval(int n, float* pv)
 {
+	// shape function derivatives evaluated at center of element
 	static double dN_hex[3][8] = {
 		{ -.125,  .125,  .125, -.125, -.125,  .125, .125, -.125 },
 		{ -.125, -.125,  .125,  .125, -.125, -.125, .125,  .125 },
@@ -1900,22 +1901,26 @@ void VolumeStrain::eval(int n, float* pv)
 		{ -.5,   0,  .5, -.5,  0, .5 },
 		{ -.5, -.5, -.5,  .5, .5, .5 }};
 
-	static double dN_tet[3][4] = {
+	static double dN_tet4[3][4] = {
 		{-1,1,0,0 },
 		{-1,0,1,0 },
 		{-1,0,0,1 }};
 
-	int i;
+	static double dN_tet10[3][10] = {
+		{-3, -1,  0,  0, 4, 0, 0, 0, 0, 0 },
+		{-3,  0, -1,  0, 0, 0, 4, 0, 0, 0 },
+		{-3,  0,  0, -1, 0, 0, 0, 4, 0, 0 } };
 
 	FEElement_* pe = &GetFEMesh()->ElementRef(n);
 
+	// TODO: Some higher-order elements are mapped to lower-order elements.
 	int N = pe->Nodes();
 	if (pe->Type() == FE_HEX20) N = 8;
 	if (pe->Type() == FE_HEX27) N = 8;
-	int node;
+	if (pe->Type() == FE_TET15) N = 10;
+	if (pe->Type() == FE_PENTA15) N = 6;
 
 	double *dN1, *dN2, *dN3;
-
 	switch (pe->Type())
 	{
 	case FE_HEX8:
@@ -1926,15 +1931,21 @@ void VolumeStrain::eval(int n, float* pv)
 		dN3 = dN_hex[2];
 		break;
 	case FE_PENTA6:
-    case FE_PENTA15:
-        dN1 = dN_pen[0];
+	case FE_PENTA15:
+		dN1 = dN_pen[0];
 		dN2 = dN_pen[1];
 		dN3 = dN_pen[2];
 		break;
 	case FE_TET4:
-		dN1 = dN_tet[0];
-		dN2 = dN_tet[1];
-		dN3 = dN_tet[2];
+		dN1 = dN_tet4[0];
+		dN2 = dN_tet4[1];
+		dN3 = dN_tet4[2];
+		break;
+	case FE_TET10:
+	case FE_TET15:
+		dN1 = dN_tet10[0];
+		dN2 = dN_tet10[1];
+		dN3 = dN_tet10[2];
 		break;
 	default:
 		*pv = 0;
@@ -1942,21 +1953,20 @@ void VolumeStrain::eval(int n, float* pv)
 	}
 
 	// get the initial and current nodal positions
-	vec3f X[8], x[8];
+	vec3f X[FSElement::MAX_NODES], x[FSElement::MAX_NODES];
 	FEPostModel* fem = GetFSModel();
 	int ntime = m_state->GetID();
-	for (i = 0; i<N; i++)
+	for (int i = 0; i<N; i++)
 	{ 
-		node = pe->m_node[i];
+		int node = pe->m_node[i];
 		X[i] = fem->NodePosition(node, 0);
 		x[i] = fem->NodePosition(node, ntime);
 	}
 
-	// calculate (average) partial derivatives
-	double dNx[8], dNy[8], dNz[8];
-
+	// calculate partial derivatives
+	double dNx[FSElement::MAX_NODES], dNy[FSElement::MAX_NODES], dNz[FSElement::MAX_NODES];
 	double J[9] = {0}, Ji[9], detJ;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		J[0] += dN1[i]*X[i].x;
 		J[1] += dN1[i]*X[i].y;
@@ -1985,16 +1995,16 @@ void VolumeStrain::eval(int n, float* pv)
 	Ji[7] = detJ*(-J[0]*J[7] + J[1]*J[6]);
 	Ji[8] = detJ*( J[0]*J[4] - J[1]*J[3]);
 
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		dNx[i] = Ji[0]*dN1[i] + Ji[1]*dN2[i] + Ji[2]*dN3[i];
 		dNy[i] = Ji[3]*dN1[i] + Ji[4]*dN2[i] + Ji[5]*dN3[i];
 		dNz[i] = Ji[6]*dN1[i] + Ji[7]*dN2[i] + Ji[8]*dN3[i];
 	}
 
-	// calculate average def gradient
+	// calculate deformation gradient
 	double F[9] = {0}, detF;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		F[0] += dNx[i]*x[i].x;
 		F[1] += dNy[i]*x[i].x;

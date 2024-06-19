@@ -2234,6 +2234,7 @@ FSMaterial* FEBioFormat::Parse1DFunction(FSMaterial* pm, XMLTag& tag)
             if (stricmp(szval, "control point") == 0) plc->SetInterpolator(PointCurve::CPOINTS);
             if (stricmp(szval, "approximation") == 0) plc->SetInterpolator(PointCurve::APPROX);
             if (stricmp(szval, "smooth step"  ) == 0) plc->SetInterpolator(PointCurve::SMOOTH_STEP);
+            if (stricmp(szval, "C2-smooth") == 0) plc->SetInterpolator(PointCurve::C2SMOOTH);
 		}
 		else if (tag == "extend")
 		{
@@ -2304,6 +2305,7 @@ bool FEBioFormat::ParseLoadDataSection(XMLTag& tag)
                 else if (*pat == "control points") lc.SetInterpolator(PointCurve::CPOINTS);
                 else if (*pat == "approximation" ) lc.SetInterpolator(PointCurve::APPROX);
                 else if (*pat == "smooth step"   ) lc.SetInterpolator(PointCurve::SMOOTH_STEP);
+                else if (*pat == "C2-smooth"     ) lc.SetInterpolator(PointCurve::C2SMOOTH);
 				else FileReader()->AddLogEntry("unknown type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 			}
 			else lc.SetInterpolator(PointCurve::LINEAR);
@@ -2526,6 +2528,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			if (szdata == 0) szdata = "";
 
 			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_FACE, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
+			const char* szset = tag.AttributeValue("surface", true);
+			if (szset)
+			{
+				FSSurface* pg = fem.FindNamedSurface(szset);
+				if (pg)
+				{
+					GObject* po = pg->GetGObject();
+					logVar.SetGroupID(pg->GetID());
+				}
+			}
+			fem.AddLogVariable(logVar);
+		}
+		else if (tag == "surface_data")
+		{
+			const char* szdata = tag.AttributeValue("data", true);
+			if (szdata == 0) szdata = "";
+
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_SURFACE, szdata);
 
 			const char* szfile = tag.AttributeValue("file", true);
 			if (szfile) logVar.setFile(szfile);

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GCurveObject.h>
 #include <MeshTools/GModifiedObject.h>
+#include <MeshTools/GPLCObject.h>
 #include <FSCore/FSObjectList.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <MeshLib/FEItemListBuilder.h>
@@ -492,6 +493,14 @@ GObject* GModel::FindObject(const string& name)
 	}
 
 	return 0;
+}
+
+GObject* GModel::GetActiveObject()
+{
+	GObject* po = nullptr;
+	GObjectSelection sel(this);
+	if (sel.Count() == 1) po = sel.Object(0);
+	return po;
 }
 
 //-----------------------------------------------------------------------------
@@ -1289,6 +1298,7 @@ GObject* BuildObject(int ntype)
 	case GMULTI_PATCH       : po = new GMultiPatch(); break;
 	case GCURVE_OBJECT      : po = new GCurveObject(); break;
 	case GBOX_IN_BOX        : po = new GBoxInBox(); break;
+	case GPLC_OBJECT        : po = new GPLCObject(); break;
 	}
 
 	assert(po);
@@ -1596,7 +1606,18 @@ void GModel::RemoveNamedSelections()
 	ClearGroups();
 }
 
-//-----------------------------------------------------------------------------
+void GModel::RemoveMeshData()
+{
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
+		{
+			pm->ClearMeshData();
+		}
+	}
+}
 
 template <class T> void clearList(FSObjectList<T>& l, std::function<bool(T*)> f)
 {

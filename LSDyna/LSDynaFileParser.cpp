@@ -33,7 +33,7 @@ void LSDynaFileParser::ClearError()
 
 bool LSDynaFileParser::Error(const std::string& err)
 {
-	int line = m_ls.CurrentLineNumber();
+	size_t line = m_ls.CurrentLineNumber();
 	std::stringstream ss;
 	ss << err << " (line " << line << ")";
 	m_err += ss.str() + "\n";

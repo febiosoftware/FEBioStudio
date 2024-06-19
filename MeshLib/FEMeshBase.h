@@ -67,8 +67,6 @@ public:
 
 	vec3d FaceCenter(FSFace& f) const;
 
-	vec3d EdgeCenter(FSEdge& e) const;
-
 	// face area
 	double FaceArea(FSFace& f);
 	double FaceArea(const std::vector<vec3d>& f, int faceType);

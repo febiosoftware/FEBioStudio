@@ -28,12 +28,14 @@ SOFTWARE.*/
 #include <QDir>
 #include <QStringList>
 
+class CMainWindow;
+
 class ZipThread : public QThread
 {
 	Q_OBJECT
 
 public:
-	ZipThread(const QString & zipFile, const QString& outDir);
+	ZipThread(CMainWindow* wnd, const QString & zipFile, const QString& outDir);
 
 	void run() override;
 
@@ -46,6 +48,9 @@ signals:
 
 private:
 	void failed();
+
+private:
+    CMainWindow* m_wnd;
 	bool aborted;
 	QString zipFile;
 	QString outDir;

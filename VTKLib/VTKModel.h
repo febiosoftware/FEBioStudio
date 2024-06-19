@@ -25,14 +25,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <vector>
+#include <string>
 
 namespace VTK {
+
+	struct vtkPoint
+	{
+		double x, y, z;
+	};
+
+	enum vtkDataFileType {
+		Invalid,
+		UnstructuredGrid,
+		PolyData
+	};
 
 	class vtkDataArray
 	{
 	public:
 		enum Types
 		{
+			INT8,
 			UINT8,
 			INT32,
 			INT64,
@@ -48,51 +61,25 @@ namespace VTK {
 		};
 
 	public:
-		vtkDataArray()
-		{
-			m_type = -1;
-			m_format = ASCII;
-			m_numComps = 1;
-			m_offset = 0;
-		}
+		vtkDataArray();
 
-		void setFormat(const char* szformat)
-		{
-			if (strcmp(szformat, "ascii") == 0) m_format = Format::ASCII;
-			else if (strcmp(szformat, "binary") == 0) m_format = Format::BINARY;
-			else if (strcmp(szformat, "appended") == 0) m_format = Format::APPENDED;
-			else { assert(false); }
-		}
+		void setFormat(const char* szformat);
 
-		size_t size() const
-		{
-			switch (m_type)
-			{
-			case FLOAT32:
-			case FLOAT64: return (m_values_float.size() / m_numComps); break;
-			case UINT8:
-			case INT32:
-			case INT64:
-				return (m_values_int.size() / m_numComps); break;
-				break;
-			default:
-				assert(false);
-				break;
-			}
-			return 0;
-		}
+		size_t size() const;
 
 		bool empty() const { return m_values_int.empty(); }
 
 		void get(int n, double* v) const { *v = m_values_float[n]; }
 		void get(int n, int* v) const { *v = m_values_int[n]; }
 
+		void init(vtkDataArray::Format format, vtkDataArray::Types type, int components);
+
 	public:
 		int	m_type;
 		int m_format;
 		int m_numComps;
 		int	m_offset;
-
+		std::string m_name;
 		std::vector<double>		m_values_float;
 		std::vector<int>		m_values_int;
 	};
@@ -113,6 +100,7 @@ namespace VTK {
 
 		enum CellType
 		{
+			VTK_INVALID = 0,
 			VTK_VERTEX = 1,
 			VTK_POLY_VERTEX = 2,
 			VTK_LINE = 3,
@@ -152,76 +140,28 @@ namespace VTK {
 			m_numCells = 0;
 		}
 
-		vtkPiece(const vtkPiece& piece)
-		{
-			m_numPoints = piece.m_numPoints;
-			m_numCells = piece.m_numCells;
-			m_points = piece.m_points;
-			m_cell_connect = piece.m_cell_connect;
-			m_cell_offsets = piece.m_cell_offsets;
-			m_cell_types = piece.m_cell_types;
-		}
-
-		void operator = (const vtkPiece& piece)
-		{
-			m_numPoints = piece.m_numPoints;
-			m_numCells = piece.m_numCells;
-			m_points = piece.m_points;
-			m_cell_connect = piece.m_cell_connect;
-			m_cell_offsets = piece.m_cell_offsets;
-			m_cell_types = piece.m_cell_types;
-		}
-
 		size_t Points() const { return m_points.size(); }
 		size_t Cells() const { return m_cell_offsets.size(); }
 
-		vec3d Point(int n) const
-		{
-			vtkDataArrayReader<double> p(m_points);
-			return vec3d(p[3 * n], p[3 * n + 1], p[3 * n + 2]);
-		}
+		vtkPoint Point(int n) const;
 
-		vtkCell Cell(int n) const
-		{
-			vtkCell cell;
+		vtkCell Cell(int n) const;
 
-			if (m_cell_types.empty())
-			{
-				int n0 = (n > 0 ? m_cell_offsets.m_values_int[n - 1] : 0);
-				int n1 = m_cell_offsets.m_values_int[n];
-				cell.m_numNodes = n1 - n0;
-				cell.m_cellType = vtkCell::VTK_POLYGON;
-				int m = cell.m_numNodes;
-				for (int i = 0; i < m; ++i)
-				{
-					cell.m_node[i] = m_cell_connect.m_values_int[n0 + i];
-				}
-			}
-			else
-			{
-				m_cell_types.get(n, &cell.m_cellType);
-
-				int n0 = (n == 0 ? 0 : m_cell_offsets.m_values_int[n - 1]);
-				int n1 = m_cell_offsets.m_values_int[n];
-				cell.m_numNodes = n1 - n0;
-				int m = cell.m_numNodes;
-				for (int i = 0; i < m; ++i)
-				{
-					cell.m_node[i] = m_cell_connect.m_values_int[n0 + i];
-				}
-			}
-
-			return cell;
-		}
+		std::string name() const { return m_name; }
 
 	public:
 		int m_numPoints;
 		int m_numCells;
 
+		std::string	m_name;
+
 		vtkDataArray	m_points;
 		vtkDataArray	m_cell_connect;
 		vtkDataArray	m_cell_offsets;
 		vtkDataArray	m_cell_types;
+
+		std::vector<vtkDataArray>	m_pointData;
+		std::vector<vtkDataArray>	m_cellData;
 	};
 
 	class vtkAppendedData
@@ -254,6 +194,7 @@ namespace VTK {
 		void Clear() { m_pieces.clear(); }
 
 	public:
+		std::string m_title;
 		std::vector<vtkPiece>	m_pieces;
 	};
 }

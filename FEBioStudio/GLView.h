@@ -283,7 +283,7 @@ public:
 	void AddRegionPoint(int x, int y);
 
 public:
-	void RenderPlaneCut();
+	void RenderPlaneCut(CGLContext& rc);
 
 	bool ShowPlaneCut();
 

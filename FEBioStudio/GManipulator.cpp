@@ -30,6 +30,15 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "GLViewTransform.h"
 
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
+
 //-----------------------------------------------------------------------------
 GManipulator::GManipulator(CGLView* view) : m_view(view)
 {

@@ -107,20 +107,18 @@ bool TetGenImport::Load(const char* szfile)
 	if (npe != 4) return false;
 
 	//taking care of empty lines
-	// NOTE: Not sure what this is doing here. Commenting it out for now.
-/*	fgets(szline, 255, m_fp);
+	fgets(szline, 255, m_fp);
 	nread = sscanf(szline, "%s", ch);
 	while (nread == -1)
 	{
 		fgets(szline, 255, m_fp);
 		nread = sscanf(szline, "%s", ch);
 	}
-*/
+
 	ELEM el;
 	int att, nid;
 	for (int i=0; i<nelems; ++i)
 	{
-		fgets(szline, 255, m_fp);
 		int nread = sscanf(szline, "%d%d%d%d%d%d", &nid, &el.node[0], &el.node[1], &el.node[2], &el.node[3], &att);
 		if ((natt>0) && (nread == 5)) el.att = att; else el.att = 0; 
 
@@ -131,6 +129,7 @@ bool TetGenImport::Load(const char* szfile)
 			m_offset = nid;
 		}
 		m_Elem.push_back(el);
+		fgets(szline, 255, m_fp);
 	}
 
 	Close();

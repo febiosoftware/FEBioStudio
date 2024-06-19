@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEKinemat.h"
+#include <sstream>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEPostModel.h>
 using namespace Post;
@@ -79,7 +80,7 @@ void FEKinemat::SetRange(int n0, int n1, int ni)
 
 int FEKinemat::States() const
 {
-	return m_State.size();
+	return (int) m_State.size();
 }
 
 //-----------------------------------------------------------------------------
@@ -156,6 +157,25 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 	}
 	if (ND == -1) return false;
 
+	// add point objects for representing the orientations
+	for (int i = 0; i < NMAT; ++i)
+	{
+		Post::FEPostModel::PointObject* ob = new Post::FEPostModel::PointObject;
+		stringstream ss; ss << "Axes" << i + 1;
+		ob->SetName(ss.str());
+		ob->m_tag = 0;
+
+		PlotObjectData* data1 = new PlotObjectData(&fem, DATA_VEC3);
+		data1->SetName("position");
+		ob->m_data.push_back(data1);
+
+		PlotObjectData* data2 = new PlotObjectData(&fem, DATA_MAT3);
+		data2->SetName("rotation");
+		ob->m_data.push_back(data2);
+
+		fem.AddPointObject(ob);
+	}
+
 	// get the initial coordinates
 	vector<vec3d> r0(NN);
 	for (int i=0; i<NN; ++i) r0[i] = to_vec3d(fem.NodePosition(i, 0));
@@ -192,6 +212,15 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 		for (int n=0; n<N; ++n)
 		{
 			KINE& kine = s.D[n];
+			vec3d p = kine.translate();
+			mat3d Q = kine.rotate();
+
+			Post::OBJ_POINT_DATA* pd = &(ps->m_objPt[n]);
+			pd->pos = p;
+			pd->rot = Q;
+			pd->data->set(0, to_vec3f(pd->pos));
+			pd->data->set(1, to_mat3f(Q));
+
 			for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 			for (int i=0; i<NE; ++i)
 			{

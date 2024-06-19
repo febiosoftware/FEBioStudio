@@ -39,6 +39,8 @@ public:
 	virtual void SetImageModel(CImageModel* img);
 	CImageModel* GetImageModel();
 
+	virtual void Reset();
+
 private:
 	CImageModel*	m_img;
 };

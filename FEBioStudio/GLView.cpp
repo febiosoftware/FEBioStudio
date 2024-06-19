@@ -316,7 +316,7 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_planeCut(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -539,6 +539,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
+	GObject* activeObject = GetActiveObject();
+
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
 	bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
@@ -550,6 +552,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	bool but3 = (ev->buttons() & Qt::RightButton);
 
 	m_select.SetStateModifiers(bshift, bctrl);
+
+	GLViewSettings& vs = GetViewSettings();
 
 	// get the mouse position
 	int x = ev->pos().x();
@@ -574,27 +578,21 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		}
 		else
 		{
-			if (pdoc->GetSelectionMode() == SELECT_EDGE)
+			if (GLHighlighter::IsTracking() || vs.m_showHighlights)
 			{
-				HighlightEdge(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_NODE)
-			{
-				HighlightNode(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_FACE)
-			{
-				HighlightSurface(x, y);
-			}
-			else if (pdoc->GetSelectionMode() == SELECT_PART)
-			{
-				HighlightPart(x, y);
+				switch (pdoc->GetSelectionMode())
+				{
+				case SELECT_EDGE: HighlightEdge(x, y); break;
+				case SELECT_NODE: HighlightNode(x, y); break;
+				case SELECT_FACE: HighlightSurface(x, y); break;
+				case SELECT_PART: HighlightPart(x, y); break;
+				}
 			}
 		}
 		ev->accept();
 
 		// we need to repaint if brush selection is on so the brush can be redrawn
-		if (GetViewSettings().m_bselbrush)
+		if (vs.m_bselbrush)
 		{
 			m_x1 = x;
 			m_y1 = y;
@@ -613,7 +611,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1 && !m_bsel)
 		{
-			if (GetViewSettings().m_bselbrush && (bshift || bctrl))
+			if (vs.m_bselbrush && (bshift || bctrl))
 			{
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
 				repaint();
@@ -688,7 +686,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			q.Inverse().RotateVector(dr);
 			FESelection* ps = pdoc->GetCurrentSelection();
-			if (ps)
+			if (ps && ps->Size())
 			{
 				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
@@ -714,6 +712,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 				m_rt += dr;
 				ps->Translate(dr);
+
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
 				m_pWnd->OnSelectionTransformed();
 			}
@@ -747,7 +747,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(f, vec3d(0, 0, 1));
 
 				FESelection* ps = pdoc->GetCurrentSelection();
-				if (ps)
+				if (ps && ps->Size())
 				{
 					if (m_coord == COORD_LOCAL)
 					{
@@ -757,6 +757,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 					q.MakeUnit();
 					ps->Rotate(q, GetPivotPosition());
+
+					if (activeObject) activeObject->UpdateFERenderMesh();
 				}
 			}
 
@@ -768,23 +770,27 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1)
 		{
-			double df = 1 + 0.002*((m_y1 - y) + (x - m_x1));
+			double df = 1 + 0.002 * ((m_y1 - y) + (x - m_x1));
 
 			m_sa *= df;
 			if (bctrl)
 			{
 				double g = scene->GetGridScale();
 				double st;
-				st = g*((int)((m_sa - 1) / g)) + 1;
+				st = g * ((int)((m_sa - 1) / g)) + 1;
 
 				df = st / m_st;
 			}
 			m_st *= df;
 			FESelection* ps = pdoc->GetCurrentSelection();
-			ps->Scale(df, m_ds, GetPivotPosition());
+			if (ps && ps->Size())
+			{
+				ps->Scale(df, m_ds, GetPivotPosition());
+				if (activeObject) activeObject->UpdateFERenderMesh();
 
-			m_pWnd->UpdateGLControlBar();
-			repaint();
+				m_pWnd->UpdateGLControlBar();
+				repaint();
+			}	
 		}
 	}
 
@@ -1404,6 +1410,7 @@ void CGLView::RenderScene()
 		m_fps = (sec != 0 ? 1.0 / sec : 0);
 	}
 
+	cam.PositionInScene();
 	RenderPivot();
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
@@ -1941,8 +1948,9 @@ bool CGLView::ShowPlaneCut() const
 
 void CGLView::SetPlaneCutMode(int nmode)
 {
+	bool breset = (m_planeCutMode != nmode);
 	m_planeCutMode = nmode;
-	UpdatePlaneCut(true);
+	UpdatePlaneCut(breset);
 	update();
 }
 
@@ -2652,7 +2660,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
 	}
 	else
 	{
@@ -2705,6 +2713,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				}
 
 				mesh->UpdateItemVisibility();
+				po->BuildFERenderMesh();
 			}
 		}
 	}
@@ -2735,7 +2744,7 @@ double* CGLView::PlaneCoordinates()
 	return m_planeCut.GetPlaneCoordinates();
 }
 
-void CGLView::RenderPlaneCut()
+void CGLView::RenderPlaneCut(CGLContext& rc)
 {
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -2743,15 +2752,10 @@ void CGLView::RenderPlaneCut()
 	if (m_planeCut.IsValid() == false)
 	{
 		FSModel& fem = *doc->GetFSModel();
-		m_planeCut.BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
 	}
 
-	BOX box = doc->GetGModel()->GetBoundingBox();
-
-	glColor3ub(200, 0, 200);
-	glx::renderBox(box, false);
-
-	m_planeCut.Render();
+	m_planeCut.Render(rc);
 }
 
 void CGLView::ToggleFPS()

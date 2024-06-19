@@ -3253,6 +3253,21 @@ void FEBioExport4::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
+				case FSLogData::LD_SURFACE:
+				{
+					XMLElement e;
+					e.name("surface_data");
+					e.add_attribute("data", d.GetDataString());
+
+					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
+
+					FSLogSurfaceData& fd = dynamic_cast<FSLogSurfaceData&>(d);
+					FEItemListBuilder* pg = fd.GetItemList();
+					if (pg) e.add_attribute("surface", pg->GetName());
+
+					m_xml.add_empty(e);
+				}
+				break;
 				case FSLogData::LD_ELEM:
 				{
 					XMLElement e;

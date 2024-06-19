@@ -1137,7 +1137,9 @@ void FEBioInputModel::UpdateGeometry()
 
 				beamSection->SetElementFormulation(beamForm);
 			}
-        }
+
+			po->Update(false);
+		}
 	}
 }
 

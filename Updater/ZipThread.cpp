@@ -25,20 +25,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "ZipThread.h"
-
+#include "MainWindow.h"
 #include <zip.h>
 #include <fstream>
 
-ZipThread::ZipThread(const QString & zipFile, const QString& outDir)
-	: zipFile(zipFile), outDir(outDir), aborted(false)
+ZipThread::ZipThread(CMainWindow* wnd, const QString & zipFile, const QString& outDir)
+	: m_wnd(wnd), zipFile(zipFile), outDir(outDir), aborted(false)
 {
 
 }
 
 void ZipThread::run()
 {
-    QStringList fileList;
-
     zip_t* archive = zip_open(zipFile.toStdString().c_str(), 0, nullptr);
     if (archive == nullptr) {
         return;
@@ -52,15 +50,15 @@ void ZipThread::run()
         zip_file_t* file = zip_fopen_index(archive, index, 0);
         
         if (file != nullptr) {
-            std::string filePath = outDir.toStdString() + "/" + stat.name;
+            QFileInfo fInfo(outDir + "/" + stat.name);
 
-            fileList.append(filePath.c_str());
+            // Create path to write to and add new dirs to uninstall list
+            m_wnd->makePath(fInfo.absolutePath());
+            
+            // Add file to uninstall list 
+            m_wnd->addNewFile(fInfo.absoluteFilePath());
 
-            // Create path to write to
-            QDir parent = QFileInfo(filePath.c_str()).dir();
-            parent.mkpath(parent.path());
-
-            std::ofstream output(filePath, std::ios::binary);
+            std::ofstream output(fInfo.absoluteFilePath().toStdString(), std::ios::binary);
             char buffer[4096];
             zip_int64_t bytesRead;
 

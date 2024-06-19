@@ -64,6 +64,8 @@ private:
 	void UpdateFEMeshData(FSMesh* pm, int ndata);
 	void UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata);
 
+	void UpdateUI();
+
 private:
 	Ui::CMeshInspector*	ui;
 	CMainWindow*	m_wnd;

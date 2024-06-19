@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include <string.h>
 #include <sys/stat.h>
-#include <iostream>
-#include <fstream>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -12,6 +10,30 @@
 
 int main(int argc, char* argv[])
 {
+// Ugly fix for deleting updater dependencies on Windows
+#ifdef WIN32
+    if(argc < 2) return -1;
+
+    if(strcmp(argv[1], "-rm") == 0)
+    {
+        for (int index = 2; index < argc; index++)
+	    {
+            int n = 0;
+            while (std::remove(argv[index]) != 0)
+            {
+                // If the file just doesn't exist, break
+                if(errno == ENOENT) break;
+
+                _sleep(100);
+                n++;
+                if (n > 10) break;
+            }
+        }
+
+        return 0;
+    }
+#endif
+
     if(argc < 3) return -1;
 
     int start = 2;
@@ -24,18 +46,6 @@ int main(int argc, char* argv[])
     }
 
     if((argc - start) % 2 != 0) return -1;
-
-    std::ofstream myfile;
-    myfile.open ("mvUtil.log");
-
-    myfile << "Args:" << std::endl;
-
-    for(int index = 0; index < argc; index++)
-    {
-        myfile << argv[index] << std::endl;
-    }
-
-    myfile << std::endl;
 
 	for (int index = start; index < argc; index += 2)
 	{
@@ -50,8 +60,6 @@ int main(int argc, char* argv[])
             // If the file just doesn't exist, break
             if(errno == ENOENT) break;
 
-            myfile << "Failed to delete " << argv[index + 1] << ". Error: " << errno << std::endl;
-
 			_sleep(500);
 			n++;
 			if (n > 10) break;
@@ -65,8 +73,6 @@ int main(int argc, char* argv[])
         chmod(argv[1], S_IRWXU|S_IXGRP|S_IXOTH);
 #endif
     }
-
-    myfile.close();
 
     char command[1000];
 

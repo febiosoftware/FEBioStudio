@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <QSslError>
 #include <QStringList>
+#include <unordered_map>
 
 class QNetworkReply;
 class QVBoxLayout;
@@ -37,6 +38,7 @@ class QLabel;
 class QCheckBox;
 class QNetworkAccessManager;
 class QDialogButtonBox;
+class QXmlStreamReader;
 
 #ifdef WIN32
 	#define URL_BASE "/update2/FEBioStudio2/Windows"
@@ -60,7 +62,8 @@ class QDialogButtonBox;
 
 struct ReleaseFile
 {
-	QString name;
+	QString baseURL;
+    QString name;
 	qint64 size;
 };
 
@@ -79,6 +82,8 @@ struct Release
 	std::vector<ReleaseFile> files;
 	QStringList deleteFiles;
 	std::vector<ReleaseFile> updaterFiles;
+    QStringList installCommands;
+    QStringList uninstallCommands;
 };
 
 class CUpdateWidget : public QWidget
@@ -105,10 +110,9 @@ private slots:
 	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
-	bool NetworkAccessibleCheck();
-
 	void checkForAppUpdate();
     void checkForAppUpdateResponse(QNetworkReply *r);
+    void parseAppXML(QXmlStreamReader& reader, bool dev);
 
 	void checkForUpdaterUpdate();
 	void checkForUpdaterUpdateResponse(QNetworkReply *r);
@@ -127,13 +131,11 @@ public:
 
     QNetworkAccessManager* restclient;
 
-    QStringList updateFiles;
+    std::vector<ReleaseFile> updateFiles;
 	QStringList deleteFiles;
-	QStringList newFiles;
-	QStringList newDirs;
-	int currentIndex;
+    QStringList installCmds;
+    QStringList uninstallCmds;
 	qint64 overallSize;
-	qint64 downloadedSize;
 
     std::vector<Release> releases;
 	std::vector<Release> updaterReleases;
@@ -141,10 +143,9 @@ public:
 	qint64 serverTime;
 
 	bool devChannel;
+    bool devAlreadyParsed;
 	bool updaterUpdateCheck;
 	bool doingUpdaterUpdate;
-	QString urlBase;
-	QString updaterBase;
 
     bool m_askSDK;
     QCheckBox* m_getSDK;
@@ -171,6 +172,9 @@ public:
 	const QString DELETEFILES  = "deleteFiles";
 	const QString AUTOUPDATE   = "autoUpdate";
 	const QString LASTUPDATE   = "lastUpdate";
+    const QString INSTALLCMD   = "installCmds";
+    const QString UNINSTALLCMD = "uninstallCmds";
+    const QString COMMAND      = "cmd";
 
 };
 

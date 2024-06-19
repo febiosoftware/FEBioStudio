@@ -114,6 +114,10 @@ public:
 
 	void DoSurfaceSmoothing(bool b);
 
+private:
+	FSMesh* RefineMesh(FSMesh* pm);
+	FSMesh* RefineSelection(FSMesh* pm);
+
 protected:
 	double	m_tol;				// tolerance for splitting facets
 	bool	m_smoothSurface;	// smooth surface

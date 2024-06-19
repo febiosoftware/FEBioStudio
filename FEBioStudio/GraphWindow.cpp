@@ -1977,6 +1977,8 @@ void CModelGraphWindow::setDataSource(int n)
 			{
 				SetXDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
 			}
+			else if (plotType == LINE_PLOT)
+				SetXDataSelector(new CTimeStepSelector(), 0);
 
 			Update(false, true);
 		}
@@ -2109,6 +2111,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 		case DATA_VEC3:
 		{
 			vec3f v = data->get<vec3f>(ndata);
+			val = component(v, ncomp);
+		}
+		break;
+		case DATA_MAT3:
+		{
+			mat3f v = data->get<mat3f>(ndata);
 			val = component(v, ncomp);
 		}
 		break;

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QApplication>
+#include <QProcess>
 #include <QIcon>
 #include <QString>
 #include <QFileInfo>
@@ -62,17 +63,15 @@ int main(int argc, char* argv[])
 		bool updaterUpdateCheck = true;
 		for(int index = 1; index < argc; index++)
 		{
-			if(QString(argv[index]) == QString("--devChannel"))
+			if(QString(argv[index]) == QString("--devChannel") || QString(argv[index]) == QString("-d"))
 			{
 				devChannel = true;
 			}
-			else if(QString(argv[index]) == QString("--noUpdaterCheck"))
+			else if(QString(argv[index]) == QString("--noUpdaterCheck") || QString(argv[index]) == QString("-n"))
 			{
 				updaterUpdateCheck = false;
 			}
 		}
-		
-		 argc > 1 && QString(argv[1]) == QString("--devChannel");
 
 		// create the main window
 		CMainWindow wnd(devChannel, updaterUpdateCheck);
@@ -82,7 +81,7 @@ int main(int argc, char* argv[])
 	}
 }
 
-void readXML(QStringList& files, QStringList& dirs)
+void readXML(QStringList& files, QStringList& dirs, QStringList& uninstallCmds)
 {
 	char updaterPath[1050];
 	char updaterDir[1024];
@@ -106,6 +105,21 @@ void readXML(QStringList& files, QStringList& dirs)
         {
             dirs.append(tag.m_szval.c_str());
         }
+        else if(tag == "uninstallCmds")
+        {
+            ++tag;
+            do
+            {
+                if(tag == "cmd")
+                {
+                    uninstallCmds.append(tag.m_szval.c_str());
+                }
+
+                ++tag; 
+            }
+            while(!tag.isend());
+
+        }
 
         ++tag;
     }
@@ -121,12 +135,13 @@ void uninstall()
 	get_app_path(updaterDir, 1023);
 	sprintf(updaterPath, "%sautoUpdate.xml", updaterDir);
 
+    QStringList files;
+    QStringList dirs;
+    QStringList cmds;
+
 	if(QFileInfo::exists(updaterPath))
 	{
-		QStringList files;
-		QStringList dirs;
-
-		readXML(files, dirs);
+		readXML(files, dirs, cmds);
 
 		files.append("autoUpdate.xml");
 
@@ -135,13 +150,43 @@ void uninstall()
 			QFile::remove(file);
 		}
 
-
 		for(auto dir : dirs)
 		{
 			QDir temp(dir);
 			temp.removeRecursively();
 		}
+
+        for(auto cmd : cmds)
+        {
+            std::system(cmd.toStdString().c_str());
+        }
 	}
+
+// Ugly fix for deleting updater dependencies on Windows
+#ifdef WIN32
+    QStringList args;
+    args << "-rm";
+
+    int runMvUtil = false;
+    for(auto file : files)
+    {
+        if(QFileInfo::exists(file))
+        {
+            args.push_back(file);
+
+            runMvUtil = true;
+        }
+    }
+
+    if(runMvUtil)
+    {
+        int zero = 0;
+        QApplication app(zero, nullptr);
+
+        QProcess* mvUtil = new QProcess;
+        mvUtil->startDetached(QApplication::applicationDirPath() + MVUTIL, args);
+    }
+#endif
 }
 
 CMainWindow* getMainWindow()

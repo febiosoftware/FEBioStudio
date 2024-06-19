@@ -100,8 +100,7 @@ void CMeshInspector::on_var_currentIndexChanged(int n)
 	else ui->propsWidget->hide();
 
 	UpdateData(n);
-	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-	m_wnd->RedrawGL();
+	UpdateUI();
 }
 
 void CMeshInspector::on_col_currentIndexChanged(int n)
@@ -427,14 +426,21 @@ void CMeshInspector::on_select_clicked()
 	}
 }
 
+void CMeshInspector::UpdateUI()
+{
+	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+	CGLScene* scene = m_wnd->GetGLView()->GetActiveScene();
+	if (scene) scene->Update();
+	m_wnd->RedrawGL();
+}
+
 void CMeshInspector::on_curvatureLevels_valueChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
 	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
-		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-		m_wnd->RedrawGL();
+		UpdateUI();
 	}
 }
 
@@ -444,10 +450,8 @@ void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
 	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
-		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-		m_wnd->RedrawGL();
+		UpdateUI();
 	}
-
 }
 
 void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
@@ -456,8 +460,7 @@ void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
-		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-		m_wnd->RedrawGL();
+		UpdateUI();
 	}
 }
 

@@ -41,3 +41,8 @@ CImageModel* CGLImageRenderer::GetImageModel()
 { 
 	return m_img; 
 }
+
+void CGLImageRenderer::Reset()
+{
+
+}

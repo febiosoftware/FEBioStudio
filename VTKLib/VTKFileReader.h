@@ -35,11 +35,6 @@ namespace VTK {
 	class VTKFileReader : public FileReader
 	{
 	protected:
-		enum vtkFileType {
-			UnstructuredGrid,
-			PolyData
-		};
-
 		enum vtkByteOrder {
 			LittleEndian,
 			BigEndian
@@ -70,13 +65,16 @@ namespace VTK {
 		bool ParsePoints(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParseCells(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParsePolys(XMLTag& tag, VTK::vtkPiece& piece);
+		bool ParsePointData(XMLTag& tag, VTK::vtkPiece& piece);
+		bool ParseCellData(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParseDataArray(XMLTag& tag, VTK::vtkDataArray& vtkDataArray);
 		bool ParseAppendedData(XMLTag& tag, VTK::vtkAppendedData& vtkAppendedData);
-		bool ProcessProcessDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
+
+		bool ProcessAppendedDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
 		bool ProcessDataArrays(VTK::vtkModel& vtk, VTK::vtkAppendedData& data);
 
 	protected:
-		vtkFileType	m_type;
+		vtkDataFileType	m_type;
 		std::string m_version;
 		vtkByteOrder m_byteOrder;
 		vtkDataType m_headerType;

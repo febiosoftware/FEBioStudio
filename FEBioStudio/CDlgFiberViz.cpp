@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QSlider>
 #include <QCheckBox>
 #include "MainWindow.h"
+#include "GLModelScene.h"
 #include "GLView.h"
 
 class CDlgFiberViz_UI
@@ -142,12 +143,15 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 
 	ui->m_showHidden->setChecked(bhf);
 	ui->m_selOnly->setChecked(bsf);
+
+	ui->m_wnd->RedrawGL();
 }
 
 void CDlgFiberViz::closeEvent(QCloseEvent* ev)
 {
 	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bfiber = false;
+	ui->m_wnd->RedrawGL();
 }
 
 void CDlgFiberViz::onDataChanged()
@@ -161,13 +165,29 @@ void CDlgFiberViz::onDataChanged()
 	double v = int_to_double(ui->m_scale->value());
 	double w = int_to_double(ui->m_width->value());
 
+	bool selonly = ui->m_selOnly->isChecked();
+	bool hiddenFibers = ui->m_showHidden->isChecked();
+
 	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
+
+	// see if we need to recalculate the fiber visualization
+	bool breset = false;
+	if (view.m_fibColor != ncol) breset = true;
+	if (view.m_showSelectFibersOnly != selonly) breset = true;
+	if (view.m_showHiddenFibers != hiddenFibers) breset = true;
+
 	view.m_fibColor = ncol;
 	view.m_fiber_scale = v;
 	view.m_fiber_width = w;
 	view.m_fibLineStyle = nstyle;
-	view.m_showSelectFibersOnly = ui->m_selOnly->isChecked();
-	view.m_showHiddenFibers = ui->m_showHidden->isChecked();
+	view.m_showSelectFibersOnly = selonly;
+	view.m_showHiddenFibers = hiddenFibers;
+
+	if (breset)
+	{
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(ui->m_wnd->GetGLView()->GetActiveScene());
+		if (scene) scene->UpdateFiberViz();
+	}
 
 	ui->m_wnd->RedrawGL();
 }

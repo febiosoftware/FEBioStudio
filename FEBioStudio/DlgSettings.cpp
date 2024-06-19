@@ -92,11 +92,11 @@ public:
 		addDoubleProperty(&m_meshOpacity, "Mesh opacity")->setFloatRange(0, 1);
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
+		addBoolProperty(&m_showHighlights, "Enable highlighting");
 		QStringList vconv;
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
-		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
 		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
 		addColorProperty(&m_defaultFGColor, "Custom text color");
@@ -109,12 +109,12 @@ public:
 	double	m_meshOpacity;
 	bool	m_bnormal;
 	double	m_scaleNormal;
-    int     m_nconv;
+	int		m_nconv;
 	int		m_ntrans;
-	int		m_nobjcol;
 	bool	m_dozsorting;
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
+	bool	m_showHighlights;
 };
 
 //-----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 4)
+		if (i == 3)
 		{
 			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear all the recent files list.\nThis can not be undone!") == QMessageBox::Yes)
 			{
@@ -408,7 +408,7 @@ public:
 		QLabel* label = new QLabel("Current palette:");
 		label->setFixedWidth(100);
 		label->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-		pal = new QComboBox; label->setBuddy(label);
+		pal = new QComboBox; label->setBuddy(pal);
 
 		QHBoxLayout* h0 = new QHBoxLayout;
 		h0->addWidget(label);
@@ -1081,9 +1081,9 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_lineSize = (double)view.m_line_size;
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
+	ui->m_display->m_showHighlights = view.m_showHighlights;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
-	ui->m_display->m_nobjcol = view.m_objectColor;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
 	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
 	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
@@ -1180,9 +1180,9 @@ void CDlgSettings::apply()
 	view.m_line_size = (float) ui->m_display->m_lineSize;
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
-    view.m_nconv = ui->m_display->m_nconv;
+	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
-	view.m_objectColor = ui->m_display->m_nobjcol;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
 	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);

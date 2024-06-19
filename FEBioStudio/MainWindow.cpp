@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
+#include "GLModelScene.h"
 
 extern GLColor col[];
 
@@ -145,27 +146,6 @@ void darkStyle()
 }
 
 //-----------------------------------------------------------------------------
-class FSMainWindowLogOutput : public FSLogOutput
-{
-public:
-	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
-	{
-		FSLogger::SetWatcher(this);
-	}
-
-	void Write(const std::string& msg)
-	{
-		QString s = QString::fromStdString(msg);
-		m_wnd->AddLogEntry(s);
-	}
-
-private:
-	CMainWindow* m_wnd;
-};
-
-FSMainWindowLogOutput* mainWindogLogger = nullptr;
-
-//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -178,8 +158,6 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
-
-	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
@@ -229,6 +207,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 */
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
+#ifdef WIN32
+	if (ui->m_settings.uiTheme == 0)
+	{
+		// From Qt 6.5 the default style (light or dark) is taken from the Windows settings.
+		// This currently causes issues, so for now we're forcing the windowsvista style, which does not have
+		// a dark option. 
+		qApp->setStyle(QStyleFactory::create("windowsvista"));
+	}
+#endif
 #ifdef LINUX
 	if(ui->m_settings.uiTheme == 2)
 	{
@@ -575,6 +562,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("vtu" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("vtm" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
@@ -1041,8 +1030,18 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
-			Post::VTKimport* vtk = new Post::VTKimport(doc->GetFSModel());
+			Post::VTKImport* vtk = new Post::VTKImport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("vtu", Qt::CaseInsensitive) == 0)
+		{
+			Post::VTUImport* vtu = new Post::VTUImport(doc->GetFSModel());
+			ReadFile(doc, fileName, vtu, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("vtm", Qt::CaseInsensitive) == 0)
+		{
+			Post::VTMImport* vtm = new Post::VTMImport(doc->GetFSModel());
+			ReadFile(doc, fileName, vtm, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
 		{
@@ -1443,7 +1442,7 @@ void CMainWindow::autosave()
 void CMainWindow::autoUpdateCheck(bool update)
 {
 	ui->m_updateAvailable = update;
-    ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
+	ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
 	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n != -1)
@@ -1454,11 +1453,11 @@ void CMainWindow::autoUpdateCheck(bool update)
 
 void CMainWindow::ReportSelection()
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
 		FESelection* sel = doc->GetCurrentSelection();
-		if ((sel == 0) || (sel->Size() == 0))
+		if ((sel == nullptr) || (sel->Size() == 0))
 		{
 			ClearStatusMessage();
 			return;
@@ -1548,7 +1547,7 @@ void CMainWindow::ReportSelection()
 			else msg = QString("%1 discrete objects selected").arg(N);
 		}
 		break;
-		case SELECT_FE_ELEMENTS:
+		case SELECT_FE_ELEMS:
 		{
 			msg = QString("%1 elements selected").arg(N);
 		}
@@ -1579,7 +1578,7 @@ void CMainWindow::ReportSelection()
 			{
 				FSMesh* pm = es->GetMesh();
 				FEElement_* el = es->Element(0);
-				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementID(0) + 1);
+				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementIndex(0) + 1);
 				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
 				switch (el->Type())
@@ -1640,13 +1639,13 @@ void CMainWindow::ReportSelection()
                     AddLogEntry("  nodal values: ");
                     for (int i = 0; i < n; ++i)
                     {
-                        AddLogEntry(QString::number(data.GetElementValue(es->ElementID(0), i)));
+                        AddLogEntry(QString::number(data.GetElementValue(es->ElementIndex(0), i)));
                         if (i < n - 1) AddLogEntry(", ");
                         else AddLogEntry("\n");
                     }
 
                     AddLogEntry("  avg value: ");
-                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementID(0))) + "\n");
+                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementIndex(0))) + "\n");
                 }
 			}
 		}
@@ -1679,77 +1678,6 @@ void CMainWindow::ReportSelection()
 					else AddLogEntry("\n");
 				}
 			}
-		}
-	}
-
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc && postDoc->IsValid())
-	{
-		Post::CGLModel* mdl = postDoc->GetGLModel();
-		int mode = mdl->GetSelectionMode();
-		switch (mode)
-		{
-		case Post::SELECT_NODES:
-		{
-			std::vector<FSNode*> sel = mdl->GetNodeSelection();
-			AddLogEntry(QString("%1 node(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_EDGES:
-		{
-			std::vector<FSEdge*> sel = mdl->GetEdgeSelection();
-			AddLogEntry(QString("%1 edge(s) selected\n").arg(sel.size()));
-		}
-		break;
-		case Post::SELECT_FACES:
-		{
-			std::vector<FSFace*> sel = mdl->GetFaceSelection();
-			if (sel.size() == 1)
-			{
-				FSFace* f = sel[0];
-				if (f)
-				{
-					vec3f n = f->m_fn;
-					QString stype;
-					switch (f->Type())
-					{
-					case FE_FACE_TRI3 : stype = "TRI3" ; break;
-					case FE_FACE_QUAD4: stype = "QUAD4"; break;
-					case FE_FACE_TRI6 : stype = "TRI6" ; break;
-					case FE_FACE_TRI7 : stype = "TRI7" ; break;
-					case FE_FACE_QUAD8: stype = "QUAD8"; break;
-					case FE_FACE_QUAD9: stype = "QUAD9"; break;
-					case FE_FACE_TRI10: stype = "TRI10"; break;
-					default:
-						assert(false);
-						stype = "(unknown)";
-					}
-					QString nodeList;
-					int nn = f->Nodes();
-					for (int i = 0; i < nn; ++i)
-					{
-						nodeList.append(QString::number(f->n[i] + 1));
-						if (i < nn - 1) nodeList.append(", ");
-					}
-					AddLogEntry("1 face selected:\n");
-					AddLogEntry(QString("  ID    : %1\n").arg(f->GetID()));
-					AddLogEntry(QString("  type  : %1\n").arg(stype));
-					AddLogEntry(QString("  nodes : %1\n").arg(nodeList));
-					AddLogEntry(QString("  normal: %1, %2, %3\n").arg(n.x).arg(n.y).arg(n.z));
-				}
-			}
-			else
-			{
-				AddLogEntry(QString("%1 faces selected\n").arg(sel.size()));
-			}
-		}
-		break;
-		case Post::SELECT_ELEMS:
-		{
-			std::vector<FEElement_*> sel = mdl->GetElementSelection();
-			AddLogEntry(QString("%1 element(s) selected\n").arg(sel.size()));
-		}
-		break;
 		}
 	}
 }
@@ -1838,6 +1766,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 					GLViewSettings& vs = glv->GetViewSettings();
 					vs.m_bselbrush = false;
 				}
+				doc->SetTransformMode(TRANSFORM_NONE);
 				Update();
 				UpdateUI();
 			}
@@ -2766,14 +2695,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
 		menu.addAction(display->menuAction());
 
-		QMenu* colorMode = new QMenu("Color mode");
-		a = colorMode->addAction("Default"         ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
-		a = colorMode->addAction("By object"       ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
-		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
-		a = colorMode->addAction("By element type" ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
-		a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
-		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
-		menu.addAction(colorMode->menuAction());
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene)
+		{
+			OBJECT_COLOR_MODE mode = scene->ObjectColorMode();
+			QMenu* colorMode = new QMenu("Color mode");
+			a = colorMode->addAction("Default"         ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
+			a = colorMode->addAction("By object"       ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
+			a = colorMode->addAction("By material type"); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
+			a = colorMode->addAction("By element type" ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
+			a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+			menu.addAction(colorMode->menuAction());
+		}
 
 		menu.addSeparator();
 
@@ -2842,13 +2776,17 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
 
-	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
-	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
-	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
-	else if (ac->text() == "By element type" ) vs.m_objectColor = OBJECT_COLOR_MODE::FSELEMENT_TYPE;
-	else if (ac->text() == "By physics"      ) vs.m_objectColor = OBJECT_COLOR_MODE::PHYSICS_TYPE;
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+	if (scene == nullptr) return;
+
+	if      (ac->text() == "Default"         ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
+	else if (ac->text() == "By object"       ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
+	else if (ac->text() == "By material type") scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
+	else if (ac->text() == "By element type" ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+	else if (ac->text() == "By physics"      ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
 
 	RedrawGL();
 }
@@ -3288,15 +3226,21 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-bool CMainWindow::DoModelCheck(CModelDocument* doc)
+bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 {
 	if (doc == nullptr) return false;
 
 	vector<MODEL_ERROR> warnings = doc->CheckModel();
 
+	if (!askRunQuestion && warnings.empty())
+	{
+		QMessageBox::information(this, "Model Check", "Model check completed. No issues found!");
+		return true;
+	}
+
 	if (warnings.empty() == false)
 	{
-		CDlgCheck dlg(this);
+		CDlgCheck dlg(this, askRunQuestion);
 		dlg.SetWarnings(warnings);
 		if (dlg.exec() == 0)
 		{

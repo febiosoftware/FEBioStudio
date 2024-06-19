@@ -365,10 +365,8 @@ FSFaceFaceList::FSFaceFaceList(const FSMesh& mesh, const FSFaceTable& FT)
 	for (int i = 0; i<(int)FT.size(); ++i)
 	{
 		const FSFace& f = FT[i];
-		assert(f.Type() == FE_FACE_TRI3);
-		NFT[f.n[0]].push_back(i);
-		NFT[f.n[1]].push_back(i);
-		NFT[f.n[2]].push_back(i);
+		for (int j=0; j<f.Nodes(); ++j)
+			NFT[f.n[j]].push_back(i);
 	}
 
 	FFT.resize(mesh.Faces());

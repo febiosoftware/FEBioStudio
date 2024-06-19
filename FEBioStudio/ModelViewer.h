@@ -128,6 +128,7 @@ public slots:
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnDeleteNamedSelection();
+	void OnExportFESurface();
 	void OnHideObject();
 	void OnShowObject();
 	void OnSelectObject();
@@ -188,6 +189,7 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
+    void OnFindImage();
     void OnExportRawImage();
     void OnExportTIFF();
     void OnExportNRRD();

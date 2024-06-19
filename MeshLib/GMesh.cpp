@@ -123,8 +123,51 @@ void GMesh::AddEdge(int* n, int nodes, int gid)
 	else assert(false);
 }
 
+void GMesh::AddEdge(vec3f* r, int nodes, int gid)
+{
+	EDGE e;
+	if (nodes == 2)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else if (nodes == 3)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[2]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[2]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else if (nodes == 4)
+	{
+		e.n[0] = AddNode(r[0]);
+		e.n[1] = AddNode(r[2]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[2]);
+		e.n[1] = AddNode(r[3]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+
+		e.n[0] = AddNode(r[3]);
+		e.n[1] = AddNode(r[1]);
+		e.pid = gid;
+		m_Edge.push_back(e);
+	}
+	else assert(false);
+}
+
+
 //-----------------------------------------------------------------------------
-int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext)
+int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId)
 {
 	FACE f;
 	f.n[0] = n0;
@@ -136,43 +179,44 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext)
 	f.pid = groupID;
 	f.sid = smoothID;
 	f.bext = bext;
-	f.eid = -1;
+	f.fid = faceId;
+	f.eid = elemId;
 	m_Face.push_back(f);
 	return ((int)m_Face.size() - 1);
 }
 
 //-----------------------------------------------------------------------------
-void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
+void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext, int faceId, int elemId)
 {
 	switch (nodes)
 	{
 	case 3: // TRI3
 		{
-			AddFace(n[0], n[1], n[2], groupID, smoothID, bext);
+			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 4: // QUAD4
 		{
-			AddFace(n[2], n[3], n[0], groupID, smoothID, bext);
-			AddFace(n[0], n[1], n[2], groupID, smoothID, bext);
+			AddFace(n[2], n[3], n[0], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 6: // TRI6
 		{
-			AddFace(n[0], n[3], n[5], groupID, smoothID, bext);
-			AddFace(n[1], n[4], n[3], groupID, smoothID, bext);
-			AddFace(n[2], n[5], n[4], groupID, smoothID, bext);
-			AddFace(n[3], n[4], n[5], groupID, smoothID, bext);
+			AddFace(n[0], n[3], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[1], n[4], n[3], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[2], n[5], n[4], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[3], n[4], n[5], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 7: // TRI7
 		{
-			AddFace(n[0], n[3], n[6], groupID, smoothID, bext);
-			AddFace(n[1], n[6], n[3], groupID, smoothID, bext);
-			AddFace(n[1], n[4], n[6], groupID, smoothID, bext);
-			AddFace(n[2], n[6], n[4], groupID, smoothID, bext);
-			AddFace(n[2], n[5], n[6], groupID, smoothID, bext);
-			AddFace(n[0], n[6], n[5], groupID, smoothID, bext);
+			AddFace(n[0], n[3], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[1], n[6], n[3], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[1], n[4], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[2], n[6], n[4], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[2], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[6], n[5], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 8: // QUAD8
@@ -185,41 +229,41 @@ void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
 			vec3d r = QUAD8::eval(x, 0.0, 0.0);
 			int n9 = AddNode(r);
 */
-			AddFace(n[0], n[4], n[7], groupID, smoothID, bext);
-			AddFace(n[4], n[1], n[5], groupID, smoothID, bext);
-			AddFace(n[5], n[2], n[6], groupID, smoothID, bext);
-			AddFace(n[6], n[3], n[7], groupID, smoothID, bext);
-//			AddFace(n9, n[7], n[4], groupID, smoothID, bext);
-//			AddFace(n9, n[4], n[5], groupID, smoothID, bext);
-//			AddFace(n9, n[5], n[6], groupID, smoothID, bext);
-//			AddFace(n9, n[6], n[7], groupID, smoothID, bext);
-			AddFace(n[5], n[6], n[7], groupID, smoothID, bext);
-			AddFace(n[4], n[5], n[7], groupID, smoothID, bext);
+			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
+//			AddFace(n9, n[7], n[4], groupID, smoothID, bext, faceId, elemId);
+//			AddFace(n9, n[4], n[5], groupID, smoothID, bext, faceId, elemId);
+//			AddFace(n9, n[5], n[6], groupID, smoothID, bext, faceId, elemId);
+//			AddFace(n9, n[6], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[5], n[6], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[4], n[5], n[7], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 9: // QUAD9
 		{
-			AddFace(n[0], n[4], n[7], groupID, smoothID, bext);
-			AddFace(n[4], n[1], n[5], groupID, smoothID, bext);
-			AddFace(n[5], n[2], n[6], groupID, smoothID, bext);
-			AddFace(n[6], n[3], n[7], groupID, smoothID, bext);
-			AddFace(n[4], n[8], n[7], groupID, smoothID, bext);
-			AddFace(n[4], n[5], n[8], groupID, smoothID, bext);
-			AddFace(n[8], n[5], n[6], groupID, smoothID, bext);
-			AddFace(n[8], n[6], n[7], groupID, smoothID, bext);
+			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[4], n[8], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[4], n[5], n[8], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[8], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[8], n[6], n[7], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	case 10: // TRI10
 		{
-			AddFace(n[0], n[3], n[7], groupID, smoothID, bext);
-			AddFace(n[1], n[5], n[4], groupID, smoothID, bext);
-			AddFace(n[2], n[8], n[6], groupID, smoothID, bext);
-			AddFace(n[9], n[7], n[3], groupID, smoothID, bext);
-			AddFace(n[9], n[3], n[4], groupID, smoothID, bext);
-			AddFace(n[9], n[4], n[5], groupID, smoothID, bext);
-			AddFace(n[9], n[5], n[6], groupID, smoothID, bext);
-			AddFace(n[9], n[6], n[8], groupID, smoothID, bext);
-			AddFace(n[9], n[8], n[7], groupID, smoothID, bext);
+			AddFace(n[0], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[1], n[5], n[4], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[2], n[8], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[7], n[3], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[3], n[4], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[4], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[6], n[8], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[9], n[8], n[7], groupID, smoothID, bext, faceId, elemId);
 		}
 		break;
 	default:
@@ -279,6 +323,13 @@ void GMesh::UpdateNormals()
 		vec3f& r1 = Node(f.n[1]).r;
 		vec3f& r2 = Node(f.n[2]).r;
 		f.fn = (r1 - r0)^(r2 - r0);
+
+		if (f.sid < 0)
+		{
+			f.vn[0] = f.fn;
+			f.vn[1] = f.fn;
+			f.vn[2] = f.fn;
+		}
 	}
 
 	//calculate the node normals
@@ -292,7 +343,7 @@ void GMesh::UpdateNormals()
 	for (int i=0; i < NF; ++i)
 	{
 		FACE* pf = &m_Face[i];
-		if (pf->tag == -1)
+		if ((pf->tag == -1) && (pf->sid >= 0))
 		{
 			// clear normals
 			for (int j = 0; j<FC; ++j)

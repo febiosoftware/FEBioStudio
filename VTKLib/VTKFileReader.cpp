@@ -208,7 +208,7 @@ private:
 
 VTKFileReader::VTKFileReader()
 {
-
+	m_type = vtkDataFileType::Invalid;
 }
 
 const VTK::vtkModel& VTKFileReader::GetVTKModel() const
@@ -216,7 +216,7 @@ const VTK::vtkModel& VTKFileReader::GetVTKModel() const
 	return m_vtk;
 }
 
-bool VTKFileReader::ProcessProcessDataArray(vtkDataArray& ar, vtkAppendedData& data)
+bool VTKFileReader::ProcessAppendedDataArray(vtkDataArray& ar, vtkAppendedData& data)
 {
 	if (ar.m_format != vtkDataArray::APPENDED) return true;
 
@@ -239,6 +239,11 @@ bool VTKFileReader::ProcessProcessDataArray(vtkDataArray& ar, vtkAppendedData& d
 	else if (ar.m_type == vtkDataArray::INT64)
 	{
 		b64.read_int64(ar.m_values_int);
+	}
+	else
+	{
+		assert(false);
+		return false;
 	}
 
 	return true;
@@ -293,10 +298,10 @@ bool VTKFileReader::ProcessDataArrays(vtkModel& vtk, vtkAppendedData& data)
 {
 	for (vtkPiece& piece : vtk.m_pieces)
 	{
-		if (ProcessProcessDataArray(piece.m_points, data) == false) return false;
-		if (ProcessProcessDataArray(piece.m_cell_offsets, data) == false) return false;
-		if (ProcessProcessDataArray(piece.m_cell_connect, data) == false) return false;
-		if (ProcessProcessDataArray(piece.m_cell_types, data) == false) return false;
+		if (ProcessAppendedDataArray(piece.m_points      , data) == false) return false;
+		if (ProcessAppendedDataArray(piece.m_cell_offsets, data) == false) return false;
+		if (ProcessAppendedDataArray(piece.m_cell_connect, data) == false) return false;
+		if (ProcessAppendedDataArray(piece.m_cell_types  , data) == false) return false;
 	}
 
 	return true;
@@ -357,6 +362,14 @@ bool VTKFileReader::ParsePiece(XMLTag& tag, vtkModel& vtk)
 		else if (tag == "Polys")
 		{
 			if (ParsePolys(tag, piece) == false) return false;
+		}
+		else if (tag == "PointData")
+		{
+			if (ParsePointData(tag, piece) == false) return false;
+		}
+		else if (tag == "CellData")
+		{
+			if (ParseCellData(tag, piece) == false) return false;
 		}
 		else tag.skip();
 		++tag;
@@ -442,6 +455,40 @@ bool VTKFileReader::ParsePolys(XMLTag& tag, vtkPiece& piece)
 	return true;
 }
 
+bool VTKFileReader::ParsePointData(XMLTag& tag, VTK::vtkPiece& piece)
+{
+	++tag;
+	do {
+		if (tag == "DataArray")
+		{
+			vtkDataArray data;
+			data.m_name = tag.AttributeValue("Name");
+			if (ParseDataArray(tag, data) == false) return false;
+			piece.m_pointData.push_back(data);
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
+	return true;
+}
+
+bool VTKFileReader::ParseCellData(XMLTag& tag, VTK::vtkPiece& piece)
+{
+	++tag;
+	do {
+		if (tag == "DataArray")
+		{
+			vtkDataArray data;
+			data.m_name = tag.AttributeValue("Name");
+			if (ParseDataArray(tag, data) == false) return false;
+			piece.m_cellData.push_back(data);
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
+	return true;
+}
+
 bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 {
 	// get the format
@@ -461,6 +508,7 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 	const char* sztype = tag.AttributeValue("type");
 	if      (strcmp(sztype, "Float32") == 0) vtkDataArray.m_type = vtkDataArray::FLOAT32;
 	else if (strcmp(sztype, "Float64") == 0) vtkDataArray.m_type = vtkDataArray::FLOAT64;
+	else if (strcmp(sztype, "Int8"   ) == 0) vtkDataArray.m_type = vtkDataArray::INT8;
 	else if (strcmp(sztype, "UInt8"  ) == 0) vtkDataArray.m_type = vtkDataArray::UINT8;
 	else if (strcmp(sztype, "Int64"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
 	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
@@ -476,6 +524,10 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 			(vtkDataArray.m_type == vtkDataArray::FLOAT64))
 		{
 			tag.value(vtkDataArray.m_values_float);
+		}
+		else if (vtkDataArray.m_type == vtkDataArray::INT8)
+		{
+			tag.value2(vtkDataArray.m_values_int);
 		}
 		else if (vtkDataArray.m_type == vtkDataArray::UINT8)
 		{
@@ -537,6 +589,17 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 			{
 				v[i] = *((double*)d);
 				d += 8;
+			}
+		}
+		else if (vtkDataArray.m_type == vtkDataArray::INT8)
+		{
+			std::vector<int>& v = vtkDataArray.m_values_int;
+			size_t m = n;
+			v.resize(m);
+			for (int i = 0; i < m; ++i)
+			{
+				v[i] = *((signed char*)d);
+				d += 1;
 			}
 		}
 		else if (vtkDataArray.m_type == vtkDataArray::UINT8)

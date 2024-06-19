@@ -2,6 +2,23 @@
 #include <QWizard>
 #include <QSslError>
 
+#ifdef WIN32
+#define FEBIOBINARY "\\febio4.exe"
+#define FBSBINARY "\\FEBioStudio2.exe"
+#define FBSUPDATERBINARY "\\FEBioStudioUpdater.exe"
+#define MVUTIL "\\mvUtil.exe"
+#elif __APPLE__
+#define FEBIOBINARY "/febio4"
+#define FBSBINARY "/FEBioStudio"
+#define FBSUPDATERBINARY "/FEBioStudioUpdater"
+#define MVUTIL "/mvUtil"
+#else
+#define FEBIOBINARY "/febio4"
+#define FBSBINARY "/FEBioStudio"
+#define FBSUPDATERBINARY "/FEBioStudioUpdater"
+#define MVUTIL "/mvUtil"
+#endif
+
 namespace Ui{
 class CMainWindow;
 }
@@ -16,6 +33,8 @@ class CMainWindow : public QWizard
 public:
 	CMainWindow(bool devChannel, bool updaterUpdateCheck);
 
+    void makePath(QString path);
+    void addNewFile(const QString filename);
 protected:
 	void initializePage(int id) override;
 
@@ -33,8 +52,6 @@ private:
     bool checkBinaries();
     bool isFileWriteable(QString filename, QString niceName);
 
-	bool NetworkAccessibleCheck();
-
 	void getFile();
 	void getFileReponse(QNetworkReply *r);
 
@@ -42,7 +59,6 @@ private:
     void getSDKResponse(QNetworkReply *r);
 
 	void deleteFiles();
-	void makePath(QString path);
 	void downloadsFinished();
 
 private:

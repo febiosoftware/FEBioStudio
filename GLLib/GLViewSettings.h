@@ -29,15 +29,6 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
-enum OBJECT_COLOR_MODE {
-	DEFAULT_COLOR,
-	OBJECT_COLOR,
-	MATERIAL_TYPE,
-	FSELEMENT_TYPE,
-	PHYSICS_TYPE
-};
-
-//-----------------------------------------------------------------------------
 // render mode
 enum RenderMode {
 	RENDER_SOLID = 0,
@@ -141,7 +132,8 @@ struct GLViewSettings
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
-	int		m_objectColor;			// 0 = default (by material), 1 = by object
+
+	bool m_showHighlights;
 
 	void Defaults(int ntheme = 0);
 };
