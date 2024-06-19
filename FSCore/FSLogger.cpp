@@ -28,7 +28,7 @@ SOFTWARE.*/
 FSLogOutput* FSLogger::m_log = nullptr;
 
 
-void FSLogger::SetWatcher(FSLogOutput* o) { m_log = o; }
+void FSLogger::SetOutput(FSLogOutput* o) { m_log = o; }
 void FSLogger::Write(const std::string& msg)
 {
 	if (m_log) m_log->Write(msg);

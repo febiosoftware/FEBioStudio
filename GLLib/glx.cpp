@@ -28,6 +28,15 @@ SOFTWARE.*/
 #include <qopengl.h>
 #include "glx.h"
 
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
+
 //-----------------------------------------------------------------------------
 void glx::translate(const vec3d& r)
 {

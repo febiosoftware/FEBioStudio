@@ -615,7 +615,6 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 
-	// delete old selection
 	if (mdl) mdl->SetSelection(nullptr); 
 	if (m_psel) delete m_psel;
 	m_psel = nullptr;

@@ -40,7 +40,7 @@ SOFTWARE.*/
 // FESelection
 //////////////////////////////////////////////////////////////////////
 
-FESelection::FESelection(int ntype) : m_ntype(ntype)
+FESelection::FESelection(SelectionType ntype) : m_ntype(ntype)
 {
 	m_nsize = -1;
 	m_movable = true;
@@ -1043,7 +1043,7 @@ void FEElementSelection::Iterator::operator ++()
 	else m_pelem = nullptr;
 }
 
-FEElementSelection::FEElementSelection(FSMesh* pm) : FESelection(SELECT_FE_ELEMS)
+FEElementSelection::FEElementSelection(FSMesh* pm) : FEMeshSelection(SELECT_FE_ELEMS)
 { 
 	m_pMesh = pm; 
 	Update(); 
@@ -1269,7 +1269,7 @@ int FEElementSelection::ElementIndex(size_t i) const
 // FEFaceSelection
 //////////////////////////////////////////////////////////////////////
 
-FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FESelection(SELECT_FE_FACES)
+FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FEMeshSelection(SELECT_FE_FACES)
 { 
 	m_pMesh = pm; 
 	Update(); 
@@ -1512,7 +1512,7 @@ FEFaceSelection::Iterator FEFaceSelection::begin()
 // FEEdgeSelection
 //////////////////////////////////////////////////////////////////////
 
-FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) 
+FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_EDGES)
 { 
 	m_pMesh = pm; 
 	Update(); 
@@ -1735,7 +1735,7 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 // FENodeSelection
 //////////////////////////////////////////////////////////////////////
 
-FENodeSelection::FENodeSelection(FSLineMesh* pm) : FESelection(SELECT_FE_NODES)
+FENodeSelection::FENodeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_NODES)
 { 
 	m_pMesh = pm; 
 	Update(); 

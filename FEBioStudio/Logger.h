@@ -27,17 +27,20 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <FSCore/FSLogger.h>
 
 class CMainWindow;
 
 enum destination{LOG, OUTPUT};
 
-class CLogger : public QObject
+class CLogger : public QObject, public FSLogOutput
 {
 	Q_OBJECT
 
 public:
 	static void Instantiate(CMainWindow* mainWindow);
+
+	void Write(const std::string& s) override;
 
 public slots:
 	static void AddLogEntry(const QString& txt);

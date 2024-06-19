@@ -408,7 +408,7 @@ public:
 		QLabel* label = new QLabel("Current palette:");
 		label->setFixedWidth(100);
 		label->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-		pal = new QComboBox; label->setBuddy(label);
+		pal = new QComboBox; label->setBuddy(pal);
 
 		QHBoxLayout* h0 = new QHBoxLayout;
 		h0->addWidget(label);

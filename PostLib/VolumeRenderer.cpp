@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
-#include <FSCore/FSLogger.h>
 #include <sstream>
 #include <limits>
 using namespace Post;

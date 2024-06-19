@@ -53,7 +53,7 @@ enum SelectionType
 class FESelection  
 {
 public:
-	FESelection(int ntype);
+	FESelection(SelectionType ntype);
 	virtual ~FESelection();
 
 	int Type() const { return m_ntype; }
@@ -354,9 +354,13 @@ protected:
 	int		m_count;
 };
 
-//-----------------------------------------------------------------------------
+class FEMeshSelection : public FESelection
+{
+public:
+	FEMeshSelection(SelectionType selectionType) : FESelection(selectionType) {}
+};
 
-class FEElementSelection : public FESelection
+class FEElementSelection : public FEMeshSelection
 {
 public:
 	class Iterator
@@ -399,9 +403,7 @@ protected:
 	std::vector<int>	m_item;
 };
 
-//-----------------------------------------------------------------------------
-
-class FEFaceSelection : public FESelection
+class FEFaceSelection : public FEMeshSelection
 {
 public:
 	class Iterator
@@ -447,9 +449,7 @@ protected:
 	std::vector<int>	m_item;
 };
 
-//-----------------------------------------------------------------------------
-
-class FEEdgeSelection : public FESelection
+class FEEdgeSelection : public FEMeshSelection
 {
 public:
 	class Iterator
@@ -490,9 +490,7 @@ protected:
 	std::vector<int>	m_items;
 };
 
-//-----------------------------------------------------------------------------
-
-class FENodeSelection : public FESelection
+class FENodeSelection : public FEMeshSelection
 {
 public:
 	class Iterator

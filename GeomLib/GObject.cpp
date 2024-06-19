@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <MeshLib/GMesh.h>
 #include <MeshTools/GLMesher.h>
+#include <MeshTools/FETetGenMesher.h>
 #include <sstream>
 
 using namespace std;
@@ -1505,15 +1506,20 @@ void GObject::Load(IArchive& ar)
 				switch (ntype)
 				{
 				case 0: break;	// use default mesher
-				case 1: 
+				case 1:
 				{
-					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
-					assert(mesher);
+					FEMesher* mesher = new FETetGenMesher(this);
 					SetFEMesher(mesher);
 				}
 				break;
 				default:
-					throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+				{
+					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
+					assert(mesher);
+					if (mesher == nullptr) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+					SetFEMesher(mesher);
+				}
+				break;
 				}
 
 				if (GetFEMesher())

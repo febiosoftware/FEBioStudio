@@ -28,11 +28,6 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 #include <FSCore/math3d.h>
 #include <qopengl.h>
-#ifdef __APPLE__
-    #include <OpenGL/GLU.h>
-#else
-    #include <GL/glu.h>
-#endif
 #include <vector>
 #include <FSCore/box.h>
 

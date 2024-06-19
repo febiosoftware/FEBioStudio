@@ -36,6 +36,8 @@ void CLogger::Instantiate(CMainWindow* mainWindow)
 	{
 		m_instance = new CLogger(mainWindow);
 
+		FSLogger::SetOutput(m_instance);
+
         connect(m_instance, &CLogger::SendLogEntry, mainWindow, &CMainWindow::AddLogEntry);
         connect(m_instance, &CLogger::SendOutputEntry, mainWindow, &CMainWindow::AddOutputEntry);
 	}
@@ -51,3 +53,7 @@ void CLogger::AddOutputEntry(const QString& txt)
 	if(m_instance) m_instance->SendOutputEntry(txt);
 }
 
+void CLogger::Write(const std::string& s)
+{
+	emit SendLogEntry(QString::fromStdString(s));
+}

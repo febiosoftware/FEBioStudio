@@ -38,6 +38,14 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <ImageLib/RGBImage.h>
 #include <QImageReader>
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
