@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PythonTool.h"
-#include "PyThread.h"
+#include "PythonThread.h"
 #include "PythonToolsPanel.h"
 #include "PyState.h"
 

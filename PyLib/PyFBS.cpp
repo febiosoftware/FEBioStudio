@@ -36,9 +36,9 @@ SOFTWARE.*/
 #include <pybind11/embed.h>
 
 #include "PyFBSCore.h"
-#include "PyFBSModel.h"
 
 #ifndef PY_EXTERNAL
+#include "PyFBSModel.h"
 #include "PyFBSUI.h"
 #endif
 

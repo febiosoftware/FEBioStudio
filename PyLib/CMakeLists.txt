@@ -54,15 +54,15 @@ if(WIN32)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-    
+    add_compile_options(-fPIC)
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
     
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+    add_compile_options(-fPIC)
 endif()
 
-add_compile_options(-fPIC)
 
 set(FEBioDir "" CACHE PATH "Path to the FEBio repo")
 
@@ -109,14 +109,17 @@ endforeach(name)
 add_subdirectory(${PYBIND11_DIR} ./pybind11)
 
 find_package(ZLIB)
+find_package(GLEW REQUIRED)
 
 target_compile_definitions(XPLTLib PRIVATE HAVE_ZLIB)
 target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
+target_link_libraries(PostLib PRIVATE ${GLEW_LIBRARIES} GLEW::glew)
 
 pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp)
 
 if(WIN32)
     target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
+    target_link_libraries(fbs PRIVATE psapi.lib ws2_32.lib)
 elseif(APPLE)
     target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
 else()
