@@ -25,7 +25,7 @@
  SOFTWARE.*/
 
 #include "FluentExport.h"
-#include <FEBioStudio/Logger.h>
+#include <FSCore/FSLogger.h>
 
 // This exporter uses information about Fluent mesh file format given at
 // https://romeo.univ-reims.fr/documents/fluent/tgrid/ug/appb.pdf
@@ -103,7 +103,7 @@ bool FluentExport::Write(const char* szfile)
                     }
                         break;
                     default:
-                        CLogger::AddLogEntry("Fluent mesh exporter only supports tet4, hex8, pyra5 and penta6 elements!\n");
+                        FSLogger::Write("Fluent mesh exporter only supports tet4, hex8, pyra5 and penta6 elements!\n");
                         return false;
                         break;
                 }

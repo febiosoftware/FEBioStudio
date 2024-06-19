@@ -146,27 +146,6 @@ void darkStyle()
 }
 
 //-----------------------------------------------------------------------------
-class FSMainWindowLogOutput : public FSLogOutput
-{
-public:
-	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
-	{
-		FSLogger::SetWatcher(this);
-	}
-
-	void Write(const std::string& msg)
-	{
-		QString s = QString::fromStdString(msg);
-		m_wnd->AddLogEntry(s);
-	}
-
-private:
-	CMainWindow* m_wnd;
-};
-
-FSMainWindowLogOutput* mainWindogLogger = nullptr;
-
-//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -179,8 +158,6 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
-
-	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
@@ -230,6 +207,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 */
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
+#ifdef WIN32
+	if (ui->m_settings.uiTheme == 0)
+	{
+		// From Qt 6.5 the default style (light or dark) is taken from the Windows settings.
+		// This currently causes issues, so for now we're forcing the windowsvista style, which does not have
+		// a dark option. 
+		qApp->setStyle(QStyleFactory::create("windowsvista"));
+	}
+#endif
 #ifdef LINUX
 	if(ui->m_settings.uiTheme == 2)
 	{
@@ -3257,6 +3243,12 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 	if (doc == nullptr) return false;
 
 	vector<MODEL_ERROR> warnings = doc->CheckModel();
+
+	if (!askRunQuestion && warnings.empty())
+	{
+		QMessageBox::information(this, "Model Check", "Model check completed. No issues found!");
+		return true;
+	}
 
 	if (warnings.empty() == false)
 	{
