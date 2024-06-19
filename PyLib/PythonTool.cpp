@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
-#include "PyThread.h"
+#include "PythonThread.h"
 #include "PyState.h"
 
 #include <FEBioStudio/MainWindow.h>

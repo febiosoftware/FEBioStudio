@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
-#include <PyLib/PyThread.h>
+#include <PyLib/PythonThread.h>
 #include "PyOutput.h"
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
