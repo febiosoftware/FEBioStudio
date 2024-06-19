@@ -129,7 +129,7 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 		m_szlog = sznew;
 	}
 
-	delete szlog;
+	delete[] szlog;
 }
 
 //-----------------------------------------------------------------------------

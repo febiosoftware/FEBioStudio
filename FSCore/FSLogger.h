@@ -40,6 +40,7 @@ class FSLogger
 public:
 	static void SetOutput(FSLogOutput* o);
 	static void Write(const std::string& msg);
+	static void Write(const char* szfmt, ...);
 
 private:
 	FSLogger() {}
