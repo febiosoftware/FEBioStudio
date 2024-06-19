@@ -146,27 +146,6 @@ void darkStyle()
 }
 
 //-----------------------------------------------------------------------------
-class FSMainWindowLogOutput : public FSLogOutput
-{
-public:
-	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
-	{
-		FSLogger::SetWatcher(this);
-	}
-
-	void Write(const std::string& msg)
-	{
-		QString s = QString::fromStdString(msg);
-		m_wnd->AddLogEntry(s);
-	}
-
-private:
-	CMainWindow* m_wnd;
-};
-
-FSMainWindowLogOutput* mainWindogLogger = nullptr;
-
-//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -179,8 +158,6 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
-
-	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.

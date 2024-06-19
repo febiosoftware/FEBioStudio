@@ -38,7 +38,7 @@ public:
 class FSLogger
 {
 public:
-	static void SetWatcher(FSLogOutput* o);
+	static void SetOutput(FSLogOutput* o);
 	static void Write(const std::string& msg);
 
 private:
