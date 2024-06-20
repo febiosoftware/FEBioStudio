@@ -60,7 +60,7 @@ namespace nglib {
 #endif
 
 #ifdef HAS_NETGEN
-FSMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
+FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ng, bool secondOrder);
 #endif
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
@@ -272,13 +272,14 @@ FSMesh*	NetGenMesher::BuildMesh()
     {
         Ng_OCC_Generate_SecondOrder (occ_geom,occ_mesh);
     }
-    FSMesh* mesh = NGMeshToFEMesh((Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
+    FSMesh* mesh = NGMeshToFEMesh(m_occ, (Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
     
     Ng_Exit();
     
     return mesh;
     
 #else
+	SetErrorMessage("This version of FEBio Studio was not built with NetGen support.");
     return nullptr;
 #endif // HAS_NETGEN
 }
@@ -305,7 +306,7 @@ void NetGenMesher::Terminate()
 }
 
 #ifdef HAS_NETGEN
-FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
+FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder)
 {
 	using namespace netgen;
 
@@ -328,10 +329,43 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
             double x = (*ngmesh)[pi](0);
             double y = (*ngmesh)[pi](1);
             double z = (*ngmesh)[pi](2);
-            
+
             FSNode& ni = mesh->Node(i);
             ni.r = vec3d(x, y, z);
         }
+
+		// we need to find the FE nodes that correspond to the geometry nodes
+		// I don't know if there is a better way to do this (i.e. if NetGen stores this information)
+		// so we're using a brute-force method
+		// (It looks like the first nodes in the NG mesh correspond to the geometry nodes, though not 100% sure)
+		if (po)
+		{
+			for (int i = 0; i < po->Nodes(); ++i)
+			{
+				GNode& node = *po->Node(i);
+				vec3d rn = node.LocalPosition();
+
+				const double eps = 1e-12;
+				int minj = -1;
+				double D2min = 0.0;
+				for (int j = 0; j < mesh->Nodes(); ++j)
+				{
+					vec3d rj = mesh->Node(j).r;
+					double D2 = (rn - rj).norm2();
+					if ((minj == -1) || (D2 < D2min))
+					{
+						minj = j;
+						D2min = D2;
+						if (D2min < eps) break;
+					}
+				}
+				assert(minj != -1);
+				if ((minj != -1) && (D2min < eps))
+				{
+					mesh->Node(minj).m_gid = i;
+				}
+			}
+		}
         
         // copy facets
         SurfaceElementIndex sei;
