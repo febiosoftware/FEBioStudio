@@ -115,8 +115,6 @@ public:
 	void DeleteAllJobs();
 
 public:
-	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
-
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 

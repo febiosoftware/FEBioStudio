@@ -53,6 +53,7 @@ protected slots:
 	void on_addParameter_clicked();
 	void on_addData_clicked();
 	void on_pasteData_clicked();
+	void on_addvar_clicked();
 
 private:
 	Ui::CDlgFEBioOptimize*	ui;

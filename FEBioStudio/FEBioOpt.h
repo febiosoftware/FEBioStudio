@@ -32,6 +32,15 @@ SOFTWARE.*/
 class FEBioOpt
 {
 public:
+	enum Objective
+	{
+		DataFit,
+		Target,
+		ElementData,
+		NodeData
+	};
+
+public:
 	class Param
 	{
 	public:
@@ -74,40 +83,22 @@ public:
 		double	m_value;
 	};
 
+	class TargetVar
+	{
+	public:
+		std::string	m_name;
+		double		m_val;
+	};
+
 public:
 	FEBioOpt()
 	{
-		method = 0;
-		obj_tol = 1e-4;
-		f_diff_scale = 0.001;
-		outLevel = 0;
-		printLevel = 0;
-	}
-
-	FEBioOpt(const FEBioOpt& op)
-	{
-		method = op.method;
-		obj_tol = op.obj_tol;
-		f_diff_scale = op.f_diff_scale;
-		outLevel = op.outLevel;
-		printLevel = op.printLevel;
-		m_params = op.m_params;
-		m_data = op.m_data;
-		m_objParam = op.m_objParam;
-	}
-
-	FEBioOpt& operator = (const FEBioOpt& op)
-	{
-		method = op.method;
-		obj_tol = op.obj_tol;
-		f_diff_scale = op.f_diff_scale;
-		outLevel = op.outLevel;
-		printLevel = op.printLevel;
-		m_params = op.m_params;
-		m_data = op.m_data;
-		m_objParam = op.m_objParam;
-
-		return *this;
+		m_method = 0;
+		m_obj_tol = 1e-4;
+		m_f_diff_scale = 0.001;
+		m_outLevel = 0;
+		m_printLevel = 0;
+		m_objective = Objective::DataFit;
 	}
 
 	void AddParameter(const Param& p)
@@ -124,14 +115,28 @@ public:
 	}
 
 public:
-	int		method;			// optimization method
-	double	obj_tol;		// objective tolerance
-	double	f_diff_scale;	// forward difference scale factor
-	int		outLevel;		// output level
-	int		printLevel;		// print level
+	int		m_method;			// optimization method
+	double	m_obj_tol;		// objective tolerance
+	double	m_f_diff_scale;	// forward difference scale factor
+	int		m_outLevel;		// output level
+	int		m_printLevel;		// print level
+	int		m_objective;	// objective option
 
-	std::string		m_objParam;	// the objective parameter
-
+	// parameters to optimize
 	std::vector<Param>		m_params;
+
+	// data-fit model
+	std::string		m_objParam;	// the objective parameter
 	std::vector<Data>		m_data;
+
+	// target model
+	std::vector<TargetVar>	m_trgVar;
+
+	// element-data model
+	std::string m_edVar;
+
+	// node-data model
+	std::string m_ndVar;
 };
+
+bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);

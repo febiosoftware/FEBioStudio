@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QStackedWidget>
 #include "MainWindow.h"
 #include <QDialogButtonBox>
 #include <QTreeWidget>
@@ -235,8 +236,19 @@ public:
 	QTableWidget*	paramTable;
 
 	// page 4 (Objective)
+	QComboBox*		objFun;
+	QStackedWidget* stack;
+	// 4.1. data-fit pane
 	CSelectParam*	objParam;
 	QTableWidget*	dataTable;
+	// 4.2 target pane
+	QLineEdit* trgName;
+	QLineEdit* trgVal;
+	QTableWidget* trgVar;
+	// 4.3 element-data pane
+	QLineEdit* edVar;
+	// 4.3 node-data pane
+	QLineEdit* ndVar;
 
 public:
 	void setup(QWizard* w)
@@ -253,19 +265,19 @@ public:
 		w->addPage(GenerateObjectivePage());
 
 		// set initial values
-		method->setCurrentIndex(opt.method);
-		objTol->setText(QString::number(opt.obj_tol));
-		fDiffScale->setText(QString::number(opt.f_diff_scale));
+		method->setCurrentIndex(opt.m_method);
+		objTol->setText(QString::number(opt.m_obj_tol));
+		fDiffScale->setText(QString::number(opt.m_f_diff_scale));
 	}
 
 	void Update()
 	{
 		// get control options
-		opt.method = method->currentIndex();
-		opt.obj_tol = objTol->text().toDouble();
-		opt.f_diff_scale = fDiffScale->text().toDouble();
-		opt.outLevel = out->currentIndex();
-		opt.printLevel = print->currentIndex();
+		opt.m_method = method->currentIndex();
+		opt.m_obj_tol = objTol->text().toDouble();
+		opt.m_f_diff_scale = fDiffScale->text().toDouble();
+		opt.m_outLevel = out->currentIndex();
+		opt.m_printLevel = print->currentIndex();
 
 		// get parameters
 		opt.m_params.clear();
@@ -280,8 +292,22 @@ public:
 			opt.AddParameter(param);
 		}
 
-		// get objective parameter
+		// get objective data
+		opt.m_objective = objFun->currentIndex();
 		opt.m_objParam = objParam->text().toStdString();
+
+		opt.m_trgVar.clear();
+		for (int i = 0; i < trgVar->rowCount(); ++i)
+		{
+			FEBioOpt::TargetVar var;
+			var.m_name = trgVar->item(i, 0)->text().toStdString();
+			var.m_val  = trgVar->item(i, 1)->text().toDouble();
+			opt.m_trgVar.push_back(var);
+		}
+
+		opt.m_edVar = edVar->text().toStdString();
+
+		opt.m_ndVar = ndVar->text().toStdString();
 
 		// get data points
 		opt.m_data.clear();
@@ -307,6 +333,17 @@ public:
 		initVal->clear();
 		minVal->clear();
 		maxVal->clear();
+	}
+
+	void addTargetVariable()
+	{
+		int rows = trgVar->rowCount();
+		trgVar->setRowCount(rows + 1);
+		trgVar->setItem(rows, 0, new QTableWidgetItem(trgName->text()));
+		trgVar->setItem(rows, 1, new QTableWidgetItem(trgVal->text()));
+
+		trgName->clear();
+		trgVal->clear();
 	}
 
 	void addDataPoint(double x, double y)
@@ -409,40 +446,112 @@ public:
 	{
 		QWizardPage* objPage = new QWizardPage;
 		objPage->setTitle("Objective");
-		objPage->setSubTitle("Set the optimization data.");
+		objPage->setSubTitle("Define the objective function.");
 
-		QFormLayout* form = new QFormLayout;
-		form->addRow("Objective parameter:", objParam = new CSelectParam(m_fem, 1));
+		objFun = new QComboBox;
+		objFun->addItems(QStringList() << "data-fit" << "target" << "element-data" << "node-data");
 
-		QHBoxLayout* h = new QHBoxLayout;
-		QPushButton* add = new QPushButton("Generate points ...");
-		add->setObjectName("addData");
-		h->addWidget(add);
+		QHBoxLayout* ol = new QHBoxLayout;
+		ol->addWidget(new QLabel("Objective model:"));
+		ol->addWidget(objFun);
+		ol->addStretch();
 
-		QPushButton* paste = new QPushButton("Paste clipboard");
-		paste->setObjectName("pasteData");
-		h->addWidget(paste);
+		stack = new QStackedWidget;
 
-		h->addStretch();
+		// pane for data-fit
+		QWidget* w1 = new QWidget;
+		QVBoxLayout* l1 = new QVBoxLayout;
+		{
+			QFormLayout* form = new QFormLayout;
+			form->addRow("Objective parameter:", objParam = new CSelectParam(m_fem, 1));
 
-		dataTable = new QTableWidget(0, 2);
-		dataTable->setObjectName("dataTable");
-		dataTable->setHorizontalHeaderLabels(QStringList() << "time" << "value");
-		dataTable->horizontalHeader()->setStretchLastSection(true);
-		dataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-		dataTable->setSelectionMode(QAbstractItemView::SingleSelection);
-		dataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+			QHBoxLayout* h = new QHBoxLayout;
+			QPushButton* add = new QPushButton("Generate points ...");
+			add->setObjectName("addData");
+			h->addWidget(add);
 
-		if (m_theme == 0)
-			dataTable->setStyleSheet("QHeaderView::section { background-color:lightgray }");
-		else
-			dataTable->setStyleSheet("QHeaderView::section { background-color:gray }");
+			QPushButton* paste = new QPushButton("Paste clipboard");
+			paste->setObjectName("pasteData");
+			h->addWidget(paste);
+
+			h->addStretch();
+
+			dataTable = new QTableWidget(0, 2);
+			dataTable->setObjectName("dataTable");
+			dataTable->setHorizontalHeaderLabels(QStringList() << "time" << "value");
+			dataTable->horizontalHeader()->setStretchLastSection(true);
+			dataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+			dataTable->setSelectionMode(QAbstractItemView::SingleSelection);
+			dataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+			if (m_theme == 0)
+				dataTable->setStyleSheet("QHeaderView::section { background-color:lightgray }");
+			else
+				dataTable->setStyleSheet("QHeaderView::section { background-color:gray }");
+
+			l1->addLayout(form);
+			l1->addLayout(h);
+			l1->addWidget(dataTable);
+
+			w1->setLayout(l1);
+		}
+		stack->addWidget(w1);
+
+		// pane for target
+		QWidget* w2 = new QWidget;
+		QVBoxLayout* l2 = new QVBoxLayout;
+		{
+			QFormLayout* form = new QFormLayout;
+			form->addRow("parameter name:", trgName = new QLineEdit);
+			form->addRow("parameter value:", trgVal = new QLineEdit); trgVal->setValidator(new QDoubleValidator);
+			l2->addLayout(form);
+
+			QHBoxLayout* h = new QHBoxLayout;
+			QPushButton* addVar = new QPushButton("Add"); addVar->setObjectName("addvar");
+			h->addWidget(addVar); h->addStretch();
+			l2->addLayout(h);
+
+			trgVar = new QTableWidget();
+			trgVar->setColumnCount(2);
+			trgVar->setHorizontalHeaderLabels(QStringList() << "Name" << "value");
+			trgVar->horizontalHeader()->setStretchLastSection(true);
+			trgVar->setSelectionBehavior(QAbstractItemView::SelectRows);
+			trgVar->setSelectionMode(QAbstractItemView::SingleSelection);
+			trgVar->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+			trgVar->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+			l2->addWidget(trgVar);
+		}
+		w2->setLayout(l2);
+		stack->addWidget(w2);
+
+		// pane for element-data
+		QWidget* w3 = new QWidget;
+		QVBoxLayout* l3 = new QVBoxLayout;
+		{
+			QFormLayout* form = new QFormLayout;
+			form->addRow("variable:", edVar = new QLineEdit());
+			l3->addLayout(form);
+		}
+		w3->setLayout(l3);
+		stack->addWidget(w3);
+
+		// pane for node-data
+		QWidget* w4 = new QWidget;
+		QVBoxLayout* l4 = new QVBoxLayout;
+		{
+			QFormLayout* form = new QFormLayout;
+			form->addRow("variable:", ndVar = new QLineEdit());
+			l4->addLayout(form);
+		}
+		w4->setLayout(l4);
+		stack->addWidget(w4);
 
 		QVBoxLayout* l = new QVBoxLayout;
-		l->addLayout(form);
-		l->addLayout(h);
-		l->addWidget(dataTable);
+		l->addLayout(ol);
+		l->addWidget(stack);
 		objPage->setLayout(l);
+
+		QObject::connect(objFun, &QComboBox::currentIndexChanged, stack, &QStackedWidget::setCurrentIndex);
 
 		return objPage;
 	}
@@ -516,6 +625,11 @@ void CDlgFEBioOptimize::on_pasteData_clicked()
 		QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
 	}
 
+}
+
+void CDlgFEBioOptimize::on_addvar_clicked()
+{
+	ui->addTargetVariable();
 }
 
 //==========================================================================================================
