@@ -306,6 +306,7 @@ void CMainWindow::on_actionHideSelection_triggered()
 		case SELECT_FE_FACES: mdl.HideSelectedFaces(); break;
 		case SELECT_FE_ELEMS: mdl.HideSelectedElements(); break;
 		}
+		mdl.UpdateMeshVisibility();
 		postDoc->UpdateSelection(false);
 		postDoc->UpdateFEModel();
 		RedrawGL();
