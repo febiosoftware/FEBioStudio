@@ -1888,6 +1888,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
 		settings.setValue("meshColor", vs.m_meshColor.to_uint());
+		settings.setValue("linewidth", vs.m_line_size);
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -1899,6 +1900,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("showGrid", vs.m_bgrid);
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
+		settings.setValue("tagFontSize", vs.m_tagFontSize);
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
@@ -2024,6 +2026,7 @@ void CMainWindow::readSettings()
 		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
 		// alpha component used to not be stored so set it to default if zero
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
+		vs.m_line_size = settings.value("linewidth", vs.m_line_size).toInt();
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -2035,6 +2038,8 @@ void CMainWindow::readSettings()
 		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
+
+		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
 
 		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 		GLWidget::set_default_font(font);
