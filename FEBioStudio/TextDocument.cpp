@@ -67,6 +67,7 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 	file.close();
 
 	m_txt.setPlainText(s);
+	m_txt.setModified(false);
 
 	m_bValid = true;
 	return true;
