@@ -198,5 +198,6 @@
         <file>icons/deriv_neg.png</file>
         <file>icons/febiomonitor.png</file>
         <file>icons/stop.png</file>
+        <file>icons/plugin.png</file>
 	</qresource>
 </RCC>

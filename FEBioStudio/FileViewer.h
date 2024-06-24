@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <vector>
+#include <QProcess>
 //using namespace std;
 
 class QTreeWidgetItem;
@@ -63,7 +64,35 @@ private slots:
 	void onRemoveFromProject();
 	void onAddFile();
 	void onImportFolder();
+	void onBuildPlugin();
+	// plugin process slots
+	void onConfigureFinished(int, QProcess::ExitStatus);
+	void onBuildFinished(int, QProcess::ExitStatus);
+	void onReadyRead();
+	void onErrorOccurred(QProcess::ProcessError);
 
 private:
 	Ui::CFileViewer*	ui;
+};
+
+class CPluginProcess : public QProcess
+{
+public:
+	CPluginProcess(QObject* parent) : QProcess(parent) {}
+
+	virtual void run() = 0;
+};
+
+class CConfigurePluginProcess : public CPluginProcess
+{
+public:
+	CConfigurePluginProcess(QObject* parent);
+	void run() override;
+};
+
+class CBuildPluginProcess : public CPluginProcess
+{
+public:
+	CBuildPluginProcess(QObject* parent);
+	void run() override;
 };

@@ -178,6 +178,21 @@ FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddGroup(const
 }
 
 
+FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddPlugin(const QString& name)
+{
+	// see if this item already exists
+	QList<ProjectItem*>::iterator it;
+	for (it = m_items.begin(); it != m_items.end(); ++it)
+	{
+		ProjectItem& item = *(*it);
+		if (item.IsGroup() && (item.Name() == name))
+		{
+			return item;
+		}
+	}
+	m_items.push_back(new ProjectItem(PROJECT_PLUGIN, name, this)); return *m_items.last();
+}
+
 void FEBioStudioProject::ProjectItem::RemoveSelf()
 {
 	assert(m_parent);
@@ -450,6 +465,16 @@ void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProje
 			}
 			xml.close_branch();
 		}
+		else if (item.IsType(FEBioStudioProject::PROJECT_PLUGIN))
+		{
+			XMLElement group("febio_plugin");
+			group.add_attribute("name", item.Name().toStdString());
+			xml.add_branch(group);
+			{
+				WriteProjectGroup(xml, prj, item);
+			}
+			xml.close_branch();
+		}
 	}
 }
 
@@ -499,6 +524,17 @@ void ParseTags(XMLTag& tag, FEBioStudioProject& prj, FEBioStudioProject::Project
 			if ((tag.isempty() == false) && (tag.isleaf() == false)) 
 			{
 				ParseTags(tag, prj, group);
+			}
+		}
+		else if (tag == "febio_plugin")
+		{
+			string pluginName = tag.AttributeValue("name");
+
+			FEBioStudioProject::ProjectItem& plugin = parent.AddPlugin(QString::fromStdString(pluginName));
+
+			if ((tag.isempty() == false) && (tag.isleaf() == false))
+			{
+				ParseTags(tag, prj, plugin);
 			}
 		}
 		else if (tag == "file")

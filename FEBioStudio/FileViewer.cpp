@@ -45,6 +45,8 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QFileIconProvider>
 #include <QFileDialog>
+#include "IconProvider.h"
+#include "Logger.h"
 
 enum FileItemType {
 	OPEN_FILES,
@@ -52,6 +54,7 @@ enum FileItemType {
 	PROJECT,
 	PROJECT_GROUP,
 	PROJECT_FILE,
+	PROJECT_PLUGIN,
 	EXTERNAL_FILE
 };
 
@@ -61,6 +64,8 @@ public:
 	::CMainWindow*	m_wnd;
 	QTreeWidget*	m_tree;
 	QTextEdit*		m_info;
+
+	CPluginProcess* m_process = nullptr;
 
 public:
 	void setupUi(QWidget* parent)
@@ -246,6 +251,17 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Add file ...", this, SLOT(onAddFile()));
 		menu.exec(ev->globalPos());
 	}
+	else if (ntype == FileItemType::PROJECT_PLUGIN)
+	{
+		QMenu menu(this);
+		menu.addAction("Build", this, SLOT(onBuildPlugin()));
+		menu.addSeparator();
+//		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
+//		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
+		menu.addAction("Add Group ...", this, SLOT(onCreateGroup()));
+		menu.addAction("Add file ...", this, SLOT(onAddFile()));
+		menu.exec(ev->globalPos());
+	}
 	else if (ntype == FileItemType::PROJECT_FILE)
 	{
 		QMenu menu(this);
@@ -383,6 +399,18 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 			t2->setFont(0, f);
 			addProjectGroup(item, t2, wnd);
 		}
+		else if (item.IsPlugin())
+		{
+			QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
+			t2->setText(0, item.Name());
+			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_PLUGIN);
+			t2->setData(0, Qt::UserRole + 1, item.Id());
+			t2->setIcon(0, CIconProvider::GetIcon("plugin"));
+			QFont f = t2->font(0);
+			f.setBold(true);
+			t2->setFont(0, f);
+			addProjectGroup(item, t2, wnd);
+		}
 	}
 
 	// add files next
@@ -505,7 +533,9 @@ void CFileViewer::onCreateGroup()
 	if (item == nullptr) return;
 
 	int ntype = item->data(0, Qt::UserRole).toInt();
-	if ((ntype == FileItemType::PROJECT) || ( ntype == FileItemType::PROJECT_GROUP))
+	if (( ntype == FileItemType::PROJECT) || 
+		( ntype == FileItemType::PROJECT_GROUP) ||
+		( ntype == FileItemType::PROJECT_PLUGIN))
 	{
 		QString groupName = QInputDialog::getText(this, "Create Group", "Group name:");
 		if (groupName.isEmpty() == false)
@@ -658,4 +688,113 @@ void CFileViewer::onImportFolder()
 			Update();
 		}
 	}
+}
+
+void CFileViewer::onBuildPlugin()
+{
+	if (ui->m_process)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A build is already in progress.\nPlease wait until the build finishes.");
+		return;
+	}
+
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr)
+	{ 
+		QMessageBox::critical(this, "FEBio Studio", "No active project.");
+		return;
+	}
+
+	// make sure log window is visible
+	ui->m_wnd->ShowLogPanel();
+
+	QString projectPath = prj->GetProjectPath();
+	ui->m_process = new CConfigurePluginProcess(this);
+	ui->m_process->setWorkingDirectory(projectPath);
+	ui->m_process->run();
+}
+
+void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
+{
+	if ((exitCode != 0) || (es != QProcess::NormalExit))
+	{
+		QString msg = QString("Exitcode = %1, Exit status = %2").arg(exitCode).arg(es == QProcess::NormalExit ? "Normal exit" : "Crash exit");
+		QMessageBox::information(this, "FEBio Studio", msg);
+		delete ui->m_process;
+		ui->m_process = nullptr;
+		return;
+	}
+
+	delete ui->m_process;
+
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	QString projectPath = prj->GetProjectPath();
+	ui->m_process = new CBuildPluginProcess(this);
+	ui->m_process->setWorkingDirectory(projectPath);
+	ui->m_process->run();
+}
+
+void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
+{
+	QString msg = QString("Exitcode = %1, Exit status = %2").arg(exitCode).arg(es == QProcess::NormalExit ? "Normal exit" : "Crash exit");
+	QMessageBox::information(this, "FEBio Studio", msg);
+
+	delete ui->m_process;
+	ui->m_process = nullptr;
+}
+
+void CFileViewer::onReadyRead()
+{
+	if (ui->m_process == nullptr) return;
+
+	QByteArray output = ui->m_process->readAll();
+	QString s(output);
+	CLogger::AddLogEntry(output);
+}
+
+void CFileViewer::onErrorOccurred(QProcess::ProcessError err)
+{
+	QString errString;
+	switch (err)
+	{
+	case QProcess::FailedToStart: errString = "Failed to start"; break;
+	case QProcess::Crashed      : errString = "Crashed"; break;
+	case QProcess::Timedout     : errString = "Timed out"; break;
+	case QProcess::WriteError   : errString = "Write error"; break;
+	case QProcess::ReadError    : errString = "Read error"; break;
+	case QProcess::UnknownError : errString = "Unknown error"; break;
+	default:
+		errString = QString("Error code = %1").arg(err);
+	}
+
+	QString t = "An error has occurred.\nError = " + errString;
+	QMessageBox::critical(this, "FEBio Studio", t);
+}
+
+CConfigurePluginProcess::CConfigurePluginProcess(QObject* parent) : CPluginProcess(parent)
+{
+	setProcessChannelMode(QProcess::MergedChannels);
+
+	QObject::connect(this, SIGNAL(finished(int, QProcess::ExitStatus)), parent, SLOT(onConfigureFinished(int, QProcess::ExitStatus)));
+	QObject::connect(this, SIGNAL(readyRead()), parent, SLOT(onReadyRead()));
+	QObject::connect(this, SIGNAL(errorOccurred(QProcess::ProcessError)), parent, SLOT(onErrorOccurred(QProcess::ProcessError)));
+}
+
+void CConfigurePluginProcess::run()
+{
+	start("cmake", QStringList() << "-S" << "." << "-B" << "./build");
+}
+
+CBuildPluginProcess::CBuildPluginProcess(QObject* parent) : CPluginProcess(parent)
+{
+	setProcessChannelMode(QProcess::MergedChannels);
+
+	QObject::connect(this, SIGNAL(finished(int, QProcess::ExitStatus)), parent, SLOT(onBuildFinished(int, QProcess::ExitStatus)));
+	QObject::connect(this, SIGNAL(readyRead()), parent, SLOT(onReadyRead()));
+	QObject::connect(this, SIGNAL(errorOccurred(QProcess::ProcessError)), parent, SLOT(onErrorOccurred(QProcess::ProcessError)));
+}
+
+void CBuildPluginProcess::run()
+{
+	start("cmake", QStringList() << "--build" << "./build" << "--config" << "Release");
 }
