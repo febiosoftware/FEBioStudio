@@ -137,7 +137,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 		XMLHighlighter::setColor(Qt::red, XMLHighlighter::XML_ATTRIBUTE_NAME);
 		XMLHighlighter::setColor(Qt::blue, XMLHighlighter::XML_ATTRIBUTE_VALUE);
 		XMLHighlighter::setColor(Qt::darkGreen, XMLHighlighter::XML_COMMENT);
-		XMLHighlighter::setColor(QColor::fromRgb(200, 200, 255), XMLHighlighter::XML_HIGHLIGHT);
+		XMLHighlighter::setColor(QColor::fromRgb(240, 240, 255), XMLHighlighter::XML_HIGHLIGHT);
 	}
 	else
 	{
@@ -234,6 +234,32 @@ void XMLEditor::paintEvent(QPaintEvent* event)
 	}
 }
 
+void XMLEditor::wheelEvent(QWheelEvent* ev)
+{
+	QTextDocument* doc = document();
+	if (doc == nullptr) return;
+
+	QFont font = doc->defaultFont();
+	qreal fontsize = font.pointSizeF();
+
+	Qt::KeyboardModifiers key = ev->modifiers();
+	bool bctrl = (key & Qt::ControlModifier);
+	if (bctrl)
+	{
+		int y = ev->angleDelta().y();
+		if (y == 0) y = ev->angleDelta().x();
+		if (y > 0) fontsize++;
+		else if (y < 0) fontsize--;
+
+		if (fontsize < 8) fontsize = 8;
+		if (fontsize > 24) fontsize = 24;
+
+		font.setPointSizeF(fontsize);
+		doc->setDefaultFont(font);
+		ev->accept();
+		update();
+	}
+}
 
 void XMLEditor::resizeEvent(QResizeEvent* e)
 {

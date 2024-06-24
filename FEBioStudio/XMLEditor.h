@@ -20,8 +20,9 @@ public:
 	void deleteLine();
 
 protected:
-	void resizeEvent(QResizeEvent* event);
-	void paintEvent(QPaintEvent* event);
+	void resizeEvent(QResizeEvent* event) override;
+	void paintEvent(QPaintEvent* event) override;
+	void wheelEvent(QWheelEvent* ev) override;
 
 private slots:
 	void updateLineNumberAreaWidth(int newBlockCount);

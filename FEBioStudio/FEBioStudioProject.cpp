@@ -53,6 +53,11 @@ bool FEBioStudioProject::ProjectItem::ContainsFile(const QString& fileName) cons
 			bool b = item.ContainsFile(fileName);
 			if (b) return true;
 		}
+		else if (item.IsPlugin())
+		{
+			bool b = item.ContainsFile(fileName);
+			if (b) return true;
+		}
 	}
 	return false;
 }

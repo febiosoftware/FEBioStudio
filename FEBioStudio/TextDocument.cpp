@@ -43,7 +43,7 @@ QTextDocument* CTextDocument::GetText()
 bool CTextDocument::ReadFromFile(const QString& fileName)
 {
 	m_txt.clear();
-	m_txt.setDefaultFont(QFont("Courier", 11));
+	m_txt.setDefaultFont(QFont("Courier", 14));
 	QTextOption ops = m_txt.defaultTextOption();
 	QFontInfo fi(m_txt.defaultFont());
 	ops.setTabStopDistance(2 * fi.pixelSize());
