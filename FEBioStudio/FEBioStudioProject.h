@@ -143,6 +143,7 @@ public:
 	QStringList GetFilePaths();
 
 	ProjectItem* AddGroup(const QString& groupName, int parentId = -1);
+	ProjectItem* AddPlugin(const QString& groupName, int parentId = -1);
 
 	void MoveToGroup(int itemId, int groupId);
 

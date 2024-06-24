@@ -326,6 +326,19 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::AddGroup(const QString& gro
 	return nullptr;
 }
 
+FEBioStudioProject::ProjectItem* FEBioStudioProject::AddPlugin(const QString& groupName, int parentId)
+{
+	FEBioStudioProject::ProjectItem* grp = FindGroup(parentId);
+	assert(grp);
+	if (grp)
+	{
+		FEBioStudioProject::ProjectItem* newGroup = &grp->AddPlugin(groupName);
+		Save();
+		return newGroup;
+	}
+	return nullptr;
+}
+
 FEBioStudioProject::ProjectItem* FEBioStudioProject::AddFile(const QString& file, int parent)
 {
 	// convert file to cleaned up format

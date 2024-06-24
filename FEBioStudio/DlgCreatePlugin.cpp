@@ -160,13 +160,17 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (prj)
 	{
-		FEBioStudioProject::ProjectItem* grp = prj->AddGroup(config.name);
+		FEBioStudioProject::ProjectItem* grp = prj->AddPlugin(config.name);
 		if (grp)
 		{
 			grp->AddFile(cmake);
-			grp->AddFile(main);
-			grp->AddFile(header);
-			grp->AddFile(source);
+
+			FEBioStudioProject::ProjectItem& headerFiles = grp->AddGroup("Include");
+			headerFiles.AddFile(header);
+
+			FEBioStudioProject::ProjectItem& sourceFiles = grp->AddGroup("Source");
+			sourceFiles.AddFile(main);
+			sourceFiles.AddFile(source);
 		}
 	}
 

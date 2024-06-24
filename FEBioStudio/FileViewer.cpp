@@ -705,10 +705,17 @@ void CFileViewer::onBuildPlugin()
 		return;
 	}
 
+	// make sure the project is saved
+	QString projectPath = prj->GetProjectPath();
+	if (projectPath.isEmpty())
+	{
+		QMessageBox::information(this, "FEBio Studio", "Please save the project file first.");
+		return;
+	}
+
 	// make sure log window is visible
 	ui->m_wnd->ShowLogPanel();
 
-	QString projectPath = prj->GetProjectPath();
 	ui->m_process = new CConfigurePluginProcess(this);
 	ui->m_process->setWorkingDirectory(projectPath);
 	ui->m_process->run();
