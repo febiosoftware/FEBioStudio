@@ -190,7 +190,7 @@ void CObjectProps::BuildParamList(FSBase* po, bool showNonPersistent)
 	for (int i = 0; i<NP; ++i)
 	{
 		Param& p = po->GetParam(i);
-		if ((showNonPersistent || p.IsPersistent()) && (p.IsEditable() || p.IsVisible()))
+		if ((showNonPersistent || p.IsPersistent()) && (p.IsEditable() && p.IsVisible()))
 		{
 			if (p.GetParameterGroup() != ng)
 			{
