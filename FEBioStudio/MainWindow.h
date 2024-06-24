@@ -323,6 +323,7 @@ private:
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
+	void OpenTextFile(const QString& fileName);
 	void OpenFEBioAppFile(const QString& fileName);
 
 	void SavePostDoc();

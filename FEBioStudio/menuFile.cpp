@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "ModelDocument.h"
 #include "ModelFileWriter.h"
+#include "TextDocument.h"
 #include "Commands.h"
 #include "DocManager.h"
 #include "DlgConvertFEBio.h"
@@ -529,18 +530,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 
 void CMainWindow::OpenFEBioFile(const QString& fileName)
 {
-	// CTextDocument* txt = new CTextDocument(this);
-	// if (txt->ReadFromFile(fileName) == false)
-	// {
-	// 	QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
-	// 	return;
-	// }
-
-	// txt->SetDocFilePath(fileName.toStdString());
-
-	// AddDocument(txt);
-
-    CXMLDocument* xml = new CXMLDocument(this);
+	CXMLDocument* xml = new CXMLDocument(this);
 	if (xml->ReadFromFile(fileName) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
@@ -552,6 +542,17 @@ void CMainWindow::OpenFEBioFile(const QString& fileName)
 	AddDocument(xml);
 }
 
+void CMainWindow::OpenTextFile(const QString& fileName)
+{
+	CTextDocument* txt = new CTextDocument(this);
+	if (txt->ReadFromFile(fileName) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+		return;
+	}
+	txt->SetDocFilePath(fileName.toStdString());
+	AddDocument(txt);
+}
 
 QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 {

@@ -620,6 +620,13 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		// Assume this is an LSDYNA database
 		OpenPostFile(fileName, nullptr, showLoadOptions);
 	}
+	else if ((ext.compare("txt", Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("h"  , Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("cpp", Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("hpp", Qt::CaseInsensitive) == 0))
+	{
+		OpenTextFile(fileName);
+	}
 	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program
