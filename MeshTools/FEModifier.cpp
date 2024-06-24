@@ -868,14 +868,68 @@ bool FESetAxesOrientation::SetAxesCopy(FSMesh *pm)
 
 FEMirrorMesh::FEMirrorMesh() : FEModifier("Mirror") 
 { 
-	AddIntParam(0, "plane", "Mirror plane")->SetEnumNames("X-plane\0Y-plane\0Z-plane\0");
+	AddIntParam(0, "plane", "Mirror plane")->SetEnumNames("X-plane\0Y-plane\0Z-plane\0face selection\0custom\0");
 	AddVecParam(vec3d(0,0,0), "center", "Center");
+	AddVecParam(vec3d(1,0,0), "normal", "Normal")->SetVisible(false);
+}
+
+bool FEMirrorMesh::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		Param& p = GetParam(2);
+		int n = GetIntValue(0);
+		if ((n == 4) && (p.IsVisible() == false))
+		{
+			p.SetVisible(true);
+			return true;
+		}
+		else if ((n != 4) && p.IsVisible())
+		{
+			p.SetVisible(false);
+			return true;
+		}
+	}
+	return false;
 }
 
 FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 {
 	int nplane = GetIntValue(0);
 	vec3d rc = GetVecValue(1);
+
+	vec3d N;
+
+	switch (nplane)
+	{
+	case 0: N = vec3d(1, 0, 0); break;
+	case 1: N = vec3d(0, 1, 0); break;
+	case 2: N = vec3d(0, 0, 1); break;
+	case 3:
+	{
+		// for user selection we need to figure out a center and normal
+		FEFaceSelection* sel = new FEFaceSelection(pm);
+		if (sel->Count() == 0) return nullptr;
+		BOX b = sel->GetBoundingBox();
+		rc += b.Center();
+
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			FSFace& face = *sel->Face(i);
+			N += to_vec3d(face.m_fn);
+		}
+		N.Normalize();
+	}
+	break;
+	case 4:
+		N = GetVecValue(2);
+		N.Normalize();
+		if (N.norm() == 0.0) return nullptr;
+		break;
+	default:
+		assert(false);
+		return nullptr;
+	}
 
 	FSMesh* pmn = new FSMesh(*pm);
 
@@ -884,13 +938,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 	{
 		FSNode& n = pmn->Node(i);
 		vec3d r = n.r - rc;
-		switch (nplane)
-		{
-		case 0: r.x = -r.x; break;
-		case 1: r.y = -r.y; break;
-		case 2: r.z = -r.z; break;
-		}
-		n.r = r + rc;
+		n.r = rc + (r - N*(2.0*(N*r)));
 	}
 
 	// invert elements

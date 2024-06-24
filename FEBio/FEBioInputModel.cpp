@@ -1083,9 +1083,6 @@ void FEBioInputModel::UpdateGeometry()
 		instance.SetGObject(po);
 		po->SetName(instance.GetName());
 
-		// don't forget to update
-		po->Update();
-
 		// apply transform
 		po->GetTransform().SetScale(instance.m_scl);
 		po->GetTransform().SetPosition(instance.m_pos);
@@ -1137,9 +1134,8 @@ void FEBioInputModel::UpdateGeometry()
 
 				beamSection->SetElementFormulation(beamForm);
 			}
-
-			po->Update(false);
 		}
+		po->Update(false);
 	}
 }
 

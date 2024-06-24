@@ -2561,9 +2561,11 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 			glEnd();
 		}
 
+	GLViewSettings& vs = GetViewSettings();
+
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	painter.setFont(QFont("Helvetica", 10));
+	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
 	for (int i = 0; i<nsel; ++i)
 		{
             int x = vtag[i].wx;

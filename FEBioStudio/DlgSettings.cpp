@@ -100,6 +100,7 @@ public:
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
 		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
 		addColorProperty(&m_defaultFGColor, "Custom text color");
+		addIntProperty(&m_tagFontSize, "Tag font size")->setIntRange(5, 100);
 	}
 
 public:
@@ -115,6 +116,7 @@ public:
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
 	bool	m_showHighlights;
+	int		m_tagFontSize;
 };
 
 //-----------------------------------------------------------------------------
@@ -1098,6 +1100,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_dozsorting = view.m_bzsorting;
 	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
 	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
+	ui->m_display->m_tagFontSize = view.m_tagFontSize;
 
 	ui->m_physics->m_showRigidBodies = view.m_brigid;
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
@@ -1199,6 +1202,7 @@ void CDlgSettings::apply()
 	view.m_bzsorting = ui->m_display->m_dozsorting;
 	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
 	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);
+	view.m_tagFontSize = ui->m_display->m_tagFontSize;
 
 	if (view.m_defaultFGColorOption == 0)
 	{

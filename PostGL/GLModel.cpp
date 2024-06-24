@@ -2627,6 +2627,8 @@ void CGLModel::UpdateMeshVisibility()
 			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
 		else edge.Show(false);
 	}
+
+	BuildInternalSurfaces();
 }
 
 //-----------------------------------------------------------------------------

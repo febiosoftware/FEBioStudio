@@ -424,7 +424,7 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 			try {
 				FEBioOpt opt = dlg.GetFEBioOpt();
 
-				if (doc->GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
+				if (GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
 				{
 					QMessageBox::critical(this, "Generate FEBio Optimization file", "Something went terribly wrong!");
 				}

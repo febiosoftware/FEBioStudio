@@ -94,6 +94,8 @@ class FEMirrorMesh : public FEModifier
 public:
 	FEMirrorMesh();
 
+	bool UpdateData(bool bsave) override;
+
 	FSMesh* Apply(FSMesh* pm);
 };
 

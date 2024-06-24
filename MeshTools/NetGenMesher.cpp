@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FESurfaceMesh.h>
+#include <FSCore/FSLogger.h>
 
 // NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
 #if defined(WIN32) && defined(_DEBUG)
@@ -59,7 +60,7 @@ namespace nglib {
 #endif
 
 #ifdef HAS_NETGEN
-FSMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
+FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ng, bool secondOrder);
 #endif
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
@@ -108,7 +109,7 @@ FSMesh*	NetGenMesher::BuildMesh()
     Ng_Result ng_res;
     
     // Initialise the Netgen Core library
-    CLogger::AddLogEntry("Calling Netgen\n");
+    FSLogger::Write("Calling Netgen\n");
     Ng_Init();
     
     // Read in the OCC File
@@ -120,7 +121,7 @@ FSMesh*	NetGenMesher::BuildMesh()
         Ng_Exit();
         return nullptr;
     }
-    CLogger::AddLogEntry(QString("Successfully converted geometry %1\n").arg(m_occ->GetName().c_str()));
+	FSLogger::Write("Successfully converted geometry %s\n", m_occ->GetName().c_str());
     
     multithread.terminate = 0;
     
@@ -128,7 +129,7 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     ng_res = Ng_OCC_GetFMap(occ_geom,occ_fmap);
     
-    CLogger::AddLogEntry(QString("ng_res = %1\n").arg(ng_res));
+	FSLogger::Write("ng_res = %d\n", ng_res);
     
     if(!FMap.Extent())
     {
@@ -137,7 +138,7 @@ FSMesh*	NetGenMesher::BuildMesh()
         return nullptr;
     }
     
-    CLogger::AddLogEntry(QString("Successfully extracted the Face Map....: 1%\n").arg(FMap.Extent()));
+	FSLogger::Write("Successfully extracted the Face Map....: %d\n", FMap.Extent());
     
     for(int i = 1; i <= FMap.Extent(); i++)
     {
@@ -148,7 +149,7 @@ FSMesh*	NetGenMesher::BuildMesh()
         BRepGProp::SurfaceProperties(OCCface,faceProps);
         
 
-        CLogger::AddLogEntry(QString("Index: %1 :: Area: %2 :: Hash: %3\n").arg(i).arg(faceProps.Mass()).arg(OCCface.HashCode(1e+6)));
+		FSLogger::Write("Index: %d :: Area: %lg :: Hash: %d\n", i, faceProps.Mass(), OCCface.HashCode(1e+6));
     }
     
     int gran = GetIntValue(NetGenMesher::GRANULARITY);
@@ -221,11 +222,11 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     
     
-    CLogger::AddLogEntry("Setting Local Mesh size.....\n");
+	FSLogger::Write("Setting Local Mesh size.....\n");
     Ng_OCC_SetLocalMeshSize(occ_geom, occ_mesh, &mp);
-    CLogger::AddLogEntry("Local Mesh size successfully set.....\n");
+	FSLogger::Write("Local Mesh size successfully set.....\n");
     
-    CLogger::AddLogEntry("Creating Edge Mesh.....\n");
+	FSLogger::Write("Creating Edge Mesh.....\n");
     ng_res = Ng_OCC_GenerateEdgeMesh(occ_geom, occ_mesh, &mp);
     if(ng_res != NG_OK)
     {
@@ -236,11 +237,11 @@ FSMesh*	NetGenMesher::BuildMesh()
     }
     else
     {
-        CLogger::AddLogEntry("Edge Mesh successfully created.....\n");
-        CLogger::AddLogEntry(QString("Number of points =  %1\n").arg(Ng_GetNP(occ_mesh)));
+		FSLogger::Write("Edge Mesh successfully created.....\n");
+		FSLogger::Write("Number of points =  %d\n", Ng_GetNP(occ_mesh));
     }
     
-    CLogger::AddLogEntry("Creating Surface Mesh.....\n");
+	FSLogger::Write("Creating Surface Mesh.....\n");
     
     ng_res = Ng_OCC_GenerateSurfaceMesh(occ_geom, occ_mesh, &mp);
     if(ng_res != NG_OK)
@@ -252,32 +253,33 @@ FSMesh*	NetGenMesher::BuildMesh()
     }
     else
     {
-        CLogger::AddLogEntry("Surface Mesh successfully created.....\n");
-        CLogger::AddLogEntry(QString("Number of points = %1\n").arg(Ng_GetNP(occ_mesh)));
-        CLogger::AddLogEntry(QString("Number of surface elements = %1\n").arg(Ng_GetNSE(occ_mesh)));
+		FSLogger::Write("Surface Mesh successfully created.....\n");
+		FSLogger::Write("Number of points = %d\n", Ng_GetNP(occ_mesh));
+		FSLogger::Write("Number of surface elements = %d\n", Ng_GetNSE(occ_mesh));
     }
     
     if ((m_occ->GetShape().ShapeType() == TopAbs_SOLID) || (m_occ->GetShape().ShapeType() == TopAbs_COMPOUND)) {
-        CLogger::AddLogEntry("Creating Volume Mesh.....\n");
+		FSLogger::Write("Creating Volume Mesh.....\n");
         
         ng_res = Ng_GenerateVolumeMesh(occ_mesh, &mp);
         
-        CLogger::AddLogEntry("Volume Mesh successfully created.....\n");
-        CLogger::AddLogEntry(QString("Number of points = %1\n").arg(Ng_GetNP(occ_mesh)));
-        CLogger::AddLogEntry(QString("Number of volume elements = %1\n").arg(Ng_GetNE(occ_mesh)));
+		FSLogger::Write("Volume Mesh successfully created.....\n");
+		FSLogger::Write("Number of points = %d\n", Ng_GetNP(occ_mesh));
+		FSLogger::Write("Number of volume elements = %d\n", Ng_GetNE(occ_mesh));
     }
     
     if (mp.second_order)
     {
         Ng_OCC_Generate_SecondOrder (occ_geom,occ_mesh);
     }
-    FSMesh* mesh = NGMeshToFEMesh((Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
+    FSMesh* mesh = NGMeshToFEMesh(m_occ, (Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
     
     Ng_Exit();
     
     return mesh;
     
 #else
+	SetErrorMessage("This version of FEBio Studio was not built with NetGen support.");
     return nullptr;
 #endif // HAS_NETGEN
 }
@@ -304,7 +306,7 @@ void NetGenMesher::Terminate()
 }
 
 #ifdef HAS_NETGEN
-FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
+FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder)
 {
 	using namespace netgen;
 
@@ -327,10 +329,43 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
             double x = (*ngmesh)[pi](0);
             double y = (*ngmesh)[pi](1);
             double z = (*ngmesh)[pi](2);
-            
+
             FSNode& ni = mesh->Node(i);
             ni.r = vec3d(x, y, z);
         }
+
+		// we need to find the FE nodes that correspond to the geometry nodes
+		// I don't know if there is a better way to do this (i.e. if NetGen stores this information)
+		// so we're using a brute-force method
+		// (It looks like the first nodes in the NG mesh correspond to the geometry nodes, though not 100% sure)
+		if (po)
+		{
+			for (int i = 0; i < po->Nodes(); ++i)
+			{
+				GNode& node = *po->Node(i);
+				vec3d rn = node.LocalPosition();
+
+				const double eps = 1e-12;
+				int minj = -1;
+				double D2min = 0.0;
+				for (int j = 0; j < mesh->Nodes(); ++j)
+				{
+					vec3d rj = mesh->Node(j).r;
+					double D2 = (rn - rj).norm2();
+					if ((minj == -1) || (D2 < D2min))
+					{
+						minj = j;
+						D2min = D2;
+						if (D2min < eps) break;
+					}
+				}
+				assert(minj != -1);
+				if ((minj != -1) && (D2min < eps))
+				{
+					mesh->Node(minj).m_gid = i;
+				}
+			}
+		}
         
         // copy facets
         SurfaceElementIndex sei;

@@ -119,6 +119,7 @@ struct GLViewSettings
 
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
+	int		m_tagFontSize;	// font size used for tags
 
 	bool	m_selectAndHide;
 
