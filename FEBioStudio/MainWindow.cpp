@@ -1344,6 +1344,11 @@ C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
     return ui->centralWidget->timeView2D;
 }
 
+CLogPanel* CMainWindow::GetLogPanel()
+{
+	return ui->logPanel;
+}
+
 CBuildPanel* CMainWindow::GetBuildPanel()
 {
 	return ui->buildPanel;
@@ -2652,30 +2657,35 @@ void CMainWindow::AddLogEntry(const QString& txt)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::updateOutput(const QString& txt)
-{
-	ui->logPanel->AddText(txt, 1);
-}
-
-//-----------------------------------------------------------------------------
 // add to the output window
 void CMainWindow::AddOutputEntry(const QString& txt)
 {
-	ui->logPanel->AddText(txt, 1);
+	ui->logPanel->AddText(txt, CLogPanel::FEBIO_LOG);
+}
+
+void CMainWindow::AddBuildEntry(const QString& txt)
+{
+	ui->logPanel->AddText(txt, CLogPanel::BUILD_LOG);
 }
 
 //-----------------------------------------------------------------------------
 // clear the log
 void CMainWindow::ClearLog()
 {
-	ui->logPanel->ClearLog();
+	ui->logPanel->Clear(CLogPanel::FBS_LOG);
 }
 
 //-----------------------------------------------------------------------------
 // clear the output window
 void CMainWindow::ClearOutput()
 {
-	ui->logPanel->ClearOutput();
+	ui->logPanel->Clear(CLogPanel::FEBIO_LOG);
+}
+
+void CMainWindow::ClearBuildLog()
+{
+	ui->logPanel->ShowLog(CLogPanel::BUILD_LOG);
+	ui->logPanel->Clear(CLogPanel::BUILD_LOG);
 }
 
 //-----------------------------------------------------------------------------
@@ -3379,7 +3389,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	// clear output for next job
 	ClearOutput();
 	ShowLogPanel();
-	ui->logPanel->ShowOutput();
+	ui->logPanel->ShowLog(CLogPanel::FEBIO_LOG);
 
 	UpdateTab(job->GetDocument());
 	// start the job

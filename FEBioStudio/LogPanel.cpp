@@ -37,24 +37,15 @@ CLogPanel::CLogPanel(QWidget* parent) : QWidget(parent), ui(new Ui::CLogPanel)
 	ui->setupUi(this);
 }
 
-void CLogPanel::ClearLog()
+void CLogPanel::Clear(LogTarget trg)
 {
-	ui->clearLog(0);
+	switch (trg)
+	{
+	case LogTarget::FBS_LOG   : ui->clearLog(0); break;
+	case LogTarget::FEBIO_LOG : ui->clearLog(1); break;
+	case LogTarget::BUILD_LOG : ui->clearLog(2); break;
+	}
 }
-
-void CLogPanel::ClearOutput()
-{
-	ui->clearLog(1);
-}
-
-
-// void CLogPanel::AddText(const QString& txt, int n)
-// {
-// 	ui->txt[n]->moveCursor(QTextCursor::End);
-// 	ui->txt[n]->insertPlainText(txt);
-// 	ui->txt[n]->moveCursor(QTextCursor::End);
-// }
-
 
 void CLogPanel::on_logSave_clicked(bool b)
 {
@@ -95,13 +86,15 @@ void CLogPanel::on_combo_currentIndexChanged(int i)
 	ui->setOutput(i);
 }
 
-void CLogPanel::ShowOutput()
+void CLogPanel::ShowLog(LogTarget trg)
 {
-	ui->showTxt(1);
+	ui->showTxt((int)trg);
 }
 
-void CLogPanel::AddText(const QString& txt, int n)
+void CLogPanel::AddText(const QString& txt, CLogPanel::LogTarget trg)
 {
+	int n = (int)trg;
+
 	QTextDocument * document = ui->txt[n]->document();
 	QRegularExpression const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
 	QTextCursor cursor(document);

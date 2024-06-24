@@ -45,16 +45,18 @@ public:
 public slots:
 	static void AddLogEntry(const QString& txt);
 	static void AddOutputEntry(const QString& txt);
+	static void AddBuildEntry(const QString& txt);
 
 signals:
-    void SendLogEntry(const QString& txt);
-    void SendOutputEntry(const QString& txt);
+	void SendLogEntry(const QString& txt);
+	void SendOutputEntry(const QString& txt);
+	void SendBuildEntry(const QString& txt);
 
 private:
 	CLogger() {}
 	CLogger(CMainWindow* mainWindow) {m_mainWindow = mainWindow;}
 	CLogger(CLogger const&) {}
-    CLogger& operator=(CLogger const&) { return *this; }
+	CLogger& operator=(CLogger const&) { return *this; }
 	virtual ~CLogger(){}
 
 	static CLogger* m_instance;

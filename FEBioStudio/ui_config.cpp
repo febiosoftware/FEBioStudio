@@ -514,5 +514,5 @@ void Ui::CMonitorConfig::Apply()
 	ui->febioMonitorView->parentWidget()->raise();
 
 	ui->m_wnd->ShowLogPanel();
-	ui->logPanel->ShowOutput();
+	ui->logPanel->ShowLog(::CLogPanel::FEBIO_LOG);
 }

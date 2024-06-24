@@ -705,6 +705,14 @@ void CFileViewer::onBuildPlugin()
 		return;
 	}
 
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype != PROJECT_PLUGIN)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A plugin project was not selected.");
+		return;
+	}
+
 	// make sure the project is saved
 	QString projectPath = prj->GetProjectPath();
 	if (projectPath.isEmpty())
@@ -715,6 +723,8 @@ void CFileViewer::onBuildPlugin()
 
 	// make sure log window is visible
 	ui->m_wnd->ShowLogPanel();
+	ui->m_wnd->ClearBuildLog();
+	CLogger::AddBuildEntry(QString("Building plugin %1:\n").arg(item->text(0)));
 
 	ui->m_process = new CConfigurePluginProcess(this);
 	ui->m_process->setWorkingDirectory(projectPath);
@@ -756,7 +766,7 @@ void CFileViewer::onReadyRead()
 
 	QByteArray output = ui->m_process->readAll();
 	QString s(output);
-	CLogger::AddLogEntry(output);
+	CLogger::AddBuildEntry(output);
 }
 
 void CFileViewer::onErrorOccurred(QProcess::ProcessError err)

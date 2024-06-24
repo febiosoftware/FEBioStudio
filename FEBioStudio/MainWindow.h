@@ -64,6 +64,7 @@ class CFEBioMonitorPanel;
 class CFEBioMonitorView;
 class CModelViewer;
 class CCommandWindow;
+class CLogPanel;
 
 enum class ImageFileType;
 
@@ -125,6 +126,11 @@ public:
 
 	// clear the output window
 	void ClearOutput();
+
+	void ClearBuildLog();
+
+	// get the log panel
+	CLogPanel* GetLogPanel();
 
 	// get the build panel
 	CBuildPanel* GetBuildPanel();
@@ -342,11 +348,9 @@ public:
 	QString GetExportFEModelFilename(QString& formatOption);
 
 public slots:
-    // add to the log 
 	void AddLogEntry(const QString& txt);
-
-	// add to the output window
 	void AddOutputEntry(const QString& txt);
+	void AddBuildEntry(const QString& txt);
 
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -709,8 +713,6 @@ public slots:
 	void autosave();
 
 	void autoUpdateCheck(bool update);
-
-	void updateOutput(const QString& txt);
 
 public:
 	QStringList GetRecentFileList();

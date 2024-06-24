@@ -38,7 +38,7 @@ class Ui::CLogPanel
 public:
 	QComboBox* combo;
 	QStackedWidget* stack;
-	QPlainTextEdit*	txt[2];
+	QPlainTextEdit*	txt[3];
 	QTextCharFormat defaultTextCharFormat;
 
 public:
@@ -54,9 +54,15 @@ public:
 		txt[1]->setFont(QFont("Courier", 11));
 		txt[1]->setWordWrapMode(QTextOption::NoWrap);
 
+		txt[2] = new QPlainTextEdit;
+		txt[2]->setReadOnly(true);
+		txt[2]->setFont(QFont("Courier", 11));
+		txt[2]->setWordWrapMode(QTextOption::NoWrap);
+
 		stack = new QStackedWidget;
 		stack->addWidget(txt[0]);
 		stack->addWidget(txt[1]);
+		stack->addWidget(txt[2]);
 
 		QVBoxLayout* pl = new QVBoxLayout;
 		pl->setContentsMargins(0,0,0,0);
@@ -66,6 +72,7 @@ public:
 		combo->setMinimumWidth(200);
 		combo->addItem("Log");
 		combo->addItem("FEBio");
+		combo->addItem("Build");
 		combo->setObjectName("combo");
 
 		QToolButton* b1 = new QToolButton; b1->setIcon(QIcon(":/icons/save.png")); b1->setAutoRaise(true); b1->setObjectName("logSave"); b1->setToolTip("<font color=\"black\">Save log");
@@ -106,6 +113,6 @@ public:
 
 	void showTxt(int n)
 	{
-		if (combo->currentIndex() != 1) combo->setCurrentIndex(1);
+		if (combo->currentIndex() != n) combo->setCurrentIndex(n);
 	}
 };
