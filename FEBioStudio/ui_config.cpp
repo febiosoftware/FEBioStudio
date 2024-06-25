@@ -289,9 +289,9 @@ void Ui::CTextConfig::Apply()
 
 	if (txtDoc)
 	{
-		ui->centralWidget->xmlEdit->blockSignals(true);
-		ui->centralWidget->xmlEdit->SetDocument(txtDoc->GetText());
-		ui->centralWidget->xmlEdit->blockSignals(false);
+		ui->centralWidget->txtEdit->blockSignals(true);
+		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText());
+		ui->centralWidget->txtEdit->blockSignals(false);
 	}
 
 	ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
@@ -353,7 +353,7 @@ void Ui::CXMLConfig::Apply()
 		if (xmlDoc->EditingText())
 		{
 			ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
-			ui->centralWidget->xmlEdit->SetDocument(xmlDoc->GetTextDocument());
+			ui->centralWidget->txtEdit->SetDocument(xmlDoc->GetTextDocument());
 
 			ui->menuEdit->menuAction()->setVisible(false);
 			ui->menuEditPost->menuAction()->setVisible(false);

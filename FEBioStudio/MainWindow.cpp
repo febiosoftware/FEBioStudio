@@ -452,9 +452,9 @@ void CMainWindow::on_addToProject(const QString& file)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_xmledit_textChanged()
+void CMainWindow::on_txtedit_textChanged()
 {
-	QTextDocument* qtxt = ui->centralWidget->xmlEdit->document();
+	QTextDocument* qtxt = ui->centralWidget->txtEdit->document();
 	if (qtxt == nullptr) return;
 
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
@@ -2488,7 +2488,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	GLHighlighter::ClearHighlights();
 
 	ui->ShowDefaultBackground();
-	ui->centralWidget->xmlEdit->setDocument(nullptr);
+	ui->centralWidget->txtEdit->setDocument(nullptr);
 
 	if (dynamic_cast<CModelDocument*>(doc))
 	{

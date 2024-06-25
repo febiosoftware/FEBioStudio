@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "XMLEditor.h"
+#include "TextEditor.h"
 #include <QPainter>
 //#include <QSyntaxHighLighter>
 // I had to change this include statement for it to find the file on linux
@@ -122,7 +122,7 @@ public:
 
 QBrush XMLHighlighter::m_pal[5];
 
-XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
+CTextEditor::CTextEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 {
 	m_countCache.first = -1;
 	m_countCache.second = -1;
@@ -159,7 +159,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 //	highlightCurrentLine();
 }
 
-void XMLEditor::SetDocument(QTextDocument* doc, const QString& title)
+void CTextEditor::SetDocument(QTextDocument* doc, const QString& title)
 {
 	QPalette p = palette();
 	p.setColor(QPalette::WindowText, Qt::blue); // Foreground was deprecated. Was told to replace with this.
@@ -180,7 +180,7 @@ void XMLEditor::SetDocument(QTextDocument* doc, const QString& title)
     setTabStopDistance(40);
 }
 
-int XMLEditor::lineNumberAreaWidth()
+int CTextEditor::lineNumberAreaWidth()
 {
 	int digits = 1;
 	int max = qMax(1, blockCount());
@@ -202,12 +202,12 @@ int XMLEditor::lineNumberAreaWidth()
 	return space;
 }
 
-void XMLEditor::updateLineNumberAreaWidth(int newBlockCount)
+void CTextEditor::updateLineNumberAreaWidth(int newBlockCount)
 {
 	setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-void XMLEditor::updateLinearNumberArea(const QRect& rect, int dy)
+void CTextEditor::updateLinearNumberArea(const QRect& rect, int dy)
 {
 	if (dy)
 		lineNumberArea->scroll(0, dy);
@@ -223,7 +223,7 @@ void XMLEditor::updateLinearNumberArea(const QRect& rect, int dy)
 		updateLineNumberAreaWidth(0);
 }
 
-void XMLEditor::paintEvent(QPaintEvent* event)
+void CTextEditor::paintEvent(QPaintEvent* event)
 {
 	QPlainTextEdit::paintEvent(event);
 	
@@ -234,7 +234,7 @@ void XMLEditor::paintEvent(QPaintEvent* event)
 	}
 }
 
-void XMLEditor::wheelEvent(QWheelEvent* ev)
+void CTextEditor::wheelEvent(QWheelEvent* ev)
 {
 	QTextDocument* doc = document();
 	if (doc == nullptr) return;
@@ -261,7 +261,7 @@ void XMLEditor::wheelEvent(QWheelEvent* ev)
 	}
 }
 
-void XMLEditor::resizeEvent(QResizeEvent* e)
+void CTextEditor::resizeEvent(QResizeEvent* e)
 {
 	QPlainTextEdit::resizeEvent(e);
 
@@ -269,7 +269,7 @@ void XMLEditor::resizeEvent(QResizeEvent* e)
 	lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-void XMLEditor::highlightCurrentLine()
+void CTextEditor::highlightCurrentLine()
 {
 	QList<QTextEdit::ExtraSelection> extraSelection;
 
@@ -286,7 +286,7 @@ void XMLEditor::highlightCurrentLine()
 	}
 }
 
-void XMLEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
+void CTextEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 {
 	QPainter painter(lineNumberArea);
 	if (isEnabled() == false)
@@ -328,7 +328,7 @@ void XMLEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 	}
 }
 
-void XMLEditor::toggleLineComment()
+void CTextEditor::toggleLineComment()
 {
 	QTextCursor cursor = textCursor();
 
@@ -357,7 +357,7 @@ void XMLEditor::toggleLineComment()
 	}
 }
 
-void XMLEditor::duplicateLine()
+void CTextEditor::duplicateLine()
 {
 	QTextCursor cursor = textCursor();
 	QString txt = cursor.block().text();
@@ -368,7 +368,7 @@ void XMLEditor::duplicateLine()
 	cursor.endEditBlock();
 }
 
-void XMLEditor::deleteLine()
+void CTextEditor::deleteLine()
 {
 	QTextCursor cursor = textCursor();
 	cursor.beginEditBlock();

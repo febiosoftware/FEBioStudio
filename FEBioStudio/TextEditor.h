@@ -3,12 +3,12 @@
 
 class CMainWindow;
 
-class XMLEditor : public QPlainTextEdit
+class CTextEditor : public QPlainTextEdit
 {
 	Q_OBJECT
 
 public:
-	XMLEditor(CMainWindow* parent);
+	CTextEditor(CMainWindow* parent);
 
 	void lineNumberAreaPaintEvent(QPaintEvent* event);
 	int lineNumberAreaWidth();
@@ -38,19 +38,19 @@ private:
 class LineNumberArea : public QWidget
 {
 public:
-	LineNumberArea(XMLEditor* editor) : QWidget(editor){ codeEditor = editor; }
+	LineNumberArea(CTextEditor* editor) : QWidget(editor){ m_txtEditor = editor; }
 
 	QSize sizeHint() const 
 	{
-		return QSize(codeEditor->lineNumberAreaWidth(), 0);
+		return QSize(m_txtEditor->lineNumberAreaWidth(), 0);
 	}
 
 protected:
 	void paintEvent(QPaintEvent* event)
 	{
-		codeEditor->lineNumberAreaPaintEvent(event);
+		m_txtEditor->lineNumberAreaPaintEvent(event);
 	}
 
 private:
-	XMLEditor*	codeEditor;
+	CTextEditor*	m_txtEditor;
 };

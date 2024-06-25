@@ -72,7 +72,7 @@ SOFTWARE.*/
 #include "FEBioStudioProject.h"
 #include "TimelinePanel.h"
 #include "UpdateChecker.h"
-#include "XMLEditor.h"
+#include "TextEditor.h"
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
 #include "PostDocument.h"
@@ -159,7 +159,7 @@ public:
 	CentralStackedWidget* stack;
 	CGLViewer* glw;
 	QTextBrowser* htmlViewer;
-	XMLEditor* xmlEdit;
+	CTextEditor* txtEdit;
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
@@ -183,9 +183,9 @@ public:
 
 		stack->addWidget(htmlViewer);
 
-		xmlEdit = new XMLEditor(wnd);
-		xmlEdit->setObjectName("xmledit");
-		stack->addWidget(xmlEdit);
+		txtEdit = new CTextEditor(wnd);
+		txtEdit->setObjectName("txtedit");
+		stack->addWidget(txtEdit);
 
 		xmlTree = new ::XMLTreeView(wnd);
 		xmlTree->setObjectName("xmlTree");
