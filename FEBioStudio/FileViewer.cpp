@@ -813,5 +813,9 @@ CBuildPluginProcess::CBuildPluginProcess(QObject* parent) : CPluginProcess(paren
 
 void CBuildPluginProcess::run()
 {
+#ifndef NDEBUG
+	start("cmake", QStringList() << "--build" << "./build" << "--config" << "Debug");
+#else
 	start("cmake", QStringList() << "--build" << "./build" << "--config" << "Release");
+#endif
 }
