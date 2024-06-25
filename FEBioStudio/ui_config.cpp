@@ -289,8 +289,10 @@ void Ui::CTextConfig::Apply()
 
 	if (txtDoc)
 	{
+		QString title = QString::fromStdString(txtDoc->GetDocTitle());
+		bool isCode = (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1);
 		ui->centralWidget->txtEdit->blockSignals(true);
-		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText());
+		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText(), (isCode ? CTextEditor::CODE : CTextEditor::PLAIN));
 		ui->centralWidget->txtEdit->blockSignals(false);
 	}
 
@@ -353,7 +355,7 @@ void Ui::CXMLConfig::Apply()
 		if (xmlDoc->EditingText())
 		{
 			ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
-			ui->centralWidget->txtEdit->SetDocument(xmlDoc->GetTextDocument());
+			ui->centralWidget->txtEdit->SetDocument(xmlDoc->GetTextDocument(), CTextEditor::XML);
 
 			ui->menuEdit->menuAction()->setVisible(false);
 			ui->menuEditPost->menuAction()->setVisible(false);

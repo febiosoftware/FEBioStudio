@@ -8,12 +8,19 @@ class CTextEditor : public QPlainTextEdit
 	Q_OBJECT
 
 public:
+	enum TextFormat {
+		PLAIN,
+		XML,
+		CODE
+	};
+
+public:
 	CTextEditor(CMainWindow* parent);
 
 	void lineNumberAreaPaintEvent(QPaintEvent* event);
 	int lineNumberAreaWidth();
 
-	void SetDocument(QTextDocument* doc, const QString& title = "");
+	void SetDocument(QTextDocument* doc, TextFormat fmt = TextFormat::PLAIN);
 
 	void toggleLineComment();
 	void duplicateLine();
