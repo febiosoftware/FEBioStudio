@@ -322,7 +322,6 @@ void Ui::CTextConfig::Apply()
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
 	ui->postPanel->parentWidget()->hide();
-	ui->logPanel->parentWidget()->hide();
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
