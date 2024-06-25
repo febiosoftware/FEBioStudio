@@ -34,7 +34,9 @@ class PluginConfig
 public:
 	enum PluginType {
 		ELASTICMATERIAL_PLUGIN,
-		ELEMDATAGENERATOR_PLUGIN
+		UNCOUPLEDMATERIAL_PLUGIN,
+		ELEMDATAGENERATOR_PLUGIN,
+		NODEPLOTDATA_PLUGIN
 	};
 
 public:
@@ -42,6 +44,7 @@ public:
 	QString name;
 	QString path;
 	QString module;
+	QString typeString;
 };
 
 class CDlgCreatePlugin : public QDialog

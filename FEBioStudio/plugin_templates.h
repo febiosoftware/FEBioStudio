@@ -49,13 +49,12 @@ const char* szmain = \
 "{\n" \
 "	return FE_SDK_VERSION;\n" \
 "}\n\n"\
-"FECORE_EXPORT void PluginInitialize(FECoreKernel & febio)\n"\
+"FECORE_EXPORT void PluginInitialize(FECoreKernel& febio)\n"\
 "{\n"\
 "	FECoreKernel::SetInstance(&febio);\n\n"\
 "	febio.SetActiveModule(\"$(PLUGIN_MODULE)\");\n\n"
-"	REGISTER_FECORE_CLASS($(PLUGIN_NAME), \"$(PLUGIN_NAME)\");\n"\
-"}\n"
-;
+"	REGISTER_FECORE_CLASS($(PLUGIN_NAME), \"$(PLUGIN_TYPESTRING)\");\n"\
+"}\n";
 
 // This defines the header file for material plugins
 const char* szhdr_mat = \
@@ -99,6 +98,48 @@ const char* szsrc_mat = \
 "	return c;\n" \
 "}\n";
 
+// This defines the header file for uncoupled material plugins
+const char* szhdr_ucm = \
+"#include <FEBioMech\\FEUncoupledMaterial.h>\n\n" \
+"class $(PLUGIN_NAME) : public FEUncoupledMaterial\n" \
+"{\n" \
+"public:\n" \
+"	// class constructor\n"
+"	$(PLUGIN_NAME)(FEModel* fem);\n\n"
+"	// evaluate Cauchy stress\n"
+"	mat3ds DevStress(FEMaterialPoint& mp) override;\n\n" \
+"	// evaluate spatial elasticity tangent\n"
+"	tens4ds DevTangent(FEMaterialPoint& mp) override;\n\n"
+"private:\n"
+"	// TODO: Add member variables here\n\n"\
+"	DECLARE_FECORE_CLASS();\n"
+"};\n";
+
+// This defines the source file for uncoupled material plugins
+const char* szsrc_ucm = \
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FEUncoupledMaterial)\n"\
+"	// TODO: Add parameters\n"\
+"END_FECORE_CLASS();\n\n"\
+"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FEUncoupledMaterial(fem)\n"\
+"{\n" \
+"	// TODO: initialize all class member variables\n" \
+"}\n\n" \
+"mat3ds $(PLUGIN_NAME)::DevStress(FEMaterialPoint& mp)\n" \
+"{\n" \
+"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
+"	// TODO: implement stress\n" \
+"	mat3ds s;\n" \
+"	return s;\n" \
+"}\n\n" \
+"tens4ds $(PLUGIN_NAME)::DevTangent(FEMaterialPoint& mp)\n" \
+"{\n" \
+"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
+"	// TODO: implement tangent\n" \
+"	tens4ds c;\n" \
+"	return c;\n" \
+"}\n";
+
 // This defines the header file for meshdata generator plugins
 const char* szhdr_mdg = \
 "#include <FECore\\FEDataGenerator.h>\n\n" \
@@ -131,4 +172,31 @@ const char* szsrc_mdg = \
 "FEDomainMap* $(PLUGIN_NAME)::Generate()\n" \
 "{\n" \
 "	return nullptr;\n" \
+"}\n";
+
+// This defines the header file for node plot data plugins
+const char* szhdr_npd = \
+"#include <FECore\\FEPlotData.h>\n\n" \
+"class $(PLUGIN_NAME) : public FEPlotNodeData\n" \
+"{\n" \
+"public:\n" \
+"	// class constructor\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotNodeData(fem, PLT_FLOAT, FMT_NODE){}\n"
+"	bool Save(FEMesh& m, FEDataStream& a);\n"
+"};\n";
+
+// This defines the source file for node plot data plugins
+const char* szsrc_npd = \
+"#include \"$(PLUGIN_NAME).h\"\n" \
+"#include <FECore\\FEMesh.h>\n\n"\
+"bool $(PLUGIN_NAME)::Save(FEMesh& m, FEDataStream& a)\n" \
+"{\n" \
+"	int N = m.Nodes();\n"\
+"	for (int i = 0; i < N; ++i)\n"\
+"	{\n"\
+"		double f;\n"\
+"		// TODO: calculate something for f\n"\
+"		a << f;\n"\
+"	}\n"\
+"	return true;\n" \
 "}\n";

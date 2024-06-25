@@ -53,6 +53,8 @@ public:
 	QComboBox* m_mod;  // FEBio module
 	QLineEdit* m_name; // name of plugin
 	CResourceEdit* m_path; // path to plugin code
+	QLineEdit* m_typeString; // name of plugin
+
 	CMainWindow* m_wnd;
 
 public:
@@ -66,8 +68,10 @@ public:
 		f->addRow("FEBio module:", m_mod = new QComboBox());
 		f->addRow("Plugin type:", m_type = new QComboBox());
 		f->addRow("Path:", m_path = new CResourceEdit());
+		f->addRow("Type string:", m_typeString = new QLineEdit());
+		m_typeString->setPlaceholderText("(leave blank for default)");
 
-		m_type->addItems(QStringList() << "Elastic material" << "Element data generator");
+		m_type->addItems(QStringList() << "Elastic material" << "Uncoupled material" << "Element data generator" << "Node plot data");
 		m_mod->addItems(QStringList() << "solid");
 		m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
 
@@ -119,7 +123,9 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	switch (config.type)
 	{
 	case PluginConfig::ELASTICMATERIAL_PLUGIN  : szhdr = szhdr_mat; szsrc = szsrc_mat; break;
+	case PluginConfig::UNCOUPLEDMATERIAL_PLUGIN: szhdr = szhdr_ucm; szsrc = szsrc_ucm; break;
 	case PluginConfig::ELEMDATAGENERATOR_PLUGIN: szhdr = szhdr_mdg; szsrc = szsrc_mdg; break; 
+	case PluginConfig::NODEPLOTDATA_PLUGIN     : szhdr = szhdr_npd; szsrc = szsrc_npd; break; 
 	default:
 		return false;
 		break;
@@ -139,6 +145,7 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	QString main = config.path + "\\main.cpp";
 	QString mainText = QString(szmain).replace("$(PLUGIN_NAME)", config.name);
 	mainText = mainText.replace("$(PLUGIN_MODULE)", config.module);
+	mainText = mainText.replace("$(PLUGIN_TYPESTRING)", config.typeString);
 	if (!GenerateFile(main, mainText)) return false;
 
 	// get the SDK paths
@@ -182,6 +189,8 @@ void CDlgCreatePlugin::accept()
 	QString name = ui->m_name->text();
 	QString path = ui->m_path->resourceName();
 	QString mod  = ui->m_mod->currentText();
+	QString typeStr = ui->m_typeString->text();
+	if (typeStr.isEmpty()) typeStr = name;
 	int type = ui->m_type->currentIndex();
 
 	// check input
@@ -215,10 +224,13 @@ void CDlgCreatePlugin::accept()
 	config.name   = name;
 	config.module = mod;
 	config.path   = path;
+	config.typeString = typeStr;
 	switch (type)
 	{
 	case 0: config.type = PluginConfig::PluginType::ELASTICMATERIAL_PLUGIN; break;
-	case 1: config.type = PluginConfig::PluginType::ELEMDATAGENERATOR_PLUGIN; break;
+	case 1: config.type = PluginConfig::PluginType::UNCOUPLEDMATERIAL_PLUGIN; break;
+	case 2: config.type = PluginConfig::PluginType::ELEMDATAGENERATOR_PLUGIN; break;
+	case 3: config.type = PluginConfig::PluginType::NODEPLOTDATA_PLUGIN; break;
 	default:
 		QMessageBox::critical(this, "FEBio Studio", "Don't know how to build this type of plugin.");
 		return;
