@@ -1917,6 +1917,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
 		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
 		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
+		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
 
 		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
@@ -2055,6 +2056,7 @@ void CMainWindow::readSettings()
 		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
 		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", "").toString();
 		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", "").toString();
+		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
 
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
 		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
@@ -3797,6 +3799,8 @@ void CMainWindow::on_selectionChanged()
 
 QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
 QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }
+QString CMainWindow::GetCreatePluginPath() const { return ui->m_settings.createPluginPath; }
 
 void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_settings.FEBioSDKInc = s; }
 void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_settings.FEBioSDKLib = s; }
+void CMainWindow::SetCreatePluginPath(const QString& s) { ui->m_settings.createPluginPath = s; }

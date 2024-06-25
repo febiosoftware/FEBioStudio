@@ -242,6 +242,7 @@ struct FBS_SETTINGS
 
 	QString FEBioSDKInc;	// path to FEBio SDK includes
 	QString FEBioSDKLib;	// path to FEBio SDK libraries
+	QString createPluginPath;	// default path to FEBio plugins
 
 	bool	clearUndoOnSave;	// clear the undo stack on save
 };

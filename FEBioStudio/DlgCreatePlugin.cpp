@@ -99,11 +99,18 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(ne
 	ui->m_wnd = parent;
 	ui->setup(this);
 
+	QString createPath;
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (prj)
+
+	if (prj && (prj->GetProjectPath().isEmpty() == false))
 	{
-		ui->m_path->setResourceName(prj->GetProjectPath());
+		createPath = prj->GetProjectPath();
 	}
+	else
+	{
+		createPath = parent->GetCreatePluginPath();
+	}
+	ui->m_path->setResourceName(createPath);
 }
 
 bool GenerateFile(const QString& fileName, const QString& content)
@@ -215,6 +222,8 @@ void CDlgCreatePlugin::accept()
 	}
 	else
 	{
+		// save this as the default path
+		ui->m_wnd->SetCreatePluginPath(QDir::toNativeSeparators(dir.absolutePath()));
 		dir.cd(name);
 		path = QDir::toNativeSeparators(dir.absolutePath());
 	}
@@ -240,6 +249,14 @@ void CDlgCreatePlugin::accept()
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to create plugin.");
 		return;
+	}
+
+	// automatically save the project file
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj && (prj->GetProjectPath().isEmpty()))
+	{
+		QString prjPath = path + "\\" + name + ".fsp";
+		prj->Save(prjPath);
 	}
 
 	// all is well

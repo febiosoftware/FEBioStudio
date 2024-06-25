@@ -171,6 +171,9 @@ public:
 	QString GetSDKLibraryPath() const;
 	void SetSDKLibraryPath(const QString& s);
 
+	QString GetCreatePluginPath() const;
+	void SetCreatePluginPath(const QString& s);
+
 protected slots:
 	void editConfigFilePath();
 
@@ -179,6 +182,7 @@ private:
 	QLineEdit* m_configEdit = nullptr;
 	QLineEdit* m_sdkInc = nullptr;
 	QLineEdit* m_sdkLib = nullptr;
+	QLineEdit* m_pluginPath = nullptr;
 };
 
 class CDlgSettings : public QDialog

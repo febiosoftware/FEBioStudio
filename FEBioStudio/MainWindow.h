@@ -292,6 +292,9 @@ public:
 	QString GetSDKLibraryPath() const;
 	void SetSDKLibraryPath(const QString& s);
 
+	QString GetCreatePluginPath() const;
+	void SetCreatePluginPath(const QString& s);
+
 	CCommandWindow* GetCommandWindow();
 
 private:

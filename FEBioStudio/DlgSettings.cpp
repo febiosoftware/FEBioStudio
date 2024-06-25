@@ -901,6 +901,7 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	QFormLayout* f = new QFormLayout;
 	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
 	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
+	f->addRow("FEBio create plugin path:", m_pluginPath = new QLineEdit);
 	layout->addLayout(f);
 	 
 	this->setLayout(layout);
@@ -919,6 +920,9 @@ void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setTe
 
 QString CFEBioSettingsWidget::GetSDKLibraryPath() const { return m_sdkLib->text(); }
 void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setText(s); }
+
+QString CFEBioSettingsWidget::GetCreatePluginPath() const { return m_pluginPath->text(); }
+void CFEBioSettingsWidget::SetCreatePluginPath(const QString& s) { m_pluginPath->setText(s); }
 
 void CFEBioSettingsWidget::editConfigFilePath()
 {
@@ -1144,6 +1148,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
 	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
 	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
+	ui->m_febio->SetCreatePluginPath(m_pwnd->GetCreatePluginPath());
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -1304,6 +1309,7 @@ void CDlgSettings::apply()
 	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
 	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
 	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
+	m_pwnd->SetCreatePluginPath(ui->m_febio->GetCreatePluginPath());
 
 	m_pwnd->RedrawGL();
 }
