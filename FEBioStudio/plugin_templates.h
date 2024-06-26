@@ -181,7 +181,7 @@ const char* szhdr_npd = \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotNodeData(fem, PLT_FLOAT, FMT_NODE){}\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotNodeData(fem, $(ARG1), FMT_NODE){}\n"
 "	bool Save(FEMesh& m, FEDataStream& a);\n"
 "};\n";
 
@@ -194,9 +194,9 @@ const char* szsrc_npd = \
 "	int N = m.Nodes();\n"\
 "	for (int i = 0; i < N; ++i)\n"\
 "	{\n"\
-"		double f;\n"\
-"		// TODO: calculate something for f\n"\
-"		a << f;\n"\
+"		$(ARG2) v;\n"\
+"		// TODO: calculate something for v\n"\
+"		a << v;\n"\
 "	}\n"\
 "	return true;\n" \
 "}\n";

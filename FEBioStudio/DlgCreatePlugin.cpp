@@ -44,59 +44,165 @@ SOFTWARE.*/
 #include "ResourceEdit.h"
 #include "plugin_templates.h"
 #include "FEBioStudioProject.h"
+#include "PropertyListForm.h"
+#include <QStackedWidget>
+#include <QLabel>
+#include "PropertyList.h"
+
+class CPluginProps : public CPropertyList
+{
+public:
+	CPluginProps() {}
+
+	virtual QStringList GetOptions() = 0;
+};
+
+class CPlotNodeDataProps : public CPluginProps
+{
+public:
+	CPlotNodeDataProps()
+	{
+		m_datatype = 0;
+		addProperty("Data type:", CProperty::Enum)->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		switch (i)
+		{
+		case 0: return m_datatype;
+		}
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_datatype = v.toInt(); break;
+		}
+	}
+
+	QStringList GetOptions() override
+	{
+		QStringList l;
+		switch (m_datatype)
+		{
+		case 0: l << "PLT_FLOAT" << "double"; break;
+		case 1: l << "PLT_VEC3F" << "vec3d"; break;
+		}
+		return l;
+	}
+
+private:
+	int	m_datatype;
+};
 
 //=============================================================================
 class CDlgCreatePluginUI
 {
 public:
-	QComboBox* m_type; // type of plugin
-	QComboBox* m_mod;  // FEBio module
-	QLineEdit* m_name; // name of plugin
-	CResourceEdit* m_path; // path to plugin code
-	QLineEdit* m_typeString; // name of plugin
+	class CMainPage : public QWizardPage
+	{
+	public:
+		QComboBox* m_type; // type of plugin
+		QComboBox* m_mod;  // FEBio module
+		QLineEdit* m_name; // name of plugin
+		CResourceEdit* m_path; // path to plugin code
+		QLineEdit* m_typeString; // name of plugin
 
-	CMainWindow* m_wnd;
+	public:
+		CMainPage()
+		{
+			setTitle("Create FEBio plugin");
+
+			QFormLayout* f = new QFormLayout;
+			f->setLabelAlignment(Qt::AlignRight);
+			f->addRow("Plugin name:", m_name = new QLineEdit());
+			f->addRow("FEBio module:", m_mod = new QComboBox());
+			f->addRow("Plugin type:", m_type = new QComboBox());
+			f->addRow("Path:", m_path = new CResourceEdit());
+			f->addRow("Type string:", m_typeString = new QLineEdit());
+			m_typeString->setPlaceholderText("(leave blank for default)");
+
+			m_type->addItems(QStringList() << "Elastic material" << "Uncoupled material" << "Element data generator" << "Node plot data");
+			m_mod->addItems(QStringList() << "solid");
+			m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
+
+			setLayout(f);
+
+			registerField("plugintype", m_type);
+		}
+	};
+
+	class COptionsPage : public QWizardPage
+	{
+	public:
+		QStackedWidget* stack;
+		CPluginProps* pl;
+
+	public:
+		COptionsPage()
+		{
+			setTitle("Set options");
+
+			stack = new QStackedWidget;
+			stack->addWidget(new QLabel("(No properties)"));
+
+			CPropertyListForm* props = new CPropertyListForm;
+			stack->addWidget(props);
+
+			pl = new CPlotNodeDataProps;
+			props->setPropertyList(pl);
+
+			QVBoxLayout* l = new QVBoxLayout;
+			l->addWidget(stack);
+
+			setLayout(l);
+		}
+
+		void initializePage() override
+		{
+			int n = field("plugintype").toInt();
+			if (n != 3) stack->setCurrentIndex(0);
+			else stack->setCurrentIndex(1);
+		}
+
+		QStringList GetOptions()
+		{
+			QStringList l;
+			int n = field("plugintype").toInt();
+			if (n == 3) l = pl->GetOptions();
+			return l;
+		}
+	};
 
 public:
-	void setup(QDialog* dlg)
+	CMainWindow* m_wnd;
+
+	CMainPage* mainPage;
+	COptionsPage* opsPage;
+
+public:
+	void setup(QWizard* dlg)
 	{
-		QVBoxLayout* l = new QVBoxLayout;
-
-		QFormLayout* f = new QFormLayout;
-		f->setLabelAlignment(Qt::AlignRight);
-		f->addRow("Plugin name:", m_name = new QLineEdit());
-		f->addRow("FEBio module:", m_mod = new QComboBox());
-		f->addRow("Plugin type:", m_type = new QComboBox());
-		f->addRow("Path:", m_path = new CResourceEdit());
-		f->addRow("Type string:", m_typeString = new QLineEdit());
-		m_typeString->setPlaceholderText("(leave blank for default)");
-
-		m_type->addItems(QStringList() << "Elastic material" << "Uncoupled material" << "Element data generator" << "Node plot data");
-		m_mod->addItems(QStringList() << "solid");
-		m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
-
-		QPushButton* create = new QPushButton("Create");
-		QPushButton* cancel = new QPushButton("Cancel");
-		QHBoxLayout* h = new QHBoxLayout;
-		h->addStretch();
-		h->addWidget(create);
-		h->addWidget(cancel);
-
-		l->addLayout(f);
-		l->addLayout(h);
-
-		dlg->setLayout(l);
-
-		QObject::connect(create, SIGNAL(clicked()), dlg, SLOT(accept()));
-		QObject::connect(cancel, SIGNAL(clicked()), dlg, SLOT(reject()));
+		dlg->addPage(mainPage = new CMainPage);
+		dlg->addPage(opsPage = new COptionsPage);
 	}
 };
 
-CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(new CDlgCreatePluginUI)
+CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(new CDlgCreatePluginUI)
 {
 	setWindowTitle("Create FEBio Plugin");
 	setMinimumSize(QSize(600, 300));
 	ui->m_wnd = parent;
+
+	if (parent->currentTheme() == 1)
+	{
+		setWizardStyle(QWizard::ClassicStyle);
+		setStyleSheet("background-color:#353535");
+	}
+
 	ui->setup(this);
 
 	QString createPath;
@@ -110,7 +216,7 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(ne
 	{
 		createPath = parent->GetCreatePluginPath();
 	}
-	ui->m_path->setResourceName(createPath);
+	ui->mainPage->m_path->setResourceName(createPath);
 }
 
 bool GenerateFile(const QString& fileName, const QString& content)
@@ -141,11 +247,23 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	// create the header file
 	QString header = config.path + "\\" + config.name + ".h";
 	QString headerText = QString(szhdr).replace("$(PLUGIN_NAME)", config.name);
+	int n = 1;
+	for (QString arg : config.args)
+	{
+		QString tmp = QString("$(ARG%1)").arg(n++);
+		headerText = headerText.replace(tmp, arg);
+	}
 	if (!GenerateFile(header, headerText)) return false;
 
 	// create the source file
 	QString source = config.path + "\\" + config.name + ".cpp";
 	QString sourceText = QString(szsrc).replace("$(PLUGIN_NAME)", config.name);
+	n = 1;
+	for (QString arg : config.args)
+	{
+		QString tmp = QString("$(ARG%1)").arg(n++);
+		sourceText = sourceText.replace(tmp, arg);
+	}
 	if (!GenerateFile(source, sourceText)) return false;
 
 	// create the main file
@@ -193,12 +311,12 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 
 void CDlgCreatePlugin::accept()
 {
-	QString name = ui->m_name->text();
-	QString path = ui->m_path->resourceName();
-	QString mod  = ui->m_mod->currentText();
-	QString typeStr = ui->m_typeString->text();
+	QString name = ui->mainPage->m_name->text();
+	QString path = ui->mainPage->m_path->resourceName();
+	QString mod  = ui->mainPage->m_mod->currentText();
+	QString typeStr = ui->mainPage->m_typeString->text();
 	if (typeStr.isEmpty()) typeStr = name;
-	int type = ui->m_type->currentIndex();
+	int type = ui->mainPage->m_type->currentIndex();
 
 	// check input
 	if (name.isEmpty())
@@ -244,6 +362,8 @@ void CDlgCreatePlugin::accept()
 		QMessageBox::critical(this, "FEBio Studio", "Don't know how to build this type of plugin.");
 		return;
 	}
+
+	config.args = ui->opsPage->GetOptions();
 
 	if (GeneratePlugin(config) == false)
 	{
