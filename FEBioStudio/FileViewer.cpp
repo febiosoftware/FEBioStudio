@@ -753,8 +753,19 @@ void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
 
 void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
 {
-	QString msg = QString("Exitcode = %1, Exit status = %2").arg(exitCode).arg(es == QProcess::NormalExit ? "Normal exit" : "Crash exit");
-	QMessageBox::information(this, "FEBio Studio", msg);
+	if (es == QProcess::NormalExit)
+	{
+		CLogger::AddBuildEntry(exitCode == 0 ? "\n--- Build succeeded\n\n" : "\n--- Build failed\n\n");
+		if (exitCode == 0)
+			QMessageBox::information(this, "FEBio Studio", "The build was successful.");
+		else
+			QMessageBox::critical(this, "FEBio Studio", "The build failed.\nSee build log for details.");
+	}
+	else
+	{
+		QString msg = QString("Exitcode = %1, Exit status = %2").arg(exitCode).arg(es == QProcess::NormalExit ? "Normal exit" : "Crash exit");
+		QMessageBox::information(this, "FEBio Studio", msg);
+	}
 
 	delete ui->m_process;
 	ui->m_process = nullptr;
