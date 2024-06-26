@@ -391,11 +391,31 @@ bool GenerateFile(const QString& fileName, const QString& content)
 	return true;
 }
 
-bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
+class PluginConfig
+{
+public:
+	QString name;
+	QString path;
+	QString module;
+	QString typeString;
+	QStringList args;
+
+	QString cmakeFile;
+	QString mainFile;
+	QString headerFile;
+	QString sourceFile;
+
+	QString headerTxt;
+	QString sourceTxt;
+
+	QString sdkInc;
+	QString sdkLib;
+};
+
+bool GeneratePluginFiles(const PluginConfig& config)
 {
 	// create the header file
-	QString header = config.path + "\\" + config.name + ".h";
-	QString headerText(config.header);
+	QString headerText(config.headerTxt);
 	headerText = headerText.replace("$(PLUGIN_NAME)", config.name);
 	int n = 1;
 	for (QString arg : config.args)
@@ -403,11 +423,10 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 		QString tmp = QString("$(ARG%1)").arg(n++);
 		headerText = headerText.replace(tmp, arg);
 	}
-	if (!GenerateFile(header, headerText)) return false;
+	if (!GenerateFile(config.headerFile, headerText)) return false;
 
 	// create the source file
-	QString source = config.path + "\\" + config.name + ".cpp";
-	QString sourceText(config.source);
+	QString sourceText(config.sourceTxt);
 	sourceText = sourceText.replace("$(PLUGIN_NAME)", config.name);
 	n = 1;
 	for (QString arg : config.args)
@@ -415,53 +434,34 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 		QString tmp = QString("$(ARG%1)").arg(n++);
 		sourceText = sourceText.replace(tmp, arg);
 	}
-	if (!GenerateFile(source, sourceText)) return false;
+	if (!GenerateFile(config.sourceFile, sourceText)) return false;
 
 	// create the main file
-	QString main = config.path + "\\main.cpp";
 	QString mainText = QString(szmain).replace("$(PLUGIN_NAME)", config.name);
 	mainText = mainText.replace("$(PLUGIN_MODULE)", config.module);
 	mainText = mainText.replace("$(PLUGIN_TYPESTRING)", config.typeString);
-	if (!GenerateFile(main, mainText)) return false;
+	if (!GenerateFile(config.mainFile, mainText)) return false;
 
 	// get the SDK paths
-	QString SDKInc = ui->m_wnd->GetSDKIncludePath();
-	QString SDKLib = ui->m_wnd->GetSDKLibraryPath();
+	QString SDKInc = config.sdkInc;
+	QString SDKLib = config.sdkLib;
 	SDKInc.replace("\\", "/");
 	SDKLib.replace("\\", "/");
 	if (SDKLib.last(1) != "/") SDKLib += "/";
 	SDKLib += "$<CONFIG>";
 
 	// create the CMake file
-	QString cmake = config.path + "\\CMakeLists.txt";
 	QString cmakeText = QString(szcmake).replace("$(PLUGIN_NAME)", config.name);
 	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
 	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
-	if (!GenerateFile(cmake, cmakeText)) return false;
-
-	// add plugin to project
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (prj)
-	{
-		FEBioStudioProject::ProjectItem* grp = prj->AddPlugin(config.name);
-		if (grp)
-		{
-			grp->AddFile(cmake);
-
-			FEBioStudioProject::ProjectItem& headerFiles = grp->AddGroup("Include");
-			headerFiles.AddFile(header);
-
-			FEBioStudioProject::ProjectItem& sourceFiles = grp->AddGroup("Source");
-			sourceFiles.AddFile(main);
-			sourceFiles.AddFile(source);
-		}
-	}
+	if (!GenerateFile(config.cmakeFile, cmakeText)) return false;
 
 	return true;
 }
 
 void CDlgCreatePlugin::accept()
 {
+	// collect input fields
 	QString name = ui->mainPage->m_name->text();
 	QString path = ui->mainPage->m_path->resourceName();
 	QString mod  = ui->mainPage->m_mod->currentText();
@@ -497,24 +497,48 @@ void CDlgCreatePlugin::accept()
 		path = QDir::toNativeSeparators(dir.absolutePath());
 	}
 
-	// generate the plugin files
+	// generate the plugin meta data
 	PluginConfig config;
 	config.name   = name;
 	config.module = mod;
 	config.path   = path;
 	config.typeString = typeStr;
-	config.header = pluginTemplates[type]->m_header;
-	config.source = pluginTemplates[type]->m_source;
+	config.headerTxt = pluginTemplates[type]->m_header;
+	config.sourceTxt = pluginTemplates[type]->m_source;
 	config.args = ui->opsPage->GetOptions();
+	config.sdkInc = ui->m_wnd->GetSDKIncludePath();
+	config.sdkLib = ui->m_wnd->GetSDKLibraryPath();
+	config.headerFile = config.path + "\\" + config.name + ".h";
+	config.sourceFile = config.path + "\\" + config.name + ".cpp";
+	config.mainFile  = config.path + "\\main.cpp";
+	config.cmakeFile = config.path + "\\CMakeLists.txt";
 
-	if (GeneratePlugin(config) == false)
+	// generate all files
+	if (GeneratePluginFiles(config) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to create plugin.");
 		return;
 	}
 
-	// automatically save the project file
+	// add plugin to project
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj)
+	{
+		FEBioStudioProject::ProjectItem* grp = prj->AddPlugin(config.name);
+		if (grp)
+		{
+			grp->AddFile(config.cmakeFile);
+
+			FEBioStudioProject::ProjectItem& headerFiles = grp->AddGroup("Include");
+			headerFiles.AddFile(config.headerFile);
+
+			FEBioStudioProject::ProjectItem& sourceFiles = grp->AddGroup("Source");
+			sourceFiles.AddFile(config.mainFile);
+			sourceFiles.AddFile(config.sourceFile);
+		}
+	}
+
+	// automatically save the project file
 	if (prj && (prj->GetProjectPath().isEmpty()))
 	{
 		QString prjPath = path + "\\" + name + ".fsp";

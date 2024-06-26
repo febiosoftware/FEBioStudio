@@ -29,19 +29,7 @@ SOFTWARE.*/
 class CMainWindow;
 class CDlgCreatePluginUI;
 
-class PluginConfig
-{
-public:
-	QString name;
-	QString path;
-	QString module;
-	QString typeString;
-	QStringList args;
-
-	QString header;
-	QString source;
-};
-
+// This wizard is used to generate FEBio plugins.
 class CDlgCreatePlugin : public QWizard
 {
 	Q_OBJECT
@@ -52,9 +40,5 @@ public:
 	void accept() override;
 
 private:
-	bool GeneratePlugin(const PluginConfig& config);
-
-private:
 	CDlgCreatePluginUI* ui;
 };
-
