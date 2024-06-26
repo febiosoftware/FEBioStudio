@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 
-// NOTE: This file should only be included in DlgCreatePlugin!
+// NOTE: This file should only be included in ui_createplugin.h!
 
 // Instructions:
 // -------------
