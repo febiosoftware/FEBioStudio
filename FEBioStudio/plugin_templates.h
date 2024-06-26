@@ -167,8 +167,8 @@ const char* szhdr_npd = \
 
 // This defines the source file for node plot data plugins
 const char* szsrc_npd = \
-"#include \"$(PLUGIN_NAME).h\"\n" \
-"#include <FECore\\FEMesh.h>\n\n"\
+"#include <FECore\\FEMesh.h>\n"\
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
 "bool $(PLUGIN_NAME)::Save(FEMesh& m, FEDataStream& a)\n" \
 "{\n" \
 "	int N = m.Nodes();\n"\
@@ -183,6 +183,40 @@ const char* szsrc_npd = \
 "}\n";
 
 // ============================================================================
+// surface plot data
+// ============================================================================
+const char* szhdr_spd = \
+"#include <FECore\\FEPlotData.h>\n\n" \
+"class $(PLUGIN_NAME) : public FEPlotSurfaceData\n" \
+"{\n" \
+"public:\n" \
+"	// class constructor\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotSurfaceData(fem, $(ARG1), $(ARG2)){}\n"
+"	bool Save(FESurface& surf, FEDataStream& a);\n"
+"};\n";
+
+const char* szsrc_spd = \
+"#include <FECore\\FEMesh.h>\n"\
+"#include <FECore\\FESurface.h>\n"\
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"bool $(PLUGIN_NAME)::Save(FESurface& surf, FEDataStream& a)\n" \
+"{\n" \
+"$(ARG3)"\
+"	return true;\n" \
+"}\n";
+
+// snippet for ARG2=FMT_ITEM
+const char* szspd_snippet_item = \
+"	int N = surf.Elements();\n"\
+"	for (int i = 0; i < N; ++i)\n"\
+"	{\n"\
+"		const FESurfaceElement& el = surf.Element(i);\n"\
+"		$(ARG4) v;\n"\
+"		// TODO: calculate something for v\n"\
+"		a << v;\n"\
+"	}\n";
+
+// ============================================================================
 // element plot data
 // ============================================================================
 const char* szhdr_epd = \
@@ -195,8 +229,8 @@ const char* szhdr_epd = \
 "};\n";
 
 const char* szsrc_epd = \
-"#include \"$(PLUGIN_NAME).h\"\n" \
-"#include <FECore\\FEDomain.h>\n\n"\
+"#include <FECore\\FEDomain.h>\n"\
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
 "bool $(PLUGIN_NAME)::Save(FEDomain& dom, FEDataStream& a)\n" \
 "{\n" \
 "$(ARG3)"\

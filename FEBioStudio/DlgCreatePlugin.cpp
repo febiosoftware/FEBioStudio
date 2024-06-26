@@ -138,6 +138,48 @@ private:
 	int	m_datatype;
 };
 
+
+class CPlotSurfaceDataProps : public CPluginTemplate
+{
+public:
+	CPlotSurfaceDataProps() : CPluginTemplate("Surface plot data", szhdr_spd, szsrc_spd)
+	{
+		m_datatype = 0;
+		m_datafmt = 1;
+		addEnumProperty(&m_datatype, "Data type:")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
+		addEnumProperty(&m_datafmt, "Data format:")->setEnumValues(QStringList() << "FMT_NODE" << "FMT_ITEM" << "FMT_MULT" << "FMT_REGION");
+	}
+
+	QStringList GetOptions() override
+	{
+		// fill $(ARG1) and $(ARG2)
+		QStringList l;
+		l << Property(0).values.at(m_datatype);
+		l << Property(1).values.at(m_datafmt);
+
+		// fill $(ARG3)
+		switch (m_datafmt)
+		{
+		case 1: l << QString(szspd_snippet_item); break;
+		default:
+			l << QString("//TODO: Write surface data (or return false to skip this surface.)");
+		}
+
+		// fill $(ARG4)
+		switch (m_datatype)
+		{
+		case 0: l << "double"; break;
+		case 1: l << "vec3d"; break;
+		}
+
+		return l;
+	}
+
+private:
+	int m_datatype;
+	int m_datafmt;
+};
+
 class CPlotElemDataProps : public CPluginTemplate
 {
 public:
@@ -186,11 +228,12 @@ public:
 };
 
 //=============================================================================
-const int PLUGIN_TEMPLATES = 5;
+const int PLUGIN_TEMPLATES = 6;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CElasticMaterialProps(),
 	new CElemDataGeneratorProps(),
 	new CPlotNodeDataProps(),
+	new CPlotSurfaceDataProps(),
 	new CPlotElemDataProps(),
 	new CSurfaceLoadProps()
 };
