@@ -254,6 +254,7 @@ CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 CMainPage::CMainPage()
 {
 	setTitle("Create FEBio plugin");
+	setSubTitle("This wizard will take you through the process of creating an FEBio plugin.");
 
 	m_type = new QListWidget();
 
@@ -264,16 +265,19 @@ CMainPage::CMainPage()
 	}
 	m_type->addItems(pluginTemplateNames);
 
-	QVBoxLayout* l = new QVBoxLayout;
+	QVBoxLayout* l1 = new QVBoxLayout;
+	l1->addWidget(new QLabel("Select a plugin type:"));
+	l1->addWidget(m_type);
 
 	QHBoxLayout* h = new QHBoxLayout;
-	h->addWidget(m_type, 2);
+	h->addLayout(l1, 2);
 	h->addWidget(m_desc = new QLabel(), 1);
 	m_desc->setWordWrap(true);
 	m_desc->setAlignment(Qt::AlignTop);
 
-	l->addLayout(h);
-	setLayout(l);
+	QVBoxLayout* mainLayout = new QVBoxLayout;
+	mainLayout->addLayout(h);
+	setLayout(mainLayout);
 
 	registerField("plugin.type", m_type);
 
