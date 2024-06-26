@@ -761,7 +761,11 @@ void CFileViewer::onLoadPlugin()
 	// we need to figure out if the plugin was built. 
 	// We are just going to look for the dll file
 	// It is assumed that the file name is .\build\(config)\name.dll" relative to the projects folder.
+#ifndef NDEBUG
 	QString dllpath = QString("./build/Debug/%1.dll").arg(pluginName);
+#else
+	QString dllpath = QString("./build/Release/%1.dll").arg(pluginName);
+#endif
 	dllpath = prj->ToAbsolutePath(dllpath);
 
 	CLogger::AddLogEntry(QString("Loading %1 ... ").arg(dllpath));

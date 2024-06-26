@@ -117,7 +117,7 @@ public:
 class CPlotNodeDataProps : public CPluginTemplate
 {
 public:
-	CPlotNodeDataProps() : CPluginTemplate("Node plot data", szhdr_npd, szsrc_npd)
+	CPlotNodeDataProps() : CPluginTemplate("Plot node data", szhdr_npd, szsrc_npd)
 	{
 		m_datatype = 0;
 		addEnumProperty(&m_datatype, "Data type")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
@@ -138,11 +138,10 @@ private:
 	int	m_datatype;
 };
 
-
 class CPlotSurfaceDataProps : public CPluginTemplate
 {
 public:
-	CPlotSurfaceDataProps() : CPluginTemplate("Surface plot data", szhdr_spd, szsrc_spd)
+	CPlotSurfaceDataProps() : CPluginTemplate("Plot surface data", szhdr_spd, szsrc_spd)
 	{
 		m_datatype = 0;
 		m_datafmt = 1;
@@ -183,7 +182,7 @@ private:
 class CPlotElemDataProps : public CPluginTemplate
 {
 public:
-	CPlotElemDataProps() : CPluginTemplate("Element plot data", szhdr_epd, szsrc_epd)
+	CPlotElemDataProps() : CPluginTemplate("Plot element data", szhdr_epd, szsrc_epd)
 	{
 		m_datatype = 0;
 		m_datafmt  = 1;
@@ -227,15 +226,44 @@ public:
 	CSurfaceLoadProps() : CPluginTemplate("Surface load", szhdr_sl, szsrc_sl) {}
 };
 
+class CLogNodeDataProps : public CPluginTemplate
+{
+public:
+	CLogNodeDataProps() : CPluginTemplate("Log node data", szhdr_nld, szsrc_nld) {}
+};
+
+class CLogElemDataProps : public CPluginTemplate
+{
+public:
+	CLogElemDataProps() : CPluginTemplate("Log element data", szhdr_eld, szsrc_eld) {}
+};
+
+class CCallbackProps : public CPluginTemplate
+{
+public:
+	CCallbackProps() : CPluginTemplate("Callback", szhdr_cb, szsrc_cb) {}
+};
+
+class CTaskProps : public CPluginTemplate
+{
+public:
+	CTaskProps() : CPluginTemplate("Task", szhdr_task, szsrc_task) {}
+};
+
 //=============================================================================
-const int PLUGIN_TEMPLATES = 6;
+// Try to keep this in alphabetical order
+const int PLUGIN_TEMPLATES = 10;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
+	new CCallbackProps(),
 	new CElasticMaterialProps(),
 	new CElemDataGeneratorProps(),
+	new CLogElemDataProps(),
+	new CLogNodeDataProps(),
+	new CPlotElemDataProps(),
 	new CPlotNodeDataProps(),
 	new CPlotSurfaceDataProps(),
-	new CPlotElemDataProps(),
-	new CSurfaceLoadProps()
+	new CSurfaceLoadProps(),
+	new CTaskProps()
 };
 
 //=============================================================================

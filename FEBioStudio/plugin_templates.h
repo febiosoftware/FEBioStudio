@@ -49,7 +49,7 @@ const char* szcmake = \
 "set(CMAKE_CXX_STANDARD 17)\n" \
 "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n" \
 "project($(PLUGIN_NAME))\n\n"\
-"add_definitions(-DWIN32 -DFECORE_DLL /wd4251)\n\n"\
+"add_definitions(-DWIN32 -DFECORE_DLL /wd4251 /wd4275)\n\n"\
 "include_directories(\"$(PLUGIN_SDK_INCLUDE)\")\n\n"\
 "link_directories(\"$(PLUGIN_SDK_LIBS)\")\n\n"\
 "add_library($(PLUGIN_NAME) SHARED $(PLUGIN_NAME).h $(PLUGIN_NAME).cpp main.cpp)\n\n"\
@@ -300,4 +300,112 @@ const char* szsrc_sl = \
 "}\n\n"\
 "void $(PLUGIN_NAME)::StiffnessMatrix(FELinearSystem& LS)\n"\
 "{\n"\
+"}\n";
+
+// ============================================================================
+// node log data
+// ============================================================================
+const char* szhdr_nld = \
+"#include <FECore\\NodeDataRecord.h>\n\n" \
+"class $(PLUGIN_NAME) : public FELogNodeData\n" \
+"{\n" \
+"public:\n" \
+"	// class constructor\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : FELogNodeData(fem){}\n"
+"	double value(const FENode& node) override;\n"
+"};\n";
+
+const char* szsrc_nld = \
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"double $(PLUGIN_NAME)::value(const FENode& node)\n" \
+"{\n" \
+"	// TODO: calculate something for val\n"\
+"	double val = 0.0;\n"\
+"	return val;\n" \
+"}\n";
+
+// ============================================================================
+// element log data
+// ============================================================================
+const char* szhdr_eld = \
+"#include <FECore\\ElementDataRecord.h>\n\n" \
+"class $(PLUGIN_NAME) : public FELogElemData\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem) : FELogElemData(fem){}\n"\
+"	double value(FEElement& el) override;\n"\
+"};\n";
+
+const char* szsrc_eld = \
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"double $(PLUGIN_NAME)::value(FEElement& el)\n" \
+"{\n" \
+"	// TODO: calculate something for val\n"\
+"	double val = 0.0;\n"\
+"	return val;\n"\
+"}\n";
+
+// ============================================================================
+// Callbacks
+// ============================================================================
+const char* szhdr_cb = \
+"#include <FECore\\FECallBack.h>\n\n" \
+"class $(PLUGIN_NAME) : public FECallBack\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	bool Init() override;\n\n"\
+"	bool Execute(FEModel& fem, int nwhen) override;\n\n"\
+"};\n";
+
+const char* szsrc_cb = \
+"#include <FECore/Callback.h>\n"\
+"#include \"$(PLUGIN_NAME).h\"\n\n"\
+"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FECallBack(fem, CB_ALWAYS)\n"\
+"{\n"\
+"}\n\n"\
+"bool $(PLUGIN_NAME)::Init()\n"\
+"{\n"\
+"	// TODO: Add additional initialization\n"\
+"	return FECallBack::Init();\n"\
+"}\n\n"\
+"bool $(PLUGIN_NAME)::Execute(FEModel& fem, int nwhen)\n"\
+"{\n"\
+"	return true;\n"\
+"}\n";
+
+// ============================================================================
+// Tasks
+// ============================================================================
+const char* szhdr_task = \
+"#include <FECore\\FECoreTask.h>\n\n" \
+"class $(PLUGIN_NAME) : public FECoreTask\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	bool Init(const char* szfile) override;\n\n"\
+"	bool Run() override;\n\n"\
+"};\n";
+
+const char* szsrc_task = \
+"#include <FECore/FEModel.h>\n"\
+"#include \"$(PLUGIN_NAME).h\"\n\n"\
+"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FECoreTask(fem)\n"\
+"{\n"\
+"}\n\n"\
+"bool $(PLUGIN_NAME)::Init(const char* szfile)\n"\
+"{\n"\
+"	// get the FE model\n"\
+"	FEModel* fem = GetFEModel();\n\n"\
+"	// TODO: make any necessary changes to the model\n\n"\
+"	// Then, initialize the model\n"\
+"	return fem->Init();\n"\
+"}\n\n"\
+"bool $(PLUGIN_NAME)::Run()\n"\
+"{\n"\
+"	FEModel* fem = GetFEModel();\n\n"\
+"	// TODO: This function is called by FEBio and should execute the task's logic.\n"\
+"	//       To run the forward model, call FEModel::Solve()\n"\
+"	//       To reset the model, call FEModel::Reset()\n"\
+"	return fem->Solve();\n"\
 "}\n";
