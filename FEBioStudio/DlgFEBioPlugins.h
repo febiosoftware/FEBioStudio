@@ -48,3 +48,5 @@ private:
 private:
 	CDlgFEBioPluginsUI* ui;
 };
+
+bool LoadFEBioPlugin(const QString& pluginFile);

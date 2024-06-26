@@ -308,6 +308,16 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(const QString& fil
 	if (item && item->IsFile()) return item; else return nullptr;
 }
 
+const FEBioStudioProject::ProjectItem* FEBioStudioProject::FindPlugin(const QString& pluginName) const
+{
+	int N = m_rootItem->Items();
+	for (int i = 0; i < N; ++i)
+	{
+		FEBioStudioProject::ProjectItem& item = m_rootItem->Item(i);
+		if (item.IsPlugin() && (item.Name() == pluginName)) return &item;
+	}
+	return nullptr;
+}
 
 QStringList FEBioStudioProject::GetFilePaths()
 {

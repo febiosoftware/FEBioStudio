@@ -65,6 +65,7 @@ private slots:
 	void onAddFile();
 	void onImportFolder();
 	void onBuildPlugin();
+	void onLoadPlugin();
 	// plugin process slots
 	void onConfigureFinished(int, QProcess::ExitStatus);
 	void onBuildFinished(int, QProcess::ExitStatus);

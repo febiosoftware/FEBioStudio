@@ -140,6 +140,8 @@ public:
 	const ProjectItem* FindFile(const QString& fileName) const;
 	ProjectItem* FindFile(const QString& fileName);
 
+	const ProjectItem* FindPlugin(const QString& pluginName) const;
+
 	QStringList GetFilePaths();
 
 	ProjectItem* AddGroup(const QString& groupName, int parentId = -1);

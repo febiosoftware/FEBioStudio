@@ -229,9 +229,9 @@ void CDlgFEBioPlugins::onLoadPlugin()
 	}
 }
 
-void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
+bool LoadFEBioPlugin(const QString& pluginFile)
 {
-	std::string sfile = fileName.toStdString();
+	std::string sfile = pluginFile.toStdString();
 
 	// get the currently active module
 	// We need this, since importing the plugin might change this.
@@ -246,6 +246,13 @@ void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
 
 	// restore active module
 	fecore.SetActiveModule(modId);
+
+	return bsuccess;
+}
+
+void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
+{
+	bool bsuccess = LoadFEBioPlugin(fileName);
 
 	if (bsuccess == false)
 	{

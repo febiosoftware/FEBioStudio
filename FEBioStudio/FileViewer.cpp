@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "IconProvider.h"
 #include "Logger.h"
+#include "DlgFEBioPlugins.h" // for LoadFEBioPlugin
 
 enum FileItemType {
 	OPEN_FILES,
@@ -255,6 +256,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 	{
 		QMenu menu(this);
 		menu.addAction("Build", this, SLOT(onBuildPlugin()));
+		menu.addAction("Load", this, SLOT(onLoadPlugin()));
 		menu.addSeparator();
 //		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
 //		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
@@ -729,6 +731,51 @@ void CFileViewer::onBuildPlugin()
 	ui->m_process = new CConfigurePluginProcess(this);
 	ui->m_process->setWorkingDirectory(projectPath);
 	ui->m_process->run();
+}
+
+void CFileViewer::onLoadPlugin()
+{
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No active project.");
+		return;
+	}
+
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype != PROJECT_PLUGIN)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A plugin project was not selected.");
+		return;
+	}
+
+	QString pluginName = item->text(0);
+	const FEBioStudioProject::ProjectItem* prjItem = prj->FindPlugin(pluginName);
+	if (prjItem == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "The plugin could not be located in the project.");
+		return;
+	}
+
+	// we need to figure out if the plugin was built. 
+	// We are just going to look for the dll file
+	// It is assumed that the file name is .\build\(config)\name.dll" relative to the projects folder.
+	QString dllpath = QString("./build/Debug/%1.dll").arg(pluginName);
+	dllpath = prj->ToAbsolutePath(dllpath);
+
+	CLogger::AddLogEntry(QString("Loading %1 ... ").arg(dllpath));
+	bool b = LoadFEBioPlugin(dllpath);
+	if (b)
+	{
+		CLogger::AddLogEntry(QString("success\n"));
+		QMessageBox::information(this, "FEBio Studio", "Plugin loaded successfully");
+	}
+	else
+	{
+		CLogger::AddLogEntry(QString("failed\n"));
+		QMessageBox::critical(this, "FEBio Studio", "Failed to load plugin.");
+	}
 }
 
 void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
