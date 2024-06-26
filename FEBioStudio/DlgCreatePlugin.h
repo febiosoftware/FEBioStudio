@@ -32,20 +32,14 @@ class CDlgCreatePluginUI;
 class PluginConfig
 {
 public:
-	enum PluginType {
-		ELASTICMATERIAL_PLUGIN,
-		UNCOUPLEDMATERIAL_PLUGIN,
-		ELEMDATAGENERATOR_PLUGIN,
-		NODEPLOTDATA_PLUGIN
-	};
-
-public:
-	PluginType type;
 	QString name;
 	QString path;
 	QString module;
 	QString typeString;
 	QStringList args;
+
+	QString header;
+	QString source;
 };
 
 class CDlgCreatePlugin : public QWizard

@@ -48,39 +48,79 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QLabel>
 #include "PropertyList.h"
+#include <FEBioLink/FEBioModule.h>
 
-class CPluginProps : public CPropertyList
+// Instructions for adding a new plugin template:
+// =============================================
+// 
+// 1. Add header and source code to plugin_templates.h (also see instructions in this file)
+// 2. Create a new CPluginTemplate-derived class. 
+//   2.1. Create the new class
+//   2.2. Pass arguments to base-class constructor
+//   2.3. Add properties in constructor
+//   2.4. (Optionally) Implement GetOptions() function, which will by used to fill the $(ARGx) fields. 
+// 3. Add it to the pluginTemplates list. (Make sure to adjust PLUGIN_TEMPLATES)
+//
+
+// Base class for deriving plugin templates.
+class CPluginTemplate : public CDataPropertyList
 {
 public:
-	CPluginProps() {}
+	CPluginTemplate(const QString& pluginType, const QString& header, const QString& source)
+	{
+		m_pluginType = pluginType;
+		m_header = header;
+		m_source = source;
+	}
 
-	virtual QStringList GetOptions() = 0;
+	virtual QStringList GetOptions()
+	{
+		return QStringList();
+	}
+
+public:
+	QString	m_pluginType;
+	QString m_header;
+	QString	m_source;
 };
 
-class CPlotNodeDataProps : public CPluginProps
+class CElasticMaterialProps : public CPluginTemplate
 {
 public:
-	CPlotNodeDataProps()
+	CElasticMaterialProps() : CPluginTemplate("Elastic material", szhdr_mat, szsrc_mat)
+	{
+		m_baseClass = 0;
+		addEnumProperty(&m_baseClass, "Base class: ")->setEnumValues(QStringList() << "FEElasticMaterial" << "FEUncoupledMaterial");
+	}
+
+	QStringList GetOptions() override
+	{
+		QStringList l;
+		switch (m_baseClass)
+		{
+		case 0: l << "FEElasticMaterial" << "Stress" << "Tangent"; break;
+		case 1: l << "FEUncoupledMaterial" << "DevStress" << "DevTangent"; break;
+		}
+		return l;
+	}
+
+private:
+	int	m_baseClass;
+};
+
+class CElemDataGeneratorProps : public CPluginTemplate
+{
+public:
+	CElemDataGeneratorProps() : CPluginTemplate("Element data generator", szhdr_mdg, szsrc_mdg) {}
+};
+
+class CPlotNodeDataProps : public CPluginTemplate
+{
+public:
+	CPlotNodeDataProps() : CPluginTemplate("Node plot data", szhdr_npd, szsrc_npd)
 	{
 		m_datatype = 0;
-		addProperty("Data type:", CProperty::Enum)->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_datatype;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_datatype = v.toInt(); break;
-		}
+		addEnumProperty(&m_datatype, "Data type")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
 	}
 
 	QStringList GetOptions() override
@@ -96,6 +136,63 @@ public:
 
 private:
 	int	m_datatype;
+};
+
+class CPlotElemDataProps : public CPluginTemplate
+{
+public:
+	CPlotElemDataProps() : CPluginTemplate("Element plot data", szhdr_epd, szsrc_epd)
+	{
+		m_datatype = 0;
+		m_datafmt  = 1;
+		addEnumProperty(&m_datatype, "Data type:"  )->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
+		addEnumProperty(&m_datafmt , "Data format:")->setEnumValues(QStringList() << "FMT_NODE" << "FMT_ITEM" << "FMT_MULT" << "FMT_REGION");
+	}
+
+	QStringList GetOptions() override
+	{
+		// fill $(ARG1) and $(ARG2)
+		QStringList l;
+		l << Property(0).values.at(m_datatype);
+		l << Property(1).values.at(m_datafmt);
+
+		// fill $(ARG3)
+		switch (m_datafmt)
+		{
+		case 1: l << QString(szepd_snippet_item); break;
+		case 3: l << QString(szepd_snippet_region); break;
+		default:
+			l << QString("");
+		}
+		
+		// fill $(ARG4)
+		switch (m_datatype)
+		{
+		case 0: l << "double"; break;
+		case 1: l << "vec3d"; break;
+		}
+		return l;
+	}
+
+private:
+	int m_datatype;
+	int m_datafmt;
+};
+
+class CSurfaceLoadProps : public CPluginTemplate
+{
+public:
+	CSurfaceLoadProps() : CPluginTemplate("Surface load", szhdr_sl, szsrc_sl) {}
+};
+
+//=============================================================================
+const int PLUGIN_TEMPLATES = 5;
+CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
+	new CElasticMaterialProps(),
+	new CElemDataGeneratorProps(),
+	new CPlotNodeDataProps(),
+	new CPlotElemDataProps(),
+	new CSurfaceLoadProps()
 };
 
 //=============================================================================
@@ -125,13 +222,27 @@ public:
 			f->addRow("Type string:", m_typeString = new QLineEdit());
 			m_typeString->setPlaceholderText("(leave blank for default)");
 
-			m_type->addItems(QStringList() << "Elastic material" << "Uncoupled material" << "Element data generator" << "Node plot data");
-			m_mod->addItems(QStringList() << "solid");
+			QStringList pluginTemplateNames;
+			for (int i = 0; i < PLUGIN_TEMPLATES; ++i)
+			{
+				pluginTemplateNames << pluginTemplates[i]->m_pluginType;
+			}
+			m_type->addItems(pluginTemplateNames);
+
+			QStringList modList;
+			std::vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
+			for (auto& mod : modules)
+			{
+				modList.append(mod.m_szname);
+			}
+			m_mod->addItems(modList);
+
 			m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
 
 			setLayout(f);
 
-			registerField("plugintype", m_type);
+			registerField("plugin.name*", m_name); // asterisk denotes this is a required property
+			registerField("plugin.type", m_type);
 		}
 	};
 
@@ -139,7 +250,9 @@ public:
 	{
 	public:
 		QStackedWidget* stack;
-		CPluginProps* pl;
+		CPropertyListForm* props;
+
+		CPluginTemplate* pl = nullptr;
 
 	public:
 		COptionsPage()
@@ -147,13 +260,12 @@ public:
 			setTitle("Set options");
 
 			stack = new QStackedWidget;
-			stack->addWidget(new QLabel("(No properties)"));
+			QLabel* label = new QLabel("(No properties)");
+			label->setAlignment(Qt::AlignTop);
+			stack->addWidget(label);
 
-			CPropertyListForm* props = new CPropertyListForm;
+			props = new CPropertyListForm;
 			stack->addWidget(props);
-
-			pl = new CPlotNodeDataProps;
-			props->setPropertyList(pl);
 
 			QVBoxLayout* l = new QVBoxLayout;
 			l->addWidget(stack);
@@ -163,16 +275,23 @@ public:
 
 		void initializePage() override
 		{
-			int n = field("plugintype").toInt();
-			if (n != 3) stack->setCurrentIndex(0);
-			else stack->setCurrentIndex(1);
+			int n = field("plugin.type").toInt();
+			setSubTitle(QString("Set the properties for the <b>%1</b> plugin.").arg(pluginTemplates[n]->m_pluginType));
+
+			if (pl) props->setPropertyList(nullptr);
+			pl = pluginTemplates[n];
+			if (pl && pl->Properties())
+			{
+				props->setPropertyList(pl);
+				stack->setCurrentIndex(1);
+			}
+			else stack->setCurrentIndex(0);
 		}
 
 		QStringList GetOptions()
 		{
 			QStringList l;
-			int n = field("plugintype").toInt();
-			if (n == 3) l = pl->GetOptions();
+			if (pl) l = pl->GetOptions();
 			return l;
 		}
 	};
@@ -231,22 +350,10 @@ bool GenerateFile(const QString& fileName, const QString& content)
 
 bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 {
-	const char* szhdr = nullptr;
-	const char* szsrc = nullptr;
-	switch (config.type)
-	{
-	case PluginConfig::ELASTICMATERIAL_PLUGIN  : szhdr = szhdr_mat; szsrc = szsrc_mat; break;
-	case PluginConfig::UNCOUPLEDMATERIAL_PLUGIN: szhdr = szhdr_ucm; szsrc = szsrc_ucm; break;
-	case PluginConfig::ELEMDATAGENERATOR_PLUGIN: szhdr = szhdr_mdg; szsrc = szsrc_mdg; break; 
-	case PluginConfig::NODEPLOTDATA_PLUGIN     : szhdr = szhdr_npd; szsrc = szsrc_npd; break; 
-	default:
-		return false;
-		break;
-	}
-
 	// create the header file
 	QString header = config.path + "\\" + config.name + ".h";
-	QString headerText = QString(szhdr).replace("$(PLUGIN_NAME)", config.name);
+	QString headerText(config.header);
+	headerText = headerText.replace("$(PLUGIN_NAME)", config.name);
 	int n = 1;
 	for (QString arg : config.args)
 	{
@@ -257,7 +364,8 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 
 	// create the source file
 	QString source = config.path + "\\" + config.name + ".cpp";
-	QString sourceText = QString(szsrc).replace("$(PLUGIN_NAME)", config.name);
+	QString sourceText(config.source);
+	sourceText = sourceText.replace("$(PLUGIN_NAME)", config.name);
 	n = 1;
 	for (QString arg : config.args)
 	{
@@ -352,17 +460,8 @@ void CDlgCreatePlugin::accept()
 	config.module = mod;
 	config.path   = path;
 	config.typeString = typeStr;
-	switch (type)
-	{
-	case 0: config.type = PluginConfig::PluginType::ELASTICMATERIAL_PLUGIN; break;
-	case 1: config.type = PluginConfig::PluginType::UNCOUPLEDMATERIAL_PLUGIN; break;
-	case 2: config.type = PluginConfig::PluginType::ELEMDATAGENERATOR_PLUGIN; break;
-	case 3: config.type = PluginConfig::PluginType::NODEPLOTDATA_PLUGIN; break;
-	default:
-		QMessageBox::critical(this, "FEBio Studio", "Don't know how to build this type of plugin.");
-		return;
-	}
-
+	config.header = pluginTemplates[type]->m_header;
+	config.source = pluginTemplates[type]->m_source;
 	config.args = ui->opsPage->GetOptions();
 
 	if (GeneratePlugin(config) == false)

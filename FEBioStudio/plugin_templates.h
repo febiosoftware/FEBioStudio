@@ -27,7 +27,23 @@ SOFTWARE.*/
 
 // NOTE: This file should only be included in DlgCreatePlugin!
 
-// This generates the make file needed to build the plugin
+// Instructions:
+// -------------
+// This file collects all the template code that is used for generating plugins. 
+// The code snippets contain special fields, starting with a dollar sign $, that will be set by the user. 
+// The main plugin fields define data that should be defined for all plugins:
+//
+// $(PLUGIN_NAME)       : the name of the plugin. Also used as the class name. 
+// $(PLUGIN_MODULE)     : the FEBio module to which the class will be added. 
+// $(PLUGIN_TYPESTRING) : the type string for the plugin class. (I.e. how the feature is referenced in the input file)
+//
+// In addition, the code snippets use additional special fields, denoted $(ARG1), $(ARG2), ...
+// These special fields are defined by the plugin generator and may also depend on user input.
+// These fields will be substituted by strings that are provided by the plugin generator. 
+// Note the these fields are substituted in sequential order. That is, first $(ARG1) will be replaced, then $(ARG2), etc. 
+
+
+// This generates the makefile (CMakeFile.txt) needed to build the plugin
 const char* szcmake = \
 "cmake_minimum_required(VERSION 3.5.0)\n\n" \
 "set(CMAKE_CXX_STANDARD 17)\n" \
@@ -56,18 +72,20 @@ const char* szmain = \
 "	REGISTER_FECORE_CLASS($(PLUGIN_NAME), \"$(PLUGIN_TYPESTRING)\");\n"\
 "}\n";
 
-// This defines the header file for material plugins
+// ============================================================================
+// elastic materials
+// ============================================================================
 const char* szhdr_mat = \
-"#include <FEBioMech\\FEElasticMaterial.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEElasticMaterial\n" \
+"#include <FEBioMech\\$(ARG1).h>\n\n" \
+"class $(PLUGIN_NAME) : public $(ARG1)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
 "	$(PLUGIN_NAME)(FEModel* fem);\n\n"
 "	// evaluate Cauchy stress\n"
-"	mat3ds Stress(FEMaterialPoint& mp) override;\n\n" \
+"	mat3ds $(ARG2)(FEMaterialPoint& mp) override;\n\n" \
 "	// evaluate spatial elasticity tangent\n"
-"	tens4ds Tangent(FEMaterialPoint& mp) override;\n\n"
+"	tens4ds $(ARG3)(FEMaterialPoint& mp) override;\n\n"
 "private:\n"
 "	// TODO: Add member variables here\n\n"\
 "	DECLARE_FECORE_CLASS();\n"
@@ -76,21 +94,21 @@ const char* szhdr_mat = \
 // This defines the source file for material plugins
 const char* szsrc_mat = \
 "#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FEElasticMaterial)\n"\
+"BEGIN_FECORE_CLASS($(PLUGIN_NAME), $(ARG1))\n"\
 "	// TODO: Add parameters\n"\
 "END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FEElasticMaterial(fem)\n"\
+"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : $(ARG1)(fem)\n"\
 "{\n" \
 "	// TODO: initialize all class member variables\n" \
 "}\n\n" \
-"mat3ds $(PLUGIN_NAME)::Stress(FEMaterialPoint& mp)\n" \
+"mat3ds $(PLUGIN_NAME)::$(ARG2)(FEMaterialPoint& mp)\n" \
 "{\n" \
 "	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement stress\n" \
 "	mat3ds s;\n" \
 "	return s;\n" \
 "}\n\n" \
-"tens4ds $(PLUGIN_NAME)::Tangent(FEMaterialPoint& mp)\n" \
+"tens4ds $(PLUGIN_NAME)::$(ARG3)(FEMaterialPoint& mp)\n" \
 "{\n" \
 "	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement tangent\n" \
@@ -98,49 +116,9 @@ const char* szsrc_mat = \
 "	return c;\n" \
 "}\n";
 
-// This defines the header file for uncoupled material plugins
-const char* szhdr_ucm = \
-"#include <FEBioMech\\FEUncoupledMaterial.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEUncoupledMaterial\n" \
-"{\n" \
-"public:\n" \
-"	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"
-"	// evaluate Cauchy stress\n"
-"	mat3ds DevStress(FEMaterialPoint& mp) override;\n\n" \
-"	// evaluate spatial elasticity tangent\n"
-"	tens4ds DevTangent(FEMaterialPoint& mp) override;\n\n"
-"private:\n"
-"	// TODO: Add member variables here\n\n"\
-"	DECLARE_FECORE_CLASS();\n"
-"};\n";
-
-// This defines the source file for uncoupled material plugins
-const char* szsrc_ucm = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FEUncoupledMaterial)\n"\
-"	// TODO: Add parameters\n"\
-"END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FEUncoupledMaterial(fem)\n"\
-"{\n" \
-"	// TODO: initialize all class member variables\n" \
-"}\n\n" \
-"mat3ds $(PLUGIN_NAME)::DevStress(FEMaterialPoint& mp)\n" \
-"{\n" \
-"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
-"	// TODO: implement stress\n" \
-"	mat3ds s;\n" \
-"	return s;\n" \
-"}\n\n" \
-"tens4ds $(PLUGIN_NAME)::DevTangent(FEMaterialPoint& mp)\n" \
-"{\n" \
-"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
-"	// TODO: implement tangent\n" \
-"	tens4ds c;\n" \
-"	return c;\n" \
-"}\n";
-
-// This defines the header file for meshdata generator plugins
+// ============================================================================
+// meshdata generator
+// ============================================================================
 const char* szhdr_mdg = \
 "#include <FECore\\FEDataGenerator.h>\n\n" \
 "class $(PLUGIN_NAME) : public FEElemDataGenerator\n" \
@@ -174,7 +152,9 @@ const char* szsrc_mdg = \
 "	return nullptr;\n" \
 "}\n";
 
-// This defines the header file for node plot data plugins
+// ============================================================================
+// node plot data
+// ============================================================================
 const char* szhdr_npd = \
 "#include <FECore\\FEPlotData.h>\n\n" \
 "class $(PLUGIN_NAME) : public FEPlotNodeData\n" \
@@ -194,9 +174,96 @@ const char* szsrc_npd = \
 "	int N = m.Nodes();\n"\
 "	for (int i = 0; i < N; ++i)\n"\
 "	{\n"\
+"		const FENode& node = m.Node(i);\n"\
 "		$(ARG2) v;\n"\
 "		// TODO: calculate something for v\n"\
 "		a << v;\n"\
 "	}\n"\
 "	return true;\n" \
+"}\n";
+
+// ============================================================================
+// element plot data
+// ============================================================================
+const char* szhdr_epd = \
+"#include <FECore\\FEPlotData.h>\n\n" \
+"class $(PLUGIN_NAME) : public FEPlotDomainData\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotDomainData(fem, $(ARG1), $(ARG2)){}\n"
+"	bool Save(FEDomain& dom, FEDataStream& a);\n"
+"};\n";
+
+const char* szsrc_epd = \
+"#include \"$(PLUGIN_NAME).h\"\n" \
+"#include <FECore\\FEDomain.h>\n\n"\
+"bool $(PLUGIN_NAME)::Save(FEDomain& dom, FEDataStream& a)\n" \
+"{\n" \
+"$(ARG3)"\
+"	return true;\n" \
+"}\n";
+
+// snippet for ARG2=FMT_ITEM
+const char* szepd_snippet_item = \
+"	int N = dom.Elements();\n"\
+"	for (int i = 0; i < N; ++i)\n"\
+"	{\n"\
+"		const FEElement& el = dom.ElementRef(i);\n"\
+"		$(ARG4) v;\n"\
+"		// TODO: calculate something for v\n"\
+"		a << v;\n"\
+"	}\n";
+
+// snippet for ARG2=FMT_REGION
+const char* szepd_snippet_region = \
+"	// TODO: calculate a single value for this domain.\n"\
+"	$(ARG4) v;\n"\
+"	a << v;\n";
+
+// ============================================================================
+// surface load
+// ============================================================================
+const char* szhdr_sl = \
+"#include <FECore\\FESurfaceLoad.h>\n\n" \
+"class $(PLUGIN_NAME) : public FESurfaceLoad\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	// initialization\n"\
+"	bool Init() override;\n\n"\
+"	// serialize data\n"\
+"	void Serialize(DumpStream& ar) override;\n\n"\
+"	// calculate residual\n"\
+"	void LoadVector(FEGlobalVector& R) override;\n\n"\
+"	// calculate pressure stiffness\n"\
+"	void StiffnessMatrix(FELinearSystem& LS) override;\n\n"
+"private:\n"
+"	// TODO: Add member variables here\n\n"\
+"	DECLARE_FECORE_CLASS();\n"
+"};\n";
+
+const char* szsrc_sl = \
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FESurfaceLoad)\n"\
+"	// TODO: Add parameters\n"\
+"END_FECORE_CLASS();\n\n"\
+"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FESurfaceLoad(fem)\n"\
+"{\n"\
+"	// TODO: Initialize all class members.\n"\
+"}\n\n"\
+"bool $(PLUGIN_NAME)::Init()\n"\
+"{\n"\
+"	// TODO: Do any additional initialization\n"\
+"	return FESurfaceLoad::Init();\n"
+"}\n\n"\
+"void $(PLUGIN_NAME)::Serialize(DumpStream& ar)\n"\
+"{\n"\
+"	FESurfaceLoad::Serialize(ar);\n"
+"	// TODO: Do any additional serialization\n"\
+"}\n\n"\
+"void $(PLUGIN_NAME)::LoadVector(FEGlobalVector& R)\n"\
+"{\n"\
+"}\n\n"\
+"void $(PLUGIN_NAME)::StiffnessMatrix(FELinearSystem& LS)\n"\
+"{\n"\
 "}\n";

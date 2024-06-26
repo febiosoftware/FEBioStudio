@@ -167,7 +167,7 @@ const char* szcppkeywords[] = {
 	"long",
 	"mutable",
 	"namespace", "new", "noexcept", "not", "not_eq", "nullptr",
-	"operator", "or", "or_eq",
+	"operator", "or", "or_eq", "override",
 	"private", "protected", "public",
 	"reflexpr", "register", "reinterpret_cast", "requires",
 	"short", "signed", "sizeof", "static", "static_assert", "static_cast", "struct",
