@@ -61,11 +61,3 @@ SOFTWARE.*/
 
 #define FBS_MAJOR_VERSION(a) ((a) >> 16)
 #define FBS_MINOR_VERSION(a) ((a) & 0x0000FFFF)
-
-//-----------------------------------------------------------------------------
-// SVN VERSION
-#ifdef SVN
-#include "svnrev.h"
-#else
-#define SVNREVISION 0
-#endif
