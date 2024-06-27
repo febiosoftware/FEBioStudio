@@ -39,7 +39,14 @@ CXMLDocument::CXMLDocument(CMainWindow* wnd)
     : CUndoDocument(wnd), m_treeModel(nullptr), m_editingText(false),
         m_textDocument(new QTextDocument)
 {
-    m_textDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_textDocument));
+	QFont font;
+	font.setFamily("Consolas");
+	font.setPointSize(14);
+	font.setWeight(QFont::Medium);
+	font.setFixedPitch(true);
+
+	m_textDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_textDocument));
+	m_textDocument->setDefaultFont(font);
 
 	SetIcon(":/icons/febio.png");
 }
@@ -65,7 +72,10 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
     XMLReader reader;
     if(!reader.Open(fileName.toStdString().c_str())) return false;
 
-    return ReadXML(reader);
+    bool b = ReadXML(reader);
+	m_textDocument->setModified(false);
+
+	return b;
 }
 
 bool CXMLDocument::ReadXML(XMLReader& reader)
@@ -253,6 +263,7 @@ bool CXMLDocument::EditAsText(bool editText)
         writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
 
         m_textDocument->setPlainText(stream.str().c_str());
+		m_textDocument->setModified(false);
 
         return true;
     }
