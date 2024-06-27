@@ -349,9 +349,12 @@ QTreeWidgetItem* addProjectItem(QTreeWidgetItem* treeItem, const FEBioStudioProj
 	else if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
 	else if (ext == "feb" ) icon = QIcon(":/icons/febio.png");
 	else if (ext == "pdf" ) icon = QIcon(":/icons/pdf.png");
+	else if (fileName.indexOf("CMakeLists.txt") != -1) icon = QIcon(":/icons/cmake.png");
 	else if (ext == "txt" ) icon = QIcon(":/icons/txt.png");
 	else if (ext == "mpg" ) icon = QIcon(":/icons/video.png");
 	else if (ext == "html") icon = QIcon(":/icons/html.png");
+	else if ((ext == "cpp") || (ext == "cxx")) icon = QIcon(":/icons/cpp_src.png");
+	else if ((ext == "h"  ) || (ext == "hpp")) icon = QIcon(":/icons/cpp_hdr.png");
 
 	if (doc && (doc->GetDocFilePath().empty() == false))
 	{

@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
-	SetIcon(":/icons/febio.png");
+	SetIcon(":/icons/txt.png");
 	m_txt.setDocumentLayout(new QPlainTextDocumentLayout(&m_txt));
 }
 
@@ -48,6 +48,13 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 	font.setPointSize(14);
 	font.setWeight(QFont::Medium);
 	font.setFixedPitch(true);
+
+	QString ext = QFileInfo(fileName).suffix();
+	if      ((ext == "h"  ) || (ext == "hpp")) SetIcon(":/icons/cpp_hdr.png");
+	else if ((ext == "cpp") || (ext == "cxx")) SetIcon(":/icons/cpp_src.png");
+	else if (ext == "feb") SetIcon(":/icons/febio.png");
+	else if (fileName.indexOf("CMakeLists.txt") != -1) SetIcon(":/icons/cmake.png");
+	else SetIcon(":/icons/txt.png");
 
 	m_txt.setDefaultFont(font);
 	QTextOption ops = m_txt.defaultTextOption();
