@@ -290,9 +290,12 @@ void Ui::CTextConfig::Apply()
 	if (txtDoc)
 	{
 		QString title = QString::fromStdString(txtDoc->GetDocTitle());
-		bool isCode = (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1);
+		CTextEditor::TextFormat fmt = CTextEditor::PLAIN;
+		if (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1) fmt = CTextEditor::CODE;
+		if (title.indexOf("CMakeLists.txt") != -1) fmt = CTextEditor::CMAKE;
+
 		ui->centralWidget->txtEdit->blockSignals(true);
-		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText(), (isCode ? CTextEditor::CODE : CTextEditor::PLAIN));
+		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText(), fmt);
 		ui->centralWidget->txtEdit->blockSignals(false);
 	}
 

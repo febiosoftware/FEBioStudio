@@ -11,7 +11,8 @@ public:
 	enum TextFormat {
 		PLAIN,
 		XML,
-		CODE
+		CODE,
+		CMAKE
 	};
 
 public:
@@ -30,6 +31,7 @@ protected:
 	void resizeEvent(QResizeEvent* event) override;
 	void paintEvent(QPaintEvent* event) override;
 	void wheelEvent(QWheelEvent* ev) override;
+	void SetHighlighter(QTextDocument* doc, TextFormat fmt);
 
 private slots:
 	void updateLineNumberAreaWidth(int newBlockCount);

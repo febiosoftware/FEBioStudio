@@ -11,149 +11,150 @@
 #include <QTextBlock>
 #include <QRegularExpression>
 
-struct HighlightingRule
+class HighlightRule
 {
+public:
 	QRegularExpression pattern;
 	QTextCharFormat format;
-	int	offset = 0;
+	
+	HighlightRule() {}
+	HighlightRule(const QString& regex) : pattern(regex) {}
 
 	void setPattern(const QString& regex) { pattern.setPattern(regex); }
-	void setStyle(const QBrush& fg, int weight)
+	void setStyle(const QBrush& fg, int weight = QFont::Medium)
 	{
 		format.setForeground(fg);
 		format.setFontWeight(weight);
 	}
 };
 
-class PlainTextHighlighter : public QSyntaxHighlighter
+class CSyntaxHighlighter : public QSyntaxHighlighter
 {
 public:
-	PlainTextHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc) {}
-	void highlightBlock(const QString& text) {}
-};
+	CSyntaxHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc) {}
 
-class XMLHighlighter : public QSyntaxHighlighter
-{
-public:
-	enum HighlightColors {
-		XML_VALUE,
-		XML_ATTRIBUTE_NAME,
-		XML_ATTRIBUTE_VALUE,
-		XML_COMMENT,
-		XML_HIGHLIGHT
-	};
+	void AddRule(const HighlightRule& rule) { m_rules.append(rule); }
 
-public:
-	XMLHighlighter(QTextDocument* doc, int theme) : QSyntaxHighlighter(doc)
+	void AddRule(const QString& regex, const QBrush& fg, int weight = QFont::Medium)
 	{
-		HighlightingRule rule;
-
-		if (theme == 0)
-		{
-			XMLHighlighter::setColor(Qt::black, XMLHighlighter::XML_VALUE);
-			XMLHighlighter::setColor(Qt::red, XMLHighlighter::XML_ATTRIBUTE_NAME);
-			XMLHighlighter::setColor(Qt::blue, XMLHighlighter::XML_ATTRIBUTE_VALUE);
-			XMLHighlighter::setColor(Qt::darkGreen, XMLHighlighter::XML_COMMENT);
-			XMLHighlighter::setColor(QColor::fromRgb(240, 240, 255), XMLHighlighter::XML_HIGHLIGHT);
-		}
-		else
-		{
-			XMLHighlighter::setColor(Qt::white, XMLHighlighter::XML_VALUE);
-			XMLHighlighter::setColor(QColor::fromRgb(102, 204, 255), XMLHighlighter::XML_ATTRIBUTE_NAME);
-			XMLHighlighter::setColor(QColor::fromRgb(255, 150, 50), XMLHighlighter::XML_ATTRIBUTE_VALUE);
-			XMLHighlighter::setColor(Qt::darkGreen, XMLHighlighter::XML_COMMENT);
-			XMLHighlighter::setColor(QColor::fromRgb(0, 51, 102), XMLHighlighter::XML_HIGHLIGHT);
-		}
-
-
-		QPalette palette = qApp->palette();
-
-		// XML values
-//		rule.pattern = QRegExp("\\b[\\-0-9\\.+\\-e,]+\\b");
-		rule.pattern = QRegularExpression(">[^<]*");
-		rule.format.setForeground(m_pal[XML_VALUE]);
-		rule.format.setFontWeight(QFont::Bold);
-		rule.offset = 1;
-		highlightingRules.append(rule);
-
-		// xml attribute values
-		rule.offset = 0;
-		rule.pattern = QRegularExpression("\"(?:[^\"]|\\.)*\"");
-		rule.format.setForeground(m_pal[XML_ATTRIBUTE_VALUE]);
-		highlightingRules.append(rule);
-
-		// xml attributes
-		rule.offset = 0;
-		rule.pattern = QRegularExpression("\\b[a-zA-Z0-9_]+(?=\\=)");
-		rule.format.setForeground(m_pal[XML_ATTRIBUTE_NAME]);
-		highlightingRules.append(rule);
-
-		// comments
-		commentFormat.setForeground(m_pal[XML_COMMENT]);
-		commentStartExpression = QRegularExpression("<!--");
-		commentEndExpression = QRegularExpression("-->");
+		HighlightRule rule(regex);
+		rule.setStyle(fg, weight);
+		m_rules.append(rule);
 	}
 
-	static void setColor(const QBrush& b, int role)
+	void SetMultilineComment(const QString& start, const QString& end, const QBrush& fg, int weight = QFont::Medium)
 	{
-		m_pal[role] = b;
+		m_startExpression = start;
+		m_endExpression = end;
+		m_commmentFormat.setForeground(fg);
+		m_commmentFormat.setFontWeight(weight);
 	}
 
-	static const QBrush& color(int role) { return m_pal[role]; }
-
-	void highlightBlock(const QString& text)
+	void highlightBlock(const QString& text) override
 	{
-		foreach( const HighlightingRule &rule, highlightingRules) 
-		{
-			const QRegularExpression& expression = rule.pattern;
-			QRegularExpressionMatch match = expression.match(text);
-			int index = match.capturedStart();
-			while (index >= 0) {
-				int length = match.capturedLength();
-				setFormat(index + rule.offset, length - 1*rule.offset, rule.format);
-				
-				match = expression.match(text, index + length);
-				index = match.capturedStart();
-			}
-		}
+		ApplyRules(text);
+		CheckMultilineComment(text);
+	}
 
+protected:
+
+	void ApplyRules(const QString& text)
+	{
+		for (const auto& rule : m_rules)
+		{
+			ApplyRule(text, rule);
+		}
+	}
+
+	bool ApplyRule(const QString& text, const HighlightRule& rule, int offset = 0)
+	{
+		int matches = 0;
+		QRegularExpressionMatchIterator i = rule.pattern.globalMatch(text, offset);
+		while (i.hasNext()) {
+			QRegularExpressionMatch match = i.next();
+			setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+			matches++;
+		}
+		return (matches != 0);
+	}
+
+	void CheckMultilineComment(const QString& text)
+	{
+		if (m_startExpression.isEmpty() || m_endExpression.isEmpty()) return;
+
+		QRegularExpression startExpression(m_startExpression);
+		QRegularExpression endExpression(m_endExpression);
 
 		setCurrentBlockState(0);
 
 		int startIndex = 0;
 		if (previousBlockState() != 1)
-			startIndex = commentStartExpression.match(text).capturedStart();
+			startIndex = text.indexOf(startExpression);
 
-		while (startIndex >= 0)
-		{
-			int endIndex = commentEndExpression.match(text, startIndex).capturedStart();
+		while (startIndex >= 0) {
+			QRegularExpressionMatch endMatch;
+			int endIndex = text.indexOf(endExpression, startIndex, &endMatch);
 			int commentLength;
-			if (endIndex == -1)
-			{
+			if (endIndex == -1) {
 				setCurrentBlockState(1);
 				commentLength = text.length() - startIndex;
 			}
-			else
-			{
-				commentLength = endIndex - startIndex + commentEndExpression.match(text, startIndex).capturedLength();
+			else {
+				commentLength = endIndex - startIndex
+					+ endMatch.capturedLength();
 			}
-			setFormat(startIndex, commentLength, commentFormat);
-			startIndex = commentStartExpression.match(text, startIndex + commentLength).capturedStart();
+			setFormat(startIndex, commentLength, m_commmentFormat);
+			startIndex = text.indexOf(startExpression,
+				startIndex + commentLength);
 		}
 	}
 
-private:
-	QVector<HighlightingRule> highlightingRules;
+protected:
+	QList<HighlightRule>	m_rules;
 
-	QTextCharFormat	commentFormat;
-	QRegularExpression commentStartExpression;
-	QRegularExpression commentEndExpression;
-
-public:
-	static QBrush	m_pal[5];
+	// multiline comments
+	QString m_startExpression;
+	QString m_endExpression;
+	QTextCharFormat m_commmentFormat;
 };
 
-QBrush XMLHighlighter::m_pal[5];
+class PlainTextHighlighter : public CSyntaxHighlighter
+{
+public:
+	PlainTextHighlighter(QTextDocument* doc) : CSyntaxHighlighter(doc) {}
+	void highlightBlock(const QString& text) {}
+};
+
+class XMLHighlighter : public CSyntaxHighlighter
+{
+public:
+	XMLHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
+	{
+		QString tag("(?<=<|<\\?|<\\/)[\\w]+");
+		QString value("(?<=>)[^<]+");
+		QString stringValue("(?<=>)[a-zA-Z][\\w]*");
+		QString attName("\\b[a-zA-Z0-9_]+(?=\\=)");
+		QString attVal("\"[^\"]*\"");
+
+		if (theme == 0)
+		{
+			AddRule(tag    , Qt::blue);
+			AddRule(value  , Qt::darkGray);
+			AddRule(attName, Qt::red);
+			AddRule(attVal , Qt::blue);
+		}
+		else
+		{
+			AddRule(tag        , QColor("cornflowerblue"));
+			AddRule(value      , QColor("gainsboro"));
+			AddRule(stringValue, QColor("khaki"));
+			AddRule(attName    , QColor::fromRgb(102, 204, 255));
+			AddRule(attVal     , QColor::fromRgb(255, 150, 50));
+		}
+
+		SetMultilineComment("<!--", "-->", QColor("forestgreen"));
+	}
+};
 
 const char* szcppkeywords[] = {
 	"alignas", "alignof", "and", "and_eq", "asm", "auto",
@@ -205,108 +206,105 @@ QString toString(const char* sz[], size_t n)
 	return s;
 }
 
-class CppHighlighter : public QSyntaxHighlighter
+class CppHighlighter : public CSyntaxHighlighter
 {
 public:
-	CppHighlighter(QTextDocument* doc, int theme) : QSyntaxHighlighter(doc)
+	CppHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
 	{
 		QString keywords = toString(szcppkeywords, sizeof(szcppkeywords) / sizeof(const char*));
 		QString controls = toString(szcppcontrols, sizeof(szcppcontrols) / sizeof(const char*));
 
-		m_cppKeyWords.setPattern(keywords);
-		m_cppControls.setPattern(controls);
-		m_directives.setPattern("#.*");
-		m_lineComment.setPattern("//.*");
-		m_stringLiterals.setPattern("\".*\"");
-		// TODO: This doesn't work correctly in all cases yet. 
-		//       I added the whitespace in front to avoid that variable names with integers would match,
-		//       but this also causes issues. I think I may need to use conditionals, but not sure yet how. 
-		m_numbers.setPattern("\\s[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
+		QString cppKeyWords(keywords);
+		QString cppControls(controls);
+		QString directives("#.*");
+		QString lineComment("//.*");
+		QString stringLiterals("\".*\"");
+		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
+		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
+		QString braces("[\\(\\[\\{\\)\\]\\}]");
 
 		if (theme == 0) // light theme
 		{
-			m_cppKeyWords.setStyle(Qt::blue, QFont::DemiBold);
-			m_cppControls.setStyle(Qt::darkMagenta, QFont::DemiBold);
-			m_directives.setStyle(Qt::darkRed, QFont::DemiBold);
-			m_lineComment.setStyle(Qt::darkGreen, QFont::DemiBold);
-			m_stringLiterals.setStyle(QColor("orangered"), QFont::DemiBold);
-			m_numbers.setStyle(Qt::darkCyan, QFont::DemiBold);
+			AddRule(cppKeyWords   , Qt::blue);
+			AddRule(cppControls   , Qt::darkMagenta);
+			AddRule(numbers       , Qt::darkCyan);
+			AddRule(braces        , QColor("gold"));
+			AddRule(allcaps       , Qt::green);
+			AddRule(stringLiterals, QColor("orangered"));
+			AddRule(directives    , Qt::darkRed);
+			AddRule(lineComment   , Qt::darkGreen);
 		}
 		else // dark theme
 		{
-			m_cppKeyWords.setStyle(QColor("dodgerblue"), QFont::DemiBold);
-			m_cppControls.setStyle(QColor("plum"), QFont::DemiBold);
-			m_directives.setStyle(QColor("orangered"), QFont::DemiBold);
-			m_lineComment.setStyle(Qt::darkGreen, QFont::DemiBold);
-			m_stringLiterals.setStyle(QColor("orange"), QFont::DemiBold);
-			m_numbers.setStyle(Qt::cyan, QFont::DemiBold);
+			AddRule(cppKeyWords   , QColor("dodgerblue"));
+			AddRule(cppControls   , QColor("plum"));
+			AddRule(numbers       , Qt::cyan);
+			AddRule(braces        , QColor("gold"));
+			AddRule(allcaps       , QColor("lightskyblue"));
+			AddRule(stringLiterals, QColor("orange"));
+			AddRule(directives    , QColor("darkorange"));
+			AddRule(lineComment   , QColor("forestgreen"));
+		}
+
+		SetMultilineComment("\\/\\*", "\\*\\/", QColor("forestgreen"));
+	}
+};
+
+const char* szcmakecmd[] = {
+	"add_definitions",
+	"add_library",
+	"cmake_minimum_required", 
+	"find_library", 
+	"include", 
+	"include_directories", 
+	"link_directories", 
+	"mark_as_advanced", 
+	"message", 
+	"option", 
+	"project", 
+	"set", 
+	"set_property", 
+	"target_link_libraries", 
+};
+
+const char* szcmakectrl[] = {
+	"if", "foreach", "while", "macro", "function"
+};
+
+class CMakeHighlighter : public CSyntaxHighlighter
+{
+public:
+	CMakeHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
+	{
+		QString cmdList  = toString(szcmakecmd, sizeof(szcmakecmd) / sizeof(const char*));
+		QString ctrlList = toString(szcmakectrl, sizeof(szcmakectrl) / sizeof(const char*));
+
+		QString commands(cmdList);
+		QString control(ctrlList);
+		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
+		QString braces("[\\(\\[\\{\\)\\]\\}]");
+		QString stringLiterals("\".*\"");
+		QString lineComment("#.*");
+
+		if (theme == 0) // light theme
+		{
+			AddRule(commands      , Qt::darkBlue);
+			AddRule(control       , Qt::blue);
+			AddRule(braces        , QColor("gold"));
+			AddRule(allcaps       , Qt::green);
+			AddRule(lineComment   , Qt::darkGreen);
+			AddRule(stringLiterals, QColor("orangered"));
+		}
+		else // dark theme
+		{
+			AddRule(commands      , QColor("khaki"));
+			AddRule(control       , QColor("cornflowerblue"));
+			AddRule(braces        , QColor("gold"));
+			AddRule(allcaps       , QColor("lightskyblue"));
+			AddRule(lineComment   , QColor("olivedrab"));
+			AddRule(stringLiterals, QColor("coral"));
 		}
 	}
-
-	void highlightBlock(const QString& text)
-	{
-		ApplyRule(text, m_cppKeyWords);
-		ApplyRule(text, m_cppControls);
-		ApplyRule(text, m_numbers);
-		ApplyRule(text, m_stringLiterals);
-		ApplyRule(text, m_directives);
-		ApplyRule(text, m_lineComment);
-
-		CheckMultilineComment(text);
-	}
-
-private:
-	bool ApplyRule(const QString& text, const HighlightingRule& rule, int offset = 0)
-	{
-		int matches = 0;
-		QRegularExpressionMatchIterator i = rule.pattern.globalMatch(text, offset);
-		while (i.hasNext()) {
-			QRegularExpressionMatch match = i.next();
-			setFormat(match.capturedStart(), match.capturedLength(), rule.format);
-			matches++;
-		}
-		return (matches != 0);
-	}
-
-	void CheckMultilineComment(const QString& text)
-	{
-		QTextCharFormat multiLineCommentFormat;
-		multiLineCommentFormat.setForeground(Qt::darkGreen);
-		multiLineCommentFormat.setFontWeight(QFont::DemiBold);
-		QRegularExpression startExpression("/\\*");
-		QRegularExpression endExpression("\\*/");
-
-		setCurrentBlockState(0);
-
-		int startIndex = 0;
-		if (previousBlockState() != 1)
-			startIndex = text.indexOf(startExpression);
-
-		while (startIndex >= 0) {
-			QRegularExpressionMatch endMatch;
-			int endIndex = text.indexOf(endExpression, startIndex, &endMatch);
-			int commentLength;
-			if (endIndex == -1) {
-				setCurrentBlockState(1);
-				commentLength = text.length() - startIndex;
-			}
-			else {
-				commentLength = endIndex - startIndex
-					+ endMatch.capturedLength();
-			}
-			setFormat(startIndex, commentLength, multiLineCommentFormat);
-			startIndex = text.indexOf(startExpression,
-				startIndex + commentLength);
-		}
-	}
-
-private:
-	HighlightingRule m_cppKeyWords;
-	HighlightingRule m_cppControls;
-	HighlightingRule m_directives;
-	HighlightingRule m_lineComment;
-	HighlightingRule m_stringLiterals;
-	HighlightingRule m_numbers;
 };
 
 CTextEditor::CTextEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
@@ -329,6 +327,20 @@ CTextEditor::CTextEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 //	highlightCurrentLine();
 }
 
+void CTextEditor::SetHighlighter(QTextDocument* doc, TextFormat fmt)
+{
+	CSyntaxHighlighter* hl = nullptr;
+	switch (fmt)
+	{
+	case TextFormat::PLAIN: hl = new PlainTextHighlighter(doc); break;
+	case TextFormat::XML  : hl = new XMLHighlighter(doc, m_wnd->currentTheme()); break;
+	case TextFormat::CODE : hl = new CppHighlighter(doc, m_wnd->currentTheme()); break;
+	case TextFormat::CMAKE: hl = new CMakeHighlighter(doc, m_wnd->currentTheme()); break;
+	default:
+		assert(false);
+	}
+}
+
 void CTextEditor::SetDocument(QTextDocument* doc, TextFormat fmt)
 {
 	QPalette p = palette();
@@ -337,24 +349,7 @@ void CTextEditor::SetDocument(QTextDocument* doc, TextFormat fmt)
 
 	if (doc)
 	{
-		switch (fmt)
-		{
-		case TextFormat::PLAIN:
-		{
-			PlainTextHighlighter* highLighter = new PlainTextHighlighter(doc);
-		}
-		break;
-		case TextFormat::XML:
-		{
-			XMLHighlighter* highLighter = new XMLHighlighter(doc, m_wnd->currentTheme());
-		}
-		break;
-		case TextFormat::CODE:
-		{
-			CppHighlighter* highLighter = new CppHighlighter(doc, m_wnd->currentTheme());
-		}
-		break;
-		}
+		SetHighlighter(doc, fmt);
 	}
 	else 
 	{
@@ -446,6 +441,10 @@ void CTextEditor::wheelEvent(QWheelEvent* ev)
 		ev->accept();
 		update();
 	}
+	else
+	{
+		QPlainTextEdit::wheelEvent(ev);
+	}
 }
 
 void CTextEditor::resizeEvent(QResizeEvent* e)
@@ -460,10 +459,16 @@ void CTextEditor::highlightCurrentLine()
 {
 	QList<QTextEdit::ExtraSelection> extraSelection;
 
+	QBrush bg;
+	if (m_wnd->currentTheme() == 0)
+		bg = QColor::fromRgb(240, 240, 255);
+	else
+		bg = QColor::fromRgb(0, 51, 102);
+
 	if (!isReadOnly() && isEnabled())
 	{
 		QTextEdit::ExtraSelection selection;
-		selection.format.setBackground(XMLHighlighter::color(XMLHighlighter::XML_HIGHLIGHT));
+		selection.format.setBackground(bg);
 		selection.format.setProperty(QTextFormat::FullWidthSelection, true);
 		selection.cursor = textCursor();
 		selection.cursor.clearSelection();
