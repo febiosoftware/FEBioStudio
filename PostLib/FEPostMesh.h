@@ -58,8 +58,6 @@ public:
 	//! clean mesh and all data
 	void ClearAll();
 
-	const std::vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
-
 public:
 	// --- G E O M E T R Y ---
 
@@ -117,8 +115,6 @@ protected:
 	std::vector<FSElemSet*>	m_ESet;	// element sets
 	std::vector<FSSurface*>	m_Surf;	// surfaces
 	std::vector<FSNodeSet*>	m_NSet;	// node sets
-
-	FSNodeElementList	m_NEL;
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

@@ -68,6 +68,7 @@ void FSNodeElementList::Build(FSCoreMesh* pm)
 
 void FSNodeElementList::Clear()
 {
+	m_pm = nullptr;
 	m_elem.clear();
 }
 

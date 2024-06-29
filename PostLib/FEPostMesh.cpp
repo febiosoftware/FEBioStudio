@@ -209,7 +209,7 @@ void Post::FEPostMesh::BuildMesh()
 	FSMesh::RebuildMesh(60.0);
 
 	// Build the node-element list
-	m_NEL.Build(this);
+	if (m_NEL.IsEmpty()) m_NEL.Build(this);
 
 	// build the node-face list
 	m_NFL.Build(this);
