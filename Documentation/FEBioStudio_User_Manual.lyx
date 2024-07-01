@@ -13445,9 +13445,9 @@ This chapter presents a more detailed overview of the GUI when a plot file
  is loaded.
  This configuration of the FEBio Studio UI is called the 
 \emph on
-Post environment
+Post Environment
 \emph default
-\SpecialChar endofsentence
+.
  
 \end_layout
 
