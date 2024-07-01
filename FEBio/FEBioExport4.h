@@ -167,6 +167,8 @@ private:
 				if (m_ELst[i]->m_name == name) return m_ELst[i];
 			return 0;
 		}
+
+		std::vector<FEBioExport4::Domain*> GetDomainsFromGPart(GPart* pg);
 	};
 
 	class ElementSet
@@ -220,7 +222,6 @@ protected:
 	void WriteMeshElements();
 	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryElements(bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
