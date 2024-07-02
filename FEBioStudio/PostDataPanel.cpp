@@ -371,9 +371,10 @@ public:
 				case NODE_DATA: return QString("NODE"); break;
 				case FACE_DATA: return QString("FACE"); break;
 				case ELEM_DATA: return QString("ELEM"); break;
+				case OBJECT_DATA: return QString("Global"); break;
 				default:
 					assert(false);
-					return QString("(unknown");
+					return QString("(unknown)");
 				}
 			}
 			else if (ncol == 3)
