@@ -218,6 +218,15 @@ public:
 	}
 };
 
+class CLogDomainDataProps : public CPluginTemplate
+{
+public:
+	CLogDomainDataProps() : CPluginTemplate("Log domain data", szhdr_dld, szsrc_dld)
+	{
+		SetInfo("Implement a new domain data log variable that can be written to the FEBio log file.");
+	}
+};
+
 class CCallbackProps : public CPluginTemplate
 {
 public:
@@ -238,11 +247,13 @@ public:
 
 //=============================================================================
 // Try to keep this in alphabetical order
-const int PLUGIN_TEMPLATES = 10;
+// NOTE: remember to increase PLUGIN_TEMPLATES when adding a new template.
+const int PLUGIN_TEMPLATES = 11;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CCallbackProps(),
 	new CElasticMaterialProps(),
 	new CElemDataGeneratorProps(),
+	new CLogDomainDataProps(),
 	new CLogElemDataProps(),
 	new CLogNodeDataProps(),
 	new CPlotElemDataProps(),

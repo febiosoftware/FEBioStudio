@@ -345,6 +345,28 @@ const char* szsrc_eld = \
 "	return val;\n"\
 "}\n";
 
+
+// ============================================================================
+// domain log data
+// ============================================================================
+const char* szhdr_dld = \
+"#include <FECore\\DomainDataRecord.h>\n\n" \
+"class $(PLUGIN_NAME) : public FELogDomainData\n" \
+"{\n" \
+"public:\n" \
+"	$(PLUGIN_NAME)(FEModel* fem) : FELogDomainData(fem){}\n"\
+"	double value(FEDomain& dom) override;\n"\
+"};\n";
+
+const char* szsrc_dld = \
+"#include \"$(PLUGIN_NAME).h\"\n\n" \
+"double $(PLUGIN_NAME)::value(FEDomain& dom)\n" \
+"{\n" \
+"	// TODO: calculate something for val\n"\
+"	double val = 0.0;\n"\
+"	return val;\n"\
+"}\n";
+
 // ============================================================================
 // Callbacks
 // ============================================================================
