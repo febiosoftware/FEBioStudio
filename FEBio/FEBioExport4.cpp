@@ -3263,6 +3263,21 @@ void FEBioExport4::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
+				case FSLogData::LD_DOMAIN:
+				{
+					XMLElement e;
+					e.name("domain_data");
+					e.add_attribute("data", d.GetDataString());
+
+					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
+
+					FSLogDomainData& fd = dynamic_cast<FSLogDomainData&>(d);
+					FEItemListBuilder* pg = fd.GetItemList();
+					if (pg) e.add_attribute("domain", pg->GetName());
+
+					m_xml.add_empty(e);
+				}
+				break;
 				case FSLogData::LD_ELEM:
 				{
 					XMLElement e;
