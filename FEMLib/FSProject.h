@@ -63,7 +63,7 @@ enum MODULE_FLAG
 class FSLogData
 {
 public:
-	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR, LD_FACE, LD_SURFACE };
+	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR, LD_FACE, LD_SURFACE, LD_DOMAIN };
 
 public:
 	FSLogData(int ntype) { m_type = ntype; }
@@ -122,6 +122,16 @@ public:
 	FSLogSurfaceData() : FSLogData(LD_SURFACE) { SetMeshItemType(FE_FACE_FLAG); }
 	FSLogSurfaceData(FEItemListBuilder* pl) : FSLogData(LD_SURFACE) {
 		SetMeshItemType(FE_FACE_FLAG);
+		SetItemList(pl);
+	}
+};
+
+class FSLogDomainData : public FSLogData, public FSHasOneItemList
+{
+public:
+	FSLogDomainData() : FSLogData(LD_DOMAIN) { SetMeshItemType(FE_PART_FLAG); }
+	FSLogDomainData(FEItemListBuilder* pl) : FSLogData(LD_DOMAIN) {
+		SetMeshItemType(FE_PART_FLAG);
 		SetItemList(pl);
 	}
 };

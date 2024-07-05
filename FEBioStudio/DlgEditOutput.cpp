@@ -170,6 +170,7 @@ public:
 		logType->addItem("Face", FSLogData::LD_FACE);
 		logType->addItem("Surface", FSLogData::LD_SURFACE);
 		logType->addItem("Element", FSLogData::LD_ELEM);
+		logType->addItem("Domain", FSLogData::LD_DOMAIN);
 		logType->addItem("Rigid body", FSLogData::LD_RIGID);
 		logType->addItem("Rigid connector", FSLogData::LD_CNCTR);
 
@@ -516,6 +517,7 @@ void CDlgEditOutput::UpdateLogTable()
 		case FSLogData::LD_FACE    : type = "Face"; break;
 		case FSLogData::LD_SURFACE : type = "Surface"; break;
 		case FSLogData::LD_ELEM    : type = "Element"; break;
+		case FSLogData::LD_DOMAIN  : type = "Domain"; break;
 		case FSLogData::LD_RIGID   : type = "Rigid body"; break;
         case FSLogData::LD_CNCTR   : type = "Rigid connector"; break;
 		}
@@ -564,10 +566,11 @@ void CDlgEditOutput::UpdateLogItemList()
 
 	int ntype = ui->logType->currentData().toInt();
 
-	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
-	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
-	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-	if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_NODE  ) ui->logList->addItem("(all nodes)", -1);
+	if (ntype == FSLogData::LD_ELEM  ) ui->logList->addItem("(all elements)", -1);
+	if (ntype == FSLogData::LD_DOMAIN) ui->logList->addItem("(all parts)", -1);
+	if (ntype == FSLogData::LD_RIGID ) ui->logList->addItem("(all rigid bodies)", -1);
+	if (ntype == FSLogData::LD_CNCTR ) ui->logList->addItem("(all rigid connectors)", -1);
 
 	std::vector<FEBio::FEBioClassInfo> info;
 	switch (ntype)
@@ -575,6 +578,7 @@ void CDlgEditOutput::UpdateLogItemList()
 	case FSLogData::LD_NODE   : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
 	case FSLogData::LD_FACE   : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
 	case FSLogData::LD_SURFACE: info = FEBio::FindAllActiveClasses(FELOGSURFACEDATA_ID); break;
+	case FSLogData::LD_DOMAIN : info = FEBio::FindAllActiveClasses(FELOGDOMAINDATA_ID); break;
 	case FSLogData::LD_ELEM   : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
 	case FSLogData::LD_RIGID  : info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
 	case FSLogData::LD_CNCTR  : info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
@@ -742,6 +746,7 @@ void CDlgEditOutput::onLogAdd()
 	case FSLogData::LD_FACE   : ld = new FSLogFaceData(mdl.FindNamedSelection(nlist)); break;
 	case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(mdl.FindNamedSelection(nlist)); break;
 	case FSLogData::LD_ELEM   : ld = new FSLogElemData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_DOMAIN : ld = new FSLogDomainData(mdl.FindNamedSelection(nlist)); break;
 	case FSLogData::LD_RIGID  : ld = new FSLogRigidData(nlist); break;
 	case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(nlist); break;
 	}

@@ -155,6 +155,7 @@ void FSMesh::Clear()
 	m_Node.clear();
 	ClearNLT();
 	ClearMeshData();
+	m_NEL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -184,6 +185,7 @@ void FSMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
 	ClearNLT();
+	m_NEL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -203,6 +205,7 @@ void FSMesh::ResizeElems(int newSize)
 {
 	m_Elem.resize(newSize);
 	ClearELT();
+	m_NEL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -699,9 +702,8 @@ void FSMesh::UpdateElementNeighbors()
 		}
 	}
 
-	// calculate the node-element table
-	FSNodeElementList NET;
-	NET.Build(this);
+	// get the node-element table
+	FSNodeElementList& NET = NodeElementList();
 
 	// loop over all elements
 #pragma omp parallel for shared(NET)
@@ -929,9 +931,8 @@ void FSMesh::UpdateFaceElementTable()
 		}
 	}
 
-	// first build the node element table
-	FSNodeElementList NET;
-	NET.Build(this);
+	// get the node element table
+	FSNodeElementList& NET = NodeElementList();
 
 	// loop over all faces
 	FSFace f2;
@@ -1053,10 +1054,8 @@ void FSMesh::UpdateEdgeElementTable()
 		e.m_elem = -1;
 	}
 
-	// first build the node element table
-	// TODO: Can we do this only once and store it on the mesh?
-	FSNodeElementList NET;
-	NET.Build(this);
+	// get the node element table
+	FSNodeElementList& NET = NodeElementList();
 
 	for (int i = 0; i < NC; ++i)
 	{
@@ -2903,4 +2902,10 @@ std::vector<int> MeshTools::GetConnectedElements(FSMesh* pm, int startIndex, dou
 	}
 
 	return elemList;
+}
+
+FSNodeElementList& FSMesh::NodeElementList()
+{
+	if (m_NEL.IsEmpty()) m_NEL.Build(this);
+	return m_NEL;
 }

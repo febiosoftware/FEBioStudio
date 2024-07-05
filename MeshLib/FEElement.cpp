@@ -507,10 +507,11 @@ int FEElement_::FindNodeIndex(int nid)
 //-----------------------------------------------------------------------------
 int FEElement_::FindFace(const FSFace& f)
 {
+	FSFace tmp;
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
-		FSFace lf = GetFace(i);
-		if (lf == f)
+		GetFace(i, tmp);
+		if (tmp == f)
 		{
 			return i;
 		}

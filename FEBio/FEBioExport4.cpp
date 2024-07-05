@@ -55,6 +55,16 @@ FSNodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
+std::vector<FEBioExport4::Domain*> FEBioExport4::Part::GetDomainsFromGPart(GPart* pg)
+{
+	std::vector<FEBioExport4::Domain*> domainList;
+	for (Domain* dom : m_Dom)
+	{
+		if (dom->m_pg == pg) domainList.push_back(dom);
+	}
+	return domainList;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -1444,6 +1454,8 @@ void FEBioExport4::WriteGeometryElementSets()
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteGeometryPartLists()
 {
+	FEBioExport4::Part& part = *m_Part[0];
+
 	GModel& mdl = m_pfem->GetModel();
 	int NP = (int)m_pPSet.size();
 	for (int i = 0; i < NP; ++i)
@@ -1461,9 +1473,19 @@ void FEBioExport4::WriteGeometryPartLists()
 			bool bfirst = true;
 			for (int id : partIDs)
 			{
-				if (bfirst == false) ss << ","; else bfirst = false;
 				GPart* pg = mdl.FindPart(id); assert(pg);
-				if (pg) ss << pg->GetName();
+				if (pg)
+				{
+					// since the domain can be split on export, we need to find all part with pg 
+					// as its parent GPart
+					std::vector<FEBioExport4::Domain*> domainList = part.GetDomainsFromGPart(pg);
+
+					for (auto domain : domainList)
+					{
+						if (bfirst == false) ss << ","; else bfirst = false;
+						ss << domain->m_name;
+					}
+				}
 			}
 		}
 		else if (dynamic_cast<FSPartSet*>(pl))
@@ -1712,33 +1734,6 @@ void FEBioExport4::WriteMeshElements()
 
 			// write this part
 			WriteGeometryPart(part, pg, false, false);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport4::WriteGeometryElements(bool writeMats, bool useMatNames)
-{
-	FSModel& s = *m_pfem;
-	GModel& model = s.GetModel();
-
-	// reset element counter
-	m_ntotelem = 0;
-
-	// loop over all objects
-	for (int i = 0; i < model.Objects(); ++i)
-	{
-		GObject* po = model.Object(i);
-
-		// loop over all parts
-		int NP = po->Parts();
-		for (int p = 0; p < NP; ++p)
-		{
-			// get the part
-			GPart* pg = po->Part(p);
-
-			// write this part
-			WriteGeometryPart(nullptr, pg, writeMats, useMatNames);
 		}
 	}
 }
@@ -3264,6 +3259,21 @@ void FEBioExport4::WriteOutputSection()
 					FSLogSurfaceData& fd = dynamic_cast<FSLogSurfaceData&>(d);
 					FEItemListBuilder* pg = fd.GetItemList();
 					if (pg) e.add_attribute("surface", pg->GetName());
+
+					m_xml.add_empty(e);
+				}
+				break;
+				case FSLogData::LD_DOMAIN:
+				{
+					XMLElement e;
+					e.name("domain_data");
+					e.add_attribute("data", d.GetDataString());
+
+					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
+
+					FSLogDomainData& fd = dynamic_cast<FSLogDomainData&>(d);
+					FEItemListBuilder* pg = fd.GetItemList();
+					if (pg) e.add_attribute("domain", pg->GetName());
 
 					m_xml.add_empty(e);
 				}

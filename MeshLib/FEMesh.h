@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/FSGroup.h>
 #include "FEMeshData.h"
 #include "Mesh_Data.h"
+#include "FENodeElementList.h"
 #include <vector>
 #include <set>
 #include <string>
@@ -189,6 +190,10 @@ public: // --- M E S H   Q U E R I E S ---
 	// select elements based on face selection
 	std::vector<int> GetElementsFromSelectedFaces();
 
+	FSNodeElementList& NodeElementList();
+
+	const std::vector<NodeElemRef>& NodeElemList(int nodeIndex) const { return m_NEL.ElementList(nodeIndex); }
+
 protected:
 	// elements
 	std::vector<FSElement>	m_Elem;	//!< FE elements
@@ -206,6 +211,8 @@ protected:
 	// Element index look up table
 	std::vector<int> m_ELT;	// Element ID lookup table
 	int m_eltmin;			// the min ID
+
+	FSNodeElementList m_NEL;
 
 	friend class FEMeshBuilder;
 };

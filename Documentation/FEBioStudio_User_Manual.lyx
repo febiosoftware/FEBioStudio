@@ -13445,9 +13445,9 @@ This chapter presents a more detailed overview of the GUI when a plot file
  is loaded.
  This configuration of the FEBio Studio UI is called the 
 \emph on
-Post environment
+Post Environment
 \emph default
-\SpecialChar endofsentence
+.
  
 \end_layout
 
@@ -13805,8 +13805,8 @@ Go to the last time step
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/properties.png
-	width 0.45in
-	height 0.38in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13816,8 +13816,8 @@ Open the time dialog box
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/colormap.png
-	width 0.25in
-	height 0.23in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13860,6 +13860,8 @@ Adds a vector plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/tensor.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13880,8 +13882,8 @@ Adds a isosurface plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/post_slice.png
-	width 0.3in
-	height 0.27in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13891,6 +13893,8 @@ Adds a slice plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/streamlines.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13900,6 +13904,8 @@ Adds a stream line plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/particle.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13909,6 +13915,8 @@ Adds a particle flow plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/imageslice.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13918,6 +13926,8 @@ Adds an image slicer to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/volrender.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13927,6 +13937,8 @@ Adds a 3D volume renderer to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/marching_cubes.png
+    width 0.28in
+	height 0.25in
 
 \end_inset
 

@@ -41,7 +41,7 @@ SOFTWARE.*/
 QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
-	char sz[1024] = { 0 };
+	char sz[2048] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (fem)
