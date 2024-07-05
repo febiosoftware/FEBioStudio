@@ -153,106 +153,74 @@ const char* szsrc_mdg = \
 "}\n";
 
 // ============================================================================
-// node plot data
+// plot data
 // ============================================================================
-const char* szhdr_npd = \
-"#include <FECore\\FEPlotData.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEPlotNodeData\n" \
+// $(ARG1) : base class
+// $(ARG2) : first argument to Save
+// $(ARG3) : data type
+// $(ARG4) : data format
+// $(ARG5) : code snippet
+// $(ARG6) : c++ data type
+// $(ARG7) : additional include files for source
+const char* szhdr_pd = \
+"#include <FECore/FEPlotData.h>\n\n" \
+"class $(PLUGIN_NAME) : public $(ARG1)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotNodeData(fem, $(ARG1), FMT_NODE){}\n"
-"	bool Save(FEMesh& m, FEDataStream& a);\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : $(ARG1)(fem, $(ARG3), $(ARG4)){}\n"
+"	bool Save($(ARG2), FEDataStream& a);\n"
 "};\n";
 
-// This defines the source file for node plot data plugins
-const char* szsrc_npd = \
-"#include <FECore\\FEMesh.h>\n"\
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"bool $(PLUGIN_NAME)::Save(FEMesh& m, FEDataStream& a)\n" \
+// This defines the source file for plot data plugins
+const char* szsrc_pd = \
+"#include \"$(PLUGIN_NAME).h\"\n" \
+"#include <FECore/FEMesh.h>\n"\
+"$(ARG7)\n"
+"bool $(PLUGIN_NAME)::Save($(ARG2), FEDataStream& a)\n" \
 "{\n" \
-"	int N = m.Nodes();\n"\
-"	for (int i = 0; i < N; ++i)\n"\
-"	{\n"\
-"		const FENode& node = m.Node(i);\n"\
-"		$(ARG2) v;\n"\
-"		// TODO: calculate something for v\n"\
-"		a << v;\n"\
-"	}\n"\
+"$(ARG5)"
 "	return true;\n" \
 "}\n";
 
-// ============================================================================
-// surface plot data
-// ============================================================================
-const char* szhdr_spd = \
-"#include <FECore\\FEPlotData.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEPlotSurfaceData\n" \
-"{\n" \
-"public:\n" \
-"	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotSurfaceData(fem, $(ARG1), $(ARG2)){}\n"
-"	bool Save(FESurface& surf, FEDataStream& a);\n"
-"};\n";
-
-const char* szsrc_spd = \
-"#include <FECore\\FEMesh.h>\n"\
-"#include <FECore\\FESurface.h>\n"\
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"bool $(PLUGIN_NAME)::Save(FESurface& surf, FEDataStream& a)\n" \
-"{\n" \
-"$(ARG3)"\
-"	return true;\n" \
-"}\n";
-
-// snippet for ARG2=FMT_ITEM
-const char* szspd_snippet_item = \
-"	int N = surf.Elements();\n"\
+// code snippet for node 
+const char* szpd_node = 
+"	int N = mesh.Nodes();\n"\
 "	for (int i = 0; i < N; ++i)\n"\
 "	{\n"\
-"		const FESurfaceElement& el = surf.Element(i);\n"\
-"		$(ARG4) v;\n"\
+"		const FENode& node = mesh.Node(i);\n"\
+"		$(ARG6) v;\n"\
 "		// TODO: calculate something for v\n"\
 "		a << v;\n"\
 "	}\n";
 
-// ============================================================================
-// element plot data
-// ============================================================================
-const char* szhdr_epd = \
-"#include <FECore\\FEPlotData.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEPlotDomainData\n" \
-"{\n" \
-"public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem) : FEPlotDomainData(fem, $(ARG1), $(ARG2)){}\n"
-"	bool Save(FEDomain& dom, FEDataStream& a);\n"
-"};\n";
-
-const char* szsrc_epd = \
-"#include <FECore\\FEDomain.h>\n"\
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"bool $(PLUGIN_NAME)::Save(FEDomain& dom, FEDataStream& a)\n" \
-"{\n" \
-"$(ARG3)"\
-"	return true;\n" \
-"}\n";
-
-// snippet for ARG2=FMT_ITEM
-const char* szepd_snippet_item = \
+// snippet for elem/FMT_ITEM
+const char* szpd_elem_item = \
 "	int N = dom.Elements();\n"\
 "	for (int i = 0; i < N; ++i)\n"\
 "	{\n"\
 "		const FEElement& el = dom.ElementRef(i);\n"\
-"		$(ARG4) v;\n"\
+"		$(ARG6) v;\n"\
 "		// TODO: calculate something for v\n"\
 "		a << v;\n"\
 "	}\n";
 
-// snippet for ARG2=FMT_REGION
-const char* szepd_snippet_region = \
+// snippet for elem/FMT_REGION
+const char* szpd_elem_region = \
 "	// TODO: calculate a single value for this domain.\n"\
-"	$(ARG4) v;\n"\
+"	$(ARG6) v;\n"\
 "	a << v;\n";
+
+// snippet for ARG2=FMT_ITEM
+const char* szpd_surface_item = \
+"	int N = surf.Elements();\n"\
+"	for (int i = 0; i < N; ++i)\n"\
+"	{\n"\
+"		const FESurfaceElement& el = surf.Element(i);\n"\
+"		$(ARG6) v;\n"\
+"		// TODO: calculate something for v\n"\
+"		a << v;\n"\
+"	}\n";
 
 // ============================================================================
 // surface load
@@ -303,68 +271,25 @@ const char* szsrc_sl = \
 "}\n";
 
 // ============================================================================
-// node log data
+// log data
 // ============================================================================
-const char* szhdr_nld = \
-"#include <FECore\\NodeDataRecord.h>\n\n" \
-"class $(PLUGIN_NAME) : public FELogNodeData\n" \
+const char* szhdr_ld = \
+"#include <FECore\\$(ARG1)>\n\n" \
+"class $(PLUGIN_NAME) : public $(ARG2)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : FELogNodeData(fem){}\n"
-"	double value(const FENode& node) override;\n"
+"	$(PLUGIN_NAME)(FEModel* fem) : $(ARG2)(fem){}\n"
+"	double value($(ARG3)) override;\n"
 "};\n";
 
-const char* szsrc_nld = \
+const char* szsrc_ld = \
 "#include \"$(PLUGIN_NAME).h\"\n\n" \
-"double $(PLUGIN_NAME)::value(const FENode& node)\n" \
+"double $(PLUGIN_NAME)::value($(ARG3))\n" \
 "{\n" \
 "	// TODO: calculate something for val\n"\
 "	double val = 0.0;\n"\
 "	return val;\n" \
-"}\n";
-
-// ============================================================================
-// element log data
-// ============================================================================
-const char* szhdr_eld = \
-"#include <FECore\\ElementDataRecord.h>\n\n" \
-"class $(PLUGIN_NAME) : public FELogElemData\n" \
-"{\n" \
-"public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem) : FELogElemData(fem){}\n"\
-"	double value(FEElement& el) override;\n"\
-"};\n";
-
-const char* szsrc_eld = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"double $(PLUGIN_NAME)::value(FEElement& el)\n" \
-"{\n" \
-"	// TODO: calculate something for val\n"\
-"	double val = 0.0;\n"\
-"	return val;\n"\
-"}\n";
-
-
-// ============================================================================
-// domain log data
-// ============================================================================
-const char* szhdr_dld = \
-"#include <FECore\\DomainDataRecord.h>\n\n" \
-"class $(PLUGIN_NAME) : public FELogDomainData\n" \
-"{\n" \
-"public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem) : FELogDomainData(fem){}\n"\
-"	double value(FEDomain& dom) override;\n"\
-"};\n";
-
-const char* szsrc_dld = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"double $(PLUGIN_NAME)::value(FEDomain& dom)\n" \
-"{\n" \
-"	// TODO: calculate something for val\n"\
-"	double val = 0.0;\n"\
-"	return val;\n"\
 "}\n";
 
 // ============================================================================

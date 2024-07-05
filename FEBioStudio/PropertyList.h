@@ -100,7 +100,7 @@ public:
 	CProperty& setIntRange(int Min, int Max) { brange = true;  imin = Min; imax = Max; return *this; }
 	CProperty& setFloatRange(double Min, double Max) { brange = true;  fmin = Min; fmax = Max; return *this; }
 	CProperty& setFloatStep(double fStep) { fstep = fStep; return *this; }
-	CProperty& setEnumValues(QStringList& val) { values = val; return *this; }
+	CProperty& setEnumValues(const QStringList& val) { values = val; return *this; }
 	CProperty& setAutoValue(bool b) { bauto = b; return *this; }
 
 	CProperty* setData(void* pd) { pdata = pd; return this; }

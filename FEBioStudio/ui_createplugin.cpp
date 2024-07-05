@@ -79,115 +79,70 @@ public:
 	}
 };
 
-class CPlotNodeDataProps : public CPluginTemplate
+class CPlotDataProps : public CPluginTemplate
 {
 public:
-	CPlotNodeDataProps() : CPluginTemplate("Plot node data", szhdr_npd, szsrc_npd)
+	CPlotDataProps() : CPluginTemplate("Plot data", szhdr_pd, szsrc_pd)
 	{
+		m_type = 0;
 		m_datatype = 0;
-		addEnumProperty(&m_datatype, "Data type")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
+		m_datafmt = 0;
+		addEnumProperty(&m_type, "Type: ")->setEnumValues({ "Node", "Element", "Surface"});
+		addEnumProperty(&m_datatype, "Data type: ")->setEnumValues({ "PLT_FLOAT", "PLT_VEC3F", "PLT_MAT3FS"});
+		addEnumProperty(&m_datafmt , "Data format: ")->setEnumValues({ "FMT_NODE" , "FMT_ITEM" , "FMT_MULT", "FMT_REGION" });
 
-		SetInfo("Implement a new node data plot variable that can be written to the FEBio plot file.");
+		SetInfo("Implement a new data plot variable that can be written to the FEBio plot file.");
 	}
 
 	QStringList GetOptions() override
 	{
 		QStringList l;
+
+		// $(ARG1) and $(ARG2)
+		switch (m_type)
+		{
+		case 0: l << "FEPlotNodeData"   << "FEMesh& mesh"; break;
+		case 1: l << "FEPlotDomainData" << "FEDomain& dom"; break;
+		case 2: l << "FEPlotSurfaceData" << "FESurface& surf"; break;
+		}
+
+		// $(ARG3) and $(ARG4)
+		l << Property(1).values.at(m_datatype);
+		l << Property(2).values.at(m_datafmt);
+
+		// $(ARG5) = code snippet
+		if      ((m_type == 0) && (m_datafmt == 0)) l << szpd_node;
+		else if ((m_type == 1) && (m_datafmt == 1)) l << szpd_elem_item;
+		else if ((m_type == 1) && (m_datafmt == 3)) l << szpd_elem_region;
+		else if ((m_type == 2) && (m_datafmt == 1)) l << szpd_surface_item;
+		else l << "";
+
+		// $(ARG6) = C++ data type;
 		switch (m_datatype)
 		{
-		case 0: l << "PLT_FLOAT" << "double"; break;
-		case 1: l << "PLT_VEC3F" << "vec3d"; break;
+		case 0: l << "double"; break;
+		case 1: l << "vec3d"; break;
+		case 2: l << "mat3ds"; break;
+		default:
+			assert(false);
+			l << "";
 		}
+
+		// $(ARG7) = additional source includes
+		switch (m_type)
+		{
+		case 1: l << "#include <FECore/FEDomain.h>\n"; break;
+		case 2: l << "#include <FECore/FESurface.h>\n"; break;
+		default:
+			l << "";
+		}
+
 		return l;
 	}
 
 private:
+	int	m_type;
 	int	m_datatype;
-};
-
-class CPlotSurfaceDataProps : public CPluginTemplate
-{
-public:
-	CPlotSurfaceDataProps() : CPluginTemplate("Plot surface data", szhdr_spd, szsrc_spd)
-	{
-		m_datatype = 0;
-		m_datafmt = 1;
-		addEnumProperty(&m_datatype, "Data type:")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
-		addEnumProperty(&m_datafmt, "Data format:")->setEnumValues(QStringList() << "FMT_NODE" << "FMT_ITEM" << "FMT_MULT" << "FMT_REGION");
-
-		SetInfo("Implement a new surface data plot variable that can be written to the FEBio plot file.");
-	}
-
-	QStringList GetOptions() override
-	{
-		// fill $(ARG1) and $(ARG2)
-		QStringList l;
-		l << Property(0).values.at(m_datatype);
-		l << Property(1).values.at(m_datafmt);
-
-		// fill $(ARG3)
-		switch (m_datafmt)
-		{
-		case 1: l << QString(szspd_snippet_item); break;
-		default:
-			l << QString("//TODO: Write surface data (or return false to skip this surface.)");
-		}
-
-		// fill $(ARG4)
-		switch (m_datatype)
-		{
-		case 0: l << "double"; break;
-		case 1: l << "vec3d"; break;
-		}
-
-		return l;
-	}
-
-private:
-	int m_datatype;
-	int m_datafmt;
-};
-
-class CPlotElemDataProps : public CPluginTemplate
-{
-public:
-	CPlotElemDataProps() : CPluginTemplate("Plot element data", szhdr_epd, szsrc_epd)
-	{
-		m_datatype = 0;
-		m_datafmt = 1;
-		addEnumProperty(&m_datatype, "Data type:")->setEnumValues(QStringList() << "PLT_FLOAT" << "PLT_VEC3F");
-		addEnumProperty(&m_datafmt, "Data format:")->setEnumValues(QStringList() << "FMT_NODE" << "FMT_ITEM" << "FMT_MULT" << "FMT_REGION");
-
-		SetInfo("Implement a new element data plot variable that can be written to the FEBio plot file.");
-	}
-
-	QStringList GetOptions() override
-	{
-		// fill $(ARG1) and $(ARG2)
-		QStringList l;
-		l << Property(0).values.at(m_datatype);
-		l << Property(1).values.at(m_datafmt);
-
-		// fill $(ARG3)
-		switch (m_datafmt)
-		{
-		case 1: l << QString(szepd_snippet_item); break;
-		case 3: l << QString(szepd_snippet_region); break;
-		default:
-			l << QString("");
-		}
-
-		// fill $(ARG4)
-		switch (m_datatype)
-		{
-		case 0: l << "double"; break;
-		case 1: l << "vec3d"; break;
-		}
-		return l;
-	}
-
-private:
-	int m_datatype;
 	int m_datafmt;
 };
 
@@ -200,31 +155,34 @@ public:
 	}
 };
 
-class CLogNodeDataProps : public CPluginTemplate
+class CLogDataProps : public CPluginTemplate
 {
 public:
-	CLogNodeDataProps() : CPluginTemplate("Log node data", szhdr_nld, szsrc_nld)
+	CLogDataProps() : CPluginTemplate("Log data", szhdr_ld, szsrc_ld)
 	{
-		SetInfo("Implement a new node data log variable that can be written to the FEBio log file.");
-	}
-};
+		SetInfo("Implement a new data log variable that can be written to the FEBio log file.");
 
-class CLogElemDataProps : public CPluginTemplate
-{
-public:
-	CLogElemDataProps() : CPluginTemplate("Log element data", szhdr_eld, szsrc_eld)
-	{
-		SetInfo("Implement a new element data log variable that can be written to the FEBio log file.");
+		m_type = 0;
+		addEnumProperty(&m_type, "Type:")->setEnumValues(QStringList() << "Node" << "Face" << "Element" << "Surface" << "Domain" << "Model");
 	}
-};
 
-class CLogDomainDataProps : public CPluginTemplate
-{
-public:
-	CLogDomainDataProps() : CPluginTemplate("Log domain data", szhdr_dld, szsrc_dld)
+	QStringList GetOptions() override
 	{
-		SetInfo("Implement a new domain data log variable that can be written to the FEBio log file.");
+		QStringList ops;
+		switch (m_type)
+		{
+		case 0: ops << "NodeDataRecord.h"    << "FELogNodeData"   << "const FENode& node"; break;
+		case 1: ops << "FaceDataRecord.h"    << "FELogFaceData"   << "FESurfaceElement& face"; break;
+		case 2: ops << "ElementDataRecord.h" << "FELogElemData"   << "FEElement& elem"; break;
+		case 3: ops << "SurfaceDataRecord.h" << "FELogSurfaceData"<< "FESurface& surf"; break;
+		case 4: ops << "DomainDataRecord.h"  << "FELogDomainData" << "FEDomain& dom"; break;
+		case 5: ops << "FEModelDataRecord.h" << "FEModelLogData"  << ""; break;
+		}
+		return ops;
 	}
+
+private:
+	int m_type;
 };
 
 class CCallbackProps : public CPluginTemplate
@@ -248,17 +206,13 @@ public:
 //=============================================================================
 // Try to keep this in alphabetical order
 // NOTE: remember to increase PLUGIN_TEMPLATES when adding a new template.
-const int PLUGIN_TEMPLATES = 11;
+const int PLUGIN_TEMPLATES = 7;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CCallbackProps(),
 	new CElasticMaterialProps(),
 	new CElemDataGeneratorProps(),
-	new CLogDomainDataProps(),
-	new CLogElemDataProps(),
-	new CLogNodeDataProps(),
-	new CPlotElemDataProps(),
-	new CPlotNodeDataProps(),
-	new CPlotSurfaceDataProps(),
+	new CLogDataProps(),
+	new CPlotDataProps(),
 	new CSurfaceLoadProps(),
 	new CTaskProps()
 };
