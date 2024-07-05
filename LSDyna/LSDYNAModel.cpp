@@ -270,13 +270,17 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		for (int i = 0; i < solids; ++i)
 		{
 			FEElement_* pe = pm->ElementPtr(eid++);
-			PLT[pe->m_gid - minpid]++;
+			int n = pe->m_gid - minpid;
+			if ((n < 0) || (n >= PLT.size())) return false;
+			PLT[n]++;
 		}
 
 		for (int i = 0; i < shells; ++i)
 		{
 			FEElement_* pe = pm->ElementPtr(eid++);
-			PLT[pe->m_gid - minpid]++;
+			int n = pe->m_gid - minpid;
+			if ((n < 0) || (n >= PLT.size())) return false;
+			PLT[n]++;
 		}
 
 		int n = 0;
@@ -320,7 +324,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			if ((n>=0) && (n < m_po->Parts()))
 			{
 				GPart* pg = m_po->Part(n);
-				pg->SetID(p.pid);
+				pg->SetID(p.pid); // NOTE: This is dangerous! What if a part with this ID already exists before reading this file!
 				pg->SetName(p.szname);
 			}
 		}
