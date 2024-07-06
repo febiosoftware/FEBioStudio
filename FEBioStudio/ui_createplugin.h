@@ -69,11 +69,9 @@ class CMainPage : public QWizardPage
 	Q_OBJECT
 
 public:
-	QListWidget* m_type; // type of plugin
-	QLabel* m_desc;
-
-private slots:
-	void on_selection_changed(int n);
+	QLineEdit* m_name; // name of plugin
+	CResourceEdit* m_path; // path to plugin code
+	QComboBox* m_mod;  // FEBio module
 
 public:
 	CMainPage();
@@ -81,16 +79,18 @@ public:
 
 class CConfigPage : public QWizardPage
 {
+	Q_OBJECT
+
 public:
-	QComboBox* m_mod;  // FEBio module
-	QLineEdit* m_name; // name of plugin
-	CResourceEdit* m_path; // path to plugin code
+	QListWidget* m_type; // type of plugin
+	QLabel* m_desc;
 	QLineEdit* m_typeString; // name of plugin
 
 public:
 	CConfigPage();
 
-	void initializePage() override;
+private slots:
+	void on_selection_changed(int n);
 };
 
 class COptionsPage : public QWizardPage

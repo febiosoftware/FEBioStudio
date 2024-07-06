@@ -222,13 +222,37 @@ CMainPage::CMainPage()
 	setTitle("Create FEBio plugin");
 	setSubTitle("This wizard will take you through the process of creating an FEBio plugin.");
 
-	m_type = new QListWidget();
+	QFormLayout* f = new QFormLayout;
+	f->setLabelAlignment(Qt::AlignRight);
+	f->addRow("Plugin name:", m_name = new QLineEdit());
+	f->addRow("Path:", m_path = new CResourceEdit());
+	f->addRow("FEBio module:", m_mod = new QComboBox());
+
+	m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
+
+	QStringList modList;
+	std::vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
+	for (auto& mod : modules)
+	{
+		modList.append(mod.m_szname);
+	}
+	m_mod->addItems(modList);
+
+	setLayout(f);
+
+	registerField("plugin.name*", m_name); // asterisk denotes this is a required property
+}
+
+CConfigPage::CConfigPage()
+{
+	setTitle("Configure plugin");
 
 	QStringList pluginTemplateNames;
 	for (int i = 0; i < PLUGIN_TEMPLATES; ++i)
 	{
 		pluginTemplateNames << pluginTemplates[i]->m_pluginType;
 	}
+	m_type = new QListWidget();
 	m_type->addItems(pluginTemplateNames);
 
 	QVBoxLayout* l1 = new QVBoxLayout;
@@ -241,16 +265,22 @@ CMainPage::CMainPage()
 	m_desc->setWordWrap(true);
 	m_desc->setAlignment(Qt::AlignTop);
 
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-	mainLayout->addLayout(h);
-	setLayout(mainLayout);
+	QFormLayout* f = new QFormLayout;
+	f->setLabelAlignment(Qt::AlignRight);
+	f->addRow("Type string:", m_typeString = new QLineEdit());
+	m_typeString->setPlaceholderText("(leave blank for default)");
+
+	QVBoxLayout* configLayout = new QVBoxLayout;
+	configLayout->addLayout(h);
+	configLayout->addLayout(f);
+
+	setLayout(configLayout);
 
 	registerField("plugin.type", m_type);
-
-	QObject::connect(m_type, &QListWidget::currentRowChanged, this, &CMainPage::on_selection_changed);
+	QObject::connect(m_type, &QListWidget::currentRowChanged, this, &CConfigPage::on_selection_changed);
 }
 
-void CMainPage::on_selection_changed(int n)
+void CConfigPage::on_selection_changed(int n)
 {
 	QString info;
 	if (n >= 0)
@@ -260,39 +290,6 @@ void CMainPage::on_selection_changed(int n)
 	else info = QString("(select an option)");
 
 	m_desc->setText(QString("<h2>Description</h2>%1").arg(info));
-}
-
-CConfigPage::CConfigPage()
-{
-	setTitle("Configure plugin");
-
-	QFormLayout* f = new QFormLayout;
-	f->setLabelAlignment(Qt::AlignRight);
-	f->addRow("Plugin name:", m_name = new QLineEdit());
-	f->addRow("FEBio module:", m_mod = new QComboBox());
-	f->addRow("Path:", m_path = new CResourceEdit());
-	f->addRow("Type string:", m_typeString = new QLineEdit());
-	m_typeString->setPlaceholderText("(leave blank for default)");
-
-	QStringList modList;
-	std::vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
-	for (auto& mod : modules)
-	{
-		modList.append(mod.m_szname);
-	}
-	m_mod->addItems(modList);
-
-	m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
-
-	setLayout(f);
-
-	registerField("plugin.name*", m_name); // asterisk denotes this is a required property
-}
-
-void CConfigPage::initializePage()
-{
-	int n = field("plugin.type").toInt();
-	setSubTitle(QString("Configure <b>%1</b> plugin.").arg(pluginTemplates[n]->m_pluginType));
 }
 
 COptionsPage::COptionsPage()
@@ -337,7 +334,7 @@ QStringList COptionsPage::GetOptions()
 
 CPluginTemplate* CDlgCreatePluginUI::GetPluginTemplate()
 {
-	int type = mainPage->m_type->currentRow();
+	int type = configPage->m_type->currentRow();
 	return pluginTemplates[type];
 }
 

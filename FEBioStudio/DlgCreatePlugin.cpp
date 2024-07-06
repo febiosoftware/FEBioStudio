@@ -54,22 +54,22 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(ne
 	if (prj && (prj->GetProjectPath().isEmpty() == false))
 	{
 		createPath = prj->GetProjectPath();
-		ui->configPage->m_path->setResourceName(createPath);
-		ui->configPage->m_path->setEnabled(false);
+		ui->mainPage->m_path->setResourceName(createPath);
+		ui->mainPage->m_path->setEnabled(false);
 	}
 	else
 	{
 		createPath = parent->GetCreatePluginPath();
-		ui->configPage->m_path->setResourceName(createPath);
+		ui->mainPage->m_path->setResourceName(createPath);
 	}
 }
 
 void CDlgCreatePlugin::accept()
 {
 	// collect input fields
-	QString name = ui->configPage->m_name->text();
-	QString path = ui->configPage->m_path->resourceName();
-	QString mod  = ui->configPage->m_mod->currentText();
+	QString name = ui->mainPage->m_name->text();
+	QString path = ui->mainPage->m_path->resourceName();
+	QString mod  = ui->mainPage->m_mod->currentText();
 	QString typeStr = ui->configPage->m_typeString->text();
 	if (typeStr.isEmpty()) typeStr = name;
 
