@@ -732,7 +732,7 @@ void CFileViewer::onBuildPlugin()
 	CLogger::AddBuildEntry(QString("Building plugin %1:\n").arg(item->text(0)));
 
 	ui->m_process = new CConfigurePluginProcess(this);
-	ui->m_process->setWorkingDirectory(projectPath);
+	ui->m_process->setWorkingDirectory(projectPath + "/" + item->text(0));
 	ui->m_process->run();
 }
 
@@ -765,9 +765,9 @@ void CFileViewer::onLoadPlugin()
 	// We are just going to look for the dll file
 	// It is assumed that the file name is .\build\(config)\name.dll" relative to the projects folder.
 #ifndef NDEBUG
-	QString dllpath = QString("./build/Debug/%1.dll").arg(pluginName);
+	QString dllpath = QString("./%1/build/Debug/%2.dll").arg(pluginName).arg(pluginName);
 #else
-	QString dllpath = QString("./build/Release/%1.dll").arg(pluginName);
+	QString dllpath = QString("./%1/build/Release/%2.dll").arg(pluginName).arg(pluginName);
 #endif
 	dllpath = prj->ToAbsolutePath(dllpath);
 
@@ -798,10 +798,13 @@ void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
 
 	delete ui->m_process;
 
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QString relPath = item->text(0);
+
 	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	QString projectPath = prj->GetProjectPath();
 	ui->m_process = new CBuildPluginProcess(this);
-	ui->m_process->setWorkingDirectory(projectPath);
+	ui->m_process->setWorkingDirectory(projectPath + "/" + relPath);
 	ui->m_process->run();
 }
 

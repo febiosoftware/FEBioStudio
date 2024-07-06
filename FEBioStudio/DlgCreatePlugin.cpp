@@ -54,12 +54,14 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(ne
 	if (prj && (prj->GetProjectPath().isEmpty() == false))
 	{
 		createPath = prj->GetProjectPath();
+		ui->configPage->m_path->setResourceName(createPath);
+		ui->configPage->m_path->setEnabled(false);
 	}
 	else
 	{
 		createPath = parent->GetCreatePluginPath();
+		ui->configPage->m_path->setResourceName(createPath);
 	}
-	ui->configPage->m_path->setResourceName(createPath);
 }
 
 void CDlgCreatePlugin::accept()
@@ -84,20 +86,54 @@ void CDlgCreatePlugin::accept()
 		return;
 	}
 
-	// create the folder for the plugin
-	QDir dir(path);
-	if (dir.mkdir(name) == false)
+	// get the active project
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr)
 	{
-		QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
+		QMessageBox::critical(this, "FEBio Studio", "No project active. Cannot add plugin.");
 		return;
+	}
+
+	// if the project was already saved, we'll add a new folder to the project's folder
+	QDir dir(path);
+	if (!prj->GetProjectPath().isEmpty())
+	{
+		assert(path == prj->GetProjectPath());
+		if (dir.mkdir(name) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
+			return;
+		}
+		dir.cd(name);
 	}
 	else
 	{
+		// create a folder to save the project in
+		if (dir.mkdir(name) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
+			return;
+		}
+
 		// save this as the default path
 		ui->m_wnd->SetCreatePluginPath(QDir::toNativeSeparators(dir.absolutePath()));
+
+		// automatically save the project file
 		dir.cd(name);
 		path = QDir::toNativeSeparators(dir.absolutePath());
+		QString prjPath = path + "\\" + name + ".fsp";
+		prj->Save(prjPath);
+
+		// then, add a folder for the plugin
+		if (dir.mkdir(name) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
+			return;
+		}
+		dir.cd(name);
 	}
+	path = QDir::toNativeSeparators(dir.absolutePath());
+
 
 	CPluginTemplate* pluginTemplate = ui->GetPluginTemplate();
 	if (pluginTemplate == nullptr)
@@ -130,28 +166,19 @@ void CDlgCreatePlugin::accept()
 	}
 
 	// add plugin to project
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (prj)
+	FEBioStudioProject::ProjectItem* grp = prj->AddPlugin(config.name);
+	if (grp)
 	{
-		FEBioStudioProject::ProjectItem* grp = prj->AddPlugin(config.name);
-		if (grp)
-		{
-			grp->AddFile(config.cmakeFile);
+		grp->AddFile(config.cmakeFile);
 
-			FEBioStudioProject::ProjectItem& headerFiles = grp->AddGroup("Include");
-			headerFiles.AddFile(config.headerFile);
+		FEBioStudioProject::ProjectItem& headerFiles = grp->AddGroup("Include");
+		headerFiles.AddFile(config.headerFile);
 
-			FEBioStudioProject::ProjectItem& sourceFiles = grp->AddGroup("Source");
-			sourceFiles.AddFile(config.mainFile);
-			sourceFiles.AddFile(config.sourceFile);
-		}
-	}
+		FEBioStudioProject::ProjectItem& sourceFiles = grp->AddGroup("Source");
+		sourceFiles.AddFile(config.mainFile);
+		sourceFiles.AddFile(config.sourceFile);
 
-	// automatically save the project file
-	if (prj && (prj->GetProjectPath().isEmpty()))
-	{
-		QString prjPath = path + "\\" + name + ".fsp";
-		prj->Save(prjPath);
+		prj->Save();
 	}
 
 	// all is well
