@@ -91,6 +91,8 @@ public:
 public:
 	CConfigPage();
 
+	bool isComplete() const override;
+
 private slots:
 	void on_selection_changed(int n);
 };

@@ -229,6 +229,9 @@ CMainPage::CMainPage()
 	f->addRow("Path:", m_path = new CResourceEdit());
 	f->addRow("FEBio module:", m_mod = new QComboBox());
 
+	QRegularExpression rx("^[a-zA-Z][\\w]*$");
+	m_name->setValidator(new QRegularExpressionValidator(rx, this));
+
 	m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
 
 	QStringList modList;
@@ -272,6 +275,9 @@ CConfigPage::CConfigPage()
 	f->addRow("Type string:", m_typeString = new QLineEdit());
 	m_typeString->setPlaceholderText("(leave blank for default)");
 
+	QRegularExpression rx_name("^[a-zA-Z][\\w]*$");
+	m_className->setValidator(new QRegularExpressionValidator(rx_name, this));
+
 	QVBoxLayout* configLayout = new QVBoxLayout;
 	configLayout->addLayout(h);
 	configLayout->addLayout(f);
@@ -281,7 +287,27 @@ CConfigPage::CConfigPage()
 	registerField("plugin.type*", m_type);
 	registerField("plugin.className*", m_className);
 	QObject::connect(m_type, &QListWidget::currentRowChanged, this, &CConfigPage::on_selection_changed);
+	QObject::connect(m_typeString, &QLineEdit::textChanged, this, &CConfigPage::completeChanged);
 }
+
+bool CConfigPage::isComplete() const
+{
+	QString s = m_typeString->text();
+	if (!s.isEmpty())
+	{
+		QRegularExpression rx_type("^[a-zA-Z].*[\\w]$");
+		QRegularExpressionValidator val(rx_type);
+
+		int pos = 0;
+		if (val.validate(s, pos) != QValidator::State::Acceptable)
+		{
+			return false;
+		}
+	}
+
+	return QWizardPage::isComplete();
+}
+
 
 void CConfigPage::on_selection_changed(int n)
 {
