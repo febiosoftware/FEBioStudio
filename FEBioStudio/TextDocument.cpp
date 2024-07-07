@@ -28,11 +28,18 @@ SOFTWARE.*/
 #include <QDir>
 #include <QTextStream>
 #include <QPlainTextDocumentLayout>
+#include <QtCore/QFileSystemWatcher>
+#include <QMessageBox>
+#include "MainWindow.h"
 
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	SetIcon(":/icons/txt.png");
 	m_txt.setDocumentLayout(new QPlainTextDocumentLayout(&m_txt));
+
+	m_fsw = new QFileSystemWatcher(this);
+
+	QObject::connect(m_fsw, &QFileSystemWatcher::fileChanged, this, &CTextDocument::onFileChanged);
 }
 
 QTextDocument* CTextDocument::GetText()
@@ -62,11 +69,23 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 	ops.setTabStopDistance(2 * fi.pixelSize());
 	m_txt.setDefaultTextOption(ops);
 
-	m_bValid = false;
-
 	QString normalizeFileName = QDir::fromNativeSeparators(fileName);
 
-	QFile file(normalizeFileName);
+	if (!LoadText(normalizeFileName))
+	{
+		return false;
+	}
+
+	m_fsw->addPath(normalizeFileName);
+
+	return true;
+}
+
+bool CTextDocument::LoadText(const QString& fileName)
+{
+	m_bValid = false;
+
+	QFile file(fileName);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		return false;
 
@@ -80,9 +99,12 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 	file.close();
 
 	m_txt.setPlainText(s);
+
+	SetModifiedFlag(false);
 	m_txt.setModified(false);
 
 	m_bValid = true;
+
 	return true;
 }
 
@@ -103,6 +125,23 @@ bool CTextDocument::SaveDocument()
 	m_txt.setModified(false);
 
 	return true;
+}
+
+void CTextDocument::onFileChanged(const QString& fileName)
+{
+	if (!IsModified())
+	{
+		LoadText(fileName);
+	}
+	else
+	{
+		QString question = QString("The following file was modified by an external program:\n%1\nDo you want to discard current changes and reload the file?").arg(fileName);
+		if (QMessageBox::question(GetMainWindow(), "FEBio Studio", question))
+		{
+			LoadText(fileName);
+		}
+	}
+	GetMainWindow()->UpdateTab(this);
 }
 
 

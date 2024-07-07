@@ -439,7 +439,7 @@ bool GeneratePluginFiles(const PluginConfig& config)
 				}
 				else if (inRegister)
 				{
-					outTxt.append(QString("\tREGISTER_FECORE_CLASS(%1, \"%2\")\n").arg(config.className).arg(config.typeString));
+					outTxt.append(QString("\tREGISTER_FECORE_CLASS(%1, \"%2\");\n").arg(config.className).arg(config.typeString));
 					inRegister = false;
 				}
 
