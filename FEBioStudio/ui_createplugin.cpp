@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <FEBioLink/FEBioModule.h>
 #include "plugin_templates.h"
 #include "version.h"
@@ -267,6 +268,7 @@ CConfigPage::CConfigPage()
 
 	QFormLayout* f = new QFormLayout;
 	f->setLabelAlignment(Qt::AlignRight);
+	f->addRow("Class name : ", m_className = new QLineEdit());
 	f->addRow("Type string:", m_typeString = new QLineEdit());
 	m_typeString->setPlaceholderText("(leave blank for default)");
 
@@ -276,7 +278,8 @@ CConfigPage::CConfigPage()
 
 	setLayout(configLayout);
 
-	registerField("plugin.type", m_type);
+	registerField("plugin.type*", m_type);
+	registerField("plugin.className*", m_className);
 	QObject::connect(m_type, &QListWidget::currentRowChanged, this, &CConfigPage::on_selection_changed);
 }
 
@@ -356,7 +359,7 @@ bool GeneratePluginFiles(const PluginConfig& config)
 
 	// create the header file
 	QString headerText(cppcomment + config.headerTxt);
-	headerText = headerText.replace("$(PLUGIN_NAME)", config.name);
+	headerText = headerText.replace("$(CLASS_NAME)", config.className);
 	int n = 1;
 	for (QString arg : config.args)
 	{
@@ -367,7 +370,7 @@ bool GeneratePluginFiles(const PluginConfig& config)
 
 	// create the source file
 	QString sourceText(cppcomment + config.sourceTxt);
-	sourceText = sourceText.replace("$(PLUGIN_NAME)", config.name);
+	sourceText = sourceText.replace("$(CLASS_NAME)", config.className);
 	n = 1;
 	for (QString arg : config.args)
 	{
@@ -377,26 +380,127 @@ bool GeneratePluginFiles(const PluginConfig& config)
 	if (!GenerateFile(config.sourceFile, sourceText)) return false;
 
 	// create the main file
-	QString mainText = cppcomment + QString(szmain);
-	mainText = mainText.replace("$(PLUGIN_NAME)", config.name);
-	mainText = mainText.replace("$(PLUGIN_MODULE)", config.febioModule);
-	mainText = mainText.replace("$(PLUGIN_TYPESTRING)", config.typeString);
-	if (!GenerateFile(config.mainFile, mainText)) return false;
+	if (!config.mainFile.isEmpty())
+	{
+		QFileInfo fi(config.cmakeFile);
+		if (fi.exists())
+		{
+			QFile f(config.mainFile);
+			if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+				return false;
 
-	// get the SDK paths
-	QString SDKInc = config.sdkInc;
-	QString SDKLib = config.sdkLib;
-	SDKInc.replace("\\", "/");
-	SDKLib.replace("\\", "/");
-	if (SDKLib.last(1) != "/") SDKLib += "/";
-	SDKLib += "$<CONFIG>";
+			QStringList outTxt;
+
+			// read the main file
+			QTextStream in(&f);
+			bool inInclude = false;
+			bool inRegister = false;
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+				if (line.contains("#include"))
+				{
+					inInclude = true;
+				}
+				else if (inInclude)
+				{
+					outTxt.append(QString("#include \"%1.h\"\n").arg(config.className));
+					inInclude = false;
+				}
+
+				if (line.contains("REGISTER_FECORE_CLASS"))
+				{
+					inRegister = true;
+				}
+				else if (inRegister)
+				{
+					outTxt.append(QString("\tREGISTER_FECORE_CLASS(%1, \"%2\")\n").arg(config.className).arg(config.typeString));
+					inRegister = false;
+				}
+
+				outTxt.append(line + "\n");
+			}
+			f.close();
+
+			// write the new main file
+			if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+				return false;
+
+			QTextStream out(&f);
+			for (QString& line : outTxt)
+				out << line;
+
+			f.close();
+		}
+		else
+		{
+			QString mainText = cppcomment + QString(szmain);
+			mainText = mainText.replace("$(PLUGIN_NAME)", config.name);
+			mainText = mainText.replace("$(CLASS_NAME)", config.className);
+			mainText = mainText.replace("$(PLUGIN_MODULE)", config.febioModule);
+			mainText = mainText.replace("$(CLASS_TYPESTRING)", config.typeString);
+			if (!GenerateFile(config.mainFile, mainText)) return false;
+		}
+	}
 
 	// create the CMake file
-	QString cmakeText = cmakecomment + QString(szcmake);
-	cmakeText = cmakeText.replace("$(PLUGIN_NAME)", config.name);
-	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
-	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
-	if (!GenerateFile(config.cmakeFile, cmakeText)) return false;
+	if (!config.cmakeFile.isEmpty())
+	{
+		QFileInfo fi(config.cmakeFile);
+		if (fi.exists())
+		{
+			QFile f(config.cmakeFile);
+			if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+				return false;
+
+			QStringList outTxt;
+
+			// read the cmake file
+			QTextStream in(&f);
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+				if (line.contains("add_library"))
+				{
+					int n = line.lastIndexOf(")");
+					line.insert(n, " " + config.className + ".h " + config.className + ".cpp");
+				}
+				outTxt.append(line + "\n");
+			}
+			f.close();
+
+			// write the new cmake file
+			if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+				return false;
+
+			QTextStream out(&f);
+			for (QString& line : outTxt)
+				out << line;
+
+			f.close();
+		}
+		else
+		{
+			// get the SDK paths
+			QString SDKInc = config.sdkInc;
+			QString SDKLib = config.sdkLib;
+			SDKInc.replace("\\", "/");
+			SDKLib.replace("\\", "/");
+			if (SDKLib.last(1) != "/") SDKLib += "/";
+			SDKLib += "$<CONFIG>";
+
+			QString cmakeText = cmakecomment + QString(szcmake);
+			cmakeText = cmakeText.replace("$(PLUGIN_NAME)", config.name);
+			cmakeText = cmakeText.replace("$(CLASS_NAME)", config.className);
+			cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
+			cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
+			if (!GenerateFile(config.cmakeFile, cmakeText)) return false;
+		}
+	}
 
 	return true;
+}
+
+CPluginTemplate* CDlgAddPluginClassUI::GetPluginTemplate()
+{
+	int type = configPage->m_type->currentRow();
+	return pluginTemplates[type];
 }

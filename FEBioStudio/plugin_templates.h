@@ -33,9 +33,9 @@ SOFTWARE.*/
 // The code snippets contain special fields, starting with a dollar sign $, that will be set by the user. 
 // The main plugin fields define data that should be defined for all plugins:
 //
-// $(PLUGIN_NAME)       : the name of the plugin. Also used as the class name. 
-// $(PLUGIN_MODULE)     : the FEBio module to which the class will be added. 
-// $(PLUGIN_TYPESTRING) : the type string for the plugin class. (I.e. how the feature is referenced in the input file)
+// $(CLASS_NAME)       : the name of the plugin. Also used as the class name. 
+// $(PLUGIN_MODULE)    : the FEBio module to which the class will be added. 
+// $(CLASS_TYPESTRING) : the type string for the plugin class. (I.e. how the feature is referenced in the input file)
 //
 // In addition, the code snippets use additional special fields, denoted $(ARG1), $(ARG2), ...
 // These special fields are defined by the plugin generator and may also depend on user input.
@@ -52,7 +52,7 @@ const char* szcmake = \
 "add_definitions(-DWIN32 -DFECORE_DLL /wd4251 /wd4275)\n\n"\
 "include_directories(\"$(PLUGIN_SDK_INCLUDE)\")\n\n"\
 "link_directories(\"$(PLUGIN_SDK_LIBS)\")\n\n"\
-"add_library($(PLUGIN_NAME) SHARED $(PLUGIN_NAME).h $(PLUGIN_NAME).cpp main.cpp)\n\n"\
+"add_library($(PLUGIN_NAME) SHARED $(CLASS_NAME).h $(CLASS_NAME).cpp main.cpp)\n\n"\
 "target_link_libraries($(PLUGIN_NAME) fecore.lib febiomech.lib)\n\n"\
 "set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))\n\n"\
 "";
@@ -60,7 +60,7 @@ const char* szcmake = \
 // This defines the main.cpp file, which registers feature classes.
 const char* szmain = \
 "#include <FECore\\FECoreKernel.h>\n" \
-"#include \"$(PLUGIN_NAME).h\"\n\n"\
+"#include \"$(CLASS_NAME).h\"\n\n"\
 "FECORE_EXPORT unsigned int GetSDKVersion()\n" \
 "{\n" \
 "	return FE_SDK_VERSION;\n" \
@@ -69,7 +69,7 @@ const char* szmain = \
 "{\n"\
 "	FECoreKernel::SetInstance(&febio);\n\n"\
 "	febio.SetActiveModule(\"$(PLUGIN_MODULE)\");\n\n"
-"	REGISTER_FECORE_CLASS($(PLUGIN_NAME), \"$(PLUGIN_TYPESTRING)\");\n"\
+"	REGISTER_FECORE_CLASS($(CLASS_NAME), \"$(CLASS_TYPESTRING)\");\n"\
 "}\n";
 
 // ============================================================================
@@ -77,11 +77,11 @@ const char* szmain = \
 // ============================================================================
 const char* szhdr_mat = \
 "#include <FEBioMech\\$(ARG1).h>\n\n" \
-"class $(PLUGIN_NAME) : public $(ARG1)\n" \
+"class $(CLASS_NAME) : public $(ARG1)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"
+"	$(CLASS_NAME)(FEModel* fem);\n\n"
 "	// evaluate Cauchy stress\n"
 "	mat3ds $(ARG2)(FEMaterialPoint& mp) override;\n\n" \
 "	// evaluate spatial elasticity tangent\n"
@@ -93,22 +93,22 @@ const char* szhdr_mat = \
 
 // This defines the source file for material plugins
 const char* szsrc_mat = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), $(ARG1))\n"\
+"#include \"$(CLASS_NAME).h\"\n\n" \
+"BEGIN_FECORE_CLASS($(CLASS_NAME), $(ARG1))\n"\
 "	// TODO: Add parameters\n"\
 "END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : $(ARG1)(fem)\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : $(ARG1)(fem)\n"\
 "{\n" \
 "	// TODO: initialize all class member variables\n" \
 "}\n\n" \
-"mat3ds $(PLUGIN_NAME)::$(ARG2)(FEMaterialPoint& mp)\n" \
+"mat3ds $(CLASS_NAME)::$(ARG2)(FEMaterialPoint& mp)\n" \
 "{\n" \
 "	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement stress\n" \
 "	mat3ds s;\n" \
 "	return s;\n" \
 "}\n\n" \
-"tens4ds $(PLUGIN_NAME)::$(ARG3)(FEMaterialPoint& mp)\n" \
+"tens4ds $(CLASS_NAME)::$(ARG3)(FEMaterialPoint& mp)\n" \
 "{\n" \
 "	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement tangent\n" \
@@ -121,11 +121,11 @@ const char* szsrc_mat = \
 // ============================================================================
 const char* szhdr_mdg = \
 "#include <FECore\\FEDataGenerator.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEElemDataGenerator\n" \
+"class $(CLASS_NAME) : public FEElemDataGenerator\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"
+"	$(CLASS_NAME)(FEModel* fem);\n\n"
 "	bool Init() override;\n\n" \
 "	FEDomainMap* Generate() override;\n\n"
 "private:\n"
@@ -135,19 +135,19 @@ const char* szhdr_mdg = \
 
 // This defines the source file for mesh data generator plugins
 const char* szsrc_mdg = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FEElemDataGenerator)\n"\
+"#include \"$(CLASS_NAME).h\"\n\n" \
+"BEGIN_FECORE_CLASS($(CLASS_NAME), FEElemDataGenerator)\n"\
 "	// TODO: Add parameters\n"\
 "END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FEElemDataGenerator(fem)\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FEElemDataGenerator(fem)\n"\
 "{\n" \
 "	// TODO: initialize all class member variables\n" \
 "}\n\n" \
-"bool $(PLUGIN_NAME)::Init()\n" \
+"bool $(CLASS_NAME)::Init()\n" \
 "{\n" \
 "	return true;\n" \
 "}\n\n" \
-"FEDomainMap* $(PLUGIN_NAME)::Generate()\n" \
+"FEDomainMap* $(CLASS_NAME)::Generate()\n" \
 "{\n" \
 "	return nullptr;\n" \
 "}\n";
@@ -164,20 +164,20 @@ const char* szsrc_mdg = \
 // $(ARG7) : additional include files for source
 const char* szhdr_pd = \
 "#include <FECore/FEPlotData.h>\n\n" \
-"class $(PLUGIN_NAME) : public $(ARG1)\n" \
+"class $(CLASS_NAME) : public $(ARG1)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : $(ARG1)(fem, $(ARG3), $(ARG4)){}\n"
+"	$(CLASS_NAME)(FEModel* fem) : $(ARG1)(fem, $(ARG3), $(ARG4)){}\n"
 "	bool Save($(ARG2), FEDataStream& a);\n"
 "};\n";
 
 // This defines the source file for plot data plugins
 const char* szsrc_pd = \
-"#include \"$(PLUGIN_NAME).h\"\n" \
+"#include \"$(CLASS_NAME).h\"\n" \
 "#include <FECore/FEMesh.h>\n"\
 "$(ARG7)\n"
-"bool $(PLUGIN_NAME)::Save($(ARG2), FEDataStream& a)\n" \
+"bool $(CLASS_NAME)::Save($(ARG2), FEDataStream& a)\n" \
 "{\n" \
 "$(ARG5)"
 "	return true;\n" \
@@ -227,10 +227,10 @@ const char* szpd_surface_item = \
 // ============================================================================
 const char* szhdr_sl = \
 "#include <FECore\\FESurfaceLoad.h>\n\n" \
-"class $(PLUGIN_NAME) : public FESurfaceLoad\n" \
+"class $(CLASS_NAME) : public FESurfaceLoad\n" \
 "{\n" \
 "public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	$(CLASS_NAME)(FEModel* fem);\n\n"\
 "	// initialization\n"\
 "	bool Init() override;\n\n"\
 "	// serialize data\n"\
@@ -245,28 +245,28 @@ const char* szhdr_sl = \
 "};\n";
 
 const char* szsrc_sl = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FESurfaceLoad)\n"\
+"#include \"$(CLASS_NAME).h\"\n\n" \
+"BEGIN_FECORE_CLASS($(CLASS_NAME), FESurfaceLoad)\n"\
 "	// TODO: Add parameters\n"\
 "END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FESurfaceLoad(fem)\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FESurfaceLoad(fem)\n"\
 "{\n"\
 "	// TODO: Initialize all class members.\n"\
 "}\n\n"\
-"bool $(PLUGIN_NAME)::Init()\n"\
+"bool $(CLASS_NAME)::Init()\n"\
 "{\n"\
 "	// TODO: Do any additional initialization\n"\
 "	return FESurfaceLoad::Init();\n"
 "}\n\n"\
-"void $(PLUGIN_NAME)::Serialize(DumpStream& ar)\n"\
+"void $(CLASS_NAME)::Serialize(DumpStream& ar)\n"\
 "{\n"\
 "	FESurfaceLoad::Serialize(ar);\n"
 "	// TODO: Do any additional serialization\n"\
 "}\n\n"\
-"void $(PLUGIN_NAME)::LoadVector(FEGlobalVector& R)\n"\
+"void $(CLASS_NAME)::LoadVector(FEGlobalVector& R)\n"\
 "{\n"\
 "}\n\n"\
-"void $(PLUGIN_NAME)::StiffnessMatrix(FELinearSystem& LS)\n"\
+"void $(CLASS_NAME)::StiffnessMatrix(FELinearSystem& LS)\n"\
 "{\n"\
 "}\n";
 
@@ -275,17 +275,17 @@ const char* szsrc_sl = \
 // ============================================================================
 const char* szhdr_ld = \
 "#include <FECore\\$(ARG1)>\n\n" \
-"class $(PLUGIN_NAME) : public $(ARG2)\n" \
+"class $(CLASS_NAME) : public $(ARG2)\n" \
 "{\n" \
 "public:\n" \
 "	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem) : $(ARG2)(fem){}\n"
+"	$(CLASS_NAME)(FEModel* fem) : $(ARG2)(fem){}\n"
 "	double value($(ARG3)) override;\n"
 "};\n";
 
 const char* szsrc_ld = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"double $(PLUGIN_NAME)::value($(ARG3))\n" \
+"#include \"$(CLASS_NAME).h\"\n\n" \
+"double $(CLASS_NAME)::value($(ARG3))\n" \
 "{\n" \
 "	// TODO: calculate something for val\n"\
 "	double val = 0.0;\n"\
@@ -297,26 +297,26 @@ const char* szsrc_ld = \
 // ============================================================================
 const char* szhdr_cb = \
 "#include <FECore\\FECallBack.h>\n\n" \
-"class $(PLUGIN_NAME) : public FECallBack\n" \
+"class $(CLASS_NAME) : public FECallBack\n" \
 "{\n" \
 "public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	$(CLASS_NAME)(FEModel* fem);\n\n"\
 "	bool Init() override;\n\n"\
 "	bool Execute(FEModel& fem, int nwhen) override;\n\n"\
 "};\n";
 
 const char* szsrc_cb = \
 "#include <FECore/Callback.h>\n"\
-"#include \"$(PLUGIN_NAME).h\"\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FECallBack(fem, CB_ALWAYS)\n"\
+"#include \"$(CLASS_NAME).h\"\n\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FECallBack(fem, CB_ALWAYS)\n"\
 "{\n"\
 "}\n\n"\
-"bool $(PLUGIN_NAME)::Init()\n"\
+"bool $(CLASS_NAME)::Init()\n"\
 "{\n"\
 "	// TODO: Add additional initialization\n"\
 "	return FECallBack::Init();\n"\
 "}\n\n"\
-"bool $(PLUGIN_NAME)::Execute(FEModel& fem, int nwhen)\n"\
+"bool $(CLASS_NAME)::Execute(FEModel& fem, int nwhen)\n"\
 "{\n"\
 "	return true;\n"\
 "}\n";
@@ -326,21 +326,21 @@ const char* szsrc_cb = \
 // ============================================================================
 const char* szhdr_task = \
 "#include <FECore\\FECoreTask.h>\n\n" \
-"class $(PLUGIN_NAME) : public FECoreTask\n" \
+"class $(CLASS_NAME) : public FECoreTask\n" \
 "{\n" \
 "public:\n" \
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"\
+"	$(CLASS_NAME)(FEModel* fem);\n\n"\
 "	bool Init(const char* szfile) override;\n\n"\
 "	bool Run() override;\n\n"\
 "};\n";
 
 const char* szsrc_task = \
 "#include <FECore/FEModel.h>\n"\
-"#include \"$(PLUGIN_NAME).h\"\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FECoreTask(fem)\n"\
+"#include \"$(CLASS_NAME).h\"\n\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : FECoreTask(fem)\n"\
 "{\n"\
 "}\n\n"\
-"bool $(PLUGIN_NAME)::Init(const char* szfile)\n"\
+"bool $(CLASS_NAME)::Init(const char* szfile)\n"\
 "{\n"\
 "	// get the FE model\n"\
 "	FEModel* fem = GetFEModel();\n\n"\
@@ -348,7 +348,7 @@ const char* szsrc_task = \
 "	// Then, initialize the model\n"\
 "	return fem->Init();\n"\
 "}\n\n"\
-"bool $(PLUGIN_NAME)::Run()\n"\
+"bool $(CLASS_NAME)::Run()\n"\
 "{\n"\
 "	FEModel* fem = GetFEModel();\n\n"\
 "	// TODO: This function is called by FEBio and should execute the task's logic.\n"\

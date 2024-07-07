@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "Logger.h"
 #include "DlgFEBioPlugins.h" // for LoadFEBioPlugin
+#include "DlgCreatePlugin.h"
 
 enum FileItemType {
 	OPEN_FILES,
@@ -257,6 +258,8 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Build", this, SLOT(onBuildPlugin()));
 		menu.addAction("Load", this, SLOT(onLoadPlugin()));
+		menu.addSeparator();
+		menu.addAction("Add FEBio feature ...", this, SLOT(onAddFEBioFeature()));
 		menu.addSeparator();
 //		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
 //		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
@@ -782,6 +785,44 @@ void CFileViewer::onLoadPlugin()
 	{
 		CLogger::AddLogEntry(QString("failed\n"));
 		QMessageBox::critical(this, "FEBio Studio", "Failed to load plugin.");
+	}
+}
+
+void CFileViewer::onAddFEBioFeature()
+{
+	if (ui->m_process)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A build is in progress.\nPlease wait until the build finishes.");
+		return;
+	}
+
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No active project.");
+		return;
+	}
+
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype != PROJECT_PLUGIN)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A plugin project was not selected.");
+		return;
+	}
+
+	QString pluginName = item->text(0);
+	FEBioStudioProject::ProjectItem* prjItem = prj->FindPlugin(pluginName);
+	if (prjItem == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "A plugin project was not selected.");
+		return;
+	}
+
+	CDlgAddPluginClass dlg(ui->m_wnd, prj, prjItem);
+	if (dlg.exec())
+	{
+		Update();
 	}
 }
 

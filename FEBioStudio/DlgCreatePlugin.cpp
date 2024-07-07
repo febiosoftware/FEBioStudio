@@ -67,20 +67,22 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(ne
 void CDlgCreatePlugin::accept()
 {
 	// collect input fields
-	QString name = ui->mainPage->m_name->text();
-	QString path = ui->mainPage->m_path->resourceName();
-	QString mod  = ui->mainPage->m_mod->currentText();
+	QString pluginName   = ui->mainPage->m_name->text();
+	QString pluginPath   = ui->mainPage->m_path->resourceName();
+	QString pluginModule = ui->mainPage->m_mod->currentText();
+
+	QString className = ui->configPage->m_className->text();
 	QString typeStr = ui->configPage->m_typeString->text();
-	if (typeStr.isEmpty()) typeStr = name;
+	if (typeStr.isEmpty()) typeStr = className;
 
 	// check input
-	if (name.isEmpty())
+	if (pluginName.isEmpty())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please choose a name for the plugin.");
 		return;
 	}
 
-	if (path.isEmpty())
+	if (pluginPath.isEmpty())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select a path where the plugin files will be created.");
 		return;
@@ -95,21 +97,21 @@ void CDlgCreatePlugin::accept()
 	}
 
 	// if the project was already saved, we'll add a new folder to the project's folder
-	QDir dir(path);
+	QDir dir(pluginPath);
 	if (!prj->GetProjectPath().isEmpty())
 	{
-		assert(path == prj->GetProjectPath());
-		if (dir.mkdir(name) == false)
+		assert(pluginPath == prj->GetProjectPath());
+		if (dir.mkdir(pluginName) == false)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
 			return;
 		}
-		dir.cd(name);
+		dir.cd(pluginName);
 	}
 	else
 	{
 		// create a folder to save the project in
-		if (dir.mkdir(name) == false)
+		if (dir.mkdir(pluginName) == false)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
 			return;
@@ -119,20 +121,20 @@ void CDlgCreatePlugin::accept()
 		ui->m_wnd->SetCreatePluginPath(QDir::toNativeSeparators(dir.absolutePath()));
 
 		// automatically save the project file
-		dir.cd(name);
-		path = QDir::toNativeSeparators(dir.absolutePath());
-		QString prjPath = path + "\\" + name + ".fsp";
+		dir.cd(pluginName);
+		pluginPath = QDir::toNativeSeparators(dir.absolutePath());
+		QString prjPath = pluginPath + "\\" + pluginName + ".fsp";
 		prj->Save(prjPath);
 
 		// then, add a folder for the plugin
-		if (dir.mkdir(name) == false)
+		if (dir.mkdir(pluginName) == false)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "The folder already exists.");
 			return;
 		}
-		dir.cd(name);
+		dir.cd(pluginName);
 	}
-	path = QDir::toNativeSeparators(dir.absolutePath());
+	pluginPath = QDir::toNativeSeparators(dir.absolutePath());
 
 
 	CPluginTemplate* pluginTemplate = ui->GetPluginTemplate();
@@ -144,17 +146,18 @@ void CDlgCreatePlugin::accept()
 
 	// generate the plugin meta data
 	PluginConfig config;
-	config.name        = name;
-	config.febioModule = mod;
-	config.path        = path;
+	config.name        = pluginName;
+	config.febioModule = pluginModule;
+	config.path        = pluginPath;
+	config.className   = className;
 	config.typeString  = typeStr;
 	config.headerTxt   = pluginTemplate->m_header;
 	config.sourceTxt   = pluginTemplate->m_source;
 	config.args        = ui->opsPage->GetOptions();
 	config.sdkInc      = ui->m_wnd->GetSDKIncludePath();
 	config.sdkLib      = ui->m_wnd->GetSDKLibraryPath();
-	config.headerFile  = config.path + "\\" + config.name + ".h";
-	config.sourceFile  = config.path + "\\" + config.name + ".cpp";
+	config.headerFile  = config.path + "\\" + config.className + ".h";
+	config.sourceFile  = config.path + "\\" + config.className + ".cpp";
 	config.mainFile    = config.path + "\\main.cpp";
 	config.cmakeFile   = config.path + "\\CMakeLists.txt";
 
@@ -182,7 +185,81 @@ void CDlgCreatePlugin::accept()
 	}
 
 	// all is well
-	QMessageBox::information(this, "FEBio Studio", QString("The plugin was created successfully in\n%1").arg(path));
+	QMessageBox::information(this, "FEBio Studio", QString("The plugin was created successfully in\n%1").arg(pluginPath));
+
+	QDialog::accept();
+}
+
+//=============================================================================
+CDlgAddPluginClass::CDlgAddPluginClass(CMainWindow* parent, FEBioStudioProject* prj, FEBioStudioProject::ProjectItem* plugin) : QWizard(parent), ui(new CDlgAddPluginClassUI)
+{
+	setWindowTitle("Add FEBio Feature");
+	setMinimumSize(QSize(600, 300));
+	ui->m_wnd = parent;
+
+	if (parent->currentTheme() == 1)
+	{
+		setWizardStyle(QWizard::ClassicStyle);
+		setStyleSheet("background-color:#353535");
+	}
+	ui->setup(this);
+	ui->prj = prj;
+	ui->plugin = plugin;
+}
+
+void CDlgAddPluginClass::accept()
+{
+	if ((ui->prj == nullptr) || (ui->plugin == nullptr)) return;
+
+	// collect input fields
+	QString className = ui->configPage->m_className->text();
+	QString typeStr = ui->configPage->m_typeString->text();
+	if (typeStr.isEmpty()) typeStr = className;
+
+	CPluginTemplate* pluginTemplate = ui->GetPluginTemplate();
+	if (pluginTemplate == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No valid plugin template found.");
+		return;
+	}
+
+	QString pluginName = ui->plugin->Name();
+	QString pluginPath = ui->prj->ToAbsolutePath("./" + pluginName);
+
+	// generate the plugin meta data
+	PluginConfig config;
+	config.name = ui->plugin->Name();
+	config.febioModule = "";
+	config.path = pluginPath;
+	config.className = className;
+	config.typeString = typeStr;
+	config.headerTxt = pluginTemplate->m_header;
+	config.sourceTxt = pluginTemplate->m_source;
+	config.args = ui->opsPage->GetOptions();
+	config.sdkInc = ui->m_wnd->GetSDKIncludePath();
+	config.sdkLib = ui->m_wnd->GetSDKLibraryPath();
+	config.headerFile = config.path + "\\" + config.className + ".h";
+	config.sourceFile = config.path + "\\" + config.className + ".cpp";
+	config.mainFile = config.path + "\\main.cpp";
+	config.cmakeFile = config.path + "\\CMakeLists.txt";
+
+	// generate all files
+	if (GeneratePluginFiles(config) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to create plugin.");
+		return;
+	}
+
+	// add plugin to project
+	FEBioStudioProject::ProjectItem* grp = ui->plugin;
+
+	FEBioStudioProject::ProjectItem& headerFiles = *grp->FindItem("Include");
+	headerFiles.AddFile(config.headerFile);
+
+	FEBioStudioProject::ProjectItem& sourceFiles = *grp->FindItem("Source");
+	sourceFiles.AddFile(config.sourceFile);
+
+	ui->prj->Save();
 
 	QDialog::accept();
 }

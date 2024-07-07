@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "ResourceEdit.h"
 #include "PropertyList.h"
 #include "PropertyListForm.h"
+#include "FEBioStudioProject.h"
 
 class CMainWindow;
 
@@ -84,7 +85,8 @@ class CConfigPage : public QWizardPage
 public:
 	QListWidget* m_type; // type of plugin
 	QLabel* m_desc;
-	QLineEdit* m_typeString; // name of plugin
+	QLineEdit* m_className;
+	QLineEdit* m_typeString; // type string of class
 
 public:
 	CConfigPage();
@@ -134,6 +136,8 @@ struct PluginConfig
 	QString name;
 	QString path;
 	QString febioModule;
+
+	QString className;
 	QString typeString;
 	QStringList args;
 
@@ -150,3 +154,24 @@ struct PluginConfig
 };
 
 bool GeneratePluginFiles(const PluginConfig& config);
+
+
+class CDlgAddPluginClassUI
+{
+public:
+	CMainWindow* m_wnd;
+	CConfigPage* configPage;
+	COptionsPage* opsPage;
+
+	FEBioStudioProject* prj = nullptr;
+	FEBioStudioProject::ProjectItem* plugin = nullptr;
+
+public:
+	void setup(QWizard* dlg)
+	{
+		dlg->addPage(configPage = new CConfigPage);
+		dlg->addPage(opsPage = new COptionsPage);
+	}
+
+	CPluginTemplate* GetPluginTemplate();
+};

@@ -141,6 +141,7 @@ public:
 	ProjectItem* FindFile(const QString& fileName);
 
 	const ProjectItem* FindPlugin(const QString& pluginName) const;
+	ProjectItem* FindPlugin(const QString& pluginName);
 
 	QStringList GetFilePaths();
 

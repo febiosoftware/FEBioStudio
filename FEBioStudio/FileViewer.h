@@ -66,6 +66,7 @@ private slots:
 	void onImportFolder();
 	void onBuildPlugin();
 	void onLoadPlugin();
+	void onAddFEBioFeature();
 	// plugin process slots
 	void onConfigureFinished(int, QProcess::ExitStatus);
 	void onBuildFinished(int, QProcess::ExitStatus);

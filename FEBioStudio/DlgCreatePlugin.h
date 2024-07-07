@@ -25,9 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QWizard>
+#include "FEBioStudioProject.h"
 
 class CMainWindow;
 class CDlgCreatePluginUI;
+class CDlgAddPluginClassUI;
 
 // This wizard is used to generate FEBio plugins.
 class CDlgCreatePlugin : public QWizard
@@ -41,4 +43,16 @@ public:
 
 private:
 	CDlgCreatePluginUI* ui;
+};
+
+// This wizard is used for adding a feature to a plugin
+class CDlgAddPluginClass : public QWizard
+{
+public:
+	CDlgAddPluginClass(CMainWindow* parent, FEBioStudioProject* prj, FEBioStudioProject::ProjectItem* plugin);
+
+	void accept() override;
+
+private:
+	CDlgAddPluginClassUI* ui;
 };

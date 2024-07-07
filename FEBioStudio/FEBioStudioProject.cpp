@@ -319,6 +319,17 @@ const FEBioStudioProject::ProjectItem* FEBioStudioProject::FindPlugin(const QStr
 	return nullptr;
 }
 
+FEBioStudioProject::ProjectItem* FEBioStudioProject::FindPlugin(const QString& pluginName)
+{
+	int N = m_rootItem->Items();
+	for (int i = 0; i < N; ++i)
+	{
+		FEBioStudioProject::ProjectItem& item = m_rootItem->Item(i);
+		if (item.IsPlugin() && (item.Name() == pluginName)) return &item;
+	}
+	return nullptr;
+}
+
 QStringList FEBioStudioProject::GetFilePaths()
 {
 	QStringList filePaths;
