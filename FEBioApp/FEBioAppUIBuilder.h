@@ -36,10 +36,10 @@ class FEBioAppUIBuilder
 public:
 	FEBioAppUIBuilder();
 
-	QWidget* BuildUIFromFile(QString filePath, FEBioAppDocument* app);
+	FEBioAppWidget* BuildUIFromFile(QString filePath, FEBioAppDocument* app);
 
 private:
-	QWidget* error();
+	FEBioAppWidget* error();
 
 	bool parseModel(XMLTag& tag);
 	bool parseGUI  (XMLTag& tag);

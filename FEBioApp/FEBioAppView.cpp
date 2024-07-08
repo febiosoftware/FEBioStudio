@@ -31,13 +31,14 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include "FEBioAppUIBuilder.h"
 #include "FEBioAppDocument.h"
+#include "FEBioAppWidget.h"
 
 class FEBioAppViewUI
 {
 public:
 	CMainWindow* wnd;
 	QStackedWidget* stack;
-	QMap<FEBioAppDocument*, QWidget*> widgets;
+	QMap<FEBioAppDocument*, FEBioAppWidget*> widgets;
 
 public:
 	void setup(QWidget* parent)
@@ -59,7 +60,7 @@ FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd), ui(new FEBioAppView
 void FEBioAppView::setActiveDocument(FEBioAppDocument* app)
 {
 	// see if we already have a UI for this document
-	QWidget* w = nullptr;
+	FEBioAppWidget* w = nullptr;
 	if (ui->widgets.contains(app))
 	{
 		w = ui->widgets.value(app);
@@ -74,6 +75,7 @@ void FEBioAppView::setActiveDocument(FEBioAppDocument* app)
 		{
 			ui->widgets[app] = w;
 			ui->stack->addWidget(w);
+			app->SetUI(w);
 		}
 	}
 

@@ -30,6 +30,11 @@ SOFTWARE.*/
 #include <FECore/FECoreKernel.h>
 #include <QWidget>
 #include <QThread>
+#include <QMessageBox>
+#include "../FEBioStudio/MainWindow.h"
+#include "ScriptParser.h"
+#include <map>
+#include <functional>
 
 class CFEBioAppThread : public QThread
 {
@@ -52,11 +57,22 @@ FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fem(nul
 	m_forceStop = false;
 	m_isInitialized = false;
 	m_isRunning = false;
+	m_ui = nullptr;
 }
 
 FEBioAppDocument::~FEBioAppDocument()
 {
 	delete m_fem;
+}
+
+void FEBioAppDocument::SetUI(FEBioAppWidget* w)
+{
+	m_ui = w;
+}
+
+FEBioAppWidget* FEBioAppDocument::GetUI()
+{
+	return m_ui;
 }
 
 bool FEBioAppDocument::febio_cb(FEModel* fem, unsigned int nevent, void* pd)
@@ -184,6 +200,17 @@ void FEBioAppDocument::runModel()
 void FEBioAppDocument::stopModel()
 {
 	m_forceStop = true;
+}
+
+void FEBioAppDocument::runScript(const QString& script)
+{
+	QObject* po = QObject::sender();
+
+	ScriptParser parser(this);
+	if (!parser.execute(script))
+	{
+		QMessageBox::critical(GetMainWindow(), "FEBio Studio", QString("Failed to execute script.\n%1").arg(parser.errorString()));
+	}
 }
 
 // This is the actual function that runs the FEBio model. It is called from a

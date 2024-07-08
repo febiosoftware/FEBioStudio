@@ -66,6 +66,12 @@ void FEBioAppWidget::AddRepaintChild(QWidget* w)
 	m_children.push_back(w);
 }
 
+QWidget* FEBioAppWidget::GetElementByID(const QString& objName)
+{
+	QWidget* w = findChild<QWidget*>(objName);
+	return w;
+}
+
 CFEBioParamEdit::CFEBioParamEdit(QObject* parent) : m_editor(nullptr), QObject(parent)
 {
 

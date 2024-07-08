@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/InputWidgets.h"
 #include "../FEBioStudio/PlotWidget.h"
 #include "../FEBioStudio/MainWindow.h"
+#include "FEBioAppView.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppWidget.h"
 #include "GLFEBioScene.h"
@@ -77,14 +78,14 @@ FEBioAppUIBuilder::FEBioAppUIBuilder() : ui(nullptr), app(nullptr)
 
 }
 
-QWidget* FEBioAppUIBuilder::error()
+FEBioAppWidget* FEBioAppUIBuilder::error()
 {
 	if (ui) delete ui;
 	ui = nullptr;
 	return nullptr;
 }
 
-QWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioAppDocument* app)
+FEBioAppWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioAppDocument* app)
 {
 	if (app == nullptr) return nullptr;
 	this->app = app;
@@ -212,32 +213,20 @@ void FEBioAppUIBuilder::parseButton(XMLTag& tag, QBoxLayout* playout)
 {
 	assert(tag.isleaf());
 
-	const char* sztitle = tag.AttributeValue("text", true);
+	const char* szid     = tag.AttributeValue("id", true);
+	const char* sztxt    = tag.AttributeValue("text", true);
 	const char* szaction = tag.AttributeValue("onClick", true);
 
-	QPushButton* pb = new QPushButton(sztitle);
+	CActionButton* pb = new CActionButton(sztxt);
+	if (szid) pb->setObjectName(szid);
 	pb->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	if (szaction)
 	{
-		if (strcmp(szaction, "fem.solve()") == 0)
-		{
-			QObject::connect(pb, SIGNAL(clicked()), app, SLOT(runModel()));
-		}
-		if (strcmp(szaction, "fem.stop()") == 0)
-		{
-			QObject::connect(pb, SIGNAL(clicked()), app, SLOT(stopModel()));
-		}
+		pb->setAction(szaction);
+		QObject::connect(pb, &CActionButton::doAction, app, &FEBioAppDocument::runScript);
 	}
 
-	//if (szaction)
-	//{
-	//	pb->setText(QString(sztitle));
-	//	pb->setCode(szaction);
-	//}
-
 	playout->addWidget(pb);
-
-//	QObject::connect(pb, SIGNAL(runCode(QString&)), m_dlg, SLOT(RunCode(QString&)));
 }
 
 void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)

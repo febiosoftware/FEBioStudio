@@ -24,65 +24,79 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QWidget>
-#include <QCheckBox>
-#include <FECore/FEParam.h>
-#include "../FEBioStudio/InputWidgets.h"
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <map>
 
 class FEBioAppDocument;
 
-class CFEBioParamEdit : public QObject
+class ScriptParser
 {
-	Q_OBJECT
+	enum TokenType {
+		UNKNOWN,
+		IDENTIFIER,
+		IF,
+		ELSE,
+		FUNCTION,
+		STRING_LITERAL,
+		DOT,
+		LP, RP,
+		STATEMENT_END,
+		SCRIPT_END
+	};
 
-public:
-	enum class AlignOptions {
-		ALIGN_LEFT,
-		ALIGN_RIGHT,
-		ALIGN_TOP,
-		ALIGN_BOTTOM,
-		ALIGN_TOP_LEFT,
-		ALIGN_TOP_RIGHT,
-		ALIGN_BOTTOM_LEFT,
-		ALIGN_BOTTOM_RIGHT
+	struct Token
+	{
+		TokenType type;
+		QString   stringValue;
+
+		Token(TokenType tokenType) { type = tokenType; }
+
+		bool operator == (TokenType tokenType) const { return type == tokenType; }
+	};
+
+
+	class Object
+	{
+	public:
+		typedef std::function<Object (const QStringList& args)> Function;
+
+	public:
+		std::map<QString, Function> m_functions;
 	};
 
 public:
-	CFEBioParamEdit(QObject* parent);
+	ScriptParser(FEBioAppDocument* doc);
 
-	void SetParameter(FEParamValue p) { m_param = p; }
-	void SetEditor(CFloatInput* w);
-	void SetEditor(CIntInput* w);
-	void SetEditor(CDoubleSlider* w);
-	void SetEditor(QCheckBox* w);
+	~ScriptParser();
 
-	QWidget* GetEditor() const;
+	bool execute(const QString& script);
 
-public slots:
-	void UpdateFloat(double newValue);
-	void UpdateInt(int newValue);
-	void UpdateBool(bool newValue);
+	QString errorString() const;
 
 private:
-	FEParamValue m_param;
-	QWidget* m_editor;
-};
+	bool parseScript();
 
-class FEBioAppWidget : public QWidget
-{
-	Q_OBJECT
-public:
-	FEBioAppWidget(FEBioAppDocument* doc);
-	void AddRepaintChild(QWidget* w);
+	Token parseBlock();
+	Token skipBlock();
+	Token parseStatement();
+	Token parseIfStatement();
+	Token parseIdentifier(const QString& id);
+	Token parseFunction(Object& ob, const QString& funcName);
+	Token nextToken(TokenType expectedType = TokenType::UNKNOWN);
 
-	QWidget* GetElementByID(const QString& objName);
+	bool parseCondition();
 
-public slots:
-	void onDataChanged();
-	void onModelStarted();
-	void onModelFinished(bool returnCode);
+	bool setError(const QString& err);
+
+	Object callMethod(Object& var, const QString& func, const QStringList& args = QStringList());
 
 private:
 	FEBioAppDocument* m_doc;
-	std::vector<QWidget*>	m_children;
+	QString m_error;
+	QString m_script;
+	size_t m_scriptLength;
+	size_t	m_index;
+
+	std::map<QString, Object> m_vars;
 };

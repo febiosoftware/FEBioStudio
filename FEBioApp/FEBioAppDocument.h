@@ -31,6 +31,8 @@ SOFTWARE.*/
 class FEBioModel;
 class FEModel;
 
+class FEBioAppWidget;
+
 class CFEBioModelDataSource
 {
 public:
@@ -60,9 +62,11 @@ public:
 
 	void AddModelDataSource(CFEBioModelDataSource* dataSrc);
 
+	void SetUI(FEBioAppWidget* w);
+	FEBioAppWidget* GetUI();
+
 public slots:
-	void runModel();
-	void stopModel();
+	void runScript(const QString& script); // called by action buttons
 
 signals:
 	void modelStarted();
@@ -76,6 +80,10 @@ private:
 	// this function actuallys run FEBio, but is called from a separate thread
 	void RunFEBioModel();
 
+public:
+	void runModel();
+	void stopModel();
+
 private:
 	bool	m_isInitialized;
 	bool	m_isRunning;
@@ -85,6 +93,8 @@ private:
 
 	std::string m_taskName;
 	std::string m_taskInputFile;
+
+	FEBioAppWidget* m_ui;
 
 	friend class CFEBioAppThread;
 };
