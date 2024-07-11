@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
+#include "DlgPickColor.h"
 #include "PostToolBar.h"
 #include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
@@ -274,6 +275,7 @@ public:
 	::CDlgFiberViz* fiberViz = nullptr;
 	::CDlgMeasure* measureTool = nullptr;
 	::CDlgPlaneCut* planeCutTool = nullptr;
+	::CDlgPickColor* pickColorTool = nullptr;
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
@@ -373,6 +375,7 @@ public:
 	QAction* actionSelectDiscrete;
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
+	QAction* actionPickColor;
 	QAction* actionRotate;
 	QAction* actionTranslate;
 	QAction* selectRect;

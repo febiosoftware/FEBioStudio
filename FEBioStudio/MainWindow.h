@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FEMLib/GMaterial.h>
 #include <FSCore/math3d.h>
+#include <FSCore/color.h>
 
 class FSObject;
 class CDocument;
@@ -261,6 +262,10 @@ public:
 
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
+
+	bool IsColorPickerActive() const;
+
+	GLColor GetPickedColor() const;
 
 private:
 	void writeSettings();
@@ -537,6 +542,7 @@ public slots:
 	void on_selectFree_toggled(bool b);
 	void on_actionMeasureTool_triggered();
 	void on_actionPlaneCutTool_triggered();
+	void on_actionPickColor_triggered();
 
 	void on_postSelectRect_toggled(bool b);
 	void on_postSelectCircle_toggled(bool b);

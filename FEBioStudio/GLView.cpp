@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
+#include <GLWLib/convert.h>
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -482,6 +483,33 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			repaint();
 			return;
 		}
+
+		if (m_pWnd->IsColorPickerActive())
+		{
+			GPart* pg = PickPart(x, y);
+			if (pg)
+			{
+				GLColor c = m_pWnd->GetPickedColor();
+				if (pdoc->GetSelectionMode() == SELECT_OBJECT)
+				{
+					GObject* po = dynamic_cast<GObject*>(pg->Object());
+					if (po) po->SetColor(c);
+				}
+				else
+				{
+					CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
+					if (mdoc)
+					{
+						int matID = pg->GetMaterialID();
+						GMaterial* mat = mdoc->GetFSModel()->GetMaterialFromID(matID);
+						if (mat) mat->AmbientDiffuse(c);
+					}
+				}
+				repaint();
+				return;
+			}
+		}
+
 		if ((m_bshift || m_bctrl) && (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)) m_bsel = true;
 	}
 	else m_bsel = false;
@@ -844,6 +872,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		ev->accept();
 		return;
 	}
+
+	// if the color picker is active, don't do anything
+	if ((but == Qt::LeftButton) && m_pWnd->IsColorPickerActive()) return;
 
 	// which mesh is active (surface or volume)
 	int meshMode = pdoc->GetMeshMode();
@@ -2212,10 +2243,10 @@ void CGLView::HighlightSurface(int x, int y)
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
-void CGLView::HighlightPart(int x, int y)
+GPart* CGLView::PickPart(int x, int y)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
+	if (pdoc == nullptr) return nullptr;
 
 	GLViewSettings& view = GetViewSettings();
 
@@ -2223,14 +2254,14 @@ void CGLView::HighlightPart(int x, int y)
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
-	if (model.Parts() == 0) return;
+	if (model.Parts() == 0) return nullptr;
 
 	// convert the point to a ray
 	makeCurrent();
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
-	GPart* closestPart = 0;
+	GPart* closestPart = nullptr;
 	Intersection q;
 	double minDist = 0;
 	double* a = PlaneCoordinates();
@@ -2294,6 +2325,13 @@ void CGLView::HighlightPart(int x, int y)
 			}
 		}
 	}
+
+	return closestPart;
+}
+
+void CGLView::HighlightPart(int x, int y)
+{
+	GPart* closestPart = PickPart(x, y);
 	if (closestPart != nullptr) GLHighlighter::SetActiveItem(closestPart);
 	else GLHighlighter::SetActiveItem(nullptr);
 }

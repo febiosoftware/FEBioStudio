@@ -3116,6 +3116,19 @@ void CMainWindow::OnSelectionTransformed()
 	RedrawGL();
 }
 
+bool CMainWindow::IsColorPickerActive() const
+{
+	if (ui->pickColorTool && ui->pickColorTool->isVisible()) return true;
+	return false;
+}
+
+GLColor CMainWindow::GetPickedColor() const
+{
+	GLColor c;
+	if (IsColorPickerActive()) c = toGLColor(ui->pickColorTool->GetColor());
+	return c;
+}
+
 // remove a graph from the list
 void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 {

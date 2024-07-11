@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "DlgMergeObjects.h"
 #include "DlgDetachSelection.h"
 #include "DlgPurge.h"
+#include "DlgPickColor.h"
 #include "PostDocument.h"
 #include "XMLDocument.h"
 #include "Commands.h"
@@ -1629,6 +1630,12 @@ void CMainWindow::on_actionPlaneCutTool_triggered()
 {
 	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
 	ui->planeCutTool->show();
+}
+
+void CMainWindow::on_actionPickColor_triggered()
+{
+	if (ui->pickColorTool == nullptr) ui->pickColorTool = new CDlgPickColor(this);
+	ui->pickColorTool->show();
 }
 
 void CMainWindow::on_actionFindTxt_triggered()
