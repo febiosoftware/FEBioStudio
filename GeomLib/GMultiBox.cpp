@@ -29,6 +29,25 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <algorithm>
 
+class GMultiBoxManipulator : public GObjectManipulator
+{
+public:
+	GMultiBoxManipulator(GMultiBox& mb) : GObjectManipulator(&mb), m_box(mb) {}
+
+	void TransformNode(GNode* pn, const Transform& T) override
+	{
+		assert(pn->Object() == &m_box);
+		vec3d r = pn->Position();
+		r = T.LocalToGlobal(r);
+		r = pn->Object()->GetTransform().GlobalToLocal(r);
+		pn->LocalPosition() = r;
+		m_box.Update();
+	}
+
+private:
+	GMultiBox& m_box;
+};
+
 //-----------------------------------------------------------------------------
 //! Constructor
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
@@ -36,6 +55,8 @@ GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 	SetFEMesher(new FEMultiBlockMesher(this));
 
 	SetSaveFlags(0);	// this prevents the mesh from getting serialized
+
+	SetManipulator(new GMultiBoxManipulator(*this));
 }
 
 //-----------------------------------------------------------------------------
@@ -75,6 +96,8 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 
 	// rebuild the GMesh
 	BuildGMesh();
+
+	SetManipulator(new GMultiBoxManipulator(*this));
 }
 
 // This function builds the object data from the multiblock mesh

@@ -149,7 +149,7 @@ public:
 		operator GPart* () { return m_pg; }
 
 	protected:
-		GModel*		m_ps;
+		GPartSelection*		m_ps;
 		GPart*		m_pg;
 		int			m_npart;
 	};
@@ -158,7 +158,7 @@ public:
 	int Prev();
 
 public:
-	GPartSelection(GModel* ps) : FESelection(SELECT_PARTS) { m_mdl = ps; Update(); }
+	GPartSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -167,12 +167,17 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation ();
 
+	GPart* Part(size_t n) { return m_partList[n]; }
+
 	GModel* GetGModel() { return m_mdl; }
 
 	FEItemListBuilder* CreateItemList();
 
+	void UpdateBoundingBox();
+
 protected:
 	GModel*	m_mdl;
+	std::vector<GPart*> m_partList;
 };
 
 //-----------------------------------------------------------------------------
@@ -193,9 +198,9 @@ public:
 		operator GFace* () { return m_pf; }
 
 	protected:
-		GModel*	m_ps;
+		GFaceSelection* m_sel;
 		GFace*	m_pf;
-		int			m_nsurf;
+		int		m_nsurf;
 	};
 
 	int Next();
@@ -204,7 +209,7 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 public:
-	GFaceSelection(GModel* ps) : FESelection(SELECT_SURFACES) { m_ps = ps; Update(); }
+	GFaceSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -215,8 +220,13 @@ public:
 
 	GModel* GetGModel() { return m_ps; }
 
+	GFace* Face(size_t n) { return m_faceList[n]; }
+
+	void UpdateBoundingBox();
+
 protected:
 	GModel*	m_ps;
+	std::vector<GFace*> m_faceList;
 };
 
 //-----------------------------------------------------------------------------
@@ -237,8 +247,8 @@ public:
 		operator GEdge* () { return m_pe; }
 
 	protected:
-		GModel*	m_ps;
-		GEdge*	m_pe;
+		GEdgeSelection*	m_ps;
+		GEdge*		m_pe;
 		int			m_nedge;
 	};
 
@@ -246,7 +256,7 @@ public:
 	int Prev();
 
 public:
-	GEdgeSelection(GModel* ps) : FESelection(SELECT_CURVES) { m_ps = ps; Update(); }
+	GEdgeSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -259,8 +269,13 @@ public:
 
 	FEItemListBuilder* CreateItemList();
 
+	GEdge* Edge(size_t n) { return m_edgeList[n]; }
+
+	void UpdateBoundingBox();
+
 protected:
 	GModel*	m_ps;
+	std::vector<GEdge*> m_edgeList;
 };
 
 //-----------------------------------------------------------------------------
@@ -281,16 +296,16 @@ public:
 		operator GNode* () { return m_pn; }
 
 	protected:
-		GNode*	m_pn;
-		std::vector<GNode*> m_sel;
-		size_t	m_node;
+		GNodeSelection* m_sel;
+		GNode* m_pn;
+		size_t	m_index;
 	};
 
 	int Next();
 	int Prev();
 
 public:
-	GNodeSelection(GModel* ps) : FESelection(SELECT_NODES) { m_ps = ps; Update(); }
+	GNodeSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -303,8 +318,13 @@ public:
 
 	FEItemListBuilder* CreateItemList();
 
+	void UpdateBoundingBox();
+
+	GNode* Node(size_t n) { return m_nodeList[n]; }
+
 protected:
 	GModel*	m_ps;
+	std::vector<GNode*> m_nodeList;
 };
 
 //-----------------------------------------------------------------------------
