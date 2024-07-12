@@ -711,7 +711,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			q.Inverse().RotateVector(dr);
 			FESelection* ps = pdoc->GetCurrentSelection();
-			if (ps && ps->Size())
+			if (ps && ps->Size() && ps->IsMovable())
 			{
 				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
@@ -1029,49 +1029,52 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	else 
 	{
 		FESelection* ps = pdoc->GetCurrentSelection();
-		CCommand* cmd = nullptr;
-		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
+		if (ps && ps->Size() && ps->IsMovable())
 		{
-			cmd = new CCmdTranslateSelection(pdoc, m_rt);
-		}
-		else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
-		{
-			if (m_wt != 0)
+			CCommand* cmd = nullptr;
+			if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 			{
-				quatd q;
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(m_wt, vec3d(1,0,0));
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0,1,0));
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0,0,1));
-
-				if (m_coord == COORD_LOCAL)
-				{
-					quatd qs = ps->GetOrientation();
-					q = qs*q*qs.Inverse();
-				}
-
-				q.MakeUnit();
-				cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
-				m_wt = 0;
+				cmd = new CCmdTranslateSelection(pdoc, m_rt);
 			}
-		}
-		else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
-		{
-			cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
-			m_st = m_sa = 1;
-		}
+			else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
+			{
+				if (m_wt != 0)
+				{
+					quatd q;
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(m_wt, vec3d(1, 0, 0));
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0, 1, 0));
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0, 0, 1));
 
-		if (cmd && ps)
-		{
-			string s = ps->GetName();
-			pdoc->AddCommand(cmd, s);
-			pdoc->Update();
-		}
+					if (m_coord == COORD_LOCAL)
+					{
+						quatd qs = ps->GetOrientation();
+						q = qs * q * qs.Inverse();
+					}
 
-		// TODO: Find a better way to update the GMesh when necessary. 
-		//       When I move FE nodes, I need to rebuild the GMesh. 
-		//       This still causes a delay between the GMesh update since we do this
-		//       when the mouse is released, but I'm not sure how to do this better.
-//		if (pdoc->GetActiveObject()) pdoc->GetActiveObject()->BuildGMesh();
+					q.MakeUnit();
+					cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
+					m_wt = 0;
+				}
+			}
+			else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
+			{
+				cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
+				m_st = m_sa = 1;
+			}
+
+			if (cmd)
+			{
+				string s = ps->GetName();
+				pdoc->AddCommand(cmd, s);
+				pdoc->Update();
+			}
+
+			// TODO: Find a better way to update the GMesh when necessary. 
+			//       When I move FE nodes, I need to rebuild the GMesh. 
+			//       This still causes a delay between the GMesh update since we do this
+			//       when the mouse is released, but I'm not sure how to do this better.
+	//		if (pdoc->GetActiveObject()) pdoc->GetActiveObject()->BuildGMesh();
+		}
 	}
 
 	ev->accept();
@@ -1694,8 +1697,7 @@ void CGLView::RenderPivot()
 	// render the manipulator
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
-	bool bact = true;
-	if ((nitem == ITEM_MESH) && (nsel != SELECT_OBJECT)) bact = false;
+	bool bact = ps->IsMovable();
 	m_pivot.Render(ntrans, d, bact);
 
 	// restore the modelview matrix

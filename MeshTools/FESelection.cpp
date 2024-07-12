@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/GMeshObject.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection
@@ -43,7 +44,7 @@ SOFTWARE.*/
 FESelection::FESelection(SelectionType ntype) : m_ntype(ntype)
 {
 	m_nsize = -1;
-	m_movable = true;
+	m_movable = false;
 }
 
 FESelection::~FESelection()
@@ -80,6 +81,12 @@ bool FESelection::Supports(unsigned int itemFlag) const
 //////////////////////////////////////////////////////////////////////
 // GObjectSelection
 //////////////////////////////////////////////////////////////////////
+
+GObjectSelection::GObjectSelection(GModel* ps) : FESelection(SELECT_OBJECTS) 
+{ 
+	m_mdl = ps; Update(); 
+	SetMovable(true);
+}
 
 int GObjectSelection::Count()
 {
@@ -1046,7 +1053,8 @@ void FEElementSelection::Iterator::operator ++()
 FEElementSelection::FEElementSelection(FSMesh* pm) : FEMeshSelection(SELECT_FE_ELEMS)
 { 
 	m_pMesh = pm; 
-	Update(); 
+	if (pm && pm->IsEditable()) SetMovable(true);
+	Update();
 }
 
 int FEElementSelection::Count()
@@ -1272,6 +1280,7 @@ int FEElementSelection::ElementIndex(size_t i) const
 FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FEMeshSelection(SELECT_FE_FACES)
 { 
 	m_pMesh = pm; 
+	if (pm && pm->IsEditable()) SetMovable(true);
 	Update(); 
 }
 
@@ -1515,6 +1524,7 @@ FEFaceSelection::Iterator FEFaceSelection::begin()
 FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_EDGES)
 { 
 	m_pMesh = pm; 
+	if (pm && pm->IsEditable()) SetMovable(true);
 	Update(); 
 }
 
@@ -1738,7 +1748,8 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 FENodeSelection::FENodeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_NODES)
 { 
 	m_pMesh = pm; 
-	Update(); 
+	if (pm && pm->IsEditable()) SetMovable(true);
+	Update();
 }
 
 int FENodeSelection::Count()

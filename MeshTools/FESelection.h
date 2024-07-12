@@ -105,7 +105,7 @@ inline int FESelection::Size()
 class GObjectSelection : public FESelection
 {
 public:
-	GObjectSelection(GModel* ps) : FESelection(SELECT_OBJECTS) { m_mdl = ps; Update(); }
+	GObjectSelection(GModel* ps);
 	int Count() override;
 	virtual void Invert() override;
 	virtual void Update() override;

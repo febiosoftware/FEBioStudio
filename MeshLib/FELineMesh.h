@@ -46,6 +46,8 @@ public:
 	// Should be called when mesh needs to be reconstructed
 	virtual void BuildMesh() = 0;
 
+	bool IsEditable() const;
+
 public: // node interface
 
 	// access node data
@@ -72,6 +74,7 @@ public:
 	// set/get parent object
 	void SetGObject(GObject* po);
 	GObject* GetGObject();
+	const GObject* GetGObject() const;
 
 	// convert a local point to global coordinates
 	// (This uses the parent object's transform)
