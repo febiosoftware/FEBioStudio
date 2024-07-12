@@ -71,6 +71,11 @@ public:
 		m_box.Update();
 	}
 
+	void TransformSurface(GFace* ps, const Transform& T) override
+	{
+
+	}
+
 private:
 	GBox& m_box;
 };

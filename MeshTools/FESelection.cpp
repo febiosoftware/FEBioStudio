@@ -442,6 +442,37 @@ GFaceSelection::GFaceSelection(GModel* ps) : FESelection(SELECT_SURFACES)
 { 
 	m_ps = ps; 
 	Update();
+
+	// we only allow the selection to be moved if the owning object
+	// has an object manipulator and has not been meshed yet.
+	bool moveAble = true;
+	for (int i = 0; i < Size(); ++i)
+	{
+		GFace* pf = Face(i);
+		GObject* po = dynamic_cast<GObject*>(pf->Object());
+		if ((po == nullptr) || (po->GetManipulator() == nullptr) || po->GetFEMesh())
+		{
+			moveAble = false;
+			break;
+		}
+	}
+	SetMovable(moveAble);
+}
+
+void GFaceSelection::Translate(vec3d dr)
+{
+	for (int i = 0; i < Size(); ++i)
+	{
+		GFace* pf = Face(i);
+		GObject* po = dynamic_cast<GObject*>(pf->Object());
+		if (po && po->GetManipulator())
+		{
+			Transform T;
+			T.SetPosition(dr);
+			po->GetManipulator()->TransformSurface(pf, T);
+		}
+	}
+	UpdateBoundingBox();
 }
 
 int GFaceSelection::Count()

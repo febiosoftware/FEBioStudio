@@ -44,6 +44,19 @@ public:
 		m_box.Update();
 	}
 
+	void TransformSurface(GFace* ps, const Transform& T)
+	{
+		for (int i = 0; i < ps->Nodes(); ++i)
+		{
+			GNode* pn = m_box.Node(ps->m_node[i]);
+			vec3d r = pn->Position();
+			r = T.LocalToGlobal(r);
+			r = pn->Object()->GetTransform().GlobalToLocal(r);
+			pn->LocalPosition() = r;
+		}
+		m_box.Update();
+	}
+
 private:
 	GMultiBox& m_box;
 };

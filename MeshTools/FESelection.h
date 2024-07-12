@@ -213,7 +213,7 @@ public:
 	int Count();
 	void Invert();
 	void Update();
-	void Translate(vec3d dr) {}
+	void Translate(vec3d dr);
 	void Rotate(quatd q, vec3d c) {}
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
