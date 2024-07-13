@@ -37,6 +37,7 @@ FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
     AddDoubleParam(1.0, "angle", "angle");	// assumed in degrees
     AddDoubleParam(0.0, "pitch", "pitch");
     AddIntParam(1, "segments", "segments");
+	AddBoolParam(true, "degenerate", "Allow degenerate elemens");
 }
 
 inline bool pointOnAxis(const vec3d& c, const vec3d& n, const vec3d& p)
@@ -98,7 +99,9 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
     double p = GetFloatValue(3);
     int nseg = GetIntValue(4);
     if (nseg < 1) return 0;
-    
+
+	bool allowDegenerateElements = GetBoolValue(5);
+
    	// count the tagged nodes
     vector<int> nodeList;
     int NN0 = pm->Nodes();
@@ -457,6 +460,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
                     else
                     {
                         // we need to figure out which edge is the rotation axis
+						bool bfound = false;
                         for (int j=0; j<4; ++j)
                         {
                             int n0 = face.n[j];
@@ -505,7 +509,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
                                     face.m_elem[0].eid = n;
                                     face.m_elem[1].eid = -1;
                                     face.m_elem[2].eid = -1;
-                                    
+									bfound = true;
                                     break;
                                 }
                                 else{
@@ -526,11 +530,86 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
                                     face.m_elem[0].eid = n;
                                     face.m_elem[1].eid = -1;
                                     face.m_elem[2].eid = -1;
-                                    
+									bfound = true;
                                     break;
                                 }
                             }
                         }
+
+						if (!bfound)
+						{
+							// It's not a hex but also not a wedge element. 
+							// If degenerate elements are allowed, we'll treat is a hex,
+							// otherwise we abort
+							if (!allowDegenerateElements)
+							{
+								SetError("Degenerate elements detected but not allowed.");
+								delete pmnew;
+								return nullptr;
+							}
+							else
+							{
+								if (isQuad) {
+									el.SetType(FE_HEX20);
+									el.m_gid = nid;
+
+									el.m_node[0] = face.n[0];
+									el.m_node[1] = face.n[1];
+									el.m_node[2] = face.n[2];
+									el.m_node[3] = face.n[3];
+
+									el.m_node[4] = NN0 + (l - 1) * nn + pmnew->Node(face.n[0]).m_ntag;
+									el.m_node[5] = NN0 + (l - 1) * nn + pmnew->Node(face.n[1]).m_ntag;
+									el.m_node[6] = NN0 + (l - 1) * nn + pmnew->Node(face.n[2]).m_ntag;
+									el.m_node[7] = NN0 + (l - 1) * nn + pmnew->Node(face.n[3]).m_ntag;
+
+									el.m_node[8] = face.n[4];
+									el.m_node[9] = face.n[5];
+									el.m_node[10] = face.n[6];
+									el.m_node[11] = face.n[7];
+
+									el.m_node[12] = NN0 + (l - 1) * nn + pmnew->Node(face.n[4]).m_ntag;
+									el.m_node[13] = NN0 + (l - 1) * nn + pmnew->Node(face.n[5]).m_ntag;
+									el.m_node[14] = NN0 + (l - 1) * nn + pmnew->Node(face.n[6]).m_ntag;
+									el.m_node[15] = NN0 + (l - 1) * nn + pmnew->Node(face.n[7]).m_ntag;
+
+									el.m_node[16] = 1 + NN0 + (l - 1) * nn + pmnew->Node(face.n[0]).m_ntag;
+									el.m_node[17] = 1 + NN0 + (l - 1) * nn + pmnew->Node(face.n[1]).m_ntag;
+									el.m_node[18] = 1 + NN0 + (l - 1) * nn + pmnew->Node(face.n[2]).m_ntag;
+									el.m_node[19] = 1 + NN0 + (l - 1) * nn + pmnew->Node(face.n[3]).m_ntag;
+
+									// move part of face
+									face.n[4] = el.m_node[12];
+									face.n[5] = el.m_node[13];
+									face.n[6] = el.m_node[14];
+									face.n[7] = el.m_node[15];
+
+								}
+								else {
+									el.SetType(FE_HEX8);
+									el.m_gid = nid;
+
+									el.m_node[0] = face.n[0];
+									el.m_node[1] = face.n[1];
+									el.m_node[2] = face.n[2];
+									el.m_node[3] = face.n[3];
+
+									el.m_node[4] = NN0 + (l - 1) * nn + pmnew->Node(face.n[0]).m_ntag;
+									el.m_node[5] = NN0 + (l - 1) * nn + pmnew->Node(face.n[1]).m_ntag;
+									el.m_node[6] = NN0 + (l - 1) * nn + pmnew->Node(face.n[2]).m_ntag;
+									el.m_node[7] = NN0 + (l - 1) * nn + pmnew->Node(face.n[3]).m_ntag;
+
+								}
+								// move the face
+								face.n[0] = el.m_node[4];
+								face.n[1] = el.m_node[5];
+								face.n[2] = el.m_node[6];
+								face.n[3] = el.m_node[7];
+								face.m_elem[0].eid = n;
+								face.m_elem[1].eid = -1;
+								face.m_elem[2].eid = -1;
+							}
+						}
                     }
                     
                     ++n;
