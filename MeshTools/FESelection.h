@@ -76,9 +76,6 @@ public:
 	virtual quatd GetOrientation() = 0;
 	virtual vec3d GetScale() { return vec3d(1,1,1); }
 
-	virtual int Next() { return -1; }
-	virtual int Prev() { return -1; }
-
 	virtual FEItemListBuilder* CreateItemList() = 0;
 
 	virtual string GetName() { return "current selection"; }
@@ -117,9 +114,6 @@ public:
 	virtual vec3d GetPivot();
 	virtual vec3d GetScale() override;
 
-	int Next() override;
-	int Prev() override;
-
 	FEItemListBuilder* CreateItemList() override;
 
 	GObject* Object(int i);
@@ -131,9 +125,20 @@ protected:
 	vector<int>	m_item;
 };
 
-//-----------------------------------------------------------------------------
+// base class for geometry selections
+class GSelection : public FESelection
+{
+public:
+	GSelection(GModel* mdl, SelectionType type) : FESelection(type), m_mdl(mdl) {}
 
-class GPartSelection : public FESelection
+	GModel* GetGModel() { return m_mdl; }
+	const GModel* GetGModel() const { return m_mdl; }
+
+private:
+	GModel* m_mdl;
+};
+
+class GPartSelection : public GSelection
 {
 public:
 	class Iterator
@@ -154,9 +159,6 @@ public:
 		int			m_npart;
 	};
 
-	int Next();
-	int Prev();
-
 public:
 	GPartSelection(GModel* ps);
 	int Count();
@@ -169,20 +171,16 @@ public:
 
 	GPart* Part(size_t n) { return m_partList[n]; }
 
-	GModel* GetGModel() { return m_mdl; }
 
 	FEItemListBuilder* CreateItemList();
 
 	void UpdateBoundingBox();
 
 protected:
-	GModel*	m_mdl;
 	std::vector<GPart*> m_partList;
 };
 
-//-----------------------------------------------------------------------------
-
-class GFaceSelection : public FESelection
+class GFaceSelection : public GSelection
 {
 public:
 	class Iterator
@@ -203,9 +201,6 @@ public:
 		int		m_nsurf;
 	};
 
-	int Next();
-	int Prev();
-
 	FEItemListBuilder* CreateItemList();
 
 public:
@@ -218,20 +213,15 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	GModel* GetGModel() { return m_ps; }
-
 	GFace* Face(size_t n) { return m_faceList[n]; }
 
 	void UpdateBoundingBox();
 
 protected:
-	GModel*	m_ps;
 	std::vector<GFace*> m_faceList;
 };
 
-//-----------------------------------------------------------------------------
-
-class GEdgeSelection : public FESelection
+class GEdgeSelection : public GSelection
 {
 public:
 	class Iterator
@@ -252,9 +242,6 @@ public:
 		int			m_nedge;
 	};
 
-	int Next();
-	int Prev();
-
 public:
 	GEdgeSelection(GModel* ps);
 	int Count();
@@ -265,22 +252,17 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	GModel* GetGModel() { return m_ps; }
-
-	FEItemListBuilder* CreateItemList();
+	FEItemListBuilder* CreateItemList() override;
 
 	GEdge* Edge(size_t n) { return m_edgeList[n]; }
 
 	void UpdateBoundingBox();
 
 protected:
-	GModel*	m_ps;
 	std::vector<GEdge*> m_edgeList;
 };
 
-//-----------------------------------------------------------------------------
-
-class GNodeSelection : public FESelection
+class GNodeSelection : public GSelection
 {
 public:
 	class Iterator
@@ -301,9 +283,6 @@ public:
 		size_t	m_index;
 	};
 
-	int Next();
-	int Prev();
-
 public:
 	GNodeSelection(GModel* ps);
 	int Count();
@@ -314,8 +293,6 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	GModel* GetGModel() { return m_ps; }
-
 	FEItemListBuilder* CreateItemList();
 
 	void UpdateBoundingBox();
@@ -323,11 +300,8 @@ public:
 	GNode* Node(size_t n) { return m_nodeList[n]; }
 
 protected:
-	GModel*	m_ps;
 	std::vector<GNode*> m_nodeList;
 };
-
-//-----------------------------------------------------------------------------
 
 class GDiscreteSelection : public FESelection
 {
@@ -351,9 +325,6 @@ public:
 		int					m_comp;
 	};
 
-	int Next();
-	int Prev();
-
 public:
 	GDiscreteSelection(GModel* ps);
 	int Count();
@@ -374,6 +345,7 @@ protected:
 	int		m_count;
 };
 
+// base class for selections of mesh items.
 class FEMeshSelection : public FESelection
 {
 public:

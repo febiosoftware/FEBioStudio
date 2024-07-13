@@ -93,24 +93,6 @@ int GObjectSelection::Count()
 	return (int)m_item.size();
 }
 
-int GObjectSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_mdl;
-	int N = m.Objects();
-	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i+1)%N; break; }
-	return n;
-}
-
-int GObjectSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_mdl;
-	int N = m.Objects();
-	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i==0?N-1:i-1); break; }
-	return n;
-}
-
 FEItemListBuilder* GObjectSelection::CreateItemList()
 {
 	GPartList* partList = new GPartList(m_mdl);
@@ -298,9 +280,8 @@ GPartSelection::Iterator& GPartSelection::Iterator::operator ++()
 	return (*this);
 }
 
-GPartSelection::GPartSelection(GModel* ps) : FESelection(SELECT_PARTS) 
+GPartSelection::GPartSelection(GModel* ps) : GSelection(ps, SELECT_PARTS)
 { 
-	m_mdl = ps; 
 	Update(); 
 }
 
@@ -309,28 +290,9 @@ int GPartSelection::Count()
 	return (int)m_partList.size();
 }
 
-int GPartSelection::Next()
-{
-	GModel& m = *m_mdl;
-	int n = -1;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i+1)%N)->GetID(); break; }
-	return n;
-}
-
-int GPartSelection::Prev()
-{
-	GModel& m = *m_mdl;
-	int n = -1;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i==0?N-1:i-1))->GetID(); break; }
-	return n;
-}
-
 void GPartSelection::Invert()
 {
-	if (m_mdl == 0) return;
-	GModel& m = *m_mdl;
+	GModel& m = *GetGModel();
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
 	{
@@ -342,8 +304,7 @@ void GPartSelection::Invert()
 
 void GPartSelection::Update()
 {
-	if (m_mdl == 0) return;
-	GModel& model = *m_mdl;
+	GModel& model = *GetGModel();
 
 	m_partList.clear();
 	for (int k=0; k<model.Objects(); ++k)
@@ -365,9 +326,8 @@ void GPartSelection::Update()
 void GPartSelection::UpdateBoundingBox()
 {
 	BOX box;
-	if (m_mdl == nullptr) return;
 
-	GModel& model = *m_mdl;
+	GModel& model = *GetGModel();
 	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
@@ -400,7 +360,7 @@ quatd GPartSelection::GetOrientation()
 
 FEItemListBuilder* GPartSelection::CreateItemList()
 {
-	return new GPartList(m_mdl, this);
+	return new GPartList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -438,9 +398,8 @@ GFaceSelection::Iterator& GFaceSelection::Iterator::operator ++()
 	return (*this);
 }
 
-GFaceSelection::GFaceSelection(GModel* ps) : FESelection(SELECT_SURFACES) 
+GFaceSelection::GFaceSelection(GModel* ps) : GSelection(ps, SELECT_SURFACES) 
 { 
-	m_ps = ps; 
 	Update();
 
 	// we only allow the selection to be moved if the owning object
@@ -480,56 +439,9 @@ int GFaceSelection::Count()
 	return (int)m_faceList.size();
 }
 
-int GFaceSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Surfaces();
-	for (int i=0; i<N; ++i) 
-	{
-		GFace& f = *m.Surface(i);
-		if (f.IsVisible() && f.IsExternal() && f.IsSelected())
-		{
-			n = f.GetID();
-			for (int j=1; j<N; ++j)
-			{
-				GFace& f = *m.Surface((i+j)%N);
-				if (f.IsExternal()) return f.GetID();
-			}
-			break;
-		}
-	}
-	return n;
-}
-
-int GFaceSelection::Prev()
-{
-	int n = -1, m;
-	GModel& model = *m_ps;
-
-	int N = model.Surfaces();
-	for (int i=0; i<N; ++i) 
-	{
-		GFace& f = *model.Surface(i);
-		if (f.IsVisible() && f.IsExternal() && f.IsSelected())
-		{
-			n = f.GetID();
-			for (int j=1; j<N; ++j)
-			{
-				m = (i-j < 0 ? (i-j+N) : i-j);
-				GFace& f = *model.Surface(m);
-				if (f.IsExternal()) return f.GetID();
-			}
-			break;
-		}
-	}
-	return n;
-}
-
 void GFaceSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Surfaces();
 	for (int i=0; i<N; ++i)
 	{
@@ -541,8 +453,7 @@ void GFaceSelection::Invert()
 
 void GFaceSelection::Update()
 {
-	if (m_ps == nullptr) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
 	m_faceList.clear();
 	for (int k=0; k<model.Objects(); ++k)
@@ -594,7 +505,7 @@ void GFaceSelection::UpdateBoundingBox()
 
 FEItemListBuilder* GFaceSelection::CreateItemList()
 {
-	return new GFaceList(m_ps, this);
+	return new GFaceList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -631,9 +542,8 @@ GEdgeSelection::Iterator& GEdgeSelection::Iterator::operator ++()
 	return (*this);
 }
 
-GEdgeSelection::GEdgeSelection(GModel* ps) : FESelection(SELECT_CURVES)
+GEdgeSelection::GEdgeSelection(GModel* ps) : GSelection(ps, SELECT_CURVES)
 { 
-	m_ps = ps; 
 	Update(); 
 }
 
@@ -642,28 +552,9 @@ int GEdgeSelection::Count()
 	return (int)m_edgeList.size();
 }
 
-int GEdgeSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i+1)%N)->GetID(); break; }
-	return n;
-}
-
-int GEdgeSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i==0?N-1:i-1))->GetID(); break; }
-	return n;
-}
-
 void GEdgeSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Edges();
 	for (int i=0; i<N; ++i)
 	{
@@ -675,8 +566,7 @@ void GEdgeSelection::Invert()
 
 void GEdgeSelection::Update()
 {
-	if (m_ps == 0) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
 	m_edgeList.clear();
 	for (int k=0; k<model.Objects(); ++k)
@@ -697,8 +587,7 @@ void GEdgeSelection::Update()
 
 void GEdgeSelection::UpdateBoundingBox()
 {
-	if (m_ps == 0) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
 	BOX box;
 	for (int k = 0; k < model.Objects(); ++k)
@@ -730,7 +619,7 @@ void GEdgeSelection::UpdateBoundingBox()
 
 FEItemListBuilder* GEdgeSelection::CreateItemList()
 {
-	return new GEdgeList(m_ps, this);
+	return new GEdgeList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -765,9 +654,8 @@ GNodeSelection::Iterator& GNodeSelection::Iterator::operator ++()
 	return (*this);
 }
 
-GNodeSelection::GNodeSelection(GModel* ps) : FESelection(SELECT_NODES) 
+GNodeSelection::GNodeSelection(GModel* ps) : GSelection(ps, SELECT_NODES) 
 {
-	m_ps = ps;
 	Update();
 
 	// we only allow the selection to be moved if the owning object
@@ -791,40 +679,9 @@ int GNodeSelection::Count()
 	return (int)m_nodeList.size();
 }
 
-int GNodeSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected()) 
-	{ 
-		do { n = m.Node((++i)%N)->GetID(); } while (n == -1);
-		break; 
-	}
-	return n;
-}
-
-int GNodeSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected())
-	{ 
-		do {
-			i = (i==0?N-1:i-1);
-			n = m.Node(i)->GetID();
-		}
-		while (n == -1);
-		break; 
-	}
-	return n;
-}
-
 void GNodeSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i)
 	{
@@ -852,8 +709,7 @@ void GNodeSelection::Translate(vec3d dr)
 
 void GNodeSelection::Update()
 {
-	if (m_ps == nullptr) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
 	m_nodeList.clear();
 	for (int k=0; k<model.Objects(); ++k)
@@ -887,7 +743,7 @@ void GNodeSelection::UpdateBoundingBox()
 
 FEItemListBuilder* GNodeSelection::CreateItemList()
 {
-	return new GNodeList(m_ps, this);
+	return new GNodeList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -957,33 +813,6 @@ GDiscreteSelection::GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE
 int GDiscreteSelection::Count()
 {
 	return m_count;
-}
-
-int GDiscreteSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.DiscreteObjects();
-	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
-	{
-		n = (++i) % N;
-		break;
-	}
-	return n;
-}
-
-int GDiscreteSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.DiscreteObjects();
-	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
-	{
-		i = (i == 0 ? N - 1 : i - 1);
-		n = i;
-		break;
-	}
-	return n;
 }
 
 void GDiscreteSelection::Invert()
