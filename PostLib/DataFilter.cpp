@@ -2080,7 +2080,7 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 					Post::FEMeshData& ms = fem.GetState(nstep)->m_Data[nsrc];
 					Post::FEMeshData& md = fem.GetState(nstep)->m_Data[ndst];
 
-					Post::FEElementData<mat3fs, DATA_ITEM>& src = dynamic_cast<Post::FEElementData<mat3fs, DATA_ITEM>&>(ms);
+					Post::FEElemData_T<mat3fs, DATA_ITEM>& src = dynamic_cast<Post::FEElemData_T<mat3fs, DATA_ITEM>&>(ms);
 					Post::FEFaceData<float, DATA_ITEM>& dst = dynamic_cast<Post::FEFaceData<float, DATA_ITEM>&>(md);
 
 					int NF = mesh.Faces();
@@ -2120,7 +2120,7 @@ ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* 
 					Post::FEMeshData& ms = fem.GetState(nstep)->m_Data[nsrc];
 					Post::FEMeshData& md = fem.GetState(nstep)->m_Data[ndst];
 
-					Post::FEElementData<mat3fs, DATA_NODE>& src = dynamic_cast<Post::FEElementData<mat3fs, DATA_NODE>&>(ms);
+					Post::FEElemData_T<mat3fs, DATA_NODE>& src = dynamic_cast<Post::FEElemData_T<mat3fs, DATA_NODE>&>(ms);
 					Post::FEFaceData<float, DATA_NODE>& dst = dynamic_cast<Post::FEFaceData<float, DATA_NODE>&>(md);
 
 					int NF = mesh.Faces();
