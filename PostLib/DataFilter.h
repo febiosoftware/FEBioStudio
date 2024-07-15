@@ -32,43 +32,41 @@ namespace Post {
 
 class ModelDataField;
 
-//-----------------------------------------------------------------------------
 // Forward declaration of FEPostModel class
 class FEPostModel;
 
-//-----------------------------------------------------------------------------
 // Scale data by facor
 bool DataScale(FEPostModel& fem, int nfield, double scale);
 bool DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale);
 
-//-----------------------------------------------------------------------------
 // Apply a smoothing operation on data
 bool DataSmooth(FEPostModel& fem, int nfield, double theta, int niters);
 
-//-----------------------------------------------------------------------------
 // Apply a smoothing operation on data
 bool DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand);
 
-//-----------------------------------------------------------------------------
 // Calculate the gradient of a scale field
 // (set config to 0 for material, to 1 for spatial gradient)
 bool DataGradient(FEPostModel& fem, int vecField, int sclField, int config = 1);
 
-//-----------------------------------------------------------------------------
 // Calculate the fractional anisotropy of a tensor field
 bool DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tensorField);
 
-//-----------------------------------------------------------------------------
 // Extract a component from a data field
 ModelDataField* DataComponent(FEPostModel& fem, ModelDataField* dataField, int ncomp, const std::string& sname);
 
-//-----------------------------------------------------------------------------
 // convert between formats
 ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newClass, int newFormat, const std::string& name);
 
-//-----------------------------------------------------------------------------
+// calculate eigen tensor
 ModelDataField* DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
 
-//-----------------------------------------------------------------------------
+// calculate the time rate of a quantity
 ModelDataField* DataTimeRate(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
+
+// project a data field onto the surface and onto the surface normal
+// For a scalar field, this just maps the field to the surface.
+// For a vector field, this calculates the scalar field N*V. 
+// For a tensor field, this calculates the scalar field N*(S*N)
+ModelDataField* SurfaceNormalProjection(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
 }
