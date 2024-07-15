@@ -420,18 +420,7 @@ GFaceSelection::GFaceSelection(GModel* ps) : GSelection(ps, SELECT_SURFACES)
 
 void GFaceSelection::Translate(vec3d dr)
 {
-	for (int i = 0; i < Size(); ++i)
-	{
-		GFace* pf = Face(i);
-		GObject* po = dynamic_cast<GObject*>(pf->Object());
-		if (po && po->GetManipulator())
-		{
-			Transform T;
-			T.SetPosition(dr);
-			po->GetManipulator()->TransformSurface(pf, T);
-		}
-	}
-	UpdateBoundingBox();
+
 }
 
 int GFaceSelection::Count()

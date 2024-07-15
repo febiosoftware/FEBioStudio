@@ -312,7 +312,6 @@ public:
 	GObject* GetObject();
 
 	virtual void TransformNode(GNode* pn, const Transform& T) {}
-	virtual void TransformSurface(GFace* ps, const Transform& T) {}
 
 private:
 	GObject* m_po;

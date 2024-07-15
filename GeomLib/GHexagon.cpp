@@ -27,15 +27,54 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FETetGenMesher.h>
 
+class GHexagonManipulator : public GObjectManipulator
+{
+public:
+	GHexagonManipulator(GHexagon& hex) : GObjectManipulator(&hex), m_hex(hex) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_hex.GetTransform().GlobalToLocal(r);
+
+		double z = r.z; r.z = 0;
+		double R = r.Length();
+
+		m_hex.SetRadius(R);
+		if (m >= 4)
+		{
+			m_hex.SetHeight(z);
+		}
+		else
+		{
+			m_hex.GetTransform().Translate(vec3d(0, 0, z));
+			m_hex.SetHeight(m_hex.Height() - z);
+		}
+		m_hex.Update();
+	}
+
+private:
+	GHexagon& m_hex;
+};
+
 GHexagon::GHexagon() : GPrimitive(GHEXAGON)
 {	
 	AddDoubleParam(1.0, "R", "Radius");
 	AddDoubleParam(1.0, "H", "Height");
 
 	SetFEMesher(new FETetGenMesher(this));
+	SetManipulator(new GHexagonManipulator(*this));
 
 	Create();
 }
+
+double GHexagon::Radius() const { return GetFloatValue(RADIUS); }
+double GHexagon::Height() const { return GetFloatValue(HEIGHT); }
+
+void GHexagon::SetRadius(double R) { SetFloatValue(RADIUS, R); }
+void GHexagon::SetHeight(double H) { SetFloatValue(HEIGHT, H); }
 
 bool GHexagon::Update(bool b)
 {

@@ -27,6 +27,40 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FECylinder.h>
 
+class GCylinderManipulator : public GObjectManipulator
+{
+public:
+	GCylinderManipulator(GCylinder& cyl) : GObjectManipulator(&cyl), m_cyl(cyl) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_cyl.GetTransform().GlobalToLocal(r);
+
+		vec3d c0 = m_cyl.Node(8)->LocalPosition();
+		vec3d c1 = m_cyl.Node(9)->LocalPosition();
+
+		double z = r.z; r.z = 0;
+		double R = (c0 - r).Length();
+
+		m_cyl.SetRadius(R);
+		if (m >= 4)
+		{
+			m_cyl.SetHeight(z);
+		}
+		else
+		{
+			m_cyl.GetTransform().Translate(vec3d(0, 0, z));
+			m_cyl.SetHeight(m_cyl.Height() - z);
+		}
+	}
+
+private:
+	GCylinder& m_cyl;
+};
+
 //-----------------------------------------------------------------------------
 // Constructor. 
 GCylinder::GCylinder() : GPrimitive(GCYLINDER)
@@ -38,9 +72,16 @@ GCylinder::GCylinder() : GPrimitive(GCYLINDER)
 	AddDoubleParam(m_h, "h", "height");
 
 	SetFEMesher(new FECylinder(this));
+	SetManipulator(new GCylinderManipulator(*this));
 
 	Create();
 }
+
+double GCylinder::Radius() const { return GetFloatValue(0); }
+double GCylinder::Height() const { return GetFloatValue(1); }
+
+void GCylinder::SetRadius(double R) { SetFloatValue(0, R); Update(); }
+void GCylinder::SetHeight(double H) { SetFloatValue(1, H); Update(); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GCylinder::CreateDefaultMesher()

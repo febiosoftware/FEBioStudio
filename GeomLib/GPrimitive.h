@@ -86,6 +86,14 @@ public:
 	GCone();
 	bool Update(bool b = true) override;
 
+	double BottomRadius() const;
+	double TopRadius() const;
+	double Height() const;
+
+	void SetBottomRadius(double r0);
+	void SetTopRadius(double r1);
+	void SetHeight(double h);
+
 private:
 	FEMesher* CreateDefaultMesher() override;
 	void Create() override;
@@ -103,6 +111,12 @@ public:
 public:
 	GCylinder();
 	bool Update(bool b = true) override;
+
+	double Radius() const;
+	double Height() const;
+
+	void SetRadius(double R);
+	void SetHeight(double H);
 
 private:
 	FEMesher* CreateDefaultMesher() override;
@@ -178,6 +192,9 @@ public:
 	GSphere();
 	bool Update(bool b = true) override;
 
+	double Radius() const;
+	void SetRadius(double R);
+
 private:
 	void Create() override;
 	void BuildGMesh() override;
@@ -246,6 +263,14 @@ public:
 public:
 	GTube();
 	bool Update(bool b = true) override;
+
+	double InnerRadius() const;
+	double OuterRadius() const;
+	double Height() const;
+
+	void SetInnerRadius(double Ri);
+	void SetOuterRadius(double Ro);
+	void SetHeight(double h);
 
 private:
 	void Create() override;
@@ -328,6 +353,12 @@ public:
 	GHexagon();
 	bool Update(bool b = true);
 
+	double Radius() const;
+	double Height() const;
+
+	void SetRadius(double R);
+	void SetHeight(double H);
+
 protected:
 	void Create();
 };
@@ -342,6 +373,9 @@ public:
 public:
 	GDisc();
 	bool Update(bool b = true) override;
+
+	double Radius() const;
+	void SetRadius(double R);
 
 protected:
 	void Create() override;
@@ -377,6 +411,9 @@ public:
 	GRing();
 	bool Update(bool b = true) override;
 
+	void SetInnerRadius(double ri);
+	void SetOuterRadius(double ro);
+
 private:
 	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
@@ -393,6 +430,12 @@ public:
 public:
 	GThinTube();
 	bool Update(bool b = true) override;
+
+	double Radius() const;
+	double Height() const;
+
+	void SetRadius(double r);
+	void SetHeight(double h);
 
 private:
 	void Create() override;

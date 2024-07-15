@@ -27,6 +27,29 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FEShellDisc.h>
 
+class GDiscManipulator : public GObjectManipulator
+{
+public:
+	GDiscManipulator(GDisc& disc) : GObjectManipulator(&disc), m_disc(disc) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+		if (m < 4)
+		{
+			vec3d r = T.LocalToGlobal(pn->Position());
+			r = m_disc.GetTransform().GlobalToLocal(r);
+
+			double R = r.Length();
+			m_disc.SetRadius(R);
+			m_disc.Update();
+		}
+	}
+
+private:
+	GDisc& m_disc;
+};
+
 //-----------------------------------------------------------------------------
 // constructor
 GDisc::GDisc() : GShellPrimitive(GDISC)
@@ -37,9 +60,14 @@ GDisc::GDisc() : GShellPrimitive(GDISC)
 	// assign default mesher
 	SetFEMesher(new FEShellDisc(this));
 
+	SetManipulator(new GDiscManipulator(*this));
+
 	// build the object
 	Create();
 }
+
+double GDisc::Radius() const { return GetFloatValue(RADIUS); }
+void GDisc::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GDisc::CreateDefaultMesher()
