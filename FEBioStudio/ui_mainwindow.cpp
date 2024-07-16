@@ -1152,9 +1152,9 @@ void Ui::CMainWindow::addToRecentFilesList(QStringList& dstList, const QString& 
 	}
 }
 
-void Ui::CMainWindow::showPartSelector(CModelDocument* doc)
+void Ui::CMainWindow::showPartViewer(CModelDocument* doc)
 {
-	if (partSelector == nullptr) partSelector = new CDlgPartSelector(m_wnd);
-	partSelector->SetDocument(doc);
-	partSelector->show();
+	if (partViewer == nullptr) partViewer = new CDlgPartViewer(m_wnd);
+	partViewer->SetDocument(doc);
+	partViewer->show();
 }

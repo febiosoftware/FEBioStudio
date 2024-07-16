@@ -83,7 +83,7 @@ SOFTWARE.*/
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
 #include "DlgStartThread.h"
-#include "DlgPartSelector.h"
+#include "DlgPartViewer.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
@@ -3350,12 +3350,10 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 }
 
-void CMainWindow::onShowPartSelector()
+void CMainWindow::onShowPartViewer()
 {
 	CModelDocument* doc = GetModelDocument();
-	if (doc->GetSelectionMode() != SELECT_PART)
-		on_actionSelectParts_toggled(true);
-	ui->showPartSelector(doc);
+	ui->showPartViewer(doc);
 }
 
 void CMainWindow::checkJobProgress()

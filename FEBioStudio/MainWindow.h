@@ -597,7 +597,7 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
-	void onShowPartSelector();
+	void onShowPartViewer();
 
 	void checkJobProgress();
 
