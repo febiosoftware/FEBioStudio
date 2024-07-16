@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 #include <GLWLib/convert.h>
+#include "DlgPickColor.h"
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -484,27 +485,13 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			return;
 		}
 
+		CDlgPickColor* pickColor = m_pWnd->GetPickColorDialog();
 		if (m_pWnd->IsColorPickerActive())
 		{
 			GPart* pg = PickPart(x, y);
 			if (pg)
 			{
-				GLColor c = m_pWnd->GetPickedColor();
-				if (pdoc->GetSelectionMode() == SELECT_OBJECT)
-				{
-					GObject* po = dynamic_cast<GObject*>(pg->Object());
-					if (po) po->SetColor(c);
-				}
-				else
-				{
-					CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
-					if (mdoc)
-					{
-						int matID = pg->GetMaterialID();
-						GMaterial* mat = mdoc->GetFSModel()->GetMaterialFromID(matID);
-						if (mat) mat->AmbientDiffuse(c);
-					}
-				}
+				pickColor->AssignColor(pg);
 				repaint();
 				return;
 			}

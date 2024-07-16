@@ -3122,11 +3122,10 @@ bool CMainWindow::IsColorPickerActive() const
 	return false;
 }
 
-GLColor CMainWindow::GetPickedColor() const
+CDlgPickColor* CMainWindow::GetPickColorDialog()
 {
-	GLColor c;
-	if (IsColorPickerActive()) c = toGLColor(ui->pickColorTool->GetColor());
-	return c;
+	if (IsColorPickerActive()) return ui->pickColorTool;
+	return nullptr;
 }
 
 // remove a graph from the list

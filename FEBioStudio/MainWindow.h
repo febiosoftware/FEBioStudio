@@ -60,6 +60,7 @@ class CImageSliceView;
 class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
+class CDlgPickColor;
 
 enum class ImageFileType;
 
@@ -258,14 +259,14 @@ public:
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
 
-    void UpdateUiView();
+	void UpdateUiView();
 
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
 
 	bool IsColorPickerActive() const;
 
-	GLColor GetPickedColor() const;
+	CDlgPickColor* GetPickColorDialog();
 
 private:
 	void writeSettings();

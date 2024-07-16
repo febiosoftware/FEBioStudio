@@ -31,6 +31,7 @@ SOFTWARE.*/
 class UIDlgPickColor;
 
 class CMainWindow;
+class GPart;
 
 class CDlgPickColor : public QDialog
 {
@@ -41,6 +42,8 @@ public:
 	~CDlgPickColor();
 
 	QColor GetColor() const;
+
+	void AssignColor(GPart* part);
 
 private:
 	UIDlgPickColor* ui;
