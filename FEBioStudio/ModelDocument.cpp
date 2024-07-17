@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "DocTemplate.h"
 #include "version.h"
-#include <XML/XMLWriter.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <PostLib/VolumeRenderer.h>
@@ -39,7 +38,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <GeomLib/GModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshLib/FENodeFaceList.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"

@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "3PointAngleTool.h"
-#include <PostGL/GLModel.h>
-using namespace Post;
+#include <GLLib/GDecoration.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 class C3PointAngleDecoration : public GDecoration

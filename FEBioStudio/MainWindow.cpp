@@ -49,9 +49,7 @@ SOFTWARE.*/
 #include "FileThread.h"
 #include "GLHighlighter.h"
 #include <QStyleFactory>
-#include "DlgAddMeshData.h"
 #include "GraphWindow.h"
-#include "DlgTimeSettings.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
@@ -75,15 +73,11 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
-#include "ModelTree.h"
 #include "XMLDocument.h"
 #include "PostSessionFile.h"
 #include "units.h"
 #include "version.h"
-#include "LocalJobProcess.h"
-#include "FEBioThread.h"
 #include "DlgStartThread.h"
-#include "DlgPartViewer.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
@@ -94,14 +88,10 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <PostLib/VolumeRenderer.h>
-#include <ImageLib/ImageModel.h>
-#include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
-#include <FSCore/FSLogger.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>

@@ -50,9 +50,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "Commands.h"
-#include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
-#include <GLWLib/convert.h>
 #include "DlgPickColor.h"
 using namespace std::chrono;
 
