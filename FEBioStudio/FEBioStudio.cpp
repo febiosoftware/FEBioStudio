@@ -38,54 +38,7 @@ SOFTWARE.*/
 #include <QDebug>
 #include <QPainter>
 #include <FEBioLink/FEBioInit.h>
-
-#ifdef __APPLE__
-#include <QFileOpenEvent>
-class FBSApplication : public QApplication
-{
-public:
-	FBSApplication(int &argc, char **argv) : QApplication(argc, argv)
-	{
-	}
-	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
-
-	bool event(QEvent *event)
-	{
-		if (event->type() == QEvent::FileOpen) {
-			QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-			
-			QString fileName;
-			// Handle custom URL scheme
-			if (!openEvent->url().isEmpty())
-        	{
-				fileName =openEvent->url().toString();
-			}
-			else
-			{	
-				fileName = openEvent->file();
-			}
-
-			fileName.replace("file://", "");
-
-			m_pWnd->OpenFile(fileName);
-		}
-
-		return QApplication::event(event);
-	}
-
-public:
-	CMainWindow* m_pWnd = nullptr;
-};
-#else
-class FBSApplication : public QApplication 
-{
-public: 
-	FBSApplication(int& argc, char** argv) : QApplication(argc, argv) {}
-	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
-private:
-	CMainWindow* m_pWnd = nullptr;
-};
-#endif
+#include "FBSApplication.h"
 
 class FBSSplashScreen : public QSplashScreen
 {
@@ -202,22 +155,10 @@ int main(int argc, char* argv[])
 
 CMainWindow* FBS::getMainWindow()
 {
-    CMainWindow* wnd = nullptr;
-
-    for(QWidget* widget : QApplication::topLevelWidgets())
-    {
-        if(CMainWindow* wnd = dynamic_cast<CMainWindow*>(widget))
-        {
-            assert(wnd);
-            return wnd;
-        }
-    }
-
-    assert(wnd);
-	return wnd;
+	return FBSApplication::Instance()->GetMainWindow();
 }
 
-CDocument* FBS::getDocument()
+CDocument* FBS::getActiveDocument()
 {
 	CMainWindow* wnd = FBS::getMainWindow();
 	return wnd->GetDocument();
