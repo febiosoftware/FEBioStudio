@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 //=================================================================================================

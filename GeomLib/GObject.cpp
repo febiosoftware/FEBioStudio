@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <MeshTools/FETetGenMesher.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 
 using namespace std;

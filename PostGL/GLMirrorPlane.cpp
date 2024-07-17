@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLMirrorPlane.h"
 #include "GLModel.h"
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);

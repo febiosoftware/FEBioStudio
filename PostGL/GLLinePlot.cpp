@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <MeshLib/FECurveMesh.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);

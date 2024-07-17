@@ -33,9 +33,7 @@ SOFTWARE.*/
 #include <XML/XMLReader.h>
 #include "FEBioFormat.h"
 
-//-----------------------------------------------------------------------------
 // Implements a class to import FEBio files
-// 
 class FEBioFileImport : public FSFileImport
 {
 public:
@@ -77,4 +75,12 @@ protected:
     bool    m_skipGeom;
 
 	friend class FEBioFormat;
+};
+
+
+// helper class for reading geometry from feb file
+class FEBioGeometryImport : public FEBioFileImport
+{
+public:
+	FEBioGeometryImport(FSProject& prj) : FEBioFileImport(prj) { SetGeometryOnlyFlag(true); }
 };

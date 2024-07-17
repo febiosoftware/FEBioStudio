@@ -37,3 +37,8 @@ public:
 	bool Load(const char* szfile);
 };
 
+// helper class to allo stp extension instead of step
+class STPImport : public STEPImport
+{
+public: STPImport(FSProject& prj) : STEPImport(prj) {}
+};

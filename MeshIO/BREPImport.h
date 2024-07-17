@@ -37,6 +37,12 @@ public:
 	bool Load(const char* szfile);
 };
 
+// helper class to allow brp extension instead of brep
+class BRPImport : public BREPImport 
+{
+public: BRPImport(FSProject& prj) : BREPImport(prj) {}
+};
+
 // NOTE: There is already an IGES file reader in IGESFileImport.h
 class IGESImport : public FSFileImport
 {
@@ -45,4 +51,10 @@ public:
 	~IGESImport();
 
 	bool Load(const char* szfile);
+};
+
+// helper class to allow igs extension instead of iges
+class IGSImport : public IGESImport
+{
+public: IGSImport(FSProject& prj) : IGESImport(prj) {}
 };

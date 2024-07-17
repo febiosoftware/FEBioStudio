@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLPointPlot.h"
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostModel.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 PointDataModel::PointDataModel(FEPostModel* fem) : m_fem(fem)
