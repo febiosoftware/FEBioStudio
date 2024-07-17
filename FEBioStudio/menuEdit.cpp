@@ -428,10 +428,18 @@ void CMainWindow::on_actionFind_triggered()
 	if (doc->IsValid() == false) return;
 
 	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
+	if (po == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires an active object.\nPlease select an object.");
+		return;
+	}
 
 	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	if (pm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires the active object to be meshed.\nPlease mesh the selected object first.");
+		return;
+	}
 
 	int nitem = doc->GetItemMode();
 	int nsel = 0;
