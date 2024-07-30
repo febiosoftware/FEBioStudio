@@ -44,60 +44,18 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     unsigned int nx = img->Width();
     unsigned int ny = img->Height();
     unsigned int nz = img->Depth();
+
+    sitk::Image sitkImg = SITKImageFromBuffer(nx, ny, nz, img->GetBytes(), img->PixelType());
+
+    sitkImg.SetOrigin({box.x0, box.y0, box.z0});
+    sitkImg.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
+
     mat3d orientation = img->GetOrientation();
+    std::vector<double> orient {orientation[0][0], orientation[0][1], orientation[0][2], orientation[1][0], 
+        orientation[1][1], orientation[1][2], orientation[2][0], orientation[2][1], orientation[2][2]};
+    sitkImg.SetDirection(orient);
 
-    sitk::ImportImageFilter filter;    
-    filter.SetSize({nx, ny, nz});
-    filter.SetOrigin({box.x0, box.y0, box.z0});
-    filter.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
-
-    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
-        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
-    filter.SetDirection(orient);
-
-    switch (img->PixelType())
-    {
-    case CImage::UINT_8:
-        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes());
-        break;
-    case CImage::INT_8:
-        filter.SetBufferAsInt8((int8_t*)img->GetBytes());
-        break;
-    case CImage::UINT_16:
-        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes());
-        break;
-    case CImage::INT_16:
-        filter.SetBufferAsInt16((int16_t*)img->GetBytes());
-        break;
-    case CImage::UINT_32:
-        filter.SetBufferAsUInt32((uint32_t*)img->GetBytes());
-        break;
-    case CImage::INT_32:
-        filter.SetBufferAsInt32((int32_t*)img->GetBytes());
-        break;
-    case CImage::UINT_RGB8:
-        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes(), 3);
-        break;
-    case CImage::INT_RGB8:
-        filter.SetBufferAsInt8((int8_t*)img->GetBytes(), 3);
-        break;
-    case CImage::UINT_RGB16:
-        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes(), 3);
-        break;
-    case CImage::INT_RGB16:
-        filter.SetBufferAsInt16((int16_t*)img->GetBytes(), 3);
-        break;
-    case CImage::REAL_32:
-        filter.SetBufferAsFloat((float*)img->GetBytes());
-        break;
-    case CImage::REAL_64:
-        filter.SetBufferAsDouble((double*)img->GetBytes());
-        break;
-    default:
-        assert(false);
-    }
-
-    return filter.Execute();
+    return sitkImg;
 }
 
 bool CImageSITK::WriteSITKImage(C3DImage* img, const std::string& filename)
@@ -130,81 +88,94 @@ bool CImageSITK::WriteSITKImage(C3DImage* img, const std::string& filename)
     return true;
 }
 
-CImageSITK::CImageSITK()
+itk::simple::Image CImageSITK::SITKImageFromBuffer(unsigned int nx, unsigned int ny, unsigned int nz, uint8_t* data, int pixelType)
 {
+    sitk::ImportImageFilter filter;    
+    filter.SetSize({nx, ny, nz});
 
-}
-
-CImageSITK::CImageSITK(int nx, int ny, int nz, int pixelType)
-{
     switch (pixelType)
     {
     case CImage::UINT_8:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
+        filter.SetBufferAsUInt8((uint8_t*)data);
         break;
     case CImage::INT_8:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt8);
+        filter.SetBufferAsInt8((int8_t*)data);
         break;
     case CImage::UINT_16:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt16);
+        filter.SetBufferAsUInt16((uint16_t*)data);
         break;
     case CImage::INT_16:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt16);
+        filter.SetBufferAsInt16((int16_t*)data);
         break;
     case CImage::UINT_32:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt32);
+        filter.SetBufferAsUInt32((uint32_t*)data);
         break;
     case CImage::INT_32:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt32);
+        filter.SetBufferAsInt32((int32_t*)data);
         break;
     case CImage::UINT_RGB8:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt8);
+        filter.SetBufferAsUInt8((uint8_t*)data, 3);
         break;
     case CImage::INT_RGB8:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt8);
+        filter.SetBufferAsInt8((int8_t*)data, 3);
         break;
     case CImage::UINT_RGB16:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt16);
+        filter.SetBufferAsUInt16((uint16_t*)data, 3);
         break;
     case CImage::INT_RGB16:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt16);
+        filter.SetBufferAsInt16((int16_t*)data, 3);
         break;
     case CImage::REAL_32:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat32);
+        filter.SetBufferAsFloat((float*)data);
         break;
     case CImage::REAL_64:
-        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat64);
+        filter.SetBufferAsDouble((double*)data);
         break;
     default:
         assert(false);
     }
 
-    m_pixelType = pixelType;
+    return filter.Execute();
+}    
 
-    FinalizeImage();
+CImageSITK::CImageSITK() : 
+    // Create dummy image to hold onto spacial info
+    m_sitkImage(1,1,1, sitk::sitkUInt8), 
+    m_itkOwnsBuffer(true)
+{
+
 }
 
 CImageSITK::~CImageSITK()
 {
-    m_pb = nullptr;
+     if(m_itkOwnsBuffer) m_pb = nullptr;
 }
 
-void CImageSITK::FinalizeImage()
+bool CImageSITK::Create(int nx, int ny, int nz, uint8_t* data, int pixelType)
 {
-    m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
+    sitk::Image sitkImage = SITKImageFromBuffer(nx, ny, nz, data, pixelType);
 
-    m_cx = m_sitkImage.GetWidth();
-    m_cy = m_sitkImage.GetHeight();
-    m_cz = m_sitkImage.GetDepth();
+    // Retain old spacial information by default
+    sitkImage.SetOrigin({m_box.x0, m_box.y0, m_box.z0});
+    sitkImage.SetSpacing({(m_box.x1 - m_box.x0)/nx, (m_box.y1 - m_box.y0)/ny, (m_box.z1 - m_box.z0)/nz});
+    sitkImage.SetDirection({m_orientation[0][0], m_orientation[0][1], m_orientation[0][2], m_orientation[1][0], 
+        m_orientation[1][1], m_orientation[1][2], m_orientation[2][0], m_orientation[2][1], m_orientation[2][2]});
+
+    SetItkImage(sitkImage);
+
+    // Ensure that we handle the buffer deletion manually
+    m_itkOwnsBuffer = false;
+
+    return true;
 }
 
 BOX CImageSITK::GetBoundingBox()
 {
     std::vector<unsigned int> size = m_sitkImage.GetSize();
-	std::vector<double> origin = m_sitkImage.GetOrigin();
-	std::vector<double> spacing = m_sitkImage.GetSpacing();
+    std::vector<double> origin = m_sitkImage.GetOrigin();
+    std::vector<double> spacing = m_sitkImage.GetSpacing();
 
-	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0]+origin[0],spacing[1]*size[1]+origin[1],spacing[2]*size[2]+origin[2]);
+    return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0]+origin[0],spacing[1]*size[1]+origin[1],spacing[2]*size[2]+origin[2]);
 }
 
 void CImageSITK::SetBoundingBox(BOX& box)
@@ -213,13 +184,13 @@ void CImageSITK::SetBoundingBox(BOX& box)
 
     std::vector<unsigned int> size = m_sitkImage.GetSize();
 
-	try {
-	    m_sitkImage.SetSpacing({(box.x1 - box.x0)/size[0], (box.y1 - box.y0)/size[1], (box.z1 - box.z0)/size[2]});
-	}
-	catch (...)
-	{
-		// ITK doesn't like zero spacing.
-	}
+    try {
+        m_sitkImage.SetSpacing({(box.x1 - box.x0)/size[0], (box.y1 - box.y0)/size[1], (box.z1 - box.z0)/size[2]});
+    }
+    catch (...)
+    {
+        // ITK doesn't like zero spacing.
+    }
 
     C3DImage::SetBoundingBox(box);
 }
@@ -233,36 +204,27 @@ mat3d CImageSITK::GetOrientation()
 
 void CImageSITK::SetOrientation(mat3d& orientation)
 {
-    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
-        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+    std::vector<double> orient {orientation[0][0], orientation[0][1], orientation[0][2], orientation[1][0], 
+        orientation[1][1], orientation[1][2], orientation[2][0], orientation[2][1], orientation[2][2]};
 
     m_sitkImage.SetDirection(orient);
 
     C3DImage::SetOrientation(orientation);
 }
 
-std::vector<unsigned int> CImageSITK::GetSize()
-{
-    return m_sitkImage.GetSize();
-}
-
-std::vector<double> CImageSITK::GetOrigin()
-{
-    return m_sitkImage.GetOrigin();
-}
-
-std::vector<double> CImageSITK::GetSpacing()
-{
-    return m_sitkImage.GetSpacing();
-}
-
 itk::simple::Image CImageSITK::GetSItkImage()
 {
-    return m_sitkImage;
+   return m_sitkImage;
 }
 
 void CImageSITK::SetItkImage(itk::simple::Image image)
 {
+    if(!m_itkOwnsBuffer)
+    {
+        CleanUp();
+        m_itkOwnsBuffer = true;
+    }
+
     m_sitkImage = image;
 
     m_cx = m_sitkImage.GetWidth();

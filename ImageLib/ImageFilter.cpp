@@ -79,9 +79,13 @@ template<class pType> void ThresholdImageFilter::FitlerTemplate()
     if(min >= max) return;
 
     pType* originalBytes = (pType*)image->GetBytes();
-    auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
-    pType* filteredBytes = (pType*)imageToFilter->GetBytes();
 
+    int nx = image->Width();
+	int ny = image->Height();
+	int nz = image->Depth();
+    uint8_t* dest_buf = new uint8_t[nx * ny * nz * image->BPS()];
+    pType* filteredBytes = (pType*)dest_buf;
+    
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
         if(originalBytes[i] > max || originalBytes[i] < min)
@@ -95,8 +99,8 @@ template<class pType> void ThresholdImageFilter::FitlerTemplate()
 
     }
 
-    BOX temp = image->GetBoundingBox();
-    imageToFilter->SetBoundingBox(temp);
+    C3DImage* imageToFilter = m_model->GetImageSource()->GetImageToFilter();
+    imageToFilter->Create(nx, ny, nz, dest_buf, image->PixelType());
 }
 
 void ThresholdImageFilter::ApplyFilter()
@@ -209,9 +213,8 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 	int ny = (dimScale ? (int)(sy*im->Height()) : im->Height());
 	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
 
-	int voxels = nx * ny * nz;
-	pType* dst_buf = new pType[voxels];
-	pType* dst = dst_buf;
+	uint8_t* dst_buf = new uint8_t[nx * ny * nz * im->BPS()];
+	pType* dst = (pType*)dst_buf;
 
 	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
@@ -307,11 +310,11 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 		}
 	}
 
-	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter(false);
-	im2->Create(nx, ny, nz, (uint8_t*)dst_buf, 0, im->PixelType());
+	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter();
+	im2->Create(nx, ny, nz, dst_buf, im->PixelType());
 
 	// update the model's box
-	mdl->SetBoundingBox(box);
+	im2->SetBoundingBox(box);
 }
 
 void WarpImageFilter::ApplyFilter()

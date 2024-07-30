@@ -51,12 +51,12 @@ C3DImage::~C3DImage()
 
 void C3DImage::CleanUp()
 {
-	if(m_pb) delete [] m_pb;
+	// if(m_pb) delete [] m_pb;
 	m_pb = nullptr;
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int pixelType)
+bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int pixelType)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
@@ -90,13 +90,8 @@ bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int p
 
         if(data == nullptr)
         {
-			if (dataSize == 0)
-			{
-				uint64_t newSize = (uint64_t)nx * (uint64_t)ny * (uint64_t)nz * (uint64_t)m_bps;
-				m_pb = new uint8_t[newSize];
-			}
-            else
-                m_pb = new uint8_t[dataSize];
+            uint64_t newSize = (uint64_t)nx * (uint64_t)ny * (uint64_t)nz * (uint64_t)m_bps;
+            m_pb = new uint8_t[newSize];
 
             if (m_pb == nullptr) return false;
         }
