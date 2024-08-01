@@ -76,14 +76,7 @@ bool LSDynaFileParser::ParseFile()
 			}
 			else if (card == "*ELEMENT_SOLID")
 			{
-				if (card.contains("(ten nodes format)"))
-				{
-					if (Read_Element_Solid2() == false) return Error("error while reading ELEMENT_SOLID section.");
-				}
-				else
-				{
-					if (Read_Element_Solid() == false) return Error("error while reading ELEMENT_SOLID section.");
-				}
+				if (Read_Element_Solid() == false) return Error("error while reading ELEMENT_SOLID section.");
 			}
 			else if (card == "*ELEMENT_SHELL_THICKNESS")
 			{
@@ -95,7 +88,15 @@ bool LSDynaFileParser::ParseFile()
 			}
 			else if (card == "*SECTION_SHELL")
 			{
-				if (Read_Domain_Shell_Thickness() == false) return Error("error while reading SECTION_SHELL section.");
+				if (Read_Section_Shell() == false) return Error("error while reading SECTION_SHELL section.");
+			}
+			else if (card == "*SECTION_SOLID_TITLE")
+			{
+				if (Read_Section_Solid_Title() == false) return Error("error while reading SECTION_SOLID_TITLE section.");
+			}
+			else if (card == "*SECTION_SOLID")
+			{
+				if (Read_Section_Solid() == false) return Error("error while reading SECTION_SOLID section.");
 			}
 			else if (card == "*ELEMENT_DISCRETE")
 			{
@@ -174,42 +175,31 @@ bool LSDynaFileParser::Read_Element_Solid()
 	{
 		if (card.nexti(el.eid) == false) return false;
 		if (card.nexti(el.pid) == false) return false;
-		if (card.nexti(el.n[0]) == false) return false;
-		if (card.nexti(el.n[1]) == false) return false;
-		if (card.nexti(el.n[2]) == false) return false;
-		if (card.nexti(el.n[3]) == false) return false;
-		if (card.nexti(el.n[4]) == false) return false;
-		if (card.nexti(el.n[5]) == false) return false;
-		if (card.nexti(el.n[6]) == false) return false;
-		if (card.nexti(el.n[7]) == false) return false;
 
-		m_dyn.addSolidElement(el);
-
-		if (m_ls.NextCard(card) == false) return false;
-	}
-
-	return true;
-}
-
-bool LSDynaFileParser::Read_Element_Solid2()
-{
-	LSDynaFile::CARD card(8);
-	if (m_ls.NextCard(card) == false) return false;
-	LSDYNAModel::ELEMENT_SOLID el;
-	while (!card.IsKeyword())
-	{
-		if (card.nexti(el.eid) == false) return false;
-		if (card.nexti(el.pid) == false) return false;
-
-		if (m_ls.NextCard(card) == false) return false;
-		if (card.nexti(el.n[0]) == false) return false;
-		if (card.nexti(el.n[1]) == false) return false;
-		if (card.nexti(el.n[2]) == false) return false;
-		if (card.nexti(el.n[3]) == false) return false;
-		if (card.nexti(el.n[4]) == false) return false;
-		if (card.nexti(el.n[5]) == false) return false;
-		if (card.nexti(el.n[6]) == false) return false;
-		if (card.nexti(el.n[7]) == false) return false;
+		// try to read the next card
+		if (card.nexti(el.n[0]) == false)
+		{
+			// probably 10-node format
+			if (m_ls.NextCard(card) == false) return false;
+			if (card.nexti(el.n[0]) == false) return false;
+			if (card.nexti(el.n[1]) == false) return false;
+			if (card.nexti(el.n[2]) == false) return false;
+			if (card.nexti(el.n[3]) == false) return false;
+			if (card.nexti(el.n[4]) == false) return false;
+			if (card.nexti(el.n[5]) == false) return false;
+			if (card.nexti(el.n[6]) == false) return false;
+			if (card.nexti(el.n[7]) == false) return false;
+		}
+		else
+		{
+			if (card.nexti(el.n[1]) == false) return false;
+			if (card.nexti(el.n[2]) == false) return false;
+			if (card.nexti(el.n[3]) == false) return false;
+			if (card.nexti(el.n[4]) == false) return false;
+			if (card.nexti(el.n[5]) == false) return false;
+			if (card.nexti(el.n[6]) == false) return false;
+			if (card.nexti(el.n[7]) == false) return false;
+		}
 
 		m_dyn.addSolidElement(el);
 
@@ -270,13 +260,13 @@ bool LSDynaFileParser::Read_Element_Shell_Thickness()
 	return true;
 }
 
-bool LSDynaFileParser::Read_Domain_Shell_Thickness()
+bool LSDynaFileParser::Read_Section_Shell()
 {
 	LSDynaFile::CARD card;
 	// read first set of domain properties
 	if (m_ls.NextCard(card) == false) return false;
-	LSDYNAModel::DOMAIN_SHELL ds;
-	if (card.nexti(ds.pid) == false) return false;
+	LSDYNAModel::SECTION_SHELL ds;
+	if (card.nexti(ds.secid) == false) return false;
 
 	// read second set of domain properties
 	if (m_ls.NextCard(card) == false) return false;
@@ -285,7 +275,7 @@ bool LSDynaFileParser::Read_Domain_Shell_Thickness()
 	if (card.nextd(ds.h[2]) == false) return false;
 	if (card.nextd(ds.h[3]) == false) return false;
 
-	m_dyn.addShellDomain(ds);
+	m_dyn.addShellSection(ds);
 
 	// read next card
 	if (m_ls.NextCard(card) == false) return false;
@@ -294,6 +284,32 @@ bool LSDynaFileParser::Read_Domain_Shell_Thickness()
 		if (m_ls.NextCard(card) == false) return false;
 	}
 
+	return true;
+}
+
+bool LSDynaFileParser::Read_Section_Solid()
+{
+	LSDYNAModel::SECTION_SOLID ss;
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return false;
+	if (card.nexti(ss.secid) == false) return false;
+	if (card.nexti(ss.elform) == false) return false;
+	m_dyn.addSolidSection(ss);
+	return true;
+}
+
+bool LSDynaFileParser::Read_Section_Solid_Title()
+{
+	LSDynaFile::CARD card;
+
+	// read title
+	if (m_ls.NextCard(card) == false) return false;
+
+	LSDYNAModel::SECTION_SOLID ss;
+	if (m_ls.NextCard(card) == false) return false;
+	if (card.nexti(ss.secid) == false) return false;
+	if (card.nexti(ss.elform) == false) return false;
+	m_dyn.addSolidSection(ss);
 	return true;
 }
 

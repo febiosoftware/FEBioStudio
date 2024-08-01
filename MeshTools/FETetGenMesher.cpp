@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/geom.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include "FEModifier.h"
+#include <FSCore/ClassDescriptor.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------

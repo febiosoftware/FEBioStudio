@@ -154,9 +154,9 @@ void CEditPanel::Update(bool breset)
 
 	if (activeObject && (activeObject == ui->m_currenObject))
 	{
-		// only update position
 		vec3d r = activeObject->GetTransform().GetPosition();
 		ui->SetObjectPosition(r);
+		ui->form->updateData();
 		return;
 	}
 

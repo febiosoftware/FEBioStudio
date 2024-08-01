@@ -105,6 +105,8 @@ public: // selection
 
 	void SelectItems(FSObject* po, const std::vector<int>& l, int n);
 
+	bool SelectHighlightedItems();
+
 public:
 	int FEBioJobs() const;
 	void AddFEbioJob(CFEBioJob* job);

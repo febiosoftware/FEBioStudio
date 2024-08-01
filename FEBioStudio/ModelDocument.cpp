@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "DocTemplate.h"
 #include "version.h"
-#include <XML/XMLWriter.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <PostLib/VolumeRenderer.h>
@@ -39,11 +38,11 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <GeomLib/GModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshLib/FENodeFaceList.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"
 #include "units.h"
+#include "GLHighlighter.h"
 #include <QJsonDocument>
 
 class CModelContext
@@ -1027,4 +1026,71 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 
 	// swap the meshes
 	return DoCommand(cmd, po->GetName(), false);
+}
+
+template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
+{
+	std::vector<T*> castedItems;
+	for (GLHighlighter::Item& it : items)
+	{
+		T* tp = dynamic_cast<T*>(it.item);
+		if (tp) castedItems.push_back(tp);
+	}
+	return castedItems;
+}
+
+bool CModelDocument::SelectHighlightedItems()
+{
+	int selectMode = GetSelectionMode();
+
+	std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
+	if (items.empty()) return false;
+
+	if (selectMode == SelectionMode::SELECT_PART)
+	{
+		std::vector<GPart*> partList = itemlist_cast<GPart>(items);
+		if (!partList.empty())
+		{
+			vector<int> partIDs;
+			for (GPart* p : partList) partIDs.push_back(p->GetID());
+			DoCommand(new CCmdSelectPart(GetGModel(), partIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_FACE)
+	{
+		std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
+		if (!faceList.empty())
+		{
+			vector<int> faceIDs;
+			for (GFace* f : faceList) faceIDs.push_back(f->GetID());
+			DoCommand(new CCmdSelectSurface(GetGModel(), faceIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_EDGE)
+	{
+		std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
+		if (!edgeList.empty())
+		{
+			vector<int> edgeIDs;
+			for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
+			DoCommand(new CCmdSelectEdge(GetGModel(), edgeIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_NODE)
+	{
+		std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
+		if (!nodeList.empty())
+		{
+			vector<int> nodeIDs;
+			for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
+			DoCommand(new CCmdSelectNode(GetGModel(), nodeIDs, false));
+		}
+		else return false;
+	}
+	else return false;
+
+	return true;
 }

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/FSTriMesh.h>
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 using namespace Post;
 

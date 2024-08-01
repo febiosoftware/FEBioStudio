@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include <GeomLib/GModel.h>
-#include "GLHighlighter.h"
 #include "Commands.h"
 #include <FEBioLink/FEBioClass.h>
 //using namespace std;

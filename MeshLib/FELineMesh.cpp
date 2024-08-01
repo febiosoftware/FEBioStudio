@@ -26,9 +26,15 @@ SOFTWARE.*/
 
 #include "FELineMesh.h"
 #include <GeomLib/GObject.h>
+#include <GeomLib/GMeshObject.h>
 
 FSLineMesh::FSLineMesh() : m_pobj(0)
 {
+}
+
+bool FSLineMesh::IsEditable() const
+{
+	return (dynamic_cast<const GMeshObject*>(GetGObject()) != nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -52,6 +58,8 @@ void FSLineMesh::SetGObject(GObject* po) { m_pobj = po; }
 
 //-----------------------------------------------------------------------------
 GObject* FSLineMesh::GetGObject() { return m_pobj; }
+
+const GObject* FSLineMesh::GetGObject() const { return m_pobj; }
 
 //-----------------------------------------------------------------------------
 // convert local coordinates to global coordinates. This uses the transform

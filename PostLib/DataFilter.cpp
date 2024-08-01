@@ -542,7 +542,7 @@ bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 				for (int i=0; i<NN; ++i) if (tag[i]>0) D[i] /= (float) tag[i];
 
 				// assign to data field
-				for (int i = 0; i<NN; ++i) { data[i] = (1.0 - theta)*data[i] + theta*D[i];  }
+				for (int i = 0; i<NN; ++i) { data[i] = (float)((1.0 - theta)*data[i] + theta*D[i]); }
 			}
 			break;
 			case DATA_VEC3:
@@ -2041,6 +2041,164 @@ ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, 
 
 						vt[i] = dvdt;
 					}
+				}
+			}
+		}
+	}
+
+	return newField;
+}
+
+ModelDataField* Post::SurfaceNormalProjection(FEPostModel& fem, ModelDataField* dataField, const std::string& name)
+{
+	if (dataField == nullptr) return nullptr;
+
+	DATA_CLASS nclass = dataField->DataClass();
+	DATA_TYPE ntype = dataField->Type();
+	DATA_FORMAT nfmt = dataField->Format();
+	int nsrc = dataField->GetFieldID(); nsrc = FIELD_CODE(nsrc);
+
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	std::string newname = name;
+	if (newname.empty()) newname = "Normal projection of " + dataField->GetName();
+
+	ModelDataField* newField = nullptr;
+	if (nclass == ELEM_DATA)
+	{
+		if (nfmt == DATA_ITEM)
+		{
+			if (ntype == DATA_MAT3S)
+			{
+				newField = new FEDataField_T<FEFaceData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, newname);
+
+				int ndst = newField->GetFieldID(); ndst = FIELD_CODE(ndst);
+
+				for (int nstep = 0; nstep < fem.GetStates(); ++nstep)
+				{
+					Post::FEMeshData& ms = fem.GetState(nstep)->m_Data[nsrc];
+					Post::FEMeshData& md = fem.GetState(nstep)->m_Data[ndst];
+
+					Post::FEElemData_T<mat3fs, DATA_ITEM>& src = dynamic_cast<Post::FEElemData_T<mat3fs, DATA_ITEM>&>(ms);
+					Post::FEFaceData<float, DATA_ITEM>& dst = dynamic_cast<Post::FEFaceData<float, DATA_ITEM>&>(md);
+
+					int NF = mesh.Faces();
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& face = mesh.Face(i);
+						face.m_ntag = -1;
+						vec3f n = face.m_fn;
+						if (face.IsExternal())
+						{
+							int eid = face.m_elem[0].eid;
+							if (src.active(eid))
+							{
+								mat3fs m;
+								src.eval(eid, &m);
+
+								float v = n * (m * n);
+
+								dst.add(i, v);
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (nfmt == DATA_NODE)
+		{
+			if (ntype == DATA_MAT3S)
+			{
+				newField = new FEDataField_T<FEFaceData<float, DATA_NODE> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, newname);
+
+				int ndst = newField->GetFieldID(); ndst = FIELD_CODE(ndst);
+
+				for (int nstep = 0; nstep < fem.GetStates(); ++nstep)
+				{
+					Post::FEMeshData& ms = fem.GetState(nstep)->m_Data[nsrc];
+					Post::FEMeshData& md = fem.GetState(nstep)->m_Data[ndst];
+
+					Post::FEElemData_T<mat3fs, DATA_NODE>& src = dynamic_cast<Post::FEElemData_T<mat3fs, DATA_NODE>&>(ms);
+					Post::FEFaceData<float, DATA_NODE>& dst = dynamic_cast<Post::FEFaceData<float, DATA_NODE>&>(md);
+
+					int NF = mesh.Faces();
+
+					// set nodal tags to local node number
+					int NN = mesh.Nodes();
+					for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+					int n = 0;
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& f = mesh.Face(i);
+						int nf = f.Nodes();
+						for (int j = 0; j < nf; ++j)
+							if (mesh.Node(f.n[j]).m_ntag == -1) mesh.Node(f.n[j]).m_ntag = n++;
+					}
+
+					// create the face list
+					vector<int> f(NF);
+					for (int i = 0; i < NF; ++i) f[i] = i;
+
+					// create vector that stores the number of nodes for each facet
+					vector<int> fn(NF, 0);
+					for (int i = 0; i < NF; ++i) fn[i] = mesh.Face(i).Nodes();
+
+					// create the local node index list
+					vector<int> l; l.reserve(NF * FSFace::MAX_NODES);
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& f = mesh.Face(i);
+						int nn = f.Nodes();
+						for (int j = 0; j < nn; ++j)
+						{
+							int n = mesh.Node(f.n[j]).m_ntag; assert(n >= 0);
+							l.push_back(n);
+						}
+					}
+
+					// create the value array
+					std::vector<float> values(n, 0.f);
+					std::vector<int> tag(n, 0);
+
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& face = mesh.Face(i);
+						if (face.IsExternal())
+						{
+							int eid = face.m_elem[0].eid;
+							FSElement& el = mesh.Element(eid);
+							if (src.active(eid))
+							{
+								mat3fs v[FSElement::MAX_NODES];
+								src.eval(eid, v);
+
+								float fv[FSFace::MAX_NODES] = { 0.f };
+								for (int m = 0; m < face.Nodes(); ++m)
+								{
+									vec3f N = face.m_nn[m];
+									int a = face.n[m];
+									int b = el.FindNodeIndex(a);
+									mat3fs S = v[b];
+									float v = N * (S * N);
+
+									int al = mesh.Node(a).m_ntag;  assert(al >= 0);
+
+									values[al] += v;
+									tag[al]++;
+								}
+							}
+						}
+					}
+
+					for (int i = 0; i < n; ++i)
+					{
+						if (tag[i] != 0) values[i] /= (float)tag[i];
+					}
+
+					dst.add(values, f, l, fn);
 				}
 			}
 		}

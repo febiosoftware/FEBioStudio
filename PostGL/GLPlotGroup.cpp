@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "GLPlotGroup.h"
 #include <MeshLib/Intersect.h>
 #include <PostGL/GLModel.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 using namespace std;
 using namespace Post;

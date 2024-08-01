@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "DlgMergeObjects.h"
 #include "DlgDetachSelection.h"
 #include "DlgPurge.h"
+#include "DlgPickColor.h"
 #include "PostDocument.h"
 #include "XMLDocument.h"
 #include "Commands.h"
@@ -515,10 +516,18 @@ void CMainWindow::on_actionFind_triggered()
 	if (doc->IsValid() == false) return;
 
 	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
+	if (po == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires an active object.\nPlease select an object.");
+		return;
+	}
 
 	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	if (pm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires the active object to be meshed.\nPlease mesh the selected object first.");
+		return;
+	}
 
 	int nitem = doc->GetItemMode();
 	int nsel = 0;
@@ -1717,6 +1726,12 @@ void CMainWindow::on_actionPlaneCutTool_triggered()
 {
 	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
 	ui->planeCutTool->show();
+}
+
+void CMainWindow::on_actionPickColor_triggered()
+{
+	if (ui->pickColorTool == nullptr) ui->pickColorTool = new CDlgPickColor(this);
+	ui->pickColorTool->show();
 }
 
 void CMainWindow::on_actionFindTxt_triggered()

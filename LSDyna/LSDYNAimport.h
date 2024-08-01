@@ -45,3 +45,9 @@ protected:
 	LSDYNAModel	m_dyna;
 	FSProject*	m_pprj = nullptr;
 };
+
+// helper class for reading LS-Dyna files using dyn extension
+class LSDYNAimport_dyn : public LSDYNAimport
+{
+public: LSDYNAimport_dyn(FSProject& prj) : LSDYNAimport(prj) {}
+};

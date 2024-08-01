@@ -46,10 +46,11 @@ private:
 
 protected:
 	bool Read_Element_Solid();
-	bool Read_Element_Solid2();
 	bool Read_Element_Shell();
 	bool Read_Element_Shell_Thickness();
-	bool Read_Domain_Shell_Thickness();
+	bool Read_Section_Shell();
+	bool Read_Section_Solid();
+	bool Read_Section_Solid_Title();
 	bool Read_Element_Discrete();
 	bool Read_Node();
 	bool Read_Nodal_Results();

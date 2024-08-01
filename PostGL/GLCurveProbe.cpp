@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 #include <fstream>
 using namespace Post;

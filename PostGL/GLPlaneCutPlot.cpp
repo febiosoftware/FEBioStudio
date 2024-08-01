@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/hex.h>
 #include <MeshTools/FESelection.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 extern int LUT[256][15];

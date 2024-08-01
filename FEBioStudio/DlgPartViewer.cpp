@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
-#include "DlgPartSelector.h"
+#include "DlgPartViewer.h"
 #include "MainWindow.h"
 #include <QBoxLayout>
 #include <QDialogButtonBox>
@@ -34,10 +34,9 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QHeaderView>
 #include "ModelDocument.h"
-#include "GLHighlighter.h"
 #include "Commands.h"
 
-class CDlgPartSelector::UI
+class CDlgPartViewer::UI
 {
 public:
 	CModelDocument* doc = nullptr;
@@ -59,7 +58,7 @@ private:
 	std::vector<Item> partList;
 
 public:
-	void setup(CMainWindow* mainWnd, CDlgPartSelector* dlg)
+	void setup(CMainWindow* mainWnd, CDlgPartViewer* dlg)
 	{
 		wnd = mainWnd;
 		list = new QTableWidget;
@@ -74,11 +73,9 @@ public:
 
 		QPushButton* showAll = new QPushButton("Show All");
 		QPushButton* hideAll = new QPushButton("Hide All");
-		QPushButton* select  = new QPushButton("Select");
 		QHBoxLayout* hbtn = new QHBoxLayout;
 		hbtn->addWidget(showAll);
 		hbtn->addWidget(hideAll);
-		hbtn->addWidget(select);
 		hbtn->addStretch();
 
 		QVBoxLayout* l = new QVBoxLayout;
@@ -92,23 +89,16 @@ public:
 
 		connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
 		connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
-		connect(list, &QTableWidget::itemClicked, dlg, &CDlgPartSelector::onItemClicked);
-		connect(list, &QTableWidget::itemSelectionChanged, dlg, &CDlgPartSelector::onSelectionChanged);
-		connect(flt, &QLineEdit::textChanged, dlg, &CDlgPartSelector::onFilterChanged);
-		connect(showAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onShowAll);
-		connect(hideAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onHideAll);
-		connect(select, &QPushButton::clicked, dlg, &CDlgPartSelector::onSelect);
+		connect(list, &QTableWidget::itemSelectionChanged, dlg, &CDlgPartViewer::onSelectionChanged);
+		connect(flt, &QLineEdit::textChanged, dlg, &CDlgPartViewer::onFilterChanged);
+		connect(showAll, &QPushButton::clicked, dlg, &CDlgPartViewer::onShowAll);
+		connect(hideAll, &QPushButton::clicked, dlg, &CDlgPartViewer::onHideAll);
 	}
 
 	void addItem(Item& it, int index)
 	{
-		bool isVisible = it.pg->IsVisible();
-		bool isSelected = it.pg->IsSelected();
 		QTableWidgetItem* wi = new QTableWidgetItem(it.name);
-		QFont font = wi->font();
-		if (isSelected) { font.setBold(true); wi->setFont(font); }
 		wi->setData(Qt::UserRole, index);
-		wi->setCheckState(isVisible ? Qt::Checked : Qt::Unchecked);
 		list->setItem(index, 0, wi);
 		list->setItem(index, 1, new QTableWidgetItem(it.type));
 		list->setItem(index, 2, new QTableWidgetItem(it.matType));
@@ -125,7 +115,6 @@ public:
 		list->clear();
 		doc = nullptr;
 		gm = nullptr;
-		GLHighlighter::ClearHighlights();
 	}
 
 	void updateList()
@@ -193,21 +182,6 @@ public:
 		return nullptr;
 	}
 
-	void updatePart(GPart* pg, bool isChecked)
-	{
-		if (pg->IsVisible() && !isChecked)
-		{
-			gm->ShowPart(pg, false);
-		}
-		else if (!pg->IsVisible() && isChecked)
-		{
-			gm->ShowPart(pg, true);
-		}
-		else return;
-
-		wnd->RedrawGL();
-	}
-
 	vector<GPart*> getPartList()
 	{
 		vector<GPart*> parts(partList.size());
@@ -217,62 +191,51 @@ public:
 
 	void showAllParts()
 	{
-		vector<GPart*> parts = getPartList();
-		gm->ShowParts(parts, true);
-		updateList();
-		wnd->RedrawGL();
+		if (list->rowCount() > 0)
+		{
+			QTableWidgetSelectionRange rng(0, 0, list->rowCount() - 1, 2);
+			list->setRangeSelected(rng, true);
+			wnd->RedrawGL();
+		}
 	}
 
 	void hideAllParts()
 	{
-		vector<GPart*> parts = getPartList();
-		gm->ShowParts(parts, false);
-		updateList();
-		wnd->RedrawGL();
-	}
-
-	void selectParts()
-	{
-		vector<int> selectedParts;
-		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
-		for (auto it : selectedItems)
+		if (list->rowCount() > 0)
 		{
-			GPart* pg = getPart(it);
-			if (pg)
-			{
-				selectedParts.push_back(pg->GetID());
-			}
+			QTableWidgetSelectionRange rng(0, 0, list->rowCount() - 1, 2);
+			list->setRangeSelected(rng, false);
+			wnd->RedrawGL();
 		}
-
-		GLHighlighter::ClearHighlights();
-		doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), selectedParts, false));
-
-		updateList();
 	}
 
 	void updateSelection()
 	{
-		GLHighlighter::ClearHighlights();
+		vector<GPart*> allParts = getPartList();
+		gm->ShowParts(allParts, false);
 
+		vector<GPart*> parts;
 		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
 		for (auto it : selectedItems)
 		{
 			GPart* pg = getPart(it);
-			if (pg) GLHighlighter::PickItem(pg);
+			if (pg) parts.push_back(pg);
 		}
+		gm->ShowParts(parts, true);
 
 		wnd->RedrawGL();
 	}
 };
 
-CDlgPartSelector::CDlgPartSelector(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
+CDlgPartViewer::CDlgPartViewer(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartViewer::UI)
 {
-	setWindowTitle("Part Selector");
+	setWindowTitle("Part Viewer");
 	setMinimumSize(800, 600);
 	ui->setup(wnd, this);
+	ui->showAllParts();
 }
 
-void CDlgPartSelector::SetDocument(CModelDocument* doc)
+void CDlgPartViewer::SetDocument(CModelDocument* doc)
 {
 	ui->doc = doc;
 	if (doc)
@@ -283,54 +246,39 @@ void CDlgPartSelector::SetDocument(CModelDocument* doc)
 	else ui->clear();
 }
 
-void CDlgPartSelector::accept()
+void CDlgPartViewer::accept()
 {
 	ui->clear();
 	QDialog::accept();
 }
 
-void CDlgPartSelector::reject()
+void CDlgPartViewer::reject()
 {
 	ui->clear();
 	QDialog::reject();
 }
 
-void CDlgPartSelector::closeEvent(QCloseEvent* e)
+void CDlgPartViewer::closeEvent(QCloseEvent* e)
 {
 	ui->clear();
 }
 
-void CDlgPartSelector::onItemClicked(QTableWidgetItem* it)
-{
-	if (it == nullptr) return;
-	if (it->column() != 0) return;
-
-	bool isChecked = (it->checkState() == Qt::Checked);
-	GPart* pg = ui->getPart(it);
-	if (pg) ui->updatePart(pg, isChecked);
-}
-
-void CDlgPartSelector::onFilterChanged()
+void CDlgPartViewer::onFilterChanged()
 {
 	ui->updateList();
 }
 
-void CDlgPartSelector::onShowAll()
+void CDlgPartViewer::onShowAll()
 {
 	ui->showAllParts();
 }
 
-void CDlgPartSelector::onHideAll()
+void CDlgPartViewer::onHideAll()
 {
 	ui->hideAllParts();
 }
 
-void CDlgPartSelector::onSelect()
-{
-	ui->selectParts();
-}
-
-void CDlgPartSelector::onSelectionChanged()
+void CDlgPartViewer::onSelectionChanged()
 {
 	ui->updateSelection();
 }

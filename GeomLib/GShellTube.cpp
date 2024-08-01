@@ -28,6 +28,38 @@ SOFTWARE.*/
 #include <MeshTools/FEShellTube.h>
 #include <MeshTools/FEShellPatch.h>
 
+class GThinTubeManipulator : public GObjectManipulator
+{
+public:
+	GThinTubeManipulator(GThinTube& tube) : GObjectManipulator(&tube), m_tube(tube) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_tube.GetTransform().GlobalToLocal(r);
+
+		double z = r.z; r.z = 0;
+		double R = r.Length();
+
+		m_tube.SetRadius(R);
+		if (m < 4)
+		{
+			m_tube.GetTransform().Translate(vec3d(0, 0, z));
+			m_tube.SetHeight(m_tube.Height() - z);
+		}
+		else
+		{
+			m_tube.SetHeight(z);
+		}
+		m_tube.Update();
+	}
+
+private:
+	GThinTube& m_tube;
+};
+
 //=============================================================================
 // GThinTube
 //=============================================================================
@@ -37,13 +69,20 @@ GThinTube::GThinTube() : GShellPrimitive(GSHELL_TUBE)
 	m_R = 1;
 	m_h = 1;
 
-	AddDoubleParam(m_R, "R", "radius");	// radius
-	AddDoubleParam(m_h, "h", "height");	// height
+	AddDoubleParam(m_R, "R", "radius");
+	AddDoubleParam(m_h, "h", "height");
 
 	SetFEMesher(new FEShellTube(this));
+	SetManipulator(new GThinTubeManipulator(*this));
 
 	Create();
 }
+
+double GThinTube::Radius() const { return GetFloatValue(RAD); }
+double GThinTube::Height() const { return GetFloatValue(H); }
+
+void GThinTube::SetRadius(double r) { SetFloatValue(RAD, r); }
+void GThinTube::SetHeight(double h) { SetFloatValue(H, h); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GThinTube::CreateDefaultMesher()

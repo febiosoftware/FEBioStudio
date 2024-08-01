@@ -23,16 +23,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include <QApplication>
+#ifdef __APPLE__
+#include <QFileOpenEvent>
+#endif
 
 class CMainWindow;
-class CDocument;
 
-namespace FBS {
+class FBSApplication : public QApplication
+{
+public:
+	FBSApplication(int& argc, char** argv);
 
-CMainWindow* getMainWindow();
+	void SetMainWindow(CMainWindow* wnd);
 
-CDocument* getActiveDocument();
+	CMainWindow* GetMainWindow();
 
-}
+#ifdef __APPLE__
+	bool event(QEvent* event) override;
+#endif
+
+	static FBSApplication* Instance();
+
+public:
+	CMainWindow* m_pWnd = nullptr;
+	static FBSApplication* m_This;
+};

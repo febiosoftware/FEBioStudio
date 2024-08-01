@@ -34,14 +34,20 @@ DEALINGS IN THE SOFTWARE.
 
 class CImageSITK : public C3DImage
 {
+    class Imp;
+
 public:
     static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
     static bool WriteSITKImage(C3DImage* img, const std::string& filename);
 
+private:
+    static itk::simple::Image SITKImageFromBuffer(unsigned int nx, unsigned int ny, unsigned int nz, uint8_t* data, int pixelType);
+
 public:
     CImageSITK();
-    CImageSITK(int nx, int ny, int nz, int pixelType = CImage::UINT_8);
     ~CImageSITK();
+
+    bool Create(int nx, int ny, int nz, uint8_t* data = nullptr, int pixelType = CImage::UINT_8) override;
 
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;
@@ -49,18 +55,12 @@ public:
     mat3d GetOrientation() override;
     void SetOrientation(mat3d& orientation) override;
 
-    std::vector<unsigned int> GetSize();
-    std::vector<double> GetOrigin();
-    std::vector<double> GetSpacing();
-
     itk::simple::Image GetSItkImage();
     void SetItkImage(itk::simple::Image image);
 
 private:
-    void FinalizeImage();
-
-private:
     itk::simple::Image m_sitkImage;
+    bool m_itkOwnsBuffer;
 };
 
 #endif

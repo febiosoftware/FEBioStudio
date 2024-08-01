@@ -117,7 +117,7 @@ bool CDICOMImageSource::Load()
     // memcpy(data, static_cast<const uint8_t*>(rawData->getData()), size);
 
     C3DImage* im = new C3DImage();
-    if (im->Create(nx, ny, nz, data, 0, pixelType) == false)
+    if (im->Create(nx, ny, nz, data, pixelType) == false)
     {
         delete im;
         return false;

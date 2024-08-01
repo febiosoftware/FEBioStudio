@@ -27,6 +27,72 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FECylinderInBox.h>
 
+class GCylinderInBoxManipulator : public GObjectManipulator
+{
+public:
+	GCylinderInBoxManipulator(GCylinderInBox& cyl) : GObjectManipulator(&cyl), m_cyl(cyl) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		if (m < 8)
+		{
+			vec3d r[2];
+			r[0] = T.LocalToGlobal(m_cyl.Node(m)->Position());
+
+			// get the opposite corner
+			const int LUT[8] = { 6, 7, 4, 5, 2, 3, 0, 1 };
+			r[1] = m_cyl.Node(LUT[m])->Position();
+
+			BOX box;
+			for (int i = 0; i < 2; ++i)
+			{
+				vec3d ri = m_cyl.GetTransform().GlobalToLocal(r[i]);
+				box += ri;
+			}
+
+			double w = box.Width();
+			double h = box.Height();
+			double d = box.Depth();
+
+			m_cyl.SetFloatValue(GCylinderInBox::WIDTH , w);
+			m_cyl.SetFloatValue(GCylinderInBox::HEIGHT, h);
+			m_cyl.SetFloatValue(GCylinderInBox::DEPTH , d);
+
+			vec3d c = box.Center();
+			c.z -= d * 0.5;
+
+			Transform& P = m_cyl.GetTransform();
+			c = P.LocalToGlobal(c);
+			m_cyl.GetTransform().SetPosition(c);
+		}
+		else
+		{
+			vec3d r = T.LocalToGlobal(pn->Position());
+			r = m_cyl.GetTransform().GlobalToLocal(r);
+			double z = r.z; r.z = 0;
+			double R = r.Length();
+
+			m_cyl.SetFloatValue(GCylinderInBox::RADIUS, R);
+			if (m >= 12)
+			{
+				m_cyl.SetFloatValue(GCylinderInBox::DEPTH, z);
+			}
+			else
+			{
+				double H = m_cyl.GetFloatValue(GCylinderInBox::DEPTH);
+				m_cyl.GetTransform().Translate(vec3d(0, 0, z));
+				m_cyl.SetFloatValue(GCylinderInBox::DEPTH, H - z);
+			}
+		}
+		m_cyl.Update();
+	}
+
+private:
+	GCylinderInBox& m_cyl;
+};
+
 //-----------------------------------------------------------------------------
 GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
 {
@@ -39,6 +105,8 @@ GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
 	AddDoubleParam(m_R, "R", "radius");
 	
 	SetFEMesher(new FECylinderInBox(this));
+	SetManipulator(new GCylinderInBoxManipulator(*this));
+
 
 	Create();
 }

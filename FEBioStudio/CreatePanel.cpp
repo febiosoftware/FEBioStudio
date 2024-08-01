@@ -30,8 +30,6 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <QMessageBox>
-#include "ObjectProps.h"
-#include "Document.h"
 #include "Commands.h"
 #include "MainWindow.h"
 #include "GLView.h"

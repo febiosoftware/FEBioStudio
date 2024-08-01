@@ -363,8 +363,9 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	selectCircle = addAction("Circle", "selectCircle", "selectCircle", true);
 	selectFree = addAction("Freehand", "selectFree", "selectFree", true);
 
-	actionMeasureTool = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
+	actionMeasureTool  = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
 	actionPlaneCutTool = addAction("Plane Cut", "actionPlaneCutTool", "cut");
+	actionPickColor    = addAction("Pick Color", "actionPickColor", "pickcolor");
 
 	QActionGroup* pag = new QActionGroup(mainWindow);
 	pag->addAction(actionSelectObjects);
@@ -739,6 +740,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	buildToolBar->addSeparator();
 	buildToolBar->addAction(actionMeasureTool);
 	buildToolBar->addAction(actionPlaneCutTool);
+	buildToolBar->addAction(actionPickColor);
 	buildToolBar->addSeparator();
 	buildToolBar->addAction(actionSelect);
 	buildToolBar->addAction(actionTranslate);
@@ -1207,9 +1209,9 @@ void Ui::CMainWindow::addToRecentFilesList(QStringList& dstList, const QString& 
 	}
 }
 
-void Ui::CMainWindow::showPartSelector(CModelDocument* doc)
+void Ui::CMainWindow::showPartViewer(CModelDocument* doc)
 {
-	if (partSelector == nullptr) partSelector = new CDlgPartSelector(m_wnd);
-	partSelector->SetDocument(doc);
-	partSelector->show();
+	if (partViewer == nullptr) partViewer = new CDlgPartViewer(m_wnd);
+	partViewer->SetDocument(doc);
+	partViewer->show();
 }

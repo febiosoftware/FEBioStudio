@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FEMLib/GMaterial.h>
 #include <FSCore/math3d.h>
+#include <FSCore/color.h>
 
 class FSObject;
 class CDocument;
@@ -60,6 +61,7 @@ class CImageSliceView;
 class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
+class CDlgPickColor;
 class CFEBioMonitorPanel;
 class CFEBioMonitorView;
 class CModelViewer;
@@ -280,7 +282,7 @@ public:
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
 
-    void UpdateUiView();
+	void UpdateUiView();
 
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
@@ -296,6 +298,10 @@ public:
 	void SetCreatePluginPath(const QString& s);
 
 	CCommandWindow* GetCommandWindow();
+
+	bool IsColorPickerActive() const;
+
+	CDlgPickColor* GetPickColorDialog();
 
 private:
 	void writeSettings();
@@ -586,6 +592,7 @@ public slots:
 	void on_selectFree_toggled(bool b);
 	void on_actionMeasureTool_triggered();
 	void on_actionPlaneCutTool_triggered();
+	void on_actionPickColor_triggered();
 
 	void on_postSelectRect_toggled(bool b);
 	void on_postSelectCircle_toggled(bool b);
@@ -639,7 +646,7 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
-	void onShowPartSelector();
+	void onShowPartViewer();
 
 	void checkJobProgress();
 

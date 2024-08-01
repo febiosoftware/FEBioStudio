@@ -27,6 +27,50 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FETube.h>
 
+class GTubeManipulator : public GObjectManipulator
+{
+public:
+	GTubeManipulator(GTube& tube) : GObjectManipulator(&tube), m_tube(tube) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_tube.GetTransform().GlobalToLocal(r);
+
+		vec3d c0 = m_tube.Node(16)->LocalPosition();
+		vec3d c1 = m_tube.Node(17)->LocalPosition();
+
+		double z = r.z; r.z = 0;
+		double R = (c0 - r).Length();
+
+		if (m >= 8)
+		{
+			if (m < 12)
+				m_tube.SetOuterRadius(R);
+			else
+				m_tube.SetInnerRadius(R);
+
+			m_tube.SetHeight(z);
+		}
+		else
+		{
+			if (m < 4)
+				m_tube.SetOuterRadius(R);
+			else
+				m_tube.SetInnerRadius(R);
+
+			m_tube.GetTransform().Translate(vec3d(0, 0, z));
+			m_tube.SetHeight(m_tube.Height() - z);
+		}
+		m_tube.Update();
+	}
+
+private:
+	GTube& m_tube;
+};
+
 //=============================================================================
 // GTube
 //=============================================================================
@@ -42,6 +86,7 @@ GTube::GTube() : GPrimitive(GTUBE)
 	AddDoubleParam(m_h, "h", "height");	// height
 
 	SetFEMesher(new FETube(this));
+	SetManipulator(new GTubeManipulator(*this));
 
 	Create();
 }
@@ -51,6 +96,14 @@ FEMesher* GTube::CreateDefaultMesher()
 {
 	return new FETube(this);
 }
+
+double GTube::InnerRadius() const { return GetFloatValue(RIN); }
+double GTube::OuterRadius() const { return GetFloatValue(ROUT); }
+double GTube::Height() const { return GetFloatValue(HEIGHT); }
+
+void GTube::SetInnerRadius(double Ri) { SetFloatValue(RIN, Ri);}
+void GTube::SetOuterRadius(double Ro) { SetFloatValue(ROUT, Ro);}
+void GTube::SetHeight(double h) { SetFloatValue(HEIGHT, h); }
 
 //-----------------------------------------------------------------------------
 bool GTube::Update(bool b)

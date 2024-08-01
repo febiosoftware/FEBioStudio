@@ -41,8 +41,9 @@ typedef enum {
 	CLASS_SKETCH,
 	CLASS_DISCRETE,
 	CLASS_SURFACE_MODIFIER,
-    CLASS_IMAGE_FILTER,
-	CLASS_PLOT
+	CLASS_IMAGE_FILTER,
+	CLASS_PLOT,
+	CLASS_FILE_READER
 } Class_Type;
 
 //-----------------------------------------------------------------------------
@@ -93,6 +94,30 @@ public:
 	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
 };
 
+template <class T> class ClassDescriptorWithCtorArg : public ClassDescriptor
+{
+public:
+	ClassDescriptorWithCtorArg(Class_Type ntype, int cid, const char* szname, const char* szres, unsigned int flag) : ClassDescriptor(ntype, cid, szname, szres, flag) {}
+
+	void SetConstructorArgument(T* arg) { m_arg = arg; }
+
+protected:
+	T* m_arg;
+};
+
+template <class theClass, class ctorArg> class ClassDescriptor_T2 : public ClassDescriptorWithCtorArg<ctorArg>
+{
+public:
+	ClassDescriptor_T2(Class_Type ntype, int cid, const char* szname, const char* szres, unsigned int flag) : ClassDescriptorWithCtorArg<ctorArg>(ntype, cid, szname, szres, flag) {}
+
+	using ClassDescriptor::m_ncount;
+	using ClassDescriptorWithCtorArg<ctorArg>::m_arg;
+	
+	FSObject* CreateInstance() { m_ncount++; return new theClass(*m_arg); }
+
+	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
+};
+
 //-----------------------------------------------------------------------------
 // Kernel object that manages the class descriptors
 class ClassKernel
@@ -107,6 +132,8 @@ public:
 
 	static FSObject* CreateClass(Class_Type classType, const char* typeStr);
 	static FSObject* CreateClassFromID(Class_Type classType, int cid);
+
+	static ClassDescriptor* FindClassDescriptor(Class_Type classType, const char* typeStr);
 
 private:
 	static ClassKernel*	m_pInst;
@@ -138,6 +165,9 @@ public:
 #define REGISTER_CLASS3(theClass, theType, theClassId, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theClassId, theName, theResource, theFlag));
 
+#define REGISTER_CLASS4(theClass, theType, theName, theCtorArg) \
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T2<theClass, theCtorArg>(theType, -1, theName, 0, 0));
+
 namespace FSCore {
 
 	template <class T> T* CreateClass(Class_Type classType, const char* sztype)
@@ -152,6 +182,28 @@ namespace FSCore {
 				return nullptr;
 			}
 			else return pt;
+		}
+		else return nullptr;
+	}
+
+	template <class T, class A> T* CreateClass(Class_Type classType, const char* sztype, A* ctorArg)
+	{
+		ClassDescriptorWithCtorArg<A>* pcd = dynamic_cast<ClassDescriptorWithCtorArg<A>*>(ClassKernel::FindClassDescriptor(classType, sztype));
+		if (pcd)
+		{
+			pcd->SetConstructorArgument(ctorArg);
+			FSObject* po = pcd->Create();
+			if (po)
+			{
+				T* pt = dynamic_cast<T*>(po);
+				if (pt == nullptr)
+				{
+					delete po;
+					return nullptr;
+				}
+				else return pt;
+			}
+			else return nullptr;
 		}
 		else return nullptr;
 	}

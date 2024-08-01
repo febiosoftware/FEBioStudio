@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <MeshTools/FETetGenMesher.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 
 using namespace std;
@@ -52,6 +53,7 @@ public:
 		m_pMesher = nullptr;
 		m_pGMesh  = nullptr;
 		m_glFaceMesh = nullptr;
+		m_objManip = nullptr;
 
 		m_col = GLColor(200, 200, 200);
 
@@ -66,6 +68,7 @@ public:
 		delete m_pMesher; m_pMesher = nullptr;
 		delete m_pGMesh; m_pGMesh = nullptr;
 		delete m_glFaceMesh; m_glFaceMesh = nullptr;
+		delete m_objManip; m_objManip = nullptr;
 	}
 
 public:
@@ -78,6 +81,8 @@ public:
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
 	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
 	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
+
+	GObjectManipulator* m_objManip;
 
 	FSObjectList<FSElemSet>		m_pFEElemSet;
 	FSObjectList<FSSurface>		m_pFESurface;
@@ -1585,6 +1590,15 @@ void GObject::ShowElements(vector<int>& elemList, bool show)
 	}
 }
 
+GObjectManipulator* GObject::GetManipulator()
+{
+	return imp->m_objManip;
+}
+
+void GObject::SetManipulator(GObjectManipulator* om)
+{
+	imp->m_objManip = om;
+}
 
 bool IsSameFace(int n[4], int m[4])
 {
@@ -1599,4 +1613,19 @@ bool IsSameFace(int n[4], int m[4])
 	if ((n[0] == m[1]) && (n[1] == m[0]) && (n[2] == m[3]) && (n[3] == m[2])) return true;
 
 	return false;
+}
+
+GObjectManipulator::GObjectManipulator(GObject* po) : m_po(po)
+{
+	assert(po);
+}
+
+GObjectManipulator::~GObjectManipulator()
+{
+	m_po = nullptr;
+}
+
+GObject* GObjectManipulator::GetObject()
+{
+	return m_po;
 }

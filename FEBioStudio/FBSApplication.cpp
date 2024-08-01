@@ -23,16 +23,52 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "stdafx.h"
+#include "FBSApplication.h"
+#include "MainWindow.h"
 
-#pragma once
+FBSApplication* FBSApplication::m_This = nullptr;
 
-class CMainWindow;
-class CDocument;
+FBSApplication* FBSApplication::Instance() { return m_This; }
 
-namespace FBS {
-
-CMainWindow* getMainWindow();
-
-CDocument* getActiveDocument();
-
+FBSApplication::FBSApplication(int& argc, char** argv) : QApplication(argc, argv)
+{
+	m_pWnd = nullptr;
+	m_This = this;
 }
+
+CMainWindow* FBSApplication::GetMainWindow()
+{
+	return m_pWnd;
+}
+
+void FBSApplication::SetMainWindow(CMainWindow* wnd) 
+{ 
+	m_pWnd = wnd; 
+}
+
+#ifdef __APPLE__
+bool FBSApplication::event(QEvent* event)
+{
+	if (event->type() == QEvent::FileOpen) {
+		QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
+
+		QString fileName;
+		// Handle custom URL scheme
+		if (!openEvent->url().isEmpty())
+		{
+			fileName = openEvent->url().toString();
+		}
+		else
+		{
+			fileName = openEvent->file();
+		}
+
+		fileName.replace("file://", "");
+
+		m_pWnd->OpenFile(fileName);
+	}
+
+	return QApplication::event(event);
+}
+#endif

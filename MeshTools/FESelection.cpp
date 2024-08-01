@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/GMeshObject.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection
@@ -43,7 +44,7 @@ SOFTWARE.*/
 FESelection::FESelection(SelectionType ntype) : m_ntype(ntype)
 {
 	m_nsize = -1;
-	m_movable = true;
+	m_movable = false;
 }
 
 FESelection::~FESelection()
@@ -81,27 +82,15 @@ bool FESelection::Supports(unsigned int itemFlag) const
 // GObjectSelection
 //////////////////////////////////////////////////////////////////////
 
+GObjectSelection::GObjectSelection(GModel* ps) : FESelection(SELECT_OBJECTS) 
+{ 
+	m_mdl = ps; Update(); 
+	SetMovable(true);
+}
+
 int GObjectSelection::Count()
 {
 	return (int)m_item.size();
-}
-
-int GObjectSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_mdl;
-	int N = m.Objects();
-	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i+1)%N; break; }
-	return n;
-}
-
-int GObjectSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_mdl;
-	int N = m.Objects();
-	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i==0?N-1:i-1); break; }
-	return n;
 }
 
 FEItemListBuilder* GObjectSelection::CreateItemList()
@@ -267,98 +256,84 @@ string GObjectSelection::GetName()
 GPartSelection::Iterator::Iterator(GPartSelection* ps)
 {
 	m_npart = -1;
-	m_pg = 0;
-	m_ps = ps->GetGModel();
-	GModel& m = *m_ps;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i)
+	m_pg = nullptr;
+	m_ps = ps;
+	if (ps && ps->Size())
 	{
-		GPart* pg = m.Part(i);
-		if (pg->IsVisible() && pg->IsSelected())
-		{
-			m_pg = pg;
-			m_npart = i;
-			break;
-		}
+		m_npart = 0;
+		m_pg = ps->Part(0);
 	}
 }
 
 GPartSelection::Iterator& GPartSelection::Iterator::operator ++()
 {
-	assert(m_pg);
-	GModel& m = *m_ps;
-	int N = m.Parts();
-	for (int i=m_npart+1; i<N; ++i)
+	if (m_npart < m_ps->Size() - 1)
 	{
-		GPart* pg = m.Part(i);
-		if (pg->IsVisible() && pg->IsSelected())
-		{
-			m_pg = pg;
-			m_npart = i;
-			break;
-		}
+		m_npart++;
+		m_pg = m_ps->Part(m_npart);
 	}
-
+	else
+	{
+		m_npart = m_ps->Size();
+		m_pg = nullptr;
+	}
 	return (*this);
+}
+
+GPartSelection::GPartSelection(GModel* ps) : GSelection(ps, SELECT_PARTS)
+{ 
+	Update(); 
 }
 
 int GPartSelection::Count()
 {
-	if (m_mdl == 0) return 0;
-	GModel& m = *m_mdl;
-	int n = 0;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) ++n;
-	return n;
-}
-
-int GPartSelection::Next()
-{
-	GModel& m = *m_mdl;
-	int n = -1;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i+1)%N)->GetID(); break; }
-	return n;
-}
-
-int GPartSelection::Prev()
-{
-	GModel& m = *m_mdl;
-	int n = -1;
-	int N = m.Parts();
-	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i==0?N-1:i-1))->GetID(); break; }
-	return n;
+	return (int)m_partList.size();
 }
 
 void GPartSelection::Invert()
 {
-	if (m_mdl == 0) return;
-	GModel& m = *m_mdl;
+	GModel& m = *GetGModel();
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
 	{
 		GPart* pg = m.Part(i);
 		if (pg->IsVisible() && pg->IsSelected()) pg->UnSelect(); else if (pg->IsVisible()) pg->Select();
 	}
+	Update();
 }
 
 void GPartSelection::Update()
 {
-	if (m_mdl == 0) return;
-	GModel& model = *m_mdl;
+	GModel& model = *GetGModel();
 
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
+	m_partList.clear();
 	for (int k=0; k<model.Objects(); ++k)
+	{
+		GObject* po = model.Object(k);
+		for (int i=0; i<po->Parts(); ++i)
+		{
+			GPart* pg = po->Part(i); assert(pg);
+			if (pg && pg->IsSelected())
+			{
+				m_partList.push_back(pg);
+			}
+		}
+	}
+
+	UpdateBoundingBox();
+}
+
+void GPartSelection::UpdateBoundingBox()
+{
+	BOX box;
+
+	GModel& model = *GetGModel();
+	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
 		GMesh* pm = po->GetRenderMesh();
 		int NF = pm->Faces();
-		for (int i=0; i<NF; ++i)
+		for (int i = 0; i < NF; ++i)
 		{
 			GMesh::FACE& f = pm->Face(i);
 			GFace* pf = po->Face(f.pid); assert(pf);
@@ -366,25 +341,16 @@ void GPartSelection::Update()
 			assert(pg);
 			if (pg && pg->IsSelected())
 			{
-				for (int j=0; j<3; ++j)
+				for (int j = 0; j < 3; ++j)
 				{
 					vec3d r = po->GetTransform().LocalToGlobal(to_vec3d(pm->Node(f.n[j]).r));
-
-					if (r.x < m_box.x0) m_box.x0 = r.x;
-					if (r.y < m_box.y0) m_box.y0 = r.y;
-					if (r.z < m_box.z0) m_box.z0 = r.z;
-
-					if (r.x > m_box.x1) m_box.x1 = r.x;
-					if (r.y > m_box.y1) m_box.y1 = r.y;
-					if (r.z > m_box.z1) m_box.z1 = r.z;
+					box += r;
 				}
-
-				++m;
 			}
 		}
 	}
 
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
+	m_box = box;
 }
 
 quatd GPartSelection::GetOrientation()
@@ -394,7 +360,7 @@ quatd GPartSelection::GetOrientation()
 
 FEItemListBuilder* GPartSelection::CreateItemList()
 {
-	return new GPartList(m_mdl, this);
+	return new GPartList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -403,160 +369,132 @@ FEItemListBuilder* GPartSelection::CreateItemList()
 
 GFaceSelection::Iterator::Iterator(GFaceSelection* ps)
 {
-	m_ps = ps->GetGModel();
-	GModel& m = *m_ps;
-	m_nsurf = -1;
-	m_pf = 0;
-	int N = m.Surfaces();
-	for (int i=0; i<N; ++i)
+	m_sel = ps;
+	if (ps && ps->Size())
 	{
-		GFace* pf = m.Surface(i);
-		if (pf->IsVisible() && pf->IsSelected())
-		{
-			m_pf = pf;
-			m_nsurf = i;
-			break;
-		}
+		m_pf = ps->Face(0);
+		m_nsurf = 0;
+	}
+	else
+	{
+		m_pf = nullptr;
+		m_nsurf = -1;
 	}
 }
 
 GFaceSelection::Iterator& GFaceSelection::Iterator::operator ++()
 {
-	assert(m_pf);
-	GModel& m = *m_ps;
-	int N = m.Surfaces();
-	for (int i=m_nsurf+1; i<N; ++i)
+	assert(m_sel);
+	if (m_nsurf < m_sel->Size() - 1)
 	{
-		GFace* pf = m.Surface(i);
-		if (pf->IsVisible() && pf->IsSelected())
+		m_nsurf++;
+		m_pf = m_sel->Face(m_nsurf);
+	}
+	else
+	{
+		m_nsurf = m_sel->Size();
+		m_pf = nullptr;
+	}
+	return (*this);
+}
+
+GFaceSelection::GFaceSelection(GModel* ps) : GSelection(ps, SELECT_SURFACES) 
+{ 
+	Update();
+
+	// we only allow the selection to be moved if the owning object
+	// has an object manipulator and has not been meshed yet.
+	bool moveAble = true;
+	for (int i = 0; i < Size(); ++i)
+	{
+		GFace* pf = Face(i);
+		GObject* po = dynamic_cast<GObject*>(pf->Object());
+		if ((po == nullptr) || (po->GetManipulator() == nullptr) || po->GetFEMesh())
 		{
-			m_pf = pf;
-			m_nsurf = i;
+			moveAble = false;
 			break;
 		}
 	}
+	SetMovable(moveAble);
+}
 
-	return (*this);
+void GFaceSelection::Translate(vec3d dr)
+{
+
 }
 
 int GFaceSelection::Count()
 {
-	if (m_ps == 0) return 0;
-	GModel& m = *m_ps;
-	int n = 0;
-	int N = m.Surfaces();
-	for (int i=0; i<N; ++i) if (m.Surface(i)->IsVisible() && m.Surface(i)->IsSelected()) ++n;
-	return n;
-}
-
-int GFaceSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Surfaces();
-	for (int i=0; i<N; ++i) 
-	{
-		GFace& f = *m.Surface(i);
-		if (f.IsVisible() && f.IsExternal() && f.IsSelected())
-		{
-			n = f.GetID();
-			for (int j=1; j<N; ++j)
-			{
-				GFace& f = *m.Surface((i+j)%N);
-				if (f.IsExternal()) return f.GetID();
-			}
-			break;
-		}
-	}
-	return n;
-}
-
-int GFaceSelection::Prev()
-{
-	int n = -1, m;
-	GModel& model = *m_ps;
-
-	int N = model.Surfaces();
-	for (int i=0; i<N; ++i) 
-	{
-		GFace& f = *model.Surface(i);
-		if (f.IsVisible() && f.IsExternal() && f.IsSelected())
-		{
-			n = f.GetID();
-			for (int j=1; j<N; ++j)
-			{
-				m = (i-j < 0 ? (i-j+N) : i-j);
-				GFace& f = *model.Surface(m);
-				if (f.IsExternal()) return f.GetID();
-			}
-			break;
-		}
-	}
-	return n;
+	return (int)m_faceList.size();
 }
 
 void GFaceSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Surfaces();
 	for (int i=0; i<N; ++i)
 	{
 		GFace* pg = m.Surface(i);
 		if (pg->IsVisible() && pg->IsSelected()) pg->UnSelect(); else if (pg->IsVisible()) pg->Select();
 	}
+	Update();
 }
 
 void GFaceSelection::Update()
 {
-	if (m_ps == 0) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
+	m_faceList.clear();
 	for (int k=0; k<model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
-		GMesh* pm = po->GetRenderMesh();
-
-		int NF = pm->Faces();
-		for (int i=0; i<NF; ++i)
+		for (int i=0; i<po->Faces(); ++i)
 		{
-			GMesh::FACE& f = pm->Face(i);
-			GFace* pf = po->Face(f.pid);
-			assert(pf);
+			GFace* pf = po->Face(i);
 			if (pf && pf->IsSelected())
 			{
-				for (int j=0; j<3; ++j)
-				{
-					vec3d r_local = to_vec3d(pm->Node(f.n[j]).r);
-					vec3d r = po->GetTransform().LocalToGlobal(r_local);
-
-					if (r.x < m_box.x0) m_box.x0 = r.x;
-					if (r.y < m_box.y0) m_box.y0 = r.y;
-					if (r.z < m_box.z0) m_box.z0 = r.z;
-
-					if (r.x > m_box.x1) m_box.x1 = r.x;
-					if (r.y > m_box.y1) m_box.y1 = r.y;
-					if (r.z > m_box.z1) m_box.z1 = r.z;
-				}
-
-				++m;
+				m_faceList.push_back(pf);
 			}
 		}
 	}
 
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
+	UpdateBoundingBox();
 }
 
+void GFaceSelection::UpdateBoundingBox()
+{
+	BOX box;
+	for (int k = 0; k < m_faceList.size(); ++k)
+	{
+		GFace* pf = m_faceList[k];
+
+		GObject* po = dynamic_cast<GObject*>(pf->Object());
+		if (po)
+		{
+			GMesh* pm = po->GetRenderMesh();
+			int NF = pm->Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				if (f.pid == pf->GetLocalID())
+				{
+					for (int j = 0; j < 3; ++j)
+					{
+						vec3d r_local = to_vec3d(pm->Node(f.n[j]).r);
+						vec3d r = po->GetTransform().LocalToGlobal(r_local);
+						box += r;
+					}
+				}
+			}
+		}
+	}
+
+	m_box = box;
+}
 
 FEItemListBuilder* GFaceSelection::CreateItemList()
 {
-	return new GFaceList(m_ps, this);
+	return new GFaceList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -565,280 +503,236 @@ FEItemListBuilder* GFaceSelection::CreateItemList()
 
 GEdgeSelection::Iterator::Iterator(GEdgeSelection* pg)
 {
-	m_ps = pg->GetGModel();
-	GModel& m = *m_ps;
+	m_ps = pg;
 	m_nedge = -1;
-	m_pe = 0;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i)
+	m_pe = nullptr;
+	if (pg && pg->Size())
 	{
-		GEdge* pe = m.Edge(i);
-		if (pe->IsSelected())
-		{
-			m_pe = pe;
-			m_nedge = i;
-			break;
-		}
+		m_nedge = 0;
+		m_pe = pg->Edge(0);
 	}
 }
 
 GEdgeSelection::Iterator& GEdgeSelection::Iterator::operator ++()
 {
-	assert(m_pe);
-	GModel& m = *m_ps;
-	int N = m.Edges();
-	for (int i=m_nedge+1; i<N; ++i)
+	if (m_ps)
 	{
-		GEdge* pe = m.Edge(i);
-		if (pe->IsSelected())
+		if (m_nedge < m_ps->Size() - 1)
 		{
-			m_pe = pe;
-			m_nedge = i;
-			break;
+			m_nedge++;
+			m_pe = m_ps->Edge(m_nedge);
+		}
+		else
+		{
+			m_nedge = m_ps->Size();
+			m_pe = nullptr;
 		}
 	}
-
 	return (*this);
+}
+
+GEdgeSelection::GEdgeSelection(GModel* ps) : GSelection(ps, SELECT_CURVES)
+{ 
+	Update(); 
 }
 
 int GEdgeSelection::Count()
 {
-	if (m_ps == 0) return 0;
-	GModel& m = *m_ps;
-	int n = 0;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) ++n;
-	return n;
-}
-
-int GEdgeSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i+1)%N)->GetID(); break; }
-	return n;
-}
-
-int GEdgeSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Edges();
-	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i==0?N-1:i-1))->GetID(); break; }
-	return n;
+	return (int)m_edgeList.size();
 }
 
 void GEdgeSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Edges();
 	for (int i=0; i<N; ++i)
 	{
 		GEdge* pe = m.Edge(i);
 		if (pe->IsSelected()) pe->UnSelect(); else pe->Select();
 	}
+	Update();
 }
 
 void GEdgeSelection::Update()
 {
-	if (m_ps == 0) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
+	m_edgeList.clear();
 	for (int k=0; k<model.Objects(); ++k)
+	{
+		GObject* po = model.Object(k);
+		for (int i=0; i<po->Edges(); ++i)
+		{
+			GEdge* pe = po->Edge(i);
+			if (pe && pe->IsSelected())
+			{
+				m_edgeList.push_back(pe);
+			}
+		}
+	}
+
+	UpdateBoundingBox();
+}
+
+void GEdgeSelection::UpdateBoundingBox()
+{
+	GModel& model = *GetGModel();
+
+	BOX box;
+	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
 		GMesh* pm = po->GetRenderMesh();
 
 		int NE = pm->Edges();
-		for (int i=0; i<NE; ++i)
+		for (int i = 0; i < NE; ++i)
 		{
 			GMesh::EDGE& e = pm->Edge(i);
 			GEdge* pe = po->Edge(e.pid);
 			assert(pe);
 			if (pe && pe->IsSelected())
 			{
-				for (int j=0; j<2; ++j)
+				for (int j = 0; j < 2; ++j)
 				{
 					vec3d r_local = to_vec3d(pm->Node(e.n[j]).r);
 					vec3d r = po->GetTransform().LocalToGlobal(r_local);
 
-					if (r.x < m_box.x0) m_box.x0 = r.x;
-					if (r.y < m_box.y0) m_box.y0 = r.y;
-					if (r.z < m_box.z0) m_box.z0 = r.z;
-
-					if (r.x > m_box.x1) m_box.x1 = r.x;
-					if (r.y > m_box.y1) m_box.y1 = r.y;
-					if (r.z > m_box.z1) m_box.z1 = r.z;
+					box += r;
 				}
-
-				++m;
 			}
 		}
 	}
 
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
+	m_box = box;
 }
-
 
 FEItemListBuilder* GEdgeSelection::CreateItemList()
 {
-	return new GEdgeList(m_ps, this);
+	return new GEdgeList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
 // GNodeSelection
 //////////////////////////////////////////////////////////////////////
 
-GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
+GNodeSelection::Iterator::Iterator(GNodeSelection* pg) : m_sel(pg)
 {
 	GModel& m = *pg->GetGModel();
 	m_pn = nullptr;
-	m_node = -1;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i)
+	m_index = -1;
+	if (pg->Size())
 	{
-		GNode* pn = m.Node(i);
-		if (pn->IsSelected())
-		{
-			m_sel.push_back(pn);
-		}
-	}
-	if (m_sel.empty() == false)
-	{
-		m_pn = m_sel[0];
-		m_node = 0;
+		m_index = 0;
+		m_pn = pg->Node(m_index);
 	}
 }
 
 GNodeSelection::Iterator& GNodeSelection::Iterator::operator ++()
 {
 	assert(m_pn);
-	if (m_node < m_sel.size() - 1)
+	if (m_index < m_sel->Size() - 1)
 	{
-		m_node++;
-		m_pn = m_sel[m_node];
+		m_index++;
+		m_pn = m_sel->Node(m_index);
 	}
 	else
 	{
-		m_node = m_sel.size();
+		m_index = m_sel->Size();
 		m_pn = nullptr;
 	}
 	return (*this);
 }
 
+GNodeSelection::GNodeSelection(GModel* ps) : GSelection(ps, SELECT_NODES) 
+{
+	Update();
+
+	// we only allow the selection to be moved if the owning object
+	// has an object manipulator and has not been meshed yet.
+	bool moveAble = true;
+	for (int i = 0; i < Size(); ++i)
+	{
+		GNode* pn = Node(i);
+		GObject* po = dynamic_cast<GObject*>(pn->Object());
+		if ((po == nullptr) || (po->GetManipulator() == nullptr) || po->GetFEMesh())
+		{
+			moveAble = false;
+			break;
+		}
+	}
+	SetMovable(moveAble);
+}
+
 int GNodeSelection::Count()
 {
-	if (m_ps == 0) return 0;
-	GModel& m = *m_ps;
-	int n = 0;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i) 
-	{
-		GNode* pn = m.Node(i);
-		assert(pn);
-		if (pn->IsSelected()) ++n;
-	}
-	return n;
-}
-
-int GNodeSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected()) 
-	{ 
-		do { n = m.Node((++i)%N)->GetID(); } while (n == -1);
-		break; 
-	}
-	return n;
-}
-
-int GNodeSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.Nodes();
-	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected())
-	{ 
-		do {
-			i = (i==0?N-1:i-1);
-			n = m.Node(i)->GetID();
-		}
-		while (n == -1);
-		break; 
-	}
-	return n;
+	return (int)m_nodeList.size();
 }
 
 void GNodeSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = *m_ps;
+	GModel& m = *GetGModel();
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i)
 	{
 		GNode* pn = m.Node(i);
 		if (pn->IsSelected()) pn->UnSelect(); else pn->Select();
 	}
+	Update();
 }
 
 void GNodeSelection::Translate(vec3d dr)
 {
-	// TODO: don't know an application for this yet
+	for (int i = 0; i < Size(); ++i)
+	{
+		GNode* pn = Node(i);
+		GObject* po = dynamic_cast<GObject*>(pn->Object());
+		if (po && po->GetManipulator())
+		{
+			Transform T;
+			T.SetPosition(dr);
+			po->GetManipulator()->TransformNode(pn, T);
+		}
+	}
+	UpdateBoundingBox();
 }
 
 void GNodeSelection::Update()
 {
-	if (m_ps == 0) return;
-	GModel& model = *m_ps;
+	GModel& model = *GetGModel();
 
-	int m = 0;
-
-	const double LARGE = 1e20;
-
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
-
+	m_nodeList.clear();
 	for (int k=0; k<model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
 
 		int N = po->Nodes();
-		vec3d r;
 		for (int i=0; i<N; ++i)
 		{
 			GNode* pn = po->Node(i);
 			if (pn && pn->IsSelected())
 			{
-				r = pn->Position();
-
-				if (r.x < m_box.x0) m_box.x0 = r.x;
-				if (r.y < m_box.y0) m_box.y0 = r.y;
-				if (r.z < m_box.z0) m_box.z0 = r.z;
-
-				if (r.x > m_box.x1) m_box.x1 = r.x;
-				if (r.y > m_box.y1) m_box.y1 = r.y;
-				if (r.z > m_box.z1) m_box.z1 = r.z;
-				++m;
+				m_nodeList.push_back(pn);
 			}
 		}
 	}
 
-	if (m==0) m_box = BOX(0,0,0,0,0,0);
+	UpdateBoundingBox();
 }
 
+void GNodeSelection::UpdateBoundingBox()
+{
+	BOX box;
+	for (int k = 0; k < Size(); ++k)
+	{
+		GNode* pn = Node(k); assert(pn && pn->IsSelected());
+		box += pn->Position();
+	}
+	m_box = box;
+}
 
 FEItemListBuilder* GNodeSelection::CreateItemList()
 {
-	return new GNodeList(m_ps, this);
+	return new GNodeList(GetGModel(), this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -908,33 +802,6 @@ GDiscreteSelection::GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE
 int GDiscreteSelection::Count()
 {
 	return m_count;
-}
-
-int GDiscreteSelection::Next()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.DiscreteObjects();
-	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
-	{
-		n = (++i) % N;
-		break;
-	}
-	return n;
-}
-
-int GDiscreteSelection::Prev()
-{
-	int n = -1;
-	GModel& m = *m_ps;
-	int N = m.DiscreteObjects();
-	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
-	{
-		i = (i == 0 ? N - 1 : i - 1);
-		n = i;
-		break;
-	}
-	return n;
 }
 
 void GDiscreteSelection::Invert()
@@ -1046,7 +913,8 @@ void FEElementSelection::Iterator::operator ++()
 FEElementSelection::FEElementSelection(FSMesh* pm) : FEMeshSelection(SELECT_FE_ELEMS)
 { 
 	m_pMesh = pm; 
-	Update(); 
+	if (pm && pm->IsEditable()) SetMovable(true);
+	Update();
 }
 
 int FEElementSelection::Count()
@@ -1272,6 +1140,7 @@ int FEElementSelection::ElementIndex(size_t i) const
 FEFaceSelection::FEFaceSelection(FSMeshBase* pm) : FEMeshSelection(SELECT_FE_FACES)
 { 
 	m_pMesh = pm; 
+	if (pm && pm->IsEditable()) SetMovable(true);
 	Update(); 
 }
 
@@ -1515,6 +1384,7 @@ FEFaceSelection::Iterator FEFaceSelection::begin()
 FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_EDGES)
 { 
 	m_pMesh = pm; 
+	if (pm && pm->IsEditable()) SetMovable(true);
 	Update(); 
 }
 
@@ -1738,7 +1608,8 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 FENodeSelection::FENodeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_NODES)
 { 
 	m_pMesh = pm; 
-	Update(); 
+	if (pm && pm->IsEditable()) SetMovable(true);
+	Update();
 }
 
 int FENodeSelection::Count()

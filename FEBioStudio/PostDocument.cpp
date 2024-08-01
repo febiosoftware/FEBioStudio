@@ -28,10 +28,8 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "PostObject.h"
-#include <FSCore/FSDir.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Palette.h>
-#include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GModel.h>
 #include <GLWLib/GLWidgetManager.h>
@@ -40,11 +38,8 @@ SOFTWARE.*/
 //       implementations for the type_to_string and string_to_type functions.
 #include <FEBio/FEBioFormat.h>
 #include <FEBio/FEBioExport.h>
-//#include <XML/XMLWriter.h>
-//#include <XML/XMLReader.h>
 //---------------------------------------
 #include <XPLTLib/xpltFileReader.h>
-#include <FSCore/ClassDescriptor.h>
 #include "PostSessionFile.h"
 #include "units.h"
 #include "GLPostScene.h"

@@ -30,7 +30,7 @@ class CMainWindow;
 class CModelDocument;
 class QTableWidgetItem;
 
-class CDlgPartSelector : public QDialog
+class CDlgPartViewer : public QDialog
 {
 	Q_OBJECT
 
@@ -38,7 +38,7 @@ private:
 	class UI;
 
 public:
-	CDlgPartSelector(CMainWindow* wnd);
+	CDlgPartViewer(CMainWindow* wnd);
 
 	void SetDocument(CModelDocument* doc);
 
@@ -48,11 +48,9 @@ public:
 	void reject() override;
 
 private slots:
-	void onItemClicked(QTableWidgetItem* it);
 	void onFilterChanged();
 	void onShowAll();
 	void onHideAll();
-	void onSelect();
 	void onSelectionChanged();
 
 private:

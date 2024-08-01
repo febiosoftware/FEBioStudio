@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 extern int LUT[256][15];

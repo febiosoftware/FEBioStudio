@@ -27,6 +27,54 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FESlice.h>
 
+class GSliceManipulator : public GObjectManipulator
+{
+public:
+	GSliceManipulator(GSlice& slice) : GObjectManipulator(&slice), m_slice(slice) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_slice.GetTransform().GlobalToLocal(r);
+		double z = r.z; r.z = 0;
+
+		double R = m_slice.GetFloatValue(GSlice::RADIUS);
+		double H = m_slice.GetFloatValue(GSlice::HEIGHT);
+		double w = m_slice.GetFloatValue(GSlice::ANGLE);
+
+		if ((m == 2) || (m == 5))
+		{
+			R = r.Length();
+			w = 180.0 * atan2(r.y, r.x) / PI;
+		}
+		else if ((m == 1) || (m == 4))
+		{
+			R = r.Length();
+		}
+
+		if (m < 3)
+		{
+			m_slice.GetTransform().Translate(vec3d(0, 0, z));
+			H = H - z;
+		}
+		else
+		{
+			H = z;
+		}
+
+		m_slice.SetFloatValue(GSlice::RADIUS, R);
+		m_slice.SetFloatValue(GSlice::HEIGHT, H);
+		m_slice.SetFloatValue(GSlice::ANGLE, w);
+
+		m_slice.Update();
+	}
+
+private:
+	GSlice& m_slice;
+};
+
 //-----------------------------------------------------------------------------
 GSlice::GSlice() : GPrimitive(GSLICE)
 {
@@ -39,6 +87,7 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 	AddDoubleParam(m_w, "w", "angle" );
 
 	SetFEMesher(new FESlice(this));
+	SetManipulator(new GSliceManipulator(*this));
 
 	Create();
 }

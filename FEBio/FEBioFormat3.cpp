@@ -175,6 +175,7 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 		else if (tag == "Control"    ) ParseControlSection    (tag);
 		else if (tag == "Material"   ) ParseMaterialSection   (tag);
 		else if (tag == "Mesh"       ) ParseMeshSection       (tag);
+		else if (tag == "Geometry"   ) ParseGeometrySection   (tag);
 		else if (tag == "MeshDomains") ParseMeshDomainsSection(tag);
 		else if (tag == "MeshData"   ) ParseMeshDataSection   (tag);
 		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
@@ -472,6 +473,44 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 		++tag;
 	} 
 	while (!tag.isend());
+
+	// don't forget to update the mesh
+	GetFEBioModel().UpdateGeometry();
+
+	// copy all mesh selections to named selections
+	GetFEBioModel().CopyMeshSelections();
+
+	return true;
+}
+
+bool FEBioFormat3::ParseGeometrySection(XMLTag& tag)
+{
+	// make sure the section is not empty
+	if (tag.isleaf()) return true;
+
+	// loop over all sections
+	++tag;
+	do
+	{
+		if      (tag == "Nodes"      ) ParseGeometryNodes      (DefaultPart(), tag);
+		else if (tag == "Elements"   ) ParseGeometryElements   (DefaultPart(), tag);
+		else if (tag == "NodeSet"    ) ParseGeometryNodeSet    (DefaultPart(), tag);
+		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
+		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
+		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
+		else if (tag == "SurfacePair") ParseGeometrySurfacePair(DefaultPart(), tag);
+		else ParseUnknownTag(tag);
+
+		++tag;
+	} while (!tag.isend());
+
+	// create a new instance
+	FEBioInputModel& febio = GetFEBioModel();
+	FEBioInputModel::Part* part = DefaultPart();
+	part->Update();
+	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(part);
+	febio.AddInstance(instance);
+	instance->SetName(part->GetName());
 
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();

@@ -23,16 +23,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 
+#pragma once
+#include <QDialog>
+
+class UIDlgPickColor;
+
 class CMainWindow;
-class CDocument;
+class GPart;
 
-namespace FBS {
+class CDlgPickColor : public QDialog
+{
+	Q_OBJECT
 
-CMainWindow* getMainWindow();
+public:
+	CDlgPickColor(CMainWindow* wnd);
+	~CDlgPickColor();
 
-CDocument* getActiveDocument();
+	QColor GetColor() const;
 
-}
+	void AssignColor(GPart* part);
+
+private:
+	UIDlgPickColor* ui;
+};

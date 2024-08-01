@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 REGISTER_CLASS(GLPointProbe, CLASS_PLOT, "probe", 0);

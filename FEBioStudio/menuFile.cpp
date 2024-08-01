@@ -126,8 +126,39 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
 #include "units.h"
+#include <FSCore/ClassDescriptor.h>
 #include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
+
+// register file reader classes
+REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
+REGISTER_CLASS4(PLYImport          , CLASS_FILE_READER, "ply"    , FSProject);
+REGISTER_CLASS4(BREPImport         , CLASS_FILE_READER, "brep"   , FSProject);
+REGISTER_CLASS4(BRPImport          , CLASS_FILE_READER, "brp"    , FSProject);
+REGISTER_CLASS4(STEPImport         , CLASS_FILE_READER, "step"   , FSProject);
+REGISTER_CLASS4(STPImport          , CLASS_FILE_READER, "stp"    , FSProject);
+REGISTER_CLASS4(IGESImport         , CLASS_FILE_READER, "iges"   , FSProject);
+REGISTER_CLASS4(IGSImport          , CLASS_FILE_READER, "igs"    , FSProject);
+REGISTER_CLASS4(AnsysImport        , CLASS_FILE_READER, "cdb"    , FSProject);
+REGISTER_CLASS4(LSDYNAimport       , CLASS_FILE_READER, "k"      , FSProject);
+REGISTER_CLASS4(LSDYNAimport_dyn   , CLASS_FILE_READER, "dyn"    , FSProject);
+REGISTER_CLASS4(IDEASimport        , CLASS_FILE_READER, "unv"    , FSProject);
+REGISTER_CLASS4(NASTRANimport      , CLASS_FILE_READER, "nas"    , FSProject);
+REGISTER_CLASS4(DXFimport          , CLASS_FILE_READER, "dxf"    , FSProject);
+REGISTER_CLASS4(STLimport          , CLASS_FILE_READER, "stl"    , FSProject);
+REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, "hmascii", FSProject);
+REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, "surf"   , FSProject);
+REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
+REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
+REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
+REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
+REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, "vtk"    , FSProject);
+REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, "vtu"    , FSProject);
+REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, "vtp"    , FSProject);
+REGISTER_CLASS4(FEBioGeometryImport, CLASS_FILE_READER, "feb"    , FSProject);
+REGISTER_CLASS4(AbaqusImport       , CLASS_FILE_READER, "inp"    , FSProject);
+REGISTER_CLASS4(RAWToMeshImport    , CLASS_FILE_READER, "raw"    , FSProject);
+REGISTER_CLASS4(COMSOLimport       , CLASS_FILE_READER, "mphtxt" , FSProject);
 
 using std::stringstream;
 
@@ -404,75 +435,24 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return nullptr;
 
+	// get the file extension
+	QString ext = QFileInfo(fileName).suffix().toLower();
+	std::string szext = ext.toStdString();
+
+	// this is needed as the constructor argument for file reader classes. 
 	FSProject& prj = doc->GetProject();
 
-	// get the file extension
-	QString ext = QFileInfo(fileName).suffix();
-	if (ext.compare("pvo", Qt::CaseInsensitive) == 0) return new PRVObjectImport(prj);
-	if (ext.compare("inp", Qt::CaseInsensitive) == 0)
+	FSFileImport* fileReader = FSCore::CreateClass<FSFileImport, FSProject>(CLASS_FILE_READER, szext.c_str(), &prj);
+	if (fileReader && fileReader->Parameters())
 	{
-		AbaqusImport* reader = new AbaqusImport(prj);
-		CDlgEditObject dlg(reader, "Import Abaqus", this);
-		if (dlg.exec())
+		CDlgEditObject dlg(fileReader, "Import " + ext, this);
+		if (dlg.exec() == QDialog::Rejected)
 		{
-			return reader;
-		}
-		else return nullptr;
-	}
-	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
-	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
-	if (ext.compare("dyn", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
-	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new IDEASimport(prj);
-	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new NASTRANimport(prj);
-	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new DXFimport(prj);
-	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new STLimport(prj);
-	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new HMASCIIimport(prj);
-	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new HyperSurfaceImport(prj);
-	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new GMshImport(prj);
-	if (ext.compare("byu", Qt::CaseInsensitive) == 0) return new BYUimport(prj);
-	if (ext.compare("mesh", Qt::CaseInsensitive) == 0) return new MeshImport(prj);
-	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new TetGenImport(prj);
-	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new IGESFileImport(prj);
-	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new VTKimport(prj);
-	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
-	if (ext.compare("vtp", Qt::CaseInsensitive) == 0) return new VTPimport(prj);
-	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
-	{
-		RAWToMeshImport* reader = new RAWToMeshImport(prj);
-		CDlgEditObject dlg(reader, "Import RAW", this);
-		if (dlg.exec()) {
-			return reader;
-		}
-		else {
-			delete reader;
-			return nullptr;
+			delete fileReader;
+			fileReader = nullptr;
 		}
 	}
-	if (ext.compare("mphtxt", Qt::CaseInsensitive) == 0)
-	{
-		COMSOLimport* reader = new COMSOLimport(prj);
-		CDlgEditObject dlg(reader, "Import COMSOL", this);
-		if (dlg.exec())
-		{
-			return reader;
-		}
-		else return 0;
-	}
-	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new PLYImport(prj);
-	if ((ext.compare("brep", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("brp", Qt::CaseInsensitive) == 0)) return new BREPImport(prj);
-	if ((ext.compare("step", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("stp", Qt::CaseInsensitive) == 0)) return new STEPImport(prj);
-	if ((ext.compare("iges", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("igs", Qt::CaseInsensitive) == 0)) return new IGESImport(prj);
-	if (ext.compare("feb", Qt::CaseInsensitive) == 0)
-	{
-		FEBioFileImport* febio = new FEBioFileImport(prj);
-		febio->SetGeometryOnlyFlag(true);
-		return febio;
-	}
-
-	return 0;
+	return fileReader;
 }
 
 //-----------------------------------------------------------------------------

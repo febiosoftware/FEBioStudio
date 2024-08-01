@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "units.h"
 #include <QFileDialog>
 #include <map>
+#include <FSCore/ClassDescriptor.h>
 
 // These are the W3C names and corresponding color values (see https://www.w3schools.com/colors/colors_hex.asp)
 std::map<QString, GLColor> colorTable = { \

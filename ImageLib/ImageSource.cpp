@@ -66,58 +66,22 @@ void CImageSource::ClearFilters()
     }
 }
 
-C3DImage* CImageSource::GetImageToFilter(bool allocate, int pixelType)
+C3DImage* CImageSource::GetImageToFilter()
 {
-
+    if(m_img == m_originalImage)
+    {
 #ifdef HAS_ITK
-
-    if(m_img == m_originalImage)
-    {
-        if(allocate)
-        {
-            int nx = m_originalImage->Width();
-            int ny = m_originalImage->Height();
-            int nz = m_originalImage->Depth();
-
-            if(pixelType == -1)
-            {
-                m_img = new CImageSITK(nx, ny, nz, m_originalImage->PixelType());
-            }
-            else
-            {
-                m_img = new CImageSITK(nx, ny, nz, pixelType);
-            }
-
-            
-        }
-        else
-        {
-            m_img = new CImageSITK();
-        }
-    }
-
+        m_img = new CImageSITK();
 #else
-
-    if(m_img == m_originalImage)
-    {
-        int nx = m_originalImage->Width();
-        int ny = m_originalImage->Height();
-        int nz = m_originalImage->Depth();
-
         m_img = new C3DImage();
-        m_img->Create(nx, ny, nz);
-
-        if(pixelType == -1)
-        {
-            m_img->Create(nx, ny, nz, nullptr, m_originalImage->PixelType());
-        }
-        else
-        {
-            m_img->Create(nx, ny, nz, nullptr, pixelType);
-        }
-    }
-
 #endif
+        
+        // Set old bounding box and orientaion on new image as default
+        BOX originalBox = m_originalImage->GetBoundingBox();
+        mat3d originalOrientation = m_originalImage->GetOrientation();
+        m_img->SetBoundingBox(originalBox);
+        m_img->SetOrientation(originalOrientation);
+    }
 
     return m_img;
 }
@@ -125,6 +89,11 @@ C3DImage* CImageSource::GetImageToFilter(bool allocate, int pixelType)
 void CImageSource::AssignImage(C3DImage* im)
 {
     delete m_originalImage;
+    if(m_img != m_originalImage)
+    {
+        delete m_img;
+    }
+
     m_originalImage = im;
     m_img = im;
 }
@@ -153,7 +122,7 @@ void CRawImageSource::SetFileName(const std::string& filename)
 bool CRawImageSource::Load()
 {
     C3DImage* im = new C3DImage;
-    if (im->Create(m_nx, m_ny, m_nz, nullptr, 0, m_type) == false)
+    if (im->Create(m_nx, m_ny, m_nz, nullptr, m_type) == false)
     {
         delete im;
         return false;

@@ -67,6 +67,7 @@ SOFTWARE.*/
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
+#include "DlgPickColor.h"
 #include "PostToolBar.h"
 #include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
@@ -79,8 +80,9 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
+#include "DlgPartViewer.h"
 #include <PyLib/PythonToolsPanel.h>
-#include "DlgPartSelector.h"
+#include "DlgPartViewer.h"
 #include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
@@ -297,10 +299,11 @@ public:
 	::CDlgFiberViz* fiberViz = nullptr;
 	::CDlgMeasure* measureTool = nullptr;
 	::CDlgPlaneCut* planeCutTool = nullptr;
+	::CDlgPickColor* pickColorTool = nullptr;
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
-	CDlgPartSelector* partSelector = nullptr;
+	CDlgPartViewer* partViewer = nullptr;
 
 	QStatusBar* statusBar;
 	QProgressBar* progressBar;
@@ -403,6 +406,7 @@ public:
 	QAction* actionSelectDiscrete;
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
+	QAction* actionPickColor;
 	QAction* actionRotate;
 	QAction* actionTranslate;
 	QAction* selectRect;
@@ -510,7 +514,7 @@ public:
 
 	void setUIConfig(Ui::Config newConfig);
 
-	void showPartSelector(CModelDocument* doc);
+	void showPartViewer(CModelDocument* doc);
 
 private:
 	void setRecentFileList(QStringList& dstList, const QStringList& fileList, QMenu* menu, QActionGroup* actionGroup);
