@@ -173,17 +173,20 @@ public:
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
 
+public:
+	void SetSection(GPartSection* section);
+	GPartSection* GetSection() const;
+
 	bool IsSolid() const;
 	bool IsShell() const;
 	bool IsBeam () const;
 
-public:
+	bool IsActive() const;
+
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
 
-	void SetSection(GPartSection* section);
-	GPartSection* GetSection() const;
-
+public:
 	BOX GetLocalBox() const;
 	BOX GetGlobalBox() const;
 	void UpdateBoundingBox();

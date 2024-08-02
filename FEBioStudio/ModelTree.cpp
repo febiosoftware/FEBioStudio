@@ -1410,6 +1410,13 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				t4->setForeground(0, Qt::gray);
 			}
+
+			if (!pg->IsActive())
+			{
+				QFont font = t4->font(0);
+				font.setItalic(true);
+				t4->setFont(0, font);
+			}
 		}
 		t3->setExpanded(false);
 
