@@ -228,7 +228,7 @@ void CBCObjectPropsPanel::on_state_toggled(bool b)
 }
 
 //=============================================================================
-CGItemPropsPanel::CGItemPropsPanel(QWidget* parent) : QWidget(parent)
+CGItemInfoPanel::CGItemInfoPanel(QWidget* parent, bool showActiveOption) : QWidget(parent)
 {
 	QGridLayout* l = new QGridLayout;
 
@@ -242,27 +242,48 @@ CGItemPropsPanel::CGItemPropsPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(new QLabel("ID:"), 2, 0, Qt::AlignRight);
 	l->addWidget(m_id = new QLabel, 2, 1);
 
+	if (showActiveOption)
+	{
+		l->addWidget(new QLabel("Active:"), 3, 0, Qt::AlignRight);
+		l->addWidget(m_active = new QCheckBox(""), 3, 1);
+	}
+	else m_active = nullptr;
+
 	setLayout(l);
 
-	QMetaObject::connectSlotsByName(this);
+	if (m_active) QObject::connect(m_active, &QCheckBox::checkStateChanged, this, &CGItemInfoPanel::on_active_changed);
+	QObject::connect(m_name, &QLineEdit::textEdited, this, &CGItemInfoPanel::on_name_textEdited);
 }
 
-void CGItemPropsPanel::setName(const QString& name)
+void CGItemInfoPanel::setName(const QString& name)
 {
 	m_name->setText(name);
 }
 
-void CGItemPropsPanel::setType(const QString& name)
+void CGItemInfoPanel::setType(const QString& name)
 {
 	m_type->setText(name);
 }
 
-void CGItemPropsPanel::setID(int nid)
+void CGItemInfoPanel::setID(int nid)
 {
 	m_id->setText(QString::number(nid));
 }
 
-void CGItemPropsPanel::on_name_textEdited(const QString& t)
+void CGItemInfoPanel::setActive(bool b)
+{
+	if (m_active) m_active->setChecked(b);
+}
+
+void CGItemInfoPanel::on_active_changed()
+{
+	if (m_active)
+	{
+		emit activeChanged(m_active->isChecked());
+	}
+}
+
+void CGItemInfoPanel::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
 }
@@ -343,7 +364,8 @@ class Ui::CModelPropsPanel
 	enum {
 		OBJECT_PANEL,
 		BCOBJECT_PANEL,
-		GITEM_PANEL,
+		GPARTINFO_PANEL,
+		GITEMINFO_PANEL,
 		MESHDATA_PANEL,
 		MESHINFO_PANEL,
 		PARTINFO_PANEL,
@@ -379,7 +401,8 @@ public:
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
-	CGItemPropsPanel*		gitem;
+	CGItemInfoPanel*		gitemInfo;
+	CGItemInfoPanel*		gpartInfo;
 	CMeshDataInfoPanel*		data;
 	CMeshInfoPanel*	mesh;
 	CPartInfoPanel* part;
@@ -414,8 +437,11 @@ public:
 		bcobj = new CBCObjectPropsPanel;
 		bcobj->setObjectName("bcobject");
 
-		gitem = new CGItemPropsPanel;
-		gitem->setObjectName("gitem");
+		gpartInfo = new CGItemInfoPanel(nullptr, true);
+		gpartInfo->setObjectName("partInfo");
+
+		gitemInfo = new CGItemInfoPanel;
+		gitemInfo->setObjectName("itemInfo");
 
 		data = new CMeshDataInfoPanel;
 		data->setObjectName("data");
@@ -448,7 +474,8 @@ public:
 		tool = new CToolBox;
 		tool->addTool("Info", obj);
 		tool->addTool("Info", bcobj);
-		tool->addTool("Info", gitem);
+		tool->addTool("Info", gpartInfo);
+		tool->addTool("Info", gitemInfo);
 		tool->addTool("Info", data);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
@@ -502,11 +529,23 @@ public:
 	{
 		if (b)
 		{
-			gitem->setName(name);
-			gitem->setType(type);
-			gitem->setID(nid);
+			gitemInfo->setName(name);
+			gitemInfo->setType(type);
+			gitemInfo->setID(nid);
 		}
-		tool->getToolItem(GITEM_PANEL)->setVisible(b);
+		tool->getToolItem(GITEMINFO_PANEL)->setVisible(b);
+	}
+
+	void showGPartInfo(bool b, const QString& name = "", const QString& type = "", int nid = -1, bool isActive = true)
+	{
+		if (b)
+		{
+			gpartInfo->setName(name);
+			gpartInfo->setType(type);
+			gpartInfo->setID(nid);
+			gpartInfo->setActive(isActive);
+		}
+		tool->getToolItem(GPARTINFO_PANEL)->setVisible(b);
 	}
 
 	void showMeshDataInfo(bool b, FEMeshData* meshdata = nullptr)
@@ -785,6 +824,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 		ui->showBCObjectInfo(false);
 		ui->showGItemInfo(false);
+		ui->showGPartInfo(false);
 		ui->showMeshDataInfo(false);
 
 		if (dynamic_cast<GObject*>(m_currentObject))
@@ -793,7 +833,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->showMeshInfoPanel(false);
 
 		if (dynamic_cast<GPart*>(m_currentObject))
+		{
 			ui->showPartInfoPanel(true);
+		}
 		else
 			ui->showPartInfoPanel(false);
 
@@ -850,6 +892,17 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				{
 					Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
 					ui->showObjectInfo(true, false, nameEditable, QColor(0, 0, 0), true, plot->IsActive());
+				}
+				else if (dynamic_cast<GPart*>(po))
+				{
+					GPart* pg = dynamic_cast<GPart*>(po);
+					QString typeStr("Part");
+					ui->setPart(pg);
+					ui->showObjectInfo(false);
+					bool isActive = true;
+					GPartSection* section = pg->GetSection();
+					if (section) isActive = section->IsActive();
+					ui->showGPartInfo(true, QString::fromStdString(pg->GetName()), typeStr, pg->GetID(), isActive);
 				}
 				else if (dynamic_cast<GItem*>(po))
 				{
@@ -1435,7 +1488,7 @@ void CModelPropsPanel::on_bcobject_nameChanged(const QString& txt)
 	}
 }
 
-void CModelPropsPanel::on_gitem_nameChanged(const QString& txt)
+void CModelPropsPanel::on_itemInfo_nameChanged(const QString& txt)
 {
 	if (m_currentObject)
 	{
@@ -1443,6 +1496,27 @@ void CModelPropsPanel::on_gitem_nameChanged(const QString& txt)
 		m_currentObject->SetName(sname.c_str());
 
 		emit nameChanged(txt);
+	}
+}
+
+void CModelPropsPanel::on_partInfo_nameChanged(const QString& txt)
+{
+	if (m_currentObject)
+	{
+		std::string sname = txt.toStdString();
+		m_currentObject->SetName(sname.c_str());
+
+		emit nameChanged(txt);
+	}
+}
+
+void CModelPropsPanel::on_partInfo_activeChanged(bool b)
+{
+	GPart* part = dynamic_cast<GPart*>(m_currentObject);
+	if (part)
+	{
+		GPartSection* section = part->GetSection();
+		if (section) section->SetActive(b);
 	}
 }
 
