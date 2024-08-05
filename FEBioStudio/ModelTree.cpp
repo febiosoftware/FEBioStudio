@@ -824,12 +824,27 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			item->setFont(0, font);
 		}
 
-
 		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
 		if (plot)
 		{
 			QFont font = item->font(0);
 			font.setItalic(plot->IsActive() == false);
+			item->setFont(0, font);
+		}
+
+		GDiscreteObject* pdo = dynamic_cast<GDiscreteObject*>(po);
+		if (pdo)
+		{
+			QFont font = item->font(0);
+			font.setItalic(pdo->IsActive() == false);
+			item->setFont(0, font);
+		}
+
+		GPart* pg = dynamic_cast<GPart*>(po);
+		if (pg)
+		{
+			QFont font = item->font(0);
+			font.setItalic(pg->IsActive() == false);
 			item->setFont(0, font);
 		}
 	}
@@ -1348,11 +1363,19 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 			GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
 
 			FSDiscreteMaterial* dm = pg->GetMaterial();
+			QTreeWidgetItem* t2 = nullptr;
 			if (dm)
 			{
-				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm), new CDiscreteSetValidator(pg));
+				t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm), new CDiscreteSetValidator(pg));
 			}
-			else QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr, new CDiscreteSetValidator(pg));
+			else t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr, new CDiscreteSetValidator(pg));
+
+			if (t2 && !pg->IsActive())
+			{
+				QFont font = t2->font(0);
+				font.setItalic(true);
+				t2->setFont(0, font);
+			}
 
 /*			for (int j = 0; j<pg->size(); ++j)
 			{
@@ -1368,7 +1391,13 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 		else if (dynamic_cast<GDiscreteElementSet*>(po))
 		{
 			GDiscreteElementSet* dset = dynamic_cast<GDiscreteElementSet*>(po);
-			AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, dset->size(), dset, 0, new CDiscreteSetValidator(dset));
+			QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, dset->size(), dset, 0, new CDiscreteSetValidator(dset));
+			if (!dset->IsActive())
+			{
+				QFont font = t2->font(0);
+				font.setItalic(true);
+				t2->setFont(0, font);
+			}
 		}
 		else AddTreeItem(t1, QString::fromStdString(po->GetName()));
 	}
