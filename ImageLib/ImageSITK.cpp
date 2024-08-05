@@ -148,7 +148,7 @@ CImageSITK::CImageSITK() :
 
 CImageSITK::~CImageSITK()
 {
-     if(m_itkOwnsBuffer) m_pb = nullptr;
+    if(m_itkOwnsBuffer) m_pb = nullptr;
 }
 
 bool CImageSITK::Create(int nx, int ny, int nz, uint8_t* data, int pixelType)
@@ -161,9 +161,10 @@ bool CImageSITK::Create(int nx, int ny, int nz, uint8_t* data, int pixelType)
     sitkImage.SetDirection({m_orientation[0][0], m_orientation[0][1], m_orientation[0][2], m_orientation[1][0], 
         m_orientation[1][1], m_orientation[1][2], m_orientation[2][0], m_orientation[2][1], m_orientation[2][2]});
 
-    SetItkImage(sitkImage);
+    SetItkImage(sitkImage, false);
 
     // Ensure that we handle the buffer deletion manually
+    m_pb = data;
     m_itkOwnsBuffer = false;
 
     return true;
@@ -217,7 +218,7 @@ itk::simple::Image CImageSITK::GetSItkImage()
    return m_sitkImage;
 }
 
-void CImageSITK::SetItkImage(itk::simple::Image image)
+void CImageSITK::SetItkImage(itk::simple::Image image, bool setBuffer)
 {
     if(!m_itkOwnsBuffer)
     {
@@ -236,7 +237,7 @@ void CImageSITK::SetItkImage(itk::simple::Image image)
     m_box = GetBoundingBox();
     m_orientation = GetOrientation();
 
-    m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
+    if(setBuffer) m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
 
     switch (m_sitkImage.GetPixelID())
     {
