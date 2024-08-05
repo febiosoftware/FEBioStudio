@@ -60,6 +60,7 @@ SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModif
 void SurfaceModifierThread::run()
 {
 	bool bsuccess = m_doc->ApplyFESurfaceModifier(*m_mod, m_po, m_pg);
+	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
 	emit resultReady(bsuccess);
 }
 
