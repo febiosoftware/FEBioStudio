@@ -1065,9 +1065,94 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	m_xml.close_branch();
 }
 
-//-----------------------------------------------------------------------------
+// As of FBS 2.8, parts can deactivated. For these inactive parts, we don't write the nodes, elements, 
+// or any geometry that references the inactive parts.
+void FEBioExport4::ProcessParts()
+{
+	FSModel& s = *m_pfem;
+	GModel& model = s.GetModel();
+
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		FSCoreMesh* pm = po->GetFEMesh();
+
+		// tag all nodes which will be exported. (Nodes of inactive parts are not exported)
+		// first we tag all elements
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			el.SetExport(true);
+			if (el.m_gid >= 0)
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (!pg->IsActive()) el.SetExport(false);
+			}
+		}
+
+		// assume all nodes will be exported
+		for (int j = 0; j < pm->Nodes(); ++j)
+		{
+			pm->Node(j).SetExport(true);
+		}
+
+		// tag all nodes of inactive parts
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			if (!el.CanExport())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) pm->Node(el.m_node[k]).SetExport(false);
+			}
+		}
+
+		// tag all nodes of active parts
+		// The reason why we first tag inactive nodes and then active nodes is so that nodes 
+		// that are not connected to any parts (e.g. free node attached with discrete element) will still be exported.
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			if (el.CanExport())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) pm->Node(el.m_node[k]).SetExport(true);
+			}
+		}
+
+		// process surface facets
+		// facets are only exported if all its nodes are exported
+		for (int j = 0; j < pm->Faces(); ++j)
+		{
+			FSFace& face = pm->Face(j);
+			int nf = face.Nodes();
+			face.SetExport(true);
+			for (int k=0; k<nf; ++k)
+			{
+				if (!pm->Node(face.n[k]).CanExport()) face.SetExport(false);
+			}
+		}
+
+		// process edges
+		// edges are only exported if all its nodes are exported
+		for (int j = 0; j < pm->Edges(); ++j)
+		{
+			FSEdge& edge = pm->Edge(j);
+			int ne = edge.Nodes();
+			edge.SetExport(true);
+			for (int k = 0; k < ne; ++k)
+			{
+				if (!pm->Node(edge.n[k]).CanExport()) edge.SetExport(false);
+			}
+		}
+	}
+}
+
 void FEBioExport4::WriteMeshSection()
 {
+	// process active parts
+	ProcessParts();
+	
 	// export the nodes
 	WriteGeometryNodes();
 
@@ -1251,12 +1336,13 @@ bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 	if (nn == 0) return false;
 
 	FSNodeList::Iterator pn = pl->First();
-	vector<int> m(nn);
+	vector<int> m;
+	m.reserve(pl->Size());
 	for (int n = 0; n < nn; ++n, pn++)
 	{
 		FSNode* pnode = pn->m_pi;
-		if (pnode == 0) return false;
-		m[n] = pnode->m_nid;
+		if (pnode == nullptr) return false;
+		if (pnode->CanExport()) m.push_back(pnode->m_nid);
 	}
 
 	XMLElement el("NodeSet");
@@ -1443,7 +1529,8 @@ void FEBioExport4::WriteGeometryElementSets()
 			if (pe->m_pi)
 			{
 				FEElement_& el = *(pe->m_pi);
-				elemIds.push_back(el.m_nid);
+				if (el.CanExport())
+					elemIds.push_back(el.m_nid);
 			}
 		}
 
@@ -1643,25 +1730,42 @@ void FEBioExport4::WriteGeometryNodes()
 		GObject* po = model.Object(i);
 		FSCoreMesh* pm = po->GetFEMesh();
 
-		XMLElement tagNodes("Nodes");
-		const string& name = po->GetName();
-		if (name.empty() == false) tagNodes.add_attribute("name", name.c_str());
-
-		m_xml.add_branch(tagNodes);
+		// we only export this object if it has any nodes that need to be exported
+		bool exportNodes = false;
+		for (int j = 0; j < pm->Nodes(); ++j)
 		{
-			XMLElement el("node");
-			int nid = el.add_attribute("id", 0);
-			for (int j = 0; j < pm->Nodes(); ++j)
+			if (pm->Node(j).CanExport())
 			{
-				FSNode& node = pm->Node(j);
-				el.set_attribute(nid, node.m_nid);
-				if (node.m_nid > n) n = node.m_nid + 1;
-				vec3d r = po->GetTransform().LocalToGlobal(node.r);
-				el.value(r);
-				m_xml.add_leaf(el, false);
+				exportNodes = true;
+				break;
 			}
 		}
-		m_xml.close_branch();
+
+		if (exportNodes)
+		{
+			XMLElement tagNodes("Nodes");
+			const string& name = po->GetName();
+			if (name.empty() == false) tagNodes.add_attribute("name", name.c_str());
+
+			m_xml.add_branch(tagNodes);
+			{
+				XMLElement el("node");
+				int nid = el.add_attribute("id", 0);
+				for (int j = 0; j < pm->Nodes(); ++j)
+				{
+					FSNode& node = pm->Node(j);
+					if (node.CanExport())
+					{
+						el.set_attribute(nid, node.m_nid);
+						if (node.m_nid > n) n = node.m_nid + 1;
+						vec3d r = po->GetTransform().LocalToGlobal(node.r);
+						el.value(r);
+						m_xml.add_leaf(el, false);
+					}
+				}
+			}
+			m_xml.close_branch();
+		}
 	}
 
 	// add the deformable springs
@@ -1732,8 +1836,11 @@ void FEBioExport4::WriteMeshElements()
 			// get the part
 			GPart* pg = po->Part(p);
 
-			// write this part
-			WriteGeometryPart(part, pg, false, false);
+			// see if it's active
+			bool exportPart = pg->IsActive();
+
+			// write this part if it's active
+			if (exportPart) WriteGeometryPart(part, pg, false, false);
 		}
 	}
 }
@@ -2100,7 +2207,7 @@ void FEBioExport4::WriteMeshDataShellThickness()
 		for (int k = 0; k < (int)elset.m_elem.size(); ++k)
 		{
 			FEElement_& el = pm->ElementRef(elset.m_elem[k]);
-			if (el.IsShell()) 
+			if (el.IsShell() && el.CanExport()) 
 			{ 
 				int n = el.Nodes();
 				for (int l = 0; l < n; ++l)
@@ -2197,10 +2304,13 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 				for (int j = 0; j < NE; ++j)
 				{
 					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
-					vec3d a = T.LocalToGlobalNormal(e.m_fiber);
-					el.set_attribute(nid, j + 1);
-					el.value(a);
-					m_xml.add_leaf(el, false);
+					if (e.CanExport())
+					{
+						vec3d a = T.LocalToGlobalNormal(e.m_fiber);
+						el.set_attribute(nid, j + 1);
+						el.value(a);
+						m_xml.add_leaf(el, false);
+					}
 				}
 			}
 			m_xml.close_branch(); // elem_data
@@ -2226,7 +2336,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 		for (int j = 0; j < NE; ++j)
 		{
 			FEElement_& el = pm->ElementRef(elSet.m_elem[j]);
-			if (el.m_Qactive) { bwrite = true; break; }
+			if (el.m_Qactive && el.CanExport()) { bwrite = true; break; }
 		}
 
 		// okay, let's get to work
@@ -2244,7 +2354,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 				for (int j = 0; j < NE; ++j)
 				{
 					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
-					if (e.m_Qactive)
+					if (e.m_Qactive && e.CanExport())
 					{
 						// e.m_Q is in local coordinates, so transform it to global coordinates
 						mat3d& Q = e.m_Q;
@@ -2315,10 +2425,13 @@ void FEBioExport4::WriteElementDataFields()
 					{
 						int eid = *it;
 						FEElement_& e = pm->ElementRef(eid);
-						el.set_attribute(nid, j + 1);
-						data.get(j, d);
-						el.value(d, M);
-						m_xml.add_leaf(el, false);
+						if (e.CanExport())
+						{
+							el.set_attribute(nid, j + 1);
+							data.get(j, d);
+							el.value(d, M);
+							m_xml.add_leaf(el, false);
+						}
 					}
 				}
 				m_xml.close_branch();
@@ -2454,8 +2567,6 @@ void FEBioExport4::WriteSurfaceDataSection()
 
 						m_xml.add_leaf(el, false);
 					}
-
-
 				}
 				m_xml.close_branch();
 			}
@@ -3062,32 +3173,31 @@ void FEBioExport4::WriteSurfaceSection(NamedItemList& l)
 	int NF = s.Size();
 	FEFaceList::Iterator pf = s.First();
 
-	int nfn;
 	for (int j = 0; j < NF; ++j, ++n, ++pf)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
 		FSFace& face = *(pf->m_pi);
-		FSCoreMesh* pm = pf->m_pm;
-		nfn = face.Nodes();
-		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
-		switch (nfn)
+		if (face.CanExport())
 		{
-		case 3: ef.name("tri3"); break;
-		case 4: ef.name("quad4"); break;
-		case 6: ef.name("tri6"); break;
-		case 7: ef.name("tri7"); break;
-		case 8: ef.name("quad8"); break;
-		case 9: ef.name("quad9"); break;
-		case 10: ef.name("tri10"); break;
-		default:
-			assert(false);
+			int nfn = face.Nodes();
+			switch (nfn)
+			{
+			case  3: ef.name("tri3" ); break;
+			case  4: ef.name("quad4"); break;
+			case  6: ef.name("tri6" ); break;
+			case  7: ef.name("tri7" ); break;
+			case  8: ef.name("quad8"); break;
+			case  9: ef.name("quad9"); break;
+			case 10: ef.name("tri10"); break;
+			default:
+				assert(false);
+			}
+			ef.add_attribute("id", n);
+			ef.value(nn, nfn);
+			m_xml.add_leaf(ef);
 		}
-		ef.add_attribute("id", n);
-		ef.value(nn, nfn);
-		m_xml.add_leaf(ef);
 	}
 }
-
 
 void FEBioExport4::WriteEdgeSection(NamedItemList& l)
 {
@@ -3107,19 +3217,22 @@ void FEBioExport4::WriteEdgeSection(NamedItemList& l)
 	{
 		if (pe->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
 		FSEdge& edge = *(pe->m_pi);
-		FSCoreMesh* pm = pe->m_pm;
-		int nen = edge.Nodes();
-		for (int k = 0; k < nen; ++k) nn[k] = pm->Node(edge.n[k]).m_nid;
-		switch (nen)
+		if (edge.CanExport())
 		{
-		case 2: ef.name("line2"); break;
-		case 3: ef.name("line3"); break;
-		default:
-			assert(false);
+			FSCoreMesh* pm = pe->m_pm;
+			int nen = edge.Nodes();
+			for (int k = 0; k < nen; ++k) nn[k] = pm->Node(edge.n[k]).m_nid;
+			switch (nen)
+			{
+			case 2: ef.name("line2"); break;
+			case 3: ef.name("line3"); break;
+			default:
+				assert(false);
+			}
+			ef.add_attribute("id", n);
+			ef.value(nn, nen);
+			m_xml.add_leaf(ef);
 		}
-		ef.add_attribute("id", n);
-		ef.value(nn, nen);
-		m_xml.add_leaf(ef);
 	}
 }
 
@@ -3131,9 +3244,12 @@ void FEBioExport4::WriteElementList(FEElemList& el)
 	for (int i = 0; i < NE; ++i, ++pe)
 	{
 		FEElement_& el = *(pe->m_pi);
-		XMLElement e("e");
-		e.add_attribute("id", el.m_nid);
-		m_xml.add_empty(e);
+		if (el.CanExport())
+		{
+			XMLElement e("e");
+			e.add_attribute("id", el.m_nid);
+			m_xml.add_empty(e);
+		}
 	}
 }
 

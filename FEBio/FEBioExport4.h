@@ -304,6 +304,8 @@ protected:
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
+	void ProcessParts();
+
 protected:
 	Part* FindPart(GObject* po);
 
