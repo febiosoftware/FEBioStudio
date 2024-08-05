@@ -13,11 +13,7 @@ public:
 
 	virtual GPartSection* Copy() = 0;
 
-	bool IsActive() const { return m_active; }
-	void SetActive(bool b) { m_active = b; }
-
 private:
-	bool	m_active; // active parts will be exported. Inactive parts will not. 
 	GPart*	m_part;
 };
 

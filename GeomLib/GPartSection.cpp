@@ -33,7 +33,6 @@ SOFTWARE.*/
 //=============================================================================
 GPartSection::GPartSection(GPart* part) : m_part(part)
 {
-	m_active = true;
 	if (part) SetParent(part);
 }
 

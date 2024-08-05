@@ -723,8 +723,7 @@ void CModelViewer::OnHideInactiveParts()
 		for (int i = 0; i < po->Parts(); ++i)
 		{
 			GPart* pg = po->Part(i);
-			GPartSection* section = pg->GetSection();
-			if (section && !section->IsActive()) partList.push_back(pg);
+			if (!pg->IsActive()) partList.push_back(pg);
 		}
 		if (!partList.empty())
 		{

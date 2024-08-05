@@ -35,7 +35,8 @@ class FSEdgeSet;
 enum {
 	GEO_VISIBLE  = 1, 
 	GEO_SELECTED = 2,
-	GEO_REQUIRED = 4
+	GEO_REQUIRED = 4,
+	GEO_ACTIVE   = 8
 };
 
 //-----------------------------------------------------------------------------
@@ -90,7 +91,7 @@ class GItem : public FSObject
 {
 public:
 	// Constructor. Takes parent object as parameter
-	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; }
+	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE | GEO_ACTIVE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; m_ntag = 0; }
 	virtual ~GItem() { m_po = 0; }
 
 	// get/set global ID
@@ -118,6 +119,10 @@ public:
 	// set required state
 	bool IsRequired() const { return ((m_state & GEO_REQUIRED) != 0); }
 	void SetRequired(bool b) { if (b) m_state = m_state | GEO_REQUIRED;	else m_state = m_state & ~GEO_REQUIRED; }
+
+	// check active status
+	bool IsActive() const { { return ((m_state & GEO_ACTIVE) != 0); } }
+	void SetActive(bool b) { if (b) m_state = m_state | GEO_ACTIVE;	else m_state = m_state & ~GEO_ACTIVE; }
 
 	// get/set state
 	unsigned int GetState() const { return m_state; }
@@ -180,8 +185,6 @@ public:
 	bool IsSolid() const;
 	bool IsShell() const;
 	bool IsBeam () const;
-
-	bool IsActive() const;
 
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }

@@ -510,11 +510,6 @@ bool GPart::IsBeam() const
 	return (dynamic_cast<GBeamSection*>(m_section));
 }
 
-bool GPart::IsActive() const
-{
-	return (m_section ? m_section->IsActive() : true);
-}
-
 //-----------------------------------------------------------------------------
 void GPart::operator =(const GPart &p)
 {
