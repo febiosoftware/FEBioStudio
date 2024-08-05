@@ -173,7 +173,6 @@ void CMeshInspector::UpdateFEMeshData(FSMesh* pm, int ndata)
 			{
 				if (data[i].tag)
 				{
-					int nerr;
 					for (int j = 0; j < ne; ++j)
 					{
 						double vj = data.GetElementValue(i, j);
@@ -282,7 +281,6 @@ void CMeshInspector::UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata)
 				int nf = face.Nodes();
 				if (data[i].tag)
 				{
-					int nerr;
 					for (int j = 0; j < nf; ++j)
 					{
 						double vj = data.GetElementValue(i, j);

@@ -524,8 +524,8 @@ bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const v
 
 		if (intersect)
 		{
-			intersect->r[0] = rp;
-			intersect->r[1] = sp;
+			intersect->r[0] = (float)rp;
+			intersect->r[1] = (float)sp;
 			intersect->point = q;
 		}
 
@@ -613,8 +613,8 @@ bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q, Intersection* int
 
 	if (intersect)
 	{
-		intersect->r[0] = r;
-		intersect->r[1] = s;
+		intersect->r[0] = (float)r;
+		intersect->r[1] = (float)s;
 		intersect->point = q;
 	}
 
@@ -1324,11 +1324,11 @@ std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 
 	// invert the temp path to get the final path
 	std::vector<vec3d> path;
-	int n = tmp.size();
+	size_t n = tmp.size();
 	if (n > 0)
 	{
 		path.resize(n);
-		for (int i = 0; i < n; ++i)
+		for (size_t i = 0; i < n; ++i)
 		{
 			path[i] = tmp[n - i - 1];
 		}

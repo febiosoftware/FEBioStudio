@@ -246,9 +246,9 @@ void CMarchingCubes::CreateSurface()
 	int NZ = im3d.Depth();
 	if ((NX == 1) || (NY == 1) || (NZ == 1)) return;
 
-	float dxi = (b.x1 - b.x0) / (NX - 1);
-	float dyi = (b.y1 - b.y0) / (NY - 1);
-	float dzi = (b.z1 - b.z0) / (NZ - 1);
+	float dxi = (float)((b.x1 - b.x0) / (NX - 1));
+	float dyi = (float)((b.y1 - b.y0) / (NY - 1));
+	float dzi = (float)((b.z1 - b.z0) / (NZ - 1));
 
 	uint8_t ref = (uint8_t)(m_val * 255.0);
 	float fref = (float)ref;
@@ -576,7 +576,7 @@ void CMarchingCubes::Render(CGLContext& rc)
 
 bool CMarchingCubes::GetMesh(FSMesh& mesh)
 {
-	int nodes = m_mesh.Vertices();
+	int nodes = (int) m_mesh.Vertices();
 	int faces = nodes / 3; assert((nodes % 3) == 0);
 	mesh.Create(nodes, 0, faces);
 	for (int i = 0; i < nodes; ++i)
@@ -692,6 +692,6 @@ template<class pType> void CMarchingCubes::Create8BitImage()
 
     for(int i = 0; i < N; i++)
     {
-        newData[i] = 255 * (oldData[i] - min)/range;
+        newData[i] = (uint8_t)(255 * (oldData[i] - min)/range);
     }
 }

@@ -86,8 +86,8 @@ public:
 			// if we get here, the node is in this box, 
 			// but not in the points array yet, so add it
 			points.push_back(r);
-			m_nodes.push_back(points.size() - 1);
-			return points.size() - 1;
+			m_nodes.push_back((int)points.size() - 1);
+			return (int)points.size() - 1;
 		}
 		else
 		{
@@ -131,7 +131,7 @@ public:
 		m_seg.push_back(l);
 	}
 
-	int Points() const { return m_pt.size(); }
+	int Points() const { return (int) m_pt.size(); }
 	vec3d& Point(int n) { return m_mesh->Node(m_pt[n]).r; }
 
 	void Build()
@@ -148,7 +148,7 @@ public:
 		Sort();
 	}
 
-	int LineSegments() const { return m_seg.size(); }
+	int LineSegments() const { return (int) m_seg.size(); }
 	LINE& GetLineSegment(int n) { return m_seg[n]; }
 
 private:
@@ -159,12 +159,12 @@ private:
 			if (m_pt[j] == n) return j;
 		}
 		m_pt.push_back(n);
-		return m_pt.size() - 1;
+		return (int)m_pt.size() - 1;
 	}
 
 	void Sort()
 	{
-		int pts = m_pt.size();
+		size_t pts = m_pt.size();
 		vector<int> tag(pts, 0);
 		for (int i = 0; i < m_seg.size(); ++i)
 		{
@@ -184,7 +184,7 @@ private:
 			}
 		}
 
-		int nltsize = pts;
+		size_t nltsize = pts;
 		if (NLT.empty())
 		{
 			// this is probably a loop, so just pick the first point
@@ -193,7 +193,7 @@ private:
 		}
 		assert(NLT.size() == 1);
 
-		int nsegs = m_seg.size();
+		size_t nsegs = m_seg.size();
 		int seg0 = 0;
 		while (NLT.size() != nltsize)
 		{
@@ -293,7 +293,7 @@ void LineData::processLines()
 	// now build a curve mesh
 	// (this is used to find the segments, i.e. the connected lines)
 	FECurveMesh mesh;
-	mesh.Create(points.size(), lines);
+	mesh.Create((int)points.size(), lines);
 	for (int i = 0; i < points.size(); ++i)
 	{
 		FSNode& node = mesh.Node(i);
@@ -560,7 +560,7 @@ int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& 
 		int n = 0;
 		unsigned int masks = 0;
 		if (fread(&masks, sizeof(unsigned int), 1, fp) != 1) { fclose(fp); return 0; }
-		for (int i = 0; i < masks; ++i)
+		for (unsigned int i = 0; i < masks; ++i)
 		{
 			unsigned int mask = 0;
 			if (fread(&mask, sizeof(unsigned int), 1, fp) != 1) { fclose(fp); return 0; }
@@ -619,7 +619,7 @@ int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& 
 				vec3f r1 = GetCoordinatesFromFrag(fem, nstate, b);
 
 				// add the line
-				lines.AddLine(r0, r1, a.user_data, b.user_data, a.iel, b.iel);
+				lines.AddLine(r0, r1, (float) a.user_data, (float) b.user_data, a.iel, b.iel);
 			}
 		}
 
@@ -634,7 +634,7 @@ int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& 
 		// read the segments
 		int nd = 6 + 2 * ndataFields;
 		vector<float> d(nd, 0.f);
-		for (int i = 0; i < segs; ++i)
+		for (unsigned int i = 0; i < segs; ++i)
 		{
 			if (fread(&d[0], sizeof(float), nd, fp) != nd) { fclose(fp); nret = 2; break; }
 

@@ -57,7 +57,6 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	vec3f x[8];
 
 	mat3d J;
-	double j;
 	int node;
 
 	float dfdx[3];

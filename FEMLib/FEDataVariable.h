@@ -46,9 +46,9 @@ public:
 	virtual vec3d Value(vec3d& r);
 
 	int GetID() { return m_nID; }
- 
+
 private:
-	FEDataVariable(const FEDataVariable& v) {}
+	FEDataVariable(const FEDataVariable& v);
 
 protected:
 	string		m_v[3];

@@ -144,6 +144,8 @@ bool CSelectNearPlaneTool::OnApply()
     CCmdSelectFENodes* cmd = new CCmdSelectFENodes(mesh, ids, m_add);
 
     doc->DoCommand(cmd);
+
+	return true;
 }
 
 void CSelectNearPlaneTool::on_dataChanged(int index)
@@ -160,7 +162,7 @@ void CSelectNearPlaneTool::on_dataChanged(int index)
         }
         else
         {
-            if(Property(1).flags != CProperty::Visible | CProperty::Editable)
+            if(Property(1).flags != (CProperty::Visible | CProperty::Editable))
             {
                 Property(1).setFlags(CProperty::Visible | CProperty::Editable);
                 m_pform->setPropertyList(this);

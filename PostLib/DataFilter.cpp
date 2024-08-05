@@ -621,7 +621,7 @@ bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 					{
 						float f;
 						data.eval(i, &f);
-						D[i] = (1.0 - theta)*f + theta*D[i];
+						D[i] =(float)((1.0 - theta)*f + theta*D[i]);
 						data.set(i, D[i]);
 					}
 			}
@@ -1008,7 +1008,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 		{
 			FEElement_& el = mesh->ElementRef(i);
 
-			for (int j = 0; j<el.Nodes(); ++j) ed[j] = d[el.m_node[j]];
+			for (int j = 0; j<el.Nodes(); ++j) ed[j] = (float)d[el.m_node[j]];
 
 			for (int j=0; j<el.Nodes(); ++j)
 			{
@@ -1376,7 +1376,8 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 					{
 						pv->eval(i, &ev);
 
-						ps->add(i, fractional_anisotropy(ev));
+						float fa = (float)fractional_anisotropy(ev);
+						ps->add(i, fa);
 					}
 				}
 			}

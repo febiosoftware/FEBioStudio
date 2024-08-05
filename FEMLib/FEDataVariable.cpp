@@ -40,6 +40,11 @@ FEDataVariable::FEDataVariable()
 	m_mth[2].AddVariable("x"); m_mth[2].AddVariable("y"); m_mth[2].AddVariable("z");
 }
 
+FEDataVariable::FEDataVariable(const FEDataVariable& v) 
+{ 
+	m_nID = -1; 
+}
+
 //-----------------------------------------------------------------------------
 void FEDataVariable::SetString(int n, const char* sz)
 {

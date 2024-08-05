@@ -76,7 +76,6 @@ void GSolidSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
@@ -187,7 +186,6 @@ void GShellSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
@@ -328,7 +326,6 @@ void GBeamSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;

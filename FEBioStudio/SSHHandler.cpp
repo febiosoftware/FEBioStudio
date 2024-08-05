@@ -382,10 +382,7 @@ void CSSHHandler::VerifyKnownHost()
 	unsigned char *hash = NULL;
 	ssh_key srv_pubkey = NULL;
 	size_t hlen;
-	char buf[10];
 	char *hexa;
-	char *p;
-	int cmp;
 	int rc;
 
 	m_data->nextFunction = -1;
@@ -617,7 +614,7 @@ int CSSHHandler::CheckRemoteDir()
 
 int CSSHHandler::SendFile(std::string local, std::string remote)
 {
-	int rc, nwritten, transferred = 0, size;
+	int rc, transferred = 0, size;
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
@@ -886,8 +883,6 @@ int CSSHHandler::RunInteractiveNoRead(std::string command)
 {
 	ssh_channel channel;
 	int rc;
-	char buffer[256];
-	int nbytes;
 
 	channel = ssh_channel_new(m_data->session);
 	if (channel == NULL)
