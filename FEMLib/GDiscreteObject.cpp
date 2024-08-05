@@ -34,7 +34,7 @@ GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
 {
 	m_gm = gm;
 	m_ntype = ntype;
-	m_state = GEO_VISIBLE;
+	m_state = (GEO_VISIBLE | GEO_ACTIVE);
 	m_col = GLColor(0, 255, 0);
 }
 

@@ -875,7 +875,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				else if (dynamic_cast<GDiscreteElementSet*>(po))
 				{
 					GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
-					ui->showObjectInfo(true, true, nameEditable, toQColor(pd->GetColor()));
+					bool isActive = pd->IsActive();
+					ui->showObjectInfo(true, true, nameEditable, toQColor(pd->GetColor()), true, isActive);
 				}
 				else if (dynamic_cast<FSStepComponent*>(po))
 				{
@@ -899,9 +900,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					QString typeStr("Part");
 					ui->setPart(pg);
 					ui->showObjectInfo(false);
-					bool isActive = true;
-					GPartSection* section = pg->GetSection();
-					if (section) isActive = section->IsActive();
+					bool isActive = pg->IsActive();
 					ui->showGPartInfo(true, QString::fromStdString(pg->GetName()), typeStr, pg->GetID(), isActive);
 				}
 				else if (dynamic_cast<GItem*>(po))
@@ -1513,10 +1512,10 @@ void CModelPropsPanel::on_partInfo_nameChanged(const QString& txt)
 void CModelPropsPanel::on_partInfo_activeChanged(bool b)
 {
 	GPart* part = dynamic_cast<GPart*>(m_currentObject);
-	if (part)
+	if (part && (part->IsActive() != b))
 	{
-		GPartSection* section = part->GetSection();
-		if (section) section->SetActive(b);
+		part->SetActive(b);
+		emit dataChanged(false);
 	}
 }
 
@@ -1605,10 +1604,16 @@ void CModelPropsPanel::on_object_statusChanged(bool b)
 	if (m_isUpdating) return;
 
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_currentObject);
-	if (po == 0) return;
+	if (po)
+	{
+		po->Activate(b);
+	}
 
-	po->Activate(b);
-
+	GDiscreteObject* disc = dynamic_cast<GDiscreteObject*>(m_currentObject);
+	if (disc)
+	{
+		disc->SetActive(b);
+	}
 	emit dataChanged(false);
 }
 
