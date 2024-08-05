@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/FESmoothSurfaceMesh.h>
 #include <MeshTools/FEEdgeCollapse.h>
 #include <MeshTools/FEFixJaggedEdges.h>
+#include <MeshTools/FEExtrudeEdges.h>
 #include <MeshTools/FEFixSurfaceMesh.h>
 #include <MeshTools/FECVDDecimationModifier.h>
 #include <MeshTools/FEEdgeFlip.h>
@@ -95,6 +96,7 @@ REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Cur
 REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
 REGISTER_CLASS(MMGSurfaceRemesh           , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
 REGISTER_CLASS(FEFixJaggedEdges           , CLASS_SURFACE_MODIFIER, "Fix Jagged Edges", 0xFF);
+REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges", 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {
