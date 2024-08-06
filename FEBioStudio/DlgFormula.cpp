@@ -141,7 +141,6 @@ std::vector<vec2d> CDlgFormula::GetPoints()
 	MSimpleExpression m;
 	MVariable* tvar = m.AddVariable("t");
 	m.Create(smath);
-	int ierr;
 	for (int i = 0; i<samples; ++i)
 	{
 		double x = fmin + i*(fmax - fmin) / (samples - 1);

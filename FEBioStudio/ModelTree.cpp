@@ -69,6 +69,7 @@ SOFTWARE.*/
 #define WARNING_SEL_NOT_USED		10
 #define WARNING_IMAGE_NO_LOAD		11
 #define WARNING_DISCRETE_SET_EMPTY	12
+#define WARNING_ZERO_SHELL_THICKNESS	13
 
 // base class for object validators
 // - define warning IDs (see list above)
@@ -107,6 +108,34 @@ public:
 
 private:
 	GObject* m_po;
+};
+
+class CPartValidator : public CObjectValidator
+{
+public:
+	CPartValidator(GPart* pg) : m_pg(pg) {}
+
+	QString GetErrorString() const override {
+		QString name = QString::fromStdString(m_pg->GetName());
+		return QString("Part \"%1\" has zero shell thickness").arg(name);
+	}
+
+	bool IsValid() override
+	{
+		if (m_pg && m_pg->IsShell())
+		{
+			GShellSection* section = dynamic_cast<GShellSection*>(m_pg->GetSection());
+			if (section == nullptr) return false;
+
+			if (section->shellThickness() == 0) return false;
+		}
+		return true;
+	}
+
+	unsigned int GetWarningID() const override { return WARNING_ZERO_SHELL_THICKNESS; };
+
+private:
+	GPart* m_pg;
 };
 
 class CBCValidator : public CObjectValidator
@@ -1433,7 +1462,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 			else if (pg->IsBeam ()) name += " [beam]";
 			else name += " []";
 
-			t4 = AddTreeItem(t3, name, MT_PART, 0, pg, new CPartProperties(pg, fem), 0, 1);
+			t4 = AddTreeItem(t3, name, MT_PART, 0, pg, new CPartProperties(pg, fem), new CPartValidator(pg), 1);
 
 			if (pg->IsVisible() == false)
 			{

@@ -105,4 +105,7 @@ vec3f C3DGradientMap::Value(int i, int j, int k)
     default:
         assert(false);
     }
+
+	// we shouldn't get here, but added it to avoid compiler warning
+	return vec3f(0.f, 0.f, 0.f);
 }

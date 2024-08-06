@@ -130,7 +130,7 @@ bool STLExport::Write(const char* szfile)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	int i, j, n;
+	int n;
 
 	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();

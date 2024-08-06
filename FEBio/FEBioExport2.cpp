@@ -4749,10 +4749,10 @@ void FEBioExport2::WriteLoadDataSection()
 		case LoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
 		}
 */
-		double d[2];
 		m_xml.add_branch(el);
 		{
-/*			for (int j = 0; j<plc->Size(); ++j)
+/*			double d[2];
+			for (int j = 0; j<plc->Size(); ++j)
 			{
 				LOADPOINT& pt = plc->Item(j);
 				d[0] = pt.time;

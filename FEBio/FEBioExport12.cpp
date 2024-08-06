@@ -3980,8 +3980,6 @@ void FEBioExport12::WriteLoadDataSection()
 		case LoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
 		}
 */
-		double d[2];
-
 		const char* szpt = "loadpoint";
 
 		m_xml.add_branch(el);

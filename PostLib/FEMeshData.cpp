@@ -98,7 +98,6 @@ void Post::shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f
 	J.invert();
 
 	// evaluate dH/dX = J^(-T)*dH/dr
-	double HX[MN], HY[MN], HZ[MN];
 	for (int i = 0; i<N; i++)
 	{
 		G[i].x = J[0][0] * Hr[i] + J[1][0] * Hs[i] + J[2][0] * Ht[i];
@@ -148,7 +147,6 @@ void Post::shape_grad_ref(FEPostModel& fem, int elem, double q[3], int nstate, v
 	J.invert();
 
 	// evaluate dH/dX = J^(-T)*dH/dr
-	double HX[MN], HY[MN], HZ[MN];
 	for (int i = 0; i < N; i++)
 	{
 		G[i].x = J[0][0] * Hr[i] + J[1][0] * Hs[i] + J[2][0] * Ht[i];

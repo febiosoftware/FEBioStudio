@@ -56,7 +56,7 @@ public:
     void SetOrientation(mat3d& orientation) override;
 
     itk::simple::Image GetSItkImage();
-    void SetItkImage(itk::simple::Image image);
+    void SetItkImage(itk::simple::Image image, bool setBuffer = true);
 
 private:
     itk::simple::Image m_sitkImage;

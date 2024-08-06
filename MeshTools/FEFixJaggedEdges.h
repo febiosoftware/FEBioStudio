@@ -25,33 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FSCore/FSObject.h>
-#include <FSCore/math3d.h>
-#include <FECore/MathObject.h>
-#include <string>
-//using namespace std;
+#include "FESurfaceModifier.h"
 
-//-----------------------------------------------------------------------------
-// This class defines a data variable over the volume of a domain.
-class FEDataVariable : public FSObject
+class FEFixJaggedEdges : public FESurfaceModifier
 {
 public:
-	FEDataVariable(void);
-	virtual ~FEDataVariable(void) {}
+    FEFixJaggedEdges();
 
-	void SetString(int n, const char* sz);
-	const char* GetString(int n) { return m_v[n].c_str(); }
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh);
 
-	//! return the value at point r
-	virtual vec3d Value(vec3d& r);
-
-	int GetID() { return m_nID; }
+	void SetAngle(double a) { m_angle = a; }
 
 private:
-	FEDataVariable(const FEDataVariable& v);
-
-protected:
-	string		m_v[3];
-	int			m_nID;
-	MSimpleExpression	m_mth[3];
+	double	m_angle;
 };
