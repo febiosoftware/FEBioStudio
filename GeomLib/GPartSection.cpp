@@ -246,7 +246,13 @@ void GShellSection::SetShellThickness(double h)
 
 double GShellSection::shellThickness() const
 {
-	return GetFloatValue(1);
+	if (m_form)
+	{
+		Param* p = m_form->GetParam("shell_thickness");
+		if (p) return p->GetFloatValue();
+		else return 0.0;
+	}
+	else return GetFloatValue(1);
 }
 
 bool GShellSection::UpdateData(bool bsave)
