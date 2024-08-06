@@ -130,6 +130,7 @@ public slots:
 	void OnCreateNewMeshLayer();
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
+	void OnHideInactiveParts();
 	void OnDeleteNamedSelection();
 	void OnExportFESurface();
 	void OnHideObject();

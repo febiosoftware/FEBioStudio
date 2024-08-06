@@ -76,7 +76,6 @@ void GSolidSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
@@ -187,7 +186,6 @@ void GShellSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
@@ -248,7 +246,13 @@ void GShellSection::SetShellThickness(double h)
 
 double GShellSection::shellThickness() const
 {
-	return GetFloatValue(1);
+	if (m_form)
+	{
+		Param* p = m_form->GetParam("shell_thickness");
+		if (p) return p->GetFloatValue();
+		else return 0.0;
+	}
+	else return GetFloatValue(1);
 }
 
 bool GShellSection::UpdateData(bool bsave)
@@ -328,7 +332,6 @@ void GBeamSection::Load(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
-		int nid, mid;
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;

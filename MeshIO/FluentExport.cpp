@@ -246,7 +246,7 @@ bool FluentExport::Write(const char* szfile)
             ++zone;
             // save interior faces
             if (mixed) {
-                fprintf(fp, "(13 (%X %X %X 2 0) (\n",zone,m.Faces()+1, m.Faces()+m_nface.size());
+                fprintf(fp, "(13 (%X %X %X 2 0) (\n",zone,m.Faces()+1, m.Faces()+(int)m_nface.size());
                 for (int j=0; j<m_nface.size(); ++j) {
                     FSFace& f = m_nface[j];
                     fprintf(fp, "%X ",f.Nodes());
@@ -258,7 +258,7 @@ bool FluentExport::Write(const char* szfile)
             }
             else {
                 FSFace& f = m_nface[0];
-                fprintf(fp, "(13 (%X %X %X 2 %X) (\n",zone,m.Faces()+1, m.Faces()+m_nface.size(),f.Nodes());
+                fprintf(fp, "(13 (%X %X %X 2 %X) (\n",zone,m.Faces()+1, m.Faces()+(int)m_nface.size(),f.Nodes());
                 for (int j=0; j<m_nface.size(); ++j) {
                     FSFace& f = m_nface[j];
                     for (int l=f.Nodes()-1; l>-1; --l) fprintf(fp, "%X ",m.Node(f.n[l]).m_ntag);

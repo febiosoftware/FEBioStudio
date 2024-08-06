@@ -69,6 +69,7 @@ SOFTWARE.*/
 #define WARNING_SEL_NOT_USED		10
 #define WARNING_IMAGE_NO_LOAD		11
 #define WARNING_DISCRETE_SET_EMPTY	12
+#define WARNING_ZERO_SHELL_THICKNESS	13
 
 // base class for object validators
 // - define warning IDs (see list above)
@@ -107,6 +108,34 @@ public:
 
 private:
 	GObject* m_po;
+};
+
+class CPartValidator : public CObjectValidator
+{
+public:
+	CPartValidator(GPart* pg) : m_pg(pg) {}
+
+	QString GetErrorString() const override {
+		QString name = QString::fromStdString(m_pg->GetName());
+		return QString("Part \"%1\" has zero shell thickness").arg(name);
+	}
+
+	bool IsValid() override
+	{
+		if (m_pg && m_pg->IsShell())
+		{
+			GShellSection* section = dynamic_cast<GShellSection*>(m_pg->GetSection());
+			if (section == nullptr) return false;
+
+			if (section->shellThickness() == 0) return false;
+		}
+		return true;
+	}
+
+	unsigned int GetWarningID() const override { return WARNING_ZERO_SHELL_THICKNESS; };
+
+private:
+	GPart* m_pg;
 };
 
 class CBCValidator : public CObjectValidator
@@ -824,12 +853,27 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			item->setFont(0, font);
 		}
 
-
 		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
 		if (plot)
 		{
 			QFont font = item->font(0);
 			font.setItalic(plot->IsActive() == false);
+			item->setFont(0, font);
+		}
+
+		GDiscreteObject* pdo = dynamic_cast<GDiscreteObject*>(po);
+		if (pdo)
+		{
+			QFont font = item->font(0);
+			font.setItalic(pdo->IsActive() == false);
+			item->setFont(0, font);
+		}
+
+		GPart* pg = dynamic_cast<GPart*>(po);
+		if (pg)
+		{
+			QFont font = item->font(0);
+			font.setItalic(pg->IsActive() == false);
 			item->setFont(0, font);
 		}
 	}
@@ -1348,11 +1392,19 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 			GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
 
 			FSDiscreteMaterial* dm = pg->GetMaterial();
+			QTreeWidgetItem* t2 = nullptr;
 			if (dm)
 			{
-				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm), new CDiscreteSetValidator(pg));
+				t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm), new CDiscreteSetValidator(pg));
 			}
-			else QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr, new CDiscreteSetValidator(pg));
+			else t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr, new CDiscreteSetValidator(pg));
+
+			if (t2 && !pg->IsActive())
+			{
+				QFont font = t2->font(0);
+				font.setItalic(true);
+				t2->setFont(0, font);
+			}
 
 /*			for (int j = 0; j<pg->size(); ++j)
 			{
@@ -1368,7 +1420,13 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 		else if (dynamic_cast<GDiscreteElementSet*>(po))
 		{
 			GDiscreteElementSet* dset = dynamic_cast<GDiscreteElementSet*>(po);
-			AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, dset->size(), dset, 0, new CDiscreteSetValidator(dset));
+			QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_FEOBJECT, dset->size(), dset, 0, new CDiscreteSetValidator(dset));
+			if (!dset->IsActive())
+			{
+				QFont font = t2->font(0);
+				font.setItalic(true);
+				t2->setFont(0, font);
+			}
 		}
 		else AddTreeItem(t1, QString::fromStdString(po->GetName()));
 	}
@@ -1404,11 +1462,18 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 			else if (pg->IsBeam ()) name += " [beam]";
 			else name += " []";
 
-			t4 = AddTreeItem(t3, name, MT_PART, 0, pg, new CPartProperties(pg, fem), 0, 1);
+			t4 = AddTreeItem(t3, name, MT_PART, 0, pg, new CPartProperties(pg, fem), new CPartValidator(pg), 1);
 
 			if (pg->IsVisible() == false)
 			{
 				t4->setForeground(0, Qt::gray);
+			}
+
+			if (!pg->IsActive())
+			{
+				QFont font = t4->font(0);
+				font.setItalic(true);
+				t4->setFont(0, font);
 			}
 		}
 		t3->setExpanded(false);

@@ -1059,6 +1059,7 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 					ar.WriteChunk(CID_OBJ_PART_MESHWEIGHT, p.GetMeshWeight());
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
 
 					if (!p.m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, p.m_node);
 					if (!p.m_edge.empty()) ar.WriteChunk(CID_OBJ_PART_EDGELIST, p.m_edge);
@@ -1321,6 +1322,13 @@ void GObject::Load(IArchive& ar)
 							p->SetName(szname);
 						}
 						break;
+					case CID_OBJ_PART_STATUS:
+					{
+						unsigned int state = 0;
+						ar.read(state);
+						p->SetState(state);
+					}
+					break;
 					case CID_OBJ_PART_PARAMS:
 						{
 							p->ParamContainer::Load(ar);

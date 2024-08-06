@@ -174,7 +174,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 			strcpy(szext,".vtk");
 		}
 		else {
-			int l = sz - szfile + 1;
+			size_t l = sz - szfile + 1;
 			strncpy(szroot, szfile, l);
 			szroot[l] = 0;
 			strcpy(szext, sz);
@@ -411,7 +411,8 @@ void FEVTKExport::WritePointData(FEState* ps)
 						string name = arrayNames[j];
 						strcpy(szname, name.c_str());
 						Space2_(szname);
-						fprintf(m_fp, "%s %d %d float\n", szname, 1, val.size());
+						int nsize = (int)val.size();
+						fprintf(m_fp, "%s %d %d float\n", szname, 1, nsize);
 						for (int i = 0; i < val.size(); ++i)
 							if (tag[i] != 0)
 							{

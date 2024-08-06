@@ -1465,6 +1465,7 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 			GLColor c = po->GetColor();
 
 			if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
+			else if (!po->IsActive()) glColor3ub(128, 128, 128);
 			else glColor3ub(c.r, c.g, c.b);
 
 			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
@@ -1492,6 +1493,7 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 					GDiscreteElement& el = pd->element(n);
 
 					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
+					else if (!po->IsActive()) glColor3ub(128, 128, 128);
 					else glColor3ub(c.r, c.g, c.b);
 
 					int n0 = el.Node(0) - minId;
@@ -3149,6 +3151,16 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 		SetMatProps(pmat);
 		GLColor c = po->GetColor();
 		if (pmat) c = pmat->Diffuse();
+
+		if (!pg->IsActive())
+		{
+			// Not sure if color material is on here, so we just set the color either way
+			c = GLColor(128, 128, 128);
+			GLfloat amb[4] = { c.r / 255.f, c.g / 255.f, c.b / 255.f, 1.f };
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, amb);
+		}
+
+		// TODO: not sure this does anything since I think color material is not on. 
 		glColor3ub(c.r, c.g, c.b);
 
 		/*		if (pmat && (pmat->m_nrender != 0))

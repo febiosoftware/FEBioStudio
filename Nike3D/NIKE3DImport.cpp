@@ -1483,8 +1483,7 @@ bool NIKE3DImport::ReadVelocities(NIKE3DProject &prj)
 //-----------------------------------------------------------------------------
 void NIKE3DImport::UpdateFEModel(FSModel& fem)
 {
-	int i, n;
-	LoadCurve* plc;
+	int i;
 	FSStep& s = *fem.GetStep(0);
 
 	// set control settings

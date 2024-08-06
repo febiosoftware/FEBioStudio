@@ -513,7 +513,6 @@ void FEMultiBlockMesh::BuildFEFaces(FSMesh* pm)
 {
 	// count faces
 	int faces = 0;
-	int n1, n2;
 	for (int i = 0; i < (int)m_MBFace.size(); ++i)
 	{
 		MBFace& f = m_MBFace[i];

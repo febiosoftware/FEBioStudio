@@ -66,6 +66,10 @@ public:
 	void Show() { m_state = m_state | GEO_VISIBLE; }
 	void Hide() { m_state = 0; }
 
+	// check active status
+	bool IsActive() const { { return ((m_state & GEO_ACTIVE) != 0); } }
+	void SetActive(bool b) { if (b) m_state = m_state | GEO_ACTIVE;	else m_state = m_state & ~GEO_ACTIVE; }
+
 	// get/set object color
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);

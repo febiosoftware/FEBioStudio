@@ -34,15 +34,17 @@ private:
 	// Even when not hidden, the item may not be shown since e.g. the material is hidden
 	enum {
 		// State Flags
-		ITEM_HIDDEN    = 0x01,		// was the item hidden by the user
-		ITEM_SELECTED  = 0x02,		// is the item currently selected ?
-		ITEM_DISABLED  = 0x04,		// should the item be evaluated ?
-		ITEM_ACTIVE    = 0x08,		// does the item contain data?
-		ITEM_INVISIBLE = 0x10,		// is the item invisible because the parent material was hidden? 
-		ITEM_ERODED    = 0x20,		// the item is "eroded" and should be treated as no longer present
-		ITEM_EXTERIOR  = 0x40,		// the item is "exterior"
-		ITEM_REQUIRED  = 0x80		// the item is required and should not be deleted during mesh operations
-	};
+		ITEM_HIDDEN    = 0x0001,	// was the item hidden by the user
+		ITEM_SELECTED  = 0x0002,	// is the item currently selected ?
+		ITEM_DISABLED  = 0x0004,	// should the item be evaluated ?
+		ITEM_ACTIVE    = 0x0008,	// does the item contain data?
+		ITEM_INVISIBLE = 0x0010,	// is the item invisible because the parent material was hidden? 
+		ITEM_ERODED    = 0x0020,	// the item is "eroded" and should be treated as no longer present
+		ITEM_EXTERIOR  = 0x0040,	// the item is "exterior"
+		ITEM_REQUIRED  = 0x0080,	// the item is required and should not be deleted during mesh operations
+		ITEM_EXPORT    = 0x0100		// item should be exported (ony used by FEBioExport4)
+};
+
 public:
 	MeshItem() { m_state = 0; m_nid = -1; m_gid = 0; m_ntag = 0; }
 	virtual ~MeshItem() {}
@@ -83,6 +85,9 @@ public:
 	void SetRequired(bool b) { if (b) m_state = m_state | ITEM_REQUIRED; else m_state = m_state & ~ITEM_REQUIRED; }
 
 	bool IsEnabled() const { return (IsDisabled() == false); }
+
+	bool CanExport() const { return ((m_state & ITEM_EXPORT) != 0); }
+	void SetExport(bool b) { if (b) m_state = m_state | ITEM_EXPORT; else m_state = m_state & ~ITEM_EXPORT; }
 
 	void Show(bool bshow = true)
 	{

@@ -848,6 +848,7 @@ void GMeshObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_PART_ID, nid);
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
 
 					if (p.Parameters() > 0)
 					{
@@ -1062,6 +1063,13 @@ void GMeshObject::Load(IArchive& ar)
 								p->SetName(szname);
 							}
 							break;
+						case CID_OBJ_PART_STATUS:
+						{
+							unsigned int state = 0;
+							ar.read(state);
+							p->SetState(state);
+						}
+						break;
 						case CID_OBJ_PART_PARAMS:
 						{
 							// TODO: Parts no longer have parameters, since the parameters
