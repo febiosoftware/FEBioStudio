@@ -139,7 +139,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     }
     
     // reorder the edges to have consecutive node numbers
-    bool done = false;
+    bool done = (NE == 1) ? true : false;
     // by default assume that the first edge does not need to be flipped
     bool flip_first_edge = false;
     while (!done) {
