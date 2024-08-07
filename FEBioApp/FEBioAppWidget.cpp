@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPushButton>
 #include <QLabel>
+#include <QPlainTextEdit>
 
 void UIElement::setText(const QString& txt) const
 {
@@ -41,6 +42,8 @@ void UIElement::setText(const QString& txt) const
 
 FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)
 {
+	m_output = nullptr;
+
 	QObject::connect(doc, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
 	QObject::connect(doc, SIGNAL(modelFinished(bool)), this, SLOT(onModelFinished(bool)));
 	QObject::connect(doc, SIGNAL(modelStarted()), this, SLOT(onModelStarted()));
@@ -59,6 +62,8 @@ void FEBioAppWidget::onModelStarted()
 
 void FEBioAppWidget::onModelFinished(bool returnCode)
 {
+	debug(QString("FEBio completed: %1").arg(returnCode));
+
 	if (returnCode)
 	{
 		QMessageBox::information(this, "FEBio App", "FEBio completed successfully!");
@@ -81,6 +86,32 @@ UIElement FEBioAppWidget::GetElementByID(const QString& objName)
 {
 	QWidget* w = findChild<QWidget*>(objName);
 	return UIElement(w);
+}
+
+void FEBioAppWidget::print(const QString& txt)
+{
+	if (m_output) m_output->appendPlainText(txt);
+}
+
+void FEBioAppWidget::debug(const QString& txt)
+{
+	QString s = "debug>" + txt;
+	if (m_output)
+	{
+		QTextCharFormat oldFormat = m_output->currentCharFormat();
+		QTextCharFormat f = oldFormat;
+		f.setForeground(QBrush(QColor::fromRgb(255, 255, 0)));
+		m_output->setCurrentCharFormat(f);
+
+		print(s);
+
+		m_output->setCurrentCharFormat(oldFormat);
+	}
+}
+
+void FEBioAppWidget::SetOutputWidget(QPlainTextEdit* w)
+{
+	m_output = w;
 }
 
 CFEBioParamEdit::CFEBioParamEdit(QObject* parent) : m_editor(nullptr), QObject(parent)

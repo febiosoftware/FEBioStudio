@@ -75,6 +75,28 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 			return ob;
 			};
 		m_vars["ui"] = ui;
+
+		// add the print function if we have a UI
+		m_vars[""].m_functions["print"] = [=](const QList<Object>& args) {
+			bool first = true;
+			QString t;
+			for (auto& o : args)
+			{
+				if (!first) t += " ";
+				else first = false;
+
+				switch (o.m_val.type())
+				{
+				case QVariant::Type::String: t += o.m_val.toString(); break;
+				case QVariant::Type::Double: t += QString::number(o.m_val.toDouble()); break;
+				case QVariant::Type::Bool  : t += (o.m_val.toBool()? "true" : "false"); break;
+				default:
+					t += "<error>";
+				}
+			}
+			uiWidget->print(t);
+			return Object();
+			};
 	}
 }
 
@@ -157,6 +179,10 @@ ScriptParser::Token ScriptParser::parseVar()
 		if (token.type == NUMBER)
 		{
 			m_vars[varName].m_val = token.toNumber();
+		}
+		else if (token.type == STRING_LITERAL)
+		{
+			m_vars[varName].m_val = token.stringValue;
 		}
 		else throw QString("Syntax error at position %d").arg(m_index);
 
@@ -321,22 +347,36 @@ ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const 
 
 	QList<Object> args;
 
-	if (token.type == STRING_LITERAL)
+	while (true)
 	{
-		Object o;
-		o.m_val = token.stringValue;
-		args << o;
-		nextToken(RP);
+		if (token.type == NUMBER)
+		{
+			Object o;
+			o.m_val = token.toNumber();
+			args << o;
+		}
+		else if (token.type == STRING_LITERAL)
+		{
+			Object o;
+			o.m_val = token.stringValue;
+			args << o;
+		}
+		else if (token.type == IDENTIFIER)
+		{
+			QString varName = token.stringValue;
+			args << m_vars[varName];
+		}
+		else if (token.type == RP) 
+		{
+			break;
+		}
+		else if (token.type == COMMA)
+		{
+			// all good, move on
+		}
+		else throw QString("syntax error at position %1").arg(m_index);
+		token = nextToken();
 	}
-	else if (token.type == IDENTIFIER)
-	{
-		QString varName = token.stringValue;
-		Object o;
-		o.m_val = m_vars[varName].m_val.toString();
-		args << o;
-		nextToken(RP);
-	}
-	else if (token.type != RP) throw QString("syntax error at position %1").arg(m_index);
 
 	Object returnValue = callMethod(ob, funcName, args);
 
@@ -372,6 +412,7 @@ ScriptParser::Token ScriptParser::nextToken(TokenType expectedType)
 	Token token({ TokenType::UNKNOWN });
 	QChar c = m_script[m_index];
 	if (c == '.') { token = Token({ DOT }); m_index++; }
+	else if (c == ',') { token = Token({ COMMA }); m_index++; }
 	else if (c == '(') { token = Token({ LP }); m_index++; }
 	else if (c == ')') { token = Token({ RP }); m_index++; }
 	else if (c == '{') { token = Token({ LC }); m_index++; }

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QTabWidget>
 #include <QFileInfo>
+#include <QPlainTextEdit>
 #include "../FEBioStudio/GLSceneView.h"
 #include "../FEBioStudio/InputWidgets.h"
 #include "../FEBioStudio/PlotWidget.h"
@@ -177,6 +178,7 @@ bool FEBioAppUIBuilder::parseGUITags(XMLTag& tag, QBoxLayout* playout)
 		else if (tag == "input_list") parseInputList(tag, playout);
 		else if (tag == "graph"     ) parseGraph    (tag, playout);
 		else if (tag == "plot3d"    ) parsePlot3d   (tag, playout);
+		else if (tag == "output"    ) parseOutput   (tag, playout);
 		else tag.skip();
 
 		++tag;
@@ -718,4 +720,16 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	playout->addWidget(pgl);
 
 	scene->SetGLView(pgl);
+}
+
+void FEBioAppUIBuilder::parseOutput(XMLTag& tag, QBoxLayout* playout)
+{
+	QPlainTextEdit* w = new QPlainTextEdit;
+	w->setReadOnly(true);
+	w->setFont(QFont("Courier", 11));
+	w->setWordWrapMode(QTextOption::NoWrap);
+
+	playout->addWidget(w);
+
+	ui->SetOutputWidget(w);
 }

@@ -45,6 +45,7 @@ class ScriptParser
 		FUNCTION,
 		STRING_LITERAL,
 		DOT,
+		COMMA,
 		LP, RP, LC, RC,
 		GT,LT,
 		STATEMENT_END,

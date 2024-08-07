@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <FECore/FEParam.h>
 #include "../FEBioStudio/InputWidgets.h"
 
+class QPlainTextEdit;
+
 class FEBioAppDocument;
 
 class CFEBioParamEdit : public QObject
@@ -90,6 +92,13 @@ public:
 
 	UIElement GetElementByID(const QString& objName);
 
+	void print(const QString& txt);
+
+	void SetOutputWidget(QPlainTextEdit* w);
+
+private:
+	void debug(const QString& txt);
+
 public slots:
 	void onDataChanged();
 	void onModelStarted();
@@ -97,5 +106,6 @@ public slots:
 
 private:
 	FEBioAppDocument* m_doc;
+	QPlainTextEdit* m_output;
 	std::vector<QWidget*>	m_children;
 };

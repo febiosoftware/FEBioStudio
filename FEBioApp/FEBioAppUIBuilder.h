@@ -56,6 +56,7 @@ private:
 	void parseInput    (XMLTag& tag, QBoxLayout* playout);
 	void parseTabGroup (XMLTag& tag, QBoxLayout* playout);
 	void parsePlot3d   (XMLTag& tag, QBoxLayout* playout);
+	void parseOutput   (XMLTag& tag, QBoxLayout* playout);
 
 private:
 	FEBioAppWidget* ui;
