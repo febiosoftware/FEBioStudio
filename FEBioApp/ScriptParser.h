@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <QtCore/QVariant>
 #include <map>
 
 class FEBioAppDocument;
@@ -35,12 +36,17 @@ class ScriptParser
 	enum TokenType {
 		UNKNOWN,
 		IDENTIFIER,
+		NUMBER,
+		BOOLEAN,
+		VAR,
+		ASSIGNMENT,
 		IF,
 		ELSE,
 		FUNCTION,
 		STRING_LITERAL,
 		DOT,
-		LP, RP,
+		LP, RP, LC, RC,
+		GT,LT,
 		STATEMENT_END,
 		SCRIPT_END
 	};
@@ -53,16 +59,22 @@ class ScriptParser
 		Token(TokenType tokenType) { type = tokenType; }
 
 		bool operator == (TokenType tokenType) const { return type == tokenType; }
+
+		double toNumber() const { return stringValue.toDouble(); }
+
+		bool toBool() const { return (stringValue == "true"); }
 	};
 
 
 	class Object
 	{
 	public:
-		typedef std::function<Object (const QStringList& args)> Function;
+		typedef std::function<Object (const QList<Object>& args)> Function;
 
 	public:
 		std::map<QString, Function> m_functions;
+
+		QVariant m_val;
 	};
 
 public:
@@ -80,6 +92,7 @@ private:
 	Token parseBlock();
 	Token skipBlock();
 	Token parseStatement();
+	Token parseVar();
 	Token parseIfStatement();
 	Token parseIdentifier(const QString& id);
 	Token parseFunction(Object& ob, const QString& funcName);
@@ -89,7 +102,7 @@ private:
 
 	bool setError(const QString& err);
 
-	Object callMethod(Object& var, const QString& func, const QStringList& args = QStringList());
+	Object callMethod(Object& var, const QString& func, const QList<Object>& args);
 
 private:
 	FEBioAppDocument* m_doc;

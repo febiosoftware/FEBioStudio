@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/MainWindow.h"
 #include <QMessageBox>
 #include <QPushButton>
+#include <QLabel>
 
 ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 {
@@ -36,18 +37,19 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 	m_index = 0;
 
 	Object global;
-	global.m_functions["alert"] = [=](const QStringList& args) {
-		QMessageBox::information(m_doc->GetMainWindow(), "FEBio Studio", args[0]);
+	global.m_functions["alert"] = [=](const QList<Object>& args) {
+		const Object& o = args.at(0);
+		QMessageBox::information(m_doc->GetMainWindow(), "FEBio Studio", o.m_val.toString());
 		return Object();
 		};
 	m_vars[""] = global;
 
 	Object app;
-	app.m_functions["runModel"] = [=](const QStringList& args) {
+	app.m_functions["runModel"] = [=](const QList<Object>& args) {
 		m_doc->runModel();
 		return Object();
 		};
-	app.m_functions["stopModel"] = [=](const QStringList& args) {
+	app.m_functions["stopModel"] = [=](const QList<Object>& args) {
 		m_doc->stopModel();
 		return Object();
 		};
@@ -57,13 +59,16 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 	if (uiWidget)
 	{
 		Object ui;
-		ui.m_functions["getElementById"] = [=](const QStringList& args) {
-			QWidget* w = uiWidget->GetElementByID(args[0]);
+		ui.m_functions["getElementById"] = [=](const QList<Object>& args) {
+
+			const Object& o = args.at(0);
+			UIElement w = uiWidget->GetElementByID(o.m_val.toString());
 
 			Object ob;
-			ob.m_functions["setText"] = [=](const QStringList& args) {
-				QPushButton* pb = dynamic_cast<QPushButton*>(w);
-				if (pb) pb->setText(args[0]);
+			ob.m_functions["setText"] = [=](const QList<Object>& args) {
+				const Object& o = args.at(0);
+				QString txt = o.m_val.toString();
+				w.setText(txt);
 				return Object();
 				};
 
@@ -101,10 +106,9 @@ bool ScriptParser::execute(const QString& script)
 
 bool ScriptParser::parseScript()
 {
-	Token token({ TokenType::UNKNOWN });
 	do
 	{
-		token = parseStatement();
+		Token token = parseStatement();
 
 		if (token.type == SCRIPT_END)
 		{
@@ -127,10 +131,38 @@ ScriptParser::Token ScriptParser::parseStatement()
 		QString id = token.stringValue;
 		token = parseIdentifier(id);
 	}
+	else if (token.type == VAR)
+	{
+		token = parseVar();
+	}
 	else if (token.type == IF)
 	{
 		token = parseIfStatement();
 	}
+	return token;
+}
+
+ScriptParser::Token ScriptParser::parseVar()
+{
+	Token token = nextToken(IDENTIFIER);
+
+	Object o;
+	QString varName = token.stringValue;
+	m_vars[varName] = o;
+
+	token = nextToken();
+	if (token.type == ASSIGNMENT)
+	{
+		token = nextToken();
+		if (token.type == NUMBER)
+		{
+			m_vars[varName].m_val = token.toNumber();
+		}
+		else throw QString("Syntax error at position %d").arg(m_index);
+
+		token = nextToken();
+	}
+
 	return token;
 }
 
@@ -153,14 +185,29 @@ ScriptParser::Token ScriptParser::parseIdentifier(const QString& id)
 	{
 		token = parseFunction(m_vars[""], id);
 	}
+	else if (token.type == ASSIGNMENT)
+	{
+		if (m_vars.find(id) == m_vars.end()) throw QString("Unknown variable %s at position %d").arg(id).arg(m_index);
+		Object& o = m_vars[id];
+		token = nextToken();
+		if (token.type == NUMBER)
+		{
+			o.m_val = token.toNumber();
+		}
+		else if (token.type == STRING_LITERAL)
+		{
+			o.m_val = token.stringValue;
+		}
+
+		token = nextToken();
+	}
+
 	return token;
 }
 
 ScriptParser::Token ScriptParser::parseIfStatement()
 {
-	nextToken(LP);
 	bool result = parseCondition();
-	nextToken(RP);
 	Token token({ UNKNOWN });
 	if (result)
 	{
@@ -170,37 +217,123 @@ ScriptParser::Token ScriptParser::parseIfStatement()
 	else
 	{
 		token = skipBlock();
-		if (token == ELSE) parseBlock();
+		if (token == ELSE) token = parseBlock();
 	}
-	return Token({ UNKNOWN });
+	return token;
 }
 
 bool ScriptParser::parseCondition()
 {
+	nextToken(LP);
+
 	Token token = nextToken();
+
+	QVariant lvalue;
+	if (token == NUMBER)
+	{
+		lvalue = token.toNumber();
+	}
+	else if (token == BOOLEAN)
+	{
+		lvalue = token.toBool();
+	}
+	else if (token == IDENTIFIER)
+	{
+		Object& o = m_vars[token.stringValue];
+		assert(o.m_val.type() == QVariant::Type::Double);
+
+		lvalue = o.m_val;
+	}
+
+	token = nextToken();
+	if (token == GT)
+	{
+		if (lvalue.type() == QVariant::Type::Double)
+		{
+			token = nextToken();
+
+			if (token.type == NUMBER)
+			{
+				nextToken(RP);
+				return (lvalue.toDouble() > token.toNumber());
+			}
+		}
+		else throw QString("Invalid operation at position %1").arg(m_index);
+	}
+	else if (token == RP)
+	{
+		if (lvalue.type() == QVariant::Type::Double)
+		{
+			return (lvalue.toDouble() != 0.0);
+		}
+		else if (lvalue.type() == QVariant::Type::Bool)
+		{
+			return lvalue.toBool();
+		}
+	}
+
+	throw QString("Error processing condition at position %1").arg(m_index);
 	return false;
 }
 
 ScriptParser::Token ScriptParser::parseBlock()
 {
-	return Token({ UNKNOWN });
+	Token token = nextToken(LC);
+
+	do {
+		token = parseStatement();
+		if (token == RC) 
+			break;
+		else if (token.type != STATEMENT_END)
+			throw QString("Unexpected token at position %1").arg(m_index);
+	} while (true);
+
+	return nextToken();
 }
 
 ScriptParser::Token ScriptParser::skipBlock()
 {
-	return Token({ UNKNOWN });
+	// eat whitespace
+	while (m_script[m_index].isSpace())
+	{
+		m_index++;
+		if (m_index >= m_scriptLength) return Token{ SCRIPT_END };
+	}
+
+	if (m_script[m_index] != '{') throw QString("missing '{' at position %1").arg(m_index);
+
+	m_index++;
+	int l = 1;
+	while (l > 0)
+	{
+		if (m_index >= m_scriptLength) throw QString("Unexpected end of statement");
+		QChar c = m_script[m_index++];
+		if (c == '{') l++;
+		else if (c == '}') l--;
+	}
+
+	return nextToken();
 }
 
 ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const QString& funcName)
 {
 	Token token = nextToken();
 
-	QStringList args;
+	QList<Object> args;
 
 	if (token.type == STRING_LITERAL)
 	{
-		QString arg = token.stringValue;
-		args << arg;
+		Object o;
+		o.m_val = token.stringValue;
+		args << o;
+		nextToken(RP);
+	}
+	else if (token.type == IDENTIFIER)
+	{
+		QString varName = token.stringValue;
+		Object o;
+		o.m_val = m_vars[varName].m_val.toString();
+		args << o;
 		nextToken(RP);
 	}
 	else if (token.type != RP) throw QString("syntax error at position %1").arg(m_index);
@@ -241,7 +374,12 @@ ScriptParser::Token ScriptParser::nextToken(TokenType expectedType)
 	if (c == '.') { token = Token({ DOT }); m_index++; }
 	else if (c == '(') { token = Token({ LP }); m_index++; }
 	else if (c == ')') { token = Token({ RP }); m_index++; }
+	else if (c == '{') { token = Token({ LC }); m_index++; }
+	else if (c == '}') { token = Token({ RC }); m_index++; }
 	else if (c == ';') { token = Token({ STATEMENT_END }); m_index++; }
+	else if (c == '=') { token = Token({ ASSIGNMENT }); m_index++; }
+	else if (c == '<') { token = Token({ LT }); m_index++; }
+	else if (c == '>') { token = Token({ GT }); m_index++; }
 	else if (c == '\'')
 	{
 		for (m_index++; m_index < m_scriptLength; ++m_index)
@@ -257,21 +395,82 @@ ScriptParser::Token ScriptParser::nextToken(TokenType expectedType)
 	}
 	else
 	{
-		for (; m_index < m_scriptLength; ++m_index)
+		// see if we are reading a number or a string
+		QChar c = m_script[m_index];
+		if ((c == '-') || (c == '+') || c.isNumber())
 		{
-			QChar c = m_script[m_index];
-			if (c.isLetterOrNumber() || (c == '_')) token.stringValue.push_back(c);
-			else
-			{
-				token.type = IDENTIFIER;
-				break;
-			}
-		}
+			token.type = NUMBER;
 
-		// check for keywords
-		if (token.stringValue == "if")
+			QString numVal;
+			if ((c == '-') || (c == '+')) {
+				numVal.push_back(c); m_index++;
+			}
+
+			for (; m_index < m_scriptLength; ++m_index)
+			{
+				c = m_script[m_index];
+				if (c.isNumber()) numVal.push_back(c);
+				else break;
+			}
+
+			if (c == '.')
+			{
+				numVal.push_back(c);
+				for (; m_index < m_scriptLength; ++m_index)
+				{
+					c = m_script[m_index];
+					if (c.isNumber()) numVal.push_back(c);
+					else break;
+				}
+
+				if ((c == 'e') || (c == 'E'))
+				{
+					m_index++;
+					c = m_script[m_index++];
+					if ((c == '+') || (c == '-')) numVal.push_back(c);
+
+					for (; m_index < m_scriptLength; ++m_index)
+					{
+						c = m_script[m_index];
+						if (c.isNumber()) numVal.push_back(c);
+						else break;
+					}
+				}
+			}
+
+			token.stringValue = numVal;
+		}
+		else
 		{
-			token.type = IF;
+			for (; m_index < m_scriptLength; ++m_index)
+			{
+				QChar c = m_script[m_index];
+				if (c.isLetterOrNumber() || (c == '_')) token.stringValue.push_back(c);
+				else
+				{
+					token.type = IDENTIFIER;
+					break;
+				}
+			}
+
+			// check for keywords
+			if (token.stringValue == "if")
+			{
+				token.type = IF;
+			}
+			else if (token.stringValue == "else")
+			{
+				token.type = ELSE;
+			}
+			else if ((token.stringValue == "true") ||
+				(token.stringValue == "false"))
+			{
+				token.type = BOOLEAN;
+			}
+			else if (token.stringValue == "var")
+			{
+				token.type = VAR;
+			}
 		}
 	}
 
@@ -288,7 +487,7 @@ QString ScriptParser::errorString() const { return m_error; }
 
 bool ScriptParser::setError(const QString& err) { m_error = err; return false; }
 
-ScriptParser::Object ScriptParser::callMethod(ScriptParser::Object& var, const QString& func, const QStringList& args)
+ScriptParser::Object ScriptParser::callMethod(ScriptParser::Object& var, const QString& func, const QList<Object>& args)
 {
 	auto it = var.m_functions.find(func);
 	if (it == var.m_functions.end()) throw QString("Unknown member function %1").arg(func);

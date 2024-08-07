@@ -68,6 +68,19 @@ private:
 	QWidget* m_editor;
 };
 
+// wrapper class for UI widgets to provide a more consistent interface with the 
+// scripting language
+class UIElement
+{
+public:
+	UIElement(QWidget* w) : m_w(w) {}
+
+	void setText(const QString& txt) const;
+
+private:
+	QWidget* m_w;
+};
+
 class FEBioAppWidget : public QWidget
 {
 	Q_OBJECT
@@ -75,7 +88,7 @@ public:
 	FEBioAppWidget(FEBioAppDocument* doc);
 	void AddRepaintChild(QWidget* w);
 
-	QWidget* GetElementByID(const QString& objName);
+	UIElement GetElementByID(const QString& objName);
 
 public slots:
 	void onDataChanged();

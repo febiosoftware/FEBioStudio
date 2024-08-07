@@ -27,6 +27,17 @@ SOFTWARE.*/
 #include "FEBioAppDocument.h"
 #include "../FEBioStudio/MainWindow.h"
 #include <QMessageBox>
+#include <QPushButton>
+#include <QLabel>
+
+void UIElement::setText(const QString& txt) const
+{
+	QPushButton* pb = dynamic_cast<QPushButton*>(m_w);
+	if (pb) pb->setText(txt);
+
+	QLabel* pl = dynamic_cast<QLabel*>(m_w);
+	if (pl) pl->setText(txt);
+}
 
 FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)
 {
@@ -66,10 +77,10 @@ void FEBioAppWidget::AddRepaintChild(QWidget* w)
 	m_children.push_back(w);
 }
 
-QWidget* FEBioAppWidget::GetElementByID(const QString& objName)
+UIElement FEBioAppWidget::GetElementByID(const QString& objName)
 {
 	QWidget* w = findChild<QWidget*>(objName);
-	return w;
+	return UIElement(w);
 }
 
 CFEBioParamEdit::CFEBioParamEdit(QObject* parent) : m_editor(nullptr), QObject(parent)
