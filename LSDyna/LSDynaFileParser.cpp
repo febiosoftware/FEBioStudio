@@ -66,13 +66,13 @@ bool LSDynaFileParser::ParseFile()
 			{
 				if (Read_Parameter_Expression() == false) return Error("error while reading PARAMETER_EXPRESSION section.");
 			}
-			else if (card == "*DEFINE_CURVE")
-			{
-				if (Read_Define_Curve() == false) return Error("error while reading DEFINE_CURVE section.");
-			}
 			else if (card == "*DEFINE_CURVE_TITLE")
 			{
 				if (Read_Define_Curve_Title() == false) return Error("error while reading DEFINE_CURVE_TITLE section.");
+			}
+			else if (card == "*DEFINE_CURVE")
+			{
+				if (Read_Define_Curve() == false) return Error("error while reading DEFINE_CURVE section.");
 			}
 			else if (card == "*ELEMENT_SOLID")
 			{
