@@ -251,7 +251,7 @@ CGItemInfoPanel::CGItemInfoPanel(QWidget* parent, bool showActiveOption) : QWidg
 
 	setLayout(l);
 
-	if (m_active) QObject::connect(m_active, &QCheckBox::checkStateChanged, this, &CGItemInfoPanel::on_active_changed);
+	if (m_active) QObject::connect(m_active, &QCheckBox::toggled, this, &CGItemInfoPanel::on_active_changed);
 	QObject::connect(m_name, &QLineEdit::textEdited, this, &CGItemInfoPanel::on_name_textEdited);
 }
 
