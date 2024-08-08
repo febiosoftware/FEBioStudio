@@ -58,6 +58,7 @@ class ScriptParser
 		QString   stringValue;
 
 		Token(TokenType tokenType) { type = tokenType; }
+		Token() { type = UNKNOWN; }
 
 		bool operator == (TokenType tokenType) const { return type == tokenType; }
 
@@ -90,14 +91,14 @@ public:
 private:
 	bool parseScript();
 
-	Token parseBlock();
-	Token skipBlock();
-	Token parseStatement();
-	Token parseVar();
-	Token parseIfStatement();
-	Token parseIdentifier(const QString& id, Object& ref);
-	Token parseFunction(Object& ob, const QString& funcName, Object& returnVal);
-	Token nextToken(TokenType expectedType = TokenType::UNKNOWN);
+	void parseBlock();
+	void skipBlock();
+	void parseStatement();
+	void parseVar();
+	void parseIfStatement();
+	void parseIdentifier(const QString& id, Object& ref);
+	void parseFunction(Object& ob, const QString& funcName, Object& returnVal);
+	void nextToken(TokenType expectedType = TokenType::UNKNOWN);
 
 	bool parseCondition();
 
@@ -111,6 +112,7 @@ private:
 	QString m_script;
 	size_t m_scriptLength;
 	size_t	m_index;
+	Token	m_token;
 
 	std::map<QString, Object> m_vars;
 };
