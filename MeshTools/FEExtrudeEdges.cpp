@@ -40,9 +40,13 @@ FEExtrudeEdges::FEExtrudeEdges() : FESurfaceModifier("Extrude Edges")
 	m_d = 0;
     m_bias = 1.0;
     m_nseg = 1;
+    m_adptv = false;
+    m_sf = 1.0;
 	AddDoubleParam(m_d, "distance", "Distance");
     AddIntParam(m_nseg, "segments", "Segments");
     AddDoubleParam(m_bias, "bias", "Mesh bias");
+    AddBoolParam(m_adptv,"Adaptive");
+    AddDoubleParam(m_sf,"sf","Scale factor");
 }
 
 FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
@@ -54,6 +58,8 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     m_d = GetFloatValue(0);
     m_nseg = GetIntValue(1);
     m_bias = GetFloatValue(2);
+    m_adptv = GetBoolValue(3);
+    m_sf = GetFloatValue(4);
     
     // get the array of biased coordinates
     std::vector<double> rbias(m_nseg+1);
@@ -133,7 +139,7 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     }
     
     // reorder the edges to have consecutive node numbers
-    bool done = false;
+    bool done = (NE == 1) ? true : false;
     // by default assume that the first edge does not need to be flipped
     bool flip_first_edge = false;
     while (!done) {
@@ -188,6 +194,8 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
     
     // evaluate the extrusion direction at each edge node
     // from the cross-product of the tangent and normal
+    std::vector<vec3d> pn(NE, vec3d(0,0,0));
+    std::vector<vec3d> vn(NE, vec3d(0,0,0));
     int NN = mesh->Nodes();
     for (int i=0; i<NE; ++i) {
         vec3d vt(0,0,0);
@@ -272,13 +280,9 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
         }
         // get the extrusion direction
         vec3d ve = vt ^ vn1; ve.unit();
-        // allocate room for the new nodes
-        int nn = mesh->Nodes();
-        mesh->Create(nn + m_nseg, 0, 0);
-        for (int j=0; j< m_nseg; ++j) {
-            FSNode& node = mesh->Node(nn+j);
-            node.pos(p+ve*(rbias[j+1]*m_d));
-        }
+        // store the vertex coordinates and extrusion direction
+        pn[i] = p;
+        vn[i] = ve;
     }
     // if the curve is open, add the extrusion for the last node
     if (first_node > -1) {
@@ -294,12 +298,85 @@ FSSurfaceMesh* FEExtrudeEdges::Apply(FSSurfaceMesh* pm)
         vec3d vn1 = to_vec3d(face.m_nn[face.FindNode(edge[NE-1].n[1])]);
         // get the extrusion direction
         vec3d ve = vt ^ vn1; ve.unit();
+        // store the vertex coordinates and extrusion direction
+        pn.push_back(p);
+        vn.push_back(ve);
+    }
+    
+    std::vector<double> dn(pn.size(), m_d);
+    // check for adaptive extrusion
+    if (m_adptv) {
+        int NS = pn.size();
+        for (int i=0; i<NS-1; ++i) {
+            vec3d p1 = pn[i];
+            vec3d p2 = pn[i+1];
+            vec3d n1 = vn[i];
+            vec3d n2 = vn[i+1];
+            double n1n2 = n1*n2;
+            double den = 1 - pow(n1n2,2);
+            if (den > 0.01) {
+                double d1 = ((p2 - p1)*(n1-n2*n1n2))/den;
+                double d2 = ((p1 - p2)*(n2-n1*n1n2))/den;
+                vec3d x1 = p1+n1*d1;
+                vec3d x2 = p2+n2*d2;
+                double xmag = (x2-x1).unit();
+                double pmag = (p2-p1).unit();
+                if (xmag < m_sf*pmag) {
+                    if (!flip_first_edge) {
+                        bool adapt = (d1 > 0) && (d2 > 0);
+                        if (adapt && (d1 <= m_sf*m_d)) dn[i] = fmin(dn[i],d1);
+                        if (adapt && (d2 <= m_sf*m_d)) dn[i+1] = fmin(dn[i+1],d2);
+                    }
+                    else {
+                        bool adapt = (d1 < 0) && (d2 < 0);
+                        if (adapt && (-d1 <= m_sf*m_d)) dn[i] = fmin(dn[i],-d1);
+                        if (adapt && (-d2 <= m_sf*m_d)) dn[i+1] = fmin(dn[i+1],-d2);
+                    }
+                }
+            }
+        }
+        // for closed curve, repeat with first vertex
+        if (first_node == -1) {
+            vec3d p1 = pn[NE-1];
+            vec3d p2 = pn[0];
+            vec3d n1 = vn[NE-1];
+            vec3d n2 = vn[0];
+            double n1n2 = n1*n2;
+            double den = 1 - pow(n1n2,2);
+            if (den > 0.01) {
+                double d1 = ((p2 - p1)*(n1-n2*n1n2))/den;
+                double d2 = ((p1 - p2)*(n2-n1*n1n2))/den;
+                vec3d x1 = p1+n1*d1;
+                vec3d x2 = p2+n2*d2;
+                double xmag = (x2-x1).unit();
+                double pmag = (p2-p1).unit();
+                if (xmag < m_sf*pmag) {
+                    if (!flip_first_edge) {
+                        bool adapt = (d1 > 0) && (d2 > 0);
+                        if (adapt && (d1 <= m_sf*m_d)) dn[NE-1] = fmin(dn[NE-1],d1);
+                        if (adapt && (d2 <= m_sf*m_d)) dn[0] = fmin(dn[0],d2);
+                    }
+                    else {
+                        bool adapt = (d1 < 0) && (d2 < 0);
+                        if (adapt && (-d1 <= m_sf*m_d)) dn[NE-1] = fmin(dn[NE-1],-d1);
+                        if (adapt && (-d2 <= m_sf*m_d)) dn[0] = fmin(dn[0],-d2);
+                    }
+                }
+            }
+        }
+    }
+    
+    // allocate room for the new nodes
+    for (int i=0; i<pn.size(); ++i) {
+        if (dn[i] == 0)
+            dn[i] = m_d;
         // allocate room for the new nodes
         int nn = mesh->Nodes();
         mesh->Create(nn + m_nseg, 0, 0);
         for (int j=0; j< m_nseg; ++j) {
             FSNode& node = mesh->Node(nn+j);
-            node.pos(p+ve*(rbias[j+1]*m_d));
+            if (!flip_first_edge) node.pos(pn[i]+vn[i]*(rbias[j+1]*dn[i]));
+            else node.pos(pn[i]-vn[i]*(rbias[j+1]*dn[i]));
         }
     }
     

@@ -42,4 +42,6 @@ private:
 	double  m_d;
     int     m_nseg;
     double  m_bias;
+    bool    m_adptv;
+    double  m_sf;
 };
