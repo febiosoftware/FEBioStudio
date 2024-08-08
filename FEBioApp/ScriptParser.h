@@ -47,7 +47,7 @@ class ScriptParser
 		DOT,
 		COMMA,
 		LP, RP, LC, RC,
-		GT,LT,
+		GT, LT, GE, LE, EQUAL, NOT_EQUAL,
 		STATEMENT_END,
 		SCRIPT_END
 	};
@@ -95,8 +95,8 @@ private:
 	Token parseStatement();
 	Token parseVar();
 	Token parseIfStatement();
-	Token parseIdentifier(const QString& id);
-	Token parseFunction(Object& ob, const QString& funcName);
+	Token parseIdentifier(const QString& id, Object& ref);
+	Token parseFunction(Object& ob, const QString& funcName, Object& returnVal);
 	Token nextToken(TokenType expectedType = TokenType::UNKNOWN);
 
 	bool parseCondition();

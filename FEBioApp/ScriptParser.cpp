@@ -151,7 +151,8 @@ ScriptParser::Token ScriptParser::parseStatement()
 	if (token.type == IDENTIFIER)
 	{
 		QString id = token.stringValue;
-		token = parseIdentifier(id);
+		Object tmp;
+		token = parseIdentifier(id, tmp);
 	}
 	else if (token.type == VAR)
 	{
@@ -184,6 +185,10 @@ ScriptParser::Token ScriptParser::parseVar()
 		{
 			m_vars[varName].m_val = token.stringValue;
 		}
+		else if (token.type == IDENTIFIER)
+		{
+			return parseIdentifier(token.stringValue, m_vars[varName]);
+		}
 		else throw QString("Syntax error at position %d").arg(m_index);
 
 		token = nextToken();
@@ -192,7 +197,7 @@ ScriptParser::Token ScriptParser::parseVar()
 	return token;
 }
 
-ScriptParser::Token ScriptParser::parseIdentifier(const QString& id)
+ScriptParser::Token ScriptParser::parseIdentifier(const QString& id, Object& ref)
 {
 	Token token = nextToken();
 	if (token.type == DOT)
@@ -203,13 +208,13 @@ ScriptParser::Token ScriptParser::parseIdentifier(const QString& id)
 		token = nextToken();
 		if (token == LP)
 		{
-			token = parseFunction(m_vars[id], member);
+			token = parseFunction(m_vars[id], member, ref);
 		}
 		else throw QString("Invalid token");
 	}
 	else if (token.type == LP)
 	{
-		token = parseFunction(m_vars[""], id);
+		token = parseFunction(m_vars[""], id, ref);
 	}
 	else if (token.type == ASSIGNMENT)
 	{
@@ -254,51 +259,63 @@ bool ScriptParser::parseCondition()
 
 	Token token = nextToken();
 
-	QVariant lvalue;
+	QVariant lvar;
 	if (token == NUMBER)
 	{
-		lvalue = token.toNumber();
+		lvar = token.toNumber();
 	}
 	else if (token == BOOLEAN)
 	{
-		lvalue = token.toBool();
+		lvar = token.toBool();
 	}
 	else if (token == IDENTIFIER)
 	{
 		Object& o = m_vars[token.stringValue];
 		assert(o.m_val.type() == QVariant::Type::Double);
-
-		lvalue = o.m_val;
+		lvar = o.m_val;
 	}
 
 	token = nextToken();
-	if (token == GT)
+	if ((token == GT) || (token == LT) || (token == EQUAL) || (token == GE) || (token == LE) || (token == NOT_EQUAL))
 	{
-		if (lvalue.type() == QVariant::Type::Double)
+		TokenType op = token.type;
+		if (lvar.type() == QVariant::Type::Double)
 		{
 			token = nextToken();
+			nextToken(RP);
 
+			double rval = 0.0;
 			if (token.type == NUMBER)
 			{
-				nextToken(RP);
-				return (lvalue.toDouble() > token.toNumber());
+				rval = token.toNumber();
+			}
+			else if (token.type == IDENTIFIER)
+			{
+				Object& o = m_vars[token.stringValue];
+				if (o.m_val.type() == QVariant::Type::Double)
+				{
+					rval = o.m_val.toDouble();
+				}
+				else throw QString("Invalid operation at position %1").arg(m_index);
+			}
+			else throw QString("Invalid operation at position %1").arg(m_index);
+
+			double lval = lvar.toDouble();
+
+			switch (op)
+			{
+			case GT   : return (lval > rval); break;
+			case LT   : return (lval < rval); break;
+			case GE   : return (lval >= rval); break;
+			case LE   : return (lval <= rval); break;
+			case EQUAL: return (lval == rval); break;
+			case NOT_EQUAL: return (lval != rval); break;
 			}
 		}
 		else throw QString("Invalid operation at position %1").arg(m_index);
 	}
-	else if (token == RP)
-	{
-		if (lvalue.type() == QVariant::Type::Double)
-		{
-			return (lvalue.toDouble() != 0.0);
-		}
-		else if (lvalue.type() == QVariant::Type::Bool)
-		{
-			return lvalue.toBool();
-		}
-	}
+	else throw QString("Error processing condition at position %1").arg(m_index);
 
-	throw QString("Error processing condition at position %1").arg(m_index);
 	return false;
 }
 
@@ -341,7 +358,7 @@ ScriptParser::Token ScriptParser::skipBlock()
 	return nextToken();
 }
 
-ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const QString& funcName)
+ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const QString& funcName, Object& returnVal)
 {
 	Token token = nextToken();
 
@@ -378,7 +395,7 @@ ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const 
 		token = nextToken();
 	}
 
-	Object returnValue = callMethod(ob, funcName, args);
+	returnVal = callMethod(ob, funcName, args);
 
 	token = nextToken();
 
@@ -390,7 +407,7 @@ ScriptParser::Token ScriptParser::parseFunction(ScriptParser::Object& ob, const 
 		token = nextToken();
 		if (token == LP)
 		{
-			token = parseFunction(returnValue, member);
+			token = parseFunction(returnVal, member, returnVal);
 		}
 		else throw QString("Invalid token");
 	}
@@ -418,9 +435,44 @@ ScriptParser::Token ScriptParser::nextToken(TokenType expectedType)
 	else if (c == '{') { token = Token({ LC }); m_index++; }
 	else if (c == '}') { token = Token({ RC }); m_index++; }
 	else if (c == ';') { token = Token({ STATEMENT_END }); m_index++; }
-	else if (c == '=') { token = Token({ ASSIGNMENT }); m_index++; }
-	else if (c == '<') { token = Token({ LT }); m_index++; }
-	else if (c == '>') { token = Token({ GT }); m_index++; }
+	else if (c == '=') 
+	{ 
+		token = Token({ ASSIGNMENT }); 
+		m_index++;
+		if (m_script[m_index] == '=')
+		{
+			token.type = EQUAL;
+			m_index++;
+		}
+	}
+	else if (c == '<') { 
+		token = Token({ LT }); 
+		m_index++; 
+		if (m_script[m_index] == '=')
+		{
+			token.type = LE;
+			m_index++;
+		}
+	}
+	else if (c == '>') 
+	{ 
+		token = Token({ GT }); m_index++; 
+		if (m_script[m_index] == '=')
+		{
+			token.type = GE;
+			m_index++;
+		}
+	}
+	else if (c == '!')
+	{
+		m_index++;
+		if (m_script[m_index] == '=')
+		{
+			token.type = NOT_EQUAL;
+			m_index++;
+		}
+		else throw QString("syntax error at position %1").arg(m_index);
+	}
 	else if (c == '\'')
 	{
 		for (m_index++; m_index < m_scriptLength; ++m_index)
