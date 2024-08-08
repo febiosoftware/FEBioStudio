@@ -25,11 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
 #include <map>
+#include <assert.h>
+#include <stdexcept>
 
 class FEBioAppDocument;
+
+class NullDereferenceError : public std::runtime_error
+{
+public:
+	NullDereferenceError() : std::runtime_error("Dereferencing null object") {}
+};
 
 class ScriptParser
 {
@@ -67,16 +73,150 @@ class ScriptParser
 		bool toBool() const { return (stringValue == "true"); }
 	};
 
+	enum ValType {
+		Invalid,
+		Bool,
+		Number,
+		String
+	};
+
+	class AbstractValue
+	{
+	public:
+		AbstractValue(ValType type) : m_type(type), m_ref(0) { m_total_allocs++; }
+		~AbstractValue() { m_total_allocs--; }
+
+		ValType type() const { return m_type; }
+
+		void inc() { m_ref++; }
+		void dec() { m_ref--; }
+		size_t refs() const { return m_ref; }
+
+		virtual bool toBool() const = 0;
+		virtual double toNumber() const = 0;
+		virtual QString toString() const = 0;
+
+	private:
+		size_t m_ref;
+		ValType m_type;
+
+		static size_t m_total_allocs;
+	};
 
 	class Object
 	{
 	public:
 		typedef std::function<Object (const QList<Object>& args)> Function;
 
+		Object() : m_val(nullptr) {}
+
+		~Object()
+		{
+			SetValue(nullptr);
+		}
+
+		Object(const Object& o)
+		{
+			m_val = o.m_val;
+			if (m_val) m_val->inc();
+			m_functions = o.m_functions;
+		}
+
+		void operator = (const Object& o) 
+		{
+			SetValue(o.m_val);
+			m_functions = o.m_functions;
+		}
+
+		void SetValue(AbstractValue* val)
+		{
+			if (val != m_val)
+			{
+				if (m_val)
+				{
+					m_val->dec();
+					if (m_val->refs() == 0) delete m_val;
+					m_val = nullptr;
+				}
+				m_val = val;
+				if (m_val) m_val->inc();
+			}
+		}
+
+		void operator = (bool v);
+		void operator = (double v);
+		void operator = (const QString& v);
+
+		bool isNull() const { return (m_val == nullptr); }
+
+		QString toString() const
+		{
+			if (m_val) return m_val->toString();
+			else throw NullDereferenceError();
+		}
+
+		double toNumber() const
+		{
+			if (m_val) return m_val->toNumber();
+			else throw NullDereferenceError();
+		}
+
+		bool toBool() const
+		{
+			if (m_val) return m_val->toBool();
+			else throw NullDereferenceError();
+		}
+
+		ValType type() const
+		{
+			if (m_val) return m_val->type();
+			else return ValType::Invalid;
+		}
+
 	public:
 		std::map<QString, Function> m_functions;
 
-		QVariant m_val;
+	private:
+		AbstractValue* m_val;
+	};
+
+	class BooleanValue : public AbstractValue
+	{
+	public:
+		BooleanValue(bool val) : AbstractValue(ValType::Bool), m_val(val) {}
+
+		bool toBool() const override { return m_val; }
+		double toNumber() const override { return (m_val?1.0:0.0); }
+		QString toString() const override { return (m_val?"true":"false"); }
+
+	private:
+		bool m_val;
+	};
+
+	class NumberValue : public AbstractValue
+	{
+	public:
+		NumberValue(double val) : AbstractValue(ValType::Number), m_val(val) {}
+
+		bool toBool() const override { return (m_val != 0.0); }
+		double toNumber() const override { return m_val; }
+		QString toString() const override { return QString::number(m_val); }
+
+	private:
+		double m_val;
+	};
+
+	class StringValue : public AbstractValue
+	{
+	public:
+		StringValue(const QString& val) : AbstractValue(ValType::String), m_val(val) {}
+
+		bool toBool() const override { assert(false); return false; }
+		double toNumber() const override { return m_val.toDouble(); }
+		QString toString() const override { return m_val; }
+
+	private:
+		QString m_val;
 	};
 
 public:
@@ -116,3 +256,7 @@ private:
 
 	std::map<QString, Object> m_vars;
 };
+
+inline void ScriptParser::Object::operator = (bool v) { SetValue(new BooleanValue(v)); }
+inline void ScriptParser::Object::operator = (double v) { SetValue(new NumberValue(v)); }
+inline void ScriptParser::Object::operator = (const QString& v) { SetValue(new StringValue(v)); }

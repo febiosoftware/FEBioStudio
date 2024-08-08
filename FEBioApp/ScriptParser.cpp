@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QLabel>
 
+size_t ScriptParser::AbstractValue::m_total_allocs = 0;
+
 ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 {
 	m_scriptLength = 0;
@@ -39,7 +41,7 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 	Object global;
 	global.m_functions["alert"] = [=](const QList<Object>& args) {
 		const Object& o = args.at(0);
-		QMessageBox::information(m_doc->GetMainWindow(), "FEBio Studio", o.m_val.toString());
+		QMessageBox::information(m_doc->GetMainWindow(), "FEBio Studio", o.toString());
 		return Object();
 		};
 	m_vars[""] = global;
@@ -62,12 +64,12 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 		ui.m_functions["getElementById"] = [=](const QList<Object>& args) {
 
 			const Object& o = args.at(0);
-			UIElement w = uiWidget->GetElementByID(o.m_val.toString());
+			UIElement w = uiWidget->GetElementByID(o.toString());
 
 			Object ob;
 			ob.m_functions["setText"] = [=](const QList<Object>& args) {
 				const Object& o = args.at(0);
-				QString txt = o.m_val.toString();
+				QString txt = o.toString();
 				w.setText(txt);
 				return Object();
 				};
@@ -84,15 +86,7 @@ ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 			{
 				if (!first) t += " ";
 				else first = false;
-
-				switch (o.m_val.type())
-				{
-				case QVariant::Type::String: t += o.m_val.toString(); break;
-				case QVariant::Type::Double: t += QString::number(o.m_val.toDouble()); break;
-				case QVariant::Type::Bool  : t += (o.m_val.toBool()? "true" : "false"); break;
-				default:
-					t += "<error>";
-				}
+				t += o.toString();
 			}
 			uiWidget->print(t);
 			return Object();
@@ -168,6 +162,7 @@ void ScriptParser::parseVar()
 {
 	nextToken(IDENTIFIER);
 
+	// insert a new (null) object
 	Object o;
 	QString varName = m_token.stringValue;
 	m_vars[varName] = o;
@@ -178,11 +173,11 @@ void ScriptParser::parseVar()
 		nextToken();
 		if (m_token.type == NUMBER)
 		{
-			m_vars[varName].m_val = m_token.toNumber();
+			m_vars[varName].SetValue(new NumberValue(m_token.toNumber()));
 		}
 		else if (m_token.type == STRING_LITERAL)
 		{
-			m_vars[varName].m_val = m_token.stringValue;
+			m_vars[varName].SetValue(new StringValue(m_token.stringValue));
 		}
 		else if (m_token.type == IDENTIFIER)
 		{
@@ -221,11 +216,11 @@ void ScriptParser::parseIdentifier(const QString& id, Object& ref)
 		nextToken();
 		if (m_token.type == NUMBER)
 		{
-			o.m_val = m_token.toNumber();
+			o.SetValue(new NumberValue(m_token.toNumber()));
 		}
 		else if (m_token.type == STRING_LITERAL)
 		{
-			o.m_val = m_token.stringValue;
+			o.SetValue(new StringValue(m_token.stringValue));
 		}
 		nextToken();
 	}
@@ -251,8 +246,8 @@ bool ScriptParser::parseCondition()
 	nextToken(LP);
 
 	nextToken();
-	QVariant lvar;
-	if (m_token == NUMBER)
+	Object lvar;
+	if (m_token == TokenType::NUMBER)
 	{
 		lvar = m_token.toNumber();
 	}
@@ -263,15 +258,15 @@ bool ScriptParser::parseCondition()
 	else if (m_token == IDENTIFIER)
 	{
 		Object& o = m_vars[m_token.stringValue];
-		assert(o.m_val.type() == QVariant::Type::Double);
-		lvar = o.m_val;
+		assert(o.type() == ValType::Number);
+		lvar = o;
 	}
 
 	nextToken();
 	if ((m_token == GT) || (m_token == LT) || (m_token == EQUAL) || (m_token == GE) || (m_token == LE) || (m_token == NOT_EQUAL))
 	{
 		TokenType op = m_token.type;
-		if (lvar.type() == QVariant::Type::Double)
+		if (lvar.type() == ValType::Number)
 		{
 			nextToken();
 
@@ -283,9 +278,9 @@ bool ScriptParser::parseCondition()
 			else if (m_token.type == IDENTIFIER)
 			{
 				Object& o = m_vars[m_token.stringValue];
-				if (o.m_val.type() == QVariant::Type::Double)
+				if (o.type() == ValType::Number)
 				{
-					rval = o.m_val.toDouble();
+					rval = o.toNumber();
 				}
 				else throw QString("Invalid operation at position %1").arg(m_index);
 			}
@@ -293,7 +288,7 @@ bool ScriptParser::parseCondition()
 
 			nextToken(RP);
 
-			double lval = lvar.toDouble();
+			double lval = lvar.toNumber();
 
 			switch (op)
 			{
@@ -366,13 +361,13 @@ void ScriptParser::parseFunction(ScriptParser::Object& ob, const QString& funcNa
 		if (m_token.type == NUMBER)
 		{
 			Object o;
-			o.m_val = m_token.toNumber();
+			o = m_token.toNumber();
 			args << o;
 		}
 		else if (m_token.type == STRING_LITERAL)
 		{
 			Object o;
-			o.m_val = m_token.stringValue;
+			o = m_token.stringValue;
 			args << o;
 		}
 		else if (m_token.type == IDENTIFIER)
