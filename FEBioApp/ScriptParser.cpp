@@ -33,18 +33,54 @@ SOFTWARE.*/
 
 size_t ScriptParser::AbstractValue::m_total_allocs = 0;
 
+static std::map<QString, ScriptParser::TokenType> keymap;
+
+void init_keymap()
+{
+	keymap["if"   ] = ScriptParser::TokenType::IF;
+	keymap["else" ] = ScriptParser::TokenType::ELSE;
+	keymap["var"  ] = ScriptParser::TokenType::VAR;
+	keymap["true" ] = ScriptParser::TokenType::BOOLEAN;
+	keymap["false"] = ScriptParser::TokenType::BOOLEAN;
+}
+
 ScriptParser::ScriptParser(FEBioAppDocument* doc) : m_doc(doc)
 {
+	if (keymap.empty()) init_keymap();
+
 	m_scriptLength = 0;
 	m_index = 0;
+	m_line = 0;
+	m_pos = 0;
 
 	Object global;
 	global.m_functions["alert"] = [=](const QList<Object>& args) {
+		if (args.size() != 1) throw InvalidNrOfArgs();
 		const Object& o = args.at(0);
 		QMessageBox::information(m_doc->GetMainWindow(), "FEBio Studio", o.toString());
 		return Object();
 		};
 	m_vars[""] = global;
+
+	Object Math;
+	Math.m_functions["sqrt"] = [=](const QList<Object>& args) {
+		if (args.size() != 1) throw InvalidNrOfArgs();
+		const Object& o = args.at(0);
+		double v = sqrt(o.toNumber());
+		return Object(v);
+		};
+	Math.m_functions["min"] = [=](const QList<Object>& args) {
+		if (args.size() < 1) throw InvalidNrOfArgs();
+		const Object& o = args.at(0);
+		double v = o.toNumber();
+		for (auto& oi : args)
+		{
+			double vi = oi.toNumber();
+			if (vi < v) v = vi;
+		}
+		return Object(v);
+		};
+	m_vars["Math"] = Math;
 
 	Object app;
 	app.m_functions["runModel"] = [=](const QList<Object>& args) {
@@ -102,18 +138,23 @@ ScriptParser::~ScriptParser()
 bool ScriptParser::execute(const QString& script)
 {
 	m_error.clear();
+	if (script.isEmpty()) return true;
 
 	m_script = script;
 	m_index = 0;
+	m_line = 0;
+	m_pos = 0;
 	m_scriptLength = script.length();
+	m_char = script[0];
 
 	try {
 		if (!parseScript())
 			return false;
 	}
-	catch (QString err)
+	catch (std::runtime_error e)
 	{
-		m_error = err;
+		m_error = e.what();
+		m_error += QString(" at line %1 position %2").arg(m_line).arg(m_token.pos);
 		return false;
 	}
 
@@ -126,13 +167,13 @@ bool ScriptParser::parseScript()
 	{
 		parseStatement();
 
-		if (m_token.type == SCRIPT_END)
+		if (m_token == SCRIPT_END)
 		{
 			break;
 		}
-		else if (m_token.type != STATEMENT_END)
+		else if (m_token != STATEMENT_END)
 		{
-			return setError("Invalid token");
+			return setError(QString("Invalid token at line %1 position %2").arg(m_line).arg(m_pos));
 		}
 	} while (true);
 
@@ -142,20 +183,70 @@ bool ScriptParser::parseScript()
 void ScriptParser::parseStatement()
 {
 	nextToken();
-	if (m_token.type == IDENTIFIER)
+	if (m_token == IDENTIFIER)
 	{
 		QString id = m_token.stringValue;
-		Object tmp;
-		parseIdentifier(id, tmp);
+
+		// is this a variable
+		if (m_vars.find(id) != m_vars.end())
+		{
+			Object& o = parseVariable();
+			if (m_token == ASSIGNMENT)
+			{
+				nextToken();
+				parseExpression(o);
+			}
+			else if (m_token == DOT)
+			{
+				Object tmp;
+				parseIdentifier(o, tmp);
+			}
+		}
+		else
+		{
+			// not a variable. Maybe a global function?
+			Object tmp;
+			nextToken();
+			if (m_token == LP)
+			{
+				parseFunction(m_vars[""], id, tmp);
+			}
+			else throw UnknownVariable();
+		}
 	}
-	else if (m_token.type == VAR)
+	else if (m_token == VAR)
 	{
 		parseVar();
 	}
-	else if (m_token.type == IF)
+	else if (m_token == IF)
 	{
 		parseIfStatement();
 	}
+}
+
+ScriptParser::Object& ScriptParser::parseVariable()
+{
+	QString id = m_token.stringValue;
+	if (m_vars.find(id) == m_vars.end()) throw UnknownVariable();
+
+	Object& o = m_vars[id];
+	nextToken();
+	if (m_token == LB)
+	{
+		if (!o.isArray()) throw SyntaxError();
+		nextToken();
+		Object tmp;
+		parseExpression(tmp);
+		if (!tmp.isNumber()) throw InvalidIndex();
+		double v = tmp.toNumber();
+		if (v != floor(v)) throw InvalidIndex();
+		int n = (int)v;
+		if ((n < 0) || (n >= o.arraySize())) throw OutOfBounds();
+		if (m_token != RB) throw SyntaxError();
+		nextToken();
+		return o.arrayElement(n);
+	}
+	else return o;
 }
 
 void ScriptParser::parseVar()
@@ -168,32 +259,221 @@ void ScriptParser::parseVar()
 	m_vars[varName] = o;
 
 	nextToken();
-	if (m_token.type == ASSIGNMENT)
+	if (m_token == ASSIGNMENT)
 	{
 		nextToken();
-		if (m_token.type == NUMBER)
-		{
-			m_vars[varName].SetValue(new NumberValue(m_token.toNumber()));
-		}
-		else if (m_token.type == STRING_LITERAL)
-		{
-			m_vars[varName].SetValue(new StringValue(m_token.stringValue));
-		}
-		else if (m_token.type == IDENTIFIER)
-		{
-			QString idName = m_token.stringValue;
-			return parseIdentifier(idName, m_vars[varName]);
-		}
-		else throw QString("Syntax error at position %d").arg(m_index);
-
-		nextToken();
+		parseExpression(m_vars[varName]);
 	}
 }
 
-void ScriptParser::parseIdentifier(const QString& id, Object& ref)
+void ScriptParser::parseExpression(Object& o)
 {
+	// TODO: need to implement short-circuit rules
+	parseArithmetic(o);
+	while (true)
+	{
+		if ((m_token == GT) || (m_token == LT) || (m_token == EQUAL) || (m_token == GE) || (m_token == LE) || (m_token == NOT_EQUAL))
+		{
+			TokenType op = m_token.type;
+
+			nextToken();
+			Object r;
+			parseArithmetic(r);
+
+			bool b = false;
+
+			if (o.isNumber() && r.isNumber())
+			{
+				double lval = o.toNumber();
+				double rval = r.toNumber();
+				switch (op)
+				{
+				case GT       : b = (lval > rval); break;
+				case LT       : b = (lval < rval); break;
+				case GE       : b = (lval >= rval); break;
+				case LE       : b = (lval <= rval); break;
+				case EQUAL    : b = (lval == rval); break;
+				case NOT_EQUAL: b = (lval != rval); break;
+				}
+			}
+			else if (o.isBool() && r.isBool())
+			{
+				bool lval = o.toBool();
+				bool rval = r.toBool();
+				switch (op)
+				{
+				case EQUAL    : b = (lval == rval); break;
+				case NOT_EQUAL: b = (lval != rval); break;
+				default:
+					throw InvalidOperation();
+				}
+			}
+			else throw InvalidOperation();
+
+			o = b;
+		}
+		else break;
+	}
+}
+
+void ScriptParser::parseArithmetic(Object& o)
+{
+	parseTerm(o);
+	while (true)
+	{
+		if (m_token == PLUS)
+		{
+			nextToken();
+			Object r;
+			parseTerm(r);
+			o += r;
+		}
+		else if (m_token == MINUS)
+		{
+			nextToken();
+			Object r;
+			parseTerm(r);
+			o -= r;
+		}
+		else break;
+	}
+}
+
+void ScriptParser::parseTerm(Object& o)
+{
+	parseFactor(o);
+	while (true)
+	{
+		if (m_token == MULTIPLY)
+		{
+			nextToken();
+			Object r;
+			parseFactor(r);
+			o *= r;
+		}
+		else if (m_token == DIV)
+		{
+			nextToken();
+			Object r;
+			parseFactor(r);
+			o /= r;
+		}
+		else break;
+	}
+}
+
+void ScriptParser::parseFactor(Object& o)
+{
+	parsePower(o);
+	while (true)
+	{
+		if (m_token == EXP)
+		{
+			nextToken();
+			Object r;
+			parsePower(r);
+			if (o.isNumber() && r.isNumber())
+			{
+				double x = o.toNumber();
+				double y = r.toNumber();
+				o = pow(x, y);
+			}
+			else throw InvalidOperation();
+		}
+		else break;
+	}
+}
+
+void ScriptParser::parsePower(Object& o)
+{
+	if (m_token == NUMBER)
+	{
+		o = m_token.toNumber();
+	}
+	else if (m_token == BOOLEAN)
+	{
+		o = m_token.toBool();
+	}
+	else if (m_token == STRING_LITERAL)
+	{
+		o = m_token.stringValue;
+	}
+	else if (m_token == IDENTIFIER)
+	{
+		QString idName = m_token.stringValue;
+		parseIdentifier(idName, o);
+		return;
+	}
+	else if (m_token == LB)
+	{
+		parseArray(o);
+	}
+	else if (m_token == LP)
+	{
+		nextToken();
+		parseExpression(o);
+		if (m_token != RP) throw SyntaxError();
+	}
+	else if (m_token == MINUS)
+	{
+		nextToken();
+		Object tmp;
+		parsePower(tmp);
+		if (!tmp.isNumber()) throw InvalidOperation();
+		double v = -(tmp.toNumber());
+		o = v;
+		return;
+	}
+	else if (m_token == PLUS)
+	{
+		nextToken();
+		parsePower(o);
+		if (!o.isNumber()) throw InvalidOperation();
+		return;
+	}
+	else throw ExpressionExpected();
+
 	nextToken();
-	if (m_token.type == DOT)
+}
+
+void ScriptParser::parseArray(Object& o)
+{
+	ArrayValue* var = new ArrayValue();
+	do {
+		nextToken();
+		Object tmp;
+		parseExpression(tmp);
+		var->push_back(tmp);
+		if ((m_token != COMMA) && (m_token != RB)) throw SyntaxError();
+
+	} while (m_token != RB);
+
+	o.SetValue(var);
+}
+
+void ScriptParser::parseIdentifier(const QString& id, Object& ret)
+{
+	if (m_vars.find(id) == m_vars.end())
+	{
+		// not a variable, but could be a global function
+		nextToken();
+		if (m_token == LP)
+		{
+			parseFunction(m_vars[""], id, ret);
+		}
+		else throw SyntaxError();
+	}
+	else
+	{
+		// get the variable
+		nextToken();
+		parseIdentifier(m_vars[id], ret);
+	}
+}
+
+void ScriptParser::parseIdentifier(Object& o, Object& ret)
+{
+	if (m_token == DOT)
 	{
 		nextToken(IDENTIFIER);
 		QString member = m_token.stringValue;
@@ -201,34 +481,37 @@ void ScriptParser::parseIdentifier(const QString& id, Object& ref)
 		nextToken();
 		if (m_token == LP)
 		{
-			parseFunction(m_vars[id], member, ref);
+			parseFunction(o, member, ret);
 		}
-		else throw QString("Invalid token");
+		else ret = o.get(member);
 	}
-	else if (m_token.type == LP)
+	else if (m_token == LB)
 	{
-		parseFunction(m_vars[""], id, ref);
-	}
-	else if (m_token.type == ASSIGNMENT)
-	{
-		if (m_vars.find(id) == m_vars.end()) throw QString("Unknown variable %s at position %d").arg(id).arg(m_index);
-		Object& o = m_vars[id];
+		if (!o.isArray()) throw SyntaxError();
 		nextToken();
-		if (m_token.type == NUMBER)
-		{
-			o.SetValue(new NumberValue(m_token.toNumber()));
-		}
-		else if (m_token.type == STRING_LITERAL)
-		{
-			o.SetValue(new StringValue(m_token.stringValue));
-		}
+		Object tmp;
+		parseExpression(tmp);
+		if (!tmp.isNumber()) throw SyntaxError();
+		double v = tmp.toNumber();
+		if (v != floor(v)) throw InvalidIndex();
+		int n = (int)v;
+		if ((n < 0) || (n >= o.arraySize())) throw OutOfBounds();
+		if (m_token != RB) throw SyntaxError();
+		ret = o.arrayElement(n);
 		nextToken();
 	}
+	else ret = o;
 }
 
 void ScriptParser::parseIfStatement()
 {
-	bool result = parseCondition();
+	nextToken(LP);
+	Object tmp;
+	nextToken();
+	parseExpression(tmp);
+	if (m_token != RP) throw SyntaxError();
+
+	bool result = tmp.toBool();
 	if (result)
 	{
 		parseBlock();
@@ -241,72 +524,6 @@ void ScriptParser::parseIfStatement()
 	}
 }
 
-bool ScriptParser::parseCondition()
-{
-	nextToken(LP);
-
-	nextToken();
-	Object lvar;
-	if (m_token == TokenType::NUMBER)
-	{
-		lvar = m_token.toNumber();
-	}
-	else if (m_token == BOOLEAN)
-	{
-		lvar = m_token.toBool();
-	}
-	else if (m_token == IDENTIFIER)
-	{
-		Object& o = m_vars[m_token.stringValue];
-		assert(o.type() == ValType::Number);
-		lvar = o;
-	}
-
-	nextToken();
-	if ((m_token == GT) || (m_token == LT) || (m_token == EQUAL) || (m_token == GE) || (m_token == LE) || (m_token == NOT_EQUAL))
-	{
-		TokenType op = m_token.type;
-		if (lvar.type() == ValType::Number)
-		{
-			nextToken();
-
-			double rval = 0.0;
-			if (m_token.type == NUMBER)
-			{
-				rval = m_token.toNumber();
-			}
-			else if (m_token.type == IDENTIFIER)
-			{
-				Object& o = m_vars[m_token.stringValue];
-				if (o.type() == ValType::Number)
-				{
-					rval = o.toNumber();
-				}
-				else throw QString("Invalid operation at position %1").arg(m_index);
-			}
-			else throw QString("Invalid operation at position %1").arg(m_index);
-
-			nextToken(RP);
-
-			double lval = lvar.toNumber();
-
-			switch (op)
-			{
-			case GT   : return (lval > rval); break;
-			case LT   : return (lval < rval); break;
-			case GE   : return (lval >= rval); break;
-			case LE   : return (lval <= rval); break;
-			case EQUAL: return (lval == rval); break;
-			case NOT_EQUAL: return (lval != rval); break;
-			}
-		}
-		else throw QString("Invalid operation at position %1").arg(m_index);
-	}
-	else throw QString("Error processing condition at position %1").arg(m_index);
-
-	return false;
-}
-
 void ScriptParser::parseBlock()
 {
 	nextToken(LC);
@@ -315,36 +532,23 @@ void ScriptParser::parseBlock()
 		parseStatement();
 		if (m_token == RC)
 			break;
-		else if (m_token.type != STATEMENT_END)
-			throw QString("Unexpected token at position %1").arg(m_index);
+		else if (m_token != STATEMENT_END)
+			throw SyntaxError();
 	} while (true);
 
-	return nextToken();
+	nextToken();
 }
 
 void ScriptParser::skipBlock()
 {
-	// eat whitespace
-	while (m_script[m_index].isSpace())
-	{
-		m_index++;
-		if (m_index >= m_scriptLength)
-		{
-			m_token.type = SCRIPT_END;
-			return;
-		}
-	}
+	nextToken(LC);
 
-	if (m_script[m_index] != '{') throw QString("missing '{' at position %1").arg(m_index);
-
-	m_index++;
 	int l = 1;
 	while (l > 0)
 	{
-		if (m_index >= m_scriptLength) throw QString("Unexpected end of statement");
-		QChar c = m_script[m_index++];
-		if (c == '{') l++;
-		else if (c == '}') l--;
+		nextChar();
+		if (m_char == '{') l++;
+		else if (m_char == '}') l--;
 	}
 
 	nextToken();
@@ -356,221 +560,309 @@ void ScriptParser::parseFunction(ScriptParser::Object& ob, const QString& funcNa
 
 	QList<Object> args;
 
-	while (true)
+	if (m_token != RP)
 	{
-		if (m_token.type == NUMBER)
+		while (true)
 		{
-			Object o;
-			o = m_token.toNumber();
-			args << o;
+			Object tmp;
+			parseExpression(tmp);
+			args.push_back(tmp);
+
+			if (m_token == RP)
+			{
+				break;
+			}
+			else if (m_token == COMMA)
+			{
+				// all good, move on
+				nextToken();
+			}
+			else throw SyntaxError();
 		}
-		else if (m_token.type == STRING_LITERAL)
-		{
-			Object o;
-			o = m_token.stringValue;
-			args << o;
-		}
-		else if (m_token.type == IDENTIFIER)
-		{
-			QString varName = m_token.stringValue;
-			args << m_vars[varName];
-		}
-		else if (m_token.type == RP)
-		{
-			break;
-		}
-		else if (m_token.type == COMMA)
-		{
-			// all good, move on
-		}
-		else throw QString("syntax error at position %1").arg(m_index);
-		nextToken();
 	}
 
 	returnVal = callMethod(ob, funcName, args);
 
 	nextToken();
 
-	if (m_token == DOT)
+	if ((m_token == DOT) || (m_token == LB))
 	{
-		nextToken(IDENTIFIER);
-		QString member = m_token.stringValue;
-
-		nextToken();
-		if (m_token == LP)
-		{
-			parseFunction(returnVal, member, returnVal);
-		}
-		else throw QString("Invalid token");
+		Object tmp;
+		parseIdentifier(returnVal, tmp);
+		returnVal = tmp;
 	}
+}
+
+void ScriptParser::nextChar()
+{
+	if (m_index < m_scriptLength)
+	{
+		m_char = m_script[m_index++];
+		if (m_char == '\n')
+		{
+			m_line++;
+			m_pos = 0;
+		}
+		else m_pos++;
+	}
+	else
+	{
+		m_index = m_scriptLength;
+		m_token.pos = m_pos;
+		throw UnexpectedEnd();
+	}
+}
+
+bool ScriptParser::peekChar(QChar c)
+{
+	if (m_index < m_scriptLength)
+	{
+		if (m_script[m_index] == c)
+		{
+			nextChar();
+			return true;
+		}
+	}
+	return false;
+}
+
+QChar ScriptParser::peekChar()
+{
+	QChar c;
+	if (m_index < m_scriptLength)
+	{
+		c = m_script[m_index];
+	}
+	else throw UnexpectedEnd();
+	return c;
 }
 
 void ScriptParser::nextToken(TokenType expectedType)
 {
-	if (m_index >= m_scriptLength)
+	nextToken();
+	if (m_token != expectedType)
 	{
-		m_token.type = SCRIPT_END;
-		return;
+		if (m_token == SCRIPT_END) throw UnexpectedEnd();
+		else throw InvalidToken();
 	}
+}
 
-	// eat whitespace
-	while (m_script[m_index].isSpace())
-	{
-		m_index++;
-		if (m_index >= m_scriptLength)
+void ScriptParser::nextToken()
+{
+	m_token.type = TokenType::UNKNOWN;
+	m_token.stringValue.clear();
+	m_token.pos = m_pos;
+
+	// read next char but skip white space
+	do {
+		if (m_index < m_scriptLength)
+			nextChar();
+		else
 		{
 			m_token.type = SCRIPT_END;
+			m_token.pos = m_pos;
 			return;
+		}
+	} while (m_char.isSpace());
+
+	// skip comments
+	if (m_char == '/')
+	{
+		if (peekChar('/'))
+		{
+			while (m_char != '\n')
+			{
+				if (m_index < m_scriptLength)
+					nextChar();
+				else
+				{
+					m_token.type = SCRIPT_END;
+					m_token.pos = m_pos;
+					return;
+				}
+			}
+		}
+		else if (peekChar('*'))
+		{
+			do {
+				if (m_index < m_scriptLength)
+					nextChar();
+				else
+				{
+					m_token.type = SCRIPT_END;
+					m_token.pos = m_pos;
+					return;
+				}
+
+				if (m_char == '*')
+				{
+					if (peekChar('/'))
+					{
+						nextChar();
+						break;
+					}
+				}
+
+			} while (true);
+		}
+
+		// skip white space
+		while (m_char.isSpace())
+		{
+			if (m_index < m_scriptLength)
+				nextChar();
+			else
+			{
+				m_token.type = SCRIPT_END;
+				m_token.pos = m_pos;
+				return;
+			}
 		}
 	}
 
-	m_token.type = TokenType::UNKNOWN;
-	m_token.stringValue.clear();
-	QChar c = m_script[m_index];
-	if      (c == '.') { m_token.type = DOT; m_index++; }
-	else if (c == ',') { m_token.type = COMMA; m_index++; }
-	else if (c == '(') { m_token.type = LP; m_index++; }
-	else if (c == ')') { m_token.type = RP; m_index++; }
-	else if (c == '{') { m_token.type = LC; m_index++; }
-	else if (c == '}') { m_token.type = RC; m_index++; }
-	else if (c == ';') { m_token.type = STATEMENT_END; m_index++; }
+	m_token.pos = m_pos - 1;
+
+	QChar c = m_char;
+	if      (c == ',') m_token.type = COMMA;
+	else if (c == '(') m_token.type = LP;
+	else if (c == ')') m_token.type = RP;
+	else if (c == '{') m_token.type = LC;
+	else if (c == '}') m_token.type = RC;
+	else if (c == '[') m_token.type = LB;
+	else if (c == ']') m_token.type = RB;
+	else if (c == ';') m_token.type = STATEMENT_END;
+	else if (c == '+') m_token.type = PLUS;
+	else if (c == '-') m_token.type = MINUS;
+	else if (c == '/') m_token.type = DIV;
+	else if (c == '*')
+	{
+		m_token.type = MULTIPLY;
+		if (peekChar('*')) m_token.type = EXP;
+	}
 	else if (c == '=') 
 	{ 
 		m_token.type = ASSIGNMENT;
-		m_index++;
-		if (m_script[m_index] == '=')
-		{
-			m_token.type = EQUAL;
-			m_index++;
-		}
+		if (peekChar('=')) m_token.type = EQUAL;
 	}
 	else if (c == '<') { 
 		m_token.type = LT;
-		m_index++; 
-		if (m_script[m_index] == '=')
-		{
-			m_token.type = LE;
-			m_index++;
-		}
+		if (peekChar('=')) m_token.type = LE;
 	}
 	else if (c == '>') 
 	{ 
-		m_token.type = GT; m_index++; 
-		if (m_script[m_index] == '=')
-		{
-			m_token.type = GE;
-			m_index++;
-		}
+		m_token.type = GT;
+		if (peekChar('=')) m_token.type = GE;
 	}
 	else if (c == '!')
 	{
-		m_index++;
-		if (m_script[m_index] == '=')
-		{
-			m_token.type = NOT_EQUAL;
-			m_index++;
-		}
-		else throw QString("syntax error at position %1").arg(m_index);
+		nextChar();
+		if (m_char == '=') m_token.type = NOT_EQUAL;
+		else throw SyntaxError();
 	}
 	else if (c == '\'')
 	{
-		for (m_index++; m_index < m_scriptLength; ++m_index)
-		{
-			c = m_script[m_index];
-			if (c != '\'')
-				m_token.stringValue.push_back(c);
-			else break;
-		}
-		if (c != '\'') throw QString("Missing ' at position %1").arg(m_index);
+		do {
+			nextChar();
+			if (m_char != '\'') m_token.stringValue += m_char;
+		} while (m_char != '\'');
 		m_token.type = STRING_LITERAL;
-		m_index++;
+	}
+	else if (c == '.')
+	{
+		QChar cn = peekChar();
+		if (cn.isNumber()) parseNumber();
+		else m_token.type = DOT;
 	}
 	else
 	{
 		// see if we are reading a number or a string
-		QChar c = m_script[m_index];
-		if ((c == '-') || (c == '+') || c.isNumber())
+		if (c.isNumber())
 		{
-			m_token.type = NUMBER;
-
-			QString numVal;
-			if ((c == '-') || (c == '+')) {
-				numVal.push_back(c); m_index++;
-			}
-
-			for (; m_index < m_scriptLength; ++m_index)
-			{
-				c = m_script[m_index];
-				if (c.isNumber()) numVal.push_back(c);
-				else break;
-			}
-
-			if (c == '.')
-			{
-				numVal.push_back(c);
-				for (; m_index < m_scriptLength; ++m_index)
-				{
-					c = m_script[m_index];
-					if (c.isNumber()) numVal.push_back(c);
-					else break;
-				}
-
-				if ((c == 'e') || (c == 'E'))
-				{
-					m_index++;
-					c = m_script[m_index++];
-					if ((c == '+') || (c == '-')) numVal.push_back(c);
-
-					for (; m_index < m_scriptLength; ++m_index)
-					{
-						c = m_script[m_index];
-						if (c.isNumber()) numVal.push_back(c);
-						else break;
-					}
-				}
-			}
-
-			m_token.stringValue = numVal;
+			parseNumber();
 		}
 		else
 		{
-			for (; m_index < m_scriptLength; ++m_index)
-			{
-				QChar c = m_script[m_index];
-				if (c.isLetterOrNumber() || (c == '_')) m_token.stringValue.push_back(c);
-				else
-				{
-					m_token.type = IDENTIFIER;
-					break;
-				}
-			}
+			QString val = parseString();
+
+			m_token.type = IDENTIFIER;
+			m_token.stringValue = val;
 
 			// check for keywords
-			if (m_token.stringValue == "if")
+			auto it = keymap.find(val);
+			if (it != keymap.end())
 			{
-				m_token.type = IF;
-			}
-			else if (m_token.stringValue == "else")
-			{
-				m_token.type = ELSE;
-			}
-			else if ((m_token.stringValue == "true") ||
-				(m_token.stringValue == "false"))
-			{
-				m_token.type = BOOLEAN;
-			}
-			else if (m_token.stringValue == "var")
-			{
-				m_token.type = VAR;
+				m_token.type = it->second;
 			}
 		}
 	}
+}
 
-	if ((expectedType != UNKNOWN) &&
-		(expectedType != m_token.type))
+void ScriptParser::parseNumber()
+{
+	// the first digit was already read in
+	QString numVal;
+	while (true)
 	{
-		throw QString("Invalid token at position %1").arg(m_index);
+		numVal.push_back(m_char);
+		QChar c = peekChar();
+		if (c.isNumber()) nextChar();
+		else if ((c == '.') || (c == 'e') || (c == 'E')) { nextChar(); break; }
+		else break;
 	}
+
+	if (m_char == '.')
+	{
+		while (true)
+		{
+			numVal.push_back(m_char);
+			QChar c = peekChar();
+			if (c.isNumber()) nextChar();
+			else if ((c == 'e') || (c == 'E')) { nextChar(); break; }
+			else break;
+		}
+	}
+
+	if ((m_char == 'e') || (m_char == 'E'))
+	{
+		numVal.push_back(m_char);
+		nextChar();
+		if ((m_char == '+') || (m_char == '-'))
+		{
+			numVal.push_back(m_char);
+			nextChar();
+		}
+
+		while (true)
+		{
+			if (m_char.isNumber()) numVal.push_back(m_char);
+			QChar c = peekChar();
+			if (c.isNumber()) nextChar();
+			else break;
+		}
+	}
+
+	m_token.type = NUMBER;
+	m_token.stringValue = numVal;
+}
+
+QString ScriptParser::parseString()
+{
+	QString val;
+	val += m_char;
+	while (true)
+	{
+		QChar c = peekChar();
+		if (c.isLetterOrNumber() || (c == '_'))
+		{
+			val.push_back(c);
+			nextChar();
+		}
+		else
+		{
+			break;
+		}
+	}
+	return val;
 }
 
 QString ScriptParser::errorString() const { return m_error; }
@@ -580,6 +872,6 @@ bool ScriptParser::setError(const QString& err) { m_error = err; return false; }
 ScriptParser::Object ScriptParser::callMethod(ScriptParser::Object& var, const QString& func, const QList<Object>& args)
 {
 	auto it = var.m_functions.find(func);
-	if (it == var.m_functions.end()) throw QString("Unknown member function %1").arg(func);
+	if (it == var.m_functions.end()) throw UnknownMemberFunction();
 	return it->second(args);
 }
