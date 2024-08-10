@@ -44,7 +44,7 @@ eqs-within-sections
 \pdf_bookmarksopenlevel 1
 \pdf_breaklinks false
 \pdf_pdfborder true
-\pdf_colorlinks false
+\pdf_colorlinks true
 \pdf_backref false
 \pdf_pdfusetitle true
 \papersize default
@@ -9212,13 +9212,12 @@ editable surface
  is an object that is defined via a surface mesh.
  The surface mesh can be edited via the tools on the Edit panel.
  If the mesh is closed and composed of triangles, the object can be meshed
- using Tetgen
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-https://www.wias-berlin.de/software/index.jsp?id=TetGen&lang=1
-\end_layout
+ using 
+\begin_inset CommandInset href
+LatexCommand href
+name "Tetgen"
+target "https://www.wias-berlin.de/software/index.jsp?id=TetGen&lang=1"
+literal "false"
 
 \end_inset
 
