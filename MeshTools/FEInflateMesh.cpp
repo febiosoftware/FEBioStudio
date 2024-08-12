@@ -107,7 +107,7 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
         // MMG remesh the selected (new) faces
         MMGSurfaceRemesh remesh;
         remesh.SetElementSize(h);
-        remesh.SetElementSize(h);
+        remesh.SetElementMinSize(h);
         remesh.SetHausdorf(h/10.);
         remesh.SetGradation(1.3);
         innerSurf = remesh.Apply(innerSurf);

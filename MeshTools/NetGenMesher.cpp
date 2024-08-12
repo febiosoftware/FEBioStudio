@@ -149,7 +149,7 @@ FSMesh*	NetGenMesher::BuildMesh()
         BRepGProp::SurfaceProperties(OCCface,faceProps);
         
 
-		FSLogger::Write("Index: %d :: Area: %lg :: Hash: %d\n", i, faceProps.Mass(), OCCface.HashCode(1e+6));
+		FSLogger::Write("Index: %d :: Area: %lg\n", i, faceProps.Mass());
     }
     
     int gran = GetIntValue(NetGenMesher::GRANULARITY);
