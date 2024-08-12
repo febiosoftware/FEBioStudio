@@ -2087,6 +2087,33 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 			return ponew;
 		}
 
+		// see if the objects are OCC
+		bool allOCC = true;
+		std::vector<GOCCObject*> occlist;
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			GOCCObject* pc = dynamic_cast<GOCCObject*>(sel->Object(i));
+			if (pc == nullptr)
+			{
+				allOCC = false;
+				break;
+			}
+			else occlist.push_back(pc);
+		}
+
+		if (allOCC)
+		{
+			static int n = 1;
+			GOCCObject* newocc = MergeOCCObjects(occlist);
+			if (newocc)
+			{
+				stringstream ss;
+				ss << "MergeObject" << n++;
+				newocc->SetName(ss.str());
+			}
+			return newocc;
+		}
+
 		// make sure all objects have meshes
 		for (int i = 0; i<sel->Count(); ++i)
 		{
