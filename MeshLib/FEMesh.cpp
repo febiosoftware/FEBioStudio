@@ -541,6 +541,7 @@ void FSMesh::UpdateMesh()
 // Convenience function that calls the mesh builder to do all the work
 void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 {
+	m_NEL.Clear();
 	FEMeshBuilder meshBuilder(*this);
 	meshBuilder.RebuildMesh(smoothingAngle, partitionMesh);
 }

@@ -123,8 +123,7 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
 	if (lumen == nullptr) { SetError("Failed to create tetmesh."); return nullptr; }
 
     // combine the two domains together into one
-    GObject obj(GMESH_OBJECT);
-    obj.SetFEMesh(lumen);
+    GMeshObject obj(lumen);
     gbm.Attach(&obj, true, tol);
     FSMesh* mymesh = gbm.GetFEMesh();
 	if (mymesh == nullptr) { SetError("Object has no mesh."); return nullptr; }
