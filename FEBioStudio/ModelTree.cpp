@@ -615,7 +615,7 @@ private:
 CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view), m_nfilter(0)
 {
 //	setAlternatingRowColors(true);
-	setSelectionMode(QAbstractItemView::SingleSelection);
+	setSelectionMode(QAbstractItemView::ExtendedSelection);
 	setColumnCount(1);
 //	QHeaderView* head = header();
 //	head->setStretchLastSection(true);
