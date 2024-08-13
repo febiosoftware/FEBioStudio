@@ -36,6 +36,7 @@ class GObject;
 class GDecoration;
 class FSMesh;
 class FSMeshBase;
+class FESelection;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -83,6 +84,9 @@ public:
 	// Update the tool
 	virtual void Update();
 
+	// reset the tool
+	virtual void Reset();
+
 	// set the decoration
 	void SetDecoration(GDecoration* deco);
 
@@ -92,6 +96,10 @@ public:
 
 	void SetID(int n) { m_id = n; }
 	int GetID() const { return m_id; }
+
+public:
+	virtual bool onPickEvent(const FESelection& sel) { return false; }
+	virtual bool onUndoEvent() { return false; }
 
 private:
 	int				m_id;

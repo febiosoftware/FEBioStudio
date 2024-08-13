@@ -56,6 +56,13 @@ using std::stringstream;
 
 void CMainWindow::on_actionUndo_triggered()
 {
+	CBuildPanel* buildPanel = GetBuildPanel();
+	if (buildPanel && buildPanel->isVisible())
+	{
+		CCommandPanel* panel = buildPanel->GetActivePanel();
+		if (panel->OnUndo()) return;
+	}
+
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 

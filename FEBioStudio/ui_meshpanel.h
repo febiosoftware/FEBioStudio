@@ -165,6 +165,8 @@ public:
 
 	void Activate() override
 	{
+		CAbstractTool::Activate();
+
 		if (m_cd) {
 			m_mod = dynamic_cast<FEModifier*>(m_cd->Create());
 			assert(m_mod);
@@ -179,6 +181,13 @@ public:
 		if (ui) ui->setPropertyList(nullptr);
 		if (m_mod) delete m_mod;
 		m_mod = nullptr;
+		CAbstractTool::Deactivate();
+	}
+
+	void updateUi() override
+	{
+		if (ui) ui->updateData();
+		CAbstractTool::updateUi();
 	}
 
 	QWidget* createUi() override

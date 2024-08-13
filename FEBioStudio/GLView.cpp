@@ -921,6 +921,22 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						emit pointPicked(r);
 					}
 					else m_bpick = false;
+
+					// get the active command window
+					CBuildPanel* panel = m_pWnd->GetBuildPanel();
+					if (panel)
+					{
+						CCommandPanel* cmdPanel = panel->GetActivePanel();
+						if (cmdPanel)
+						{
+							FESelection* sel = pdoc->GetCurrentSelection();
+							if (sel && cmdPanel->OnPickEvent(*sel))
+							{
+								return;
+							}
+						}
+					}
+
 				}
 				else
 				{

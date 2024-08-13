@@ -41,6 +41,7 @@ public:
 	CBuildPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	CCreatePanel* CreatePanel();
+	CCommandPanel* GetActivePanel();
 
 	void Update(bool breset) override;
 

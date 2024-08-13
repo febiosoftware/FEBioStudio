@@ -61,6 +61,9 @@ public:
 	//! event when user picks something from UI
 	virtual bool OnPickEvent(const FESelection& sel) { return false; }
 
+	//! undo event
+	virtual bool OnUndo() { return false; }
+
 	//! Mechanism for programmatically apply a command tool
 	virtual void Apply() {}
 

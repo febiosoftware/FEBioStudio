@@ -58,12 +58,14 @@ public:
 
 	bool OnPickEvent(const FESelection& sel) override;
 
+	bool OnUndo() override;
+
 private:
 	void initTools();
 	void activateTool(int id);
 
 private slots:
-	void on_buttons2_buttonSelected(int n);
+	void on_buttons2_idClicked(int n);
 	void on_buttons_idClicked(int id);
 	void on_apply_clicked(bool b);
 	void on_apply2_clicked(bool b);
@@ -116,9 +118,12 @@ public:
 
 	void stop() override;
 
+	FSMesh* GetNewMesh() { return m_newMesh; }
+
 private:
 	CModelDocument*	m_doc;
 	GObject*	m_po;
 	FEModifier*	m_mod;
 	FESelection*	m_sel;
+	FSMesh* m_newMesh;
 };

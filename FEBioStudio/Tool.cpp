@@ -74,6 +74,12 @@ void CAbstractTool::Update()
 
 }
 
+void CAbstractTool::Reset()
+{
+	updateUi();
+	SetDecoration(nullptr);
+}
+
 void CAbstractTool::Activate()
 {
 	Update();

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/FERevolveFaces.h>
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
+#include <MeshTools/FESelection.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
@@ -60,6 +61,7 @@ SOFTWARE.*/
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
 #include "Tool.h"
+#include <GLLib/GDecoration.h>
 
 class CSurfaceMesherProps : public CObjectProps
 {
@@ -159,12 +161,34 @@ ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po
 	m_mod = mod;
 	m_sel = sel;
 	m_po = po;
+	m_newMesh = nullptr;
 }
 
 void ModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
-	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
+	bool bsuccess = false;
+
+	// get the mesh
+	FSMesh* pm = m_po->GetFEMesh();
+	if (pm && m_mod)
+	{
+		// apply modifier and create new mesh
+		m_newMesh = nullptr;
+		try {
+			if (m_sel && (m_sel->Type() != SELECT_OBJECTS))
+				m_newMesh = m_mod->Apply(m_po, m_sel);
+			else
+				m_newMesh = m_mod->Apply(pm);
+		}
+		catch (...)
+		{
+			m_mod->SetError("Exception detected.");
+		}
+
+		SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
+		if ((m_newMesh == nullptr) && !m_mod->AllowNullMesh()) bsuccess = false;
+		else bsuccess = true;
+	}
 	emit resultReady(bsuccess);
 }
 
@@ -187,6 +211,102 @@ void ModifierThread::stop()
 {
 	
 }
+
+//=============================================================================
+class CAddTriangleTool : public ModifierTool
+{
+public:
+	CAddTriangleTool(CMainWindow* wnd, ClassDescriptor* cd) : ModifierTool(wnd, cd) { m_pick = 0; }
+
+	bool onPickEvent(const FESelection& sel)
+	{
+		const FENodeSelection* nodeSel = dynamic_cast<const FENodeSelection*>(&sel);
+		if (nodeSel && (nodeSel->Count() == 1))
+		{
+			int nid = nodeSel->NodeIndex(0);
+			FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+			if (mod)
+			{
+				const FSLineMesh* mesh = nodeSel->GetMesh();
+				points.push_back(to_vec3f(mesh->NodePosition(nid)));
+				mod->SetIntValue(m_pick, nid + 1);
+				for (int i = m_pick + 1; i < 3; ++i) mod->SetIntValue(i, 0);
+
+				m_pick++;
+				if (m_pick >= 3)
+				{
+					mod->push_stack();
+					m_pick = 0;
+				}
+
+				BuildDecoration();
+
+				return true;	
+			}
+		}
+		return false;
+	}
+
+	void BuildDecoration()
+	{
+		GCompositeDecoration* deco = new GCompositeDecoration;
+		int n = (int)points.size();
+		int nf = n / 3;
+		for (int i = 0; i < nf; i++)
+		{
+			GDecoration* di = new GTriangleDecoration(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+			if (i < nf - 1) di->setColor(GLColor(200, 200, 0));
+			deco->AddDecoration(di);
+		}
+		if ((n % 3) == 2)
+		{
+			deco->AddDecoration(new GLineDecoration(points[n - 2], points[n - 1]));
+		}
+		else if ((n % 3) == 1)
+		{
+			deco->AddDecoration(new GPointDecoration(points[n - 1]));
+		}
+		SetDecoration(deco);
+	}
+
+	bool onUndoEvent() override 
+	{ 
+		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+		if (mod)
+		{
+			if (points.size() > 0) points.pop_back();
+			else return false;
+
+			m_pick--;
+			if (m_pick < 0)
+			{
+				m_pick = 2;
+				mod->pop_stack();
+			}
+			BuildDecoration();
+			return false; // fall through so selection is also undone
+		}
+		else return false;
+	}
+
+	void Reset() override
+	{
+		m_pick = 0;
+		points.clear();
+		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+		if (mod)
+		{
+			mod->SetIntValue(0, 0);
+			mod->SetIntValue(1, 0);
+			mod->SetIntValue(2, 0);
+		}
+		CAbstractTool::Reset();
+	}
+
+private:
+	int m_pick;
+	std::vector<vec3f> points;
+};
 
 //=============================================================================
 // NOTE: Try to keep these in alphabetical order!
@@ -237,7 +357,12 @@ void CMeshPanel::initTools()
 		ClassDescriptor* pcd = *it;
 		if (pcd->GetType() == CLASS_FEMODIFIER)
 		{
-			tools.push_back(new ModifierTool(wnd, pcd));
+			// TODO: Find a better way
+			if (strcmp(pcd->GetName(), "Add Triangle") == 0)
+			{
+				tools.push_back(new CAddTriangleTool(wnd, pcd));
+			}
+			else tools.push_back(new ModifierTool(wnd, pcd));
 		}
 	}
 }
@@ -306,7 +431,7 @@ void CMeshPanel::Update(bool breset)
 	}
 }
 
-void CMeshPanel::on_buttons2_buttonSelected(int id)
+void CMeshPanel::on_buttons2_idClicked(int id)
 {
 	activateTool(id);
 }
@@ -359,7 +484,24 @@ void CMeshPanel::Apply()
 
 bool CMeshPanel::OnPickEvent(const FESelection& sel)
 {
-	return false;
+	if (m_activeTool)
+	{
+		bool b = m_activeTool->onPickEvent(sel);
+		if (b) m_activeTool->updateUi();
+		return b;
+	}
+	else return false;
+}
+
+bool CMeshPanel::OnUndo()
+{
+	if (m_activeTool)
+	{
+		bool b = m_activeTool->onUndoEvent();
+		if (b) m_activeTool->updateUi();
+		return b;
+	}
+	else return false;
 }
 
 void CMeshPanel::on_apply_clicked(bool b)
@@ -464,6 +606,13 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		}
 		else
 		{
+			FSMesh* newMesh = thread->GetNewMesh();
+			newMesh->ClearFaceSelection();
+
+			// swap the meshes
+			string ss = mod->GetName();
+			doc->DoCommand(new CCmdChangeFEMesh(activeObject, thread->GetNewMesh()), ss.c_str(), false);
+
 			std::string err = mod->GetErrorString();
 			if (err.empty() == false)
 			{
@@ -471,6 +620,9 @@ void CMeshPanel::on_apply2_clicked(bool b)
 			}
 		}
 	}
+	thread->deleteLater();
+
+	modTool->Reset();
 
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();

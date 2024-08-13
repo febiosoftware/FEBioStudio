@@ -484,6 +484,12 @@ public:
 	FEAddTriangle();
 
 	FSMesh* Apply(FSMesh* pm);
+
+	void push_stack();
+	void pop_stack();
+
+private:
+	std::vector<int> m_stack;
 };
 
 //-----------------------------------------------------------------------------

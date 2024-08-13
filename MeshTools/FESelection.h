@@ -512,6 +512,7 @@ public:
 	virtual quatd GetOrientation();
 
 	FSLineMesh* GetMesh() { return m_pMesh; }
+	const FSLineMesh* GetMesh() const { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 

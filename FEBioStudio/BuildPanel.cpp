@@ -58,6 +58,13 @@ void CBuildPanel::on_buildTab_currentChanged(int index)
 	Update(true);
 }
 
+CCommandPanel* CBuildPanel::GetActivePanel()
+{
+	if (IsEditPanelVisible()) return ui->edit;
+	if (IsMeshPanelVisible()) return ui->mesh;
+	return nullptr;
+}
+
 bool CBuildPanel::IsEditPanelVisible()
 {
 	return (ui->tab->currentIndex() == Ui::CBuildPanel::EDIT_PANEL);
