@@ -90,7 +90,11 @@ public:
 	FSMesh* GetActiveMesh();
 	FSMeshBase* GetActiveEditMesh();
 
+	void SetID(int n) { m_id = n; }
+	int GetID() const { return m_id; }
+
 private:
+	int				m_id;
 	QString			m_name;
 	QString			m_info;
 	CMainWindow*	m_wnd;

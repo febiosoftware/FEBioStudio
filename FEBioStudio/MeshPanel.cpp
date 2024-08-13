@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
+#include "Tool.h"
 
 class CSurfaceMesherProps : public CObjectProps
 {
@@ -222,10 +223,23 @@ REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDI
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
-	m_mod = 0;
-	m_nid = -1;
 	m_currentObject = nullptr;
+	m_activeTool = nullptr;
+	initTools();
 	ui->setupUi(this, wnd);
+}
+
+void CMeshPanel::initTools()
+{
+	CMainWindow* wnd = GetMainWindow();
+	for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if (pcd->GetType() == CLASS_FEMODIFIER)
+		{
+			tools.push_back(new ModifierTool(wnd, pcd));
+		}
+	}
 }
 
 void CMeshPanel::Update(bool breset)
@@ -250,17 +264,8 @@ void CMeshPanel::Update(bool breset)
 	// start by hiding everything
 	ui->hideAllPanels();
 
-	// update the active modifier
-	if (m_mod)
-	{
-		if (m_mod->UpdateData(false) == true)
-		{
-			ui->setActiveModifier(m_mod);
-		}
-	}
-
 	// if there is no active object, we're done
-	if (activeObject == 0) return;
+	if (activeObject == nullptr) return;
 
 	if (dynamic_cast<GMeshObject*>(activeObject))
 	{
@@ -301,64 +306,60 @@ void CMeshPanel::Update(bool breset)
 	}
 }
 
-void CMeshPanel::on_buttons_buttonSelected(int id)
-{
-	m_nid = id;
-	if (id == -1) ui->showModifierParametersPanel(false);
-	else
-	{
-		if (m_mod) delete m_mod;
-		m_mod = 0;
-
-		ui->setModifierPropertyList(0);
-
-		ClassDescriptor* pcd = ui->buttons->GetClassDescriptor(id);
-		if (pcd)
-		{
-			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-			if (m_mod) m_mod->UpdateData(false);
-			ui->setActiveModifier(m_mod);
-		}
-
-		ui->showModifierParametersPanel(true);
-	}
-}
-
 void CMeshPanel::on_buttons2_buttonSelected(int id)
 {
-	// If the ID is the same and we already have a modifier 
-	// allocated, then return.
-	if ((id == m_nid) && m_mod) return;
-
-	// delete modifier
-	if (m_mod) delete m_mod;
-	m_mod = nullptr;
-
-	// store button id
-	m_nid = id;
-
-	// update modifier and panel
-	if (id == -1) ui->showModifierParametersPanel(false);
-	else
-	{
-		ui->setModifierPropertyList(0);
-
-		ClassDescriptor* pcd = ui->buttons2->GetClassDescriptor(id);
-		if (pcd)
-		{
-			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-			if (m_mod) m_mod->UpdateData(false);
-			ui->setActiveModifier(m_mod);
-		}
-
-		ui->showModifierParametersPanel(true);
-	}
+	activateTool(id);
 }
 
+void CMeshPanel::on_buttons_idClicked(int id)
+{
+	activateTool(id);
+}
+
+void CMeshPanel::activateTool(int id)
+{
+	// deactivate the active tool
+	if (m_activeTool) m_activeTool->Deactivate();
+	m_activeTool = nullptr;
+
+	if (id == -1)
+	{
+		ui->showModifierParametersPanel(false);
+		return;
+	}
+
+	// find the tool
+	for (CAbstractTool* tool : tools)
+	{
+		if (tool->GetID() == id)
+		{
+			m_activeTool = tool;
+			break;
+		}
+	}
+
+	// activate the tool
+	if (m_activeTool)
+	{
+		m_activeTool->Activate();
+		ui->modParams->setCurrentIndex(id);
+		ui->showModifierParametersPanel(true);
+	}
+	else
+	{
+		ui->modParams->setCurrentIndex(0);
+		ui->showModifierParametersPanel(false);
+	}
+}
 
 void CMeshPanel::Apply()
 {
 	on_apply_clicked(true);
+}
+
+bool CMeshPanel::OnPickEvent(const FESelection& sel)
+{
+	return false;
 }
 
 void CMeshPanel::on_apply_clicked(bool b)
@@ -417,7 +418,11 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// make sure we have a modifier
-	if (m_mod == 0) return;
+	ModifierTool* modTool = dynamic_cast<ModifierTool*>(m_activeTool);
+	if (modTool == nullptr) return;
+
+	FEModifier* mod = modTool->GetModifier();
+	if (mod == nullptr) return;
 
 	// check if the current mesh has any dependencies
 	if (activeObject->GetFEMesh())
@@ -446,20 +451,20 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		else { delete list; list = 0; }
 	}
 
-	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
+	ModifierThread* thread = new ModifierThread(doc, mod, activeObject, sel);
 	CDlgStartThread dlg(this, thread);
-	dlg.setTask(QString::fromStdString(m_mod->GetName()));
+	dlg.setTask(QString::fromStdString(mod->GetName()));
 	if (dlg.exec())
 	{
 		bool bsuccess = dlg.GetReturnCode();
 		if (bsuccess == false)
 		{
-			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
+			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(mod->GetName())).arg(QString::fromStdString(mod->GetErrorString()));
 			QMessageBox::critical(this, "Error", err);
 		}
 		else
 		{
-			std::string err = m_mod->GetErrorString();
+			std::string err = mod->GetErrorString();
 			if (err.empty() == false)
 			{
 				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
@@ -467,15 +472,6 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		}
 	}
 
-	if (m_mod)
-	{
-		if (m_mod->UpdateData(false))
-		{
-			ui->setActiveModifier(m_mod);
-		}
-	}
-
-	Update();
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();
