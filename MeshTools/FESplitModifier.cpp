@@ -747,6 +747,8 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	}
 */
 	// update the new mesh
+	pnew->GenerateNodalIDs();
+	pnew->GenerateElementIDs();
 	pnew->RebuildMesh();
 
 	// All done
