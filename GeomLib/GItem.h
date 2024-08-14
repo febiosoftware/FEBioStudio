@@ -109,7 +109,7 @@ public:
 	// check visibility state (only used by GBaseObject's)
 	bool IsVisible () const { return ((m_state & GEO_VISIBLE ) != 0); }
 	void ShowItem() { m_state = m_state | GEO_VISIBLE;  }
-	void HideItem() { m_state = 0; }
+	void HideItem() { m_state = m_state & ~(GEO_VISIBLE | GEO_SELECTED); }
 
 	// check selection state
 	bool IsSelected() const { return ((m_state & GEO_SELECTED) != 0); }
