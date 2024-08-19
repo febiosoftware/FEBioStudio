@@ -87,6 +87,9 @@ void XpltReader3::XMesh::Clear()
 	m_Node.clear();
 	m_Dom.clear();
 	m_Surf.clear();
+	m_NodeSet.clear();
+	m_ElemSet.clear();
+	m_FacetSet.clear();
 }
 
 //-----------------------------------------------------------------------------

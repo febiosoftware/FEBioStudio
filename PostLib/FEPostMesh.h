@@ -82,6 +82,8 @@ public:
 	// return a surface
 	FSSurface& Surface(int n) { return *m_Surf[n]; }
 
+	FSSurface* FindSurface(const std::string& s);
+
 	// Add a surface
 	void AddSurface(FSSurface* ps) { m_Surf.push_back(ps); }
 
