@@ -88,7 +88,7 @@ GObjectSelection::GObjectSelection(GModel* ps) : FESelection(SELECT_OBJECTS)
 	SetMovable(true);
 }
 
-int GObjectSelection::Count()
+int GObjectSelection::Count() const
 {
 	return (int)m_item.size();
 }
@@ -285,7 +285,7 @@ GPartSelection::GPartSelection(GModel* ps) : GSelection(ps, SELECT_PARTS)
 	Update(); 
 }
 
-int GPartSelection::Count()
+int GPartSelection::Count() const
 {
 	return (int)m_partList.size();
 }
@@ -423,7 +423,7 @@ void GFaceSelection::Translate(vec3d dr)
 
 }
 
-int GFaceSelection::Count()
+int GFaceSelection::Count() const
 {
 	return (int)m_faceList.size();
 }
@@ -536,7 +536,7 @@ GEdgeSelection::GEdgeSelection(GModel* ps) : GSelection(ps, SELECT_CURVES)
 	Update(); 
 }
 
-int GEdgeSelection::Count()
+int GEdgeSelection::Count() const
 {
 	return (int)m_edgeList.size();
 }
@@ -663,7 +663,7 @@ GNodeSelection::GNodeSelection(GModel* ps) : GSelection(ps, SELECT_NODES)
 	SetMovable(moveAble);
 }
 
-int GNodeSelection::Count()
+int GNodeSelection::Count() const
 {
 	return (int)m_nodeList.size();
 }
@@ -799,7 +799,7 @@ GDiscreteSelection::GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE
 	Update(); 
 }
 
-int GDiscreteSelection::Count()
+int GDiscreteSelection::Count() const
 {
 	return m_count;
 }
@@ -917,7 +917,7 @@ FEElementSelection::FEElementSelection(FSMesh* pm) : FEMeshSelection(SELECT_FE_E
 	Update();
 }
 
-int FEElementSelection::Count()
+int FEElementSelection::Count() const
 {
 	return (int)m_item.size();
 }
@@ -1150,7 +1150,7 @@ FSFace* FEFaceSelection::Face(size_t n)
 	else return nullptr;
 }
 
-int FEFaceSelection::Count()
+int FEFaceSelection::Count() const
 {
 	return (int)m_item.size();
 }
@@ -1388,7 +1388,7 @@ FEEdgeSelection::FEEdgeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_EDG
 	Update(); 
 }
 
-int FEEdgeSelection::Count()
+int FEEdgeSelection::Count() const
 {
 	return (int)m_items.size();
 }
@@ -1612,7 +1612,7 @@ FENodeSelection::FENodeSelection(FSLineMesh* pm) : FEMeshSelection(SELECT_FE_NOD
 	Update();
 }
 
-int FENodeSelection::Count()
+int FENodeSelection::Count() const
 {
 	return (int)m_items.size();
 }

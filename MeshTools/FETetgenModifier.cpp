@@ -33,7 +33,6 @@ using namespace std;
 #undef PI
 
 #ifdef TETLIBRARY
-	#undef TETLIBRARY // we undef it since it is also defined in tetgen.h and the duplicate definition causes a compiler warning
 	#include <tetgen.h>
 #endif
 

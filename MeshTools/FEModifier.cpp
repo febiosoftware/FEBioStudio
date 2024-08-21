@@ -1355,10 +1355,11 @@ int getModifierID(const char* szmod)
 
 FEConvertMesh::FEConvertMesh() : FEModifier("Convert")
 {
-	AddIntParam(0, "convert", "Convert");
+	AddChoiceParam(0, "convert", "Convert");
 	AddBoolParam(false, "smooth", "smooth surface");
 
 	m_currentType = -2;
+	UpdateData(true);
 }
 
 bool FEConvertMesh::UpdateData(bool bsave)
@@ -1399,7 +1400,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 
 	m_currentType = meshType;
 
-	return true;
+	return false;
 }
 
 FSMesh* FEConvertMesh::Apply(FSMesh* pm)
@@ -1503,21 +1504,48 @@ FEAddTriangle::FEAddTriangle() : FEModifier("Add Triangle")
 
 FSMesh* FEAddTriangle::Apply(FSMesh* pm)
 {
-	int n0 = GetIntValue(0) - 1;
-	int n1 = GetIntValue(1) - 1;
-	int n2 = GetIntValue(2) - 1;
+	if (m_stack.empty())
+	{
+		int n0 = GetIntValue(0) - 1;
+		int n1 = GetIntValue(1) - 1;
+		int n2 = GetIntValue(2) - 1;
 
-	int NN = pm->Nodes();
-	if ((n0 < 0) || (n0 >= NN)) return nullptr;
-	if ((n1 < 0) || (n1 >= NN)) return nullptr;
-	if ((n2 < 0) || (n2 >= NN)) return nullptr;
+		int NN = pm->Nodes();
+		if ((n0 < 0) || (n0 >= NN)) return nullptr;
+		if ((n1 < 0) || (n1 >= NN)) return nullptr;
+		if ((n2 < 0) || (n2 >= NN)) return nullptr;
 
-	FSMesh* newMesh = new FSMesh(*pm);
+		FSMesh* newMesh = new FSMesh(*pm);
 
-	FEMeshBuilder meshBuilder(*newMesh);
-	meshBuilder.AddTriangle(n0, n1, n2);
+		FEMeshBuilder meshBuilder(*newMesh);
+		meshBuilder.AddTriangle(n0, n1, n2);
 
-	return newMesh;
+		return newMesh;
+	}
+	else
+	{
+		FSMesh* newMesh = new FSMesh(*pm);
+		FEMeshBuilder meshBuilder(*newMesh);
+		meshBuilder.AddTriangles(m_stack);
+		return newMesh;
+	}
+}
+
+void FEAddTriangle::push_stack()
+{
+	m_stack.push_back(GetIntValue(0) - 1);
+	m_stack.push_back(GetIntValue(1) - 1);
+	m_stack.push_back(GetIntValue(2) - 1);
+}
+
+void FEAddTriangle::pop_stack()
+{
+	if (m_stack.size() >= 3)
+	{
+		m_stack.pop_back();
+		m_stack.pop_back();
+		m_stack.pop_back();
+	}
 }
 
 //=============================================================================

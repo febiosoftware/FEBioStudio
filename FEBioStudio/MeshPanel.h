@@ -38,6 +38,7 @@ class GObject;
 class FEMesher;
 class FSGroup;
 class FESelection;
+class CAbstractTool;
 
 namespace Ui {
 	class CMeshPanel;
@@ -55,19 +56,30 @@ public:
 
 	void Apply() override;
 
+	bool OnPickEvent(const FESelection& sel) override;
+
+	bool OnUndo() override;
+
+private:
+	void initTools();
+	void activateTool(int id);
+
 private slots:
-	void on_buttons_buttonSelected(int n);
-	void on_buttons2_buttonSelected(int n);
+	void on_buttons2_idClicked(int n);
+	void on_buttons_idClicked(int id);
 	void on_apply_clicked(bool b);
 	void on_apply2_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
 	void on_form_dataChanged(bool itemModified, int index);
 
 private:
-	int					m_nid;	// current button selected
-	FEModifier*			m_mod;	// temporary modifier
+	CAbstractTool*			m_activeTool;
+	QList<CAbstractTool*>	tools;
+
 	GObject*			m_currentObject;
 	Ui::CMeshPanel*		ui;
+
+	friend class Ui::CMeshPanel;
 };
 
 class MeshingThread : public CustomThread
@@ -107,9 +119,12 @@ public:
 
 	void stop() override;
 
+	FSMesh* GetNewMesh() { return m_newMesh; }
+
 private:
 	CModelDocument*	m_doc;
 	GObject*	m_po;
 	FEModifier*	m_mod;
 	FESelection*	m_sel;
+	FSMesh* m_newMesh;
 };

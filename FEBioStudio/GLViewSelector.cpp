@@ -2533,7 +2533,7 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	vector<int> selectedObjects;
+	vector<GDiscreteObject*> selectedObjects;
 
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
@@ -2556,7 +2556,30 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 
 			if (region.LineIntersects(x0, y0, x1, y1))
 			{
-				selectedObjects.push_back(i);
+				selectedObjects.push_back(ps);
+			}
+		}
+		else if (dynamic_cast<GDiscreteSpringSet*>(po))
+		{
+			GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(po);
+			for (int n = 0; n < set->size(); ++n)
+			{
+				GDiscreteElement& el = set->element(n);
+				vec3d r0 = model.FindNode(el.Node(0))->Position();
+				vec3d r1 = model.FindNode(el.Node(1))->Position();
+
+				vec3d p0 = transform.WorldToScreen(r0);
+				vec3d p1 = transform.WorldToScreen(r1);
+
+				int x0 = (int)p0.x;
+				int y0 = (int)p0.y;
+				int x1 = (int)p1.x;
+				int y1 = (int)p1.y;
+
+				if (region.LineIntersects(x0, y0, x1, y1))
+				{
+					selectedObjects.push_back(&el);
+				}
 			}
 		}
 	}

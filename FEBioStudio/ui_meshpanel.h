@@ -39,12 +39,14 @@ SOFTWARE.*/
 #include <QButtonGroup>
 #include <QMenu>
 #include <QValidator>
+#include <QStackedWidget>
 #include <FSCore/ClassDescriptor.h>
 #include "PropertyListForm.h"
 #include "PropertyList.h"
 #include "ObjectPanel.h"
 #include "MeshButtonBox.h"
 #include "ObjectProps.h"
+#include "Tool.h"
 
 enum MeshEditButtonFlags
 {
@@ -56,70 +58,226 @@ enum MeshEditButtonFlags
 	EDIT_SAFE      = 0x20	// flag for modifiers that can safely be applied to primitives (i.e. won't affect geometry or partitioning)
 };
 
+class CMesherParamsPanel : public QWidget
+{
+public:
+	CMesherParamsPanel(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		QVBoxLayout* pl = new QVBoxLayout;
+		QPushButton* applyButton = new QPushButton("Apply");
+		applyButton->setObjectName("apply");
+		pl->addWidget(form = new CPropertyListForm); form->setBackgroundRole(QPalette::Light);
+		form->setObjectName("form2");
+		pl->addWidget(applyButton);
+		setLayout(pl);
+	}
+
+	void SetPropertyList(CPropertyList* pl)
+	{
+		CPropertyList* plold = form->getPropertyList();
+		form->setPropertyList(nullptr);
+		if (plold) delete plold;
+		if (pl) form->setPropertyList(pl);
+	}
+
+	CPropertyList* GetPropertyList() { return form->getPropertyList(); }
+
+private:
+	CPropertyListForm* form;
+};
+
+class CModifierParamsPanel : public QWidget
+{
+public:
+	CModifierParamsPanel(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		QPushButton* pb = new QPushButton("Apply");
+		pb->setObjectName("apply2");
+
+		stack = new QStackedWidget;
+		QLabel* label = new QLabel("(No tool selected)");
+		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+		stack->addWidget(label);
+
+		QVBoxLayout* pl = new QVBoxLayout;
+		pl->addWidget(stack);
+		pl->addWidget(pb);
+		pl->addStretch();
+		setLayout(pl);
+	}
+
+	void AddTool(CAbstractTool* tool)
+	{
+		QWidget* pw = tool->createUi();
+		if (pw == nullptr)
+		{
+			QLabel* pl = new QLabel("(no properties)");
+			pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+			stack->addWidget(pl);
+		}
+		else stack->addWidget(pw);
+	}
+
+	void setCurrentIndex(int n) { stack->setCurrentIndex(n); }
+
+private:
+	QStackedWidget* stack;
+};
+
+class CButtonBox : public QWidget
+{
+public:
+	CButtonBox(const QString& name, QWidget* parent = nullptr) : QWidget(parent)
+	{
+		m_count = 0;
+
+		grid = new QGridLayout;
+		setLayout(grid);
+		grid->setSpacing(2);
+
+		group = new QButtonGroup(this);
+		group->setObjectName(name);
+	}
+
+	void AddButton(const QString& txt, int id)
+	{
+		QPushButton* but = new QPushButton(txt);
+		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+		but->setCheckable(true);
+
+		grid->addWidget(but, m_count / 2, m_count % 2);
+		group->addButton(but); group->setId(but, id);
+		m_count++;
+	}
+
+private:
+	QGridLayout* grid;
+	QButtonGroup* group;
+	int m_count;
+};
+
+class ModifierTool : public CAbstractTool
+{
+public:
+	ModifierTool(CMainWindow* wnd, ClassDescriptor* cd) : CAbstractTool(wnd, cd->GetName()), m_cd(cd)
+	{
+		m_mod = nullptr;
+		ui = nullptr;
+	}
+
+	void Activate() override
+	{
+		CAbstractTool::Activate();
+
+		if (m_cd) {
+			m_mod = dynamic_cast<FEModifier*>(m_cd->Create());
+			assert(m_mod);
+
+			CPropertyList* pl = new CObjectProps(m_mod);
+			ui->setPropertyList(pl);
+		}
+	}
+
+	void Deactivate() override
+	{
+		if (ui) ui->setPropertyList(nullptr);
+		if (m_mod) delete m_mod;
+		m_mod = nullptr;
+		CAbstractTool::Deactivate();
+	}
+
+	void updateUi() override
+	{
+		if (ui) ui->updateData();
+		CAbstractTool::updateUi();
+	}
+
+	QWidget* createUi() override
+	{
+		ui = new CPropertyListForm();
+		ui->setBackgroundRole(QPalette::Light);
+		return ui;
+	}
+
+	FEModifier* GetModifier() { return m_mod; }
+
+	unsigned int flags() const { return (m_cd ? m_cd->Flag() : 0); }
+
+private:
+	ClassDescriptor* m_cd;
+	FEModifier* m_mod;
+	CPropertyListForm* ui;
+};
+
 class Ui::CMeshPanel
 {
 	// make sure these values correspond to the order of the panels
 	enum {
 		OBJECT_PANEL,		// object info panel
-		EDITMESH_PANEL,		// modifiers for editables meshes
 		PARAMS_PANEL,		// mesher parameters
+		EDITMESH_PANEL,		// modifiers for editables meshes
 		EDITMESH_PANEL2,	// modifiers for non-editable meshes
 		PARAMS_PANEL2		// modifier parameters
 	};
 
 public:
-	CObjectPanel*	obj;
-	::CMeshButtonBox*	buttons;		// buttons for editables meshes
-	::CMeshButtonBox*	buttons2;		// buttons for editing mesh of primitives
-	CPropertyListForm*	form;
-	CPropertyListForm*	form2;
-	CToolBox* tool;
-
-//	CPropertyList* m_pl;
+	CToolBox*			tool;
+	CObjectPanel*		obj;
+	CMesherParamsPanel*		mesherParams;
+	CModifierParamsPanel*	modParams;
 
 public:
-	void setupUi(QWidget* parent, ::CMainWindow* mainWindow)
+	void setupUi(::CMeshPanel* parent, ::CMainWindow* mainWindow)
 	{
-//		m_pl = 0;
-
 		obj = new CObjectPanel(mainWindow); obj->setObjectName("objectPanel");
 
-		// parameters for mesh
-		QWidget* pw = new QWidget;
-		QVBoxLayout* pl = new QVBoxLayout;
-		QPushButton* applyButton = new QPushButton("Apply");
-		applyButton->setObjectName("apply");
-		pl->addWidget(form = new CPropertyListForm); form->setBackgroundRole(QPalette::Light);
-		pl->addWidget(applyButton);
-		pw->setLayout(pl);
+		// parameters for meshers
+		mesherParams = new CMesherParamsPanel;
 
-		// parameters for modifiers
-		QWidget* pw2 = new QWidget;
-		QVBoxLayout* pl2 = new QVBoxLayout;
-		QPushButton* applyButton2 = new QPushButton("Apply");
-		applyButton2->setObjectName("apply2");
-		pl2->addWidget(form2 = new CPropertyListForm); form2->setBackgroundRole(QPalette::Light);
-		pl2->addWidget(applyButton2);
-		pw2->setLayout(pl2);
+		// UIs for tools
+		modParams = new CModifierParamsPanel;
+		QList<CAbstractTool*>& tools = parent->tools;
+		int n = 1;
+		for (CAbstractTool* tool : tools)
+		{
+			tool->SetID(n++);
+			modParams->AddTool(tool);
+		}
+
+		// buttons for mesh modifiers
+		CButtonBox* box = new CButtonBox("buttons");
+		for (CAbstractTool* tool : tools)
+		{
+			ModifierTool* modTool = dynamic_cast<ModifierTool*>(tool);
+			if (modTool)
+			{
+				box->AddButton(modTool->name(), tool->GetID());
+			}
+		}
+
+		// buttons for safe mesh modifiers
+		CButtonBox* box2 = new CButtonBox("buttons2");
+		for (CAbstractTool* tool : tools)
+		{
+			ModifierTool* modTool = dynamic_cast<ModifierTool*>(tool);
+			if (modTool && (modTool->flags() & EDIT_SAFE))
+			{
+				box2->AddButton(modTool->name(), tool->GetID());
+			}
+		}
 
 		// put it all together
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
-		tool->addTool("Edit Mesh"      , buttons = new ::CMeshButtonBox(CLASS_FEMODIFIER));
-		tool->addTool("Mesh Parameters", pw);
-		tool->addTool("Edit Mesh"      , buttons2 = new ::CMeshButtonBox(CLASS_FEMODIFIER, EDIT_SAFE));
-		tool->addTool("Parameters"     , pw2);
+		tool->addTool("Mesh Parameters", mesherParams);
+		tool->addTool("Edit Mesh"      , box);
+		tool->addTool("Edit Mesh"      , box2);
+		tool->addTool("Parameters"     , modParams);
 
 		showMesherParametersPanel(false);
 		showButtonsPanel(false);
 		showButtonsPanel2(false);
 		showModifierParametersPanel(false);
-
-		buttons->setObjectName("buttons");
-		form->setObjectName("form");
-
-		buttons2->setObjectName("buttons2");
-		form2->setObjectName("form2");
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->setContentsMargins(0,0,0,0);
@@ -131,24 +289,7 @@ public:
 
 	void setMesherPropertyList(CPropertyList* pl)
 	{
-		CPropertyList* plold = form->getPropertyList();
-		form->setPropertyList(0);
-		if (plold) delete plold;
-		if (pl) form->setPropertyList(pl);
-	}
-
-	void setActiveModifier(FEModifier* mod)
-	{
-		CPropertyList* pl = new CObjectProps(mod);
-		setModifierPropertyList(pl);
-	}
-
-	void setModifierPropertyList(CPropertyList* pl)
-	{
-		CPropertyList* plold = form2->getPropertyList();
-		form2->setPropertyList(0);
-		if (plold) delete plold;
-		if (pl) form2->setPropertyList(pl);
+		mesherParams->SetPropertyList(pl);
 	}
 
 	void showMesherParametersPanel(bool b)

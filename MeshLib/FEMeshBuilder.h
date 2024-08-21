@@ -64,7 +64,8 @@ public:
 	FSNode* AddNode(const vec3d& r);
 
 	// Add a triangle
-	FSElement* AddTriangle(int n0, int n1, int n2);
+	void AddTriangle(int n0, int n1, int n2);
+	void AddTriangles(const std::vector<int>& nodes);
 
 	// Remove nodes that are not attached to anything
 	// returns the number of nodes that were removed

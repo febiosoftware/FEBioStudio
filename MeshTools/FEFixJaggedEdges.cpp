@@ -83,6 +83,10 @@ FSSurfaceMesh* FEFixJaggedEdges::Apply(FSSurfaceMesh* pm)
         SetError("No edges selected.");
         return nullptr;
     }
+    if (NE == 1) {
+        SetError("Single edge selected.");
+        return nullptr;
+    }
     // in case the edge chain is open, search for the two nodes that appear only once
     std::map<int,int> en;
     std::map<int,int>::iterator it;

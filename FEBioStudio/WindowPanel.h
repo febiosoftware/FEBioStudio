@@ -30,6 +30,7 @@ SOFTWARE.*/
 // forward declarations
 class CMainWindow;
 class CGLDocument;
+class FESelection;
 
 //! Base class for window panels.
 class CWindowPanel : public QWidget
@@ -52,6 +53,12 @@ public:
 
 	//! Process Del key event (return true if processed)
 	virtual bool OnDeleteEvent() { return false; }
+
+	//! event when user picks something from UI
+	virtual bool OnPickEvent(const FESelection& sel) { return false; }
+
+	//! undo event
+	virtual bool OnUndo() { return false; }
 
 	//! Mechanism for programmatically apply a command tool
 	virtual void Apply() {}

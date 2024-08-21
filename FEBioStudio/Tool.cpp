@@ -40,6 +40,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
 {
+	m_id = -1;
 	m_wnd = wnd;
 	m_deco = nullptr;
 }
@@ -71,6 +72,12 @@ void CAbstractTool::updateUi()
 void CAbstractTool::Update()
 {
 
+}
+
+void CAbstractTool::Reset()
+{
+	updateUi();
+	SetDecoration(nullptr);
 }
 
 void CAbstractTool::Activate()

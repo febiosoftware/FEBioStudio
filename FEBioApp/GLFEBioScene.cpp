@@ -301,7 +301,7 @@ void GLFEBioScene::BuildRenderMesh()
 		FESurfaceElement& el = surf->Element(i);
 
 		int mid = 0;
-		FEElement* pe = el.m_elem[0];
+		FEElement* pe = el.m_elem[0].pe;
 		if (pe) mid = pe->GetMatID();
 		if (mid < 0) mid = 0;
 		GLColor col = pal.Color(mid % pal.Colors());

@@ -82,7 +82,7 @@ public:
 
 protected:
 	virtual void Update() = 0;
-	virtual int Count() = 0;
+	virtual int Count() const = 0;
 
 protected:
 	BOX		m_box;
@@ -103,7 +103,7 @@ class GObjectSelection : public FESelection
 {
 public:
 	GObjectSelection(GModel* ps);
-	int Count() override;
+	int Count() const override;
 	virtual void Invert() override;
 	virtual void Update() override;
 	virtual void Translate(vec3d dr) override;
@@ -161,7 +161,7 @@ public:
 
 public:
 	GPartSelection(GModel* ps);
-	int Count();
+	int Count() const override;
 	void Invert();
 	void Update();
 	void Translate(vec3d dr) {}
@@ -205,7 +205,7 @@ public:
 
 public:
 	GFaceSelection(GModel* ps);
-	int Count();
+	int Count() const override;
 	void Invert();
 	void Update();
 	void Translate(vec3d dr);
@@ -244,7 +244,7 @@ public:
 
 public:
 	GEdgeSelection(GModel* ps);
-	int Count();
+	int Count() const override;
 	void Invert();
 	void Update();
 	void Translate(vec3d dr) {}
@@ -285,7 +285,7 @@ public:
 
 public:
 	GNodeSelection(GModel* ps);
-	int Count();
+	int Count() const override;
 	void Invert();
 	void Update();
 	void Translate(vec3d dr);
@@ -327,7 +327,7 @@ public:
 
 public:
 	GDiscreteSelection(GModel* ps);
-	int Count();
+	int Count() const override;
 	void Invert();
 	void Update();
 
@@ -373,7 +373,7 @@ public:
 
 public:
 	FEElementSelection(FSMesh* pm);
-	int Count();
+	int Count() const override;
 	virtual void Invert();
 	virtual void Update();
 	virtual void Translate(vec3d dr);
@@ -425,7 +425,7 @@ public:
 	int FaceIndex(size_t n) const { return m_item[n]; }
 
 public:
-	int Count() override;
+	int Count() const override;
 	void Invert() override;
 	void Update() override;
 	void Translate(vec3d dr) override;
@@ -462,7 +462,7 @@ public:
 
 public:
 	FEEdgeSelection(FSLineMesh* pm);
-	int Count();
+	int Count() const override;
 	virtual void Invert();
 	virtual void Update();
 	virtual void Translate(vec3d dr);
@@ -503,7 +503,7 @@ public:
 
 public:
 	FENodeSelection(FSLineMesh* pm);
-	int Count();
+	int Count() const override;
 	virtual void Invert();
 	virtual void Update();
 	virtual void Translate(vec3d dr);
@@ -512,6 +512,7 @@ public:
 	virtual quatd GetOrientation();
 
 	FSLineMesh* GetMesh() { return m_pMesh; }
+	const FSLineMesh* GetMesh() const { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 

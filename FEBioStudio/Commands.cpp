@@ -1626,7 +1626,7 @@ CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n) : CComm
 	if (n > 0)
 	{
 		m_obj.resize(n);
-		for (int i = 0; i<n; ++i) m_obj[i] = pobj[i];
+		for (int i = 0; i<n; ++i) m_obj[i] = m_model->DiscreteObject(pobj[i]);
 	}
 
 	int N = m_model->DiscreteObjects();
@@ -1642,13 +1642,25 @@ CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj) :
 	if (n > 0)
 	{
 		m_obj.resize(n);
-		for (int i = 0; i<n; ++i) m_obj[i] = obj[i];
+		for (int i = 0; i<n; ++i) m_obj[i] = m_model->DiscreteObject(obj[i]);
 	}
 
 	int N = m_model->DiscreteObjects();
 	m_bold.resize(N);
 	for (int i = 0; i<N; ++i) m_bold[i] = m_model->DiscreteObject(i)->IsSelected();
 }
+
+CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj) : CCommand("Unselect Discrete")
+{
+	m_model = ps;
+
+	m_obj = obj;
+
+	int N = m_model->DiscreteObjects();
+	m_bold.resize(N);
+	for (int i = 0; i < N; ++i) m_bold[i] = m_model->DiscreteObject(i)->IsSelected();
+}
+
 
 void CCmdUnSelectDiscrete::Execute()
 {
@@ -1657,7 +1669,7 @@ void CCmdUnSelectDiscrete::Execute()
 	n = m_obj.size();
 	for (i = 0; i<n; ++i)
 	{
-		GDiscreteObject* pn = m_model->DiscreteObject(m_obj[i]);
+		GDiscreteObject* pn = m_obj[i];
 		if (pn) pn->UnSelect();
 	}
 }

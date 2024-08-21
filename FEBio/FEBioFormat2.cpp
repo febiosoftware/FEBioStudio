@@ -615,6 +615,11 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	{
 		pg = new FSNodeSet(po);
 		po->AddFENodeSet(pg);
+
+		static int n = 1;
+		char szname[256] = { 0 };
+		sprintf(szname, "FixedNodeset%02d", n++);
+		pg->SetName(szname);
 	}
 
 	// read the node list
@@ -778,6 +783,11 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	else
 	{
 		pg = new FSNodeSet(po);
+		po->AddFENodeSet(pg);
+
+		static int n = 1;
+		sprintf(szname, "PrescribedNodeset%02d", n++);
+		pg->SetName(szname);
 	}
 
 	// make a new boundary condition
@@ -934,6 +944,7 @@ void FEBioFormat2::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	FSMesh* pm = &GetFEMesh();
 	char szname[256];
 	FSNodeSet* pg = new FSNodeSet(po);
+	po->AddFENodeSet(pg);
 
 	static int n = 1;
 	sprintf(szname, "ForceNodeset%02d", n++);
@@ -1721,7 +1732,10 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(v);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FSNodeSet(po);
+					if (pg == 0) {
+						pg = new FSNodeSet(po);
+						po->AddFENodeSet(pg);
+					}
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1733,6 +1747,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialVelocity%02d", CountICs<FSNodalVelocities>(fem)+1);
 			pbc->SetName(szname);
+			if (pg && pg->GetName().empty()) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "concentration")	// initial concentration BC
@@ -1759,7 +1774,10 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(c);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FSNodeSet(po);
+					if (pg == 0) {
+						pg = new FSNodeSet(po);
+						po->AddFENodeSet(pg);
+					}
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1771,6 +1789,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialConcentration%02d", CountICs<FSInitConcentration>(fem)+1);
 			pbc->SetName(szname);
+			if (pg && pg->GetName().empty()) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
@@ -1789,7 +1808,10 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(p);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FSNodeSet(po);
+					if (pg == 0) {
+						pg = new FSNodeSet(po);
+						po->AddFENodeSet(pg);
+					}
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1801,6 +1823,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountICs<FSInitFluidPressure>(fem)+1);
 			pbc->SetName(szname);
+			if (pg && pg->GetName().empty()) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
@@ -1819,7 +1842,10 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(p);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FSNodeSet(po);
+					if (pg == 0) {
+						pg = new FSNodeSet(po);
+						po->AddFENodeSet(pg);
+					}
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1831,6 +1857,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialTemperature%02d", CountICs<FSInitTemperature>(fem)+1);
 			pbc->SetName(szname);
+			if (pg && pg->GetName().empty()) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else ParseUnknownTag(tag);
@@ -2489,7 +2516,7 @@ void FEBioFormat2::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 			int id = pmat->GetID();
 			// create the node set
 			FSNodeSet* pn = new FSNodeSet(po);
-			//			pm->AddNodeSet(pn);
+			po->AddFENodeSet(pn);
 			sprintf(szbuf, "RigidNodeset%2d", CountInterfaces<FSRigidInterface>(fem) + 1);
 			pn->SetName(szbuf);
 

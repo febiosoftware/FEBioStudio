@@ -921,6 +921,22 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						emit pointPicked(r);
 					}
 					else m_bpick = false;
+
+					// get the active command window
+					CBuildPanel* panel = m_pWnd->GetBuildPanel();
+					if (panel)
+					{
+						CWindowPanel* cmdPanel = panel->GetActivePanel();
+						if (cmdPanel)
+						{
+							FESelection* sel = pdoc->GetCurrentSelection();
+							if (sel && cmdPanel->OnPickEvent(*sel))
+							{
+								return;
+							}
+						}
+					}
+
 				}
 				else
 				{
@@ -961,15 +977,12 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 				emit selectionChanged();
 				m_pWnd->Update(0, false);
-
-				repaint();
 			}
 			else
 			{
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		else if (but == Qt::MiddleButton)
@@ -987,7 +1000,6 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		else if (but == Qt::RightButton)
@@ -1006,10 +1018,10 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		m_bsel = false;
+		repaint();
 	}
 	else 
 	{

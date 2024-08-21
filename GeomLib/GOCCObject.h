@@ -92,3 +92,6 @@ public:
 private:
 	void MakeBox();
 };
+
+// merge a list of occ objects into a single object
+GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist);

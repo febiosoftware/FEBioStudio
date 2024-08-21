@@ -107,6 +107,14 @@ void Post::FEPostMesh::ClearNodeSets()
 	m_NSet.clear();
 }
 
+Post::FSSurface* Post::FEPostMesh::FindSurface(const std::string& s)
+{
+	for (auto& surf : m_Surf)
+	{
+		if (surf->GetName() == s) return surf;
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 void Post::FEPostMesh::Create(int nodes, int elems, int faces, int edges)

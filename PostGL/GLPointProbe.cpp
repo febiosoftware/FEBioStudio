@@ -268,7 +268,7 @@ public:
 		m_pc->Update();
 	}
 
-	int Count() { return 1; }
+	int Count() const { return 1; }
 
 private:
 	GLPointProbe* m_pc;

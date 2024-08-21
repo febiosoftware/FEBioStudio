@@ -1315,7 +1315,7 @@ public:
 		m_pc->UpdatePlaneCut();
 	}
 
-	int Count() { return 1; }
+	int Count() const { return 1; }
 
 private:
 	CGLPlaneCutPlot* m_pc;
