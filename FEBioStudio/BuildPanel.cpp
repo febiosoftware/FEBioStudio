@@ -62,6 +62,8 @@ CCommandPanel* CBuildPanel::GetActivePanel()
 {
 	if (IsEditPanelVisible()) return ui->edit;
 	if (IsMeshPanelVisible()) return ui->mesh;
+	if (IsCreatePanelVisible()) return ui->mesh;
+	if (IsToolsPanelVisible()) return ui->tools;
 	return nullptr;
 }
 
@@ -73,6 +75,16 @@ bool CBuildPanel::IsEditPanelVisible()
 bool CBuildPanel::IsMeshPanelVisible()
 {
 	return (ui->tab->currentIndex() == Ui::CBuildPanel::MESH_PANEL);
+}
+
+bool CBuildPanel::IsCreatePanelVisible()
+{
+	return (ui->tab->currentIndex() == Ui::CBuildPanel::CREATE_PANEL);
+}
+
+bool CBuildPanel::IsToolsPanelVisible()
+{
+	return (ui->tab->currentIndex() == Ui::CBuildPanel::TOOLS_PANEL);
 }
 
 bool CBuildPanel::OnEscapeEvent()

@@ -53,6 +53,8 @@ public:
 
 	bool IsEditPanelVisible();
 	bool IsMeshPanelVisible();
+	bool IsCreatePanelVisible();
+	bool IsToolsPanelVisible();
 
 public slots:
 	void on_buildTab_currentChanged(int index);

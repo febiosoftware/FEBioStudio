@@ -60,7 +60,7 @@ void CMainWindow::on_actionUndo_triggered()
 	if (buildPanel && buildPanel->isVisible())
 	{
 		CCommandPanel* panel = buildPanel->GetActivePanel();
-		if (panel->OnUndo()) return;
+		if (panel && panel->OnUndo()) return;
 	}
 
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());

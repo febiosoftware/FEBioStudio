@@ -698,15 +698,15 @@ class CCmdUnSelectDiscrete : public CCommand
 public:
 	CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n);
 	CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj);
+	CCmdUnSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_obj;		// list of discrete objects to select
+	vector<GDiscreteObject*>		m_obj;		// list of discrete objects to select
 	vector<bool>	m_bold;		// old selection state of surfaces
-	bool			m_badd;		// add to current selection
 };
 
 
