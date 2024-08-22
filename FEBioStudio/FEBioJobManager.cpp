@@ -338,7 +338,6 @@ public:
 		l->addWidget(log);
 		l->addWidget(openPlt);
 
-		l->addStretch();
 		QHBoxLayout* hc = new QHBoxLayout;
 		hc->addStretch();
 		hc->addWidget(close = new QPushButton("Close"));

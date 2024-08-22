@@ -58,6 +58,8 @@ CMemoryWidget::CMemoryWidget(QWidget* parent) : CPlotWidget(parent)
 	m_duration = 500;
 	m_maxPoints = 120;
 
+	setMinimumSize(500, 300);
+
 	CPlotData* pd = new CPlotData();
 	addPlotData(pd);
 	pd->setMarkerType(MarkerType::NO_MARKER);
