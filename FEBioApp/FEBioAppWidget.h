@@ -105,6 +105,9 @@ public slots:
 	void onModelStarted();
 	void onModelFinished(bool returnCode);
 
+signals:
+	void modelFinished();
+
 private:
 	FEBioAppDocument* m_doc;
 	QPlainTextEdit* m_output;

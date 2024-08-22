@@ -252,6 +252,8 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 	if (sztxt) plotWidget->setTitle(QString(sztxt));
 //	plotWidget->showLegend(false);
 
+	QObject::connect(ui, &FEBioAppWidget::modelFinished, plotWidget, &CPlotWidget::OnZoomToFit);
+
 	if (!tag.isleaf())
 	{
 		++tag;

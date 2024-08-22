@@ -78,6 +78,8 @@ void FEBioAppWidget::onModelFinished(bool returnCode)
 	repaint();
 	CMainWindow* wnd = dynamic_cast<CMainWindow*>(window());
 	if (wnd) wnd->UpdateTitle();
+
+	emit modelFinished();
 }
 
 void FEBioAppWidget::AddRepaintChild(QWidget* w)
