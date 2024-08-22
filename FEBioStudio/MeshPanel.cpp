@@ -61,7 +61,6 @@ SOFTWARE.*/
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
 #include "Tool.h"
-#include <GLLib/GDecoration.h>
 
 class CSurfaceMesherProps : public CObjectProps
 {
@@ -213,102 +212,6 @@ void ModifierThread::stop()
 }
 
 //=============================================================================
-class CAddTriangleTool : public ModifierTool
-{
-public:
-	CAddTriangleTool(CMainWindow* wnd, ClassDescriptor* cd) : ModifierTool(wnd, cd) { m_pick = 0; }
-
-	bool onPickEvent(const FESelection& sel)
-	{
-		const FENodeSelection* nodeSel = dynamic_cast<const FENodeSelection*>(&sel);
-		if (nodeSel && (nodeSel->Count() == 1))
-		{
-			int nid = nodeSel->NodeIndex(0);
-			FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-			if (mod)
-			{
-				const FSLineMesh* mesh = nodeSel->GetMesh();
-				points.push_back(to_vec3f(mesh->NodePosition(nid)));
-				mod->SetIntValue(m_pick, nid + 1);
-				for (int i = m_pick + 1; i < 3; ++i) mod->SetIntValue(i, 0);
-
-				m_pick++;
-				if (m_pick >= 3)
-				{
-					mod->push_stack();
-					m_pick = 0;
-				}
-
-				BuildDecoration();
-
-				return true;	
-			}
-		}
-		return false;
-	}
-
-	void BuildDecoration()
-	{
-		GCompositeDecoration* deco = new GCompositeDecoration;
-		int n = (int)points.size();
-		int nf = n / 3;
-		for (int i = 0; i < nf; i++)
-		{
-			GDecoration* di = new GTriangleDecoration(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
-			if (i < nf - 1) di->setColor(GLColor(200, 200, 0));
-			deco->AddDecoration(di);
-		}
-		if ((n % 3) == 2)
-		{
-			deco->AddDecoration(new GLineDecoration(points[n - 2], points[n - 1]));
-		}
-		else if ((n % 3) == 1)
-		{
-			deco->AddDecoration(new GPointDecoration(points[n - 1]));
-		}
-		SetDecoration(deco);
-	}
-
-	bool onUndoEvent() override 
-	{ 
-		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-		if (mod)
-		{
-			if (points.size() > 0) points.pop_back();
-			else return false;
-
-			m_pick--;
-			if (m_pick < 0)
-			{
-				m_pick = 2;
-				mod->pop_stack();
-			}
-			BuildDecoration();
-			return false; // fall through so selection is also undone
-		}
-		else return false;
-	}
-
-	void Reset() override
-	{
-		m_pick = 0;
-		points.clear();
-		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-		if (mod)
-		{
-			mod->SetIntValue(0, 0);
-			mod->SetIntValue(1, 0);
-			mod->SetIntValue(2, 0);
-		}
-		CAbstractTool::Reset();
-	}
-
-private:
-	int m_pick;
-	std::vector<vec3f> points;
-};
-
-//=============================================================================
 // NOTE: Try to keep these in alphabetical order!
 REGISTER_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
 REGISTER_CLASS(FEAddTriangle          , CLASS_FEMODIFIER, "Add Triangle"   , EDIT_MESH);
@@ -343,28 +246,7 @@ REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDI
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
-	m_currentObject = nullptr;
-	m_activeTool = nullptr;
-	initTools();
 	ui->setupUi(this, wnd);
-}
-
-void CMeshPanel::initTools()
-{
-	CMainWindow* wnd = GetMainWindow();
-	for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
-	{
-		ClassDescriptor* pcd = *it;
-		if (pcd->GetType() == CLASS_FEMODIFIER)
-		{
-			// TODO: Find a better way
-			if (strcmp(pcd->GetName(), "Add Triangle") == 0)
-			{
-				tools.push_back(new CAddTriangleTool(wnd, pcd));
-			}
-			else tools.push_back(new ModifierTool(wnd, pcd));
-		}
-	}
 }
 
 void CMeshPanel::Update(bool breset)
@@ -379,10 +261,10 @@ void CMeshPanel::Update(bool breset)
 	GObject::SetActiveObject(activeObject);
 
 	// only update if reset is true or the active object changed
-	if ((breset == false) && (activeObject == m_currentObject)) return;
+	if ((breset == false) && (activeObject == ui->m_currentObject)) return;
 
 	// keep track of the object
-	m_currentObject = activeObject;
+	ui->m_currentObject = activeObject;
 
 	ui->obj->Update();
 
@@ -433,48 +315,12 @@ void CMeshPanel::Update(bool breset)
 
 void CMeshPanel::on_buttons2_idClicked(int id)
 {
-	activateTool(id);
+	ui->activateTool(id);
 }
 
 void CMeshPanel::on_buttons_idClicked(int id)
 {
-	activateTool(id);
-}
-
-void CMeshPanel::activateTool(int id)
-{
-	// deactivate the active tool
-	if (m_activeTool) m_activeTool->Deactivate();
-	m_activeTool = nullptr;
-
-	if (id == -1)
-	{
-		ui->showModifierParametersPanel(false);
-		return;
-	}
-
-	// find the tool
-	for (CAbstractTool* tool : tools)
-	{
-		if (tool->GetID() == id)
-		{
-			m_activeTool = tool;
-			break;
-		}
-	}
-
-	// activate the tool
-	if (m_activeTool)
-	{
-		m_activeTool->Activate();
-		ui->modParams->setCurrentIndex(id);
-		ui->showModifierParametersPanel(true);
-	}
-	else
-	{
-		ui->modParams->setCurrentIndex(0);
-		ui->showModifierParametersPanel(false);
-	}
+	ui->activateTool(id);
 }
 
 void CMeshPanel::Apply()
@@ -484,10 +330,10 @@ void CMeshPanel::Apply()
 
 bool CMeshPanel::OnPickEvent(const FESelection& sel)
 {
-	if (m_activeTool)
+	if (ui->m_activeTool)
 	{
-		bool b = m_activeTool->onPickEvent(sel);
-		if (b) m_activeTool->updateUi();
+		bool b = ui->m_activeTool->onPickEvent(sel);
+		if (b) ui->m_activeTool->updateUi();
 		return b;
 	}
 	else return false;
@@ -495,10 +341,10 @@ bool CMeshPanel::OnPickEvent(const FESelection& sel)
 
 bool CMeshPanel::OnUndo()
 {
-	if (m_activeTool)
+	if (ui->m_activeTool)
 	{
-		bool b = m_activeTool->onUndoEvent();
-		if (b) m_activeTool->updateUi();
+		bool b = ui->m_activeTool->onUndoEvent();
+		if (b) ui->m_activeTool->updateUi();
 		return b;
 	}
 	else return false;
@@ -551,7 +397,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	}
 }
 
-void CMeshPanel::on_apply2_clicked(bool b)
+void CMeshPanel::on_modParams_apply()
 {
 	CMainWindow* w = GetMainWindow();
 
@@ -560,7 +406,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// make sure we have a modifier
-	ModifierTool* modTool = dynamic_cast<ModifierTool*>(m_activeTool);
+	ModifierTool* modTool = dynamic_cast<ModifierTool*>(ui->m_activeTool);
 	if (modTool == nullptr) return;
 
 	FEModifier* mod = modTool->GetModifier();

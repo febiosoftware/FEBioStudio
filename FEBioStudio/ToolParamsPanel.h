@@ -23,77 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "CommandPanel.h"
-#include "DlgStartThread.h"
+#include <QWidget>
+#include "Tool.h"
 
-class CMainWindow;
+class UIToolParamsPanel;
 
-namespace Ui {
-	class CEditPanel;
-}
-
-class CMainWindow;
-class CModelDocument;
-class FESurfaceModifier;
-class FSMesh;
-class GSurfaceMeshObject;
-class FEMesher;
-class FSGroup;
-class FSSurfaceMesh;
-
-class SurfaceModifierThread : public CustomThread
-{
-public:
-	SurfaceModifierThread(FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
-
-	void run() Q_DECL_OVERRIDE;
-
-public:
-	bool hasProgress() override;
-
-	double progress() override;
-
-	const char* currentTask() override;
-
-	void stop() override;
-
-	FSSurfaceMesh* newMesh() { return m_newMesh; }
-
-private:
-	CModelDocument*		m_doc;
-	GSurfaceMeshObject*	m_po;
-	FESurfaceModifier*	m_mod;
-	FSGroup*			m_pg;
-	FSSurfaceMesh*		m_newMesh;
-};
-
-
-class CEditPanel : public CCommandPanel
+class CToolParamsPanel : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CEditPanel(CMainWindow* wnd, QWidget* parent = 0);
+	CToolParamsPanel(QWidget* parent = nullptr);
 
-	// update mesh panel
-	void Update(bool breset = true) override;
+	void AddTool(CAbstractTool* tool);
 
-	void Apply() override;
+	void setCurrentIndex(int n);
 
-private slots:
-	void on_apply_clicked(bool b);
-	void on_menu_triggered(QAction* pa);
-	void on_buttons_idClicked(int id);
-	void on_posX_editingFinished();
-	void on_posY_editingFinished();
-	void on_posZ_editingFinished();
-	void on_modParams_apply();
+public slots:
+	void on_apply_clicked();
+
+signals:
+	void apply();
 
 private:
-	void updateObjectPosition();
-
-private:
-	Ui::CEditPanel*	ui;
+	UIToolParamsPanel* ui;
 };

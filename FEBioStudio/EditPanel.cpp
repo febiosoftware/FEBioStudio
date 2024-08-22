@@ -49,19 +49,42 @@ SOFTWARE.*/
 #include "Commands.h"
 
 //=======================================================================================
-SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg)
+SurfaceModifierThread::SurfaceModifierThread(FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg)
 {
-	m_doc = doc;
 	m_mod = mod;
 	m_pg = pg;
 	m_po = po;
+	m_newMesh = nullptr;
 }
 
 void SurfaceModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFESurfaceModifier(*m_mod, m_po, m_pg);
-	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
-	emit resultReady(bsuccess);
+	if ((m_po == nullptr) || (m_mod == nullptr))
+	{
+		emit resultReady(false);
+		return;
+	}
+
+	// get the surface mesh
+	FSSurfaceMesh* mesh = m_po->GetSurfaceMesh();
+	if (mesh == nullptr)
+	{
+		emit resultReady(false);
+		return;
+	}
+
+	// create a new mesh
+	m_newMesh = nullptr;
+	try {
+		m_newMesh = m_mod->Apply(mesh, m_pg);
+		SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
+	}
+	catch (...)
+	{
+		SetErrorString("Exception detected.");
+	}
+
+	emit resultReady(m_newMesh != nullptr);
 }
 
 bool SurfaceModifierThread::hasProgress()
@@ -99,50 +122,6 @@ REGISTER_CLASS(MMGSurfaceRemesh           , CLASS_SURFACE_MODIFIER, "MMG Remesh"
 REGISTER_CLASS(FEFixJaggedEdges           , CLASS_SURFACE_MODIFIER, "Fix Jagged Edges", 0xFF);
 REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges", 0xFF);
 
-class CPartitionProps : public CDataPropertyList
-{
-public:
-	CPartitionProps(FESurfacePartitionSelection* mod) : m_mod(mod)
-	{
-		m_createNew = true;
-		m_partition = 0;
-
-		addBoolProperty(&m_createNew, "Create New");
-		addIntProperty(&m_partition, "Partition");
-
-		if (m_createNew) mod->assignToPartition(-1);
-	}
-
-	void SetPropertyValue(int i, const QVariant& value)
-	{
-		switch (i)
-		{
-		case 0: m_createNew = value.toBool(); break;
-		case 1: m_partition = value.toInt(); break;
-		}
-
-		if (m_createNew) m_mod->assignToPartition(-1);
-		else m_mod->assignToPartition(m_partition);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_createNew; break;
-		case 1: return m_partition; break;
-		}
-
-		return QVariant();
-	}
-
-
-public:
-	bool	m_createNew;
-	int		m_partition;
-	FESurfacePartitionSelection*	m_mod;
-};
-
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
 	ui->setupUi(this, wnd);
@@ -155,42 +134,45 @@ void CEditPanel::Update(bool breset)
 
 	// make sure the active object has changed
 	GObject* activeObject = doc->GetActiveObject();
-	if (breset) ui->m_currenObject = nullptr;
+	if (breset) ui->m_currentObject = nullptr;
 
-	if (activeObject && (activeObject == ui->m_currenObject))
+	if (activeObject && (activeObject == ui->m_currentObject))
 	{
 		vec3d r = activeObject->GetTransform().GetPosition();
-		ui->SetObjectPosition(r);
-		ui->form->updateData();
+		ui->pos->SetObjectPosition(r);
+		ui->editParams->updateData();
 		return;
 	}
 
-	ui->m_currenObject = activeObject;
+	ui->m_currentObject = activeObject;
 
 	ui->obj->Update();
 
-	if (activeObject == 0)
+	if (activeObject == nullptr)
 	{
-		ui->showParametersPanel(false);
 		ui->showPositionPanel(false);
+		ui->showObjectParametersPanel(false);
 		ui->showButtonsPanel(false);
+		ui->showModifierParametersPanel(false);
 	}
 	else
 	{
 		ui->showPositionPanel(true);
 
 		vec3d r = activeObject->GetTransform().GetPosition();
-		ui->SetObjectPosition(r);
+		ui->pos->SetObjectPosition(r);
 
 		if (activeObject->Parameters() > 0)
 		{
-			ui->setPropertyList(new CObjectProps(activeObject));
-			ui->showParametersPanel(true);
+			ui->editParams->SetPropertyList(new CObjectProps(activeObject));
+			ui->showObjectParametersPanel(true);
+			ui->showModifierParametersPanel(false);
 		}
 		else
 		{
-			ui->setPropertyList(0);
-			ui->showParametersPanel(false);
+			ui->editParams->SetPropertyList(nullptr);
+			ui->showObjectParametersPanel(false);
+			ui->showModifierParametersPanel(false);
 		}
 
 		GSurfaceMeshObject* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(activeObject);
@@ -213,8 +195,8 @@ void CEditPanel::Apply()
 void CEditPanel::on_apply_clicked(bool b)
 {
 	// get the acrive object
-	GObject* activeObject = ui->m_currenObject;
-	if (activeObject == 0) return;
+	GObject* activeObject = ui->m_currentObject;
+	if (activeObject == nullptr) return;
 
 	// check for a FE mesh
 	FSMesh* pm = activeObject->GetFEMesh();
@@ -226,58 +208,83 @@ void CEditPanel::on_apply_clicked(bool b)
 		}
 	}
 
-	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
-	if (surfaceObject)
+	CCmdGroup* cmd = new CCmdGroup("Change mesh");
+	cmd->AddCommand(new CCmdChangeFEMesh(activeObject, nullptr));
+	cmd->AddCommand(new CCmdChangeObjectParams(activeObject));
+	GetDocument()->DoCommand(cmd);
+
+	// clear any highlights
+	GLHighlighter::ClearHighlights();
+}
+
+void CEditPanel::on_modParams_apply()
+{
+	// get the active object
+	GObject* activeObject = ui->m_currentObject;
+	if (activeObject == nullptr) return;
+
+	// check for a FE mesh
+	FSMesh* pm = activeObject->GetFEMesh();
+	if (pm)
 	{
-		if (ui->m_mod)
+		if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
 		{
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-			FESelection* sel = doc->GetCurrentSelection();
-			FEItemListBuilder* list = sel->CreateItemList();
-			FSGroup* g = 0;
-			if (sel->Size() > 0)
-			{
-				g = dynamic_cast<FSGroup*>(list);
-				if (g == 0) { delete list; list = 0; }
-			}
-
-			SurfaceModifierThread* thread = new SurfaceModifierThread(doc, ui->m_mod, surfaceObject, g);
-			CDlgStartThread dlg(this, thread);
-			dlg.setTask(QString::fromStdString(ui->m_mod->GetName()));
-			if (dlg.exec())
-			{
-				bool bsuccess = dlg.GetReturnCode();
-				if (bsuccess == false)
-				{
-					std::string err;
-					if (ui->m_mod) err = ui->m_mod->GetErrorString();
-					if (err.empty()) err = "(unknown)";
-					QString errStr = QString::fromStdString(err);
-					QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
-				}
-				else
-				{
-					std::string log = ui->m_mod->GetErrorString();
-					if (log.empty() == false)
-					{
-						GetMainWindow()->AddLogEntry(QString::fromStdString(log) + "\n");
-					}
-				}
-				GetMainWindow()->RedrawGL();
-				GetMainWindow()->UpdateModel(activeObject, true);
-			}
-
-			// don't forget to cleanup
-			if (g) delete g;
+			return;
 		}
 	}
-	else
+
+	// make sure we have a modifier
+	SurfaceModifierTool* modTool = dynamic_cast<SurfaceModifierTool*>(ui->m_activeTool);
+	if (modTool == nullptr) return;
+
+	FESurfaceModifier* mod = modTool->GetModifier();
+	if (mod == nullptr) return;
+
+	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
+	if (surfaceObject == nullptr) return;
+
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	FESelection* sel = doc->GetCurrentSelection();
+	FEItemListBuilder* list = sel->CreateItemList();
+	FSGroup* g = 0;
+	if (sel->Size() > 0)
 	{
-		CCmdGroup* cmd = new CCmdGroup("Change mesh");
-		cmd->AddCommand(new CCmdChangeFEMesh(activeObject, nullptr));
-		cmd->AddCommand(new CCmdChangeObjectParams(activeObject));
-		GetDocument()->DoCommand(cmd);
+		g = dynamic_cast<FSGroup*>(list);
+		if (g == 0) { delete list; list = 0; }
 	}
+
+	SurfaceModifierThread* thread = new SurfaceModifierThread(mod, surfaceObject, g);
+	CDlgStartThread dlg(this, thread);
+	dlg.setTask(QString::fromStdString(mod->GetName()));
+	if (dlg.exec())
+	{
+		bool bsuccess = dlg.GetReturnCode();
+		if (bsuccess == false)
+		{
+			std::string err;
+			if (mod) err = mod->GetErrorString();
+			if (err.empty()) err = "(unknown)";
+			QString errStr = QString::fromStdString(err);
+			QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
+		}
+		else
+		{
+			std::string log = mod->GetErrorString();
+			if (log.empty() == false)
+			{
+				GetMainWindow()->AddLogEntry(QString::fromStdString(log) + "\n");
+			}
+
+			// if the object has an FE mesh, we need to delete it
+			CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
+			cmdg->AddCommand(new CCmdChangeFEMesh(surfaceObject, nullptr));
+			cmdg->AddCommand(new CCmdChangeFESurfaceMesh(surfaceObject, thread->newMesh()));
+			doc->DoCommand(cmdg, false);
+		}
+		GetMainWindow()->RedrawGL();
+		GetMainWindow()->UpdateModel(activeObject, true);
+	}
+	thread->deleteLater();
 
 	// clear any highlights
 	GLHighlighter::ClearHighlights();
@@ -338,7 +345,7 @@ void CEditPanel::updateObjectPosition()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == nullptr) return;
 
-	vec3d r = ui->objectPosition();
+	vec3d r = ui->pos->objectPosition();
 	Transform t = po->GetTransform();
 	t.SetPosition(r);
 
@@ -362,34 +369,7 @@ void CEditPanel::on_posZ_editingFinished()
 	updateObjectPosition();
 }
 
-void CEditPanel::on_buttons_buttonSelected(int id)
+void CEditPanel::on_buttons_idClicked(int id)
 {
-	ui->m_nid = id;
-	if (id == -1) ui->showParametersPanel(false);
-	else
-	{
-		if (ui->m_mod) delete ui->m_mod;
-		ui->m_mod = 0;
-
-		ui->form->setPropertyList(0);
-
-		ClassDescriptor* pcd = ui->buttons->GetClassDescriptor(id);
-		if (pcd)
-		{
-			ui->m_mod = static_cast<FESurfaceModifier*>(pcd->Create()); assert(ui->m_mod);
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-			GModel* geo = &doc->GetFSModel()->GetModel();
-
-			CPropertyList* pl = 0;
-			if (dynamic_cast<FECurveIntersect*>(ui->m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(ui->m_mod));
-			else if (dynamic_cast<FESurfacePartitionSelection*>(ui->m_mod)) pl = new CPartitionProps(dynamic_cast<FESurfacePartitionSelection*>(ui->m_mod));
-			else pl = new CObjectProps(ui->m_mod);
-
-			ui->setPropertyList(pl);
-		}
-
-		ui->showParametersPanel(true);
-	}
+	ui->activateTool(id);
 }

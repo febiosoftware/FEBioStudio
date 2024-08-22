@@ -23,77 +23,65 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "stdafx.h"
+#include "ToolParamsPanel.h"
+#include <QStackedWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QBoxLayout>
 
-#pragma once
-#include "CommandPanel.h"
-#include "DlgStartThread.h"
+class UIToolParamsPanel 
+{
+public:
+	QStackedWidget* stack;
 
-class CMainWindow;
+	void setup(CToolParamsPanel* w)
+	{
+		QPushButton* pb = new QPushButton("Apply");
 
-namespace Ui {
-	class CEditPanel;
+		stack = new QStackedWidget;
+		QLabel* label = new QLabel("(No tool selected)");
+		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+		stack->addWidget(label);
+
+		QVBoxLayout* pl = new QVBoxLayout;
+		pl->addWidget(stack);
+		pl->addWidget(pb);
+		pl->addStretch();
+		w->setLayout(pl);
+
+		QObject::connect(pb, &QPushButton::clicked, w, &CToolParamsPanel::on_apply_clicked);
+	}
+
+	void addTool(CAbstractTool* tool)
+	{
+		QWidget* pw = tool->createUi();
+		if (pw == nullptr)
+		{
+			QLabel* pl = new QLabel("(no properties)");
+			pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+			stack->addWidget(pl);
+		}
+		else stack->addWidget(pw);
+	}
+};
+
+CToolParamsPanel::CToolParamsPanel(QWidget* parent) : QWidget(parent), ui(new UIToolParamsPanel)
+{
+	ui->setup(this);
 }
 
-class CMainWindow;
-class CModelDocument;
-class FESurfaceModifier;
-class FSMesh;
-class GSurfaceMeshObject;
-class FEMesher;
-class FSGroup;
-class FSSurfaceMesh;
-
-class SurfaceModifierThread : public CustomThread
+void CToolParamsPanel::AddTool(CAbstractTool* tool)
 {
-public:
-	SurfaceModifierThread(FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
+	ui->addTool(tool);
+}
 
-	void run() Q_DECL_OVERRIDE;
+void CToolParamsPanel::setCurrentIndex(int n) 
+{ 
+	ui->stack->setCurrentIndex(n); 
+}
 
-public:
-	bool hasProgress() override;
-
-	double progress() override;
-
-	const char* currentTask() override;
-
-	void stop() override;
-
-	FSSurfaceMesh* newMesh() { return m_newMesh; }
-
-private:
-	CModelDocument*		m_doc;
-	GSurfaceMeshObject*	m_po;
-	FESurfaceModifier*	m_mod;
-	FSGroup*			m_pg;
-	FSSurfaceMesh*		m_newMesh;
-};
-
-
-class CEditPanel : public CCommandPanel
+void CToolParamsPanel::on_apply_clicked()
 {
-	Q_OBJECT
-
-public:
-	CEditPanel(CMainWindow* wnd, QWidget* parent = 0);
-
-	// update mesh panel
-	void Update(bool breset = true) override;
-
-	void Apply() override;
-
-private slots:
-	void on_apply_clicked(bool b);
-	void on_menu_triggered(QAction* pa);
-	void on_buttons_idClicked(int id);
-	void on_posX_editingFinished();
-	void on_posY_editingFinished();
-	void on_posZ_editingFinished();
-	void on_modParams_apply();
-
-private:
-	void updateObjectPosition();
-
-private:
-	Ui::CEditPanel*	ui;
-};
+	emit apply();
+}
