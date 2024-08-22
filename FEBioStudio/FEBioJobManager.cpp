@@ -169,7 +169,7 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 
 		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
 		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
-		CDlgJobMonitor dlg(im->wnd);
+		CDlgJobReport dlg(im->wnd);
 		dlg.SetFEBioJob(job);
 		if (dlg.exec())
 		{
@@ -255,7 +255,7 @@ QString FormatTimeString(double sec)
 	return QString("%1:%2:%3").arg(nhr).arg(nmin, 2, 10, QChar('0')).arg(nsec, 2, 10, QChar('0'));
 }
 
-class Ui::CDlgJobMonitor
+class Ui::CDlgJobReport
 {
 public:
 	QLabel* jobName;
@@ -279,7 +279,7 @@ public:
 	QList<LogEntry> m_log;
 
 public:
-	void setup(::CDlgJobMonitor* dlg)
+	void setup(::CDlgJobReport* dlg)
 	{
 		QGridLayout* g = new QGridLayout;
 		g->addWidget(new QLabel("Job:"), 0, 0);
@@ -348,8 +348,8 @@ public:
 
 		QObject::connect(openPlt, &QPushButton::clicked, dlg, &QDialog::accept);
 		QObject::connect(close, &QPushButton::clicked, dlg, &QDialog::reject);
-		QObject::connect(showWarnings, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
-		QObject::connect(showErrors, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
+		QObject::connect(showWarnings, &QPushButton::toggled, dlg, &::CDlgJobReport::UpdateReport);
+		QObject::connect(showErrors, &QPushButton::toggled, dlg, &::CDlgJobReport::UpdateReport);
 
 #ifdef WIN32
 		MessageBeep(MB_ICONASTERISK);
@@ -464,18 +464,18 @@ public:
 	}
 };
 
-CDlgJobMonitor::CDlgJobMonitor(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlgJobMonitor())
+CDlgJobReport::CDlgJobReport(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlgJobReport())
 {
-	setWindowTitle("Job Monitor");
+	setWindowTitle("Job Summary");
 	ui->setup(this);
 }
 
-void CDlgJobMonitor::SetFEBioJob(CFEBioJob* job)
+void CDlgJobReport::SetFEBioJob(CFEBioJob* job)
 {
 	ui->setJob(job);
 }
 
-void CDlgJobMonitor::UpdateReport()
+void CDlgJobReport::UpdateReport()
 {
 	ui->UpdateLog();
 }

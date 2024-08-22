@@ -55,15 +55,15 @@ private:
 };
 
 namespace Ui {
-	class CDlgJobMonitor;
+	class CDlgJobReport;
 }
 
-class CDlgJobMonitor : public QDialog
+class CDlgJobReport : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgJobMonitor(CMainWindow* wnd);
+	CDlgJobReport(CMainWindow* wnd);
 
 	void SetFEBioJob(CFEBioJob* job);
 
@@ -71,5 +71,5 @@ public slots:
 	void UpdateReport();
 
 private:
-	Ui::CDlgJobMonitor* ui;
+	Ui::CDlgJobReport* ui;
 };
