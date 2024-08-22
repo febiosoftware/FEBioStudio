@@ -995,7 +995,7 @@ void CMainWindow::SetCurrentState(int n)
 		ui->postToolBar->SetSpinValue(n + 1);
 
 	FEBioMonitorDoc* mdoc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
-	if (mdoc && mdoc->IsPaused())
+	if (mdoc && (mdoc->IsPaused() || !mdoc->IsRunning()))
 	{
 		mdoc->SetCurrentState(n);
 		RedrawGL();
