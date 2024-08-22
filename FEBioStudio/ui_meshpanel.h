@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "MeshButtonBox.h"
 #include "ObjectProps.h"
 #include "Tool.h"
+#include "ButtonBox.h"
 
 enum MeshEditButtonFlags
 {
@@ -120,38 +121,6 @@ public:
 
 private:
 	QStackedWidget* stack;
-};
-
-class CButtonBox : public QWidget
-{
-public:
-	CButtonBox(const QString& name, QWidget* parent = nullptr) : QWidget(parent)
-	{
-		m_count = 0;
-
-		grid = new QGridLayout;
-		setLayout(grid);
-		grid->setSpacing(2);
-
-		group = new QButtonGroup(this);
-		group->setObjectName(name);
-	}
-
-	void AddButton(const QString& txt, int id)
-	{
-		QPushButton* but = new QPushButton(txt);
-		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-		but->setCheckable(true);
-
-		grid->addWidget(but, m_count / 2, m_count % 2);
-		group->addButton(but); group->setId(but, id);
-		m_count++;
-	}
-
-private:
-	QGridLayout* grid;
-	QButtonGroup* group;
-	int m_count;
 };
 
 class ModifierTool : public CAbstractTool
