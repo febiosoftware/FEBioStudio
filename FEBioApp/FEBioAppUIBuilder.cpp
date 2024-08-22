@@ -724,7 +724,11 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 void FEBioAppUIBuilder::parseOutput(XMLTag& tag, QBoxLayout* playout)
 {
+	const char* szid = tag.AttributeValue("id", true);
+
 	QPlainTextEdit* w = new QPlainTextEdit;
+	if (szid) w->setObjectName(szid);
+
 	w->setReadOnly(true);
 	w->setFont(QFont("Courier", 11));
 	w->setWordWrapMode(QTextOption::NoWrap);

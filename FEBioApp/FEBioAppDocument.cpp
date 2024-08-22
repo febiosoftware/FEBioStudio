@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QThread>
 #include <QMessageBox>
 #include "../FEBioStudio/MainWindow.h"
-#include "ScriptParser.h"
+#include "FEBioAppScript.h"
 #include <map>
 #include <functional>
 
@@ -206,10 +206,10 @@ void FEBioAppDocument::runScript(const QString& script)
 {
 	QObject* po = QObject::sender();
 
-	ScriptParser parser(this);
-	if (!parser.execute(script))
+	FEBioAppScript appScript(this);
+	if (!appScript.run(script))
 	{
-		QMessageBox::critical(GetMainWindow(), "FEBio Studio", QString("Failed to execute script.\n%1").arg(parser.errorString()));
+		QMessageBox::critical(GetMainWindow(), "FEBio Studio", QString("Failed to execute script.\n%1").arg(appScript.errorString()));
 	}
 }
 

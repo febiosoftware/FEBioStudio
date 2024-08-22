@@ -93,11 +93,12 @@ public:
 	UIElement GetElementByID(const QString& objName);
 
 	void print(const QString& txt);
+	void debug(const QString& txt);
+	void error(const QString& txt);
 
 	void SetOutputWidget(QPlainTextEdit* w);
 
 private:
-	void debug(const QString& txt);
 
 public slots:
 	void onDataChanged();

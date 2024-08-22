@@ -38,6 +38,9 @@ void UIElement::setText(const QString& txt) const
 
 	QLabel* pl = dynamic_cast<QLabel*>(m_w);
 	if (pl) pl->setText(txt);
+
+	QPlainTextEdit* pe = dynamic_cast<QPlainTextEdit*>(m_w);
+	if (pe) pe->appendPlainText(txt);
 }
 
 FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)
@@ -101,6 +104,22 @@ void FEBioAppWidget::debug(const QString& txt)
 		QTextCharFormat oldFormat = m_output->currentCharFormat();
 		QTextCharFormat f = oldFormat;
 		f.setForeground(QBrush(QColor::fromRgb(255, 255, 0)));
+		m_output->setCurrentCharFormat(f);
+
+		print(s);
+
+		m_output->setCurrentCharFormat(oldFormat);
+	}
+}
+
+void FEBioAppWidget::error(const QString& txt)
+{
+	QString s = "error>" + txt;
+	if (m_output)
+	{
+		QTextCharFormat oldFormat = m_output->currentCharFormat();
+		QTextCharFormat f = oldFormat;
+		f.setForeground(QBrush(QColor::fromRgb(255, 0, 0)));
 		m_output->setCurrentCharFormat(f);
 
 		print(s);
