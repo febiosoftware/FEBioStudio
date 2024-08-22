@@ -60,6 +60,10 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 
 	m_bhasProgress = false;
 	m_pct = 0.0;
+
+#ifdef HAS_SSH
+	m_sshHandler = nullptr;
+#endif
 }
 
 CFEBioJob::~CFEBioJob()

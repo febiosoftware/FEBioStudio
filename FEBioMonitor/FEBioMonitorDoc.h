@@ -32,6 +32,7 @@ SOFTWARE.*/
 class FEModel; // from FEBio
 class FEBioModel;
 class FEGlobalMatrix;
+class CFEBioJob;
 
 class FEBioMonitorDoc;
 
@@ -47,7 +48,7 @@ class FEBioMonitorThread : public QThread
 	Q_OBJECT
 
 public:
-	FEBioMonitorThread(FEBioMonitorDoc* doc);
+	FEBioMonitorThread(FEBioMonitorDoc* doc, CFEBioJob* job);
 
 	void run() override;
 
@@ -56,6 +57,7 @@ signals:
 
 private:
 	FEBioMonitorDoc* m_doc;
+	CFEBioJob* m_job;
 };
 
 class FEBioWatchVariable

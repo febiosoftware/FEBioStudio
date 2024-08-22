@@ -38,6 +38,8 @@ SOFTWARE.*/
 #include "FEBioMonitorView.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
+#include "../FEBioStudio/FEBioJobManager.h"
+#include "../FEBioStudio/FEBioJob.h"
 
 // winbase.h defines a GetCurrentTime macro, 
 // so we need to undef this before we include FEModel.h
@@ -71,7 +73,7 @@ private:
 	FEBioMonitorDoc* m_doc;
 };
 
-FEBioMonitorThread::FEBioMonitorThread(FEBioMonitorDoc* doc) : m_doc(doc)
+FEBioMonitorThread::FEBioMonitorThread(FEBioMonitorDoc* doc, CFEBioJob* job) : m_doc(doc), m_job(job)
 {
 	connect(this, &QThread::finished, this, &QObject::deleteLater);
 	connect(this, &FEBioMonitorThread::jobFinished, doc, &FEBioMonitorDoc::onJobFinished);
@@ -92,6 +94,7 @@ void FEBioMonitorThread::run()
 	}
 
 	FEBioModel fem;
+	fem.CreateReport(true);
 	fem.GetLogFile().SetLogStream(new FEBLogStream(m_doc));
 	fem.SetDebugLevel(m_doc->GetDebugLevel());
 
@@ -104,6 +107,10 @@ void FEBioMonitorThread::run()
 	}
 
 	bool b = fem.Init();
+
+	std::string plotFileName = fem.GetPlotFileName();
+	m_job->SetPlotFileName(plotFileName);
+
 	if (b == false)
 	{
 		emit jobFinished(false);
@@ -117,6 +124,7 @@ void FEBioMonitorThread::run()
 	{
 		b = false;
 	}
+	if (m_job) m_job->m_jobReport = fem.GetReport();
 
 	emit jobFinished(b);
 }
@@ -143,6 +151,7 @@ public:
 	QMutex	mutex;
 	Timer	timer;
 	FEBioModel* fem = nullptr;
+	CFEBioJob* job = nullptr;
 
 	QVector<FEBioWatchVariable*>	watches;
 };
@@ -291,7 +300,12 @@ void FEBioMonitorDoc::RunJob()
 	m->progressPct = 0.0;
 	m->timer.reset();
 	m->timer.start();
-	FEBioMonitorThread* thread = new FEBioMonitorThread(this);
+	assert(m->job == nullptr);
+	m->job = new CFEBioJob(this);
+	m->job->SetName("febio monitor");
+	m->job->SetFEBFileName(GetFEBioInputFile().toStdString());
+	m->job->StartTimer();
+	FEBioMonitorThread* thread = new FEBioMonitorThread(this, m->job);
 	thread->start();
 }
 
@@ -330,17 +344,27 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 	m->timer.stop();
 	m->isRunning = false;
 
+	assert(m->job);
+	m->job->StopTimer();
+	m->job->SetStatus(b ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
+
 	if (m->isStopped)
 	{
 		QMessageBox::information(m_wnd, "FEBio Studio", "Job cancelled.");
 	}
 	else
 	{
-		if (b)
-			QMessageBox::information(m_wnd, "FEBio Studio", "NORMAL TERMINATION");
-		else
-			QMessageBox::critical(m_wnd, "FEBio Studio", "ERROR TERMINATION");
+		CDlgJobReport dlg(GetMainWindow());
+		dlg.SetFEBioJob(m->job);
+		if (dlg.exec())
+		{
+			GetMainWindow()->OpenFile(QString::fromStdString(m->job->GetPlotFileName()), false, false);
+		}
 	}
+
+	delete m->job;
+	m->job = nullptr;
+
 	updateWindowTitle();
 }
 
