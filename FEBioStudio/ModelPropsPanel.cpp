@@ -427,7 +427,7 @@ public:
 		math  = new CMathEditWidget; math->setObjectName("math");
 		math->SetOrdinate("t");
 
-		math2 = new CMathEditWidget; math->setObjectName("math2");
+		math2 = new CMathEditWidget; math2->setObjectName("math2");
 		math2->SetOrdinate("t");
 		math2->showRangeOptions(true);
 
