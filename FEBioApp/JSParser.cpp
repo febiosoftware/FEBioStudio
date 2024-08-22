@@ -141,7 +141,9 @@ void JSParser::parse()
 JSExpressionStatement* JSParser::parseExpressionStatement()
 {
 	unique_ptr<JSExpression> expr(parseExpression());
-	eatToken(TokenKind::STATEMENT_END);
+	if ((m_token != STATEMENT_END) && (m_token != SCRIPT_END))
+		throw MissingStatementEnd();
+	nextToken();
 	JSExpressionStatement* exprstmt = new JSExpressionStatement(expr.release());
 	return exprstmt;
 }
