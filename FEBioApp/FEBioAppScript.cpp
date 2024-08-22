@@ -99,6 +99,9 @@ bool FEBioAppScript::runScript()
 	app.m_functions["runModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
 			m_doc->runModel();
 		};
+	app.m_functions["stopModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
+		m_doc->stopModel();
+		};
 
 	JSObject& ui = interpreter.addVar("ui");
 	ui.m_functions["getElementById"] = [=](const std::list<JSObject>& args, JSObject& ret) {
