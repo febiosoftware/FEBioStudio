@@ -47,6 +47,9 @@ SOFTWARE.*/
 #include "MeshButtonBox.h"
 #include "ObjectProps.h"
 #include "Tool.h"
+#include "ButtonBox.h"
+#include "ToolParamsPanel.h"
+#include <GLLib/GDecoration.h>
 
 enum MeshEditButtonFlags
 {
@@ -86,75 +89,6 @@ private:
 	CPropertyListForm* form;
 };
 
-class CModifierParamsPanel : public QWidget
-{
-public:
-	CModifierParamsPanel(QWidget* parent = nullptr) : QWidget(parent)
-	{
-		QPushButton* pb = new QPushButton("Apply");
-		pb->setObjectName("apply2");
-
-		stack = new QStackedWidget;
-		QLabel* label = new QLabel("(No tool selected)");
-		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-		stack->addWidget(label);
-
-		QVBoxLayout* pl = new QVBoxLayout;
-		pl->addWidget(stack);
-		pl->addWidget(pb);
-		pl->addStretch();
-		setLayout(pl);
-	}
-
-	void AddTool(CAbstractTool* tool)
-	{
-		QWidget* pw = tool->createUi();
-		if (pw == nullptr)
-		{
-			QLabel* pl = new QLabel("(no properties)");
-			pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-			stack->addWidget(pl);
-		}
-		else stack->addWidget(pw);
-	}
-
-	void setCurrentIndex(int n) { stack->setCurrentIndex(n); }
-
-private:
-	QStackedWidget* stack;
-};
-
-class CButtonBox : public QWidget
-{
-public:
-	CButtonBox(const QString& name, QWidget* parent = nullptr) : QWidget(parent)
-	{
-		m_count = 0;
-
-		grid = new QGridLayout;
-		setLayout(grid);
-		grid->setSpacing(2);
-
-		group = new QButtonGroup(this);
-		group->setObjectName(name);
-	}
-
-	void AddButton(const QString& txt, int id)
-	{
-		QPushButton* but = new QPushButton(txt);
-		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-		but->setCheckable(true);
-
-		grid->addWidget(but, m_count / 2, m_count % 2);
-		group->addButton(but); group->setId(but, id);
-		m_count++;
-	}
-
-private:
-	QGridLayout* grid;
-	QButtonGroup* group;
-	int m_count;
-};
 
 class ModifierTool : public CAbstractTool
 {
@@ -209,6 +143,101 @@ private:
 	CPropertyListForm* ui;
 };
 
+class CAddTriangleTool : public ModifierTool
+{
+public:
+	CAddTriangleTool(CMainWindow* wnd, ClassDescriptor* cd) : ModifierTool(wnd, cd) { m_pick = 0; }
+
+	bool onPickEvent(const FESelection& sel)
+	{
+		const FENodeSelection* nodeSel = dynamic_cast<const FENodeSelection*>(&sel);
+		if (nodeSel && (nodeSel->Count() == 1))
+		{
+			int nid = nodeSel->NodeIndex(0);
+			FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+			if (mod)
+			{
+				const FSLineMesh* mesh = nodeSel->GetMesh();
+				points.push_back(to_vec3f(mesh->NodePosition(nid)));
+				mod->SetIntValue(m_pick, nid + 1);
+				for (int i = m_pick + 1; i < 3; ++i) mod->SetIntValue(i, 0);
+
+				m_pick++;
+				if (m_pick >= 3)
+				{
+					mod->push_stack();
+					m_pick = 0;
+				}
+
+				BuildDecoration();
+
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void BuildDecoration()
+	{
+		GCompositeDecoration* deco = new GCompositeDecoration;
+		int n = (int)points.size();
+		int nf = n / 3;
+		for (int i = 0; i < nf; i++)
+		{
+			GDecoration* di = new GTriangleDecoration(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+			if (i < nf - 1) di->setColor(GLColor(200, 200, 0));
+			deco->AddDecoration(di);
+		}
+		if ((n % 3) == 2)
+		{
+			deco->AddDecoration(new GLineDecoration(points[n - 2], points[n - 1]));
+		}
+		else if ((n % 3) == 1)
+		{
+			deco->AddDecoration(new GPointDecoration(points[n - 1]));
+		}
+		SetDecoration(deco);
+	}
+
+	bool onUndoEvent() override
+	{
+		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+		if (mod)
+		{
+			if (points.size() > 0) points.pop_back();
+			else return false;
+
+			m_pick--;
+			if (m_pick < 0)
+			{
+				m_pick = 2;
+				mod->pop_stack();
+			}
+			BuildDecoration();
+			return false; // fall through so selection is also undone
+		}
+		else return false;
+	}
+
+	void Reset() override
+	{
+		m_pick = 0;
+		points.clear();
+		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
+		if (mod)
+		{
+			mod->SetIntValue(0, 0);
+			mod->SetIntValue(1, 0);
+			mod->SetIntValue(2, 0);
+		}
+		CAbstractTool::Reset();
+	}
+
+private:
+	int m_pick;
+	std::vector<vec3f> points;
+};
+
 class Ui::CMeshPanel
 {
 	// make sure these values correspond to the order of the panels
@@ -221,22 +250,32 @@ class Ui::CMeshPanel
 	};
 
 public:
+	::CMainWindow* m_wnd;
+
 	CToolBox*			tool;
 	CObjectPanel*		obj;
-	CMesherParamsPanel*		mesherParams;
-	CModifierParamsPanel*	modParams;
+	CMesherParamsPanel*	mesherParams;
+	CToolParamsPanel*	modParams;
+
+	CAbstractTool* m_activeTool = nullptr;
+	QList<CAbstractTool*>	tools;
+
+	GObject* m_currentObject = nullptr;
 
 public:
 	void setupUi(::CMeshPanel* parent, ::CMainWindow* mainWindow)
 	{
+		m_wnd = mainWindow;
+
 		obj = new CObjectPanel(mainWindow); obj->setObjectName("objectPanel");
 
 		// parameters for meshers
 		mesherParams = new CMesherParamsPanel;
 
 		// UIs for tools
-		modParams = new CModifierParamsPanel;
-		QList<CAbstractTool*>& tools = parent->tools;
+		initTools();
+		modParams = new CToolParamsPanel;
+		modParams->setObjectName("modParams");
 		int n = 1;
 		for (CAbstractTool* tool : tools)
 		{
@@ -285,6 +324,59 @@ public:
 		parent->setLayout(mainLayout);
 
 		QMetaObject::connectSlotsByName(parent);
+	}
+
+	void initTools()
+	{
+		for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+		{
+			ClassDescriptor* pcd = *it;
+			if (pcd->GetType() == CLASS_FEMODIFIER)
+			{
+				// TODO: Find a better way
+				if (strcmp(pcd->GetName(), "Add Triangle") == 0)
+				{
+					tools.push_back(new CAddTriangleTool(m_wnd, pcd));
+				}
+				else tools.push_back(new ModifierTool(m_wnd, pcd));
+			}
+		}
+	}
+
+	void activateTool(int id)
+	{
+		// deactivate the active tool
+		if (m_activeTool) m_activeTool->Deactivate();
+		m_activeTool = nullptr;
+
+		if (id == -1)
+		{
+			showModifierParametersPanel(false);
+			return;
+		}
+
+		// find the tool
+		for (CAbstractTool* tool : tools)
+		{
+			if (tool->GetID() == id)
+			{
+				m_activeTool = tool;
+				break;
+			}
+		}
+
+		// activate the tool
+		if (m_activeTool)
+		{
+			m_activeTool->Activate();
+			modParams->setCurrentIndex(id);
+			showModifierParametersPanel(true);
+		}
+		else
+		{
+			modParams->setCurrentIndex(0);
+			showModifierParametersPanel(false);
+		}
 	}
 
 	void setMesherPropertyList(CPropertyList* pl)

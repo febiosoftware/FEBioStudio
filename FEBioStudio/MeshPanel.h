@@ -60,26 +60,16 @@ public:
 
 	bool OnUndo() override;
 
-private:
-	void initTools();
-	void activateTool(int id);
-
 private slots:
 	void on_buttons2_idClicked(int n);
 	void on_buttons_idClicked(int id);
 	void on_apply_clicked(bool b);
-	void on_apply2_clicked(bool b);
+	void on_modParams_apply();
 	void on_menu_triggered(QAction* pa);
 	void on_form_dataChanged(bool itemModified, int index);
 
 private:
-	CAbstractTool*			m_activeTool;
-	QList<CAbstractTool*>	tools;
-
-	GObject*			m_currentObject;
-	Ui::CMeshPanel*		ui;
-
-	friend class Ui::CMeshPanel;
+	Ui::CMeshPanel* ui;
 };
 
 class MeshingThread : public CustomThread
