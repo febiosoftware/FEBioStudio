@@ -30,7 +30,5 @@ class FSProject;
 namespace FEBio {
 	void InitFEBioLibrary();
 
-	void SetActiveProject(FSProject* prj);
-
 	bool ConfigureFEBio(const char* szfilename);
 }

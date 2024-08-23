@@ -601,7 +601,7 @@ void FSProject::SetDefaultPlotVariables()
 	{
 		m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("stress", true);
-        m_plt.AddPlotVariable("relative volume", true);
+		m_plt.AddPlotVariable("relative volume", true);
 	}
 	else if (strcmp(szmod, "biphasic") == 0)
 	{
