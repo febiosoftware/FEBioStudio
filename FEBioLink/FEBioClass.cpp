@@ -170,6 +170,7 @@ namespace febio {
 	void initCreateHandlers()
 	{
 		FECoreKernel& fecore = FECoreKernel::GetInstance();
+		addDefaultCreateHandler<FESolver>([](FESolver* pc) { pc->m_msymm = 3; }); // = preferred
 
 		// solid module handlers
 		fecore.SetActiveModule("solid");
