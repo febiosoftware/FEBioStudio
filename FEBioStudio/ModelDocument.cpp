@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
+#include <FEBioLink/FEBioClass.h>
 #include "GLModelScene.h"
 #include "units.h"
 #include "GLHighlighter.h"
