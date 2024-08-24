@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include <sstream>
+#include <iomanip>
 
 class NullDereference : public std::runtime_error {
 public: NullDereference() : std::runtime_error("Dereferencing null object") {}
@@ -47,7 +48,7 @@ public:
 	static JSString number(double a)
 	{
 		std::stringstream ss;
-		ss << a;
+		ss << std::setprecision(16) << a;
 		return JSString(ss.str());
 	}
 };
@@ -69,6 +70,8 @@ public:
 	typedef std::function<void(const std::list<JSObject>& args, JSObject& ret)> Function;
 
 	JSObject();
+
+	JSObject(AbstractValue* val);
 
 	explicit JSObject(bool v);
 	explicit JSObject(double v);
@@ -279,7 +282,7 @@ public:
 		return out;
 	}
 
-	void addProperty(const std::string& name, JSObject& val) { m_val[name] = val; }
+	void addProperty(const std::string& name, const JSObject& val) { m_val[name] = val; }
 
 	JSObject& operator[](const std::string& name)
 	{
@@ -302,6 +305,7 @@ private:
 typedef std::list<JSObject> JSObjectList;
 
 inline JSObject::JSObject() : m_val(nullptr) {}
+inline JSObject::JSObject(AbstractValue* val) : m_val(nullptr) { SetValue(val); }
 
 inline void JSObject::operator = (bool v) { SetValue(new BooleanValue(v)); }
 inline void JSObject::operator = (double v) { SetValue(new NumberValue(v)); }
@@ -375,7 +379,7 @@ inline AbstractValue* JSObject::CopyValue() const
 			JSObject& src_i = it->second;
 			JSObject tmp;
 			tmp.SetValue(src_i.CopyValue());
-			src->addProperty(it->first, tmp);
+			dst->addProperty(it->first, tmp);
 		}
 		return dst;
 	}

@@ -150,25 +150,26 @@ JSExpressionStatement* JSParser::parseExpressionStatement()
 
 JSVarDeclarationStatement* JSParser::parseVarDeclarationStatement()
 {
+	std::unique_ptr<JSVarDeclarationStatement> stmt(new JSVarDeclarationStatement());
 	nextToken(TokenKind::IDENTIFIER);
-	string name = m_token.stringValue;
+	while (true)
+	{
+		string name = m_token.stringValue;
+		nextToken();
+		JSExpression* expr = nullptr;
+		if (m_token == ASSIGNMENT)
+		{
+			nextToken();
+			expr = parseExpression();
+		}
+		stmt->addVar(name, expr, false);
+
+		if (m_token == STATEMENT_END) break;
+		else if (m_token == COMMA) nextToken(TokenKind::IDENTIFIER);
+		else throw SyntaxError();
+	}
 	nextToken();
-	if (m_token == ASSIGNMENT)
-	{
-		nextToken();
-		std::unique_ptr<JSExpression> expr(parseExpression());
-		eatToken(TokenKind::STATEMENT_END);
-		JSVarDeclarationStatement* declstmt = new JSVarDeclarationStatement(name, expr.release(), false);
-		return declstmt;
-	}
-	else if (m_token == STATEMENT_END)
-	{
-		nextToken();
-		JSVarDeclarationStatement* declstmt = new JSVarDeclarationStatement(name, nullptr, false);
-		return declstmt;
-	}
-	assert(false);
-	return nullptr;
+	return stmt.release();
 }
 
 JSVarDeclarationStatement* JSParser::parseConstDeclarationStatement()
@@ -179,7 +180,8 @@ JSVarDeclarationStatement* JSParser::parseConstDeclarationStatement()
 	nextToken();
 	std::unique_ptr<JSExpression> expr(parseExpression());
 	eatToken(TokenKind::STATEMENT_END);
-	JSVarDeclarationStatement* declstmt = new JSVarDeclarationStatement(name, expr.release(), true);
+	JSVarDeclarationStatement* declstmt = new JSVarDeclarationStatement();
+	declstmt->addVar(name, expr.release(), true);
 	return declstmt;
 }
 

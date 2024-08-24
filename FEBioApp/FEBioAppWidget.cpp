@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "FEBioAppWidget.h"
 #include "FEBioAppDocument.h"
 #include "../FEBioStudio/MainWindow.h"
+#include "../FEBioStudio/PlotWidget.h"
 #include <QMessageBox>
 #include <QPushButton>
 #include <QLabel>
@@ -41,6 +42,9 @@ void UIElement::setText(const QString& txt) const
 
 	QPlainTextEdit* pe = dynamic_cast<QPlainTextEdit*>(m_w);
 	if (pe) pe->appendPlainText(txt);
+
+	CPlotWidget* pp = dynamic_cast<CPlotWidget*>(m_w);
+	if (pp) pp->setTitle(txt);
 }
 
 FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)

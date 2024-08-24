@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <stdexcept>
 
 class FEBioAppDocument;
+class JSInterpreter;
 
 class FEBioAppScript
 {
@@ -44,6 +45,7 @@ public:
 
 private:
 	bool runScript();
+	void initJSModules(JSInterpreter& interpreter);
 
 private:
 	FEBioAppDocument* m_doc;

@@ -252,10 +252,30 @@ void printAST(ostream& out, JSExpressionStatement& stmt, int l)
 void printAST(ostream& out, JSVarDeclarationStatement& stmt, int l)
 {
 	out << "VarDeclarationStatement {\n";
-	indent(out, l + 1); out << "Name: " << stmt.name() << ",\n";
-	indent(out, l + 1); out << "Expression : ";
-	JSExpression* expr = stmt.expr();
-	if (expr) printAST(out, *expr, l + 1); else out << "<null>\n";
+	if (stmt.size() == 1)
+	{
+		JSVarDeclarationStatement::Var& v = stmt.var(0);
+		indent(out, l + 1); out << "Name: " << v.name << ",\n";
+		indent(out, l + 1); out << "Expression : ";
+		JSExpression* expr = v.expr;
+		if (expr) printAST(out, *expr, l + 1); else out << "<null>";
+	}
+	else
+	{
+		indent(out, l + 1); out << "Variables: [\n";
+		for (size_t i = 0; i < stmt.size(); ++i)
+		{
+			indent(out, l + 2); out << "{\n";
+			JSVarDeclarationStatement::Var& v = stmt.var(i);
+			indent(out, l + 3); out << "Name: " << v.name << ",\n";
+			indent(out, l + 3); out << "Expression : ";
+			JSExpression* expr = v.expr;
+			if (expr) printAST(out, *expr, l + 3); else out << "<null>";
+			out << "\n"; indent(out, l + 2);
+			if (i != stmt.size() - 1) out << "},\n"; else out << "}\n";
+		}
+		indent(out, l + 1); out << "]";
+	}
 	out << "\n"; indent(out, l); out << "}";
 }
 

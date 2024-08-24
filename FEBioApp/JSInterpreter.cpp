@@ -73,6 +73,48 @@ void JSInterpreter::init()
 
 	// create global scope
 	push_scope();
+
+	// add Math module
+	JSObject& math = addVar("Math");
+	math.m_functions["sin"] = [](const JSObjectList& args, JSObject& ret) {
+		ret = sin(args.begin()->toNumber());
+		};
+	math.m_functions["cos"] = [](const JSObjectList& args, JSObject& ret) {
+		ret = cos(args.begin()->toNumber());
+		};
+	math.m_functions["exp"] = [](const JSObjectList& args, JSObject& ret) {
+		ret = exp(args.begin()->toNumber());
+		};
+
+	math.m_functions["pow"] = [](const JSObjectList& args, JSObject& ret) {
+		auto it = args.begin();
+		double x = it->toNumber(); ++it;
+		double y = it->toNumber();
+		ret = pow(x, y);
+		};
+
+	math.m_functions["max"] = [](const JSObjectList& args, JSObject& ret) {
+		auto it = args.begin();
+		double v = it->toNumber(); it++;
+		for (; it != args.end(); ++it)
+		{
+			double x = it->toNumber();
+			if (x > v) v = x;
+		}
+		ret = v;
+		};
+
+	math.m_functions["min"] = [](const JSObjectList& args, JSObject& ret) {
+		auto it = args.begin();
+		double v = it->toNumber(); it++;
+		for (; it != args.end(); ++it)
+		{
+			double x = it->toNumber();
+			if (x < v) v = x;
+		}
+		ret = v;
+		};
+
 }
 
 void JSInterpreter::execStatement(JSStatement& stmt)
@@ -86,11 +128,11 @@ void JSInterpreter::execStatement(JSStatement& stmt)
 	}
 	break;
 	case JSStatement::VarDeclarationStatement: execVarDeclStatement(dynamic_cast<JSVarDeclarationStatement&>(stmt)); break;
-	case JSStatement::ExpressionStatement: execExpressionStmt(dynamic_cast<JSExpressionStatement&>(stmt)); break;
-	case JSStatement::IfStatement: execIfStatement(dynamic_cast<JSIfStatement&>(stmt)); break;
-	case JSStatement::WhileStatement: execWhileStatement(dynamic_cast<JSWhileStatement&>(stmt)); break;
-	case JSStatement::DoWhileStatement: execDoWhileStatement(dynamic_cast<JSDoWhileStatement&>(stmt)); break;
-	case JSStatement::FunctionDeclaration: execFunctionDeclaration(dynamic_cast<JSFunctionDeclaration&>(stmt)); break;
+	case JSStatement::ExpressionStatement    : execExpressionStmt  (dynamic_cast<JSExpressionStatement&>(stmt)); break;
+	case JSStatement::IfStatement            : execIfStatement     (dynamic_cast<JSIfStatement&>(stmt)); break;
+	case JSStatement::WhileStatement         : execWhileStatement  (dynamic_cast<JSWhileStatement&>(stmt)); break;
+	case JSStatement::DoWhileStatement       : execDoWhileStatement(dynamic_cast<JSDoWhileStatement&>(stmt)); break;
+	case JSStatement::FunctionDeclaration    : execFunctionDeclaration(dynamic_cast<JSFunctionDeclaration&>(stmt)); break;
 	default:
 		assert(false);
 	}
@@ -115,10 +157,12 @@ void JSInterpreter::execBlockStatement(JSBlockStatement& stmt, JSObject& ret)
 
 void JSInterpreter::execVarDeclStatement(JSVarDeclarationStatement& stmt)
 {
-	JSString name(stmt.name());
-	JSObject& var = addVar(name);
-	if (stmt.expr())
-		execExpression(stmt.expr(), var);
+	for (size_t i = 0; i < stmt.size(); ++i)
+	{
+		JSVarDeclarationStatement::Var& v = stmt.var(i);
+		JSObject& var = addVar(v.name);
+		if (v.expr) execExpression(v.expr, var);
+	}
 }
 
 void JSInterpreter::execIfStatement(JSIfStatement& stmt)
@@ -166,18 +210,18 @@ void JSInterpreter::execExpression(JSExpression* expr, JSObject& ret)
 	if (expr == nullptr) throw NullExpression();
 	switch (expr->kind())
 	{
-	case JSExpression::Number: ret = dynamic_cast<JSNumberLiteral*>(expr)->value(); break;
-	case JSExpression::String: ret = dynamic_cast<JSStringLiteral*>(expr)->value(); break;
-	case JSExpression::Boolean: ret = dynamic_cast<JSBooleanLiteral*>(expr)->value(); break;
-	case JSExpression::Symbol: execSymbolExpression(dynamic_cast<JSSymbolExpr&>(*expr), ret); break;
-	case JSExpression::Function: execFuncExpression(dynamic_cast<JSFunctionExpr&>(*expr), ret); break;
-	case JSExpression::Unary: execUnaryExpression(dynamic_cast<JSUnaryExpr&>(*expr), ret); break;
-	case JSExpression::Binary: execBinaryExpression(dynamic_cast<JSBinaryExpr&>(*expr), ret); break;
+	case JSExpression::Number    : ret = dynamic_cast<JSNumberLiteral *>(expr)->value(); break;
+	case JSExpression::String    : ret = dynamic_cast<JSStringLiteral *>(expr)->value(); break;
+	case JSExpression::Boolean   : ret = dynamic_cast<JSBooleanLiteral*>(expr)->value(); break;
+	case JSExpression::Symbol    : execSymbolExpression(dynamic_cast<JSSymbolExpr    &>(*expr), ret); break;
+	case JSExpression::Function  : execFuncExpression  (dynamic_cast<JSFunctionExpr  &>(*expr), ret); break;
+	case JSExpression::Unary     : execUnaryExpression (dynamic_cast<JSUnaryExpr     &>(*expr), ret); break;
+	case JSExpression::Binary    : execBinaryExpression(dynamic_cast<JSBinaryExpr    &>(*expr), ret); break;
 	case JSExpression::Assignment: execAssignExpression(dynamic_cast<JSAssignmentExpr&>(*expr), ret); break;
-	case JSExpression::Array: execArrayExpression(dynamic_cast<JSArrayLiteral&>(*expr), ret); break;
-	case JSExpression::ArrayItem: execArrayItemExpr(dynamic_cast<JSArrayItemExpr&>(*expr), ret); break;
-	case JSExpression::Member: execMemberExpr(dynamic_cast<JSMemberExpr&>(*expr), ret); break;
-	case JSExpression::Object: execObjectExpression(dynamic_cast<JSObjectLiteral&>(*expr), ret); break;
+	case JSExpression::Array     : execArrayExpression (dynamic_cast<JSArrayLiteral  &>(*expr), ret); break;
+	case JSExpression::ArrayItem : execArrayItemExpr   (dynamic_cast<JSArrayItemExpr &>(*expr), ret); break;
+	case JSExpression::Member    : execMemberExpr      (dynamic_cast<JSMemberExpr    &>(*expr), ret); break;
+	case JSExpression::Object    : execObjectExpression(dynamic_cast<JSObjectLiteral&>(*expr), ret); break;
 	default:
 		assert(false);
 	}
@@ -270,7 +314,7 @@ void JSInterpreter::execBinaryExpression(JSBinaryExpr& b, JSObject& ret)
 {
 	JSObject left;
 	JSObject right;
-	execExpression(b.left, left);
+	execExpression(b.left , left);
 	execExpression(b.right, right);
 
 	switch (b.op)
@@ -280,13 +324,13 @@ void JSInterpreter::execBinaryExpression(JSBinaryExpr& b, JSObject& ret)
 	case JSBinaryExpr::MUL: ret = left * right; break;
 	case JSBinaryExpr::DIV: ret = left / right; break;
 	case JSBinaryExpr::EXP: ret = pow(left.toNumber(), right.toNumber()); break;
-	case JSBinaryExpr::GT: ret = (left.toNumber() > right.toNumber()); break;
-	case JSBinaryExpr::LT: ret = (left.toNumber() < right.toNumber()); break;
-	case JSBinaryExpr::GE: ret = (left.toNumber() >= right.toNumber()); break;
-	case JSBinaryExpr::LE: ret = (left.toNumber() <= right.toNumber()); break;
+	case JSBinaryExpr::GT : ret = (left.toNumber() > right.toNumber()); break;
+	case JSBinaryExpr::LT : ret = (left.toNumber() < right.toNumber()); break;
+	case JSBinaryExpr::GE : ret = (left.toNumber() >= right.toNumber()); break;
+	case JSBinaryExpr::LE : ret = (left.toNumber() <= right.toNumber()); break;
 	case JSBinaryExpr::AND: ret = (left.toBool() && right.toBool()); break;
-	case JSBinaryExpr::OR: ret = (left.toBool() || right.toBool()); break;
-		break;
+	case JSBinaryExpr::OR : ret = (left.toBool() || right.toBool()); break;
+	break;
 	default:
 		assert(false);
 	}
@@ -340,7 +384,7 @@ void JSInterpreter::execAssignExpression(JSAssignmentExpr& expr, JSObject& ret)
 	execExpression(expr.rv, tmp);
 	switch (expr.op)
 	{
-	case JSAssignmentExpr::EQUAL: lv.SetValue(tmp.CopyValue()); break;
+	case JSAssignmentExpr::EQUAL    : lv.SetValue(tmp.CopyValue()); break;
 	case JSAssignmentExpr::EQUAL_ADD: lv += tmp; break;
 	case JSAssignmentExpr::EQUAL_SUB: lv -= tmp; break;
 	case JSAssignmentExpr::EQUAL_MUL: lv *= tmp; break;
@@ -398,10 +442,26 @@ void JSInterpreter::execMemberExpr(JSMemberExpr& expr, JSObject& ret)
 	JSExpression& member = *expr.rv;
 	switch (member.kind())
 	{
-	case JSExpression::Symbol:
+	case JSExpression::Symbol: 
 	{
 		JSSymbolExpr& sym = dynamic_cast<JSSymbolExpr&>(member);
 		ret = tmp.get(sym.name());
+	}
+	break;
+	case JSExpression::ArrayItem:
+	{
+		JSArrayItemExpr& it = dynamic_cast<JSArrayItemExpr&>(member);
+		if (it.lv->kind() != JSExpression::Symbol) throw InvalidMember();
+		JSSymbolExpr& sym = dynamic_cast<JSSymbolExpr&>(*it.lv);
+		JSObject o = tmp.get(sym.name());
+		if (!o.isArray()) throw ArrayExpected();
+
+		JSObject rv;
+		execExpression(it.rv, rv);
+		bool ok = true;
+		int n = rv.toInt(ok);
+		if (!ok) throw InvalidArrayIndex();
+		ret = o.arrayElement(n);
 	}
 	break;
 	case JSExpression::Function:

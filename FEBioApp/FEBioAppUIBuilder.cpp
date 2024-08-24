@@ -233,12 +233,13 @@ void FEBioAppUIBuilder::parseButton(XMLTag& tag, QBoxLayout* playout)
 
 void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 {
-	const char* sztxt = nullptr;
+	const char *sztxt = nullptr, *szid = nullptr;
 	int size[2] = { 400, 400 };
 
 	for (XMLAtt& att : tag.m_att)
 	{
 		if      (att.m_name == "text") sztxt = att.cvalue();
+		else if (att.m_name == "id"  ) szid  = att.cvalue();
 		else if (att.m_name == "size") att.value(size, 2);
 	}
 
@@ -249,6 +250,7 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 	FEBioModel* fem = app->GetFEBioModel();
 
 	CPlotWidget* plotWidget = new CPlotWidget(0);
+	if (szid) plotWidget->setObjectName(szid);
 	if (sztxt) plotWidget->setTitle(QString(sztxt));
 //	plotWidget->showLegend(false);
 

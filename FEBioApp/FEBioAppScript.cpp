@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QLabel>
 #include "JSParser.h"
 #include "JSInterpreter.h"
+#include <FEBioLib/FEBioModel.h>
+#include <FECore/FEMaterial.h>
 
 FEBioAppScript::FEBioAppScript(FEBioAppDocument* doc) : m_doc(doc)
 {
@@ -75,34 +77,30 @@ QString ObjectListToString(const std::list<JSObject>& args)
 	return s;
 }
 
-bool FEBioAppScript::runScript()
+void FEBioAppScript::initJSModules(JSInterpreter& interpreter)
 {
-	std::string script = m_script.toStdString();
-	JSParser parser;
-	if (!parser.parse(script))
-	{
-		m_error = QString::fromStdString(parser.errorString());
-		return false;
-	}
-
 	FEBioAppWidget* uiWidget = m_doc->GetUI();
 
-	JSInterpreter interpreter;
-	interpreter.init();
-
+	// global module
 	JSObject& global = interpreter.addVar("");
 	global.m_functions["alert"] = [=](const std::list<JSObject>& args, JSObject& ret) {
 		QMessageBox::warning(uiWidget, "Alert", ObjectListToString(args));
 		};
 
+	global.m_functions["print"] = [=](const std::list<JSObject>& args, JSObject& ret) {
+		uiWidget->print(ObjectListToString(args));
+		};
+
+	// app module
 	JSObject& app = interpreter.addVar("app");
 	app.m_functions["runModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
-			m_doc->runModel();
+		m_doc->runModel();
 		};
 	app.m_functions["stopModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
 		m_doc->stopModel();
 		};
 
+	// ui module
 	JSObject& ui = interpreter.addVar("ui");
 	ui.m_functions["getElementById"] = [=](const std::list<JSObject>& args, JSObject& ret) {
 
@@ -117,13 +115,65 @@ bool FEBioAppScript::runScript()
 		ret = ob;
 		};
 
+	// fem module
+	FEBioModel* febioModel = m_doc->GetFEBioModel();
+	JSObject& fem = interpreter.addVar("fem");
+	ObjectValue* v = new ObjectValue;
+	ArrayValue* mat = new ArrayValue(febioModel->Materials());
+	for (int i = 0; i < mat->size(); ++i)
+	{
+		FEMaterial* pm = febioModel->GetMaterial(i);
+		ObjectValue* m = new ObjectValue;
+		FEParameterList& pl = pm->GetParameterList();
+		auto it = pl.first();
+		for (int j = 0; j < pm->Parameters(); ++j, ++it)
+		{
+			FEParam& pj = *it;
+			switch (pj.type())
+			{
+			case FE_PARAM_DOUBLE: { JSObject o(pj.value<double>()); m->addProperty(pj.name(), o); } break;
+			case FE_PARAM_INT: { JSObject o((double)pj.value<int>()); m->addProperty(pj.name(), o); } break;
+			case FE_PARAM_BOOL: { JSObject o(pj.value<bool>()); m->addProperty(pj.name(), o); } break;
+			case FE_PARAM_DOUBLE_MAPPED:
+			{
+				FEParamDouble& v = pj.value<FEParamDouble>();
+				if (v.isConst())
+				{
+					JSObject o(v.constValue());
+					m->addProperty(pj.name(), o);
+				}
+			}
+			break;
+			}
+		}
+		mat->at(i).SetValue(m);
+	}
+	v->addProperty("material", JSObject(mat));
+	fem.SetValue(v);
+}
+
+bool FEBioAppScript::runScript()
+{
+	std::string script = m_script.toStdString();
+	JSParser parser;
+	if (!parser.parse(script))
+	{
+		m_error = QString::fromStdString(parser.errorString());
+		return false;
+	}
+
+	JSInterpreter interpreter;
+	interpreter.init();
+
+	initJSModules(interpreter);
+
 	try {
 		interpreter.run(parser.GetAST());
 	}
 	catch (std::runtime_error e)
 	{
 		m_error = QString::fromStdString(e.what());
-		uiWidget->error(m_error);
+		m_doc->GetUI()->error(m_error);
 		return false;
 	}
 

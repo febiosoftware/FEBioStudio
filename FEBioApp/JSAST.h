@@ -268,18 +268,29 @@ public:
 class JSVarDeclarationStatement : public JSStatement
 {
 public:
-	JSVarDeclarationStatement(const std::string& varName, JSExpression* expr, bool isConst) : JSStatement(JSStatement::VarDeclarationStatement), m_expr(expr), m_name(varName), m_isConst(isConst) {}
-	~JSVarDeclarationStatement() { delete m_expr; }
+	struct Var {
+		std::string name;
+		bool isConst;
+		JSExpression* expr;
+	};
 
-	const std::string& name() const { return m_name; }
-	JSExpression* expr() { return m_expr; }
+public:
+	JSVarDeclarationStatement() : JSStatement(JSStatement::VarDeclarationStatement) {}
+	~JSVarDeclarationStatement() { 
+		for (Var& v : m_vars) delete v.expr;
+		m_vars.clear();
+	}
 
-	bool isConst() const { return m_isConst; }
+	void addVar(const std::string& varName, JSExpression* expr, bool isConst)
+	{
+		m_vars.push_back({ varName, isConst, expr });
+	}
+
+	Var& var(size_t n) { return m_vars[n]; }
+	size_t size() const { return m_vars.size(); }
 
 private:
-	std::string  m_name;
-	bool		m_isConst;
-	JSExpression* m_expr;
+	std::vector<Var> m_vars;
 };
 
 class JSBlockStatement : public JSStatement
