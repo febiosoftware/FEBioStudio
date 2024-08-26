@@ -74,6 +74,7 @@ SOFTWARE.*/
 #include <MeshIO/RAWToMeshImport.h>
 #include <MeshIO/STLimport.h>
 #include <MeshIO/TetGenImport.h>
+#include <MeshIO/ArtisynthImport.h>
 #include <MeshIO/VTKImport.h>
 #include <Nike3D/NIKE3DImport.h>
 #include <MeshIO/PRVObjectImport.h>
@@ -149,6 +150,7 @@ REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
 REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
 REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
 REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
+REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, "elem"   , FSProject);
 REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, "vtk"    , FSProject);
 REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, "vtu"    , FSProject);
 REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, "vtp"    , FSProject);
