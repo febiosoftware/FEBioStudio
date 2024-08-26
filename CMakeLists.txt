@@ -263,11 +263,11 @@ if(USE_ZLIB)
 endif()
 
 # Find FEBio Libs
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot febiofluid febiomix)
+
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")
     set(FEBio_RELEASE_LIBS "")
-
-    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
         find_library(TEMP NAMES ${name} 
@@ -286,8 +286,6 @@ if (WIN32)
     unset(FEBio_LIB_NAMES)
 else()
     set(FEBio_LIBS "")
-
-    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
         findLib(FEBio_LIB_DIR FEBio_LIB ${name})
