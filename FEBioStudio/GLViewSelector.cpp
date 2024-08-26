@@ -2648,25 +2648,27 @@ void GLViewSelector::SelectFENodes(int x, int y)
 		if (view.m_bconn && pm)
 		{
 			vector<int> nodeList;
-			if (view.m_bselpath == false)
+			nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
+			lastIndex = -1;
+			if (!nodeList.empty())
 			{
-				nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
-				lastIndex = -1;
+				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
+				else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+			}
+		}
+		else if (view.m_bselpath && pm)
+		{
+			vector<int> nodeList;
+			if ((lastIndex != -1) && (lastIndex != index))
+			{
+				nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
+				lastIndex = index;
 			}
 			else
 			{
-				if ((lastIndex != -1) && (lastIndex != index))
-				{
-					nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
-					lastIndex = index;
-				}
-				else
-				{
-					nodeList.push_back(index);
-					lastIndex = index;
-				}
+				nodeList.push_back(index);
+				lastIndex = index;
 			}
-
 			if (!nodeList.empty())
 			{
 				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);

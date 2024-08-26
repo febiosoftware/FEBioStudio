@@ -51,11 +51,9 @@ public:
 
 	QWidget* edit;
 
-	QToolButton*	but[4];
-	QToolButton*	selConnect;
-	QToolButton*	selBrush;
+	QToolButton*	meshItemButton[4];
+	QToolButton*	meshToolButton[3];
 	QDoubleSpinBox*	maxAngle;
-	QToolButton*	selPath;
 	QToolButton*	cull;
 	QToolButton*	noint;
 	QToolButton*	showMesh;
@@ -82,18 +80,18 @@ public:
 		// mesh editing tool buttons
 		edit = new QWidget;
 
-		but[0] = addButton(QIcon(":/icons/selElem.png"), "Select elements"); 
-		but[1] = addButton(QIcon(":/icons/selFace.png"), "Select faces");
-		but[2] = addButton(QIcon(":/icons/selEdge.png"), "Select edges");
-		but[3] = addButton(QIcon(":/icons/selNode.png"), "Select nodes");
+		meshItemButton[0] = addButton(QIcon(":/icons/selElem.png"), "Select elements", true); 
+		meshItemButton[1] = addButton(QIcon(":/icons/selFace.png"), "Select faces", true);
+		meshItemButton[2] = addButton(QIcon(":/icons/selEdge.png"), "Select edges", true);
+		meshItemButton[3] = addButton(QIcon(":/icons/selNode.png"), "Select nodes", true);
 
-		selConnect = addButton(QIcon(":/icons/select_connected.png"), "Select connected");
+		meshToolButton[0] = addButton(QIcon(":/icons/select_connected.png"), "Select connected");
 
 		maxAngle = new QDoubleSpinBox; maxAngle->setRange(0.0, 180); maxAngle->setSingleStep(0.5);
 		maxAngle->setMaximumWidth(60);
 
-		selBrush = addButton(QIcon(":/icons/brush.png"), "Brush Select");
-		selPath = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
+		meshToolButton[1] = addButton(QIcon(":/icons/brush.png"), "Brush Select");
+		meshToolButton[2] = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
 		cull    = addButton(QIcon(":/icons/backface.png"), "Select backfacing");
 		noint   = addButton(QIcon(":/icons/ignore.png"), "Ignore interior");
 
@@ -103,26 +101,42 @@ public:
 		QFrame* sep = new QFrame;
 		sep->setFrameShape(QFrame::VLine);
 //		sep->setFrameShadow(QFrame::Sunken);
-
 		hl->addWidget(sep);
-		hl->addWidget(but[0]);
-		hl->addWidget(but[1]);
-		hl->addWidget(but[2]);
-		hl->addWidget(but[3]);
-		hl->addWidget(selConnect);
+
+		hl->addWidget(meshItemButton[0]);
+		hl->addWidget(meshItemButton[1]);
+		hl->addWidget(meshItemButton[2]);
+		hl->addWidget(meshItemButton[3]);
+
+		sep = new QFrame;
+		sep->setFrameShape(QFrame::VLine);
+		hl->addWidget(sep);
+
+		hl->addWidget(meshToolButton[0]);
 		hl->addWidget(maxAngle);
-		hl->addWidget(selBrush);
-		hl->addWidget(selPath);
+		hl->addWidget(meshToolButton[1]);
+		hl->addWidget(meshToolButton[2]);
+
+		sep = new QFrame;
+		sep->setFrameShape(QFrame::VLine);
+		hl->addWidget(sep);
+
 		hl->addWidget(cull);
 		hl->addWidget(noint);
 		hl->addStretch();
 
 		QButtonGroup* bg = new QButtonGroup(bar);
 		bg->setExclusive(false);
-		bg->addButton(but[0], 0);
-		bg->addButton(but[1], 1);
-		bg->addButton(but[2], 2);
-		bg->addButton(but[3], 3);
+		bg->addButton(meshItemButton[0], 0);
+		bg->addButton(meshItemButton[1], 1);
+		bg->addButton(meshItemButton[2], 2);
+		bg->addButton(meshItemButton[3], 3);
+
+		QButtonGroup* bg2 = new QButtonGroup(bar);
+		bg2->setExclusive(false);
+		bg2->addButton(meshToolButton[0], 0);
+		bg2->addButton(meshToolButton[1], 1);
+		bg2->addButton(meshToolButton[2], 2);
 
 		edit->setLayout(hl);
 
@@ -162,10 +176,8 @@ public:
 		QObject::connect(zoomAll, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
 		QObject::connect(toggleLight, SIGNAL(clicked(bool)), bar, SLOT(onToggleLight(bool)));
-		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
-		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
-		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
-		QObject::connect(selBrush, SIGNAL(clicked(bool)), bar, SLOT(onBrushSelect(bool)));
+		QObject::connect(bg , SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
+		QObject::connect(bg2, SIGNAL(idClicked(int)), bar, SLOT(onMeshToolClicked(int)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
 		QObject::connect(noint, SIGNAL(clicked(bool)), bar, SLOT(onIgnoreInterior(bool)));
@@ -195,22 +207,22 @@ public:
 		edit->setVisible(b);
 		if (b)
 		{
-			but[0]->setEnabled(showElem);
-			but[1]->setEnabled(showFace);
+			meshItemButton[0]->setEnabled(showElem);
+			meshItemButton[1]->setEnabled(showFace);
 		}
 	}
 
 	void checkButton(int id)
 	{
 		for (int i = 0; i<4; ++i)
-			if (id != i) but[i]->setChecked(false);
+			if (id != i) meshItemButton[i]->setChecked(false);
 
 		if (id == -1) return;
-		if (but[id]->isChecked() == false) 
+		if (meshItemButton[id]->isChecked() == false)
 		{
-			but[id]->blockSignals(true);
-			but[id]->setChecked(true);
-			but[id]->blockSignals(false);
+			meshItemButton[id]->blockSignals(true);
+			meshItemButton[id]->setChecked(true);
+			meshItemButton[id]->blockSignals(false);
 		}
 	}
 };
@@ -220,6 +232,12 @@ CGLControlBar::CGLControlBar(CMainWindow* wnd, QWidget* parent) : QWidget(parent
 	ui->m_wnd = wnd;
 	ui->setup(this);
 	ui->showEditButtons(false);
+}
+
+void CGLControlBar::toggleSelectConnected()
+{
+	ui->meshToolButton[0]->toggle();
+	onMeshToolClicked(0);
 }
 
 void CGLControlBar::SetMeshItem(int n)
@@ -282,9 +300,9 @@ void CGLControlBar::Update()
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			ui->selConnect->setChecked(vs.m_bconn);
-			ui->selBrush->setChecked(vs.m_bselbrush);
-			ui->selPath->setChecked(vs.m_bselpath);
+			ui->meshToolButton[0]->setChecked(vs.m_bconn);
+			ui->meshToolButton[1]->setChecked(vs.m_bselbrush);
+			ui->meshToolButton[2]->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
 			ui->noint->setChecked(vs.m_bext);
@@ -309,9 +327,9 @@ void CGLControlBar::Update()
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			ui->selConnect->setChecked(vs.m_bconn);
-			ui->selBrush->setChecked(vs.m_bselbrush);
-			ui->selPath->setChecked(vs.m_bselpath);
+			ui->meshToolButton[0]->setChecked(vs.m_bconn);
+			ui->meshToolButton[1]->setChecked(vs.m_bselbrush);
+			ui->meshToolButton[2]->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
 			ui->noint->setChecked(vs.m_bext);
@@ -334,9 +352,9 @@ void CGLControlBar::Update()
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			ui->selConnect->setChecked(vs.m_bconn);
-			ui->selBrush->setChecked(vs.m_bselbrush);
-			ui->selPath->setChecked(vs.m_bselpath);
+			ui->meshToolButton[0]->setChecked(vs.m_bconn);
+			ui->meshToolButton[1]->setChecked(vs.m_bselbrush);
+			ui->meshToolButton[2]->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
 			ui->noint->setChecked(vs.m_bext);
@@ -421,9 +439,9 @@ void CGLControlBar::onMeshButtonClicked(int id)
 	if (pdoc == nullptr) return;
 
 	for (int i = 0; i<4; ++i)
-		if (id != i) ui->but[i]->setChecked(false);
+		if (id != i) ui->meshItemButton[i]->setChecked(false);
 
-	if (ui->but[id]->isChecked() == false) id = -1;
+	if (ui->meshItemButton[id]->isChecked() == false) id = -1;
 
 	int newMode = 0;
 	switch (id)
@@ -440,33 +458,23 @@ void CGLControlBar::onMeshButtonClicked(int id)
 	ui->m_wnd->RedrawGL();
 }
 
-void CGLControlBar::onSelectConnected(bool b)
+void CGLControlBar::onMeshToolClicked(int id)
 {
-	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
-	view.m_bconn = b;
-}
+	CGLView* glw = ui->m_wnd->GetGLView();
+	if (glw == nullptr) return;
 
-void CGLControlBar::onBrushSelect(bool b)
-{
-	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
-	view.m_bselbrush = b;
+	for (int i = 0; i < 3; ++i)
+		if (id != i) ui->meshToolButton[i]->setChecked(false);
+
+	GLViewSettings& view = glw->GetViewSettings();
+
+	if (ui->meshToolButton[id]->isChecked() == false) id = -1;
+
+	view.m_bconn     = (id == 0);
+	view.m_bselbrush = (id == 1);
+	view.m_bselpath  = (id == 2);
+
 	ui->m_wnd->RedrawGL();
-}
-
-void CGLControlBar::toggleSelectConnected()
-{
-	ui->selConnect->toggle();
-}
-
-void CGLControlBar::toggleBrushSelect()
-{
-	ui->selBrush->toggle();
-}
-
-void CGLControlBar::onSelectClosestPath(bool b)
-{
-	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
-	view.m_bselpath = b;
 }
 
 void CGLControlBar::onMaxAngleChanged(double v)
