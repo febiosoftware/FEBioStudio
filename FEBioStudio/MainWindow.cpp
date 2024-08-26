@@ -587,7 +587,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
-		     (ext.compare("dyn", Qt::CaseInsensitive) == 0))
+		     (ext.compare("dyn", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("key", Qt::CaseInsensitive) == 0))
 	{
 		OpenFEModel(fileName);
 	}

@@ -45,6 +45,7 @@ private:
 private:
 
 protected:
+	bool Read_Comment();
 	bool Read_Element_Solid();
 	bool Read_Element_Shell();
 	bool Read_Element_Shell_Thickness();
@@ -66,6 +67,7 @@ protected:
 	bool Read_Mat_Other();
 	bool Read_Set_Segment_Title();
 	bool Read_Include();
+	bool Read_IncludePath();
 	bool Read_Define_Curve();
 	bool Read_Define_Curve_Title();
 	bool Read_Parameter();

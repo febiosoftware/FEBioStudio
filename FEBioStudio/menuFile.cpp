@@ -475,9 +475,10 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	// create a file reader
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
-	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
-	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
+	if      (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
+	else if (ext.compare("n"  , Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
 	else if (ext.compare("dyn", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
+	else if (ext.compare("key", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
