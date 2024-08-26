@@ -1525,6 +1525,7 @@ bool AbaqusImport::read_end_instance(char* szline, FILE* fp)
 
 	if (asmbly->CurrentInstance() == nullptr) return errf("end instance encountered with no active instance.");
 	asmbly->ClearCurrentInstance();
+	m_inp.SetCurrentPart(nullptr);
 	read_line(szline, fp);
 	return true;
 }
@@ -2152,16 +2153,17 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		for (i = 0; i<solidSections; ++i, ++solidSection)
 		{
 			AbaqusModel::SOLID_SECTION& ss = *solidSection;
-			po->Part(n++)->SetName(ss.szelset);
+			GPart* pg = po->Part(n++); assert(pg);
+			if (pg) pg->SetName(ss.szelset);
 		}
 
 		list<AbaqusModel::SHELL_SECTION>::iterator shellSection = part.m_Shell.begin();
 		for (i = 0; i < shellSections; ++i, ++shellSection)
 		{
 			AbaqusModel::SHELL_SECTION& ss = *shellSection;
-			po->Part(n++)->SetName(ss.szelset);
+			GPart* pg = po->Part(n++); assert(pg);
+			if (pg) pg->SetName(ss.szelset);
 		}
-
 	}
 	else if (m_bautopart)
 	{
