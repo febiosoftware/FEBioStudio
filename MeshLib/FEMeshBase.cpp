@@ -732,6 +732,50 @@ std::vector<int> MeshTools::GetConnectedNodesByPath(FSMeshBase* pm, int startNod
 	return nodeList;
 }
 
+std::vector<int> MeshTools::GetConnectedEdgesByPath(FSMeshBase* pm, int startEdge, int endEdge)
+{
+	// pick the two nodes that are closest
+	FSEdge& e0 = pm->Edge(startEdge);
+	FSEdge& e1 = pm->Edge(endEdge);
+	double d[2][2] = { 0 };
+	d[0][0] = (pm->Node(e0.n[0]).r - pm->Node(e1.n[0]).r).Length();
+	d[0][1] = (pm->Node(e0.n[0]).r - pm->Node(e1.n[1]).r).Length();
+	d[1][0] = (pm->Node(e0.n[1]).r - pm->Node(e1.n[0]).r).Length();
+	d[1][1] = (pm->Node(e0.n[1]).r - pm->Node(e1.n[1]).r).Length();
+	int n[2] = {0, 0};
+	double dmin = d[0][0];
+	if (d[0][1] < dmin) { dmin = d[0][1]; n[0] = 0; n[1] = 1; }
+	if (d[1][0] < dmin) { dmin = d[1][0]; n[0] = 1; n[1] = 0; }
+	if (d[1][1] < dmin) { dmin = d[1][1]; n[0] = 1; n[1] = 1; }
+
+	int n0 = e0.n[n[0]];
+	int n1 = e1.n[n[1]];
+
+	const int TAG = 1;
+	TagNodesByShortestPath(pm, n0, n1, TAG);
+	pm->Node(e0.n[0]).m_ntag = TAG; pm->Node(e0.n[1]).m_ntag = TAG;
+	pm->Node(e1.n[0]).m_ntag = TAG; pm->Node(e1.n[1]).m_ntag = TAG;
+	pm->TagAllEdges(0);
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		if ((pm->Node(e.n[0]).m_ntag == TAG) &&
+			(pm->Node(e.n[1]).m_ntag == TAG))
+		{
+			e.m_ntag = TAG;
+		}
+	}
+
+	vector<int> edgeList;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		if (e.m_ntag == TAG) edgeList.push_back(i);
+	}
+
+	return edgeList;
+}
+
 void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax, int tag)
 {
 	// clear all tags

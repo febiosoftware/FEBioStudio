@@ -132,6 +132,8 @@ namespace MeshTools {
 
 	std::vector<int> GetConnectedNodesByPath(FSMeshBase* pm, int startNode, int endNode);
 
+	std::vector<int> GetConnectedEdgesByPath(FSMeshBase* pm, int startEdge, int endEdge);
+
 	std::vector<int> GetConnectedEdges(FSMeshBase* pm, int startEdge, double tolAngleDeg, bool bmax);
 
 	void TagConnectedNodes(FSMeshBase* pm, int node, double tolAngleDeg, bool bmax, int tag);

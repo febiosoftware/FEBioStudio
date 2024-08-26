@@ -1186,11 +1186,32 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 
 	// parse the selection buffer
 	CCommand* pcmd = 0;
+	static int lastIndex = -1; // used by select path tool
 	if (index >= 0)
 	{
 		if (view.m_bconn)
 		{
 			vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, view.m_fconn, view.m_bmax);
+			if (!edgeList.empty())
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+			}
+			lastIndex = -1;
+		}
+		else if (view.m_bselpath)
+		{
+			vector<int> edgeList;
+			if ((lastIndex != -1) && (lastIndex != index))
+			{
+				edgeList = MeshTools::GetConnectedEdgesByPath(pm, lastIndex, index);
+				lastIndex = index;
+			}
+			else
+			{
+				edgeList.push_back(index);
+				lastIndex = index;
+			}
 			if (!edgeList.empty())
 			{
 				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
