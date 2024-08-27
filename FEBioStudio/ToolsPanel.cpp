@@ -118,3 +118,12 @@ void CToolsPanel::showEvent(QShowEvent* ev)
 	}
 	ev->accept();
 }
+
+bool CToolsPanel::OnPickEvent(const FESelection& sel)
+{
+	if (m_activeTool)
+	{
+		return m_activeTool->onPickEvent(sel);
+	}
+	else return false;
+}

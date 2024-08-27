@@ -69,7 +69,11 @@ void FEPlaneCut::SetPlaneCoefficients(double a[4])
 FSMesh* FEPlaneCut::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
-	if (pm->IsType(FE_TRI3) == false) return 0;
+	if (pm->IsType(FE_TRI3) == false)
+	{
+		SetError("This is not a triangle mesh.");
+		return nullptr;
+	}
 
 	// get the characteristic mesh size (i.e. smallest edge length)
 	double h = 0.01*FEMeshMetrics::ShortestEdge(*pm);

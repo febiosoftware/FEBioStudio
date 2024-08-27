@@ -29,9 +29,12 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FEModifier.h>
+#include <GLLib/GDecoration.h>
 
 CPlaneCutTool::CPlaneCutTool(CMainWindow* wnd) : CBasicTool(wnd, "Plane cut", HAS_APPLY_BUTTON)
 {
+	m_pick = 0;
+
 	addDoubleProperty(&m_r0.x, "X1");	
 	addDoubleProperty(&m_r0.y, "Y1");
 	addDoubleProperty(&m_r0.z, "Z1");
@@ -43,6 +46,83 @@ CPlaneCutTool::CPlaneCutTool(CMainWindow* wnd) : CBasicTool(wnd, "Plane cut", HA
 	addDoubleProperty(&m_r2.x, "X3");
 	addDoubleProperty(&m_r2.y, "Y3");
 	addDoubleProperty(&m_r2.z, "Z3");
+}
+
+void CPlaneCutTool::Activate()
+{
+	CBasicTool::Activate();
+	m_pick = 0;
+}
+
+
+bool CPlaneCutTool::onPickEvent(const FESelection& sel)
+{
+	const FENodeSelection* nodeSel = dynamic_cast<const FENodeSelection*>(&sel);
+	if (nodeSel && (nodeSel->Count() == 1))
+	{
+		int nid = nodeSel->NodeIndex(0);
+		const FSLineMesh* mesh = nodeSel->GetMesh();
+
+		vec3d r = mesh->NodePosition(nid);
+
+		if (m_pick >= 3) m_pick = 0;
+
+		switch (m_pick)
+		{
+		case 0: SetPropertyValue(0, r.x); SetPropertyValue(1, r.y); SetPropertyValue(2, r.z); break;
+		case 1: SetPropertyValue(3, r.x); SetPropertyValue(4, r.y); SetPropertyValue(5, r.z); break;
+		case 2: SetPropertyValue(6, r.x); SetPropertyValue(7, r.y); SetPropertyValue(8, r.z); break;
+		}
+		m_pick++;
+
+		BuildDecoration();
+
+		updateUi();
+
+		return true;
+	}
+	return false;
+}
+
+void CPlaneCutTool::BuildDecoration()
+{
+	GCompositeDecoration* deco = new GCompositeDecoration;
+	if (m_pick == 1)
+	{
+		vec3f r0;
+		r0.x = GetPropertyValue(0).toDouble();
+		r0.y = GetPropertyValue(1).toDouble();
+		r0.z = GetPropertyValue(2).toDouble();
+		deco->AddDecoration(new GPointDecoration(r0));
+	}
+	else if (m_pick == 2)
+	{
+		vec3f r0, r1;
+		r0.x = GetPropertyValue(0).toDouble();
+		r0.y = GetPropertyValue(1).toDouble();
+		r0.z = GetPropertyValue(2).toDouble();
+		r1.x = GetPropertyValue(3).toDouble();
+		r1.y = GetPropertyValue(4).toDouble();
+		r1.z = GetPropertyValue(5).toDouble();
+		GPointDecoration* p0 = new GPointDecoration(r0);
+		GPointDecoration* p1 = new GPointDecoration(r1);
+		deco->AddDecoration(new GLineDecoration(p0, p1));
+	}
+	else if (m_pick == 3)
+	{
+		vec3f r0, r1, r2;
+		r0.x = GetPropertyValue(0).toDouble();
+		r0.y = GetPropertyValue(1).toDouble();
+		r0.z = GetPropertyValue(2).toDouble();
+		r1.x = GetPropertyValue(3).toDouble();
+		r1.y = GetPropertyValue(4).toDouble();
+		r1.z = GetPropertyValue(5).toDouble();
+		r2.x = GetPropertyValue(6).toDouble();
+		r2.y = GetPropertyValue(7).toDouble();
+		r2.z = GetPropertyValue(8).toDouble();
+		deco->AddDecoration(new GTriangleDecoration(r0, r1, r2));
+	}
+	SetDecoration(deco);
 }
 
 bool CPlaneCutTool::OnApply()
