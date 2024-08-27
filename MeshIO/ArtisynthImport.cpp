@@ -147,7 +147,16 @@ FSMesh* ArtiSynthImport::BuildMesh()
 		ELEM& elem = m_Elem[i];
 		FSElement& el = pm->Element(i);
 
-		el.SetType(FE_HEX8);
+		if ((elem.node[6] == 0) && (elem.node[7] == 0))
+		{
+			if ((elem.node[4] == 0) && (elem.node[5] == 0))
+				el.SetType(FE_TET4);
+			else
+				el.SetType(FE_PENTA6);
+		}
+		else
+			el.SetType(FE_HEX8);
+
 		for (int j=0; j<el.Nodes(); ++j)
 			el.m_node[j] = lut[elem.node[j] - imin];
 
