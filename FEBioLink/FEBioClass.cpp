@@ -177,6 +177,7 @@ namespace febio {
 		addPlotVariablesWhenCreating<FEContactInterface>({ "contact pressure", "contact gap" });
 
 		addCreateHandler("sliding-elastic"       , [](FECoreBase* pc) { pc->SetParameter("auto_penalty", true); });
+		addCreateHandler("sliding-elastic"       , [](FECoreBase* pc) { pc->SetParameter("symmetric_stiffness", false); });
 		addCreateHandler("sliding-facet-on-facet", [](FECoreBase* pc) { pc->SetParameter("auto_penalty", true); });
 
 		// biphasic module handlers (biphasic, biphasic-solute, multiphasic)
