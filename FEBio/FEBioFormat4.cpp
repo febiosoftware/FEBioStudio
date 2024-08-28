@@ -1119,10 +1119,14 @@ bool FEBioFormat4::ParseMeshDataSection(XMLTag& tag)
 			FSElement& e0 = pdst->Element(j);
 			FSElement& e1 = psrc->Element(j);
 
-			int ne = e0.Nodes(); assert(ne == e1.Nodes());
-			for (int k=0; k<ne; ++k)
+			if (e0.IsShell())
 			{
-				e0.m_h[k] = e1.m_h[k];
+				assert(e1.IsShell());
+				int ne = e0.Nodes(); assert(ne == e1.Nodes());
+				for (int k = 0; k < ne; ++k)
+				{
+					e0.m_h[k] = e1.m_h[k];
+				}
 			}
             e0.m_Q = e1.m_Q;
             e0.m_Qactive = e1.m_Qactive;
@@ -1323,8 +1327,11 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 					int id = dom->ElementID(lid);
 					FSElement& el = mesh->Element(id);
 
-					assert(m == el.Nodes());
-					for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
+					if (el.IsShell() && (m == el.Nodes()))
+					{
+						for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
+					}
+					else throw XMLReader::InvalidValue(tag);
 				}
 				++tag;
 			} while (!tag.isend());
