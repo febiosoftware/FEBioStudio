@@ -39,7 +39,6 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
 #include <MeshTools/FESelection.h>
-#include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -47,20 +46,13 @@ SOFTWARE.*/
 #include "ObjectProps.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include "CurveIntersectProps.h"
 #include "GLHighlighter.h"
 #include <GeomLib/GPrimitive.h>
 #include <QMessageBox>
-#include <QInputDialog>
-#include <QProgressBar>
-#include <sstream>
-#include <QtCore/QTimer>
-#include <GeomLib/MeshLayer.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
-#include "Tool.h"
 
 class CSurfaceMesherProps : public CObjectProps
 {
