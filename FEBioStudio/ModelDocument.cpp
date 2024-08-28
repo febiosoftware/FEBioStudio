@@ -518,7 +518,13 @@ bool CModelDocument::Initialize()
 	if (m_Project.GetUnits() != 0)
 	{
 		SetUnitSystem(m_Project.GetUnits());
+
+		if (GetActiveDocument() == this)
+		{
+			Units::SetUnitSystem(GetUnitSystem());
+		}
 	}
+
 	return CGLDocument::Initialize();
 }
 
