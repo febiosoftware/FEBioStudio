@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "ImageSource.h"
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
-#include <ImageLib/ImageSITK.h>
 #include <FSCore/FSDir.h>
 
 using namespace Post;
@@ -70,11 +69,7 @@ C3DImage* CImageSource::GetImageToFilter()
 {
     if(m_img == m_originalImage)
     {
-#ifdef HAS_ITK
-        m_img = new CImageSITK();
-#else
         m_img = new C3DImage();
-#endif
         
         // Set old bounding box and orientaion on new image as default
         BOX originalBox = m_originalImage->GetBoundingBox();

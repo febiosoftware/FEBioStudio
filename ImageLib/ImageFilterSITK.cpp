@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "ImageFilterSITK.h"
 #include "ImageModel.h"
 #include "ImageSource.h"
-#include "ImageSITK.h"
+#include "SITKTools.h"
 
 #ifdef HAS_ITK
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
@@ -73,14 +73,8 @@ SITKImageFiler::SITKImageFiler()
 itk::simple::Image SITKImageFiler::GetSITKImage()
 {
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
-    if(!dynamic_cast<CImageSITK*>(image))
-    {
-        return CImageSITK::SITKImageFrom3DImage(image);
-    }
-    else
-    {
-        return dynamic_cast<CImageSITK*>(image)->GetSItkImage();
-    }
+    
+    return SITKImageFrom3DImage(image);
 } 
 
 
@@ -104,7 +98,7 @@ void MeanImageFilter::ApplyFilter()
 
     sitk::Image original = GetSITKImage();
     
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::MeanImageFilter filter;
 
@@ -118,7 +112,7 @@ void MeanImageFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
     }
     catch(std::exception& e)
     {
@@ -144,7 +138,7 @@ void GaussianImageFilter::ApplyFilter()
 
     sitk::Image original = GetSITKImage();
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::SmoothingRecursiveGaussianImageFilter filter;
 
@@ -152,7 +146,7 @@ void GaussianImageFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
     }
     catch(std::exception& e)
     {
@@ -183,7 +177,7 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 
     sitk::Image original = GetSITKImage();
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::AdaptiveHistogramEqualizationImageFilter filter;
     filter.SetAlpha(GetFloatValue(0));
@@ -192,7 +186,8 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
+
     }
     catch(std::exception& e)
     {

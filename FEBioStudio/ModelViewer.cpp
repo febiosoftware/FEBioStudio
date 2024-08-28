@@ -2008,8 +2008,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			}
             QMenu* exportImage = menu.addMenu("Export Image");
             exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
+#ifdef HAS_ITK
             exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
             exportImage->addAction("NRRD", this, &CModelViewer::OnExportNRRD);
+#endif
             del = true;
         }
 		break;
