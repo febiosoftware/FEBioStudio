@@ -394,6 +394,17 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
+
+		if (mesh)
+		{
+			// create a report: 
+			QString report = QString("Meshing finished for %1:\n").arg(QString::fromStdString(activeObject->GetName()));
+			report += QString("- Nodes    = %1\n").arg(mesh->Nodes());
+			report += QString("- Faces    = %1\n").arg(mesh->Faces());
+			report += QString("- Elements = %1\n").arg(mesh->Elements());
+			QMessageBox::information(this, "FEBio Studio", report);
+			w->AddLogEntry(report);
+		}
 	}
 }
 
