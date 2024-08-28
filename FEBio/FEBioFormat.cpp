@@ -2705,7 +2705,19 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	if (tag.isleaf())
 	{
 		// make sure there is a value
-		if (strlen(tag.szvalue()) == 0) return;
+		// if the value only contains white space we consider it empty. 
+		bool valueEmpty = true;
+		const char* ch = tag.szvalue();
+		while (ch && (*ch != 0))
+		{
+			if (!isspace(*ch))
+			{
+				valueEmpty = false;
+				break;
+			}
+			ch++;
+		}
+		if (valueEmpty) return;
 
 		const char* szparam = tag.Name();
 		const char* sztype = tag.AttributeValue("type", true);
