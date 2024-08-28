@@ -36,7 +36,6 @@ SOFTWARE.*/
 
 namespace sitk = itk::simple;
 
-
 class ITKException : public std::exception
 {
 public:
@@ -64,20 +63,14 @@ private:
     std::string m_what;
 };
 
+#endif
 
 SITKImageFiler::SITKImageFiler()
 {
 
 }
 
-itk::simple::Image SITKImageFiler::GetSITKImage()
-{
-    C3DImage* image = m_model->GetImageSource()->Get3DImage();
-    
-    return SITKImageFrom3DImage(image);
-} 
-
-
+#ifdef HAS_ITK
 MeanImageFilter::MeanImageFilter()
 {
     static int n = 1;
@@ -96,7 +89,7 @@ void MeanImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
     
     C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
@@ -119,7 +112,12 @@ void MeanImageFilter::ApplyFilter()
         throw ITKException(e);
     }
 }
+#else
+MeanImageFilter::MeanImageFilter(){}
+void MeanImageFilter::ApplyFilter() {}
+#endif
 
+#ifdef HAS_ITK
 GaussianImageFilter::GaussianImageFilter()
 {
     static int n = 1;
@@ -136,7 +134,7 @@ void GaussianImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
 
     C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
@@ -153,7 +151,12 @@ void GaussianImageFilter::ApplyFilter()
         throw ITKException(e);
     }
 }
+#else
+GaussianImageFilter::GaussianImageFilter(){}
+void GaussianImageFilter::ApplyFilter(){}
+#endif
 
+#ifdef HAS_ITK
 AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter()
 {
     static int n = 1;
@@ -175,7 +178,7 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
 
     C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
@@ -194,5 +197,7 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
         throw ITKException(e);
     }
 }
-
+#else
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter() {}
+void AdaptiveHistogramEqualizationFilter::ApplyFilter() {}
 #endif
