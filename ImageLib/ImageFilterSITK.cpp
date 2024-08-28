@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "ImageFilterSITK.h"
 #include "ImageModel.h"
 #include "ImageSource.h"
-#include "ImageSITK.h"
+#include "SITKTools.h"
 
 #ifdef HAS_ITK
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include <sitkAdaptiveHistogramEqualizationImageFilter.h>
 
 namespace sitk = itk::simple;
-
 
 class ITKException : public std::exception
 {
@@ -64,26 +63,14 @@ private:
     std::string m_what;
 };
 
+#endif
 
 SITKImageFiler::SITKImageFiler()
 {
 
 }
 
-itk::simple::Image SITKImageFiler::GetSITKImage()
-{
-    C3DImage* image = m_model->GetImageSource()->Get3DImage();
-    if(!dynamic_cast<CImageSITK*>(image))
-    {
-        return CImageSITK::SITKImageFrom3DImage(image);
-    }
-    else
-    {
-        return dynamic_cast<CImageSITK*>(image)->GetSItkImage();
-    }
-} 
-
-
+#ifdef HAS_ITK
 MeanImageFilter::MeanImageFilter()
 {
     static int n = 1;
@@ -102,9 +89,9 @@ void MeanImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
     
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::MeanImageFilter filter;
 
@@ -118,14 +105,19 @@ void MeanImageFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
     }
     catch(std::exception& e)
     {
         throw ITKException(e);
     }
 }
+#else
+MeanImageFilter::MeanImageFilter(){}
+void MeanImageFilter::ApplyFilter() {}
+#endif
 
+#ifdef HAS_ITK
 GaussianImageFilter::GaussianImageFilter()
 {
     static int n = 1;
@@ -142,9 +134,9 @@ void GaussianImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::SmoothingRecursiveGaussianImageFilter filter;
 
@@ -152,14 +144,19 @@ void GaussianImageFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
     }
     catch(std::exception& e)
     {
         throw ITKException(e);
     }
 }
+#else
+GaussianImageFilter::GaussianImageFilter(){}
+void GaussianImageFilter::ApplyFilter(){}
+#endif
 
+#ifdef HAS_ITK
 AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter()
 {
     static int n = 1;
@@ -181,9 +178,9 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    sitk::Image original = GetSITKImage();
+    sitk::Image original = SITKImageFrom3DImage(m_model->GetImageSource()->Get3DImage());
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+    C3DImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     sitk::AdaptiveHistogramEqualizationImageFilter filter;
     filter.SetAlpha(GetFloatValue(0));
@@ -192,12 +189,15 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(original));
+        CopyTo3DImage(filteredImage, filter.Execute(original));
+
     }
     catch(std::exception& e)
     {
         throw ITKException(e);
     }
 }
-
+#else
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter() {}
+void AdaptiveHistogramEqualizationFilter::ApplyFilter() {}
 #endif

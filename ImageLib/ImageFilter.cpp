@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageSource.h>
-#include <ImageLib/ImageSITK.h>
+#include "3DImage.h"
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
 #include "ImageFilterSITK.h"
