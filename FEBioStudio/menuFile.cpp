@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
 #include <MeshIO/BYUimport.h>
+#include <MeshIO/ObjImport.h>
 #include <Comsol/COMSOLImport.h>
 #include <MeshIO/DXFimport.h>
 #include <MeshIO/GMshImport.h>
@@ -148,6 +149,7 @@ REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, "hmascii", FSProject);
 REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, "surf"   , FSProject);
 REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
 REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
+REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, "obj"    , FSProject);
 REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
 REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
 REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, "elem"   , FSProject);
