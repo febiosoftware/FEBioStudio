@@ -57,9 +57,5 @@ public:
 	void Load(IArchive& ar) override;
 
 private:
-    template<class pType> void 
-    CopySliceData(pType* buffer, int pixelType, int nx, int ny);
-
-private:
     std::vector<std::string> m_filenames;
 };
