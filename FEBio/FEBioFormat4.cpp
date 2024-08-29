@@ -212,6 +212,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 				else if (strcmp(sz, "um-nN-s") == 0) prj.SetUnits(5);
 				else if (strcmp(sz, "CGS"    ) == 0) prj.SetUnits(6);
                 else if (strcmp(sz, "mm-g-s" ) == 0) prj.SetUnits(7);
+                else if (strcmp(sz, "mm-mg-s") == 0) prj.SetUnits(8);
 				else AddLogEntry("Unrecognized unit system.");
 			}
 			++tag;
