@@ -44,6 +44,8 @@ class CGLSlicePlot : public CGLLegendPlot
 		SHOW_LEGEND, 
 		SLICES, 
 		SLICE_OFFSET, 
+		SLICE_RANGE,
+		USER_SLICES,
 		RANGE, 
 		RANGE_MAX, 
 		RANGE_MIN, 
@@ -106,6 +108,8 @@ protected:
 	int			m_nrange;		//!< range option (0=dynamic, 1=user)
 	float		m_fmin, m_fmax;	//!< user-defined range 
 	float		m_offset;
+	vec2d		m_slice_range;
+	std::vector<double> m_user_slices;
 
 	int				m_nfield;	// data field
 	CColorTexture	m_Col;		// colormap
