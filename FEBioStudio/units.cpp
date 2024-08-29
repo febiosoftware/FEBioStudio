@@ -37,7 +37,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "um-nN-s" << "CGS" << "mm-g-s";
+	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "um-nN-s" << "CGS" << "mm-g-s" << "mm-mg-s";
 
 	return s;
 }
@@ -70,7 +70,10 @@ static Units::UnitSymbol unit_table[][14] = {
     {{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}, {"℃", 1}},
 
     // MMGS units
-    {{"mm",1e-3},{"g",1e-3},{"s",1},{"K",1},{"µA",1e-6},{"nmol",1e-9},{"µN",1e-6},{"Pa",1.0}, {"nJ",1e-9},{"nW",1e-9},{"mV",1e-3},{"mM", 1}, {"℃", 1}}
+    {{"mm",1e-3},{"g",1e-3},{"s",1},{"K",1},{"µA",1e-6},{"nmol",1e-9},{"µN",1e-6},{"Pa",1.0}, {"nJ",1e-9},{"nW",1e-9},{"mV",1e-3},{"mM", 1}, {"℃", 1}},
+
+    // MMMGS units
+    {{"mm",1e-3},{"mg",1e-6},{"s",1},{"K",1},{"µA",1e-6},{"nmol",1e-9},{"µN",1e-6},{"Pa",1.0}, {"nJ",1e-9},{"nW",1e-9},{"mV",1e-3},{"mM", 1}, {"℃", 1}}
 };
 
 QString Units::GetUnitString(const char* szunit)
