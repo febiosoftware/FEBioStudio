@@ -55,6 +55,8 @@ private:
 	void IntegrateSelection(CPlotData& data);
 	void IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& data);
 
+	void setDataSource(int n) override { m_nsrc = n; Update(false, true); }
+
 private slots:
 	void OnConfigChanged(int i);
 
