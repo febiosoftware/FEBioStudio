@@ -41,7 +41,7 @@ CExtrudeMapTool::CExtrudeMapTool(CMainWindow* wnd) : CBasicTool(wnd, "Extrude ma
 	m_meshBias = 1;
 	m_symmetricBias = false;
 	addResourceProperty(&m_filename, "map file:");
-	addDoubleProperty(&m_D, "distance");
+	addDoubleProperty(&m_D, "scale factor");
 	addIntProperty(&m_nsegs, "segments");
 	addBoolProperty(&m_useLocalNormal, "use local normal");
 	addDoubleProperty(&m_meshBias, "mesh bias");

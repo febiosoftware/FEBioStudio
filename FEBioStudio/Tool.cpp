@@ -66,6 +66,7 @@ CMainWindow* CAbstractTool::GetMainWindow()
 void CAbstractTool::updateUi()
 {
 	m_wnd->repaint();
+	m_wnd->RedrawGL();
 }
 
 // Update the tool
