@@ -23,30 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "FEModifier.h"
-#include <MeshLib/FENodeData.h>
+#include "Tool.h"
+#include <vector>
 
-class FEExtrudeFaces : public FEModifier
+class CExtrudeMapTool : public CBasicTool
 {
 public:
-	FEExtrudeFaces();
+	CExtrudeMapTool(CMainWindow* wnd);
 
-	FSMesh* Apply(FSMesh* pm);
-	FSMesh* Apply(FSGroup* pg);
-
-	void SetExtrusionDistance(double D);
-	void SetSegments(int n);
-	void SetUseNormalLocal(bool b);
-	void SetMeshBiasFactor(double g);
-	void SetSymmetricBias(bool b);
-
-	void SetNodalMap(FENodeData* map);
-
-protected:
-	bool Extrude(FSMesh* pm, std::vector<int>& faceList);
+	bool OnApply() override;
 
 private:
-	FENodeData* m_map;
+	QString m_filename;
+	double m_D;
+	int m_nsegs;
+	bool m_useLocalNormal;
+	double m_meshBias;
+	bool m_symmetricBias;
 };
