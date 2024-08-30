@@ -1179,6 +1179,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			}
 			AddDocument(doc);
 
+			Units::SetUnitSystem(doc->GetUnitSystem());
+
 			// for fsprj files we set the "project" directory. 
 			FSDir path(file.m_fileName.toStdString());
 			if (path.fileExt() == "fsprj")
