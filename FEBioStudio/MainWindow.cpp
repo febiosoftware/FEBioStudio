@@ -1797,6 +1797,15 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	{
 		if (GetPostDocument()) ui->actionTranslate->toggle();
 	}
+	else if ((ev->key() == Qt::Key_A))
+	{
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
+		{
+			doc->ToggleActiveParts();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)

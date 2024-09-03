@@ -1083,3 +1083,21 @@ bool CModelDocument::SelectHighlightedItems()
 
 	return true;
 }
+
+void CModelDocument::ToggleActiveParts()
+{
+	if (GetSelectionMode() != SELECT_PART) return;
+
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	vector<GPart*> selectedParts;
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+	}
+	if (selectedParts.empty()) return;
+
+	DoCommand(new CCmdToggleActiveParts(selectedParts));
+}
