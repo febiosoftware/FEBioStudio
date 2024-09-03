@@ -68,6 +68,8 @@ public:
 
 	void clearGrid();
 
+	void Apply();
+
 protected slots:
 	void currentMapChanged(int n);
 	void onDataChanged();
@@ -78,6 +80,9 @@ protected slots:
 	void onInvert();
 	void onSetDefault(int nstate);
 
+signals:
+	void colormapChanged(int map);
+
 private:
 	void updateMaps();
 
@@ -87,7 +92,10 @@ private:
 	QComboBox*		m_maps;
 	ColorGradient*	m_grad;
 	QCheckBox*		m_default;
+
 	int				m_currentMap;
+	Post::CColorMap	m_map;
+	bool	m_changed;
 };
 
 class CUnitWidget : public QWidget
@@ -193,6 +201,7 @@ private:
 	void UpdatePalettes();
 	void UpdateSettings();
 	void UpdateUI();
+	void UpdateColormap();
 
 protected:
 	CMainWindow*		m_pwnd;

@@ -56,6 +56,8 @@ SOFTWARE.*/
 #include "units.h"
 #include "DlgSetRepoFolder.h"
 #include "IconProvider.h"
+#include "PostDocument.h"
+#include <PostGL/GLModel.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -503,6 +505,7 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 
 	updateMaps();
 	m_currentMap = 0;
+	m_changed = false;
 	currentMapChanged(0);
 }
 
@@ -567,9 +570,9 @@ void CColormapWidget::onEdit()
 
 void CColormapWidget::onInvert()
 {
-	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
-	map.Invert();
-	updateColorMap(map);
+	m_map.Invert();
+	updateColorMap(m_map);
+	m_changed = true;
 }
 
 void CColormapWidget::updateColorMap(const Post::CColorMap& map)
@@ -606,11 +609,32 @@ void CColormapWidget::clearGrid()
 	}
 }
 
+void CColormapWidget::Apply()
+{
+	Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+	tex = m_map;
+}
+
 void CColormapWidget::currentMapChanged(int n)
 {
+	if (m_changed && (m_currentMap >= 0))
+	{
+		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
+		{
+			Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+			tex = m_map;
+			emit colormapChanged(m_currentMap);
+		}
+	}
+
+	m_currentMap = n;
+	m_changed = false;
 	if (n != -1)
 	{
 		m_currentMap = n;
+		Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+		m_map = tex;
+
 		updateColorMap(Post::ColorMapManager::GetColorMap(n));
 
 		int defaultMap = Post::ColorMapManager::GetDefaultMap();
@@ -630,7 +654,7 @@ void CColormapWidget::currentMapChanged(int n)
 
 void CColormapWidget::onDataChanged()
 {
-	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+	Post::CColorMap& map = m_map;
 	for (int i = 0; i<map.Colors(); ++i)
 	{
 		QLineEdit* pos = dynamic_cast<QLineEdit*>(m_grid->itemAtPosition(i, 1)->widget()); assert(pos);
@@ -648,15 +672,16 @@ void CColormapWidget::onDataChanged()
 		}
 	}
 	m_grad->setColorMap(map);
+	m_changed = true;
 }
 
 void CColormapWidget::onSpinValueChanged(int n)
 {
-	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
-	if (map.Colors() != n)
+	if (m_map.Colors() != n)
 	{
-		map.SetColors(n);
-		updateColorMap(map);
+		m_map.SetColors(n);
+		updateColorMap(m_map);
+		m_changed = true;
 	}
 }
 
@@ -1032,6 +1057,7 @@ public:
 		QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), pwnd, SLOT(onClicked(QAbstractButton*)));
 		QObject::connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
 		QObject::connect(resetButton, SIGNAL(clicked()), pwnd, SLOT(onReset()));
+		QObject::connect(m_map, SIGNAL(colormapChanged(int)), pwnd, SLOT(onColormapChanged(int)));
 	}
 };
 
@@ -1285,6 +1311,9 @@ void CDlgSettings::apply()
 		}
 	}
 
+	ui->m_map->Apply();
+	UpdateColormap();
+
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
 	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
@@ -1314,4 +1343,19 @@ void CDlgSettings::onReset()
 	UpdateSettings();
 	m_pwnd->RedrawGL();
 	UpdateUI();
+}
+
+void CDlgSettings::UpdateColormap()
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(m_pwnd->GetGLDocument());
+	if (doc == nullptr) return;
+	if (!doc->IsValid()) return;
+
+	Post::CGLModel* gm = doc->GetGLModel();
+	if (gm == nullptr) return;
+
+	Post::CGLColorMap* colmap = gm->GetColorMap();
+	colmap->m_Col.UpdateTexture();
+
+	m_pwnd->RedrawGL();
 }
