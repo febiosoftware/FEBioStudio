@@ -213,7 +213,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 				if (m == -1) return error("Invalid nodal map specified.");
 
 				double v = m_map->get(i);
-				ed[m] *= v;
+				ed[m] *= v * dist;
 			}
 		}
 		else if (m_map->GetDataType() == DATA_VEC3)
