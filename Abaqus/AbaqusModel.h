@@ -69,12 +69,12 @@ public:
 	typedef vector<ELEMENT>::iterator Telem_itr;
 
 	// Spring element
-	struct SPRING
+	struct SPRING_ELEMENT
 	{
 		int	id;
 		int	n[2];
 	};
-	typedef list<SPRING>::iterator Tspring_itr;
+	typedef list<SPRING_ELEMENT>::iterator Tspring_itr;
 
 	// Face
 	struct FACE
@@ -116,6 +116,7 @@ public:
 		char	szmat[Max_Name + 1];
 		char	szorient[Max_Name + 1];
 		PART*	part;
+		int		m_pid = -1;
 	};
 
 	// Shell section
@@ -126,6 +127,7 @@ public:
 		char	szorient[Max_Name + 1];
 		PART*	part = nullptr;
 		double	m_shellThickness = 0.0;
+		int		m_pid = -1;
 	};
 
 	struct Orientation
@@ -169,6 +171,13 @@ public:
 		std::vector<vec2d>	m_points;
 	};
 
+	class SpringSet
+	{
+	public:
+		vector<SPRING_ELEMENT> m_Elem;
+		LoadCurve m_lc;
+	};
+
 	// part
 	class PART
 	{
@@ -195,7 +204,7 @@ public:
 		void AddElement(ELEMENT& n);
 
 		// add a spring
-		Tspring_itr AddSpring(SPRING& n);
+		Tspring_itr AddSpring(SPRING_ELEMENT& n);
 
 		// finds a element with a particular id
 		Telem_itr FindElement(int id);
@@ -219,10 +228,10 @@ public:
 		SURFACE* AddSurface(const char* szname);
 
 		// add a solid section
-		list<SOLID_SECTION>::iterator AddSolidSection(const char* szset, const char* szmat, const char* szorient);
+		void AddSolidSection(const char* szset, const char* szmat, const char* szorient);
 
 		// add a solid section
-		list<SHELL_SECTION>::iterator AddShellSection(const char* szset, const char* szmat, const char* szorient);
+		SHELL_SECTION& AddShellSection(const char* szset, const char* szmat, const char* szorient);
 
 		// number of nodes
 		int Nodes() { return (int)m_Node.size(); }
@@ -246,12 +255,13 @@ public:
 		char m_szname[256];
 		vector<NODE>				m_Node;		// list of nodes
 		vector<ELEMENT>				m_Elem;		// list of elements
-		list<SPRING>				m_Spring;	// list of springs
+		list<SPRING_ELEMENT>		m_Spring;	// list of springs
 		map<string, NODE_SET*>		m_NSet;		// node sets
 		map<string, ELEMENT_SET*>	m_ESet;		// element sets
 		map<string, SURFACE*>		m_Surf;		// surfaces
-		list<SOLID_SECTION>			m_Solid;	// solid sections
-		list<SHELL_SECTION>			m_Shell;	// shell sections
+		map<string, SpringSet>		m_SpringSet; // set of springs
+		map<string, SOLID_SECTION>	m_Solid;	// solid sections
+		map<string, SHELL_SECTION>	m_Shell;	// shell sections
 		list<Orientation>			m_Orient;
 		list<Distribution>			m_Distr;
 
@@ -424,6 +434,8 @@ public:
 	list<PART*>&	PartList() { return m_Part; }
 
 	SURFACE* FindSurface(const char* szname);
+
+	SpringSet* FindSpringSet(const char* szname);
 
 public:
 	// Add a material

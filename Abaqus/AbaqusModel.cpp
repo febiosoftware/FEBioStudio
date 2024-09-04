@@ -209,6 +209,21 @@ AbaqusModel::SURFACE* AbaqusModel::FindSurface(const char* szname)
 	return 0;
 }
 
+AbaqusModel::SpringSet* AbaqusModel::FindSpringSet(const char* szname)
+{
+	list<AbaqusModel::PART*>::iterator it;
+	for (it = m_Part.begin(); it != m_Part.end(); ++it)
+	{
+		AbaqusModel::PART& part = *(*it);
+		auto it = part.m_SpringSet.find(szname);
+		if (it != part.m_SpringSet.end())
+		{
+			return &(it->second);
+		}
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 AbaqusModel::PART* AbaqusModel::GetActivePart(bool bcreate)
 {
@@ -332,7 +347,7 @@ AbaqusModel::Tnode_itr AbaqusModel::PART::FindNode(int id)
 	return m_NLT[id - m_ioff];
 }
 
-list<AbaqusModel::SPRING>::iterator AbaqusModel::PART::AddSpring(AbaqusModel::SPRING& s)
+list<AbaqusModel::SPRING_ELEMENT>::iterator AbaqusModel::PART::AddSpring(AbaqusModel::SPRING_ELEMENT& s)
 {
 	m_Spring.push_back(s);
 	return --m_Spring.end();
@@ -411,28 +426,25 @@ AbaqusModel::SURFACE* AbaqusModel::PART::FindSurface(const char* szname)
 
 //-----------------------------------------------------------------------------
 // add a solid section
-list<AbaqusModel::SOLID_SECTION>::iterator AbaqusModel::PART::AddSolidSection(const char* szset, const char* szmat, const char* szorient)
+void AbaqusModel::PART::AddSolidSection(const char* szset, const char* szmat, const char* szorient)
 {
-	SOLID_SECTION ss;
+	SOLID_SECTION& ss = m_Solid[szset];
 	strcpy(ss.szelset, szset);
 	if (szmat) strcpy(ss.szmat, szmat); else ss.szmat[0] = 0;
 	if (szorient) strcpy(ss.szorient, szorient); else ss.szorient[0] = 0;
 	ss.part = this;
-	m_Solid.push_back(ss);
-	return --m_Solid.end();
 }
 
 //-----------------------------------------------------------------------------
 // add a shell section
-list<AbaqusModel::SHELL_SECTION>::iterator AbaqusModel::PART::AddShellSection(const char* szset, const char* szmat, const char* szorient)
+AbaqusModel::SHELL_SECTION& AbaqusModel::PART::AddShellSection(const char* szset, const char* szmat, const char* szorient)
 {
-	SHELL_SECTION ss;
+	SHELL_SECTION& ss = m_Shell[szset];
 	strcpy(ss.szelset, szset);
 	if (szmat) strcpy(ss.szmat, szmat); else ss.szmat[0] = 0;
 	if (szorient) strcpy(ss.szorient, szorient); else ss.szorient[0] = 0;
 	ss.part = this;
-	m_Shell.push_back(ss);
-	return --m_Shell.end();
+	return ss;
 }
 
 //-----------------------------------------------------------------------------

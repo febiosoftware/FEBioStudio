@@ -2133,7 +2133,7 @@ bool FSProject::ConvertDiscrete(std::ostream& log)
 		if (ps)
 		{
 			FSDiscreteMaterial* pm = ps->GetMaterial();
-			if (pm)
+			if (pm && (dynamic_cast<FEBioDiscreteMaterial*>(pm)==nullptr))
 			{
 				FSDiscreteMaterial* febMat = FEBio::CreateDiscreteMaterial(pm->GetTypeString(), &fem);
 
