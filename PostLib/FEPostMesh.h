@@ -96,6 +96,8 @@ public:
 	//! Add a node set
 	void AddNodeSet(FSNodeSet* ps) { m_NSet.push_back(ps); }
 
+	FSNodeSet* FindNodeSet(const std::string& s);
+
 	// --- D A T A   U P D A T E ---
 
 	//! update mesh data

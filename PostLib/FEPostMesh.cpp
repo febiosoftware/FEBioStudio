@@ -116,6 +116,15 @@ Post::FSSurface* Post::FEPostMesh::FindSurface(const std::string& s)
 	return nullptr;
 }
 
+Post::FSNodeSet* Post::FEPostMesh::FindNodeSet(const std::string& s)
+{
+	for (auto& nset : m_NSet)
+	{
+		if (nset->GetName() == s) return nset;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void Post::FEPostMesh::Create(int nodes, int elems, int faces, int edges)
 {
