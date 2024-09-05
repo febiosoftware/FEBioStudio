@@ -1066,8 +1066,8 @@ void VolumeRatio::eval(int n, float* pv)
 	for (int i=0; i<N; i++) 
 	{ 
 		int node = pe->m_node[i];
-		X[i] = to_vec3d(fem.NodePosition(node, 0)); 
-		x[i] = to_vec3d(fem.NodePosition(node, ntime));
+		X[i] = to_vec3d(m_state->NodePosition(node));
+		x[i] = to_vec3d(m_state->NodeRefPosition(node));
 	}
 
 	double v0 = element_volume(pe->Type(), X);
@@ -1957,8 +1957,8 @@ void VolumeStrain::eval(int n, float* pv)
 	for (int i = 0; i<N; i++)
 	{ 
 		int node = pe->m_node[i];
-		X[i] = fem->NodePosition(node, 0);
-		x[i] = fem->NodePosition(node, ntime);
+		X[i] = m_state->NodePosition(node);
+		x[i] = m_state->NodeRefPosition(node);
 	}
 
 	// calculate partial derivatives

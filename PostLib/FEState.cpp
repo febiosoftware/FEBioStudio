@@ -222,6 +222,23 @@ void FEState::AddPointObjectData()
 	}
 }
 
+vec3f FEState::NodePosition(int node)
+{
+	Post::FEPostModel* fem = GetFSModel();
+	int ndisp = fem->GetDisplacementField();
+	FERefState& ref = *m_ref;
+	vec3f r = ref.m_Node[node].m_rt;
+	if (ndisp >= 0) r += fem->EvaluateNodeVector(node, m_id, ndisp);
+	return r;
+}
+
+vec3f FEState::NodeRefPosition(int node)
+{
+	FERefState& ref = *m_ref;
+	vec3f r = ref.m_Node[node].m_rt;
+	return r;
+}
+
 //-----------------------------------------------------------------------------
 // helper function for copying data
 template <class T> void copyData(Post::FEMeshData* dest, Post::FEMeshData* src)
