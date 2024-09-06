@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
+#include <FEBioLink/FEBioModule.h>
 
 FEBioFormat12::FEBioFormat12(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -85,6 +86,9 @@ bool FEBioFormat12::ParseModuleSection(XMLTag &tag)
 		m_nAnalysis = FE_STEP_MECHANICS;
 		FileReader()->AddLogEntry("unknown module type. Assuming solid module (line %d)", tag.currentLine());
 	}
+	
+	FSProject& prj = FileReader()->GetProject();
+	prj.SetModule(FEBio::SetActiveModule(atype.cvalue()));
 
 	// set the project's active modules
 /*
