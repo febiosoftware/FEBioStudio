@@ -849,6 +849,26 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					break;
 					}
 				}
+				else if (fmt == DATA_REGION)
+				{
+					switch (d.GetType())
+					{
+					case DATA_SCALAR:
+					{
+						FEElemData_T<float, DATA_REGION>* pf = dynamic_cast<FEElemData_T<float, DATA_REGION>*>(&d);
+						float v; pf->eval(i, &v);
+						fprintf(fp, "%g", v);
+					}
+					break;
+					case DATA_VEC3:
+					{
+						FEElemData_T<vec3f, DATA_REGION>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>*>(&d);
+						vec3f v; pf->eval(i, &v);
+						fprintf(fp, "%g,%g,%g", v.x, v.y, v.z);
+					}
+					break;
+					}
+				}
 				if (n != nstates - 1) fprintf(fp, ",");
 			}
 			fprintf(fp, "\n");

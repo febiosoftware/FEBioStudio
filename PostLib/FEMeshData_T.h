@@ -545,7 +545,7 @@ public:
 			m_elem.assign(state->GetFEMesh()->Elements(), -1); 
 	}
 	void eval(int n, T* pv) { assert(m_elem[n] >= 0); (*pv) = m_data[m_elem[n]]; }
-	void copy(FEElementData<T, DATA_REGION>& d) { m_data = d.m_data; }
+	void copy(FEElementData<T, DATA_REGION>& d) { m_data = d.m_data; m_elem = d.m_elem; }
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[n] >= 0); }
 	void add(std::vector<int>& item, const T& v)
 	{ 
