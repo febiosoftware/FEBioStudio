@@ -24,38 +24,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "ImageSource.h"
+#pragma once
+#include <MeshIO/FSFileImport.h>
+#include <FEMLib/FSProject.h>
+#include <vector>
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
-class CITKImageSource : public CImageSource
+class ObjImport : public FSFileImport
 {
 public:
-    CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
-    CITKImageSource(CImageModel* imgModel);
+	struct Vertex {
+		double x, y, z;
+	};
 
-    bool Load() override;
+	struct Face {
+		int node[3];
+	};
 
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
-private:
-    std::string m_filename;
-
-    ImageFileType m_fileType;
-};
-
-class CITKSeriesImageSource : public CImageSource
-{
 public:
-    CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
-    CITKSeriesImageSource(CImageModel* imgModel);
+	ObjImport(FSProject& prj);
+	~ObjImport(void);
 
-    bool Load() override;
-
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	bool Load(const char* szfile);
 
 private:
-    std::vector<std::string> m_filenames;
+	std::vector<Vertex> m_vert;
+	std::vector<Face> m_face;
 };

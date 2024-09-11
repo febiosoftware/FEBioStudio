@@ -938,10 +938,18 @@ FSMesh* FEMeshBuilder::DetachSelectedMesh()
 
 			for (j = 0; j<pe->Nodes(); ++j)
 			{
-				el.m_h[j] = pe->m_h[j];
 				el.m_node[j] = m_mesh.Node(pe->m_node[j]).m_ntag;
 				assert(el.m_node[j] >= 0);
 			}
+
+			if (el.IsShell() && pe->IsShell())
+			{
+				for (j = 0; j < pe->Nodes(); ++j)
+				{
+					el.m_h[j] = pe->m_h[j];
+				}
+			}
+
 			++n;
 		}
 	}

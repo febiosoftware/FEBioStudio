@@ -23,39 +23,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <MeshIO/FSFileImport.h>
+#include <FEMLib/FSProject.h>
+#include <string>
+#include <vector>
 
-#include "ImageSource.h"
-
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
-class CITKImageSource : public CImageSource
+class ArtiSynthImport : public FSFileImport
 {
+	struct NODE {
+		int nid;
+		double x, y, z;
+	};
+
+	struct ELEM {
+		int eid;
+		int node[8];
+		int tmp[5]; // don't know what this is for
+	};
+
 public:
-    CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
-    CITKImageSource(CImageModel* imgModel);
+	ArtiSynthImport(FSProject& prj);
+	~ArtiSynthImport();
 
-    bool Load() override;
-
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	bool Load(const char* szfile);
 
 private:
-    std::string m_filename;
+	bool readNodes(const std::string& nodeFile);
+	bool readElems(const std::string& elemFile);
 
-    ImageFileType m_fileType;
-};
-
-class CITKSeriesImageSource : public CImageSource
-{
-public:
-    CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
-    CITKSeriesImageSource(CImageModel* imgModel);
-
-    bool Load() override;
-
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	FSMesh* BuildMesh();
 
 private:
-    std::vector<std::string> m_filenames;
+	std::vector<NODE> m_Node;
+	std::vector<ELEM> m_Elem;
 };

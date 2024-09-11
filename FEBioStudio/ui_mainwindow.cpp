@@ -450,12 +450,14 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFile->addSeparator();
 	menuFile->addAction(menuImportImage->menuAction());
 	menuImportImage->addAction(actionImportRawImage);
-	menuImportImage->addAction(actionImportDICOMImage);
 	menuImportImage->addAction(actionImportTiffImage);
+#ifdef HAS_ITK
+    menuImportImage->addAction(actionImportDICOMImage);
 	menuImportImage->addAction(actionImportNrrdImage);
 	//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 	menuImportImage->addAction(actionImportImageSequence);
 	menuImportImage->addAction(actionImportImageOther);
+#endif
 
 
 	QMenu* ConvertMenu = new QMenu("Batch convert");

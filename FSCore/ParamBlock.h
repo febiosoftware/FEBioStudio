@@ -50,11 +50,10 @@ enum Param_Type {
 	Param_STD_VECTOR_VEC2D,
 	Param_ARRAY_INT,			// fixed size array of int
 	Param_ARRAY_DOUBLE,			// fixed size array of double
+	Param_CURVE_OBSOLETE,		// obsolete
+	Param_VEC2D,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
-
-// obsolete parameter types
-#define Param_CURVE_OBSOLETE		0x0010		//-> obsolete
 
 // parameter states
 // (Note that the paramete state is not serialized, so it can be modified without affecting compatibility)
@@ -112,6 +111,7 @@ public:
 	explicit Param(double d, const char* szunit = 0, const char* szb = 0, const char* szn = 0);
 	explicit Param(bool b, const char* szb, const char* szn = 0);
 	explicit Param(vec2i v, const char* szb, const char* szn = 0);
+	explicit Param(vec2d v, const char* szb, const char* szn = 0);
 	explicit Param(vec3d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3ds v, const char* szb, const char* szn = 0);
@@ -138,6 +138,8 @@ public:
 	int GetLoadCurveID() const;
 
 	int GetArraySize() const;
+	bool IsFixedSize() const;
+	void SetFixedSize(bool b);
 
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
@@ -160,6 +162,7 @@ public:
 	void SetBoolValue  (bool   b) {assert(m_ntype == Param_BOOL  ); val<bool> () = b; }
 	void SetVec3dValue (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
 	void SetVec2iValue (const vec2i& v) { assert(m_ntype == Param_VEC2I); val<vec2i>() = v; }
+	void SetVec2dValue (const vec2d& v) { assert(m_ntype == Param_VEC2D); val<vec2d>() = v; }
 	void SetMat3dValue (const mat3d& v) { assert(m_ntype == Param_MAT3D); val<mat3d>() = v; }
 	void SetMat3dsValue(const mat3ds& v){ assert(m_ntype == Param_MAT3DS); val<mat3ds>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
@@ -178,6 +181,7 @@ public:
 	bool   GetBoolValue  () const {assert(m_ntype == Param_BOOL  ); return val<bool> (); }
 	vec3d  GetVec3dValue () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
 	vec2i  GetVec2iValue () const { assert(m_ntype == Param_VEC2I); return val<vec2i>(); }
+	vec2d  GetVec2dValue () const { assert(m_ntype == Param_VEC2D); return val<vec2d>(); }
 	mat3d  GetMat3dValue () const {assert(m_ntype == Param_MAT3D); return val<mat3d>(); }
 	mat3ds GetMat3dsValue () const {assert(m_ntype == Param_MAT3DS); return val<mat3ds>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
@@ -284,6 +288,7 @@ protected:
 	Param*	m_watch;	// watch variable
 
 	Param_Type	m_varType;	// if set, the parameter can have different types. 
+	bool m_fixedSize = true; // if vectors can change their size or not
 
 	friend class ParamBlock;
 };
@@ -363,6 +368,16 @@ public:
 	}
 
 	Param* AddVec2iParam(vec2i v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
+		m_Param.push_back(p);
+		return p;
+	}
+
+	Param* AddVec2dParam(vec2d v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
@@ -617,6 +632,7 @@ public:
 	Param* AddScienceParam(double d, const char* szunit, const char* szb, const char* szn = 0) { return m_Param.AddScienceParam(d, szunit, szb, szn); }
 	Param* AddBoolParam(bool   b, const char* szb = 0, const char* szn = 0) { return m_Param.AddBoolParam(b, szb, szn); }
 	Param* AddVecParam(vec3d  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVecParam(v, szb, szn); }
+	Param* AddVec2dParam(vec2d  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVec2dParam(v, szb, szn); }
 	Param* AddVec2iParam(vec2i  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVec2iParam(v, szb, szn); }
 	Param* AddIndxIntParam(int n, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxIntParam(n, szi, idx, szb, szn); }
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxDoubleParam(d, szi, idx, szb, szn); }
@@ -654,16 +670,20 @@ public:
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
 	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
 	vec2i GetVec2iValue(int n) const { return m_Param[n].GetVec2iValue(); }
+	vec2d GetVec2dValue(int n) const { return m_Param[n].GetVec2dValue(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
 	GLColor GetColorValue(int n) const { return m_Param[n].GetColorValue(); }
+	std::vector<double> GetParamVectorDouble(int n) { return m_Param[n].GetVectorDoubleValue(); }
 
 	void SetIntValue   (int n, int    v) { m_Param[n].SetIntValue   (v); }
 	void SetFloatValue (int n, double v) { m_Param[n].SetFloatValue (v); }
 	void SetBoolValue  (int n, bool   v) { m_Param[n].SetBoolValue  (v); }
 	void SetVecValue   (int n, const vec3d& v) { m_Param[n].SetVec3dValue(v); }
+	void SetVec2dValue (int n, const vec2d& v) { m_Param[n].SetVec2dValue(v); }
 	void SetStringValue(int n, const std::string& s) { m_Param[n].SetStringValue(s); }
 	void SetColorValue (int n, const GLColor& c) { m_Param[n].SetColorValue(c); }
+	void SetParamVectorDouble(int n, const std::vector<double>& a) { m_Param[n].SetVectorDoubleValue(a); }
 	void Clear() { m_Param.clear(); }
 
 	void SetParamInt   (const char* szparam, int n               ) { GetParam(szparam)->SetIntValue   (n); }
@@ -682,6 +702,7 @@ public:
 	vec3d  GetParamVec3d(const char* szparam) { return GetParam(szparam)->GetVec3dValue(); }
 	std::vector<int>    GetParamArrayInt   (const char* szparam) { return GetParam(szparam)->GetArrayIntValue(); }
 	std::vector<double> GetParamArrayDouble(const char* szparam) { return GetParam(szparam)->GetArrayDoubleValue(); }
+	std::vector<double> GetParamVectorDouble(const char* szparam) { return GetParam(szparam)->GetVectorDoubleValue(); }
 
 public:
 	int SetActiveGroup(const char* szgroup) { return m_Param.SetActiveGroup(szgroup); }

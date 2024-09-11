@@ -1082,9 +1082,22 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	Post::FSNodeSet* pn2 = dynamic_cast<Post::FSNodeSet*>(po);
 	if (pn2)
 	{
-		std::vector<int> items = pn2->GetNodeList();
-		doc->SetItemMode(ITEM_NODE);
-		doc->DoCommand(new CCmdSelectFENodes(pn2->GetMesh(), items, false));
+		// the tree is populated from the initial mesh
+		// but if the initial mesh is remeshed, we need to find the mesh
+		// of the active time step
+		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+		if (postDoc)
+		{
+			Post::FEPostModel* mdl = postDoc->GetFSModel();
+			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
+
+			Post::FSNodeSet* pn3 = pm->FindNodeSet(pn2->GetName());
+			if (pn3) pn2 = pn3;
+
+			std::vector<int> items = pn2->GetNodeList();
+			doc->SetItemMode(ITEM_NODE);
+			doc->DoCommand(new CCmdSelectFENodes(pn2->GetMesh(), items, false));
+		}
 	}
 
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);

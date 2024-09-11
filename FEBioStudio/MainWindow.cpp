@@ -592,7 +592,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
-		     (ext.compare("dyn", Qt::CaseInsensitive) == 0))
+		     (ext.compare("dyn", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("key", Qt::CaseInsensitive) == 0))
 	{
 		OpenFEModel(fileName);
 	}
@@ -1183,6 +1184,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				AddLogEntry("Document initialization failed!\n");
 			}
 			AddDocument(doc);
+
+			Units::SetUnitSystem(doc->GetUnitSystem());
 
 			// for fsprj files we set the "project" directory. 
 			FSDir path(file.m_fileName.toStdString());
@@ -1825,6 +1828,15 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	else if ((ev->key() == Qt::Key_T))
 	{
 		if (GetPostDocument()) ui->actionTranslate->toggle();
+	}
+	else if ((ev->key() == Qt::Key_A))
+	{
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
+		{
+			doc->ToggleActiveParts();
+			RedrawGL();
+		}
 	}
 }
 

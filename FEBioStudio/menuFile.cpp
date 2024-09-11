@@ -61,6 +61,7 @@ SOFTWARE.*/
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
 #include <MeshIO/BYUimport.h>
+#include <MeshIO/ObjImport.h>
 #include <Comsol/COMSOLImport.h>
 #include <MeshIO/DXFimport.h>
 #include <MeshIO/GMshImport.h>
@@ -75,6 +76,7 @@ SOFTWARE.*/
 #include <MeshIO/RAWToMeshImport.h>
 #include <MeshIO/STLimport.h>
 #include <MeshIO/TetGenImport.h>
+#include <MeshIO/ArtisynthImport.h>
 #include <MeshIO/VTKImport.h>
 #include <Nike3D/NIKE3DImport.h>
 #include <MeshIO/PRVObjectImport.h>
@@ -150,8 +152,10 @@ REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, "hmascii", FSProject);
 REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, "surf"   , FSProject);
 REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
 REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
+REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, "obj"    , FSProject);
 REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
 REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
+REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, "elem"   , FSProject);
 REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, "vtk"    , FSProject);
 REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, "vtu"    , FSProject);
 REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, "vtp"    , FSProject);
@@ -474,9 +478,10 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	// create a file reader
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
-	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
-	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
+	if      (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
+	else if (ext.compare("n"  , Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
 	else if (ext.compare("dyn", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
+	else if (ext.compare("key", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);

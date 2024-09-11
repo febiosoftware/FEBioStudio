@@ -33,8 +33,15 @@ class CPlaneCutTool : public CBasicTool
 public:
 	CPlaneCutTool(CMainWindow* wnd);
 
-	bool OnApply();
+	bool OnApply() override;
+
+	void Activate() override;
 
 private:
+	bool onPickEvent(const FESelection& sel);
+	void BuildDecoration();
+
+private:
+	int m_pick;
 	vec3d	m_r0, m_r1, m_r2;
 };

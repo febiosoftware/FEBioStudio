@@ -573,9 +573,12 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 			for (int i = 0; i < nodeset.size(); ++i)
 			{
 				FSNode* pn = nodeset.GetNode(i);
-				int nid = pn->m_nid;
-				if (nid <= 0) nid = items[i] + 1;
-				addData(QString::number(nid), items[i], 0, false);
+				if (pn)
+				{
+					int nid = pn->m_nid;
+					if (nid <= 0) nid = items[i] + 1;
+					addData(QString::number(nid), items[i], 0, false);
+				}
 			}
 		}
 		else

@@ -101,3 +101,7 @@ protected:
 	std::vector<FSNode>	m_Node;		//!< Node list
 	std::vector<FSEdge>	m_Edge;		//!< Edge list
 };
+
+namespace MeshTools {
+	std::vector<int> GetConnectedEdgesOnLineMesh(FSLineMesh* pm, int startEdge, double angDeg, bool bmax);
+}

@@ -23,39 +23,68 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "Tool.h"
+#include <vector>
 
-#include "ImageSource.h"
+class CMainWindow;
+class ClassDescriptor;
+class FEModifier;
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
-class CITKImageSource : public CImageSource
+class ModifierTool : public CAbstractTool
 {
+	Q_OBJECT
+
 public:
-    CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
-    CITKImageSource(CImageModel* imgModel);
+	ModifierTool(CMainWindow* wnd, ClassDescriptor* cd);
 
-    bool Load() override;
+	void Activate() override;
 
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	void Deactivate() override;
+	
+	void updateUi() override;
+
+	QWidget* createUi() override;
+
+	FEModifier* GetModifier();
+
+	unsigned int flags() const;
+
+	virtual void UpdateData();
+
+private slots:
+	void on_dataChanged();
 
 private:
-    std::string m_filename;
-
-    ImageFileType m_fileType;
+	ClassDescriptor* m_cd;
+	FEModifier* m_mod;
+	CPropertyListForm* ui;
 };
 
-class CITKSeriesImageSource : public CImageSource
+class CAddTriangleTool : public ModifierTool
 {
 public:
-    CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
-    CITKSeriesImageSource(CImageModel* imgModel);
+	CAddTriangleTool(CMainWindow* wnd, ClassDescriptor* cd);
 
-    bool Load() override;
+	bool onPickEvent(const FESelection& sel);
 
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	void BuildDecoration();
+
+	bool onUndoEvent() override;
+
+	void Reset() override;
 
 private:
-    std::vector<std::string> m_filenames;
+	int m_pick;
+	std::vector<vec3f> points;
+};
+
+class CAddNodeTool : public ModifierTool
+{
+public:
+	CAddNodeTool(CMainWindow* wnd, ClassDescriptor* cd);
+
+	void BuildDecoration();
+
+	void UpdateData() override;
 };

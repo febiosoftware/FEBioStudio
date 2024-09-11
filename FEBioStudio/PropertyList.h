@@ -53,6 +53,7 @@ public:
 		Mat3,
 		Mat3s,
 		Vec2i,
+		Vec2d,
 		Std_Vector_Int,
 		Std_Vector_Double,
 

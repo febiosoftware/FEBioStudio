@@ -72,6 +72,7 @@ void CObjectProps::AddParameter(Param& p)
 	case Param_MATH  : prop = addProperty(paramName, CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(paramName, CProperty::Color); break;
 	case Param_VEC2I : prop = addProperty(paramName, CProperty::Vec2i); break;
+	case Param_VEC2D : prop = addProperty(paramName, CProperty::Vec2d); break;
 	case Param_BOOL:
 	{
 		const char* ch = p.GetEnumNames();
@@ -249,6 +250,13 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_VEC2D:
+	{
+		vec2d r = p.GetVec2dValue();
+		QString t = Vec2dToString(r);
+		return t;
+	}
+	break;
 	case Param_MAT3D:
 	{
 		mat3d m = p.GetMat3dValue();
@@ -340,6 +348,13 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		p.SetVec2iValue(r);
 	}
 	break;
+	case Param_VEC2D:
+	{
+		QString t = v.toString();
+		vec2d r = StringToVec2d(t);
+		p.SetVec2dValue(r);
+	}
+	break;
 	case Param_MAT3D:
 	{
 		QString t = v.toString();
@@ -372,9 +387,8 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	{
 		QString s = v.toString();
 		std::vector<double> val = StringToVectorDouble(s);
-		if (val.empty() == false)
+		if (p.IsFixedSize())
 		{
-			// Make sure we don't change the vector's size
 			int n = p.GetVectorDoubleValue().size();
 			if ((n != 0) && (n != val.size()))
 			{
@@ -383,8 +397,8 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 				for (int i = 0; i < n; ++i) tmp[i] = val[i];
 				val = tmp;
 			}
-			p.SetVectorDoubleValue(val);
 		}
+		p.SetVectorDoubleValue(val);
 	}
 	break;
 	case Param_ARRAY_INT:

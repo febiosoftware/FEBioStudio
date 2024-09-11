@@ -656,9 +656,13 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 			FSNonLinearSpringMaterial* sm = new FSNonLinearSpringMaterial(&fem);
 			Param* pF = sm->GetParam("force");
 			pF->SetFloatValue(1.0);
-			int lc = m_LCT[mat->lcd - m_lct_off];
-			int lcid = fem.GetLoadController(lc)->GetID();
-			pF->SetLoadCurveID(lcid);
+			int n = mat->lcd - m_lct_off;
+			if ((n >= 0) && (n < m_LCT.size()))
+			{
+				int lc = m_LCT[n];
+				int lcid = fem.GetLoadController(lc)->GetID();
+				pF->SetLoadCurveID(lcid);
+			}
 			ps->SetMaterial(sm);
 			ps->SetName(mat->szname);
 			m.AddDiscreteObject(ps);

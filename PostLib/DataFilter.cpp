@@ -2046,6 +2046,48 @@ ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, 
 			}
 		}
 	}
+	else if (nclass == ELEM_DATA)
+	{
+		if (ntype == DATA_VEC3)
+		{
+			if (nfmt == DATA_REGION)
+			{
+				newField = new FEDataField_T< FEElementData<vec3f, DATA_REGION> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, name);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					Post::FEElementData<vec3f, DATA_REGION>& vt = dynamic_cast<FEElementData<vec3f, DATA_REGION>&>(fem.GetState(n)->m_Data[nnew]);
+
+					int n0 = n, n1 = n;
+					if (fem.GetStates() > 1)
+					{
+						if (n == 0) { n1 = n + 1; }
+						else n0 = n - 1;
+					}
+					
+					FEState* state0 = fem.GetState(n0);
+					FEState* state1 = fem.GetState(n1);
+
+					double dt = state1->m_time - state0->m_time;
+					if (dt == 0) dt = 1.f;
+
+					Post::FEElementData<vec3f, DATA_REGION>& d0 = dynamic_cast<FEElementData<vec3f, DATA_REGION>&>(state0->m_Data[nold]);
+					Post::FEElementData<vec3f, DATA_REGION>& d1 = dynamic_cast<FEElementData<vec3f, DATA_REGION>&>(state1->m_Data[nold]);
+
+					vt.copy(d0);
+					int NE = vt.size();
+					for (int i = 0; i < NE; ++i)
+					{
+						vt[i] = (d1[i] - d0[i]) / dt;
+					}
+				}
+			}
+		}
+	}
 
 	return newField;
 }

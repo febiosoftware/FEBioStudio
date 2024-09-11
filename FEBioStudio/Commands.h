@@ -1642,3 +1642,15 @@ private:
 	FEMeshData*	m_data;
 	int		m_index;
 };
+
+class CCmdToggleActiveParts : public CCommand
+{
+public:
+	CCmdToggleActiveParts(const std::vector<GPart*>& partList);
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+	std::vector<GPart*> m_partList;
+};

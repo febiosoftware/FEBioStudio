@@ -94,6 +94,9 @@ public:
 	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
+	// toggle selected parts to (in)active
+	void ToggleActiveParts();
+
 public:
 	void AddImageModel(CImageModel* imgModel) override;
 

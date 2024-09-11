@@ -36,6 +36,8 @@ FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 	AddBoolParam(false, "L", "Use local normal");
 	AddDoubleParam(1, "mesh bias");
 	AddBoolParam(false, "symmetric mesh bias");
+
+	m_map = nullptr;
 }
 
 void FEExtrudeFaces::SetExtrusionDistance(double D)
@@ -61,6 +63,11 @@ void FEExtrudeFaces::SetMeshBiasFactor(double g)
 void FEExtrudeFaces::SetSymmetricBias(bool b)
 {
 	SetBoolValue(4, b);
+}
+
+void FEExtrudeFaces::SetNodalMap(FENodeData* map)
+{
+	m_map = map;
 }
 
 FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
@@ -99,12 +106,16 @@ FSMesh* FEExtrudeFaces::Apply(FSMesh* pm)
 	}	
 
 	FSMesh* pnm = new FSMesh(*pm);
-	Extrude(pnm, faceList);
+	if (!Extrude(pnm, faceList))
+	{
+		delete pnm;
+		pnm = nullptr;
+	}
 
 	return pnm;
 }
 
-void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
+bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 {
 	// let's mark the nodes that need to be copied
 	pm->TagAllNodes(-1);
@@ -118,7 +129,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 		int n = face.Nodes();
 
 		// extrusion is only allowed on tris and quads!
-		if ((n != 4) && (n != 3) && (n != 9) && (n != 8) && (n != 6)) return;
+		if ((n != 4) && (n != 3) && (n != 9) && (n != 8) && (n != 6)) return false;
 
 		if ((n == 9) || (n == 8) || (n == 6)) linear = false;
 
@@ -127,17 +138,21 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	}
 
 	// make sure there was something selected
-	if (ne1 == 0) return;
+	if (ne1 == 0) return false;
 
 	// count the nodes
 	int n0 = pm->Nodes();
 	int nn = 0;
-	for (int i = 0; i<n0; ++i)
-		if (pm->Node(i).m_ntag > 0)
+	for (int i = 0; i < n0; ++i)
+	{
+		FSNode& node = pm->Node(i);
+		if (node.m_ntag > 0)
 		{
-			pm->Node(i).m_ntag = nn;
+			node.m_ntag = nn;
 			++nn;
 		}
+		else node.m_ntag = -1;
+	}
 
 	double dist = GetFloatValue(0);
 	int nseg = GetIntValue(1);
@@ -175,6 +190,46 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 
 	// make sure all directional vectors are normalized
 	for (int i = 0; i<nn; ++i) ed[i].Normalize();
+
+	// apply nodal map
+	if (m_map)
+	{
+		FSNodeSet* nset = dynamic_cast<FSNodeSet*>(m_map->GetItemList());
+		if (nset == nullptr) return error("Invalid nodal map specified.");
+
+		vector<int> tag(n0, -1);
+		for (int i = 0; i < n0; ++i)
+			if (pm->Node(i).m_ntag >= 0)
+			{
+				tag[i] = pm->Node(i).m_ntag;
+			}
+
+		if (m_map->GetDataType() == DATA_SCALAR)
+		{
+			auto it = nset->begin();
+			for (int i = 0; i < nset->size(); ++i, ++it)
+			{
+				int m = tag[*it];
+				if (m == -1) return error("Invalid nodal map specified.");
+
+				double v = m_map->get(i);
+				ed[m] *= v * dist;
+			}
+		}
+		else if (m_map->GetDataType() == DATA_VEC3)
+		{
+			auto it = nset->begin();
+			for (int i = 0; i < nset->size(); ++i, ++it)
+			{
+				int m = tag[*it];
+				if (m == -1) return error("Invalid nodal map specified.");
+
+				vec3d v = m_map->getVec3d(i);
+				ed[m] = v * dist;
+			}
+		}
+		else return error("Invalid nodal data map specified.");
+	}
 
 	double fd = gd;
 	gd = 1;
@@ -479,4 +534,6 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	// delete extraneous nodes (if any)
 	FEMeshBuilder meshBuilder(*pm);
 	meshBuilder.RemoveIsolatedNodes();
+
+	return true;
 }

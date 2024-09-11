@@ -58,6 +58,10 @@ bool LSDynaFileParser::ParseFile()
 				m_ls.NextCard(card);
 				m_ls.NextCard(card);
 			}
+			else if (card == "*COMMENT")
+			{
+				if (Read_Comment() == false) return Error("error while reading COMMENT section.");
+			}
 			else if (card == "*PARAMETER")
 			{
 				if (Read_Parameter() == false) return Error("error while reading PARAMETER section.");
@@ -131,6 +135,10 @@ bool LSDynaFileParser::ParseFile()
 			{
 				if (Read_Set_Segment_Title() == false) return Error("error while reading SET_SEGMENT_TITLE section.");
 			}
+			else if (card == "*INCLUDE_PATH")
+			{
+				if (Read_IncludePath() == false) return false;
+			}
 			else if (card == "*INCLUDE")
 			{
 				if (Read_Include() == false) return false;
@@ -164,6 +172,17 @@ bool LSDynaFileParser::ParseFile()
 	} while (!bdone);
 
 	return bdone;
+}
+
+bool LSDynaFileParser::Read_Comment()
+{
+	LSDynaFile::CARD card(8);
+	if (m_ls.NextCard(card) == false) return false;
+	while (!card.IsKeyword())
+	{
+		if (m_ls.NextCard(card) == false) return false;
+	}
+	return true;
 }
 
 bool LSDynaFileParser::Read_Element_Solid()
@@ -754,6 +773,15 @@ bool LSDynaFileParser::Read_Define_Curve()
 	m_dyn.addLoadCurve(lc);
 
 	return true;
+}
+
+bool LSDynaFileParser::Read_IncludePath()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+
+	// TODO: store include path somewhere
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
 }
 
 bool LSDynaFileParser::Read_Include()

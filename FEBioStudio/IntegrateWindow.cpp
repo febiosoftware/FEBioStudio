@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <QBoxLayout>
 
-CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
+CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, SHOW_DATA_SOURCE)
 {
 	QString wndTitle = windowTitle();
 	wndTitle += ":Integrate";
@@ -72,7 +72,7 @@ void CIntegrateWindow::OnConfigChanged(int i)
 {
 	if ((i < 0) || (i > 1)) return;
 	m_nconf = i;
-	Update(true, true);
+	Update(false, true);
 }
 
 void CIntegrateWindow::Update(bool breset, bool bfit)
@@ -105,7 +105,7 @@ void CIntegrateWindow::UpdateIntegral()
 
 	Post::CGLModel* model = pdoc->GetGLModel();
 	
-	int nsrc = GetCurrentYValue();
+	int nsrc = currentDataSource();
 	if (nsrc < 0) return;
 
 	char sztitle[256] = {0};
@@ -137,9 +137,9 @@ void CIntegrateWindow::UpdateIntegral()
 void CIntegrateWindow::UpdateSourceOptions()
 {
 	// Add the selection source
-	CGenericDataSelector* sel = new CGenericDataSelector();
-	sel->AddOption("current selection");
-	m_src.push_back((Post::CGLPlaneCutPlot*) 0);
+	QStringList sources;
+	sources.push_back("current selection");
+	m_src.push_back((Post::CGLPlaneCutPlot*) nullptr);
 
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
@@ -152,13 +152,61 @@ void CIntegrateWindow::UpdateSourceOptions()
 		if (pp) 
 		{
 			string name = pp->GetName();
-			sel->AddOption(QString::fromStdString(name));
+			sources.push_back(QString::fromStdString(name));
 			m_src.push_back(pp);
 		}
 	}
 
 	if ((m_nsrc < 0) || (m_nsrc >= m_src.size()-1)) m_nsrc = 0;
-	SetYDataSelector(sel, m_nsrc);
+	SetDataSource(sources);
+}
+
+std::vector<int> GetSelectedNodes(Post::FEPostMesh& mesh)
+{
+	int N = mesh.Nodes();
+	std::vector<int> sel; if (N > 0) sel.reserve(N);
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		if (node.IsSelected()) sel.push_back(i);
+	}
+	return sel;
+}
+
+std::vector<int> GetSelectedEdges(Post::FEPostMesh& mesh)
+{
+	int N = mesh.Edges();
+	std::vector<int> sel; if (N > 0) sel.reserve(N);
+	for (int i = 0; i < N; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		if (edge.IsSelected()) sel.push_back(i);
+	}
+	return sel;
+}
+
+std::vector<int> GetSelectedFaces(Post::FEPostMesh& mesh)
+{
+	int N = mesh.Faces();
+	std::vector<int> sel; if (N > 0) sel.reserve(N);
+	for (int i = 0; i < N; ++i)
+	{
+		FSFace& face = mesh.Face(i);
+		if (face.IsSelected()) sel.push_back(i);
+	}
+	return sel;
+}
+
+std::vector<int> GetSelectedElements(Post::FEPostMesh& mesh)
+{
+	int N = mesh.Elements();
+	std::vector<int> sel; if (N > 0) sel.reserve(N);
+	for (int i=0; i<N; ++i)
+	{
+		FSElement& el = mesh.Element(i);
+		if (el.IsSelected()) sel.push_back(i);
+	}
+	return sel;
 }
 
 //-----------------------------------------------------------------------------
@@ -184,6 +232,19 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 		// make sure all states are up-to-date
 		pdoc->UpdateAllStates();
 
+		vector<int> selection;
+		switch (nview)
+		{
+		case SELECT_FE_NODES: selection = GetSelectedNodes(mesh); break;
+		case SELECT_FE_EDGES: selection = GetSelectedEdges(mesh); break;
+		case SELECT_FE_FACES: selection = GetSelectedFaces(mesh); break;
+		case SELECT_FE_ELEMS: selection = GetSelectedElements(mesh); break;
+		default:
+			assert(false);
+			return;
+			break;
+		}
+
 		// loop over all steps
 		for (int i=0; i<ntime; ++i)
 		{
@@ -194,18 +255,18 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 
 			if (m_nconf == 0)
 			{
-				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, ps);
-				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, ps);
-				else if (nview == SELECT_FE_FACES) res = IntegrateFaces(mesh, ps);
-				else if (nview == SELECT_FE_ELEMS) res = IntegrateElems(mesh, ps);
+				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, selection, ps);
+				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, selection, ps);
+				else if (nview == SELECT_FE_FACES) res = IntegrateFaces(mesh, selection, ps);
+				else if (nview == SELECT_FE_ELEMS) res = IntegrateElems(mesh, selection, ps);
 				else assert(false);
 			}
 			else
 			{
-				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, ps);
-				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, ps);
-				else if (nview == SELECT_FE_FACES) res = IntegrateReferenceFaces(mesh, ps);
-				else if (nview == SELECT_FE_ELEMS) res = IntegrateReferenceElems(mesh, ps);
+				if      (nview == SELECT_FE_NODES) res = IntegrateNodes(mesh, selection, ps);
+				else if (nview == SELECT_FE_EDGES) res = IntegrateEdges(mesh, selection, ps);
+				else if (nview == SELECT_FE_FACES) res = IntegrateReferenceFaces(mesh, selection, ps);
+				else if (nview == SELECT_FE_ELEMS) res = IntegrateReferenceElems(mesh, selection, ps);
 				else assert(false);
 			}
 

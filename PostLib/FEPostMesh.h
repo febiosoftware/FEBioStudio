@@ -96,6 +96,8 @@ public:
 	//! Add a node set
 	void AddNodeSet(FSNodeSet* ps) { m_NSet.push_back(ps); }
 
+	FSNodeSet* FindNodeSet(const std::string& s);
+
 	// --- D A T A   U P D A T E ---
 
 	//! update mesh data
@@ -125,20 +127,20 @@ bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& x, int& nelem, doub
 
 class FEState;
 
-double IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps);
-double IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps);
+double IntegrateNodes(Post::FEPostMesh& mesh, const std::vector<int>& nodeList, Post::FEState* ps);
+double IntegrateEdges(Post::FEPostMesh& mesh, const std::vector<int>& edgeList, Post::FEState* ps);
 
 // This function calculates the integral over a surface. Note that if the surface
 // is triangular, then we calculate the integral from a degenerate quad.
-double IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
-double IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
+double IntegrateFaces(Post::FEPostMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps);
+double IntegrateReferenceFaces(Post::FEPostMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps);
 
 // integrates the surface normal scaled by the data field
 vec3d IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps);
 
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
-double IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps);
-double IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps);
+double IntegrateElems(Post::FEPostMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps);
+double IntegrateReferenceElems(Post::FEPostMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps);
 
 } // namespace Post

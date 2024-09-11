@@ -3817,3 +3817,21 @@ void CCmdRemoveMeshData::UnExecute()
 	if (m_data->GetItemList()) m_data->GetItemList()->IncRef();
 	m_index = -1;
 }
+
+CCmdToggleActiveParts::CCmdToggleActiveParts(const std::vector<GPart*>& partList) : CCommand("toggle active")
+{
+	m_partList = partList;
+}
+
+void CCmdToggleActiveParts::Execute()
+{
+	for (GPart* pg : m_partList)
+	{
+		pg->SetActive(!pg->IsActive());
+	}
+}
+
+void CCmdToggleActiveParts::UnExecute()
+{
+	Execute();
+}

@@ -39,7 +39,6 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
 #include <MeshTools/FESelection.h>
-#include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -47,15 +46,9 @@ SOFTWARE.*/
 #include "ObjectProps.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include "CurveIntersectProps.h"
 #include "GLHighlighter.h"
 #include <GeomLib/GPrimitive.h>
 #include <QMessageBox>
-#include <QInputDialog>
-#include <QProgressBar>
-#include <sstream>
-#include <QtCore/QTimer>
-#include <GeomLib/MeshLayer.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
@@ -398,7 +391,17 @@ void CMeshPanel::on_apply_clicked(bool b)
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
 
-		CCommandLogger::Log("genmesh");
+		if (mesh)
+		{
+			// create a report: 
+			QString report = QString("Meshing finished for %1:\n").arg(QString::fromStdString(activeObject->GetName()));
+			report += QString("- Nodes    = %1\n").arg(mesh->Nodes());
+			report += QString("- Faces    = %1\n").arg(mesh->Faces());
+			report += QString("- Elements = %1\n").arg(mesh->Elements());
+			QMessageBox::information(this, "FEBio Studio", report);
+			w->AddLogEntry(report);
+			CCommandLogger::Log("genmesh");
+		}
 	}
 }
 

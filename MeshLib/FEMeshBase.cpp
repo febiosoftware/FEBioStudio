@@ -732,6 +732,122 @@ std::vector<int> MeshTools::GetConnectedNodesByPath(FSMeshBase* pm, int startNod
 	return nodeList;
 }
 
+std::vector<int> MeshTools::GetConnectedFacesByPath(FSMeshBase* pm, int startFace, int endFace)
+{
+	vector<int> faceList;
+	int NF = pm->Faces();
+	if ((startFace < 0) || (startFace >= NF)) return faceList;
+	if ((endFace < 0) || (endFace >= NF)) return faceList;
+	if (startFace == endFace)
+	{
+		faceList.push_back(startFace);
+		return faceList;
+	}
+
+	vector< pair<double, int> > D(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		D[i].first = -1;
+		D[i].second = -1;
+	}
+	D[startFace].first = 0.0;
+	D[startFace].second = -1;
+
+	std::set<int> Q;
+	Q.insert(startFace);
+	while (!Q.empty())
+	{
+		// find node with minimum distance
+		std::set<int>::iterator it, min_it = Q.begin();
+		for (it = Q.begin(); it != Q.end(); ++it)
+		{
+			pair<double, int>& nd = D[*it];
+			pair<double, int>& nm = D[*min_it];
+			if (nd.first < nm.first) min_it = it;
+		}
+		int nu = *min_it;
+		Q.erase(min_it);
+
+		double dist_u = D[nu].first;
+		D[nu].first = -2;
+
+		if (nu == endFace) break;
+
+		FSFace& face0 = pm->Face(nu);
+		vec3d r0 = pm->FaceCenter(face0);
+		int nedges = face0.Edges();
+		for (int k = 0; k < nedges; ++k)
+		{
+			int m = face0.m_nbr[k];
+			FSFace* pfk = pm->FacePtr(face0.m_nbr[k]);
+			if (pfk)
+			{
+				vec3d r1 = pm->FaceCenter(*pfk);
+				double d = (r1 - r0).Length();
+				double new_dist = dist_u + d;
+				if ((D[m].first == -1) || (new_dist < D[m].first))
+				{
+					Q.insert(m);
+					D[m].first = new_dist;
+					D[m].second = nu;
+				}
+			}
+		}
+	}
+
+	int m = endFace;
+	do {
+		faceList.push_back(m);
+		m = D[m].second;
+	} while (m >= 0);
+
+	return faceList;
+}
+
+std::vector<int> MeshTools::GetConnectedEdgesByPath(FSMeshBase* pm, int startEdge, int endEdge)
+{
+	// pick the two nodes that are closest
+	FSEdge& e0 = pm->Edge(startEdge);
+	FSEdge& e1 = pm->Edge(endEdge);
+	double d[2][2] = { 0 };
+	d[0][0] = (pm->Node(e0.n[0]).r - pm->Node(e1.n[0]).r).Length();
+	d[0][1] = (pm->Node(e0.n[0]).r - pm->Node(e1.n[1]).r).Length();
+	d[1][0] = (pm->Node(e0.n[1]).r - pm->Node(e1.n[0]).r).Length();
+	d[1][1] = (pm->Node(e0.n[1]).r - pm->Node(e1.n[1]).r).Length();
+	int n[2] = {0, 0};
+	double dmin = d[0][0];
+	if (d[0][1] < dmin) { dmin = d[0][1]; n[0] = 0; n[1] = 1; }
+	if (d[1][0] < dmin) { dmin = d[1][0]; n[0] = 1; n[1] = 0; }
+	if (d[1][1] < dmin) { dmin = d[1][1]; n[0] = 1; n[1] = 1; }
+
+	int n0 = e0.n[n[0]];
+	int n1 = e1.n[n[1]];
+
+	const int TAG = 1;
+	TagNodesByShortestPath(pm, n0, n1, TAG);
+	pm->Node(e0.n[0]).m_ntag = TAG; pm->Node(e0.n[1]).m_ntag = TAG;
+	pm->Node(e1.n[0]).m_ntag = TAG; pm->Node(e1.n[1]).m_ntag = TAG;
+	pm->TagAllEdges(0);
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		if ((pm->Node(e.n[0]).m_ntag == TAG) &&
+			(pm->Node(e.n[1]).m_ntag == TAG))
+		{
+			e.m_ntag = TAG;
+		}
+	}
+
+	vector<int> edgeList;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		if (e.m_ntag == TAG) edgeList.push_back(i);
+	}
+
+	return edgeList;
+}
+
 void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax, int tag)
 {
 	// clear all tags
@@ -847,9 +963,12 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 //-----------------------------------------------------------------------------
 void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1, int tag)
 {
-	if (n1 == n0) return;
-
 	pm->TagAllNodes(0);
+
+	if (n1 == n0) return;
+	if ((n0 < 0) || (n0 >= pm->Nodes())) return;
+	if ((n1 < 0) || (n1 >= pm->Nodes())) return;
+
 	pm->Node(n0).m_ntag = tag;
 
 	vec3d r0 = pm->Node(n0).r;
@@ -869,43 +988,109 @@ void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1, int tag)
 
 	if (b0 && b1)
 	{
-		// see if we can connect the nodes by staying on edges
-		FSNodeEdgeList NEL(pm);
+		const int method = 1; // use new method by default
 
-		int n = n0;
-		double Lmin = (r1 - r0).SqrLength();
-		do
+		if (method == 0) // old method
 		{
-			int minNode = -1;
-			int nval = NEL.Edges(n);
-			for (int i = 0; i < nval; ++i)
+			// see if we can connect the nodes by staying on edges
+			FSNodeEdgeList NEL(pm);
+
+			int n = n0;
+			double Lmin = (r1 - r0).SqrLength();
+			do
 			{
-				const FSEdge* pe = NEL.Edge(n, i);
-				int ne = pe->Nodes();
-				for (int j = 0; j < ne; ++j)
+				int minNode = -1;
+				int nval = NEL.Edges(n);
+				for (int i = 0; i < nval; ++i)
 				{
-					int nj = pe->n[j];
-					if (pm->Node(nj).m_ntag == 0)
+					const FSEdge* pe = NEL.Edge(n, i);
+					int ne = pe->Nodes();
+					for (int j = 0; j < ne; ++j)
 					{
-						vec3d rj = pm->Node(nj).r;
-						double L = (r1 - rj).SqrLength();
-						if (L < Lmin)
+						int nj = pe->n[j];
+						if (pm->Node(nj).m_ntag == 0)
 						{
-							Lmin = L;
-							minNode = nj;
+							vec3d rj = pm->Node(nj).r;
+							double L = (r1 - rj).SqrLength();
+							if (L < Lmin)
+							{
+								Lmin = L;
+								minNode = nj;
+							}
 						}
+					}
+				}
+
+				if (minNode != -1)
+				{
+					pm->Node(minNode).m_ntag = tag;
+					n = minNode;
+					if (minNode == n1) break;
+				}
+				else break;
+			} while (1);
+		}
+		else
+		{
+			// use Dijkstra's algorithm for finding the shortest distance between the two nodes.
+			 
+			// see if we can connect the nodes by staying on edges
+			FSNodeEdgeList NEL(pm);
+
+			int NN = pm->Nodes();
+			vector< pair<double, int> > D(NN); // (dist., prev.) pairs for each node
+			for (int i = 0; i < NN; ++i)
+			{
+				D[i].first = -1;
+				D[i].second = -1;
+			}
+			D[n0].first = 0.0;
+			D[n0].second = -1;
+
+			std::set<int> Q;
+			Q.insert(n0);
+			while (!Q.empty())
+			{
+				// find node with minimum distance
+				std::set<int>::iterator it, min_it = Q.begin();
+				for (it = Q.begin(); it != Q.end(); ++it)
+				{
+					pair<double, int>& nd = D[*it];
+					pair<double, int>& nm = D[*min_it];
+					if (nd.first < nm.first) min_it = it;
+				}
+				int nu = *min_it;
+				Q.erase(min_it);
+
+				double dist_u = D[nu].first;
+				D[nu].first = -2;
+
+				if (nu == n1) break;
+
+				int nedges = NEL.Edges(nu);
+				for (int k = 0; k < nedges; ++k)
+				{
+					const FSEdge* pe = NEL.Edge(nu, k);
+					int m = (pe->n[0] == nu ? pe->n[1] : pe->n[0]);
+
+					double d = (pm->Node(nu).r - pm->Node(m).r).Length();
+
+					double new_dist = dist_u + d;
+					if ((D[m].first == -1) || (new_dist < D[m].first))
+					{
+						Q.insert(m);
+						D[m].first = new_dist;
+						D[m].second = nu;
 					}
 				}
 			}
 
-			if (minNode != -1)
-			{
-				pm->Node(minNode).m_ntag = tag;
-				n = minNode;
-				if (minNode == n1) break;
-			}
-			else break;
-		} while (1);
+			int m = n1;
+			do {
+				pm->Node(m).m_ntag = tag;
+				m = D[m].second;
+			} while (m >= 0);
+		}
 	}
 	else
 	{

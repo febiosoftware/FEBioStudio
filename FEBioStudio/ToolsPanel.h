@@ -50,6 +50,8 @@ private:
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
 
+	bool OnPickEvent(const FESelection& sel) override;
+
 private slots:
 	void on_buttons_idClicked(int id);
 

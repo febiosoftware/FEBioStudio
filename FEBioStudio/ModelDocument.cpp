@@ -536,7 +536,13 @@ bool CModelDocument::Initialize()
 	if (m_Project.GetUnits() != 0)
 	{
 		SetUnitSystem(m_Project.GetUnits());
+
+		if (GetActiveDocument() == this)
+		{
+			Units::SetUnitSystem(GetUnitSystem());
+		}
 	}
+
 	return CGLDocument::Initialize();
 }
 
@@ -1094,4 +1100,22 @@ bool CModelDocument::SelectHighlightedItems()
 	else return false;
 
 	return true;
+}
+
+void CModelDocument::ToggleActiveParts()
+{
+	if (GetSelectionMode() != SELECT_PART) return;
+
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	vector<GPart*> selectedParts;
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+	}
+	if (selectedParts.empty()) return;
+
+	DoCommand(new CCmdToggleActiveParts(selectedParts));
 }

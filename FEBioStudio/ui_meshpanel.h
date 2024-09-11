@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include "MeshPanel.h"
 #include "ToolBox.h"
@@ -50,6 +49,7 @@ SOFTWARE.*/
 #include "ButtonBox.h"
 #include "ToolParamsPanel.h"
 #include <GLLib/GDecoration.h>
+#include "ModifierTool.h"
 
 enum MeshEditButtonFlags
 {
@@ -87,155 +87,6 @@ public:
 
 private:
 	CPropertyListForm* form;
-};
-
-
-class ModifierTool : public CAbstractTool
-{
-public:
-	ModifierTool(CMainWindow* wnd, ClassDescriptor* cd) : CAbstractTool(wnd, cd->GetName()), m_cd(cd)
-	{
-		m_mod = nullptr;
-		ui = nullptr;
-	}
-
-	void Activate() override
-	{
-		CAbstractTool::Activate();
-
-		if (m_cd) {
-			m_mod = dynamic_cast<FEModifier*>(m_cd->Create());
-			assert(m_mod);
-
-			CPropertyList* pl = new CObjectProps(m_mod);
-			ui->setPropertyList(pl);
-		}
-	}
-
-	void Deactivate() override
-	{
-		if (ui) ui->setPropertyList(nullptr);
-		if (m_mod) delete m_mod;
-		m_mod = nullptr;
-		CAbstractTool::Deactivate();
-	}
-
-	void updateUi() override
-	{
-		if (ui) ui->updateData();
-		CAbstractTool::updateUi();
-	}
-
-	QWidget* createUi() override
-	{
-		ui = new CPropertyListForm();
-		ui->setBackgroundRole(QPalette::Light);
-		return ui;
-	}
-
-	FEModifier* GetModifier() { return m_mod; }
-
-	unsigned int flags() const { return (m_cd ? m_cd->Flag() : 0); }
-
-private:
-	ClassDescriptor* m_cd;
-	FEModifier* m_mod;
-	CPropertyListForm* ui;
-};
-
-class CAddTriangleTool : public ModifierTool
-{
-public:
-	CAddTriangleTool(CMainWindow* wnd, ClassDescriptor* cd) : ModifierTool(wnd, cd) { m_pick = 0; }
-
-	bool onPickEvent(const FESelection& sel)
-	{
-		const FENodeSelection* nodeSel = dynamic_cast<const FENodeSelection*>(&sel);
-		if (nodeSel && (nodeSel->Count() == 1))
-		{
-			int nid = nodeSel->NodeIndex(0);
-			FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-			if (mod)
-			{
-				const FSLineMesh* mesh = nodeSel->GetMesh();
-				points.push_back(to_vec3f(mesh->NodePosition(nid)));
-				mod->SetIntValue(m_pick, nid + 1);
-				for (int i = m_pick + 1; i < 3; ++i) mod->SetIntValue(i, 0);
-
-				m_pick++;
-				if (m_pick >= 3)
-				{
-					mod->push_stack();
-					m_pick = 0;
-				}
-
-				BuildDecoration();
-
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void BuildDecoration()
-	{
-		GCompositeDecoration* deco = new GCompositeDecoration;
-		int n = (int)points.size();
-		int nf = n / 3;
-		for (int i = 0; i < nf; i++)
-		{
-			GDecoration* di = new GTriangleDecoration(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
-			if (i < nf - 1) di->setColor(GLColor(200, 200, 0));
-			deco->AddDecoration(di);
-		}
-		if ((n % 3) == 2)
-		{
-			deco->AddDecoration(new GLineDecoration(points[n - 2], points[n - 1]));
-		}
-		else if ((n % 3) == 1)
-		{
-			deco->AddDecoration(new GPointDecoration(points[n - 1]));
-		}
-		SetDecoration(deco);
-	}
-
-	bool onUndoEvent() override
-	{
-		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-		if (mod)
-		{
-			if (points.size() > 0) points.pop_back();
-			else return false;
-
-			m_pick--;
-			if (m_pick < 0)
-			{
-				m_pick = 2;
-				mod->pop_stack();
-			}
-			BuildDecoration();
-			return false; // fall through so selection is also undone
-		}
-		else return false;
-	}
-
-	void Reset() override
-	{
-		m_pick = 0;
-		points.clear();
-		FEAddTriangle* mod = dynamic_cast<FEAddTriangle*>(GetModifier());
-		if (mod)
-		{
-			mod->SetIntValue(0, 0);
-			mod->SetIntValue(1, 0);
-			mod->SetIntValue(2, 0);
-		}
-		CAbstractTool::Reset();
-	}
-
-private:
-	int m_pick;
-	std::vector<vec3f> points;
 };
 
 class Ui::CMeshPanel
@@ -337,6 +188,10 @@ public:
 				if (strcmp(pcd->GetName(), "Add Triangle") == 0)
 				{
 					tools.push_back(new CAddTriangleTool(m_wnd, pcd));
+				}
+				else if (strcmp(pcd->GetName(), "Add Node") == 0)
+				{
+					tools.push_back(new CAddNodeTool(m_wnd, pcd));
 				}
 				else tools.push_back(new ModifierTool(m_wnd, pcd));
 			}

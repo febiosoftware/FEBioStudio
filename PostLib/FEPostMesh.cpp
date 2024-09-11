@@ -116,6 +116,15 @@ Post::FSSurface* Post::FEPostMesh::FindSurface(const std::string& s)
 	return nullptr;
 }
 
+Post::FSNodeSet* Post::FEPostMesh::FindNodeSet(const std::string& s)
+{
+	for (auto& nset : m_NSet)
+	{
+		if (nset->GetName() == s) return nset;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void Post::FEPostMesh::Create(int nodes, int elems, int faces, int edges)
 {
@@ -280,14 +289,14 @@ bool Post::FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem
 }
 
 //-----------------------------------------------------------------------------
-double Post::IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateNodes(Post::FEPostMesh& mesh, const std::vector<int>& nodeList, Post::FEState* ps)
 {
 	double res = 0.0;
-	int N = mesh.Nodes();
+	int N = (int) nodeList.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FSNode& node = mesh.Node(i);
-		if (node.IsSelected() && (ps->m_NODE[i].m_ntag > 0))
+		FSNode& node = mesh.Node( nodeList[i] );
+		if (ps->m_NODE[i].m_ntag > 0)
 		{
 			res += ps->m_NODE[i].m_val;
 		}
@@ -296,7 +305,7 @@ double Post::IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps)
 }
 
 //-----------------------------------------------------------------------------
-double Post::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateEdges(Post::FEPostMesh& mesh, const std::vector<int>& edgeList, Post::FEState* ps)
 {
 	assert(false);
 	return 0.0;
@@ -304,15 +313,16 @@ double Post::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps)
 
 // This function calculates the integral over a surface. Note that if the surface
 // is triangular, then we calculate the integral from a degenerate quad.
-double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateFaces(Post::FEPostMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps)
 {
 	double res = 0.0;
 	float v[FSFace::MAX_NODES];
 	vec3f r[FSFace::MAX_NODES];
-	for (int i = 0; i<mesh.Faces(); ++i)
+	int NF = (int)faceList.size();
+	for (int i = 0; i<NF; ++i)
 	{
-		FSFace& f = mesh.Face(i);
-		if (f.IsSelected() && f.IsActive())
+		FSFace& f = mesh.Face( faceList[i] );
+		if (f.IsActive())
 		{
 			int nn = f.Nodes();
 
@@ -349,16 +359,17 @@ double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 
 // This function calculates the integral over a surface. Note that if the surface
 // is triangular, then we calculate the integral from a degenerate quad.
-double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
 	float v[FSFace::MAX_NODES];
 	vec3f r[FSFace::MAX_NODES];
-	for (int i = 0; i < mesh.Faces(); ++i)
+	int NF = (int)faceList.size();
+	for (int i = 0; i < NF; ++i)
 	{
-		FSFace& f = mesh.Face(i);
-		if (f.IsSelected() && f.IsActive())
+		FSFace& f = mesh.Face( faceList[i] );
+		if (f.IsActive())
 		{
 			int nn = f.Nodes();
 
@@ -453,16 +464,17 @@ vec3d Post::IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps)
 //-----------------------------------------------------------------------------
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
-double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
 	float v[FSElement::MAX_NODES];
 	vec3f r[FSElement::MAX_NODES];
-	for (int i = 0; i<mesh.Elements(); ++i)
+	int NE = (int)elemList.size();
+	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& e = mesh.ElementRef(i);
-		if (e.IsSelected() && (e.IsSolid()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		FEElement_& e = mesh.ElementRef( elemList[i] );
+		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();
 
@@ -506,15 +518,16 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 //-----------------------------------------------------------------------------
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
-double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateElems(Post::FEPostMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps)
 {
 	double res = 0.0;
 	float v[FSElement::MAX_NODES];
 	vec3f r[FSElement::MAX_NODES];
-	for (int i = 0; i < mesh.Elements(); ++i)
+	int NE = (int)elemList.size();
+	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& e = mesh.ElementRef(i);
-		if (e.IsSelected() && (e.IsSolid()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		FEElement_& e = mesh.ElementRef( elemList[i] );
+		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();
 
@@ -557,7 +570,7 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 		// TODO: This was done so that discrete element variables can be added, but I don't think that makes sense
 		//       for other element types that are considered "beams", e.g. discrete elements. 
 		//       I think the solution is to distinguish between "beams" and "discrete" elements. 
-		if (e.IsSelected() && (e.IsBeam()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		if (e.IsBeam() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			double v0 = ps->m_ElemData.value(i, 0);
 			double v1 = ps->m_ElemData.value(i, 1);

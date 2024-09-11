@@ -23,39 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "Tool.h"
+#include <vector>
 
-#include "ImageSource.h"
-
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
-class CITKImageSource : public CImageSource
+class CExtrudeMapTool : public CBasicTool
 {
 public:
-    CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
-    CITKImageSource(CImageModel* imgModel);
+	CExtrudeMapTool(CMainWindow* wnd);
 
-    bool Load() override;
-
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
+	bool OnApply() override;
 
 private:
-    std::string m_filename;
-
-    ImageFileType m_fileType;
-};
-
-class CITKSeriesImageSource : public CImageSource
-{
-public:
-    CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
-    CITKSeriesImageSource(CImageModel* imgModel);
-
-    bool Load() override;
-
-    void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
-private:
-    std::vector<std::string> m_filenames;
+	QString m_filename;
+	double m_D;
+	int m_nsegs;
+	bool m_useLocalNormal;
+	double m_meshBias;
+	bool m_symmetricBias;
 };
