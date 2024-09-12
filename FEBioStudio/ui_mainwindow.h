@@ -87,6 +87,7 @@ SOFTWARE.*/
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
 #include <FEBioMonitor/FEBioMonitorView.h>
+#include <FEBioMonitor/FEBioReportView.h>
 #include <vector>
 
 class QProcess;
@@ -152,7 +153,8 @@ public:
 		IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		APP_VIEWER
+		APP_VIEWER,
+		FEBREPORT_VIEW
 	};
 
 public:
@@ -166,6 +168,7 @@ public:
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
 	FEBioAppView* appView;
+	CFEBioReportView* febReportView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -208,6 +211,10 @@ public:
 		appView->setObjectName("appview");
 		appView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(appView);
+
+		febReportView = new CFEBioReportView(wnd);
+		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(febReportView);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

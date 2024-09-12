@@ -38,6 +38,7 @@ namespace Ui {
 		XML_CONFIG,			// text document	(i.e. feb file)
 		APP_CONFIG,			// app document	(i.e. fex file)
 		MONITOR_CONFIG,		// febio monitor document
+		FEBREPORT_CONFIG,	// febio report document
 	};
 
 	// Protected base class for configurations
@@ -120,6 +121,14 @@ namespace Ui {
 	{
 	public:
 		CMonitorConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::MONITOR_CONFIG) {}
+		void Apply() override;
+	};
+
+	// Configuration for viewing an febio report
+	class CFEBReportConfig : public CUIConfig
+	{
+	public:
+		CFEBReportConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::FEBREPORT_CONFIG) {}
 		void Apply() override;
 	};
 

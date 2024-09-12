@@ -38,14 +38,18 @@ SOFTWARE.*/
 #include "FEBioMonitorView.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
-#include "../FEBioStudio/FEBioJobManager.h"
-#include "../FEBioStudio/FEBioJob.h"
 
 // winbase.h defines a GetCurrentTime macro, 
 // so we need to undef this before we include FEModel.h
 #ifdef GetCurrentTime
 #undef GetCurrentTime
 #endif // GetCurrentTime
+
+
+#include "../FEBioStudio/FEBioJobManager.h"
+#include "../FEBioStudio/FEBioJob.h"
+#include "FEBioReportDoc.h"
+
 
 #include <FECore/FEModel.h>
 #include <FECore/Timer.h>
@@ -124,7 +128,11 @@ void FEBioMonitorThread::run()
 	{
 		b = false;
 	}
-	if (m_job) m_job->m_jobReport = fem.GetReport();
+	if (m_job)
+	{
+		m_job->m_jobReport = fem.GetReport();
+		m_job->m_timingInfo = fem.GetTimingInfo();
+	}
 
 	emit jobFinished(b);
 }
@@ -360,6 +368,13 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 		{
 			GetMainWindow()->OpenFile(QString::fromStdString(m->job->GetPlotFileName()), false, false);
 		}
+
+		// generate detailed report
+		CMainWindow* wnd = GetMainWindow();
+		CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+		doc->setJob(m->job);
+		doc->SetDocTitle("Report");
+		wnd->AddDocument(doc);
 	}
 
 	delete m->job;

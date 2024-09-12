@@ -203,5 +203,6 @@
         <file>icons/cpp_hdr.png</file>
         <file>icons/cpp_src.png</file>
         <file>icons/cmake.png</file>
+        <file>icons/error_small.png</file>
 	</qresource>
 </RCC>

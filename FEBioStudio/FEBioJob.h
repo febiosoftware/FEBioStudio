@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <PostLib/FEFileReader.h>
 #include "LaunchConfig.h"
+#include <FEBioLib/febiolib_types.h>
 
 class CDocument;
 #ifdef HAS_SSH
@@ -113,7 +114,9 @@ public:
 	bool	m_bhasProgress;
 	double	m_pct;
 
+	// FEBio output
 	std::string	m_jobReport;
+	TimingInfo m_timingInfo;
 
 	double	m_tic, m_toc;
 

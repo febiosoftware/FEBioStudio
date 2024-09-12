@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "ui_mainwindow.h"
 #include "TextDocument.h"
+#include "../FEBioMonitor/FEBioReportDoc.h"
 
 // configuration base class
 void Ui::CUIConfig::Apply()
@@ -519,4 +520,48 @@ void Ui::CMonitorConfig::Apply()
 
 	ui->m_wnd->ShowLogPanel();
 	ui->logPanel->ShowLog(::CLogPanel::FEBIO_LOG);
+}
+
+// Configure for app document
+void Ui::CFEBReportConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->centralWidget->setActiveView(CMainCentralWidget::FEBREPORT_VIEW);
+
+	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioMonitorSettings->setVisible(true);
+	ui->actionFEBioPause->setVisible(true);
+	ui->actionFEBioNext->setVisible(true);
+	ui->actionFEBioContinue->setVisible(true);
+
+	ui->menuEdit->menuAction()->setVisible(false);
+	ui->menuEditPost->menuAction()->setVisible(true);
+	ui->menuEditTxt->menuAction()->setVisible(false);
+	ui->menuEditXml->menuAction()->setVisible(false);
+	ui->menuPhysics->menuAction()->setVisible(false);
+	ui->menuPost->menuAction()->setVisible(true);
+	ui->menuRecord->menuAction()->setVisible(true);
+	ui->menuView->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->show();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+
+	ui->centralWidget->febReportView->setDocument(dynamic_cast<CFEBioReportDoc*>(ui->m_wnd->GetDocument()));
 }
