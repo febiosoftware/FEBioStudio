@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include "../FEBioStudio/FEBioJob.h"
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -1121,7 +1122,7 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, std::string& report)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, CFEBioJob* job)
 {
 	terminateRun = false;
 
@@ -1152,7 +1153,11 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, F
 		}
 
 		int returnCode = febio::RunModel(fem, &ops);
-		report = fem.GetReport();
+		if (job)
+		{
+			job->m_jobReport = fem.GetReport();
+			job->m_timingInfo = fem.GetTimingInfo();
+		}
 		return returnCode;
 	}
 	catch (...)

@@ -65,6 +65,7 @@ class FSMeshAdaptor;
 class FSVec3dValuator;
 class FSMat3dValuator;
 class FSProject;
+class CFEBioJob;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -214,7 +215,7 @@ namespace FEBio {
 	int runModel(const std::string& fileName, 
 		FEBioOutputHandler* outputHandler,
 		FEBioProgressTracker* progressTracker,
-		std::string& report);
+		CFEBioJob* job);
 
 	void TerminateRun();
 

@@ -368,14 +368,14 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 		{
 			GetMainWindow()->OpenFile(QString::fromStdString(m->job->GetPlotFileName()), false, false);
 		}
-
-		// generate detailed report
-		CMainWindow* wnd = GetMainWindow();
-		CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
-		doc->setJob(m->job);
-		doc->SetDocTitle("Report");
-		wnd->AddDocument(doc);
 	}
+
+	// generate detailed report
+	CMainWindow* wnd = GetMainWindow();
+	CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+	doc->setJob(m->job);
+	doc->SetDocTitle("Report");
+	wnd->AddDocument(doc);
 
 	delete m->job;
 	m->job = nullptr;
