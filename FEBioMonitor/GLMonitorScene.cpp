@@ -51,6 +51,7 @@ CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 	m_fem = nullptr;
 	m_postModel = new Post::FEPostModel;
 	m_glm = new Post::CGLModel(m_postModel);
+	m_glm->SetSubDivisions(1);
 	m_postObj = new CPostObject(m_glm);
 }
 

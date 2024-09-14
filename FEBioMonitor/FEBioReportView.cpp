@@ -50,6 +50,7 @@ public:
 	}
 
 	void heading1(const QString& s) { append(wrap("h1", s)); }
+	void heading2(const QString& s) { append(wrap("h2", s)); }
 	void paragraph(const QString& s) { append(wrap("p", s)); }
 	void table(const QStringList& v)
 	{
@@ -232,17 +233,34 @@ void CFEBioReportView::setDocument(CFEBioReportDoc* doc)
 		entries.push_back({ "input" , ti.input_time  , ti.input_time   / ti.total_time, "Time to process the input file" , QColor::fromRgb(64, 224, 208) });
 		entries.push_back({ "init"  , ti.init_time   , ti.init_time    / ti.total_time, "Time to initialize all model data" , QColor::fromRgb(220, 20, 60)});
 		entries.push_back({ "output", ti.io_time     , ti.io_time      / ti.total_time, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0)});
-		entries.push_back({ "refs"  , ti.total_reform, ti.total_reform / ti.total_time, "Time spent reforming the stiffness matrix" , QColor::fromRgb(75, 0, 130) });
+		entries.push_back({ "refs"  , ti.total_reform, ti.total_reform / ti.total_time, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
 		entries.push_back({ "stiff" , ti.total_stiff , ti.total_stiff  / ti.total_time, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
 		entries.push_back({ "rhs"   , ti.total_rhs   , ti.total_rhs    / ti.total_time, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
 		entries.push_back({ "update", ti.total_update, ti.total_update / ti.total_time, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 103, 165) });
-		entries.push_back({ "QN"    , ti.total_qn    , ti.total_qn     / ti.total_time, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(230, 230, 250) });
+		entries.push_back({ "QN"    , ti.total_qn    , ti.total_qn     / ti.total_time, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(200, 200, 250) });
 		entries.push_back({ "linsol", ti.total_linsol, ti.total_linsol / ti.total_time, "Time spent in the linear solver (includes factorization and backsolves)" , QColor::fromRgb(218, 165, 32) });
 		entries.push_back({ "other" , ti.total_other , ti.total_other  / ti.total_time, "Time spent outside of timed routines" , QColor::fromRgb(255, 0, 255) });
 		std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec > b.sec; });
 
 		HTMLComposer html;
-		html.heading1("Summary");
+		html.heading1("FEBio Job Report");
+		html.heading2("Files");
+		html.paragraph("Files used in the job.");
+		html.table_start();
+		html.table_row({ "<b>input</b>", QString::fromStdString(job->GetFEBFileName()) });
+		html.table_row({ "<b>log</b>"  , QString::fromStdString(job->GetLogFileName()) });
+		html.table_row({ "<b>plot</b>" , QString::fromStdString(job->GetPlotFileName()) });
+		html.table_end();
+		html.heading2("Stats");
+		html.paragraph("Overall statistics.");
+		html.table_start();
+		ModelStats stats = job->m_stats;
+		html.table_row({ "<b>time steps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
+		html.table_row({ "<b>total iters</b>"  , HTMLComposer::align_right, QString::number(stats.ntotalIters  ), "Total number of Quasi-Newton iterations."});
+		html.table_row({ "<b>total RHS</b>"    , HTMLComposer::align_right, QString::number(stats.ntotalRHS    ), "Total number of residual evaluations."});
+		html.table_row({ "<b>total reforms</b>", HTMLComposer::align_right, QString::number(stats.ntotalReforms), "Total number of stiffness matrix reformations."});
+		html.table_end();
+		html.heading2("Timings");
 		html.paragraph("Breakdown of total runtime.");
 		html.table_start();
 		html.table_row(composeRow("Total time", ti.total_time  , 1.0, "Total time to run the job"));

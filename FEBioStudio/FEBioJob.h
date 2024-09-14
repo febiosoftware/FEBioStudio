@@ -117,6 +117,7 @@ public:
 	// FEBio output
 	std::string	m_jobReport;
 	TimingInfo m_timingInfo;
+	ModelStats m_stats;
 
 	double	m_tic, m_toc;
 
