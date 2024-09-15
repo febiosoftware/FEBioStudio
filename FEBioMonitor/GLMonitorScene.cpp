@@ -341,7 +341,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 
 	BuildMesh();
 	BuildGLModel();
-	UpdateStateData(false);
+	UpdateStateData();
 	BOX box = GetBoundingBox();
 	if (box.IsValid())
 	{
@@ -651,20 +651,21 @@ void CGLMonitorScene::BuildGLModel()
 	m_postObj->UpdateMesh();
 }
 
-void CGLMonitorScene::UpdateStateData(bool addState)
+void CGLMonitorScene::AddState()
+{
+	m_postModel->AddState(new Post::FEState(m_doc->GetTimeValue(), m_postModel, m_postModel->GetFEMesh(0)));
+	m_postModel->SetCurrentTimeIndex(m_postModel->GetStates() - 1);
+}
+
+void CGLMonitorScene::UpdateStateData()
 {
 	QMutexLocker lock(&m_mutex);
 
 	if (m_fem == nullptr) return;
 
-	if (addState)
-	{
-		m_postModel->AddState(new Post::FEState(m_doc->GetTimeValue(), m_postModel, m_postModel->GetFEMesh(0)));
-	}
-	m_postModel->SetCurrentTimeIndex(m_postModel->GetStates() - 1);
-
 	Post::FEState* ps = m_postModel->CurrentState();
-	if (!addState) ps->m_time = m_doc->GetTimeValue();
+	ps->m_time = m_doc->GetTimeValue();
+	m_postModel->SetCurrentTimeIndex(ps->m_id);
 
 	FEMesh& febioMesh = m_fem->GetMesh();
 	for (int i = 0; i < febioMesh.Nodes(); ++i)

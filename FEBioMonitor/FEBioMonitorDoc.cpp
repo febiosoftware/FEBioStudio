@@ -143,7 +143,7 @@ class FEBioMonitorDoc::Imp
 public:
 	QString febFile;
 	QString	outputBuffer;
-	bool	startPaused;
+	bool	startPaused = false;
 	bool	isOutputReady;
 	bool	isStopped;
 	bool	isRunning;
@@ -155,8 +155,9 @@ public:
 	double	time;
 	unsigned int pauseEvents;
 	int		currentEvent;
-	int		debugLevel;
-	bool	recordStates;
+	int		debugLevel = 0;
+	bool	recordStates = false;
+	int		updateEvents = Update_Major_Iters;
 	QMutex	mutex;
 	Timer	timer;
 	FEBioModel* fem = nullptr;
@@ -284,6 +285,12 @@ bool FEBioMonitorDoc::GetRecordStatesFlag() const
 {
 	return m->recordStates;
 }
+
+void FEBioMonitorDoc::SetUpdateEvents(int updateEvents)
+{
+	m->updateEvents = updateEvents;
+}
+
 
 void FEBioMonitorDoc::RunJob()
 {
@@ -556,16 +563,28 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	m->time = fem->GetTime().currentTime;
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
 	m->currentEvent = nevent;
-	switch (nevent)
+
+	bool updateGL = false;
+	if (nevent == CB_INIT)
 	{
-	case CB_INIT:
 		scene->InitScene(fem);
 		m_bValid = true;
 		emit modelInitialized();
-		break;
-	default:
-		scene->UpdateStateData(m->recordStates);
-		break;
+	}
+	else
+	{
+		switch (m->updateEvents)
+		{
+		case Update_Major_Iters: updateGL = (nevent == CB_MAJOR_ITERS); break;
+		case Update_Minor_Iters: updateGL = (nevent == CB_MINOR_ITERS); break;
+		case Update_All_Events : updateGL = true; break;
+		}
+
+		if (updateGL)
+		{
+			if (m->recordStates) scene->AddState();
+			scene->UpdateStateData();
+		}
 	}
 
 	// NOTE: Even if we cancel the run,
@@ -580,7 +599,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
-	emit updateViews(false);
+	emit updateViews(false, updateGL);
 	modelIsUpdating.wait(&m->mutex);
 
 	constexpr double eps = std::numeric_limits<double>::epsilon();
@@ -589,7 +608,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	{
 		m->outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();
-		emit updateViews(true);
+		emit updateViews(true, true);
 		m->isPaused = true;
 		jobIsPaused.wait(&m->mutex);
 		m->isPaused = false;
@@ -612,11 +631,11 @@ void FEBioMonitorDoc::onModelInitialized()
 	wnd->UpdateGLControlBar();
 }
 
-void FEBioMonitorDoc::onUpdateViews(bool b)
+void FEBioMonitorDoc::onUpdateViews(bool updatePanel, bool updateGL)
 {
 	CMainWindow* wnd = GetMainWindow();
-	wnd->GetGLView()->updateView();
-	wnd->GetFEBioMonitorPanel()->Update(b);
+	if (updateGL) wnd->GetGLView()->updateView();
+	wnd->GetFEBioMonitorPanel()->Update(updatePanel);
 	wnd->GetFEBioMonitorView()->Update(false);
 
 	modelIsUpdating.wakeAll();

@@ -48,7 +48,8 @@ public:
 	~CGLMonitorScene();
 
 	void InitScene(FEModel* fem);
-	void UpdateStateData(bool addState);
+	void AddState();
+	void UpdateStateData();
 	void UpdateScene();
 
 	void Render(CGLContext& rc) override;

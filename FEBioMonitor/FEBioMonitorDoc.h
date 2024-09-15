@@ -93,6 +93,14 @@ class FEBioMonitorDoc : public CGLModelDocument
 	class Imp;
 
 public:
+	enum UpdateEvents
+	{
+		Update_Major_Iters,
+		Update_Minor_Iters,
+		Update_All_Events
+	};
+
+public:
 	FEBioMonitorDoc(CMainWindow* wnd);
 	~FEBioMonitorDoc();
 
@@ -115,6 +123,8 @@ public:
 
 	void SetRecordStatesFlag(bool b);
 	bool GetRecordStatesFlag() const;
+
+	void SetUpdateEvents(int updateEvents);
 
 public:
 	void RunJob();
@@ -174,13 +184,13 @@ private:
 private slots:
 	void onJobFinished(bool b);
 	void onModelInitialized();
-	void onUpdateViews(bool b);
+	void onUpdateViews(bool updatePanel, bool updateGL);
 	void readOutput();
 
 signals:
 	void outputReady();
 	void modelInitialized();
-	void updateViews(bool b);
+	void updateViews(bool updatePanel, bool updateGL);
 
 private:
 	Imp* m;

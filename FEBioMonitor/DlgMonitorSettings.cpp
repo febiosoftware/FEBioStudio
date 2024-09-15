@@ -47,6 +47,7 @@ private:
 	CFloatInput* m_pauseTime;
 	QComboBox* m_debugMode;
 	QCheckBox* m_recordStates;
+	QComboBox* m_updateEvents;
 
 public:
 	int m_fileMode = 0;
@@ -91,6 +92,15 @@ public:
 		m_recordStates = new QCheckBox("record states");
 		l->addWidget(m_recordStates);
 
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Update events:"));
+		m_updateEvents = new QComboBox();
+		m_updateEvents->addItems({ "major iterations", "minor iterations", "all events" });
+		h->addWidget(m_updateEvents);
+		h->addStretch();
+		l->addLayout(h);
+
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
@@ -107,7 +117,7 @@ public:
 	bool InputIsEnabled() const { return m_fileInput->isEnabled(); }
 	unsigned int GetPauseEvents() { return (unsigned int)(m_pauseEvents->currentData().toInt()); }
 	bool GetStartPausedOption() { return m_startPaused->isChecked(); }
-
+	unsigned int GetUpdateEvents() { return m_updateEvents->currentIndex(); }
 	void SetFEBioInputFile(QString febfile) { m_fileInput->setText(febfile); }
 
 	void SetStartPausedOption(bool b) { m_startPaused->setChecked(b); }
@@ -195,6 +205,7 @@ void CDlgMonitorSettings::accept()
 	m_doc->SetPauseTime(ui->GetPauseTime(), ui->IsPauseTimeEnabled());
 	m_doc->SetDebugLevel(ui->GetDebugLevel());
 	m_doc->SetRecordStatesFlag(ui->GetRecordStatesFlag());
+	m_doc->SetUpdateEvents(ui->GetUpdateEvents());
 
 	QDialog::accept();
 }
