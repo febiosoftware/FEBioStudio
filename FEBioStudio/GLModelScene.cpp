@@ -2286,9 +2286,13 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 		for (int i = 0; i < N; ++i)
 		{
 			FSNode& node = pm->Node(i);
-			if (!node.IsVisible() ||
-				(view.m_bext && !node.IsExterior())) node.m_ntag = 0;
-			else node.m_ntag = 1;
+			if (node.IsSelected()) node.m_ntag = 1;
+			else
+			{
+				if (!node.IsVisible() ||
+					(view.m_bext && !node.IsExterior())) node.m_ntag = 0;
+				else node.m_ntag = 1;
+			}
 		}
 		renderer.RenderFENodes(pm);
 	}
