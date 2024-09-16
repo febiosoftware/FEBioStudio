@@ -350,6 +350,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 		CGLCamera& cam = GetCamera();
 		cam.SetTarget(box.Center());
 		cam.SetTargetDistance(2.0 * f);
+		cam.Update(true);
 	}
 }
 

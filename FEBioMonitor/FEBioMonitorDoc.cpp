@@ -321,6 +321,9 @@ void FEBioMonitorDoc::RunJob()
 	m->job->SetName("febio monitor");
 	m->job->SetFEBFileName(GetFEBioInputFile().toStdString());
 	m->job->StartTimer();
+
+	GetMainWindow()->GetFEBioMonitorView()->Update(true);
+
 	FEBioMonitorThread* thread = new FEBioMonitorThread(this, m->job);
 	thread->start();
 }
@@ -631,7 +634,9 @@ void FEBioMonitorDoc::onModelInitialized()
 	CFEBioMonitorPanel* monitorPanel = wnd->GetFEBioMonitorPanel(); assert(monitorPanel);
 	if (monitorPanel == nullptr) return;
 	monitorPanel->Update(true);
+	wnd->GetFEBioMonitorView()->Update(true);
 	wnd->UpdateGLControlBar();
+	wnd->RedrawGL();
 }
 
 void FEBioMonitorDoc::onUpdateViews(bool updatePanel, bool updateGL)

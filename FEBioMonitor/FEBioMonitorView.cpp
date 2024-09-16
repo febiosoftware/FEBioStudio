@@ -169,6 +169,12 @@ CFEBioMonitorView::CFEBioMonitorView(CMainWindow* wnd, QWidget* parent) : CWindo
 
 void CFEBioMonitorView::Update(bool reset)
 {
+	if (reset)
+	{
+		ui->plot->clearData();
+		return;
+	}
+
 	FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
 	if (doc == nullptr) return;
 	if (doc->IsRunning() == false) return;
