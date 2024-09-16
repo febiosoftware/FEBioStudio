@@ -36,11 +36,24 @@ class CFEBioJob;
 
 class FEBioMonitorDoc;
 
-struct FSConvergenceInfo
+class FSConvergenceInfo
 {
-	double	m_R0, m_Rt;
-	double	m_E0, m_Et;
-	double	m_U0, m_Ut;
+public:
+	double	R0;
+	double	E0;
+	double	U0;
+
+	std::vector<double> Rt;
+	std::vector<double> Et;
+	std::vector<double> Ut;
+
+	void clear()
+	{
+		R0 = E0 = U0 = 0;
+		Rt.clear();
+		Et.clear();
+		Ut.clear();
+	}
 };
 
 class FEBioMonitorThread : public QThread
@@ -154,7 +167,9 @@ public:
 
 	double GetConditionNumber();
 
-	FSConvergenceInfo GetConvergenceInfo();
+	FSConvergenceInfo& GetConvergenceInfo();
+
+	void UpdateConvergenceInfo();
 
 private:
 	void UpdateWatchVariable(FEBioWatchVariable& var);

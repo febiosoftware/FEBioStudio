@@ -61,7 +61,6 @@ SOFTWARE.*/
 #include <FECore/log.h>
 
 QWaitCondition jobIsPaused;
-QWaitCondition modelIsUpdating;
 
 class FEBLogStream : public LogStream
 {
@@ -164,6 +163,7 @@ public:
 	CFEBioJob* job = nullptr;
 
 	QVector<FEBioWatchVariable*>	watches;
+	FSConvergenceInfo conv;
 };
 
 FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(new FEBioMonitorDoc::Imp)
@@ -564,15 +564,22 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
 	m->currentEvent = nevent;
 
+	m->fem = dynamic_cast<FEBioModel*>(fem);
+
 	bool updateGL = false;
 	if (nevent == CB_INIT)
 	{
+		m->mutex.lock();
+		m->conv.clear();
+		m->mutex.unlock();
 		scene->InitScene(fem);
 		m_bValid = true;
 		emit modelInitialized();
 	}
 	else
 	{
+		if (nevent == CB_MINOR_ITERS) UpdateConvergenceInfo();
+
 		switch (m->updateEvents)
 		{
 		case Update_Major_Iters: updateGL = (nevent == CB_MAJOR_ITERS); break;
@@ -593,14 +600,10 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	if (nevent == CB_INIT) SetProgress(0.0);
 	else if (!m->isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
-	m->mutex.lock();
-
-	m->fem = dynamic_cast<FEBioModel*>(fem);
-
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
 	emit updateViews(false, updateGL);
-	modelIsUpdating.wait(&m->mutex);
+	m->mutex.lock();
 
 	constexpr double eps = std::numeric_limits<double>::epsilon();
 	if ((m->pauseRequested && (m->pauseEvents & nevent)) ||
@@ -633,12 +636,12 @@ void FEBioMonitorDoc::onModelInitialized()
 
 void FEBioMonitorDoc::onUpdateViews(bool updatePanel, bool updateGL)
 {
+	QMutexLocker lock(&m->mutex);
+
 	CMainWindow* wnd = GetMainWindow();
 	if (updateGL) wnd->GetGLView()->updateView();
 	wnd->GetFEBioMonitorPanel()->Update(updatePanel);
 	wnd->GetFEBioMonitorView()->Update(false);
-
-	modelIsUpdating.wakeAll();
 }
 
 const FEBioWatchVariable* FEBioMonitorDoc::GetWatchVariable(int n)
@@ -790,29 +793,31 @@ double FEBioMonitorDoc::GetConditionNumber()
 	return 0.0;
 }
 
-FSConvergenceInfo FEBioMonitorDoc::GetConvergenceInfo()
+void FEBioMonitorDoc::UpdateConvergenceInfo()
 {
-	FSConvergenceInfo info = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
 	QMutexLocker lock(&m->mutex);
-	if (m->fem == nullptr) return info;
 
+	if (m->fem == nullptr) return;
 	FEAnalysis* step = m->fem->GetCurrentStep();
-	if (step == nullptr) return info;
-
+	if (step == nullptr) return;
 	FENewtonSolver* solver = dynamic_cast<FENewtonSolver*>(step->GetFESolver());
-	if (solver == nullptr) return info;
+	if (solver == nullptr) return;
+
+	FSConvergenceInfo& info = m->conv;
 
 	ConvergenceInfo Rnorm = solver->GetResidualConvergence();
 	ConvergenceInfo Enorm = solver->GetEnergyConvergence();
 	ConvergenceInfo Unorm = solver->GetSolutionConvergence(0);
 
-	info.m_R0 = Rnorm.norm0;
-	info.m_Rt = Rnorm.norm;
-	info.m_E0 = Enorm.norm0;
-	info.m_Et = Enorm.norm;
-	info.m_U0 = Unorm.norm0;
-	info.m_Ut = Unorm.norm;
+	info.R0 = Rnorm.norm0;
+	info.Rt.push_back(Rnorm.norm);
+	info.E0 = Enorm.norm0;
+	info.Et.push_back(Enorm.norm);
+	info.U0 = Unorm.norm0;
+	info.Ut.push_back(Unorm.norm);
+}
 
-	return info;
+FSConvergenceInfo& FEBioMonitorDoc::GetConvergenceInfo()
+{
+	return m->conv;
 }

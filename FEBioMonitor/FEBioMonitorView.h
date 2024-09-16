@@ -54,5 +54,8 @@ public:
 	void Update(bool reset) override;
 
 private:
+	void onUpdate();
+
+private:
 	Ui* ui;
 };

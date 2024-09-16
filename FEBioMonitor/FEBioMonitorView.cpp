@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <FECore/Callback.h>
 #include <QSplitter>
 #include <QTimer>
+#include <QMutex>
+#include <QMutexLocker>
 #ifdef WIN32
 #include <windows.h>
 #include <psapi.h>
@@ -135,6 +137,8 @@ class CFEBioMonitorView::Ui
 public:
 	CPlotWidget* plot;
 	CMemoryWidget* memview;
+	bool updated = true;
+	QMutex mutex;
 
 public:
 	void setup(CFEBioMonitorView* view)
@@ -169,75 +173,52 @@ void CFEBioMonitorView::Update(bool reset)
 	if (doc == nullptr) return;
 	if (doc->IsRunning() == false) return;
 
-	if (reset) ui->plot->clearData();
+	QMutexLocker lock(&ui->mutex);
 
 	int currentEvent = doc->GetCurrentEvent();
-
-	static int counter = 0;
-	static bool addNorm0 = true;
-	if (currentEvent == CB_INIT)
-	{
-		ui->plot->clearData();
-		counter = 0; addNorm0 = true;
-	}
-
 	if (currentEvent == CB_MINOR_ITERS)
 	{
 		CPlotData& Rdata = ui->plot->getPlotData(0);
 		CPlotData& Edata = ui->plot->getPlotData(1);
 		CPlotData& Udata = ui->plot->getPlotData(2);
 
-		FSConvergenceInfo info = doc->GetConvergenceInfo();
+		FSConvergenceInfo& info = doc->GetConvergenceInfo();
 
-		if (addNorm0)
+		ui->plot->clearData();
+		for (int i = 0; i < info.Rt.size(); ++i)
 		{
-			if (info.m_R0 > 0)
-			{
-				double R0 = log10(info.m_R0);
-				Rdata.addPoint(counter, R0);
-			}
-
-			if (info.m_E0 > 0)
-			{
-				double E0 = log10(info.m_E0);
-				Edata.addPoint(counter, E0);
-			}
-
-			if (info.m_U0 > 0)
-			{
-				double U0 = log10(info.m_U0);
-				Udata.addPoint(counter, U0);
-			}
-
-			addNorm0 = false;
-			counter++;
+			double vi = info.Rt[i];
+			double y = (vi > 0 ? log10(vi) : 0);
+			Rdata.addPoint(i, y);
 		}
 
-		if (info.m_Rt > 0)
+		for (int i = 0; i < info.Et.size(); ++i)
 		{
-			double Rt = log10(info.m_Rt);
-			Rdata.addPoint(counter, Rt);
+			double vi = info.Et[i];
+			double y = (vi > 0 ? log10(vi) : 0);
+			Edata.addPoint(i, y);
 		}
 
-		if (info.m_Et > 0)
+		for (int i = 0; i < info.Ut.size(); ++i)
 		{
-			double Et = log10(info.m_Et);
-			Edata.addPoint(counter, Et);
+			double vi = info.Ut[i];
+			double y = (vi > 0 ? log10(vi) : 0);
+			Udata.addPoint(i, y);
 		}
 
-		if (info.m_Ut > 0)
+		if (ui->updated == true)
 		{
-			double Ut = log10(info.m_Ut);
-			Udata.addPoint(counter, Ut);
+			ui->updated = false;
+			QTimer::singleShot(500, this, &CFEBioMonitorView::onUpdate);
 		}
-
-		ui->plot->OnZoomToFit();
-		ui->plot->update();
-		counter++;
 	}
-	else if ((currentEvent == CB_MAJOR_ITERS) || (currentEvent == CB_TIMESTEP_FAILED))
-	{
-		counter--;
-		addNorm0 = true;
-	}
+}
+
+void CFEBioMonitorView::onUpdate()
+{
+	QMutexLocker lock(&ui->mutex);
+
+	ui->plot->OnZoomToFit();
+	ui->plot->repaint();
+	ui->updated = true;
 }
