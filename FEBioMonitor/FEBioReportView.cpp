@@ -233,7 +233,7 @@ void CFEBioReportView::setDocument(CFEBioReportDoc* doc)
 		entries.push_back({ "input"    , ti.input_time        , ti.input_time         / ti.total_time, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
 		entries.push_back({ "init"     , ti.init_time         , ti.init_time          / ti.total_time, "Time to initialize all model data" , QColor::fromRgb(220, 120, 60)});
 		entries.push_back({ "output"   , ti.io_time           , ti.io_time            / ti.total_time, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0)});
-		entries.push_back({ "refs"     , ti.total_reform      , ti.total_reform       / ti.total_time, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
+		entries.push_back({ "reforms"  , ti.total_reform      , ti.total_reform       / ti.total_time, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
 		entries.push_back({ "stiff"    , ti.total_stiff       , ti.total_stiff        / ti.total_time, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
 		entries.push_back({ "rhs"      , ti.total_rhs         , ti.total_rhs          / ti.total_time, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
 		entries.push_back({ "update"   , ti.total_update      , ti.total_update       / ti.total_time, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 165, 103) });

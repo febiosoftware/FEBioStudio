@@ -67,6 +67,7 @@ class CFEBioMonitorView;
 class CModelViewer;
 class CCommandWindow;
 class CLogPanel;
+struct ProgressTracker; // in FEBio/FEBioExport4
 
 enum class ImageFileType;
 
@@ -709,8 +710,6 @@ public slots:
 
 	void RunFEBioJob(CFEBioJob* job);
 
-	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion);
-
 	void NextSSHFunction(CSSHHandler*);
 	void ShowProgress(bool show, QString message = "");
 	void ShowIndeterminateProgress(bool show, QString message = "");
@@ -736,6 +735,8 @@ public:
 
 	QString ProjectFolder();
 	QString ProjectName();
+
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, ProgressTracker* prg = nullptr);
 
 private:
 	void ReadNextFileInQueue();

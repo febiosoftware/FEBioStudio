@@ -33,6 +33,13 @@ class GPartList;
 class GMaterial;
 class GPart;
 
+struct ProgressTracker
+{
+	double pct = 0;
+	const char* sztask = nullptr;
+	bool cancel = false;
+};
+
 //-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.5
 class FEBioExport4 : public FEBioExport
@@ -202,6 +209,8 @@ public:
 	FEBioExport4(FSProject& prj);
 	virtual ~FEBioExport4();
 
+	void SetProgressTracker(ProgressTracker* prg);
+
 	void Clear();
 
 	bool Write(const char* szfile);
@@ -222,7 +231,7 @@ protected:
 	void WriteMeshElements();
 	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
+	void WriteGeometryPart(Part* part, GPart* pg, std::vector<int>& elemList, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
@@ -251,7 +260,6 @@ protected:
 	void WriteBodyLoads(FSStep& s);
 
 	// Used by new Part export feature
-	void WriteGeometryObject(Part* po);
 	void WriteGeometryNodeSetsNew();
 	void WriteGeometrySurfacesNew();
 	void WriteGeometryElementSetsNew();
@@ -289,6 +297,11 @@ protected:
 	FSModel* m_pfem;
 
 	bool	m_writeControlSection;	// write Control section for single step analysis
+	ProgressTracker* m_prg;
+
+	void setProgress(double v);
+	void setProgress(double v, const char* sztask);
+	void setProgressTask(const char* sztask);
 
 protected:
 	const char* GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists = false);

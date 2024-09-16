@@ -140,9 +140,9 @@ void CDlgStartThread::checkProgress()
 		if (ui->m_cancelled) ui->m_breturn = false;
 		if (ui->m_breturn) accept(); else reject();
 	}
-	else if (ui->m_cancelled == false)
+	else 
 	{
-		if (ui->m_thread->hasProgress())
+		if ((ui->m_cancelled == false) && ui->m_thread->hasProgress())
 		{
 			ui->m_progress->setRange(0.0, 100.0);
 			double p = ui->m_thread->progress();

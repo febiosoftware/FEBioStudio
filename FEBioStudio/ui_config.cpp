@@ -493,7 +493,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->menuPhysics->menuAction()->setVisible(false);
 	ui->menuPost->menuAction()->setVisible(true);
 	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();

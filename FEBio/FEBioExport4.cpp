@@ -74,11 +74,46 @@ FEBioExport4::FEBioExport4(FSProject& prj) : FEBioExport(prj)
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
+	m_prg = nullptr;
 }
 
 FEBioExport4::~FEBioExport4()
 {
 	Clear();
+}
+
+void FEBioExport4::SetProgressTracker(ProgressTracker* prg)
+{
+	m_prg = prg;
+}
+
+void FEBioExport4::setProgress(double v)
+{
+	if (m_prg)
+	{
+		m_prg->pct = v;
+		if (m_prg->cancel) throw CancelExport();
+	}
+}
+
+void FEBioExport4::setProgress(double v, const char* sztask)
+{
+	if (m_prg)
+	{
+		m_prg->pct = v;
+		m_prg->sztask = sztask;
+
+		if (m_prg->cancel) throw CancelExport();
+	}
+}
+
+void FEBioExport4::setProgressTask(const char* sztask)
+{
+	if (m_prg)
+	{
+		m_prg->sztask = sztask;
+		if (m_prg->cancel) throw CancelExport();
+	}
 }
 
 void FEBioExport4::Clear()
@@ -562,9 +597,12 @@ bool FEBioExport4::Write(const char* szfile)
 	GModel& mdl = fem.GetModel();
 	m_pfem = &fem;
 
+	setProgress(0.0, nullptr);
+
 	// prepare for export
 	try
 	{
+		setProgress(0.0, "Preparing to export");
 		if (PrepareExport(m_prj) == false) return false;
 
 		// get the initial step
@@ -605,6 +643,8 @@ bool FEBioExport4::Write(const char* szfile)
 		// output root element
 		el.name("febio_spec");
 		el.add_attribute("version", "4.0");
+
+		setProgress(0.0, "Writing file ...");
 
 		m_xml.add_branch(el);
 		{
@@ -683,6 +723,17 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // MeshData
 			}
 
+			// output initial section
+			int nic = pstep->ICs();
+			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
+			{
+				m_xml.add_branch("Initial");
+				{
+					WriteInitialSection(*pstep);
+				}
+				m_xml.close_branch(); // Initial
+			}
+
 			// output boundary section
 			int nbc = pstep->BCs();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
@@ -715,17 +766,6 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			// output contact
-			int nci = pstep->Interfaces();
-			if ((nci > 0) && (m_section[FEBIO_CONTACT]))
-			{
-				m_xml.add_branch("Contact");
-				{
-					WriteContactSection(*pstep);
-				}
-				m_xml.close_branch(); // Contact
-			}
-
 			// output constraints section
 			int nnlc = CountConstraints<FSModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
@@ -737,15 +777,15 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch();
 			}
 
-			// output initial section
-			int nic = pstep->ICs();
-			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
+			// output contact
+			int nci = pstep->Interfaces();
+			if ((nci > 0) && (m_section[FEBIO_CONTACT]))
 			{
-				m_xml.add_branch("Initial");
+				m_xml.add_branch("Contact");
 				{
-					WriteInitialSection(*pstep);
+					WriteContactSection(*pstep);
 				}
-				m_xml.close_branch(); // Initial
+				m_xml.close_branch(); // Contact
 			}
 
 			// output discrete elements (the obsolete spring-tied interface generates springs as well)
@@ -811,6 +851,10 @@ bool FEBioExport4::Write(const char* szfile)
 	catch (RigidContactException)
 	{
 		return errf("Missing rigid body in rigid contact definition.");
+	}
+	catch (CancelExport)
+	{
+		return errf("Export was cancelled.");
 	}
 	catch (std::runtime_error e)
 	{
@@ -1249,79 +1293,6 @@ void FEBioExport4::WriteMeshDomainsSection()
 	}
 }
 
-//-----------------------------------------------------------------------------
-void FEBioExport4::WriteGeometryObject(FEBioExport4::Part* part)
-{
-	GObject* po = part->m_obj;
-
-	// get the mesh
-	FSCoreMesh* pm = po->GetFEMesh();
-
-	// Write the nodes
-	m_xml.add_branch("Nodes");
-	{
-		XMLElement el("node");
-		int nid = el.add_attribute("id", 0);
-		for (int j = 0; j < pm->Nodes(); ++j)
-		{
-			FSNode& node = pm->Node(j);
-			el.set_attribute(nid, ++m_ntotnodes);
-			vec3d r = node.r;
-			el.value(r);
-			m_xml.add_leaf(el, false);
-		}
-	}
-	m_xml.close_branch();
-
-	// write all elements
-	int NP = po->Parts();
-	for (int p = 0; p < NP; ++p)
-	{
-		// get the part
-		GPart* pg = po->Part(p);
-
-		// write this part
-		WriteGeometryPart(part, pg, false);
-	}
-
-	// write all node sets
-	for (int i = 0; i < part->m_NSet.size(); ++i)
-	{
-		NodeSet* ns = part->m_NSet[i];
-		WriteNodeSet(ns->m_name.c_str(), ns->m_nodeList);
-	}
-
-	// write all surfaces
-	for (int i = 0; i < part->m_Surf.size(); ++i)
-	{
-		Surface* s = part->m_Surf[i];
-		XMLElement el("Surface");
-		el.add_attribute("name", s->m_name);
-		m_xml.add_branch(el);
-		{
-			FEFaceList* faceList = s->m_faceList;
-			WriteSurfaceSection(*faceList);
-		}
-		m_xml.close_branch();
-	}
-
-	// write all element sets
-	for (int i = 0; i < part->m_ELst.size(); ++i)
-	{
-		ElementList* es = part->m_ELst[i];
-		XMLElement el("ElementSet");
-		el.add_attribute("name", es->m_name);
-		m_xml.add_branch(el);
-		{
-			// TODO: This writes the old format. Need to fix it, if I still want this Geometry section. 
-			assert(false);
-			WriteElementList(*es->m_elemList);
-		}
-		m_xml.close_branch();
-	}
-}
-
-//-----------------------------------------------------------------------------
 bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 {
 	if (pl == 0)
@@ -1825,15 +1796,39 @@ void FEBioExport4::WriteMeshElements()
 
 	Part* part = m_Part[0];
 
+	int parts = model.Parts();
+	if (parts == 0) parts = 1;
+	int count = 0;
+
 	// loop over all objects
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
+		FSMesh* pm = po->GetFEMesh();
 
 		// loop over all parts
 		int NP = po->Parts();
+		std::vector<int> elemCount(NP, 0);
+		for (int i=0; i<pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			elemCount[el.m_gid]++;
+		}
+		std::vector< std::vector<int> > partElements(NP);
 		for (int p = 0; p < NP; ++p)
 		{
+			partElements[p].reserve(elemCount[p]);
+		}
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			partElements[el.m_gid].push_back(i);
+		}
+
+		for (int p = 0; p < NP; ++p, count++)
+		{
+			setProgress((double)count / (double) parts);
+
 			// get the part
 			GPart* pg = po->Part(p);
 
@@ -1841,13 +1836,13 @@ void FEBioExport4::WriteMeshElements()
 			bool exportPart = pg->IsActive();
 
 			// write this part if it's active
-			if (exportPart) WriteGeometryPart(part, pg, false, false);
+			if (exportPart) WriteGeometryPart(part, pg, partElements[p], false, false);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool useMatNames)
+void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, std::vector<int>& elemList, bool writeMats, bool useMatNames)
 {
 	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -1856,13 +1851,11 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	int pid = pg->GetLocalID();
 
 	// Parts must be split up by element type
-	int NE = pm->Elements();
-	int NEP = 0; // number of elements in part
-	for (int i = 0; i < NE; ++i)
+	int NEP = elemList.size(); // number of elements in part
+	for (int i = 0; i < NEP; ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
-		if (el.m_gid == pid) { el.m_ntag = 1; NEP++; }
-		else el.m_ntag = -1;
+		FEElement_& el = pm->ElementRef(elemList[i]); assert(el.m_gid == pid);
+		el.m_ntag = 1;
 	}
 
 	// make sure this part has elements
@@ -1884,7 +1877,7 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	char szname[128] = { 0 };
 	for (int i = 0; ncount < NEP; ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FEElement_& el = pm->ElementRef(elemList[i]);
 		if (el.m_ntag == 1)
 		{
 			assert(el.m_gid == pid);
@@ -1929,9 +1922,9 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 				int n1 = xej.add_attribute("id", (int)0);
 				int lastElemID = 0;
 
-				for (int j = i; j < NE; ++j)
+				for (int j = i; j < NEP; ++j)
 				{
-					FEElement_& ej = pm->ElementRef(j);
+					FEElement_& ej = pm->ElementRef(elemList[j]);
 					if ((ej.m_ntag == 1) && (ej.Type() == ntype))
 					{
 						if (ej.m_nid <= lastElemID) throw FEBioExportError();

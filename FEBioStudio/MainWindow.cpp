@@ -3343,7 +3343,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 	return true;
 }
 
-bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion, ProgressTracker* prg)
 {
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
@@ -3373,6 +3373,7 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		else if (febioFileVersion == 0x0400)
 		{
 			FEBioExport4 feb(doc->GetProject());
+			feb.SetProgressTracker(prg);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
@@ -3387,7 +3388,7 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		ret = false;
 	}
 
-	if (ret == false)
+	if ((ret == false) && (prg == nullptr))
 	{
 		QString msg = QString("Failed saving FEBio file:\n%1").arg(QString::fromStdString(err));
 		QMessageBox::critical(this, "Run FEBio", msg);

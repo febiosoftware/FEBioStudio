@@ -38,6 +38,8 @@ SOFTWARE.*/
 #include <FEBioMonitor/DlgMonitorSettings.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include "DlgCreatePlugin.h"
+#include "DlgStartThread.h"
+#include <FEBio/FEBioExport4.h> // for ProgressTracker
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -266,6 +268,35 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	}
 }
 
+class ExportFEBioThread : public CustomThread
+{
+public:
+	ExportFEBioThread(CMainWindow* wnd, CModelDocument* doc, const std::string& febFile) : m_wnd(wnd), m_doc(doc), m_fileName(febFile) {}
+
+	void run() override
+	{
+		bool b = m_wnd->ExportFEBioFile(m_doc, m_fileName, 0x0400, &m_prg);
+		emit resultReady(b);
+	}
+
+	void stop() override
+	{
+		m_prg.cancel = true;
+	}
+
+	bool hasProgress() override { return true; }
+
+	double progress() override { return 100.0 * m_prg.pct; }
+
+	const char* currentTask() override { return m_prg.sztask; }
+
+private:
+	CMainWindow* m_wnd;
+	CModelDocument* m_doc;
+	std::string m_fileName;
+	ProgressTracker m_prg;
+};
+
 void CMainWindow::on_actionFEBioMonitor_triggered()
 {
 	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
@@ -306,10 +337,14 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 		if (dlg.exec())
 		{
 			std::string febFilename = monitorDoc->GetFEBioInputFile().toStdString();
-			if (doc && exportFEBioFile && ExportFEBioFile(doc, febFilename, 0x0400) == false)
+			if (doc && exportFEBioFile)
 			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
-				return;
+				CDlgStartThread runThread(this, new ExportFEBioThread(this, doc, febFilename));
+				if (!runThread.exec())
+				{
+					QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
+					return;
+				}
 			}
 
 			AddDocument(monitorDoc);
