@@ -175,42 +175,38 @@ void CFEBioMonitorView::Update(bool reset)
 
 	QMutexLocker lock(&ui->mutex);
 
-	int currentEvent = doc->GetCurrentEvent();
-	if (currentEvent == CB_MINOR_ITERS)
+	CPlotData& Rdata = ui->plot->getPlotData(0);
+	CPlotData& Edata = ui->plot->getPlotData(1);
+	CPlotData& Udata = ui->plot->getPlotData(2);
+
+	FSConvergenceInfo& info = doc->GetConvergenceInfo();
+
+	ui->plot->clearData();
+	for (int i = 0; i < info.Rt.size(); ++i)
 	{
-		CPlotData& Rdata = ui->plot->getPlotData(0);
-		CPlotData& Edata = ui->plot->getPlotData(1);
-		CPlotData& Udata = ui->plot->getPlotData(2);
+		double vi = info.Rt[i];
+		double y = (vi > 0 ? log10(vi) : 0);
+		Rdata.addPoint(i, y);
+	}
 
-		FSConvergenceInfo& info = doc->GetConvergenceInfo();
+	for (int i = 0; i < info.Et.size(); ++i)
+	{
+		double vi = info.Et[i];
+		double y = (vi > 0 ? log10(vi) : 0);
+		Edata.addPoint(i, y);
+	}
 
-		ui->plot->clearData();
-		for (int i = 0; i < info.Rt.size(); ++i)
-		{
-			double vi = info.Rt[i];
-			double y = (vi > 0 ? log10(vi) : 0);
-			Rdata.addPoint(i, y);
-		}
+	for (int i = 0; i < info.Ut.size(); ++i)
+	{
+		double vi = info.Ut[i];
+		double y = (vi > 0 ? log10(vi) : 0);
+		Udata.addPoint(i, y);
+	}
 
-		for (int i = 0; i < info.Et.size(); ++i)
-		{
-			double vi = info.Et[i];
-			double y = (vi > 0 ? log10(vi) : 0);
-			Edata.addPoint(i, y);
-		}
-
-		for (int i = 0; i < info.Ut.size(); ++i)
-		{
-			double vi = info.Ut[i];
-			double y = (vi > 0 ? log10(vi) : 0);
-			Udata.addPoint(i, y);
-		}
-
-		if (ui->updated == true)
-		{
-			ui->updated = false;
-			QTimer::singleShot(500, this, &CFEBioMonitorView::onUpdate);
-		}
+	if (ui->updated == true)
+	{
+		ui->updated = false;
+		QTimer::singleShot(250, this, &CFEBioMonitorView::onUpdate);
 	}
 }
 
