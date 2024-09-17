@@ -63,6 +63,7 @@ public:
 	bool	m_bexportSelections;
 	bool	m_compress;
 	bool	m_writeNotes;
+	bool	m_allowHybrids;
 
 private slots:
 	void OnAllClicked();

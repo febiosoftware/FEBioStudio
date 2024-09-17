@@ -1346,6 +1346,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						writer.SetPlotfileCompressionFlag(dlg.m_compress);
 						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 						writer.SetWriteNotesFlag(dlg.m_writeNotes);
+						writer.SetMixedMeshFlag(dlg.m_allowHybrids);
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());

@@ -3270,7 +3270,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 	return true;
 }
 
-bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion, bool allowHybridMesh)
 {
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
@@ -3281,38 +3281,42 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	// pass the units to the model project
 	doc->GetProject().SetUnits(doc->GetUnitSystem());
 
+	FEBioExport* writer = nullptr;
+	if (febioFileVersion == 0x0205)
+	{
+		FEBioExport25* feb = new FEBioExport25(doc->GetProject());
+		feb->SetExportSelectionsFlag(true);
+		writer = feb;
+	}
+	else if (febioFileVersion == 0x0300)
+	{
+		FEBioExport3* feb = new FEBioExport3(doc->GetProject());
+		feb->SetExportSelectionsFlag(true);
+		writer = feb;
+	}
+	else if (febioFileVersion == 0x0400)
+	{
+		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
+		feb->SetMixedMeshFlag(allowHybridMesh);
+		writer = feb;
+	}
+	else
+	{
+		assert(false);
+	}
+	if (writer == nullptr) return false;
+
 
 	try {
-		if (febioFileVersion == 0x0205)
-		{
-			FEBioExport25 feb(doc->GetProject());
-			feb.SetExportSelectionsFlag(true);
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else if (febioFileVersion == 0x0300)
-		{
-			FEBioExport3 feb(doc->GetProject());
-			feb.SetExportSelectionsFlag(true);
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else if (febioFileVersion == 0x0400)
-		{
-			FEBioExport4 feb(doc->GetProject());
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else
-		{
-			assert(false);
-		}
+		ret = writer->Write(febFile.c_str());
+		if (ret == false) err = writer->GetErrorMessage();
 	}
 	catch (...)
 	{
 		err = "Unknown exception detected.";
 		ret = false;
 	}
+	delete writer;
 
 	if (ret == false)
 	{

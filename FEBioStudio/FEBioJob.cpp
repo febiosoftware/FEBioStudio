@@ -60,6 +60,9 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 
 	m_bhasProgress = false;
 	m_pct = 0.0;
+
+	m_writeNotes = true;
+	m_allowMixedMesh = false;
 }
 
 CFEBioJob::~CFEBioJob()

@@ -996,7 +996,7 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
 						switch (m_ar.GetChunkID())
 						{
 						case PLT_DOM_ELEM_TYPE: m_ar.read(D.etype); break;
-						case PLT_DOM_PART_ID   : m_ar.read(D.mid); break;
+						case PLT_DOM_PART_ID  : m_ar.read(D.mid); break;
 						case PLT_DOM_ELEMS    : m_ar.read(D.ne); break;
 						case PLT_DOM_NAME     : m_ar.sread(D.szname, DI_NAME_SIZE); break;
 						default:
@@ -1365,32 +1365,82 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			el.m_gid = i;
 			el.SetID(E.eid);
 
-			FEElementType etype;
+			FEElementType srcType;
 			switch (D.etype)
 			{
-			case PLT_ELEM_HEX8   : etype = FE_HEX8  ; break;
-			case PLT_ELEM_PENTA  : etype = FE_PENTA6; break;
-            case PLT_ELEM_PENTA15: etype = FE_PENTA15; break;
-            case PLT_ELEM_TET4   : etype = FE_TET4  ; break;
-			case PLT_ELEM_TET5   : etype = FE_TET5  ; break;
-			case PLT_ELEM_QUAD   : etype = FE_QUAD4 ; break;
-			case PLT_ELEM_TRI    : etype = FE_TRI3  ; break;
-			case PLT_ELEM_TRUSS  : etype = FE_BEAM2 ; break;
-			case PLT_ELEM_HEX20  : etype = FE_HEX20 ; break;
-			case PLT_ELEM_HEX27  : etype = FE_HEX27 ; break;
-			case PLT_ELEM_TET10  : etype = FE_TET10 ; break;
-			case PLT_ELEM_TET15  : etype = FE_TET15 ; break;
-			case PLT_ELEM_TET20  : etype = FE_TET20 ; break;
-			case PLT_ELEM_TRI6   : etype = FE_TRI6  ; break;
-			case PLT_ELEM_QUAD8  : etype = FE_QUAD8 ; break;
-			case PLT_ELEM_QUAD9  : etype = FE_QUAD9 ; break;
-			case PLT_ELEM_PYRA5  : etype = FE_PYRA5 ; break;
-            case PLT_ELEM_PYRA13 : etype = FE_PYRA13; break;
-            case PLT_ELEM_LINE3  : etype = FE_BEAM3; break;
+			case PLT_ELEM_HEX8   : srcType = FE_HEX8  ; break;
+			case PLT_ELEM_PENTA  : srcType = FE_PENTA6; break;
+			case PLT_ELEM_PENTA15: srcType = FE_PENTA15; break;
+			case PLT_ELEM_TET4   : srcType = FE_TET4  ; break;
+			case PLT_ELEM_TET5   : srcType = FE_TET5  ; break;
+			case PLT_ELEM_QUAD   : srcType = FE_QUAD4 ; break;
+			case PLT_ELEM_TRI    : srcType = FE_TRI3  ; break;
+			case PLT_ELEM_TRUSS  : srcType = FE_BEAM2 ; break;
+			case PLT_ELEM_HEX20  : srcType = FE_HEX20 ; break;
+			case PLT_ELEM_HEX27  : srcType = FE_HEX27 ; break;
+			case PLT_ELEM_TET10  : srcType = FE_TET10 ; break;
+			case PLT_ELEM_TET15  : srcType = FE_TET15 ; break;
+			case PLT_ELEM_TET20  : srcType = FE_TET20 ; break;
+			case PLT_ELEM_TRI6   : srcType = FE_TRI6  ; break;
+			case PLT_ELEM_QUAD8  : srcType = FE_QUAD8 ; break;
+			case PLT_ELEM_QUAD9  : srcType = FE_QUAD9 ; break;
+			case PLT_ELEM_PYRA5  : srcType = FE_PYRA5 ; break;
+			case PLT_ELEM_PYRA13 : srcType = FE_PYRA13; break;
+			case PLT_ELEM_LINE3  : srcType = FE_BEAM3; break;
 			}
-			el.SetType(etype);
-			int ne = el.Nodes();
-			for (int k=0; k<ne; ++k) el.m_node[k] = E.node[k];
+
+			// check for degenerate elements
+			int dstType = srcType;
+			if ((srcType == FE_QUAD4 ) && (E.node[2] == E.node[3])) dstType = FE_TRI3;
+			if ((srcType == FE_PENTA6) && (E.node[5] == E.node[4]) && (E.node[4] == E.node[3])) dstType = FE_TET4;
+			if ((srcType == FE_HEX8  ) && (E.node[2] == E.node[3]) && (E.node[7] == E.node[6]) && (E.node[6]==E.node[5]) && (E.node[5] == E.node[4])) dstType = FE_TET4;
+			if ((srcType == FE_HEX8  ) && (E.node[2] == E.node[3]) && (E.node[6] == E.node[7])) dstType = FE_PENTA6;
+
+			el.SetType(dstType);
+			if (dstType == srcType)
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) el.m_node[k] = E.node[k];
+			}
+			else
+			{
+				if (dstType == FE_TRI3)
+				{
+					assert(srcType == FE_QUAD4);
+					el.m_node[0] = E.node[0];
+					el.m_node[1] = E.node[1];
+					el.m_node[2] = E.node[2];
+				}
+				else if (dstType == FE_PENTA6)
+				{
+					assert(srcType == FE_HEX8);
+					el.m_node[0] = E.node[0];
+					el.m_node[1] = E.node[1];
+					el.m_node[2] = E.node[2];
+					el.m_node[3] = E.node[4];
+					el.m_node[4] = E.node[5];
+					el.m_node[5] = E.node[6];
+				}
+				else if (dstType == FE_TET4)
+				{
+					if (srcType == FE_PENTA6)
+					{
+						el.m_node[0] = E.node[0];
+						el.m_node[1] = E.node[1];
+						el.m_node[2] = E.node[2];
+						el.m_node[3] = E.node[3];
+					}
+					else if (srcType == FE_HEX8)
+					{
+						el.m_node[0] = E.node[0];
+						el.m_node[1] = E.node[1];
+						el.m_node[2] = E.node[2];
+						el.m_node[3] = E.node[4];
+					}
+					else assert(false);
+				}
+				else assert(false);
+			}
 		}
 	}
 

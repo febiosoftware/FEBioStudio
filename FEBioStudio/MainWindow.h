@@ -660,7 +660,7 @@ public slots:
 
 	void RunFEBioJob(CFEBioJob* job);
 
-	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion);
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false);
 
 	void NextSSHFunction(CSSHHandler*);
 	void ShowProgress(bool show, QString message = "");
