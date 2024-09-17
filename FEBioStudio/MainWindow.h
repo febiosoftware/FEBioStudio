@@ -736,7 +736,7 @@ public:
 	QString ProjectFolder();
 	QString ProjectName();
 
-	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, ProgressTracker* prg = nullptr);
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false, ProgressTracker* prg = nullptr);
 
 private:
 	void ReadNextFileInQueue();

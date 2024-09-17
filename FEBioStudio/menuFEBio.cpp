@@ -219,7 +219,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
 
 		job->m_febVersion = lastFEBioFileVersion;
-		job->m_writeNotes = dlg.WriteNotes();
+		job->m_writeNotes     = dlg.WriteNotes();
+		job->m_allowMixedMesh = dlg.AllowMixedMesh();
 		job->m_cmd = dlg.CommandLine().toStdString();
 
 		// do a model check
@@ -257,7 +258,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
 
 			// save the FEBio file
-			if (ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion) == false)
+			if (ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion, job->m_allowMixedMesh) == false)
 			{
 				return;
 			}
@@ -275,7 +276,7 @@ public:
 
 	void run() override
 	{
-		bool b = m_wnd->ExportFEBioFile(m_doc, m_fileName, 0x0400, &m_prg);
+		bool b = m_wnd->ExportFEBioFile(m_doc, m_fileName, 0x0400, false, &m_prg);
 		emit resultReady(b);
 	}
 

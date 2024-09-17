@@ -74,6 +74,7 @@ FEBioExport4::FEBioExport4(FSProject& prj) : FEBioExport(prj)
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
+	m_allowMixedParts = false;
 	m_prg = nullptr;
 }
 
@@ -1836,9 +1837,183 @@ void FEBioExport4::WriteMeshElements()
 			bool exportPart = pg->IsActive();
 
 			// write this part if it's active
-			if (exportPart) WriteGeometryPart(part, pg, partElements[p], false, false);
+			if (exportPart)
+			{
+				if (m_allowMixedParts)
+					WriteMixedElementsPart(part, pg, partElements[p], false, false);
+				else
+					WriteGeometryPart(part, pg, partElements[p], false, false);
+			}
 		}
 	}
+}
+
+int degenerate_element_type(int type1, int type2)
+{
+	if (type1 == type2) return type1;
+	if ((type1 == FE_TRI3  ) && (type2 == FE_QUAD4 )) return FE_QUAD4;
+	if ((type1 == FE_QUAD4 ) && (type2 == FE_TRI3  )) return FE_QUAD4;
+	if ((type1 == FE_TET4  ) && (type2 == FE_PENTA6)) return FE_PENTA6;
+	if ((type1 == FE_PENTA6) && (type2 == FE_TET4  )) return FE_PENTA6;
+	if ((type1 == FE_HEX8  ) && (type2 == FE_TET4  )) return FE_HEX8;
+	if ((type1 == FE_TET4  ) && (type2 == FE_HEX8  )) return FE_HEX8;
+	if ((type1 == FE_PENTA6) && (type2 == FE_HEX8  )) return FE_HEX8;
+	if ((type1 == FE_HEX8  ) && (type2 == FE_PENTA6)) return FE_HEX8;
+	return -1;
+}
+
+int get_degenerate_nodes(int dstType, int srcType, int* n)
+{
+	if (dstType == FE_QUAD4)
+	{
+		if (srcType == FE_QUAD4) return 4;
+		if (srcType == FE_TRI3)
+		{
+			n[3] = n[2];
+			return 4;
+		}
+	}
+	if (dstType == FE_PENTA6)
+	{
+		if (srcType == FE_PENTA6) return 6;
+		if (srcType == FE_TET4)
+		{
+			n[5] = n[4] = n[3];
+			return 6;
+		}
+	}
+	if (dstType == FE_HEX8)
+	{
+		if (srcType == FE_HEX8) return 8;
+		if (srcType == FE_PENTA6)
+		{
+			n[7] = n[6] = n[5];
+			n[5] = n[4];
+			n[4] = n[3];
+			n[3] = n[2];
+			return 8;
+		}
+		if (srcType == FE_TET4)
+		{
+			n[7] = n[6] = n[5] = n[4] = n[3];
+			n[3] = n[2];
+			return 8;
+		}
+	}
+	assert(false);
+	return -1;
+}
+
+void FEBioExport4::WriteMixedElementsPart(Part* part, GPart* pg, std::vector<int>& elemList, bool writeMats, bool useMatNames)
+{
+	FSModel& s = *m_pfem;
+	GModel& model = s.GetModel();
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	FSCoreMesh* pm = po->GetFEMesh();
+	int pid = pg->GetLocalID();
+
+	// get the material
+	int nmat = 0;
+	GMaterial* pmat = s.GetMaterialFromID(pg->GetMaterialID());
+	if (pmat) nmat = pmat->m_ntag;
+
+	// figure out which type this part is
+	int elemType = -1;
+	int elemClass = -1;
+	int NE = (int)elemList.size();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = pm->ElementRef(elemList[i]); assert(el.m_gid == pid);
+
+		if (elemType == -1) elemType = el.Type();
+		else if (el.Type() != elemType)
+		{
+			elemType = degenerate_element_type(elemType, el.Type());
+			if (elemType == -1)
+			{
+				string err = "Part \"" + pg->GetName() + "\" has invalid degenerate elements.";
+				throw std::runtime_error(err);
+			}
+		}
+
+		if (elemClass == -1) elemClass = el.Class();
+		else if (elemClass != el.Class()) throw FEBioExportError();
+	}
+
+	const char* sztype = ElementTypeString(elemType);
+	if (sztype == nullptr) throw FEBioExportError();
+	XMLElement xe("Elements");
+	xe.add_attribute("type", sztype);
+	if ((nmat > 0) && writeMats)
+	{
+		if (useMatNames) xe.add_attribute("mat", pmat->GetName().c_str());
+		else xe.add_attribute("mat", nmat);
+	}
+	string name = pg->GetName();
+	xe.add_attribute("name", name);
+
+	ElementSet es;
+	es.m_mesh = pm;
+	es.m_name = name;
+	es.m_matID = pg->GetMaterialID();
+
+	// add a domain
+	if (part)
+	{
+		FEBioExport4::Domain* dom = new FEBioExport4::Domain;
+		dom->m_name = name;
+		dom->m_pg = pg;
+		if (pmat) dom->m_matName = pmat->GetName().c_str();
+		part->m_Dom.push_back(dom);
+
+		dom->m_elemClass = elemClass;
+		dom->m_elemType = elemType;
+	}
+
+	int lastElemID = 0;
+	int ncount = 0;
+	m_xml.add_branch(xe);
+	{
+		// loop over unprocessed elements
+		int nn[FSElement::MAX_NODES];
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement_& el = pm->ElementRef(elemList[i]);
+			if (el.m_nid <= lastElemID) throw FEBioExportError();
+			lastElemID = el.m_nid;
+
+			int ntype = el.Type();
+
+			XMLElement xel("elem");
+			xel.add_attribute("id", el.m_nid);
+
+			int ne = el.Nodes();
+			for (int k = 0; k < ne; ++k) nn[k] = pm->Node(el.m_node[k]).m_nid;
+
+			if (el.Type() != elemType)
+			{
+				ne = get_degenerate_nodes(elemType, el.Type(), nn);
+				if (ne == -1) throw FEBioExportError();
+			}
+					
+			xel.value(nn, ne);
+			m_xml.add_leaf(xel, false);
+			ncount++;
+			es.m_elem.push_back(i);
+			m_ElSet.push_back(es);
+		}
+	}
+	m_xml.close_branch();
+
+	// make sure this part has elements
+	if (ncount == 0)
+	{
+		string err = "Part \"" + pg->GetName() + "\" has no elements.";
+		throw std::runtime_error(err);
+	}
+
+	// update total element counter
+	m_ntotelem += ncount;
 }
 
 //-----------------------------------------------------------------------------

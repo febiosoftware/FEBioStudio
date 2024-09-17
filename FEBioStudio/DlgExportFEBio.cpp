@@ -72,6 +72,7 @@ public:
 	CFEBioFormatSelector*	combo;
 	QCheckBox*	sel;
 	QCheckBox*	comp;
+	QCheckBox*	hybrid;
 	QCheckBox*	notes;
 	QCheckBox* pc[16];
 
@@ -96,11 +97,14 @@ public:
 		notes = new QCheckBox("Write notes (version 2.5 and up)");
 		notes->setChecked(true);
 
+		hybrid = new QCheckBox("Allow degenerate elements");
+
 		QVBoxLayout* topLayout = new QVBoxLayout;
 		topLayout->addLayout(formatLayout);
 		topLayout->addWidget(sel);
 		topLayout->addWidget(notes);
 		topLayout->addWidget(comp);
+		topLayout->addWidget(hybrid);
 
 		// extension widget
 		QPushButton* allButton = new QPushButton("All");
@@ -171,6 +175,7 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 	ui->setupUi(this);
 	m_compress = false;
 	m_bexportSelections = false;
+	m_allowHybrids = false;
 
 	if (m_nindex == -1) m_nindex = 0;
 	ui->combo->setCurrentIndex(m_nindex);
@@ -188,6 +193,7 @@ void CDlgExportFEBio::accept()
 	m_compress = ui->comp->isChecked();
 	m_bexportSelections = ui->sel->isChecked();
 	m_writeNotes = ui->notes->isChecked();
+	m_allowHybrids = ui->hybrid->isChecked();
 
 	for (int i=0; i<MAX_SECTIONS; ++i) m_nsection[i] = ui->pc[i]->isChecked();
 
