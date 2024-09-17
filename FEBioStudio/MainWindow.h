@@ -710,7 +710,6 @@ public slots:
 
 	void RunFEBioJob(CFEBioJob* job);
 
-	void NextSSHFunction(CSSHHandler*);
 	void ShowProgress(bool show, QString message = "");
 	void ShowIndeterminateProgress(bool show, QString message = "");
 	void UpdateProgress(int);
@@ -740,7 +739,6 @@ public:
 
 private:
 	void ReadNextFileInQueue();
-	bool HandleSSHMessage(CSSHHandler*);
 
 public:
 	int Views();

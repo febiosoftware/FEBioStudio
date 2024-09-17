@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include <QtCore/QObject>
 
-class QSemaphore;
+class CSSHThread;
 
 enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET,
 		STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS, CREATEREMOTEDIR};
@@ -49,6 +49,11 @@ public:
 	~CSSHHandler();
 	void Update(CLaunchConfig& oldConfig);
 
+	void StartRemoteSession();
+	void RequestRemoteFiles();
+	void RequestQueueStatus();
+
+private:
 	void StartSSHSession();
 	void VerifyKnownHost();
 	void AddTrustedServer();
@@ -79,6 +84,11 @@ public:
 	void Orphan();
 
 	bool IsBusy();
+
+	bool HandleSSHMessage();
+
+public slots:
+	void NextSSHFunction();
 
 signals:
 	void AddLogEntry(const QString&);
@@ -111,4 +121,6 @@ private:
 
 private:
 	SSHData*	m_data;
+
+	friend class CSSHThread;
 };

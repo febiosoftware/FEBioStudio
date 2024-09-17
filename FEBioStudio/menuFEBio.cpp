@@ -221,7 +221,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		job->m_febVersion = lastFEBioFileVersion;
 		job->m_writeNotes     = dlg.WriteNotes();
 		job->m_allowMixedMesh = dlg.AllowMixedMesh();
-		job->m_cmd = dlg.CommandLine().toStdString();
+		job->SetCommand(dlg.CommandLine().toStdString());
 
 		// do a model check
 		if (modelDoc && (DoModelCheck(modelDoc) == false)) return;

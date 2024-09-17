@@ -50,8 +50,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include "MainWindow.h"
-#include "SSHThread.h"
-#include "SSHHandler.h"
 #include "Logger.h"
 #include "IconProvider.h"
 
@@ -419,14 +417,12 @@ public:
 		if ((launchType != LOCAL) && (launchType != DEFAULT))
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
-//			addProperty("", CProperty::Action)->info = QString("Orphan Process");
 		}
 
-		if(launchType == PBS || launchType == SLURM)
+		if ((launchType == PBS) || (launchType == SLURM))
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Queue Status");
 		}
-
 	}
 
 	QVariant GetPropertyValue(int i) override
@@ -462,37 +458,15 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-#ifdef HAS_SSH
 		if (i == 4)
 		{
-			if(!m_job->GetSSHHandler()->IsBusy())
-			{
-				// Copy remote files to local dir
-				m_job->GetSSHHandler()->SetTargetFunction(GETJOBFILES);
-
-				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), STARTSSHSESSION);
-				QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
-				sshThread->start();
-			}
+			m_job->GetRemoteFiles();
 		}
-//		else if (i == 6)
-//		{
-//			m_job->GetSSHHandler()->Orphan();
-//		}
 		else if (i == 5)
 		{
-			if(!m_job->GetSSHHandler()->IsBusy())
-			{
-				// Copy remote files to local dir
-				m_wnd->ClearOutput();
-
-				m_job->GetSSHHandler()->SetTargetFunction(GETQUEUESTATUS);
-				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), STARTSSHSESSION);
-				QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
-				sshThread->start();
-			}
+			m_wnd->ClearOutput();
+			m_job->GetQueueStatus();
 		}
-#endif // HAS_SSH
 	}
 
 private:

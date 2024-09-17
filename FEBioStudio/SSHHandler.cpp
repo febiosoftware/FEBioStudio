@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <string>
 #include <fstream>
 #include <fcntl.h>
-#include "SSHHandler.h"
 #include "Logger.h"
 #include "Encrypter.h"
 #include <FSCore/FSDir.h>
@@ -47,6 +46,13 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
 #include <QStandardPaths>
+
+#ifdef WIN32
+#undef GetMessage
+#endif
+
+#include "SSHHandler.h"
+#include "SSHThread.h"
 
 using std::ifstream;
 using std::ios;
@@ -98,6 +104,9 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // 
 
 	// Get remote base file name
 	m_data->remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
+
+	QObject::connect(this, &CSSHHandler::AddLogEntry, &CLogger::AddLogEntry);
+	QObject::connect(this, &CSSHHandler::AddOutputEntry, &CLogger::AddOutputEntry);
 }
 
 CSSHHandler::~CSSHHandler() { delete m_data; }
@@ -354,7 +363,8 @@ void CSSHHandler::StartSSHSession()
 	ssh_options_set(m_data->session, SSH_OPTIONS_USER, m_data->job->GetLaunchConfig()->userName.c_str());
 
 	QString sshDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.ssh";
-	ssh_options_set(m_data->session, SSH_OPTIONS_SSH_DIR, sshDir.toStdString().c_str());
+	std::string sdir = sshDir.toStdString();
+	ssh_options_set(m_data->session, SSH_OPTIONS_SSH_DIR, sdir.c_str());
 
 	// Connect to server
 	error = ssh_connect(m_data->session);
@@ -1254,13 +1264,44 @@ int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
 	return SSH_OK;
 }
 
+void CSSHHandler::RequestRemoteFiles()
+{
+	if (!IsBusy())
+	{
+		// Copy remote files to local dir
+		SetTargetFunction(GETJOBFILES);
+		CSSHThread* sshThread = new CSSHThread(this, STARTSSHSESSION);
+		sshThread->start();
+	}
+}
+
+void CSSHHandler::RequestQueueStatus()
+{
+	if (!IsBusy())
+	{
+		// Copy remote files to local dir
+		SetTargetFunction(GETQUEUESTATUS);
+		CSSHThread* sshThread = new CSSHThread(this, STARTSSHSESSION);
+		sshThread->start();
+	}
+}
+
+void CSSHHandler::StartRemoteSession()
+{
+	if (!IsBusy())
+	{
+		SetTargetFunction(STARTREMOTEJOB);
+		CSSHThread* sshThread = new CSSHThread(this, STARTSSHSESSION);
+		sshThread->start();
+	}
+}
+
 void CSSHHandler::ReplaceMacros(QString& string)
 {
 	string.replace("${FEBIO_PATH}", m_data->job->GetLaunchConfig()->path.c_str());
 	string.replace("${JOB_NAME}", m_data->job->GetName().c_str());
 	string.replace("${REMOTE_DIR}", m_data->job->GetLaunchConfig()->remoteDir.c_str());
 }
-
 
 bool CSSHHandler::IsBusy()
 {
@@ -1320,6 +1361,55 @@ std::string CSSHHandler::GetSFTPErrorText(int sftpErr)
 	return returnVal;
 }
 
+bool CSSHHandler::HandleSSHMessage()
+{
+	QString QPasswd;
+	QMessageBox::StandardButton reply;
+
+	switch (GetMsgCode())
+	{
+	case FAILED:
+		QMessageBox::critical(nullptr, "FEBio Studio", GetMessage());
+		return false;
+	case NEEDSPSWD:
+		bool ok;
+		QPasswd = QInputDialog::getText(nullptr, "Password", GetMessage(), QLineEdit::Password, "", &ok);
+
+		if (ok)
+		{
+			std::string password = QPasswd.toStdString();
+			SetPasswordLength(password.length());
+			SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case YESNODIALOG:
+		reply = QMessageBox::question(nullptr, "FEBio Studio", GetMessage(),
+			QMessageBox::Yes | QMessageBox::No);
+
+		return reply == QMessageBox::Yes;
+	case DONE:
+		return false;
+	}
+
+	return true;
+}
+
+void CSSHHandler::NextSSHFunction()
+{
+	if (!HandleSSHMessage())
+	{
+		EndSSHSession();
+		return;
+	}
+
+	CSSHThread* sshThread = new CSSHThread(this, GetNextFunction());
+	sshThread->start();
+}
+
 #else
 class CSSHHandler::SSHData
 {
@@ -1366,4 +1456,9 @@ std::string CSSHHandler::GetSFTPErrorText(int sftpErr) {return "";}
 int CSSHHandler::CreateBashFile() {return 0;}
 int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands) {return 0;}
 void CSSHHandler::ReplaceMacros(QString& string) {}
+bool CSSHHandler::HandleSSHMessage() { return false; }
+void CSSHHandler::NextSSHFunction() {}
+void CSSHHandler::StartRemoteSession() {}
+void CSSHHandler::RequestRemoteFiles() {}
+void CSSHHandler::RequestQueueStatus() {}
 #endif

@@ -31,14 +31,14 @@ SOFTWARE.*/
 #include <FEBioLib/febiolib_types.h>
 
 class CDocument;
-#ifdef HAS_SSH
-class CSSHHandler;
-#endif
 class xpltFileReader;
 
 //-----------------------------------------------------------------------------
 class CFEBioJob : public FSObject
 {
+private:
+	class Imp;
+
 public:
 	enum JOB_STATUS {
 		NONE,
@@ -73,9 +73,10 @@ public:
 	CLaunchConfig* GetLaunchConfig();
 	void UpdateLaunchConfig(CLaunchConfig launchConfig);
 
-#ifdef HAS_SSH
-	CSSHHandler* GetSSHHandler();
-#endif
+	void SetCommand(const std::string& cmd);
+	const std::string& GetCommand() const;
+
+	double ElapsedTime() const;
 
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
@@ -86,10 +87,26 @@ public:
 	void StopTimer();
 
 public:
+	// for PBS and SLURM launch configurations
+	void GetRemoteFiles();
+	void GetQueueStatus();
+	void StartRemoteJob();
+
+public:
 	void SetProgress(double pct);
 	double GetProgress() const;
 	bool HasProgress() const;
 	void ClearProgress();
+
+public: // FEBio output
+	std::string m_jobReport;
+	TimingInfo m_timingInfo;
+	ModelStats m_stats;
+
+	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
+	int  m_febVersion;	// the .feb file version
+	bool m_writeNotes;	// write notes to .feb file
+	bool m_allowMixedMesh;	// allow mixed mesh on export
 
 private:
 	std::string		m_febFile;	// the .feb file name
@@ -99,35 +116,16 @@ private:
 	int				m_status;	// return status
 
 	CLaunchConfig 	m_launchConfig;
-#ifdef HAS_SSH
-	CSSHHandler*	m_sshHandler;
-	CSSHHandler* 	NewHandler();
-#endif
 
-public:
-	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
-	int			m_febVersion;	// the .feb file version
-	bool		m_writeNotes;	// write notes to .feb file
-	bool		m_allowMixedMesh;	// allow mixed mesh on export
-	std::string	m_cmd;			// command line options
-
-	// progress management
-	bool	m_bhasProgress;
-	double	m_pct;
-
-	// FEBio output
-	std::string	m_jobReport;
-	TimingInfo m_timingInfo;
-	ModelStats m_stats;
-
-	double	m_tic, m_toc;
-
-public:
+private:
+	Imp& m;
 	CDocument*	m_doc;
 
-	static CFEBioJob*	m_activeJob;
+public:
 	static void SetActiveJob(CFEBioJob* activeJob);
 	static CFEBioJob* GetActiveJob();
 
+private:
+	static CFEBioJob*	m_activeJob;
 	static int	m_count;
 };

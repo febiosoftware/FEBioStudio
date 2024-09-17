@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include "FEBioThread.h"
 #include "FEBioJob.h"
 #include "LocalJobProcess.h"
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#include "SSHThread.h"
-#endif
 #include <QProcess>
 #include <QMessageBox>
 #include <QToolButton>
@@ -100,21 +96,10 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 	}
 	else
 	{
-#ifdef HAS_SSH
-		CSSHHandler* handler = job->GetSSHHandler();
-
-		if (!handler->IsBusy())
-		{
-			handler->SetTargetFunction(STARTREMOTEJOB);
-
-			CSSHThread* sshThread = new CSSHThread(handler, STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, im->wnd, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
+		job->StartRemoteJob();
 
 		// NOTE: Why are we doing this?
 		CFEBioJob::SetActiveJob(nullptr);
-#endif
 	}
 
 	return true;
@@ -386,7 +371,7 @@ public:
 		default: jobStatus->setText("(Unknown)"); break;
 		}
 
-		double elapsedTime = job->m_toc - job->m_tic;
+		double elapsedTime = job->ElapsedTime();
 		QString timeStr = FormatTimeString(elapsedTime);
 		runTime->setText(timeStr);
 

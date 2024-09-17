@@ -63,7 +63,6 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "Logger.h"
 #include "SSHHandler.h"
-#include "SSHThread.h"
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
 #include "Commands.h"
@@ -3444,64 +3443,6 @@ void CMainWindow::checkJobProgress()
 	{
 		QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 	}
-}
-
-void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
-{
-#ifdef HAS_SSH
-	if(!HandleSSHMessage(sshHandler))
-	{
-		sshHandler->EndSSHSession();
-
-		return;
-	}
-
-	CSSHThread* sshThread = new CSSHThread(sshHandler, sshHandler->GetNextFunction());
-	QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
-	sshThread->start();
-#endif// HAS_SSH
-}
-
-
-bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
-{
-#ifdef HAS_SSH
-	QString QPasswd;
-	QMessageBox::StandardButton reply;
-
-	switch(sshHandler->GetMsgCode())
-	{
-	case FAILED:
-		QMessageBox::critical(this, "FEBio Studio", sshHandler->GetMessage());
-		return false;
-	case NEEDSPSWD:
-		bool ok;
-		QPasswd = QInputDialog::getText(NULL, "Password", sshHandler->GetMessage(), QLineEdit::Password, "", &ok);
-
-		if(ok)
-		{
-			std::string password = QPasswd.toStdString();
-			sshHandler->SetPasswordLength(password.length());
-			sshHandler->SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
-		}
-		else
-		{
-			return false;
-		}
-		break;
-	case YESNODIALOG:
-		 reply = QMessageBox::question(this, "FEBio Studio", sshHandler->GetMessage(),
-				 QMessageBox::Yes|QMessageBox::No);
-
-		 return reply == QMessageBox::Yes;
-	case DONE:
-		return false;
-	}
-
-	return true;
-#else
-	return false;
-#endif // HAS_SSH
 }
 
 void CMainWindow::ShowProgress(bool show, QString message)

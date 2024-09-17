@@ -41,7 +41,48 @@ SOFTWARE.*/
 #include <chrono>
 using namespace std::chrono;
 
-//-----------------------------------------------------------------------------
+class CFEBioJob::Imp {
+public:
+	CFEBioJob* job = nullptr;
+
+	std::string	cmd;			// command line options
+
+	// progress management
+	bool	bhasProgress;
+	double	pct;
+
+	double	tic, toc;
+
+	Imp()
+	{
+		bhasProgress = false;
+		pct = 0.0;
+		tic = toc = 0.0;
+#ifdef HAS_SSH
+		sshHandler = nullptr;
+#endif
+	}
+
+	~Imp()
+	{
+#ifdef HAS_SSH
+		delete sshHandler;
+#endif
+	}
+
+#ifdef HAS_SSH
+	CSSHHandler* sshHandler;
+	CSSHHandler* NewHandler()
+	{
+		CSSHHandler* handler = new CSSHHandler(job);
+		CMainWindow* wnd = job->m_doc->GetMainWindow();
+		QObject::connect(handler, &CSSHHandler::ShowProgress, wnd, &CMainWindow::ShowProgress);
+		QObject::connect(handler, &CSSHHandler::UpdateProgress, wnd, &CMainWindow::UpdateProgress);
+		return handler;
+	}
+#endif
+};
+
 int CFEBioJob::m_count = 0;
 CFEBioJob*	CFEBioJob::m_activeJob = nullptr;
 
@@ -49,36 +90,30 @@ void CFEBioJob::SetActiveJob(CFEBioJob* activeJob) { m_activeJob = activeJob; }
 CFEBioJob* CFEBioJob::GetActiveJob() { return m_activeJob; }
 
 
-CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
+CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc), m(*(new CFEBioJob::Imp))
 {
+	m.job = this;
 	m_count++;
 	std::stringstream ss;
 	ss << "job" << m_count;
 	SetName(ss.str());
 
 	m_status = NONE;
-
-	m_bhasProgress = false;
-	m_pct = 0.0;
-
+	m_febVersion = 0x0400;
 	m_writeNotes = true;
 	m_allowMixedMesh = false;
-
-#ifdef HAS_SSH
-	m_sshHandler = nullptr;
-#endif
 }
 
 CFEBioJob::~CFEBioJob()
 {
-#ifdef HAS_SSH
-	delete m_sshHandler;
-#endif
+	delete &m;
 }
 
 CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
-	: m_doc(doc), m_launchConfig(launchConfig)
+	: m_doc(doc), m_launchConfig(launchConfig), m(*(new CFEBioJob::Imp))
 {
+	m.job = this;
+
 	// set the job's name
 	SetName(jobName);
 
@@ -94,8 +129,9 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 
 	m_status = NONE;
 
-	m_bhasProgress = false;
-	m_pct = 0.0;
+	m_febVersion = 0x0400;
+	m_writeNotes = true;
+	m_allowMixedMesh = false;
 
 	// set default plot file name
 	m_plotFile = m_febFile;
@@ -122,13 +158,13 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	m_logFile += "log";
 
 #ifdef HAS_SSH
-	if(launchConfig.type == LOCAL)
+	if ((launchConfig.type == LOCAL) || (launchConfig.type == DEFAULT))
 	{
-		m_sshHandler = nullptr;
+		m.sshHandler = nullptr;
 	}
 	else
 	{
-		m_sshHandler = NewHandler();
+		m.sshHandler = m.NewHandler();
 	}
 #endif
 
@@ -142,35 +178,50 @@ CDocument* CFEBioJob::GetDocument()
 void CFEBioJob::StartTimer()
 {
 	time_point<steady_clock> tp = steady_clock::now();
-	m_tic = m_toc = duration_cast< duration<double> >(tp.time_since_epoch()).count();
+	m.tic = m.toc = duration_cast< duration<double> >(tp.time_since_epoch()).count();
 }
 
 void CFEBioJob::StopTimer()
 {
 	time_point<steady_clock> tp = steady_clock::now();
-	m_toc = duration_cast<duration<double>>(tp.time_since_epoch()).count();
+	m.toc = duration_cast<duration<double>>(tp.time_since_epoch()).count();
 }
 
 void CFEBioJob::SetProgress(double pct)
 {
-	m_bhasProgress = true;
-	m_pct = pct;
+	m.bhasProgress = true;
+	m.pct = pct;
 }
 
 bool CFEBioJob::HasProgress() const
 {
-	return m_bhasProgress;
+	return m.bhasProgress;
 }
 
 double CFEBioJob::GetProgress() const
 {
-	return m_pct;
+	return m.pct;
 }
 
 void CFEBioJob::ClearProgress()
 {
-	m_bhasProgress = false;
-	m_pct = 0.0;
+	m.bhasProgress = false;
+	m.pct = 0.0;
+}
+
+void CFEBioJob::SetCommand(const std::string& cmd)
+{
+	m.cmd = cmd;
+}
+
+const std::string& CFEBioJob::GetCommand() const
+{
+	return m.cmd;
+}
+
+double CFEBioJob::ElapsedTime() const
+{
+	return m.toc - m.tic;
 }
 
 void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
@@ -202,47 +253,28 @@ void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
 	m_launchConfig = launchConfig;
 
 #ifdef HAS_SSH
-	if(launchConfig.type == LOCAL)
+	if ((launchConfig.type == LOCAL) || (launchConfig.type == DEFAULT))
 	{
-		if(m_sshHandler)
+		if (m.sshHandler)
 		{
-			delete m_sshHandler;
+			delete m.sshHandler;
 		}
-
-		m_sshHandler = nullptr;
+		m.sshHandler = nullptr;
 	}
 	else
 	{
-		if(m_sshHandler)
+		if (m.sshHandler)
 		{
-			m_sshHandler->Update(oldConfig);
+			m.sshHandler->Update(oldConfig);
 		}
 		else
 		{
-			m_sshHandler = NewHandler();
+			m.sshHandler = m.NewHandler();
 		}
 	}
 #endif
 
 }
-
-#ifdef HAS_SSH
-CSSHHandler* CFEBioJob::GetSSHHandler()
-{
-	return m_sshHandler;
-}
-
-CSSHHandler* CFEBioJob::NewHandler()
-{
-	CSSHHandler* handler = new CSSHHandler(this);
-
-	QObject::connect(handler, &CSSHHandler::ShowProgress, m_doc->GetMainWindow(), &CMainWindow::ShowProgress);
-	QObject::connect(handler, &CSSHHandler::UpdateProgress, m_doc->GetMainWindow(), &CMainWindow::UpdateProgress);
-
-	return handler;
-}
-
-#endif
 
 void CFEBioJob::SetStatus(JOB_STATUS status)
 {
@@ -348,7 +380,7 @@ void CFEBioJob::Load(IArchive& ar)
 		{
 			CLaunchConfig lConfig; lConfig.Load(ar); 
 #ifdef HAS_SSH
-			m_sshHandler = nullptr; 
+			m.sshHandler = nullptr; 
 #endif
 			UpdateLaunchConfig(lConfig); 
 		} 
@@ -356,4 +388,25 @@ void CFEBioJob::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+}
+
+void CFEBioJob::GetRemoteFiles()
+{
+#ifdef HAS_SSH
+	m.sshHandler->RequestRemoteFiles();
+#endif
+}
+
+void CFEBioJob::GetQueueStatus()
+{
+#ifdef HAS_SSH
+	m.sshHandler->RequestQueueStatus();
+#endif
+}
+
+void CFEBioJob::StartRemoteJob()
+{
+#ifdef HAS_SSH
+	m.sshHandler->StartRemoteSession();
+#endif
 }

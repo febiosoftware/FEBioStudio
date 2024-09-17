@@ -62,7 +62,7 @@ void CLocalJobProcess::run()
 	program = QString::fromStdString(sprogram);
 
 	// extract the arguments
-	QString cmd = QString::fromStdString(m_job->m_cmd);
+	QString cmd = QString::fromStdString(m_job->GetCommand());
 	QStringList args = cmd.split(" ", Qt::SkipEmptyParts);
 
 	std::string configFile = m_job->GetConfigFileName();
