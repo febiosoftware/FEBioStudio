@@ -107,7 +107,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionOpen = addAction("Open Model File ...", "actionOpen", "open"); actionOpen->setShortcuts(QKeySequence::Open);
 	QAction* actionSave = addAction("Save", "actionSave", "save"); actionSave->setShortcuts(QKeySequence::Save);
 	QAction* actionSaveAs = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
-	QAction* actionSaveAll = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
+	QAction* actionSaveAll = addAction("Save All", "actionSaveAll");
 	QAction* actionCloseAll = addAction("Close All", "actionCloseAll");
 	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot"); actionSnapShot->setShortcut(Qt::AltModifier | Qt::Key_F2);
 	QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
