@@ -469,7 +469,6 @@ void CMeshPanel::on_modParams_apply()
 			}
 		}
 	}
-	thread->deleteLater();
 
 	modTool->Reset();
 
