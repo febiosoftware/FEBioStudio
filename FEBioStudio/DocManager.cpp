@@ -23,12 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "DocManager.h"
 #include "Document.h"
-#include "MainWindow.h"
-#include "ModelDocument.h"
 #include <string>
 #include <sstream>
 
@@ -103,30 +100,4 @@ std::string CDocManager::GenerateNewDocName()
 		}
 	} while (bok == false);
 	return docTitle;
-}
-
-CModelDocument* CDocManager::CreateNewDocument(int moduleID, std::string name, int units)
-{
-	CModelDocument* doc = new CModelDocument(m_wnd);
-	doc->GetProject().SetModule(moduleID);
-
-	if (name.size() == 0) name = GenerateNewDocName();
-	doc->SetDocTitle(name);
-
-	if (units == -1) units = m_wnd->GetDefaultUnitSystem();
-	doc->SetUnitSystem(units);
-	return doc;
-}
-
-CModelDocument* CDocManager::CreateDocumentFromTemplate(int templateID, std::string name, int units)
-{
-	CModelDocument* doc = new CModelDocument(m_wnd);
-	if (doc->LoadTemplate(templateID) == false)
-	{
-		delete doc;
-		return nullptr;
-	}
-	doc->SetDocTitle(name);
-	doc->SetUnitSystem(units);
-	return doc;
 }

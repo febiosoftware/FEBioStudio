@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "GLHighlighter.h"
 #include <QJsonDocument>
+#include "DocManager.h"
 
 class CModelContext
 {
@@ -1118,4 +1119,32 @@ void CModelDocument::ToggleActiveParts()
 	if (selectedParts.empty()) return;
 
 	DoCommand(new CCmdToggleActiveParts(selectedParts));
+}
+
+CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(wnd);
+	doc->GetProject().SetModule(moduleID);
+
+	CDocManager* dm = wnd->GetDocManager();
+
+	if (name.size() == 0) name = dm->GenerateNewDocName();
+	doc->SetDocTitle(name);
+
+	if (units == -1) units = wnd->GetDefaultUnitSystem();
+	doc->SetUnitSystem(units);
+	return doc;
+}
+
+CModelDocument* CreateDocumentFromTemplate(CMainWindow* wnd, int templateID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(wnd);
+	if (doc->LoadTemplate(templateID) == false)
+	{
+		delete doc;
+		return nullptr;
+	}
+	doc->SetDocTitle(name);
+	doc->SetUnitSystem(units);
+	return doc;
 }

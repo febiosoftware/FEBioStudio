@@ -195,11 +195,11 @@ void CMainWindow::on_actionNewModel_triggered()
 		CModelDocument* doc = nullptr;
 		if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
 		{
-			doc = dm->CreateNewDocument(dlg.GetSelection(), docName, units);
+			doc = CreateNewModelDocument(this, dlg.GetSelection(), docName, units);
 		}
 		else if (dlg.CreateMode() == CDlgNew::CREATE_FROM_TEMPLATE)
 		{
-			doc = dm->CreateDocumentFromTemplate(dlg.GetSelection(), docName, units);
+			doc = CreateDocumentFromTemplate(this, dlg.GetSelection(), docName, units);
 			if (doc == nullptr)
 			{
 				QMessageBox::critical(this, "New", "Failed to initialize template.");

@@ -991,11 +991,10 @@ CMD_RETURN_CODE CommandProcessor::cmd_new(QStringList ops)
 	}
 	else
 	{
-		CDocManager* dm = m_wnd->GetDocManager();
 		int moduleID = FEBio::GetModuleId(ops[0].toStdString());
 		if (moduleID != -1)
 		{
-			CModelDocument* doc = dm->CreateNewDocument(moduleID);
+			CModelDocument* doc = CreateNewModelDocument(m_wnd, moduleID);
 			if (doc)
 			{
 				if (ops.size() == 2) doc->SetDocTitle(ops[1].toStdString());

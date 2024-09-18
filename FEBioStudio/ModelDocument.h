@@ -145,3 +145,6 @@ private:
 
 	CModelContext*	m_context;
 };
+
+CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name = "", int units = -1);
+CModelDocument* CreateDocumentFromTemplate(CMainWindow* wnd, int templateID, std::string name, int units = -1);
