@@ -26,20 +26,21 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <QPushButton>
+#include "../FEBioStudio/DocumentView.h"
 
 class CMainWindow;
 class FEBioAppDocument;
 
 class FEBioAppViewUI;
 
-class FEBioAppView : public QWidget
+class FEBioAppView : public CDocumentView
 {
 	Q_OBJECT
 
 public:
 	FEBioAppView(CMainWindow* wnd);
 
-	void setActiveDocument(FEBioAppDocument* app);
+	void setDocument(CDocument* doc) override;
 
 	void removeDocument(FEBioAppDocument* app);
 

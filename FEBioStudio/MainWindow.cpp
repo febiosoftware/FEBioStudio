@@ -444,7 +444,7 @@ void CMainWindow::on_addToProject(const QString& file)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_txtedit_textChanged()
 {
-	QTextDocument* qtxt = ui->centralWidget->txtEdit->document();
+	QTextDocument* qtxt = ui->centralWidget->txtEdit->textDocument();
 	if (qtxt == nullptr) return;
 
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
@@ -2374,8 +2374,6 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->centralWidget->tab->setActiveView(n);
-	GetGLView()->UpdateWidgets();
-	UpdateUIConfig();
 }
 
 //-----------------------------------------------------------------
@@ -2416,9 +2414,6 @@ void CMainWindow::on_tab_currentChanged(int n)
 	UpdateToolbar();
 	ui->updateMeshInspector();
 	RedrawGL();
-
-	if (n == 0) ui->modelViewer->parentWidget()->raise();
-	else ui->postPanel->parentWidget()->raise();
 }
 
 //-----------------------------------------------------------------------------

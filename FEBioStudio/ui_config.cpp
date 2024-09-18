@@ -96,7 +96,7 @@ void Ui::CEmptyConfig::Apply()
 
 	ui->fileViewer->parentWidget()->raise();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
+	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 	ui->ShowDefaultBackground();
 }
 
@@ -105,11 +105,7 @@ void Ui::CHTMLConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	::CMainWindow* wnd = ui->m_wnd;
-	CHTMLDocument* htmlDoc = dynamic_cast<CHTMLDocument*>(wnd->GetDocument()); assert(htmlDoc);
-
-	if (htmlDoc) ui->centralWidget->htmlViewer->setDocument(htmlDoc->GetText());
-	ui->centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
+	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(false);
@@ -224,7 +220,7 @@ void Ui::CPostConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+	ui->setActiveCentralView(CMainCentralWidget::GL_VIEWER);
 
 	ui->actionImportGeom->setEnabled(true);
 	ui->actionExportGeom->setEnabled(true);
@@ -285,22 +281,7 @@ void Ui::CTextConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	::CMainWindow* wnd = ui->m_wnd;
-	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(wnd->GetDocument()); assert(txtDoc);
-
-	if (txtDoc)
-	{
-		QString title = QString::fromStdString(txtDoc->GetDocTitle());
-		CTextEditor::TextFormat fmt = CTextEditor::PLAIN;
-		if (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1) fmt = CTextEditor::CODE;
-		if (title.indexOf("CMakeLists.txt") != -1) fmt = CTextEditor::CMAKE;
-
-		ui->centralWidget->txtEdit->blockSignals(true);
-		ui->centralWidget->txtEdit->SetDocument(txtDoc->GetText(), fmt);
-		ui->centralWidget->txtEdit->blockSignals(false);
-	}
-
-	ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
+	ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(false);
@@ -357,8 +338,7 @@ void Ui::CXMLConfig::Apply()
 
 		if (xmlDoc->EditingText())
 		{
-			ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
-			ui->centralWidget->txtEdit->SetDocument(xmlDoc->GetTextDocument(), CTextEditor::XML);
+			ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
 			ui->menuEdit->menuAction()->setVisible(false);
 			ui->menuEditPost->menuAction()->setVisible(false);
@@ -394,7 +374,7 @@ void Ui::CXMLConfig::Apply()
 		}
 		else
 		{
-			ui->centralWidget->setActiveView(CMainCentralWidget::XML_VIEWER);
+			ui->setActiveCentralView(CMainCentralWidget::XML_VIEWER);
 
 			ui->menuEdit->menuAction()->setVisible(false);
 			ui->menuEditPost->menuAction()->setVisible(false);
@@ -438,8 +418,6 @@ void Ui::CAPPConfig::Apply()
 {
 	CUIConfig::Apply();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::APP_VIEWER);
-
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(false);
 	ui->menuEditTxt->menuAction()->setVisible(false);
@@ -468,8 +446,7 @@ void Ui::CAPPConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 
-	ui->centralWidget->appView->setActiveDocument(dynamic_cast<FEBioAppDocument*>(ui->m_wnd->GetDocument()));
-
+	ui->setActiveCentralView(CMainCentralWidget::APP_VIEWER);
 	ui->fileViewer->parentWidget()->raise();
 }
 
@@ -527,7 +504,7 @@ void Ui::CFEBReportConfig::Apply()
 {
 	CUIConfig::Apply();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::FEBREPORT_VIEW);
+	ui->setActiveCentralView(CMainCentralWidget::FEBREPORT_VIEW);
 
 	ui->actionFEBioStop->setEnabled(true);
 	ui->actionFEBioMonitorSettings->setVisible(true);
@@ -562,6 +539,4 @@ void Ui::CFEBReportConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
-
-	ui->centralWidget->febReportView->setDocument(dynamic_cast<CFEBioReportDoc*>(ui->m_wnd->GetDocument()));
 }

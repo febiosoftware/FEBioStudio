@@ -39,6 +39,8 @@ public:
 
 	void Clear();
 
+	void showEvent(QShowEvent* ev) override;
+
 private:
 	Ui* ui;
 };

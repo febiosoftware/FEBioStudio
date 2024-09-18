@@ -180,12 +180,11 @@ public:
 		txt = new QTextEdit;
 		txt->setReadOnly(true);
 		l->addWidget(txt);
-		txt->setHtml("<h1>Report</h1><p>All is good!</p>");
 		view->setLayout(l);
 	}
 };
 
-CFEBioReportView::CFEBioReportView(CMainWindow* wnd) : QWidget(wnd), ui(new CFEBioReportView::Ui)
+CFEBioReportView::CFEBioReportView(CMainWindow* wnd) : CDocumentView(wnd), ui(new CFEBioReportView::Ui)
 {
 	ui->setup(this);
 }
@@ -209,10 +208,14 @@ struct TimingEntry
 	QColor col;
 };
 
-void CFEBioReportView::setDocument(CFEBioReportDoc* doc)
+void CFEBioReportView::setDocument(CDocument* doc)
 {
 	ui->txt->clear();
-	CFEBioJob* job = doc->getJob();
+
+	CFEBioReportDoc* report = dynamic_cast<CFEBioReportDoc*>(doc);
+	if (report == nullptr) return;
+
+	CFEBioJob* job = report->getJob();
 	QTextEdit* txt = ui->txt;
 	QTextDocument* t = txt->document(); assert(t);
 	if (t == nullptr) return;

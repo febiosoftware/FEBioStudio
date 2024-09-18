@@ -82,3 +82,8 @@ void CFEBioMonitorPanel::Clear()
 {
 	ui->febioPanel->Clear();
 }
+
+void CFEBioMonitorPanel::showEvent(QShowEvent* ev)
+{
+	Update(true);
+}

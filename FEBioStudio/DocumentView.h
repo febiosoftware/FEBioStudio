@@ -24,21 +24,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/DocumentView.h"
+#include <QWidget>
 
-class CFEBioReportDoc;
+class CDocument;
+class CMainWindow;
 
-class CFEBioReportView : public CDocumentView
+// base class for all view classes
+class CDocumentView : public QWidget
 {
-	Q_OBJECT
-
-	class Ui;
-
 public:
-	CFEBioReportView(CMainWindow* wnd);
+	CDocumentView(CMainWindow* wnd, QWidget* parent = nullptr);
 
-	void setDocument(CDocument* doc) override;
+	CMainWindow* mainWindow();
+
+	virtual void setDocument(CDocument* doc);
+
+	CDocument* activeDocument();
 
 private:
-	Ui* ui;
+	CMainWindow* m_wnd;
 };

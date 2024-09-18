@@ -1081,13 +1081,6 @@ void Ui::CMainWindow::stopAnimation()
 void Ui::CMainWindow::ShowDefaultBackground()
 {
 	centralWidget->htmlViewer->setDocument(nullptr);
-	centralWidget->htmlViewer->setHtml(QString(" \
-					<!DOCTYPE html> \
-					<html> \
-					<body style = \"background-color:#808080;\"> \
-					</body> \
-					</html>"\
-	));
 }
 
 void Ui::CMainWindow::setUIConfig(Ui::Config newConfig)
@@ -1217,4 +1210,12 @@ void Ui::CMainWindow::showPartViewer(CModelDocument* doc)
 	if (partViewer == nullptr) partViewer = new CDlgPartViewer(m_wnd);
 	partViewer->SetDocument(doc);
 	partViewer->show();
+}
+
+void Ui::CMainWindow::setActiveCentralView(CMainCentralWidget::Viewer viewer)
+{
+	centralWidget->setActiveView(viewer);
+	QWidget* w = centralWidget->activeView();
+	CDocumentView* v = dynamic_cast<CDocumentView*>(w);
+	if (v) v->setDocument(m_wnd->GetDocument());
 }

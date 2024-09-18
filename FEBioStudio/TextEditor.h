@@ -1,5 +1,6 @@
 #pragma once
 #include <QPlainTextEdit>
+#include "DocumentView.h"
 
 class CMainWindow;
 
@@ -62,4 +63,24 @@ protected:
 
 private:
 	CTextEditor*	m_txtEditor;
+};
+
+class CTextEditView : public CDocumentView
+{
+public:
+	CTextEditView(CMainWindow* wnd);
+
+	void setDocument(CDocument* doc) override;
+
+public:
+	QTextDocument* textDocument();
+
+	bool find(const QString& txt);
+	void centerCursor();
+	void toggleLineComment();
+	void duplicateLine();
+	void deleteLine();
+
+private:
+	CTextEditor* m_edit;
 };

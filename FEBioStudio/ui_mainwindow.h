@@ -38,7 +38,6 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QBoxLayout>
 #include <QSpinBox>
-#include <QTextBrowser>
 #include <QStackedWidget>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -89,6 +88,7 @@ SOFTWARE.*/
 #include <FEBioMonitor/FEBioMonitorView.h>
 #include <FEBioMonitor/FEBioReportView.h>
 #include <vector>
+#include "HTMLBrowser.h"
 
 class QProcess;
 
@@ -162,8 +162,8 @@ public:
 
 	CentralStackedWidget* stack;
 	CGLViewer* glw;
-	QTextBrowser* htmlViewer;
-	CTextEditor* txtEdit;
+	CHTMLBrowser* htmlViewer;
+	CTextEditView* txtEdit;
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
@@ -182,14 +182,11 @@ public:
 
 		stack = new CentralStackedWidget(wnd);
 
-		htmlViewer = new QTextBrowser;
-		htmlViewer->setObjectName("htmlview");
-		htmlViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+		htmlViewer = new CHTMLBrowser(wnd);
 
 		stack->addWidget(htmlViewer);
 
-		txtEdit = new CTextEditor(wnd);
-		txtEdit->setObjectName("txtedit");
+		txtEdit = new CTextEditView(wnd);
 		stack->addWidget(txtEdit);
 
 		xmlTree = new ::XMLTreeView(wnd);
@@ -224,6 +221,11 @@ public:
 	void setActiveView(Viewer viewer)
 	{
 		stack->setCurrentIndex(viewer);
+	}
+
+	QWidget* activeView()
+	{
+		return stack->currentWidget();
 	}
 
 	void SetDocumentTabText(CDocument* doc, QString text, QString tooltip)
@@ -465,6 +467,8 @@ public:
 	CMainWindow();
 
 	void setupUi(::CMainWindow* wnd);
+
+	void setActiveCentralView(CMainCentralWidget::Viewer viewer);
 
 private:
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false);

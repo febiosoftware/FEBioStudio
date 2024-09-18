@@ -51,31 +51,36 @@ public:
 	}
 };
 
-FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd), ui(new FEBioAppViewUI)
+FEBioAppView::FEBioAppView(CMainWindow* wnd) : CDocumentView(wnd), ui(new FEBioAppViewUI)
 {
 	ui->wnd = wnd;
 	ui->setup(this);
 }
 
-void FEBioAppView::setActiveDocument(FEBioAppDocument* app)
+void FEBioAppView::setDocument(CDocument* doc)
 {
+	FEBioAppDocument* app = dynamic_cast<FEBioAppDocument*>(doc);
+
 	// see if we already have a UI for this document
 	FEBioAppWidget* w = nullptr;
-	if (ui->widgets.contains(app))
+	if (app)
 	{
-		w = ui->widgets.value(app);
-	}
-	else
-	{
-		// build a new widget
-		FEBioAppUIBuilder UIBuilder;
-		w = UIBuilder.BuildUIFromFile(QString::fromStdString(app->GetDocFilePath()), app);
-		if (w == nullptr) QMessageBox::critical(this, "FEBio Studio", "Failed to read file!");
+		if (ui->widgets.contains(app))
+		{
+			w = ui->widgets.value(app);
+		}
 		else
 		{
-			ui->widgets[app] = w;
-			ui->stack->addWidget(w);
-			app->SetUI(w);
+			// build a new widget
+			FEBioAppUIBuilder UIBuilder;
+			w = UIBuilder.BuildUIFromFile(QString::fromStdString(app->GetDocFilePath()), app);
+			if (w == nullptr) QMessageBox::critical(this, "FEBio Studio", "Failed to read file!");
+			else
+			{
+				ui->widgets[app] = w;
+				ui->stack->addWidget(w);
+				app->SetUI(w);
+			}
 		}
 	}
 

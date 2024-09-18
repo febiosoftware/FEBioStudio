@@ -10,6 +10,9 @@
 #include <QTextCursor>
 #include <QTextBlock>
 #include <QRegularExpression>
+#include <QBoxLayout>
+#include "TextDocument.h"
+#include "XMLDocument.h"
 
 class HighlightRule
 {
@@ -567,4 +570,68 @@ void CTextEditor::deleteLine()
 	cursor.select(QTextCursor::BlockUnderCursor);
 	cursor.removeSelectedText();
 	cursor.endEditBlock();
+}
+
+CTextEditView::CTextEditView(CMainWindow* wnd) : CDocumentView(wnd)
+{
+	QVBoxLayout* l = new QVBoxLayout;
+	l->addWidget(m_edit = new CTextEditor(wnd));
+	m_edit->setObjectName("txtedit");
+	setLayout(l);
+}
+
+QTextDocument* CTextEditView::textDocument()
+{
+	return m_edit->document();
+}
+
+bool CTextEditView::find(const QString& txt)
+{
+	return m_edit->find(txt);
+}
+
+void CTextEditView::centerCursor()
+{
+	m_edit->centerCursor();
+}
+
+void CTextEditView::toggleLineComment()
+{
+	m_edit->toggleLineComment();
+}
+
+void CTextEditView::duplicateLine()
+{
+	m_edit->duplicateLine();
+}
+
+void CTextEditView::deleteLine()
+{
+	m_edit->deleteLine();
+}
+
+void CTextEditView::setDocument(CDocument* doc)
+{
+	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(activeDocument());
+	if (txtDoc)
+	{
+		QString title = QString::fromStdString(txtDoc->GetDocTitle());
+		CTextEditor::TextFormat fmt = CTextEditor::PLAIN;
+		if (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1) fmt = CTextEditor::CODE;
+		if (title.indexOf("CMakeLists.txt") != -1) fmt = CTextEditor::CMAKE;
+
+		m_edit->blockSignals(true);
+		m_edit->SetDocument(txtDoc->GetText(), fmt);
+		m_edit->blockSignals(false);
+		return;
+	}
+
+	CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(activeDocument());
+	if (xmlDoc)
+	{
+		m_edit->SetDocument(xmlDoc->GetTextDocument(), CTextEditor::XML);
+		return;
+	}
+
+	m_edit->clear();
 }
