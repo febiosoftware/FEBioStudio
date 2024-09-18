@@ -495,6 +495,9 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 
 	setLayout(v);
 
+	m_currentMap = 0;
+	m_changed = false;
+
 	QObject::connect(l, SIGNAL(currentIndexChanged(int)), this, SLOT(currentMapChanged(int)));
 	QObject::connect(m_spin, SIGNAL(valueChanged(int)), this, SLOT(onSpinValueChanged(int)));
 	QObject::connect(newButton, SIGNAL(clicked()), this, SLOT(onNew()));
@@ -504,8 +507,6 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(m_default, SIGNAL(stateChanged(int)), this, SLOT(onSetDefault(int)));
 
 	updateMaps();
-	m_currentMap = 0;
-	m_changed = false;
 	currentMapChanged(0);
 }
 
