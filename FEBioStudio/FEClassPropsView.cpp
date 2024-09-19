@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <FSCore/FSCore.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/GObject.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 using namespace std;
@@ -1273,6 +1274,30 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			if (p->IsVariable())
 			{
 				CEditVariableParam* pw = new CEditVariableParam(parent);
+/*				FSModel* fem = item->GetFSModel();
+				if (fem)
+				{
+					int n = fem->MeshDataGenerators();
+					for (int i = 0; i < n; ++i)
+					{
+						FSMeshDataGenerator* m = fem->GetMeshDataGenerator(i);
+						pw->addItem(QString::fromStdString(m->GetName()));
+					}
+
+					GModel& gm = fem->GetModel();
+					for (int i = 0; i < gm.Objects(); ++i)
+					{
+						GObject* po = gm.Object(i);
+						FSMesh* pm = po->GetFEMesh();
+						int n = pm->MeshDataFields();
+						for (int j = 0; j < n; ++j)
+						{
+							FEMeshData* md = pm->GetMeshDataField(j);
+							pw->addItem(QString::fromStdString(md->GetName()));
+						}
+					}
+				}
+*/
 				pw->setParam(p);
 				return pw;
 			}

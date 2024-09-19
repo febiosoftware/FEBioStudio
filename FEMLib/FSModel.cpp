@@ -1290,15 +1290,15 @@ void FSModel::Clear()
 	// clear all data variables
 	m_Var.Clear();
 
-	// remove all meshes
-	m_pModel->Clear();
-
 	// remove all materials
 	m_pMat.Clear();
 	ClearMLT();
 
 	// remove all steps
 	m_pStep.Clear();
+
+	// remove all meshes
+	m_pModel->Clear();
 
 	// clear all solutes and SBMS
 	ClearSolutes();
