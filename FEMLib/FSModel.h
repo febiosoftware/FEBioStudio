@@ -76,6 +76,8 @@ public:
 	void DeleteAllSteps();
 	void DeleteAllLoadControllers();
 	void DeleteAllMeshDataGenerators();
+	void DeleteAllMeshData();
+	void DeleteAllMeshAdaptors();
 
 	void RemoveUnusedLoadControllers();
 

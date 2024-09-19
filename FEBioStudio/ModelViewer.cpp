@@ -1724,7 +1724,13 @@ void CModelViewer::OnRemoveAllSelections()
 
 void CModelViewer::OnDeleteAllMeshAdaptors()
 {
-
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc)
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllMeshAdaptors();
+		Update();
+	}
 }
 
 // clear current FSObject selection
@@ -1894,7 +1900,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:
-		menu.addAction("Add Mesh Adaptor", wnd, SLOT(on_actionAddMeshAdaptor_triggered()));
+		menu.addAction("Add Mesh Adaptor ...", wnd, SLOT(on_actionAddMeshAdaptor_triggered()));
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshAdaptors()));
 		break;
 	case MT_OBJECT:

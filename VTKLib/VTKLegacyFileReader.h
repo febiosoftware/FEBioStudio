@@ -61,6 +61,7 @@ namespace VTK {
 		bool read_SCALARS(VTK::vtkPiece& vtk);
 		bool read_VECTORS(VTK::vtkPiece& vtk);
 		bool read_TENSORS(VTK::vtkPiece& vtk);
+		bool read_METADATA(VTK::vtkPiece& vtk);
 
 		bool checkLine(const char* sz);
 
