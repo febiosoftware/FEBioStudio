@@ -216,8 +216,6 @@ public:
 	bool Write(const char* szfile);
 
 public: // set export attributes
-	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
-
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 	void SetMixedMeshFlag(bool b) { m_allowMixedParts = b; }

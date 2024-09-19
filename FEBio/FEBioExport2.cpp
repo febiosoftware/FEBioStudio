@@ -321,10 +321,10 @@ bool FEBioExport2::Write(const char* szfile)
 				if (pstep == 0) return errf("Step 1 is not an analysis step.");
 
 				// write the module section
-				if (m_section[FEBIO_MODULE]) WriteModuleSection(pstep);
+				if (WriteSection(FEBIO_MODULE)) WriteModuleSection(pstep);
 
 				// write the control section
-				if (m_section[FEBIO_CONTROL])
+				if (WriteSection(FEBIO_CONTROL))
 				{
 					m_xml.add_branch("Control");
 					{
@@ -336,7 +336,7 @@ bool FEBioExport2::Write(const char* szfile)
 
 			// global variables
 			int nvar = fem.Parameters();
-			if ((nvar > 0) && m_section[FEBIO_GLOBAL])
+			if ((nvar > 0) && WriteSection(FEBIO_GLOBAL))
 			{
 				m_xml.add_branch("Globals");
 				{
@@ -346,7 +346,7 @@ bool FEBioExport2::Write(const char* szfile)
 			}
 
 			// output material section
-			if ((fem.Materials() > 0) && (m_section[FEBIO_MATERIAL]))
+			if ((fem.Materials() > 0) && (WriteSection(FEBIO_MATERIAL)))
 			{
 				m_xml.add_branch("Material");
 				{
@@ -356,7 +356,7 @@ bool FEBioExport2::Write(const char* szfile)
 			}
 
 			// output geometry section
-			if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
+			if ((fem.GetModel().Objects() > 0) && (WriteSection(FEBIO_GEOMETRY)))
 			{
 				m_xml.add_branch("Geometry");
 				{
@@ -367,7 +367,7 @@ bool FEBioExport2::Write(const char* szfile)
 
 			// output boundary section
 			int nbc = pstep->BCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects();
-			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
+			if ((nbc > 0) && (WriteSection(FEBIO_BOUNDARY)))
 			{
 				m_xml.add_branch("Boundary");
 				{
@@ -378,7 +378,7 @@ bool FEBioExport2::Write(const char* szfile)
 
 			// output loads section
 			int nlc = pstep->Loads();
-			if ((nlc > 0) && (m_section[FEBIO_LOADS]))
+			if ((nlc > 0) && (WriteSection(FEBIO_LOADS)))
 			{
 				m_xml.add_branch("Loads");
 				{
@@ -390,7 +390,7 @@ bool FEBioExport2::Write(const char* szfile)
 			// output contact
 			int nci = pstep->Interfaces();
 			int nLC = pstep->LinearConstraints();
-			if (((nci > 0)||(nLC > 0)) && (m_section[FEBIO_CONTACT]))
+			if (((nci > 0)||(nLC > 0)) && (WriteSection(FEBIO_CONTACT)))
 			{
 				m_xml.add_branch("Contact");
 				{
@@ -401,7 +401,7 @@ bool FEBioExport2::Write(const char* szfile)
 
 			// output constraints section
             int ncn = pstep->RigidConnectors();
-			if (((m_nrc > 0) || (ncn > 0)) && (m_section[FEBIO_CONSTRAINTS]))
+			if (((m_nrc > 0) || (ncn > 0)) && (WriteSection(FEBIO_CONSTRAINTS)))
 			{
 				m_xml.add_branch("Constraints");
 				{
@@ -411,7 +411,7 @@ bool FEBioExport2::Write(const char* szfile)
 			}
 
 			// output initial section
-			if ((pstep->ICs() > 0) && (m_section[FEBIO_INITIAL]))
+			if ((pstep->ICs() > 0) && (WriteSection(FEBIO_INITIAL)))
 			{
 				m_xml.add_branch("Initial");
 				{
@@ -422,7 +422,7 @@ bool FEBioExport2::Write(const char* szfile)
 
 			// output discrete elements
 			int nrb = fem.GetModel().DiscreteObjects();
-			if ((nrb > 0) && (m_section[FEBIO_DISCRETE]))
+			if ((nrb > 0) && (WriteSection(FEBIO_DISCRETE)))
 			{
 				m_xml.add_branch("Discrete");
 				{
@@ -432,7 +432,7 @@ bool FEBioExport2::Write(const char* szfile)
 			}
 
 			// loadcurve data
-			if ((fem.LoadControllers() > 0) && (m_section[FEBIO_LOADDATA]))
+			if ((fem.LoadControllers() > 0) && (WriteSection(FEBIO_LOADDATA)))
 			{
 				m_xml.add_branch("LoadData");
 				{
@@ -442,7 +442,7 @@ bool FEBioExport2::Write(const char* szfile)
 			}
 
 			// Output data
-			if (m_section[FEBIO_OUTPUT])
+			if (WriteSection(FEBIO_OUTPUT))
 			{
 				m_xml.add_branch("Output");
 				{
@@ -1309,7 +1309,7 @@ void FEBioExport2::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		if (pm->Parameters()) WriteMaterialParams(pm);
 
 		// write the components
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i=0; i<NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);

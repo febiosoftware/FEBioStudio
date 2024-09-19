@@ -347,7 +347,7 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
-	void ProcessITKImage(const QString& fileName, ImageFileType type);
+	void ImportITKImage(const QString& fileName, ImageFileType type);
 
 	bool ImportImage(CImageModel* imgModel);
 
@@ -773,3 +773,5 @@ public:
 private:
 	static CMainWindow*	m_wnd;
 };
+
+QString createFileName(const QString& fileName, const QString& dirName, const QString& ext);

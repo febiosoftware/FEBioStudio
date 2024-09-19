@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <FEBio/FEBioExport.h>
 
 class CDlgConvertFEBioUI
 {
@@ -113,10 +114,7 @@ CDlgConvertFEBio::CDlgConvertFEBio(CMainWindow* wnd) : QDialog(wnd), ui(new CDlg
 	m_bexportSelections = true;
 	m_writeNotes = true;
 
-	for (int i = 0; i < MAX_SECTIONS; ++i)
-	{
-		m_nsection[i] = true;
-	}
+	m_nsection = 0xFFFF;
 }
 
 QStringList CDlgConvertFEBio::getFileNames()
@@ -217,7 +215,7 @@ void CDlgConvertFEBio::on_moreOptions()
 		m_writeNotes = dlg.m_writeNotes;
 		m_compress = dlg.m_compress;
 		m_bexportSelections = dlg.m_bexportSelections;
-		for (int i = 0; i < MAX_SECTIONS; ++i) m_nsection[i] = dlg.m_nsection[i];
+		m_nsection = dlg.m_nsection;
 	}
 }
 

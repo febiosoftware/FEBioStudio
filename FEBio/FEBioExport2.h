@@ -44,9 +44,6 @@ public:
 
 	bool Write(const char* szfile) override;
 
-public: // set export attributes
-	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
-
 protected:
 	bool PrepareExport(FSProject& prj) override;
 

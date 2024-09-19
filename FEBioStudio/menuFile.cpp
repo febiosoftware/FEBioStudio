@@ -55,9 +55,7 @@ SOFTWARE.*/
 #include <MeshIO/TetGenExport.h>
 #include <MeshIO/VTKExport.h>
 #include <MeshIO/VTUImport.h>
-#include <MeshIO/PLYExport.h>
 #include <MeshIO/GMshExport.h>
-#include <GeomLib/GPrimitive.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
 #include <MeshIO/BYUimport.h>
@@ -68,7 +66,6 @@ SOFTWARE.*/
 #include <MeshIO/HMASCIIimport.h>
 #include <MeshIO/HyperSurfaceImport.h>
 #include <MeshIO/IDEASimport.h>
-#include <MeshIO/IGESFileImport.h>
 #include <LSDyna/LSDYNAimport.h>
 #include <MeshIO/MeshImport.h>
 #include <MeshIO/NASTRANimport.h>
@@ -90,24 +87,18 @@ SOFTWARE.*/
 #include "DlgExportFEBio.h"
 #include "DlgNew.h"
 #include "DlgNewProject.h"
-#include "DlgModelInfo.h"
 #include "DlgExportLSDYNA.h"
-#include <GeomLib/GSurfaceMeshObject.h>
-#include "DlgPurge.h"
 #include "DlgBatchConvert.h"
 #include "version.h"
 #include "PostDocument.h"
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
-#include <QtCore/QTextStream>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
-#include <ImageLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/PLYExport.h>
 #include <PostLib/AbaqusExport.h>
-#include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
@@ -121,16 +112,15 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
-#include <PostLib/VolumeRenderer.h>
 #include <ImageLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
-#include "ModelFileReader.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
 #include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
+#include "BatchConverter.h"
 
 // register file reader classes
 REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
@@ -1435,7 +1425,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 						writer.SetWriteNotesFlag(dlg.m_writeNotes);
 						writer.SetMixedMeshFlag(dlg.m_allowHybrids);
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						writer.SetSectionFlags(dlg.m_nsection);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
@@ -1446,7 +1436,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						writer.SetPlotfileCompressionFlag(dlg.m_compress);
 						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 						writer.SetWriteNotesFlag(dlg.m_writeNotes);
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						writer.SetSectionFlags(dlg.m_nsection);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
@@ -1457,7 +1447,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						writer.SetPlotfileCompressionFlag(dlg.m_compress);
 						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 						writer.SetWriteNotesFlag(dlg.m_writeNotes);
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						writer.SetSectionFlags(dlg.m_nsection);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
@@ -1466,7 +1456,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						// Write version 2.0
 						FEBioExport2 writer(fem);
 						writer.SetPlotfileCompressionFlag(dlg.m_compress);
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						writer.SetSectionFlags(dlg.m_nsection);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
@@ -1474,7 +1464,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					{
 						// Write version 1.x
 						FEBioExport12 writer(fem);
-						for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						writer.SetSectionFlags(dlg.m_nsection);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
@@ -1678,7 +1668,7 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+		ImportITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
 	}
 }
 
@@ -1701,7 +1691,7 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 // 	if (filedlg.exec())
 // 	{
-// 		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+// 		ImportITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 // 	}
 // }
 
@@ -1760,7 +1750,7 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
+		ImportITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
 	}
 }
 
@@ -1783,7 +1773,7 @@ void CMainWindow::on_actionImportNrrdImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+		ImportITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
 	}
 }
 
@@ -1803,7 +1793,7 @@ void CMainWindow::on_actionImportImageOther_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+		ImportITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
 	}
 }
 
@@ -1868,151 +1858,30 @@ void CMainWindow::on_actionConvertFeb_triggered()
 	CDlgConvertFEBio dlg(this);
 	if (dlg.exec())
 	{
-		QStringList fileNames = dlg.getFileNames();
-		QString dir = dlg.getOutPath();
-
-		int nformat = dlg.getOutputFormat();
-
-		QStringList::iterator it;
-
 		ShowLogPanel();
-
-		AddLogEntry("Starting batch conversion ...\n");
-		int nsuccess = 0, nfails = 0, nwarnings = 0;
-		for (it = fileNames.begin(); it != fileNames.end(); ++it)
-		{
-			FSProject prj;
-			FEBioFileImport reader(prj);
-
-			FSFileExport* exporter = 0;
-			if (nformat == 0x0400)
-			{
-				// write version 4
-				FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
-				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-			}
-			else if (nformat == 0x0300)
-			{
-				// write version 3
-				FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
-				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-			}
-			else if (nformat == 0x0205)
-			{
-				// write version 2.5
-				FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
-				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-			}
-			else if (nformat == 0x0200)
-			{
-				// Write version 2.0
-				FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
-				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-			}
-			else if (nformat == 0x0102)
-			{
-				// Write version 1.x
-				FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
-				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-			}
-			else
-			{
-				QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
-				return;
-			}
-
-			std::string inFile = it->toStdString();
-			AddLogEntry(QString("Converting %1 ... ").arg(*it));
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-			// create an output file name
-			QString outName = createFileName(*it, dir, "feb");
-			string outFile = outName.toStdString();
-
-			// try to read the project
-			bool bret = reader.Load(inFile.c_str());
-
-			// try to save the project
-			exporter->ClearLog();
-			bret = (bret ? exporter->Write(outFile.c_str()) : false);
-
-			AddLogEntry(bret ? "success\n" : "FAILED\n");
-			string err = reader.GetErrorString();
-			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-			err = exporter->GetErrorMessage();
-			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-
-			if (bret) nsuccess++; else nfails++;
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-			delete exporter;
-		}
-
-		AddLogEntry("Batch conversion completed:\n");
-		if (nwarnings == 0)
-			AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
-		else
-			AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+		CConvertFEBtoFEB batch(this);
+		batch.SetOutputFormat(dlg.getOutputFormat());
+		batch.SetFiles(dlg.getFileNames());
+		batch.SetOutputFolder(dlg.getOutPath());
+		batch.SetSectionFlags(dlg.m_nsection);
+		batch.Start();
 	}
 }
 
 void CMainWindow::on_actionConvertFeb2Fsm_triggered()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", CurrentWorkingDirectory(), "FEBio files (*.feb)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", CurrentWorkingDirectory(), "FEBio files (*.feb)");
 	if (fileNames.isEmpty() == false)
 	{
 		QString dir = QFileDialog::getExistingDirectory();
 		if (dir.isEmpty() == false)
 		{
-            QStringList::iterator it;
-
-            ShowLogPanel();
-
-            AddLogEntry("Starting batch conversion ...\n");
-            int nsuccess = 0, nfails = 0, nwarnings = 0;
-            for (it = fileNames.begin(); it != fileNames.end(); ++it)
-            {
-                CModelDocument doc(this);
-
-                // we need to set this document as the active document
-                // NOTE: This might cause problems if the user modifies the currently open document
-                //       while the file is reading. 
-                // CDocument::SetActiveDocument(doc);
-
-                FSProject& prj = doc.GetProject();
-				FEBioFileImport reader(prj);
-
-                std::string inFile = it->toStdString();
-                AddLogEntry(QString("Converting %1 ... ").arg(*it));
-                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-                // create an output file name
-                QString outName = createFileName(*it, dir, "fsm");
-                string outFile = outName.toStdString();
-                doc.SetDocFilePath(outFile);
-
-                // try to read the project
-                bool bret = reader.Load(inFile.c_str());
-
-                // try to save the project
-                bret = (bret ? doc.SaveDocument() : false);
-
-                AddLogEntry(bret ? "success\n" : "FAILED\n");
-                string err = reader.GetErrorString();
-                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-
-                if (bret) nsuccess++; else nfails++;
-                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-            }
-
-            AddLogEntry("Batch conversion completed:\n");
-            if (nwarnings == 0)
-                AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
-            else
-                AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
-        }
+			ShowLogPanel();
+			CConvertFEBtoFSM f2f(this);
+			f2f.SetFiles(fileNames);
+			f2f.SetOutputFolder(dir);
+			f2f.Start();
+		}
 	}
 }
 
@@ -2022,103 +1891,13 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 	dlg.SetFileFilter(CDlgConvertFEBio::FSM_FILES);
 	if (dlg.exec())
 	{
-		QStringList fileNames = dlg.getFileNames();
-		QString dir = dlg.getOutPath();
-
-		int nformat = dlg.getOutputFormat();
-
-		QStringList::iterator it;
-
 		ShowLogPanel();
-
-		AddLogEntry("Starting batch conversion ...\n");
-		int nsuccess = 0, nfails = 0, nwarnings = 0;
-		for (it = fileNames.begin(); it != fileNames.end(); ++it)
-		{
-			CModelDocument doc(this);
-
-			std::string inFile = it->toStdString();
-			AddLogEntry(QString("Converting %1 ... ").arg(*it));
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-			// read the model
-			ModelFileReader reader(&doc);
-			bool bret = reader.Load(inFile.c_str());
-
-			if (bret)
-			{
-				FSProject& prj = doc.GetProject();
-
-				FSFileExport* exporter = 0;
-				if (nformat == 0x0400)
-				{
-					// write version 4
-					FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (nformat == 0x0300)
-				{
-					// write version 3
-					FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (nformat == 0x0205)
-				{
-					// write version 2.5
-					FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (nformat == 0x0200)
-				{
-					// Write version 2.0
-					FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (nformat == 0x0102)
-				{
-					// Write version 1.x
-					FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else
-				{
-					QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
-					return;
-				}
-
-				// create an output file name
-				QString outName = createFileName(*it, dir, "feb");
-				string outFile = outName.toStdString();
-
-				// try to save the project
-				exporter->ClearLog();
-				bret = (bret ? exporter->Write(outFile.c_str()) : false);
-
-				AddLogEntry(bret ? "success\n" : "FAILED\n");
-				string err = reader.GetErrorString();
-				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-				err = exporter->GetErrorMessage();
-				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-
-				if (bret) nsuccess++; else nfails++;
-
-				delete exporter;
-			}
-			else
-			{
-				AddLogEntry("FAILED\n");
-				string err = reader.GetErrorString();
-				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-				nfails++;
-			}
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-		}
-
-		AddLogEntry("Batch conversion completed:\n");
-		if (nwarnings == 0)
-			AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
-		else
-			AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+		CConvertFSMtoFEB f2f(this);
+		f2f.SetFiles(dlg.getFileNames());
+		f2f.SetOutputFolder(dlg.getOutPath());
+		f2f.SetOutputFormat(dlg.getOutputFormat());
+		f2f.SetSectionFlags(dlg.m_nsection);
+		f2f.Start();
 	}
 }
 
@@ -2168,82 +1947,11 @@ void CMainWindow::on_actionConvertGeo_triggered()
 			{
 				// note that the format is an index into the options presented in
 				// the dialog box.
-				int format = dlg.GetFileFormat();
-
-				// create a file writer
-				QString ext;
-
-				// start convert process
-				AddLogEntry("Starting batch conversion ...\n");
-				int nsuccess = 0, nfails = 0, nwarnings = 0;
-				QStringList::iterator it;
-				for (it = fileNames.begin(); it != fileNames.end(); ++it)
-				{
-					std::string inFile = it->toStdString();
-					AddLogEntry(QString("Converting %1 ... ").arg(*it));
-					QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-					// create a file reader based on the file extension
-					FileReader* reader = CreateFileReader(*it);
-					FSFileImport* importer = dynamic_cast<FSFileImport*>(reader);
-					if (importer)
-					{
-						FSProject& prj = importer->GetProject();
-
-						FSFileExport* exporter = nullptr;
-						switch (format)
-						{
-						case 0: exporter = new VTKExport(prj); ext = "vtk"; break;
-						case 1: exporter = new PLYExport(prj); ext = "ply"; break;
-						case 2: exporter = new LSDYNAexport(prj); ext = "k"; break;
-						case 3: exporter = new HypersurfaceExport(prj); ext = "surf"; break;
-						case 4: exporter = new BYUExport(prj); ext = "byu"; break;
-						case 5: exporter = new STLExport(prj); ext = "stl"; break;
-						case 6: exporter = new ViewpointExport(prj); ext = "vp"; break;
-						case 7: exporter = new MeshExport(prj); ext = "mesh"; break;
-						case 8: exporter = new TetGenExport(prj); ext = "ele"; break;
-						}
-
-						if (exporter == nullptr)
-						{
-							QMessageBox::critical(this, "FEBio Studio", "Cannot create file exporter.");
-							return;
-						}
-
-						// create an output file name
-						QString outName = createFileName(*it, dir, ext);
-						string outFile = outName.toStdString();
-
-						// try to read the project
-						bool bret = importer->Load(inFile.c_str());
-
-						// try to save the project
-						exporter->ClearLog();
-						bret = (bret ? exporter->Write(outFile.c_str()) : false);
-
-						AddLogEntry(bret ? "success\n" : "FAILED\n");
-						string err = reader->GetErrorString();
-						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-						err = exporter->GetErrorMessage();
-						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-
-						if (bret) nsuccess++; else nfails++;
-						QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-						delete reader;
-						delete exporter;
-					}
-					else
-					{
-						AddLogEntry("FAILED (can't create file reader!)\n");
-					}
-				}
-
-				AddLogEntry("Batch conversion completed:\n");
-				if (nwarnings == 0)
-					AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
-				else
-					AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+				CConvertGeoFiles conv(this);
+				conv.SetFiles(fileNames);
+				conv.SetOutputFolder(dir);
+				conv.SetOutputFormat(dlg.GetFileFormat());
+				conv.Start();
 			}
 		}
 	}

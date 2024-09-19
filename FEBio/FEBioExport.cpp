@@ -107,7 +107,7 @@ FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
 	m_exportNonPersistentParams = true;
 
 	// initialize section flags
-	for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) m_section[i] = true;
+	m_section = 0xFFFF;
 }
 
 void FEBioExport::SetPlotfileCompressionFlag(bool b)
@@ -118,6 +118,26 @@ void FEBioExport::SetPlotfileCompressionFlag(bool b)
 void FEBioExport::SetExportSelectionsFlag(bool b)
 {
 	m_exportSelections = b;
+}
+
+void FEBioExport::SetSectionFlags(unsigned int flags)
+{
+	m_section = flags;
+}
+
+void FEBioExport::SetSectionFlag(unsigned int n, bool bwrite)
+{
+	assert(n < FEBIO_MAX_SECTIONS);
+	unsigned int flag = 1 << n;
+	if (bwrite) m_section |= flag;
+	else m_section &= ~flag;
+}
+
+bool FEBioExport::WriteSection(unsigned int n)
+{
+	assert(n < FEBIO_MAX_SECTIONS);
+	unsigned int flag = 1 << n;
+	return (m_section & flag);
 }
 
 //-----------------------------------------------------------------------------

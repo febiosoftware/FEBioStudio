@@ -62,6 +62,11 @@ public:
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);
 
+	void SetSectionFlags(unsigned int flags);
+	void SetSectionFlag(unsigned int n, bool bwrite);
+
+	bool WriteSection(unsigned int n);
+
 protected:
 	void WriteParam(Param& p);
 	void WriteParamList(ParamContainer& c);
@@ -83,7 +88,7 @@ public: // helper functions for writing to the xml file directly
 protected:
 	XMLWriter		m_xml;
 
-	bool	m_section[FEBIO_MAX_SECTIONS];	//!< write section flags
+	unsigned int m_section;	//!< write section flags
 
 	bool	m_compress;				//!< compress plot file
 	bool	m_exportSelections;		//!< export named selections as well

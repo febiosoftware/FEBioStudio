@@ -3685,7 +3685,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 }
 
 #ifdef HAS_ITK
-	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
+	void CMainWindow::ImportITKImage(const QString& fileName, ImageFileType type)
 	{
 		CGLDocument* doc = GetGLDocument();
 
@@ -3701,7 +3701,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
         }
 	}
 #else
-	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type) {}
+	void CMainWindow::ImportITKImage(const QString& fileName, ImageFileType type) {}
 #endif
 
 void CMainWindow::OnDeleteAllLoadControllers()

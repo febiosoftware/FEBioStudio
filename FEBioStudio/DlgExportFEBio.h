@@ -45,9 +45,6 @@ class CDlgExportFEBio : public QDialog
 {
 	Q_OBJECT
 
-private:
-	enum { MAX_SECTIONS = 16 };
-
 public:
 	CDlgExportFEBio(QWidget* parent);
 
@@ -59,7 +56,7 @@ public:
 
 public:
 	static int		m_nindex;
-	bool	m_nsection[MAX_SECTIONS];
+	unsigned int m_nsection;
 	bool	m_bexportSelections;
 	bool	m_compress;
 	bool	m_writeNotes;

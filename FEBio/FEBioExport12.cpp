@@ -1115,7 +1115,7 @@ void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		if (pm->Parameters()) WriteMaterialParams(pm);
 
 		// write the components
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);

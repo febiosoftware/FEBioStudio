@@ -206,7 +206,6 @@ public:
 	bool Write(const char* szfile);
 
 public: // set export attributes
-	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
 
 	void SetExportPartsFlag(bool b) { m_exportParts = b; }
 
