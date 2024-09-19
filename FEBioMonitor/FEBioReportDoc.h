@@ -38,8 +38,12 @@ public:
 
 	void setJob(CFEBioJob* job);
 
-	CFEBioJob* getJob();
-	
-protected:
-	CFEBioJob* m_job;
+public:
+	QString m_jobName;
+	QString m_febFile;
+	QString m_logFile;
+	QString m_pltFile;
+	QString m_report;
+	TimingInfo m_timingInfo;
+	ModelStats m_stats;
 };

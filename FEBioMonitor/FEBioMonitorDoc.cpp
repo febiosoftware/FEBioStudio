@@ -385,7 +385,6 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 	CMainWindow* wnd = GetMainWindow();
 	CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
 	doc->setJob(m->job);
-	doc->SetDocTitle("Report");
 	wnd->AddDocument(doc);
 
 	delete m->job;

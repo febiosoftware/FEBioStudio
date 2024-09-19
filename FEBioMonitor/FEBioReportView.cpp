@@ -212,15 +212,12 @@ void CFEBioReportView::setDocument(CDocument* doc)
 {
 	ui->txt->clear();
 
-	CFEBioReportDoc* report = dynamic_cast<CFEBioReportDoc*>(doc);
-	if (report == nullptr) return;
-
-	CFEBioJob* job = report->getJob();
 	QTextEdit* txt = ui->txt;
 	QTextDocument* t = txt->document(); assert(t);
 	if (t == nullptr) return;
 
-	if (job == nullptr)
+	CFEBioReportDoc* report = dynamic_cast<CFEBioReportDoc*>(doc);
+	if ((report == nullptr) || !report->IsValid())
 	{
 		QTextCursor cursor(t);
 		QTextImageFormat imf;
@@ -230,7 +227,7 @@ void CFEBioReportView::setDocument(CDocument* doc)
 	}
 	else
 	{
-		TimingInfo ti = job->m_timingInfo;
+		TimingInfo ti = report->m_timingInfo;
 
 		std::vector<TimingEntry> entries;
 		entries.push_back({ "input"    , ti.input_time        , ti.input_time         / ti.total_time, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
@@ -253,14 +250,14 @@ void CFEBioReportView::setDocument(CDocument* doc)
 		html.heading2("Files");
 		html.paragraph("Files used in the job.");
 		html.table_start();
-		html.table_row({ "<b>input</b>", QString::fromStdString(job->GetFEBFileName()) });
-		html.table_row({ "<b>log</b>"  , QString::fromStdString(job->GetLogFileName()) });
-		html.table_row({ "<b>plot</b>" , QString::fromStdString(job->GetPlotFileName()) });
+		html.table_row({ "<b>input</b>", report->m_febFile });
+		html.table_row({ "<b>log</b>"  , report->m_logFile });
+		html.table_row({ "<b>plot</b>" , report->m_pltFile });
 		html.table_end();
 		html.heading2("Stats");
 		html.paragraph("Overall statistics.");
 		html.table_start();
-		ModelStats stats = job->m_stats;
+		ModelStats stats = report->m_stats;
 		html.table_row({ "<b>time steps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
 		html.table_row({ "<b>total iters</b>"  , HTMLComposer::align_right, QString::number(stats.ntotalIters  ), "Total number of Quasi-Newton iterations."});
 		html.table_row({ "<b>total RHS</b>"    , HTMLComposer::align_right, QString::number(stats.ntotalRHS    ), "Total number of residual evaluations."});

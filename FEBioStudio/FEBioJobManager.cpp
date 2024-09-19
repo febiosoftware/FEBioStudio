@@ -168,7 +168,6 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		CMainWindow* wnd = im->wnd;
 		CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
 		doc->setJob(job);
-		doc->SetDocTitle("Report");
 		wnd->AddDocument(doc);
 	}
 	else

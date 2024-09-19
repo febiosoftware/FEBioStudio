@@ -27,17 +27,26 @@ SOFTWARE.*/
 
 CFEBioReportDoc::CFEBioReportDoc(CMainWindow* wnd) : CDocument(wnd)
 {
-	m_job = nullptr;
+	m_bValid = false;
+	SetDocTitle("Report");
 }
 
 void CFEBioReportDoc::setJob(CFEBioJob* job)
 {
-	m_job = job;
-}
+	m_jobName = QString::fromStdString(job->GetName());
+	m_febFile = QString::fromStdString(job->GetFEBFileName());
+	m_logFile = QString::fromStdString(job->GetLogFileName());
+	m_pltFile = QString::fromStdString(job->GetPlotFileName());
 
-CFEBioJob* CFEBioReportDoc::getJob()
-{
-	return m_job;
+	m_report = QString::fromStdString(job->m_jobReport);
+
+	m_timingInfo = job->m_timingInfo;
+	m_stats = job->m_stats;
+
+	QString title = QString("Report[%1]").arg(m_jobName);
+	SetDocTitle(title.toStdString());
+
+	m_bValid = true;
 }
 
 bool CFEBioReportDoc::SaveDocument()
