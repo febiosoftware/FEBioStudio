@@ -3723,6 +3723,7 @@ void CMainWindow::OnDeleteAllMeshData()
 	{
 		FSModel* fem = doc->GetFSModel();
 		fem->DeleteAllMeshDataGenerators();
+		fem->DeleteAllMeshData();
 		doc->SetModifiedFlag(true);
 		UpdateTab(doc);
 		UpdateModel();

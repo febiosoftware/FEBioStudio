@@ -1985,6 +1985,17 @@ void FSModel::DeleteAllMeshDataGenerators()
 	m_MD.Clear();
 }
 
+void FSModel::DeleteAllMeshData()
+{
+	GModel& m = GetModel();
+	for (int i = 0; i < m.Objects(); ++i)
+	{
+		GObject* po = m.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm) pm->ClearMeshData();
+	}
+}
+
 void FSModel::DeleteAllMeshAdaptors()
 {
 	for (int i = 0; i < Steps(); ++i)
