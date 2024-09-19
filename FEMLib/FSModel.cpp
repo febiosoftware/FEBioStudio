@@ -1985,7 +1985,15 @@ void FSModel::DeleteAllMeshDataGenerators()
 	m_MD.Clear();
 }
 
-//-----------------------------------------------------------------------------
+void FSModel::DeleteAllMeshAdaptors()
+{
+	for (int i = 0; i < Steps(); ++i)
+	{
+		FSStep* pstep = GetStep(i);
+		pstep->RemoveAllMeshAdaptors();
+	}
+}
+
 void FSModel::DeleteAllRigidBCs()
 {
 	for (int i = 0; i<Steps(); ++i)
