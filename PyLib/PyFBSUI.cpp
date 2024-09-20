@@ -113,6 +113,7 @@ void init_FBSUI(py::module& m)
     ui.def("MeshFromCurve", meshFromCurve, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve",
 		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
+    ui.def("showProgress", PyShowProgress);
     ui.def("setProgressText", PySetProgressText);
     ui.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
     ui.def("setProgress", static_cast<void (*) (float)>(PySetProgress));

@@ -51,6 +51,7 @@ void CPythonToolsPanel::initPython()
     m_pythonThread = new CPyThread(this);
     connect(m_pythonThread, &CPyThread::ExecDone, this, &CPythonToolsPanel::on_pythonThread_ExecDone);
     connect(m_pythonThread, &CPyThread::Restarted, this, &CPythonToolsPanel::on_pythonThread_Restarted);
+    connect(m_pythonThread, &CPyThread::ToolFinished, this, &CPythonToolsPanel::on_pythonThread_ToolFinished);
 
     m_pythonThread->start();
 }
@@ -97,7 +98,7 @@ void CPythonToolsPanel::runScript(QString filename)
 	PyRun_SimpleFile(file, filename.toStdString().c_str());
 }
 
-void CPythonToolsPanel::startRunning(const QString& msg)
+void CPythonToolsPanel::showProgress(const QString& msg)
 {
 	ui->startRunning(msg);
 }
@@ -144,6 +145,11 @@ void CPythonToolsPanel::on_pythonThread_Restarted()
 	tools.clear();
 
 	m_activeTool = nullptr;
+}
+
+void CPythonToolsPanel::on_pythonThread_ToolFinished()
+{
+	ui->stopRunning();
 }
 
 void CPythonToolsPanel::on_importScript_triggered()

@@ -47,6 +47,7 @@ public:
 signals:
     void ExecDone();
     void Restarted();
+	void ToolFinished();
 
 private:
     void initPython();

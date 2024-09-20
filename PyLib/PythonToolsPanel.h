@@ -63,8 +63,6 @@ public:
 
 	void runScript(QString filename);
 
-	void startRunning(const QString& msg);
-
 	CPythonInputHandler* getInputHandler();
 	void addInputPage(QWidget* wgt);
 	QWidget* getInputWgt();
@@ -79,12 +77,14 @@ private:
 
 public slots:
 	void addLog(QString txt);
+	void showProgress(const QString& msg);
 	void setProgressText(const QString& txt);
 	void setProgress(int prog);
 
 private slots:
     void on_pythonThread_ExecDone();
     void on_pythonThread_Restarted();
+    void on_pythonThread_ToolFinished();
 	void on_buttons_idClicked(int id);
 	void on_importScript_triggered();
 	void on_refresh_triggered();

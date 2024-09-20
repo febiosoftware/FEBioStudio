@@ -34,6 +34,14 @@ SOFTWARE.*/
 #include "PythonToolsPanel.h"
 #include "PyCallBack.h"
 
+void PyShowProgress(const char* txt)
+{
+	auto wnd = FBS::getMainWindow();
+	auto panel = wnd->GetPythonToolsPanel();
+
+	QMetaObject::invokeMethod(panel, "showProgress", Q_ARG(const QString&, txt));
+}
+
 void PySetProgressText(const char* txt)
 {
     auto wnd = FBS::getMainWindow();

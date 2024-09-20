@@ -77,6 +77,8 @@ void CPyThread::run()
         {
             m_tool->runFunc();
             m_tool = nullptr;
+
+			emit ToolFinished();
         }
         else if(!m_filename.isEmpty())
         {
