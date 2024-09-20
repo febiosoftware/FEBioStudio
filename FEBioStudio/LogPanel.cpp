@@ -44,6 +44,7 @@ void CLogPanel::Clear(LogTarget trg)
 	case LogTarget::FBS_LOG   : ui->clearLog(0); break;
 	case LogTarget::FEBIO_LOG : ui->clearLog(1); break;
 	case LogTarget::BUILD_LOG : ui->clearLog(2); break;
+	case LogTarget::PYTHON_LOG: ui->clearLog(3); break;
 	}
 }
 

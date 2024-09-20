@@ -132,6 +132,8 @@ public:
 
 	void ClearBuildLog();
 
+	void ClearPythonLog();
+
 	// get the log panel
 	CLogPanel* GetLogPanel();
 
@@ -360,7 +362,8 @@ public:
 public slots:
 	void AddLogEntry(const QString& txt);
 	void AddOutputEntry(const QString& txt);
-	void AddBuildEntry(const QString& txt);
+	void AddBuildLogEntry(const QString& txt);
+	void AddPythonLogEntry(const QString& txt);
 
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();

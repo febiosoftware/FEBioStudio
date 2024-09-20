@@ -40,7 +40,8 @@ public:
 	enum LogTarget {
 		FBS_LOG,
 		FEBIO_LOG,
-		BUILD_LOG
+		BUILD_LOG,
+		PYTHON_LOG
 	};
 
 public:

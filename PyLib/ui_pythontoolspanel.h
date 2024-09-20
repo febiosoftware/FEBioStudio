@@ -39,7 +39,6 @@ SOFTWARE.*/
 #include <QLabel>
 #include <FEBioStudio/Tool.h>
 #include <FEBioStudio/ToolBox.h>
-#include <QPlainTextEdit>
 #include "PythonTool.h"
 
 class Ui::CPythonToolsPanel
@@ -57,28 +56,13 @@ public:
 	bool running;
 	QProgressBar* progress;
 
-	QPlainTextEdit*	txt;
-
 public:
 	void setupUi(::CPythonToolsPanel* parent)
 	{
 		this->parent = parent;
 		running = false;
 
-		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
-		
-		QSplitter* splitter = new QSplitter;
-		splitter->setOrientation(Qt::Vertical);
-		
-		splitter->addWidget(parentStack = new QStackedWidget);
-
-		QWidget* mainPage = new QWidget;
-
-		QVBoxLayout* pg = new QVBoxLayout(mainPage);
-		pg->setContentsMargins(1,1,1,1);
-
 		QToolBar* toolbar = new QToolBar();
-
 		importScript = new QAction(CIconProvider::GetIcon("open"), "Import Script", parent);
 		importScript->setObjectName("importScript");
 		importScript->setIconVisibleInMenu(false);
@@ -92,8 +76,6 @@ public:
 		refresh->setObjectName("refresh");
 		refresh->setIconVisibleInMenu(false);
 		toolbar->addAction(refresh);
-
-		pg->addWidget(toolbar);
 
 		QWidget* box = new QWidget;
 
@@ -114,10 +96,13 @@ public:
 		tool->addTool("Tools", box);
 		tool->addTool("Parameters", stack);
 
+		QWidget* toolsPage = new QWidget;
+		QVBoxLayout* pg = new QVBoxLayout(toolsPage);
+		pg->setContentsMargins(1, 1, 1, 1);
+		pg->addWidget(toolbar);
 		pg->addWidget(tool);
 
-		parentStack->addWidget(mainPage);
-
+		// create the running page (shown when a tool is running)
 		QWidget* runningPage = new QWidget;
 		QVBoxLayout* runningLayout = new QVBoxLayout(runningPage);
 		runningLayout->setAlignment(Qt::AlignCenter);
@@ -131,17 +116,15 @@ public:
 
 		runningLayout->addWidget(progress);
 
+		// build the main layout
+		parentStack = new QStackedWidget;
+		parentStack->addWidget(toolsPage);
 		parentStack->addWidget(runningPage);
 
-		txt = new QPlainTextEdit;
-		txt->setReadOnly(true);
-		txt->setFont(QFont("Courier", 11));
-		txt->setWordWrapMode(QTextOption::NoWrap);
-		splitter->addWidget(txt);
+		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
+		parentLayout->addWidget(parentStack);
 
-		parentLayout->addWidget(splitter);
-
-        numTools = 0;
+		numTools = 0;
 
 		QMetaObject::connectSlotsByName(parent);
 	}
@@ -184,9 +167,7 @@ public:
 			delete stack->widget(1);
 		}
 
-		txt->clear();
-
-        numTools = 0;
+		numTools = 0;
 	}
 
 	void startRunning(const QString& txt)

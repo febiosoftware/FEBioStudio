@@ -732,7 +732,7 @@ void CFileViewer::onBuildPlugin()
 	// make sure log window is visible
 	ui->m_wnd->ShowLogPanel();
 	ui->m_wnd->ClearBuildLog();
-	CLogger::AddBuildEntry(QString("Building plugin %1:\n").arg(item->text(0)));
+	CLogger::AddBuildLogEntry(QString("Building plugin %1:\n").arg(item->text(0)));
 
 	ui->m_process = new CConfigurePluginProcess(this);
 	ui->m_process->setWorkingDirectory(projectPath + "/" + item->text(0));
@@ -853,7 +853,7 @@ void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
 {
 	if (es == QProcess::NormalExit)
 	{
-		CLogger::AddBuildEntry(exitCode == 0 ? "\n--- Build succeeded\n\n" : "\n--- Build failed\n\n");
+		CLogger::AddBuildLogEntry(exitCode == 0 ? "\n--- Build succeeded\n\n" : "\n--- Build failed\n\n");
 		if (exitCode == 0)
 			QMessageBox::information(this, "FEBio Studio", "The build was successful.");
 		else
@@ -875,7 +875,7 @@ void CFileViewer::onReadyRead()
 
 	QByteArray output = ui->m_process->readAll();
 	QString s(output);
-	CLogger::AddBuildEntry(output);
+	CLogger::AddBuildLogEntry(output);
 }
 
 void CFileViewer::onErrorOccurred(QProcess::ProcessError err)

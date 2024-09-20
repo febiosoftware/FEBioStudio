@@ -2666,9 +2666,14 @@ void CMainWindow::AddOutputEntry(const QString& txt)
 	ui->logPanel->AddText(txt, CLogPanel::FEBIO_LOG);
 }
 
-void CMainWindow::AddBuildEntry(const QString& txt)
+void CMainWindow::AddBuildLogEntry(const QString& txt)
 {
 	ui->logPanel->AddText(txt, CLogPanel::BUILD_LOG);
+}
+
+void CMainWindow::AddPythonLogEntry(const QString& txt)
+{
+	ui->logPanel->AddText(txt, CLogPanel::PYTHON_LOG);
 }
 
 //-----------------------------------------------------------------------------
@@ -2689,6 +2694,12 @@ void CMainWindow::ClearBuildLog()
 {
 	ui->logPanel->ShowLog(CLogPanel::BUILD_LOG);
 	ui->logPanel->Clear(CLogPanel::BUILD_LOG);
+}
+
+void CMainWindow::ClearPythonLog()
+{
+	ui->logPanel->ShowLog(CLogPanel::PYTHON_LOG);
+	ui->logPanel->Clear(CLogPanel::PYTHON_LOG);
 }
 
 //-----------------------------------------------------------------------------

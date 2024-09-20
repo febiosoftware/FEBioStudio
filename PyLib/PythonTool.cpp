@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QLabel>
 #include <iostream>
+#include <FEBioStudio/LogPanel.h>
+#include <FEBioStudio/Logger.h>
 
 namespace py = pybind11;
 
@@ -112,7 +114,10 @@ QWidget* CPythonTool::createUi()
 
 void CPythonTool::OnApply()
 {
-	GetMainWindow()->GetPythonToolsPanel()->GetThread()->SetTool(this);
+	CMainWindow* wnd = GetMainWindow();
+	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(name()));
+	wnd->GetPythonToolsPanel()->GetThread()->SetTool(this);
 }
 
 bool CPythonTool::runFunc()
@@ -142,16 +147,19 @@ bool CPythonTool::runFunc()
                     kwargs[name.c_str()] = *((vec3d*)d);
                     break;
                 case CProperty::String:
-                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str(); // TODO: This will not work!
+					// TODO: Is this safe? This passes a pointer to a temporary object
+                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
                     break;
 				case CProperty::Enum:
 					{
 						int n = *((int*)d);
-						kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());  // TODO: This will not work!
+						// TODO: Is this safe? This passes a pointer to a temporary object
+						kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());
 					}
                     break;
                 case CProperty::Resource:
-                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str(); // TODO: This will not work!
+					// TODO: Is this safe? This passes a pointer to a temporary object
+                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
                     break;
 
                 default:

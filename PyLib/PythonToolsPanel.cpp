@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <FEBioStudio/MainWindow.h>
 #include <PyLib/PythonThread.h>
 #include "PyOutput.h"
+#include <FEBioStudio/Logger.h>
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
 	: CWindowPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), m_wnd(wnd), inputHandler(this)
@@ -188,11 +189,8 @@ void CPythonToolsPanel::removeInputPage()
 
 void CPythonToolsPanel::addLog(QString txt)
 {
-	ui->txt->moveCursor(QTextCursor::End);
-	ui->txt->insertPlainText(txt);
-	ui->txt->moveCursor(QTextCursor::End);
+	CLogger::AddPythonLogEntry(txt);
 }
-
 
 void CPythonToolsPanel::on_buttons_idClicked(int id)
 {

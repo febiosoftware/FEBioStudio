@@ -45,12 +45,14 @@ public:
 public slots:
 	static void AddLogEntry(const QString& txt);
 	static void AddOutputEntry(const QString& txt);
-	static void AddBuildEntry(const QString& txt);
+	static void AddBuildLogEntry(const QString& txt);
+	static void AddPythonLogEntry(const QString& txt);
 
 signals:
 	void SendLogEntry(const QString& txt);
 	void SendOutputEntry(const QString& txt);
-	void SendBuildEntry(const QString& txt);
+	void SendBuildLogEntry(const QString& txt);
+	void SendPythonLogEntry(const QString& txt);
 
 private:
 	CLogger() {}

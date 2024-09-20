@@ -23,35 +23,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QObject>
-#include <FEBioStudio/FEBioStudio.h>
-#include <FEBioStudio/MainWindow.h>
-#include "PythonToolsPanel.h"
+#include <FEBioStudio/Logger.h>
 
-#include <iostream>
-
-class CPyOutput : public QObject
+class CPyOutput
 {
-    Q_OBJECT
-
 public:
-    CPyOutput() 
-    {
-        auto panel =  FBS::getMainWindow()->GetPythonToolsPanel();
-
-        QObject::connect(this, &CPyOutput::output, panel, &CPythonToolsPanel::addLog);
-    }
+	CPyOutput() {}
 
     void write(const char* txt)
     {
-        emit output(txt);
+        CLogger::AddPythonLogEntry(txt);
     }
 
     void flush() {}
-
-signals:
-    void output(QString txt);
-
 };

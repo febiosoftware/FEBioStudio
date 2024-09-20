@@ -40,7 +40,8 @@ void CLogger::Instantiate(CMainWindow* mainWindow)
 
 		connect(m_instance, &CLogger::SendLogEntry, mainWindow, &CMainWindow::AddLogEntry);
 		connect(m_instance, &CLogger::SendOutputEntry, mainWindow, &CMainWindow::AddOutputEntry);
-		connect(m_instance, &CLogger::SendBuildEntry, mainWindow, &CMainWindow::AddBuildEntry);
+		connect(m_instance, &CLogger::SendBuildLogEntry, mainWindow, &CMainWindow::AddBuildLogEntry);
+		connect(m_instance, &CLogger::SendPythonLogEntry, mainWindow, &CMainWindow::AddPythonLogEntry);
 	}
 }
 
@@ -54,9 +55,14 @@ void CLogger::AddOutputEntry(const QString& txt)
 	if(m_instance) m_instance->SendOutputEntry(txt);
 }
 
-void CLogger::AddBuildEntry(const QString& txt)
+void CLogger::AddBuildLogEntry(const QString& txt)
 {
-	if (m_instance) m_instance->SendBuildEntry(txt);
+	if (m_instance) m_instance->SendBuildLogEntry(txt);
+}
+
+void CLogger::AddPythonLogEntry(const QString& txt)
+{
+	if (m_instance) m_instance->SendPythonLogEntry(txt);
 }
 
 void CLogger::Write(const std::string& s)
