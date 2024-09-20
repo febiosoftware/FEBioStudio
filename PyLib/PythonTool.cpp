@@ -103,21 +103,9 @@ QWidget* CPythonTool::createUi()
 	CPropertyListForm* ui = new CPropertyListForm;
 	ui->setPropertyList(m_props);
 	l->addWidget(ui);
-	QPushButton* pb = new QPushButton("Run");
-	l->addWidget(pb);
 	l->addStretch();
 	w->setLayout(l);
-
-	QObject::connect(pb, &QPushButton::clicked, this, &CPythonTool::OnApply);
 	return w;
-}
-
-void CPythonTool::OnApply()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(name()));
-	wnd->GetPythonToolsPanel()->GetThread()->SetTool(this);
 }
 
 bool CPythonTool::runFunc()

@@ -117,9 +117,9 @@ void init_FBSUI(py::module& m)
     ui.def("setProgressText", PySetProgressText);
     ui.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
     ui.def("setProgress", static_cast<void (*) (float)>(PySetProgress));
-    ui.def("getUserString", PyGetString);
-    ui.def("getUserInt", PyGetInt);
-    ui.def("getUserSelection", PyGetSelection);
+//    ui.def("getUserString", PyGetString);
+//    ui.def("getUserInt", PyGetInt);
+//    ui.def("getUserSelection", PyGetSelection);
 
 	py::class_<CPythonToolProps, std::unique_ptr<CPythonToolProps, py::nodelete>>(ui, "PythonTool")
 		.def(py::init(&PythonTool_init))

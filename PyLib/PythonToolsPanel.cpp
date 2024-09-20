@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <PyLib/PythonThread.h>
 #include "PyOutput.h"
 #include <FEBioStudio/Logger.h>
+#include <FEBioStudio/LogPanel.h>
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
 	: CWindowPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), m_wnd(wnd), inputHandler(this)
@@ -99,19 +100,14 @@ void CPythonToolsPanel::runScript(QString filename)
 	PyRun_SimpleFile(file, filename.toStdString().c_str());
 }
 
-void CPythonToolsPanel::showProgress(const QString& msg)
-{
-	ui->startRunning(msg);
-}
-
 void CPythonToolsPanel::setProgressText(const QString& txt)
 {
-	ui->setProgressText(txt);
+	ui->runPane->setProgressText(txt);
 }
 
 void CPythonToolsPanel::setProgress(int prog)
 {
-	ui->setProgress(prog);
+	ui->runPane->setProgress(prog);
 }
 
 void CPythonToolsPanel::BuildTools()
@@ -125,11 +121,23 @@ void CPythonToolsPanel::BuildTools()
 	dummyTools.clear();
 }
 
+void CPythonToolsPanel::on_run_clicked()
+{
+	if (m_activeTool == nullptr) return;
+	QString msg = QString("Running %1").arg(m_activeTool->name());
+	ui->runPane->startRunning(msg);
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(m_activeTool->name()));
+	wnd->GetPythonToolsPanel()->GetThread()->SetTool(m_activeTool);
+}
+
 void CPythonToolsPanel::on_pythonThread_ExecDone()
 {
 	BuildTools();
 
-	ui->stopRunning();
+	ui->runPane->stopRunning();
 
 	m_wnd->UpdateModel();
 	m_wnd->UpdateUI();
@@ -137,7 +145,7 @@ void CPythonToolsPanel::on_pythonThread_ExecDone()
 
 void CPythonToolsPanel::on_pythonThread_Restarted()
 {
-    ui->refreshPanel();
+	ui->refreshPanel();
 
 	for(auto tool : tools)
 	{
@@ -150,7 +158,7 @@ void CPythonToolsPanel::on_pythonThread_Restarted()
 
 void CPythonToolsPanel::on_pythonThread_ToolFinished()
 {
-	ui->stopRunning();
+	ui->runPane->stopRunning();
 }
 
 void CPythonToolsPanel::on_importScript_triggered()
@@ -167,6 +175,7 @@ void CPythonToolsPanel::on_refresh_triggered()
     m_pythonThread->Restart();
 }
 
+/*
 CPythonInputHandler* CPythonToolsPanel::getInputHandler()
 {
 	return &inputHandler;
@@ -186,6 +195,7 @@ void CPythonToolsPanel::removeInputPage()
 {
 	ui->removePage();
 }
+*/
 
 void CPythonToolsPanel::addLog(QString txt)
 {
@@ -196,7 +206,13 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 {
 	// deactivate the active tool
 	if (m_activeTool) m_activeTool->Deactivate();
-	m_activeTool = 0;
+	m_activeTool = nullptr;
+
+	if (id == -1)
+	{
+		ui->runPane->hide();
+		return;
+	}
 
 	// find the tool
 	auto it = tools.begin();
@@ -207,7 +223,9 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 	m_activeTool->Activate();
 
 	// show the tab
-	ui->stack->setCurrentIndex(id);
+	ui->paramStack->setCurrentIndex(id);
+	ui->runPane->show();
+	ui->runPane->setCurrentIndex(0);
 }
 
 void CPythonToolsPanel::hideEvent(QHideEvent* ev)

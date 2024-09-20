@@ -53,6 +53,7 @@ int CPythonInputHandler::getSelection()
 
 void CPythonInputHandler::getInput(int type, const QString& txt)
 {
+/*
     currentType = type;
 
     PyInputWidget* wgt;
@@ -74,10 +75,12 @@ void CPythonInputHandler::getInput(int type, const QString& txt)
 
     QObject::connect(wgt, &PyInputWidget::done, this, &CPythonInputHandler::finishInput);
 	panel->addInputPage(wgt);
+*/
 }
 
 void CPythonInputHandler::finishInput()
 {
+	/*
     switch (currentType)
     {
     case STRING:
@@ -91,7 +94,7 @@ void CPythonInputHandler::finishInput()
     }
 
 	panel->removeInputPage();
-	
+	*/
 	emit inputReady();
 }
 

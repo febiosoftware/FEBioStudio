@@ -68,6 +68,7 @@ void PySetProgress(float prog)
 
 CPythonInputHandler* PyGetInput(int type, const char* txt)
 {
+	/*
     auto wnd = FBS::getMainWindow();
     auto inputHandler = wnd->GetPythonToolsPanel()->getInputHandler();
 
@@ -78,8 +79,10 @@ CPythonInputHandler* PyGetInput(int type, const char* txt)
     loop.exec();
 
     return inputHandler;
+	*/
+	return nullptr;
 }
-
+/*
 std::string PyGetString(const char* txt)
 {
     return PyGetInput(CPythonInputHandler::STRING, txt)->getString();
@@ -94,12 +97,12 @@ int PyGetSelection(const char* txt)
 {
     return PyGetInput(CPythonInputHandler::SELECTION, txt)->getSelection();
 }
-
+*/
 #else
 void PySetProgressText(const char* txt) {}
 void PySetProgress(int prog) {}
 void PySetProgress(float prog) {}
-std::string PyGetString(const char* txt) {return "";}
-int PyGetInt(const char* txt) {return 0;}
-int PyGetSelection(const char* txt) {return 0;}
+//std::string PyGetString(const char* txt) {return "";}
+//int PyGetInt(const char* txt) {return 0;}
+//int PyGetSelection(const char* txt) {return 0;}
 #endif

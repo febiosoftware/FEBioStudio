@@ -41,161 +41,211 @@ SOFTWARE.*/
 #include <FEBioStudio/ToolBox.h>
 #include "PythonTool.h"
 
+class CPythonToolBar : public QToolBar
+{
+public:
+	CPythonToolBar(QWidget* parent = nullptr) : QToolBar(nullptr)
+	{
+		QAction* importScript = new QAction(CIconProvider::GetIcon("open"), "Import Script", parent);
+		importScript->setObjectName("importScript");
+		importScript->setIconVisibleInMenu(false);
+		addAction(importScript);
+
+		// add empty widget so that the refresh button can be aligned on the right
+		QWidget* empty = new QWidget();
+		empty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+		addWidget(empty);
+
+		QAction* refresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
+		refresh->setObjectName("refresh");
+		refresh->setIconVisibleInMenu(false);
+		addAction(refresh);
+	}
+};
+
+class CPythonButtonBox : public QWidget
+{
+public:
+	CPythonButtonBox(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		m_grid = new QGridLayout;
+		setLayout(m_grid);
+		m_grid->setSpacing(2);
+
+		m_buttonGroup = new QButtonGroup(this);
+		m_buttonGroup->setObjectName("buttons");
+	}
+
+	void addButton(const QString& label)
+	{
+		QPushButton* but = new QPushButton(label);
+		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+		but->setCheckable(true);
+
+		int i = m_buttons++;
+		m_grid->addWidget(but, i / 2, i % 2);
+		m_buttonGroup->addButton(but); m_buttonGroup->setId(but, i + 1);
+	}
+
+	void clear()
+	{
+		for (auto button : m_buttonGroup->buttons())
+		{
+			delete button;
+		}
+		m_buttons = 0;
+	}
+
+private:
+	int m_buttons = 0;
+	QGridLayout* m_grid;
+	QButtonGroup* m_buttonGroup;
+};
+
+class CPythonParameterPanel : public QStackedWidget
+{
+public:
+	CPythonParameterPanel(QWidget* parent = nullptr) : QStackedWidget(parent)
+	{
+		QLabel* label = new QLabel("(No tool selected)");
+
+		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+		addWidget(label);
+	}
+
+	void AddPanel(QWidget* w)
+	{
+		if (w == nullptr)
+		{
+			QLabel* pl = new QLabel("(no properties)");
+			pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+			addWidget(pl);
+		}
+		else addWidget(w);
+	}
+
+	void clear()
+	{
+		setCurrentIndex(0);
+		while (count() > 1)
+		{
+			delete widget(1);
+		}
+	}
+};
+
+class CPythonRunningPane : public QStackedWidget
+{
+private:
+	QLabel* m_text;
+	QProgressBar* m_progress;
+
+public:
+	CPythonRunningPane(QWidget* parent = nullptr) : QStackedWidget(parent)
+	{
+		QWidget* w1 = new QWidget;
+		QVBoxLayout* l1 = new QVBoxLayout(w1);
+		QPushButton* runButton = new QPushButton("run");
+		runButton->setObjectName("run");
+		l1->addWidget(runButton);
+		l1->addStretch();
+		addWidget(w1);
+
+		QWidget* w2 = new QWidget;
+		QVBoxLayout* l2 = new QVBoxLayout(w2);
+		l2->addWidget(m_text = new QLabel());
+		l2->addWidget(m_progress = new QProgressBar());
+		l2->addStretch();
+		addWidget(w2);
+
+		m_progress->setMinimum(0);
+		m_progress->setMaximum(100);
+	}
+
+	void startRunning(const QString& msg)
+	{
+		setCurrentIndex(1);
+		m_text->setText(msg);
+		m_progress->setValue(0);
+	}
+
+	void stopRunning()
+	{
+		setCurrentIndex(0);
+	}
+
+	void setProgressText(const QString& txt)
+	{
+		m_text->setText(txt);
+	}
+
+	void setProgress(int n)
+	{
+		m_progress->setValue(n);
+	}
+};
+
 class Ui::CPythonToolsPanel
 {
 public:
-	QStackedWidget* parentStack;
-	QStackedWidget* stack;
-	QGridLayout* grid;
-	QButtonGroup* group;
-	
-	QAction* importScript;
-	QAction* refresh;
+	CPythonButtonBox* buttons;
+	CPythonParameterPanel* paramStack;
+	CPythonRunningPane* runPane;
 
-	QLabel* runningText;
-	bool running;
-	QProgressBar* progress;
+	::CPythonToolsPanel* parent = nullptr;
+	int numTools = 0;
 
 public:
 	void setupUi(::CPythonToolsPanel* parent)
 	{
 		this->parent = parent;
-		running = false;
 
-		QToolBar* toolbar = new QToolBar();
-		importScript = new QAction(CIconProvider::GetIcon("open"), "Import Script", parent);
-		importScript->setObjectName("importScript");
-		importScript->setIconVisibleInMenu(false);
-		toolbar->addAction(importScript);
+		// build the toolbar
+		QToolBar* toolbar = new CPythonToolBar(parent);
 
-		QWidget* empty = new QWidget();
-		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-		toolbar->addWidget(empty);
+		// build the button box
+		buttons = new CPythonButtonBox();
 
-		refresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
-		refresh->setObjectName("refresh");
-		refresh->setIconVisibleInMenu(false);
-		toolbar->addAction(refresh);
+		// create the parameters pane
+		QWidget* paramWidget = new QWidget;
+		QVBoxLayout* paramLayout = new QVBoxLayout(paramWidget);
+		paramStack = new CPythonParameterPanel();
+		paramLayout->addWidget(paramStack);
 
-		QWidget* box = new QWidget;
-
-		grid = new QGridLayout;
-		box->setLayout(grid);
-		grid->setSpacing(2);
-
-		group = new QButtonGroup(box);
-		group->setObjectName("buttons");
-
-		stack = new QStackedWidget;
-		QLabel* label = new QLabel("(No tool selected)");
-		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-		stack->addWidget(label);
+		// create the running page (shown when a tool is running)
+		runPane = new CPythonRunningPane();
+		runPane->hide();
+		paramLayout->addWidget(runPane);
 
 		// create the toolbox
 		CToolBox* tool = new CToolBox;
-		tool->addTool("Tools", box);
-		tool->addTool("Parameters", stack);
-
-		QWidget* toolsPage = new QWidget;
-		QVBoxLayout* pg = new QVBoxLayout(toolsPage);
-		pg->setContentsMargins(1, 1, 1, 1);
-		pg->addWidget(toolbar);
-		pg->addWidget(tool);
-
-		// create the running page (shown when a tool is running)
-		QWidget* runningPage = new QWidget;
-		QVBoxLayout* runningLayout = new QVBoxLayout(runningPage);
-		runningLayout->setAlignment(Qt::AlignCenter);
-
-		runningLayout->addWidget(runningText = new QLabel);
-		runningText->setAlignment(Qt::AlignCenter);
-
-		progress = new QProgressBar;
-		progress->setMinimum(0);
-		progress->setMaximum(0);
-
-		runningLayout->addWidget(progress);
+		tool->addTool("Tools", buttons);
+		tool->addTool("Parameters", paramWidget);
 
 		// build the main layout
-		parentStack = new QStackedWidget;
-		parentStack->addWidget(toolsPage);
-		parentStack->addWidget(runningPage);
-
-		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
-		parentLayout->addWidget(parentStack);
-
-		numTools = 0;
+		QVBoxLayout* mainLayout = new QVBoxLayout(parent);
+		mainLayout->setContentsMargins(1, 1, 1, 1);
+		mainLayout->addWidget(toolbar);
+		mainLayout->addWidget(tool);
 
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-
 	void addTool(CPythonTool* tool)
 	{
-		int i = numTools;
-
-		QPushButton* but = new QPushButton(tool->name());
-		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-		but->setCheckable(true);
-
-		grid->addWidget(but, i / 2, i % 2);
-		group->addButton(but); group->setId(but, i + 1);
-
-		QWidget* pw = tool->createUi();
-		if (pw == 0)
-		{
-			QLabel* pl = new QLabel("(no properties)");
-			pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-			stack->addWidget(pl);
-		}
-		else stack->addWidget(pw);
-
-        numTools++;
+		buttons->addButton(tool->name());
+		paramStack->AddPanel(tool->createUi());
+		numTools++;
 	}
 
 	void refreshPanel()
 	{
-		stack->setCurrentIndex(0);
-
-		for(auto button : group->buttons())
-		{
-			delete button;
-		}
-
-		while(stack->count() > 1)
-		{
-			delete stack->widget(1);
-		}
-
+		buttons->clear();
+		paramStack->clear();
 		numTools = 0;
 	}
 
-	void startRunning(const QString& txt)
-	{
-		running = true;
-		runningText->setText(txt);
-		parentStack->setCurrentIndex(1);
-	}
-
-	void stopRunning()
-	{
-		running = false;
-		progress->setMaximum(0);
-		parentStack->setCurrentIndex(0);
-	}
-
-	void setProgress(int prog)
-	{
-		progress->setMaximum(100);
-		progress->setValue(prog);
-	}
-
-	void setProgressText(const QString& txt)
-	{
-		runningText->setText(QString("%1...").arg(txt));
-	}
-
-	void addPage(QWidget* page)
+/*	void addPage(QWidget* page)
 	{
 		parentStack->addWidget(page);
 		parentStack->setCurrentIndex(2);
@@ -214,9 +264,5 @@ public:
 
 		parentStack->removeWidget(parentStack->widget(2));
 	}
-
-private:
-	::CPythonToolsPanel* parent;
-
-    int numTools;
+*/
 };

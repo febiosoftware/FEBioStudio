@@ -69,7 +69,6 @@ public:
 	~CPythonTool();
 
 public:
-	void OnApply();
 	bool runFunc();
 
 	void SetProperties(CPythonToolProps* props);
