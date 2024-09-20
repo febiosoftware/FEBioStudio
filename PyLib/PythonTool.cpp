@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/PropertyListForm.h"
 #include <QBoxLayout>
 #include <QPushButton>
+#include <QLabel>
 #include <iostream>
 
 namespace py = pybind11;
@@ -91,11 +92,18 @@ QWidget* CPythonTool::createUi()
 {
 	QWidget* w = new QWidget;
 	QVBoxLayout* l = new QVBoxLayout();
+	QString s = QString::fromStdString(m_props->GetInfo());
+	if (!s.isEmpty())
+	{
+		QLabel* label = new QLabel(s);
+		l->addWidget(label);
+	}
 	CPropertyListForm* ui = new CPropertyListForm;
 	ui->setPropertyList(m_props);
 	l->addWidget(ui);
 	QPushButton* pb = new QPushButton("Run");
 	l->addWidget(pb);
+	l->addStretch();
 	w->setLayout(l);
 
 	QObject::connect(pb, &QPushButton::clicked, this, &CPythonTool::OnApply);

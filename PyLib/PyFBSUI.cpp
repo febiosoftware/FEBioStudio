@@ -123,6 +123,7 @@ void init_FBSUI(py::module& m)
 
 	py::class_<CPythonToolProps, std::unique_ptr<CPythonToolProps, py::nodelete>>(ui, "PythonTool")
 		.def(py::init(&PythonTool_init))
+		.def("setInfo"             , &CPythonToolProps::setInfo            , "info"_a)
 		.def("addBoolParameter"    , &CPythonToolProps::addBoolProperty    , "name"_a, "value"_a = true)
 		.def("addIntParameter"     , &CPythonToolProps::addIntProperty     , "name"_a, "value"_a = 0)
 		.def("addDoubleParameter"  , &CPythonToolProps::addDoubleProperty  , "name"_a, "value"_a = 0)

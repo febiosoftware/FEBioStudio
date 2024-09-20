@@ -44,6 +44,9 @@ public:
 
 	pybind11::function GetFunction() { return m_func; }
 
+	const std::string& GetInfo() { return m_info; }
+
+	void setInfo(const std::string& info) { m_info = info; }
 	void addBoolProperty(const std::string& name, bool v);
 	void addIntProperty(const std::string& name, int v);
 	void addDoubleProperty(const std::string& name, double v);
@@ -55,6 +58,7 @@ public:
 private:
 	int m_id;
 	std::string m_name;
+	std::string m_info;
 	pybind11::function m_func;
 };
 
