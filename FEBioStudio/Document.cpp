@@ -506,8 +506,7 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
 	}
 	else msg = pcmd->GetName();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
+	CLogger::AddLogEntry(QString("Executing command: %1\n").arg(msg));
 	AppendChangeLog(msg);
 
 	bool ret = m_pCmd->DoCommand(pcmd);
