@@ -46,6 +46,7 @@ SOFTWARE.*/
 
 #include "PyFSMesh.h"
 
+namespace py = pybind11;
 
 CModelDocument* GetActiveDocument()
 {
@@ -122,15 +123,15 @@ bool ExportFEB(std::string& fileName)
 }
 
 // Initializes the fbs.mdl module
-void init_FBSModel(pybind11::module& m)
+void init_FBSModel(py::module& m)
 {
-	pybind11::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio model.");
+	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio model.");
 
 
     ///////////////// FSModel /////////////////
     mdl.def("GetActiveFSModel", &GetActiveFSModel);
 
-    pybind11::class_<FSModel, std::unique_ptr<FSModel, pybind11::nodelete>>(mdl, "FSModel")
+	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "FSModel")
         .def("Clear", &FSModel::Clear)
         .def("Purge", &FSModel::Purge)
 
@@ -192,7 +193,7 @@ void init_FBSModel(pybind11::module& m)
     ///////////////// FSModel /////////////////
 
     ///////////////// GObject /////////////////
-    pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
+	py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(mdl, "GObject")
         .def("Parts", &GBaseObject::Parts)
         .def("Faces", &GBaseObject::Faces)
         .def("Edges", &GBaseObject::Edges)
@@ -210,7 +211,7 @@ void init_FBSModel(pybind11::module& m)
     ///////////////// GObject /////////////////
 
     ///////////////// GNode /////////////////
-    pybind11::class_<GNode, std::unique_ptr<GNode, pybind11::nodelete>>(mdl, "GNode")
+	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(mdl, "GNode")
         .def("Type", &GNode::Type)
         .def("SetType", &GNode::SetType)
         .def("LocalPosition", static_cast<vec3d& (GNode::*)()>(&GNode::LocalPosition))
@@ -228,9 +229,9 @@ void init_FBSModel(pybind11::module& m)
 	mdl.def("AddStep", AddStep);
 	mdl.def("ExportFEB", ExportFEB);
 
-	pybind11::class_<FSStep, std::unique_ptr<FSStep, pybind11::nodelete>>(mdl, "FSStep");
+	py::class_<FSStep, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep");
 
-	pybind11::class_<GMaterial, std::unique_ptr<GMaterial, pybind11::nodelete>>(mdl, "GMaterial")
+	py::class_<GMaterial, std::unique_ptr<GMaterial, py::nodelete>>(mdl, "GMaterial")
 		.def("set", [](GMaterial* gm, std::string& paramName, float value) {
 			FSMaterial* pm = gm->GetMaterialProperties();
 			if (pm) {
@@ -239,7 +240,7 @@ void init_FBSModel(pybind11::module& m)
 			}
 		});
 
-	// pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
+	// py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(mdl, "GObject")
 	// 	.def("AssignMaterial", [](GObject* po, GMaterial* pm) {
 	// 		for (int i = 0; i < po->Parts(); ++i) po->Part(i)->SetMaterialID(pm->GetID());
 	// 	})
@@ -251,5 +252,5 @@ void init_FBSModel(pybind11::module& m)
 
 }
 #else
-void init_FBSModel(pybind11::module_& m) {}
+void init_FBSModel(py::module_& m) {}
 #endif

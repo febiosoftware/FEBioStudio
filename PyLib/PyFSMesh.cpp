@@ -36,10 +36,12 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 
-void init_FSMesh(pybind11::module_& m)
+namespace py = pybind11;
+
+void init_FSMesh(py::module_& m)
 {
     ///////////////// FSMesh /////////////////
-    pybind11::class_<FSMesh, std::unique_ptr<FSMesh, pybind11::nodelete>>(m, "FSMesh")
+	py::class_<FSMesh, std::unique_ptr<FSMesh, py::nodelete>>(m, "FSMesh")
         .def("Create", &FSMesh::Create)
         .def("Clear", &FSMesh::Clear)
 
@@ -60,7 +62,7 @@ void init_FSMesh(pybind11::module_& m)
     ///////////////// FSMesh /////////////////
 
     ///////////////// MeshItem /////////////////
-    pybind11::class_<MeshItem, std::unique_ptr<MeshItem, pybind11::nodelete>>(m, "MeshItem")
+	py::class_<MeshItem, std::unique_ptr<MeshItem, py::nodelete>>(m, "MeshItem")
         .def("IsHidden", &MeshItem::IsHidden)
         .def("IsSelected", &MeshItem::IsSelected)
         .def("IsDisabled", &MeshItem::IsDisabled)
@@ -95,18 +97,18 @@ void init_FSMesh(pybind11::module_& m)
     ///////////////// MeshItem /////////////////
 
     ///////////////// FSNode /////////////////
-    pybind11::class_<FSNode, MeshItem, std::unique_ptr<FSNode, pybind11::nodelete>>(m, "FSNode")
+	py::class_<FSNode, MeshItem, std::unique_ptr<FSNode, py::nodelete>>(m, "FSNode")
         .def_readwrite("pos", &FSNode::r);
         ;
     ///////////////// FSNode /////////////////
 
     // ///////////////// FSElement /////////////////
-    // pybind11::class_<FSElement, MeshItem, std::unique_ptr<FSElement, pybind11::nodelete>>(m, "FSElement")
+    // py::class_<FSElement, MeshItem, std::unique_ptr<FSElement, py::nodelete>>(m, "FSElement")
     //     .def_readwrite("pos", &FSNode::r);
     //     ;
     // ///////////////// FSElement /////////////////
 }
 
 #else
-void init_FSMesh(pybind11::module_& m) {}
+void init_FSMesh(py::module_& m) {}
 #endif

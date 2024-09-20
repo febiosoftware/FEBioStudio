@@ -25,163 +25,125 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PythonTool.h"
-
-#ifdef HAS_PYTHON
-#include <pybind11/pybind11.h>
-#include "PythonThread.h"
-#include "PyState.h"
-
 #include <FEBioStudio/MainWindow.h>
 #include "PythonToolsPanel.h"
+#include "../FEBioStudio/PropertyListForm.h"
+#include <QBoxLayout>
+#include <QPushButton>
 #include <iostream>
 
-CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, int id)
-    : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON), m_id(id), m_wnd(wnd)
+namespace py = pybind11;
+
+void CPythonToolProps::addBoolProperty(const std::string& name, bool v)
 {
-    SetApplyButtonText("Run");
+	CCachedPropertyList::addBoolProperty(v, QString::fromStdString(name));
+}
+
+void CPythonToolProps::addIntProperty(const std::string& name, int v)
+{
+	CCachedPropertyList::addIntProperty(v, QString::fromStdString(name));
+}
+
+void CPythonToolProps::addDoubleProperty(const std::string& name, double v)
+{
+	CCachedPropertyList::addDoubleProperty(v, QString::fromStdString(name));
+}
+
+void CPythonToolProps::addVec3Property(const std::string& name, vec3d v)
+{
+	CCachedPropertyList::addVec3Property(v, QString::fromStdString(name));
+}
+
+void CPythonToolProps::addEnumProperty(const std::string& name, const std::string& labels, int v)
+{
+	QString enumString = QString::fromStdString(labels);
+	QStringList enums = enumString.split(';');
+	CCachedPropertyList::addEnumProperty(v, QString::fromStdString(name))->setEnumValues(enums);
+}
+
+void CPythonToolProps::addStringProperty(const std::string& name, const char* v)
+{
+	CCachedPropertyList::addStringProperty(v, QString::fromStdString(name));
+}
+
+void CPythonToolProps::addResourceProperty(const std::string& name, const char* v)
+{
+	CCachedPropertyList::addResourceProperty(v, QString::fromStdString(name));
+}
+
+CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, int id)
+    : CAbstractTool(wnd, name.c_str()), m_id(id)
+{
+	m_props = nullptr;
 }
 
 CPythonTool::~CPythonTool()
 {
-    for(auto el : boolProps)
-    {
-        delete el.second;
-    }
-
-    for(auto el : intProps)
-    {
-        delete el.second;
-    }
-
-    for(auto el : enumProps)
-    {
-        delete el.second;
-    }
-
-    for(auto el : dblProps)
-    {
-        delete el.second;
-    }
-
-    for(auto el : vec3Props)
-    {
-        delete el.second;
-    }
-
-    for(auto el : strProps)
-    {
-        delete el.second;
-    }
-
-    for(auto el : rscProps)
-    {
-        delete el.second;
-    }
+	delete m_props;
 }
 
-void CPythonTool::addBoolProperty(const std::string& name, bool value)
+void CPythonTool::SetProperties(CPythonToolProps* props)
 {
-    bool* val = new bool;
-    *val = value;
-    boolProps[name] = val;
-
-    CDataPropertyList::addBoolProperty(val, QString::fromStdString(name));
+	m_props = props;
 }
 
-void CPythonTool::addIntProperty(const std::string& name, int value)
+QWidget* CPythonTool::createUi()
 {
-    int* val = new int;
-    *val = value;
-    intProps[name] = val;
+	QWidget* w = new QWidget;
+	QVBoxLayout* l = new QVBoxLayout();
+	CPropertyListForm* ui = new CPropertyListForm;
+	ui->setPropertyList(m_props);
+	l->addWidget(ui);
+	QPushButton* pb = new QPushButton("Run");
+	l->addWidget(pb);
+	w->setLayout(l);
 
-    CDataPropertyList::addIntProperty(val, QString::fromStdString(name));
+	QObject::connect(pb, &QPushButton::clicked, this, &CPythonTool::OnApply);
+	return w;
 }
 
-void CPythonTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
+void CPythonTool::OnApply()
 {
-    int* val = new int;
-    *val = value;
-    enumProps[name] = val;
-
-    QStringList qlabels = QString::fromStdString(labels).split(";");
-
-    CDataPropertyList::addEnumProperty(val, QString::fromStdString(name))->setEnumValues(qlabels);
-}
-
-void CPythonTool::addDoubleProperty(const std::string& name, double value)
-{
-    double* val = new double;
-    *val = value;
-    dblProps[name] = val;
-
-    CDataPropertyList::addDoubleProperty(val, QString::fromStdString(name));
-}
-
-void CPythonTool::addVec3Property(const std::string& name, vec3d value)
-{
-    vec3d* val = new vec3d;
-    *val = value;
-    vec3Props[name] = val;
-
-    CDataPropertyList::addVec3Property(val, QString::fromStdString(name));
-}
-
-void CPythonTool::addStringProperty(const std::string& name, std::string value)
-{
-    QString * val = new QString(value.c_str());
-    strProps[name] = val;
-
-    CDataPropertyList::addStringProperty(val, QString::fromStdString(name));
-}
-
-void CPythonTool::addResourceProperty(const std::string& name, std::string value)
-{
-    QString * val = new QString(value.c_str());
-    rscProps[name] = val;
-
-    CDataPropertyList::addResourceProperty(val, QString::fromStdString(name));
-}
-
-bool CPythonTool::OnApply()
-{
-    m_wnd->GetPythonToolsPanel()->GetThread()->SetTool(this);
-
-    return true;
+	GetMainWindow()->GetPythonToolsPanel()->GetThread()->SetTool(this);
 }
 
 bool CPythonTool::runFunc()
 {
     try
     {
-        pybind11::dict kwargs;
+        py::dict kwargs;
 
-        for(int prop = 0; prop < Properties(); prop++)
+        for(int prop = 0; prop < m_props->Properties(); prop++)
         {
-            CProperty& current = Property(prop);
+            CProperty& current = m_props->Property(prop);
             std::string name = current.name.toStdString();
+			void* d = current.data(); assert(d);
 
             switch(current.type)
             {
                 case CProperty::Bool:
-                    kwargs[name.c_str()] = *boolProps[name];
+                    kwargs[name.c_str()] = *((bool*)d);
                     break;
                 case CProperty::Int:
-                    kwargs[name.c_str()] = *intProps[name];
+                    kwargs[name.c_str()] = *((int*)d);
                     break;
                 case CProperty::Float:
-                    kwargs[name.c_str()] = *dblProps[name];
+                    kwargs[name.c_str()] = *((double*)d);
                     break;
                 case CProperty::Vec3:
-                    kwargs[name.c_str()] = *vec3Props[name];
+                    kwargs[name.c_str()] = *((vec3d*)d);
                     break;
                 case CProperty::String:
-                    kwargs[name.c_str()] = strProps[name]->toStdString().c_str();
+                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str(); // TODO: This will not work!
                     break;
-                case CProperty::Enum:
-                    kwargs[name.c_str()] = pybind11::make_tuple(*enumProps[name], current.values[*enumProps[name]].toStdString().c_str());
+				case CProperty::Enum:
+					{
+						int n = *((int*)d);
+						kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());  // TODO: This will not work!
+					}
                     break;
                 case CProperty::Resource:
-                    kwargs[name.c_str()] = rscProps[name]->toStdString().c_str();
+                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str(); // TODO: This will not work!
                     break;
 
                 default:
@@ -189,14 +151,13 @@ bool CPythonTool::runFunc()
             };
         }
 
-        auto func = m_wnd->GetPythonToolsPanel()->GetThread()->GetState()->GetFunc(m_id);
-
+		auto func = m_props->GetFunction();
         (*func)(**kwargs);
     }
-    catch(pybind11::error_already_set &e)
+    catch(py::error_already_set &e)
     {
         // Print the error message
-        pybind11::print(e.what());
+        py::print(e.what());
 
         // Return execution to Python to allow the thread to exit
         e.restore();
@@ -207,68 +168,3 @@ bool CPythonTool::runFunc()
 
     return true;
 }
-
-// Dummy tool
-
-CPythonDummyTool::CPythonDummyTool(const char* name, int id)
-    : name(name), m_id(id)
-{
-
-}
-
-void CPythonDummyTool::addBoolProperty(const std::string& name, bool value)
-{
-    propOrder.push_back(CProperty::Bool);
-    boolProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addIntProperty(const std::string& name, int value)
-{
-    propOrder.push_back(CProperty::Int);
-    intProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
-{
-    propOrder.push_back(CProperty::Enum);
-    enumProps.emplace(name, value);
-    enumLabels.emplace(labels);
-}
-
-void CPythonDummyTool::addDoubleProperty(const std::string& name, double value)
-{
-    propOrder.push_back(CProperty::Float);
-    dblProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value)
-{
-    propOrder.push_back(CProperty::Vec3);
-    vec3Props.emplace(name, value);
-}
-
-void CPythonDummyTool::addStringProperty(const std::string& name, const char* value)
-{
-    propOrder.push_back(CProperty::String);
-    strProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addResourceProperty(const std::string& name, const char* value)
-{
-    propOrder.push_back(CProperty::Resource);
-    rscProps.emplace(name, value);
-}
-
-#else
-CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func) : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON) {}
-CPythonTool::~CPythonTool() {}
-void CPythonTool::addBoolProperty(const std::string& name, bool value) {}
-void CPythonTool::addIntProperty(const std::string& name, int value) {}
-void CPythonTool::addEnumProperty(const std::string& name, const std::string& labels, int value) {}
-void CPythonTool::addDoubleProperty(const std::string& name, double value) {}
-void CPythonTool::addVec3Property(const std::string& name, vec3d value) {}
-void CPythonTool::addStringProperty(const std::string& name, std::string value) {}
-void CPythonTool::addResourceProperty(const std::string& name, std::string value) {}
-bool CPythonTool::OnApply() {return false;}
-bool CPythonTool::runFunc() {return false;}
-#endif

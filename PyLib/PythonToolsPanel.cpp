@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <pybind11/embed.h>
 
 #include "PythonToolsPanel.h"
-#include "PyState.h"
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
@@ -69,78 +68,20 @@ void CPythonToolsPanel::Update(bool breset)
 	}
 }
 
-CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func)
+CPythonToolProps* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func)
 {
-    int id = tools.size() + dummyTools.size();
-
-    m_pythonThread->GetState()->AddFunc(id, func);
-
-	CPythonDummyTool* tool = new CPythonDummyTool(name, id);
-
+	int id = tools.size() + dummyTools.size();
+	CPythonToolProps* tool = new CPythonToolProps(name, id, func);
 	dummyTools.push_back(tool);
-
 	return tool;
 }
 
-CPythonTool* CPythonToolsPanel::addTool(std::string name, int id)
+CPythonTool* CPythonToolsPanel::CreateTool(CPythonToolProps* p)
 {
-	CPythonTool* tool = new CPythonTool(GetMainWindow(), name, id);
-
+	CPythonTool* tool = new CPythonTool(GetMainWindow(), p->GetName(), p->GetID());
+	tool->SetProperties(p);
 	tools.push_back(tool);
-
 	return tool;
-}
-
-void CPythonToolsPanel::finalizeTools()
-{
-	for(auto dummyTool : dummyTools)
-	{
-		auto tool = addTool(dummyTool->name, dummyTool->m_id);
-
-		for(auto type : dummyTool->propOrder)
-		{
-			switch (type)
-			{
-			case CProperty::Bool:
-				tool->addBoolProperty(dummyTool->boolProps.front().first, dummyTool->boolProps.front().second);
-				dummyTool->boolProps.pop();
-				break;
-			case CProperty::Int:
-				tool->addIntProperty(dummyTool->intProps.front().first, dummyTool->intProps.front().second);
-				dummyTool->intProps.pop();
-				break;
-			case CProperty::Float:
-				tool->addDoubleProperty(dummyTool->dblProps.front().first, dummyTool->dblProps.front().second);
-				dummyTool->dblProps.pop();
-				break;
-			case CProperty::Enum:
-				tool->addEnumProperty(dummyTool->enumProps.front().first, dummyTool->enumLabels.front(), dummyTool->enumProps.front().second);
-				dummyTool->enumProps.pop();
-				dummyTool->enumLabels.pop();
-				break;
-			case CProperty::Vec3:
-				tool->addVec3Property(dummyTool->vec3Props.front().first, dummyTool->vec3Props.front().second);
-				dummyTool->vec3Props.pop();
-				break;
-			case CProperty::String:
-				tool->addStringProperty(dummyTool->strProps.front().first, dummyTool->strProps.front().second);
-				dummyTool->strProps.pop();
-				break;
-			case CProperty::Resource:
-				tool->addResourceProperty(dummyTool->rscProps.front().first, dummyTool->rscProps.front().second);
-				dummyTool->rscProps.pop();
-				break;
-			default:
-				break;
-			}
-		}
-
-		ui->addTool(tool);
-
-		delete dummyTool;
-	}
-
-	dummyTools.clear();
 }
 
 CPyThread* CPythonToolsPanel::GetThread()
@@ -171,9 +112,20 @@ void CPythonToolsPanel::setProgress(int prog)
 	ui->setProgress(prog);
 }
 
+void CPythonToolsPanel::BuildTools()
+{
+	for (auto p : dummyTools)
+	{
+		// Note that tool takes ownership of the properties
+		auto tool = CreateTool(p);
+		ui->addTool(tool);
+	}
+	dummyTools.clear();
+}
+
 void CPythonToolsPanel::on_pythonThread_ExecDone()
 {
-    finalizeTools();
+	BuildTools();
 
 	ui->stopRunning();
 
@@ -288,7 +240,7 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CComma
 void CPythonToolsPanel::initPython() {}
 CPythonToolsPanel::~CPythonToolsPanel() {}
 void CPythonToolsPanel::Update(bool breset) {}
-CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func) {return nullptr;}
+CPythonToolProps* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func) {return nullptr;}
 CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func) {return nullptr;}
 void CPythonToolsPanel::runScript(QString filename) {}
 void CPythonToolsPanel::finalizePython() {}

@@ -40,7 +40,7 @@ namespace pybind11{
 class CMainWindow;
 class CAbstractTool;
 class CPythonTool;
-class CPythonDummyTool;
+class CPythonToolProps;
 class CPyOutput;
 class CPyThread;
 
@@ -57,9 +57,9 @@ public:
 	// update the tools panel
 	void Update(bool breset = true) override;
 
-    CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
+	CPythonToolProps* addDummyTool(const char* name, pybind11::function func);
 
-    CPyThread* GetThread();
+	CPyThread* GetThread();
 
 	void runScript(QString filename);
 
@@ -71,8 +71,8 @@ public:
 	void removeInputPage();
 
 private:
-    void finalizeTools();
-    CPythonTool* addTool(std::string name, int id);
+	void BuildTools();
+	CPythonTool* CreateTool(CPythonToolProps* p);
 
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
@@ -96,7 +96,7 @@ private:
     CPyThread* m_pythonThread;
 
 	CPythonTool*			m_activeTool;
-	std::vector<CPythonDummyTool*>	dummyTools;
+	std::vector<CPythonToolProps*>	dummyTools;
     std::vector<CPythonTool*>	tools;
 
 	friend class Ui::CPythonToolsPanel;

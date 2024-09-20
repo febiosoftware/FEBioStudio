@@ -27,21 +27,21 @@ SOFTWARE.*/
 #include "PythonTool.h"
 #include "PythonThread.h"
 #include "PythonToolsPanel.h"
-#include "PyState.h"
+#include <pybind11/pybind11.h>
 
 #include "PyFBS.cpp"
 
 #include <QMetaObject>
 
 CPyThread::CPyThread(CPythonToolsPanel* panel) 
-    : m_panel(panel), m_tool(nullptr), m_restart(false), m_state(new CPyState)
+    : m_panel(panel), m_tool(nullptr), m_restart(false)
 {
 
 }
 
 CPyThread::~CPyThread()
 {
-    delete m_state;
+
 }
 
 void CPyThread::initPython()
@@ -68,8 +68,6 @@ void CPyThread::run()
     {
         if(m_restart)
         {
-            m_state->ClearFuncs();
-
             finalizePython();
             initPython();
 
@@ -107,9 +105,4 @@ void CPyThread::SetFilename(QString& filename)
 void CPyThread::Restart()
 {
     m_restart = true;
-}
-
-CPyState* CPyThread::GetState()
-{
-    return m_state;
 }

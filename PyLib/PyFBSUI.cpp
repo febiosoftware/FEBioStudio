@@ -46,13 +46,17 @@ SOFTWARE.*/
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
+#include <sstream>
+
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 void openFile(const char *fileName)
 {
     FBS::getMainWindow()->OpenFile(fileName);
 }
 
-CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
+CPythonToolProps* PythonTool_init(const char* name, py::function func)
 {
     auto wnd = FBS::getMainWindow();
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
@@ -60,9 +64,14 @@ CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
     return pythonToolsPanel->addDummyTool(name, func);
 }
 
-GBox* GBox_init(vec3d pos, double width, double height, double depth)
+void GBox_init(vec3d pos, double width, double height, double depth)
 {
     GBox* gbox = new GBox();
+
+	static int n = 1;
+	std::stringstream ss;
+	ss << "box" << n++;
+	gbox->SetName(ss.str());
 
     gbox->SetFloatValue(GBox::WIDTH, width);
     gbox->SetFloatValue(GBox::HEIGHT, height);
@@ -80,29 +89,29 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
     }
 
     doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), gbox), gbox->GetName());
-
-    return gbox;
 }
 
-void init_FBSUI(pybind11::module& m)
+void init_FBSUI(py::module& m)
 {
-    pybind11::module ui = m.def_submodule("ui", "Module used to interact with the FEBio Studio GUI");
+    py::module ui = m.def_submodule("ui", "Module used to interact with the FEBio Studio GUI");
 
-    pybind11::class_<CPyOutput>(ui, "PyOutput")
-        .def(pybind11::init())
+    py::class_<CPyOutput>(ui, "PyOutput")
+        .def(py::init())
         .def("write", &CPyOutput::write)
         .def("flush", &CPyOutput::flush);
 
-    pybind11::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, pybind11::nodelete>>(ui, "SpringSet")
-        .def(pybind11::init(&SpringSet_init))
+    py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(ui, "SpringSet")
+        .def(py::init(&SpringSet_init))
         .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
 
     ui.def("openFile", openFile);
 
+	ui.def("GBox", GBox_init, "pos"_a, "W"_a, "H"_a, "D"_a);
+
     ui.def("FindOrMakeNode", FindOrMakeNode);
     ui.def("IntersectWithObject", IntersectWithObject);
-    ui.def("MeshFromCurve", meshFromCurve, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
-        pybind11::arg("divisions") = 6, pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
+    ui.def("MeshFromCurve", meshFromCurve, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve",
+		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
     ui.def("setProgressText", PySetProgressText);
     ui.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
@@ -111,17 +120,17 @@ void init_FBSUI(pybind11::module& m)
     ui.def("getUserInt", PyGetInt);
     ui.def("getUserSelection", PyGetSelection);
 
-    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(ui, "PythonTool")
-        .def(pybind11::init(&PythonTool_init))
-        .def("addBoolParameter", &CPythonDummyTool::addBoolProperty, pybind11::arg("name"), pybind11::arg("value") = true)
-        .def("addIntParameter", &CPythonDummyTool::addIntProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
-        .def("addDoubleParameter", &CPythonDummyTool::addDoubleProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
-        .def("addVec3Parameter", &CPythonDummyTool::addVec3Property, pybind11::arg("name"), pybind11::arg("value") = vec3d())
-        .def("addEnumParameter", &CPythonDummyTool::addEnumProperty, pybind11::arg("name"), pybind11::arg("labels"), pybind11::arg("value") = 0)
-        .def("addStringParameter", &CPythonDummyTool::addStringProperty, pybind11::arg("name"), pybind11::arg("value") = "")
-        .def("addResourceParameter", &CPythonDummyTool::addResourceProperty, pybind11::arg("name"), pybind11::arg("value") = "");
+	py::class_<CPythonToolProps, std::unique_ptr<CPythonToolProps, py::nodelete>>(ui, "PythonTool")
+		.def(py::init(&PythonTool_init))
+		.def("addBoolParameter"    , &CPythonToolProps::addBoolProperty    , "name"_a, "value"_a = true)
+		.def("addIntParameter"     , &CPythonToolProps::addIntProperty     , "name"_a, "value"_a = 0)
+		.def("addDoubleParameter"  , &CPythonToolProps::addDoubleProperty  , "name"_a, "value"_a = 0)
+		.def("addVec3Parameter"    , &CPythonToolProps::addVec3Property    , "name"_a, "value"_a = vec3d())
+		.def("addEnumParameter"    , &CPythonToolProps::addEnumProperty    , "name"_a, "labels"_a, "value"_a = 0)
+		.def("addStringParameter"  , &CPythonToolProps::addStringProperty  , "name"_a, "value"_a = "")
+		.def("addResourceParameter", &CPythonToolProps::addResourceProperty, "name"_a, "value"_a = "");
 }
 
 #else
-void init_FBSUI(pybind11::module_& m) {}
+void init_FBSUI(py::module_& m) {}
 #endif

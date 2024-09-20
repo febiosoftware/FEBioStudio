@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 
 using namespace Post;
+namespace py = pybind11;
 
 FEPostModel* readPlotFile(std::string filename)
 {
@@ -74,81 +75,81 @@ ModelDataField* runDistanceMap(FEPostModel* model, std::vector<int>& sel1, std::
     return distanceMap;
 }
 
-void init_FBSPost(pybind11::module& m)
+void init_FBSPost(py::module& m)
 {
-    pybind11::module post = m.def_submodule("post", "Module used to interact with plot files");
+	py::module post = m.def_submodule("post", "Module used to interact with plot files");
 
     post.def("readPlotFile", &readPlotFile);
     post.def("runDistanceMap", &runDistanceMap);
 
-    pybind11::class_<FEPostModel>(post, "FEPostModel")
-        .def("GetFEMesh", &FEPostModel::GetFEMesh, pybind11::return_value_policy::reference)
+	py::class_<FEPostModel>(post, "FEPostModel")
+        .def("GetFEMesh", &FEPostModel::GetFEMesh, py::return_value_policy::reference)
         .def("GetStates", &FEPostModel::GetStates)
-        .def("GetState", &FEPostModel::GetStates, pybind11::return_value_policy::reference)
-        .def("GetDataManager", &FEPostModel::GetDataManager, pybind11::return_value_policy::reference)
+        .def("GetState", &FEPostModel::GetStates, py::return_value_policy::reference)
+        .def("GetDataManager", &FEPostModel::GetDataManager, py::return_value_policy::reference)
         .def("Evaluate", [](FEPostModel& self, ModelDataField& field, int component, int time)
             {
                 self.Evaluate(field.GetFieldID() | component, time);
 
                 return self.GetState(time);
-            }, pybind11::return_value_policy::reference);
+            }, py::return_value_policy::reference);
 
-    pybind11::class_<FEPostMesh>(post, "FEPostMesh")
+	py::class_<FEPostMesh>(post, "FEPostMesh")
         .def("Surfaces", &FEPostMesh::Surfaces)
-        .def("Surface", &FEPostMesh::Surface, pybind11::return_value_policy::reference)
+        .def("Surface", &FEPostMesh::Surface, py::return_value_policy::reference)
         .def("NodeSets", &FEPostMesh::NodeSets)
-        .def("NodeSet", &FEPostMesh::NodeSet, pybind11::return_value_policy::reference);
+        .def("NodeSet", &FEPostMesh::NodeSet, py::return_value_policy::reference);
 
-    pybind11::class_<Post::FSSurface>(post, "FESurface")
-        .def_readonly("Faces", &Post::FSSurface::m_Face, pybind11::return_value_policy::reference)
+	py::class_<Post::FSSurface>(post, "FESurface")
+        .def_readonly("Faces", &Post::FSSurface::m_Face, py::return_value_policy::reference)
         .def("GetName", &Post::FSSurface::GetName);
 
-    pybind11::class_<Post::FSNodeSet>(post, "FSNodeSet")
-        .def_readonly("Nodes", &Post::FSNodeSet::m_Node, pybind11::return_value_policy::reference)
+	py::class_<Post::FSNodeSet>(post, "FSNodeSet")
+        .def_readonly("Nodes", &Post::FSNodeSet::m_Node, py::return_value_policy::reference)
         .def("GetName", &Post::FSNodeSet::GetName);
 
-    pybind11::enum_<Data_Tensor_Type>(post, "DataTensorType")
+	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
         .value("DATA_VECTOR", Data_Tensor_Type::TENSOR_VECTOR)
         .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
 
-    pybind11::class_<FEDataManager>(post, "FEDataManager")
+	py::class_<FEDataManager>(post, "FEDataManager")
         .def("DataFields", &FEDataManager::DataFields)
-        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, pybind11::return_value_policy::reference)
+        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, py::return_value_policy::reference)
         .def("FindDataField", &FEDataManager::FindDataField);
 
-    pybind11::class_<ModelDataField, std::unique_ptr<ModelDataField, pybind11::nodelete>>(post, "ModelDataField")
+	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField")
         .def("components", &ModelDataField::components)
         .def("componentName", &ModelDataField::componentName)
         .def("GetName", &ModelDataField::GetName)
         .def("SetName", &ModelDataField::SetName);
 
-    pybind11::class_<FEState>(post, "FEState")
-        .def_readonly("NodeData", &FEState::m_NODE, pybind11::return_value_policy::reference)
-        .def_readonly("EdgeData", &FEState::m_EDGE, pybind11::return_value_policy::reference)
-        .def_readonly("FaceData", &FEState::m_FACE, pybind11::return_value_policy::reference)
-        .def_readonly("ElemData", &FEState::m_ELEM, pybind11::return_value_policy::reference);
+	py::class_<FEState>(post, "FEState")
+        .def_readonly("NodeData", &FEState::m_NODE, py::return_value_policy::reference)
+        .def_readonly("EdgeData", &FEState::m_EDGE, py::return_value_policy::reference)
+        .def_readonly("FaceData", &FEState::m_FACE, py::return_value_policy::reference)
+        .def_readonly("ElemData", &FEState::m_ELEM, py::return_value_policy::reference);
 
-    pybind11::class_<NODEDATA>(post, "NODEDATA")
+	py::class_<NODEDATA>(post, "NODEDATA")
         .def_readonly("val", &NODEDATA::m_val)
         .def_readonly("tag", &NODEDATA::m_ntag);
 
-    pybind11::class_<EDGEDATA>(post, "EDGEDATA")
+	py::class_<EDGEDATA>(post, "EDGEDATA")
         .def_readonly("val", &EDGEDATA::m_val)
         .def_readonly("tag", &EDGEDATA::m_ntag)
         .def_readonly("nodeVals", &EDGEDATA::m_nv);
 
-    pybind11::class_<ELEMDATA>(post, "ELEMDATA")
+	py::class_<ELEMDATA>(post, "ELEMDATA")
         .def_readonly("val", &ELEMDATA::m_val)
         .def_readonly("state", &ELEMDATA::m_state)
         .def_readonly("shellThickness", &ELEMDATA::m_h);
 
-    pybind11::class_<FACEDATA>(post, "FACEDATA")
+	py::class_<FACEDATA>(post, "FACEDATA")
         .def_readonly("val", &FACEDATA::m_val)
         .def_readonly("tag", &FACEDATA::m_ntag);
 
 }
 
 #else
-void init_FBSPost(pybind11::module_& m) {}
+void init_FBSPost(py::module_& m) {}
 #endif

@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QThread>
 
-class CPyState;
 class CPythonToolsPanel;
 class CPythonTool;
 
@@ -45,8 +44,6 @@ public:
     void SetFilename(QString& filename);
     void Restart();
 
-    CPyState* GetState();
-
 signals:
     void ExecDone();
     void Restarted();
@@ -60,6 +57,4 @@ private:
     CPythonTool* m_tool;
     CPythonToolsPanel* m_panel;
     QString m_filename;
-
-    CPyState* m_state;
 };

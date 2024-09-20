@@ -43,6 +43,8 @@ SOFTWARE.*/
 
 #include <FECore/mat3d.h>
 
+namespace py = pybind11;
+
 void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
 	GDisc disc;
@@ -139,26 +141,26 @@ void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, 
 
 
 
-void init_FBSCore(pybind11::module& m)
+void init_FBSCore(py::module& m)
 {
-    pybind11::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
+    py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
     init_FBSPost(core);
 
-    core.def("curveToVTKMesh", curveToVTKMesh);//, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
-        // pybind11::arg("divisions") = 6, pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
+    core.def("curveToVTKMesh", curveToVTKMesh);//, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve", 
+        // py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
-    pybind11::class_<vec3d>(core, "vec3d")
-        .def(pybind11::init<>())
-        .def(pybind11::init<double, double, double>())
-        .def(pybind11::self + pybind11::self)
-        .def(pybind11::self - pybind11::self)
-        .def(pybind11::self * pybind11::self)
-        .def(pybind11::self ^ pybind11::self)
-        .def(pybind11::self == pybind11::self)
-        .def(-pybind11::self)
-        .def(pybind11::self * double())
-        .def(pybind11::self / double())
+	py::class_<vec3d>(core, "vec3d")
+        .def(py::init<>())
+        .def(py::init<double, double, double>())
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * py::self)
+        .def(py::self ^ py::self)
+        .def(py::self == py::self)
+        .def(-py::self)
+        .def(py::self * double())
+        .def(py::self / double())
         .def("Length", &vec3d::Length)
         .def("SqrLength", &vec3d::SqrLength)
         .def("Normalize", &vec3d::Normalize)
@@ -174,5 +176,5 @@ void init_FBSCore(pybind11::module& m)
     FSElementLibrary::InitLibrary();
 }
 #else
-void init_FBSCore(pybind11::module_& m) {}
+void init_FBSCore(py::module_& m) {}
 #endif

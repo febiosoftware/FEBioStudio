@@ -23,79 +23,57 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
-#else
-// Since objects of this type are member variables of these classes, they require
-// "full" class definitions, rather than just forward declarations
-namespace pybind11
-{
-    class function {};
-    class dict {};
-}
+#include "PythonThread.h"
 #endif
 
+
 #include <FEBioStudio/Tool.h>
-#include <queue>
-#include <unordered_map>
 
-class CPythonTool : public CBasicTool
+class CPythonToolProps : public CCachedPropertyList
 {
-
 public:
-    CPythonTool(CMainWindow* wnd, std::string name, int id);
-    ~CPythonTool();
+	CPythonToolProps(const char* name, int id, pybind11::function func) : m_name(name), m_id(id), m_func(func) {}
 
-    void addBoolProperty(const std::string& name, bool value = true);
-	void addIntProperty(const std::string& name, int value = 0);
-	void addEnumProperty(const std::string& name, const std::string& labels, int value = 0);
-	void addDoubleProperty(const std::string& name, double value = 0);
-    void addVec3Property(const std::string& name, vec3d value = vec3d());
-    void addStringProperty(const std::string& name, std::string = "");
-    void addResourceProperty(const std::string& name, std::string = "");
+	int GetID() const { return m_id; }
 
-    bool OnApply();
+	const std::string& GetName() { return m_name; }
 
-    bool runFunc();
+	pybind11::function GetFunction() { return m_func; }
+
+	void addBoolProperty(const std::string& name, bool v);
+	void addIntProperty(const std::string& name, int v);
+	void addDoubleProperty(const std::string& name, double v);
+	void addVec3Property(const std::string& name, vec3d v);
+	void addEnumProperty(const std::string& name, const std::string& labels, int v);
+	void addStringProperty(const std::string& name, const char* v);
+	void addResourceProperty(const std::string& name, const char* v);
 
 private:
-    int m_id;
-    CMainWindow* m_wnd;
-    std::unordered_map<std::string, bool*> boolProps;
-    std::unordered_map<std::string, int*> intProps;
-    std::unordered_map<std::string, int*> enumProps;
-    std::unordered_map<std::string, double*> dblProps;
-    std::unordered_map<std::string, vec3d*> vec3Props;
-    std::unordered_map<std::string, QString*> strProps;
-    std::unordered_map<std::string, QString*> rscProps;
+	int m_id;
+	std::string m_name;
+	pybind11::function m_func;
 };
 
-
-class CPythonDummyTool
+class CPythonTool : public CAbstractTool
 {
 public:
-    CPythonDummyTool(const char* name, int id);
+	CPythonTool(CMainWindow* wnd, std::string name, int id);
+	~CPythonTool();
 
-    void addBoolProperty(const std::string& name, bool value = true);
-	void addIntProperty(const std::string& name, int value = 0);
-	void addEnumProperty(const std::string& name, const std::string& labels, int value = 0);
-	void addDoubleProperty(const std::string& name, double value = 0);
-    void addVec3Property(const std::string& name, vec3d value = vec3d());
-    void addStringProperty(const std::string& name, const char* value = "");
-    void addResourceProperty(const std::string& name, const char* value = "");
+public:
+	void OnApply();
+	bool runFunc();
 
-    int m_id;
-    std::string name;
-    std::vector<int> propOrder;
-    std::queue<std::pair<std::string, bool>> boolProps;
-    std::queue<std::pair<std::string, int>> intProps;
-    std::queue<std::pair<std::string, int>> enumProps;
-    std::queue<std::string> enumLabels;
-    std::queue<std::pair<std::string, double>> dblProps;
-    std::queue<std::pair<std::string, vec3d>> vec3Props;
-    std::queue<std::pair<std::string, std::string>> strProps;
-    std::queue<std::pair<std::string, std::string>> rscProps;
+	void SetProperties(CPythonToolProps* props);
+
+	// A form will be created based on the property list
+	QWidget* createUi();
+
+private:
+	int m_id;
+	CPythonToolProps* m_props;
 };
