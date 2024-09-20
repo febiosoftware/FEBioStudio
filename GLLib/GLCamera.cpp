@@ -87,13 +87,18 @@ void CGLCamera::SetOrthoProjection(bool b) { m_bortho = b; }
 
 bool CGLCamera::IsOrtho() const { return m_bortho; }
 
+void CGLCamera::MakeActive()
+{
+	Interpolator::m_smooth = 0.5f + m_bias * 0.45f;
+	Interpolator::m_nsteps = 5 + (int)((1.0 - m_speed) * 60.0);
+}
+
 //-----------------------------------------------------------------------------
 void CGLCamera::SetCameraSpeed(double f)
 {
 	if (f > 1.0) f = 1.0;
 	if (f < 0.0) f = 0.0;
 	m_speed = f;
-	Interpolator::m_nsteps = 5 + (int)((1.0 - f)*60.0);
 }
 
 //-----------------------------------------------------------------------------
@@ -102,7 +107,6 @@ void CGLCamera::SetCameraBias(double f)
 	if (f > 1.f) f = 1.f;
 	if (f < 0.f) f = 0.f;
 	m_bias = f;
-	Interpolator::m_smooth = 0.5f + f*0.45f;
 }
 
 //-----------------------------------------------------------------------------
