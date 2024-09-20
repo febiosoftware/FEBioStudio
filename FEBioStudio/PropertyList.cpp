@@ -246,7 +246,6 @@ CProperty::CProperty(const QString& sname, CProperty::Type itype, const QString&
 	param = nullptr;
 }
 
-
 //-----------------------------------------------------------------------------
 CDataPropertyList::CDataPropertyList()
 {
@@ -365,5 +364,166 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::Mat3: { mat3d& d = *((mat3d*)p.pdata); d = StringToMat3d(v.value<QString>()); } break;
 	case CProperty::Std_Vector_Int: { std::vector<int>& d = *((std::vector<int>*)p.pdata); d = StringToVectorInt(v.value<QString>()); } break;
 	case CProperty::Std_Vector_Double: { std::vector<double>& d = *((std::vector<double>*)p.pdata); d = StringToVectorDouble(v.value<QString>()); } break;
+	}
+}
+
+
+CCachedPropertyList::CCachedPropertyList()
+{
+
+}
+
+CCachedPropertyList::~CCachedPropertyList()
+{
+	for (int i = 0; i < Properties(); ++i)
+	{
+		CProperty& p = Property(i);
+		void* d = p.data();
+		switch (p.type)
+		{
+		case CProperty::Bool        : delete (bool*)d; break;
+		case CProperty::Int         : delete (int*)d; break;
+		case CProperty::Enum        : delete (int*)d; break;
+		case CProperty::Float       : delete (double*)d; break;
+		case CProperty::String      : delete (QString*)d; break;
+		case CProperty::Color       : delete (QColor*)d; break;
+		case CProperty::Resource    : delete (QString*)d; break;
+		case CProperty::InternalLink: delete (QStringList*)d; break;
+		case CProperty::ExternalLink: delete (QStringList*)d; break;
+		case CProperty::Vec3        : delete (vec3d*)d; break;
+		case CProperty::Vec2i       : delete (vec2i*)d; break;
+		case CProperty::Mat3        : delete (mat3d*)d; break;
+		default:
+			assert(false);
+		}
+	}
+}
+
+CProperty* CCachedPropertyList::addBoolProperty(bool b, const QString& name)
+{
+	bool* v = new bool(b);
+	return addProperty(name, CProperty::Bool)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addIntProperty(int n, const QString& name)
+{
+	int* v = new int(n);
+	return addProperty(name, CProperty::Int)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addEnumProperty(int n, const QString& name)
+{
+	int* v = new int(n);
+	return addProperty(name, CProperty::Enum)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addDoubleProperty(double g, const QString& name)
+{
+	double* v = new double(g);
+	return addProperty(name, CProperty::Float)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addColorProperty(QColor c, const QString& name)
+{
+	QColor* v = new QColor(c);
+	return addProperty(name, CProperty::Color)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addStringProperty(QString s, const QString& name)
+{
+	QString* v = new QString(s);
+	return addProperty(name, CProperty::String)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addCurveProperty(QString pd, const QString& name)
+{
+	assert(false);
+	return nullptr;
+}
+
+CProperty* CCachedPropertyList::addCurveListProperty(QStringList pd, const QString& name)
+{
+	assert(false);
+	return nullptr;
+}
+
+CProperty* CCachedPropertyList::addResourceProperty(QString s, const QString& name)
+{
+	QString* v = new QString(s);
+	return addProperty(name, CProperty::Resource)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addInternalLinkProperty(QStringList s, const QString& name)
+{
+	QStringList* v = new QStringList(s);
+	return addProperty(name, CProperty::InternalLink)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addExternalLinkProperty(QStringList s, const QString& name)
+{
+	QStringList* v = new QStringList(s);
+	return addProperty(name, CProperty::ExternalLink)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addVec3Property(vec3d p, const QString& name)
+{
+	vec3d* v = new vec3d(p);
+	return addProperty(name, CProperty::Vec3)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addVec2iProperty(vec2i p, const QString& name)
+{
+	vec2i* v = new vec2i(p);
+	return addProperty(name, CProperty::Vec2i)->setData(v);
+}
+
+CProperty* CCachedPropertyList::addMat3Property(mat3d m, const QString& name)
+{
+	mat3d* v = new mat3d(m);
+	return addProperty(name, CProperty::Mat3)->setData(v);
+}
+
+QVariant CCachedPropertyList::GetPropertyValue(int i)
+{
+	CProperty& p = Property(i);
+	switch (p.type)
+	{
+		case CProperty::Bool        : return value<bool>(i); break;
+		case CProperty::Int         : return value<int>(i); break;
+		case CProperty::Enum        : return value<int>(i); break;
+		case CProperty::Float       : return value<double>(i); break;
+		case CProperty::String      : return value<QString>(i); break;
+		case CProperty::Color       : return value<QColor>(i); break;
+		case CProperty::Resource    : return value<QString>(i); break;
+		case CProperty::InternalLink: return value<QStringList>(i); break;
+		case CProperty::ExternalLink: return value<QStringList>(i); break;
+		case CProperty::Vec3        : return Vec3dToString(value<vec3d>(i)); break;
+		case CProperty::Vec2i       : return Vec2iToString(value<vec2i>(i)); break;
+		case CProperty::Mat3        : return Mat3dToString(value<mat3d>(i)); break;
+		default:
+			assert(false);
+	}
+	return QVariant();
+}
+
+void CCachedPropertyList::SetPropertyValue(int i, const QVariant& v)
+{
+	CProperty& p = Property(i);
+	switch (p.type)
+	{
+	case CProperty::Bool        : value<bool>(i) = v.toBool(); break;
+	case CProperty::Int         : value<int>(i) = v.toInt(); break;
+	case CProperty::Enum        : value<int>(i) = v.toInt(); break;
+	case CProperty::Float       : value<double>(i) = v.toDouble(); break;
+	case CProperty::String      : value<QString>(i) = v.toString(); break;
+	case CProperty::Color       : value<QColor>(i) = v.value<QColor>(); break;
+	case CProperty::Resource    : value<QString>(i) = v.toString(); break;
+	case CProperty::InternalLink: value<QStringList>(i) = v.toStringList(); break;
+	case CProperty::ExternalLink: value<QStringList>(i) = v.toStringList(); break;
+	case CProperty::Vec3        : value<vec3d>(i) = StringToVec3d(v.toString()); break;
+	case CProperty::Vec2i       : value<vec2i>(i) = StringToVec2i(v.toString()); break;
+	case CProperty::Mat3        : value<mat3d>(i) = StringToMat3d(v.toString()); break;
+	default:
+		assert(false);
 	}
 }

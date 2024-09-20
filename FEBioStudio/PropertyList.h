@@ -94,7 +94,7 @@ public:
 	Param*		param;
 
 public:
-	CProperty() { param = nullptr; brange = false; }
+	CProperty() { param = nullptr; brange = false; pdata = nullptr; }
 	CProperty(const CProperty& p) { *this = p; }
 	CProperty& operator = (const CProperty& p);
 
@@ -178,6 +178,36 @@ public:
 
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+};
+
+// Property list that manages its own data
+class CCachedPropertyList : public CPropertyList
+{
+public:
+	CCachedPropertyList();
+	~CCachedPropertyList();
+
+	CProperty* addBoolProperty(bool pd, const QString& name);
+	CProperty* addIntProperty(int pd, const QString& name);
+	CProperty* addEnumProperty(int pd, const QString& name);
+	CProperty* addDoubleProperty(double pd, const QString& name);
+	CProperty* addColorProperty(QColor pd, const QString& name);
+	CProperty* addStringProperty(QString pd, const QString& name);
+	CProperty* addCurveProperty(QString pd, const QString& name);
+	CProperty* addCurveListProperty(QStringList pd, const QString& name);
+	CProperty* addResourceProperty(QString pd, const QString& name);
+	CProperty* addInternalLinkProperty(QStringList pd, const QString& name);
+	CProperty* addExternalLinkProperty(QStringList pd, const QString& name);
+	CProperty* addVec3Property(vec3d pd, const QString& name);
+	CProperty* addVec2iProperty(vec2i pd, const QString& name);
+	CProperty* addMat3Property(mat3d pd, const QString& name);
+
+	QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+
+protected:
+	template <class T>
+	T& value(int n) { return *((T*)Property(n).data()); }
 };
 
 QString Vec2dToString(const vec2d& r);
