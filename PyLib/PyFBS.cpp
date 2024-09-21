@@ -54,4 +54,17 @@ PY_MODULE_TYPE(fbs, m)
 #endif
 }
 
+#ifndef PY_EXTERNAL
+void init_fbs_python()
+{
+	pybind11::initialize_interpreter();
+
+	// setup output
+	auto sysm = pybind11::module::import("sys");
+	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
+	sysm.attr("stdout") = output();
+	sysm.attr("stderr") = output();
+}
+#endif
+
 #endif

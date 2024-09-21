@@ -28,9 +28,7 @@ SOFTWARE.*/
 #include "PythonThread.h"
 #include "PythonToolsPanel.h"
 #include <pybind11/pybind11.h>
-
-#include "PyFBS.cpp"
-
+#include <pybind11/embed.h>
 #include <QMetaObject>
 
 CPyThread::CPyThread(CPythonToolsPanel* panel) 
@@ -44,15 +42,11 @@ CPyThread::~CPyThread()
 
 }
 
+void init_fbs_python(); // in PyFBS.cpp
+
 void CPyThread::initPython()
 {
-	pybind11::initialize_interpreter();
- 
-	// setup output
- 	auto sysm = pybind11::module::import("sys");
-	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
-	sysm.attr("stdout") = output();
-	sysm.attr("stderr") = output();
+	init_fbs_python();
 }
 
 void CPyThread::finalizePython()
