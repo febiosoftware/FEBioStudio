@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "PythonTool.h"
 #include <FEBioStudio/MainWindow.h>
 #include "PythonToolsPanel.h"
@@ -35,7 +34,30 @@ SOFTWARE.*/
 #include <FEBioStudio/LogPanel.h>
 #include <FEBioStudio/Logger.h>
 
-namespace py = pybind11;
+class CPythonToolProps::Imp
+{
+public:
+	int id;
+	std::string name;
+	std::string info;
+	python_handle func;
+};
+
+CPythonToolProps::CPythonToolProps(const char* name, python_handle f) : m(new CPythonToolProps::Imp)
+{
+	m->name = name;
+	m->id = -1;
+	m->func = f;
+}
+
+CPythonToolProps::~CPythonToolProps() { delete m; }
+void CPythonToolProps::SetID(int id) { m->id = id; }
+int CPythonToolProps::GetID() const { return m->id; }
+const std::string& CPythonToolProps::GetName() { return m->name; }
+python_handle CPythonToolProps::GetFunction() { return m->func; }
+const std::string& CPythonToolProps::GetInfo() { return m->info; }
+void CPythonToolProps::setInfo(const std::string& info) { m->info = info; }
+
 
 void CPythonToolProps::addBoolProperty(const std::string& name, bool v)
 {
@@ -74,8 +96,7 @@ void CPythonToolProps::addResourceProperty(const std::string& name, const char* 
 	CCachedPropertyList::addResourceProperty(v, QString::fromStdString(name));
 }
 
-CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, int id)
-    : CAbstractTool(wnd, name.c_str()), m_id(id)
+CPythonTool::CPythonTool(CMainWindow* wnd, std::string name) : CAbstractTool(wnd, name.c_str())
 {
 	m_props = nullptr;
 }
@@ -88,6 +109,11 @@ CPythonTool::~CPythonTool()
 void CPythonTool::SetProperties(CPythonToolProps* props)
 {
 	m_props = props;
+}
+
+CPythonToolProps* CPythonTool::GetProperties()
+{
+	return m_props;
 }
 
 QWidget* CPythonTool::createUi()
@@ -106,69 +132,4 @@ QWidget* CPythonTool::createUi()
 	l->addStretch();
 	w->setLayout(l);
 	return w;
-}
-
-bool CPythonTool::runFunc()
-{
-    try
-    {
-        py::dict kwargs;
-
-        for(int prop = 0; prop < m_props->Properties(); prop++)
-        {
-            CProperty& current = m_props->Property(prop);
-            std::string name = current.name.toStdString();
-			void* d = current.data(); assert(d);
-
-            switch(current.type)
-            {
-                case CProperty::Bool:
-                    kwargs[name.c_str()] = *((bool*)d);
-                    break;
-                case CProperty::Int:
-                    kwargs[name.c_str()] = *((int*)d);
-                    break;
-                case CProperty::Float:
-                    kwargs[name.c_str()] = *((double*)d);
-                    break;
-                case CProperty::Vec3:
-                    kwargs[name.c_str()] = *((vec3d*)d);
-                    break;
-                case CProperty::String:
-					// TODO: Is this safe? This passes a pointer to a temporary object
-                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
-                    break;
-				case CProperty::Enum:
-					{
-						int n = *((int*)d);
-						// TODO: Is this safe? This passes a pointer to a temporary object
-						kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());
-					}
-                    break;
-                case CProperty::Resource:
-					// TODO: Is this safe? This passes a pointer to a temporary object
-                    kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
-                    break;
-
-                default:
-                    return false;
-            };
-        }
-
-		auto func = m_props->GetFunction();
-        (*func)(**kwargs);
-    }
-    catch(py::error_already_set &e)
-    {
-        // Print the error message
-        py::print(e.what());
-
-        // Return execution to Python to allow the thread to exit
-        e.restore();
-
-        // Clear the error to allow further Python execution. 
-        PyErr_Clear();
-    }
-
-    return true;
 }

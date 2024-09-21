@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,42 +23,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "PyState.h"
 
-#pragma once
-#include <QtCore/QThread>
+CPyState* CPyState::m_instance = nullptr;
 
-class CPythonToolProps;
-
-class CPyThread : public QThread
+CPyState& CPyState::state()
 {
-    Q_OBJECT
+	if (m_instance == nullptr) m_instance = new CPyState;
+	return *m_instance;
+}
 
-	void run() Q_DECL_OVERRIDE;
+size_t CPyState::add_pyfunction(pybind11::function f)
+{
+	CPyState& s = state();
+	s.m_fnc.push_back(f);
+	return s.m_fnc.size() - 1;
+}
 
-public:
-    CPyThread();
-    ~CPyThread();
+pybind11::function CPyState::get_pyfunction(size_t index)
+{
+	CPyState& s = state();
+	assert((index >= 0) && (index < s.m_fnc.size()));
+	return s.m_fnc[index];
+}
 
-    void SetTool(CPythonToolProps* tool);
-    void SetFilename(QString& filename);
-    void Restart();
-	void Stop();
-
-signals:
-    void ExecDone();
-    void Restarted();
-	void ToolFinished(bool);
-
-private:
-    void initPython();
-    void finalizePython();
-	void runRestart();
-	void runTool();
-	void runScript();
-
-private:
-	bool m_stop;
-    bool m_restart;
-	CPythonToolProps* m_tool;
-    QString m_filename;
-};
+void CPyState::clear()
+{
+	CPyState& s = state();
+	s.m_fnc.clear();
+}

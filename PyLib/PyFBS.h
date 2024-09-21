@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,42 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QtCore/QThread>
 
-class CPythonToolProps;
-
-class CPyThread : public QThread
-{
-    Q_OBJECT
-
-	void run() Q_DECL_OVERRIDE;
-
-public:
-    CPyThread();
-    ~CPyThread();
-
-    void SetTool(CPythonToolProps* tool);
-    void SetFilename(QString& filename);
-    void Restart();
-	void Stop();
-
-signals:
-    void ExecDone();
-    void Restarted();
-	void ToolFinished(bool);
-
-private:
-    void initPython();
-    void finalizePython();
-	void runRestart();
-	void runTool();
-	void runScript();
-
-private:
-	bool m_stop;
-    bool m_restart;
-	CPythonToolProps* m_tool;
-    QString m_filename;
-};
+#ifndef PY_EXTERNAL
+void init_fbs_python();
+void finish_fbs_python();
+#endif

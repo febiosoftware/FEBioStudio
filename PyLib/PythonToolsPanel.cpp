@@ -23,14 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-
-
-#ifdef HAS_PYTHON
-// #include "PyFBS.cpp"
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
@@ -40,64 +32,58 @@ SOFTWARE.*/
 #include "PyOutput.h"
 #include <FEBioStudio/Logger.h>
 #include <FEBioStudio/LogPanel.h>
+#include <QMessageBox>
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
-	: CWindowPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), m_wnd(wnd), inputHandler(this)
+	: CWindowPanel(wnd, parent), ui(new Ui::CPythonToolsPanel)
 {
-	m_activeTool = 0;
 	ui->setupUi(this);
+	ui->m_pythonThread = nullptr;
 }
 
-void CPythonToolsPanel::initPython()
+void CPythonToolsPanel::startThread()
 {
-    m_pythonThread = new CPyThread(this);
-    connect(m_pythonThread, &CPyThread::ExecDone, this, &CPythonToolsPanel::on_pythonThread_ExecDone);
-    connect(m_pythonThread, &CPyThread::Restarted, this, &CPythonToolsPanel::on_pythonThread_Restarted);
-    connect(m_pythonThread, &CPyThread::ToolFinished, this, &CPythonToolsPanel::on_pythonThread_ToolFinished);
+	if (ui->m_pythonThread == nullptr)
+	{
+		ui->m_pythonThread = new CPyThread();
+		connect(ui->m_pythonThread, &CPyThread::ExecDone, this, &CPythonToolsPanel::on_pythonThread_ExecDone);
+		connect(ui->m_pythonThread, &CPyThread::Restarted, this, &CPythonToolsPanel::on_pythonThread_Restarted);
+		connect(ui->m_pythonThread, &CPyThread::ToolFinished, this, &CPythonToolsPanel::on_pythonThread_ToolFinished);
 
-    m_pythonThread->start();
+		ui->m_pythonThread->start();
+	}
 }
 
 CPythonToolsPanel::~CPythonToolsPanel()
 {
-    m_pythonThread->quit();
+	if (ui->m_pythonThread)
+	{
+		ui->m_pythonThread->Stop();
+		ui->m_pythonThread->wait();
+	}
 }
 
 void CPythonToolsPanel::Update(bool breset)
 {
-	if (m_activeTool)
+	if (ui->m_activeTool)
 	{
-		m_activeTool->CAbstractTool::Update();
+		ui->m_activeTool->CAbstractTool::Update();
 	}
 }
 
-CPythonToolProps* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func)
+void CPythonToolsPanel::addDummyTool(CPythonToolProps* tool)
 {
-	int id = tools.size() + dummyTools.size();
-	CPythonToolProps* tool = new CPythonToolProps(name, id, func);
-	dummyTools.push_back(tool);
-	return tool;
+	int id = ui->tools.size() + ui->dummyTools.size();
+	tool->SetID(id);
+	ui->dummyTools.push_back(tool);
 }
 
 CPythonTool* CPythonToolsPanel::CreateTool(CPythonToolProps* p)
 {
-	CPythonTool* tool = new CPythonTool(GetMainWindow(), p->GetName(), p->GetID());
+	CPythonTool* tool = new CPythonTool(GetMainWindow(), p->GetName());
 	tool->SetProperties(p);
-	tools.push_back(tool);
+	ui->tools.push_back(tool);
 	return tool;
-}
-
-CPyThread* CPythonToolsPanel::GetThread()
-{
-    return m_pythonThread;
-}
-
-void CPythonToolsPanel::runScript(QString filename)
-{
-    PyObject* obj = Py_BuildValue("s", filename.toStdString().c_str());
-	FILE* file = _Py_fopen_obj(obj, "r+");
-	
-	PyRun_SimpleFile(file, filename.toStdString().c_str());
 }
 
 void CPythonToolsPanel::setProgressText(const QString& txt)
@@ -112,25 +98,40 @@ void CPythonToolsPanel::setProgress(int prog)
 
 void CPythonToolsPanel::BuildTools()
 {
-	for (auto p : dummyTools)
+	for (auto p : ui->dummyTools)
 	{
 		// Note that tool takes ownership of the properties
 		auto tool = CreateTool(p);
 		ui->addTool(tool);
 	}
-	dummyTools.clear();
+	ui->dummyTools.clear();
+}
+
+void CPythonToolsPanel::on_importScript_triggered()
+{
+	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
+
+	if (filename.isEmpty()) return;
+
+	if (ui->m_pythonThread == nullptr) startThread();
+
+	GetMainWindow()->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	CLogger::AddPythonLogEntry(QString(">>> running file %1\n").arg(filename));
+	ui->m_pythonThread->SetFilename(filename);
 }
 
 void CPythonToolsPanel::on_run_clicked()
 {
-	if (m_activeTool == nullptr) return;
-	QString msg = QString("Running %1").arg(m_activeTool->name());
+	if (ui->m_activeTool == nullptr) return;
+	QString msg = QString("Running %1").arg(ui->m_activeTool->name());
 	ui->runPane->startRunning(msg);
+
+	if (ui->m_pythonThread == nullptr) startThread();
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(m_activeTool->name()));
-	wnd->GetPythonToolsPanel()->GetThread()->SetTool(m_activeTool);
+	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(ui->m_activeTool->name()));
+	ui->m_pythonThread->SetTool(ui->m_activeTool->GetProperties());
 }
 
 void CPythonToolsPanel::on_pythonThread_ExecDone()
@@ -139,42 +140,35 @@ void CPythonToolsPanel::on_pythonThread_ExecDone()
 
 	ui->runPane->stopRunning();
 
-	m_wnd->UpdateModel();
-	m_wnd->UpdateUI();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->UpdateModel();
+	wnd->UpdateUI();
 }
 
 void CPythonToolsPanel::on_pythonThread_Restarted()
 {
 	ui->refreshPanel();
 
-	for(auto tool : tools)
+	for(auto tool : ui->tools)
 	{
 		delete tool;
 	}
-	tools.clear();
+	ui->tools.clear();
 
-	m_activeTool = nullptr;
+	ui->m_activeTool = nullptr;
+	ui->runPane->hide();
 }
 
-void CPythonToolsPanel::on_pythonThread_ToolFinished()
+void CPythonToolsPanel::on_pythonThread_ToolFinished(bool b)
 {
+	if (b == false) QMessageBox::critical(this, "Python", "An error occurred while running the Python script.");
 	ui->runPane->stopRunning();
-}
-
-void CPythonToolsPanel::on_importScript_triggered()
-{
-	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
-    
-	if(filename.isEmpty()) return;
-
-	GetMainWindow()->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running file %1\n").arg(filename));
-    m_pythonThread->SetFilename(filename);
 }
 
 void CPythonToolsPanel::on_refresh_triggered()
 {
-    m_pythonThread->Restart();
+	if (ui->m_pythonThread)
+		ui->m_pythonThread->Restart();
 }
 
 /*
@@ -207,8 +201,8 @@ void CPythonToolsPanel::addLog(QString txt)
 void CPythonToolsPanel::on_buttons_idClicked(int id)
 {
 	// deactivate the active tool
-	if (m_activeTool) m_activeTool->Deactivate();
-	m_activeTool = nullptr;
+	if (ui->m_activeTool) ui->m_activeTool->Deactivate();
+	ui->m_activeTool = nullptr;
 
 	if (id == -1)
 	{
@@ -217,12 +211,12 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 	}
 
 	// find the tool
-	auto it = tools.begin();
+	auto it = ui->tools.begin();
 	for (int i = 0; i<id - 1; ++i, ++it);
 
 	// activate the tool
-	m_activeTool = *it;
-	m_activeTool->Activate();
+	ui->m_activeTool = *it;
+	ui->m_activeTool->Activate();
 
 	// show the tab
 	ui->paramStack->setCurrentIndex(id);
@@ -232,55 +226,18 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 
 void CPythonToolsPanel::hideEvent(QHideEvent* ev)
 {
-	if (m_activeTool)
+	if (ui->m_activeTool)
 	{
-		m_activeTool->Deactivate();
+		ui->m_activeTool->Deactivate();
 	}
 	ev->accept();
 }
 
 void CPythonToolsPanel::showEvent(QShowEvent* ev)
 {
-	if (m_activeTool)
+	if (ui->m_activeTool)
 	{
-		m_activeTool->Activate();
+		ui->m_activeTool->Activate();
 	}
 	ev->accept();
 }
-
-#else
-#include "PythonToolsPanel.h"
-#include "ui_pythontoolspanel.h"
-
-namespace pybind11
-{
-	class function
-	{
-
-	};
-}
-
-CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), inputHandler(this) {}
-void CPythonToolsPanel::initPython() {}
-CPythonToolsPanel::~CPythonToolsPanel() {}
-void CPythonToolsPanel::Update(bool breset) {}
-CPythonToolProps* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func) {return nullptr;}
-CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func) {return nullptr;}
-void CPythonToolsPanel::runScript(QString filename) {}
-void CPythonToolsPanel::finalizePython() {}
-void CPythonToolsPanel::finalizeTools() {}
-void CPythonToolsPanel::endThread() {}
-void CPythonToolsPanel::on_importScript_triggered() {}
-void CPythonToolsPanel::on_refresh_triggered() {}
-void CPythonToolsPanel::startRunning(const QString& msg) {}
-CPythonInputHandler* CPythonToolsPanel::getInputHandler() {return nullptr;}
-void CPythonToolsPanel::addInputPage(QWidget* wgt) {}
-QWidget* CPythonToolsPanel::getInputWgt() {return nullptr;}
-void CPythonToolsPanel::removeInputPage() {}
-void CPythonToolsPanel::addLog(QString txt) {}
-void CPythonToolsPanel::setProgressText(const QString& txt) {}
-void CPythonToolsPanel::setProgress(int prog) {}
-void CPythonToolsPanel::on_buttons_idClicked(int id) {}
-void CPythonToolsPanel::hideEvent(QHideEvent* ev) {}
-void CPythonToolsPanel::showEvent(QShowEvent* ev) {}
-#endif

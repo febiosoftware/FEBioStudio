@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "PythonToolsPanel.h"
+#include "PythonInputHandler.h"
 #include <QBoxLayout>
 #include <QAction>
 #include <QToolBar>
@@ -40,6 +41,7 @@ SOFTWARE.*/
 #include <FEBioStudio/Tool.h>
 #include <FEBioStudio/ToolBox.h>
 #include "PythonTool.h"
+#include "PythonThread.h"
 
 class CPythonToolBar : public QToolBar
 {
@@ -194,10 +196,20 @@ public:
 
 	::CPythonToolsPanel* parent = nullptr;
 	int numTools = 0;
+	CPythonInputHandler* inputHandler = nullptr;
+
+public:
+	CPyThread* m_pythonThread = nullptr;
+
+	CPythonTool* m_activeTool = nullptr;
+	std::vector<CPythonToolProps*>	dummyTools;
+	std::vector<CPythonTool*>	tools;
 
 public:
 	void setupUi(::CPythonToolsPanel* parent)
 	{
+		inputHandler = new CPythonInputHandler(parent);
+
 		this->parent = parent;
 
 		// build the toolbar

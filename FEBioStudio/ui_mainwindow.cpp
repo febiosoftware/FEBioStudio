@@ -931,7 +931,6 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 #ifdef HAS_PYTHON
 		QDockWidget* dock13 = new QDockWidget("Python", m_wnd); dock13->setObjectName("dockPython");
 		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock13);
-		pythonToolsPanel->initPython();
 		dock13->setWidget(pythonToolsPanel);
 		menuWindows->addAction(dock13->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock3, dock13);

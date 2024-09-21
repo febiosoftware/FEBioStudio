@@ -24,29 +24,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-
-#ifdef HAS_PYTHON
-#include <pybind11/pybind11.h>
-#include "PythonThread.h"
-#endif
-
-
 #include <FEBioStudio/Tool.h>
 
+typedef size_t python_handle;
+
+// The CPythonToolProps hold the properties of the tool. It also holds the python
+// function that should be called to run the tool.
 class CPythonToolProps : public CCachedPropertyList
 {
+	class Imp;
+
 public:
-	CPythonToolProps(const char* name, int id, pybind11::function func) : m_name(name), m_id(id), m_func(func) {}
+	CPythonToolProps(const char* name, python_handle f);
+	~CPythonToolProps();
 
-	int GetID() const { return m_id; }
+	void SetID(int id);
+	int GetID() const;
 
-	const std::string& GetName() { return m_name; }
+	const std::string& GetName();
 
-	pybind11::function GetFunction() { return m_func; }
+	python_handle GetFunction();
 
-	const std::string& GetInfo() { return m_info; }
+	const std::string& GetInfo();
 
-	void setInfo(const std::string& info) { m_info = info; }
+	void setInfo(const std::string& info);
+
+public:
 	void addBoolProperty(const std::string& name, bool v);
 	void addIntProperty(const std::string& name, int v);
 	void addDoubleProperty(const std::string& name, double v);
@@ -56,27 +59,25 @@ public:
 	void addResourceProperty(const std::string& name, const char* v);
 
 private:
-	int m_id;
-	std::string m_name;
-	std::string m_info;
-	pybind11::function m_func;
+	Imp* m;
 };
 
+// The CPythonTool class creates the UI component that will be added 
+// to the Python panel. It manages a CPythonToolProps that contains the properties of the tool.
 class CPythonTool : public CAbstractTool
 {
 public:
-	CPythonTool(CMainWindow* wnd, std::string name, int id);
+	CPythonTool(CMainWindow* wnd, std::string name);
 	~CPythonTool();
 
 public:
-	bool runFunc();
-
 	void SetProperties(CPythonToolProps* props);
+
+	CPythonToolProps* GetProperties();
 
 	// A form will be created based on the property list
 	QWidget* createUi();
 
 private:
-	int m_id;
 	CPythonToolProps* m_props;
 };

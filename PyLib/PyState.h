@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,59 +24,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FEBioStudio/WindowPanel.h>
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
+#ifdef HAS_PYTHON
+#include <pybind11/pybind11.h>
+#include <deque>
 
-class CMainWindow;
-class CPythonTool;
-class CPythonToolProps;
 
-class CPythonToolsPanel : public CWindowPanel
+class CPyState
 {
-	Q_OBJECT
-
 public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
-
-	// update the tools panel
-	void Update(bool breset = true) override;
-
-	void addDummyTool(CPythonToolProps* tool);
-
-/*	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
-*/
+	static size_t add_pyfunction(pybind11::function f);
+	static pybind11::function get_pyfunction(size_t index);
+	static void clear();
 
 private:
-	void BuildTools();
-	CPythonTool* CreateTool(CPythonToolProps* p);
-
-	void startThread();
-
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
-
-public slots:
-	void addLog(QString txt);
-	void setProgressText(const QString& txt);
-	void setProgress(int prog);
-
-private slots:
-    void on_pythonThread_ExecDone();
-    void on_pythonThread_Restarted();
-    void on_pythonThread_ToolFinished(bool b);
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	void on_refresh_triggered();
-	void on_run_clicked();
+	CPyState() {}
+	static CPyState& state();
+	static CPyState* m_instance;
 
 private:
-	Ui::CPythonToolsPanel*	ui;
-	friend class Ui::CPythonToolsPanel;
+	std::deque<pybind11::function> m_fnc;
 };
+#endif

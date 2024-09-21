@@ -65,6 +65,11 @@ void init_fbs_python()
 	sysm.attr("stdout") = output();
 	sysm.attr("stderr") = output();
 }
+
+void finish_fbs_python()
+{
+	pybind11::finalize_interpreter();
+}
 #endif
 
 #endif

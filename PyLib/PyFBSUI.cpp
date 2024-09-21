@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
 #include <sstream>
+#include "PyState.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -58,10 +59,12 @@ void openFile(const char *fileName)
 
 CPythonToolProps* PythonTool_init(const char* name, py::function func)
 {
-    auto wnd = FBS::getMainWindow();
-    CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
-
-    return pythonToolsPanel->addDummyTool(name, func);
+	auto wnd = FBS::getMainWindow();
+	CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
+	size_t n = CPyState::add_pyfunction(func);
+	CPythonToolProps* tool = new CPythonToolProps(name, n);
+	pythonToolsPanel->addDummyTool(tool);
+	return tool;
 }
 
 void GBox_init(vec3d pos, double width, double height, double depth)
