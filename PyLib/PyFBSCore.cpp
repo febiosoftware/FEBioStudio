@@ -145,8 +145,6 @@ void init_FBSCore(py::module& m)
 {
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
-    init_FBSPost(core);
-
     core.def("curveToVTKMesh", curveToVTKMesh);//, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve", 
         // py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 

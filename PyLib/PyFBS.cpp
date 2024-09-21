@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <pybind11/embed.h>
 
 #include "PyFBSCore.h"
+#include "PyFBSPost.h"
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
@@ -45,6 +46,7 @@ SOFTWARE.*/
 PY_MODULE_TYPE(fbs, m)
 {
     init_FBSCore(m);
+	init_FBSPost(m);
 
 #ifndef PY_EXTERNAL
     init_FBSUI(m);

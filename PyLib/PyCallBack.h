@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include <string>
 
-void PyShowProgress(const char* txt);
 void PySetProgressText(const char* txt);
 void PySetProgress(int prog);
 void PySetProgress(float prog);
