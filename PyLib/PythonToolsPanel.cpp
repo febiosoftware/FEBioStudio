@@ -167,6 +167,8 @@ void CPythonToolsPanel::on_importScript_triggered()
     
 	if(filename.isEmpty()) return;
 
+	GetMainWindow()->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	CLogger::AddPythonLogEntry(QString(">>> running file %1\n").arg(filename));
     m_pythonThread->SetFilename(filename);
 }
 

@@ -194,20 +194,18 @@ void init_FBSModel(py::module& m)
 
     ///////////////// GObject /////////////////
 	py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(mdl, "GObject")
-        .def("Parts", &GBaseObject::Parts)
-        .def("Faces", &GBaseObject::Faces)
-        .def("Edges", &GBaseObject::Edges)
-        .def("Nodes", &GBaseObject::Nodes)
-        .def("Part", [](GObject& self, int i){return self.Part(i);})
-        .def("Face", [](GObject& self, int i){return self.Face(i);})
-        .def("Edge", [](GObject& self, int i){return self.Edge(i);})
-        .def("Node", [](GObject& self, int i){return self.Node(i);})
-        .def("Part", [](GObject& self, int i){return self.Part(i);})
-
-        .def("GetFEMesh", [](GObject& self){return self.GetFEMesh();})
-
-
-        ;
+		.def("Parts", &GBaseObject::Parts)
+		.def("Faces", &GBaseObject::Faces)
+		.def("Edges", &GBaseObject::Edges)
+		.def("Nodes", &GBaseObject::Nodes)
+		.def("Part", [](GObject& self, int i) {return self.Part(i); })
+		.def("Face", [](GObject& self, int i) {return self.Face(i); })
+		.def("Edge", [](GObject& self, int i) {return self.Edge(i); })
+		.def("Node", [](GObject& self, int i) {return self.Node(i); })
+		.def("Part", [](GObject& self, int i) {return self.Part(i); })
+		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); })
+		.def("BuildMesh", &GObject::BuildMesh)
+		.def("AssignMaterial", [](GObject& self, GMaterial* m) { self.AssignMaterial(m->GetID()); });
     ///////////////// GObject /////////////////
 
     ///////////////// GNode /////////////////
