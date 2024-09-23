@@ -26,40 +26,14 @@ SOFTWARE.*/
 #pragma once
 #include <FEBioStudio/Tool.h>
 
-typedef size_t python_handle;
-
-// The CPythonToolProps hold the properties of the tool. It also holds the python
-// function that should be called to run the tool.
-class CPythonToolProps : public CCachedPropertyList
+// Helper class for collecting all the properties of a python tool.
+class CPythonToolProps
 {
-	class Imp;
-
 public:
-	CPythonToolProps(const char* name, python_handle f);
-	~CPythonToolProps();
-
-	void SetID(int id);
-	int GetID() const;
-
-	const std::string& GetName();
-
-	python_handle GetFunction();
-
-	const std::string& GetInfo();
-
-	void setInfo(const std::string& info);
-
-public:
-	void addBoolProperty(const std::string& name, bool v);
-	void addIntProperty(const std::string& name, int v);
-	void addDoubleProperty(const std::string& name, double v);
-	void addVec3Property(const std::string& name, vec3d v);
-	void addEnumProperty(const std::string& name, const std::string& labels, int v);
-	void addStringProperty(const std::string& name, const char* v);
-	void addResourceProperty(const std::string& name, const char* v);
-
-private:
-	Imp* m;
+	CCachedPropertyList m_props;
+	QString m_name;
+	QString m_fileName;
+	QString m_info;
 };
 
 // The CPythonTool class creates the UI component that will be added 
@@ -67,17 +41,13 @@ private:
 class CPythonTool : public CAbstractTool
 {
 public:
-	CPythonTool(CMainWindow* wnd, std::string name);
+	CPythonTool(CMainWindow* wnd, CPythonToolProps* props);
 	~CPythonTool();
-
-public:
-	void SetProperties(CPythonToolProps* props);
 
 	CPythonToolProps* GetProperties();
 
-	// A form will be created based on the property list
 	QWidget* createUi();
 
 private:
-	CPythonToolProps* m_props;
+	CPythonToolProps* m_tool;
 };

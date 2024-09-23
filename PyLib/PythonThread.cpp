@@ -28,154 +28,87 @@ SOFTWARE.*/
 // This is because pybind11 defines a "slots" variable, but Qt defines a slots macro and thus, 
 // including Qt before pybind11 will break the pybind11 code. 
 #include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PyState.h"
-#endif
+#include <FEBioStudio/PropertyList.h>
 
-#include "PythonTool.h"
-#include "PythonThread.h"
-#include "PyFBS.h"
-#include <QMutex>
-#include <QMutexLocker>
-
-#ifdef HAS_PYTHON
 namespace py = pybind11;
 #endif
 
-QMutex mutex;
-CPyThread::CPyThread() : m_tool(nullptr)
-{
-	m_restart = false;
-	m_stop = false;
-}
+#include "PythonThread.h"
+#include "PyFBS.h"
 
-CPyThread::~CPyThread()
+CPyThread::CPyThread(const QString& filename, CCachedPropertyList* params) : m_filename(filename), m_params(params)
 {
-
-}
-
-void CPyThread::initPython()
-{
-	init_fbs_python();
-}
-
-void CPyThread::finalizePython()
-{
-#ifdef HAS_PYTHON
-	CPyState::clear();
-	finish_fbs_python();
-#endif
+	QObject::connect(this, &QThread::finished, this, &QObject::deleteLater);
 }
 
 void CPyThread::run()
 {
-	initPython();
+	init_fbs_python();
 
-	while(true)
-	{
-		mutex.lock();
-		if (m_stop)
-		{
-			mutex.unlock();
-			break;
-		}
-		else if (m_restart) runRestart();
-		else if (m_tool) runTool();
-		else if (!m_filename.isEmpty()) runScript();
-		mutex.unlock();
-		msleep(100);
-	}
+	bool b = runScript();
 
-	finalizePython();
+	emit threadFinished(b);
+
+	finish_fbs_python();
 }
 
-void CPyThread::SetTool(CPythonToolProps* tool)
+bool CPyThread::runScript()
 {
-	QMutexLocker lock(&mutex);
-	m_tool = tool;
-}
-
-void CPyThread::SetFilename(QString& filename)
-{
-	QMutexLocker lock(&mutex);
-	m_filename = filename;
-}
-
-void CPyThread::Restart()
-{
-	QMutexLocker lock(&mutex);
-	m_restart = true;
-}
-
-void CPyThread::Stop()
-{
-	QMutexLocker lock(&mutex);
-	m_stop = true;
-}
-
-void CPyThread::runRestart()
-{
-	finalizePython();
-	initPython();
-	m_restart = false;
-	emit Restarted();
-}
-
-void CPyThread::runTool()
-{
-	bool returnValue = true;
 #ifdef HAS_PYTHON
 	try
 	{
 		py::dict kwargs;
 
-		for (int prop = 0; prop < m_tool->Properties(); prop++)
+		if (m_params)
 		{
-			CProperty& current = m_tool->Property(prop);
-			std::string name = current.name.toStdString();
-			void* d = current.data(); assert(d);
+			for (int prop = 0; prop < m_params->Properties(); prop++)
+			{
+				CProperty& current = m_params->Property(prop);
+				std::string name = current.name.toStdString();
+				void* d = current.data(); assert(d);
 
-			switch (current.type)
-			{
-			case CProperty::Bool:
-				kwargs[name.c_str()] = *((bool*)d);
+				switch (current.type)
+				{
+				case CProperty::Bool:
+					kwargs[name.c_str()] = *((bool*)d);
+					break;
+				case CProperty::Int:
+					kwargs[name.c_str()] = *((int*)d);
+					break;
+				case CProperty::Float:
+					kwargs[name.c_str()] = *((double*)d);
+					break;
+				case CProperty::Vec3:
+					kwargs[name.c_str()] = *((vec3d*)d);
+					break;
+				case CProperty::String:
+					// TODO: Is this safe? This passes a pointer to a temporary object
+					kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
+					break;
+				case CProperty::Enum:
+				{
+					int n = *((int*)d);
+					// TODO: Is this safe? This passes a pointer to a temporary object
+					kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());
+				}
 				break;
-			case CProperty::Int:
-				kwargs[name.c_str()] = *((int*)d);
-				break;
-			case CProperty::Float:
-				kwargs[name.c_str()] = *((double*)d);
-				break;
-			case CProperty::Vec3:
-				kwargs[name.c_str()] = *((vec3d*)d);
-				break;
-			case CProperty::String:
-				// TODO: Is this safe? This passes a pointer to a temporary object
-				kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
-				break;
-			case CProperty::Enum:
-			{
-				int n = *((int*)d);
-				// TODO: Is this safe? This passes a pointer to a temporary object
-				kwargs[name.c_str()] = py::make_tuple(n, current.values[n].toStdString().c_str());
+				case CProperty::Resource:
+					// TODO: Is this safe? This passes a pointer to a temporary object
+					kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
+					break;
+				default:
+					assert(false);
+					return false;
+				};
 			}
-			break;
-			case CProperty::Resource:
-				// TODO: Is this safe? This passes a pointer to a temporary object
-				kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
-				break;
-			default:
-				assert(false);
-				returnValue = false;
-			};
 		}
 
-		if (returnValue)
-		{
-			python_handle f = m_tool->GetFunction();
-			auto func = CPyState::get_pyfunction(f);
-			(*func)(**kwargs);
-		}
+		auto m = py::module::import("fbs");
+		m.attr("args") = kwargs;
+
+		PyObject* obj = Py_BuildValue("s", m_filename.toStdString().c_str());
+		FILE* file = _Py_fopen_obj(obj, "r+");
+		PyRun_SimpleFile(file, m_filename.toStdString().c_str());
 	}
 	catch (py::error_already_set& e)
 	{
@@ -188,20 +121,15 @@ void CPyThread::runTool()
 		// Clear the error to allow further Python execution. 
 		PyErr_Clear();
 
-		returnValue = false;
+		return false;
+	}
+	catch (...)
+	{
+		py::print("unknown exception");
+
+		return false;
 	}
 #endif
-	m_tool = nullptr;
-	emit ToolFinished(returnValue);
-}
 
-void CPyThread::runScript()
-{
-#ifdef HAS_PYTHON
-	PyObject* obj = Py_BuildValue("s", m_filename.toStdString().c_str());
-	FILE* file = _Py_fopen_obj(obj, "r+");
-	PyRun_SimpleFile(file, m_filename.toStdString().c_str());
-	m_filename.clear();
-#endif
-	emit ExecDone();
+	return true;
 }

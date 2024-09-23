@@ -30,10 +30,6 @@ namespace Ui {
 	class CPythonToolsPanel;
 }
 
-class CMainWindow;
-class CPythonTool;
-class CPythonToolProps;
-
 class CPythonToolsPanel : public CWindowPanel
 {
 	Q_OBJECT
@@ -45,32 +41,17 @@ public:
 	// update the tools panel
 	void Update(bool breset = true) override;
 
-	void addDummyTool(CPythonToolProps* tool);
-
-/*	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
-*/
-
 private:
-	void BuildTools();
-	CPythonTool* CreateTool(CPythonToolProps* p);
-
 	void startThread();
-
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
 
 public slots:
-	void addLog(QString txt);
 	void setProgressText(const QString& txt);
 	void setProgress(int prog);
 
 private slots:
-    void on_pythonThread_ExecDone();
-    void on_pythonThread_Restarted();
-    void on_pythonThread_ToolFinished(bool b);
+    void on_pythonThread_threadFinished(bool b);
 	void on_buttons_idClicked(int id);
 	void on_importScript_triggered();
 	void on_refresh_triggered();

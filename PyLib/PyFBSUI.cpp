@@ -47,29 +47,18 @@ SOFTWARE.*/
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
 #include <sstream>
-#include "PyState.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 void openFile(const char *fileName)
 {
-    FBS::getMainWindow()->OpenFile(fileName);
-}
-
-CPythonToolProps* PythonTool_init(const char* name, py::function func)
-{
-	auto wnd = FBS::getMainWindow();
-	CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
-	size_t n = CPyState::add_pyfunction(func);
-	CPythonToolProps* tool = new CPythonToolProps(name, n);
-	pythonToolsPanel->addDummyTool(tool);
-	return tool;
+	FBS::getMainWindow()->OpenFile(fileName);
 }
 
 void GBox_init(vec3d pos, double width, double height, double depth)
 {
-    GBox* gbox = new GBox();
+	GBox* gbox = new GBox();
 
 	static int n = 1;
 	std::stringstream ss;
@@ -122,17 +111,6 @@ void init_FBSUI(py::module& m)
 //    ui.def("getUserString", PyGetString);
 //    ui.def("getUserInt", PyGetInt);
 //    ui.def("getUserSelection", PyGetSelection);
-
-	py::class_<CPythonToolProps, std::unique_ptr<CPythonToolProps, py::nodelete>>(ui, "PythonTool")
-		.def(py::init(&PythonTool_init))
-		.def("setInfo"             , &CPythonToolProps::setInfo            , "info"_a)
-		.def("addBoolParameter"    , &CPythonToolProps::addBoolProperty    , "name"_a, "value"_a = true)
-		.def("addIntParameter"     , &CPythonToolProps::addIntProperty     , "name"_a, "value"_a = 0)
-		.def("addDoubleParameter"  , &CPythonToolProps::addDoubleProperty  , "name"_a, "value"_a = 0)
-		.def("addVec3Parameter"    , &CPythonToolProps::addVec3Property    , "name"_a, "value"_a = vec3d())
-		.def("addEnumParameter"    , &CPythonToolProps::addEnumProperty    , "name"_a, "labels"_a, "value"_a = 0)
-		.def("addStringParameter"  , &CPythonToolProps::addStringProperty  , "name"_a, "value"_a = "")
-		.def("addResourceParameter", &CPythonToolProps::addResourceProperty, "name"_a, "value"_a = "");
 }
 
 #else

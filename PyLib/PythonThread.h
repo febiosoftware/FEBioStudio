@@ -27,38 +27,24 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QThread>
 
-class CPythonToolProps;
+class CCachedPropertyList;
 
 class CPyThread : public QThread
 {
-    Q_OBJECT
+	Q_OBJECT
 
 	void run() Q_DECL_OVERRIDE;
 
 public:
-    CPyThread();
-    ~CPyThread();
+	CPyThread(const QString& filename, CCachedPropertyList* params);
 
-    void SetTool(CPythonToolProps* tool);
-    void SetFilename(QString& filename);
-    void Restart();
-	void Stop();
+private:
+	bool runScript();
 
 signals:
-    void ExecDone();
-    void Restarted();
-	void ToolFinished(bool);
+	void threadFinished(bool);
 
 private:
-    void initPython();
-    void finalizePython();
-	void runRestart();
-	void runTool();
-	void runScript();
-
-private:
-	bool m_stop;
-    bool m_restart;
-	CPythonToolProps* m_tool;
-    QString m_filename;
+	CCachedPropertyList* m_params;
+	QString m_filename;
 };

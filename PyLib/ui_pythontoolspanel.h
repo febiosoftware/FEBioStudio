@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QProgressBar>
-#include <QSplitter>
 #include <FEBioStudio/IconProvider.h>
 #include <QLabel>
 #include <FEBioStudio/Tool.h>
@@ -190,19 +189,17 @@ public:
 class Ui::CPythonToolsPanel
 {
 public:
-	CPythonButtonBox* buttons;
-	CPythonParameterPanel* paramStack;
-	CPythonRunningPane* runPane;
+	CPythonButtonBox* buttons = nullptr;
+	CPythonParameterPanel* paramStack = nullptr;
+	CPythonRunningPane* runPane = nullptr;
 
 	::CPythonToolsPanel* parent = nullptr;
-	int numTools = 0;
 	CPythonInputHandler* inputHandler = nullptr;
 
 public:
 	CPyThread* m_pythonThread = nullptr;
 
 	CPythonTool* m_activeTool = nullptr;
-	std::vector<CPythonToolProps*>	dummyTools;
 	std::vector<CPythonTool*>	tools;
 
 public:
@@ -247,34 +244,13 @@ public:
 	{
 		buttons->addButton(tool->name());
 		paramStack->AddPanel(tool->createUi());
-		numTools++;
+		tool->SetID(tools.size());
+		tools.push_back(tool);
 	}
 
 	void refreshPanel()
 	{
 		buttons->clear();
 		paramStack->clear();
-		numTools = 0;
 	}
-
-/*	void addPage(QWidget* page)
-	{
-		parentStack->addWidget(page);
-		parentStack->setCurrentIndex(2);
-	}
-
-	void removePage()
-	{
-		if(running)
-		{
-			parentStack->setCurrentIndex(1);	
-		}
-		else
-		{
-			parentStack->setCurrentIndex(0);
-		}
-
-		parentStack->removeWidget(parentStack->widget(2));
-	}
-*/
 };

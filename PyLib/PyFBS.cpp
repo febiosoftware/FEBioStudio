@@ -34,6 +34,7 @@ SOFTWARE.*/
 
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h>
 
 #include "PyFBSCore.h"
 #include "PyFBSPost.h"
@@ -43,9 +44,13 @@ SOFTWARE.*/
 #include "PyFBSUI.h"
 #endif
 
+#include <FSCore/math3d.h>
+
+namespace py = pybind11;
+
 PY_MODULE_TYPE(fbs, m)
 {
-    init_FBSCore(m);
+	init_FBSCore(m);
 	init_FBSPost(m);
 
 #ifndef PY_EXTERNAL

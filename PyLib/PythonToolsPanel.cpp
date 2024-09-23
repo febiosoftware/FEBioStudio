@@ -29,10 +29,12 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
 #include <PyLib/PythonThread.h>
-#include "PyOutput.h"
 #include <FEBioStudio/Logger.h>
 #include <FEBioStudio/LogPanel.h>
 #include <QMessageBox>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
 	: CWindowPanel(wnd, parent), ui(new Ui::CPythonToolsPanel)
@@ -43,13 +45,14 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent)
 
 void CPythonToolsPanel::startThread()
 {
+	CPythonTool* tool = ui->m_activeTool;
+	if (tool == nullptr) return;
+
 	if (ui->m_pythonThread == nullptr)
 	{
-		ui->m_pythonThread = new CPyThread();
-		connect(ui->m_pythonThread, &CPyThread::ExecDone, this, &CPythonToolsPanel::on_pythonThread_ExecDone);
-		connect(ui->m_pythonThread, &CPyThread::Restarted, this, &CPythonToolsPanel::on_pythonThread_Restarted);
-		connect(ui->m_pythonThread, &CPyThread::ToolFinished, this, &CPythonToolsPanel::on_pythonThread_ToolFinished);
-
+		CPythonToolProps* td = tool->GetProperties();
+		ui->m_pythonThread = new CPyThread(td->m_fileName, &td->m_props);
+		connect(ui->m_pythonThread, &CPyThread::threadFinished, this, &CPythonToolsPanel::on_pythonThread_threadFinished);
 		ui->m_pythonThread->start();
 	}
 }
@@ -58,8 +61,8 @@ CPythonToolsPanel::~CPythonToolsPanel()
 {
 	if (ui->m_pythonThread)
 	{
-		ui->m_pythonThread->Stop();
-		ui->m_pythonThread->wait();
+		// TODO: user is trying to quit FEBio Studio with a tool still running.
+		//       Should we do anything? 
 	}
 }
 
@@ -69,21 +72,6 @@ void CPythonToolsPanel::Update(bool breset)
 	{
 		ui->m_activeTool->CAbstractTool::Update();
 	}
-}
-
-void CPythonToolsPanel::addDummyTool(CPythonToolProps* tool)
-{
-	int id = ui->tools.size() + ui->dummyTools.size();
-	tool->SetID(id);
-	ui->dummyTools.push_back(tool);
-}
-
-CPythonTool* CPythonToolsPanel::CreateTool(CPythonToolProps* p)
-{
-	CPythonTool* tool = new CPythonTool(GetMainWindow(), p->GetName());
-	tool->SetProperties(p);
-	ui->tools.push_back(tool);
-	return tool;
 }
 
 void CPythonToolsPanel::setProgressText(const QString& txt)
@@ -96,60 +84,169 @@ void CPythonToolsPanel::setProgress(int prog)
 	ui->runPane->setProgress(prog);
 }
 
-void CPythonToolsPanel::BuildTools()
+bool parsePythonFile(const QString& filename, QJsonObject& js)
 {
-	for (auto p : ui->dummyTools)
-	{
-		// Note that tool takes ownership of the properties
-		auto tool = CreateTool(p);
-		ui->addTool(tool);
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
+
+	QString jsonString;
+	QTextStream ts(&f);
+	bool foundStart = false;
+	while (!ts.atEnd()) {
+		QString line = ts.readLine();
+		if (line[0] == '#')
+		{
+			if (!foundStart)
+			{
+				int n = line.indexOf("@fbs");
+				if (n >= 0)
+				{
+					foundStart = true;
+				}
+				jsonString += line.sliced(n + 4);
+			}
+			else
+			{
+				jsonString += line.sliced(1);
+			}
+		}
+		else break;
 	}
-	ui->dummyTools.clear();
+	f.close();
+
+	QJsonDocument doc = QJsonDocument::fromJson(jsonString.toUtf8());
+	js = doc.object();
+	return true;
+}
+
+vec3d jsonToVec3d(QJsonArray& a)
+{
+	double d[3] = { 0,0,0 };
+	if (a.size() == 3)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			QJsonValue ai = a[i];
+			if (ai.isDouble()) d[i] = ai.toDouble();
+		}
+	}
+	return vec3d(d[0], d[1], d[2]);
+}
+
+QStringList jsonToStringList(QJsonArray& a)
+{
+	QStringList l;
+	for (int i = 0; i < a.size(); ++i)
+	{
+		QJsonValue ai = a[i];
+		if (ai.isString()) l.push_back(ai.toString());
+	}
+	return l;
+}
+
+void BuildPropertyList(QJsonObject& o, CCachedPropertyList& props)
+{
+	QStringList keys = o.keys();
+	for (QString key : keys)
+	{
+		QJsonValue v = o[key];
+		if (v.isDouble())
+		{
+			double d = v.toDouble();
+			props.addDoubleProperty(d, key);
+		}
+		else if (v.isString())
+		{
+			QString s = v.toString();
+			props.addStringProperty(s, key);
+		}
+		else if (v.isArray())
+		{
+			QJsonArray a = v.toArray();
+			props.addVec3Property(jsonToVec3d(a), key);
+		}
+		else if (v.isObject())
+		{
+			QJsonObject a = v.toObject();
+			int propType = -1;
+			QJsonValue jtype = a["type"];
+			if (jtype.isString())
+			{
+				QString stype = jtype.toString();
+				if      (stype == "int"   ) propType = CProperty::Int;
+				else if (stype == "float" ) propType = CProperty::Float;
+				else if (stype == "vec3"  ) propType = CProperty::Vec3;
+				else if (stype == "url"   ) propType = CProperty::Resource;
+				else if (stype == "string") propType = CProperty::String;
+				else if (stype == "enum"  ) propType = CProperty::Enum;
+				else if (stype == "bool"  ) propType = CProperty::Bool;
+			}
+			QJsonValue jval = a["value"];
+			switch (propType)
+			{
+			case CProperty::Int     : if (jval.isDouble()) { props.addIntProperty((int)jval.toDouble(), key); } break;
+			case CProperty::Bool    : if (jval.isDouble()) { props.addBoolProperty((bool)jval.toDouble(), key); } break;
+			case CProperty::Float   : if (jval.isDouble()) { props.addDoubleProperty(jval.toDouble(), key); } break;
+			case CProperty::String  : if (jval.isString()) { props.addStringProperty(jval.toString(), key); } break;
+			case CProperty::Resource: if (jval.isString()) { props.addResourceProperty(jval.toString(), key); } break;
+			case CProperty::Enum    : if (jval.isArray()) {
+				QJsonArray a = jval.toArray();
+				props.addEnumProperty(0, key)->setEnumValues(jsonToStringList(a));
+			} break;
+			case CProperty::Vec3: {
+				if (jval.isArray()) { 
+					QJsonArray a = jval.toArray();
+					props.addVec3Property(jsonToVec3d(a), key);
+				}
+			} break;
+			}
+		}
+	}
 }
 
 void CPythonToolsPanel::on_importScript_triggered()
 {
-	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
+	QString filePath = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
+	if (filePath.isEmpty()) return;
 
-	if (filename.isEmpty()) return;
+	QFileInfo fi(filePath);
+	QString toolName = fi.fileName();
+	int n = toolName.indexOf(".");
+	if (n >= 0) toolName.truncate(n);
 
-	if (ui->m_pythonThread == nullptr) startThread();
+	// parse the file for the preamble
+	QJsonObject o;
+	if (parsePythonFile(filePath, o) == false)
+	{
+		QMessageBox::critical(this, "Python", "Failed to import python file.");
+		return;
+	}
 
-	GetMainWindow()->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running file %1\n").arg(filename));
-	ui->m_pythonThread->SetFilename(filename);
+	// construct the tool properties
+	CPythonToolProps* props = new CPythonToolProps();
+	QString toolInfo;
+	QJsonValue jname = o["name"]; if (jname.isString()) toolName = jname.toString();
+	QJsonValue jinfo = o["info"]; if (jinfo.isString()) toolInfo = jinfo.toString();
+	QJsonValue args = o["args"];
+	if (args.isObject())
+	{
+		QJsonObject po = args.toObject();
+		BuildPropertyList(po, props->m_props);
+	}
+	
+	// create the tool and add it to the UI
+	props->m_fileName = filePath;
+	props->m_name = toolName;
+	props->m_info = toolInfo;
+	CPythonTool* tool = new CPythonTool(GetMainWindow(), props);
+	tool->SetInfo(toolInfo);
+	ui->addTool(tool);
 }
 
-void CPythonToolsPanel::on_run_clicked()
-{
-	if (ui->m_activeTool == nullptr) return;
-	QString msg = QString("Running %1").arg(ui->m_activeTool->name());
-	ui->runPane->startRunning(msg);
-
-	if (ui->m_pythonThread == nullptr) startThread();
-
-	CMainWindow* wnd = GetMainWindow();
-	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(ui->m_activeTool->name()));
-	ui->m_pythonThread->SetTool(ui->m_activeTool->GetProperties());
-}
-
-void CPythonToolsPanel::on_pythonThread_ExecDone()
-{
-	BuildTools();
-
-	ui->runPane->stopRunning();
-
-	CMainWindow* wnd = GetMainWindow();
-	wnd->UpdateModel();
-	wnd->UpdateUI();
-}
-
-void CPythonToolsPanel::on_pythonThread_Restarted()
+void CPythonToolsPanel::on_refresh_triggered()
 {
 	ui->refreshPanel();
-
-	for(auto tool : ui->tools)
+	for (auto tool : ui->tools)
 	{
 		delete tool;
 	}
@@ -159,43 +256,31 @@ void CPythonToolsPanel::on_pythonThread_Restarted()
 	ui->runPane->hide();
 }
 
-void CPythonToolsPanel::on_pythonThread_ToolFinished(bool b)
+void CPythonToolsPanel::on_run_clicked()
+{
+	if (ui->m_activeTool == nullptr) return;
+	if (ui->m_pythonThread)
+	{
+		QMessageBox::critical(this, "Python", "A python script is still running. Please wait.");
+		return;
+	}
+
+	QString msg = QString("Running %1").arg(ui->m_activeTool->name());
+	ui->runPane->startRunning(msg);
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(ui->m_activeTool->name()));
+
+	startThread();
+}
+
+void CPythonToolsPanel::on_pythonThread_threadFinished(bool b)
 {
 	if (b == false) QMessageBox::critical(this, "Python", "An error occurred while running the Python script.");
 	ui->runPane->stopRunning();
-}
-
-void CPythonToolsPanel::on_refresh_triggered()
-{
-	if (ui->m_pythonThread)
-		ui->m_pythonThread->Restart();
-}
-
-/*
-CPythonInputHandler* CPythonToolsPanel::getInputHandler()
-{
-	return &inputHandler;
-}
-
-void CPythonToolsPanel::addInputPage(QWidget* wgt)
-{
-	ui->addPage(wgt);
-}
-
-QWidget* CPythonToolsPanel::getInputWgt()
-{
-	return ui->parentStack->currentWidget();
-}
-
-void CPythonToolsPanel::removeInputPage()
-{
-	ui->removePage();
-}
-*/
-
-void CPythonToolsPanel::addLog(QString txt)
-{
-	CLogger::AddPythonLogEntry(txt);
+	ui->m_pythonThread = nullptr;
+	GetMainWindow()->Update(this, true);
 }
 
 void CPythonToolsPanel::on_buttons_idClicked(int id)
@@ -204,18 +289,14 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 	if (ui->m_activeTool) ui->m_activeTool->Deactivate();
 	ui->m_activeTool = nullptr;
 
-	if (id == -1)
+	if ((id <= 0) || (id > ui->tools.size()))
 	{
 		ui->runPane->hide();
 		return;
 	}
 
-	// find the tool
-	auto it = ui->tools.begin();
-	for (int i = 0; i<id - 1; ++i, ++it);
-
 	// activate the tool
-	ui->m_activeTool = *it;
+	ui->m_activeTool = ui->tools[id - 1];
 	ui->m_activeTool->Activate();
 
 	// show the tab
