@@ -50,8 +50,8 @@ void CPythonToolsPanel::startThread()
 
 	if (ui->m_pythonThread == nullptr)
 	{
-		CPythonToolProps* td = tool->GetProperties();
-		ui->m_pythonThread = new CPyThread(td->m_fileName, &td->m_props);
+		CCachedPropertyList* props = tool->GetProperties();
+		ui->m_pythonThread = new CPyThread(tool->GetFilePath(), props);
 		connect(ui->m_pythonThread, &CPyThread::threadFinished, this, &CPythonToolsPanel::on_pythonThread_threadFinished);
 		ui->m_pythonThread->start();
 	}
@@ -209,6 +209,11 @@ void CPythonToolsPanel::on_importScript_triggered()
 	QString filePath = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
 	if (filePath.isEmpty()) return;
 
+	LoadToolFromFile(filePath);
+}
+
+void CPythonToolsPanel::LoadToolFromFile(const QString& filePath)
+{
 	QFileInfo fi(filePath);
 	QString toolName = fi.fileName();
 	int n = toolName.indexOf(".");
@@ -223,7 +228,7 @@ void CPythonToolsPanel::on_importScript_triggered()
 	}
 
 	// construct the tool properties
-	CPythonToolProps* props = new CPythonToolProps();
+	CCachedPropertyList* props = new CCachedPropertyList();
 	QString toolInfo;
 	QJsonValue jname = o["name"]; if (jname.isString()) toolName = jname.toString();
 	QJsonValue jinfo = o["info"]; if (jinfo.isString()) toolInfo = jinfo.toString();
@@ -231,29 +236,34 @@ void CPythonToolsPanel::on_importScript_triggered()
 	if (args.isObject())
 	{
 		QJsonObject po = args.toObject();
-		BuildPropertyList(po, props->m_props);
+		BuildPropertyList(po, *props);
 	}
-	
-	// create the tool and add it to the UI
-	props->m_fileName = filePath;
-	props->m_name = toolName;
-	props->m_info = toolInfo;
-	CPythonTool* tool = new CPythonTool(GetMainWindow(), props);
-	tool->SetInfo(toolInfo);
-	ui->addTool(tool);
+
+	// see if the tool already exists
+	CPythonTool* tool = ui->findTool(filePath);
+	if (tool)
+	{
+		ui->setToolName(tool, toolName);
+		tool->SetToolInfo(toolInfo);
+		tool->SetProperties(props);
+	}
+	else
+	{
+		// create the tool and add it to the UI
+		CPythonTool* tool = new CPythonTool(GetMainWindow(), toolName);
+		tool->SetInfo(toolInfo);
+		tool->SetFilePath(filePath);
+		tool->SetProperties(props);
+		ui->addTool(tool);
+	}
 }
 
 void CPythonToolsPanel::on_refresh_triggered()
 {
-	ui->refreshPanel();
-	for (auto tool : ui->tools)
+	if ((ui->m_pythonThread == nullptr) && ui->m_activeTool)
 	{
-		delete tool;
+		LoadToolFromFile(ui->m_activeTool->GetFilePath());
 	}
-	ui->tools.clear();
-
-	ui->m_activeTool = nullptr;
-	ui->runPane->hide();
 }
 
 void CPythonToolsPanel::on_run_clicked()

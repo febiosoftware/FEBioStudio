@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "PythonToolsPanel.h"
-#include "PythonInputHandler.h"
 #include <QBoxLayout>
 #include <QAction>
 #include <QToolBar>
@@ -85,16 +84,19 @@ public:
 
 		int i = m_buttons++;
 		m_grid->addWidget(but, i / 2, i % 2);
-		m_buttonGroup->addButton(but); m_buttonGroup->setId(but, i + 1);
+		m_buttonGroup->addButton(but, i + 1); 
 	}
 
-	void clear()
+	void setButtonText(int id, const QString& txt)
 	{
-		for (auto button : m_buttonGroup->buttons())
-		{
-			delete button;
-		}
-		m_buttons = 0;
+		QAbstractButton* pb = m_buttonGroup->button(id);
+		if (pb) pb->setText(txt);
+	}
+
+	void pushButton(int id)
+	{
+		QAbstractButton* pb = m_buttonGroup->button(id);
+		if (pb) pb->click();
 	}
 
 private:
@@ -123,15 +125,6 @@ public:
 			addWidget(pl);
 		}
 		else addWidget(w);
-	}
-
-	void clear()
-	{
-		setCurrentIndex(0);
-		while (count() > 1)
-		{
-			delete widget(1);
-		}
 	}
 };
 
@@ -194,7 +187,6 @@ public:
 	CPythonRunningPane* runPane = nullptr;
 
 	::CPythonToolsPanel* parent = nullptr;
-	CPythonInputHandler* inputHandler = nullptr;
 
 public:
 	CPyThread* m_pythonThread = nullptr;
@@ -205,8 +197,6 @@ public:
 public:
 	void setupUi(::CPythonToolsPanel* parent)
 	{
-		inputHandler = new CPythonInputHandler(parent);
-
 		this->parent = parent;
 
 		// build the toolbar
@@ -244,13 +234,31 @@ public:
 	{
 		buttons->addButton(tool->name());
 		paramStack->AddPanel(tool->createUi());
-		tool->SetID(tools.size());
+		tool->SetID((int)tools.size());
 		tools.push_back(tool);
+		// trigger a button push so the new button becomes the active tool.
+		buttons->pushButton(tool->GetID() + 1);
 	}
 
-	void refreshPanel()
+	CPythonTool* findTool(const QString& filepath)
 	{
-		buttons->clear();
-		paramStack->clear();
+		for (auto tool : tools)
+		{
+			if (tool->GetFilePath() == filepath) return tool;
+		}
+		return nullptr;
+	}
+
+	void setToolName(CPythonTool* tool, const QString& toolName)
+	{
+		tool->setName(toolName);
+		for (int i = 0; i < (int)tools.size(); ++i)
+		{
+			if (tools[i] == tool)
+			{
+				buttons->setButtonText(i + 1, toolName);
+				return;
+			}
+		}
 	}
 };

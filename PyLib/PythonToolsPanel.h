@@ -46,6 +46,8 @@ private:
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
 
+	void LoadToolFromFile(const QString& filename);
+
 public slots:
 	void setProgressText(const QString& txt);
 	void setProgress(int prog);

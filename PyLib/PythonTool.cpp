@@ -28,34 +28,56 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 
-CPythonTool::CPythonTool(CMainWindow* wnd, CPythonToolProps* tool) : CAbstractTool(wnd, tool->m_name)
+CPythonTool::CPythonTool(CMainWindow* wnd, const QString& name) : CAbstractTool(wnd, name)
 {
-	assert(tool);
-	m_tool = tool;
+	m_props = nullptr;
+	form = nullptr;
+	label = nullptr;
 }
 
 CPythonTool::~CPythonTool()
 {
-	delete m_tool;
+	delete m_props;
 }
 
-CPythonToolProps* CPythonTool::GetProperties()
+void CPythonTool::SetProperties(CCachedPropertyList* props)
 {
-	return m_tool;
+	if (form) form->setPropertyList(props);
+	delete m_props;
+	m_props = props;
+}
+
+void CPythonTool::SetToolInfo(const QString& info)
+{
+	CAbstractTool::SetInfo(info);
+	if (label) label->setText(info);
+}
+
+CCachedPropertyList* CPythonTool::GetProperties()
+{
+	return m_props;
+}
+
+QString CPythonTool::GetFilePath()
+{
+	return m_fileName;
+}
+
+void CPythonTool::SetFilePath(const QString& filepath)
+{
+	m_fileName = filepath;
 }
 
 QWidget* CPythonTool::createUi()
 {
 	QWidget* w = new QWidget;
 	QVBoxLayout* l = new QVBoxLayout();
-	if (!m_tool->m_info.isEmpty())
-	{
-		QLabel* label = new QLabel(m_tool->m_info);
-		l->addWidget(label);
-	}
-	CPropertyListForm* ui = new CPropertyListForm;
-	ui->setPropertyList(&m_tool->m_props);
-	l->addWidget(ui);
+	QString info = GetInfo();
+	label = new QLabel(info);
+	l->addWidget(label);
+	form = new CPropertyListForm;
+	form->setPropertyList(m_props);
+	l->addWidget(form);
 	l->addStretch();
 	w->setLayout(l);
 	return w;

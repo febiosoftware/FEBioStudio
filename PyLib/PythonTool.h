@@ -26,28 +26,30 @@ SOFTWARE.*/
 #pragma once
 #include <FEBioStudio/Tool.h>
 
-// Helper class for collecting all the properties of a python tool.
-class CPythonToolProps
-{
-public:
-	CCachedPropertyList m_props;
-	QString m_name;
-	QString m_fileName;
-	QString m_info;
-};
+class CPropertyListForm;
+class QLabel;
 
 // The CPythonTool class creates the UI component that will be added 
 // to the Python panel. It manages a CPythonToolProps that contains the properties of the tool.
 class CPythonTool : public CAbstractTool
 {
 public:
-	CPythonTool(CMainWindow* wnd, CPythonToolProps* props);
+	CPythonTool(CMainWindow* wnd, const QString& name);
 	~CPythonTool();
 
-	CPythonToolProps* GetProperties();
+	void SetProperties(CCachedPropertyList* props);
+	CCachedPropertyList* GetProperties();
+
+	void SetFilePath(const QString& filepath);
+	QString GetFilePath();
+
+	void SetToolInfo(const QString& info);
 
 	QWidget* createUi();
 
 private:
-	CPythonToolProps* m_tool;
+	CCachedPropertyList* m_props;
+	QString m_fileName;
+	CPropertyListForm* form;
+	QLabel* label;
 };
