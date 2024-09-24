@@ -377,6 +377,7 @@ SOFTWARE.*/
 #define CID_PARAM_CHECKED			0x000C0004
 #define CID_PARAM_NAME				0x000C0005
 #define CID_PARAM_LC				0x000C0006	// new in FBS 2.0
+#define CID_PARAM_STATE				0x000C0007	// new in FBS 3.0
 
 // --- properties ---
 // (only used by febio classes)

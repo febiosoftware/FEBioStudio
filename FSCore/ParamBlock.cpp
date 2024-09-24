@@ -1175,6 +1175,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
 	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
+	ar.WriteChunk(CID_PARAM_STATE, p.GetState());
 
 	switch (ntype)
 	{
@@ -1224,6 +1225,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	Param p;
 	int ntype = -1;
 	int lcid = -1;
+	int state = 0;
 	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1234,6 +1236,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
 		case CID_PARAM_NAME: ar.read(paramName); break;
 		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
+		case CID_PARAM_STATE: ar.read(state); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -1330,6 +1333,9 @@ void ParamContainer::LoadParam(IArchive& ar)
 		// if we find the parameter, let's try to process it
 		if (param)
 		{
+			// we only map the modified state
+			if (state & Param_State::Param_MODIFIED) param->SetModified(true);
+
 			// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
 			if ((p.GetParamType() == Param_BOOL) && (param->GetParamType() == Param_INT))
 			{
