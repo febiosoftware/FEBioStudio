@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshIO/VTKExport.h>
 #include <MeshIO/PLYExport.h>
 #include <QMessageBox>
+#include <QCoreApplication>
 #include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <LSDyna/LSDYNAexport.h>

@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <sstream>
 #include <iomanip>
+#include <math.h>
 
 class NullDereference : public std::runtime_error {
 public: NullDereference() : std::runtime_error("Dereferencing null object") {}
