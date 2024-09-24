@@ -526,7 +526,7 @@ void Ui::CFEBReportConfig::Apply()
 	ui->imageToolBar->hide();
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
-	ui->monitorToolBar->show();
+	ui->monitorToolBar->hide();
 
 	ui->centralWidget->glw->ShowControlBar();
 
