@@ -94,7 +94,10 @@ void CMainWindow::on_actionRedo_triggered()
 class CDlgChangeLog : public QDialog
 {
 private:
+	QLineEdit* m_flt;
 	QPlainTextEdit* m_txt;
+	QStringList m_lines;
+
 public:
 	CDlgChangeLog(QWidget* w) : QDialog(w)
 	{
@@ -102,12 +105,17 @@ public:
 
 		setMinimumSize(1024, 600);
 
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("filter:"));
+		h->addWidget(m_flt = new QLineEdit);
+
 		m_txt = new QPlainTextEdit;
 		m_txt->setReadOnly(true);
 		m_txt->setFont(QFont("Courier", 11));
 		m_txt->setWordWrapMode(QTextOption::NoWrap);
 
 		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(h);
 		l->addWidget(m_txt);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::Save);
@@ -118,12 +126,30 @@ public:
 
 		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+
+		QObject::connect(m_flt, &QLineEdit::textChanged, this, &CDlgChangeLog::updateText);
 	}
 
-	void SetText(const QString& title, const QString& txt)
+	void updateText()
+	{
+		QString flt = m_flt->text();
+		QString txt;
+		for (QString& line : m_lines)
+		{
+			if (flt.isEmpty() || line.contains(flt, Qt::CaseInsensitive))
+			{
+				txt += line;
+				txt += "\n";
+			}
+		}
+		m_txt->setPlainText(txt);
+	}
+
+	void SetText(const QString& title, const QStringList& txt)
 	{
 		setWindowTitle(QString("Changelog [%1]").arg(title));
-		m_txt->setPlainText(txt);
+		m_lines = txt;
+		updateText();
 	}
 };
 
@@ -132,17 +158,18 @@ void CMainWindow::on_actionChangeLog_triggered()
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QString txt;
+	QStringList txt;
 	const ChangeLog& log = doc->GetChangeLog();
 	int n = log.size();
 	int m = (int) log10(n) + 1;
 	for (int i = 0; i < n; ++i)
 	{
 		const ChangeLog::Entry& v = log.entry(i);
-		txt += QString("%1: (").arg(i + 1, m);
-		txt += v.time.toString() + ") ";
-		txt += v.txt;
-		txt += "\n";
+		QString line;
+		line += QString("%1: (").arg(i + 1, m);
+		line += v.time.toString() + ") ";
+		line += v.txt;
+		txt.push_back(line);
 	}
 
 	CDlgChangeLog dlg(this);
@@ -161,7 +188,10 @@ void CMainWindow::on_actionChangeLog_triggered()
 			else
 			{
 				QTextStream out(&file);
-				out << txt;
+				for (QString& line : txt)
+				{
+					out << line << "\n";
+				}
 				file.close();
 
 				QMessageBox::information(this, "Save changelog", QString("Changelog saved successfully to:\n%1").arg(fileName));
