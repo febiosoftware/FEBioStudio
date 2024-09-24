@@ -48,6 +48,7 @@ Param::Param()
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0; // don't care
 	m_checkable = false;
 	m_checked = false;
 	m_flags = 0;
@@ -104,6 +105,7 @@ void Param::SetFloatRange(double fmin, double fmax, double fstep)
 	m_floatRange = true;
 	m_fmin = fmin;
 	m_fmax = fmax;
+	m_rngType = 6; // FE_CLOSED
 
 	if (fstep == 0.0) fstep = (fmax - fmin) / 100.0;
 	m_fstep = fstep;
@@ -116,6 +118,46 @@ void Param::SetIntRange(int imin, int imax, int istep)
 	m_fmin = imin;
 	m_fmax = imax;
 	m_fstep = istep;
+	m_rngType = 6; // FE_CLOSED
+}
+
+void Param::SetRangeType(int n)
+{
+	m_rngType = n;
+}
+
+bool is_value_in_range(int rng, double val, double dmin, double dmax)
+{
+	switch (rng)
+	{
+	case 0: return true; break;
+	case 1: return (val > dmin); break;
+	case 2: return (val >= dmin); break;
+	case 3: return (val < dmin); break;
+	case 4: return (val <= dmin); break;
+	case 5: return ((val > dmin) && (val < dmax)); break;
+	case 6: return ((val >= dmin) && (val <= dmax)); break;
+	case 7: return ((val > dmin) && (val <= dmax)); break;
+	case 8: return ((val >= dmin) && (val < dmax)); break;
+	case 9: return (val != dmin); break;
+	}
+	return false;
+}
+
+bool Param::IsValueValid() const
+{
+	if ((m_ntype == Param_INT) && m_floatRange)
+	{
+		int v = GetIntValue();
+		return is_value_in_range(m_rngType, (double)v, m_fmin, m_fmax);
+	}
+	if ((m_ntype == Param_FLOAT) && m_floatRange)
+	{
+		double v = GetFloatValue();
+		return is_value_in_range(m_rngType, v, m_fmin, m_fmax);
+	}
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -345,6 +387,7 @@ Param::Param(const Param& p)
 	m_fmin = p.m_fmin;
 	m_fmax = p.m_fmax;
 	m_fstep = p.m_fstep;
+	m_rngType = p.m_rngType;
 	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 	switch (m_ntype)
@@ -442,6 +485,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -470,6 +514,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -498,6 +543,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -526,6 +572,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -554,6 +601,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -582,6 +630,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -611,6 +660,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -639,6 +689,7 @@ Param::Param(vec2d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -668,6 +719,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -696,6 +748,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -723,6 +776,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -750,6 +804,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -776,6 +831,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -802,6 +858,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -829,6 +886,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -859,6 +917,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -889,6 +948,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -917,6 +977,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -945,6 +1006,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -973,6 +1035,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;

@@ -256,6 +256,24 @@ public:
 								}
 								else toolTip += QString("<p><b>load controller: </b>(none)</p>");
 							}
+
+							int rng = p.GetRangeType();
+							double vmin, vmax;
+							p.GetRange(vmin, vmax);
+							switch (rng)
+							{
+							case 0: break;
+							case 1: toolTip += QString("<p><b>range:</b> (%1, inf)</p>").arg(vmin); break;
+							case 2: toolTip += QString("<p><b>range:</b> [%1, inf)</p>").arg(vmin); break;
+							case 3: toolTip += QString("<p><b>range:</b> (-inf, %1)</p>").arg(vmin); break;
+							case 4: toolTip += QString("<p><b>range:</b> (-inf, %1]</p>").arg(vmin); break;
+							case 5: toolTip += QString("<p><b>range:</b> (%1, %2)</p>").arg(vmin).arg(vmax); break;
+							case 6: toolTip += QString("<p><b>range:</b> [%1, %2]</p>").arg(vmin).arg(vmax); break;
+							case 7: toolTip += QString("<p><b>range:</b> (%1, %2]</p>").arg(vmin).arg(vmax); break;
+							case 8: toolTip += QString("<p><b>range:</b> [%1, %2)</p>").arg(vmin).arg(vmax); break;
+							case 9: toolTip += QString("<p><b>range:</b> value != %1</p>").arg(vmin); break;
+							}
+							
 							return toolTip;
 						}
 						return QVariant();
@@ -1773,11 +1791,20 @@ void FEClassPropsView::drawRow(QPainter* painter, const QStyleOptionViewItem& op
 		if (m_model->isParameter(index))
 		{
 			Param* p = m_model->GetParameter(index); assert(p);
-			if (p && p->IsModified())
+			if (p)
 			{
-				QRect rt = option.rect;
-				rt.setLeft(rt.right() - 5);
-				painter->fillRect(rt, Qt::darkCyan);
+				if (!p->IsValueValid())
+				{
+					QRect rt = option.rect;
+					rt.setLeft(rt.right() - 5);
+					painter->fillRect(rt, Qt::red);
+				}
+				else if (p->IsModified())
+				{
+					QRect rt = option.rect;
+					rt.setLeft(rt.right() - 5);
+					painter->fillRect(rt, Qt::darkCyan);
+				}
 			}
 		}
 	}

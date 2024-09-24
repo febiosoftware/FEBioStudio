@@ -233,6 +233,12 @@ public:
 
 	void SetFloatRange(double fmin, double fmax, double fstep = 0.0);
 	void SetIntRange(int imin, int imax, int istep = 1);
+	void SetRangeType(int n); // see FECore/FEParamValidator.h
+
+	int GetRangeType() const { return m_rngType; }
+	void GetRange(double& vmin, double& vmax) const { vmin = m_fmin; vmax = m_fmax; }
+
+	bool IsValueValid() const;
 
 	void SetCheckable(bool b);
 	bool IsCheckable() const;
@@ -276,6 +282,7 @@ protected:
 
 	bool		m_floatRange;
 	double		m_fmin, m_fmax, m_fstep;
+	int			m_rngType;
 
 	const char*	m_szbrev;	// short name of parameter
 	const char*	m_szname;	// long name of parameter
