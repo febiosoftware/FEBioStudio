@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/FERevolveFaces.h>
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
-#include <GeomLib/GCurveMeshObject.h>
+#include <MeshTools/FESelection.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -46,15 +46,9 @@ SOFTWARE.*/
 #include "ObjectProps.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include "CurveIntersectProps.h"
 #include "GLHighlighter.h"
 #include <GeomLib/GPrimitive.h>
 #include <QMessageBox>
-#include <QInputDialog>
-#include <QProgressBar>
-#include <sstream>
-#include <QtCore/QTimer>
-#include <GeomLib/MeshLayer.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
@@ -158,12 +152,34 @@ ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po
 	m_mod = mod;
 	m_sel = sel;
 	m_po = po;
+	m_newMesh = nullptr;
 }
 
 void ModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
-	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
+	bool bsuccess = false;
+
+	// get the mesh
+	FSMesh* pm = m_po->GetFEMesh();
+	if (pm && m_mod)
+	{
+		// apply modifier and create new mesh
+		m_newMesh = nullptr;
+		try {
+			if (m_sel && (m_sel->Type() != SELECT_OBJECTS))
+				m_newMesh = m_mod->Apply(m_po, m_sel);
+			else
+				m_newMesh = m_mod->Apply(pm);
+		}
+		catch (...)
+		{
+			m_mod->SetError("Exception detected.");
+		}
+
+		SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
+		if ((m_newMesh == nullptr) && !m_mod->AllowNullMesh()) bsuccess = false;
+		else bsuccess = true;
+	}
 	emit resultReady(bsuccess);
 }
 
@@ -222,9 +238,6 @@ REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDI
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
-	m_mod = 0;
-	m_nid = -1;
-	m_currentObject = nullptr;
 	ui->setupUi(this, wnd);
 }
 
@@ -240,27 +253,18 @@ void CMeshPanel::Update(bool breset)
 	GObject::SetActiveObject(activeObject);
 
 	// only update if reset is true or the active object changed
-	if ((breset == false) && (activeObject == m_currentObject)) return;
+	if ((breset == false) && (activeObject == ui->m_currentObject)) return;
 
 	// keep track of the object
-	m_currentObject = activeObject;
+	ui->m_currentObject = activeObject;
 
 	ui->obj->Update();
 
 	// start by hiding everything
 	ui->hideAllPanels();
 
-	// update the active modifier
-	if (m_mod)
-	{
-		if (m_mod->UpdateData(false) == true)
-		{
-			ui->setActiveModifier(m_mod);
-		}
-	}
-
 	// if there is no active object, we're done
-	if (activeObject == 0) return;
+	if (activeObject == nullptr) return;
 
 	if (dynamic_cast<GMeshObject*>(activeObject))
 	{
@@ -301,64 +305,41 @@ void CMeshPanel::Update(bool breset)
 	}
 }
 
-void CMeshPanel::on_buttons_buttonSelected(int id)
+void CMeshPanel::on_buttons2_idClicked(int id)
 {
-	m_nid = id;
-	if (id == -1) ui->showModifierParametersPanel(false);
-	else
-	{
-		if (m_mod) delete m_mod;
-		m_mod = 0;
-
-		ui->setModifierPropertyList(0);
-
-		ClassDescriptor* pcd = ui->buttons->GetClassDescriptor(id);
-		if (pcd)
-		{
-			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-			if (m_mod) m_mod->UpdateData(false);
-			ui->setActiveModifier(m_mod);
-		}
-
-		ui->showModifierParametersPanel(true);
-	}
+	ui->activateTool(id);
 }
 
-void CMeshPanel::on_buttons2_buttonSelected(int id)
+void CMeshPanel::on_buttons_idClicked(int id)
 {
-	// If the ID is the same and we already have a modifier 
-	// allocated, then return.
-	if ((id == m_nid) && m_mod) return;
-
-	// delete modifier
-	if (m_mod) delete m_mod;
-	m_mod = nullptr;
-
-	// store button id
-	m_nid = id;
-
-	// update modifier and panel
-	if (id == -1) ui->showModifierParametersPanel(false);
-	else
-	{
-		ui->setModifierPropertyList(0);
-
-		ClassDescriptor* pcd = ui->buttons2->GetClassDescriptor(id);
-		if (pcd)
-		{
-			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-			if (m_mod) m_mod->UpdateData(false);
-			ui->setActiveModifier(m_mod);
-		}
-
-		ui->showModifierParametersPanel(true);
-	}
+	ui->activateTool(id);
 }
-
 
 void CMeshPanel::Apply()
 {
 	on_apply_clicked(true);
+}
+
+bool CMeshPanel::OnPickEvent(const FESelection& sel)
+{
+	if (ui->m_activeTool)
+	{
+		bool b = ui->m_activeTool->onPickEvent(sel);
+		if (b) ui->m_activeTool->updateUi();
+		return b;
+	}
+	else return false;
+}
+
+bool CMeshPanel::OnUndo()
+{
+	if (ui->m_activeTool)
+	{
+		bool b = ui->m_activeTool->onUndoEvent();
+		if (b) ui->m_activeTool->updateUi();
+		return b;
+	}
+	else return false;
 }
 
 void CMeshPanel::on_apply_clicked(bool b)
@@ -405,10 +386,21 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		// clear any highlights
 		GLHighlighter::ClearHighlights();
+
+		if (mesh)
+		{
+			// create a report: 
+			QString report = QString("Meshing finished for %1:\n").arg(QString::fromStdString(activeObject->GetName()));
+			report += QString("- Nodes    = %1\n").arg(mesh->Nodes());
+			report += QString("- Faces    = %1\n").arg(mesh->Faces());
+			report += QString("- Elements = %1\n").arg(mesh->Elements());
+			QMessageBox::information(this, "FEBio Studio", report);
+			w->AddLogEntry(report);
+		}
 	}
 }
 
-void CMeshPanel::on_apply2_clicked(bool b)
+void CMeshPanel::on_modParams_apply()
 {
 	CMainWindow* w = GetMainWindow();
 
@@ -417,7 +409,11 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// make sure we have a modifier
-	if (m_mod == 0) return;
+	ModifierTool* modTool = dynamic_cast<ModifierTool*>(ui->m_activeTool);
+	if (modTool == nullptr) return;
+
+	FEModifier* mod = modTool->GetModifier();
+	if (mod == nullptr) return;
 
 	// check if the current mesh has any dependencies
 	if (activeObject->GetFEMesh())
@@ -446,20 +442,27 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		else { delete list; list = 0; }
 	}
 
-	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
+	ModifierThread* thread = new ModifierThread(doc, mod, activeObject, sel);
 	CDlgStartThread dlg(GetMainWindow(), thread);
-	dlg.setTask(QString::fromStdString(m_mod->GetName()));
+	dlg.setTask(QString::fromStdString(mod->GetName()));
 	if (dlg.exec())
 	{
 		bool bsuccess = dlg.GetReturnCode();
 		if (bsuccess == false)
 		{
-			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
+			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(mod->GetName())).arg(QString::fromStdString(mod->GetErrorString()));
 			QMessageBox::critical(this, "Error", err);
 		}
 		else
 		{
-			std::string err = m_mod->GetErrorString();
+			FSMesh* newMesh = thread->GetNewMesh();
+			newMesh->ClearFaceSelection();
+
+			// swap the meshes
+			string ss = mod->GetName();
+			doc->DoCommand(new CCmdChangeFEMesh(activeObject, thread->GetNewMesh()), ss.c_str(), false);
+
+			std::string err = mod->GetErrorString();
 			if (err.empty() == false)
 			{
 				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
@@ -467,15 +470,8 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		}
 	}
 
-	if (m_mod)
-	{
-		if (m_mod->UpdateData(false))
-		{
-			ui->setActiveModifier(m_mod);
-		}
-	}
+	modTool->Reset();
 
-	Update();
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();

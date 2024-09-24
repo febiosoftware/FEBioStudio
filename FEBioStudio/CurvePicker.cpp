@@ -154,7 +154,7 @@ CCurveListPicker::~CCurveListPicker()
 void CCurveListPicker::onAddButtonClicked()
 {
 	// get the document
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getDocument());
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getActiveDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -179,7 +179,7 @@ void CCurveListPicker::onAddButtonClicked()
 void CCurveListPicker::onSubButtonClicked()
 {
 	// get the document
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getDocument());
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getActiveDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -211,7 +211,7 @@ void CCurveListPicker::onDelButtonClicked()
 void CCurveListPicker::onSelButtonClicked()
 {
 	// get the document
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getDocument());
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(FBS::getActiveDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -240,7 +240,7 @@ void CCurveListPicker::onSelButtonClicked()
 //-----------------------------------------------------------------------------
 void CCurveListPicker::setCurves(const QStringList& curves)
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(FBS::getDocument());
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(FBS::getActiveDocument());
 	GModel& m = *doc->GetGModel();
 
 	ui->m_list->clearData();

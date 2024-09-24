@@ -89,6 +89,7 @@ void CLogDataSettings::Save(OArchive& ar)
 			case FSLogData::LD_ELEM:
 			case FSLogData::LD_FACE:
 			case FSLogData::LD_SURFACE:
+			case FSLogData::LD_DOMAIN:
 			{
 				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
 				if (pil)
@@ -150,6 +151,7 @@ void CLogDataSettings::Load(IArchive& ar)
 			case FSLogData::LD_FACE   : ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
 			case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(gm.FindNamedSelection(gid)); break;
 			case FSLogData::LD_ELEM   : ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_DOMAIN : ld = new FSLogDomainData(gm.FindNamedSelection(gid)); break;
 			case FSLogData::LD_RIGID  : ld = new FSLogRigidData(mid); break;
 			case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(cid); break;
 			default:
@@ -599,7 +601,7 @@ void FSProject::SetDefaultPlotVariables()
 	{
 		m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("stress", true);
-        m_plt.AddPlotVariable("relative volume", true);
+		m_plt.AddPlotVariable("relative volume", true);
 	}
 	else if (strcmp(szmod, "biphasic") == 0)
 	{
@@ -2131,7 +2133,7 @@ bool FSProject::ConvertDiscrete(std::ostream& log)
 		if (ps)
 		{
 			FSDiscreteMaterial* pm = ps->GetMaterial();
-			if (pm)
+			if (pm && (dynamic_cast<FEBioDiscreteMaterial*>(pm)==nullptr))
 			{
 				FSDiscreteMaterial* febMat = FEBio::CreateDiscreteMaterial(pm->GetTypeString(), &fem);
 

@@ -63,13 +63,19 @@ public:
 		int		tag;
 	};
 
-    struct DOMAIN_SHELL
-    {
-        int       pid;
-        double    h[4];
-        
-        DOMAIN_SHELL() { h[0] = h[1] = h[2] = h[3] = 0; }
-    };
+	struct SECTION_SHELL
+	{
+		int       secid = 0;
+		double    h[4];
+
+		SECTION_SHELL() { h[0] = h[1] = h[2] = h[3] = 0; }
+	};
+
+	struct SECTION_SOLID
+	{
+		int   secid = 0;
+		int   elform = 0;
+	};
 
 	struct ELEMENT_DISCRETE
 	{
@@ -271,10 +277,12 @@ public:
 
 	void addShellElement(const ELEMENT_SHELL& el) { m_shell.push_back(el); }
 
-    void addShellDomain(const DOMAIN_SHELL& ds) { m_dshell.push_back(ds); }
+	void addShellSection(const SECTION_SHELL& ds) { m_shellsection.push_back(ds); }
+
+	void addSolidSection(const SECTION_SOLID& ds) { m_solidsection.push_back(ds); }
 
 	void addDiscrete(const ELEMENT_DISCRETE& el) { m_discrete.push_back(el); }
-    
+
 	int parts() const { return (int) m_part.size(); }
 	void addPart(const PART& p) { m_part.push_back(p); }
 
@@ -297,8 +305,8 @@ public:
 
 	int FindFace(int n[4]);
 
-    int FindShellDomain(int pid);
-    
+	int FindShellSection(int secid);
+
 	void UpdateMesh(FSMesh& mesh);
 
 	void allocData(int N) { m_Data.assign(N, vector<double>(2)); }
@@ -317,7 +325,8 @@ protected:
 public:
 	vector<ELEMENT_SOLID>		m_solid;
 	vector<ELEMENT_SHELL>		m_shell;
-    vector<DOMAIN_SHELL>        m_dshell;
+    vector<SECTION_SHELL>		m_shellsection;
+    vector<SECTION_SOLID>		m_solidsection;
     vector<ELEMENT_DISCRETE>	m_discrete;
 	vector<NODE>				m_node;
 	vector<PART>				m_part;

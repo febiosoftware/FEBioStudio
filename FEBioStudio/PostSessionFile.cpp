@@ -16,6 +16,7 @@
 #include <FEBio/FEBioFormat.h>
 #include <PostGL/GLLinePlot.h>
 #include <PostGL/GLPlotGroup.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 
 template <> std::string type_to_string<GLColor>(const GLColor& v)

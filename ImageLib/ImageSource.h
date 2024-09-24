@@ -65,7 +65,7 @@ public:
 	C3DImage* Get3DImage() { return m_img; }
 
     void ClearFilters();
-    C3DImage* GetImageToFilter(bool allocate = false, int pixelType = -1);
+    C3DImage* GetImageToFilter();
 
 public:
 	CImageModel* GetImageModel();

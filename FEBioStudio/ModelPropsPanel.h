@@ -127,12 +127,12 @@ private:
 	QCheckBox*		m_state;
 };
 
-class CGItemPropsPanel : public QWidget
+class CGItemInfoPanel : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CGItemPropsPanel(QWidget* parent = 0);
+	CGItemInfoPanel(QWidget* parent = 0, bool showActiveOption = false);
 
 	void setName(const QString& name);
 
@@ -140,16 +140,21 @@ public:
 
 	void setID(int id);
 
+	void setActive(bool b);
+
 protected slots:
 	void on_name_textEdited(const QString&);
+	void on_active_changed();
 
 signals:
 	void nameChanged(const QString& newName);
+	void activeChanged(bool);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
 	QLabel*			m_id;
+	QCheckBox*		m_active; // only used by parts
 };
 
 class CMeshDataInfoPanel : public QWidget
@@ -214,7 +219,9 @@ private slots:
 	void on_select2_pickClicked();
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
-	void on_gitem_nameChanged(const QString&);
+	void on_itemInfo_nameChanged(const QString&);
+	void on_partInfo_nameChanged(const QString&);
+	void on_partInfo_activeChanged(bool);
 	void on_data_nameChanged(const QString&);
 	void on_object_colorChanged(const QColor& col);
 	void on_props_dataChanged(int n);

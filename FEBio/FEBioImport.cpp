@@ -498,6 +498,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		case FSLogData::LD_NODE   : ld = new FSLogNodeData(mdl.FindNamedSelection(v.GroupID())); break;
 		case FSLogData::LD_FACE   : ld = new FSLogFaceData(mdl.FindNamedSelection(v.GroupID())); break;
 		case FSLogData::LD_SURFACE: ld = new FSLogSurfaceData(mdl.FindNamedSelection(v.GroupID())); break;
+		case FSLogData::LD_DOMAIN : ld = new FSLogDomainData(mdl.FindNamedSelection(v.GroupID())); break;
 		case FSLogData::LD_ELEM   : ld = new FSLogElemData(mdl.FindNamedSelection(v.GroupID())); break;
 		case FSLogData::LD_RIGID  : ld = new FSLogRigidData(v.GroupID()); break;
 		case FSLogData::LD_CNCTR  : ld = new FSLogConnectorData(v.GroupID()); break;

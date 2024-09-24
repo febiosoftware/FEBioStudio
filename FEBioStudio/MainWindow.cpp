@@ -49,9 +49,7 @@ SOFTWARE.*/
 #include "FileThread.h"
 #include "GLHighlighter.h"
 #include <QStyleFactory>
-#include "DlgAddMeshData.h"
 #include "GraphWindow.h"
-#include "DlgTimeSettings.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
@@ -75,15 +73,11 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
-#include "ModelTree.h"
 #include "XMLDocument.h"
 #include "PostSessionFile.h"
 #include "units.h"
 #include "version.h"
-#include "LocalJobProcess.h"
-#include "FEBioThread.h"
 #include "DlgStartThread.h"
-#include "DlgPartSelector.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
@@ -94,14 +88,10 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <PostLib/VolumeRenderer.h>
-#include <ImageLib/ImageModel.h>
-#include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
-#include <FSCore/FSLogger.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
@@ -597,7 +587,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
-		     (ext.compare("dyn", Qt::CaseInsensitive) == 0))
+		     (ext.compare("dyn", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("key", Qt::CaseInsensitive) == 0))
 	{
 		OpenFEModel(fileName);
 	}
@@ -1187,6 +1178,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				AddLogEntry("Document initialization failed!\n");
 			}
 			AddDocument(doc);
+
+			Units::SetUnitSystem(doc->GetUnitSystem());
 
 			// for fsprj files we set the "project" directory. 
 			FSDir path(file.m_fileName.toStdString());
@@ -1804,6 +1797,15 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	{
 		if (GetPostDocument()) ui->actionTranslate->toggle();
 	}
+	else if ((ev->key() == Qt::Key_A))
+	{
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
+		{
+			doc->ToggleActiveParts();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
@@ -1888,6 +1890,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
 		settings.setValue("meshColor", vs.m_meshColor.to_uint());
+		settings.setValue("linewidth", vs.m_line_size);
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -1899,6 +1902,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("showGrid", vs.m_bgrid);
 		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
+		settings.setValue("tagFontSize", vs.m_tagFontSize);
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
@@ -2024,6 +2028,7 @@ void CMainWindow::readSettings()
 		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
 		// alpha component used to not be stored so set it to default if zero
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
+		vs.m_line_size = settings.value("linewidth", vs.m_line_size).toInt();
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -2035,6 +2040,8 @@ void CMainWindow::readSettings()
 		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
+
+		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
 
 		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 		GLWidget::set_default_font(font);
@@ -3111,6 +3118,18 @@ void CMainWindow::OnSelectionTransformed()
 	RedrawGL();
 }
 
+bool CMainWindow::IsColorPickerActive() const
+{
+	if (ui->pickColorTool && ui->pickColorTool->isVisible()) return true;
+	return false;
+}
+
+CDlgPickColor* CMainWindow::GetPickColorDialog()
+{
+	if (IsColorPickerActive()) return ui->pickColorTool;
+	return nullptr;
+}
+
 // remove a graph from the list
 void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 {
@@ -3251,7 +3270,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 	return true;
 }
 
-bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion, bool allowHybridMesh)
 {
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
@@ -3262,38 +3281,42 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	// pass the units to the model project
 	doc->GetProject().SetUnits(doc->GetUnitSystem());
 
+	FEBioExport* writer = nullptr;
+	if (febioFileVersion == 0x0205)
+	{
+		FEBioExport25* feb = new FEBioExport25(doc->GetProject());
+		feb->SetExportSelectionsFlag(true);
+		writer = feb;
+	}
+	else if (febioFileVersion == 0x0300)
+	{
+		FEBioExport3* feb = new FEBioExport3(doc->GetProject());
+		feb->SetExportSelectionsFlag(true);
+		writer = feb;
+	}
+	else if (febioFileVersion == 0x0400)
+	{
+		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
+		feb->SetMixedMeshFlag(allowHybridMesh);
+		writer = feb;
+	}
+	else
+	{
+		assert(false);
+	}
+	if (writer == nullptr) return false;
+
 
 	try {
-		if (febioFileVersion == 0x0205)
-		{
-			FEBioExport25 feb(doc->GetProject());
-			feb.SetExportSelectionsFlag(true);
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else if (febioFileVersion == 0x0300)
-		{
-			FEBioExport3 feb(doc->GetProject());
-			feb.SetExportSelectionsFlag(true);
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else if (febioFileVersion == 0x0400)
-		{
-			FEBioExport4 feb(doc->GetProject());
-			ret = feb.Write(febFile.c_str());
-			if (ret == false) err = feb.GetErrorMessage();
-		}
-		else
-		{
-			assert(false);
-		}
+		ret = writer->Write(febFile.c_str());
+		if (ret == false) err = writer->GetErrorMessage();
 	}
 	catch (...)
 	{
 		err = "Unknown exception detected.";
 		ret = false;
 	}
+	delete writer;
 
 	if (ret == false)
 	{
@@ -3333,12 +3356,10 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 }
 
-void CMainWindow::onShowPartSelector()
+void CMainWindow::onShowPartViewer()
 {
 	CModelDocument* doc = GetModelDocument();
-	if (doc->GetSelectionMode() != SELECT_PART)
-		on_actionSelectParts_toggled(true);
-	ui->showPartSelector(doc);
+	ui->showPartViewer(doc);
 }
 
 void CMainWindow::checkJobProgress()

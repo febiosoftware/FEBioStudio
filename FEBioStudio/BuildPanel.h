@@ -41,6 +41,7 @@ public:
 	CBuildPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	CCreatePanel* CreatePanel();
+	CCommandPanel* GetActivePanel();
 
 	void Update(bool breset) override;
 
@@ -52,6 +53,8 @@ public:
 
 	bool IsEditPanelVisible();
 	bool IsMeshPanelVisible();
+	bool IsCreatePanelVisible();
+	bool IsToolsPanelVisible();
 
 public slots:
 	void on_buildTab_currentChanged(int index);

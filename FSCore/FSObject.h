@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "ParamBlock.h"
-#include"ClassDescriptor.h"
 #include <string>
 
 //-----------------------------------------------------------------------------

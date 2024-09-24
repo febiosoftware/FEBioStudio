@@ -28,13 +28,14 @@ SOFTWARE.*/
 #include "GDiscreteObject.h"
 #include <FSCore/Archive.h>
 #include <GeomLib/GModel.h>
+#include "GMaterial.h"
 #include <sstream>
 
 GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
 {
 	m_gm = gm;
 	m_ntype = ntype;
-	m_state = GEO_VISIBLE;
+	m_state = (GEO_VISIBLE | GEO_ACTIVE);
 	m_col = GLColor(0, 255, 0);
 }
 
@@ -351,6 +352,8 @@ void GDiscreteElementSet::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+	ar.WriteChunk(1, m_state);
 }
 
 void GDiscreteElementSet::Load(IArchive& ar)
@@ -362,7 +365,7 @@ void GDiscreteElementSet::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		if (nid == 0)
 		{
-			int n0, n1;
+			int n0 = -1, n1 = -1;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -372,14 +375,21 @@ void GDiscreteElementSet::Load(IArchive& ar)
 			}
 			AddElement(n0, n1);
 		}
+		else if (nid == 1) ar.read(m_state);
 		ar.CloseChunk();
 	}
 }
 
 //=============================================================================
+
+extern GLColor col[GMaterial::MAX_COLORS]; // in GMaterial.cpp
+
 GDiscreteSpringSet::GDiscreteSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_DISCRETE_SPRING_SET)
 {
 	m_mat = nullptr;
+	static int n = 0;
+	SetColor(col[n % GMaterial::MAX_COLORS]);
+	n++;
 }
 
 //-----------------------------------------------------------------------------

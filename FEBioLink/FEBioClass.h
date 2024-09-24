@@ -64,6 +64,7 @@ class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
 class FSMat3dValuator;
+class FSProject;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -229,4 +230,6 @@ namespace FEBio {
 	FECoreBase* CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem);
 
 	FSModelComponent* CloneModelComponent(FSModelComponent* pmc, FSModel* fem);
+
+	void SetActiveProject(FSProject* prj);
 }

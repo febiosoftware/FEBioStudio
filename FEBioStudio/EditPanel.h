@@ -41,11 +41,12 @@ class FSMesh;
 class GSurfaceMeshObject;
 class FEMesher;
 class FSGroup;
+class FSSurfaceMesh;
 
 class SurfaceModifierThread : public CustomThread
 {
 public:
-	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
+	SurfaceModifierThread(FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
 
 	void run() Q_DECL_OVERRIDE;
 
@@ -58,11 +59,14 @@ public:
 
 	void stop() override;
 
+	FSSurfaceMesh* newMesh() { return m_newMesh; }
+
 private:
 	CModelDocument*		m_doc;
 	GSurfaceMeshObject*	m_po;
 	FESurfaceModifier*	m_mod;
 	FSGroup*			m_pg;
+	FSSurfaceMesh*		m_newMesh;
 };
 
 
@@ -81,10 +85,11 @@ public:
 private slots:
 	void on_apply_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
-	void on_buttons_buttonSelected(int n);
+	void on_buttons_idClicked(int id);
 	void on_posX_editingFinished();
 	void on_posY_editingFinished();
 	void on_posZ_editingFinished();
+	void on_modParams_apply();
 
 private:
 	void updateObjectPosition();

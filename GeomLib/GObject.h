@@ -45,6 +45,7 @@ class FSNode;
 class FSGroup;
 class GMesh;
 class GObject;
+class GObjectManipulator;
 
 //-----------------------------------------------------------------------------
 enum ObjectSaveFlags {
@@ -284,6 +285,10 @@ public:
 
 	void Reindex();
 
+	GObjectManipulator* GetManipulator();
+
+	void SetManipulator(GObjectManipulator* om);
+
 public:
 	static void SetActiveObject(GObject* po);
 	static GObject* GetActiveObject();
@@ -297,3 +302,17 @@ private:
 
 // helper function to see if two faces are identical
 bool IsSameFace(int n[4], int m[4]);
+
+class GObjectManipulator
+{
+public:
+	GObjectManipulator(GObject* po);
+	virtual ~GObjectManipulator();
+
+	GObject* GetObject();
+
+	virtual void TransformNode(GNode* pn, const Transform& T) {}
+
+private:
+	GObject* m_po;
+};

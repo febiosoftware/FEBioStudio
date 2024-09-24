@@ -74,7 +74,7 @@ public:
 	CMarchingCubes(CImageModel* img);
 	virtual ~CMarchingCubes();
 
-	float GetIsoValue() const { return m_val; }
+	float GetIsoValue() const { return (float) m_val; }
 	void SetIsoValue(float v);
 
 	bool GetSmooth() const { return m_bsmooth; }

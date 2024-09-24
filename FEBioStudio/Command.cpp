@@ -26,19 +26,12 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "Command.h"
-#include "Document.h"
-#include "GLView.h"
-#include <FEMLib/FEAnalysisStep.h>
-#include <GeomLib/GMultiBox.h>
-#include <GeomLib/GPrimitive.h>
-#include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/FEMesher.h>
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddMesh
 //////////////////////////////////////////////////////////////////////
 
-CCommand::CCommand(const string& name)
+CCommand::CCommand(const std::string& name)
 {
 	m_name = name;
 }
@@ -53,7 +46,7 @@ const char* CCommand::GetName() const
 	return m_name.c_str(); 
 }
 
-void CCommand::SetName(const string& name) 
+void CCommand::SetName(const std::string& name)
 { 
 	m_name = name; 
 }

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/FSTriMesh.h>
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 #include <sstream>
 using namespace Post;
 
@@ -440,7 +441,7 @@ protected:
 		m_box = BOX(r, r); m_box.Inflate(m_R);
 	}
 
-	int Count() { return 1; }
+	int Count() const { return 1; }
 
 private:
 	GLMusclePath* m_path = nullptr;

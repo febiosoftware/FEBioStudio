@@ -29,6 +29,22 @@ SOFTWARE.*/
 #include <FECore/FECoreBase.h>
 #include <FECore/FEModelParam.h>
 #include <FECore/FEModule.h>
+#include <FECore/FETimeStepController.h>
+#include <FECore/FENewtonStrategy.h>
+#include <FECore/FENewtonSolver.h>
+#include <FEBioFluid/FEFluidAnalysis.h>
+#include <FEBioFluid/FEFluidSolutesAnalysis.h>
+#include <FEBioFluid/FEFluidFSIAnalysis.h>
+#include <FEBioFluid/FEMultiphasicFSIAnalysis.h>
+#include <FEBioFluid/FEPolarFluidAnalysis.h>
+#include <FEBioFluid/FEThermoFluidAnalysis.h>
+#include <FEBioMix/FEBiphasicAnalysis.h>
+#include <FEBioMix/FEBiphasicSoluteAnalysis.h>
+#include <FEBioMix/FEMultiphasicAnalysis.h>
+#include <FEBioMech/FEContactInterface.h>
+#include <FEBioMech/FESlidingElasticInterface.h>
+#include <FEBioMech/FEFacet2FacetSliding.h>
+#include <FEBioMech/FESolidAnalysis.h>
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLib/febio.h>
 #include <FEMLib/FSModel.h>
@@ -46,8 +62,229 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 using namespace FEBio;
+using namespace std;
+
+static FSProject* activeProject = nullptr;
+
+static bool blockCreateEvents = false;
+
+// create handlers
+class FSCreateHandler {
+public:
+	FSCreateHandler() { m_moduleId = -1; }
+	virtual ~FSCreateHandler() {}
+	virtual void handle(FECoreBase*) = 0;
+
+	int GetModuleID() const { return m_moduleId; }
+	void SetModuleID(int n) { m_moduleId = n; }
+
+private:
+	int	m_moduleId;
+};
+
+template <class T> class FSCreateHandlerFunction : public FSCreateHandler
+{
+public:
+	FSCreateHandlerFunction(std::function<void(T*)> f) : m_f(f) {}
+
+	void handle(FECoreBase* pc) override
+	{
+		T* pT = dynamic_cast<T*>(pc);
+		if (pT) m_f(pT);
+	}
+
+private:
+	std::function<void(T* pc)> m_f;
+};
+
+template <class T> class AddPlotVariables : public FSCreateHandler
+{
+public:
+	AddPlotVariables(const vector<string>& vars) : m_vars(vars) {}
+	AddPlotVariables(const string& var) { m_vars.push_back(var); }
+
+	void handle(FECoreBase* pc) override
+	{
+		T* pT = dynamic_cast<T*>(pc);
+		if (pT && activeProject)
+		{
+			CPlotDataSettings& plt = activeProject->GetPlotDataSettings();
+			for (string& s : m_vars) plt.AddPlotVariable(s, true);
+		}
+	}
+
+private:
+	vector<string> m_vars;
+};
+
+static std::vector<FSCreateHandler*> createHandlers;
+
+void addCreateHandler(FSCreateHandler* handler)
+{
+	handler->SetModuleID(FEBio::GetActiveModule());
+	createHandlers.push_back(handler);
+}
+
+template <class T> void addDefaultCreateHandler(std::function<void(T*)> f)
+{
+	addCreateHandler(new FSCreateHandlerFunction<T>(f));
+}
+
+class FSCreateHandlerForTypeString : public FSCreateHandler
+{
+public:
+	FSCreateHandlerForTypeString(const char* sztype, std::function<void(FECoreBase*)> f) : m_typeStr(sztype), m_f(f) {}
+
+	void handle(FECoreBase* pc) override
+	{
+		if (pc && (m_typeStr == pc->GetTypeStr()))
+		{
+			m_f(pc);
+		}
+	}
+
+private:
+	std::string m_typeStr;
+	std::function<void(FECoreBase*)> m_f;
+};
+
+void addCreateHandler(const char* sztype, std::function<void(FECoreBase*)> f)
+{
+	addCreateHandler(new FSCreateHandlerForTypeString(sztype, f));
+}
+
+template <class T> void addPlotVariableWhenCreating(const string& var)
+{
+	addCreateHandler(new AddPlotVariables<T>(var));
+}
+
+template <class T> void addPlotVariablesWhenCreating(const vector<string>& vars)
+{
+	addCreateHandler(new AddPlotVariables<T>(vars));
+}
+
+namespace febio {
+	void initCreateHandlers()
+	{
+		FECoreKernel& fecore = FECoreKernel::GetInstance();
+		addDefaultCreateHandler<FESolver>([](FESolver* pc) { pc->m_msymm = 3; }); // = preferred
+
+		// solid module handlers
+		fecore.SetActiveModule("solid");
+		addPlotVariablesWhenCreating<FEContactInterface>({ "contact pressure", "contact gap" });
+
+		addCreateHandler("sliding-elastic"       , [](FECoreBase* pc) { pc->SetParameter("auto_penalty", true); });
+		addCreateHandler("sliding-elastic"       , [](FECoreBase* pc) { pc->SetParameter("symmetric_stiffness", false); });
+		addCreateHandler("sliding-facet-on-facet", [](FECoreBase* pc) { pc->SetParameter("auto_penalty", true); });
+
+		// biphasic module handlers (biphasic, biphasic-solute, multiphasic)
+		fecore.SetActiveModule("biphasic");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 0; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) { pc->m_maxref = 25; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 15; });
+		addDefaultCreateHandler<FEBiphasicAnalysis>([](FEBiphasicAnalysis* pc) { pc->m_nanalysis = FEBiphasicAnalysis::TRANSIENT; });
+
+		// biphasic-solute module handlers
+		fecore.SetActiveModule("solute");
+		addDefaultCreateHandler<FEBiphasicSoluteAnalysis>([](FEBiphasicSoluteAnalysis* pc) { pc->m_nanalysis = FEBiphasicSoluteAnalysis::TRANSIENT; });
+
+		// multiphasic module handlers
+		fecore.SetActiveModule("multiphasic");
+		addDefaultCreateHandler<FEMultiphasicAnalysis>([](FEMultiphasicAnalysis* pc) { pc->m_nanalysis = FEMultiphasicAnalysis::TRANSIENT; });
+
+		// fluid module handlers
+		fecore.SetActiveModule("fluid");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 50; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 50; });
+		addDefaultCreateHandler<FEFluidAnalysis>([](FEFluidAnalysis* pc) { pc->m_nanalysis = FEFluidAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = false;
+			pc->m_bdivreform = false;
+			});
+
+		// fluid-solutes module handlers
+		fecore.SetActiveModule("fluid-solutes");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 20; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 100; });
+		addDefaultCreateHandler<FEFluidSolutesAnalysis>([](FEFluidSolutesAnalysis* pc) { pc->m_nanalysis = FEFluidSolutesAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = true;
+			pc->m_bdivreform = false;
+			});
+
+		// fluid-FSI module handlers
+		fecore.SetActiveModule("fluid-FSI");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 50; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 50; });
+		addDefaultCreateHandler<FEFluidFSIAnalysis>([](FEFluidFSIAnalysis* pc) { pc->m_nanalysis = FEFluidFSIAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = false;
+			pc->m_bdivreform = false;
+			});
+
+		// multiphasic-FSI module handlers
+		fecore.SetActiveModule("multiphasic-FSI");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 50; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 50; });
+		addDefaultCreateHandler<FEMultiphasicFSIAnalysis>([](FEMultiphasicFSIAnalysis* pc) { pc->m_nanalysis = FEMultiphasicFSIAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = false;
+			pc->m_bdivreform = false;
+			});
+
+		// polar fluid module handlers
+		fecore.SetActiveModule("polar fluid");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 50; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 50; });
+		addDefaultCreateHandler<FEPolarFluidAnalysis>([](FEPolarFluidAnalysis* pc) { pc->m_nanalysis = FEPolarFluidAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = false;
+			pc->m_bdivreform = false;
+			});
+
+		// thermo-fluid module handlers
+		fecore.SetActiveModule("thermo-fluid");
+		addDefaultCreateHandler<FENewtonStrategy>([](FENewtonStrategy* pc) { pc->m_maxups = 50; });
+		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 50; });
+		addDefaultCreateHandler<FEThermoFluidAnalysis>([](FEThermoFluidAnalysis* pc) { pc->m_nanalysis = FEThermoFluidAnalysis::DYNAMIC; });
+		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) {
+			pc->m_maxref = 5;
+			pc->m_Rmax = 1.0e+20;
+			// turn off reform on each time step and diverge reform
+			pc->m_breformtimestep = false;
+			pc->m_bdivreform = false;
+			});
+	}
+}
+
+void applyCreateHandlers(FECoreBase* pc)
+{
+	if (pc == nullptr) return;
+	FECoreKernel& kernel = FECoreKernel::GetInstance();
+	for (auto h : createHandlers)
+	{
+		if (kernel.IsModuleActive(h->GetModuleID()))
+			h->handle(pc);
+	}
+}
 
 // dummy model used for allocating temporary FEBio classes.
 static FEBioModel* febioModel = nullptr;
@@ -62,7 +299,7 @@ int baseClassIndex(const char* sz)
 	auto it = classIndex.find(sz);
 	if (it == classIndex.end())
 	{
-		n = classIndex.size();
+		n = (int)classIndex.size();
 		classIndex[sz] = n;
 	}
 	else n = classIndex[sz];
@@ -293,6 +530,12 @@ FECoreBase* CreateFECoreClass(int classId)
 	// try to create the FEBio object
 	assert(febioModel);
 	FECoreBase* pc = fecore.CreateInstance(fac, febioModel); assert(pc);
+
+	// apply create handlers
+	if (pc && !blockCreateEvents)
+	{
+		applyCreateHandlers(pc);
+	}
 
 	// all done!
 	return pc;
@@ -1349,8 +1592,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, unsigned int fla
 
 void FEBio::BlockCreateEvents(bool b)
 {
-	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	fecore.BlockEvents(b);
+	blockCreateEvents = b;
 }
 
 FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem)
@@ -1526,4 +1768,11 @@ FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem
 	}
 
 	return pd;
+}
+
+void FEBio::SetActiveProject(FSProject* prj)
+{
+	if (prj == nullptr) SetActiveModule(-1);
+	else SetActiveModule(prj->GetModule());
+	activeProject = prj;
 }

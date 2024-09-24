@@ -55,6 +55,7 @@ public:
 	int GetLaunchConfig();
 	int GetFEBioFileVersion();
 	bool WriteNotes();
+	bool AllowMixedMesh();
 	bool UseSubDir();
 	void SetConfigFileName(const QString& configFile);
 	bool DoAutoSave();

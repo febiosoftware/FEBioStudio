@@ -26,19 +26,14 @@ SOFTWARE.*/
 
 #include "SITKImageSource.h"
 #include "ImageModel.h"
-#include <ImageLib/ImageSITK.h>
+#include "3DImage.h"
+#include "SITKTools.h"
 #include <FSCore/FSDir.h>
-#include <unordered_set>
+#include <cstring>
 
 using namespace Post;
 
 #ifdef HAS_ITK
-
-namespace sitk = itk::simple;
-
-static const std::unordered_set<sitk::PixelIDValueEnum> supportedTypes = {sitk::sitkInt8, sitk::sitkUInt8, sitk::sitkInt16, 
-    sitk::sitkUInt16, sitk::sitkInt32, sitk::sitkUInt32, sitk::sitkVectorInt8, sitk::sitkVectorUInt8, sitk::sitkVectorInt16, 
-    sitk::sitkVectorUInt16, sitk::sitkFloat32, sitk::sitkFloat64};
 
 //========================================================================
 
@@ -56,7 +51,7 @@ CITKImageSource::CITKImageSource(CImageModel* imgModel)
 
 bool CITKImageSource::Load()
 {
-    CImageSITK* im = new CImageSITK;
+    C3DImage* im = new C3DImage;
 
     sitk::Image sitkImage;
 
@@ -204,7 +199,8 @@ bool CITKImageSource::Load()
         throw std::runtime_error("FEBio Studio does not yet support " + sitkImage.GetPixelIDTypeAsString() + " images.");
     }
 
-    im->SetItkImage(sitkImage);
+    // Copy to 3DImage
+    CopyTo3DImage(im, sitkImage);
 
 	AssignImage(im);
 
@@ -307,42 +303,9 @@ CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel)
 
 }
 
-template<class pType> void CITKSeriesImageSource::CopySliceData(pType* buffer, int pixelType, int nx, int ny)
-{
-    sitk::ImageFileReader reader;
-
-    for(auto filename : m_filenames)
-    {
-        reader.SetFileName(filename);
-        sitk::Image slice = reader.Execute();
-
-        if(slice.GetDimension() != 2)
-        {
-            throw std::runtime_error("All images in the stack must have be 2 dimensional.");
-        }
-
-        if(slice.GetPixelID() != pixelType)
-        {
-            throw std::runtime_error("All images in the stack must have the same pixel type.");
-        }
-
-        if(slice.GetWidth() != nx || slice.GetHeight() != ny)
-        {
-            throw std::runtime_error("All images in the stack must have the same pixel dimensions");
-        }
-        
-        pType* sliceBytes = (pType*)slice.GetBufferAsVoid();
-        for(int index = 0; index < nx*ny; index++)
-        {
-            *buffer = sliceBytes[index];
-            buffer++;
-        }
-    }
-}
-
 bool CITKSeriesImageSource::Load()
 {
-    CImageSITK* im = new CImageSITK;
+    C3DImage* im = new C3DImage;
 
     sitk::ImageFileReader reader;
     reader.SetFileName(m_filenames[0]);
@@ -359,51 +322,45 @@ bool CITKSeriesImageSource::Load()
         throw std::runtime_error("FEBio Studio does not yet support " + slice.GetPixelIDTypeAsString() + " images.");
     }
 
-    sitk::Image sitkImage(nx, ny, nz, slice.GetPixelID());
+    im->Create(nx, ny, nz, nullptr, typeMap.at(slice.GetPixelID()));
+    uint8_t* imgBuff = im->GetBytes();
+    uint64_t sliceSize = (uint64_t)nx*(uint64_t)ny*(uint64_t)im->BPS();
 
     try
     {
-        switch (slice.GetPixelID())
+        sitk::ImageFileReader reader;
+
+        for(int index = 0; index < m_filenames.size(); index++)
         {
-        case sitk::sitkUInt8:
-            CopySliceData<uint8_t>(sitkImage.GetBufferAsUInt8(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkInt8:
-            CopySliceData<int8_t>(sitkImage.GetBufferAsInt8(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkUInt16:
-            CopySliceData<uint16_t>(sitkImage.GetBufferAsUInt16(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkInt16:
-            CopySliceData<int16_t>(sitkImage.GetBufferAsInt16(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkVectorUInt8:
-            CopySliceData<uint8_t>(sitkImage.GetBufferAsUInt8(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkVectorInt8:
-            CopySliceData<int8_t>(sitkImage.GetBufferAsInt8(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkVectorUInt16:
-            CopySliceData<uint16_t>(sitkImage.GetBufferAsUInt16(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkVectorInt16:
-            CopySliceData<int16_t>(sitkImage.GetBufferAsInt16(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkFloat32:
-            CopySliceData<float>(sitkImage.GetBufferAsFloat(), slice.GetPixelID(), nx, ny);
-            break;
-        case sitk::sitkFloat64:
-            CopySliceData<double>(sitkImage.GetBufferAsDouble(), slice.GetPixelID(), nx, ny);
-            break;
+            reader.SetFileName(m_filenames[index]);
+            sitk::Image slice = reader.Execute();
+
+            if(slice.GetDimension() != 2)
+            {
+                throw std::runtime_error("All images in the stack must have be 2 dimensional.");
+            }
+
+            if(slice.GetPixelID() != slice.GetPixelID())
+            {
+                throw std::runtime_error("All images in the stack must have the same pixel type.");
+            }
+
+            if(slice.GetWidth() != nx || slice.GetHeight() != ny)
+            {
+                throw std::runtime_error("All images in the stack must have the same pixel dimensions");
+            }
+            
+            uint8_t* sliceBuff = (uint8_t*)slice.GetBufferAsVoid();
+
+            std::memcpy(imgBuff + sliceSize*index, sliceBuff, sliceSize);
         }
+
     }
     catch(const std::exception& e)
     {
         delete im;
         throw e;
     }
-    
-    im->SetItkImage(sitkImage);
 
 	AssignImage(im);
 

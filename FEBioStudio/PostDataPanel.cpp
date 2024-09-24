@@ -371,9 +371,10 @@ public:
 				case NODE_DATA: return QString("NODE"); break;
 				case FACE_DATA: return QString("FACE"); break;
 				case ELEM_DATA: return QString("ELEM"); break;
+				case OBJECT_DATA: return QString("Global"); break;
 				default:
 					assert(false);
-					return QString("(unknown");
+					return QString("(unknown)");
 				}
 			}
 			else if (ncol == 3)
@@ -609,6 +610,7 @@ public:
 		pselect->addItem("Convert Format");
 		pselect->addItem("Eigen vectors");
 		pselect->addItem("Time Derivative");
+		pselect->addItem("Normal projection");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -680,7 +682,13 @@ public:
 
 		// eigenvectors
 		QWidget* pcaPage = new QWidget;
-		
+
+		// time derivative
+		QWidget* dtPage = new QWidget;
+
+		// normal projection
+		QWidget* prjPage = new QWidget;
+	
 
 		QStackedWidget* stack = new QStackedWidget;
 		stack->addWidget(scalePage);
@@ -691,6 +699,8 @@ public:
 		stack->addWidget(faPage);
 		stack->addWidget(convPage);
 		stack->addWidget(pcaPage);
+		stack->addWidget(dtPage);
+		stack->addWidget(prjPage);
 
 		pvl->addWidget(stack);
 
@@ -1184,6 +1194,12 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 8: // time derivative
 				{
 					newData = DataTimeRate(fem, pdf, sname);
+					bret = (newData != nullptr);
+				}
+				break;
+				case 9: // surface normal projection
+				{
+					newData = SurfaceNormalProjection(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;

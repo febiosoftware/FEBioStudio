@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FSLogger.h"
+#include <cstdarg>
+#include <assert.h>
 
 FSLogOutput* FSLogger::m_log = nullptr;
 
@@ -32,4 +34,38 @@ void FSLogger::SetOutput(FSLogOutput* o) { m_log = o; }
 void FSLogger::Write(const std::string& msg)
 {
 	if (m_log) m_log->Write(msg);
+}
+
+void FSLogger::Write(const char* sz, ...)
+{
+	if (m_log == nullptr) return;
+	if ((sz == 0) || (*sz == 0)) return;
+
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	char* szlog = NULL;
+
+	va_start(args, sz);
+
+	// count how many chars we need to allocate
+	va_list argscopy;
+	va_copy(argscopy, args);
+	int l = vsnprintf(nullptr, 0, sz, argscopy) + 1;
+	va_end(argscopy);
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	m_log->Write(szlog);
+
+	delete[] szlog;
 }

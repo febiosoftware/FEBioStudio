@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,44 +23,36 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QDialog>
 
-#include "3DImage.h"
+class CMainWindow;
+class CModelDocument;
+class QTableWidgetItem;
 
-#ifdef HAS_ITK
-
-#include <SimpleITK.h>
-
-class CImageSITK : public C3DImage
+class CDlgPartViewer : public QDialog
 {
-public:
-    static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
-    static bool WriteSITKImage(C3DImage* img, const std::string& filename);
-
-public:
-    CImageSITK();
-    CImageSITK(int nx, int ny, int nz, int pixelType = CImage::UINT_8);
-    ~CImageSITK();
-
-	bool CreateFrom3DImage(C3DImage* im);
-
-    BOX GetBoundingBox() override;
-    void SetBoundingBox(BOX& box) override;
-
-    mat3d GetOrientation() override;
-    void SetOrientation(mat3d& orientation) override;
-
-    std::vector<unsigned int> GetSize();
-    std::vector<double> GetOrigin();
-    std::vector<double> GetSpacing();
-
-    itk::simple::Image GetSItkImage();
-    void SetItkImage(itk::simple::Image image);
+	Q_OBJECT
 
 private:
-    void FinalizeImage();
+	class UI;
+
+public:
+	CDlgPartViewer(CMainWindow* wnd);
+
+	void SetDocument(CModelDocument* doc);
+
+	void closeEvent(QCloseEvent* e) override;
+
+	void accept() override;
+	void reject() override;
+
+private slots:
+	void onFilterChanged();
+	void onShowAll();
+	void onHideAll();
+	void onSelectionChanged();
 
 private:
-    itk::simple::Image m_sitkImage;
+	UI* ui;
 };
-
-#endif

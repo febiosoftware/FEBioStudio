@@ -41,7 +41,7 @@ SOFTWARE.*/
 QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
-	char sz[1024] = { 0 };
+	char sz[2048] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (fem)
@@ -250,6 +250,7 @@ public:
 					}
 					break;
 					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
+					case Param_VEC2D: return Vec2dToString(p.val<vec2d>()); break;
 					case Param_MAT3D:
 					{
 						QString v = Mat3dToString(p.val<mat3d>());
@@ -320,6 +321,7 @@ public:
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
+					case Param_VEC2D:return Vec2dToString(p.val<vec2d>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
@@ -414,6 +416,7 @@ public:
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
 				case Param_VEC2I: p.SetVec2iValue(StringToVec2i(value.toString())); break;
+				case Param_VEC2D: p.SetVec2dValue(StringToVec2d(value.toString())); break;
 				case Param_MAT3D: p.SetMat3dValue(StringToMat3d(value.toString())); break;
 				case Param_MAT3DS: p.SetMat3dsValue(StringToMat3ds(value.toString())); break;
 				case Param_BOOL:
@@ -700,6 +703,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				return pw;
 			}
 			if (p->GetParamType() == Param_VEC2I)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			if (p->GetParamType() == Param_VEC2D)
 			{
 				QLineEdit* pw = new QLineEdit(parent);
 				return pw;

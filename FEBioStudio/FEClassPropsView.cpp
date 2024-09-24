@@ -310,6 +310,7 @@ public:
 					}
 					break;
 					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
+					case Param_VEC2D: return Vec2dToString(p.val<vec2d>()); break;
 					case Param_MAT3D:
 					{
 						QString v = Mat3dToString(p.val<mat3d>());
@@ -455,6 +456,7 @@ public:
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
+					case Param_VEC2D:return Vec2dToString(p.val<vec2d>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
@@ -638,6 +640,14 @@ public:
 					vec2i s = p.GetVec2iValue();
 					if ((v.x != s.x) || (v.y != s.y)) {
 						p.SetVec2iValue(v);
+						p.SetModified(true);
+					}
+				}break;
+				case Param_VEC2D: {
+					vec2d v = StringToVec2d(value.toString());
+					vec2d s = p.GetVec2dValue();
+					if ((v.x() != s.x()) || (v.y() != s.y())) {
+						p.SetVec2dValue(v);
 						p.SetModified(true);
 					}
 				}break;
@@ -1282,6 +1292,12 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					return pw;
 				}
 				break;
+			case Param_VEC2D:
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			break;
 			case Param_VEC3D:
 				{
 					QLineEdit* pw = new QLineEdit(parent);

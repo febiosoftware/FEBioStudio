@@ -28,6 +28,41 @@ SOFTWARE.*/
 #include <MeshTools/FECone.h>
 #include <MeshLib/GMesh.h>
 
+
+class GConeManipulator : public GObjectManipulator
+{
+public:
+	GConeManipulator(GCone& cone) : GObjectManipulator(&cone), m_cone(cone) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_cone.GetTransform().GlobalToLocal(r);
+
+		double z = r.z; r.z = 0;
+		double R = r.Length();
+
+		if (m < 4)
+		{
+			m_cone.GetTransform().Translate(vec3d(0, 0, z));
+			m_cone.SetHeight(m_cone.Height() - z);
+
+			m_cone.SetBottomRadius(R);
+		}
+		else
+		{
+			m_cone.SetTopRadius(R);
+			m_cone.SetHeight(z);
+		}
+		m_cone.Update();
+	}
+
+private:
+	GCone& m_cone;
+};
+
 //=============================================================================
 // GCone
 //=============================================================================
@@ -43,9 +78,18 @@ GCone::GCone() : GPrimitive(GCONE)
 	AddDoubleParam(m_h , "h" , "Height");
 
 	SetFEMesher(new FECone(this));
+	SetManipulator(new GConeManipulator(*this));
 
 	Create();
 }
+
+double GCone::BottomRadius() const { return GetFloatValue(R0);}
+double GCone::TopRadius() const { return GetFloatValue(R1);}
+double GCone::Height() const { return GetFloatValue(H); }
+
+void GCone::SetBottomRadius(double r0) { SetFloatValue(R0, r0);}
+void GCone::SetTopRadius(double r1) { SetFloatValue(R1, r1);}
+void GCone::SetHeight(double h) { SetFloatValue(H, h); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GCone::CreateDefaultMesher()

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 REGISTER_CLASS(GLPointProbe, CLASS_PLOT, "probe", 0);
@@ -267,7 +268,7 @@ public:
 		m_pc->Update();
 	}
 
-	int Count() { return 1; }
+	int Count() const { return 1; }
 
 private:
 	GLPointProbe* m_pc;

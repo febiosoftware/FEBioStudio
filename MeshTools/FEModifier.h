@@ -94,6 +94,8 @@ class FEMirrorMesh : public FEModifier
 public:
 	FEMirrorMesh();
 
+	bool UpdateData(bool bsave) override;
+
 	FSMesh* Apply(FSMesh* pm);
 };
 
@@ -482,6 +484,12 @@ public:
 	FEAddTriangle();
 
 	FSMesh* Apply(FSMesh* pm);
+
+	void push_stack();
+	void pop_stack();
+
+private:
+	std::vector<int> m_stack;
 };
 
 //-----------------------------------------------------------------------------

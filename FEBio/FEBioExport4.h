@@ -167,6 +167,8 @@ private:
 				if (m_ELst[i]->m_name == name) return m_ELst[i];
 			return 0;
 		}
+
+		std::vector<FEBioExport4::Domain*> GetDomainsFromGPart(GPart* pg);
 	};
 
 	class ElementSet
@@ -209,6 +211,8 @@ public: // set export attributes
 
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
+	void SetMixedMeshFlag(bool b) { m_allowMixedParts = b; }
+
 protected:
 	bool PrepareExport(FSProject& prj);
 	void BuildItemLists(FSProject& prj);
@@ -220,8 +224,8 @@ protected:
 	void WriteMeshElements();
 	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryElements(bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
+	void WriteMixedElementsPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
@@ -303,6 +307,8 @@ protected:
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
+	void ProcessParts();
+
 protected:
 	Part* FindPart(GObject* po);
 
@@ -324,5 +330,6 @@ protected:
 	int m_ntotnodes;	// total node counter
 	bool	m_bdata;	// write MeshData section flag
 	bool	m_writeNotes;	// write notes as comments
+	bool	m_allowMixedParts; // if true, parts will not be split by elements. Instead, degenerate elements are written.
 };
 

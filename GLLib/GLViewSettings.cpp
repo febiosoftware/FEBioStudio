@@ -75,6 +75,8 @@ void GLViewSettings::Defaults(int ntheme)
 
 	m_defaultFGColorOption = 0;
 
+	m_tagFontSize = 10;
+
 	if (ntheme == 0)
 	{
 		m_col1 = GLColor(255, 255, 255);

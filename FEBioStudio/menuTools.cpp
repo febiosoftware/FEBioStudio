@@ -99,6 +99,7 @@ public:
 		m_fileReader = nullptr;
 		m_fem = doc->GetFSModel();
 		m_currentState = 0;
+		m_n0 = m_n1 = m_ni = -1;
 	}
 
 	void run() Q_DECL_OVERRIDE

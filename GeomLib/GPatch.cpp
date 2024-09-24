@@ -30,6 +30,52 @@ SOFTWARE.*/
 #include <MeshTools/FEAdvancingFrontMesher2D.h>
 using namespace std;
 
+
+class GPatchManipulator : public GObjectManipulator
+{
+public:
+	GPatchManipulator(GPatch& patch) : GObjectManipulator(&patch), m_patch(patch) {}
+
+	void TransformNode(GNode* pn, const Transform& T) override
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r[2];
+		r[0] = T.LocalToGlobal(m_patch.Node(m)->Position());
+
+		// get the opposite corner
+		const int LUT[4] = { 2, 3, 0, 1 };
+		r[1] = m_patch.Node(LUT[m])->Position();
+
+		BOX box;
+		for (int i = 0; i < 2; ++i)
+		{
+			vec3d ri = m_patch.GetTransform().GlobalToLocal(r[i]);
+			box += ri;
+		}
+
+		double w = box.Width();
+		double h = box.Height();
+		double z = box.Depth();
+
+		m_patch.SetFloatValue(GPatch::W, w);
+		m_patch.SetFloatValue(GPatch::H, h);
+
+		vec3d c = box.Center();
+		c.z = 0;
+
+		Transform& P = m_patch.GetTransform();
+		c = P.LocalToGlobal(c);
+		c.z = r[0].z;
+		m_patch.GetTransform().SetPosition(c);
+
+		m_patch.Update();
+	}
+
+private:
+	GPatch& m_patch;
+};
+
 //=============================================================================
 // GPatch
 //=============================================================================
@@ -42,6 +88,7 @@ GPatch::GPatch() : GShellPrimitive(GPATCH)
 	AddDoubleParam(m_h, "h", "Height");
 	
 	SetFEMesher(new FEShellPatch(this));
+	SetManipulator(new GPatchManipulator(*this));
 
 	Create();
 }

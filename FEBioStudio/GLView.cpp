@@ -50,8 +50,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "Commands.h"
-#include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
+#include "DlgPickColor.h"
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -482,6 +482,19 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			repaint();
 			return;
 		}
+
+		CDlgPickColor* pickColor = m_pWnd->GetPickColorDialog();
+		if (m_pWnd->IsColorPickerActive())
+		{
+			GPart* pg = PickPart(x, y);
+			if (pg)
+			{
+				pickColor->AssignColor(pg);
+				repaint();
+				return;
+			}
+		}
+
 		if ((m_bshift || m_bctrl) && (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)) m_bsel = true;
 	}
 	else m_bsel = false;
@@ -686,7 +699,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			q.Inverse().RotateVector(dr);
 			FESelection* ps = pdoc->GetCurrentSelection();
-			if (ps && ps->Size())
+			if (ps && ps->Size() && ps->IsMovable())
 			{
 				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
@@ -848,6 +861,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		return;
 	}
 
+	// if the color picker is active, don't do anything
+	if ((but == Qt::LeftButton) && m_pWnd->IsColorPickerActive()) return;
+
 	// which mesh is active (surface or volume)
 	int meshMode = pdoc->GetMeshMode();
 
@@ -909,6 +925,22 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 						emit pointPicked(r);
 					}
 					else m_bpick = false;
+
+					// get the active command window
+					CBuildPanel* panel = m_pWnd->GetBuildPanel();
+					if (panel)
+					{
+						CCommandPanel* cmdPanel = panel->GetActivePanel();
+						if (cmdPanel)
+						{
+							FESelection* sel = pdoc->GetCurrentSelection();
+							if (sel && cmdPanel->OnPickEvent(*sel))
+							{
+								return;
+							}
+						}
+					}
+
 				}
 				else
 				{
@@ -949,15 +981,12 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 				emit selectionChanged();
 				m_pWnd->Update(0, false);
-
-				repaint();
 			}
 			else
 			{
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		else if (but == Qt::MiddleButton)
@@ -975,7 +1004,6 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		else if (but == Qt::RightButton)
@@ -994,57 +1022,60 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
-				repaint();
 			}
 		}
 		m_bsel = false;
+		repaint();
 	}
 	else 
 	{
 		FESelection* ps = pdoc->GetCurrentSelection();
-		CCommand* cmd = nullptr;
-		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
+		if (ps && ps->Size() && ps->IsMovable())
 		{
-			cmd = new CCmdTranslateSelection(pdoc, m_rt);
-		}
-		else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
-		{
-			if (m_wt != 0)
+			CCommand* cmd = nullptr;
+			if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 			{
-				quatd q;
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(m_wt, vec3d(1,0,0));
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0,1,0));
-				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0,0,1));
-
-				if (m_coord == COORD_LOCAL)
-				{
-					quatd qs = ps->GetOrientation();
-					q = qs*q*qs.Inverse();
-				}
-
-				q.MakeUnit();
-				cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
-				m_wt = 0;
+				cmd = new CCmdTranslateSelection(pdoc, m_rt);
 			}
-		}
-		else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
-		{
-			cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
-			m_st = m_sa = 1;
-		}
+			else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
+			{
+				if (m_wt != 0)
+				{
+					quatd q;
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(m_wt, vec3d(1, 0, 0));
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0, 1, 0));
+					if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0, 0, 1));
 
-		if (cmd && ps)
-		{
-			string s = ps->GetName();
-			pdoc->AddCommand(cmd, s);
-			pdoc->Update();
-		}
+					if (m_coord == COORD_LOCAL)
+					{
+						quatd qs = ps->GetOrientation();
+						q = qs * q * qs.Inverse();
+					}
 
-		// TODO: Find a better way to update the GMesh when necessary. 
-		//       When I move FE nodes, I need to rebuild the GMesh. 
-		//       This still causes a delay between the GMesh update since we do this
-		//       when the mouse is released, but I'm not sure how to do this better.
-//		if (pdoc->GetActiveObject()) pdoc->GetActiveObject()->BuildGMesh();
+					q.MakeUnit();
+					cmd = new CCmdRotateSelection(pdoc, q, GetPivotPosition());
+					m_wt = 0;
+				}
+			}
+			else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
+			{
+				cmd = new CCmdScaleSelection(pdoc, m_st, m_ds, GetPivotPosition());
+				m_st = m_sa = 1;
+			}
+
+			if (cmd)
+			{
+				string s = ps->GetName();
+				pdoc->AddCommand(cmd, s);
+				pdoc->Update();
+			}
+
+			// TODO: Find a better way to update the GMesh when necessary. 
+			//       When I move FE nodes, I need to rebuild the GMesh. 
+			//       This still causes a delay between the GMesh update since we do this
+			//       when the mouse is released, but I'm not sure how to do this better.
+	//		if (pdoc->GetActiveObject()) pdoc->GetActiveObject()->BuildGMesh();
+		}
 	}
 
 	ev->accept();
@@ -1148,17 +1179,6 @@ bool CGLView::event(QEvent* event)
     return QOpenGLWidget::event(event);
 }
 
-template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
-{
-	std::vector<T*> castedItems;
-	for (GLHighlighter::Item& it : items)
-	{
-		T* tp = dynamic_cast<T*>(it.item);
-		if (tp) castedItems.push_back(tp);
-	}
-	return castedItems;
-}
-
 void CGLView::keyPressEvent(QKeyEvent* ev)
 {
 	if (((ev->key() == Qt::Key_X) || (ev->key() == Qt::Key_Y) || (ev->key() == Qt::Key_Z)) && (ev->modifiers() & Qt::ALT))
@@ -1187,59 +1207,10 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 	else if ((ev->key() == Qt::Key_Return) || (ev->key() == Qt::Key_Enter))
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-		int selectMode = doc->GetSelectionMode();
-		
-		std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
-		if (items.empty()) { ev->ignore(); return; }
-		GLHighlighter::ClearHighlights();
-
-		if (selectMode == SelectionMode::SELECT_PART)
+		if (doc && doc->SelectHighlightedItems())
 		{
-			std::vector<GPart*> partList = itemlist_cast<GPart>(items);
-			if (!partList.empty())
-			{
-				vector<int> partIDs;
-				for (GPart* p : partList) partIDs.push_back(p->GetID());
-				doc->DoCommand(new CCmdSelectPart(doc->GetGModel(), partIDs, false));
-				repaint();
-			}
-			else ev->ignore();
-		}
-		else if (selectMode == SelectionMode::SELECT_FACE)
-		{
-			std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
-			if (!faceList.empty())
-			{
-				vector<int> faceIDs;
-				for (GFace* f : faceList) faceIDs.push_back(f->GetID());
-				doc->DoCommand(new CCmdSelectSurface(doc->GetGModel(), faceIDs, false));
-				repaint();
-			}
-			else ev->ignore();
-		}
-		else if (selectMode == SelectionMode::SELECT_EDGE)
-		{
-			std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
-			if (!edgeList.empty())
-			{
-				vector<int> edgeIDs;
-				for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
-				doc->DoCommand(new CCmdSelectEdge(doc->GetGModel(), edgeIDs, false));
-				repaint();
-			}
-			else ev->ignore();
-		}
-		else if (selectMode == SelectionMode::SELECT_NODE)
-		{
-			std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
-			if (!nodeList.empty())
-			{
-				vector<int> nodeIDs;
-				for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
-				doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), nodeIDs, false));
-				repaint();
-			}
-			else ev->ignore();
+			GLHighlighter::ClearHighlights();
+			repaint();
 		}
 		else ev->ignore();
 	}
@@ -1667,8 +1638,7 @@ void CGLView::RenderPivot()
 	// render the manipulator
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
-	bool bact = true;
-	if ((nitem == ITEM_MESH) && (nsel != SELECT_OBJECT)) bact = false;
+	bool bact = ps->IsMovable();
 	m_pivot.Render(ntrans, d, bact);
 
 	// restore the modelview matrix
@@ -2216,10 +2186,10 @@ void CGLView::HighlightSurface(int x, int y)
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
-void CGLView::HighlightPart(int x, int y)
+GPart* CGLView::PickPart(int x, int y)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
+	if (pdoc == nullptr) return nullptr;
 
 	GLViewSettings& view = GetViewSettings();
 
@@ -2227,14 +2197,14 @@ void CGLView::HighlightPart(int x, int y)
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
-	if (model.Parts() == 0) return;
+	if (model.Parts() == 0) return nullptr;
 
 	// convert the point to a ray
 	makeCurrent();
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
-	GPart* closestPart = 0;
+	GPart* closestPart = nullptr;
 	Intersection q;
 	double minDist = 0;
 	double* a = PlaneCoordinates();
@@ -2298,6 +2268,13 @@ void CGLView::HighlightPart(int x, int y)
 			}
 		}
 	}
+
+	return closestPart;
+}
+
+void CGLView::HighlightPart(int x, int y)
+{
+	GPart* closestPart = PickPart(x, y);
 	if (closestPart != nullptr) GLHighlighter::SetActiveItem(closestPart);
 	else GLHighlighter::SetActiveItem(nullptr);
 }
@@ -2565,9 +2542,11 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 			glEnd();
 		}
 
+	GLViewSettings& vs = GetViewSettings();
+
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	painter.setFont(QFont("Helvetica", 10));
+	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
 	for (int i = 0; i<nsel; ++i)
 		{
             int x = vtag[i].wx;

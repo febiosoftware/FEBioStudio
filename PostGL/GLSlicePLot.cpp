@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -58,6 +59,8 @@ CGLSlicePlot::CGLSlicePlot()
 	AddBoolParam(true, "show_legend"   );
 	AddIntParam(0, "slices");
 	AddDoubleParam(0, "slice_offset")->SetFloatRange(0.0, 1.0);
+	AddVec2dParam(vec2d(0,1), "slice_range");
+	AddVectorDoubleParam(m_user_slices, "user_slices")->SetFixedSize(false);
 	AddIntParam(0, "range")->SetEnumNames("dynamic\0user\0");
 	AddDoubleParam(0, "range_max");
 	AddDoubleParam(0, "range_min");
@@ -67,8 +70,9 @@ CGLSlicePlot::CGLSlicePlot()
 	AddBoolParam(true, "show_box");
 
 	m_nslices = 10;
-	m_nfield = 0;
+	m_nfield = -1;
 	m_offset = 0.5f;
+	m_slice_range = vec2d(0, 1);
 
 	m_lastTime = 0;
 	m_lastDt = 0.f;
@@ -110,6 +114,15 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		}
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
+		m_slice_range = GetVec2dValue(SLICE_RANGE);
+		m_user_slices = GetParamVectorDouble(USER_SLICES);
+
+		double& x = m_slice_range.x();
+		double& y = m_slice_range.y();
+		if (x < 0) x = 0;
+		if (y > 1) y = 1;
+		if (x > y) { double tmp = x; x = y; y = tmp; }
+
 		m_nrange = GetIntValue(RANGE);
 		m_fmax = GetFloatValue(RANGE_MAX);
 		m_fmin = GetFloatValue(RANGE_MIN);
@@ -128,6 +141,8 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		SetBoolValue(CLIP, AllowClipping());
 		SetIntValue(SLICES, m_nslices);
 		SetFloatValue(SLICE_OFFSET, m_offset);
+		SetVec2dValue(SLICE_RANGE, m_slice_range);
+		SetParamVectorDouble(USER_SLICES, m_user_slices);
 		SetIntValue(RANGE, m_nrange);
 		SetFloatValue(RANGE_MAX, m_fmax);
 		SetFloatValue(RANGE_MIN, m_fmin);
@@ -152,7 +167,7 @@ void CGLSlicePlot::SetSliceOffset(float f)
 
 void CGLSlicePlot::Render(CGLContext& rc)
 {
-	if (m_nfield == 0) return;
+	if (m_nfield == -1) return;
 	if (m_box.IsValid() == false) return;
 
 	bool showBox = GetBoolValue(SHOW_BOX);
@@ -320,7 +335,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		m_rng.resize(NS);
 		m_val.resize(NN);
 	}
-	if (m_nfield == 0) return;
+	if (m_nfield == -1) return;
 
 	// see if we need to update this state
 	if (breset ||(m_map.GetTag(ntime) != m_nfield))
@@ -509,13 +524,17 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 		fmax -= 1e-3 * Df;
 	}
 
+	float frange = fmax - fmin;
+	fmax = fmin + frange * m_slice_range.y();
+	fmin = fmin + frange * m_slice_range.x();
+
 	int faceCount = 0;
 	if (m_nslices == 1)
 	{
 		float ref = fmin + m_offset * (fmax - fmin);
 		faceCount += UpdateSlice(ref, activeElements);
 	}
-	else
+	else if (m_nslices > 0)
 	{
 		float df = m_offset / m_nslices;
 		fmin += df;
@@ -526,6 +545,15 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 			float ref = fmin + f * (fmax - fmin);
 			faceCount += UpdateSlice(ref, activeElements);
 		}
+	}
+
+	for (int i = 0; i < m_user_slices.size(); ++i)
+	{
+		double f = m_user_slices[i];
+		if (f < 0) f = 0;
+		if (f > 1) f = 1;
+		float ref = fmin + f * (fmax - fmin);
+		faceCount += UpdateSlice(ref, activeElements);
 	}
 
 	return faceCount;

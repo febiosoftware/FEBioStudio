@@ -27,15 +27,10 @@ SOFTWARE.*/
 
 #include "ImageFilter.h"
 
-#ifdef HAS_ITK
-#include <sitkImage.h>
-
 class SITKImageFiler : public CImageFilter
 {
 public:
     SITKImageFiler();
-
-    itk::simple::Image GetSITKImage();
 
     virtual void ApplyFilter() = 0;
 
@@ -64,5 +59,3 @@ public:
 
     void ApplyFilter() override;
 };
-
-#endif

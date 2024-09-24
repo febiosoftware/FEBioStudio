@@ -92,12 +92,30 @@ private:
 class GTriangleDecoration : public GDecoration
 {
 public:
-	GTriangleDecoration() { p1 = p2 = p3 = 0; }
-	GTriangleDecoration(GPointDecoration* point1, GPointDecoration* point2, GPointDecoration* point3) : p1(point1), p2(point2), p3(point3) {}
+	GTriangleDecoration() { p1 = p2 = p3 = 0; m_del = false; }
+	~GTriangleDecoration()
+	{
+		if (m_del)
+		{
+			delete p1;
+			delete p2;
+			delete p3;
+		}
+	}
+
+	GTriangleDecoration(GPointDecoration* point1, GPointDecoration* point2, GPointDecoration* point3) : p1(point1), p2(point2), p3(point3) { m_del = false; }
+	GTriangleDecoration(const vec3f& a, const vec3f& b, const vec3f& c)
+	{
+		m_del = true;
+		p1 = new GPointDecoration(a);
+		p2 = new GPointDecoration(b);
+		p3 = new GPointDecoration(c);
+	}
 
 	void render();
 
 private:
+	bool m_del;
 	GPointDecoration* p1;
 	GPointDecoration* p2;
 	GPointDecoration* p3;

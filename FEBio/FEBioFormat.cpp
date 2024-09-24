@@ -389,6 +389,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		case Param_BOOL: { int n; tag.value(n); pp->SetBoolValue(n == 1); } break;
 		case Param_VEC3D: { vec3d v; tag.value(v); pp->SetVec3dValue(v); } break;
 		case Param_VEC2I: { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
+		case Param_VEC2D: { vec2d v; tag.value(v); pp->SetVec2dValue(v); } break;
 		case Param_MAT3D: { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
 		case Param_MAT3DS: { mat3ds v; tag.value(v); pp->SetMat3dsValue(v); } break;
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
@@ -2566,6 +2567,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			}
 			fem.AddLogVariable(logVar);
 		}
+		else if (tag == "domain_data")
+		{
+			const char* szdata = tag.AttributeValue("data", true);
+			if (szdata == 0) szdata = "";
+
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_DOMAIN, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
+			const char* szset = tag.AttributeValue("domain", true);
+			if (szset)
+			{
+				FSPartSet* pg = fem.FindNamedPartSet(szset);
+				if (pg)
+				{
+					GObject* po = pg->GetGObject();
+					logVar.SetGroupID(pg->GetID());
+				}
+			}
+			fem.AddLogVariable(logVar);
+		}
 		else if (tag == "rigid_body_data")
 		{
 			const char* szdata = tag.AttributeValue("data", true);
@@ -2683,7 +2706,19 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	if (tag.isleaf())
 	{
 		// make sure there is a value
-		if (strlen(tag.szvalue()) == 0) return;
+		// if the value only contains white space we consider it empty. 
+		bool valueEmpty = true;
+		const char* ch = tag.szvalue();
+		while (ch && (*ch != 0))
+		{
+			if (!isspace(*ch))
+			{
+				valueEmpty = false;
+				break;
+			}
+			ch++;
+		}
+		if (valueEmpty) return;
 
 		const char* szparam = tag.Name();
 		const char* sztype = tag.AttributeValue("type", true);

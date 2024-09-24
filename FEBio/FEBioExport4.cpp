@@ -55,6 +55,16 @@ FSNodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
+std::vector<FEBioExport4::Domain*> FEBioExport4::Part::GetDomainsFromGPart(GPart* pg)
+{
+	std::vector<FEBioExport4::Domain*> domainList;
+	for (Domain* dom : m_Dom)
+	{
+		if (dom->m_pg == pg) domainList.push_back(dom);
+	}
+	return domainList;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -64,6 +74,7 @@ FEBioExport4::FEBioExport4(FSProject& prj) : FEBioExport(prj)
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
+	m_allowMixedParts = false;
 }
 
 FEBioExport4::~FEBioExport4()
@@ -840,6 +851,7 @@ void FEBioExport4::WriteModuleSection(FSProject& prj)
 		case 5: m_xml.add_leaf("units", "um-nN-s"); break;
 		case 6: m_xml.add_leaf("units", "CGS"    ); break;
         case 7: m_xml.add_leaf("units", "mm-g-s" ); break;
+        case 8: m_xml.add_leaf("units", "mm-mg-s"); break;
 		}
 		m_xml.close_branch();
 	}
@@ -1055,9 +1067,94 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	m_xml.close_branch();
 }
 
-//-----------------------------------------------------------------------------
-void FEBioExport4::WriteMeshSection()
+// As of FBS 2.8, parts can deactivated. For these inactive parts, we don't write the nodes, elements, 
+// or any geometry that references the inactive parts.
+void FEBioExport4::ProcessParts()
 {
+	FSModel& s = *m_pfem;
+	GModel& model = s.GetModel();
+
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		FSCoreMesh* pm = po->GetFEMesh();
+
+		// tag all nodes which will be exported. (Nodes of inactive parts are not exported)
+		// first we tag all elements
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			el.SetExport(true);
+			if (el.m_gid >= 0)
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (!pg->IsActive()) el.SetExport(false);
+			}
+		}
+
+		// assume all nodes will be exported
+		for (int j = 0; j < pm->Nodes(); ++j)
+		{
+			pm->Node(j).SetExport(true);
+		}
+
+		// tag all nodes of inactive parts
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			if (!el.CanExport())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) pm->Node(el.m_node[k]).SetExport(false);
+			}
+		}
+
+		// tag all nodes of active parts
+		// The reason why we first tag inactive nodes and then active nodes is so that nodes 
+		// that are not connected to any parts (e.g. free node attached with discrete element) will still be exported.
+		for (int j = 0; j < pm->Elements(); ++j)
+		{
+			FEElement_& el = pm->ElementRef(j);
+			if (el.CanExport())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) pm->Node(el.m_node[k]).SetExport(true);
+			}
+		}
+
+		// process surface facets
+		// facets are only exported if all its nodes are exported
+		for (int j = 0; j < pm->Faces(); ++j)
+		{
+			FSFace& face = pm->Face(j);
+			int nf = face.Nodes();
+			face.SetExport(true);
+			for (int k=0; k<nf; ++k)
+			{
+				if (!pm->Node(face.n[k]).CanExport()) face.SetExport(false);
+			}
+		}
+
+		// process edges
+		// edges are only exported if all its nodes are exported
+		for (int j = 0; j < pm->Edges(); ++j)
+		{
+			FSEdge& edge = pm->Edge(j);
+			int ne = edge.Nodes();
+			edge.SetExport(true);
+			for (int k = 0; k < ne; ++k)
+			{
+				if (!pm->Node(edge.n[k]).CanExport()) edge.SetExport(false);
+			}
+		}
+	}
+}
+
+void FEBioExport4::WriteMeshSection() 
+{
+	// process active parts
+	ProcessParts();
+	
 	// export the nodes
 	WriteGeometryNodes();
 
@@ -1241,12 +1338,13 @@ bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 	if (nn == 0) return false;
 
 	FSNodeList::Iterator pn = pl->First();
-	vector<int> m(nn);
+	vector<int> m;
+	m.reserve(pl->Size());
 	for (int n = 0; n < nn; ++n, pn++)
 	{
 		FSNode* pnode = pn->m_pi;
-		if (pnode == 0) return false;
-		m[n] = pnode->m_nid;
+		if (pnode == nullptr) return false;
+		if (pnode->CanExport()) m.push_back(pnode->m_nid);
 	}
 
 	XMLElement el("NodeSet");
@@ -1433,7 +1531,8 @@ void FEBioExport4::WriteGeometryElementSets()
 			if (pe->m_pi)
 			{
 				FEElement_& el = *(pe->m_pi);
-				elemIds.push_back(el.m_nid);
+				if (el.CanExport())
+					elemIds.push_back(el.m_nid);
 			}
 		}
 
@@ -1444,6 +1543,8 @@ void FEBioExport4::WriteGeometryElementSets()
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteGeometryPartLists()
 {
+	FEBioExport4::Part& part = *m_Part[0];
+
 	GModel& mdl = m_pfem->GetModel();
 	int NP = (int)m_pPSet.size();
 	for (int i = 0; i < NP; ++i)
@@ -1461,9 +1562,19 @@ void FEBioExport4::WriteGeometryPartLists()
 			bool bfirst = true;
 			for (int id : partIDs)
 			{
-				if (bfirst == false) ss << ","; else bfirst = false;
 				GPart* pg = mdl.FindPart(id); assert(pg);
-				if (pg) ss << pg->GetName();
+				if (pg && pg->IsActive())
+				{
+					// since the domain can be split on export, we need to find all part with pg 
+					// as its parent GPart
+					std::vector<FEBioExport4::Domain*> domainList = part.GetDomainsFromGPart(pg);
+
+					for (auto domain : domainList)
+					{
+						if (bfirst == false) ss << ","; else bfirst = false;
+						ss << domain->m_name;
+					}
+				}
 			}
 		}
 		else if (dynamic_cast<FSPartSet*>(pl))
@@ -1474,7 +1585,7 @@ void FEBioExport4::WriteGeometryPartLists()
 			{
 				if (bfirst == false) ss << ","; else bfirst = false;
 				GPart* pg = ps->GetPart(n); assert(pg);
-				if (pg) ss << pg->GetName();
+				if (pg && pg->IsActive()) ss << pg->GetName();
 			}
 		}
 		else { assert(false); }
@@ -1621,25 +1732,42 @@ void FEBioExport4::WriteGeometryNodes()
 		GObject* po = model.Object(i);
 		FSCoreMesh* pm = po->GetFEMesh();
 
-		XMLElement tagNodes("Nodes");
-		const string& name = po->GetName();
-		if (name.empty() == false) tagNodes.add_attribute("name", name.c_str());
-
-		m_xml.add_branch(tagNodes);
+		// we only export this object if it has any nodes that need to be exported
+		bool exportNodes = false;
+		for (int j = 0; j < pm->Nodes(); ++j)
 		{
-			XMLElement el("node");
-			int nid = el.add_attribute("id", 0);
-			for (int j = 0; j < pm->Nodes(); ++j)
+			if (pm->Node(j).CanExport())
 			{
-				FSNode& node = pm->Node(j);
-				el.set_attribute(nid, node.m_nid);
-				if (node.m_nid > n) n = node.m_nid + 1;
-				vec3d r = po->GetTransform().LocalToGlobal(node.r);
-				el.value(r);
-				m_xml.add_leaf(el, false);
+				exportNodes = true;
+				break;
 			}
 		}
-		m_xml.close_branch();
+
+		if (exportNodes)
+		{
+			XMLElement tagNodes("Nodes");
+			const string& name = po->GetName();
+			if (name.empty() == false) tagNodes.add_attribute("name", name.c_str());
+
+			m_xml.add_branch(tagNodes);
+			{
+				XMLElement el("node");
+				int nid = el.add_attribute("id", 0);
+				for (int j = 0; j < pm->Nodes(); ++j)
+				{
+					FSNode& node = pm->Node(j);
+					if (node.CanExport())
+					{
+						el.set_attribute(nid, node.m_nid);
+						if (node.m_nid > n) n = node.m_nid + 1;
+						vec3d r = po->GetTransform().LocalToGlobal(node.r);
+						el.value(r);
+						m_xml.add_leaf(el, false);
+					}
+				}
+			}
+			m_xml.close_branch();
+		}
 	}
 
 	// add the deformable springs
@@ -1710,40 +1838,194 @@ void FEBioExport4::WriteMeshElements()
 			// get the part
 			GPart* pg = po->Part(p);
 
-			// write this part
-			WriteGeometryPart(part, pg, false, false);
+			// see if it's active
+			bool exportPart = pg->IsActive();
+
+			// write this part if it's active
+			if (exportPart)
+			{
+				if (m_allowMixedParts)
+					WriteMixedElementsPart(part, pg, false, false);
+				else
+					WriteGeometryPart(part, pg, false, false);
+			}
 		}
 	}
 }
 
-//-----------------------------------------------------------------------------
-void FEBioExport4::WriteGeometryElements(bool writeMats, bool useMatNames)
+int degenerate_element_type(int type1, int type2)
+{
+	if (type1 == type2) return type1;
+	if ((type1 == FE_TRI3  ) && (type2 == FE_QUAD4 )) return FE_QUAD4;
+	if ((type1 == FE_QUAD4 ) && (type2 == FE_TRI3  )) return FE_QUAD4;
+	if ((type1 == FE_TET4  ) && (type2 == FE_PENTA6)) return FE_PENTA6;
+	if ((type1 == FE_PENTA6) && (type2 == FE_TET4  )) return FE_PENTA6;
+	if ((type1 == FE_HEX8  ) && (type2 == FE_TET4  )) return FE_HEX8;
+	if ((type1 == FE_TET4  ) && (type2 == FE_HEX8  )) return FE_HEX8;
+	if ((type1 == FE_PENTA6) && (type2 == FE_HEX8  )) return FE_HEX8;
+	if ((type1 == FE_HEX8  ) && (type2 == FE_PENTA6)) return FE_HEX8;
+	return -1;
+}
+
+int get_degenerate_nodes(int dstType, int srcType, int* n)
+{
+	if (dstType == FE_QUAD4)
+	{
+		if (srcType == FE_QUAD4) return 4;
+		if (srcType == FE_TRI3)
+		{
+			n[3] = n[2];
+			return 4;
+		}
+	}
+	if (dstType == FE_PENTA6)
+	{
+		if (srcType == FE_PENTA6) return 6;
+		if (srcType == FE_TET4)
+		{
+			n[5] = n[4] = n[3];
+			return 6;
+		}
+	}
+	if (dstType == FE_HEX8)
+	{
+		if (srcType == FE_HEX8) return 8;
+		if (srcType == FE_PENTA6)
+		{
+			n[7] = n[6] = n[5];
+			n[5] = n[4];
+			n[4] = n[3];
+			n[3] = n[2];
+			return 8;
+		}
+		if (srcType == FE_TET4)
+		{
+			n[7] = n[6] = n[5] = n[4] = n[3];
+			n[3] = n[2];
+			return 8;
+		}
+	}
+	assert(false);
+	return -1;
+}
+
+void FEBioExport4::WriteMixedElementsPart(Part* part, GPart* pg, bool writeMats, bool useMatNames)
 {
 	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	FSCoreMesh* pm = po->GetFEMesh();
+	int pid = pg->GetLocalID();
 
-	// reset element counter
-	m_ntotelem = 0;
+	// get the material
+	int nmat = 0;
+	GMaterial* pmat = s.GetMaterialFromID(pg->GetMaterialID());
+	if (pmat) nmat = pmat->m_ntag;
 
-	// loop over all objects
-	for (int i = 0; i < model.Objects(); ++i)
+	// figure out which type this part is
+	int elemType = -1;
+	int elemClass = -1;
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
 	{
-		GObject* po = model.Object(i);
-
-		// loop over all parts
-		int NP = po->Parts();
-		for (int p = 0; p < NP; ++p)
+		FEElement_& el = pm->ElementRef(i);
+		if (el.m_gid == pid)
 		{
-			// get the part
-			GPart* pg = po->Part(p);
+			if (elemType == -1) elemType = el.Type();
+			else if (el.Type() != elemType)
+			{
+				elemType = degenerate_element_type(elemType, el.Type());
+				if (elemType == -1)
+				{
+					string err = "Part \"" + pg->GetName() + "\" has invalid degenerate elements.";
+					throw std::runtime_error(err);
+				}
+			}
 
-			// write this part
-			WriteGeometryPart(nullptr, pg, writeMats, useMatNames);
+			if (elemClass == -1) elemClass = el.Class();
+			else if (elemClass != el.Class()) throw FEBioExportError();
 		}
 	}
+
+	const char* sztype = ElementTypeString(elemType);
+	if (sztype == nullptr) throw FEBioExportError();
+	XMLElement xe("Elements");
+	xe.add_attribute("type", sztype);
+	if ((nmat > 0) && writeMats)
+	{
+		if (useMatNames) xe.add_attribute("mat", pmat->GetName().c_str());
+		else xe.add_attribute("mat", nmat);
+	}
+	string name = pg->GetName();
+	xe.add_attribute("name", name);
+
+	ElementSet es;
+	es.m_mesh = pm;
+	es.m_name = name;
+	es.m_matID = pg->GetMaterialID();
+
+	// add a domain
+	if (part)
+	{
+		FEBioExport4::Domain* dom = new FEBioExport4::Domain;
+		dom->m_name = name;
+		dom->m_pg = pg;
+		if (pmat) dom->m_matName = pmat->GetName().c_str();
+		part->m_Dom.push_back(dom);
+
+		dom->m_elemClass = elemClass;
+		dom->m_elemType = elemType;
+	}
+
+	int lastElemID = 0;
+	int ncount = 0;
+	m_xml.add_branch(xe);
+	{
+		// loop over unprocessed elements
+		int nn[FSElement::MAX_NODES];
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement_& el = pm->ElementRef(i);
+			if (el.m_gid == pid)
+			{
+				if (el.m_nid <= lastElemID) throw FEBioExportError();
+				lastElemID = el.m_nid;
+
+				int ntype = el.Type();
+
+				XMLElement xel("elem");
+				xel.add_attribute("id", el.m_nid);
+
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k) nn[k] = pm->Node(el.m_node[k]).m_nid;
+
+				if (el.Type() != elemType)
+				{
+					ne = get_degenerate_nodes(elemType, el.Type(), nn);
+					if (ne == -1) throw FEBioExportError();
+				}
+					
+				xel.value(nn, ne);
+				m_xml.add_leaf(xel, false);
+				ncount++;
+				es.m_elem.push_back(i);
+				m_ElSet.push_back(es);
+			}
+		}
+	}
+	m_xml.close_branch();
+
+	// make sure this part has elements
+	if (ncount == 0)
+	{
+		string err = "Part \"" + pg->GetName() + "\" has no elements.";
+		throw std::runtime_error(err);
+	}
+
+	// update total element counter
+	m_ntotelem += ncount;
 }
 
-//-----------------------------------------------------------------------------
 void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool useMatNames)
 {
 	FSModel& s = *m_pfem;
@@ -1867,116 +2149,120 @@ void FEBioExport4::WriteGeometryDiscreteSets()
 	// write the discrete element sets
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
-		GLinearSpring* ps = dynamic_cast<GLinearSpring*>(model.DiscreteObject(i));
-		if (ps)
+		GDiscreteObject* pdo = model.DiscreteObject(i);
+		if (pdo->IsActive())
 		{
-			GNode* pn0 = model.FindNode(ps->m_node[0]);
-			GNode* pn1 = model.FindNode(ps->m_node[1]);
-			if (pn0 && pn1)
+			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(pdo);
+			if (ps)
 			{
-				GObject* po0 = dynamic_cast<GObject*>(pn0->Object()); assert(po0);
-				GObject* po1 = dynamic_cast<GObject*>(pn1->Object()); assert(po1);
-
-				int n[2];
-				n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-				n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
-
-				XMLElement el("DiscreteSet");
-				el.add_attribute("name", ps->GetName().c_str());
-				m_xml.add_branch(el);
+				GNode* pn0 = model.FindNode(ps->m_node[0]);
+				GNode* pn1 = model.FindNode(ps->m_node[1]);
+				if (pn0 && pn1)
 				{
-					m_xml.add_leaf("delem", n, 2);
-				}
-				m_xml.close_branch();
-			}
-		}
-		GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(model.DiscreteObject(i));
-		if (pg)
-		{
-			GNode* pn0 = model.FindNode(pg->m_node[0]);
-			GNode* pn1 = model.FindNode(pg->m_node[1]);
-			if (pn0 && pn1)
-			{
-				GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-				GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
+					GObject* po0 = dynamic_cast<GObject*>(pn0->Object()); assert(po0);
+					GObject* po1 = dynamic_cast<GObject*>(pn1->Object()); assert(po1);
 
-				int n[2];
-				n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-				n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
+					int n[2];
+					n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
+					n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
 
-				XMLElement el("DiscreteSet");
-				el.add_attribute("name", pg->GetName().c_str());
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("delem", n, 2);
-				}
-				m_xml.close_branch();
-			}
-		}
-		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
-		if (pds && (pds->size()))
-		{
-			XMLElement el("DiscreteSet");
-			el.add_attribute("name", pds->GetName().c_str());
-			m_xml.add_branch(el);
-			{
-				int N = pds->size();
-				for (int n = 0; n < N; ++n)
-				{
-					GDiscreteElement& el = pds->element(n);
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
-					if (pn0 && pn1)
+					XMLElement el("DiscreteSet");
+					el.add_attribute("name", ps->GetName().c_str());
+					m_xml.add_branch(el);
 					{
-						GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-						GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
-
-						int n[2];
-						n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-						n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
-
 						m_xml.add_leaf("delem", n, 2);
 					}
+					m_xml.close_branch();
 				}
 			}
-			m_xml.close_branch();
-		}
-		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
-		if (ds)
-		{
-			GNode* pn0 = model.FindNode(ds->NodeID(0));
-			GNode* pn1 = model.FindNode(ds->NodeID(1));
-			if (pn0 && pn1)
+			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(pdo);
+			if (pg)
 			{
-				GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-				GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
+				GNode* pn0 = model.FindNode(pg->m_node[0]);
+				GNode* pn1 = model.FindNode(pg->m_node[1]);
+				if (pn0 && pn1)
+				{
+					GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
+					GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
 
-				int n[2], m[2] = { 0 };
-				n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-				n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
+					int n[2];
+					n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
+					n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
 
+					XMLElement el("DiscreteSet");
+					el.add_attribute("name", pg->GetName().c_str());
+					m_xml.add_branch(el);
+					{
+						m_xml.add_leaf("delem", n, 2);
+					}
+					m_xml.close_branch();
+				}
+			}
+			GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(pdo);
+			if (pds && (pds->size()))
+			{
 				XMLElement el("DiscreteSet");
-				el.add_attribute("name", ds->GetName().c_str());
+				el.add_attribute("name", pds->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					int N = ds->Divisions();
-					if (N == 1) m_xml.add_leaf("delem", n, 2);
-					else
+					int N = pds->size();
+					for (int n = 0; n < N; ++n)
 					{
-						int nid = ds->m_ntag; assert(nid != -1);
-						m[0] = n[0]; m[1] = nid;
-						m_xml.add_leaf("delem", m, 2);
-						for (int j = 0; j < N - 2; ++j)
+						GDiscreteElement& el = pds->element(n);
+						GNode* pn0 = model.FindNode(el.Node(0));
+						GNode* pn1 = model.FindNode(el.Node(1));
+						if (pn0 && pn1)
 						{
-							m[0] = nid++;
-							m[1] = nid;
-							m_xml.add_leaf("delem", m, 2);
+							GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
+							GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
+
+							int n[2];
+							n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
+							n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
+
+							m_xml.add_leaf("delem", n, 2);
 						}
-						m[0] = nid; m[1] = n[1];
-						m_xml.add_leaf("delem", m, 2);
 					}
 				}
 				m_xml.close_branch();
+			}
+			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(pdo);
+			if (ds)
+			{
+				GNode* pn0 = model.FindNode(ds->NodeID(0));
+				GNode* pn1 = model.FindNode(ds->NodeID(1));
+				if (pn0 && pn1)
+				{
+					GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
+					GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
+
+					int n[2], m[2] = { 0 };
+					n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
+					n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
+
+					XMLElement el("DiscreteSet");
+					el.add_attribute("name", ds->GetName().c_str());
+					m_xml.add_branch(el);
+					{
+						int N = ds->Divisions();
+						if (N == 1) m_xml.add_leaf("delem", n, 2);
+						else
+						{
+							int nid = ds->m_ntag; assert(nid != -1);
+							m[0] = n[0]; m[1] = nid;
+							m_xml.add_leaf("delem", m, 2);
+							for (int j = 0; j < N - 2; ++j)
+							{
+								m[0] = nid++;
+								m[1] = nid;
+								m_xml.add_leaf("delem", m, 2);
+							}
+							m[0] = nid; m[1] = n[1];
+							m_xml.add_leaf("delem", m, 2);
+						}
+					}
+					m_xml.close_branch();
+				}
 			}
 		}
 	}
@@ -2105,7 +2391,7 @@ void FEBioExport4::WriteMeshDataShellThickness()
 		for (int k = 0; k < (int)elset.m_elem.size(); ++k)
 		{
 			FEElement_& el = pm->ElementRef(elset.m_elem[k]);
-			if (el.IsShell()) 
+			if (el.IsShell() && el.CanExport()) 
 			{ 
 				int n = el.Nodes();
 				for (int l = 0; l < n; ++l)
@@ -2202,10 +2488,13 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 				for (int j = 0; j < NE; ++j)
 				{
 					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
-					vec3d a = T.LocalToGlobalNormal(e.m_fiber);
-					el.set_attribute(nid, j + 1);
-					el.value(a);
-					m_xml.add_leaf(el, false);
+					if (e.CanExport())
+					{
+						vec3d a = T.LocalToGlobalNormal(e.m_fiber);
+						el.set_attribute(nid, j + 1);
+						el.value(a);
+						m_xml.add_leaf(el, false);
+					}
 				}
 			}
 			m_xml.close_branch(); // elem_data
@@ -2231,7 +2520,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 		for (int j = 0; j < NE; ++j)
 		{
 			FEElement_& el = pm->ElementRef(elSet.m_elem[j]);
-			if (el.m_Qactive) { bwrite = true; break; }
+			if (el.m_Qactive && el.CanExport()) { bwrite = true; break; }
 		}
 
 		// okay, let's get to work
@@ -2249,7 +2538,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 				for (int j = 0; j < NE; ++j)
 				{
 					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
-					if (e.m_Qactive)
+					if (e.m_Qactive && e.CanExport())
 					{
 						// e.m_Q is in local coordinates, so transform it to global coordinates
 						mat3d& Q = e.m_Q;
@@ -2320,10 +2609,13 @@ void FEBioExport4::WriteElementDataFields()
 					{
 						int eid = *it;
 						FEElement_& e = pm->ElementRef(eid);
-						el.set_attribute(nid, j + 1);
-						data.get(j, d);
-						el.value(d, M);
-						m_xml.add_leaf(el, false);
+						if (e.CanExport())
+						{
+							el.set_attribute(nid, j + 1);
+							data.get(j, d);
+							el.value(d, M);
+							m_xml.add_leaf(el, false);
+						}
 					}
 				}
 				m_xml.close_branch();
@@ -2459,8 +2751,6 @@ void FEBioExport4::WriteSurfaceDataSection()
 
 						m_xml.add_leaf(el, false);
 					}
-
-
 				}
 				m_xml.close_branch();
 			}
@@ -2610,9 +2900,6 @@ void FEBioExport4::WriteLoadsSection(FSStep& s)
 	WriteBodyLoads(s);
 }
 
-//-----------------------------------------------------------------------------
-// write discrete elements
-//
 void FEBioExport4::WriteDiscreteSection(FSStep& s)
 {
 	FSModel& fem = *m_pfem;
@@ -2627,59 +2914,63 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 	int n = 1;
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
-		GLinearSpring* ps = dynamic_cast<GLinearSpring*>(model.DiscreteObject(i));
-		if (ps)
+		GDiscreteObject* pdo = model.DiscreteObject(i);
+		if (pdo->IsActive())
 		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, ps->GetName().c_str());
-			dmat.set_attribute(n3, "linear spring");
-			m_xml.add_branch(dmat, false);
+			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(pdo);
+			if (ps)
 			{
-				WriteParamList(*ps);
+				dmat.set_attribute(n1, n++);
+				dmat.set_attribute(n2, ps->GetName().c_str());
+				dmat.set_attribute(n3, "linear spring");
+				m_xml.add_branch(dmat, false);
+				{
+					WriteParamList(*ps);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(model.DiscreteObject(i));
-		if (pg)
-		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pg->GetName().c_str());
-			dmat.set_attribute(n3, "nonlinear spring");
-			m_xml.add_branch(dmat, false);
+			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(pdo);
+			if (pg)
 			{
-				Param& p = pg->GetParam(GGeneralSpring::MP_F);
-				double F = p.GetFloatValue();
-				int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
+				dmat.set_attribute(n1, n++);
+				dmat.set_attribute(n2, pg->GetName().c_str());
+				dmat.set_attribute(n3, "nonlinear spring");
+				m_xml.add_branch(dmat, false);
+				{
+					Param& p = pg->GetParam(GGeneralSpring::MP_F);
+					double F = p.GetFloatValue();
+					int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
 
-				XMLElement f;
-				f.name("force");
-				f.value(F);
-				if (lc > 0) f.add_attribute("lc", lc);
-				m_xml.add_leaf(f);
+					XMLElement f;
+					f.name("force");
+					f.value(F);
+					if (lc > 0) f.add_attribute("lc", lc);
+					m_xml.add_leaf(f);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
-		if (pds && (pds->size()))
-		{
-			XMLElement dmat("discrete_material");
-			dmat.add_attribute("id", n++);
-			dmat.add_attribute("name", pds->GetName().c_str());
-			FSDiscreteMaterial* dm = pds->GetMaterial();
-			WriteModelComponent(dm, dmat);
-		}
-		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
-		if (ds)
-		{
-			GDeformableSpring& spring = dynamic_cast<GDeformableSpring&>(*ds);
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, spring.GetName().c_str());
-			dmat.set_attribute(n3, "linear spring");
-			m_xml.add_branch(dmat, false);
+			GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(pdo);
+			if (pds && (pds->size()))
 			{
-				WriteParamList(spring);
+				XMLElement dmat("discrete_material");
+				dmat.add_attribute("id", n++);
+				dmat.add_attribute("name", pds->GetName().c_str());
+				FSDiscreteMaterial* dm = pds->GetMaterial();
+				WriteModelComponent(dm, dmat);
 			}
-			m_xml.close_branch();
+			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(pdo);
+			if (ds)
+			{
+				GDeformableSpring& spring = dynamic_cast<GDeformableSpring&>(*ds);
+				dmat.set_attribute(n1, n++);
+				dmat.set_attribute(n2, spring.GetName().c_str());
+				dmat.set_attribute(n3, "linear spring");
+				m_xml.add_branch(dmat, false);
+				{
+					WriteParamList(spring);
+				}
+				m_xml.close_branch();
+			}
 		}
 	}
 
@@ -2707,33 +2998,37 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 	n = 1;
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
-		GLinearSpring* ps = dynamic_cast<GLinearSpring*>(model.DiscreteObject(i));
-		if (ps)
+		GDiscreteObject* pdo = model.DiscreteObject(i);
+		if (pdo->IsActive())
 		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, ps->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(model.DiscreteObject(i));
-		if (pg)
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pg->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
-		if (pds && (pds->size()))
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pds->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
-		if (ds)
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, ds->GetName().c_str());
-			m_xml.add_empty(disc, false);
+			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(pdo);
+			if (ps)
+			{
+				disc.set_attribute(n1, n++);
+				disc.set_attribute(n2, ps->GetName().c_str());
+				m_xml.add_empty(disc, false);
+			}
+			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(pdo);
+			if (pg)
+			{
+				disc.set_attribute(n1, n++);
+				disc.set_attribute(n2, pg->GetName().c_str());
+				m_xml.add_empty(disc, false);
+			}
+			GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(pdo);
+			if (pds && (pds->size()))
+			{
+				disc.set_attribute(n1, n++);
+				disc.set_attribute(n2, pds->GetName().c_str());
+				m_xml.add_empty(disc, false);
+			}
+			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(pdo);
+			if (ds)
+			{
+				disc.set_attribute(n1, n++);
+				disc.set_attribute(n2, ds->GetName().c_str());
+				m_xml.add_empty(disc, false);
+			}
 		}
 	}
 
@@ -3067,32 +3362,33 @@ void FEBioExport4::WriteSurfaceSection(NamedItemList& l)
 	int NF = s.Size();
 	FEFaceList::Iterator pf = s.First();
 
-	int nfn;
 	for (int j = 0; j < NF; ++j, ++n, ++pf)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
 		FSFace& face = *(pf->m_pi);
-		FSCoreMesh* pm = pf->m_pm;
-		nfn = face.Nodes();
-		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
-		switch (nfn)
+		if (face.CanExport())
 		{
-		case 3: ef.name("tri3"); break;
-		case 4: ef.name("quad4"); break;
-		case 6: ef.name("tri6"); break;
-		case 7: ef.name("tri7"); break;
-		case 8: ef.name("quad8"); break;
-		case 9: ef.name("quad9"); break;
-		case 10: ef.name("tri10"); break;
-		default:
-			assert(false);
+			int nfn = face.Nodes();
+			FSCoreMesh* pm = pf->m_pm;
+			for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
+			switch (nfn)
+			{
+			case  3: ef.name("tri3" ); break;
+			case  4: ef.name("quad4"); break;
+			case  6: ef.name("tri6" ); break;
+			case  7: ef.name("tri7" ); break;
+			case  8: ef.name("quad8"); break;
+			case  9: ef.name("quad9"); break;
+			case 10: ef.name("tri10"); break;
+			default:
+				assert(false);
+			}
+			ef.add_attribute("id", n);
+			ef.value(nn, nfn);
+			m_xml.add_leaf(ef);
 		}
-		ef.add_attribute("id", n);
-		ef.value(nn, nfn);
-		m_xml.add_leaf(ef);
 	}
 }
-
 
 void FEBioExport4::WriteEdgeSection(NamedItemList& l)
 {
@@ -3112,19 +3408,22 @@ void FEBioExport4::WriteEdgeSection(NamedItemList& l)
 	{
 		if (pe->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
 		FSEdge& edge = *(pe->m_pi);
-		FSCoreMesh* pm = pe->m_pm;
-		int nen = edge.Nodes();
-		for (int k = 0; k < nen; ++k) nn[k] = pm->Node(edge.n[k]).m_nid;
-		switch (nen)
+		if (edge.CanExport())
 		{
-		case 2: ef.name("line2"); break;
-		case 3: ef.name("line3"); break;
-		default:
-			assert(false);
+			FSCoreMesh* pm = pe->m_pm;
+			int nen = edge.Nodes();
+			for (int k = 0; k < nen; ++k) nn[k] = pm->Node(edge.n[k]).m_nid;
+			switch (nen)
+			{
+			case 2: ef.name("line2"); break;
+			case 3: ef.name("line3"); break;
+			default:
+				assert(false);
+			}
+			ef.add_attribute("id", n);
+			ef.value(nn, nen);
+			m_xml.add_leaf(ef);
 		}
-		ef.add_attribute("id", n);
-		ef.value(nn, nen);
-		m_xml.add_leaf(ef);
 	}
 }
 
@@ -3136,9 +3435,12 @@ void FEBioExport4::WriteElementList(FEElemList& el)
 	for (int i = 0; i < NE; ++i, ++pe)
 	{
 		FEElement_& el = *(pe->m_pi);
-		XMLElement e("e");
-		e.add_attribute("id", el.m_nid);
-		m_xml.add_empty(e);
+		if (el.CanExport())
+		{
+			XMLElement e("e");
+			e.add_attribute("id", el.m_nid);
+			m_xml.add_empty(e);
+		}
 	}
 }
 
@@ -3264,6 +3566,21 @@ void FEBioExport4::WriteOutputSection()
 					FSLogSurfaceData& fd = dynamic_cast<FSLogSurfaceData&>(d);
 					FEItemListBuilder* pg = fd.GetItemList();
 					if (pg) e.add_attribute("surface", pg->GetName());
+
+					m_xml.add_empty(e);
+				}
+				break;
+				case FSLogData::LD_DOMAIN:
+				{
+					XMLElement e;
+					e.name("domain_data");
+					e.add_attribute("data", d.GetDataString());
+
+					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
+
+					FSLogDomainData& fd = dynamic_cast<FSLogDomainData&>(d);
+					FEItemListBuilder* pg = fd.GetItemList();
+					if (pg) e.add_attribute("domain", pg->GetName());
 
 					m_xml.add_empty(e);
 				}

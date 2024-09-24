@@ -26,9 +26,17 @@ SOFTWARE.*/
 
 #include "FELineMesh.h"
 #include <GeomLib/GObject.h>
+#include <GeomLib/GMeshObject.h>
+#include "FENodeEdgeList.h"
+using namespace std;
 
 FSLineMesh::FSLineMesh() : m_pobj(0)
 {
+}
+
+bool FSLineMesh::IsEditable() const
+{
+	return (dynamic_cast<const GMeshObject*>(GetGObject()) != nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -52,6 +60,8 @@ void FSLineMesh::SetGObject(GObject* po) { m_pobj = po; }
 
 //-----------------------------------------------------------------------------
 GObject* FSLineMesh::GetGObject() { return m_pobj; }
+
+const GObject* FSLineMesh::GetGObject() const { return m_pobj; }
 
 //-----------------------------------------------------------------------------
 // convert local coordinates to global coordinates. This uses the transform
@@ -113,4 +123,60 @@ void FSLineMesh::UpdateBoundingBox()
 		if (r.y > m_box.y1) m_box.y1 = r.y;
 		if (r.z > m_box.z1) m_box.z1 = r.z;
 	}
+}
+
+std::vector<int> MeshTools::GetConnectedEdgesOnLineMesh(FSLineMesh* pm, int startEdge, double angDeg, bool bmax)
+{
+	vector<int> edgeList; edgeList.reserve(pm->Edges());
+
+	for (int i = 0; i < pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
+	std::stack<FSEdge*> stack;
+
+	FSNodeEdgeList NEL(pm);
+
+	// push the first face to the stack
+	FSEdge* pe = pm->EdgePtr(startEdge);
+	edgeList.push_back(startEdge);
+	pe->m_ntag = -1;
+	stack.push(pe);
+
+	int gid = pe->m_gid;
+
+	// setup the direction vector
+	vec3d& r0 = pm->Node(pe->n[0]).r;
+	vec3d& r1 = pm->Node(pe->n[1]).r;
+	vec3d t1 = r1 - r0; t1.Normalize();
+
+	// angle tolerance
+	double wtol = 1.000001 * cos(PI * angDeg / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
+
+	// now push the rest
+	while (!stack.empty())
+	{
+		pe = stack.top(); stack.pop();
+
+		for (int i = 0; i < 2; ++i)
+		{
+			int n = NEL.Edges(pe->n[i]);
+			for (int j = 0; j < n; ++j)
+			{
+				int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
+				if (edgeID >= 0)
+				{
+					FSEdge* pe2 = pm->EdgePtr(edgeID);
+					vec3d& r0 = pm->Node(pe2->n[0]).r;
+					vec3d& r1 = pm->Node(pe2->n[1]).r;
+					vec3d t2 = r1 - r0; t2.Normalize();
+					if (pe2->IsVisible() && ((bmax == false) || (fabs(t1 * t2) >= wtol)) && ((gid == -1) || (pe2->m_gid == gid)))
+					{
+						edgeList.push_back(pe2->m_ntag);
+						pe2->m_ntag = -1;
+						stack.push(pe2);
+					}
+				}
+			}
+		}
+	}
+
+	return edgeList;
 }

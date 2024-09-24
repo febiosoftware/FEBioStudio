@@ -45,11 +45,13 @@ private:
 private:
 
 protected:
+	bool Read_Comment();
 	bool Read_Element_Solid();
-	bool Read_Element_Solid2();
 	bool Read_Element_Shell();
 	bool Read_Element_Shell_Thickness();
-	bool Read_Domain_Shell_Thickness();
+	bool Read_Section_Shell();
+	bool Read_Section_Solid();
+	bool Read_Section_Solid_Title();
 	bool Read_Element_Discrete();
 	bool Read_Node();
 	bool Read_Nodal_Results();
@@ -65,6 +67,7 @@ protected:
 	bool Read_Mat_Other();
 	bool Read_Set_Segment_Title();
 	bool Read_Include();
+	bool Read_IncludePath();
 	bool Read_Define_Curve();
 	bool Read_Define_Curve_Title();
 	bool Read_Parameter();

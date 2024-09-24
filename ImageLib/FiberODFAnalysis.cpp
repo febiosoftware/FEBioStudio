@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
-#include "ImageSITK.h"
+#include "SITKTools.h"
 #include "levmar.h"
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
@@ -203,7 +203,7 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 {
 	clear();
 
-    sitk::Image img = CImageSITK::SITKImageFrom3DImage(m_img->Get3DImage());
+    sitk::Image img = SITKImageFrom3DImage(m_img->Get3DImage());
 	
     img = sitk::Cast(img, sitk::sitkUInt32);
 	auto size = img.GetSize();
@@ -270,7 +270,7 @@ void CFiberODFAnalysis::run()
 	// generate the subvolumes
 	if (m_ODFs.empty()) GenerateSubVolumes();
 
-    sitk::Image img = CImageSITK::SITKImageFrom3DImage(m_img->Get3DImage());
+    sitk::Image img = SITKImageFrom3DImage(m_img->Get3DImage());
 
     img = sitk::Cast(img, sitk::sitkUInt32);
 
@@ -837,7 +837,11 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	if ((showMesh == 1) || cam->IsMoving()) mesh = &odf->m_remesh;
 	else mesh = &odf->m_mesh;
 
-	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
+	if (ncolor == 0)
+    {
+        glEnable(GL_COLOR_MATERIAL);
+        m_render.SetFaceColor(true);
+    }
 	else
 	{
 		GLColor c = m_map.map(odf->m_FA);
@@ -858,8 +862,11 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
 */
-		glColor3f(0, 0, 0);
 
+        glEnable(GL_BLEND);
+		glColor4f(0, 0, 0, 0.5);
+
+        glLineWidth(1.5f);
 		m_render.RenderGMeshLines(mesh);
 /*
 		glPopMatrix();

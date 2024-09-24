@@ -868,14 +868,68 @@ bool FESetAxesOrientation::SetAxesCopy(FSMesh *pm)
 
 FEMirrorMesh::FEMirrorMesh() : FEModifier("Mirror") 
 { 
-	AddIntParam(0, "plane", "Mirror plane")->SetEnumNames("X-plane\0Y-plane\0Z-plane\0");
+	AddIntParam(0, "plane", "Mirror plane")->SetEnumNames("X-plane\0Y-plane\0Z-plane\0face selection\0custom\0");
 	AddVecParam(vec3d(0,0,0), "center", "Center");
+	AddVecParam(vec3d(1,0,0), "normal", "Normal")->SetVisible(false);
+}
+
+bool FEMirrorMesh::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		Param& p = GetParam(2);
+		int n = GetIntValue(0);
+		if ((n == 4) && (p.IsVisible() == false))
+		{
+			p.SetVisible(true);
+			return true;
+		}
+		else if ((n != 4) && p.IsVisible())
+		{
+			p.SetVisible(false);
+			return true;
+		}
+	}
+	return false;
 }
 
 FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 {
 	int nplane = GetIntValue(0);
 	vec3d rc = GetVecValue(1);
+
+	vec3d N;
+
+	switch (nplane)
+	{
+	case 0: N = vec3d(1, 0, 0); break;
+	case 1: N = vec3d(0, 1, 0); break;
+	case 2: N = vec3d(0, 0, 1); break;
+	case 3:
+	{
+		// for user selection we need to figure out a center and normal
+		FEFaceSelection* sel = new FEFaceSelection(pm);
+		if (sel->Count() == 0) return nullptr;
+		BOX b = sel->GetBoundingBox();
+		rc += b.Center();
+
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			FSFace& face = *sel->Face(i);
+			N += to_vec3d(face.m_fn);
+		}
+		N.Normalize();
+	}
+	break;
+	case 4:
+		N = GetVecValue(2);
+		N.Normalize();
+		if (N.norm() == 0.0) return nullptr;
+		break;
+	default:
+		assert(false);
+		return nullptr;
+	}
 
 	FSMesh* pmn = new FSMesh(*pm);
 
@@ -884,13 +938,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 	{
 		FSNode& n = pmn->Node(i);
 		vec3d r = n.r - rc;
-		switch (nplane)
-		{
-		case 0: r.x = -r.x; break;
-		case 1: r.y = -r.y; break;
-		case 2: r.z = -r.z; break;
-		}
-		n.r = r + rc;
+		n.r = rc + (r - N*(2.0*(N*r)));
 	}
 
 	// invert elements
@@ -1307,10 +1355,11 @@ int getModifierID(const char* szmod)
 
 FEConvertMesh::FEConvertMesh() : FEModifier("Convert")
 {
-	AddIntParam(0, "convert", "Convert");
+	AddChoiceParam(0, "convert", "Convert");
 	AddBoolParam(false, "smooth", "smooth surface");
 
 	m_currentType = -2;
+	UpdateData(true);
 }
 
 bool FEConvertMesh::UpdateData(bool bsave)
@@ -1351,7 +1400,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 
 	m_currentType = meshType;
 
-	return true;
+	return false;
 }
 
 FSMesh* FEConvertMesh::Apply(FSMesh* pm)
@@ -1455,21 +1504,48 @@ FEAddTriangle::FEAddTriangle() : FEModifier("Add Triangle")
 
 FSMesh* FEAddTriangle::Apply(FSMesh* pm)
 {
-	int n0 = GetIntValue(0) - 1;
-	int n1 = GetIntValue(1) - 1;
-	int n2 = GetIntValue(2) - 1;
+	if (m_stack.empty())
+	{
+		int n0 = GetIntValue(0) - 1;
+		int n1 = GetIntValue(1) - 1;
+		int n2 = GetIntValue(2) - 1;
 
-	int NN = pm->Nodes();
-	if ((n0 < 0) || (n0 >= NN)) return nullptr;
-	if ((n1 < 0) || (n1 >= NN)) return nullptr;
-	if ((n2 < 0) || (n2 >= NN)) return nullptr;
+		int NN = pm->Nodes();
+		if ((n0 < 0) || (n0 >= NN)) return nullptr;
+		if ((n1 < 0) || (n1 >= NN)) return nullptr;
+		if ((n2 < 0) || (n2 >= NN)) return nullptr;
 
-	FSMesh* newMesh = new FSMesh(*pm);
+		FSMesh* newMesh = new FSMesh(*pm);
 
-	FEMeshBuilder meshBuilder(*newMesh);
-	meshBuilder.AddTriangle(n0, n1, n2);
+		FEMeshBuilder meshBuilder(*newMesh);
+		meshBuilder.AddTriangle(n0, n1, n2);
 
-	return newMesh;
+		return newMesh;
+	}
+	else
+	{
+		FSMesh* newMesh = new FSMesh(*pm);
+		FEMeshBuilder meshBuilder(*newMesh);
+		meshBuilder.AddTriangles(m_stack);
+		return newMesh;
+	}
+}
+
+void FEAddTriangle::push_stack()
+{
+	m_stack.push_back(GetIntValue(0) - 1);
+	m_stack.push_back(GetIntValue(1) - 1);
+	m_stack.push_back(GetIntValue(2) - 1);
+}
+
+void FEAddTriangle::pop_stack()
+{
+	if (m_stack.size() >= 3)
+	{
+		m_stack.pop_back();
+		m_stack.pop_back();
+		m_stack.pop_back();
+	}
 }
 
 //=============================================================================

@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "DocTemplate.h"
 #include "version.h"
-#include <XML/XMLWriter.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <PostLib/VolumeRenderer.h>
@@ -39,11 +38,12 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <GeomLib/GModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshLib/FENodeFaceList.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
+#include <FEBioLink/FEBioClass.h>
 #include "GLModelScene.h"
 #include "units.h"
+#include "GLHighlighter.h"
 
 class CModelContext
 {
@@ -532,7 +532,13 @@ bool CModelDocument::Initialize()
 	if (m_Project.GetUnits() != 0)
 	{
 		SetUnitSystem(m_Project.GetUnits());
+
+		if (GetActiveDocument() == this)
+		{
+			Units::SetUnitSystem(GetUnitSystem());
+		}
 	}
+
 	return CGLDocument::Initialize();
 }
 
@@ -543,85 +549,6 @@ bool CModelDocument::LoadTemplate(int n)
 	if ((n<0) || (n >= N)) return false;
 	DocTemplate& doc = TemplateManager::GetTemplate(n);
 	return doc.Load(this);
-}
-
-bool CModelDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
-{
-	const char* szlog[] = { "LOG_DEFAULT", "LOG_NEVER", "LOG_FILE_ONLY", "LOG_SCREEN_ONLY", "LOG_FILE_AND_SCREEN" };
-	const char* szprt[] = { "PRINT_ITERATIONS", "PRINT_VERBOSE" };
-
-	XMLWriter xml;
-
-	if (xml.open(fileName.c_str()) == false) return false;
-
-	XMLElement root("febio_optimize");
-	root.add_attribute("version", "2.0");
-	xml.add_branch(root);
-
-	// print options
-	XMLElement ops("Options");
-	switch (opt.method)
-	{
-	case 0: ops.add_attribute("type", "levmar"); break;
-	case 1: ops.add_attribute("type", "constrained levmar"); break;
-	}
-	xml.add_branch(ops);
-	{
-		xml.add_leaf("obj_tol", opt.obj_tol);
-		xml.add_leaf("f_diff_scale", opt.f_diff_scale);
-		xml.add_leaf("log_level", szlog[opt.outLevel]);
-		xml.add_leaf("print_level", szprt[opt.printLevel]);
-	}
-	xml.close_branch();
-
-	// parameters
-	XMLElement params("Parameters");
-	xml.add_branch(params);
-	for (int i = 0; i < (int)opt.m_params.size(); ++i)
-	{
-		FEBioOpt::Param& pi = opt.m_params[i];
-		XMLElement par("param");
-		par.add_attribute("name", pi.m_name);
-		double v[3] = { pi.m_initVal, pi.m_minVal, pi.m_maxVal };
-		par.value(v, 3);
-		xml.add_leaf(par);
-	}
-	xml.close_branch();
-
-	// objective
-	XMLElement obj("Objective");
-	obj.add_attribute("type", "data-fit");
-	xml.add_branch(obj);
-	{
-		XMLElement fnc("fnc");
-		fnc.add_attribute("type", "parameter");
-		xml.add_branch(fnc);
-		{
-			XMLElement p("param");
-			p.add_attribute("name", opt.m_objParam);
-			xml.add_empty(p);
-		}
-		xml.close_branch();
-
-		xml.add_branch("data");
-		{
-			for (int i = 0; i < (int)opt.m_data.size(); ++i)
-			{
-				FEBioOpt::Data& di = opt.m_data[i];
-				double v[2] = { di.m_time, di.m_value };
-				xml.add_leaf("pt", v, 2);
-			}
-		}
-		xml.close_branch();
-	}
-	xml.close_branch();
-
-	// closing tag
-	xml.close_branch();
-
-	xml.close();
-
-	return true;
 }
 
 std::vector<MODEL_ERROR> CModelDocument::CheckModel()
@@ -1102,4 +1029,89 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 
 	// swap the meshes
 	return DoCommand(cmd, false);
+}
+
+template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
+{
+	std::vector<T*> castedItems;
+	for (GLHighlighter::Item& it : items)
+	{
+		T* tp = dynamic_cast<T*>(it.item);
+		if (tp) castedItems.push_back(tp);
+	}
+	return castedItems;
+}
+
+bool CModelDocument::SelectHighlightedItems()
+{
+	int selectMode = GetSelectionMode();
+
+	std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
+	if (items.empty()) return false;
+
+	if (selectMode == SelectionMode::SELECT_PART)
+	{
+		std::vector<GPart*> partList = itemlist_cast<GPart>(items);
+		if (!partList.empty())
+		{
+			vector<int> partIDs;
+			for (GPart* p : partList) partIDs.push_back(p->GetID());
+			DoCommand(new CCmdSelectPart(GetGModel(), partIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_FACE)
+	{
+		std::vector<GFace*> faceList = itemlist_cast<GFace>(items);
+		if (!faceList.empty())
+		{
+			vector<int> faceIDs;
+			for (GFace* f : faceList) faceIDs.push_back(f->GetID());
+			DoCommand(new CCmdSelectSurface(GetGModel(), faceIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_EDGE)
+	{
+		std::vector<GEdge*> edgeList = itemlist_cast<GEdge>(items);
+		if (!edgeList.empty())
+		{
+			vector<int> edgeIDs;
+			for (GEdge* e : edgeList) edgeIDs.push_back(e->GetID());
+			DoCommand(new CCmdSelectEdge(GetGModel(), edgeIDs, false));
+		}
+		else return false;
+	}
+	else if (selectMode == SelectionMode::SELECT_NODE)
+	{
+		std::vector<GNode*> nodeList = itemlist_cast<GNode>(items);
+		if (!nodeList.empty())
+		{
+			vector<int> nodeIDs;
+			for (GNode* n : nodeList) nodeIDs.push_back(n->GetID());
+			DoCommand(new CCmdSelectNode(GetGModel(), nodeIDs, false));
+		}
+		else return false;
+	}
+	else return false;
+
+	return true;
+}
+
+void CModelDocument::ToggleActiveParts()
+{
+	if (GetSelectionMode() != SELECT_PART) return;
+
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	vector<GPart*> selectedParts;
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+	}
+	if (selectedParts.empty()) return;
+
+	DoCommand(new CCmdToggleActiveParts(selectedParts));
 }

@@ -33,6 +33,6 @@ namespace FBS {
 
 CMainWindow* getMainWindow();
 
-CDocument* getDocument();
+CDocument* getActiveDocument();
 
 }

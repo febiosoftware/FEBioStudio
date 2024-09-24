@@ -513,19 +513,28 @@ public:
 					m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
 					return pc;
 				}
-
-				
 			}
 			else if (prop.type == CProperty::Enum)
 			{
 				if (prop.values.isEmpty() == false)
 				{
-					QComboBox* pc = new QComboBox;
+					QComboBox* pc = new QComboBox(parent);
 					pc->addItems(prop.values);
 					pc->setCurrentIndex(data.toInt());
 					m_view->connect(pc, SIGNAL(currentIndexChanged(int)), m_view, SLOT(onDataChanged()));
 					return pc;
 				}
+			}
+		}
+		else if (data.type() == QVariant::String)
+		{
+			const CProperty& prop = model->getPropertyList().Property(index.row());
+			if ((prop.type == CProperty::Std_Vector_Double) ||
+				(prop.type == CProperty::Vec2d))
+			{
+				QLineEdit* w = new QLineEdit(parent);
+				QObject::connect(w, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));
+				return w;
 			}
 		}
 		return QStyledItemDelegate::createEditor(parent, option, index);

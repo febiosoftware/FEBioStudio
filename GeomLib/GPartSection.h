@@ -14,7 +14,7 @@ public:
 	virtual GPartSection* Copy() = 0;
 
 private:
-	GPart* m_part;
+	GPart*	m_part;
 };
 
 class FESolidFormulation;

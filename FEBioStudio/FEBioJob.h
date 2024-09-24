@@ -107,6 +107,7 @@ public:
 	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
 	int			m_febVersion;	// the .feb file version
 	bool		m_writeNotes;	// write notes to .feb file
+	bool		m_allowMixedMesh;	// allow mixed mesh on export
 	std::string	m_cmd;			// command line options
 
 	// progress management

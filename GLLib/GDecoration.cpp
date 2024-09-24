@@ -103,7 +103,14 @@ void GTriangleDecoration::render()
 	vec3f& r2 = p2->position();
 	vec3f& r3 = p3->position();
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	glEnable(GL_POLYGON_STIPPLE);
 	glBegin(GL_TRIANGLES);
+	glVertex3f(r1.x, r1.y, r1.z);
+	glVertex3f(r2.x, r2.y, r2.z);
+	glVertex3f(r3.x, r3.y, r3.z);
+	glEnd();
+	glDisable(GL_POLYGON_STIPPLE);
+	glBegin(GL_LINE_LOOP);
 	glVertex3f(r1.x, r1.y, r1.z);
 	glVertex3f(r2.x, r2.y, r2.z);
 	glVertex3f(r3.x, r3.y, r3.z);

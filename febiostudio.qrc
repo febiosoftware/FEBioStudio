@@ -196,5 +196,6 @@
         <file>icons/select_highlight.png</file>
         <file>icons/deriv.png</file>
         <file>icons/deriv_neg.png</file>
+        <file>icons/pickcolor.png</file>
 	</qresource>
 </RCC>

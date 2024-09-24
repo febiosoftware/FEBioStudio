@@ -32,8 +32,6 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include <QValidator>
-#include <GeomLib/GCurveMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
 #include <MeshTools/GObject2D.h>
 #include <GeomLib/GCurveObject.h>

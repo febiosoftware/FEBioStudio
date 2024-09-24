@@ -223,7 +223,7 @@ void GBaseObject::AddFace(GFace* f)
 //-----------------------------------------------------------------------------
 GFace* GBaseObject::AddFace()
 {
-	GFace* f = new GFace;
+	GFace* f = new GFace(this);
 	AddFace(f);
 	return f;
 }

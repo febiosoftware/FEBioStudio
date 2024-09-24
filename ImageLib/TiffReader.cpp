@@ -355,7 +355,7 @@ bool CTiffImageSource::Load()
 		}
 		else if (nbps == 16)
 		{
-			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_16);
+			im->Create(nx, ny, nz, nullptr, CImage::UINT_16);
 			WORD* buf = (WORD*)im->GetBytes();
 			DWORD imSize = nx * ny;
 			for (int i = 0; i < nz; ++i)
@@ -383,7 +383,7 @@ bool CTiffImageSource::Load()
 		if (nbps == 8)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_RGB8);
+			im->Create(nx, ny, nz, nullptr, CImage::UINT_RGB8);
 			DWORD imSize = nx * ny;
 			for (int k = 0; k < images; ++k)
 			{
@@ -403,7 +403,7 @@ bool CTiffImageSource::Load()
 		else if (nbps == 16)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_RGB16);
+			im->Create(nx, ny, nz, nullptr, CImage::UINT_RGB16);
 			DWORD imSize = nx * ny;
 			assert(dimOrder != ome::DimensionOrder::Unknown);
 			if (dimOrder == ome::DimensionOrder::XYCZT)

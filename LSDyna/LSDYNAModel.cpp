@@ -92,12 +92,12 @@ int LSDYNAModel::FindFace(int n[4])
 	return -1;
 }
 
-int LSDYNAModel::FindShellDomain(int pid)
+int LSDYNAModel::FindShellSection(int secid)
 {
-    int N = (int)m_dshell.size();
-    for (int i=0; i<N; ++i)
-        if (m_dshell[i].pid == pid) return i;
-    return -1;
+	int N = (int)m_shellsection.size();
+	for (int i=0; i<N; ++i)
+		if (m_shellsection[i].secid == secid) return i;
+	return -1;
 }
 
 bool LSDYNAModel::BuildModel(FSModel& fem)
@@ -235,19 +235,21 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			pe->m_node[2] = NodeIndex(is.n[2]); if (pe->m_node[2] < 0) return false;
 			pe->m_node[3] = NodeIndex(is.n[3]); if (pe->m_node[3] < 0) return false;
 
-            int n = FindShellDomain(is.pid);
-            if (n != -1) {
-                pe->m_h[0] = m_dshell[n].h[0];
-                pe->m_h[1] = m_dshell[n].h[1];
-                pe->m_h[2] = m_dshell[n].h[2];
-                pe->m_h[3] = m_dshell[n].h[3];
-            }
-            else {
-                pe->m_h[0] = is.h[0];
-                pe->m_h[1] = is.h[1];
-                pe->m_h[2] = is.h[2];
-                pe->m_h[3] = is.h[3];
-            }
+			// TODO: This is not correct. We need to find the part first,
+			// then get the section ID from the part
+			int n = FindShellSection(is.pid);
+			if (n != -1) {
+				pe->m_h[0] = m_shellsection[n].h[0];
+				pe->m_h[1] = m_shellsection[n].h[1];
+				pe->m_h[2] = m_shellsection[n].h[2];
+				pe->m_h[3] = m_shellsection[n].h[3];
+			}
+			else {
+				pe->m_h[0] = is.h[0];
+				pe->m_h[1] = is.h[1];
+				pe->m_h[2] = is.h[2];
+				pe->m_h[3] = is.h[3];
+			}
 		}
 	}
 
@@ -255,12 +257,11 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	if (nparts > 0)
 	{
 		int minpid = 0, maxpid = 0;
-		for (int i=0; i<nparts; ++i)
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			PART& p = m_part[i];
-			int pid = p.pid;
-			if ((i==0) || (pid < minpid)) minpid = pid;
-			if ((i==0) || (pid > maxpid)) maxpid = pid;
+			FSElement& el = pm->Element(i);
+			if ((i == 0) || (el.m_gid < minpid)) minpid = el.m_gid;
+			if ((i == 0) || (el.m_gid > maxpid)) maxpid = el.m_gid;
 		}
 
 		int nsize = maxpid - minpid + 1;
@@ -270,13 +271,17 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		for (int i = 0; i < solids; ++i)
 		{
 			FEElement_* pe = pm->ElementPtr(eid++);
-			PLT[pe->m_gid - minpid]++;
+			int n = pe->m_gid - minpid;
+			if ((n < 0) || (n >= PLT.size())) return false;
+			PLT[n]++;
 		}
 
 		for (int i = 0; i < shells; ++i)
 		{
 			FEElement_* pe = pm->ElementPtr(eid++);
-			PLT[pe->m_gid - minpid]++;
+			int n = pe->m_gid - minpid;
+			if ((n < 0) || (n >= PLT.size())) return false;
+			PLT[n]++;
 		}
 
 		int n = 0;
@@ -301,7 +306,11 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		for (int i=0; i<nparts; ++i)
 		{
 			PART& p = m_part[i];
-			p.lid = PLT[p.pid - minpid];
+			int lid = p.pid - minpid;
+			if ((lid >= 0) && (lid < nsize))
+				p.lid = PLT[p.pid - minpid];
+			else
+				p.lid = -1;
 		}
 	}
 
@@ -320,7 +329,6 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			if ((n>=0) && (n < m_po->Parts()))
 			{
 				GPart* pg = m_po->Part(n);
-				pg->SetID(p.pid);
 				pg->SetName(p.szname);
 			}
 		}
@@ -648,9 +656,13 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 			FSNonLinearSpringMaterial* sm = new FSNonLinearSpringMaterial(&fem);
 			Param* pF = sm->GetParam("force");
 			pF->SetFloatValue(1.0);
-			int lc = m_LCT[mat->lcd - m_lct_off];
-			int lcid = fem.GetLoadController(lc)->GetID();
-			pF->SetLoadCurveID(lcid);
+			int n = mat->lcd - m_lct_off;
+			if ((n >= 0) && (n < m_LCT.size()))
+			{
+				int lc = m_LCT[n];
+				int lcid = fem.GetLoadController(lc)->GetID();
+				pF->SetLoadCurveID(lcid);
+			}
 			ps->SetMaterial(sm);
 			ps->SetName(mat->szname);
 			m.AddDiscreteObject(ps);

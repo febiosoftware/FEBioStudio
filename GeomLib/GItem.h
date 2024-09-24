@@ -35,7 +35,8 @@ class FSEdgeSet;
 enum {
 	GEO_VISIBLE  = 1, 
 	GEO_SELECTED = 2,
-	GEO_REQUIRED = 4
+	GEO_REQUIRED = 4,
+	GEO_ACTIVE   = 8
 };
 
 //-----------------------------------------------------------------------------
@@ -90,7 +91,7 @@ class GItem : public FSObject
 {
 public:
 	// Constructor. Takes parent object as parameter
-	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; }
+	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE | GEO_ACTIVE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; m_ntag = 0; }
 	virtual ~GItem() { m_po = 0; }
 
 	// get/set global ID
@@ -108,7 +109,7 @@ public:
 	// check visibility state (only used by GBaseObject's)
 	bool IsVisible () const { return ((m_state & GEO_VISIBLE ) != 0); }
 	void ShowItem() { m_state = m_state | GEO_VISIBLE;  }
-	void HideItem() { m_state = 0; }
+	void HideItem() { m_state = m_state & ~(GEO_VISIBLE | GEO_SELECTED); }
 
 	// check selection state
 	bool IsSelected() const { return ((m_state & GEO_SELECTED) != 0); }
@@ -118,6 +119,10 @@ public:
 	// set required state
 	bool IsRequired() const { return ((m_state & GEO_REQUIRED) != 0); }
 	void SetRequired(bool b) { if (b) m_state = m_state | GEO_REQUIRED;	else m_state = m_state & ~GEO_REQUIRED; }
+
+	// check active status
+	bool IsActive() const { { return ((m_state & GEO_ACTIVE) != 0); } }
+	void SetActive(bool b) { if (b) m_state = m_state | GEO_ACTIVE;	else m_state = m_state & ~GEO_ACTIVE; }
 
 	// get/set state
 	unsigned int GetState() const { return m_state; }
@@ -173,17 +178,18 @@ public:
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
 
+public:
+	void SetSection(GPartSection* section);
+	GPartSection* GetSection() const;
+
 	bool IsSolid() const;
 	bool IsShell() const;
 	bool IsBeam () const;
 
-public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
 
-	void SetSection(GPartSection* section);
-	GPartSection* GetSection() const;
-
+public:
 	BOX GetLocalBox() const;
 	BOX GetGlobalBox() const;
 	void UpdateBoundingBox();
@@ -246,8 +252,8 @@ class GNode;
 class GEdge : public GItem_T<GEdge>
 {
 public:
-	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;  }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_cnode = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW; }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_cnode = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);

@@ -44,7 +44,7 @@ eqs-within-sections
 \pdf_bookmarksopenlevel 1
 \pdf_breaklinks false
 \pdf_pdfborder true
-\pdf_colorlinks false
+\pdf_colorlinks true
 \pdf_backref false
 \pdf_pdfusetitle true
 \papersize default
@@ -9212,13 +9212,12 @@ editable surface
  is an object that is defined via a surface mesh.
  The surface mesh can be edited via the tools on the Edit panel.
  If the mesh is closed and composed of triangles, the object can be meshed
- using Tetgen
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-https://www.wias-berlin.de/software/index.jsp?id=TetGen&lang=1
-\end_layout
+ using 
+\begin_inset CommandInset href
+LatexCommand href
+name "Tetgen"
+target "https://www.wias-berlin.de/software/index.jsp?id=TetGen&lang=1"
+literal "false"
 
 \end_inset
 
@@ -13445,9 +13444,9 @@ This chapter presents a more detailed overview of the GUI when a plot file
  is loaded.
  This configuration of the FEBio Studio UI is called the 
 \emph on
-Post environment
+Post Environment
 \emph default
-\SpecialChar endofsentence
+.
  
 \end_layout
 
@@ -13805,8 +13804,8 @@ Go to the last time step
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/properties.png
-	width 0.45in
-	height 0.38in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13816,8 +13815,8 @@ Open the time dialog box
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/colormap.png
-	width 0.25in
-	height 0.23in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13860,6 +13859,8 @@ Adds a vector plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/tensor.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13880,8 +13881,8 @@ Adds a isosurface plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/post_slice.png
-	width 0.3in
-	height 0.27in
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13891,6 +13892,8 @@ Adds a slice plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/streamlines.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13900,6 +13903,8 @@ Adds a stream line plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/particle.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13909,6 +13914,8 @@ Adds a particle flow plot to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/imageslice.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13918,6 +13925,8 @@ Adds an image slicer to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/volrender.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -13927,6 +13936,8 @@ Adds a 3D volume renderer to the model
 \begin_layout Standard
 \begin_inset Graphics
 	filename Figures/marching_cubes.png
+	width 0.28in
+	height 0.25in
 
 \end_inset
 
@@ -20472,6 +20483,441 @@ The various 3D image renderers.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+Other 3D Image Tools
+\end_layout
+
+\begin_layout Subsection
+Image Map Tool
+\end_layout
+
+\begin_layout Standard
+The Image Map Tool (found on the Tools tab of the Build Panel) is used to
+ map intensity values from a 3D Image onto an FE mesh that exists inside
+ the image domain.
+ To use this tool you must first import a 3D Image, select the FE object
+ onto which you want the intensity values to be mapped, and then run the
+ tool.
+ After running the tool, a new Mesh Data object will be created and added
+ to the model tree.
+ 
+\end_layout
+
+\begin_layout Standard
+The tool has the following parameters.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/ImageMapTool.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Parameters for the Image Map tool
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Name
+\emph default
+ - The name of the resulting data map.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Image Model
+\emph default
+ - The 3D image that will be used in the image map.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Method
+\emph default
+ - The method used by the algorithm to sample the image (see below for more
+ details).
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Project Surface Nodes Inward
+\emph default
+ - A parameter used by the 
+\emph on
+Sample Image at Nodes
+\emph default
+ method to help nodes on the surface of a mesh to be assigned the correct
+ value (see below for more details).
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Surface Threshold
+\emph default
+ - The intensity value cutoff at which to stop projecting a surface node
+ inward.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Max Search Depth
+\emph default
+ - The maximum number of voxels to search when projecting nodes inward.
+ The default value of 
+\emph on
+5
+\emph default
+ is usually sufficient.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\emph on
+Normalize
+\emph default
+ - When checked, the values of the resulting data map will always range
+ between 0 and 1.
+ When left unchecked, the values of the data map will be read directly from
+ the image.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Filter
+\emph default
+ - When checked, an editable graph similar to the Curve Editor (Section
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:mylabel19"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) will be shown.
+ This graph can be used to create a curve through which the data sampled
+ from the image will be passed before being written to the data map.
+ If the 
+\emph on
+Normalize
+\emph default
+ option is checked, the normalization will occur before the data is passed
+ to the filter.
+\end_layout
+
+\begin_layout Standard
+There are three different methods that can be used for sampling the image.
+ Each method may be useful with different combinations of mesh and voxel
+ density.
+ It is important to choose the correct method to ensure that the tool accurately
+ samples your image.
+ The 
+\emph on
+Sample Image at Nodes
+\emph default
+ method is best in most situations, but due to its comlexity, it is dicussed
+ last.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Sample at Element Centroids
+\emph default
+ method samples the image at the location of each element's centroid and
+ assigns the value to that element, resulting in a single value for each
+ element.
+ The value of the sample is linearly interpolated between voxels in the
+ image.
+ This method works well when the FE elements in the mesh are similar in
+ size to the image's voxels, or smaller than the voxels.
+ If the elements in the mesh are considerably larger than the voxels, high
+ frequency data in the image will be lost.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Average Intensity Over Elements
+\emph default
+ method loops over every element in the mesh, and finds all of the voxels
+ in the image whose centroids lie inside the current element.
+ It then takes the average of those voxel values, and assigns that average
+ to the element.
+ This method works well when the FE elements are considerably larger than
+ the image's voxels, and tends to act as a sort of low-pass filter for the
+ image data.
+ This method is not recommended for use when the FE elements are of a similar
+ size to the image's voxels, or smaller.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Sample Image at Nodes
+\emph default
+ method samples the image at the location of each node in the FE mesh, and
+ assigns the value to that node, resulting in a single value for each node
+ in the mesh.
+ The value of the sample is linearly interpolated between voxels in the
+ image.
+ This method works well when the FE elements in the mesh are similar in
+ size to the image's voxels, or smaller than the voxels.
+ This method also provdes the 
+\emph on
+Project Surface Nodes Inward
+\emph default
+ parameter which can be used to help nodes on the surface of a mesh to be
+ assigned the correct value, as explained below.
+\end_layout
+
+\begin_layout Standard
+It is often the case that an FE mesh does not simply cover the entire domain
+ of the image, but rather oulines some prominent feature in the image, such
+ as a bone (see Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:imageMapEx1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Figures/imageMapExample1.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Part of a human pelvis shown in three views.
+ A: a 2D slice of the image along the X axis.
+ B: a 3D render of the image.
+ C: an FE mesh covering the surface of the bone.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:imageMapEx1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is also often the case that the surface of the FE mesh does not perfectly
+ follow the outline of the feature in question.
+ As shown in the Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:imageMapEx2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, there is a gap between the surface of the FE mesh, and the surface of
+ the pelvis in the 3D image.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/imageMapExample2.png
+	width 40text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The FE Mesh and 3D Image (shown in green for contrast).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:imageMapEx2"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The nodes on the surface of this FE mesh lie slightly outside the bounds
+ of the bone in the image, and so when the Image Map Tool samples the values
+ for these nodes, it will sample a value from the background of the image,
+ rather than the bone.
+ The 
+\emph on
+Project Surface Nodes Inward
+\emph default
+ option helps to mitigate this.
+ When this option is enabled, the Image Map tool projects each node on the
+ surface of the FE mesh inward along its surface normal until it enounters
+ a voxel whose value meets or exceeds a user-specified threshold, and assigns
+ that voxel's value to the node.
+ 
+\end_layout
+
+\begin_layout Standard
+In more detail, the 
+\emph on
+Project Surface Nodes Inward
+\emph default
+ option works as follows.
+ For each node on the surface of the FE mesh it will first check the value
+ of the voxel at the node's location.
+ If the value is greater than or equal to the value specified in the 
+\emph on
+Surface Threshold
+\emph default
+ parameter, then it will assign that voxel's value to the node, and move
+ on to the next node.
+ However, if the value of that voxel is less than the 
+\emph on
+Surface Threshold
+\emph default
+, then it will travel in a direction opposite of the node's surface normal,
+ until it encounters a new voxel.
+ It will check the value of that voxel, and if it meets or exceeds the 
+\emph on
+Surface Threshold
+\emph default
+ then it will assign that voxel's value to the node, otherwise it will move
+ on to the next voxel in line.
+ This search continues until either a suitable voxel is found, or until
+ it has searched a number of voxels equal to the value stored in the 
+\emph on
+Max Search Depth
+\emph default
+ parameter.
+ If the tool is unable to find a suitable voxel before that point, it assigns
+ the node the value of the voxel closest to the node.
+ 
+\end_layout
+
+\begin_layout Standard
+After running the Image Map tool, the results will be stored in a Mesh Data
+ object in the Model Tree.
+ To visualize the values on the mesh, select the object and open the Mesh
+ Inspector (Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:mylabel20"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Then in the 
+\emph on
+Variable
+\emph default
+ drop-down menu, select the name that was specified in the Image Map tool's
+ 
+\emph on
+Name
+\emph default
+ parameter.
 \end_layout
 
 \begin_layout Standard

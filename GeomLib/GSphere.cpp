@@ -28,6 +28,28 @@ SOFTWARE.*/
 #include <MeshTools/FESphere.h>
 #include <MeshLib/GMesh.h>
 
+class GSphereManipulator : public GObjectManipulator
+{
+public:
+	GSphereManipulator(GSphere& sphere) : GObjectManipulator(&sphere), m_sphere(sphere) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_sphere.GetTransform().GlobalToLocal(r);
+
+		double R = r.Length();
+		m_sphere.SetRadius(R);
+		m_sphere.Update();
+	}
+
+private:
+	GSphere& m_sphere;
+};
+
+
 //=============================================================================
 // GSphere
 //=============================================================================
@@ -39,9 +61,13 @@ GSphere::GSphere() : GPrimitive(GSPHERE)
 	AddDoubleParam(m_R, "R", "radius");	// radius
 
 	SetFEMesher(new FESphere(this));
+	SetManipulator(new GSphereManipulator(*this));
 
 	Create();
 }
+
+double GSphere::Radius() const { return GetFloatValue(RADIUS); }
+void GSphere::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GSphere::CreateDefaultMesher()

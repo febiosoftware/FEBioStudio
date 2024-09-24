@@ -46,6 +46,7 @@ public:
 	bool			m_cancelled;
 	bool			m_breturn;
 	QString			m_currentTask;
+	QString			m_report;
 
 public:
 	QLabel*			m_task;

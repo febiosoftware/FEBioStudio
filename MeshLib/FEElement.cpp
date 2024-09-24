@@ -257,9 +257,30 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 		nodes = 3;
 		n[0] = 0; n[1] = 1; n[2] = 2;
 		break;
+	case FE_TRI6:
+		nodes = 6;
+		n[0] = 0; n[1] = 1; n[2] = 2;
+		n[3] = 3; n[4] = 4; n[5] = 5;
+		break;
+	case FE_TRI7:
+		nodes = 7;
+		n[0] = 0; n[1] = 1; n[2] = 2;
+		n[3] = 3; n[4] = 4; n[5] = 5;
+		n[6] = 6;
+		break;
+	case FE_TRI10:
+		nodes = 10;
+		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3; n[4] = 4; 
+		n[5] = 5; n[6] = 6; n[7] = 7; n[8] = 8; n[9] = 9;
+		break;
 	case FE_QUAD4:
 		nodes = 4;
 		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3;
+		break;
+	case FE_QUAD8:
+		nodes = 8;
+		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3;
+		n[4] = 4; n[5] = 5; n[6] = 6; n[7] = 7;
 		break;
 	case FE_QUAD9:
 		nodes = 9;
@@ -507,10 +528,11 @@ int FEElement_::FindNodeIndex(int nid)
 //-----------------------------------------------------------------------------
 int FEElement_::FindFace(const FSFace& f)
 {
+	FSFace tmp;
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
-		FSFace lf = GetFace(i);
-		if (lf == f)
+		GetFace(i, tmp);
+		if (tmp == f)
 		{
 			return i;
 		}

@@ -58,7 +58,7 @@ FSNode* FEMeshBuilder::AddNode(const vec3d& r)
 }
 
 // Add a triangle
-FSElement* FEMeshBuilder::AddTriangle(int n0, int n1, int n2)
+void FEMeshBuilder::AddTriangle(int n0, int n1, int n2)
 {
 	FSElement elem;
 	elem.SetType(FE_TRI3);
@@ -66,8 +66,22 @@ FSElement* FEMeshBuilder::AddTriangle(int n0, int n1, int n2)
 	elem.m_node[1] = n1;
 	elem.m_node[2] = n2;
 	m_mesh.m_Elem.push_back(elem);
+	RebuildMesh();
+}
 
-	return &m_mesh.m_Elem[m_mesh.Elements() - 1];
+void FEMeshBuilder::AddTriangles(const std::vector<int>& nodes)
+{
+	if (nodes.size() < 3) return;
+	for (int i = 0; i < nodes.size(); i += 3)
+	{
+		FSElement elem;
+		elem.SetType(FE_TRI3);
+		elem.m_node[0] = nodes[i  ];
+		elem.m_node[1] = nodes[i+1];
+		elem.m_node[2] = nodes[i+2];
+		m_mesh.m_Elem.push_back(elem);
+	}
+	RebuildMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -924,10 +938,18 @@ FSMesh* FEMeshBuilder::DetachSelectedMesh()
 
 			for (j = 0; j<pe->Nodes(); ++j)
 			{
-				el.m_h[j] = pe->m_h[j];
 				el.m_node[j] = m_mesh.Node(pe->m_node[j]).m_ntag;
 				assert(el.m_node[j] >= 0);
 			}
+
+			if (el.IsShell() && pe->IsShell())
+			{
+				for (j = 0; j < pe->Nodes(); ++j)
+				{
+					el.m_h[j] = pe->m_h[j];
+				}
+			}
+
 			++n;
 		}
 	}
@@ -1261,7 +1283,7 @@ void FEMeshBuilder::InvertTaggedElements(int ntag)
 			FSFace g;
 			m_mesh.FindFace(pe, f, g);
 
-			for (int j = 0; j<FSElement::MAX_NODES; ++j)
+			for (int j = 0; j<FSFace::MAX_NODES; ++j)
 				f.n[j] = g.n[j];
 		}
 	}

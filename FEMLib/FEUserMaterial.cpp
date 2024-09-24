@@ -36,7 +36,10 @@ void FSUserMaterial::AddParameter(const char* szname, double v)
 	AddDoubleParam(v, sz, sz);
 }
 
-FSUserMaterial::FSUserMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem) {}
+FSUserMaterial::FSUserMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem) 
+{
+	m_sztype[0] = 0;
+}
 
 FSUserMaterial::~FSUserMaterial()
 {

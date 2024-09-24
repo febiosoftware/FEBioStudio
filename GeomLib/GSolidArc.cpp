@@ -27,6 +27,65 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FESolidArc.h>
 
+class GSolidArcManipulator : public GObjectManipulator
+{
+public:
+	GSolidArcManipulator(GSolidArc& arc) : GObjectManipulator(&arc), m_arc(arc) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_arc.GetTransform().GlobalToLocal(r);
+		double z = r.z; r.z = 0;
+
+		double Ri = m_arc.GetFloatValue(GSolidArc::RIN);
+		double Ro = m_arc.GetFloatValue(GSolidArc::ROUT);
+		double H = m_arc.GetFloatValue(GSolidArc::HEIGHT);
+		double w = m_arc.GetFloatValue(GSolidArc::ARC);
+
+		if ((m == 1) || (m == 5))
+		{
+			Ro = r.Length();
+			w = 180.0 * atan2(r.y, r.x) / PI;
+		}
+		else if ((m == 2) || (m == 6))
+		{
+			Ri = r.Length();
+			w = 180.0 * atan2(r.y, r.x) / PI;
+		}
+		else if ((m == 0) || (m == 4))
+		{
+			Ro = r.Length();
+		}
+		else if ((m == 3) || (m == 7))
+		{
+			Ri = r.Length();
+		}
+
+		if (m < 4)
+		{
+			m_arc.GetTransform().Translate(vec3d(0, 0, z));
+			H = H - z;
+		}
+		else
+		{
+			H = z;
+		}
+
+		m_arc.SetFloatValue(GSolidArc::RIN, Ri);
+		m_arc.SetFloatValue(GSolidArc::ROUT, Ro);
+		m_arc.SetFloatValue(GSolidArc::HEIGHT, H);
+		m_arc.SetFloatValue(GSolidArc::ARC, w);
+
+		m_arc.Update();
+	}
+
+private:
+	GSolidArc& m_arc;
+};
+
 //=============================================================================
 // GSolidArc
 //=============================================================================
@@ -39,6 +98,7 @@ GSolidArc::GSolidArc() : GPrimitive(GSOLIDARC)
 	AddDoubleParam(90., "alpha", "Angle");				// alpha angle (in degrees)
 
 	SetFEMesher(new FESolidArc(this));
+	SetManipulator(new GSolidArcManipulator(*this));
 
 	Create();
 }

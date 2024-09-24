@@ -252,6 +252,7 @@ void GCurveMeshObject::Save(OArchive& ar)
 					ar.WriteChunk(CID_OBJ_PART_ID, nid);
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
 				}
 				ar.EndChunk();
 			}
@@ -409,6 +410,13 @@ void GCurveMeshObject::Load(IArchive& ar)
 						char szname[256] = { 0 };
 						ar.read(szname);
 						p->SetName(szname);
+					}
+					break;
+					case CID_OBJ_PART_STATUS:
+					{
+						unsigned int state = 0;
+						ar.read(state);
+						p->SetState(state);
 					}
 					break;
 					}

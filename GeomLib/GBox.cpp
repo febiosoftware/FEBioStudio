@@ -26,6 +26,54 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FEBox.h>
+#include <GeomLib/GObject.h>
+
+class GBoxManipulator : public GObjectManipulator
+{
+public:
+	GBoxManipulator(GBox& box) : GObjectManipulator(&box), m_box(box) {}
+
+	void TransformNode(GNode* pn, const Transform& T) override
+	{
+		assert(pn->Object() == &m_box);
+
+		int m = pn->GetLocalID();
+
+		vec3d r[2];
+		r[0] = T.LocalToGlobal(m_box.Node(m)->Position());
+
+		// get the opposite corner
+		const int LUT[8] = {6, 7, 4, 5, 2, 3, 0, 1};
+		r[1] = m_box.Node(LUT[m])->Position();
+
+		BOX box;
+		for (int i = 0; i < 2; ++i)
+		{
+			vec3d ri = m_box.GetTransform().GlobalToLocal(r[i]);
+			box += ri;
+		}
+
+		double w = box.Width();
+		double h = box.Height();
+		double d = box.Depth();
+
+		m_box.SetFloatValue(GBox::WIDTH , w);
+		m_box.SetFloatValue(GBox::HEIGHT, h);
+		m_box.SetFloatValue(GBox::DEPTH , d);
+
+		vec3d c = box.Center();
+		c.z -= d * 0.5;
+
+		Transform& P = m_box.GetTransform();
+		c = P.LocalToGlobal(c);
+		m_box.GetTransform().SetPosition(c);
+
+		m_box.Update();
+	}
+
+private:
+	GBox& m_box;
+};
 
 //=============================================================================
 // GBox
@@ -40,6 +88,8 @@ GBox::GBox() : GPrimitive(GBOX)
 	AddDoubleParam(m_d, "d", "Depth (Z)" );
 	
 	SetFEMesher(new FEBoxMesher(this));
+
+	SetManipulator(new GBoxManipulator(*this));
 
 	Create();
 }

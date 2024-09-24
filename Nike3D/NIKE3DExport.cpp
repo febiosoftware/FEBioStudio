@@ -37,6 +37,8 @@ SOFTWARE.*/
 
 NIKE3DExport::NIKE3DExport(FSProject& prj) : FSFileExport(prj)
 {
+	m_bcomm = false;
+	m_fp = nullptr;
 }
 
 NIKE3DExport::~NIKE3DExport()
@@ -465,7 +467,7 @@ bool NIKE3DExport::ExportMaterials(NIKE3DProject& prj)
 bool NIKE3DExport::ExportNodes(NIKE3DProject& prj)
 {
 	// make sure there are any nodes
-	int nodes = prj.m_Node.size();
+	int nodes = (int)prj.m_Node.size();
 	if (nodes == 0) return true;
 
 	// print the comment
@@ -498,7 +500,7 @@ bool NIKE3DExport::ExportNodes(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportHexElements(NIKE3DProject& prj)
 {
-	int solids = prj.m_Brick.size();
+	int solids = (int)prj.m_Brick.size();
 	if (solids == 0) return true;
 
 	if (m_bcomm)
@@ -541,7 +543,7 @@ bool NIKE3DExport::ExportHexElements(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportShellElements(NIKE3DProject& prj)
 {
-	int shells = prj.m_Shell.size();
+	int shells = (int)prj.m_Shell.size();
 	if (shells == 0) return true;
 
 	if (m_bcomm)
@@ -579,8 +581,8 @@ bool NIKE3DExport::ExportShellElements(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportDiscrete(NIKE3DProject& prj)
 {
-	int ndemat = prj.m_DMA.size();
-	int numdel = prj.m_DSP.size();
+	int ndemat = (int)prj.m_DMA.size();
+	int numdel = (int)prj.m_DSP.size();
 	int nummas = 0;
 
 	// make sure there are any discrete elements
@@ -616,7 +618,7 @@ bool NIKE3DExport::ExportDiscrete(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportRigid(NIKE3DProject& prj)
 {
-	int numrnf = prj.m_Rigid.size();
+	int numrnf = (int)prj.m_Rigid.size();
 	if (numrnf == 0) return true;
 
 	if (m_bcomm)
@@ -640,7 +642,7 @@ bool NIKE3DExport::ExportRigid(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportSliding(NIKE3DProject& prj)
 {
-	int nslide = prj.m_SI.size();
+	int nslide = (int)prj.m_SI.size();
 	if (nslide == 0) return true;
 
 	if (m_bcomm)
@@ -726,7 +728,7 @@ bool NIKE3DExport::ExportSliding(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportLoadCurve(NIKE3DProject& prj)
 {
-	int nlc = prj.m_LC.size();
+	int nlc = (int)prj.m_LC.size();
 	if (nlc == 0) return true;
 
 	if (m_bcomm)
@@ -757,7 +759,7 @@ bool NIKE3DExport::ExportLoadCurve(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportNodalLoads(NIKE3DProject& prj)
 {
-	int ncnl = prj.m_NF.size();
+	int ncnl = (int)prj.m_NF.size();
 	if (ncnl == 0) return true;
 
 	if (m_bcomm)
@@ -779,7 +781,7 @@ bool NIKE3DExport::ExportNodalLoads(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportPressure(NIKE3DProject& prj)
 {
-	int numpr = prj.m_PF.size();
+	int numpr = (int)prj.m_PF.size();
 	if (numpr == 0) return true;
 
 	if (m_bcomm)
@@ -812,7 +814,7 @@ bool NIKE3DExport::ExportPressure(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportDisplacement(NIKE3DProject& prj)
 {
-	int numdis = prj.m_DC.size();
+	int numdis = (int)prj.m_DC.size();
 	if (numdis == 0) return true;
 
 	if (m_bcomm)
@@ -834,7 +836,7 @@ bool NIKE3DExport::ExportDisplacement(NIKE3DProject& prj)
 
 bool NIKE3DExport::ExportBodyForce(NIKE3DProject& prj)
 {
-	int nbf = prj.m_BF.size();
+	int nbf = (int)prj.m_BF.size();
 	if (nbf == 0) return true;
 
 	if (m_bcomm)

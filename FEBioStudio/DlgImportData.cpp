@@ -97,9 +97,13 @@ public:
         {
             commaButton->setChecked(true);
         }
-        else
+		else if (data.count('\t') > 0)
+		{
+			tabButton->setChecked(true);
+		}
+		else
         {
-            tabButton->setChecked(true);
+			spaceButton->setChecked(true);
         }
 
         separatorLayout->addWidget(otherSeparator = new QLineEdit(";"));
@@ -315,6 +319,11 @@ void CDlgImportData::UpdateTable()
             cols = row.size();
         }
     }
+
+	if (ui->numCols == -1)
+	{
+		ui->numCols = cols;
+	}
 
     if(cols < ui->numCols)
     {

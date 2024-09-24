@@ -1073,6 +1073,7 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 
 	if (bfound)
 	{
+		static int lastIndex = -1;
 		int index = q.m_index;
 		if (view.m_bconn)
 		{
@@ -1081,6 +1082,24 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 
 			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
 			else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+
+			lastIndex = -1;
+		}
+		else if (view.m_bselpath)
+		{
+			if (lastIndex != -1)
+			{
+				vector<int> faceList = MeshTools::GetConnectedFacesByPath(pm, lastIndex, index);
+
+				if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
+				else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+			}
+			else
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
+				else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+			}
+			lastIndex = index;
 		}
 		else
 		{
@@ -1186,11 +1205,32 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 
 	// parse the selection buffer
 	CCommand* pcmd = 0;
+	static int lastIndex = -1; // used by select path tool
 	if (index >= 0)
 	{
 		if (view.m_bconn)
 		{
 			vector<int> edgeList = MeshTools::GetConnectedEdges(pm, index, view.m_fconn, view.m_bmax);
+			if (!edgeList.empty())
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+			}
+			lastIndex = -1;
+		}
+		else if (view.m_bselpath)
+		{
+			vector<int> edgeList;
+			if ((lastIndex != -1) && (lastIndex != index))
+			{
+				edgeList = MeshTools::GetConnectedEdgesByPath(pm, lastIndex, index);
+				lastIndex = index;
+			}
+			else
+			{
+				edgeList.push_back(index);
+				lastIndex = index;
+			}
 			if (!edgeList.empty())
 			{
 				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
@@ -1967,6 +2007,7 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	FSMeshBase* pmesh = po->GetEditableMesh();
 	FSLineMesh* pm = po->GetEditableLineMesh();
 
 	int X = x;
@@ -2014,60 +2055,29 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	{
 		if (view.m_bconn)
 		{
-			vector<int> pint(pm->Edges());
-			int m = 0;
-
-			for (int i = 0; i < pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FSEdge*> stack;
-
-			FSNodeEdgeList NEL(pm);
-
-			// push the first face to the stack
-			FSEdge* pe = pm->EdgePtr(index);
-			pint[m++] = index;
-			pe->m_ntag = -1;
-			stack.push(pe);
-
-			int gid = pe->m_gid;
-
-			// setup the direction vector
-			vec3d& r0 = pm->Node(pe->n[0]).r;
-			vec3d& r1 = pm->Node(pe->n[1]).r;
-			vec3d t1 = r1 - r0; t1.Normalize();
-
-			// angle tolerance
-			double wtol = 1.000001 * cos(PI * view.m_fconn / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
-
-			// now push the rest
-			while (!stack.empty())
+			vector<int> edgeList = MeshTools::GetConnectedEdgesOnLineMesh(pm, index, view.m_fconn, view.m_bmax);
+			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+			else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+		}
+		else if (view.m_bselpath)
+		{
+			static int lastIndex = -1;
+			vector<int> edgeList;
+			if ((lastIndex != -1) && (lastIndex != index))
 			{
-				pe = stack.top(); stack.pop();
-
-				for (int i = 0; i < 2; ++i)
-				{
-					int n = NEL.Edges(pe->n[i]);
-					for (int j = 0; j < n; ++j)
-					{
-						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
-						if (edgeID >= 0)
-						{
-							FSEdge* pe2 = pm->EdgePtr(edgeID);
-							vec3d& r0 = pm->Node(pe2->n[0]).r;
-							vec3d& r1 = pm->Node(pe2->n[1]).r;
-							vec3d t2 = r1 - r0; t2.Normalize();
-							if (pe2->IsVisible() && ((view.m_bmax == false) || (fabs(t1 * t2) >= wtol)) && ((gid == -1) || (pe2->m_gid == gid)))
-							{
-								pint[m++] = pe2->m_ntag;
-								pe2->m_ntag = -1;
-								stack.push(pe2);
-							}
-						}
-					}
-				}
+				edgeList = MeshTools::GetConnectedEdgesByPath(pmesh, lastIndex, index);
+				lastIndex = index;
 			}
-
-			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &pint[0], m);
-			else pcmd = new CCmdSelectFEEdges(pm, &pint[0], m, m_bshift);
+			else
+			{
+				edgeList.push_back(index);
+				lastIndex = index;
+			}
+			if (!edgeList.empty())
+			{
+				if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, edgeList);
+				else pcmd = new CCmdSelectFEEdges(pm, edgeList, m_bshift);
+			}
 		}
 		else
 		{
@@ -2136,35 +2146,35 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 	{
 		if (view.m_bconn && pm)
 		{
-			vector<int> pint(pm->Nodes(), 0);
-
-			if (view.m_bselpath == false)
-			{
-				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax, 1);
-				lastIndex = -1;
-			}
-			else
-			{
-				if ((lastIndex != -1) && (lastIndex != index))
-				{
-					MeshTools::TagNodesByShortestPath(pm, lastIndex, index, 1);
-					lastIndex = index;
-				}
-				else
-				{
-					pm->TagAllNodes(0);
-					pm->Node(index).m_ntag = 1;
-					lastIndex = index;
-				}
-			}
+			MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax, 1);
+			lastIndex = -1;
 
 			// fill the pint array
 			int m = 0;
+			vector<int> pint(pm->Nodes(), 0);
 			for (int i = 0; i < pm->Nodes(); ++i)
 				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
 
 			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
 			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
+		}
+		else if (view.m_bselpath && pm)
+		{
+			vector<int> nodeList;
+			if ((lastIndex != -1) && (lastIndex != index))
+			{
+				nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
+				lastIndex = index;
+			}
+			else
+			{
+				nodeList.push_back(index);
+				lastIndex = index;
+			}
+
+			// fill the pint array
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
+			else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
 		}
 		else
 		{
@@ -2532,7 +2542,7 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	vector<int> selectedObjects;
+	vector<GDiscreteObject*> selectedObjects;
 
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
@@ -2555,7 +2565,30 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 
 			if (region.LineIntersects(x0, y0, x1, y1))
 			{
-				selectedObjects.push_back(i);
+				selectedObjects.push_back(ps);
+			}
+		}
+		else if (dynamic_cast<GDiscreteSpringSet*>(po))
+		{
+			GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(po);
+			for (int n = 0; n < set->size(); ++n)
+			{
+				GDiscreteElement& el = set->element(n);
+				vec3d r0 = model.FindNode(el.Node(0))->Position();
+				vec3d r1 = model.FindNode(el.Node(1))->Position();
+
+				vec3d p0 = transform.WorldToScreen(r0);
+				vec3d p1 = transform.WorldToScreen(r1);
+
+				int x0 = (int)p0.x;
+				int y0 = (int)p0.y;
+				int x1 = (int)p1.x;
+				int y1 = (int)p1.y;
+
+				if (region.LineIntersects(x0, y0, x1, y1))
+				{
+					selectedObjects.push_back(&el);
+				}
 			}
 		}
 	}
@@ -2625,25 +2658,27 @@ void GLViewSelector::SelectFENodes(int x, int y)
 		if (view.m_bconn && pm)
 		{
 			vector<int> nodeList;
-			if (view.m_bselpath == false)
+			nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
+			lastIndex = -1;
+			if (!nodeList.empty())
 			{
-				nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
-				lastIndex = -1;
+				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);
+				else pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
+			}
+		}
+		else if (view.m_bselpath && pm)
+		{
+			vector<int> nodeList;
+			if ((lastIndex != -1) && (lastIndex != index))
+			{
+				nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
+				lastIndex = index;
 			}
 			else
 			{
-				if ((lastIndex != -1) && (lastIndex != index))
-				{
-					nodeList = MeshTools::GetConnectedNodesByPath(pm, lastIndex, index);
-					lastIndex = index;
-				}
-				else
-				{
-					nodeList.push_back(index);
-					lastIndex = index;
-				}
+				nodeList.push_back(index);
+				lastIndex = index;
 			}
-
 			if (!nodeList.empty())
 			{
 				if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, nodeList);

@@ -230,6 +230,7 @@ double ShortestEdge(const FSMesh& mesh, const FSElement &el)
 double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag)
 {
 	assert(el.IsShell());
+	if (!el.IsShell()) return 0.0;
 
 	int i, j, k;
 	int n = el.Nodes();

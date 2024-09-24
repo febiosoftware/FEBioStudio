@@ -55,6 +55,7 @@ public:
 	QComboBox*	launchConfig;
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
+	QCheckBox*	allowMixedMesh;
 	QLineEdit*	configFile;
 	QComboBox*	taskName;
 	QLineEdit*	taskFile;
@@ -141,6 +142,7 @@ public:
 		QFormLayout* febl = new QFormLayout;
 		febl->addRow("FEBio file format:", febioFormat);
 		febl->addRow("", writeNotes = new QCheckBox("Write Notes"));
+		febl->addRow("", allowMixedMesh = new QCheckBox("Allow degenerate elements"));
 
 		febops = new QGroupBox("FEBio export settings:");
 		febops->setLayout(febl);
@@ -372,6 +374,11 @@ int CDlgRun::GetFEBioFileVersion()
 bool CDlgRun::WriteNotes()
 {
 	return ui->writeNotes->isChecked();
+}
+
+bool CDlgRun::AllowMixedMesh()
+{
+	return ui->allowMixedMesh->isChecked();
 }
 
 QString CDlgRun::CommandLine()

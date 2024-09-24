@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "SelectNearPlaneTool.h"
 #include "KinematBuildTool.h"
 #include "MeshMorphTool.h"
+#include "ExtrudeMapTool.h"
 #include <ImageLib/FiberODF.h>
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
@@ -82,6 +83,7 @@ void CToolsPanel::initTools()
     tools.push_back(new CSelectNearPlaneTool(wnd));
 	tools.push_back(new CKinematBuildTool   (wnd));
 	tools.push_back(new CMeshMorphTool      (wnd));
+	tools.push_back(new CExtrudeMapTool     (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)
@@ -118,4 +120,13 @@ void CToolsPanel::showEvent(QShowEvent* ev)
 		m_activeTool->Activate();
 	}
 	ev->accept();
+}
+
+bool CToolsPanel::OnPickEvent(const FESelection& sel)
+{
+	if (m_activeTool)
+	{
+		return m_activeTool->onPickEvent(sel);
+	}
+	else return false;
 }

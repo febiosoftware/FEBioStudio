@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,38 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include <QDialog>
+#include "FESurfaceModifier.h"
 
-class CMainWindow;
-class CModelDocument;
-class QTableWidgetItem;
-
-class CDlgPartSelector : public QDialog
+class FEFixJaggedEdges : public FESurfaceModifier
 {
-	Q_OBJECT
-
-private:
-	class UI;
-
 public:
-	CDlgPartSelector(CMainWindow* wnd);
+    FEFixJaggedEdges();
 
-	void SetDocument(CModelDocument* doc);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh);
 
-	void closeEvent(QCloseEvent* e) override;
-
-	void accept() override;
-	void reject() override;
-
-private slots:
-	void onItemClicked(QTableWidgetItem* it);
-	void onFilterChanged();
-	void onShowAll();
-	void onHideAll();
-	void onSelect();
-	void onSelectionChanged();
+	void SetAngle(double a) { m_angle = a; }
 
 private:
-	UI* ui;
+	double	m_angle;
 };

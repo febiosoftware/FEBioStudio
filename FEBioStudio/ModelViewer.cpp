@@ -714,6 +714,28 @@ void CModelViewer::OnUnhideAllParts()
 	}
 }
 
+void CModelViewer::OnHideInactiveParts()
+{
+	GObject* po = dynamic_cast<GObject*>(m_currentObject);
+	if (po)
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		GModel* m = doc->GetGModel();
+		list<GPart*> partList;
+		for (int i = 0; i < po->Parts(); ++i)
+		{
+			GPart* pg = po->Part(i);
+			if (!pg->IsActive()) partList.push_back(pg);
+		}
+		if (!partList.empty())
+		{
+			m->ShowParts(partList, false);
+			Update();
+			GetMainWindow()->RedrawGL();
+		}
+	}
+}
+
 void CModelViewer::OnDeleteNamedSelection()
 {
 	OnDeleteItem();
@@ -1690,7 +1712,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_OBJECT_LIST:
 	{
 		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
-		menu.addAction("Part selector ...", GetMainWindow(), SLOT(onShowPartSelector()));
+		menu.addAction("Part Viewer ...", GetMainWindow(), SLOT(onShowPartViewer()));
 		menu.addSeparator();
 
 		QMenu* sub = new QMenu("Set Active Mesh Layer");
@@ -1717,6 +1739,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	break;
 	case MT_PART_LIST:
 		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
+		menu.addAction("Hide Inactive", this, SLOT(OnHideInactiveParts()));
 		break;
 	case MT_PART_GROUP:
 	case MT_FACE_GROUP:
@@ -1987,9 +2010,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			}
             QMenu* exportImage = menu.addMenu("Export Image");
             exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
+#ifdef HAS_ITK
             exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
             exportImage->addAction("NRRD", this, &CModelViewer::OnExportNRRD);
             menu.addAction("Fiber ODF Analysis", this, &CModelViewer::OnAddFiberODFAnalysis);
+#endif
             del = true;
         }
 		break;

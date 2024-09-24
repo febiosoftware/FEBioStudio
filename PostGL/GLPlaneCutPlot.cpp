@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/hex.h>
 #include <MeshTools/FESelection.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -1015,18 +1016,10 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 // Calculate the integral over the plane cut
 float CGLPlaneCutPlot::Integrate(FEState* ps)
 {
-	int k, l;
-
 	CGLModel* mdl = GetModel();
 
 	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-
-	float ev[8];
-	vec3d ex[8];
-
-	vec3d r[4];
-	float v[4];
 
 	// Integral
 	float sum = 0.f;
@@ -1039,7 +1032,9 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	double ref = -a[3];
 
 	// repeat over all elements
-	for (int i=0; i<pm->Elements(); ++i)
+	const int NE = pm->Elements();
+#pragma omp parallel for reduction(+:sum)
+	for (int i=0; i<NE; ++i)
 	{
 		// consider only solid elements that are visible
 		FEElement_& el = pm->ElementRef(i);
@@ -1066,7 +1061,9 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			}
 
 			// get the nodal values
-			for (k=0; k<8; ++k)
+			float ev[8];
+			vec3d ex[8];
+			for (int k=0; k<8; ++k)
 			{
 				int m = el.m_node[nt[k]];
 				FSNode& node = pm->Node(m);
@@ -1076,17 +1073,19 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 			// calculate the case of the element
 			int ncase = 0;
-			for (k=0; k<8; ++k) 
+			for (int k=0; k<8; ++k)
 			if (norm*ex[k] >= ref) ncase |= (1 << k);
 
 			// loop over faces
+			vec3d r[4];
+			float v[4];
 			int* pf = LUT[ncase];
-			for (l=0; l<5; l++)
+			for (int l=0; l<5; l++)
 			{
 				if (*pf == -1) break;
 
 				// calculate nodal positions
-				for (k=0; k<3; k++)
+				for (int k=0; k<3; k++)
 				{
 					int n1 = ET_HEX[pf[k]][0];
 					int n2 = ET_HEX[pf[k]][1];
@@ -1314,7 +1313,7 @@ public:
 		m_pc->UpdatePlaneCut();
 	}
 
-	int Count() { return 1; }
+	int Count() const { return 1; }
 
 private:
 	CGLPlaneCutPlot* m_pc;

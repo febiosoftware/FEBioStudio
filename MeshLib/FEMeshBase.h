@@ -128,9 +128,13 @@ namespace MeshTools {
 	// respectPartitions: do not cross surface partitions if true
 	std::vector<int> GetConnectedFaces(FSMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions);
 
+	std::vector<int> GetConnectedFacesByPath(FSMeshBase* pm, int startFace, int endFace);
+
 	std::vector<int> GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax);
 
 	std::vector<int> GetConnectedNodesByPath(FSMeshBase* pm, int startNode, int endNode);
+
+	std::vector<int> GetConnectedEdgesByPath(FSMeshBase* pm, int startEdge, int endEdge);
 
 	std::vector<int> GetConnectedEdges(FSMeshBase* pm, int startEdge, double tolAngleDeg, bool bmax);
 

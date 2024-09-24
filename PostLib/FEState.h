@@ -155,6 +155,9 @@ public:
 
 	void AddPointObjectData();
 
+	vec3f NodePosition(int node);
+	vec3f NodeRefPosition(int node);
+
 public:
 	float	m_time;		// time value
 	int		m_nField;	// the field whos values are contained in m_pval

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidgetManager.h"
 #include <PostGL/GLModel.h>
 #include <GLLib/glx.h>
+#include <FSCore/ClassDescriptor.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////

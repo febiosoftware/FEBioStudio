@@ -118,6 +118,7 @@ protected:
 	bool read_distribution       (char* szline, FILE* fp);
 	bool read_amplitude          (char* szline, FILE* fp);
 	bool read_contact_pair       (char* szline, FILE* fp);
+	bool read_spring             (char* szline, FILE* fp);
 
 	// skip until we find the next keyword
 	bool skip_keyword(char* szline, FILE* fp);

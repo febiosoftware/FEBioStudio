@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include "ImageSource.h"
 #include "TiffReader.h"
 #include "SITKImageSource.h"
+#include "SITKTools.h"
 #include <ImageLib/3DImage.h>
-#include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <PostLib/GLImageRenderer.h>
@@ -445,7 +445,7 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 #ifdef HAS_ITK
 bool CImageModel::ExportSITKImage(const std::string& filename)
 {
-    return CImageSITK::WriteSITKImage(Get3DImage(), filename);
+    return WriteSITKImage(Get3DImage(), filename);
 }
 #else
 bool CImageModel::ExportSITKImage(const std::string& filename) { return false; }

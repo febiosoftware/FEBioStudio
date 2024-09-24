@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <BRepAdaptor_Curve.hxx>
 #include <TopExp_Explorer.hxx>
 #include <BRepTools.hxx>
+#include <BOPAlgo_MakerVolume.hxx>
 #endif
 
 #ifdef HAS_OCC
@@ -440,5 +441,33 @@ void GOCCBox::MakeBox()
 #ifdef HAS_OCC
 	TopoDS_Solid box1 = BRepPrimAPI_MakeBox(gp_Pnt(0, 0, 0), 1, 1, 1);
 	SetShape(box1, false);
+#endif
+}
+
+GOCCObject* MergeOCCObjects(std::vector<GOCCObject*> occlist)
+{
+#ifdef HAS_OCC
+	// empty compound, as nothing has been added yet
+	BOPAlgo_MakerVolume aBuilder;
+	for (GOCCObject* po : occlist)
+	{
+		TopoDS_Shape& shape = po->GetShape();
+		TopExp_Explorer ex;
+		for (ex.Init(shape, TopAbs_SOLID); ex.More(); ex.Next())
+		{
+			const TopoDS_Solid& solid = TopoDS::Solid(ex.Current());
+			aBuilder.AddArgument(solid);
+		}
+	}
+
+	aBuilder.SetIntersect(true);
+	aBuilder.SetAvoidInternalShapes(false);
+	aBuilder.Perform();
+	TopoDS_Shape solid = aBuilder.Shape();
+	GOCCObject* occ = new GOCCObject;
+	occ->SetShape(solid);
+	return occ;
+#else
+	return nullptr;
 #endif
 }

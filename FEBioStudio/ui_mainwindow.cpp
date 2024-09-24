@@ -107,7 +107,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionOpen = addAction("Open Model File ...", "actionOpen", "open"); actionOpen->setShortcuts(QKeySequence::Open);
 	QAction* actionSave = addAction("Save", "actionSave", "save"); actionSave->setShortcuts(QKeySequence::Save);
 	QAction* actionSaveAs = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
-	QAction* actionSaveAll = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
+	QAction* actionSaveAll = addAction("Save All", "actionSaveAll");
 	QAction* actionCloseAll = addAction("Close All", "actionCloseAll");
 	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot"); actionSnapShot->setShortcut(Qt::AltModifier | Qt::Key_F2);
 	QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
@@ -355,8 +355,9 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	selectCircle = addAction("Circle", "selectCircle", "selectCircle", true);
 	selectFree = addAction("Freehand", "selectFree", "selectFree", true);
 
-	actionMeasureTool = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
+	actionMeasureTool  = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
 	actionPlaneCutTool = addAction("Plane Cut", "actionPlaneCutTool", "cut");
+	actionPickColor    = addAction("Pick Color", "actionPickColor", "pickcolor");
 
 	QActionGroup* pag = new QActionGroup(mainWindow);
 	pag->addAction(actionSelectObjects);
@@ -441,12 +442,14 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFile->addSeparator();
 	menuFile->addAction(menuImportImage->menuAction());
 	menuImportImage->addAction(actionImportRawImage);
-	menuImportImage->addAction(actionImportDICOMImage);
 	menuImportImage->addAction(actionImportTiffImage);
+#ifdef HAS_ITK
+    menuImportImage->addAction(actionImportDICOMImage);
 	menuImportImage->addAction(actionImportNrrdImage);
 	//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 	menuImportImage->addAction(actionImportImageSequence);
 	menuImportImage->addAction(actionImportImageOther);
+#endif
 
 
 	QMenu* ConvertMenu = new QMenu("Batch convert");
@@ -723,6 +726,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	buildToolBar->addSeparator();
 	buildToolBar->addAction(actionMeasureTool);
 	buildToolBar->addAction(actionPlaneCutTool);
+	buildToolBar->addAction(actionPickColor);
 	buildToolBar->addSeparator();
 	buildToolBar->addAction(actionSelect);
 	buildToolBar->addAction(actionTranslate);
@@ -1150,9 +1154,9 @@ void Ui::CMainWindow::addToRecentFilesList(QStringList& dstList, const QString& 
 	}
 }
 
-void Ui::CMainWindow::showPartSelector(CModelDocument* doc)
+void Ui::CMainWindow::showPartViewer(CModelDocument* doc)
 {
-	if (partSelector == nullptr) partSelector = new CDlgPartSelector(m_wnd);
-	partSelector->SetDocument(doc);
-	partSelector->show();
+	if (partViewer == nullptr) partViewer = new CDlgPartViewer(m_wnd);
+	partViewer->SetDocument(doc);
+	partViewer->show();
 }

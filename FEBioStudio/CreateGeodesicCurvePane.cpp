@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
-#include <MeshTools/GObject2D.h>
 #include <MeshTools/FEGeodesic.h>
 #include <MeshLib/GMesh.h>
 #include "PropertyList.h" // for Vec3dToString

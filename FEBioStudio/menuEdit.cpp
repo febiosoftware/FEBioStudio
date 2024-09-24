@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "DlgMergeObjects.h"
 #include "DlgDetachSelection.h"
 #include "DlgPurge.h"
+#include "DlgPickColor.h"
 #include "PostDocument.h"
 #include "XMLDocument.h"
 #include "Commands.h"
@@ -55,6 +56,13 @@ using std::stringstream;
 
 void CMainWindow::on_actionUndo_triggered()
 {
+	CBuildPanel* buildPanel = GetBuildPanel();
+	if (buildPanel && buildPanel->isVisible())
+	{
+		CCommandPanel* panel = buildPanel->GetActivePanel();
+		if (panel && panel->OnUndo()) return;
+	}
+
 	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
@@ -306,6 +314,7 @@ void CMainWindow::on_actionHideSelection_triggered()
 		case SELECT_FE_FACES: mdl.HideSelectedFaces(); break;
 		case SELECT_FE_ELEMS: mdl.HideSelectedElements(); break;
 		}
+		mdl.UpdateMeshVisibility();
 		postDoc->UpdateSelection(false);
 		postDoc->UpdateFEModel();
 		RedrawGL();
@@ -426,10 +435,18 @@ void CMainWindow::on_actionFind_triggered()
 	if (doc->IsValid() == false) return;
 
 	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
+	if (po == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires an active object.\nPlease select an object.");
+		return;
+	}
 
 	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	if (pm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "This tool requires the active object to be meshed.\nPlease mesh the selected object first.");
+		return;
+	}
 
 	int nitem = doc->GetItemMode();
 	int nsel = 0;
@@ -1628,6 +1645,12 @@ void CMainWindow::on_actionPlaneCutTool_triggered()
 {
 	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
 	ui->planeCutTool->show();
+}
+
+void CMainWindow::on_actionPickColor_triggered()
+{
+	if (ui->pickColorTool == nullptr) ui->pickColorTool = new CDlgPickColor(this);
+	ui->pickColorTool->show();
 }
 
 void CMainWindow::on_actionFindTxt_triggered()

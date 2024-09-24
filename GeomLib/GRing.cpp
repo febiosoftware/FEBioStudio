@@ -27,6 +27,36 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FEShellRing.h>
 
+class GRingManipulator : public GObjectManipulator
+{
+public:
+	GRingManipulator(GRing& ring) : GObjectManipulator(&ring), m_ring(ring) {}
+
+	void TransformNode(GNode* pn, const Transform& T)
+	{
+		int m = pn->GetLocalID();
+
+		vec3d r = T.LocalToGlobal(pn->Position());
+		r = m_ring.GetTransform().GlobalToLocal(r);
+
+		double z = r.z; r.z = 0;
+		double R = r.Length();
+
+		if (m < 4)
+		{
+			m_ring.SetOuterRadius(R);
+		}
+		else
+		{
+			m_ring.SetInnerRadius(R);
+		}
+		m_ring.Update();
+	}
+
+private:
+	GRing& m_ring;
+};
+
 //=============================================================================
 // GRing
 //=============================================================================
@@ -40,9 +70,13 @@ GRing::GRing() : GShellPrimitive(GRING)
 	AddDoubleParam(m_Ro, "Ro", "Outer radius");
 
 	SetFEMesher(new FEShellRing(this));
+	SetManipulator(new GRingManipulator(*this));
 
 	Create();
 }
+
+void GRing::SetInnerRadius(double ri) { SetFloatValue(RIN, ri); }
+void GRing::SetOuterRadius(double ro) { SetFloatValue(ROUT, ro); }
 
 //-----------------------------------------------------------------------------
 FEMesher* GRing::CreateDefaultMesher()

@@ -185,7 +185,6 @@ FEItemListBuilder* GMaterial::GetItemList(int n)
 
 	// set the items
 	int NO = mdl.Objects();
-	m_pos = vec3d(0, 0, 0);
 	for (int i = 0; i < NO; ++i)
 	{
 		GObject* po = mdl.Object(i);
@@ -201,7 +200,48 @@ FEItemListBuilder* GMaterial::GetItemList(int n)
 			}
 		}
 	}
-	if (m_partList->size() > 0) m_pos /= (double)m_partList->size();
+
+	// update center of mass (only used by rigid bodies)
+	m_pos = vec3d(0, 0, 0);
+	int count = 0;
+	for (int i = 0; i < NO; ++i)
+	{
+		GObject* po = mdl.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm == nullptr)
+		{
+			int NP = po->Parts();
+			for (int j = 0; j < NP; ++j)
+			{
+				GPart* pg = po->Part(j);
+				if (pg->GetMaterialID() == GetID())
+				{
+					BOX b = pg->GetGlobalBox();
+					m_pos += b.Center();
+					count++;
+				}
+			}
+		}
+		else
+		{
+			vec3d rc(0, 0, 0);
+			int nc = 0;
+			int NE = pm->Elements();
+			for (int j = 0; j < NE; ++j)
+			{
+				FSElement& el = pm->Element(j);
+				if (el.m_MatID == GetID())
+				{
+					rc += pm->ElementCenter(el);
+					nc++;
+				}
+			}
+			if (nc > 0) rc /= nc;
+			m_pos += pm->LocalToGlobal(rc);
+			count++;
+		}
+	}
+	if (count > 0) m_pos /= (double)count;
 
 	return m_partList;
 }

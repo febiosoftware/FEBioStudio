@@ -94,6 +94,9 @@ public:
 	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
+	// toggle selected parts to (in)active
+	void ToggleActiveParts();
+
 public:
 	void AddImageModel(CImageModel* imgModel) override;
 
@@ -105,6 +108,8 @@ public: // selection
 
 	void SelectItems(FSObject* po, const std::vector<int>& l, int n);
 
+	bool SelectHighlightedItems();
+
 public:
 	int FEBioJobs() const;
 	void AddFEbioJob(CFEBioJob* job);
@@ -115,8 +120,6 @@ public:
 	void DeleteAllJobs();
 
 public:
-	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
-
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 

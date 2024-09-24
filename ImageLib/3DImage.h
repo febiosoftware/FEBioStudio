@@ -39,7 +39,7 @@ public:
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, uint8_t* data = nullptr, int dataSize = 0, int pixelType = CImage::UINT_8);
+	virtual bool Create(int nx, int ny, int nz, uint8_t* data = nullptr, int pixelType = CImage::UINT_8);
 
 	int Width () { return m_cx; }
 	int Height() { return m_cy; }

@@ -143,6 +143,8 @@ public:
 	void HighlightSurface(int x, int y);
 	void HighlightPart(int x, int y);
 
+	GPart* PickPart(int x, int y);
+
 	bool SelectPivot(int x, int y);
 
 	void SetCoordinateSystem(int nmode);
