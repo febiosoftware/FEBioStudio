@@ -131,7 +131,8 @@ void FEBioMonitorThread::run()
 	{
 		m_job->m_jobReport = fem.GetReport();
 		m_job->m_timingInfo = fem.GetTimingInfo();
-		m_job->m_stats = fem.GetModelStats();
+		m_job->m_modelStats = fem.GetModelStats();
+		m_job->m_stepStats = fem.GetStepStats();
 	}
 
 	emit jobFinished(b);

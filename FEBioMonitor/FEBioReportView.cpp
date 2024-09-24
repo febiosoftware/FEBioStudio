@@ -44,7 +44,7 @@ public:
 
 	QString text() const { 
 
-		QString s = "<html><head><style>table, th, td { border: 1px solid black; border-collapse: collapse; } th, td { padding: 5px; }</style></head>";
+		QString s = "<html><head><style>table, th, td { border: 1px solid black; border-collapse: collapse; } th, td { padding: 5px; } th { background-color:#808080;}</style></head>";
 		s += "<body>" + m_txt + "</body>";
 		return s; 
 	}
@@ -69,6 +69,17 @@ public:
 
 	void table_start() { open("table"); }
 	void table_end() { close("table"); }
+	void table_headings(const QStringList& v)
+	{
+		open("tr");
+		for (auto& d : v)
+		{
+			open("th");
+			append(d);
+			close("th");
+		}
+		close("tr");
+	}
 	void table_row(const QStringList& v)
 	{
 		int n = 0;
@@ -199,6 +210,13 @@ QStringList composeRow(const QString& label, double sec, double f, const QString
 	return sl;
 }
 
+QStringList composeRow(const std::vector<int>& a)
+{
+	QStringList sl;
+	for (int v : a) sl.push_back(QString::number(v));
+	return sl;
+}
+
 struct TimingEntry
 {
 	QString label;
@@ -254,15 +272,30 @@ void CFEBioReportView::setDocument(CDocument* doc)
 		html.table_row({ "<b>log</b>"  , report->m_logFile });
 		html.table_row({ "<b>plot</b>" , report->m_pltFile });
 		html.table_end();
+
+		// Model Stats
 		html.heading2("Stats");
 		html.paragraph("Overall statistics.");
 		html.table_start();
-		ModelStats stats = report->m_stats;
-		html.table_row({ "<b>time steps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
+		ModelStats stats = report->m_modelStats;
+		html.table_row({ "<b>timesteps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
 		html.table_row({ "<b>total iters</b>"  , HTMLComposer::align_right, QString::number(stats.ntotalIters  ), "Total number of Quasi-Newton iterations."});
 		html.table_row({ "<b>total RHS</b>"    , HTMLComposer::align_right, QString::number(stats.ntotalRHS    ), "Total number of residual evaluations."});
 		html.table_row({ "<b>total reforms</b>", HTMLComposer::align_right, QString::number(stats.ntotalReforms), "Total number of stiffness matrix reformations."});
 		html.table_end();
+
+		// Step stats
+		html.paragraph("Breakdown of stats per step.");
+		html.table_start();
+		html.table_headings({ "step", "timesteps", "total iters", "total RHS", "total reforms" });
+		for (int i = 0; i < report->m_stepStats.size(); ++i)
+		{
+			ModelStats& s = report->m_stepStats[i];
+			html.table_row(composeRow({ i + 1, s.ntimeSteps, s.ntotalIters, s.ntotalRHS, s.ntotalReforms }));
+		}
+		html.table_end();
+
+		// Timings
 		html.heading2("Timings");
 		html.paragraph("Breakdown of total runtime.");
 		html.table_start();

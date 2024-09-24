@@ -41,7 +41,8 @@ void CFEBioReportDoc::setJob(CFEBioJob* job)
 	m_report = QString::fromStdString(job->m_jobReport);
 
 	m_timingInfo = job->m_timingInfo;
-	m_stats = job->m_stats;
+	m_modelStats = job->m_modelStats;
+	m_stepStats  = job->m_stepStats;
 
 	QString title = QString("Report[%1]").arg(m_jobName);
 	SetDocTitle(title.toStdString());

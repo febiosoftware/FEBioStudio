@@ -101,7 +101,8 @@ public:
 public: // FEBio output
 	std::string m_jobReport;
 	TimingInfo m_timingInfo;
-	ModelStats m_stats;
+	ModelStats m_modelStats;
+	std::vector<ModelStats> m_stepStats;
 
 	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
 	int  m_febVersion;	// the .feb file version

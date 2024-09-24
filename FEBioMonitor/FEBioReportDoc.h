@@ -45,5 +45,6 @@ public:
 	QString m_pltFile;
 	QString m_report;
 	TimingInfo m_timingInfo;
-	ModelStats m_stats;
+	ModelStats m_modelStats;
+	std::vector<ModelStats> m_stepStats;
 };

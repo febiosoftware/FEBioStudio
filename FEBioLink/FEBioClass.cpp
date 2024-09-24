@@ -1157,7 +1157,8 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, F
 		{
 			job->m_jobReport = fem.GetReport();
 			job->m_timingInfo = fem.GetTimingInfo();
-			job->m_stats = fem.GetModelStats();
+			job->m_modelStats = fem.GetModelStats();
+			job->m_stepStats = fem.GetStepStats();
 		}
 		return returnCode;
 	}
