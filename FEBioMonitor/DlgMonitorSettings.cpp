@@ -118,6 +118,7 @@ public:
 	unsigned int GetPauseEvents() { return (unsigned int)(m_pauseEvents->currentData().toInt()); }
 	bool GetStartPausedOption() { return m_startPaused->isChecked(); }
 	unsigned int GetUpdateEvents() { return m_updateEvents->currentIndex(); }
+	void SetUpdateEvents(int n) { m_updateEvents->setCurrentIndex(n); }
 	void SetFEBioInputFile(QString febfile) { m_fileInput->setText(febfile); }
 
 	void SetStartPausedOption(bool b) { m_startPaused->setChecked(b); }
@@ -163,6 +164,7 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 	ui->EnablePauseTime(doc->IsPauseTimeEnabled());
 	ui->SetDebugLevel(doc->GetDebugLevel());
 	ui->SetRecordStatesFlag(doc->GetRecordStatesFlag());
+	ui->SetUpdateEvents(doc->GetUpdateEvents());
 }
 
 void CDlgMonitorSettings::CanEditFilename(bool b)

@@ -292,6 +292,10 @@ void FEBioMonitorDoc::SetUpdateEvents(int updateEvents)
 	m->updateEvents = updateEvents;
 }
 
+int FEBioMonitorDoc::GetUpdateEvents() const
+{
+	return m->updateEvents;
+}
 
 void FEBioMonitorDoc::RunJob()
 {

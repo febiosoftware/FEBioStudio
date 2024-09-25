@@ -138,6 +138,7 @@ public:
 	bool GetRecordStatesFlag() const;
 
 	void SetUpdateEvents(int updateEvents);
+	int GetUpdateEvents() const;
 
 public:
 	void RunJob();
