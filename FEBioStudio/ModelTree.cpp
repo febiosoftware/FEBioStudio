@@ -413,15 +413,19 @@ public:
 		addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 
-		int launchType = job->GetLaunchConfig()->type;
-		if ((launchType != LOCAL) && (launchType != DEFAULT))
+		CLaunchConfig* lc = job->GetLaunchConfig();
+		if (lc)
 		{
-			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
-		}
+			int launchType = lc->type;
+			if ((launchType != LOCAL) && (launchType != DEFAULT))
+			{
+				addProperty("", CProperty::Action)->info = QString("Get Remote Files");
+			}
 
-		if ((launchType == PBS) || (launchType == SLURM))
-		{
-			addProperty("", CProperty::Action)->info = QString("Get Queue Status");
+			if ((launchType == PBS) || (launchType == SLURM))
+			{
+				addProperty("", CProperty::Action)->info = QString("Get Queue Status");
+			}
 		}
 	}
 

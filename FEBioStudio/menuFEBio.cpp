@@ -194,7 +194,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		if (job == nullptr)
 		{
 			// create a new new job
-			job = new CFEBioJob(doc, jobName.toStdString(), relPath, ui->m_launch_configs.at(lastLaunchConfigIndex));
+			job = new CFEBioJob(doc, jobName.toStdString(), relPath, &ui->m_launch_configs.at(lastLaunchConfigIndex));
 
 			if (modelDoc)
 			{
@@ -206,7 +206,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		else
 		{
 			job->UpdateWorkingDirectory(relPath);
-			job->UpdateLaunchConfig(ui->m_launch_configs.at(lastLaunchConfigIndex));
+			job->SetLaunchConfig(&ui->m_launch_configs.at(lastLaunchConfigIndex));
 
 			// show it in the model viewer
 			UpdateModel(job);

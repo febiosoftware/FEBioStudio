@@ -102,15 +102,16 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc), m(*(new CFEBioJob::Imp))
 	m_febVersion = 0x0400;
 	m_writeNotes = true;
 	m_allowMixedMesh = false;
+
+	m_launchConfig = nullptr;
 }
 
 CFEBioJob::~CFEBioJob()
 {
-	if (m_activeJob == this) m_activeJob = nullptr;
 	delete &m;
 }
 
-CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
+CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig* launchConfig)
 	: m_doc(doc), m_launchConfig(launchConfig), m(*(new CFEBioJob::Imp))
 {
 	m.job = this;
@@ -159,13 +160,16 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	m_logFile += "log";
 
 #ifdef HAS_SSH
-	if ((launchConfig.type == LOCAL) || (launchConfig.type == DEFAULT))
+	if (m_launchConfig)
 	{
-		m.sshHandler = nullptr;
-	}
-	else
-	{
-		m.sshHandler = m.NewHandler();
+		if ((m_launchConfig->type == LOCAL) || (m_launchConfig->type == DEFAULT))
+		{
+			m.sshHandler = nullptr;
+		}
+		else
+		{
+			m.sshHandler = m.NewHandler();
+		}
 	}
 #endif
 
@@ -244,17 +248,17 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 
 CLaunchConfig* CFEBioJob::GetLaunchConfig()
 {
-	return &m_launchConfig;
+	return m_launchConfig;
 }
 
-void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
+void CFEBioJob::SetLaunchConfig(CLaunchConfig* launchConfig)
 {
-	CLaunchConfig oldConfig = m_launchConfig;
+	CLaunchConfig* oldConfig = m_launchConfig;
 
 	m_launchConfig = launchConfig;
 
 #ifdef HAS_SSH
-	if ((launchConfig.type == LOCAL) || (launchConfig.type == DEFAULT))
+	if ((launchConfig->type == LOCAL) || (launchConfig->type == DEFAULT))
 	{
 		if (m.sshHandler)
 		{
@@ -266,7 +270,7 @@ void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
 	{
 		if (m.sshHandler)
 		{
-			m.sshHandler->Update(oldConfig);
+			m.sshHandler->Update(*oldConfig);
 		}
 		else
 		{
@@ -342,11 +346,6 @@ void CFEBioJob::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_febFile);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
 	ar.WriteChunk(CID_FEBIOJOB_LOGFILE, m_logFile);
-
-	ar.BeginChunk(CID_FEBIOJOB_LCONFIG);
-	m_launchConfig.Save(ar);
-	ar.EndChunk();
-
 }
 
 void CFEBioJob::Load(IArchive& ar)
@@ -377,15 +376,6 @@ void CFEBioJob::Load(IArchive& ar)
 			m_logFile = QString::fromStdString(m_logFile).replace("\\","/").toStdString();
 #endif
 			break;
-		case CID_FEBIOJOB_LCONFIG: 
-		{
-			CLaunchConfig lConfig; lConfig.Load(ar); 
-#ifdef HAS_SSH
-			m.sshHandler = nullptr; 
-#endif
-			UpdateLaunchConfig(lConfig); 
-		} 
-		break;
 		}
 		ar.CloseChunk();
 	}

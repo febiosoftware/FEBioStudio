@@ -78,28 +78,32 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 	job->StartTimer();
 
 	// launch the job
-	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+	CLaunchConfig* lc = job->GetLaunchConfig();
+	if (lc)
 	{
-		if (im->febThread) return false;
-		im->febThread = new CFEBioThread(im->wnd, job, this);
-		im->febThread->start();
-	}
-	else if (job->GetLaunchConfig()->type == LOCAL)
-	{
-		if (im->process) return false;
-		// create new process
-		CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, this);
-		im->process = process;
+		if (lc->type == launchTypes::DEFAULT)
+		{
+			if (im->febThread) return false;
+			im->febThread = new CFEBioThread(im->wnd, job, this);
+			im->febThread->start();
+		}
+		else if (lc->type == LOCAL)
+		{
+			if (im->process) return false;
+			// create new process
+			CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, this);
+			im->process = process;
 
-		// go! 
-		process->run();
-	}
-	else
-	{
-		job->StartRemoteJob();
+			// go! 
+			process->run();
+		}
+		else
+		{
+			job->StartRemoteJob();
 
-		// NOTE: Why are we doing this?
-		CFEBioJob::SetActiveJob(nullptr);
+			// NOTE: Why are we doing this?
+			CFEBioJob::SetActiveJob(nullptr);
+		}
 	}
 
 	return true;
@@ -164,11 +168,14 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 
 		im->wnd->UpdateTab(job->GetDocument());
 
-		// generate detailed report
-		CMainWindow* wnd = im->wnd;
-		CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
-		doc->setJob(job);
-		wnd->AddDocument(doc);
+		// generate detailed report (for local jobs)
+		if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+		{
+			CMainWindow* wnd = im->wnd;
+			CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+			doc->setJob(job);
+			wnd->AddDocument(doc);
+		}
 	}
 	else
 	{

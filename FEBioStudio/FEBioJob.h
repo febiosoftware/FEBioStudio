@@ -51,7 +51,7 @@ public:
 public:
 	CFEBioJob(CDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
+	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig* launchConfig);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
@@ -71,7 +71,7 @@ public:
 	void UpdateWorkingDirectory(const std::string& dir);
 
 	CLaunchConfig* GetLaunchConfig();
-	void UpdateLaunchConfig(CLaunchConfig launchConfig);
+	void SetLaunchConfig(CLaunchConfig* launchConfig);
 
 	void SetCommand(const std::string& cmd);
 	const std::string& GetCommand() const;
@@ -116,7 +116,7 @@ private:
 	std::string		m_cnfFile;	// the config file
 	int				m_status;	// return status
 
-	CLaunchConfig 	m_launchConfig;
+	CLaunchConfig*	m_launchConfig;
 
 private:
 	Imp& m;
