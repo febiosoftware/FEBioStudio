@@ -326,6 +326,7 @@ void FEBioMonitorDoc::RunJob()
 	m->job->SetName("febio monitor");
 	m->job->SetFEBFileName(GetFEBioInputFile().toStdString());
 	m->job->StartTimer();
+	CFEBioJob::SetActiveJob(m->job);
 
 	GetMainWindow()->GetFEBioMonitorView()->Update(true);
 
@@ -440,18 +441,8 @@ void FEBioMonitorDoc::updateWindowTitle()
 	int pn = (int)(10.0 * p);
 	p = pn / 10.0;
 
-	QString status;
-	if      (m->isPaused ) status = "PAUSED";
-	else if (m->isStopped) status = "STOPPED";
-	else if (m->isRunning) status = "RUNNING";
-	else status = "READY";
-
-	QString debugStr;
-	if (m->debugLevel != 0) debugStr = QString("(DEBUG)");
-
-	QString title = QString("[%1: %2 % %3]").arg(status).arg(p).arg(debugStr);
-
-	m_wnd->setWindowTitle(title);
+	if (m->job) m->job->SetProgress(p);
+	m_wnd->UpdateTitle();
 }
 
 double calculateFEBioProgressInPercent(FEModel* pfem)

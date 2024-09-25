@@ -106,6 +106,7 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc), m(*(new CFEBioJob::Imp))
 
 CFEBioJob::~CFEBioJob()
 {
+	if (m_activeJob == this) m_activeJob = nullptr;
 	delete &m;
 }
 
