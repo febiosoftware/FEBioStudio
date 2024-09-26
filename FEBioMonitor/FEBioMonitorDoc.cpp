@@ -574,6 +574,10 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		m_bValid = true;
 		emit modelInitialized();
 	}
+	else if (nevent == CB_REMESH)
+	{
+		scene->UpdateMeshState(fem);
+	}
 	else
 	{
 		if (nevent == CB_MINOR_ITERS) UpdateConvergenceInfo();

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <PostLib/FEDataField.h>
 #include <GLLib/GLContext.h>
 #include <PostGL/GLPlaneCutPlot.h>
+#include <PostLib/FEState.h>
 #include <QtCore/QFileInfo>
 #include <sstream>
 #ifdef __APPLE__
@@ -650,6 +651,36 @@ void CGLMonitorScene::BuildGLModel()
 	m_glm->Update(true);
 
 	m_postObj->UpdateMesh();
+}
+
+void CGLMonitorScene::UpdateMeshState(FEModel* fem)
+{
+	QMutexLocker lock(&m_mutex);
+	FEMesh& mesh = fem->GetMesh();
+
+	Post::FEState* state = m_postModel->CurrentState(); assert(state);
+	if (state == nullptr) return;
+
+	Post::FEPostMesh& postMesh = *m_postModel->GetFEMesh(0);
+	assert(mesh.Nodes() == postMesh.Nodes());
+	assert(mesh.Elements() == postMesh.Elements());
+
+	int ne = 0;
+	int ND = mesh.Domains();
+	for (int i = 0; i < ND; i++)
+	{
+		FEDomain& D = mesh.Domain(i);
+		for (int j = 0; j < D.Elements(); ++j, ne++)
+		{
+			FEElement& el = D.ElementRef(j);
+			if (!el.isActive())
+			{
+				unsigned int mask = ~(Post::StatusFlags::VISIBLE);
+				state->m_ELEM[ne].m_state &= mask;
+			}
+		}
+	}
+	m_glm->Update(true);
 }
 
 void CGLMonitorScene::AddState()

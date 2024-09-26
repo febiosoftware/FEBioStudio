@@ -48,6 +48,7 @@ public:
 	~CGLMonitorScene();
 
 	void InitScene(FEModel* fem);
+	void UpdateMeshState(FEModel* fem);
 	void AddState();
 	void UpdateStateData();
 	void UpdateScene();
