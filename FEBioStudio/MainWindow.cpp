@@ -1972,7 +1972,7 @@ void CMainWindow::writeSettings()
 	{
 		// Create and save a list of launch config names
 		// NOTE: We do not save the first config, which should be the DEFAULT one
-		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0]->type == launchTypes::DEFAULT));
+		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0]->type() == CLaunchConfig::DEFAULT));
 		QStringList launch_config_names;
 		for (int i = 1; i < ui->m_launch_configs.size(); ++i)
 		{
