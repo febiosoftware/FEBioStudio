@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
 #include <QStandardPaths>
+#include <QRegularExpression>
 
 #ifdef WIN32
 #undef GetMessage
@@ -70,9 +71,11 @@ class CSSHHandler::SSHData
 {
 public:
 	CFEBioJob* job;
+	CLaunchConfig* lc;
 	ssh_session session;
 	sftp_session sftp;
 	std::string remoteFileBase;
+	int port = -1;
 	int passwdLength;
 	std::vector<unsigned char> passwdEnc;
 
@@ -89,9 +92,10 @@ public:
 
 
 
-CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
+CSSHHandler::CSSHHandler(CFEBioJob* job, CLaunchConfig* lc) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
 {
 	m_data->job = job;
+	m_data->lc = lc;
 	m_data->passwdLength = -1;
 	m_data->isBusy = false;
 	m_data->orphan = false;
@@ -103,31 +107,13 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // 
 	std::string baseName = info.baseName().toStdString();
 
 	// Get remote base file name
-	m_data->remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
+	m_data->remoteFileBase = m_data->lc->remoteDir() + "/" + baseName;
 
 	QObject::connect(this, &CSSHHandler::AddLogEntry, &CLogger::AddLogEntry);
 	QObject::connect(this, &CSSHHandler::AddOutputEntry, &CLogger::AddOutputEntry);
 }
 
 CSSHHandler::~CSSHHandler() { delete m_data; }
-
-void CSSHHandler::Update(CLaunchConfig& oldConfig)
-{
-	if(!m_data->job->GetLaunchConfig()->SameServer(oldConfig))
-	{
-		m_data->passwdEnc.clear();
-		m_data->passwdLength = -1;
-	}
-
-	// Get local .feb file name
-	std::string localFile = FSDir::expandMacros(m_data->job->GetFEBFileName());
-
-	QFileInfo info(localFile.c_str());
-	std::string baseName = info.baseName().toStdString();
-
-	// Get remote base file name
-	m_data->remoteFileBase = m_data->job->GetLaunchConfig()->remoteDir + "/" + baseName;
-}
 
 void CSSHHandler::StartRemoteJob()
 {
@@ -152,11 +138,11 @@ void CSSHHandler::StartRemoteJob()
 		return;
 	}
 
-	if(m_data->job->GetLaunchConfig()->type == REMOTE)
+	if(m_data->lc->type() == CLaunchConfig::REMOTE)
 	{
 		// Construct remote command
 		std::vector<std::string> commands;
-		commands.push_back(m_data->job->GetLaunchConfig()->path + " " + remoteFile);
+		commands.push_back(m_data->lc->path() + " " + remoteFile);
 
 		// Run the commands
 //		if(RunCommand(command) != SSH_OK)
@@ -167,7 +153,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 	}
-	else if(m_data->job->GetLaunchConfig()->type == PBS)
+	else if(m_data->lc->type() == CLaunchConfig::PBS)
 	{
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
@@ -186,7 +172,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 	}
-	else if(m_data->job->GetLaunchConfig()->type == SLURM)
+	else if(m_data->lc->type() == CLaunchConfig::SLURM)
 	{
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
@@ -205,7 +191,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 	}
-	else if(m_data->job->GetLaunchConfig()->type == CUSTOM)
+	else if(m_data->lc->type() == CLaunchConfig::CUSTOM)
 	{
 		std::vector<std::string> commands;
 		if(ParseCustomFile(commands) != SSH_OK) return;
@@ -264,7 +250,7 @@ void CSSHHandler::GetQueueStatus()
 
 	std::string command;
 
-	if(m_data->job->GetLaunchConfig()->type == PBS)
+	if(m_data->lc->type() == CLaunchConfig::PBS)
 	{
 		command = "qstat";
 	}
@@ -358,9 +344,17 @@ void CSSHHandler::StartSSHSession()
 		return;
 	}
 
-	ssh_options_set(m_data->session, SSH_OPTIONS_HOST, m_data->job->GetLaunchConfig()->server.c_str());
-	ssh_options_set(m_data->session, SSH_OPTIONS_PORT, &(m_data->job->GetLaunchConfig()->port));
-	ssh_options_set(m_data->session, SSH_OPTIONS_USER, m_data->job->GetLaunchConfig()->userName.c_str());
+	if (m_data->lc == nullptr)
+	{
+		m_data->code = FAILED;
+		m_data->msg = "No valid launch configuration";
+		return;
+	}
+
+	m_data->port = m_data->lc->port();
+	ssh_options_set(m_data->session, SSH_OPTIONS_HOST, m_data->lc->server().c_str());
+	ssh_options_set(m_data->session, SSH_OPTIONS_PORT, &m_data->port);
+	ssh_options_set(m_data->session, SSH_OPTIONS_USER, m_data->lc->userName().c_str());
 
 	QString sshDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.ssh";
 	std::string sdir = sshDir.toStdString();
@@ -384,6 +378,7 @@ void CSSHHandler::EndSSHSession()
 	ssh_disconnect(m_data->session);
 	ssh_free(m_data->session);
 	m_data->isBusy = false;
+	emit sessionFinished();
 }
 
 void CSSHHandler::VerifyKnownHost()
@@ -500,7 +495,7 @@ void CSSHHandler::Authenticate()
 		}
 	}
 
-	std::string userAndServer = m_data->job->GetLaunchConfig()->userName + "@" + m_data->job->GetLaunchConfig()->server;
+	std::string userAndServer = m_data->lc->userName() + "@" + m_data->lc->server();
 	m_data->msg = QString("Please enter a password for %1").arg(userAndServer.c_str());
 
 	if (m_data->passwdLength != -1)
@@ -589,7 +584,7 @@ int CSSHHandler::EndSFTPSession()
 
 int CSSHHandler::CheckRemoteDir()
 {
-	QString remoteDir = QString(m_data->job->GetLaunchConfig()->remoteDir.c_str());
+	QString remoteDir = QString(m_data->lc->remoteDir().c_str());
 	QStringList dirList = remoteDir.split("/");
 
 	QString currentDir = "/";
@@ -1147,6 +1142,26 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 			break;
 		}
 
+		// see if we can extract the progress
+		size_t c1 = temp.find('\033');
+		if (c1 != -1)
+		{
+			size_t c2 = temp.find('\007');
+			if (c2 != -1)
+			{
+				string t = temp.substr(c1 + 4, c2 - c1 - 4);
+				QRegularExpression e("\\([^\\)]*\\)");
+				QRegularExpressionMatch m = e.match(QString::fromStdString(t));
+				if (m.isValid())
+				{
+					QString s = m.captured(0);
+					string sz = s.toStdString();
+					double f = atof(sz.c_str() + 1);
+					UpdateProgress(f);
+				}
+			}
+		}
+
 		// Only print the previous buffer
 		emit AddOutputEntry(pbuf1);
 
@@ -1219,7 +1234,7 @@ int CSSHHandler::CreateBashFile()
 //		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
 //	}
 
-	QString bashText = m_data->job->GetLaunchConfig()->getText().c_str();
+	QString bashText = m_data->lc->text().c_str();
 
 	ReplaceMacros(bashText);
 
@@ -1231,26 +1246,7 @@ int CSSHHandler::CreateBashFile()
 
 int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
 {
-//	QString customFile = m_data->job->GetLaunchConfig()->customFile.c_str();
-//	QFile file(customFile);
-//	if(!file.open(QIODevice::ReadOnly))
-//	{
-//		m_data->msg = QString("Failed to open local custom script file:\n%1").arg(customFile);
-//		m_data->code = FAILED;
-//		return SSH_ERROR;
-//	}
-//
-//	QTextStream in(&file);
-//	while(!in.atEnd())
-//	{
-//		QString line = in.readLine();
-//		if(line.startsWith("#")) continue;
-//
-//		commands.push_back(line.toStdString());
-//	}
-//	file.close();
-
-	QString customScript = m_data->job->GetLaunchConfig()->getText().c_str();
+	QString customScript = m_data->lc->text().c_str();
 	ReplaceMacros(customScript);
 	QStringList commandList = customScript.split("\n", Qt::SkipEmptyParts); // QString::SkipEmptyParts is deprecated
 
@@ -1298,9 +1294,9 @@ void CSSHHandler::StartRemoteSession()
 
 void CSSHHandler::ReplaceMacros(QString& string)
 {
-	string.replace("${FEBIO_PATH}", m_data->job->GetLaunchConfig()->path.c_str());
+	string.replace("${FEBIO_PATH}", m_data->lc->path().c_str());
 	string.replace("${JOB_NAME}", m_data->job->GetName().c_str());
-	string.replace("${REMOTE_DIR}", m_data->job->GetLaunchConfig()->remoteDir.c_str());
+	string.replace("${REMOTE_DIR}", m_data->lc->remoteDir().c_str());
 }
 
 bool CSSHHandler::IsBusy()

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QtCore/QObject>
 
 class CSSHThread;
+class CLaunchConfig;
 
 enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET,
 		STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS, CREATEREMOTEDIR};
@@ -45,9 +46,8 @@ class CSSHHandler : public QObject
 	class SSHData;
 
 public:
-	CSSHHandler (CFEBioJob* job);
+	CSSHHandler (CFEBioJob* job, CLaunchConfig* lc);
 	~CSSHHandler();
-	void Update(CLaunchConfig& oldConfig);
 
 	void StartRemoteSession();
 	void RequestRemoteFiles();
@@ -95,6 +95,7 @@ signals:
 	void AddOutputEntry(const QString&);
 	void ShowProgress(bool, QString message = "");
 	void UpdateProgress(int);
+	void sessionFinished();
 
 private:
 	int RunCommand(std::string command);

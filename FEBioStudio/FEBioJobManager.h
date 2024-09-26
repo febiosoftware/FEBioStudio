@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 class CMainWindow;
 class CFEBioJob;
+class CLaunchConfig;
 
 class CFEBioJobManager : public QObject
 {
@@ -39,7 +40,7 @@ class CFEBioJobManager : public QObject
 public:
 	CFEBioJobManager(CMainWindow* wnd);
 
-	bool StartJob(CFEBioJob* job);
+	bool StartJob(CFEBioJob* job, CLaunchConfig* lc);
 
 	bool IsJobRunning() const;
 
@@ -49,6 +50,7 @@ public slots:
 	void onRunFinished(int exitCode, QProcess::ExitStatus es);
 	void onReadyRead();
 	void onErrorOccurred(QProcess::ProcessError err);
+	void remoteJobFinished();
 
 private:
 	Impl* im;

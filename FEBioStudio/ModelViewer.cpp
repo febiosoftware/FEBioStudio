@@ -1625,15 +1625,6 @@ void CModelViewer::OnStepMoveDown()
 	}
 }
 
-void CModelViewer::OnRerunJob()
-{
-	CFEBioJob* job = dynamic_cast<CFEBioJob*>(m_currentObject); assert(job);
-	if (job == 0) return;
-
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RunFEBioJob(job);
-}
-
 void CModelViewer::OnOpenJob()
 {
 	FSObject* po = GetCurrentObject();
@@ -2057,7 +2048,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_JOB:
 		menu.addAction("Open", this, SLOT(OnOpenJob()));
-		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
 		del = true;
 		break;
 	case MT_3DIMAGE:

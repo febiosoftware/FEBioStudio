@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioJobManager.h"
 #include "FEBioThread.h"
 #include "FEBioJob.h"
+#include "RemoteJob.h"
 #include "LocalJobProcess.h"
 #include <QProcess>
 #include <QMessageBox>
@@ -39,6 +40,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "../FEBioMonitor/FEBioReportDoc.h"
+#include "LaunchConfig.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -50,6 +52,8 @@ public:
 	CMainWindow*	wnd;
 	QProcess*		process;
 	CFEBioThread*	febThread;
+	CRemoteJob*		remoteJob;
+	CLaunchConfig*	launchConfig;
 	bool			bkillJob;
 };
 
@@ -59,9 +63,10 @@ CFEBioJobManager::CFEBioJobManager(CMainWindow* wnd) : im(new CFEBioJobManager::
 	im->process = nullptr;
 	im->bkillJob = false;
 	im->febThread = nullptr;
+	im->remoteJob = nullptr;
 }
 
-bool CFEBioJobManager::StartJob(CFEBioJob* job)
+bool CFEBioJobManager::StartJob(CFEBioJob* job, CLaunchConfig* lc)
 {
 	// make sure no model is running
 	if (CFEBioJob::GetActiveJob() != nullptr) return false;
@@ -77,21 +82,23 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 	job->ClearProgress();
 	job->StartTimer();
 
+	im->launchConfig = lc;
+
 	// launch the job
-	CLaunchConfig* lc = job->GetLaunchConfig();
 	if (lc)
 	{
-		if (lc->type == launchTypes::DEFAULT)
+		if (lc->type() == CLaunchConfig::DEFAULT)
 		{
 			if (im->febThread) return false;
 			im->febThread = new CFEBioThread(im->wnd, job, this);
 			im->febThread->start();
 		}
-		else if (lc->type == LOCAL)
+		else if (lc->type() == CLaunchConfig::LOCAL)
 		{
 			if (im->process) return false;
 			// create new process
-			CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, this);
+			QString program = QString::fromStdString(lc->path());
+			CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, program, this);
 			im->process = process;
 
 			// go! 
@@ -99,10 +106,10 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 		}
 		else
 		{
-			job->StartRemoteJob();
-
-			// NOTE: Why are we doing this?
-			CFEBioJob::SetActiveJob(nullptr);
+			if (im->remoteJob) return false;
+			im->remoteJob = new CRemoteJob(job, lc, im->wnd);
+			QObject::connect(im->remoteJob, &CRemoteJob::jobFinished, this, &CFEBioJobManager::remoteJobFinished);
+			im->remoteJob->StartRemoteJob();
 		}
 	}
 
@@ -143,6 +150,31 @@ void CFEBioJobManager::KillJob()
 	}
 }
 
+void CFEBioJobManager::remoteJobFinished()
+{
+	if (im->remoteJob == nullptr) return;
+	CFEBioJob* job = im->remoteJob->GetFEBioJob();
+	if (job)
+	{
+		job->StopTimer();
+		job->SetStatus(CFEBioJob::COMPLETED);
+		QString jobName = QString::fromStdString(job->GetName());
+		CFEBioJob::SetActiveJob(nullptr);
+		QString logmsg = QString("FEBio job \"%1 \" has finished.\n").arg(jobName);
+		im->wnd->AddLogEntry(logmsg);
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
+		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
+		QMessageBox::information(im->wnd, "FEBio Studio", logmsg);
+	}
+	else
+	{
+		// Not sure if we should ever get here.
+		QMessageBox::information(im->wnd, "FEBio Studio", "FEBio is done.");
+	}
+	delete im->remoteJob;
+	im->remoteJob = nullptr;
+}
+
 void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 {
 	CFEBioJob* job = CFEBioJob::GetActiveJob();
@@ -169,7 +201,7 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		im->wnd->UpdateTab(job->GetDocument());
 
 		// generate detailed report (for local jobs)
-		if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+		if (im->launchConfig && (im->launchConfig->type() == CLaunchConfig::DEFAULT))
 		{
 			CMainWindow* wnd = im->wnd;
 			CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);

@@ -30,9 +30,10 @@ SOFTWARE.*/
 #include <FSCore/FSCore.h>
 
 //=======================================================================================
-CObjectProps::CObjectProps(FSBase* po)
+CObjectProps::CObjectProps(FSBase* po, bool beautifyStrings)
 {
-	m_po = 0;
+	m_po = nullptr;
+	m_beautify = beautifyStrings;
 	if (po) BuildParamList(po);
 }
 
@@ -41,7 +42,7 @@ void CObjectProps::AddParameter(Param& p)
 	CProperty* prop = nullptr;
 
 	const char* szname = p.GetLongName();
-	string sname = FSCore::beautify_string(szname);
+	string sname = (m_beautify ? FSCore::beautify_string(szname) : szname);
 	QString paramName = QString::fromStdString(sname);
 
 	switch (p.GetParamType())
@@ -69,6 +70,7 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
+	case Param_URL   : prop = addProperty(paramName, CProperty::Resource); break;
 	case Param_MATH  : prop = addProperty(paramName, CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(paramName, CProperty::Color); break;
 	case Param_VEC2I : prop = addProperty(paramName, CProperty::Vec2i); break;
@@ -228,7 +230,8 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	case Param_CHOICE:
 	case Param_INT: return p.GetIntValue(); break;
 	case Param_FLOAT: return p.GetFloatValue(); break;
-	case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
+	case Param_STRING: return QString::fromStdString(p.GetURLValue()); break;
+	case Param_URL  : return QString::fromStdString(p.GetStringValue()); break;
 	case Param_MATH  : return QString::fromStdString(p.GetMathString()); break;
 	case Param_BOOL:
 	{
@@ -326,7 +329,8 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_CHOICE:
 	case Param_INT: p.SetIntValue(v.toInt()); break;
 	case Param_FLOAT: p.SetFloatValue(v.toDouble()); break;
-	case Param_STRING: p.SetStringValue(v.toString().toStdString()); break;
+	case Param_STRING: p.SetURLValue(v.toString().toStdString()); break;
+	case Param_URL  : p.SetStringValue(v.toString().toStdString()); break;
 	case Param_MATH  : p.SetMathString(v.toString().toStdString()); break;
 	case Param_BOOL:
 	{

@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "DlgExportFEBio.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/fecore_enum.h>
+#include "LaunchConfig.h"
 
 
 class Ui::CDlgRun
@@ -72,7 +73,7 @@ public:
 	QGroupBox*	advSettings;
 	QPushButton* more;
 
-	std::vector<CLaunchConfig>* m_launch_configs;
+	std::vector<CLaunchConfig*>* m_launch_configs;
 
 	int m_last_index = -1;
 
@@ -312,9 +313,9 @@ void CDlgRun::UpdateLaunchConfigBox(int index)
 	ui->launchConfig->clear();
 
 	QStringList launchConfigNames;
-	for(CLaunchConfig conf : *ui->m_launch_configs)
+	for(CLaunchConfig* conf : *ui->m_launch_configs)
 	{
-		launchConfigNames.append(QString::fromStdString(conf.name));
+		launchConfigNames.append(QString::fromStdString(conf->name()));
 	}
 
 	ui->launchConfig->addItems(launchConfigNames);
@@ -323,7 +324,7 @@ void CDlgRun::UpdateLaunchConfigBox(int index)
 		ui->launchConfig->setCurrentIndex(index);
 }
 
-void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault)
+void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig*>& launchConfigs, int ndefault)
 {
 	ui->m_launch_configs = &launchConfigs;
 
@@ -396,7 +397,7 @@ CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 
 void CDlgRun::on_editLCBtn_Clicked()
 {
-	CDlgEditPath dlg(this, ui->m_launch_configs);
+	CDlgEditLaunchConfigs dlg(this, ui->m_launch_configs, ui->launchConfig->currentIndex());
 
 	if (dlg.exec())
 	{

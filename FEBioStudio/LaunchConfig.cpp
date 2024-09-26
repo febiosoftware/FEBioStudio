@@ -25,238 +25,167 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "LaunchConfig.h"
+#ifdef HAS_SSH
+#include "SSHHandler.h"
+#endif
 
 CLaunchConfig::CLaunchConfig() {}
 CLaunchConfig::~CLaunchConfig() {}
 
-CLaunchConfig::CLaunchConfig(launchTypes launchType, const std::string& configName)
+CLaunchConfig::CLaunchConfig(CLaunchConfig::LaunchType launchType, const std::string& configName)
 {
-	type = launchType;
-	name = configName;
+	m_type = launchType;
+	m_name = configName;
 }
 
-CLaunchConfig::CLaunchConfig(const CLaunchConfig &old)
+std::string CLaunchConfig::typeString() const
 {
-	type = old.type;
-	name = old.name;
-	path = old.path;
-	server = old.server;
-	port = old.port;
-	userName = old.userName;
-	remoteDir = old.remoteDir;
-//	jobName = old.jobName;
-//	walltime = old.walltime;
-//	procNum = old.procNum;
-	customFile = old.customFile;
-//	ram = old.ram;
-	text = old.text;
-}
-
-void CLaunchConfig::operator=(const CLaunchConfig &old)
-{
-	type = old.type;
-	name = old.name;
-	path = old.path;
-	server = old.server;
-	port = old.port;
-	userName = old.userName;
-	remoteDir = old.remoteDir;
-//	jobName = old.jobName;
-//	walltime = old.walltime;
-//	procNum = old.procNum;
-	customFile = old.customFile;
-//	ram = old.ram;
-	text = old.text;
-}
-
-bool CLaunchConfig::operator!=(const CLaunchConfig &b)
-{
-	return !operator==(b);
-}
-
-bool CLaunchConfig::operator==(const CLaunchConfig &b)
-{
-	if(type != b.type) return false;
-	if(name.compare(b.name) != 0) return false;
-	if(path.compare(b.path) != 0) return false;
-	if(server.compare(b.server) != 0) return false;
-	if(port != b.port) return false;
-	if(userName.compare(b.userName) != 0) return false;
-	if(remoteDir.compare(b.remoteDir) != 0) return false;
-//	if(jobName.compare(b.jobName) != 0) return false;
-//	if(walltime.compare(b.walltime) != 0) return false;
-	if(customFile.compare(b.customFile) != 0) return false;
-//	if(ram != b.ram) return false;
-	if(text.compare(b.text) != 0) return false;
-
-	return true;
-}
-
-
-bool CLaunchConfig::SameServer(const CLaunchConfig &b)
-{
-	if(server.compare(b.server) != 0) return false;
-	if(port != b.port) return false;
-	if(userName.compare(b.userName) != 0) return false;
-
-	return true;
-}
-
-void CLaunchConfig::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_LCONFIG_TYPE, type);
-	ar.WriteChunk(CID_LCONFIG_PATH, path);
-	ar.WriteChunk(CID_LCONFIG_SERVER, server);
-	ar.WriteChunk(CID_LCONFIG_PORT, port);
-	ar.WriteChunk(CID_LCONFIG_USERNAME, userName);
-	ar.WriteChunk(CID_LCONFIG_REMOTEDIR, remoteDir);
-//	ar.WriteChunk(CID_LCONFIG_JOBNAME, jobName);
-//	ar.WriteChunk(CID_LCONFIG_WALLTIME, walltime);
-//	ar.WriteChunk(CID_LCONFIG_PROCNUM, procNum);
-//	ar.WriteChunk(CID_LCONFIG_RAM, ram);
-	ar.WriteChunk(CID_LCONFIG_CUSTOMEFILE, customFile);
-	ar.WriteChunk(CID_LCONFIG_TEXT, getText());
-}
-
-void CLaunchConfig::Load(IArchive& ar)
-{
-	while (ar.OpenChunk() == IArchive::IO_OK)
+	std::string typestr;
+	switch (type())
 	{
-		int nid = ar.GetChunkID();
-		switch(nid)
-		{
-		case CID_LCONFIG_TYPE: ar.read(type); break;
-		case CID_LCONFIG_PATH: ar.read(path); break;
-		case CID_LCONFIG_SERVER: ar.read(server); break;
-		case CID_LCONFIG_PORT: ar.read(port); break;
-		case CID_LCONFIG_USERNAME: ar.read(userName); break;
-		case CID_LCONFIG_REMOTEDIR: ar.read(remoteDir); break;
-//		case CID_LCONFIG_JOBNAME: ar.read(jobName); break;
-//		case CID_LCONFIG_WALLTIME: ar.read(walltime); break;
-//		case CID_LCONFIG_PROCNUM: ar.read(procNum); break;
-//		case CID_LCONFIG_RAM: ar.read(ram); break;
-		case CID_LCONFIG_CUSTOMEFILE: ar.read(customFile); break;
-		case CID_LCONFIG_TEXT: ar.read(text); break;
-		}
-		ar.CloseChunk();
+	case LOCAL  : typestr = "local"; break;
+	case REMOTE : typestr = "remote"; break;
+	case PBS    : typestr = "PBS"; break;
+	case SLURM  : typestr = "SLURM"; break;
+	case CUSTOM : typestr = "custom"; break;
+	case DEFAULT: typestr = "default"; break;
+	default:
+		assert(false);
 	}
+	return typestr;
 }
 
-const std::string& CLaunchConfig::getCustomFile() const {
-	return customFile;
+void CLaunchConfig::GetRemoteFiles(CFEBioJob* job)
+{
+#ifdef HAS_SSH
+/*
+	CSSHHandler* ssh = new CSSHHandler(job);
+	QObject::connect(ssh, &CSSHHandler::sessionFinished, ssh, &QObject::deleteLater);
+	ssh->RequestRemoteFiles();
+*/
+#endif
 }
 
-void CLaunchConfig::setCustomFile(const std::string &customFile) {
-	this->customFile = customFile;
+void CLaunchConfig::GetQueueStatus(CFEBioJob* job)
+{
+#ifdef HAS_SSH
+/*
+	CSSHHandler* ssh = new CSSHHandler(job);
+	QObject::connect(ssh, &CSSHHandler::sessionFinished, ssh, &QObject::deleteLater);
+	ssh->RequestQueueStatus();
+*/
+#endif
 }
 
-const std::string& CLaunchConfig::getName() const {
-	return name;
+std::string CLaunchConfig::path() const
+{
+	const Param* p = GetParam("path"); assert(p);
+	if (p && (p->GetParamType() == Param_URL)) return p->GetURLValue();
+	if (p && (p->GetParamType() == Param_STRING)) return p->GetStringValue();
+	return "";
 }
 
-void CLaunchConfig::setName(const std::string &name) {
-	this->name = name;
+std::string CLaunchConfig::server() const
+{
+	const Param* p = GetParam("server"); assert(p);
+	if (p) return p->GetStringValue(); else return "";
 }
 
-const std::string& CLaunchConfig::getPath() const {
-	return path;
+int CLaunchConfig::port() const
+{
+	const Param* p = GetParam("port"); assert(p);
+	if (p) return p->GetIntValue(); else return -1;
 }
 
-void CLaunchConfig::setPath(const std::string &path) {
-	this->path = path;
+std::string CLaunchConfig::userName() const
+{
+	const Param* p = GetParam("userName"); assert(p);
+	if (p) return p->GetStringValue(); else return "";
 }
 
-int CLaunchConfig::getPort() const {
-	return port;
+std::string CLaunchConfig::remoteDir() const
+{
+	const Param* p = GetParam("remoteDir"); assert(p);
+	if (p) return p->GetStringValue(); else return "";
 }
 
-void CLaunchConfig::setPort(int port) {
-	this->port = port;
+std::string CLaunchConfig::text() const
+{
+	const Param* p = GetParam("text"); assert(p);
+	if (p) return p->GetStringValue(); else return "";
 }
 
-const std::string& CLaunchConfig::getRemoteDir() const {
-	return remoteDir;
+CLocalLaunchConfig::CLocalLaunchConfig(const std::string& configname) : CLaunchConfig(LOCAL, configname) 
+{
+	AddURLParam("", "path", "FEBio executable");
 }
 
-void CLaunchConfig::setRemoteDir(const std::string &remoteDir) {
-	this->remoteDir = remoteDir;
+CRemoteLaunchConfig::CRemoteLaunchConfig(const std::string& configname) : CLaunchConfig(REMOTE, configname) 
+{
+	AddStringParam("", "path", "Remote executable");
+	AddStringParam("", "server", "Server");
+	AddIntParam(22, "port", "Port")->SetIntRange(0, 65535);
+	AddStringParam("", "userName", "Username");
+	AddStringParam("", "remoteDir", "Remote Directory");
 }
 
-const std::string& CLaunchConfig::getServer() const {
-	return server;
+// PBS config widgets
+static char defaultPBSText[] = "#!/bin/bash\n\n"
+"#PBS -l nodes=1:ppn=1\n"
+"#PBS -l walltime=1:00:00\n"
+"#PBS -N ${JOB_NAME}\n"
+"#PBS -o ${REMOTE_DIR}/${JOB_NAME}_stdout.log\n"
+"#PBS -e ${REMOTE_DIR}/${JOB_NAME}_stderr.log\n\n"
+"${FEBIO_PATH} ${REMOTE_DIR}/${JOB_NAME}.feb";
+
+CPBSLaunchConfig::CPBSLaunchConfig(const std::string& configname) : CLaunchConfig(PBS, configname) 
+{
+	AddStringParam("", "path", "Remote executable");
+	AddStringParam("", "server", "Server");
+	AddIntParam(22, "port", "Port")->SetIntRange(0, 65535);
+	AddStringParam("", "userName", "Username");
+	AddStringParam("", "remoteDir", "Remote Directory");
+	AddStringParam(defaultPBSText, "text", "text")->SetVisible(false);
 }
 
-void CLaunchConfig::setServer(const std::string &server) {
-	this->server = server;
+// Slurm config widgets
+static char defaultSlurmText[] = "#!/bin/bash\n\n"
+"#SBATCH -N 1\n"
+"#SBATCH -n 1\n"
+"#SBATCH -t 1:00:00\n"
+"#SBATCH -J ${JOB_NAME}\n"
+"#SBATCH -o ${REMOTE_DIR}/${JOB_NAME}_stdout.log\n"
+"#SBATCH -e ${REMOTE_DIR}/${JOB_NAME}_stderr.log\n\n"
+"${FEBIO_PATH} ${REMOTE_DIR}/${JOB_NAME}.feb";
+
+CSLURMLaunchConfig::CSLURMLaunchConfig(const std::string& configname) : CLaunchConfig(SLURM, configname)
+{
+	AddStringParam("", "path", "Remote executable");
+	AddStringParam("", "server", "Server");
+	AddIntParam(22, "port", "Port")->SetIntRange(0, 65535);
+	AddStringParam("", "userName", "Username");
+	AddStringParam("", "remoteDir", "Remote Directory");
+	AddStringParam(defaultSlurmText, "text", "text")->SetVisible(false);
 }
 
-int CLaunchConfig::getType() const {
-	return type;
+// Custom config widgets
+static char defaultCustomText[] = "#Use this field to create a custom script.\n"
+"#Lines starting with '#' are comments and will be ignored.\n"
+"#Empty Lines will be ignored.\n"
+"#Each line will be run as a separate command.\n\n"
+"#You can use the following macros:\n"
+"#\t${REMOTE_DIR}: the remote directory that you specify.\n"
+"#\t${JOB_NAME}: your current job's name.\n";
+
+CCustomLaunchConfig::CCustomLaunchConfig(const std::string& configname) : CLaunchConfig(CUSTOM, configname) 
+{
+	AddStringParam("", "server", "Server");
+	AddIntParam(22, "port", "Port")->SetIntRange(0, 65535);
+	AddStringParam("", "userName", "Username");
+	AddStringParam("", "remoteDir", "Remote Directory");
+	AddStringParam(defaultCustomText, "text", "text")->SetVisible(false);
 }
 
-void CLaunchConfig::setType(int type) {
-	this->type = type;
-}
-
-const std::string& CLaunchConfig::getUserName() const {
-	return userName;
-}
-
-void CLaunchConfig::setUserName(const std::string &userName) {
-	this->userName = userName;
-}
-
-//const std::string& CLaunchConfig::getCustomText() const {
-//	return CustomText;
-//}
-//
-//void CLaunchConfig::setCustomText(const std::string &customText) {
-//	CustomText = customText;
-//}
-//
-//const std::string& CLaunchConfig::getPbsText() const {
-//
-//	if(PBSText.compare("${DEFAULT}") == 0)
-//	{
-//		return DefaultPBSText;
-//	}
-//
-//	return PBSText;
-//}
-//
-//void CLaunchConfig::setPbsText(const std::string &pbsText) {
-//	PBSText = pbsText;
-//}
-//
-//const std::string& CLaunchConfig::getSlurmText() const {
-//	if(PBSText.compare("${DEFAULT}") == 0)
-//	{
-//		return DefaultPBSText;
-//	}
-//
-//	return SlurmText;
-//}
-//
-//void CLaunchConfig::setSlurmText(const std::string &slurmText) {
-//	SlurmText = slurmText;
-//}
-
-void CLaunchConfig::setText(const std::string &text) {
-	this->text = text;
-}
-
-const std::string& CLaunchConfig::getText() const {
-
-//	switch(type)
-//	{
-//	case PBS:
-//		return PBSText;
-//	case SLURM:
-//		return SlurmText;
-//	case CUSTOM:
-//		return CustomText;
-//	}
-//
-//	return "";
-	return text;
+CDefaultLaunchConfig::CDefaultLaunchConfig(const std::string& configname) : CLaunchConfig(DEFAULT, configname) 
+{
 }

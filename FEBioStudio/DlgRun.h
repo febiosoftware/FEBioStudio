@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 #include <vector>
-#include "LaunchConfig.h"
+
+class CLaunchConfig;
 
 namespace Ui {
 	class CDlgRun;
@@ -43,7 +44,7 @@ public:
 	void SetWorkingDirectory(const QString& wd);
 	void SetJobName(const QString& fn);
 	void SetJobNames(QStringList& jobNames);
-	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
+	void SetLaunchConfig(std::vector<CLaunchConfig*>& launchConfigs, int ndefault = 0);
 	void SetFEBioFileVersion(int fileVersion);
 
 	void ShowFEBioSaveOptions(bool b);

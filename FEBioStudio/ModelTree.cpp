@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "Logger.h"
 #include "IconProvider.h"
+#include "LaunchConfig.h"
 
 // list of warnings generated
 #define WARNING_NONE				0
@@ -412,21 +413,6 @@ public:
 		addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
-
-		CLaunchConfig* lc = job->GetLaunchConfig();
-		if (lc)
-		{
-			int launchType = lc->type;
-			if ((launchType != LOCAL) && (launchType != DEFAULT))
-			{
-				addProperty("", CProperty::Action)->info = QString("Get Remote Files");
-			}
-
-			if ((launchType == PBS) || (launchType == SLURM))
-			{
-				addProperty("", CProperty::Action)->info = QString("Get Queue Status");
-			}
-		}
 	}
 
 	QVariant GetPropertyValue(int i) override
@@ -462,15 +448,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 4)
-		{
-			m_job->GetRemoteFiles();
-		}
-		else if (i == 5)
-		{
-			m_wnd->ClearOutput();
-			m_job->GetQueueStatus();
-		}
+	
 	}
 
 private:

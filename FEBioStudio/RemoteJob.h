@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,36 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QObject>
 
-#include "stdafx.h"
-#include <QDialog>
-
+class CFEBioJob;
+class CMainWindow;
 class CLaunchConfig;
 
-namespace Ui
-{
-	class CDlgEditLaunchConfigs;
-}
-
-class QListWidgetItem;
-
-class CDlgEditLaunchConfigs : public QDialog
+class CRemoteJob : public QObject
 {
 	Q_OBJECT
+	class Imp;
 
 public:
-	CDlgEditLaunchConfigs(QWidget* parent, std::vector<CLaunchConfig*>* launchConfigs, int select = -1);
-	~CDlgEditLaunchConfigs() {}
+	CRemoteJob(CFEBioJob* job, CLaunchConfig* lc, CMainWindow* wnd);
+	~CRemoteJob();
 
-	int GetLCIndex();
+	CFEBioJob* GetFEBioJob();
+
+	void StartRemoteJob();
+	void GetRemoteFiles();
+	void GetQueueStatus();
 
 public slots:
-	void on_selection_change(QListWidgetItem* current, QListWidgetItem* previous);
-	void on_dblClick(QListWidgetItem* item);
-	void on_addConfigBtn_Clicked();
-	void on_delConfigBtn_Clicked();
-	void on_textChanged();
+	void sessionEnded();
+	void updateProgress(double pct);
+
+signals:
+	void jobFinished();
 
 private:
-	Ui::CDlgEditLaunchConfigs* ui;
+	Imp& m;
 };

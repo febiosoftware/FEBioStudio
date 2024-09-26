@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QtCore/QTimer>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
 #include <FEBioMonitor/DlgMonitorSettings.h>
@@ -194,7 +195,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		if (job == nullptr)
 		{
 			// create a new new job
-			job = new CFEBioJob(doc, jobName.toStdString(), relPath, &ui->m_launch_configs.at(lastLaunchConfigIndex));
+			job = new CFEBioJob(doc, jobName.toStdString(), relPath);
 
 			if (modelDoc)
 			{
@@ -206,7 +207,6 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		else
 		{
 			job->UpdateWorkingDirectory(relPath);
-			job->SetLaunchConfig(&ui->m_launch_configs.at(lastLaunchConfigIndex));
 
 			// show it in the model viewer
 			UpdateModel(job);
@@ -219,7 +219,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
 
 		job->m_febVersion = lastFEBioFileVersion;
-		job->m_writeNotes     = dlg.WriteNotes();
+		job->m_writeNotes = dlg.WriteNotes();
 		job->m_allowMixedMesh = dlg.AllowMixedMesh();
 		job->SetCommand(dlg.CommandLine().toStdString());
 
@@ -265,7 +265,28 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		}
 
 		// run the job
-		RunFEBioJob(job);
+		if (CFEBioJob::GetActiveJob())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
+			return;
+		}
+
+		// clear output for next job
+		ClearOutput();
+		ShowLogPanel();
+		ui->logPanel->ShowLog(CLogPanel::FEBIO_LOG);
+
+		UpdateTab(job->GetDocument());
+		// start the job
+		if (ui->m_jobManager->StartJob(job, ui->m_launch_configs.at(lastLaunchConfigIndex)) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
+		}
+
+		UpdateModel(job, false);
+
+		// start a time to measure progress
+		QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 	}
 }
 

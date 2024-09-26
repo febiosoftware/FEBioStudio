@@ -711,8 +711,6 @@ public slots:
 	// (e.g. when a GL widget gets selected)
 	void UpdateFontToolbar();
 
-	void RunFEBioJob(CFEBioJob* job);
-
 	void ShowProgress(bool show, QString message = "");
 	void ShowIndeterminateProgress(bool show, QString message = "");
 	void UpdateProgress(int);

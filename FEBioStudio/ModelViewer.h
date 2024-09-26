@@ -165,7 +165,6 @@ public slots:
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();
-	void OnRerunJob();
 	void OnOpenJob();
 	void OnEditOutput();
 	void OnEditOutputLog();

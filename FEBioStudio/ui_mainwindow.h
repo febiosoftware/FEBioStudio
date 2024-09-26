@@ -433,7 +433,7 @@ public:
 
 	QString m_envMapFile;
 
-	vector<CLaunchConfig>		m_launch_configs;
+	vector<CLaunchConfig*>		m_launch_configs;
 
 	CFEBioJobManager* m_jobManager;
 

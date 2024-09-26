@@ -26,19 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <PostLib/FEFileReader.h>
-#include "LaunchConfig.h"
 #include <FEBioLib/febiolib_types.h>
 
 class CDocument;
-class xpltFileReader;
 
-//-----------------------------------------------------------------------------
 class CFEBioJob : public FSObject
 {
-private:
-	class Imp;
-
 public:
 	enum JOB_STATUS {
 		NONE,
@@ -51,7 +44,7 @@ public:
 public:
 	CFEBioJob(CDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig* launchConfig);
+	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
@@ -70,9 +63,6 @@ public:
 
 	void UpdateWorkingDirectory(const std::string& dir);
 
-	CLaunchConfig* GetLaunchConfig();
-	void SetLaunchConfig(CLaunchConfig* launchConfig);
-
 	void SetCommand(const std::string& cmd);
 	const std::string& GetCommand() const;
 
@@ -85,12 +75,6 @@ public:
 
 	void StartTimer();
 	void StopTimer();
-
-public:
-	// for PBS and SLURM launch configurations
-	void GetRemoteFiles();
-	void GetQueueStatus();
-	void StartRemoteJob();
 
 public:
 	void SetProgress(double pct);
@@ -109,6 +93,12 @@ public: // FEBio output
 	bool m_writeNotes;	// write notes to .feb file
 	bool m_allowMixedMesh;	// allow mixed mesh on export
 
+	// progress management
+	std::string	m_cmd;			// command line options
+	bool	m_bhasProgress;
+	double	m_pct;
+	double	m_tic, m_toc;
+
 private:
 	std::string		m_febFile;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
@@ -116,10 +106,7 @@ private:
 	std::string		m_cnfFile;	// the config file
 	int				m_status;	// return status
 
-	CLaunchConfig*	m_launchConfig;
-
 private:
-	Imp& m;
 	CDocument*	m_doc;
 
 public:

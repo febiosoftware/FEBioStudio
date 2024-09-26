@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <QWizard>
 #include <QTreeWidget>
 #include <vector>
-#include "LaunchConfig.h"
 
 namespace Ui {
 	class CWzdUpload;

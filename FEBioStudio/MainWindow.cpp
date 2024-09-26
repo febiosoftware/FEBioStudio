@@ -240,7 +240,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	else
 	{
 		// Add the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+		ui->m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 	}
 
 	// allow drop events
@@ -1972,30 +1972,36 @@ void CMainWindow::writeSettings()
 	{
 		// Create and save a list of launch config names
 		// NOTE: We do not save the first config, which should be the DEFAULT one
-		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
+		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0]->type == launchTypes::DEFAULT));
 		QStringList launch_config_names;
 		for (int i = 1; i < ui->m_launch_configs.size(); ++i)
 		{
-			CLaunchConfig& confi = ui->m_launch_configs[i];
-			launch_config_names.append(QString::fromStdString(confi.name));
+			CLaunchConfig& confi = *ui->m_launch_configs[i];
+			launch_config_names.append(QString::fromStdString(confi.name()));
 		}
 		settings.setValue("launchConfigNames", launch_config_names);
 
 		// Save launch configs
 		for (int i = 0; i < launch_config_names.count(); i++)
 		{
-			CLaunchConfig& confi = ui->m_launch_configs[i + 1];
-
+			CLaunchConfig& confi = *ui->m_launch_configs[i + 1];
 			QString configName = "launchConfigs/" + launch_config_names[i];
 
-			settings.setValue(configName + "/type", confi.type);
-			settings.setValue(configName + "/path", confi.path.c_str());
-			settings.setValue(configName + "/server", confi.server.c_str());
-			settings.setValue(configName + "/port", confi.port);
-			settings.setValue(configName + "/userName", confi.userName.c_str());
-			settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
-			settings.setValue(configName + "/customFile", confi.customFile.c_str());
-			settings.setValue(configName + "/text", confi.getText().c_str());
+			settings.setValue(configName + "/type", confi.type());
+			for (int n = 0; n < confi.Parameters(); ++n)
+			{
+				Param& p = confi.GetParam(n);
+				QString name = configName + "/" + QString(p.GetShortName());
+				switch (p.GetParamType())
+				{
+				case Param_URL   : settings.setValue(name, p.GetURLValue().c_str()); break;
+				case Param_STRING: settings.setValue(name, p.GetStringValue().c_str()); break;
+				case Param_INT   : settings.setValue(name, p.GetIntValue()); break;
+				case Param_BOOL  : settings.setValue(name, p.GetBoolValue()); break;
+				default:
+					assert(false);
+				}
+			}
 		}
 	}
 	settings.endGroup();
@@ -2136,23 +2142,44 @@ void CMainWindow::readSettings()
 		ui->m_launch_configs.clear();
 
 		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+		ui->m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 
 		for (QString conf : launch_config_names)
 		{
 			QString configName = "launchConfigs/" + conf;
 
-			ui->m_launch_configs.push_back(CLaunchConfig());
+			CLaunchConfig* lc = nullptr;
+			int ntype = settings.value(configName + "/type").toInt();
+			switch (ntype)
+			{
+			case CLaunchConfig::LOCAL : lc = new CLocalLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::REMOTE: lc = new CRemoteLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::PBS   : lc = new CPBSLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::SLURM : lc = new CSLURMLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::CUSTOM: lc = new CCustomLaunchConfig(conf.toStdString()); break;
+			default:
+				assert(false);
+			}
 
-			ui->m_launch_configs.back().name = conf.toStdString();
-			ui->m_launch_configs.back().type = settings.value(configName + "/type").toInt();
-			ui->m_launch_configs.back().path = settings.value(configName + "/path").toString().toStdString();
-			ui->m_launch_configs.back().server = settings.value(configName + "/server").toString().toStdString();
-			ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
-			ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
-			ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
-			ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
-			ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
+			if (lc)
+			{
+				ui->m_launch_configs.push_back(lc);
+
+				for (int n = 0; n < lc->Parameters(); ++n)
+				{
+					Param& p = lc->GetParam(n);
+					QString name = configName + "/" + QString(p.GetShortName());
+					switch (p.GetParamType())
+					{
+					case Param_URL   : p.SetURLValue   (settings.value(name).toString().toStdString()); break;
+					case Param_STRING: p.SetStringValue(settings.value(name).toString().toStdString()); break;
+					case Param_INT   : p.SetIntValue   (settings.value(name).toInt()); break;
+					case Param_BOOL  : p.SetBoolValue  (settings.value(name).toBool()); break;
+					default:
+						assert(false);
+					}
+				}
+			}
 		}
 	}
 	settings.endGroup();
@@ -3406,33 +3433,6 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	else AddLogEntry("SUCCESS!\n");
 
 	return ret;
-}
-
-void CMainWindow::RunFEBioJob(CFEBioJob* job)
-{
-	// see if we already have a job running.
-	if (CFEBioJob::GetActiveJob())
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
-		return;
-	}
-
-	// clear output for next job
-	ClearOutput();
-	ShowLogPanel();
-	ui->logPanel->ShowLog(CLogPanel::FEBIO_LOG);
-
-	UpdateTab(job->GetDocument());
-	// start the job
-	if (ui->m_jobManager->StartJob(job) == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
-	}
-
-	UpdateModel(job, false);
-
-	// start a time to measure progress
-	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 }
 
 void CMainWindow::onShowPartViewer()

@@ -262,6 +262,7 @@ void Param::clear()
 		case Param_MAT3D : delete ((mat3d*)m_pd); break;
 		case Param_MAT3DS: delete ((mat3ds*)m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
+		case Param_URL   : delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		case Param_STD_VECTOR_INT   : delete ((std::vector<int>*)m_pd); break;
@@ -291,6 +292,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_MAT3D : m_pd = new mat3d; break;
 	case Param_MAT3DS: m_pd = new mat3ds; break;
 	case Param_STRING: m_pd = new std::string; break;
+	case Param_URL   : m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
 	case Param_STD_VECTOR_INT   : m_pd = new std::vector<int>(); break;
@@ -402,6 +404,7 @@ Param::Param(const Param& p)
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT   : { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
@@ -448,6 +451,7 @@ Param& Param::operator = (const Param& p)
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds*)p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
@@ -1252,6 +1256,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_MAT3D : { mat3d  v = p.GetMat3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_MAT3DS: { mat3ds v = p.GetMat3dsValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
+	case Param_URL   : { std::string s = p.GetURLValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
@@ -1314,6 +1319,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_MAT3DS: p.SetParamType(Param_MAT3DS); break;
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
+			case Param_URL   : p.SetParamType(Param_URL); break;
 			case Param_MATH  : p.SetParamType(Param_MATH); break;
 			case Param_COLOR : p.SetParamType(Param_COLOR); break;
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
@@ -1337,6 +1343,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_MAT3D : { mat3d  m; ar.read(m); p.SetMat3dValue (m); } break;
 			case Param_MAT3DS: { mat3ds m; ar.read(m); p.SetMat3dsValue (m); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
+			case Param_URL   : { std::string s; ar.read(s); p.SetURLValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }

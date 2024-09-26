@@ -35,7 +35,7 @@ class FSObject;
 class CObjectProps : public CPropertyList
 {
 public:
-	CObjectProps(FSBase* po);
+	CObjectProps(FSBase* po, bool beautifyStrings = true);
 
 	QVariant GetPropertyValue(int i);
 
@@ -58,4 +58,5 @@ protected:
 protected:
 	FSBase*			m_po;
 	std::vector<Param*>	m_params;
+	bool m_beautify;
 };

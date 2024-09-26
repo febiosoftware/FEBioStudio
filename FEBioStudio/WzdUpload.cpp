@@ -410,7 +410,7 @@ public:
 
 	bool invalidNames(QTreeWidgetItem* item = nullptr)
 	{
-		string dissallowed = "<>:\"\\/|?*";
+		std::string dissallowed = "<>:\"\\/|?*";
 
 		if(!item) item = projectItem;
 
@@ -926,7 +926,7 @@ void CWzdUpload::accept()
 
 	}
 
-	string dissallowed = "<>:\"\\/|?*.";
+	std::string dissallowed = "<>:\"\\/|?*.";
 	for(auto c : dissallowed)
 	{
 		if(name.contains(c))
