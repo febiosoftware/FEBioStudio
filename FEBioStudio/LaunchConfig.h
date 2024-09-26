@@ -56,9 +56,6 @@ public:
 	std::string text() const;
 	int port() const;
 
-	void GetRemoteFiles(CFEBioJob* job);
-	void GetQueueStatus(CFEBioJob* job);
-
 private:
 	CLaunchConfig(const CLaunchConfig& old) = delete;
 	void operator=(const CLaunchConfig& old) = delete;

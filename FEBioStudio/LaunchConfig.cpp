@@ -25,9 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "LaunchConfig.h"
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#endif
 
 CLaunchConfig::CLaunchConfig() {}
 CLaunchConfig::~CLaunchConfig() {}
@@ -53,28 +50,6 @@ std::string CLaunchConfig::typeString() const
 		assert(false);
 	}
 	return typestr;
-}
-
-void CLaunchConfig::GetRemoteFiles(CFEBioJob* job)
-{
-#ifdef HAS_SSH
-/*
-	CSSHHandler* ssh = new CSSHHandler(job);
-	QObject::connect(ssh, &CSSHHandler::sessionFinished, ssh, &QObject::deleteLater);
-	ssh->RequestRemoteFiles();
-*/
-#endif
-}
-
-void CLaunchConfig::GetQueueStatus(CFEBioJob* job)
-{
-#ifdef HAS_SSH
-/*
-	CSSHHandler* ssh = new CSSHHandler(job);
-	QObject::connect(ssh, &CSSHHandler::sessionFinished, ssh, &QObject::deleteLater);
-	ssh->RequestQueueStatus();
-*/
-#endif
 }
 
 std::string CLaunchConfig::path() const

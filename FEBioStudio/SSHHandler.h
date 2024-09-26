@@ -41,7 +41,8 @@ enum SSHTask {
 	STARTREMOTEJOB, 
 	GETJOBFILES, 
 	GETQUEUESTATUS, 
-	CREATEREMOTEDIR
+	CREATEREMOTEDIR,
+	SENDFILE
 };
 
 enum msgCode {FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
@@ -69,7 +70,8 @@ public:
 	void setUserName(const std::string& userName);
 	void setRemoteDir(const std::string& remoteDir);
 
-	void StartRemoteSession(const std::string& localFile, SchedulerType scheduler, const::string& runScript);
+	void SendFileToServer(const std::string& localFile);
+	void RunRemoteJob(SchedulerType scheduler, const::string& runScript);
 	void RequestRemoteFiles(const std::string& localFile);
 	void RequestQueueStatus();
 
@@ -80,6 +82,7 @@ private:
 	void Authenticate();
 	void CreateRemoteDir();
 	void EndSSHSession();
+	void SendLocalFile();
 
 	void StartRemoteJob();
 	void GetJobFiles();
@@ -113,9 +116,8 @@ public slots:
 signals:
 	void AddLogEntry(const QString&);
 	void AddOutputEntry(const QString&);
-	void ShowProgress(bool, QString message = "");
 	void UpdateProgress(int);
-	void sessionFinished();
+	void sessionFinished(int nfunc);
 
 private:
 	int RunCommand(std::string command);

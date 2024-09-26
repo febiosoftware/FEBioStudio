@@ -30,7 +30,6 @@ SOFTWARE.*/
 #include "SSHHandler.h"
 #include "MainWindow.h"
 
-#ifdef HAS_SSH
 CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) : sshHandler(sshHandler), func(func)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
@@ -78,12 +77,8 @@ void CSSHThread::run()
 	case CREATEREMOTEDIR:
 		sshHandler->CreateRemoteDir();
 		break;
+	case SENDFILE:
+		sshHandler->SendLocalFile();
+		break;
 	}
 }
-
-#else
-CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) {}
-void CSSHThread::run() {}
-void CSSHThread::SetFuncName(int func) {}
-void CSSHThread::SendFinishedPart() {}
-#endif

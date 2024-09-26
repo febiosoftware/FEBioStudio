@@ -41,10 +41,45 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "../FEBioMonitor/FEBioReportDoc.h"
 #include "LaunchConfig.h"
+#include <QProgressBar>
 
 #ifdef WIN32
 #include <Windows.h>
 #endif
+
+class CDlgRemoteProgress : public QDialog
+{
+public:
+	CDlgRemoteProgress(CRemoteJob* job, QWidget* parent, bool send) : QDialog(parent), m_job(job) 
+	{
+		assert(job);
+		setMinimumWidth(400);
+		QVBoxLayout* l = new QVBoxLayout;
+		QLabel* task = new QLabel("");
+		l->addWidget(task);
+		l->addWidget(m_prg = new QProgressBar);
+		m_prg->setRange(0, 100);
+		setLayout(l);
+
+		QObject::connect(m_job, &CRemoteJob::fileTransferFinished, this, &QDialog::accept);
+		QObject::connect(m_job, &CRemoteJob::progressUpdate, m_prg, &QProgressBar::setValue);
+
+		if (send)
+		{
+			task->setText("Sending file to server ...");
+			m_job->SendLocalFile();
+		}
+		else
+		{
+			task->setText("Fetching remote files ...");
+			m_job->GetRemoteFiles();
+		}
+	}
+
+private:
+	CRemoteJob* m_job = nullptr;
+	QProgressBar* m_prg = nullptr;
+};
 
 class CFEBioJobManager::Impl
 {
@@ -108,6 +143,10 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job, CLaunchConfig* lc)
 		{
 			if (im->remoteJob) return false;
 			im->remoteJob = new CRemoteJob(job, lc, im->wnd);
+
+			CDlgRemoteProgress dlg(im->remoteJob, im->wnd, true);
+			dlg.exec();
+
 			QObject::connect(im->remoteJob, &CRemoteJob::jobFinished, this, &CFEBioJobManager::remoteJobFinished);
 			im->remoteJob->StartRemoteJob();
 		}
@@ -165,6 +204,9 @@ void CFEBioJobManager::remoteJobFinished()
 		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
 		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
 		QMessageBox::information(im->wnd, "FEBio Studio", logmsg);
+
+		CDlgRemoteProgress dlg(im->remoteJob, im->wnd, false);
+		dlg.exec();
 	}
 	else
 	{

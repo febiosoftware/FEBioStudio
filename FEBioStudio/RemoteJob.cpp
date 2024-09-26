@@ -25,9 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RemoteJob.h"
 #include "MainWindow.h"
-#ifdef HAS_SSH
 #include "SSHHandler.h"
-#endif
 #include "LaunchConfig.h"
 #include <FSCore/FSDir.h>
 #include <QFileInfo>
@@ -39,9 +37,7 @@ public:
 	CLaunchConfig* lc = nullptr;
 	double progress = 0;
 	CMainWindow* wnd;
-#ifdef HAS_SSH
 	CSSHHandler* sshHandler = nullptr;
-#endif
 
 	Imp() {}
 	~Imp() { delete sshHandler; }
@@ -52,16 +48,13 @@ CRemoteJob::CRemoteJob(CFEBioJob* job, CLaunchConfig* lc, CMainWindow* wnd) : m(
 	m.job = job;
 	m.lc  = lc;
 	m.wnd = wnd;
-#ifdef HAS_SSH
 	m.sshHandler = new CSSHHandler();
 	m.sshHandler->setServerName(lc->server());
 	m.sshHandler->setPort(lc->port());
 	m.sshHandler->setUserName(lc->userName());
 	m.sshHandler->setRemoteDir(lc->remoteDir());
-	QObject::connect(m.sshHandler, &CSSHHandler::ShowProgress, wnd, &CMainWindow::ShowProgress);
-	QObject::connect(m.sshHandler, &CSSHHandler::UpdateProgress, this, &CRemoteJob::updateProgress);
+	QObject::connect(m.sshHandler, &CSSHHandler::UpdateProgress, this, &CRemoteJob::getProgressUpdate);
 	QObject::connect(m.sshHandler, &CSSHHandler::sessionFinished, this, &CRemoteJob::sessionEnded);
-#endif
 }
 
 CRemoteJob::~CRemoteJob() { delete &m; }
@@ -71,38 +64,38 @@ CFEBioJob* CRemoteJob::GetFEBioJob()
 	return m.job;
 }
 
-void CRemoteJob::updateProgress(double pct)
+void CRemoteJob::getProgressUpdate(double pct)
 {
-	if (pct > m.progress)
-	{
-		m.progress = pct;
-		m.job->SetProgress(pct);
-		m.wnd->UpdateTitle();
-	}
+	m.progress = pct;
+	if (m.job) m.job->SetProgress(pct);
+	m.wnd->UpdateTitle();
+	emit progressUpdate(pct);
 }
 
 void CRemoteJob::GetRemoteFiles()
 {
-#ifdef HAS_SSH
+	m.progress = 0;
 	std::string localFile = FSDir::expandMacros(m.job->GetPlotFileName());
 	m.sshHandler->RequestRemoteFiles(localFile);
-#endif
 }
 
 void CRemoteJob::GetQueueStatus()
 {
-#ifdef HAS_SSH
 	m.sshHandler->RequestQueueStatus();
-#endif
+}
+
+void CRemoteJob::SendLocalFile()
+{
+	if ((m.lc == nullptr) || (m.job == nullptr)) return;
+	std::string localFile = FSDir::expandMacros(m.job->GetFEBFileName());
+	m.progress = 0;
+	m.sshHandler->SendFileToServer(localFile);
 }
 
 void CRemoteJob::StartRemoteJob()
 {
-#ifdef HAS_SSH
 	if ((m.lc == nullptr) || (m.job == nullptr)) return;
 	
-	std::string localFile = FSDir::expandMacros(m.job->GetFEBFileName());
-
 	CSSHHandler::SchedulerType scheduler = CSSHHandler::NO_SCHEDULER;
 	switch (m.lc->type())
 	{
@@ -115,6 +108,7 @@ void CRemoteJob::StartRemoteJob()
 	}
 
 	std::string script;
+	m.progress = 0;
 	if (m.lc->type() == CLaunchConfig::REMOTE) script = m.lc->path();
 	else
 	{
@@ -127,11 +121,17 @@ void CRemoteJob::StartRemoteJob()
 		script = text.toStdString();
 	}
 
-	m.sshHandler->StartRemoteSession(localFile, scheduler, script);
-#endif
+	m.sshHandler->RunRemoteJob(scheduler, script);
 }
 
-void CRemoteJob::sessionEnded()
+void CRemoteJob::sessionEnded(int nfunc)
 {
-	emit jobFinished();
+	if (nfunc == SSHTask::STARTREMOTEJOB)
+	{
+		emit jobFinished();
+	}
+	else if ((nfunc == SSHTask::GETJOBFILES)||(nfunc == SSHTask::SENDFILE))
+	{
+		emit fileTransferFinished();
+	}
 }

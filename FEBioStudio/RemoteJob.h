@@ -41,16 +41,19 @@ public:
 
 	CFEBioJob* GetFEBioJob();
 
+	void SendLocalFile();
 	void StartRemoteJob();
 	void GetRemoteFiles();
 	void GetQueueStatus();
 
 public slots:
-	void sessionEnded();
-	void updateProgress(double pct);
+	void sessionEnded(int nfunc);
+	void getProgressUpdate(double pct);
 
 signals:
 	void jobFinished();
+	void fileTransferFinished();
+	void progressUpdate(double pct);
 
 private:
 	Imp& m;
