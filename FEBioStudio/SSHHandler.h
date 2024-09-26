@@ -27,17 +27,24 @@ SOFTWARE.*/
 #pragma once
 
 #include "FEBioJob.h"
-#include "LaunchConfig.h"
-#include "MainWindow.h"
 #include <QtCore/QObject>
 
 class CSSHThread;
-class CLaunchConfig;
 
-enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET,
-		STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS, CREATEREMOTEDIR};
+enum SSHTask {
+	ENDSSHSESSION = -1, 
+	STARTSSHSESSION, 
+	VERIFYSERVER, 
+	ADDTRUSETEDSERVER, 
+	AUTHENTICATE, 
+	TARGET,
+	STARTREMOTEJOB, 
+	GETJOBFILES, 
+	GETQUEUESTATUS, 
+	CREATEREMOTEDIR
+};
 
-enum msgCode{FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
+enum msgCode {FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
 
 class CSSHHandler : public QObject
 {
@@ -46,11 +53,24 @@ class CSSHHandler : public QObject
 	class SSHData;
 
 public:
-	CSSHHandler (CFEBioJob* job, CLaunchConfig* lc);
+	enum SchedulerType {
+		NO_SCHEDULER,
+		PBS_SCHEDULER,
+		SLURM_SCHEDULER,
+		CUSTOM_SCHEDULER
+	};
+
+public:
+	CSSHHandler ();
 	~CSSHHandler();
 
-	void StartRemoteSession();
-	void RequestRemoteFiles();
+	void setPort(int port);
+	void setServerName(const std::string& server);
+	void setUserName(const std::string& userName);
+	void setRemoteDir(const std::string& remoteDir);
+
+	void StartRemoteSession(const std::string& localFile, SchedulerType scheduler, const::string& runScript);
+	void RequestRemoteFiles(const std::string& localFile);
 	void RequestQueueStatus();
 
 private:
@@ -118,7 +138,7 @@ private:
 	int CreateBashFile();
 	int ParseCustomFile(std::vector<std::string>& commands);
 
-	void ReplaceMacros(QString& string);
+	void setError(const QString& msg);
 
 private:
 	SSHData*	m_data;

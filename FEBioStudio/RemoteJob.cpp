@@ -28,11 +28,15 @@ SOFTWARE.*/
 #ifdef HAS_SSH
 #include "SSHHandler.h"
 #endif
+#include "LaunchConfig.h"
+#include <FSCore/FSDir.h>
+#include <QFileInfo>
 
 class CRemoteJob::Imp 
 {
 public:
 	CFEBioJob* job = nullptr;
+	CLaunchConfig* lc = nullptr;
 	double progress = 0;
 	CMainWindow* wnd;
 #ifdef HAS_SSH
@@ -46,9 +50,14 @@ public:
 CRemoteJob::CRemoteJob(CFEBioJob* job, CLaunchConfig* lc, CMainWindow* wnd) : m(*(new CRemoteJob::Imp))
 { 
 	m.job = job;
+	m.lc  = lc;
 	m.wnd = wnd;
 #ifdef HAS_SSH
-	m.sshHandler = new CSSHHandler(job, lc);
+	m.sshHandler = new CSSHHandler();
+	m.sshHandler->setServerName(lc->server());
+	m.sshHandler->setPort(lc->port());
+	m.sshHandler->setUserName(lc->userName());
+	m.sshHandler->setRemoteDir(lc->remoteDir());
 	QObject::connect(m.sshHandler, &CSSHHandler::ShowProgress, wnd, &CMainWindow::ShowProgress);
 	QObject::connect(m.sshHandler, &CSSHHandler::UpdateProgress, this, &CRemoteJob::updateProgress);
 	QObject::connect(m.sshHandler, &CSSHHandler::sessionFinished, this, &CRemoteJob::sessionEnded);
@@ -75,7 +84,8 @@ void CRemoteJob::updateProgress(double pct)
 void CRemoteJob::GetRemoteFiles()
 {
 #ifdef HAS_SSH
-	m.sshHandler->RequestRemoteFiles();
+	std::string localFile = FSDir::expandMacros(m.job->GetPlotFileName());
+	m.sshHandler->RequestRemoteFiles(localFile);
 #endif
 }
 
@@ -89,7 +99,35 @@ void CRemoteJob::GetQueueStatus()
 void CRemoteJob::StartRemoteJob()
 {
 #ifdef HAS_SSH
-	m.sshHandler->StartRemoteSession();
+	if ((m.lc == nullptr) || (m.job == nullptr)) return;
+	
+	std::string localFile = FSDir::expandMacros(m.job->GetFEBFileName());
+
+	CSSHHandler::SchedulerType scheduler = CSSHHandler::NO_SCHEDULER;
+	switch (m.lc->type())
+	{
+	case CLaunchConfig::REMOTE: scheduler = CSSHHandler::NO_SCHEDULER; break;
+	case CLaunchConfig::PBS   : scheduler = CSSHHandler::PBS_SCHEDULER; break;
+	case CLaunchConfig::SLURM : scheduler = CSSHHandler::SLURM_SCHEDULER; break;
+	case CLaunchConfig::CUSTOM: scheduler = CSSHHandler::CUSTOM_SCHEDULER; break;
+	default:
+		assert(false);
+	}
+
+	std::string script;
+	if (m.lc->type() == CLaunchConfig::REMOTE) script = m.lc->path();
+	else
+	{
+		QString text = QString::fromStdString(m.lc->text());
+
+		text.replace("${FEBIO_PATH}", m.lc->path().c_str());
+		text.replace("${JOB_NAME}"  , m.job->GetName().c_str());
+		text.replace("${REMOTE_DIR}", m.lc->remoteDir().c_str());
+
+		script = text.toStdString();
+	}
+
+	m.sshHandler->StartRemoteSession(localFile, scheduler, script);
 #endif
 }
 
