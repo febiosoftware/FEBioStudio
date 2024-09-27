@@ -43,10 +43,6 @@ void Ui::CUIConfig::Apply()
 	// disable some FEBio menu items
 	ui->actionFEBioRun->setEnabled(false);
 	ui->actionFEBioStop->setEnabled(false);
-	ui->actionFEBioMonitorSettings->setVisible(false);
-	ui->actionFEBioPause->setVisible(false);
-	ui->actionFEBioNext->setVisible(false);
-	ui->actionFEBioContinue->setVisible(false);
 	ui->actionFEBioCheck->setEnabled(false);
 
 	// disable some Tools menu items
@@ -166,13 +162,11 @@ void Ui::CModelConfig::Apply()
 		}
 	}
 
+	ui->actionFEBioMonitor->setEnabled(true);
 	ui->actionImportGeom->setEnabled(true);
 	ui->actionExportGeom->setEnabled(true);
 	ui->actionExportFE->setEnabled(true);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
-	ui->menuImportImage->menuAction()->setEnabled(true);
 	ui->actionSnapShot->setEnabled(true);
-
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
 	ui->actionFEBioCheck->setEnabled(true);
@@ -182,6 +176,9 @@ void Ui::CModelConfig::Apply()
 	ui->actionMeshDiagnostic->setEnabled(true);
 	ui->actionMaterialTest->setEnabled(true);
 
+	ui->menuFEBio->menuAction()->setVisible(true);
+	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
+	ui->menuImportImage->menuAction()->setEnabled(true);
 	ui->menuEdit->menuAction()->setVisible(true);
 	ui->menuEditPost->menuAction()->setVisible(false);
 	ui->menuEditTxt->menuAction()->setVisible(false);
@@ -458,10 +455,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
 
 	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitorSettings->setVisible(true);
-	ui->actionFEBioPause->setVisible(true);
-	ui->actionFEBioNext->setVisible(true);
-	ui->actionFEBioContinue->setVisible(true);
+	ui->actionFEBioMonitor->setEnabled(false);
 
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(true);
@@ -506,20 +500,15 @@ void Ui::CFEBReportConfig::Apply()
 
 	ui->setActiveCentralView(CMainCentralWidget::FEBREPORT_VIEW);
 
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitorSettings->setVisible(true);
-	ui->actionFEBioPause->setVisible(true);
-	ui->actionFEBioNext->setVisible(true);
-	ui->actionFEBioContinue->setVisible(true);
-
 	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(true);
+	ui->menuEditPost->menuAction()->setVisible(false);
 	ui->menuEditTxt->menuAction()->setVisible(false);
 	ui->menuEditXml->menuAction()->setVisible(false);
 	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(true);
-	ui->menuRecord->menuAction()->setVisible(true);
+	ui->menuPost->menuAction()->setVisible(false);
+	ui->menuRecord->menuAction()->setVisible(false);
 	ui->menuView->menuAction()->setVisible(false);
+	ui->menuFEBio->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();

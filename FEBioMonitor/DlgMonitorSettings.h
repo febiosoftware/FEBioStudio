@@ -34,23 +34,17 @@ class CDlgMonitorSettings : public QDialog
 	class Ui;
 
 public:
-	enum FileMode {
-		OPEN_FILE,
-		SAVE_FILE
-	};
-
-public:
 	CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent = 0);
+	void CanEditJob(bool b);
+	void SetJobList(const QStringList& joblist);
+	void SetJobName(const QString& jobName);
+	void SetWorkingDirectory(const QString& workingDir);
 
-	void CanEditFilename(bool b);
-
-	void SetFileMode(FileMode fileMode);
+	QString GetWorkingDirectory();
+	QString GetJobName();
 
 protected:
 	void accept() override;
-
-public slots:
-	void OnClick();
 
 private:
 	FEBioMonitorDoc* m_doc;

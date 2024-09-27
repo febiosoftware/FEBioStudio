@@ -87,7 +87,10 @@ QString CResourceEdit::resourceName() const
 
 void CResourceEdit::setResourceName(const QString& t)
 {
-	ui->m_name->setText(t);
+	QDir d(t);
+	QString s = d.cleanPath(t);
+	s = d.toNativeSeparators(s);
+	ui->m_name->setText(s);
 }
 
 void CResourceEdit::nameChanged()
@@ -108,7 +111,7 @@ void CResourceEdit::buttonPressed()
 			if (files.size() == 1)
 			{
 				QString fileName = files.at(0);
-				ui->m_name->setText(fileName);
+				setResourceName(fileName);
 				emit resourceChanged();
 			}
 		}
@@ -118,7 +121,7 @@ void CResourceEdit::buttonPressed()
 		QString folderName = QFileDialog::getExistingDirectory(this);
 		if (folderName.isEmpty() == false)
 		{
-			ui->m_name->setText(folderName);
+			setResourceName(folderName);
 			emit resourceChanged();
 		}
 	}

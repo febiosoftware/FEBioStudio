@@ -29,6 +29,7 @@ CFEBioReportDoc::CFEBioReportDoc(CMainWindow* wnd) : CDocument(wnd)
 {
 	m_bValid = false;
 	SetDocTitle("Report");
+	SetIcon(":/icons/report.png");
 }
 
 void CFEBioReportDoc::setJob(CFEBioJob* job)
@@ -44,7 +45,7 @@ void CFEBioReportDoc::setJob(CFEBioJob* job)
 	m_modelStats = job->m_modelStats;
 	m_stepStats  = job->m_stepStats;
 
-	QString title = QString("Report[%1]").arg(m_jobName);
+	QString title = QString("Report [%1]").arg(m_jobName);
 	SetDocTitle(title.toStdString());
 
 	m_bValid = true;

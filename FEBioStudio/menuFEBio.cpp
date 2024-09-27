@@ -326,53 +326,160 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 		QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor is already running.");
 		return;
 	}
-	else
+
+	if (CFEBioJob::GetActiveJob())
 	{
-		bool exportFEBioFile = false;
-		FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
-		CModelDocument* doc = GetModelDocument();
-		if (doc)
+		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
+		return;
+	}
+
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Monitor", "No document open.");
+		return;
+	}
+
+	QString docFolder = QString::fromStdString(modelDoc->GetDocFolder());
+	if (docFolder.isEmpty())
+	{
+		QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
+		return;
+	}
+
+	QString docName = QString::fromStdString(modelDoc->GetDocFileBase());
+	QString jobPath = docFolder + "/jobs";
+
+	QStringList jobList;
+	for (int i = 0; i < modelDoc->FEBioJobs(); ++i)
+	{
+		CFEBioJob* job = modelDoc->GetFEBioJob(i);
+		QString jobNamei = QString::fromStdString(job->GetName());
+		jobList.append(jobNamei);
+	}
+
+	// we'll take the last job's name or create a new one if the job list is empty
+	QString jobName;
+	if (jobList.empty())
+	{
+		// create a name for this job
+		jobName = docName;
+	}
+	else if (jobName.isEmpty())
+	{
+		jobName = jobList.last();
+	}
+		
+	std::unique_ptr<FEBioMonitorDoc> monitorDoc(new FEBioMonitorDoc(this));
+	CDlgMonitorSettings dlg(monitorDoc.get(), this);
+	dlg.SetJobList(jobList);
+	dlg.SetWorkingDirectory(jobPath);
+	dlg.SetJobName(jobName);
+
+	if (dlg.exec())
+	{
+		// get the working directory and job name
+		jobPath = dlg.GetWorkingDirectory();
+		jobName = dlg.GetJobName();
+
+		// do string replacement
+		QString absDir = QString::fromStdString(FSDir::expandMacros(jobPath.toStdString()));
+
+		// create job directory if it doesn't exist.
+		if (!QFile(absDir).exists())
 		{
-			// make sure the model is saved
-			if (doc->IsModified())
+			bool b = QDir(absDir).mkpath(absDir);
+			if (b == false)
 			{
-				on_actionSave_triggered();
+				QMessageBox::critical(this, "FEBioStudio", "Failed creating working directory.\nCannot run job.");
+				return;
 			}
-
-			// write the FEBio input file
-			std::string febFilename = doc->GetDocFilePath();
-
-			exportFEBioFile = true;
-			size_t n = febFilename.rfind(".fs2");
-			if (n == string::npos) exportFEBioFile = false;
-			else febFilename.replace(n, 4, ".feb");
-
-			monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
 		}
 
-		CDlgMonitorSettings dlg(monitorDoc, this);
-		if (doc && exportFEBioFile) dlg.SetFileMode(CDlgMonitorSettings::SAVE_FILE);
-		else dlg.SetFileMode(CDlgMonitorSettings::OPEN_FILE);
+		// for default jobs we want to change the working directory to the jobs folder
+		QDir::setCurrent(absDir);
 
-		if (doc && (exportFEBioFile == false)) dlg.CanEditFilename(false);
+		// find the relative path with respect to the model's folder
+		QDir modelDir(QString::fromStdString(modelDoc->GetDocFolder()));
+		string relPath = modelDir.relativeFilePath(jobPath).toStdString();
 
-		if (dlg.exec())
+		CFEBioJob* job = nullptr;
+		if (modelDoc)
 		{
-			std::string febFilename = monitorDoc->GetFEBioInputFile().toStdString();
-			if (doc && exportFEBioFile)
-			{
-				CDlgStartThread runThread(this, new ExportFEBioThread(this, doc, febFilename));
-				if (!runThread.exec())
-				{
-					QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
-					return;
-				}
-			}
-
-			AddDocument(monitorDoc);
-			monitorDoc->RunJob();
+			// see if a job with this name already exists
+			job = modelDoc->FindFEBioJob(jobName.toStdString());
 		}
-		else delete monitorDoc;
+
+		// if not, create a new job
+		if (job == nullptr)
+		{
+			// create a new new job
+			job = new CFEBioJob(modelDoc, jobName.toStdString(), relPath);
+
+			if (modelDoc)
+			{
+				modelDoc->AddFEbioJob(job);
+				// show it in the model viewer
+				UpdateModel(job);
+			}
+		}
+		else
+		{
+			job->UpdateWorkingDirectory(relPath);
+
+			// show it in the model viewer
+			UpdateModel(job);
+		}
+
+		job->m_febVersion = 0x0400;
+		job->m_writeNotes = true;
+		job->m_allowMixedMesh = false;
+
+		// do a model check
+		if (DoModelCheck(modelDoc) == false) return;
+
+		// auto-save the document
+		if (modelDoc->IsModified())
+		{
+			AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(modelDoc->GetDocFilePath())));
+			bool b = modelDoc->SaveDocument();
+			UpdateTab(modelDoc);
+			AddLogEntry(b ? "success\n" : "FAILED\n");
+		}
+
+		// export to FEBio
+		string febFile = job->GetFEBFileName();
+
+		// see if the feb file already exists
+		QFile file(QString::fromStdString(febFile));
+		if (file.exists())
+		{
+			QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(jobName);
+			int n = QMessageBox::warning(this, "Run FEBio", msg, QMessageBox::Yes, QMessageBox::No);
+			if (n != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+
+		// save the FEBio file
+		CDlgStartThread runThread(this, new ExportFEBioThread(this, modelDoc, febFile));
+		if (!runThread.exec())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
+			return;
+		}
+
+		modelDoc->AppendChangeLog(QString("Started job %1").arg(QString::fromStdString(job->GetName())));
+		UpdateModel(job, false);
+
+		if (monitorDoc->RunJob(job) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to start job in FEBio Monitor.");
+			return;
+		}
+		AddDocument(monitorDoc.get());
+		monitorDoc.release();
 	}
 }
 
@@ -388,7 +495,7 @@ void CMainWindow::on_actionFEBioMonitorSettings_triggered()
 	}
 
 	CDlgMonitorSettings dlg(doc, this);
-	dlg.CanEditFilename(false);
+	dlg.CanEditJob(false);
 	dlg.exec();
 }
 
@@ -402,7 +509,7 @@ void CMainWindow::on_actionFEBioContinue_triggered()
 			QMessageBox::information(this, "FEBio Studio", "The current job is already running.");
 			return;
 		}
-		else doc->RunJob();
+		else doc->ContinueJob();
 	}
 }
 

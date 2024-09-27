@@ -213,7 +213,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 	actionFEBioCheck = addAction("Model check ...", "actionFEBioCheck");
 	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop", "stop");
-	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor");
+	actionFEBioMonitor = addAction("Run FEBio Monitor ...", "actionFEBioMonitor", "febiomonitor");
 	actionFEBioMonitorSettings = addAction("FEBio Monitor Settings ...", "actionFEBioMonitorSettings", "febiomonitor");
 	actionFEBioContinue = addAction("Pause FEBio", "actionFEBioContinue", "play"); actionFEBioContinue->setShortcut(Qt::ControlModifier | Qt::Key_F5);
 	actionFEBioPause   = addAction("Pause FEBio", "actionFEBioPause", "pause"); actionFEBioPause->setShortcut(Qt::ShiftModifier | Qt::Key_F5);
@@ -580,11 +580,6 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFEBio->addAction(actionFEBioRun);
 	menuFEBio->addAction(actionFEBioStop);
 	menuFEBio->addAction(actionFEBioMonitor);
-	menuFEBio->addAction(actionFEBioMonitorSettings);
-	menuFEBio->addAction(actionFEBioContinue);
-	menuFEBio->addAction(actionFEBioPause);
-	menuFEBio->addAction(actionFEBioNext);
-	menuFEBio->addAction(actionFEBioCheck);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);

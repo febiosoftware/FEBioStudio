@@ -35,12 +35,16 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QFileDialog>
 #include <QtCore/QFileInfo>
-#include "../FEBioStudio/InputWidgets.h"
+#include <QFormLayout>
+#include <QGroupBox>
+#include <FEBioStudio/InputWidgets.h>
+#include <FEBioStudio/ResourceEdit.h>
 
 class CDlgMonitorSettings::Ui
 {
-private:
-	QLineEdit* m_fileInput;
+public:
+	QComboBox* m_jobName;
+	CResourceEdit* m_workingDir;
 	QCheckBox* m_startPaused;
 	QComboBox* m_pauseEvents;
 	QCheckBox* m_enablePauseTime;
@@ -48,6 +52,7 @@ private:
 	QComboBox* m_debugMode;
 	QCheckBox* m_recordStates;
 	QComboBox* m_updateEvents;
+	QGroupBox* jobSettings;
 
 public:
 	int m_fileMode = 0;
@@ -57,40 +62,43 @@ public:
 	{
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		QVBoxLayout* l = new QVBoxLayout;
-		l->addWidget(new QLabel("FEBio input file:"));
 
+		jobSettings = new QGroupBox("Job Settings:");
+		QFormLayout* form = new QFormLayout();
+		form->setLabelAlignment(Qt::AlignRight);
+		form->addRow("Job name:", m_jobName = new QComboBox()); m_jobName->setEditable(true);
+		form->addRow("Working directory:", m_workingDir = new CResourceEdit);
+		jobSettings->setLayout(form);
+		l->addWidget(jobSettings);
+
+		QGroupBox* b = new QGroupBox("Monitor Settings:");
+
+		QVBoxLayout* settingsLayout = new QVBoxLayout;
 		QHBoxLayout* h = new QHBoxLayout;
-		h->addWidget(m_fileInput = new QLineEdit());
-		QPushButton* pb = new QPushButton("...");
-		pb->setMaximumWidth(50);
-		h->addWidget(pb);
-		l->addLayout(h);
-
-		h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
 		h->addWidget(new QLabel("Pause event:"));
 		h->addWidget(m_pauseEvents = new QComboBox);
 		h->addStretch();
-		l->addLayout(h);
-		l->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
+		settingsLayout->addLayout(h);
+		settingsLayout->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
 
 		h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
 		h->addWidget(m_enablePauseTime = new QCheckBox("Pause after time: "));
 		h->addWidget(m_pauseTime = new CFloatInput); m_pauseTime->setValue(0.0);
 		h->addStretch();
-		l->addLayout(h);
+		settingsLayout->addLayout(h);
 
 		h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
 		h->addWidget(new QLabel("Debug level:"));
 		h->addWidget(m_debugMode = new QComboBox);
 		h->addStretch();
-		l->addLayout(h);
+		settingsLayout->addLayout(h);
 		m_debugMode->addItems(QStringList() << "0 (off)" << "1" << "2");
 
 		m_recordStates = new QCheckBox("record states");
-		l->addWidget(m_recordStates);
+		settingsLayout->addWidget(m_recordStates);
 
 		h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
@@ -99,27 +107,24 @@ public:
 		m_updateEvents->addItems({ "major iterations", "minor iterations", "all events" });
 		h->addWidget(m_updateEvents);
 		h->addStretch();
-		l->addLayout(h);
+		settingsLayout->addLayout(h);
+
+		b->setLayout(settingsLayout);
+		l->addWidget(b);
 
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
 		connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
-		connect(pb, &QPushButton::clicked, dlg, &CDlgMonitorSettings::OnClick);
 	}
-
-	void EnableFileInput(bool b) { m_fileInput->setEnabled(b); }
 
 	void AddPauseEvent(QString name, int nevent) { m_pauseEvents->addItem(name, QVariant(nevent)); }
 
-	QString GetInputFilename() { return m_fileInput->text(); }
-	bool InputIsEnabled() const { return m_fileInput->isEnabled(); }
 	unsigned int GetPauseEvents() { return (unsigned int)(m_pauseEvents->currentData().toInt()); }
 	bool GetStartPausedOption() { return m_startPaused->isChecked(); }
 	unsigned int GetUpdateEvents() { return m_updateEvents->currentIndex(); }
 	void SetUpdateEvents(int n) { m_updateEvents->setCurrentIndex(n); }
-	void SetFEBioInputFile(QString febfile) { m_fileInput->setText(febfile); }
 
 	void SetStartPausedOption(bool b) { m_startPaused->setChecked(b); }
 
@@ -157,7 +162,6 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 			ui->AddPauseEvent(eventName, n);
 	}
 
-	ui->SetFEBioInputFile(doc->GetFEBioInputFile());
 	ui->SetStartPausedOption(doc->StartPaused());
 	ui->SetPauseEvents(doc->GetPauseEvents());
 	ui->SetPauseTime(doc->GetPauseTime());
@@ -167,67 +171,44 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 	ui->SetUpdateEvents(doc->GetUpdateEvents());
 }
 
-void CDlgMonitorSettings::CanEditFilename(bool b)
+void CDlgMonitorSettings::CanEditJob(bool b)
 {
-	ui->EnableFileInput(b);
+	if (!b) ui->jobSettings->hide();
 }
 
-void CDlgMonitorSettings::SetFileMode(FileMode fileMode)
+void CDlgMonitorSettings::SetJobList(const QStringList& joblist)
 {
-	ui->m_fileMode = (int)fileMode;
+	ui->m_jobName->addItems(joblist);
+}
+
+void CDlgMonitorSettings::SetJobName(const QString& jobName)
+{
+	ui->m_jobName->setEditText(jobName);
+}
+
+void CDlgMonitorSettings::SetWorkingDirectory(const QString& workingDir)
+{
+	ui->m_workingDir->setResourceName(workingDir);
+}
+
+QString CDlgMonitorSettings::GetWorkingDirectory()
+{
+	return ui->m_workingDir->resourceName();
+}
+
+QString CDlgMonitorSettings::GetJobName()
+{
+	return ui->m_jobName->currentText();
 }
 
 void CDlgMonitorSettings::accept()
 {
 	assert(m_doc);
-	if (ui->InputIsEnabled())
-	{
-		QString filename = ui->GetInputFilename();
-		if (filename.isEmpty())
-		{
-			QMessageBox::critical(this, "FEBio Monitor", "You need to specify a valid filename.");
-			return;
-		}
-
-		QFileInfo fi(filename);
-		if (fi.exists() && (ui->m_fileMode == CDlgMonitorSettings::SAVE_FILE))
-		{
-			QString msg("The FEBio input file already exists and will be overwritten. Continue?");
-			if (QMessageBox::question(this, "FEBio Monitor", msg, QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
-			{
-				return;
-			}
-		}
-
-		m_doc->SetFEBioInputFile(ui->GetInputFilename());
-	}
-
 	m_doc->StartPaused(ui->GetStartPausedOption());
 	m_doc->SetPauseEvents(ui->GetPauseEvents());
 	m_doc->SetPauseTime(ui->GetPauseTime(), ui->IsPauseTimeEnabled());
 	m_doc->SetDebugLevel(ui->GetDebugLevel());
 	m_doc->SetRecordStatesFlag(ui->GetRecordStatesFlag());
 	m_doc->SetUpdateEvents(ui->GetUpdateEvents());
-
 	QDialog::accept();
-}
-
-void CDlgMonitorSettings::OnClick()
-{
-	if (ui->m_fileMode == OPEN_FILE)
-	{
-		QString filename = QFileDialog::getOpenFileName(this, "Open File", QString(), "FEBio Files (*.feb)");
-		if (filename.isEmpty() == false)
-		{
-			ui->SetFEBioInputFile(filename);
-		}
-	}
-	else if (ui->m_fileMode == SAVE_FILE)
-	{
-		QString filename = QFileDialog::getOpenFileName(this, "Save File", QString(), "FEBio Files (*.feb)");
-		if (filename.isEmpty() == false)
-		{
-			ui->SetFEBioInputFile(filename);
-		}
-	}
 }

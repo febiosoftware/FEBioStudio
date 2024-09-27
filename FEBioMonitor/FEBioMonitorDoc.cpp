@@ -90,7 +90,7 @@ bool cb_processEvent(FEModel* fem, unsigned int nwhen, void* pd)
 
 void FEBioMonitorThread::run()
 {
-	std::string filename = m_doc->GetFEBioInputFile().toStdString();
+	std::string filename = m_doc->GetFEBioInputFile();
 	if (filename.empty()) {
 		emit jobFinished(false);
 		return;
@@ -162,6 +162,7 @@ public:
 	Timer	timer;
 	FEBioModel* fem = nullptr;
 	CFEBioJob* job = nullptr;
+	std::string febFileName;
 
 	QVector<FEBioWatchVariable*>	watches;
 	FSConvergenceInfo conv;
@@ -169,7 +170,7 @@ public:
 
 FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(new FEBioMonitorDoc::Imp)
 {
-	SetDocTitle("[FEBio Monitor]");
+	SetDocTitle("FEBio Monitor");
 	SetIcon(":/icons/febiomonitor.png");
 
 	m->isOutputReady = false;
@@ -203,16 +204,6 @@ FEBioMonitorDoc::~FEBioMonitorDoc()
 	wnd->GetFEBioMonitorPanel()->Clear();
 	qDeleteAll(m->watches);
 	delete m;
-}
-
-void FEBioMonitorDoc::SetFEBioInputFile(QString febFile)
-{
-	m->febFile = febFile;
-}
-
-QString FEBioMonitorDoc::GetFEBioInputFile() const
-{
-	return m->febFile;
 }
 
 bool FEBioMonitorDoc::IsRunning() const
@@ -297,19 +288,15 @@ int FEBioMonitorDoc::GetUpdateEvents() const
 	return m->updateEvents;
 }
 
-void FEBioMonitorDoc::RunJob()
+std::string FEBioMonitorDoc::GetFEBioInputFile() const
 {
-	if (m->isRunning)
-	{
-		if (m->isPaused)
-		{
-			m->pauseRequested = false;
-			jobIsPaused.wakeAll();
-			return;
-		}
-		else assert(false);
-		return;
-	}
+	return m->febFileName;
+}
+
+bool FEBioMonitorDoc::RunJob(CFEBioJob* job)
+{
+	if (job == nullptr) return false;
+	if (m->job) return false;
 
 	GetMainWindow()->ClearOutput();
 
@@ -322,16 +309,34 @@ void FEBioMonitorDoc::RunJob()
 	m->timer.reset();
 	m->timer.start();
 	assert(m->job == nullptr);
-	m->job = new CFEBioJob(this);
-	m->job->SetName("febio monitor");
-	m->job->SetFEBFileName(GetFEBioInputFile().toStdString());
+	m->job = job;
+	m->febFileName = job->GetFEBFileName();
 	m->job->StartTimer();
 	CFEBioJob::SetActiveJob(m->job);
 
 	GetMainWindow()->GetFEBioMonitorView()->Update(true);
 
+	QString title = QString("FEBio Monitor [%1]").arg(QString::fromStdString(job->GetName()));
+	SetDocTitle(title.toStdString());
+
 	FEBioMonitorThread* thread = new FEBioMonitorThread(this, m->job);
 	thread->start();
+
+	return true;
+}
+
+void FEBioMonitorDoc::ContinueJob()
+{
+	if (m->isRunning)
+	{
+		if (m->isPaused)
+		{
+			m->pauseRequested = false;
+			jobIsPaused.wakeAll();
+			return;
+		}
+		else assert(false);
+	}
 }
 
 void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
@@ -372,6 +377,7 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 	assert(m->job);
 	m->job->StopTimer();
 	m->job->SetStatus(b ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
+	m->job->SetActiveJob(nullptr);
 
 	if (m->isStopped)
 	{
@@ -393,10 +399,11 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 	doc->setJob(m->job);
 	wnd->AddDocument(doc);
 
-	delete m->job;
-	m->job = nullptr;
-
 	updateWindowTitle();
+	
+	wnd->UpdateTab(m->job->GetDocument());
+
+	m->job = nullptr;
 }
 
 void FEBioMonitorDoc::appendLog(const char* sz)

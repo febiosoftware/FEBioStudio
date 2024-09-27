@@ -84,7 +84,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 
 
 	// Update GLWidget string table for post rendering
-	QString febFile = m_doc->GetFEBioInputFile();
+	QString febFile = QString::fromStdString(m_doc->GetFEBioInputFile());
 	QFileInfo fi(febFile);
 	QString filename = fi.fileName();
 	GLWidget::addToStringTable("$(filename)", filename.toStdString());

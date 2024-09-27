@@ -117,10 +117,6 @@ public:
 	FEBioMonitorDoc(CMainWindow* wnd);
 	~FEBioMonitorDoc();
 
-	void SetFEBioInputFile(QString febFile);
-
-	QString GetFEBioInputFile() const;
-
 	void StartPaused(bool b);
 	bool StartPaused() const;
 
@@ -140,12 +136,16 @@ public:
 	void SetUpdateEvents(int updateEvents);
 	int GetUpdateEvents() const;
 
+	std::string GetFEBioInputFile() const;
+
 public:
-	void RunJob();
+	bool RunJob(CFEBioJob* job);
 
 	void KillJob();
 
 	void PauseJob();
+
+	void ContinueJob();
 
 	void AdvanceJob();
 
