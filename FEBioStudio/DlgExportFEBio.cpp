@@ -201,7 +201,7 @@ void CDlgExportFEBio::accept()
 	for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i)
 	{
 		if (ui->pc[i]->isChecked())
-			m_nsection &= (1 << i);
+			m_nsection |= (1 << i);
 	}
 
 	QDialog::accept();
