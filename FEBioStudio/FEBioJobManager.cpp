@@ -203,10 +203,16 @@ void CFEBioJobManager::remoteJobFinished()
 		im->wnd->AddLogEntry(logmsg);
 		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
 		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
-		QMessageBox::information(im->wnd, "FEBio Studio", logmsg);
 
-		CDlgRemoteProgress dlg(im->remoteJob, im->wnd, false);
-		dlg.exec();
+		CDlgJobReport dlg(im->wnd);
+		dlg.SetFEBioJob(job);
+		if (dlg.exec())
+		{
+			CDlgRemoteProgress fetchFiles(im->remoteJob, im->wnd, false);
+			fetchFiles.exec();
+
+			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
+		}
 	}
 	else
 	{
