@@ -470,6 +470,15 @@ public:
 
 	void setActiveCentralView(CMainCentralWidget::Viewer viewer);
 
+	CLaunchConfig* findLaunchConfig(const std::string& name)
+	{
+		for (auto lc : m_launch_configs)
+		{
+			if (lc->name() == name) return lc;
+		}
+		return nullptr;
+	}
+
 private:
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false);
 

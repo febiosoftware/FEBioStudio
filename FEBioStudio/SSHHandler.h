@@ -42,7 +42,8 @@ enum SSHTask {
 	GETJOBFILES, 
 	GETQUEUESTATUS, 
 	CREATEREMOTEDIR,
-	SENDFILE
+	SENDFILE,
+	GETREMOTEFILE
 };
 
 enum msgCode {FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
@@ -73,6 +74,7 @@ public:
 	void SendFileToServer(const std::string& localFile);
 	void RunRemoteJob(SchedulerType scheduler, const::string& runScript);
 	void RequestRemoteFiles(const std::string& localFile);
+	void RequestRemoteFile(const std::string& localFile);
 	void RequestQueueStatus();
 
 private:
@@ -86,6 +88,7 @@ private:
 
 	void StartRemoteJob();
 	void GetJobFiles();
+	void GetRemoteFile();
 	void GetQueueStatus();
 
 	void SetPasswordLength(int l);

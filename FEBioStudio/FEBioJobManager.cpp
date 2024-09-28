@@ -42,44 +42,12 @@ SOFTWARE.*/
 #include "../FEBioMonitor/FEBioReportDoc.h"
 #include "LaunchConfig.h"
 #include <QProgressBar>
+#include <fstream>
+#include "DlgRemoteProgress.h"
 
 #ifdef WIN32
 #include <Windows.h>
 #endif
-
-class CDlgRemoteProgress : public QDialog
-{
-public:
-	CDlgRemoteProgress(CRemoteJob* job, QWidget* parent, bool send) : QDialog(parent), m_job(job) 
-	{
-		assert(job);
-		setMinimumWidth(400);
-		QVBoxLayout* l = new QVBoxLayout;
-		QLabel* task = new QLabel("");
-		l->addWidget(task);
-		l->addWidget(m_prg = new QProgressBar);
-		m_prg->setRange(0, 100);
-		setLayout(l);
-
-		QObject::connect(m_job, &CRemoteJob::fileTransferFinished, this, &QDialog::accept);
-		QObject::connect(m_job, &CRemoteJob::progressUpdate, m_prg, &QProgressBar::setValue);
-
-		if (send)
-		{
-			task->setText("Sending file to server ...");
-			m_job->SendLocalFile();
-		}
-		else
-		{
-			task->setText("Fetching remote files ...");
-			m_job->GetRemoteFiles();
-		}
-	}
-
-private:
-	CRemoteJob* m_job = nullptr;
-	QProgressBar* m_prg = nullptr;
-};
 
 class CFEBioJobManager::Impl
 {
@@ -105,11 +73,8 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job, CLaunchConfig* lc)
 {
 	// make sure no model is running
 	if (CFEBioJob::GetActiveJob() != nullptr) return false;
-
-	// set this as the active job
-	CFEBioJob::SetActiveJob(job);
-
 	if (job == nullptr) return true;
+	if (lc == nullptr) return false;
 
 	// don't forget to reset the kill flag
 	im->bkillJob = false;
@@ -119,38 +84,72 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job, CLaunchConfig* lc)
 
 	im->launchConfig = lc;
 
-	// launch the job
-	if (lc)
+	switch (lc->type())
 	{
-		if (lc->type() == CLaunchConfig::DEFAULT)
-		{
-			if (im->febThread) return false;
-			im->febThread = new CFEBioThread(im->wnd, job, this);
-			im->febThread->start();
-		}
-		else if (lc->type() == CLaunchConfig::LOCAL)
-		{
-			if (im->process) return false;
-			// create new process
-			QString program = QString::fromStdString(lc->path());
-			CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, program, this);
-			im->process = process;
-
-			// go! 
-			process->run();
-		}
-		else
-		{
-			if (im->remoteJob) return false;
-			im->remoteJob = new CRemoteJob(job, lc, im->wnd);
-
-			CDlgRemoteProgress dlg(im->remoteJob, im->wnd, true);
-			dlg.exec();
-
-			QObject::connect(im->remoteJob, &CRemoteJob::jobFinished, this, &CFEBioJobManager::remoteJobFinished);
-			im->remoteJob->StartRemoteJob();
-		}
+	case CLaunchConfig::DEFAULT: return startDefaultJob(job, lc); break;
+	case CLaunchConfig::LOCAL  : return startLocalJob(job, lc); break;
+	case CLaunchConfig::REMOTE:
+	case CLaunchConfig::PBS:
+	case CLaunchConfig::SLURM:
+	case CLaunchConfig::CUSTOM:
+		return startRemoteJob(job, lc);
+		break;
+	default:
+		assert(false);
 	}
+
+	return false;
+}
+
+bool CFEBioJobManager::startDefaultJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->febThread) return false;
+	CFEBioJob::SetActiveJob(job);
+	im->febThread = new CFEBioThread(im->wnd, job, this);
+	im->febThread->start();
+	return true;
+}
+
+bool CFEBioJobManager::startLocalJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->process) return false;
+	// create new process
+	QString program = QString::fromStdString(lc->path());
+	CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, program, this);
+	im->process = process;
+
+	// go! 
+	CFEBioJob::SetActiveJob(job);
+	process->run();
+
+	return true;
+}
+
+bool CFEBioJobManager::startRemoteJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->remoteJob) return false;
+
+	CFEBioJob::SetActiveJob(job);
+	im->remoteJob = new CRemoteJob(job, lc, im->wnd);
+
+	CDlgRemoteProgress dlg(im->remoteJob, im->wnd, true);
+	dlg.exec();
+
+	// create placeholder files for plot and log files
+	std::string pltFile = job->GetPlotFileName();
+	pltFile.append(".remote");
+	std::ofstream plt(pltFile);
+	plt << lc->name();
+	plt.close();
+
+	std::string logFile = job->GetLogFileName();
+	logFile.append(".remote");
+	std::ofstream log(logFile);
+	log << lc->name();
+	log.close();
+
+	QObject::connect(im->remoteJob, &CRemoteJob::jobFinished, this, &CFEBioJobManager::remoteJobFinished);
+	im->remoteJob->StartRemoteJob();
 
 	return true;
 }
@@ -210,6 +209,13 @@ void CFEBioJobManager::remoteJobFinished()
 		{
 			CDlgRemoteProgress fetchFiles(im->remoteJob, im->wnd, false);
 			fetchFiles.exec();
+
+			// delete place holder files
+			QDir dir;
+			QString pltFile = QString("%1.remote").arg(QString::fromStdString(job->GetPlotFileName()));
+			QString logFile = QString("%1.remote").arg(QString::fromStdString(job->GetLogFileName()));
+			dir.remove(pltFile);
+			dir.remove(logFile);
 
 			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
 		}

@@ -24,38 +24,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QObject>
+#include <QDialog>
 
-class CFEBioJob;
-class CMainWindow;
-class CLaunchConfig;
+class CRemoteJob;
+class QProgressBar;
 
-class CRemoteJob : public QObject
+class CDlgRemoteProgress : public QDialog
 {
-	Q_OBJECT
-	class Imp;
-
 public:
-	CRemoteJob(CFEBioJob* job, CLaunchConfig* lc, CMainWindow* wnd);
-	~CRemoteJob();
-
-	CFEBioJob* GetFEBioJob();
-
-	void SendLocalFile();
-	void StartRemoteJob();
-	void GetRemoteFiles();
-	void GetRemoteFile(const QString& localFile);
-	void GetQueueStatus();
-
-public slots:
-	void sessionEnded(int nfunc);
-	void getProgressUpdate(double pct);
-
-signals:
-	void jobFinished();
-	void fileTransferFinished();
-	void progressUpdate(double pct);
+	CDlgRemoteProgress(CRemoteJob* job, QWidget* parent, bool send, const QString& fileName = "");
 
 private:
-	Imp& m;
+	CRemoteJob* m_job = nullptr;
+	QProgressBar* m_prg = nullptr;
 };

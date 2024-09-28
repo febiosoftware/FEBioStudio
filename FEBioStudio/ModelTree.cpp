@@ -412,7 +412,7 @@ public:
 		addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
 		addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
-		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
+		addProperty("Log File"  , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 	}
 
 	QVariant GetPropertyValue(int i) override

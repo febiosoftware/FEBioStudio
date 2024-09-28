@@ -52,7 +52,12 @@ SOFTWARE.*/
 using std::ifstream;
 using std::ios;
 
-#define MAX_XFER_BUF_SIZE 16383
+// NOTE: Note sure why the value of 16383 was chosen, but bigger values
+// seem to speed up transers. Although chosing values too large don't seem to work.
+// Apparently we should be able to query the max read buffer size with sftp_limits() but that 
+// doesn't seem to exist in the sshlib we link to. 
+//#define MAX_XFER_BUF_SIZE 16383
+#define MAX_XFER_BUF_SIZE 65535
 
 #ifdef WIN32
 #define S_IRWXU (0400|0200|0100)
@@ -243,6 +248,22 @@ void CSSHHandler::GetJobFiles()
 	if (GetFile(localFile, remoteFile) != SSH_OK)
 	{
 		m_data->msg = QString("log file error: %1").arg(m_data->msg);
+	}
+#else
+	setError("SSH not available in this build.");
+#endif
+}
+
+void CSSHHandler::GetRemoteFile()
+{
+#ifdef HAS_SSH
+	m_data->nextFunction = -1;
+	m_data->code = DONE;
+
+	if (GetFile(m_data->localFile, m_data->remoteFile) != SSH_OK)
+	{
+		m_data->msg = QString("xplt file error: %1").arg(m_data->msg);
+		return;
 	}
 #else
 	setError("SSH not available in this build.");
@@ -1183,6 +1204,22 @@ void CSSHHandler::RequestRemoteFiles(const std::string& localFile)
 		m_data->remoteFileBase = m_data->remoteDir + "/" + baseName.toStdString();
 
 		SetTargetFunction(GETJOBFILES);
+		CSSHThread* sshThread = new CSSHThread(this, STARTSSHSESSION);
+		sshThread->start();
+	}
+}
+
+void CSSHHandler::RequestRemoteFile(const std::string& localFile)
+{
+	if (!IsBusy())
+	{
+		m_data->localFile = localFile;
+
+		QFileInfo info(QString::fromStdString(localFile));
+		QString fileName = info.fileName();
+		m_data->remoteFile = m_data->remoteDir + "/" + fileName.toStdString();
+
+		SetTargetFunction(GETREMOTEFILE);
 		CSSHThread* sshThread = new CSSHThread(this, STARTSSHSESSION);
 		sshThread->start();
 	}

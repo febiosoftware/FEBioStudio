@@ -89,27 +89,39 @@ CLinkPropertyEdit::CLinkPropertyEdit(QStringList& paths, bool internal, QWidget*
 
 void CLinkPropertyEdit::buttonPressed()
 {
+	QString filename = ui->fullPath;
 	QFileInfo info = QFileInfo(ui->fullPath);
 
 	if(!info.exists())
 	{
-		QMessageBox box;
-		box.setText((QString("Cannot open file.\n%1 does not exist.").arg(ui->fullPath)));
-		box.exec();
-
-		return;
+		// for plot and log files we'll check for remote versions
+		QString ext = info.suffix();
+		if ((ext == "xplt") || (ext == "log"))
+		{
+			QString remoteFile = QString("%1.remote").arg(filename);
+			QFileInfo info2(remoteFile);
+			if (!info2.exists())
+			{
+				// no luck either
+				QMessageBox::critical(this, "FEBio Studio", QString("Cannot open file.\n%1 does not exist.").arg(filename));
+				return;
+			}
+			filename = remoteFile;
+		}
+		else
+		{
+			QMessageBox::critical(this, "FEBio Studio", QString("Cannot open file.\n%1 does not exist.").arg(filename));
+			return;
+		}
 	}
 
 	if(ui->internal)
 	{
 		CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
-
-		wnd->OpenFile(ui->fullPath, false);
+		wnd->OpenFile(filename, false);
 	}
 	else
 	{
-		QDesktopServices::openUrl(QUrl::fromLocalFile(ui->fullPath));
+		QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 	}
-
-
 }

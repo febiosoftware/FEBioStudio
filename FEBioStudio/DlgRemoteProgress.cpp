@@ -23,39 +23,40 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QObject>
+#include "stdafx.h"
+#include "DlgRemoteProgress.h"
+#include "RemoteJob.h"
+#include <QBoxLayout>
+#include <QProgressBar>
+#include <QLabel>
 
-class CFEBioJob;
-class CMainWindow;
-class CLaunchConfig;
-
-class CRemoteJob : public QObject
+CDlgRemoteProgress::CDlgRemoteProgress(CRemoteJob* job, QWidget* parent, bool send, const QString& localFile) : QDialog(parent), m_job(job)
 {
-	Q_OBJECT
-	class Imp;
+	assert(job);
+	setMinimumWidth(400);
+	QVBoxLayout* l = new QVBoxLayout;
+	QLabel* task = new QLabel("");
+	l->addWidget(task);
+	l->addWidget(m_prg = new QProgressBar);
+	m_prg->setRange(0, 100);
+	setLayout(l);
 
-public:
-	CRemoteJob(CFEBioJob* job, CLaunchConfig* lc, CMainWindow* wnd);
-	~CRemoteJob();
+	QObject::connect(m_job, &CRemoteJob::fileTransferFinished, this, &QDialog::accept);
+	QObject::connect(m_job, &CRemoteJob::progressUpdate, m_prg, &QProgressBar::setValue);
 
-	CFEBioJob* GetFEBioJob();
-
-	void SendLocalFile();
-	void StartRemoteJob();
-	void GetRemoteFiles();
-	void GetRemoteFile(const QString& localFile);
-	void GetQueueStatus();
-
-public slots:
-	void sessionEnded(int nfunc);
-	void getProgressUpdate(double pct);
-
-signals:
-	void jobFinished();
-	void fileTransferFinished();
-	void progressUpdate(double pct);
-
-private:
-	Imp& m;
-};
+	if (send)
+	{
+		task->setText("Sending file to server ...");
+		m_job->SendLocalFile();
+	}
+	else if (!localFile.isEmpty())
+	{
+		task->setText("Fetching remote file ...");
+		m_job->GetRemoteFile(localFile);
+	}
+	else
+	{
+		task->setText("Fetching remote files ...");
+		m_job->GetRemoteFiles();
+	}
+}

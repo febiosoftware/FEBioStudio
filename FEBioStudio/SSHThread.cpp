@@ -71,6 +71,9 @@ void CSSHThread::run()
 	case GETJOBFILES:
 		sshHandler->GetJobFiles();
 		break;
+	case GETREMOTEFILE:
+		sshHandler->GetRemoteFile();
+		break;
 	case GETQUEUESTATUS:
 		sshHandler->GetQueueStatus();
 		break;

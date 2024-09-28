@@ -46,6 +46,11 @@ public:
 
 	void KillJob();
 
+protected:
+	bool startDefaultJob(CFEBioJob* job, CLaunchConfig* lc);
+	bool startLocalJob(CFEBioJob* job, CLaunchConfig* lc);
+	bool startRemoteJob(CFEBioJob* job, CLaunchConfig* lc);
+
 public slots:
 	void onRunFinished(int exitCode, QProcess::ExitStatus es);
 	void onReadyRead();

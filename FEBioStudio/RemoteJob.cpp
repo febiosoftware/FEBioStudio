@@ -79,6 +79,12 @@ void CRemoteJob::GetRemoteFiles()
 	m.sshHandler->RequestRemoteFiles(localFile);
 }
 
+void CRemoteJob::GetRemoteFile(const QString& localFile)
+{
+	m.progress = 0;
+	m.sshHandler->RequestRemoteFile(localFile.toStdString());
+}
+
 void CRemoteJob::GetQueueStatus()
 {
 	m.sshHandler->RequestQueueStatus();
@@ -130,7 +136,7 @@ void CRemoteJob::sessionEnded(int nfunc)
 	{
 		emit jobFinished();
 	}
-	else if ((nfunc == SSHTask::GETJOBFILES)||(nfunc == SSHTask::SENDFILE))
+	else if ((nfunc == SSHTask::GETJOBFILES)||(nfunc == SSHTask::SENDFILE)||(nfunc == SSHTask::GETREMOTEFILE))
 	{
 		emit fileTransferFinished();
 	}

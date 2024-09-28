@@ -322,6 +322,7 @@ public:
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true, bool openInThread = true);
 	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true, bool openInThread = true);
+	void OpenRemoteFile(const QString& fileName);
 
 	bool SaveDocument(const QString& fileName);
 

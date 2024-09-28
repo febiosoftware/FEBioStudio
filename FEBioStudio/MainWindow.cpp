@@ -99,6 +99,8 @@ SOFTWARE.*/
 #include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioReportDoc.h>
+#include "RemoteJob.h"
+#include "DlgRemoteProgress.h"
 
 extern GLColor col[];
 
@@ -618,6 +620,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenTextFile(fileName);
 	}
+	else if (ext == "remote")
+	{
+		OpenRemoteFile(fileName);
+	}
 	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program
@@ -989,7 +995,38 @@ bool CMainWindow::CreateNewProject(QString fileName)
 	return ret;
 }
 
-//-----------------------------------------------------------------------------
+void CMainWindow::OpenRemoteFile(const QString& remoteFileName)
+{
+	// make sure this is a remote file
+	QFileInfo fi(remoteFileName);
+	if (fi.suffix() != "remote") return;
+
+	QFile f(remoteFileName);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+	QString s(f.readAll());
+	f.close();
+
+	// should be the name of a launch configuration
+	CLaunchConfig* lc = ui->findLaunchConfig(s.toStdString());
+	if (lc == nullptr) return;
+
+	// strip the ".remote" suffix
+	QString fileName = remoteFileName.chopped(7);
+	QFileInfo fi2(fileName);
+
+	// go get the file
+	std::unique_ptr<CRemoteJob> tmp(new CRemoteJob(nullptr, lc, this));
+	CDlgRemoteProgress dlg(tmp.get(), this, false, fileName);
+	dlg.exec();
+
+	// now delete the .remote file
+	QDir dir;
+	dir.remove(remoteFileName);
+
+	// and finally try to open file
+	OpenFile(fileName);
+}
+
 //! Open a plot file
 void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions, bool openInThread)
 {
