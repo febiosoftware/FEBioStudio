@@ -59,6 +59,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 	SetName("Model");
 
 	m_lastMesh = nullptr;
+	
+	m_useNewRenderEngine = true;
 
 	m_stol = 60.0;
 
@@ -118,6 +120,9 @@ CGLModel::CGLModel(FEPostModel* ps)
 	// add a default color map
 	m_pcol = new CGLColorMap(this);
 
+	if (ps) m_postObj = new CPostObject(this);
+	else m_postObj = nullptr;
+
 	UpdateEdge();
 	BuildInternalSurfaces();
 	Update(false);
@@ -132,16 +137,32 @@ CGLModel::~CGLModel(void)
 	ClearInternalSurfaces();
 }
 
-//-----------------------------------------------------------------------------
+void CGLModel::Clear()
+{
+	SetFEModel(nullptr);
+	m_postObj = nullptr;
+}
+
+bool CGLModel::IsValid() const
+{
+	return (m_ps && m_postObj);
+}
+
 void CGLModel::SetFEModel(FEPostModel* ps)
 {
 	SetSelection(nullptr);
+	if (m_postObj) delete m_postObj; 
+	if (ps) m_postObj = new CPostObject(this);
 	ClearInternalSurfaces();
 	m_ps = ps;
 	if (ps) BuildInternalSurfaces();
 }
 
-//-----------------------------------------------------------------------------
+CPostObject* CGLModel::GetPostObject()
+{
+	return m_postObj;
+}
+
 void CGLModel::ShowShell2Solid(bool b) { m_render.m_bShell2Solid = b; }
 bool CGLModel::ShowShell2Solid() const { return m_render.m_bShell2Solid; }
 
@@ -250,6 +271,8 @@ bool CGLModel::Update(bool breset)
 		CGLPlot* pi = m_pPlot[i];
 		if (pi->IsActive()) pi->Update(ntime, dt, breset);
 	}
+
+	if (m_postObj) m_postObj->UpdateMesh();
 
 	return true;
 }

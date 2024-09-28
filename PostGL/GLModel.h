@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLDisplacementMap.h"
 #include "GLColorMap.h"
 #include <PostLib/FEPostModel.h>
+#include <FEBioStudio/PostObject.h> // Move this to PostLib?
 #include <GLLib/GDecoration.h>
 #include "GLPlotGroup.h"
 #include <FSCore/FSObjectList.h>
@@ -39,10 +40,8 @@ SOFTWARE.*/
 
 namespace Post {
 
-//-----------------------------------------------------------------------------
 typedef FSObjectList<Post::CGLPlot>	GPlotList;
 
-//-----------------------------------------------------------------------------
 // view conventions
 enum View_Convention {
 	CONV_FR_XZ,
@@ -101,7 +100,13 @@ public:
 	CGLModel(FEPostModel* ps);
 	~CGLModel(void);
 
+	void Clear();
+
+	bool IsValid() const;
+
 	void SetFEModel(FEPostModel* ps);
+
+	CPostObject* GetPostObject();
 
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
@@ -338,7 +343,10 @@ public:
 	bool		m_doZSorting;
 
 protected:
-	FEPostModel*			m_ps;
+	FEPostModel*	m_ps;
+
+	CPostObject* m_postObj;
+
 	vector<GLSurface*>		m_innerSurface;
 	GLEdge					m_edge;	// all line elements from springs
 
@@ -360,6 +368,8 @@ protected:
 	// --- Selection ---
 	SelectionType	m_selectType;		//!< current selection type (node, edge, face, elem)
 	int				m_selectStyle;		//!< selection style (box, circle, rect)
+
+	bool m_useNewRenderEngine;
 };
 
 // This class provides a convenient way to loop over all the plots in a model, traversing

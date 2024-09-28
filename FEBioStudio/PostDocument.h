@@ -220,8 +220,6 @@ private:
 
 	ModelData	m_MD;
 
-	CPostObject*	m_postObj;
-
 	TIMESETTINGS m_timeSettings;
 
 	bool	m_binit;

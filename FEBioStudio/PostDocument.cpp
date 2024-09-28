@@ -232,7 +232,6 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	SetIcon(":/icons/PostView.png");
 
 	m_fem = new Post::FEPostModel;
-	m_postObj = nullptr;
 	m_glm = nullptr;
 
 	m_binit = false;
@@ -272,9 +271,7 @@ void CPostDocument::Clear()
 
 	m_MD.ReadData(m_glm);
 
-	if (m_glm) m_glm->SetFEModel(nullptr);
-
-	delete m_postObj; m_postObj = nullptr;
+	if (m_glm) m_glm->Clear();
 }
 
 bool CPostDocument::Initialize()
@@ -300,7 +297,6 @@ bool CPostDocument::Initialize()
 	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
-	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
 
 	m_timeSettings.Defaults();
 	m_timeSettings.m_start = 0;
@@ -309,7 +305,7 @@ bool CPostDocument::Initialize()
 	if (m_MD.IsValid())
 	{
 		m_MD.WriteData(m_glm);
-		m_postObj->Update();
+		m_glm->GetPostObject()->Update();
 	}
 	else
 	{
@@ -403,7 +399,6 @@ void CPostDocument::SetActiveState(int n)
 	assert(m_glm);
 	m_glm->SetCurrentTimeIndex(n);
 	m_glm->Update(false);
-	m_postObj->UpdateMesh();
 }
 
 int CPostDocument::GetActiveState()
@@ -593,7 +588,7 @@ std::string CPostDocument::GetFileName()
 
 bool CPostDocument::IsValid()
 {
-	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
+	return (m_glm && m_glm->IsValid());
 }
 
 void CPostDocument::SetModifiedFlag(bool bset)
@@ -659,7 +654,7 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 
 CPostObject* CPostDocument::GetPostObject()
 {
-	return m_postObj;
+	return m_glm->GetPostObject();
 }
 
 int CPostDocument::Graphs() const

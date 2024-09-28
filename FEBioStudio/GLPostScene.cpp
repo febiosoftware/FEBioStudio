@@ -466,8 +466,8 @@ void CGLPostScene::ToggleTrackSelection()
 	{
 		m_btrack = false;
 
-		CPostObject* po = m_doc->GetPostObject();
 		Post::CGLModel* model = m_doc->GetGLModel(); assert(model);
+		CPostObject* po = model->GetPostObject(); assert(po);
 
 		int m[3] = { -1, -1, -1 };
 		int nmode = model->GetSelectionType();
