@@ -1999,7 +1999,7 @@ void FEBioExport4::WriteMixedElementsPart(Part* part, GPart* pg, std::vector<int
 			xel.value(nn, ne);
 			m_xml.add_leaf(xel, false);
 			ncount++;
-			es.m_elem.push_back(i);
+			es.m_elem.push_back(elemList[i]);
 			m_ElSet.push_back(es);
 		}
 	}
@@ -2114,7 +2114,7 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, std::vector<int>& el
 						ej.m_ntag = -1;	// mark as processed
 						ncount++;
 
-						es.m_elem.push_back(j);
+						es.m_elem.push_back(elemList[j]);
 					}
 				}
 			}
