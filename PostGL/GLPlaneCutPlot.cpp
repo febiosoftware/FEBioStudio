@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlaneCutPlot.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
-#include "GLModel.h"
+#include <PostLib/GLModel.h>
 #include <MeshLib/hex.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/ClassDescriptor.h>

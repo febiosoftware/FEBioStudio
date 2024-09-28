@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLCurveProbe.h"
-#include "GLModel.h"
+#include <PostLib/GLModel.h>
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
 #include <MeshLib/FENodeNodeList.h>

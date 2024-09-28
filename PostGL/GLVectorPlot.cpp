@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "PostLib/ColorMap.h"
 #include "PostLib/constants.h"
 #include "GLWLib/GLWidgetManager.h"
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
 using namespace Post;

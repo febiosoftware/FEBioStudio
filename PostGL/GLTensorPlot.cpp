@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
 #include "GLWLib/GLWidgetManager.h"
-#include "GLModel.h"
+#include <PostLib/GLModel.h>
 #include <stdlib.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>

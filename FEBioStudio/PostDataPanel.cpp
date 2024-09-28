@@ -48,7 +48,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEPostModel.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <QtCore/QAbstractTableModel>
 #include <PostLib/DataFilter.h>
 #include "PropertyListView.h"

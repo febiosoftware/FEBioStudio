@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLLinePlot.h"
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <PostLib/FEPostModel.h>
 #include <MeshLib/FECurveMesh.h>
 #include <GLLib/glx.h>

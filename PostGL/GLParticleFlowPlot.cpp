@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLParticleFlowPlot.h"
-#include "GLModel.h"
+#include <PostLib/GLModel.h>
 #include <FSCore/ClassDescriptor.h>
 using namespace Post;
 

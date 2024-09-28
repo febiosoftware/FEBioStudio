@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLColorMap.h"
-#include "GLModel.h"
+#include <PostLib/GLModel.h>
 #include "GLWLib/GLWidgetManager.h"
 #include "PostLib/constants.h"
 using namespace Post;

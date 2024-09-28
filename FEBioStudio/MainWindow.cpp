@@ -50,7 +50,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include <QStyleFactory>
 #include "GraphWindow.h"
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>

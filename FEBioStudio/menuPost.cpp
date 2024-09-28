@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <PostGL/GLPointProbe.h>
 #include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLRuler.h>

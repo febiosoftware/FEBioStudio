@@ -2,7 +2,7 @@
 #include "FEKinematFileReader.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include "PostDocument.h"
 using namespace Post;
 

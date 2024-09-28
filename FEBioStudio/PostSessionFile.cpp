@@ -3,7 +3,7 @@
 #include <QtCore/QDir>
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
 #include <PostLib/FEPostMesh.h>

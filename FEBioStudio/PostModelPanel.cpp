@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "Document.h"
 #include "PropertyListView.h"
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/GLObject.h>
 #include <PostGL/GLPlot.h>

@@ -27,10 +27,10 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
-#include "PostObject.h"
+#include <PostLib/PostObject.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Palette.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <GeomLib/GModel.h>
 #include <GLWLib/GLWidgetManager.h>
 //---------------------------------------

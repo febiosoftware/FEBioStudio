@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "IconProvider.h"
 #include <PostGL/GLColorMap.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <QSpinBox>
 
 class UIPostToolBar

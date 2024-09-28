@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "PostObject.h"
-#include <PostGL/GLModel.h>
+#include "GLModel.h"
 
 CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FSMesh*)nullptr)
 {

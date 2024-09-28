@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLModel.h"
-#include "GLPlaneCutPlot.h"
-#include "PostLib/FEDataManager.h"
+#include <PostGL/GLPlaneCutPlot.h>
+#include "FEDataManager.h"
 #include <GLLib/GLContext.h>
-#include "PostLib/constants.h"
+#include "constants.h"
 #include <GLLib/GLCamera.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <GLWLib/GLWidgetManager.h>

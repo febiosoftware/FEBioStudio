@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FENodeEdgeList.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include "GLHighlighter.h"
 #include "CommandWindow.h"
 

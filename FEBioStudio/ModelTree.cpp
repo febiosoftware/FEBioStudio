@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include "ModelViewer.h"
 #include "PostDocument.h"
 #include <GeomLib/GObject.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLPointPlot.h"
-#include <PostGL/GLModel.h>
+#include <PostLib/GLModel.h>
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
 using namespace Post;

@@ -524,6 +524,7 @@ target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Netwo
 target_link_libraries(CUILib Qt6::Widgets)
 target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(PostGL Qt6::Gui)
+target_link_libraries(PostLib Qt6::Gui)
 target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
