@@ -123,3 +123,8 @@ void renderContractileForce(const vec3d& a, const vec3d& b, double R);
 
 void renderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 }
+
+inline void glxColor(const GLColor& c)
+{
+	glColor3ub(c.r, c.g, c.b);
+}

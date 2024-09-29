@@ -23,30 +23,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <GeomLib/GMeshObject.h>
+#include "GLMesh.h"
+#include <MeshLib/GMesh.h>
 
-namespace Post
-{
-	class CGLModel;
-}
+class GLTexture1D;
 
-class CPostObject : public GMeshObject
+class GLShader
 {
 public:
-	CPostObject(Post::CGLModel* glm);
-	~CPostObject();
+	GLShader() {}
+	virtual ~GLShader() {}
 
-	void UpdateMesh() override;
+	virtual void Activate() {}
+	virtual void Deactivate() {}
 
-	BOX GetBoundingBox();
-
-private:
-	// Don't want the sections on the post side. 
-	void UpdateSections() override {}
-
-private:
-	Post::CGLModel* m_glm;
+	virtual void Render(const GMesh::FACE& face) {}
 };
 
+class GLStandardShader : public GLShader
+{
+public:
+	float ambient[4] = { 0.f, 0.f, 0.f, 1.f };
+	float diffuse[4] = { 0.f, 0.f, 0.f, 1.f };
+	float specular[4] = { 0.f, 0.f, 0.f, 1.f };
+	float emission[4] = { 0.f, 0.f, 0.f, 1.f };
+	float shininess = 0.f;
+
+	void Activate();
+
+	void Render(const GMesh::FACE& face);
+};
+
+class GLTexture1DShader : public GLShader
+{
+public:
+	void SetTexture(GLTexture1D* tex);
+
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::FACE& face) override;
+
+private:
+	GLTexture1D* m_tex;
+};

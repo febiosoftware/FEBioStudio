@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLMeshRender.h>
+#include <GLLib/GLShader.h>
 #include <GLLib/glx.h>
 #include <stack>
 
@@ -434,7 +435,12 @@ void CGLModel::Render(CGLContext& rc)
 	}
 	else if (mode == SELECT_FE_ELEMS)
 	{
-		RenderElems(m_ps, rc);
+		if (m_useNewRenderEngine)
+		{
+			RenderElemsNew(m_ps, rc);
+		}
+		else
+			RenderElems(m_ps, rc);
 	}
 	else
 	{
@@ -953,6 +959,62 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 			RenderSolidPart(ps, rc, m);
 		}
 	}
+}
+
+void CGLModel::RenderElemsNew(FEPostModel* ps, CGLContext& rc)
+{
+	glEnable(GL_COLOR_MATERIAL);
+
+	CPostObject* po = GetPostObject();
+	GMesh& mesh = *po->GetFERenderMesh();
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	bool colorMapEnabled = GetColorMap()->IsActive();
+
+	m_render.ClearShaders();
+	for (int i = 0; i < ps->Materials(); ++i)
+	{
+		Post::Material& mat = *ps->GetMaterial(i);
+		if (mat.bvisible)
+		{
+			if (colorMapEnabled)
+			{
+				if (!mat.benable)
+				{
+					float alpha = mat.transparency;
+					GLColor c = m_pcol->GetInactiveColor();
+					c.a = (uint8_t)(255.f*alpha);
+
+					GLStandardShader* shader = new GLStandardShader;
+					c.toFloat(shader->diffuse);
+					c.toFloat(shader->ambient);
+					m_render.AddShader(shader);
+				}
+				else
+				{
+					GLTexture1DShader* shader = new GLTexture1DShader;
+					shader->SetTexture(&m_pcol->GetColorMap()->GetTexture());
+					m_render.AddShader(shader);
+				}
+			}
+			else
+			{
+				GLStandardShader* shader = new GLStandardShader;
+				mat.ambient.toFloat(shader->ambient);
+				mat.diffuse.toFloat(shader->diffuse);
+				mat.specular.toFloat(shader->specular);
+				mat.emission.toFloat(shader->emission);
+				shader->shininess = mat.shininess * 64.f;
+				m_render.AddShader(shader);
+			}
+		}
+		else m_render.AddShader(nullptr);
+	}
+
+	m_render.SetUseShaders(true);
+	m_render.RenderGMesh(mesh);
+	m_render.SetUseShaders(false);
 }
 
 //-----------------------------------------------------------------------------

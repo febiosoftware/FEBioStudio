@@ -46,11 +46,6 @@ CPostObject::~CPostObject()
 	SetFEMesh(nullptr);
 }
 
-void CPostObject::BuildFERenderMesh()
-{
-	// NOTE: for now, we don't use this yet. But soon ...
-}
-
 BOX CPostObject::GetBoundingBox()
 {
 	FSMesh* mesh = GetFEMesh();
@@ -71,10 +66,11 @@ void CPostObject::UpdateMesh()
 	{
 		SetFEMesh(postMesh);
 		BuildGMesh();
+		BuildFERenderMesh();
 	}
 	else
 	{
-		GMesh* mesh = GetRenderMesh(); assert(mesh);
+		GMesh* mesh = GetFERenderMesh(); assert(mesh);
 
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
@@ -84,5 +80,15 @@ void CPostObject::UpdateMesh()
 			nd.r = to_vec3f(ns.r);
 		}
 		mesh->Update();
+
+		int nf = 0;
+		for (int i = 0; i < postMesh->Faces(); ++i)
+		{
+			FSFace& face = postMesh->Face(i);
+			if (face.IsVisible())
+			{
+				nf = mesh->SetFaceTex(nf, face.m_tex, face.Nodes());
+			}
+		}
 	}
 }

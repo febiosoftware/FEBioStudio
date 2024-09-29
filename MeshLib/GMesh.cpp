@@ -167,7 +167,7 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 
 
 //-----------------------------------------------------------------------------
-int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId)
+int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
 {
 	FACE f;
 	f.n[0] = n0;
@@ -181,42 +181,43 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext,
 	f.bext = bext;
 	f.fid = faceId;
 	f.eid = elemId;
+	f.mid = mat;
 	m_Face.push_back(f);
 	return ((int)m_Face.size() - 1);
 }
 
 //-----------------------------------------------------------------------------
-void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext, int faceId, int elemId)
+void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
 {
 	switch (nodes)
 	{
 	case 3: // TRI3
 		{
-			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 4: // QUAD4
 		{
-			AddFace(n[2], n[3], n[0], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[2], n[3], n[0], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[0], n[1], n[2], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 6: // TRI6
 		{
-			AddFace(n[0], n[3], n[5], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[1], n[4], n[3], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[2], n[5], n[4], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[3], n[4], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[3], n[5], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[1], n[4], n[3], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[2], n[5], n[4], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[3], n[4], n[5], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 7: // TRI7
 		{
-			AddFace(n[0], n[3], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[1], n[6], n[3], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[1], n[4], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[2], n[6], n[4], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[2], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[0], n[6], n[5], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[3], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[1], n[6], n[3], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[1], n[4], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[2], n[6], n[4], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[2], n[5], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[0], n[6], n[5], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 8: // QUAD8
@@ -229,41 +230,41 @@ void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bex
 			vec3d r = QUAD8::eval(x, 0.0, 0.0);
 			int n9 = AddNode(r);
 */
-			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
-//			AddFace(n9, n[7], n[4], groupID, smoothID, bext, faceId, elemId);
-//			AddFace(n9, n[4], n[5], groupID, smoothID, bext, faceId, elemId);
-//			AddFace(n9, n[5], n[6], groupID, smoothID, bext, faceId, elemId);
-//			AddFace(n9, n[6], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[5], n[6], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[4], n[5], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+//			AddFace(n9, n[7], n[4], groupID, smoothID, bext, faceId, elemId, mat);
+//			AddFace(n9, n[4], n[5], groupID, smoothID, bext, faceId, elemId, mat);
+//			AddFace(n9, n[5], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+//			AddFace(n9, n[6], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[5], n[6], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[4], n[5], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 9: // QUAD9
 		{
-			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[4], n[8], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[4], n[5], n[8], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[8], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[8], n[6], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[4], n[8], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[4], n[5], n[8], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[8], n[5], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[8], n[6], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	case 10: // TRI10
 		{
-			AddFace(n[0], n[3], n[7], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[1], n[5], n[4], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[2], n[8], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[7], n[3], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[3], n[4], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[4], n[5], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[5], n[6], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[6], n[8], groupID, smoothID, bext, faceId, elemId);
-			AddFace(n[9], n[8], n[7], groupID, smoothID, bext, faceId, elemId);
+			AddFace(n[0], n[3], n[7], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[1], n[5], n[4], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[2], n[8], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[7], n[3], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[3], n[4], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[4], n[5], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[5], n[6], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[6], n[8], groupID, smoothID, bext, faceId, elemId, mat);
+			AddFace(n[9], n[8], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 		}
 		break;
 	default:
@@ -301,6 +302,84 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 	face.vr[2] = r[2];
 	face.c[0] = face.c[1] = face.c[2] = c;
 	m_Face.push_back(face);
+}
+
+int GMesh::SetFaceTex(int f0, float* t, int n)
+{
+	GMesh::FACE* pf = &m_Face[f0];
+	switch (n)
+	{
+	case 3:
+		pf->t[0] = t[0]; pf->t[1] = t[1]; pf->t[2] = t[2];
+		return f0 + 1;
+	break;
+	case 4:
+		pf->t[0] = t[2]; pf->t[1] = t[3]; pf->t[2] = t[0]; pf++;
+		pf->t[0] = t[0]; pf->t[1] = t[2]; pf->t[2] = t[2]; pf++;
+		return f0 + 2;
+		break;
+	case 6:
+	{
+		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[5]; pf++;
+		pf->t[0] = t[1]; pf->t[1] = t[4]; pf->t[2] = t[3]; pf++;
+		pf->t[0] = t[2]; pf->t[1] = t[5]; pf->t[2] = t[4]; pf++;
+		pf->t[0] = t[3]; pf->t[1] = t[4]; pf->t[2] = t[5]; pf++;
+		return f0 + 4;
+	}
+	break;
+	case 7: // TRI7
+	{
+		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[1]; pf->t[1] = t[6]; pf->t[2] = t[3]; pf++;
+		pf->t[0] = t[1]; pf->t[1] = t[4]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[2]; pf->t[1] = t[6]; pf->t[2] = t[4]; pf++;
+		pf->t[0] = t[2]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[0]; pf->t[1] = t[6]; pf->t[2] = t[5]; pf++;
+		return f0 + 6;
+	}
+	break;
+	case 8: // QUAD8
+	{
+		pf->t[0] = t[0]; pf->t[1] = t[4]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[4]; pf->t[1] = t[1]; pf->t[2] = t[5]; pf++;
+		pf->t[0] = t[5]; pf->t[1] = t[2]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[6]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[5]; pf->t[1] = t[6]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[4]; pf->t[1] = t[5]; pf->t[2] = t[7]; pf++;
+		return f0 + 6;
+	}
+	break;
+	case 9: // QUAD9
+	{
+		pf->t[0] = t[0]; pf->t[1] = t[4]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[4]; pf->t[1] = t[1]; pf->t[2] = t[5]; pf++;
+		pf->t[0] = t[5]; pf->t[1] = t[2]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[6]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[4]; pf->t[1] = t[8]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[4]; pf->t[1] = t[5]; pf->t[2] = t[8]; pf++;
+		pf->t[0] = t[8]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[8]; pf->t[1] = t[6]; pf->t[2] = t[7]; pf++;
+		return f0 + 8;
+	}
+	break;
+	case 10: // TRI10
+	{
+		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
+		pf->t[0] = t[1]; pf->t[1] = t[5]; pf->t[2] = t[4]; pf++;
+		pf->t[0] = t[2]; pf->t[1] = t[8]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[7]; pf->t[2] = t[3]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[3]; pf->t[2] = t[4]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[4]; pf->t[2] = t[5]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[6]; pf->t[2] = t[8]; pf++;
+		pf->t[0] = t[9]; pf->t[1] = t[8]; pf->t[2] = t[7]; pf++;
+		return f0 + 9;
+	}
+	break;
+	default:
+		assert(false);
+	}
+	return f0;
 }
 
 //-----------------------------------------------------------------------------

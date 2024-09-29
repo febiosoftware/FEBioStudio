@@ -59,6 +59,14 @@ public:
 
 	unsigned int to_uint() { return (unsigned int)((r << 24) | (g << 16) | (b << 8) | a); }
 
+	void toFloat(float f[4])
+	{
+		f[0] = (float)r / 255.f;
+		f[1] = (float)g / 255.f;
+		f[2] = (float)b / 255.f;
+		f[3] = (float)a / 255.f;
+	}
+
 	static GLColor White() { return GLColor(255, 255, 255); }
 	static GLColor FromRGBf(float r, float g, float b) { return GLColor((uint8_t)(r*255.f), (uint8_t)(g*255.f), (uint8_t)(b*255.f)); }
 };

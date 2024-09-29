@@ -23,30 +23,49 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "GLShader.h"
+#include "GLTexture1D.h"
+#include <GLLib/glx.h>
 
-#pragma once
-#include <GeomLib/GMeshObject.h>
-
-namespace Post
+void GLStandardShader::Activate()
 {
-	class CGLModel;
+	glDisable(GL_COLOR_MATERIAL);
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
-class CPostObject : public GMeshObject
+void GLStandardShader::Render(const GMesh::FACE& f)
 {
-public:
-	CPostObject(Post::CGLModel* glm);
-	~CPostObject();
+	glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
+	glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
+	glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
+}
 
-	void UpdateMesh() override;
+void GLTexture1DShader::SetTexture(GLTexture1D* tex)
+{
+	m_tex = tex;
+}
 
-	BOX GetBoundingBox();
+void GLTexture1DShader::Activate()
+{
+	glEnable(GL_COLOR_MATERIAL);
+	glColor3ub(255, 255, 255);
+	glEnable(GL_TEXTURE_1D);
+	m_tex->MakeCurrent();
+}
 
-private:
-	// Don't want the sections on the post side. 
-	void UpdateSections() override {}
+void GLTexture1DShader::Deactivate()
+{
+	glDisable(GL_TEXTURE_1D);
+}
 
-private:
-	Post::CGLModel* m_glm;
-};
-
+void GLTexture1DShader::Render(const GMesh::FACE& f)
+{
+	glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x); glTexCoord1f(f.t[0]);
+	glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x); glTexCoord1f(f.t[1]);
+	glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x); glTexCoord1f(f.t[2]);
+}

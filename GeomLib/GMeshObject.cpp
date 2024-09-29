@@ -403,6 +403,23 @@ void GMeshObject::UpdateSurfaces()
 			if (pid[2] == -1) pid[2] = pid2;
 		}
 	}
+
+	// assign the faces to the parts
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		pg->m_face.clear();
+	}
+
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace* pf = Face(i);
+		int* pid = pf->m_nPID;
+		assert(pid[0] != -1);
+		if (pid[0] != -1) Part(pid[0])->m_face.push_back(i);
+		if (pid[1] != -1) Part(pid[1])->m_face.push_back(i);
+		if (pid[2] != -1) Part(pid[2])->m_face.push_back(i);
+	}
 }
 
 //-----------------------------------------------------------------------------

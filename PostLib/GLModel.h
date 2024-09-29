@@ -195,6 +195,8 @@ public:
 	void RenderElems(FEPostModel* ps, CGLContext& rc);
 	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
+	void RenderElemsNew(FEPostModel* ps, CGLContext& rc);
+
 public:
 	void RenderMeshLines(CGLContext& rc);
 	void RenderOutline(CGLContext& rc, int nmat = -1);

@@ -221,6 +221,7 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+		gm.Node(i).nid = i;
 	}
 
 	int NF = pm->Faces();
@@ -234,8 +235,10 @@ void GObject::BuildFERenderMesh()
 			{
 				eid = face.m_elem[1].eid;
 			}
+			int mid = -1;
+			if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid);
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid, mid);
 
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)

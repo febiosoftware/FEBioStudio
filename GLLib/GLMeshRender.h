@@ -41,6 +41,7 @@ class GMesh;
 class CGLContext;
 class FSMesh;
 class Transform;
+class GLShader;
 
 class GLMeshRender
 {
@@ -67,6 +68,11 @@ public:
 	void SetDivisions(int ndivs) { m_ndivs = ndivs; }
 
 public:
+	void SetUseShaders(bool b);
+	void ClearShaders();
+	void AddShader(GLShader* shader);
+
+public:
 	void SetRenderMode(RenderMode mode);
 
 	void PushState();
@@ -76,6 +82,8 @@ public:
 	void RenderGLMesh(GMesh* pm);
 	void RenderGLMesh(GMesh& pm, GLColor c);
 	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
+
+	void RenderGMesh(const GMesh& mesh);
 
 	void RenderGLMesh(GMesh* pm, int surfID);
 	void RenderGLEdges(GMesh* pm);
@@ -160,8 +168,10 @@ public:
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
 	bool		m_bfaceColor;		//!< use face colors when rendering
+	bool		m_useShaders;		//!< use the shaders
 	RenderMode	m_renderMode;
 
 private:
 	GLTriMesh	m_glmesh;
+	std::vector<GLShader*> m_shaders;
 };

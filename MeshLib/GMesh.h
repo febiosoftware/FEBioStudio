@@ -63,6 +63,7 @@ public:
 		int		fid = 0;	// face ID of FSace in parent mesh (or -1 if not applicable)
 		int		eid = 0;	// element ID (used by planecut algorithm)
 		int		sid = 0;	// smoothing group ID
+		int		mid = 0;	// material ID
 		bool	bext = true;	// external flag
 		int		tag = 0;	// multipurpose tag
 		int		n[3];	// nodes
@@ -108,10 +109,12 @@ public:
 	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	void AddEdge(vec3f* r, int nodes, int groupID = 0);
-	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
-	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1);
+	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
+	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
 	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
+
+	int SetFaceTex(int f0, float* t, int n);
 
 protected:
 	void FindNeighbors();

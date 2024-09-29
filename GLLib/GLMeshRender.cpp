@@ -30,10 +30,11 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/quad8.h>
 #include <MeshLib/GMesh.h>
-#include <GLLib/glx.h>
-#include <GLLib/GLMesh.h>
-#include <GLLib/GLContext.h>
-#include <GLLib/GLCamera.h>
+#include "glx.h"
+#include "GLMesh.h"
+#include "GLContext.h"
+#include "GLCamera.h"
+#include "GLShader.h"
 #include <FECore/FETransform.h>
 
 // drawing routines for faces
@@ -118,6 +119,23 @@ GLMeshRender::GLMeshRender()
 	m_pointSize = 7.f;
 	m_bfaceColor = false;
 	m_renderMode = DefaultMode;
+	m_useShaders = false;
+}
+
+void GLMeshRender::SetUseShaders(bool b)
+{
+	m_useShaders = b;
+}
+
+void GLMeshRender::ClearShaders()
+{
+	for (auto s : m_shaders) delete s;
+	m_shaders.clear();
+}
+
+void GLMeshRender::AddShader(GLShader* shader)
+{
+	m_shaders.push_back(shader);
 }
 
 //-----------------------------------------------------------------------------
@@ -266,12 +284,6 @@ void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 	default:
 		assert(false);
 	}
-}
-
-//-----------------------------------------------------------------------------
-inline void glxColor(const GLColor& c)
-{
-	glColor3ub(c.r, c.g, c.b);
 }
 
 //-----------------------------------------------------------------------------
@@ -2027,6 +2039,42 @@ void GLMeshRender::RenderGLMesh(GMesh& mesh, GLColor c)
 		}
 	}
 	glEnd();
+}
+
+void GLMeshRender::RenderGMesh(const GMesh& mesh)
+{
+	if (!m_useShaders || m_shaders.empty()) return;
+
+	int lastShader = -1;
+	GLShader* shader = nullptr;
+	for (int i = 0; i < mesh.m_FIL.size(); ++i)
+	{
+		int n0 = mesh.m_FIL[i].first;
+		int nf = mesh.m_FIL[i].second;
+		if (nf > 0)
+		{
+			const GMesh::FACE& f = mesh.Face(n0);
+			if (f.mid != lastShader)
+			{
+				lastShader = f.mid;
+				if (shader) shader->Deactivate();
+				shader = m_shaders[f.mid];
+				if (shader) shader->Activate();
+			}
+			if (shader)
+			{
+				glBegin(GL_TRIANGLES);
+				{
+					for (int j = 0; j < nf; ++j)
+					{
+						shader->Render(mesh.Face(n0 + j));
+					}
+				}
+				glEnd();
+			}
+		}
+	}
+	if (shader) shader->Deactivate();
 }
 
 void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> func)
