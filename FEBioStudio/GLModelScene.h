@@ -130,6 +130,8 @@ private:
 	void SetMatProps(GMaterial* pm);
 	void SetMatProps(CGLContext& rc, GPart* pg);
 
+	GLColor GetPartColor(CGLContext& rc, GPart* pg);
+
 	// set some default GL material properties
 	void SetDefaultMatProps();
 

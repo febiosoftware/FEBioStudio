@@ -175,7 +175,9 @@ void GLMeshRender::SetRenderMode(RenderMode mode)
 	m_renderMode = mode;
 	switch (mode)
 	{
-	case DefaultMode: break;
+	case DefaultMode: 
+		glDisable(GL_POLYGON_STIPPLE);
+		break;
 	case SelectionMode:
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDisable(GL_CULL_FACE);
@@ -187,6 +189,9 @@ void GLMeshRender::SetRenderMode(RenderMode mode)
 		glDisable(GL_POLYGON_STIPPLE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
+		break;
+	case StippleMode:
+		glEnable(GL_POLYGON_STIPPLE);
 		break;
 	}
 }
@@ -2077,6 +2082,21 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 	if (shader) shader->Deactivate();
 }
 
+void GLMeshRender::RenderGMesh(const GMesh& mesh, GLShader& shader)
+{
+	shader.Activate();
+	int NF = mesh.Faces();
+	glBegin(GL_TRIANGLES);
+	{
+		for (int i = 0; i < NF; ++i)
+		{
+			shader.Render(mesh.Face(i));
+		}
+	}
+	glEnd();
+	shader.Deactivate();
+}
+
 void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> func)
 {
 	glBegin(GL_TRIANGLES);
@@ -2126,6 +2146,26 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 			}
 		}
 		glEnd();
+	}
+}
+
+void GLMeshRender::RenderGMesh(GMesh* pm, int surfID, GLShader& shader)
+{
+	if ((surfID < 0) || (surfID >= (int)pm->m_FIL.size())) return;
+	pair<int, int> fil = pm->m_FIL[surfID];
+	int NF = fil.second;
+	if (NF > 0)
+	{
+		shader.Activate();
+		glBegin(GL_TRIANGLES);
+		{
+			for (int i = 0; i < NF; ++i)
+			{
+				shader.Render(pm->Face(i + fil.first));
+			}
+		}
+		glEnd();
+		shader.Deactivate();
 	}
 }
 

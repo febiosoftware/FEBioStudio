@@ -49,7 +49,8 @@ public:
 	enum RenderMode {
 		DefaultMode,
 		SelectionMode,
-		OutlineMode
+		OutlineMode,
+		StippleMode
 	};
 public:
 	GLMeshRender();
@@ -84,8 +85,11 @@ public:
 	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
 
 	void RenderGMesh(const GMesh& mesh);
+	void RenderGMesh(const GMesh& pm, GLShader& shader);
+	void RenderGMesh(GMesh* pm, int surfID, GLShader& shader);
 
 	void RenderGLMesh(GMesh* pm, int surfID);
+
 	void RenderGLEdges(GMesh* pm);
 	void RenderGLEdges(GMesh* pm, int nedge);
 	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);

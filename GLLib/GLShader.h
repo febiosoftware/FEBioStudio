@@ -67,3 +67,26 @@ public:
 private:
 	GLTexture1D* m_tex;
 };
+
+class GLStandardModelShader : public GLShader
+{
+public:
+	GLStandardModelShader();
+	GLStandardModelShader(const GLColor& c);
+
+	void SetColor(const GLColor& c) { m_col = c; }
+
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::FACE& face) override;
+
+private:
+	GLColor m_col;
+};
+
+class GLFaceColorShader : public GLShader
+{
+public:
+	void Activate() override;
+	void Render(const GMesh::FACE& face) override;
+};

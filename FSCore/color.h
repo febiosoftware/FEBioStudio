@@ -59,7 +59,7 @@ public:
 
 	unsigned int to_uint() { return (unsigned int)((r << 24) | (g << 16) | (b << 8) | a); }
 
-	void toFloat(float f[4])
+	void toFloat(float f[4]) const
 	{
 		f[0] = (float)r / 255.f;
 		f[1] = (float)g / 255.f;
