@@ -65,9 +65,9 @@ void GLTexture1DShader::Deactivate()
 
 void GLTexture1DShader::Render(const GMesh::FACE& f)
 {
-	glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x); glTexCoord1f(f.t[0]);
-	glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x); glTexCoord1f(f.t[1]);
-	glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x); glTexCoord1f(f.t[2]);
+	glNormal3fv(&f.vn[0].x); glTexCoord1f(f.t[0]); glVertex3fv(&f.vr[0].x);
+	glNormal3fv(&f.vn[1].x); glTexCoord1f(f.t[1]); glVertex3fv(&f.vr[1].x);
+	glNormal3fv(&f.vn[2].x); glTexCoord1f(f.t[2]); glVertex3fv(&f.vr[2].x);
 }
 
 GLStandardModelShader::GLStandardModelShader()

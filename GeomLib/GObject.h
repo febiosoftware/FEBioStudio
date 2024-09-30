@@ -182,6 +182,7 @@ public:
 
 	// get the mesh for rendering the FE mesh
 	GMesh* GetFERenderMesh();
+	std::vector<std::deque<int>>& GetFERenderMeshFaceList();
 
 	// get the local bounding box 
 	BOX GetLocalBox() const;

@@ -80,7 +80,9 @@ public:
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
 	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
+	
 	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
+	std::vector<std::deque<int>> m_faceList; // list of FE mesh faces for each GFace
 
 	GObjectManipulator* m_objManip;
 
@@ -211,12 +213,20 @@ void GObject::SetFEMesh(FSMesh* pm)
 
 void GObject::BuildFERenderMesh()
 {
-	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
+	Imp& m = *imp;
+
+	delete m.m_glFaceMesh; m.m_glFaceMesh = nullptr;
+	m.m_faceList.clear();
+
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	imp->m_glFaceMesh = new GMesh;
-	GMesh& gm = *imp->m_glFaceMesh;
+	int nsurf = Faces();
+	m.m_faceList.resize(nsurf);
+	if (nsurf == 0) return;
+
+	m.m_glFaceMesh = new GMesh;
+	GMesh& gm = *m.m_glFaceMesh;
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
@@ -228,25 +238,38 @@ void GObject::BuildFERenderMesh()
 	for (int i = 0; i < NF; i++)
 	{
 		const FSFace& face = pm->Face(i);
+		assert(face.m_gid >= 0);
+		m.m_faceList[face.m_gid].push_back(i);
+	}
 
-		int eid = face.m_elem[0].eid;
-		if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+	for (int i = 0; i < nsurf; i++)
+	{
+		std::deque<int>::iterator it = m.m_faceList[i].begin();
+		gm.NewPartition();
+		for (auto n : m.m_faceList[i])
 		{
-			eid = face.m_elem[1].eid;
-		}
-		int mid = -1;
-		if (eid >= 0) mid = pm->Element(eid).m_MatID;
-		
-		gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid, mid);
+			const FSFace& face = pm->Face(n);
+			assert(face.m_gid == i);
 
-		int ne = face.Edges();
-		for (int j = 0; j < ne; ++j)
-		{
-			int j1 = (j + 1) % ne;
-			if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+			int eid = face.m_elem[0].eid;
+			if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
 			{
-				int m[2] = { face.n[j], face.n[j1] };
-				gm.AddEdge(m, 2);
+				eid = face.m_elem[1].eid;
+			}
+			int mid = -1;
+			if (eid >= 0) mid = pm->Element(eid).m_MatID;
+
+			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+
+			int ne = face.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				int j1 = (j + 1) % ne;
+				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+				{
+					int m[2] = { face.n[j], face.n[j1] };
+					gm.AddEdge(m, 2);
+				}
 			}
 		}
 	}
@@ -787,6 +810,11 @@ GMesh*	GObject::GetRenderMesh()
 GMesh* GObject::GetFERenderMesh()
 {
 	return imp->m_glFaceMesh;
+}
+
+std::vector<std::deque<int>>& GObject::GetFERenderMeshFaceList()
+{
+	return imp->m_faceList;
 }
 
 //-----------------------------------------------------------------------------

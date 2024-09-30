@@ -48,6 +48,8 @@ void GMesh::Create(int nodes, int faces, int edges)
 	m_Node.resize(nodes);
 	m_Face.resize(faces);
 	m_Edge.resize(edges);
+	m_FIL.clear();
+	m_EIL.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -56,6 +58,8 @@ void GMesh::Clear()
 	m_Node.clear();
 	m_Edge.clear();
 	m_Face.clear();
+	m_FIL.clear();
+	m_EIL.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -166,7 +170,23 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 }
 
 
-//-----------------------------------------------------------------------------
+int GMesh::AddFace(const GMesh::FACE& face)
+{
+	if (m_FIL.empty()) NewPartition();
+	auto& fil = m_FIL.back();
+	fil.nf++;
+	m_Face.push_back(face);
+	return ((int)m_Face.size() - 1);
+}
+
+void GMesh::NewPartition()
+{
+	PARTITION p;
+	p.n0 = m_Face.size();
+	p.nf = 0;
+	m_FIL.push_back(p);
+}
+
 int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
 {
 	FACE f;
@@ -182,8 +202,7 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext,
 	f.fid = faceId;
 	f.eid = elemId;
 	f.mid = mat;
-	m_Face.push_back(f);
-	return ((int)m_Face.size() - 1);
+	return AddFace(f);
 }
 
 //-----------------------------------------------------------------------------
@@ -222,22 +241,10 @@ void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bex
 		break;
 	case 8: // QUAD8
 		{
-			// NOTE: Commented this out since I need a one-to-one correspondence
-			// between nodes from the original mesh and the GMesh
-			// we add a central node to make the improve the rendering a bit
-/*			vec3d x[8];
-			for (int i = 0; i < 8; ++i) x[i] = Node(n[i]).r;
-			vec3d r = QUAD8::eval(x, 0.0, 0.0);
-			int n9 = AddNode(r);
-*/
 			AddFace(n[0], n[4], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 			AddFace(n[4], n[1], n[5], groupID, smoothID, bext, faceId, elemId, mat);
 			AddFace(n[5], n[2], n[6], groupID, smoothID, bext, faceId, elemId, mat);
 			AddFace(n[6], n[3], n[7], groupID, smoothID, bext, faceId, elemId, mat);
-//			AddFace(n9, n[7], n[4], groupID, smoothID, bext, faceId, elemId, mat);
-//			AddFace(n9, n[4], n[5], groupID, smoothID, bext, faceId, elemId, mat);
-//			AddFace(n9, n[5], n[6], groupID, smoothID, bext, faceId, elemId, mat);
-//			AddFace(n9, n[6], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 			AddFace(n[5], n[6], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 			AddFace(n[4], n[5], n[7], groupID, smoothID, bext, faceId, elemId, mat);
 		}
@@ -301,7 +308,7 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
 	face.c[0] = face.c[1] = face.c[2] = c;
-	m_Face.push_back(face);
+	AddFace(face);
 }
 
 int GMesh::SetFaceTex(int f0, float* t, int n)
@@ -315,7 +322,7 @@ int GMesh::SetFaceTex(int f0, float* t, int n)
 	break;
 	case 4:
 		pf->t[0] = t[2]; pf->t[1] = t[3]; pf->t[2] = t[0]; pf++;
-		pf->t[0] = t[0]; pf->t[1] = t[2]; pf->t[2] = t[2]; pf++;
+		pf->t[0] = t[0]; pf->t[1] = t[1]; pf->t[2] = t[2]; pf++;
 		return f0 + 2;
 		break;
 	case 6:
@@ -501,30 +508,38 @@ bool CmpEdge(GMesh::EDGE e1, GMesh::EDGE e2)
 	return (e1.pid < e2.pid);
 }
 
-//-----------------------------------------------------------------------------
+void GMesh::AutoPartition()
+{
+	int NF = m_Face.size();
+	m_FIL.clear();
+	if (NF == 0) return;
+
+	// sort the face list by pid
+	stable_sort(m_Face.begin(), m_Face.end(), CmpFace);
+
+	// find the largest PID value
+	// since the faces are sorted, this is the last one
+	int FID = m_Face[NF-1].pid + 1;
+
+	// find the start index and length of each surface
+	m_FIL.resize(FID);
+	for (int i=0; i<FID; ++i) m_FIL[i].nf = 0;
+	for (int i=0; i<NF; ++i)
+	{
+		FACE& f = m_Face[i];
+		m_FIL[f.pid].nf += 1;
+	}
+	m_FIL[0].n0 = 0;
+	for (int i=1; i<FID; ++i) m_FIL[i].n0 = m_FIL[i-1].n0 + m_FIL[i-1].nf;
+}
+
 void GMesh::Update()
 {
+	if (m_FIL.empty()) AutoPartition();
+
 	int NF = (int) m_Face.size();
 	if (NF)
 	{
-		// sort the face list by pid
-		stable_sort(m_Face.begin(), m_Face.end(), CmpFace);
-
-		// find the largest PID value
-		// since the faces are sorted, this is the last one
-		int FID = m_Face[NF-1].pid + 1;
-
-		// find the start index and length of each surface
-		m_FIL.resize(FID);
-		for (int i=0; i<FID; ++i) m_FIL[i].second = 0;
-		for (int i=0; i<NF; ++i)
-		{
-			FACE& f = m_Face[i];
-			m_FIL[f.pid].second += 1;
-		}
-		m_FIL[0].first = 0;
-		for (int i=1; i<FID; ++i) m_FIL[i].first = m_FIL[i-1].first + m_FIL[i-1].second;
-
 		for (int i = 0; i < NF; ++i)
 		{
 			FACE& face = m_Face[i];
@@ -798,7 +813,7 @@ void GMesh::Attach(GMesh &m, bool bupdate)
 		f.n[0] += N0;
 		f.n[1] += N0;
 		f.n[2] += N0;
-		m_Face.push_back(f);
+		AddFace(f);
 	}
 
 	if (bupdate) Update();

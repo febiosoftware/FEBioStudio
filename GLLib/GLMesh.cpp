@@ -145,16 +145,16 @@ void GLMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 
 void GLMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
 {
-	if ((surfID < 0) || (surfID >= gmsh.m_FIL.size())) { assert(false); return; }
+	if ((surfID < 0) || (surfID >= gmsh.Partitions())) { assert(false); return; }
 
-	pair<int, int> fil = gmsh.m_FIL[surfID];
-	int faces = fil.second;
+	const GMesh::PARTITION& part = gmsh.Partition(surfID);
+	int faces = part.nf;
 	AllocVertexBuffers(3 * faces, flags);
 
 	BeginMesh();
 	for (int i = 0; i < faces; ++i)
 	{
-		const GMesh::FACE& f = gmsh.Face(i + fil.first);
+		const GMesh::FACE& f = gmsh.Face(i + part.n0);
 		assert(f.pid == surfID);
 		for (int j = 0; j < 3; ++j)
 		{

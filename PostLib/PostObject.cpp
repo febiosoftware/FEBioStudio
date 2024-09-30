@@ -81,12 +81,14 @@ void CPostObject::UpdateMesh()
 		}
 		mesh->Update();
 
+		std::vector<std::deque<int>>& faceList = GetFERenderMeshFaceList();
+		assert(mesh->Partitions() == faceList.size());
 		int nf = 0;
-		for (int i = 0; i < postMesh->Faces(); ++i)
+		for (int i = 0; i < faceList.size(); ++i)
 		{
-			FSFace& face = postMesh->Face(i);
-			if (face.IsVisible())
+			for (int n : faceList[i])
 			{
+				FSFace& face = postMesh->Face(n);
 				nf = mesh->SetFaceTex(nf, face.m_tex, face.Nodes());
 			}
 		}

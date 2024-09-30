@@ -2145,8 +2145,9 @@ void CGLView::HighlightSurface(int x, int y)
 					GFace* gface = po->Face(k);
 					if (gface->IsVisible() && !gface->IsSelected())
 					{
-						int NF = mesh->m_FIL[k].second;
-						int N0 = mesh->m_FIL[k].first;
+						const GMesh::PARTITION& pk = mesh->Partition(k);
+						int NF = pk.nf;
+						int N0 = pk.n0;
 						for (int j = 0; j < NF; ++j)
 						{
 							GMesh::FACE& face = mesh->Face(j + N0);

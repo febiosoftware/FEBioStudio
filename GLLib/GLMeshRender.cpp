@@ -2052,10 +2052,11 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 
 	int lastShader = -1;
 	GLShader* shader = nullptr;
-	for (int i = 0; i < mesh.m_FIL.size(); ++i)
+	for (int i = 0; i < mesh.Partitions(); ++i)
 	{
-		int n0 = mesh.m_FIL[i].first;
-		int nf = mesh.m_FIL[i].second;
+		const GMesh::PARTITION& p = mesh.Partition(i);
+		int n0 = p.n0;
+		int nf = p.nf;
 		if (nf > 0)
 		{
 			const GMesh::FACE& f = mesh.Face(n0);
@@ -2120,18 +2121,19 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE&
 
 void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 {
-	if ((surfID < 0) || (surfID >= (int)pm->m_FIL.size())) return;
-	pair<int, int> fil = pm->m_FIL[surfID];
-	int NF = fil.second;
-	if (NF > 0)
+	if ((surfID < 0) || (surfID >= (int)pm->Partitions())) return;
+	const GMesh::PARTITION& p = pm->Partition(surfID);
+	if (p.nf > 0)
 	{
+		int NF = p.nf;
+		int n0 = p.n0;
 		glBegin(GL_TRIANGLES);
 		{
 			if (m_bfaceColor)
 			{
 				for (int i = 0; i < NF; ++i)
 				{
-					const GMesh::FACE& f = pm->Face(i + fil.first);
+					const GMesh::FACE& f = pm->Face(i + n0);
 					glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
 					glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
 					glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
@@ -2141,7 +2143,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 			{
 				for (int i = 0; i < NF; ++i)
 				{
-					const GMesh::FACE& f = pm->Face(i + fil.first);
+					const GMesh::FACE& f = pm->Face(i + n0);
 					glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
 					glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
 					glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
@@ -2154,17 +2156,18 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 
 void GLMeshRender::RenderGMesh(GMesh* pm, int surfID, GLShader& shader)
 {
-	if ((surfID < 0) || (surfID >= (int)pm->m_FIL.size())) return;
-	pair<int, int> fil = pm->m_FIL[surfID];
-	int NF = fil.second;
-	if (NF > 0)
+	if ((surfID < 0) || (surfID >= (int)pm->Partitions())) return;
+	const GMesh::PARTITION& p = pm->Partition(surfID);
+	if (p.nf > 0)
 	{
+		int NF = p.nf;
+		int n0 = p.n0;
 		shader.Activate();
 		glBegin(GL_TRIANGLES);
 		{
 			for (int i = 0; i < NF; ++i)
 			{
-				shader.Render(pm->Face(i + fil.first));
+				shader.Render(pm->Face(i + n0));
 			}
 		}
 		glEnd();
@@ -2219,10 +2222,10 @@ void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 	if (pm == nullptr) return;
 	int N = pm->Edges();
 	if (N == 0) return;
-	if ((nid < 0) || (nid >= pm->m_EIL.size())) return;
+	if ((nid < 0) || (nid >= pm->EILs())) return;
 	glBegin(GL_LINES);
 	{
-		pair<int, int> eil = pm->m_EIL[nid];
+		const pair<int, int>& eil = pm->EIL(nid);
 		for (int i = 0; i < eil.second; ++i)
 		{
 			GMesh::EDGE& e = pm->Edge(i + eil.first);
@@ -2321,14 +2324,14 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transfo
 	// this array will collect all points to render
 	vector<vec3f> points; points.reserve(1024);
 
-	pair<int, int> fil = pm->m_FIL[surfID];
-	int NF = fil.second;
+	const GMesh::PARTITION& part = pm->Partition(surfID);
+	int NF = part.nf;
 	if (NF > 0)
 	{
 		// loop over all faces
 		for (int i = 0; i < NF; ++i)
 		{
-			const GMesh::FACE& f = pm->Face(i + fil.first);
+			const GMesh::FACE& f = pm->Face(i + part.n0);
 			for (int j = 0; j < 3; ++j)
 			{
 				bool bdraw = false;

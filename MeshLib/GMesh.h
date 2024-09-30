@@ -75,12 +75,22 @@ public:
 		float	t[3];	// texture coordinates
 	};
 
+	struct PARTITION
+	{
+		int n0; // start index into face list
+		int nf; // nr of faces in partition
+	};
+
 public:
 	GMesh(void);
 	virtual ~GMesh(void);
 
 	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
+
+	void NewPartition();
+
+	void AutoPartition();
 
 	virtual void Update();
 
@@ -105,6 +115,13 @@ public:
 	void AutoSmooth(double angleDegrees);
 
 public:
+	size_t Partitions() const { return m_FIL.size(); }
+	const PARTITION& Partition(size_t n) const { return m_FIL[n]; }
+
+	size_t EILs() const { return m_EIL.size(); }
+	const std::pair<int, int>& EIL(size_t n) const { return m_EIL[n]; }
+
+public:
 	int	AddNode(const vec3f& r, int groupID = 0);
 	int	AddNode(const vec3f& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
@@ -123,13 +140,16 @@ public:
 	void UpdateBoundingBox();
 	void UpdateNormals();
 
+private:
+	int AddFace(const FACE& face);
+
 protected:
 	BOX				m_box;
 	vector<NODE>	m_Node;
 	vector<EDGE>	m_Edge;
 	vector<FACE>	m_Face;
 
-public:
-	vector<pair<int, int> >	m_FIL;
+private:
+	vector<PARTITION>		m_FIL;
 	vector<pair<int, int> >	m_EIL;
 };

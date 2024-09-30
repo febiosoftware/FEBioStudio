@@ -771,13 +771,25 @@ void GMeshObject::BuildGMesh()
 		}
 	}
 
-	// create face data
-	for (int i=0; i<pm->Faces(); ++i)
+	std::vector<std::deque<int>> faceList(Faces());
+	int NF = pm->Faces();
+	for (int i = 0; i < NF; i++)
 	{
-		FSFace& fs = pm->Face(i);
-		int nf = fs.Nodes();
-		for (int j=0; j<nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
-		gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+		const FSFace& face = pm->Face(i);
+		assert(face.m_gid >= 0);
+		faceList[face.m_gid].push_back(i);
+	}
+
+	for (int i = 0; i < Faces(); ++i)
+	{
+		gmesh->NewPartition();
+		for (int l : faceList[i])
+		{
+			FSFace& fs = pm->Face(l);
+			int nf = fs.Nodes();
+			for (int j = 0; j < nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
+			gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+		}
 	}
 
 	gmesh->Update();
