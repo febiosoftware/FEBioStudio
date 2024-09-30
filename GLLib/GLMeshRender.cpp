@@ -2063,7 +2063,10 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 			{
 				lastShader = f.mid;
 				if (shader) shader->Deactivate();
-				shader = m_shaders[f.mid];
+				if (f.mid != -1)
+					shader = m_shaders[f.mid];
+				else
+					shader = nullptr;
 				if (shader) shader->Activate();
 			}
 			if (shader)
