@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLWidgetManager.h"
 #include <QOpenGLWidget>
 #include <assert.h>
+#include <QPainter>
 
 CGLWidgetManager* CGLWidgetManager::m_pmgr = 0;
 
@@ -128,7 +129,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 
 	// see if there is a widget that wishes to handle this event
 	// first we see if the user is trying to select a widget
-	if (nevent == PUSH)
+	if (nevent == GLWEvent::GLW_PUSH)
 	{
 		bool bsel = false;
 		for (int i=0; i<(int) m_Widget.size(); ++i)
@@ -147,9 +148,12 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 	GLWidget* pw = GLWidget::get_focus();
 	if (pw) 
 	{
+		// see if the widget wants to handle it
+		if (pw->handle(x, y, nevent)) return 1;
+
 		switch (nevent)
 		{
-		case PUSH:
+		case GLWEvent::GLW_PUSH:
 			{
 				xp = x;
 				yp = y;
@@ -166,7 +170,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 //				GLWidget::GetView()->Redraw();
 			}
 			return 1;
-		case DRAG:
+		case GLWEvent::GLW_DRAG:
 			if (pw->has_focus())
 			{
 				int x0 = pw->x();
@@ -218,7 +222,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 */
 			}
 			return 1;
-		case RELEASE:
+		case GLWEvent::GLW_RELEASE:
 			{
 //				CWnd* pwnd = flxGetMainWnd();
 //				pwnd->SetStatusBar(0);

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <GLWLib/GLWidget.h>
+#include <GLWLib/GLLegendBar.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
 #else

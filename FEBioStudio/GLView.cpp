@@ -48,10 +48,16 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "Commands.h"
 #include <chrono>
 #include "DlgPickColor.h"
+#include <GLWLib/GLLabel.h>
+#include <GLWLib/GLCheckBox.h>
+#include <GLWLib/GLTriad.h>
+#include <GLWLib/GLSafeFrame.h>
+#include <GLWLib/GLLegendBar.h>
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -443,7 +449,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
-	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1))
+	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_PUSH) == 1))
 	{
 		m_pWnd->UpdateFontToolbar();
 		repaint();
@@ -570,7 +576,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	int y = ev->pos().y();
 
 	// let the widget manager handle it first
-	if (but1 && (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1)))
+	if (but1 && (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_DRAG) == 1)))
 	{
 		repaint();
 		m_pWnd->UpdateFontToolbar();
@@ -828,7 +834,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	int y = (int)ev->position().y();
 
 	// let the widget manager handle it first
-	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1))
+	if (m_Widget && (m_Widget->handle(x, y, GLWEvent::GLW_RELEASE) == 1))
 	{
 		ev->accept();
 		m_pWnd->UpdateFontToolbar();
@@ -1225,19 +1231,20 @@ void CGLView::initializeGL()
 		m_Widget->AttachToView(this);
 
 		int Y = 0;
-		m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
+		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""), 0);
 		m_ptitle->set_font_size(30);
 		m_ptitle->fit_to_size();
 		m_ptitle->set_label("$(filename)");
 		Y += m_ptitle->h();
 
-		m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
+		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""), 0);
 		m_psubtitle->set_font_size(15);
 		m_psubtitle->fit_to_size();
 		m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
 		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+		
 		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();

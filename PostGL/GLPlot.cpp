@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "GLPlotGroup.h"
 #include <GLWLib/GLWidgetManager.h>
+#include <GLWLib/GLLegendBar.h>
 using namespace Post;
 
 CGLPlot::CGLPlot(CGLModel* po) : CGLVisual(po)

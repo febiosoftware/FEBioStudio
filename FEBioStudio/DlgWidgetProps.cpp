@@ -40,10 +40,12 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QPushButton>
-#include <GLWLib/GLWidget.h>
 #include "InputWidgets.h"
 #include "CColorButton.h"
 #include "GLWLib/convert.h"
+#include <GLWLib/GLLabel.h>
+#include <GLWLib/GLLegendBar.h>
+#include <GLWLib/GLTriad.h>
 #include "MainWindow.h"
 
 //=================================================================================================
@@ -248,7 +250,7 @@ CDlgBoxProps::CDlgBoxProps(GLWidget* widget, QWidget* parent) : QDialog(parent),
 	ui->setupUi(this);
 
 	pw = widget;
-	GLBox* pb = dynamic_cast<GLBox*>(pw);
+	GLLabel* pb = dynamic_cast<GLLabel*>(pw);
 
 	ui->ppos->setPosition(widget->x(), widget->y(), widget->w(), widget->h());
 
@@ -280,7 +282,7 @@ void CDlgBoxProps::apply()
 	pw->resize(x, y, w, h);
 	pw->copy_label(text.c_str());
 
-	GLBox* pb = dynamic_cast<GLBox*>(pw);
+	GLLabel* pb = dynamic_cast<GLLabel*>(pw);
 	pb->m_bshadow = ui->pshadow->isChecked();
 	pb->m_shc = toGLColor(ui->pshadowCol->color());
 

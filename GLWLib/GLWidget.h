@@ -23,34 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
-#include <QPainter>
-#include <PostLib/ColorMap.h>
-#include <FSCore/math3d.h>
+#include <functional>
+#include <FSCore/color.h>
+#include <QFont>
+#include <map>
 
 class CGLView;
 class CGLWidgetManager;
+class QPainter;
 
-#define GLW_ALIGN_LEFT		0x0001
-#define GLW_ALIGN_RIGHT		0x0002
-#define GLW_ALIGN_TOP		0x0004
-#define GLW_ALIGN_BOTTOM	0x0008
-#define GLW_ALIGN_HCENTER	0x0010
-#define GLW_ALIGN_VCENTER	0x0020
+enum GLWAlign {
+	GLW_ALIGN_LEFT		= 0x0001,
+	GLW_ALIGN_RIGHT		= 0x0002,
+	GLW_ALIGN_TOP		= 0x0004,
+	GLW_ALIGN_BOTTOM	= 0x0008,
+	GLW_ALIGN_HCENTER	= 0x0010,
+	GLW_ALIGN_VCENTER	= 0x0020
+};
 
-//-----------------------------------------------------------------------------
+enum GLWEvent {
+	GLW_PUSH,
+	GLW_DRAG,
+	GLW_RELEASE
+};
+
+class GLWidget;
+
+typedef std::function<void(GLWidget* w, int nevent)> glw_event_handler;
+
 class GLWidget
 {
 public:
@@ -63,16 +64,15 @@ public:
 
 	virtual void draw(QPainter* painter) = 0;
 
-	void set_color(GLColor fgc, GLColor bgc);
+	virtual int handle(int x, int y, int nevent) { return 0; }
 
-	void set_fg_color(GLColor c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
-	void set_fg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_fgc = GLColor(r,g,b,a); }
+	void set_fg_color(const GLColor& c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
 	GLColor get_fg_color() { return m_fgc; }
 	bool isfgc_overridden() const { return m_boverridefgc; }
 
 	void set_bg_style(int n) { m_bgFillMode = n; }
 	void set_bg_color(GLColor c1, GLColor c2) { m_bgFillColor[0] = c1; m_bgFillColor[1] = c2; }
-	void set_bg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_bgFillColor[0] = GLColor(r,g,b,a); }
+	void set_bg_color(GLColor c) { m_bgFillColor[0] = c; }
 	GLColor get_bg_color(int i) { return m_bgFillColor[i]; }
 	int get_bg_style() { return m_bgFillMode; }
 
@@ -127,6 +127,13 @@ public:
 	void set_font_size(int nsize) { m_font.setPointSize(nsize); }
 
 public:
+	void call_event_handlers(int nevent);
+	void add_event_handler(glw_event_handler f) { m_eventHandlers.push_back(f); }
+
+protected:
+	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
+
+public:
 	unsigned int layer() const { return m_layer; }
 	void set_layer(unsigned int l) { m_layer = l; }
 
@@ -175,142 +182,7 @@ protected:
 
 	static	std::map<std::string, std::string>	m_stringTable;
 
+	std::vector<glw_event_handler> m_eventHandlers;
+
 	friend class CGLWidgetManager;
-};
-
-//-----------------------------------------------------------------------------
-
-class GLBox : public GLWidget
-{
-public:
-	enum AlignOption {
-		LeftJustified,
-		Centered,
-		RightJustified
-	};
-
-public:
-	GLBox(int x, int y, int w, int h, const char* szlabel = 0);
-
-	void draw(QPainter* painter);
-
-	void fit_to_size();
-
-protected:
-	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
-
-public:
-	bool	m_bshadow;	// render shadows
-	GLColor	m_shc;		// shadow color
-	int		m_margin;
-	int		m_align;
-};
-
-//-----------------------------------------------------------------------------
-
-class GLLegendBar : public GLWidget
-{
-public:
-	enum { GRADIENT, DISCRETE };
-	enum { ORIENT_HORIZONTAL, ORIENT_VERTICAL };
-
-public:
-	GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
-
-	void draw(QPainter* painter);
-
-	void SetType(int n) { m_ntype = n; }
-
-	void SetOrientation(int n);
-	int Orientation() const { return m_nrot; }
-
-	bool ShowLabels() { return m_blabels; }
-	void ShowLabels(bool bshow) { m_blabels = bshow; }
-
-	bool ShowTitle() const { return m_btitle; }
-	void ShowTitle(bool b) { m_btitle = b; }
-
-	int GetPrecision() { return m_nprec; }
-	void SetPrecision(int n) { n = (n<1?1:(n>7?7:n)); m_nprec = n; }
-
-	int GetLabelPosition() const { return m_labelPos; }
-	void SetLabelPosition(int n) { m_labelPos = n; }
-
-	void SetRange(float fmin, float fmax);
-	void GetRange(float& fmin, float& fmax);
-
-	int GetDivisions();
-	void SetDivisions(int n);
-
-	bool SmoothTexture() const;
-	void SetSmoothTexture(bool b);
-
-	float LineThickness() const { return m_lineWidth; }
-	void SetLineThickness(float f) { m_lineWidth = f; }
-
-protected:
-	void draw_gradient_vert(QPainter* painter);
-	void draw_gradient_horz(QPainter* painter);
-	void draw_discrete_vert(QPainter* painter);
-	void draw_discrete_horz(QPainter* painter);
-
-	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
-
-protected:
-	int		m_ntype;	// type of bar
-	int		m_nrot;		// orientation
-	bool	m_btitle;	// show title
-	bool	m_blabels;	// show labels
-	int		m_labelPos;	// label placement
-	int		m_nprec;	// precision
-	float	m_fmin;		// min of range
-	float	m_fmax;		// max of range
-	float	m_lineWidth;	// line width
-
-	Post::CColorTexture*		m_pMap;
-};
-
-//-----------------------------------------------------------------------------
-class GLTriad : public GLWidget
-{
-public:
-	GLTriad(int x, int y, int w, int h);
-
-	void draw(QPainter* painter);
-
-	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
-	bool show_coord_labels() { return m_bcoord_labels; }
-
-	void setOrientation(const quatd& q) { m_rot = q; }
-
-protected:
-	quatd	m_rot;
-	bool	m_bcoord_labels;
-};
-
-//-----------------------------------------------------------------------------
-
-class GLSafeFrame : public GLWidget
-{
-public:
-	enum STATE {
-		FREE,
-		FIXED_SIZE,
-		LOCKED
-	};
-
-public:
-	GLSafeFrame(int x, int y, int w, int h);
-
-	void resize(int x, int y, int W, int H) override;
-
-	bool is_inside(int x, int y) override;
-
-	void draw(QPainter* painter) override;
-
-	void SetState(STATE state) { m_state = state; }
-	int GetState() { return m_state; }
-
-protected:
-	int		m_state;
 };

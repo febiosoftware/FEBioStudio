@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLDataMap.h"
-#include <GLWLib/GLWidget.h>
+#include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLTexture1D.h>
 #include <PostLib/ColorMap.h>
 

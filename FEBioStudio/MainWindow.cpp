@@ -91,6 +91,10 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
+#include <GLWLib/GLLabel.h>
+#include <GLWLib/GLTriad.h>
+#include <GLWLib/GLSafeFrame.h>
+#include <GLWLib/GLLegendBar.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
@@ -3342,7 +3346,7 @@ void CMainWindow::on_actionProperties_triggered()
 	if (pglw == 0) return;
 
 	// edit the properties
-	if (dynamic_cast<GLBox*>(pglw))
+	if (dynamic_cast<GLLabel*>(pglw))
 	{
 		CDlgBoxProps dlg(pglw, this);
 		dlg.exec();
@@ -3364,7 +3368,7 @@ void CMainWindow::on_actionProperties_triggered()
 	}
 	else
 	{
-		QMessageBox::information(this, "Properties", "No properties available");
+//		QMessageBox::information(this, "Properties", "No properties available");
 	}
 
 	UpdateFontToolbar();

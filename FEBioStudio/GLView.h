@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLSceneView.h"
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
+#include <PostLib/ColorMap.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
 #include "GTriad.h"
@@ -47,6 +48,11 @@ class CGView;
 class FSModel;
 class CGLView;
 class CGLScene;
+
+class GLLabel;
+class GLTriad;
+class GLSafeFrame;
+class GLLegendBar;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -340,9 +346,9 @@ protected:
 	CGLPivot m_pivot;
 	bool	m_userPivot;
 
-	// triad
-	GLBox*			m_ptitle;
-	GLBox*			m_psubtitle;
+	// GL widgets
+	GLLabel*		m_ptitle;
+	GLLabel*		m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
 	GLLegendBar*	m_legend;

@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QCoreApplication>
+#include <QPainter>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"
 #include "MainWindow.h"

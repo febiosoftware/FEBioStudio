@@ -23,6 +23,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
+
 #include "GLFEBioScene.h"
 #include "../FEBioStudio/GLView.h"
 #include <QMutexLocker>
@@ -36,13 +45,9 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <GeomLib/GObject.h>
 #include <PostLib/Palette.h>
-#include <GLWLib/GLWidget.h>
+#include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLContext.h>
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <QPainter>
 
 GLSceneObject::GLSceneObject() 
 {

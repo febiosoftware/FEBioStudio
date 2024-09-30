@@ -23,53 +23,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
-class QOpenGLWidget;
 #include "GLWidget.h"
-#include <vector>
 
-class CGLWidgetManager
+class GLSafeFrame : public GLWidget
 {
 public:
-	~CGLWidgetManager();
+	// tODO: move to GLWidget?
+	enum STATE {
+		FREE,
+		FIXED_SIZE,
+		LOCKED
+	};
 
-	static CGLWidgetManager* GetInstance();
+public:
+	GLSafeFrame(int x, int y, int w, int h);
 
-	void AddWidget(GLWidget* pw, int layer = -1);
-	void RemoveWidget(GLWidget* pw);
-	int Widgets() { return (int)m_Widget.size(); }
+	void resize(int x, int y, int W, int H) override;
 
-	GLWidget* operator [] (int i) { return m_Widget[i]; }
-	GLWidget* get(int i) { return m_Widget[i]; }
+	bool is_inside(int x, int y) override;
 
-	void AttachToView(QOpenGLWidget* pview);
+	void draw(QPainter* painter) override;
 
-	int handle(int x, int y, int nevent);
-
-	void DrawWidgets(QPainter* painter);
-	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	void SetRenderLayer(int l);
-	void SetEditLayer(int l);
-
-	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
-	void CheckWidgetBounds();
+	void SetState(STATE state) { m_state = state; }
+	int GetState() { return m_state; }
 
 protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
-	QOpenGLWidget*			m_pview;
-	std::vector<GLWidget*>	m_Widget;
-
-	unsigned int			m_renderLayer;	// layer used for rendering
-	unsigned int			m_editLayer;	// default layer used when adding widgets
-
-private:
-	CGLWidgetManager();
-	CGLWidgetManager(const CGLWidgetManager& m);
-
-	static CGLWidgetManager*	m_pmgr;
+	int		m_state;
 };

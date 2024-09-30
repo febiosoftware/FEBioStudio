@@ -25,6 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
+
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>

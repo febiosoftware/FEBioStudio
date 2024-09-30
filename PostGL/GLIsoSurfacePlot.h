@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLWidget.h"
+#include "GLWLib/GLLegendBar.h"
 #include "PostLib/DataMap.h"
 #include <MeshLib/GMesh.h>
 #include <GLLib/GLMesh.h>

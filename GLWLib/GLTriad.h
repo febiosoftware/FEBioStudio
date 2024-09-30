@@ -23,53 +23,24 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
-class QOpenGLWidget;
 #include "GLWidget.h"
-#include <vector>
+#include <FSCore/math3d.h>
 
-class CGLWidgetManager
+class GLTriad : public GLWidget
 {
 public:
-	~CGLWidgetManager();
+	GLTriad(int x, int y, int w, int h);
 
-	static CGLWidgetManager* GetInstance();
+	void draw(QPainter* painter);
 
-	void AddWidget(GLWidget* pw, int layer = -1);
-	void RemoveWidget(GLWidget* pw);
-	int Widgets() { return (int)m_Widget.size(); }
+	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
+	bool show_coord_labels() { return m_bcoord_labels; }
 
-	GLWidget* operator [] (int i) { return m_Widget[i]; }
-	GLWidget* get(int i) { return m_Widget[i]; }
-
-	void AttachToView(QOpenGLWidget* pview);
-
-	int handle(int x, int y, int nevent);
-
-	void DrawWidgets(QPainter* painter);
-	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	void SetRenderLayer(int l);
-	void SetEditLayer(int l);
-
-	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
-	void CheckWidgetBounds();
+	void setOrientation(const quatd& q) { m_rot = q; }
 
 protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
-	QOpenGLWidget*			m_pview;
-	std::vector<GLWidget*>	m_Widget;
-
-	unsigned int			m_renderLayer;	// layer used for rendering
-	unsigned int			m_editLayer;	// default layer used when adding widgets
-
-private:
-	CGLWidgetManager();
-	CGLWidgetManager(const CGLWidgetManager& m);
-
-	static CGLWidgetManager*	m_pmgr;
+	quatd	m_rot;
+	bool	m_bcoord_labels;
 };
+
