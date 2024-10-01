@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Animation.h"
 #ifdef WIN32
+#include <Windows.h>
 #include <vfw.h>
 
 //-----------------------------------------------------------------------------
