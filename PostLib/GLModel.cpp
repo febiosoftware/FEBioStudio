@@ -1074,11 +1074,12 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected faces
 	if (mode == SELECT_FE_FACES)
 	{
-		glColor3ub(c.r, c.g, c.b);
-		m_render.SetRenderMode(GLMeshRender::SelectionMode);
+		GLSelectionShader shader(c);
+		shader.Activate();
 		m_render.RenderFEFaces(pm, [](const FSFace& face) {
 			return face.IsSelected();
 			});
+		shader.Deactivate();
 	}
 
 	// render the selected elements
@@ -1087,18 +1088,19 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		FEElementSelection* elemSelection = dynamic_cast<FEElementSelection*>(m_selection);
 		if (elemSelection && (elemSelection->Size() > 0))
 		{
-			glColor3ub(255, 64, 0);
-			m_render.SetRenderMode(GLMeshRender::SelectionMode);
+			GLSelectionShader shader(GLColor(255, 64, 0));
+			shader.Activate();
 			m_render.RenderFEFaces(pm, [=](const FSFace& face) {
 				FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 				return el.IsSelected();
 				});
+			shader.Deactivate();
 		}
 	}
 
 	// render the outline of the selected elements
-	m_render.SetRenderMode(GLMeshRender::OutlineMode);
-	glColor3f(1.f, 1.f, 0);
+	GLOutlineShader outlineShader(GLColor(255, 255, 0));
+	outlineShader.Activate();
 
 	// do the selected elements first
 	if (mode == SELECT_FE_ELEMS)
@@ -1123,7 +1125,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		}
 	}
 
-	glPopAttrib();
+	outlineShader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------

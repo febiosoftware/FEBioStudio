@@ -72,7 +72,32 @@ class GLStandardModelShader : public GLShader
 {
 public:
 	GLStandardModelShader();
-	GLStandardModelShader(const GLColor& c);
+	GLStandardModelShader(const GLColor& c, bool useStipple = false);
+
+	void SetColor(const GLColor& c) { m_col = c; }
+	void SetUseStipple(bool b) { m_useStipple = b; }
+
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::FACE& face) override;
+
+private:
+	bool m_useStipple;
+	GLColor m_col;
+};
+
+class GLFaceColorShader : public GLShader
+{
+public:
+	void Activate() override;
+	void Render(const GMesh::FACE& face) override;
+};
+
+class GLSelectionShader : public GLShader
+{
+public:
+	GLSelectionShader();
+	GLSelectionShader(const GLColor& c);
 
 	void SetColor(const GLColor& c) { m_col = c; }
 
@@ -84,9 +109,15 @@ private:
 	GLColor m_col;
 };
 
-class GLFaceColorShader : public GLShader
+class GLOutlineShader : public GLShader
 {
 public:
+	GLOutlineShader();
+	GLOutlineShader(const GLColor& c);
 	void Activate() override;
+	void Deactivate() override;
 	void Render(const GMesh::FACE& face) override;
+
+private:
+	GLColor m_col;
 };

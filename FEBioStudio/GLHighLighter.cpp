@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
+#include <GLLib/GLShader.h>
 
 GLHighlighter GLHighlighter::This;
 
@@ -192,16 +193,13 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 	glPushMatrix();
 	SetModelView(po);
 
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(c.r, c.g, c.b);
-		renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
-		renderer.RenderGLMesh(mesh, face->GetLocalID());
-		renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
-		renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), face->GetLocalID());
-	}
-	glPopAttrib();
+	GLSelectionShader shader(c);
+	renderer.RenderGMesh(mesh, face->GetLocalID(), shader);
+
+	GLOutlineShader outlineShader(c);
+	outlineShader.Activate();
+	renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), face->GetLocalID());
+	outlineShader.Deactivate();
 
 	glPopMatrix();
 }
@@ -228,19 +226,19 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	glPushMatrix();
 	SetModelView(po);
 
-	glPushAttrib(GL_ENABLE_BIT);
+	GLSelectionShader shader(c);
+	for (int surfID : faceList)
 	{
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(c.r, c.g, c.b);
-		for (int surfID : faceList)
-		{
-			renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
-			renderer.RenderGLMesh(mesh, surfID);
-			renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
-			renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), surfID);
-		}
+		renderer.RenderGMesh(mesh, surfID, shader);
 	}
-	glPopAttrib();
+
+	GLOutlineShader outlineShader(c);
+	outlineShader.Activate();
+	for (int surfID : faceList)
+	{
+		renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), surfID);
+	}
+	outlineShader.Deactivate();
 
 	glPopMatrix();
 }
@@ -280,20 +278,22 @@ void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLCo
 	int NF = surf->size();
 	if (NF == 0) return;
 
-	glPushMatrix();
-	SetModelView(po);
-	renderer.PushState();
-	{
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(c.r, c.g, c.b);
-		std::vector<int> faceList = surf->CopyItems();
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		renderer.RenderFEFaces(mesh, faceList);
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		renderer.RenderFEFacesOutline(mesh, faceList);
-	}
-	renderer.PopState();
+	std::vector<int> faceList = surf->CopyItems();
 
+	glPushMatrix();
+	{
+		SetModelView(po);
+
+		GLSelectionShader shader(c);
+		shader.Activate();
+		renderer.RenderFEFaces(mesh, faceList);
+		shader.Deactivate();
+
+		GLOutlineShader outlineShader(c);
+		outlineShader.Activate();
+		renderer.RenderFEFacesOutline(mesh, faceList);
+		outlineShader.Deactivate();
+	}
 	glPopMatrix();
 }
 

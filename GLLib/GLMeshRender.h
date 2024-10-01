@@ -46,13 +46,6 @@ class GLShader;
 class GLMeshRender
 {
 public:
-	enum RenderMode {
-		DefaultMode,
-		SelectionMode,
-		OutlineMode,
-		StippleMode
-	};
-public:
 	GLMeshRender();
 
 	void ShowShell2Hex(bool b) { m_bShell2Solid = b; }
@@ -72,10 +65,9 @@ public:
 	void SetUseShaders(bool b);
 	void ClearShaders();
 	void AddShader(GLShader* shader);
+	void SetDefaultShader(GLShader* shader);
 
 public:
-	void SetRenderMode(RenderMode mode);
-
 	void PushState();
 	void PopState();
 
@@ -173,9 +165,9 @@ public:
 	float		m_pointSize;		//!< size of points
 	bool		m_bfaceColor;		//!< use face colors when rendering
 	bool		m_useShaders;		//!< use the shaders
-	RenderMode	m_renderMode;
 
 private:
 	GLTriMesh	m_glmesh;
 	std::vector<GLShader*> m_shaders;
+	GLShader* m_defaultShader;
 };

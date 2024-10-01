@@ -118,8 +118,8 @@ GLMeshRender::GLMeshRender()
 	m_ndivs = 1;
 	m_pointSize = 7.f;
 	m_bfaceColor = false;
-	m_renderMode = DefaultMode;
 	m_useShaders = false;
+	m_defaultShader = nullptr;
 }
 
 void GLMeshRender::SetUseShaders(bool b)
@@ -131,6 +131,12 @@ void GLMeshRender::ClearShaders()
 {
 	for (auto s : m_shaders) delete s;
 	m_shaders.clear();
+	m_defaultShader = nullptr;
+}
+
+void GLMeshRender::SetDefaultShader(GLShader* shader)
+{
+	m_defaultShader = shader;
 }
 
 void GLMeshRender::AddShader(GLShader* shader)
@@ -167,33 +173,6 @@ void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemLi
 		RenderElement(&el, &mesh, bsel);
 	}
 	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::SetRenderMode(RenderMode mode)
-{
-	m_renderMode = mode;
-	switch (mode)
-	{
-	case DefaultMode: 
-		glDisable(GL_POLYGON_STIPPLE);
-		break;
-	case SelectionMode:
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_POLYGON_STIPPLE);
-		break;
-	case OutlineMode:
-		glDisable(GL_POLYGON_STIPPLE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		break;
-	case StippleMode:
-		glEnable(GL_POLYGON_STIPPLE);
-		break;
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2051,7 +2030,8 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 	if (!m_useShaders || m_shaders.empty()) return;
 
 	int lastShader = -1;
-	GLShader* shader = nullptr;
+	GLShader* shader = m_defaultShader;
+	if (shader) shader->Activate();
 	for (int i = 0; i < mesh.Partitions(); ++i)
 	{
 		const GMesh::PARTITION& p = mesh.Partition(i);
@@ -2067,7 +2047,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 				if (f.mid != -1)
 					shader = m_shaders[f.mid];
 				else
-					shader = nullptr;
+					shader = m_defaultShader;
 				if (shader) shader->Activate();
 			}
 			if (shader)

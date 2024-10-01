@@ -361,6 +361,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc, po);
 			}
+			else if (m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR)
+			{
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderMeshByObjectColor(rc, *po, *gm);
+			}
 			else RenderObject(rc, po);
 		}
 		break;
@@ -1766,16 +1771,15 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	if (selectedSurfaces.empty()) return;
 
 	// render the selected faces
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	GLSelectionShader shader(GLColor(0, 0, 255));
+	for (int surfId : selectedSurfaces)
 	{
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3ub(0, 0, 255);
-		for (int surfId : selectedSurfaces)
-		{
-			renderer.RenderGLMesh(pm, surfId);
-		}
+		renderer.RenderGMesh(pm, surfId, shader);
+	}
 
 #ifndef NDEBUG
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	{
 		// Render the GFace nodes and the FE surfaces to make sure the 
 		// GMesh and the FE mesh are consisten
 
@@ -1855,22 +1859,18 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 			mesh.EndMesh();
 			mesh.Render();
 		}
-#endif
 		glDisable(GL_POLYGON_STIPPLE);
 	}
 	glPopAttrib();
+#endif
 
-	// render the selected faces
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	GLOutlineShader outlineShader(GLColor(0, 0, 255));
+	outlineShader.Activate();
+	for (int surfId : selectedSurfaces)
 	{
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3ub(0, 0, 255);
-		for (int surfId : selectedSurfaces)
-		{
-			renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
-		}
+		renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
 	}
-	glPopAttrib();
+	outlineShader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -1968,30 +1968,19 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	glPushAttrib(GL_ENABLE_BIT);
+	GLSelectionShader shader(GLColor(0, 0, 255));
+	for (int surfId : facesToRender)
 	{
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		SetMatProps(0);
-		glColor3ub(0, 0, 255);
-		for (int surfId : facesToRender)
-		{
-			renderer.RenderGLMesh(m, surfId);
-		}
+		renderer.RenderGMesh(m, surfId, shader);
 	}
-	glPopAttrib();
 
-	glPushAttrib(GL_ENABLE_BIT);
+	GLOutlineShader outlineShader(GLColor(0, 0, 200));
+	outlineShader.Activate();
+	for (int surfId : facesToRender)
 	{
-		renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		SetMatProps(0);
-		glColor3ub(0, 0, 200);
-		for (int surfId : facesToRender)
-		{
-			renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
-		}
+		renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
 	}
-	glPopAttrib();
-
+	outlineShader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -2077,12 +2066,9 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 					}
 				}
 
-				if (useStipple) renderer.SetRenderMode(GLMeshRender::StippleMode);
-
 				// render the face
+				shader.SetUseStipple(useStipple);
 				renderer.RenderGMesh(pm, n, shader);
-
-				if (useStipple) renderer.SetRenderMode(GLMeshRender::DefaultMode);
 			}
 		}
 	}
@@ -2321,9 +2307,13 @@ void CGLModelScene::RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh)
 	m_renderer.ClearShaders();
 	for (GLShader* s : shaders) m_renderer.AddShader(s);
 
+	GLStandardModelShader defaultShader;
+	m_renderer.SetDefaultShader(&defaultShader);
+
 	m_renderer.SetUseShaders(true);
 	m_renderer.RenderGMesh(mesh);
 	m_renderer.SetUseShaders(false);
+	m_renderer.ClearShaders();
 }
 
 void CGLModelScene::RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh)
@@ -2372,9 +2362,6 @@ void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& 
 
 void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
 {
-	SetDefaultMatProps();
-	glDisable(GL_COLOR_MATERIAL);
-
 	const int MAX_COLORS = 6;
 	GLColor CLT[MAX_COLORS] = {
 		{230, 230, 230}, // free surface
@@ -2404,21 +2391,16 @@ void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
 				c = CLT[n];
 			}
 
-			GLStandardModelShader shader(c);
-
-			if (useStipple) m_renderer.SetRenderMode(GLMeshRender::StippleMode);
+			GLStandardModelShader shader(c, useStipple);
 			m_renderer.RenderGMesh(&mesh, i, shader);
-			if (useStipple) m_renderer.SetRenderMode(GLMeshRender::DefaultMode);
 		}
 	}
 
 	if (m_doc->GetItemMode() == ITEM_ELEM)
 	{
 		// exposed facets cannot be part of physics, so render them transparent
-		m_renderer.SetRenderMode(GLMeshRender::StippleMode);
-		GLStandardModelShader shader(CLT[0]);
+		GLStandardModelShader shader(CLT[0], true);
 		m_renderer.RenderGMesh(&mesh, NF, shader);
-		m_renderer.SetRenderMode(GLMeshRender::DefaultMode);
 	}
 }
 
@@ -2606,18 +2588,15 @@ void CGLModelScene::RenderSelectedFEFaces(CGLContext& rc, GObject* po)
 {
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
-	m_renderer.PushState();
-	{
-		m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3ub(255, 0, 0);
-		m_renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
+	GLSelectionShader shader(GLColor(255, 0, 0));
+	shader.Activate();
+	m_renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
+	shader.Deactivate();
 
-		// render the selected face outline
-		m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
-		glColor3ub(255, 255, 0);
-		m_renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
-	}
-	m_renderer.PopState();
+	GLOutlineShader outlineShader(GLColor(255, 255, 0));
+	outlineShader.Activate();
+	m_renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
+	outlineShader.Deactivate();
 }
 
 void CGLModelScene::RenderSelectedFEElements(CGLContext& rc, GObject* po)
@@ -2629,24 +2608,21 @@ void CGLModelScene::RenderSelectedFEElements(CGLContext& rc, GObject* po)
 	const std::vector<int>& selectedElements = sel->ItemList();
 	if (selectedElements.empty()) return;
 	
-	
-	m_renderer.PushState();
-
-	m_renderer.SetRenderMode(GLMeshRender::SelectionMode);
-	glColor3f(1.f, 0, 0);
-
+	GLSelectionShader shader;
+	shader.Activate();
 	bool hasBeamElements = false;
 	m_renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
 		// check for beams
 		if (el.IsBeam()) hasBeamElements = true;
 		return true;
 	});
+	shader.Deactivate();
 
 	// render a yellow highlight around selected elements
-	m_renderer.SetRenderMode(GLMeshRender::OutlineMode);
-	glColor3f(1.f, 1.f, 0);
+	GLOutlineShader outlineShader(GLColor(255, 255, 0));
+	outlineShader.Activate();
 	m_renderer.RenderFEElementsOutline(*pm, selectedElements);
-	m_renderer.PopState();
+	outlineShader.Deactivate();
 
 	if (hasBeamElements)
 	{
@@ -2729,10 +2705,10 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 
 	// render the selected faces
 	// override some settings
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	renderer.SetRenderMode(GLMeshRender::SelectionMode);
-	glColor3ub(255, 64, 0);
+	GLSelectionShader shader(GLColor(255, 64, 0));
+	shader.Activate();
 	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
+	shader.Deactivate();
 
 	// render the selected face outline
 	glDisable(GL_DEPTH_TEST);

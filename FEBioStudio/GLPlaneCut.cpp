@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/GMesh.h>
+#include <GLLib/GLShader.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -298,43 +299,44 @@ void GLPlaneCut::Render(CGLContext& rc)
 
 	GLMeshRender mr;
 
-	// turn off specular lighting
-	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
-
 	// render the unselected faces
-	glColor3ub(255, 255, 255);
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	mr.SetFaceColor(true);
-	mr.RenderGLMesh(m_planeCut, 0);
+	GLFaceColorShader unselectedShader;
+	mr.RenderGMesh(m_planeCut, 0, unselectedShader);
 
 	// render the selected faces
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	mr.SetRenderMode(GLMeshRender::SelectionMode);
-	glColor3ub(255, 64, 0);
-	mr.SetFaceColor(false);
-	mr.RenderGLMesh(m_planeCut, 1);
+	GLSelectionShader shader(GLColor(255, 64, 0));
+	mr.RenderGMesh(m_planeCut, 1, shader);
 
-	if (rc.m_settings.m_bmesh)
+	glPushAttrib(GL_ENABLE_BIT);
 	{
-		GLColor c = rc.m_settings.m_meshColor;
-		glDisable(GL_LIGHTING);
+		glColor3ub(255, 255, 255);
 		glEnable(GL_COLOR_MATERIAL);
-		glColor4ub(c.r, c.g, c.b, c.a);
+		mr.SetFaceColor(true);
 
-		CGLCamera& cam = *rc.m_cam;
-		cam.LineDrawMode(true);
-		cam.PositionInScene();
+		// turn off specular lighting
+		GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
 
-		mr.RenderGLEdges(m_planeCut, 0);
-		glDisable(GL_DEPTH_TEST);
-		glColor3ub(255, 255, 0);
-		mr.RenderGLEdges(m_planeCut, 1);
+		if (rc.m_settings.m_bmesh)
+		{
+			GLColor c = rc.m_settings.m_meshColor;
+			glDisable(GL_LIGHTING);
+			glEnable(GL_COLOR_MATERIAL);
+			glColor4ub(c.r, c.g, c.b, c.a);
 
-		cam.LineDrawMode(false);
-		cam.PositionInScene();
+			CGLCamera& cam = *rc.m_cam;
+			cam.LineDrawMode(true);
+			cam.PositionInScene();
+
+			mr.RenderGLEdges(m_planeCut, 0);
+			glDisable(GL_DEPTH_TEST);
+			glColor3ub(255, 255, 0);
+			mr.RenderGLEdges(m_planeCut, 1);
+
+			cam.LineDrawMode(false);
+			cam.PositionInScene();
+		}
 	}
 	glPopAttrib();
 }
