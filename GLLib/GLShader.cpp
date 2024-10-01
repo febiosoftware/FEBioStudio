@@ -110,6 +110,11 @@ void GLStandardModelShader::Render(const GMesh::FACE& f)
 
 void GLFaceColorShader::Activate()
 {
+	GLfloat zero[] = { 0.0f, 0.0f, 0.0f, 1.f };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 }

@@ -39,14 +39,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <ImageLib/RGBImage.h>
 #include <QImageReader>
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <PostGL/GLVectorRender.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -113,9 +106,6 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
 	if (glview == nullptr) return;
-
-	// We don't need this for rendering model docs
-	glDisable(GL_COLOR_MATERIAL);
 
 	GLViewSettings& view = glview->GetViewSettings();
 	int nitem = m_doc->GetItemMode();
@@ -967,111 +957,18 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 	glPopAttrib();
 }
 
-class GLFiberRenderer
+class GLFiberRenderer : public GLVectorRenderer
 {
 public:
-	struct FIBER
-	{
-		GLColor c;
-		vec3d r;	// center of fiber
-		vec3d n;	// direction of fiber
-	};
-
-public:
-	GLFiberRenderer() {
-		m_fibers.reserve(4096);
-	}
-
-	void Clear() { m_fibers.clear(); }
+	GLFiberRenderer() {}
 
 	void BuildFiberVectors(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
 	void BuildFiberVectors(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q);
 
-	void RenderFibers();
-	void RenderFiber(const FIBER& fiber);
-
-	void Init();
-
-	void Finish();
-
 public:
-	void SetColorOption(int n) { m_colorOption = n; }
-	void SetDefaultColor(GLColor c) { m_defaultCol = c; }
-	void SetScaleFactor(double s) { m_scale = s; }
-	void SetLineStyle(int n) { m_lineStyle = n; }
-	void SetLineWidth(double l) { m_lineWidth = l; }
-
-private:
-	int		m_colorOption = 0;
-	int		m_lineStyle = 0;
-	double	m_lineWidth = 1.0;
-	GLColor	m_defaultCol;
-	double	m_scale = 1.0;
-	GLUquadricObj* m_glyph = nullptr;
-
-	std::vector<FIBER>	m_fibers;
+	int m_colorOption = 0;
+	GLColor	m_defaultCol = GLColor(0,0,0);
 };
-
-void GLFiberRenderer::Init()
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	if (m_lineStyle == 0)
-	{
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_LINES);
-	}
-	else
-	{
-		m_glyph = gluNewQuadric();
-		gluQuadricNormals(m_glyph, GLU_SMOOTH);
-	}
-}
-
-void GLFiberRenderer::RenderFibers()
-{
-	for (auto& fiber : m_fibers)
-		RenderFiber(fiber);
-}
-
-void GLFiberRenderer::RenderFiber(const GLFiberRenderer::FIBER& fiber)
-{
-	vec3d p0 = fiber.r - fiber.n * (m_scale * 0.5);
-	vec3d p1 = fiber.r + fiber.n * (m_scale * 0.5);
-
-	glColor3ub(fiber.c.r, fiber.c.g, fiber.c.b);
-	if (m_lineStyle == 0)
-	{
-		glVertex3d(p0.x, p0.y, p0.z);
-		glVertex3d(p1.x, p1.y, p1.z);
-	}
-	else
-	{
-		glPushMatrix();
-
-		glx::translate(p0);
-		quatd Q(vec3d(0, 0, 1), fiber.n);
-		glx::rotate(Q);
-
-		gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
-
-		glPopMatrix();
-	}
-}
-
-void GLFiberRenderer::Finish()
-{
-	if (m_lineStyle == 0)
-	{
-		glEnd(); // GL_LINES
-	}
-	else
-	{
-		gluDeleteQuadric(m_glyph);
-	}
-	glPopAttrib();
-}
 
 void GLFiberRenderer::BuildFiberVectors(
 	GObject* po,
@@ -1103,7 +1000,7 @@ void GLFiberRenderer::BuildFiberVectors(
 			col = GLColor(r, g, b);
 		}
 
-		m_fibers.push_back({ col, c, q });
+		AddVector({ col, c, q });
 	}
 
 	if (pmat->HasMaterialAxes())
@@ -1167,7 +1064,7 @@ void GLFiberRenderer::BuildFiberVectors(
 			col = GLColor(r, g, b);
 		}
 
-		m_fibers.push_back({ col, c, q });
+		AddVector({ col, c, q });
 	}
 
 	int index = 0;
@@ -1213,7 +1110,7 @@ void CGLModelScene::BuildFiberViz(CGLContext& rc)
 	FEElementRef rel;
 
 	GLViewSettings& view = rc.m_settings;
-	m_fiberViz->SetColorOption(view.m_fibColor);
+	m_fiberViz->m_colorOption = view.m_fibColor;
 
 	GMaterial* pgm = nullptr;
 	int matId = -1;
@@ -1246,7 +1143,7 @@ void CGLModelScene::BuildFiberViz(CGLContext& rc)
 						if (pgm)
 						{
 							pmat = pgm->GetMaterialProperties();
-							m_fiberViz->SetDefaultColor(pgm->Diffuse());
+							m_fiberViz->m_defaultCol = pgm->Diffuse();
 						}
 
 						rel.m_nelem = j;
@@ -1307,7 +1204,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 	fiberRender.SetLineStyle(view.m_fibLineStyle);
 
 	fiberRender.Init();
-	fiberRender.RenderFibers();
+	fiberRender.RenderVectors();
 	fiberRender.Finish();
 }
 
