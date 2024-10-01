@@ -381,6 +381,14 @@ public:
 			});
 		add_widget(w);
 
+		w = new GLCheckBox(0, 0, W, H, "material axes");
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_blma = b->m_checked;
+			});
+		add_widget(w);
+
 		l = new GLLabel(0, 0, W, 30, "Display:");
 		l->set_font(font);
 		add_widget(l);
