@@ -1629,7 +1629,19 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 					partList->add(pg->GetID());
 					mda->SetItemList(partList);
 				}
-				else AddLogEntry("Failed to find element set %s", szset);
+				else
+				{
+					if (strstr(szset, "@part_list:"))
+					{
+						GPartList* pg = feb.FindNamedPartList(szset + 11);
+						if (pg)
+						{
+							mda->SetItemList(pg);
+						}
+						else AddLogEntry("Failed to find element set %s", szset);
+					}
+					else AddLogEntry("Failed to find element set %s", szset);
+				}
 			}
 
 			m_pBCStep->AddComponent(mda);
