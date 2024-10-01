@@ -29,11 +29,8 @@ SOFTWARE.*/
 
 GLCheckBox::GLCheckBox(int x, int y, int w, int h, const char* szlabel) : GLWidget(x, y, w, h, szlabel)
 {
-	m_checked = true;
+	m_checked = false;
 	m_checkRect[0] = m_checkRect[1] = m_checkRect[2] = m_checkRect[3] = 0;
-
-	m_bgFillMode = FILL_COLOR1;
-	m_bgFillColor[0] = GLColor(255, 255, 255, 50);
 }
 
 void GLCheckBox::draw(QPainter* painter)
@@ -51,6 +48,8 @@ void GLCheckBox::draw(QPainter* painter)
 	int w = m_w - 2 * margin;
 	int h = m_h - 2 * margin;
 
+	QPen oldpen = painter->pen();
+
 	// draw the checkmark
 	const int checkSize = 2 * m_h / 3;
 	QPen pen = painter->pen();
@@ -58,19 +57,22 @@ void GLCheckBox::draw(QPainter* painter)
 	painter->setPen(pen);
 	int xl = x0 + 2;
 	int yl = y0 + (h - checkSize) / 2;
-	painter->drawRect(xl, yl, checkSize, checkSize);
+	painter->drawRoundedRect(xl, yl, checkSize, checkSize, 2, 2);
 	m_checkRect[0] = xl;
 	m_checkRect[1] = yl;
 	m_checkRect[2] = xl + checkSize;
-	m_checkRect[3] = yl + checkSize;;
+	m_checkRect[3] = yl + checkSize;
 	if (m_checked)
 	{
-		int w = checkSize - 6;
-		xl += 3;
-		yl += 3;
-		pen.setWidth(2);
+		int w = checkSize - 8;
+		xl += 4;
+		yl += 4;
+		pen.setWidth(3);
 		painter->setPen(pen);
 		painter->drawLine(xl, yl + w / 2, xl + w / 2, yl + w);
+
+		pen.setWidth(2);
+		painter->setPen(pen);
 		painter->drawLine(xl + w / 2, yl + w, xl + w, yl);
 	}
 
@@ -84,6 +86,8 @@ void GLCheckBox::draw(QPainter* painter)
 		painter->setFont(m_font);
 		painter->drawText(x0, y0, w, h, flags, QString::fromStdString(label));
 	}
+
+	painter->setPen(oldpen);
 }
 
 int GLCheckBox::handle(int x, int y, int nevent)

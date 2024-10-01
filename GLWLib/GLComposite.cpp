@@ -23,53 +23,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "GLComposite.h"
 
-#pragma once
-
-class QOpenGLWidget;
-#include "GLWidget.h"
-#include <vector>
-
-class CGLWidgetManager
+GLComposite::GLComposite(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 {
-public:
-	~CGLWidgetManager();
+	m_resizable = false;
+	m_bgFillMode = FILL_COLOR1;
+	m_bgFillColor[0] = GLColor(255, 255, 255, 50);
+}
 
-	static CGLWidgetManager* GetInstance();
+void GLComposite::draw(QPainter* painter)
+{
+	int y = m_y;
+	for (GLWidget* w : m_children)
+	{
+		w->resize(m_x, y, m_w, w->h());
+		y += w->h();
+	}
+	m_h = y - m_y;
 
-	void AddWidget(GLWidget* pw, int layer = -1);
-	void RemoveWidget(GLWidget* pw);
-	int Widgets() { return (int)m_Widget.size(); }
+	draw_bg(m_x, m_y, m_x + m_w, m_y + m_h, painter);
 
-	GLWidget* operator [] (int i) { return m_Widget[i]; }
-	GLWidget* get(int i) { return m_Widget[i]; }
+	for (GLWidget* w : m_children)
+	{
+		w->draw(painter);
+	}
+}
 
-	void AttachToView(QOpenGLWidget* pview);
-
-	int handle(int x, int y, int nevent);
-
-	void DrawWidgets(QPainter* painter);
-	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	void SetRenderLayer(int l);
-	void SetEditLayer(int l);
-
-	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
-	void CheckWidgetBounds();
-
-protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
-	QOpenGLWidget*			m_pview;
-	std::vector<GLWidget*>	m_Widget;
-
-	unsigned int			m_renderLayer;	// layer used for rendering
-	unsigned int			m_editLayer;	// default layer used when adding widgets
-
-private:
-	CGLWidgetManager();
-	CGLWidgetManager(const CGLWidgetManager& m) = delete;
-
-	static CGLWidgetManager*	m_pmgr;
-};
+int GLComposite::handle(int x, int y, int nevent)
+{
+	for (GLWidget* w : m_children)
+	{
+		if (w->handle(x, y, nevent)) return 1;
+	}
+	return 0;
+}

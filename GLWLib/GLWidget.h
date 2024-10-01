@@ -118,6 +118,8 @@ public:
 	void hide() { m_bshow = false; if (this == m_pfocus) m_pfocus = 0; }
 	bool visible() { return m_bshow; }
 
+	bool resizable() const { return m_resizable; }
+
 	unsigned int GetSnap() { return m_nsnap; }
 
 	void align(unsigned int n) { m_nsnap = n; }
@@ -155,6 +157,8 @@ protected:
 	int m_w, m_h;
 	int	m_minw, m_minh;
 	bool	m_balloc;
+
+	bool m_resizable = true;
 
 	bool	m_boverridefgc;	// flag to see if fg color was overridden.
 	

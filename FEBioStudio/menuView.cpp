@@ -43,6 +43,11 @@ void CMainWindow::on_actionRedoViewChange_triggered()
 	GetGLView()->RedoViewChange();
 }
 
+void CMainWindow::on_actionShowGVContext_triggered()
+{
+	GetGLView()->ToggleContextMenu();
+}
+
 void CMainWindow::on_actionZoomSelect_triggered()
 {
 	GetGLView()->ZoomSelection();
@@ -68,9 +73,7 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bgrid = b;
+	GetGLView()->ToggleGridLines(b);
 	RedrawGL();
 }
 
@@ -78,9 +81,7 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bmesh = b;
+	GetGLView()->ToggleMeshLines(b);
 	Update(this);
 }
 
@@ -88,9 +89,7 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bfeat = b;
+	GetGLView()->ToggleFeatureEdges(b);
 	Update(this);
 }
 
@@ -125,9 +124,7 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bnorm = b;
+	GetGLView()->ToggleNormals(b);
 	RedrawGL();
 }
 

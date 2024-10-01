@@ -532,6 +532,7 @@ public slots:
 	// View menu actions
 	void on_actionUndoViewChange_triggered();
 	void on_actionRedoViewChange_triggered();
+	void on_actionShowGVContext_triggered();
 	void on_actionZoomSelect_triggered();
 	void on_actionZoomExtents_triggered();
 	void on_actionViewCapture_toggled(bool bchecked);

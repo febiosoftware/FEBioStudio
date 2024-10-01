@@ -378,6 +378,7 @@ public:
 	// VIEW menu
 	QAction* actionUndoViewChange;
 	QAction* actionRedoViewChange;
+	QAction* actionShowGVContext;
 	QAction* actionZoomSelect;
 	QAction* actionZoomExtents;
 	QAction* actionViewCapture;

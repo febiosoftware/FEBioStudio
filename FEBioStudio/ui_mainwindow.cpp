@@ -261,7 +261,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionPlotGroup = addAction("Plot Group", "actionPlotGroup", "folder");
 	QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 	QAction* actionScatter = addAction("Scatter plot ...", "actionScatter");
-	QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
+	QAction* actionSummary = addAction("Summary ...", "actionSummary");
 	QAction* actionStats = addAction("Statistics  ...", "actionStats");
 	QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
 	QAction* actionIntegrateSurface = addAction("Integrate Surface ...", "actionIntegrateSurface");
@@ -297,6 +297,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	// --- View menu ---
 	actionUndoViewChange = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_U);
 	actionRedoViewChange = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_R);
+	actionShowGVContext = addAction("Show GV context menu", "actionShowGVContext");  actionShowGVContext->setShortcut(Qt::Key_F4);
 	actionZoomSelect = addAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 	actionZoomExtents = addAction("Zoom to Selection", "actionZoomExtents");
 	actionViewCapture = addAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
@@ -643,6 +644,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuBar->addAction(menuView->menuAction());
 	menuView->addAction(actionUndoViewChange);
 	menuView->addAction(actionRedoViewChange);
+	menuView->addAction(actionShowGVContext);
 	menuView->addSeparator();
 	menuView->addAction(actionZoomSelect);
 	menuView->addAction(actionOrtho);

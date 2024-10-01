@@ -53,6 +53,7 @@ class GLLabel;
 class GLTriad;
 class GLSafeFrame;
 class GLLegendBar;
+class GVContextMenu;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -177,6 +178,11 @@ public:
 
 	void ToggleFPS();
 
+	void ToggleMeshLines(bool b);
+	void ToggleGridLines(bool b);
+	void ToggleFeatureEdges(bool b);
+	void ToggleNormals(bool b);
+
 protected:
 	void mousePressEvent  (QMouseEvent* ev) override;
 	void mouseMoveEvent   (QMouseEvent* ev) override;
@@ -237,6 +243,8 @@ public:
 
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
 	void AllocateDefaultWidgets(bool b);
+
+	void ToggleContextMenu();
 
 protected:
 	void initializeGL() override;
@@ -352,6 +360,8 @@ protected:
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
 	GLLegendBar*	m_legend;
+
+	GVContextMenu* m_menu;
 
 	CGLWidgetManager*	m_Widget;
 	bool	m_ballocDefaultWidgets;

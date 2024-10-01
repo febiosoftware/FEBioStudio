@@ -58,6 +58,7 @@ SOFTWARE.*/
 #include <GLWLib/GLTriad.h>
 #include <GLWLib/GLSafeFrame.h>
 #include <GLWLib/GLLegendBar.h>
+#include <GLWLib/GLComposite.h>
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -320,6 +321,134 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 	}
 	return m_mode;
 }
+
+class GVContextMenu : public GLComposite
+{
+public:
+	GVContextMenu(CGLView* glview) : GLComposite(50, 50, 175, 0), m_glview(glview)
+	{
+		const int W = w();
+		const int H = 25;
+
+		GLLabel* l = new GLLabel(0, 0, W, 30, "Physics:");
+		QFont font = l->get_font();
+		font.setBold(true);
+		l->set_font(font);
+		add_widget(l);
+
+		GLCheckBox* w = new GLCheckBox(0, 0, W, H, "rigid bodies");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_brigid = b->m_checked;
+			});
+		add_widget(w);
+
+		w = new GLCheckBox(0, 0, W, H, "rigid joints");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bjoint = b->m_checked;
+			});
+		add_widget(w);
+
+		w = new GLCheckBox(0, 0, W, H, "rigid labels");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_showRigidLabels = b->m_checked;
+			});
+		add_widget(w);
+
+		w = new GLCheckBox(0, 0, W, H, "rigid walls");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bwall = b->m_checked;
+			});
+		add_widget(w);
+
+		w = new GLCheckBox(0, 0, W, H, "discrete sets");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_showDiscrete = b->m_checked;
+			});
+		add_widget(w);
+
+		l = new GLLabel(0, 0, W, 30, "Display:");
+		l->set_font(font);
+		add_widget(l);
+
+		m_gridLines = w = new GLCheckBox(0, 0, W, H, "grid (g)");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bgrid = b->m_checked;
+			});
+		add_widget(w);
+
+		m_meshLines = w = new GLCheckBox(0, 0, 150, 25, "mesh lines (m)");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bmesh = b->m_checked;
+			});
+		add_widget(w);
+
+		m_featureEdges = w = new GLCheckBox(0, 0, 150, 25, "feature edges (z)");
+		w->m_checked = true;
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bfeat = b->m_checked;
+			});
+		add_widget(w);
+
+		m_showNormals = w = new GLCheckBox(0, 0, 150, 25, "normals (n)");
+		w->add_event_handler([=](GLWidget* w, int nevent) {
+			GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+			GLViewSettings& vs = glview->GetViewSettings();
+			vs.m_bnorm = b->m_checked;
+			});
+		add_widget(w);
+	}
+
+	void toggleMeshLines(bool b)
+	{
+		m_meshLines->m_checked = b;
+	}
+
+	void toggleGridLines(bool b)
+	{
+		m_gridLines->m_checked = b;
+	}
+
+	void toggleFeatureEdges(bool b)
+	{
+		m_featureEdges->m_checked = b;
+	}
+
+	void toggleNormals(bool b)
+	{
+		m_showNormals->m_checked = b;
+	}
+
+private:
+	CGLView* m_glview;
+	GLCheckBox* m_meshLines;
+	GLCheckBox* m_gridLines;
+	GLCheckBox* m_featureEdges;
+	GLCheckBox* m_showNormals;
+};
+
 
 //-----------------------------------------------------------------------------
 CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
@@ -1253,6 +1382,10 @@ void CGLView::initializeGL()
 		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
+
+		m_menu = new GVContextMenu(this);
+		m_menu->set_layer(0);
+		m_Widget->AddWidget(m_menu);
 	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
@@ -1260,6 +1393,13 @@ void CGLView::initializeGL()
 
 	// initialize clipping planes
 	Post::CGLPlaneCutPlot::InitClipPlanes();
+}
+
+void CGLView::ToggleContextMenu()
+{
+	if (m_menu->visible()) m_menu->hide();
+	else m_menu->show();
+	update();
 }
 
 void CGLView::Reset()
@@ -2744,4 +2884,36 @@ void CGLView::RenderPlaneCut(CGLContext& rc)
 void CGLView::ToggleFPS()
 {
 	m_showFPS = !m_showFPS;
+}
+
+void CGLView::ToggleMeshLines(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_bmesh = b;
+	m_menu->toggleMeshLines(b);
+	update();
+}
+
+void CGLView::ToggleGridLines(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_bgrid = b;
+	m_menu->toggleGridLines(b);
+	update();
+}
+
+void CGLView::ToggleFeatureEdges(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_bfeat = b;
+	m_menu->toggleFeatureEdges(b);
+	update();
+}
+
+void CGLView::ToggleNormals(bool b)
+{
+	GLViewSettings& view = GetViewSettings();
+	view.m_bnorm = b;
+	m_menu->toggleNormals(b);
+	update();
 }
