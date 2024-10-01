@@ -1667,6 +1667,11 @@ FSPartSet* FEBioInputModel::FindNamedPartSet(const std::string& name)
 	return dynamic_cast<FSPartSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
 }
 
+GPartList* FEBioInputModel::FindNamedPartList(const std::string& name)
+{
+	return dynamic_cast<GPartList*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
+}
+
 //-----------------------------------------------------------------------------
 FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
