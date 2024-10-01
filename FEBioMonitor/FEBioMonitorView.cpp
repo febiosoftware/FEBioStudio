@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QTimer>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QTabWidget>
 #ifdef WIN32
 #include <windows.h>
 #include <psapi.h>
@@ -135,18 +136,24 @@ void CMemoryWidget::onTimer()
 class CFEBioMonitorView::Ui 
 {
 public:
-	CPlotWidget* plot;
+	CPlotWidget* plot[2];
+	QTabWidget* tab;
 	CMemoryWidget* memview;
 	bool updated = true;
 	QMutex mutex;
+
+	std::vector<CPlotData*> m_vars;
 
 public:
 	void setup(CFEBioMonitorView* view)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 
+		QTabWidget* tab = new QTabWidget;
+		tab->addTab(plot[0] = new CPlotWidget, "norms");
+		tab->addTab(plot[1] = new CPlotWidget, "variables");
 		QSplitter* splitter = new QSplitter(Qt::Horizontal);
-		splitter->addWidget(plot = new CPlotWidget);
+		splitter->addWidget(tab);
 		splitter->addWidget(memview = new CMemoryWidget);
 		splitter->setStretchFactor(0, 3);
 		splitter->setStretchFactor(1, 1);
@@ -162,16 +169,18 @@ CFEBioMonitorView::CFEBioMonitorView(CMainWindow* wnd, QWidget* parent) : CWindo
 	CPlotData* rdata = new CPlotData; rdata->setLabel("R");
 	CPlotData* edata = new CPlotData; edata->setLabel("E");
 	CPlotData* udata = new CPlotData; udata->setLabel("D");
-	ui->plot->addPlotData(rdata);
-	ui->plot->addPlotData(edata);
-	ui->plot->addPlotData(udata);
+	ui->plot[0]->addPlotData(rdata);
+	ui->plot[0]->addPlotData(edata);
+	ui->plot[0]->addPlotData(udata);
 }
 
 void CFEBioMonitorView::Update(bool reset)
 {
 	if (reset)
 	{
-		ui->plot->clearData();
+		ui->plot[0]->clearData();
+		ui->plot[1]->clear();
+		ui->m_vars.clear();
 		return;
 	}
 
@@ -181,13 +190,13 @@ void CFEBioMonitorView::Update(bool reset)
 
 	QMutexLocker lock(&ui->mutex);
 
-	CPlotData& Rdata = ui->plot->getPlotData(0);
-	CPlotData& Edata = ui->plot->getPlotData(1);
-	CPlotData& Udata = ui->plot->getPlotData(2);
+	CPlotData& Rdata = ui->plot[0]->getPlotData(0);
+	CPlotData& Edata = ui->plot[0]->getPlotData(1);
+	CPlotData& Udata = ui->plot[0]->getPlotData(2);
 
 	FSConvergenceInfo& info = doc->GetConvergenceInfo();
 
-	ui->plot->clearData();
+	ui->plot[0]->clearData();
 	for (int i = 0; i < info.Rt.size(); ++i)
 	{
 		double vi = info.Rt[i];
@@ -209,6 +218,53 @@ void CFEBioMonitorView::Update(bool reset)
 		Udata.addPoint(i, y);
 	}
 
+	if (!info.m_varNorms.empty())
+	{
+		if (ui->m_vars.size() != info.m_varNorms.size())
+		{
+			ui->plot[1]->clear();
+			ui->m_vars.assign(info.m_varNorms.size(), nullptr);
+			for (int i = 0; i < info.m_varNorms.size(); ++i)
+			{
+				if (info.m_varNorms[i].val.size() > 0)
+				{
+					CPlotData* pd = new CPlotData();
+					pd->setLabel(QString::fromStdString(info.m_varNorms[i].name));
+					ui->plot[1]->addPlotData(pd);
+					ui->m_vars[i] = pd;
+				}
+			}
+		}
+
+		for (int i = 0; i < info.m_varNorms.size(); ++i)
+		{
+			if (info.m_varNorms[i].val.size() > 0)
+			{
+				CPlotData* pd = ui->m_vars[i];
+				if (pd)
+				{
+					pd->clear();
+					for (int j = 0; j < info.m_varNorms[i].val.size(); ++j)
+					{
+						double vj = info.m_varNorms[i].val[j];
+						if (j == 0)
+						{
+							double y = (vj > 0 ? log10(vj) : 0);
+							pd->addPoint(j, y);
+						}
+						else
+						{
+							double vp = info.m_varNorms[i].val[j - 1];
+							double dv = fabs(vj - vp);
+							double y = (dv > 0 ? log10(dv) : 0);
+							pd->addPoint(j, y);
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if (ui->updated == true)
 	{
 		ui->updated = false;
@@ -220,7 +276,9 @@ void CFEBioMonitorView::onUpdate()
 {
 	QMutexLocker lock(&ui->mutex);
 
-	ui->plot->OnZoomToFit();
-	ui->plot->repaint();
+	ui->plot[0]->OnZoomToFit();
+	ui->plot[0]->repaint();
+	ui->plot[1]->OnZoomToFit();
+	ui->plot[1]->repaint();
 	ui->updated = true;
 }

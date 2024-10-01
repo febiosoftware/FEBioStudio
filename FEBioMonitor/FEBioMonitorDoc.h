@@ -39,6 +39,14 @@ class FEBioMonitorDoc;
 class FSConvergenceInfo
 {
 public:
+	class VariableNorm
+	{
+	public:
+		std::string name;
+		std::vector<double> val;
+	};
+
+public:
 	double	R0;
 	double	E0;
 	double	U0;
@@ -47,12 +55,15 @@ public:
 	std::vector<double> Et;
 	std::vector<double> Ut;
 
+	std::vector<VariableNorm> m_varNorms;
+
 	void clear()
 	{
 		R0 = E0 = U0 = 0;
 		Rt.clear();
 		Et.clear();
 		Ut.clear();
+		m_varNorms.clear();
 	}
 };
 
@@ -167,6 +178,8 @@ public:
 	FEGlobalMatrix* GetStiffnessMatrix();
 
 	double GetConditionNumber();
+
+	void CollectVariableNorms(bool b);
 
 	FSConvergenceInfo& GetConvergenceInfo();
 

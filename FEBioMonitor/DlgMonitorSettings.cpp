@@ -48,6 +48,7 @@ public:
 	QCheckBox* m_startPaused;
 	QComboBox* m_pauseEvents;
 	QCheckBox* m_enablePauseTime;
+	QCheckBox* m_variableNorms;
 	CFloatInput* m_pauseTime;
 	QComboBox* m_debugMode;
 	QCheckBox* m_recordStates;
@@ -107,6 +108,9 @@ public:
 		m_updateEvents->addItems({ "major iterations", "minor iterations", "all events" });
 		h->addWidget(m_updateEvents);
 		h->addStretch();
+
+		m_variableNorms = new QCheckBox("collect variable norms");
+		settingsLayout->addWidget(m_variableNorms);
 		settingsLayout->addLayout(h);
 
 		b->setLayout(settingsLayout);
@@ -145,6 +149,8 @@ public:
 
 	void SetRecordStatesFlag(bool b) { m_recordStates->setChecked(b); }
 	bool GetRecordStatesFlag() { return m_recordStates->isChecked(); }
+
+	bool CollectVariableNorms() { return m_variableNorms->isChecked(); }
 };
 
 CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
@@ -210,5 +216,6 @@ void CDlgMonitorSettings::accept()
 	m_doc->SetDebugLevel(ui->GetDebugLevel());
 	m_doc->SetRecordStatesFlag(ui->GetRecordStatesFlag());
 	m_doc->SetUpdateEvents(ui->GetUpdateEvents());
+	m_doc->CollectVariableNorms(ui->CollectVariableNorms());
 	QDialog::accept();
 }

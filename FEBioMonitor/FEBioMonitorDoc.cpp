@@ -166,6 +166,7 @@ public:
 
 	QVector<FEBioWatchVariable*>	watches;
 	FSConvergenceInfo conv;
+	bool collectVariableNorms = false;
 };
 
 FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(new FEBioMonitorDoc::Imp)
@@ -187,6 +188,7 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(ne
 	m->time = 0.0;
 	m->debugLevel = 0;
 	m->recordStates = false;
+	m->collectVariableNorms = false;
 
 	m_scene = new CGLMonitorScene(this);
 	m_bValid = false;
@@ -785,6 +787,11 @@ FEGlobalMatrix* FEBioMonitorDoc::GetStiffnessMatrix()
 	return K;
 }
 
+void FEBioMonitorDoc::CollectVariableNorms(bool b)
+{
+	m->collectVariableNorms = b;
+}
+
 double FEBioMonitorDoc::GetConditionNumber()
 {
 	if (IsPaused() == false) return 0.0;
@@ -826,6 +833,50 @@ void FEBioMonitorDoc::UpdateConvergenceInfo()
 	info.Et.push_back(Enorm.norm);
 	info.U0 = Unorm.norm0;
 	info.Ut.push_back(Unorm.norm);
+
+	if (m->collectVariableNorms)
+	{
+		DOFS& dofs = m->fem->GetDOFS();
+		int nvar = dofs.Variables();
+
+		vector<double> norms(nvar);
+		FEMesh& mesh = m->fem->GetMesh();
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			FENode& node = mesh.Node(i);
+			for (int j = 0; j < nvar; ++j)
+			{
+				int ndof = dofs.GetVariableSize(j);
+				for (int k = 0; k < ndof; ++k)
+				{
+					int n = dofs.GetDOF(j, k);
+					double v = node.get(n);
+					norms[j] += v * v;
+				}
+			}
+		}
+
+		for (int j = 0; j < nvar; ++j)
+		{
+			norms[j] = sqrt(norms[j]);
+		}
+
+		if (m->conv.m_varNorms.empty())
+		{
+			for (int i = 0; i < nvar; ++i)
+			{
+				FSConvergenceInfo::VariableNorm var;
+				var.name = dofs.GetVariableName(i);
+				m->conv.m_varNorms.push_back(var);
+			}
+		}
+		assert(nvar == m->conv.m_varNorms.size());
+		for (int i = 0; i < nvar; ++i)
+		{
+			if (norms[i] != 0)
+				m->conv.m_varNorms[i].val.push_back(norms[i]);
+		}
+	}
 }
 
 FSConvergenceInfo& FEBioMonitorDoc::GetConvergenceInfo()
