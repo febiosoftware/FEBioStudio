@@ -34,8 +34,11 @@ CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FSMesh*)nullptr)
 	m_glm = glm;
 
 	// Set the FE mesh and update
-	SetFEMesh(glm->GetFSModel()->GetFEMesh(0));
-	Update(true);
+	if (glm && glm->GetFSModel())
+	{
+		SetFEMesh(glm->GetFSModel()->GetFEMesh(0));
+		Update(true);
+	}
 }
 
 CPostObject::~CPostObject()

@@ -58,13 +58,11 @@ CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 	m_postModel = new Post::FEPostModel;
 	m_glm = new Post::CGLModel(m_postModel);
 	m_glm->SetSubDivisions(1);
-	m_postObj = new CPostObject(m_glm);
 }
 
 CGLMonitorScene::~CGLMonitorScene()
 {
 	Clear();
-	delete m_postObj;
 	delete m_glm;
 }
 
@@ -488,6 +486,9 @@ void CGLMonitorScene::BuildMesh()
 	// Update the mesh
 	// This will also build the faces
 	pmesh->BuildMesh();
+	m_glm->GetPostObject()->SetFEMesh(pmesh);
+	m_glm->GetPostObject()->Update(true);
+
 	// store the current mesh
 	m_postModel->AddMesh(pmesh);
 
@@ -654,8 +655,6 @@ void CGLMonitorScene::BuildGLModel()
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
 	m_glm->UpdateEdge();
 	m_glm->Update(true);
-
-	m_postObj->UpdateMesh();
 }
 
 void CGLMonitorScene::UpdateMeshState(FEModel* fem)

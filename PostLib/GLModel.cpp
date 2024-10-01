@@ -154,6 +154,7 @@ void CGLModel::SetFEModel(FEPostModel* ps)
 	SetSelection(nullptr);
 	if (m_postObj) delete m_postObj; 
 	if (ps) m_postObj = new CPostObject(this);
+	else m_postObj = nullptr;
 	ClearInternalSurfaces();
 	m_ps = ps;
 	if (ps) BuildInternalSurfaces();

@@ -70,7 +70,7 @@ public:
 
 	bool AddDataField(const std::string& fieldName);
 
-	CPostObject* GetPostObject() { return m_postObj; }
+	CPostObject* GetPostObject() { return m_glm->GetPostObject(); }
 
 private:
 	void Clear();
@@ -88,7 +88,6 @@ private:
 	Post::FEPostModel* m_postModel;
 	Post::CGLModel* m_glm;
 	FSNodeFaceList	m_NFT;
-	CPostObject* m_postObj;
 	FEModel* m_fem;
 	QMutex	m_mutex;
 	std::vector<FEPlotData*>	m_dataFields;
