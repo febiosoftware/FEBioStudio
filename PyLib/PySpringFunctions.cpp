@@ -177,15 +177,8 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 	}
 }
 
-void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
+FSMesh* meshFromCurve(const std::vector<vec3d>& points, double radius, int div, int seg, double ratio)
 {
-	auto wnd = FBS::getMainWindow();
-    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-    if(!doc)
-    {
-        throw pyNoModelDocExcept();
-    }
-
 	GDisc disc;
 	disc.SetFloatValue(GDisc::RADIUS, radius);
 	disc.Update();
@@ -265,9 +258,5 @@ void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, i
 
 	newMesh->RebuildMesh();
 
-	GMeshObject* gmesh = new GMeshObject(newMesh);
-	gmesh->SetName(name);
-
-	auto fem = doc->GetFSModel();
-	fem->GetModel().AddObject(gmesh);
+	return newMesh;
 }

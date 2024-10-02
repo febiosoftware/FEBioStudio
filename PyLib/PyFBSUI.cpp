@@ -33,18 +33,7 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
-#include <FEBioStudio/ModelDocument.h>
-#include <FEBioStudio/Commands.h>
-#include "PythonTool.h"
-#include "PythonToolsPanel.h"
-#include "PyExceptions.h"
-#include "PySpringFunctions.h"
-#include <GeomLib/GPrimitive.h>
-
-#include <FEMLib/GDiscreteObject.h>
-
 #include "PyCallBack.h"
-#include "PythonInputHandler.h"
 #include "PyOutput.h"
 #include <sstream>
 
@@ -56,61 +45,23 @@ void openFile(const char *fileName)
 	FBS::getMainWindow()->OpenFile(fileName);
 }
 
-void GBox_init(vec3d pos, double width, double height, double depth)
-{
-	GBox* gbox = new GBox();
-
-	static int n = 1;
-	std::stringstream ss;
-	ss << "box" << n++;
-	gbox->SetName(ss.str());
-
-    gbox->SetFloatValue(GBox::WIDTH, width);
-    gbox->SetFloatValue(GBox::HEIGHT, height);
-    gbox->SetFloatValue(GBox::DEPTH, depth);
-
-    gbox->Update();
-
-    gbox->GetTransform().SetPosition(pos);
-
-    auto wnd = FBS::getMainWindow();
-    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-    if(!doc)
-    {
-        throw pyNoModelDocExcept();
-    }
-
-    doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), gbox), gbox->GetName());
-}
-
 void init_FBSUI(py::module& m)
 {
     py::module ui = m.def_submodule("ui", "Module used to interact with the FEBio Studio GUI");
+
+	py::module panels = ui.def_submodule("panels", "Module used for interacting with FBS panels");
+	py::module pytools = panels.def_submodule("pytools", "Module used for interacting with Python panel");
 
     py::class_<CPyOutput>(ui, "PyOutput")
         .def(py::init())
         .def("write", &CPyOutput::write)
         .def("flush", &CPyOutput::flush);
 
-    py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(ui, "SpringSet")
-        .def(py::init(&SpringSet_init))
-        .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
-
     ui.def("openFile", openFile);
 
-	ui.def("GBox", GBox_init, "pos"_a, "W"_a, "H"_a, "D"_a);
-
-    ui.def("FindOrMakeNode", FindOrMakeNode);
-    ui.def("IntersectWithObject", IntersectWithObject);
-    ui.def("MeshFromCurve", meshFromCurve, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve",
-		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
-
-    ui.def("setProgressText", PySetProgressText);
-    ui.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
-    ui.def("setProgress", static_cast<void (*) (float)>(PySetProgress));
-//    ui.def("getUserString", PyGetString);
-//    ui.def("getUserInt", PyGetInt);
-//    ui.def("getUserSelection", PyGetSelection);
+    pytools.def("set_progress_text", PySetProgressText);
+    pytools.def("set_progress", static_cast<void (*) (int)>(PySetProgress));
+    pytools.def("set_progress", static_cast<void (*) (float)>(PySetProgress));
 }
 
 #else

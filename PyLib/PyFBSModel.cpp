@@ -37,13 +37,13 @@ SOFTWARE.*/
 #include <FEBioStudio/Commands.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
+#include <GeomLib/GPrimitive.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GBaseObject.h>
 #include <GeomLib/GItem.h>
-
+#include "PySpringFunctions.h"
 #include <FEBio/FEBioExport4.h>
-
 #include "PyFSMesh.h"
 
 namespace py = pybind11;
@@ -85,11 +85,15 @@ GObject* CreateBox(std::string& name, vec3d pos, double width, double height, do
 	gbox->SetFloatValue(GBox::DEPTH, depth);
 	gbox->Update();
 	gbox->GetTransform().SetPosition(pos);
-
-	// add it to the model
-	AddObjectToModel(gbox);
-
 	return gbox;
+}
+
+// Create a box primitve
+GObject* CreateMeshObject(const std::string& name, FSMesh* pm)
+{
+	GMeshObject* po = new GMeshObject(pm);
+	po->SetName(name);
+	return po;
 }
 
 GMaterial* AddMaterial(std::string& name, std::string& type)
@@ -130,6 +134,11 @@ void init_FBSModel(py::module& m)
 
     ///////////////// FSModel /////////////////
     mdl.def("GetActiveFSModel", &GetActiveFSModel);
+
+	mdl.def("active_model", GetActiveGModel);
+
+	py::class_<GModel, std::unique_ptr<GModel, py::nodelete>>(mdl, "Model")
+		.def("add_object", &GModel::AddObject);
 
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "FSModel")
         .def("Clear", &FSModel::Clear)
@@ -222,7 +231,9 @@ void init_FBSModel(py::module& m)
     init_FSMesh(mdl);
     
 
-	mdl.def("CreateBox", CreateBox);
+	mdl.def("create_box", CreateBox);
+	mdl.def("create_mesh_object", CreateMeshObject);
+
 	mdl.def("AddMaterial", AddMaterial);
 	mdl.def("AddStep", AddStep);
 	mdl.def("ExportFEB", ExportFEB);
@@ -238,16 +249,15 @@ void init_FBSModel(py::module& m)
 			}
 		});
 
-	// py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(mdl, "GObject")
-	// 	.def("AssignMaterial", [](GObject* po, GMaterial* pm) {
-	// 		for (int i = 0; i < po->Parts(); ++i) po->Part(i)->SetMaterialID(pm->GetID());
-	// 	})
-    //     .def("BuildMesh", &GObject::BuildMesh);
-	// 		// });
-	// 	// .def("BuildMesh", [](GObject* po) {
-	// 	// 	po->BuildMesh();
-	// 	// 	});
+	mdl.def("mesh_from_curve", meshFromCurve, py::arg("points"), py::arg("radius"),
+		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
+	py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet")
+		.def(py::init(&SpringSet_init))
+		.def("add_spring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement));
+
+	mdl.def("find_or_make_node", FindOrMakeNode);
+	mdl.def("intersect_with_object", IntersectWithObject);
 }
 #else
 void init_FBSModel(py::module_& m) {}

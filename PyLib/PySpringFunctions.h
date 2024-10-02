@@ -29,6 +29,8 @@ SOFTWARE.*/
 
 class GDiscreteSpringSet;
 class vec3d;
+class GObject;
+class FSMesh;
 
 GDiscreteSpringSet* SpringSet_init(const char* name, char* type);
 
@@ -36,4 +38,4 @@ int FindOrMakeNode(vec3d r, double tol);
 
 void IntersectWithObject(vec3d& r0, vec3d& r1, double tol);
 
-void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio);
+FSMesh* meshFromCurve(const std::vector<vec3d>& points, double radius, int div, int seg, double ratio);

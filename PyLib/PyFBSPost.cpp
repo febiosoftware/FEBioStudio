@@ -113,21 +113,21 @@ void init_FBSPost(py::module& m)
                 return self.GetState(time);
             }, py::return_value_policy::reference);
 
-	post.def("getActiveModel", &getActiveModel, py::return_value_policy::reference);
+	post.def("active_model", &getActiveModel, py::return_value_policy::reference);
 
 	py::class_<FEPostMesh>(post, "FEPostMesh")
-        .def("Surfaces", &FEPostMesh::Surfaces)
-        .def("Surface", &FEPostMesh::Surface, py::return_value_policy::reference)
-        .def("NodeSets", &FEPostMesh::NodeSets)
-        .def("NodeSet", &FEPostMesh::NodeSet, py::return_value_policy::reference);
+        .def("surfaces", &FEPostMesh::Surfaces)
+        .def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
+        .def("nodesets", &FEPostMesh::NodeSets)
+        .def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference);
 
 	py::class_<Post::FSSurface>(post, "FESurface")
-        .def_readonly("Faces", &Post::FSSurface::m_Face, py::return_value_policy::reference)
-        .def("GetName", &Post::FSSurface::GetName);
+        .def_readonly("faces", &Post::FSSurface::m_Face, py::return_value_policy::reference)
+        .def("name", &Post::FSSurface::GetName);
 
 	py::class_<Post::FSNodeSet>(post, "FSNodeSet")
-        .def_readonly("Nodes", &Post::FSNodeSet::m_Node, py::return_value_policy::reference)
-        .def("GetName", &Post::FSNodeSet::GetName);
+        .def_readonly("nodes", &Post::FSNodeSet::m_Node, py::return_value_policy::reference)
+        .def("name", &Post::FSNodeSet::GetName);
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
@@ -135,17 +135,17 @@ void init_FBSPost(py::module& m)
         .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
 
 	py::class_<FEDataManager>(post, "FEDataManager")
-        .def("DataFields", &FEDataManager::DataFields)
-        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, py::return_value_policy::reference)
-        .def("FindDataField", &FEDataManager::FindDataField);
+        .def("datafields", &FEDataManager::DataFields)
+        .def("datafield", [](FEDataManager& self, int i){return *self.DataField(i); }, py::return_value_policy::reference)
+        .def("find_datafield", &FEDataManager::FindDataField);
 
 	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField")
         .def("components", &ModelDataField::components)
-        .def("componentName", &ModelDataField::componentName)
-        .def("GetName", &ModelDataField::GetName)
-        .def("SetName", &ModelDataField::SetName);
+        .def("component_name", &ModelDataField::componentName)
+        .def("name", &ModelDataField::GetName)
+        .def("set_name", &ModelDataField::SetName);
 
-	py::class_<FEState>(post, "FEState")
+	py::class_<FEState>(post, "State")
         .def_readonly("NodeData", &FEState::m_NODE, py::return_value_policy::reference)
         .def_readonly("EdgeData", &FEState::m_EDGE, py::return_value_policy::reference)
         .def_readonly("FaceData", &FEState::m_FACE, py::return_value_policy::reference)
