@@ -240,7 +240,7 @@ void CMaterialPanel::Update(bool breset)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
 
-			QString name(mat.GetName());
+			QString name = QString::fromStdString(mat.GetName());
 			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 			{
 				nrows++;
@@ -252,10 +252,10 @@ void CMaterialPanel::Update(bool breset)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
 
-			QString name(mat.GetName());
+			QString name = QString::fromStdString(mat.GetName());
 			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 			{
-				QTableWidgetItem* it = new QTableWidgetItem(mat.GetName());
+				QTableWidgetItem* it = new QTableWidgetItem(name);
 				it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
 				it->setData(Qt::UserRole, i);
 				ui->m_list->setItem(nrows, 0, it);

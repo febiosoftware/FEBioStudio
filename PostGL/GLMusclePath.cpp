@@ -166,7 +166,8 @@ void GLMusclePath::SetModel(CGLModel* pm)
 	for (int i=0; i<fem->Materials(); ++i)
 	{ 
 		Post::Material* gm = fem->GetMaterial(i);
-		const char* sn = gm->GetName();
+		string name = gm->GetName();
+		const char* sn = name.c_str();
 		int n = strlen(sn);
 		sprintf(sz, "%s", sn); sz += n; *sz++ = 0;
 	}

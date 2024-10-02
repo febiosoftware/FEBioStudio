@@ -23,6 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#ifdef HAS_PYTHON
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "PyFBSPost.h"
 
@@ -36,15 +39,12 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData.h>
 #include <PostLib/constants.h>
 #include <PostLib/FEDistanceMap.h>
-
+#include <FEBioStudio/FEBioStudio.h>
+#include <FEBioStudio/PostDocument.h>
 #include <iostream>
 
 #include <vector>
 #include <string>
-
-#ifdef HAS_PYTHON
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
 using namespace Post;
 namespace py = pybind11;
@@ -59,6 +59,17 @@ FEPostModel* readPlotFile(std::string filename)
     model->SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, 0, 0));
 
     return model;
+}
+
+FEPostModel* getActiveModel()
+{
+	CMainWindow* wnd = FBS::getMainWindow();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(FBS::getActiveDocument());
+	if (doc && doc->IsValid())
+	{
+		return doc->GetFSModel();
+	}
+	else return nullptr;
 }
 
 ModelDataField* runDistanceMap(FEPostModel* model, std::vector<int>& sel1, std::vector<int>& sel2, bool sign)
@@ -82,7 +93,15 @@ void init_FBSPost(py::module& m)
     post.def("readPlotFile", &readPlotFile);
     post.def("runDistanceMap", &runDistanceMap);
 
+	py::class_<Material>(post, "Material")
+		.def("setColor", &Material::setColor)
+		.def("name", &Material::GetName)
+		.def("show", &Material::show)
+		.def("hide", &Material::hide);
+
 	py::class_<FEPostModel>(post, "FEPostModel")
+		.def("materials", &FEPostModel::Materials)
+		.def("material", &FEPostModel::GetMaterial, py::return_value_policy::reference)
         .def("GetFEMesh", &FEPostModel::GetFEMesh, py::return_value_policy::reference)
         .def("GetStates", &FEPostModel::GetStates)
         .def("GetState", &FEPostModel::GetStates, py::return_value_policy::reference)
@@ -93,6 +112,8 @@ void init_FBSPost(py::module& m)
 
                 return self.GetState(time);
             }, py::return_value_policy::reference);
+
+	post.def("getActiveModel", &getActiveModel, py::return_value_policy::reference);
 
 	py::class_<FEPostMesh>(post, "FEPostMesh")
         .def("Surfaces", &FEPostMesh::Surfaces)

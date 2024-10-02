@@ -788,6 +788,12 @@ void CPropertyListForm::onDataChanged()
                 }
             }
             break;
+		case CProperty::Color:
+		{
+			CColorButton* cb = qobject_cast<CColorButton*>(pw);
+			if (cb) m_list->SetPropertyValue(propIndex, cb->color());
+		}
+		break;
         case CProperty::DataScalar:
             {
                 CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);

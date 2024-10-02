@@ -145,6 +145,12 @@ void init_FBSCore(py::module& m)
 {
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
+	py::class_<GLColor>(core, "color")
+		.def_readwrite("r", &GLColor::r)
+		.def_readwrite("g", &GLColor::g)
+		.def_readwrite("b", &GLColor::b)
+		.def_readwrite("a", &GLColor::a);
+
     core.def("curveToVTKMesh", curveToVTKMesh);//, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve", 
         // py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 

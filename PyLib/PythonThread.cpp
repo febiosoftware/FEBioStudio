@@ -96,6 +96,12 @@ bool CPyThread::runScript()
 					// TODO: Is this safe? This passes a pointer to a temporary object
 					kwargs[name.c_str()] = ((QString*)d)->toStdString().c_str();
 					break;
+				case CProperty::Color:
+				{
+					GLColor c = toGLColor(*((QColor*)d));
+					kwargs[name.c_str()] = c;
+				}
+				break;
 				default:
 					assert(false);
 					return false;

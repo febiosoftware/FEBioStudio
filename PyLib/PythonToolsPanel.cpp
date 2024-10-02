@@ -133,6 +133,21 @@ vec3d jsonToVec3d(QJsonArray& a)
 	return vec3d(d[0], d[1], d[2]);
 }
 
+QColor jsonToQColor(QJsonArray& a)
+{
+	double d[3] = { 0,0,0 };
+	if (a.size() == 3)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			QJsonValue ai = a[i];
+			if (ai.isDouble()) d[i] = ai.toDouble();
+		}
+	}
+
+	return QColor::fromRgb((int)d[0], (int)d[1], (int)d[2]);
+}
+
 QStringList jsonToStringList(QJsonArray& a)
 {
 	QStringList l;
@@ -180,6 +195,7 @@ void BuildPropertyList(QJsonObject& o, CCachedPropertyList& props)
 				else if (stype == "string") propType = CProperty::String;
 				else if (stype == "enum"  ) propType = CProperty::Enum;
 				else if (stype == "bool"  ) propType = CProperty::Bool;
+				else if (stype == "color" ) propType = CProperty::Color;
 			}
 			QJsonValue jval = a["value"];
 			switch (propType)
@@ -199,6 +215,14 @@ void BuildPropertyList(QJsonObject& o, CCachedPropertyList& props)
 					props.addVec3Property(jsonToVec3d(a), key);
 				}
 			} break;
+			case CProperty::Color:
+			{
+				if (jval.isArray()) {
+					QJsonArray a = jval.toArray();
+					props.addColorProperty(jsonToQColor(a), key);
+				}
+			}
+			break;
 			}
 		}
 	}
