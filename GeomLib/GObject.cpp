@@ -250,25 +250,27 @@ void GObject::BuildFERenderMesh()
 		{
 			const FSFace& face = pm->Face(n);
 			assert(face.m_gid == i);
-
-			int eid = face.m_elem[0].eid;
-			if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+			if (face.IsVisible())
 			{
-				eid = face.m_elem[1].eid;
-			}
-			int mid = -1;
-			if (eid >= 0) mid = pm->Element(eid).m_MatID;
-
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
-
-			int ne = face.Edges();
-			for (int j = 0; j < ne; ++j)
-			{
-				int j1 = (j + 1) % ne;
-				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+				int eid = face.m_elem[0].eid;
+				if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
 				{
-					int m[2] = { face.n[j], face.n[j1] };
-					gm.AddEdge(m, 2);
+					eid = face.m_elem[1].eid;
+				}
+				int mid = -1;
+				if (eid >= 0) mid = pm->Element(eid).m_MatID;
+
+				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+
+				int ne = face.Edges();
+				for (int j = 0; j < ne; ++j)
+				{
+					int j1 = (j + 1) % ne;
+					if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+					{
+						int m[2] = { face.n[j], face.n[j1] };
+						gm.AddEdge(m, 2);
+					}
 				}
 			}
 		}

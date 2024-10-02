@@ -92,7 +92,10 @@ void CPostObject::UpdateMesh()
 			for (int n : faceList[i])
 			{
 				FSFace& face = postMesh->Face(n);
-				nf = mesh->SetFaceTex(nf, face.m_tex, face.Nodes());
+				if (face.IsVisible())
+				{
+					nf = mesh->SetFaceTex(nf, face.m_tex, face.Nodes());
+				}
 			}
 		}
 	}

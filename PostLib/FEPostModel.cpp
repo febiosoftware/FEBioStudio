@@ -1383,6 +1383,7 @@ void FEPostModel::UpdateMeshState(int ntime)
 		}
 		else el.SetEroded(false);
 	}
+	mesh->UpdateItemVisibility();
 
 	// update plot objects
 	for (int i = 0; i < PointObjects(); ++i)

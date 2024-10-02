@@ -967,9 +967,8 @@ void CGLModel::RenderElemsNew(FEPostModel* ps, CGLContext& rc)
 	glEnable(GL_COLOR_MATERIAL);
 
 	CPostObject* po = GetPostObject();
-	GMesh& mesh = *po->GetFERenderMesh();
-	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	GMesh* mesh = po->GetFERenderMesh(); assert(mesh);
+	if (mesh == nullptr) return;
 
 	bool colorMapEnabled = GetColorMap()->IsActive();
 
@@ -1014,7 +1013,7 @@ void CGLModel::RenderElemsNew(FEPostModel* ps, CGLContext& rc)
 	}
 
 	m_render.SetUseShaders(true);
-	m_render.RenderGMesh(mesh);
+	m_render.RenderGMesh(*mesh);
 	m_render.SetUseShaders(false);
 }
 
