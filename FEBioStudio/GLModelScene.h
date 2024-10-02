@@ -133,9 +133,6 @@ private:
 	// set some default GL material properties
 	void SetDefaultMatProps();
 
-	// apply the mesh data to an object's render mesh
-	void MapMeshData(GObject* po);
-
 	void BuildFiberViz(CGLContext& rc);
 
 private:
