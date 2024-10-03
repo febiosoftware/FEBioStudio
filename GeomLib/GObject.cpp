@@ -100,7 +100,7 @@ public:
 // GObject constructor.
 GObject::GObject(int ntype): imp(new GObject::Imp)
 {
-	m_gid = CreateUniqueID();
+	m_gid = -1;
 	imp->m_ntype = ntype;
 
 	// set the state as visible
