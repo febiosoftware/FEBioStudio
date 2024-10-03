@@ -506,7 +506,7 @@ int FEBioInputModel::Part::GlobalToLocalElementIndex(int globalID)
 {
 	assert(m_ELT.empty() == false);
 	assert((globalID - m_eltoff) < (int)m_ELT.size());
-	return m_NLT[globalID - m_eltoff];
+	return m_ELT[globalID - m_eltoff];
 }
 
 void FEBioInputModel::Part::GlobalToLocalElementIndex(std::vector<int>& elemList)

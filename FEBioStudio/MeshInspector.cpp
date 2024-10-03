@@ -132,7 +132,10 @@ void CMeshInspector::UpdateData(int ndata)
 		}
 		else return;
 	}
-	else UpdateFEMeshData(pm, ndata);
+	else {
+		UpdateFEMeshData(pm, ndata);
+		po->UpdateMeshData();
+	}
 }
 
 void CMeshInspector::UpdateFEMeshData(FSMesh* pm, int ndata)

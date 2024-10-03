@@ -3415,86 +3415,8 @@ OBJECT_COLOR_MODE CGLModelScene::ObjectColorMode() const
 	return m_objectColor;
 }
 
-// apply the mesh data to an object's render mesh
-void CGLModelScene::MapMeshData(GObject* po)
-{
-	if (po == nullptr) return;
-	GMesh* gmsh = po->GetFERenderMesh();
-	if (gmsh == nullptr) return;
-
-	FSMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
-
-	Mesh_Data& data = pm->GetMeshData();
-	if (!data.IsValid()) return;
-
-	double vmin, vmax;
-	data.GetValueRange(vmin, vmax);
-	if (vmax == vmin) vmax++;
-
-	int NN = pm->Nodes();
-	vector<double> val(NN, 0);
-
-	Post::CColorMap map;
-	map.SetRange((float)vmin, (float)vmax);
-	
-	int NF = gmsh->Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		GMesh::FACE& fi = gmsh->Face(i);
-		int fid = fi.fid;
-		FSFace* pf = pm->FacePtr(fid);
-		if (pf)
-		{
-			FSFace& face = *pf;
-			FSElement& el = pm->Element(face.m_elem[0].eid);
-			GPart* pg = po->Part(el.m_gid);
-			if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-			{
-				FSElement& el1 = pm->Element(face.m_elem[1].eid);
-				pg = po->Part(el1.m_gid);
-			}
-
-			if (pg && pg->IsVisible())
-			{
-				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
-					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
-					}
-
-					for (int j = 0; j < 3; ++j)
-					{
-						double vj = val[fi.n[j]];
-						fi.c[j] = map.map(vj);
-					}
-				}
-				else
-				{
-					GLColor col(212, 212, 212);
-					for (int j = 0; j < 3; ++j) fi.c[j] = col;
-				}
-			}
-		}
-	}
-}
-
 void CGLModelScene::Update()
 {
-	if (m_doc == nullptr) return;
-	GModel* gm = m_doc->GetGModel();
-	if (gm)
-	{
-		GObject* po = gm->GetActiveObject();
-		if (po) MapMeshData(po);
-	}
 }
 
 void CGLModelScene::RenderPlaneCut(CGLContext& rc)

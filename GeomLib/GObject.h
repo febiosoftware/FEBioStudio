@@ -290,6 +290,8 @@ public:
 
 	void SetManipulator(GObjectManipulator* om);
 
+	void UpdateMeshData();
+
 public:
 	static void SetActiveObject(GObject* po);
 	static GObject* GetActiveObject();
