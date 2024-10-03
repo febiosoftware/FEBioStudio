@@ -201,11 +201,6 @@ FSObject* CDefaultCreatePane::Create()
 {
 	GObject* po = m_po;
 
-	// set default name
-	stringstream ss;
-	ss << "Object" << po->GetID();
-	po->SetName(ss.str());
-
 	vec3d r = position->position();
 	po->GetTransform().SetPosition(r);
 

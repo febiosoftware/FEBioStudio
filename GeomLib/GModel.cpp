@@ -543,6 +543,15 @@ void GModel::AddObject(GObject* po)
 		return;
 	}
 
+	// make sure it has an ID an a name
+	if (po->GetID() == -1) po->SetID(po->CreateUniqueID());
+	if (po->GetName().empty())
+	{
+		stringstream ss;
+		ss << "Object" << po->GetID();
+		po->SetName(ss.str());
+	}
+
 	// before we can add it, we must ensure that the names of this object
 	// and all parts, surfaces, edges, and nodes are unique. 
 	if (Objects() > 0) imp->ValidateNames(po);
