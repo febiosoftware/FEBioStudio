@@ -992,10 +992,25 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		{
 			ui->showSelectionPanel1(true);
 
-			if (dynamic_cast<GMaterial*>(m_currentObject) == nullptr)
-				SetSelection(0, hil->GetItemList(0), true);
-			else
+            // GMaterials don't use named selections and can only be assinged to parts
+			if (dynamic_cast<GMaterial*>(m_currentObject))
+            {
 				SetSelection(0, hil->GetItemList(0), false);
+            }
+            // It doesn't make sense to change the selection of FEMeshData objects
+            else if(dynamic_cast<FEMeshData*>(m_currentObject))
+            {
+                CItemListSelectionBox* sel = ui->selectionPanel(0);
+                sel->SetItemList(hil->GetItemList(0));
+                sel->showNameType(false);
+                sel->enableAddButton(false);
+                sel->enableRemoveButton(false);
+                sel->enableDeleteButton(false);
+            }
+			else
+            {
+                SetSelection(0, hil->GetItemList(0), true);
+            }
 			return;
 		}
 
