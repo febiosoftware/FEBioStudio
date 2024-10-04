@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "constants.h"
 #include "FEMeshData_T.h"
 #include <MeshLib/MeshTools.h>
+#include <GeomLib/GObject.h>
 #include <stdio.h>
 using namespace std;
 
@@ -1366,6 +1367,7 @@ void FEPostModel::UpdateMeshState(int ntime)
 
 	FEPostMesh* mesh = state.GetFEMesh();
 	int NE = mesh->Elements();
+	bool elemsModified = false;
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement_& el = mesh->ElementRef(i);
@@ -1379,11 +1381,24 @@ void FEPostModel::UpdateMeshState(int ntime)
 
 		if ((data.m_state & StatusFlags::VISIBLE) == 0)
 		{
-			el.SetEroded(true);
+			if (!el.IsEroded())
+			{
+				el.SetEroded(true); 
+				elemsModified = true;
+			}
 		}
-		else el.SetEroded(false);
+		else if (el.IsEroded())
+		{
+			el.SetEroded(false);
+			elemsModified = true;
+		}
 	}
-	mesh->UpdateItemVisibility();
+	if (elemsModified)
+	{
+		mesh->UpdateItemVisibility();
+		GObject* po = mesh->GetGObject();
+		if (po) po->BuildFERenderMesh();
+	}
 
 	// update plot objects
 	for (int i = 0; i < PointObjects(); ++i)

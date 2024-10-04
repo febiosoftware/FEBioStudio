@@ -30,6 +30,7 @@ SOFTWARE.*/
 namespace Post
 {
 	class CGLModel;
+	class GLSurface;
 }
 
 class CPostObject : public GMeshObject
@@ -42,11 +43,22 @@ public:
 
 	BOX GetBoundingBox();
 
+	void BuildFERenderMesh() override;
+
+public: // internal surfaces
+
+	int InternalSurfaces() { return (int)m_innerSurface.size(); }
+	Post::GLSurface& InteralSurface(int i) { return *m_innerSurface[i]; }
+
+	void ClearInternalSurfaces();
+
+	void BuildInternalSurfaces();
+
 private:
 	// Don't want the sections on the post side. 
 	void UpdateSections() override {}
 
 private:
 	Post::CGLModel* m_glm;
+	std::vector<Post::GLSurface*> m_innerSurface;
 };
-

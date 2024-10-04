@@ -121,11 +121,18 @@ CGLModel::CGLModel(FEPostModel* ps)
 	// add a default color map
 	m_pcol = new CGLColorMap(this);
 
-	if (ps) m_postObj = new CPostObject(this);
+	if (ps)
+	{
+		m_postObj = new CPostObject(this);
+
+		// Set the FE mesh and update
+		m_postObj->SetFEMesh(ps->GetFEMesh(0));
+		m_postObj->Update(true);
+	}
 	else m_postObj = nullptr;
 
 	UpdateEdge();
-	BuildInternalSurfaces();
+	m_postObj->BuildInternalSurfaces();
 	Update(false);
 }
 
@@ -135,7 +142,7 @@ CGLModel::~CGLModel(void)
 {
 	delete m_pdis;
 	delete m_pcol;
-	ClearInternalSurfaces();
+	delete m_postObj;
 }
 
 void CGLModel::Clear()
@@ -154,10 +161,14 @@ void CGLModel::SetFEModel(FEPostModel* ps)
 	SetSelection(nullptr);
 	m_ps = ps;
 	if (m_postObj) delete m_postObj; 
-	if (ps) m_postObj = new CPostObject(this);
+	if (ps)
+	{
+		m_postObj = new CPostObject(this);
+		m_postObj->SetFEMesh(ps->GetFEMesh(0));
+		m_postObj->Update(true);
+	}
 	else m_postObj = nullptr;
-	ClearInternalSurfaces();
-	if (ps) BuildInternalSurfaces();
+	if (m_postObj) m_postObj->BuildInternalSurfaces();
 }
 
 CPostObject* CGLModel::GetPostObject()
@@ -274,7 +285,22 @@ bool CGLModel::Update(bool breset)
 		if (pi->IsActive()) pi->Update(ntime, dt, breset);
 	}
 
-	if (m_postObj) m_postObj->UpdateMesh();
+	if (m_postObj)
+	{
+		Post::FEState* state = GetActiveState();
+		if (state)
+		{
+			Post::FEPostMesh* postMesh = state->GetFEMesh();
+			if (m_postObj->GetFEMesh() != postMesh)
+			{
+				m_postObj->SetFEMesh(postMesh);
+				m_postObj->Update(true);
+			}
+			if (postMesh) postMesh->UpdateBoundingBox();
+
+			m_postObj->UpdateMesh();
+		}
+	}
 
 	return true;
 }
@@ -1343,10 +1369,12 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderInnerSurface(int m, bool btex)
 {
+	if (m_postObj == nullptr) return;
+
 //	m_render.SetDivisions(1);
 	Post::FEPostMesh* pm = GetActiveMesh();
-	if ((m < 0) || (m >= m_innerSurface.size())) return;
-	GLSurface& surf = *m_innerSurface[m];
+	if ((m < 0) || (m >= m_postObj->InternalSurfaces())) return;
+	GLSurface& surf = m_postObj->InteralSurface(m);
 
 	// render active faces
 	if (btex) glEnable(GL_TEXTURE_1D);
@@ -1378,11 +1406,12 @@ void CGLModel::RenderInnerSurfaces(bool b)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 {
+	if (m_postObj == nullptr) return;
 	m_render.SetDivisions(ndivs);
-	if (m_innerSurface.empty() == false)
+	if ((m>=0)&&(m<m_postObj->InternalSurfaces()))
 	{
 		Post::FEPostMesh* pm = GetActiveMesh();
-		GLSurface& inSurf = *m_innerSurface[m];
+		GLSurface& inSurf = m_postObj->InteralSurface(m);
 		for (int i = 0; i < inSurf.Faces(); ++i)
 		{
 			FSFace& facet = inSurf.Face(i);
@@ -2715,7 +2744,7 @@ void CGLModel::UpdateMeshVisibility()
 		else edge.Show(false);
 	}
 
-	BuildInternalSurfaces();
+	m_postObj->BuildInternalSurfaces();
 }
 
 //-----------------------------------------------------------------------------
@@ -2873,6 +2902,8 @@ void CGLModel::HideSelectedElements()
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
+
+	if (m_postObj) m_postObj->BuildFERenderMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -3129,82 +3160,10 @@ void CGLModel::UpdateEdge()
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::ClearInternalSurfaces()
-{
-	for (int i=0; i<(int)m_innerSurface.size(); ++i) delete m_innerSurface[i];
-	m_innerSurface.clear();
-}
-
-//-----------------------------------------------------------------------------
-void CGLModel::BuildInternalSurfaces()
-{
-	ClearInternalSurfaces();
-
-	int nmat = m_ps->Materials();
-	for (int i = 0; i<nmat; ++i) m_innerSurface.push_back(new GLSurface);
-
-	Post::FEPostMesh* pmesh = GetActiveMesh();
-	if (pmesh == nullptr) return;
-	Post::FEPostMesh& mesh = *pmesh;
-
-	FSFace face;
-	int ndom = mesh.Domains();
-	for (int m = 0; m<ndom; ++m)
-	{
-		MeshDomain& dom = mesh.Domain(m);
-		int NE = dom.Elements();
-
-		float f1 = m_ps->GetMaterial(m)->transparency;
-
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement_& el = dom.Element(i);
-			if (el.IsVisible())
-			{
-				for (int j = 0; j<el.Faces(); ++j)
-				{
-					FEElement_* pen = mesh.ElementPtr(el.m_nbr[j]);
-					if (pen && (pen->m_MatID == el.m_MatID))
-					{
-						bool badd = (pen->IsSelected() != el.IsSelected()) || !pen->IsVisible();
-
-						/*						if ((badd == false) && (el.m_MatID != pen->m_MatID))
-						{
-						Material* pm2 = m_ps->GetMaterial(pen->m_MatID);
-						float f2 = pm2->transparency;
-						if ((f1 > f2) || (pm2->m_nrender == RENDER_MODE_WIRE)) badd = true;
-						}
-						*/
-						if (badd)
-						{
-							el.GetFace(j, face);
-							face.m_elem[0].eid = el.m_lid; // store the element ID. This is used for selection ???
-							face.m_elem[1].eid = pen->m_lid;
-
-							// calculate the face normals
-							vec3f r0 = to_vec3f(mesh.Node(face.n[0]).r);
-							vec3f r1 = to_vec3f(mesh.Node(face.n[1]).r);
-							vec3f r2 = to_vec3f(mesh.Node(face.n[2]).r);
-
-							face.m_fn = (r1 - r0) ^ (r2 - r0);
-							for (int k = 0; k < face.Nodes(); ++k) face.m_nn[k] = face.m_fn;
-							face.m_fn.Normalize();
-							face.m_sid = 0;
-
-							m_innerSurface[m]->add(face);
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CGLModel::UpdateInternalSurfaces(bool eval)
 {
 	// Build the internal surfaces
-	BuildInternalSurfaces();
+	m_postObj->BuildInternalSurfaces();
 
 	// reevaluate model
 	if (eval) Update(false);

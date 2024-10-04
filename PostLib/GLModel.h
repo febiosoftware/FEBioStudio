@@ -145,11 +145,6 @@ public:
 	void ResetMesh();
 
 public:
-	// return internal surfaces
-	int InternalSurfaces() { return (int) m_innerSurface.size(); }
-	GLSurface& InteralSurface(int i) { return *m_innerSurface[i]; }
-
-public:
 	bool ShowNormals() { return m_bnorm; }
 	void ShowNormals(bool b) { m_bnorm = b; }
 
@@ -321,9 +316,7 @@ public:
 	void UpdateEdge();
 
 protected:
-	void BuildInternalSurfaces();
 	void UpdateInternalSurfaces(bool eval = true);
-	void ClearInternalSurfaces();
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
@@ -349,7 +342,6 @@ protected:
 
 	CPostObject* m_postObj;
 
-	vector<GLSurface*>		m_innerSurface;
 	GLEdge					m_edge;	// all line elements from springs
 
 	CGLDisplacementMap*		m_pdis;

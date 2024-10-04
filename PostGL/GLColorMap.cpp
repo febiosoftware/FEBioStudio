@@ -472,10 +472,11 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	}
 
 	// update the internal surfaces of the model
-	int NS = po->InternalSurfaces();
+	CPostObject* obj = po->GetPostObject();
+	int NS = obj->InternalSurfaces();
 	for (int i=0; i<NS; ++i)
 	{
-		GLSurface& surf = po->InteralSurface(i);
+		GLSurface& surf = obj->InteralSurface(i);
 		int NF = surf.Faces();
 		for (int j=0; j<NF; ++j)
 		{

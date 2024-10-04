@@ -83,7 +83,6 @@ public:
 	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
 	
 	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
-	std::vector<std::deque<int>> m_faceList; // list of FE mesh faces for each GFace
 
 	GObjectManipulator* m_objManip;
 
@@ -204,12 +203,9 @@ void GObject::SetFEMesh(FSMesh* pm)
 {
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
 
-	// rebuild the line mesh
-	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
-	if (pm)
-	{
-		BuildFERenderMesh();
-	}
+	// delete the FE render mesh
+	delete imp->m_glFaceMesh; 
+	imp->m_glFaceMesh = nullptr;
 }
 
 void GObject::BuildFERenderMesh()
@@ -217,13 +213,11 @@ void GObject::BuildFERenderMesh()
 	Imp& m = *imp;
 
 	delete m.m_glFaceMesh; m.m_glFaceMesh = nullptr;
-	m.m_faceList.clear();
 
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
 	int nsurf = Faces();
-	m.m_faceList.resize(nsurf);
 	if (nsurf == 0) return;
 
 	m.m_glFaceMesh = new GMesh;
@@ -236,18 +230,19 @@ void GObject::BuildFERenderMesh()
 	}
 
 	int NF = pm->Faces();
+	std::vector< std::deque<int> > faceList(nsurf);
 	for (int i = 0; i < NF; i++)
 	{
 		const FSFace& face = pm->Face(i);
 		assert(face.m_gid >= 0);
-		m.m_faceList[face.m_gid].push_back(i);
+		faceList[face.m_gid].push_back(i);
 	}
 
 	for (int i = 0; i < nsurf; i++)
 	{
-		std::deque<int>::iterator it = m.m_faceList[i].begin();
+		std::deque<int>::iterator it = faceList[i].begin();
 		gm.NewPartition();
-		for (auto n : m.m_faceList[i])
+		for (auto n : faceList[i])
 		{
 			const FSFace& face = pm->Face(n);
 			assert(face.m_gid == i);
@@ -277,9 +272,8 @@ void GObject::BuildFERenderMesh()
 		}
 	}
 
-	// add the exposed surface from hidden elements
-	int maxSurfID = Faces(); // we assign this ID to the exposed surface
-	FSFace face;
+	int nparts = Parts();
+	vector<deque<int>> partElems(nparts);
 	int NE = pm->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -292,10 +286,36 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
+					if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+					{
+						partElems[el.m_gid].push_back(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// add the exposed surface from hidden elements
+	int maxSurfID = Faces(); // we assign this ID to the exposed surface
+	FSFace face;
+	for (int i = 0; i < nparts; ++i)
+	{
+		int ne = partElems[i].size();
+		gm.NewPartition();
+		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
+		{
+			FSElement& el = pm->Element(*it); assert(el.IsVisible());
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				if (el.m_nbr[j] >= 0)
+				{
+					FSElement& elj = pm->Element(el.m_nbr[j]);
 					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
 					{
 						el.GetFace(j, face);
-						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i, el.m_MatID);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);
 
 						int n[FSEdge::MAX_NODES];
 						int ne = face.Edges();
@@ -352,6 +372,12 @@ void GObject::SetRenderMesh(GMesh* mesh)
 {
 	delete imp->m_pGMesh;
 	imp->m_pGMesh = mesh;
+}
+
+void GObject::SetFERenderMesh(GMesh* mesh)
+{
+	delete imp->m_glFaceMesh;
+	imp->m_glFaceMesh = mesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -813,12 +839,8 @@ GMesh*	GObject::GetRenderMesh()
 
 GMesh* GObject::GetFERenderMesh()
 {
+	if (imp->m_glFaceMesh == nullptr) BuildFERenderMesh();
 	return imp->m_glFaceMesh;
-}
-
-std::vector<std::deque<int>>& GObject::GetFERenderMeshFaceList()
-{
-	return imp->m_faceList;
 }
 
 //-----------------------------------------------------------------------------
