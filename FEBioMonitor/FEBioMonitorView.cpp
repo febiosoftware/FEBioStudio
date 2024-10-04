@@ -140,6 +140,7 @@ public:
 	QTabWidget* tab;
 	CMemoryWidget* memview;
 	bool updated = true;
+	FSConvergenceInfo info;
 	QMutex mutex;
 
 	std::vector<CPlotData*> m_vars;
@@ -190,11 +191,24 @@ void CFEBioMonitorView::Update(bool reset)
 
 	QMutexLocker lock(&ui->mutex);
 
+	ui->info = doc->GetConvergenceInfo();
+
+	if (ui->updated == true)
+	{
+		ui->updated = false;
+		QTimer::singleShot(250, this, &CFEBioMonitorView::onUpdate);
+	}
+}
+
+void CFEBioMonitorView::onUpdate()
+{
+	QMutexLocker lock(&ui->mutex);
+
 	CPlotData& Rdata = ui->plot[0]->getPlotData(0);
 	CPlotData& Edata = ui->plot[0]->getPlotData(1);
 	CPlotData& Udata = ui->plot[0]->getPlotData(2);
 
-	FSConvergenceInfo& info = doc->GetConvergenceInfo();
+	FSConvergenceInfo& info = ui->info;
 
 	ui->plot[0]->clearData();
 	for (int i = 0; i < info.Rt.size(); ++i)
@@ -265,20 +279,15 @@ void CFEBioMonitorView::Update(bool reset)
 		}
 	}
 
-	if (ui->updated == true)
+	int NP = info.Ut.size();
+	for (int i = 0; i < 2; ++i)
 	{
-		ui->updated = false;
-		QTimer::singleShot(250, this, &CFEBioMonitorView::onUpdate);
+		ui->plot[i]->OnZoomToHeight();
+		QRectF rt = ui->plot[i]->m_viewRect;
+		rt.setX(NP > 100 ? NP - 100 : 0);
+		rt.setWidth(100);
+		ui->plot[i]->setViewRect(rt);
+		ui->plot[i]->repaint();
 	}
-}
-
-void CFEBioMonitorView::onUpdate()
-{
-	QMutexLocker lock(&ui->mutex);
-
-	ui->plot[0]->OnZoomToFit();
-	ui->plot[0]->repaint();
-	ui->plot[1]->OnZoomToFit();
-	ui->plot[1]->repaint();
 	ui->updated = true;
 }
