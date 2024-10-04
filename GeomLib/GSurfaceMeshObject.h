@@ -75,6 +75,8 @@ public:
 	// attach another surface mesh object
 	void Attach(const GSurfaceMeshObject* po, bool weld, double weldTolerance);
 
+	void UpdateSurfaceMeshData();
+
 private:
 	// Move this elsewhere or refactor
 	bool build_tetgen_plc(FSMesh* pm, tetgenio& in);

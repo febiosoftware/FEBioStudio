@@ -332,18 +332,18 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	// Get the item mode
 	int item = pdoc->GetItemMode();
 
-	// get the selection mode
-	int nsel = pdoc->GetSelectionMode();
-
 	GObject* poa = pdoc->GetActiveObject();
 
+	// get the selection mode
+	int nsel = pdoc->GetSelectionMode();
+	
 	if (item == ITEM_MESH)
 	{
 		switch (nsel)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour && (poa == po))
+			if (view.m_bcontour && (po == poa))
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc, po);
@@ -2643,15 +2643,11 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 
 	FSSurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
 	assert(surfaceMesh);
-	if (surfaceMesh == 0) return;
-
-	CModelDocument* doc = m_doc;
-	if (doc == nullptr) return;
+	if (surfaceMesh == nullptr) return;
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
 	GLViewSettings& view = rc.m_settings;
-	FSModel& fem = *doc->GetFSModel();
 
 	Mesh_Data& data = surfaceMesh->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
@@ -2659,64 +2655,26 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	// render the unselected faces
 	if (showContour)
 	{
-		// Color is determined by data and colormap
-		double vmin, vmax;
-		data.GetValueRange(vmin, vmax);
-
-		// Create a copy so we can change the range
-		Post::CColorMap colorMap = ((CGLView*)rc.m_view)->GetColorMap();
-		colorMap.SetRange((float)vmin, (float)vmax);
-
-		SetMatProps(0);
-		glEnable(GL_COLOR_MATERIAL);
-
-		renderer.RenderFESurfaceMeshFaces(surfaceMesh, [&](const FSFace& face, GLColor* c) {
-			int i = face.m_ntag;
-
-			if (face.IsVisible() && !face.IsSelected())
-			{
-				int ne = face.Nodes();
-				for (int j = 0; j < ne; ++j)
-				{
-					if (data.GetElementDataTag(i) > 0)
-						c[j] = colorMap.map(data.GetElementValue(i, j));
-					else
-						c[j] = GLColor(212, 212, 212);
-				}
-
-				// render the face
-				return true;
-			}
-			return false;
-			});
+		GMesh* gmesh = surfaceObject->GetRenderMesh();
+		GLFaceColorShader shader;
+		renderer.RenderGMesh(*gmesh, shader);
 	}
 	else
 	{
-		GLColor col = po->GetColor();
-		SetMatProps(0);
-		glColor3ub(col.r, col.g, col.b);
-
-		// render the unselected faces
-		// Note that we do not render internal faces
-		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
-			return (!face.IsSelected() && face.IsVisible());
-			});
+		RenderObject(rc, po);
 	}
 
 	// render the selected faces
-	// override some settings
 	GLSelectionShader shader(GLColor(255, 64, 0));
 	shader.Activate();
 	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
 	shader.Deactivate();
 
 	// render the selected face outline
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
+	GLOutlineShader outlineShader(GLColor(255, 255, 0));
+	outlineShader.Activate();
 	renderer.RenderFEFacesOutline(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
-
-	glPopAttrib();
+	outlineShader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------

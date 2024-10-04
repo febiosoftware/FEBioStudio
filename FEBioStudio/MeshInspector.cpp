@@ -129,6 +129,7 @@ void CMeshInspector::UpdateData(int ndata)
 			if (psm == nullptr) return;
 
 			UpdateSurfaceMeshData(psm, ndata);
+			pso->UpdateSurfaceMeshData();
 		}
 		else return;
 	}

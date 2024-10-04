@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/FECurveMesh.h>
 #include <MeshLib/GMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
+#include <PostLib/ColorMap.h>
 #include "GOCCObject.h"
 
 GSurfaceMeshObject::GSurfaceMeshObject(FSSurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
@@ -417,7 +418,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FSFace& fs = pm->Face(i);
-		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid);
+		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid, true, i);
 	}
 
 	gmesh->Update();
@@ -1087,4 +1088,58 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 	if (po->IsSelected()) pnew->Select();
 
 	return pnew;
+}
+
+void GSurfaceMeshObject::UpdateSurfaceMeshData()
+{
+	GMesh* gmsh = GetRenderMesh();
+	if (gmsh == nullptr) return;
+
+	FSSurfaceMesh* pm = GetSurfaceMesh();
+	if (pm == nullptr) return;
+
+	Mesh_Data& data = pm->GetMeshData();
+	if (!data.IsValid()) return;
+
+	double vmin, vmax;
+	data.GetValueRange(vmin, vmax);
+	if (vmax == vmin) vmax++;
+
+	int NN = pm->Nodes();
+	vector<double> val(NN, 0);
+
+	Post::CColorMap map;
+	map.SetRange((float)vmin, (float)vmax);
+
+	int NF = gmsh->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GMesh::FACE& fi = gmsh->Face(i);
+		int fid = fi.fid;
+		FSFace* pf = pm->FacePtr(fid);
+		if (pf)
+		{
+			FSFace& face = *pf;
+			if (data.GetElementDataTag(fid) > 0)
+			{
+				int ne = face.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					double vj = data.GetElementValue(fid, j);
+					val[face.n[j]] = vj;
+				}
+
+				for (int j = 0; j < 3; ++j)
+				{
+					double vj = val[fi.n[j]];
+					fi.c[j] = map.map(vj);
+				}
+			}
+			else
+			{
+				GLColor col(212, 212, 212);
+				for (int j = 0; j < 3; ++j) fi.c[j] = col;
+			}
+		}
+	}
 }
