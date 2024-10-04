@@ -295,7 +295,7 @@ void GObject::BuildFERenderMesh()
 					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
 					{
 						el.GetFace(j, face);
-						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i, el.m_MatID);
 
 						int n[FSEdge::MAX_NODES];
 						int ne = face.Edges();
