@@ -121,3 +121,16 @@ public:
 private:
 	GLColor m_col;
 };
+
+class GLLineShader : public GLShader
+{
+public:
+	GLLineShader();
+	GLLineShader(const GLColor& c);
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::FACE& face) override;
+
+private:
+	GLColor m_col;
+};

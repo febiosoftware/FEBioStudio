@@ -134,6 +134,8 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 	{
 		e.n[0] = AddNode(r[0]);
 		e.n[1] = AddNode(r[1]);
+		e.vr[0] = r[0];
+		e.vr[1] = r[1];
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
@@ -141,11 +143,15 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 	{
 		e.n[0] = AddNode(r[0]);
 		e.n[1] = AddNode(r[2]);
+		e.vr[0] = r[0];
+		e.vr[1] = r[2];
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = AddNode(r[2]);
 		e.n[1] = AddNode(r[1]);
+		e.vr[0] = r[2];
+		e.vr[1] = r[1];
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
@@ -153,16 +159,22 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 	{
 		e.n[0] = AddNode(r[0]);
 		e.n[1] = AddNode(r[2]);
+		e.vr[0] = r[0];
+		e.vr[1] = r[2];
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = AddNode(r[2]);
 		e.n[1] = AddNode(r[3]);
+		e.vr[0] = r[2];
+		e.vr[1] = r[3];
 		e.pid = gid;
 		m_Edge.push_back(e);
 
 		e.n[0] = AddNode(r[3]);
 		e.n[1] = AddNode(r[1]);
+		e.vr[0] = r[3];
+		e.vr[1] = r[1];
 		e.pid = gid;
 		m_Edge.push_back(e);
 	}
@@ -393,8 +405,8 @@ int GMesh::SetFaceTex(int f0, float* t, int n)
 // Update normals for all faces using smoothing groups
 void GMesh::UpdateNormals()
 {
-	int NN = Nodes();
 	int NF = Faces();
+	if (NF == 0) return;
 
 	// calculate face normals
 	for (int i=0; i<NF; ++i) 
@@ -419,6 +431,7 @@ void GMesh::UpdateNormals()
 	}
 
 	//calculate the node normals
+	int NN = Nodes();
 	vector<vec3f> norm(NN, vec3f(0,0,0));
 
 	vector<FACE*> F(NF);

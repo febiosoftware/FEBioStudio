@@ -191,3 +191,31 @@ void GLOutlineShader::Render(const GMesh::FACE& face)
 {
 	// This is used for rendering lines so we don't need this
 }
+
+GLLineShader::GLLineShader()
+{
+	m_col = GLColor(0, 0, 0);
+}
+
+GLLineShader::GLLineShader(const GLColor& c) : m_col(c)
+{
+
+}
+
+void GLLineShader::Activate()
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+}
+
+void GLLineShader::Deactivate()
+{
+	glPopAttrib();
+}
+
+void GLLineShader::Render(const GMesh::FACE& face)
+{
+	// This is used for rendering lines so we don't need this
+}

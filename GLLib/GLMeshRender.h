@@ -72,6 +72,10 @@ public:
 	void PopState();
 
 public:
+	void RenderLineLoop(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3);
+	void RenderLines(vec3d* r, int n);
+
+public:
 	void RenderGLMesh(GMesh* pm);
 	void RenderGLMesh(GMesh& pm, GLColor c);
 	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
@@ -98,7 +102,7 @@ public:
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
 
-	void RenderMeshLines(const GMesh& m);
+	void RenderEdges(const GMesh& m);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
@@ -131,9 +135,7 @@ public:
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
-public:
-	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderPoints(GMesh& mesh);
 
 private:
 	// drawing routines for faces

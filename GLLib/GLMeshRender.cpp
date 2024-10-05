@@ -162,6 +162,27 @@ void GLMeshRender::SetFaceColor(bool b) { m_bfaceColor = b; }
 //-----------------------------------------------------------------------------
 bool GLMeshRender::GetFaceColor() const { return m_bfaceColor; }
 
+void GLMeshRender::RenderLineLoop(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3)
+{
+	glBegin(GL_LINE_LOOP);
+	{
+		glx::vertex3d(r0);
+		glx::vertex3d(r1);
+		glx::vertex3d(r2);
+		glx::vertex3d(r3);
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderLines(vec3d* r, int n)
+{
+	glBegin(GL_LINES);
+	{
+		for (int i = 0; i < n; ++i) glx::vertex3d(r[i]);
+	}
+	glEnd();
+}
+
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel)
 {
@@ -1941,43 +1962,6 @@ void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	}
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
-{
-	assert(pe->IsType(FE_BEAM2));
-	FEElement_& e = *pe;
-	vec3d r[2];
-
-	glBegin(GL_LINES);
-	{
-		r[0] = pm->Node(e.m_node[0]).r;
-		r[1] = pm->Node(e.m_node[1]).r;
-
-		glx::vertex3d(r[0]);
-		glx::vertex3d(r[1]);
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel)
-{
-	assert(pe->IsType(FE_BEAM3));
-	FEElement_& e = *pe;
-	vec3d r[3];
-
-	glBegin(GL_LINES);
-	{
-		r[0] = pm->Node(e.m_node[0]).r;
-		r[1] = pm->Node(e.m_node[1]).r;
-		r[2] = pm->Node(e.m_node[2]).r;
-
-		glx::vertex3d(r[0]); glx::vertex3d(r[2]);
-		glx::vertex3d(r[2]); glx::vertex3d(r[1]);
-	}
-	glEnd();
-}
-
 void GLMeshRender::RenderGLMesh(GMesh* pm)
 {
 	glBegin(GL_TRIANGLES);
@@ -2517,31 +2501,24 @@ void GLMeshRender::RenderUnselectedFEEdges(FSLineMesh* pm)
 	glEnd();
 }
 
-void GLMeshRender::RenderMeshLines(const GMesh& m)
+void GLMeshRender::RenderEdges(const GMesh& m)
 {
 	int NE = m.Edges();
 	if (NE == 0) return;
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
 	glBegin(GL_LINES);
-	for (int i = 0; i < NE; i++)
 	{
-		const GMesh::EDGE& e = m.Edge(i);
-		glx::line(e.vr[0], e.vr[1]);
+		for (int i = 0; i < NE; i++)
+		{
+			const GMesh::EDGE& e = m.Edge(i);
+			glx::line(e.vr[0], e.vr[1]);
+		}
 	}
 	glEnd();
-	glPopAttrib();
 }
 
 void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 {
 	if (pm == 0) return;
-
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	// loop over all faces
 	int NF = pm->Faces();
 	glBegin(GL_LINES);
 	for (int i = 0; i<NF; i++)
@@ -2613,8 +2590,6 @@ void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 		} // if
 	} // for
 	glEnd();
-
-	glPopAttrib();
 }
 
 void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f)
@@ -4111,4 +4086,19 @@ void GLMeshRender::RenderNormals(FSMeshBase* pm, float scale, int ntag)
 
 	// restore attributes
 	glPopAttrib();
+}
+
+void GLMeshRender::RenderPoints(GMesh& mesh)
+{
+	if (mesh.Nodes() == 0) return;
+	glBegin(GL_POINTS);
+	{
+		int NN = mesh.Nodes();
+		for (int i = 0; i < NN; ++i)
+		{
+			vec3f& r = mesh.Node(i).r;
+			glVertex3f(r.x, r.y, r.z);
+		}
+	}
+	glEnd();
 }

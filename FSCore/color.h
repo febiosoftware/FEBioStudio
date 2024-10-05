@@ -68,5 +68,10 @@ public:
 	}
 
 	static GLColor White() { return GLColor(255, 255, 255); }
+	static GLColor Red()   { return GLColor(255,   0,   0); }
+	static GLColor Green() { return GLColor(  0, 255,   0); }
+	static GLColor Blue()  { return GLColor(  0,   0, 255); }
+	static GLColor Yellow(){ return GLColor(255, 255,   0); }
+	static GLColor Black() { return GLColor(  0,   0,   0); }
 	static GLColor FromRGBf(float r, float g, float b) { return GLColor((uint8_t)(r*255.f), (uint8_t)(g*255.f), (uint8_t)(b*255.f)); }
 };

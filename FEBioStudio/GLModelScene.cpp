@@ -413,13 +413,9 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			{
 				if (item == ITEM_ELEM)
 				{
-					GMesh* gm = po->GetFERenderMesh();
-					if (gm)
-					{
-						RenderFEFacesFromGMesh(rc, po);
-						RenderUnselectedBeamElements(rc, po);
-						RenderSelectedFEElements(rc, po);
-					}
+					RenderFEFacesFromGMesh(rc, po);
+					RenderUnselectedBeamElements(rc, po);
+					RenderSelectedFEElements(rc, po);
 				}
 				else if (item == ITEM_FACE)
 				{
@@ -561,11 +557,8 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 
 	quatd qi = cam.GetOrientation().Inverse();
 
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
+	GLOutlineShader shader;
+	shader.Activate();
 	for (int i = 0; i < ps->Materials(); ++i)
 	{
 		GMaterial* pgm = ps->GetMaterial(i);
@@ -589,49 +582,9 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 			glx::renderRigidBody(R);
 
 			glPopMatrix();
-
-			// get the parent
-/*			if (pb->m_pid != -1)
-			{
-				FSRigidMaterial* pp = dynamic_cast<FSRigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
-				assert(pp);
-
-				glColor3ub(50, 50, 255);
-				vec3d r0 = pb->GetVecValue(FSRigidMaterial::MP_RC);
-				vec3d r1 = pp->GetVecValue(FSRigidMaterial::MP_RC);
-
-				double l = (r1 - r0).Length();
-				vec3d el = r0 - r1; el.Normalize();
-
-				quatd q(vec3d(0, 0, 1), el);
-				glPushMatrix();
-				{
-					glTranslated(r1.x, r1.y, r1.z);
-					glx::rotate(q);
-
-					vec3d e2 = q*vec3d(0, 0, 1);
-
-					double a = l*0.25;
-					double b = a*0.25;
-					glBegin(GL_LINES);
-					{
-						glVertex3d(0, 0, 0); glVertex3d(b, b, a); glVertex3d(b, b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(-b, b, a); glVertex3d(-b, b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(-b, -b, a); glVertex3d(-b, -b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(b, -b, a); glVertex3d(b, -b, a); glVertex3d(0, 0, l);
-						glVertex3d(b, b, a); glVertex3d(-b, b, a);
-						glVertex3d(-b, b, a); glVertex3d(-b, -b, a);
-						glVertex3d(-b, -b, a); glVertex3d(b, -b, a);
-						glVertex3d(b, -b, a); glVertex3d(b, b, a);
-					}
-					glEnd();
-				}
-				glPopMatrix();
-			}*/
 		}
 	}
-
-	glPopAttrib();
+	shader.Deactivate();
 }
 
 void CGLModelScene::RenderRigidWalls(CGLContext& rc)
@@ -647,9 +600,8 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
+	GLOutlineShader shader;
+	shader.Activate();
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -678,28 +630,20 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 					glRectd(-R, -R, R, R);
 
 					glColor3ub(164, 128, 0);
-					glBegin(GL_LINE_LOOP);
-					{
-						glVertex3d(-R, -R, 0);
-						glVertex3d(R, -R, 0);
-						glVertex3d(R, R, 0);
-						glVertex3d(-R, R, 0);
-					}
-					glEnd();
-					glBegin(GL_LINES);
-					{
-						glVertex3d(0, 0, 0); glVertex3d(0, 0, R / 2);
-						glVertex3d(0, 0, R / 2); glVertex3d(-R * 0.1, 0, R * 0.4);
-						glVertex3d(0, 0, R / 2); glVertex3d(R * 0.1, 0, R * 0.4);
-					}
-					glEnd();
+					m_renderer.RenderLineLoop(vec3d(-R, -R, 0), vec3d(R, -R, 0), vec3d(R, R, 0), vec3d(-R, R, 0));
+
+					vec3d r[6];
+					r[0] = vec3d(0, 0,   0); r[1] = vec3d( 0, 0, R / 2);
+					r[2] = vec3d(0, 0, R/2); r[3] = vec3d(-R * 0.1, 0, R * 0.4);
+					r[4] = vec3d(0, 0, R/2); r[5] = vec3d( R * 0.1, 0, R * 0.4);
+					m_renderer.RenderLines(r, 6);
 				}
 				glPopMatrix();
 			}
 		}
 	}
 
-	glPopAttrib();
+	shader.Deactivate();
 }
 
 void CGLModelScene::RenderRigidJoints(CGLContext& rc)
@@ -717,10 +661,8 @@ void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 0, 0);
+	GLOutlineShader shader;
+	shader.Activate();
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -731,17 +673,12 @@ void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 			if (pj)
 			{
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
-
-				glColor3ub(255, 0, 0);
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glx::renderJoint(R);
-				glPopMatrix();
+				glx::renderJoint(r, R, GLColor::Red());
 			}
 		}
 	}
 
-	glPopAttrib();
+	shader.Deactivate();
 }
 
 void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
@@ -756,10 +693,8 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(0, 0, 255);
+	GLOutlineShader shader;
+	shader.Activate();
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -771,15 +706,13 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 			{
 				vec3d r = rci->GetParamVec3d("joint_origin");
 
+				GLColor c;
 				if (rci->IsActive())
-					glColor3ub(255, 0, 0);
+					c = GLColor(255, 0, 0);
 				else
-					glColor3ub(64, 64, 64);
+					c = GLColor(64, 64, 64);
 
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glx::renderJoint(R);
-				glPopMatrix();
+				glx::renderJoint(r, R, c);
 			}
 			else if (rci->IsType("rigid revolute joint"))
 			{
@@ -959,7 +892,7 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 		}
 	}
 
-	glPopAttrib();
+	shader.Deactivate();
 }
 
 class GLFiberRenderer : public GLVectorRenderer
@@ -1435,9 +1368,8 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	int nitem = pdoc->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	GLColor c = vs.m_meshColor;
-	glEnable(GL_COLOR_MATERIAL);
-	glColor4ub(c.r, c.g, c.b, c.a);
+	GLLineShader shader(vs.m_meshColor);
+	shader.Activate();
 
 	for (int i = 0; i < model.Objects(); ++i)
 	{
@@ -1452,7 +1384,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 				if (nitem != ITEM_EDGE)
 				{
 					GMesh* lineMesh = po->GetFERenderMesh();
-					if (lineMesh) renderer.RenderMeshLines(*lineMesh);
+					if (lineMesh) renderer.RenderEdges(*lineMesh);
 					else renderer.RenderMeshLines(pm);
 				}
 				glPopMatrix();
@@ -1470,6 +1402,8 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 			}
 		}
 	}
+
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -1518,9 +1452,9 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 // Render non-selected nodes
 void CGLModelScene::RenderNodes(CGLContext& rc, GObject* po)
 {
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(0, 0, 255);
+	if ((po == nullptr) || (po->Nodes() == 0)) return;
+
+	GMesh points;
 	for (int i = 0; i < po->Nodes(); ++i)
 	{
 		// only render nodes that are not selected
@@ -1528,40 +1462,40 @@ void CGLModelScene::RenderNodes(CGLContext& rc, GObject* po)
 		GNode& n = *po->Node(i);
 		if (!n.IsSelected() && (n.Type() != NODE_SHAPE))
 		{
-			vec3d r = n.LocalPosition();
-			glBegin(GL_POINTS);
-			{
-				glVertex3d(r.x, r.y, r.z);
-			}
-			glEnd();
+			vec3f r = to_vec3f(n.LocalPosition());
+			points.AddNode(r);
 		}
 	}
-	glPopAttrib();
+	if (points.Nodes() == 0) return;
+
+	GLLineShader shader(GLColor::Blue());
+	shader.Activate();
+	m_renderer.RenderPoints(points);
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
 // Render selected nodes
 void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 {
-	if (po == nullptr) return;
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 0);
+	if ((po == nullptr) || (po->Nodes()==0)) return;
+
+	GMesh points;
 	for (int i = 0; i < po->Nodes(); ++i)
 	{
 		GNode& n = *po->Node(i);
 		if (n.IsSelected())
 		{
 			assert(n.Type() != NODE_SHAPE);
-			vec3d r = n.LocalPosition();
-			glBegin(GL_POINTS);
-			{
-				glVertex3d(r.x, r.y, r.z);
-			}
-			glEnd();
+			vec3f r = to_vec3f(n.LocalPosition());
+			points.AddNode(r);
 		}
 	}
+	if (points.IsEmpty()) return;
+
+	GLOutlineShader shader(GLColor::Yellow());
+	shader.Activate();
+	m_renderer.RenderPoints(points);
 
 #ifndef NDEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
@@ -1580,7 +1514,7 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 	}
 #endif
 
-	glPopAttrib();
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -1615,14 +1549,12 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
-	vec3d r1, r2;
+	GLOutlineShader shader(GLColor::Yellow());
+	shader.Activate();
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
+	GMesh pointMesh;
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
@@ -1636,14 +1568,8 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 
 			if (n0 && n1)
 			{
-				glBegin(GL_POINTS);
-				{
-					vec3d r0 = n0->LocalPosition();
-					vec3d r1 = n1->LocalPosition();
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-				glEnd();
+				pointMesh.AddNode(to_vec3f(n0->LocalPosition()));
+				pointMesh.AddNode(to_vec3f(n1->LocalPosition()));
 			}
 		}
 	}
@@ -1664,7 +1590,10 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 			});
 	}
 #endif
-	glPopAttrib();
+
+	if (pointMesh.Nodes() != 0) m_renderer.RenderPoints(pointMesh);
+
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -1778,35 +1707,10 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	}
 
 #ifndef NDEBUG
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	shader.SetColor(GLColor::Red());
+	shader.Activate();
 	{
-		// Render the GFace nodes and the FE surfaces to make sure the 
-		// GMesh and the FE mesh are consisten
-
-		// render GNodes
-		// TODO: This causes a crash after a primitive was converted to editable mesh and auto partition was applied.
-/*		for (int i = 0; i<NF; ++i)
-		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				glBegin(GL_POINTS);
-				{
-					int nf = f.Nodes();
-					for (int j = 0; j<nf; ++j)
-					if (f.m_node[j] != -1)
-					{
-						vec3d r = po->Node(f.m_node[j])->LocalPosition();
-						int c = 255 * j / (nf - 1);
-						glColor3ub((GLubyte)c, (GLubyte)c, (GLubyte)c);
-						glVertex3d(r.x, r.y, r.z);
-					}
-				}
-				glEnd();
-			}
-		}
-*/
-// render FE surfaces
+		// render FE surfaces
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
@@ -1859,9 +1763,8 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 			mesh.EndMesh();
 			mesh.Render();
 		}
-		glDisable(GL_POLYGON_STIPPLE);
 	}
-	glPopAttrib();
+	shader.Deactivate();
 #endif
 
 	GLOutlineShader outlineShader(GLColor(0, 0, 255));
@@ -2246,7 +2149,7 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 
 void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 {
-	GMesh* gm = po->GetFERenderMesh(); assert(gm);
+	GMesh* gm = po->GetFERenderMesh();
 	if (gm == nullptr) return;
 
 	GLViewSettings& vs = rc.m_settings;
@@ -2691,20 +2594,17 @@ void CGLModelScene::RenderSurfaceMeshEdges(CGLContext& rc, GObject* po)
 	assert(pm);
 	if (pm == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
 	// render the unselected edges
-	glColor3ub(0, 0, 255);
+	GLLineShader lineShader1(GLColor::Blue());
+	lineShader1.Activate();
 	renderer.RenderUnselectedFEEdges(pm);
+	lineShader1.Deactivate();
 
 	// render the selected edges
-	// override some settings
-	glDisable(GL_CULL_FACE);
-	glColor3ub(255, 0, 0);
+	GLLineShader lineShader2(GLColor::Red());
+	lineShader2.Activate();
 	renderer.RenderSelectedFEEdges(pm);
-
-	glPopAttrib();
+	lineShader2.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -2792,20 +2692,17 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
 	// render the unselected edges
-	glColor4ub(0, 0, 255, 128);
+	GLLineShader shader1(GLColor(0, 0, 255, 128));
+	shader1.Activate();
 	renderer.RenderUnselectedFEEdges(pm);
+	shader1.Deactivate();
 
 	// render the selected edges
-	// override some settings
-	glDisable(GL_CULL_FACE);
-	glColor4ub(255, 0, 0, 128);
+	GLLineShader shader2(GLColor(255, 0, 0, 128));
+	shader2.Activate();
 	renderer.RenderSelectedFEEdges(pm);
-
-	glPopAttrib();
+	shader2.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -2815,11 +2712,8 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	GLMeshRender& renderer = GetMeshRenderer();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
+	GMesh beamMesh;
+	vec3f r[3];
 	int NE = pm->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -2829,16 +2723,28 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 			GPart* pg = po->Part(el.m_gid);
 			if (pg->IsVisible())
 			{
+				r[0] = to_vec3f(pm->Node(el.m_node[0]).r);
+				r[1] = to_vec3f(pm->Node(el.m_node[1]).r);
 				switch (el.Type())
 				{
-				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
+				case FE_BEAM2: 
+					beamMesh.AddEdge(r, 2);
+					break;
+				case FE_BEAM3: 
+					r[2] = to_vec3f(pm->Node(el.m_node[2]).r);
+					beamMesh.AddEdge(r, 3);
+					break;
 				}
 			}
 		}
 	}
-
-	glPopAttrib();
+	if (beamMesh.Edges() == 0) return;
+	
+	GLLineShader shader;
+	shader.Activate();
+	GLMeshRender& renderer = GetMeshRenderer();
+	renderer.RenderEdges(beamMesh);
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -2850,13 +2756,8 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-
-	GLColor c = rc.m_settings.m_meshColor;
-	glColor3ub(c.r, c.g, c.b);
-
+	GMesh beamMesh;
+	vec3f r[3];
 	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -2864,15 +2765,24 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 		if (edge.IsVisible() && (!edge.IsSelected()) && (edge.m_elem >= 0))
 		{
 			FSElement& el = pm->Element(edge.m_elem);
+			r[0] = to_vec3f(pm->Node(el.m_node[0]).r);
+			r[1] = to_vec3f(pm->Node(el.m_node[1]).r);
 			switch (el.Type())
 			{
-			case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-			case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
+			case FE_BEAM2: beamMesh.AddEdge(r, 2); break;
+			case FE_BEAM3: 
+				r[2] = to_vec3f(pm->Node(el.m_node[2]).r);
+				beamMesh.AddEdge(r, 3);
+				break;
 			}
 		}
 	}
+	if (beamMesh.Edges() == 0) return;
 
-	glPopAttrib();
+	GLLineShader shader(po->GetColor());
+	shader.Activate();
+	renderer.RenderEdges(beamMesh);
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -2904,12 +2814,10 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 	edgeMesh.Update();
 	if (edgeMesh.Edges() == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 0);
-	m_renderer.RenderMeshLines(edgeMesh);
-	glPopAttrib();
+	GLOutlineShader shader(GLColor(255, 255, 0));
+	shader.Activate();
+	m_renderer.RenderEdges(edgeMesh);
+	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -3488,11 +3396,9 @@ void CGLModelScene::RenderBoxCut(CGLContext& rc, const BOX& box)
 			}
 		}
 		plane.Update();
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(255, 64, 255);
-		m_renderer.RenderMeshLines(plane);
-		glPopAttrib();
+		GLLineShader shader(GLColor(255, 64, 255));
+		shader.Activate();
+		m_renderer.RenderEdges(plane);
+		shader.Deactivate();
 	}
 }
