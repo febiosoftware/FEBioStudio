@@ -32,16 +32,40 @@ class GLTexture1D;
 class GLShader
 {
 public:
-	GLShader() {}
-	virtual ~GLShader() {}
+	GLShader();
+	virtual ~GLShader();
 
-	virtual void Activate() {}
-	virtual void Deactivate() {}
+	bool IsActive() const;
 
-	virtual void Render(const GMesh::FACE& face) {}
+	virtual void Activate();
+	virtual void Deactivate();
+
+private:
+	static GLShader* m_activeShader;
 };
 
-class GLStandardShader : public GLShader
+class GLPointShader : public GLShader
+{
+public:
+	GLPointShader() {}
+	virtual void Render(const GMesh::NODE& node) = 0;
+};
+
+class GLLineShader : public GLShader
+{
+public:
+	GLLineShader() {}
+	virtual void Render(const GMesh::EDGE& edge) = 0;
+};
+
+class GLFacetShader : public GLShader
+{
+public:
+	GLFacetShader() {}
+	virtual void Render(const GMesh::FACE& face) = 0;
+};
+
+class GLStandardShader : public GLFacetShader
 {
 public:
 	float ambient[4] = { 0.f, 0.f, 0.f, 1.f };
@@ -50,12 +74,12 @@ public:
 	float emission[4] = { 0.f, 0.f, 0.f, 1.f };
 	float shininess = 0.f;
 
-	void Activate();
+	void Activate() override;
 
-	void Render(const GMesh::FACE& face);
+	void Render(const GMesh::FACE& face) override;
 };
 
-class GLTexture1DShader : public GLShader
+class GLTexture1DShader : public GLFacetShader
 {
 public:
 	void SetTexture(GLTexture1D* tex);
@@ -68,7 +92,7 @@ private:
 	GLTexture1D* m_tex;
 };
 
-class GLStandardModelShader : public GLShader
+class GLStandardModelShader : public GLFacetShader
 {
 public:
 	GLStandardModelShader();
@@ -86,14 +110,14 @@ private:
 	GLColor m_col;
 };
 
-class GLFaceColorShader : public GLShader
+class GLFaceColorShader : public GLFacetShader
 {
 public:
 	void Activate() override;
 	void Render(const GMesh::FACE& face) override;
 };
 
-class GLSelectionShader : public GLShader
+class GLSelectionShader : public GLFacetShader
 {
 public:
 	GLSelectionShader();
@@ -109,27 +133,54 @@ private:
 	GLColor m_col;
 };
 
-class GLOutlineShader : public GLShader
+class GLOutlineShader : public GLLineShader
 {
 public:
 	GLOutlineShader();
 	GLOutlineShader(const GLColor& c);
+	void SetColor(const GLColor& c);
 	void Activate() override;
 	void Deactivate() override;
-	void Render(const GMesh::FACE& face) override;
+	void Render(const GMesh::EDGE& edge) override;
 
 private:
 	GLColor m_col;
 };
 
-class GLLineShader : public GLShader
+class GLLineColorShader : public GLLineShader
 {
 public:
-	GLLineShader();
-	GLLineShader(const GLColor& c);
+	GLLineColorShader();
+	GLLineColorShader(const GLColor& c);
 	void Activate() override;
 	void Deactivate() override;
-	void Render(const GMesh::FACE& face) override;
+	void Render(const GMesh::EDGE& edge) override;
+
+private:
+	GLColor m_col;
+};
+
+class GLPointColorShader : public GLPointShader
+{
+public:
+	GLPointColorShader();
+	GLPointColorShader(const GLColor& c);
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::NODE& node) override;
+
+private:
+	GLColor m_col;
+};
+
+class GLPointOverlayShader : public GLPointShader
+{
+public:
+	GLPointOverlayShader();
+	GLPointOverlayShader(const GLColor& c);
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::NODE& node) override;
 
 private:
 	GLColor m_col;

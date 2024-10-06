@@ -2213,15 +2213,22 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 {
 	Post::FEPostMesh* pm = GetActiveMesh();
 
-	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
+	GMesh* gm = GetPostObject()->GetFERenderMesh();
+
+	const int VISIBLE_FLAG  = 1;
+	const int SELECT_FLAG   = 2;
 
 	// reset tags and check visibility
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
 		FSNode& n = pm->Node(i);
-		n.m_ntag = (n.IsVisible() ? 1 : 0);
+		GMesh::NODE& gn = gm->Node(i);
+		gn.tag = 0;
+		if (n.IsVisible())
+		{
+			if (n.IsExterior() || m_brenderInteriorNodes) gn.tag = VISIBLE_FLAG;
+			if (n.IsSelected()) gn.tag |= SELECT_FLAG;
+		}
 	}
 
 	// see if backface-culling is enabled or not
@@ -2240,48 +2247,29 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 			{
 				vec3d f = to_vec3d(face.m_nn[j]);
 				q.RotateVector(f);
-				if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
+				if (f.z < 0) gm->Node(face.n[j]).tag = 0;
 			}
 		}
 	}
 
 	// render all unselected tagged nodes
-	glColor3ub(m_node_col.r, m_node_col.g, m_node_col.b);
-	m_render.RenderFENodes(*pm, [](const FSNode& node) {
-		return (node.IsExterior() && node.m_ntag && (node.IsSelected() == false));
+	GLPointColorShader shader(m_node_col);
+	shader.Activate();
+	m_render.RenderPoints(*gm, [](const GMesh::NODE& node) {
+		return (node.tag & VISIBLE_FLAG) && ((node.tag & SELECT_FLAG) == 0);
 		});
-
-	if (m_brenderInteriorNodes)
-	{
-		m_render.RenderFENodes(*pm, [](const FSNode& node) {
-			return ((node.IsExterior() == false) && node.m_ntag && (node.IsSelected() == false));
-			});
-	}
+	shader.Deactivate();
 
 	// render selected tagged nodes
 	if (GetSelectionType() == SELECT_FE_NODES)
 	{
-		glDisable(GL_DEPTH_TEST);
-
-		// render exterior selected nodes first
-		glColor3ub(255, 255, 0);
-
-		m_render.RenderFENodes(*pm, [](const FSNode& node) {
-			return (node.IsExterior() && node.m_ntag && node.IsSelected());
+		GLPointOverlayShader pointShader(GLColor::Yellow());
+		pointShader.Activate();
+		m_render.RenderPoints(*gm, [](const GMesh::NODE& node) {
+			return (node.tag & VISIBLE_FLAG) && (node.tag & SELECT_FLAG);
 			});
-
-		// render interior nodes
-		if (m_brenderInteriorNodes)
-		{
-			glColor3ub(255, 0, 0);
-			m_render.RenderFENodes(*pm, [](const FSNode& node) {
-				return ((node.IsExterior() == false) && node.m_ntag && node.IsSelected());
-				});
-		}
+		pointShader.Deactivate();
 	}
-
-	// restore attributes
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------

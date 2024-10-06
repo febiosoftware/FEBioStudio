@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <functional>
 #include "GLMesh.h"
 #include <MeshLib/GMesh.h>
+#include "GLShader.h"
 
 class FEElement_;
 class FSNode;
@@ -41,7 +42,6 @@ class GMesh;
 class CGLContext;
 class FSMesh;
 class Transform;
-class GLShader;
 
 class GLMeshRender
 {
@@ -64,8 +64,8 @@ public:
 public:
 	void SetUseShaders(bool b);
 	void ClearShaders();
-	void AddShader(GLShader* shader);
-	void SetDefaultShader(GLShader* shader);
+	void AddShader(GLFacetShader* shader);
+	void SetDefaultShader(GLFacetShader* shader);
 
 public:
 	void PushState();
@@ -81,8 +81,8 @@ public:
 	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
 
 	void RenderGMesh(const GMesh& mesh);
-	void RenderGMesh(const GMesh& pm, GLShader& shader);
-	void RenderGMesh(GMesh* pm, int surfID, GLShader& shader);
+	void RenderGMesh(const GMesh& pm, GLFacetShader& shader);
+	void RenderGMesh(GMesh* pm, int surfID, GLFacetShader& shader);
 
 	void RenderGLMesh(GMesh* pm, int surfID);
 
@@ -93,8 +93,6 @@ public:
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
-	void RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f);
-	void RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList);
 
 public:
 	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
@@ -103,6 +101,7 @@ public:
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
 
 	void RenderEdges(const GMesh& m);
+	void RenderEdges(const GMesh& m, GLLineShader& shader);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
@@ -136,6 +135,9 @@ public:
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
 	void RenderPoints(GMesh& mesh);
+	void RenderPoints(GMesh& mesh, GLPointShader& shader);
+	void RenderPoints(GMesh& mesh, std::vector<int>& nodeList);
+	void RenderPoints(GMesh& mesh, std::function<bool (const GMesh::NODE& node)> fnc);
 
 private:
 	// drawing routines for faces
@@ -170,6 +172,6 @@ public:
 
 private:
 	GLTriMesh	m_glmesh;
-	std::vector<GLShader*> m_shaders;
-	GLShader* m_defaultShader;
+	std::vector<GLFacetShader*> m_shaders;
+	GLFacetShader* m_defaultShader;
 };

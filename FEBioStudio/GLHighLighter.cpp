@@ -245,26 +245,24 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 
 void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c)
 {
+	if ((nodeSet == nullptr) || (nodeSet->size() == 0)) return;
+
 	FSMesh* mesh = nodeSet->GetMesh();
 	if (mesh == nullptr) return;
 	GObject* po = mesh->GetGObject();
 	if (po == nullptr) return;
 
-	int NF = nodeSet->size();
-	if (NF == 0) return;
+	GMesh* gm = po->GetFERenderMesh();
+	if (gm == nullptr) return;
+	assert(gm->Nodes() == mesh->Nodes());
 
 	glPushMatrix();
 	SetModelView(po);
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(c.r, c.g, c.b);
-		std::vector<int> nodeList = nodeSet->CopyItems();
-		renderer.RenderFENodes(*mesh, nodeList);
-	}
-	glPopAttrib();
-
+	GLOutlineShader shader(c);
+	shader.Activate();
+	std::vector<int> nodeList = nodeSet->CopyItems();
+	renderer.RenderPoints(*gm, nodeList);
+	shader.Deactivate();
 	glPopMatrix();
 }
 

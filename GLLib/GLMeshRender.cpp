@@ -134,12 +134,12 @@ void GLMeshRender::ClearShaders()
 	m_defaultShader = nullptr;
 }
 
-void GLMeshRender::SetDefaultShader(GLShader* shader)
+void GLMeshRender::SetDefaultShader(GLFacetShader* shader)
 {
 	m_defaultShader = shader;
 }
 
-void GLMeshRender::AddShader(GLShader* shader)
+void GLMeshRender::AddShader(GLFacetShader* shader)
 {
 	m_shaders.push_back(shader);
 }
@@ -2014,7 +2014,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 	if (!m_useShaders || m_shaders.empty()) return;
 
 	int lastShader = -1;
-	GLShader* shader = m_defaultShader;
+	GLFacetShader* shader = m_defaultShader;
 	if (shader) shader->Activate();
 	for (int i = 0; i < mesh.Partitions(); ++i)
 	{
@@ -2050,7 +2050,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 	if (shader) shader->Deactivate();
 }
 
-void GLMeshRender::RenderGMesh(const GMesh& mesh, GLShader& shader)
+void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 {
 	shader.Activate();
 	int NF = mesh.Faces();
@@ -2118,7 +2118,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 	}
 }
 
-void GLMeshRender::RenderGMesh(GMesh* pm, int surfID, GLShader& shader)
+void GLMeshRender::RenderGMesh(GMesh* pm, int surfID, GLFacetShader& shader)
 {
 	if ((surfID < 0) || (surfID >= (int)pm->Partitions())) return;
 	const GMesh::PARTITION& p = pm->Partition(surfID);
@@ -2415,42 +2415,6 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 	glPopAttrib();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f)
-{
-	GLfloat old_size;
-	glGetFloatv(GL_POINT_SIZE, &old_size);
-	glPointSize(m_pointSize);
-	glBegin(GL_POINTS);
-	{
-		for (int i = 0; i < mesh.Nodes(); ++i)
-		{
-			FSNode& node = mesh.Node(i);
-			if (f(node)) glx::vertex3d(node.r);
-		}
-	}
-	glEnd();
-	glPointSize(old_size);
-}
-
-void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::vector<int>& nodeList)
-{
-	GLfloat old_size;
-	glGetFloatv(GL_POINT_SIZE, &old_size);
-	glPointSize(m_pointSize);
-	glBegin(GL_POINTS);
-	{
-		for (int i : nodeList)
-		{
-			FSNode& node = mesh.Node(i);
-			glx::vertex3d(node.r);
-		}
-	}
-	glEnd();
-	glPointSize(old_size);
-}
-
-//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f)
 {
 	glBegin(GL_LINES);
@@ -2511,6 +2475,20 @@ void GLMeshRender::RenderEdges(const GMesh& m)
 		{
 			const GMesh::EDGE& e = m.Edge(i);
 			glx::line(e.vr[0], e.vr[1]);
+		}
+	}
+	glEnd();
+}
+
+void GLMeshRender::RenderEdges(const GMesh& m, GLLineShader& shader)
+{
+	int NE = m.Edges();
+	if (NE == 0) return;
+	glBegin(GL_LINES);
+	{
+		for (int i = 0; i < NE; i++)
+		{
+			shader.Render(m.Edge(i));
 		}
 	}
 	glEnd();
@@ -4091,6 +4069,9 @@ void GLMeshRender::RenderNormals(FSMeshBase* pm, float scale, int ntag)
 void GLMeshRender::RenderPoints(GMesh& mesh)
 {
 	if (mesh.Nodes() == 0) return;
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
 	glBegin(GL_POINTS);
 	{
 		int NN = mesh.Nodes();
@@ -4101,4 +4082,65 @@ void GLMeshRender::RenderPoints(GMesh& mesh)
 		}
 	}
 	glEnd();
+	glPointSize(old_size);
+}
+
+void GLMeshRender::RenderPoints(GMesh& mesh, GLPointShader& shader)
+{
+	if (mesh.Nodes() == 0) return;
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	shader.Activate();
+	glBegin(GL_POINTS);
+	{
+		int NN = mesh.Nodes();
+		for (int i = 0; i < NN; ++i)
+		{
+			shader.Render(mesh.Node(i));
+		}
+	}
+	glEnd();
+	shader.Deactivate();
+	glPointSize(old_size);
+}
+
+void GLMeshRender::RenderPoints(GMesh& mesh, std::vector<int>& nodeList)
+{
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	glBegin(GL_POINTS);
+	{
+		for (int i : nodeList)
+		{
+			vec3f& r = mesh.Node(i).r;
+			glVertex3f(r.x, r.y, r.z);
+		}
+	}
+	glEnd();
+	glPointSize(old_size);
+}
+
+void GLMeshRender::RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc)
+{
+	if (mesh.Nodes() == 0) return;
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	glBegin(GL_POINTS);
+	{
+		int NN = mesh.Nodes();
+		for (int i = 0; i < NN; ++i)
+		{
+			GMesh::NODE& node = mesh.Node(i);
+			if (fnc(node))
+			{
+				vec3f& r = mesh.Node(i).r;
+				glVertex3f(r.x, r.y, r.z);
+			}
+		}
+	}
+	glEnd();
+	glPointSize(old_size);
 }

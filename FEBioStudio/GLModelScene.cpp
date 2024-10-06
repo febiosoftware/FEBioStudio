@@ -1368,7 +1368,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	int nitem = pdoc->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	GLLineShader shader(vs.m_meshColor);
+	GLLineColorShader shader(vs.m_meshColor);
 	shader.Activate();
 
 	for (int i = 0; i < model.Objects(); ++i)
@@ -1468,10 +1468,8 @@ void CGLModelScene::RenderNodes(CGLContext& rc, GObject* po)
 	}
 	if (points.Nodes() == 0) return;
 
-	GLLineShader shader(GLColor::Blue());
-	shader.Activate();
-	m_renderer.RenderPoints(points);
-	shader.Deactivate();
+	GLPointColorShader shader(GLColor::Blue());
+	m_renderer.RenderPoints(points, shader);
 }
 
 //-----------------------------------------------------------------------------
@@ -1502,15 +1500,24 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
-		glColor3ub(255, 0, 0);
-		m_renderer.RenderFENodes(*pm, [&](const FSNode& node) {
+		GMesh fenodes;
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			FSNode& node = pm->Node(i);
 			if (node.m_gid > -1)
 			{
 				GNode& gn = *po->Node(node.m_gid);
-				if (gn.IsSelected()) return true;
+				if (gn.IsSelected())
+				{
+					fenodes.AddNode(to_vec3f(node.r));
+				}
 			}
-			return false;
-			});
+		}
+		if (fenodes.Nodes() != 0)
+		{
+			shader.SetColor(GLColor::Red());
+			m_renderer.RenderPoints(fenodes);
+		}
 	}
 #endif
 
@@ -2179,7 +2186,7 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 	}
 }
 
-std::vector<GLShader*> BuildMaterialShaders(FSModel* fem)
+std::vector<GLFacetShader*> BuildMaterialShaders(FSModel* fem)
 {
 	int nmat = 0;
 	for (int i = 0; i < fem->Materials(); ++i)
@@ -2188,7 +2195,7 @@ std::vector<GLShader*> BuildMaterialShaders(FSModel* fem)
 		if (mat->GetID() > nmat) nmat = mat->GetID();
 	}
 	nmat++;
-	std::vector<GLShader*> shaders(nmat, nullptr);
+	std::vector<GLFacetShader*> shaders(nmat, nullptr);
 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
@@ -2206,9 +2213,9 @@ void CGLModelScene::RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh)
 	FSMesh* pm = o.GetFEMesh();
 	if (pm == nullptr) return;
 
-	std::vector<GLShader*> shaders = BuildMaterialShaders(fem);
+	std::vector<GLFacetShader*> shaders = BuildMaterialShaders(fem);
 	m_renderer.ClearShaders();
-	for (GLShader* s : shaders) m_renderer.AddShader(s);
+	for (GLFacetShader* s : shaders) m_renderer.AddShader(s);
 
 	GLStandardModelShader defaultShader;
 	m_renderer.SetDefaultShader(&defaultShader);
@@ -2240,7 +2247,7 @@ void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& 
 		if (mat->GetID() > nmat) nmat = mat->GetID();
 	}
 	nmat++;
-	std::vector<GLShader*> shaders(nmat, nullptr);
+	std::vector<GLFacetShader*> shaders(nmat, nullptr);
 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
@@ -2256,7 +2263,7 @@ void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& 
 	}
 
 	m_renderer.ClearShaders();
-	for (GLShader* s : shaders) m_renderer.AddShader(s);
+	for (GLFacetShader* s : shaders) m_renderer.AddShader(s);
 
 	m_renderer.SetUseShaders(true);
 	m_renderer.RenderGMesh(mesh);
@@ -2307,13 +2314,14 @@ void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
 	}
 }
 
-class GLElementTypeShader : public GLShader
+class GLElementTypeShader : public GLFacetShader
 {
 public:
 	GLElementTypeShader(FSMesh* pm) : m_pm(pm) {}
 
 	void Activate() override
 	{
+		GLFacetShader::Activate();
 		glEnable(GL_COLOR_MATERIAL);
 	}
 
@@ -2595,13 +2603,13 @@ void CGLModelScene::RenderSurfaceMeshEdges(CGLContext& rc, GObject* po)
 	if (pm == 0) return;
 
 	// render the unselected edges
-	GLLineShader lineShader1(GLColor::Blue());
+	GLLineColorShader lineShader1(GLColor::Blue());
 	lineShader1.Activate();
 	renderer.RenderUnselectedFEEdges(pm);
 	lineShader1.Deactivate();
 
 	// render the selected edges
-	GLLineShader lineShader2(GLColor::Red());
+	GLLineColorShader lineShader2(GLColor::Red());
 	lineShader2.Activate();
 	renderer.RenderSelectedFEEdges(pm);
 	lineShader2.Deactivate();
@@ -2693,13 +2701,13 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	if (pm == 0) return;
 
 	// render the unselected edges
-	GLLineShader shader1(GLColor(0, 0, 255, 128));
+	GLLineColorShader shader1(GLColor(0, 0, 255, 128));
 	shader1.Activate();
 	renderer.RenderUnselectedFEEdges(pm);
 	shader1.Deactivate();
 
 	// render the selected edges
-	GLLineShader shader2(GLColor(255, 0, 0, 128));
+	GLLineColorShader shader2(GLColor(255, 0, 0, 128));
 	shader2.Activate();
 	renderer.RenderSelectedFEEdges(pm);
 	shader2.Deactivate();
@@ -2740,11 +2748,9 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 	}
 	if (beamMesh.Edges() == 0) return;
 	
-	GLLineShader shader;
-	shader.Activate();
+	GLLineColorShader shader;
 	GLMeshRender& renderer = GetMeshRenderer();
-	renderer.RenderEdges(beamMesh);
-	shader.Deactivate();
+	renderer.RenderEdges(beamMesh, shader);
 }
 
 //-----------------------------------------------------------------------------
@@ -2779,10 +2785,8 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 	}
 	if (beamMesh.Edges() == 0) return;
 
-	GLLineShader shader(po->GetColor());
-	shader.Activate();
-	renderer.RenderEdges(beamMesh);
-	shader.Deactivate();
+	GLLineColorShader shader(po->GetColor());
+	renderer.RenderEdges(beamMesh, shader);
 }
 
 //-----------------------------------------------------------------------------
@@ -3396,7 +3400,7 @@ void CGLModelScene::RenderBoxCut(CGLContext& rc, const BOX& box)
 			}
 		}
 		plane.Update();
-		GLLineShader shader(GLColor(255, 64, 255));
+		GLLineColorShader shader(GLColor(255, 64, 255));
 		shader.Activate();
 		m_renderer.RenderEdges(plane);
 		shader.Deactivate();

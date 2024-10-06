@@ -27,8 +27,32 @@ SOFTWARE.*/
 #include "GLTexture1D.h"
 #include <GLLib/glx.h>
 
+GLShader* GLShader::m_activeShader = nullptr;
+
+GLShader::GLShader() {}
+GLShader::~GLShader() 
+{
+	assert(m_activeShader != this);
+}
+
+void GLShader::Activate() 
+{
+	assert(m_activeShader == nullptr);
+	m_activeShader = this;
+}
+
+void GLShader::Deactivate()
+{ 
+	assert(m_activeShader == this);
+	m_activeShader = nullptr;
+}
+
+bool GLShader::IsActive() const { return (m_activeShader==this); }
+
 void GLStandardShader::Activate()
 {
+	GLFacetShader::Activate();
+
 	glDisable(GL_COLOR_MATERIAL);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
@@ -52,6 +76,8 @@ void GLTexture1DShader::SetTexture(GLTexture1D* tex)
 
 void GLTexture1DShader::Activate()
 {
+	GLFacetShader::Activate();
+
 	glEnable(GL_COLOR_MATERIAL);
 	glColor3ub(255, 255, 255);
 	glEnable(GL_TEXTURE_1D);
@@ -61,6 +87,8 @@ void GLTexture1DShader::Activate()
 void GLTexture1DShader::Deactivate()
 {
 	glDisable(GL_TEXTURE_1D);
+
+	GLFacetShader::Deactivate();
 }
 
 void GLTexture1DShader::Render(const GMesh::FACE& f)
@@ -83,6 +111,8 @@ GLStandardModelShader::GLStandardModelShader(const GLColor& c, bool useStipple) 
 
 void GLStandardModelShader::Activate()
 {
+	GLFacetShader::Activate();
+
 	GLfloat col[] = { 0.8f, 0.6f, 0.6f, 1.f };
 	GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
 	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
@@ -102,6 +132,8 @@ void GLStandardModelShader::Activate()
 void GLStandardModelShader::Deactivate()
 {
 	if (m_useStipple) glDisable(GL_POLYGON_STIPPLE);
+
+	GLFacetShader::Deactivate();
 }
 
 void GLStandardModelShader::Render(const GMesh::FACE& f)
@@ -113,6 +145,8 @@ void GLStandardModelShader::Render(const GMesh::FACE& f)
 
 void GLFaceColorShader::Activate()
 {
+	GLFacetShader::Activate();
+
 	GLfloat zero[] = { 0.0f, 0.0f, 0.0f, 1.f };
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
@@ -141,6 +175,8 @@ GLSelectionShader::GLSelectionShader(const GLColor& c)
 
 void GLSelectionShader::Activate()
 {
+	GLFacetShader::Activate();
+
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_CULL_FACE);
@@ -154,6 +190,8 @@ void GLSelectionShader::Activate()
 void GLSelectionShader::Deactivate()
 {
 	glPopAttrib();
+
+	GLFacetShader::Deactivate();
 }
 
 void GLSelectionShader::Render(const GMesh::FACE& f)
@@ -175,6 +213,8 @@ GLOutlineShader::GLOutlineShader(const GLColor& c) : m_col(c)
 
 void GLOutlineShader::Activate()
 {
+	GLLineShader::Activate();
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -182,40 +222,117 @@ void GLOutlineShader::Activate()
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
 }
 
+void GLOutlineShader::SetColor(const GLColor& c) 
+{ 
+	m_col = c; 
+	if (IsActive()) glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+}
+
 void GLOutlineShader::Deactivate()
 {
 	glPopAttrib();
+
+	GLLineShader::Deactivate();
 }
 
-void GLOutlineShader::Render(const GMesh::FACE& face)
+void GLOutlineShader::Render(const GMesh::EDGE& e)
 {
-	// This is used for rendering lines so we don't need this
+	glx::line(e.vr[0], e.vr[1]);
 }
 
-GLLineShader::GLLineShader()
+GLLineColorShader::GLLineColorShader()
 {
 	m_col = GLColor(0, 0, 0);
 }
 
-GLLineShader::GLLineShader(const GLColor& c) : m_col(c)
+GLLineColorShader::GLLineColorShader(const GLColor& c) : m_col(c)
 {
 
 }
 
-void GLLineShader::Activate()
+void GLLineColorShader::Activate()
 {
+	GLLineShader::Activate();
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
 }
 
-void GLLineShader::Deactivate()
+void GLLineColorShader::Deactivate()
 {
 	glPopAttrib();
+
+	GLLineShader::Deactivate();
 }
 
-void GLLineShader::Render(const GMesh::FACE& face)
+void GLLineColorShader::Render(const GMesh::EDGE& e)
 {
-	// This is used for rendering lines so we don't need this
+	glx::line(e.vr[0], e.vr[1]);
+}
+
+GLPointColorShader::GLPointColorShader()
+{
+}
+
+GLPointColorShader::GLPointColorShader(const GLColor& c)
+{
+	m_col = c;
+}
+
+void GLPointColorShader::Activate()
+{
+	GLPointShader::Activate();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+}
+
+void GLPointColorShader::Deactivate()
+{
+	glPopAttrib();
+
+	GLPointShader::Deactivate();
+}
+
+void GLPointColorShader::Render(const GMesh::NODE& node)
+{
+	const vec3f& r = node.r;
+	glVertex3f(r.x, r.y, r.z);
+}
+
+GLPointOverlayShader::GLPointOverlayShader()
+{
+}
+
+GLPointOverlayShader::GLPointOverlayShader(const GLColor& c)
+{
+	m_col = c;
+}
+
+void GLPointOverlayShader::Activate()
+{
+	GLPointShader::Activate();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+}
+
+void GLPointOverlayShader::Deactivate()
+{
+	glPopAttrib();
+
+	GLPointShader::Deactivate();
+}
+
+void GLPointOverlayShader::Render(const GMesh::NODE& node)
+{
+	const vec3f& r = node.r;
+	glVertex3f(r.x, r.y, r.z);
 }
