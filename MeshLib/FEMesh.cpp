@@ -420,7 +420,7 @@ void FSMesh::UpdateElementPartitions()
 
 //-----------------------------------------------------------------------------
 // Remove elements with tag ntag
-void FSMesh::RemoveElements(int ntag)
+int FSMesh::RemoveElements(int ntag)
 {
 	int n = 0;
     bool bdata = (m_data.m_data.size() > 0);
@@ -440,8 +440,13 @@ void FSMesh::RemoveElements(int ntag)
 		}
 	}
 
-	m_Elem.resize(n);
-	m_data.Clear();
+	int N0 = m_Elem.size();
+	if (n < N0)
+	{
+		m_Elem.resize(n);
+		m_data.Clear();
+	}
+	return (N0 - n);
 }
 
 //-----------------------------------------------------------------------------

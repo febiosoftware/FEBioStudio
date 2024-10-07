@@ -137,7 +137,7 @@ public: // Helper functions for updating mesh data structures
 	void UpdateElementPartitions();
 	void UpdateSmoothingGroups();
 
-	void RemoveElements(int ntag);
+	int RemoveElements(int ntag);
 
 	void MarkExteriorElements();
 	void MarkExteriorFaces();

@@ -312,14 +312,16 @@ void FEMeshBuilder::DeleteSelectedElements()
 void FEMeshBuilder::DeleteTaggedElements(int tag)
 {
 	// Let's go ahead and remove all tagged elements
-	m_mesh.RemoveElements(tag);
-	m_mesh.UpdateElementPartitions();
+	if (m_mesh.RemoveElements(tag) > 0)
+	{
+		m_mesh.UpdateElementPartitions();
 
-	// remove isolated nodes
-	RemoveIsolatedNodes();
+		// remove isolated nodes
+		RemoveIsolatedNodes();
 
-	// rebuild mesh
-	m_mesh.RebuildMesh();
+		// rebuild mesh
+		m_mesh.RebuildMesh();
+	}
 }
 
 FSMesh* FEMeshBuilder::DeleteParts(FSMesh& mesh, std::vector<int> partIds)
