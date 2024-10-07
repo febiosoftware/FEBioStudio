@@ -600,7 +600,7 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	}
 
 	QString sp;
-	if (pc) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
+	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
 	else sp = QString("\"%1\"").arg(p->GetLongName());
 
 	QString sv;
@@ -609,8 +609,8 @@ void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
 	case Param_INT   : sv = QString::number(p->GetIntValue()); break;
 	case Param_FLOAT : sv = QString::number(p->GetFloatValue()); break;
 	case Param_BOOL  : sv = (p->GetBoolValue()?"Yes":"No"); break;
-	case Param_VEC3D : sv = QString::number(p->GetIntValue()); break;
-	case Param_STRING: sv = QString("\"%1\"").arg(Vec3dToString(p->GetVec3dValue())); break;
+	case Param_VEC3D : sv = Vec3dToString(p->GetVec3dValue()); break;
+	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
 	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
 	case Param_COLOR : break;
 	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;

@@ -1975,7 +1975,10 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 				lastShader = f.mid;
 				if (shader) shader->Deactivate();
 				if (f.mid != -1)
+				{
 					shader = m_shaders[f.mid];
+					if (shader == nullptr) shader = m_defaultShader;
+				}
 				else
 					shader = m_defaultShader;
 				if (shader) shader->Activate();
