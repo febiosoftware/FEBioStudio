@@ -2363,58 +2363,6 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transfo
 	lineMesh.Render();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	GLfloat old_size;
-	glGetFloatv(GL_POINT_SIZE, &old_size);
-	glPointSize(m_pointSize);
-
-	int NN = mesh->Nodes();
-	vector<int> selectedNodes; selectedNodes.reserve(NN);
-
-	glBegin(GL_POINTS);
-	{
-		// render unselected nodes first
-		glColor4ub(0, 0, 255, 128);
-		for (int i = 0; i < mesh->Nodes(); ++i)
-		{
-			FSNode& node = mesh->Node(i);
-			if (node.m_ntag)
-			{
-				if (node.IsSelected() == false)
-					glx::vertex3d(node.r);
-				else
-					selectedNodes.push_back(i);
-			}
-		}
-	}
-	glEnd();
-	
-	if (!selectedNodes.empty())
-	{
-		// render selected nodes next
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_POINTS);
-		{
-			glColor3ub(255, 0, 0);
-			for (int i : selectedNodes)
-			{
-				FSNode& node = mesh->Node(i);
-				glx::vertex3d(node.r);
-			}
-		}
-		glEnd();
-	}
-
-	glPointSize(old_size);
-
-	glPopAttrib();
-}
-
 void GLMeshRender::RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f)
 {
 	glBegin(GL_LINES);

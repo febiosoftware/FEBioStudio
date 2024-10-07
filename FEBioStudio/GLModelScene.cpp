@@ -333,6 +333,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	int item = pdoc->GetItemMode();
 
 	GObject* poa = pdoc->GetActiveObject();
+	if (po != poa)
+	{
+		RenderObject(rc, po);
+		return;
+	}
 
 	// get the selection mode
 	int nsel = pdoc->GetSelectionMode();
@@ -343,7 +348,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour && (po == poa))
+			if (view.m_bcontour)
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc, po);
@@ -407,70 +412,66 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		// get the mesh mode
 		int meshMode = m_doc->GetMeshMode();
 
-		if (po == poa)
+		if (meshMode == MESH_MODE_VOLUME)
 		{
-			if (meshMode == MESH_MODE_VOLUME)
+			if (item == ITEM_ELEM)
 			{
-				if (item == ITEM_ELEM)
+				RenderFEFacesFromGMesh(rc, po);
+				RenderUnselectedBeamElements(rc, po);
+				RenderSelectedFEElements(rc, po);
+			}
+			else if (item == ITEM_FACE)
+			{
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm)
 				{
 					RenderFEFacesFromGMesh(rc, po);
-					RenderUnselectedBeamElements(rc, po);
-					RenderSelectedFEElements(rc, po);
+					RenderSelectedFEFaces(rc, po);
 				}
-				else if (item == ITEM_FACE)
-				{
-					GMesh* gm = po->GetFERenderMesh();
-					if (gm)
-					{
-						RenderFEFacesFromGMesh(rc, po);
-						RenderSelectedFEFaces(rc, po);
-					}
-					else RenderFEFaces(rc, po);
-				}
-				else if (item == ITEM_EDGE)
-				{
-					GMesh* gm = po->GetFERenderMesh();
-					if (gm) RenderFEFacesFromGMesh(rc, po);
-					else RenderFEFaces(rc, po);
-					cam.LineDrawMode(true);
-					cam.PositionInScene();
-					SetModelView(po);
-					RenderFEEdges(rc, po);
-					cam.LineDrawMode(false);
-					cam.PositionInScene();
-				}
-				else if (item == ITEM_NODE)
-				{
-					GMesh* gm = po->GetFERenderMesh();
-					if (gm) RenderFEFacesFromGMesh(rc, po);
-					else RenderFEFaces(rc, po);
-					RenderFENodes(rc, po);
-				}
+				else RenderFEFaces(rc, po);
 			}
-			else
+			else if (item == ITEM_EDGE)
 			{
-				if (item == ITEM_FACE)
-				{
-					RenderSurfaceMeshFaces(rc, po);
-				}
-				else if (item == ITEM_EDGE)
-				{
-					RenderSurfaceMeshFaces(rc, po);
-					cam.LineDrawMode(true);
-					cam.PositionInScene();
-					SetModelView(po);
-					RenderSurfaceMeshEdges(rc, po);
-					cam.LineDrawMode(false);
-					cam.PositionInScene();
-				}
-				else if (item == ITEM_NODE)
-				{
-					RenderSurfaceMeshFaces(rc, po);
-					RenderSurfaceMeshNodes(rc, po);
-				}
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
+				else RenderFEFaces(rc, po);
+				cam.LineDrawMode(true);
+				cam.PositionInScene();
+				SetModelView(po);
+				RenderFEEdges(rc, po);
+				cam.LineDrawMode(false);
+				cam.PositionInScene();
+			}
+			else if (item == ITEM_NODE)
+			{
+				GMesh* gm = po->GetFERenderMesh();
+				if (gm) RenderFEFacesFromGMesh(rc, po);
+				else RenderFEFaces(rc, po);
+				RenderFENodes(rc, po);
 			}
 		}
-		else RenderObject(rc, po);
+		else
+		{
+			if (item == ITEM_FACE)
+			{
+				RenderSurfaceMeshFaces(rc, po);
+			}
+			else if (item == ITEM_EDGE)
+			{
+				RenderSurfaceMeshFaces(rc, po);
+				cam.LineDrawMode(true);
+				cam.PositionInScene();
+				SetModelView(po);
+				RenderSurfaceMeshEdges(rc, po);
+				cam.LineDrawMode(false);
+				cam.PositionInScene();
+			}
+			else if (item == ITEM_NODE)
+			{
+				RenderSurfaceMeshFaces(rc, po);
+				RenderSurfaceMeshNodes(rc, po);
+			}
+		}
 	}
 
 	// render normals if requested
@@ -1987,17 +1988,19 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	if (NF == 0)
 	{
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_LIGHTING);
 		// if there are no faces, render edges instead
+		GLLineColorShader shader;
+		shader.Activate();
 		int NC = po->Edges();
 		for (int n = 0; n < NC; ++n)
 		{
 			GEdge& e = *po->Edge(n);
-//			if (e.IsVisible())
-//				renderer.RenderGLEdges(pm, e.GetLocalID());
+			if (e.IsVisible())
+			{
+				renderer.RenderGLEdges(pm, n);
+			}
 		}
-		glPopAttrib();
+		shader.Deactivate();
 	}
 
 	// render beam sections if feature edges are not rendered. 
@@ -2079,78 +2082,38 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 	renderer.SetPointSize(fsize);
 
 	FSMesh* pm = po->GetFEMesh();
-	if (pm)
+	if (pm == nullptr) return;
+
+	GMesh* gm = po->GetFERenderMesh(); assert(gm);
+	assert(gm->Nodes() == pm->Nodes());
+	int N = pm->Nodes();
+	for (int i = 0; i < N; ++i)
 	{
-		int N = pm->Nodes();
-		for (int i = 0; i < N; ++i)
-		{
-			FSNode& node = pm->Node(i);
-			if (node.IsSelected()) node.m_ntag = 1;
-			else
-			{
-				if (!node.IsVisible() ||
-					(view.m_bext && !node.IsExterior())) node.m_ntag = 0;
-				else node.m_ntag = 1;
-			}
-		}
-		renderer.RenderFENodes(pm);
-	}
-	else
-	{
-		FSMeshBase* mesh = po->GetEditableMesh();
-		if (mesh)
-		{
-			// reset all tags
-			mesh->TagAllNodes(1);
-
-			// make sure we render all isolated nodes
-			int NF = mesh->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = mesh->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j < n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
-			}
-
-			// check visibility
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = mesh->Face(i);
-				if (face.IsVisible())
-				{
-					int n = face.Nodes();
-					for (int j = 0; j < n; ++j) mesh->Node(face.n[j]).m_ntag = 1;
-				}
-			}
-
-			// check the cull
-			if (view.m_bcull)
-			{
-				vec3d f;
-				for (int i = 0; i < NF; ++i)
-				{
-					FSFace& face = mesh->Face(i);
-					int n = face.Nodes();
-					for (int j = 0; j < n; ++j)
-					{
-						vec3d nn = to_vec3d(face.m_nn[j]);
-						f = q * nn;
-						if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
-					}
-				}
-			}
-
-			renderer.RenderFENodes(mesh);
-		}
+		FSNode& node = pm->Node(i);
+		GMesh::NODE& v = gm->Node(i);
+		if (node.IsSelected()) v.tag = 1;
 		else
 		{
-			FSLineMesh* pm = po->GetEditableLineMesh();
-			if (pm)
-			{
-				pm->TagAllNodes(1);
-				renderer.RenderFENodes(pm);
-			}
+			if (!node.IsVisible() ||
+				(view.m_bext && !node.IsExterior())) v.tag = 0;
+			else v.tag = 1;
 		}
+	}
+	GLPointColorShader pointShader(GLColor(0, 0, 255, 128));
+	pointShader.Activate();
+	renderer.RenderPoints(*gm, [](const GMesh::NODE& v) {
+			return (v.tag != 0);
+		});
+	pointShader.Deactivate();
+
+	FENodeSelection* sel = dynamic_cast<FENodeSelection*>(m_doc->GetCurrentSelection());
+	if (sel && sel->Size())
+	{
+		std::vector<int> items = sel->Items();
+		GLPointOverlayShader ovlShader(GLColor::Red());
+		ovlShader.Activate();
+		renderer.RenderPoints(*gm, items);
+		ovlShader.Deactivate();
 	}
 }
 
@@ -2633,33 +2596,24 @@ void CGLModelScene::RenderSurfaceMeshNodes(CGLContext& rc, GObject* po)
 	FSMeshBase* mesh = po->GetEditableMesh();
 	if (mesh)
 	{
+		GMesh* gm = po->GetRenderMesh(); assert(gm);
+		if (gm == nullptr) return;
+		assert(gm->Nodes() == mesh->Nodes());
+
 		// reset all tags
-		mesh->TagAllNodes(1);
-
-		// make sure we render all isolated nodes
-		int NF = mesh->Faces();
-		for (int i = 0; i < NF; ++i)
+		int NN = mesh->Nodes();
+		for (int i = 0; i < NN; ++i)
 		{
-			FSFace& face = mesh->Face(i);
-			int n = face.Nodes();
-			for (int j = 0; j < n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
-		}
-
-		// check visibility
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = mesh->Face(i);
-			if (face.IsVisible())
-			{
-				int n = face.Nodes();
-				for (int j = 0; j < n; ++j) mesh->Node(face.n[j]).m_ntag = 1;
-			}
+			FSNode& node = mesh->Node(i);
+			GMesh::NODE& gn = gm->Node(i);
+			gn.tag = (node.IsVisible() ? 1 : 0);
 		}
 
 		// check the cull
 		if (view.m_bcull)
 		{
 			vec3d f;
+			int NF = mesh->Faces();
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = mesh->Face(i);
@@ -2668,21 +2622,17 @@ void CGLModelScene::RenderSurfaceMeshNodes(CGLContext& rc, GObject* po)
 				{
 					vec3d nn = to_vec3d(face.m_nn[j]);
 					f = q * nn;
-					if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
+					if (f.z < 0) gm->Node(face.n[j]).tag = 0;
 				}
 			}
 		}
 
-		renderer.RenderFENodes(mesh);
-	}
-	else
-	{
-		FSLineMesh* pm = po->GetEditableLineMesh();
-		if (pm)
-		{
-			pm->TagAllNodes(1);
-			renderer.RenderFENodes(pm);
-		}
+		GLPointColorShader shader(GLColor(0, 0, 255, 128));
+		shader.Activate();
+		renderer.RenderPoints(*gm, [](const GMesh::NODE& v) {
+			return (v.tag != 0);
+			});
+		shader.Deactivate();
 	}
 }
 

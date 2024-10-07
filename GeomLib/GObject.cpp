@@ -217,9 +217,6 @@ void GObject::BuildFERenderMesh()
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	int nsurf = Faces();
-	if (nsurf == 0) return;
-
 	m.m_glFaceMesh = new GMesh;
 	GMesh& gm = *m.m_glFaceMesh;
 	gm.Create(pm->Nodes(), 0, 0);
@@ -229,107 +226,121 @@ void GObject::BuildFERenderMesh()
 		gm.Node(i).nid = i;
 	}
 
-	int NF = pm->Faces();
-	std::vector< std::deque<int> > faceList(nsurf);
-	for (int i = 0; i < NF; i++)
+	int nsurf = Faces();
+	if (nsurf > 0)
 	{
-		const FSFace& face = pm->Face(i);
-		assert(face.m_gid >= 0);
-		faceList[face.m_gid].push_back(i);
-	}
-
-	for (int i = 0; i < nsurf; i++)
-	{
-		std::deque<int>::iterator it = faceList[i].begin();
-		gm.NewPartition();
-		for (auto n : faceList[i])
+		int NF = pm->Faces();
+		std::vector< std::deque<int> > faceList(nsurf);
+		for (int i = 0; i < NF; i++)
 		{
-			const FSFace& face = pm->Face(n);
-			assert(face.m_gid == i);
-			if (face.IsVisible())
-			{
-				int eid = face.m_elem[0].eid;
-				if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
-				{
-					eid = face.m_elem[1].eid;
-				}
-				int mid = -1;
-				if (eid >= 0) mid = pm->Element(eid).m_MatID;
-
-				gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
-
-				int ne = face.Edges();
-				for (int j = 0; j < ne; ++j)
-				{
-					int j1 = (j + 1) % ne;
-					if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
-					{
-						int m[2] = { face.n[j], face.n[j1] };
-						gm.AddEdge(m, 2);
-					}
-				}
-			}
+			const FSFace& face = pm->Face(i);
+			assert(face.m_gid >= 0);
+			faceList[face.m_gid].push_back(i);
 		}
-	}
 
-	int nparts = Parts();
-	vector<deque<int>> partElems(nparts);
-	int NE = pm->Elements();
-	for (int i = 0; i < NE; ++i)
-	{
-		FSElement& el = pm->Element(i);
-		if (el.IsVisible())
+		for (int i = 0; i < nsurf; i++)
 		{
-			int nf = el.Faces();
-			for (int j = 0; j < nf; ++j)
+			std::deque<int>::iterator it = faceList[i].begin();
+			gm.NewPartition();
+			for (auto n : faceList[i])
 			{
-				if (el.m_nbr[j] >= 0)
+				const FSFace& face = pm->Face(n);
+				assert(face.m_gid == i);
+				if (face.IsVisible())
 				{
-					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+					int eid = face.m_elem[0].eid;
+					if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
 					{
-						partElems[el.m_gid].push_back(i);
-						break;
+						eid = face.m_elem[1].eid;
 					}
-				}
-			}
-		}
-	}
+					int mid = -1;
+					if (eid >= 0) mid = pm->Element(eid).m_MatID;
 
-	// add the exposed surface from hidden elements
-	int maxSurfID = Faces(); // we assign this ID to the exposed surface
-	FSFace face;
-	for (int i = 0; i < nparts; ++i)
-	{
-		int ne = partElems[i].size();
-		gm.NewPartition();
-		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
-		{
-			FSElement& el = pm->Element(*it); assert(el.IsVisible());
-			int nf = el.Faces();
-			for (int j = 0; j < nf; ++j)
-			{
-				if (el.m_nbr[j] >= 0)
-				{
-					FSElement& elj = pm->Element(el.m_nbr[j]);
-					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+
+					int ne = face.Edges();
+					for (int j = 0; j < ne; ++j)
 					{
-						el.GetFace(j, face);
-						gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);
-
-						int n[FSEdge::MAX_NODES];
-						int ne = face.Edges();
-						for (int k = 0; k < ne; ++k)
+						int j1 = (j + 1) % ne;
+						if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 						{
-							int m = face.GetEdgeNodes(k, n);
-							if (m == 2)
+							int m[2] = { face.n[j], face.n[j1] };
+							gm.AddEdge(m, 2);
+						}
+					}
+				}
+			}
+		}
+
+
+		int nparts = Parts();
+		vector<deque<int>> partElems(nparts);
+		int NE = pm->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.IsVisible())
+			{
+				int nf = el.Faces();
+				for (int j = 0; j < nf; ++j)
+				{
+					if (el.m_nbr[j] >= 0)
+					{
+						FSElement& elj = pm->Element(el.m_nbr[j]);
+						if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+						{
+							partElems[el.m_gid].push_back(i);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// add the exposed surface from hidden elements
+		int maxSurfID = Faces(); // we assign this ID to the exposed surface
+		FSFace face;
+		for (int i = 0; i < nparts; ++i)
+		{
+			int ne = partElems[i].size();
+			gm.NewPartition();
+			for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
+			{
+				FSElement& el = pm->Element(*it); assert(el.IsVisible());
+				int nf = el.Faces();
+				for (int j = 0; j < nf; ++j)
+				{
+					if (el.m_nbr[j] >= 0)
+					{
+						FSElement& elj = pm->Element(el.m_nbr[j]);
+						if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
+						{
+							el.GetFace(j, face);
+							gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);
+
+							int n[FSEdge::MAX_NODES];
+							int ne = face.Edges();
+							for (int k = 0; k < ne; ++k)
 							{
-								if (n[0] < n[1]) gm.AddEdge(n, 2, -1);
+								int m = face.GetEdgeNodes(k, n);
+								if (m == 2)
+								{
+									if (n[0] < n[1]) gm.AddEdge(n, 2, -1);
+								}
 							}
 						}
 					}
 				}
 			}
+		}
+	}
+	else if (Edges() > 0)
+	{
+		vec3f r[FSEdge::MAX_NODES];
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FSEdge& edge = pm->Edge(i);
+			gm.AddEdge(edge.n, edge.Nodes(), edge.m_gid);
 		}
 	}
 

@@ -91,8 +91,10 @@ public:
 	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);
 	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
-public:
-	void RenderFENodes(FSLineMesh* mesh);
+	void RenderPoints(GMesh& mesh);
+	void RenderPoints(GMesh& mesh, GLPointShader& shader);
+	void RenderPoints(GMesh& mesh, std::vector<int>& nodeList);
+	void RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc);
 
 public:
 	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
@@ -133,11 +135,6 @@ public:
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
-
-	void RenderPoints(GMesh& mesh);
-	void RenderPoints(GMesh& mesh, GLPointShader& shader);
-	void RenderPoints(GMesh& mesh, std::vector<int>& nodeList);
-	void RenderPoints(GMesh& mesh, std::function<bool (const GMesh::NODE& node)> fnc);
 
 private:
 	// drawing routines for faces

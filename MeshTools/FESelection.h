@@ -521,6 +521,8 @@ public:
 	FSNode* Node(size_t n);
 	int NodeIndex(size_t n) const { return m_items[n]; }
 
+	const std::vector<int>& Items() const { return m_items; }
+
 protected:
 	FSLineMesh*	m_pMesh;
 	std::vector<int>	m_items;
