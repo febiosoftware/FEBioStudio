@@ -117,7 +117,6 @@ GLMeshRender::GLMeshRender()
 	m_nshellref = 0;
 	m_ndivs = 1;
 	m_pointSize = 7.f;
-	m_bfaceColor = false;
 	m_useShaders = false;
 	m_defaultShader = nullptr;
 }
@@ -155,12 +154,6 @@ void GLMeshRender::PopState()
 {
 	glPopAttrib();
 }
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::SetFaceColor(bool b) { m_bfaceColor = b; }
-
-//-----------------------------------------------------------------------------
-bool GLMeshRender::GetFaceColor() const { return m_bfaceColor; }
 
 void GLMeshRender::RenderLineLoop(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3)
 {
@@ -1962,53 +1955,6 @@ void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 	}
 }
 
-void GLMeshRender::RenderGLMesh(GMesh* pm)
-{
-	glBegin(GL_TRIANGLES);
-	{
-		if (m_bfaceColor)
-		{
-			int NF = pm->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				GMesh::FACE& f = pm->Face(i);
-				glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
-				glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
-				glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
-			}
-		}
-		else
-		{
-			int NF = pm->Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				GMesh::FACE& f = pm->Face(i);
-				glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-				glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-				glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-			}
-		}
-	}
-	glEnd();
-}
-
-void GLMeshRender::RenderGLMesh(GMesh& mesh, GLColor c)
-{
-	glColor4ub(c.r, c.g, c.b, c.a);
-	glBegin(GL_TRIANGLES);
-	{
-		int NF = mesh.Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			GMesh::FACE& f = mesh.Face(i);
-			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-		}
-	}
-	glEnd();
-}
-
 void GLMeshRender::RenderGMesh(const GMesh& mesh)
 {
 	if (!m_useShaders || m_shaders.empty()) return;
@@ -2065,53 +2011,21 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 	shader.Deactivate();
 }
 
-void GLMeshRender::RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> func)
+void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 {
-	glBegin(GL_TRIANGLES);
-	{
-		int NF = pm->Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			GMesh::FACE& f = pm->Face(i);
-			f.tag = i;
-			func(f);
-			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-		}
-	}
-	glEnd();
-}
-
-void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
-{
-	if ((surfID < 0) || (surfID >= (int)pm->Partitions())) return;
-	const GMesh::PARTITION& p = pm->Partition(surfID);
+	GLFacetShader* shader = m_defaultShader;
+	if (shader == nullptr) return;
+	if ((surfID < 0) || (surfID >= (int)mesh.Partitions())) return;
+	const GMesh::PARTITION& p = mesh.Partition(surfID);
 	if (p.nf > 0)
 	{
 		int NF = p.nf;
 		int n0 = p.n0;
 		glBegin(GL_TRIANGLES);
 		{
-			if (m_bfaceColor)
+			for (int i = 0; i < NF; ++i)
 			{
-				for (int i = 0; i < NF; ++i)
-				{
-					const GMesh::FACE& f = pm->Face(i + n0);
-					glNormal3fv(&f.vn[0].x); glColor4ub(f.c[0].r, f.c[0].g, f.c[0].b, f.c[0].a); glVertex3fv(&f.vr[0].x);
-					glNormal3fv(&f.vn[1].x); glColor4ub(f.c[1].r, f.c[1].g, f.c[1].b, f.c[1].a); glVertex3fv(&f.vr[1].x);
-					glNormal3fv(&f.vn[2].x); glColor4ub(f.c[2].r, f.c[2].g, f.c[2].b, f.c[2].a); glVertex3fv(&f.vr[2].x);
-				}
-			}
-			else
-			{
-				for (int i = 0; i < NF; ++i)
-				{
-					const GMesh::FACE& f = pm->Face(i + n0);
-					glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-					glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-					glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-				}
+				shader->Render(mesh.Face(i + n0));
 			}
 		}
 		glEnd();
@@ -2138,26 +2052,6 @@ void GLMeshRender::RenderGMesh(GMesh* pm, int surfID, GLFacetShader& shader)
 		shader.Deactivate();
 	}
 }
-
-/*
-void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
-{
-	if (surfID == -1)
-	{
-		m_glmesh.CreateFromGMesh(*pm);
-	}
-	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
-	{
-		unsigned int flags = GLMesh::FLAG_NORMAL;
-		if (m_bfaceColor) flags |= GLMesh::FLAG_COLOR;
-
-		m_glmesh.CreateFromGMesh(*pm, surfID, flags);
-	}
-	else return;
-
-	m_glmesh.Render();
-}
-*/
 
 void GLMeshRender::RenderGLEdges(GMesh* pm)
 {

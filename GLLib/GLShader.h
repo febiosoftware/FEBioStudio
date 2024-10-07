@@ -98,8 +98,8 @@ public:
 	GLStandardModelShader();
 	GLStandardModelShader(const GLColor& c, bool useStipple = false);
 
-	void SetColor(const GLColor& c) { m_col = c; }
-	void SetUseStipple(bool b) { m_useStipple = b; }
+	void SetColor(const GLColor& c);
+	void SetUseStipple(bool b);
 
 	void Activate() override;
 	void Deactivate() override;

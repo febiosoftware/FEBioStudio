@@ -311,7 +311,6 @@ void GLPlaneCut::Render(CGLContext& rc)
 	{
 		glColor3ub(255, 255, 255);
 		glEnable(GL_COLOR_MATERIAL);
-		mr.SetFaceColor(true);
 
 		// turn off specular lighting
 		GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };

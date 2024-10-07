@@ -109,6 +109,24 @@ GLStandardModelShader::GLStandardModelShader(const GLColor& c, bool useStipple) 
 	m_useStipple = useStipple;
 }
 
+void GLStandardModelShader::SetColor(const GLColor& c) 
+{ 
+	m_col = c; 
+	if (IsActive()) glColor4ub(c.r, c.g, c.b, c.a);
+}
+void GLStandardModelShader::SetUseStipple(bool b)
+{ 
+	if (b != m_useStipple)
+	{
+		m_useStipple = b;
+		if (IsActive())
+		{
+			if (m_useStipple) glEnable(GL_POLYGON_STIPPLE);
+			else glDisable(GL_POLYGON_STIPPLE);
+		}
+	}
+}
+
 void GLStandardModelShader::Activate()
 {
 	GLFacetShader::Activate();

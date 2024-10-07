@@ -1647,38 +1647,36 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
+				GLColor c;
+				bool useStipple = false;
 				if (m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
 				{
-					SetDefaultMatProps();
 					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
 					switch (f.m_ntag)
 					{
-					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; useStipple = true; break;
 					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
 					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
 					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
 					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
 					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
 					}
-					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+					c = GLColor::FromRGBf(col[0], col[1], col[2]);
 				}
-				else SetMatProps(rc, pg);
+				else c = GetPartColor(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
 					switch (vs.m_transparencyMode)
 					{
-					case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-					case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+					case 1: if (po->IsSelected()) useStipple = true; break;
+					case 2: if (!po->IsSelected()) useStipple = true; break;
 					}
 				}
 
 				// render the face
-				renderer.RenderGLMesh(pm, n);
-
-				if ((vs.m_transparencyMode != 0) ||
-					(m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
-					glDisable(GL_POLYGON_STIPPLE);
+				GLStandardModelShader shader(c, useStipple);
+				renderer.RenderGMesh(pm, n, shader);
 			}
 		}
 	}
@@ -1832,22 +1830,21 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 		// make sure we have a part
 		if (pg)
 		{
-			SetMatProps(rc, pg);
-
+			bool useStipple = false;
 			if (vs.m_transparencyMode != 0)
 			{
 				switch (vs.m_transparencyMode)
 				{
-				case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-				case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+				case 1: if (po->IsSelected()) useStipple = true; break;
+				case 2: if (!po->IsSelected()) useStipple = true; break;
 				}
 			}
 
 			// render the face
+			GLColor c = GetPartColor(rc, pg);
+			GLStandardModelShader shader(c, useStipple);
 			int nid = pg->GetLocalID();
-			renderer.RenderGLMesh(pm, n);
-
-			if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
+			renderer.RenderGMesh(pm, n, shader);
 		}
 	}
 
@@ -1922,6 +1919,8 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 	if (vs.m_use_environment_map) ActivateEnvironmentMap();
 
 	GLStandardModelShader shader;
+	renderer.SetDefaultShader(&shader);
+	shader.Activate();
 
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
@@ -1979,10 +1978,12 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 				// render the face
 				shader.SetUseStipple(useStipple);
-				renderer.RenderGMesh(pm, n, shader);
+				renderer.RenderGMesh(*pm, n);
 			}
 		}
 	}
+	shader.Deactivate();
+	renderer.SetDefaultShader(nullptr);
 
 	if (vs.m_use_environment_map) DeactivateEnvironmentMap();
 
@@ -2127,15 +2128,11 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
 	if (vs.m_bcontour && (po == view->GetActiveObject()))
 	{
-		m_renderer.SetFaceColor(true);
 		GLFaceColorShader shader;
 		m_renderer.RenderGMesh(*gm, shader);
 	}
 	else
 	{
-		SetDefaultMatProps();
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-		glEnable(GL_COLOR_MATERIAL);
 		switch (m_objectColor)
 		{
 		case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderMeshByDefault     (rc, *po, *gm); break;
@@ -2144,7 +2141,7 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByPhysics     (rc, *po, *gm); break;
 		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType (rc, *po, *gm); break;
 		default:
-			m_renderer.RenderGLMesh(gm);
+			assert(false);
 		}
 	}
 }

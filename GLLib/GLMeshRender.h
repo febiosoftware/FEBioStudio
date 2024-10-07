@@ -76,15 +76,10 @@ public:
 	void RenderLines(vec3d* r, int n);
 
 public:
-	void RenderGLMesh(GMesh* pm);
-	void RenderGLMesh(GMesh& pm, GLColor c);
-	void RenderGLMesh(GMesh* pm, std::function<void(const GMesh::FACE& face)> f);
-
 	void RenderGMesh(const GMesh& mesh);
-	void RenderGMesh(const GMesh& pm, GLFacetShader& shader);
+	void RenderGMesh(const GMesh& mesh, GLFacetShader& shader);
+	void RenderGMesh(const GMesh& mesh, int surfID);
 	void RenderGMesh(GMesh* pm, int surfID, GLFacetShader& shader);
-
-	void RenderGLMesh(GMesh* pm, int surfID);
 
 	void RenderGLEdges(GMesh* pm);
 	void RenderGLEdges(GMesh* pm, int nedge);
@@ -147,9 +142,6 @@ private:
 public:
 	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm);
 
-	void SetFaceColor(bool b);
-	bool GetFaceColor() const;
-
 private:
 	// special render routines for thick shells
 	void RenderThickShell(const FSFace& face, FSCoreMesh* pm);
@@ -164,7 +156,6 @@ public:
 	float		m_bSolidBeamRadius;	//!< radius scale factor when rendering beams as solid
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
-	bool		m_bfaceColor;		//!< use face colors when rendering
 	bool		m_useShaders;		//!< use the shaders
 
 private:
