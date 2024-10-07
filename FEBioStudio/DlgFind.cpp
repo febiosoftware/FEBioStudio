@@ -75,7 +75,7 @@ public:
 
 		QHBoxLayout* hb = new QHBoxLayout;
 		hb->addWidget(new QLabel("method:"));
-		method = new QComboBox(); method->addItems(QStringList() << "ID" << "coordinates" << "coordinates range");
+		method = new QComboBox(); method->addItems(QStringList() << "ID" << "coordinates" << "coordinates range" << "index");
 		hb->addWidget(method);
 		method->setSizePolicy(QSizePolicy::Expanding, method->sizePolicy().verticalPolicy());
 		pvb->addLayout(hb);
@@ -131,6 +131,8 @@ CDlgFind::CDlgFind(QWidget* parent, int nsel) : QDialog(parent), ui(new Ui::CDlg
 {
 	ui->setupUi(this);
 
+	m_bsel[0] = m_bsel[1] = m_bsel[2] = m_bsel[3] = false;
+	m_bclear = true;
 	m_method = 0;
 
 	if (nsel == 0) ui->pselNodes->setChecked(true);
@@ -151,7 +153,7 @@ void CDlgFind::accept()
 	m_bclear = false;
 	if (ui->pclear->isChecked()) m_bclear = true;
 
-	if (m_method == 0)
+	if ((m_method == 0)|| (m_method == 3))
 	{
 		// std::string s = ui->pitem->text().toStdString();
 		// char sz[256] = {0};

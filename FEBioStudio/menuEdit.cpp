@@ -684,12 +684,16 @@ void CMainWindow::on_actionFind_triggered()
 			case ITEM_ELEM: items = findElementsByCoordinates(pm, dlg.m_coord); break;
 			}
 		}
-		else
+		else if (dlg.m_method == 2)
 		{
 			switch (nitem)
 			{
 			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
 			}
+		}
+		else if (dlg.m_method == 3)
+		{
+			items = dlg.m_item;
 		}
 
 		if (items.empty() == false)
