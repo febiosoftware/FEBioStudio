@@ -317,6 +317,7 @@ public:
 
 protected:
 	void UpdateInternalSurfaces(bool eval = true);
+	void UpdateSelectionMesh();
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
@@ -353,6 +354,7 @@ protected:
 
 	// selected items
 	FESelection* m_selection;
+	GMesh m_selectionMesh;
 
 	GPlotList			m_pPlot;	// list of plots
 

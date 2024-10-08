@@ -990,8 +990,6 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 
 void CGLModel::RenderElemsNew(FEPostModel* ps, CGLContext& rc)
 {
-	glEnable(GL_COLOR_MATERIAL);
-
 	CPostObject* po = GetPostObject();
 	GMesh* mesh = po->GetFERenderMesh(); assert(mesh);
 	if (mesh == nullptr) return;
@@ -1077,81 +1075,15 @@ void CGLModel::RenderSurface(FEPostModel* ps, CGLContext& rc)
 	}
 }
 
-//-----------------------------------------------------------------------------
-
 void CGLModel::RenderSelection(CGLContext &rc)
 {
-	int mode = GetSelectionType();
+	// render the selection surface
+	GLSelectionShader shader(m_sel_col);
+	m_render.RenderGMesh(m_selectionMesh, shader);
 
-	// get the mesh
-	FEPostModel* ps = m_ps;
-	Post::FEPostMesh* pm = GetActiveMesh();
-
-	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_POLYGON_BIT);
-
-	// now render the selected faces
-	glDisable(GL_TEXTURE_1D);
-	GLColor c = m_sel_col;
-	glDisable(GL_LIGHTING);
-
-	int ndivs = GetSubDivisions();
-	m_render.SetDivisions(ndivs);
-
-	// render the selected faces
-	if (mode == SELECT_FE_FACES)
-	{
-		GLSelectionShader shader(c);
-		shader.Activate();
-		m_render.RenderFEFaces(pm, [](const FSFace& face) {
-			return face.IsSelected();
-			});
-		shader.Deactivate();
-	}
-
-	// render the selected elements
-	if (mode == SELECT_FE_ELEMS)
-	{
-		FEElementSelection* elemSelection = dynamic_cast<FEElementSelection*>(m_selection);
-		if (elemSelection && (elemSelection->Size() > 0))
-		{
-			GLSelectionShader shader(GLColor(255, 64, 0));
-			shader.Activate();
-			m_render.RenderFEFaces(pm, [=](const FSFace& face) {
-				FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-				return el.IsSelected();
-				});
-			shader.Deactivate();
-		}
-	}
-
-	// render the outline of the selected elements
-	GLOutlineShader outlineShader(GLColor(255, 255, 0));
-	outlineShader.Activate();
-
-	// do the selected elements first
-	if (mode == SELECT_FE_ELEMS)
-	{
-		FEElementSelection* elemSelection = dynamic_cast<FEElementSelection*>(m_selection);
-		if (elemSelection && (elemSelection->Size() > 0))
-		{
-			// NOTE: This only renders outlines for solid elements
-			const vector<int>& itemList = elemSelection->ItemList();
-			m_render.RenderFEElementsOutline(*pm, itemList);
-		}
-	}
-
-	// now do the selected faces
-	if (mode == SELECT_FE_FACES)
-	{
-		FEFaceSelection* faceSelection = dynamic_cast<FEFaceSelection*>(m_selection);
-		if (faceSelection && (faceSelection->Size() > 0))
-		{
-			const vector<int>& itemList = faceSelection->ItemList();
-			m_render.RenderFEFacesOutline(pm, itemList);
-		}
-	}
-
-	outlineShader.Deactivate();
+	// render the selection outlines
+	GLOutlineShader outlineShader(GLColor::Yellow());
+	m_render.RenderEdges(m_selectionMesh, outlineShader);
 }
 
 //-----------------------------------------------------------------------------
@@ -2538,6 +2470,124 @@ int CGLModel::GetSubDivisions()
 void CGLModel::SetSelection(FESelection* sel)
 {
 	m_selection = sel;
+	UpdateSelectionMesh();
+}
+
+void CGLModel::UpdateSelectionMesh()
+{
+	GMesh& m = m_selectionMesh;
+	m.Clear();
+	FEElementSelection* esel = dynamic_cast<FEElementSelection*>(m_selection);
+	if (esel && esel->Count())
+	{
+		m.NewPartition();
+		FSMesh* pm = esel->GetMesh();
+		int NE = esel->Count();
+		int n[FSFace::MAX_NODES];
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement_& el = *esel->Element(i); assert(el.IsSelected());
+			if (el.IsSolid())
+			{
+				int nf = el.Faces();
+				for (int j = 0; j < nf; ++j)
+				{
+					int nj = el.m_nbr[j];
+					FEElement_* pej = pm->ElementPtr(nj);
+					if ((pej == nullptr) || (!pej->IsSelected()))
+					{
+						FSFace f = el.GetFace(j);
+						for (int k = 0; k < f.Nodes(); ++k)
+						{
+							FSNode& nodek = pm->Node(f.n[k]);
+							vec3f r = to_vec3f(nodek.r);
+							n[k] = m.AddNode(r);
+							nodek.m_ntag = n[k];
+						}
+						m.AddFace(n, f.Nodes(), 0, -1, true, -1, i);
+
+						for (int k = 0; k < f.Edges(); ++k)
+						{
+							int en[FSEdge::MAX_NODES];
+							FSEdge edge = f.GetEdge(k);
+							for (int l = 0; l < edge.Nodes(); ++l)
+								en[l] = pm->Node(edge.n[l]).m_ntag;
+							m.AddEdge(en, edge.Nodes());
+						}
+					}
+				}
+			}
+			else if (el.IsShell())
+			{
+				// add shells
+				for (int k = 0; k < el.Nodes(); ++k)
+				{
+					FSNode& nodek = pm->Node(el.m_node[k]);
+					vec3f r = to_vec3f(nodek.r);
+					n[k] = m.AddNode(r);
+					nodek.m_ntag = n[k];
+				}
+				m.AddFace(n, el.Nodes(), 0, -1, true, -1, i);
+
+				for (int k = 0; k < el.Edges(); ++k)
+				{
+					int en[FSEdge::MAX_NODES];
+					FSEdge edge = el.GetEdge(k);
+					for (int l = 0; l < edge.Nodes(); ++l)
+						en[l] = pm->Node(edge.n[l]).m_ntag;
+					m.AddEdge(en, edge.Nodes());
+				}
+			}
+			else if (el.IsBeam())
+			{
+				for (int k = 0; k < el.Nodes(); ++k)
+				{
+					FSNode& nodek = pm->Node(el.m_node[k]);
+					vec3f r = to_vec3f(nodek.r);
+					n[k] = m.AddNode(r);
+					nodek.m_ntag = n[k];
+				}
+				m.AddEdge(n, el.Nodes());
+			}
+		}
+		m.Update();
+	}
+
+	FEFaceSelection* fsel = dynamic_cast<FEFaceSelection*>(m_selection);
+	if (fsel && fsel->Count())
+	{
+		m.NewPartition();
+		FSMeshBase* pm = fsel->GetMesh();
+		int NF = fsel->Count();
+		int n[FSFace::MAX_NODES];
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = *fsel->Face(i); assert(face.IsSelected());
+			for (int k = 0; k < face.Nodes(); ++k)
+			{
+				FSNode& nodek = pm->Node(face.n[k]);
+				vec3f r = to_vec3f(nodek.r);
+				n[k] = m.AddNode(r);
+				nodek.m_ntag = n[k];
+			}
+			m.AddFace(n, face.Nodes(), 0, -1, true, i, -1);
+
+			for (int k = 0; k < face.Edges(); ++k)
+			{
+				FSFace* pf = pm->FacePtr(face.m_nbr[k]);
+				if ((pf == nullptr) || !pf->IsSelected() || !pf->IsVisible() || (face.GetID() < pf->GetID()))
+				{
+					int en[FSEdge::MAX_NODES];
+					FSEdge edge = face.GetEdge(k);
+					for (int l = 0; l < edge.Nodes(); ++l)
+						en[l] = pm->Node(edge.n[l]).m_ntag;
+
+					m.AddEdge(en, edge.Nodes());
+				}
+			}
+		}
+		m.Update();
+	}
 }
 
 //-----------------------------------------------------------------------------

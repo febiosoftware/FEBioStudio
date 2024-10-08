@@ -176,45 +176,6 @@ void GLMeshRender::RenderLines(vec3d* r, int n)
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel)
-{
-	int NE = (int)elemList.size();
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < NE; ++i)
-	{
-		FEElement_& el = mesh.Element(elemList[i]);
-		RenderElement(&el, &mesh, bsel);
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f)
-{
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i<mesh.Elements(); ++i)
-	{
-		FEElement_& el = mesh.Element(i);
-		if (f(el)) RenderElement(&el, &mesh, true);
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el, GLColor* c)> f)
-{
-	GLColor col[FSElement::MAX_NODES];
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < mesh.Elements(); ++i)
-	{
-		FEElement_& el = mesh.Element(i);
-		if (f(el, col)) RenderElement(&el, &mesh, col);
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f)
 {
 	glBegin(GL_TRIANGLES);
@@ -2260,25 +2221,6 @@ void GLMeshRender::RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transfo
 	lineMesh.Render();
 }
 
-void GLMeshRender::RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f)
-{
-	glBegin(GL_LINES);
-	{
-		for (int i = 0; i < mesh.Edges(); ++i)
-		{
-			FSEdge& e = mesh.Edge(i);
-			if (f(e))
-			{
-				vec3d r0 = mesh.Node(e.n[0]).r;
-				vec3d r1 = mesh.Node(e.n[1]).r;
-				glVertex3d(r0.x, r0.y, r0.z);
-				glVertex3d(r1.x, r1.y, r1.z);
-			}
-		}
-	}
-	glEnd();
-}
-
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderSelectedFEEdges(FSLineMesh* pm)
 {
@@ -2329,6 +2271,7 @@ void GLMeshRender::RenderEdges(const GMesh& m, GLLineShader& shader)
 {
 	int NE = m.Edges();
 	if (NE == 0) return;
+	shader.Activate();
 	glBegin(GL_LINES);
 	{
 		for (int i = 0; i < NE; i++)
@@ -2337,6 +2280,7 @@ void GLMeshRender::RenderEdges(const GMesh& m, GLLineShader& shader)
 		}
 	}
 	glEnd();
+	shader.Deactivate();
 }
 
 void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
@@ -2761,24 +2705,6 @@ void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace
 		{
 			FSFace& face = pm->Face(i);
 			if (f(face, c)) RenderFace(face, pm, c);
-		}
-	}
-	glEnd();
-
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(const FSFace& face, GLColor* c)> f)
-{
-	GLColor c[FSFace::MAX_NODES];
-	glBegin(GL_TRIANGLES);
-	{
-		int faces = pm->Faces();
-		for (int i = 0; i < faces; ++i)
-		{
-			FSFace& face = pm->Face(i);
-			face.m_ntag = i;
-			if (f(face, c)) RenderFESurfaceMeshFace(face, pm, c);
 		}
 	}
 	glEnd();

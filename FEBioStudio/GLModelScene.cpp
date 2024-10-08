@@ -1581,27 +1581,39 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 			}
 		}
 	}
+	if (pointMesh.Nodes() != 0) m_renderer.RenderPoints(pointMesh);
+	shader.Deactivate();
+
 
 #ifndef NDEBUG
 	// Render FE edges onto GMesh edges to make sure they are consistent
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
-		glColor3ub(255, 0, 0);
-		m_renderer.RenderFEEdges(*pm, [&](const FSEdge& edge) {
-			if (edge.m_gid > -1)
+		// TODO: Add the edges to the render mesh
+		GMesh edges;
+		vec3f r[FSEdge::MAX_NODES];
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FSEdge& e = pm->Edge(i);
+			if (e.m_gid > -1)
 			{
-				GEdge* ge = po->Edge(edge.m_gid);
-				if (ge && ge->IsSelected()) return true;
+				GEdge* ge = po->Edge(e.m_gid);
+				if (ge && ge->IsSelected())
+				{
+					for (int j=0; j<e.Nodes(); ++j)
+						r[j] = to_vec3f(pm->Node(e.n[j]).r);
+					edges.AddEdge(r, e.Nodes(), e.m_gid);
+				}
 			}
-			return false;
-			});
+		}
+		if (edges.Edges() > 0)
+		{
+			GLOutlineShader shader(GLColor::Red());
+			m_renderer.RenderEdges(edges, shader);
+		}
 	}
 #endif
-
-	if (pointMesh.Nodes() != 0) m_renderer.RenderPoints(pointMesh);
-
-	shader.Deactivate();
 }
 
 //-----------------------------------------------------------------------------

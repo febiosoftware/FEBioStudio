@@ -92,8 +92,6 @@ public:
 	void RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc);
 
 public:
-	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
-
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
 
@@ -111,8 +109,6 @@ public:
 
 	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
 
-	void RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
-
 	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
 	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
@@ -124,9 +120,6 @@ private:
 	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm);
 
 public:
-	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel = false);
-	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
-	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el, GLColor* c)> f);
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
