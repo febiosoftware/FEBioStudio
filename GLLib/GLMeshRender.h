@@ -31,16 +31,11 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 #include "GLShader.h"
 
-class FEElement_;
-class FSNode;
-class FSEdge;
 class FSFace;
-class FSLineMesh;
 class FSCoreMesh;
 class FSMeshBase;
 class GMesh;
 class CGLContext;
-class FSMesh;
 class Transform;
 
 class GLMeshRender
@@ -79,10 +74,14 @@ public:
 	void RenderGMesh(const GMesh& mesh);
 	void RenderGMesh(const GMesh& mesh, GLFacetShader& shader);
 	void RenderGMesh(const GMesh& mesh, int surfID);
-	void RenderGMesh(GMesh* pm, int surfID, GLFacetShader& shader);
+	void RenderGMesh(const GMesh& mesh, int surfID, GLFacetShader& shader);
 
-	void RenderGLEdges(GMesh* pm);
-	void RenderGLEdges(GMesh* pm, int nedge);
+	void RenderEdges(const GMesh& m);
+	void RenderEdges(const GMesh& m, std::function<bool(const GMesh::EDGE& e)> f);
+	void RenderEdges(const GMesh& p, int nedge);
+	void RenderEdges(const GMesh& m, GLLineShader& shader);
+
+
 	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);
 	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
 
@@ -92,15 +91,6 @@ public:
 	void RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc);
 
 public:
-	void RenderSelectedFEEdges(FSLineMesh* pm);
-	void RenderUnselectedFEEdges(FSLineMesh* pm);
-
-	void RenderEdges(const GMesh& m);
-	void RenderEdges(const GMesh& m, GLLineShader& shader);
-
-	void RenderMeshLines(FSMeshBase* pm);
-	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
-
 	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList);
 	void RenderFEFaces(FSMeshBase* pm, const std::vector<FSFace>& faceList, std::function<bool(const FSFace& face)> f);
 	void RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
@@ -113,15 +103,7 @@ public:
 	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
 
-	void RenderFEElementsOutline(FSMesh& mesh, const std::vector<int>& elemList);
-	void RenderFEElementsOutline(FSCoreMesh* pm, const std::vector<FEElement_*>& elemList);
-
-private:
-	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm);
-
 public:
-	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
-
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
 private:

@@ -301,11 +301,11 @@ void GLPlaneCut::Render(CGLContext& rc)
 
 	// render the unselected faces
 	GLFaceColorShader unselectedShader;
-	mr.RenderGMesh(m_planeCut, 0, unselectedShader);
+	mr.RenderGMesh(*m_planeCut, 0, unselectedShader);
 
 	// render the selected faces
 	GLSelectionShader shader(GLColor(255, 64, 0));
-	mr.RenderGMesh(m_planeCut, 1, shader);
+	mr.RenderGMesh(*m_planeCut, 1, shader);
 
 	glPushAttrib(GL_ENABLE_BIT);
 	{
@@ -328,10 +328,10 @@ void GLPlaneCut::Render(CGLContext& rc)
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 
-			mr.RenderGLEdges(m_planeCut, 0);
+			mr.RenderEdges(*m_planeCut, 0);
 			glDisable(GL_DEPTH_TEST);
 			glColor3ub(255, 255, 0);
-			mr.RenderGLEdges(m_planeCut, 1);
+			mr.RenderEdges(*m_planeCut, 1);
 
 			cam.LineDrawMode(false);
 			cam.PositionInScene();

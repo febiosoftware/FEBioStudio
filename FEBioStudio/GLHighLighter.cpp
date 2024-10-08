@@ -140,7 +140,7 @@ void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 	SetModelView(po);
 
 	GMesh& m = *po->GetRenderMesh();
-	renderer.RenderGLEdges(&m, edge->GetLocalID());
+	renderer.RenderEdges(m, edge->GetLocalID());
 
 	GNode* n0 = po->Node(edge->m_node[0]);
 	GNode* n1 = po->Node(edge->m_node[1]);
@@ -194,7 +194,7 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 	SetModelView(po);
 
 	GLSelectionShader shader(c);
-	renderer.RenderGMesh(mesh, face->GetLocalID(), shader);
+	renderer.RenderGMesh(*mesh, face->GetLocalID(), shader);
 
 	GLOutlineShader outlineShader(c);
 	outlineShader.Activate();
@@ -229,7 +229,7 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	GLSelectionShader shader(c);
 	for (int surfID : faceList)
 	{
-		renderer.RenderGMesh(mesh, surfID, shader);
+		renderer.RenderGMesh(*mesh, surfID, shader);
 	}
 
 	GLOutlineShader outlineShader(c);

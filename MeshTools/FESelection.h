@@ -527,3 +527,7 @@ protected:
 	FSLineMesh*	m_pMesh;
 	std::vector<int>	m_items;
 };
+
+// TODO: Is this a good place to put this?
+class GMesh;
+bool BuildSelectionMesh(FESelection* sel, GMesh& mesh);

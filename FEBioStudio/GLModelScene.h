@@ -60,6 +60,8 @@ public:
 
 	void UpdateFiberViz();
 
+	GMesh& GetSelectionMesh() { return m_selectionMesh; }
+
 private:
 	void RenderModel(CGLContext& rc);
 	void RenderGObject(CGLContext& rc, GObject* po);
@@ -88,10 +90,8 @@ private:
 	void RenderBeamParts       (CGLContext& rc, GObject* po);
 
 	// rendering functions for FEMeshes
-	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);
-	void RenderMeshLines    (CGLContext& rc, GObject* po);
 
 	void RenderSelectedFEFaces(CGLContext& rc, GObject* po);
 	void RenderSelectedFEElements(CGLContext& rc, GObject* po);
@@ -140,6 +140,7 @@ private:
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;
+	GMesh			m_selectionMesh;
 	
 	OBJECT_COLOR_MODE	m_objectColor;
 

@@ -415,13 +415,36 @@ void GSurfaceMeshObject::BuildGMesh()
 	}
 
 	// create face data
+	for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FSFace& fs = pm->Face(i);
 		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid, true, i);
+
+		// add additional edges for rendering meshlines
+		int ne = fs.Edges();
+		for (int j = 0; j < ne; ++j)
+		{
+			FSFace* pf = pm->FacePtr(fs.m_nbr[j]);
+			if ((pf == nullptr) || !pf->IsVisible() || (fs.m_ntag < pf->m_ntag))
+			{
+				FSEdge e = fs.GetEdge(j);
+				gmesh->AddEdge(e.n, e.Nodes(), Faces());
+			}
+		}
 	}
 
 	gmesh->Update();
+
+	// The update sorted the edges, so the edges for rendering meshlines will
+	// be at the back. However, they still have a pid set which will causes these
+	// edges to render as feature edges. So, we need to set them to -1
+	for (int i = 0; i < gmesh->Edges(); ++i)
+	{
+		GMesh::EDGE& edge = gmesh->Edge(i);
+		if (edge.pid == Faces()) edge.pid = -1;
+	}
+
 	SetRenderMesh(gmesh);
 }
 
