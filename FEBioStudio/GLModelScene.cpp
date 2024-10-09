@@ -368,8 +368,13 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 			}
 			else if (m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR)
 			{
-				GMesh* gm = po->GetFERenderMesh();
+				GMesh* gm = po->GetRenderMesh();
 				if (gm) RenderMeshByObjectColor(rc, *po, *gm);
+			}
+			else if (m_objectColor == OBJECT_COLOR_MODE::MATERIAL_TYPE)
+			{
+				GMesh* gm = po->GetRenderMesh();
+				if (gm) RenderMeshByMaterialType(rc, *po, *gm);
 			}
 			else RenderObject(rc, po);
 		}
@@ -2201,13 +2206,38 @@ void CGLModelScene::RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& m
 	m_renderer.RenderGMesh(mesh, shader);
 }
 
+GLColor GetMaterialTypeColor(GMaterial* mat)
+{
+	GLColor c;
+	if (mat == nullptr) return GLColor(205, 205, 205);
+	FSMaterial* pm = mat->GetMaterialProperties();
+	if (pm == nullptr) c = GLColor::Black();
+	else if (pm->IsRigid()) c = GLColor(200, 180, 175);
+	else
+	{
+		const char* sztype = pm->GetTypeString();
+		if (sztype)
+		{
+			if ((strcmp(sztype, "biphasic") == 0) ||
+				(strcmp(sztype, "triphasic") == 0) ||
+				(strcmp(sztype, "multiphasic") == 0))
+			{
+				c = GLColor(205, 164, 210);
+			}
+			else
+			{
+				c = GLColor(205, 102, 102);
+			}
+		}
+		else c = GLColor::Black();
+	}
+	return c;
+}
+
 void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh)
 {
 	if ((m_doc == nullptr) || !m_doc->IsValid()) return;
 	FSModel* fem = m_doc->GetFSModel();
-
-	FSMesh* pm = o.GetFEMesh();
-	if (pm == nullptr) return;
 
 	int nmat = 0;
 	for (int i = 0; i < fem->Materials(); ++i)
@@ -2221,22 +2251,21 @@ void CGLModelScene::RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
 		GMaterial* mat = fem->GetMaterial(i);
-
-		GLColor c(0, 0, 0);
-		FSMaterial* pm = mat->GetMaterialProperties();
-		if (pm == nullptr) c = GLColor(205, 205, 205);
-		else if (pm->IsRigid()) c = GLColor(200, 180, 175);
-		else c = GLColor(205, 102, 102);
-
+		GLColor c = GetMaterialTypeColor(mat);
 		shaders[mat->GetID()] = new GLStandardModelShader(c);
 	}
 
 	m_renderer.ClearShaders();
 	for (GLFacetShader* s : shaders) m_renderer.AddShader(s);
 
+	GLStandardModelShader defaultShader(GetMaterialTypeColor(nullptr));
+	m_renderer.SetDefaultShader(&defaultShader);
+
 	m_renderer.SetUseShaders(true);
 	m_renderer.RenderGMesh(mesh);
 	m_renderer.SetUseShaders(false);
+
+	m_renderer.SetDefaultShader(nullptr);
 }
 
 void CGLModelScene::RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh)
@@ -2738,16 +2767,8 @@ GLColor CGLModelScene::GetPartColor(CGLContext& rc, GPart* pg)
 	break;
 	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
 	{
-		GLColor c;
 		GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
-		if (gmat == nullptr) c = GLColor(200, 200, 200);
-		else
-		{
-			FSMaterial* pm = gmat->GetMaterialProperties();
-			if (pm == nullptr) c = GLColor(0, 0, 0);
-			else if (pm->IsRigid()) c = GLColor(210, 200, 164);
-			else c = GLColor(200, 128, 128);
-		}
+		GLColor c = GetMaterialTypeColor(gmat);
 		return c;
 	}
 	break;
@@ -2818,20 +2839,10 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	break;
 	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
 	{
-		GLColor c;
 		GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
-		if (gmat == nullptr) c = GLColor(200, 200, 200);
-		else
-		{
-			FSMaterial* pm = gmat->GetMaterialProperties();
-			if (pm == nullptr) c = GLColor(0, 0, 0);
-			else if (pm->IsRigid()) c = GLColor(210, 200, 164);
-			else c = GLColor(200, 128, 128);
-		}
+		GLColor c = GetMaterialTypeColor(gmat);
 		GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
-		col[0] = (float)c.r / 255.f;
-		col[1] = (float)c.g / 255.f;
-		col[2] = (float)c.b / 255.f;
+		c.toFloat(col);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
 	}
 	break;

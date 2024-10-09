@@ -112,7 +112,12 @@ GLStandardModelShader::GLStandardModelShader(const GLColor& c, bool useStipple) 
 void GLStandardModelShader::SetColor(const GLColor& c) 
 { 
 	m_col = c; 
-	if (IsActive()) glColor4ub(c.r, c.g, c.b, c.a);
+	if (IsActive())
+	{
+		GLfloat f[4] = { 0.f, 0.f, 0.f, 1.f };
+		m_col.toFloat(f);
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, f);
+	}
 }
 void GLStandardModelShader::SetUseStipple(bool b)
 { 
