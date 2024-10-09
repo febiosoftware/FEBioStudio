@@ -40,13 +40,17 @@ CHTMLBrowser::CHTMLBrowser(CMainWindow* wnd) : CDocumentView(wnd)
 
 void CHTMLBrowser::setDocument(CDocument* doc)
 {
-	CHTMLDocument* htmlDoc = dynamic_cast<CHTMLDocument*>(activeDocument());
+	CHTMLDocument* htmlDoc = dynamic_cast<CHTMLDocument*>(doc);
 	if (htmlDoc) m_txt->setDocument(htmlDoc->GetText());
-	else m_txt->setHtml(QString("\
+	else
+	{
+		QString html("\
 					<!DOCTYPE html>\
 					<html> \
 					<body style = \"background-color:#808080;\"> \
 					</body> \
-					</html>"\
-	));
+					</html>");
+		m_txt->setDocument(nullptr);
+		m_txt->setHtml(html);
+	}
 }
