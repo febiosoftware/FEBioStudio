@@ -290,6 +290,39 @@ void GLLineColorShader::Render(const GMesh::EDGE& e)
 	glx::line(e.vr[0], e.vr[1]);
 }
 
+
+GLNormalShader::GLNormalShader()
+{
+	m_scale = 1.f;
+}
+
+void GLNormalShader::Activate()
+{
+	GLLineShader::Activate();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+}
+
+void GLNormalShader::Deactivate()
+{
+	glPopAttrib();
+	GLLineShader::Deactivate();
+}
+
+void GLNormalShader::Render(const GMesh::EDGE& edge)
+{
+	vec3f r1 = edge.vr[0];
+	vec3f N = edge.vr[1];
+
+	GLfloat r = (GLfloat)fabs(N.x);
+	GLfloat g = (GLfloat)fabs(N.y);
+	GLfloat b = (GLfloat)fabs(N.z);
+
+	vec3f r2 = r1 + N * m_scale;
+
+	glx::line(r1, r2, GLColor::White(), GLColor::FromRGBf(r, g, b));
+}
+
 GLPointColorShader::GLPointColorShader()
 {
 }

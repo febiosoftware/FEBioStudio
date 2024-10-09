@@ -585,39 +585,16 @@ void CGLModel::BuildShaders()
 
 void CGLModel::RenderMeshLines(CGLContext& rc)
 {
-	FEPostModel* fem = GetFSModel();
-	if (fem == nullptr) return;
-	for (int m = 0; m < fem->Materials(); ++m)
-	{
-		// get the material
-		Material* pmat = fem->GetMaterial(m);
+	CPostObject* po = GetPostObject();
+	if (po == nullptr) return;
 
-		// make sure the material is visible
-		if (pmat->bvisible && pmat->bmesh)
-		{
-			// store attributes
-			glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+	GMesh* mesh = po->GetFERenderMesh();
+	if (mesh == nullptr) return;
 
-			glDisable(GL_LIGHTING);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-			if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
-
-			rc.m_cam->LineDrawMode(true);
-
-			// set the material properties
-			GLColor c = pmat->meshcol;
-			glColor4ub(c.r, c.g, c.b, 128);
-			RenderMeshLines(fem, m);
-
-			rc.m_cam->LineDrawMode(false);
-
-			CGLPlaneCutPlot::EnableClipPlanes();
-
-			// restore attributes
-			glPopAttrib();
-		}
-	}
+	GLColor c = rc.m_settings.m_meshColor;
+	c.a = 128;
+	GLLineColorShader lineShader(c);
+	m_render.RenderEdges(*mesh, lineShader);
 }
 
 //-----------------------------------------------------------------------------
@@ -1009,23 +986,6 @@ void CGLModel::RenderInnerSurfaces(bool b)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
-{
-	if (m_postObj == nullptr) return;
-	m_render.SetDivisions(ndivs);
-	if ((m>=0)&&(m<m_postObj->InternalSurfaces()))
-	{
-		Post::FEPostMesh* pm = GetActiveMesh();
-		GLSurface& inSurf = m_postObj->InteralSurface(m);
-		for (int i = 0; i < inSurf.Faces(); ++i)
-		{
-			FSFace& facet = inSurf.Face(i);
-			m_render.RenderFaceOutline(facet, pm);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // This algorithm is identical to the RenderOutline, except that it uses the
 // original coordinates instead of the current ones
 void CGLModel::RenderGhost(CGLContext &rc)
@@ -1332,66 +1292,16 @@ void CGLModel::RenderNormals(CGLContext& rc)
 {
 	// get the mesh
 	FEPostModel* ps = m_ps;
-	Post::FEPostMesh* pm = GetActiveMesh();
-
 	BOX box = ps->GetBoundingBox();
-
 	float scale = 0.05f*box.Radius()*m_scaleNormals;
 
-	// tag faces
-	for (int i = 0; i < pm->Faces(); ++i)
-	{
-		FSFace& face = pm->Face(i);
-		if (face.IsVisible()) face.m_ntag = 1; else face.m_ntag = 0;
-	}
+	GMesh* gm = GetPostObject()->GetFERenderMesh();
+	if (gm == nullptr) return;
 
-	// render the normals on the tagged faces
-	GLMeshRender render;
-	render.RenderNormals(pm, scale, 1);
+	GLNormalShader shader;
+	shader.SetScale(scale);
+	m_render.RenderNormals(*gm, shader);
 }
-
-//-----------------------------------------------------------------------------
-// Render the mesh lines for a specific material
-//
-void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
-{
-	// get the mesh
-	Post::FEPostMesh* pm = GetActiveMesh();
-
-	int ndivs = GetSubDivisions();
-	m_render.SetDivisions(ndivs);
-
-	// now loop over all faces and see which face belongs to this material
-	if (nmat < pm->Domains())
-	{
-		MeshDomain& dom = pm->Domain(nmat);
-		for (int i=0; i<dom.Faces(); ++i)
-		{
-			FSFace& face = dom.Face(i);
-			if (face.IsVisible())
-			{
-				// don't render lines on eroded elements
-				if ((face.m_elem[0].eid >= 0) && (pm->Element(face.m_elem[0].eid).IsEroded() == false))
-				{
-					// okay, we got one, so let's render it
-					m_render.RenderFaceOutline(face, pm);
-				}
-			}
-		}
-	}
-
-	int mode = GetSelectionType();
-	if (mode != SELECT_FE_FACES)
-	{
-		// draw elements
-		RenderInnerSurfaceOutline(nmat, ndivs);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Render the mesh lines of the model.
-
-///////////////////////////////////////////////////////////////////////////////
 
 void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 {

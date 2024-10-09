@@ -206,7 +206,6 @@ public:
 
 	void RenderDecorations();
 
-	void RenderMeshLines(FEPostModel* ps, int nmat);
 	void RenderShadows(FEPostModel* ps, const vec3d& lp, float inf);
 
 	void AddDecoration(GDecoration* pd);
@@ -216,8 +215,6 @@ public:
 	void RenderInnerSurfaces(bool b);
 
 protected:
-	void RenderInnerSurfaceOutline(int m, int ndivs);
-
 	void BuildShaders();
 
 public:

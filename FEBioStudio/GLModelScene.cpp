@@ -1433,7 +1433,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 					return (e.pid >= 0);
 					});
 
-				renderer.RenderOutline(rc, m, po->GetTransform(), (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+				renderer.RenderOutline(*rc.m_cam, m, po->GetTransform(), (rc.m_settings.m_nrender == RENDER_WIREFRAME));
 			}
 
 			glPopMatrix();
@@ -1786,7 +1786,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	outlineShader.Activate();
 	for (int surfId : selectedSurfaces)
 	{
-		renderer.RenderSurfaceOutline(rc, pm, po->GetTransform(), surfId);
+		renderer.RenderSurfaceOutline(*rc.m_cam, pm, po->GetTransform(), surfId);
 	}
 	outlineShader.Deactivate();
 }
@@ -1895,7 +1895,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 	outlineShader.Activate();
 	for (int surfId : facesToRender)
 	{
-		renderer.RenderSurfaceOutline(rc, m, po->GetTransform(), surfId);
+		renderer.RenderSurfaceOutline(*rc.m_cam, m, po->GetTransform(), surfId);
 	}
 	outlineShader.Deactivate();
 }
@@ -2651,35 +2651,16 @@ void CGLModelScene::RenderNormals(CGLContext& rc, GObject* po, double scale)
 
 	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == 0) return;
-
 	double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * scale;
 
-	glPushAttrib(GL_LIGHTING);
-	glDisable(GL_LIGHTING);
+	GMesh* mesh = po->GetFERenderMesh();
+	if (mesh == nullptr) mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
 
-	int NS = po->Faces();
-	vector<bool> vis(NS);
-	for (int n = 0; n < NS; ++n)
-	{
-		GFace* gface = po->Face(n);
-		vis[n] = po->IsFaceVisible(gface);
-	}
-
-	// tag the faces we want to render
-	int N = pm->Faces();
-	for (int i = 0; i < N; ++i)
-	{
-		FSFace& face = pm->Face(i);
-		bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
-		if (face.IsVisible() && bvis)
-		{
-			face.m_ntag = 1;
-		}
-		else face.m_ntag = 0;
-	}
-
+	GLNormalShader shader;
+	shader.SetScale(R);
 	GLMeshRender render;
-	render.RenderNormals(pm, R, 1);
+	render.RenderNormals(*mesh, shader);
 }
 
 //-----------------------------------------------------------------------------

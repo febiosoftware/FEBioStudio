@@ -23,19 +23,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include <FSCore/color.h>
-#include <functional>
-#include "GLMesh.h"
 #include <MeshLib/GMesh.h>
+#include "GLMesh.h"
 #include "GLShader.h"
+#include <functional>
 
-class FSFace;
-class FSCoreMesh;
-class FSMeshBase;
 class GMesh;
-class CGLContext;
+class CGLCamera;
 class Transform;
 
 class GLMeshRender
@@ -82,8 +78,8 @@ public:
 	void RenderEdges(const GMesh& m, GLLineShader& shader);
 
 
-	void RenderOutline(CGLContext& rc, GMesh* pm, const Transform& T, bool outline = false);
-	void RenderSurfaceOutline(CGLContext& rc, GMesh* pm, const Transform& T, int surfID);
+	void RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, bool outline = false);
+	void RenderSurfaceOutline(CGLCamera& cam, GMesh* pm, const Transform& T, int surfID);
 
 	void RenderPoints(GMesh& mesh);
 	void RenderPoints(GMesh& mesh, GLPointShader& shader);
@@ -91,32 +87,7 @@ public:
 	void RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc);
 
 public:
-	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList);
-
-	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
-	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
-	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
-
-public:
-	void RenderNormals(FSMeshBase* pm, float scale, int tag);
-
-private:
-	// drawing routines for faces
-	void RenderFEFace(const FSFace& face, FSMeshBase* pm);
-	void RenderFace(FSFace& face, FSCoreMesh* pm);
-	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4]);
-
-	void RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor c[4]);
-
-public:
-	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm);
-
-private:
-	// special render routines for thick shells
-	void RenderThickShell(const FSFace& face, FSCoreMesh* pm);
-	void RenderThickQuad(const FSFace& face, FSCoreMesh* pm);
-	void RenderThickTri(const FSFace& face, FSCoreMesh* pm);
-	void RenderThickShellOutline(FSFace& face, FSCoreMesh* pm);
+	void RenderNormals(const GMesh& gm, GLLineShader& shader);
 
 public:
 	int			m_ndivs;			//!< divisions for smooth render

@@ -160,6 +160,19 @@ private:
 	GLColor m_col;
 };
 
+class GLNormalShader : public GLLineShader
+{
+public:
+	GLNormalShader();
+	void SetScale(float s) { m_scale = s; }
+	void Activate() override;
+	void Deactivate() override;
+	void Render(const GMesh::EDGE& edge) override;
+
+private:
+	float m_scale;
+};
+
 class GLPointColorShader : public GLPointShader
 {
 public:

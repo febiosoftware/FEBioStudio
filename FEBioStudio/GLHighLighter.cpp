@@ -198,7 +198,7 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 
 	GLOutlineShader outlineShader(c);
 	outlineShader.Activate();
-	renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), face->GetLocalID());
+	renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetTransform(), face->GetLocalID());
 	outlineShader.Deactivate();
 
 	glPopMatrix();
@@ -236,7 +236,7 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	outlineShader.Activate();
 	for (int surfID : faceList)
 	{
-		renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), surfID);
+		renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetTransform(), surfID);
 	}
 	outlineShader.Deactivate();
 
@@ -282,15 +282,24 @@ void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLCo
 	{
 		SetModelView(po);
 
-		GLSelectionShader shader(c);
-		shader.Activate();
-		renderer.RenderFEFaces(mesh, faceList);
-		shader.Deactivate();
+		GMesh gmesh;
+		gmesh.NewPartition();
+		int m[FSFace::MAX_NODES];
+		for (int n : faceList)
+		{
+			const FSFace& face = mesh->Face(n);
+			int nf = face.Nodes();
+			for (int i = 0; i < nf; ++i)
+			{
+				vec3f r = to_vec3f(mesh->Node(face.n[i]).r);
+				m[i] = gmesh.AddNode(r);
+			}
+			gmesh.AddFace(m, nf);
+		}
+		gmesh.Update();
 
-		GLOutlineShader outlineShader(c);
-		outlineShader.Activate();
-		renderer.RenderFEFacesOutline(mesh, faceList);
-		outlineShader.Deactivate();
+		GLSelectionShader shader(c);
+		renderer.RenderGMesh(gmesh, shader);
 	}
 	glPopMatrix();
 }
