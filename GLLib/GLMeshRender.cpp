@@ -59,20 +59,6 @@ void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
 void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
 void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
 
-// drawing routines for edges
-// Note: Call this from within glBegin(GL_LINES)\glEnd() section
-void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
-
-//-----------------------------------------------------------------------------
-extern int ET_HEX[12][2];
-extern int ET_HEX20[12][3];
-extern int ET_TET[6][2];
-extern int ET_PENTA[9][2];
-extern int ET_PENTA15[9][3];
-extern int ET_TET10[6][3];
-extern int ET_PYRA5[8][2];
-extern int ET_PYRA13[8][3];
-
 GLMeshRender::GLMeshRender()
 {
 	m_bShell2Solid = false;
@@ -201,14 +187,24 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 
 void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 {
-	GLFacetShader* shader = m_defaultShader;
-	if (shader == nullptr) return;
 	if ((surfID < 0) || (surfID >= (int)mesh.Partitions())) return;
 	const GMesh::PARTITION& p = mesh.Partition(surfID);
 	if (p.nf > 0)
 	{
 		int NF = p.nf;
 		int n0 = p.n0;
+		// It's assumed that the default shader has already been activated!
+		GLFacetShader* shader = m_defaultShader;
+		if (m_useShaders)
+		{
+			int shaderID = mesh.Face(n0).mid;
+			if ((shaderID >= 0) && (shaderID < m_shaders.size()))
+			{
+				shader = m_shaders[shaderID];
+				shader->Activate();
+			}
+		}
+		if (shader == nullptr) return;
 		glBegin(GL_TRIANGLES);
 		{
 			for (int i = 0; i < NF; ++i)
@@ -217,6 +213,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 			}
 		}
 		glEnd();
+		if (shader != m_defaultShader) shader->Deactivate();
 	}
 }
 
@@ -471,21 +468,6 @@ void GLMeshRender::RenderEdges(const GMesh& m, GLLineShader& shader)
 	shader.Deactivate();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<FSFace>& faceList, std::function<bool(const FSFace& face)> f)
-{
-	if (faceList.empty()) return;
-	glBegin(GL_TRIANGLES);
-	{
-		for (const FSFace& face : faceList)
-		{
-			if (f(face)) RenderFEFace(face, pm);
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList)
 {
 	if (faceList.empty()) return;
@@ -500,70 +482,6 @@ void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceLis
 	glEnd();
 }
 
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace& face)> f)
-{
-	glBegin(GL_TRIANGLES);
-	{
-		int faces = (int)pm->Faces();
-		for (int i = 0; i<faces; ++i)
-		{
-			FSFace& face = pm->Face(i);
-			if (f(face)) RenderFEFace(face, pm);
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face)> f)
-{
-	if (faceList.empty()) return;
-	glBegin(GL_TRIANGLES);
-	{
-		for (int i : faceList)
-		{
-			FSFace& face = pm->Face(i);
-			if (f(face)) RenderFEFace(face, pm);
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face, GLColor* c)> f)
-{
-	if (faceList.empty()) return;
-	GLColor c[FSFace::MAX_NODES];
-	glBegin(GL_TRIANGLES);
-	{
-		for (int i : faceList)
-		{
-			FSFace& face = pm->Face(i);
-			if (f(face, c)) RenderFace(face, pm, c);
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f)
-{
-	GLColor c[FSFace::MAX_NODES];
-	glBegin(GL_TRIANGLES);
-	{
-		int faces = (int)pm->Faces();
-		for (int i = 0; i < faces; ++i)
-		{
-			FSFace& face = pm->Face(i);
-			if (f(face, c)) RenderFace(face, pm, c);
-		}
-	}
-	glEnd();
-
-}
-
-//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList)
 {
 	glBegin(GL_LINES);
@@ -1097,42 +1015,6 @@ void GLMeshRender::RenderThickShellOutline(FSFace &face, FSCoreMesh* pm)
 	}
 
 	if (btex) glEnable(GL_TEXTURE_1D);
-}
-
-//-----------------------------------------------------------------------------
-// Assumes that we are inside glBegin(GL_LINES)\glEnd()
-void RenderFEEdge(FSEdge& edge, FSLineMesh* pm)
-{
-	const vec3d& r1 = pm->Node(edge.n[0]).r;
-	const vec3d& r2 = pm->Node(edge.n[1]).r;
-
-	switch (edge.Nodes())
-	{
-	case 2:
-	{
-		glx::vertex3d(r1);
-		glx::vertex3d(r2);
-	}
-	break;
-	case 3:
-	{
-		const vec3d& r3 = pm->Node(edge.n[2]).r;
-		glx::vertex3d(r1); glx::vertex3d(r3);
-		glx::vertex3d(r3); glx::vertex3d(r2);
-	}
-	break;
-	case 4:
-	{
-		const vec3d& r3 = pm->Node(edge.n[2]).r;
-		const vec3d& r4 = pm->Node(edge.n[3]).r;
-		glx::vertex3d(r1); glx::vertex3d(r3);
-		glx::vertex3d(r3); glx::vertex3d(r4);
-		glx::vertex3d(r4); glx::vertex3d(r2);
-	}
-	break;
-	default:
-		assert(false);
-	}
 }
 
 //-----------------------------------------------------------------------------

@@ -2413,17 +2413,16 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 		RenderObject(rc, po);
 	}
 
-	// render the selected faces
-	GLSelectionShader shader(GLColor(255, 64, 0));
-	shader.Activate();
-	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
-	shader.Deactivate();
+	RenderSelection(rc);
+}
 
-	// render the selected face outline
-	GLOutlineShader outlineShader(GLColor(255, 255, 0));
-	outlineShader.Activate();
-	renderer.RenderFEFacesOutline(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
-	outlineShader.Deactivate();
+void CGLModelScene::RenderSelection(CGLContext& rc)
+{
+	GLSelectionShader shader;
+	m_renderer.RenderGMesh(m_selectionMesh, shader);
+
+	GLOutlineShader outlineShader(GLColor::Yellow());
+	m_renderer.RenderEdges(m_selectionMesh, outlineShader);
 }
 
 //-----------------------------------------------------------------------------

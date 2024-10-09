@@ -188,9 +188,6 @@ public:
 	void RenderEdges(FEPostModel* ps, CGLContext& rc);
 	void RenderFaces(FEPostModel* ps, CGLContext& rc);
 	void RenderElems(FEPostModel* ps, CGLContext& rc);
-	void RenderSurface(FEPostModel* ps, CGLContext& rc);
-
-	void RenderElemsNew(FEPostModel* ps, CGLContext& rc);
 
 public:
 	void RenderMeshLines(CGLContext& rc);
@@ -219,13 +216,9 @@ public:
 	void RenderInnerSurfaces(bool b);
 
 protected:
-	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
-	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool activeOnly);
-	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, bool benable, bool zsort, bool activeOnly);
-
-	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);
+
+	void BuildShaders();
 
 public:
 	float CurrentTime() const;
@@ -364,8 +357,6 @@ protected:
 	// --- Selection ---
 	SelectionType	m_selectType;		//!< current selection type (node, edge, face, elem)
 	int				m_selectStyle;		//!< selection style (box, circle, rect)
-
-	bool m_useNewRenderEngine;
 };
 
 // This class provides a convenient way to loop over all the plots in a model, traversing

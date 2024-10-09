@@ -75,6 +75,7 @@ private:
 	void RenderDiscrete(CGLContext& rc);
 	void RenderMeshLines(CGLContext& rc);
 	void RenderFeatureEdges(CGLContext& rc);
+	void RenderSelection(CGLContext& rc);
 
 private:
 	// rendering functions for GObjects
