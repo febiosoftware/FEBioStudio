@@ -63,10 +63,6 @@ public:
 	void PopState();
 
 public:
-	void RenderLineLoop(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3);
-	void RenderLines(vec3d* r, int n);
-
-public:
 	void RenderGMesh(const GMesh& mesh);
 	void RenderGMesh(const GMesh& mesh, GLFacetShader& shader);
 	void RenderGMesh(const GMesh& mesh, int surfID);

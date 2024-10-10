@@ -78,27 +78,6 @@ void GLMeshRender::PopState()
 	glPopAttrib();
 }
 
-void GLMeshRender::RenderLineLoop(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3)
-{
-	glBegin(GL_LINE_LOOP);
-	{
-		glx::vertex3d(r0);
-		glx::vertex3d(r1);
-		glx::vertex3d(r2);
-		glx::vertex3d(r3);
-	}
-	glEnd();
-}
-
-void GLMeshRender::RenderLines(vec3d* r, int n)
-{
-	glBegin(GL_LINES);
-	{
-		for (int i = 0; i < n; ++i) glx::vertex3d(r[i]);
-	}
-	glEnd();
-}
-
 void GLMeshRender::RenderGMesh(const GMesh& mesh)
 {
 	if (!m_useShaders || m_shaders.empty()) return;

@@ -1384,6 +1384,34 @@ void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
 	glx::drawLine(a, b);
 }
 
+void glx::renderRigidWall(double R)
+{
+	glColor4ub(128, 96, 0, 96);
+	glRectd(-R, -R, R, R);
+
+	glColor3ub(164, 128, 0);
+	glBegin(GL_LINE_LOOP);
+	{
+		glx::vertex3d(vec3d(-R, -R, 0));
+		glx::vertex3d(vec3d(R, -R, 0));
+		glx::vertex3d(vec3d(R, R, 0));
+		glx::vertex3d(vec3d(-R, R, 0));
+	}
+	glEnd();
+
+	vec3d r[6];
+	r[0] = vec3d(0, 0, 0); r[1] = vec3d(0, 0, R / 2);
+	r[2] = vec3d(0, 0, R / 2); r[3] = vec3d(-R * 0.1, 0, R * 0.4);
+	r[4] = vec3d(0, 0, R / 2); r[5] = vec3d(R * 0.1, 0, R * 0.4);
+	glBegin(GL_LINES);
+	{
+		glx::vertex3d(r[0]); glx::vertex3d(r[1]);
+		glx::vertex3d(r[2]); glx::vertex3d(r[3]);
+		glx::vertex3d(r[4]); glx::vertex3d(r[5]);
+	}
+	glEnd();
+}
+
 inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
 {
 	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);

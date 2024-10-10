@@ -630,17 +630,7 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 				{
 					glTranslated(p.x, p.y, p.z);
 					glx::rotate(q);
-					glColor4ub(128, 96, 0, 96);
-					glRectd(-R, -R, R, R);
-
-					glColor3ub(164, 128, 0);
-					m_renderer.RenderLineLoop(vec3d(-R, -R, 0), vec3d(R, -R, 0), vec3d(R, R, 0), vec3d(-R, R, 0));
-
-					vec3d r[6];
-					r[0] = vec3d(0, 0,   0); r[1] = vec3d( 0, 0, R / 2);
-					r[2] = vec3d(0, 0, R/2); r[3] = vec3d(-R * 0.1, 0, R * 0.4);
-					r[4] = vec3d(0, 0, R/2); r[5] = vec3d( R * 0.1, 0, R * 0.4);
-					m_renderer.RenderLines(r, 6);
+					glx::renderRigidWall(R);
 				}
 				glPopMatrix();
 			}
