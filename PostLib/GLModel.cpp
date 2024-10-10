@@ -293,6 +293,7 @@ bool CGLModel::Update(bool breset)
 			{
 				m_postObj->SetFEMesh(postMesh);
 				m_postObj->Update(true);
+				UpdateInternalSurfaces(false);
 			}
 			if (postMesh) postMesh->UpdateBoundingBox();
 
