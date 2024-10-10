@@ -297,6 +297,7 @@ bool CGLModel::Update(bool breset)
 			if (postMesh) postMesh->UpdateBoundingBox();
 
 			m_postObj->UpdateMesh();
+			UpdateSelectionMesh();
 		}
 	}
 

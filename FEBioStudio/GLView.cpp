@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <GLWLib/GLSafeFrame.h>
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLComposite.h>
+#include "GLModelScene.h"
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -866,7 +867,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				m_rt += dr;
 				ps->Translate(dr);
 
-				if (activeObject) activeObject->UpdateFERenderMesh();
+				if (activeObject)
+				{
+					activeObject->UpdateFERenderMesh();
+					CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetActiveScene());
+					if (scene) scene->UpdateSelectionMesh(ps);
+				}
 
 				m_pWnd->OnSelectionTransformed();
 			}

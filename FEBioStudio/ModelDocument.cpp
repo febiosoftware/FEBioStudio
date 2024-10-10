@@ -768,9 +768,8 @@ void CModelDocument::UpdateSelection(bool report)
 		}
 	}
 
-	CGLModelScene* m_scene = dynamic_cast<CGLModelScene*>(GetScene());
-	GMesh& mesh = m_scene->GetSelectionMesh();
-	BuildSelectionMesh(m_psel, mesh);
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetScene());
+	if (scene) scene->UpdateSelectionMesh(m_psel);
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
