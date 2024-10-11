@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/MeshLayer.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include <FEMLib/FERigidLoad.h>
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddObject
