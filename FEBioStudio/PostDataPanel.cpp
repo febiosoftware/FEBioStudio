@@ -749,8 +749,8 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 
 	DATA_FORMAT frm = pdf->Format();
 	ui->convFmt->clear();
-	if (frm != DATA_ITEM) ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
-	if (frm != DATA_NODE) ui->convFmt->addItem("NODE", (int)DATA_NODE);
+	ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
+	ui->convFmt->addItem("NODE", (int)DATA_NODE);
 
 	DATA_CLASS cls = pdf->DataClass();
 	ui->convClass->clear();
@@ -760,6 +760,7 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 	else if (cls == ELEM_DATA)
 	{
 		ui->convClass->addItem("Elem", (int)ELEM_DATA);
+		ui->convClass->addItem("Face", (int)FACE_DATA);
 		ui->convClass->addItem("Node", (int)NODE_DATA);
 	}
 }
