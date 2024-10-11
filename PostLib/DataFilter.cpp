@@ -1397,8 +1397,6 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	DATA_TYPE ntype = dataField->Type();
 	int nfmt = dataField->Format();
 
-	if (newFormat == nfmt) return nullptr;
-
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	ModelDataField* newField = nullptr;
@@ -1745,6 +1743,42 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 				}
 			}
 		}
+		else if ((nclass == ELEM_DATA) && (newClass == FACE_DATA))
+		{
+			if ((nfmt == DATA_ITEM) && (newFormat == DATA_ITEM))
+			{
+				newField = new FEDataField_T<FEFaceData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, name);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NE = mesh.Elements();
+				int NF = mesh.Faces();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					FEElemData_T<float, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&state->m_Data[nold]);
+					FEFaceData<float, DATA_ITEM>* pnew = dynamic_cast<FEFaceData<float, DATA_ITEM>*>(&state->m_Data[nnew]);
+
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& face = mesh.Face(i);
+						if (face.IsExternal())
+						{
+							int eid = face.m_elem[0].eid;
+							if (pold->active(eid))
+							{
+								float v; pold->eval(eid, &v);
+								pnew->add(i, v);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	else if (ntype == DATA_VEC3)
 	{
@@ -1795,6 +1829,42 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 				}
 			}
 		}
+		else if ((nclass == ELEM_DATA) && (newClass == FACE_DATA))
+		{
+			if ((nfmt == DATA_ITEM) && (newFormat == DATA_ITEM))
+			{
+				newField = new FEDataField_T<FEFaceData<vec3f, DATA_ITEM> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, name);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NE = mesh.Elements();
+				int NF = mesh.Faces();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					FEElemData_T<vec3f, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&state->m_Data[nold]);
+					FEFaceData<vec3f, DATA_ITEM>* pnew = dynamic_cast<FEFaceData<vec3f, DATA_ITEM>*>(&state->m_Data[nnew]);
+
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& face = mesh.Face(i);
+						if (face.IsExternal())
+						{
+							int eid = face.m_elem[0].eid;
+							if (pold->active(eid))
+							{
+								vec3f v; pold->eval(eid, &v);
+								pnew->add(i, v);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	else if (ntype == DATA_MAT3S)
 	{
@@ -1842,6 +1912,42 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					}
 
 					for (int i = 0; i < NN; ++i) (*pnew)[i] = data[i];
+				}
+			}
+		}
+		else if ((nclass == ELEM_DATA) && (newClass == FACE_DATA))
+		{
+			if ((nfmt == DATA_ITEM) && (newFormat == DATA_ITEM))
+			{
+				newField = new FEDataField_T<FEFaceData<mat3fs, DATA_ITEM> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, name);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NE = mesh.Elements();
+				int NF = mesh.Faces();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					FEElemData_T<mat3fs, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&state->m_Data[nold]);
+					FEFaceData<mat3fs, DATA_ITEM>* pnew = dynamic_cast<FEFaceData<mat3fs, DATA_ITEM>*>(&state->m_Data[nnew]);
+
+					for (int i = 0; i < NF; ++i)
+					{
+						FSFace& face = mesh.Face(i);
+						if (face.IsExternal())
+						{
+							int eid = face.m_elem[0].eid;
+							if (pold->active(eid))
+							{
+								mat3fs v; pold->eval(eid, &v);
+								pnew->add(i, v);
+							}
+						}
+					}
 				}
 			}
 		}

@@ -2570,6 +2570,7 @@ void FEBioExport4::WriteElementDataFields()
 			{
 				FEElementData& data = *meshData;
 				const FSElemSet* pg = data.GetElementSet();
+				if (pg == nullptr) throw InvalidItemListBuilder(meshData);
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();
