@@ -102,6 +102,8 @@ BOX CGLModelScene::GetSelectionBox()
 
 void CGLModelScene::Render(CGLContext& rc)
 {
+	m_renderer.ResetStats();
+
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
 	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
@@ -3339,4 +3341,9 @@ bool BuildSelectionMesh(FESelection* sel, GMesh& mesh)
 void CGLModelScene::UpdateSelectionMesh(FESelection* sel)
 {
 	BuildSelectionMesh(sel, m_selectionMesh);
+}
+
+GLRenderStats CGLModelScene::GetRenderStats()
+{
+	return m_renderer.GetRenderStats();
 }

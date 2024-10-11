@@ -1639,7 +1639,7 @@ void CGLView::RenderCanvas(CGLContext& rc)
 			GLRenderStats stats = scene->GetRenderStats();
 			rt.setY(rt.y() + fontSize + 5);
 			float tris = (float)stats.triangles;
-			QChar suffix;
+			QChar suffix(' ');
 			if      (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
 			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
 			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);

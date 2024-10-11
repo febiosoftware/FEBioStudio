@@ -64,6 +64,8 @@ public:
 
 	void UpdateSelectionMesh(FESelection* sel);
 
+	GLRenderStats GetRenderStats();
+
 private:
 	void RenderModel(CGLContext& rc);
 	void RenderGObject(CGLContext& rc, GObject* po);
