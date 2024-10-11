@@ -997,7 +997,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
             {
 				SetSelection(0, hil->GetItemList(0), false);
             }
-            // It doesn't make sense to change the selection of FEMeshData objects
+			// TODO: This actually prevents the user from making an initial assignment, 
+			//       so need to come up with a different solution here. 
+/*            // It doesn't make sense to change the selection of FEMeshData objects
             else if(dynamic_cast<FEMeshData*>(m_currentObject))
             {
                 CItemListSelectionBox* sel = ui->selectionPanel(0);
@@ -1007,6 +1009,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
                 sel->enableRemoveButton(false);
                 sel->enableDeleteButton(false);
             }
+*/
 			else
             {
                 SetSelection(0, hil->GetItemList(0), true);
