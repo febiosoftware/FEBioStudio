@@ -24,51 +24,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/box.h>
-#include <GLLib/GView.h>
-#include <GLLib/GLRenderStats.h>
-#include "GGrid.h"
-#include <QString>
 
-class CGLContext;
-
-class CGLScene
+struct GLRenderStats
 {
-public:
-	CGLScene();
-	virtual ~CGLScene();
+	size_t triangles = 0;
 
-	CGView& GetView();
-
-	virtual void Update();
-
-	virtual void Render(CGLContext& rc) = 0;
-
-	// get the bounding box of the entire scene
-	virtual BOX GetBoundingBox() = 0;
-
-	// get the bounding box of the current selection
-	virtual BOX GetSelectionBox() = 0;
-
-	CGLCamera& GetCamera() { return m_view.GetCamera(); }
-
-public:
-	GGrid& GetGrid() { return m_grid; }
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
-
-	void SetEnvironmentMap(QString filename) { m_envMap = filename; }
-	void ActivateEnvironmentMap();
-	void DeactivateEnvironmentMap();
-	void LoadEnvironmentMap();
-
-	virtual GLRenderStats GetRenderStats() { return GLRenderStats(); }
-
-protected:
-	CGView	m_view;
-	GGrid	m_grid;		// the grid object
-
-	unsigned int	m_envtex;	// enironment texture ID
-	QString m_envMap; // file name used for environment mapping 
+	void clear()
+	{
+		triangles = 0;
+	}
 };

@@ -433,6 +433,8 @@ void CGLModel::RemoveDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::Render(CGLContext& rc)
 {
+	m_render.ResetStats();
+
 	if (GetFSModel() == nullptr) return;
 	if (GetActiveMesh() == nullptr) return;
 

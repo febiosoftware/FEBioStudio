@@ -2678,7 +2678,7 @@ void CGLModelScene::RenderNormals(CGLContext& rc, GObject* po, double scale)
 
 	GLNormalShader shader;
 	shader.SetScale(R);
-	GLMeshRender render;
+	GLMeshRender& render = GetMeshRenderer();
 	render.RenderNormals(*mesh, shader);
 }
 

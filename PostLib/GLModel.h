@@ -179,6 +179,8 @@ public:
 	// call this to render the model
 	void Render(CGLContext& rc);
 
+	GLMeshRender& GetMeshRenderer() { return m_render; }
+
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
 	void RenderObjects(CGLContext& rc);

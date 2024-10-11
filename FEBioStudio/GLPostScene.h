@@ -41,6 +41,8 @@ public:
 
 	void ToggleTrackSelection();
 
+	GLRenderStats GetRenderStats() override;
+
 private:
 	void RenderImageData(CGLContext& rc);
 

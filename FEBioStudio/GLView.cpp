@@ -1623,13 +1623,27 @@ void CGLView::RenderCanvas(CGLContext& rc)
 	// stop time
 	if (m_showFPS)
 	{
+		QRect rt = rect();
 		QTextOption to;
 		QFont font = painter.font();
-		font.setPointSize(12);
+		const int fontSize = 20;
+		font.setPixelSize(fontSize);
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rect(), QString("FPS: %1").arg(m_fps), to);
+		painter.drawText(rt, QString("FPS: %1").arg(m_fps), to);
+
+		CGLScene* scene = GetActiveScene();
+		if (scene)
+		{
+			GLRenderStats stats = scene->GetRenderStats();
+			rt.setY(rt.y() + fontSize + 5);
+			float tris = (float)stats.triangles;
+			QChar suffix;
+			if      (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
+			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
+			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
+		}
 	}
 
 	painter.end();

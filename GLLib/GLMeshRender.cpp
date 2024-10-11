@@ -44,6 +44,16 @@ GLMeshRender::GLMeshRender()
 	m_defaultShader = nullptr;
 }
 
+void GLMeshRender::ResetStats()
+{
+	m_stats.clear();
+}
+
+GLRenderStats GLMeshRender::GetRenderStats()
+{
+	return m_stats;
+}
+
 void GLMeshRender::SetUseShaders(bool b)
 {
 	m_useShaders = b;
@@ -116,6 +126,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 					}
 				}
 				glEnd();
+				m_stats.triangles += nf;
 			}
 		}
 	}
@@ -135,6 +146,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 	}
 	glEnd();
 	shader.Deactivate();
+	m_stats.triangles += NF;
 }
 
 void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
@@ -166,6 +178,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 		}
 		glEnd();
 		if (shader != m_defaultShader) shader->Deactivate();
+		m_stats.triangles += NF;
 	}
 }
 
@@ -187,6 +200,7 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID, GLFacetShader& sha
 		}
 		glEnd();
 		shader.Deactivate();
+		m_stats.triangles += NF;
 	}
 }
 

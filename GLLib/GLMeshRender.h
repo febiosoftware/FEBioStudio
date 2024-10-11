@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 #include "GLMesh.h"
 #include "GLShader.h"
+#include "GLRenderStats.h"
 #include <functional>
 
 class GMesh;
@@ -51,6 +52,10 @@ public:
 	void SetPointSize(float f) { m_pointSize = f; }
 
 	void SetDivisions(int ndivs) { m_ndivs = ndivs; }
+
+public:
+	void ResetStats();
+	GLRenderStats GetRenderStats();
 
 public:
 	void SetUseShaders(bool b);
@@ -95,6 +100,7 @@ public:
 	bool		m_useShaders;		//!< use the shaders
 
 private:
+	GLRenderStats m_stats;
 	GLTriMesh	m_glmesh;
 	std::vector<GLFacetShader*> m_shaders;
 	GLFacetShader* m_defaultShader;

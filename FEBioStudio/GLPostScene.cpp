@@ -59,6 +59,15 @@ BOX CGLPostScene::GetSelectionBox()
 	return box;
 }
 
+GLRenderStats CGLPostScene::GetRenderStats()
+{
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return GLRenderStats();
+
+	Post::CGLModel* gm = m_doc->GetGLModel();
+	if (gm) return gm->GetMeshRenderer().GetRenderStats();
+	return GLRenderStats();
+}
+
 void CGLPostScene::Render(CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
