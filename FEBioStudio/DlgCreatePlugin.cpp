@@ -69,7 +69,9 @@ void CDlgCreatePlugin::accept()
 	// collect input fields
 	QString pluginName   = ui->mainPage->m_name->text();
 	QString pluginPath   = ui->mainPage->m_path->resourceName();
-	QString pluginModule = ui->mainPage->m_mod->currentText();
+
+	int modid = ui->mainPage->m_mod->currentData().toInt();
+	QString pluginModule = (modid != -1 ? ui->mainPage->m_mod->currentText() : "");
 
 	QString className = ui->configPage->m_className->text();
 	QString typeStr = ui->configPage->m_typeString->text();

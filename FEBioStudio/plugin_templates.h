@@ -72,6 +72,19 @@ const char* szmain = \
 "	REGISTER_FECORE_CLASS($(CLASS_NAME), \"$(CLASS_TYPESTRING)\");\n"\
 "}\n";
 
+const char* szmain_no_module = \
+"#include <FECore\\FECoreKernel.h>\n" \
+"#include \"$(CLASS_NAME).h\"\n\n"\
+"FECORE_EXPORT unsigned int GetSDKVersion()\n" \
+"{\n" \
+"	return FE_SDK_VERSION;\n" \
+"}\n\n"\
+"FECORE_EXPORT void PluginInitialize(FECoreKernel& febio)\n"\
+"{\n"\
+"	FECoreKernel::SetInstance(&febio);\n\n"\
+"	REGISTER_FECORE_CLASS($(CLASS_NAME), \"$(CLASS_TYPESTRING)\");\n"\
+"}\n";
+
 // ============================================================================
 // elastic materials
 // ============================================================================
@@ -355,4 +368,54 @@ const char* szsrc_task = \
 "	//       To run the forward model, call FEModel::Solve()\n"\
 "	//       To reset the model, call FEModel::Reset()\n"\
 "	return fem->Solve();\n"\
+"}\n";
+
+// ============================================================================
+// Linear Solver
+// ============================================================================
+const char* szhdr_ls = \
+"#include <FECore\\LinearSolver.h>\n\n" \
+"class $(CLASS_NAME) : public LinearSolver\n" \
+"{\n" \
+"public:\n" \
+"	$(CLASS_NAME)(FEModel* fem);\n\n"\
+"	~$(CLASS_NAME)();\n\n"\
+"	bool PreProcess() override;\n\n"\
+"	bool Factor() override;\n\n"\
+"	bool BackSolve(double* x, double* y) override;\n\n"\
+"	void Destroy() override;\n\n"\
+"	SparseMatrix* CreateSparseMatrix(Matrix_Type ntype) override;\n\n"\
+"	bool SetSparseMatrix(SparseMatrix* pA) override;\n\n"\
+"};\n";
+
+const char* szsrc_ls = \
+"#include \"$(CLASS_NAME).h\"\n\n"\
+"$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : LinearSolver(fem)\n"\
+"{\n"\
+"}\n\n"\
+"$(CLASS_NAME)::~$(CLASS_NAME)()\n"\
+"{\n"\
+"}\n\n"\
+"bool $(CLASS_NAME)::PreProcess()\n"\
+"{\n"\
+"	return true;\n"
+"}\n\n"\
+"bool $(CLASS_NAME)::Factor()\n"\
+"{\n"\
+"	return true;\n"
+"}\n\n"\
+"bool $(CLASS_NAME)::BackSolve(double* x, double* y)\n"\
+"{\n"\
+"	return true;\n"
+"}\n\n"\
+"void $(CLASS_NAME)::Destroy()\n"\
+"{\n"\
+"}\n\n"\
+"SparseMatrix* $(CLASS_NAME)::CreateSparseMatrix(Matrix_Type ntype)\n"\
+"{\n"\
+"	return nullptr;\n"
+"}\n\n"\
+"bool $(CLASS_NAME)::SetSparseMatrix(SparseMatrix* pA)\n"\
+"{\n"\
+"	return false;\n"
 "}\n";

@@ -204,10 +204,19 @@ public:
 	}
 };
 
+class CLinearSolverProps : public CPluginTemplate
+{
+public:
+	CLinearSolverProps() : CPluginTemplate("Linear solver", szhdr_ls, szsrc_ls)
+	{
+		SetInfo("Implement a new linear solver.");
+	}
+};
+
 //=============================================================================
 // Try to keep this in alphabetical order
 // NOTE: remember to increase PLUGIN_TEMPLATES when adding a new template.
-const int PLUGIN_TEMPLATES = 7;
+const int PLUGIN_TEMPLATES = 8;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CCallbackProps(),
 	new CElasticMaterialProps(),
@@ -215,7 +224,8 @@ CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CLogDataProps(),
 	new CPlotDataProps(),
 	new CSurfaceLoadProps(),
-	new CTaskProps()
+	new CTaskProps(),
+	new CLinearSolverProps()
 };
 
 CMainPage::CMainPage()
@@ -234,13 +244,13 @@ CMainPage::CMainPage()
 
 	m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
 
-	QStringList modList;
+	m_mod->addItem("(none)", -1);
 	std::vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
 	for (auto& mod : modules)
 	{
-		modList.append(mod.m_szname);
+		m_mod->addItem(mod.m_szname, mod.m_id);
+
 	}
-	m_mod->addItems(modList);
 
 	setLayout(f);
 
@@ -459,12 +469,23 @@ bool GeneratePluginFiles(const PluginConfig& config)
 		}
 		else
 		{
-			QString mainText = cppcomment + QString(szmain);
-			mainText = mainText.replace("$(PLUGIN_NAME)", config.name);
-			mainText = mainText.replace("$(CLASS_NAME)", config.className);
-			mainText = mainText.replace("$(PLUGIN_MODULE)", config.febioModule);
-			mainText = mainText.replace("$(CLASS_TYPESTRING)", config.typeString);
-			if (!GenerateFile(config.mainFile, mainText)) return false;
+			if (config.febioModule.isEmpty())
+			{
+				QString mainText = cppcomment + QString(szmain_no_module);
+				mainText = mainText.replace("$(PLUGIN_NAME)", config.name);
+				mainText = mainText.replace("$(CLASS_NAME)", config.className);
+				mainText = mainText.replace("$(CLASS_TYPESTRING)", config.typeString);
+				if (!GenerateFile(config.mainFile, mainText)) return false;
+			}
+			else
+			{
+				QString mainText = cppcomment + QString(szmain);
+				mainText = mainText.replace("$(PLUGIN_NAME)", config.name);
+				mainText = mainText.replace("$(CLASS_NAME)", config.className);
+				mainText = mainText.replace("$(PLUGIN_MODULE)", config.febioModule);
+				mainText = mainText.replace("$(CLASS_TYPESTRING)", config.typeString);
+				if (!GenerateFile(config.mainFile, mainText)) return false;
+			}
 		}
 	}
 
