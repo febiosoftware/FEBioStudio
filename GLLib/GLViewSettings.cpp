@@ -45,6 +45,7 @@ void GLViewSettings::Defaults(int ntheme)
 	m_fibLineStyle = 0;
 	m_fiber_scale = 1.0;
 	m_fiber_width = 1.0;
+	m_fiber_density = 1.0;
 
 	m_bcontour = false;
 	m_blma = false;

@@ -93,6 +93,7 @@ struct GLViewSettings
 	bool	m_blma;		//!< show local material axes
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	double	m_fiber_width;	//!< line width
+	double	m_fiber_density; //!< density of fibers
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
 	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
 

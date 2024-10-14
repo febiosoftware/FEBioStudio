@@ -45,6 +45,7 @@ public:
 	CMainWindow* m_wnd;
 	QSlider* m_scale;
 	QSlider* m_width;
+	QSlider* m_density;
 	QComboBox* m_style;
 	QComboBox* m_color;
 	QCheckBox* m_selOnly;
@@ -67,11 +68,16 @@ public:
 		m_width->setOrientation(Qt::Horizontal);
 		m_width->setRange(0, 100);
 
+		m_density = new QSlider;
+		m_density->setOrientation(Qt::Horizontal);
+		m_density->setRange(0, 100);
+
 		QFormLayout* f = new QFormLayout;
 		f->addRow("Color by:", m_color);
 		f->addRow("Scale factor:", m_scale);
 		f->addRow("Line width:", m_width);
 		f->addRow("Line style:", m_style);
+		f->addRow("Density:", m_density);
 		f->addRow("Selected objects only:", m_selOnly = new QCheckBox);
 		f->addRow("Show fibers on hidden parts:", m_showHidden = new QCheckBox);
 
@@ -84,6 +90,7 @@ public:
 		QObject::connect(m_color, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_scale, SIGNAL(valueChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_width, SIGNAL(valueChanged(int)), dlg, SLOT(onDataChanged()));
+		QObject::connect(m_density, SIGNAL(valueChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_style, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_selOnly, SIGNAL(clicked(bool)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_showHidden, SIGNAL(clicked(bool)), dlg, SLOT(onDataChanged()));
@@ -127,6 +134,7 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 
 	double v = view.m_fiber_scale;
 	double w = view.m_fiber_width;
+	double d = view.m_fiber_density;
 	bool bhf = view.m_showHiddenFibers;
 	bool bsf = view.m_showSelectFibersOnly;
 	int c = view.m_fibColor;
@@ -137,6 +145,8 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 
 	int m = double_to_int(w);
 	ui->m_width->setValue(m);
+
+	ui->m_density->setValue((int)(100.0 * d));
 
 	ui->m_color->setCurrentIndex(c);
 	ui->m_style->setCurrentIndex(ls);
@@ -165,6 +175,10 @@ void CDlgFiberViz::onDataChanged()
 	double v = int_to_double(ui->m_scale->value());
 	double w = int_to_double(ui->m_width->value());
 
+	double d = ui->m_density->value() / 100.0;
+	if (d < 0) d = 0;
+	else if (d > 1) d = 1;
+
 	bool selonly = ui->m_selOnly->isChecked();
 	bool hiddenFibers = ui->m_showHidden->isChecked();
 
@@ -179,6 +193,7 @@ void CDlgFiberViz::onDataChanged()
 	view.m_fibColor = ncol;
 	view.m_fiber_scale = v;
 	view.m_fiber_width = w;
+	view.m_fiber_density = d;
 	view.m_fibLineStyle = nstyle;
 	view.m_showSelectFibersOnly = selonly;
 	view.m_showHiddenFibers = hiddenFibers;

@@ -998,11 +998,18 @@ public:
 	void SetScaleFactor(double s) { m_scale = s; }
 	void SetLineStyle(int n) { m_lineStyle = n; }
 	void SetLineWidth(double l) { m_lineWidth = l; }
+	void SetDensity(double d)
+	{
+		if (d < 0) m_density = 0;
+		else if (d > 1) m_density = 1;
+		else m_density = d;
+	}
 
 private:
 	int		m_colorOption = 0;
 	int		m_lineStyle = 0;
 	double	m_lineWidth = 1.0;
+	double	m_density = 1.0;
 	GLColor	m_defaultCol;
 	double	m_scale = 1.0;
 	GLUquadricObj* m_glyph = nullptr;
@@ -1027,10 +1034,17 @@ void GLFiberRenderer::Init()
 	}
 }
 
+
+
 void GLFiberRenderer::RenderFibers()
 {
+	srand(0);
 	for (auto& fiber : m_fibers)
-		RenderFiber(fiber);
+	{
+		double r = (double)rand() / (double)RAND_MAX;
+		if (r < m_density)
+			RenderFiber(fiber);
+	}
 }
 
 void GLFiberRenderer::RenderFiber(const GLFiberRenderer::FIBER& fiber)
@@ -1303,6 +1317,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
 	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
 	fiberRender.SetLineStyle(view.m_fibLineStyle);
+	fiberRender.SetDensity(view.m_fiber_density);
 
 	fiberRender.Init();
 	fiberRender.RenderFibers();
