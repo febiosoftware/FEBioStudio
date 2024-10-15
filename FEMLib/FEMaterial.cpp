@@ -3591,7 +3591,19 @@ void FEBioMaterial::Load(IArchive& ar)
 
 bool FEBioMaterial::UpdateData(bool bsave)
 {
-	if (bsave) FEBio::UpdateFEBioClass(this);
+	if (bsave)
+	{
+		FEBio::UpdateFEBioClass(this);
+		for (int i = 0; i < Properties(); ++i)
+		{
+			FSProperty& p = GetProperty(i);
+			for (int j = 0; j < p.Size(); ++j)
+			{
+				FSCoreBase* pj = p.GetComponent(j);
+				if (pj) pj->UpdateData(bsave);
+			}
+		}
+	}
 	return false;
 }
 

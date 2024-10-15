@@ -1136,6 +1136,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
 	fiberRender.SetLineWidth(h * view.m_fiber_width * 0.1);
 	fiberRender.SetLineStyle(view.m_fibLineStyle);
+	fiberRender.SetDensity(view.m_fiber_density);
 
 	fiberRender.Init();
 	fiberRender.RenderVectors();

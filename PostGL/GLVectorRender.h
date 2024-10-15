@@ -56,6 +56,7 @@ public:
 	void SetScaleFactor(double s);
 	void SetLineStyle(int n);
 	void SetLineWidth(double l);
+	void SetDensity(double d);
 
 private:
 	void RenderVector(const VECTOR& fiber);

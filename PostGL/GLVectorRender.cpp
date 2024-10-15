@@ -33,6 +33,7 @@ public:
 	int		lineStyle = 0;
 	double	lineWidth = 1.0;
 	double	scale = 1.0;
+	double	density = 1.0;
 	GLUquadricObj* glyph = nullptr;
 
 	std::vector<VECTOR>	vectors;
@@ -52,6 +53,7 @@ void GLVectorRenderer::Clear() { m.vectors.clear(); }
 void GLVectorRenderer::SetScaleFactor(double s) { m.scale = s; }
 void GLVectorRenderer::SetLineStyle(int n) { m.lineStyle = n; }
 void GLVectorRenderer::SetLineWidth(double l) { m.lineWidth = l; }
+void GLVectorRenderer::SetDensity(double d) { m.density = d; }
 
 void GLVectorRenderer::Init()
 {
@@ -72,8 +74,13 @@ void GLVectorRenderer::Init()
 
 void GLVectorRenderer::RenderVectors()
 {
+	srand(0);
 	for (auto& vector : m.vectors)
-		RenderVector(vector);
+	{
+		double r = (double)rand() / (double)RAND_MAX;
+		if (r < m.density)
+			RenderVector(vector);
+	}
 }
 
 void GLVectorRenderer::RenderVector(const GLVectorRenderer::VECTOR& vector)
