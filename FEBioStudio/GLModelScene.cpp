@@ -368,16 +368,6 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc, po);
 			}
-			else if (m_objectColor == OBJECT_COLOR_MODE::OBJECT_COLOR)
-			{
-				GMesh* gm = po->GetRenderMesh();
-				if (gm) RenderMeshByObjectColor(rc, *po, *gm);
-			}
-			else if (m_objectColor == OBJECT_COLOR_MODE::MATERIAL_TYPE)
-			{
-				GMesh* gm = po->GetRenderMesh();
-				if (gm) RenderMeshByMaterialType(rc, *po, *gm);
-			}
 			else RenderObject(rc, po);
 		}
 		break;
@@ -2205,7 +2195,7 @@ GLColor GetMaterialTypeColor(GMaterial* mat)
 	if (mat == nullptr) return GLColor(205, 205, 205);
 	FSMaterial* pm = mat->GetMaterialProperties();
 	if (pm == nullptr) c = GLColor::Black();
-	else if (pm->IsRigid()) c = GLColor(200, 180, 175);
+	else if (pm->IsRigid()) c = GLColor(210, 205, 200);
 	else
 	{
 		const char* sztype = pm->GetTypeString();
