@@ -207,6 +207,8 @@ public:
 
 	void SetCurrentState(int n);
 
+	void GenerateReport(bool b);
+
 private:
 	void updateWindowTitle();
 

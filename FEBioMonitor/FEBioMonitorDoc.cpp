@@ -150,6 +150,7 @@ public:
 	bool	isPaused;
 	bool	pauseRequested;
 	bool	usePauseTime;
+	bool	generateReport;
 	double	pauseTime;
 	double	progressPct;
 	double	time;
@@ -184,6 +185,7 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(ne
 	m->pauseEvents = CB_ALWAYS;
 	m->currentEvent = 0;
 	m->usePauseTime = false;
+	m->generateReport = false;
 	m->pauseTime = 0.0;
 	m->time = 0.0;
 	m->debugLevel = 0;
@@ -396,14 +398,17 @@ void FEBioMonitorDoc::onJobFinished(bool b)
 	}
 
 	// generate detailed report
-	CMainWindow* wnd = GetMainWindow();
-	CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
-	doc->setJob(m->job);
-	wnd->AddDocument(doc);
+	if (m->generateReport)
+	{
+		CMainWindow* wnd = GetMainWindow();
+		CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+		doc->setJob(m->job);
+		wnd->AddDocument(doc);
 
-	updateWindowTitle();
-	
-	wnd->UpdateTab(m->job->GetDocument());
+		updateWindowTitle();
+
+		wnd->UpdateTab(m->job->GetDocument());
+	}
 
 	m->job = nullptr;
 }
@@ -536,6 +541,11 @@ void FEBioMonitorDoc::SetCurrentState(int n)
 	if (scene == nullptr) return;
 	scene->GetFSModel()->SetCurrentTimeIndex(n);
 	scene->UpdateScene();
+}
+
+void FEBioMonitorDoc::GenerateReport(bool b)
+{
+	m->generateReport = b;
 }
 
 QString eventToString(int nevent)

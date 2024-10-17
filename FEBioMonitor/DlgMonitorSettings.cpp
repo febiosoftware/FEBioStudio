@@ -49,6 +49,7 @@ public:
 	QComboBox* m_pauseEvents;
 	QCheckBox* m_enablePauseTime;
 	QCheckBox* m_variableNorms;
+	QCheckBox* m_generateReport;
 	CFloatInput* m_pauseTime;
 	QComboBox* m_debugMode;
 	QCheckBox* m_recordStates;
@@ -113,6 +114,9 @@ public:
 		settingsLayout->addWidget(m_variableNorms);
 		settingsLayout->addLayout(h);
 
+		m_generateReport = new QCheckBox("generate job report");
+		settingsLayout->addWidget(m_generateReport);
+
 		b->setLayout(settingsLayout);
 		l->addWidget(b);
 
@@ -151,6 +155,8 @@ public:
 	bool GetRecordStatesFlag() { return m_recordStates->isChecked(); }
 
 	bool CollectVariableNorms() { return m_variableNorms->isChecked(); }
+
+	bool GenerateJobReport() { return m_generateReport->isChecked(); }
 };
 
 CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
@@ -217,5 +223,6 @@ void CDlgMonitorSettings::accept()
 	m_doc->SetRecordStatesFlag(ui->GetRecordStatesFlag());
 	m_doc->SetUpdateEvents(ui->GetUpdateEvents());
 	m_doc->CollectVariableNorms(ui->CollectVariableNorms());
+	m_doc->GenerateReport(ui->GenerateJobReport());
 	QDialog::accept();
 }

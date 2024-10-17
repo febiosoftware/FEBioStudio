@@ -257,10 +257,14 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		// generate detailed report (for local jobs)
 		if (im->launchConfig && (im->launchConfig->type() == CLaunchConfig::DEFAULT))
 		{
-			CMainWindow* wnd = im->wnd;
-			CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
-			doc->setJob(job);
-			wnd->AddDocument(doc);
+			CDefaultLaunchConfig* defaultConfig = dynamic_cast<CDefaultLaunchConfig*>(im->launchConfig);
+			if (defaultConfig && defaultConfig->GenerateJobReport())
+			{
+				CMainWindow* wnd = im->wnd;
+				CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+				doc->setJob(job);
+				wnd->AddDocument(doc);
+			}
 		}
 	}
 	else
