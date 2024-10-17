@@ -516,13 +516,24 @@ public:
 		pclass->addItem("Face");
 		pclass->addItem("Elem");
 
+		QHBoxLayout* h = new QHBoxLayout();
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(pclass);
+		h->addStretch();
+		pl->addRow("Class:", h);
+
+		// NOTE: This assumes the same order as DATA_TYPE enum (see MeshLib\enums.h)
 		ptype = new QComboBox;
 		ptype->addItem("float (1 fl)");
-		ptype->addItem("vec3f (3 fl)");
-		ptype->addItem("mat3fs (6 fl)");
+		ptype->addItem("vec3 (3 fl)");
+		ptype->addItem("mat3 (9 fl)");
+		ptype->addItem("mat3s (6 fl)");
 
-		pl->addRow("Class:", pclass);
-		pl->addRow("Type:", ptype);
+		h = new QHBoxLayout();
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(ptype);
+		h->addStretch();
+		pl->addRow("Type:", h);
 
 		pv->addLayout(pl);
 
@@ -539,7 +550,11 @@ public:
 
 CDlgAddDataFile::CDlgAddDataFile(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddDataFile)
 {
+	setWindowTitle("Import Datafile");
+	setMinimumSize(600, 300);
 	ui->setupUi(this);
+	m_nclass = 0;
+	m_ntype = 0;
 }
 
 void CDlgAddDataFile::accept()
