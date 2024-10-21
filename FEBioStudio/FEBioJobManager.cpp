@@ -147,7 +147,6 @@ void CFEBioJobManager::KillJob()
 		if (job)
 		{
 			job->SetStatus(CFEBioJob::CANCELLED);
-			CFEBioJob::SetActiveJob(nullptr);
 		}
 	}
 }
