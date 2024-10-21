@@ -611,6 +611,8 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
             GetParam(6).SetState(Param_ALLFLAGS);
             GetParam(7).SetState(Param_ALLFLAGS);
             break;
+		default:
+			return false;
 		}
 
 		return true;
