@@ -434,6 +434,7 @@ void GSurfaceMeshObject::BuildGMesh()
 		}
 	}
 
+	gmesh->AutoPartition();
 	gmesh->Update();
 
 	// The update sorted the edges, so the edges for rendering meshlines will
