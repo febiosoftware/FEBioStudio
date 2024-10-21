@@ -61,6 +61,7 @@ private slots:
 	void on_materialList_itemClicked(QTableWidgetItem* item);
 	void on_matprops_dataChanged(int nprop);
 	void on_filter_textChanged(const QString& txt);
+	void on_highlightButton_toggled(bool);
 
 private:
 	Ui::CMaterialPanel*	ui;

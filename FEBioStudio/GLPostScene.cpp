@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <MeshTools/FESelection.h>
 #include <PostLib/PostObject.h>
+#include "GLHighlighter.h"
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
 {
@@ -199,6 +200,9 @@ void CGLPostScene::Render(CGLContext& rc)
 
 	// render the image data
 	RenderImageData(rc);
+
+	// render the highlights
+	GLHighlighter::draw();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

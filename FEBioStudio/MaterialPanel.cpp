@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Material.h>
 #include <PostLib/GLModel.h>
+#include "GLHighlighter.h"
 
 class MaterialProps : public CPropertyList
 {
@@ -119,6 +120,7 @@ public:
 	QTableWidget*			m_list;
 	::CPropertyListView*	m_prop;
 	QLineEdit* m_flt;
+	QToolButton* highlightButton;
 
 	bool update;
 
@@ -131,9 +133,17 @@ public:
 		pg->setContentsMargins(0,0,0,0);
 
 		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(highlightButton = new QToolButton);
 		h->addWidget(new QLabel("Filter:"));
 		h->addWidget(m_flt = new QLineEdit); m_flt->setObjectName("filter");
 		pg->addLayout(h);
+
+		highlightButton->setIcon(QIcon(":/icons/select_highlight.png"));
+		highlightButton->setObjectName("highlightButton");
+		highlightButton->setAutoRaise(true);
+		highlightButton->setToolTip("<font color=\"black\">Toggle selection highlighting");
+		highlightButton->setCheckable(true);
+		highlightButton->setChecked(false);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -390,8 +400,31 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 				mdl.ResetAllStates();
 				mdl.Update(true);
 			}
-			GetMainWindow()->RedrawGL();
 		}
+
+		GLHighlighter::ClearHighlights();
+		if (ui->highlightButton->isChecked() && (imat >= 0))
+		{
+			// find all the parts that belong to this material
+			CPostObject* po = mdl.GetPostObject();
+			if (po)
+			{
+				vector<GPart*> parts;
+				for (int i = 0; i < po->Parts(); ++i)
+				{
+					GPart* pg = po->Part(i);
+					if (pg && pg->GetMaterialID() == imat)
+					{
+						parts.push_back(pg);
+					}
+				}
+
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part, 0);
+			}
+		}
+
+		GetMainWindow()->RedrawGL();
 	}
 }
 
@@ -404,6 +437,11 @@ void CMaterialPanel::SetItemColor(int index, GLColor c)
 void CMaterialPanel::on_filter_textChanged(const QString& txt)
 {
 	Update(true);
+}
+
+void CMaterialPanel::on_highlightButton_toggled(bool)
+{
+	on_materialList_itemClicked(ui->m_list->currentItem());
 }
 
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
