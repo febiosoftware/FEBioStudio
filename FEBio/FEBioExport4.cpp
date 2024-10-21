@@ -1680,8 +1680,13 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 				el.add_attribute("name", pi->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					m_xml.add_leaf("primary", GetSurfaceName(pss, true));
-					m_xml.add_leaf("secondary", GetSurfaceName(pms, true));
+					const char* szprimary   = GetSurfaceName(pss, true);
+					const char* szsecondary = GetSurfaceName(pms, true);
+					if ((szprimary == nullptr) || (szsecondary == nullptr))
+						throw InvalidItemListBuilder(pi);
+
+					m_xml.add_leaf("primary", szprimary);
+					m_xml.add_leaf("secondary", szsecondary);
 				}
 				m_xml.close_branch();
 			}
