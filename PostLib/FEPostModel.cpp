@@ -404,6 +404,16 @@ void InterpolateMeshData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::
 			case DATA_MAT3S: InterpolateFaceData<mat3fs, DATA_NODE>(data, data0, data1, w); break;
 			}
 		}
+		else if (data.GetFormat() == DATA_REGION)
+		{
+			switch (data.GetType())
+			{
+			case DATA_SCALAR: InterpolateFaceData<float , DATA_REGION>(data, data0, data1, w); break;
+			case DATA_VEC3  : InterpolateFaceData<vec3f , DATA_REGION>(data, data0, data1, w); break;
+			case DATA_MAT3  : InterpolateFaceData<mat3f , DATA_REGION>(data, data0, data1, w); break;
+			case DATA_MAT3S : InterpolateFaceData<mat3fs, DATA_REGION>(data, data0, data1, w); break;
+			}
+		}
 	}
 	else if (dynamic_cast<FEElemItemData*>(&data))
 	{

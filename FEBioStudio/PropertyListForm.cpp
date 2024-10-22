@@ -638,9 +638,11 @@ void CPropertyListForm::updateData()
 						QComboBox* pc = qobject_cast<QComboBox*>(pw);
 						if (pc)
 						{
+							pc->blockSignals(true);
 							pc->clear();
 							pc->addItems(pi.values);
 							pc->setCurrentIndex(v.toInt());
+							pc->blockSignals(false);
 						}
 					}
 					break;
