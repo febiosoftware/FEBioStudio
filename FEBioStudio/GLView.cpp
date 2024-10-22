@@ -1391,15 +1391,14 @@ void CGLView::initializeGL()
 		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
-		m_pframe->set_layer(0); // permanent widget
 
 		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
 		m_menu = new GVContextMenu(this);
-		m_menu->set_layer(0);
-		m_Widget->AddWidget(m_menu);
+		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
+		m_Widget->AddWidget(m_menu, 0);
 	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
@@ -1602,6 +1601,12 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		if (m_legend)
 		{
 			if (doc->ShowLegend()) m_legend->show(); else m_legend->hide();
+		}
+		if (m_menu)
+		{
+			// only show menu on model docs
+			if (dynamic_cast<CModelDocument*>(doc)) m_menu->show();
+			else m_menu->hide();
 		}
 
 		int layer = doc->GetWidgetLayer();
