@@ -863,7 +863,7 @@ void CMainWindow::OpenDocument(const QString& fileName)
 		int majv = FBS_MAJOR_VERSION(fileVersion);
 		int minv = FBS_MINOR_VERSION(fileVersion);
 
-		QString msg = QString("This file was created with an older version of FEBio Studio and needs to converted.\nDo you wish to continue?\n(File version: %1.%2)").arg(majv).arg(minv);
+		QString msg = QString("This file was created with an older version of FEBio Studio and needs to be converted.\nDo you wish to continue?\n(File version: %1.%2)").arg(majv).arg(minv);
 		if (QMessageBox::question(this, "FEBio Studio", msg) != QMessageBox::Yes)
 		{
 			delete reader;
