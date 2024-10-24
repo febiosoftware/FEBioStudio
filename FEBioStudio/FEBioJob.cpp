@@ -63,6 +63,8 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 
 	m_writeNotes = true;
 	m_allowMixedMesh = false;
+
+	m_sshHandler = nullptr;
 }
 
 CFEBioJob::~CFEBioJob()
