@@ -92,7 +92,7 @@ FSMesh::FSMesh(FSMesh& m)
 	m_box = m.m_box;
 
 	// don't copy object (two meshes cannot be owned by the same object)
-	m_pobj = 0;
+	m_pobj = nullptr;
 }
 
 //-----------------------------------------------------------------------------

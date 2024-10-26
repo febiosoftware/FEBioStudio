@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FEElementData.h>
 #include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
@@ -144,6 +145,39 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	// copy the mesh from the original object
 	FSMesh* pm = new FSMesh(*po->GetFEMesh());
 	SetFEMesh(pm);
+
+	// copy the named selections
+	for (int i = 0; i < po->FEPartSets(); ++i)
+	{
+		FSPartSet* ps = po->GetFEPartSet(i);
+		FSPartSet* pd = new FSPartSet(this);
+		pd->add(ps->CopyItems());
+		pd->SetName(ps->GetName());
+		AddFEPartSet(pd);
+	}
+
+	// copy the mesh data
+	FSMesh* ms = po->GetFEMesh();
+	FSMesh* md = GetFEMesh();
+	for (int i = 0; i < ms->MeshDataFields(); ++i)
+	{
+		FEMeshData* mds = ms->GetMeshDataField(i);
+		if (dynamic_cast<FEPartData*>(mds))
+		{
+			FEPartData* pds = dynamic_cast<FEPartData*>(mds);
+			FEItemListBuilder* ls = pds->GetItemList();
+			FSPartSet* pg = FindFEPartSet(ls->GetName()); assert(pg);
+
+			if (pg)
+			{
+				FEPartData* pdd = new FEPartData(md);
+				pdd->Create(pg, pds->GetDataType(), pds->GetDataFormat());
+				pdd->SetData(pds->GetData());
+				pdd->SetName(pds->GetName());
+				md->AddMeshDataField(pdd);
+			}
+		}
+	}
 
 	// rebuild the GMesh
 	BuildGMesh();

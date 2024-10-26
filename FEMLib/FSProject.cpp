@@ -2049,10 +2049,20 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		{
 			FSModel* fem = febStep.GetFSModel();
 			LoadCurve* lc = oldStep.GetMustPointLoadCurve();
-			if (lc && (lc->GetID() >= 0) && (lc->GetID() < fem->LoadControllers()))
+			if (lc)
 			{
-				FSLoadController* plc = fem->GetLoadController(lc->GetID());
-				timeStepper->GetParam("dtmax")->SetLoadCurveID(plc->GetID());
+				FSLoadController* plc = nullptr;
+				int lcID = lc->GetID();
+				if ((lcID >= 0) && (lcID < fem->LoadControllers()))
+				{
+					plc = fem->GetLoadController(lc->GetID());
+				}
+				else
+				{
+					plc = fem->AddLoadCurve(*lc);
+				}
+				if (plc)
+					timeStepper->GetParam("dtmax")->SetLoadCurveID(plc->GetID());
 			}
 		}
 	}

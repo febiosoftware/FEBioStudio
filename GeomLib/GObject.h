@@ -266,6 +266,8 @@ public:
 	void InsertFENodeSet(int n, FSNodeSet* pg);
 	void InsertFEPartSet(int n, FSPartSet* pg);
 
+	FSPartSet* FindFEPartSet(const std::string& name);
+
 	FSGroup* FindFEGroup(int nid);
 
 	FSSurface* FindFESurface(const string& szname);

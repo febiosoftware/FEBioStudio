@@ -628,6 +628,16 @@ void GObject::InsertFEEdgeSet(int n, FSEdgeSet* pg) { imp->m_pFEEdgeSet.Insert(n
 //-----------------------------------------------------------------------------
 void GObject::InsertFENodeSet(int n, FSNodeSet* pg) { imp->m_pFENodeSet.Insert(n, pg); }
 
+FSPartSet* GObject::FindFEPartSet(const std::string& name)
+{
+	for (int i = 0; i < FEPartSets(); ++i)
+	{
+		FSPartSet* pg = GetFEPartSet(i);
+		if (pg->GetName() == name) return pg;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 void GObject::CollapseTransform()
 {
