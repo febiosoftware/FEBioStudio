@@ -73,6 +73,7 @@ NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
 	AddBoolParam(true, "Use local mesh modifiers");
 	AddDoubleParam(0, "Grading (0 = use default)");
 	AddDoubleParam(1000.0, "Max element size");
+    AddDoubleParam(1.0, "Min element size");
 	AddIntParam(3, "Nr. 2D optimization steps");
 	AddIntParam(5, "Nr. 3D optimization steps");
 	AddBoolParam(false, "Second-order mesh");
@@ -162,6 +163,7 @@ FSMesh*	NetGenMesher::BuildMesh()
     // NOTE: Do this before creating the OCCGeometry
     mp.uselocalh = (GetBoolValue(NetGenMesher::USELOCALH) ? 1 : 0);
     mp.maxh = GetFloatValue(NetGenMesher::MAXELEMSIZE);
+    mp.minh = GetFloatValue(NetGenMesher::MINELEMSIZE);
     mp.grading = GetFloatValue(NetGenMesher::GRADING);
     mp.optsteps_2d = GetIntValue(NetGenMesher::NROPT2D);
     mp.optsteps_3d = GetIntValue(NetGenMesher::NROPT3D);
@@ -172,9 +174,6 @@ FSMesh*	NetGenMesher::BuildMesh()
     mp.optsurfmeshenable = 1;
     mp.quad_dominated = 0;
     if (m_occ->GetShape().ShapeType() == TopAbs_SHELL) mp.quad_dominated = GetBoolValue(NetGenMesher::QUADMESH) ? 1 : 0;
-    
-    // make sure grading is not zero
-    if (mp.grading == 0.0) mp.grading = 0.001;
     
     switch (gran) {
         case 0:
