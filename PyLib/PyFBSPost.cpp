@@ -93,6 +93,9 @@ void init_FBSPost(py::module& m)
     post.def("readPlotFile", &readPlotFile);
     post.def("runDistanceMap", &runDistanceMap);
 
+    InitStandardDataFields();
+    post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField));
+
 	py::class_<Material>(post, "Material")
 		.def("setColor", &Material::setColor)
 		.def("name", &Material::GetName)
@@ -119,7 +122,11 @@ void init_FBSPost(py::module& m)
         .def("surfaces", &FEPostMesh::Surfaces)
         .def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
         .def("nodesets", &FEPostMesh::NodeSets)
-        .def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference);
+        .def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference)
+        .def("nodes", &FEPostMesh::Nodes)
+        .def("elements", &FEPostMesh::Elements)
+        .def("elemsets", &FEPostMesh::ElemSets)
+        .def("elemset", &FEPostMesh::ElemSet, py::return_value_policy::reference);
 
 	py::class_<Post::FSSurface>(post, "FESurface")
         .def_readonly("faces", &Post::FSSurface::m_Face, py::return_value_policy::reference)
@@ -128,6 +135,10 @@ void init_FBSPost(py::module& m)
 	py::class_<Post::FSNodeSet>(post, "FSNodeSet")
         .def_readonly("nodes", &Post::FSNodeSet::m_Node, py::return_value_policy::reference)
         .def("name", &Post::FSNodeSet::GetName);
+
+    py::class_<Post::FSElemSet>(post, "FSElemSet")
+        .def_readonly("elems", &Post::FSElemSet::m_Elem, py::return_value_policy::reference)
+        .def("name", &Post::FSElemSet::GetName);
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
