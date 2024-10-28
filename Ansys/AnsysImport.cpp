@@ -134,7 +134,7 @@ bool AnsysImport::read_EBLOCK()
 		ELEM e;
 		int* n = e.n;
 		fgets(m_szline, 255, m_fp);
-		int np = sscanf(m_szline, "%*d%*d%*d%*d%*d%*d%*d%*d%d%*d%d%d%d%d%d%d%d%d%d", &e.nn, &e.eid, n,n+1,n+2,n+3,n+4,n+5,n+6,n+7);
+		int np = sscanf(m_szline, "%d%*d%*d%*d%*d%*d%*d%*d%d%*d%d%d%d%d%d%d%d%d%d", &e.mid, &e.nn, &e.eid, n,n+1,n+2,n+3,n+4,n+5,n+6,n+7);
 		if ((e.nn == 4) || (e.nn == 8)) m_Elem.push_back(e);
 		if (e.nn == 10)
 		{
@@ -196,7 +196,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 	{
 		FEElement_* pe = pm->ElementPtr(i);
 
-		pe->m_gid = 0;
+		pe->m_gid = ih->mid;
 		ih->tag = i;
 		int* n = ih->n;
 		if (ih->nn == 8)
@@ -322,6 +322,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 	}
 
 	// update the mesh
+	pm->UpdateElementPartitions();
 	pm->RebuildMesh();
 	GObject* po = new GMeshObject(pm);
 
