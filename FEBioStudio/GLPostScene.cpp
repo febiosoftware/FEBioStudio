@@ -26,11 +26,11 @@ SOFTWARE.*/
 #include "GLPostScene.h"
 #include "GLView.h"
 #include "PostDocument.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <GLLib/glx.h>
 #include <MeshTools/FESelection.h>
-#include <PostLib/PostObject.h>
+#include <PostGL/PostObject.h>
 #include "GLHighlighter.h"
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)

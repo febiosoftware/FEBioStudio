@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "Animation.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
+#include <PostGL/ColorTexture.h>
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLMirrorPlane.h"
-#include <PostLib/GLModel.h>
+#include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
 using namespace Post;
 

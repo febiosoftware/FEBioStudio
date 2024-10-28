@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Material.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
 
 class MaterialProps : public CPropertyList

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
 #include <GLLib/GLMesh.h>
+#include "ColorTexture.h"
 namespace Post {
 
 //-----------------------------------------------------------------------------

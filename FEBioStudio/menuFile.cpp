@@ -92,7 +92,7 @@ SOFTWARE.*/
 #include "version.h"
 #include "PostDocument.h"
 #include <PostGL/GLColorMap.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
@@ -114,7 +114,7 @@ SOFTWARE.*/
 #include <PostLib/VTKImport.h>
 #include <ImageLib/TiffReader.h>
 #include <sstream>
-#include <PostLib/PostObject.h>
+#include <PostGL/PostObject.h>
 #include "DlgScreenCapture.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>

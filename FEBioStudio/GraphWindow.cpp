@@ -48,7 +48,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QSignalMapper>
 #include <PostGL/GLDataMap.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "version.h"
 #include <QValidator>
 #include <QComboBox>

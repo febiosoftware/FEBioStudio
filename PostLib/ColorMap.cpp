@@ -23,19 +23,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "ColorMap.h"
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
 #include <assert.h>
 #include <string>
 //using namespace std;
@@ -274,108 +263,6 @@ void CColorMap::Invert()
 		m_col[i] = m_col[m_ncol-i-1];
 		m_col[m_ncol-i-1] = c;
 	}
-}
-
-//=============================================================================
-CColorTexture::CColorTexture()
-{
-	m_colorMap = ColorMapManager::GetDefaultMap();
-	m_ndivs = 10;
-	m_bsmooth = true;
-
-	UpdateTexture();
-}
-
-CColorTexture::CColorTexture(const CColorTexture& col)
-{
-	m_colorMap = col.m_colorMap;
-	m_ndivs = col.m_ndivs;
-	m_bsmooth = col.m_bsmooth;
-
-	m_tex = col.m_tex;
-}
-
-void CColorTexture::operator = (const CColorTexture& col)
-{
-	m_colorMap = col.m_colorMap;
-	m_ndivs = col.m_ndivs;
-	m_bsmooth = col.m_bsmooth;
-
-	m_tex = col.m_tex;
-}
-
-void CColorTexture::UpdateTexture()
-{
-	int n = m_tex.Size();
-	GLubyte* pb = m_tex.GetBytes();
-
-	int N = (m_bsmooth ? n : m_ndivs);
-	if (N < 2) N = 2;
-
-	// make sure the color map points to an existing map
-	if ((m_colorMap < 0) || (m_colorMap >= ColorMapManager::ColorMaps())) m_colorMap = ColorMapManager::GetDefaultMap();
-	CColorMap& map = ColorMapManager::GetColorMap(m_colorMap);
-
-	GLColor c;
-	for (int i = 0; i<n; i++, pb += 3)
-	{
-		float f = (float)(i*N / n);
-
-		c = map.map(f / (N - 1));
-
-		pb[0] = c.r;
-		pb[1] = c.g;
-		pb[2] = c.b;
-	}
-
-	m_tex.Update();
-}
-
-int CColorTexture::GetDivisions() const
-{
-	return m_ndivs;
-}
-
-void CColorTexture::SetDivisions(int n)
-{
-	if (n != m_ndivs)
-	{
-		m_ndivs = n;
-		UpdateTexture();
-	}
-}
-
-bool CColorTexture::GetSmooth() const
-{
-	return m_bsmooth;
-}
-
-void CColorTexture::SetSmooth(bool b)
-{
-	if (b != m_bsmooth)
-	{
-		m_bsmooth = b;
-		UpdateTexture();
-	}
-}
-
-void CColorTexture::SetColorMap(int n)
-{
-	if (n != m_colorMap)
-	{
-		m_colorMap = n;
-		UpdateTexture();
-	}
-}
-
-int CColorTexture::GetColorMap() const
-{
-	return m_colorMap;
-}
-
-CColorMap& CColorTexture::ColorMap()
-{
-	return ColorMapManager::GetColorMap(m_colorMap);
 }
 
 //=============================================================================

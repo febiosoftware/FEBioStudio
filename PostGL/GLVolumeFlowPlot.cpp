@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLVolumeFlowPlot.h"
-#include <PostLib/GLModel.h>
+#include "GLModel.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ClassDescriptor.h>

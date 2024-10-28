@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLDisplacementMap.h"
-#include <PostLib/GLModel.h>
+#include "GLModel.h"
 using namespace Post;
 
 //-----------------------------------------------------------------------------

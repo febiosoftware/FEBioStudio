@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "Document.h"
 #include "GLView.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 #include "Logger.h"
 

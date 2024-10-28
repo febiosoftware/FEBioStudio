@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QComboBox>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 using namespace Post;
 
 class CImageViewer::Ui

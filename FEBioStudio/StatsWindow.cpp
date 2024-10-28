@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <PostLib/constants.h>
 #include <PostGL/GLDataMap.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDocument.h"
 

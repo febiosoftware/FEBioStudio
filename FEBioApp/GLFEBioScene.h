@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/GLScene.h"
 #include "../FEBioStudio/GLSceneView.h"
 #include "../PostLib/ColorMap.h"
+#include <PostGL/ColorTexture.h>
 #include <GLLib/GLMesh.h>
 #include "FEBioAppDocument.h"
 #include <QMutex>

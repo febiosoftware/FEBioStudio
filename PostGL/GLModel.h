@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "GLObject.h"
-#include <PostGL/GLDisplacementMap.h>
-#include <PostGL/GLColorMap.h>
-#include "FEPostModel.h"
+#include <PostLib/GLObject.h>
+#include "GLDisplacementMap.h"
+#include "GLColorMap.h"
+#include <PostLib/FEPostModel.h>
 #include "PostObject.h"
 #include <GLLib/GDecoration.h>
 #include <PostGL/GLPlotGroup.h>

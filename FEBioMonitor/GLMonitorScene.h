@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/GLScene.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "../MeshLib/FENodeFaceList.h"
-#include <PostLib/PostObject.h>
+#include <PostGL/PostObject.h>
 #include <GLLib/GLMesh.h>
 #include <QMutex>
 

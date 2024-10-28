@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLWidget.h"
 #include <PostLib/ColorMap.h>
+#include <PostGL/ColorTexture.h>
 
 class GLLegendBar : public GLWidget
 {

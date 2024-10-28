@@ -40,7 +40,11 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/FEDistanceMap.h>
 #include <FEBioStudio/FEBioStudio.h>
+
+#ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
+#endif
+
 #include <iostream>
 
 #include <vector>
@@ -61,6 +65,7 @@ FEPostModel* readPlotFile(std::string filename)
     return model;
 }
 
+#ifndef PY_EXTERNAL
 FEPostModel* getActiveModel()
 {
 	CMainWindow* wnd = FBS::getMainWindow();
@@ -71,6 +76,7 @@ FEPostModel* getActiveModel()
 	}
 	else return nullptr;
 }
+#endif
 
 ModelDataField* runDistanceMap(FEPostModel* model, std::vector<int>& sel1, std::vector<int>& sel2, bool sign)
 {
@@ -113,7 +119,9 @@ void init_FBSPost(py::module& m)
                 return self.GetState(time);
             }, py::return_value_policy::reference);
 
+#ifndef PY_EXTERNAL
 	post.def("active_model", &getActiveModel, py::return_value_policy::reference);
+#endif
 
 	py::class_<FEPostMesh>(post, "FEPostMesh")
         .def("surfaces", &FEPostMesh::Surfaces)

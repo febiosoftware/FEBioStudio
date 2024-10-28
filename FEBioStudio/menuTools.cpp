@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "FEKinematFileReader.h"
 
 void CMainWindow::on_actionCurveEditor_triggered()

@@ -23,64 +23,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <ImageLib/3DImage.h>
-#include <FSCore/box.h>
-#include "GLImageRenderer.h"
-#include <ImageLib/RGBAImage.h>
-#include <PostGL/ColorTexture.h>
-#include "ColorMap.h"
-
-class CImageModel;
-class CImage;
+#include <GLLib/GLTexture1D.h>
+#include <PostLib/ColorMap.h>
 
 namespace Post {
+	class CColorTexture
+	{
+	public:
+		CColorTexture();
+		CColorTexture(const CColorTexture& col);
+		void operator = (const CColorTexture& col);
 
-class CImageSlicer : public CGLImageRenderer
-{
-	enum { ORIENTATION, OFFSET, COLOR_MAP, TRANSPARENCY };
+		GLTexture1D& GetTexture() { return m_tex; }
 
-public:
-	CImageSlicer(CImageModel* img);
-	~CImageSlicer();
+		void UpdateTexture();
 
-	void Create();
+		int GetDivisions() const;
+		void SetDivisions(int n);
 
-	void Update() override;
+		bool GetSmooth() const;
+		void SetSmooth(bool b);
 
-	void Render(CGLContext& rc) override;
+		void SetColorMap(int n);
+		int GetColorMap() const;
 
-	int GetOrientation() const;
-	void SetOrientation(int n);
+		CColorMap& ColorMap();
 
-	double GetOffset() const;
-	void SetOffset(double f);
+	private:
+		int		m_colorMap;		// index of template to use
+		int		m_ndivs;		// number of divisions
+		bool	m_bsmooth;		// smooth interpolation or not
 
-	int GetColorMap() const { return m_Col.GetColorMap(); }
-	void SetColorMap(int n) { m_Col.SetColorMap(n); }
-
-	bool UpdateData(bool bsave = true) override;
-
-    void SetImageSlice(CImage* img);
-
-private:
-	void BuildLUT();
-
-	void UpdateSlice();
-
-    template<class pType>
-    void CreateCRGBAImage(CImage& slice);
-
-private:
-	CRGBAImage		m_im;	// 2D image that will be displayed
-	int				m_LUTC[4][256];	// color lookup table
-	bool			m_reloadTexture;
-
-    CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
-
-	Post::CColorTexture	m_Col;
-
-	unsigned int m_texID;
-};
+		GLTexture1D m_tex;	// the actual texture
+	};
 }

@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostGL/GLDataMap.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "PostDocument.h"
 
 CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)

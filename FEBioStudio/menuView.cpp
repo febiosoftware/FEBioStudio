@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "Document.h"
 #include "PostDocument.h"
 #include "DocManager.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include "GLPostScene.h"
 
 void CMainWindow::on_actionUndoViewChange_triggered()

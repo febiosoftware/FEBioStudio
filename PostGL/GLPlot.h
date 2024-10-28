@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/DataMap.h>
 #include <PostLib/ColorMap.h>
 #include <FSCore/box.h>
+#include "ColorTexture.h"
 
 class GLLegendBar;
 

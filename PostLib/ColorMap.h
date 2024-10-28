@@ -88,37 +88,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CColorTexture
-{
-public:
-	CColorTexture();
-	CColorTexture(const CColorTexture& col);
-	void operator = (const CColorTexture& col);
-
-	GLTexture1D& GetTexture() { return m_tex; }
-
-	void UpdateTexture();
-
-	int GetDivisions() const;
-	void SetDivisions(int n);
-
-	bool GetSmooth() const;
-	void SetSmooth(bool b);
-
-	void SetColorMap(int n);
-	int GetColorMap() const;
-
-	CColorMap& ColorMap();
-
-private:
-	int		m_colorMap;		// index of template to use
-	int		m_ndivs;		// number of divisions
-	bool	m_bsmooth;		// smooth interpolation or not
-
-	GLTexture1D m_tex;	// the actual texture
-};
-
-//-----------------------------------------------------------------------------
 // Class for managing available color maps
 class ColorMapManager
 {

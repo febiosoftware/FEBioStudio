@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <PostGL/GLDisplacementMap.h>
 #include <PostGL/GLColorMap.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageSource.h>

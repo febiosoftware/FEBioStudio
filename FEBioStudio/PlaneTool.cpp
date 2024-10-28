@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QStackedWidget>
 #include "Document.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <PostLib/FEPostMesh.h>
 #include "MainWindow.h"
 #include "GLView.h"

@@ -57,7 +57,7 @@ SOFTWARE.*/
 #include "DlgSetRepoFolder.h"
 #include "IconProvider.h"
 #include "PostDocument.h"
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList

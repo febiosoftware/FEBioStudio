@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLStreamLinePlot.h"
 #include "GLWLib/GLWidgetManager.h"
-#include <PostLib/GLModel.h>
+#include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
 using namespace Post;

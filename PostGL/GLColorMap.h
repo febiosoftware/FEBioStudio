@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLDataMap.h"
 #include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLTexture1D.h>
+#include <PostGL/ColorTexture.h>
 #include <PostLib/ColorMap.h>
 
 namespace Post {

@@ -50,7 +50,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveObject.h>
-#include <PostLib/GLModel.h>
+#include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
 #include "TextDocument.h"

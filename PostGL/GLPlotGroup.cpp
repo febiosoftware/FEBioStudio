@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLPlotGroup.h"
 #include <MeshLib/Intersect.h>
-#include <PostLib/GLModel.h>
+#include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
 #include <sstream>
 using namespace std;
