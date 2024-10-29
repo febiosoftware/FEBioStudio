@@ -38,27 +38,19 @@ using namespace std;
 // FSGroup
 //////////////////////////////////////////////////////////////////////
 
-FSGroup::FSGroup(GObject* po, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
+FSGroup::FSGroup(FSMesh* pm, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
-	// store a ptr to the mesh this group belongs to
-	m_pObj = po;
-	if (po) m_objID = po->GetID(); else m_objID = -1;
-}
-
-void FSGroup::SetGObject(GObject* po)
-{
-	m_pObj = po; 
-	if (po) m_objID = po->GetID(); else m_objID = -1;
+	m_mesh = pm;
 }
 
 GObject* FSGroup::GetGObject()
 {
-	return m_pObj;
+	return (m_mesh ? m_mesh->GetGObject() : nullptr);
 }
 
 FSMesh* FSGroup::GetMesh()
 {
-	return m_pObj->GetFEMesh();
+	return m_mesh;
 }
 
 FSGroup::~FSGroup()
@@ -68,12 +60,9 @@ FSGroup::~FSGroup()
 
 void FSGroup::Save(OArchive& ar)
 {
-	assert(m_pObj);
-	int meshid = (m_pObj ? m_pObj->GetID() : -1);
 	int N = (int)m_Item.size();
 	ar.WriteChunk(ID, m_nID);
 	ar.WriteChunk(NAME, GetName());
-	ar.WriteChunk(MESHID, meshid);
 	ar.WriteChunk(SIZE, N);
 
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -101,7 +90,6 @@ void FSGroup::Load(IArchive &ar)
 		{
 		case ID: ar.read(n); SetID(n); break;
 		case NAME: { char sz[256]; ar.read(sz); SetName(sz); } break;
-		case MESHID: ar.read(m_objID); break;
 		case SIZE: ar.read(N); break;
 		case ITEM: ar.read(n); m_Item.push_back(n); break;
 		default:
@@ -116,7 +104,7 @@ void FSGroup::Load(IArchive &ar)
 // FSElemSet
 //////////////////////////////////////////////////////////////////////
 
-FSElemSet::FSElemSet(GObject* po, const vector<int>& elset) : FSGroup(po, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG)
+FSElemSet::FSElemSet(FSMesh* pm, const vector<int>& elset) : FSGroup(pm, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG)
 {
 	int nsel = (int) elset.size();
 	if (nsel > 0)
@@ -133,7 +121,7 @@ void FSElemSet::Copy(FSElemSet* pg)
 
 FEItemListBuilder* FSElemSet::Copy()
 {
-	FSElemSet* pg = new FSElemSet(m_pObj);
+	FSElemSet* pg = new FSElemSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
@@ -159,7 +147,7 @@ FEElement_* FSElemSet::GetElement(int n)
 //-----------------------------------------------------------------------------
 FEElemList* FSElemSet::BuildElemList()
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm==0) return 0;
 
 	FEElemList* pg = new FEElemList();
@@ -178,7 +166,7 @@ FEElemList* FSElemSet::BuildElemList()
 FSNodeList* FSElemSet::BuildNodeList()
 {
 	int i, j;
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	int N = pm->Nodes();
 	for (i=0; i<N; ++i) pm->Node(i).m_ntag = 0;
 
@@ -204,7 +192,7 @@ FSNodeList* FSElemSet::BuildNodeList()
 
 FEItemListBuilder* FSPartSet::Copy()
 {
-	FSPartSet* pg = new FSPartSet(m_pObj);
+	FSPartSet* pg = new FSPartSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
@@ -218,7 +206,8 @@ void FSPartSet::Copy(FSPartSet* pg)
 GPart* FSPartSet::GetPart(size_t n)
 {
 	if ((n < 0) || (n >= m_Item.size())) return nullptr;
-	return m_pObj->Part(m_Item[n]);
+	GObject* po = m_mesh->GetGObject(); assert(po);
+	return (po ? po->Part(m_Item[n]) : nullptr);
 }
 
 std::vector<int> FSPartSet::BuildElementIndexList()
@@ -283,7 +272,7 @@ std::vector<int> FSPartSet::BuildElementIndexList(const std::vector<int>& partLi
 // FSSurface
 //////////////////////////////////////////////////////////////////////
 
-FSSurface::FSSurface(GObject* po, vector<int>& face) : FSGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG)
+FSSurface::FSSurface(FSMesh* pm, vector<int>& face) : FSGroup(pm, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int n = (int) face.size();
 	if (n > 0)
@@ -300,21 +289,21 @@ void FSSurface::Copy(FSSurface* pg)
 
 FEItemListBuilder* FSSurface::Copy()
 {
-	FSSurface* pg = new FSSurface(m_pObj);
+	FSSurface* pg = new FSSurface(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
 
 FSFace* FSSurface::GetFace(int n)
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == nullptr) return nullptr;
 	return pm->FacePtr(m_Item[n]);
 }
 
 FEFaceList* FSSurface::BuildFaceList()
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
 	FEFaceList* ps = new FEFaceList();
@@ -327,7 +316,7 @@ FEFaceList* FSSurface::BuildFaceList()
 
 FSNodeList* FSSurface::BuildNodeList()
 {	
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
 	FSNodeList* pg = new FSNodeList();
@@ -360,7 +349,7 @@ FSNodeList* FSSurface::BuildNodeList()
 // FSEdgeSet
 //////////////////////////////////////////////////////////////////////
 
-FSEdgeSet::FSEdgeSet(GObject* po, vector<int>& edge) : FSGroup(po, FE_EDGESET, FE_NODE_FLAG)
+FSEdgeSet::FSEdgeSet(FSMesh* pm, vector<int>& edge) : FSGroup(pm, FE_EDGESET, FE_NODE_FLAG)
 {
 	int n = (int) edge.size();
 	if (n > 0)
@@ -377,14 +366,14 @@ void FSEdgeSet::Copy(FSEdgeSet* pg)
 
 FEItemListBuilder* FSEdgeSet::Copy()
 {
-	FSEdgeSet* pg = new FSEdgeSet(m_pObj);
+	FSEdgeSet* pg = new FSEdgeSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
 
 FSEdge* FSEdgeSet::Edge(FEItemListBuilder::Iterator it)
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 	FSEdge& e = pm->Edge(*it);
 	return &e;
@@ -392,7 +381,7 @@ FSEdge* FSEdgeSet::Edge(FEItemListBuilder::Iterator it)
 
 FSNodeList* FSEdgeSet::BuildNodeList()
 {	
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
 	FSNodeList* pg = new FSNodeList();
@@ -422,7 +411,7 @@ FSNodeList* FSEdgeSet::BuildNodeList()
 
 FEEdgeList* FSEdgeSet::BuildEdgeList()
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
 	FEEdgeList* pg = new FEEdgeList();
@@ -442,7 +431,7 @@ FEEdgeList* FSEdgeSet::BuildEdgeList()
 // FSNodeSet
 //////////////////////////////////////////////////////////////////////
 
-FSNodeSet::FSNodeSet(GObject* po, const vector<int>& node) : FSGroup(po, FE_NODESET, FE_NODE_FLAG)
+FSNodeSet::FSNodeSet(FSMesh* pm, const vector<int>& node) : FSGroup(pm, FE_NODESET, FE_NODE_FLAG)
 {
 	int n = (int) node.size();
 	if (n > 0)
@@ -459,7 +448,7 @@ void FSNodeSet::Copy(FSNodeSet* pg)
 
 FEItemListBuilder* FSNodeSet::Copy()
 {
-	FSNodeSet* pg = new FSNodeSet(m_pObj);
+	FSNodeSet* pg = new FSNodeSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
@@ -467,7 +456,7 @@ FEItemListBuilder* FSNodeSet::Copy()
 void FSNodeSet::CreateFromMesh()
 {
 	Clear();
-	FSMesh* m = m_pObj->GetFEMesh();
+	FSMesh* m = m_mesh;
 	if (m == nullptr) return;
 	int NN = m->Nodes();
 	for (int i = 0; i < NN; ++i) add(i);
@@ -475,7 +464,7 @@ void FSNodeSet::CreateFromMesh()
 
 FSNodeList* FSNodeSet::BuildNodeList()
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 	FSNodeList* ps = new FSNodeList();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -485,7 +474,7 @@ FSNodeList* FSNodeSet::BuildNodeList()
 
 FSNode* FSNodeSet::GetNode(size_t n)
 {
-	FSMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_mesh;
 	if (pm == nullptr) return nullptr;
 	return pm->NodePtr(m_Item[n]);
 }

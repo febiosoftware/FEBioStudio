@@ -2361,15 +2361,14 @@ void FSMesh::Load(IArchive& ar)
 		{
 		case CID_MESH_ELEMSET_SECTION:
 			{
-				// TODO: move to GObject serialization
-				FSElemSet* pg = 0;
+				FSElemSet* pg = nullptr;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_ELEMENTSET);
-					pg = new FSElemSet(po);
+					pg = new FSElemSet(this);
 					pg->Load(ar);
-					po->AddFEElemSet(pg);
+					AddFEElemSet(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2377,15 +2376,14 @@ void FSMesh::Load(IArchive& ar)
 			break;
 		case CID_MESH_PARTSET_SECTION:
 		{
-			// TODO: move to GObject serialization
-			FSPartSet* pg = 0;
+			FSPartSet* pg = nullptr;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				pg = 0;
 				assert(ar.GetChunkID() == CID_MESH_PARTSET);
-				pg = new FSPartSet(po);
+				pg = new FSPartSet(this);
 				pg->Load(ar);
-				po->AddFEPartSet(pg);
+				AddFEPartSet(pg);
 
 				ar.CloseChunk();
 			}
@@ -2393,15 +2391,14 @@ void FSMesh::Load(IArchive& ar)
 		break;
 		case CID_MESH_SURF_SECTION:
 			{
-				// TODO: move to GObject serialization
 				FSSurface* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					pg = 0;
+					pg = nullptr;
 					assert(ar.GetChunkID() == CID_MESH_SURFACE);
-					pg = new FSSurface(po);
+					pg = new FSSurface(this);
 					pg->Load(ar);
-					po->AddFESurface(pg);
+					AddFESurface(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2409,15 +2406,14 @@ void FSMesh::Load(IArchive& ar)
 			break;
 		case CID_MESH_EDGESET_SECTION:
 		{
-			// TODO: move to GObject serialization
-			FSEdgeSet* pg = 0;
+			FSEdgeSet* pg = nullptr;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				pg = 0;
+				pg = nullptr;
 				assert(ar.GetChunkID() == CID_MESH_EDGESET);
-				pg = new FSEdgeSet(po);
+				pg = new FSEdgeSet(this);
 				pg->Load(ar);
-				po->AddFEEdgeSet(pg);
+				AddFEEdgeSet(pg);
 
 				ar.CloseChunk();
 			}
@@ -2425,15 +2421,14 @@ void FSMesh::Load(IArchive& ar)
 		break;
 		case CID_MESH_NSET_SECTION:
 			{
-				// TODO: move to GObject serialization
-				FSNodeSet* pg = 0;
+				FSNodeSet* pg = nullptr;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					pg = 0;
+					pg = nullptr;
 					assert(ar.GetChunkID() == CID_MESH_NODESET);
-					pg = new FSNodeSet(po);
+					pg = new FSNodeSet(this);
 					pg->Load(ar);
-					po->AddFENodeSet(pg);
+					AddFENodeSet(pg);
 
 					ar.CloseChunk();
 				}			

@@ -159,7 +159,7 @@ void FEElementData::Save(OArchive& ar)
 //-----------------------------------------------------------------------------
 void FEElementData::Load(IArchive& ar)
 {
-	GObject* po = GetMesh()->GetGObject();
+	FSMesh* pm = GetMesh();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -189,9 +189,9 @@ void FEElementData::Load(IArchive& ar)
 		{
 			int listId = -1;
 			ar.read(listId);
-			if (po)
+			if (pm)
 			{
-				FSElemSet* pg = dynamic_cast<FSElemSet*>(po->FindFEGroup(listId)); assert(pg);
+				FSElemSet* pg = dynamic_cast<FSElemSet*>(pm->FindFEGroup(listId)); assert(pg);
 				SetItemList(pg);
 			}
 		}
@@ -199,10 +199,10 @@ void FEElementData::Load(IArchive& ar)
 		{
 			// older files (pre 2.1) used to store their own element sets. Now, the parent GObject stores
 			// all element sets and we only need a pointer. 
-			FSElemSet* part = new FSElemSet(po);
+			FSElemSet* part = new FSElemSet(pm);
 			part->Load(ar);
 			if (part->GetName().empty()) part->SetName(GetName());
-			po->AddFEElemSet(part);
+			pm->AddFEElemSet(part);
 			SetItemList(part);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
@@ -364,7 +364,7 @@ void FEPartData::Save(OArchive& ar)
 
 void FEPartData::Load(IArchive& ar)
 {
-	GObject* po = GetMesh()->GetGObject();
+	FSMesh* pm = GetMesh();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -394,9 +394,9 @@ void FEPartData::Load(IArchive& ar)
 		{
 			int listId = -1;
 			ar.read(listId);
-			if (po)
+			if (pm)
 			{
-				FSPartSet* pg = dynamic_cast<FSPartSet*>(po->FindFEGroup(listId)); assert(pg);
+				FSPartSet* pg = dynamic_cast<FSPartSet*>(pm->FindFEGroup(listId)); assert(pg);
 				SetItemList(pg);
 			}
 		}
@@ -406,7 +406,7 @@ void FEPartData::Load(IArchive& ar)
 			ar.read(part);
 			if (part.empty())
 			{
-				FSPartSet* ps = new FSPartSet(po);
+				FSPartSet* ps = new FSPartSet(pm);
 				ps->SetName(GetName());
 				for (int n : part) ps->add(n);
 				SetItemList(ps);

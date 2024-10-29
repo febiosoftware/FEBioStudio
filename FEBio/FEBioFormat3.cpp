@@ -1655,9 +1655,9 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 
 			// okay, let's build a part set for this then instead
 			GPart* pg = po->FindPartFromName(set->cvalue());
-			FSPartSet* partSet = new FSPartSet(po);
+			FSPartSet* partSet = new FSPartSet(mesh);
 			partSet->SetName(sname);
-			po->AddFEPartSet(partSet);
+			mesh->AddFEPartSet(partSet);
 			partSet->add(pg->GetLocalID());
 
 			meshData = mesh->AddPartDataField(sname, partSet, dataType);

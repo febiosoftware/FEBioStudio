@@ -2226,13 +2226,13 @@ void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 // this function to find the parent object (and mesh).
 bool FSModel::FindGroupParent(FSGroup* pg)
 {
-	int obj_id = pg->GetObjectID();
+	int obj_id = -1;// pg->GetObjectID();
 	if (obj_id == -1) return false;
 	else
 	{
 		GObject* po = GetModel().FindObject(obj_id);
 		if (po == 0) return false;
-		pg->SetGObject(po);
+//		pg->SetGObject(po);
 	}
 	return true;
 }

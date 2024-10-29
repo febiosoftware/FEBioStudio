@@ -269,7 +269,7 @@ void CImageMapTool::OnCreate()
 
     // create element data
     int parts = po->Parts();
-	FSPartSet* partSet = new FSPartSet(po);
+	FSPartSet* partSet = new FSPartSet(pm);
 
     // if an object is selected, we work with the whole object. 
     // otherwise we only do the selected parts.

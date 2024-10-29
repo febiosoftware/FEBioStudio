@@ -324,7 +324,7 @@ bool NASTRANimport::BuildMesh(FSModel& fem)
 		list<PSOLID>::iterator ip = m_Part.begin();
 		for (i=0; i<nparts; ++i, ++ip)
 		{
-			FSElemSet* pg = new FSElemSet(po);
+			FSElemSet* pg = new FSElemSet(pm);
 
 			sprintf(szname, "Part%02d", i+1);
 			pg->SetName(szname);
@@ -332,7 +332,7 @@ bool NASTRANimport::BuildMesh(FSModel& fem)
 			list<ELEM>::iterator ib = m_Elem.begin();
 			for (n=0; n<elems; ++n, ++ib) if (ib->pid == ip->pid) pg->add(n);
 
-			po->AddFEElemSet(pg);
+			pm->AddFEElemSet(pg);
 		}
 	}
 

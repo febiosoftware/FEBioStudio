@@ -92,7 +92,7 @@ void FENodeData::Save(OArchive& ar)
 
 void FENodeData::Load(IArchive& ar)
 {
-	GObject* po = GetMesh()->GetGObject();
+	FSMesh* pm = GetMesh();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -112,9 +112,9 @@ void FENodeData::Load(IArchive& ar)
 		{
 			int listId = -1;
 			ar.read(listId);
-			if (po)
+			if (pm)
 			{
-				FSNodeSet* pg = dynamic_cast<FSNodeSet*>(po->FindFEGroup(listId)); assert(pg);
+				FSNodeSet* pg = dynamic_cast<FSNodeSet*>(pm->FindFEGroup(listId)); assert(pg);
 				SetItemList(pg);
 			}
 		}
@@ -122,13 +122,13 @@ void FENodeData::Load(IArchive& ar)
 		{
 			// older files (pre 2.1) stored their own node sets. 
 			// now these are stored on the parent object
-			FSNodeSet* nodeSet = new FSNodeSet(po);
+			FSNodeSet* nodeSet = new FSNodeSet(pm);
 			nodeSet->Load(ar);
 
 			// add it to the parent object
 			if (nodeSet->GetName().empty()) nodeSet->SetName(GetName());
 			SetItemList(nodeSet);
-			po->AddFENodeSet(nodeSet);
+			pm->AddFENodeSet(nodeSet);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
@@ -137,11 +137,11 @@ void FENodeData::Load(IArchive& ar)
 			FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(GetItemList());
 			if (nodeSet == nullptr)
 			{
-				nodeSet = new FSNodeSet(m_po);
+				nodeSet = new FSNodeSet(pm);
 				nodeSet->CreateFromMesh();
 				nodeSet->SetName(GetName());
 				SetItemList(nodeSet);
-				m_po->AddFENodeSet(nodeSet);
+				pm->AddFENodeSet(nodeSet);
 			}
 
 			ar.read(&m_data[0], m_data.size());

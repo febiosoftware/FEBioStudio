@@ -253,7 +253,7 @@ bool HMASCIIimport::BuildMesh(FSModel& fem)
 		list<COMPONENT>::iterator ip = m_Part.begin();
 		for (int i=0; i<parts; ++i, ++ip)
 		{
-			FSElemSet* pg = new FSElemSet(po);
+			FSElemSet* pg = new FSElemSet(pm);
 
 			pg->SetName(ip->szname);
 

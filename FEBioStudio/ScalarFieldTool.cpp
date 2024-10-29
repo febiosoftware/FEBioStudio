@@ -325,7 +325,7 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		FSPartSet* partSet = new FSPartSet(po);
+		FSPartSet* partSet = new FSPartSet(pm);
 		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
@@ -335,7 +335,7 @@ void CScalarFieldTool::OnApply()
 				partSet->add(i);
 			}
 		}
-		po->AddFEPartSet(partSet);
+		pm->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
@@ -361,7 +361,7 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		FSPartSet* partSet = new FSPartSet(po);
+		FSPartSet* partSet = new FSPartSet(pm);
 		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
@@ -371,7 +371,7 @@ void CScalarFieldTool::OnApply()
 				partSet->add(i);
 			}
 		}
-		po->AddFEPartSet(partSet);
+		pm->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
@@ -396,10 +396,10 @@ void CScalarFieldTool::OnApply()
 	else
 	{
 		// create a node set from the mesh
-		FSNodeSet* nodeSet = new FSNodeSet(po);
+		FSNodeSet* nodeSet = new FSNodeSet(pm);
 		nodeSet->CreateFromMesh();
 		nodeSet->SetName(name.toStdString());
-		po->AddFENodeSet(nodeSet);
+		pm->AddFENodeSet(nodeSet);
 
 		// create node data
 		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, DATA_SCALAR);

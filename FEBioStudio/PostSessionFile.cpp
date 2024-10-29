@@ -372,11 +372,12 @@ bool PostSessionFileReader::parse_mesh_nodeset(XMLTag& tag)
 	} while (!tag.isend());
 
 	GObject* po = m_doc->GetActiveObject();
-	if (po)
+	if (po && po->GetFEMesh())
 	{
-		FSNodeSet* pg = new FSNodeSet(po, nodeList);
+		FSMesh* pm = po->GetFEMesh();
+		FSNodeSet* pg = new FSNodeSet(pm, nodeList);
 		pg->SetName(name);
-		po->AddFENodeSet(pg);
+		pm->AddFENodeSet(pg);
 	}
 
 	return true;
@@ -398,11 +399,12 @@ bool PostSessionFileReader::parse_mesh_edgeset(XMLTag& tag)
 	} while (!tag.isend());
 
 	GObject* po = m_doc->GetActiveObject();
-	if (po)
+	if (po && po->GetFEMesh())
 	{
-		FSEdgeSet* pg = new FSEdgeSet(po, edgeList);
+		FSMesh* pm = po->GetFEMesh();
+		FSEdgeSet* pg = new FSEdgeSet(pm, edgeList);
 		pg->SetName(name);
-		po->AddFEEdgeSet(pg);
+		pm->AddFEEdgeSet(pg);
 	}
 
 	return true;
@@ -424,11 +426,12 @@ bool PostSessionFileReader::parse_mesh_surface(XMLTag& tag)
 	} while (!tag.isend());
 
 	GObject* po = m_doc->GetActiveObject();
-	if (po)
+	if (po && po->GetFEMesh())
 	{
-		FSSurface* pg = new FSSurface(po, faceList);
+		FSMesh* pm = po->GetFEMesh();
+		FSSurface* pg = new FSSurface(pm, faceList);
 		pg->SetName(name);
-		po->AddFESurface(pg);
+		pm->AddFESurface(pg);
 	}
 
 	return true;
@@ -450,11 +453,12 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 	} while (!tag.isend());
 
 	GObject* po = m_doc->GetActiveObject();
-	if (po)
+	if (po && po->GetFEMesh())
 	{
-		FSElemSet* pg = new FSElemSet(po, elemList);
+		FSMesh* pm = po->GetFEMesh();
+		FSElemSet* pg = new FSElemSet(pm, elemList);
 		pg->SetName(name);
-		po->AddFEElemSet(pg);
+		pm->AddFEElemSet(pg);
 	}
 
 	return true;
