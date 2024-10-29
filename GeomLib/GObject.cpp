@@ -84,12 +84,6 @@ public:
 	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
 
 	GObjectManipulator* m_objManip;
-
-	FSObjectList<FSElemSet>		m_pFEElemSet;
-	FSObjectList<FSSurface>		m_pFESurface;
-	FSObjectList<FSEdgeSet>		m_pFEEdgeSet;
-	FSObjectList<FSNodeSet>		m_pFENodeSet;
-	FSObjectList<FSPartSet>		m_pFEPartSet;
 };
 
 //=============================================================================
@@ -331,251 +325,81 @@ void GObject::SetRenderMesh(GMesh* mesh)
 }
 
 //-----------------------------------------------------------------------------
-void GObject::ClearFEPartSets()
-{
-	imp->m_pFEPartSet.Clear();
-}
-
-//-----------------------------------------------------------------------------
-void GObject::ClearFEElementSets()
-{
-	imp->m_pFEElemSet.Clear();
-}
-
-//-----------------------------------------------------------------------------
-void GObject::ClearFESurfaces()
-{
-	imp->m_pFESurface.Clear();
-}
-
-//-----------------------------------------------------------------------------
-void GObject::ClearFEEdgeSets()
-{
-	imp->m_pFEEdgeSet.Clear();
-}
-
-//-----------------------------------------------------------------------------
-void GObject::ClearFENodeSets()
-{
-	imp->m_pFENodeSet.Clear();
-}
-
-//-----------------------------------------------------------------------------
 // Clear group data
 void GObject::ClearFEGroups()
 {
-	ClearFEPartSets();
-	ClearFEElementSets();
-	ClearFEEdgeSets();
-	ClearFESurfaces();
-	ClearFENodeSets();
-}
-
-//-----------------------------------------------------------------------------
-// Remove groups that are empty.
-
-template <class T> void clearVector(FSObjectList<T>& v, std::function<bool(T*)> f)
-{
-	if (v.IsEmpty()) return;
-
-	for (size_t i=0; i<v.Size(); )
-	{
-		T* o = v[i];
-		if (f(o))
-		{
-			v.Remove(o);
-		}
-		else i++;
-	}
+	if (imp->m_pmesh) imp->m_pmesh->ClearFEGroups();
 }
 
 void GObject::RemoveEmptyFEGroups()
 {
-	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->size() == 0); });
-	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->size() == 0); });
-	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->size() == 0); });
-	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->size() == 0); });
-	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->size() == 0); });
+	if (imp->m_pmesh) imp->m_pmesh->RemoveEmptyFEGroups();
 }
 
 void GObject::RemoveUnusedFEGroups()
 {
-	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->GetReferenceCount() == 0); });
-	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->GetReferenceCount() == 0); });
-	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->GetReferenceCount() == 0); });
-	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->GetReferenceCount() == 0); });
-	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
+	if (imp->m_pmesh) imp->m_pmesh->RemoveUnusedFEGroups();
 }
 
-//-----------------------------------------------------------------------------
-// Find a surface from its name.
-// Returns NULL if the surface cannot be found
 FSSurface* GObject::FindFESurface(const string& name)
 {
-	// loop over all surfaces
-	for (size_t i = 0; i<imp->m_pFESurface.Size(); ++i)
-	{
-		FSSurface* psi = imp->m_pFESurface[i];
-		if (psi->GetName() == name) return psi;
-	}
-
-	// sorry, no luck
+	if (imp->m_pmesh) return imp->m_pmesh->FindFESurface(name);
 	return nullptr;
 }
 
-// Find a surface from its name.
-// Returns NULL if the surface cannot be found
 FSEdgeSet* GObject::FindFEEdgeSet(const string& name)
 {
-	for (size_t i = 0; i < imp->m_pFESurface.Size(); ++i)
-	{
-		FSEdgeSet* psi = imp->m_pFEEdgeSet[i];
-		if (psi->GetName() == name) return psi;
-	}
-
-	// sorry, no luck
+	if (imp->m_pmesh) return imp->m_pmesh->FindFEEdgeSet(name);
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
-// Find a node set from its name.
-// Returns NULL if the node set cannot be found
 FSNodeSet* GObject::FindFENodeSet(const string& name)
 {
-	// loop over all surfaces
-	for (size_t i = 0; i<imp->m_pFENodeSet.Size(); ++i)
-	{
-		FSNodeSet* psi = imp->m_pFENodeSet[i];
-		if (psi->GetName() == name) return psi;
-	}
-
-	// sorry, no luck
-	return 0;
+	if (imp->m_pmesh) return imp->m_pmesh->FindFENodeSet(name);
+	return nullptr;
 }
-
-//-----------------------------------------------------------------------------
-// Find a group based on its global ID
-FSGroup* GObject::FindFEGroup(int nid)
-{
-	for (int i = 0; i < FEPartSets(); ++i)
-	if (imp->m_pFEPartSet[i]->GetID() == nid) return imp->m_pFEPartSet[i];
-
-	for (int i = 0; i<FEElemSets(); ++i)
-	if (imp->m_pFEElemSet[i]->GetID() == nid) return imp->m_pFEElemSet[i];
-
-	for (int i = 0; i<FESurfaces(); ++i)
-	if (imp->m_pFESurface[i]->GetID() == nid) return imp->m_pFESurface[i];
-
-	for (int i = 0; i<FEEdgeSets(); ++i)
-	if (imp->m_pFEEdgeSet[i]->GetID() == nid) return imp->m_pFEEdgeSet[i];
-
-	for (int i = 0; i<FENodeSets(); ++i)
-	if (imp->m_pFENodeSet[i]->GetID() == nid) return imp->m_pFENodeSet[i];
-
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-int GObject::FEPartSets() const { return (int)imp->m_pFEPartSet.Size(); }
-
-//-----------------------------------------------------------------------------
-int GObject::FEElemSets() const { return (int) imp->m_pFEElemSet.Size(); }
-
-//-----------------------------------------------------------------------------
-int GObject::FESurfaces() const { return (int)imp->m_pFESurface.Size(); }
-
-//-----------------------------------------------------------------------------
-int GObject::FEEdgeSets() const { return (int)imp->m_pFEEdgeSet.Size(); }
-
-//-----------------------------------------------------------------------------
-int GObject::FENodeSets() const { return (int)imp->m_pFENodeSet.Size(); }
-
-//-----------------------------------------------------------------------------
-void GObject::AddFEPartSet(FSPartSet* pg) { imp->m_pFEPartSet.Add(pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::AddFEElemSet(FSElemSet* pg) { imp->m_pFEElemSet.Add(pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::AddFESurface(FSSurface* pg) { imp->m_pFESurface.Add(pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::AddFEEdgeSet(FSEdgeSet* pg) { imp->m_pFEEdgeSet.Add(pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::AddFENodeSet(FSNodeSet* pg) { imp->m_pFENodeSet.Add(pg); }
-
-//-----------------------------------------------------------------------------
-FSPartSet* GObject::GetFEPartSet(int n) { return (n >= 0 && n < (int)imp->m_pFEPartSet.Size() ? imp->m_pFEPartSet[n] : 0); }
-
-//-----------------------------------------------------------------------------
-FSElemSet* GObject::GetFEElemSet(int n) { return (n >= 0 && n<(int) imp->m_pFEElemSet.Size() ? imp->m_pFEElemSet[n] : 0); }
-
-//-----------------------------------------------------------------------------
-FSSurface* GObject::GetFESurface(int n) { return (n >= 0 && n<(int)imp->m_pFESurface.Size() ? imp->m_pFESurface[n] : 0); }
-
-//-----------------------------------------------------------------------------
-FSEdgeSet* GObject::GetFEEdgeSet(int n) { return (n >= 0 && n<(int)imp->m_pFEEdgeSet.Size() ? imp->m_pFEEdgeSet[n] : 0); }
-
-//-----------------------------------------------------------------------------
-FSNodeSet* GObject::GetFENodeSet(int n) { return (n >= 0 && n<(int)imp->m_pFENodeSet.Size() ? imp->m_pFENodeSet[n] : 0); }
-
-//-----------------------------------------------------------------------------
-int GObject::RemoveFEPartSet(FSPartSet* pg)
-{
-	return imp->m_pFEPartSet.Remove(pg);
-}
-
-//-----------------------------------------------------------------------------
-int GObject::RemoveFEElemSet(FSElemSet* pg)
-{
-	return imp->m_pFEElemSet.Remove(pg);
-}
-
-//-----------------------------------------------------------------------------
-// Remove a named surface from the mesh
-int GObject::RemoveFESurface(FSSurface* pg)
-{
-	return imp->m_pFESurface.Remove(pg);
-}
-
-//-----------------------------------------------------------------------------
-int GObject::RemoveFEEdgeSet(FSEdgeSet* pg)
-{
-	return imp->m_pFEEdgeSet.Remove(pg);
-}
-
-//-----------------------------------------------------------------------------
-// Remove a named nodeset from the mesh
-int GObject::RemoveFENodeSet(FSNodeSet* pg)
-{
-	return imp->m_pFENodeSet.Remove(pg);
-}
-
-//-----------------------------------------------------------------------------
-void GObject::InsertFEPartSet(int n, FSPartSet* pg) { imp->m_pFEPartSet.Insert(n, pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::InsertFEElemSet(int n, FSElemSet* pg) { imp->m_pFEElemSet.Insert(n, pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::InsertFESurface(int n, FSSurface* pg) { imp->m_pFESurface.Insert(n, pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::InsertFEEdgeSet(int n, FSEdgeSet* pg) { imp->m_pFEEdgeSet.Insert(n, pg); }
-
-//-----------------------------------------------------------------------------
-void GObject::InsertFENodeSet(int n, FSNodeSet* pg) { imp->m_pFENodeSet.Insert(n, pg); }
 
 FSPartSet* GObject::FindFEPartSet(const std::string& name)
 {
-	for (int i = 0; i < FEPartSets(); ++i)
-	{
-		FSPartSet* pg = GetFEPartSet(i);
-		if (pg->GetName() == name) return pg;
-	}
+	if (imp->m_pmesh) return imp->m_pmesh->FindFEPartSet(name);
 	return nullptr;
 }
+
+FSGroup* GObject::FindFEGroup(int nid)
+{
+	if (imp->m_pmesh) return imp->m_pmesh->FindFEGroup(nid);
+	return nullptr;
+}
+
+int GObject::FEPartSets() const { return (imp->m_pmesh? imp->m_pmesh->FEPartSets() : 0); }
+int GObject::FEElemSets() const { return (imp->m_pmesh? imp->m_pmesh->FEElemSets() : 0); }
+int GObject::FESurfaces() const { return (imp->m_pmesh? imp->m_pmesh->FESurfaces() : 0); }
+int GObject::FEEdgeSets() const { return (imp->m_pmesh? imp->m_pmesh->FEEdgeSets() : 0); }
+int GObject::FENodeSets() const { return (imp->m_pmesh? imp->m_pmesh->FENodeSets() : 0); }
+
+void GObject::AddFEPartSet(FSPartSet* pg) { if (imp->m_pmesh) imp->m_pmesh->AddFEPartSet(pg); }
+void GObject::AddFEElemSet(FSElemSet* pg) { if (imp->m_pmesh) imp->m_pmesh->AddFEElemSet(pg); }
+void GObject::AddFESurface(FSSurface* pg) { if (imp->m_pmesh) imp->m_pmesh->AddFESurface(pg); }
+void GObject::AddFEEdgeSet(FSEdgeSet* pg) { if (imp->m_pmesh) imp->m_pmesh->AddFEEdgeSet(pg); }
+void GObject::AddFENodeSet(FSNodeSet* pg) { if (imp->m_pmesh) imp->m_pmesh->AddFENodeSet(pg); }
+
+FSPartSet* GObject::GetFEPartSet(int n) { return (imp->m_pmesh ? imp->m_pmesh->GetFEPartSet(n) : nullptr); }
+FSElemSet* GObject::GetFEElemSet(int n) { return (imp->m_pmesh ? imp->m_pmesh->GetFEElemSet(n) : nullptr); }
+FSSurface* GObject::GetFESurface(int n) { return (imp->m_pmesh ? imp->m_pmesh->GetFESurface(n) : nullptr); }
+FSEdgeSet* GObject::GetFEEdgeSet(int n) { return (imp->m_pmesh ? imp->m_pmesh->GetFEEdgeSet(n) : nullptr); }
+FSNodeSet* GObject::GetFENodeSet(int n) { return (imp->m_pmesh ? imp->m_pmesh->GetFENodeSet(n) : nullptr); }
+
+int GObject::RemoveFEPartSet(FSPartSet* pg) { return (imp->m_pmesh? imp->m_pmesh->RemoveFEPartSet(pg) : -1); }
+int GObject::RemoveFEElemSet(FSElemSet* pg) { return (imp->m_pmesh? imp->m_pmesh->RemoveFEElemSet(pg) : -1); }
+int GObject::RemoveFESurface(FSSurface* pg) { return (imp->m_pmesh? imp->m_pmesh->RemoveFESurface(pg) : -1); }
+int GObject::RemoveFEEdgeSet(FSEdgeSet* pg) { return (imp->m_pmesh? imp->m_pmesh->RemoveFEEdgeSet(pg) : -1); }
+int GObject::RemoveFENodeSet(FSNodeSet* pg) { return (imp->m_pmesh? imp->m_pmesh->RemoveFENodeSet(pg) : -1); }
+
+void GObject::InsertFEPartSet(int n, FSPartSet* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFEPartSet(n, pg); }
+void GObject::InsertFEElemSet(int n, FSElemSet* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFEElemSet(n, pg); }
+void GObject::InsertFESurface(int n, FSSurface* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFESurface(n, pg); }
+void GObject::InsertFEEdgeSet(int n, FSEdgeSet* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFEEdgeSet(n, pg); }
+void GObject::InsertFENodeSet(int n, FSNodeSet* pg) { if (imp->m_pmesh) imp->m_pmesh->InsertFENodeSet(n, pg); }
 
 //-----------------------------------------------------------------------------
 void GObject::CollapseTransform()

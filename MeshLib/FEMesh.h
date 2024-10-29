@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEMeshData.h"
 #include "Mesh_Data.h"
 #include "FENodeElementList.h"
+#include <FSCore/FSObjectList.h>
 #include <vector>
 #include <set>
 #include <string>
@@ -180,6 +181,47 @@ public:
 
 	Mesh_Data& GetMeshData();
 
+public:
+	int FEPartSets() const;
+	int FEElemSets() const;
+	int FESurfaces() const;
+	int FEEdgeSets() const;
+	int FENodeSets() const;
+
+	FSElemSet* GetFEElemSet(int n);
+	FSSurface* GetFESurface(int n);
+	FSEdgeSet* GetFEEdgeSet(int n);
+	FSNodeSet* GetFENodeSet(int n);
+	FSPartSet* GetFEPartSet(int n);
+
+	void AddFEElemSet(FSElemSet* pg);
+	void AddFESurface(FSSurface* pg);
+	void AddFEEdgeSet(FSEdgeSet* pg);
+	void AddFENodeSet(FSNodeSet* pg);
+	void AddFEPartSet(FSPartSet* pg);
+
+	int RemoveFEElemSet(FSElemSet* pg);
+	int RemoveFESurface(FSSurface* pg);
+	int RemoveFEEdgeSet(FSEdgeSet* pg);
+	int RemoveFENodeSet(FSNodeSet* pg);
+	int RemoveFEPartSet(FSPartSet* pg);
+
+	void InsertFEElemSet(int n, FSElemSet* pg);
+	void InsertFESurface(int n, FSSurface* pg);
+	void InsertFEEdgeSet(int n, FSEdgeSet* pg);
+	void InsertFENodeSet(int n, FSNodeSet* pg);
+	void InsertFEPartSet(int n, FSPartSet* pg);
+
+	FSGroup* FindFEGroup(int nid);
+	FSPartSet* FindFEPartSet(const std::string& name);
+	FSSurface* FindFESurface(const string& szname);
+	FSEdgeSet* FindFEEdgeSet(const string& szname);
+	FSNodeSet* FindFENodeSet(const string& szname);
+
+	void ClearFEGroups();
+	void RemoveEmptyFEGroups();
+	void RemoveUnusedFEGroups();
+
 public: // --- M E S H   Q U E R I E S ---
 	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);
 
@@ -203,6 +245,13 @@ protected:
 	// data fields
 	std::vector<FEMeshData*>		m_meshData;
 
+	FSObjectList<FSElemSet>		m_pFEElemSet;
+	FSObjectList<FSSurface>		m_pFESurface;
+	FSObjectList<FSEdgeSet>		m_pFEEdgeSet;
+	FSObjectList<FSNodeSet>		m_pFENodeSet;
+	FSObjectList<FSPartSet>		m_pFEPartSet;
+
+protected:
 	// Node index look up table
 	std::vector<int> m_NLT;	// node ID lookup table
 	int m_nltmin;			// the min ID
