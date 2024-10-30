@@ -2995,3 +2995,19 @@ void FSMesh::InsertFEElemSet(int n, FSElemSet* pg) { m_pFEElemSet.Insert(n, pg);
 void FSMesh::InsertFESurface(int n, FSSurface* pg) { m_pFESurface.Insert(n, pg); }
 void FSMesh::InsertFEEdgeSet(int n, FSEdgeSet* pg) { m_pFEEdgeSet.Insert(n, pg); }
 void FSMesh::InsertFENodeSet(int n, FSNodeSet* pg) { m_pFENodeSet.Insert(n, pg); }
+
+int FSMesh::FindFaceIndex(FSFace& face)
+{
+	FSNodeElementList& NEL = NodeElementList();
+	int n0 = face.n[0];
+	if (n0 < 0) return -1;
+	int N = NEL.Valence(n0);
+	FSFace tmp;
+	for (int i = 0; i < N; ++i)
+	{
+		FEElement_* el = NEL.Element(n0, i);
+		int m = FindFace(el, face, tmp);
+		if (m != -1) return el->m_face[m];
+	}
+	return -1;
+}

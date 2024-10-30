@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEModifier.h"
+#include <MeshLib/FEElementData.h>
 
 FEDeleteElements::FEDeleteElements() : FEModifier("delete elements")
 {
@@ -126,6 +127,122 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 	}
 
 	newMesh->RebuildMesh();
+
+	for (int i = 0; i < NE0; ++i)
+	{
+		FSElement& es = pm->Element(i);
+		if (es.m_ntag >= 0)
+		{
+			FSElement& ed = newMesh->Element(es.m_ntag);
+			ed.m_ntag = i;
+		}
+	}
+
+	// copy the named selections
+	for (int i = 0; i < pm->FENodeSets(); ++i)
+	{
+		FSNodeSet* ps = pm->GetFENodeSet(i);
+		FSNodeSet* pd = new FSNodeSet(newMesh);
+		pd->SetName(ps->GetName());
+		std::vector<int> src = ps->CopyItems();
+		std::vector<int> nodeList;
+		for (int j = 0; j < src.size(); ++j)
+		{
+			FSNode& node = pm->Node(src[j]);
+			if (node.m_ntag >= 0) nodeList.push_back(node.m_ntag);
+		}
+		pd->add(nodeList);
+		
+		newMesh->AddFENodeSet(pd);
+	}
+
+	for (int i = 0; i < pm->FEElemSets(); ++i)
+	{
+		FSElemSet* ps = pm->GetFEElemSet(i);
+		FSElemSet* pd = new FSElemSet(newMesh);
+		pd->SetName(ps->GetName());
+		std::vector<int> src = ps->CopyItems();
+		std::vector<int> elemList;
+		for (int j = 0; j < src.size(); ++j)
+		{
+			FSElement& el = pm->Element(src[j]);
+			if (el.m_ntag >= 0) elemList.push_back(el.m_ntag);
+		}
+		pd->add(elemList);
+		newMesh->AddFEElemSet(pd);
+	}
+
+	for (int i = 0; i < pm->FEPartSets(); ++i)
+	{
+		FSPartSet* ps = pm->GetFEPartSet(i);
+		FSPartSet* pd = new FSPartSet(newMesh);
+		pd->add(ps->CopyItems());
+		pd->SetName(ps->GetName());
+		newMesh->AddFEPartSet(pd);
+	}
+
+	for (int i = 0; i < pm->FESurfaces(); ++i)
+	{
+		FSSurface* ps = pm->GetFESurface(i);
+		FSSurface* pd = new FSSurface(newMesh);
+		pd->SetName(ps->GetName());
+		newMesh->AddFESurface(pd);
+
+		std::vector<int> src = ps->CopyItems();
+		for (int j = 0; j < src.size(); ++j)
+		{
+			FSFace& face = pm->Face(src[j]);
+			FSFace tmp;
+			tmp.SetType((FEFaceType)face.Type());
+			for (int n = 0; n < tmp.Nodes(); ++n)
+			{
+				tmp.n[n] = pm->Node(face.n[n]).m_ntag;
+			}
+			int n = newMesh->FindFaceIndex(tmp);
+			if (n >= 0) pd->add(n);
+		}
+	}
+
+	// copy data
+	for (int i = 0; i < pm->MeshDataFields(); ++i)
+	{
+		FEPartData* ps = dynamic_cast<FEPartData*>(pm->GetMeshDataField(i));
+		if (ps)
+		{
+			FEItemListBuilder* ls = ps->GetItemList();
+			FSPartSet* pg = newMesh->FindFEPartSet(ls->GetName()); assert(pg);
+
+			if (pg)
+			{
+				FEPartData* pd = new FEPartData(newMesh);
+				pd->Create(pg, ps->GetDataType(), ps->GetDataFormat());
+				pd->SetName(ps->GetName());
+				newMesh->AddMeshDataField(pd);
+
+				if (ps->GetDataFormat() == DATA_FORMAT::DATA_ITEM)
+				{
+					FEElemList* elemList = pd->BuildElemList();
+					FEElemList::Iterator it = elemList->First();
+					for (int j = 0; j < elemList->Size(); ++j, ++it)
+					{
+						int eid = it->m_lid;
+						int m = it->m_pi->m_ntag; assert(m >= 0);
+						if (m >= 0)
+						{
+							switch (ps->GetDataType())
+							{
+							case DATA_TYPE::DATA_SCALAR: pd->set(eid, ps->getScalar(m)); break;
+							case DATA_TYPE::DATA_VEC3  : pd->set(eid, ps->getVec3d(m)); break;
+							case DATA_TYPE::DATA_MAT3  : pd->set(eid, ps->getMat3d(m)); break;
+							default:
+								assert(false);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	return newMesh;
 }

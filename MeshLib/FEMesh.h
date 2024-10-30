@@ -235,6 +235,8 @@ public: // --- M E S H   Q U E R I E S ---
 
 	const std::vector<NodeElemRef>& NodeElemList(int nodeIndex) const { return m_NEL.ElementList(nodeIndex); }
 
+	int FindFaceIndex(FSFace& face);
+
 protected:
 	// elements
 	std::vector<FSElement>	m_Elem;	//!< FE elements
