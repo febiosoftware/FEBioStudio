@@ -11,8 +11,8 @@ permissions:
 
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/windows-release.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/windows-release.yml@newQt
     with:
-      aws-ami-id: ami-0b18c665dbe9efa75
+      aws-ami-id: ami-04101bdd599a4d3b1
       aws-sg-id: sg-0ca7912782cf1538b
     secrets: inherit

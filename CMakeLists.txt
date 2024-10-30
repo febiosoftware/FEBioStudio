@@ -33,8 +33,7 @@ if(NOT Qt6_DIR)
     if(WIN32)
         find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-            PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
-            PATH_SUFFIXES "msvc2015_64/Qt6" "msvc2017_64/Qt6" "msvc2019_64/Qt6"
+            PATH_SUFFIXES "lib/cmake/Qt6" "msvc2019_64/lib/cmake/Qt6"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     elseif(APPLE)
@@ -56,11 +55,7 @@ if(NOT Qt6_DIR)
     if(Qt_TEMP)
         set(Qt6_DIR ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
 
-        if(WIN32)
-            set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${Qt_TEMP}/.. CACHE INTERNAL "Qt Prefix.")
-        else()
-            set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${Qt_TEMP}/../../.. CACHE INTERNAL "Qt Prefix.")
-        endif()
+        set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${Qt_TEMP}/../../.. CACHE INTERNAL "Qt Prefix.")
 
         unset(Qt_TEMP CACHE)
     else()
