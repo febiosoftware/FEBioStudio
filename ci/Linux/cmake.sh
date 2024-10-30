@@ -1,4 +1,4 @@
-LIB_DIR="/usr/lib/x86_64-linux-gnu"
+LIB_DIR="/opt/Qt"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$LIB_DIR \
