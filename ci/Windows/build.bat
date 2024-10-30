@@ -1,7 +1,7 @@
 call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
 cmake -version
-set Qt_Root="c:/usr/local/Qt/6.7.3/msvc2019_x64"
+set Qt_Root="c:/usr/local/Qt/6.7.3/msvc2019_64"
 :: TODO: Cmake requires 6 runs to generate correctly
 for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
