@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@newQt
     with:
       package-name: febio-studio
       requires-sdk: true
