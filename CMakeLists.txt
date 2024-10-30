@@ -31,24 +31,24 @@ endif()
 
 if(NOT CMAKE_PREFIX_PATH)
     if(WIN32)
-      find_path(Qt_TEMP Qt6/Qt6Config.cmake
+      find_path(Qt_TEMP Qt6Config.cmake
         PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
         PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
-        PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
+        PATH_SUFFIXES "msvc2015_64/Qt6" "msvc2017_64/Qt6" "msvc2019_64/Qt6"
         DOC "Qt CMake Directory"
         NO_DEFAULT_PATH)
     elseif(APPLE)
-        find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+        find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/*
               $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-            PATH_SUFFIXES "clang_64"
+            PATH_SUFFIXES "lib/cmake/Qt6" "clang_64/lib/cmake/Qt6"
             DOC "Qt6 CMake Directory"
             NO_DEFAULT_PATH)
     else()
-        find_path(Qt_TEMP cmake/Qt6/Qt6Config.cmake
+        find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                 $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-            PATH_SUFFIXES "gcc_64" "lib"
+            PATH_SUFFIXES "gcc_64/lib/cmake/Qt6" "lib/cmake/Qt6"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     endif()
