@@ -29,14 +29,14 @@ if(NOT Qt_Root)
     set(Qt_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
 endif()
 
-if(NOT CMAKE_PREFIX_PATH)
+if(NOT Qt6_DIR)
     if(WIN32)
-      find_path(Qt_TEMP Qt6Config.cmake
-        PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
-        PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
-        PATH_SUFFIXES "msvc2015_64/Qt6" "msvc2017_64/Qt6" "msvc2019_64/Qt6"
-        DOC "Qt CMake Directory"
-        NO_DEFAULT_PATH)
+        find_path(Qt_TEMP Qt6Config.cmake
+            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
+            PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
+            PATH_SUFFIXES "msvc2015_64/Qt6" "msvc2017_64/Qt6" "msvc2019_64/Qt6"
+            DOC "Qt CMake Directory"
+            NO_DEFAULT_PATH)
     elseif(APPLE)
         find_path(Qt_TEMP Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/*
@@ -54,13 +54,20 @@ if(NOT CMAKE_PREFIX_PATH)
     endif()
     
     if(Qt_TEMP)
-        set(CMAKE_PREFIX_PATH ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
+        set(Qt6_DIR ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
+
+        if(WIN32)
+            set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${Qt_TEMP}/.. CACHE INTERNAL "Qt Prefix.")
+        else()
+            set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${Qt_TEMP}/../../.. CACHE INTERNAL "Qt Prefix.")
+        endif()
+
         unset(Qt_TEMP CACHE)
     else()
         unset(Qt_TEMP CACHE)
     endif()
     
-    if(NOT CMAKE_PREFIX_PATH)
+    if(NOT Qt6_DIR)
         message(FATAL_ERROR "Unable to locate Qt6Config.cmake. Please check the value of Qt6_Root and set it to the root directory of your Qt6 installation (e.g. /opt/Qt).")
     endif()
 endif()
