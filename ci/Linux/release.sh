@@ -183,13 +183,13 @@ for item in ${libs[@]}; do
 done
 
 # Get Qt plugins
-cp -r /lib/x86_64-linux-gnu/qt6/plugins/xcbglintegrations $RELEASE_DIR/lib/
-cp -r /lib/x86_64-linux-gnu/qt6/plugins/tls $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.7.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
+cp -r /opt/Qt/6.7.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
 
 # Get Qt platforms
 mkdir $RELEASE_DIR/lib/platforms
-cp /lib/x86_64-linux-gnu/qt6/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
-cp /lib/x86_64-linux-gnu/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
+cp /opt/Qt/6.7.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
+cp /opt/Qt/6.7.3/gcc_64/lib/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
 
 patchelf --set-rpath '$ORIGIN/..' $RELEASE_DIR/lib/platforms/libqxcb.so
 
