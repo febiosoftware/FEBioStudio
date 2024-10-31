@@ -128,6 +128,23 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 
 	newMesh->RebuildMesh();
 
+	int N = std::max(pm->CountNodePartitions(), newMesh->CountNodePartitions());
+	for (int i = 0; i < NN1; ++i)
+	{
+		FSNode& nd = newMesh->Node(i);
+		if (nd.m_gid >= 0) nd.m_gid += N;
+	}
+	for (int i = 0; i < NN0; ++i)
+	{
+		FSNode& ns = pm->Node(i);
+		if ((ns.m_gid >= 0) && (ns.m_ntag >= 0))
+		{
+			FSNode& nd = newMesh->Node(ns.m_ntag);
+			nd.m_gid = ns.m_gid;
+		}
+	}
+	newMesh->UpdateNodePartitions();
+
 	for (int i = 0; i < NE0; ++i)
 	{
 		FSElement& es = pm->Element(i);
