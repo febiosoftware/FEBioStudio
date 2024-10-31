@@ -221,19 +221,27 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 
 				if (ps->GetDataFormat() == DATA_FORMAT::DATA_ITEM)
 				{
+					std::vector<int> tag(NE0, -1);
+
+					FEElemList* srcList = ps->BuildElemList();
+					FEElemList::Iterator it = srcList->First();
+					for (int j = 0; j < srcList->Size(); ++j, ++it)
+					{
+						tag[it->m_lid] = j;
+					}
+
 					FEElemList* elemList = pd->BuildElemList();
-					FEElemList::Iterator it = elemList->First();
+					it = elemList->First();
 					for (int j = 0; j < elemList->Size(); ++j, ++it)
 					{
-						int eid = it->m_lid;
-						int m = it->m_pi->m_ntag; assert(m >= 0);
+						int m = tag[it->m_pi->m_ntag]; assert(m >= 0);
 						if (m >= 0)
 						{
 							switch (ps->GetDataType())
 							{
-							case DATA_TYPE::DATA_SCALAR: pd->set(eid, ps->getScalar(m)); break;
-							case DATA_TYPE::DATA_VEC3  : pd->set(eid, ps->getVec3d(m)); break;
-							case DATA_TYPE::DATA_MAT3  : pd->set(eid, ps->getMat3d(m)); break;
+							case DATA_TYPE::DATA_SCALAR: pd->set(j, ps->getScalar(m)); break;
+							case DATA_TYPE::DATA_VEC3  : pd->set(j, ps->getVec3d(m)); break;
+							case DATA_TYPE::DATA_MAT3  : pd->set(j, ps->getMat3d(m)); break;
 							default:
 								assert(false);
 							}
