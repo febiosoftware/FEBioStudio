@@ -17,6 +17,7 @@ cmake -L . -B cmbuild ^
   -DUSE_SSL=ON ^
   -DCAD_FEATURES=ON ^
   -DUSE_NETGEN=ON ^
+  -DMODEL_REPO=ON ^
   -DUSE_ITK=ON ^
   -DBUILD_UPDATER=ON
 )
