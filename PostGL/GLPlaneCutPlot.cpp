@@ -365,7 +365,7 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 					vec3d* r = face.r;
 					float* tex = face.tex;
 					GLColor c = pmat->diffuse;
-					c.a = (byte)(255 * pmat->transparency);
+					c.a = (uint8_t)(255 * pmat->transparency);
 					inactivePoints.push_back(pair < vec3d, GLColor>(r[0], c));
 					inactivePoints.push_back(pair < vec3d, GLColor>(r[1], c));
 					inactivePoints.push_back(pair < vec3d, GLColor>(r[2], c));
