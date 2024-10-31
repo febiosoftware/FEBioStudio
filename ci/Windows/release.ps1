@@ -60,13 +60,13 @@ $bins = @(
     'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
 
     # Qt
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Core.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Widgets.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Gui.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6OpenGLWidgets.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6OpenGL.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Network.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6DBus.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6Core.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6Widgets.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6Gui.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6OpenGLWidgets.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6OpenGL.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6Network.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\Qt6DBus.dll'
 
     # ZLIB
     'C:\vcpkg\buildtrees\zlib\x64-windows-rel\zlib1.dll'
