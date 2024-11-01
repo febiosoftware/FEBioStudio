@@ -205,10 +205,10 @@ void CDiscreteElementNetworkTool::OnApply()
 		{
 			FSNodeSet* pns = po->GetFENodeSet(i);
 
-			FSNodeSet* pnewSet = new FSNodeSet(pmo);
+			FSNodeSet* pnewSet = new FSNodeSet(pm);
 			pnewSet->SetName(pns->GetName());
 			pnewSet->add(pns->CopyItems());
-			pmo->AddFENodeSet(pnewSet);
+			pm->AddFENodeSet(pnewSet);
 		}
 	}
 

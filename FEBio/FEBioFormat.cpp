@@ -2466,9 +2466,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
                         char sz[32] = { 0 };
                         sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
-                        FSNodeSet* ps = new FSNodeSet(po, l);
+                        FSNodeSet* ps = new FSNodeSet(pm, l);
                         ps->SetName(sz);
-                        po->AddFENodeSet(ps);
+                        pm->AddFENodeSet(ps);
 
                         logVar.SetGroupID(ps->GetID());
                     }
@@ -2510,12 +2510,13 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					// create a new element set for this
 					FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
 					GMeshObject* po = inst->GetGObject();
+					FSMesh* pm = po->GetFEMesh();
 
 					char sz[32] = { 0 };
-					sprintf(sz, "elementset%02d", po->FEElemSets() + 1);
-					FSElemSet* ps = new FSElemSet(po, l);
+					sprintf(sz, "elementset%02d", pm->FEElemSets() + 1);
+					FSElemSet* ps = new FSElemSet(pm, l);
 					ps->SetName(sz);
-					po->AddFEElemSet(ps);
+					pm->AddFEElemSet(ps);
 
 					logVar.SetGroupID(ps->GetID());
 				}

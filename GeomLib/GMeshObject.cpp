@@ -150,10 +150,10 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	for (int i = 0; i < po->FEPartSets(); ++i)
 	{
 		FSPartSet* ps = po->GetFEPartSet(i);
-		FSPartSet* pd = new FSPartSet(this);
+		FSPartSet* pd = new FSPartSet(pm);
 		pd->add(ps->CopyItems());
 		pd->SetName(ps->GetName());
-		AddFEPartSet(pd);
+		pm->AddFEPartSet(pd);
 	}
 
 	// copy the mesh data

@@ -124,7 +124,7 @@ void FESurfaceData::Save(OArchive& ar)
 
 void FESurfaceData::Load(IArchive& ar)
 {
-	GObject* po = GetMesh()->GetGObject();
+	FSMesh* pm = GetMesh();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -150,18 +150,18 @@ void FESurfaceData::Load(IArchive& ar)
 		{
 			int listId = -1;
 			ar.read(listId);
-			if (po)
+			if (pm)
 			{
-				FSSurface* pg = dynamic_cast<FSSurface*>(po->FindFEGroup(listId)); assert(pg);
+				FSSurface* pg = dynamic_cast<FSSurface*>(pm->FindFEGroup(listId)); assert(pg);
 				SetItemList(pg);
 			}
 		}
 		else if(nid == CID_MESH_DATA_SURFACE)
 		{
 			// older files (pre 2.1) stored the surface on the mesh data
-			FSSurface* surface = new FSSurface(po);
+			FSSurface* surface = new FSSurface(pm);
 			surface->Load(ar);
-			po->AddFESurface(surface);
+			pm->AddFESurface(surface);
 			SetItemList(surface);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)

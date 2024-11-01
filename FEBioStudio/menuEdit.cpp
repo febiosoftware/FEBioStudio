@@ -403,7 +403,23 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (po == 0) return;
 
 			GMeshObject* pgo = dynamic_cast<GMeshObject*>(po);
-			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()), pgo->GetName());
+			if (pgo && pgo->GetFEMesh())
+			{
+				CCommand* cmd = nullptr;
+				if (dynamic_cast<FEElementSelection*>(psel))
+				{
+					FEModifier* mod = new FEDeleteElements();
+					cmd = new CCmdApplyFEModifier(mod, po);
+				}
+				else
+					cmd = new CCmdDeleteFESelection(pgo, doc->GetItemMode());
+
+				if (!doc->DoCommand(cmd))
+				{
+					QString msg = QString::fromStdString(CCommandManager::GetErrorString());
+					QMessageBox::critical(this, "Delete Elements", msg);
+				}
+			}
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
 			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()), pso->GetName());

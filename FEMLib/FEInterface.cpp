@@ -80,10 +80,10 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 	case GO_EDGE: pitem = new GEdgeList(gm); break;
 	case GO_FACE: pitem = new GFaceList(gm); break;
 	case GO_PART: pitem = new GPartList(gm); break;
-	case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
-	case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
-	case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
-	case FE_ELEMSET: pitem = new FSElemSet((GObject*)0); break;
+	case FE_NODESET: pitem = new FSNodeSet(nullptr); break;
+	case FE_EDGESET: pitem = new FSEdgeSet(nullptr); break;
+	case FE_SURFACE: pitem = new FSSurface(nullptr); break;
+	case FE_ELEMSET: pitem = new FSElemSet(nullptr); break;
 	default:
 		assert(false);
 	}

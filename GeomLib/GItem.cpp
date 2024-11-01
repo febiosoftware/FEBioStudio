@@ -358,7 +358,7 @@ FSEdgeSet* GEdge::GetFEEdgeSet() const
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return nullptr;
 
-	FSEdgeSet* edge = new FSEdgeSet(po);
+	FSEdgeSet* edge = new FSEdgeSet(pm);
 	int eid = GetLocalID();
 	for (int i = 0; i < pm->Edges(); ++i)
 	{

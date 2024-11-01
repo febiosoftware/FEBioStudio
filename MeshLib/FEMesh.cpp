@@ -2366,15 +2366,14 @@ void FSMesh::Load(IArchive& ar)
 		{
 		case CID_MESH_ELEMSET_SECTION:
 			{
-				// TODO: move to GObject serialization
-				FSElemSet* pg = 0;
+				FSElemSet* pg = nullptr;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_ELEMENTSET);
-					pg = new FSElemSet(po);
+					pg = new FSElemSet(this);
 					pg->Load(ar);
-					po->AddFEElemSet(pg);
+					AddFEElemSet(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2382,15 +2381,14 @@ void FSMesh::Load(IArchive& ar)
 			break;
 		case CID_MESH_PARTSET_SECTION:
 		{
-			// TODO: move to GObject serialization
-			FSPartSet* pg = 0;
+			FSPartSet* pg = nullptr;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				pg = 0;
 				assert(ar.GetChunkID() == CID_MESH_PARTSET);
-				pg = new FSPartSet(po);
+				pg = new FSPartSet(this);
 				pg->Load(ar);
-				po->AddFEPartSet(pg);
+				AddFEPartSet(pg);
 
 				ar.CloseChunk();
 			}
@@ -2398,15 +2396,14 @@ void FSMesh::Load(IArchive& ar)
 		break;
 		case CID_MESH_SURF_SECTION:
 			{
-				// TODO: move to GObject serialization
 				FSSurface* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					pg = 0;
+					pg = nullptr;
 					assert(ar.GetChunkID() == CID_MESH_SURFACE);
-					pg = new FSSurface(po);
+					pg = new FSSurface(this);
 					pg->Load(ar);
-					po->AddFESurface(pg);
+					AddFESurface(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2414,15 +2411,14 @@ void FSMesh::Load(IArchive& ar)
 			break;
 		case CID_MESH_EDGESET_SECTION:
 		{
-			// TODO: move to GObject serialization
-			FSEdgeSet* pg = 0;
+			FSEdgeSet* pg = nullptr;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				pg = 0;
+				pg = nullptr;
 				assert(ar.GetChunkID() == CID_MESH_EDGESET);
-				pg = new FSEdgeSet(po);
+				pg = new FSEdgeSet(this);
 				pg->Load(ar);
-				po->AddFEEdgeSet(pg);
+				AddFEEdgeSet(pg);
 
 				ar.CloseChunk();
 			}
@@ -2430,15 +2426,14 @@ void FSMesh::Load(IArchive& ar)
 		break;
 		case CID_MESH_NSET_SECTION:
 			{
-				// TODO: move to GObject serialization
-				FSNodeSet* pg = 0;
+				FSNodeSet* pg = nullptr;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					pg = 0;
+					pg = nullptr;
 					assert(ar.GetChunkID() == CID_MESH_NODESET);
-					pg = new FSNodeSet(po);
+					pg = new FSNodeSet(this);
 					pg->Load(ar);
-					po->AddFENodeSet(pg);
+					AddFENodeSet(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2914,4 +2909,117 @@ FSNodeElementList& FSMesh::NodeElementList()
 {
 	if (m_NEL.IsEmpty()) m_NEL.Build(this);
 	return m_NEL;
+}
+
+void FSMesh::ClearFEGroups()
+{
+	m_pFEPartSet.Clear();
+	m_pFEElemSet.Clear();
+	m_pFESurface.Clear();
+	m_pFEEdgeSet.Clear();
+	m_pFENodeSet.Clear();
+}
+
+void FSMesh::RemoveEmptyFEGroups()
+{
+	clearVector<FSPartSet>(m_pFEPartSet, [](FSPartSet* pg) { return (pg->size() == 0); });
+	clearVector<FSElemSet>(m_pFEElemSet, [](FSElemSet* pg) { return (pg->size() == 0); });
+	clearVector<FSSurface>(m_pFESurface, [](FSSurface* pg) { return (pg->size() == 0); });
+	clearVector<FSEdgeSet>(m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->size() == 0); });
+	clearVector<FSNodeSet>(m_pFENodeSet, [](FSNodeSet* pg) { return (pg->size() == 0); });
+}
+
+void FSMesh::RemoveUnusedFEGroups()
+{
+	clearVector<FSPartSet>(m_pFEPartSet, [](FSPartSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSElemSet>(m_pFEElemSet, [](FSElemSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSSurface>(m_pFESurface, [](FSSurface* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSEdgeSet>(m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSNodeSet>(m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
+}
+
+FSSurface* FSMesh::FindFESurface(const string& name)
+{
+	return m_pFESurface.FindByName(name);
+}
+
+FSEdgeSet* FSMesh::FindFEEdgeSet(const string& name)
+{
+	return m_pFEEdgeSet.FindByName(name);
+}
+
+FSNodeSet* FSMesh::FindFENodeSet(const string& name)
+{
+	return m_pFENodeSet.FindByName(name);
+}
+
+FSPartSet* FSMesh::FindFEPartSet(const std::string& name)
+{
+	return m_pFEPartSet.FindByName(name);
+}
+
+FSGroup* FSMesh::FindFEGroup(int nid)
+{
+	for (int i = 0; i < m_pFEPartSet.Size(); ++i)
+		if (m_pFEPartSet[i]->GetID() == nid) return m_pFEPartSet[i];
+
+	for (int i = 0; i < m_pFEElemSet.Size(); ++i)
+		if (m_pFEElemSet[i]->GetID() == nid) return m_pFEElemSet[i];
+
+	for (int i = 0; i < m_pFESurface.Size(); ++i)
+		if (m_pFESurface[i]->GetID() == nid) return m_pFESurface[i];
+
+	for (int i = 0; i < m_pFEEdgeSet.Size(); ++i)
+		if (m_pFEEdgeSet[i]->GetID() == nid) return m_pFEEdgeSet[i];
+
+	for (int i = 0; i < m_pFENodeSet.Size(); ++i)
+		if (m_pFENodeSet[i]->GetID() == nid) return m_pFENodeSet[i];
+
+	return nullptr;
+}
+
+int FSMesh::FEPartSets() const { return (int)m_pFEPartSet.Size(); }
+int FSMesh::FEElemSets() const { return (int)m_pFEElemSet.Size(); }
+int FSMesh::FESurfaces() const { return (int)m_pFESurface.Size(); }
+int FSMesh::FEEdgeSets() const { return (int)m_pFEEdgeSet.Size(); }
+int FSMesh::FENodeSets() const { return (int)m_pFENodeSet.Size(); }
+
+void FSMesh::AddFEPartSet(FSPartSet* pg) { m_pFEPartSet.Add(pg); }
+void FSMesh::AddFEElemSet(FSElemSet* pg) { m_pFEElemSet.Add(pg); }
+void FSMesh::AddFESurface(FSSurface* pg) { m_pFESurface.Add(pg); }
+void FSMesh::AddFEEdgeSet(FSEdgeSet* pg) { m_pFEEdgeSet.Add(pg); }
+void FSMesh::AddFENodeSet(FSNodeSet* pg) { m_pFENodeSet.Add(pg); }
+
+FSPartSet* FSMesh::GetFEPartSet(int n) { return (n >= 0 && n < (int)m_pFEPartSet.Size() ? m_pFEPartSet[n] : nullptr); }
+FSElemSet* FSMesh::GetFEElemSet(int n) { return (n >= 0 && n < (int)m_pFEElemSet.Size() ? m_pFEElemSet[n] : nullptr); }
+FSSurface* FSMesh::GetFESurface(int n) { return (n >= 0 && n < (int)m_pFESurface.Size() ? m_pFESurface[n] : nullptr); }
+FSEdgeSet* FSMesh::GetFEEdgeSet(int n) { return (n >= 0 && n < (int)m_pFEEdgeSet.Size() ? m_pFEEdgeSet[n] : nullptr); }
+FSNodeSet* FSMesh::GetFENodeSet(int n) { return (n >= 0 && n < (int)m_pFENodeSet.Size() ? m_pFENodeSet[n] : nullptr); }
+
+int FSMesh::RemoveFEPartSet(FSPartSet* pg) { return (int)m_pFEPartSet.Remove(pg); }
+int FSMesh::RemoveFEElemSet(FSElemSet* pg) { return (int)m_pFEElemSet.Remove(pg); }
+int FSMesh::RemoveFESurface(FSSurface* pg) { return (int)m_pFESurface.Remove(pg); }
+int FSMesh::RemoveFEEdgeSet(FSEdgeSet* pg) { return (int)m_pFEEdgeSet.Remove(pg); }
+int FSMesh::RemoveFENodeSet(FSNodeSet* pg) { return (int)m_pFENodeSet.Remove(pg); }
+
+void FSMesh::InsertFEPartSet(int n, FSPartSet* pg) { m_pFEPartSet.Insert(n, pg); }
+void FSMesh::InsertFEElemSet(int n, FSElemSet* pg) { m_pFEElemSet.Insert(n, pg); }
+void FSMesh::InsertFESurface(int n, FSSurface* pg) { m_pFESurface.Insert(n, pg); }
+void FSMesh::InsertFEEdgeSet(int n, FSEdgeSet* pg) { m_pFEEdgeSet.Insert(n, pg); }
+void FSMesh::InsertFENodeSet(int n, FSNodeSet* pg) { m_pFENodeSet.Insert(n, pg); }
+
+int FSMesh::FindFaceIndex(FSFace& face)
+{
+	FSNodeElementList& NEL = NodeElementList();
+	int n0 = face.n[0];
+	if (n0 < 0) return -1;
+	int N = NEL.Valence(n0);
+	FSFace tmp;
+	for (int i = 0; i < N; ++i)
+	{
+		FEElement_* el = NEL.Element(n0, i);
+		int m = FindFace(el, face, tmp);
+		if (m != -1) return el->m_face[m];
+	}
+	return -1;
 }

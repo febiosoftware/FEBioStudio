@@ -592,7 +592,10 @@ FSPartSet* GPartList::BuildPartSet()
 	if (po == nullptr) return nullptr;
 
 	// build the part set
-	FSPartSet* partSet = new FSPartSet(po);
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return nullptr;
+
+	FSPartSet* partSet = new FSPartSet(pm);
 	it = m_Item.begin();
 	for (int n = 0; n < N; ++n, ++it)
 	{

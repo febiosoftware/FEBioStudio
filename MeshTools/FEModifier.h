@@ -523,3 +523,10 @@ public:
 	FEInflateMesh();
 	FSMesh* Apply(FSMesh* pm);
 };
+
+class FEDeleteElements : public FEModifier
+{
+public:
+	FEDeleteElements();
+	FSMesh* Apply(FSMesh* pm);
+};

@@ -418,9 +418,9 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	{
 		std::vector<int> nodelist(nl.m_nodelist);
 		for (int i = 0; i < nodelist.size(); ++i) nodelist[i] = NodeIndex(nodelist[i]);
-		FSNodeSet* pg = new FSNodeSet(m_po, nodelist);
+		FSNodeSet* pg = new FSNodeSet(pm, nodelist);
 		pg->SetName(nl.m_name);
-		m_po->AddFENodeSet(pg);
+		pm->AddFENodeSet(pg);
 	}
 
 	// clean up

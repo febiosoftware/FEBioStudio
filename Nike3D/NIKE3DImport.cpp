@@ -373,10 +373,10 @@ void NIKE3DImport::build_constraints(NIKE3DProject& nike)
 			if (nbc)
 			{
 				// create a nodeset of this BC
-				FSNodeSet* pg = new FSNodeSet(m_po);
+				FSNodeSet* pg = new FSNodeSet(pm);
 				sprintf(szname, "FixedNodeset%02d", nfc++);
 				pg->SetName(szname);
-				m_po->AddFENodeSet(pg);
+				pm->AddFENodeSet(pg);
 
 				// count all nodes that have this BC
 				// assign the nodes to this group
@@ -449,10 +449,10 @@ void NIKE3DImport::build_constraints(NIKE3DProject& nike)
 			for (i=0; i<N; ++i, ++pn) if ((BC[i] == nbc) && (pn->lc == nlc)) ++nfix;
 
 			// create a nodeset of this BC
-			FSNodeSet* pg = new FSNodeSet(m_po);
+			FSNodeSet* pg = new FSNodeSet(pm);
 			sprintf(szname, "DisplacementNodeset%02d", nfc);
 			pg->SetName(szname);
-			m_po->AddFENodeSet(pg);
+			pm->AddFENodeSet(pg);
 
 			// assign the nodes to this group
 			pn = nike.m_DC.begin();
@@ -700,10 +700,10 @@ void NIKE3DImport::build_rigidfacets(NIKE3DProject& nike)
 
 	while (pf != nike.m_Rigid.end())
 	{
-		FSNodeSet* pn = new FSNodeSet(m_po);
+		FSNodeSet* pn = new FSNodeSet(pm);
 		sprintf(szname, "RigidNodeset%2d", nrns);
 		pn->SetName(szname);
-		m_po->AddFENodeSet(pn);
+		pm->AddFENodeSet(pn);
 
 		int nrb = pf->nrb;
 		GMaterial* pgm = m_pMat[nrb-1];
@@ -786,13 +786,13 @@ void NIKE3DImport::build_interfaces(NIKE3DProject& nike)
 		NIKE3DProject::SLIDING_INTERFACE& si = nike.m_SI[i];
 
 		// create the slave surface
-		FSSurface* pss = new FSSurface(m_po);
+		FSSurface* pss = new FSSurface(pm);
 		for (j=0; j<si.nns; ++j, ++pf) pss->add(FindFace(pf->n, 1));
 		sprintf(szname, "SlaveSurface%02d", i+1);
 		pss->SetName(szname);
 
 		// create the master surface
-		FSSurface* pms = new FSSurface(m_po);
+		FSSurface* pms = new FSSurface(pm);
 		for (j=0; j<si.nms; ++j, ++pf) pms->add(FindFace(pf->n, 1));
 		sprintf(szname, "MasterSurface%02d", i+1);
 		pms->SetName(szname);

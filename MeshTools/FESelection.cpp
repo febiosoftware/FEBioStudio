@@ -1118,8 +1118,7 @@ quatd FEElementSelection::GetOrientation()
 FEItemListBuilder* FEElementSelection::CreateItemList()
 {
 	FSMesh* pm = GetMesh();
-	GObject* po = pm->GetGObject();
-	return new FSElemSet(po, m_item);
+	return new FSElemSet(pm, m_item);
 }
 
 FEElement_* FEElementSelection::Element(size_t i)
@@ -1366,11 +1365,10 @@ FEItemListBuilder* FEFaceSelection::CreateItemList()
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 
-	GObject* po = pm->GetGObject();
 	vector<int> fs;
 	for (int i=0; i<pm->Faces(); ++i)
 		if (pm->Face(i).IsSelected()) fs.push_back(i);
-	return new FSSurface(po, fs);
+	return new FSSurface(pm, fs);
 }
 
 FEFaceSelection::Iterator FEFaceSelection::begin()
@@ -1595,11 +1593,10 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 {
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
-	GObject* po = pm->GetGObject();
 	vector<int> es;
 	for (int i=0; i<pm->Edges(); ++i)
 		if (pm->Edge(i).IsSelected()) es.push_back(i);
-	return new FSEdgeSet(po, es);
+	return new FSEdgeSet(pm, es);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1781,6 +1778,5 @@ FEItemListBuilder* FENodeSelection::CreateItemList()
 {
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
-	GObject* po = pm->GetGObject();
-	return new FSNodeSet(po, m_items);
+	return new FSNodeSet(pm, m_items);
 }

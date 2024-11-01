@@ -266,19 +266,12 @@ public:
 	void InsertFENodeSet(int n, FSNodeSet* pg);
 	void InsertFEPartSet(int n, FSPartSet* pg);
 
-	FSPartSet* FindFEPartSet(const std::string& name);
-
 	FSGroup* FindFEGroup(int nid);
-
+	FSPartSet* FindFEPartSet(const std::string& name);
 	FSSurface* FindFESurface(const string& szname);
 	FSEdgeSet* FindFEEdgeSet(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
-	void ClearFEPartSets();
-	void ClearFEElementSets();
-	void ClearFESurfaces();
-	void ClearFEEdgeSets();
-	void ClearFENodeSets();
 	void ClearFEGroups();
 
 	void RemoveEmptyFEGroups();
