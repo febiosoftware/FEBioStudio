@@ -219,7 +219,6 @@ class Ui::CDlgFEBioOptimize
 public:
 	FSModel*	m_fem;
 	FEBioOpt	opt;
-	int			m_theme;
 
 	// page2 (Options)
 	QComboBox*	method;
@@ -253,12 +252,6 @@ public:
 public:
 	void setup(QWizard* w)
 	{
-		if (m_theme == 1)
-		{
-			w->setWizardStyle(QWizard::ClassicStyle);
-			w->setStyleSheet("background-color:#353535");
-		}
-
 		w->addPage(GenerateIntro());
 		w->addPage(GenerateOptionsPage());
 		w->addPage(GenerateParametersPage());
@@ -427,11 +420,6 @@ public:
 		paramTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 		paramTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 
-		if (m_theme == 0)
-			paramTable->setStyleSheet("QHeaderView::section { background-color:lightgray }");
-		else
-			paramTable->setStyleSheet("QHeaderView::section { background-color:gray }");
-
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addLayout(form);
 		l->addLayout(h);
@@ -483,11 +471,6 @@ public:
 			dataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 			dataTable->setSelectionMode(QAbstractItemView::SingleSelection);
 			dataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-			if (m_theme == 0)
-				dataTable->setStyleSheet("QHeaderView::section { background-color:lightgray }");
-			else
-				dataTable->setStyleSheet("QHeaderView::section { background-color:gray }");
 
 			l1->addLayout(form);
 			l1->addLayout(h);
@@ -562,7 +545,6 @@ CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(parent->GetDocument());
 
 	setWindowTitle("Generate FEBio optimization");
-	ui->m_theme = parent->currentTheme();
 	ui->m_fem = doc->GetFSModel();
 	ui->setup(this);
 

@@ -134,11 +134,7 @@ void CWelcomePage::Activate()
 	page.replace("_RECENT_FILES_", fileLinks);
 	page.replace("_RECENT_PROJECTS_", prjLinks);
 
-	int theme = m_wnd->currentTheme();
-	if (theme == 0)
-		page.replace("_BGCOLOR_", "#fffae7");
-	else
-		page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
+	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 
 	QString updateText;
 	if(m_wnd->updateAvailable())

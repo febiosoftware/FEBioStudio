@@ -30,16 +30,17 @@ SOFTWARE.*/
 #include <QIcon>
 #include <QPixmap>
 #include <QPainter>
+#include <QApplication>
+#include <QStyleHints>
 
 CIconProvider* CIconProvider::m_instance = nullptr;
-bool CIconProvider::m_dark = false;
-int CIconProvider::m_dpr = 0;
+double CIconProvider::m_dpr = 0;
 
-void CIconProvider::Instantiate(bool dark, int dpr)
+void CIconProvider::Instantiate(double dpr)
 {
 	if(!m_instance)
 	{
-		m_instance = new CIconProvider(dark, dpr);
+		m_instance = new CIconProvider(dpr);
 	}
 }
 
@@ -152,15 +153,17 @@ QPixmap CIconProvider::BuildPixMap(const QColor& c, Shape shape, int size)
 
 QString CIconProvider::themedIconURL(const QString& iconName)
 {
+    bool dark = qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+
 	QString rs(iconName);
-	if (m_dark)
+	if (dark)
 	{
 		rs += "_neg";
 	}
 	QString url = ":/icons/" + rs + ".png";
 
 	// make sure the icon exists
-	if (m_dark)
+	if (dark)
 	{
 		QFile f(url);
 		if (!f.exists())

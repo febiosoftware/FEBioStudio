@@ -219,7 +219,6 @@ private:
 
 struct FBS_SETTINGS
 {
-	int		uiTheme;		// the UI theme (0 = default, 1 = dark)
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
 
