@@ -37,7 +37,7 @@ enum class Shape {Circle, Square};
 class CIconProvider
 {
 public:
-	static void Instantiate(bool dark, int dpr);
+	static void Instantiate(double dpr);
 
 	static QIcon GetIcon(const QString& iconName);
 	static QIcon GetIcon(const QString& baseIconName, Emblem emblem);
@@ -50,7 +50,7 @@ public:
 
 private:
 	CIconProvider() {}
-	CIconProvider(bool dark, int dpr) {m_dark = dark; m_dpr = dpr;}
+	CIconProvider(double dpr) {m_dpr = dpr;}
 	CIconProvider(CIconProvider const&) {}
 	CIconProvider& operator=(CIconProvider const&) { return *this; }
 	virtual ~CIconProvider(){}
@@ -59,6 +59,5 @@ private:
 	static QString emblemIconURL(Emblem emblem);
 
 	static CIconProvider* m_instance;
-	static bool m_dark;
-	static int m_dpr;
+	static double m_dpr;
 };

@@ -6,6 +6,7 @@
 #include <qsyntaxhighlighter.h>
 #include <QDockWidget>
 #include <QApplication>
+#include <QStyleHints>
 #include "MainWindow.h"
 #include <QTextCursor>
 #include <QTextBlock>
@@ -127,11 +128,13 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 	m_countCache.first = -1;
 	m_countCache.second = -1;
 
+    bool darkTheme = qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+
 	QPalette p = palette();
-	p.setColor(QPalette::Text, (!wnd->usingDarkTheme() ? Qt::darkBlue : QColor::fromRgb(51, 153, 255)));
+	p.setColor(QPalette::Text, (!darkTheme ? Qt::darkBlue : QColor::fromRgb(51, 153, 255)));
 	setPalette(p);
 
-	if (!wnd->usingDarkTheme())
+	if (!darkTheme)
 	{
 		XMLHighlighter::setColor(Qt::black, XMLHighlighter::XML_VALUE);
 		XMLHighlighter::setColor(Qt::red, XMLHighlighter::XML_ATTRIBUTE_NAME);
@@ -269,7 +272,8 @@ void XMLEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 		return;
 	}
 
-	int theme = m_wnd->currentTheme();
+	int theme = 0;
+    if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) theme = 0;
 	painter.fillRect(e->rect(), (theme == 0 ? Qt::darkGray : Qt::black));
 	painter.setPen((theme == 0 ? Qt::white : Qt::darkGray));
 

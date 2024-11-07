@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <QTabWidget>
 #include <QListWidget>
 #include <QAction>
+#include <QApplication>
+#include <QStyleHints>
 #include <QLabel>
 #include <QDialogButtonBox>
 #include <QInputDialog>
@@ -154,11 +156,6 @@ public:
 	{
 		addBoolProperty(&m_apply, "Emulate apply action");
 		addBoolProperty(&m_bcmd , "Clear undo stack on save");
-		QStringList themes  = QStringList() << "Default" << "Dark";
-#ifdef LINUX
-		themes << "Adwaita" << "Adwaita Dark";
-#endif
-		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
 		addProperty("Recent files list", CProperty::Action)->info = QString("Clear");
 		addIntProperty(&m_autoSaveInterval, "AutoSave Interval (s)");
 	}
@@ -1128,7 +1125,6 @@ void CDlgSettings::UpdateSettings()
 
 	ui->m_ui->m_apply = (view.m_apply == 1);
 	ui->m_ui->m_bcmd = m_pwnd->clearCommandStackOnSave();
-	ui->m_ui->m_theme = m_pwnd->currentTheme();
 	ui->m_ui->m_autoSaveInterval = m_pwnd->autoSaveInterval();
 
 	ui->m_select->m_bconnect = view.m_bconn;
@@ -1220,8 +1216,8 @@ void CDlgSettings::apply()
 
 	if (view.m_defaultFGColorOption == 0)
 	{
-		int theme = m_pwnd->currentTheme();
-		if (theme == 0) view.m_defaultFGColor = GLColor(0,0,0);
+		int theme = 0;
+		if (qApp->styleHints()->colorScheme() != Qt::ColorScheme::Dark) view.m_defaultFGColor = GLColor(0,0,0);
 		else view.m_defaultFGColor = GLColor(255, 255, 255);
 	}
 	GLWidget::set_base_color(view.m_defaultFGColor);
@@ -1278,14 +1274,6 @@ void CDlgSettings::apply()
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
 
-	int oldTheme = m_pwnd->currentTheme();
-	if (ui->m_ui->m_theme != oldTheme)
-	{
-		m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
-		view.Defaults(ui->m_ui->m_theme);
-		QMessageBox::information(this, "FEBio Studio", "Changing the theme requires a restart of FEBio Studio for all changes to take effect.");
-	}
-
 	// update units
 	int newUnit = ui->m_unit->m_unit;
 	int nops = ui->m_unit->getOption();
@@ -1339,7 +1327,8 @@ void CDlgSettings::onReset()
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 	CGLView* glview = m_pwnd->GetGLView();
 	GLViewSettings& view = glview->GetViewSettings();
-	int ntheme = m_pwnd->currentTheme();
+	int ntheme = 0;
+    if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
 	view.Defaults(ntheme);
 	UpdateSettings();
 	m_pwnd->RedrawGL();

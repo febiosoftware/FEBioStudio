@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include "FileThread.h"
 #include "GLHighlighter.h"
 #include <QStyleFactory>
+#include <QStyleHints>
 #include "GraphWindow.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
@@ -110,31 +111,6 @@ QIcon CResource::Icon(const QString& iconName)
 	return CIconProvider::GetIcon(iconName);
 }
 
-// create a dark style theme (work in progress)
-void darkStyle()
-{
-	qApp->setStyle(QStyleFactory::create("Fusion"));
-	QPalette palette = qApp->palette();
-	palette.setColor(QPalette::Window, QColor(53, 53, 53));
-	palette.setColor(QPalette::WindowText, Qt::white);
-	palette.setColor(QPalette::Base, QColor(30, 30, 30));
-	palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-	palette.setColor(QPalette::ToolTipBase, Qt::white);
-	palette.setColor(QPalette::ToolTipText, Qt::black);
-	palette.setColor(QPalette::Text, Qt::white);
-	palette.setColor(QPalette::Button, QColor(53, 53, 53));
-	palette.setColor(QPalette::ButtonText, Qt::white);
-	palette.setColor(QPalette::BrightText, Qt::red);
-	palette.setColor(QPalette::Highlight, QColor(51, 153, 255));
-	palette.setColor(QPalette::HighlightedText, Qt::white);
-	palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
-	palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
-	palette.setColor(QPalette::Link,  QColor("Dodgerblue"));
-	qApp->setPalette(palette);
-
-	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
-}
-
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
@@ -178,54 +154,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	PM.AddPalette(pal);
 	PM.SetCurrentIndex(PM.Palettes() - 1);
 
-	// read the theme option, before we build the UI
-	if (reset == false)
-		readThemeSetting();
-
-	// activate dark style
-	if (ui->m_settings.uiTheme == 1)
-	{
-		darkStyle();
-
-		// NOTE: I'm not sure if I can set the dark theme before I can create the document.
-		//       Since the bg colors are already set, I need to do this here. Make sure
-		//       the values set here coincide with the values from CDocument::NewDocument
-/*		GLViewSettings& v = m_doc->GetViewSettings();
-		v.m_col1 = GLColor(83, 83, 83);
-		v.m_col2 = GLColor(128, 128, 128);
-		v.m_nbgstyle = BG_HORIZONTAL;
-*/
-		GLWidget::set_base_color(GLColor(255, 255, 255));
-	}
-#ifdef WIN32
-	if (ui->m_settings.uiTheme == 0)
-	{
-		// From Qt 6.5 the default style (light or dark) is taken from the Windows settings.
-		// This currently causes issues, so for now we're forcing the windowsvista style, which does not have
-		// a dark option. 
-		qApp->setStyle(QStyleFactory::create("windowsvista"));
-	}
-#endif
-#ifdef LINUX
-	if(ui->m_settings.uiTheme == 2)
-	{
-		qApp->setStyle(QStyleFactory::create("adwaita"));
-	}
-	else if(ui->m_settings.uiTheme == 3)
-	{
-		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
-
-//		GLViewSettings& v = m_doc->GetViewSettings();
-//		v.m_col1 = GLColor(83, 83, 83);
-//		v.m_col2 = GLColor(128, 128, 128);
-//		v.m_nbgstyle = BG_HORIZONTAL;
-
-		GLWidget::set_base_color(GLColor(255, 255, 255));
-	}
-#endif
-
 	// Instantiate IconProvider singleton
-	CIconProvider::Instantiate(usingDarkTheme(), devicePixelRatio());
+	CIconProvider::Instantiate(devicePixelRatio());
 
 	// setup the GUI
 	ui->setupUi(this);
@@ -293,31 +223,6 @@ CMainWindow::~CMainWindow()
 }
 
 //-----------------------------------------------------------------------------
-// get the current theme
-int CMainWindow::currentTheme() const
-{
-	return ui->m_settings.uiTheme;
-}
-
-//-----------------------------------------------------------------------------
-// check for dark theme
-bool CMainWindow::usingDarkTheme() const
-{
-	bool dark = currentTheme() == 1 || currentTheme() == 3;
-
-#ifdef __APPLE__
-	if(!dark)
-	{
-		QColor text = qApp->palette().color(QPalette::Text);
-
-		dark = (text.red() + text.green() + text.blue())/3 >= 128;
-	}
-#endif
-
-	return dark;
-}
-
-//-----------------------------------------------------------------------------
 // clear command stack on save
 bool CMainWindow::clearCommandStackOnSave() const
 {
@@ -329,13 +234,6 @@ bool CMainWindow::clearCommandStackOnSave() const
 void CMainWindow::setClearCommandStackOnSave(bool b)
 {
 	ui->m_settings.clearUndoOnSave = b;
-}
-
-//-----------------------------------------------------------------------------
-// set the current theme
-void CMainWindow::setCurrentTheme(int n)
-{
-	ui->m_settings.uiTheme = n;
 }
 
 //-----------------------------------------------------------------------------
@@ -1880,7 +1778,6 @@ void CMainWindow::writeSettings()
 		settings.setValue("geometry", saveGeometry());
 		settings.setValue("state", saveState());
 
-		settings.setValue("theme", ui->m_settings.uiTheme);
 		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
 		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
 		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
@@ -1998,14 +1895,6 @@ void CMainWindow::writeSettings()
 	}
 }
 
-void CMainWindow::readThemeSetting()
-{
-	QSettings settings("MRLSoftware", "FEBio Studio");
-	settings.beginGroup("MainWindow");
-	ui->m_settings.uiTheme = settings.value("theme", 0).toInt();
-	settings.endGroup();
-}
-
 void CMainWindow::readSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
@@ -2016,7 +1905,6 @@ void CMainWindow::readSettings()
 		restoreGeometry(settings.value("geometry").toByteArray());
 		restoreState(settings.value("state").toByteArray());
 
-		ui->m_settings.uiTheme = settings.value("theme", 0).toInt();
 		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
 		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
