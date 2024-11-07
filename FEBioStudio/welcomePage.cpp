@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QApplication>
+#include <QStyleHints>
 #include "welcomePage.h"
 #include "MainWindow.h"
 #include "version.h"
@@ -134,8 +135,7 @@ void CWelcomePage::Activate()
 	page.replace("_RECENT_FILES_", fileLinks);
 	page.replace("_RECENT_PROJECTS_", prjLinks);
 
-	int theme = m_wnd->currentTheme();
-	if (theme == 0)
+	if (qApp->styleHints()->colorScheme() != Qt::ColorScheme::Dark)
 		page.replace("_BGCOLOR_", "#fffae7");
 	else
 		page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
