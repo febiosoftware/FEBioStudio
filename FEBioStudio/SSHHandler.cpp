@@ -843,7 +843,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #ifdef WIN32
 		WriteFile(fileHandle, buffer.data(), nbytes, &nwritten, NULL);
 #else
-		nwritten = write(fd, buffer, nbytes);
+		nwritten = write(fd, buffer.data(), nbytes);
 
 #endif
 		if (nwritten != nbytes)
