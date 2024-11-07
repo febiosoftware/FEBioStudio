@@ -594,11 +594,18 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
 									el.m_node[2] = face.n[2];
 									el.m_node[3] = face.n[3];
 
-									el.m_node[4] = NN0 + (l - 1) * nn + pmnew->Node(face.n[0]).m_ntag;
-									el.m_node[5] = NN0 + (l - 1) * nn + pmnew->Node(face.n[1]).m_ntag;
-									el.m_node[6] = NN0 + (l - 1) * nn + pmnew->Node(face.n[2]).m_ntag;
-									el.m_node[7] = NN0 + (l - 1) * nn + pmnew->Node(face.n[3]).m_ntag;
+									int m[4];
+									for (int k = 0; k < 4; ++k)
+									{
+										int mk = pmnew->Node(face.n[k]).m_ntag;
+										if (mk >= 0) m[k] = NN0 + (l - 1) * nn + mk;
+										else m[k] = face.n[k];
+									}
 
+									el.m_node[4] = m[0];
+									el.m_node[5] = m[1];
+									el.m_node[6] = m[2];
+									el.m_node[7] = m[3];
 								}
 								// move the face
 								face.n[0] = el.m_node[4];
