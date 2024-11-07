@@ -60,13 +60,12 @@ $bins = @(
     'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
 
     # Qt
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Core.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Widgets.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Gui.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6OpenGLWidgets.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6OpenGL.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Network.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6DBus.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Core.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Widgets.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Gui.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6OpenGLWidgets.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6OpenGL.dll'
+    'C:\usr\local\Qt\6.7.3\msvc2019_64\bin\Qt6Network.dll'
 
     # ZLIB
     'C:\vcpkg\buildtrees\zlib\x64-windows-rel\zlib1.dll'
@@ -116,6 +115,7 @@ $bins = @(
 
     # libZip
     'C:\usr\local\bin\zip.dll'
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\zstd.dll'
 
     # FFMPEG
     'C:\Program Files\FFmpeg\bin\*.dll'
@@ -125,19 +125,6 @@ $bins = @(
 
     # SQLite
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\sqlite3.dll'
-
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\zstd.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\brotlidec.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\brotlicommon.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\icudt74.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\icuuc74.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\icuin74.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\double-conversion.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\pcre2-16.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\libpng16.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\harfbuzz.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\freetype.dll'
-    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\bz2.dll'
 )
 
 Foreach ($i in $febioBins)
@@ -158,16 +145,16 @@ Foreach ($i in $bins)
 }
 
 mkdir release\bin\platforms
-cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\platforms\qwindows.dll release\bin\platforms
+cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\platforms\qwindows.dll release\bin\platforms
 
 mkdir release\bin\styles
-cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\styles\qwindowsvistastyle.dll release\bin\styles
+cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\styles\qmodernwindowsstyle.dll release\bin\styles
 
 mkdir release\bin\tls
-cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\tls\*.dll release\bin\tls
+cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\tls\*.dll release\bin\tls
 
 mkdir release\bin\imageformats
-cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\imageformats\*.dll release\bin\imageformats
+cp C:\usr\local\Qt\6.7.3\msvc2019_64\plugins\imageformats\*.dll release\bin\imageformats
 
 # Create docs
 $docs = @(
