@@ -186,6 +186,10 @@ done
 cp -r /opt/Qt/6.7.3/gcc_64/plugins/xcbglintegrations $RELEASE_DIR/lib/
 cp -r /opt/Qt/6.7.3/gcc_64/plugins/tls $RELEASE_DIR/lib/
 
+# Remove extra "debug" files
+rm $RELEASE_DIR/lib/xcbglintegrations/*.debug
+rm $RELEASE_DIR/lib/tls/*.debug
+
 # Get Qt platforms
 mkdir $RELEASE_DIR/lib/platforms
 cp /opt/Qt/6.7.3/gcc_64/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
