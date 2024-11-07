@@ -33,6 +33,12 @@ SOFTWARE.*/
 #include <QtCore/QDir>
 #include "ui_createplugin.h"
 
+#ifdef WIN32
+    const char* sep = "\\";
+#else
+    const char* sep = "/";
+#endif
+
 //=============================================================================
 CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(new CDlgCreatePluginUI)
 {
@@ -125,7 +131,7 @@ void CDlgCreatePlugin::accept()
 		// automatically save the project file
 		dir.cd(pluginName);
 		pluginPath = QDir::toNativeSeparators(dir.absolutePath());
-		QString prjPath = pluginPath + "\\" + pluginName + ".fsp";
+		QString prjPath = pluginPath + sep + pluginName + ".fsp";
 		prj->Save(prjPath);
 
 		// then, add a folder for the plugin
@@ -158,10 +164,10 @@ void CDlgCreatePlugin::accept()
 	config.args        = ui->opsPage->GetOptions();
 	config.sdkInc      = ui->m_wnd->GetSDKIncludePath();
 	config.sdkLib      = ui->m_wnd->GetSDKLibraryPath();
-	config.headerFile  = config.path + "\\" + config.className + ".h";
-	config.sourceFile  = config.path + "\\" + config.className + ".cpp";
-	config.mainFile    = config.path + "\\main.cpp";
-	config.cmakeFile   = config.path + "\\CMakeLists.txt";
+	config.headerFile  = config.path + sep + config.className + ".h";
+	config.sourceFile  = config.path + sep + config.className + ".cpp";
+	config.mainFile    = config.path + sep + "main.cpp";
+	config.cmakeFile   = config.path + sep + "CMakeLists.txt";
 
 	// generate all files
 	if (GeneratePluginFiles(config) == false)
@@ -240,10 +246,10 @@ void CDlgAddPluginClass::accept()
 	config.args = ui->opsPage->GetOptions();
 	config.sdkInc = ui->m_wnd->GetSDKIncludePath();
 	config.sdkLib = ui->m_wnd->GetSDKLibraryPath();
-	config.headerFile = config.path + "\\" + config.className + ".h";
-	config.sourceFile = config.path + "\\" + config.className + ".cpp";
-	config.mainFile = config.path + "\\main.cpp";
-	config.cmakeFile = config.path + "\\CMakeLists.txt";
+	config.headerFile = config.path + sep + config.className + ".h";
+	config.sourceFile = config.path + sep + config.className + ".cpp";
+	config.mainFile = config.path + sep + "main.cpp";
+	config.cmakeFile = config.path + sep + "CMakeLists.txt";
 
 	// generate all files
 	if (GeneratePluginFiles(config) == false)

@@ -59,7 +59,7 @@ const char* szcmake = \
 
 // This defines the main.cpp file, which registers feature classes.
 const char* szmain = \
-"#include <FECore\\FECoreKernel.h>\n" \
+"#include <FECore/FECoreKernel.h>\n" \
 "#include \"$(CLASS_NAME).h\"\n\n"\
 "FECORE_EXPORT unsigned int GetSDKVersion()\n" \
 "{\n" \
@@ -73,7 +73,7 @@ const char* szmain = \
 "}\n";
 
 const char* szmain_no_module = \
-"#include <FECore\\FECoreKernel.h>\n" \
+"#include <FECore/FECoreKernel.h>\n" \
 "#include \"$(CLASS_NAME).h\"\n\n"\
 "FECORE_EXPORT unsigned int GetSDKVersion()\n" \
 "{\n" \
@@ -89,7 +89,7 @@ const char* szmain_no_module = \
 // elastic materials
 // ============================================================================
 const char* szhdr_mat = \
-"#include <FEBioMech\\$(ARG1).h>\n\n" \
+"#include <FEBioMech/$(ARG1).h>\n\n" \
 "class $(CLASS_NAME) : public $(ARG1)\n" \
 "{\n" \
 "public:\n" \
@@ -133,7 +133,7 @@ const char* szsrc_mat = \
 // meshdata generator
 // ============================================================================
 const char* szhdr_mdg = \
-"#include <FECore\\FEDataGenerator.h>\n\n" \
+"#include <FECore/FEDataGenerator.h>\n\n" \
 "class $(CLASS_NAME) : public FEElemDataGenerator\n" \
 "{\n" \
 "public:\n" \
@@ -239,7 +239,7 @@ const char* szpd_surface_item = \
 // surface load
 // ============================================================================
 const char* szhdr_sl = \
-"#include <FECore\\FESurfaceLoad.h>\n\n" \
+"#include <FECore/FESurfaceLoad.h>\n\n" \
 "class $(CLASS_NAME) : public FESurfaceLoad\n" \
 "{\n" \
 "public:\n" \
@@ -287,7 +287,7 @@ const char* szsrc_sl = \
 // log data
 // ============================================================================
 const char* szhdr_ld = \
-"#include <FECore\\$(ARG1)>\n\n" \
+"#include <FECore/$(ARG1)>\n\n" \
 "class $(CLASS_NAME) : public $(ARG2)\n" \
 "{\n" \
 "public:\n" \
@@ -309,7 +309,7 @@ const char* szsrc_ld = \
 // Callbacks
 // ============================================================================
 const char* szhdr_cb = \
-"#include <FECore\\FECallBack.h>\n\n" \
+"#include <FECore/FECallBack.h>\n\n" \
 "class $(CLASS_NAME) : public FECallBack\n" \
 "{\n" \
 "public:\n" \
@@ -338,7 +338,7 @@ const char* szsrc_cb = \
 // Tasks
 // ============================================================================
 const char* szhdr_task = \
-"#include <FECore\\FECoreTask.h>\n\n" \
+"#include <FECore/FECoreTask.h>\n\n" \
 "class $(CLASS_NAME) : public FECoreTask\n" \
 "{\n" \
 "public:\n" \
@@ -374,7 +374,7 @@ const char* szsrc_task = \
 // Linear Solver
 // ============================================================================
 const char* szhdr_ls = \
-"#include <FECore\\LinearSolver.h>\n\n" \
+"#include <FECore/LinearSolver.h>\n\n" \
 "class $(CLASS_NAME) : public LinearSolver\n" \
 "{\n" \
 "public:\n" \
