@@ -46,7 +46,8 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QWizard(parent), ui(ne
 	setMinimumSize(QSize(600, 300));
 	ui->m_wnd = parent;
 
-	if (parent->currentTheme() == 1)
+	// TODO: Do we still need this?
+	if (parent->usingDarkTheme())
 	{
 		setWizardStyle(QWizard::ClassicStyle);
 		setStyleSheet("background-color:#353535");
@@ -205,7 +206,8 @@ CDlgAddPluginClass::CDlgAddPluginClass(CMainWindow* parent, FEBioStudioProject* 
 	setMinimumSize(QSize(600, 300));
 	ui->m_wnd = parent;
 
-	if (parent->currentTheme() == 1)
+	// TODO: do we still need this?
+	if (parent->usingDarkTheme())
 	{
 		setWizardStyle(QWizard::ClassicStyle);
 		setStyleSheet("background-color:#353535");

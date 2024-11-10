@@ -4,6 +4,159 @@
 
 *****************************************************************
 
+
+===========================================================================
+
+ R E L E A S E   2.8   11/7/2024
+
+===========================================================================
+
+New Features:
+* Added modifier to delete elements.
+* Added density option for fiber visualization.
+* Implemented filter for converting element data to face data (for DATA_ITEM format).
+* Implemented "delete all" context menu for mesh data.
+* Implemented "delete all" context menu for the mesh adaptors.
+* Added option to export hybrid meshes (i.e. mesh of elements with different element types). Mesh of hybrid part is not split. Instead, degenerate elements are written.
+* Added support for taking time derivative and exporting element region data.
+* Added set of units for mm-mg-s
+* Added tool for AddNode modifier.
+* Added obj file reader.
+* Added some basic support for reading ArtiSynth files.
+* Implemented path selection for edges.
+* Added custom ui tool for Add Triangle modifier.
+* Added ability to perform adaptive curve extrusion.
+* Added ability to fix jagged edges of surface meshes
+* Added active status flag to discrete objects.
+* Added context menu to hide inactive parts of an object.
+* Added option to set parts as inactive. Inactive parts are not exported to the feb file.
+* Implemented data filter that projects data onto the surface normal.
+* Object manipulators are implemented The object manipulator allows users to change the object's shape through the UI. Cleaned up selection classes for geometry items.
+* Implemented color picker tool for quickly assigning colors to objects or to a part's material.
+
+Improvements:
+* Delete elements modifier now updates named selections and part data.
+* Now partitioning Ansys-imported mesh based on Field1 (material number).
+* Part sets and part data is now copied when converting to editable mesh.
+* Added support for interpolating face data with region format.
+* Job report dialog is now displayed even when job is cancelled.
+* Added check to export of surface pairs to see if the primary and secondary surfaces are found.
+* Named selections are now automatically removed if they become unused when a model component is removed.
+* Implemented different algorithm for evaluating a material's center of mass.
+* Modified "volume ratio" and "volume strain" datafields to work better with multi-mesh models.
+* Added shortcut ('a') and corresponding command to toggle the selected parts' active state.
+* Distance parameter now also scales scalar map for extrude faces tool.
+* Implemented extrude tool that can use a map, read from a file, to adjust the local extrusion direction and distance.
+* Made sure correct units are set after reading a file.
+* Added support for vec2d properties and fixed some issues with vector_double properties. Added options to slice plot to set the slice range and add user slices.
+* Integrate Window now uses the source field instead of the Y field to select the source. Selections are now determined prior to integration in order to speed up calculations. Now using omp to speed up integration over a planecut.
+* Removed SITKImage class. SITK is only used to read files and fitler images. Image data is now copied from SITK images into 3DImage
+* Added report when meshing finishes.
+* Added better check to see if an xml tag's value is empty.
+* Made sure correct units are used after loading febio files.
+* Set symmetric_stiffness flag for sliding-elastic to false using create handler.
+* Added create handler for setting matrix format for FESolver to preferred.
+* Added some interaction to the plane cut tool.
+* Implemented new algorithm for finding nodes along shortest path.
+* Added support for .key extension for reading LS-dyna file. Fixed some isses with the LS dyna reader.
+* Added seperators between mesh selection tools and options. Select path tool no longer requires select connected to be on.
+* Added error message if only one edge is selected in Fix Jagged Edges
+* Regenerate node and element IDs after split modifier.
+* Minor changes to FEInflateMesh and FENetgenMesher
+* Removed occ object merge from STEP import and moved it to the merge tool.
+* Status flags are now serialized for GParts and discrete element sets.
+* Added part validator to check for zero shell thickness.
+* Added ability to extrude edges in surface meshes
+* Inactive discrete sets are now shown with italic font in model tree.
+* Inactive parts and discrete objects are rendered dark-gray.
+* Added export status flag to mesh items. Now using this to selectively export items from active parts only.
+* Inactive parts are now shown as italic in model tree.
+* Added warning messages to Edit\Find menu.
+* Replaced Part Selector with Part Viewer tool.
+* Color is now assigned based on the object color mode in color-picker tool.
+* Added check for degenerate elements in revolve mesh tool.
+* Added option to manipulate surfaces of objects.
+* Adjusted data field ID so that field codes can be 16 bit instead of 8. (This allows more than 256 fields to be indexed.)
+* Added support for domain data to febio logfile.
+* FEMesh now stores its FENodeElement list so it does not need to be recalculated.
+* Added options to Mirror tool to mirror about face selection or custom plane.
+* Saved line size to settings. Added option to set font size used for rendering tag labels.
+* Started work on expanding support for generating optimization input files.
+* Implemented different algorithm for estimating surface normal in triangulate.
+* FE nodes are now mapped to the geometry nodes in the NetGenMesher.
+* Added variable argument Write function to FSLogger. Now using that in NetGenMesher, instead of CLogger.
+* Some minor refactoring of FSLogger so it can be used safely in threaded tasks.
+* Model check now reports when there are no issues found.
+
+Bug Fixes:
+* Fixed issue in delete-elements modifier that aims to preserve node partitions.
+* Fixed issue with revolve faces tool that was not creating correct denegerate hexes.
+* Fixed issue with preserving part data in the delete-elements modifier.
+* Fixed issue with transparency of planecuts.
+* Fixed some issues with visualization of planecuts on post side.
+* Fixed bug in Netgen mesher which set granularity to 0.001 when user sepcifies 0. Added minimum element size in Netgen mesher.
+* Mesh state is now updated for all meshes when enabling/disabling materials, not just the active one.
+* Fixed crash in CFEBioJob's destructor.
+* Fixed issue with importing must point curves from old fsm file.
+* Fixed crashed when changing enum properties.
+* Fixed bug in Archive::read when reading std::vector<vec2d>.
+* Fixed issue with importing mat3s data from file.
+* Fixed issue where material properties were not getting updated.
+* Fixed potential crash when exporting mesh data.
+* Made it so that object IDs and names are sequential when they are added to the model.
+* Fixed bug in processing element sets from feb input file.
+* Fixed issues with displaying mesh data when mesh inspector is active.
+* Fixed issue with importing part lists for mesh adaptors.
+* Fixed bug in extrude map tool.
+* Fixed bug in camera animation.
+* Fixed some issues with legacy VTK file reader.
+* Fixed issue with initialization of colormap widget.
+* Fixed potential crash due to double deletion of thread.
+* Fixed some issues with reading feb 1.2 files.
+* Fixed issue with selecting nodesets of multi-mesh models.
+* Implemented better support for reading springs from Abaqus input file. Fixed some issues related to repeated solid sections and element sets in Abaqus input file.
+* Fixed issue where colormap changes in settings were not immediately visible.
+* Fixed crashes due to heap corruption of FSElement's m_h array.
+* Fixed some issues in Abaqus reader.
+* Fixed bug in new path selection for nodes. Added support for path selection of surface edges and faces.
+* Fixed region selection for discrete springs.
+* Fixed issue with selecting surfaces in a model that has multiple meshes.
+* Fixed bug in hiding items.
+* Fixed some issues with inflate tool.
+* Fixed some issues with reading nodesets from feb2 files.
+* Fixed compiler issue with older versions of Qt.
+* Fixed bug in LSDyna file reader related to curves.
+* Fixed bug that prevented extrusion of a single edge.
+* Made sure error from surface modifier is propagated to running thread.
+* Fixed minor bug in FEFixJaggedEdges
+* Fixed crash triggered by image filter deletion
+* Fixed crashes caused by bug in image filter pipeline.
+* Fixed crash in newly created surface normal projection filter.
+* Fixed some issues with reading solid elements and solid sections in LS-Dyna file reader.
+* Fixed backward compatibility issue with feb3 files.
+* Fixed potential crash in reading LS-dyna files.
+* Fixed issues with creating named selections when importing older febio 2.5 files.
+* Fixed problem with exporting initial conditions on parts that were split on export.
+* Fixed buffer overrun problem when extracting enum values.
+* Fixed problem with feb input that caused GObject::Update to be called too many times.
+* Fixed problem with internal surfaces not being updated when hiding elements in post doc.
+* Fixed issues with reading PLC objects.
+* Fixed bug in PostDocument::UpdateSelection.
+* Fixed bug in CPaletteWidget's constructor.
+* Fixed qt style issue with newer version of qt on windows.
+* Fixed issue with reading surfaces from feb 2.5 format.
+* Fixed some compilation issues on Windows after updating Qt.
+* Fixed some issues with the correct placement of the pivot for object selections on the post side.
+
+Documentation:
+* Updated FEBioStudio Manual to improve Netgen meshing features.
+* Modified hyperlinks to appear colored in PDF output.
+* Added documentation for Image Map tool.
+* Fixed size of PostToolbar icons in manual
+* Fixed error in lyx manual that was causing problems when processing to html.
+
+
+
 ===========================================================================
 
  R E L E A S E   2.7   6/6/2024

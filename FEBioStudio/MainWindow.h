@@ -168,20 +168,14 @@ public:
 	// write some useful info to the log regarding the selection
 	void ReportSelection();
 
-	// get the current theme
-	int currentTheme() const;
-
-	// check for dark theme
-	bool usingDarkTheme() const;
-
-	// set the current theme
-	void setCurrentTheme(int n);
-
 	// clear command stack on save
 	bool clearCommandStackOnSave() const;
 
 	// set clear command stack on save
 	void setClearCommandStackOnSave(bool b);
+
+	// check for dark theme
+	bool usingDarkTheme() const;
 
 	//! get the mesh mode
 	int GetMeshMode();
@@ -309,7 +303,6 @@ public:
 private:
 	void writeSettings();
 	void readSettings();
-	void readThemeSetting();
     
 public:
 	// Read a file

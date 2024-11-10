@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 #include "MainWindow.h"
+#include <QApplication>
+#include <QStyleHints>
 #include "BuildPanel.h"
 #include "CreatePanel.h"
 #include "ModelDocument.h"
@@ -1418,7 +1420,9 @@ void CGLView::ToggleContextMenu()
 void CGLView::Reset()
 {
 	// default display properties
-	int ntheme = m_pWnd->currentTheme();
+	int ntheme = 0;
+    if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
+
 	m_view.Defaults(ntheme);
 
 	GLHighlighter::ClearHighlights();

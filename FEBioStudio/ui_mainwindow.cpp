@@ -29,7 +29,6 @@ SOFTWARE.*/
 
 Ui::CMainWindow::CMainWindow()
 {
-	m_settings.uiTheme = 0;
 	m_settings.defaultUnits = 0;
 	m_settings.clearUndoOnSave = true;
 	m_settings.autoSaveInterval = 600;

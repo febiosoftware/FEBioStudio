@@ -336,9 +336,9 @@ void CTextEditor::SetHighlighter(QTextDocument* doc, TextFormat fmt)
 	switch (fmt)
 	{
 	case TextFormat::PLAIN: hl = new PlainTextHighlighter(doc); break;
-	case TextFormat::XML  : hl = new XMLHighlighter(doc, m_wnd->currentTheme()); break;
-	case TextFormat::CODE : hl = new CppHighlighter(doc, m_wnd->currentTheme()); break;
-	case TextFormat::CMAKE: hl = new CMakeHighlighter(doc, m_wnd->currentTheme()); break;
+	case TextFormat::XML  : hl = new XMLHighlighter  (doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
+	case TextFormat::CODE : hl = new CppHighlighter  (doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
+	case TextFormat::CMAKE: hl = new CMakeHighlighter(doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
 	default:
 		assert(false);
 	}
@@ -463,10 +463,10 @@ void CTextEditor::highlightCurrentLine()
 	QList<QTextEdit::ExtraSelection> extraSelection;
 
 	QBrush bg;
-	if (m_wnd->currentTheme() == 0)
-		bg = QColor::fromRgb(240, 240, 255);
-	else
+	if (m_wnd->usingDarkTheme())
 		bg = QColor::fromRgb(0, 51, 102);
+	else
+		bg = QColor::fromRgb(240, 240, 255);
 
 	if (!isReadOnly() && isEnabled())
 	{
@@ -490,7 +490,7 @@ void CTextEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 		return;
 	}
 
-	int theme = m_wnd->currentTheme();
+	int theme = (m_wnd->usingDarkTheme() ? 1 : 0);
 	painter.fillRect(e->rect(), (theme == 0 ? Qt::darkGray : Qt::black));
 	painter.setPen((theme == 0 ? Qt::white : Qt::darkGray));
 

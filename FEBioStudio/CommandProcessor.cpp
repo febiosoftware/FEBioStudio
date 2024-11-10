@@ -1058,7 +1058,7 @@ CMD_RETURN_CODE CommandProcessor::cmd_reset(QStringList ops)
 	CGLView* glview = m_wnd->GetGLView();
 	if (glview == nullptr) return GLViewIsNull();
 	GLViewSettings& view = glview->GetViewSettings();
-	int ntheme = m_wnd->currentTheme();
+	int ntheme = (m_wnd->usingDarkTheme() ? 1 : 0);
 	view.Defaults(ntheme);
 	m_wnd->RedrawGL();
 	return CMD_RETURN_CODE::CMD_SUCCESS;
