@@ -30,7 +30,7 @@ SOFTWARE.*/
 // VERSION INFORMATION
 #define FBS_VERSION			2
 #define FBS_SUBVERSION		8
-#define FBS_SUBSUBVERSION	0
+#define FBS_SUBSUBVERSION	1
 
 //-----------------------------------------------------------------------------
 // FSM FILE VERSION
