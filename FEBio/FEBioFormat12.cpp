@@ -1591,7 +1591,7 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 			// create a new initial velocity BC
 			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
+			sprintf(szname, "InitialConcentration%02d", CountICs<FSInitConcentration>(fem) + 1);
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
