@@ -137,8 +137,6 @@ void CWelcomePage::Activate()
 
 	if (qApp->styleHints()->colorScheme() != Qt::ColorScheme::Dark)
 		page.replace("_BGCOLOR_", "#fffae7");
-	else
-		page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 
 	QString updateText;
 	if(m_wnd->updateAvailable())
