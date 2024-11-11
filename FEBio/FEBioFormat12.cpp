@@ -701,7 +701,8 @@ void FEBioFormat12::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		pNS[ng]->add(n);
 
 		FSPrescribedDOF* pbc = pBC[ng];
-//		febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+		Param& p = pbc->GetParam(FSPrescribedDOF::SCALE);
+		febio.AddParamCurve(&p, lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
 }
