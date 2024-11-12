@@ -55,6 +55,9 @@ public:
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
+    
+    std::vector<int> m_nface;
+    std::vector<double> m_msize;
 
 protected:
 	void BuildGObject();

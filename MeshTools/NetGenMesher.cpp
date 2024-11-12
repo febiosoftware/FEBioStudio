@@ -40,6 +40,7 @@ SOFTWARE.*/
 
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 #include <GProp_GProps.hxx>
@@ -80,6 +81,8 @@ NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
     AddDoubleParam(1.0, "Elements per edge");
     AddDoubleParam(2.0, "Elements per curve");
     AddBoolParam(true, "Quad dominant shell mesh");
+    AddBoolParam(false, "Surface mesh refinement");
+//    AddDoubleParam(0.0, "Surface mesh size");
 }
 
 namespace netgen
@@ -115,6 +118,16 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     // Read in the OCC File
     OCCGeometry * occgeo = new OCCGeometry(m_occ->GetShape());
+/*
+    occgeo->tolerance = 1e-3;
+    occgeo->fixsmalledges = true;
+    occgeo->fixspotstripfaces = true;
+    occgeo->sewfaces = false;
+    occgeo->makesolids = false;
+    occgeo->splitpartitions = false;
+
+    occgeo->HealGeometry();
+*/
     occ_geom = (Ng_OCC_Geometry *)occgeo;
     if (!occ_geom)
     {
@@ -123,7 +136,27 @@ FSMesh*	NetGenMesher::BuildMesh()
         return nullptr;
     }
 	FSLogger::Write("Successfully converted geometry %s\n", m_occ->GetName().c_str());
-    
+
+    // check to see if any edge has near-zero length
+    // Evaluate the minimum and max edge length to determin min and max element sizes
+    double mnedg = 0.0;
+    double mxedg = 0.0;
+    TopoDS_Shape& occ = m_occ->GetShape();
+    TopExp_Explorer anExp (occ, TopAbs_EDGE);
+    for (; anExp.More(); anExp.Next()) {
+        const TopoDS_Edge& anEdge = TopoDS::Edge (anExp.Current());
+        GProp_GProps props;
+        BRepGProp::LinearProperties(anEdge, props);
+        double length = props.Mass();
+        if (mnedg == 0) mnedg = length;
+        else {
+            mnedg = fmin(mnedg, length);
+            mxedg = fmax(mxedg, length);
+        }
+    }
+    FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
+    FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
+
     multithread.terminate = 0;
     
     occ_mesh = Ng_NewMesh();
@@ -218,9 +251,51 @@ FSMesh*	NetGenMesher::BuildMesh()
             mp.elementspercurve = 2.0;
             break;
     }
-    
-    
-    
+
+    // check if user has selected surface mesh refinement option
+    if (GetBoolValue(NetGenMesher::SURFREFINE)) {
+        
+        // Update the face mesh sizes to reflect the global maximum mesh size
+        MeshingParameters* mparam = new MeshingParameters();
+        mparam->uselocalh = mp.uselocalh;
+        
+        mparam->maxh = mp.maxh;
+        mparam->minh = mp.minh;
+        
+        mparam->grading = mp.grading;
+        mparam->curvaturesafety = mp.elementspercurve;
+        mparam->segmentsperedge = mp.elementsperedge;
+        
+        mparam->secondorder = mp.second_order;
+        mparam->quad = mp.quad_dominated;
+        
+        if (mp.meshsize_filename)
+            mparam->meshsizefilename = mp.meshsize_filename;
+        else
+            mparam->meshsizefilename = "";
+        mparam->optsteps2d = mp.optsteps_2d;
+        mparam->optsteps3d = mp.optsteps_3d;
+        
+        mparam->inverttets = mp.invert_tets;
+        mparam->inverttrigs = mp.invert_trigs;
+        
+        mparam->checkoverlap = mp.check_overlap;
+        mparam->checkoverlappingboundary = mp.check_overlapping_boundary;
+        
+        for(int i = 1; i <= occgeo->NrFaces(); i++)
+        {
+            if(!occgeo->GetFaceMaxhModified(i))
+            {
+                occgeo->SetFaceMaxH(i, mp.maxh, *mparam);
+            }
+        }
+        
+        // set mesh size of selected surface
+        for (int i=0; i<m_occ->m_nface.size(); ++i) {
+            if (m_occ->m_msize[i] > 0) occgeo->SetFaceMaxH(m_occ->m_nface[i], m_occ->m_msize[i], *mparam);
+        }
+    }
+
 	FSLogger::Write("Setting Local Mesh size.....\n");
     Ng_OCC_SetLocalMeshSize(occ_geom, occ_mesh, &mp);
 	FSLogger::Write("Local Mesh size successfully set.....\n");
