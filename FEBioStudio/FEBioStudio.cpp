@@ -95,6 +95,10 @@ int main(int argc, char* argv[])
 	// create the application object
 	FBSApplication app(argc, argv);
 
+#ifdef WIN32
+	app.setStyle("fusion");
+#endif
+
 	// set the display name (this will be displayed on all windows and dialogs)
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 	app.setApplicationVersion(version);

@@ -461,6 +461,7 @@ void FEBioFormat12::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 
 	int nbc = 0;
+	int nset = 0;
 	do
 	{
 		// find a non-zero bc
@@ -479,6 +480,8 @@ void FEBioFormat12::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 			// create a nodeset of this BC
 			FSNodeSet* pg = new FSNodeSet(pm);
+			sprintf(szname, "FixedNodeset%02d", ++nset);
+			pg->SetName(szname);
 			pm->AddFENodeSet(pg);
 
 			// assign the nodes to this group
@@ -701,7 +704,8 @@ void FEBioFormat12::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		pNS[ng]->add(n);
 
 		FSPrescribedDOF* pbc = pBC[ng];
-//		febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+		Param& p = pbc->GetParam(FSPrescribedDOF::SCALE);
+		febio.AddParamCurve(&p, lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
 }
@@ -1590,8 +1594,9 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 			// create a new initial velocity BC
 			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
+			sprintf(szname, "InitialConcentration%02d", CountICs<FSInitConcentration>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
@@ -1626,6 +1631,7 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FSInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
@@ -2249,7 +2255,8 @@ void FEBioFormat12::ParseContactTC(FSStep *pstep, XMLTag &tag)
 
 	// set name
 	char szname[256];
-	sprintf(szname, "TCInterface%02d", CountInterfaces<FSTensionCompressionInterface>(fem) + 1);
+	int ntc = CountInterfaces<FSTensionCompressionInterface>(fem) + 1;
+	sprintf(szname, "TCInterface%02d", ntc);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2279,12 +2286,20 @@ void FEBioFormat12::ParseContactTC(FSStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szname, "TCInterface%02dSecondary", ntc);
+						ps->SetName(szname);
+					}
 					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szname, "TCInterface%02dPrimary", ntc);
+						ps->SetName(szname);
+					}
 					pi->SetPrimarySurface(ps);
 				}
 
