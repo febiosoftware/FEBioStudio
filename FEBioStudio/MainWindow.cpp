@@ -521,6 +521,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		OpenPostFile(fileName, nullptr, showLoadOptions);
 	}
 	else if ((ext.compare("txt", Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("log", Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("h"  , Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("cpp", Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("hpp", Qt::CaseInsensitive) == 0))
