@@ -321,7 +321,7 @@ GMesh* triangulate(GFace& face)
 		break;
 		case EDGE_3P_CIRC_ARC:
 		{
-			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r0 = obj.Node(e.m_cnode[0])->LocalPosition() - rc;
 			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
 			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
 			q.RotateVector(r0);
@@ -348,7 +348,7 @@ GMesh* triangulate(GFace& face)
 		break;
 		case EDGE_3P_ARC:
 		{
-			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r0 = obj.Node(e.m_cnode[0])->LocalPosition() - rc;
 			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
 			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
 			q.RotateVector(r0);

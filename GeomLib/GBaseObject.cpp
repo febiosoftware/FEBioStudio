@@ -329,7 +329,6 @@ int GBaseObject::AddLine(int n1, int n2)
 	e->m_ntype = EDGE_LINE;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 
 	return AddEdge(e);
 }
@@ -344,7 +343,6 @@ int GBaseObject::AddYArc(int n1, int n2)
 	e->m_ntype = EDGE_YARC;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 	return AddEdge(e);
 }
 
@@ -358,7 +356,6 @@ int GBaseObject::AddZArc(int n1, int n2)
 	e->m_ntype = EDGE_ZARC;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 	return AddEdge(e);
 }
 
@@ -373,7 +370,7 @@ int GBaseObject::AddCircularArc(int n1, int n2, int n3)
 
 	GEdge* e = new GEdge(this);
 	e->m_ntype = EDGE_3P_CIRC_ARC;
-	e->m_cnode = n1;
+	e->m_cnode.push_back(n1);
 	e->m_node[0] = n2;
 	e->m_node[1] = n3;	
 	return AddEdge(e);
@@ -390,7 +387,7 @@ int GBaseObject::AddArcSection(int n1, int n2, int n3)
 
 	GEdge* e = new GEdge(this);
 	e->m_ntype = EDGE_3P_ARC;
-	e->m_cnode = n1;
+	e->m_cnode.push_back(n1);
 	e->m_node[0] = n2;
 	e->m_node[1] = n3;	
 	return AddEdge(e);

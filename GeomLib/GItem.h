@@ -47,13 +47,16 @@ enum {
 
 //-----------------------------------------------------------------------------
 // Edge types
-#define EDGE_UNKNOWN		0
-#define EDGE_LINE			1		// straight line between two nodes
-#define EDGE_3P_CIRC_ARC	2		// 3-point circular arc. 
-#define EDGE_YARC			3		// circular arc defined by two points and the y-axis
-#define EDGE_ZARC			4		// circular arc defined by two points and the z-axis
-#define EDGE_3P_ARC			5		// coordinate alligned elliptical arc section defined by three points
-#define EDGE_MESH			6		// edge is determined by a mesh (used by GCurveMeshObject)
+enum EdgeType {
+	EDGE_UNKNOWN,
+	EDGE_LINE,			// straight line between two nodes
+	EDGE_3P_CIRC_ARC,	// 3-point circular arc. 
+	EDGE_YARC,			// circular arc defined by two points and the y-axis
+	EDGE_ZARC,			// circular arc defined by two points and the z-axis
+	EDGE_3P_ARC,		// coordinate alligned elliptical arc section defined by three points
+	EDGE_MESH,			// edge is determined by a mesh (used by GCurveMeshObject)
+	EDGE_BEZIER			// Bezier-curve
+};
 
 //-----------------------------------------------------------------------------
 // Face types
@@ -252,8 +255,8 @@ class GNode;
 class GEdge : public GItem_T<GEdge>
 {
 public:
-	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_cnode = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW; }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_cnode = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW; }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);
@@ -276,8 +279,8 @@ public:
 	FSEdgeSet* GetFEEdgeSet() const;
 
 public:
-	int		m_node[2];	// indices of GNodes
-	int		m_cnode;	// center node for arcs
+	int		m_node[2];	// indices of start and edge nodes
+	std::vector<int>		m_cnode;	// additional shape nodes
 	int		m_orient;	// orientation for arcs
 	int		m_ntype;	// type identifier
 };

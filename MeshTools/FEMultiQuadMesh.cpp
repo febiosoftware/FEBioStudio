@@ -192,7 +192,7 @@ bool FEMultiQuadMesh::Build(GObject* po)
 		edge.m_orient = pe->m_orient;
 		edge.m_node[0] = pe->m_node[0];
 		edge.m_node[1] = pe->m_node[1];
-		edge.m_cnode = pe->m_cnode;
+		edge.m_cnode = (pe->m_cnode.empty() ? -1 : pe->m_cnode[0]);
 		edge.m_gid = pe->GetLocalID();
 		m_MBEdge.push_back(edge);
 	}
@@ -1006,7 +1006,7 @@ bool FEMultiQuadMesher::BuildMultiQuad()
 		mbEdge.m_ntype = e->m_ntype;
 		mbEdge.m_node[0] = e->m_node[0];
 		mbEdge.m_node[1] = e->m_node[1];
-		mbEdge.m_cnode = e->m_cnode;
+		mbEdge.m_cnode = (e->m_cnode.empty() ? -1 : e->m_cnode[0]);
 		mbEdge.m_orient = e->m_orient;
 		mbEdge.SetID(e->GetLocalID());
 	}

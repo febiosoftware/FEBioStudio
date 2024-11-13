@@ -149,8 +149,8 @@ void GRevolveModifier::Apply(GObject* po)
 				switch (e.m_ntype)
 				{
 				case EDGE_LINE       : ne[(i + 1)*E + j] = po->AddLine(n0, n1); break;
-				case EDGE_3P_CIRC_ARC: ne[(i + 1)*E + j] = po->AddCircularArc(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
-				case EDGE_3P_ARC     : ne[(i + 1)*E + j] = po->AddArcSection(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
+				case EDGE_3P_CIRC_ARC: ne[(i + 1)*E + j] = po->AddCircularArc(nn[e.m_cnode[0] + (i + 1) * N], n0, n1); break;
+				case EDGE_3P_ARC     : ne[(i + 1)*E + j] = po->AddArcSection(nn[e.m_cnode[0] + (i + 1) * N], n0, n1); break;
 				default:
 					assert(false);
 				}

@@ -935,7 +935,7 @@ bool PLC::ProcessSizing()
 			break;
 		case EDGE_3P_CIRC_ARC:
 			{
-				vec3d r0 = m_po->Node(es.m_cnode)->LocalPosition();
+				vec3d r0 = m_po->Node(es.m_cnode[0])->LocalPosition();
 				vec3d r1 = m_po->Node(es.m_node[0])->LocalPosition();
 				vec3d r2 = m_po->Node(es.m_node[1])->LocalPosition();
 
@@ -1073,7 +1073,7 @@ bool PLC::BuildEdges()
 		case EDGE_3P_CIRC_ARC:
 			{
 				ed.node.push_back(FindNode(es.m_node[0]));
-				vec3d r0 = m_po->Node(es.m_cnode)->LocalPosition();
+				vec3d r0 = m_po->Node(es.m_cnode[0])->LocalPosition();
 				vec3d r1 = m_po->Node(es.m_node[0])->LocalPosition();
 				vec3d r2 = m_po->Node(es.m_node[1])->LocalPosition();
 

@@ -56,6 +56,7 @@ public:
 protected slots:
 	void on_getNode_clicked();
 	void on_newCurve_clicked();
+	void on_lineType_currentIndexChanged(int n);
 
 private:
 	void AddPoint(const vec3d& r);
@@ -66,4 +67,5 @@ private:
 	QPushButton*	m_newCurve;
 	GObject*	m_tmp;	// temp object
 	int		m_lastNode; // last node that was created
+	int		m_lineType;
 };

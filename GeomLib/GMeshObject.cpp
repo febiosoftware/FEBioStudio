@@ -1331,7 +1331,9 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 		GEdge& eo = *po->Edge(i);
 		e->m_node[0] = eo.m_node[0] + NN0;
 		e->m_node[1] = eo.m_node[1] + NN0;
-		e->m_cnode = (eo.m_cnode >= 0 ? eo.m_cnode + NN0 : -1);
+		e->m_cnode = eo.m_cnode;
+		for (int j=0; j<eo.m_cnode.size(); ++j)
+			e->m_cnode[j] = (eo.m_cnode[j] >= 0 ? eo.m_cnode[j] + NN0 : -1);
 		e->SetID(eo.GetID());
 		e->SetLocalID(i + NE0);
 		e->SetName(eo.GetName());

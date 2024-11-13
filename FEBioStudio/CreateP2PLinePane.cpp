@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include <QValidator>
+#include <QComboBox>
 #include "GLHighlighter.h"
 #include <MeshTools/GObject2D.h>
 #include <GeomLib/GCurveObject.h>
@@ -41,15 +42,18 @@ CCreateP2PLinePane::CCreateP2PLinePane(CCreatePanel* parent) : CCreatePane(paren
 {
 	m_tmp = 0;
 	m_lastNode = -1;
+	m_lineType = 0;
 
 	QLabel* pl;
 	QGridLayout* grid = new QGridLayout;
 	QPushButton* b;
 	QLineEdit* e;
+	QComboBox* c;
 	grid->addWidget(pl = new QLabel("X"), 0, 0); grid->addWidget(e = m_in[0] = new QLineEdit, 0, 1); pl->setBuddy(e); e->setValidator(new QDoubleValidator); e->setObjectName("x");
 	grid->addWidget(pl = new QLabel("Y"), 1, 0); grid->addWidget(e = m_in[1] = new QLineEdit, 1, 1); pl->setBuddy(e); e->setValidator(new QDoubleValidator); e->setObjectName("y");
 	grid->addWidget(pl = new QLabel("Z"), 2, 0); grid->addWidget(e = m_in[2] = new QLineEdit, 2, 1); pl->setBuddy(e); e->setValidator(new QDoubleValidator); e->setObjectName("z");
 	grid->addWidget(b = new QPushButton("Add Node"), 3, 1); b->setObjectName("getNode");
+	grid->addWidget(c = new QComboBox); c->addItems({ "line", "Bezier" }); c->setObjectName("lineType");
 	grid->addWidget(m_newCurve = new QPushButton("New curve segment")); m_newCurve->setObjectName("newCurve");
 	grid->addWidget(m_cap = new QCheckBox("Create Surface"));
 
@@ -87,6 +91,12 @@ void CCreateP2PLinePane::on_newCurve_clicked()
 	m_lastNode = -1;
 }
 
+void CCreateP2PLinePane::on_lineType_currentIndexChanged(int n)
+{
+	m_lineType = n;
+	on_newCurve_clicked();
+}
+
 void CCreateP2PLinePane::on_getNode_clicked()
 {
 	double x = m_in[0]->text().toDouble();
@@ -121,13 +131,37 @@ void CCreateP2PLinePane::AddPoint(const vec3d& r)
 
 	// add a new edge connecting the last added node to this new node.
 	bool addEdge = false;
-	if ((m_lastNode != -1) && (newNode != m_lastNode))
+	if (m_lineType == 0)
 	{
-		int edges = m_tmp->Edges();
-		m_tmp->AddLine(m_lastNode, newNode);
-		if (m_tmp->Edges() > edges)
+		if ((m_lastNode != -1) && (newNode != m_lastNode))
 		{
-			addEdge = true;
+			int edges = m_tmp->Edges();
+			m_tmp->AddLine(m_lastNode, newNode);
+			if (m_tmp->Edges() > edges)
+			{
+				addEdge = true;
+			}
+		}
+	}
+	else
+	{
+		if (m_lastNode == -1)
+		{
+			GEdge* edge = new GEdge(m_tmp);
+			edge->m_ntype = EDGE_BEZIER;
+			edge->m_node[0] = edge->m_node[1] = newNode;
+			m_tmp->AddEdge(edge);
+		}
+		else
+		{
+			GEdge* edge = m_tmp->Edge(m_tmp->Edges() - 1);
+			if (edge->m_node[0] == edge->m_node[1])
+				edge->m_node[1] = newNode;
+			else
+			{
+				edge->m_cnode.push_back(edge->m_node[1]);
+				edge->m_node[1] = newNode;
+			}
 		}
 	}
 

@@ -973,7 +973,8 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 		const GEdge& eo = *po->Edge(i);
 		e->m_node[0] = eo.m_node[0] + NN0;
 		e->m_node[1] = eo.m_node[1] + NN0;
-		e->m_cnode = (eo.m_cnode >= 0 ? eo.m_cnode + NN0 : -1);
+		if (!eo.m_cnode.empty())
+			e->m_cnode.push_back(eo.m_cnode[0] + NN0);
 		e->SetID(eo.GetID());
 		e->SetLocalID(i + NE0);
 		e->SetName(eo.GetName());

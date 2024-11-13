@@ -67,6 +67,7 @@ GCurveObject::GCurveObject(GCurveObject* po) : GObject(GCURVE_OBJECT)
 		GEdge& eo = *po->Edge(i);
 		e->m_node[0] = eo.m_node[0];
 		e->m_node[1] = eo.m_node[1];
+		e->m_cnode = eo.m_cnode;
 		e->SetID(eo.GetID());
 		e->SetLocalID(i);
 		e->SetName(eo.GetName());

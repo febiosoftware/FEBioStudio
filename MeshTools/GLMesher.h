@@ -47,6 +47,7 @@ private:
 	void BuildFaceRevolveWedge(GMesh* glmesh, GFace& f);
 	void BuildEdgeMesh(GMesh* glmesh, GEdge& e);
 	void BuildEdgeLine(GMesh* glmesh, GEdge& e);
+	void BuildEdgeBezier(GMesh* glmesh, GEdge& e);
 
 	vec3d EdgePoint(GEdge& edge, double r);
 

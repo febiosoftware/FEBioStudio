@@ -162,7 +162,7 @@ bool GEdge::operator==(const GEdge& e)
 		break;
 	case EDGE_3P_CIRC_ARC:
 		if ((m_node[0] != e.m_node[0])  || (m_node[1] != e.m_node[1])) return false;
-		if (m_cnode != e.m_cnode) return false;
+		if (m_cnode[0] != e.m_cnode[0]) return false;
 		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_ARC:
@@ -202,7 +202,7 @@ double GEdge::Length()
 		break;
 	case EDGE_3P_CIRC_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition();
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition();
 
@@ -216,7 +216,7 @@ double GEdge::Length()
 		break;
 	case EDGE_3P_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition();
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition();
 
@@ -252,7 +252,7 @@ vec3d GEdge::Point(double l)
 		break;
 	case EDGE_3P_CIRC_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition() - r0;
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition() - r0;
 			vec3d n = r1^r2; n.Normalize();
@@ -270,7 +270,7 @@ vec3d GEdge::Point(double l)
 		break;
 	case EDGE_3P_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition() - r0;
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition() - r0;
 			vec3d n = r1^r2; n.Normalize();
@@ -314,7 +314,7 @@ vec2d GEdge::Tangent(double l)
 		break;
 	case EDGE_3P_CIRC_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition();
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition();
 
@@ -329,7 +329,7 @@ vec2d GEdge::Tangent(double l)
 		break;
 	case EDGE_3P_ARC:
 		{
-			vec3d r0 = m_po->Node(m_cnode)->LocalPosition();
+			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[0])->LocalPosition();
 			vec3d r2 = m_po->Node(m_node[1])->LocalPosition();
 

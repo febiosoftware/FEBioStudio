@@ -258,6 +258,7 @@ SOFTWARE.*/
 #define CID_OBJ_EDGE_NODE2			0x00080307	// version 2.0
 #define CID_OBJ_EDGE_ORIENT			0x00080308	// as of version FB 1.7
 #define CID_OBJ_EDGE_MESHWEIGHT		0x00080309	// as of version FB 1.7
+#define CID_OBJ_EDGE_CNODE			0x0008030A	// as of version FB 3.0
 
 #define CID_OBJ_NODE_LIST			0x00080400
 #define CID_OBJ_NODE				0x00080401

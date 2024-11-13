@@ -274,7 +274,7 @@ void GCurveMeshObject::Save(OArchive& ar)
 				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
 				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
 				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
+				ar.WriteChunk(CID_OBJ_EDGE_CNODE, e.m_cnode);
 			}
 			ar.EndChunk();
 		}
@@ -451,7 +451,11 @@ void GCurveMeshObject::Load(IArchive& ar)
 					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
 					case CID_OBJ_EDGE_NODE0: ar.read(e->m_node[0]); break;
 					case CID_OBJ_EDGE_NODE1: ar.read(e->m_node[1]); break;
-					case CID_OBJ_EDGE_NODE2: ar.read(e->m_cnode); break;
+					case CID_OBJ_EDGE_NODE2: {
+						int c; ar.read(c);
+						e->m_cnode.push_back(c);
+					} break;
+					case CID_OBJ_EDGE_CNODE: ar.read(e->m_cnode); break;
 					case CID_OBJ_EDGE_NAME:
 					{
 						char szname[256] = { 0 };
