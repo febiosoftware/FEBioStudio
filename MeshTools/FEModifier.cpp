@@ -565,7 +565,7 @@ void FESetFiberOrientation::SetFiberNodes(FSMesh *pm)
 
 FESetAxesOrientation::FESetAxesOrientation() : FEModifier("Set axes orientation")
 {
-	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0cylindrical\0");
+	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0cylindrical\0<none>\0");
 	AddVecParam(vec3d(1, 0, 0), "a");
 	AddVecParam(vec3d(0, 1, 0), "d");
 	AddIntParam(1, "n0")->SetState(0);
@@ -611,6 +611,15 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
             GetParam(6).SetState(Param_ALLFLAGS);
             GetParam(7).SetState(Param_ALLFLAGS);
             break;
+		case 4:
+			GetParam(1).SetState(0);
+			GetParam(2).SetState(0);
+			GetParam(3).SetState(0);
+			GetParam(4).SetState(0);
+			GetParam(5).SetState(0);
+			GetParam(6).SetState(0);
+			GetParam(7).SetState(0);
+			break;
 		default:
 			return false;
 		}
@@ -645,6 +654,7 @@ FSMesh* FESetAxesOrientation::Apply(FSMesh *pm)
 		case 1: bret = SetAxesNodes(pnm); break;
         case 2: bret = SetAxesAngles(pnm); break;
 		case 3: bret = SetAxesCylindrical(pnm); break;
+		case 4: bret = ClearAxes(pnm); break;
 //		case 2: SetAxesCopy  (pnm); break;
 		default:
 			assert(false);
@@ -793,6 +803,20 @@ bool FESetAxesOrientation::SetAxesCylindrical(FSMesh* pm)
 			Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
 
 			el.m_Qactive = true;
+		}
+	}
+
+	return true;
+}
+
+bool FESetAxesOrientation::ClearAxes(FSMesh* pm)
+{
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			el.m_Qactive = false;
 		}
 	}
 

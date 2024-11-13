@@ -169,6 +169,7 @@ protected:
     bool SetAxesAngles(FSMesh* pm);
 	bool SetAxesCopy  (FSMesh* pm);
 	bool SetAxesCylindrical(FSMesh* pm);
+	bool ClearAxes(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
