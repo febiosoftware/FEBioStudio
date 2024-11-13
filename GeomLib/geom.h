@@ -113,3 +113,14 @@ public:
 	vec3d	m_c, m_a, m_b;
 	int		m_winding;
 };
+
+class GM_BEZIER
+{
+public:
+	GM_BEZIER(const std::vector<vec3d>& P) : m_P(P) {}
+
+	vec3d Point(double l);
+
+private:
+	std::vector<vec3d> m_P;
+};

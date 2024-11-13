@@ -373,6 +373,41 @@ GMesh* triangulate(GFace& face)
 			}
 		}
 		break;
+		case EDGE_BEZIER:
+		{
+			vector<vec3d> P;
+			if (ew == 1)
+			{
+				P.push_back(obj.Node(e.m_node[0])->LocalPosition());
+				for (int i = 0; i < e.m_cnode.size(); ++i)
+					P.push_back(obj.Node(e.m_cnode[i])->LocalPosition());
+				P.push_back(obj.Node(e.m_node[1])->LocalPosition());
+			}
+			else
+			{
+				P.push_back(obj.Node(e.m_node[1])->LocalPosition());
+				int n = e.m_cnode.size();
+				for (int i = 0; i < n; ++i)
+					P.push_back(obj.Node(e.m_cnode[n - i - 1])->LocalPosition());
+				P.push_back(obj.Node(e.m_node[0])->LocalPosition());
+			}
+
+			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
+			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
+			q.RotateVector(r1);
+			q.RotateVector(r2);
+			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
+
+			GM_BEZIER gm(P);
+			for (int i = 1; i < M; ++i)
+			{
+				double l = i / (double)M;
+				vec3d p = gm.Point(l) - rc;
+				q.RotateVector(p);
+				c.AddNode(p, -1);
+			}
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -395,14 +430,8 @@ GMesh* triangulate(GFace& face)
 		}
 		break;
 		case EDGE_3P_CIRC_ARC:
-			for (int j = 0; j < M; ++j)
-			{
-				int n0 = m++;
-				int n1 = (n0 + 1) % NN;
-				c.AddEdge(n0, n1, eid);
-			}
-			break;
 		case EDGE_3P_ARC:
+		case EDGE_BEZIER:
 			for (int j = 0; j < M; ++j)
 			{
 				int n0 = m++;

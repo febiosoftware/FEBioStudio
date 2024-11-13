@@ -276,12 +276,14 @@ FSObject* CCreateP2PLinePane::Create()
 		for (int i = 0; i<m_tmp->Nodes(); ++i) po->AddNode(m_tmp->Node(i)->LocalPosition());
 
 		// add edges
-		for (int i = 0; i<m_tmp->Nodes(); ++i)
+		for (int i = 0; i<m_tmp->Edges(); ++i)
 		{
 			GEdge* edge = new GEdge(po);
-			edge->m_node[0] = i;
-			edge->m_node[1] = (i + 1) % m_tmp->Nodes();
-			edge->m_ntype = EDGE_LINE;
+			edge->m_node[0] = m_tmp->Edge(i)->m_node[0];
+			edge->m_node[1] = m_tmp->Edge(i)->m_node[1];
+			edge->m_cnode = m_tmp->Edge(i)->m_cnode;
+			edge->m_ntype = m_tmp->Edge(i)->m_ntype;
+			edge->m_orient = m_tmp->Edge(i)->m_orient;
 			po->AddEdge(edge);
 		}
 
@@ -291,8 +293,8 @@ FSObject* CCreateP2PLinePane::Create()
 		face->m_ntype = FACE_POLYGON;
 		face->m_node.resize(N);
 		for (int i = 0; i<N; ++i) face->m_node[i] = i;
-		face->m_edge.resize(N);
-		for (int i = 0; i<N; ++i)
+		face->m_edge.resize(NE);
+		for (int i = 0; i<NE; ++i)
 		{
 			face->m_edge[i].nid = i;
 			face->m_edge[i].nwn = 1;

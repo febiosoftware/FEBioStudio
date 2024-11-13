@@ -60,12 +60,14 @@ enum EdgeType {
 
 //-----------------------------------------------------------------------------
 // Face types
-#define FACE_UNKNOWN		0	
-#define FACE_POLYGON		1		// polygonal area; edges don't have to be linear
-#define FACE_EXTRUDE		2		// face is extruded
-#define FACE_QUAD			3		// face is bilinear quadrialter
-#define FACE_REVOLVE		4		// face created by revolving an edge
-#define FACE_REVOLVE_WEDGE	5		// 3-point face create by revolving edge that has one node on the axis
+enum FaceType {
+	FACE_UNKNOWN,
+	FACE_POLYGON,	// polygonal area; edges don't have to be linear
+	FACE_EXTRUDE,	// face is extruded
+	FACE_QUAD,		// face is bilinear quadrilateral
+	FACE_REVOLVE,	// face created by revolving an edge
+	FACE_REVOLVE_WEDGE,	// 3-point face create by revolving edge that has one node on the axis
+};
 
 //-----------------------------------------------------------------------------
 // Part types

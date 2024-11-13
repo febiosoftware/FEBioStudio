@@ -342,6 +342,39 @@ vec2d GEdge::Tangent(double l)
 			t = ca.Tangent(l);
 		}
 		break;
+	case EDGE_BEZIER:
+		{
+			vec3d r0 = m_po->Node(m_node[0])->LocalPosition();
+			vec3d r1 = m_po->Node(m_node[1])->LocalPosition();
+
+			if (m_cnode.empty())
+			{
+				vec3d e = r1 - r0;
+				return vec2d(e.x, e.y);
+			}
+			else
+			{
+				int n = m_cnode.size();
+				vec3d a, b;
+				if (l <= 0)
+				{
+					a = m_po->Node(m_node[0])->LocalPosition();
+					b = m_po->Node(m_cnode[0])->LocalPosition();
+				}
+				else if (l >= 1)
+				{
+					a = m_po->Node(m_cnode[n-1])->LocalPosition();
+					b = m_po->Node(m_node[1])->LocalPosition();
+				}
+				else
+				{
+					assert(false);
+				}
+				vec3d e = b - a;
+				return vec2d(e.x, e.y);
+			}
+		}
+		break;
 	default:
 		assert(false);
 	}
@@ -433,20 +466,34 @@ bool GFace::HasEdge(int nid)
 void GFace::Invert()
 {
 	// swap block IDs
-	int tmp = m_nPID[0]; m_nPID[0] = m_nPID[1]; m_nPID[1] = tmp;
+	if (m_nPID[1] != -1)
+	{
+		int tmp = m_nPID[0]; m_nPID[0] = m_nPID[1]; m_nPID[1] = tmp;
+	}
 
 	// we also need to invert the edges and nodes
-	int fn[4], fe[4], fw[4];
-	for (int j = 0; j < 4; ++j) {
+	int nn = m_node.size();
+	int ne = m_edge.size();
+	std::vector<int> fn(nn);
+	std::vector<int> fe(ne);
+	std::vector<int> fw(ne);
+
+	for (int j = 0; j < nn; ++j) {
 		fn[j] = m_node[j];
+	}
+	for (int j = 0; j < ne; ++j) {
 		fe[j] = m_edge[j].nid;
 		fw[j] = m_edge[j].nwn;
 	}
-	for (int j = 0; j < 4; ++j)
+
+	for (int j = 0; j < nn; ++j)
 	{
-		m_node[j] = fn[(4 - j) % 4];
-		m_edge[j].nid = fe[3 - j];
-		m_edge[j].nwn = -fw[3 - j];
+		m_node[j] = fn[(nn - j) % nn];
+	}
+	for (int j = 0; j < ne; ++j)
+	{
+		m_edge[j].nid = fe[ne - j - 1];
+		m_edge[j].nwn = -fw[ne - j - 1];
 	}
 }
 

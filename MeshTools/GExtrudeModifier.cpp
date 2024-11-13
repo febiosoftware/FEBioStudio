@@ -227,6 +227,13 @@ void GExtrudeModifier::Apply(GObject* po)
 		}
 	}
 
+	// flip bottom faces
+	for (int i = 0; i < F; ++i)
+	{
+		GFace* face = po->Face(i);
+		face->Invert();
+	}
+
 	// find all vertices
 	po->UpdateNodeTypes();
 }

@@ -486,3 +486,14 @@ vec3d GM_CIRCLE_3P_ARC::Point(double l)
 	vec3d r = p + m_c;
 	return r;
 }
+
+vec3d GM_BEZIER::Point(double u)
+{
+	std::vector<vec3d> Q(m_P);
+	int n = Q.size() - 1;
+	for (int k = 1; k <= n; ++k)
+		for (int i = 0; i <= n - k; ++i)
+			Q[i] = Q[i] * (1.0 - u) + Q[i + 1] * u;
+
+	return Q[0];
+}

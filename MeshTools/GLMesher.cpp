@@ -120,17 +120,6 @@ void GLMesher::BuildEdgeLine(GMesh* glmsh, GEdge& e)
 	glmsh->Update();
 }
 
-vec3d BezierCurve(const vector<vec3d>& P, double u)
-{
-	vector<vec3d> Q(P);
-	int n = P.size()-1;
-	for (int k = 1; k <= n; ++k)
-		for (int i = 0; i <= n - k; ++i)
-			Q[i] = Q[i] * (1.0 - u) + Q[i + 1] * u;
-
-	return Q[0];
-}
-
 void GLMesher::BuildEdgeBezier(GMesh* glmesh, GEdge& edge)
 {
 	GObject& o = *m_po;
@@ -146,12 +135,14 @@ void GLMesher::BuildEdgeBezier(GMesh* glmesh, GEdge& edge)
 	if (n <= 1) N = 2;
 	else N = 25 * n;
 
+	GM_BEZIER gm(P);
+
 	GMesh m;
 	m.Create(N, 0, N - 1);
 	for (int i = 0; i < N; ++i)
 	{
 		double u = (double)i / (double)(N - 1);
-		vec3d p = BezierCurve(P, u);
+		vec3d p = gm.Point(u);
 		m.Node(i).r = to_vec3f(p);
 	}
 
@@ -378,10 +369,11 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 				P.push_back(o.Node(e0.m_cnode[n - i - 1])->LocalPosition());
 			P.push_back(o.Node(e0.m_node[0])->LocalPosition());
 		}
+		GM_BEZIER gm(P);
 
 		for (int i = 0; i <= M; ++i)
 		{
-			points[i] = to_vec3f(BezierCurve(P, i / (double)M));
+			points[i] = to_vec3f(gm.Point(i / (double)M));
 		}
 	}
 	break;
