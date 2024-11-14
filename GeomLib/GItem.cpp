@@ -228,6 +228,19 @@ double GEdge::Length()
 			L = ca.Length();
 		}
 		break;
+	case EDGE_YARC:
+		{
+			vec3d r0 = m_po->Node(m_node[0])->LocalPosition();
+			vec3d r1 = m_po->Node(m_node[1])->LocalPosition();
+			vec2d c(0, 0);
+			vec2d a(r0.x, r0.z);
+			vec2d b(r1.x, r1.z);
+
+			// create an arc object
+			GM_CIRCLE_ARC ca(c, a, b, -m_orient);
+			L = ca.Length();
+		}
+		break;
 	case EDGE_BEZIER:
 		{
 			std::vector<vec3d> P;
@@ -308,7 +321,7 @@ vec3d GEdge::Point(double l)
 			vec2d a(r0.x, r0.z);
 			vec2d b(r1.x, r1.z);
 
-			GM_CIRCLE_ARC c(vec2d(0, 0), a, b);
+			GM_CIRCLE_ARC c(vec2d(0, 0), a, b, -m_orient);
 			vec2d q = c.Point(l);
 			p = vec3d(q.x(), y, q.y());
 		}

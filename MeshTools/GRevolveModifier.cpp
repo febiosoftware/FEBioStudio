@@ -200,7 +200,7 @@ void GRevolveModifier::Apply(GObject* po)
 			edge.resize(ef);
 			for (int k=0; k<ef; ++k) 
 			{
-				edge[k] = ne[f.m_edge[k].nid + (i+1)*E];
+				edge[ef-k-1] = ne[f.m_edge[k].nid + (i+1)*E];
 			}
 			po->AddFacet(edge, FACE_POLYGON);
 		}
