@@ -239,7 +239,11 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// get number of nodes and edges
 	int NN = f.Nodes();
@@ -459,7 +463,11 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	int NN = f.Nodes();
 	int NE = f.Edges();
@@ -483,10 +491,18 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 	}
 
 	// determine which edge is getting revolved.
+	int axis = EDGE_YARC;
 	int revolvedEdge = -1;
-	if      (e[0]->m_ntype == EDGE_ZARC) revolvedEdge = 1;
-	else if (e[1]->m_ntype == EDGE_ZARC) revolvedEdge = 0;
-	else assert(false);
+	if      (e[0]->m_ntype == EDGE_YARC) revolvedEdge = 1;
+	else if (e[1]->m_ntype == EDGE_YARC) revolvedEdge = 0;
+	else
+	{
+		// hmm, maybe revolve around Z? 
+		axis = EDGE_ZARC;
+		if      (e[0]->m_ntype == EDGE_ZARC) revolvedEdge = 1;
+		else if (e[1]->m_ntype == EDGE_ZARC) revolvedEdge = 0;
+		else assert(false);
+	}
 
 	// allocate mesh
 	GMesh m;
@@ -516,15 +532,30 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 
 			// the transfinite interpolation doesn't quite project correctly
 			// to a revolved surface, so we need to make a small adjustment.
-			vec2d c(q[revolvedEdge].x, q[revolvedEdge].y);
-			double R = c.norm();
+			if (axis == EDGE_YARC)
+			{
+				vec2d c(q[revolvedEdge].x, q[revolvedEdge].z);
+				double R = c.norm();
 
-			double z = p.z;
-			p.z = 0;
-			p.Normalize();
-			p.x *= R;
-			p.y *= R;
-			p.z = z;
+				double y = p.y;
+				p.y = 0;
+				p.Normalize();
+				p.x *= R;
+				p.z *= R;
+				p.y = y;
+			}
+			else
+			{
+				vec2d c(q[revolvedEdge].x, q[revolvedEdge].y);
+				double R = c.norm();
+
+				double z = p.z;
+				p.z = 0;
+				p.Normalize();
+				p.x *= R;
+				p.y *= R;
+				p.z = z;
+			}
 
 			GMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = to_vec3f(p);
@@ -680,6 +711,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 				n0.pid = -1;
 			}
 		}
+		else (assert(false));
 
 		m.Node(0).pid = o.Node(f.m_node[0])->GetLocalID();
 		m.Node(1).pid = o.Node(f.m_node[1])->GetLocalID();
@@ -727,6 +759,18 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 	case EDGE_LINE:
 		p = r0 * (1.0 - r) + r1 * r;
 		break;
+	case EDGE_YARC:
+	{
+		vec2d c(0, 0);
+		vec2d a(r0.x, r0.z);
+		vec2d b(r1.x, r1.z);
+
+		// create an arc object
+		GM_CIRCLE_ARC ca(c, a, b, -edge.m_orient);
+		vec2d q = ca.Point(r);
+		p = vec3d(q.x(), r1.y, q.y());
+	}
+	break;
 	case EDGE_ZARC:
 	{
 		vec2d c(0, 0);
@@ -745,7 +789,12 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 		GM_CIRCLE_3P_ARC c(rc, r0, r1, edge.m_orient);
 		p = c.Point(r);
 	}
-	break;	
+	break;
+	case EDGE_BEZIER:
+	{
+		p = edge.Point(r);
+	}
+	break;
 	default:
 		assert(false);
 	}

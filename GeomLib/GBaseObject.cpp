@@ -393,6 +393,18 @@ int GBaseObject::AddArcSection(int n1, int n2, int n3)
 	return AddEdge(e);
 }
 
+int GBaseObject::AddBezierSection(const std::vector<int>& n)
+{
+	assert(n.size() >= 2);
+	GEdge* e = new GEdge(this);
+	e->m_ntype = EDGE_BEZIER;
+	e->m_node[0] = n[0];
+	for (int i=1; i<n.size()-1; ++i)
+		e->m_cnode.push_back(n[i]);
+	e->m_node[1] = n[n.size()-1];
+	return AddEdge(e);
+}
+
 //-----------------------------------------------------------------------------
 // Build a facet from a wire, that is an edge list. It is assumed that the edges
 // are in the proper order, that is that each edge connects to its left and right

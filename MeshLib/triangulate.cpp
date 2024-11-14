@@ -267,7 +267,11 @@ GMesh* triangulate(GFace& face)
 	GTriangulate c;
 	c.Clear();
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// find the (approximate) face normal
 	vec3d fc(0, 0, 0);
