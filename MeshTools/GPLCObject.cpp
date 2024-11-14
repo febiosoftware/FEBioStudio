@@ -255,3 +255,59 @@ void GPLCObject::Create(GSketch &s)
 	// find all vertices
 	UpdateNodeTypes();
 }
+
+GObject* GPLCObject::Clone()
+{
+	GPLCObject* clone = new GPLCObject();
+
+	// copy nodes
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		GNode& ni = *Node(i);
+		GNode* newNode = clone->AddNode(ni.LocalPosition(), ni.Type(), true);
+		newNode->SetMeshWeight(ni.GetMeshWeight());
+	}
+
+	// copy edges
+	for (int i = 0; i < Edges(); ++i)
+	{
+		GEdge& ei = *Edge(i);
+		GEdge* ec = clone->AddEdge();
+
+		ec->m_node[0] = ei.m_node[0];
+		ec->m_node[1] = ei.m_node[1];
+		ec->m_cnode = ei.m_cnode;
+		ec->m_ntype = ei.m_ntype;
+		ec->m_orient = ei.m_orient;
+		ec->SetMeshWeight(ei.GetMeshWeight());
+	}
+
+	// copy faces
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace& fi = *Face(i);
+		GFace* fc = clone->AddFace();
+		fc->m_ntype = fi.m_ntype;
+		fc->m_nPID[0] = fi.m_nPID[0];
+		fc->m_nPID[1] = fi.m_nPID[1];
+		fc->m_nPID[2] = fi.m_nPID[2];
+		fc->m_node = fi.m_node;
+		fc->m_edge = fi.m_edge;
+		fc->SetMeshWeight(fi.GetMeshWeight());
+	}
+
+	// copy parts
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart& pi = *Part(i);
+		GPart* pc = clone->AddPart();
+		pc->m_node = pi.m_node;
+		pc->m_edge = pi.m_edge;
+		pc->m_face = pi.m_face;
+		pc->SetMeshWeight(pi.GetMeshWeight());
+	}
+
+	clone->Update();
+
+	return clone;
+}

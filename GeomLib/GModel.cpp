@@ -1845,12 +1845,17 @@ void GModel::ShowAllParts(GObject* po)
 //-----------------------------------------------------------------------------
 GObject* GModel::CloneObject(GObject *po)
 {
+	if (po == nullptr) return nullptr;
+
 	// clone counter
 	static int n = 1;
 
 	// clone the object
 	GObject* pco = po->Clone();
 	if (pco == 0) return 0;
+
+	pco->CopyTransform(po);
+	pco->SetColor(po->GetColor());
 
 	// set a new name
 	char sz[256];

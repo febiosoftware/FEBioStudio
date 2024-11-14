@@ -39,6 +39,8 @@ public:
 
 	void Create(GSketch& s);
 
+	GObject* Clone() override;
+
 	FSMesh* BuildMesh();
 
 	FSMeshBase* GetEditableMesh() override;
