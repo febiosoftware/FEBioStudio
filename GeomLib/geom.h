@@ -119,7 +119,9 @@ class GM_BEZIER
 public:
 	GM_BEZIER(const std::vector<vec3d>& P) : m_P(P) {}
 
-	vec3d Point(double l);
+	vec3d Point(double l) const;
+
+	double Length() const;
 
 private:
 	std::vector<vec3d> m_P;

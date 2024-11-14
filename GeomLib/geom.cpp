@@ -487,7 +487,7 @@ vec3d GM_CIRCLE_3P_ARC::Point(double l)
 	return r;
 }
 
-vec3d GM_BEZIER::Point(double u)
+vec3d GM_BEZIER::Point(double u) const
 {
 	std::vector<vec3d> Q(m_P);
 	int n = Q.size() - 1;
@@ -496,4 +496,19 @@ vec3d GM_BEZIER::Point(double u)
 			Q[i] = Q[i] * (1.0 - u) + Q[i + 1] * u;
 
 	return Q[0];
+}
+
+double GM_BEZIER::Length() const
+{
+	double L = 0.0;
+	const int M = 100;
+	vec3d r0 = Point(0.0);
+	for (int i=1; i<=M; ++i)
+	{
+		double u = (double)i / (double)M;
+		vec3d r1 = Point(u);
+		L += (r1 - r0).Length();
+		r0 = r1;
+	}
+	return L;
 }

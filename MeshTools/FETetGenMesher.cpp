@@ -925,54 +925,16 @@ bool PLC::ProcessSizing()
 	for (int i = 0; i < NE; ++i)
 	{
 		GEdge& es = *m_po->Edge(i);
+		double L = es.Length();
 		EDGE ed;
-		switch (es.m_ntype)
+		if (es.m_ntype == EDGE_LINE)
+			ed.ndiv = 1;
+		else
 		{
-		case EDGE_LINE:
-			{
-				ed.ndiv = 1;
-			}
-			break;
-		case EDGE_3P_CIRC_ARC:
-			{
-				vec3d r0 = m_po->Node(es.m_cnode[0])->LocalPosition();
-				vec3d r1 = m_po->Node(es.m_node[0])->LocalPosition();
-				vec3d r2 = m_po->Node(es.m_node[1])->LocalPosition();
-
-				vec2d a(r0.x, r0.y);
-				vec2d b(r1.x, r1.y);
-				vec2d c(r2.x, r2.y);
-
-				GM_CIRCLE_ARC ca(a, b, c);
-
-				double L = ca.Length();
-				int n = (int) (L/m_h)+1;
-				if (n<3) n = 3;
-
-				ed.ndiv = n;
-			}
-			break;
-		case EDGE_YARC:
-			{
-				vec3d r0 = m_po->Node(es.m_node[0])->LocalPosition();
-				vec3d r1 = m_po->Node(es.m_node[1])->LocalPosition();
-				double y = r0.y;
-
-				vec2d a(r0.x, r0.z);
-				vec2d b(r1.x, r1.z);
-
-				GM_CIRCLE_ARC c(vec2d(0,0), a, b);
-				double L = c.Length();
-				int n = (int) (L/m_h)+1;
-				if (n<3) n = 3;
-
-				ed.ndiv = n;
-			}
-			break;
-		default:
-			assert(false);
+			int n = (int)(L / m_h) + 1;
+			if (n < 3) n = 3;
+			ed.ndiv = n;
 		}
-
 		m_Edge.push_back(ed);
 	}
 
@@ -1064,62 +1026,15 @@ bool PLC::BuildEdges()
 		EDGE& ed = m_Edge[i];
 		ed.node.clear();
 
-		switch (es.m_ntype)
+		ed.node.push_back(FindNode(es.m_node[0]));
+		int n = ed.ndiv;
+		for (int j = 1; j < n; ++j)
 		{
-		case EDGE_LINE:
-			ed.node.push_back(FindNode(es.m_node[0]));
-			ed.node.push_back(FindNode(es.m_node[1]));
-			break;
-		case EDGE_3P_CIRC_ARC:
-			{
-				ed.node.push_back(FindNode(es.m_node[0]));
-				vec3d r0 = m_po->Node(es.m_cnode[0])->LocalPosition();
-				vec3d r1 = m_po->Node(es.m_node[0])->LocalPosition();
-				vec3d r2 = m_po->Node(es.m_node[1])->LocalPosition();
-
-				vec2d a(r0.x, r0.y);
-				vec2d b(r1.x, r1.y);
-				vec2d c(r2.x, r2.y);
-
-				GM_CIRCLE_ARC ca(a, b, c);
-
-				int n = ed.ndiv;
-				for (int j=1; j<n; ++j)
-				{
-					double l = (double) j / (double) n;
-					vec3d r = ca.Point(l);
-					r.z = r0.z;
-					ed.node.push_back(AddNode(r, -1));
-				}
-				ed.node.push_back(FindNode(es.m_node[1]));
-			}
-			break;
-		case EDGE_YARC:
-			{
-				ed.node.push_back(FindNode(es.m_node[0]));
-				vec3d r0 = m_po->Node(es.m_node[0])->LocalPosition();
-				vec3d r1 = m_po->Node(es.m_node[1])->LocalPosition();
-				double y = r0.y;
-
-				vec2d a(r0.x, r0.z);
-				vec2d b(r1.x, r1.z);
-
-				GM_CIRCLE_ARC c(vec2d(0,0), a, b);
-				int n = ed.ndiv;
-				for (int j=1; j<n; ++j)
-				{
-					double l = (double) j / (double) n;
-					vec2d p = c.Point(l);
-					vec3d r(p.x(), y, p.y());
-					ed.node.push_back(AddNode(r, -1));
-				}
-				ed.node.push_back(FindNode(es.m_node[1]));
-			}
-			break;
-		default:
-			assert(false);
-			return false;
+			double l = (double)j / (double)n;
+			vec3d r = es.Point(l);
+			ed.node.push_back(AddNode(r, -1));
 		}
+		ed.node.push_back(FindNode(es.m_node[1]));
 	}
 
 	return true;

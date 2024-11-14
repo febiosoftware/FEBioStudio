@@ -228,6 +228,19 @@ double GEdge::Length()
 			L = ca.Length();
 		}
 		break;
+	case EDGE_BEZIER:
+		{
+			std::vector<vec3d> P;
+			P.push_back(m_po->Node(m_node[0])->LocalPosition());
+			for (int i = 0; i < m_cnode.size(); ++i)
+			{
+				P.push_back(m_po->Node(m_cnode[i])->LocalPosition());
+			}
+			P.push_back(m_po->Node(m_node[1])->LocalPosition());
+			GM_BEZIER bez(P);
+			L = bez.Length();
+		}
+	break;
 	default:
 		assert(false);
 	}
@@ -285,6 +298,33 @@ vec3d GEdge::Point(double l)
 			qi.RotateVector(p);
 			p += r0;
 		};
+		break;
+	case EDGE_YARC:
+		{
+			vec3d r0 = m_po->Node(m_node[0])->LocalPosition();
+			vec3d r1 = m_po->Node(m_node[1])->LocalPosition();
+			double y = r0.y;
+
+			vec2d a(r0.x, r0.z);
+			vec2d b(r1.x, r1.z);
+
+			GM_CIRCLE_ARC c(vec2d(0, 0), a, b);
+			vec2d q = c.Point(l);
+			p = vec3d(q.x(), y, q.y());
+		}
+		break;
+	case EDGE_BEZIER:
+		{
+			std::vector<vec3d> P;
+			P.push_back(m_po->Node(m_node[0])->LocalPosition());
+			for (int i = 0; i < m_cnode.size(); ++i)
+			{
+				P.push_back(m_po->Node(m_cnode[i])->LocalPosition());
+			}
+			P.push_back(m_po->Node(m_node[1])->LocalPosition());
+			GM_BEZIER bez(P);
+			p = bez.Point(l);
+		}
 		break;
 	default:
 		assert(false);
