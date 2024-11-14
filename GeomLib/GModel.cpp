@@ -2033,11 +2033,43 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 	{
 		// see if all objects are multiblocks
 		bool allMultiBlocks = true;
+		std::vector<GMultiBox*> Mblocks;
 		for (int i = 0; i < sel->Count(); ++i)
 		{
 			GMultiBox* mb = dynamic_cast<GMultiBox*>(sel->Object(i));
 			if (mb == nullptr) {
 				allMultiBlocks = false; break;
+			}
+			else
+				Mblocks.push_back(mb);
+		}
+
+		bool allPrimitives = false;
+		if (!allMultiBlocks)
+		{
+			// see if they are all primitives
+			allPrimitives = true;
+			std::vector<GPrimitive*> prim;
+			for (int i = 0; i < sel->Count(); ++i)
+			{
+				GPrimitive* p = dynamic_cast<GPrimitive*>(sel->Object(i));
+				if (p == nullptr) {
+					allPrimitives = false; break;
+				}
+				else
+					prim.push_back(p);
+			}
+
+			if (allPrimitives)
+			{
+				// convert all primitives to multi-blocks
+				Mblocks.clear();
+				for (GPrimitive* p : prim)
+				{
+					GMultiBox* newObject = new GMultiBox(p);
+					Mblocks.push_back(newObject);
+				}
+				allMultiBlocks = true;
 			}
 		}
 
@@ -2045,17 +2077,22 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		if (allMultiBlocks)
 		{
 			// create a new object by copying the first selected object
-			GMultiBox* poa = dynamic_cast<GMultiBox*>(sel->Object(0)); assert(poa);
+			GMultiBox* poa = Mblocks[0]; assert(poa);
 			GMultiBox* ponew = dynamic_cast<GMultiBox*>(poa->Clone());
 			ponew->SetName(newObjectName.c_str());
 
 			for (int i = 1; i < sel->Count(); ++i)
 			{
 				// get the next object
-				GMultiBox* po = dynamic_cast<GMultiBox*>(sel->Object(i));
+				GMultiBox* po = Mblocks[i];
 
 				// attach it
 				ponew->Merge(*po);
+			}
+
+			if (allPrimitives)
+			{
+				for (GMultiBox* o : Mblocks) delete o;
 			}
 
 			return ponew;
