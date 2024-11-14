@@ -138,7 +138,7 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 		MBEdge& eo = mb.GetEdge(i);
 		e->m_node[0] = eo.m_node[0];
 		e->m_node[1] = eo.m_node[1];
-		e->m_cnode.push_back(eo.m_cnode);
+		if (eo.m_cnode >= 0) e->m_cnode.push_back(eo.m_cnode);
 		e->m_ntype = eo.m_ntype;
 		e->m_orient = eo.m_orient;
 	}

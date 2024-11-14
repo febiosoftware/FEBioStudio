@@ -104,8 +104,9 @@ public:
 		m_gx = 1;
 		m_bx = false;
 		m_orient = 1;
+		m_cnode = -1;
 	}
-	MBEdge(int n0, int n1) { m_node[0] = n0; m_node[1] = n1; m_ntype = EDGE_LINE; m_orient = 1; }
+	MBEdge(int n0, int n1) { m_node[0] = n0; m_node[1] = n1; m_ntype = EDGE_LINE; m_orient = 1; m_cnode = -1; }
 	bool operator == (const MBEdge& e) const
 	{
 		const int* n1 = m_node;
