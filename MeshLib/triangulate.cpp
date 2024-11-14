@@ -270,20 +270,20 @@ GMesh* triangulate(GFace& face)
 	const int M = 50;
 
 	// find the (approximate) face normal
-	vec3d fn(0, 0, 0);
-	int ne = face.Edges();
-	for (int i = 0; i < ne - 1; ++i)
+	vec3d fc(0, 0, 0);
+	for (int i = 0; i < face.Nodes(); ++i)
 	{
-		GEdge& e0 = *obj.Edge(face.m_edge[i].nid);
-		int w0 = face.m_edge[i].nwn;
+		GNode& node = *obj.Node(face.m_node[i]);
+		fc += node.LocalPosition();
+	}
+	fc /= face.Nodes();
 
-		GEdge& e1 = *obj.Edge(face.m_edge[i + 1].nid);
-		int w1 = face.m_edge[i + 1].nwn;
-
-		vec3d t0 = (w0 > 0 ? e0.Tangent(1) : -e0.Tangent(0));
-		vec3d t1 = (w1 > 0 ? e1.Tangent(0) : -e1.Tangent(1));
-
-		fn += (t0 ^ t1);
+	vec3d fn(0, 0, 0);
+	for (int i = 0; i < face.Nodes() - 1; ++i)
+	{
+		vec3d r0 = obj.Node(face.m_node[i  ])->LocalPosition();
+		vec3d r1 = obj.Node(face.m_node[i+1])->LocalPosition();
+		fn += (r0 - fc) ^ (r1 - fc);
 	}
 	fn.Normalize();
 
@@ -298,6 +298,7 @@ GMesh* triangulate(GFace& face)
 	vec3d rc = obj.Node(face.m_node[0])->LocalPosition();
 
 	// create all nodes
+	int ne = face.Edges();
 	for (int i = 0; i < ne; ++i)
 	{
 		GEdge& e = *obj.Edge(face.m_edge[i].nid);

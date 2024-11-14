@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/GPLCObject.h>
+#include <MeshTools/GObject2D.h>
 #include <FSCore/FSObjectList.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <MeshLib/FEItemListBuilder.h>
@@ -1323,6 +1324,7 @@ GObject* BuildObject(int ntype)
 	case GCURVE_OBJECT      : po = new GCurveObject(); break;
 	case GBOX_IN_BOX        : po = new GBoxInBox(); break;
 	case GPLC_OBJECT        : po = new GPLCObject(); break;
+	case GOBJECT2D          : po = new GObject2D(); break;
 	}
 
 	assert(po);
