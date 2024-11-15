@@ -42,6 +42,10 @@ public:
 	QWidget* createUi() override;
 
 	void Activate() override;
+
+	void Deactivate() override;
+
+	void Update() override;
     
 private slots:
 	void OnAddClicked();
@@ -50,9 +54,11 @@ private slots:
 
 private:
 	void Clear();
+	void SetObject(GOCCObject* po);
+
+	void addRow(const QString& name, double v);
 
 private:
 	UISurfaceMeshSizeTool*	ui;
 	GOCCObject*	m_po;
-	std::vector<FEItemListBuilder*>	m_data;
 };

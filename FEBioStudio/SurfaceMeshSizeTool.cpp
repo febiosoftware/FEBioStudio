@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include "MainWindow.h"
 #include <FSCore/FSLogger.h>
+#include <MeshTools/NetGenMesher.h>
 
 // NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
 #if defined(WIN32) && defined(_DEBUG)
@@ -78,10 +79,10 @@ namespace nglib {
 class UISurfaceMeshSizeTool : public QWidget
 {
 public:
-	QPushButton*	m_add;
-	QTableWidget*	m_table;
-	QLineEdit*		m_val;
-    QPushButton*    m_clear;
+	QPushButton* m_add;
+	QTableWidget* m_table;
+	QLineEdit* m_val;
+	QPushButton* m_clear;
 
 public:
 	UISurfaceMeshSizeTool(CSurfaceMeshSizeTool* w)
@@ -104,17 +105,17 @@ public:
 		m_table->setHorizontalHeaderLabels(QStringList() << "surface" << "mesh size");
 		l->addStretch();
 
-        QHBoxLayout* h3 = new QHBoxLayout;
-        m_clear = new QPushButton("Clear");
-        h3->addWidget(m_clear);
-        l->addLayout(h3);
-        l->addStretch();
+		QHBoxLayout* h3 = new QHBoxLayout;
+		m_clear = new QPushButton("Clear");
+		h3->addWidget(m_clear);
+		l->addLayout(h3);
+		l->addStretch();
 
-        setLayout(l);
+		setLayout(l);
 
 		QObject::connect(m_add, SIGNAL(clicked()), w, SLOT(OnAddClicked()));
-        QObject::connect(m_clear, SIGNAL(clicked()), w, SLOT(OnClearClicked()));
-        QObject::connect(m_table, SIGNAL(itemChanged(QTableWidgetItem*)), w, SLOT(OnTableEdited()));
+		QObject::connect(m_clear, SIGNAL(clicked()), w, SLOT(OnClearClicked()));
+		QObject::connect(m_table, SIGNAL(itemChanged(QTableWidgetItem*)), w, SLOT(OnTableEdited()));
 	}
 };
 
@@ -130,139 +131,157 @@ QWidget* CSurfaceMeshSizeTool::createUi()
 	return ui;
 }
 
+void CSurfaceMeshSizeTool::addRow(const QString& name, double v)
+{
+	int n = ui->m_table->rowCount();
+	ui->m_table->setRowCount(n + 1);
+	QTableWidgetItem* it0 = new QTableWidgetItem;
+	it0->setText(name);
+	it0->setFlags(Qt::ItemIsSelectable);
+	ui->m_table->setItem(n, 0, it0);
+
+	QTableWidgetItem* it1 = new QTableWidgetItem;
+	it1->setText(QString::number(v));
+	ui->m_table->setItem(n, 1, it1);
+}
+
 void CSurfaceMeshSizeTool::OnAddClicked()
 {
+	if (m_po == nullptr) return;
+	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher()); assert(ngen);
+	if (ngen == nullptr) return;
+
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	if ((doc == nullptr) || !doc->IsValid()) return;
+
+	GFaceSelection* sel = dynamic_cast<GFaceSelection*>(doc->GetCurrentSelection());
+	if ((sel == nullptr) || (sel->Count() == 0)) return;
+
 	double v = ui->m_val->text().toDouble();
 
-    GOCCObject* po = dynamic_cast<GOCCObject*>(GetMainWindow()->GetActiveObject());
-	if (m_po == nullptr) m_po = po;
-	if ((m_po == po) && (m_po != nullptr))
+	GFaceSelection::Iterator it(sel);
+	for (int i = 0; i < sel->Size(); ++i, ++it) 
 	{
-		CModelDocument* doc = GetMainWindow()->GetModelDocument();
-        GFaceSelection* sel = dynamic_cast<GFaceSelection*>(doc->GetCurrentSelection());
-        if (sel)
+		GFace* gf = it;
+		if (gf && (m_po == gf->Object())) 
 		{
-			FEItemListBuilder* items = sel->CreateItemList();
-			if (items)
-			{
-				m_data.push_back(items);
-
-                GFaceSelection::Iterator it(sel);
-                for (int i=0; i<sel->Size(); ++i, ++it) {
-                    GFace* gf = it;
-                    if (gf) {
-                        GBaseObject* gbo = gf->Object();
-                        if (dynamic_cast<GOCCObject*>(gbo)) {
-                            // exclude surfaces that have been selected previously
-                            bool selprev = false;
-                            for (int j=0; j<m_po->m_nface.size(); ++j) {
-                                if (gf->GetID() == m_po->m_nface[j]) {
-                                    selprev = true;
-                                    FSLogger::Write("Face %d has been assigned a mesh size already.\n", j);
-                                }
-                            }
-                            if (!selprev) {
-                                int n = ui->m_table->rowCount();
-                                ui->m_table->insertRow(n);
-                                
-                                QTableWidgetItem* it0 = new QTableWidgetItem;
-                                it0->setText((QString::number(gf->GetID())).arg(n));
-                                it0->setFlags(Qt::ItemIsSelectable);
-                                ui->m_table->setItem(n, 0, it0);
-                                m_po->m_nface.push_back(gf->GetID());
-                                
-                                QTableWidgetItem* it1 = new QTableWidgetItem;
-                                it1->setText(QString::number(v));
-                                ui->m_table->setItem(n, 1, it1);
-                                m_po->m_msize.push_back(v);
-                            }
-                        }
-                    }
-                }
-			}
-		}		
+			ngen->SetMeshSize(gf->GetLocalID(), v);
+		}
 	}
-    else {
-        FSLogger::Write("Select an OCC (e.g., STEP) object.\n");
-    }
+	SetObject(m_po);
 }
 
 void CSurfaceMeshSizeTool::OnClearClicked()
 {
-    Clear();
+	Clear();
 }
 
 void CSurfaceMeshSizeTool::OnTableEdited()
 {
-    QTableWidgetItem* item = ui->m_table->currentItem();
-    if (item == nullptr) return;
-    int row = item->row();
-    double msize = item->text().toDouble();
-    m_po->m_msize[row] = msize;
+	if (m_po == nullptr) return;
+
+	QTableWidgetItem* item = ui->m_table->currentItem();
+	if (item == nullptr) return;
+	int row = item->row();
+	double msize = item->text().toDouble();
+	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher());
+	if (ngen)
+	{
+		ngen->SetMeshSizeFromIndex(row, msize);
+	}
+}
+
+void CSurfaceMeshSizeTool::Update()
+{
+	GOCCObject* po = dynamic_cast<GOCCObject*>(GetActiveObject());
+	if (po == nullptr)
+	{
+		m_po = nullptr;
+		Clear();
+		ui->setDisabled(true);
+	}
+	else if (po != m_po)
+	{
+		SetObject(po);
+		ui->setEnabled(true);
+	}
+	CAbstractTool::Update();
+}
+
+void CSurfaceMeshSizeTool::SetObject(GOCCObject* po)
+{
+	if (po && (po != m_po))
+	{
+		// print some stats
+#ifdef HAS_NETGEN
+		double mnedg = 0.0;
+		double mxedg = 0.0;
+		TopoDS_Shape& occ = po->GetShape();
+		TopExp_Explorer anExp(occ, TopAbs_EDGE);
+		for (; anExp.More(); anExp.Next()) {
+			const TopoDS_Edge& anEdge = TopoDS::Edge(anExp.Current());
+			GProp_GProps props;
+			BRepGProp::LinearProperties(anEdge, props);
+			double length = props.Mass();
+			if (mnedg == 0) mnedg = length;
+			else {
+				mnedg = fmin(mnedg, length);
+				mxedg = fmax(mxedg, length);
+			}
+		}
+		FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
+		FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
+#endif
+	}
+
+	m_po = nullptr;
+	Clear();
+	m_po = po;
+	if (po == nullptr) return;
+
+	// fill the table
+	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(po->GetFEMesher());
+	if (ngen)
+	{
+		for (int i = 0; i < ngen->GetMeshSizes(); ++i)
+		{
+			const NetGenMesher::MeshSize& ms = ngen->GetMeshSize(i);
+			GFace* pf = m_po->Face(ms.faceId); assert(pf);
+			if (pf) addRow(QString::fromStdString(pf->GetName()), ms.meshSize);
+		}
+	}
 }
 
 void CSurfaceMeshSizeTool::Activate()
 {
-	CModelDocument* doc = GetMainWindow()->GetModelDocument();
-	if (doc)
+	assert(m_po == nullptr);
+	GOCCObject* po = dynamic_cast<GOCCObject*>(GetActiveObject());
+	if (po)
 	{
-        GModel& mdl = *doc->GetGModel();
-        if (mdl.Objects() == 0) return;
-        GOCCObject* pocc = nullptr;
-        for (int n = 0; n < mdl.Objects(); ++n)
-        {
-            GObject* po = mdl.Object(n);
-            pocc = dynamic_cast<GOCCObject*>(po);
-            if (pocc) break;
-        }
-        // check if any of the objects in this model are of type GOCCObject
-        if (pocc == nullptr) {
-            FSLogger::Write("This model does not include any OCC (e.g., STEP) object.\n");
-            Clear();
-            return;
-        }
-        else if (mdl.Objects() > 1) {
-            FSLogger::Write("This tool works only if there is a single OCC (e.g., STEP) object in the model.\n");
-            Clear();
-            return;
-        }
-        pocc->Select();
-#ifdef HAS_NETGEN
-        double mnedg = 0.0;
-        double mxedg = 0.0;
-        TopoDS_Shape& occ = pocc->GetShape();
-        TopExp_Explorer anExp (occ, TopAbs_EDGE);
-        for (; anExp.More(); anExp.Next()) {
-            const TopoDS_Edge& anEdge = TopoDS::Edge (anExp.Current());
-            GProp_GProps props;
-            BRepGProp::LinearProperties(anEdge, props);
-            double length = props.Mass();
-            if (mnedg == 0) mnedg = length;
-            else {
-                mnedg = fmin(mnedg, length);
-                mxedg = fmax(mxedg, length);
-            }
-        }
-        FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
-        FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
-#endif
+		SetObject(po);
+		ui->setEnabled(true);
 	}
-    else
-        Clear();
+	else
+	{
+		ui->setDisabled(true);
+	}
 
 	CAbstractTool::Activate();
 }
 
+void CSurfaceMeshSizeTool::Deactivate()
+{
+	m_po = nullptr;
+	Clear();
+	CAbstractTool::Deactivate();
+}
+
 void CSurfaceMeshSizeTool::Clear()
 {
-    if (m_po) {
-        m_po->m_nface.clear();
-        m_po->m_msize.clear();
-    }
-	m_po = nullptr;
-	for (int i = 0; i < m_data.size(); ++i) delete m_data[i];
-	m_data.clear();
+	if (m_po) {
+		NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher());
+		if (ngen) ngen->ClearMeshSizes();
+	}
 	ui->m_table->clear();
 	ui->m_table->setRowCount(0);
 }
-

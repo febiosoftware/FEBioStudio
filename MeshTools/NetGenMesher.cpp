@@ -291,8 +291,8 @@ FSMesh*	NetGenMesher::BuildMesh()
         }
         
         // set mesh size of selected surface
-        for (int i=0; i<m_occ->m_nface.size(); ++i) {
-            if (m_occ->m_msize[i] > 0) occgeo->SetFaceMaxH(m_occ->m_nface[i], m_occ->m_msize[i], *mparam);
+        for (MeshSize& msize : m_msize) {
+            if (msize.meshSize > 0) occgeo->SetFaceMaxH(msize.faceId + 1, msize.meshSize, *mparam);
         }
     }
 
@@ -697,3 +697,16 @@ FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder)
     return mesh;
 }
 #endif
+
+void NetGenMesher::SetMeshSize(int faceId, double v)
+{
+	for (MeshSize& ms : m_msize)
+	{
+		if (ms.faceId == faceId)
+		{
+			ms.meshSize = v;
+			return;
+		}
+	}
+	m_msize.push_back({ faceId, v });
+}
