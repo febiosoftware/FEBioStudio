@@ -46,6 +46,11 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include <FSCore/FSLogger.h>
 
+// NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
+#if defined(WIN32) && defined(_DEBUG)
+#undef HAS_NETGEN
+#endif
+
 #ifdef HAS_NETGEN
 
 #include <TopTools_IndexedMapOfShape.hxx>
@@ -240,10 +245,10 @@ void CSurfaceMeshSizeTool::Activate()
         }
         FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
         FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
+#endif
 	}
     else
         Clear();
-#endif
 
 	CAbstractTool::Activate();
 }
