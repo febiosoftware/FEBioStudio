@@ -406,7 +406,7 @@ class GMultiBox;
 
 class FEMultiBlockMesher : public FEMultiBlockMesh
 {
-	enum { DIVS, ELEM_TYPE };
+	enum { ELEM_SIZE, ELEM_TYPE };
 
 public:
 	FEMultiBlockMesher(GMultiBox* po);

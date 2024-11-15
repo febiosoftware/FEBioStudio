@@ -574,15 +574,15 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 			GMesh::FACE& f0 = m.Face(j * (2 * M) + 2 * i);
 			GMesh::FACE& f1 = m.Face(j * (2 * M) + 2 * i + 1);
 
-			f0.n[0] = i * (M + 1) + j;
-			f0.n[1] = (i + 1) * (M + 1) + j;
-			f0.n[2] = (i + 1) * (M + 1) + j + 1;
-			f0.pid = f.GetLocalID();
-
-			f1.n[0] = (i + 1) * (M + 1) + j + 1;
-			f1.n[1] = i * (M + 1) + j + 1;
-			f1.n[2] = i * (M + 1) + j;
+			f1.n[0] = j * (M + 1) + i;
+			f1.n[1] = j * (M + 1) + i + 1;
+			f1.n[2] = (j + 1) * (M + 1) + i + 1;
 			f1.pid = f.GetLocalID();
+
+			f0.n[0] = (j + 1) * (M + 1) + i + 1;
+			f0.n[1] = (j + 1) * (M + 1) + i;
+			f0.n[2] = j * (M + 1) + i;
+			f0.pid = f.GetLocalID();
 		}
 
 	// build the edges

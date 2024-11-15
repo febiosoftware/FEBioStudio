@@ -221,10 +221,10 @@ void GRevolveModifier::Apply(GObject* po)
 			if ((m0 > 0)&&(m1 > 0))
 			{
 				edge.resize(4);
-				edge[0] = ne[         i*E+j];
-				edge[1] =                 m1;
-				edge[2] = ne[((i+1)*E+j)%NE];
-				edge[3] =                 m0;
+				edge[3] = ne[         i*E+j];
+				edge[2] =                 m1;
+				edge[1] = ne[((i+1)*E+j)%NE];
+				edge[0] =                 m0;
 				po->AddFacet(edge, FACE_REVOLVE);
 				e0.m_ntag = nf++;
 			}

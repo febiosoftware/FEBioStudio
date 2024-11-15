@@ -191,27 +191,20 @@ double GEdge::Length()
 		{
 			vec3d r0 = m_po->Node(m_node[0])->LocalPosition();
 			vec3d r1 = m_po->Node(m_node[1])->LocalPosition();
-
-			vec2d a(r0.x, r0.y);
-			vec2d b(r1.x, r1.y);
-
-			GM_LINE l(a, b);
-
-			L = l.Length();
+			return (r1 - r0).Length();
 		}
 		break;
 	case EDGE_3P_CIRC_ARC:
 		{
 			vec3d r0 = m_po->Node(m_cnode[0])->LocalPosition();
-			vec3d r1 = m_po->Node(m_node[0])->LocalPosition();
-			vec3d r2 = m_po->Node(m_node[1])->LocalPosition();
-
-			vec2d a(r0.x, r0.y); 
-			vec2d b(r1.x, r1.y); 
-			vec2d c(r2.x, r2.y); 
-
-			GM_CIRCLE_ARC ca(a, b, c);
-			L = ca.Length();
+			vec3d r1 = m_po->Node(m_node[0])->LocalPosition() - r0;
+			vec3d r2 = m_po->Node(m_node[1])->LocalPosition() - r0;
+			vec3d n = r1 ^ r2; n.Normalize();
+			quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
+			q.RotateVector(r1);
+			q.RotateVector(r2);
+			GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
+			L = fabs(c.Length());
 		}
 		break;
 	case EDGE_3P_ARC:
@@ -225,7 +218,7 @@ double GEdge::Length()
 			vec2d c(r2.x, r2.y); 
 
 			GM_ARC ca(a, b, c);
-			L = ca.Length();
+			L = fabs(ca.Length());
 		}
 		break;
 	case EDGE_YARC:
@@ -238,9 +231,22 @@ double GEdge::Length()
 
 			// create an arc object
 			GM_CIRCLE_ARC ca(c, a, b, -m_orient);
-			L = ca.Length();
+			L = fabs(ca.Length());
 		}
 		break;
+	case EDGE_ZARC:
+	{
+		vec3d r0 = m_po->Node(m_node[0])->LocalPosition();
+		vec3d r1 = m_po->Node(m_node[1])->LocalPosition();
+		vec2d c(0, 0);
+		vec2d a(r0.x, r0.y);
+		vec2d b(r1.x, r1.y);
+
+		// create an arc object
+		GM_CIRCLE_ARC ca(c, a, b, m_orient);
+		L = fabs(ca.Length());
+	}
+	break;
 	case EDGE_BEZIER:
 		{
 			std::vector<vec3d> P;

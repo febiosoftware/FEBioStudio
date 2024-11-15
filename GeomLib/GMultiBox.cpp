@@ -364,7 +364,7 @@ bool GMultiBox::DeletePart(GPart* pg)
 	for (GEdge* e : m_Edge) {
 		e->m_node[0] = m_Node[e->m_node[0]]->m_ntag; assert(e->m_node[0] >= 0);
 		e->m_node[1] = m_Node[e->m_node[1]]->m_ntag; assert(e->m_node[1] >= 0);
-		if (!e->m_cnode.empty() >= 0)
+		if (!e->m_cnode.empty())
 		{
 			e->m_cnode[0] = m_Node[e->m_cnode[0]]->m_ntag;
 			assert(e->m_cnode[0] >= 0);
