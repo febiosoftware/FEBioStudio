@@ -66,22 +66,28 @@ FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ng, bool secondOrder);
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
 {
-	m_meshGranularity = 2;
+	m_meshGranularity = Moderate;
+	m_grading = 0.3;
+	m_elemPerEdge = 1;
+	m_elemPerCurve = 2;
 }
 
 NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
 {
 	m_meshGranularity = Moderate;
-	AddChoiceParam(2, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0Very fine\0User-defined\0");
+	m_grading = 0.3;
+	m_elemPerEdge = 1;
+	m_elemPerCurve = 2;
+	AddChoiceParam(m_meshGranularity, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0Very fine\0User-defined\0");
 	AddBoolParam(true, "Use local mesh modifiers");
-	AddDoubleParam(0.3, "Grading")->SetFloatRange(0, 1);
+	AddDoubleParam(m_grading, "Grading")->SetFloatRange(0, 1);
 	AddDoubleParam(1000.0, "Max element size");
     AddDoubleParam(1.0, "Min element size");
 	AddIntParam(3, "Nr. 2D optimization steps");
 	AddIntParam(5, "Nr. 3D optimization steps");
 	AddBoolParam(false, "Second-order mesh");
-    AddDoubleParam(1.0, "Elements per edge");
-    AddDoubleParam(2.0, "Elements per curve");
+    AddDoubleParam(m_elemPerEdge, "Elements per edge");
+    AddDoubleParam(m_elemPerCurve, "Elements per curve");
     AddBoolParam(true, "Quad dominant shell mesh");
     AddBoolParam(false, "Surface mesh refinement");
 //    AddDoubleParam(0.0, "Surface mesh size");
@@ -116,42 +122,56 @@ bool NetGenMesher::UpdateData(bool bsave)
 			m_meshGranularity = gran;
 			switch (gran) {
 			case VeryCoarse:
-				SetFloatValue(GRADING, 0.7);
-				SetFloatValue(ELEMPEREDGE, 0.3);
-				SetFloatValue(ELEMPERCURV, 1.0);
+				m_grading = 0.7;
+				m_elemPerEdge = 0.3;
+				m_elemPerCurve = 1.0;
 				break;
 			case Coarse:
-				SetFloatValue(GRADING, 0.5);
-				SetFloatValue(ELEMPEREDGE, 0.5);
-				SetFloatValue(ELEMPERCURV, 1.5);
+				m_grading = 0.5;
+				m_elemPerEdge = 0.5;
+				m_elemPerCurve = 1.5;
 				break;
 			case Moderate:
-				SetFloatValue(GRADING, 0.3);
-				SetFloatValue(ELEMPEREDGE, 1.0);
-				SetFloatValue(ELEMPERCURV, 2.0);
+				m_grading = 0.3;
+				m_elemPerEdge = 1.0;
+				m_elemPerCurve = 2.0;
 				break;
 			case Fine:
-				SetFloatValue(GRADING, 0.2);
-				SetFloatValue(ELEMPEREDGE, 2.0);
-				SetFloatValue(ELEMPERCURV, 3.0);
+				m_grading = 0.2;
+				m_elemPerEdge = 2.0;
+				m_elemPerCurve = 3.0;
 				break;
 			case VeryFine:
-				SetFloatValue(GRADING, 0.1);
-				SetFloatValue(ELEMPEREDGE, 3.0);
-				SetFloatValue(ELEMPERCURV, 5.0);
+				m_grading = 0.1;
+				m_elemPerEdge = 3.0;
+				m_elemPerCurve = 5.0;
 				break;
 			case UserDefined:
 				break;
 			default:
 				assert(false);
 			}
+			SetFloatValue(GRADING, m_grading);
+			SetFloatValue(ELEMPEREDGE, m_elemPerEdge);
+			SetFloatValue(ELEMPERCURV, m_elemPerCurve);
+
 			return true;
 		}
 		else if (gran != UserDefined)
 		{
-			m_meshGranularity = UserDefined;
-			SetIntValue(NetGenMesher::GRANULARITY, UserDefined);
-			return true;
+			double grading = GetFloatValue(GRADING);
+			double elemPerEdge = GetFloatValue(ELEMPEREDGE);
+			double elemPerCurve = GetFloatValue(ELEMPERCURV);
+			if ((grading != m_grading) || (elemPerCurve != m_elemPerCurve) || (elemPerEdge != m_elemPerEdge))
+			{
+				m_meshGranularity = UserDefined;
+				SetIntValue(NetGenMesher::GRANULARITY, UserDefined);
+
+				m_grading = grading;
+				m_elemPerEdge = elemPerEdge;
+				m_elemPerCurve = elemPerCurve;
+				return true;
+			}
 		}
 	}
 	return FEMesher::UpdateData(bsave);
@@ -259,6 +279,8 @@ FSMesh*	NetGenMesher::BuildMesh()
     mp.maxh = GetFloatValue(NetGenMesher::MAXELEMSIZE);
     mp.minh = GetFloatValue(NetGenMesher::MINELEMSIZE);
     mp.grading = GetFloatValue(NetGenMesher::GRADING);
+	mp.elementsperedge = GetFloatValue(NetGenMesher::ELEMPEREDGE);
+	mp.elementspercurve = GetFloatValue(NetGenMesher::ELEMPERCURV);
     mp.optsteps_2d = GetIntValue(NetGenMesher::NROPT2D);
     mp.optsteps_3d = GetIntValue(NetGenMesher::NROPT3D);
     mp.second_order = (GetBoolValue(NetGenMesher::SECONDORDER) ? 1 : 0);

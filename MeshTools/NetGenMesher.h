@@ -83,7 +83,11 @@ public:
 	void ClearMeshSizes() { m_msize.clear(); }
 
 private:
+	// parameters affected by granularity
 	int m_meshGranularity;
+	double m_grading;
+	double m_elemPerEdge;
+	double m_elemPerCurve;
 	GOCCObject*	m_occ;
 	std::vector<MeshSize> m_msize;
 };
