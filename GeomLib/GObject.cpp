@@ -1506,7 +1506,7 @@ void GObject::UpdateMeshData()
 			FSFace& face = *pf;
 			FSElement& el = pm->Element(face.m_elem[0].eid);
 			GPart* pg = Part(el.m_gid);
-			if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
+			if (pg && (pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
 			{
 				FSElement& el1 = pm->Element(face.m_elem[1].eid);
 				pg = Part(el1.m_gid);
