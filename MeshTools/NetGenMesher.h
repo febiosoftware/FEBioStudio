@@ -48,6 +48,16 @@ public:
         SURFESIZE
 	};
 
+	enum MeshGranularityOption
+	{
+		VeryCoarse,
+		Coarse,
+		Moderate,
+		Fine,
+		VeryFine,
+		UserDefined
+	};
+
 	struct MeshSize {
 		int faceId;
 		double meshSize;
@@ -63,6 +73,8 @@ public:
 
 	void Terminate() override;
 
+	bool UpdateData(bool bsave) override;
+
 public:
 	int GetMeshSizes() const { return (int)m_msize.size(); }
 	const MeshSize& GetMeshSize(int n) { return m_msize[n]; }
@@ -71,6 +83,7 @@ public:
 	void ClearMeshSizes() { m_msize.clear(); }
 
 private:
+	int m_meshGranularity;
 	GOCCObject*	m_occ;
 	std::vector<MeshSize> m_msize;
 };
