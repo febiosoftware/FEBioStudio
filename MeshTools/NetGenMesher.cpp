@@ -79,7 +79,7 @@ NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
 	m_elemPerEdge = 1;
 	m_elemPerCurve = 2;
 	AddChoiceParam(m_meshGranularity, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0Very fine\0User-defined\0");
-	AddBoolParam(true, "Use local mesh modifiers");
+	AddBoolParam(true, "Use local mesh modifiers")->SetEditable(false);
 	AddDoubleParam(m_grading, "Grading")->SetFloatRange(0, 1);
 	AddDoubleParam(1000.0, "Max element size");
     AddDoubleParam(1.0, "Min element size");
