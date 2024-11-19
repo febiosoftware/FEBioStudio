@@ -25,69 +25,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "Tool.h"
+#include <vector>
+#include <GeomLib/GOCCObject.h>
 
-class GOCCObject;
+class UISurfaceMeshSizeTool;
+class FEItemListBuilder;
 
-class NetGenMesher : public FEMesher
+class CSurfaceMeshSizeTool : public CAbstractTool
 {
-public:
-	enum {
-		GRANULARITY,
-		USELOCALH,
-		GRADING,
-		MAXELEMSIZE,
-        MINELEMSIZE,
-		NROPT2D,
-		NROPT3D,
-		SECONDORDER,
-        ELEMPEREDGE,
-        ELEMPERCURV,
-        QUADMESH,
-        SURFREFINE,
-        SURFESIZE
-	};
-
-	enum MeshGranularityOption
-	{
-		VeryCoarse,
-		Coarse,
-		Moderate,
-		Fine,
-		VeryFine,
-		UserDefined
-	};
-
-	struct MeshSize {
-		int faceId;
-		double meshSize;
-	};
+	Q_OBJECT
 
 public:
-	NetGenMesher();
-	NetGenMesher(GOCCObject* po);
+    CSurfaceMeshSizeTool(CMainWindow* wnd);
 
-	FSMesh*	BuildMesh() override;
+	QWidget* createUi() override;
 
-	FSTaskProgress GetProgress() override;
+	void Activate() override;
 
-	void Terminate() override;
+	void Deactivate() override;
 
-	bool UpdateData(bool bsave) override;
-
-public:
-	int GetMeshSizes() const { return (int)m_msize.size(); }
-	const MeshSize& GetMeshSize(int n) { return m_msize[n]; }
-	void SetMeshSize(int faceId, double v);
-	void SetMeshSizeFromIndex(int n, double v) { m_msize[n].meshSize = v; }
-	void ClearMeshSizes() { m_msize.clear(); }
+	void Update() override;
+    
+private slots:
+	void OnAddClicked();
+    void OnClearClicked();
+    void OnTableEdited();
 
 private:
-	// parameters affected by granularity
-	int m_meshGranularity;
-	double m_grading;
-	double m_elemPerEdge;
-	double m_elemPerCurve;
-	GOCCObject*	m_occ;
-	std::vector<MeshSize> m_msize;
+	void Clear();
+	void SetObject(GOCCObject* po);
+
+	void addRow(const QString& name, double v);
+
+private:
+	UISurfaceMeshSizeTool*	ui;
+	GOCCObject*	m_po;
 };

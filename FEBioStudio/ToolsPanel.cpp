@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
 #include "ScalarFieldTool.h"
+#include "SurfaceMeshSizeTool.h"
 #include "EditDataFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
@@ -83,6 +84,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CKinematBuildTool   (wnd));
 	tools.push_back(new CMeshMorphTool      (wnd));
 	tools.push_back(new CExtrudeMapTool     (wnd));
+    tools.push_back(new CSurfaceMeshSizeTool(wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

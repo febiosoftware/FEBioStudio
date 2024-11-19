@@ -40,6 +40,7 @@ SOFTWARE.*/
 
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 #include <GProp_GProps.hxx>
@@ -65,21 +66,31 @@ FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ng, bool secondOrder);
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
 {
+	m_meshGranularity = Moderate;
+	m_grading = 0.3;
+	m_elemPerEdge = 1;
+	m_elemPerCurve = 2;
 }
 
 NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
 {
-	AddChoiceParam(2, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0Very fine\0User-defined\0");
-	AddBoolParam(true, "Use local mesh modifiers");
-	AddDoubleParam(0, "Grading (0 = use default)");
+	m_meshGranularity = Moderate;
+	m_grading = 0.3;
+	m_elemPerEdge = 1;
+	m_elemPerCurve = 2;
+	AddChoiceParam(m_meshGranularity, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0Very fine\0User-defined\0");
+	AddBoolParam(true, "Use local mesh modifiers")->SetEditable(false);
+	AddDoubleParam(m_grading, "Grading")->SetFloatRange(0, 1);
 	AddDoubleParam(1000.0, "Max element size");
     AddDoubleParam(1.0, "Min element size");
 	AddIntParam(3, "Nr. 2D optimization steps");
 	AddIntParam(5, "Nr. 3D optimization steps");
 	AddBoolParam(false, "Second-order mesh");
-    AddDoubleParam(1.0, "Elements per edge");
-    AddDoubleParam(2.0, "Elements per curve");
+    AddDoubleParam(m_elemPerEdge, "Elements per edge");
+    AddDoubleParam(m_elemPerCurve, "Elements per curve");
     AddBoolParam(true, "Quad dominant shell mesh");
+    AddBoolParam(false, "Surface mesh refinement");
+//    AddDoubleParam(0.0, "Surface mesh size");
 }
 
 namespace netgen
@@ -88,11 +99,88 @@ namespace netgen
 #endif
 }
 
+#ifdef HAS_NETGEN
+using namespace nglib;
+using namespace netgen;
+
+// helper class for wrapping Ng_Init and Ng_Exit
+class NGHelper
+{
+public:
+	NGHelper() { Ng_Init(); }
+	~NGHelper() { Ng_Exit(); }
+};
+#endif
+
+bool NetGenMesher::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int gran = GetIntValue(NetGenMesher::GRANULARITY);
+		if (gran != m_meshGranularity)
+		{
+			m_meshGranularity = gran;
+			switch (gran) {
+			case VeryCoarse:
+				m_grading = 0.7;
+				m_elemPerEdge = 0.3;
+				m_elemPerCurve = 1.0;
+				break;
+			case Coarse:
+				m_grading = 0.5;
+				m_elemPerEdge = 0.5;
+				m_elemPerCurve = 1.5;
+				break;
+			case Moderate:
+				m_grading = 0.3;
+				m_elemPerEdge = 1.0;
+				m_elemPerCurve = 2.0;
+				break;
+			case Fine:
+				m_grading = 0.2;
+				m_elemPerEdge = 2.0;
+				m_elemPerCurve = 3.0;
+				break;
+			case VeryFine:
+				m_grading = 0.1;
+				m_elemPerEdge = 3.0;
+				m_elemPerCurve = 5.0;
+				break;
+			case UserDefined:
+				break;
+			default:
+				assert(false);
+			}
+			SetFloatValue(GRADING, m_grading);
+			SetFloatValue(ELEMPEREDGE, m_elemPerEdge);
+			SetFloatValue(ELEMPERCURV, m_elemPerCurve);
+
+			return true;
+		}
+		else if (gran != UserDefined)
+		{
+			double grading = GetFloatValue(GRADING);
+			double elemPerEdge = GetFloatValue(ELEMPEREDGE);
+			double elemPerCurve = GetFloatValue(ELEMPERCURV);
+			if ((grading != m_grading) || (elemPerCurve != m_elemPerCurve) || (elemPerEdge != m_elemPerEdge))
+			{
+				m_meshGranularity = UserDefined;
+				SetIntValue(NetGenMesher::GRANULARITY, UserDefined);
+
+				m_grading = grading;
+				m_elemPerEdge = elemPerEdge;
+				m_elemPerCurve = elemPerCurve;
+				return true;
+			}
+		}
+	}
+	return FEMesher::UpdateData(bsave);
+}
+
+
 FSMesh*	NetGenMesher::BuildMesh()
 {
 #ifdef HAS_NETGEN
-    using namespace nglib;
-    using namespace netgen;
     //using namespace std;
     
     // Define pointer to OCC Geometry
@@ -111,19 +199,48 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     // Initialise the Netgen Core library
     FSLogger::Write("Calling Netgen\n");
-    Ng_Init();
+	NGHelper ng;
     
     // Read in the OCC File
     OCCGeometry * occgeo = new OCCGeometry(m_occ->GetShape());
+/*
+    occgeo->tolerance = 1e-3;
+    occgeo->fixsmalledges = true;
+    occgeo->fixspotstripfaces = true;
+    occgeo->sewfaces = false;
+    occgeo->makesolids = false;
+    occgeo->splitpartitions = false;
+
+    occgeo->HealGeometry();
+*/
     occ_geom = (Ng_OCC_Geometry *)occgeo;
     if (!occ_geom)
     {
         setErrorString("Error converting geometry " + m_occ->GetName());
-        Ng_Exit();
         return nullptr;
     }
 	FSLogger::Write("Successfully converted geometry %s\n", m_occ->GetName().c_str());
-    
+
+    // check to see if any edge has near-zero length
+    // Evaluate the minimum and max edge length to determin min and max element sizes
+    double mnedg = 0.0;
+    double mxedg = 0.0;
+    TopoDS_Shape& occ = m_occ->GetShape();
+    TopExp_Explorer anExp (occ, TopAbs_EDGE);
+    for (; anExp.More(); anExp.Next()) {
+        const TopoDS_Edge& anEdge = TopoDS::Edge (anExp.Current());
+        GProp_GProps props;
+        BRepGProp::LinearProperties(anEdge, props);
+        double length = props.Mass();
+        if (mnedg == 0) mnedg = length;
+        else {
+            mnedg = fmin(mnedg, length);
+            mxedg = fmax(mxedg, length);
+        }
+    }
+    FSLogger::Write("Minimum edge length in this object is %g.\n", mnedg);
+    FSLogger::Write("Maximum edge length in this object is %g.\n", mxedg);
+
     multithread.terminate = 0;
     
     occ_mesh = Ng_NewMesh();
@@ -135,7 +252,6 @@ FSMesh*	NetGenMesher::BuildMesh()
     if(!FMap.Extent())
     {
         setErrorString("Error retrieving Face map....");
-        Ng_Exit();
         return nullptr;
     }
     
@@ -153,8 +269,6 @@ FSMesh*	NetGenMesher::BuildMesh()
 		FSLogger::Write("Index: %d :: Area: %lg\n", i, faceProps.Mass());
     }
     
-    int gran = GetIntValue(NetGenMesher::GRANULARITY);
-    
     const double resthcloseedgefac_list[] = { 0.5, 1, 2, 3.5, 5 };
     const double resthminedgelen_list[] = {0.002, 0.02, 0.2, 1.0, 2.0};
     
@@ -165,6 +279,8 @@ FSMesh*	NetGenMesher::BuildMesh()
     mp.maxh = GetFloatValue(NetGenMesher::MAXELEMSIZE);
     mp.minh = GetFloatValue(NetGenMesher::MINELEMSIZE);
     mp.grading = GetFloatValue(NetGenMesher::GRADING);
+	mp.elementsperedge = GetFloatValue(NetGenMesher::ELEMPEREDGE);
+	mp.elementspercurve = GetFloatValue(NetGenMesher::ELEMPERCURV);
     mp.optsteps_2d = GetIntValue(NetGenMesher::NROPT2D);
     mp.optsteps_3d = GetIntValue(NetGenMesher::NROPT3D);
     mp.second_order = (GetBoolValue(NetGenMesher::SECONDORDER) ? 1 : 0);
@@ -174,53 +290,59 @@ FSMesh*	NetGenMesher::BuildMesh()
     mp.optsurfmeshenable = 1;
     mp.quad_dominated = 0;
     if (m_occ->GetShape().ShapeType() == TopAbs_SHELL) mp.quad_dominated = GetBoolValue(NetGenMesher::QUADMESH) ? 1 : 0;
+
+	// some validation
+	if ((mp.grading <= 0) || (mp.grading >= 1))
+	{
+		SetErrorMessage("Grading parameter should be between 0 and 1.");
+		return nullptr;
+	}
+
     
-    switch (gran) {
-        case 0:
-            mp.grading = (mp.grading == 0) ? 0.7 : mp.grading;
-            mp.elementsperedge = 0.3;
-            mp.elementspercurve = 1.0;
-            break;
-            
-        case 1:
-            mp.grading = (mp.grading == 0) ? 0.5 : mp.grading;
-            mp.elementsperedge = 0.5;
-            mp.elementspercurve = 1.5;
-            break;
-            
-        case 2:
-            mp.grading = (mp.grading == 0) ? 0.3 : mp.grading;
-            mp.elementsperedge = 1.0;
-            mp.elementspercurve = 2.0;
-            break;
-            
-        case 3:
-            mp.grading = (mp.grading == 0) ? 0.2 : mp.grading;
-            mp.elementsperedge = 2.0;
-            mp.elementspercurve = 3.0;
-            break;
-            
-        case 4:
-            mp.grading = (mp.grading == 0) ? 0.1 : mp.grading;
-            mp.elementsperedge = 3.0;
-            mp.elementspercurve = 5.0;
-            break;
-            
-        case 5:
-            mp.grading = (mp.grading == 0) ? 0.1 : mp.grading;
-            mp.elementsperedge = GetFloatValue(NetGenMesher::ELEMPEREDGE);
-            mp.elementspercurve = GetFloatValue(NetGenMesher::ELEMPERCURV);;
-            break;
-            
-        default:
-            mp.grading = (mp.grading == 0) ? 0.3 : mp.grading;
-            mp.elementsperedge = 1.0;
-            mp.elementspercurve = 2.0;
-            break;
+    // check if user has selected surface mesh refinement option
+    if (GetBoolValue(NetGenMesher::SURFREFINE)) {
+        
+        // Update the face mesh sizes to reflect the global maximum mesh size
+        MeshingParameters* mparam = new MeshingParameters();
+        mparam->uselocalh = mp.uselocalh;
+        
+        mparam->maxh = mp.maxh;
+        mparam->minh = mp.minh;
+        
+        mparam->grading = mp.grading;
+        mparam->curvaturesafety = mp.elementspercurve;
+        mparam->segmentsperedge = mp.elementsperedge;
+        
+        mparam->secondorder = mp.second_order;
+        mparam->quad = mp.quad_dominated;
+        
+        if (mp.meshsize_filename)
+            mparam->meshsizefilename = mp.meshsize_filename;
+        else
+            mparam->meshsizefilename = "";
+        mparam->optsteps2d = mp.optsteps_2d;
+        mparam->optsteps3d = mp.optsteps_3d;
+        
+        mparam->inverttets = mp.invert_tets;
+        mparam->inverttrigs = mp.invert_trigs;
+        
+        mparam->checkoverlap = mp.check_overlap;
+        mparam->checkoverlappingboundary = mp.check_overlapping_boundary;
+
+        for(int i = 1; i <= occgeo->NrFaces(); i++)
+        {
+            if(!occgeo->GetFaceMaxhModified(i))
+            {
+                occgeo->SetFaceMaxH(i, mp.maxh, *mparam);
+            }
+        }
+        
+        // set mesh size of selected surface
+        for (MeshSize& msize : m_msize) {
+            if (msize.meshSize > 0) occgeo->SetFaceMaxH(msize.faceId + 1, msize.meshSize, *mparam);
+        }
     }
-    
-    
-    
+
 	FSLogger::Write("Setting Local Mesh size.....\n");
     Ng_OCC_SetLocalMeshSize(occ_geom, occ_mesh, &mp);
 	FSLogger::Write("Local Mesh size successfully set.....\n");
@@ -231,7 +353,6 @@ FSMesh*	NetGenMesher::BuildMesh()
     {
         Ng_DeleteMesh(occ_mesh);
         setErrorString("Error creating Edge Mesh.... Aborting!!");
-        Ng_Exit();
         return nullptr;
     }
     else
@@ -247,7 +368,6 @@ FSMesh*	NetGenMesher::BuildMesh()
     {
         //       Ng_DeleteMesh(occ_mesh);
         setErrorString("Error creating Surface Mesh..... Aborting!!");
-        Ng_Exit();
         return nullptr;
     }
     else
@@ -260,7 +380,14 @@ FSMesh*	NetGenMesher::BuildMesh()
     if ((m_occ->GetShape().ShapeType() == TopAbs_SOLID) || (m_occ->GetShape().ShapeType() == TopAbs_COMPOUND)) {
 		FSLogger::Write("Creating Volume Mesh.....\n");
         
-        ng_res = Ng_GenerateVolumeMesh(occ_mesh, &mp);
+		try {
+			Ng_GenerateVolumeMesh(occ_mesh, &mp);
+		}
+		catch (...)
+		{
+			setErrorString("Error creating volume mesh..... aborting!!");
+			return nullptr;
+		}
         
 		FSLogger::Write("Volume Mesh successfully created.....\n");
 		FSLogger::Write("Number of points = %d\n", Ng_GetNP(occ_mesh));
@@ -269,12 +396,16 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     if (mp.second_order)
     {
-        Ng_OCC_Generate_SecondOrder (occ_geom,occ_mesh);
+		try {
+			Ng_OCC_Generate_SecondOrder(occ_geom, occ_mesh);
+		}
+		catch (...)
+		{
+			return nullptr;
+		}
     }
-    FSMesh* mesh = NGMeshToFEMesh(m_occ, (Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
-    
-    Ng_Exit();
-    
+
+	FSMesh* mesh = NGMeshToFEMesh(m_occ, (Mesh*)occ_mesh, GetBoolValue(SECONDORDER));
     return mesh;
     
 #else
@@ -622,3 +753,16 @@ FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder)
     return mesh;
 }
 #endif
+
+void NetGenMesher::SetMeshSize(int faceId, double v)
+{
+	for (MeshSize& ms : m_msize)
+	{
+		if (ms.faceId == faceId)
+		{
+			ms.meshSize = v;
+			return;
+		}
+	}
+	m_msize.push_back({ faceId, v });
+}
