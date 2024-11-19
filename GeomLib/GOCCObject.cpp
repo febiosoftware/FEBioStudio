@@ -141,7 +141,14 @@ void GOCCObject::BuildGObject()
 	}
 
 	// add a part
-	AddPart();
+	if ((m_occ->m_shape.ShapeType() == TopAbs_SOLID) || (m_occ->m_shape.ShapeType() == TopAbs_COMPOUND))
+	{
+		AddSolidPart();
+	}
+	else
+	{
+		AddShellPart();
+	}
 #endif
 }
 
