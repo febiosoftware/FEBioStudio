@@ -636,6 +636,7 @@ int FSStep::StepComponents()
 	n += RigidICs();
 	n += RigidLoads();
 	n += RigidConnectors();
+	n += MeshAdaptors();
 	return n;
 }
 
