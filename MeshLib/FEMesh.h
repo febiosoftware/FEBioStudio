@@ -237,6 +237,11 @@ public: // --- M E S H   Q U E R I E S ---
 
 	int FindFaceIndex(FSFace& face);
 
+public:
+	void CopyFENodeSets(FSMesh* pm);
+	void CopyFEElemSets(FSMesh* pm);
+	void CopyFESurfaces(FSMesh* pm);
+
 protected:
 	// elements
 	std::vector<FSElement>	m_Elem;	//!< FE elements
