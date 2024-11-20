@@ -94,6 +94,11 @@ FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
+	// let's copy lists
+	pnm->CopyFENodeSets(pm);
+	pnm->CopyFEElemSets(pm);
+	pnm->CopyFESurfaces(pm);
+
 	return pnm;
 }
 
@@ -161,9 +166,16 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	double gd = GetFloatValue(3);
 	bool bd = GetBoolValue(4);
 
+	// cache the node IDs for now.
+	vector<int> nodeIDs(n0);
+	for (int i = 0; i < n0; ++i) nodeIDs[i] = pm->Node(i).m_nid;
+
 	// allocate room for new nodes
 	if (linear) pm->Create(n0 + nseg*nn, 0);
 	else pm->Create(n0 + nseg*nn * 2, 0);   // nn/2 wasteful nodes
+
+	// reallocating the nodes removes node IDs, so let's set those back
+	for (int i = 0; i < n0; ++i) pm->Node(i).m_nid = nodeIDs[i];
 
 	// we use the nodal position to store the extrusion direction
 	vector<vec3d> ed; ed.assign(nn, vec3d(0, 0, 0));
@@ -269,6 +281,19 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 			}
 		}
 	}
+
+	// reassign nodal IDs to the top layer
+	for (int i = 0; i < n0; ++i)
+	{
+		FSNode& node = pm->Node(i);
+		if (node.m_ntag >= 0)
+		{
+			FSNode& node2 = pm->Node(n0 + (nseg - 1) * nn + node.m_ntag);
+//			node2.m_nid = node.m_nid;
+			node.m_nid = -1;
+		}
+	}
+
 	// add mid-layer nodes for quadratic elements
 	if (!linear) 
 	{
@@ -306,9 +331,17 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	}
 	nid++;
 
-	// create new elements
 	int ne0 = pm->Elements();
+
+	// cache the element IDs for now.
+	vector<int> elemIDs(ne0);
+	for (int i = 0; i < ne0; ++i) elemIDs[i] = pm->Element(i).m_nid;
+
+	// create new elements
 	pm->Create(0, ne0 + nseg*ne1);
+
+	// adding elements can reset their IDs so let's set them back
+	for (int i = 0; i < ne0; ++i) pm->Element(i).m_nid = elemIDs[i];
 
 	int n = ne0;
 	for (int l = 1; l <= nseg; ++l)
@@ -501,8 +534,33 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 		}
 	}
 
+	// rebuilding the mesh is going to scramble the nodal (geometry) IDs. 
+	// let's keep track of them so we can restore them later
+	int np = pm->CountNodePartitions();
+	vector<int> gid(pm->Nodes(), -1);
+	for (int i = 0; i < n0; ++i)
+	{
+		FSNode& node = pm->Node(i);
+		gid[i] = node.m_gid;
+	}
+
 	// rebuild the object
 	pm->RebuildMesh();
+
+	// let's restore GIDs
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& node = pm->Node(i);
+		if ((gid[i] == -1) && (node.m_gid >= 0))
+		{
+			// this is a newly partitioned node
+			node.m_gid = np++;
+		}
+		else if (gid[i] >= 0)
+		{
+			node.m_gid = gid[i];
+		}
+	}
 
 	// reselect the new faces
 	pm->ClearFaceSelection();

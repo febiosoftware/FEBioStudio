@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QFileIconProvider>
 #include <QFileDialog>
+#include <QDirIterator>
 #include "IconProvider.h"
 #include "Logger.h"
 #include "DlgFEBioPlugins.h" // for LoadFEBioPlugin

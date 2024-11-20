@@ -3023,3 +3023,182 @@ int FSMesh::FindFaceIndex(FSFace& face)
 	}
 	return -1;
 }
+
+void FSMesh::CopyFENodeSets(FSMesh* pm)
+{
+	int imin = -1;
+	int imax = -1;
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		FSNode& node = Node(i);
+		int nid = node.m_nid;
+		if (nid > 0)
+		{
+			if ((imin == -1) || (nid < imin)) imin = nid;
+			if ((imax == -1) || (nid > imax)) imax = nid;
+		}
+	}
+
+	if ((imin != -1) && (imax != -1))
+	{
+		int nsize = imax - imin + 1;
+		vector<int> lut(nsize);
+		for (int i = 0; i < Nodes(); ++i)
+		{
+			FSNode& node = Node(i);
+			int nid = node.m_nid;
+			if (nid > 0)
+			{
+				lut[nid - imin] = i;
+			}
+		}
+
+		for (int i = 0; i < pm->FENodeSets(); ++i)
+		{
+			FSNodeSet& nset = *pm->GetFENodeSet(i);
+
+			std::vector<int> nodeList = nset.CopyItems();
+			std::vector<int> newNodeList;
+			for (int n : nodeList)
+			{
+				FSNode& node = pm->Node(n);
+				int nid = node.m_nid;
+				if ((nid > 0) && (nid >= imin) && (nid <= imax))
+				{
+					newNodeList.push_back(lut[nid - imin]);
+				}
+			}
+
+			if (!newNodeList.empty())
+			{
+				FSNodeSet* newset = new FSNodeSet(this);
+				newset->add(newNodeList);
+				newset->SetName(nset.GetName());
+				AddFENodeSet(newset);
+			}
+		}
+	}
+}
+
+void FSMesh::CopyFEElemSets(FSMesh* pm)
+{
+	int imin = -1;
+	int imax = -1;
+	for (int i = 0; i < Elements(); ++i)
+	{
+		FSElement& elem = Element(i);
+		int id = elem.m_nid;
+		if (id > 0)
+		{
+			if ((imin == -1) || (id < imin)) imin = id;
+			if ((imax == -1) || (id > imax)) imax = id;
+		}
+	}
+
+	if ((imin != -1) && (imax != -1))
+	{
+		int nsize = imax - imin + 1;
+		vector<int> lut(nsize);
+		for (int i = 0; i < Elements(); ++i)
+		{
+			FSElement& elem = Element(i);
+			int id = elem.m_nid;
+			if (id > 0)
+			{
+				lut[id - imin] = i;
+			}
+		}
+
+		for (int i = 0; i < pm->FEElemSets(); ++i)
+		{
+			FSElemSet& eset = *pm->GetFEElemSet(i);
+
+			std::vector<int> elemList = eset.CopyItems();
+			std::vector<int> newElemList;
+			for (int n : elemList)
+			{
+				FSElement& elem = pm->Element(n);
+				int id = elem.m_nid;
+				if ((id > 0) && (id >= imin) && (id <= imax))
+				{
+					newElemList.push_back(lut[id - imin]);
+				}
+			}
+
+			if (!newElemList.empty())
+			{
+				FSElemSet* newset = new FSElemSet(this);
+				newset->add(newElemList);
+				newset->SetName(eset.GetName());
+				AddFEElemSet(newset);
+			}
+		}
+	}
+}
+
+void FSMesh::CopyFESurfaces(FSMesh* pm)
+{
+	int imin = -1;
+	int imax = -1;
+	for (int i = 0; i < Elements(); ++i)
+	{
+		FSElement& elem = Element(i);
+		int id = elem.m_nid;
+		if (id > 0)
+		{
+			if ((imin == -1) || (id < imin)) imin = id;
+			if ((imax == -1) || (id > imax)) imax = id;
+		}
+	}
+
+	if ((imin != -1) && (imax != -1))
+	{
+		int nsize = imax - imin + 1;
+		vector<int> lut(nsize);
+		for (int i = 0; i < Elements(); ++i)
+		{
+			FSElement& elem = Element(i);
+			int id = elem.m_nid;
+			if (id > 0)
+			{
+				lut[id - imin] = i;
+			}
+		}
+
+		for (int i = 0; i < pm->FESurfaces(); ++i)
+		{
+			FSSurface& surf = *pm->GetFESurface(i);
+
+			std::vector<int> faceList = surf.CopyItems();
+			std::vector<int> newFaceList;
+			for (int n : faceList)
+			{
+				FSFace& face = pm->Face(n);
+				if ((face.m_elem[0].eid >= 0) && (face.m_elem[0].lid >= 0))
+				{
+					FSElement& el = pm->Element(face.m_elem[0].eid);
+					int id = el.m_nid;
+					if ((id > 0) && (id >= imin) && (id <= imax))
+					{
+						int index = lut[id - imin];
+						FSElement& del = Element(index);
+						int nface = del.m_face[face.m_elem[0].lid];
+						if (nface >= 0)
+						{
+							if (Face(nface).IsExternal())
+								newFaceList.push_back(nface);
+						}
+					}
+				}
+			}
+
+			if (!newFaceList.empty())
+			{
+				FSSurface* newsurf = new FSSurface(this);
+				newsurf->add(newFaceList);
+				newsurf->SetName(surf.GetName());
+				AddFESurface(newsurf);
+			}
+		}
+	}
+}

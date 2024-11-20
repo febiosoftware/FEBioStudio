@@ -727,6 +727,7 @@ void FSMaterial::Load(IArchive &ar)
 								if (prop)
 								{
 									FSModelComponent* pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, fem); assert(pmc);
+									pmc->SetFlags(prop->GetFlags());
 									try {
 										pmc->Load(ar);
 										prop->AddComponent(pmc);

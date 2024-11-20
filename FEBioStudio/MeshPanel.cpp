@@ -461,16 +461,19 @@ void CMeshPanel::on_modParams_apply()
 		else
 		{
 			FSMesh* newMesh = thread->GetNewMesh();
-			newMesh->ClearFaceSelection();
-
-			// swap the meshes
-			string ss = mod->GetName();
-			doc->DoCommand(new CCmdChangeFEMesh(activeObject, thread->GetNewMesh()), ss.c_str(), false);
-
-			std::string err = mod->GetErrorString();
-			if (err.empty() == false)
+			if (newMesh)
 			{
-				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+				newMesh->ClearFaceSelection();
+
+				// swap the meshes
+				string ss = mod->GetName();
+				doc->DoCommand(new CCmdChangeFEMesh(activeObject, thread->GetNewMesh()), ss.c_str(), false);
+
+				std::string err = mod->GetErrorString();
+				if (err.empty() == false)
+				{
+					w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+				}
 			}
 		}
 	}
