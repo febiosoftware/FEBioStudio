@@ -2172,6 +2172,7 @@ void FEBioFormat4::ParseRigidConnector(FSStep *pstep, XMLTag &tag)
 		ParseUnknownAttribute(tag, "type");
 		return;
 	}
+	pi->SetName(szname);
 	pstep->AddComponent(pi);
 	ParseModelComponent(pi, tag);
 }
