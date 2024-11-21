@@ -1448,6 +1448,7 @@ void CModelViewer::OnCopyRigidBC()
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
 //	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
+	pcCopy->SetStep(step->GetID());
 	step->AddRigidBC(pcCopy);
 
 	// update the model viewer
