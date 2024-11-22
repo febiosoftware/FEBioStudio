@@ -140,13 +140,20 @@ std::vector<vec2d> CDlgFormula::GetPoints()
 	std::vector<vec2d> pts;
 	MSimpleExpression m;
 	MVariable* tvar = m.AddVariable("t");
-	m.Create(smath);
-	for (int i = 0; i<samples; ++i)
+	bool b = m.Create(smath);
+	if (b == false)
 	{
-		double x = fmin + i*(fmax - fmin) / (samples - 1);
-		tvar->value(x);
-		double y = m.value();
-		pts.push_back(vec2d(x, y));
+		QMessageBox::critical(this, "Equation editor", "Error in expression.");
+	}
+	else
+	{
+		for (int i = 0; i < samples; ++i)
+		{
+			double x = fmin + i * (fmax - fmin) / (samples - 1);
+			tvar->value(x);
+			double y = m.value();
+			pts.push_back(vec2d(x, y));
+		}
 	}
 
 	return pts;
