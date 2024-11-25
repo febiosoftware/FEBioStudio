@@ -94,10 +94,10 @@ FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
-	// let's copy lists
-	pnm->CopyFENodeSets(pm);
-	pnm->CopyFEElemSets(pm);
-	pnm->CopyFESurfaces(pm);
+	// let's try to map the user selections
+	pnm->MapFENodeSets(pm);
+	pnm->MapFEElemSets(pm);
+	pnm->MapFESurfaces(pm);
 
 	return pnm;
 }

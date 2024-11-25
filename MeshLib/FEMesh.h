@@ -238,6 +238,11 @@ public: // --- M E S H   Q U E R I E S ---
 	int FindFaceIndex(FSFace& face);
 
 public:
+	// these functions attempt to map user selections from pm onto this mesh
+	void MapFENodeSets(FSMesh* pm);
+	void MapFEElemSets(FSMesh* pm);
+	void MapFESurfaces(FSMesh* pm);
+
 	void CopyFENodeSets(FSMesh* pm);
 	void CopyFEElemSets(FSMesh* pm);
 	void CopyFESurfaces(FSMesh* pm);
