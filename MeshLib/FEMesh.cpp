@@ -3012,7 +3012,7 @@ int FSMesh::FindFaceIndex(FSFace& face)
 	return -1;
 }
 
-void FSMesh::CopyFENodeSets(FSMesh* pm)
+void FSMesh::MapFENodeSets(FSMesh* pm)
 {
 	int imin = -1;
 	int imax = -1;
@@ -3068,7 +3068,7 @@ void FSMesh::CopyFENodeSets(FSMesh* pm)
 	}
 }
 
-void FSMesh::CopyFEElemSets(FSMesh* pm)
+void FSMesh::MapFEElemSets(FSMesh* pm)
 {
 	int imin = -1;
 	int imax = -1;
@@ -3124,7 +3124,7 @@ void FSMesh::CopyFEElemSets(FSMesh* pm)
 	}
 }
 
-void FSMesh::CopyFESurfaces(FSMesh* pm)
+void FSMesh::MapFESurfaces(FSMesh* pm)
 {
 	int imin = -1;
 	int imax = -1;
@@ -3188,5 +3188,44 @@ void FSMesh::CopyFESurfaces(FSMesh* pm)
 				AddFESurface(newsurf);
 			}
 		}
+	}
+}
+
+void FSMesh::CopyFENodeSets(FSMesh* pm)
+{
+	for (int i = 0; i < pm->FENodeSets(); ++i)
+	{
+		FSNodeSet& nset = *pm->GetFENodeSet(i);
+		std::vector<int> nodeList = nset.CopyItems();
+		FSNodeSet* newset = new FSNodeSet(this);
+		newset->add(nodeList);
+		newset->SetName(nset.GetName());
+		AddFENodeSet(newset);
+	}
+}
+
+void FSMesh::CopyFEElemSets(FSMesh* pm)
+{
+	for (int i = 0; i < pm->FEElemSets(); ++i)
+	{
+		FSElemSet& eset = *pm->GetFEElemSet(i);
+		std::vector<int> elemList = eset.CopyItems();
+		FSElemSet* newset = new FSElemSet(this);
+		newset->add(elemList);
+		newset->SetName(eset.GetName());
+		AddFEElemSet(newset);
+	}
+}
+
+void FSMesh::CopyFESurfaces(FSMesh* pm)
+{
+	for (int i = 0; i < pm->FESurfaces(); ++i)
+	{
+		FSSurface& surf = *pm->GetFESurface(i);
+		std::vector<int> faceList = surf.CopyItems();
+		FSSurface* newsurf = new FSSurface(this);
+		newsurf->add(faceList);
+		newsurf->SetName(surf.GetName());
+		AddFESurface(newsurf);
 	}
 }
