@@ -95,117 +95,6 @@ endif()
 set(OLD_SDK ${FEBio_SDK} CACHE INTERNAL "Old SDK path.")
 mark_as_advanced(OLD_SDK)
 
-
-# Teem
-if(WIN32)
-	find_path(TEEM_INC teem/nrrd.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "include/teem*" "src" "build" "build/include"
-        DOC "Teem include directory")
-	find_library(TEEM_LIB teem
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/bin" "src/build/bin" "Release" "Debug"
-		DOC "Teem library path")
-else()
-	find_path(TEEM_INC teem/nrrd.h
-        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "include/teem" "build" "build/include" "src"
-		DOC "Teem include directory")
-	find_library(TEEM_LIB teem
-        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
-		DOC "Teem library path")
-endif()
-
-if(TEEM_LIB)
-    get_filename_component(TEEM_TEMP ${TEEM_LIB} DIRECTORY)
-    set(TEEM_LIB_DIR ${TEEM_TEMP} CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
-    unset(TEEM_TEMP)
-    unset(TEEM_LIB CACHE)
-else()
-	set(TEEM_LIB_DIR  CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
-    unset(TEEM_LIB CACHE)
-endif()
-
-# Libtiff
-if(WIN32)
-	find_path(LIBTIFF_INC tiffio.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "src" "build" "build/include"
-        DOC "LibTiff include directory")
-	find_library(LIBTIFF_LIB tiff
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
-		DOC "LibTiff library path")
-else()
-	find_path(LIBTIFF_INC tiffio.h
-        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "build" "build/include" "src"
-		DOC "LibTiff include directory")
-	find_library(LIBTIFF_LIB tiff
-        PATHS /opt/libtiff* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
-		DOC "LibTiff library path")
-endif()
-
-if(LIBTIFF_LIB)
-    get_filename_component(LIBTIFF_TEMP ${LIBTIFF_LIB} DIRECTORY)
-    set(LIBTIFF_LIB_DIR ${LIBTIFF_TEMP} CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
-    unset(LIBTIFF_TEMP)
-    unset(LIBTIFF_LIB CACHE)
-else()
-	set(LIBTIFF_LIB_DIR  CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
-    unset(LIBTIFF_LIB CACHE)
-endif()
-
-
-if(LIBTIFF_INC AND LIBTIFF_LIB_DIR AND TEEM_INC AND TEEM_LIB_DIR)
-	option(USE_TEEM "Required for Teem use" ON)
-    mark_as_advanced(TEEM_INC TEEM_LIB_DIR)
-else()
-	option(USE_TEEM "Required for Teem use" OFF)
-    mark_as_advanced(CLEAR TEEM_INC TEEM_LIB_DIR)
-endif()
-
-# Dicom
-if(WIN32)
-	find_path(DCMTK_INC dcmtk/dcmimgle/dcmimage.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "include/dcmtk*" "src" "build" "build/dcmtk"
-        DOC "Dicom include directory")
-	find_library(DCMTK_LIB dcmimgle
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
-		DOC "Dicom library path")
-else()
-	find_path(DCMTK_INC dcmtk/dcmimgle/dcmimage.h
-        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src"
-		DOC "Dicom include directory")
-	find_library(DCMTK_LIB dcmimgle
-        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
-		DOC "Dicom library path")
-endif()
-
-if(DCMTK_LIB)
-    get_filename_component(DCMTK_TEMP ${DCMTK_LIB} DIRECTORY)
-    set(DCMTK_LIB_DIR ${DCMTK_TEMP} CACHE PATH "Path to the DCMTK lib directory (e.g. /opt/dcmtk/lib)")
-    unset(DCMTK_TEMP)
-    unset(DCMTK_LIB CACHE)
-else()
-	set(DCMTK_LIB_DIR  CACHE PATH "Path to the DCMTK lib directory (e.g. /opt/dcmtk/lib)")
-    unset(DCMTK_LIB CACHE)
-endif()
-
-if(DCMTK_INC AND DCMTK_LIB_DIR)
-	option(USE_DCMTK "Required for Dicom use" ON)
-    mark_as_advanced(DCMTK_INC DCMTK_LIB_DIR)
-else()
-	option(USE_DCMTK "Required for Dicom use" OFF)
-    mark_as_advanced(CLEAR DCMTK_INC DCMTK_LIB_DIR)
-endif()
-
 # MMG
 if(WIN32)
 	find_path(MMG_INC mmg/mmg3d/libmmg3d.h
@@ -346,12 +235,10 @@ else()
         PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app
         PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ" "Contents/Resources/include"
     DOC "Netgen include directory")
-  message(STATUS "NETGEN_INC: ${NETGEN_INC}")
 	find_library(NETGEN_LIB nglib
         PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app
         PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS" "Contents/MacOS"
 		DOC "Netgen library path")
-  message(STATUS "NETGEN_LIB: ${NETGEN_LIB}")
 endif()
 
 if(NETGEN_LIB)
@@ -645,14 +532,12 @@ if(NOT WIN32)
     find_package(OpenMP QUIET)
 endif()
 
-#ITK
-#~ find_package(ITK)
+# SITK
+find_package(SimpleITK QUIET)
 
-if(DEFINED ITK_USE_FILE)
+if(DEFINED SimpleITK_FOUND)
 	option(USE_ITK "Required to import most image files." ON)
 else()
 	option(USE_ITK "Required to import most image files." OFF)
 endif()
 
-# SITK
-find_package(SimpleITK QUIET)
