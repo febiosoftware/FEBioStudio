@@ -12,30 +12,32 @@
 ### CMake 
 FEBio Studio's build process utilizes CMake, an open-source, cross-platform tool designed to streamline the configuration of the build environment. The CMake script in this repository will help you to locate necessary third party libraries on your machine, set up include and library paths, and allow you to choose which of FEBio Studio’s features you would like to include in your build.
 
-Please download the latest release of CMake from https://cmake.org/, and install it on your machine before proceeding. Many Linux distributions come with CMake pre-installed, or have CMake available through their package managers. 
+Please download the latest release of CMake from https://cmake.org/, and install it on your machine before proceeding. Many Linux distributions come with CMake pre-installed, or have CMake available through their package managers.
+
+### FEBio
+Since the release of version 2.0, FEBio Studio requires the FEBio SDK. The SDK can be downloaded as part of our FEBio Studio installers from [febio.org](https://www.febioorg/downloads), or you can build it yourself by cloning the [FEBio GitHub Repository](https://github.com/febiosoftware/FEBio), and following the [BUILD](https://github.com/febiosoftware/FEBio/blob/develop/BUILD.md) guide. 
 
 ### Qt
 
 Qt is a cross-platform framework primarily used to create graphical user interfaces. Qt dependence is built into the large majority of FEBio Studio's code, and so it is absolutely required. A free, open-source version of Qt can be downloaded from [Qt's download page](https://www.qt.io/download). The Qt installer will allow you to choose many different versions of Qt, and individually decide which components of the version that you would like to install. 
 
-We recommend that you install version 5.14.2 of Qt. Some older versions of Qt do not support all of the features that we use, and some newer versions have caused bugs in FEBio Studio. 
+FEBio Studio requires at least version 6.5.0 of Qt, and we recommend that you install version 6.8.0.
 
-If you wish, you may install all of Qt's components, but it's not necessary. Only the following components are used by FEBio Studio:
+If you wish, you may install all of Qt's components, but doing so is not necessary. Only the following components are used by FEBio Studio:
 
 * The "core" Qt component. The name of this component differs depending on your platform. 
-    * On Windows, when compiling with Microsoft Visual Studio 2017 (which is highly recommended), this component is named _MSVC 2017 64-bit_.
+    * On Windows, when compiling with Microsoft Visual Studio 2022 (which is highly recommended), this component is named _MSVC 2022 64-bit_.
     * On macOS, this component is named _macOS_.
-    * On Linux, this component is named _Desktop gcc 64-bit_.
-* The _Qt Charts_ component is used by FEBio Studio to create plots during post-simulation analysis. This component is required.
-* The _Qt WebEngine_ component is used by FEBio Studio to display contextual help from our online manuals within certain FEBio Studio dialogs. This component is not required, but the online help feature will be unavailable without it. 
+    * On Linux, this component is named _Desktop_.
+* The _Qt Charts_ component is used by FEBio Studio to create plots during post-simulation analysis.
 
-### Required Third Party Packages
+### Other Required Third Party Packages
 
 FEBio Studio relies on several third party packages. Some are required to compile FEBio Studio at all, while others are only required if you would like to include specific features in FEBio Studio. The following third party packages are required:
 
 * OpenGL is a widely-used 2D and 3D graphics application programming interface. FEBio Studio uses OpenGL to render everything in the model view area. This library is generally pre-installed on all modern operating systems. Be sure to have your latest graphic driver installed. 
 
-* zlib is an open-source, lossless data-compression library that is used by FEBio Studio to read plot files that have been compressed. This library is generally pre-installed on macOS, and most Linux distributions. For Windows, you will need to download the latest source from [zlib's website](https://zlib.net/), and compile the library yourself. 
+* GLEW is the OpenGL Extension Wrangler Library. FEBio Studio uses GLEW in various places in its graphics rendering code. The source for this library, and precompiled binaries for Windows can be found on [GLEW's Website](https://glew.sourceforge.net/). On macOS GLEW can be obtained via Homebrew, and on Linux it can usually be installed by the system's package manager. 
 
 ### Optional Third Party Packages
 
@@ -55,7 +57,7 @@ FEBio Studio makes use of the following third party packages to add additional f
 
 #### FEBio Project Repository  
 
-* QuaZip is a library used to create and read zip files that interfaces cleanly with Qt. This library is required to use the FEBio Project Repository. QuaZip depends on Qt, and so Qt must be installed before you compile it. The source can be found on [QuaZip's GitHub page](https://github.com/stachenov/quazip).
+* LibZip is a library used to create and read zip files. This library is required to use the features of FEBio Studio that interact with the FEBio Project Repository. The source can be found on [LibZip's website](https://libzip.org/).
 
 * SQLite is an open-source library used for reading and writing data from self-contained SQL database files. FEBio Studio uses this library to store and retrieve information about the projects in the online FEBio Project Repository. SQLite is therefore required to use the repository. Many Linux distributions offer a version of SQLite through their package managers, however, FEBio Studio uses some relatively new SQLite features implemented in version 3.24.0. It is therefore recommended that SQLite be compiled from its source code. Instructions on how to compile SQLite, and a link to its source code can be found on [SQLite's website](https://sqlite.org/src/doc/trunk/README.md).
 
@@ -65,9 +67,15 @@ FEBio Studio makes use of the following third party packages to add additional f
 
 * OpenSSL is used by FEBio Studio to encrypt SSH passwords (for use in running remote jobs) while they are stored in RAM. Both libssh and OpenSSL are required for running remote FEBio jobs. Information on how to build this library can be found on [OpenSSL's website](https://www.openssl.org/source/). OpenSSL is also available on macOS through [Homebrew](https://brew.sh/).
 
+#### Image Manipulation
+
+* SimpleITk is a simplified interface to the Insight Toolkit (ITK), which is an industry-standard, multi-dimensional image analysis library. FEBio Studio requires SimpleITK to read and write various image formats, apply certain image filters, and perform certain image analyses. The source code can be downloaded from [SimpleITK's GitHub repository](https://github.com/SimpleITK/SimpleITK). 
+
 #### Miscellaneous
 
 * FFMPEG is used by FEBio Studio for creating MP4 recordings. FFMPEG is available through most Linux package managers, and through [Homebrew](https://brew.sh/) on macOS. Installation files, and the source code can also be found on [FFMPEG's website](https://ffmpeg.org/download.html).
+
+* zlib is an open-source, lossless data-compression library that is used by FEBio Studio to read plot files that have been compressed. This library is generally pre-installed on macOS, and most Linux distributions. For Windows, you will need to download the latest source from [zlib's website](https://zlib.net/), and compile the library yourself. 
 
 ## Running CMake <a name="runCMake"></a>
 
@@ -99,7 +107,7 @@ ccmake ..
 
 The configuration step in the CMake build process runs the script defined in `CMakeLists.txt` located in the root directory of the FEBio Studio repository. This script does several things: 
 
-* Attempts to locate Qt, and any other third party packages that FEBio Studio uses.
+* Attempts to locate the FEBio SDK, Qt, and any other third party packages that FEBio Studio uses.
 * Automatically enables or disables FEBio Studio features based on which libraries it was able to find.
 * Automatically sets up include and library paths for your build system based on the libraries that it found, and the features that have been enabled.
 
@@ -108,11 +116,16 @@ To run the configuration process click the _Configure_ button in the lower left 
 <img src="Documentation/BuildGuide/CMakeGUIFull.png" href="https://gibboncode.org" alt="ccmake" width="75%">
 <!-- ![cmake gui](Documentation/BuildGuide/ccmake.png) -->
 
-However, you may be greeted with a dialog saying that there was an error. If this is the case, you will find the error message in red text in the text field at the bottom of the GUI. The most common error you will encounter on the first run will say that CMake was unable to locate `Qt5Config.cmake`. If you run into another error at this point, see the Troubleshooting section.
+However, you may be greeted with a dialog saying that there was an error. If this is the case, you will find the error message in red text in the text field at the bottom of the GUI. The most common errors you will encounter on the first run will either say that CMake was unable to locate the FEBio SDK, or `Qt6Config.cmake`. If you run into another error at this point, see the Troubleshooting section.
+
+#### Locating FEBio
+
+The CMake script included in the FEBio Studio repository will do its best to locate Qt on your machine. If it is unable to locate Qt automatically, a simple mechanism is provided for you to help point it in the right direction. A variable called `FEBio_SDK` will have appeared in the CMake GUI. Enter the path to the root directory of either your local FEBio git repository, or the FEBio SDK as the value for the variable, then run the configuration step again. If you've correctly entered the path, it should find FEBio and present you with something more like what is in the image above.
+
 
 #### Locating Qt
 
-The CMake script included in the FEBio Studio repository will do its best to locate Qt on your machine. If it is unable to locate Qt automatically, a simple mechanism is provided for you to help point it in the right direction. A variable called `Qt5_Root` will have appeared in the CMake GUI. Enter the path to the root directory of your Qt installation as the value for the variable, then run the configuration step again. If you've correctly entered the path, it should find Qt and present you with something more like what is in the image above.
+The CMake script included in the FEBio Studio repository will do its best to locate Qt on your machine. If it is unable to locate Qt automatically, a simple mechanism is provided for you to help point it in the right direction. A variable called `Qt_Root` will have appeared in the CMake GUI. Enter the path to the root directory of your Qt installation as the value for the variable, then run the configuration step again. If you've correctly entered the path, it should find Qt and present you with something more like what is in the image above.
 
 ### Build Options
 
@@ -121,8 +134,9 @@ After running the configuration process, the CMake GUI will populate with severa
 Build Option | Required Packages | Added Features
 -------------|-------------------|---------------
 CAD_FEATURES|OCCT<br>NetGen|Importing and meshing CAD objects
-MODEL_REPO|QuaZip<br>SQLite|Connecting to the online FEBio Project Repository
+MODEL_REPO|LibZip<br>SQLite|Connecting to the online FEBio Project Repository
 USE_FFMPEG|FFMPEG|Creating mp4 video recordings
+USE_ITK|SimpleITK|Image analysis
 USE_MMG|MMG|Advanced tetrahedral remeshing
 USE_SSH|libssh<br>OpenSSL|Running FEBio jobs on remote servers
 USE_TETGEN|TetGen|Tetrahedral remeshing
@@ -153,7 +167,7 @@ Once the Makefiles have been generated, open a terminal in the _build_ directory
 
 CMake is a useful tool for automating cross-platform builds, but it is not without its limitations:
 
-* CMake is unable to create project files or makefiles that can automatically detect the presence of new source files. If you update your local repository after a new FEBio Studio release, or if you modify FEBio Studio's source and add new source files, you will have to rerun CMake in order to insure that any new source files are included in the build.
+* CMake is unable to create project files or makefiles that can automatically detect the presence of new source files. If you update your local repository after a new FEBio Studio release, or if you modify FEBio Studio's source by adding new source files, you will have to rerun CMake in order to insure that any new source files are included in the build.
 
 * On Linux, the type of build (e.g. debug, release, etc) is determined by CMake during the generation process, since the related options are baked into the resulting makefiles. To change the type of build you are building, you must rerun CMake and select the desired build type. 
 
