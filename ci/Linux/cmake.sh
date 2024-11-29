@@ -4,8 +4,6 @@ run_cmake() {
 		-DQt_Root=$QT_DIR \
 		-DFEBio_SDK=febio4-sdk \
 		-DUSE_FFMPEG=ON \
-		-DUSE_TEEM=OFF \
-		-DUSE_DCMTK=OFF \
 		-DUSE_TETGEN=ON \
 		-DUSE_MMG=ON \
 		-DUSE_SSH=ON \

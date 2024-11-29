@@ -104,21 +104,6 @@ function(findLib libDir libOut libName)
     endif()
 endfunction()
 
-if(USE_TEEM)
-  findLib(TEEM_LIB_DIR TEEM_LIB teem)
-  findLib(LIBTIFF_LIB_DIR LIBTIFF_LIB tiff)
-  #find_library(teem NAMES teem PATH TEEM_LIB_DIR TEEM_LIB)
-endif()
-
-if(USE_DCMTK)
-  set(DCMTK_LIB_NAMES dcmdata dcmimage dcmimgle i2d oflog ofstd)
-  foreach(name IN LISTS DCMTK_LIB_NAMES)
-    findLib(DCMTK_LIB_DIR DCMTK_LIB ${name})
-	list(APPEND DCMTK_LIBS ${DCMTK_LIB})
-	unset(DCMTK_LIB)
-  endforeach(name)
-endif()
-
 if(USE_MMG)
     set(MMG_LIB_NAMES mmg3d mmg2d mmgs)
     foreach(name IN LISTS MMG_LIB_NAMES)
@@ -337,17 +322,6 @@ endif()
 
 include_directories(.)
 
-if(USE_TEEM)
-  add_definitions(-DHAS_TEEM)
-  include_directories(${TEEM_INC})
-  include_directories(${LIBTIFF_INC})
-endif()
-
-if(USE_DCMTK)
-  add_definitions(-DHAS_DCMTK)
-  include_directories(${DCMTK_INC})
-endif()
-
 if(USE_MMG)
 	add_definitions(-DHAS_MMG)
 	include_directories(${MMG_INC})
@@ -399,7 +373,6 @@ endif()
 
 if(USE_ITK)
     add_definitions(-DHAS_ITK)
-    #~ include(${ITK_USE_FILE})
     include_directories(${SimpleITK_INCLUDE_DIRS})
 endif()
 
@@ -531,15 +504,6 @@ else()
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
 	target_link_libraries(${FBS_BIN_NAME} -Wl,--start-group)
-endif()
-
-if(USE_TEEM)
-  target_link_libraries(${FBS_BIN_NAME} ${TEEM_LIB})
-  target_link_libraries(${FBS_BIN_NAME} ${LIBTIFF_LIB})
-endif()
-
-if(USE_DCMTK)
-  target_link_libraries(${FBS_BIN_NAME} ${DCMTK_LIBS})
 endif()
 
 if(UNIX)

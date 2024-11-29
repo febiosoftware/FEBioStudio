@@ -161,6 +161,9 @@ libs=(
 
     # GLEW
     /lib/x86_64-linux-gnu/libGLEW.so.2.2
+
+    # Required for libQt6XcbQpa.so
+    /lib/x86_64-linux-gnu/libxcb-cursor.so.0
 )
 
 for item in ${bins[@]}; do
