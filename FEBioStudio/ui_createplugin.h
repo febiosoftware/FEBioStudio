@@ -153,6 +153,7 @@ struct PluginConfig
 
 	QString sdkInc;
 	QString sdkLib;
+    QStringList febioLibs;
 };
 
 bool GeneratePluginFiles(const PluginConfig& config);

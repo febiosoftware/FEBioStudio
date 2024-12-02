@@ -1997,8 +1997,11 @@ void CMainWindow::readSettings()
 		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
 		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
 		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
-		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", "").toString();
-		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", "").toString();
+
+        QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
+
+		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
+		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
 		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
 
 		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());

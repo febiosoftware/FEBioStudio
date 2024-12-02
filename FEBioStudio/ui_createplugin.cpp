@@ -532,13 +532,22 @@ bool GeneratePluginFiles(const PluginConfig& config)
 			SDKInc.replace("\\", "/");
 			SDKLib.replace("\\", "/");
 			if (SDKLib.last(1) != "/") SDKLib += "/";
+#ifdef WIN32
 			SDKLib += "$<CONFIG>";
+#endif
+
+            QString febioLibs = "";
+            for(auto lib : config.febioLibs)
+            {
+                febioLibs += lib + " ";
+            }
 
 			QString cmakeText = cmakecomment + QString(szcmake);
 			cmakeText = cmakeText.replace("$(PLUGIN_NAME)", config.name);
 			cmakeText = cmakeText.replace("$(CLASS_NAME)", config.className);
 			cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
 			cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
+            cmakeText = cmakeText.replace("$(FEBIO_LIB_NAMES)", febioLibs);
 			if (!GenerateFile(config.cmakeFile, cmakeText)) return false;
 		}
 	}
