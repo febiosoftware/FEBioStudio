@@ -152,6 +152,8 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMeshBase* pm = nullptr;
 	switch (pdoc->GetMeshMode())
 	{
@@ -193,7 +195,7 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
-			vec3d r = po->GetTransform().LocalToGlobal(node.r);
+			vec3d r = T.LocalToGlobal(node.r);
 
 			if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 			{
@@ -365,6 +367,8 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMesh* pm = po->GetFEMesh();
 
 	// activate the gl rendercontext
@@ -412,7 +416,7 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 
 				for (int j = 0; j < ne; ++j)
 				{
-					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(el.m_node[j]).r);
+					vec3d r = T.LocalToGlobal(pm->Node(el.m_node[j]).r);
 
 					if ((m_glv->ShowPlaneCut()  == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] > 0))
 					{
@@ -616,6 +620,8 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMeshBase* pm = nullptr;
 	switch (pdoc->GetMeshMode())
 	{
@@ -641,8 +647,8 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 		FSEdge& edge = pm->Edge(i);
 		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
-			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
-			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
+			vec3d r0 = T.LocalToGlobal(pm->Node(edge.n[0]).r);
+			vec3d r1 = T.LocalToGlobal(pm->Node(edge.n[1]).r);
 
 			double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
 			double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
@@ -696,8 +702,9 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	Transform& T = po->GetRenderTransform();
+	ray.origin = T.GlobalToLocal(ray.origin);
+	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
 	double R = view.m_brushSize;
 
@@ -873,6 +880,8 @@ int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, 
 	vec3d o(0, 0, 0);
 	vec3d O = transform.WorldToScreen(o);
 
+	Transform& T = po->GetRenderTransform();
+
 	int index = -1;
 	float zmin = 0.f;
 	int NE = pm->Elements();
@@ -881,8 +890,8 @@ int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, 
 		FSElement& del = pm->Element(i);
 		if (del.IsBeam() && del.IsVisible())
 		{
-			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
-			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);
+			vec3d r0 = T.LocalToGlobal(pm->Node(del.m_node[0]).r);
+			vec3d r1 = T.LocalToGlobal(pm->Node(del.m_node[1]).r);
 
 			vec3d p0 = transform.WorldToScreen(r0);
 			vec3d p1 = transform.WorldToScreen(r1);
@@ -927,10 +936,12 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
+	Transform& T = po->GetRenderTransform();
+
 	// convert ray to local coordinates
 	Ray localRay;
-	localRay.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	localRay.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	localRay.origin = T.GlobalToLocal(ray.origin);
+	localRay.direction = T.GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
@@ -939,7 +950,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	// see if the intersection with the plane cut is closer
 	if (bfound && m_glv->ShowPlaneCut())
 	{
-		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+		vec3d p = T.LocalToGlobal(q.point);
 		GLPlaneCut& planeCut = m_glv->GetPlaneCut();
 		bool bintersect = planeCut.Intersect(p, ray, q);
 		if (bintersect) bfound = bintersect;
@@ -1052,8 +1063,9 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	Transform& T = po->GetRenderTransform();
+	ray.origin = T.GlobalToLocal(ray.origin);
+	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
@@ -1063,7 +1075,7 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 
 	if (bfound && m_glv->ShowPlaneCut())
 	{
-		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+		vec3d p = T.LocalToGlobal(q.point);
 
 		// see if the intersection lies behind the plane cut. 
 		double* a = m_glv->PlaneCoordinates();
@@ -1153,6 +1165,8 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
@@ -1174,8 +1188,8 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 	for (int i = 0; i < NE; ++i)
 	{
 		FSEdge& edge = pm->Edge(i);
-		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
-		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
+		vec3d r0 = T.LocalToGlobal(pm->Node(edge.n[0]).r);
+		vec3d r1 = T.LocalToGlobal(pm->Node(edge.n[1]).r);
 
 		vec3d p0 = transform.WorldToScreen(r0);
 		vec3d p1 = transform.WorldToScreen(r1);
@@ -1313,6 +1327,8 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 	GMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return false;
 
+	Transform& T = po->GetRenderTransform();
+
 	Intersection qtmp;
 	double distance = 0.0, minDist = 1e34;
 	int NF = mesh->Faces();
@@ -1323,9 +1339,9 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 
 		if (po->Face(face.pid)->IsVisible())
 		{
-			vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-			vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-			vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+			vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+			vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+			vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 			Triangle tri = { r0, r1, r2 };
 			if (IntersectTriangle(ray, tri, qtmp))
@@ -1463,6 +1479,8 @@ void GLViewSelector::SelectParts(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
+
 			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
@@ -1471,9 +1489,9 @@ void GLViewSelector::SelectParts(int x, int y)
 				{
 					GMesh::FACE& face = mesh->Face(j);
 
-					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+					vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
@@ -1575,6 +1593,8 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
+
 			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
@@ -1587,9 +1607,9 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 					{
 						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
 						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
-						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r * 0.99999));
-						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r * 0.99999));
-						vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r * 0.99999));
+						vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r * 0.99999));
+						vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r * 0.99999));
+						vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r * 0.99999));
 
 						Triangle tri = { r0, r1, r2 };
 						if (IntersectTriangle(ray, tri, q))
@@ -1634,7 +1654,7 @@ GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform
 	GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 	if (mesh == nullptr) return nullptr;
 
-	Transform& T = po->GetTransform();
+	Transform& T = po->GetRenderTransform();
 
 	double* a = m_glv->PlaneCoordinates();
 
@@ -1764,6 +1784,8 @@ void GLViewSelector::SelectNodes(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
+
 			int nodes = po->Nodes();
 			for (int j = 0; j < nodes; ++j)
 			{
@@ -1772,7 +1794,8 @@ void GLViewSelector::SelectNodes(int x, int y)
 				// don't select shape nodes
 				if (node.Type() != NODE_SHAPE)
 				{
-					vec3d r = node.Position();
+					vec3d r0 = node.LocalPosition();
+					vec3d r = T.LocalToGlobal(r0);
 
 					if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0))
 					{
@@ -1970,8 +1993,9 @@ void GLViewSelector::SelectSurfaceFaces(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	Transform& T = po->GetRenderTransform();
+	ray.origin = T.GlobalToLocal(ray.origin);
+	ray.direction = T.GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
@@ -2010,6 +2034,8 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMeshBase* pmesh = po->GetEditableMesh();
 	FSLineMesh* pm = po->GetEditableLineMesh();
 
@@ -2030,8 +2056,8 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	for (int i = 0; i < NE; ++i)
 	{
 		FSEdge& edge = pm->Edge(i);
-		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
-		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
+		vec3d r0 = T.LocalToGlobal(pm->Node(edge.n[0]).r);
+		vec3d r1 = T.LocalToGlobal(pm->Node(edge.n[1]).r);
 
 		vec3d p0 = transform.WorldToScreen(r0);
 		vec3d p1 = transform.WorldToScreen(r1);
@@ -2109,6 +2135,8 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMeshBase* pm = po->GetEditableMesh();
 	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
@@ -2129,7 +2157,7 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
-			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
+			vec3d r = T.LocalToGlobal(lineMesh->Node(i).r);
 
 			vec3d p = transform.WorldToScreen(r);
 
@@ -2220,14 +2248,15 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
+			Transform& T = po->GetRenderTransform();
 			bool intersect = false;
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -2248,7 +2277,7 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 				{
 					GMesh::NODE& node = mesh->Node(j);
 
-					vec3d r = po->GetTransform().LocalToGlobal(to_vec3d(node.r));
+					vec3d r = T.LocalToGlobal(to_vec3d(node.r));
 					vec3d p = transform.WorldToScreen(r);
 					if (region.IsInside((int)p.x, (int)p.y))
 					{
@@ -2294,13 +2323,15 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
+			Transform& T = po->GetRenderTransform();
+
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -2379,13 +2410,15 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
+			Transform& T = po->GetRenderTransform();
+
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-				vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-				vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+				vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -2441,6 +2474,8 @@ void GLViewSelector::RegionSelectEdges(const SelectRegion& region)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
+
 			for (int j = 0; j < po->Edges(); ++j)
 			{
 				GEdge* edge = po->Edge(j);
@@ -2448,8 +2483,8 @@ void GLViewSelector::RegionSelectEdges(const SelectRegion& region)
 
 				if ((n[0] >= 0) && (n[1] >= 0))
 				{
-					vec3d r0 = po->Node(n[0])->Position();
-					vec3d r1 = po->Node(n[1])->Position();
+					vec3d r0 = T.LocalToGlobal(po->Node(n[0])->LocalPosition());
+					vec3d r1 = T.LocalToGlobal(po->Node(n[1])->LocalPosition());
 
 					vec3d p0 = transform.WorldToScreen(r0);
 					vec3d p1 = transform.WorldToScreen(r1);
@@ -2499,6 +2534,7 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
 			for (int j = 0; j < po->Nodes(); ++j)
 			{
 				GNode* node = po->Node(j);
@@ -2506,7 +2542,7 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 				// don't select shape nodes
 				if (node->Type() != NODE_SHAPE)
 				{
-					vec3d r = node->Position();
+					vec3d r = T.LocalToGlobal(node->LocalPosition());
 
 					if ((m_glv->ShowPlaneCut() == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 					{
@@ -2616,6 +2652,8 @@ void GLViewSelector::SelectFENodes(int x, int y)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
+	Transform& T = po->GetRenderTransform();
+
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
@@ -2637,7 +2675,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
-			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
+			vec3d r = T.LocalToGlobal(pm->Node(i).r);
 			double D = r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3];
 
 			if ((m_glv->ShowPlaneCut() == false) || (D >= 0))

@@ -88,35 +88,30 @@ int mod(int a, int b)
 // FSDomain
 /////////////////////////////////////////////////////////////////////////////////
 
-FSDomain::~FSDomain()
-{
-    VertexList.clear();
-    EdgeList.clear();
-    QuadList.clear();
-    TriList.clear();
-    BoxList.clear();
-    WedgeList.clear();
-    TetList.clear();
+FSDomain::FSDomain(FSMesh* pm)
+{ 
+	m_pmesh = pm; 
+	m_NLT.assign(pm->Nodes(), -1);
 }
 
 //-------------------------------------------------------------------------------
 // Find a vertex in the master VertexList by its tag number
 int FSDomain::FindVertexByTagNumber(int n)
 {
-    for (int i=0; i<VertexList.size(); ++i)
-        if (VertexList[i].m_ntag == n) return i;
-
-    return -1;
+	if ((n < 0) || (n >= m_NLT.size())) return -1;
+	int m = m_NLT[n];
+	assert((m==-1)||(VertexList[m].m_ntag == n));
+	return m;
 }
 
 //-------------------------------------------------------------------------------
 // Find an edge in the master EdgeList
-int FSDomain::FindEdge(FEDEdge edge)
+int FSDomain::FindEdge(const FEDEdge& edge)
 {
     // only search the list of edges connected to the first vertex of this edge
-    FEDVertex v = Vertex(edge.v[0]);
+    const FEDVertex& v = Vertex(edge.v[0]);
     for (int i=0; i<v.m_edge.size(); ++i) {
-        FEDEdge e = Edge(v.m_edge[i]);
+        const FEDEdge& e = Edge(v.m_edge[i]);
         if (((e.v[0] == edge.v[0]) && (e.v[1] == edge.v[1])) ||
             ((e.v[0] == edge.v[1]) && (e.v[1] == edge.v[0]))) {
             return v.m_edge[i];
@@ -129,12 +124,12 @@ int FSDomain::FindEdge(FEDEdge edge)
 // Find an edge in the master EdgeList
 // If the edge is found, pos = true means that the sense of edge is the same as
 // the entry in EdgeList, pos = false means that the sense is opposite.
-int FSDomain::FindEdge(FEDEdge edge, bool& pos)
+int FSDomain::FindEdge(const FEDEdge& edge, bool& pos)
 {
     // only search the list of edges connected to the first vertex of this edge
-    FEDVertex v = Vertex(edge.v[0]);
+    const FEDVertex& v = Vertex(edge.v[0]);
     for (int i=0; i<v.m_edge.size(); ++i) {
-        FEDEdge e = Edge(v.m_edge[i]);
+        const FEDEdge& e = Edge(v.m_edge[i]);
         if ((e.v[0] == edge.v[0]) && (e.v[1] == edge.v[1])) {
             pos = true;
             return v.m_edge[i];
@@ -149,21 +144,21 @@ int FSDomain::FindEdge(FEDEdge edge, bool& pos)
 
 //-------------------------------------------------------------------------------
 // Find a quad in the master QuadList
-int FSDomain::FindQuad(FEDQuad quad)
+int FSDomain::FindQuad(const FEDQuad& quad)
 {
     // only search the list of quads connected to the first vertex of this quad
     bool found_quad, found_node;
-    FEDVertex v = Vertex(quad.v[0]);
+    const FEDVertex& v = Vertex(quad.v[0]);
     for (int i=0; i<v.m_quad.size(); ++i) {
         found_quad = true;
-        FEDQuad q = Quad(v.m_quad[i]);
+        const FEDQuad& q = Quad(v.m_quad[i]);
         for (int j=0; j<4; ++j) {
             found_node = false;
             for (int k=0; k<4; ++k) {
                 found_node =  (quad.v[j] == q.v[k]);
                 if (found_node) break;
             }
-            found_quad = found_quad & found_node;
+            found_quad = (found_quad && found_node);
             if (!found_quad) break;
         }
         if (found_quad) return v.m_quad[i];
@@ -173,12 +168,12 @@ int FSDomain::FindQuad(FEDQuad quad)
 
 //-------------------------------------------------------------------------------
 // Find a quad in the master QuadList
-int FSDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
+int FSDomain::FindQuad(const FEDQuad& quad, bool& pos, int& ist)
 {
     // only search the list of quads connected to the first vertex of this quad
-    FEDVertex v = Vertex(quad.v[0]);
+    const FEDVertex& v = Vertex(quad.v[0]);
     for (int i=0; i<v.m_quad.size(); ++i) {
-        FEDQuad q = Quad(v.m_quad[i]);
+        const FEDQuad& q = Quad(v.m_quad[i]);
         if ((q.v[0] == quad.v[0]) && (q.v[1] == quad.v[1]) &&
             (q.v[2] == quad.v[2]) && (q.v[3] == quad.v[3])) {
             pos = true; ist = 0; return v.m_quad[i];
@@ -217,7 +212,7 @@ int FSDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
 
 //-------------------------------------------------------------------------------
 // Find a quad in the master QuadList from a FSFace
-int FSDomain::FindQuadFromFace(FSFace face)
+int FSDomain::FindQuadFromFace(const FSFace& face)
 {
     if (face.Nodes() != 4) return -1;
     int v[4];
@@ -231,21 +226,21 @@ int FSDomain::FindQuadFromFace(FSFace face)
 
 //-------------------------------------------------------------------------------
 // Find a tri in the master TriList
-int FSDomain::FindTri(FEDTri tri)
+int FSDomain::FindTri(const FEDTri& tri)
 {
     // only search the list of tris connected to the first vertex of this tri
     bool found_tri, found_node;
-    FEDVertex v = Vertex(tri.v[0]);
+    const FEDVertex& v = Vertex(tri.v[0]);
     for (int i=0; i<v.m_tri.size(); ++i) {
         found_tri = true;
-        FEDTri t = Tri(v.m_tri[i]);
+        const FEDTri& t = Tri(v.m_tri[i]);
         for (int j=0; j<3; ++j) {
             found_node = false;
             for (int k=0; k<3; ++k) {
                 found_node =  (tri.v[j] == t.v[k]);
                 if (found_node) break;
             }
-            found_tri = found_tri & found_node;
+            found_tri = (found_tri && found_node);
             if (!found_tri) break;
         }
         if (found_tri) return v.m_tri[i];
@@ -255,10 +250,10 @@ int FSDomain::FindTri(FEDTri tri)
 
 //-------------------------------------------------------------------------------
 // Find a tri in the master TriList
-int FSDomain::FindTri(FEDTri tri, bool& pos, int& ist)
+int FSDomain::FindTri(const FEDTri& tri, bool& pos, int& ist)
 {
     // only search the list of quads connected to the first vertex of this quad
-    FEDVertex v = Vertex(tri.v[0]);
+    const FEDVertex& v = Vertex(tri.v[0]);
     for (int i=0; i<v.m_tri.size(); ++i) {
         FEDTri t = Tri(v.m_tri[i]);
         if ((t.v[0] == tri.v[0]) && (t.v[1] == tri.v[1]) &&
@@ -291,7 +286,7 @@ int FSDomain::FindTri(FEDTri tri, bool& pos, int& ist)
 
 //-------------------------------------------------------------------------------
 // Find a tri in the master TriList from a FSFace
-int FSDomain::FindTriFromFace(FSFace face)
+int FSDomain::FindTriFromFace(const FSFace& face)
 {
     if (face.Nodes() != 3) return -1;
     int v[3];
@@ -335,12 +330,14 @@ int FSDomain::FindTet(int n)
 
 //-------------------------------------------------------------------------------
 // Add a vertex to this domain
-int FSDomain::AddVertex(FEDVertex vtx)
+int FSDomain::AddVertex(int n, const vec3d& r)
 {
     // get new vertex number
     int vn = Vertices();
     // store vertex in VertexList
-    VertexList.push_back(vtx);
+    VertexList.push_back(FEDVertex(n, r));
+
+	if (n >= 0) m_NLT[n] = vn;
     
     return vn;
 }
@@ -734,9 +731,8 @@ bool FSDomain::AddElement(int iel)
         int n = el.m_node[i];
         int vn = FindVertexByTagNumber(n);
         if (vn == -1) {
-            FSNode node = m_pmesh->Node(el.m_node[i]);
-            FEDVertex v(el.m_node[i], node.r);
-            vlist[i] = AddVertex(v);
+            FSNode& node = m_pmesh->Node(el.m_node[i]);
+            vlist[i] = AddVertex(el.m_node[i], node.r);
         }
         else
             vlist[i] = vn;
@@ -788,8 +784,8 @@ void FSDomain::ResetMeshParameters()
 bool FSDomain::MeshEdges()
 {
     for (int i=0; i<Edges(); ++i) {
-        FEDEdge* edge = EdgePtr(i);
-        bool meshed = edge->CreateMesh(this);
+        FEDEdge& edge = Edge(i);
+        bool meshed = edge.CreateMesh(this);
         if (!meshed) return false;
     }
     return true;
@@ -799,10 +795,10 @@ bool FSDomain::MeshEdges()
 bool FSDomain::MeshQuads()
 {
     for (int i=0; i<Quads(); ++i) {
-        FEDQuad* quad = QuadPtr(i);
+        FEDQuad& quad = Quad(i);
         // mesh only if tag != -1
-        if (quad->m_ntag != -1)
-            if (!quad->CreateMesh(this))
+        if (quad.m_ntag != -1)
+            if (!quad.CreateMesh(this))
                 return false;
     }
     return true;
@@ -812,10 +808,10 @@ bool FSDomain::MeshQuads()
 bool FSDomain::MeshTris()
 {
     for (int i=0; i<Tris(); ++i) {
-        FEDTri* tri = TriPtr(i);
+        FEDTri& tri = Tri(i);
         // mesh only if tag != -1
-        if (tri->m_ntag != -1)
-            if (!tri->CreateMesh(this))
+        if (tri.m_ntag != -1)
+            if (!tri.CreateMesh(this))
                 return false;
     }
     return true;
@@ -825,10 +821,10 @@ bool FSDomain::MeshTris()
 bool FSDomain::MeshBoxes()
 {
     for (int i=0; i<Boxes(); ++i) {
-        FEDBox* box = BoxPtr(i);
+        FEDBox& box = Box(i);
         // mesh only if tag != -1
-        if (box->m_ntag != -1)
-            if (!box->CreateMesh(this))
+        if (box.m_ntag != -1)
+            if (!box.CreateMesh(this))
                 return false;
     }
     return true;
@@ -838,9 +834,9 @@ bool FSDomain::MeshBoxes()
 bool FSDomain::MeshWedges()
 {
     for (int i=0; i<Wedges(); ++i) {
-        FEDWedge* wdg = WedgePtr(i);
-        if (wdg->m_ntag != -1)
-            if (!wdg->CreateMesh(this))
+        FEDWedge& wdg = Wedge(i);
+        if (wdg.m_ntag != -1)
+            if (!wdg.CreateMesh(this))
                 return false;
     }
     return true;
@@ -850,9 +846,9 @@ bool FSDomain::MeshWedges()
 bool FSDomain::MeshTets()
 {
     for (int i=0; i<Tets(); ++i) {
-        FEDTet* tet = TetPtr(i);
-        if (tet->m_ntag != -1)
-            if (!tet->CreateMesh(this))
+        FEDTet& tet = Tet(i);
+        if (tet.m_ntag != -1)
+            if (!tet.CreateMesh(this))
                 return false;
     }
     return true;
@@ -881,12 +877,12 @@ bool FSDomain::MeshDomain()
     // create new nodes
     n1 = 0;
     for (int i=0; i<Vertices(); ++i) {
-        FEDVertex* vtx = VertexPtr(i);
-        if (vtx->m_ntag == -1) {
+        FEDVertex& vtx = Vertex(i);
+        if (vtx.m_ntag == -1) {
             FSNode& node = m_pmesh->Node(n0 + n1);
-            node.r = vtx->r;
+            node.r = vtx.r;
             // store node number in vertex tag
-            node.m_ntag = vtx->m_ntag = n0 + n1;
+            node.m_ntag = vtx.m_ntag = n0 + n1;
             ++n1;
         }
     }
@@ -907,58 +903,58 @@ bool FSDomain::MeshDomain()
     ne1 = 0;
     // create box elements
     for (int i=0; i<Boxes(); ++i) {
-        FEDBox* box = BoxPtr(i);
-        for (int j=0; j<box->elem.size(); ++j) {
+        FEDBox& box = Box(i);
+        for (int j=0; j<box.elem.size(); ++j) {
             FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.SetType(FE_HEX8);
-            el.m_gid = box->m_gid; assert(el.m_gid >= 0);
+            el.m_gid = box.m_gid; assert(el.m_gid >= 0);
             for (int k=0; k<8; ++k)
-                el.m_node[k] = Vertex(box->elem[j][k]).m_ntag;
+                el.m_node[k] = Vertex(box.elem[j][k]).m_ntag;
             ++ne1;
         }
     }
     // create wedge elements
     for (int i=0; i<Wedges(); ++i) {
-        FEDWedge* wdg = WedgePtr(i);
-        for (int j=0; j<wdg->elem.size(); ++j) {
+        FEDWedge& wdg = Wedge(i);
+        for (int j=0; j<wdg.elem.size(); ++j) {
             FSElement& el = m_pmesh->Element(ne0 + ne1);
-            el.m_gid = wdg->m_gid; assert(el.m_gid >= 0);
-            if (wdg->elem[j].size() == 8) {
+            el.m_gid = wdg.m_gid; assert(el.m_gid >= 0);
+            if (wdg.elem[j].size() == 8) {
                 el.SetType(FE_HEX8);
                 for (int k=0; k<8; ++k)
-                    el.m_node[k] = Vertex(wdg->elem[j][k]).m_ntag;
+                    el.m_node[k] = Vertex(wdg.elem[j][k]).m_ntag;
                 ++ne1;
             }
-            else if (wdg->elem[j].size() == 6) {
+            else if (wdg.elem[j].size() == 6) {
                 el.SetType(FE_PENTA6);
                 for (int k=0; k<6; ++k)
-                    el.m_node[k] = Vertex(wdg->elem[j][k]).m_ntag;
+                    el.m_node[k] = Vertex(wdg.elem[j][k]).m_ntag;
                 ++ne1;
             }
         }
     }
     // create tet elements
     for (int i=0; i<Tets(); ++i) {
-        FEDTet* tet = TetPtr(i);
-        for (int j=0; j<tet->elem.size(); ++j) {
+        FEDTet& tet = Tet(i);
+        for (int j=0; j<tet.elem.size(); ++j) {
             FSElement& el = m_pmesh->Element(ne0 + ne1);
-            el.m_gid = tet->m_gid; assert(el.m_gid >= 0);
-            if (tet->elem[j].size() == 4) {
+            el.m_gid = tet.m_gid; assert(el.m_gid >= 0);
+            if (tet.elem[j].size() == 4) {
                 el.SetType(FE_TET4);
                 for (int k=0; k<4; ++k)
-                    el.m_node[k] = Vertex(tet->elem[j][k]).m_ntag;
+                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
                 ++ne1;
             }
-            else if (tet->elem[j].size() == 6) {
+            else if (tet.elem[j].size() == 6) {
                 el.SetType(FE_PENTA6);
                 for (int k=0; k<6; ++k)
-                    el.m_node[k] = Vertex(tet->elem[j][k]).m_ntag;
+                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
                 ++ne1;
             }
-            else if (tet->elem[j].size() == 8) {
+            else if (tet.elem[j].size() == 8) {
                 el.SetType(FE_HEX8);
                 for (int k=0; k<8; ++k)
-                    el.m_node[k] = Vertex(tet->elem[j][k]).m_ntag;
+                    el.m_node[k] = Vertex(tet.elem[j][k]).m_ntag;
                 ++ne1;
             }
         }
@@ -980,31 +976,10 @@ FEDVertex::FEDVertex()
 }
 
 //-------------------------------------------------------------------------------
-FEDVertex::FEDVertex(int m, vec3d x)
+FEDVertex::FEDVertex(int m, const vec3d& x)
 {
     m_ntag = m;
     r = x;
-}
-
-//-------------------------------------------------------------------------------
-FEDVertex::FEDVertex(const FEDVertex& vrtx)
-{
-    m_ntag = vrtx.m_ntag;
-    r = vrtx.r;
-    m_edge = vrtx.m_edge;
-    m_quad = vrtx.m_quad;
-    m_tri = vrtx.m_tri;
-}
-
-//-------------------------------------------------------------------------------
-FEDVertex& FEDVertex::operator=(const FEDVertex vrtx)
-{
-    m_ntag = vrtx.m_ntag;
-    r = vrtx.r;
-    m_edge = vrtx.m_edge;
-    m_quad = vrtx.m_quad;
-    m_tri = vrtx.m_tri;
-    return *this;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1029,31 +1004,6 @@ FEDEdge::FEDEdge(int v0, int v1)
 }
 
 //-------------------------------------------------------------------------------
-FEDEdge::FEDEdge(const FEDEdge& edge)
-{
-    nseg = edge.nseg;
-    bias = edge.bias;
-    dble = edge.dble;
-    v[0] = edge.v[0];
-    v[1] = edge.v[1];
-    n = edge.n;
-    rbias = edge.rbias;
-}
-
-//-------------------------------------------------------------------------------
-FEDEdge& FEDEdge::operator=(const FEDEdge edge)
-{
-    nseg = edge.nseg;
-    bias = edge.bias;
-    dble = edge.dble;
-    v[0] = edge.v[0];
-    v[1] = edge.v[1];
-    n = edge.n;
-    rbias = edge.rbias;
-    return *this;
-}
-
-//-------------------------------------------------------------------------------
 void FEDEdge::GenerateBias()
 {
     if (nseg < 1) return;
@@ -1067,7 +1017,6 @@ void FEDEdge::GenerateBias()
         double dr = 1./nseg;
         for (int i=1; i<nseg; ++i) rbias[i] = dr*i;
     }
-    // TODO: evaluate double bias
     else if (dble)
     {
         double dr = (bias - 1)/(pow(bias, nseg) - 1);
@@ -1102,8 +1051,7 @@ bool FEDEdge::CreateMesh(FSDomain* pdom)
     vec3d dr = pdom->Vertex(v[1]).r - r0;
     for (int i=1; i<nseg; ++i) {
         vec3d r = r0 + dr*rbias[i];
-        FEDVertex vtx(-1,r);
-        n[i] = pdom->AddVertex(vtx);
+        n[i] = pdom->AddVertex(-1, r);
     }
     
     return true;
@@ -1126,27 +1074,6 @@ FEDQuad::FEDQuad(int v0, int v1, int v2, int v3)
     m_ntag = -1;
     v[0] = v0; v[1] = v1; v[2] = v2; v[3] = v3;
     e[0] = e[1] = e[2] = e[3] = -1;
-}
-
-//-------------------------------------------------------------------------------
-FEDQuad::FEDQuad(const FEDQuad& quad)
-{
-    m_ntag = quad.m_ntag;
-    v[0] = quad.v[0]; v[1] = quad.v[1]; v[2] = quad.v[2]; v[3] = quad.v[3];
-    e[0] = quad.e[0]; e[1] = quad.e[1]; e[2] = quad.e[2]; e[3] = quad.e[3];
-    ep[0] = quad.ep[0]; ep[1] = quad.ep[1]; ep[2] = quad.ep[2]; ep[3] = quad.ep[3];
-    n = quad.n;
-}
-
-//-------------------------------------------------------------------------------
-FEDQuad& FEDQuad::operator=(const FEDQuad quad)
-{
-    m_ntag = quad.m_ntag;
-    v[0] = quad.v[0]; v[1] = quad.v[1]; v[2] = quad.v[2]; v[3] = quad.v[3];
-    e[0] = quad.e[0]; e[1] = quad.e[1]; e[2] = quad.e[2]; e[3] = quad.e[3];
-    ep[0] = quad.ep[0]; ep[1] = quad.ep[1]; ep[2] = quad.ep[2]; ep[3] = quad.ep[3];
-    n = quad.n;
-    return *this;
 }
 
 //-------------------------------------------------------------------------------
@@ -1219,8 +1146,7 @@ bool FEDQuad::CreateMesh(FSDomain* pdom)
             double h1 = eta1[i][j];
             double h2 = eta2[i][j];
             vec3d r = r0*(1-h1)*(1-h2) +r1*h1*(1-h2) + r2*h1*h2 + r3*(1-h1)*h2;
-            FEDVertex vtx(-1,r);
-            n[i][j] = pdom->AddVertex(vtx);
+            n[i][j] = pdom->AddVertex(-1, r);
         }
     }
     
@@ -1249,29 +1175,6 @@ FEDTri::FEDTri(int v0, int v1, int v2, int a)
 }
 
 //-------------------------------------------------------------------------------
-FEDTri::FEDTri(const FEDTri& tri)
-{
-    m_ntag = tri.m_ntag;
-    m_fne = tri.m_fne;
-    v[0] = tri.v[0]; v[1] = tri.v[1]; v[2] = tri.v[2];
-    e[0] = tri.e[0]; e[1] = tri.e[1]; e[2] = tri.e[2];
-    ep[0] = tri.ep[0]; ep[1] = tri.ep[1]; ep[2] = tri.ep[2];
-    n = tri.n;
-}
-
-//-------------------------------------------------------------------------------
-FEDTri& FEDTri::operator=(const FEDTri tri)
-{
-    m_ntag = tri.m_ntag;
-    m_fne = tri.m_fne;
-    v[0] = tri.v[0]; v[1] = tri.v[1]; v[2] = tri.v[2];
-    e[0] = tri.e[0]; e[1] = tri.e[1]; e[2] = tri.e[2];
-    ep[0] = tri.ep[0]; ep[1] = tri.ep[1]; ep[2] = tri.ep[2];
-    n = tri.n;
-    return *this;
-}
-
-//-------------------------------------------------------------------------------
 // find a vertex in the triangle
 int FEDTri::FindVertex(int vtx)
 {
@@ -1295,9 +1198,9 @@ bool FEDTri::CreateMesh(FSDomain* pdom)
         default: e0 = 0; e1 = 1; e2 = 2; break;
     }
     
-    FEDEdge edg0 = pdom->Edge(e[e0]);
-    FEDEdge edg1 = pdom->Edge(e[e1]);
-    FEDEdge edg2 = pdom->Edge(e[e2]);
+    const FEDEdge& edg0 = pdom->Edge(e[e0]);
+    const FEDEdge& edg1 = pdom->Edge(e[e1]);
+    const FEDEdge& edg2 = pdom->Edge(e[e2]);
     int mseg = edg0.nseg;   // number of segments along eta1
     int nseg = edg1.nseg;   // number of segments along eta2
     
@@ -1361,8 +1264,7 @@ bool FEDTri::CreateMesh(FSDomain* pdom)
             double h1 = eta1[i][j];
             double h2 = eta2[i][j];
             vec3d r = r0*(1-h1)*(1-h2) +r1*h1*(1-h2) + r2*h1*h2 + r3*(1-h1)*h2;
-            FEDVertex vtx(-1,r);
-            n[i][j] = pdom->AddVertex(vtx);
+            n[i][j] = pdom->AddVertex(-1, r);
         }
     }
     
@@ -1387,53 +1289,14 @@ FEDBox::FEDBox()
         qp[i] = true;
         qst[i] = -1;
     }
-    m_pDom = 0;
-}
-
-//-------------------------------------------------------------------------------
-FEDBox::FEDBox(const FEDBox& box)
-{
-    m_ntag = box.m_ntag;
-    m_gid = box.m_gid;
-    for (int i=0; i<8; ++i) v[i] = box.v[i];
-    for (int i=0; i<12; ++i) {
-        e[i] = box.e[i];
-        ep[i] = box.ep[i];
-    }
-    for (int i=0; i<6; ++i) {
-        q[i] = box.q[i];
-        qp[i] = box.qp[i];
-        qst[i] = box.qst[i];
-    }
-    n = box.n;
-    m_pDom = box.m_pDom;
-}
-
-//-------------------------------------------------------------------------------
-FEDBox& FEDBox::operator=(const FEDBox box)
-{
-    m_ntag = box.m_ntag;
-    m_gid = box.m_gid;
-    for (int i=0; i<8; ++i) v[i] = box.v[i];
-    for (int i=0; i<12; ++i) {
-        e[i] = box.e[i];
-        ep[i] = box.ep[i];
-    }
-    for (int i=0; i<6; ++i) {
-        q[i] = box.q[i];
-        qp[i] = box.qp[i];
-        qst[i] = box.qst[i];
-    }
-    n = box.n;
-    m_pDom = box.m_pDom;
-    return *this;
+    m_pDom = nullptr;
 }
 
 //-------------------------------------------------------------------------------
 // Find a box box face by node numbers
-int FEDBox::FindBoxFace(FSFace face)
+int FEDBox::FindBoxFace(const FSFace& face)
 {
-    int v[4];
+	int v[4] = { 0 };
     // find the vertices from the node list
     for (int i=0; i<face.Nodes(); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
@@ -1442,7 +1305,7 @@ int FEDBox::FindBoxFace(FSFace face)
     }
     
     for (int i=0; i<6; ++i) {
-        FEDQuad quad = m_pDom->Quad(q[i]);
+        const FEDQuad& quad = m_pDom->Quad(q[i]);
         if ((v[0] == quad.v[0]) && (v[1] == quad.v[1]) &&
             (v[2] == quad.v[2]) && (v[3] == quad.v[3])) {
             return i;
@@ -1517,7 +1380,6 @@ bool FEDBox::SetMeshFaces034(int nseg[3], double bias[3], bool dble[3])
         { true , true, true, true}
     };
     double b, bi;
-    FEDEdge edge;
 
     // for each face
     for (int i=0; i<3; ++i) {
@@ -1534,21 +1396,26 @@ bool FEDBox::SetMeshFaces034(int nseg[3], double bias[3], bool dble[3])
             }
             // copy the edge
             int ie = e[enf[i][j]];
-            edge = FEDEdge(m_pDom->Edge(ie));
-            // set bias based on edge direction in this box
-            edge.bias = ep[enf[i][j]] ? b : bi;
-            edge.nseg = nseg[i];
-            edge.dble = dble[i];
-            // check if this edge was previously meshed
-            if (m_pDom->Edge(ie).nseg == -1) {
-                m_pDom->Edge(ie) = edge;
-            }
-            // else, if previously meshed, check consistency
-            else if ((m_pDom->Edge(ie).nseg != edge.nseg) ||
-                     (m_pDom->Edge(ie).bias != edge.bias) ||
-                     (m_pDom->Edge(ie).dble != edge.dble)) {
-                    return false;
-            }
+
+			FEDEdge& edge = m_pDom->Edge(ie);
+			// check if this edge was previously meshed
+			if (m_pDom->Edge(ie).nseg == -1) 
+			{
+				// set bias based on edge direction in this box
+				edge.bias = ep[enf[i][j]] ? b : bi;
+				edge.nseg = nseg[i];
+				edge.dble = dble[i];
+			}
+			else
+			{
+				// else, if previously meshed, check consistency
+				if ((m_pDom->Edge(ie).nseg != edge.nseg) ||
+					(m_pDom->Edge(ie).bias != edge.bias) ||
+					(m_pDom->Edge(ie).dble != edge.dble)) {
+					assert(false);
+					return false;
+				}
+			}
         }
     }
     
@@ -1670,7 +1537,7 @@ bool FEDBox::CreateMesh(FSDomain* pdom)
     // store vertices in node list
     for (int k=0; k< pseg; ++k) {
         // get a pointer to this stack entry
-        FEDQuad quad = pdom->Quad(qstack[k]);
+        const FEDQuad& quad = pdom->Quad(qstack[k]);
         // copy the node list
         for (int j=0; j<= nseg; ++j) {
             for (int i=0; i<= mseg; ++i) {
@@ -1680,7 +1547,7 @@ bool FEDBox::CreateMesh(FSDomain* pdom)
     }
     
     // last stack requires different sequence
-    FEDQuad quad = pdom->Quad(qstack[pseg]);
+    const FEDQuad& quad = pdom->Quad(qstack[pseg]);
     int m = (qst[4] + qst[5]) % 4;
     if (qp[4] && qp[5]) {
         for (int j=0; j<= nseg; ++j) {
@@ -1811,51 +1678,10 @@ FEDWedge::FEDWedge()
 }
 
 //-------------------------------------------------------------------------------
-FEDWedge::FEDWedge(const FEDWedge& wdg)
-{
-    m_ntag = wdg.m_ntag;
-    m_fne = wdg.m_fne;
-    m_gid = wdg.m_gid;
-    for (int i=0; i<6; ++i) v[i] = wdg.v[i];
-    for (int i=0; i<9; ++i) {
-        e[i] = wdg.e[i];
-        ep[i] = wdg.ep[i];
-    }
-    for (int i=0; i<5; ++i) {
-        f[i] = wdg.f[i];
-        fp[i] = wdg.fp[i];
-        fst[i] = wdg.fst[i];
-    }
-    n = wdg.n;
-    m_pDom = wdg.m_pDom;
-}
-
-//-------------------------------------------------------------------------------
-FEDWedge& FEDWedge::operator=(const FEDWedge wdg)
-{
-    m_ntag = wdg.m_ntag;
-    m_fne = wdg.m_fne;
-    m_gid = wdg.m_gid;
-    for (int i=0; i<6; ++i) v[i] = wdg.v[i];
-    for (int i=0; i<9; ++i) {
-        e[i] = wdg.e[i];
-        ep[i] = wdg.ep[i];
-    }
-    for (int i=0; i<5; ++i) {
-        f[i] = wdg.f[i];
-        fp[i] = wdg.fp[i];
-        fst[i] = wdg.fst[i];
-    }
-    n = wdg.n;
-    m_pDom = wdg.m_pDom;
-    return *this;
-}
-
-//-------------------------------------------------------------------------------
 // Find a wedge face by node numbers
-int FEDWedge::FindWedgeFace(FSFace face)
+int FEDWedge::FindWedgeFace(const FSFace& face)
 {
-    int v[4];
+	int v[4] = { 0 };
     // find the vertices from the node list
     for (int i=0; i<face.Nodes(); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
@@ -1865,7 +1691,7 @@ int FEDWedge::FindWedgeFace(FSFace face)
     
     if (face.Nodes() == 4) {
         for (int i=0; i<3; ++i) {
-            FEDQuad quad = m_pDom->Quad(f[i]);
+            const FEDQuad& quad = m_pDom->Quad(f[i]);
             if ((v[0] == quad.v[0]) && (v[1] == quad.v[1]) &&
                 (v[2] == quad.v[2]) && (v[3] == quad.v[3])) {
                 return i;
@@ -1902,7 +1728,7 @@ int FEDWedge::FindWedgeFace(FSFace face)
     }
     else if (face.Nodes() == 3) {
         for (int i=3; i<5; ++i) {
-            FEDTri tri = m_pDom->Tri(f[i]);
+            const FEDTri& tri = m_pDom->Tri(f[i]);
             if ((v[0] == tri.v[0]) && (v[1] == tri.v[1]) &&
                 (v[2] == tri.v[2])) {
                 return i;
@@ -2238,7 +2064,7 @@ bool FEDWedge::CreateMesh(FSDomain* pdom)
     // store vertices in node list
     for (int k=0; k< pseg; ++k) {
         // get a pointer to this stack entry
-        FEDTri tri = pdom->Tri(fstack[k]);
+        const FEDTri& tri = pdom->Tri(fstack[k]);
         // copy the node list
         for (int j=0; j<= nseg; ++j) {
             for (int i=0; i<= mseg; ++i) {
@@ -2248,7 +2074,7 @@ bool FEDWedge::CreateMesh(FSDomain* pdom)
     }
     
     // last stack requires different sequence
-    FEDTri tri = pdom->Tri(fstack[pseg]);
+    const FEDTri& tri = pdom->Tri(fstack[pseg]);
     // check compatibility
     if (fp[3] == fp[4]) {
         for (int j=0; j<= nseg; ++j) {
@@ -2472,54 +2298,11 @@ FEDTet::FEDTet()
 }
 
 //-------------------------------------------------------------------------------
-FEDTet::FEDTet(const FEDTet& tet)
-{
-    m_ntag = tet.m_ntag;
-    m_type = tet.m_type;
-    m_fne = tet.m_fne;
-    m_gid = tet.m_gid;
-    for (int i=0; i<4; ++i) v[i] = tet.v[i];
-    for (int i=0; i<6; ++i) {
-        e[i] = tet.e[i];
-        ep[i] = tet.ep[i];
-    }
-    for (int i=0; i<4; ++i) {
-        f[i] = tet.f[i];
-        fp[i] = tet.fp[i];
-        fst[i] = tet.fst[i];
-    }
-    n = tet.n;
-    m_pDom = tet.m_pDom;
-}
-
-//-------------------------------------------------------------------------------
-FEDTet& FEDTet::operator=(const FEDTet tet)
-{
-    m_ntag = tet.m_ntag;
-    m_type = tet.m_type;
-    m_fne = tet.m_fne;
-    m_gid = tet.m_gid;
-    for (int i=0; i<4; ++i) v[i] = tet.v[i];
-    for (int i=0; i<6; ++i) {
-        e[i] = tet.e[i];
-        ep[i] = tet.ep[i];
-    }
-    for (int i=0; i<4; ++i) {
-        f[i] = tet.f[i];
-        fp[i] = tet.fp[i];
-        fst[i] = tet.fst[i];
-    }
-    n = tet.n;
-    m_pDom = tet.m_pDom;
-    return *this;
-}
-
-//-------------------------------------------------------------------------------
 // Find a tet face by node numbers
-int FEDTet::FindTetFace(FSFace face)
+int FEDTet::FindTetFace(const FSFace& face)
 {
     if (face.Nodes() != 3) return-1;
-    int v[3];
+	int v[3] = { 0 };
     // find the vertices from the node list
     for (int i=0; i<face.Nodes(); ++i) {
         v[i] = m_pDom->FindVertexByTagNumber(face.n[i]);
@@ -2528,7 +2311,7 @@ int FEDTet::FindTetFace(FSFace face)
     }
     
     for (int i=0; i<4; ++i) {
-        FEDTri tri = m_pDom->Tri(f[i]);
+        const FEDTri& tri = m_pDom->Tri(f[i]);
         if ((v[0] == tri.v[0]) && (v[1] == tri.v[1]) &&
             (v[2] == tri.v[2])) {
             return i;

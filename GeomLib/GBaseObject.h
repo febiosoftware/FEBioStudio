@@ -117,8 +117,13 @@ public: // transformation
 	// copy transform info
 	void CopyTransform(GBaseObject* po);
 
+	Transform& GetRenderTransform() { return m_renderTransform; }
+	const Transform& GetRenderTransform() const { return m_renderTransform; }
+	void SetRenderTransform(const Transform& T) { m_renderTransform = T; }
+
 protected:
 	Transform	m_transform;		// The object's transform
+	Transform	m_renderTransform;	// the objects' transform for rendering
 
 protected:
 	// --- definition of geometry ---

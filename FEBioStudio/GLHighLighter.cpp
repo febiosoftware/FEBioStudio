@@ -198,7 +198,7 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 
 	GLOutlineShader outlineShader(c);
 	outlineShader.Activate();
-	renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetTransform(), face->GetLocalID());
+	renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetRenderTransform(), face->GetLocalID());
 	outlineShader.Deactivate();
 
 	glPopMatrix();
@@ -236,7 +236,7 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 	outlineShader.Activate();
 	for (int surfID : faceList)
 	{
-		renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetTransform(), surfID);
+		renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetRenderTransform(), surfID);
 	}
 	outlineShader.Deactivate();
 

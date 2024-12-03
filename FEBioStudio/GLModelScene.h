@@ -142,6 +142,8 @@ private:
 
 	void BuildFiberViz(CGLContext& rc);
 
+	void UpdateRenderTransforms(CGLContext& rc);
+
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;

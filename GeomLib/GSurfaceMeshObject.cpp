@@ -771,6 +771,8 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 					{
 						unsigned int state = 0;
 						ar.read(state);
+						// let's make sure the part is visible
+						state |= GEO_VISIBLE;
 						p->SetState(state);
 					}
 					break;
@@ -944,6 +946,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 
 	BuildGMesh();
 	UpdateFEElementMatIDs();
+	UpdateItemVisibility();
 	BuildFERenderMesh();
 }
 

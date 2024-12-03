@@ -2005,10 +2005,11 @@ void FEBioExport4::WriteMixedElementsPart(Part* part, GPart* pg, std::vector<int
 			m_xml.add_leaf(xel, false);
 			ncount++;
 			es.m_elem.push_back(elemList[i]);
-			m_ElSet.push_back(es);
 		}
 	}
 	m_xml.close_branch();
+
+	m_ElSet.push_back(es);
 
 	// make sure this part has elements
 	if (ncount == 0)

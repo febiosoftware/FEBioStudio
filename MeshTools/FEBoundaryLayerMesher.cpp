@@ -51,21 +51,21 @@ FSMesh* FEBoundaryLayerMesher::Apply(FSMesh* pm)
 
 bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 {
+	if (pm == nullptr) return false;
+
 	// get the modifier's parameters
 	double bias = GetFloatValue(0);
 	int nseg = GetIntValue(1);
-
-	// tag elements for deletion
-	int ne0 = pm->Elements();
-	vector<bool> delem(ne0, false);
+	if (nseg < 1) return false;
+	if (nseg == 1) return true;
 
 	// store list of selected faces in fdata
-	vector<FSFace> fdata;
+	vector<int> fdata;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FSFace& face = pm->Face(i);
+		const FSFace& face = pm->Face(i);
 		if (face.IsSelected())
-			fdata.push_back(face);
+			fdata.push_back(i);
 	}
 
 	// make sure we have work to do
@@ -82,26 +82,29 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	std::map<int, vector<int>> efm;
 	for (int i = 0; i<ne1; ++i)
 	{
-		FSFace face = fdata[i];
+		FSFace& face = pm->Face(fdata[i]);
 		// get element to which this face belongs
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
 		efm[iel].push_back(i);
-        pm->Element(iel).m_ntag = 1;
+		pm->Element(iel).m_ntag = 1;
 	}
 
 	// mark all nodes on the selected faces
 	pm->TagAllNodes(-1);
-	for (int i = 0; i<ne1; ++i)
-		for (int j = 0; j<fdata[i].Nodes(); ++j)
-			pm->Node(fdata[i].n[j]).m_ntag = 1;
+	for (int i = 0; i < ne1; ++i)
+	{
+		const FSFace& face = pm->Face(fdata[i]);
+		for (int j = 0; j < face.Nodes(); ++j)
+			pm->Node(face.n[j]).m_ntag = 1;
+	}
 
 	// find all elements that share nodes with these faces
 	// fne key = non-face element
 	// fne mapped values = vector of entries into fdata faces
 	std::map<int, vector<int>> fne;
 	for (int i = 0; i<pm->Elements(); ++i) {
-		FSElement el = pm->Element(i);
+		const FSElement& el = pm->Element(i);
         if (pm->Element(i).m_ntag == -1) {
             vector<int> shared_nodes;
             shared_nodes.reserve(el.Nodes());
@@ -114,6 +117,10 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
         }
 	}
 
+	// tag elements for deletion
+	int ne0 = pm->Elements();
+	vector<bool> delem(ne0, false);
+
 	// create a domain from all selected elements
 	FSDomain dom(pm);
 	std::map<int, vector<int>>::iterator it;
@@ -124,7 +131,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// add element to domain
 			dom.AddElement(iel);
 			// set meshing parameters
-			FSFace face = fdata[it->second[0]];
+			const FSFace& face = pm->Face(fdata[it->second[0]]);
 			FEElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
 				// get the box from this domain
@@ -165,8 +172,8 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 		}
 		else if (it->second.size() == 2) {
 			// two faces connected to this element
-			FSFace face0 = fdata[it->second[0]];
-			FSFace face1 = fdata[it->second[1]];
+			const FSFace& face0 = pm->Face(fdata[it->second[0]]);
+			const FSFace& face1 = pm->Face(fdata[it->second[1]]);
 			// check if they share common nodes
 			vector<int> cn;
 			for (int i = 0; i<face0.Nodes(); ++i)
@@ -221,10 +228,10 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 				}
 				// for each of these other faces mesh the opposite element
 				for (int i = 0; i<2; ++i) {
-					// find the neihboring element
+					// find the neighboring element
 					int jel = -1;
 					for (int k = 0; k<pm->Elements(); ++k) {
-						FEElement_ oel = pm->Element(k);
+						FEElement_& oel = pm->Element(k);
 						if ((k != iel) && (oel.Type() == FE_TET4))
 							if (oel.FindFace(opface[i]) != -1) {
 								jel = k;

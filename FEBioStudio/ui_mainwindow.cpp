@@ -366,6 +366,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionMeasureTool  = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
 	actionPlaneCutTool = addAction("Plane Cut", "actionPlaneCutTool", "cut");
 	actionPickColor    = addAction("Pick Color", "actionPickColor", "pickcolor");
+	actionExplodedView = addAction("Exploded View", "actionExplodedView", "explode");
 
 	QActionGroup* pag = new QActionGroup(mainWindow);
 	pag->addAction(actionSelectObjects);
@@ -739,6 +740,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	buildToolBar->addAction(actionMeasureTool);
 	buildToolBar->addAction(actionPlaneCutTool);
 	buildToolBar->addAction(actionPickColor);
+	buildToolBar->addAction(actionExplodedView);
 	buildToolBar->addSeparator();
 	buildToolBar->addAction(actionSelect);
 	buildToolBar->addAction(actionTranslate);

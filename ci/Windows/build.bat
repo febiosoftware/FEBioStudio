@@ -9,8 +9,6 @@ cmake -L . -B cmbuild ^
   -DFEBio_SDK=febio4-sdk ^
   -DWINDEPLOYQT_EXECUTABLE="%Qt_Root%\bin\windeployqt.exe" ^
   -DUSE_FFMPEG=ON ^
-  -DUSE_TEEM=OFF ^
-  -DUSE_DCMTK=OFF ^
   -DUSE_TETGEN=ON ^
   -DUSE_MMG=ON ^
   -DUSE_SSH=ON ^
