@@ -1669,6 +1669,13 @@ void CMainWindow::on_actionPickColor_triggered()
 	ui->pickColorTool->show();
 }
 
+void CMainWindow::on_actionExplodedView_triggered()
+{
+	if (ui->explodeTool == nullptr) ui->explodeTool = new CDlgExplodedView(this);
+	if (!ui->explodeTool->isVisible())
+		ui->explodeTool->show();
+}
+
 void CMainWindow::on_actionFindTxt_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());

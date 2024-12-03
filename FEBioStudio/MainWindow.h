@@ -534,6 +534,7 @@ public slots:
 	void on_actionMeasureTool_triggered();
 	void on_actionPlaneCutTool_triggered();
 	void on_actionPickColor_triggered();
+	void on_actionExplodedView_triggered();
 
 	void on_postSelectRect_toggled(bool b);
 	void on_postSelectCircle_toggled(bool b);

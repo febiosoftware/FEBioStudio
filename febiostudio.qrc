@@ -197,5 +197,6 @@
         <file>icons/deriv.png</file>
         <file>icons/deriv_neg.png</file>
         <file>icons/pickcolor.png</file>
+        <file>icons/explode.png</file>
 	</qresource>
 </RCC>

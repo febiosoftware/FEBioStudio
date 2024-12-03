@@ -114,4 +114,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_transparencyMode = 0; // = off
 
 	m_showHighlights = true;
+
+	m_explode = false;
+	m_explode_direction = EXPLODE_X;
+	m_explode_strength = 0.5;
 }

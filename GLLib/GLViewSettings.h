@@ -52,6 +52,12 @@ enum TagInfoOption {
 	TAG_ITEM_AND_NODES
 };
 
+enum ExplodeDirection {
+	EXPLODE_X,
+	EXPLODE_Y,
+	EXPLODE_Z,
+};
+
 //-----------------------------------------------------------------------------
 //! view settings
 struct GLViewSettings
@@ -136,6 +142,11 @@ struct GLViewSettings
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 
 	bool m_showHighlights;
+
+	// exploded view settings
+	bool m_explode; // enable/disable exploded view
+	int m_explode_direction;
+	double m_explode_strength;
 
 	void Defaults(int ntheme = 0);
 };
