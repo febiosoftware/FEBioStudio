@@ -90,14 +90,17 @@ CDlgStartThread::CDlgStartThread(QWidget* parent, CustomThread* thread) : QDialo
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
-
-	ui->m_thread->start();
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::setTask(const QString& taskString)
 {
 	ui->m_task->setText(taskString);
+}
+
+void CDlgStartThread::showEvent(QShowEvent* ev) 
+{
+    ui->m_thread->start();
+	QTimer::singleShot(100, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::closeEvent(QCloseEvent* ev)
