@@ -47,7 +47,6 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QDirIterator>
 #include "IconProvider.h"
-#include "Logger.h"
 #include "DlgFEBioPlugins.h" // for LoadFEBioPlugin
 #include "DlgCreatePlugin.h"
 
@@ -733,7 +732,7 @@ void CFileViewer::onBuildPlugin()
 	// make sure log window is visible
 	ui->m_wnd->ShowLogPanel();
 	ui->m_wnd->ClearBuildLog();
-	CLogger::AddBuildLogEntry(QString("Building plugin %1:\n").arg(item->text(0)));
+	ui->m_wnd->AddBuildLogEntry(QString("Building plugin %1:\n").arg(item->text(0)));
 
 	ui->m_process = new CConfigurePluginProcess(this);
 	ui->m_process->setWorkingDirectory(projectPath + "/" + item->text(0));
@@ -782,16 +781,16 @@ void CFileViewer::onLoadPlugin()
 
 	dllpath = prj->ToAbsolutePath(dllpath);
 
-	CLogger::AddLogEntry(QString("Loading %1 ... ").arg(dllpath));
+	ui->m_wnd->AddLogEntry(QString("Loading %1 ... ").arg(dllpath));
 	bool b = LoadFEBioPlugin(dllpath);
 	if (b)
 	{
-		CLogger::AddLogEntry(QString("success\n"));
+		ui->m_wnd->AddLogEntry(QString("success\n"));
 		QMessageBox::information(this, "FEBio Studio", "Plugin loaded successfully");
 	}
 	else
 	{
-		CLogger::AddLogEntry(QString("failed\n"));
+		ui->m_wnd->AddLogEntry(QString("failed\n"));
 		QMessageBox::critical(this, "FEBio Studio", "Failed to load plugin.");
 	}
 }
@@ -861,7 +860,7 @@ void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
 {
 	if (es == QProcess::NormalExit)
 	{
-		CLogger::AddBuildLogEntry(exitCode == 0 ? "\n--- Build succeeded\n\n" : "\n--- Build failed\n\n");
+		ui->m_wnd->AddBuildLogEntry(exitCode == 0 ? "\n--- Build succeeded\n\n" : "\n--- Build failed\n\n");
 		if (exitCode == 0)
 			QMessageBox::information(this, "FEBio Studio", "The build was successful.");
 		else
@@ -883,7 +882,7 @@ void CFileViewer::onReadyRead()
 
 	QByteArray output = ui->m_process->readAll();
 	QString s(output);
-	CLogger::AddBuildLogEntry(output);
+	ui->m_wnd->AddBuildLogEntry(output);
 }
 
 void CFileViewer::onErrorOccurred(QProcess::ProcessError err)

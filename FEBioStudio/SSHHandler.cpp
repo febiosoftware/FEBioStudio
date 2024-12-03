@@ -33,8 +33,9 @@ SOFTWARE.*/
 #include <string>
 #include <fstream>
 #include <fcntl.h>
-#include "Logger.h"
 #include "Encrypter.h"
+#include "FEBioStudio.h"
+#include "MainWindow.h"
 #include <QMessageBox>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -102,8 +103,9 @@ public:
 
 CSSHHandler::CSSHHandler() : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
 {
-	QObject::connect(this, &CSSHHandler::AddLogEntry, &CLogger::AddLogEntry);
-	QObject::connect(this, &CSSHHandler::AddOutputEntry, &CLogger::AddOutputEntry);
+    CMainWindow* wnd = FBS::getMainWindow();
+	QObject::connect(this, &CSSHHandler::AddLogEntry, wnd, &CMainWindow::AddLogEntry);
+	QObject::connect(this, &CSSHHandler::AddOutputEntry, wnd, &CMainWindow::AddOutputEntry);
 }
 
 void CSSHHandler::setPort(int port) { m_data->port = port; }

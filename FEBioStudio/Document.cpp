@@ -63,7 +63,6 @@ SOFTWARE.*/
 #include <QDateTime>
 #include "Commands.h"
 #include "FEBioJob.h"
-#include "Logger.h"
 #include <sstream>
 #include <QTextStream>
 #include "units.h"
@@ -506,7 +505,7 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
 	}
 	else msg = pcmd->GetName();
-	CLogger::AddLogEntry(QString("Executing command: %1\n").arg(msg));
+    m_wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
 	AppendChangeLog(msg);
 
 	bool ret = m_pCmd->DoCommand(pcmd);
@@ -979,11 +978,11 @@ bool CGLDocument::AutoSaveDocument()
 {
 	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
 	{
-		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
+		m_wnd->AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
 
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
-		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
+		m_wnd->AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
 		SetModifiedFlag(false);
 		return success;
 	}

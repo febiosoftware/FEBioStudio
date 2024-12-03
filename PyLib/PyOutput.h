@@ -24,7 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FEBioStudio/Logger.h>
+#include <FEBioStudio/FEBioStudio.h>
+#include <FEBioStudio/MainWindow.h>
 
 class CPyOutput
 {
@@ -33,7 +34,7 @@ public:
 
     void write(const char* txt)
     {
-        CLogger::AddPythonLogEntry(txt);
+        FBS::getMainWindow()->AddPythonLogEntry(txt);
     }
 
     void flush() {}

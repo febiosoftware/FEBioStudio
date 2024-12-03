@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
 #include <PyLib/PythonThread.h>
-#include <FEBioStudio/Logger.h>
 #include <FEBioStudio/LogPanel.h>
 #include <QMessageBox>
 #include <QJsonObject>
@@ -304,7 +303,7 @@ void CPythonToolsPanel::on_run_clicked()
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-	CLogger::AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(ui->m_activeTool->name()));
+	wnd->AddPythonLogEntry(QString(">>> running python tool \"%1\"\n").arg(ui->m_activeTool->name()));
 
 	startThread();
 }

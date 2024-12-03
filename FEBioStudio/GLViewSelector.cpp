@@ -30,7 +30,8 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "Commands.h"
-#include "Logger.h"
+#include "FEBioStudio.h"
+#include "MainWindow.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <PostGL/GLModel.h>
@@ -1008,7 +1009,8 @@ void GLViewSelector::SelectFEElements(int x, int y)
 							double val = state->m_ELEM[num].m_val;
 							FSElement& el = pm->Element(num);
 							QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
-							CLogger::AddLogEntry(txt);
+                            
+							FBS::getMainWindow()->AddLogEntry(txt);
 						}
 					}
 				}
@@ -1121,7 +1123,7 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 						double val = state->m_FACE[index].m_val;
 						FSFace& face = pm->Face(index);
 						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
-						CLogger::AddLogEntry(txt);
+						FBS::getMainWindow()->AddLogEntry(txt);
 					}
 				}
 			}
@@ -1258,7 +1260,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 						double val = state->m_EDGE[num].m_val;
 						FSEdge& ed = pm->Edge(num);
 						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
-						CLogger::AddLogEntry(txt);
+						FBS::getMainWindow()->AddLogEntry(txt);
 					}
 				}
 			}
@@ -2723,7 +2725,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 						txt += QString(", value = %1").arg(val);
 					}
 
-					CLogger::AddLogEntry(txt + QString("\n"));
+					FBS::getMainWindow()->AddLogEntry(txt + QString("\n"));
 				}
 			}
 			lastIndex = -1;

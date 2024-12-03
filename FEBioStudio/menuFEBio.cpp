@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include "DlgCreatePlugin.h"
 #include "DlgStartThread.h"
 #include <FEBio/FEBioExport4.h> // for ProgressTracker
+#include <QDebug>
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {

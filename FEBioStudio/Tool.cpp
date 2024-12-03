@@ -29,13 +29,13 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
+#include "FEBioStudio.h"
 #include "MainWindow.h"
 #include "PostDocument.h"
 #include "Document.h"
 #include "GLView.h"
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
-#include "Logger.h"
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
@@ -175,7 +175,7 @@ bool CBasicTool::SetErrorString(const QString& err)
 	if (err.isEmpty() == false)
 	{
 		QString msg = QString("[%1]%2\n").arg(name()).arg(err);
-		CLogger::AddLogEntry(msg);
+		FBS::getMainWindow()->AddLogEntry(msg);
 	}
 	m_err = err;
 	return err.isEmpty();

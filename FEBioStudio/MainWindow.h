@@ -353,11 +353,17 @@ public:
 	QString GetExportGeometryFilename(QString& formatOption);
 	QString GetExportFEModelFilename(QString& formatOption);
 
-public slots:
-	void AddLogEntry(const QString& txt);
+public:
+    void AddLogEntry(const QString& txt);
 	void AddOutputEntry(const QString& txt);
 	void AddBuildLogEntry(const QString& txt);
 	void AddPythonLogEntry(const QString& txt);
+
+public slots:
+	void AddLogEntrySlot(const QString& txt);
+	void AddOutputEntrySlot(const QString& txt);
+	void AddBuildLogEntrySlot(const QString& txt);
+	void AddPythonLogEntrySlot(const QString& txt);
 
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();

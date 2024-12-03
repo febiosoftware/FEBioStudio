@@ -50,7 +50,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include "MainWindow.h"
-#include "Logger.h"
 #include "IconProvider.h"
 #include "LaunchConfig.h"
 

@@ -62,7 +62,6 @@ SOFTWARE.*/
 #include <QUuid>
 #include "DlgCheck.h"
 #include "IconProvider.h"
-#include "Logger.h"
 #include "SSHHandler.h"
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
@@ -193,9 +192,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// load templates
 	TemplateManager::Init();
-
-	// Instantiate Logger singleton
-	CLogger::Instantiate(this);
 
 	// configure FEBio library
 	if (ui->m_settings.loadFEBioConfigFile)
@@ -2621,22 +2617,46 @@ void CMainWindow::ShowLogPanel()
 // add to the log 
 void CMainWindow::AddLogEntry(const QString& txt)
 {
+	QMetaObject::invokeMethod(this, &CMainWindow::AddLogEntrySlot, txt);
+}
+
+void CMainWindow::AddLogEntrySlot(const QString& txt)
+{
 	ui->logPanel->AddText(txt);
 }
 
 //-----------------------------------------------------------------------------
-// add to the output window
+// add to the output log
 void CMainWindow::AddOutputEntry(const QString& txt)
+{
+	QMetaObject::invokeMethod(this, &CMainWindow::AddOutputEntrySlot, txt);
+}
+
+void CMainWindow::AddOutputEntrySlot(const QString& txt)
 {
 	ui->logPanel->AddText(txt, CLogPanel::FEBIO_LOG);
 }
 
+//-----------------------------------------------------------------------------
+// add to the build log
 void CMainWindow::AddBuildLogEntry(const QString& txt)
+{
+	QMetaObject::invokeMethod(this, &CMainWindow::AddBuildLogEntrySlot, txt);
+}
+
+void CMainWindow::AddBuildLogEntrySlot(const QString& txt)
 {
 	ui->logPanel->AddText(txt, CLogPanel::BUILD_LOG);
 }
 
+//-----------------------------------------------------------------------------
+// add to the python log
 void CMainWindow::AddPythonLogEntry(const QString& txt)
+{
+	QMetaObject::invokeMethod(this, &CMainWindow::AddPythonLogEntrySlot, txt);
+}
+
+void CMainWindow::AddPythonLogEntrySlot(const QString& txt)
 {
 	ui->logPanel->AddText(txt, CLogPanel::PYTHON_LOG);
 }

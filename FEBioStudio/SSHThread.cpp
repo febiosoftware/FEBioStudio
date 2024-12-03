@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "SSHThread.h"
-#include "Logger.h"
 #include "SSHHandler.h"
 #include "MainWindow.h"
 
