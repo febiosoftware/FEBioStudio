@@ -427,6 +427,19 @@ void CImageMapTool::OnCreate()
                 int voxelIndexY = locPos.y/spacing.y;
                 int voxelIndexZ = locPos.z/spacing.z;
 
+                // Ensure we're in the bounds of the image before we sample
+                if(voxelIndexX < 0) voxelIndexX = 0;
+                else if(voxelIndexX >= imageModel->Get3DImage()->Width())
+                    voxelIndexX = imageModel->Get3DImage()->Width() - 1;
+
+                if(voxelIndexY < 0) voxelIndexY = 0;
+                else if(voxelIndexY >= imageModel->Get3DImage()->Height())
+                    voxelIndexY = imageModel->Get3DImage()->Height() - 1;
+
+                if(voxelIndexZ < 0) voxelIndexZ = 0;
+                else if(voxelIndexZ >= imageModel->Get3DImage()->Depth())
+                    voxelIndexZ = imageModel->Get3DImage()->Depth() - 1;
+
                 double discreteVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
                 if(discreteVal >= threshold)
                 {
