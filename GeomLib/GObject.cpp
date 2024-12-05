@@ -517,7 +517,7 @@ void GObject::UpdateFEElementMatIDs()
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FSElement& el = pm->Element(i);
-		GPart* pg = Part(el.m_gid); assert(pg);
+		GPart* pg = Part(el.m_gid);
 		if (pg) el.m_MatID = pg->GetMaterialID();
 	}
 }

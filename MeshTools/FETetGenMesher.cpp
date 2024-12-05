@@ -1785,6 +1785,113 @@ FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 #endif // TETLIBRARY
 }
 
+void FETetGenMesher::UpdateElementPartitioning(GObject* po, FSMesh* pmesh)
+{
+	// start by tagging faces
+	// face tag:
+	// = -1 : unprocessed
+	// =  0 : potential candidate for next pass
+	// =  1 : candidate for processing
+	// =  2 : processed
+	pmesh->TagAllFaces(-1);
+	// to get the process started, we flag all external faces as candidates
+	int NF = pmesh->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = pmesh->Face(i);
+		if (face.IsExternal()) face.m_ntag = 0;
+	}
+
+	// tag elements
+	// -1 = unprocessed and unvisited
+	//  0 = unvisited (about to be processed)
+	//  1 = processed
+	pmesh->TagAllElements(-1);
+
+	while (true)
+	{
+		// elevate potential candidates to candidates
+		int nc = 0;
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pmesh->Face(i);
+			if (face.m_ntag == 0) {
+				face.m_ntag = 1; nc++;
+			}
+		}
+
+		// if we didn't find any candidates, we're done
+		if (nc == 0) break;
+
+		// loop over all candidates
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pmesh->Face(i);
+			if (face.m_ntag == 1)
+			{
+				// mark face as processed
+				face.m_ntag = 2;
+
+				// get the PID of the adjacent part
+				int fid = face.m_gid; assert(fid >= 0);
+				GFace* pf = po->Face(fid);
+				int pid = pf->m_nPID[0];
+
+				// see if connects to an unprocessed element
+				int eid = face.m_elem[0].eid;
+				if (pmesh->Element(eid).m_ntag != -1)
+				{
+					eid = face.m_elem[1].eid;
+					if ((eid >= 0) && (pmesh->Element(eid).m_ntag != -1))
+					{
+						eid = -1;
+					}
+				}
+
+				if (eid >= 0)
+				{
+					// we found an element 
+					// loop over all connected elements and assign the current part
+					// don't cross surfaces when processing elements
+					stack<int> S;
+					S.push(eid);
+					while (!S.empty())
+					{
+						int inxt = S.top(); S.pop();
+						FSElement& el = pmesh->Element(inxt);
+						el.m_gid = pid;
+						el.m_ntag = 1; // processed
+
+						for (int l = 0; l < 4; ++l)
+						{
+							int nbr = el.m_nbr[l];
+							if (nbr >= 0)
+							{
+								if (el.m_face[l] < 0)
+								{
+									FSElement& elj = pmesh->Element(nbr);
+									if (elj.m_ntag == -1)
+									{
+										elj.m_ntag = 0; // about to be processed
+										S.push(nbr);
+									}
+								}
+								else
+								{
+									// we reached a face. 
+									// If this face has not been processed, mark it as a candidate for the next iteration
+									FSFace& fl = pmesh->Face(el.m_face[l]);
+									if (fl.m_ntag == -1) fl.m_ntag = 0;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 //=============================================================================
 FEConvexHullMesher::FEConvexHullMesher()
 {
@@ -1875,82 +1982,4 @@ FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 #else
 	return nullptr;
 #endif
-}
-
-void FETetGenMesher::UpdateElementPartitioning(GObject* po, FSMesh* pmesh)
-{
-	pmesh->TagAllNodes(-1);
-	for (int i = 0; i < pmesh->Faces(); ++i)
-	{
-		FSFace& f = pmesh->Face(i);
-		if (f.m_gid >= 0)
-		{
-			GFace* gf = po->Face(f.m_gid);
-			int pid = gf->m_nPID[0];
-			if (pid >= 0)
-			{
-				int nf = f.Nodes();
-				for (int k = 0; k < nf; ++k)
-				{
-					FSNode& nk = pmesh->Node(f.n[k]);
-					if (nk.m_ntag == -1)
-						nk.m_ntag = pid;
-					else if (nk.m_ntag != pid)
-						nk.m_ntag = -2; // multi-part node
-				}
-			}
-		}
-	}
-
-	// we loop over all parts
-	pmesh->TagAllElements(-1);
-	for (int pid = 0; pid < po->Parts(); ++pid)
-	{
-		// find an element that belongs to this part
-		int i0 = 0;
-		while (i0 < pmesh->Elements())
-		{
-			for (; i0 < pmesh->Elements(); ++i0)
-			{
-				FSElement& el = pmesh->Element(i0);
-				if (el.m_ntag == -1)
-				{
-					// see if this element connects to the part
-					if (connects_to_part(el, *pmesh, pid)) break;
-				}
-			}
-
-			if (i0 < pmesh->Elements())
-			{
-				stack<int> S;
-				S.push(i0);
-				while (!S.empty())
-				{
-					int inxt = S.top(); S.pop();
-					FSElement& el = pmesh->Element(inxt);
-					el.m_gid = pid;
-					el.m_ntag = 1;
-					for (int n = 0; n < 4; ++n)
-					{
-						FSNode& node = pmesh->Node(el.m_node[n]);
-						if (node.m_ntag == -1) node.m_ntag = pid;
-					}
-
-					for (int l = 0; l < 4; ++l)
-					{
-						int nbr = el.m_nbr[l];
-						if (nbr >= 0)
-						{
-							FSElement& elj = pmesh->Element(nbr);
-							if ((elj.m_ntag == -1) && connects_to_part(elj, *pmesh, pid))
-							{
-								elj.m_ntag = -2;
-								S.push(nbr);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 }
