@@ -81,12 +81,21 @@ void CPropertySelector::onSelectionChanged(int n)
 	int m = currentData().toInt();
 	if (m == -2)
 	{
+// Strange bug on macOS is causing crashes here. For some reason, this object is getting deleted before the 
+// QMessageBox is closing. We have tried manually instantiating a QMessageBox and even making our own custom
+// dialog to ask the question, and neither fixes the problem despite the fact that in the m==-3 case, we're 
+// also opening a custom dialog, and that works without any issues (with this object's destructor running
+// after this function exits as expected). 
+#ifndef __APPLE__
 		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
 		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 		{
 			emit currentDataChanged(n);
 		}
 		else setCurrentIndex(0);
+#else
+		emit currentDataChanged(n);
+#endif
 	}
 	else if (m == -3)
 	{

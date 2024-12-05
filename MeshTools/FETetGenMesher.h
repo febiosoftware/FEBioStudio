@@ -32,6 +32,7 @@ SOFTWARE.*/
 //using namespace std;
 
 class GObject;
+class GSurfaceMeshObject;
 
 #ifdef TETLIBRARY
 class tetgenio;
@@ -146,9 +147,10 @@ public:
 
 public:
 	// Generate a volume mesh from a surface mesh
-	FSMesh* CreateMesh(FSSurfaceMesh* surfaceMesh);
+	FSMesh* CreateMesh(GSurfaceMeshObject* surfaceObj);
 
-protected:
+private:
+	void UpdateElementPartitioning(GObject* po, FSMesh* pm);
 
 protected:
 	GObject*	m_po;	// TODO: move this to base class

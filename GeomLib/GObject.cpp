@@ -197,9 +197,13 @@ void GObject::SetFEMesh(FSMesh* pm)
 {
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
 
-	// delete the FE render mesh
-	delete imp->m_glFaceMesh; 
-	imp->m_glFaceMesh = nullptr;
+	// rebuild the line mesh
+	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
+	if (pm)
+	{
+		UpdateFEElementMatIDs();
+		BuildFERenderMesh();
+	}
 }
 
 void GObject::BuildFERenderMesh()
@@ -577,7 +581,7 @@ void GObject::UpdateFEElementMatIDs()
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FSElement& el = pm->Element(i);
-		GPart* pg = Part(el.m_gid); assert(pg);
+		GPart* pg = Part(el.m_gid);
 		if (pg) el.m_MatID = pg->GetMaterialID();
 	}
 }
