@@ -200,6 +200,7 @@ void GObject::SetFEMesh(FSMesh* pm)
 	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
 	if (pm)
 	{
+		UpdateFEElementMatIDs();
 		BuildFERenderMesh();
 	}
 }

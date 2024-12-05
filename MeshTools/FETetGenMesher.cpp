@@ -101,7 +101,7 @@ FSMesh* FETetGenMesher::BuildMesh()
 	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (surfObj)
 	{
-		return CreateMesh(surfObj->GetSurfaceMesh());
+		return CreateMesh(surfObj);
 	}
 
 //  NOTE: Use this for testing if TetGen fails to mesh the object
@@ -1580,11 +1580,22 @@ bool FETetGenMesher::build_plc(FSSurfaceMesh* pm, tetgenio& in)
 
 #endif
 
+bool connects_to_part(FSElement& el, FSMesh& mesh, int pid)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (mesh.Node(el.m_node[i]).m_ntag == pid) return true;
+	}
+	return false;
+}
 
 // Generate a volume mesh from a surface mesh
-FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
+FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 {
 #ifdef TETLIBRARY
+
+	FSSurfaceMesh* surfMesh = surfObj->GetSurfaceMesh();
+
 	// allocate tetgen structures
 	tetgenio in, out;
 	in.initialize();
@@ -1701,6 +1712,13 @@ FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
 
 	// update the internal mesh data
 	pmesh->BuildMesh();
+
+	// currently, all elements are assigned to the first partition
+	// However, if there are more parts, then we need to repartition
+	if (surfObj->Parts() > 1)
+	{
+		UpdateElementPartitioning(surfObj, pmesh);
+	}
 
 	// update faces
 	pmesh->SmoothByPartition();
@@ -1857,4 +1875,82 @@ FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 #else
 	return nullptr;
 #endif
+}
+
+void FETetGenMesher::UpdateElementPartitioning(GObject* po, FSMesh* pmesh)
+{
+	pmesh->TagAllNodes(-1);
+	for (int i = 0; i < pmesh->Faces(); ++i)
+	{
+		FSFace& f = pmesh->Face(i);
+		if (f.m_gid >= 0)
+		{
+			GFace* gf = po->Face(f.m_gid);
+			int pid = gf->m_nPID[0];
+			if (pid >= 0)
+			{
+				int nf = f.Nodes();
+				for (int k = 0; k < nf; ++k)
+				{
+					FSNode& nk = pmesh->Node(f.n[k]);
+					if (nk.m_ntag == -1)
+						nk.m_ntag = pid;
+					else if (nk.m_ntag != pid)
+						nk.m_ntag = -2; // multi-part node
+				}
+			}
+		}
+	}
+
+	// we loop over all parts
+	pmesh->TagAllElements(-1);
+	for (int pid = 0; pid < po->Parts(); ++pid)
+	{
+		// find an element that belongs to this part
+		int i0 = 0;
+		while (i0 < pmesh->Elements())
+		{
+			for (; i0 < pmesh->Elements(); ++i0)
+			{
+				FSElement& el = pmesh->Element(i0);
+				if (el.m_ntag == -1)
+				{
+					// see if this element connects to the part
+					if (connects_to_part(el, *pmesh, pid)) break;
+				}
+			}
+
+			if (i0 < pmesh->Elements())
+			{
+				stack<int> S;
+				S.push(i0);
+				while (!S.empty())
+				{
+					int inxt = S.top(); S.pop();
+					FSElement& el = pmesh->Element(inxt);
+					el.m_gid = pid;
+					el.m_ntag = 1;
+					for (int n = 0; n < 4; ++n)
+					{
+						FSNode& node = pmesh->Node(el.m_node[n]);
+						if (node.m_ntag == -1) node.m_ntag = pid;
+					}
+
+					for (int l = 0; l < 4; ++l)
+					{
+						int nbr = el.m_nbr[l];
+						if (nbr >= 0)
+						{
+							FSElement& elj = pmesh->Element(nbr);
+							if ((elj.m_ntag == -1) && connects_to_part(elj, *pmesh, pid))
+							{
+								elj.m_ntag = -2;
+								S.push(nbr);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
