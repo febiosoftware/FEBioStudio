@@ -193,7 +193,7 @@ public:
 
 public:
 	void RenderMeshLines(CGLContext& rc);
-	void RenderOutline(CGLContext& rc, int nmat = -1);
+	void RenderOutline(CGLContext& rc);
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);
 	void RenderDiscrete(CGLContext& rc);

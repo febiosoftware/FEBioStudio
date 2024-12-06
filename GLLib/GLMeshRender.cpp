@@ -271,30 +271,37 @@ void GLMeshRender::RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, 
 			{
 				bdraw = true;
 			}
-			else if (outline)
+			else
 			{
 				int j1 = (j + 1) % 3;
 				if (f.n[j] < f.n[j1])
 				{
 					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
-					vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
-
-					if (cam.IsOrtho())
+					if ((f.pid != f2.pid) || (f.sid != f2.sid))
 					{
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0) bdraw = true;
+						bdraw = true;
 					}
-					else
+					else if (outline)
 					{
-						vec3d r1 = T.LocalToGlobal(to_vec3d(f.vr[j]));
-						vec3d r2 = T.LocalToGlobal(to_vec3d(f.vr[j1]));
-						vec3d c = (r1 + r2) * 0.5;
-						vec3d pc = p - c;
-						double d1 = pc * n1;
-						double d2 = pc * n2;
-						if (d1 * d2 <= 0) bdraw = true;
+						vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+						vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
+
+						if (cam.IsOrtho())
+						{
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0) bdraw = true;
+						}
+						else
+						{
+							vec3d r1 = T.LocalToGlobal(to_vec3d(f.vr[j]));
+							vec3d r2 = T.LocalToGlobal(to_vec3d(f.vr[j1]));
+							vec3d c = (r1 + r2) * 0.5;
+							vec3d pc = p - c;
+							double d1 = pc * n1;
+							double d2 = pc * n2;
+							if (d1 * d2 <= 0) bdraw = true;
+						}
 					}
 				}
 			}
