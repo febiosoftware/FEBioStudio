@@ -307,6 +307,9 @@ void GLPlaneCut::Render(CGLContext& rc)
 	GLSelectionShader shader(GLColor(255, 64, 0));
 	mr.RenderGMesh(*m_planeCut, 1, shader);
 
+	GLLineColorShader* lineShader = new GLLineColorShader();
+	mr.SetLineShader(lineShader);
+
 	glPushAttrib(GL_ENABLE_BIT);
 	{
 		glColor3ub(255, 255, 255);
@@ -319,18 +322,16 @@ void GLPlaneCut::Render(CGLContext& rc)
 
 		if (rc.m_settings.m_bmesh)
 		{
-			GLColor c = rc.m_settings.m_meshColor;
-			glDisable(GL_LIGHTING);
-			glEnable(GL_COLOR_MATERIAL);
-			glColor4ub(c.r, c.g, c.b, c.a);
-
 			CGLCamera& cam = *rc.m_cam;
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 
+			GLColor c = rc.m_settings.m_meshColor;
+			lineShader->SetColor(c);
 			mr.RenderEdges(*m_planeCut, 0);
-			glDisable(GL_DEPTH_TEST);
-			glColor3ub(255, 255, 0);
+
+			// TODO: This used to be drawn with depthtest off
+			lineShader->SetColor(GLColor::Yellow());
 			mr.RenderEdges(*m_planeCut, 1);
 
 			cam.LineDrawMode(false);

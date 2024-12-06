@@ -48,6 +48,8 @@ class GLPointShader : public GLShader
 {
 public:
 	GLPointShader() {}
+	void Activate() override;
+	void Deactivate() override;
 	virtual void Render(const GMesh::NODE& node) = 0;
 };
 
@@ -55,6 +57,8 @@ class GLLineShader : public GLShader
 {
 public:
 	GLLineShader() {}
+	void Activate() override;
+	void Deactivate() override;
 	virtual void Render(const GMesh::EDGE& edge) = 0;
 };
 
@@ -62,6 +66,8 @@ class GLFacetShader : public GLShader
 {
 public:
 	GLFacetShader() {}
+	void Activate() override;
+	void Deactivate() override;
 	virtual void Render(const GMesh::FACE& face) = 0;
 };
 
@@ -152,6 +158,7 @@ class GLLineColorShader : public GLLineShader
 public:
 	GLLineColorShader();
 	GLLineColorShader(const GLColor& c);
+	void SetColor(const GLColor& c) { m_col = c; }
 	void Activate() override;
 	void Deactivate() override;
 	void Render(const GMesh::EDGE& edge) override;
@@ -191,6 +198,7 @@ class GLPointOverlayShader : public GLPointShader
 public:
 	GLPointOverlayShader();
 	GLPointOverlayShader(const GLColor& c);
+	void SetColor(const GLColor& c) { m_col = c; }
 	void Activate() override;
 	void Deactivate() override;
 	void Render(const GMesh::NODE& node) override;

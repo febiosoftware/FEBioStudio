@@ -42,6 +42,17 @@ GLMeshRender::GLMeshRender()
 	m_pointSize = 7.f;
 	m_useShaders = false;
 	m_defaultShader = nullptr;
+
+	m_pointShader = nullptr;
+	m_lineShader = nullptr;
+	m_facetShader = nullptr;
+}
+
+GLMeshRender::~GLMeshRender()
+{
+	delete m_pointShader;
+	delete m_lineShader;
+	delete m_facetShader;
 }
 
 void GLMeshRender::ResetStats()
@@ -76,6 +87,27 @@ void GLMeshRender::AddShader(GLFacetShader* shader)
 	m_shaders.push_back(shader);
 }
 
+void GLMeshRender::SetPointShader(GLPointShader* pointShader)
+{
+	assert((m_pointShader == nullptr) || (!m_pointShader->IsActive()));
+	delete m_pointShader;
+	m_pointShader = pointShader;
+}
+
+void GLMeshRender::SetLineShader(GLLineShader* lineShader)
+{
+	assert((m_lineShader == nullptr) || (!m_lineShader->IsActive()));
+	delete m_lineShader;
+	m_lineShader = lineShader;
+}
+
+void GLMeshRender::SetFacetShader(GLFacetShader* facetShader)
+{
+	assert((m_facetShader == nullptr) || (!m_facetShader->IsActive()));
+	delete m_facetShader;
+	m_facetShader = facetShader;
+}
+
 //-----------------------------------------------------------------------------
 void GLMeshRender::PushState()
 {
@@ -88,13 +120,22 @@ void GLMeshRender::PopState()
 	glPopAttrib();
 }
 
+void GLMeshRender::RenderLine(const vec3d& a, const vec3d& b)
+{
+	glBegin(GL_LINES);
+	{
+		glVertex3d(a.x, a.y, a.z);
+		glVertex3d(b.x, b.y, b.z);
+	}
+	glEnd();
+}
+
 void GLMeshRender::RenderGMesh(const GMesh& mesh)
 {
 	if (!m_useShaders || m_shaders.empty()) return;
 
 	int lastShader = -1;
 	GLFacetShader* shader = m_defaultShader;
-	if (shader) shader->Activate();
 	for (int i = 0; i < mesh.Partitions(); ++i)
 	{
 		const GMesh::PARTITION& p = mesh.Partition(i);
@@ -106,7 +147,6 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 			if (f.mid != lastShader)
 			{
 				lastShader = f.mid;
-				if (shader) shader->Deactivate();
 				if (f.mid != -1)
 				{
 					shader = m_shaders[f.mid];
@@ -114,37 +154,30 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 				}
 				else
 					shader = m_defaultShader;
-				if (shader) shader->Activate();
 			}
 			if (shader)
 			{
-				glBegin(GL_TRIANGLES);
+				shader->Activate();
+				for (int j = 0; j < nf; ++j)
 				{
-					for (int j = 0; j < nf; ++j)
-					{
-						shader->Render(mesh.Face(n0 + j));
-					}
+					shader->Render(mesh.Face(n0 + j));
 				}
-				glEnd();
 				m_stats.triangles += nf;
+				shader->Deactivate();
 			}
 		}
 	}
-	if (shader) shader->Deactivate();
 }
 
 void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 {
-	shader.Activate();
 	int NF = mesh.Faces();
-	glBegin(GL_TRIANGLES);
+	if (NF == 0) return;
+	shader.Activate();
+	for (int i = 0; i < NF; ++i)
 	{
-		for (int i = 0; i < NF; ++i)
-		{
-			shader.Render(mesh.Face(i));
-		}
+		shader.Render(mesh.Face(i));
 	}
-	glEnd();
 	shader.Deactivate();
 	m_stats.triangles += NF;
 }
@@ -169,14 +202,10 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 			}
 		}
 		if (shader == nullptr) return;
-		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NF; ++i)
 		{
-			for (int i = 0; i < NF; ++i)
-			{
-				shader->Render(mesh.Face(i + n0));
-			}
+			shader->Render(mesh.Face(i + n0));
 		}
-		glEnd();
 		if (shader != m_defaultShader) shader->Deactivate();
 		m_stats.triangles += NF;
 	}
@@ -191,14 +220,10 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID, GLFacetShader& sha
 		int NF = p.nf;
 		int n0 = p.n0;
 		shader.Activate();
-		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NF; ++i)
 		{
-			for (int i = 0; i < NF; ++i)
-			{
-				shader.Render(mesh.Face(i + n0));
-			}
+			shader.Render(mesh.Face(i + n0));
 		}
-		glEnd();
 		shader.Deactivate();
 		m_stats.triangles += NF;
 	}
@@ -206,26 +231,21 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID, GLFacetShader& sha
 
 void GLMeshRender::RenderEdges(const GMesh& mesh, int nid)
 {
+	if (m_lineShader == nullptr) { assert(false); return; }
 	int N = mesh.Edges();
 	if (N == 0) return;
 	if ((nid < 0) || (nid >= mesh.EILs())) return;
-	glBegin(GL_LINES);
+	m_lineShader->Activate();
 	{
 		const pair<int, int>& eil = mesh.EIL(nid);
 		for (int i = 0; i < eil.second; ++i)
 		{
 			const GMesh::EDGE& e = mesh.Edge(i + eil.first);
 			assert(e.pid == nid);
-			if ((e.n[0] != -1) && (e.n[1] != -1))
-			{
-				const vec3f& r0 = mesh.Node(e.n[0]).r;
-				const vec3f& r1 = mesh.Node(e.n[1]).r;
-				glVertex3d(r0.x, r0.y, r0.z);
-				glVertex3d(r1.x, r1.y, r1.z);
-			}
+			m_lineShader->Render(e);
 		}
 	}
-	glEnd();
+	m_lineShader->Deactivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -289,14 +309,21 @@ void GLMeshRender::RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, 
 	if (points.empty()) return;
 
 	// build the line mesh
-	GLLineMesh lineMesh;
-	lineMesh.Create((int)points.size() / 2);
-	lineMesh.BeginMesh();
-	for (auto& p : points) lineMesh.AddVertex(p);
-	lineMesh.EndMesh();
+	GMesh lineMesh;
+	int NN = (int)points.size();
+	int NE = (int)points.size() / 2;
+	lineMesh.Create(NN, 0, NE);
+	for (int i=0; i<NE; ++i)
+	{
+		lineMesh.Node(2 * i    ).r = points[2 * i];
+		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
+		lineMesh.Edge(i).n[0] = 2 * i;
+		lineMesh.Edge(i).n[1] = 2 * i + 1;
+	}
+	lineMesh.Update();
 
 	// render the active edges
-	lineMesh.Render();
+	RenderEdges(lineMesh);
 }
 
 void GLMeshRender::RenderSurfaceOutline(CGLCamera& cam, GMesh* pm, const Transform& T, int surfID)
@@ -373,69 +400,59 @@ void GLMeshRender::RenderSurfaceOutline(CGLCamera& cam, GMesh* pm, const Transfo
 	if (points.empty()) return;
 
 	// build the line mesh
-	GLLineMesh lineMesh;
-	lineMesh.Create((int)points.size() / 2);
-	lineMesh.BeginMesh();
-	for (auto& p : points) lineMesh.AddVertex(p);
-	lineMesh.EndMesh();
+	GMesh lineMesh;
+	int NN = (int)points.size();
+	int NE = (int)points.size() / 2;
+	lineMesh.Create(NN, 0, NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		lineMesh.Node(2 * i).r = points[2 * i];
+		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
+		lineMesh.Edge(i).n[0] = 2 * i;
+		lineMesh.Edge(i).n[1] = 2 * i + 1;
+	}
+	lineMesh.Update();
 
 	// render the active edges
-	lineMesh.Render();
+	RenderEdges(lineMesh);
 }
 
 void GLMeshRender::RenderEdges(const GMesh& m)
 {
+	if (m_lineShader == nullptr) { assert(false); return; }
 	int NE = m.Edges();
 	if (NE == 0) return;
-	glBegin(GL_LINES);
+	m_lineShader->Activate();
 	{
 		for (int i = 0; i < NE; i++)
 		{
 			const GMesh::EDGE& e = m.Edge(i);
-			glx::line(e.vr[0], e.vr[1]);
+			m_lineShader->Render(e);
 		}
 	}
-	glEnd();
+	m_lineShader->Deactivate();
 }
 
 void GLMeshRender::RenderEdges(const GMesh& m, std::function<bool(const GMesh::EDGE& e)> f)
 {
+	if (m_lineShader == nullptr) { assert(false); return; }
 	int NE = m.Edges();
 	if (NE == 0) return;
-	glBegin(GL_LINES);
+	m_lineShader->Activate();
+	for (int i = 0; i < NE; i++)
 	{
-		for (int i = 0; i < NE; i++)
+		const GMesh::EDGE& e = m.Edge(i);
+		if (f(e))
 		{
-			const GMesh::EDGE& e = m.Edge(i);
-			if (f(e))
-			{
-				glx::line(e.vr[0], e.vr[1]);
-			}
+			m_lineShader->Render(e);
 		}
 	}
-	glEnd();
-}
-
-void GLMeshRender::RenderEdges(const GMesh& m, GLLineShader& shader)
-{
-	int NE = m.Edges();
-	if (NE == 0) return;
-	shader.Activate();
-	glBegin(GL_LINES);
-	{
-		for (int i = 0; i < NE; i++)
-		{
-			shader.Render(m.Edge(i));
-		}
-	}
-	glEnd();
-	shader.Deactivate();
+	m_lineShader->Deactivate();
 }
 
 void GLMeshRender::RenderNormals(const GMesh& mesh, GLLineShader& shader)
 {
 	shader.Activate();
-	glBegin(GL_LINES);
 	{
 		GMesh::EDGE edge;
 		for (int i = 0; i < mesh.Faces(); ++i)
@@ -454,73 +471,54 @@ void GLMeshRender::RenderNormals(const GMesh& mesh, GLLineShader& shader)
 			shader.Render(edge);
 		}
 	}
-	glEnd();
 	shader.Deactivate();
 }
 
 void GLMeshRender::RenderPoints(GMesh& mesh)
 {
+	if (m_pointShader == nullptr) { assert(false); return; }
 	if (mesh.Nodes() == 0) return;
 	GLfloat old_size;
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
-	glBegin(GL_POINTS);
+	m_pointShader->Activate();
 	{
 		int NN = mesh.Nodes();
 		for (int i = 0; i < NN; ++i)
 		{
-			vec3f& r = mesh.Node(i).r;
-			glVertex3f(r.x, r.y, r.z);
+			m_pointShader->Render(mesh.Node(i));
 		}
 	}
-	glEnd();
-	glPointSize(old_size);
-}
-
-void GLMeshRender::RenderPoints(GMesh& mesh, GLPointShader& shader)
-{
-	if (mesh.Nodes() == 0) return;
-	GLfloat old_size;
-	glGetFloatv(GL_POINT_SIZE, &old_size);
-	glPointSize(m_pointSize);
-	shader.Activate();
-	glBegin(GL_POINTS);
-	{
-		int NN = mesh.Nodes();
-		for (int i = 0; i < NN; ++i)
-		{
-			shader.Render(mesh.Node(i));
-		}
-	}
-	glEnd();
-	shader.Deactivate();
+	m_pointShader->Deactivate();
 	glPointSize(old_size);
 }
 
 void GLMeshRender::RenderPoints(GMesh& mesh, std::vector<int>& nodeList)
 {
+	if (m_pointShader == nullptr) { assert(false); return; }
+	if (nodeList.empty()) return;
 	GLfloat old_size;
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
-	glBegin(GL_POINTS);
+	m_pointShader->Activate();
 	{
 		for (int i : nodeList)
 		{
-			vec3f& r = mesh.Node(i).r;
-			glVertex3f(r.x, r.y, r.z);
+			m_pointShader->Render(mesh.Node(i));
 		}
 	}
-	glEnd();
+	m_pointShader->Deactivate();
 	glPointSize(old_size);
 }
 
 void GLMeshRender::RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc)
 {
+	if (m_pointShader == nullptr) { assert(false); return; }
 	if (mesh.Nodes() == 0) return;
 	GLfloat old_size;
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
-	glBegin(GL_POINTS);
+	m_pointShader->Activate();
 	{
 		int NN = mesh.Nodes();
 		for (int i = 0; i < NN; ++i)
@@ -528,11 +526,10 @@ void GLMeshRender::RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NOD
 			GMesh::NODE& node = mesh.Node(i);
 			if (fnc(node))
 			{
-				vec3f& r = mesh.Node(i).r;
-				glVertex3f(r.x, r.y, r.z);
+				m_pointShader->Render(mesh.Node(i));
 			}
 		}
 	}
-	glEnd();
+	m_pointShader->Deactivate();
 	glPointSize(old_size);
 }

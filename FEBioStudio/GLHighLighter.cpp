@@ -140,6 +140,7 @@ void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 	SetModelView(po);
 
 	GMesh& m = *po->GetRenderMesh();
+	renderer.SetLineShader(new GLOutlineShader(c));
 	renderer.RenderEdges(m, edge->GetLocalID());
 
 	GNode* n0 = po->Node(edge->m_node[0]);
@@ -147,39 +148,30 @@ void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 
 	if (n0 && n1)
 	{
-		glBegin(GL_POINTS);
-		{
-			vec3d r0 = n0->LocalPosition();
-			vec3d r1 = n1->LocalPosition();
-			glVertex3d(r0.x, r0.y, r0.z);
-			glVertex3d(r1.x, r1.y, r1.z);
-		}
-		glEnd();
+		GMesh endPoints;
+		vec3d r0 = n0->LocalPosition();
+		vec3d r1 = n1->LocalPosition();
+		endPoints.AddNode(to_vec3f(r0));
+		endPoints.AddNode(to_vec3f(r1));
+
+		renderer.SetPointShader(new GLPointColorShader(c));
+		renderer.RenderPoints(endPoints);
 	}
 	glPopMatrix();
 }
 
 void drawNode(GLMeshRender& renderer, GNode* node, GLColor c)
 {
+	if (node == nullptr) return;
 	GObject* po = dynamic_cast<GObject*>(node->Object());
-	if (po == 0) return;
-
-	glColor3ub(c.r, c.g, c.b);
+	if (po == nullptr) return;
 
 	glPushMatrix();
 	SetModelView(po);
-
-	GMesh& m = *po->GetRenderMesh();
-
-	if (node)
-	{
-		glBegin(GL_POINTS);
-		{
-			vec3d r0 = node->LocalPosition();
-			glVertex3d(r0.x, r0.y, r0.z);
-		}
-		glEnd();
-	}
+	GMesh pt;
+	pt.AddNode(to_vec3f(node->LocalPosition()));
+	renderer.SetPointShader(new GLPointColorShader(c));
+	renderer.RenderPoints(pt);
 	glPopMatrix();
 }
 
@@ -196,10 +188,8 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 	GLSelectionShader shader(c);
 	renderer.RenderGMesh(*mesh, face->GetLocalID(), shader);
 
-	GLOutlineShader outlineShader(c);
-	outlineShader.Activate();
+	renderer.SetLineShader(new GLOutlineShader(c));
 	renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetRenderTransform(), face->GetLocalID());
-	outlineShader.Deactivate();
 
 	glPopMatrix();
 }
@@ -232,13 +222,11 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 		renderer.RenderGMesh(*mesh, surfID, shader);
 	}
 
-	GLOutlineShader outlineShader(c);
-	outlineShader.Activate();
+	renderer.SetLineShader(new GLOutlineShader(c));
 	for (int surfID : faceList)
 	{
 		renderer.RenderSurfaceOutline(*rc.m_cam, mesh, po->GetRenderTransform(), surfID);
 	}
-	outlineShader.Deactivate();
 
 	glPopMatrix();
 }
@@ -258,11 +246,9 @@ void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, G
 
 	glPushMatrix();
 	SetModelView(po);
-	GLOutlineShader shader(c);
-	shader.Activate();
+	renderer.SetPointShader(new GLPointOverlayShader(c));
 	std::vector<int> nodeList = nodeSet->CopyItems();
 	renderer.RenderPoints(*gm, nodeList);
-	shader.Deactivate();
 	glPopMatrix();
 }
 

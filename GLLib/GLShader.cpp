@@ -49,17 +49,52 @@ void GLShader::Deactivate()
 
 bool GLShader::IsActive() const { return (m_activeShader==this); }
 
+void GLPointShader::Activate()
+{
+	GLShader::Activate();
+	glBegin(GL_POINTS);
+}
+
+void GLPointShader::Deactivate()
+{
+	glEnd();
+	GLShader::Deactivate();
+}
+
+void GLLineShader::Activate()
+{
+	GLShader::Activate();
+	glBegin(GL_LINES);
+}
+
+void GLLineShader::Deactivate()
+{
+	glEnd();
+	GLShader::Deactivate();
+}
+
+void GLFacetShader::Activate()
+{
+	GLShader::Activate();
+	glBegin(GL_TRIANGLES);
+}
+
+void GLFacetShader::Deactivate()
+{
+	glEnd();
+	GLShader::Deactivate();
+}
+
 void GLStandardShader::Activate()
 {
-	GLFacetShader::Activate();
-
 	glDisable(GL_COLOR_MATERIAL);
-
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
+	GLFacetShader::Activate();
 }
 
 void GLStandardShader::Render(const GMesh::FACE& f)
@@ -76,19 +111,17 @@ void GLTexture1DShader::SetTexture(GLTexture1D* tex)
 
 void GLTexture1DShader::Activate()
 {
-	GLFacetShader::Activate();
-
 	glEnable(GL_COLOR_MATERIAL);
 	glColor3ub(255, 255, 255);
 	glEnable(GL_TEXTURE_1D);
 	m_tex->MakeCurrent();
+	GLFacetShader::Activate();
 }
 
 void GLTexture1DShader::Deactivate()
 {
-	glDisable(GL_TEXTURE_1D);
-
 	GLFacetShader::Deactivate();
+	glDisable(GL_TEXTURE_1D);
 }
 
 void GLTexture1DShader::Render(const GMesh::FACE& f)
@@ -111,31 +144,17 @@ GLStandardModelShader::GLStandardModelShader(const GLColor& c, bool useStipple) 
 
 void GLStandardModelShader::SetColor(const GLColor& c) 
 { 
-	m_col = c; 
-	if (IsActive())
-	{
-		GLfloat f[4] = { 0.f, 0.f, 0.f, 1.f };
-		m_col.toFloat(f);
-		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, f);
-	}
+	assert(!IsActive());
+	m_col = c;
 }
 void GLStandardModelShader::SetUseStipple(bool b)
 { 
-	if (b != m_useStipple)
-	{
-		m_useStipple = b;
-		if (IsActive())
-		{
-			if (m_useStipple) glEnable(GL_POLYGON_STIPPLE);
-			else glDisable(GL_POLYGON_STIPPLE);
-		}
-	}
+	assert(!IsActive());
+	m_useStipple = b;
 }
 
 void GLStandardModelShader::Activate()
 {
-	GLFacetShader::Activate();
-
 	GLfloat col[] = { 0.8f, 0.6f, 0.6f, 1.f };
 	GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
 	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
@@ -150,13 +169,14 @@ void GLStandardModelShader::Activate()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+
+	GLFacetShader::Activate();
 }
 
 void GLStandardModelShader::Deactivate()
 {
-	if (m_useStipple) glDisable(GL_POLYGON_STIPPLE);
-
 	GLFacetShader::Deactivate();
+	if (m_useStipple) glDisable(GL_POLYGON_STIPPLE);
 }
 
 void GLStandardModelShader::Render(const GMesh::FACE& f)
@@ -168,8 +188,6 @@ void GLStandardModelShader::Render(const GMesh::FACE& f)
 
 void GLFaceColorShader::Activate()
 {
-	GLFacetShader::Activate();
-
 	GLfloat zero[] = { 0.0f, 0.0f, 0.0f, 1.f };
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
@@ -177,6 +195,8 @@ void GLFaceColorShader::Activate()
 
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
+
+	GLFacetShader::Activate();
 }
 
 void GLFaceColorShader::Render(const GMesh::FACE& f)
@@ -198,8 +218,6 @@ GLSelectionShader::GLSelectionShader(const GLColor& c)
 
 void GLSelectionShader::Activate()
 {
-	GLFacetShader::Activate();
-
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_CULL_FACE);
@@ -208,13 +226,14 @@ void GLSelectionShader::Activate()
 	glEnable(GL_POLYGON_STIPPLE);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+
+	GLFacetShader::Activate();
 }
 
 void GLSelectionShader::Deactivate()
 {
-	glPopAttrib();
-
 	GLFacetShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLSelectionShader::Render(const GMesh::FACE& f)
@@ -236,13 +255,12 @@ GLOutlineShader::GLOutlineShader(const GLColor& c) : m_col(c)
 
 void GLOutlineShader::Activate()
 {
-	GLLineShader::Activate();
-
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	GLLineShader::Activate();
 }
 
 void GLOutlineShader::SetColor(const GLColor& c) 
@@ -253,9 +271,8 @@ void GLOutlineShader::SetColor(const GLColor& c)
 
 void GLOutlineShader::Deactivate()
 {
-	glPopAttrib();
-
 	GLLineShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLOutlineShader::Render(const GMesh::EDGE& e)
@@ -275,19 +292,17 @@ GLLineColorShader::GLLineColorShader(const GLColor& c) : m_col(c)
 
 void GLLineColorShader::Activate()
 {
-	GLLineShader::Activate();
-
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	GLLineShader::Activate();
 }
 
 void GLLineColorShader::Deactivate()
 {
-	glPopAttrib();
-
 	GLLineShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLLineColorShader::Render(const GMesh::EDGE& e)
@@ -303,15 +318,15 @@ GLNormalShader::GLNormalShader()
 
 void GLNormalShader::Activate()
 {
-	GLLineShader::Activate();
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	GLLineShader::Activate();
 }
 
 void GLNormalShader::Deactivate()
 {
-	glPopAttrib();
 	GLLineShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLNormalShader::Render(const GMesh::EDGE& edge)
@@ -339,19 +354,17 @@ GLPointColorShader::GLPointColorShader(const GLColor& c)
 
 void GLPointColorShader::Activate()
 {
-	GLPointShader::Activate();
-
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	GLPointShader::Activate();
 }
 
 void GLPointColorShader::Deactivate()
 {
-	glPopAttrib();
-
 	GLPointShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLPointColorShader::Render(const GMesh::NODE& node)
@@ -371,20 +384,18 @@ GLPointOverlayShader::GLPointOverlayShader(const GLColor& c)
 
 void GLPointOverlayShader::Activate()
 {
-	GLPointShader::Activate();
-
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
 	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	GLPointShader::Activate();
 }
 
 void GLPointOverlayShader::Deactivate()
 {
-	glPopAttrib();
-
 	GLPointShader::Deactivate();
+	glPopAttrib();
 }
 
 void GLPointOverlayShader::Render(const GMesh::NODE& node)

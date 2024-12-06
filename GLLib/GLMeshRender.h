@@ -39,6 +39,7 @@ class GLMeshRender
 {
 public:
 	GLMeshRender();
+	~GLMeshRender();
 
 	void ShowShell2Hex(bool b) { m_bShell2Solid = b; }
 	bool ShowShell2Hex() { return m_bShell2Solid; }
@@ -63,9 +64,16 @@ public:
 	void AddShader(GLFacetShader* shader);
 	void SetDefaultShader(GLFacetShader* shader);
 
+	void SetPointShader(GLPointShader* pointShader);
+	void SetLineShader(GLLineShader* lineShader);
+	void SetFacetShader(GLFacetShader* facetShader);
+
 public:
 	void PushState();
 	void PopState();
+
+public:
+	void RenderLine(const vec3d& a, const vec3d& b);
 
 public:
 	void RenderGMesh(const GMesh& mesh);
@@ -76,14 +84,11 @@ public:
 	void RenderEdges(const GMesh& m);
 	void RenderEdges(const GMesh& m, std::function<bool(const GMesh::EDGE& e)> f);
 	void RenderEdges(const GMesh& p, int nedge);
-	void RenderEdges(const GMesh& m, GLLineShader& shader);
-
 
 	void RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, bool outline = false);
 	void RenderSurfaceOutline(CGLCamera& cam, GMesh* pm, const Transform& T, int surfID);
 
 	void RenderPoints(GMesh& mesh);
-	void RenderPoints(GMesh& mesh, GLPointShader& shader);
 	void RenderPoints(GMesh& mesh, std::vector<int>& nodeList);
 	void RenderPoints(GMesh& mesh, std::function<bool(const GMesh::NODE& node)> fnc);
 
@@ -104,4 +109,8 @@ private:
 	GLTriMesh	m_glmesh;
 	std::vector<GLFacetShader*> m_shaders;
 	GLFacetShader* m_defaultShader;
+
+	GLPointShader* m_pointShader;
+	GLLineShader* m_lineShader;
+	GLFacetShader* m_facetShader;
 };

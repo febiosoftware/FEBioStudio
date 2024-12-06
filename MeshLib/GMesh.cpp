@@ -45,9 +45,9 @@ GMesh::~GMesh(void)
 //-----------------------------------------------------------------------------
 void GMesh::Create(int nodes, int faces, int edges)
 {
-	m_Node.resize(nodes);
-	m_Face.resize(faces);
-	m_Edge.resize(edges);
+	if (nodes > 0) m_Node.resize(nodes);
+	if (faces > 0) m_Face.resize(faces);
+	if (edges > 0) m_Edge.resize(edges);
 	m_FIL.clear();
 	m_EIL.clear();
 }

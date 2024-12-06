@@ -597,8 +597,8 @@ void CGLModel::RenderMeshLines(CGLContext& rc)
 
 	GLColor c = rc.m_settings.m_meshColor;
 	c.a = 128;
-	GLLineColorShader lineShader(c);
-	m_render.RenderEdges(*mesh, lineShader);
+	m_render.SetLineShader(new GLLineColorShader(c));
+	m_render.RenderEdges(*mesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -973,8 +973,8 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	m_render.RenderGMesh(m_selectionMesh, shader);
 
 	// render the selection outlines
-	GLOutlineShader outlineShader(GLColor::Yellow());
-	m_render.RenderEdges(m_selectionMesh, outlineShader);
+	m_render.SetLineShader(new GLOutlineShader(GLColor::Yellow()));
+	m_render.RenderEdges(m_selectionMesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -1469,23 +1469,19 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 
 	// render all unselected tagged nodes
 	GLColor c = m_node_col; c.a = 128;
-	GLPointColorShader shader(c);
-	shader.Activate();
+	m_render.SetPointShader(new GLPointColorShader(c));
 	m_render.RenderPoints(*gm, [](const GMesh::NODE& node) {
 		return (node.tag & VISIBLE_FLAG) && ((node.tag & SELECT_FLAG) == 0);
 		});
-	shader.Deactivate();
 	m_render.SetPointSize(fsize);
 
 	// render selected tagged nodes
 	if (GetSelectionType() == SELECT_FE_NODES)
 	{
-		GLPointOverlayShader pointShader(GLColor::Yellow());
-		pointShader.Activate();
+		m_render.SetPointShader(new GLPointOverlayShader(GLColor::Yellow()));
 		m_render.RenderPoints(*gm, [](const GMesh::NODE& node) {
 			return (node.tag & VISIBLE_FLAG) && (node.tag & SELECT_FLAG);
 			});
-		pointShader.Deactivate();
 	}
 }
 
