@@ -37,6 +37,8 @@ void GLViewSettings::Defaults(int ntheme)
 
 	m_selectAndHide = false;
 
+	m_light = vec3f(0.5, 0.5, 1);
+
 	m_bjoint = true;
 	m_bwall = true;
 	m_brigid = true;

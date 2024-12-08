@@ -25,13 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLPlaneCut.h"
-#include "GLView.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSModel.h>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/GMesh.h>
 #include <GLLib/GLShader.h>
+#include <GLLib/GLCamera.h>
+#include <GLLib/GLContext.h>
+#include <PostLib/ColorMap.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -310,35 +312,23 @@ void GLPlaneCut::Render(CGLContext& rc)
 	GLLineColorShader* lineShader = new GLLineColorShader();
 	mr.SetLineShader(lineShader);
 
-	glPushAttrib(GL_ENABLE_BIT);
+	if (rc.m_settings.m_bmesh)
 	{
-		glColor3ub(255, 255, 255);
-		glEnable(GL_COLOR_MATERIAL);
+		CGLCamera& cam = *rc.m_cam;
+		cam.LineDrawMode(true);
+		cam.PositionInScene();
 
-		// turn off specular lighting
-		GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+		GLColor c = rc.m_settings.m_meshColor;
+		lineShader->SetColor(c);
+		mr.RenderEdges(*m_planeCut, 0);
 
-		if (rc.m_settings.m_bmesh)
-		{
-			CGLCamera& cam = *rc.m_cam;
-			cam.LineDrawMode(true);
-			cam.PositionInScene();
+		// TODO: This used to be drawn with depthtest off
+		lineShader->SetColor(GLColor::Yellow());
+		mr.RenderEdges(*m_planeCut, 1);
 
-			GLColor c = rc.m_settings.m_meshColor;
-			lineShader->SetColor(c);
-			mr.RenderEdges(*m_planeCut, 0);
-
-			// TODO: This used to be drawn with depthtest off
-			lineShader->SetColor(GLColor::Yellow());
-			mr.RenderEdges(*m_planeCut, 1);
-
-			cam.LineDrawMode(false);
-			cam.PositionInScene();
-		}
+		cam.LineDrawMode(false);
+		cam.PositionInScene();
 	}
-	glPopAttrib();
 }
 
 bool GLPlaneCut::Intersect(const vec3d& p, const Ray& ray, Intersection& q)

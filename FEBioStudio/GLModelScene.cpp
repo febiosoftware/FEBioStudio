@@ -34,11 +34,8 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GLLib/GLShader.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <GeomLib/GSurfaceMeshObject.h>
 #include <FEMLib/FELoad.h>
-#include <MeshLib/MeshMetrics.h>
-#include <ImageLib/RGBImage.h>
-#include <QImageReader>
+#include <GeomLib/GSurfaceMeshObject.h>
 #include <PostGL/GLVectorRender.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
@@ -110,9 +107,6 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (ps == nullptr) return;
 	GModel& model = ps->GetModel();
 
-	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view); assert(glview);
-	if (glview == nullptr) return;
-
 	GLViewSettings& view = rc.m_settings;
 
 	// set the object's render transforms
@@ -123,7 +117,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	CGLCamera& cam = *rc.m_cam;
 	cam.PositionInScene();
 
-	if (glview->ShowPlaneCut())
+	if (view.m_showPlaneCut)
 	{
 		RenderPlaneCut(rc);
 	}
@@ -190,6 +184,8 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	glDisable(GL_CLIP_PLANE0);
 
+	ClearTags();
+
 	// show the labels on rigid bodies
 	if (view.m_showRigidLabels) RenderRigidLabels(rc);
 
@@ -202,17 +198,16 @@ void CGLModelScene::Render(CGLContext& rc)
 	// render the image data
 	RenderImageData(rc);
 
-	// render the decorations
-	glview->RenderDecorations();
-
 	// render the highlights
 	GLHighlighter::draw();
 
 	// render 3D cursor
 	if (m_doc->GetItemMode() == ITEM_MESH)
 	{
-		glview->Render3DCursor();
+		view.m_show3DCursor = true;
 	}
+	else
+		view.m_show3DCursor = false;
 
 	// see if we need to draw the legend bar for the mesh inspector
 	if (view.m_bcontour)
@@ -420,8 +415,6 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 	CModelDocument* pdoc = m_doc;
 	GLViewSettings& view = rc.m_settings;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-
 	CGLCamera& cam = *rc.m_cam;
 	
 	// Get the item mode
@@ -456,7 +449,7 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				if (gm) RenderFEFacesFromGMesh(rc, po);
 				else RenderObject(rc, po);
 			}
-			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
+			else if (view.m_showPlaneCut && (view.m_planeCutMode == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc, po);
@@ -571,10 +564,7 @@ void CGLModelScene::RenderSelectionBox(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
-
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 
 	// get the model
 	FSModel* ps = pdoc->GetFSModel();
@@ -634,9 +624,6 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
-
 	CGLCamera& cam = *rc.m_cam;
 
 	FSModel* ps = pdoc->GetFSModel();
@@ -646,8 +633,10 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 
 	quatd qi = cam.GetOrientation().Inverse();
 
-	GLOutlineShader shader;
-	shader.Activate();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	for (int i = 0; i < ps->Materials(); ++i)
 	{
 		GMaterial* pgm = ps->GetMaterial(i);
@@ -673,7 +662,7 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 			glPopMatrix();
 		}
 	}
-	shader.Deactivate();
+	glPopAttrib();
 }
 
 void CGLModelScene::RenderRigidWalls(CGLContext& rc)
@@ -681,16 +670,15 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
-
 	FSModel* ps = pdoc->GetFSModel();
 	BOX box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
 
-	GLOutlineShader shader;
-	shader.Activate();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -722,16 +710,13 @@ void CGLModelScene::RenderRigidWalls(CGLContext& rc)
 		}
 	}
 
-	shader.Deactivate();
+	glPopAttrib();
 }
 
 void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 {
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
-
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
 
 	CGLCamera& cam = *rc.m_cam;
 
@@ -740,9 +725,10 @@ void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
-	GLOutlineShader shader;
-	shader.Activate();
-
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
 		FSStep& s = *ps->GetStep(n);
@@ -756,8 +742,7 @@ void CGLModelScene::RenderRigidJoints(CGLContext& rc)
 			}
 		}
 	}
-
-	shader.Deactivate();
+	glPopAttrib();
 }
 
 void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
@@ -772,8 +757,10 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
-	GLOutlineShader shader;
-	shader.Activate();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -970,8 +957,7 @@ void CGLModelScene::RenderRigidConnectors(CGLContext& rc)
 			}
 		}
 	}
-
-	shader.Deactivate();
+	glPopAttrib();
 }
 
 class GLFiberRenderer : public GLVectorRenderer
@@ -1231,9 +1217,6 @@ void CGLModelScene::RenderLocalMaterialAxes(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	if (glview == nullptr) return;
-
 	// get the model
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -1243,7 +1226,7 @@ void CGLModelScene::RenderLocalMaterialAxes(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	BOX box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
@@ -1875,8 +1858,6 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-
 	GLMeshRender& renderer = GetMeshRenderer();
 
 	GLViewSettings& vs = rc.m_settings;
@@ -1987,9 +1968,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -2139,8 +2118,6 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 // Render the FE nodes
 void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 {
-	CGLView* glview = (CGLView*)rc.m_view;
-
 	GLViewSettings& view = rc.m_settings;
 	quatd q = rc.m_cam->GetOrientation();
 
@@ -2189,8 +2166,7 @@ void CGLModelScene::RenderFEFacesFromGMesh(CGLContext& rc, GObject* po)
 
 	GLViewSettings& vs = rc.m_settings;
 
-	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
-	if (vs.m_bcontour && (po == view->GetActiveObject()))
+	if (vs.m_bcontour && (po == m_doc->GetActiveObject()))
 	{
 		GLFaceColorShader shader;
 		m_renderer.RenderGMesh(*gm, shader);
@@ -2779,8 +2755,7 @@ GLColor CGLModelScene::GetPartColor(CGLContext& rc, GPart* pg)
 	if (pg == nullptr) return GLColor(0, 0, 0);
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return GLColor(0,0,0);
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
 
@@ -2833,8 +2808,7 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	if (pg == nullptr) return;
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
 
@@ -2908,7 +2882,6 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 
 void CGLModelScene::RenderTags(CGLContext& rc)
 {
-	if (rc.m_view == nullptr) return;
 	GLViewSettings& view = rc.m_settings;
 
 	GObject* po = m_doc->GetActiveObject();
@@ -2917,7 +2890,6 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 	// create the tag array.
 	// We add a tag for each selected item
 	GLTAG tag;
-	vector<GLTAG> vtag;
 
 	int mode = m_doc->GetItemMode();
 
@@ -2947,7 +2919,7 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					int nid = el.GetID();
 					if (nid < 0) nid = selection->ElementIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -2977,7 +2949,7 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					int nid = f.GetID();
 					if (nid < 0) nid = selection->FaceIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -3007,7 +2979,7 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					int nid = edge.GetID();
 					if (nid < 0) nid = selection->EdgeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -3037,7 +3009,7 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					int nid = node.GetID();
 					if (nid < 0) nid = selection->NodeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 				}
 			}
 		}
@@ -3058,22 +3030,11 @@ void CGLModelScene::RenderTags(CGLContext& rc)
 					int n = node.GetID();
 					if (n < 0) n = i + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-					vtag.push_back(tag);
+					AddTag(tag);
 				}
 			}
 		}
 	}
-
-	// if we don't have any tags, just return
-	if (vtag.empty()) return;
-
-	// limit the number of tags to render
-	const int MAX_TAGS = 100;
-	int nsel = (int)vtag.size();
-	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
-
-	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
-	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLModelScene::RenderRigidLabels(CGLContext& rc)
@@ -3081,10 +3042,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 	FSModel* fem = m_doc->GetFSModel();
 	if (fem == nullptr) return;
 
-	CGLView* glview = (CGLView*)rc.m_view;
-	GLViewSettings& view = glview->GetViewSettings();
-
-	vector<GLTAG> vtag;
+	GLViewSettings& view = rc.m_settings;
 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
@@ -3109,11 +3067,9 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 				tag.sztag[l] = 0;
 			}
 			else snprintf(tag.sztag, sizeof tag.sztag, "_no_name");
-			vtag.push_back(tag);
+			AddTag(tag);
 		}
 	}
-	if (vtag.empty()) return;
-	glview->RenderTags(vtag);
 }
 
 void CGLModelScene::RenderImageData(CGLContext& rc)

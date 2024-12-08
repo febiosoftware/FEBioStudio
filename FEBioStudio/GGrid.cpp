@@ -26,7 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GGrid.h"
-#include "GLView.h"
+#include <GLLib/GLCamera.h>
+#include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 
 GGrid::GGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
@@ -90,7 +91,7 @@ void GGrid::Render(CGLContext& renderContext)
 
 	// determine the colors for the major axis
 	GLColor cx, cy;
-	View_Mode view = ((CGLView*)(renderContext.m_view))->GetViewMode();
+	View_Mode view = renderContext.m_settings.m_nview;
 	switch (view)
 	{
 	case VIEW_USER:

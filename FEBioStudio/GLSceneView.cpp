@@ -46,7 +46,6 @@ CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
 	m_view.Defaults();
 
 	m_ox = m_oy = 1;
-	m_light = vec3f(0.5, 0.5, 1);
 }
 
 CGLScene* CGLSceneView::GetActiveScene()
@@ -330,7 +329,7 @@ void CGLSceneView::PrepScene()
 	glLightfv(GL_LIGHT0, GL_AMBIENT, av);
 
 	// position the light
-	vec3f lp = GetLightPosition(); lp.Normalize();
+	vec3f lp = m_view.m_light; lp.Normalize();
 	GLfloat fv[4] = { 0 };
 	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
 	glLightfv(GL_LIGHT0, GL_POSITION, fv);

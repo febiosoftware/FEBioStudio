@@ -1203,7 +1203,6 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 
 	if (breset)
 	{
-		//	m_pGLView->OnZoomExtents(0,0);
 		UpdateModel();
 	}
 
@@ -1335,7 +1334,7 @@ void CMainWindow::Reset()
 {
 //	GetGLView()->Reset();
 	GLHighlighter::ClearHighlights();
-	GetGLView()->ZoomExtents(false);
+	on_actionZoomExtents_triggered();
 }
 
 //-----------------------------------------------------------------------------
@@ -2357,7 +2356,7 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 	string docIcon = doc->GetIcon();
 	ui->centralWidget->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
-	glview->ZoomExtents(false);
+	on_actionZoomExtents_triggered();
 	glview->UpdateWidgets();
 }
 
@@ -3646,8 +3645,13 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		{
 			ShowInModelViewer(imgModel);
 		}
-		GetGLView()->ZoomTo(imgModel->GetBoundingBox());
 
+		CGLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomTo(imgModel->GetBoundingBox());
+			RedrawGL();
+		}
 		return true;
 	}
 	return false;

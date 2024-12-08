@@ -476,8 +476,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 
 	m_bsel = false;
 
-	m_nview = VIEW_USER;
-
 	m_nsnap = SNAP_NONE;
 
 	m_bshift = false;
@@ -488,9 +486,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_userPivot = false;
 
 	m_coord = COORD_GLOBAL;
-
-	m_showPlaneCut = false;
-	m_planeCutMode = Planecut_Mode::PLANECUT;
 
 	// attach the highlighter to this view
 	GLHighlighter::AttachToView(this);
@@ -557,7 +552,7 @@ void CGLView::changeViewMode(View_Mode vm)
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	SetViewMode(vm);
+	m_view.m_nview = vm;
 
 	// switch to ortho view if we're not in it
 	bool bortho = scene->GetView().OrhographicProjection();
@@ -762,6 +757,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
+	View_Mode viewMode = m_view.m_nview;
+
 	int pivotMode = m_pivot.GetSelectionMode();
 	if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)
 	{
@@ -772,7 +769,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
 				repaint();
 			}
-			else if (m_nview == VIEW_USER)
+			else if (viewMode == VIEW_USER)
 			{
 				if (balt)
 				{
@@ -790,7 +787,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 				repaint();
 			}
-			else SetViewMode(VIEW_USER);
+			else m_view.m_nview = VIEW_USER;
 		}
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{
@@ -1524,6 +1521,8 @@ void CGLView::RenderScene()
 
 	GLViewSettings& view = GetViewSettings();
 
+	view.m_show3DCursor = false;
+
 	CGLCamera& cam = scene->GetView().GetCamera();
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
@@ -1547,6 +1546,15 @@ void CGLView::RenderScene()
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
 
 	if (view.m_bselbrush) RenderBrush();
+
+	RenderDecorations();
+
+	if (view.m_show3DCursor)
+	{
+		Render3DCursor();
+	}
+
+	RenderTags();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
@@ -1709,15 +1717,6 @@ QPoint CGLView::DeviceToPhysical(int x, int y)
 {
 	double dpr = devicePixelRatio();
 	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
-}
-
-inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
-{
-	vec3d a;
-	a.x = m[0][0] * r.x + m[0][1] * r.y + m[0][2] * r.z;
-	a.y = m[1][0] * r.x + m[1][1] * r.y + m[1][2] * r.z;
-	a.z = m[2][0] * r.x + m[2][1] * r.y + m[2][2] * r.z;
-	return a;
 }
 
 void CGLView::ShowMeshData(bool b)
@@ -1946,7 +1945,7 @@ void CGLView::SetViewMode(View_Mode n)
                     assert(false);
             }
             
-            m_nview = n;
+            view.m_nview = n;
             scene->SetGridOrientation(q);
             
             // set the camera orientation
@@ -1980,7 +1979,7 @@ void CGLView::SetViewMode(View_Mode n)
                     assert(false);
             }
             
-            m_nview = n;
+			view.m_nview = n;
 			scene->SetGridOrientation(q);
             
             // set the camera orientation
@@ -2014,7 +2013,7 @@ void CGLView::SetViewMode(View_Mode n)
                     assert(false);
             }
             
-            m_nview = n;
+			view.m_nview = n;
 			scene->SetGridOrientation(q);
             
             // set the camera orientation
@@ -2030,8 +2029,8 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_USER: repaint(); return;
             }
         }
-            break;
-    }
+		break;
+	}
 
 	scene->GetCamera().SetOrientation(q);
 
@@ -2087,20 +2086,20 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 
 void CGLView::ShowPlaneCut(bool b)
 {
-	m_showPlaneCut = b;
+	m_view.m_showPlaneCut = b;
 	UpdatePlaneCut(true);
 	update();
 }
 
 bool CGLView::ShowPlaneCut() const
 {
-	return m_showPlaneCut;
+	return m_view.m_showPlaneCut;
 }
 
 void CGLView::SetPlaneCutMode(int nmode)
 {
-	bool breset = (m_planeCutMode != nmode);
-	m_planeCutMode = nmode;
+	bool breset = (m_view.m_planeCutMode != nmode);
+	m_view.m_planeCutMode = nmode;
 	UpdatePlaneCut(breset);
 	update();
 }
@@ -2374,8 +2373,6 @@ GPart* CGLView::PickPart(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return nullptr;
 
-	GLViewSettings& view = GetViewSettings();
-
 	// Get the model
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -2598,103 +2595,23 @@ quatd CGLView::GetPivotRotation()
 bool CGLView::GetPivotUserMode() const { return m_userPivot; }
 void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
-// this function will only adjust the camera if the currently
-// selected object is too close.
-void CGLView::ZoomSelection(bool forceZoom)
+void CGLView::RenderTags()
 {
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	// get the selection's bounding box
-	BOX box = GLHighlighter::GetBoundingBox();
-	box += scene->GetSelectionBox();
-	if (box.IsValid())
-	{
-		double f = box.GetMaxExtent();
-		if (f < 1.0e-8) f = 1.0;
-
-		CGLCamera& cam = scene->GetCamera();
-
-		double g = cam.GetFinalTargetDistance();
-		if ((forceZoom == true) || (g < 2.0*f))
-		{
-			cam.SetTarget(box.Center());
-			cam.SetTargetDistance(2.0*f);
-			repaint();
-		}
-	}
-	else ZoomExtents();
-}
-
-void CGLView::ZoomToObject(GObject *po)
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	BOX box = po->GetGlobalBox();
-
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	CGLCamera& cam = scene->GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0*f);
-	cam.SetOrientation(po->GetRenderTransform().GetRotationInverse());
-
-	repaint();
-}
-
-//-----------------------------------------------------------------
-//! zoom in on a box
-void CGLView::ZoomTo(const BOX& box)
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	CGLCamera& cam = scene->GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0*f);
-
-	repaint();
-}
-
-void CGLView::ZoomExtents(bool banimate)
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	BOX box = scene->GetBoundingBox();
-
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	CGLCamera& cam = scene->GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0*f);
-
-	if (banimate == false) cam.Update(true);
-
-	repaint();
-}
-
-void CGLView::RenderTags(std::vector<GLTAG>& vtag)
-{
-	if (vtag.empty()) return;
-	int nsel = (int)vtag.size();
+	const int MAX_TAGS = 100;
+	size_t ntags = scene->Tags();
+	if (ntags > MAX_TAGS) return;
 
 	// find out where the tags are on the screen
 	GLViewTransform transform(this);
-	for (int i = 0; i<nsel; i++)
+	for (int i = 0; i<ntags; i++)
 	{
-		vec3d p = transform.WorldToScreen(vtag[i].r);
-		vtag[i].wx = p.x;
-		vtag[i].wy = m_viewport[3] - p.y;
+		GLTAG& tag = scene->Tag(i);
+		vec3d p = transform.WorldToScreen(tag.r);
+		tag.wx = p.x;
+		tag.wy = m_viewport[3] - p.y;
 	}
 
 	// render the tags
@@ -2713,38 +2630,41 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glDisable(GL_DEPTH_TEST);
 
 	double dpr = devicePixelRatio();
-	for (int i = 0; i<nsel; i++)
+	glBegin(GL_POINTS);
+	{
+		for (int i = 0; i< ntags; i++)
 		{
-			glBegin(GL_POINTS);
-			{
-				glColor3ub(0, 0, 0);
-				int x = (int)(vtag[i].wx * dpr);
-				int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy));
-				glVertex2f(x, y);
-				glColor3ub(vtag[i].c.r, vtag[i].c.g, vtag[i].c.b);
-				glVertex2f(x - 1, y + 1);
-			}
-			glEnd();
+			GLTAG& tag = scene->Tag(i);
+			int x = (int)(tag.wx * dpr);
+			int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - tag.wy));
+			glColor3ub(0, 0, 0);
+			glVertex2f(x, y);
+			glColor3ub(tag.c.r, tag.c.g, tag.c.b);
+			glVertex2f(x - 1, y + 1);
 		}
+	}
+	glEnd();
 
 	GLViewSettings& vs = GetViewSettings();
 
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 	painter.setFont(QFont("Helvetica", vs.m_tagFontSize));
-	for (int i = 0; i<nsel; ++i)
-		{
-            int x = vtag[i].wx;
-            int y = height()*dpr - vtag[i].wy;
-			painter.setPen(Qt::black);
+	for (int i = 0; i<ntags; ++i)
+	{
+		GLTAG& tag = scene->Tag(i);
 
-			painter.drawText(x + 3, y - 2, vtag[i].sztag);
+		int x = tag.wx;
+		int y = height()*dpr - tag.wy;
+		painter.setPen(Qt::black);
 
-			GLColor c = vtag[i].c;
-			painter.setPen(QColor::fromRgbF(c.r, c.g, c.b));
+		painter.drawText(x + 3, y - 2, tag.sztag);
 
-			painter.drawText(x + 2, y - 3, vtag[i].sztag);
-		}
+		GLColor c = tag.c;
+		painter.setPen(QColor::fromRgbF(c.r, c.g, c.b));
+
+		painter.drawText(x + 2, y - 3, tag.sztag);
+	}
 
 	painter.end();
 
@@ -2822,7 +2742,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 		}
 	}
 
-	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
+	if ((m_view.m_planeCutMode == Planecut_Mode::PLANECUT) && (m_view.m_showPlaneCut))
 	{
 		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
 	}
@@ -2835,7 +2755,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 			{
 				FSMesh* mesh = po->GetFEMesh();
 
-				if (m_showPlaneCut)
+				if (m_view.m_showPlaneCut)
 				{
 					int NN = mesh->Nodes();
 					for (int i = 0; i < NN; ++i)
@@ -2885,7 +2805,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 bool CGLView::ShowPlaneCut()
 {
-	return m_showPlaneCut;
+	return m_view.m_showPlaneCut;
 }
 
 GLPlaneCut& CGLView::GetPlaneCut()
@@ -2900,7 +2820,7 @@ void CGLView::DeletePlaneCutMesh()
 
 int CGLView::PlaneCutMode()
 {
-	return m_planeCutMode;
+	return m_view.m_planeCutMode;
 }
 
 double* CGLView::PlaneCoordinates()

@@ -34,7 +34,6 @@ SOFTWARE.*/
 
 #include "GLMonitorScene.h"
 #include "FEBioMonitorDoc.h"
-#include "../FEBioStudio/GLView.h"
 #include <FECore/FEModel.h>
 #include <FECore/FEMesh.h>
 #include <FECore/FEDomain.h>
@@ -79,9 +78,6 @@ void CGLMonitorScene::Render(CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 
-	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
-	if (glview == nullptr) return;
-
 	int nfield = m_glm->GetColorMap()->GetEvalField();
 	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::Data_Tensor_Type::TENSOR_SCALAR);
 
@@ -102,7 +98,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 
 	CGLCamera& cam = *rc.m_cam;
 
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	glm->m_nrender = vs.m_nrender + 1;
 	glm->m_bnorm = vs.m_bnorm;
@@ -144,7 +140,7 @@ void CGLMonitorScene::Render(CGLContext& rc)
 
 		float inf = box.Radius() * 100.f;
 
-		vec3d lpv = to_vec3d(glview->GetLightPosition());
+		vec3d lpv = to_vec3d(vs.m_light);
 
 		quatd q = cam.GetOrientation();
 		q.Inverse().RotateVector(lpv);
@@ -203,17 +199,15 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	glPopMatrix();
 
 	// render the tags
-	GLViewSettings& view = glview->GetViewSettings();
-	if (view.m_bTags) RenderTags(rc);
+	if (vs.m_bTags) RenderTags(rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
-
-	// render the decorations
-	glview->RenderDecorations();
 }
 
 void CGLMonitorScene::RenderTags(CGLContext& rc)
 {
+	ClearTags();
+
 	if (rc.m_view == nullptr) return;
 	GLViewSettings& view = rc.m_settings;
 
@@ -225,7 +219,6 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 	// create the tag array.
 	// We add a tag for each selected item
 	GLTAG tag;
-	vector<GLTAG> vtag;
 
 	// clear the node tags
 	pm->TagAllNodes(0);
@@ -246,7 +239,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 				tag.c = extcol;
 				int nid = el.GetID();
 				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-				vtag.push_back(tag);
+				AddTag(tag);
 
 				int ne = el.Nodes();
 				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
@@ -267,7 +260,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 					int nid = f.GetID();
 					if (nid < 0) nid = i + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					int nf = f.Nodes();
 					for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
@@ -289,7 +282,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 					int nid = edge.GetID();
 					if (nid < 0) nid = i + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					int ne = edge.Nodes();
 					for (int j = 0; j < ne; ++j) pm->Node(edge.n[j]).m_ntag = 1;
@@ -306,7 +299,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 				tag.c = (node.IsExterior() ? extcol : intcol);
 				int nid = node.GetID();
 				snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-				vtag.push_back(tag);
+				AddTag(tag);
 				});
 		}
 
@@ -319,21 +312,10 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 				tag.c = (node.IsExterior() ? extcol : intcol);
 				int n = node.GetID();
 				snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-				vtag.push_back(tag);
+				AddTag(tag);
 				});
 		}
 	}
-
-	// if we don't have any tags, just return
-	if (vtag.empty()) return;
-
-	// limit the number of tags to render
-	const int MAX_TAGS = 100;
-	int nsel = (int)vtag.size();
-	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
-
-	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
-	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLMonitorScene::InitScene(FEModel* fem)

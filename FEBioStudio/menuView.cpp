@@ -50,12 +50,30 @@ void CMainWindow::on_actionShowGVContext_triggered()
 
 void CMainWindow::on_actionZoomSelect_triggered()
 {
-	GetGLView()->ZoomSelection();
+	CGLDocument* doc = GetGLDocument();
+	if (doc)
+	{
+		CGLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomSelection();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::on_actionZoomExtents_triggered()
 {
-	GetGLView()->ZoomExtents();
+	CGLDocument* doc = GetGLDocument();
+	if (doc)
+	{
+		CGLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomExtents();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::on_actionViewCapture_toggled(bool bchecked)

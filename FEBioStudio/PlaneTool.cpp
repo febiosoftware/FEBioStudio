@@ -33,15 +33,11 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
-#include <QRadioButton>
-#include <QButtonGroup>
 #include <QComboBox>
 #include <QStackedWidget>
 #include "Document.h"
 #include <PostGL/GLModel.h>
-#include <PostLib/FEPostMesh.h>
 #include "MainWindow.h"
-#include "GLView.h"
 #include "DragBox.h"
 using namespace Post;
 

@@ -31,6 +31,16 @@ SOFTWARE.*/
 #include <QString>
 
 class CGLContext;
+class GObject;
+
+// tag structure
+struct GLTAG
+{
+	char	sztag[64];	// name of tag
+	float	wx, wy;		// window coordinates for tag
+	vec3d	r;			// world coordinates of tag
+	GLColor	c;			// tag color
+};
 
 class CGLScene
 {
@@ -65,10 +75,30 @@ public:
 
 	virtual GLRenderStats GetRenderStats() { return GLRenderStats(); }
 
+public:
+	void ZoomSelection(bool forceZoom = true);
+
+	void ZoomExtents(bool banimate = true);
+
+	void ZoomTo(const BOX& box);
+
+	//! Zoom in on an object
+	void ZoomToObject(GObject* po);
+
+public:
+	void AddTag(const GLTAG& tag) { m_tags.push_back(tag); }
+	void AddTags(const std::vector<GLTAG>& tag) { m_tags.insert(m_tags.end(), tag.begin(), tag.end()); }
+	void ClearTags() { m_tags.clear(); }
+
+	size_t Tags() const { return m_tags.size(); }
+	GLTAG& Tag(size_t i) { return m_tags[i]; }
+
 protected:
 	CGView	m_view;
 	GGrid	m_grid;		// the grid object
 
 	unsigned int	m_envtex;	// enironment texture ID
 	QString m_envMap; // file name used for environment mapping 
+
+	std::vector<GLTAG> m_tags;
 };

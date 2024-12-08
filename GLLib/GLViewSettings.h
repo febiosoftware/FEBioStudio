@@ -35,7 +35,6 @@ enum RenderMode {
 	RENDER_WIREFRAME = 1
 };
 
-//-----------------------------------------------------------------------------
 // background styles
 enum BackgroundStyle {
 	BG_COLOR1 = 0,
@@ -43,7 +42,6 @@ enum BackgroundStyle {
 	BG_HORIZONTAL = 2,
 	BG_VERTICAL = 3
 };
-
 
 // Tag Info options
 enum TagInfoOption {
@@ -58,7 +56,18 @@ enum ExplodeDirection {
 	EXPLODE_Z,
 };
 
-//-----------------------------------------------------------------------------
+// preset views
+enum View_Mode {
+	VIEW_USER,
+	VIEW_TOP,
+	VIEW_BOTTOM,
+	VIEW_LEFT,
+	VIEW_RIGHT,
+	VIEW_FRONT,
+	VIEW_BACK,
+	VIEW_ISOMETRIC
+};
+
 //! view settings
 struct GLViewSettings
 {
@@ -122,6 +131,7 @@ struct GLViewSettings
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes
 
+	bool	m_show3DCursor = false;
 	vec3d	m_pos3d;	// The location of the 3D cursor
 
 	bool	m_bTags;
@@ -137,6 +147,7 @@ struct GLViewSettings
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
 	bool	m_use_environment_map;	// use the environment map (if one is provided)
+	vec3f	m_light;
 
 	// object appearance
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
@@ -147,6 +158,13 @@ struct GLViewSettings
 	bool m_explode; // enable/disable exploded view
 	int m_explode_direction;
 	double m_explode_strength;
+
+	// planecut settings
+	bool		m_showPlaneCut = false;
+	int			m_planeCutMode = 0;
+
+	// view mode
+	View_Mode	m_nview = VIEW_USER;
 
 	void Defaults(int ntheme = 0);
 };

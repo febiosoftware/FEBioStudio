@@ -24,8 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLPostScene.h"
-#include "GLView.h"
 #include "PostDocument.h"
+#include <GLLib/GLContext.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <GLLib/glx.h>
@@ -73,9 +73,6 @@ void CGLPostScene::Render(CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
-	if (glview == nullptr) return;
-
 	// Update GLWidget string table for post rendering
 	GLWidget::addToStringTable("$(filename)", m_doc->GetDocFileName());
 	GLWidget::addToStringTable("$(datafield)", m_doc->GetFieldString());
@@ -89,7 +86,7 @@ void CGLPostScene::Render(CGLContext& rc)
 
 	CGLCamera& cam = *rc.m_cam;
 
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	glm->m_nrender = vs.m_nrender + 1;
 	glm->m_bnorm = vs.m_bnorm;
@@ -134,7 +131,7 @@ void CGLPostScene::Render(CGLContext& rc)
 
 		float inf = box.Radius() * 100.f;
 
-		vec3d lpv = to_vec3d(glview->GetLightPosition());
+		vec3d lpv = to_vec3d(vs.m_light);
 
 		quatd q = cam.GetOrientation();
 		q.Inverse().RotateVector(lpv);
@@ -187,10 +184,9 @@ void CGLPostScene::Render(CGLContext& rc)
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	GLViewSettings& view = glview->GetViewSettings();
-	if (view.m_use_environment_map) ActivateEnvironmentMap();
+	if (vs.m_use_environment_map) ActivateEnvironmentMap();
 	glm->Render(rc);
-	if (view.m_use_environment_map) DeactivateEnvironmentMap();
+	if (vs.m_use_environment_map) DeactivateEnvironmentMap();
 
 	// update and render the tracking
 	if (m_btrack)
@@ -208,12 +204,10 @@ void CGLPostScene::Render(CGLContext& rc)
 	glPopMatrix();
 
 	// render the tags
-	if (view.m_bTags) RenderTags(rc);
+	ClearTags();
+	if (vs.m_bTags) RenderTags(rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
-
-	// render the decorations
-	glview->RenderDecorations();
 }
 
 void CGLPostScene::RenderImageData(CGLContext& rc)
@@ -239,7 +233,6 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 	// create the tag array.
 	// We add a tag for each selected item
 	GLTAG tag;
-	vector<GLTAG> vtag;
 
 	int mode = m_doc->GetItemMode();
 
@@ -267,7 +260,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 					int nid = el.GetID();
 					if (nid < 0) nid = selection->ElementIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -295,7 +288,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 					int nid = f.GetID();
 					if (nid < 0) nid = selection->FaceIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -323,7 +316,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 					int nid = edge.GetID();
 					if (nid < 0) nid = selection->EdgeIndex(i) + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-					vtag.push_back(tag);
+					AddTag(tag);
 
 					if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 					{
@@ -353,7 +346,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 						int nid = node->GetID();
 						if (nid < 0) nid = selection->NodeIndex(i) + 1;
 						snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-						vtag.push_back(tag);
+						AddTag(tag);
 					}
 				}
 			}
@@ -373,7 +366,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 					int n = node.GetID();
 					if (n < 0) n = i + 1;
 					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
-					vtag.push_back(tag);
+					AddTag(tag);
 				}
 			}
 		}
@@ -396,7 +389,7 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 					tag.r = ob.m_pos;
 					tag.c = ob.Color();
 					snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-					vtag.push_back(tag);
+					AddTag(tag);
 				}
 			}
 		}
@@ -412,21 +405,10 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 				tag.r = (a + b) * 0.5;
 				tag.c = ob.Color();
 				snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
-				vtag.push_back(tag);
+				AddTag(tag);
 			}
 		}
 	}
-
-	// if we don't have any tags, just return
-	if (vtag.empty()) return;
-
-	// limit the number of tags to render
-	const int MAX_TAGS = 100;
-	int nsel = (int)vtag.size();
-	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
-
-	CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
-	if (glview) glview->RenderTags(vtag);
 }
 
 void CGLPostScene::UpdateTracking()

@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include "Commands.h"
 #include "MainWindow.h"
-#include "GLView.h"
 #include "CreateP2PlinePane.h"
 #include "CreateGeodesicCurvePane.h"
 #include "CreateSpringPane.h"
@@ -190,7 +189,12 @@ void CCreatePanel::on_create_clicked()
 			wnd->Update(this);
 
 			// make sure the object is visible
-			wnd->GetGLView()->ZoomSelection(false);
+			CGLScene* scene = doc->GetScene();
+			if (scene)
+			{
+				scene->ZoomSelection(false);
+				wnd->RedrawGL();
+			}
 
 			CCommandLine cmd("create");
 			CCommandLogger::Log(cmd << po->GetTypeString() << Stringify(*po));

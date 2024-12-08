@@ -1036,8 +1036,6 @@ void CMainWindow::on_actionTransform_triggered()
 			r.Normalize();
 			rot = quatd(w, r)*rot;
 
-			CGLView* glview = GetGLView();
-
 			pos += dr;
 			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, pos));
 
@@ -1195,7 +1193,8 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
-	GetGLView()->ZoomToObject(copyObject);
+	CGLScene* scene = doc->GetScene();
+	if (scene) scene->ZoomToObject(copyObject);
 	copyObject = nullptr;
 
 	// update windows

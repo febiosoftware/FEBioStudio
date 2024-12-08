@@ -61,18 +61,6 @@ class GVContextMenu;
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
 
-// preset views
-enum View_Mode {
-	VIEW_USER,
-	VIEW_TOP,
-	VIEW_BOTTOM,
-	VIEW_LEFT,
-	VIEW_RIGHT,
-	VIEW_FRONT,
-	VIEW_BACK,
-	VIEW_ISOMETRIC
-};
-
 // view conventions
 enum View_Convention {
 	CONV_FR_XZ,
@@ -117,15 +105,6 @@ public:
 	vec3d	m_pos;		// pivot point
 };
 
-// tag structure
-struct GLTAG
-{
-	char	sztag[64];	// name of tag
-	float	wx, wy;		// window coordinates for tag
-	vec3d	r;			// world coordinates of tag
-	GLColor	c;			// tag color
-};
-
 //===================================================================
 class CGLView : public CGLSceneView
 {
@@ -166,7 +145,7 @@ public:
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
-	View_Mode GetViewMode() { return m_nview; }
+	View_Mode GetViewMode() { return m_view.m_nview; }
 
 	void TogglePerspective(bool b);
 
@@ -200,29 +179,12 @@ signals:
 	void pointPicked(const vec3d& p);
 	void selectionChanged();
 
-public:
-	//! Zoom out on current selection
-	void ZoomSelection(bool forceZoom = true);
-
-	//! zoom in on a box
-	void ZoomTo(const BOX& box);
-
-	//! Zoom in on an object
-	void ZoomToObject(GObject* po);
-
-	// zoom to the models extents
-	void ZoomExtents(bool banimate = true);
-
 	// render functions
 public:
 	// other rendering functions
 	void RenderRubberBand();
 	void RenderBrush();
 	void RenderPivot();
-
-	void Render3DCursor();
-	void RenderTags(std::vector<GLTAG>& tags);
-	void RenderDecorations();
 
 	void ShowSafeFrame(bool b);
 
@@ -254,6 +216,11 @@ protected:
 	void RenderScene() override;
 
 	void RenderCanvas(CGLContext& rc);
+
+private:
+	void Render3DCursor();
+	void RenderTags();
+	void RenderDecorations();
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -324,7 +291,6 @@ protected:
 	int			m_x0, m_y0, m_x1, m_y1;
 	int			m_xp, m_yp;
 	int			m_dxp, m_dyp;
-	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
@@ -384,8 +350,6 @@ private:
 
 	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
 
-	bool		m_showPlaneCut;
-	int			m_planeCutMode;
 	GLPlaneCut	m_planeCut;
 
 	std::string		m_oglVersionString;

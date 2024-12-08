@@ -55,11 +55,6 @@ public:
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 
-public: // lighting
-
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
-
 protected:
 	void initializeGL() override;
 	void paintGL() override;
@@ -81,8 +76,6 @@ protected:
 	double	m_oy;
 
 	QPoint m_prevPos;	//!< last mouse position
-
-	vec3f	m_light;
 };
 
 // This class manages its own scene

@@ -1148,14 +1148,14 @@ void CDlgSettings::UpdateSettings()
 	ui->m_select->m_binterior = view.m_bext;
 	ui->m_select->m_bpart = view.m_bpart;
 
-	ui->m_light->m_blight = view.m_bLighting;
+	ui->m_light->m_blight  = view.m_bLighting;
 	ui->m_light->m_diffuse = view.m_diffuse;
 	ui->m_light->m_ambient = view.m_ambient;
 	ui->m_light->m_bshadow = view.m_bShadows;
-	ui->m_light->m_shadow = view.m_shadow_intensity;
-	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
-	ui->m_light->m_envmap = m_pwnd->GetEnvironmentMap();
-	ui->m_light->m_useEV = view.m_use_environment_map;
+	ui->m_light->m_shadow  = view.m_shadow_intensity;
+	ui->m_light->m_pos     = view.m_light;
+	ui->m_light->m_envmap  = m_pwnd->GetEnvironmentMap();
+	ui->m_light->m_useEV   = view.m_use_environment_map;
 
 	if (glview)
 	{
@@ -1279,7 +1279,7 @@ void CDlgSettings::apply()
 	view.m_ambient   = ui->m_light->m_ambient;
 	view.m_bShadows  = ui->m_light->m_bshadow;
 	view.m_shadow_intensity = ui->m_light->m_shadow;
-	if (glview) glview->SetLightPosition(ui->m_light->m_pos);
+	view.m_light = ui->m_light->m_pos;
 	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
 	view.m_use_environment_map = ui->m_light->m_useEV;
 

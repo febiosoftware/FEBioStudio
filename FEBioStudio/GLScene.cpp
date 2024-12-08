@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLScene.h"
 #include <GLLib/glx.h>
+#include <GeomLib/GObject.h>
 #include <QImage>
 
 CGLScene::CGLScene() 
@@ -104,4 +105,68 @@ void CGLScene::LoadEnvironmentMap()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nx, ny, 0, GL_RGB, GL_UNSIGNED_BYTE, buf);
 
 	delete[] buf;
+}
+
+// this function will only adjust the camera if the currently
+// selected object is too close.
+void CGLScene::ZoomSelection(bool forceZoom)
+{
+	// get the selection's bounding box
+	BOX box = GetSelectionBox();
+	if (box.IsValid())
+	{
+		double f = box.GetMaxExtent();
+		if (f < 1.0e-8) f = 1.0;
+
+		CGLCamera& cam = GetCamera();
+
+		double g = cam.GetFinalTargetDistance();
+		if ((forceZoom == true) || (g < 2.0 * f))
+		{
+			cam.SetTarget(box.Center());
+			cam.SetTargetDistance(2.0 * f);
+		}
+	}
+	else ZoomExtents();
+}
+
+void CGLScene::ZoomExtents(bool banimate)
+{
+	BOX box = GetBoundingBox();
+
+	double f = box.GetMaxExtent();
+	if (f == 0) f = 1;
+
+	CGLCamera& cam = GetCamera();
+
+	cam.SetTarget(box.Center());
+	cam.SetTargetDistance(2.0 * f);
+
+	if (banimate == false) cam.Update(true);
+}
+
+//! zoom in on a box
+void CGLScene::ZoomTo(const BOX& box)
+{
+	double f = box.GetMaxExtent();
+	if (f == 0) f = 1;
+
+	CGLCamera& cam = GetCamera();
+
+	cam.SetTarget(box.Center());
+	cam.SetTargetDistance(2.0 * f);
+}
+
+void CGLScene::ZoomToObject(GObject* po)
+{
+	BOX box = po->GetGlobalBox();
+
+	double f = box.GetMaxExtent();
+	if (f == 0) f = 1;
+
+	CGLCamera& cam = GetCamera();
+
+	cam.SetTarget(box.Center());
+	cam.SetTargetDistance(2.0 * f);
+	cam.SetOrientation(po->GetRenderTransform().GetRotationInverse());
 }
