@@ -228,10 +228,10 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	switch (p.GetParamType())
 	{
 	case Param_CHOICE:
-	case Param_INT: return p.GetIntValue(); break;
-	case Param_FLOAT: return p.GetFloatValue(); break;
-	case Param_STRING: return QString::fromStdString(p.GetURLValue()); break;
-	case Param_URL  : return QString::fromStdString(p.GetStringValue()); break;
+	case Param_INT   : return p.GetIntValue(); break;
+	case Param_FLOAT : return p.GetFloatValue(); break;
+	case Param_URL   : return QString::fromStdString(p.GetURLValue()); break;
+	case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 	case Param_MATH  : return QString::fromStdString(p.GetMathString()); break;
 	case Param_BOOL:
 	{
@@ -327,10 +327,10 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	switch (p.GetParamType())
 	{
 	case Param_CHOICE:
-	case Param_INT: p.SetIntValue(v.toInt()); break;
-	case Param_FLOAT: p.SetFloatValue(v.toDouble()); break;
-	case Param_STRING: p.SetURLValue(v.toString().toStdString()); break;
-	case Param_URL  : p.SetStringValue(v.toString().toStdString()); break;
+	case Param_INT   : p.SetIntValue(v.toInt()); break;
+	case Param_FLOAT : p.SetFloatValue(v.toDouble()); break;
+	case Param_URL   : p.SetURLValue(v.toString().toStdString()); break;
+	case Param_STRING: p.SetStringValue(v.toString().toStdString()); break;
 	case Param_MATH  : p.SetMathString(v.toString().toStdString()); break;
 	case Param_BOOL:
 	{
