@@ -196,7 +196,7 @@ void GLFEBioScene::Update(double time)
 	}
 	else
 	{
-		auto rng = std::minmax_element(begin(val), end(val));
+		auto rng = std::minmax_element(std::begin(val), std::end(val));
 		vmin = *rng.first;
 		vmax = *rng.second;
 	}
@@ -228,7 +228,7 @@ void GLFEBioScene::Update(double time)
 	UpdateBoundingBox();
 }
 
-void GLFEBioScene::Render(CGLContext& rc)
+void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 	glPushAttrib(GL_ENABLE_BIT);

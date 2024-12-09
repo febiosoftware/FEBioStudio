@@ -107,6 +107,8 @@ public:
 	// render the mesh
 	void Render();
 
+	void Render(int nstart, int ncount);
+
 	// set the transparency of the mesh
 	void SetTransparency(ubyte a);
 
@@ -151,6 +153,8 @@ protected:
 	unsigned int m_mode;	// primitive type to render (set by derived classes)
 	RenderMode	m_renderMode;
 	bool	m_initVBO;
+
+	int m_start, m_count;
 };
 
 inline void GLMesh::AddVertex(double* r, double* n, double* t)

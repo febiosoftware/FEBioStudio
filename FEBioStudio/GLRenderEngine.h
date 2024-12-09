@@ -24,40 +24,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "Document.h"
+#include <FSCore/math3d.h>
+#include <FSCore/color.h>
+#include <string>
 
-class CPostDocument;
+class GMesh;
 
-class CGLPostScene : public CGLScene
+class GLRenderEngine
 {
 public:
-	CGLPostScene(CPostDocument* doc);
+	enum StateFlag {
+		LIGHTING = 1
+	};
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	enum MaterialType {
+		PLASTIC = 1
+	};
 
-	BOX GetBoundingBox() override;
+public:
+	GLRenderEngine() {}
+	virtual ~GLRenderEngine() {}
 
-	BOX GetSelectionBox() override;
+public:
+	virtual void pushState() {}
+	virtual void popState() {}
 
-	void ToggleTrackSelection();
+	virtual void enable(StateFlag flag) {}
+	virtual void disable(StateFlag flag) {}
 
-	GLRenderStats GetRenderStats() override;
+	virtual void setColor(GLColor c) {}
+	virtual void setMaterial(MaterialType mat, GLColor c) {}
 
-private:
-	void RenderImageData(CGLContext& rc);
+public:
+	virtual void renderPoint(const vec3d& r) {}
+	virtual void renderLine(const vec3d& a, const vec3d& b) {}
 
-	void RenderTags(CGLContext& rc);
+	virtual void renderGMesh(const GMesh& mesh) {}
+	virtual void renderGMesh(const GMesh& mesh, int surfId) {}
 
-	void UpdateTracking();
-
-private:
-	CPostDocument* m_doc;
-
-	bool	m_btrack;
-	int		m_ntrack[3];	// used for tracking
-	double	m_trackScale;
-	vec3d	m_trgPos;
-	quatd	m_trgRot0;
-	quatd	m_trgRot;
-	quatd	m_trgRotDelta;
+public:
+	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
+	virtual void ActivateEnvironmentMap(unsigned int mapid) {}
+	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
 };

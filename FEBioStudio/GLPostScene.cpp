@@ -69,7 +69,7 @@ GLRenderStats CGLPostScene::GetRenderStats()
 	return GLRenderStats();
 }
 
-void CGLPostScene::Render(CGLContext& rc)
+void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
@@ -184,9 +184,9 @@ void CGLPostScene::Render(CGLContext& rc)
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (vs.m_use_environment_map) ActivateEnvironmentMap();
+	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 	glm->Render(rc);
-	if (vs.m_use_environment_map) DeactivateEnvironmentMap();
+	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// update and render the tracking
 	if (m_btrack)

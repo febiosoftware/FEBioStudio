@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <PostGL/ColorTexture.h>
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
+#include "OpenGLRenderer.h"
 
 class CMainWindow;
 class CGLDocument;
@@ -353,6 +354,8 @@ private:
 	GLPlaneCut	m_planeCut;
 
 	std::string		m_oglVersionString;
+
+	OpenGLRenderer	m_ogl;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

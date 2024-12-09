@@ -175,6 +175,24 @@ void GLMesh::Render()
 {
 	if (!m_bvalid) return;
 
+	m_start = 0;
+	m_count = m_vertexCount;
+
+	switch (m_renderMode)
+	{
+	case ImmediateMode  : RenderImmediate(); break;
+	case VertexArrayMode: RenderVertexArrays(); break;
+	case VBOMode        : RenderVBO(); break;
+	}
+}
+
+void GLMesh::Render(int nstart, int ncount)
+{
+	if (!m_bvalid) return;
+
+	m_start = nstart;
+	m_count = ncount;
+
 	switch (m_renderMode)
 	{
 	case ImmediateMode  : RenderImmediate(); break;
@@ -253,7 +271,7 @@ void GLMesh::RenderVBO()
 		glDrawElements(m_mode, m_vertexCount, GL_UNSIGNED_INT, 0);
 	}
 	else
-		glDrawArrays(m_mode, 0, m_vertexCount);
+		glDrawArrays(m_mode, m_start, m_count);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

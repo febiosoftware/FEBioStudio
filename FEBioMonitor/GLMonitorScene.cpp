@@ -74,7 +74,7 @@ void CGLMonitorScene::Clear()
 	m_dataFields.clear();
 }
 
-void CGLMonitorScene::Render(CGLContext& rc)
+void CGLMonitorScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 

@@ -28,10 +28,12 @@ SOFTWARE.*/
 #include <GLLib/GView.h>
 #include <GLLib/GLRenderStats.h>
 #include "GGrid.h"
+#include "GLRenderEngine.h"
 #include <QString>
 
 class CGLContext;
 class GObject;
+class CGLScene;
 
 // tag structure
 struct GLTAG
@@ -41,6 +43,19 @@ struct GLTAG
 	vec3d	r;			// world coordinates of tag
 	GLColor	c;			// tag color
 };
+
+class GLSceneItem
+{
+public:
+	GLSceneItem() {}
+	virtual ~GLSceneItem() {}
+
+	virtual void render(GLRenderEngine& re, CGLContext& rc) const = 0;
+};
+
+typedef std::vector<GLSceneItem*> GLItemList;
+typedef std::vector<GLSceneItem*>::const_iterator ConstGLItemIterator;
+typedef std::vector<GLSceneItem*>::iterator GLItemIterator;
 
 class CGLScene
 {
@@ -52,7 +67,7 @@ public:
 
 	virtual void Update();
 
-	virtual void Render(CGLContext& rc) = 0;
+	virtual void Render(GLRenderEngine& engine, CGLContext& rc) = 0;
 
 	// get the bounding box of the entire scene
 	virtual BOX GetBoundingBox() = 0;
@@ -69,9 +84,10 @@ public:
 	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
 
 	void SetEnvironmentMap(QString filename) { m_envMap = filename; }
-	void ActivateEnvironmentMap();
-	void DeactivateEnvironmentMap();
-	void LoadEnvironmentMap();
+
+	void ActivateEnvironmentMap(GLRenderEngine& re);
+	void DeactivateEnvironmentMap(GLRenderEngine& re);
+	void LoadEnvironmentMap(GLRenderEngine& re);
 
 	virtual GLRenderStats GetRenderStats() { return GLRenderStats(); }
 
@@ -93,6 +109,19 @@ public:
 	size_t Tags() const { return m_tags.size(); }
 	GLTAG& Tag(size_t i) { return m_tags[i]; }
 
+public:
+	GLItemIterator begin() { return m_Items.begin(); }
+	GLItemIterator end() { return m_Items.end(); }
+
+	ConstGLItemIterator begin() const { return m_Items.begin(); }
+	ConstGLItemIterator end() const { return m_Items.end(); }
+
+	void addItem(GLSceneItem* item) { if (item) m_Items.push_back(item); }
+
+	size_t items() const { return m_Items.size(); }
+
+	void clear();
+
 protected:
 	CGView	m_view;
 	GGrid	m_grid;		// the grid object
@@ -101,4 +130,6 @@ protected:
 	QString m_envMap; // file name used for environment mapping 
 
 	std::vector<GLTAG> m_tags;
+
+	GLItemList m_Items;
 };

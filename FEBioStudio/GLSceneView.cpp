@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMouseEvent>
 #include <QTimer>
+#include "OpenGLRenderer.h"
 
 static bool initGlew = false;
 
@@ -206,13 +207,15 @@ void CGLSceneView::RenderScene()
 		CGLCamera& cam = scene->GetCamera();
 		cam.PositionInScene();
 
+		OpenGLRenderer ogl(this);
+
 		CGLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
 		rc.m_view = this;
 		rc.m_w = width();
 		rc.m_h = height();
-		scene->Render(rc);
+		scene->Render(ogl, rc);
 	}
 }
 

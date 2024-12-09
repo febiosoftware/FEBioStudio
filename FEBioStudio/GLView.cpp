@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLComposite.h>
 #include "GLModelScene.h"
+#include "OpenGLRenderer.h"
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -462,7 +463,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_ogl(this)
 {
 	m_bsnap = false;
 
@@ -1536,7 +1537,7 @@ void CGLView::RenderScene()
 	if (scene)
 	{
 		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(rc);
+		scene->Render(m_ogl, rc);
 		time_point<steady_clock> stopTime = steady_clock::now();
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 		m_fps = (sec != 0 ? 1.0 / sec : 0);

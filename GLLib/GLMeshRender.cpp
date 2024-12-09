@@ -269,7 +269,7 @@ void GLMeshRender::RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, 
 
 			if (f.nbr[j] < 0)
 			{
-				bdraw = true;
+				bdraw = false;
 			}
 			else
 			{
@@ -279,7 +279,7 @@ void GLMeshRender::RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, 
 					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
 					if ((f.pid != f2.pid) || (f.sid != f2.sid))
 					{
-						bdraw = true;
+						bdraw = false;
 					}
 					else if (outline)
 					{
@@ -324,10 +324,13 @@ void GLMeshRender::RenderOutline(CGLCamera& cam, GMesh* pm, const Transform& T, 
 	{
 		lineMesh.Node(2 * i    ).r = points[2 * i];
 		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
-		lineMesh.Edge(i).n[0] = 2 * i;
-		lineMesh.Edge(i).n[1] = 2 * i + 1;
+		GMesh::EDGE& edge = lineMesh.Edge(i);
+		edge.n[0] = 2 * i;
+		edge.n[1] = 2 * i + 1;
+		edge.vr[0] = points[2 * i];
+		edge.vr[1] = points[2 * i + 1];
 	}
-	lineMesh.Update();
+//	lineMesh.Update();
 
 	// render the active edges
 	RenderEdges(lineMesh);

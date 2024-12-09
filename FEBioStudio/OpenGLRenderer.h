@@ -24,40 +24,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "Document.h"
+#include "GLRenderEngine.h"
 
-class CPostDocument;
+class CGLSceneView;
 
-class CGLPostScene : public CGLScene
+class OpenGLRenderer : public GLRenderEngine
 {
+	class Imp;
+
 public:
-	CGLPostScene(CPostDocument* doc);
+	OpenGLRenderer(CGLSceneView* view);
+	~OpenGLRenderer();
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+public:
+	void pushState() override;
+	void popState() override;
 
-	BOX GetBoundingBox() override;
+	void enable(StateFlag flag);
+	void disable(StateFlag flag);
 
-	BOX GetSelectionBox() override;
+	void setColor(GLColor c) override;
+	void setMaterial(GLRenderEngine::MaterialType mat, GLColor c) override;
 
-	void ToggleTrackSelection();
+public:
+	void renderPoint(const vec3d& r) override;
+	void renderLine(const vec3d& a, const vec3d& b) override;
 
-	GLRenderStats GetRenderStats() override;
+	void renderGMesh(const GMesh& mesh) override;
+	void renderGMesh(const GMesh& mesh, int surfId) override;
+
+public:
+	unsigned int LoadEnvironmentMap(const std::string& fileName) override;
+	void ActivateEnvironmentMap(unsigned int mapid) override;
+	void DeactivateEnvironmentMap(unsigned int mapid) override;
 
 private:
-	void RenderImageData(CGLContext& rc);
-
-	void RenderTags(CGLContext& rc);
-
-	void UpdateTracking();
-
-private:
-	CPostDocument* m_doc;
-
-	bool	m_btrack;
-	int		m_ntrack[3];	// used for tracking
-	double	m_trackScale;
-	vec3d	m_trgPos;
-	quatd	m_trgRot0;
-	quatd	m_trgRot;
-	quatd	m_trgRotDelta;
+	Imp& m;
 };

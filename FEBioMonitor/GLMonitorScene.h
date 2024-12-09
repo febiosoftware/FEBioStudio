@@ -53,7 +53,7 @@ public:
 	void UpdateStateData();
 	void UpdateScene();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, CGLContext& rc) override;
 
 	void RenderTags(CGLContext& rc);
 

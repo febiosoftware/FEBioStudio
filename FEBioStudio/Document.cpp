@@ -683,7 +683,7 @@ CGLScene* CGLDocument::GetScene()
 
 void CGLDocument::Update()
 {
-
+	if (m_scene) m_scene->Update();
 }
 
 int CGLDocument::GetWidgetLayer()
@@ -914,6 +914,7 @@ void CGLDocument::AddImageModel(CImageModel* img)
 {
 	assert(img);
 	m_img.Add(img);
+	Update();
 }
 
 CImageModel* CGLDocument::GetImageModel(int i)
