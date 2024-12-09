@@ -126,13 +126,11 @@ void init_FBSPost(py::module& m)
 	post.def("active_model", &getActiveModel, py::return_value_policy::reference);
 #endif
 
-	py::class_<FEPostMesh>(post, "FEPostMesh")
+	py::class_<FEPostMesh, FSMesh>(post, "FEPostMesh")
         .def("surfaces", &FEPostMesh::Surfaces)
         .def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
         .def("nodesets", &FEPostMesh::NodeSets)
         .def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference)
-        .def("nodes", &FEPostMesh::Nodes)
-        .def("elements", &FEPostMesh::Elements)
         .def("elemsets", &FEPostMesh::ElemSets)
         .def("elemset", &FEPostMesh::ElemSet, py::return_value_policy::reference);
 

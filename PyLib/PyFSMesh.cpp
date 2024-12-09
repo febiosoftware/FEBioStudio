@@ -40,8 +40,10 @@ namespace py = pybind11;
 
 void init_FSMesh(py::module_& m)
 {
+    py::module mesh = m.def_submodule("mesh", "Module used to interact with FE Meshes");
+
     ///////////////// FSMesh /////////////////
-	py::class_<FSMesh, std::unique_ptr<FSMesh, py::nodelete>>(m, "Mesh")
+	py::class_<FSMesh, std::unique_ptr<FSMesh, py::nodelete>>(mesh, "Mesh")
         .def("create", &FSMesh::Create)
         .def("clear", &FSMesh::Clear)
 
@@ -61,7 +63,7 @@ void init_FSMesh(py::module_& m)
     ///////////////// FSMesh /////////////////
 
     ///////////////// MeshItem /////////////////
-	py::class_<MeshItem, std::unique_ptr<MeshItem, py::nodelete>>(m, "MeshItem")
+	py::class_<MeshItem, std::unique_ptr<MeshItem, py::nodelete>>(mesh, "MeshItem")
         .def("is_hidden", &MeshItem::IsHidden)
         .def("is_selected", &MeshItem::IsSelected)
         .def("is_disabled", &MeshItem::IsDisabled)
@@ -95,17 +97,20 @@ void init_FSMesh(py::module_& m)
         ;
     ///////////////// MeshItem /////////////////
 
+    ///////////////// FSElement /////////////////
+	py::class_<FSElement, MeshItem, std::unique_ptr<FSElement, py::nodelete>>(mesh, "Element")
+        .def("nodes", &FSElement::Nodes)
+        .def("node", [](FSElement& self, int i){ return self.m_node[i]; })
+        ;
+        
+    ///////////////// FSElement /////////////////
+
+
     ///////////////// FSNode /////////////////
-	py::class_<FSNode, MeshItem, std::unique_ptr<FSNode, py::nodelete>>(m, "Node")
-        .def_readwrite("pos", &FSNode::r);
+	py::class_<FSNode, MeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")
+        .def_readwrite("pos", &FSNode::r)
         ;
     ///////////////// FSNode /////////////////
-
-    // ///////////////// FSElement /////////////////
-    // py::class_<FSElement, MeshItem, std::unique_ptr<FSElement, py::nodelete>>(m, "FSElement")
-    //     .def_readwrite("pos", &FSNode::r);
-    //     ;
-    // ///////////////// FSElement /////////////////
 }
 
 #else
