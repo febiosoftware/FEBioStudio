@@ -206,12 +206,7 @@ public:
 
 	void RenderMinMaxMarkers(CGLContext& rc);
 
-	void RenderDecorations();
-
 	void RenderShadows(FEPostModel* ps, const vec3d& lp, float inf);
-
-	void AddDecoration(GDecoration* pd);
-	void RemoveDecoration(GDecoration* pd);
 
 	bool RenderInnerSurfaces();
 	void RenderInnerSurfaces(bool b);

@@ -534,9 +534,6 @@ void CGLModel::Render(CGLContext& rc)
 		RenderMinMaxMarkers(rc);
 	}
 
-	// render decorations
-	RenderDecorations();
-
 	// render all the objects
 	RenderObjects(rc);
 }
@@ -1479,43 +1476,6 @@ void CGLModel::RenderMinMaxMarkers(CGLContext& rc)
 	glPointSize(pointSize);
 
 	glPopAttrib();
-}
-
-void CGLModel::RenderDecorations()
-{
-	if (m_decor.empty() == false)
-	{
-		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glColor3ub(255, 255, 0);
-
-		std::list<GDecoration*>::iterator it;
-		for (it=m_decor.begin(); it != m_decor.end(); ++it)
-		{
-			GDecoration* pd = *it;
-			if (pd->isVisible()) pd->render();
-		}
-		glPopAttrib();
-	}
-}
-
-void CGLModel::AddDecoration(GDecoration* pd)
-{
-	m_decor.push_back(pd);
-}
-
-void CGLModel::RemoveDecoration(GDecoration* pd)
-{
-	std::list<GDecoration*>::iterator it;
-	for (it=m_decor.begin(); it != m_decor.end(); ++it)
-	{
-		if (*it==pd)
-		{
-			m_decor.erase(it);
-			return;
-		}
-	}
 }
 
 void CGLModel::SetSubDivisions(int ndivs)
