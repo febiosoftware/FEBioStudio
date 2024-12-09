@@ -210,6 +210,8 @@ void CGLSceneView::RenderScene()
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
 		rc.m_view = this;
+		rc.m_w = width();
+		rc.m_h = height();
 		scene->Render(rc);
 	}
 }

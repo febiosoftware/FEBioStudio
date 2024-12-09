@@ -222,7 +222,6 @@ void CGLPostScene::RenderImageData(CGLContext& rc)
 
 void CGLPostScene::RenderTags(CGLContext& rc)
 {
-	if (rc.m_view == nullptr) return;
 	GLViewSettings& view = rc.m_settings;
 
 	GObject* po = m_doc->GetPostObject();

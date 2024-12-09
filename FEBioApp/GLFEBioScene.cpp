@@ -248,7 +248,7 @@ void GLFEBioScene::Render(CGLContext& rc)
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, rc.m_view->width(), rc.m_view->height(), 0);
+	gluOrtho2D(0, rc.m_w, rc.m_h, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -260,8 +260,8 @@ void GLFEBioScene::Render(CGLContext& rc)
 	// render the GL widgets
 	if (m_legend->visible())
 	{
-		int W = rc.m_view->width();
-		int H = rc.m_view->height();
+		int W = rc.m_w;
+		int H = rc.m_h;
 		m_legend->resize(W - 150, H/2 - 300, 120, 600);
 		QPainter painter(rc.m_view);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);

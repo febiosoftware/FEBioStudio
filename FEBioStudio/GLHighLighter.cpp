@@ -299,6 +299,8 @@ void GLHighlighter::draw()
 
 	CGLContext rc;
 	rc.m_view = view;
+	rc.m_w = view->width();
+	rc.m_h = view->height();
 	rc.m_cam = view->GetCamera();
 	rc.m_settings = view->GetViewSettings();
 

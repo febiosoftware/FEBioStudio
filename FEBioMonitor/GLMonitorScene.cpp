@@ -208,7 +208,6 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 {
 	ClearTags();
 
-	if (rc.m_view == nullptr) return;
 	GLViewSettings& view = rc.m_settings;
 
 	GObject* po = m_doc->GetActiveObject();

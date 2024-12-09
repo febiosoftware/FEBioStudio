@@ -38,9 +38,10 @@ public:
 	~CGLContext();
 
 public:
-	CGLSceneView*	m_view;
+	CGLSceneView*	m_view; // TODO: replace with QPaintDevice? We only need this to initialize QPainter
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
+	int			m_w, m_h;
 
 	GLViewSettings	m_settings;
 };

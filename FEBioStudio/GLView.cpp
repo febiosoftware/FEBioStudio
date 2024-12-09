@@ -1528,6 +1528,8 @@ void CGLView::RenderScene()
 
 	CGLContext& rc = m_rc;
 	rc.m_view = this;
+	rc.m_w = width();
+	rc.m_h = height();
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 
