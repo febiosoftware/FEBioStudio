@@ -233,7 +233,7 @@ public:
 	}
 	void eval(int n, T* pv) { (*pv) = m_data[m_face[n]]; }
 	bool active(int n) { return (m_face[n] >= 0); }
-	void copy(FEFaceData<T,DATA_ITEM>& d) { m_data = d.m_data; }
+	void copy(FEFaceData<T, DATA_REGION>& d) { m_face = d.m_face; m_data = d.m_data; }
 	bool add(std::vector<int>& item, const T& v)
 	{ 
 		int m = (int) m_data.size(); 

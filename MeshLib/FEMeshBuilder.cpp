@@ -1157,6 +1157,7 @@ void FEMeshBuilder::InvertTaggedFaces(int ntag)
 			}
 			break;
             case FE_FACE_TRI6:
+            case FE_FACE_TRI7:
             {
                 m = f.n[0]; f.n[0] = f.n[2]; f.n[2] = m;
                 m = f.n[3]; f.n[3] = f.n[4]; f.n[4] = m;
@@ -1266,6 +1267,13 @@ void FEMeshBuilder::InvertTaggedElements(int ntag)
                 m = e.m_node[10]; e.m_node[10] = e.m_node[12]; e.m_node[12] = m;
             }
             break;
+			case FE_TRI6:
+			case FE_TRI7:
+			{
+				m = e.m_node[0]; e.m_node[0] = e.m_node[2]; e.m_node[2] = m;
+				m = e.m_node[3]; e.m_node[3] = e.m_node[4]; e.m_node[4] = m;
+			}
+			break;
 			default:
 				assert(false);
 			}

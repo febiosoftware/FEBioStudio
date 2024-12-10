@@ -142,15 +142,6 @@ public:
 	// write some useful info to the log regarding the selection
 	void ReportSelection();
 
-	// get the current theme
-	int currentTheme() const;
-
-	// check for dark theme
-	bool usingDarkTheme() const;
-
-	// set the current theme
-	void setCurrentTheme(int n);
-
 	// clear command stack on save
 	bool clearCommandStackOnSave() const;
 
@@ -271,7 +262,6 @@ public:
 private:
 	void writeSettings();
 	void readSettings();
-	void readThemeSetting();
     
 public:
 	// Read a file
@@ -544,6 +534,7 @@ public slots:
 	void on_actionMeasureTool_triggered();
 	void on_actionPlaneCutTool_triggered();
 	void on_actionPickColor_triggered();
+	void on_actionExplodedView_triggered();
 
 	void on_postSelectRect_toggled(bool b);
 	void on_postSelectCircle_toggled(bool b);

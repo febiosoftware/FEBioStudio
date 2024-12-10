@@ -43,6 +43,7 @@ class AnsysImport : public FSFileImport
 	struct ELEM
 	{
 		int		eid;
+		int		mid;
 		int		nn;
 		int		n[20];
 		int		tag;

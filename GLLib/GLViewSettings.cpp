@@ -45,6 +45,7 @@ void GLViewSettings::Defaults(int ntheme)
 	m_fibLineStyle = 0;
 	m_fiber_scale = 1.0;
 	m_fiber_width = 1.0;
+	m_fiber_density = 1.0;
 
 	m_bcontour = false;
 	m_blma = false;
@@ -113,4 +114,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_transparencyMode = 0; // = off
 
 	m_showHighlights = true;
+
+	m_explode = false;
+	m_explode_direction = EXPLODE_X;
+	m_explode_strength = 0.5;
 }

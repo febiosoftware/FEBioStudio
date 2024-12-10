@@ -580,6 +580,7 @@ public:
 	FSSurface* FindNamedSurface(const std::string& name);
 	FSElemSet* FindNamedElementSet(const std::string& name);
 	FSPartSet* FindNamedPartSet(const std::string& name);
+	GPartList* FindNamedPartList(const std::string& name);
 
 public:
 	bool	m_shellNodalNormals;

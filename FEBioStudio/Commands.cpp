@@ -3458,53 +3458,55 @@ void CCmdDeleteGObject::UnExecute()
 // CCmdDeleteFSModelComponent
 //-----------------------------------------------------------------------------
 
-CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : CCommand(string("Delete ") + po->GetName())
+CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : CCmdGroup(string("Delete ") + po->GetName())
 {
-	assert(po->GetParent());
 	m_obj = po;
-	m_parent = po->GetParent();
-	m_delObject = false;
+
+	AddCommand(new CCmdDeleteFSObject(po));
+
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
+	if (pil)
+	{
+		for (int i = 0; i < pil->ItemLists(); ++i)
+		{
+			FEItemListBuilder* pl = pil->GetItemList(i);
+			m_sel.push_back(pl);
+			if (pl && (pl->GetReferenceCount() == 1)) AddCommand(new CCmdDeleteFSObject(pl));
+		}
+	}
 }
 
 CCmdDeleteFSModelComponent::~CCmdDeleteFSModelComponent()
 {
-	if (m_delObject) delete m_obj;
 }
 
 void CCmdDeleteFSModelComponent::Execute()
 {
-	m_insertPos = m_parent->RemoveChild(m_obj);
-	m_obj->SetParent(nullptr);
-	m_delObject = true;
-
 	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
 	if (pil)
 	{
+		assert(m_sel.size() == pil->ItemLists());
 		for (int i = 0; i < pil->ItemLists(); ++i)
 		{
-			FEItemListBuilder* pl = pil->GetItemList(i);
-			if (pl) pl->DecRef();
+			pil->SetItemList(nullptr, i);
 		}
 	}
+	CCmdGroup::Execute();
 }
 
 void CCmdDeleteFSModelComponent::UnExecute()
 {
-	m_parent->InsertChild(m_insertPos, m_obj);
-	assert(m_obj->GetParent() == m_parent);
-	m_delObject = false;
-
+	CCmdGroup::UnExecute();
 	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
 	if (pil)
 	{
+		assert(m_sel.size() == pil->ItemLists());
 		for (int i = 0; i < pil->ItemLists(); ++i)
 		{
-			FEItemListBuilder* pl = pil->GetItemList(i);
-			if (pl) pl->IncRef();
+			pil->SetItemList(m_sel[i], i);
 		}
 	}
 }
-
 
 //-----------------------------------------------------------------------------
 // CCmdDeleteFSObject

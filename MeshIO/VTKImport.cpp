@@ -47,7 +47,7 @@ bool VTKimport::Load(const char* szfile)
 {
 	VTK::vtkLegacyFileReader vtkReader;
 	if (vtkReader.Load(szfile) == false)
-		return errf("Failed opening file %s.", szfile);
+		return errf(vtkReader.GetErrorString().c_str());
 	SetFileName(szfile);
 	const VTK::vtkModel& vtk = vtkReader.GetVTKModel();
 	return BuildMesh(vtk);
@@ -61,6 +61,7 @@ bool VTKimport::BuildMesh(const VTK::vtkModel& vtk)
 	const VTK::vtkPiece& piece = vtk.Piece(0);
 
 	FSMesh* pm = VTKTools::BuildFEMesh(piece);
+	if (pm == nullptr) return false;
 
 	GMeshObject* po = new GMeshObject(pm);
 	po->Update();

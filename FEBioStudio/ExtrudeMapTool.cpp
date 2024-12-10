@@ -110,7 +110,7 @@ bool CExtrudeMapTool::OnApply()
 		(data[0].size() == data[2].size())) fields = 3;
 
 	// create a nodeset
-	FSNodeSet nodeSet(po);
+	FSNodeSet nodeSet(pm);
 	for (int i = 0; i < node.size(); ++i)
 	{
 		int nid = node[i];

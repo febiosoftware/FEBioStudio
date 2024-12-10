@@ -101,7 +101,7 @@ FSMesh* FETetGenMesher::BuildMesh()
 	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (surfObj)
 	{
-		return CreateMesh(surfObj->GetSurfaceMesh());
+		return CreateMesh(surfObj);
 	}
 
 //  NOTE: Use this for testing if TetGen fails to mesh the object
@@ -1580,11 +1580,22 @@ bool FETetGenMesher::build_plc(FSSurfaceMesh* pm, tetgenio& in)
 
 #endif
 
+bool connects_to_part(FSElement& el, FSMesh& mesh, int pid)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (mesh.Node(el.m_node[i]).m_ntag == pid) return true;
+	}
+	return false;
+}
 
 // Generate a volume mesh from a surface mesh
-FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
+FSMesh* FETetGenMesher::CreateMesh(GSurfaceMeshObject* surfObj)
 {
 #ifdef TETLIBRARY
+
+	FSSurfaceMesh* surfMesh = surfObj->GetSurfaceMesh();
+
 	// allocate tetgen structures
 	tetgenio in, out;
 	in.initialize();
@@ -1702,6 +1713,13 @@ FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
 	// update the internal mesh data
 	pmesh->BuildMesh();
 
+	// currently, all elements are assigned to the first partition
+	// However, if there are more parts, then we need to repartition
+	if (surfObj->Parts() > 1)
+	{
+		UpdateElementPartitioning(surfObj, pmesh);
+	}
+
 	// update faces
 	pmesh->SmoothByPartition();
 
@@ -1765,6 +1783,113 @@ FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
 #else
 	return 0;
 #endif // TETLIBRARY
+}
+
+void FETetGenMesher::UpdateElementPartitioning(GObject* po, FSMesh* pmesh)
+{
+	// start by tagging faces
+	// face tag:
+	// = -1 : unprocessed
+	// =  0 : potential candidate for next pass
+	// =  1 : candidate for processing
+	// =  2 : processed
+	pmesh->TagAllFaces(-1);
+	// to get the process started, we flag all external faces as candidates
+	int NF = pmesh->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = pmesh->Face(i);
+		if (face.IsExternal()) face.m_ntag = 0;
+	}
+
+	// tag elements
+	// -1 = unprocessed and unvisited
+	//  0 = unvisited (about to be processed)
+	//  1 = processed
+	pmesh->TagAllElements(-1);
+
+	while (true)
+	{
+		// elevate potential candidates to candidates
+		int nc = 0;
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pmesh->Face(i);
+			if (face.m_ntag == 0) {
+				face.m_ntag = 1; nc++;
+			}
+		}
+
+		// if we didn't find any candidates, we're done
+		if (nc == 0) break;
+
+		// loop over all candidates
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pmesh->Face(i);
+			if (face.m_ntag == 1)
+			{
+				// mark face as processed
+				face.m_ntag = 2;
+
+				// get the PID of the adjacent part
+				int fid = face.m_gid; assert(fid >= 0);
+				GFace* pf = po->Face(fid);
+				int pid = pf->m_nPID[0];
+
+				// see if connects to an unprocessed element
+				int eid = face.m_elem[0].eid;
+				if (pmesh->Element(eid).m_ntag != -1)
+				{
+					eid = face.m_elem[1].eid;
+					if ((eid >= 0) && (pmesh->Element(eid).m_ntag != -1))
+					{
+						eid = -1;
+					}
+				}
+
+				if (eid >= 0)
+				{
+					// we found an element 
+					// loop over all connected elements and assign the current part
+					// don't cross surfaces when processing elements
+					stack<int> S;
+					S.push(eid);
+					while (!S.empty())
+					{
+						int inxt = S.top(); S.pop();
+						FSElement& el = pmesh->Element(inxt);
+						el.m_gid = pid;
+						el.m_ntag = 1; // processed
+
+						for (int l = 0; l < 4; ++l)
+						{
+							int nbr = el.m_nbr[l];
+							if (nbr >= 0)
+							{
+								if (el.m_face[l] < 0)
+								{
+									FSElement& elj = pmesh->Element(nbr);
+									if (elj.m_ntag == -1)
+									{
+										elj.m_ntag = 0; // about to be processed
+										S.push(nbr);
+									}
+								}
+								else
+								{
+									// we reached a face. 
+									// If this face has not been processed, mark it as a candidate for the next iteration
+									FSFace& fl = pmesh->Face(el.m_face[l]);
+									if (fl.m_ntag == -1) fl.m_ntag = 0;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //=============================================================================

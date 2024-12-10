@@ -2629,37 +2629,40 @@ void CGLModel::UpdateMeshVisibility()
 // Enable elements with a certain mat ID
 void CGLModel::UpdateMeshState()
 {
-	Post::FEPostMesh& mesh = *GetActiveMesh();
 	FEPostModel& fem = *GetFSModel();
-
-	// update the elements
-	for (int i=0; i<mesh.Elements(); ++i)
+	for (int i = 0; i < fem.Meshes(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
-		int nmat = el.m_MatID;
-		if (fem.GetMaterial(nmat)->enabled()) el.Enable();
-		else el.Disable();
-	}
+		Post::FEPostMesh& mesh = *fem.GetFEMesh(i);
 
-	// now we update the nodes
-	for (int i=0; i<mesh.Nodes(); ++i) mesh.Node(i).Disable();
-	for (int i=0; i<mesh.Elements(); ++i)
-	{
-		FEElement_& el = mesh.ElementRef(i);
-		if (el.IsEnabled())
+		// update the elements
+		for (int i = 0; i < mesh.Elements(); ++i)
 		{
-			int n = el.Nodes();
-			for (int j=0; j<n; ++j) mesh.Node(el.m_node[j]).Enable();
+			FEElement_& el = mesh.ElementRef(i);
+			int nmat = el.m_MatID;
+			if (fem.GetMaterial(nmat)->enabled()) el.Enable();
+			else el.Disable();
 		}
-	}
 
-	// enable the faces
-	for (int i=0; i<mesh.Faces(); ++i) 
-	{
-		FSFace& f = mesh.Face(i);
-		f.Disable();
-		if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
-		else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
+		// now we update the nodes
+		for (int i = 0; i < mesh.Nodes(); ++i) mesh.Node(i).Disable();
+		for (int i = 0; i < mesh.Elements(); ++i)
+		{
+			FEElement_& el = mesh.ElementRef(i);
+			if (el.IsEnabled())
+			{
+				int n = el.Nodes();
+				for (int j = 0; j < n; ++j) mesh.Node(el.m_node[j]).Enable();
+			}
+		}
+
+		// enable the faces
+		for (int i = 0; i < mesh.Faces(); ++i)
+		{
+			FSFace& f = mesh.Face(i);
+			f.Disable();
+			if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
+			else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
+		}
 	}
 }
 

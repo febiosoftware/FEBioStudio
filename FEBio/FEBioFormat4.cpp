@@ -1440,7 +1440,8 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			else
 			{
 				GMeshObject* po = feb.GetInstance(0)->GetGObject();
-				FSPartSet* ps = new FSPartSet(po);
+				FSMesh* pm = po->GetFEMesh();
+				FSPartSet* ps = new FSPartSet(pm);
 				ps->SetName(name->cvalue());
 				for (int i = 0; i < po->Parts(); ++i)
 				{
@@ -1453,7 +1454,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 
 				if (ps->size() > 0)
 				{
-					po->AddFEPartSet(ps);
+					pm->AddFEPartSet(ps);
 					gen->SetItemList(ps);
 				}
 				else
@@ -1527,9 +1528,9 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 
 				// okay, let's build a part set for this then instead
 				GPart* pg = po->FindPartFromName(set->cvalue());
-				FSPartSet* partSet = new FSPartSet(po);
+				FSPartSet* partSet = new FSPartSet(mesh);
 				partSet->SetName(sname);
-				po->AddFEPartSet(partSet);
+				mesh->AddFEPartSet(partSet);
 				partSet->add(pg->GetLocalID());
 
 				meshData = mesh->AddPartDataField(sname, partSet, dataType);
@@ -1629,7 +1630,19 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 					partList->add(pg->GetID());
 					mda->SetItemList(partList);
 				}
-				else AddLogEntry("Failed to find element set %s", szset);
+				else
+				{
+					if (strstr(szset, "@part_list:"))
+					{
+						GPartList* pg = feb.FindNamedPartList(szset + 11);
+						if (pg)
+						{
+							mda->SetItemList(pg);
+						}
+						else AddLogEntry("Failed to find element set %s", szset);
+					}
+					else AddLogEntry("Failed to find element set %s", szset);
+				}
 			}
 
 			m_pBCStep->AddComponent(mda);
@@ -2159,6 +2172,7 @@ void FEBioFormat4::ParseRigidConnector(FSStep *pstep, XMLTag &tag)
 		ParseUnknownAttribute(tag, "type");
 		return;
 	}
+	pi->SetName(szname);
 	pstep->AddComponent(pi);
 	ParseModelComponent(pi, tag);
 }

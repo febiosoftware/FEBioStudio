@@ -1709,8 +1709,13 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 				el.add_attribute("name", pi->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					m_xml.add_leaf("primary", GetSurfaceName(pss, true));
-					m_xml.add_leaf("secondary", GetSurfaceName(pms, true));
+					const char* szprimary   = GetSurfaceName(pss, true);
+					const char* szsecondary = GetSurfaceName(pms, true);
+					if ((szprimary == nullptr) || (szsecondary == nullptr))
+						throw InvalidItemListBuilder(pi);
+
+					m_xml.add_leaf("primary", szprimary);
+					m_xml.add_leaf("secondary", szsecondary);
 				}
 				m_xml.close_branch();
 			}
@@ -2009,11 +2014,12 @@ void FEBioExport4::WriteMixedElementsPart(Part* part, GPart* pg, bool writeMats,
 				m_xml.add_leaf(xel, false);
 				ncount++;
 				es.m_elem.push_back(i);
-				m_ElSet.push_back(es);
 			}
 		}
 	}
 	m_xml.close_branch();
+
+	m_ElSet.push_back(es);
 
 	// make sure this part has elements
 	if (ncount == 0)
@@ -2581,6 +2587,7 @@ void FEBioExport4::WriteElementDataFields()
 			{
 				FEElementData& data = *meshData;
 				const FSElemSet* pg = data.GetElementSet();
+				if (pg == nullptr) throw InvalidItemListBuilder(meshData);
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();

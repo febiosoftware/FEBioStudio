@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <FSCore/FSCore.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/GObject.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
 using namespace std;
@@ -79,12 +80,21 @@ void CPropertySelector::onSelectionChanged(int n)
 	int m = currentData().toInt();
 	if (m == -2)
 	{
+// Strange bug on macOS is causing crashes here. For some reason, this object is getting deleted before the 
+// QMessageBox is closing. We have tried manually instantiating a QMessageBox and even making our own custom
+// dialog to ask the question, and neither fixes the problem despite the fact that in the m==-3 case, we're 
+// also opening a custom dialog, and that works without any issues (with this object's destructor running
+// after this function exits as expected). 
+#ifndef __APPLE__
 		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
 		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 		{
 			emit currentDataChanged(n);
 		}
 		else setCurrentIndex(0);
+#else
+		emit currentDataChanged(n);
+#endif
 	}
 	else if (m == -3)
 	{
@@ -1273,6 +1283,30 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			if (p->IsVariable())
 			{
 				CEditVariableParam* pw = new CEditVariableParam(parent);
+/*				FSModel* fem = item->GetFSModel();
+				if (fem)
+				{
+					int n = fem->MeshDataGenerators();
+					for (int i = 0; i < n; ++i)
+					{
+						FSMeshDataGenerator* m = fem->GetMeshDataGenerator(i);
+						pw->addItem(QString::fromStdString(m->GetName()));
+					}
+
+					GModel& gm = fem->GetModel();
+					for (int i = 0; i < gm.Objects(); ++i)
+					{
+						GObject* po = gm.Object(i);
+						FSMesh* pm = po->GetFEMesh();
+						int n = pm->MeshDataFields();
+						for (int j = 0; j < n; ++j)
+						{
+							FEMeshData* md = pm->GetMeshDataField(j);
+							pw->addItem(QString::fromStdString(md->GetName()));
+						}
+					}
+				}
+*/
 				pw->setParam(p);
 				return pw;
 			}

@@ -41,6 +41,11 @@ FEItemListBuilder::FEItemListBuilder(int ntype, unsigned int flags)
 	m_refs = 0;
 }
 
+FEItemListBuilder::~FEItemListBuilder()
+{
+	assert(m_refs == 0);
+}
+
 void FEItemListBuilder::SetID(int nid)
 { 
 	m_nID = nid; 

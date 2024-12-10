@@ -336,7 +336,7 @@ void CFiberGeneratorTool::OnApply()
 	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
 	// create a temporary node set from the mesh
-	FSNodeSet nodeSet(po);
+	FSNodeSet nodeSet(pm);
 	nodeSet.CreateFromMesh();
 
 	// create node data
@@ -394,7 +394,7 @@ void CFiberGeneratorTool::OnApply()
 		if (genMap)
 		{
 			int parts = po->Parts();
-			FSPartSet* partSet = new FSPartSet(po);
+			FSPartSet* partSet = new FSPartSet(pm);
 			partSet->SetName(mapName.toStdString());
 			for (int i = 0; i < parts; ++i)
 			{

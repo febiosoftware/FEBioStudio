@@ -169,6 +169,7 @@ protected:
     bool SetAxesAngles(FSMesh* pm);
 	bool SetAxesCopy  (FSMesh* pm);
 	bool SetAxesCylindrical(FSMesh* pm);
+	bool ClearAxes(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -521,5 +522,12 @@ class FEInflateMesh: public FEModifier
 {
 public:
 	FEInflateMesh();
+	FSMesh* Apply(FSMesh* pm);
+};
+
+class FEDeleteElements : public FEModifier
+{
+public:
+	FEDeleteElements();
 	FSMesh* Apply(FSMesh* pm);
 };

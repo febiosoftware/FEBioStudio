@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QFileIconProvider>
 #include <QFileDialog>
+#include <QDirIterator>
 
 enum FileItemType {
 	OPEN_FILES,

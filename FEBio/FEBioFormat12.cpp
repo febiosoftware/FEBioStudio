@@ -420,8 +420,6 @@ void FEBioFormat12::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 	FSModel& fem = GetFSModel();
 
-	GMeshObject* po = GetGObject();
-
 	// read the prescribed data
 	++tag;
 	for (i = 0; i<nfix; ++i)
@@ -463,6 +461,7 @@ void FEBioFormat12::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 
 	int nbc = 0;
+	int nset = 0;
 	do
 	{
 		// find a non-zero bc
@@ -480,8 +479,10 @@ void FEBioFormat12::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 			for (int i = 0; i<N; ++i) if (BC[i] & ntype) ++nfix;
 
 			// create a nodeset of this BC
-			FSNodeSet* pg = new FSNodeSet(po);
-			po->AddFENodeSet(pg);
+			FSNodeSet* pg = new FSNodeSet(pm);
+			sprintf(szname, "FixedNodeset%02d", ++nset);
+			pg->SetName(szname);
+			pm->AddFENodeSet(pg);
 
 			// assign the nodes to this group
 			for (int i = 0; i<N; ++i) if (BC[i] & ntype) { pg->add(i); BC[i] &= (~ntype); }
@@ -616,17 +617,16 @@ void FEBioFormat12::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	vector<FSNodeSet*> pNS(nns);
 	nns = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 	for (i = 0; i<lcmax; ++i)
 	{
 		for (j = 0; j<MAXBC; ++j)
 		if (cc[j][i] >= 0)
 		{
 			// make a new group
-			FSNodeSet* pg = new FSNodeSet(po);
+			FSNodeSet* pg = new FSNodeSet(pm);
 			sprintf(szname, "Nodeset%02d", i + 1);
 			pg->SetName(szname);
-			po->AddFENodeSet(pg);
+			pm->AddFENodeSet(pg);
 
 			// make a new boundary condition
 			FSPrescribedDOF* pbc = 0;
@@ -704,7 +704,8 @@ void FEBioFormat12::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		pNS[ng]->add(n);
 
 		FSPrescribedDOF* pbc = pBC[ng];
-//		febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+		Param& p = pbc->GetParam(FSPrescribedDOF::SCALE);
+		febio.AddParamCurve(&p, lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
 }
@@ -783,16 +784,15 @@ void FEBioFormat12::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 	vector<FSNodalDOFLoad*> pFC(nns);
 	vector<FSNodeSet*> pNS(nns);
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 	for (i = 0; i<lcmax; ++i)
 	{
 		for (j = 0; j<MAXBC; ++j)
 		if (cc[j][i] >= 0)
 		{
-			FSNodeSet* pg = new FSNodeSet(po);
+			FSNodeSet* pg = new FSNodeSet(pm);
 			sprintf(szname, "ForceNodeset%02d", i + 1);
 			pg->SetName(szname);
-			po->AddFENodeSet(pg);
+			pm->AddFENodeSet(pg);
 
 			FSNodalDOFLoad* pbc = new FSNodalDOFLoad(&fem, pg, j, 1, pstep->GetID());
 			sprintf(szname, "ForceLoad%02d", i + 1);
@@ -895,7 +895,6 @@ void FEBioFormat12::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 	for (i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
 	FSModel& fem = GetFSModel();
-	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
 	vector<FSPressureLoad*> pPC(ns);
@@ -904,8 +903,8 @@ void FEBioFormat12::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 	int npr = CountLoads<FSPressureLoad>(fem);
 	for (i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "PressureSurface%02d", npr + i + 1);
 		ps->SetName(szname);
 
@@ -996,8 +995,6 @@ void FEBioFormat12::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 	int ns = 0;
 	for (int i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
-	GMeshObject* po = GetGObject();
-
 	// let's create the surfaces
 	vector<FSSurfaceTraction*> pPC(ns);
 	vector<FSSurface*> pSF(ns);
@@ -1005,8 +1002,8 @@ void FEBioFormat12::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 	int ntl = CountLoads<FSSurfaceTraction>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "TractionSurface%02d", ntl + i + 1);
 		ps->SetName(szname);
 
@@ -1114,8 +1111,6 @@ void FEBioFormat12::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 	int ns = 0;
 	for (int i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
-	GMeshObject* po = GetGObject();
-
 	// let's create the surfaces
 	vector<FSFluidFlux*> pPC(ns);
 	vector<FSSurface*> pSF(ns);
@@ -1123,8 +1118,8 @@ void FEBioFormat12::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 	int nfl = CountLoads<FSFluidFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "FluidFluxSurface%02d", nfl + i + 1);
 		ps->SetName(szname);
 
@@ -1234,8 +1229,6 @@ void FEBioFormat12::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 	int ns = 0;
 	for (int i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
-	GMeshObject* po = GetGObject();
-
 	// let's create the surfaces
 	vector<FSBPNormalTraction*> pPC(ns);
 	vector<FSSurface*> pSF(ns);
@@ -1243,8 +1236,8 @@ void FEBioFormat12::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 	int ntl = CountLoads<FSBPNormalTraction>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "NormalTractionSurface%02d", ntl + i + 1);
 		ps->SetName(szname);
 
@@ -1339,8 +1332,6 @@ void FEBioFormat12::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 	int ns = 0;
 	for (int i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
-	GMeshObject* po = GetGObject();
-
 	// let's create the surfaces
 	vector<FSHeatFlux*> pPC(ns);
 	vector<FSSurface*> pSF(ns);
@@ -1348,8 +1339,8 @@ void FEBioFormat12::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 	int nhf = CountLoads<FSHeatFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "HeatFluxSurface%02d", nhf + i + 1);
 		ps->SetName(szname);
 
@@ -1446,7 +1437,6 @@ void FEBioFormat12::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 	for (int i = 0; i<nmax; ++i) if (nlc[i] > 0) nlc[i] = ns++;
 
 	FSModel& fem = GetFSModel();
-	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
 	vector<FSSoluteFlux*> pPC(ns);
@@ -1455,8 +1445,8 @@ void FEBioFormat12::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 	int nsf = CountLoads<FSSoluteFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
-		FSSurface* ps = new FSSurface(po);
-		po->AddFESurface(ps);
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
 		sprintf(szname, "SoluteFluxSurface%02d", nsf + i + 1);
 		ps->SetName(szname);
 
@@ -1526,7 +1516,7 @@ bool FEBioFormat12::ParseLoadsSection(XMLTag& tag)
 bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
-	GMeshObject* po = GetGObject();
+	FSMesh* pm = &GetFEMesh();
 
 	++tag;
 	do
@@ -1550,8 +1540,8 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 					// see if we need to make a new group, otherwise add the node to the group
 					if (pg == nullptr)
 					{
-						pg = new FSNodeSet(po);
-						po->AddFENodeSet(pg);
+						pg = new FSNodeSet(pm);
+						pm->AddFENodeSet(pg);
 					}
 					pg->add(id);
 				}
@@ -1592,8 +1582,8 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 
 					// see if we need to make a new group, otherwise add the node to the group
 					if (pg == nullptr) {
-						pg = new FSNodeSet(po);
-						po->AddFENodeSet(pg);
+						pg = new FSNodeSet(pm);
+						pm->AddFENodeSet(pg);
 					}
 					pg->add(id);
 				}
@@ -1604,8 +1594,9 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 			// create a new initial velocity BC
 			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
+			sprintf(szname, "InitialConcentration%02d", CountICs<FSInitConcentration>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
@@ -1626,8 +1617,8 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 
 					// see if we need to make a new group, otherwise add the node to the group
 					if (pg == nullptr) {
-						pg = new FSNodeSet(po);
-						po->AddFENodeSet(pg);
+						pg = new FSNodeSet(pm);
+						pm->AddFENodeSet(pg);
 					}
 					pg->add(id);
 				}
@@ -1640,6 +1631,7 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FSInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) pg->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
@@ -1660,8 +1652,8 @@ bool FEBioFormat12::ParseInitialSection(XMLTag& tag)
 
 					// see if we need to make a new group, otherwise add the node to the group
 					if (pg == nullptr) {
-						pg = new FSNodeSet(po);
-						po->AddFENodeSet(pg);
+						pg = new FSNodeSet(pm);
+						pm->AddFENodeSet(pg);
 					}
 					pg->add(id);
 				}
@@ -1714,7 +1706,6 @@ void FEBioFormat12::ParseContact(FSStep *pstep, XMLTag &tag)
 void FEBioFormat12::ParseContactSurface(FSSurface* ps, XMLTag& tag)
 {
 	FSMesh* pm = ps->GetMesh();
-	GMeshObject* po = GetGObject();
 	FEBioMesh& mesh = GetFEBioMesh();
 
 	// see if the set is defined 
@@ -1724,7 +1715,7 @@ void FEBioFormat12::ParseContactSurface(FSSurface* ps, XMLTag& tag)
 		const char* szset = tag.AttributeValue("set");
 
 		// find the surface
-		FSSurface* psurf = po->FindFESurface(szset);
+		FSSurface* psurf = pm->FindFESurface(szset);
 		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
 		// copy the surface to the new surface
@@ -1781,7 +1772,6 @@ void FEBioFormat12::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 
 	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -1803,8 +1793,8 @@ void FEBioFormat12::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -1848,7 +1838,6 @@ void FEBioFormat12::ParseF2FSliding(FSStep* pstep, XMLTag& tag)
 
 	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -1870,8 +1859,8 @@ void FEBioFormat12::ParseF2FSliding(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -1913,7 +1902,6 @@ void FEBioFormat12::ParseContactBiphasic(FSStep* pstep, XMLTag& tag)
 
 	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -1930,8 +1918,8 @@ void FEBioFormat12::ParseContactBiphasic(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -1974,7 +1962,6 @@ void FEBioFormat12::ParseContactSolute(FSStep* pstep, XMLTag& tag)
 
 	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -1991,8 +1978,8 @@ void FEBioFormat12::ParseContactSolute(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2035,7 +2022,6 @@ void FEBioFormat12::ParseContactMultiphasic(FSStep* pstep, XMLTag& tag)
 
 	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -2052,8 +2038,8 @@ void FEBioFormat12::ParseContactMultiphasic(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2096,7 +2082,6 @@ void FEBioFormat12::ParseContactTied(FSStep *pstep, XMLTag &tag)
 
 	FSMesh* pm = &GetFEMesh();
 	FSSurface *pms = 0, *pss = 0;
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -2113,8 +2098,8 @@ void FEBioFormat12::ParseContactTied(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2157,7 +2142,6 @@ void FEBioFormat12::ParseContactSticky(FSStep *pstep, XMLTag &tag)
 
 	FSMesh* pm = &GetFEMesh();
 	FSSurface *pms = 0, *pss = 0;
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -2174,8 +2158,8 @@ void FEBioFormat12::ParseContactSticky(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2218,7 +2202,6 @@ void FEBioFormat12::ParseContactPeriodic(FSStep *pstep, XMLTag &tag)
 
 	FSMesh* pm = &GetFEMesh();
 	FSSurface *pms = 0, *pss = 0;
-	GMeshObject* po = GetGObject();
 
 	++tag;
 	do
@@ -2235,8 +2218,8 @@ void FEBioFormat12::ParseContactPeriodic(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2272,13 +2255,13 @@ void FEBioFormat12::ParseContactTC(FSStep *pstep, XMLTag &tag)
 
 	// set name
 	char szname[256];
-	sprintf(szname, "TCInterface%02d", CountInterfaces<FSTensionCompressionInterface>(fem) + 1);
+	int ntc = CountInterfaces<FSTensionCompressionInterface>(fem) + 1;
+	sprintf(szname, "TCInterface%02d", ntc);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
 
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 	FSSurface *pms = 0, *pss = 0;
 
 	++tag;
@@ -2296,19 +2279,27 @@ void FEBioFormat12::ParseContactTC(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szname, "TCInterface%02dSecondary", ntc);
+						ps->SetName(szname);
+					}
 					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szname, "TCInterface%02dPrimary", ntc);
+						ps->SetName(szname);
+					}
 					pi->SetPrimarySurface(ps);
 				}
 
@@ -2339,7 +2330,6 @@ void FEBioFormat12::ParseContactTiedPoro(FSStep *pstep, XMLTag &tag)
 	pi->SetName(szname);
 
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 	FSSurface *pms = 0, *pss = 0;
 
 	++tag;
@@ -2357,8 +2347,8 @@ void FEBioFormat12::ParseContactTiedPoro(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 
 				if (ntype == 1)
 				{
@@ -2401,7 +2391,6 @@ void FEBioFormat12::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 	pci->SetName(szname);
 
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 	FSSurface *pms = 0, *pss = 0;
 
 	++tag;
@@ -2430,8 +2419,8 @@ void FEBioFormat12::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 		{
 			const char* szn = tag.AttributeValue("name", true);
 
-			FSSurface* ps = new FSSurface(po);
-			po->AddFESurface(ps);
+			FSSurface* ps = new FSSurface(pm);
+			pm->AddFESurface(ps);
 			pci->SetItemList(ps);
 			if (szn) ps->SetName(szn);
 
@@ -2484,7 +2473,6 @@ void FEBioFormat12::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 		++tag;
 	} while (!tag.isend());
 
-	GMeshObject* po = GetGObject();
 	FSMesh& mesh = GetFEMesh();
 	int NN = mesh.Nodes();
 	char szbuf[256];
@@ -2495,8 +2483,8 @@ void FEBioFormat12::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 		{
 			int id = pmat->GetID();
 			// create the node set
-			FSNodeSet* pn = new FSNodeSet(po);
-			po->AddFENodeSet(pn);
+			FSNodeSet* pn = new FSNodeSet(pm);
+			pm->AddFENodeSet(pn);
 
 			for (int j = 0; j<NN; ++j)
 			{
@@ -3100,7 +3088,6 @@ void FEBioFormat12::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 
 	// get the mesh (need it for defining the surface)
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	// read parameters
 	++tag;
@@ -3117,8 +3104,8 @@ void FEBioFormat12::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FSVolumeConstraint>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
@@ -3158,7 +3145,6 @@ void FEBioFormat12::ParseSymmetryPlane(FSStep* pstep, XMLTag& tag)
 
 	// get the mesh (need it for defining the surface)
 	FSMesh* pm = &GetFEMesh();
-	GMeshObject* po = GetGObject();
 
 	// read parameters
 	++tag;
@@ -3175,8 +3161,8 @@ void FEBioFormat12::ParseSymmetryPlane(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(po);
-				po->AddFESurface(ps);
+				FSSurface* ps = new FSSurface(pm);
+				pm->AddFESurface(ps);
 				sprintf(szbuf, "SymmetryPlaneSurface%02d", CountConstraints<FSSymmetryPlane>(fem));
 				ps->SetName(szn ? szn : szbuf);
 

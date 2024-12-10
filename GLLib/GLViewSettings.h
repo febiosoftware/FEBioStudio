@@ -52,6 +52,12 @@ enum TagInfoOption {
 	TAG_ITEM_AND_NODES
 };
 
+enum ExplodeDirection {
+	EXPLODE_X,
+	EXPLODE_Y,
+	EXPLODE_Z,
+};
+
 //-----------------------------------------------------------------------------
 //! view settings
 struct GLViewSettings
@@ -93,6 +99,7 @@ struct GLViewSettings
 	bool	m_blma;		//!< show local material axes
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	double	m_fiber_width;	//!< line width
+	double	m_fiber_density; //!< density of fibers
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
 	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
 
@@ -135,6 +142,11 @@ struct GLViewSettings
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 
 	bool m_showHighlights;
+
+	// exploded view settings
+	bool m_explode; // enable/disable exploded view
+	int m_explode_direction;
+	double m_explode_strength;
 
 	void Defaults(int ntheme = 0);
 };

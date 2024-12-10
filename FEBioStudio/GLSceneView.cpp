@@ -334,6 +334,13 @@ void CGLSceneView::PrepScene()
 	GLfloat fv[4] = { 0 };
 	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
 	glLightfv(GL_LIGHT0, GL_POSITION, fv);
+
+	CGLScene* scene = GetActiveScene();
+	if (scene)
+	{
+		CGLCamera& cam = scene->GetCamera();
+		cam.MakeActive();
+	}
 }
 
 void CGLSceneView::mousePressEvent(QMouseEvent* ev)

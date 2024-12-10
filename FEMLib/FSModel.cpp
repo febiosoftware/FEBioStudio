@@ -1290,15 +1290,15 @@ void FSModel::Clear()
 	// clear all data variables
 	m_Var.Clear();
 
-	// remove all meshes
-	m_pModel->Clear();
-
 	// remove all materials
 	m_pMat.Clear();
 	ClearMLT();
 
 	// remove all steps
 	m_pStep.Clear();
+
+	// remove all meshes
+	m_pModel->Clear();
 
 	// clear all solutes and SBMS
 	ClearSolutes();
@@ -1985,7 +1985,26 @@ void FSModel::DeleteAllMeshDataGenerators()
 	m_MD.Clear();
 }
 
-//-----------------------------------------------------------------------------
+void FSModel::DeleteAllMeshData()
+{
+	GModel& m = GetModel();
+	for (int i = 0; i < m.Objects(); ++i)
+	{
+		GObject* po = m.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm) pm->ClearMeshData();
+	}
+}
+
+void FSModel::DeleteAllMeshAdaptors()
+{
+	for (int i = 0; i < Steps(); ++i)
+	{
+		FSStep* pstep = GetStep(i);
+		pstep->RemoveAllMeshAdaptors();
+	}
+}
+
 void FSModel::DeleteAllRigidBCs()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -2207,13 +2226,13 @@ void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 // this function to find the parent object (and mesh).
 bool FSModel::FindGroupParent(FSGroup* pg)
 {
-	int obj_id = pg->GetObjectID();
+	int obj_id = -1;// pg->GetObjectID();
 	if (obj_id == -1) return false;
 	else
 	{
 		GObject* po = GetModel().FindObject(obj_id);
 		if (po == 0) return false;
-		pg->SetGObject(po);
+//		pg->SetGObject(po);
 	}
 	return true;
 }

@@ -86,7 +86,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 			int en[8];
 			GLColor ec[8];
 
-			const Transform& T = po->GetTransform();
+			const Transform& T = po->GetRenderTransform();
 
 			// set the plane normal
 			vec3d norm(m_plane[0], m_plane[1], m_plane[2]);

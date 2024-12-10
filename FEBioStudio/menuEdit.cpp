@@ -285,7 +285,23 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (po == 0) return;
 
 			GMeshObject* pgo = dynamic_cast<GMeshObject*>(po);
-			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()));
+			if (pgo && pgo->GetFEMesh())
+			{
+				CCommand* cmd = nullptr;
+				if (dynamic_cast<FEElementSelection*>(psel))
+				{
+					FEModifier* mod = new FEDeleteElements();
+					cmd = new CCmdApplyFEModifier(mod, po);
+				}
+				else
+					cmd = new CCmdDeleteFESelection(pgo, doc->GetItemMode());
+
+				if (!doc->DoCommand(cmd))
+				{
+					QString msg = QString::fromStdString(CCommandManager::GetErrorString());
+					QMessageBox::critical(this, "Delete Elements", msg);
+				}
+			}
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
 			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()));
@@ -1651,6 +1667,13 @@ void CMainWindow::on_actionPickColor_triggered()
 {
 	if (ui->pickColorTool == nullptr) ui->pickColorTool = new CDlgPickColor(this);
 	ui->pickColorTool->show();
+}
+
+void CMainWindow::on_actionExplodedView_triggered()
+{
+	if (ui->explodeTool == nullptr) ui->explodeTool = new CDlgExplodedView(this);
+	if (!ui->explodeTool->isVisible())
+		ui->explodeTool->show();
 }
 
 void CMainWindow::on_actionFindTxt_triggered()

@@ -506,7 +506,7 @@ int FEBioInputModel::Part::GlobalToLocalElementIndex(int globalID)
 {
 	assert(m_ELT.empty() == false);
 	assert((globalID - m_eltoff) < (int)m_ELT.size());
-	return m_NLT[globalID - m_eltoff];
+	return m_ELT[globalID - m_eltoff];
 }
 
 void FEBioInputModel::Part::GlobalToLocalElementIndex(std::vector<int>& elemList)
@@ -597,7 +597,7 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	GetPart()->GlobalToLocalNodeIndex(nodelist);
 
 	// create the node set
-	FSNodeSet* pns = new FSNodeSet(m_po, nodelist);
+	FSNodeSet* pns = new FSNodeSet(m_po->GetFEMesh(), nodelist);
 
 	// copy the name
 	std::string name = nodeSet->name();
@@ -613,7 +613,7 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::
 	GetPart()->GlobalToLocalNodeIndex(nodeList);
 
 	// create the surface
-	FSNodeSet* pns = new FSNodeSet(m_po, nodeList);
+	FSNodeSet* pns = new FSNodeSet(m_po->GetFEMesh(), nodeList);
 
 	// copy the name
 	pns->SetName(nset.name());
@@ -650,7 +650,7 @@ FSEdgeSet* FEBioInputModel::PartInstance::BuildFEEdgeSet(FEBioInputModel::EdgeSe
 	}
 
 	// create the surface
-	FSEdgeSet* ps = new FSEdgeSet(m_po, edgeList);
+	FSEdgeSet* ps = new FSEdgeSet(m_po->GetFEMesh(), edgeList);
 
 	// copy the name
 	std::string name = edge.name();
@@ -798,7 +798,7 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 	}
 
 	// create the surface
-	FSSurface* ps = new FSSurface(m_po, faceList);
+	FSSurface* ps = new FSSurface(m_po->GetFEMesh(), faceList);
 
 	// copy the name
 	std::string name = surface.name();
@@ -835,7 +835,7 @@ FSElemSet* FEBioInputModel::PartInstance::BuildFEElemSet(const char* szname)
 	if (elemList.empty()) return nullptr;
 
 	// create the element set
-	FSElemSet* pg = new FSElemSet(m_po, elemList);
+	FSElemSet* pg = new FSElemSet(m_po->GetFEMesh(), elemList);
 
 	// copy the name
 	pg->SetName(szname);
@@ -1148,6 +1148,7 @@ void FEBioInputModel::CopyMeshSelections()
 		Part* part = instance.GetPart();
 
 		GMeshObject* po = instance.GetGObject();
+		FSMesh* pm = po->GetFEMesh();
 		assert(po);
 
 		// create the nodesets
@@ -1159,12 +1160,12 @@ void FEBioInputModel::CopyMeshSelections()
 			part->GlobalToLocalNodeIndex(nodelist);
 
 			// create the node set
-			FSNodeSet* pns = new FSNodeSet(po, nodelist);
+			FSNodeSet* pns = new FSNodeSet(pm, nodelist);
 
 			// copy the name
 			pns->SetName(ns.name());
 
-			po->AddFENodeSet(pns);
+			pm->AddFENodeSet(pns);
 		}
 
 		// create the edges
@@ -1175,7 +1176,7 @@ void FEBioInputModel::CopyMeshSelections()
 			// create the edge
 			FSEdgeSet* ps = instance.BuildFEEdgeSet(s);
 
-			po->AddFEEdgeSet(ps);
+			pm->AddFEEdgeSet(ps);
 		}
 
 		// create the surfaces
@@ -1186,7 +1187,7 @@ void FEBioInputModel::CopyMeshSelections()
 			// create the FESurface
 			FSSurface* ps = instance.BuildFESurface(s);
 
-			po->AddFESurface(ps);
+			pm->AddFESurface(ps);
 		}
 
 		// create the element sets
@@ -1201,12 +1202,12 @@ void FEBioInputModel::CopyMeshSelections()
 			part->GlobalToLocalElementIndex(elemList);
 
 			// create the part
-			FSElemSet* pg = new FSElemSet(po, elemList);
+			FSElemSet* pg = new FSElemSet(pm, elemList);
 
 			// copy the name
 			pg->SetName(es.name());
 
-			po->AddFEElemSet(pg);
+			pm->AddFEElemSet(pg);
 		}
 
 		// create the part lists
@@ -1585,7 +1586,7 @@ FSElemSet* FEBioInputModel::BuildFEElemSet(FEBioInputModel::Domain* dom)
 {
 	PartInstance* part = GetInstance(0);
 
-	FSElemSet* pg = new FSElemSet(part->GetGObject(), dom->GetElementIDList());
+	FSElemSet* pg = new FSElemSet(part->GetGObject()->GetFEMesh(), dom->GetElementIDList());
 
 	pg->SetName(dom->name());
 
@@ -1665,6 +1666,11 @@ FSElemSet* FEBioInputModel::FindNamedElementSet(const std::string& name)
 FSPartSet* FEBioInputModel::FindNamedPartSet(const std::string& name)
 {
 	return dynamic_cast<FSPartSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
+}
+
+GPartList* FEBioInputModel::FindNamedPartList(const std::string& name)
+{
+	return dynamic_cast<GPartList*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
 }
 
 //-----------------------------------------------------------------------------

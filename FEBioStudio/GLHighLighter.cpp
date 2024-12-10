@@ -199,7 +199,7 @@ void drawFace(CGLContext& rc, GLMeshRender& renderer, GFace* face, GLColor c)
 		renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
 		renderer.RenderGLMesh(mesh, face->GetLocalID());
 		renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
-		renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), face->GetLocalID());
+		renderer.RenderSurfaceOutline(rc, mesh, po->GetRenderTransform(), face->GetLocalID());
 	}
 	glPopAttrib();
 
@@ -237,7 +237,7 @@ void drawPart(CGLContext& rc, GLMeshRender& renderer, GPart* part, GLColor c)
 			renderer.SetRenderMode(GLMeshRender::RenderMode::SelectionMode);
 			renderer.RenderGLMesh(mesh, surfID);
 			renderer.SetRenderMode(GLMeshRender::RenderMode::OutlineMode);
-			renderer.RenderSurfaceOutline(rc, mesh, po->GetTransform(), surfID);
+			renderer.RenderSurfaceOutline(rc, mesh, po->GetRenderTransform(), surfID);
 		}
 	}
 	glPopAttrib();

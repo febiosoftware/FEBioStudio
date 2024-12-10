@@ -1,11 +1,9 @@
-LIB_DIR="/usr/lib/x86_64-linux-gnu"
+QT_DIR="/opt/Qt/6.7.3/gcc_64"
 run_cmake() {
 	cmake -L . -B cmbuild \
-		-DQt_Root=$LIB_DIR \
+		-DQt_Root=$QT_DIR \
 		-DFEBio_SDK=febio4-sdk \
 		-DUSE_FFMPEG=ON \
-		-DUSE_TEEM=OFF \
-		-DUSE_DCMTK=OFF \
 		-DUSE_TETGEN=ON \
 		-DUSE_MMG=ON \
 		-DUSE_SSH=ON \

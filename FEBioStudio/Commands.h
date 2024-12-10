@@ -1432,7 +1432,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CCmdDeleteFSModelComponent: public CCommand
+class CCmdDeleteFSModelComponent: public CCmdGroup
 {
 public:
 	CCmdDeleteFSModelComponent(FSModelComponent* po);
@@ -1443,9 +1443,7 @@ public:
 
 protected:
 	FSModelComponent* m_obj;
-	FSObject*	m_parent;
-	bool		m_delObject;
-	size_t		m_insertPos;
+	std::vector<FEItemListBuilder*> m_sel;
 };
 
 //-----------------------------------------------------------------------------

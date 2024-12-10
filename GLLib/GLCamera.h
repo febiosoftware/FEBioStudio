@@ -78,6 +78,8 @@ public:
 	// reset the camera
 	void Reset();
 
+	void MakeActive();
+
 	// set the GL transformation matrix
 	void PositionInScene();
 

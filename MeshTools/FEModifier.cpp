@@ -565,7 +565,7 @@ void FESetFiberOrientation::SetFiberNodes(FSMesh *pm)
 
 FESetAxesOrientation::FESetAxesOrientation() : FEModifier("Set axes orientation")
 {
-	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0cylindrical\0");
+	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0cylindrical\0<none>\0");
 	AddVecParam(vec3d(1, 0, 0), "a");
 	AddVecParam(vec3d(0, 1, 0), "d");
 	AddIntParam(1, "n0")->SetState(0);
@@ -611,6 +611,17 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
             GetParam(6).SetState(Param_ALLFLAGS);
             GetParam(7).SetState(Param_ALLFLAGS);
             break;
+		case 4:
+			GetParam(1).SetState(0);
+			GetParam(2).SetState(0);
+			GetParam(3).SetState(0);
+			GetParam(4).SetState(0);
+			GetParam(5).SetState(0);
+			GetParam(6).SetState(0);
+			GetParam(7).SetState(0);
+			break;
+		default:
+			return false;
 		}
 
 		return true;
@@ -643,6 +654,7 @@ FSMesh* FESetAxesOrientation::Apply(FSMesh *pm)
 		case 1: bret = SetAxesNodes(pnm); break;
         case 2: bret = SetAxesAngles(pnm); break;
 		case 3: bret = SetAxesCylindrical(pnm); break;
+		case 4: bret = ClearAxes(pnm); break;
 //		case 2: SetAxesCopy  (pnm); break;
 		default:
 			assert(false);
@@ -791,6 +803,20 @@ bool FESetAxesOrientation::SetAxesCylindrical(FSMesh* pm)
 			Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
 
 			el.m_Qactive = true;
+		}
+	}
+
+	return true;
+}
+
+bool FESetAxesOrientation::ClearAxes(FSMesh* pm)
+{
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			el.m_Qactive = false;
 		}
 	}
 
@@ -1065,8 +1091,26 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 	assert(pm);
 	if (pm == nullptr) return nullptr;
 
-	// before we get started, let's make sure this is a tet4 mesh
-	if (pm->IsType(FE_TRI3) == false) return nullptr;
+	// before we get started, let's make sure this is a valid mesh
+	int NE = pm->Elements();
+	int ntri = 0;
+	int nquad = 0;
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.Type() == FE_TRI3) ntri++;
+		else if (el.Type() == FE_QUAD4) nquad++;
+		else
+		{
+			SetError("This is not a valid mesh.");
+			return nullptr;
+		}
+	}
+	if (ntri == 0)
+	{
+		SetError("This mesh has no triangle elements.");
+		return nullptr;
+	}
 
 	// build the edge tables
 	FSEdgeList ET(*pm);
@@ -1079,7 +1123,7 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 
 	FSMesh* pnew = new FSMesh;
 	int N1 = N0 + E0 + F0;
-	int F1 = 3*F0;
+	int F1 = 3*ntri + 4*nquad;
 
 	pnew->Create(N1, F1, 0, 0);
 
@@ -1115,15 +1159,29 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 		vec3d a = pm->Node(f0.n[0]).r;
 		vec3d b = pm->Node(f0.n[1]).r;
 		vec3d c = pm->Node(f0.n[2]).r;
-
-		n1.r = (a + b + c) / 3.0;
+		if (f0.Type() == FE_FACE_TRI3)
+		{
+			n1.r = (a + b + c) / 3.0;
+		}
+		else if (f0.Type() == FE_FACE_QUAD4)
+		{
+			vec3d d = pm->Node(f0.n[3]).r;
+			n1.r = (a + b + c + d) / 4.0;
+		}
 	}
 
 	// node lookup table
-	const int NLT[3][4] = {
+	const int NLT3[3][4] = {
 		{ 0, 3, 6, 5 },
 		{ 1, 4, 6, 3 },
 		{ 2, 5, 6, 4}
+	};
+
+	const int NLT4[4][4] = {
+		{ 0, 4, 8, 7 },
+		{ 1, 5, 8, 4 },
+		{ 2, 6, 8, 5 },
+		{ 3, 7, 8, 6 }
 	};
 
 	// create the new elements
@@ -1132,23 +1190,48 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 	{
 		FSElement& e0 = pm->Element(i);
 
-		int n[7];
-		int* en = e0.m_node;
-		n[0] = en[0];
-		n[1] = en[1];
-		n[2] = en[2];
-		n[3] = N0 + EET.EdgeIndex(i, 0);
-		n[4] = N0 + EET.EdgeIndex(i, 1);
-		n[5] = N0 + EET.EdgeIndex(i, 2);
-		n[6] = N0 + E0 + i;
-
-		for (int j = 0; j < 3; ++j)
+		if (e0.Type() == FE_TRI3)
 		{
-			FSElement& e1 = pnew->Element(ne++);
+			int n[7];
+			int* en = e0.m_node;
+			n[0] = en[0];
+			n[1] = en[1];
+			n[2] = en[2];
+			n[3] = N0 + EET.EdgeIndex(i, 0);
+			n[4] = N0 + EET.EdgeIndex(i, 1);
+			n[5] = N0 + EET.EdgeIndex(i, 2);
+			n[6] = N0 + E0 + i;
 
-			e1.SetType(FE_QUAD4);
-			e1.m_gid = e0.m_gid;
-			for (int k = 0; k < 4; ++k) e1.m_node[k] = n[NLT[j][k]];
+			for (int j = 0; j < 3; ++j)
+			{
+				FSElement& e1 = pnew->Element(ne++);
+
+				e1.SetType(FE_QUAD4);
+				e1.m_gid = e0.m_gid;
+				for (int k = 0; k < 4; ++k) e1.m_node[k] = n[NLT3[j][k]];
+			}
+		}
+		else if (e0.Type() == FE_QUAD4)
+		{
+			int n[9];
+			int* en = e0.m_node;
+			n[0] = en[0];
+			n[1] = en[1];
+			n[2] = en[2];
+			n[3] = en[3];
+			n[4] = N0 + EET.EdgeIndex(i, 0);
+			n[5] = N0 + EET.EdgeIndex(i, 1);
+			n[6] = N0 + EET.EdgeIndex(i, 2);
+			n[7] = N0 + EET.EdgeIndex(i, 3);
+			n[8] = N0 + E0 + i;
+
+			for (int j = 0; j < 4; ++j)
+			{
+				FSElement& e1 = pnew->Element(ne++);
+				e1.SetType(FE_QUAD4);
+				e1.m_gid = e0.m_gid;
+				for (int k = 0; k < 4; ++k) e1.m_node[k] = n[NLT4[j][k]];
+			}
 		}
 	}
 

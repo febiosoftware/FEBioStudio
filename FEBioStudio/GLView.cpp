@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 #include "MainWindow.h"
+#include <QApplication>
+#include <QStyleHints>
 #include "BuildPanel.h"
 #include "CreatePanel.h"
 #include "ModelDocument.h"
@@ -1262,7 +1264,9 @@ void CGLView::initializeGL()
 void CGLView::Reset()
 {
 	// default display properties
-	int ntheme = m_pWnd->currentTheme();
+	int ntheme = 0;
+    if(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) ntheme = 1;
+
 	m_view.Defaults(ntheme);
 
 	GLHighlighter::ClearHighlights();
@@ -1549,9 +1553,10 @@ void CGLView::ShowMeshData(bool b)
 void SetModelView(GObject* po)
 {
 	// get transform data
-	vec3d r = po->GetTransform().GetPosition();
-	vec3d s = po->GetTransform().GetScale();
-	quatd q = po->GetTransform().GetRotation();
+	Transform& T = po->GetRenderTransform();
+	vec3d r = T.GetPosition();
+	vec3d s = T.GetScale();
+	quatd q = T.GetRotation();
 
 	// translate mesh
 	glTranslated(r.x, r.y, r.z);
@@ -2010,6 +2015,7 @@ void CGLView::HighlightEdge(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
 			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
@@ -2020,8 +2026,8 @@ void CGLView::HighlightEdge(int x, int y)
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
-						vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
-						vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
+						vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
+						vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
 
 						vec3d p0 = transform.WorldToScreen(r0);
 						vec3d p1 = transform.WorldToScreen(r1);
@@ -2137,7 +2143,7 @@ void CGLView::HighlightSurface(int x, int y)
 		if (po->IsVisible())
 		{
 			Ray localRay;
-			Transform& T = po->GetTransform();
+			Transform& T = po->GetRenderTransform();
 			localRay.origin = T.GlobalToLocal(ray.origin);
 			localRay.direction = T.GlobalToLocalNormal(ray.direction);
 			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
@@ -2213,6 +2219,7 @@ GPart* CGLView::PickPart(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
+			Transform& T = po->GetRenderTransform();
 			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
@@ -2221,9 +2228,9 @@ GPart* CGLView::PickPart(int x, int y)
 				{
 					GMesh::FACE& face = mesh->Face(j);
 
-					vec3d r0 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
-					vec3d r1 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
-					vec3d r2 = po->GetTransform().LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
+					vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
+					vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
+					vec3d r2 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[2]).r));
 
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
@@ -2335,15 +2342,16 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	if (po && po->GetEditableMesh())
 	{
 		// convert to local coordinates
-		vec3d rl = po->GetTransform().GlobalToLocal(ray.origin);
-		vec3d nl = po->GetTransform().GlobalToLocalNormal(ray.direction);
+		Transform& T = po->GetRenderTransform();
+		vec3d rl = T.GlobalToLocal(ray.origin);
+		vec3d nl = T.GlobalToLocalNormal(ray.direction);
 
 		FSMeshBase* mesh = po->GetEditableMesh();
 		vec3d q;
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
 			if (success) *success = true;
-			q = po->GetTransform().LocalToGlobal(q);
+			q = po->GetRenderTransform().LocalToGlobal(q);
 			return q;
 		}
 	}
@@ -2455,7 +2463,7 @@ void CGLView::ZoomToObject(GObject *po)
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
-	cam.SetOrientation(po->GetTransform().GetRotationInverse());
+	cam.SetOrientation(po->GetRenderTransform().GetRotationInverse());
 
 	repaint();
 }

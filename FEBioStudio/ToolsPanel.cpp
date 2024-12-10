@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
 #include "ScalarFieldTool.h"
+#include "SurfaceMeshSizeTool.h"
 #include "EditDataFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
@@ -46,6 +47,7 @@ SOFTWARE.*/
 #include "KinematBuildTool.h"
 #include "MeshMorphTool.h"
 #include "ExtrudeMapTool.h"
+#include "CurveToBeamTool.h"
 #include <ImageLib/FiberODF.h>
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
@@ -84,6 +86,8 @@ void CToolsPanel::initTools()
 	tools.push_back(new CKinematBuildTool   (wnd));
 	tools.push_back(new CMeshMorphTool      (wnd));
 	tools.push_back(new CExtrudeMapTool     (wnd));
+	tools.push_back(new CSurfaceMeshSizeTool(wnd));
+	tools.push_back(new CCurveToBeamTool    (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

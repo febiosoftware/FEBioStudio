@@ -9,7 +9,7 @@ FSHasOneItemList::FSHasOneItemList()
 
 FSHasOneItemList::~FSHasOneItemList()
 {
-	m_pItem = nullptr;
+	SetItemList(nullptr);
 }
 
 int FSHasOneItemList::ItemLists() const
@@ -44,8 +44,8 @@ FSHasTwoItemLists::FSHasTwoItemLists()
 
 FSHasTwoItemLists::~FSHasTwoItemLists()
 {
-	m_pItem[0] = nullptr;
-	m_pItem[1] = nullptr;
+	SetItemList(nullptr, 0);
+	SetItemList(nullptr, 1);
 }
 
 int FSHasTwoItemLists::ItemLists() const

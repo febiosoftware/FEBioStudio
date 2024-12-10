@@ -27,7 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include "FSObject.h"
 #include <vector>
+#include <string>
 #include <algorithm>
+#include <functional>
 
 class FSObjectList_ : public FSObject
 {
@@ -133,6 +135,8 @@ public:
 	T* operator [] (size_t i) { return dynamic_cast<T*>(m_obs[i]); }
 	const T* operator [] (size_t i) const { return dynamic_cast<T*>(m_obs[i]); }
 
+	T* At(size_t i) { return dynamic_cast<T*>(m_obs[i]); }
+
 	void Set(size_t pos, T* obj)
 	{
 		m_obs[pos] = obj;
@@ -145,6 +149,15 @@ public:
         else        
             std::rotate(m_obs.begin() + oldIndex, m_obs.begin() + oldIndex + 1, m_obs.begin() + newIndex + 1);
     }
+
+	T* FindByName(const std::string& name)
+	{
+		for (int i = 0; i < m_obs.size(); ++i)
+		{
+			if (m_obs[i]->GetName() == name) return At(i);
+		}
+		return nullptr;
+	}
 
 protected:
 	size_t RemoveChild(FSObject* po) override
@@ -161,3 +174,18 @@ protected:
 		return -1;
 	}
 };
+
+template <class T> void clearVector(FSObjectList<T>& v, std::function<bool(T*)> f)
+{
+	if (v.IsEmpty()) return;
+
+	for (size_t i = 0; i < v.Size(); )
+	{
+		T* o = v[i];
+		if (f(o))
+		{
+			v.Remove(o);
+		}
+		else i++;
+	}
+}

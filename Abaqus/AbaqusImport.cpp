@@ -2210,11 +2210,11 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->second->elem.size();
-				FSElemSet* pg = new FSElemSet(po);
+				FSElemSet* pg = new FSElemSet(pm);
 				pg->SetName(pes->second->szname);
 				vector<int>::iterator pe = pes->second->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add(part.FindElement(*pe)->lid);
-				po->AddFEElemSet(pg);
+				pm->AddFEElemSet(pg);
 			}
 		}
 	}
@@ -2229,12 +2229,12 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			int nn;
 			for (i=0; i<nsets; ++i, ++ns)
 			{
-				FSNodeSet* pg = new FSNodeSet(po);
+				FSNodeSet* pg = new FSNodeSet(pm);
 				pg->SetName(ns->second->szname);
 				list<AbaqusModel::Tnode_itr>::iterator pn = ns->second->node.begin();
 				nn = (int) ns->second->node.size();
 				for (j=0; j<nn; ++j, ++pn) pg->add((*pn)->id);
-				po->AddFENodeSet(pg);
+				pm->AddFENodeSet(pg);
 			}
 		}
 	}
@@ -2355,7 +2355,7 @@ FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 	FSMesh* pm = part->m_po->GetFEMesh();
 
 	int nf, n;
-	FSSurface* ps = new FSSurface(part->m_po);
+	FSSurface* ps = new FSSurface(pm);
 	ps->SetName(si->szname);
 	nf = (int)si->face.size();
 	list<AbaqusModel::FACE>::iterator pf = si->face.begin();
@@ -2478,7 +2478,7 @@ FSNodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 
 	FSMesh* pm = part->m_po->GetFEMesh();
 
-	FSNodeSet* nset = new FSNodeSet(po);
+	FSNodeSet* nset = new FSNodeSet(pm);
 	list<AbaqusModel::Tnode_itr>::iterator it = ns->node.begin();
 	for (it; it != ns->node.end(); ++it)
 	{

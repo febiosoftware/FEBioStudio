@@ -101,6 +101,10 @@ bool vtkLegacyFileReader::Load(const char* szfilename)
 		{
 			if (read_TENSORS(piece) == false) return false;
 		}
+		else if (checkLine("METADATA"))
+		{
+			if (read_METADATA(piece) == false) return false;
+		}
 
 	} while (nextLine());
 
@@ -309,7 +313,7 @@ bool vtkLegacyFileReader::read_CELLS(vtkPiece& vtk)
 	std::vector<int>& offsets = vtk.m_cell_offsets.m_values_int;
 
 	if (checkLine("OFFSETS") == true) {
-		offsets.resize(elems);
+		std::vector<int> tmp(elems);
 		// read the offsets
 		int temp[9];
 		int offsetsRead = 0;
@@ -323,11 +327,16 @@ bool vtkLegacyFileReader::read_CELLS(vtkPiece& vtk)
 				return errf("An error occured while reading the cell offsets.");
 
 			for (int j = 0; j < nread; ++j)
-				offsets[offsetsRead + j] = temp[j];
+				tmp[offsetsRead + j] = temp[j];
 
 			offsetsRead += nread;
 		}
 		assert(offsetsRead == elems);
+
+		// chop off the first index
+		assert(tmp[0] == 0);
+		offsets.clear();
+		offsets.insert(offsets.begin(), tmp.begin() + 1, tmp.end());
 
 		// now check for connectivity
 		if (nextLine() == false) return errf("An unexpected error occured while reading the file data after the CELLS OFFSETS section.");
@@ -650,6 +659,13 @@ bool vtkLegacyFileReader::read_FIELD(vtkPiece& vtkMesh)
 	for (int n = 0; n < numArrays; ++n)
 	{
 		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+
+		// for some reason, we can have METADATA between fields
+		if (checkLine("METADATA"))
+		{
+			if (!read_METADATA(vtkMesh)) return false;
+			if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+		}
 		std::vector<string> att;
 		int nread = parseLine(att);
 		if (nread < 3) return errf("Invalid number of attributes in field definition.");
@@ -678,4 +694,21 @@ bool vtkLegacyFileReader::read_FIELD(vtkPiece& vtkMesh)
 		assert(nreadTotal == nsize);
 	}
 	return true;
+}
+
+bool vtkLegacyFileReader::read_METADATA(VTK::vtkPiece& vtk)
+{
+	if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+	std::vector<string> att;
+	int nread = parseLine(att);
+	if (att[0] != "INFORMATION") return errf("Cannot find INFORMATION keyword.");
+	int numInfo = atoi(att[1].c_str());
+
+	for (int i = 0; i < numInfo; ++i)
+	{
+		// read NAME
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+		// read DATA
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+	}
 }

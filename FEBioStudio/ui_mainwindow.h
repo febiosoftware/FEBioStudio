@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "DlgPickColor.h"
+#include "DlgExplodedView.h"
 #include "PostToolBar.h"
 #include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
@@ -219,7 +220,6 @@ private:
 
 struct FBS_SETTINGS
 {
-	int		uiTheme;		// the UI theme (0 = default, 1 = dark)
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
 
@@ -276,6 +276,7 @@ public:
 	::CDlgMeasure* measureTool = nullptr;
 	::CDlgPlaneCut* planeCutTool = nullptr;
 	::CDlgPickColor* pickColorTool = nullptr;
+	::CDlgExplodedView* explodeTool = nullptr;
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 
@@ -376,6 +377,7 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 	QAction* actionPickColor;
+	QAction* actionExplodedView;
 	QAction* actionRotate;
 	QAction* actionTranslate;
 	QAction* selectRect;

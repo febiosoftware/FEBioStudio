@@ -1,4 +1,4 @@
-QT_ROOT="$HOME/local/x86_64/Qt"
+QT_ROOT="$HOME/local/x86_64/QtNew/6.7.3/macos"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_ROOT \
@@ -9,7 +9,6 @@ run_cmake() {
 		-DUSE_SSH=ON \
 		-DCAD_FEATURES=ON \
 		-DUSE_ITK=ON \
-		-DUSE_NETGEN=OFF \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
 		-DCMAKE_OSX_ARCHITECTURES=x86_64 \
 		-DBUILD_UPDATER=ON \

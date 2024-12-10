@@ -186,7 +186,7 @@ void MeshImport::BuildMesh(FSProject& prj)
 		char sz[256] = {0};
 		for (i=0; i<nparts; ++i)
 		{
-			P[i] = new FSElemSet(po);
+			P[i] = new FSElemSet(pm);
 			sprintf(sz, "Part%02d", i+1);
 			P[i]->SetName(sz);
 		}

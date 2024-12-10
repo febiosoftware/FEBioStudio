@@ -274,8 +274,11 @@ IArchive::IOResult IArchive::read(std::vector<vec2d>& v)
 
 	int nsize = pc->nsize / sizeof(vec2d);
 	v.resize(nsize);
-	int nread = (int)fread(&v[0], sizeof(vec2d), nsize, m_fp);
-	if (nread != nsize) return IO_ERROR;
+	if (nsize > 0)
+	{
+		int nread = (int)fread(&v[0], sizeof(vec2d), nsize, m_fp);
+		if (nread != nsize) return IO_ERROR;
+	}
 	return IO_OK;
 }
 

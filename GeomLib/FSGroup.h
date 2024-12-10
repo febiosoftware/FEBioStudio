@@ -42,30 +42,18 @@ class GPart;
 class FSGroup : public FEItemListBuilder
 {
 public:
-	FSGroup(GObject* po, int ntype, unsigned int flags);
+	FSGroup(FSMesh* pm, int ntype, unsigned int flags);
 	virtual ~FSGroup();
 
 	FSMesh* GetMesh();
-	void SetGObject(GObject* pm);
 	GObject* GetGObject();
 
 	int Type() { return m_ntype; }
 
-	FSNodeList* BuildNodeList() { return 0; }
-	FEEdgeList* BuildEdgeList() { return 0; }
-	FEFaceList* BuildFaceList() { return 0; }
-	FEElemList* BuildElemList() { return 0; }
-
-public:
-	// These functions were added when FSGroup was added to FECore. 
-	// The mesh ID is the ID of the GObject that owns the mesh. In FECore
-	// GObjects are not known, so a different mechanism was implemented
-	// to find the parent object (and mesh) when reading the archive. Now, only the
-	// mesh ID (i.e. the object ID) is written and read and a function
-	// higher up the call stack needs to find the correct parent mesh. 
-	// I hope one day to remove this construction.
-//	void SetMeshID(int nid) { m_objID = nid; }
-	int GetObjectID() const { return m_objID; }
+	FSNodeList* BuildNodeList() { return nullptr; }
+	FEEdgeList* BuildEdgeList() { return nullptr; }
+	FEFaceList* BuildFaceList() { return nullptr; }
+	FEElemList* BuildElemList() { return nullptr; }
 
 public:
 	void Save(OArchive& ar);
@@ -75,8 +63,7 @@ public:
 	int m_ntag;
 
 protected:
-	GObject*	m_pObj;		//!< pointer to the object this group belongs to
-	int			m_objID;	//!< The ID of the object that owns the mesh (only used when reading the IArchive)
+	FSMesh* m_mesh;
 };
 
 //-----------------------------------------------------------------------------
@@ -85,8 +72,8 @@ protected:
 class FSElemSet : public FSGroup
 {
 public:
-	FSElemSet(GObject* po) : FSGroup(po, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG) {}
-	FSElemSet(GObject* po, const std::vector<int>&  elset);
+	FSElemSet(FSMesh* pm) : FSGroup(pm, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG) {}
+	FSElemSet(FSMesh* pm, const std::vector<int>& elset);
 	~FSElemSet(){}
 
 	void CreateFromMesh();
@@ -106,8 +93,7 @@ public:
 class FSPartSet : public FSGroup
 {
 public:
-	FSPartSet(GObject* po) : FSGroup(po, FE_PARTSET, FE_PART_FLAG) {}
-	FSPartSet(GObject* po, const std::vector<int>& parts);
+	FSPartSet(FSMesh* pm) : FSGroup(pm, FE_PARTSET, FE_PART_FLAG) {}
 	~FSPartSet() {}
 
 	FEItemListBuilder* Copy();
@@ -126,8 +112,8 @@ public:
 class FSSurface : public FSGroup
 {
 public:
-	FSSurface(GObject* po) : FSGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG) {}
-	FSSurface(GObject* po, std::vector<int>& face);
+	FSSurface(FSMesh* pm) : FSGroup(pm, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG) {}
+	FSSurface(FSMesh* pm, std::vector<int>& face);
 	~FSSurface(){}
 
 	FSNodeList* BuildNodeList();
@@ -144,8 +130,8 @@ public:
 class FSEdgeSet : public FSGroup
 {
 public:
-	FSEdgeSet(GObject* po) : FSGroup(po, FE_EDGESET, FE_NODE_FLAG) {}
-	FSEdgeSet(GObject* po, std::vector<int>& edge);
+	FSEdgeSet(FSMesh* pm) : FSGroup(pm, FE_EDGESET, FE_NODE_FLAG) {}
+	FSEdgeSet(FSMesh* pm, std::vector<int>& edge);
 	~FSEdgeSet(){}
 
 	FSNodeList* BuildNodeList();
@@ -165,8 +151,8 @@ public:
 class FSNodeSet : public FSGroup
 {
 public:
-	FSNodeSet(GObject* po) : FSGroup(po, FE_NODESET, FE_NODE_FLAG) {}
-	FSNodeSet(GObject* po, const std::vector<int>& node);
+	FSNodeSet(FSMesh* pm) : FSGroup(pm, FE_NODESET, FE_NODE_FLAG) {}
+	FSNodeSet(FSMesh* pm, const std::vector<int>& node);
 	~FSNodeSet(){}
 
 	void CreateFromMesh();

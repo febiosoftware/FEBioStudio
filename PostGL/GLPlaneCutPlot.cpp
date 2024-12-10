@@ -277,7 +277,8 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	glDisable(GL_CLIP_PLANE0 + m_nclip);
 
 	// render the slice
-	RenderSlice();
+	if (rc.m_settings.m_nrender != RENDER_WIREFRAME)
+		RenderSlice();
 
 	// render the mesh
 	if (m_bshow_mesh)
@@ -325,6 +326,8 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	vector<pair<vec3d, double> > activePoints; activePoints.reserve(1024);
 	vector<pair<vec3d, GLColor> > inactivePoints; inactivePoints.reserve(1024);
 
+	bool activeMap = colorMap.IsActive();
+
 	// loop over all enabled materials
 	for (int n = 0; n < ps->Materials(); ++n)
 	{
@@ -336,7 +339,7 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 			for (int i = 0; i < NF; ++i)
 			{
 				GLSlice::FACE& face = m_slice.Face(i);
-				if ((face.mat == n) && (face.bactive))
+				if ((face.mat == n) && (face.bactive) && activeMap)
 				{
 					vec3d* r = face.r;
 					float* tex = face.tex;
@@ -350,19 +353,22 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 					activePoints.push_back(pair<vec3d, double>(r[2], t3));
 				}
 			}
+			
 
 			// render inactive faces
 			for (int i = 0; i < NF; ++i)
 			{
 				GLSlice::FACE& face = m_slice.Face(i);
-				if ((face.mat == n) && (!face.bactive))
+				if (!activeMap || ((face.mat == n) && (!face.bactive)))
 				{
 					// render the face
 					vec3d* r = face.r;
 					float* tex = face.tex;
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[0], pmat->diffuse));
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[1], pmat->diffuse));
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[2], pmat->diffuse));
+					GLColor c = pmat->diffuse;
+					c.a = (uint8_t)(255 * pmat->transparency);
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[0], c));
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[1], c));
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[2], c));
 				}
 			}
 		}

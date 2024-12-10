@@ -23,164 +23,21 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include <FSCore/math3d.h>
 #include <MeshLib/FEElement.h>
 #include <MeshLib/FEMesh.h>
 
-class FEDVertex;
-class FEDEdge;
-class FEDQuad;
-class FEDTri;
-class FEDBox;
-class FEDWedge;
-class FEDTet;
+// This file contains helper classes for the FEBoundaryLayerMesher class
+class FSDomain;
 
-//-------------------------------------------------------------------------------
-class FSDomain
-{
-public:
-    //! constructor
-    FSDomain() { m_pmesh = 0; };
-    FSDomain(FSMesh* pm) { m_pmesh = pm; }
-    
-    //! destructor
-    ~FSDomain();
-
-public:
-    int Vertices() const { return (int)VertexList.size();}
-    int Edges   () const { return (int)EdgeList.size();  }
-    int Quads   () const { return (int)QuadList.size();  }
-    int Tris    () const { return (int)TriList.size();   }
-    int Boxes   () const { return (int)BoxList.size();   }
-    int Wedges  () const { return (int)WedgeList.size(); }
-    int Tets    () const { return (int)TetList.size();   }
-
-    FEDVertex&    Vertex (int n) { return VertexList[n]; }
-    FEDEdge&	  Edge   (int n) { return EdgeList[n];   }
-    FEDQuad&	  Quad   (int n) { return QuadList[n];   }
-    FEDTri&       Tri    (int n) { return TriList[n];    }
-    FEDBox&       Box    (int n) { return BoxList[n];    }
-    FEDWedge&     Wedge  (int n) { return WedgeList[n];  }
-    FEDTet&       Tet    (int n) { return TetList[n];    }
-    
-    FEDVertex*    VertexPtr (int n=0) { return ((n>=0) && (n<(int)VertexList.size())? &VertexList[n] : 0); }
-    FEDEdge*      EdgePtr   (int n=0) { return ((n>=0) && (n<(int)EdgeList.size())? &EdgeList[n] : 0);     }
-    FEDQuad*	  QuadPtr   (int n=0) { return ((n>=0) && (n<(int)QuadList.size())? &QuadList[n] : 0);     }
-    FEDTri* 	  TriPtr    (int n=0) { return ((n>=0) && (n<(int)TriList.size())? &TriList[n] : 0);       }
-    FEDBox*       BoxPtr    (int n=0) { return ((n>=0) && (n<(int)BoxList.size())? &BoxList[n] : 0);       }
-    FEDWedge*     WedgePtr  (int n=0) { return ((n>=0) && (n<(int)WedgeList.size())? &WedgeList[n] : 0);       }
-    FEDTet*       TetPtr    (int n=0) { return ((n>=0) && (n<(int)TetList.size())? &TetList[n] : 0);       }
-
-public:
-    std::vector<FEDVertex>   VertexList;
-    std::vector<FEDEdge>     EdgeList;
-    std::vector<FEDQuad>     QuadList;
-    std::vector<FEDTri>      TriList;
-    std::vector<FEDBox>      BoxList;
-    std::vector<FEDWedge>    WedgeList;
-    std::vector<FEDTet>      TetList;
-    
-public:
-    // find vertex by tag number
-    int FindVertexByTagNumber(int n);
-    
-    // find edge
-    int FindEdge(FEDEdge edge);
-    int FindEdge(FEDEdge edge, bool& pos);
-    
-    // find quad
-    int FindQuad(FEDQuad quad);
-    int FindQuad(FEDQuad quad, bool& pos, int& ist);
-    int FindQuadFromFace(FSFace face);
-    
-    // find tri
-    int FindTri(FEDTri tri);
-    int FindTri(FEDTri tri, bool& pos, int& ist);
-    int FindTriFromFace(FSFace face);
-    
-    // find box by tag number
-    int FindBox(int n);
-    
-    // find wedge by tag number
-    int FindWedge(int n);
-    
-    // find tet by tag number
-    int FindTet(int n);
-    
-    // add a vertex to this domain
-    int AddVertex(FEDVertex vtx);
-    
-    // add an edge to this domain
-    int AddEdge(FEDEdge edge);
-    
-    // add a quad to this domain
-    int AddQuad(FEDQuad quad);
-    
-    // add a tri to this domain
-    int AddTri(FEDTri tri);
-    
-    // add a box from a list of vertices
-    int AddBox(std::vector<int> vlist, int ntag = -1, int gid = -1);
-    
-    // add a wedge from a list of vertices
-    int AddWedge(std::vector<int> vlist, int ntag = -1, int gid = -1);
-    
-    // add a tet from a list of vertices
-    int AddTet(std::vector<int> vlist, int ntag = -1, int gid = -1);
-    
-    // split a box into two wedges
-    void SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2]);
-    
-    // split a wedge into three tets
-    void SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3]);
-    
-    // add an element to this domain
-    bool AddElement(int iel);
-    
-public:
-    // reset mesh parameters
-    void ResetMeshParameters();
-    
-    // mesh the edges
-    bool MeshEdges();
-    
-    // mesh the quads
-    bool MeshQuads();
-    
-    // mesh the tris
-    bool MeshTris();
-    
-    // mesh the boxes
-    bool MeshBoxes();
-    
-    // mesh the wedges
-    bool MeshWedges();
-    
-    // mesh the tets
-    bool MeshTets();
-    
-    // mesh the domain
-    bool MeshDomain();
-    
-public:
-    FSMesh* m_pmesh;
-};
-
-//-------------------------------------------------------------------------------
-class FEDVertex : public FSDomain
+class FEDVertex
 {
 public:
     //! constructor
     FEDVertex();
-    FEDVertex(int m, vec3d x);
-    FEDVertex(const FEDVertex& vrtx);
-    FEDVertex& operator=(const FEDVertex vrtx);
-    
-    //! destructor
-    ~FEDVertex() { m_edge.clear(); m_quad.clear(); m_tri.clear(); }
-    
+    FEDVertex(int m, const vec3d& x);
+
 public:
     vec3d   r;          // vertex position
     int     m_ntag;     // tag number
@@ -189,19 +46,13 @@ public:
     std::vector<int> m_tri;  // list of tris connected to this vertex
 };
 
-//-------------------------------------------------------------------------------
-class FEDEdge : public FSDomain
+class FEDEdge
 {
 public:
     //! constructor
     FEDEdge();
     FEDEdge(int v0, int v1);
-    FEDEdge(const FEDEdge& edge);
-    FEDEdge& operator=(const FEDEdge edge);
-    
-    //! destructor
-    ~FEDEdge() { n.clear(); rbias.clear(); }
-    
+
 public:
     int  v[2];   // vertices of edge
     
@@ -220,18 +71,12 @@ public:
     std::vector<double>  rbias;  // parametric coordinates of biased mesh
 };
 
-//-------------------------------------------------------------------------------
-class FEDQuad : public FSDomain
+class FEDQuad
 {
 public:
     //! constructor
     FEDQuad();
     FEDQuad(int v0, int v1, int v2, int v3);
-    FEDQuad(const FEDQuad& quad);
-    FEDQuad& operator=(const FEDQuad quad);
-    
-    //! destructor
-    ~FEDQuad() { n.clear(); eta1.clear(); eta2.clear(); }
     
     // create meshed vertices
     bool CreateMesh(FSDomain* pdom);
@@ -253,18 +98,12 @@ public:
     
 };
 
-//-------------------------------------------------------------------------------
-class FEDTri : public FSDomain
+class FEDTri
 {
 public:
     //! constructor
     FEDTri();
     FEDTri(int v0, int v1, int v2, int a = -1);
-    FEDTri(const FEDTri& tri);
-    FEDTri& operator=(const FEDTri tri);
-    
-    //! destructor
-    ~FEDTri() { n.clear(); eta1.clear(); eta2.clear(); }
     
     // find a vertex in the triangle
     int FindVertex(int vtx);
@@ -293,20 +132,14 @@ public:
     
 };
 
-//-------------------------------------------------------------------------------
-class FEDBox : public FSDomain
+class FEDBox
 {
 public:
     //! constructor
     FEDBox();
-    FEDBox(const FEDBox& box);
-    FEDBox& operator=(const FEDBox box);
-
-    //! destructor
-    ~FEDBox() { n.clear(); elem.clear(); }
 
     // find a box face by node numbers
-    int FindBoxFace(FSFace face);
+    int FindBoxFace(const FSFace& face);
     
     // find a box edge by node numbers
     int FindBoxEdge(int n0, int n1);
@@ -352,20 +185,14 @@ protected:
     FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };
 
-//-------------------------------------------------------------------------------
-class FEDWedge : public FSDomain
+class FEDWedge
 {
 public:
     //! constructor
     FEDWedge();
-    FEDWedge(const FEDWedge& wdg);
-    FEDWedge& operator=(const FEDWedge wdg);
-    
-    //! destructor
-    ~FEDWedge() { n.clear(); elem.clear(); }
     
     // find a wedge face by FSFace node numbers
-    int FindWedgeFace(FSFace face);
+    int FindWedgeFace(const FSFace& face);
     
     // find a wedge edge by node numbers
     int FindWedgeEdge(int n0, int n1);
@@ -418,20 +245,14 @@ protected:
     FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };
 
-//-------------------------------------------------------------------------------
-class FEDTet : public FSDomain
+class FEDTet
 {
 public:
     //! constructor
     FEDTet();
-    FEDTet(const FEDTet& tet);
-    FEDTet& operator=(const FEDTet tet);
-    
-    //! destructor
-    ~FEDTet() { n.clear(); elem.clear(); }
     
     // find a tet face by FSFace node numbers
-    int FindTetFace(FSFace face);
+    int FindTetFace(const FSFace& face);
     
     // find a tet edge by node numbers
     int FindTetEdge(int n0, int n1);
@@ -486,4 +307,123 @@ public:
     
 protected:
     FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
+};
+
+class FSDomain
+{
+public:
+	//! constructor
+	FSDomain(FSMesh* pm);
+
+public:
+	int Vertices() const { return (int)VertexList.size(); }
+	int Edges() const { return (int)EdgeList.size(); }
+	int Quads() const { return (int)QuadList.size(); }
+	int Tris() const { return (int)TriList.size(); }
+	int Boxes() const { return (int)BoxList.size(); }
+	int Wedges() const { return (int)WedgeList.size(); }
+	int Tets() const { return (int)TetList.size(); }
+
+	FEDVertex& Vertex(int n) { return VertexList[n]; }
+	FEDEdge& Edge(int n) { return EdgeList[n]; }
+	FEDQuad& Quad(int n) { return QuadList[n]; }
+	FEDTri& Tri(int n) { return TriList[n]; }
+	FEDBox& Box(int n) { return BoxList[n]; }
+	FEDWedge& Wedge(int n) { return WedgeList[n]; }
+	FEDTet& Tet(int n) { return TetList[n]; }
+
+public:
+	std::vector<FEDVertex>   VertexList;
+	std::vector<FEDEdge>     EdgeList;
+	std::vector<FEDQuad>     QuadList;
+	std::vector<FEDTri>      TriList;
+	std::vector<FEDBox>      BoxList;
+	std::vector<FEDWedge>    WedgeList;
+	std::vector<FEDTet>      TetList;
+	std::vector<int> m_NLT;
+
+public:
+	// find vertex by tag number
+	int FindVertexByTagNumber(int n);
+
+	// find edge
+	int FindEdge(const FEDEdge& edge);
+	int FindEdge(const FEDEdge& edge, bool& pos);
+
+	// find quad
+	int FindQuad(const FEDQuad& quad);
+	int FindQuad(const FEDQuad& quad, bool& pos, int& ist);
+	int FindQuadFromFace(const FSFace& face);
+
+	// find tri
+	int FindTri(const FEDTri& tri);
+	int FindTri(const FEDTri& tri, bool& pos, int& ist);
+	int FindTriFromFace(const FSFace& face);
+
+	// find box by tag number
+	int FindBox(int n);
+
+	// find wedge by tag number
+	int FindWedge(int n);
+
+	// find tet by tag number
+	int FindTet(int n);
+
+	// add a vertex to this domain
+	int AddVertex(int n, const vec3d& r);
+
+	// add an edge to this domain
+	int AddEdge(FEDEdge edge);
+
+	// add a quad to this domain
+	int AddQuad(FEDQuad quad);
+
+	// add a tri to this domain
+	int AddTri(FEDTri tri);
+
+	// add a box from a list of vertices
+	int AddBox(std::vector<int> vlist, int ntag = -1, int gid = -1);
+
+	// add a wedge from a list of vertices
+	int AddWedge(std::vector<int> vlist, int ntag = -1, int gid = -1);
+
+	// add a tet from a list of vertices
+	int AddTet(std::vector<int> vlist, int ntag = -1, int gid = -1);
+
+	// split a box into two wedges
+	void SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2]);
+
+	// split a wedge into three tets
+	void SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3]);
+
+	// add an element to this domain
+	bool AddElement(int iel);
+
+public:
+	// reset mesh parameters
+	void ResetMeshParameters();
+
+	// mesh the edges
+	bool MeshEdges();
+
+	// mesh the quads
+	bool MeshQuads();
+
+	// mesh the tris
+	bool MeshTris();
+
+	// mesh the boxes
+	bool MeshBoxes();
+
+	// mesh the wedges
+	bool MeshWedges();
+
+	// mesh the tets
+	bool MeshTets();
+
+	// mesh the domain
+	bool MeshDomain();
+
+public:
+	FSMesh* m_pmesh;
 };

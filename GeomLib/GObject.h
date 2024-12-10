@@ -266,16 +266,11 @@ public:
 	void InsertFEPartSet(int n, FSPartSet* pg);
 
 	FSGroup* FindFEGroup(int nid);
-
+	FSPartSet* FindFEPartSet(const std::string& name);
 	FSSurface* FindFESurface(const string& szname);
 	FSEdgeSet* FindFEEdgeSet(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
-	void ClearFEPartSets();
-	void ClearFEElementSets();
-	void ClearFESurfaces();
-	void ClearFEEdgeSets();
-	void ClearFENodeSets();
 	void ClearFEGroups();
 
 	void RemoveEmptyFEGroups();
@@ -288,6 +283,8 @@ public:
 	GObjectManipulator* GetManipulator();
 
 	void SetManipulator(GObjectManipulator* om);
+
+	void UpdateMeshData();
 
 public:
 	static void SetActiveObject(GObject* po);
