@@ -937,7 +937,7 @@ void CFiberODFWidget::on_copyEFD_triggered()
 
     // create element data
     int parts = po->Parts();
-	FSPartSet* partSet = new FSPartSet(po);
+	FSPartSet* partSet = new FSPartSet(po->GetFEMesh());
     for (int i = 0; i < parts; ++i) partSet->add(i);
     partSet->SetName(datamapName);
     po->AddFEPartSet(partSet);
