@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h> 
 #include <GLLib/GLMeshRender.h>
 #include <GLLib/GLCamera.h>
-#include <SimpleITK.h>
 
 class CMainWindow;
 class matrix;
@@ -39,7 +38,6 @@ class CFiberODFAnalysis;
 class FSMaterial;
 struct CODF;
 
-namespace sitk = itk::simple;
 using std::string;
 
 class CFiberGLWidget : public QOpenGLWidget

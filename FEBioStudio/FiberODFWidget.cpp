@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QGroupBox>
 #include <fstream>
 #include <vector>
+#include <complex>
 #include "DynamicStackedWidget.h"
 #include <PostLib/ColorMap.h>
 #include "MainWindow.h"
@@ -77,8 +78,6 @@ SOFTWARE.*/
 #else
 #include <GL/glu.h>
 #endif
-
-#include <iostream>
 
 using std::vector;
 using std::complex;
@@ -303,7 +302,9 @@ public:
 		addProperty("High Freq Cutoff (pixels)", CProperty::Float);
 		addProperty("Butterworth fraction", CProperty::Float);
 		addProperty("Butterworth steepness", CProperty::Float);
+#ifdef HAS_LEVMAR
 		addProperty("Do fitting analysis", CProperty::Bool);
+#endif
 	}
 
 	QVariant GetPropertyValue(int i) override
@@ -317,7 +318,9 @@ public:
 		case 2: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::T_HIGH); break;
 		case 3: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::BW_FRACTION); break;
 		case 4: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::BW_STEEPNESS); break;
+#ifdef HAS_LEVMAR
 		case 5: return m_odfAnalysis->GetBoolValue (CFiberODFAnalysis::FITTING); break;
+#endif
 		}
 
 		return QVariant();
@@ -334,7 +337,9 @@ public:
 		case 2: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::T_HIGH , v.toDouble() ); break;
 		case 3: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::BW_FRACTION, v.toDouble()); break;
 		case 4: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::BW_STEEPNESS, v.toDouble()); break;
+#ifdef HAS_LEVMAR
 		case 5: m_odfAnalysis->SetBoolValue (CFiberODFAnalysis::FITTING, v.toBool() ); break;
+#endif
 		}
 	}
 
@@ -529,10 +534,12 @@ public:
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
 		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
         fitTabLayout->addRow("Mean Intensity:", meanIntensity = new QLineEdit); meanIntensity->setReadOnly(true);
+#ifdef HAS_LEVMAR
 		fitTabLayout->addRow("EFD alpha:", EFD_alpha = new QLineEdit); EFD_alpha->setReadOnly(true);
 		fitTabLayout->addRow("VM3 beta:", VM3_beta = new QLineEdit); VM3_beta->setReadOnly(true);
         fitTabLayout->addRow("VM3 phi:", VM3_phi = new QLineEdit); VM3_phi->setReadOnly(true);
         fitTabLayout->addRow("VM3 theta:", VM3_theta = new QLineEdit); VM3_theta->setReadOnly(true);
+#endif
 
 		fitTab->setLayout(fitTabLayout);
 //		tabs->addTab(fitTab, "Analysis");
@@ -543,7 +550,9 @@ public:
         buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material..."));
         copyMenu = new QMenu;
         copyMenu->addAction(copyODF = new QAction("FiberODF Material"));
+#ifdef HAS_LEVMAR
         copyMenu->addAction(copyEFD = new QAction("EFD Material"));
+#endif
         copyToMatButton->setMenu(copyMenu);
 
         buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to XML..."));
@@ -665,10 +674,12 @@ private:
 		FA->setText(QString::number(odf->m_FA));
 		GFA->setText(QString::number(odf->m_GFA));
         meanIntensity->setText(QString::number(odf->m_meanIntensity));
+#ifdef HAS_LEVMAR
 		EFD_alpha->setText(Vec3dToString(odf->m_EFD_alpha));
 		VM3_beta->setText(QString::number(odf->m_VM3_beta.x));
         VM3_phi->setText(QString::number(odf->m_VM3_beta.y));
         VM3_theta->setText(QString::number(odf->m_VM3_beta.z));
+#endif
 	}
 };
 
@@ -685,7 +696,9 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
     connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
     connect(ui->copyODF, &QAction::triggered, this, &CFiberODFWidget::on_copyODF_triggered);
+#ifdef HAS_LEVMAR
     connect(ui->copyEFD, &QAction::triggered, this, &CFiberODFWidget::on_copyEFD_triggered);
+#endif
     connect(ui->saveODFs, &QAction::triggered, this, &CFiberODFWidget::on_saveODFs_triggered);
     connect(ui->saveSphHarm, &QAction::triggered, this, &CFiberODFWidget::on_saveSphHarm_triggered);
     connect(ui->saveStats, &QAction::triggered, this, &CFiberODFWidget::on_saveStats_triggered);
@@ -1279,6 +1292,7 @@ void CFiberODFWidget::on_saveStats_triggered()
         efd.value(current->m_GFA);
         writer.add_leaf(efd);
 
+#ifdef HAS_LEVMAR
         XMLElement efdFrd("EFD_FRD");
         efdFrd.value(current->m_EFD_FRD);
         writer.add_leaf(efdFrd);
@@ -1326,6 +1340,7 @@ void CFiberODFWidget::on_saveStats_triggered()
         XMLElement thetaEl("VM3_theta");
         thetaEl.value(current->m_VM3_beta.z);
         writer.add_leaf(thetaEl);
+#endif
 
         writer.close_branch();
     }

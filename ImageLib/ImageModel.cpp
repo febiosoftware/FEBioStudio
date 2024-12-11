@@ -124,6 +124,11 @@ void CImageModel::Render(CGLContext& rc)
 	};
 	glMultMatrixd(q);
 
+    for(int j = 0; j < ImageAnalyses(); j++)
+    {
+        GetImageAnalysis(j)->render(rc.m_cam);
+    }
+
 	if (ShowBox())
 	{
 		BOX box = GetBoundingBox();
@@ -145,11 +150,6 @@ void CImageModel::Render(CGLContext& rc)
 			pir->Render(rc);
 		}
 	}
-
-    for(int j = 0; j < ImageAnalyses(); j++)
-    {
-        GetImageAnalysis(j)->render(rc.m_cam);
-    }
 
 	glPopMatrix();
 }

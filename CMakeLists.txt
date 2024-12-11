@@ -369,6 +369,7 @@ if(USE_FFMPEG)
 endif()
 
 if(USE_LEVMAR)
+    add_definitions(-DHAS_LEVMAR)
 	include_directories(${LEVMAR_INC})
 endif()
 

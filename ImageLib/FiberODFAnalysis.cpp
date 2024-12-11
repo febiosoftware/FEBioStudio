@@ -36,10 +36,10 @@ SOFTWARE.*/
 #include <complex>
 #include <sstream>
 #include "SITKTools.h"
-#include "levmar.h"
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
+
 #ifdef min
 #undef min
 #endif
@@ -58,7 +58,6 @@ SOFTWARE.*/
 #define M_PI 3.141592653589793
 #endif
 
-namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
@@ -81,8 +80,321 @@ CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
 };
 
 //==================================================================
+
+#ifdef HAS_ITK
+#include <SimpleITK.h>
+namespace sitk = itk::simple;
+#endif
+
+class CFiberODFAnalysis::Imp
+{
+public:
+    Imp(CFiberODFAnalysis* parent) : parent(parent) {}
+
+#ifdef HAS_ITK
+
+    // calculate root-mean-square of vector x
+    double rms(const vector<double>& x)
+    {
+        if (x.empty()) return 0.0;
+        double rms = 0.0;
+        for (double xi : x) rms += xi * xi;
+        rms = sqrt(rms / (double)x.size());
+        return rms;
+    }
+
+    // calculate standard deviation of vector x
+    double stddev(const vector<double>& x)
+    {
+        if (x.empty()) return 0.0;
+        double mu = 0.0;
+        size_t n = x.size();
+        for (size_t i = 0; i < n; ++i) mu += x[i];
+        mu /= (double)x.size();
+
+        double sum = 0.0;
+        for (size_t i = 0; i < n; ++i) sum += (x[i] - mu) * (x[i] - mu);
+        sum = sqrt(sum / ((double)n - 1.0));
+        return sum;
+    }
+
+    // This function generates the ODF from the subvolume image
+    bool generateODF(CODF& odf, sitk::Image& img, int nsh)
+    {
+        // process the image (apply butterworth and calculate power spectrum)
+        // Note that the image is overwritten with the filtered power spectrum
+        processImage(img);
+
+        // allocate odf
+        odf.m_sphHarmonics.resize(nsh);
+
+        // project image onto unit sphere
+        std::vector<double> reduced = std::vector<double>(NPTS, 0);
+        reduceAmp(img, reduced);
+
+        // see if user cancelled
+        if (parent->IsCanceled()) { parent->clear(); return false; }
+
+        // odf = A*B*reduced
+        vector<double> Bxr(parent->m_B.rows(), 0.0);
+        parent->m_B.mult(reduced, Bxr);
+        parent->m_A.mult(Bxr, odf.m_odf);
+        parent->updateProgressIncrement(0.75);
+
+        // normalize odf
+        parent->normalizeODF(&odf);
+
+        // Calculate spherical harmonics
+        parent->m_B.mult(odf.m_odf, odf.m_sphHarmonics);
+
+        // Recalc ODF based on spherical harmonics
+        parent->m_T.mult(odf.m_sphHarmonics, odf.m_odf);
+
+        parent->normalizeODF(&odf);
+
+        // Calcualte ODF_GFA
+        odf.m_GFA = stddev(odf.m_odf) / rms(odf.m_odf);
+
+        // build the meshes
+        parent->buildMesh(&odf);
+        parent->buildRemesh(&odf);
+
+        // do the fitting stats
+#ifdef HAS_LEVMAR
+        if (parent->GetBoolValue(FITTING)) parent->calculateFits(&odf);
+#endif
+        return true;
+    }
+
+    // Note that the returned image is now a filtered power spectrum
+    void processImage(sitk::Image& current)
+    {
+        // Apply Butterworth filter
+        butterworthFilter(current);
+
+        current = sitk::Cast(current, sitk::sitkFloat32);
+
+        // Apply FFT and FFT shift
+        current = sitk::FFTPad(current);
+        current = sitk::ForwardFFT(current);
+        current = sitk::FFTShift(current);
+
+        // Obtain Power Spectrum
+        current = powerSpectrum(current);
+
+        // Remove DC component (does not have a direction and does not 
+        // constitute fibrillar structures)
+        // NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
+        // and results in a slightly different max value in the ODF
+        auto currentSize = current.GetSize();
+        std::vector<uint32_t> index{ currentSize[0] / 2 + 1, currentSize[1] / 2 + 1, currentSize[2] / 2 + 1 };
+        current.SetPixelAsFloat(index, 0);
+
+        // Apply Radial FFT Filter
+        fftRadialFilter(current);
+    }
+
+    void butterworthFilter(sitk::Image& img)
+    {
+        double fraction = parent->GetFloatValue(BW_FRACTION);
+        double steepness = parent->GetFloatValue(BW_STEEPNESS);
+
+        uint32_t* data = img.GetBufferAsUInt32();
+
+        int nx = img.GetSize()[0];
+        int ny = img.GetSize()[1];
+        int nz = img.GetSize()[2];
+
+        double xStep = img.GetSpacing()[0];
+        double yStep = img.GetSpacing()[1];
+        double zStep = img.GetSpacing()[2];
+
+        double height = nx*xStep;
+        double width = ny*yStep;
+        double depth = nz*zStep;
+        double radMax = std::min({height, width, depth})/2;
+
+        radMax = 1;
+
+        double decent = radMax - radMax * fraction;
+
+        #pragma omp parallel for
+        for(int z = 0; z < nz; z++)
+        {
+            for(int y = 0; y < ny; y++)
+            {
+                for(int x = 0; x < nx; x++)
+                {
+                    int xPos = x - nx/2;
+                    int yPos = y - ny/2;
+                    int zPos = z - nz/2;
+
+                    int xPercent = xPos/nx;
+                    int yPercent = yPos/ny;
+                    int zPercent = zPos/nz;
+
+                    double rad = sqrt(xPercent*xPercent + yPercent*yPercent + zPercent*zPercent);
+
+                    int index = x + y*nx + z*nx*ny;
+
+                    data[index] = data[index]/(1 + pow(rad/decent, 2*steepness));
+                }
+            }
+        }
+    }
+
+    sitk::Image powerSpectrum(sitk::Image& img)
+    {
+        int nx = img.GetSize()[0];
+        int ny = img.GetSize()[1];
+        int nz = img.GetSize()[2];
+
+        // create a new image that will store the power spectrum
+        sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
+        PS.SetSpacing(img.GetSpacing());
+        PS.SetOrigin(img.GetOrigin());
+
+        float* data = PS.GetBufferAsFloat();
+        float* cd = (float*) (img.GetBufferAsVoid());
+
+        #pragma omp parallel for
+        for (int z = 0; z < nz; z++)
+        {
+            float* ci = cd + 2 * z * nx * ny;
+            for (int y = 0; y < ny; y++)
+            {
+                for(int x = 0; x <nx; x++)
+                {
+                    // NOTE: ITK's indexing is really slow. 
+                    // std::vector<uint32_t> index = {(unsigned int)x,(unsigned int)y,(unsigned int)z};
+                    // complex<float> val = img.GetPixelAsComplexFloat32(index);
+                    complex<float> val = { (*ci++), (*ci++) };
+                    float ps = abs(val);
+
+                    int newIndex = x + y*nx + z*nx*ny;
+
+                    data[newIndex] = ps*ps;
+                }
+            }
+        }
+
+        return PS;
+    }
+
+    // This function filters the power spectrum. 
+    void fftRadialFilter(sitk::Image& img)
+    {
+        float fLow = 1/parent->GetFloatValue(T_LOW);
+        float fHigh = 1/parent->GetFloatValue(T_HIGH);
+
+        int nx = img.GetSize()[0];
+        int ny = img.GetSize()[1];
+        int nz = img.GetSize()[2];
+
+        int minSize = std::min({nx, ny, nz})/2;
+        
+        float* data = img.GetBufferAsFloat();
+
+        #pragma omp parallel for
+        for(int z = 0; z < nz; z++)
+        {
+            for(int y = 0; y < ny; y++)
+            {
+                for(int x = 0; x < nx; x++)
+                {
+                    int xPos = x - nx/2;
+                    int yPos = y - ny/2;
+                    int zPos = z - nz/2;
+
+                    double rad = sqrt(xPos*xPos + yPos*yPos + zPos*zPos);
+
+                    double val = rad/minSize;
+
+                    if ((val < fLow) || (val > fHigh))
+                    {
+                        size_t index = x + y*nx + z*nx*ny;
+                        data[index] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    void reduceAmp(sitk::Image& img, std::vector<double>& reduced)
+    {
+        float* data = img.GetBufferAsFloat();
+
+        int nx = img.GetSize()[0];
+        int ny = img.GetSize()[1];
+        int nz = img.GetSize()[2];
+
+        double xSize = img.GetSpacing()[0];
+        double ySize = img.GetSpacing()[1];
+        double zSize = img.GetSpacing()[2];
+
+        double zcount = 0;
+
+        #pragma omp parallel shared(img)
+        {
+            FSNNQuery query(&parent->m_points);
+            query.Init();
+            
+            std::vector<double> tmp(NPTS, 0.0);
+
+            #pragma omp for schedule(dynamic)
+            for (int z = 0; z < nz; z++)
+            {
+                if (parent->IsCanceled()) continue;
+
+                double wz = (z - nz / 2) / (nz*0.5);
+
+                for (int y = 0; y < ny; y++)
+                {
+                    double wy = (y - ny / 2) / (ny * 0.5);
+
+                    for (int x = 0; x < nx; x++)
+                    {
+                        double wx = (x - nx / 2) / (nx * 0.5);
+
+                        double realX = wx/xSize;
+                        double realY = wy/ySize;
+                        double realZ = wz/zSize;
+                        
+                        double rad = sqrt(realX*realX + realY*realY + realZ*realZ);
+                        
+                        if(rad == 0) continue;
+
+                        int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
+                        
+                        int index = x + y*nx + z*nx*ny;
+                        
+                        tmp[closestIndex] += data[index];
+                    }
+                }
+
+                #pragma omp critical
+                {
+                    zcount++;
+                    parent->updateProgressIncrement(0.5*zcount / nz);
+                }
+            }
+
+            #pragma omp critical
+            for (int i = 0; i < NPTS; ++i)
+            {
+                reduced[i] += tmp[i];
+            }
+        }
+    }
+#endif
+
+private:
+    CFiberODFAnalysis* parent;
+};
+
+//==================================================================
 CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
-    : CImageAnalysis(CImageAnalysis::FIBERODF, img), m_lengthScale(10), m_hausd(0.05), 
+    : CImageAnalysis(CImageAnalysis::FIBERODF, img), m_imp(new Imp(this)), m_lengthScale(10), m_hausd(0.05), 
         m_grad(1.3)
 {
     static int n = 1;
@@ -118,8 +430,12 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
+#ifdef HAS_LEVMAR
 	AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
-	AddBoolParam(true, "Show Bounding boxes");
+#else
+    AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0");
+#endif
+    AddBoolParam(true, "Show Bounding boxes");
     AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
 	AddIntParam(m_ndivs, "Divisions", "Legend Divisions")->SetIntRange(1,100);
@@ -147,6 +463,7 @@ CFiberODFAnalysis::~CFiberODFAnalysis()
 {
     clear();
 	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
+    delete m_imp;
 }
 
 void CFiberODFAnalysis::clear()
@@ -159,46 +476,7 @@ void CFiberODFAnalysis::clear()
 	if (m_pbar) m_pbar->hide();
 }
 
-// calculate root-mean-square of vector x
-double rms(const vector<double>& x)
-{
-	if (x.empty()) return 0.0;
-	double rms = 0.0;
-	for (double xi : x) rms += xi * xi;
-	rms = sqrt(rms / (double)x.size());
-	return rms;
-}
-
-// calculate standard deviation of vector x
-double stddev(const vector<double>& x)
-{
-	if (x.empty()) return 0.0;
-	double mu = 0.0;
-	size_t n = x.size();
-	for (size_t i = 0; i < n; ++i) mu += x[i];
-	mu /= (double)x.size();
-
-	double sum = 0.0;
-	for (size_t i = 0; i < n; ++i) sum += (x[i] - mu) * (x[i] - mu);
-	sum = sqrt(sum / ((double)n - 1.0));
-	return sum;
-}
-
-// calculate mean image intensity
-double meanImageIntensity(sitk::Image& img)
-{
-	double meanIntensity = 0;
-	auto data = img.GetBufferAsUInt32();
-	auto size = img.GetNumberOfPixels();
-	for (int index = 0; index < size; index++)
-	{
-		meanIntensity += data[index];
-	}
-	meanIntensity /= size;
-
-	return meanIntensity;
-}
-
+#ifdef HAS_ITK
 void CFiberODFAnalysis::GenerateSubVolumes()
 {
 	clear();
@@ -259,6 +537,21 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 				odf->m_box = BOX(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
 				m_ODFs.push_back(odf);
 			}
+}
+
+// calculate mean image intensity
+double meanImageIntensity(sitk::Image& img)
+{
+	double meanIntensity = 0;
+	auto data = img.GetBufferAsUInt32();
+	auto size = img.GetNumberOfPixels();
+	for (int index = 0; index < size; index++)
+	{
+		meanIntensity += data[index];
+	}
+	meanIntensity /= size;
+
+	return meanIntensity;
 }
 
 // run the ODF analysis
@@ -382,7 +675,7 @@ void CFiberODFAnalysis::run()
 						if (meanIntensity > maxIntensity) maxIntensity = meanIntensity;
 
 						// generate the odf from the image
-						bool b = generateODF(odf, current, C->columns());
+						bool b = m_imp->generateODF(odf, current, C->columns());
 						odf.m_meanIntensity = meanIntensity;
 
 						// delete image
@@ -407,53 +700,11 @@ void CFiberODFAnalysis::run()
 	UpdateAllMeshes();
 	m_pbar->show();
 }
+#else
+void CFiberODFAnalysis::run() {}
+void CFiberODFAnalysis::GenerateSubVolumes() {}
+#endif
 
-// This function generates the ODF from the subvolume image
-bool CFiberODFAnalysis::generateODF(CODF& odf, sitk::Image& img, int nsh)
-{
-	// process the image (apply butterworth and calculate power spectrum)
-	// Note that the image is overwritten with the filtered power spectrum
-	processImage(img);
-
-	// allocate odf
-	odf.m_sphHarmonics.resize(nsh);
-
-	// project image onto unit sphere
-	std::vector<double> reduced = std::vector<double>(NPTS, 0);
-	reduceAmp(img, reduced);
-
-	// see if user cancelled
-	if (IsCanceled()) { clear(); return false; }
-
-	// odf = A*B*reduced
-	vector<double> Bxr(m_B.rows(), 0.0);
-	m_B.mult(reduced, Bxr);
-	m_A.mult(Bxr, odf.m_odf);
-	updateProgressIncrement(0.75);
-
-	// normalize odf
-	normalizeODF(&odf);
-
-	// Calculate spherical harmonics
-	m_B.mult(odf.m_odf, odf.m_sphHarmonics);
-
-	// Recalc ODF based on spherical harmonics
-	m_T.mult(odf.m_sphHarmonics, odf.m_odf);
-
-	normalizeODF(&odf);
-
-	// Calcualte ODF_GFA
-	odf.m_GFA = stddev(odf.m_odf) / rms(odf.m_odf);
-
-	// build the meshes
-	buildMesh(&odf);
-	buildRemesh(&odf);
-
-	// do the fitting stats
-	if (GetBoolValue(FITTING)) calculateFits(&odf);
-
-	return true;
-}
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
 {
@@ -645,35 +896,6 @@ void CFiberODFAnalysis::UpdateColorBar()
 	}
 }
 
-// Note that the returned image is now a filtered power spectrum
-void CFiberODFAnalysis::processImage(sitk::Image& current)
-{
-	// Apply Butterworth filter
-	butterworthFilter(current);
-
-	current = sitk::Cast(current, sitk::sitkFloat32);
-
-	// Apply FFT and FFT shift
-	current = sitk::FFTPad(current);
-	current = sitk::ForwardFFT(current);
-	current = sitk::FFTShift(current);
-
-	// Obtain Power Spectrum
-	current = powerSpectrum(current);
-
-	// Remove DC component (does not have a direction and does not 
-	// constitute fibrillar structures)
-	// NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
-	// and results in a slightly different max value in the ODF
-	auto currentSize = current.GetSize();
-	std::vector<uint32_t> index{ currentSize[0] / 2 + 1, currentSize[1] / 2 + 1, currentSize[2] / 2 + 1 };
-	current.SetPixelAsFloat(index, 0);
-
-	// Apply Radial FFT Filter
-	fftRadialFilter(current);
-}
-
-
 void CFiberODFAnalysis::normalizeODF(CODF* odf)
 {
 	// normalize odf
@@ -855,25 +1077,11 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 
 	if (meshLines)
 	{
-/*		cam->LineDrawMode(true);
-		cam->Transform();
-
-		glPushMatrix();
-		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
-		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-*/
-
         glEnable(GL_BLEND);
 		glColor4f(0, 0, 0, 0.5);
 
         glLineWidth(1.5f);
 		m_render.RenderGMeshLines(mesh);
-/*
-		glPopMatrix();
-
-		cam->LineDrawMode(false);
-		cam->Transform();
-*/
 	}
 }
 
@@ -915,205 +1123,10 @@ bool CFiberODFAnalysis::showRadial()
     return GetBoolValue(RADIAL);
 }
 
-void CFiberODFAnalysis::butterworthFilter(sitk::Image& img)
-{
-    double fraction = GetFloatValue(BW_FRACTION);
-    double steepness = GetFloatValue(BW_STEEPNESS);
-
-    uint32_t* data = img.GetBufferAsUInt32();
-
-    int nx = img.GetSize()[0];
-    int ny = img.GetSize()[1];
-    int nz = img.GetSize()[2];
-
-    double xStep = img.GetSpacing()[0];
-    double yStep = img.GetSpacing()[1];
-    double zStep = img.GetSpacing()[2];
-
-    double height = nx*xStep;
-    double width = ny*yStep;
-    double depth = nz*zStep;
-    double radMax = std::min({height, width, depth})/2;
-
-    radMax = 1;
-
-    double decent = radMax - radMax * fraction;
-
-    #pragma omp parallel for
-    for(int z = 0; z < nz; z++)
-    {
-        for(int y = 0; y < ny; y++)
-        {
-            for(int x = 0; x < nx; x++)
-            {
-                int xPos = x - nx/2;
-                int yPos = y - ny/2;
-                int zPos = z - nz/2;
-
-                int xPercent = xPos/nx;
-                int yPercent = yPos/ny;
-                int zPercent = zPos/nz;
-
-                // double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
-                double rad = sqrt(xPercent*xPercent + yPercent*yPercent + zPercent*zPercent);
-                // double rad = xPercent*yPercent*zPercent/3;
-
-                int index = x + y*nx + z*nx*ny;
-
-                data[index] = data[index]/(1 + pow(rad/decent, 2*steepness));
-            }
-        }
-    }
-}
-
-sitk::Image CFiberODFAnalysis::powerSpectrum(sitk::Image& img)
-{
-    int nx = img.GetSize()[0];
-    int ny = img.GetSize()[1];
-    int nz = img.GetSize()[2];
-
-	// create a new image that will store the power spectrum
-    sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
-	PS.SetSpacing(img.GetSpacing());
-	PS.SetOrigin(img.GetOrigin());
-
-    float* data = PS.GetBufferAsFloat();
-	float* cd = (float*) (img.GetBufferAsVoid());
-
-    #pragma omp parallel for
-	for (int z = 0; z < nz; z++)
-	{
-		float* ci = cd + 2 * z * nx * ny;
-		for (int y = 0; y < ny; y++)
-		{
-			for(int x = 0; x <nx; x++)
-			{
-				// NOTE: ITK's indexing is really slow. 
-//				std::vector<uint32_t> index = {(unsigned int)x,(unsigned int)y,(unsigned int)z};
-//				complex<float> val = img.GetPixelAsComplexFloat32(index);
-				complex<float> val = { (*ci++), (*ci++) };
-                float ps = abs(val);
-
-                int newIndex = x + y*nx + z*nx*ny;
-
-                data[newIndex] = ps*ps;
-            }
-        }
-    }
-
-    return PS;
-}
-
-// This function filters the power spectrum. 
-void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
-{
-    float fLow = 1/GetFloatValue(T_LOW);
-    float fHigh = 1/GetFloatValue(T_HIGH);
-
-    int nx = img.GetSize()[0];
-    int ny = img.GetSize()[1];
-    int nz = img.GetSize()[2];
-
-    int minSize = std::min({nx, ny, nz})/2;
-    
-    float* data = img.GetBufferAsFloat();
-
-    #pragma omp parallel for
-    for(int z = 0; z < nz; z++)
-    {
-        for(int y = 0; y < ny; y++)
-        {
-            for(int x = 0; x < nx; x++)
-            {
-                int xPos = x - nx/2;
-                int yPos = y - ny/2;
-                int zPos = z - nz/2;
-
-                double rad = sqrt(xPos*xPos + yPos*yPos + zPos*zPos);
-
-                double val = rad/minSize;
-
-                if ((val < fLow) || (val > fHigh))
-                {
-					size_t index = x + y*nx + z*nx*ny;
-					data[index] = 0;
-                }
-            }
-        }
-    }
-}
-
 void CFiberODFAnalysis::updateProgressIncrement(double f)
 {
 	m_progress = 100.0 * (m_stepsCompleted + f) / m_totalSteps;
 	setProgress(m_progress);
-}
-
-void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>& reduced)
-{
-    float* data = img.GetBufferAsFloat();
-
-    int nx = img.GetSize()[0];
-    int ny = img.GetSize()[1];
-    int nz = img.GetSize()[2];
-
-    double xSize = img.GetSpacing()[0];
-    double ySize = img.GetSpacing()[1];
-    double zSize = img.GetSpacing()[2];
-
-	double zcount = 0;
-
-    #pragma omp parallel shared(img)
-    {
-        FSNNQuery query(&m_points);
-        query.Init();
-        
-        std::vector<double> tmp(NPTS, 0.0);
-
-        #pragma omp for schedule(dynamic)
-        for (int z = 0; z < nz; z++)
-        {
-            if (IsCanceled()) continue;
-
-			double wz = (z - nz / 2) / (nz*0.5);
-
-            for (int y = 0; y < ny; y++)
-            {
-				double wy = (y - ny / 2) / (ny * 0.5);
-
-                for (int x = 0; x < nx; x++)
-                {
-					double wx = (x - nx / 2) / (nx * 0.5);
-
-                    double realX = wx/xSize;
-                    double realY = wy/ySize;
-                    double realZ = wz/zSize;
-                    
-                    double rad = sqrt(realX*realX + realY*realY + realZ*realZ);
-                    
-                    if(rad == 0) continue;
-
-                    int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
-                    
-                    int index = x + y*nx + z*nx*ny;
-                    
-                    tmp[closestIndex] += data[index];
-                }
-            }
-
-			#pragma omp critical
-			{
-				zcount++;
-				updateProgressIncrement(0.5*zcount / nz);
-			}
-		}
-
-#pragma omp critical
-		for (int i = 0; i < NPTS; ++i)
-		{
-			reduced[i] += tmp[i];
-		}
-	}
 }
 
 enum NUMTYPE { REALTYPE, IMAGTYPE, COMPLEXTYPE };
@@ -1492,7 +1505,6 @@ void efd_objfun(double* p, double* hx, int m, int n, void* adata)
 	}
 
 	// evaluate objective function
-//#ifdef _DEBUG
 	if (data.plog)
 	{
 		double o = 0.0;
@@ -1500,7 +1512,6 @@ void efd_objfun(double* p, double* hx, int m, int n, void* adata)
 		for (int i = 0; i < m; ++i) data.plog->Log("%lg, ", p[i]);
 		data.plog->Log("(%lg)\n", o);
 	}
-//#endif
 }
 
 
@@ -1528,7 +1539,6 @@ void vm3_objfun(double* p, double* hx, int m, int n, void* adata)
 	}
 
 	// evaluate objective function
-//#ifdef _DEBUG
 	if (data.plog)
 	{
 		double o = 0.0;
@@ -1536,7 +1546,6 @@ void vm3_objfun(double* p, double* hx, int m, int n, void* adata)
 		for (int i = 0; i < m; ++i) data.plog->Log("%lg, ", p[i]);
 		data.plog->Log("(%lg)\n", o);
 	}
-	//#endif
 }
 
 double vmax(const vector<double>& v)
@@ -1566,6 +1575,9 @@ double matrix_max(const matrix& v)
 		}
 	return vm;
 }
+
+#ifdef HAS_LEVMAR
+#include "levmar.h"
 
 vector<double> CFiberODFAnalysis::optimize_edf(
 	const vector<double>& alpha0, 
@@ -1687,6 +1699,22 @@ vector<double> CFiberODFAnalysis::optimize_vm3(
 	return beta;
 }
 
+#else
+vector<double> CFiberODFAnalysis::optimize_edf(
+	const vector<double>& alpha0, 
+	const vector<double>& odf, 
+	const vector<vec3d>& x,
+	const matrix& V,
+	const vector<double>& l)
+{ return {}; }
+
+vector<double> CFiberODFAnalysis::optimize_vm3(
+	const vector<double>& beta0,
+	const vector<double>& odf,
+	const vector<vec3d>& x)
+{ return {}; }
+#endif
+
 double det_matrix3(const matrix& a)
 {
 	double d = 0;
@@ -1751,11 +1779,6 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
 	Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
 
-	// determinant scaling
-/*		double D = det_matrix3(c);
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j) c(i, j) /= D;
-*/
 	// calculate eigenvalues and eigenvectors
 	// NOTE: V must be correct size; l must be empty.
 	matrix V(3, 3); V.zero();
@@ -1804,10 +1827,6 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	vector<double>& EFDODF = odf->m_EFD_ODF;
 	EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
 
-	// calculate generalized FA
-	// odf->m_EFD_GFA = stddev(EFDODF) / rms(EFDODF);
-	// Log("generalized fractional anisotropy: %lg\n", stddev(EFDODF) / rms(EFDODF));
-
 	// calculate Fisher-Rao distance
 	odf->m_EFD_FRD = computeFisherRao(odf->m_odf, odf->m_EFD_ODF);
 	Log("Fisher-Rao distance: %lg\n", odf->m_EFD_FRD);
@@ -1824,10 +1843,6 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	// calculate VM3 ODF
 	vector<double>& VM3ODF = odf->m_VM3_ODF;
 	VM3_ODF(odf->m_odf, x, beta, VM3ODF);
-
-	// calculate generalized FA
-	// odf->m_VM3_GFA = stddev(VM3ODF) / rms(VM3ODF);
-	// Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
 
 	// calculate Fisher-Rao distance
 	odf->m_VM3_FRD = computeFisherRao(odf->m_odf, odf->m_VM3_ODF);

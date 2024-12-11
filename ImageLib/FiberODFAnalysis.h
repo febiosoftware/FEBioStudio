@@ -27,14 +27,11 @@ SOFTWARE.*/
 #pragma once
 
 #include "ImageAnalysis.h"
-#include <SimpleITK.h>
 #include <MeshLib/GMesh.h>
 #include <GLLib/GLMeshRender.h>
 #include <FECore/vec3d.h>
 #include <GLWLib/GLWidget.h>
 #include <PostLib/ColorMap.h>
-
-namespace sitk = itk::simple;
 
 class matrix;
 
@@ -78,6 +75,9 @@ public:
 
 class CFiberODFAnalysis : public CImageAnalysis
 {
+
+    class Imp;
+
 public:
 	enum ODF_PARAMS {
 		ORDER, T_LOW, T_HIGH, XDIV, YDIV, ZDIV, OVERLAP, FITTING,
@@ -121,18 +121,9 @@ private:
 	// clear all ODFs
     void clear();
 
-	// generate an ODF from an image
-	bool generateODF(CODF& odf, sitk::Image& img, int nsh);
-
-    void butterworthFilter(sitk::Image& img);
-    sitk::Image powerSpectrum(sitk::Image& img);
-    void fftRadialFilter(sitk::Image& img);
-    void reduceAmp(sitk::Image& img, std::vector<double>& reduced);
-
     std::unique_ptr<matrix> complLapBel_Coef();
     double GFA(std::vector<double>& vals);
 
-	void processImage(sitk::Image& img);
 	void normalizeODF(CODF* odf);
     void buildMesh(CODF* odf);
     void buildRemesh(CODF* odf);
@@ -159,6 +150,7 @@ private:
 		const vector<vec3d>& x);
 
 private:
+    Imp* m_imp;
     std::vector<CODF*> m_ODFs;
 
     GLMeshRender m_render;
@@ -199,4 +191,6 @@ private:
 	// temp data for calculating ODFs
 	matrix	m_A, m_B, m_T;
 	std::vector<vec3d>	m_points;
+
+    friend class Imp;
 };
