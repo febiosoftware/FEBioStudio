@@ -119,21 +119,11 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh)
 		GLMesh* glm = it->second;
 	}
 
-	if (glm) glm->Render();
-
-/*
-	glBegin(GL_TRIANGLES);
+	if (glm)
 	{
-		for (int i = 0; i < mesh.Faces(); ++i)
-		{
-			const GMesh::FACE& f = mesh.Face(i);
-			glNormal3fv(&f.vn[0].x); glVertex3fv(&f.vr[0].x);
-			glNormal3fv(&f.vn[1].x); glVertex3fv(&f.vr[1].x);
-			glNormal3fv(&f.vn[2].x); glVertex3fv(&f.vr[2].x);
-		}
+		glm->Render();
+		m_stats.triangles += glm->Vertices() / 3;
 	}
-	glEnd();
-*/
 }
 
 void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
@@ -156,6 +146,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
 	{
 		const GMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf);
+		m_stats.triangles += p.nf;
 	}
 }
 

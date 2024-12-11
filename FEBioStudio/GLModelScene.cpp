@@ -175,8 +175,6 @@ BOX CGLModelScene::GetSelectionBox()
 
 void CGLModelScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
-	m_renderer.ResetStats();
-
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
 	FSModel* ps = m_doc->GetFSModel();
@@ -2312,11 +2310,6 @@ GLFiberRenderer* CGLModelScene::GetFiberRenderer()
 void CGLModelScene::UpdateSelectionMesh(FESelection* sel)
 {
 	BuildSelectionMesh(sel, m_selectionMesh);
-}
-
-GLRenderStats CGLModelScene::GetRenderStats()
-{
-	return m_renderer.GetRenderStats();
 }
 
 GModel* CGLModelScene::GetGModel()

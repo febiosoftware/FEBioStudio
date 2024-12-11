@@ -55,16 +55,6 @@ GLMeshRender::~GLMeshRender()
 	delete m_facetShader;
 }
 
-void GLMeshRender::ResetStats()
-{
-	m_stats.clear();
-}
-
-GLRenderStats GLMeshRender::GetRenderStats()
-{
-	return m_stats;
-}
-
 void GLMeshRender::SetUseShaders(bool b)
 {
 	m_useShaders = b;
@@ -162,7 +152,6 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh)
 				{
 					shader->Render(mesh.Face(n0 + j));
 				}
-				m_stats.triangles += nf;
 				shader->Deactivate();
 			}
 		}
@@ -179,7 +168,6 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, GLFacetShader& shader)
 		shader.Render(mesh.Face(i));
 	}
 	shader.Deactivate();
-	m_stats.triangles += NF;
 }
 
 void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
@@ -207,7 +195,6 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID)
 			shader->Render(mesh.Face(i + n0));
 		}
 		if (shader != m_defaultShader) shader->Deactivate();
-		m_stats.triangles += NF;
 	}
 }
 
@@ -225,7 +212,6 @@ void GLMeshRender::RenderGMesh(const GMesh& mesh, int surfID, GLFacetShader& sha
 			shader.Render(mesh.Face(i + n0));
 		}
 		shader.Deactivate();
-		m_stats.triangles += NF;
 	}
 }
 

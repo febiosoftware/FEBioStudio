@@ -23,39 +23,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "Document.h"
+#include "stdafx.h"
+#include "GLRenderEngine.h"
 
-class CPostDocument;
-
-class CGLPostScene : public CGLScene
+void GLRenderEngine::ResetStats()
 {
-public:
-	CGLPostScene(CPostDocument* doc);
+	m_stats.clear();
+}
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
-
-	BOX GetBoundingBox() override;
-
-	BOX GetSelectionBox() override;
-
-	void ToggleTrackSelection();
-
-private:
-	void RenderImageData(CGLContext& rc);
-
-	void RenderTags(CGLContext& rc);
-
-	void UpdateTracking();
-
-private:
-	CPostDocument* m_doc;
-
-	bool	m_btrack;
-	int		m_ntrack[3];	// used for tracking
-	double	m_trackScale;
-	vec3d	m_trgPos;
-	quatd	m_trgRot0;
-	quatd	m_trgRot;
-	quatd	m_trgRotDelta;
-};
+GLRenderStats GLRenderEngine::GetRenderStats()
+{
+	return m_stats;
+}

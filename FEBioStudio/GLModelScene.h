@@ -184,8 +184,6 @@ public:
 
 	void UpdateSelectionMesh(FESelection* sel);
 
-	GLRenderStats GetRenderStats();
-
 	GModel* GetGModel();
 
 	FSModel* GetFSModel();

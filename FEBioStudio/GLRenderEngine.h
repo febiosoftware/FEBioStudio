@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
 #include <string>
+#include <GLLib/GLRenderStats.h>
 
 class GMesh;
 
@@ -44,6 +45,9 @@ public:
 public:
 	GLRenderEngine() {}
 	virtual ~GLRenderEngine() {}
+
+	void ResetStats();
+	GLRenderStats GetRenderStats();
 
 public:
 	virtual void pushState() {}
@@ -66,4 +70,7 @@ public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
 	virtual void ActivateEnvironmentMap(unsigned int mapid) {}
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
+
+protected:
+	GLRenderStats m_stats;
 };

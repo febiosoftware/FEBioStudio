@@ -89,8 +89,6 @@ public:
 	void DeactivateEnvironmentMap(GLRenderEngine& re);
 	void LoadEnvironmentMap(GLRenderEngine& re);
 
-	virtual GLRenderStats GetRenderStats() { return GLRenderStats(); }
-
 public:
 	void ZoomSelection(bool forceZoom = true);
 

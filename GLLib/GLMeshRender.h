@@ -55,10 +55,6 @@ public:
 	void SetDivisions(int ndivs) { m_ndivs = ndivs; }
 
 public:
-	void ResetStats();
-	GLRenderStats GetRenderStats();
-
-public:
 	void SetUseShaders(bool b);
 	void ClearShaders();
 	void AddShader(GLFacetShader* shader);
@@ -105,7 +101,6 @@ public:
 	bool		m_useShaders;		//!< use the shaders
 
 private:
-	GLRenderStats m_stats;
 	GLTriMesh	m_glmesh;
 	std::vector<GLFacetShader*> m_shaders;
 	GLFacetShader* m_defaultShader;
