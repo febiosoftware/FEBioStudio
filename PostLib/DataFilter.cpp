@@ -1148,30 +1148,48 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	FEElemData_T<T, DATA_NODE>& vec = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
 	Post::FEElementData<float, DATA_NODE>& scl = dynamic_cast<Post::FEElementData<float, DATA_NODE>&>(dst);
 
+	mesh.TagAllNodes(-1);
+	int n = 0;
+	int ne_max = 0;
 	int NE = mesh.Elements();
-	T val[FSElement::MAX_NODES];
-	vector<float> data;
-	vector<int> elem(1);
-	vector<int> l;
-	for (int i = 0; i<NE; ++i)
+	vector<int> elemList; elemList.reserve(NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		if (vec.active(i))
+		{
+			elemList.push_back(i);
+			int ne = el.Nodes();
+			if (ne > ne_max) ne_max = ne;
+			for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = n++;
+		}
+	}
+	if (n == 0) return;
+
+	vector<float> val(n, 0.f);
+	vector<int> l(ne_max * elemList.size());
+	for (int i : elemList)
 	{
 		FEElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
-		if (vec.active(i))
+		for (int j = 0; j < ne; ++j) l[i * ne_max + j] = mesh.Node(el.m_node[j]).m_ntag;
+	}
+
+	T data[FSElement::MAX_NODES];
+	for (int i : elemList)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		vec.eval(i, data);
+
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
 		{
-			vec.eval(i, val);
-
-			data.resize(ne);
-			for (int j=0; j<ne; ++j) data[j] = component(val[j], ncomp);
-
-			l.resize(ne);
-			for (int j=0; j<ne; ++j) l[j] = el.m_node[j];
-
-			elem[0] = i;
-			
-			scl.add(data, elem, l, ne);
+			float f = component(data[j], ncomp);
+			val[l[i * ne_max + j]] = f;
 		}
 	}
+
+	scl.add(val, elemList, l, ne_max);
 }
 
 void extractElemDataComponentNODE_ARRAY(Post::FEMeshData& dst, Post::FEMeshData& src, int ncomp, Post::FEPostMesh& mesh)
