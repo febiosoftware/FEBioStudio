@@ -516,6 +516,7 @@ if(WIN32)
 		DOC "Levmar library path")
 else()
 	find_path(LEVMAR_INC levmar.h PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "levmar" "include/levmar"
 		DOC "Levmar include directory")
 	find_library(LEVMAR_LIB levmar PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build" "cbuild" "cmbuild"
