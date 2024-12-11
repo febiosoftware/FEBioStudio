@@ -17,6 +17,7 @@ cmake -L . -B cmbuild ^
   -DUSE_NETGEN=ON ^
   -DMODEL_REPO=ON ^
   -DUSE_ITK=ON ^
+  -DUSE_LEVMAR=ON ^
   -DBUILD_UPDATER=ON
 )
 cd cmbuild

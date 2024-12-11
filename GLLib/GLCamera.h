@@ -170,6 +170,10 @@ public:
 	void SetOrthoProjection(bool b);
 
 public:
+	bool IsMoving() const { return m_isMoving; }
+	void SetMoving(bool b) { m_isMoving = b; }
+
+public:
 	VecInterpolator		m_pos;	// position of target in global coordinates
 	VecInterpolator		m_trg;	// position of target in local coordinates
 	QuatInterpolator	m_rot;	// orientation of camera
@@ -179,4 +183,6 @@ private:
 	double	m_speed;
 	double	m_bias;
 	bool	m_bortho;
+
+	bool	m_isMoving;	// camera is moving when user is moving mouse with depressed button
 };

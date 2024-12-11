@@ -507,6 +507,9 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		return;
 	}
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	cam.SetMoving(true);
+
 	if (ntrans == TRANSFORM_MOVE)
 	{
 		m_rt = m_rg = vec3d(0, 0, 0);
@@ -869,6 +872,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	AddRegionPoint(x, y);
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	cam.SetMoving(false);
 
 	int pivotMode = m_pivot.GetSelectionMode();
 	if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)

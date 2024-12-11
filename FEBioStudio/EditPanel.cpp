@@ -254,7 +254,7 @@ void CEditPanel::on_modParams_apply()
 	}
 
 	SurfaceModifierThread* thread = new SurfaceModifierThread(mod, surfaceObject, g);
-	CDlgStartThread dlg(this, thread);
+	CDlgStartThread dlg(GetMainWindow(), thread);
 	dlg.setTask(QString::fromStdString(mod->GetName()));
 	if (dlg.exec())
 	{

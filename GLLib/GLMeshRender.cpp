@@ -2543,6 +2543,30 @@ void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 	glPopAttrib();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGMeshLines(GMesh* pm)
+{
+	if (pm == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// loop over all faces
+	glBegin(GL_LINES);
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		GMesh::FACE& face = pm->Face(i);
+		const vec3d& r1 = to_vec3d(pm->Node(face.n[0]).r);
+		const vec3d& r2 = to_vec3d(pm->Node(face.n[1]).r);
+		const vec3d& r3 = to_vec3d(pm->Node(face.n[2]).r);
+		glx::lineLoop(r1, r2, r3);
+	} // for
+	glEnd();
+
+	glPopAttrib();
+}
+
 void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f)
 {
 	vector<vec3d> points; points.reserve(65536);

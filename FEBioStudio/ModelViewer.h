@@ -195,6 +195,8 @@ public slots:
     void OnExportTIFF();
     void OnExportNRRD();
 
+    void OnAddFiberODFAnalysis();
+
 signals:
 	void currentObjectChanged(FSObject* po);
 

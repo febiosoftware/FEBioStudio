@@ -25,12 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "DlgStartThread.h"
+#include "MainWindow.h"
 #include <QLabel>
 #include <QProgressBar>
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QFormLayout>
 #include <QTimer>
+#include <chrono>
+using namespace std::chrono;
+using dseconds = duration<double>;
 
 //=======================================================================================
 class CDlgStartThreadUI
@@ -47,6 +52,10 @@ public:
 	QLabel*			m_task;
 	QProgressBar*	m_progress;
 	QPushButton*	m_stop;
+	QLabel*			m_time;
+	QLabel*			m_timeLeft;
+
+	time_point<steady_clock>	m_start;	//!< time at start
 
 public:
 	CDlgStartThreadUI()
@@ -67,6 +76,11 @@ public:
 		m_progress->setRange(0, 0);
 		m_progress->setValue(0);
 
+		QFormLayout* h1 = new QFormLayout;
+		h1->addRow("Time elapsed: ", m_time = new QLabel); m_time->setAlignment(Qt::AlignLeft);
+		h1->addRow("Time remaining: ", m_timeLeft = new QLabel); m_timeLeft->setAlignment(Qt::AlignLeft);
+		l->addLayout(h1);
+
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addStretch();
 		h->addWidget(m_stop = new QPushButton("Cancel"));
@@ -81,18 +95,22 @@ public:
 
 
 //=============================================================================
-CDlgStartThread::CDlgStartThread(QWidget* parent, CustomThread* thread) : QDialog(parent), ui(new CDlgStartThreadUI)
+CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QDialog(parent), ui(new CDlgStartThreadUI)
 {
 	ui->setup(this);
 	
 	ui->m_thread = thread;
+	parent->ShowLogPanel();
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
+	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
+
+	ui->m_start = steady_clock::now();
 
 	ui->m_thread->start();
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
+	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::setTask(const QString& taskString)
@@ -125,8 +143,24 @@ void CDlgStartThread::cancel()
 	ui->m_thread->stop();
 }
 
+QString sec2str(double fsec)
+{
+	int nhour = (int)(fsec / 3600.0); fsec -= nhour * 3600;
+	int nmin = (int)(fsec / 60.0); fsec -= nmin * 60;
+	int nsec = (int)(fsec + 0.5);
+
+	char sz[64] = { 0 };
+	sprintf(sz, "%d:%02d:%02d", nhour, nmin, nsec);
+
+	return QString(sz);
+}
+
 void CDlgStartThread::checkProgress()
 {
+	time_point<steady_clock> pause = steady_clock::now();
+	double fsec = duration_cast<dseconds>(pause - ui->m_start).count();
+	ui->m_time->setText(sec2str(fsec));
+
 	if (ui->m_bdone)
 	{
 		if (ui->m_breturn == false)
@@ -140,9 +174,9 @@ void CDlgStartThread::checkProgress()
 		if (ui->m_cancelled) ui->m_breturn = false;
 		if (ui->m_breturn) accept(); else reject();
 	}
-	else if (ui->m_cancelled == false)
+	else
 	{
-		if (ui->m_thread->hasProgress())
+		if ((ui->m_cancelled == false) && (ui->m_thread->hasProgress()))
 		{
 			ui->m_progress->setRange(0.0, 100.0);
 			double p = ui->m_thread->progress();
@@ -155,6 +189,13 @@ void CDlgStartThread::checkProgress()
 			{
 				ui->m_currentTask = QString(sztask);
 				ui->m_task->setText(ui->m_currentTask);
+			}
+
+			double f = p / 100.0;
+			if (f > 0.01)
+			{
+				double frem = fsec * (1.0 - f) / f;
+				ui->m_timeLeft->setText(sec2str(frem));
 			}
 		}
 

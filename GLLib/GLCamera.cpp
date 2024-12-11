@@ -80,6 +80,8 @@ void CGLCamera::Reset()
 
 	m_bdecal = false;
 	m_bortho = false;
+
+	m_isMoving = false;
 }
 
 //-----------------------------------------------------------------------------

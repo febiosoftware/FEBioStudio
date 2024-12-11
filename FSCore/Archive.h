@@ -89,7 +89,7 @@ public:
 
 	// open for reading
 	bool Open(const char* szfile, unsigned int signature);
-	bool Open(FILE* file, unsigned int signature);
+	bool Open(FILE* file, unsigned int signature, const char* szfile);
 
 	// see if there is a valid file pointer
 	bool IsValid() const;
@@ -191,6 +191,8 @@ public:
 	void log(const char* sztxt, ...);
 	std::string GetLog() const;
 
+    std::string GetFilename() const;
+
 private:
 	bool Load(const char* szfile) { return false; }
 
@@ -207,6 +209,9 @@ protected:
 
 protected:
 	std::string		m_log;
+
+private:
+    std::string m_filename;
 };
 
 //----------------------
@@ -228,6 +233,8 @@ public:
 
 	// end a chunck
 	void EndChunk();
+
+    std::string GetFilename() const;
 
 	void WriteChunk(unsigned int nid, char* sz)
 	{
@@ -254,9 +261,16 @@ public:
 		m_pChunk->AddChild(new OLeaf<T>(nid, o));
 	}
 
+    template <typename T> void WriteChunk(unsigned int nid, std::vector<T>& a)
+	{
+		m_pChunk->AddChild(new OLeaf<std::vector<T> >(nid, a));
+	}
+
 protected:
 	FileStream	m_fp;		// the file pointer
 
 	OBranch*	m_pRoot;	// chunk tree root
 	OBranch*	m_pChunk;	// current chunk
+
+    std::string m_filename;
 };

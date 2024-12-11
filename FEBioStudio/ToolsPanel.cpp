@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include "MeshMorphTool.h"
 #include "ExtrudeMapTool.h"
 #include "CurveToBeamTool.h"
+#include <ImageLib/FiberODF.h>
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {

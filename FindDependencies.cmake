@@ -507,6 +507,29 @@ endif()
 set(FFMPEG_DBG_LIB_DIR CACHE PATH "Path to the FFMPEG debug lib directory")
 mark_as_advanced(FFMPEG_DBG_LIB_DIR)
 
+# LEVMAR
+if(WIN32)
+	find_path(LEVMAR_INC levmar.h PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		DOC "Levmar include directory")
+	find_library(LEVMAR_LIB levmar PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "vs2017/Release"
+		DOC "Levmar library path")
+else()
+	find_path(LEVMAR_INC levmar.h PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
+		DOC "Levmar include directory")
+	find_library(LEVMAR_LIB levmar PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build" "cbuild" "cmbuild"
+		DOC "Levmar library path")
+endif()
+
+if(LEVMAR_INC AND LEVMAR_LIB)		
+	option(USE_LEVMAR "Required for optimization in FEBio" ON)
+    mark_as_advanced(LEVMAR_INC LEVMAR_LIB)
+else()
+	option(USE_LEVMAR "Required for optimization in FEBio" OFF)
+    mark_as_advanced(CLEAR LEVMAR_INC LEVMAR_LIB)
+endif()
+
 # OpenGL
 find_package(OpenGL REQUIRED)
 # Use non-standard PATH_SUFFIXES on HOMEBREW macs

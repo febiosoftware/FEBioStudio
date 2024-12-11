@@ -324,6 +324,20 @@ void CModelDocument::DeleteObject(FSObject* po)
 
 		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
 	}
+    else if (dynamic_cast<CImageModel*>(po))
+    {
+        auto img = dynamic_cast<CImageModel*>(po);
+        RemoveImageModel(img);
+        delete img;
+
+        // We don't handle image models on the command stack so that 
+        // image deletion actually clears up ram
+        ClearCommandStack();
+    }
+    else if (dynamic_cast<CImageAnalysis*>(po))
+    {
+        DoCommand(new CCmdDeleteImageAnalysis(dynamic_cast<CImageAnalysis*>(po)));
+    }
 	else if (po->GetParent())
 	{
 		if (dynamic_cast<CFEBioJob*>(po))

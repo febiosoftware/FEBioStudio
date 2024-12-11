@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <PostLib/GLImageRenderer.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/ImageAnalysis.h>
 #include <PostLib/GLObject.h>
 #include <FEBioStudio/ImageViewSettings.h>
 
@@ -69,8 +70,12 @@ public:
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
 	size_t RemoveFilter(CImageFilter* filter);
     void MoveFilter(int fromIndex, int toIndex) { m_filters.Move(fromIndex, toIndex); }
-
 	void AddImageFilter(CImageFilter* imageFilter);
+
+    int ImageAnalyses() const { return (int)m_analyses.Size(); }
+	CImageAnalysis* GetImageAnalysis(int i) { return m_analyses[i]; }
+    void AddImageAnalysis(CImageAnalysis* analysis) { m_analyses.Add(analysis); }
+	size_t RemoveAnalysis(CImageAnalysis* analysis);
 
 	BOX GetBoundingBox();
 
@@ -101,6 +106,7 @@ private:
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<Post::CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;
+    FSObjectList<CImageAnalysis> m_analyses;
 
 	CImageSource*	m_img;
 

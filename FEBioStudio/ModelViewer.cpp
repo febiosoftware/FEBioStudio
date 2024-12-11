@@ -54,6 +54,8 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
+
+#include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
@@ -2018,10 +2020,14 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 #ifdef HAS_ITK
             exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
             exportImage->addAction("NRRD", this, &CModelViewer::OnExportNRRD);
+            menu.addAction("Fiber ODF Analysis", this, &CModelViewer::OnAddFiberODFAnalysis);
 #endif
             del = true;
         }
 		break;
+    case MT_IMGANALYSIS:
+        del = true;
+        break;
 	default:
 		return;
 	}
@@ -2152,6 +2158,20 @@ void CModelViewer::OnEditMeshData()
 
 	CDlgEditMeshData dlg(data, this);
 	dlg.exec();
+}
+
+void CModelViewer::OnAddFiberODFAnalysis()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject); assert(img);
+	if (img == 0) return;
+
+    CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+
+	CFiberODFAnalysis* po = new CFiberODFAnalysis(img);
+    pdoc->DoCommand(new CCmdAddImageAnalysis(po));
+
+    Update();
+	Select(po);
 }
 
 void CModelViewer::OnFindImage()
