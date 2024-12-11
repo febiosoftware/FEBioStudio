@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #ifdef HAS_PYTHON
-
+ 
 #ifdef PY_EXTERNAL
 #define PY_MODULE_TYPE PYBIND11_MODULE
 #else
@@ -38,6 +38,7 @@ SOFTWARE.*/
 
 #include "PyFBSCore.h"
 #include "PyFBSPost.h"
+#include "PyFSMesh.h"
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
@@ -51,6 +52,7 @@ namespace py = pybind11;
 PY_MODULE_TYPE(fbs, m)
 {
 	init_FBSCore(m);
+    init_FSMesh(m);
 	init_FBSPost(m);
 
 #ifndef PY_EXTERNAL

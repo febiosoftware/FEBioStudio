@@ -226,9 +226,6 @@ void init_FBSModel(py::module& m)
         .def("MakeRequired", &GNode::MakeRequired)
         ;
     ///////////////// GNode /////////////////
-
-    
-    init_FSMesh(mdl);
     
 
 	mdl.def("create_box", CreateBox);
