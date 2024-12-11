@@ -841,7 +841,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			if (dynamic_cast<GMaterial*>(po))
 			{
 				GMaterial* m = dynamic_cast<GMaterial*>(po);
-				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24);
+				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->GetColor()), ::Shape::Circle, 24);
 				item->setIcon(0, CIconProvider::CreateIcon(icon, Emblem::Caution));
 			}
 			else
@@ -872,7 +872,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
-			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24));
+			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->GetColor()), ::Shape::Circle, 24));
 		}
 		else if (m_data[n].szicon)
 		{

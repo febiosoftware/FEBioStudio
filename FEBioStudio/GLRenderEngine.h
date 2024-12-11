@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 #include <string>
 #include <GLLib/GLRenderStats.h>
+#include <GLLib/GLMaterial.h>
 
 class GMesh;
 
@@ -36,10 +37,6 @@ class GLRenderEngine
 public:
 	enum StateFlag {
 		LIGHTING = 1
-	};
-
-	enum MaterialType {
-		PLASTIC = 1
 	};
 
 public:
@@ -57,7 +54,7 @@ public:
 	virtual void disable(StateFlag flag) {}
 
 	virtual void setColor(GLColor c) {}
-	virtual void setMaterial(MaterialType mat, GLColor c) {}
+	virtual void setMaterial(GLMaterial::Type mat, GLColor c) {}
 
 public:
 	virtual void renderPoint(const vec3d& r) {}

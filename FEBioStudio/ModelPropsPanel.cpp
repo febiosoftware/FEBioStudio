@@ -870,7 +870,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				else if (dynamic_cast<GMaterial*>(po))
 				{
 					GMaterial* mo = dynamic_cast<GMaterial*>(po);
-					ui->showObjectInfo(true, true, nameEditable, toQColor(mo->Diffuse()));
+					ui->showObjectInfo(true, true, nameEditable, toQColor(mo->GetColor()));
 				}
 				else if (dynamic_cast<GDiscreteElementSet*>(po))
 				{
@@ -1560,7 +1560,7 @@ void CModelPropsPanel::on_object_colorChanged(const QColor& col)
 	GMaterial* mo = dynamic_cast<GMaterial*>(m_currentObject);
 	if (mo)
 	{
-		mo->AmbientDiffuse(toGLColor(col));
+		mo->SetColor(toGLColor(col));
 	}
 
 	GDiscreteObject* pd = dynamic_cast<GDiscreteObject*>(m_currentObject);

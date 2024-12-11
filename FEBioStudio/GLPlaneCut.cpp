@@ -128,7 +128,7 @@ void GLPlaneCut::BuildPlaneCut(FSModel& fem, bool showMeshData)
 						GMaterial* pmat = fem.GetMaterialFromID(mid);
 						if (pmat)
 						{
-							c = fem.GetMaterialFromID(mid)->Diffuse();
+							c = fem.GetMaterialFromID(mid)->GetColor();
 							matId = mid;
 						}
 						else

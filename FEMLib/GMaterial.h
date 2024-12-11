@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <FSCore/color.h>
 #include <MeshLib/IHasItemList.h>
+#include <GLLib/GLMaterial.h>
 
 //-----------------------------------------------------------------------------
 class FSModel;
@@ -70,16 +70,9 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	GLColor Ambient() { return m_ambient; }
-	GLColor Diffuse() { return m_diffuse; }
-	GLColor Emission() { return m_emission; }
-	GLColor Specular() { return m_specular; }
-
-	void Ambient(GLColor c) { m_ambient = c; }
-	void Diffuse(GLColor c) { m_diffuse = c; }
-	void Emission(GLColor c) { m_emission = c; }
-	void Specular(GLColor c) { m_specular = c; }
-	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
+	void SetColor(GLColor c) { m_glmat.AmbientDiffuse(c); }
+	GLColor GetColor() const { return m_glmat.diffuse; }
+	GLMaterial& GetGLMaterial() { return m_glmat; }
 
 	vec3d GetPosition() const { return m_pos; }
 
@@ -101,17 +94,13 @@ public:
 
 public:
 	// appearance
-	double	m_shininess;	// shininess factor
 	int			m_nrender;		// rendering mode
 
 	int		m_ntag;	// used for I/O
 	vec3d	m_pos;	// location where glyph will be rendered (e.g. for rigid bodies)
 
 protected:
-	GLColor		m_diffuse;	// diffuse color of material
-	GLColor		m_ambient;	// ambient color of material
-	GLColor		m_specular;	// specular color of material
-	GLColor		m_emission;	// emission color of material
+	GLMaterial	m_glmat;
 
 protected:
 	int			m_nID;	//!< unique material ID

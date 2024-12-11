@@ -140,6 +140,12 @@ class GLSelectionItem : public GLModelSceneItem
 public:
 	GLSelectionItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
 	void render(GLRenderEngine& re, CGLContext& rc) const override;
+
+private:
+	void RenderSelectedParts(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
+	void RenderSelectedSurfaces(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
+	void RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
+	void RenderSelectedNodes(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
 };
 
 class GLGridItem : public GLModelSceneItem
@@ -202,10 +208,6 @@ public:
 
 public:
 	void RenderSelection(CGLContext& rc);
-	void RenderSelectedParts(CGLContext& rc, GObject* po);
-	void RenderSelectedSurfaces(CGLContext& rc, GObject* po);
-	void RenderSelectedEdges(CGLContext& rc, GObject* po);
-	void RenderSelectedNodes(CGLContext& rc, GObject* po);
 
 private:
 	void BuildScene(CGLContext& rc);
@@ -248,14 +250,7 @@ private:
 	void RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh);
 
 public:
-	// set the GL material properties based on the material
-	void SetMatProps(GMaterial* pm);
-	void SetMatProps(CGLContext& rc, GPart* pg);
-
 	GLColor GetPartColor(CGLContext& rc, GPart* pg);
-
-	// set some default GL material properties
-	void SetDefaultMatProps();
 
 	void BuildFiberViz(CGLContext& rc);
 

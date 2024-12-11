@@ -678,7 +678,7 @@ void NIKE3DImport::build_materials(NIKE3DProject& nike)
 		GMaterial* pgm = new GMaterial(pmat);
 
 		pgm->SetName(m.szname);
-		pgm->AmbientDiffuse(col[i%16]);
+		pgm->SetColor(col[i%16]);
 		m_pMat.push_back(pgm);
 
 		// add materials to model

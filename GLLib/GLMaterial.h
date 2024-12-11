@@ -24,40 +24,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLRenderEngine.h"
+#include <FSCore/color.h>
 
-class CGLSceneView;
-
-class OpenGLRenderer : public GLRenderEngine
+class GLMaterial
 {
-	class Imp;
+public:
+	enum Type {
+		PLASTIC = 1,
+		HIGHLIGHT
+	};
 
 public:
-	OpenGLRenderer(CGLSceneView* view);
-	~OpenGLRenderer();
+	GLColor		diffuse;	// diffuse color of material
+	GLColor		ambient;	// ambient color of material
+	GLColor		specular;	// specular color of material
+	GLColor		emission;	// emission color of material
+	double		shininess;	// shininess factor
 
 public:
-	void pushState() override;
-	void popState() override;
-
-	void enable(StateFlag flag);
-	void disable(StateFlag flag);
-
-	void setColor(GLColor c) override;
-	void setMaterial(GLMaterial::Type mat, GLColor c) override;
-
-public:
-	void renderPoint(const vec3d& r) override;
-	void renderLine(const vec3d& a, const vec3d& b) override;
-
-	void renderGMesh(const GMesh& mesh) override;
-	void renderGMesh(const GMesh& mesh, int surfId) override;
-
-public:
-	unsigned int LoadEnvironmentMap(const std::string& fileName) override;
-	void ActivateEnvironmentMap(unsigned int mapid) override;
-	void DeactivateEnvironmentMap(unsigned int mapid) override;
-
-private:
-	Imp& m;
+	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }
 };

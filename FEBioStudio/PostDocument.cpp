@@ -338,7 +338,7 @@ bool CPostDocument::Initialize()
 			{
 				for (int i = 0; i < mats; ++i)
 				{
-					GLColor c = docfem.GetMaterial(i)->Diffuse();
+					GLColor c = docfem.GetMaterial(i)->GetColor();
 
 					Post::Material* mat = m_fem->GetMaterial(i);
 					mat->ambient = c;

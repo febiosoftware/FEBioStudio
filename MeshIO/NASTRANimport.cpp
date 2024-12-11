@@ -349,7 +349,7 @@ bool NASTRANimport::BuildMesh(FSModel& fem)
 			pmat->SetFloatValue(FSIsotropicElastic::MP_v, mat.v);
 
 			GMaterial* pgm = new GMaterial(pmat);
-			pgm->AmbientDiffuse(col[i%16]);
+			pgm->SetColor(col[i%16]);
 			fem.AddMaterial(pgm);
 
 			// see if there is a part that has this material
