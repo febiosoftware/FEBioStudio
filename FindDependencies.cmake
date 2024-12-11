@@ -510,16 +510,17 @@ mark_as_advanced(FFMPEG_DBG_LIB_DIR)
 # LEVMAR
 if(WIN32)
 	find_path(LEVMAR_INC levmar.h PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "levmar"
 		DOC "Levmar include directory")
 	find_library(LEVMAR_LIB levmar PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "vs2017/Release"
 		DOC "Levmar library path")
 else()
-	find_path(LEVMAR_INC levmar.h PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
+	find_path(LEVMAR_INC levmar.h PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/* $ENV{HOME}/local/x86_64
         PATH_SUFFIXES "include" "levmar" "include/levmar"
 		DOC "Levmar include directory")
-	find_library(LEVMAR_LIB levmar PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build" "cbuild" "cmbuild"
+	find_library(LEVMAR_LIB levmar PATHS /usr/local/ /opt/levmar* $ENV{HOME}/* $ENV{HOME}/*/* $ENV{HOME}/local/x86_64
+        PATH_SUFFIXES "lib" "build" "cbuild" "cmbuild"
 		DOC "Levmar library path")
 endif()
 
