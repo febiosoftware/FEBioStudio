@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
+#include <FEBioOpt/FEBioOpt.h>
 
 #ifdef min
 #undef min
@@ -160,9 +161,7 @@ public:
         parent->buildRemesh(&odf);
 
         // do the fitting stats
-#ifdef HAS_LEVMAR
         if (parent->GetBoolValue(FITTING)) parent->calculateFits(&odf);
-#endif
         return true;
     }
 
@@ -430,11 +429,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
-#ifdef HAS_LEVMAR
 	AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
-#else
-    AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0");
-#endif
     AddBoolParam(true, "Show Bounding boxes");
     AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
@@ -1576,9 +1571,6 @@ double matrix_max(const matrix& v)
 	return vm;
 }
 
-#ifdef HAS_LEVMAR
-#include "levmar.h"
-
 vector<double> CFiberODFAnalysis::optimize_edf(
 	const vector<double>& alpha0, 
 	const vector<double>& odf, 
@@ -1606,11 +1598,11 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 	data.pefd = &tmp;
 	data.plog = this;
 	vector<double> alpha = alpha0;
-	double info[LM_INFO_SZ] = { 0.0 };
+	double info[10] = { 0.0 }; // should match LM_INFO_SZ in levmar.h!
 
 	// call levmar.
 	// returns nr of iterations or -1 on failure
-	int niter = dlevmar_bc_dif(efd_objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
+	int niter = FEBioOpt::optimize(efd_objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
 	Log("levmar completed:\n");
 	Log("initial ||e||_2  : %lg\n", info[0]);
 	Log("||e||_2          : %lg\n", info[1]);
@@ -1665,11 +1657,11 @@ vector<double> CFiberODFAnalysis::optimize_vm3(
 	data.pefd = &tmp;
 	data.plog = this;
 	vector<double> beta = beta0;
-	double info[LM_INFO_SZ] = { 0.0 };
+	double info[10] = { 0.0 }; // should match LM_INFO_SZ in levmar.h
 
 	// call levmar.
 	// returns nr of iterations or -1 on failure
-	int niter = dlevmar_bc_dif(vm3_objfun, beta.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
+	int niter = FEBioOpt::optimize(vm3_objfun, beta.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
 	Log("levmar completed:\n");
 	Log("initial ||e||_2  : %lg\n", info[0]);
 	Log("||e||_2          : %lg\n", info[1]);
@@ -1698,22 +1690,6 @@ vector<double> CFiberODFAnalysis::optimize_vm3(
 
 	return beta;
 }
-
-#else
-vector<double> CFiberODFAnalysis::optimize_edf(
-	const vector<double>& alpha0, 
-	const vector<double>& odf, 
-	const vector<vec3d>& x,
-	const matrix& V,
-	const vector<double>& l)
-{ return {}; }
-
-vector<double> CFiberODFAnalysis::optimize_vm3(
-	const vector<double>& beta0,
-	const vector<double>& odf,
-	const vector<vec3d>& x)
-{ return {}; }
-#endif
 
 double det_matrix3(const matrix& a)
 {
