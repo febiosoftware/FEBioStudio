@@ -24,19 +24,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <QStackedWidget>
+#pragma once
 
-// QStackedWidget whose size depends only on the currently visible item
-class DynamicStackedWidget : public QStackedWidget
+#include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
+
+class CImageModel;
+class CGLCamera;
+
+class CImageAnalysis : public FSThreadedTask
 {
-	QSize sizeHint() const override
-	{
-		return currentWidget()->sizeHint();
-	}
+public:
+    enum TYPES
+    {
+        FIBERODF = 0
+    };
 
-	QSize minimumSizeHint() const override
-	{
-		return currentWidget()->minimumSizeHint();
-	}
+public:
+    CImageAnalysis(int type, CImageModel* img);
 
+    int Type() { return m_type; }
+
+    virtual void run() = 0;
+    virtual void render(CGLCamera* cam = nullptr) {}
+
+	bool IsActive() const { return m_active; }
+	void Activate(bool b) { m_active = b; }
+
+	CImageModel* GetImageModel() { return m_img; }
+
+    // Called when a Command removes the analysis from the ImageModel
+    // used to hide GLWidgets being rendered by the GLWidgetManager
+    // amoung other things
+    virtual void OnDelete() {}
+
+protected:
+    CImageModel* m_img;
+
+private:
+    int m_type;
+
+	bool	m_active;
 };

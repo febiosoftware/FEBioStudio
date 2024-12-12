@@ -258,6 +258,16 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 	}
 }
 
+void CGLWidgetManager::DrawWidgetsInLayer(QPainter* painter, int layer)
+{
+	SetRenderLayer(layer);
+	for (int i = 0; i < (int)m_Widget.size(); ++i)
+	{
+		GLWidget* pw = m_Widget[i];
+		if (pw->visible() && pw->layer() == layer) DrawWidget(pw, painter);
+	}
+}
+
 void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
 {
 	// snap the widget if any of its align flags are set

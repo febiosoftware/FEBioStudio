@@ -28,13 +28,14 @@ SOFTWARE.*/
 #include "CustomThread.h"
 
 class CDlgStartThreadUI;
+class CMainWindow;
 
 class CDlgStartThread : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgStartThread(QWidget* parent, CustomThread* thread);
+	CDlgStartThread(CMainWindow* parent, CustomThread* thread);
 
     void showEvent(QShowEvent* ev) override;
 	void closeEvent(QCloseEvent* ev) override;

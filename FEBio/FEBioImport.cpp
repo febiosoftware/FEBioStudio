@@ -113,7 +113,7 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 	if (szlog == NULL) return;
 
 	l = (int) strlen(szlog);
-	if (l == 0) { delete szlog;  return; }
+	if (l == 0) { delete[] szlog;  return; }
 
 	if (m_szlog == 0)
 	{

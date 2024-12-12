@@ -32,9 +32,11 @@ namespace Ui
 {
     class CImageParam;
     class CImageParam2;
+    class CImageSettingsWidget;
     class CImageSettingsPanel;
 }
 
+class CImageModel;
 class CMainWindow;
 class FSObject;
 class Param;
@@ -83,6 +85,24 @@ private:
 	Ui::CImageParam2* ui;
 };
 
+class CImageSettingsWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    CImageSettingsWidget(QWidget* parent = nullptr);
+
+public slots:
+    void ImageModelChanged(CImageModel* model);
+
+signals:
+    void ParamChanged();
+
+private:
+    Ui::CImageSettingsWidget* ui;
+
+};
+
 class CImageSettingsPanel : public CWindowPanel
 {
     Q_OBJECT
@@ -92,8 +112,7 @@ public:
 
 public slots:
     void ModelTreeSelectionChanged(FSObject* obj);
-    void ParamChanged();
-
+    void on_ParamChanged();
 
 private:
     Ui::CImageSettingsPanel* ui;

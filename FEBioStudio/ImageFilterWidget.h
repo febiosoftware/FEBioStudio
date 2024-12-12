@@ -64,13 +64,14 @@ protected:
     }
 };
 
+class CMainWindow;
 
 class CImageFilterWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    CImageFilterWidget();
+    CImageFilterWidget(CMainWindow* wnd);
     ~CImageFilterWidget();
 
     void SetImageModel(CImageModel* img);
@@ -96,4 +97,5 @@ private:
 
     std::vector<CPropertyList*> m_props;
 
+	CMainWindow* m_wnd;
 };

@@ -41,8 +41,8 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include "DlgStartThread.h"
 
-CImageFilterWidget::CImageFilterWidget()
-    : m_imgModel(nullptr)
+CImageFilterWidget::CImageFilterWidget(CMainWindow* wnd)
+    : m_imgModel(nullptr), m_wnd(wnd)
 {
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
@@ -205,7 +205,7 @@ void CImageFilterWidget::on_applyFilters_clicked()
     {
         m_imgModel->ClearFilters();
 
-        CDlgStartThread dlg(this, new CImageFilterThread(m_imgModel));
+        CDlgStartThread dlg(m_wnd, new CImageFilterThread(m_imgModel));
 
         if(!dlg.exec())
         {

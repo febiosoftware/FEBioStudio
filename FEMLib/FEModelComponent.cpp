@@ -276,13 +276,22 @@ void LoadFEBioProperties(FSModelComponent* pmc, IArchive& ar)
 				case CID_PROPERTY_ITEM:
 				{
 					FSModelComponent* pci = FEBio::CreateFSClass(prop->GetSuperClassID(), prop->GetPropertyType(), pmc->GetFSModel());
-					assert(pci);
-					pci->Load(ar);
+					if (pci)
+					{
+						try {
+							pci->Load(ar);
 
-					if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
-						prop->AddComponent(pci);
-					else prop->SetComponent(pci, n);
-					n++;
+							if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
+								prop->AddComponent(pci);
+							else prop->SetComponent(pci, n);
+							n++;
+						}
+						catch (std::runtime_error e)
+						{
+							ar.log(e.what());
+							delete pci;
+						}
+					}
 				}
 				break;
 				}

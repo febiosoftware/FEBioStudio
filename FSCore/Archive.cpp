@@ -120,12 +120,14 @@ bool IArchive::Open(const char* szfile, unsigned int signature)
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return false;
 	m_delfp = true;
-	return Open(fp, signature);
+	return Open(fp, signature, szfile);
 }
 
 //-----------------------------------------------------------------------------
-bool IArchive::Open(FILE* fp, unsigned int signature)
+bool IArchive::Open(FILE* fp, unsigned int signature, const char* szfile)
 {
+    m_filename = szfile;
+
 	m_log.clear();
 
 	// make sure the file pointer is valid
@@ -319,6 +321,11 @@ std::string IArchive::GetLog() const
 	return m_log;
 }
 
+std::string IArchive::GetFilename() const
+{
+    return m_filename;
+}
+
 //////////////////////////////////////////////////////////////////////
 // OArchive
 //////////////////////////////////////////////////////////////////////
@@ -349,6 +356,8 @@ void OArchive::Close()
 
 bool OArchive::Create(const char* szfile, unsigned int signature)
 {
+    m_filename = szfile;
+
 	// attempt to create the file
 	if (m_fp.Create(szfile) == false) return false;
 
@@ -377,4 +386,9 @@ void OArchive::BeginChunk(unsigned int id)
 void OArchive::EndChunk()
 {
 	m_pChunk = m_pChunk->GetParent();
+}
+
+std::string OArchive::GetFilename() const
+{
+    return m_filename;
 }
