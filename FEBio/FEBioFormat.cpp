@@ -2841,12 +2841,16 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						const char* szname = tag.AttributeValue("name", true);
 
 						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
 						if (pc)
 						{
+							assert(pc->GetSuperClassID() == prop->GetSuperClassID());
 							if (szname) pc->SetName(szname);
 							prop->AddComponent(pc);
 							ParseModelComponent(pc, tag);
+						}
+						else
+						{
+							ParseUnknownAttribute(tag, sztype);
 						}
 					}
 				}

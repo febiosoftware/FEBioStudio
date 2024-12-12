@@ -48,6 +48,7 @@ class MeshLayer;
 class CModelDocument;
 class CGLDocument;
 class CGView;
+class CImageAnalysis;
 
 class FSRigidLoad;
 class FSRigidBC;
@@ -1651,4 +1652,34 @@ public:
 
 private:
 	std::vector<GPart*> m_partList;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddImageAnalysis : public CCommand
+{
+public:
+	CCmdAddImageAnalysis(CImageAnalysis* analysis);
+	~CCmdAddImageAnalysis();
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+    bool m_del;
+	CImageAnalysis*	m_analysis;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdDeleteImageAnalysis : public CCommand
+{
+public:
+	CCmdDeleteImageAnalysis(CImageAnalysis* analysis);
+	~CCmdDeleteImageAnalysis();
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+    bool m_del;
+	CImageAnalysis*	m_analysis;
 };

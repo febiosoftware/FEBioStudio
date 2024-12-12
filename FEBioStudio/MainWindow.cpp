@@ -3639,6 +3639,10 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		// add it to the project
 		doc->AddImageModel(imgModel);
 
+        // We don't handle image models on the command stack so that 
+        // image deletion actually clears up ram
+        doc->ClearCommandStack();
+
 		Update(0, true);
 		// only for model docs
 		if (dynamic_cast<CModelDocument*>(doc))

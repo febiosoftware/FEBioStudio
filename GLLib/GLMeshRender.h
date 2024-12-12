@@ -73,6 +73,7 @@ public:
 	void PopState();
 
 public:
+	void RenderGMeshLines(GMesh* pm);
 	void RenderLine(const vec3d& a, const vec3d& b);
 
 public:

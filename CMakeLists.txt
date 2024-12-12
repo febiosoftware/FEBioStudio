@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
@@ -250,7 +250,7 @@ if(USE_ZLIB)
 endif()
 
 # Find FEBio Libs
-set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot febiofluid febiomix)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot febiofluid febiomix feamr febioopt)
 
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")

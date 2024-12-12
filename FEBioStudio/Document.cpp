@@ -51,6 +51,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/ImageAnalysis.h>
 #include "ImageThread.h"
 #include <GeomLib/GModel.h>
 #include <MeshLib/FENodeData.h>
@@ -743,6 +744,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
 	else if (dynamic_cast<CImageModel*>(po)) return "3D Image volume";
+    else if (dynamic_cast<CImageAnalysis*>(po)) return "Image Analysis";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
@@ -914,6 +916,11 @@ void CGLDocument::AddImageModel(CImageModel* img)
 {
 	assert(img);
 	m_img.Add(img);
+}
+
+void CGLDocument::RemoveImageModel(CImageModel* img)
+{
+    m_img.Remove(img);
 }
 
 CImageModel* CGLDocument::GetImageModel(int i)

@@ -44,9 +44,18 @@ struct FSTaskProgress
 	FSTaskProgress(double p, const char* sz)
 	{
 		valid = false;
+		canceled = false;
 		percent = p;
 		task = sz;
 	}
+};
+
+class TaskLogger
+{
+public:
+	TaskLogger() {}
+	virtual ~TaskLogger() {}
+	virtual void Log(const std::string& msg) = 0;
 };
 
 class FSThreadedTask : public FSObject
@@ -63,7 +72,9 @@ public:
 	// see if the task was canceled? 
 	virtual bool IsCanceled() const;
 
-	std::string GetErrorString() const;
+	std::string getErrorString() const;
+    
+    std::string GetErrorString() const;
 
 	// get the number of errors
 	int Errors() const;
@@ -75,7 +86,14 @@ public:
 	bool errf(const char* szerr, ...);
 	bool error(const std::string& err);
 
+	void SetTaskLogger(TaskLogger* logger);
+
+	void Log(const char* sz, ...);
+
 protected:
+	// reset progress 
+	void resetProgress();
+
 	// set progress in percent (value between 0 and 100)
 	void setProgress(double d);
 
@@ -91,4 +109,5 @@ private:
 	FSTaskProgress	m_progress;
 	std::string		m_err;		//!< error messages (separated by \n)
 	int				m_nerrors;	//!< number of errors
+	TaskLogger* m_log;
 };

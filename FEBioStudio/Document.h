@@ -392,6 +392,7 @@ public:
 public:
 	int ImageModels() const;
 	virtual void AddImageModel(CImageModel* img);
+    virtual void RemoveImageModel(CImageModel* img);
 	CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 

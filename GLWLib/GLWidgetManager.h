@@ -49,6 +49,7 @@ public:
 	int handle(int x, int y, int nevent);
 
 	void DrawWidgets(QPainter* painter);
+	void DrawWidgetsInLayer(QPainter* painter, int layer);
 	void DrawWidget(GLWidget* widget, QPainter* painter);
 
 	void SetRenderLayer(int l);

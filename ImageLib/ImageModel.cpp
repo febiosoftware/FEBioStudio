@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "SITKTools.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/FiberODFAnalysis.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
@@ -39,10 +40,13 @@ SOFTWARE.*/
 #include <fstream>
 #include <assert.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLContext.h>
 
 using namespace Post;
 
-CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
+enum SaveIDs { BASE = 0, IMAGESOURCE, FILTERS, ANALYSES, VIEWSETTINGS};
+
+CImageModel::CImageModel(Post::CGLModel* mdl) : CGLObject(mdl)
 {
 	m_showBox = true;
 	m_img = nullptr;
@@ -120,6 +124,11 @@ void CImageModel::Render(CGLContext& rc)
 	};
 	glMultMatrixd(q);
 
+    for(int j = 0; j < ImageAnalyses(); j++)
+    {
+        GetImageAnalysis(j)->render(rc.m_cam);
+    }
+
 	if (ShowBox())
 	{
 		BOX box = GetBoundingBox();
@@ -141,6 +150,7 @@ void CImageModel::Render(CGLContext& rc)
 			pir->Render(rc);
 		}
 	}
+
 	glPopMatrix();
 }
 
@@ -185,6 +195,7 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 
 size_t CImageModel::RemoveFilter(CImageFilter* filter)
 {
+    delete filter;
     return m_filters.Remove(filter);
 }
 
@@ -192,6 +203,11 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 {
     imageFilter->SetImageModel(this);
 	m_filters.Add(imageFilter);
+}
+
+size_t CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
+{
+    return m_analyses.Remove(analysis);
 }
 
 BOX CImageModel::GetBoundingBox()
@@ -224,7 +240,7 @@ mat3d CImageModel::GetOrientation()
 
 void CImageModel::Save(OArchive& ar)
 {
-	ar.BeginChunk(0);
+	ar.BeginChunk(BASE);
 	{
 		FSObject::Save(ar);
 	}
@@ -232,7 +248,7 @@ void CImageModel::Save(OArchive& ar)
 
 	if (m_img)
 	{
-		ar.BeginChunk(1);
+		ar.BeginChunk(IMAGESOURCE);
 		{
             ar.BeginChunk((int)m_img->Type());
             {
@@ -245,7 +261,7 @@ void CImageModel::Save(OArchive& ar)
 
 	if (m_filters.IsEmpty() == false)
 	{
-		ar.BeginChunk(2);
+		ar.BeginChunk(FILTERS);
 		{
 			for (int index = 0; index < m_filters.Size(); index++)
 			{
@@ -259,6 +275,28 @@ void CImageModel::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+    if (m_analyses.IsEmpty() == false)
+	{
+		ar.BeginChunk(ANALYSES);
+		{
+			for (int index = 0; index < m_analyses.Size(); index++)
+			{
+				ar.BeginChunk(m_analyses[index]->Type());
+				{
+					m_analyses[index]->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+    ar.BeginChunk(VIEWSETTINGS);
+    {
+        viewSettings.Save(ar);
+    }
+    ar.EndChunk();
 }
 
 CImageSource* CImageModel::GetImageSource()
@@ -279,10 +317,10 @@ void CImageModel::Load(IArchive& ar)
 
 		switch (nid)
 		{
-		case 0:
+		case BASE:
 			FSObject::Load(ar);
 			break;
-		case 1:
+		case IMAGESOURCE:
         {
             while (ar.OpenChunk() == IArchive::IO_OK)
             {
@@ -313,7 +351,7 @@ void CImageModel::Load(IArchive& ar)
             }
             break;
         }
-        case 2:
+        case FILTERS:
         {
             std::string typeString;
             while (ar.OpenChunk() == IArchive::IO_OK)
@@ -342,6 +380,33 @@ void CImageModel::Load(IArchive& ar)
             }
             break;
         }
+        case ANALYSES:
+        {
+            while (ar.OpenChunk() == IArchive::IO_OK)
+            {
+                int nid2 = ar.GetChunkID();
+
+                switch (nid2)
+                {
+                case CImageAnalysis::FIBERODF:
+                {
+                    auto temp = new CFiberODFAnalysis(this);
+                    temp->Load(ar);
+                    m_analyses.Add(temp);
+                    break;
+                }
+                default:
+                    break;
+                }
+                ar.CloseChunk();
+            }
+            break;
+        }
+        case VIEWSETTINGS:
+            viewSettings.Load(ar);
+            break;
+        default:
+            break;
 		}
 		ar.CloseChunk();
 	}

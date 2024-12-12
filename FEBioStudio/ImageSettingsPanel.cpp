@@ -29,12 +29,14 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLabel>
 #include <QSpinBox>
+#include <QLabel>
 #include "ImageSettingsPanel.h"
 #include "MainWindow.h"
 #include "PropertyListForm.h"
 #include "ObjectProps.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
+#include <ImageLib/ImageAnalysis.h>
 #include "InputWidgets.h"
 #include "RangeSlider.h"
 #include <vector>
@@ -213,11 +215,11 @@ void CImageParam2::updateSpinBox()
 	emit paramChanged();
 }
 
-
 //=======================================================================================
-class Ui::CImageSettingsPanel
+class Ui::CImageSettingsWidget
 {
 public:
+	QLabel*		name;
 	QWidget*	w[3];
 	QFormLayout* panel[3];
 
@@ -238,9 +240,15 @@ public:
 	::CImageParam* chue3;
 
 public:
-    void setup(::CImageSettingsPanel* parent)
+    void setup(::CImageSettingsWidget* parent)
     {
         m_parent = parent;
+
+		name = new QLabel;
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("<b>Image volume:</b> "));
+		h->addWidget(name);
+		h->addStretch();
 
         panel[0] = new QFormLayout;
         panel[1] = new QFormLayout;
@@ -294,13 +302,18 @@ public:
 		addWidget(chue2, "Channel2 Hue", 2);
 		addWidget(chue3, "Channel3 Hue", 2);
 
-		parent->setLayout(layout);
+		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout->addLayout(h);
+		mainLayout->addLayout(layout);
+		parent->setLayout(mainLayout);
     }
 
     void setImageModel(CImageModel* img)
     {
         if(img)
         {
+			name->setText(QString::fromStdString(img->GetName()));
+
             CImageViewSettings* settings = img->GetViewSettings();
 
 			scale->setParam(&settings->GetParam(CImageViewSettings::ALPHA_SCALE));
@@ -333,6 +346,8 @@ public:
 		}
 		else
 		{
+			name->setText("(none selected)");
+
 			scale->setParam(nullptr);
 			gamma->setParam(nullptr);
 			hue->setParam(nullptr);
@@ -352,14 +367,51 @@ public:
 	void addWidget(::CImageParam* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
-		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
 	}
 
 	void addWidget(::CImageParam2* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
-		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
 	}
+
+private:
+	::CImageSettingsWidget* m_parent;
+};
+
+CImageSettingsWidget::CImageSettingsWidget(QWidget* parent) 
+    : QWidget(parent), ui(new Ui::CImageSettingsWidget)
+{
+    ui->setup(this);
+}
+
+ void CImageSettingsWidget::ImageModelChanged(CImageModel* model)
+ {
+    ui->setImageModel(model);
+ }
+
+
+//=======================================================================================
+class Ui::CImageSettingsPanel
+{
+public:
+	::CImageSettingsWidget* m_widget;
+
+public:
+    void setup(::CImageSettingsPanel* parent)
+    {
+        m_parent = parent;
+
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        layout->addWidget(m_widget = new ::CImageSettingsWidget);
+
+		parent->setLayout(layout);
+
+        QObject::connect(m_widget, &::CImageSettingsWidget::ParamChanged, m_parent, &::CImageSettingsPanel::on_ParamChanged);
+    }
 
 private:
 	::CImageSettingsPanel* m_parent;
@@ -374,18 +426,25 @@ CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)
 void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 {
     CImageModel* model = dynamic_cast<CImageModel*>(obj);
+	if (model == nullptr)
+	{
+		CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(obj);
+		if (ima) model = ima->GetImageModel();
+	}
 
-    ui->setImageModel(model);
+    ui->m_widget->ImageModelChanged(model);
 
-    if(model)
-    {
-        parentWidget()->show();
-        parentWidget()->raise();
-    }
+	if (model)
+	{
+		parentWidget()->show();
+		parentWidget()->raise();
+		ui->m_widget->show();
+	}
+	else ui->m_widget->hide();
 
 }
 
-void CImageSettingsPanel::ParamChanged()
+void CImageSettingsPanel::on_ParamChanged()
 {
     GetMainWindow()->UpdateUiView();
 }

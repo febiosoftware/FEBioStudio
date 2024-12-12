@@ -1306,6 +1306,11 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 	{
 		CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), new CImageModelValidator(img));
+
+        for(int j = 0; j < img->ImageAnalyses(); j++)
+        {
+            AddTreeItem(t2, QString::fromStdString(img->GetImageAnalysis(j)->GetName()), MT_IMGANALYSIS, 0, img->GetImageAnalysis(j), new CObjectProps(img->GetImageAnalysis(j)));
+        }
 	}
 }
 

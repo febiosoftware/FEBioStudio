@@ -24,19 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <QStackedWidget>
+#include "ImageAnalysis.h"
 
-// QStackedWidget whose size depends only on the currently visible item
-class DynamicStackedWidget : public QStackedWidget
+CImageAnalysis::CImageAnalysis(int type, CImageModel* img)
+    : m_img(img), m_type(type)
 {
-	QSize sizeHint() const override
-	{
-		return currentWidget()->sizeHint();
-	}
-
-	QSize minimumSizeHint() const override
-	{
-		return currentWidget()->minimumSizeHint();
-	}
-
-};
+	m_active = true;
+}

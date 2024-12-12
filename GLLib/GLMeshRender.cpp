@@ -449,12 +449,34 @@ void GLMeshRender::RenderEdges(const GMesh& m, std::function<bool(const GMesh::E
 	for (int i = 0; i < NE; i++)
 	{
 		const GMesh::EDGE& e = m.Edge(i);
-		if (f(e))
-		{
-			m_lineShader->Render(e);
-		}
+		glx::line(e.vr[0], e.vr[1]);
 	}
-	m_lineShader->Deactivate();
+	glEnd();
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGMeshLines(GMesh* pm)
+{
+	if (pm == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// loop over all faces
+	glBegin(GL_LINES);
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		GMesh::FACE& face = pm->Face(i);
+		const vec3d& r1 = to_vec3d(pm->Node(face.n[0]).r);
+		const vec3d& r2 = to_vec3d(pm->Node(face.n[1]).r);
+		const vec3d& r3 = to_vec3d(pm->Node(face.n[2]).r);
+		glx::lineLoop(r1, r2, r3);
+	} // for
+	glEnd();
+
+	glPopAttrib();
 }
 
 void GLMeshRender::RenderNormals(const GMesh& mesh, GLLineShader& shader)
