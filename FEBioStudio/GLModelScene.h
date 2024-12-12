@@ -71,6 +71,31 @@ private:
 	void RenderObjectNew(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaceMeshFaces(CGLContext& rc) const;
 
+	void RenderParts(CGLContext& rc) const;
+	void RenderSurfaces(CGLContext& rc) const;
+	void RenderEdges(CGLContext& rc) const;
+	void RenderNodes(CGLContext& rc) const;
+	void RenderBeamParts(CGLContext& rc) const;
+	void RenderSurfaceMeshEdges(CGLContext& rc) const;
+
+	void RenderFEFacesFromGMesh(CGLContext& rc) const;
+	void RenderMeshByDefault(CGLContext& rc, GMesh& mesh) const;
+	void RenderMeshByObjectColor(CGLContext& rc, GMesh& mesh) const;
+	void RenderMeshByMaterialType(CGLContext& rc, GMesh& mesh) const;
+	void RenderMeshByPhysics(CGLContext& rc, GMesh& mesh) const;
+	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const;
+
+	void RenderUnselectedBeamElements(CGLContext& rc) const;
+	void RenderSelectedFEElements(CGLContext& rc) const;
+	void RenderAllBeamElements(CGLContext& rc) const;
+	void RenderSelectedFEFaces(CGLContext& rc) const;
+	void RenderFEEdges(CGLContext& rc) const;
+	void RenderFENodes(CGLContext& rc) const;
+	void RenderSurfaceMeshNodes(CGLContext& rc) const;
+	void RenderNormals(CGLContext& rc, double scale) const;
+
+	void RenderSelection(CGLContext& rc) const;
+
 private:
 	GObject* m_po;
 };
@@ -206,48 +231,15 @@ public:
 
 	GLFiberRenderer* GetFiberRenderer();
 
-public:
-	void RenderSelection(CGLContext& rc);
+	FESelection* GetCurrentSelection();
 
 private:
 	void BuildScene(CGLContext& rc);
 
 public:
-	// rendering functions for GObjects
-	void RenderParts           (CGLContext& rc, GObject* po);
-	void RenderSurfaces        (CGLContext& rc, GObject* po);
-	void RenderEdges           (CGLContext& rc, GObject* po);
-	void RenderNodes           (CGLContext& rc, GObject* po);
-	void RenderBeamParts       (CGLContext& rc, GObject* po);
-
-	// rendering functions for FEMeshes
-	void RenderFEEdges      (CGLContext& rc, GObject* po);
-	void RenderFENodes      (CGLContext& rc, GObject* po);
-
-	void RenderSelectedFEFaces(CGLContext& rc, GObject* po);
-	void RenderSelectedFEElements(CGLContext& rc, GObject* po);
-
-	void RenderFEFacesFromGMesh(CGLContext& rc, GObject* po);
-
-	void RenderAllBeamElements       (CGLContext& rc, GObject* po);
-	void RenderUnselectedBeamElements(CGLContext& rc, GObject* po);
-	void RenderSelectedBeamElements  (CGLContext& rc, GObject* po);
-
-	// rendering functions for surface meshes
-	void RenderSurfaceMeshEdges(CGLContext& rc, GObject* po);
-	void RenderSurfaceMeshNodes(CGLContext& rc, GObject* po);
-
-	void RenderNormals(CGLContext& rc, GObject* po, double scale);
 	void RenderRigidLabels(CGLContext& rc);
 
 	void RenderTags(CGLContext& rc);
-
-private:
-	void RenderMeshByDefault(CGLContext& rc, GObject& o, GMesh& mesh);
-	void RenderMeshByObjectColor(CGLContext& rc, GObject& o, GMesh& mesh);
-	void RenderMeshByMaterialType(CGLContext& rc, GObject& o, GMesh& mesh);
-	void RenderMeshByPhysics(CGLContext& rc, GObject& o, GMesh& mesh);
-	void RenderMeshByElementType(CGLContext& rc, GObject& o, GMesh& mesh);
 
 public:
 	GLColor GetPartColor(CGLContext& rc, GPart* pg);

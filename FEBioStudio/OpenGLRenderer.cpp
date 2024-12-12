@@ -91,13 +91,13 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 		glDisable(GL_POLYGON_STIPPLE);
 
 		GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
-		GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
+		GLfloat spc[] = { 0.5f, 0.5f, 0.5f, 1.f };
 		GLfloat emi[] = { 0.0f, 0.0f, 0.0f, 1.f };
 
 		glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, rev);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
-		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
 	}
 	else if (mat == GLMaterial::HIGHLIGHT)
 	{

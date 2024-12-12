@@ -1658,10 +1658,17 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		GLRenderStats stats = m_ogl.GetRenderStats();
 		rt.setY(rt.y() + fontSize + 5);
 		float tris = (float)stats.triangles;
-		QChar suffix(' ');
-		if      (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
-		else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
-		painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 3).arg(suffix), to);
+		if (tris < 1e3)
+		{
+			painter.drawText(rt, QString("TRIs: %1").arg(stats.triangles), to);
+		}
+		else
+		{
+			QChar suffix(' ');
+			if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
+			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
+			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
+		}
 	}
 
 	painter.end();
