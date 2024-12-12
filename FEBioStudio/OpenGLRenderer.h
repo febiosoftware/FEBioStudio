@@ -58,6 +58,8 @@ public:
 	void ActivateEnvironmentMap(unsigned int mapid) override;
 	void DeactivateEnvironmentMap(unsigned int mapid) override;
 
+	void setClipPlane(unsigned int n, const double* v) override;
+
 private:
 	Imp& m;
 };

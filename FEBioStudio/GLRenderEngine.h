@@ -36,7 +36,8 @@ class GLRenderEngine
 {
 public:
 	enum StateFlag {
-		LIGHTING = 1
+		LIGHTING = 1,
+		CLIPPLANE
 	};
 
 public:
@@ -67,6 +68,8 @@ public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
 	virtual void ActivateEnvironmentMap(unsigned int mapid) {}
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
+
+	virtual void setClipPlane(unsigned int n, const double* v) {}
 
 protected:
 	GLRenderStats m_stats;

@@ -737,7 +737,6 @@ GLColor CGLModelScene::GetPartColor(CGLContext& rc, GPart* pg)
 
 		if (!pg->IsActive())
 		{
-			// Not sure if color material is on here, so we just set the color either way
 			c = GLColor(128, 128, 128);
 		}
 
@@ -1287,8 +1286,8 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc) const
 		view->RenderPlaneCut(rc);
 
 		// then turn on the clipping plane before rendering the other geometry
-		glClipPlane(GL_CLIP_PLANE0, view->PlaneCoordinates());
-		glEnable(GL_CLIP_PLANE0);
+		re.setClipPlane(0, view->PlaneCoordinates());
+		re.enable(GLRenderEngine::CLIPPLANE);
 	}
 }
 
@@ -1322,8 +1321,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 
 	if (po != poa)
 	{
-//		RenderObject(rc);
-		RenderObjectNew(re, rc);
+		RenderObject(re, rc);
 		return;
 	}
 
@@ -1340,28 +1338,28 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc);
-				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc);
-				else RenderObject(rc);
+				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(re, rc);
+				else RenderObject(re, rc);
 			}
 			else if (objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc);
-				else RenderObject(rc);
+				else RenderObject(re, rc);
 			}
 			else if (view.m_showPlaneCut && (view.m_planeCutMode == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				GMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(rc);
 			}
-			else RenderObject(rc);
+			else RenderObject(re, rc);
 		}
 		break;
 		case SELECT_PART: RenderParts(rc); break;
 		case SELECT_FACE: RenderSurfaces(rc); break;
 		case SELECT_EDGE:
 		{
-			RenderObject(rc);
+			RenderObject(re, rc);
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 			SetModelView(po);
@@ -1373,7 +1371,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 		break;
 		case SELECT_NODE:
 		{
-			RenderObject(rc);
+			RenderObject(re, rc);
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 			SetModelView(po);
@@ -1385,7 +1383,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 		break;
 		case SELECT_DISCRETE:
 		{
-			RenderObject(rc);
+			RenderObject(re, rc);
 		}
 		break;
 		}
@@ -1435,11 +1433,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 		{
 			if (item == ITEM_FACE)
 			{
-				RenderSurfaceMeshFaces(rc);
+				RenderSurfaceMeshFaces(re, rc);
 			}
 			else if (item == ITEM_EDGE)
 			{
-				RenderSurfaceMeshFaces(rc);
+				RenderSurfaceMeshFaces(re, rc);
 				cam.LineDrawMode(true);
 				cam.PositionInScene();
 				SetModelView(po);
@@ -1449,7 +1447,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			}
 			else if (item == ITEM_NODE)
 			{
-				RenderSurfaceMeshFaces(rc);
+				RenderSurfaceMeshFaces(re, rc);
 				RenderSurfaceMeshNodes(rc);
 			}
 		}
@@ -2117,80 +2115,29 @@ void GLObjectItem::RenderSelection(CGLContext& rc) const
 //       it is possible for an external surface to coincide with an
 //       internal surface. E.g., when a shell layer lies on top of a 
 //       hex layer.
-void GLObjectItem::RenderObject(CGLContext& rc) const
+void GLObjectItem::RenderObject(GLRenderEngine& re, CGLContext& rc) const
 {
-	GLViewSettings& vs = rc.m_settings;
-
-	GObject* po = m_po;
-
-	// get the GMesh
-	FSModel& fem = *m_scene->GetFSModel();
-	GMesh* pm = po->GetRenderMesh(); assert(pm);
-	if (pm == 0) return;
-
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	GLStandardModelShader shader;
-
-	int objectColor = m_scene->GetObjectColorMode();
-
-	// render non-selected faces
-	GPart* pgmat = 0; // the part that defines the material
-	int NF = po->Faces();
-	for (int n = 0; n < NF; ++n)
+	re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor());
+	GMesh* mesh = m_po->GetRenderMesh();
+	if (mesh == nullptr) return;
+	
+	int NF = m_po->Faces();
+	for (int i = 0; i < NF; ++i)
 	{
-		// get the next face
-		GFace& f = *po->Face(n);
-
-		// make sure the face is visible
-		if (f.IsVisible())
+		GFace* pf = m_po->Face(i);
+		if (pf->IsVisible())
 		{
-			// get the part IDs
-			int* pid = f.m_nPID;
-
-			// get the part (that is visible)
-			GPart* pg = po->Part(pid[0]);
-			if (pg && (pg->IsVisible() == false))
+			GPart* pg = m_po->Part(pf->m_nPID[0]);
+			if ((pg == nullptr) || !pg->IsVisible())
 			{
-				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = nullptr;
-				if (pg && (pg->IsVisible() == false)) pg = nullptr;
+				pg = m_po->Part(pf->m_nPID[1]);
 			}
 
-			// make sure we have a part
-			if (pg)
+			if (pg && pg->IsVisible())
 			{
-				bool useStipple = false;
-				if (objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
-				{
-					GLColor col(0, 0, 0);
-					switch (f.m_ntag)
-					{
-					case 0: col = GLColor(200, 200, 200); useStipple = true; break;
-					case 1: col = GLColor(200, 200, 0); break;	// boundary conditions
-					case 2: col = GLColor(0, 75, 0); break;	// initial conditions
-					case 3: col = GLColor(0, 200, 200); break;	// loads
-					case 4: col = GLColor(200, 0, 200); break;	// contact
-					case 5: col = GLColor(60, 0, 60); break;	// contact secondary
-					}
-					shader.SetColor(col);
-				}
-				else
-				{
-					shader.SetColor(m_scene->GetPartColor(rc, pg));
-				}
-
-				if (vs.m_transparencyMode != 0)
-				{
-					switch (vs.m_transparencyMode)
-					{
-					case 1: if (po->IsSelected()) useStipple = true; break;
-					case 2: if (!po->IsSelected()) useStipple = true; break;
-					}
-				}
-
-				// render the face
-				shader.SetUseStipple(useStipple);
-				renderer.RenderGMesh(*pm, n, shader);
+				GLColor c = m_scene->GetPartColor(rc, pg);
+				re.setColor(c);
+				re.renderGMesh(*mesh, i);
 			}
 		}
 	}
@@ -2198,62 +2145,34 @@ void GLObjectItem::RenderObject(CGLContext& rc) const
 	if (NF == 0)
 	{
 		// if there are no faces, render edges instead
+		GLMeshRender& renderer = m_scene->GetMeshRenderer();
 		renderer.SetLineShader(new GLLineColorShader());
-		int NC = po->Edges();
+		int NC = m_po->Edges();
 		for (int n = 0; n < NC; ++n)
 		{
-			GEdge& e = *po->Edge(n);
+			GEdge& e = *m_po->Edge(n);
 			if (e.IsVisible())
 			{
-				renderer.RenderEdges(*pm, n);
+				renderer.RenderEdges(*mesh, n);
 			}
 		}
 	}
 
 	// render beam sections if feature edges are not rendered. 
-	if (vs.m_bfeat == false)
+	if (rc.m_settings.m_bfeat == false)
 	{
 		RenderBeamParts(rc);
 	}
 }
 
-void GLObjectItem::RenderObjectNew(GLRenderEngine& re, CGLContext& rc) const
-{
-	re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor());
-	GMesh* mesh = m_po->GetRenderMesh();
-	if (mesh)
-	{
-		int NF = m_po->Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			GFace* pf = m_po->Face(i);
-			if (pf->IsVisible())
-			{
-				GPart* pg = m_po->Part(pf->m_nPID[0]);
-				if ((pg == nullptr) || !pg->IsVisible())
-				{
-					pg = m_po->Part(pf->m_nPID[1]);
-				}
-
-				if (pg && pg->IsVisible())
-				{
-					GLColor c = m_scene->GetPartColor(rc, pg);
-					re.setColor(c);
-					re.renderGMesh(*mesh, i);
-				}
-			}
-		}
-	}
-}
-
-void GLObjectItem::RenderSurfaceMeshFaces(CGLContext& rc) const
+void GLObjectItem::RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
 	if (surfaceObject == 0)
 	{
 		// just render something, otherwise nothing will show up
-		RenderObject(rc);
+		RenderObject(re, rc);
 		return;
 	}
 
@@ -2277,7 +2196,7 @@ void GLObjectItem::RenderSurfaceMeshFaces(CGLContext& rc) const
 	}
 	else
 	{
-		RenderObject(rc);
+		RenderObject(re, rc);
 	}
 
 	RenderSelection(rc);

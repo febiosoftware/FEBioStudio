@@ -62,6 +62,7 @@ void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 	switch (flag)
 	{
 	case GLRenderEngine::LIGHTING: glEnable(GL_LIGHTING); break;
+	case GLRenderEngine::CLIPPLANE: glEnable(GL_CLIP_PLANE0); break;
 	}
 }
 
@@ -236,4 +237,9 @@ void OpenGLRenderer::DeactivateEnvironmentMap(unsigned int mapid)
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
 	glDisable(GL_TEXTURE_2D);
+}
+
+void OpenGLRenderer::setClipPlane(unsigned int n, const double* v)
+{
+	glClipPlane(GL_CLIP_PLANE0 + n, v);
 }

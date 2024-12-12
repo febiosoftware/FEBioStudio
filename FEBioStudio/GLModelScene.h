@@ -67,9 +67,8 @@ public:
 private:
 	void RenderGObject(GLRenderEngine& re, CGLContext& rc) const;
 
-	void RenderObject(CGLContext& rc) const;
-	void RenderObjectNew(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaceMeshFaces(CGLContext& rc) const;
+	void RenderObject(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc) const;
 
 	void RenderParts(CGLContext& rc) const;
 	void RenderSurfaces(CGLContext& rc) const;
