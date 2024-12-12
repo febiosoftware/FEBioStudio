@@ -315,7 +315,7 @@ int FEBio::GetBaseClassIndex(const std::string& baseClassName)
 int FEBio::GetBaseClassIndex(int superId, const std::string& typeStr)
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	const FECoreFactory* fac = fecore.FindFactoryClass(superId, typeStr.c_str()); assert(fac);
+	const FECoreFactory* fac = fecore.FindFactoryClass(superId, typeStr.c_str());
 	if (fac == nullptr) return -1;
 	return GetBaseClassIndex(fac->GetBaseClassName());
 }
