@@ -205,7 +205,9 @@ void GLMesh::RenderImmediate()
 {
 	glBegin(m_mode);
 	{
-		for (int i = 0; i < m_vertexCount; ++i)
+		int i0 = m_start;
+		int i1 = m_start + m_count;
+		for (int i = i0; i < i1; ++i)
 		{
 			if (m_vn) glNormal3fv(m_vn + 3 * i);
 			if (m_vt) glTexCoord3fv(m_vt + 3 * i);
@@ -231,7 +233,7 @@ void GLMesh::RenderVertexArrays()
 	if (m_ind)
 		glDrawElements(m_mode, m_vertexCount, GL_UNSIGNED_INT, m_ind);
 	else
-		glDrawArrays(m_mode, 0, m_vertexCount);
+		glDrawArrays(m_mode, m_start, m_count);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	if (m_vn) glDisableClientState(GL_NORMAL_ARRAY);
