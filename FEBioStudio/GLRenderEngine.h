@@ -40,6 +40,17 @@ public:
 		CLIPPLANE
 	};
 
+	enum GlyphType {
+		RIGID_BODY,
+		RIGID_WALL,
+		RIGID_JOINT,
+		REVOLUTE_JOINT,
+		PRISMATIC_JOINT,
+		CYLINDRICAL_JOINT,
+		PLANAR_JOINT,
+		RIGID_LOCK
+	};
+
 public:
 	GLRenderEngine() {}
 	virtual ~GLRenderEngine() {}
@@ -70,6 +81,9 @@ public:
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
 
 	virtual void setClipPlane(unsigned int n, const double* v) {}
+
+public:
+	virtual void renderGlyph(GlyphType glyph, float scale, GLColor c) {}
 
 protected:
 	GLRenderStats m_stats;

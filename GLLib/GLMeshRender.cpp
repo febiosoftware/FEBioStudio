@@ -438,10 +438,10 @@ void GLMeshRender::RenderEdges(const GMesh& m, std::function<bool(const GMesh::E
 	for (int i = 0; i < NE; i++)
 	{
 		const GMesh::EDGE& e = m.Edge(i);
+		m_lineShader->Render(e);
 		glx::line(e.vr[0], e.vr[1]);
 	}
-	glEnd();
-	glPopAttrib();
+	m_lineShader->Deactivate();
 }
 
 //-----------------------------------------------------------------------------

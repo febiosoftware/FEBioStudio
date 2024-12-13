@@ -1204,15 +1204,6 @@ void glx::renderAxes(double R, const vec3d& pos, const quatd& q, GLColor c)
 	glPopAttrib();
 }
 
-void glx::renderJoint(const vec3d& pos, double R, GLColor col)
-{
-	glPushMatrix();
-	glTranslated(pos.x, pos.y, pos.z);
-	glx::glcolor(col);
-	glx::renderJoint(R);
-	glPopMatrix();
-}
-
 void glx::renderJoint(double R)
 {
 	glBegin(GL_LINES);

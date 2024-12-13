@@ -110,7 +110,6 @@ void smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs);
 
 void renderRigidBody(double R);
 void renderJoint(double R);
-void renderJoint(const vec3d& pos, double R, GLColor col);
 void renderRevoluteJoint(double R);
 void renderCylindricalJoint(double R);
 void renderPlanarJoint(double R);

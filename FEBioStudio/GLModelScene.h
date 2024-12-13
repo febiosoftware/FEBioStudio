@@ -142,12 +142,12 @@ public:
 	void render(GLRenderEngine& re, CGLContext& rc) const override;
 
 private:
-	void RenderRigidBodies(CGLContext& rc) const;
-	void RenderRigidJoints(CGLContext& rc) const;
-	void RenderRigidConnectors(CGLContext& rc) const;
-	void RenderRigidWalls(CGLContext& rc) const;
-	void RenderMaterialFibers(CGLContext& rc) const;
-	void RenderLocalMaterialAxes(CGLContext& rc) const;
+	void RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderLocalMaterialAxes(GLRenderEngine& re, CGLContext& rc) const;
 };
 
 // This is a mock item to disable clipping plane. 

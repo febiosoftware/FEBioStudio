@@ -2527,14 +2527,14 @@ void GLPhysicsItem::render(GLRenderEngine& re, CGLContext& rc) const
 	GLViewSettings& vs = rc.m_settings;
 
 	// render physics
-	if (vs.m_brigid) RenderRigidBodies(rc);
-	if (vs.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
-	if (vs.m_bwall) RenderRigidWalls(rc);
-	if (vs.m_bfiber) RenderMaterialFibers(rc);
-	if (vs.m_blma) RenderLocalMaterialAxes(rc);
+	if (vs.m_brigid) RenderRigidBodies(re, rc);
+	if (vs.m_bjoint) { RenderRigidJoints(re, rc); RenderRigidConnectors(re, rc); }
+	if (vs.m_bwall) RenderRigidWalls(re, rc);
+	if (vs.m_bfiber) RenderMaterialFibers(re, rc);
+	if (vs.m_blma) RenderLocalMaterialAxes(re, rc);
 }
 
-void GLPhysicsItem::RenderRigidBodies(CGLContext& rc) const
+void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const
 {
 	CGLCamera& cam = *rc.m_cam;
 
@@ -2545,10 +2545,6 @@ void GLPhysicsItem::RenderRigidBodies(CGLContext& rc) const
 
 	quatd qi = cam.GetOrientation().Inverse();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
 	for (int i = 0; i < ps->Materials(); ++i)
 	{
 		GMaterial* pgm = ps->GetMaterial(i);
@@ -2557,8 +2553,6 @@ void GLPhysicsItem::RenderRigidBodies(CGLContext& rc) const
 		if (pm && pm->IsRigid())
 		{
 			GLColor c = glm.diffuse;
-
-			glColor3ub(c.r, c.g, c.b);
 
 			// We'll position the rigid body glyph, either in the center of rigid part,
 			// or in the center_of_mass parameter if the override_com is true.
@@ -2570,25 +2564,19 @@ void GLPhysicsItem::RenderRigidBodies(CGLContext& rc) const
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
 
-			glx::renderRigidBody(R);
+			re.renderGlyph(GLRenderEngine::RIGID_BODY, R, c);
 
 			glPopMatrix();
 		}
 	}
-	glPopAttrib();
 }
 
-void GLPhysicsItem::RenderRigidWalls(CGLContext& rc) const
+void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const
 {
 	FSModel* ps = m_scene->GetFSModel();
 	BOX box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -2613,17 +2601,15 @@ void GLPhysicsItem::RenderRigidWalls(CGLContext& rc) const
 				{
 					glTranslated(p.x, p.y, p.z);
 					glx::rotate(q);
-					glx::renderRigidWall(R);
+					re.renderGlyph(GLRenderEngine::RIGID_WALL, R, GLColor::Black());
 				}
 				glPopMatrix();
 			}
 		}
 	}
-
-	glPopAttrib();
 }
 
-void GLPhysicsItem::RenderRigidJoints(CGLContext& rc) const
+void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const
 {
 	CGLCamera& cam = *rc.m_cam;
 
@@ -2632,10 +2618,6 @@ void GLPhysicsItem::RenderRigidJoints(CGLContext& rc) const
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
 		FSStep& s = *ps->GetStep(n);
@@ -2645,14 +2627,16 @@ void GLPhysicsItem::RenderRigidJoints(CGLContext& rc) const
 			if (pj)
 			{
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
-				glx::renderJoint(r, R, GLColor::Red());
+				glPushMatrix();
+				glTranslated(r.x, r.y, r.z);
+				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, GLColor::Red());
+				glPopMatrix();
 			}
 		}
 	}
-	glPopAttrib();
 }
 
-void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
+void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) const
 {
 	CGLCamera& cam = *rc.m_cam;
 
@@ -2682,7 +2666,10 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				else
 					c = GLColor(64, 64, 64);
 
-				glx::renderJoint(r, R, c);
+				glPushMatrix();
+				glTranslated(r.x, r.y, r.z);
+				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, c);
+				glPopMatrix();
 			}
 			else if (rci->IsType("rigid revolute joint"))
 			{
@@ -2701,12 +2688,12 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				GLColor col;
 				if (rci->IsActive())
-					glColor3ub(0, 0, 255);
+					col = GLColor(0, 0, 255);
 				else
-					glColor3ub(64, 64, 64);
-
-				glx::renderRevoluteJoint(R);
+					col = GLColor(64, 64, 64);
+				re.renderGlyph(GLRenderEngine::REVOLUTE_JOINT, R, col);
 
 				glPopMatrix();
 			}
@@ -2727,11 +2714,12 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				GLColor col;
 				if (rci->IsActive())
-					glColor3ub(0, 255, 0);
+					col = GLColor(0, 255, 0);
 				else
-					glColor3ub(64, 64, 64);
-				glx::renderPrismaticJoint(R);
+					col = GLColor(64, 64, 64);
+				re.renderGlyph(GLRenderEngine::PRISMATIC_JOINT, R, col);
 
 				glPopMatrix();
 			}
@@ -2752,12 +2740,13 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				GLColor col;
 				if (rci->IsActive())
-					glColor3ub(255, 0, 255);
+					col = GLColor(255, 0, 255);
 				else
-					glColor3ub(64, 64, 64);
+					col = GLColor(64, 64, 64);
 
-				glx::renderCylindricalJoint(R);
+				re.renderGlyph(GLRenderEngine::CYLINDRICAL_JOINT, R, col);
 
 				glPopMatrix();
 			}
@@ -2778,12 +2767,13 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				GLColor col;
 				if (rci->IsActive())
-					glColor3ub(0, 255, 255);
+					col = GLColor(0, 255, 255);
 				else
-					glColor3ub(64, 64, 64);
+					col = GLColor(64, 64, 64);
 
-				glx::renderPlanarJoint(R);
+				re.renderGlyph(GLRenderEngine::PLANAR_JOINT, R, col);
 
 				glPopMatrix();
 			}
@@ -2804,12 +2794,8 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				if (rci->IsActive())
-					glColor3ub(255, 127, 0);
-				else
-					glColor3ub(64, 64, 64);
-
-				glx::renderRigidLock(R);
+				GLColor col = (rci->IsActive() ? GLColor(255, 127, 0) : GLColor(64, 64, 64));
+				re.renderGlyph(GLRenderEngine::RIGID_LOCK, R, col);
 
 				glPopMatrix();
 			}
@@ -2864,7 +2850,7 @@ void GLPhysicsItem::RenderRigidConnectors(CGLContext& rc) const
 	glPopAttrib();
 }
 
-void GLPhysicsItem::RenderMaterialFibers(CGLContext& rc) const
+void GLPhysicsItem::RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) const
 {
 	GLFiberRenderer* fiberRender = m_scene->GetFiberRenderer();
 	if (fiberRender == nullptr) return;
@@ -2887,7 +2873,7 @@ void GLPhysicsItem::RenderMaterialFibers(CGLContext& rc) const
 	fiberRender->Finish();
 }
 
-void GLPhysicsItem::RenderLocalMaterialAxes(CGLContext& rc) const
+void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, CGLContext& rc) const
 {
 	// get the model
 	FSModel* ps = m_scene->GetFSModel();

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QImage>
 #include <GLLib/GLMesh.h>
 #include <map>
+#include <GLLib/glx.h>
 
 class OpenGLRenderer::Imp {
 public:
@@ -242,4 +243,27 @@ void OpenGLRenderer::DeactivateEnvironmentMap(unsigned int mapid)
 void OpenGLRenderer::setClipPlane(unsigned int n, const double* v)
 {
 	glClipPlane(GL_CLIP_PLANE0 + n, v);
+}
+
+void OpenGLRenderer::renderGlyph(GlyphType glyph, float scale, GLColor c)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glColor3ub(c.r, c.g, c.b);
+
+	switch (glyph)
+	{
+	case GlyphType::RIGID_BODY       : glx::renderRigidBody(scale); break;
+	case GlyphType::RIGID_WALL       : glx::renderRigidWall(scale); break;
+	case GlyphType::RIGID_JOINT      : glx::renderJoint(scale); break;
+	case GlyphType::REVOLUTE_JOINT   : glx::renderRevoluteJoint(scale); break;
+	case GlyphType::PRISMATIC_JOINT  : glx::renderPrismaticJoint(scale); break;
+	case GlyphType::CYLINDRICAL_JOINT: glx::renderCylindricalJoint(scale); break;
+	case GlyphType::PLANAR_JOINT     : glx::renderPlanarJoint(scale); break;
+	case GlyphType::RIGID_LOCK       : glx::renderRigidLock(scale); break;
+	}
+
+	glPopAttrib();
 }

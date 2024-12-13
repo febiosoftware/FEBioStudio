@@ -60,6 +60,9 @@ public:
 
 	void setClipPlane(unsigned int n, const double* v) override;
 
+public:
+	void renderGlyph(GlyphType glyph, float scale, GLColor c) override;
+
 private:
 	Imp& m;
 };
