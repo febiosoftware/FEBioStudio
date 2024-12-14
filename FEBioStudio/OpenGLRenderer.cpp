@@ -36,7 +36,8 @@ class OpenGLRenderer::Imp {
 public:
 	CGLSceneView* glv;
 
-	std::map<const GMesh*, GLMesh*> mesh;
+	std::map<const GMesh*, GLTriMesh*> triMesh;
+	std::map<const GMesh*, GLLineMesh*> lineMesh;
 };
 
 OpenGLRenderer::OpenGLRenderer(CGLSceneView* view) : m(*(new OpenGLRenderer::Imp))
@@ -82,7 +83,9 @@ void OpenGLRenderer::setColor(GLColor c)
 
 void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 {
-	if (mat == GLMaterial::PLASTIC)
+	switch (mat)
+	{
+	case GLMaterial::PLASTIC:
 	{
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -101,7 +104,8 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
 	}
-	else if (mat == GLMaterial::HIGHLIGHT)
+	break;
+	case GLMaterial::HIGHLIGHT:
 	{
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
@@ -111,6 +115,16 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 		glColor4ub(c.r, c.g, c.b, c.a);
+	}
+	break;
+	case GLMaterial::CONSTANT:
+	{
+		glDisable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+		glColor4ub(c.r, c.g, c.b, c.a);
+	}
+	break;
 	}
 }
 
@@ -136,17 +150,17 @@ void OpenGLRenderer::renderLine(const vec3d& a, const vec3d& b)
 void OpenGLRenderer::renderGMesh(const GMesh& mesh)
 {
 	GLTriMesh* glm = nullptr;
-	auto it = m.mesh.find(&mesh);
-	if (it == m.mesh.end())
+	auto it = m.triMesh.find(&mesh);
+	if (it == m.triMesh.end())
 	{
 		glm = new GLTriMesh;
 		glm->SetRenderMode(GLMesh::VBOMode);
 		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
-		m.mesh[&mesh] = glm;
+		m.triMesh[&mesh] = glm;
 	}
 	else
 	{
-		GLMesh* glm = it->second;
+		glm = it->second;
 	}
 
 	if (glm)
@@ -158,14 +172,14 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh)
 
 void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
 {
-	GLMesh* glm = nullptr;
-	auto it = m.mesh.find(&mesh);
-	if (it == m.mesh.end())
+	GLTriMesh* glm = nullptr;
+	auto it = m.triMesh.find(&mesh);
+	if (it == m.triMesh.end())
 	{
 		glm = new GLTriMesh;
 		glm->SetRenderMode(GLMesh::VBOMode);
 		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
-		m.mesh[&mesh] = glm;
+		m.triMesh[&mesh] = glm;
 	}
 	else
 	{
@@ -177,6 +191,51 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
 		const GMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf);
 		m_stats.triangles += p.nf;
+	}
+}
+
+void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh)
+{
+	GLLineMesh* glm = nullptr;
+	auto it = m.lineMesh.find(&mesh);
+	if (it == m.lineMesh.end())
+	{
+		glm = new GLLineMesh;
+		glm->SetRenderMode(GLMesh::VBOMode);
+		glm->CreateFromGMesh(mesh);
+		m.lineMesh[&mesh] = glm;
+	}
+	else
+	{
+		glm = it->second;
+	}
+
+	if (glm)
+	{
+		glm->Render();
+	}
+}
+
+void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId)
+{
+	GLLineMesh* glm = nullptr;
+	auto it = m.lineMesh.find(&mesh);
+	if (it == m.lineMesh.end())
+	{
+		glm = new GLLineMesh;
+		glm->SetRenderMode(GLMesh::VBOMode);
+		glm->CreateFromGMesh(mesh);
+		m.lineMesh[&mesh] = glm;
+	}
+	else
+	{
+		glm = it->second;
+	}
+
+	if (glm)
+	{
+		const auto& p = mesh.EIL(edgeId);
+		glm->Render(2 * p.first, 2 * p.second);
 	}
 }
 

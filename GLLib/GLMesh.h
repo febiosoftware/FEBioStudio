@@ -100,10 +100,6 @@ public:
 	// this when done building the mesh
 	void EndMesh();
 
-	// create from a GMesh
-	void CreateFromGMesh(const GMesh& gmsh, unsigned int flags = FLAG_NORMAL | FLAG_COLOR);
-	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
-
 	// render the mesh
 	void Render();
 
@@ -278,6 +274,10 @@ public:
 	// sort backwards/forwards
 	void SortBackwards();
 	void SortForwards();
+
+	// create from a GMesh
+	void CreateFromGMesh(const GMesh& gmsh, unsigned int flags = FLAG_NORMAL | FLAG_COLOR);
+	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
 };
 
 inline void GLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
@@ -309,6 +309,8 @@ public:
 	void AddLine(const vec3f& r0, const vec3f& r1);
 	void AddLine(const vec3d& r0, const vec3d& r1);
 	void AddLine(const vec3f& r0, const vec3f& r1, GLColor& c);
+
+	void CreateFromGMesh(const GMesh& mesh);
 };
 
 inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)

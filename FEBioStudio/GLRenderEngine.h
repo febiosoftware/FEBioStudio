@@ -75,6 +75,9 @@ public:
 	virtual void renderGMesh(const GMesh& mesh) {}
 	virtual void renderGMesh(const GMesh& mesh, int surfId) {}
 
+	virtual void renderGMeshEdges(const GMesh& mesh) {}
+	virtual void renderGMeshEdges(const GMesh& mesh, int edgeId) {}
+
 public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
 	virtual void ActivateEnvironmentMap(unsigned int mapid) {}

@@ -30,7 +30,8 @@ class GLMaterial
 {
 public:
 	enum Type {
-		PLASTIC = 1,
+		CONSTANT = 1,
+		PLASTIC,
 		HIGHLIGHT
 	};
 

@@ -53,6 +53,9 @@ public:
 	void renderGMesh(const GMesh& mesh) override;
 	void renderGMesh(const GMesh& mesh, int surfId) override;
 
+	void renderGMeshEdges(const GMesh& mesh) override;
+	void renderGMeshEdges(const GMesh& mesh, int edgeId) override;
+
 public:
 	unsigned int LoadEnvironmentMap(const std::string& fileName) override;
 	void ActivateEnvironmentMap(unsigned int mapid) override;

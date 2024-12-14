@@ -125,46 +125,6 @@ void GLMesh::EndMesh()
 	m_bvalid = ((m_vr != nullptr) && (m_vertexCount != 0));
 }
 
-void GLMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
-{
-	int faces = gmsh.Faces();
-	AllocVertexBuffers(3 * faces, flags);
-
-	BeginMesh();
-	for (int i = 0; i < gmsh.Faces(); ++i)
-	{
-		auto& tri = gmsh.Face(i);
-		for (int j = 0; j < 3; ++j)
-		{
-			auto& vj = gmsh.Node(tri.n[j]);
-			AddVertex(vj.r, tri.vn[j], tri.c[j]);
-		}
-	}
-	EndMesh();
-}
-
-void GLMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
-{
-	if ((surfID < 0) || (surfID >= gmsh.Partitions())) { assert(false); return; }
-
-	const GMesh::PARTITION& part = gmsh.Partition(surfID);
-	int faces = part.nf;
-	AllocVertexBuffers(3 * faces, flags);
-
-	BeginMesh();
-	for (int i = 0; i < faces; ++i)
-	{
-		const GMesh::FACE& f = gmsh.Face(i + part.n0);
-		assert(f.pid == surfID);
-		for (int j = 0; j < 3; ++j)
-		{
-			auto& vj = gmsh.Node(f.n[j]);
-			AddVertex(vj.r, f.vn[j], f.c[j]);
-		}
-	}
-	EndMesh();
-}
-
 void GLMesh::SetTransparency(ubyte a)
 {
 	if (m_vc == nullptr) return;
@@ -429,6 +389,47 @@ void GLTriMesh::SortForwards()
 	m_bvalid = true;
 }
 
+
+void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
+{
+	int faces = gmsh.Faces();
+	AllocVertexBuffers(3 * faces, flags);
+
+	BeginMesh();
+	for (int i = 0; i < gmsh.Faces(); ++i)
+	{
+		auto& tri = gmsh.Face(i);
+		for (int j = 0; j < 3; ++j)
+		{
+			auto& vj = gmsh.Node(tri.n[j]);
+			AddVertex(vj.r, tri.vn[j], tri.c[j]);
+		}
+	}
+	EndMesh();
+}
+
+void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
+{
+	if ((surfID < 0) || (surfID >= gmsh.Partitions())) { assert(false); return; }
+
+	const GMesh::PARTITION& part = gmsh.Partition(surfID);
+	int faces = part.nf;
+	AllocVertexBuffers(3 * faces, flags);
+
+	BeginMesh();
+	for (int i = 0; i < faces; ++i)
+	{
+		const GMesh::FACE& f = gmsh.Face(i + part.n0);
+		assert(f.pid == surfID);
+		for (int j = 0; j < 3; ++j)
+		{
+			auto& vj = gmsh.Node(f.n[j]);
+			AddVertex(vj.r, f.vn[j], f.c[j]);
+		}
+	}
+	EndMesh();
+}
+
 //===================================================================================
 GLQuadMesh::GLQuadMesh() : GLMesh(GL_QUADS) {}
 
@@ -448,6 +449,24 @@ GLLineMesh::GLLineMesh(int maxLines, unsigned int flags) : GLMesh(GL_LINES)
 void GLLineMesh::Create(int maxLines, unsigned int flags)
 {
 	AllocVertexBuffers(2 * maxLines, flags);
+}
+
+void GLLineMesh::CreateFromGMesh(const GMesh& gmsh)
+{
+	int edges = gmsh.Edges();
+	AllocVertexBuffers(2 * edges, 0);
+
+	BeginMesh();
+	for (int i = 0; i < gmsh.Edges(); ++i)
+	{
+		auto& edge = gmsh.Edge(i);
+		for (int j = 0; j < 2; ++j)
+		{
+			auto& vj = gmsh.Node(edge.n[j]);
+			AddVertex(vj.r);
+		}
+	}
+	EndMesh();
 }
 
 //===================================================================================

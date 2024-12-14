@@ -279,9 +279,9 @@ void CGLModelScene::BuildScene(CGLContext& rc)
 
 	addItem(new GLSelectionBox(this));
 
-	addItem(new GLMeshLinesItem(this));
-
 	addItem(new GLFeatureEdgesItem(this));
+
+	addItem(new GLMeshLinesItem(this));
 
 	if (vs.m_bfiber == false)
 	{
@@ -2425,13 +2425,12 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc) const
 	cam.LineDrawMode(true);
 	cam.PositionInScene();
 
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
 	GModel& model = *m_scene->GetGModel();
 	int nitem = m_scene->GetItemMode();
 
 	GLViewSettings& vs = rc.m_settings;
-	renderer.SetLineShader(new GLLineColorShader(vs.m_meshColor));
+	re.setMaterial(GLMaterial::CONSTANT, vs.m_meshColor);
+
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2445,7 +2444,10 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc) const
 				if (nitem != ITEM_EDGE)
 				{
 					GMesh* lineMesh = po->GetFERenderMesh(); assert(lineMesh);
-					if (lineMesh) renderer.RenderEdges(*lineMesh);
+					if (lineMesh)
+					{
+						re.renderGMeshEdges(*lineMesh);
+					}
 				}
 				glPopMatrix();
 			}
@@ -2456,7 +2458,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc) const
 				{
 					glPushMatrix();
 					SetModelView(po);
-					renderer.RenderEdges(*gmesh);
+					re.renderGMeshEdges(*gmesh);
 					glPopMatrix();
 				}
 			}
@@ -2484,13 +2486,10 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc) const
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 
-			GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-			GLLineColorShader* shader = new GLLineColorShader();
-			renderer.SetLineShader(shader);
-
 			FSModel* ps = m_scene->GetFSModel();
 			GModel& model = ps->GetModel();
+
+			re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
 
 			for (int k = 0; k < model.Objects(); ++k)
 			{
@@ -2503,15 +2502,8 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc) const
 					GMesh* m = po->GetRenderMesh();
 					if (m)
 					{
-						shader->SetColor(GLColor::Black());
-						renderer.RenderEdges(*m, [](const GMesh::EDGE& e) {
-							return (e.pid >= 0);
-							});
-
-						shader->SetColor(GLColor(64, 0, 16));
-						renderer.RenderOutline(*rc.m_cam, m, po->GetRenderTransform(), (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+						re.renderGMeshEdges(*m);
 					}
-
 					glPopMatrix();
 				}
 			}
