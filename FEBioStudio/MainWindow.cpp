@@ -2493,7 +2493,6 @@ void CMainWindow::RedrawGL()
 	if(QThread::currentThread() == this->thread())
 	{
 		CGLView* view = GetGLView();
-		if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
 		view->repaint();
 	}
 	else

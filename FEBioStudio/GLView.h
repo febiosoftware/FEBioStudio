@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include "GManipulator.h"
 #include "GTriad.h"
 #include "GGrid.h"
-#include "GLPlaneCut.h"
 #include <GLWLib/GLWidgetManager.h>
 #include "Animation.h"
 #include <GLLib/GLContext.h>
@@ -50,6 +49,7 @@ class CGView;
 class FSModel;
 class CGLView;
 class CGLScene;
+class GPart;
 
 class GLLabel;
 class GLTriad;
@@ -74,12 +74,6 @@ enum Snap_Mode
 {
 	SNAP_NONE,
 	SNAP_GRID
-};
-
-enum Planecut_Mode
-{
-	PLANECUT,
-	HIDE_ELEMENTS
 };
 
 class CGLPivot
@@ -119,6 +113,8 @@ public:
 	CGLDocument* GetDocument();
 
 	CGLScene* GetActiveScene() override;
+
+	void UpdateScene();
 
 	GObject* GetActiveObject();
 
@@ -247,12 +243,6 @@ public:
 	void AddDecoration(GDecoration* deco);
 	void RemoveDecoration(GDecoration* deco);
 
-	void ShowPlaneCut(bool b);
-	bool ShowPlaneCut() const;
-	void SetPlaneCut(double d[4]);
-	void SetPlaneCutMode(int nmode);
-	void UpdatePlaneCut(bool breset = false);
-
 	GLScreenRecorder& GetScreenRecorder() { return m_recorder; }
 
 	QSize GetSafeFrameSize() const;
@@ -266,19 +256,6 @@ public:
 	Post::CColorMap& GetColorMap();
 
 	void AddRegionPoint(int x, int y);
-
-public:
-	void RenderPlaneCut(CGLContext& rc);
-
-	bool ShowPlaneCut();
-
-	GLPlaneCut& GetPlaneCut();
-
-	void DeletePlaneCutMesh();
-
-	int PlaneCutMode();
-
-	double* PlaneCoordinates();
 
 public slots:
 	void updateView();
@@ -350,8 +327,6 @@ private:
 	CGLCamera	m_oldCam;
 
 	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
-
-	GLPlaneCut	m_planeCut;
 
 	std::string		m_oglVersionString;
 

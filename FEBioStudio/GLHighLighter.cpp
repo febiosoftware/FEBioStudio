@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
 #include <GLLib/GLShader.h>
+#include <MeshLib/FEMesh.h>
 
 GLHighlighter GLHighlighter::This;
 

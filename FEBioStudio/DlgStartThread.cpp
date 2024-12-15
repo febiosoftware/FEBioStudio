@@ -169,16 +169,20 @@ void CDlgStartThread::checkProgress()
 
 	if (ui->m_bdone)
 	{
-		if (ui->m_breturn == false)
+		if (ui->m_thread)
 		{
-			QString err = ui->m_thread->GetErrorString();
-			if (err.isEmpty()) err = "An unknown error has occurred.";
-			QMessageBox::critical(this, "Error", err);
-		}
-		ui->m_thread->deleteLater();
+			if (ui->m_breturn == false)
+			{
+				QString err = ui->m_thread->GetErrorString();
+				if (err.isEmpty()) err = "An unknown error has occurred.";
+				QMessageBox::critical(this, "Error", err);
+			}
+			ui->m_thread->deleteLater();
+			ui->m_thread = nullptr;
 
-		if (ui->m_cancelled) ui->m_breturn = false;
-		if (ui->m_breturn) accept(); else reject();
+			if (ui->m_cancelled) ui->m_breturn = false;
+			if (ui->m_breturn) accept(); else reject();
+		}
 	}
 	else
 	{

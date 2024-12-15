@@ -265,7 +265,7 @@ void CGLModelScene::BuildScene(CGLContext& rc)
 	GLViewSettings& vs = rc.m_settings;
 
 	// add plane cut if requested
-	addItem(new GLPlaneCutItem(this));
+	addItem(new GLPlaneCutItem(this, rc));
 
 	// add all objects for solid rendering
 	GModel& model = *GetGModel();
@@ -977,7 +977,7 @@ void CGLModelScene::Update()
 	CGLScene::Update();
 }
 
-void RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box)
+void GLPlaneCutItem::RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box)
 {
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -994,7 +994,7 @@ void RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box)
 	if (R == 0) R = 1;
 	int ncase = 0;
 	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
-	double* plane = view->PlaneCoordinates();
+	const double* plane = m_planeCut.GetPlaneCoordinates();
 	vec3d norm(plane[0], plane[1], plane[2]);
 	double ref = -(plane[3] - R * 0.001);
 	for (int k = 0; k < 8; ++k)
@@ -1269,7 +1269,12 @@ FSModel* CGLModelScene::GetFSModel()
 	return pdoc->GetFSModel();
 }
 
-void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc) const
+GLPlaneCutItem::GLPlaneCutItem(CGLModelScene* scene, CGLContext& rc) : GLModelSceneItem(scene)
+{
+	UpdatePlaneCut(rc, true);
+}
+
+void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (rc.m_settings.m_showPlaneCut == false) return;
 
@@ -1279,19 +1284,123 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc) const
 
 	RenderBoxCut(m_scene->GetMeshRenderer(), rc, box);
 
-	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
-	if (view->PlaneCutMode() == 0)
+	if (rc.m_settings.m_planeCutMode == 0)
 	{
 		// render the plane cut first
-		view->RenderPlaneCut(rc);
+		if (m_planeCut.IsValid() == false)
+		{
+			FSModel& fem = *m_scene->GetFSModel();
+			double* d = rc.m_settings.m_planeCut;
+			m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], d[3]);
+			m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
+		}
+
+		m_planeCut.Render(rc);
 
 		// then turn on the clipping plane before rendering the other geometry
-		re.setClipPlane(0, view->PlaneCoordinates());
+		re.setClipPlane(0, rc.m_settings.m_planeCut);
 		re.enable(GLRenderEngine::CLIPPLANE);
 	}
 }
 
-void GLObjectItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLPlaneCutItem::UpdatePlaneCut(CGLContext& rc, bool reset)
+{
+	m_planeCut.Clear();
+
+	FSModel& fem = *m_scene->GetFSModel();
+
+	GModel& mdl = *m_scene->GetGModel();
+	if (mdl.Objects() == 0) return;
+
+	// set the plane normal
+	double* d = rc.m_settings.m_planeCut;
+	m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], d[3]);
+	vec3d norm(d[0], d[1], d[2]);
+	double ref = -d[3];
+
+	GLViewSettings& vs = rc.m_settings;
+
+	if (reset)
+	{
+		for (int n = 0; n < mdl.Objects(); ++n)
+		{
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
+			{
+				FSMesh* mesh = po->GetFEMesh();
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
+				{
+					FSElement& el = mesh->Element(i);
+					el.Show(); el.Unhide();
+				}
+				po->UpdateItemVisibility();
+			}
+		}
+	}
+
+	if ((vs.m_planeCutMode == Planecut_Mode::PLANECUT) && (vs.m_showPlaneCut))
+	{
+		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
+	}
+	else
+	{
+		for (int n = 0; n < mdl.Objects(); ++n)
+		{
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
+			{
+				FSMesh* mesh = po->GetFEMesh();
+
+				if (vs.m_showPlaneCut)
+				{
+					int NN = mesh->Nodes();
+					for (int i = 0; i < NN; ++i)
+					{
+						FSNode& node = mesh->Node(i);
+						node.m_ntag = 0;
+
+						vec3d ri = mesh->LocalToGlobal(node.pos());
+						if (norm * ri < ref)
+						{
+							node.m_ntag = 1;
+						}
+					}
+
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FSElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							if (mesh->Node(el.m_node[j]).m_ntag == 1)
+							{
+								el.Hide();
+								break;
+							}
+						}
+					}
+				}
+				else
+				{
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FSElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+					}
+				}
+
+				mesh->UpdateItemVisibility();
+				po->BuildFERenderMesh();
+			}
+		}
+	}
+}
+
+void GLObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	GLViewSettings& vs = rc.m_settings;
 	int nitem = m_scene->GetItemMode();
@@ -2339,7 +2448,7 @@ GLDiscreteItem::GLDiscreteItem(CGLModelScene* scene) : GLModelSceneItem(scene)
 	}
 }
 
-void GLDiscreteItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLDiscreteItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (rc.m_settings.m_showDiscrete == false) return;
 
@@ -2359,7 +2468,7 @@ void GLDiscreteItem::render(GLRenderEngine& re, CGLContext& rc) const
 	re.popState();
 }
 
-void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc) const
+void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
 
@@ -2416,7 +2525,7 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc) const
 	}
 }
 
-void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (rc.m_settings.m_bmesh == false) return;
 
@@ -2469,7 +2578,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc) const
 	cam.PositionInScene();
 }
 
-void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	GLViewSettings& vs = rc.m_settings;
 	if (vs.m_bfeat || (vs.m_nrender == RENDER_WIREFRAME))
@@ -2514,7 +2623,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc) const
 	}
 }
 
-void GLPhysicsItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLPhysicsItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	GLViewSettings& vs = rc.m_settings;
 
@@ -2951,7 +3060,7 @@ void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, CGLContext& rc) 
 	glPopAttrib();
 }
 
-void GLSelectionItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLSelectionItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_scene->GetItemMode() != ITEM_MESH) return;
 
@@ -3234,12 +3343,12 @@ void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, CGLContext& rc, GO
 	}
 }
 
-void GLDisableClipPlaneItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLDisableClipPlaneItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	glDisable(GL_CLIP_PLANE0);
 }
 
-void GLGridItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GLGridItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (rc.m_settings.m_bgrid)
 	{
@@ -3248,7 +3357,7 @@ void GLGridItem::render(GLRenderEngine& re, CGLContext& rc) const
 	}
 }
 
-void GL3DImageItem::render(GLRenderEngine& re, CGLContext& rc) const
+void GL3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	m_img->Render(rc);
 }

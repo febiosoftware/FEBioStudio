@@ -55,6 +55,7 @@ public slots:
 
 private:
 	void setOrientation(double x, double y, double z);
+	void setPlaneCoordinates(double a[4]);
 
 private:
 	UIDlgPlaneCut*	ui;

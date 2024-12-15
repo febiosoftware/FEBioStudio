@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
+#include "GLPlaneCut.h"
 #include <GLLib/GLMeshRender.h>
 
 enum OBJECT_COLOR_MODE {
@@ -54,15 +55,22 @@ protected:
 class GLPlaneCutItem : public GLModelSceneItem
 {
 public:
-	GLPlaneCutItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	GLPlaneCutItem(CGLModelScene* scene, CGLContext& rc);
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
+	void UpdatePlaneCut(CGLContext& rc, bool reset);
+	void RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box);
+
+private:
+	GLPlaneCut	m_planeCut;
 };
 
 class GLObjectItem : public GLModelSceneItem
 {
 public:
 	GLObjectItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	void RenderGObject(GLRenderEngine& re, CGLContext& rc) const;
@@ -108,7 +116,7 @@ class GLDiscreteItem : public GLModelSceneItem
 
 public:
 	GLDiscreteItem(CGLModelScene* scene);
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	std::vector<Line> m_lines;
@@ -118,28 +126,28 @@ class GLSelectionBox : public GLModelSceneItem
 {
 public:
 	GLSelectionBox(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GLMeshLinesItem : public GLModelSceneItem
 {
 public:
 	GLMeshLinesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GLFeatureEdgesItem : public GLModelSceneItem
 {
 public:
 	GLFeatureEdgesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GLPhysicsItem : public GLModelSceneItem
 {
 public:
 	GLPhysicsItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	void RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const;
@@ -156,14 +164,14 @@ class GLDisableClipPlaneItem : public GLModelSceneItem
 {
 public:
 	GLDisableClipPlaneItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GLSelectionItem : public GLModelSceneItem
 {
 public:
 	GLSelectionItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	void RenderSelectedParts(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
@@ -176,14 +184,14 @@ class GLGridItem : public GLModelSceneItem
 {
 public:
 	GLGridItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GL3DImageItem : public GLModelSceneItem
 {
 public:
 	GL3DImageItem(CGLModelScene* scene, CImageModel* img) : GLModelSceneItem(scene), m_img(img) {}
-	void render(GLRenderEngine& re, CGLContext& rc) const override;
+	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	CImageModel* m_img;

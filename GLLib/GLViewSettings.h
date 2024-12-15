@@ -68,6 +68,12 @@ enum View_Mode {
 	VIEW_ISOMETRIC
 };
 
+enum Planecut_Mode
+{
+	PLANECUT,
+	HIDE_ELEMENTS
+};
+
 //! view settings
 struct GLViewSettings
 {
@@ -162,6 +168,7 @@ struct GLViewSettings
 	// planecut settings
 	bool		m_showPlaneCut = false;
 	int			m_planeCutMode = 0;
+	double		m_planeCut[4] = { 0 };
 
 	// view mode
 	View_Mode	m_nview = VIEW_USER;

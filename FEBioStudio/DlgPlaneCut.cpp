@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "DragBox.h"
 #include <QRadioButton>
 #include <QButtonGroup>
+#include "GLScene.h"
 
 class UIDlgPlaneCut
 {
@@ -123,17 +124,20 @@ void CDlgPlaneCut::Update()
 void CDlgPlaneCut::showEvent(QShowEvent* ev)
 {
 	onDataChanged();
-	ui->m_view->ShowPlaneCut(true);
+	ui->m_view->GetViewSettings().m_showPlaneCut = true;
+	ui->m_view->UpdateScene();
 }
 
 void CDlgPlaneCut::closeEvent(QCloseEvent* ev)
 {
-	ui->m_view->ShowPlaneCut(false);
+	ui->m_view->GetViewSettings().m_showPlaneCut = false;
+	ui->m_view->UpdateScene();
 }
 
 void CDlgPlaneCut::reject()
 {
-	ui->m_view->ShowPlaneCut(false);
+	ui->m_view->GetViewSettings().m_showPlaneCut = false;
+	ui->m_view->UpdateScene();
 	QDialog::reject();
 }
 
@@ -154,12 +158,57 @@ void CDlgPlaneCut::onDataChanged()
 	}
 	else a[0] = 1.0;
 
-	ui->m_view->SetPlaneCut(a);
+	setPlaneCoordinates(a);
 
 	int nop = 0;
 	if (ui->m_rb[0]->isChecked()) nop = 0;
 	if (ui->m_rb[1]->isChecked()) nop = 1;
-	ui->m_view->SetPlaneCutMode(nop);
+	ui->m_view->GetViewSettings().m_planeCutMode = nop;
+	ui->m_view->UpdateScene();
+}
+
+void CDlgPlaneCut::setPlaneCoordinates(double d[4])
+{
+	CGLScene* scene = ui->m_view->GetActiveScene();
+	if (scene == nullptr) return;
+
+	BOX box = scene->GetBoundingBox();
+
+	double R = box.GetMaxExtent();
+	if (R < 1e-12) R = 1.0;
+
+	GLViewSettings& vs = ui->m_view->GetViewSettings();
+
+	vec3d n(d[0], d[1], d[2]);
+
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d r[8];
+	r[0] = vec3d(a.x, a.y, a.z);
+	r[1] = vec3d(b.x, a.y, a.z);
+	r[2] = vec3d(b.x, b.y, a.z);
+	r[3] = vec3d(a.x, b.y, a.z);
+	r[4] = vec3d(a.x, a.y, b.z);
+	r[5] = vec3d(b.x, a.y, b.z);
+	r[6] = vec3d(b.x, b.y, b.z);
+	r[7] = vec3d(a.x, b.y, b.z);
+	double d0 = n * r[0];
+	double d1 = d0;
+	for (int i = 1; i < 8; ++i)
+	{
+		double d = n * r[i];
+		if (d < d0) d0 = d;
+		if (d > d1) d1 = d;
+	}
+
+	double d3 = d0 + 0.5 * (d[3] + 1) * (d1 - d0);
+
+	vs.m_planeCut[0] = n.x;
+	vs.m_planeCut[1] = n.y;
+	vs.m_planeCut[2] = n.z;
+	vs.m_planeCut[3] = -d3;
+
+	scene->Update();
 }
 
 void CDlgPlaneCut::setOrientation(double x, double y, double z)

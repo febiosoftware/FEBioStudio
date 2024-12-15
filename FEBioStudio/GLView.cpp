@@ -1734,7 +1734,8 @@ QPoint CGLView::DeviceToPhysical(int x, int y)
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
-	m_planeCut.Clear();	// TODO: Why do we do this? 
+	CGLScene* scene = GetActiveScene();
+	if (scene) scene->Update();
 }
 
 void SetModelView(GObject* po)
@@ -2096,63 +2097,6 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 	}
 }
 
-void CGLView::ShowPlaneCut(bool b)
-{
-	m_view.m_showPlaneCut = b;
-	UpdatePlaneCut(true);
-	update();
-}
-
-bool CGLView::ShowPlaneCut() const
-{
-	return m_view.m_showPlaneCut;
-}
-
-void CGLView::SetPlaneCutMode(int nmode)
-{
-	bool breset = (m_view.m_planeCutMode != nmode);
-	m_view.m_planeCutMode = nmode;
-	UpdatePlaneCut(breset);
-	update();
-}
-
-void CGLView::SetPlaneCut(double d[4])
-{
-	CModelDocument* doc = m_pWnd->GetModelDocument();
-	if (doc == nullptr) return;
-
-	BOX box = doc->GetGModel()->GetBoundingBox();
-
-	double R = box.GetMaxExtent();
-	if (R < 1e-12) R = 1.0;
-
-	vec3d n(d[0], d[1], d[2]);
-
-	vec3d a = box.r0();
-	vec3d b = box.r1();
-	vec3d r[8];
-	r[0] = vec3d(a.x, a.y, a.z);
-	r[1] = vec3d(b.x, a.y, a.z);
-	r[2] = vec3d(b.x, b.y, a.z);
-	r[3] = vec3d(a.x, b.y, a.z);
-	r[4] = vec3d(a.x, a.y, b.z);
-	r[5] = vec3d(b.x, a.y, b.z);
-	r[6] = vec3d(b.x, b.y, b.z);
-	r[7] = vec3d(a.x, b.y, b.z);
-	double d0 = n * r[0];
-	double d1 = d0;
-	for (int i = 1; i < 8; ++i)
-	{
-		double d = n * r[i];
-		if (d < d0) d0 = d;
-		if (d > d1) d1 = d;
-	}
-
-	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
-	m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], -d3);
-	update();
-}
-
 // Select an arm of the pivot manipulator
 bool CGLView::SelectPivot(int x, int y)
 {
@@ -2319,7 +2263,7 @@ void CGLView::HighlightSurface(int x, int y)
 	// convert the point to a ray
 	Ray ray = transform.PointToRay(x, y);
 
-	double* a = PlaneCoordinates();
+//	double* a = PlaneCoordinates();
 	int Objects = model.Objects();
 	GFace* closestSurface = nullptr;
 	double minDist = 0;
@@ -2357,7 +2301,7 @@ void CGLView::HighlightSurface(int x, int y)
 							if (IntersectTriangle(localRay, tri, q, false))
 							{
 								vec3d q1 = T.LocalToGlobal(q.point);
-								if ((ShowPlaneCut() == false) || (q1.x * a[0] + q1.y * a[1] + q1.z * a[2] + a[3] > 0))
+//								if ((ShowPlaneCut() == false) || (q1.x * a[0] + q1.y * a[1] + q1.z * a[2] + a[3] > 0))
 								{
 									double distance = ray.direction * (q1 - ray.origin);
 									if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
@@ -2399,7 +2343,7 @@ GPart* CGLView::PickPart(int x, int y)
 	GPart* closestPart = nullptr;
 	Intersection q;
 	double minDist = 0;
-	double* a = PlaneCoordinates();
+//	double* a = PlaneCoordinates();
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2421,7 +2365,7 @@ GPart* CGLView::PickPart(int x, int y)
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
 					{
-						if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
+//						if ((ShowPlaneCut() == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 						{
 							double distance = ray.direction * (q.point - ray.origin);
 							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
@@ -2477,6 +2421,13 @@ CGLScene* CGLView::GetActiveScene()
 	CGLDocument* doc = m_pWnd->GetGLDocument();
 	if (doc) return doc->GetScene();
 	return nullptr;
+}
+
+void CGLView::UpdateScene()
+{
+	CGLScene* scene = GetActiveScene();
+	scene->Update();
+	update();
 }
 
 GObject* CGLView::GetActiveObject()
@@ -2714,144 +2665,6 @@ void CGLView::UnlockSafeFrame()
 {
 	if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
 	repaint();
-}
-
-void CGLView::UpdatePlaneCut(bool breset)
-{
-	m_planeCut.Clear();
-
-	CModelDocument* doc = m_pWnd->GetModelDocument();
-	if (doc == nullptr) return;
-
-	FSModel& fem = *doc->GetFSModel();
-
-	GModel& mdl = *doc->GetGModel();
-	if (mdl.Objects() == 0) return;
-
-	// set the plane normal
-	double* d = m_planeCut.GetPlaneCoordinates();
-	vec3d norm(d[0], d[1], d[2]);
-	double ref = -d[3];
-
-	GLViewSettings& vs = GetViewSettings();
-
-	if (breset)
-	{
-		for (int n = 0; n < mdl.Objects(); ++n)
-		{
-			GObject* po = mdl.Object(n);
-			if (po->GetFEMesh())
-			{
-				FSMesh* mesh = po->GetFEMesh();
-				int NE = mesh->Elements();
-				for (int i = 0; i < NE; ++i)
-				{
-					FSElement& el = mesh->Element(i);
-					el.Show(); el.Unhide();
-				}
-				po->UpdateItemVisibility();
-			}
-		}
-	}
-
-	if ((m_view.m_planeCutMode == Planecut_Mode::PLANECUT) && (m_view.m_showPlaneCut))
-	{
-		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
-	}
-	else
-	{
-		for (int n = 0; n < mdl.Objects(); ++n)
-		{
-			GObject* po = mdl.Object(n);
-			if (po->GetFEMesh())
-			{
-				FSMesh* mesh = po->GetFEMesh();
-
-				if (m_view.m_showPlaneCut)
-				{
-					int NN = mesh->Nodes();
-					for (int i = 0; i < NN; ++i)
-					{
-						FSNode& node = mesh->Node(i);
-						node.m_ntag = 0;
-
-						vec3d ri = mesh->LocalToGlobal(node.pos());
-						if (norm*ri < ref)
-						{
-							node.m_ntag = 1;
-						}
-					}
-
-					int NE = mesh->Elements();
-					for (int i = 0; i < NE; ++i)
-					{
-						FSElement& el = mesh->Element(i);
-						el.Show(); el.Unhide();
-						int ne = el.Nodes();
-						for (int j = 0; j < ne; ++j)
-						{
-							if (mesh->Node(el.m_node[j]).m_ntag == 1)
-							{
-								el.Hide();
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					int NE = mesh->Elements();
-					for (int i = 0; i < NE; ++i)
-					{
-						FSElement& el = mesh->Element(i);
-						el.Show(); el.Unhide();
-					}
-				}
-
-				mesh->UpdateItemVisibility();
-				po->BuildFERenderMesh();
-			}
-		}
-	}
-}
-
-bool CGLView::ShowPlaneCut()
-{
-	return m_view.m_showPlaneCut;
-}
-
-GLPlaneCut& CGLView::GetPlaneCut()
-{
-	return m_planeCut;
-}
-
-void CGLView::DeletePlaneCutMesh()
-{
-	m_planeCut.Clear();
-}
-
-int CGLView::PlaneCutMode()
-{
-	return m_view.m_planeCutMode;
-}
-
-double* CGLView::PlaneCoordinates()
-{
-	return m_planeCut.GetPlaneCoordinates();
-}
-
-void CGLView::RenderPlaneCut(CGLContext& rc)
-{
-	CModelDocument* doc = m_pWnd->GetModelDocument();
-	if (doc == nullptr) return;
-
-	if (m_planeCut.IsValid() == false)
-	{
-		FSModel& fem = *doc->GetFSModel();
-		m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
-	}
-
-	m_planeCut.Render(rc);
 }
 
 void CGLView::ToggleFPS()

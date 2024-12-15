@@ -50,7 +50,7 @@ public:
 	GLSceneItem() {}
 	virtual ~GLSceneItem() {}
 
-	virtual void render(GLRenderEngine& re, CGLContext& rc) const = 0;
+	virtual void render(GLRenderEngine& re, CGLContext& rc) = 0;
 };
 
 typedef std::vector<GLSceneItem*> GLItemList;
