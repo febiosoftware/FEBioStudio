@@ -50,7 +50,7 @@ using namespace Post;
 
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
-extern int LUT2D_tri[16][9];
+extern int LUT2D_quad[16][9];
 extern int ET2D[4][2];
 
 TriMesh::TriMesh()
@@ -527,7 +527,7 @@ void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, uint8_t val[4], vec3f r[4], c
 	float fref = (float)m_ref;
 
 	// loop over faces
-	int* pf = LUT2D_tri[ncase];
+	int* pf = LUT2D_quad[ncase];
 	for (int l = 0; l < 3; l++)
 	{
 		if (*pf == -1) break;

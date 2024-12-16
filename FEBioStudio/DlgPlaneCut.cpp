@@ -207,8 +207,6 @@ void CDlgPlaneCut::setPlaneCoordinates(double d[4])
 	vs.m_planeCut[1] = n.y;
 	vs.m_planeCut[2] = n.z;
 	vs.m_planeCut[3] = -d3;
-
-	scene->Update();
 }
 
 void CDlgPlaneCut::setOrientation(double x, double y, double z)

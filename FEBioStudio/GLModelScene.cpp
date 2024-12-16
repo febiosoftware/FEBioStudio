@@ -1271,7 +1271,7 @@ FSModel* CGLModelScene::GetFSModel()
 
 GLPlaneCutItem::GLPlaneCutItem(CGLModelScene* scene, CGLContext& rc) : GLModelSceneItem(scene)
 {
-	UpdatePlaneCut(rc, true);
+
 }
 
 void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
@@ -1282,25 +1282,18 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 	glColor3ub(200, 0, 200);
 	glx::renderBox(box, false);
 
-	RenderBoxCut(m_scene->GetMeshRenderer(), rc, box);
-
-	if (rc.m_settings.m_planeCutMode == 0)
+	// render the plane cut first
+	if (m_planeCut.IsValid() == false)
 	{
-		// render the plane cut first
-		if (m_planeCut.IsValid() == false)
-		{
-			FSModel& fem = *m_scene->GetFSModel();
-			double* d = rc.m_settings.m_planeCut;
-			m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], d[3]);
-			m_planeCut.BuildPlaneCut(fem, rc.m_settings.m_bcontour);
-		}
-
-		m_planeCut.Render(rc);
-
-		// then turn on the clipping plane before rendering the other geometry
-		re.setClipPlane(0, rc.m_settings.m_planeCut);
-		re.enable(GLRenderEngine::CLIPPLANE);
+		UpdatePlaneCut(rc, true);
 	}
+
+	RenderBoxCut(m_scene->GetMeshRenderer(), rc, box);
+	m_planeCut.Render(rc);
+
+	// then turn on the clipping plane before rendering the other geometry
+	re.setClipPlane(0, rc.m_settings.m_planeCut);
+	re.enable(GLRenderEngine::CLIPPLANE);
 }
 
 void GLPlaneCutItem::UpdatePlaneCut(CGLContext& rc, bool reset)
@@ -1312,92 +1305,11 @@ void GLPlaneCutItem::UpdatePlaneCut(CGLContext& rc, bool reset)
 	GModel& mdl = *m_scene->GetGModel();
 	if (mdl.Objects() == 0) return;
 
-	// set the plane normal
 	double* d = rc.m_settings.m_planeCut;
 	m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], d[3]);
-	vec3d norm(d[0], d[1], d[2]);
-	double ref = -d[3];
 
 	GLViewSettings& vs = rc.m_settings;
-
-	if (reset)
-	{
-		for (int n = 0; n < mdl.Objects(); ++n)
-		{
-			GObject* po = mdl.Object(n);
-			if (po->GetFEMesh())
-			{
-				FSMesh* mesh = po->GetFEMesh();
-				int NE = mesh->Elements();
-				for (int i = 0; i < NE; ++i)
-				{
-					FSElement& el = mesh->Element(i);
-					el.Show(); el.Unhide();
-				}
-				po->UpdateItemVisibility();
-			}
-		}
-	}
-
-	if ((vs.m_planeCutMode == Planecut_Mode::PLANECUT) && (vs.m_showPlaneCut))
-	{
-		m_planeCut.BuildPlaneCut(fem, vs.m_bcontour);
-	}
-	else
-	{
-		for (int n = 0; n < mdl.Objects(); ++n)
-		{
-			GObject* po = mdl.Object(n);
-			if (po->GetFEMesh())
-			{
-				FSMesh* mesh = po->GetFEMesh();
-
-				if (vs.m_showPlaneCut)
-				{
-					int NN = mesh->Nodes();
-					for (int i = 0; i < NN; ++i)
-					{
-						FSNode& node = mesh->Node(i);
-						node.m_ntag = 0;
-
-						vec3d ri = mesh->LocalToGlobal(node.pos());
-						if (norm * ri < ref)
-						{
-							node.m_ntag = 1;
-						}
-					}
-
-					int NE = mesh->Elements();
-					for (int i = 0; i < NE; ++i)
-					{
-						FSElement& el = mesh->Element(i);
-						el.Show(); el.Unhide();
-						int ne = el.Nodes();
-						for (int j = 0; j < ne; ++j)
-						{
-							if (mesh->Node(el.m_node[j]).m_ntag == 1)
-							{
-								el.Hide();
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					int NE = mesh->Elements();
-					for (int i = 0; i < NE; ++i)
-					{
-						FSElement& el = mesh->Element(i);
-						el.Show(); el.Unhide();
-					}
-				}
-
-				mesh->UpdateItemVisibility();
-				po->BuildFERenderMesh();
-			}
-		}
-	}
+	m_planeCut.Create(fem, vs.m_bcontour, vs.m_planeCutMode);
 }
 
 void GLObjectItem::render(GLRenderEngine& re, CGLContext& rc)

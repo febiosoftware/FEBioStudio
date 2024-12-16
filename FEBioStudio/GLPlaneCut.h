@@ -41,7 +41,7 @@ public:
 
 	bool IsValid() const;
 
-	void BuildPlaneCut(FSModel& fem, bool showMeshData);
+	void Create(FSModel& fem, bool showMeshData, int mode);
 
 	void SetPlaneCoordinates(double d0, double d1, double d2, double d3)
 	{
@@ -57,6 +57,10 @@ public:
 	void Render(CGLContext& rc);
 
 	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
+
+private:
+	void CreatePlaneCut(FSModel& fem, bool showMeshData);
+	void CreateHideElements(FSModel& fem, bool showMeshData);
 
 private:
 	GMesh* m_planeCut = nullptr;
