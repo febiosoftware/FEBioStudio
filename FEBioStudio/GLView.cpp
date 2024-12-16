@@ -1646,7 +1646,7 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		painter.drawText(rect(), "Recording paused", to);
 	}
 
-	// stop time
+	// stop render stats
 	if (m_showFPS)
 	{
 		QRect rt = rect();
@@ -1660,7 +1660,8 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		painter.drawText(rt, QString("FPS: %1").arg(m_fps, 0, 'f', 2), to);
 
 		GLRenderStats stats = m_ogl.GetRenderStats();
-		rt.setY(rt.y() + fontSize + 5);
+		int Y = rt.y() + fontSize + 5;
+		rt.setY(Y);
 		float tris = (float)stats.triangles;
 		if (tris < 1e3)
 		{
@@ -1672,6 +1673,20 @@ void CGLView::RenderCanvas(CGLContext& rc)
 			if (tris > 1e6) { tris /= 1e6; suffix = 'M'; }
 			else if (tris > 1e3) { tris /= 1e3; suffix = 'K'; }
 			painter.drawText(rt, QString("TRIs: %1%2").arg(tris, 0, 'f', 2).arg(suffix), to);
+		}
+		Y += fontSize + 5;
+		rt.setY(Y);
+		float lines = (float)stats.lines;
+		if (lines < 1e3)
+		{
+			painter.drawText(rt, QString("Lines: %1").arg(stats.lines), to);
+		}
+		else
+		{
+			QChar suffix(' ');
+			if (lines > 1e6) { lines /= 1e6; suffix = 'M'; }
+			else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
+			painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
 		}
 	}
 

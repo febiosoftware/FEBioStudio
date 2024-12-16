@@ -213,6 +213,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh)
 	if (glm)
 	{
 		glm->Render();
+		m_stats.lines += glm->Vertices() / 2;
 	}
 }
 
@@ -236,6 +237,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId)
 	{
 		const auto& p = mesh.EIL(edgeId);
 		glm->Render(2 * p.first, 2 * p.second);
+		m_stats.lines += p.second;
 	}
 }
 

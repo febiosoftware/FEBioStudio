@@ -28,9 +28,13 @@ SOFTWARE.*/
 struct GLRenderStats
 {
 	size_t triangles = 0;
+	size_t lines = 0;
+	size_t cachedObjects = 0;
 
 	void clear()
 	{
 		triangles = 0;
+		lines = 0;
+		cachedObjects = 0;
 	}
 };
