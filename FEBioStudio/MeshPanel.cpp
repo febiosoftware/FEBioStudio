@@ -54,6 +54,60 @@ SOFTWARE.*/
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
 
+class CPrimitiveMesherProps : public CObjectProps
+{
+public:
+	CPrimitiveMesherProps(GPrimitive* po) : CObjectProps(nullptr), m_po(po)
+	{
+		BuildParameterList();
+	}
+
+	void BuildParameterList()
+	{
+		Clear();
+		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "Default" << "TetGen");
+		addProperty("Properties", CProperty::Group);
+		BuildParamList(m_po->GetFEMesher());
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		FEMesher* mesher = m_po->GetFEMesher();
+
+		if (i == 0)
+		{
+			if (dynamic_cast<FETetGenMesher*>(mesher)) return 1; else return 0;
+		}
+		else if (i > 1) return CObjectProps::GetPropertyValue(i - 2);
+		else return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		FEMesher* mesher = m_po->GetFEMesher();
+		if (i == 0)
+		{
+			int val = v.toInt();
+			if ((val == 0) && dynamic_cast<FETetGenMesher*>(mesher))
+			{
+				m_po->SetFEMesher(m_po->CreateDefaultMesher());
+				BuildParameterList();
+				SetModified(true);
+			}
+			else if ((val == 1) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
+			{
+				m_po->SetFEMesher(new FETetGenMesher(m_po));
+				BuildParameterList();
+				SetModified(true);
+			}
+		}
+		else if (i > 1) CObjectProps::SetPropertyValue(i - 2, v);
+	}
+
+private:
+	GPrimitive* m_po;
+};
+
 class CSurfaceMesherProps : public CObjectProps
 {
 public:
@@ -288,11 +342,20 @@ void CMeshPanel::Update(bool breset)
 		}
 		else
 		{
-			FEMesher* mesher = activeObject->GetFEMesher();
-			if (mesher)
+			GPrimitive* primitive = dynamic_cast<GPrimitive*>(activeObject);
+			if (primitive)
 			{
-				ui->setMesherPropertyList(new CObjectProps(mesher));
+				ui->setMesherPropertyList(new CPrimitiveMesherProps(primitive));
 				ui->showMesherParametersPanel(true);
+			}
+			else
+			{
+				FEMesher* mesher = activeObject->GetFEMesher();
+				if (mesher)
+				{
+					ui->setMesherPropertyList(new CObjectProps(mesher));
+					ui->showMesherParametersPanel(true);
+				}
 			}
 		}
 
