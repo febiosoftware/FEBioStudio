@@ -122,11 +122,24 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 		glColor4ub(c.r, c.g, c.b, c.a);
 	}
 	break;
+	case GLMaterial::OVERLAY:
+	{
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_POLYGON_STIPPLE);
+
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+		glColor4ub(c.r, c.g, c.b, c.a);
+	}
+	break;
 	case GLMaterial::CONSTANT:
 	{
 		glDisable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
 		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_POLYGON_STIPPLE);
+		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glColor4ub(c.r, c.g, c.b, c.a);
 	}
@@ -211,6 +224,15 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 
 		if (!cacheMesh) delete glm;
 	}
+}
+
+void OpenGLRenderer::renderGMeshNodes(const GMesh& mesh, bool cacheMesh)
+{
+	// TODO: implement mesh caching for point meshes
+	GLPointMesh points;
+	points.SetRenderMode(GLMesh::VertexArrayMode);
+	points.CreateFromGMesh(mesh);
+	points.Render();
 }
 
 void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)

@@ -340,4 +340,6 @@ public:
 	GLPointMesh(int maxVertices, unsigned int flags = 0);
 
 	void Create(int maxVertices, unsigned int flags = 0);
+
+	void CreateFromGMesh(const GMesh& mesh);
 };

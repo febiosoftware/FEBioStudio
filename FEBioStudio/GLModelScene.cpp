@@ -3025,11 +3025,8 @@ void GLSelectionItem::RenderSelectedNodes(GLRenderEngine& re, CGLContext& rc, GO
 	}
 	if (points.IsEmpty()) return;
 
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	GLPointOverlayShader* shader = new GLPointOverlayShader(GLColor::Yellow());
-	renderer.SetPointShader(shader);
-	renderer.RenderPoints(points);
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
+	re.renderGMeshNodes(points, false);
 
 #ifndef NDEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
@@ -3051,8 +3048,8 @@ void GLSelectionItem::RenderSelectedNodes(GLRenderEngine& re, CGLContext& rc, GO
 		}
 		if (fenodes.Nodes() != 0)
 		{
-			shader->SetColor(GLColor::Red());
-			renderer.RenderPoints(fenodes);
+			re.setColor(GLColor::Red());
+			re.renderGMeshNodes(fenodes, false);
 		}
 	}
 #endif
@@ -3064,8 +3061,7 @@ void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GO
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.SetLineShader(new GLOutlineShader(GLColor::Yellow()));
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
 
 	GMesh pointMesh;
 	int N = po->Edges();
@@ -3074,7 +3070,7 @@ void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GO
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected())
 		{
-			renderer.RenderEdges(*m, i);
+			re.renderGMeshEdges(*m, i);
 
 			GNode* n0 = po->Node(e.m_node[0]);
 			GNode* n1 = po->Node(e.m_node[1]);
@@ -3089,8 +3085,7 @@ void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GO
 
 	if (pointMesh.Nodes() != 0)
 	{
-		renderer.SetPointShader(new GLPointOverlayShader(GLColor::Yellow()));
-		renderer.RenderPoints(pointMesh);
+		re.renderGMeshNodes(pointMesh, false);
 	}
 
 #ifndef NDEBUG
@@ -3117,8 +3112,8 @@ void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GO
 		}
 		if (edges.Edges() > 0)
 		{
-			renderer.SetLineShader(new GLOutlineShader(GLColor::Red()));
-			renderer.RenderEdges(edges);
+			re.setColor(GLColor::Red());
+			re.renderGMeshEdges(edges, false);
 		}
 	}
 #endif

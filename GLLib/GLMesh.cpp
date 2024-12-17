@@ -481,3 +481,17 @@ void GLPointMesh::Create(int maxVertices, unsigned int flags)
 {
 	AllocVertexBuffers(maxVertices, flags);
 }
+
+void GLPointMesh::CreateFromGMesh(const GMesh& gmsh)
+{
+	int nodes = gmsh.Nodes();
+	AllocVertexBuffers(nodes, 0);
+
+	BeginMesh();
+	for (int i = 0; i < gmsh.Nodes(); ++i)
+	{
+		const GMesh::NODE& node = gmsh.Node(i);
+		AddVertex(node.r);
+	}
+	EndMesh();
+}

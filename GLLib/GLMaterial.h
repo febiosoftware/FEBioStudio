@@ -33,7 +33,8 @@ public:
 		CONSTANT = 1,
 		PLASTIC,
 		GLASS,
-		HIGHLIGHT
+		HIGHLIGHT,
+		OVERLAY,
 	};
 
 public:

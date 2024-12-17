@@ -75,6 +75,8 @@ public:
 	virtual void renderGMesh(const GMesh& mesh) {}
 	virtual void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh = true) {}
 
+	virtual void renderGMeshNodes(const GMesh& mesh, bool cacheMesh = true) {}
+
 	virtual void renderGMeshEdges(const GMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh = true) {}
 
