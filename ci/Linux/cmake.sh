@@ -11,6 +11,5 @@ run_cmake() {
 		-DCAD_FEATURES=ON \
 		-DUSE_NETGEN=ON \
 		-DUSE_ITK=ON \
-        -DUSE_LEVMAR=ON \
 		-DBUILD_UPDATER=ON
 }
