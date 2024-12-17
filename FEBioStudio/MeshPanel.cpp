@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
 #include <MeshTools/FESelection.h>
+#include <MeshTools/NetGenSTLMesher.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -119,7 +120,7 @@ public:
 	void BuildParameterList()
 	{
 		Clear();
-		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "Shell Mesh");
+		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "NetGen" << "Shell Mesh");
 		addProperty("Properties", CProperty::Group);
 		BuildParamList(m_po->GetFEMesher());
 	}
@@ -130,7 +131,9 @@ public:
 
 		if (i == 0)
 		{
-			if (dynamic_cast<FEShellMesher*>(mesher)) return 1; else return 0;
+			if (dynamic_cast<FEShellMesher*>(mesher)) return 2;
+			else if (dynamic_cast<NetGenSTLMesher*>(mesher)) return 1;
+			else return 0;
 		}
 		else if (i > 1) return CObjectProps::GetPropertyValue(i - 2);
 		else return QVariant();
@@ -145,6 +148,12 @@ public:
 			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
 				m_po->SetFEMesher(new FETetGenMesher(m_po));
+				BuildParameterList();
+				SetModified(true);
+			}
+			else if ((val == 1) && (dynamic_cast<NetGenSTLMesher*>(mesher) == nullptr))
+			{
+				m_po->SetFEMesher(new NetGenSTLMesher(m_po));
 				BuildParameterList();
 				SetModified(true);
 			}

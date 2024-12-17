@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GOCCObject.h"
-#include <MeshTools/NetGenMesher.h>
+#include <MeshTools/NetGenOCCMesher.h>
 #include <MeshLib/GMesh.h>
 #include <MeshLib/FEMesh.h>
 
@@ -72,12 +72,12 @@ public:
 GOCCObject::GOCCObject(int type) : GObject(type)
 {
 	m_occ = new OCC_Data;
-	SetFEMesher(new NetGenMesher(this));
+	SetFEMesher(new NetGenOCCMesher(this));
 }
 
 FEMesher* GOCCObject::CreateDefaultMesher()
 {
-	return new NetGenMesher(this);
+	return new NetGenOCCMesher(this);
 }
 
 void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)
