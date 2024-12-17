@@ -51,10 +51,10 @@ public:
 	void renderLine(const vec3d& a, const vec3d& b) override;
 
 	void renderGMesh(const GMesh& mesh) override;
-	void renderGMesh(const GMesh& mesh, int surfId) override;
+	void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh) override;
 
 	void renderGMeshEdges(const GMesh& mesh) override;
-	void renderGMeshEdges(const GMesh& mesh, int edgeId) override;
+	void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh) override;
 
 public:
 	unsigned int LoadEnvironmentMap(const std::string& fileName) override;

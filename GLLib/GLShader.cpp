@@ -162,6 +162,9 @@ void GLStandardModelShader::Activate()
 
 	m_col.toFloat(col);
 
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
+
 	glDisable(GL_COLOR_MATERIAL);
 	if (m_useStipple) glEnable(GL_POLYGON_STIPPLE);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);

@@ -28,13 +28,12 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSModel.h>
-#include <GLLib/GLMeshRender.h>
 #include <MeshLib/GMesh.h>
-#include <GLLib/GLShader.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include <PostLib/ColorMap.h>
+#include "GLRenderEngine.h"
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -220,7 +219,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 								w = 0.f;
 
 							vec3d rk = ex[n1] * (1 - w) + ex[n2] * w;
-							r[k] = to_vec3f(T.LocalToGlobal(rk));
+							r[2-k] = to_vec3f(T.LocalToGlobal(rk));
 						}
 
 						int nf = planeCut->Faces();
@@ -251,7 +250,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 								c.g = (uint8_t)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
 								c.b = (uint8_t)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
 
-								face.c[k] = c;
+								face.c[2-k] = c;
 							}
 						}
 						else
@@ -359,9 +358,6 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 			}
 
 			// repeat over all elements
-			GLColor defaultColor(200, 200, 200);
-			GLColor c(defaultColor);
-			int matId = -1;
 			int NE = mesh->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
@@ -370,22 +366,6 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 				el.m_ntag = -1;
 				if (el.IsVisible() && el.IsSolid())
 				{
-					int mid = el.m_MatID;
-					if (mid != matId)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(mid);
-						if (pmat)
-						{
-							c = fem.GetMaterialFromID(mid)->GetColor();
-							matId = mid;
-						}
-						else
-						{
-							matId = -1;
-							c = po->GetColor();
-						}
-					}
-
 					// see if the plane intersects this element
 					const int* nt = nullptr;
 					switch (el.Type())
@@ -422,6 +402,9 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 				}
 			}
 
+			GLColor defaultColor(200, 200, 200);
+			GLColor c(defaultColor);
+			int matId = -1;
 			for (int i = 0; i < NE; ++i)
 			{
 				FSElement& el = mesh->Element(i);
@@ -429,6 +412,22 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 
 				if ((ncase > 0) && (ncase < 255))
 				{
+					int mid = el.m_MatID;
+					if (mid != matId)
+					{
+						GMaterial* pmat = fem.GetMaterialFromID(mid);
+						if (pmat)
+						{
+							c = fem.GetMaterialFromID(mid)->GetColor();
+							matId = mid;
+						}
+						else
+						{
+							matId = -1;
+							c = po->GetColor();
+						}
+					}
+
 					FSFace f;
 					for (int j = 0; j < el.Faces(); ++j)
 					{
@@ -534,22 +533,17 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render(CGLContext& rc)
+void GLPlaneCut::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_planeCut == nullptr) return;
 
-	GLMeshRender mr;
-
 	// render the unselected faces
-	GLFaceColorShader unselectedShader;
-	mr.RenderGMesh(*m_planeCut, 0, unselectedShader);
+	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200));
+	re.renderGMesh(*m_planeCut, 0, false);
 
 	// render the selected faces
-	GLSelectionShader shader(GLColor(255, 64, 0));
-	mr.RenderGMesh(*m_planeCut, 1, shader);
-
-	GLLineColorShader* lineShader = new GLLineColorShader();
-	mr.SetLineShader(lineShader);
+	re.setColor(GLColor(255, 64, 0));
+	re.renderGMesh(*m_planeCut, 1, false);
 
 	if (rc.m_settings.m_bmesh)
 	{
@@ -558,12 +552,12 @@ void GLPlaneCut::Render(CGLContext& rc)
 		cam.PositionInScene();
 
 		GLColor c = rc.m_settings.m_meshColor;
-		lineShader->SetColor(c);
-		mr.RenderEdges(*m_planeCut, 0);
+		re.setMaterial(GLMaterial::CONSTANT, c);
+		re.renderGMeshEdges(*m_planeCut, 0, false);
 
 		// TODO: This used to be drawn with depthtest off
-		lineShader->SetColor(GLColor::Yellow());
-		mr.RenderEdges(*m_planeCut, 1);
+		re.setColor(GLColor::Yellow());
+		re.renderGMeshEdges(*m_planeCut, 1, false);
 
 		cam.LineDrawMode(false);
 		cam.PositionInScene();

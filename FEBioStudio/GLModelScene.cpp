@@ -1289,7 +1289,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 	}
 
 	RenderBoxCut(m_scene->GetMeshRenderer(), rc, box);
-	m_planeCut.Render(rc);
+	m_planeCut.Render(re, rc);
 
 	// then turn on the clipping plane before rendering the other geometry
 	re.setClipPlane(0, rc.m_settings.m_planeCut);

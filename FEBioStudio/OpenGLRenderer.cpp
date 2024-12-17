@@ -170,20 +170,31 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh)
 	}
 }
 
-void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
+void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 {
+	if ((surfId < 0) || (surfId >= mesh.Partitions())) return;
+
 	GLTriMesh* glm = nullptr;
-	auto it = m.triMesh.find(&mesh);
-	if (it == m.triMesh.end())
+	if (cacheMesh)
 	{
-		glm = new GLTriMesh;
-		glm->SetRenderMode(GLMesh::VBOMode);
-		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
-		m.triMesh[&mesh] = glm;
+		auto it = m.triMesh.find(&mesh);
+		if (it == m.triMesh.end())
+		{
+			glm = new GLTriMesh;
+			glm->SetRenderMode(GLMesh::VBOMode);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
+			m.triMesh[&mesh] = glm;
+		}
+		else
+		{
+			glm = it->second;
+		}
 	}
 	else
 	{
-		glm = it->second;
+		glm = new GLTriMesh;
+		glm->SetRenderMode(GLMesh::VertexArrayMode);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
 	}
 
 	if (glm)
@@ -191,6 +202,8 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId)
 		const GMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf);
 		m_stats.triangles += p.nf;
+
+		if (!cacheMesh) delete glm;
 	}
 }
 
@@ -217,20 +230,31 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh)
 	}
 }
 
-void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId)
+void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh)
 {
+	if ((edgeId < 0) || (edgeId >= mesh.EILs())) return;
+
 	GLLineMesh* glm = nullptr;
-	auto it = m.lineMesh.find(&mesh);
-	if (it == m.lineMesh.end())
+	if (cacheMesh)
 	{
-		glm = new GLLineMesh;
-		glm->SetRenderMode(GLMesh::VBOMode);
-		glm->CreateFromGMesh(mesh);
-		m.lineMesh[&mesh] = glm;
+		auto it = m.lineMesh.find(&mesh);
+		if (it == m.lineMesh.end())
+		{
+			glm = new GLLineMesh;
+			glm->SetRenderMode(GLMesh::VBOMode);
+			glm->CreateFromGMesh(mesh);
+			m.lineMesh[&mesh] = glm;
+		}
+		else
+		{
+			glm = it->second;
+		}
 	}
 	else
 	{
-		glm = it->second;
+		glm = new GLLineMesh;
+		glm->SetRenderMode(GLMesh::VertexArrayMode);
+		glm->CreateFromGMesh(mesh);
 	}
 
 	if (glm)
@@ -238,6 +262,8 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId)
 		const auto& p = mesh.EIL(edgeId);
 		glm->Render(2 * p.first, 2 * p.second);
 		m_stats.lines += p.second;
+
+		if (!cacheMesh) delete glm;
 	}
 }
 
