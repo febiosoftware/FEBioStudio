@@ -977,7 +977,7 @@ void CGLModelScene::Update()
 	CGLScene::Update();
 }
 
-void GLPlaneCutItem::RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box)
+void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, CGLContext& rc, const BOX& box)
 {
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -1069,8 +1069,8 @@ void GLPlaneCutItem::RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, cons
 		}
 		plane.Update();
 
-		meshRender.SetLineShader(new GLLineColorShader(GLColor(255, 64, 255)));
-		meshRender.RenderEdges(plane);
+		re.setMaterial(GLMaterial::CONSTANT, GLColor(255, 64, 255));
+		re.renderGMeshEdges(plane, false);
 	}
 }
 
@@ -1288,7 +1288,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 		UpdatePlaneCut(rc, true);
 	}
 
-	RenderBoxCut(m_scene->GetMeshRenderer(), rc, box);
+	RenderBoxCut(re, rc, box);
 	m_planeCut.Render(re, rc);
 
 	// then turn on the clipping plane before rendering the other geometry
@@ -1376,8 +1376,8 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			else RenderObject(re, rc);
 		}
 		break;
-		case SELECT_PART: RenderParts(rc); break;
-		case SELECT_FACE: RenderSurfaces(rc); break;
+		case SELECT_PART: RenderParts(re, rc); break;
+		case SELECT_FACE: RenderSurfaces(re, rc); break;
 		case SELECT_EDGE:
 		{
 			RenderObject(re, rc);
@@ -1479,10 +1479,8 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 }
 
 // render non-selected parts
-void GLObjectItem::RenderParts(CGLContext& rc) const
+void GLObjectItem::RenderParts(GLRenderEngine& re, CGLContext& rc) const
 {
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
 	GLViewSettings& vs = rc.m_settings;
 
 	GObject* po = m_po;
@@ -1493,7 +1491,7 @@ void GLObjectItem::RenderParts(CGLContext& rc) const
 	if (pm == nullptr) return;
 
 	// render non-selected parts
-	GPart* pgmat = 0; // the part that defines the material
+	GPart* pgmat = nullptr; // the part that defines the material
 	int NF = po->Faces();
 	for (int n = 0; n < NF; ++n)
 	{
@@ -1532,9 +1530,9 @@ void GLObjectItem::RenderParts(CGLContext& rc) const
 
 			// render the face
 			GLColor c = m_scene->GetPartColor(rc, pg);
-			GLStandardModelShader shader(c, useStipple);
-			int nid = pg->GetLocalID();
-			renderer.RenderGMesh(*pm, n, shader);
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+			else re.setMaterial(GLMaterial::PLASTIC, c);
+			re.renderGMesh(*pm, n);
 		}
 	}
 
@@ -1542,10 +1540,8 @@ void GLObjectItem::RenderParts(CGLContext& rc) const
 }
 
 // Render non-selected surfaces
-void GLObjectItem::RenderSurfaces(CGLContext& rc) const
+void GLObjectItem::RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const
 {
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
 	GLViewSettings& vs = rc.m_settings;
 
 	GObject* po = m_po;
@@ -1610,8 +1606,9 @@ void GLObjectItem::RenderSurfaces(CGLContext& rc) const
 				}
 
 				// render the face
-				GLStandardModelShader shader(c, useStipple);
-				renderer.RenderGMesh(*pm, n, shader);
+				if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+				else re.setMaterial(GLMaterial::PLASTIC, c);
+				re.renderGMesh(*pm, n);
 			}
 		}
 	}
@@ -2138,7 +2135,19 @@ void GLObjectItem::RenderSelection(CGLContext& rc) const
 //       hex layer.
 void GLObjectItem::RenderObject(GLRenderEngine& re, CGLContext& rc) const
 {
-	re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor());
+	bool useStipple = false;
+	if (rc.m_settings.m_transparencyMode != 0)
+	{
+		switch (rc.m_settings.m_transparencyMode)
+		{
+		case 1: if (m_po->IsSelected()) useStipple = true; break;
+		case 2: if (!m_po->IsSelected()) useStipple = true; break;
+		}
+	}
+
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor());
+	else re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor());
+
 	GMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
 	
@@ -2166,15 +2175,14 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, CGLContext& rc) const
 	if (NF == 0)
 	{
 		// if there are no faces, render edges instead
-		GLMeshRender& renderer = m_scene->GetMeshRenderer();
-		renderer.SetLineShader(new GLLineColorShader());
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
 		int NC = m_po->Edges();
 		for (int n = 0; n < NC; ++n)
 		{
 			GEdge& e = *m_po->Edge(n);
 			if (e.IsVisible())
 			{
-				renderer.RenderEdges(*mesh, n);
+				re.renderGMeshEdges(*mesh, n);
 			}
 		}
 	}

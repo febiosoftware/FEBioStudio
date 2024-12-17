@@ -41,12 +41,16 @@ CGView& CGLScene::GetView() { return m_view; }
 
 void CGLScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
+	engine.pushState();
+
 	CGLScene& scene = *this;
 	for (GLSceneItem* item : scene)
 	{
 		assert(item);
 		item->render(engine, rc);
 	}
+
+	engine.popState();
 }
 
 void CGLScene::Update()

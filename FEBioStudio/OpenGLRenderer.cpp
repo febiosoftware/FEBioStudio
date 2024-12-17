@@ -86,6 +86,7 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 	switch (mat)
 	{
 	case GLMaterial::PLASTIC:
+	case GLMaterial::GLASS:
 	{
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -93,7 +94,11 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 
 		glEnable(GL_LIGHTING);
 		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_POLYGON_STIPPLE);
+
+		if (mat == GLMaterial::PLASTIC)
+			glDisable(GL_POLYGON_STIPPLE);
+		else
+			glEnable(GL_POLYGON_STIPPLE);
 
 		GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
 		GLfloat spc[] = { 0.5f, 0.5f, 0.5f, 1.f };
@@ -121,6 +126,7 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 	{
 		glDisable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
+		glEnable(GL_DEPTH_TEST);
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glColor4ub(c.r, c.g, c.b, c.a);
 	}
@@ -207,26 +213,37 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 	}
 }
 
-void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh)
+void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 {
 	GLLineMesh* glm = nullptr;
-	auto it = m.lineMesh.find(&mesh);
-	if (it == m.lineMesh.end())
+	if (cacheMesh)
 	{
-		glm = new GLLineMesh;
-		glm->SetRenderMode(GLMesh::VBOMode);
-		glm->CreateFromGMesh(mesh);
-		m.lineMesh[&mesh] = glm;
+		auto it = m.lineMesh.find(&mesh);
+		if (it == m.lineMesh.end())
+		{
+			glm = new GLLineMesh;
+			glm->SetRenderMode(GLMesh::VBOMode);
+			glm->CreateFromGMesh(mesh);
+			m.lineMesh[&mesh] = glm;
+		}
+		else
+		{
+			glm = it->second;
+		}
 	}
 	else
 	{
-		glm = it->second;
+		glm = new GLLineMesh;
+		glm->SetRenderMode(GLMesh::VertexArrayMode);
+		glm->CreateFromGMesh(mesh);
 	}
 
 	if (glm)
 	{
 		glm->Render();
 		m_stats.lines += glm->Vertices() / 2;
+
+		if (!cacheMesh) delete glm;
 	}
 }
 

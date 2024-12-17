@@ -60,7 +60,7 @@ public:
 
 private:
 	void UpdatePlaneCut(CGLContext& rc, bool reset);
-	void RenderBoxCut(GLMeshRender& meshRender, CGLContext& rc, const BOX& box);
+	void RenderBoxCut(GLRenderEngine& re, CGLContext& rc, const BOX& box);
 
 private:
 	GLPlaneCut	m_planeCut;
@@ -78,8 +78,8 @@ private:
 	void RenderObject(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc) const;
 
-	void RenderParts(CGLContext& rc) const;
-	void RenderSurfaces(CGLContext& rc) const;
+	void RenderParts(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderEdges(CGLContext& rc) const;
 	void RenderNodes(CGLContext& rc) const;
 	void RenderBeamParts(CGLContext& rc) const;

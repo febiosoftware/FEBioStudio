@@ -32,6 +32,7 @@ public:
 	enum Type {
 		CONSTANT = 1,
 		PLASTIC,
+		GLASS,
 		HIGHLIGHT
 	};
 

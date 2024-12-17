@@ -53,7 +53,7 @@ public:
 	void renderGMesh(const GMesh& mesh) override;
 	void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh) override;
 
-	void renderGMeshEdges(const GMesh& mesh) override;
+	void renderGMeshEdges(const GMesh& mesh, bool cacheMesh) override;
 	void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh) override;
 
 public:
