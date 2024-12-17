@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
 #include "OpenGLRenderer.h"
+#include <queue>
 
 class CMainWindow;
 class CGLDocument;
@@ -272,7 +273,7 @@ protected:
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
-	double	m_fps;
+	std::queue<double>	m_fps;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;

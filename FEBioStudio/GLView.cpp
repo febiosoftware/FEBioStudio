@@ -468,7 +468,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_bsnap = false;
 
 	m_showFPS = false;
-	m_fps = 0.0;
 
 	Reset();
 
@@ -1546,7 +1545,10 @@ void CGLView::RenderScene()
 		scene->Render(m_ogl, rc);
 		time_point<steady_clock> stopTime = steady_clock::now();
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
-		m_fps = (sec != 0 ? 1.0 / sec : 0);
+		double fps = (sec != 0 ? 1.0 / sec : 0);
+
+		if (m_fps.size() >= 50) m_fps.pop();
+		m_fps.push(fps);
 	}
 
 	cam.PositionInScene();
@@ -1649,6 +1651,14 @@ void CGLView::RenderCanvas(CGLContext& rc)
 	// stop render stats
 	if (m_showFPS)
 	{
+		double fps = 0;
+		if (!m_fps.empty())
+		{
+			auto& container = m_fps._Get_container();
+			for (double f : container) fps += f;
+			fps /= (container.size());
+		}
+
 		QRect rt = rect();
 		QTextOption to;
 		QFont font = painter.font();
@@ -1657,7 +1667,7 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		painter.setFont(font);
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rt, QString("FPS: %1").arg(m_fps, 0, 'f', 2), to);
+		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
 
 		GLRenderStats stats = m_ogl.GetRenderStats();
 		int Y = rt.y() + fontSize + 5;
