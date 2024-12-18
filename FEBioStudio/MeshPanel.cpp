@@ -112,22 +112,22 @@ private:
 class CSurfaceMesherProps : public CObjectProps
 {
 public:
-	CSurfaceMesherProps(GSurfaceMeshObject* po) : CObjectProps(nullptr), m_po(po)
+	CSurfaceMesherProps(GSurfaceMeshObject* po) : CObjectProps(nullptr), m_pso(po)
 	{
-		BuildParameterList();
+		BuildParamList(m_pso->GetFEMesher());
 	}
 
-	void BuildParameterList()
+	void BuildParamList(FSBase* po, bool showNonPersistent = false) override
 	{
 		Clear();
 		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "NetGen" << "Shell Mesh");
 		addProperty("Properties", CProperty::Group);
-		BuildParamList(m_po->GetFEMesher());
+		CObjectProps::BuildParamList(po);
 	}
 
 	QVariant GetPropertyValue(int i)
 	{
-		FEMesher* mesher = m_po->GetFEMesher();
+		FEMesher* mesher = m_pso->GetFEMesher();
 
 		if (i == 0)
 		{
@@ -141,26 +141,26 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v)
 	{
-		FEMesher* mesher = m_po->GetFEMesher();
+		FEMesher* mesher = m_pso->GetFEMesher();
 		if (i == 0)
 		{
 			int val = v.toInt();
 			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_po->SetFEMesher(new FETetGenMesher(m_po));
-				BuildParameterList();
+				m_pso->SetFEMesher(new FETetGenMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if ((val == 1) && (dynamic_cast<NetGenSTLMesher*>(mesher) == nullptr))
 			{
-				m_po->SetFEMesher(new NetGenSTLMesher(m_po));
-				BuildParameterList();
+				m_pso->SetFEMesher(new NetGenSTLMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
 			{
-				m_po->SetFEMesher(new FEShellMesher(m_po));
-				BuildParameterList();
+				m_pso->SetFEMesher(new FEShellMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 		}
@@ -168,7 +168,7 @@ public:
 	}
 
 private:
-	GSurfaceMeshObject*	m_po;
+	GSurfaceMeshObject*	m_pso;
 };
 
 

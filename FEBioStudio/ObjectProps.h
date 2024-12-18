@@ -46,7 +46,7 @@ public:
 	int Params() const { return (int) m_params.size(); }
 
 protected:
-	void BuildParamList(FSBase* po, bool showNonPersistent = false);
+	virtual void BuildParamList(FSBase* po, bool showNonPersistent = false);
 
 	void AddParameter(Param& p);
 	void AddParameterList(FSBase* po);
