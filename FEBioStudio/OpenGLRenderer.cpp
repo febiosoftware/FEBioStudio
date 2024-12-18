@@ -166,26 +166,36 @@ void OpenGLRenderer::renderLine(const vec3d& a, const vec3d& b)
 	glEnd();
 }
 
-void OpenGLRenderer::renderGMesh(const GMesh& mesh)
+void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 {
 	GLTriMesh* glm = nullptr;
-	auto it = m.triMesh.find(&mesh);
-	if (it == m.triMesh.end())
+	if (cacheMesh)
 	{
-		glm = new GLTriMesh;
-		glm->SetRenderMode(GLMesh::VBOMode);
-		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
-		m.triMesh[&mesh] = glm;
+		auto it = m.triMesh.find(&mesh);
+		if (it == m.triMesh.end())
+		{
+			glm = new GLTriMesh;
+			glm->SetRenderMode(GLMesh::VBOMode);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
+			m.triMesh[&mesh] = glm;
+		}
+		else
+		{
+			glm = it->second;
+		}
 	}
 	else
 	{
-		glm = it->second;
+		glm = new GLTriMesh;
+		glm->SetRenderMode(GLMesh::VertexArrayMode);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
 	}
 
 	if (glm)
 	{
 		glm->Render();
 		m_stats.triangles += glm->Vertices() / 3;
+		if (!cacheMesh) delete glm;
 	}
 }
 

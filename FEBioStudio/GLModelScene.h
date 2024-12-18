@@ -80,8 +80,8 @@ private:
 
 	void RenderParts(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderEdges(CGLContext& rc) const;
-	void RenderNodes(CGLContext& rc) const;
+	void RenderEdges(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderNodes(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderBeamParts(CGLContext& rc) const;
 	void RenderSurfaceMeshEdges(CGLContext& rc) const;
 
@@ -95,7 +95,7 @@ private:
 	void RenderUnselectedBeamElements(CGLContext& rc) const;
 	void RenderSelectedFEElements(CGLContext& rc) const;
 	void RenderAllBeamElements(CGLContext& rc) const;
-	void RenderSelectedFEFaces(CGLContext& rc) const;
+	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderFEEdges(CGLContext& rc) const;
 	void RenderFENodes(CGLContext& rc) const;
 	void RenderSurfaceMeshNodes(CGLContext& rc) const;

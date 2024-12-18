@@ -72,7 +72,7 @@ public:
 	virtual void renderPoint(const vec3d& r) {}
 	virtual void renderLine(const vec3d& a, const vec3d& b) {}
 
-	virtual void renderGMesh(const GMesh& mesh) {}
+	virtual void renderGMesh(const GMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh = true) {}
 
 	virtual void renderGMeshNodes(const GMesh& mesh, bool cacheMesh = true) {}

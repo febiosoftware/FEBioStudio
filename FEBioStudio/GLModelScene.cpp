@@ -1384,7 +1384,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 			SetModelView(po);
-			RenderEdges(rc);
+			RenderEdges(re, rc);
 			cam.LineDrawMode(false);
 			cam.PositionInScene();
 			SetModelView(po);
@@ -1396,7 +1396,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			cam.LineDrawMode(true);
 			cam.PositionInScene();
 			SetModelView(po);
-			RenderNodes(rc);
+			RenderNodes(re, rc);
 			cam.LineDrawMode(false);
 			cam.PositionInScene();
 			SetModelView(po);
@@ -1429,7 +1429,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 				{
 					RenderFEFacesFromGMesh(rc);
 					RenderAllBeamElements(rc);
-					RenderSelectedFEFaces(rc);
+					RenderSelectedFEFaces(re, rc);
 				}
 			}
 			else if (item == ITEM_EDGE)
@@ -1615,7 +1615,7 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const
 }
 
 // Render non-selected nodes
-void GLObjectItem::RenderNodes(CGLContext& rc) const
+void GLObjectItem::RenderNodes(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 	if ((po == nullptr) || (po->Nodes() == 0)) return;
@@ -1634,24 +1634,18 @@ void GLObjectItem::RenderNodes(CGLContext& rc) const
 	}
 	if (points.Nodes() == 0) return;
 
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.SetPointShader(new GLPointColorShader(GLColor::Blue()));
-	renderer.RenderPoints(points);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
+	re.renderGMeshNodes(points, false);
 }
 
 // render non-selected edges
-void GLObjectItem::RenderEdges(CGLContext& rc) const
+void GLObjectItem::RenderEdges(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 	GMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(0, 0, 255);
-
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.SetLineShader(new GLLineColorShader(GLColor::Blue()));
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
 
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
@@ -1659,10 +1653,9 @@ void GLObjectItem::RenderEdges(CGLContext& rc) const
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected() == false)
 		{
-			renderer.RenderEdges(*m, i);
+			re.renderGMeshEdges(*m, i);
 		}
 	}
-	glPopAttrib();
 }
 
 void GLObjectItem::RenderFEFacesFromGMesh(CGLContext& rc) const
@@ -1857,7 +1850,7 @@ void GLObjectItem::RenderFENodes(CGLContext& rc) const
 	}
 }
 
-void GLObjectItem::RenderSelectedFEFaces(CGLContext& rc) const
+void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 
@@ -1865,12 +1858,13 @@ void GLObjectItem::RenderSelectedFEFaces(CGLContext& rc) const
 	if ((sel == nullptr) || (sel->Count() == 0)) return;
 	if (sel->GetMesh() != po->GetFEMesh()) return;
 
-	GLSelectionShader shader(GLColor::Red());
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.RenderGMesh(m_scene->GetSelectionMesh(), shader);
+	GMesh& selMesh = m_scene->GetSelectionMesh();
 
-	renderer.SetLineShader(new GLOutlineShader(GLColor::Yellow()));
-	renderer.RenderEdges(m_scene->GetSelectionMesh());
+	re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Red());
+	re.renderGMesh(selMesh, false);
+
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
+	re.renderGMeshEdges(selMesh, false);
 }
 
 void GLObjectItem::RenderSelectedFEElements(CGLContext& rc) const
