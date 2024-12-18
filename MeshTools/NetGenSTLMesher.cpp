@@ -90,6 +90,7 @@ FSMesh* NetGenSTLMesher::BuildMesh()
 	{
 		FaceDescriptor fd;
 		fd.SetSurfNr(i + 1);
+		fd.SetDomainIn(1);
 		mesh.AddFaceDescriptor(fd);
 	}
 
