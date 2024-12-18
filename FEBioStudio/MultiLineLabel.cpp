@@ -48,8 +48,7 @@ void MultiLineLabel::setText(const QString &text)
 {
 	QTextBrowser::setHtml(text);
 
-	QResizeEvent event(size(), size());
-	resizeEvent(&event);
+    adjustSize();
 }
 
 void MultiLineLabel::resizeEvent(QResizeEvent *event)
