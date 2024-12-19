@@ -1698,6 +1698,23 @@ void CGLView::RenderCanvas(CGLContext& rc)
 			else if (lines > 1e3) { lines /= 1e3; suffix = 'K'; }
 			painter.drawText(rt, QString("Lines: %1%2").arg(lines, 0, 'f', 2).arg(suffix), to);
 		}
+		Y += fontSize + 5;
+		rt.setY(Y);
+		float points = (float)stats.points;
+		if (points < 1e3)
+		{
+			painter.drawText(rt, QString("Points: %1").arg(stats.points), to);
+		}
+		else
+		{
+			QChar suffix(' ');
+			if (points > 1e6) { points /= 1e6; suffix = 'M'; }
+			else if (points > 1e3) { points /= 1e3; suffix = 'K'; }
+			painter.drawText(rt, QString("Points: %1%2").arg(points, 0, 'f', 2).arg(suffix), to);
+		}
+		Y += fontSize + 5;
+		rt.setY(Y);
+		painter.drawText(rt, QString("Caches: %1").arg(stats.cachedObjects), to);
 	}
 
 	painter.end();

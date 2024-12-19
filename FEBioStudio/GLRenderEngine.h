@@ -57,7 +57,7 @@ public:
 	GLRenderEngine() {}
 	virtual ~GLRenderEngine() {}
 
-	void ResetStats();
+	virtual void ResetStats();
 	GLRenderStats GetRenderStats();
 
 public:

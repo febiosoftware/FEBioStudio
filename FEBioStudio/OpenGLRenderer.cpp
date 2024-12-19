@@ -38,6 +38,8 @@ public:
 
 	std::map<const GMesh*, GLTriMesh*> triMesh;
 	std::map<const GMesh*, GLLineMesh*> lineMesh;
+
+	size_t cachedObjects() { return triMesh.size() + lineMesh.size(); }
 };
 
 OpenGLRenderer::OpenGLRenderer(CGLSceneView* view) : m(*(new OpenGLRenderer::Imp))
@@ -47,6 +49,12 @@ OpenGLRenderer::OpenGLRenderer(CGLSceneView* view) : m(*(new OpenGLRenderer::Imp
 
 OpenGLRenderer::~OpenGLRenderer() 
 {
+}
+
+void OpenGLRenderer::ResetStats()
+{
+	GLRenderEngine::ResetStats();
+	m_stats.cachedObjects = m.cachedObjects();
 }
 
 void OpenGLRenderer::pushState()
@@ -244,6 +252,8 @@ void OpenGLRenderer::renderGMeshNodes(const GMesh& mesh, bool cacheMesh)
 	points.SetRenderMode(GLMesh::VertexArrayMode);
 	points.CreateFromGMesh(mesh);
 	points.Render();
+
+	m_stats.points += points.Vertices();
 }
 
 void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
