@@ -147,3 +147,20 @@ void CGLScene::clear()
 	for (GLSceneItem* item : m_Items) delete item;
 	m_Items.clear();
 }
+
+GLCompositeSceneItem::GLCompositeSceneItem() {}
+GLCompositeSceneItem::~GLCompositeSceneItem()
+{
+	for (auto item : m_items)
+	{
+		delete item;
+	}
+}
+
+void GLCompositeSceneItem::render(GLRenderEngine& re, CGLContext& rc)
+{
+	for (auto item : m_items)
+	{
+		item->render(re, rc);
+	}
+}

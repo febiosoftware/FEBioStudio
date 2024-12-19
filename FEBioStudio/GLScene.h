@@ -57,6 +57,21 @@ typedef std::vector<GLSceneItem*> GLItemList;
 typedef std::vector<GLSceneItem*>::const_iterator ConstGLItemIterator;
 typedef std::vector<GLSceneItem*>::iterator GLItemIterator;
 
+class GLCompositeSceneItem : public GLSceneItem
+{
+public:
+	GLCompositeSceneItem();
+	virtual ~GLCompositeSceneItem();
+
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+public:
+	void addItem(GLSceneItem* item) { if (item) m_items.push_back(item); }
+
+private:
+	GLItemList m_items;
+};
+
 class CGLScene
 {
 public:

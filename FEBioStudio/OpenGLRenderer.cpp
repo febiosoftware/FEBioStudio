@@ -63,7 +63,7 @@ void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 {
 	switch (flag)
 	{
-	case GLRenderEngine::LIGHTING: glEnable(GL_LIGHTING); break;
+	case GLRenderEngine::LIGHTING : glEnable(GL_LIGHTING); break;
 	case GLRenderEngine::CLIPPLANE: glEnable(GL_CLIP_PLANE0); break;
 	}
 }
@@ -72,7 +72,8 @@ void OpenGLRenderer::disable(GLRenderEngine::StateFlag flag)
 {
 	switch (flag)
 	{
-	case GLRenderEngine::LIGHTING: glDisable(GL_LIGHTING); break;
+	case GLRenderEngine::LIGHTING : glDisable(GL_LIGHTING); break;
+	case GLRenderEngine::CLIPPLANE: glDisable(GL_CLIP_PLANE0); break;
 	}
 }
 

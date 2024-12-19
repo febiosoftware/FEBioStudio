@@ -261,24 +261,25 @@ void CGLModelScene::BuildScene(CGLContext& rc)
 
 	GLViewSettings& vs = rc.m_settings;
 
-	// add plane cut if requested
-	addItem(new GLPlaneCutItem(this, rc));
+	// add plane cut item
+	GLPlaneCutItem* planeCut = new GLPlaneCutItem(this);
+	addItem(planeCut);
 
 	// add all objects for solid rendering
 	GModel& model = *GetGModel();
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		addItem(new GLObjectItem(this, po));
+		planeCut->addItem(new GLObjectItem(this, po));
 	}
 
-	addItem(new GLDiscreteItem(this));
+	planeCut->addItem(new GLDiscreteItem(this));
 
-	addItem(new GLSelectionBox(this));
+	planeCut->addItem(new GLSelectionBox(this));
 
-	addItem(new GLFeatureEdgesItem(this));
+	planeCut->addItem(new GLFeatureEdgesItem(this));
 
-	addItem(new GLMeshLinesItem(this));
+	planeCut->addItem(new GLMeshLinesItem(this));
 
 	if (vs.m_bfiber == false)
 	{
@@ -296,16 +297,11 @@ void CGLModelScene::BuildScene(CGLContext& rc)
 		}
 	}
 
-	addItem(new GLPhysicsItem(this));
+	planeCut->addItem(new GLPhysicsItem(this));
 
-	addItem(new GLSelectionItem(this));
+	planeCut->addItem(new GLSelectionItem(this));
 
-	addItem(new GLHighlighterItem(this));
-
-	// This is here because we have no other way of turning off the clipping plane.
-	// One solution is to make other items child items of the clipping plane and then
-	// add an option to begin/end rendering for each item. 
-	addItem(new GLDisableClipPlaneItem(this));
+	planeCut->addItem(new GLHighlighterItem(this));
 
 	addItem(new GLGridItem(this));
 
@@ -1270,31 +1266,41 @@ FSModel* CGLModelScene::GetFSModel()
 	return pdoc->GetFSModel();
 }
 
-GLPlaneCutItem::GLPlaneCutItem(CGLModelScene* scene, CGLContext& rc) : GLModelSceneItem(scene)
+GLPlaneCutItem::GLPlaneCutItem(CGLModelScene* scene) : m_scene(scene)
 {
 
 }
 
 void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 {
-	if (rc.m_settings.m_showPlaneCut == false) return;
-
-	BOX box = m_scene->GetBoundingBox();
-	glColor3ub(200, 0, 200);
-	glx::renderBox(box, false);
-
-	// render the plane cut first
-	if (m_planeCut.IsValid() == false)
+	if (rc.m_settings.m_showPlaneCut)
 	{
-		UpdatePlaneCut(rc, true);
+		BOX box = m_scene->GetBoundingBox();
+		glColor3ub(200, 0, 200);
+		glx::renderBox(box, false);
+
+		// render the plane cut first
+		if (m_planeCut.IsValid() == false)
+		{
+			UpdatePlaneCut(rc, true);
+		}
+
+		RenderBoxCut(re, rc, box);
+		m_planeCut.Render(re, rc);
+
+		// then turn on the clipping plane before rendering the other geometry
+		re.setClipPlane(0, rc.m_settings.m_planeCut);
+		re.enable(GLRenderEngine::CLIPPLANE);
 	}
 
-	RenderBoxCut(re, rc, box);
-	m_planeCut.Render(re, rc);
+	// render the children
+	GLCompositeSceneItem::render(re, rc);
 
-	// then turn on the clipping plane before rendering the other geometry
-	re.setClipPlane(0, rc.m_settings.m_planeCut);
-	re.enable(GLRenderEngine::CLIPPLANE);
+	if (rc.m_settings.m_showPlaneCut)
+	{
+		// turn off clipping plane
+		re.disable(GLRenderEngine::CLIPPLANE);
+	}
 }
 
 void GLPlaneCutItem::UpdatePlaneCut(CGLContext& rc, bool reset)
@@ -3467,11 +3473,6 @@ void GLHighlighterItem::drawFESurface(CGLContext& rc, GLMeshRender& renderer, FS
 		renderer.RenderGMesh(gmesh, shader);
 	}
 	glPopMatrix();
-}
-
-void GLDisableClipPlaneItem::render(GLRenderEngine& re, CGLContext& rc)
-{
-	glDisable(GL_CLIP_PLANE0);
 }
 
 void GLGridItem::render(GLRenderEngine& re, CGLContext& rc)

@@ -52,10 +52,10 @@ protected:
 	CGLModelScene* m_scene;
 };
 
-class GLPlaneCutItem : public GLModelSceneItem
+class GLPlaneCutItem : public GLCompositeSceneItem
 {
 public:
-	GLPlaneCutItem(CGLModelScene* scene, CGLContext& rc);
+	GLPlaneCutItem(CGLModelScene* scene);
 	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
@@ -63,6 +63,7 @@ private:
 	void RenderBoxCut(GLRenderEngine& re, CGLContext& rc, const BOX& box);
 
 private:
+	CGLModelScene* m_scene;
 	GLPlaneCut	m_planeCut;
 };
 
@@ -156,15 +157,6 @@ private:
 	void RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderLocalMaterialAxes(GLRenderEngine& re, CGLContext& rc) const;
-};
-
-// This is a mock item to disable clipping plane. 
-// Probably want a different solution here
-class GLDisableClipPlaneItem : public GLModelSceneItem
-{
-public:
-	GLDisableClipPlaneItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
 };
 
 class GLSelectionItem : public GLModelSceneItem
