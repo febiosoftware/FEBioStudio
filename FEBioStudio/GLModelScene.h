@@ -86,8 +86,8 @@ private:
 	void RenderBeamParts(CGLContext& rc) const;
 	void RenderSurfaceMeshEdges(CGLContext& rc) const;
 
-	void RenderFEFacesFromGMesh(CGLContext& rc) const;
-	void RenderMeshByDefault(CGLContext& rc, GMesh& mesh) const;
+	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByObjectColor(CGLContext& rc, GMesh& mesh) const;
 	void RenderMeshByMaterialType(CGLContext& rc, GMesh& mesh) const;
 	void RenderMeshByPhysics(CGLContext& rc, GMesh& mesh) const;
@@ -95,7 +95,7 @@ private:
 
 	void RenderUnselectedBeamElements(CGLContext& rc) const;
 	void RenderSelectedFEElements(CGLContext& rc) const;
-	void RenderAllBeamElements(CGLContext& rc) const;
+	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderFEEdges(CGLContext& rc) const;
 	void RenderFENodes(CGLContext& rc) const;
