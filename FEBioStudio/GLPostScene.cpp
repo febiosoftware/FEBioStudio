@@ -188,9 +188,6 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	// render the image data
 	RenderImageData(rc);
 
-	// render the highlights
-	GLHighlighter::draw();
-
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 

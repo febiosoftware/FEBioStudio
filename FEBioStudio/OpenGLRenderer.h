@@ -58,6 +58,8 @@ public:
 	void renderGMeshEdges(const GMesh& mesh, bool cacheMesh) override;
 	void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh) override;
 
+	void renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transform& T, int surfID);
+
 public:
 	unsigned int LoadEnvironmentMap(const std::string& fileName) override;
 	void ActivateEnvironmentMap(unsigned int mapid) override;

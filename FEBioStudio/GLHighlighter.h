@@ -75,9 +75,6 @@ public:
 	// return the name of the highlighted item
 	static QString GetActiveItemName();
 
-	// draw the highlighted item
-	static void draw();
-
 	// clear all hightlights
 	static void ClearHighlights();
 
@@ -116,8 +113,6 @@ private:
 	GItem*			m_activeItem;		// pointer to the active item (or zero)
 	std::vector<Item>	m_item;				// list of hightlighted items (except active item)
 	bool			m_btrack;			// set active item via mouse tracking
-	GLColor			m_activeColor;		// color of active item
-	GLColor			m_pickColor[2];		// color of picked items
 
 	// the one-and-only highlighter
 	static GLHighlighter This;

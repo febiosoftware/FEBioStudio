@@ -180,6 +180,26 @@ private:
 	void RenderSelectedNodes(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
 };
 
+class GLHighlighterItem : public GLModelSceneItem
+{
+public:
+	GLHighlighterItem(CGLModelScene* scene);
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
+	void drawNode(GLRenderEngine& re, CGLContext& rc, GNode* node, GLColor c);
+	void drawEdge(GLRenderEngine& re, CGLContext& rc, GEdge* edge, GLColor c);
+	void drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face, GLColor c);
+	void drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part, GLColor c);
+
+	void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c);
+	void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLColor c);
+
+private:
+	GLColor			m_activeColor;		// color of active item
+	GLColor			m_pickColor[2];		// color of picked items
+};
+
 class GLGridItem : public GLModelSceneItem
 {
 public:

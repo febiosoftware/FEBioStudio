@@ -214,9 +214,6 @@ void CGLModelScene::Render(GLRenderEngine& engine, CGLContext& rc)
 
 	if (view.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
-	// render the highlights
-	GLHighlighter::draw();
-
 	// Render 2D stuff
 	ClearTags();
 
@@ -303,7 +300,11 @@ void CGLModelScene::BuildScene(CGLContext& rc)
 
 	addItem(new GLSelectionItem(this));
 
-	// Why is this here? I mean, why do we need to turn off the clipping plane here?
+	addItem(new GLHighlighterItem(this));
+
+	// This is here because we have no other way of turning off the clipping plane.
+	// One solution is to make other items child items of the clipping plane and then
+	// add an option to begin/end rendering for each item. 
 	addItem(new GLDisableClipPlaneItem(this));
 
 	addItem(new GLGridItem(this));
@@ -3250,6 +3251,222 @@ void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, CGLContext& rc, GO
 	{
 		renderer.RenderSurfaceOutline(*rc.m_cam, m, po->GetRenderTransform(), surfId);
 	}
+}
+
+GLHighlighterItem::GLHighlighterItem(CGLModelScene* scene) : GLModelSceneItem(scene)
+{
+	m_activeColor = GLColor(100, 255, 255);
+	m_pickColor[0] = GLColor(0, 200, 200);
+	m_pickColor[1] = GLColor(200, 0, 200);
+}
+
+void GLHighlighterItem::render(GLRenderEngine& re, CGLContext& rc)
+{
+	std::vector<GLHighlighter::Item> items = GLHighlighter::GetItems();
+	GItem* activeItem = GLHighlighter::GetActiveItem();
+	if (items.empty() && (activeItem == nullptr)) return;
+
+	GLMeshRender& renderer = m_scene->GetMeshRenderer();
+
+	for (auto& item : items)
+	{
+		FSObject* it = item.item;
+
+		GLColor c = m_pickColor[item.color];
+
+		GEdge* edge = dynamic_cast<GEdge*>(it);
+		if (edge) drawEdge(re, rc, edge, c);
+
+		GNode* node = dynamic_cast<GNode*>(it);
+		if (node) drawNode(re, rc, node, c);
+
+		GFace* face = dynamic_cast<GFace*>(it);
+		if (face) drawFace(re, rc, face, c);
+
+		GPart* part = dynamic_cast<GPart*>(it);
+		if (part) drawPart(re, rc, part, c);
+
+		FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(it);
+		if (nodeSet) drawFENodeSet(rc, renderer, nodeSet, c);
+
+		FSSurface* surf = dynamic_cast<FSSurface*>(it);
+		if (surf) drawFESurface(rc, renderer, surf, c);
+	}
+
+	if (activeItem)
+	{
+		GLColor c = m_activeColor;
+		GEdge* edge = dynamic_cast<GEdge*>(activeItem);
+		if (edge) drawEdge(re, rc, edge, c);
+
+		GNode* node = dynamic_cast<GNode*>(activeItem);
+		if (node) drawNode(re, rc, node, c);
+
+		GFace* face = dynamic_cast<GFace*>(activeItem);
+		if (face) drawFace(re, rc, face, c);
+
+		GPart* part = dynamic_cast<GPart*>(activeItem);
+		if (part) drawPart(re, rc, part, c);
+	}
+}
+
+void GLHighlighterItem::drawEdge(GLRenderEngine& re, CGLContext& rc, GEdge* edge, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(edge->Object());
+	if (po == 0) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
+	GMesh& m = *po->GetRenderMesh();
+
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.renderGMeshEdges(m, edge->GetLocalID());
+
+	GNode* n0 = po->Node(edge->m_node[0]);
+	GNode* n1 = po->Node(edge->m_node[1]);
+
+	if (n0 && n1)
+	{
+		GMesh endPoints;
+		vec3d r0 = n0->LocalPosition();
+		vec3d r1 = n1->LocalPosition();
+		endPoints.AddNode(to_vec3f(r0));
+		endPoints.AddNode(to_vec3f(r1));
+
+		re.renderGMeshNodes(endPoints, false);
+	}
+	glPopMatrix();
+}
+
+void GLHighlighterItem::drawNode(GLRenderEngine& re, CGLContext& rc, GNode* node, GLColor c)
+{
+	if (node == nullptr) return;
+	GObject* po = dynamic_cast<GObject*>(node->Object());
+	if (po == nullptr) return;
+
+	glPushMatrix();
+	SetModelView(po);
+	GMesh pt;
+	pt.AddNode(to_vec3f(node->LocalPosition()));
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.renderGMeshNodes(pt, false);
+	glPopMatrix();
+}
+
+void GLHighlighterItem::drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(face->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
+	re.setMaterial(GLMaterial::HIGHLIGHT, c);
+	re.renderGMesh(*mesh, face->GetLocalID());
+
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), face->GetLocalID());
+
+	glPopMatrix();
+}
+
+void GLHighlighterItem::drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(part->Object());
+	if (po == 0) return;
+	GMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return;
+
+	int pid = part->GetLocalID();
+
+	// TODO: Make sure that the part's face list is populated!
+//	if (part->Faces() == 0) return;
+	vector<int> faceList; faceList.reserve(po->Faces());
+	for (int i = 0; i < po->Faces(); ++i)
+	{
+		GFace* face = po->Face(i);
+		if ((face->m_nPID[0] == pid) || (face->m_nPID[1] == pid)) faceList.push_back(i);
+	}
+	if (faceList.empty()) return;
+
+	glPushMatrix();
+	SetModelView(po);
+
+	re.setMaterial(GLMaterial::HIGHLIGHT, c);
+	for (int surfID : faceList)
+	{
+		re.renderGMesh(*mesh, surfID);
+	}
+
+	re.setMaterial(GLMaterial::OVERLAY, c);
+	for (int surfID : faceList)
+	{
+		re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), surfID);
+	}
+
+	glPopMatrix();
+}
+
+void GLHighlighterItem::drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c)
+{
+	if ((nodeSet == nullptr) || (nodeSet->size() == 0)) return;
+
+	FSMesh* mesh = nodeSet->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	GMesh* gm = po->GetFERenderMesh();
+	if (gm == nullptr) return;
+	assert(gm->Nodes() == mesh->Nodes());
+
+	glPushMatrix();
+	SetModelView(po);
+	renderer.SetPointShader(new GLPointOverlayShader(c));
+	std::vector<int> nodeList = nodeSet->CopyItems();
+	renderer.RenderPoints(*gm, nodeList);
+	glPopMatrix();
+}
+
+void GLHighlighterItem::drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLColor c)
+{
+	FSMesh* mesh = surf->GetMesh();
+	if (mesh == nullptr) return;
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return;
+
+	int NF = surf->size();
+	if (NF == 0) return;
+
+	std::vector<int> faceList = surf->CopyItems();
+
+	glPushMatrix();
+	{
+		SetModelView(po);
+
+		GMesh gmesh;
+		gmesh.NewPartition();
+		int m[FSFace::MAX_NODES];
+		for (int n : faceList)
+		{
+			const FSFace& face = mesh->Face(n);
+			int nf = face.Nodes();
+			for (int i = 0; i < nf; ++i)
+			{
+				vec3f r = to_vec3f(mesh->Node(face.n[i]).r);
+				m[i] = gmesh.AddNode(r);
+			}
+			gmesh.AddFace(m, nf);
+		}
+		gmesh.Update();
+
+		GLSelectionShader shader(c);
+		renderer.RenderGMesh(gmesh, shader);
+	}
+	glPopMatrix();
 }
 
 void GLDisableClipPlaneItem::render(GLRenderEngine& re, CGLContext& rc)

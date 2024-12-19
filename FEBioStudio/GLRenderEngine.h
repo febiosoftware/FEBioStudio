@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <string>
 #include <GLLib/GLRenderStats.h>
 #include <GLLib/GLMaterial.h>
+#include <GLLib/GLCamera.h>
+#include <FECore/FETransform.h>
 
 class GMesh;
 
@@ -79,6 +81,8 @@ public:
 
 	virtual void renderGMeshEdges(const GMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh = true) {}
+
+	virtual void renderGMeshOutline(CGLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) {}
 
 public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
