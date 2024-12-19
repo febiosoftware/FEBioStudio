@@ -74,6 +74,7 @@ void GGrid::Render(CGLContext& renderContext)
 
 	// turn off lighting
 	glDisable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
 
 	// get the camera
 	CGLCamera& cam = *renderContext.m_cam;
