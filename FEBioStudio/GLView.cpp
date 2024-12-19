@@ -770,7 +770,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (vs.m_bselbrush && (bshift || bctrl))
 			{
 				m_select.BrushSelectFaces(x, y, (bctrl == false), false);
-				repaint();
+				update();
 			}
 			else if (viewMode == VIEW_USER)
 			{
@@ -787,8 +787,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 					cam.Orbit(qx);
 					cam.Orbit(qy);
 				}
-
-				repaint();
+				update();
 			}
 			else m_view.m_nview = VIEW_USER;
 		}
@@ -796,7 +795,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		{
 			vec3d r = vec3d(-(double)(x - m_x1), (double)(y - m_y1), 0.f);
 			cam.PanView(r);
-			repaint();
+			update();
 		}
 		else if (but3 && !m_bsel)
 		{
@@ -821,14 +820,13 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (m_y1 < y) cam.Zoom(1.0f / 0.95f);
 			}
 
-			repaint();
+			update();
 
 			m_pWnd->UpdateGLControlBar();
 		}
 		// NOTE: Not sure why we would want to do an expensive update when we move the mouse.
 		//       I think we only need to do a repaint
 //		if (but1 && m_bsel) m_pWnd->Update();
-		repaint();
 	}
 	else if (ntrans == TRANSFORM_MOVE)
 	{
