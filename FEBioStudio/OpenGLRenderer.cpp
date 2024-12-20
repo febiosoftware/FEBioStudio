@@ -424,7 +424,7 @@ void OpenGLRenderer::renderGlyph(GlyphType glyph, float scale, GLColor c)
 	glPopAttrib();
 }
 
-void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transform& T, int surfID)
+void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, const GMesh& gmsh, const Transform& T, int surfID)
 {
 	// get some settings
 	quatd q = cam.GetOrientation();
@@ -433,14 +433,14 @@ void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transfo
 	// this array will collect all points to render
 	vector<vec3f> points; points.reserve(1024);
 
-	const GMesh::PARTITION& part = pm->Partition(surfID);
+	const GMesh::PARTITION& part = gmsh.Partition(surfID);
 	int NF = part.nf;
 	if (NF > 0)
 	{
 		// loop over all faces
 		for (int i = 0; i < NF; ++i)
 		{
-			const GMesh::FACE& f = pm->Face(i + part.n0);
+			const GMesh::FACE& f = gmsh.Face(i + part.n0);
 			for (int j = 0; j < 3; ++j)
 			{
 				bool bdraw = false;
@@ -451,7 +451,7 @@ void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transfo
 				}
 				else
 				{
-					GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+					const GMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 
 					if (f.pid != f2.pid)
 					{
@@ -472,8 +472,8 @@ void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transfo
 						{
 							int a = j;
 							int b = (j + 1) % 3;
-							vec3d ra = T.LocalToGlobal(to_vec3d(pm->Node(f.n[a]).r));
-							vec3d rb = T.LocalToGlobal(to_vec3d(pm->Node(f.n[b]).r));
+							vec3d ra = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[a]).r));
+							vec3d rb = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[b]).r));
 							vec3d c = (ra + rb) * 0.5;
 							vec3d pc = p - c;
 							double d1 = pc * n1;
@@ -489,8 +489,8 @@ void OpenGLRenderer::renderGMeshOutline(CGLCamera& cam, GMesh* pm, const Transfo
 					int b = f.n[(j + 1) % 3];
 					if (a > b) { a ^= b; b ^= a; a ^= b; }
 
-					points.push_back(pm->Node(a).r);
-					points.push_back(pm->Node(b).r);
+					points.push_back(gmsh.Node(a).r);
+					points.push_back(gmsh.Node(b).r);
 				}
 			}
 		}

@@ -84,14 +84,14 @@ private:
 	void RenderEdges(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderNodes(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderBeamParts(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaceMeshEdges(CGLContext& rc) const;
+	void RenderSurfaceMeshEdges(GLRenderEngine& re, CGLContext& rc) const;
 
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const;
 
-	void RenderUnselectedBeamElements(CGLContext& rc) const;
+	void RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const;
@@ -100,7 +100,7 @@ private:
 	void RenderSurfaceMeshNodes(CGLContext& rc) const;
 	void RenderNormals(CGLContext& rc, double scale) const;
 
-	void RenderSelection(CGLContext& rc) const;
+	void RenderSelection(GLRenderEngine& re, CGLContext& rc) const;
 
 private:
 	GObject* m_po;
@@ -182,8 +182,8 @@ private:
 	void drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face, GLColor c);
 	void drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part, GLColor c);
 
-	void drawFENodeSet(CGLContext& rc, GLMeshRender& renderer, FSNodeSet* nodeSet, GLColor c);
-	void drawFESurface(CGLContext& rc, GLMeshRender& renderer, FSSurface* surf, GLColor c);
+	void drawFENodeSet(GLRenderEngine& re, CGLContext& rc, FSNodeSet* nodeSet, GLColor c);
+	void drawFESurface(GLRenderEngine& re, CGLContext& rc, FSSurface* surf, GLColor c);
 
 private:
 	GLColor			m_activeColor;		// color of active item
