@@ -51,9 +51,13 @@ OpenGLRenderer::~OpenGLRenderer()
 {
 }
 
-void OpenGLRenderer::ResetStats()
+void OpenGLRenderer::start()
 {
-	GLRenderEngine::ResetStats();
+	GLRenderEngine::start();
+}
+
+void OpenGLRenderer::finish()
+{
 	m_stats.cachedObjects = m.cachedObjects();
 }
 

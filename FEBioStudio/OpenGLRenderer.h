@@ -36,7 +36,9 @@ public:
 	OpenGLRenderer(CGLSceneView* view);
 	~OpenGLRenderer();
 
-	void ResetStats() override;
+	void start() override;
+
+	void finish() override;
 
 public:
 	void pushState() override;

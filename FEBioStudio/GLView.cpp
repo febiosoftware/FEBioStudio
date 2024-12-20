@@ -1520,7 +1520,7 @@ void CGLView::setLegendRange(float vmin, float vmax)
 
 void CGLView::RenderScene()
 {
-	m_ogl.ResetStats();
+	m_ogl.start();
 
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -1566,6 +1566,8 @@ void CGLView::RenderScene()
 	}
 
 	RenderTags();
+
+	m_ogl.finish();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);

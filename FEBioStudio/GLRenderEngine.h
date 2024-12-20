@@ -57,9 +57,13 @@ public:
 	GLRenderEngine() {}
 	virtual ~GLRenderEngine() {}
 
-	virtual void ResetStats();
+	void ResetStats();
 	GLRenderStats GetRenderStats();
 
+public:
+	virtual void start() { ResetStats(); }
+	virtual void finish() {}
+	 
 public:
 	virtual void pushState() {}
 	virtual void popState() {}
