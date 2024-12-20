@@ -83,22 +83,20 @@ private:
 	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderEdges(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderNodes(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderBeamParts(CGLContext& rc) const;
+	void RenderBeamParts(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaceMeshEdges(CGLContext& rc) const;
 
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderMeshByObjectColor(CGLContext& rc, GMesh& mesh) const;
-	void RenderMeshByMaterialType(CGLContext& rc, GMesh& mesh) const;
-	void RenderMeshByPhysics(CGLContext& rc, GMesh& mesh) const;
+	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const;
 
 	void RenderUnselectedBeamElements(CGLContext& rc) const;
-	void RenderSelectedFEElements(CGLContext& rc) const;
+	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderFEEdges(CGLContext& rc) const;
-	void RenderFENodes(CGLContext& rc) const;
+	void RenderFEEdges(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderFENodes(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaceMeshNodes(CGLContext& rc) const;
 	void RenderNormals(CGLContext& rc, double scale) const;
 
@@ -262,6 +260,7 @@ public:
 
 public:
 	GLColor GetPartColor(CGLContext& rc, GPart* pg);
+	GLColor GetFaceColor(CGLContext& rc, GFace& face);
 
 	void BuildFiberViz(CGLContext& rc);
 

@@ -156,6 +156,11 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
 	}
 }
 
+void OpenGLRenderer::setPointSize(float f)
+{
+	glPointSize(f);
+}
+
 void OpenGLRenderer::renderPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);

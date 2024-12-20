@@ -727,16 +727,17 @@ GLColor CGLModelScene::GetPartColor(CGLContext& rc, GPart* pg)
 	{
 	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
 	{
-		GMaterial* pmat = fem->GetMaterialFromID(pg->GetMaterialID());
-		GLMaterial& glm = pmat->GetGLMaterial();
 		GLColor c = po->GetColor();
-		if (pmat) c = glm.diffuse;
-
 		if (!pg->IsActive())
 		{
 			c = GLColor(128, 128, 128);
 		}
-
+		else
+		{
+			GMaterial* pmat = fem->GetMaterialFromID(pg->GetMaterialID());
+			GLMaterial& glm = pmat->GetGLMaterial();
+			if (pmat) c = glm.diffuse;
+		}
 		return c;
 	}
 	break;
@@ -759,11 +760,57 @@ GLColor CGLModelScene::GetPartColor(CGLContext& rc, GPart* pg)
 	break;
 	case OBJECT_COLOR_MODE::PHYSICS_TYPE:
 	{
-		return GLColor(255, 255, 255);
+		return GLColor(200, 200, 200, 128);
 	}
 	break;
 	}
 	return GLColor(0, 0, 0);
+}
+
+GLColor CGLModelScene::GetFaceColor(CGLContext& rc, GFace& f)
+{
+	GLColor c = GLColor::Black();
+
+	GBaseObject* po = f.Object();
+	if (po == nullptr) return c;
+
+	// get the part (that is visible)
+	int* pid = f.m_nPID;
+	GPart* pg = po->Part(pid[0]);
+	if (pg && pg->IsVisible() == false)
+	{
+		if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = nullptr;
+		if (pg && (pg->IsVisible() == false)) pg = nullptr;
+	}
+
+	// make sure we have a part
+	if (pg)
+	{
+		if (ObjectColorMode()  == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+		{
+			switch (f.m_ntag)
+			{
+			case 0: c = GLColor(200, 200, 200, 128); break;
+			case 1: c = GLColor(200, 200,   0); break;	// boundary conditions
+			case 2: c = GLColor(  0, 100,   0); break;	// initial conditions
+			case 3: c = GLColor(  0, 200, 200); break;	// loads
+			case 4: c = GLColor(200,   0, 200); break;	// contact primary
+			case 5: c = GLColor(100,   0, 100); break;	// contact secondary
+			}
+		}
+		else c = GetPartColor(rc, pg);
+	}
+
+	if (rc.m_settings.m_transparencyMode != 0)
+	{
+		switch (rc.m_settings.m_transparencyMode)
+		{
+		case 1: if (po->IsSelected()) c.a = 128; break;
+		case 2: if (!po->IsSelected()) c.a = 128; break;
+		}
+	}
+
+	return c;
 }
 
 void CGLModelScene::RenderTags(CGLContext& rc)
@@ -1207,6 +1254,20 @@ bool BuildSelectionMesh(FESelection* sel, GMesh& mesh)
 		mesh.Update();
 	}
 
+	FENodeSelection* nsel = dynamic_cast<FENodeSelection*>(sel);
+	if (nsel)
+	{
+		FSLineMesh* pm = nsel->GetMesh();
+		int NN = nsel->Count();
+		for (int i = 0; i < NN; ++i)
+		{
+			FSNode* node = nsel->Node(i); assert(node->IsSelected());
+			vec3f r = to_vec3f(node->r);
+			mesh.AddNode(r);
+		}
+		mesh.Update();
+	}
+
 	return true;
 }
 
@@ -1427,7 +1488,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			{
 				RenderFEFacesFromGMesh(re, rc);
 				RenderUnselectedBeamElements(rc);
-				RenderSelectedFEElements(rc);
+				RenderSelectedFEElements(re, rc);
 			}
 			else if (item == ITEM_FACE)
 			{
@@ -1446,7 +1507,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 				cam.LineDrawMode(true);
 				cam.PositionInScene();
 				SetModelView(po);
-				RenderFEEdges(rc);
+				RenderFEEdges(re, rc);
 				cam.LineDrawMode(false);
 				cam.PositionInScene();
 			}
@@ -1454,7 +1515,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 			{
 				GMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm) RenderFEFacesFromGMesh(re, rc);
-				RenderFENodes(rc);
+				RenderFENodes(re, rc);
 			}
 		}
 		else
@@ -1505,45 +1566,22 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, CGLContext& rc) const
 		// get the next face
 		GFace& f = *po->Face(n);
 
-		// get the part IDs
-		int* pid = f.m_nPID;
+		GLColor c = m_scene->GetFaceColor(rc, f);
 
-		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]); assert(pg);
-		if (pg && ((pg->IsVisible() == false) || (pg->IsSelected())))
+		bool useStipple = false;
+		if (c.a != 255)
 		{
-			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-			if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
-
-			if (pg == nullptr)
-			{
-				if (pid[2] >= 0) pg = po->Part(pid[2]); else pg = 0;
-				if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
-			}
+			c.a = 255;
+			useStipple = true;
 		}
 
-		// make sure we have a part
-		if (pg)
-		{
-			bool useStipple = false;
-			if (vs.m_transparencyMode != 0)
-			{
-				switch (vs.m_transparencyMode)
-				{
-				case 1: if (po->IsSelected()) useStipple = true; break;
-				case 2: if (!po->IsSelected()) useStipple = true; break;
-				}
-			}
-
-			// render the face
-			GLColor c = m_scene->GetPartColor(rc, pg);
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-			else re.setMaterial(GLMaterial::PLASTIC, c);
-			re.renderGMesh(*pm, n);
-		}
+		// render the face
+		if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+		else re.setMaterial(GLMaterial::PLASTIC, c);
+		re.renderGMesh(*pm, n);
 	}
 
-	RenderBeamParts(rc);
+	RenderBeamParts(re, rc);
 }
 
 // Render non-selected surfaces
@@ -1558,10 +1596,7 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const
 	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
-	int objectColor = m_scene->GetObjectColorMode();
-
 	// render non-selected faces
-	GPart* pgmat = 0; // the part that defines the material
 	int NF = po->Faces();
 	for (int n = 0; n < NF; ++n)
 	{
@@ -1571,52 +1606,19 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const
 		// make sure this face is not selected
 		if (f.IsSelected() == false)
 		{
-			// get the part IDs
-			int* pid = f.m_nPID;
+			GLColor c = m_scene->GetFaceColor(rc, f);
 
-			// get the part (that is visible)
-			GPart* pg = po->Part(pid[0]);
-			if (pg && pg->IsVisible() == false)
+			bool useStipple = false;
+			if (c.a != 255)
 			{
-				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-				if (pg && (pg->IsVisible() == false)) pg = 0;
+				useStipple = true;
+				c.a = 255;
 			}
 
-			// make sure we have a part
-			if (pg)
-			{
-				GLColor c;
-				bool useStipple = false;
-				if (objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
-				{
-					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
-					switch (f.m_ntag)
-					{
-					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; useStipple = true; break;
-					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
-					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
-					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
-					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
-					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
-					}
-					c = GLColor::FromRGBf(col[0], col[1], col[2]);
-				}
-				else c = m_scene->GetPartColor(rc, pg);
-
-				if (vs.m_transparencyMode != 0)
-				{
-					switch (vs.m_transparencyMode)
-					{
-					case 1: if (po->IsSelected()) useStipple = true; break;
-					case 2: if (!po->IsSelected()) useStipple = true; break;
-					}
-				}
-
-				// render the face
-				if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-				else re.setMaterial(GLMaterial::PLASTIC, c);
-				re.renderGMesh(*pm, n);
-			}
+			// render the face
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+			else re.setMaterial(GLMaterial::PLASTIC, c);
+			re.renderGMesh(*pm, n);
 		}
 	}
 }
@@ -1685,9 +1687,9 @@ void GLObjectItem::RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc) co
 		switch (objectColor)
 		{
 		case OBJECT_COLOR_MODE::DEFAULT_COLOR : RenderMeshByDefault(re, rc); break;
-		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor(rc, *gm); break;
-		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByMaterialType(rc, *gm); break;
-		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByPhysics(rc, *gm); break;
+		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor(re, rc); break;
+		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByDefault(re, rc); break;
+		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByDefault(re, rc); break;
 		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType(rc, *gm); break;
 		default:
 			assert(false);
@@ -1712,52 +1714,19 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const
 		// get the next face
 		GFace& f = *po->Face(n);
 
-		// get the part IDs
-		int* pid = f.m_nPID;
+		GLColor c = m_scene->GetFaceColor(rc, f);
 
-		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]);
-		if (pg && pg->IsVisible() == false)
+		bool useStipple = false;
+		if (c.a != 255)
 		{
-			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-			if (pg && (pg->IsVisible() == false)) pg = 0;
+			useStipple = true;
+			c.a = 255;
 		}
 
-		// make sure we have a part
-		if (pg)
-		{
-			GLColor c;
-			bool useStipple = false;
-			if (objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
-			{
-				GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
-				switch (f.m_ntag)
-				{
-				case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; useStipple = true; break;
-				case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
-				case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
-				case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
-				case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
-				case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
-				}
-				c = GLColor::FromRGBf(col[0], col[1], col[2]);
-			}
-			else c = m_scene->GetPartColor(rc, pg);
-
-			if (vs.m_transparencyMode != 0)
-			{
-				switch (vs.m_transparencyMode)
-				{
-				case 1: if (po->IsSelected()) useStipple = true; break;
-				case 2: if (!po->IsSelected()) useStipple = true; break;
-				}
-			}
-
-			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-			else re.setMaterial(GLMaterial::PLASTIC, c);
-			re.renderGMesh(*gm, n);
-		}
+		// render the face
+		if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+		else re.setMaterial(GLMaterial::PLASTIC, c);
+		re.renderGMesh(*gm, n);
 	}
 
 	// render internal surfaces
@@ -1769,14 +1738,13 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const
 		{
 			GPart* pg = po->Part(i);
 
-			GLColor c;
+			GLColor c = m_scene->GetPartColor(rc, pg);
 			bool useStipple = false;
-			if (objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+			if (c.a != 255)
 			{
-				GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
-				col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; useStipple = true;
+				c.a = 255;
+				useStipple = true;
 			}
-			else c = m_scene->GetPartColor(rc, pg);
 
 			if (vs.m_transparencyMode != 0)
 			{
@@ -1795,91 +1763,27 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const
 	}
 }
 
-void GLObjectItem::RenderMeshByObjectColor(CGLContext& rc, GMesh& mesh) const
+void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc) const
 {
-	GLStandardModelShader shader(m_po->GetColor());
-	m_scene->GetMeshRenderer().RenderGMesh(mesh, shader);
-}
+	GMesh* gm = m_po->GetFERenderMesh();
+	if (gm == nullptr) return;
 
-void GLObjectItem::RenderMeshByMaterialType(CGLContext& rc, GMesh& mesh) const
-{
-	FSModel* fem = m_scene->GetFSModel();
-
-	int nmat = 0;
-	for (int i = 0; i < fem->Materials(); ++i)
+	GLViewSettings& vs = rc.m_settings;
+	bool useStipple = false;
+	if (vs.m_transparencyMode != 0)
 	{
-		GMaterial* mat = fem->GetMaterial(i);
-		if (mat->GetID() > nmat) nmat = mat->GetID();
-	}
-	nmat++;
-	std::vector<GLFacetShader*> shaders(nmat, nullptr);
-
-	for (int i = 0; i < fem->Materials(); ++i)
-	{
-		GMaterial* mat = fem->GetMaterial(i);
-		GLColor c = GetMaterialTypeColor(mat);
-		shaders[mat->GetID()] = new GLStandardModelShader(c);
-	}
-
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.ClearShaders();
-	for (GLFacetShader* s : shaders) renderer.AddShader(s);
-
-	GLStandardModelShader defaultShader(GetMaterialTypeColor(nullptr));
-	renderer.SetDefaultShader(&defaultShader);
-
-	renderer.SetUseShaders(true);
-	renderer.RenderGMesh(mesh);
-	renderer.SetUseShaders(false);
-
-	renderer.SetDefaultShader(nullptr);
-}
-
-void GLObjectItem::RenderMeshByPhysics(CGLContext& rc, GMesh& mesh) const
-{
-	const int MAX_COLORS = 6;
-	GLColor CLT[MAX_COLORS] = {
-		{230, 230, 230}, // free surface
-		{230, 230,   0}, // boundary conditions
-		{  0, 102,   0}, // initial conditions
-		{  0, 230, 230}, // loads
-		{230,   0, 230}, // contact primary
-		{ 77,   0,  77}  // contact secondary
-	};
-
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	GObject& o = *m_po;
-	int NF = o.Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		GFace* face = o.Face(i);
-		if (face->IsVisible())
+		switch (vs.m_transparencyMode)
 		{
-			GPart* pg = o.Part(face->m_nPID[0]);
-			if (!pg->IsVisible() && (face->m_nPID[1] >= 0))
-				pg = o.Part(face->m_nPID[1]);
-
-			bool useStipple = false;
-			GLColor c(0, 0, 0);
-			int n = face->m_ntag;
-			if ((n >= 0) && (n < MAX_COLORS))
-			{
-				useStipple = true;
-				c = CLT[n];
-			}
-
-			GLStandardModelShader shader(c, useStipple);
-			renderer.RenderGMesh(mesh, i, shader);
+		case 1: if (m_po->IsSelected()) useStipple = true; break;
+		case 2: if (!m_po->IsSelected()) useStipple = true; break;
 		}
 	}
 
-	if (m_scene->GetItemMode() == ITEM_ELEM)
-	{
-		// exposed facets cannot be part of physics, so render them transparent
-		GLStandardModelShader shader(CLT[0], true);
-		renderer.RenderGMesh(mesh, NF, shader);
-	}
+	GLColor c = m_po->GetColor();
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+	else re.setMaterial(GLMaterial::PLASTIC, c);
+
+	re.renderGMesh(*gm);
 }
 
 void GLObjectItem::RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const
@@ -1892,47 +1796,35 @@ void GLObjectItem::RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const
 }
 
 // Render the FE nodes
-void GLObjectItem::RenderFENodes(CGLContext& rc) const
+void GLObjectItem::RenderFENodes(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 	GLViewSettings& view = rc.m_settings;
-	quatd q = rc.m_cam->GetOrientation();
-
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	// set the point size
-	float fsize = view.m_node_size;
-	renderer.SetPointSize(fsize);
 
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
+	re.setPointSize(rc.m_settings.m_node_size);
+
 	GMesh* gm = po->GetFERenderMesh(); assert(gm);
 	assert(gm->Nodes() == pm->Nodes());
-	int N = pm->Nodes();
-	for (int i = 0; i < N; ++i)
-	{
-		FSNode& node = pm->Node(i);
-		GMesh::NODE& v = gm->Node(i);
-		if (node.IsSelected()) v.tag = 1;
-		else
-		{
-			if (!node.IsVisible() ||
-				(view.m_bext && !node.IsExterior())) v.tag = 0;
-			else v.tag = 1;
-		}
-	}
-	renderer.SetPointShader(new GLPointColorShader(GLColor(0, 0, 255, 128)));
-	renderer.RenderPoints(*gm, [](const GMesh::NODE& v) {
-		return (v.tag != 0);
-		});
 
+	// render the visible nodes
+	// TODO: Can I make it so that the render mesh only contains the visible nodes?
+	re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
+	re.renderGMeshNodes(*gm);
+
+	// render selected nodes
+	// TODO: Shouldn't this be done in the GLSelectionItem?
 	FENodeSelection* sel = dynamic_cast<FENodeSelection*>(m_scene->GetCurrentSelection());
 	if (sel && sel->Size())
 	{
-		std::vector<int> items = sel->Items();
-		renderer.SetPointShader(new GLPointOverlayShader(GLColor::Red()));
-		renderer.RenderPoints(*gm, items);
+		GMesh& selectionMesh = m_scene->GetSelectionMesh();
+		if (selectionMesh.Nodes() > 0)
+		{
+			re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
+			re.renderGMeshNodes(selectionMesh, false);
+		}
 	}
 }
 
@@ -1953,21 +1845,18 @@ void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) con
 	re.renderGMeshEdges(selMesh, false);
 }
 
-void GLObjectItem::RenderSelectedFEElements(CGLContext& rc) const
+void GLObjectItem::RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc) const
 {
-	GObject* po = m_po;
-		
 	FEElementSelection* sel = dynamic_cast<FEElementSelection*>(m_scene->GetCurrentSelection());
 	if ((sel == nullptr) || (sel->Count() == 0)) return;
-	if (sel->GetMesh() != po->GetFEMesh()) return;
+	if (sel->GetMesh() != m_po->GetFEMesh()) return;
 
-	GLSelectionShader shader;
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-	renderer.RenderGMesh(m_scene->GetSelectionMesh(), shader);
+	re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Red());
+	re.renderGMesh(m_scene->GetSelectionMesh(), false);
 
 	// render a yellow highlight around selected elements
-	renderer.SetLineShader(new GLOutlineShader(GLColor::Yellow()));
-	renderer.RenderEdges(m_scene->GetSelectionMesh());
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
+	re.renderGMeshEdges(m_scene->GetSelectionMesh(), false);
 }
 
 void GLObjectItem::RenderSurfaceMeshNodes(CGLContext& rc) const
@@ -2024,24 +1913,23 @@ void GLObjectItem::RenderSurfaceMeshNodes(CGLContext& rc) const
 
 //-----------------------------------------------------------------------------
 // Render the FE Edges
-void GLObjectItem::RenderFEEdges(CGLContext& rc) const
+void GLObjectItem::RenderFEEdges(GLRenderEngine& re, CGLContext& rc) const
 {
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	GLLineColorShader* shader = new GLLineColorShader();
-	renderer.SetLineShader(shader);
-
 	// render the unselected edges
 	GMesh* mesh = m_po->GetFERenderMesh();
 	if (mesh)
 	{
-		shader->SetColor(GLColor(0, 0, 255, 128));
-		renderer.RenderEdges(*mesh);
+		re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
+		re.renderGMeshEdges(*mesh);
 	}
 
 	// render the selected edges
-	shader->SetColor(GLColor(255, 0, 0, 128));
-	renderer.RenderEdges(m_scene->GetSelectionMesh());
+	GMesh& selectionMesh = m_scene->GetSelectionMesh();
+	if (selectionMesh.Edges() > 0)
+	{
+		re.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 0, 128));
+		re.renderGMeshEdges(selectionMesh, false);
+	}
 }
 
 void GLObjectItem::RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc) const
@@ -2134,7 +2022,7 @@ void GLObjectItem::RenderNormals(CGLContext& rc, double scale) const
 	render.RenderNormals(*mesh, shader);
 }
 
-void GLObjectItem::RenderBeamParts(CGLContext& rc) const
+void GLObjectItem::RenderBeamParts(GLRenderEngine& re, CGLContext& rc) const
 {
 	GObject* po = m_po;
 	if (!po->IsVisible()) return;
@@ -2149,31 +2037,20 @@ void GLObjectItem::RenderBeamParts(CGLContext& rc) const
 	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
 
-	GLMeshRender& renderer = m_scene->GetMeshRenderer();
-
-	GPart* pgmat = 0; // the part that defines the material
-	GLLineColorShader* shader = new GLLineColorShader(po->GetColor());
-	renderer.SetLineShader(shader);
+	re.setMaterial(GLMaterial::CONSTANT, po->GetColor());
 	for (int i = 0; i < po->Parts(); ++i)
 	{
 		GPart* pg = po->Part(i);
 		if (pg->IsVisible() && pg->IsBeam())
 		{
-			if ((nitem == ITEM_MESH) && (nsel == SELECT_PART) && pg->IsSelected())
-			{
-				shader->SetColor(GLColor::Red());
-			}
-			else shader->SetColor(po->GetColor());
-
 			for (int j = 0; j < pg->m_edge.size(); ++j)
 			{
 				GEdge& e = *po->Edge(pg->m_edge[j]);
 				if (e.IsVisible())
-					renderer.RenderEdges(*pm, e.GetLocalID());
+					re.renderGMeshEdges(*pm, e.GetLocalID());
 			}
 		}
 	}
-	glPopAttrib();
 }
 
 void GLObjectItem::RenderSurfaceMeshEdges(CGLContext& rc) const
@@ -2234,18 +2111,9 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, CGLContext& rc) const
 		GFace* pf = m_po->Face(i);
 		if (pf->IsVisible())
 		{
-			GPart* pg = m_po->Part(pf->m_nPID[0]);
-			if ((pg == nullptr) || !pg->IsVisible())
-			{
-				pg = m_po->Part(pf->m_nPID[1]);
-			}
-
-			if (pg && pg->IsVisible())
-			{
-				GLColor c = m_scene->GetPartColor(rc, pg);
-				re.setColor(c);
-				re.renderGMesh(*mesh, i);
-			}
+			GLColor c = m_scene->GetFaceColor(rc, *pf);
+			re.setColor(c);
+			re.renderGMesh(*mesh, i);
 		}
 	}
 
@@ -2267,7 +2135,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, CGLContext& rc) const
 	// render beam sections if feature edges are not rendered. 
 	if (rc.m_settings.m_bfeat == false)
 	{
-		RenderBeamParts(rc);
+		RenderBeamParts(re, rc);
 	}
 }
 
@@ -2483,6 +2351,9 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 
 	bool bnorm = view.m_bnorm;
 	double scale = view.m_scaleNormals;
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_POLYGON_STIPPLE);
 
 	if (item == ITEM_MESH)
 	{

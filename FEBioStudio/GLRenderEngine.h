@@ -70,6 +70,8 @@ public:
 	virtual void setColor(GLColor c) {}
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c) {}
 
+	virtual void setPointSize(float f) {}
+
 public:
 	virtual void renderPoint(const vec3d& r) {}
 	virtual void renderLine(const vec3d& a, const vec3d& b) {}

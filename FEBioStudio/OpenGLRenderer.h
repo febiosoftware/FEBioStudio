@@ -48,6 +48,8 @@ public:
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c) override;
 
+	void setPointSize(float f) override;
+
 public:
 	void renderPoint(const vec3d& r) override;
 	void renderLine(const vec3d& a, const vec3d& b) override;
