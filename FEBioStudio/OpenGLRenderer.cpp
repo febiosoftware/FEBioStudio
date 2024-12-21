@@ -36,6 +36,8 @@ class OpenGLRenderer::Imp {
 public:
 	CGLSceneView* glv;
 
+	bool useVertexColors = false;
+
 	std::map<const GMesh*, GLTriMesh*> triMesh;
 	std::map<const GMesh*, GLLineMesh*> lineMesh;
 
@@ -94,8 +96,11 @@ void OpenGLRenderer::setColor(GLColor c)
 	glColor4ub(c.r, c.g, c.b, c.a);
 }
 
-void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c)
+void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map)
 {
+	if (map == GLMaterial::DiffuseMap::VERTEX_COLOR) m.useVertexColors = true;
+	else m.useVertexColors = false;
+
 	switch (mat)
 	{
 	case GLMaterial::PLASTIC:
@@ -287,7 +292,9 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 	{
 		glm = new GLLineMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh);
+		unsigned int flags = 0;
+		if (m.useVertexColors) flags = GLMesh::FLAG_COLOR;
+		glm->CreateFromGMesh(mesh, flags);
 	}
 
 	if (glm)

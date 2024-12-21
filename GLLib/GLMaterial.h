@@ -37,6 +37,12 @@ public:
 		OVERLAY,
 	};
 
+	enum DiffuseMap {
+		NONE,
+		VERTEX_COLOR,
+		TEXTURE_1D
+	};
+
 public:
 	GLColor		diffuse;	// diffuse color of material
 	GLColor		ambient;	// ambient color of material

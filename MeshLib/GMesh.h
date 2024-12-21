@@ -55,6 +55,7 @@ public:
 		int		pid = 0;	// GEdge parent local id
 		int		n[2];	// nodes
 		vec3f	vr[2];	// nodal coordinates
+		GLColor	c[2];	// node colors
 	};
 
 	struct FACE

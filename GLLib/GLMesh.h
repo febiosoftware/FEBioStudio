@@ -310,7 +310,7 @@ public:
 	void AddLine(const vec3d& r0, const vec3d& r1);
 	void AddLine(const vec3f& r0, const vec3f& r1, GLColor& c);
 
-	void CreateFromGMesh(const GMesh& mesh);
+	void CreateFromGMesh(const GMesh& mesh, unsigned int flags = 0);
 };
 
 inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)

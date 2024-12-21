@@ -72,7 +72,7 @@ public:
 	virtual void disable(StateFlag flag) {}
 
 	virtual void setColor(GLColor c) {}
-	virtual void setMaterial(GLMaterial::Type mat, GLColor c) {}
+	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE) {}
 
 	virtual void setPointSize(float f) {}
 

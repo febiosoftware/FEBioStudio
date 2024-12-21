@@ -48,7 +48,7 @@ public:
 	void disable(StateFlag flag);
 
 	void setColor(GLColor c) override;
-	void setMaterial(GLMaterial::Type mat, GLColor c) override;
+	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE) override;
 
 	void setPointSize(float f) override;
 

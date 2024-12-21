@@ -1543,7 +1543,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc) const
 	}
 
 	// render normals if requested
-	if (view.m_bnorm) RenderNormals(rc, view.m_scaleNormals);
+	if (view.m_bnorm) RenderNormals(re, rc, view.m_scaleNormals);
 }
 
 // render non-selected parts
@@ -2000,7 +2000,7 @@ void GLObjectItem::RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& 
 	re.renderGMeshEdges(beamMesh, false);
 }
 
-void GLObjectItem::RenderNormals(CGLContext& rc, double scale) const
+void GLObjectItem::RenderNormals(GLRenderEngine& re, CGLContext& rc, double scale) const
 {
 	if (m_po->IsVisible() == false) return;
 
@@ -2008,14 +2008,36 @@ void GLObjectItem::RenderNormals(CGLContext& rc, double scale) const
 	if (pm == 0) return;
 	double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * scale;
 
-	GMesh* mesh = m_po->GetFERenderMesh();
-	if (mesh == nullptr) mesh = m_po->GetRenderMesh();
-	if (mesh == nullptr) return;
+	GMesh lineMesh;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		const FSFace& face = pm->Face(i);
 
-	GLNormalShader shader;
-	shader.SetScale(R);
-	GLMeshRender& render = m_scene->GetMeshRenderer();
-	render.RenderNormals(*mesh, shader);
+		vec3f p[2];
+		p[0] = vec3f(0, 0, 0);
+		vec3f fn = face.m_fn;
+
+		vec3d c(0, 0, 0);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
+		c /= nf;
+
+		p[0] = to_vec3f(c);
+		p[1] = p[0] + fn * R;
+
+		lineMesh.AddEdge(p, 2);
+
+		float r = fabs(fn.x);
+		float g = fabs(fn.y);
+		float b = fabs(fn.z);
+
+		GMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+		edge.c[0] = GLColor::White();
+		edge.c[1] = GLColor::FromRGBf(r, g, b);
+	}
+
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	re.renderGMeshEdges(lineMesh, false);
 }
 
 void GLObjectItem::RenderBeamParts(GLRenderEngine& re, CGLContext& rc) const

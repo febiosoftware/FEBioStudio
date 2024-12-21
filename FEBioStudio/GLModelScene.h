@@ -98,7 +98,7 @@ private:
 	void RenderFEEdges(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderFENodes(GLRenderEngine& re, CGLContext& rc) const;
 	void RenderSurfaceMeshNodes(CGLContext& rc) const;
-	void RenderNormals(CGLContext& rc, double scale) const;
+	void RenderNormals(GLRenderEngine& re, CGLContext& rc, double scale) const;
 
 	void RenderSelection(GLRenderEngine& re, CGLContext& rc) const;
 

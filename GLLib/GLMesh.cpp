@@ -451,10 +451,10 @@ void GLLineMesh::Create(int maxLines, unsigned int flags)
 	AllocVertexBuffers(2 * maxLines, flags);
 }
 
-void GLLineMesh::CreateFromGMesh(const GMesh& gmsh)
+void GLLineMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 {
 	int edges = gmsh.Edges();
-	AllocVertexBuffers(2 * edges, 0);
+	AllocVertexBuffers(2 * edges, flags);
 
 	BeginMesh();
 	for (int i = 0; i < gmsh.Edges(); ++i)
@@ -463,7 +463,7 @@ void GLLineMesh::CreateFromGMesh(const GMesh& gmsh)
 		for (int j = 0; j < 2; ++j)
 		{
 			auto& vj = gmsh.Node(edge.n[j]);
-			AddVertex(vj.r);
+			AddVertex(vj.r, edge.c[j]);
 		}
 	}
 	EndMesh();
