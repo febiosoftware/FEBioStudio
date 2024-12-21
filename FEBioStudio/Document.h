@@ -288,7 +288,10 @@ public:
 	void ClearCommandStack();
 	const std::string& GetCommandErrorString() const;
 
+	// TODO: Move this to Update ?
     virtual void UpdateSelection(bool breport = true);
+
+	virtual void Update();
 
 public:
 	//! Get the change log
@@ -372,7 +375,7 @@ public:
 
 	CGLScene* GetScene();
 
-	virtual void Update();
+	void Update() override;
 
 public:
 	int GetWidgetLayer();
