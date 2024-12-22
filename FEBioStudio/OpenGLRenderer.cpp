@@ -55,11 +55,31 @@ OpenGLRenderer::~OpenGLRenderer()
 
 void OpenGLRenderer::start()
 {
+	for (auto it : m.triMesh) it.second->resetRef();
+	for (auto it : m.lineMesh) it.second->resetRef();
 	GLRenderEngine::start();
 }
 
 void OpenGLRenderer::finish()
 {
+	for (auto it = m.triMesh.begin(); it != m.triMesh.end();)
+	{
+		GLMesh* gm = it->second;
+		if (gm->refs() == 0)
+		{
+			it = m.triMesh.erase(it);
+		}
+		else it++;
+	}
+	for (auto it = m.lineMesh.begin(); it != m.lineMesh.end();)
+	{
+		GLMesh* gm = it->second;
+		if (gm->refs() == 0)
+		{
+			it = m.lineMesh.erase(it);
+		}
+		else it++;
+	}
 	m_stats.cachedObjects = m.cachedObjects();
 }
 
@@ -235,9 +255,10 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 	{
 		unsigned int flags = GLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= GLMesh::FLAG_COLOR;
-
 		glm->Render(flags);
 		m_stats.triangles += glm->Vertices() / 3;
+
+		glm->incRef();
 		if (!cacheMesh) delete glm;
 	}
 }
@@ -278,6 +299,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 		glm->Render(3*p.n0, 3*p.nf, flags);
 		m_stats.triangles += p.nf;
 
+		glm->incRef();
 		if (!cacheMesh) delete glm;
 	}
 }
@@ -326,6 +348,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 		glm->Render(flags);
 		m_stats.lines += glm->Vertices() / 2;
 
+		glm->incRef();
 		if (!cacheMesh) delete glm;
 	}
 }
@@ -366,6 +389,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheM
 		glm->Render(2 * p.first, 2 * p.second, flags);
 		m_stats.lines += p.second;
 
+		glm->incRef();
 		if (!cacheMesh) delete glm;
 	}
 }

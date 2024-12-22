@@ -117,6 +117,12 @@ public:
 	// return vertex data
 	Vertex GetVertex(size_t i) const;
 
+public:
+	void incRef();
+	void decRef();
+	void resetRef();
+	int refs() const;
+
 protected:
 	GLMesh(unsigned int mode);
 	virtual ~GLMesh();
@@ -152,6 +158,8 @@ protected:
 	bool	m_initVBO;
 
 	int m_start, m_count;
+
+	int	m_refCount;
 };
 
 inline void GLMesh::AddVertex(double* r, double* n, double* t)

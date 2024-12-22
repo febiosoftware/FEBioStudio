@@ -56,11 +56,33 @@ GLMesh::GLMesh(unsigned int mode)
 	m_vbo[0] = m_vbo[1] = m_vbo[2] = m_vbo[3] = m_vbo[4] = 0;
 	m_renderMode = VertexArrayMode;
 	m_initVBO = false;
+	m_refCount = 0;
 }
 
 GLMesh::~GLMesh()
 {
 	Clear();
+}
+
+void GLMesh::incRef()
+{
+	m_refCount++;
+}
+
+void GLMesh::decRef()
+{
+	m_refCount--;
+	assert(m_refCount >= 0);
+}
+
+void GLMesh::resetRef()
+{
+	m_refCount = 0;
+}
+
+int GLMesh::refs() const
+{
+	return m_refCount;
 }
 
 void GLMesh::SetRenderMode(GLMesh::RenderMode mode)
