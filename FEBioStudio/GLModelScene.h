@@ -70,40 +70,50 @@ private:
 class GLObjectItem : public GLModelSceneItem
 {
 public:
-	GLObjectItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem(scene), m_po(po) {}
+	GLObjectItem(CGLModelScene* scene, GObject* po);
 	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
-	void RenderGObject(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderGObject(GLRenderEngine& re, CGLContext& rc);
 
-	void RenderObject(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderObject(GLRenderEngine& re, CGLContext& rc);
+	void RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc);
 
-	void RenderParts(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderEdges(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderNodes(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderBeamParts(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaceMeshEdges(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderParts(GLRenderEngine& re, CGLContext& rc);
+	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc);
+	void RenderEdges(GLRenderEngine& re, CGLContext& rc);
+	void RenderNodes(GLRenderEngine& re, CGLContext& rc);
+	void RenderBeamParts(GLRenderEngine& re, CGLContext& rc);
+	void RenderSurfaceMeshEdges(GLRenderEngine& re, CGLContext& rc);
 
-	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh) const;
+	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc);
+	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc);
+	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc);
+	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh);
 
-	void RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderFEEdges(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderFENodes(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderSurfaceMeshNodes(CGLContext& rc) const;
-	void RenderNormals(GLRenderEngine& re, CGLContext& rc, double scale) const;
+	void RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& rc);
+	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc);
+	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc);
+	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc);
+	void RenderFEEdges(GLRenderEngine& re, CGLContext& rc);
+	void RenderFENodes(GLRenderEngine& re, CGLContext& rc);
+	void RenderSurfaceMeshNodes(GLRenderEngine& re, CGLContext& rc);
+	void RenderNormals(GLRenderEngine& re, CGLContext& rc, double scale);
 
-	void RenderSelection(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderSelection(GLRenderEngine& re, CGLContext& rc);
+
+private:
+	void UpdateGMeshColor(GMesh& msh);
+
+	void ColorByDefault     (GMesh& msh);
+	void ColorByObject      (GMesh& msh);
+	void ColorByMaterialType(GMesh& msh);
+	void ColorByElementType (GMesh& msh);
+	void ColorByPhysics     (GMesh& msh);
 
 private:
 	GObject* m_po;
+	bool	m_clearCache;
 };
 
 class GLDiscreteItem : public GLModelSceneItem
@@ -259,8 +269,8 @@ public:
 	void RenderTags(CGLContext& rc);
 
 public:
-	GLColor GetPartColor(CGLContext& rc, GPart* pg);
-	GLColor GetFaceColor(CGLContext& rc, GFace& face);
+	GLColor GetPartColor(GPart* pg);
+	GLColor GetFaceColor(GFace& face);
 
 	void BuildFiberViz(CGLContext& rc);
 
