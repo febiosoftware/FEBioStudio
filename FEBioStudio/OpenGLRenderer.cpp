@@ -63,6 +63,23 @@ void OpenGLRenderer::finish()
 	m_stats.cachedObjects = m.cachedObjects();
 }
 
+void OpenGLRenderer::deleteCachedMesh(GMesh* gm)
+{
+	auto it1 = m.triMesh.find(gm);
+	if (it1 != m.triMesh.end())
+	{
+		delete it1->second;
+		m.triMesh.erase(it1);
+	}
+
+	auto it2 = m.lineMesh.find(gm);
+	if (it2 != m.lineMesh.end())
+	{
+		delete it2->second;
+		m.lineMesh.erase(it2);
+	}
+}
+
 void OpenGLRenderer::pushState()
 {
 	glPushAttrib(GL_ENABLE_BIT);
@@ -199,7 +216,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 		{
 			glm = new GLTriMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
 			m.triMesh[&mesh] = glm;
 		}
 		else
@@ -211,12 +228,15 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 	{
 		glm = new GLTriMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
 	}
 
 	if (glm)
 	{
-		glm->Render();
+		unsigned int flags = GLMesh::FLAG_NORMAL;
+		if (m.useVertexColors) flags |= GLMesh::FLAG_COLOR;
+
+		glm->Render(flags);
 		m_stats.triangles += glm->Vertices() / 3;
 		if (!cacheMesh) delete glm;
 	}
@@ -234,7 +254,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 		{
 			glm = new GLTriMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
 			m.triMesh[&mesh] = glm;
 		}
 		else
@@ -251,8 +271,11 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 
 	if (glm)
 	{
+		unsigned int flags = GLMesh::FLAG_NORMAL;
+		if (m.useVertexColors) flags |= GLMesh::FLAG_COLOR;
+
 		const GMesh::PARTITION& p = mesh.Partition(surfId);
-		glm->Render(3*p.n0, 3*p.nf);
+		glm->Render(3*p.n0, 3*p.nf, flags);
 		m_stats.triangles += p.nf;
 
 		if (!cacheMesh) delete glm;
@@ -280,7 +303,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 		{
 			glm = new GLLineMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_COLOR);
 			m.lineMesh[&mesh] = glm;
 		}
 		else
@@ -292,14 +315,15 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 	{
 		glm = new GLLineMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		unsigned int flags = 0;
-		if (m.useVertexColors) flags = GLMesh::FLAG_COLOR;
-		glm->CreateFromGMesh(mesh, flags);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_COLOR);
 	}
 
 	if (glm)
 	{
-		glm->Render();
+		unsigned int flags = 0;
+		if (m.useVertexColors) flags = GLMesh::FLAG_COLOR;
+
+		glm->Render(flags);
 		m_stats.lines += glm->Vertices() / 2;
 
 		if (!cacheMesh) delete glm;
@@ -318,7 +342,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheM
 		{
 			glm = new GLLineMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_COLOR);
 			m.lineMesh[&mesh] = glm;
 		}
 		else
@@ -330,13 +354,16 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheM
 	{
 		glm = new GLLineMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_COLOR);
 	}
 
 	if (glm)
 	{
+		unsigned int flags = 0;
+		if (m.useVertexColors) flags = GLMesh::FLAG_COLOR;
+
 		const auto& p = mesh.EIL(edgeId);
-		glm->Render(2 * p.first, 2 * p.second);
+		glm->Render(2 * p.first, 2 * p.second, flags);
 		m_stats.lines += p.second;
 
 		if (!cacheMesh) delete glm;

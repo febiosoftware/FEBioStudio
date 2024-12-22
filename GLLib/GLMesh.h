@@ -101,9 +101,9 @@ public:
 	void EndMesh();
 
 	// render the mesh
-	void Render();
+	void Render(unsigned int flags = 0);
 
-	void Render(int nstart, int ncount);
+	void Render(int nstart, int ncount, unsigned int nflags = 0);
 
 	// set the transparency of the mesh
 	void SetTransparency(ubyte a);
@@ -124,11 +124,12 @@ protected:
 	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
 
 private:
-	void RenderImmediate();
-	void RenderVertexArrays();
-	void RenderVBO();
+	void RenderImmediate(unsigned int flags);
+	void RenderVertexArrays(unsigned int flags);
+	void RenderVBO(unsigned int flags);
 
 	void InitVBO();
+	void ClearVBO();
 
 protected:
 	float* m_vr = nullptr;	// vertex coordinates

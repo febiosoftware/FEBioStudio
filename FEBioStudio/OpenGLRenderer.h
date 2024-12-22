@@ -41,6 +41,9 @@ public:
 	void finish() override;
 
 public:
+	void deleteCachedMesh(GMesh* gm) override;
+
+public:
 	void pushState() override;
 	void popState() override;
 

@@ -81,6 +81,11 @@ void GLMesh::Clear()
 	delete[] m_vt; m_vt = nullptr;
 	delete[] m_vc; m_vc = nullptr;
 	delete[] m_ind; m_ind = nullptr;
+
+	if (m_initVBO)
+	{
+		ClearVBO();
+	}
 }
 
 void GLMesh::AllocVertexBuffers(size_t maxVertices, unsigned flags)
@@ -131,7 +136,7 @@ void GLMesh::SetTransparency(ubyte a)
 	for (int i = 0; i < m_vertexCount; ++i) m_vc[4 * i + 3] = a;
 }
 
-void GLMesh::Render()
+void GLMesh::Render(unsigned int flags)
 {
 	if (!m_bvalid) return;
 
@@ -140,13 +145,13 @@ void GLMesh::Render()
 
 	switch (m_renderMode)
 	{
-	case ImmediateMode  : RenderImmediate(); break;
-	case VertexArrayMode: RenderVertexArrays(); break;
-	case VBOMode        : RenderVBO(); break;
+	case ImmediateMode  : RenderImmediate(flags); break;
+	case VertexArrayMode: RenderVertexArrays(flags); break;
+	case VBOMode        : RenderVBO(flags); break;
 	}
 }
 
-void GLMesh::Render(int nstart, int ncount)
+void GLMesh::Render(int nstart, int ncount, unsigned int flags)
 {
 	if (!m_bvalid) return;
 
@@ -155,13 +160,13 @@ void GLMesh::Render(int nstart, int ncount)
 
 	switch (m_renderMode)
 	{
-	case ImmediateMode  : RenderImmediate(); break;
-	case VertexArrayMode: RenderVertexArrays(); break;
-	case VBOMode        : RenderVBO(); break;
+	case ImmediateMode  : RenderImmediate(flags); break;
+	case VertexArrayMode: RenderVertexArrays(flags); break;
+	case VBOMode        : RenderVBO(flags); break;
 	}
 }
 
-void GLMesh::RenderImmediate()
+void GLMesh::RenderImmediate(unsigned int flags)
 {
 	glBegin(m_mode);
 	{
@@ -169,26 +174,26 @@ void GLMesh::RenderImmediate()
 		int i1 = m_start + m_count;
 		for (int i = i0; i < i1; ++i)
 		{
-			if (m_vn) glNormal3fv(m_vn + 3 * i);
-			if (m_vt) glTexCoord3fv(m_vt + 3 * i);
-			if (m_vc) glColor4ubv(m_vc + 4 * i);
+			if (m_vn && (flags & FLAG_NORMAL )) glNormal3fv(m_vn + 3 * i);
+			if (m_vt && (flags & FLAG_TEXTURE)) glTexCoord3fv(m_vt + 3 * i);
+			if (m_vc && (flags & FLAG_COLOR  )) glColor4ubv(m_vc + 4 * i);
 			glVertex3fv(m_vr + 3 * i);
 		}
 	}
 	glEnd();
 }
 
-void GLMesh::RenderVertexArrays()
+void GLMesh::RenderVertexArrays(unsigned int flags)
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
-	if (m_vn) glEnableClientState(GL_NORMAL_ARRAY);
-	if (m_vt) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (m_vc) glEnableClientState(GL_COLOR_ARRAY);
+	if (m_vn && (flags & FLAG_NORMAL )) glEnableClientState(GL_NORMAL_ARRAY);
+	if (m_vt && (flags & FLAG_TEXTURE)) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (m_vc && (flags & FLAG_COLOR  )) glEnableClientState(GL_COLOR_ARRAY);
 
 	glVertexPointer(3, GL_FLOAT, 0, m_vr);
-	if (m_vn) glNormalPointer(GL_FLOAT, 0, m_vn);
-	if (m_vt) glTexCoordPointer(3, GL_FLOAT, 0, m_vt);
-	if (m_vc) glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_vc);
+	if (m_vn && (flags & FLAG_NORMAL )) glNormalPointer(GL_FLOAT, 0, m_vn);
+	if (m_vt && (flags & FLAG_TEXTURE)) glTexCoordPointer(3, GL_FLOAT, 0, m_vt);
+	if (m_vc && (flags & FLAG_COLOR  )) glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_vc);
 
 	if (m_ind)
 		glDrawElements(m_mode, m_vertexCount, GL_UNSIGNED_INT, m_ind);
@@ -196,33 +201,39 @@ void GLMesh::RenderVertexArrays()
 		glDrawArrays(m_mode, m_start, m_count);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	if (m_vn) glDisableClientState(GL_NORMAL_ARRAY);
-	if (m_vt) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (m_vc) glDisableClientState(GL_COLOR_ARRAY);
+	if (m_vn && (flags & FLAG_NORMAL )) glDisableClientState(GL_NORMAL_ARRAY);
+	if (m_vt && (flags & FLAG_TEXTURE)) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (m_vc && (flags & FLAG_COLOR  )) glDisableClientState(GL_COLOR_ARRAY);
 }
 
-void GLMesh::RenderVBO()
+void GLMesh::RenderVBO(unsigned int flags)
 {
 	if (m_initVBO == false) InitVBO();
 	if (m_initVBO == false) return;
 
+	bool useNormals  = (m_flags & FLAG_NORMAL ) && (flags & FLAG_NORMAL);
+	bool useTexCoord = (m_flags & FLAG_TEXTURE) && (flags & FLAG_TEXTURE);
+	bool useColors   = (m_flags & FLAG_COLOR  ) && (flags & FLAG_COLOR);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
-	if (m_flags & FLAG_NORMAL) glEnableClientState(GL_NORMAL_ARRAY);
+	if (useNormals ) glEnableClientState(GL_NORMAL_ARRAY);
+	if (useTexCoord) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (useColors  ) glEnableClientState(GL_COLOR_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[VERTEX_DATA]);
 	glVertexPointer(3, GL_FLOAT, 0, 0);
 
-	if (m_flags & FLAG_NORMAL) {
+	if (useNormals) {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo[NORMAL_DATA]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 	}
 
-	if (m_flags & FLAG_TEXTURE) {
+	if (useTexCoord) {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo[TEXTURE_DATA]);
 		glTexCoordPointer(3, GL_FLOAT, 0, 0);
 	}
 
-	if (m_flags & FLAG_COLOR) {
+	if (useColors) {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo[COLOR_DATA]);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, 0);
 	}
@@ -240,7 +251,19 @@ void GLMesh::RenderVBO()
 	if (m_useIndices) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	if (m_flags & FLAG_NORMAL) glDisableClientState(GL_NORMAL_ARRAY);
+	if (useNormals ) glDisableClientState(GL_NORMAL_ARRAY);
+	if (useTexCoord) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (useColors  ) glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void GLMesh::ClearVBO()
+{
+	// NOTE: This assumes the current GL context is active
+	if (m_vbo[0] != 0)
+	{
+		glDeleteBuffers(5, m_vbo);
+		m_vbo[0] = m_vbo[1] = m_vbo[2] = m_vbo[3] = m_vbo[4] = 0;
+	}
 }
 
 void GLMesh::InitVBO()
@@ -248,10 +271,7 @@ void GLMesh::InitVBO()
 	if (m_initVBO || (m_bvalid == false)) return;
 
 	// first, see if we need to cleanup some old buffers
-	if (m_vbo[0] != 0)
-	{
-		glDeleteBuffers(5, m_vbo);
-	}
+	ClearVBO();
 
 	// generate 4 buffer objects
 	glGenBuffers(5, m_vbo);

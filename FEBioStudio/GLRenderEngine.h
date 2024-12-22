@@ -63,6 +63,9 @@ public:
 public:
 	virtual void start() { ResetStats(); }
 	virtual void finish() {}
+
+public:
+	virtual void deleteCachedMesh(GMesh* gm) {}
 	 
 public:
 	virtual void pushState() {}
