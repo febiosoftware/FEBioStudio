@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FEMultiBlockMesh.h>
 #include <MeshTools/FESelection.h>
+#include <MeshTools/NetGenSTLMesher.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -57,10 +58,10 @@ SOFTWARE.*/
 #include <GLLib/GDecoration.h>
 #include "CommandWindow.h"
 
-class CSurfaceMesherProps : public CObjectProps
+class CPrimitiveMesherProps : public CObjectProps
 {
 public:
-	CSurfaceMesherProps(GSurfaceMeshObject* po) : CObjectProps(nullptr), m_po(po)
+	CPrimitiveMesherProps(GPrimitive* po) : CObjectProps(nullptr), m_po(po)
 	{
 		BuildParameterList();
 	}
@@ -68,7 +69,7 @@ public:
 	void BuildParameterList()
 	{
 		Clear();
-		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "Shell Mesh");
+		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "Default" << "TetGen");
 		addProperty("Properties", CProperty::Group);
 		BuildParamList(m_po->GetFEMesher());
 	}
@@ -79,7 +80,7 @@ public:
 
 		if (i == 0)
 		{
-			if (dynamic_cast<FEShellMesher*>(mesher)) return 1; else return 0;
+			if (dynamic_cast<FETetGenMesher*>(mesher)) return 1; else return 0;
 		}
 		else if (i > 1) return CObjectProps::GetPropertyValue(i - 2);
 		else return QVariant();
@@ -91,15 +92,15 @@ public:
 		if (i == 0)
 		{
 			int val = v.toInt();
-			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
+			if ((val == 0) && dynamic_cast<FETetGenMesher*>(mesher))
 			{
-				m_po->SetFEMesher(new FETetGenMesher(m_po));
+				m_po->SetFEMesher(m_po->CreateDefaultMesher());
 				BuildParameterList();
 				SetModified(true);
 			}
-			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
+			else if ((val == 1) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_po->SetFEMesher(new FEShellMesher(m_po));
+				m_po->SetFEMesher(new FETetGenMesher(m_po));
 				BuildParameterList();
 				SetModified(true);
 			}
@@ -108,7 +109,69 @@ public:
 	}
 
 private:
-	GSurfaceMeshObject*	m_po;
+	GPrimitive* m_po;
+};
+
+class CSurfaceMesherProps : public CObjectProps
+{
+public:
+	CSurfaceMesherProps(GSurfaceMeshObject* po) : CObjectProps(nullptr), m_pso(po)
+	{
+		BuildParamList(m_pso->GetFEMesher());
+	}
+
+	void BuildParamList(FSBase* po, bool showNonPersistent = false) override
+	{
+		Clear();
+		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "NetGen" << "Shell Mesh");
+		addProperty("Properties", CProperty::Group);
+		CObjectProps::BuildParamList(po);
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		FEMesher* mesher = m_pso->GetFEMesher();
+
+		if (i == 0)
+		{
+			if (dynamic_cast<FEShellMesher*>(mesher)) return 2;
+			else if (dynamic_cast<NetGenSTLMesher*>(mesher)) return 1;
+			else return 0;
+		}
+		else if (i > 1) return CObjectProps::GetPropertyValue(i - 2);
+		else return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		FEMesher* mesher = m_pso->GetFEMesher();
+		if (i == 0)
+		{
+			int val = v.toInt();
+			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
+			{
+				m_pso->SetFEMesher(new FETetGenMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
+				SetModified(true);
+			}
+			else if ((val == 1) && (dynamic_cast<NetGenSTLMesher*>(mesher) == nullptr))
+			{
+				m_pso->SetFEMesher(new NetGenSTLMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
+				SetModified(true);
+			}
+			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
+			{
+				m_pso->SetFEMesher(new FEShellMesher(m_pso));
+				BuildParamList(m_pso->GetFEMesher());
+				SetModified(true);
+			}
+		}
+		else if (i > 1) CObjectProps::SetPropertyValue(i - 2, v);
+	}
+
+private:
+	GSurfaceMeshObject*	m_pso;
 };
 
 
@@ -291,11 +354,20 @@ void CMeshPanel::Update(bool breset)
 		}
 		else
 		{
-			FEMesher* mesher = activeObject->GetFEMesher();
-			if (mesher)
+			GPrimitive* primitive = dynamic_cast<GPrimitive*>(activeObject);
+			if (primitive)
 			{
-				ui->setMesherPropertyList(new CObjectProps(mesher));
+				ui->setMesherPropertyList(new CPrimitiveMesherProps(primitive));
 				ui->showMesherParametersPanel(true);
+			}
+			else
+			{
+				FEMesher* mesher = activeObject->GetFEMesher();
+				if (mesher)
+				{
+					ui->setMesherPropertyList(new CObjectProps(mesher));
+					ui->showMesherParametersPanel(true);
+				}
 			}
 		}
 

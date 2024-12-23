@@ -44,8 +44,6 @@ using namespace std;
 
 REGISTER_CLASS3(FETetGenMesher, CLASS_MESHER, TetGen_Mesher, "tetgen", 0, 0);
 
-//-----------------------------------------------------------------------------
-// Constructor
 FETetGenMesher::FETetGenMesher(GObject* po) : m_po(po)
 {
 	SetType(TetGen_Mesher);

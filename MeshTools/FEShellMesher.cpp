@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include "FEShellMesher.h"
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshLib/FEMesh.h>
+#include <FSCore/ClassDescriptor.h>
+
+REGISTER_CLASS3(FEShellMesher, CLASS_MESHER, Shell_Mesher, "shell_mesher", 0, 0);
 
 FEShellMesher::FEShellMesher()
 {
