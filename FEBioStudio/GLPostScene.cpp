@@ -31,13 +31,64 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <MeshTools/FESelection.h>
 #include <PostGL/PostObject.h>
-#include "GLHighlighter.h"
+void GLPostSceneItem::render(GLRenderEngine& re, CGLContext& rc)
+{
+	Post::CGLModel* glm = m_scene->GetGLModel();
+	if (glm == nullptr) return;
+
+	CGLCamera& cam = *rc.m_cam;
+
+	GLViewSettings& vs = rc.m_settings;
+
+	glm->m_nrender = vs.m_nrender + 1;
+	glm->m_bnorm = vs.m_bnorm;
+	glm->m_scaleNormals = vs.m_scaleNormals;
+	glm->m_doZSorting = vs.m_bzsorting;
+
+	cam.PositionInScene();
+
+	glDisable(GL_CULL_FACE);
+
+	// match the selection mode
+	SelectionType selectionMode = SELECT_FE_ELEMS;
+	switch (m_scene->GetItemMode())
+	{
+	case ITEM_MESH:
+	case ITEM_ELEM: selectionMode = SELECT_FE_ELEMS; break;
+	case ITEM_FACE: selectionMode = SELECT_FE_FACES; break;
+	case ITEM_EDGE: selectionMode = SELECT_FE_EDGES; break;
+	case ITEM_NODE: selectionMode = SELECT_FE_NODES; break;
+	}
+	glm->SetSelectionType(selectionMode);
+
+	glm->Render(rc);
+}
+
+void GLPost3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
+{
+	if (m_img && m_img->IsActive())
+	{
+		m_img->Render(rc);
+	}
+}
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
 {
 	m_btrack = false;
 	m_ntrack[0] = m_ntrack[1] = m_ntrack[2] = -1;
 	m_trackScale = 1.0;
+	m_buildScene = true;
+}
+
+Post::CGLModel* CGLPostScene::GetGLModel()
+{
+	if (m_doc && m_doc->IsValid()) return m_doc->GetGLModel();
+	return nullptr;
+}
+
+int CGLPostScene::GetItemMode() const
+{
+	return m_doc->GetItemMode();
 }
 
 BOX CGLPostScene::GetBoundingBox()
@@ -64,25 +115,12 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
-	// Update GLWidget string table for post rendering
-	GLWidget::addToStringTable("$(filename)", m_doc->GetDocFileName());
-	GLWidget::addToStringTable("$(datafield)", m_doc->GetFieldString());
-	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
-	GLWidget::addToStringTable("$(time)", m_doc->GetTimeValue());
-
-	// We need this for rendering post docs
-	glEnable(GL_COLOR_MATERIAL);
-
-	Post::CGLModel* glm = m_doc->GetGLModel();
-
-	CGLCamera& cam = *rc.m_cam;
-
-	GLViewSettings& vs = rc.m_settings;
-
-	glm->m_nrender = vs.m_nrender + 1;
-	glm->m_bnorm = vs.m_bnorm;
-	glm->m_scaleNormals = vs.m_scaleNormals;
-	glm->m_doZSorting = vs.m_bzsorting;
+	// build the scene
+	if (m_buildScene)
+	{
+		BuildScene(rc);
+		m_buildScene = false;
+	}
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -91,92 +129,13 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	// we need to update the tracking target before we position the camera
 	if (m_btrack) UpdateTracking();
 
-	cam.PositionInScene();
-
-	glDisable(GL_CULL_FACE);
-
-	// match the selection mode
-	SelectionType selectionMode = SELECT_FE_ELEMS;
-	switch (m_doc->GetItemMode())
-	{
-	case ITEM_MESH:
-	case ITEM_ELEM: selectionMode = SELECT_FE_ELEMS; break;
-	case ITEM_FACE: selectionMode = SELECT_FE_FACES; break;
-	case ITEM_EDGE: selectionMode = SELECT_FE_EDGES; break;
-	case ITEM_NODE: selectionMode = SELECT_FE_NODES; break;
-	}
-	glm->SetSelectionType(selectionMode);
-
-
-	if (vs.m_bShadows)
-	{
-		BOX box = m_doc->GetBoundingBox();
-
-		float a = vs.m_shadow_intensity;
-		GLfloat shadow[] = { a, a, a, 1 };
-		GLfloat zero[] = { 0, 0, 0, 1 };
-		GLfloat ones[] = { 1,1,1,1 };
-		GLfloat lp[4] = { 0 };
-
-		glEnable(GL_STENCIL_TEST);
-
-		float inf = box.Radius() * 100.f;
-
-		vec3d lpv = to_vec3d(vs.m_light);
-
-		quatd q = cam.GetOrientation();
-		q.Inverse().RotateVector(lpv);
-
-		lp[0] = lpv.x;
-		lp[1] = lpv.y;
-		lp[2] = lpv.z;
-
-		// set coloring for shadows
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, shadow);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-
-		glStencilFunc(GL_ALWAYS, 0x00, 0xff);
-		glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-		// render the scene
-		glm->Render(rc);
-
-		// Create mask in stencil buffer
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glDepthMask(GL_FALSE);
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-
-		Post::FEPostModel* fem = glm->GetFSModel();
-		glm->RenderShadows(fem, lpv, inf);
-
-		glCullFace(GL_BACK);
-		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
-
-		glm->RenderShadows(fem, lpv, inf);
-
-		// Render the scene in light
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDepthMask(GL_TRUE);
-
-		GLfloat d = vs.m_diffuse;
-		GLfloat dv[4] = { d, d, d, 1.f };
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, ones);
-
-		glStencilFunc(GL_EQUAL, 0, 0xff);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-		glDisable(GL_CULL_FACE);
-
-		glClear(GL_DEPTH_BUFFER_BIT);
-	}
+	GLViewSettings& vs = rc.m_settings;
 
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
-	glm->Render(rc);
+
+	// now render it
+	CGLScene::Render(engine, rc);
+
 	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
 	// update and render the tracking
@@ -185,26 +144,27 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 		glx::renderAxes(m_trackScale, m_trgPos, m_trgRot, GLColor(255, 0, 255));
 	}
 
-	// render the image data
-	RenderImageData(rc);
-
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
 	// render the tags
 	ClearTags();
-	if (vs.m_bTags) RenderTags(rc);
+	if (rc.m_settings.m_bTags) RenderTags(rc);
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
 }
 
-void CGLPostScene::RenderImageData(CGLContext& rc)
+void CGLPostScene::BuildScene(CGLContext& rc)
 {
-	if (m_doc->IsValid() == false) return;
+	clear();
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
+
+	addItem(new GLPostSceneItem(this));
+
 	for (int i = 0; i < m_doc->ImageModels(); ++i)
 	{
 		CImageModel* img = m_doc->GetImageModel(i);
-		if (img->IsActive()) img->Render(rc);
+		addItem(new GLPost3DImageItem(img, this));
 	}
 }
 

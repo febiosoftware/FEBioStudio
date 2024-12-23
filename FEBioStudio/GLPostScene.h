@@ -27,6 +27,31 @@ SOFTWARE.*/
 #include "Document.h"
 
 class CPostDocument;
+class CGLPostScene;
+class CImageModel;
+
+class GLPostSceneItem : public GLSceneItem
+{
+public:
+	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
+
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
+	CGLPostScene* m_scene;
+};
+
+class GLPost3DImageItem : public GLSceneItem
+{
+public:
+	GLPost3DImageItem(CImageModel* img, CGLPostScene* scene) : m_scene(scene), m_img(img) {}
+
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
+	CGLPostScene* m_scene;
+	CImageModel* m_img;
+};
 
 class CGLPostScene : public CGLScene
 {
@@ -41,12 +66,17 @@ public:
 
 	void ToggleTrackSelection();
 
-private:
-	void RenderImageData(CGLContext& rc);
+	Post::CGLModel* GetGLModel();
 
+	int GetItemMode() const;
+
+private:
 	void RenderTags(CGLContext& rc);
 
 	void UpdateTracking();
+
+private:
+	void BuildScene(CGLContext& rc);
 
 private:
 	CPostDocument* m_doc;
@@ -58,4 +88,6 @@ private:
 	quatd	m_trgRot0;
 	quatd	m_trgRot;
 	quatd	m_trgRotDelta;
+
+	bool	m_buildScene;
 };

@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "CreatePanel.h"
 #include "ModelDocument.h"
+#include "PostDocument.h"
 #include <GeomLib/GObject.h>
 #include "GLHighlighter.h"
 #include "GLCursor.h"
@@ -1612,6 +1613,18 @@ void CGLView::RenderCanvas(CGLContext& rc)
 	// draw the GL widgets
 	if (m_Widget)
 	{
+		// Update GLWidget string table for post rendering
+		// TODO: Query the doc for the values:
+		//       GLWidget::addToStringTable("$(filename)", m_doc->GetVariable("filename"));
+		CPostDocument* postDoc = m_pWnd->GetPostDocument();
+		if (postDoc)
+		{
+			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
+			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
+			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
+			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
+		}
+
 		// update the triad
 		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
 
