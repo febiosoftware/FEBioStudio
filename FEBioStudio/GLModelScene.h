@@ -26,8 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "GLPlaneCut.h"
-#include <GLLib/GLMeshRender.h>
-
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
 	OBJECT_COLOR,
@@ -89,7 +87,7 @@ private:
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc);
 	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc);
 	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc);
-	void RenderMeshByElementType(CGLContext& rc, GMesh& mesh);
+	void RenderMeshByElementType(GLRenderEngine& re, CGLContext& rc, GMesh& mesh);
 
 	void RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& rc);
 	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc);
@@ -224,8 +222,6 @@ public:
 
 	void Render(GLRenderEngine& engine, CGLContext& rc) override;
 
-	GLMeshRender& GetMeshRenderer();
-
 	BOX GetBoundingBox() override;
 
 	BOX GetSelectionBox() override;
@@ -278,7 +274,6 @@ public:
 
 private:
 	CModelDocument* m_doc;
-	GLMeshRender	m_renderer;
 	GMesh			m_selectionMesh;
 	
 	OBJECT_COLOR_MODE	m_objectColor;

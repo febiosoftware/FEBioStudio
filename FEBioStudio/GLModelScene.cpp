@@ -31,8 +31,6 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
 #include <GLLib/glx.h>
-#include <GLLib/GLMeshRender.h>
-#include <GLLib/GLShader.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FELoad.h>
 #include <GeomLib/GSurfaceMeshObject.h>
@@ -149,8 +147,6 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 	m_fiberViz = nullptr;
 	m_buildScene = true;
 }
-
-GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
 
 BOX CGLModelScene::GetBoundingBox()
 {
@@ -605,26 +601,6 @@ void CGLModelScene::BuildFiberViz(CGLContext& rc)
 //					Rendering functions for FEMeshes
 //=============================================================================
 
-std::vector<GLFacetShader*> BuildMaterialShaders(FSModel* fem)
-{
-	int nmat = 0;
-	for (int i = 0; i < fem->Materials(); ++i)
-	{
-		GMaterial* mat = fem->GetMaterial(i);
-		if (mat->GetID() > nmat) nmat = mat->GetID();
-	}
-	nmat++;
-	std::vector<GLFacetShader*> shaders(nmat, nullptr);
-
-	for (int i = 0; i < fem->Materials(); ++i)
-	{
-		GMaterial* mat = fem->GetMaterial(i);
-		GLMaterial& glm = mat->GetGLMaterial();
-		shaders[mat->GetID()] = new GLStandardModelShader(glm.diffuse);
-	}
-	return shaders;
-}
-
 GLColor GetMaterialTypeColor(GMaterial* mat)
 {
 	GLColor c;
@@ -652,67 +628,6 @@ GLColor GetMaterialTypeColor(GMaterial* mat)
 	}
 	return c;
 }
-
-class GLElementTypeShader : public GLFacetShader
-{
-public:
-	GLElementTypeShader(FSMesh* pm) : m_pm(pm) {}
-
-	void Activate() override
-	{
-		glEnable(GL_COLOR_MATERIAL);
-		GLFacetShader::Activate();
-	}
-
-	void Render(const GMesh::FACE& face) override
-	{
-		GLColor col;
-		if (face.eid >= 0)
-		{
-			FEElement_* pe = m_pm->ElementPtr(face.eid);
-			if (pe)
-			{
-				const int a = 212;
-				const int b = 106;
-				const int d =  53;
-				switch (pe->Type())
-				{
-				case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
-				case FE_TRI3   : col = GLColor(0, a, a); break;
-				case FE_TRI6   : col = GLColor(0, b, b); break;
-				case FE_TRI7   : col = GLColor(0, b, d); break;
-				case FE_TRI10  : col = GLColor(0, d, d); break;
-				case FE_QUAD4  : col = GLColor(a, a, 0); break;
-				case FE_QUAD8  : col = GLColor(b, b, 0); break;
-				case FE_QUAD9  : col = GLColor(d, d, 0); break;
-				case FE_TET4   : col = GLColor(0, a, 0); break;
-				case FE_TET5   : col = GLColor(0, a, 0); break;
-				case FE_TET10  : col = GLColor(0, b, 0); break;
-				case FE_TET15  : col = GLColor(0, b, 0); break;
-				case FE_TET20  : col = GLColor(0, d, 0); break;
-				case FE_HEX8   : col = GLColor(a, 0, 0); break;
-				case FE_HEX20  : col = GLColor(b, 0, 0); break;
-				case FE_HEX27  : col = GLColor(b, 0, 0); break;
-				case FE_PENTA6 : col = GLColor(0, 0, a); break;
-				case FE_PENTA15: col = GLColor(0, 0, b); break;
-				case FE_PYRA5  : col = GLColor(0, 0, a); break;
-				case FE_PYRA13 : col = GLColor(0, 0, b); break;
-				case FE_BEAM2  : col = GLColor(a, a, a); break;
-				case FE_BEAM3  : col = GLColor(b, b, b); break;
-				default:
-					col = GLColor(255, 255, 255); break;
-				}
-			}
-		}
-		glColor3ub(col.r, col.g, col.b);
-		glNormal3fv(&face.vn[0].x); glVertex3fv(&face.vr[0].x);
-		glNormal3fv(&face.vn[1].x); glVertex3fv(&face.vr[1].x);
-		glNormal3fv(&face.vn[2].x); glVertex3fv(&face.vr[2].x);
-	}
-
-private:
-	FSMesh* m_pm;
-};
 
 GLColor CGLModelScene::GetPartColor(GPart* pg)
 {
@@ -1028,7 +943,6 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, CGLContext& rc, const BOX&
 	double R = box.GetMaxExtent();
 	if (R == 0) R = 1;
 	int ncase = 0;
-	CGLView* view = dynamic_cast<CGLView*>(rc.m_view);
 	const double* plane = m_planeCut.GetPlaneCoordinates();
 	vec3d norm(plane[0], plane[1], plane[2]);
 	double ref = -(plane[3] - R * 0.001);
@@ -1828,7 +1742,7 @@ void GLObjectItem::RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc)
 		case OBJECT_COLOR_MODE::OBJECT_COLOR  : RenderMeshByObjectColor(re, rc); break;
 		case OBJECT_COLOR_MODE::MATERIAL_TYPE : RenderMeshByDefault(re, rc); break;
 		case OBJECT_COLOR_MODE::PHYSICS_TYPE  : RenderMeshByDefault(re, rc); break;
-		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType(rc, *gm); break;
+		case OBJECT_COLOR_MODE::FSELEMENT_TYPE: RenderMeshByElementType(re, rc, *gm); break;
 		default:
 			assert(false);
 		}
@@ -1924,13 +1838,24 @@ void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMesh(*gm);
 }
 
-void GLObjectItem::RenderMeshByElementType(CGLContext& rc, GMesh& mesh)
+void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, CGLContext& rc, GMesh& mesh)
 {
-	FSMesh* pm = m_po->GetFEMesh();
-	if (pm == nullptr) return;
+	GLViewSettings& vs = rc.m_settings;
+	bool useStipple = false;
+	if (vs.m_transparencyMode != 0)
+	{
+		switch (vs.m_transparencyMode)
+		{
+		case 1: if (m_po->IsSelected()) useStipple = true; break;
+		case 2: if (!m_po->IsSelected()) useStipple = true; break;
+		}
+	}
 
-	GLElementTypeShader shader(pm);
-	m_scene->GetMeshRenderer().RenderGMesh(mesh, shader);
+	GLColor c = m_po->GetColor();
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::VERTEX_COLOR);
+	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::VERTEX_COLOR);
+
+	re.renderGMesh(mesh);
 }
 
 // Render the FE nodes
@@ -3242,19 +3167,13 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, CGLContext& rc,
 
 
 #ifndef NDEBUG
-	GLSelectionShader shader(GLColor::Red());
-	shader.Activate();
 	{
 		// render FE surfaces
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			glColor3ub(255, 0, 0);
-			vec3d rf[FSElement::MAX_NODES];
-
-			GLTriMesh mesh;
-			mesh.Create(pm->Faces() * 6); // each face can have a max of 6 * 3 vertices 
-			mesh.BeginMesh();
+			GMesh msh;
+			vec3f rf[FSElement::MAX_NODES];
 			for (int i = 0; i < pm->Faces(); ++i)
 			{
 				FSFace& f = pm->Face(i);
@@ -3264,42 +3183,20 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, CGLContext& rc,
 					if (gf.IsSelected())
 					{
 						int nf = f.Nodes();
-						for (int j = 0; j < nf; ++j) rf[j] = pm->Node(f.n[j]).r;
-						switch (nf)
-						{
-						case 3:
-						case 10:
-							mesh.AddTriangle(rf[0], rf[1], rf[2]);
-							break;
-						case 4:
-							mesh.AddTriangle(rf[0], rf[1], rf[2]);
-							mesh.AddTriangle(rf[2], rf[3], rf[0]);
-							break;
-						case 6:
-						case 7:
-							mesh.AddTriangle(rf[0], rf[3], rf[5]);
-							mesh.AddTriangle(rf[3], rf[1], rf[4]);
-							mesh.AddTriangle(rf[5], rf[4], rf[2]);
-							mesh.AddTriangle(rf[3], rf[4], rf[5]);
-							break;
-						case 8:
-						case 9:
-							mesh.AddTriangle(rf[0], rf[4], rf[7]);
-							mesh.AddTriangle(rf[1], rf[5], rf[4]);
-							mesh.AddTriangle(rf[2], rf[6], rf[5]);
-							mesh.AddTriangle(rf[3], rf[7], rf[6]);
-							mesh.AddTriangle(rf[4], rf[6], rf[7]);
-							mesh.AddTriangle(rf[4], rf[5], rf[6]);
-							break;
-						}
+						for (int j = 0; j < nf; ++j) rf[j] = to_vec3f(pm->Node(f.n[j]).r);
+						msh.AddFace(rf, nf);
 					}
 				}
 			}
-			mesh.EndMesh();
-			mesh.Render();
+			if (msh.Faces() > 0)
+			{
+				msh.Update();
+
+				re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
+				re.renderGMesh(msh, false);
+			}
 		}
 	}
-	shader.Deactivate();
 #endif
 
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());
