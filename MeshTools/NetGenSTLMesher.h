@@ -24,65 +24,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "FEMesher.h"
+#include "NetGenMesher.h"
 
-class GObject;
+class GSurfaceMeshObject;
 
-namespace netgen {
-	class Mesh;
-}
-
-// Base class for NetGen based meshers
-class NetGenMesher : public FEMesher
+class NetGenSTLMesher : public NetGenMesher
 {
 public:
-	enum {
-		GRANULARITY,
-		USELOCALH,
-		GRADING,
-		MAXELEMSIZE,
-		MINELEMSIZE,
-		NROPT2D,
-		NROPT3D,
-		SECONDORDER,
-		ELEMPEREDGE,
-		ELEMPERCURV,
-		QUADMESH,
-		SURFREFINE,
-		SURFESIZE
-	};
+	NetGenSTLMesher();
+	NetGenSTLMesher(GSurfaceMeshObject* po);
 
-	enum MeshGranularityOption
-	{
-		VeryCoarse,
-		Coarse,
-		Moderate,
-		Fine,
-		VeryFine,
-		UserDefined
-	};
+	FSMesh* BuildMesh() override;
 
-	struct MeshSize {
-		int faceId;
-		double meshSize;
-	};
-
-public:
-	NetGenMesher();
-
-	bool UpdateData(bool bsave) override;
-
-	FSTaskProgress GetProgress() override;
-
-protected:
-	void Terminate() override;
-
-	FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder);
-
-protected:
-	// parameters affected by granularity
-	int m_meshGranularity;
-	double m_grading;
-	double m_elemPerEdge;
-	double m_elemPerCurve;
+private:
+	GSurfaceMeshObject* m_pso;
 };

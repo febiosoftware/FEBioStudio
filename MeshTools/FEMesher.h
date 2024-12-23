@@ -31,9 +31,13 @@ class GObject;
 class FSMesh;
 
 // mesher types
+// Don't change the values!
 enum FEMesherType {
 	Default_Mesher = 0,
-	TetGen_Mesher = 1
+	TetGen_Mesher = 1,
+	Shell_Mesher = 2,
+	NetGen_OCC_Mesher = 3,
+	NetGen_STL_Mesher = 4
 };
 
 //-----------------------------------------------------------------------------

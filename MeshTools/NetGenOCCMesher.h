@@ -23,66 +23,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include "FEMesher.h"
+#include "NetGenMesher.h"
 
-class GObject;
+class GOCCObject;
 
-namespace netgen {
-	class Mesh;
-}
-
-// Base class for NetGen based meshers
-class NetGenMesher : public FEMesher
+class NetGenOCCMesher : public NetGenMesher
 {
 public:
-	enum {
-		GRANULARITY,
-		USELOCALH,
-		GRADING,
-		MAXELEMSIZE,
-		MINELEMSIZE,
-		NROPT2D,
-		NROPT3D,
-		SECONDORDER,
-		ELEMPEREDGE,
-		ELEMPERCURV,
-		QUADMESH,
-		SURFREFINE,
-		SURFESIZE
-	};
+	NetGenOCCMesher();
+	NetGenOCCMesher(GOCCObject* po);
 
-	enum MeshGranularityOption
-	{
-		VeryCoarse,
-		Coarse,
-		Moderate,
-		Fine,
-		VeryFine,
-		UserDefined
-	};
-
-	struct MeshSize {
-		int faceId;
-		double meshSize;
-	};
+	FSMesh*	BuildMesh() override;
 
 public:
-	NetGenMesher();
+	int GetMeshSizes() const { return (int)m_msize.size(); }
+	const MeshSize& GetMeshSize(int n) { return m_msize[n]; }
+	void SetMeshSize(int faceId, double v);
+	void SetMeshSizeFromIndex(int n, double v) { m_msize[n].meshSize = v; }
+	void ClearMeshSizes() { m_msize.clear(); }
 
-	bool UpdateData(bool bsave) override;
-
-	FSTaskProgress GetProgress() override;
-
-protected:
-	void Terminate() override;
-
-	FSMesh* NGMeshToFEMesh(GObject* po, netgen::Mesh* ngmesh, bool secondOrder);
-
-protected:
-	// parameters affected by granularity
-	int m_meshGranularity;
-	double m_grading;
-	double m_elemPerEdge;
-	double m_elemPerCurve;
+private:
+	GOCCObject*	m_occ;
+	std::vector<MeshSize> m_msize;
 };

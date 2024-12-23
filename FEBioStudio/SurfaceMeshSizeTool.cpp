@@ -45,7 +45,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include "MainWindow.h"
 #include <FSCore/FSLogger.h>
-#include <MeshTools/NetGenMesher.h>
+#include <MeshTools/NetGenOCCMesher.h>
 
 // NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
 #if defined(WIN32) && defined(_DEBUG)
@@ -148,7 +148,7 @@ void CSurfaceMeshSizeTool::addRow(const QString& name, double v)
 void CSurfaceMeshSizeTool::OnAddClicked()
 {
 	if (m_po == nullptr) return;
-	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher()); assert(ngen);
+	NetGenOCCMesher* ngen = dynamic_cast<NetGenOCCMesher*>(m_po->GetFEMesher()); assert(ngen);
 	if (ngen == nullptr) return;
 
 	CModelDocument* doc = GetMainWindow()->GetModelDocument();
@@ -184,7 +184,7 @@ void CSurfaceMeshSizeTool::OnTableEdited()
 	if (item == nullptr) return;
 	int row = item->row();
 	double msize = item->text().toDouble();
-	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher());
+	NetGenOCCMesher* ngen = dynamic_cast<NetGenOCCMesher*>(m_po->GetFEMesher());
 	if (ngen)
 	{
 		ngen->SetMeshSizeFromIndex(row, msize);
@@ -240,12 +240,12 @@ void CSurfaceMeshSizeTool::SetObject(GOCCObject* po)
 	if (po == nullptr) return;
 
 	// fill the table
-	NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(po->GetFEMesher());
+	NetGenOCCMesher* ngen = dynamic_cast<NetGenOCCMesher*>(po->GetFEMesher());
 	if (ngen)
 	{
 		for (int i = 0; i < ngen->GetMeshSizes(); ++i)
 		{
-			const NetGenMesher::MeshSize& ms = ngen->GetMeshSize(i);
+			const NetGenOCCMesher::MeshSize& ms = ngen->GetMeshSize(i);
 			GFace* pf = m_po->Face(ms.faceId); assert(pf);
 			if (pf) addRow(QString::fromStdString(pf->GetName()), ms.meshSize);
 		}
@@ -279,7 +279,7 @@ void CSurfaceMeshSizeTool::Deactivate()
 void CSurfaceMeshSizeTool::Clear()
 {
 	if (m_po) {
-		NetGenMesher* ngen = dynamic_cast<NetGenMesher*>(m_po->GetFEMesher());
+		NetGenOCCMesher* ngen = dynamic_cast<NetGenOCCMesher*>(m_po->GetFEMesher());
 		if (ngen) ngen->ClearMeshSizes();
 	}
 	ui->m_table->clear();
