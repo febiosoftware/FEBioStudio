@@ -1522,10 +1522,10 @@ void GLObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 	{
 		if (m_po && m_po->IsValid())
 		{
-			glPushMatrix();
+			re.pushTransform();
 			SetModelView(m_po);
 			RenderGObject(re, rc);
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 }
@@ -1699,20 +1699,22 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, CGLContext& rc)
 	{
 		// get the next face
 		GFace& f = *po->Face(n);
-
-		GLColor c = m_scene->GetFaceColor(f);
-
-		bool useStipple = false;
-		if (c.a != 255)
+		if (f.IsVisible())
 		{
-			c.a = 255;
-			useStipple = true;
-		}
+			GLColor c = m_scene->GetFaceColor(f);
 
-		// render the face
-		if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-		else re.setMaterial(GLMaterial::PLASTIC, c);
-		re.renderGMesh(*pm, n);
+			bool useStipple = false;
+			if (c.a != 255)
+			{
+				c.a = 255;
+				useStipple = true;
+			}
+
+			// render the face
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+			else re.setMaterial(GLMaterial::PLASTIC, c);
+			re.renderGMesh(*pm, n);
+		}
 	}
 
 	RenderBeamParts(re, rc);
@@ -2515,7 +2517,7 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 			GObject* po = model.Object(i);
 			if (po->IsVisible())
 			{
-				glPushMatrix();
+				re.pushTransform();
 				SetModelView(po);
 
 				if (nsel == SELECT_OBJECT)
@@ -2532,17 +2534,17 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 					assert(po->IsSelected());
 					glx::renderBox(po->GetLocalBox(), true, 1.025);
 				}
-				glPopMatrix();
+				re.popTransform();
 			}
 		}
 	}
 	else if (poa)
 	{
-		glPushMatrix();
+		re.pushTransform();
 		SetModelView(poa);
 		glColor3ub(255, 255, 0);
 		glx::renderBox(poa->GetLocalBox(), true, 1.025);
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 
@@ -2569,7 +2571,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc)
 			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
-				glPushMatrix();
+				re.pushTransform();
 				SetModelView(po);
 				if (nitem != ITEM_EDGE)
 				{
@@ -2579,17 +2581,17 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc)
 						re.renderGMeshEdges(*lineMesh);
 					}
 				}
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
 			{
 				GMesh* gmesh = po->GetRenderMesh();
 				if (gmesh && (nitem != ITEM_EDGE))
 				{
-					glPushMatrix();
+					re.pushTransform();
 					SetModelView(po);
 					re.renderGMeshEdges(*gmesh);
-					glPopMatrix();
+					re.popTransform();
 				}
 			}
 		}
@@ -2626,7 +2628,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
 				GObject* po = model.Object(k);
 				if (po->IsVisible())
 				{
-					glPushMatrix();
+					re.pushTransform();
 					SetModelView(po);
 
 					GMesh* m = po->GetRenderMesh();
@@ -2634,7 +2636,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
 					{
 						re.renderGMeshEdges(*m);
 					}
-					glPopMatrix();
+					re.popTransform();
 				}
 			}
 
@@ -2683,12 +2685,12 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const
 			if (b) r = pm->GetParamVec3d("center_of_mass");
 			else r = pgm->GetPosition();
 
-			glPushMatrix();
+			re.pushTransform();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
 
 			re.renderGlyph(GLRenderEngine::RIGID_BODY, R, c);
 
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 }
@@ -2719,13 +2721,13 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const
 				vec3d p = c - n * (n * (c - r0));
 
 				quatd q(vec3d(0, 0, 1), n);
-				glPushMatrix();
+				re.pushTransform();
 				{
 					glTranslated(p.x, p.y, p.z);
 					glx::rotate(q);
 					re.renderGlyph(GLRenderEngine::RIGID_WALL, R, GLColor::Black());
 				}
-				glPopMatrix();
+				re.popTransform();
 			}
 		}
 	}
@@ -2749,10 +2751,10 @@ void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const
 			if (pj)
 			{
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
-				glPushMatrix();
+				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
 				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, GLColor::Red());
-				glPopMatrix();
+				re.popTransform();
 			}
 		}
 	}
@@ -2766,11 +2768,6 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
 
 	for (int n = 0; n < ps->Steps(); ++n)
 	{
@@ -2788,10 +2785,10 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					c = GLColor(64, 64, 64);
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
 				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, c);
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid revolute joint"))
 			{
@@ -2806,7 +2803,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
@@ -2817,7 +2814,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(64, 64, 64);
 				re.renderGlyph(GLRenderEngine::REVOLUTE_JOINT, R, col);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid prismatic joint"))
 			{
@@ -2832,7 +2829,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
@@ -2843,7 +2840,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(64, 64, 64);
 				re.renderGlyph(GLRenderEngine::PRISMATIC_JOINT, R, col);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid cylindrical joint"))
 			{
@@ -2858,7 +2855,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
@@ -2870,7 +2867,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				re.renderGlyph(GLRenderEngine::CYLINDRICAL_JOINT, R, col);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid planar joint"))
 			{
@@ -2885,7 +2882,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
@@ -2897,7 +2894,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				re.renderGlyph(GLRenderEngine::PLANAR_JOINT, R, col);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid lock"))
 			{
@@ -2912,35 +2909,35 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glPushMatrix();
+				re.pushTransform();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
 				GLColor col = (rci->IsActive() ? GLColor(255, 127, 0) : GLColor(64, 64, 64));
 				re.renderGlyph(GLRenderEngine::RIGID_LOCK, R, col);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid spring"))
 			{
 				vec3d xa = rci->GetParamVec3d("insertion_a");
 				vec3d xb = rci->GetParamVec3d("insertion_b");
 
-				glPushMatrix();
+				re.pushTransform();
 				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
 				else
 					glColor3ub(64, 64, 64);
 
 				glx::renderSpring(xa, xb, R);
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid damper"))
 			{
 				vec3d xa = rci->GetParamVec3d("insertion_a");
 				vec3d xb = rci->GetParamVec3d("insertion_b");
 
-				glPushMatrix();
+				re.pushTransform();
 
 				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
@@ -2949,14 +2946,14 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				glx::renderDamper(xa, xb, R);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 			else if (rci->IsType("rigid contractile force"))
 			{
 				vec3d xa = rci->GetParamVec3d("insertion_a");
 				vec3d xb = rci->GetParamVec3d("insertion_b");
 
-				glPushMatrix();
+				re.pushTransform();
 
 				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
@@ -2965,11 +2962,10 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				glx::renderContractileForce(xa, xb, R);
 
-				glPopMatrix();
+				re.popTransform();
 			}
 		}
 	}
-	glPopAttrib();
 }
 
 void GLPhysicsItem::RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) const
@@ -3088,7 +3084,7 @@ void GLSelectionItem::render(GLRenderEngine& re, CGLContext& rc)
 		GObject* po = model.Object(i);
 		if (po->IsVisible() && po->IsValid())
 		{
-			glPushMatrix();
+			re.pushTransform();
 			SetModelView(po);
 			switch (nsel)
 			{
@@ -3097,7 +3093,7 @@ void GLSelectionItem::render(GLRenderEngine& re, CGLContext& rc)
 			case SELECT_EDGE: RenderSelectedEdges(re, rc, po); break;
 			case SELECT_NODE: RenderSelectedNodes(re, rc, po); break;
 			}
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 }
@@ -3411,7 +3407,7 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, CGLContext& rc, GEdge* edge
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;
 
-	glPushMatrix();
+	re.pushTransform();
 	SetModelView(po);
 
 	GMesh& m = *po->GetRenderMesh();
@@ -3432,7 +3428,7 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, CGLContext& rc, GEdge* edge
 
 		re.renderGMeshNodes(endPoints, false);
 	}
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawNode(GLRenderEngine& re, CGLContext& rc, GNode* node, GLColor c)
@@ -3441,13 +3437,13 @@ void GLHighlighterItem::drawNode(GLRenderEngine& re, CGLContext& rc, GNode* node
 	GObject* po = dynamic_cast<GObject*>(node->Object());
 	if (po == nullptr) return;
 
-	glPushMatrix();
+	re.pushTransform();
 	SetModelView(po);
 	GMesh pt;
 	pt.AddNode(to_vec3f(node->LocalPosition()));
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshNodes(pt, false);
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face, GLColor c)
@@ -3457,7 +3453,7 @@ void GLHighlighterItem::drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face
 	GMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
-	glPushMatrix();
+	re.pushTransform();
 	SetModelView(po);
 
 	re.setMaterial(GLMaterial::HIGHLIGHT, c);
@@ -3466,7 +3462,7 @@ void GLHighlighterItem::drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), face->GetLocalID());
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part, GLColor c)
@@ -3488,7 +3484,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part
 	}
 	if (faceList.empty()) return;
 
-	glPushMatrix();
+	re.pushTransform();
 	SetModelView(po);
 
 	re.setMaterial(GLMaterial::HIGHLIGHT, c);
@@ -3503,7 +3499,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part
 		re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), surfID);
 	}
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, CGLContext& rc, FSNodeSet* nodeSet, GLColor c)
@@ -3527,11 +3523,11 @@ void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, CGLContext& rc, FSNode
 		pointMesh.Node(i).r = gm->Node(nodeList[i]).r;
 	}
 
-	glPushMatrix();
+	re.pushTransform();
 	SetModelView(po);
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshNodes(pointMesh, false);
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLHighlighterItem::drawFESurface(GLRenderEngine& re, CGLContext& rc, FSSurface* surf, GLColor c)
@@ -3546,7 +3542,7 @@ void GLHighlighterItem::drawFESurface(GLRenderEngine& re, CGLContext& rc, FSSurf
 
 	std::vector<int> faceList = surf->CopyItems();
 
-	glPushMatrix();
+	re.pushTransform();
 	{
 		SetModelView(po);
 
@@ -3569,7 +3565,7 @@ void GLHighlighterItem::drawFESurface(GLRenderEngine& re, CGLContext& rc, FSSurf
 		re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Red());
 		re.renderGMesh(gmesh, false);
 	}
-	glPopMatrix();
+	re.popTransform();
 }
 
 void GLGridItem::render(GLRenderEngine& re, CGLContext& rc)

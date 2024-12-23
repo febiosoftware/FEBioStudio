@@ -110,6 +110,18 @@ void OpenGLRenderer::popState()
 	glPopAttrib();
 }
 
+void OpenGLRenderer::pushTransform()
+{
+	// This assumes that the matrix mode is MODELVIEW
+	glPushMatrix();
+}
+
+void OpenGLRenderer::popTransform()
+{
+	// This assumes that the matrix mode is MODELVIEW
+	glPopMatrix();
+}
+
 void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 {
 	switch (flag)

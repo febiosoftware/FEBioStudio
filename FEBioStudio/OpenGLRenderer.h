@@ -47,6 +47,9 @@ public:
 	void pushState() override;
 	void popState() override;
 
+	void pushTransform() override;
+	void popTransform() override;
+
 	void enable(StateFlag flag);
 	void disable(StateFlag flag);
 

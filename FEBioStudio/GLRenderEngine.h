@@ -71,6 +71,9 @@ public:
 	virtual void pushState() {}
 	virtual void popState() {}
 
+	virtual void pushTransform() {}
+	virtual void popTransform() {}
+
 	virtual void enable(StateFlag flag) {}
 	virtual void disable(StateFlag flag) {}
 
