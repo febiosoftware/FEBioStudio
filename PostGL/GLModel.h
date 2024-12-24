@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <GLLib/GDecoration.h>
 #include <PostGL/GLPlotGroup.h>
 #include <FSCore/FSObjectList.h>
-#include <GLLib/GLMeshRender.h>
 #include <MeshLib/Intersect.h>
 #include <MeshTools/FESelection.h>
 #include <vector>
@@ -176,43 +175,8 @@ public:
 	void SetGhostColor(GLColor c) { m_ghost_color = c; }
 
 public:
-	// call this to render the model
-	void Render(CGLContext& rc);
-
-	GLMeshRender& GetMeshRenderer() { return m_render; }
-
-	void RenderPlots(CGLContext& rc, int renderOrder = 0);
-
-	void RenderObjects(CGLContext& rc);
-
-public:
-	void RenderNodes(FEPostModel* ps, CGLContext& rc);
-	void RenderEdges(FEPostModel* ps, CGLContext& rc);
-	void RenderFaces(FEPostModel* ps, CGLContext& rc);
-	void RenderElems(FEPostModel* ps, CGLContext& rc);
-
-public:
-	void RenderMeshLines(CGLContext& rc);
-	void RenderOutline(CGLContext& rc);
-	void RenderNormals(CGLContext& rc);
-	void RenderGhost  (CGLContext& rc);
-	void RenderDiscrete(CGLContext& rc);
-	void RenderDiscreteAsLines(CGLContext& rc);
-	void RenderDiscreteAsSolid(CGLContext& rc);
-	void RenderDiscreteElement(GLEdge::EDGE& e);
-	void RenderDiscreteElementAsSolid(GLEdge::EDGE& e, double W);
-
-	void RenderSelection(CGLContext& rc);
-
-	void RenderMinMaxMarkers(CGLContext& rc);
-
-	void RenderShadows(FEPostModel* ps, const vec3d& lp, float inf);
-
 	bool RenderInnerSurfaces();
 	void RenderInnerSurfaces(bool b);
-
-protected:
-	void BuildShaders();
 
 public:
 	float CurrentTime() const;
@@ -322,10 +286,16 @@ public:
 	double		m_stol;			//!< smoothing threshold
 	bool		m_renderInnerSurface;	//!< render the inner surfaces
 
+	float		m_solidBeamRadius;
+	bool		m_bShell2Solid;
+	bool		m_bBeam2Solid;
+
+	int		m_nshellref;
+
 	bool		m_bshowMesh;
 	bool		m_doZSorting;
 
-protected:
+public:
 	FEPostModel*	m_ps;
 
 	CPostObject* m_postObj;
@@ -334,8 +304,6 @@ protected:
 
 	CGLDisplacementMap*		m_pdis;
 	CGLColorMap*			m_pcol;
-
-	GLMeshRender	m_render;
 
 	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
 

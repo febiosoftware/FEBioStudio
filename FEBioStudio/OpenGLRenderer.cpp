@@ -37,6 +37,7 @@ public:
 	CGLSceneView* glv;
 
 	bool useVertexColors = false;
+	bool useTexture1D = false;
 
 	std::map<const GMesh*, GLTriMesh*> triMesh;
 	std::map<const GMesh*, GLLineMesh*> lineMesh;
@@ -149,6 +150,12 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 {
 	if (map == GLMaterial::DiffuseMap::VERTEX_COLOR) m.useVertexColors = true;
 	else m.useVertexColors = false;
+
+	if (map == GLMaterial::DiffuseMap::TEXTURE_1D) m.useTexture1D = true;
+	else m.useTexture1D = false;
+
+	if (m.useTexture1D) glEnable(GL_TEXTURE_1D);
+	else glDisable(GL_TEXTURE_1D);
 
 	switch (mat)
 	{
@@ -287,7 +294,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 		{
 			glm = new GLTriMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 			m.triMesh[&mesh] = glm;
 		}
 		else
@@ -299,13 +306,14 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 	{
 		glm = new GLTriMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 	}
 
 	if (glm)
 	{
 		unsigned int flags = GLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= GLMesh::FLAG_COLOR;
+		if (m.useTexture1D) flags |= GLMesh::FLAG_TEXTURE;
 
 		const GMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf, flags);

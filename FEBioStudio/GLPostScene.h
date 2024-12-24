@@ -30,10 +30,56 @@ class CPostDocument;
 class CGLPostScene;
 class CImageModel;
 
+namespace Post {
+	class CGLPlot;
+	class FEPostModel;
+}
+
 class GLPostSceneItem : public GLSceneItem
 {
 public:
 	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
+
+protected:
+	CGLPostScene* m_scene;
+};
+
+class GLPostModelItem : public GLPostSceneItem
+{
+public:
+	GLPostModelItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
+	void RenderModel(GLRenderEngine& re, CGLContext& rc);
+	void RenderNodes(GLRenderEngine& re, CGLContext& rc);
+	void RenderEdges(GLRenderEngine& re, CGLContext& rc);
+	void RenderFaces(GLRenderEngine& re, CGLContext& rc);
+	void RenderElems(GLRenderEngine& re, CGLContext& rc);
+	void RenderSelection(GLRenderEngine& re, CGLContext& rc);
+	void RenderNormals(GLRenderEngine& re, CGLContext& rc);
+	void RenderOutline(GLRenderEngine& re, CGLContext& rc);
+	void RenderGhost(GLRenderEngine& re, CGLContext& rc);
+	void RenderMeshLines(GLRenderEngine& re, CGLContext& rc);
+	void RenderDiscrete(CGLContext& rc);
+	void RenderDiscreteAsLines(CGLContext& rc);
+	void RenderDiscreteAsSolid(CGLContext& rc);
+	void RenderMinMaxMarkers(CGLContext& rc);
+	void RenderDiscreteElement(int n);
+	void RenderDiscreteElementAsSolid(int n, double W);
+};
+
+class GLPostPlotItem : public GLPostSceneItem
+{
+public:
+	GLPostPlotItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+};
+
+class GLPostPlaneCutItem : public GLCompositeSceneItem
+{
+public:
+	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
 
 	void render(GLRenderEngine& re, CGLContext& rc) override;
 
@@ -41,15 +87,35 @@ private:
 	CGLPostScene* m_scene;
 };
 
-class GLPost3DImageItem : public GLSceneItem
+class GLPostMirrorItem : public GLCompositeSceneItem
 {
 public:
-	GLPost3DImageItem(CImageModel* img, CGLPostScene* scene) : m_scene(scene), m_img(img) {}
+	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
 
 	void render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
+	void renderMirror(GLRenderEngine& re, CGLContext& rc, int start, int end);
+
+private:
 	CGLPostScene* m_scene;
+};
+
+class GLPostObjectItem : public GLPostSceneItem
+{
+public:
+	GLPostObjectItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+};
+
+class GLPost3DImageItem : public GLPostSceneItem
+{
+public:
+	GLPost3DImageItem(CImageModel* img, CGLPostScene* scene) : GLPostSceneItem(scene), m_img(img) {}
+
+	void render(GLRenderEngine& re, CGLContext& rc) override;
+
+private:
 	CImageModel* m_img;
 };
 
@@ -68,7 +134,13 @@ public:
 
 	Post::CGLModel* GetGLModel();
 
+	Post::FEPostModel* GetFSModel();
+
+	FESelection* GetSelection();
+
 	int GetItemMode() const;
+
+	void Update() override;
 
 private:
 	void RenderTags(CGLContext& rc);

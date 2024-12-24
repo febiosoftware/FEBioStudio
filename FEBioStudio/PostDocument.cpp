@@ -546,6 +546,8 @@ void CPostDocument::UpdateFEModel(bool breset)
 
 	// update the model
 	if (m_glm) m_glm->Update(breset);
+
+	m_scene->Update();
 }
 
 void CPostDocument::SetDataField(int n)

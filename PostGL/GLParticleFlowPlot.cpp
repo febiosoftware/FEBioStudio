@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLParticleFlowPlot.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLMesh.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);

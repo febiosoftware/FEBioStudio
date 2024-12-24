@@ -27,9 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLHighlighter.h"
 #include "GLView.h"
-#include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
-#include <GLLib/GLShader.h>
+#include <MeshLib/GMesh.h>
 #include <MeshLib/FEMesh.h>
 
 GLHighlighter GLHighlighter::This;

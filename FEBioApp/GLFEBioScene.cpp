@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include "GLFEBioScene.h"
 #include "../FEBioStudio/GLView.h"
 #include <QMutexLocker>
-#include <GLLib/GLMeshRender.h>
 #include <MeshLib/GMesh.h>
 #include <FECore/FEMesh.h>
 #include <FECore/FESurface.h>

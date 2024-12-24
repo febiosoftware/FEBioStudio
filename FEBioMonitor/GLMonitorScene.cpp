@@ -50,8 +50,8 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <sstream>
 
-
-CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
+// TODO: I think I might need to inherit FEBioMonitorDoc from CPostDocument
+CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : CGLPostScene(nullptr), m_doc(doc)
 {
 	m_fem = nullptr;
 	m_postModel = new Post::FEPostModel;
@@ -78,6 +78,8 @@ void CGLMonitorScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 
+/*
+	// TODO: This was moved to CGLView and will be handled differently 
 	int nfield = m_glm->GetColorMap()->GetEvalField();
 	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::Data_Tensor_Type::TENSOR_SCALAR);
 
@@ -90,118 +92,8 @@ void CGLMonitorScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	GLWidget::addToStringTable("$(datafield)", dataFieldName);
 	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
 	GLWidget::addToStringTable("$(time)", m_postModel->CurrentTime());
-
-	// We need this for rendering post docs
-	glEnable(GL_COLOR_MATERIAL);
-
-	Post::CGLModel* glm = m_glm;
-
-	CGLCamera& cam = *rc.m_cam;
-
-	GLViewSettings& vs = rc.m_settings;
-
-	glm->m_nrender = vs.m_nrender + 1;
-	glm->m_bnorm = vs.m_bnorm;
-	glm->m_scaleNormals = vs.m_scaleNormals;
-	glm->m_doZSorting = vs.m_bzsorting;
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	cam.PositionInScene();
-
-	glDisable(GL_CULL_FACE);
-
-	// match the selection mode
-	SelectionType selectionMode = SELECT_FE_ELEMS;
-	switch (m_doc->GetItemMode())
-	{
-	case ITEM_MESH:
-	case ITEM_ELEM: selectionMode = SELECT_FE_ELEMS; break;
-	case ITEM_FACE: selectionMode = SELECT_FE_FACES; break;
-	case ITEM_EDGE: selectionMode = SELECT_FE_EDGES; break;
-	case ITEM_NODE: selectionMode = SELECT_FE_NODES; break;
-	}
-	glm->SetSelectionType(selectionMode);
-
-
-	if (vs.m_bShadows)
-	{
-		BOX box = m_postModel->GetBoundingBox();
-
-		float a = vs.m_shadow_intensity;
-		GLfloat shadow[] = { a, a, a, 1 };
-		GLfloat zero[] = { 0, 0, 0, 1 };
-		GLfloat ones[] = { 1,1,1,1 };
-		GLfloat lp[4] = { 0 };
-
-		glEnable(GL_STENCIL_TEST);
-
-		float inf = box.Radius() * 100.f;
-
-		vec3d lpv = to_vec3d(vs.m_light);
-
-		quatd q = cam.GetOrientation();
-		q.Inverse().RotateVector(lpv);
-
-		lp[0] = lpv.x;
-		lp[1] = lpv.y;
-		lp[2] = lpv.z;
-
-		// set coloring for shadows
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, shadow);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-
-		glStencilFunc(GL_ALWAYS, 0x00, 0xff);
-		glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-		// render the scene
-		glm->Render(rc);
-
-		// Create mask in stencil buffer
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glDepthMask(GL_FALSE);
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-
-		Post::FEPostModel* fem = glm->GetFSModel();
-		glm->RenderShadows(fem, lpv, inf);
-
-		glCullFace(GL_BACK);
-		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
-
-		glm->RenderShadows(fem, lpv, inf);
-
-		// Render the scene in light
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDepthMask(GL_TRUE);
-
-		GLfloat d = vs.m_diffuse;
-		GLfloat dv[4] = { d, d, d, 1.f };
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, ones);
-
-		glStencilFunc(GL_EQUAL, 0, 0xff);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-		glDisable(GL_CULL_FACE);
-
-		glClear(GL_DEPTH_BUFFER_BIT);
-	}
-
-	glm->Render(rc);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	// render the tags
-	if (vs.m_bTags) RenderTags(rc);
-
-	Post::CGLPlaneCutPlot::DisableClipPlanes();
+*/
+	CGLPostScene::Render(engine, rc);
 }
 
 void CGLMonitorScene::RenderTags(CGLContext& rc)

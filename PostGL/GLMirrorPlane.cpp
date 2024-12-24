@@ -32,6 +32,14 @@ using namespace Post;
 
 REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);
 
+CGLMirrorPlane* CGLMirrorPlane::m_mirrors[MAX_MIRROR_PLANES] = { nullptr };
+
+CGLMirrorPlane* CGLMirrorPlane::GetMirrorPlane(int n)
+{
+	assert(n < MAX_MIRROR_PLANES);
+	return m_mirrors[n];
+}
+
 CGLMirrorPlane::CGLMirrorPlane()
 {
 	SetTypeString("mirror");
@@ -55,6 +63,37 @@ CGLMirrorPlane::CGLMirrorPlane()
 	m_recursive = true;
 
 	UpdateData(false);
+
+	m_render_id = -1;
+	AllocRenderID();
+}
+
+CGLMirrorPlane::~CGLMirrorPlane()
+{
+	DeallocRenderID();
+}
+
+void CGLMirrorPlane::DeallocRenderID()
+{
+	assert(m_render_id >= 0);
+	assert(m_mirrors[m_render_id] == this);
+	m_mirrors[m_render_id] = nullptr;
+	m_render_id = -1;
+}
+
+void CGLMirrorPlane::AllocRenderID()
+{
+	m_render_id = -1;
+	for (int i = 0; i < MAX_MIRROR_PLANES; ++i)
+	{
+		if (m_mirrors[i] == nullptr)
+		{
+			m_mirrors[i] = this;
+			m_render_id = i;
+			break;
+		}
+	}
+	assert(m_render_id != -1);
 }
 
 bool CGLMirrorPlane::UpdateData(bool bsave)
@@ -79,48 +118,8 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 	return false;
 }
 
-int CGLMirrorPlane::m_render_id = -1;
-
 void CGLMirrorPlane::Render(CGLContext& rc)
 {
-	// need to make sure we are not calling this recursively
-	if (m_recursive)
-	{
-		if ((m_render_id != -1) && (m_id >= m_render_id)) return;
-	}
-	else
-	{
-		if (m_render_id != -1) return;
-	}
-
-	// plane normal
-	vec3f scl;
-	switch (m_plane)
-	{
-	case 0: m_norm = vec3f(1.f, 0.f, 0.f); scl = vec3f(-1.f, 1.f, 1.f); break;
-	case 1: m_norm = vec3f(0.f, 1.f, 0.f); scl = vec3f(1.f, -1.f, 1.f); break;
-	case 2: m_norm = vec3f(0.f, 0.f, 1.f); scl = vec3f(1.f, 1.f, -1.f); break;
-	}
-
-	// render the flipped model
-	CGLModel* m = GetModel();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(-m_offset*m_norm.x, -m_offset*m_norm.y, -m_offset*m_norm.z);
-	glScalef(scl.x, scl.y, scl.z);
-
-	int old_id = m_render_id;
-	m_render_id = m_id;
-	int frontFace;
-	glGetIntegerv(GL_FRONT_FACE, &frontFace);
-	glFrontFace(frontFace == GL_CW ? GL_CCW : GL_CW);
-	m->Render(rc);
-	glFrontFace(frontFace == GL_CW ? GL_CW : GL_CCW);
-	m_render_id = old_id;
-
-	glPopMatrix();
-
 	// render the plane
 	if (m_showPlane) RenderPlane();
 }
@@ -141,12 +140,20 @@ void CGLMirrorPlane::RenderPlane()
 	case 2: rc.z = 0.f; break;
 	}
 
+	vec3f norm;
+	switch (m_plane)
+	{
+	case 0: norm = vec3f(1.f, 0.f, 0.f); break;
+	case 1: norm = vec3f(0.f, 1.f, 0.f); break;
+	case 2: norm = vec3f(0.f, 0.f, 1.f); break;
+	}
+
 	glPushMatrix();
 
 	glTranslatef(rc.x, rc.y, rc.z);
-	glTranslatef(-0.5f*m_offset*m_norm.x, -0.5f*m_offset*m_norm.y, -0.5f*m_offset*m_norm.z);
+	glTranslatef(-0.5f*m_offset*norm.x, -0.5f*m_offset*norm.y, -0.5f*m_offset*norm.z);
 
-	quatd q = quatd(vec3d(0, 0, 1), to_vec3d(m_norm));
+	quatd q = quatd(vec3d(0, 0, 1), to_vec3d(norm));
 	float w = q.GetAngle();
 	if (w != 0)
 	{
@@ -154,14 +161,16 @@ void CGLMirrorPlane::RenderPlane()
 		glRotated(w * 180 / PI, v.x, v.y, v.z);
 	}
 
-	float R = box.Radius();
+	float R = 2*box.Radius();
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
-	GLdouble r = fabs(m_norm.x);
-	GLdouble g = fabs(m_norm.y);
-	GLdouble b = fabs(m_norm.z);
+	GLdouble r = fabs(norm.x);
+	GLdouble g = fabs(norm.y);
+	GLdouble b = fabs(norm.z);
 
 	glColor4d(r, g, b, m_transparency);
 	glDepthMask(false);

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "../MeshLib/FENodeFaceList.h"
 #include <PostGL/PostObject.h>
 #include <GLLib/GLMesh.h>
+#include "../FEBioStudio/GLPostScene.h"
 #include <QMutex>
 
 class FEBioMonitorDoc;
@@ -41,7 +42,7 @@ namespace Post {
 class FEModel;
 class FEPlotData;
 
-class CGLMonitorScene : public CGLScene
+class CGLMonitorScene : public CGLPostScene
 {
 public:
 	CGLMonitorScene(FEBioMonitorDoc* doc);

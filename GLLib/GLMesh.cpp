@@ -444,7 +444,7 @@ void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 		for (int j = 0; j < 3; ++j)
 		{
 			auto& vj = gmsh.Node(tri.n[j]);
-			AddVertex(vj.r, tri.vn[j], tri.c[j]);
+			AddVertex(vj.r, tri.vn[j], tri.c[j], tri.t[j]);
 		}
 	}
 	EndMesh();
