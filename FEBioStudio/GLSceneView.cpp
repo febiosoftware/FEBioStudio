@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 static bool initGlew = false;
 
-CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
+CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent), m_ogl(this)
 {
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(16);
@@ -201,13 +201,12 @@ void CGLSceneView::paintGL()
 
 void CGLSceneView::RenderScene()
 {
+	m_ogl.start();
 	CGLScene* scene = GetActiveScene();
 	if (scene)
 	{
 		CGLCamera& cam = scene->GetCamera();
 		cam.PositionInScene();
-
-		OpenGLRenderer ogl(this);
 
 		CGLContext rc;
 		rc.m_cam = &cam;
@@ -215,8 +214,10 @@ void CGLSceneView::RenderScene()
 		rc.m_view = this;
 		rc.m_w = width();
 		rc.m_h = height();
-		scene->Render(ogl, rc);
+		scene->Render(m_ogl, rc);
+
 	}
+	m_ogl.finish();
 }
 
 // setup the projection matrix

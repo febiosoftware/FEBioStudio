@@ -464,7 +464,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_ogl(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -1524,7 +1524,11 @@ void CGLView::RenderScene()
 	m_ogl.start();
 
 	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
+	if (scene == nullptr)
+	{
+		m_ogl.finish();
+		return;
+	}
 
 	GLViewSettings& view = GetViewSettings();
 

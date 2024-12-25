@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <QOpenGLWidget>
 #include <GLLib/GLViewSettings.h>
 #include <FSCore/math3d.h>
+#include "OpenGLRenderer.h"
 
 class CGLScene;
 class CGView;
@@ -76,6 +77,8 @@ protected:
 	double	m_oy;
 
 	QPoint m_prevPos;	//!< last mouse position
+
+	OpenGLRenderer	m_ogl;
 };
 
 // This class manages its own scene
