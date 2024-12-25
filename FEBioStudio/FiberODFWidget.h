@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <MeshLib/GMesh.h> 
-#include <GLLib/GLMeshRender.h>
 #include <GLLib/GLCamera.h>
 
 class CMainWindow;
@@ -61,7 +60,6 @@ protected:
 private:
     CFiberODFAnalysis* m_analysis;
     CODF* m_ODF;
-    GLMeshRender m_renderer;
     CGLCamera m_cam;
 
     GLTriad* m_ptriad;

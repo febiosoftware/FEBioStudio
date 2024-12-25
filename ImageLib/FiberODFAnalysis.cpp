@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
 #include <FEBioOpt/FEBioOpt.h>
+#include "../FEBioStudio/OpenGLRenderer.h"
 
 #include <algorithm>
 
@@ -1020,6 +1021,9 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	int showMesh = GetIntValue(SHOW_MESH);
 	int ncolor = GetIntValue(COLOR_MODE);
 
+	// TODO: This is a temporary construct! 
+	OpenGLRenderer ogl(nullptr);
+	ogl.start();
 	
     if (showMesh == 3)
     {
@@ -1061,26 +1065,27 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 
 	if (ncolor == 0)
     {
-		GLFaceColorShader shader;
-		m_render.RenderGMesh(*mesh, shader);
+		ogl.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		ogl.renderGMesh(*mesh, false);
     }
 	else
 	{
 		GLColor c = m_map.map(odf->m_FA);
 
-		GLStandardShader shader;
-		c.toFloat(shader.diffuse);
-		m_render.RenderGMesh(*mesh, shader);
+		ogl.setMaterial(GLMaterial::PLASTIC, c);
+		ogl.renderGMesh(*mesh, false);
 	}
 
 	if (meshLines)
 	{
         glEnable(GL_BLEND);
-		glColor4f(0, 0, 0, 0.5);
-
         glLineWidth(1.5f);
-		m_render.RenderGMeshLines(mesh);
+
+		ogl.setMaterial(GLMaterial::CONSTANT, GLColor(0,0,0,128));
+		ogl.renderGMeshEdges(*mesh, false);
 	}
+
+	ogl.finish();
 }
 
 void CFiberODFAnalysis::OnDelete()

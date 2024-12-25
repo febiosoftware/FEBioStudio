@@ -28,7 +28,6 @@ SOFTWARE.*/
 
 #include "ImageAnalysis.h"
 #include <MeshLib/GMesh.h>
-#include <GLLib/GLMeshRender.h>
 #include <FECore/vec3d.h>
 #include <GLWLib/GLWidget.h>
 #include <GLWLib/GLLegendBar.h>
@@ -154,8 +153,6 @@ private:
 private:
     Imp* m_imp;
     std::vector<CODF*> m_ODFs;
-
-    GLMeshRender m_render;
 
     double m_lengthScale;
     double m_hausd;
