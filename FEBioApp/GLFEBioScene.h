@@ -26,17 +26,15 @@ SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/GLScene.h"
 #include "../FEBioStudio/GLSceneView.h"
-#include "../PostLib/ColorMap.h"
 #include <PostGL/ColorTexture.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include "FEBioAppDocument.h"
 #include <QMutex>
 
-class GMesh;
 class FESurface;
 class GLLegendBar;
 
-class GLSceneObject
+class GLSceneObject : public GLSceneItem
 {
 public:
 	GLSceneObject();
@@ -48,10 +46,11 @@ public:
 
 	void SetRotation(quatd q);
 
-	void Render();
+public:
+	void render(GLRenderEngine& engine, CGLContext& rc) override;
 
 private:
-	GLTriMesh	m_mesh;
+	GMesh		m_mesh;
 	GLColor		m_col;
 	vec3d		m_pos;
 	quatd		m_rot;
@@ -96,7 +95,6 @@ private:
 private:
 	FEBioModel& m_fem;
 	GMesh* m_renderMesh;
-	GLTriMesh m_glmesh;
 	FESurface* m_febSurface;
 	CGLSceneView* m_view;
 	GLLegendBar* m_legend;
@@ -108,5 +106,4 @@ private:
 
 	BOX	m_box;
 	Post::CColorTexture m_col;
-	std::vector<GLSceneObject*>	m_obj;
 };

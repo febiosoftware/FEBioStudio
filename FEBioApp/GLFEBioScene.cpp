@@ -53,10 +53,9 @@ GLSceneObject::GLSceneObject()
 	m_col = GLColor::White();
 }
 
-void GLSceneObject::Render()
+void GLSceneObject::render(GLRenderEngine& engine, CGLContext& rc)
 {
 	glPushMatrix();
-	glColor3ub(m_col.r, m_col.g, m_col.b);
 	glTranslated(m_pos.x, m_pos.y, m_pos.z);
 	double w = m_rot.GetAngle();
 	if (w != 0.0)
@@ -64,7 +63,10 @@ void GLSceneObject::Render()
 		vec3d r = m_rot.GetVector();
 		glRotated(w * RAD2DEG, r.x, r.y, r.z);
 	}
-	m_mesh.Render();
+
+	engine.setMaterial(GLMaterial::PLASTIC, m_col);
+	engine.renderGMesh(m_mesh);
+
 	glPopMatrix();
 }
 
@@ -90,7 +92,10 @@ bool GLSceneObject::LoadFromFile(const std::string& fileName)
 	if (stl.Load(fileName.c_str()) == false) return false;
 	GObject* po = tmp.GetFSModel().GetModel().Object(0);
 	GMesh* m = po->GetRenderMesh();
-	if (m) m_mesh.CreateFromGMesh(*m, GLMesh::FLAG_NORMAL);
+	if (m)
+	{
+		m_mesh = *m;
+	}
 	return true;
 }
 
@@ -120,8 +125,6 @@ GLFEBioScene::~GLFEBioScene()
 {
 	delete m_febSurface;
 	delete m_renderMesh;
-	for (int i = 0; i < m_obj.size(); ++i) delete m_obj[i];
-	m_obj.clear();
 }
 
 void GLFEBioScene::SetDataSourceName(const std::string& dataName) 
@@ -142,7 +145,7 @@ void GLFEBioScene::SetDataRange(double rngMin, double rngMax)
 
 void GLFEBioScene::AddSceneObject(GLSceneObject* po)
 {
-	m_obj.push_back(po);
+	addItem(po);
 }
 
 void GLFEBioScene::SetColorMap(const std::string& colorMapName)
@@ -205,12 +208,6 @@ void GLFEBioScene::Update(double time)
 	col.SetRange(vmin, vmax);
 	m_legend->SetRange(vmin, vmax);
 
-	unsigned int createFlags = GLMesh::FLAG_NORMAL;
-	if (m_dataSource.empty()) createFlags |= GLMesh::FLAG_COLOR;
-	else createFlags |= GLMesh::FLAG_TEXTURE;
-
-	m_glmesh.Create(m_renderMesh->Faces(), createFlags);
-	m_glmesh.BeginMesh();
 	for (int i = 0; i < m_renderMesh->Faces(); ++i)
 	{
 		GMesh::FACE& f = m_renderMesh->Face(i);
@@ -219,29 +216,30 @@ void GLFEBioScene::Update(double time)
 			GMesh::NODE& node = m_renderMesh->Node(f.n[j]);
 			double t = (val[f.n[j]] - vmin) / (vmax - vmin);
 			if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-			GLMesh::Vertex v{ node.r, f.vn[j], vec3f(t,0.f,0.f), f.c[j] };
-			m_glmesh.AddVertex(v);
+			f.t[j] = t;
 		}
 	}
-	m_glmesh.EndMesh();
+
 	UpdateBoundingBox();
 }
 
 void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	if (m_dataSource.empty() == false)
+
+	if (m_dataSource.empty())
 	{
-		glEnable(GL_TEXTURE_1D);
-		glColor3ub(255, 255, 255);
+		engine.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	}
+	else
+	{
+		engine.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D);
 		m_col.GetTexture().MakeCurrent();
 	}
-	m_glmesh.Render();
+	engine.renderGMesh(*m_renderMesh, false);
 	glDisable(GL_TEXTURE_1D);
-	for (auto po : m_obj) po->Render();
-	glPopAttrib();
+
+	CGLScene::Render(engine, rc);
 
 	// Canvas rendering
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen

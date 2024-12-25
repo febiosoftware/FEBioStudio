@@ -255,7 +255,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 		{
 			glm = new GLTriMesh;
 			glm->SetRenderMode(GLMesh::VBOMode);
-			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
+			glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 			m.triMesh[&mesh] = glm;
 		}
 		else
@@ -267,13 +267,14 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 	{
 		glm = new GLTriMesh;
 		glm->SetRenderMode(GLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
+		glm->CreateFromGMesh(mesh, GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 	}
 
 	if (glm)
 	{
 		unsigned int flags = GLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= GLMesh::FLAG_COLOR;
+		if (m.useTexture1D) flags |= GLMesh::FLAG_TEXTURE;
 		glm->Render(flags);
 		m_stats.triangles += glm->Vertices() / 3;
 
