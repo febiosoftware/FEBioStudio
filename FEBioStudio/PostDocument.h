@@ -185,9 +185,6 @@ public:
 	// get the model's bounding box
 	BOX GetBoundingBox();
 
-	// get the selection bounding box
-	BOX GetSelectionBox();
-
 	void SetGLModel(Post::CGLModel* glm);
 
 public:

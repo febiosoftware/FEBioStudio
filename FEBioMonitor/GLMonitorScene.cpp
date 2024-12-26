@@ -50,8 +50,7 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <sstream>
 
-// TODO: I think I might need to inherit FEBioMonitorDoc from CPostDocument
-CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : CGLPostScene(nullptr), m_doc(doc)
+CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : CGLPostScene(doc), m_fmdoc(doc)
 {
 	m_fem = nullptr;
 	m_postModel = new Post::FEPostModel;
@@ -102,7 +101,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 
 	GLViewSettings& view = rc.m_settings;
 
-	GObject* po = m_doc->GetActiveObject();
+	GObject* po = m_fmdoc->GetActiveObject();
 	if (po == nullptr) return;
 
 	FSMesh* pm = po->GetFEMesh();
@@ -114,7 +113,7 @@ void CGLMonitorScene::RenderTags(CGLContext& rc)
 	// clear the node tags
 	pm->TagAllNodes(0);
 
-	int mode = m_doc->GetItemMode();
+	int mode = m_fmdoc->GetItemMode();
 
 	GLColor extcol(255, 255, 0);
 	GLColor intcol(255, 0, 0);
@@ -562,7 +561,7 @@ void CGLMonitorScene::UpdateMeshState(FEModel* fem)
 
 void CGLMonitorScene::AddState()
 {
-	m_postModel->AddState(new Post::FEState(m_doc->GetTimeValue(), m_postModel, m_postModel->GetFEMesh(0)));
+	m_postModel->AddState(new Post::FEState(m_fmdoc->GetTimeValue(), m_postModel, m_postModel->GetFEMesh(0)));
 	m_postModel->SetCurrentTimeIndex(m_postModel->GetStates() - 1);
 }
 
@@ -573,7 +572,7 @@ void CGLMonitorScene::UpdateStateData()
 	if (m_fem == nullptr) return;
 
 	Post::FEState* ps = m_postModel->CurrentState();
-	ps->m_time = m_doc->GetTimeValue();
+	ps->m_time = m_fmdoc->GetTimeValue();
 	m_postModel->SetCurrentTimeIndex(ps->m_id);
 
 	FEMesh& febioMesh = m_fem->GetMesh();
@@ -910,7 +909,7 @@ BOX CGLMonitorScene::GetSelectionBox()
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
 
-	FESelection* sel = m_doc->GetCurrentSelection();
+	FESelection* sel = m_fmdoc->GetCurrentSelection();
 	if (sel) return sel->GetBoundingBox();
 
 	return BOX();

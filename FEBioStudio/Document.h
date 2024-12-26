@@ -367,6 +367,9 @@ public:
 	FESelection* GetCurrentSelection();
 	void SetCurrentSelection(FESelection* psel);
 
+	// get the selection bounding box
+	BOX GetSelectionBox();
+
 	virtual void UpdateSelection(bool breport = true);
 
 	virtual GObject* GetActiveObject();

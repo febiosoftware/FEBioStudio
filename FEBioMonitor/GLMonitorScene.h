@@ -85,7 +85,7 @@ private:
 	void UpdateSurfaceData(FEPlotData* dataField, Post::FEMeshData& meshData);
 
 private:
-	FEBioMonitorDoc* m_doc;
+	FEBioMonitorDoc* m_fmdoc;
 	Post::FEPostModel* m_postModel;
 	Post::CGLModel* m_glm;
 	FSNodeFaceList	m_NFT;

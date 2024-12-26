@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 
-class CPostDocument;
+class CGLModelDocument;
 class CGLPostScene;
 class CImageModel;
 
@@ -122,7 +122,7 @@ private:
 class CGLPostScene : public CGLScene
 {
 public:
-	CGLPostScene(CPostDocument* doc);
+	CGLPostScene(CGLModelDocument* doc);
 
 	void Render(GLRenderEngine& engine, CGLContext& rc) override;
 
@@ -151,7 +151,7 @@ private:
 	void BuildScene(CGLContext& rc);
 
 private:
-	CPostDocument* m_doc;
+	CGLModelDocument* m_doc;
 
 	bool	m_btrack;
 	int		m_ntrack[3];	// used for tracking

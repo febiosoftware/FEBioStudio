@@ -650,6 +650,26 @@ std::string CGLDocument::GetRenderString()
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
 
+BOX CGLDocument::GetSelectionBox()
+{
+	if (!IsValid()) return BOX(-1, -1, -1, 1, 1, 1);
+
+	BOX box;
+	FESelection* currentSelection = GetCurrentSelection();
+	if (currentSelection && currentSelection->Size())
+	{
+		box = currentSelection->GetBoundingBox();
+	}
+
+	if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
+	{
+		float R = box.Radius();
+		box.InflateTo(R, R, R);
+	}
+
+	return box;
+}
+
 void CGLDocument::SetCurrentSelection(FESelection* psel)
 {
 	if (m_psel) delete m_psel;

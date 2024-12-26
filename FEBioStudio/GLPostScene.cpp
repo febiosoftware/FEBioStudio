@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLPostScene.h"
-#include "PostDocument.h"
+#include "GLModelDocument.h"
 #include <GLLib/GLContext.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
@@ -1120,7 +1120,7 @@ void GLPost3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
+CGLPostScene::CGLPostScene(CGLModelDocument* doc) : m_doc(doc)
 {
 	m_btrack = false;
 	m_ntrack[0] = m_ntrack[1] = m_ntrack[2] = -1;
@@ -1162,7 +1162,8 @@ BOX CGLPostScene::GetBoundingBox()
 	BOX box;
 	if (m_doc && m_doc->IsValid())
 	{
-		box = m_doc->GetPostObject()->GetBoundingBox();
+		CGLModel& gm = *m_doc->GetGLModel();
+		box = gm.GetPostObject()->GetBoundingBox();
 	}
 	return box;
 }
@@ -1252,7 +1253,8 @@ void CGLPostScene::RenderTags(CGLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
 
-	GObject* po = m_doc->GetPostObject();
+	CGLModel& gm = *m_doc->GetGLModel();
+	GObject* po = gm.GetPostObject();
 	if (po == nullptr) return;
 
 	FSMesh* pm = po->GetFEMesh();
@@ -1443,7 +1445,8 @@ void CGLPostScene::UpdateTracking()
 	if ((m_ntrack[0] >= 0) && (m_ntrack[1] >= 0) && (m_ntrack[2] >= 0))
 	{
 		// calculate new tracking position and orientation
-		FSMeshBase* pm = m_doc->GetPostObject()->GetFEMesh();
+		CGLModel& gm = *m_doc->GetGLModel();
+		FSMeshBase* pm = gm.GetPostObject()->GetFEMesh();
 		int* nt = m_ntrack;
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
