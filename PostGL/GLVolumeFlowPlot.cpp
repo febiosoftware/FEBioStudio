@@ -459,7 +459,7 @@ void GLVolumeFlowPlot::Render(CGLContext& rc)
 	UpdateMesh(slice, m_mesh);
 
 	// render the geometry
-	m_mesh.Render();
+	m_mesh.Render(GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 
 	glPopAttrib();
 }

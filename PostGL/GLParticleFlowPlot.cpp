@@ -170,7 +170,7 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 	mesh.EndMesh();
 
 	// render the points
-	mesh.Render();
+	mesh.Render(GLMesh::FLAG_COLOR);
 
 	if (m_showPath)
 	{

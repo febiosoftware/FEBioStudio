@@ -190,7 +190,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 
 	if (a < 255) m_mesh.ZSortFaces(*rc.m_cam);
 
-	m_mesh.Render();
+	m_mesh.Render(GLMesh::FLAG_TEXTURE);
 
 	glDisable(GL_TEXTURE_1D);
 	glPopAttrib();

@@ -256,7 +256,7 @@ void CGLPointPlot::RenderPoints()
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 
-		m_pointMesh.Render();
+		m_pointMesh.Render(GLMesh::FLAG_COLOR);
 	}
 	glPopAttrib();
 	glPointSize(size_old);

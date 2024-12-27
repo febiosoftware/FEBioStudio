@@ -571,7 +571,7 @@ void CMarchingCubes::Render(CGLContext& rc)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, (GLint)(128*m_shininess));
 
-	m_mesh.Render();
+	m_mesh.Render(GLMesh::FLAG_NORMAL);
 }
 
 bool CMarchingCubes::GetMesh(FSMesh& mesh)

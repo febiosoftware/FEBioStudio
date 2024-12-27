@@ -565,7 +565,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 
 	// update geometry and render
 	UpdateGeometry(view);
-	m_mesh.Render();
+	m_mesh.Render(GLMesh::FLAG_TEXTURE);
 
 	// clean up
 	glUseProgram(0);

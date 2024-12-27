@@ -169,7 +169,7 @@ void CGLIsoSurfacePlot::Render(CGLContext& rc)
 		if (m_transparency < 0.99) m_glmesh.ZSortFaces(*rc.m_cam);
 
 		// render the mesh
-		m_glmesh.Render();
+		m_glmesh.Render(GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
 	}
 	glPopAttrib();
 }

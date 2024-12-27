@@ -137,7 +137,7 @@ void CGLStreamLinePlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_1D);
 
-	m_mesh.Render();
+	m_mesh.Render(GLMesh::FLAG_COLOR);
 
 	glPopAttrib();
 }
