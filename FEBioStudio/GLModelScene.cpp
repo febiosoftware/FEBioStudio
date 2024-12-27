@@ -3476,5 +3476,5 @@ void GLGridItem::render(GLRenderEngine& re, CGLContext& rc)
 
 void GL3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
 {
-	m_img->Render(rc);
+	m_img->Render(re, rc);
 }

@@ -564,7 +564,7 @@ void CMarchingCubes::SetIsoValue(float v)
 	m_val = v;
 }
 
-void CMarchingCubes::Render(CGLContext& rc)
+void CMarchingCubes::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	GLfloat spc[4] = { m_spc.r / 255.f, m_spc.g / 255.f, m_spc.b / 255.f, 1.f };
 	glColor3ub(m_col.r, m_col.g, m_col.b);

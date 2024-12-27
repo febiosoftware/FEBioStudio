@@ -91,7 +91,7 @@ bool GLRuler::UpdateData(bool bsave)
 	return false;
 }
 
-void GLRuler::Render(CGLContext& rc)
+void GLRuler::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if ((m_node[0] <= 0) || (m_node[1] <= 0)) return;
 

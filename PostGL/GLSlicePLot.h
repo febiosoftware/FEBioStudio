@@ -66,7 +66,7 @@ public:
 	vec3f GetPlaneNormal() { return m_norm; }
 	void SetPlaneNormal(vec3f& n) { m_norm = n; }
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, CGLContext& rc) override;
 
 	int GetEvalField() { return m_nfield; }
 	void SetEvalField(int n);

@@ -103,7 +103,7 @@ void CImageModel::ShowBox(bool b)
 	m_showBox = b;
 }
 
-void CImageModel::Render(CGLContext& rc)
+void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (IsActive() == false) return;
 
@@ -147,7 +147,7 @@ void CImageModel::Render(CGLContext& rc)
 		{
 //			if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
 //			else CGLPlaneCutPlot::DisableClipPlanes();
-			pir->Render(rc);
+			pir->Render(re, rc);
 		}
 	}
 

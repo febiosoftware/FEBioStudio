@@ -148,7 +148,7 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLIsoSurfacePlot::Render(CGLContext& rc)
+void CGLIsoSurfacePlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_nfield == 0) return;
 

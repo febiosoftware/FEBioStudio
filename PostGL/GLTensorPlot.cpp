@@ -424,7 +424,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 
 static double frand() { return (double)rand() / (double)RAND_MAX; }
 
-void GLTensorPlot::Render(CGLContext& rc)
+void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	GetLegendBar()->SetDivisions(m_ndivs);
 

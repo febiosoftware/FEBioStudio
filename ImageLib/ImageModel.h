@@ -87,7 +87,7 @@ public:
 
 	void ShowBox(bool b);
 
-	void Render(CGLContext& rc);
+	void Render(GLRenderEngine& re, CGLContext& rc);
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;

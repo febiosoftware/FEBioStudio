@@ -118,7 +118,7 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLMirrorPlane::Render(CGLContext& rc)
+void CGLMirrorPlane::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	// render the plane
 	if (m_showPlane) RenderPlane();

@@ -1025,7 +1025,7 @@ void GLPostPlotItem::render(GLRenderEngine& re, CGLContext& rc)
 			if (plt.AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
 			else CGLPlaneCutPlot::DisableClipPlanes();
 
-			plt.Render(rc);
+			plt.Render(re, rc);
 		}
 	}
 	CGLPlaneCutPlot::DisableClipPlanes();
@@ -1116,7 +1116,7 @@ void GLPost3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_img && m_img->IsActive())
 	{
-		m_img->Render(rc);
+		m_img->Render(re, rc);
 	}
 }
 

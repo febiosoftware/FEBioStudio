@@ -162,7 +162,7 @@ void CGLLinePlot::Reload()
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render(CGLContext& rc)
+void CGLLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_lineData == nullptr) return;
 

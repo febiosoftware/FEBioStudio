@@ -84,9 +84,9 @@ void CImageSliceView::Update()
     }
 }
 
-void CImageSliceView::RenderSlicers(CGLContext& rc)
+void CImageSliceView::RenderSlicers(GLRenderEngine& re, CGLContext& rc)
 {
-	m_slicer.Render(rc);
+	m_slicer.Render(re, rc);
 }
 
 void CImageSliceView::SetInspector(CDlgPixelInspector* inspector)
@@ -195,7 +195,7 @@ CImageSliceViewRender::CImageSliceViewRender(CImageSliceView* sliceView) : m_sli
 
 }
 
-void CImageSliceViewRender::Render(CGLContext& rc)
+void CImageSliceViewRender::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_sliceView == nullptr) return;
 	if (!m_sliceView->isVisible()) return;
@@ -205,6 +205,6 @@ void CImageSliceViewRender::Render(CGLContext& rc)
 	CImageModel* img = GetImageModel();
 	if (img && (img == m_sliceView->GetImageModel()))
 	{
-		m_sliceView->RenderSlicers(rc);
+		m_sliceView->RenderSlicers(re, rc);
 	}
 }

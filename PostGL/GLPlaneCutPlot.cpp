@@ -250,7 +250,7 @@ vec3d CGLPlaneCutPlot::GetPlanePosition() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLPlaneCutPlot::Render(CGLContext& rc)
+void CGLPlaneCutPlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	// make sure we have a clip plane ID assigned
 	if (m_nclip == -1) return;

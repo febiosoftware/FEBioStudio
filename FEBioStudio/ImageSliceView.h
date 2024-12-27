@@ -51,7 +51,7 @@ public:
 
     CImageModel* GetImageModel() { return m_imgModel; }
 
-    void RenderSlicers(CGLContext& rc);
+    void RenderSlicers(GLRenderEngine& re, CGLContext& rc);
 
     void SetInspector(CDlgPixelInspector* inspector) override;
 
@@ -85,7 +85,7 @@ class CImageSliceViewRender : public Post::CGLImageRenderer
 public:
 	CImageSliceViewRender(CImageSliceView* sliceView);
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, CGLContext& rc) override;
 
 private:
 	CImageSliceView* m_sliceView;

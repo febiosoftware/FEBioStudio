@@ -43,11 +43,11 @@ GLPlotGroup::GLPlotGroup()
 	SetName(ss.str());
 }
 
-void GLPlotGroup::Render(CGLContext& rc)
+void GLPlotGroup::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	for (int i = 0; i < m_plot.Size(); ++i)
 	{
-		if (m_plot[i]->IsActive()) m_plot[i]->Render(rc);
+		if (m_plot[i]->IsActive()) m_plot[i]->Render(re, rc);
 	}
 }
 

@@ -165,7 +165,7 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
-void CGLSlicePlot::Render(CGLContext& rc)
+void CGLSlicePlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_nfield == -1) return;
 	if (m_box.IsValid() == false) return;

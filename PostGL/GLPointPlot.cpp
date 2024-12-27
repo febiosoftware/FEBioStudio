@@ -232,7 +232,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 }
 
 //-----------------------------------------------------------------------------
-void CGLPointPlot::Render(CGLContext& rc)
+void CGLPointPlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = GetModel()->CurrentTimeIndex();

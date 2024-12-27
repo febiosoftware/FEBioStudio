@@ -92,7 +92,7 @@ bool GLPointProbe::UpdateData(bool bsave)
 	return false;
 }
 
-void GLPointProbe::Render(CGLContext& rc)
+void GLPointProbe::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	double R = m_R * m_size;
 	GLUquadricObj* pobj = gluNewQuadric();

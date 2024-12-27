@@ -435,7 +435,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 	}
 }
 
-void GLVolumeFlowPlot::Render(CGLContext& rc)
+void GLVolumeFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);

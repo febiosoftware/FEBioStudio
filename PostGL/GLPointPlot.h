@@ -114,7 +114,7 @@ public:
 	CGLPointPlot();
 	virtual ~CGLPointPlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, CGLContext& rc) override;
 
 	float GetPointSize() { return m_pointSize; }
 	void SetPointSize(float f) { m_pointSize = f; }

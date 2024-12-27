@@ -67,7 +67,7 @@ void CGLPlane::Create(int n[3])
 	}
 }
 
-void CGLPlane::Render(CGLContext& rc)
+void CGLPlane::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 

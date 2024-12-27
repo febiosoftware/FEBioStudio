@@ -128,7 +128,7 @@ void CGLStreamLinePlot::SetVectorType(int ntype)
 	Update();
 }
 
-void CGLStreamLinePlot::Render(CGLContext& rc)
+void CGLStreamLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	int NSL = (int)m_streamLines.size();
 	if (NSL == 0) return;

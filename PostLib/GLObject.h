@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 
 
+class GLRenderEngine;
 class CGLContext;
 
 namespace Post {
@@ -88,7 +89,7 @@ public:
 	CGLVisual(CGLModel* mdl = 0) : CGLObject(mdl) { m_bclip = true; }
 
 	// render the object to the 3D view
-	virtual void Render(CGLContext& rc) = 0;
+	virtual void Render(GLRenderEngine& re, CGLContext& rc) = 0;
 
 	// allow clipping
 	bool AllowClipping() { return m_bclip; }

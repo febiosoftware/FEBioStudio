@@ -440,7 +440,7 @@ GLColor HSV2RGB(double H, double S, double V)
 	return c;
 }
 
-void CVolumeRenderer::Render(CGLContext& rc)
+void CVolumeRenderer::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	// make sure volume renderer is initialized
 	if (m_vrInit == false) Init();

@@ -43,7 +43,7 @@ public:
 	GLMusclePath();
 	~GLMusclePath();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, CGLContext& rc) override;
 
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;

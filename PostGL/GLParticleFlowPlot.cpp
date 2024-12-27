@@ -150,7 +150,7 @@ void CGLParticleFlowPlot::SetDensity(float v)
 	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
-void CGLParticleFlowPlot::Render(CGLContext& rc)
+void CGLParticleFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;

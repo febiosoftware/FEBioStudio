@@ -215,7 +215,7 @@ void GLMusclePath::ClearPaths()
 	m_path.clear();
 }
 
-void GLMusclePath::Render(CGLContext& rc)
+void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_path.empty()) return;
 
