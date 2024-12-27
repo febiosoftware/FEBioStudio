@@ -26,12 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLIsoSurfacePlot.h"
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
 #include <GLLib/GLContext.h>
-#include <GLLib/GLCamera.h>
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
+
 using namespace Post;
 
 extern int LUT[256][15];
@@ -127,7 +126,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		{
 			// set the mesh transparency
 			m_transparency = GetFloatValue(TRANSPARENCY);
-			m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
 		}
 	}
 	else
@@ -152,26 +150,9 @@ void CGLIsoSurfacePlot::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (m_nfield == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-	{
-		glColor4ub(255,255,255,255);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-		glDisable(GL_TEXTURE_1D);
-		GLfloat zero[4] = {0.f};
-		GLfloat one[4] = {1.f, 1.f, 1.f, 1.f};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-	//	glLightfv(GL_LIGHT0, GL_AMBIENT, one);
-	//	glLightfv(GL_LIGHT0, GL_DIFFUSE, one);
-
-		// z-sorting if necessary
-		if (m_transparency < 0.99) m_glmesh.ZSortFaces(*rc.m_cam);
-
-		// render the mesh
-		m_glmesh.Render(GLMesh::FLAG_NORMAL | GLMesh::FLAG_COLOR);
-	}
-	glPopAttrib();
+	// TODO: We used to z-sort the faces
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.renderGMesh(m_renderMesh, false);
 }
 
 void CGLIsoSurfacePlot::UpdateMesh()
@@ -183,6 +164,7 @@ void CGLIsoSurfacePlot::UpdateMesh()
 	float D = vmax - vmin;
 
 	// build a GMesh
+	m_renderMesh.Clear();
 	GMesh mesh;
 	for (int i = 0; i < m_nslices; ++i)
 	{
@@ -192,14 +174,9 @@ void CGLIsoSurfacePlot::UpdateMesh()
 
 		CColorMap& map = m_Col.ColorMap();
 		GLColor col = map.map(w);
-		UpdateSlice(mesh, ref, col);
+		col.a = (unsigned char)(m_transparency * 255.0);
+		UpdateSlice(m_renderMesh, ref, col);
 	}
-
-	// create a GLVAMesh
-	m_glmesh.CreateFromGMesh(mesh);
-
-	// set the mesh transparency
-	m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

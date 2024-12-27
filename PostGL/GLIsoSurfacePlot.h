@@ -26,10 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLLegendBar.h"
 #include "PostLib/DataMap.h"
 #include <MeshLib/GMesh.h>
-#include <GLLib/GLMesh.h>
 
 namespace Post {
 
@@ -106,7 +104,7 @@ protected:
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
 
-	GLTriMesh	m_glmesh; // the mesh to render
+	GMesh	m_renderMesh; // the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;

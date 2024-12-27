@@ -146,7 +146,7 @@ void OpenGLRenderer::setColor(GLColor c)
 	glColor4ub(c.r, c.g, c.b, c.a);
 }
 
-void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map)
+void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	if (map == GLMaterial::DiffuseMap::VERTEX_COLOR) m.useVertexColors = true;
 	else m.useVertexColors = false;
@@ -163,7 +163,10 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 	case GLMaterial::GLASS:
 	{
 		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+		if (frontOnly)
+			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+		else
+			glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glColor4ub(c.r, c.g, c.b, c.a);
 
 		glEnable(GL_LIGHTING);
@@ -178,7 +181,7 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 		GLfloat spc[] = { 0.5f, 0.5f, 0.5f, 1.f };
 		GLfloat emi[] = { 0.0f, 0.0f, 0.0f, 1.f };
 
-		glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, rev);
+		if (frontOnly) glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, rev);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
