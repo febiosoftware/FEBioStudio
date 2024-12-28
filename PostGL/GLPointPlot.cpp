@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
+
 using namespace Post;
 
 PointDataModel::PointDataModel(FEPostModel* fem) : m_fem(fem)
@@ -241,25 +243,20 @@ void CGLPointPlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 	switch (m_renderMode)
 	{
-	case 0: RenderPoints(); break;
+	case 0: RenderPoints(re); break;
 	case 1: RenderSpheres(); break;
 	}
 }
 
-void CGLPointPlot::RenderPoints()
+void CGLPointPlot::RenderPoints(GLRenderEngine& re)
 {
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 	GLfloat size_old;
 	glGetFloatv(GL_POINT_SIZE, &size_old);
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glPointSize(m_pointSize);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
+	re.setPointSize(m_pointSize);
 
-		m_pointMesh.Render(GLMesh::FLAG_COLOR);
-	}
-	glPopAttrib();
-	glPointSize(size_old);
+	re.renderGMeshNodes(m_pointMesh, false);
+	re.setPointSize(size_old);
 }
 
 void CGLPointPlot::RenderSpheres()
@@ -392,21 +389,17 @@ void CGLPointPlot::UpdatePointMesh()
 	PointData& pd = m_pointData->GetPointData(ns);
 
 	int NP = pd.Points(); 
-	m_pointMesh.Create(NP, GLMesh::FLAG_COLOR);
+	m_pointMesh.Clear();
 
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	GLColor c = m_solidColor;
-	m_pointMesh.BeginMesh();
+	for (int i = 0; i < NP; ++i)
 	{
-		for (int i = 0; i < NP; ++i)
-		{
-			PointData::POINT& p = pd.Point(i);
-			if (m_colorMode == 1) c = map.map(p.tex);
-			m_pointMesh.AddVertex(p.m_r, c);
-		}
+		PointData::POINT& p = pd.Point(i);
+		if (m_colorMode == 1) c = map.map(p.tex);
+		m_pointMesh.AddNode(p.m_r, c);
 	}
-	m_pointMesh.EndMesh();
 }
 
 void CGLPointPlot::UpdateTriMesh()

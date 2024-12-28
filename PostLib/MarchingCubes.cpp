@@ -52,6 +52,7 @@ extern int LUT[256][15];
 extern int ET_HEX[12][2];
 extern int LUT2D_quad[16][9];
 extern int ET2D[4][2];
+#include "../FEBioStudio/GLRenderEngine.h"
 
 TriMesh::TriMesh()
 {
@@ -153,9 +154,6 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	ProcessImage();
 
 	UpdateData(false);
-
-	// let's use VBOs
-	m_mesh.SetRenderMode(GLMesh::VBOMode);
 }
 
 CMarchingCubes::~CMarchingCubes()
@@ -164,6 +162,7 @@ CMarchingCubes::~CMarchingCubes()
     {
         delete m_8bitImage;
     }
+	delete m_mesh;
 }
 
 bool CMarchingCubes::UpdateData(bool bsave)
@@ -495,14 +494,14 @@ void CMarchingCubes::CreateSurface()
 
 	// create vertex arrays from mesh
 	int faces = mesh.Faces();
-	m_mesh.Create(faces, GLMesh::FLAG_NORMAL);
-	m_mesh.BeginMesh();
+	delete m_mesh;
+	m_mesh = new GMesh;
 	for (int i = 0; i < faces; ++i)
 	{
 		Post::TriMesh::TRI& face = mesh.Face(i);
-		for (int j = 0; j < 3; ++j) m_mesh.AddVertex(face.m_node[j], face.m_norm[j]);
+		m_mesh->AddFace(face.m_node, face.m_norm, m_col);
 	}
-	m_mesh.EndMesh();
+	m_mesh->Update();
 }
 
 void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, uint8_t val[4], vec3f r[4], const vec3f& faceNormal)
@@ -566,22 +565,21 @@ void CMarchingCubes::SetIsoValue(float v)
 
 void CMarchingCubes::Render(GLRenderEngine& re, CGLContext& rc)
 {
-	GLfloat spc[4] = { m_spc.r / 255.f, m_spc.g / 255.f, m_spc.b / 255.f, 1.f };
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, (GLint)(128*m_shininess));
-
-	m_mesh.Render(GLMesh::FLAG_NORMAL);
+	if (m_mesh)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, m_col, GLMaterial::NONE, false);
+		re.renderGMesh(*m_mesh);
+	}
 }
 
 bool CMarchingCubes::GetMesh(FSMesh& mesh)
 {
-	int nodes = (int) m_mesh.Vertices();
-	int faces = nodes / 3; assert((nodes % 3) == 0);
+	int nodes = m_mesh->Nodes();
+	int faces = m_mesh->Faces();
 	mesh.Create(nodes, 0, faces);
 	for (int i = 0; i < nodes; ++i)
 	{
-		GLMesh::Vertex v = m_mesh.GetVertex(i);
+		GMesh::NODE& v = m_mesh->Node(i);
 		mesh.Node(i).r = to_vec3d(v.r);
 	}
 

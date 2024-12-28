@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <PostLib/FEState.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 namespace Post {
 
@@ -132,7 +132,7 @@ public:
 	void Reload() override;
 
 private:
-	void RenderPoints();
+	void RenderPoints(GLRenderEngine& re);
 	void RenderSpheres();
 
 	void UpdateRange();
@@ -150,6 +150,6 @@ private:
 
 	PointDataModel* m_pointData;
 
-	GLPointMesh	m_pointMesh;	// mesh used for rendering points
+	GMesh	m_pointMesh;	// mesh used for rendering points
 };
 } // namespace Post

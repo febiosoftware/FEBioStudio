@@ -57,6 +57,7 @@ public:
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;
 
 	void setPointSize(float f) override;
+	void setLineWidth(float f) override;
 
 public:
 	void renderPoint(const vec3d& r) override;

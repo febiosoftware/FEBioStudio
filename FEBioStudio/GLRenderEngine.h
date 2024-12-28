@@ -81,6 +81,7 @@ public:
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) {}
 
 	virtual void setPointSize(float f) {}
+	virtual void setLineWidth(float f) {}
 
 public:
 	virtual void renderPoint(const vec3d& r) {}

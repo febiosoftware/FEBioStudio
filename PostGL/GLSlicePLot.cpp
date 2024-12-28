@@ -26,12 +26,12 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLSlicePLot.h"
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
+
 using namespace Post;
 
 extern int LUT[256][15];
@@ -181,19 +181,13 @@ void CGLSlicePlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 	uint8_t a = uint8_t(255.0*GetFloatValue(TRANSPARENCY));
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_TEXTURE_1D);
-	glDisable(GL_LIGHTING);
+	re.pushState();
+	re.setMaterial(GLMaterial::PLASTIC, GLColor(255, 255, 255, a), GLMaterial::TEXTURE_1D, false);
 	tex.MakeCurrent();
 
-	glColor4ub(255, 255, 255, a);
-
-	if (a < 255) m_mesh.ZSortFaces(*rc.m_cam);
-
-	m_mesh.Render(GLMesh::FLAG_TEXTURE);
-
-	glDisable(GL_TEXTURE_1D);
-	glPopAttrib();
+	// TODO: We used to z-sort the faces
+	re.renderGMesh(m_mesh, false);
+	re.popState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -412,7 +406,7 @@ void CGLSlicePlot::UpdateMesh()
 	activeElements.reserve(pm->Faces());
 	int faces = CountFaces(activeElements);
 
-	m_mesh.Create(faces, GLMesh::FLAG_TEXTURE);
+	m_mesh.Clear();
 
 	float ev[8];	// element nodal values
 	float ex[8];	// element nodal distances
@@ -431,7 +425,6 @@ void CGLSlicePlot::UpdateMesh()
 	float f;
 
 	// loop over all elements
-	m_mesh.BeginMesh();
 	for (int i = 0; i < activeElements.size(); ++i)
 	{
 		// render only if the element is visible and
@@ -501,14 +494,12 @@ void CGLSlicePlot::UpdateMesh()
 			}
 
 			// add the vertices
-			m_mesh.AddVertex(r[0], tex[0]);
-			m_mesh.AddVertex(r[1], tex[1]);
-			m_mesh.AddVertex(r[2], tex[2]);
+			m_mesh.AddFace(r, tex);
 
 			pf += 3;
 		}
 	}
-	m_mesh.EndMesh();
+	m_mesh.Update();
 }
 
 int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements)

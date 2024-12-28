@@ -229,6 +229,11 @@ void OpenGLRenderer::setPointSize(float f)
 	glPointSize(f);
 }
 
+void OpenGLRenderer::setLineWidth(float f)
+{
+	glLineWidth(f);
+}
+
 void OpenGLRenderer::renderPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);

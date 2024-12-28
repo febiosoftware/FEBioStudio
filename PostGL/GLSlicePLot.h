@@ -26,9 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLLegendBar.h"
 #include "PostLib/DataMap.h"
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 namespace Post {
 
@@ -122,6 +121,6 @@ protected:
 	int m_lastTime;
 	float	m_lastDt;
 
-	GLTriMesh	m_mesh;
+	GMesh	m_mesh;
 };
 }

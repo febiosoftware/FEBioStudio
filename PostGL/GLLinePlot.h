@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include "ColorTexture.h"
 namespace Post {
 
@@ -80,9 +80,9 @@ public:
 	LineDataModel* GetLineDataModel();
 
 protected:
-	void RenderLines();
-	void Render3DLines();
-	void Render3DSmoothLines();
+	void RenderLines(GLRenderEngine& re);
+	void Render3DLines(GLRenderEngine& re);
+	void Render3DSmoothLines(GLRenderEngine& re);
 	bool ShowLine(LINESEGMENT& l, FEState& s);
 
 	void UpdateLineMesh(FEState& s, int ntime);
@@ -102,8 +102,6 @@ private:
 
 	LineDataModel* m_lineData;
 
-	GLLineMesh	m_lineMesh;	// mesh used for line rendering
-	GLQuadMesh	m_quadMesh;	// mesh used for 3d line rendering
-	GLTriMesh	m_triMesh;	// mesh used for smooth 3d line rendering
+	GMesh	m_mesh;
 };
 }

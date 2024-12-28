@@ -45,6 +45,7 @@ public:
 	{
 		vec3f	r;		// nodal position
 		vec3f	n;		// normal (but not really)
+		GLColor c;
 		int		tag = 0;	// multipurpose tag
 		int		pid = 0;	// GNode parent local ID
 		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GMesh)
@@ -125,12 +126,28 @@ public:
 public:
 	int	AddNode(const vec3f& r, int groupID = 0);
 	int	AddNode(const vec3f& r, int nodeID, int groupID);
+
+	int	AddNode(const vec3f& r, GLColor c);
+
+public:
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	void AddEdge(vec3f* r, int nodes, int groupID = 0);
+
+	void AddEdge(vec3f r[2], GLColor c);
+	void AddEdge(vec3f r[2], GLColor c[2]);
+
+public:
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
 	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
 	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
+	
+	void AddFace(vec3f r[3], GLColor c);
 	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
+	void AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c);
+	void AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c);
+	void AddFace(vec3f r[3], GLColor c[3]);
+	void AddFace(vec3f r[3], float t[3]);
+	void AddFace(vec3f r[3], float t[3], GLColor c[3]);
 
 	int SetFaceTex(int f0, float* t, int n);
 

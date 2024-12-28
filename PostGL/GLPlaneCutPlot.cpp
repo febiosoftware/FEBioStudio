@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <MeshLib/hex.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
+
 using namespace Post;
 
 extern int LUT[256][15];
@@ -278,20 +280,20 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 	// render the slice
 	if (rc.m_settings.m_nrender != RENDER_WIREFRAME)
-		RenderSlice();
+		RenderSlice(re);
 
 	// render the mesh
 	if (m_bshow_mesh)
 	{
 		rc.m_cam->LineDrawMode(true);
-		RenderMesh();
-		RenderOutline();
+		RenderMeshLines(re);
+		RenderOutline(re);
 		rc.m_cam->LineDrawMode(false);
 	}
 
 	if (rc.m_settings.m_bfeat)
 	{
-		RenderOutline();
+		RenderOutline(re);
 	}
 
 	// render the plane
@@ -323,10 +325,10 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	colorMap.GetRange(rng);
 	if (rng[1] == rng[0]) ++rng[1];
 
-	vector<pair<vec3d, double> > activePoints; activePoints.reserve(1024);
-	vector<pair<vec3d, GLColor> > inactivePoints; inactivePoints.reserve(1024);
-
 	bool activeMap = colorMap.IsActive();
+
+	m_activeMesh.Clear();
+	m_inactiveMesh.Clear();
 
 	// loop over all enabled materials
 	for (int n = 0; n < ps->Materials(); ++n)
@@ -341,19 +343,16 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 				GLSlice::FACE& face = m_slice.Face(i);
 				if ((face.mat == n) && (face.bactive) && activeMap)
 				{
-					vec3d* r = face.r;
+					vec3f* r = face.r;
 					float* tex = face.tex;
 
-					float t1 = (tex[0] - rng[0]) / (rng[1] - rng[0]);
-					float t2 = (tex[1] - rng[0]) / (rng[1] - rng[0]);
-					float t3 = (tex[2] - rng[0]) / (rng[1] - rng[0]);
-
-					activePoints.push_back(pair<vec3d, double>(r[0], t1));
-					activePoints.push_back(pair<vec3d, double>(r[1], t2));
-					activePoints.push_back(pair<vec3d, double>(r[2], t3));
+					float t[3];
+					t[0] = (tex[0] - rng[0]) / (rng[1] - rng[0]);
+					t[1] = (tex[1] - rng[0]) / (rng[1] - rng[0]);
+					t[2] = (tex[2] - rng[0]) / (rng[1] - rng[0]);
+					m_activeMesh.AddFace(r, t);
 				}
 			}
-			
 
 			// render inactive faces
 			for (int i = 0; i < NF; ++i)
@@ -361,78 +360,36 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 				GLSlice::FACE& face = m_slice.Face(i);
 				if (!activeMap || ((face.mat == n) && (!face.bactive)))
 				{
-					// render the face
-					vec3d* r = face.r;
+					vec3f* r = face.r;
 					float* tex = face.tex;
 					GLColor c = pmat->diffuse;
 					c.a = (uint8_t)(255 * pmat->transparency);
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[0], c));
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[1], c));
-					inactivePoints.push_back(pair < vec3d, GLColor>(r[2], c));
+					m_inactiveMesh.AddFace(r, c);
 				}
 			}
 		}
 	}
 
-	if (activePoints.empty())
-	{
-		m_activeMesh.Clear();
-	}
-	else
-	{
-		m_activeMesh.Create(activePoints.size()/3, GLMesh::FLAG_TEXTURE);
-		m_activeMesh.BeginMesh();
-		{
-			for (auto& v : activePoints) m_activeMesh.AddVertex(v.first, v.second);
-		}
-		m_activeMesh.EndMesh();
-	}
-
-	if (inactivePoints.empty())
-	{
-		m_inactiveMesh.Clear();
-	}
-	else
-	{
-		m_inactiveMesh.Create(inactivePoints.size()/3, GLMesh::FLAG_COLOR);
-		m_inactiveMesh.BeginMesh();
-		{
-			for (auto& v : inactivePoints) m_inactiveMesh.AddVertex(v.first, v.second);
-		}
-		m_inactiveMesh.EndMesh();
-	}
+	m_activeMesh.Update();
+	m_inactiveMesh.Update();
 }
 
 //-----------------------------------------------------------------------------
 // Render the plane cut slice 
-void CGLPlaneCutPlot::RenderSlice()
+void CGLPlaneCutPlot::RenderSlice(GLRenderEngine& re)
 {
 	CGLModel* mdl = GetModel();
 	CGLColorMap* pcol = mdl->GetColorMap();
 
-	// get the plane equations
-	GLdouble a[4];
-	GetNormalizedEquations(a);
-
-	// set the plane normal
-	vec3d norm(a[0], a[1], a[2]); norm.Normalize();
-	glNormal3d(norm.x, norm.y, norm.z);
-
 	// render active (i.e. textured) mesh
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
 	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_COLOR_MATERIAL);
-
-	glEnable(GL_TEXTURE_1D);
 	tex.MakeCurrent();
-	glColor3ub(255, 255, 255);
-
-	m_activeMesh.Render();
+	re.renderGMesh(m_activeMesh, false);
 
 	// now render the inactive mesh
-	glDisable(GL_TEXTURE_1D);
-
-	m_inactiveMesh.Render();
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.renderGMesh(m_inactiveMesh, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -466,7 +423,7 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 	Material* pmat = nullptr;
 
 	// repeat over all elements
-	vector<vec3d> points; points.reserve(1024);
+	m_lineMesh.Clear();
 	for (int i=0; i<pm->Elements(); ++i)
 	{
 		// render only when visible
@@ -570,88 +527,58 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 			}
 
 			// add the lines
+			vec3f vr[2];
 			for (int k=0; k<ne; ++k)
 				if (edge[k].m_ntag == 0)
 				{
-					vec3d& r0 = edge[k].m_r[0];
-					vec3d& r1 = edge[k].m_r[1];
-					points.push_back(r0);
-					points.push_back(r1);
+					vr[0] = to_vec3f(edge[k].m_r[0]);
+					vr[1] = to_vec3f(edge[k].m_r[1]);
+					m_lineMesh.AddEdge(vr, 2);
 				}
 		}
-	}
-
-	if (points.empty())
-	{
-		m_lineMesh.Clear();
-		return;
-	}
-	else
-	{
-		m_lineMesh.Create(points.size() / 2);
-		m_lineMesh.BeginMesh();
-		{
-			for (auto& v : points) m_lineMesh.AddVertex(v);
-		}
-		m_lineMesh.EndMesh();
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Render the mesh of the plane cut
-void CGLPlaneCutPlot::RenderMesh()
+void CGLPlaneCutPlot::RenderMeshLines(GLRenderEngine& re)
 {
-	GLColor c = m_meshColor;
-	glColor3ub(c.r, c.g, c.b);	
-
-	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
-
-	m_lineMesh.Render();
-
-	// restore attributes
-	glPopAttrib();
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, m_meshColor);
+	re.renderGMeshEdges(m_lineMesh, false);
+	re.popState();
 }
 
 //-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateOutlineMesh()
 {
-	m_outlineMesh.Create(m_slice.Edges());
-	m_outlineMesh.BeginMesh();
+	vec3f r[2];
+	m_outlineMesh.Clear();
 	for (int i = 0; i < m_slice.Edges(); ++i)
 	{
 		GLSlice::EDGE& edge = m_slice.Edge(i);
-		m_outlineMesh.AddLine(edge.r[0], edge.r[1]);
+		r[0] = to_vec3f(edge.r[0]);
+		r[1] = to_vec3f(edge.r[1]);
+		m_outlineMesh.AddEdge(r, 2);
 	}
-	m_outlineMesh.EndMesh();
 }
 
 //-----------------------------------------------------------------------------
 // Render the outline of the mesh of the plane cut
-void CGLPlaneCutPlot::RenderOutline()
+void CGLPlaneCutPlot::RenderOutline(GLRenderEngine& re)
 {
-	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
-	glEnable(GL_COLOR_MATERIAL);
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
 
 	// because plots are drawn before the mesh
 	// we get visual artifacts from the background seeping through.
 	// therefor we turn blending of
 	glDisable(GL_BLEND);
 
-	glColor3ub(0,0,0);
-	m_outlineMesh.Render();
+	re.renderGMeshEdges(m_outlineMesh, false);
 
 	// restore attributes
-	glPopAttrib();
+	re.popState();
 }
 
 //-----------------------------------------------------------------------------
@@ -807,9 +734,9 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 
 					GLSlice::FACE face;
 					face.mat = n;
-					face.r[0] = r[0];
-					face.r[1] = r[1];
-					face.r[2] = r[2];
+					face.r[0] = to_vec3f(r[0]);
+					face.r[1] = to_vec3f(r[1]);
+					face.r[2] = to_vec3f(r[2]);
 					face.tex[0] = tex[0];
 					face.tex[1] = tex[1];
 					face.tex[2] = tex[2];
@@ -895,9 +822,9 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 
 								GLSlice::FACE face;
 								face.mat = n;
-								face.r[0] = r[0];
-								face.r[1] = r[1];
-								face.r[2] = r[2];
+								face.r[0] = to_vec3f(r[0]);
+								face.r[1] = to_vec3f(r[1]);
+								face.r[2] = to_vec3f(r[2]);
 								face.tex[0] = tex[0];
 								face.tex[1] = tex[1];
 								face.tex[2] = tex[2];

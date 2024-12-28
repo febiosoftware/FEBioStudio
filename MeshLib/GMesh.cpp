@@ -84,6 +84,17 @@ int GMesh::AddNode(const vec3f& r, int nodeID, int gid)
 	return ((int)m_Node.size() - 1);
 }
 
+int	GMesh::AddNode(const vec3f& r, GLColor c)
+{
+	NODE v;
+	v.r = r;
+	v.c = c;
+	v.pid = 0;
+	v.nid = 0;
+	m_Node.push_back(v);
+	return ((int)m_Node.size() - 1);
+}
+
 //-----------------------------------------------------------------------------
 void GMesh::AddEdge(int* n, int nodes, int gid)
 {
@@ -181,6 +192,30 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 	else assert(false);
 }
 
+void GMesh::AddEdge(vec3f r[2], GLColor c)
+{
+	EDGE e;
+	e.n[0] = AddNode(r[0]);
+	e.n[1] = AddNode(r[1]);
+	e.vr[0] = r[0];
+	e.vr[1] = r[1];
+	e.c[0] = e.c[1] = c;
+	e.pid = 0;
+	m_Edge.push_back(e);
+}
+
+void GMesh::AddEdge(vec3f r[2], GLColor c[2])
+{
+	EDGE e;
+	e.n[0] = AddNode(r[0]);
+	e.n[1] = AddNode(r[1]);
+	e.vr[0] = r[0];
+	e.vr[1] = r[1];
+	e.c[0] = c[0];
+	e.c[1] = c[1];
+	e.pid = 0;
+	m_Edge.push_back(e);
+}
 
 int GMesh::AddFace(const GMesh::FACE& face)
 {
@@ -302,7 +337,23 @@ void GMesh::AddFace(vec3f* r, int gid, int smoothId, bool bext)
 	AddFace(n, 3, gid, smoothId, bext);
 }
 
-//-----------------------------------------------------------------------------
+void GMesh::AddFace(vec3f r[3], GLColor c)
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.c[0] = face.c[1] = face.c[2] = c;
+	AddFace(face);
+}
+
 void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 {
 	int n0 = AddNode(r[0]);
@@ -320,6 +371,110 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
 	face.c[0] = face.c[1] = face.c[2] = c;
+	AddFace(face);
+}
+
+void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c)
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vn[0] = n[0];
+	face.vn[1] = n[1];
+	face.vn[2] = n[2];
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = face.t[1] = face.t[2] = tex;
+	face.c[0] = face.c[1] = face.c[2] = c;
+	AddFace(face);
+}
+
+void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c)
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vn[0] = n[0];
+	face.vn[1] = n[1];
+	face.vn[2] = n[2];
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = tex[0];
+	face.t[1] = tex[1];
+	face.t[2] = tex[2];
+	face.c[0] = face.c[1] = face.c[2] = c;
+	AddFace(face);
+}
+
+void GMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = t[0];
+	face.t[1] = t[1];
+	face.t[2] = t[2];
+	face.c[0] = c[0];
+	face.c[1] = c[1];
+	face.c[2] = c[2];
+	AddFace(face);
+}
+
+void GMesh::AddFace(vec3f r[3], GLColor c[3])
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.c[0] = c[0];
+	face.c[1] = c[1];
+	face.c[2] = c[2];
+	AddFace(face);
+}
+
+void GMesh::AddFace(vec3f r[3], float t[3])
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = t[0];
+	face.t[1] = t[1];
+	face.t[2] = t[2];
 	AddFace(face);
 }
 

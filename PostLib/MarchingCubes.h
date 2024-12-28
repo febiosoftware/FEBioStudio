@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 class FSMesh;
 class CImageModel;
@@ -119,7 +119,7 @@ private:
 	double	m_shininess;
 	uint8_t m_ref;
 
-	GLTriMesh	m_mesh;
+	GMesh*	m_mesh = nullptr;
 
     C3DImage* m_8bitImage;
     bool m_del8BitImage;

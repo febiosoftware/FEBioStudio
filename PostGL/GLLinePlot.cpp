@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "GLLinePlot.h"
 #include "GLModel.h"
 #include <PostLib/FEPostModel.h>
-#include <MeshLib/FECurveMesh.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 using namespace Post;
 
 REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);
@@ -191,9 +191,9 @@ void CGLLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
 			{
 				switch (m_nmode)
 				{
-				case 0: RenderLines(); break;
-				case 1: Render3DLines(); break;
-				case 2: Render3DSmoothLines(); break;
+				case 0: RenderLines(re); break;
+				case 1: Render3DLines(re); break;
+				case 2: Render3DSmoothLines(re); break;
 				}
 			}
 			glPopAttrib();
@@ -210,16 +210,14 @@ int randomize(int n, int nmax)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::RenderLines()
+void CGLLinePlot::RenderLines(GLRenderEngine& re)
 {
-	glDisable(GL_LIGHTING);
+	re.setMaterial(GLMaterial::CONSTANT, m_col);
 	GLfloat line_old;
 	glGetFloatv(GL_LINE_WIDTH, &line_old);
-	glLineWidth(m_line);
-
-	m_lineMesh.Render();
-
-	glLineWidth(line_old);
+	re.setLineWidth(m_line);
+	re.renderGMeshEdges(m_mesh, false);
+	re.setLineWidth(line_old);
 }
 
 //-----------------------------------------------------------------------------
@@ -235,49 +233,42 @@ bool CGLLinePlot::ShowLine(LINESEGMENT& l, FEState& s)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DLines()
+void CGLLinePlot::Render3DLines(GLRenderEngine& re)
 {
 	if (m_ncolor == COLOR_SOLID)
 	{
-		glDisable(GL_TEXTURE_1D);
-		glColor3ub(m_col.r, m_col.g, m_col.b);
+		re.setMaterial(GLMaterial::PLASTIC, m_col);
 	}
 	else
 	{
-		glEnable(GL_TEXTURE_1D);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
 		m_Col.GetTexture().MakeCurrent();
-		glColor3ub(255, 255, 255);
 	}
-
-	// render the mesh
-	m_quadMesh.Render();
+	re.renderGMesh(m_mesh, false);
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DSmoothLines()
+void CGLLinePlot::Render3DSmoothLines(GLRenderEngine& re)
 {
 	if (m_ncolor == COLOR_SOLID)
 	{
-		glDisable(GL_TEXTURE_1D);
-		glColor3ub(m_col.r, m_col.g, m_col.b);
+		re.setMaterial(GLMaterial::PLASTIC, m_col);
 	}
 	else if (m_ncolor == COLOR_SEGMENT)
 	{
-		glDisable(GL_TEXTURE_1D);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
 	}
 	else
 	{
-		glColor3ub(255, 255, 255);
-		glEnable(GL_TEXTURE_1D);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
 		m_Col.GetTexture().MakeCurrent();
 	}
-
-	m_triMesh.Render();
+	re.renderGMesh(m_mesh, false);
 }
 
 void CGLLinePlot::Update(int ntime, float dt, bool breset)
 {
-	if (m_lineData == nullptr) { m_lineMesh.Clear(); return; }
+	if (m_lineData == nullptr) { m_mesh.Clear(); return; }
 
 	CGLModel& glm = *GetModel();
 	FEPostModel& fem = *glm.GetFSModel();
@@ -370,7 +361,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 
 	int NL = lineData.Lines();
-	if (NL == 0) { m_lineMesh.Clear(); return; }
+	if (NL == 0) { m_mesh.Clear(); return; }
 
 	int maxseg = 0;
 	for (int i = 0; i < NL; ++i)
@@ -379,28 +370,26 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	if (maxseg == 0) maxseg = 1;
 
-	m_lineMesh.Create(NL, GLMesh::FLAG_COLOR);
+	m_mesh.Clear();
 
 	if (m_ncolor == COLOR_SOLID)
 	{
-		m_lineMesh.BeginMesh();
 		for (int i = 0; i < NL; ++i)
 		{
 			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
-				m_lineMesh.AddLine(l.m_r0, l.m_r1, m_col);
+				vec3f vr[2];
+				vr[0] = l.m_r0;
+				vr[1] = l.m_r1;
+				m_mesh.AddEdge(vr, 2);
 			}
 		}
-		m_lineMesh.EndMesh();
 	}
 	else if (m_ncolor == COLOR_SEGMENT)
 	{
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-	m_lineMesh.Render();
-
-		m_lineMesh.BeginMesh();
 		for (int i = 0; i < NL; ++i)
 		{
 			LINESEGMENT& l = lineData.Line(i);
@@ -408,15 +397,15 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 			int n = l.m_segId;// randomize(l.m_segId, maxseg);
 			float f = (float)n / (float)maxseg;
 			GLColor c = map.map(f);
-			glx::glcolor(c);
 
 			if (m_show || ShowLine(l, s))
 			{
-				m_lineMesh.AddVertex(l.m_r0, c);
-				m_lineMesh.AddVertex(l.m_r1, c);
+				vec3f vr[2];
+				vr[0] = l.m_r0;
+				vr[1] = l.m_r1;
+				m_mesh.AddEdge(vr, c);
 			}
 		}
-		m_lineMesh.EndMesh();
 	}
 	else
 	{
@@ -426,7 +415,6 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 		float vmax = m_range.max;
 		if (vmin == vmax) vmax++;
 
-		m_lineMesh.BeginMesh();
 		{
 			int NL = lineData.Lines();
 			for (int i = 0; i < NL; ++i)
@@ -434,33 +422,34 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 				LINESEGMENT& l = lineData.Line(i);
 				if (m_show || ShowLine(l, s))
 				{
+					vec3f vr[2];
+					vr[0] = l.m_r0;
+					vr[1] = l.m_r1;
+
 					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
 					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
 
-					GLColor c0 = map.map(f0);
-					GLColor c1 = map.map(f1);
-
-					m_lineMesh.AddVertex(l.m_r0, c0);
-					m_lineMesh.AddVertex(l.m_r1, c1);
+					GLColor c[2];
+					c[0] = map.map(f0);
+					c[1] = map.map(f1);
+					m_mesh.AddEdge(vr, c);
 				}
 			}
 		}
-		m_lineMesh.EndMesh();
 	}
 }
 
 void CGLLinePlot::Update3DLines(FEState& s, int ntime)
 {
 	Post::LineData& lineData = m_lineData->GetLineData(ntime);
-	if (lineData.Lines() == 0) { m_quadMesh.Clear(); return; }
+	if (lineData.Lines() == 0) { m_mesh.Clear(); return; }
 
 	const int NSEG = 8;
 	int NL = lineData.Lines();
 
 	int quads = NL * NSEG;
-	m_quadMesh.Create(quads, GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
+	m_mesh.Clear();
 
-	m_quadMesh.BeginMesh();
 	for (int i = 0; i < NL; ++i)
 	{
 		LINESEGMENT& l = lineData.Line(i);
@@ -499,26 +488,33 @@ void CGLLinePlot::Update3DLines(FEState& s, int ntime)
 				};
 				double tex[4] = { f0, f1, f1, f0 };
 
+				vec3f vr[4], vn[4];
 				for (int j = 0; j < 4; ++j)
 				{
 					vec3d rj = r[j];
 					q.RotateVector(rj);
 					rj += ra;
+					vr[j] = to_vec3f(rj);
 
 					vec3d nj = r[j]; nj.z = 0; nj /= R;
 					q.RotateVector(nj);
-
-					m_quadMesh.AddVertex(rj, nj, tex[j]);
+					vn[j] = to_vec3f(nj);
 				}
+
+				vec3f ra[3], rb[3];
+				ra[0] = vr[0]; ra[1] = vr[1]; ra[2] = vr[2];
+				rb[0] = vr[2]; ra[1] = vr[3]; ra[2] = vr[0];
+				m_mesh.AddFace(ra);
+				m_mesh.AddFace(rb);
 			}
 		}
 	}
-	m_quadMesh.EndMesh();
+	m_mesh.Update();
 }
 
 
 //-----------------------------------------------------------------------------
-void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, GLColor c, int nsegs, int ndivs)
+void tesselateSmoothPath(GMesh& mesh, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, GLColor c, int nsegs, int ndivs)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 	quatd q1(vec3d(0, 0, 1), n1);
@@ -540,7 +536,6 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 		y[i] = sin(w);
 	}
 
-	GLMesh::Vertex v;
 	const int N = ndivs;
 	for (int j = 0; j < M; ++j)
 	{
@@ -567,11 +562,14 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 			if (i > 0)
 			{
 				int L[2][3] = { {0,1,2}, {2,3,0} };
+				vec3f vr[3], vn[3];
+				float vt[3];
 				for (int k = 0; k < 2; ++k)
 				{
-					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex[L[k][0]],0,0), c }; mesh.AddVertex(v);
-					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex[L[k][1]],0,0), c }; mesh.AddVertex(v);
-					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex[L[k][2]],0,0), c }; mesh.AddVertex(v);
+					vr[0] = to_vec3f(r[L[k][0]]); vn[0] = to_vec3f(n[L[k][0]]); vt[0] = tex[L[k][0]];
+					vr[1] = to_vec3f(r[L[k][1]]); vn[1] = to_vec3f(n[L[k][1]]); vt[1] = tex[L[k][1]];
+					vr[2] = to_vec3f(r[L[k][2]]); vn[2] = to_vec3f(n[L[k][2]]); vt[2] = tex[L[k][2]];
+					mesh.AddFace(vr, vn, vt, c);
 				}
 			}
 
@@ -581,10 +579,8 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 	}
 }
 
-void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
+void tesselateHalfSphere(GMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
 {
-	GLMesh::Vertex v;
-
 	quatd q0(vec3d(0, 0, 1), n0);
 	const int M = nsecs;
 	const int N = ndivs;
@@ -631,11 +627,14 @@ void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d&
 				}
 
 				int L[2][3] = { {0,1,2}, {2,3,0} };
+				vec3f vr[3], vn[3];
 				for (int k = 0; k < 2; ++k)
 				{
-					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
-					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
-					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+					vr[0] = to_vec3f(r[L[k][0]]); vn[0] = to_vec3f(n[L[k][0]]);
+					vr[1] = to_vec3f(r[L[k][1]]); vn[1] = to_vec3f(n[L[k][1]]);
+					vr[2] = to_vec3f(r[L[k][2]]); vn[2] = to_vec3f(n[L[k][2]]);
+
+					mesh.AddFace(vr, vn, tex, c);
 				}
 			}
 		}
@@ -667,9 +666,12 @@ void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d&
 				q0.RotateVector(n[0]);
 				q0.RotateVector(n[1]);
 
-				v = { to_vec3f(  rb), to_vec3f(  nb), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
-				v = { to_vec3f(r[0]), to_vec3f(n[0]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
-				v = { to_vec3f(r[1]), to_vec3f(n[1]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+				vec3f vr[3], vn[3];
+				vr[0] = to_vec3f(  rb); vn[0] = to_vec3f(  nb);
+				vr[1] = to_vec3f(r[0]); vn[1] = to_vec3f(n[0]);
+				vr[2] = to_vec3f(r[1]); vn[2] = to_vec3f(n[1]);
+
+				mesh.AddFace(vr, vn, tex, c);
 			}
 		}
 	}
@@ -681,7 +683,7 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 
 	int NL = lineData.Lines();
-	if (NL == 0) { m_triMesh.Clear(); return; }
+	if (NL == 0) { m_mesh.Clear(); return; }
 
 	int maxseg = 0;
 	for (int i = 0; i < NL; ++i)
@@ -701,14 +703,10 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	const int NSEC = 4;  // spherical sections for half-sphere
 
 	// allocate mesh
-	unsigned int flags = GLMesh::FLAG_NORMAL;
-	if (m_ncolor == COLOR_SEGMENT) flags |= GLMesh::FLAG_COLOR;
-	if (m_ncolor > COLOR_SEGMENT) flags |= GLMesh::FLAG_TEXTURE;
 	int trisPerLine = NSEG * NDIV * 2 + 2 * ((NSEC - 1) * NDIV * 2 + NDIV);
 	int totalTris = NL * trisPerLine;
-	m_triMesh.Create(totalTris, flags);
+	m_mesh.Clear();
 
-	m_triMesh.BeginMesh();
 	for (int i = 0; i < NL; ++i)
 	{
 		LINESEGMENT& l = lineData.Line(i);
@@ -735,12 +733,11 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 			}
 
 			// render cylinder
-			tesselateSmoothPath(m_triMesh, to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1, c, NSEG, NDIV);
+			tesselateSmoothPath(m_mesh, to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1, c, NSEG, NDIV);
 
 			// render caps
-			if (l.m_end[0] == 1) tesselateHalfSphere(m_triMesh, to_vec3d(l.m_r0), m_line, e1, f0, c, NDIV, NSEC);
-			if (l.m_end[1] == 1) tesselateHalfSphere(m_triMesh, to_vec3d(l.m_r1), m_line, e2, f1, c, NDIV, NSEC);
+			if (l.m_end[0] == 1) tesselateHalfSphere(m_mesh, to_vec3d(l.m_r0), m_line, e1, f0, c, NDIV, NSEC);
+			if (l.m_end[1] == 1) tesselateHalfSphere(m_mesh, to_vec3d(l.m_r1), m_line, e2, f1, c, NDIV, NSEC);
 		}
 	}
-	m_triMesh.EndMesh();
 }

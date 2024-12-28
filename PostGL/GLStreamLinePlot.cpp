@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 using namespace Post;
 
 //=================================================================================================
@@ -133,13 +134,8 @@ void CGLStreamLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
 	int NSL = (int)m_streamLines.size();
 	if (NSL == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
-
-	m_mesh.Render(GLMesh::FLAG_COLOR);
-
-	glPopAttrib();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.renderGMeshEdges(m_mesh, false);
 }
 
 static float frand()
@@ -442,11 +438,11 @@ void CGLStreamLinePlot::UpdateMesh()
 			verts += 2*(sl.Points() - 2) + 2;
 	}
 
-	// allocate mesh
-	m_mesh.Create(verts / 2, GLMesh::FLAG_COLOR);
+	m_mesh.Clear();
 
 	// build mesh
-	m_mesh.BeginMesh();
+	vec3f vr[2];
+	GLColor vc[2];
 	for (int i = 0; i < NSL; ++i)
 	{
 		StreamLine& sl = m_streamLines[i];
@@ -457,10 +453,11 @@ void CGLStreamLinePlot::UpdateMesh()
 			{
 				StreamPoint& p0 = sl[j];
 				StreamPoint& p1 = sl[j+1];
-				m_mesh.AddVertex(p0.r, p0.c);
-				m_mesh.AddVertex(p1.r, p1.c);
+
+				vr[0] = p0.r; vc[0] = p0.c;
+				vr[1] = p1.r; vc[1] = p1.c;
+				m_mesh.AddEdge(vr, vc);
 			}
 		}
 	}
-	m_mesh.EndMesh();
 }

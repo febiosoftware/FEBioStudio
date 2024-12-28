@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FECore/FETransform.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <vector>
 
 namespace Post {
@@ -44,7 +44,7 @@ class CGLPlaneCutPlot : public CGLPlot
 		struct FACE
 		{
 			int		mat;
-			vec3d	r[3];
+			vec3f	r[3];
 			float	tex[3];
 			bool	bactive;
 		};
@@ -113,10 +113,9 @@ public:
 	void ClearSelection() override;
 
 protected:
-	void RenderSlice();
-	void RenderMesh();
-	void RenderOutline();
-	vec3d WorldToPlane(const vec3d& r);
+	void RenderSlice(GLRenderEngine& re);
+	void RenderMeshLines(GLRenderEngine& re);
+	void RenderOutline(GLRenderEngine& re);
 
 	void ReleasePlane();
 	static int GetFreePlane();
@@ -163,10 +162,10 @@ protected:
 	static	std::vector<int>				m_clip;	// avaialabe clip planes
 	static	std::vector<CGLPlaneCutPlot*>	m_pcp;
 
-	GLTriMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
-	GLTriMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
-	GLLineMesh	m_lineMesh;	// for rendering mesh lines
-	GLLineMesh	m_outlineMesh;	// for rendering the outline
+	GMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
+	GMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
+	GMesh	m_lineMesh;	// for rendering mesh lines
+	GMesh	m_outlineMesh;	// for rendering the outline
 
 	bool	m_bupdateSlice; // update slice before rendering
 };

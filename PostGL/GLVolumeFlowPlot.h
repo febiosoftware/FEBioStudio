@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <vector>
 
 namespace Post {
@@ -43,7 +43,7 @@ public:
 	public:
 		struct Face {
 			float	v[3];
-			vec3d	r[3];
+			vec3f	r[3];
 		};
 
 		void clear() { m_Face.clear(); }
@@ -70,7 +70,7 @@ private:
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void UpdateBoundingBox();
-	void UpdateMesh(std::vector<Slice>& slice, GLTriMesh& mesh);
+	void UpdateMesh(std::vector<Slice>& slice, GMesh& mesh);
 
 private:
 	int			m_nfield;
@@ -89,6 +89,6 @@ private:
 	vector<float>	m_val;	// current nodal values
 	BOX				m_box;
 
-	GLTriMesh	m_mesh;
+	GMesh	m_mesh;
 };
 } // namespace Post

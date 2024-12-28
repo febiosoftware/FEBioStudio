@@ -28,7 +28,8 @@ SOFTWARE.*/
 #include "GLParticleFlowPlot.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
-#include <GLLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
@@ -160,17 +161,16 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
 	glDisable(GL_TEXTURE_1D);
 
 	// build a point mesh
-	GLPointMesh mesh(NP, GLMesh::FLAG_COLOR);
-	mesh.BeginMesh();
+	GMesh mesh;
 	for (int i=0; i<NP; ++i)
 	{
 		FlowParticle& p = m_particles[i];
-		if (p.m_balive) mesh.AddVertex(p.m_r, p.m_col);
+		if (p.m_balive) mesh.AddNode(p.m_r, p.m_col);
 	}
-	mesh.EndMesh();
 
 	// render the points
-	mesh.Render(GLMesh::FLAG_COLOR);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	re.renderGMeshNodes(mesh, false);
 
 	if (m_showPath)
 	{
@@ -198,10 +198,9 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
 			}
 
 			// allocate line mesh
-			GLLineMesh lineMesh(lines);
+			GMesh lineMesh;
 
 			glColor3ub(0,0,255);
-			lineMesh.BeginMesh();
 			for (int i = 0; i<NP; ++i)
 			{
 				FlowParticle& p = m_particles[i];
@@ -217,18 +216,18 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
 					if (n0 > tend) n0 = tend;
 				}
 
+				vec3f vr[2];
 				for (int n=n0; n<tend; ++n)
 				{
-					vec3f& r0 = p.m_pos[n];
-					vec3f& r1 = p.m_pos[n+1];
-					lineMesh.AddVertex(r0);
-					lineMesh.AddVertex(r1);
+					vr[0] = p.m_pos[n];
+					vr[1] = p.m_pos[n + 1];
+					lineMesh.AddEdge(vr, 2);
 				}					
 			}
-			lineMesh.EndMesh();
 
 			// render the lines
-			lineMesh.Render();
+			re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
+			re.renderGMeshEdges(lineMesh, false);
 		}
 	}
 
