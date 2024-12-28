@@ -30,7 +30,6 @@ SOFTWARE.*/
 CGLContext::CGLContext()
 {
 	m_cam = nullptr;
-	m_view = nullptr;
 	m_x = m_y = 0;
 	m_w = m_h = 0;
 }

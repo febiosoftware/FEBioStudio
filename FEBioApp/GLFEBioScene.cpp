@@ -240,30 +240,19 @@ void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	glDisable(GL_TEXTURE_1D);
 
 	CGLScene::Render(engine, rc);
+}
 
-	// Canvas rendering
-	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, rc.m_w, rc.m_h, 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// We must turn off culling before we use the QPainter, otherwise
-	// drawing using QPainter doesn't work correctly.
-	glDisable(GL_CULL_FACE);
+void GLFEBioScene::RenderCanvas(QPainter& painter, CGLContext& rc)
+{
+	QMutexLocker lock(&m_mutex);
 
 	// render the GL widgets
 	if (m_legend->visible())
 	{
 		int W = rc.m_w;
 		int H = rc.m_h;
-		m_legend->resize(W - 150, H/2 - 300, 120, 600);
-		QPainter painter(rc.m_view);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		m_legend->resize(W - 150, H / 2 - 300, 120, 600);
 		m_legend->draw(&painter);
-		painter.end();
 	}
 }
 

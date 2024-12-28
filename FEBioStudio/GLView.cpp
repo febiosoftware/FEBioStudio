@@ -1514,11 +1514,6 @@ void CGLView::RenderDecorations()
 	}
 }
 
-void CGLView::setLegendRange(float vmin, float vmax)
-{
-	if (m_legend) m_legend->SetRange((float)vmin, (float)vmax);
-}
-
 void CGLView::RenderScene()
 {
 	m_ogl.start();
@@ -1538,7 +1533,6 @@ void CGLView::RenderScene()
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
 	CGLContext& rc = m_rc;
-	rc.m_view = this;
 	rc.m_w = width();
 	rc.m_h = height();
 	rc.m_cam = &cam;
@@ -1642,7 +1636,15 @@ void CGLView::RenderCanvas(CGLContext& rc)
 		}
 		if (m_legend)
 		{
-			if (doc->ShowLegend()) m_legend->show(); else m_legend->hide();
+			if (doc->ShowLegend())
+			{
+				double v[2];
+				doc->GetDataRange(v);
+				m_legend->SetRange((float)v[0], (float)v[1]);
+				m_legend->show();
+			}
+			else m_legend->hide();
+
 		}
 		if (m_menu)
 		{

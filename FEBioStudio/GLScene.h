@@ -34,6 +34,7 @@ SOFTWARE.*/
 class CGLContext;
 class GObject;
 class CGLScene;
+class QPainter;
 
 // tag structure
 struct GLTAG
@@ -82,7 +83,11 @@ public:
 
 	virtual void Update();
 
+	// Render the 3D scene
 	virtual void Render(GLRenderEngine& engine, CGLContext& rc) = 0;
+
+	// Render on the 2D canvas
+	virtual void RenderCanvas(QPainter& painter, CGLContext& rc) {}
 
 	// get the bounding box of the entire scene
 	virtual BOX GetBoundingBox() = 0;

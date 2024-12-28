@@ -237,8 +237,6 @@ public:
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
 
-	void setLegendRange(float vmin, float vmax);
-
 public:
 	void AddDecoration(GDecoration* deco);
 	void RemoveDecoration(GDecoration* deco);

@@ -616,6 +616,7 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_showTitle = false;
 	m_showSubtitle = false;
 	m_showLegend = false;
+	m_dataRange[0] = m_dataRange[1] = 0;
 
 	static int layer = 1;
 	m_widgetLayer = layer++;

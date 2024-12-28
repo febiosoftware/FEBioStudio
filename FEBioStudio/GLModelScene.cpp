@@ -238,11 +238,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, CGLContext& rc)
 			double vmin, vmax;
 			data.GetValueRange(vmin, vmax);
 			if (vmin == vmax) vmax++;
-			CGLView* glview = dynamic_cast<CGLView*>(rc.m_view);
-			if (glview)
-			{
-				glview->setLegendRange((float)vmin, (float)vmax);
-			}
+			m_doc->SetDataRange(vmin, vmax);
 			m_doc->ShowLegend(true);
 		}
 	}

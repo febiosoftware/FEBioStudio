@@ -45,6 +45,7 @@ public:
 
 	virtual CGLScene* GetActiveScene();
 	virtual void RenderScene();
+	virtual void RenderCanvas();
 
 	CGView* GetView();
 	CGLCamera* GetCamera();

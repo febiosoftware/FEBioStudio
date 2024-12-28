@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <QMouseEvent>
 #include <QTimer>
 #include "OpenGLRenderer.h"
+#include <QPainter>
 
 static bool initGlew = false;
 
@@ -186,9 +187,13 @@ void CGLSceneView::RenderBackground()
 
 void CGLSceneView::paintGL()
 {
+	// Render the 3D scene
 	PrepScene();
 	RenderBackground();
 	RenderScene();
+
+	// render the 2D canvas
+	RenderCanvas();
 
 	// if the camera is animating, we need to redraw
 	CGLScene* scene = GetActiveScene();
@@ -211,13 +216,43 @@ void CGLSceneView::RenderScene()
 		CGLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
-		rc.m_view = this;
 		rc.m_w = width();
 		rc.m_h = height();
 		scene->Render(m_ogl, rc);
 
 	}
 	m_ogl.finish();
+}
+
+void CGLSceneView::RenderCanvas()
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene)
+	{
+		CGLCamera& cam = scene->GetCamera();
+		CGLContext rc;
+		rc.m_cam = &cam;
+		rc.m_settings = GetViewSettings();
+		rc.m_w = width();
+		rc.m_h = height();
+
+		// set the projection Matrix to ortho2d so we can draw some stuff on the screen
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluOrtho2D(0, width(), height(), 0);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		// We must turn off culling before we use the QPainter, otherwise
+		// drawing using QPainter doesn't work correctly.
+		glDisable(GL_CULL_FACE);
+
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		scene->RenderCanvas(painter, rc);
+		painter.end();
+	}
 }
 
 // setup the projection matrix

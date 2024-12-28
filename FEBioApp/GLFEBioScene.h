@@ -65,7 +65,9 @@ public:
 
 	void SetGLView(CGLSceneView* view) { m_view = view; }
 
-	void Render(GLRenderEngine& engine, CGLContext& rc);
+	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+
+	void RenderCanvas(QPainter& painter, CGLContext& rc) override;
 
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox();
