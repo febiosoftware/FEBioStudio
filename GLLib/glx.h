@@ -34,6 +34,17 @@ SOFTWARE.*/
 
 namespace glx {
 
+	enum GlyphType {
+		RIGID_BODY,
+		RIGID_WALL,
+		RIGID_JOINT,
+		REVOLUTE_JOINT,
+		PRISMATIC_JOINT,
+		CYLINDRICAL_JOINT,
+		PLANAR_JOINT,
+		RIGID_LOCK
+	};
+
 void translate(const vec3d& r);
 void rotate(const quatd& q);
 
@@ -124,6 +135,9 @@ void renderContractileForce(const vec3d& a, const vec3d& b, double R);
 void renderRigidWall(double R);
 
 void renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
+
+void renderGlyph(GlyphType glyph, float scale, GLColor c);
+
 }
 
 inline void glxColor(const GLColor& c)

@@ -2605,7 +2605,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const
 			re.pushTransform();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
 
-			re.renderGlyph(GLRenderEngine::RIGID_BODY, R, c);
+			glx::renderGlyph(glx::RIGID_BODY, R, c);
 
 			re.popTransform();
 		}
@@ -2642,7 +2642,7 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const
 				{
 					glTranslated(p.x, p.y, p.z);
 					glx::rotate(q);
-					re.renderGlyph(GLRenderEngine::RIGID_WALL, R, GLColor::Black());
+					glx::renderGlyph(glx::RIGID_WALL, R, GLColor::Black());
 				}
 				re.popTransform();
 			}
@@ -2670,7 +2670,7 @@ void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
 				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
-				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, GLColor::Red());
+				glx::renderGlyph(glx::RIGID_JOINT, R, GLColor::Red());
 				re.popTransform();
 			}
 		}
@@ -2704,7 +2704,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
-				re.renderGlyph(GLRenderEngine::RIGID_JOINT, R, c);
+				glx::renderGlyph(glx::RIGID_JOINT, R, c);
 				re.popTransform();
 			}
 			else if (rci->IsType("rigid revolute joint"))
@@ -2729,7 +2729,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(0, 0, 255);
 				else
 					col = GLColor(64, 64, 64);
-				re.renderGlyph(GLRenderEngine::REVOLUTE_JOINT, R, col);
+				glx::renderGlyph(glx::REVOLUTE_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2755,7 +2755,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(0, 255, 0);
 				else
 					col = GLColor(64, 64, 64);
-				re.renderGlyph(GLRenderEngine::PRISMATIC_JOINT, R, col);
+				glx::renderGlyph(glx::PRISMATIC_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2782,7 +2782,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					col = GLColor(64, 64, 64);
 
-				re.renderGlyph(GLRenderEngine::CYLINDRICAL_JOINT, R, col);
+				glx::renderGlyph(glx::CYLINDRICAL_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2809,7 +2809,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					col = GLColor(64, 64, 64);
 
-				re.renderGlyph(GLRenderEngine::PLANAR_JOINT, R, col);
+				glx::renderGlyph(glx::PLANAR_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2831,7 +2831,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				glMultMatrixf(Q4);
 
 				GLColor col = (rci->IsActive() ? GLColor(255, 127, 0) : GLColor(64, 64, 64));
-				re.renderGlyph(GLRenderEngine::RIGID_LOCK, R, col);
+				glx::renderGlyph(glx::RIGID_LOCK, R, col);
 
 				re.popTransform();
 			}
