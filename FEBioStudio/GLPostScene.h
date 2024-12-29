@@ -143,7 +143,7 @@ public:
 	void Update() override;
 
 private:
-	void RenderTags(CGLContext& rc);
+	void CreateTags(CGLContext& rc);
 
 	void UpdateTracking();
 

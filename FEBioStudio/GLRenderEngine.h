@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FECore/FETransform.h>
 
 class GMesh;
+class CGLCamera;
 
 class GLRenderEngine
 {
@@ -82,6 +83,8 @@ public:
 
 	virtual void setPointSize(float f) {}
 	virtual void setLineWidth(float f) {}
+
+	virtual void positionCamera(const CGLCamera& cam) {}
 
 public:
 	virtual void renderPoint(const vec3d& r) {}

@@ -549,7 +549,7 @@ void GLPlaneCut::Render(GLRenderEngine& re, CGLContext& rc)
 	{
 		CGLCamera& cam = *rc.m_cam;
 		cam.LineDrawMode(true);
-		cam.PositionInScene();
+		re.positionCamera(cam);
 
 		GLColor c = rc.m_settings.m_meshColor;
 		re.setMaterial(GLMaterial::CONSTANT, c);
@@ -560,7 +560,7 @@ void GLPlaneCut::Render(GLRenderEngine& re, CGLContext& rc)
 		re.renderGMeshEdges(*m_planeCut, 1, false);
 
 		cam.LineDrawMode(false);
-		cam.PositionInScene();
+		re.positionCamera(cam);
 	}
 }
 

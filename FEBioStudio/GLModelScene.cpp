@@ -183,7 +183,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	UpdateRenderTransforms(rc);
 
 	CGLCamera& cam = *rc.m_cam;
-	cam.PositionInScene();
+	engine.positionCamera(cam);
 
 	int nitem = m_doc->GetItemMode();
 	if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH))
@@ -1494,11 +1494,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc)
 		{
 			RenderObject(re, rc);
 			cam.LineDrawMode(true);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 			SetModelView(po);
 			RenderEdges(re, rc);
 			cam.LineDrawMode(false);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 			SetModelView(po);
 		}
 		break;
@@ -1506,11 +1506,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc)
 		{
 			RenderObject(re, rc);
 			cam.LineDrawMode(true);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 			SetModelView(po);
 			RenderNodes(re, rc);
 			cam.LineDrawMode(false);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 			SetModelView(po);
 		}
 		break;
@@ -1549,11 +1549,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc)
 				GMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				cam.LineDrawMode(true);
-				cam.PositionInScene();
+				re.positionCamera(cam);
 				SetModelView(po);
 				RenderFEEdges(re, rc);
 				cam.LineDrawMode(false);
-				cam.PositionInScene();
+				re.positionCamera(cam);
 			}
 			else if (item == ITEM_NODE)
 			{
@@ -1572,11 +1572,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, CGLContext& rc)
 			{
 				RenderSurfaceMeshFaces(re, rc);
 				cam.LineDrawMode(true);
-				cam.PositionInScene();
+				re.positionCamera(cam);
 				SetModelView(po);
 				RenderSurfaceMeshEdges(re, rc);
 				cam.LineDrawMode(false);
-				cam.PositionInScene();
+				re.positionCamera(cam);
 			}
 			else if (item == ITEM_NODE)
 			{
@@ -2476,7 +2476,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc)
 	CGLCamera& cam = *rc.m_cam;
 
 	cam.LineDrawMode(true);
-	cam.PositionInScene();
+	re.positionCamera(cam);
 
 	GModel& model = *m_scene->GetGModel();
 	int nitem = m_scene->GetItemMode();
@@ -2519,7 +2519,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, CGLContext& rc)
 	}
 
 	cam.LineDrawMode(false);
-	cam.PositionInScene();
+	re.positionCamera(cam);
 }
 
 void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
@@ -2537,7 +2537,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
 			CGLCamera& cam = *rc.m_cam;
 
 			cam.LineDrawMode(true);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 
 			FSModel* ps = m_scene->GetFSModel();
 			GModel& model = ps->GetModel();
@@ -2562,7 +2562,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, CGLContext& rc)
 			}
 
 			cam.LineDrawMode(false);
-			cam.PositionInScene();
+			re.positionCamera(cam);
 		}
 	}
 }

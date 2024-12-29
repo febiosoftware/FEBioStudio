@@ -31,6 +31,8 @@ SOFTWARE.*/
 
 class CImageModel;
 class CGLCamera;
+class GLRenderEngine;
+class CGLContext;
 
 class CImageAnalysis : public FSThreadedTask
 {
@@ -46,7 +48,7 @@ public:
     int Type() { return m_type; }
 
     virtual void run() = 0;
-    virtual void render(CGLCamera* cam = nullptr) {}
+    virtual void render(GLRenderEngine& re, CGLContext& rc) {}
 
 	bool IsActive() const { return m_active; }
 	void Activate(bool b) { m_active = b; }

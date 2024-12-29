@@ -1201,7 +1201,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
 	CGLCamera& cam = *rc.m_cam;
-	cam.PositionInScene();
+	engine.positionCamera(cam);
 
 	// now render it
 	CGLScene::Render(engine, rc);
@@ -1214,12 +1214,8 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 		glx::renderAxes(m_trackScale, m_trgPos, m_trgRot, GLColor(255, 0, 255));
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	// render the tags
 	ClearTags();
-	if (rc.m_settings.m_bTags) RenderTags(rc);
+	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
 void CGLPostScene::BuildScene(CGLContext& rc)
@@ -1249,7 +1245,7 @@ void CGLPostScene::BuildScene(CGLContext& rc)
 	addItem(root);
 }
 
-void CGLPostScene::RenderTags(CGLContext& rc)
+void CGLPostScene::CreateTags(CGLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
 

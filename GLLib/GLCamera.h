@@ -28,11 +28,9 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include "Interpolator.h"
 #include <PostLib/GLObject.h>
-#include <string>
 
-//-----------------------------------------------------------------------------
-// TODO: We need to inherit this from CGLObject because it is used in the modeltree
-// in PostView. Fix this.
+// NOTE: We need to inherit this from CGLObject because it is used in the modeltree
+// in PostView.
 class GLCameraTransform : public Post::CGLObject
 {
 public:
@@ -62,7 +60,6 @@ public:
 	quatd	m_trgRot;
 };
 
-//=============================================================================
 // This class implements a camera that can be used to navigate a 3D world.
 // It uses the interpolater class to allow animatable transistions between
 // two viewpoints.
@@ -79,9 +76,6 @@ public:
 	void Reset();
 
 	void MakeActive();
-
-	// set the GL transformation matrix
-	void PositionInScene();
 
 	// update camera position (for animations)
 	void Update(bool bhit = false);

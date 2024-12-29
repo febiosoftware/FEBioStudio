@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLContext.h>
 #include <FEBioOpt/FEBioOpt.h>
 #include "../FEBioStudio/OpenGLRenderer.h"
 
@@ -954,7 +955,7 @@ void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
 	glPopMatrix();
 }
 
-void CFiberODFAnalysis::render(CGLCamera* cam)
+void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (IsActive() == false)
 	{
@@ -988,7 +989,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
         {
             glPushMatrix();
             glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
-            renderODFMesh(odf, cam);
+            renderODFMesh(re, odf, rc.m_cam);
             glPopMatrix();
         }
 
@@ -1015,16 +1016,12 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     glPopAttrib();
 }
 
-void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
+void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* cam)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
 	int showMesh = GetIntValue(SHOW_MESH);
 	int ncolor = GetIntValue(COLOR_MODE);
 
-	// TODO: This is a temporary construct! 
-	OpenGLRenderer ogl(nullptr);
-	ogl.start();
-	
     if (showMesh == 3)
     {
         glEnable(GL_COLOR_MATERIAL);
@@ -1065,15 +1062,15 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 
 	if (ncolor == 0)
     {
-		ogl.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
-		ogl.renderGMesh(*mesh, false);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMesh(*mesh, false);
     }
 	else
 	{
 		GLColor c = m_map.map(odf->m_FA);
 
-		ogl.setMaterial(GLMaterial::PLASTIC, c);
-		ogl.renderGMesh(*mesh, false);
+		re.setMaterial(GLMaterial::PLASTIC, c);
+		re.renderGMesh(*mesh, false);
 	}
 
 	if (meshLines)
@@ -1081,11 +1078,9 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
         glEnable(GL_BLEND);
         glLineWidth(1.5f);
 
-		ogl.setMaterial(GLMaterial::CONSTANT, GLColor(0,0,0,128));
-		ogl.renderGMeshEdges(*mesh, false);
+		re.setMaterial(GLMaterial::CONSTANT, GLColor(0,0,0,128));
+		re.renderGMeshEdges(*mesh, false);
 	}
-
-	ogl.finish();
 }
 
 void CFiberODFAnalysis::OnDelete()

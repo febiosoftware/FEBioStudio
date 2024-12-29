@@ -84,6 +84,8 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 
+#include "OpenGLRenderer.h"
+
 using std::vector;
 using std::complex;
 
@@ -178,10 +180,17 @@ void CFiberGLWidget::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-    m_cam.SetTargetDistance(50);
-    m_cam.PositionInScene();
-
-	if (m_analysis && m_ODF) m_analysis->renderODFMesh(m_ODF, &m_cam);
+	// TODO: I don't think the CGLSceneView pointer is actually
+	//       used by OpenGLRenderer, but I should probably derive 
+	//       CFiberGLWidget from CGLSceneView.
+	OpenGLRenderer ogl(nullptr);
+	ogl.start();
+	{
+		m_cam.SetTargetDistance(50);
+		ogl.positionCamera(m_cam);
+		if (m_analysis && m_ODF) m_analysis->renderODFMesh(ogl, m_ODF, &m_cam);
+	}
+	ogl.finish();
 
     // render the GL widgets
     glMatrixMode(GL_PROJECTION);

@@ -59,6 +59,8 @@ public:
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;
 
+	void positionCamera(const CGLCamera& cam) override;
+
 public:
 	void renderPoint(const vec3d& r) override;
 	void renderLine(const vec3d& a, const vec3d& b) override;

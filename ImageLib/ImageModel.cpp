@@ -126,7 +126,7 @@ void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 
     for(int j = 0; j < ImageAnalyses(); j++)
     {
-        GetImageAnalysis(j)->render(rc.m_cam);
+        GetImageAnalysis(j)->render(re, rc);
     }
 
 	if (ShowBox())

@@ -234,6 +234,31 @@ void OpenGLRenderer::setLineWidth(float f)
 	glLineWidth(f);
 }
 
+void OpenGLRenderer::positionCamera(const CGLCamera& cam)
+{
+	// reset the modelview matrix mode
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// target in camera coordinates
+	vec3d r = cam.Target();
+
+	// zoom-in a little when in decal mode
+	if (cam.m_bdecal)
+		glPolygonOffset(0, 0);
+	else
+		glPolygonOffset(1, 1);
+
+	// position the target in camera coordinates
+	glx::translate(-r);
+
+	// orient the camera
+	glx::rotate(cam.m_rot.Value());
+
+	// translate to world coordinates
+	glx::translate(-cam.GetPosition());
+}
+
 void OpenGLRenderer::renderPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);

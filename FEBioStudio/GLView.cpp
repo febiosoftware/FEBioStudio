@@ -1550,7 +1550,7 @@ void CGLView::RenderScene()
 		m_fps.push(fps);
 	}
 
-	cam.PositionInScene();
+	m_ogl.positionCamera(cam);
 	RenderPivot();
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
