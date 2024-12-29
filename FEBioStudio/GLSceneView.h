@@ -46,6 +46,7 @@ public:
 	virtual CGLScene* GetActiveScene();
 	virtual void RenderScene();
 	virtual void RenderCanvas();
+	virtual void RenderBackground();
 
 	CGView* GetView();
 	CGLCamera* GetCamera();
@@ -62,8 +63,6 @@ protected:
 	void paintGL() override;
 
 	void PrepScene();
-
-	void RenderBackground();
 
 private:
 	void mousePressEvent(QMouseEvent* ev) override;

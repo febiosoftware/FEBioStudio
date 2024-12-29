@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
-#include <QOpenGLWidget>
-#include <MeshLib/GMesh.h> 
+#include "GLSceneView.h"
 #include <GLLib/GLCamera.h>
+#include "GLScene.h"
 
 class CMainWindow;
 class matrix;
@@ -39,7 +39,25 @@ struct CODF;
 
 using std::string;
 
-class CFiberGLWidget : public QOpenGLWidget
+class CFiberGLWidget;
+
+class CODFScene : public CGLScene
+{
+public:
+	CODFScene(CFiberGLWidget* w) : m_w(w) {}
+	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+
+	void RenderCanvas(QPainter& painter, CGLContext& rc) override;
+
+	BOX GetBoundingBox() override;
+
+	BOX GetSelectionBox() override;
+
+private:
+	CFiberGLWidget* m_w;
+};
+
+class CFiberGLWidget : public CGLManagedSceneView
 {
 public:
     CFiberGLWidget();
@@ -47,26 +65,15 @@ public:
     void setAnalysis(CFiberODFAnalysis* analysis);
     void setODF(CODF* odf);
 
-protected:
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
-
-	void mousePressEvent(QMouseEvent* ev) override;
-	void mouseMoveEvent(QMouseEvent* ev) override;
-
-    int heightForWidth(int w) const override;
+	void RenderBackground() override;
 
 private:
     CFiberODFAnalysis* m_analysis;
     CODF* m_ODF;
-    CGLCamera m_cam;
 
     GLTriad* m_ptriad;
 
-private:
-    int m_x0, m_y0;
-
+	friend class CODFScene;
 };
 
 namespace Ui
