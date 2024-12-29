@@ -136,6 +136,8 @@ public:
 	void AddEdge(vec3f r[2], GLColor c);
 	void AddEdge(vec3f r[2], GLColor c[2]);
 
+	void AddEdge(const vec3f& a, const vec3f& b);
+
 public:
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
 	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);

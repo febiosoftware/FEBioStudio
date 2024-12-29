@@ -173,8 +173,7 @@ void CGLSlicePlot::Render(GLRenderEngine& re, CGLContext& rc)
 	bool showBox = GetBoolValue(SHOW_BOX);
 	if (showBox)
 	{
-		glColor3ub(200, 200, 200);
-		glx::renderBox(m_box, false, 1.0);
+		glx::renderBox(re, m_box, GLColor(200, 200, 200), false, 1.0);
 	}
 
 	GLTexture1D& tex = m_Col.GetTexture();

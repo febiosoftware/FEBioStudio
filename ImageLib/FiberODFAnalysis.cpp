@@ -995,8 +995,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 
         if(showBoundingBoxes)
         {
-            glColor3ub(255, 128, 128);
-            glx::renderBox(odf->m_box, false, 1);
+            glx::renderBox(re, odf->m_box, GLColor(255, 128, 128), false, 1);
         }
         
 		re.popTransform();
@@ -1005,11 +1004,10 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 	// show selected box
 	if (sel && showSelBox)
 	{
-		glColor3ub(255, 255, 0);
 		glDisable(GL_DEPTH_TEST);
 		re.pushTransform();
 		re.translate(sel->m_position);
-		glx::renderBox(sel->m_box, false, 1);
+		glx::renderBox(re, sel->m_box, GLColor(255, 255, 0), false, 1);
 		re.popTransform();
 	}
 

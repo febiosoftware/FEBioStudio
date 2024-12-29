@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 
+#include <MeshLib/GMesh.h>
+
 //-----------------------------------------------------------------------------
 void glx::translate(const vec3d& r)
 {
@@ -1403,66 +1405,82 @@ void glx::renderRigidWall(double R)
 	glEnd();
 }
 
-inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
+void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool partial, double scale)
 {
-	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
-	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
-	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
-}
-
-void glx::renderBox(const BOX& bbox, bool partial, double scale)
-{
-	// push attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glEnable(GL_LINE_SMOOTH);
-	glDisable(GL_LIGHTING);
-
 	BOX box = bbox;
 	box.Scale(scale);
+
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, col);
+
+	GMesh mesh;
 
 	if (partial)
 	{
 		double dx = box.Width() * 0.3;
 		double dy = box.Height() * 0.3;
 		double dz = box.Depth() * 0.3;
-		glBegin(GL_LINES);
-		{
-			render_triad(box.x0, box.y0, box.z0, dx, dy, dz);
-			render_triad(box.x1, box.y0, box.z0, -dx, dy, dz);
-			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
-			render_triad(box.x0, box.y1, box.z0, dx, -dy, dz);
 
-			render_triad(box.x0, box.y0, box.z1, dx, dy, -dz);
-			render_triad(box.x1, box.y0, box.z1, -dx, dy, -dz);
-			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
-			render_triad(box.x0, box.y1, box.z1, dx, -dy, -dz);
-		}
-		glEnd();
+		float x, y, z;
+		x = box.x0; y = box.y0, z = box.z0;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x + dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y + dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z + dz));
+
+		x = box.x1; y = box.y0, z = box.z0;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x - dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y + dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z + dz));
+
+		x = box.x1; y = box.y1, z = box.z0;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x - dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y - dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z + dz));
+			
+		x = box.x0; y = box.y1, z = box.z0;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x + dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y - dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z + dz));
+
+		x = box.x0; y = box.y0, z = box.z1;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x + dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y + dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z - dz));
+
+		x = box.x1; y = box.y0, z = box.z1;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x - dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y + dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z - dz));
+
+		x = box.x1; y = box.y1, z = box.z1;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x - dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y - dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z - dz));
+
+		x = box.x0; y = box.y1, z = box.z1;
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x + dx, y, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y - dy, z));
+		mesh.AddEdge(vec3f(x, y, z), vec3f(x, y, z - dz));
 	}
 	else
 	{
-		glBegin(GL_LINES);
-		{
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+		mesh.AddEdge(vec3f(box.x0, box.y0, box.z0), vec3f(box.x1, box.y0, box.z0));
+		mesh.AddEdge(vec3f(box.x1, box.y0, box.z0), vec3f(box.x1, box.y1, box.z0));
+		mesh.AddEdge(vec3f(box.x1, box.y1, box.z0), vec3f(box.x0, box.y1, box.z0));
+		mesh.AddEdge(vec3f(box.x0, box.y1, box.z0), vec3f(box.x0, box.y0, box.z0));
 
-			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+		mesh.AddEdge(vec3f(box.x0, box.y0, box.z1), vec3f(box.x1, box.y0, box.z1));
+		mesh.AddEdge(vec3f(box.x1, box.y0, box.z1), vec3f(box.x1, box.y1, box.z1));
+		mesh.AddEdge(vec3f(box.x1, box.y1, box.z1), vec3f(box.x0, box.y1, box.z1));
+		mesh.AddEdge(vec3f(box.x0, box.y1, box.z1), vec3f(box.x0, box.y0, box.z1));
 
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
-		}
-		glEnd();
+		mesh.AddEdge(vec3f(box.x0, box.y0, box.z0), vec3f(box.x0, box.y0, box.z1));
+		mesh.AddEdge(vec3f(box.x1, box.y0, box.z0), vec3f(box.x1, box.y0, box.z1));
+		mesh.AddEdge(vec3f(box.x0, box.y1, box.z0), vec3f(box.x0, box.y1, box.z1));
+		mesh.AddEdge(vec3f(box.x1, box.y1, box.z0), vec3f(box.x1, box.y1, box.z1));
 	}
 
-	// restore attributes
-	glPopAttrib();
+	re.renderGMeshEdges(mesh, false);
+
+	re.popState();
 }

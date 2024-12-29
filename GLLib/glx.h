@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <qopengl.h>
 #include <vector>
 #include <FSCore/box.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 
 namespace glx {
 
@@ -122,7 +123,7 @@ void renderDamper(const vec3d& a, const vec3d& b, double R);
 void renderContractileForce(const vec3d& a, const vec3d& b, double R);
 void renderRigidWall(double R);
 
-void renderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
+void renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
 }
 
 inline void glxColor(const GLColor& c)

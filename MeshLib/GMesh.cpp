@@ -217,6 +217,17 @@ void GMesh::AddEdge(vec3f r[2], GLColor c[2])
 	m_Edge.push_back(e);
 }
 
+void GMesh::AddEdge(const vec3f& a, const vec3f& b)
+{
+	EDGE e;
+	e.n[0] = AddNode(a);
+	e.n[1] = AddNode(b);
+	e.vr[0] = a;
+	e.vr[1] = b;
+	e.pid = 0;
+	m_Edge.push_back(e);
+}
+
 int GMesh::AddFace(const GMesh::FACE& face)
 {
 	if (m_FIL.empty()) NewPartition();

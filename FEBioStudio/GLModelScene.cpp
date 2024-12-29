@@ -1238,8 +1238,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 	if (rc.m_settings.m_showPlaneCut)
 	{
 		BOX box = m_scene->GetBoundingBox();
-		glColor3ub(200, 0, 200);
-		glx::renderBox(box, false);
+		glx::renderBox(re, box, GLColor(200, 0, 200), false);
 
 		// render the plane cut first
 		if (m_planeCut.IsValid() == false)
@@ -2443,17 +2442,15 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 
 				if (nsel == SELECT_OBJECT)
 				{
-					glColor3ub(255, 255, 255);
 					if (po->IsSelected())
 					{
-						glx::renderBox(po->GetLocalBox(), true, 1.025);
+						glx::renderBox(re, po->GetLocalBox(), GLColor(255, 255, 255), true, 1.025);
 					}
 				}
 				else if (po == poa)
 				{
-					glColor3ub(164, 0, 164);
 					assert(po->IsSelected());
-					glx::renderBox(po->GetLocalBox(), true, 1.025);
+					glx::renderBox(re, po->GetLocalBox(), GLColor(164, 0, 164), true, 1.025);
 				}
 				re.popTransform();
 			}
@@ -2463,8 +2460,7 @@ void GLSelectionBox::render(GLRenderEngine& re, CGLContext& rc)
 	{
 		re.pushTransform();
 		SetModelView(poa);
-		glColor3ub(255, 255, 0);
-		glx::renderBox(poa->GetLocalBox(), true, 1.025);
+		glx::renderBox(re, poa->GetLocalBox(), GLColor(255, 255, 0), true, 1.025);
 		re.popTransform();
 	}
 }

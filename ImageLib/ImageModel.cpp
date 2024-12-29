@@ -136,8 +136,7 @@ void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 		vec3d r0 = box.r0();
 		vec3d r1 = box.r1();
 		BOX localBox(vec3d(0, 0, 0), r1 - r0);
-		glColor3ub(255, 128, 128);
-		glx::renderBox(localBox, false);
+		glx::renderBox(re, localBox, GLColor(255, 128, 128), false);
 	}
 
 	// render the volume image data if present
