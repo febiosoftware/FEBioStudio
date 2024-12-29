@@ -2640,8 +2640,7 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const
 				quatd q(vec3d(0, 0, 1), n);
 				re.pushTransform();
 				{
-					glTranslated(p.x, p.y, p.z);
-					glx::rotate(q);
+					re.transform(p, q);
 					glx::renderGlyph(glx::RIGID_WALL, R, GLColor::Black());
 				}
 				re.popTransform();

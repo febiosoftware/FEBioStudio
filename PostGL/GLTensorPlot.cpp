@@ -618,9 +618,9 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 					glx::glcolor(c);
 				}
 
-				glx::translate(r);
+				re.translate(r);
 				RenderGlyphs(re, t, scale*auto_scale, pglyph);
-				glx::translate(-r);
+				re.translate(-r);
 			}
 		}
 	}

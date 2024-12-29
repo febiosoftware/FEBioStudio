@@ -82,7 +82,7 @@ void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 	re.pushTransform();
 
 	// orient the grid
-	glx::rotate(m_q);
+	re.rotate(m_q);
 
 	// determine the scale
 	double scale = 1.f*(double) cam.GetTargetDistance();

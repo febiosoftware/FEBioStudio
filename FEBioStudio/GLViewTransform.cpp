@@ -159,12 +159,20 @@ void GLViewTransform::PositionInScene(const CGLCamera& cam)
 		glPolygonOffset(1, 1);
 
 	// position the target in camera coordinates
-	glx::translate(-r);
+	vec3d t = -r;
+	glTranslated(t.x, t.y, t.z);
 
 	// orient the camera
-	glx::rotate(cam.m_rot.Value());
+	quatd q = cam.m_rot.Value();
+	double w = q.GetAngle();
+	if (w != 0)
+	{
+		vec3d r = q.GetVector();
+		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
+		else glRotated(w * 180 / PI, 1, 0, 0);
+	}
 
 	// translate to world coordinates
-	glx::translate(-cam.GetPosition());
-
+	vec3d c = -cam.GetPosition();
+	glTranslated(c.x, c.y, c.z);
 }

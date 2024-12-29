@@ -99,10 +99,7 @@ void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::
 	{
 		re.pushTransform();
 
-		glx::translate(p0);
-		quatd Q(vec3d(0, 0, 1), vector.n);
-		glx::rotate(Q);
-
+		re.transform(p0, quatd(vec3d(0, 0, 1), vector.n));
 		gluCylinder(m.glyph, m.lineWidth, m.lineWidth, m.scale, 10, 1);
 
 		re.popTransform();

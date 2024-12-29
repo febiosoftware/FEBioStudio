@@ -45,8 +45,6 @@ namespace glx {
 		RIGID_LOCK
 	};
 
-void translate(const vec3d& r);
-void rotate(const quatd& q);
 
 void drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n);
 void drawCircle(double R, int N);

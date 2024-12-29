@@ -40,24 +40,6 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 
 //-----------------------------------------------------------------------------
-void glx::translate(const vec3d& r)
-{
-	glTranslated(r.x, r.y, r.z);
-}
-
-//-----------------------------------------------------------------------------
-void glx::rotate(const quatd& q)
-{
-	double w = q.GetAngle();
-	if (w != 0)
-	{
-		vec3d r = q.GetVector();
-		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
-		else glRotated(w * 180 / PI, 1, 0, 0);
-	}
-}
-
-//-----------------------------------------------------------------------------
 void glx::drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
 {
 	double x, y;
