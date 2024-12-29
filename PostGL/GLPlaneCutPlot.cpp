@@ -32,8 +32,6 @@ SOFTWARE.*/
 #include <MeshLib/hex.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
-
 using namespace Post;
 
 extern int LUT[256][15];
@@ -303,7 +301,7 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, CGLContext& rc)
 		glDisable(GL_LIGHTING);
 		DisableClipPlanes();
 //		rc.m_cam->LineDrawMode(true);
-		RenderPlane();
+		RenderPlane(re);
 //		rc.m_cam->LineDrawMode(false);
 		EnableClipPlanes();
 		glPopAttrib();
@@ -1051,7 +1049,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 //-----------------------------------------------------------------------------
 // Render the cutting plane
-void CGLPlaneCutPlot::RenderPlane()
+void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 {
 	vec3d norm0 = m_normal;
 	norm0.Normalize();
@@ -1063,7 +1061,7 @@ void CGLPlaneCutPlot::RenderPlane()
 	// calculate reference value
 	vec3d p0 = m_T.GetPosition();
 
-	glPushMatrix();
+	re.pushTransform();
 
 	glTranslatef(-p0.x, -p0.y, -p0.z);
 
@@ -1116,7 +1114,7 @@ void CGLPlaneCutPlot::RenderPlane()
 	}
 	glEnd();
 
-	glPopMatrix();
+	re.popTransform();
 
 	// restore attributes
 	glPopAttrib();

@@ -542,7 +542,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 				}
 
 				glTranslatef(r.x, r.y, r.z);
-				RenderGlyphs(t, scale*auto_scale, pglyph);
+				RenderGlyphs(re, t, scale*auto_scale, pglyph);
 				glTranslatef(-r.x, -r.y, -r.z);
 			}
 		}
@@ -619,7 +619,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 				}
 
 				glx::translate(r);
-				RenderGlyphs(t, scale*auto_scale, pglyph);
+				RenderGlyphs(re, t, scale*auto_scale, pglyph);
 				glx::translate(-r);
 			}
 		}
@@ -633,18 +633,18 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 }
 
-void GLTensorPlot::RenderGlyphs(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
 {
 	switch (m_nglyph)
 	{
-	case Glyph_Arrow : RenderArrows(t, scale, glyph); break;
-	case Glyph_Line  : RenderLines (t, scale, glyph); break;
-	case Glyph_Sphere: RenderSphere(t, scale, glyph); break;
-	case Glyph_Box   : RenderBox   (t, scale, glyph); break;
+	case Glyph_Arrow : RenderArrows(re, t, scale, glyph); break;
+	case Glyph_Line  : RenderLines (re, t, scale, glyph); break;
+	case Glyph_Sphere: RenderSphere(re, t, scale, glyph); break;
+	case Glyph_Box   : RenderBox   (re, t, scale, glyph); break;
 	}
 }
 
-void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderArrows(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -653,7 +653,7 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 
 	for (int i = 0; i<3; ++i)
 	{
-		glPushMatrix();
+		re.pushTransform();
 
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 		vec3f v = t.r[i];
@@ -677,11 +677,11 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 		glTranslatef(0.f, 0.f, (float)l0*0.9f);
 		gluCylinder(pglyph, r1, 0, l1, 10, 1);
 
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 
-void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -690,7 +690,7 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 
 	for (int i = 0; i<3; ++i)
 	{
-		glPushMatrix();
+		re.pushTransform();
 
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 
@@ -706,11 +706,11 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 		glx::glcolor(c[i]);
 		glx::drawLine(0, 0, 0, 0, 0, L);
 
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 
-void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderSphere(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
 {
 	if (scale <= 0.f) return;
 
@@ -724,7 +724,7 @@ void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
 	if (sy < 0.1*smax) sy = 0.1f*smax;
 	if (sz < 0.1*smax) sz = 0.1f*smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f* e = t.r;
 	vec3f n = e[0] ^ e[1];
 	if (n*e[2] < 0) e[2] = -e[2];
@@ -737,10 +737,10 @@ void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
 
 	glScalef(scale*sx, scale*sy, scale*sz);
 	gluSphere(glyph, 1.f, 16, 16);
-	glPopMatrix();
+	re.popTransform();
 }
 
-void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
 {
 	if (scale <= 0.f) return;
 
@@ -754,7 +754,7 @@ void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
 	if (sy < 0.1*smax) sy = 0.1f*smax;
 	if (sz < 0.1*smax) sz = 0.1f*smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f* e = t.r;
 	GLfloat m[4][4] = { 0 };
 	m[3][3] = 1.f;
@@ -765,5 +765,5 @@ void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
 
 	glScalef(scale*sx, scale*sy, scale*sz);
 	glx::drawBox(0.5, 0.5, 0.5);
-	glPopMatrix();
+	re.popTransform();
 }

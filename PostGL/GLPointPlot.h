@@ -133,7 +133,7 @@ public:
 
 private:
 	void RenderPoints(GLRenderEngine& re);
-	void RenderSpheres();
+	void RenderSpheres(GLRenderEngine& re);
 
 	void UpdateRange();
 	void UpdatePointMesh();

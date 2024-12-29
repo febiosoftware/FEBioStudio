@@ -91,7 +91,7 @@ public:
 	vec3d GetPlanePosition() const;
 
 	void Render(GLRenderEngine& re, CGLContext& rc) override;
-	void RenderPlane();
+	void RenderPlane(GLRenderEngine& re);
 	float Integrate(FEState* ps);
 
 	static void InitClipPlanes();

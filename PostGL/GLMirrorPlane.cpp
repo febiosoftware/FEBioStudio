@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLMirrorPlane.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 using namespace Post;
 
 REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);
@@ -121,11 +122,11 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 void CGLMirrorPlane::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	// render the plane
-	if (m_showPlane) RenderPlane();
+	if (m_showPlane) RenderPlane(re);
 }
 
 //-----------------------------------------------------------------------------
-void CGLMirrorPlane::RenderPlane()
+void CGLMirrorPlane::RenderPlane(GLRenderEngine& re)
 {
 	CGLModel* mdl = GetModel();
 
@@ -148,31 +149,25 @@ void CGLMirrorPlane::RenderPlane()
 	case 2: norm = vec3f(0.f, 0.f, 1.f); break;
 	}
 
-	glPushMatrix();
+	re.pushTransform();
+	re.translate(rc);
 
-	glTranslatef(rc.x, rc.y, rc.z);
-	glTranslatef(-0.5f*m_offset*norm.x, -0.5f*m_offset*norm.y, -0.5f*m_offset*norm.z);
+	vec3d offset(-0.5f*m_offset*norm.x, -0.5f*m_offset*norm.y, -0.5f*m_offset*norm.z);
+	re.translate(offset);
 
 	quatd q = quatd(vec3d(0, 0, 1), to_vec3d(norm));
-	float w = q.GetAngle();
-	if (w != 0)
-	{
-		vec3d v = q.GetVector();
-		glRotated(w * 180 / PI, v.x, v.y, v.z);
-	}
+	re.rotate(q);
 
 	float R = 2*box.Radius();
 
 	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	re.pushState();
 
 	GLdouble r = fabs(norm.x);
 	GLdouble g = fabs(norm.y);
 	GLdouble b = fabs(norm.z);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::FromRGBf(r, g, b, m_transparency), GLMaterial::NONE, false);
 
-	glColor4d(r, g, b, m_transparency);
 	glDepthMask(false);
 	glNormal3f(0, 0, 1);
 	glBegin(GL_QUADS);
@@ -183,10 +178,9 @@ void CGLMirrorPlane::RenderPlane()
 		glVertex3f(-R, R, 0);
 	}
 	glEnd();
-	glDepthMask(true);
 
-	glColor3ub(255, 255, 0);
-	glDisable(GL_LIGHTING);
+	re.setColor(GLColor(255, 255, 0));
+	glDepthMask(true);
 	glBegin(GL_LINE_LOOP);
 	{
 		glVertex3f(-R, -R, 0);
@@ -196,8 +190,6 @@ void CGLMirrorPlane::RenderPlane()
 	}
 	glEnd();
 
-	glPopMatrix();
-
-	// restore attributes
-	glPopAttrib();
+	re.popState();
+	re.popTransform();
 }

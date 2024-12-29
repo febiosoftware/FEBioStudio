@@ -306,11 +306,9 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	static int n = 0; n++;
 	char szname[64] = { 0 };
 	snprintf(szname, sizeof szname, "ViewPoint%02d", n);
-	t.SetName(szname);
-	GLCameraTransform* vp = view.AddCameraKey(t);
+	CGViewKey* vp = view.AddCameraKey(t, szname);
 	ui->postPanel->Update();
 	ui->postPanel->SelectObject(vp);
-
 }
 
 void CMainWindow::on_actionViewVPPrev_triggered()
@@ -322,7 +320,7 @@ void CMainWindow::on_actionViewVPPrev_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.PrevKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -336,7 +334,7 @@ void CMainWindow::on_actionViewVPNext_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.NextKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }

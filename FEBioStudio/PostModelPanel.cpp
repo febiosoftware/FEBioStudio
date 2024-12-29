@@ -959,9 +959,9 @@ void CPostModelPanel::BuildModelTree()
 
 		for (int i=0; i<view.CameraKeys(); ++i)
 		{
-			GLCameraTransform& key = view.GetKey(i);
+			CGViewKey& key = view.GetKey(i);
 			string name = key.GetName();
-			ui->AddItem(pi1, &key, QString::fromStdString(name), "view", new CCameraTransformProps(key));
+			ui->AddItem(pi1, &key, QString::fromStdString(name), "view", new CCameraTransformProps(key.transform));
 		}
 
 		// saved graphs
@@ -1048,7 +1048,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(treeItem);
 	FSObject* po = item->Object();
 
-	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(po);
+	CGViewKey* pkey = dynamic_cast<CGViewKey*>(po);
 	if (pkey)
 	{
 		CGView* view = GetActiveDocument()->GetView();

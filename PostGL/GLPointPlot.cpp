@@ -244,7 +244,7 @@ void CGLPointPlot::Render(GLRenderEngine& re, CGLContext& rc)
 	switch (m_renderMode)
 	{
 	case 0: RenderPoints(re); break;
-	case 1: RenderSpheres(); break;
+	case 1: RenderSpheres(re); break;
 	}
 }
 
@@ -259,7 +259,7 @@ void CGLPointPlot::RenderPoints(GLRenderEngine& re)
 	re.setPointSize(size_old);
 }
 
-void CGLPointPlot::RenderSpheres()
+void CGLPointPlot::RenderSpheres(GLRenderEngine& re)
 {
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
@@ -278,7 +278,7 @@ void CGLPointPlot::RenderSpheres()
 	for (int i = 0; i < pd.Points(); ++i)
 	{
 		PointData::POINT& p = pd.Point(i);
-		vec3f& c = p.m_r;
+		vec3d c = to_vec3d(p.m_r);
 
 		if (m_colorMode == 1)
 		{
@@ -293,12 +293,12 @@ void CGLPointPlot::RenderSpheres()
 
 		if (pointSize > 0)
 		{
-			glPushMatrix();
+			re.pushTransform();
 			{
-				glTranslatef(c.x, c.y, c.z);
+				re.translate(c);
 				gluSphere(pobj, pointSize, 32, 32);
 			}
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 	gluDeleteQuadric(pobj);

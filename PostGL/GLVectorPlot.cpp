@@ -254,7 +254,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 			{
 				vec3f r = to_vec3f(pm->ElementCenter(elem));
 				vec3f v = m_val[i];
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v, pglyph);
 			}
 		}
 	}
@@ -293,7 +293,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 			{
 				vec3f r = to_vec3f(pm->FaceCenter(face));
 				vec3f v = m_val[i];
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v, pglyph);
 			}
 		}
 	}
@@ -330,7 +330,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 				vec3f v = m_val[i];
 
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v, pglyph);
 			}
 		}
 	}
@@ -343,7 +343,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 }
 
-void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
+void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GLUquadric* pglyph)
 {
 	float L = v.Length();
 	if (L == 0.f) return;
@@ -383,7 +383,7 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	float r0 = L*0.05*m_ar;
 	float r1 = L*0.15*m_ar;
 
-	glPushMatrix();
+	re.pushTransform();
 
 	glTranslatef(r.x, r.y, r.z);
 	quatd q;
@@ -421,7 +421,7 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 		glx::drawLine(0, 0, 0, 0, 0, L);
 	}
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void CGLVectorPlot::SetVectorField(int ntype) 

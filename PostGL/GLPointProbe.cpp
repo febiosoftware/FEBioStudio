@@ -97,12 +97,12 @@ void GLPointProbe::Render(GLRenderEngine& re, CGLContext& rc)
 	double R = m_R * m_size;
 	GLUquadricObj* pobj = gluNewQuadric();
 	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glTranslated(m_pos.x, m_pos.y, m_pos.z);
+		re.translate(m_pos);
 		gluSphere(pobj, R, 32, 32);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	gluDeleteQuadric(pobj);
 

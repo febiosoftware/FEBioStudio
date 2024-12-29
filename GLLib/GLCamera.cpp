@@ -27,23 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLCamera.h"
 
-GLCameraTransform::GLCameraTransform(const GLCameraTransform& key)
-{
-	pos = key.pos;
-	trg = key.trg;
-	rot = key.rot;
-	SetName(key.GetName());
-}
-
-GLCameraTransform& GLCameraTransform::operator = (const GLCameraTransform& key)
-{
-	pos = key.pos;
-	trg = key.trg;
-	rot = key.rot;
-	SetName(key.GetName());
-	return *this;
-}
-
 CGLCamera::CGLCamera()
 {
 	Reset();

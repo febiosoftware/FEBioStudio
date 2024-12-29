@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLVectorRender.h"
 #include <GLLib/glx.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 
 class GLVectorRenderer::Imp
 {
@@ -72,18 +73,18 @@ void GLVectorRenderer::Init()
 	}
 }
 
-void GLVectorRenderer::RenderVectors()
+void GLVectorRenderer::RenderVectors(GLRenderEngine& re)
 {
 	srand(0);
 	for (auto& vector : m.vectors)
 	{
 		double r = (double)rand() / (double)RAND_MAX;
 		if (r < m.density)
-			RenderVector(vector);
+			RenderVector(re, vector);
 	}
 }
 
-void GLVectorRenderer::RenderVector(const GLVectorRenderer::VECTOR& vector)
+void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::VECTOR& vector)
 {
 	vec3d p0 = vector.r - vector.n * (m.scale * 0.5);
 	vec3d p1 = vector.r + vector.n * (m.scale * 0.5);
@@ -96,7 +97,7 @@ void GLVectorRenderer::RenderVector(const GLVectorRenderer::VECTOR& vector)
 	}
 	else
 	{
-		glPushMatrix();
+		re.pushTransform();
 
 		glx::translate(p0);
 		quatd Q(vec3d(0, 0, 1), vector.n);
@@ -104,7 +105,7 @@ void GLVectorRenderer::RenderVector(const GLVectorRenderer::VECTOR& vector)
 
 		gluCylinder(m.glyph, m.lineWidth, m.lineWidth, m.scale, 10, 1);
 
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 

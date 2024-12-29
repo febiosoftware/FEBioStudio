@@ -27,17 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include "Interpolator.h"
-#include <PostLib/GLObject.h>
-
-// NOTE: We need to inherit this from CGLObject because it is used in the modeltree
-// in PostView.
-class GLCameraTransform : public Post::CGLObject
+class GLCameraTransform
 {
 public:
 	GLCameraTransform() {}
-	GLCameraTransform(const GLCameraTransform& key);
-	GLCameraTransform& operator = (const GLCameraTransform& key);
-
 public:
 	vec3d		pos;	// position
 	vec3d		trg;	// target

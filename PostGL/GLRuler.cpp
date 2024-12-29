@@ -104,7 +104,7 @@ void GLRuler::Render(GLRenderEngine& re, CGLContext& rc)
 
 	glColor3ub(m_col.r, m_col.g, m_col.b);
 	GLUquadricObj* pobj = gluNewQuadric();
-	glPushMatrix();
+	re.pushTransform();
 	{
 		glTranslated(ra.x, ra.y, ra.z);
 		quatd q(vec3d(0, 0, 1), t);
@@ -116,9 +116,9 @@ void GLRuler::Render(GLRenderEngine& re, CGLContext& rc)
 		}
 		gluCylinder(pobj, R, R, H, 12, 1);
 	}
-	glPopMatrix();
+	re.popTransform();
 
-	glPushMatrix();
+	re.pushTransform();
 	{
 		glTranslated(ra.x, ra.y, ra.z);
 		gluSphere(pobj, R, 12, 12);
@@ -126,10 +126,11 @@ void GLRuler::Render(GLRenderEngine& re, CGLContext& rc)
 		glTranslated(rb.x, rb.y, rb.z);
 		gluSphere(pobj, R, 12, 12);
 	}
-	glPopMatrix();
+	re.popTransform();
+
 	gluDeleteQuadric(pobj);
 
-	glPushAttrib(GL_ENABLE_BIT);
+	re.pushState();
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glBegin(GL_LINES);
@@ -138,8 +139,7 @@ void GLRuler::Render(GLRenderEngine& re, CGLContext& rc)
 		glVertex3d(rb.x, rb.y, rb.z);
 	}
 	glEnd();
-	glPopAttrib();
-
+	re.popState();
 }
 
 void GLRuler::Update()

@@ -31,10 +31,7 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
-#include "GTriad.h"
-#include "GGrid.h"
 #include <GLWLib/GLWidgetManager.h>
-#include "Animation.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include <PostGL/ColorTexture.h>
@@ -263,7 +260,7 @@ protected:
 
 	CBasicCmdManager m_Cmd;	// view command history
 
-	vector<pair<int, int> >		m_pl;
+	std::vector<std::pair<int, int> >		m_pl;
 	int			m_x0, m_y0, m_x1, m_y1;
 	int			m_xp, m_yp;
 	int			m_dxp, m_dyp;

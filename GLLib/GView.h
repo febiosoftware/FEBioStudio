@@ -26,6 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLCamera.h"
+#include <PostLib/GLObject.h>
+
+class CGViewKey : public Post::CGLObject
+{
+public:
+	GLCameraTransform transform;
+};
 
 //-----------------------------------------------------------------------------
 // This class stores viewing information
@@ -41,14 +48,14 @@ public:
 
 	int CameraKeys() { return (int) m_key.size(); }
 
-	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(GLCameraTransform* pkey);
+	CGViewKey& GetKey(int i) { return *m_key[i]; }
+	CGViewKey& GetCurrentKey() { return *m_key[m_nkey]; }
+	void SetCurrentKey(CGViewKey* pkey);
 	void SetCurrentKey(int i);
 
-	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
+	CGViewKey* AddCameraKey(GLCameraTransform& t, const std::string& name);
 
-	void DeleteKey(GLCameraTransform* pt);
+	void DeleteKey(CGViewKey* pt);
 
 	void DeleteAllKeys();
 
@@ -72,6 +79,6 @@ public:
 protected:
 	CGLCamera m_cam;	//!< current camera
 
-	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int								m_nkey;	//!< current key
+	std::vector<CGViewKey*>	m_key;	//!< stored camera transformations
+	int						m_nkey;	//!< current key
 };

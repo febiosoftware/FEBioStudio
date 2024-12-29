@@ -91,8 +91,8 @@ void GLPostMirrorItem::renderMirror(GLRenderEngine& re, CGLContext& rc, int star
 
 			float offset = plane->m_offset;
 
-			glPushMatrix();
-			glTranslatef(-offset * norm.x, -offset * norm.y, -offset * norm.z);
+			re.pushTransform();
+			re.translate(vec3d(-offset * norm.x, -offset * norm.y, -offset * norm.z));
 			glScalef(scl.x, scl.y, scl.z);
 
 			int frontFace;
@@ -101,7 +101,7 @@ void GLPostMirrorItem::renderMirror(GLRenderEngine& re, CGLContext& rc, int star
 
 			renderMirror(re, rc, 0, i);
 			glFrontFace(frontFace);
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 }
@@ -1041,9 +1041,8 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 	double scale = 0.05 * (double)rc.m_cam->GetTargetDistance();
 	double R = 0.5 * scale;
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	re.pushState();
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Black());
 
 	bool renderRB = rc.m_settings.m_brigid;
 	bool renderRJ = rc.m_settings.m_bjoint;
@@ -1053,16 +1052,15 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 		Post::FEPostModel::PointObject& ob = *fem->GetPointObject(i);
 		if (ob.IsActive())
 		{
-			glPushMatrix();
-			glx::translate(ob.m_pos);
-			glx::rotate(ob.m_rot);
+			re.pushTransform();
+			re.transform(ob.m_pos, ob.m_rot);
 
-			glx::translate(ob.m_rt);
+			re.translate(ob.m_rt);
 
 			double size = R * ob.Scale();
 
 			GLColor c = ob.Color();
-			glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 			switch (ob.m_tag)
 			{
 			case 1: if (renderRB) glx::renderRigidBody(size); break;
@@ -1075,7 +1073,7 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 			default:
 				if (renderRB) glx::renderAxis(size);
 			}
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 
@@ -1084,9 +1082,8 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 		Post::FEPostModel::LineObject& ob = *fem->GetLineObject(i);
 		if (ob.IsActive() && renderRJ)
 		{
-			glPushMatrix();
-			glx::translate(ob.m_pos);
-			glx::rotate(ob.m_rot);
+			re.pushTransform();
+			re.transform(ob.m_pos, ob.m_rot);
 
 			vec3d a = ob.m_r1;
 			vec3d b = ob.m_r2;
@@ -1096,7 +1093,7 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 			if (L0 == 0) L0 = Lt;
 
 			GLColor c = ob.Color();
-			glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 			switch (ob.m_tag)
 			{
 			case 1: glx::renderSpring(a, b, R, (R == 0 ? 25 : L0 / R)); break;
@@ -1105,11 +1102,11 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 			default:
 				glx::drawLine(a, b);
 			}
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
 
-	glPopAttrib();
+	re.popState();
 }
 
 void GLPost3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
@@ -1188,10 +1185,6 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 		BuildScene(rc);
 		m_buildScene = false;
 	}
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
 
 	// we need to update the tracking target before we position the camera
 	if (m_btrack) UpdateTracking();

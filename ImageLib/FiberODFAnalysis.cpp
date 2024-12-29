@@ -928,7 +928,7 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 	}
 }
 
-void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
+void RenderEllipsoid(GLRenderEngine& re, GLUquadricObj* po, float* l, vec3f* e)
 {
 	float smax = 0.f;
 	float sx = fabs(l[0]); if (sx > smax) smax = sx;
@@ -940,7 +940,7 @@ void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
 	if (sy < 0.01 * smax) sy = 0.01f * smax;
 	if (sz < 0.01 * smax) sz = 0.01f * smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f n = e[0] ^ e[1];
 	if (n * e[2] < 0) e[2] = -e[2];
 	GLfloat m[4][4] = { 0 };
@@ -952,7 +952,7 @@ void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
 
 	glScalef(sx, sy, sz);
 	gluSphere(po, 1.f, 32, 32);
-	glPopMatrix();
+	re.popTransform();
 }
 
 void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
@@ -967,7 +967,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 		m_pbar->show();
 	}
 
-    glPushAttrib(GL_ENABLE_BIT);
+	re.pushState();
     glEnable(GL_COLOR_MATERIAL);
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
@@ -980,17 +980,17 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 
     for (auto odf : m_ODFs)
     {
-        glPushMatrix();
-        glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+		re.pushTransform();
+		re.translate(odf->m_position);
 
         if (odf->m_selected) sel = odf;
 
         if (odf->m_active && odf->IsValid())
         {
-            glPushMatrix();
+			re.pushTransform();
             glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
             renderODFMesh(re, odf, rc.m_cam);
-            glPopMatrix();
+			re.popTransform();
         }
 
         if(showBoundingBoxes)
@@ -999,7 +999,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
             glx::renderBox(odf->m_box, false, 1);
         }
         
-        glPopMatrix();
+		re.popTransform();
     }
 
 	// show selected box
@@ -1007,13 +1007,13 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 	{
 		glColor3ub(255, 255, 0);
 		glDisable(GL_DEPTH_TEST);
-		glPushMatrix();
-		glTranslated(sel->m_position.x, sel->m_position.y, sel->m_position.z);
+		re.pushTransform();
+		re.translate(sel->m_position);
 		glx::renderBox(sel->m_box, false, 1);
-		glPopMatrix();
+		re.popTransform();
 	}
 
-    glPopAttrib();
+	re.popState();
 }
 
 void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* cam)
@@ -1047,7 +1047,7 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* 
                 l[0] /= lmax;
                 l[1] /= lmax;
                 l[2] /= lmax;
-                RenderEllipsoid(pglyph, l, e);
+                RenderEllipsoid(re, pglyph, l, e);
             }
         }
 

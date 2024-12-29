@@ -26,7 +26,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include "FEBioMonitorDoc.h"
 #include "../FEBioStudio/MainWindow.h"
-#include "../FEBioStudio/GLView.h"
 #include "../FEBioStudio/PropertyList.h"
 #include <FECore/FEModelParam.h>
 #include <FECore/FEAnalysis.h>
@@ -662,7 +661,7 @@ void FEBioMonitorDoc::onUpdateViews(bool updatePanel, bool updateGL)
 	QMutexLocker lock(&m->mutex);
 
 	CMainWindow* wnd = GetMainWindow();
-	if (updateGL) wnd->GetGLView()->updateView();
+	if (updateGL) wnd->RedrawGL();
 	wnd->GetFEBioMonitorPanel()->Update(updatePanel);
 	wnd->GetFEBioMonitorView()->Update(false);
 }

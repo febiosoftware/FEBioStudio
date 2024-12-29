@@ -443,7 +443,7 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	else if (dynamic_cast<GLCameraTransform*>(po))
 	{
-		GLCameraTransform* pt = dynamic_cast<GLCameraTransform*>(po);
+		CGViewKey* pt = dynamic_cast<CGViewKey*>(po);
 		CGView* pview = GetView();
 		pview->DeleteKey(pt);
 	}

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 
 class CGLContext;
+class GLRenderEngine;
 
 class GGrid
 {
@@ -38,7 +39,7 @@ public:
 
 	double GetScale() { return m_scale; }
 
-	void Render(CGLContext& rc);
+	void Render(GLRenderEngine& re, CGLContext& rc);
 
 	vec3d WorldToPlane(const vec3d& r) const
 	{

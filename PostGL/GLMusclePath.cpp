@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 #include <sstream>
 using namespace Post;
 
@@ -332,7 +333,7 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 					vec3d r = pt.r;
 					vec3d t = path->m_data.tng;
 
-					glPushMatrix();
+					re.pushTransform();
 
 					glTranslatef(r.x, r.y, r.z);
 					quatd q;
@@ -352,7 +353,7 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 					glTranslatef(0.f, 0.f, (float)L * 0.9f);
 					gluCylinder(pglyph, 2*D, 0, 0.5*L, 20, 1);
 
-					glPopMatrix();
+					re.popTransform();
 				}
 			}
 		}

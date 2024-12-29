@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
 
+class GLRenderEngine;
+
 class GLVectorRenderer
 {
 	class Imp;
@@ -44,7 +46,7 @@ public:
 
 	void Clear();
 
-	void RenderVectors();
+	void RenderVectors(GLRenderEngine& re);
 
 	void AddVector(const VECTOR& vector);
 
@@ -59,7 +61,7 @@ public:
 	void SetDensity(double d);
 
 private:
-	void RenderVector(const VECTOR& fiber);
+	void RenderVector(GLRenderEngine& re, const VECTOR& fiber);
 
 private:
 	Imp& m;

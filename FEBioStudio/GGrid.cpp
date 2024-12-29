@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
+#include "GLRenderEngine.h"
 
 GGrid::GGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {
@@ -67,20 +68,18 @@ vec3d GGrid::Snap(vec3d r)
 	return r;
 }
 
-void GGrid::Render(CGLContext& renderContext)
+void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 {
 	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
+	re.pushState();
 
-	// turn off lighting
-	glDisable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// get the camera
 	CGLCamera& cam = *renderContext.m_cam;
 
 	// store modelview matrix
-	glPushMatrix();
+	re.pushTransform();
 
 	// orient the grid
 	glx::rotate(m_q);
@@ -156,8 +155,8 @@ void GGrid::Render(CGLContext& renderContext)
 	}
 
 	// restore modelview matrix
-	glPopMatrix();
+	re.popTransform();
 
 	// restore attribs
-	glPopAttrib();
+	re.popState();
 }

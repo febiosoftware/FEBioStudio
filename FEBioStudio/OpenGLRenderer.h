@@ -47,7 +47,7 @@ public:
 	void pushTransform() override;
 	void popTransform() override;
 
-	void translate(const vec3d& r);
+	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
 	void transform(const vec3d& pos, const quatd& rot) override;
 
@@ -55,8 +55,8 @@ public:
 	void pushState() override;
 	void popState() override;
 
-	void enable(StateFlag flag);
-	void disable(StateFlag flag);
+	void enable(StateFlag flag) override;
+	void disable(StateFlag flag) override;
 
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;

@@ -47,7 +47,7 @@ public:
 	static CGLMirrorPlane* GetMirrorPlane(int n);
 
 private:
-	void RenderPlane();
+	void RenderPlane(GLRenderEngine& re);
 
 public:
 	int		m_plane;

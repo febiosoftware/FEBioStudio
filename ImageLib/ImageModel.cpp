@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <assert.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
+#include "../FEBioStudio/GLRenderEngine.h"
 
 using namespace Post;
 
@@ -107,7 +108,7 @@ void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 {
 	if (IsActive() == false) return;
 
-	glPushMatrix();
+	re.pushTransform();
 
 	BOX box = GetBoundingBox();
 	vec3d r0 = box.r0();
@@ -151,7 +152,7 @@ void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 		}
 	}
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void CImageModel::ApplyFilters()

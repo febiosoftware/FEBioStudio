@@ -2908,7 +2908,7 @@ void GLPhysicsItem::RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) con
 	fiberRender->SetDensity(vs.m_fiber_density);
 
 	fiberRender->Init();
-	fiberRender->RenderVectors();
+	fiberRender->RenderVectors(re);
 	fiberRender->Finish();
 }
 
@@ -3466,7 +3466,7 @@ void GLGridItem::render(GLRenderEngine& re, CGLContext& rc)
 	if (rc.m_settings.m_bgrid)
 	{
 		GGrid& grid = m_scene->GetGrid();
-		grid.Render(rc);
+		grid.Render(re, rc);
 	}
 }
 

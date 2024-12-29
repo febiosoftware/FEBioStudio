@@ -27,9 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <FSCore/FSObject.h>
+#include <FEBioStudio/GLRenderEngine.h>
 
-
-class GLRenderEngine;
 class CGLContext;
 
 namespace Post {

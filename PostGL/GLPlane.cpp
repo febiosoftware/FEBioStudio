@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <PostLib/FEPostModel.h>
 #include "GLPlane.h"
+#include "../FEBioStudio/GLRenderEngine.h"
 using namespace Post;
 
 CGLPlane::CGLPlane(FEPostModel* pm)
@@ -83,7 +84,7 @@ void CGLPlane::Render(GLRenderEngine& re, CGLContext& rc)
 
 	double R = m_pfem->GetBoundingBox().Radius();
 
-	glPushMatrix();
+	re.pushTransform();
 	glTranslatef(m_rc.x, m_rc.y, m_rc.z);
 
 	quatd q(vec3d(0,0,1), m_e[2]);
@@ -105,7 +106,7 @@ void CGLPlane::Render(GLRenderEngine& re, CGLContext& rc)
 	}
 	glEnd();
 
-	glPopMatrix();
+	re.popTransform();
 
 	glPopAttrib();
 }

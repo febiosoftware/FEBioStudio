@@ -26,7 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include "stdafx.h"
 #include "GLPlot.h"
-#include <GLWLib/GLLegendBar.h>
 
 namespace Post {
 
@@ -104,11 +103,11 @@ public:
 	void SetNormalize(bool b) { m_bnormalize = b; }
 
 protected:
-	void RenderGlyphs(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderArrows(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderLines(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderArrows(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderLines(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderSphere(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderBox(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph);
 
 	void Update() override;
 
