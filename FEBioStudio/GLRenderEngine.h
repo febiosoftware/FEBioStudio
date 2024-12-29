@@ -69,11 +69,16 @@ public:
 	virtual void deleteCachedMesh(GMesh* gm) {}
 	 
 public:
-	virtual void pushState() {}
-	virtual void popState() {}
-
 	virtual void pushTransform() {}
 	virtual void popTransform() {}
+
+	virtual void translate(const vec3d& r) {}
+	virtual void rotate(const quatd& rot) {}
+	virtual void transform(const vec3d& pos, const quatd& rot) {}
+
+public:
+	virtual void pushState() {}
+	virtual void popState() {}
 
 	virtual void enable(StateFlag flag) {}
 	virtual void disable(StateFlag flag) {}

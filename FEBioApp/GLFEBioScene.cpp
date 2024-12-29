@@ -23,17 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
-
 #include "GLFEBioScene.h"
-#include "../FEBioStudio/GLView.h"
 #include <QMutexLocker>
 #include <MeshLib/GMesh.h>
 #include <FECore/FEMesh.h>
@@ -55,19 +45,11 @@ GLSceneObject::GLSceneObject()
 
 void GLSceneObject::render(GLRenderEngine& engine, CGLContext& rc)
 {
-	glPushMatrix();
-	glTranslated(m_pos.x, m_pos.y, m_pos.z);
-	double w = m_rot.GetAngle();
-	if (w != 0.0)
-	{
-		vec3d r = m_rot.GetVector();
-		glRotated(w * RAD2DEG, r.x, r.y, r.z);
-	}
-
+	engine.pushTransform();
+	engine.transform(m_pos, m_rot);
 	engine.setMaterial(GLMaterial::PLASTIC, m_col);
 	engine.renderGMesh(m_mesh);
-
-	glPopMatrix();
+	engine.popTransform();
 }
 
 void GLSceneObject::SetColor(GLColor c)
@@ -237,8 +219,8 @@ void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
 		m_col.GetTexture().MakeCurrent();
 	}
 	engine.renderGMesh(*m_renderMesh, false);
-	glDisable(GL_TEXTURE_1D);
 
+	engine.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
 	CGLScene::Render(engine, rc);
 }
 

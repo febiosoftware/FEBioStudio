@@ -44,11 +44,16 @@ public:
 	void deleteCachedMesh(GMesh* gm) override;
 
 public:
-	void pushState() override;
-	void popState() override;
-
 	void pushTransform() override;
 	void popTransform() override;
+
+	void translate(const vec3d& r);
+	void rotate(const quatd& rot) override;
+	void transform(const vec3d& pos, const quatd& rot) override;
+
+public:
+	void pushState() override;
+	void popState() override;
 
 	void enable(StateFlag flag);
 	void disable(StateFlag flag);

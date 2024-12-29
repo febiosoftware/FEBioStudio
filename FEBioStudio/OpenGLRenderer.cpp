@@ -123,6 +123,27 @@ void OpenGLRenderer::popTransform()
 	glPopMatrix();
 }
 
+void OpenGLRenderer::translate(const vec3d& r)
+{
+	glTranslated(r.x, r.y, r.z);
+}
+
+void OpenGLRenderer::rotate(const quatd& rot)
+{
+	double w = rot.GetAngle();
+	if (w != 0.0)
+	{
+		vec3d r = rot.GetVector();
+		glRotated(w * RAD2DEG, r.x, r.y, r.z);
+	}
+}
+
+void OpenGLRenderer::transform(const vec3d& pos, const quatd& rot)
+{
+	translate(pos);
+	rotate(rot);
+}
+
 void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 {
 	switch (flag)
