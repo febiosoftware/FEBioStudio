@@ -30,16 +30,6 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "GLViewTransform.h"
 
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
-
-//-----------------------------------------------------------------------------
 GManipulator::GManipulator(CGLView* view) : m_view(view)
 {
 	m_scale = 1.0;
@@ -49,118 +39,106 @@ GManipulator::~GManipulator(void)
 {
 }
 
-//-----------------------------------------------------------------------------
-void GTranslator::Render(int npivot, bool bactive)
+void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 {
 	double d = m_scale;
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.pushState();
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
 	GLColor g(128, 128, 128);
 
 	// X-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotated(90, 0, 1, 0);
+		re.rotate(90, 0, 1, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) glColor3ub(255,255,0);
-			else glColor3ub(255,0,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(255, 0, 0));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(g);
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCone(0.5 * l, l, 12);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Y-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotated(90, -1, 0, 0);
+		re.rotate(90, -1, 0, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) glColor3ub(255,255,0);
-			else glColor3ub(0,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(0,255,0));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(g);
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCone(0.5 * l, l, 12);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Z-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) glColor3ub(255,255,0);
-			else glColor3ub(0,0,255);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(0,0,255));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(g);
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCone(0.5 * l, l, 12);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	if (bactive)
 	{
 		// XY-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-	//	glPushMatrix();
-		{
-			glRectd(0,0,r,r);
-
-			glColor4ub(255,255,0, 128);
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
-		}
-	//	glPopMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		glx::drawRect(0,0,r,r);
+		re.setColor(GLColor(255,255,0, 128));
+		glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 
 		// YZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-		glPushMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
 		{
-			glRotated(-90, 0, 1, 0);
-			glRectd(0,0,r,r);
+			re.rotate(-90, 0, 1, 0);
+			glx::drawRect(0,0,r,r);
 
-			glColor4ub(255,255,0,128);
+			re.setColor(GLColor(255,255,0,128));
 			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
-		glPopMatrix();
+		re.popTransform();
 
 		// XZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-		glPushMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
 		{
-			glRotated(90, 1, 0, 0);
-			glRectd(0,0,r,r);
+			re.rotate(90, 1, 0, 0);
+			glx::drawRect(0,0,r,r);
 
-			glColor4ub(255,255,0,128);
+			re.setColor(GLColor(255,255,0,128));
 			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
-		glPopMatrix();
+		re.popTransform();
 	}
 
-	gluDeleteQuadric(pobj);
-
-	glPopAttrib();
+	re.popState();
 }
 
-//-----------------------------------------------------------------------------
 int GTranslator::Pick(int x, int  y)
 {
 	double r = 0.3*m_scale;
@@ -231,124 +209,116 @@ int GTranslator::Pick(int x, int  y)
 	return PIVOT_SELECTION_MODE::SELECT_NONE;
 }
 
-//-----------------------------------------------------------------------------
-void GRotator::Render(int npivot, bool bactive)
+void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 {
 	double d = m_scale;
 	double l = 0.1*d;
 	const int N = 50;
 
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.pushState();
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
 	// X-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotatef(90.f, 0.f, 1.f, 0.f);
+		re.rotate(90, 0, 1, 0);
 		if (bactive)
 		{
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_X)
 			{
-				glColor4ub(200,0,0,64);
-				gluDisk(pobj, 0, d, N, 1);
+				re.setColor(GLColor(200,0,0,64));
+				glx::drawDisk(d, N);
 
-				glColor3ub(255,255,0);
+				re.setColor(GLColor(255,255,0));
 				glx::drawLine(0, 0, 0, 0, 0, d + l);
 				glx::drawCircle(d, N);
 
-				glColor3ub(255,255,0);
-				glTranslated(0, 0, d+l);
-				gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+				re.setColor(GLColor(255,255,0));
+				re.translate(vec3d(0, 0, d+l));
+				glx::drawCone(0.5 * l, l);
 			}
 			else
 			{
-				glColor3ub(255,0,0);
+				re.setColor(GLColor(255,0,0));
 				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
-			glColor3ub(128,128,128);
+			re.setColor(GLColor(128,128,128));
 			glx::drawCircle(d, N);
 		}
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Y-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotatef(90.f, -1.f, 0.f, 0.f);
+		re.rotate(90.f, -1.f, 0.f, 0.f);
 		if (bactive)
 		{
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y)
 			{
-				glColor4ub(0,200,0,64);
-				gluDisk(pobj, 0, d, N, 1);
+				re.setColor(GLColor(0,200,0,64));
+				glx::drawDisk(d, N);
 
-				glColor3ub(255,255,0);
+				re.setColor(GLColor(255,255,0));
 				glx::drawLine(0, 0, 0, 0, 0, d + l);
 				glx::drawCircle(d, N);
 
-				glColor3ub(255,255,0);
-				glTranslated(0, 0, d+l);
-				gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+				re.setColor(GLColor(255,255,0));
+				re.translate(vec3d(0, 0, d+l));
+				glx::drawCone(0.5 * l, l);
 			}
 			else
 			{
-				glColor3ub(0,255,0);
+				re.setColor(GLColor(0,255,0));
 				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
-			glColor3ub(128,128,128);
+			re.setColor(GLColor(128,128,128));
 			glx::drawCircle(d, N);
 		}
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Z-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
 		if (bactive)
 		{
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z)
 			{
-				glColor4ub(0,0,255,64);
-				gluDisk(pobj, 0, d, N, 1);
+				re.setColor(GLColor(0,0,255,64));
+				glx::drawDisk(d, N);
 
-				glColor3ub(255,255,0);
+				re.setColor(GLColor(255,255,0));
 				glx::drawLine(0, 0, 0, 0, 0, d + l);
 				glx::drawCircle(d, N);
 
-				glColor3ub(255,255,0);
-				glTranslated(0, 0, d+l);
-				gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
+				re.setColor(GLColor(255,255,0));
+				re.translate(vec3d(0, 0, d+l));
+				glx::drawCone(0.5 * l, l);
 			}
 			else
 			{
-				glColor3ub(0,0,255);
+				re.setColor(GLColor(0,0,255));
 				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
-			glColor3ub(128,128,128);
+			re.setColor(GLColor(128,128,128));
 			glx::drawCircle(d, N);
 		}
 	}
-	glPopMatrix();
+	re.popTransform();
 
-	gluDeleteQuadric(pobj);
-
-	glPopAttrib();
+	re.popState();
 }
 
-//-----------------------------------------------------------------------------
 int GRotator::Pick(int x, int y)
 {
 	GLViewTransform transform(m_view);
@@ -431,122 +401,106 @@ int GRotator::Pick(int x, int y)
 	return PIVOT_SELECTION_MODE::SELECT_NONE;
 }
 
-//-----------------------------------------------------------------------------
-void GScalor::Render(int npivot, bool bactive)
+void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 {
 	double d = m_scale;
 	double l = 0.1*d;
 	double r = 0.3*d;
 
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.pushState();
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
 	GLColor g(128, 128, 128);
 
 	// X-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotated(90, 0, 1, 0);
+		re.rotate(90, 0, 1, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) glColor3ub(255,255,0);
-			else glColor3ub(255,0,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(255,0,0));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(GLColor(g.r, g.g, g.b));
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
-		gluDisk(pobj, 0, 0.5*l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCappedCylinder(0.5 * l, l);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Y-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glRotated(90, -1, 0, 0);
+		re.rotate(90, -1, 0, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) glColor3ub(255,255,0);
-			else glColor3ub(0,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(0,255,0));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(GLColor(g.r, g.g, g.b));
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
-		gluDisk(pobj, 0, 0.5*l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCappedCylinder(0.5 * l, l);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	// Z-axis
-	glPushMatrix();
+	re.pushTransform();
 	{
 		if (bactive)
 		{
-			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) glColor3ub(255,255,0);
-			else glColor3ub(0,0,255);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) re.setColor(GLColor(255,255,0));
+			else re.setColor(GLColor(0,0,255));
 		}
-		else glColor3ub(g.r, g.g, g.b);
+		else re.setColor(GLColor(g.r, g.g, g.b));
 		glx::drawLine(0, 0, 0, 0, 0, d);
 
-		glTranslated(0, 0, d);
-		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
-		gluDisk(pobj, 0, 0.5*l, 12, 1);
+		re.translate(vec3d(0, 0, d));
+		glx::drawCappedCylinder(0.5 * l, l);
 	}
-	glPopMatrix();
+	re.popTransform();
 
 	if (bactive)
 	{
 		// XY-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-	//	glPushMatrix();
-		{
-			glRectd(0,0,r,r);
-
-			glColor4ub(255,255,0, 128);
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
-		}
-	//	glPopMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		glx::drawRect(0,0,r,r);
+		re.setColor(GLColor(255,255,0, 128));
+		glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 
 		// YZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-		glPushMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
 		{
-			glRotated(-90, 0, 1, 0);
-			glRectd(0,0,r,r);
+			re.rotate(-90, 0, 1, 0);
+			glx::drawRect(0,0,r,r);
 
-			glColor4ub(255,255,0,128);
+			re.setColor(GLColor(255,255,0,128));
 			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
-		glPopMatrix();
+		re.popTransform();
 
 		// XZ-plane
-		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) glColor4ub(255, 255, 0, 128);
-		else glColor4ub(164, 164, 0, 90);
-		glPushMatrix();
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) re.setColor(GLColor(255, 255, 0, 128));
+		else re.setColor(GLColor(164, 164, 0, 90));
+		re.pushTransform();
 		{
-			glRotated(90, 1, 0, 0);
-			glRectd(0,0,r,r);
+			re.rotate(90, 1, 0, 0);
+			glx::drawRect(0,0,r,r);
 
-			glColor4ub(255,255,0,128);
+			re.setColor(GLColor(255,255,0,128));
 			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
-		glPopMatrix();
+		re.popTransform();
 	}
 
-	gluDeleteQuadric(pobj);
-
-	glPopAttrib();
+	re.popState();
 }
 
-//-----------------------------------------------------------------------------
 int GScalor::Pick(int x, int y)
 {
 	double r = 0.3*m_scale;

@@ -53,6 +53,7 @@ class GLTriad;
 class GLSafeFrame;
 class GLLegendBar;
 class GVContextMenu;
+class GLRenderEngine;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -84,7 +85,7 @@ public:
 
 	vec3d GetPosition() const { return m_pos; }
 
-	void Render(int ntrans, double scale, bool bact);
+	void Render(GLRenderEngine& re, int ntrans, double scale, bool bact);
 
 	int Pick(int ntrans, int x, int y);
 

@@ -137,6 +137,11 @@ void OpenGLRenderer::rotate(const quatd& rot)
 	}
 }
 
+void OpenGLRenderer::rotate(double angleDeg, double x, double y, double z)
+{
+	glRotated(angleDeg, x, y, z);
+}
+
 void OpenGLRenderer::transform(const vec3d& pos, const quatd& rot)
 {
 	translate(pos);

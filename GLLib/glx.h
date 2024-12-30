@@ -68,6 +68,12 @@ void drawSmoothPath(const std::vector<vec3d>& path, float R, float t0 = 0.f, flo
 void drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16, int leftCap = 0, int rightCap = 0);
 
+void drawRect(double x0, double y0, double x1, double x2);
+void drawDisk(float baseRadius, int N = 16);
+void drawCone(float baseRadius, float height, int N = 16);
+void drawCylinder(float radius, float height, int N = 16);
+void drawCappedCylinder(float radius, float height, int N = 16);
+
 vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t);
 
 void quad4(const vec3d* r, const vec3f* n);

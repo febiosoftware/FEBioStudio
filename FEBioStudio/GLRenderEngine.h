@@ -63,6 +63,7 @@ public:
 
 	virtual void translate(const vec3d& r) {}
 	virtual void rotate(const quatd& rot) {}
+	virtual void rotate(double angleDeg, double x, double y, double z) {}
 	virtual void transform(const vec3d& pos, const quatd& rot) {}
 
 public:

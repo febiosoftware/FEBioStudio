@@ -49,6 +49,7 @@ public:
 
 	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
+	void rotate(double angleDeg, double x, double y, double z) override;
 	void transform(const vec3d& pos, const quatd& rot) override;
 
 public:

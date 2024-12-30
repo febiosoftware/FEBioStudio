@@ -494,6 +494,78 @@ void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0
 	}
 }
 
+void glx::drawRect(double x0, double y0, double x1, double y1)
+{
+	glBegin(GL_QUADS);
+	{
+		glVertex3d(x0, y0, 0); 
+		glVertex3d(x1, y0, 0);
+		glVertex3d(x1, y1, 0);
+		glVertex3d(x0, y1, 0);
+	}
+	glEnd();
+}
+
+void glx::drawDisk(float baseRadius, int N)
+{
+	glBegin(GL_TRIANGLE_FAN);
+	{
+		glNormal3d(0, 0, 1);
+		glVertex3d(0, 0, 0);
+		for (int i = 0; i <= N; ++i)
+		{
+			double x = baseRadius * cos(i * 2 * PI / N);
+			double y = baseRadius * sin(i * 2 * PI / N);
+			glVertex3d(x, y, 0);
+		}
+	}
+	glEnd();
+}
+
+void glx::drawCylinder(float radius, float height, int N)
+{
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i <= N; ++i)
+	{
+		double w = 2 * PI * i / (double)N;
+		double x = cos(w);
+		double y = sin(w);
+
+		glNormal3d(x, y, 0); glVertex3d(radius*x, radius*y, 0);
+		glNormal3d(x, y, 0); glVertex3d(radius*x, radius*y, height);
+	}
+	glEnd();
+}
+
+void glx::drawCappedCylinder(float radius, float height, int N)
+{
+	// render cylinder
+	glx::drawCylinder(radius, height, N);
+
+	// render caps
+	glx::drawCircle(vec3d(0,0,0), vec3d(0,0,-1), radius, 16);
+	glx::drawCircle(vec3d(0,0,height), vec3d(0,0,1), radius, 16);
+}
+
+void glx::drawCone(float baseRadius, float height, int N)
+{
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i <= N; ++i)
+	{
+		double wa = 2 * PI * i / (double)N;
+		double wb = 2 * PI * (i+1) / (double)N;
+		double xa = baseRadius*cos(wa);
+		double ya = baseRadius*sin(wa);
+		double xb = baseRadius*cos(wb);
+		double yb = baseRadius*sin(wb);
+
+		glVertex3d(xa, ya, 0);
+		glVertex3d(xb, yb, 0);
+		glVertex3d(0, 0, height);
+	}
+	glEnd();
+}
+
 void glx::quad4(const vec3d* r, const vec3f* n)
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);

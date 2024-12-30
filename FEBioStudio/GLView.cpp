@@ -306,13 +306,13 @@ CGLPivot::CGLPivot(CGLView* view) : m_Ttor(view), m_Rtor(view), m_Stor(view)
 	m_pos = vec3d(0, 0, 0);
 }
 
-void CGLPivot::Render(int ntrans, double scale, bool bact)
+void CGLPivot::Render(GLRenderEngine& re, int ntrans, double scale, bool bact)
 {
 	switch (ntrans)
 	{
-	case TRANSFORM_MOVE  : m_Ttor.SetScale(scale); m_Ttor.Render(m_mode, bact); break;
-	case TRANSFORM_ROTATE: m_Rtor.SetScale(scale); m_Rtor.Render(m_mode, bact); break;
-	case TRANSFORM_SCALE : m_Stor.SetScale(scale); m_Stor.Render(m_mode, bact); break;
+	case TRANSFORM_MOVE  : m_Ttor.SetScale(scale); m_Ttor.Render(re, m_mode, bact); break;
+	case TRANSFORM_ROTATE: m_Rtor.SetScale(scale); m_Rtor.Render(re, m_mode, bact); break;
+	case TRANSFORM_SCALE : m_Stor.SetScale(scale); m_Stor.Render(re, m_mode, bact); break;
 	}
 }
 
@@ -1895,7 +1895,7 @@ void CGLView::RenderPivot()
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = ps->IsMovable();
-	m_pivot.Render(ntrans, d, bact);
+	m_pivot.Render(m_ogl, ntrans, d, bact);
 
 	// restore the modelview matrix
 	glPopMatrix();
