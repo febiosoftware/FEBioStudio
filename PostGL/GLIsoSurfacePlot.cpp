@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
 
@@ -146,7 +146,7 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLIsoSurfacePlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLIsoSurfacePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nfield == 0) return;
 

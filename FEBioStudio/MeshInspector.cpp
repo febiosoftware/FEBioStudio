@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMeshValuator.h>
 #include <PostLib/ColorMap.h>
 #include "Commands.h"
+#include <GLLib/GLScene.h>
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {
@@ -431,7 +432,7 @@ void CMeshInspector::on_select_clicked()
 void CMeshInspector::UpdateUI()
 {
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-	CGLScene* scene = m_wnd->GetGLView()->GetActiveScene();
+	GLScene* scene = m_wnd->GetGLView()->GetActiveScene();
 	if (scene) scene->Update();
 	m_wnd->RedrawGL();
 }

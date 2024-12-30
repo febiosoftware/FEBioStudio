@@ -250,7 +250,7 @@ vec3d CGLPlaneCutPlot::GetPlanePosition() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLPlaneCutPlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	// make sure we have a clip plane ID assigned
 	if (m_nclip == -1) return;
@@ -382,7 +382,7 @@ void CGLPlaneCutPlot::RenderSlice(GLRenderEngine& re)
 	// render active (i.e. textured) mesh
 	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
 	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
-	tex.MakeCurrent();
+	re.setTexture(tex);
 	re.renderGMesh(m_activeMesh, false);
 
 	// now render the inactive mesh

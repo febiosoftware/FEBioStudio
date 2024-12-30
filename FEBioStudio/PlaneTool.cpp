@@ -390,7 +390,7 @@ void CPlaneTool::onAlignView()
 
 	vec3d r = ui->GetNormal();
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	GLCamera& cam = doc->GetView()->GetCamera();
 	cam.SetViewDirection(r);
 
 	GetMainWindow()->RedrawGL();

@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PMi(4, 4), q(4, 0.0), c(4, 0.0)
 {
-	CGLCamera* cam = view->GetCamera();
+	GLCamera* cam = view->GetCamera();
 	if (cam == nullptr) return;
 	view->SetupProjection();
 	PositionInScene(*cam);
@@ -143,7 +143,7 @@ bool GLViewTransform::IsVisible(const vec3d& p)
 	return ((p.x > 0) && (p.x < W) && (p.y > 0) && (p.y < H) && (p.z > -1) && (p.z < 1));
 }
 
-void GLViewTransform::PositionInScene(const CGLCamera& cam)
+void GLViewTransform::PositionInScene(const GLCamera& cam)
 {
 	// reset the modelview matrix mode
 	glMatrixMode(GL_MODELVIEW);

@@ -45,7 +45,7 @@ class GDecoration;
 class CGView;
 class FSModel;
 class CGLView;
-class CGLScene;
+class GLScene;
 class GPart;
 
 class GLLabel;
@@ -110,7 +110,7 @@ public:
 public:
 	CGLDocument* GetDocument();
 
-	CGLScene* GetActiveScene() override;
+	GLScene* GetActiveScene() override;
 
 	void UpdateScene();
 
@@ -210,7 +210,7 @@ protected:
 
 	void RenderScene() override;
 
-	void RenderCanvas(CGLContext& rc);
+	void RenderCanvas(GLContext& rc);
 
 private:
 	void Render3DCursor();
@@ -313,14 +313,14 @@ private:
 	vector<GDecoration*>	m_deco;
 
 public:
-	CGLContext	m_rc;
+	GLContext	m_rc;
 
 private:
 	GLViewSelector	m_select;
 
 	GLScreenRecorder	m_recorder;
 
-	CGLCamera	m_oldCam;
+	GLCamera	m_oldCam;
 
 	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
 

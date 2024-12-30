@@ -316,7 +316,7 @@ bool CPostDocument::Initialize()
 		// reset the camera
 		CGView& view = *GetView();
 		view.Reset();
-		CGLCamera& cam = view.GetCamera();
+		GLCamera& cam = view.GetCamera();
 		cam.Reset();
 		cam.SetTargetDistance(box.Radius() * 3);
 		cam.SetTarget(box.Center());

@@ -62,7 +62,7 @@ void C3DImageSlicer::SetSliceImage(int slice, float offset, CImage* img)
 	p->SetImageSlice(img);
 }
 
-void C3DImageSlicer::Render(GLRenderEngine& re, CGLContext& rc)
+void C3DImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (GetImageModel() == nullptr) return;
 

@@ -1159,7 +1159,7 @@ void CDlgSettings::UpdateSettings()
 
 	if (glview)
 	{
-		CGLCamera* cam = glview->GetCamera();
+		GLCamera* cam = glview->GetCamera();
 		ui->m_cam->m_banim = true;
 		ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
 		ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
@@ -1283,7 +1283,7 @@ void CDlgSettings::apply()
 	m_pwnd->SetEnvironmentMap(ui->m_light->m_envmap);
 	view.m_use_environment_map = ui->m_light->m_useEV;
 
-	CGLCamera* cam = glview->GetCamera();
+	GLCamera* cam = glview->GetCamera();
 	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
 	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
 

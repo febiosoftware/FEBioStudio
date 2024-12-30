@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include "Interpolator.h"
+
 class GLCameraTransform
 {
 public:
@@ -38,10 +39,10 @@ public:
 };
 
 // Base class for camera tracking targets
-class CTrackingTarget
+class GLTrackingTarget
 {
 public:
-	CTrackingTarget() {}
+	GLTrackingTarget() {}
 
 	bool IsActive() const { return m_btrack; }
 
@@ -56,14 +57,14 @@ public:
 // This class implements a camera that can be used to navigate a 3D world.
 // It uses the interpolater class to allow animatable transistions between
 // two viewpoints.
-class CGLCamera  
+class GLCamera  
 {
 public:
 	// constructor/destructor
-	CGLCamera();
+	GLCamera();
 
 	//! destructor
-	virtual ~CGLCamera();
+	virtual ~GLCamera();
 
 	// reset the camera
 	void Reset();

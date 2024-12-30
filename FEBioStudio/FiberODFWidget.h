@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include "GLSceneView.h"
 #include <GLLib/GLCamera.h>
-#include "GLScene.h"
+#include <GLLib/GLScene.h>
 
 class CMainWindow;
 class matrix;
@@ -41,13 +41,13 @@ using std::string;
 
 class CFiberGLWidget;
 
-class CODFScene : public CGLScene
+class CODFScene : public GLScene
 {
 public:
 	CODFScene(CFiberGLWidget* w) : m_w(w) {}
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	void RenderCanvas(QPainter& painter, CGLContext& rc) override;
+	void RenderCanvas(QPainter& painter, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
 

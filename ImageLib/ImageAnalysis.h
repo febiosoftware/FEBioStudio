@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include <FSCore/FSThreadedTask.h>
 
 class CImageModel;
-class CGLCamera;
+class GLCamera;
 class GLRenderEngine;
-class CGLContext;
+class GLContext;
 
 class CImageAnalysis : public FSThreadedTask
 {
@@ -48,7 +48,7 @@ public:
     int Type() { return m_type; }
 
     virtual void run() = 0;
-    virtual void render(GLRenderEngine& re, CGLContext& rc) {}
+    virtual void render(GLRenderEngine& re, GLContext& rc) {}
 
 	bool IsActive() const { return m_active; }
 	void Activate(bool b) { m_active = b; }

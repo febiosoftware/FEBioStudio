@@ -23,43 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include "GLPlot.h"
+#include <FSCore/math3d.h>
 
-class FEMesh;
+class GLContext;
+class GLRenderEngine;
 
-namespace Post {
+class GLGrid
+{
+public:
+	GLGrid();
 
-	class GLRuler : public CGLPlot
+	vec3d Intersect(vec3d r, vec3d t, bool bsnap);
+
+	double GetScale() { return m_scale; }
+
+	void Render(GLRenderEngine& re, GLContext& rc);
+
+	vec3d WorldToPlane(const vec3d& r) const
 	{
-		enum { NODE0, NODE1, SIZE, COLOR };
+		return m_q.Inverse() * (r - m_o);
+	}
 
-	public:
-		GLRuler();
+protected:
+	vec3d Snap(vec3d r);
 
-		void Render(GLRenderEngine& re, GLContext& rc) override;
+public:
+	vec3d	m_o;	// plane origin
+	quatd	m_q;	// plane orientation
 
-		void Update() override;
-		void Update(int ntime, float dt, bool breset) override;
-
-		bool UpdateData(bool bsave = true) override;
-
-		double DataValue(int nfield, int nstep);
-
-	public:
-		GLColor GetColor() const;
-		void SetColor(const GLColor& c);
-
-	private:
-		int		m_node[2];
-		GLColor	m_col;
-		double	m_size;
-		bool	m_bfollow;
-
-	private:
-		double	m_R;
-		double	m_lastTime;
-		double	m_lastDt;
-		vec3d	m_rt[2];
-	};
-}
+	double	m_scale;	// scale of grid (ie. distance between lines)
+};

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 
 class CGLView;
-class CGLCamera;
+class GLCamera;
 
 // class that can be used to map screen to world and vice versa
 // NOTE: make sure to call makeCurrent before using this class!
@@ -50,7 +50,7 @@ public:
 	bool IsVisible(const vec3d& p);
 
 private:
-	void PositionInScene(const CGLCamera& cam);
+	void PositionInScene(const GLCamera& cam);
 
 private:
 	CGLView*	m_view;	

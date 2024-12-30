@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
 #include <MeshLib/GMesh.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
@@ -151,7 +151,7 @@ void CGLParticleFlowPlot::SetDensity(float v)
 	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
-void CGLParticleFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;

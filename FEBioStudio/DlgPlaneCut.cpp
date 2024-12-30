@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include "DragBox.h"
 #include <QRadioButton>
 #include <QButtonGroup>
-#include "GLScene.h"
+#include <GLLib/GLScene.h>
 
 class UIDlgPlaneCut
 {
@@ -169,7 +169,7 @@ void CDlgPlaneCut::onDataChanged()
 
 void CDlgPlaneCut::setPlaneCoordinates(double d[4])
 {
-	CGLScene* scene = ui->m_view->GetActiveScene();
+	GLScene* scene = ui->m_view->GetActiveScene();
 	if (scene == nullptr) return;
 
 	BOX box = scene->GetBoundingBox();

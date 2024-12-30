@@ -25,9 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
-#include <GLLib/GLMesh.h>
+#include <GLLib/GLTexture3D.h>
+#include <OGLLib/OGLMesh.h>
 
 class CImageModel;
+class GLRenderEngine;
 
 namespace Post {
 
@@ -44,25 +46,23 @@ public:
 
 	void Reset() override;
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 
 private:
 	void Init();
-	void InitShaders();
 	void ReloadTexture();
 	void UpdateGeometry(const vec3d& view);
 
 private:
-	unsigned int m_texID;
-    float 	m_IscaleMin;
-    float 	m_Iscale;
+	GLTexture3D m_tex;
+	
 	bool	m_vrInit;
 	bool	m_vrReset;
 
 	int	m_nslices = 0;
-	GLTriMesh m_mesh;
+	OGLTriMesh m_mesh;
 };
 
 }

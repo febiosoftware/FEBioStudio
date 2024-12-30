@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLMirrorPlane.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);
@@ -119,7 +119,7 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLMirrorPlane::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLMirrorPlane::Render(GLRenderEngine& re, GLContext& rc)
 {
 	// render the plane
 	if (m_showPlane) RenderPlane(re);

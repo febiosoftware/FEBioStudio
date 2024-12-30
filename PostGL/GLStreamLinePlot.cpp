@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 //=================================================================================================
@@ -129,7 +129,7 @@ void CGLStreamLinePlot::SetVectorType(int ntype)
 	Update();
 }
 
-void CGLStreamLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLStreamLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	int NSL = (int)m_streamLines.size();
 	if (NSL == 0) return;

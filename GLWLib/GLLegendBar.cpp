@@ -166,6 +166,30 @@ void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 	}
 }
 
+void setCurrentTexture(GLTexture1D& tex)
+{
+	unsigned int texID = tex.GetID();
+	if (texID == 0)
+	{
+		glGenTextures(1, &texID);
+		glBindTexture(GL_TEXTURE_1D, texID);
+
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //(m_bsmooth ? GL_LINEAR : GL_NEAREST));
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //(m_bsmooth ? GL_LINEAR : GL_NEAREST));
+
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+
+		tex.SetID(texID);
+	}
+	else glBindTexture(GL_TEXTURE_1D, texID);
+
+	if (tex.DoUpdate())
+	{
+		glTexImage1D(GL_TEXTURE_1D, 0, 3, tex.Size(), 0, GL_RGB, GL_UNSIGNED_BYTE, tex.GetBytes());
+		tex.Update(false);
+	}
+}
+
 void GLLegendBar::draw_gradient_vert(QPainter* painter)
 {
 	painter->beginNativePainting();
@@ -180,7 +204,7 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	glEnable(GL_TEXTURE_1D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	m_pMap->GetTexture().MakeCurrent();
+	setCurrentTexture(m_pMap->GetTexture());
 
 	GLint dfnc;
 	glGetIntegerv(GL_DEPTH_FUNC, &dfnc);
@@ -336,7 +360,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 	glEnable(GL_TEXTURE_1D);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	m_pMap->GetTexture().MakeCurrent();
+	setCurrentTexture(m_pMap->GetTexture());
 
 	GLint dfnc;
 	glGetIntegerv(GL_DEPTH_FUNC, &dfnc);

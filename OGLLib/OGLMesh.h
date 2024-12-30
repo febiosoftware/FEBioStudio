@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 class GMesh;
-class CGLCamera;
+class GLCamera;
 
 #ifndef ubyte
 #define ubyte unsigned char
@@ -37,7 +37,7 @@ class CGLCamera;
 // Mesh class used for GL rendering using vertex arrays
 // This base class has a protected constructor, so cannot be used directly.
 // Instead, use one of the derived classes below. 
-class GLMesh
+class OGLMesh
 {
 private:
 	enum VertexBuffer
@@ -125,8 +125,8 @@ public:
 	int refs() const;
 
 protected:
-	GLMesh(unsigned int mode);
-	virtual ~GLMesh();
+	OGLMesh(unsigned int mode);
+	virtual ~OGLMesh();
 
 	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
 
@@ -163,7 +163,7 @@ protected:
 	int	m_refCount;
 };
 
-inline void GLMesh::AddVertex(double* r, double* n, double* t)
+inline void OGLMesh::AddVertex(double* r, double* n, double* t)
 {
 	size_t i = m_vertexCount++;
 	if (r && m_vr) { m_vr[3 * i] = (float)r[0]; m_vr[3 * i + 1] = (float)r[1]; m_vr[3 * i + 2] = (float)r[2]; }
@@ -171,19 +171,19 @@ inline void GLMesh::AddVertex(double* r, double* n, double* t)
 	if (r && m_vt) { m_vt[3 * i] = (float)t[0]; m_vt[3 * i + 1] = (float)t[1]; m_vt[3 * i + 2] = (float)t[2]; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r)
+inline void OGLMesh::AddVertex(const vec3f& r)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r)
+inline void OGLMesh::AddVertex(const vec3d& r)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
+inline void OGLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
@@ -191,7 +191,7 @@ inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c)
+inline void OGLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
@@ -199,7 +199,7 @@ inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c)
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, float tex)
+inline void OGLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, float tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
@@ -208,7 +208,7 @@ inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, 
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] =   0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
+inline void OGLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
@@ -216,49 +216,49 @@ inline void GLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n)
+inline void OGLMesh::AddVertex(const vec3f& r, const vec3f& n)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
+inline void OGLMesh::AddVertex(const vec3d& r, const vec3d& n)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, float tex)
+inline void OGLMesh::AddVertex(const vec3f& r, float tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, float tex)
+inline void OGLMesh::AddVertex(const vec3d& r, float tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, const GLColor& c)
+inline void OGLMesh::AddVertex(const vec3f& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, const GLColor& c)
+inline void OGLMesh::AddVertex(const vec3d& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLMesh::AddVertex(const Vertex& v)
+inline void OGLMesh::AddVertex(const Vertex& v)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = v.r.x; m_vr[3 * i + 1] = v.r.y; m_vr[3 * i + 2] = v.r.z; }
@@ -267,7 +267,7 @@ inline void GLMesh::AddVertex(const Vertex& v)
 	if (m_vc) { m_vc[4 * i] = v.c.r; m_vc[4 * i + 1] = v.c.g; m_vc[4 * i + 2] = v.c.b; m_vc[4 * i + 3] = v.c.a; }
 }
 
-inline GLMesh::Vertex GLMesh::GetVertex(size_t i) const
+inline OGLMesh::Vertex OGLMesh::GetVertex(size_t i) const
 {
 	Vertex v;
 	if (m_vr) { float* r = m_vr + (3 * i); v.r = vec3f(r[0], r[1], r[2]); }
@@ -278,17 +278,17 @@ inline GLMesh::Vertex GLMesh::GetVertex(size_t i) const
 }
 
 // Triangle mesh
-class GLTriMesh : public GLMesh
+class OGLTriMesh : public OGLMesh
 {
 public:
-	GLTriMesh();
+	OGLTriMesh();
 
 	void Create(size_t maxTriangles, unsigned int flags = 0);
 
 	void AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2);
 
 	// z-sort the faces
-	void ZSortFaces(const CGLCamera& cam);
+	void ZSortFaces(const GLCamera& cam);
 
 	// sort backwards/forwards
 	void SortBackwards();
@@ -299,7 +299,7 @@ public:
 	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
 };
 
-inline void GLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
+inline void OGLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
 	AddVertex(r0);
 	AddVertex(r1);
@@ -307,21 +307,20 @@ inline void GLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d
 }
 
 // quad mesh
-class GLQuadMesh : public GLMesh
+class OGLQuadMesh : public OGLMesh
 {
 public:
-	GLQuadMesh();
+	OGLQuadMesh();
 
 	void Create(int maxQuads, unsigned int flags = 0);
 };
 
-//=============================================================================
 // line mesh
-class GLLineMesh : public GLMesh
+class OGLLineMesh : public OGLMesh
 {
 public:
-	GLLineMesh();
-	GLLineMesh(int maxLines, unsigned int flags = 0);
+	OGLLineMesh();
+	OGLLineMesh(int maxLines, unsigned int flags = 0);
 
 	void Create(int maxLines, unsigned int flags = 0);
 
@@ -332,31 +331,30 @@ public:
 	void CreateFromGMesh(const GMesh& mesh, unsigned int flags = 0);
 };
 
-inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)
+inline void OGLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)
 {
 	AddVertex(r0);
 	AddVertex(r1);
 }
 
-inline void GLLineMesh::AddLine(const vec3d& r0, const vec3d& r1)
+inline void OGLLineMesh::AddLine(const vec3d& r0, const vec3d& r1)
 {
 	AddVertex(r0);
 	AddVertex(r1);
 }
 
-inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1, GLColor& c)
+inline void OGLLineMesh::AddLine(const vec3f& r0, const vec3f& r1, GLColor& c)
 {
 	AddVertex(r0, c);
 	AddVertex(r1, c);
 }
 
-//=============================================================================
 // point mesh
-class GLPointMesh : public GLMesh
+class OGLPointMesh : public OGLMesh
 {
 public:
-	GLPointMesh();
-	GLPointMesh(int maxVertices, unsigned int flags = 0);
+	OGLPointMesh();
+	OGLPointMesh(int maxVertices, unsigned int flags = 0);
 
 	void Create(int maxVertices, unsigned int flags = 0);
 

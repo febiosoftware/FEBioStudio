@@ -63,7 +63,7 @@ private:
 public:
 	GLTensorPlot();
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	CColorTexture* GetColorMap();
 

@@ -26,11 +26,10 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <GL/glew.h>
 #include "GLSceneView.h"
-#include "GLScene.h"
+#include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <QMouseEvent>
 #include <QTimer>
-#include "OpenGLRenderer.h"
 #include <QPainter>
 
 static bool initGlew = false;
@@ -50,7 +49,7 @@ CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent), m_ogl(this)
 	m_ox = m_oy = 1;
 }
 
-CGLScene* CGLSceneView::GetActiveScene()
+GLScene* CGLSceneView::GetActiveScene()
 {
 	return nullptr;
 }
@@ -123,7 +122,7 @@ void CGLSceneView::initializeGL()
 
 void CGLSceneView::RenderBackground()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr)
 	{
 		glClearColor(.2f, .2f, .2f, 1.f);
@@ -196,7 +195,7 @@ void CGLSceneView::paintGL()
 	RenderCanvas();
 
 	// if the camera is animating, we need to redraw
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene && scene->GetCamera().IsAnimating())
 	{
 		scene->GetCamera().Update();
@@ -207,13 +206,13 @@ void CGLSceneView::paintGL()
 void CGLSceneView::RenderScene()
 {
 	m_ogl.start();
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
-		CGLCamera& cam = scene->GetCamera();
+		GLCamera& cam = scene->GetCamera();
 		m_ogl.positionCamera(cam);
 
-		CGLContext rc;
+		GLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
 		rc.m_w = width();
@@ -226,11 +225,11 @@ void CGLSceneView::RenderScene()
 
 void CGLSceneView::RenderCanvas()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
-		CGLCamera& cam = scene->GetCamera();
-		CGLContext rc;
+		GLCamera& cam = scene->GetCamera();
+		GLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
 		rc.m_w = width();
@@ -262,13 +261,13 @@ void CGLSceneView::SetupProjection()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	BOX box = scene->GetBoundingBox();
 
 	CGView& view = scene->GetView();
-	CGLCamera& cam = view.GetCamera();
+	GLCamera& cam = view.GetCamera();
 
 	double R = box.Radius();
 	GLViewSettings& vs = GetViewSettings();
@@ -309,14 +308,14 @@ void CGLSceneView::GetViewport(int vp[4]) const
 
 CGView* CGLSceneView::GetView()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene) return &(scene->GetView());
 	else return nullptr;
 }
 
-CGLCamera* CGLSceneView::GetCamera()
+GLCamera* CGLSceneView::GetCamera()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene) return &(scene->GetView().GetCamera());
 	else return nullptr;
 }
@@ -375,17 +374,17 @@ void CGLSceneView::PrepScene()
 	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
 	glLightfv(GL_LIGHT0, GL_POSITION, fv);
 
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
-		CGLCamera& cam = scene->GetCamera();
+		GLCamera& cam = scene->GetCamera();
 		cam.MakeActive();
 	}
 }
 
 void CGLSceneView::mousePressEvent(QMouseEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	m_prevPos = ev->pos();
@@ -393,10 +392,10 @@ void CGLSceneView::mousePressEvent(QMouseEvent* ev)
 
 void CGLSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	CGLCamera& cam = scene->GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -468,17 +467,17 @@ void CGLSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void CGLSceneView::mouseReleaseEvent(QMouseEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 }
 
 void CGLSceneView::wheelEvent(QWheelEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetView().GetCamera();
 
 	Qt::KeyboardModifiers key = ev->modifiers();
 	bool balt = (key & Qt::AltModifier);
@@ -525,7 +524,7 @@ void CGLSceneView::wheelEvent(QWheelEvent* ev)
 
 void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	double W = (double)width();
@@ -544,7 +543,7 @@ void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
 	fy = fh / 2 - y * fh / H;
 }
 
-CGLManagedSceneView::CGLManagedSceneView(CGLScene* scene, QWidget* parent) : CGLSceneView(parent), m_scene(scene) 
+CGLManagedSceneView::CGLManagedSceneView(GLScene* scene, QWidget* parent) : CGLSceneView(parent), m_scene(scene) 
 {
 	if (scene)
 	{

@@ -95,7 +95,7 @@ public:
 	void GenerateSubVolumes();
 
     void run() override;
-    void render(GLRenderEngine& re, CGLContext& rc) override;
+    void render(GLRenderEngine& re, GLContext& rc) override;
 
 	int ODFs() const;
     CODF* GetODF(int i);
@@ -116,7 +116,7 @@ public:
 	void ProcessSelectedOnly(bool b) { m_processSelectedOnly = b; }
 
 public:
-	void renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* cam);
+	void renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam);
 
 private:
 	// clear all ODFs

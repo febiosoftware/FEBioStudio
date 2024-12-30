@@ -27,9 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <FSCore/FSObject.h>
-#include <FEBioStudio/GLRenderEngine.h>
+#include <GLLib/GLRenderEngine.h>
 
-class CGLContext;
+class GLContext;
 
 namespace Post {
 
@@ -88,7 +88,7 @@ public:
 	CGLVisual(CGLModel* mdl = 0) : CGLObject(mdl) { m_bclip = true; }
 
 	// render the object to the 3D view
-	virtual void Render(GLRenderEngine& re, CGLContext& rc) = 0;
+	virtual void Render(GLRenderEngine& re, GLContext& rc) = 0;
 
 	// allow clipping
 	bool AllowClipping() { return m_bclip; }

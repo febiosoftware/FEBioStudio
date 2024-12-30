@@ -32,8 +32,8 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
+#include <GLLib/GLRenderEngine.h>
 #include <PostLib/ColorMap.h>
-#include "GLRenderEngine.h"
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -533,7 +533,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render(GLRenderEngine& re, CGLContext& rc)
+void GLPlaneCut::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_planeCut == nullptr) return;
 
@@ -547,7 +547,7 @@ void GLPlaneCut::Render(GLRenderEngine& re, CGLContext& rc)
 
 	if (rc.m_settings.m_bmesh)
 	{
-		CGLCamera& cam = *rc.m_cam;
+		GLCamera& cam = *rc.m_cam;
 		cam.LineDrawMode(true);
 		re.positionCamera(cam);
 

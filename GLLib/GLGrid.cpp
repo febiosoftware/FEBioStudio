@@ -25,18 +25,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "GGrid.h"
-#include <GLLib/GLCamera.h>
-#include <GLLib/GLContext.h>
-#include <GLLib/glx.h>
+#include "GLGrid.h"
+#include "GLCamera.h"
+#include "GLContext.h"
+#include "glx.h"
 #include "GLRenderEngine.h"
 
-GGrid::GGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
+GLGrid::GLGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {
 	m_scale = .1f; 
 }
 
-vec3d GGrid::Intersect(vec3d r, vec3d t, bool bsnap)
+vec3d GLGrid::Intersect(vec3d r, vec3d t, bool bsnap)
 {
 	vec3d q = m_o - r;
 	vec3d n = m_q*vec3d(0,0,1);
@@ -57,7 +57,7 @@ vec3d GGrid::Intersect(vec3d r, vec3d t, bool bsnap)
 
 inline double sign(double x) { return (x >= 0.0 ? 1.0 : -1.0); }
 
-vec3d GGrid::Snap(vec3d r)
+vec3d GLGrid::Snap(vec3d r)
 {
 	double s = 1/ (m_scale == 0 ? 1 : m_scale);
 
@@ -68,7 +68,7 @@ vec3d GGrid::Snap(vec3d r)
 	return r;
 }
 
-void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
+void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 {
 	// store attributes
 	re.pushState();
@@ -76,7 +76,7 @@ void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// get the camera
-	CGLCamera& cam = *renderContext.m_cam;
+	GLCamera& cam = *renderContext.m_cam;
 
 	// store modelview matrix
 	re.pushTransform();

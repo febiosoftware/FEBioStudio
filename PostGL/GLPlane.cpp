@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <PostLib/FEPostModel.h>
 #include "GLPlane.h"
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 CGLPlane::CGLPlane(FEPostModel* pm)
@@ -68,7 +68,7 @@ void CGLPlane::Create(int n[3])
 	}
 }
 
-void CGLPlane::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLPlane::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 

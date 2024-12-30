@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include <QOpenGLWidget>
 #include <GLLib/GLViewSettings.h>
 #include <FSCore/math3d.h>
-#include "OpenGLRenderer.h"
+#include <OGLLib/OpenGLRenderer.h>
 
-class CGLScene;
+class GLScene;
 class CGView;
-class CGLCamera;
+class GLCamera;
 
 //! This class is used for rendering CGLScenes
 class CGLSceneView : public QOpenGLWidget
@@ -43,13 +43,13 @@ public:
 
 	GLViewSettings& GetViewSettings() { return m_view; }
 
-	virtual CGLScene* GetActiveScene();
+	virtual GLScene* GetActiveScene();
 	virtual void RenderScene();
 	virtual void RenderCanvas();
 	virtual void RenderBackground();
 
 	CGView* GetView();
-	CGLCamera* GetCamera();
+	GLCamera* GetCamera();
 
 	//! Setup the projection matrix
 	void SetupProjection();
@@ -85,11 +85,11 @@ protected:
 class CGLManagedSceneView : public CGLSceneView
 {
 public:
-	CGLManagedSceneView(CGLScene* scene, QWidget* parent = nullptr);
+	CGLManagedSceneView(GLScene* scene, QWidget* parent = nullptr);
 	~CGLManagedSceneView();
 
-	CGLScene* GetActiveScene() override { return m_scene; }
+	GLScene* GetActiveScene() override { return m_scene; }
 
 private:
-	CGLScene* m_scene;
+	GLScene* m_scene;
 };

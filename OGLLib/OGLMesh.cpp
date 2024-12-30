@@ -23,7 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "GLMesh.h"
+#include "OGLMesh.h"
 #include <GL/glew.h>
 #ifdef WIN32
 #include <Windows.h>
@@ -36,11 +36,10 @@ SOFTWARE.*/
 #include <GL/gl.h>
 #endif
 #include <MeshLib/GMesh.h>
-#include <map>
 #include <algorithm>
-#include "GLCamera.h"
+#include <GLLib/GLCamera.h>
 
-GLMesh::GLMesh(unsigned int mode)
+OGLMesh::OGLMesh(unsigned int mode)
 {
 	m_mode = mode;
 	m_vr = nullptr;
@@ -57,42 +56,44 @@ GLMesh::GLMesh(unsigned int mode)
 	m_renderMode = VertexArrayMode;
 	m_initVBO = false;
 	m_refCount = 0;
+	m_count = 0;
+	m_start = 0;
 }
 
-GLMesh::~GLMesh()
+OGLMesh::~OGLMesh()
 {
 	Clear();
 }
 
-void GLMesh::incRef()
+void OGLMesh::incRef()
 {
 	m_refCount++;
 }
 
-void GLMesh::decRef()
+void OGLMesh::decRef()
 {
 	m_refCount--;
 	assert(m_refCount >= 0);
 }
 
-void GLMesh::resetRef()
+void OGLMesh::resetRef()
 {
 	m_refCount = 0;
 }
 
-int GLMesh::refs() const
+int OGLMesh::refs() const
 {
 	return m_refCount;
 }
 
-void GLMesh::SetRenderMode(GLMesh::RenderMode mode)
+void OGLMesh::SetRenderMode(OGLMesh::RenderMode mode)
 {
 	assert(m_bvalid == false);
 	if (m_bvalid == false) m_renderMode = mode;
 }
 
 // clear all mesh data
-void GLMesh::Clear()
+void OGLMesh::Clear()
 {
 	m_bvalid = false;
 	m_vertexCount = 0;
@@ -110,7 +111,7 @@ void GLMesh::Clear()
 	}
 }
 
-void GLMesh::AllocVertexBuffers(size_t maxVertices, unsigned flags)
+void OGLMesh::AllocVertexBuffers(size_t maxVertices, unsigned flags)
 {
 	m_bvalid = false;
 	m_flags = flags;
@@ -141,24 +142,24 @@ void GLMesh::AllocVertexBuffers(size_t maxVertices, unsigned flags)
 	m_maxVertexCount = maxVertices;
 }
 
-void GLMesh::BeginMesh()
+void OGLMesh::BeginMesh()
 {
 	m_vertexCount = 0;
 	m_bvalid = false;
 }
 
-void GLMesh::EndMesh()
+void OGLMesh::EndMesh()
 {
 	m_bvalid = ((m_vr != nullptr) && (m_vertexCount != 0));
 }
 
-void GLMesh::SetTransparency(ubyte a)
+void OGLMesh::SetTransparency(ubyte a)
 {
 	if (m_vc == nullptr) return;
 	for (int i = 0; i < m_vertexCount; ++i) m_vc[4 * i + 3] = a;
 }
 
-void GLMesh::Render(unsigned int flags)
+void OGLMesh::Render(unsigned int flags)
 {
 	if (!m_bvalid) return;
 
@@ -173,7 +174,7 @@ void GLMesh::Render(unsigned int flags)
 	}
 }
 
-void GLMesh::Render(int nstart, int ncount, unsigned int flags)
+void OGLMesh::Render(int nstart, int ncount, unsigned int flags)
 {
 	if (!m_bvalid) return;
 
@@ -188,7 +189,7 @@ void GLMesh::Render(int nstart, int ncount, unsigned int flags)
 	}
 }
 
-void GLMesh::RenderImmediate(unsigned int flags)
+void OGLMesh::RenderImmediate(unsigned int flags)
 {
 	glBegin(m_mode);
 	{
@@ -205,7 +206,7 @@ void GLMesh::RenderImmediate(unsigned int flags)
 	glEnd();
 }
 
-void GLMesh::RenderVertexArrays(unsigned int flags)
+void OGLMesh::RenderVertexArrays(unsigned int flags)
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	if (m_vn && (flags & FLAG_NORMAL )) glEnableClientState(GL_NORMAL_ARRAY);
@@ -228,7 +229,7 @@ void GLMesh::RenderVertexArrays(unsigned int flags)
 	if (m_vc && (flags & FLAG_COLOR  )) glDisableClientState(GL_COLOR_ARRAY);
 }
 
-void GLMesh::RenderVBO(unsigned int flags)
+void OGLMesh::RenderVBO(unsigned int flags)
 {
 	if (m_initVBO == false) InitVBO();
 	if (m_initVBO == false) return;
@@ -278,7 +279,7 @@ void GLMesh::RenderVBO(unsigned int flags)
 	if (useColors  ) glDisableClientState(GL_COLOR_ARRAY);
 }
 
-void GLMesh::ClearVBO()
+void OGLMesh::ClearVBO()
 {
 	// NOTE: This assumes the current GL context is active
 	if (m_vbo[0] != 0)
@@ -288,7 +289,7 @@ void GLMesh::ClearVBO()
 	}
 }
 
-void GLMesh::InitVBO()
+void OGLMesh::InitVBO()
 {
 	if (m_initVBO || (m_bvalid == false)) return;
 
@@ -339,14 +340,14 @@ void GLMesh::InitVBO()
 }
 
 //===================================================================================
-GLTriMesh::GLTriMesh() : GLMesh(GL_TRIANGLES) {}
+OGLTriMesh::OGLTriMesh() : OGLMesh(GL_TRIANGLES) {}
 
-void GLTriMesh::Create(size_t maxTriangles, unsigned int flags)
+void OGLTriMesh::Create(size_t maxTriangles, unsigned int flags)
 {
 	AllocVertexBuffers(3 * maxTriangles, flags);
 }
 
-void GLTriMesh::ZSortFaces(const CGLCamera& cam)
+void OGLTriMesh::ZSortFaces(const GLCamera& cam)
 {
 	// not sure how to do this for VBOs
 	if (m_renderMode == VBOMode) return;
@@ -393,7 +394,7 @@ void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 	m_bvalid = true;
 }
 
-void GLTriMesh::SortBackwards()
+void OGLTriMesh::SortBackwards()
 {
 	// not sure how to do this for VBOs
 	if (m_renderMode == VBOMode) return;
@@ -418,7 +419,7 @@ void GLTriMesh::SortBackwards()
 	m_bvalid = true;
 }
 
-void GLTriMesh::SortForwards()
+void OGLTriMesh::SortForwards()
 {
 	// not sure how to do this for VBOs
 	if (m_renderMode == VBOMode) return;
@@ -432,7 +433,7 @@ void GLTriMesh::SortForwards()
 }
 
 
-void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
+void OGLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 {
 	int faces = gmsh.Faces();
 	AllocVertexBuffers(3 * faces, flags);
@@ -450,7 +451,7 @@ void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 	EndMesh();
 }
 
-void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
+void OGLTriMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
 {
 	if ((surfID < 0) || (surfID >= gmsh.Partitions())) { assert(false); return; }
 
@@ -473,27 +474,27 @@ void GLTriMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flag
 }
 
 //===================================================================================
-GLQuadMesh::GLQuadMesh() : GLMesh(GL_QUADS) {}
+OGLQuadMesh::OGLQuadMesh() : OGLMesh(GL_QUADS) {}
 
-void GLQuadMesh::Create(int maxQuads, unsigned int flags)
+void OGLQuadMesh::Create(int maxQuads, unsigned int flags)
 {
 	AllocVertexBuffers(4 * maxQuads, flags);
 }
 
 //===================================================================================
-GLLineMesh::GLLineMesh() : GLMesh(GL_LINES) {}
+OGLLineMesh::OGLLineMesh() : OGLMesh(GL_LINES) {}
 
-GLLineMesh::GLLineMesh(int maxLines, unsigned int flags) : GLMesh(GL_LINES) 
+OGLLineMesh::OGLLineMesh(int maxLines, unsigned int flags) : OGLMesh(GL_LINES)
 {
 	AllocVertexBuffers(2*maxLines, flags);
 }
 
-void GLLineMesh::Create(int maxLines, unsigned int flags)
+void OGLLineMesh::Create(int maxLines, unsigned int flags)
 {
 	AllocVertexBuffers(2 * maxLines, flags);
 }
 
-void GLLineMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
+void OGLLineMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 {
 	int edges = gmsh.Edges();
 	AllocVertexBuffers(2 * edges, flags);
@@ -512,19 +513,19 @@ void GLLineMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 }
 
 //===================================================================================
-GLPointMesh::GLPointMesh() : GLMesh(GL_POINTS) {}
+OGLPointMesh::OGLPointMesh() : OGLMesh(GL_POINTS) {}
 
-GLPointMesh::GLPointMesh(int maxVertices, unsigned int flags) : GLMesh(GL_POINTS)
+OGLPointMesh::OGLPointMesh(int maxVertices, unsigned int flags) : OGLMesh(GL_POINTS)
 {
 	AllocVertexBuffers(maxVertices, flags);
 }
 
-void GLPointMesh::Create(int maxVertices, unsigned int flags)
+void OGLPointMesh::Create(int maxVertices, unsigned int flags)
 {
 	AllocVertexBuffers(maxVertices, flags);
 }
 
-void GLPointMesh::CreateFromGMesh(const GMesh& gmsh)
+void OGLPointMesh::CreateFromGMesh(const GMesh& gmsh)
 {
 	int nodes = gmsh.Nodes();
 	AllocVertexBuffers(nodes, 0);

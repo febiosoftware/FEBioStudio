@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class FSModel;
 class GMesh;
-class CGLContext;
+class GLContext;
 class GLRenderEngine;
 
 // class that creates and renders the plane cut in the CGLView.
@@ -55,7 +55,7 @@ public:
 
 	double* GetPlaneCoordinates() { return m_plane; }
 
-	void Render(GLRenderEngine& re, CGLContext& rc);
+	void Render(GLRenderEngine& re, GLContext& rc);
 
 	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
 

@@ -63,7 +63,7 @@ void CGLMonitorScene::Clear()
 	m_dataFields.clear();
 }
 
-void CGLMonitorScene::Render(GLRenderEngine& engine, CGLContext& rc)
+void CGLMonitorScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 
@@ -85,7 +85,7 @@ void CGLMonitorScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	CGLPostScene::Render(engine, rc);
 }
 
-void CGLMonitorScene::RenderTags(CGLContext& rc)
+void CGLMonitorScene::RenderTags(GLContext& rc)
 {
 	ClearTags();
 
@@ -213,7 +213,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 	{
 		double f = box.GetMaxExtent();
 		if (f == 0) f = 1;
-		CGLCamera& cam = GetCamera();
+		GLCamera& cam = GetCamera();
 		cam.SetTarget(box.Center());
 		cam.SetTargetDistance(2.0 * f);
 		cam.Update(true);

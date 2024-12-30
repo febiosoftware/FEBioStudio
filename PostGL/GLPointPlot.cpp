@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
 
@@ -234,7 +234,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 }
 
 //-----------------------------------------------------------------------------
-void CGLPointPlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLPointPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = GetModel()->CurrentTimeIndex();

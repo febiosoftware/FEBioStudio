@@ -84,7 +84,7 @@ void CImageSliceView::Update()
     }
 }
 
-void CImageSliceView::RenderSlicers(GLRenderEngine& re, CGLContext& rc)
+void CImageSliceView::RenderSlicers(GLRenderEngine& re, GLContext& rc)
 {
 	m_slicer.Render(re, rc);
 }
@@ -195,7 +195,7 @@ CImageSliceViewRender::CImageSliceViewRender(CImageSliceView* sliceView) : m_sli
 
 }
 
-void CImageSliceViewRender::Render(GLRenderEngine& re, CGLContext& rc)
+void CImageSliceViewRender::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_sliceView == nullptr) return;
 	if (!m_sliceView->isVisible()) return;

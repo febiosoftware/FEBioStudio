@@ -69,20 +69,19 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
 #include <GLWLib/GLTriad.h>
-#include "OpenGLRenderer.h"
-#include "GLScene.h"
+#include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 
 using std::vector;
 using std::complex;
 
-void CODFScene::Render(GLRenderEngine& engine, CGLContext& rc)
+void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	if (m_w->m_analysis && m_w->m_ODF) m_w->m_analysis->renderODFMesh(engine, m_w->m_ODF, rc.m_cam);
 }
 
-void CODFScene::RenderCanvas(QPainter& painter, CGLContext& rc)
+void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
 {
 	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
 	m_w->m_ptriad->draw(&painter);

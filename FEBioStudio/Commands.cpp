@@ -3173,7 +3173,7 @@ void CCmdChangeFESurfaceMesh::UnExecute()
 // CCmdChangeView
 ///////////////////////////////////////////////////////////////////////////////
 
-CCmdChangeView::CCmdChangeView(CGView* pview, CGLCamera cam) : CCommand("Change View")
+CCmdChangeView::CCmdChangeView(CGView* pview, GLCamera cam) : CCommand("Change View")
 {
 	m_cam = cam;
 	m_pview = pview;
@@ -3186,8 +3186,8 @@ CCmdChangeView::~CCmdChangeView()
 
 void CCmdChangeView::Execute()
 {
-	CGLCamera& cam = m_pview->GetCamera();
-	CGLCamera old = cam;
+	GLCamera& cam = m_pview->GetCamera();
+	GLCamera old = cam;
 	cam = m_cam;
 	m_cam = old;
 }

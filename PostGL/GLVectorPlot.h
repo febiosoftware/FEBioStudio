@@ -73,7 +73,7 @@ public:
 public:
 	CGLVectorPlot();
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void SetScaleFactor(float g) { m_scale = g; }
 	double GetScaleFactor() { return m_scale; }

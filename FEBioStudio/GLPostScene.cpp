@@ -39,7 +39,7 @@ SOFTWARE.*/
 
 using namespace Post;
 
-void GLPostPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	CGLModel& gm = *m_scene->GetGLModel();
 	GPlotList& PL = gm.GetPlotList();
@@ -59,7 +59,7 @@ void GLPostPlaneCutItem::render(GLRenderEngine& re, CGLContext& rc)
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
 }
 
-void GLPostMirrorItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPostMirrorItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	int frontFace;
 	glGetIntegerv(GL_FRONT_FACE, &frontFace);
@@ -71,7 +71,7 @@ void GLPostMirrorItem::render(GLRenderEngine& re, CGLContext& rc)
 	glFrontFace(frontFace);
 }
 
-void GLPostMirrorItem::renderMirror(GLRenderEngine& re, CGLContext& rc, int start, int end)
+void GLPostMirrorItem::renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end)
 {
 	// pass one
 	GLCompositeSceneItem::render(re, rc);
@@ -107,7 +107,7 @@ void GLPostMirrorItem::renderMirror(GLRenderEngine& re, CGLContext& rc, int star
 	}
 }
 
-void GLPostModelItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel* glm = m_scene->GetGLModel();
 	if (glm == nullptr) return;
@@ -150,7 +150,7 @@ void GLPostModelItem::render(GLRenderEngine& re, CGLContext& rc)
 	CGLPlaneCutPlot::DisableClipPlanes();
 }
 
-void GLPostModelItem::RenderModel(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -219,7 +219,7 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderNodes(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -300,7 +300,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderEdges(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -368,7 +368,7 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderFaces(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 	Post::FEPostModel* ps = m_scene->GetFSModel();
@@ -397,7 +397,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, CGLContext& rc)
 						GLColor c = GLColor::White();
 						c.a = (uint8_t)(255.f * alpha);
 						re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-						glm.m_pcol->GetColorMap()->GetTexture().MakeCurrent();
+						re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
 					}
 					else
 					{
@@ -423,7 +423,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, CGLContext& rc)
 
 // TODO: This is identical to RenderFaces, except that we loop over all the GMesh partitions
 //       Maybe I can combine these two functions.
-void GLPostModelItem::RenderElems(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 	Post::FEPostModel* ps = m_scene->GetFSModel();
@@ -452,7 +452,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, CGLContext& rc)
 						GLColor c = GLColor::White();
 						c.a = (uint8_t)(255.f * alpha);
 						re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-						glm.m_pcol->GetColorMap()->GetTexture().MakeCurrent();
+						re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
 					}
 					else
 					{
@@ -476,7 +476,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderSelection(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -489,7 +489,7 @@ void GLPostModelItem::RenderSelection(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMeshEdges(glm.m_selectionMesh, false);
 }
 
-void GLPostModelItem::RenderNormals(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -531,7 +531,7 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMeshEdges(lineMesh, false);
 }
 
-void GLPostModelItem::RenderGhost(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -603,7 +603,7 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMeshEdges(lineMesh, false);
 }
 
-void GLPostModelItem::RenderOutline(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -621,7 +621,7 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -637,7 +637,7 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMeshEdges(*mesh, false);
 }
 
-void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	if (gm.ShowBeam2Solid())
@@ -650,7 +650,7 @@ void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, CGLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
@@ -671,7 +671,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc)
 
 	if (colmap && colmap->IsActive())
 	{
-		colmap->GetColorMap()->GetTexture().MakeCurrent();
+		re.setTexture(colmap->GetColorMap()->GetTexture());
 
 		glEnable(GL_TEXTURE_1D);
 
@@ -745,7 +745,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc)
 	glLineWidth(lineWidth);
 }
 
-void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
@@ -784,10 +784,8 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, CGLContext& rc)
 	Post::CGLColorMap* colmap = gm.GetColorMap();
 	if (colmap->IsActive())
 	{
-		colmap->GetColorMap()->GetTexture().MakeCurrent();
-		glEnable(GL_TEXTURE_1D);
-
-		glColor3ub(255, 255, 255);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D);
+		re.setTexture(colmap->GetColorMap()->GetTexture());
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -979,7 +977,7 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	}
 }
 
-void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, CGLContext& rc)
+void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
@@ -1022,7 +1020,7 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, CGLContext& rc)
 	glPopAttrib();
 }
 
-void GLPostPlotItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	Post::GPlotList& plotList = gm.GetPlotList();
@@ -1040,7 +1038,7 @@ void GLPostPlotItem::render(GLRenderEngine& re, CGLContext& rc)
 	CGLPlaneCutPlot::DisableClipPlanes();
 }
 
-void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	Post::FEPostModel* fem = m_scene->GetFSModel();
 	if (fem == nullptr) return;
@@ -1118,7 +1116,7 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 	re.popState();
 }
 
-void GLPost3DImageItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLPost3DImageItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_img && m_img->IsActive())
 	{
@@ -1160,7 +1158,7 @@ int CGLPostScene::GetItemMode() const
 void CGLPostScene::Update()
 {
 	m_buildScene = true;
-	CGLScene::Update();
+	GLScene::Update();
 }
 
 BOX CGLPostScene::GetBoundingBox()
@@ -1184,7 +1182,7 @@ BOX CGLPostScene::GetSelectionBox()
 	return box;
 }
 
-void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
+void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
@@ -1202,11 +1200,11 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
-	CGLCamera& cam = *rc.m_cam;
+	GLCamera& cam = *rc.m_cam;
 	engine.positionCamera(cam);
 
 	// now render it
-	CGLScene::Render(engine, rc);
+	GLScene::Render(engine, rc);
 
 	if (vs.m_use_environment_map) DeactivateEnvironmentMap(engine);
 
@@ -1223,7 +1221,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
-void CGLPostScene::BuildScene(CGLContext& rc)
+void CGLPostScene::BuildScene(GLContext& rc)
 {
 	clear();
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
@@ -1250,7 +1248,7 @@ void CGLPostScene::BuildScene(CGLContext& rc)
 	addItem(root);
 }
 
-void CGLPostScene::CreateTags(CGLContext& rc)
+void CGLPostScene::CreateTags(GLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
 
@@ -1465,7 +1463,7 @@ void CGLPostScene::UpdateTracking()
 		m_trgRot = quatd(Q);
 
 		// update camera's position and orientation
-		CGLCamera& cam = GetCamera();
+		GLCamera& cam = GetCamera();
 		quatd currentRot = cam.GetOrientation();
 		quatd q0 = currentRot*m_trgRotDelta.Inverse();
 
@@ -1482,7 +1480,7 @@ void CGLPostScene::UpdateTracking()
 
 void CGLPostScene::ToggleTrackSelection()
 {
-	CGLCamera& cam = GetCamera();
+	GLCamera& cam = GetCamera();
 
 	if (m_btrack)
 	{

@@ -26,6 +26,8 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "GLPlaneCut.h"
+#include <GLLib/GLScene.h>
+
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
 	OBJECT_COLOR,
@@ -54,11 +56,11 @@ class GLPlaneCutItem : public GLCompositeSceneItem
 {
 public:
 	GLPlaneCutItem(CGLModelScene* scene);
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void UpdatePlaneCut(CGLContext& rc, bool reset);
-	void RenderBoxCut(GLRenderEngine& re, CGLContext& rc, const BOX& box);
+	void UpdatePlaneCut(GLContext& rc, bool reset);
+	void RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& box);
 
 private:
 	CGLModelScene* m_scene;
@@ -69,36 +71,36 @@ class GLObjectItem : public GLModelSceneItem
 {
 public:
 	GLObjectItem(CGLModelScene* scene, GObject* po);
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderGObject(GLRenderEngine& re, CGLContext& rc);
+	void RenderGObject(GLRenderEngine& re, GLContext& rc);
 
-	void RenderObject(GLRenderEngine& re, CGLContext& rc);
-	void RenderSurfaceMeshFaces(GLRenderEngine& re, CGLContext& rc);
+	void RenderObject(GLRenderEngine& re, GLContext& rc);
+	void RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc);
 
-	void RenderParts(GLRenderEngine& re, CGLContext& rc);
-	void RenderSurfaces(GLRenderEngine& re, CGLContext& rc);
-	void RenderEdges(GLRenderEngine& re, CGLContext& rc);
-	void RenderNodes(GLRenderEngine& re, CGLContext& rc);
-	void RenderBeamParts(GLRenderEngine& re, CGLContext& rc);
-	void RenderSurfaceMeshEdges(GLRenderEngine& re, CGLContext& rc);
+	void RenderParts(GLRenderEngine& re, GLContext& rc);
+	void RenderSurfaces(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderNodes(GLRenderEngine& re, GLContext& rc);
+	void RenderBeamParts(GLRenderEngine& re, GLContext& rc);
+	void RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc);
 
-	void RenderFEFacesFromGMesh(GLRenderEngine& re, CGLContext& rc);
-	void RenderMeshByDefault(GLRenderEngine& re, CGLContext& rc);
-	void RenderMeshByObjectColor(GLRenderEngine& re, CGLContext& rc);
-	void RenderMeshByElementType(GLRenderEngine& re, CGLContext& rc, GMesh& mesh);
+	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
+	void RenderMeshByDefault(GLRenderEngine& re, GLContext& rc);
+	void RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
+	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GMesh& mesh);
 
-	void RenderUnselectedBeamElements(GLRenderEngine& re, CGLContext& rc);
-	void RenderSelectedFEElements(GLRenderEngine& re, CGLContext& rc);
-	void RenderAllBeamElements(GLRenderEngine& re, CGLContext& rc);
-	void RenderSelectedFEFaces(GLRenderEngine& re, CGLContext& rc);
-	void RenderFEEdges(GLRenderEngine& re, CGLContext& rc);
-	void RenderFENodes(GLRenderEngine& re, CGLContext& rc);
-	void RenderSurfaceMeshNodes(GLRenderEngine& re, CGLContext& rc);
-	void RenderNormals(GLRenderEngine& re, CGLContext& rc, double scale);
+	void RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& rc);
+	void RenderSelectedFEElements(GLRenderEngine& re, GLContext& rc);
+	void RenderAllBeamElements(GLRenderEngine& re, GLContext& rc);
+	void RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc);
+	void RenderFEEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
+	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
+	void RenderNormals(GLRenderEngine& re, GLContext& rc, double scale);
 
-	void RenderSelection(GLRenderEngine& re, CGLContext& rc);
+	void RenderSelection(GLRenderEngine& re, GLContext& rc);
 
 private:
 	void UpdateGMeshColor(GMesh& msh);
@@ -123,7 +125,7 @@ class GLDiscreteItem : public GLModelSceneItem
 
 public:
 	GLDiscreteItem(CGLModelScene* scene);
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	std::vector<Line> m_lines;
@@ -133,65 +135,65 @@ class GLSelectionBox : public GLModelSceneItem
 {
 public:
 	GLSelectionBox(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GLMeshLinesItem : public GLModelSceneItem
 {
 public:
 	GLMeshLinesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GLFeatureEdgesItem : public GLModelSceneItem
 {
 public:
 	GLFeatureEdgesItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GLPhysicsItem : public GLModelSceneItem
 {
 public:
 	GLPhysicsItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderMaterialFibers(GLRenderEngine& re, CGLContext& rc) const;
-	void RenderLocalMaterialAxes(GLRenderEngine& re, CGLContext& rc) const;
+	void RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const;
+	void RenderRigidJoints(GLRenderEngine& re, GLContext& rc) const;
+	void RenderRigidConnectors(GLRenderEngine& re, GLContext& rc) const;
+	void RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const;
+	void RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) const;
+	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const;
 };
 
 class GLSelectionItem : public GLModelSceneItem
 {
 public:
 	GLSelectionItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderSelectedParts(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
-	void RenderSelectedSurfaces(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
-	void RenderSelectedEdges(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
-	void RenderSelectedNodes(GLRenderEngine& re, CGLContext& rc, GObject* po) const;
+	void RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GObject* po) const;
+	void RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, GObject* po) const;
+	void RenderSelectedEdges(GLRenderEngine& re, GLContext& rc, GObject* po) const;
+	void RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GObject* po) const;
 };
 
 class GLHighlighterItem : public GLModelSceneItem
 {
 public:
 	GLHighlighterItem(CGLModelScene* scene);
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void drawNode(GLRenderEngine& re, CGLContext& rc, GNode* node, GLColor c);
-	void drawEdge(GLRenderEngine& re, CGLContext& rc, GEdge* edge, GLColor c);
-	void drawFace(GLRenderEngine& re, CGLContext& rc, GFace* face, GLColor c);
-	void drawPart(GLRenderEngine& re, CGLContext& rc, GPart* part, GLColor c);
+	void drawNode(GLRenderEngine& re, GLContext& rc, GNode* node, GLColor c);
+	void drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge, GLColor c);
+	void drawFace(GLRenderEngine& re, GLContext& rc, GFace* face, GLColor c);
+	void drawPart(GLRenderEngine& re, GLContext& rc, GPart* part, GLColor c);
 
-	void drawFENodeSet(GLRenderEngine& re, CGLContext& rc, FSNodeSet* nodeSet, GLColor c);
-	void drawFESurface(GLRenderEngine& re, CGLContext& rc, FSSurface* surf, GLColor c);
+	void drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeSet* nodeSet, GLColor c);
+	void drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurface* surf, GLColor c);
 
 private:
 	GLColor			m_activeColor;		// color of active item
@@ -202,25 +204,25 @@ class GLGridItem : public GLModelSceneItem
 {
 public:
 	GLGridItem(CGLModelScene* scene) : GLModelSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GL3DImageItem : public GLModelSceneItem
 {
 public:
 	GL3DImageItem(CGLModelScene* scene, CImageModel* img) : GLModelSceneItem(scene), m_img(img) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	CImageModel* m_img;
 };
 
-class CGLModelScene : public CGLScene
+class CGLModelScene : public GLScene
 {
 public:
 	CGLModelScene(CModelDocument* doc);
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
 
@@ -257,20 +259,20 @@ public:
 	FESelection* GetCurrentSelection();
 
 private:
-	void BuildScene(CGLContext& rc);
+	void BuildScene(GLContext& rc);
 
 public:
-	void RenderRigidLabels(CGLContext& rc);
+	void RenderRigidLabels(GLContext& rc);
 
-	void RenderTags(CGLContext& rc);
+	void RenderTags(GLContext& rc);
 
 public:
 	GLColor GetPartColor(GPart* pg);
 	GLColor GetFaceColor(GFace& face);
 
-	void BuildFiberViz(CGLContext& rc);
+	void BuildFiberViz(GLContext& rc);
 
-	void UpdateRenderTransforms(CGLContext& rc);
+	void UpdateRenderTransforms(GLContext& rc);
 
 private:
 	CModelDocument* m_doc;

@@ -25,13 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 
-//=========================================================================
 // Class describing an OpenGL program.
-class GLProgram
+class OGLProgram
 {
 public:
 	// constructor
-	GLProgram();
+	OGLProgram();
 
 	// create the shaders, compile and link
 	bool Create(const char* szvert, const char* szfrag);

@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLVectorRender.h"
 #include <GLLib/glx.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 class GLVectorRenderer::Imp
 {

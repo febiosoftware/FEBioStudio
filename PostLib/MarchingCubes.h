@@ -91,7 +91,7 @@ public:
 
 	void Create();
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 

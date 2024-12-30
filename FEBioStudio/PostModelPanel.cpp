@@ -199,7 +199,7 @@ public:
 
 	QVariant GetPropertyValue(int i)
 	{
-		CGLCamera* cam = m_view.GetCamera();
+		GLCamera* cam = m_view.GetCamera();
 		if (cam == nullptr) return QVariant();
 
 		quatd q = cam->GetOrientation();
@@ -227,7 +227,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& val)
 	{
-		CGLCamera* cam = m_view.GetCamera();
+		GLCamera* cam = m_view.GetCamera();
 		if (cam == nullptr) return;
 
 		quatd q = cam->GetOrientation();

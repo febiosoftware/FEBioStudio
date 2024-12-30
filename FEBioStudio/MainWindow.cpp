@@ -3649,7 +3649,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 			ShowInModelViewer(imgModel);
 		}
 
-		CGLScene* scene = doc->GetScene();
+		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
 			scene->ZoomTo(imgModel->GetBoundingBox());

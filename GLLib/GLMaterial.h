@@ -30,7 +30,8 @@ class GLMaterial
 {
 public:
 	enum Type {
-		CONSTANT = 1,
+		INVALID,
+		CONSTANT,
 		PLASTIC,
 		GLASS,
 		HIGHLIGHT,
@@ -40,7 +41,8 @@ public:
 	enum DiffuseMap {
 		NONE,
 		VERTEX_COLOR,
-		TEXTURE_1D
+		TEXTURE_1D,
+		TEXTURE_3D
 	};
 
 public:

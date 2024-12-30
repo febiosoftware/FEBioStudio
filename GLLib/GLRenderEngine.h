@@ -27,13 +27,15 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
 #include <string>
-#include <GLLib/GLRenderStats.h>
-#include <GLLib/GLMaterial.h>
-#include <GLLib/GLCamera.h>
+#include "GLRenderStats.h"
+#include "GLMaterial.h"
+#include "GLCamera.h"
+#include "GLTexture1D.h"
+#include "GLTexture3D.h"
 #include <FECore/FETransform.h>
 
 class GMesh;
-class CGLCamera;
+class GLCamera;
 
 class GLRenderEngine
 {
@@ -42,7 +44,12 @@ public:
 		LIGHTING = 1,
 		DEPTHTEST,
 		CULLFACE,
-		CLIPPLANE
+		CLIPPLANE0,
+		CLIPPLANE1,
+		CLIPPLANE2,
+		CLIPPLANE3,
+		CLIPPLANE4,
+		CLIPPLANE5,
 	};
 
 	enum PrimitiveType {
@@ -97,7 +104,7 @@ public:
 	virtual void setPointSize(float f) {}
 	virtual void setLineWidth(float f) {}
 
-	virtual void positionCamera(const CGLCamera& cam) {}
+	virtual void positionCamera(const GLCamera& cam) {}
 
 public: // immediate mode rendering
 	virtual void begin(PrimitiveType prim) {}
@@ -123,7 +130,7 @@ public:
 	virtual void renderGMeshEdges(const GMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh = true) {}
 
-	virtual void renderGMeshOutline(CGLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) {}
+	virtual void renderGMeshOutline(GLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) {}
 
 public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }
@@ -131,6 +138,10 @@ public:
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
 
 	virtual void setClipPlane(unsigned int n, const double* v) {}
+
+public:
+	virtual void setTexture(GLTexture1D& tex) {}
+	virtual void setTexture(GLTexture3D& tex) {}
 
 protected:
 	GLRenderStats m_stats;

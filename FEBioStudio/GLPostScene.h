@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
+#include <GLLib/GLScene.h>
 
 class CGLModelDocument;
 class CGLPostScene;
@@ -48,23 +49,23 @@ class GLPostModelItem : public GLPostSceneItem
 {
 public:
 	GLPostModelItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void RenderModel(GLRenderEngine& re, CGLContext& rc);
-	void RenderNodes(GLRenderEngine& re, CGLContext& rc);
-	void RenderEdges(GLRenderEngine& re, CGLContext& rc);
-	void RenderFaces(GLRenderEngine& re, CGLContext& rc);
-	void RenderElems(GLRenderEngine& re, CGLContext& rc);
-	void RenderSelection(GLRenderEngine& re, CGLContext& rc);
-	void RenderNormals(GLRenderEngine& re, CGLContext& rc);
-	void RenderOutline(GLRenderEngine& re, CGLContext& rc);
-	void RenderGhost(GLRenderEngine& re, CGLContext& rc);
-	void RenderMeshLines(GLRenderEngine& re, CGLContext& rc);
-	void RenderDiscrete(GLRenderEngine& re, CGLContext& rc);
-	void RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc);
-	void RenderDiscreteAsSolid(GLRenderEngine& re, CGLContext& rc);
-	void RenderMinMaxMarkers(GLRenderEngine& re, CGLContext& rc);
+	void RenderModel(GLRenderEngine& re, GLContext& rc);
+	void RenderNodes(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderFaces(GLRenderEngine& re, GLContext& rc);
+	void RenderElems(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re, GLContext& rc);
+	void RenderNormals(GLRenderEngine& re, GLContext& rc);
+	void RenderOutline(GLRenderEngine& re, GLContext& rc);
+	void RenderGhost(GLRenderEngine& re, GLContext& rc);
+	void RenderMeshLines(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc);
+	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 };
@@ -73,7 +74,7 @@ class GLPostPlotItem : public GLPostSceneItem
 {
 public:
 	GLPostPlotItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GLPostPlaneCutItem : public GLCompositeSceneItem
@@ -81,7 +82,7 @@ class GLPostPlaneCutItem : public GLCompositeSceneItem
 public:
 	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
 
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	CGLPostScene* m_scene;
@@ -92,10 +93,10 @@ class GLPostMirrorItem : public GLCompositeSceneItem
 public:
 	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
 
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
-	void renderMirror(GLRenderEngine& re, CGLContext& rc, int start, int end);
+	void renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end);
 
 private:
 	CGLPostScene* m_scene;
@@ -105,7 +106,7 @@ class GLPostObjectItem : public GLPostSceneItem
 {
 public:
 	GLPostObjectItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 };
 
 class GLPost3DImageItem : public GLPostSceneItem
@@ -113,18 +114,18 @@ class GLPost3DImageItem : public GLPostSceneItem
 public:
 	GLPost3DImageItem(CImageModel* img, CGLPostScene* scene) : GLPostSceneItem(scene), m_img(img) {}
 
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	CImageModel* m_img;
 };
 
-class CGLPostScene : public CGLScene
+class CGLPostScene : public GLScene
 {
 public:
 	CGLPostScene(CGLModelDocument* doc);
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
 
@@ -143,12 +144,12 @@ public:
 	void Update() override;
 
 private:
-	void CreateTags(CGLContext& rc);
+	void CreateTags(GLContext& rc);
 
 	void UpdateTracking();
 
 private:
-	void BuildScene(CGLContext& rc);
+	void BuildScene(GLContext& rc);
 
 private:
 	CGLModelDocument* m_doc;

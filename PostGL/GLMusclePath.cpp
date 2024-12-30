@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 #include <sstream>
 using namespace Post;
 
@@ -216,7 +216,7 @@ void GLMusclePath::ClearPaths()
 	m_path.clear();
 }
 
-void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
+void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_path.empty()) return;
 

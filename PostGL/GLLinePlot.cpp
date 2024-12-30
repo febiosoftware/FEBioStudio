@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);
@@ -162,7 +162,7 @@ void CGLLinePlot::Reload()
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_lineData == nullptr) return;
 
@@ -242,7 +242,7 @@ void CGLLinePlot::Render3DLines(GLRenderEngine& re)
 	else
 	{
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
-		m_Col.GetTexture().MakeCurrent();
+		re.setTexture(m_Col.GetTexture());
 	}
 	re.renderGMesh(m_mesh, false);
 }
@@ -261,7 +261,7 @@ void CGLLinePlot::Render3DSmoothLines(GLRenderEngine& re)
 	else
 	{
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
-		m_Col.GetTexture().MakeCurrent();
+		re.setTexture(m_Col.GetTexture());
 	}
 	re.renderGMesh(m_mesh, false);
 }

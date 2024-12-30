@@ -49,7 +49,7 @@ public:
 
 	void Update() override;
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	int GetOrientation() const;
 	void SetOrientation(int n);

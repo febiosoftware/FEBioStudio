@@ -941,7 +941,7 @@ void RenderEllipsoid(GLRenderEngine& re, float* l, vec3f* e)
 	re.popTransform();
 }
 
-void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
+void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (IsActive() == false)
 	{
@@ -997,7 +997,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 	re.popState();
 }
 
-void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* cam)
+void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
 	int showMesh = GetIntValue(SHOW_MESH);

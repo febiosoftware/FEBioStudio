@@ -63,7 +63,7 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLComposite.h>
 #include "GLModelScene.h"
-#include "OpenGLRenderer.h"
+
 using namespace std::chrono;
 
 static GLubyte poly_mask[128] = {
@@ -534,10 +534,10 @@ CGLDocument* CGLView::GetDocument()
 
 void CGLView::UpdateCamera(bool hitCameraTarget)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
-		CGLCamera& cam = scene->GetCamera();
+		GLCamera& cam = scene->GetCamera();
 		cam.Update(hitCameraTarget);
 	}
 }
@@ -550,7 +550,7 @@ void CGLView::resizeGL(int w, int h)
 
 void CGLView::changeViewMode(View_Mode vm)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	m_view.m_nview = vm;
@@ -647,7 +647,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		return;
 	}
 
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	GLCamera& cam = pdoc->GetView()->GetCamera();
 	cam.SetMoving(true);
 
 	if (ntrans == TRANSFORM_MOVE)
@@ -691,7 +691,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	GObject* activeObject = GetActiveObject();
@@ -759,7 +759,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	GLCamera& cam = pdoc->GetView()->GetCamera();
 
 	View_Mode viewMode = m_view.m_nview;
 
@@ -1018,7 +1018,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	GLCamera& cam = pdoc->GetView()->GetCamera();
 	cam.SetMoving(false);
 
 	int pivotMode = m_pivot.GetSelectionMode();
@@ -1232,10 +1232,10 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 void CGLView::wheelEvent(QWheelEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetView().GetCamera();
 
 	int pivotMode = m_pivot.GetSelectionMode();
 
@@ -1297,10 +1297,10 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 
 bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return true;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetView().GetCamera();
 
     if (ev->gestureType() == Qt::ZoomNativeGesture) {
         if (ev->value() < 0) {
@@ -1336,7 +1336,7 @@ void CGLView::keyPressEvent(QKeyEvent* ev)
 
 		double s = (ev->modifiers() & Qt::SHIFT ? -1 : 1);
 
-		CGLCamera* cam = GetCamera();
+		GLCamera* cam = GetCamera();
 
 		quatd dq;
 		switch (ev->key())
@@ -1518,7 +1518,7 @@ void CGLView::RenderScene()
 {
 	m_ogl.start();
 
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr)
 	{
 		m_ogl.finish();
@@ -1529,10 +1529,10 @@ void CGLView::RenderScene()
 
 	view.m_show3DCursor = false;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetView().GetCamera();
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
-	CGLContext& rc = m_rc;
+	GLContext& rc = m_rc;
 	rc.m_w = width();
 	rc.m_h = height();
 	rc.m_cam = &cam;
@@ -1590,7 +1590,7 @@ void CGLView::RenderScene()
 	}
 }
 
-void CGLView::RenderCanvas(CGLContext& rc)
+void CGLView::RenderCanvas(GLContext& rc)
 {
 	// We must turn off culling before we use the QPainter, otherwise
 	// drawing using QPainter doesn't work correctly.
@@ -1813,7 +1813,7 @@ QPoint CGLView::DeviceToPhysical(int x, int y)
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene) scene->Update();
 }
 
@@ -1883,7 +1883,7 @@ void CGLView::RenderPivot()
 	// this is where we place the manipulator
 	vec3d rp = GetPivotPosition();
 
-	CGLCamera& cam = *GetCamera();
+	GLCamera& cam = *GetCamera();
 
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
@@ -2012,7 +2012,7 @@ void CGLView::ShowSafeFrame(bool b)
 
 void CGLView::SetViewMode(View_Mode n)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
@@ -2134,7 +2134,7 @@ void CGLView::SetViewMode(View_Mode n)
 
 void CGLView::TogglePerspective(bool b)
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	CGView& view = scene->GetView();
@@ -2495,7 +2495,7 @@ void CGLView::HighlightPart(int x, int y)
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
-CGLScene* CGLView::GetActiveScene()
+GLScene* CGLView::GetActiveScene()
 {
 	CGLDocument* doc = m_pWnd->GetGLDocument();
 	if (doc) return doc->GetScene();
@@ -2504,7 +2504,7 @@ CGLScene* CGLView::GetActiveScene()
 
 void CGLView::UpdateScene()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	scene->Update();
 	update();
 }
@@ -2523,7 +2523,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return vec3d(0,0,0);
 
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return vec3d(0, 0, 0);
 
 	GLViewSettings& view = GetViewSettings();
@@ -2574,7 +2574,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	else
 	{
 		// pick a point on the grid
-		GGrid& grid = scene->GetGrid();
+		GLGrid& grid = scene->GetGrid();
 		vec3d r = grid.Intersect(ray.origin, ray.direction, view.m_snapToGrid);
 		if (success) *success = true;
 
@@ -2639,7 +2639,7 @@ void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
 void CGLView::RenderTags()
 {
-	CGLScene* scene = GetActiveScene();
+	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	const int MAX_TAGS = 100;

@@ -38,7 +38,7 @@ public:
 	CGLPlane(Post::FEPostModel* pfem);
 	~CGLPlane(void);
 
-	void Render(GLRenderEngine& re, CGLContext& rc);
+	void Render(GLRenderEngine& re, GLContext& rc);
 
 	void Create(int n[3]);
 

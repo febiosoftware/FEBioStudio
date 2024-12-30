@@ -314,7 +314,7 @@ void CImageSlicer::BuildLUT()
 
 //-----------------------------------------------------------------------------
 //! Render textures
-void CImageSlicer::Render(GLRenderEngine& re, CGLContext& rc)
+void CImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_texID == 0)
 	{

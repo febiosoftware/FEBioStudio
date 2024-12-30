@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
 #include "TextDocument.h"
+#include <GLLib/GLScene.h>
 #include <sstream>
 
 using std::stringstream;
@@ -1193,7 +1194,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
-	CGLScene* scene = doc->GetScene();
+	GLScene* scene = doc->GetScene();
 	if (scene) scene->ZoomToObject(copyObject);
 	copyObject = nullptr;
 

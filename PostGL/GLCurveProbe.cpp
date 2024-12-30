@@ -52,7 +52,7 @@ GLCurveProbe::GLCurveProbe()
 	AddDoubleParam(m_scale, "scale factor");
 }
 
-void GLCurveProbe::Render(GLRenderEngine& re, CGLContext& rc)
+void GLCurveProbe::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_path.size())
 	{

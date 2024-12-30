@@ -35,7 +35,7 @@ class QResizeEvent;
 
 class CGLView;
 class CMainWindow;
-class CGLContext;
+class GLContext;
 class FSObject;
 class CImageModel;
 class CImageSlice;
@@ -51,7 +51,7 @@ public:
 
     CImageModel* GetImageModel() { return m_imgModel; }
 
-    void RenderSlicers(GLRenderEngine& re, CGLContext& rc);
+    void RenderSlicers(GLRenderEngine& re, GLContext& rc);
 
     void SetInspector(CDlgPixelInspector* inspector) override;
 
@@ -85,7 +85,7 @@ class CImageSliceViewRender : public Post::CGLImageRenderer
 public:
 	CImageSliceViewRender(CImageSliceView* sliceView);
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 private:
 	CImageSliceView* m_sliceView;

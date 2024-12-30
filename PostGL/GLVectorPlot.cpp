@@ -161,7 +161,7 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 
 static double frand() { return (double) rand() / (double) RAND_MAX; }
 
-void CGLVectorPlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nvec == -1) return;
 

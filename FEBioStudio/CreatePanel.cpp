@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
 #include "CommandWindow.h"
+#include <GLLib/GLScene.h>
 
 //------------------------------------------------------------------------------------------------------------
 REGISTER_CLASS2(GBox               , CLASS_OBJECT, "box"            , ":/icons/box.png"          , 0);
@@ -189,7 +190,7 @@ void CCreatePanel::on_create_clicked()
 			wnd->Update(this);
 
 			// make sure the object is visible
-			CGLScene* scene = doc->GetScene();
+			GLScene* scene = doc->GetScene();
 			if (scene)
 			{
 				scene->ZoomSelection(false);

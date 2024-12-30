@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "Document.h"
-#include <GLLib/glx.h>
 #include <GeomLib/GMeshObject.h>
 #include <FSCore/enum.h>
 #include "version.h"
@@ -36,13 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
 #include <MeshIO/FSFileExport.h>
-#include <FEMLib/FEUserMaterial.h>
-#include <FEMLib/FEMultiMaterial.h>
-#include <MeshIO/PRVObjectFormat.h>
-#include <QMessageBox>
 #include <FEMLib/FEStepComponent.h>
-#include <XML/XMLWriter.h>
-#include <PostLib/Palette.h>
 #include <PostGL/GLPlot.h>
 #include <PostGL/GLDisplacementMap.h>
 #include <PostGL/GLColorMap.h>
@@ -52,7 +45,6 @@ SOFTWARE.*/
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageAnalysis.h>
-#include "ImageThread.h"
 #include <GeomLib/GModel.h>
 #include <MeshLib/FENodeData.h>
 #include <MeshLib/FESurfaceData.h>
@@ -70,6 +62,8 @@ SOFTWARE.*/
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <GLLib/GLScene.h>
+#include <FSCore/FileReader.h>
 
 using std::stringstream;
 
@@ -707,7 +701,7 @@ CGView* CGLDocument::GetView()
 	return &m_scene->GetView();
 }
 
-CGLScene* CGLDocument::GetScene()
+GLScene* CGLDocument::GetScene()
 {
 	return m_scene;
 }

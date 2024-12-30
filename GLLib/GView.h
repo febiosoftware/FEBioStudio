@@ -42,7 +42,7 @@ public:
 	CGView();
 	~CGView();
 
-	CGLCamera& GetCamera() { return m_cam; }
+	GLCamera& GetCamera() { return m_cam; }
 
 	void Reset();
 
@@ -77,7 +77,7 @@ public:
 	double	m_ar;
 
 protected:
-	CGLCamera m_cam;	//!< current camera
+	GLCamera m_cam;	//!< current camera
 
 	std::vector<CGViewKey*>	m_key;	//!< stored camera transformations
 	int						m_nkey;	//!< current key

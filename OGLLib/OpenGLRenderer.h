@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 class CGLSceneView;
 
@@ -67,7 +67,7 @@ public:
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;
 
-	void positionCamera(const CGLCamera& cam) override;
+	void positionCamera(const GLCamera& cam) override;
 
 public:
 	void begin(PrimitiveType prim) override;
@@ -86,7 +86,7 @@ public:
 	void renderGMeshEdges(const GMesh& mesh, bool cacheMesh) override;
 	void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh) override;
 
-	void renderGMeshOutline(CGLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) override;
+	void renderGMeshOutline(GLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) override;
 
 public:
 	unsigned int LoadEnvironmentMap(const std::string& fileName) override;
@@ -94,6 +94,10 @@ public:
 	void DeactivateEnvironmentMap(unsigned int mapid) override;
 
 	void setClipPlane(unsigned int n, const double* v) override;
+
+public:
+	void setTexture(GLTexture1D& tex) override;
+	void setTexture(GLTexture3D& tex) override;
 
 private:
 	Imp& m;

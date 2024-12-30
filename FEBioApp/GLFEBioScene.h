@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/GLScene.h"
+#include <GLLib/GLScene.h>
 #include "../FEBioStudio/GLSceneView.h"
 #include <PostGL/ColorTexture.h>
 #include <MeshLib/GMesh.h>
@@ -47,7 +47,7 @@ public:
 	void SetRotation(quatd q);
 
 public:
-	void render(GLRenderEngine& engine, CGLContext& rc) override;
+	void render(GLRenderEngine& engine, GLContext& rc) override;
 
 private:
 	GMesh		m_mesh;
@@ -56,7 +56,7 @@ private:
 	quatd		m_rot;
 };
 
-class GLFEBioScene : public CGLScene, public CFEBioModelDataSource
+class GLFEBioScene : public GLScene, public CFEBioModelDataSource
 {
 public:
 	GLFEBioScene(FEBioModel& fem);
@@ -65,9 +65,9 @@ public:
 
 	void SetGLView(CGLSceneView* view) { m_view = view; }
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	void RenderCanvas(QPainter& painter, CGLContext& rc) override;
+	void RenderCanvas(QPainter& painter, GLContext& rc) override;
 
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox();

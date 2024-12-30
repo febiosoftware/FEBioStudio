@@ -43,7 +43,7 @@ GLPlotGroup::GLPlotGroup()
 	SetName(ss.str());
 }
 
-void GLPlotGroup::Render(GLRenderEngine& re, CGLContext& rc)
+void GLPlotGroup::Render(GLRenderEngine& re, GLContext& rc)
 {
 	for (int i = 0; i < m_plot.Size(); ++i)
 	{

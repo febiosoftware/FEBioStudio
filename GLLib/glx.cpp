@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <qopengl.h>
 #include "glx.h"
 #include <MeshLib/GMesh.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include "GLRenderEngine.h"
 
 void glx::drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
 {

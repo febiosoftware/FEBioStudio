@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <assert.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 #include <qopengl.h>
 
 using namespace Post;
@@ -105,7 +105,7 @@ void CImageModel::ShowBox(bool b)
 	m_showBox = b;
 }
 
-void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
+void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (IsActive() == false) return;
 

@@ -75,7 +75,7 @@ public:
 
 	void Update(int ntime, float dt, bool breset) override;
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	bool UpdateData(bool bsave = true) override;
 

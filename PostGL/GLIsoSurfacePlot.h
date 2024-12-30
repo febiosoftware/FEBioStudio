@@ -48,7 +48,7 @@ public:
 	int GetSlices();
 	void SetSlices(int nslices);
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update(int ntime, float dt, bool breset);
 

@@ -25,15 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FSCore/box.h>
-#include <GLLib/GView.h>
-#include <GLLib/GLRenderStats.h>
-#include "GGrid.h"
+#include "GView.h"
+#include "GLRenderStats.h"
+
+#include "GLGrid.h"
 #include "GLRenderEngine.h"
 #include <QString>
 
-class CGLContext;
+class GLContext;
 class GObject;
-class CGLScene;
+class GLScene;
 class QPainter;
 
 // tag structure
@@ -51,7 +52,7 @@ public:
 	GLSceneItem() {}
 	virtual ~GLSceneItem() {}
 
-	virtual void render(GLRenderEngine& re, CGLContext& rc) = 0;
+	virtual void render(GLRenderEngine& re, GLContext& rc) = 0;
 };
 
 typedef std::vector<GLSceneItem*> GLItemList;
@@ -64,7 +65,7 @@ public:
 	GLCompositeSceneItem();
 	virtual ~GLCompositeSceneItem();
 
-	void render(GLRenderEngine& re, CGLContext& rc) override;
+	void render(GLRenderEngine& re, GLContext& rc) override;
 
 public:
 	void addItem(GLSceneItem* item) { if (item) m_items.push_back(item); }
@@ -73,21 +74,21 @@ private:
 	GLItemList m_items;
 };
 
-class CGLScene
+class GLScene
 {
 public:
-	CGLScene();
-	virtual ~CGLScene();
+	GLScene();
+	virtual ~GLScene();
 
 	CGView& GetView();
 
 	virtual void Update();
 
 	// Render the 3D scene
-	virtual void Render(GLRenderEngine& engine, CGLContext& rc) = 0;
+	virtual void Render(GLRenderEngine& engine, GLContext& rc) = 0;
 
 	// Render on the 2D canvas
-	virtual void RenderCanvas(QPainter& painter, CGLContext& rc) {}
+	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}
 
 	// get the bounding box of the entire scene
 	virtual BOX GetBoundingBox() = 0;
@@ -95,10 +96,10 @@ public:
 	// get the bounding box of the current selection
 	virtual BOX GetSelectionBox() = 0;
 
-	CGLCamera& GetCamera() { return m_view.GetCamera(); }
+	GLCamera& GetCamera() { return m_view.GetCamera(); }
 
 public:
-	GGrid& GetGrid() { return m_grid; }
+	GLGrid& GetGrid() { return m_grid; }
 	double GetGridScale() { return m_grid.GetScale(); }
 	quatd GetGridOrientation() { return m_grid.m_q; }
 	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
@@ -142,7 +143,7 @@ public:
 
 protected:
 	CGView	m_view;
-	GGrid	m_grid;		// the grid object
+	GLGrid	m_grid;		// the grid object
 
 	unsigned int	m_envtex;	// enironment texture ID
 	QString m_envMap; // file name used for environment mapping 

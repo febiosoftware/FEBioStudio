@@ -52,7 +52,7 @@ extern int LUT[256][15];
 extern int ET_HEX[12][2];
 extern int LUT2D_quad[16][9];
 extern int ET2D[4][2];
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 TriMesh::TriMesh()
 {
@@ -563,7 +563,7 @@ void CMarchingCubes::SetIsoValue(float v)
 	m_val = v;
 }
 
-void CMarchingCubes::Render(GLRenderEngine& re, CGLContext& rc)
+void CMarchingCubes::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_mesh)
 	{

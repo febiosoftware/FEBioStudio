@@ -49,7 +49,7 @@ public:
 	CGLLinePlot();
 	virtual ~CGLLinePlot();
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	float GetLineWidth() { return m_line; }
 	void SetLineWidth(float f) { m_line = f; }

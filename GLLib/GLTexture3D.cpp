@@ -23,35 +23,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "GLTexture3D.h"
 
-#pragma once
-#include <FSCore/math3d.h>
-
-class CGLContext;
-class GLRenderEngine;
-
-class GGrid
+GLTexture3D::GLTexture3D()
 {
-public:
-	GGrid();
-
-	vec3d Intersect(vec3d r, vec3d t, bool bsnap);
-
-	double GetScale() { return m_scale; }
-
-	void Render(GLRenderEngine& re, CGLContext& rc);
-
-	vec3d WorldToPlane(const vec3d& r) const
-	{
-		return m_q.Inverse() * (r - m_o);
-	}
-
-protected:
-	vec3d Snap(vec3d r);
-
-public:
-	vec3d	m_o;	// plane origin
-	quatd	m_q;	// plane orientation
-
-	double	m_scale;	// scale of grid (ie. distance between lines)
-};
+	m_texID = 0;
+	m_im = nullptr;
+	m_isModified = true;
+}

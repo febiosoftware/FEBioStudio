@@ -24,42 +24,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLPlot.h"
 
-class FEMesh;
+class GLTexture1D;
 
-namespace Post {
+class OGLShader
+{
+public:
+	OGLShader();
+	virtual ~OGLShader();
 
-	class GLRuler : public CGLPlot
-	{
-		enum { NODE0, NODE1, SIZE, COLOR };
+	bool IsActive() const;
 
-	public:
-		GLRuler();
+	virtual void Activate();
+	virtual void Deactivate();
 
-		void Render(GLRenderEngine& re, GLContext& rc) override;
-
-		void Update() override;
-		void Update(int ntime, float dt, bool breset) override;
-
-		bool UpdateData(bool bsave = true) override;
-
-		double DataValue(int nfield, int nstep);
-
-	public:
-		GLColor GetColor() const;
-		void SetColor(const GLColor& c);
-
-	private:
-		int		m_node[2];
-		GLColor	m_col;
-		double	m_size;
-		bool	m_bfollow;
-
-	private:
-		double	m_R;
-		double	m_lastTime;
-		double	m_lastDt;
-		vec3d	m_rt[2];
-	};
-}
+private:
+	static OGLShader* m_activeShader;
+};

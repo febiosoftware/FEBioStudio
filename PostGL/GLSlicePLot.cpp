@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
 
@@ -165,7 +165,7 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
-void CGLSlicePlot::Render(GLRenderEngine& re, CGLContext& rc)
+void CGLSlicePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nfield == -1) return;
 	if (m_box.IsValid() == false) return;
@@ -182,7 +182,7 @@ void CGLSlicePlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 	re.pushState();
 	re.setMaterial(GLMaterial::PLASTIC, GLColor(255, 255, 255, a), GLMaterial::TEXTURE_1D, false);
-	tex.MakeCurrent();
+	re.setTexture(tex);
 
 	// TODO: We used to z-sort the faces
 	re.renderGMesh(m_mesh, false);

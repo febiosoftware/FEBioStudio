@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ClassDescriptor.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+#include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
 
@@ -437,7 +437,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 	}
 }
 
-void GLVolumeFlowPlot::Render(GLRenderEngine& re, CGLContext& rc)
+void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	re.pushState();
 	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);

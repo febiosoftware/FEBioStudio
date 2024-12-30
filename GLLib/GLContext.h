@@ -28,16 +28,16 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include "GLViewSettings.h"
 
-class CGLCamera;
+class GLCamera;
 
-class CGLContext
+class GLContext
 {
 public:
-	CGLContext();
-	~CGLContext();
+	GLContext();
+	~GLContext();
 
 public:
-	CGLCamera*	m_cam;
+	GLCamera*	m_cam;
 	int			m_x, m_y;
 	int			m_w, m_h;
 

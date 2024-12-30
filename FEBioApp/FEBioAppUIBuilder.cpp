@@ -707,7 +707,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	vec3d R = vec3d(rot[0], rot[1], rot[2])*d2r;
 	if (R.norm2() > 0)
 	{
-		CGLCamera& cam = scene->GetCamera();
+		GLCamera& cam = scene->GetCamera();
 		cam.SetOrientation(quatd(R));
 		cam.Update(true);
 	}

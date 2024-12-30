@@ -27,9 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FEMLib/FSProject.h>
 #include <MeshTools/FESelection.h>
-#include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
-#include <FSCore/FileReader.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
 #include <ImageLib/ImageModel.h>
@@ -37,11 +35,12 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include <QtCore/QString>
 #include <GLLib/GLViewSettings.h>
-#include "GLScene.h"
 #include <GLLib/GView.h>
 #include <QObject>
 #include "Command.h"
 #include <QDateTime>
+
+class GLScene;
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -376,7 +375,7 @@ public:
 
 	CGView* GetView();
 
-	CGLScene* GetScene();
+	GLScene* GetScene();
 
 	void Update() override;
 
@@ -423,7 +422,7 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	CGLScene*			m_scene;
+	GLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state
 

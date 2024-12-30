@@ -23,12 +23,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "stdafx.h"
-#include "GLProgram.h"
+#include "OGLProgram.h"
 #include <FSCore/FSLogger.h>
 #include <GL/glew.h>
 
-GLProgram::GLProgram()
+OGLProgram::OGLProgram()
 {
 	m_progId = 0;
 }
@@ -57,7 +56,7 @@ bool compileShader(unsigned int shaderid, const char* shadersrc)
 	return (success != 0);
 }
 
-bool GLProgram::Create(const char* szvert, const char* szfrag)
+bool OGLProgram::Create(const char* szvert, const char* szfrag)
 {
 	// create the fragment shader
 	GLuint vertShader = 0, fragShader = 0;
@@ -102,24 +101,24 @@ bool GLProgram::Create(const char* szvert, const char* szfrag)
 	return (success != 0);
 }
 
-void GLProgram::Use()
+void OGLProgram::Use()
 {
 	if (m_progId > 0) glUseProgram(m_progId);
 }
 
-void GLProgram::SetInt(const char* szparam, int val)
+void OGLProgram::SetInt(const char* szparam, int val)
 {
 	GLint id = glGetUniformLocation(m_progId, szparam);
 	glUniform1i(id, val);
 }
 
-void GLProgram::SetFloat(const char* szparam, float val)
+void OGLProgram::SetFloat(const char* szparam, float val)
 {
 	GLint id = glGetUniformLocation(m_progId, szparam);
 	glUniform1f(id, val);
 }
 
-void GLProgram::SetFloat3(const char* szparam, float v[3])
+void OGLProgram::SetFloat3(const char* szparam, float v[3])
 {
 	GLint id = glGetUniformLocation(m_progId, szparam);
 	glUniform3f(id, v[0], v[1], v[2]);

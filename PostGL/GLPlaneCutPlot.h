@@ -90,7 +90,7 @@ public:
 	float GetOffsetScale() const;
 	vec3d GetPlanePosition() const;
 
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 	void RenderPlane(GLRenderEngine& re);
 	float Integrate(FEState* ps);
 

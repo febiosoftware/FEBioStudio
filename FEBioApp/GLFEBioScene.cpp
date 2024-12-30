@@ -43,7 +43,7 @@ GLSceneObject::GLSceneObject()
 	m_col = GLColor::White();
 }
 
-void GLSceneObject::render(GLRenderEngine& engine, CGLContext& rc)
+void GLSceneObject::render(GLRenderEngine& engine, GLContext& rc)
 {
 	engine.pushTransform();
 	engine.transform(m_pos, m_rot);
@@ -97,7 +97,7 @@ GLFEBioScene::GLFEBioScene(FEBioModel& fem) : m_fem(fem)
 	{
 		double f = m_box.GetMaxExtent();
 		if (f == 0) f = 1;
-		CGLCamera& cam = GetCamera();
+		GLCamera& cam = GetCamera();
 		cam.SetTarget(m_box.Center());
 		cam.SetTargetDistance(2.0 * f);
 	}
@@ -205,7 +205,7 @@ void GLFEBioScene::Update(double time)
 	UpdateBoundingBox();
 }
 
-void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
+void GLFEBioScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 
@@ -216,15 +216,15 @@ void GLFEBioScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	else
 	{
 		engine.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D);
-		m_col.GetTexture().MakeCurrent();
+		engine.setTexture(m_col.GetTexture());
 	}
 	engine.renderGMesh(*m_renderMesh, false);
 
 	engine.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
-	CGLScene::Render(engine, rc);
+	GLScene::Render(engine, rc);
 }
 
-void GLFEBioScene::RenderCanvas(QPainter& painter, CGLContext& rc)
+void GLFEBioScene::RenderCanvas(QPainter& painter, GLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 

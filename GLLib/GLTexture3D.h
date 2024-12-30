@@ -24,42 +24,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLPlot.h"
+#include <ImageLib/3DImage.h>
+#include <FSCore/color.h>
 
-class FEMesh;
+class GLTexture3D
+{
+public:
+	GLTexture3D();
 
-namespace Post {
+	unsigned int GetTexID() const { return m_texID; }
+	void SetTexID(unsigned int id) { m_texID = id; m_isModified = true; }
 
-	class GLRuler : public CGLPlot
-	{
-		enum { NODE0, NODE1, SIZE, COLOR };
+	void Set3DImage(C3DImage* im) { m_im = im; m_isModified = true; }
+	C3DImage* Get3DImage() { return m_im; }
 
-	public:
-		GLRuler();
+	bool IsModified() const { return m_isModified; }
+	void SetModified(bool b = true) { m_isModified = b; }
 
-		void Render(GLRenderEngine& re, GLContext& rc) override;
+public:
+	float Imin;
+	float Imax;
+	float Amin;
+	float Amax;
+	float gamma;
+	float hue;
+	float sat;
+	float lum;
+	int cmap;
+	float IscaleMin;
+	float Iscale;
 
-		void Update() override;
-		void Update(int ntime, float dt, bool breset) override;
+	GLColor col1, col2, col3;
 
-		bool UpdateData(bool bsave = true) override;
-
-		double DataValue(int nfield, int nstep);
-
-	public:
-		GLColor GetColor() const;
-		void SetColor(const GLColor& c);
-
-	private:
-		int		m_node[2];
-		GLColor	m_col;
-		double	m_size;
-		bool	m_bfollow;
-
-	private:
-		double	m_R;
-		double	m_lastTime;
-		double	m_lastDt;
-		vec3d	m_rt[2];
-	};
-}
+private:
+	unsigned int m_texID;
+	C3DImage* m_im;
+	bool	m_isModified;
+};

@@ -40,7 +40,7 @@ public:
 	~CGLMirrorPlane();
 
 	// render the object to the 3D view
-	void Render(GLRenderEngine& re, CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	bool UpdateData(bool bsave = true) override;
 

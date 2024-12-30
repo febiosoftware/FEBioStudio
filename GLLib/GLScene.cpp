@@ -27,23 +27,23 @@ SOFTWARE.*/
 #include "GLScene.h"
 #include <GeomLib/GObject.h>
 
-CGLScene::CGLScene() 
+GLScene::GLScene() 
 {
 	m_envtex = 0;
 }
 
-CGLScene::~CGLScene() 
+GLScene::~GLScene() 
 {
 	clear();
 }
 
-CGView& CGLScene::GetView() { return m_view; }
+CGView& GLScene::GetView() { return m_view; }
 
-void CGLScene::Render(GLRenderEngine& engine, CGLContext& rc)
+void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	engine.pushState();
 
-	CGLScene& scene = *this;
+	GLScene& scene = *this;
 	for (GLSceneItem* item : scene)
 	{
 		assert(item);
@@ -53,25 +53,25 @@ void CGLScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	engine.popState();
 }
 
-void CGLScene::Update()
+void GLScene::Update()
 {
 
 }
 
-void CGLScene::ActivateEnvironmentMap(GLRenderEngine& re)
+void GLScene::ActivateEnvironmentMap(GLRenderEngine& re)
 {
 	if (m_envtex == 0) LoadEnvironmentMap(re);
 	if (m_envtex == 0) return;
 	re.ActivateEnvironmentMap(m_envtex);
 }
 
-void CGLScene::DeactivateEnvironmentMap(GLRenderEngine& re)
+void GLScene::DeactivateEnvironmentMap(GLRenderEngine& re)
 {
 	if (m_envtex == 0) return;
 	re.DeactivateEnvironmentMap(m_envtex);
 }
 
-void CGLScene::LoadEnvironmentMap(GLRenderEngine& re)
+void GLScene::LoadEnvironmentMap(GLRenderEngine& re)
 {
 	if (m_envtex != 0) return;
 	if (m_envMap.isEmpty()) return;
@@ -80,7 +80,7 @@ void CGLScene::LoadEnvironmentMap(GLRenderEngine& re)
 
 // this function will only adjust the camera if the currently
 // selected object is too close.
-void CGLScene::ZoomSelection(bool forceZoom)
+void GLScene::ZoomSelection(bool forceZoom)
 {
 	// get the selection's bounding box
 	BOX box = GetSelectionBox();
@@ -89,7 +89,7 @@ void CGLScene::ZoomSelection(bool forceZoom)
 		double f = box.GetMaxExtent();
 		if (f < 1.0e-8) f = 1.0;
 
-		CGLCamera& cam = GetCamera();
+		GLCamera& cam = GetCamera();
 
 		double g = cam.GetFinalTargetDistance();
 		if ((forceZoom == true) || (g < 2.0 * f))
@@ -101,14 +101,14 @@ void CGLScene::ZoomSelection(bool forceZoom)
 	else ZoomExtents();
 }
 
-void CGLScene::ZoomExtents(bool banimate)
+void GLScene::ZoomExtents(bool banimate)
 {
 	BOX box = GetBoundingBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	GLCamera& cam = GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0 * f);
@@ -117,32 +117,32 @@ void CGLScene::ZoomExtents(bool banimate)
 }
 
 //! zoom in on a box
-void CGLScene::ZoomTo(const BOX& box)
+void GLScene::ZoomTo(const BOX& box)
 {
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	GLCamera& cam = GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0 * f);
 }
 
-void CGLScene::ZoomToObject(GObject* po)
+void GLScene::ZoomToObject(GObject* po)
 {
 	BOX box = po->GetGlobalBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	GLCamera& cam = GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0 * f);
 	cam.SetOrientation(po->GetRenderTransform().GetRotationInverse());
 }
 
-void CGLScene::clear()
+void GLScene::clear()
 {
 	for (GLSceneItem* item : m_Items) delete item;
 	m_Items.clear();
@@ -157,7 +157,7 @@ GLCompositeSceneItem::~GLCompositeSceneItem()
 	}
 }
 
-void GLCompositeSceneItem::render(GLRenderEngine& re, CGLContext& rc)
+void GLCompositeSceneItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	for (auto item : m_items)
 	{

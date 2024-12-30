@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include <PostGL/GLModel.h>
 #include "GLPostScene.h"
+#include <GLLib/GLScene.h>
 
 void CMainWindow::on_actionUndoViewChange_triggered()
 {
@@ -53,7 +54,7 @@ void CMainWindow::on_actionZoomSelect_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
-		CGLScene* scene = doc->GetScene();
+		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
 			scene->ZoomSelection();
@@ -67,7 +68,7 @@ void CMainWindow::on_actionZoomExtents_triggered()
 	CGLDocument* doc = GetGLDocument();
 	if (doc)
 	{
-		CGLScene* scene = doc->GetScene();
+		GLScene* scene = doc->GetScene();
 		if (scene)
 		{
 			scene->ZoomExtents();
@@ -299,7 +300,7 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
-	CGLCamera& cam = view.GetCamera();
+	GLCamera& cam = view.GetCamera();
 	GLCameraTransform t;
 	cam.GetTransform(t);
 
@@ -346,7 +347,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
-	CGLCamera& cam = view.GetCamera();
+	GLCamera& cam = view.GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
 	CDocManager* DM = GetDocManager();
@@ -359,7 +360,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 			CGView& viewi = *doci->GetView();
 
 			// copy the transforms
-			CGLCamera& cami = viewi.GetCamera();
+			GLCamera& cami = viewi.GetCamera();
 			cami.SetTransform(transform);
 			cami.Update(true);
 

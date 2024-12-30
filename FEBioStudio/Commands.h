@@ -1322,7 +1322,7 @@ protected:
 class CCmdChangeView : public CCommand
 {
 public:
-	CCmdChangeView(CGView* pview, CGLCamera cam);
+	CCmdChangeView(CGView* pview, GLCamera cam);
 	~CCmdChangeView();
 
 	void Execute();
@@ -1330,7 +1330,7 @@ public:
 
 protected:
 	CGView*		m_pview;
-	CGLCamera	m_cam;
+	GLCamera	m_cam;
 };
 
 //-----------------------------------------------------------------------------

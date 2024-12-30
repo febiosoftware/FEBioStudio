@@ -24,11 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/GLScene.h"
+#include <GLLib/GLScene.h>
 #include <PostGL/GLModel.h>
 #include "../MeshLib/FENodeFaceList.h"
 #include <PostGL/PostObject.h>
-#include <GLLib/GLMesh.h>
 #include "../FEBioStudio/GLPostScene.h"
 #include <QMutex>
 
@@ -54,9 +53,9 @@ public:
 	void UpdateStateData();
 	void UpdateScene();
 
-	void Render(GLRenderEngine& engine, CGLContext& rc) override;
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	void RenderTags(CGLContext& rc);
+	void RenderTags(GLContext& rc);
 
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override;
