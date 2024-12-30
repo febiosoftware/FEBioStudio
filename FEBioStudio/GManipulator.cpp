@@ -60,10 +60,10 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(255, 0, 0));
 		}
 		else re.setColor(g);
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCone(0.5 * l, l, 12);
+		glx::drawCone(re, 0.5 * l, l, 12);
 	}
 	re.popTransform();
 
@@ -77,10 +77,10 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(0,255,0));
 		}
 		else re.setColor(g);
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCone(0.5 * l, l, 12);
+		glx::drawCone(re, 0.5 * l, l, 12);
 	}
 	re.popTransform();
 
@@ -93,10 +93,10 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(0,0,255));
 		}
 		else re.setColor(g);
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCone(0.5 * l, l, 12);
+		glx::drawCone(re, 0.5 * l, l, 12);
 	}
 	re.popTransform();
 
@@ -105,9 +105,9 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 		// XY-plane
 		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
 		else re.setColor(GLColor(164, 164, 0, 90));
-		glx::drawRect(0,0,r,r);
+		re.renderRect(0,0,r,r);
 		re.setColor(GLColor(255,255,0, 128));
-		glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+		re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 
 		// YZ-plane
 		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
@@ -115,10 +115,10 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 		re.pushTransform();
 		{
 			re.rotate(-90, 0, 1, 0);
-			glx::drawRect(0,0,r,r);
+			re.renderRect(0,0,r,r);
 
 			re.setColor(GLColor(255,255,0,128));
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 		}
 		re.popTransform();
 
@@ -128,10 +128,10 @@ void GTranslator::Render(GLRenderEngine& re, int npivot, bool bactive)
 		re.pushTransform();
 		{
 			re.rotate(90, 1, 0, 0);
-			glx::drawRect(0,0,r,r);
+			re.renderRect(0,0,r,r);
 
 			re.setColor(GLColor(255,255,0,128));
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 		}
 		re.popTransform();
 	}
@@ -227,26 +227,26 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_X)
 			{
 				re.setColor(GLColor(200,0,0,64));
-				glx::drawDisk(d, N);
+				glx::drawDisk(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
-				glx::drawLine(0, 0, 0, 0, 0, d + l);
-				glx::drawCircle(d, N);
+				re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d + l));
+				glx::drawCircle(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
 				re.translate(vec3d(0, 0, d+l));
-				glx::drawCone(0.5 * l, l);
+				glx::drawCone(re, 0.5 * l, l);
 			}
 			else
 			{
 				re.setColor(GLColor(255,0,0));
-				glx::drawCircle(d, N);
+				glx::drawCircle(re, d, N);
 			}
 		}
 		else
 		{
 			re.setColor(GLColor(128,128,128));
-			glx::drawCircle(d, N);
+			glx::drawCircle(re, d, N);
 		}
 	}
 	re.popTransform();
@@ -260,26 +260,26 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y)
 			{
 				re.setColor(GLColor(0,200,0,64));
-				glx::drawDisk(d, N);
+				glx::drawDisk(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
-				glx::drawLine(0, 0, 0, 0, 0, d + l);
-				glx::drawCircle(d, N);
+				re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d + l));
+				glx::drawCircle(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
 				re.translate(vec3d(0, 0, d+l));
-				glx::drawCone(0.5 * l, l);
+				glx::drawCone(re, 0.5 * l, l);
 			}
 			else
 			{
 				re.setColor(GLColor(0,255,0));
-				glx::drawCircle(d, N);
+				glx::drawCircle(re, d, N);
 			}
 		}
 		else
 		{
 			re.setColor(GLColor(128,128,128));
-			glx::drawCircle(d, N);
+			glx::drawCircle(re, d, N);
 		}
 	}
 	re.popTransform();
@@ -292,26 +292,26 @@ void GRotator::Render(GLRenderEngine& re, int npivot, bool bactive)
 			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z)
 			{
 				re.setColor(GLColor(0,0,255,64));
-				glx::drawDisk(d, N);
+				glx::drawDisk(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
-				glx::drawLine(0, 0, 0, 0, 0, d + l);
-				glx::drawCircle(d, N);
+				re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d + l));
+				glx::drawCircle(re, d, N);
 
 				re.setColor(GLColor(255,255,0));
 				re.translate(vec3d(0, 0, d+l));
-				glx::drawCone(0.5 * l, l);
+				glx::drawCone(re, 0.5 * l, l);
 			}
 			else
 			{
 				re.setColor(GLColor(0,0,255));
-				glx::drawCircle(d, N);
+				glx::drawCircle(re, d, N);
 			}
 		}
 		else
 		{
 			re.setColor(GLColor(128,128,128));
-			glx::drawCircle(d, N);
+			glx::drawCircle(re, d, N);
 		}
 	}
 	re.popTransform();
@@ -422,10 +422,10 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(255,0,0));
 		}
 		else re.setColor(GLColor(g.r, g.g, g.b));
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCappedCylinder(0.5 * l, l);
+		glx::drawCappedCylinder(re, 0.5 * l, l);
 	}
 	re.popTransform();
 
@@ -439,10 +439,10 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(0,255,0));
 		}
 		else re.setColor(GLColor(g.r, g.g, g.b));
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCappedCylinder(0.5 * l, l);
+		glx::drawCappedCylinder(re, 0.5 * l, l);
 	}
 	re.popTransform();
 
@@ -455,10 +455,10 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 			else re.setColor(GLColor(0,0,255));
 		}
 		else re.setColor(GLColor(g.r, g.g, g.b));
-		glx::drawLine(0, 0, 0, 0, 0, d);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, d));
 
 		re.translate(vec3d(0, 0, d));
-		glx::drawCappedCylinder(0.5 * l, l);
+		glx::drawCappedCylinder(re, 0.5 * l, l);
 	}
 	re.popTransform();
 
@@ -467,9 +467,9 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 		// XY-plane
 		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) re.setColor(GLColor(255, 255, 0, 128));
 		else re.setColor(GLColor(164, 164, 0, 90));
-		glx::drawRect(0,0,r,r);
+		re.renderRect(0,0,r,r);
 		re.setColor(GLColor(255,255,0, 128));
-		glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+		re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 
 		// YZ-plane
 		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) re.setColor(GLColor(255, 255, 0, 128));
@@ -477,10 +477,10 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 		re.pushTransform();
 		{
 			re.rotate(-90, 0, 1, 0);
-			glx::drawRect(0,0,r,r);
+			re.renderRect(0,0,r,r);
 
 			re.setColor(GLColor(255,255,0,128));
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 		}
 		re.popTransform();
 
@@ -490,10 +490,10 @@ void GScalor::Render(GLRenderEngine& re, int npivot, bool bactive)
 		re.pushTransform();
 		{
 			re.rotate(90, 1, 0, 0);
-			glx::drawRect(0,0,r,r);
+			re.renderRect(0,0,r,r);
 
 			re.setColor(GLColor(255,255,0,128));
-			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			re.renderLine(vec3d(r, 0, 0), vec3d(r, r, 0), vec3d(0, r, 0));
 		}
 		re.popTransform();
 	}

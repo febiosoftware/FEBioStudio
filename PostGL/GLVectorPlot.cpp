@@ -401,24 +401,24 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GL
 	switch (m_nglyph)
 	{
 	case GLYPH_ARROW:
-		gluCylinder(pglyph, r0, r0, l0, 5, 1);
+		glx::drawCylinder(re, r0, l0, 5);
 		glTranslatef(0.f, 0.f, (float)l0*0.9f);
-		gluCylinder(pglyph, r1, 0, l1, 10, 1);
+		glx::drawCone(re, r1, l1, 10);
 		break;
 	case GLYPH_CONE:
-		gluCylinder(pglyph, r1, 0, l0, 10, 1);
+		glx::drawCone(re, r1, l0, 10);
 		break;
 	case GLYPH_CYLINDER:
-		gluCylinder(pglyph, r1, r1, l0, 10, 1);
+		glx::drawCylinder(re, r1, l0, 10);
 		break;
 	case GLYPH_SPHERE:
 		gluSphere(pglyph, r1, 10, 5);
 		break;
 	case GLYPH_BOX:
-		glx::drawBox(r0, r0, r0);
+		glx::drawBox(re, r0, r0, r0);
 		break;
 	case GLYPH_LINE:
-		glx::drawLine(0, 0, 0, 0, 0, L);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, L));
 	}
 
 	re.popTransform();

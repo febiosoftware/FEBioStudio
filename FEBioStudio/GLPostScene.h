@@ -61,12 +61,12 @@ private:
 	void RenderOutline(GLRenderEngine& re, CGLContext& rc);
 	void RenderGhost(GLRenderEngine& re, CGLContext& rc);
 	void RenderMeshLines(GLRenderEngine& re, CGLContext& rc);
-	void RenderDiscrete(CGLContext& rc);
-	void RenderDiscreteAsLines(CGLContext& rc);
-	void RenderDiscreteAsSolid(CGLContext& rc);
-	void RenderMinMaxMarkers(CGLContext& rc);
-	void RenderDiscreteElement(int n);
-	void RenderDiscreteElementAsSolid(int n, double W);
+	void RenderDiscrete(GLRenderEngine& re, CGLContext& rc);
+	void RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re, CGLContext& rc);
+	void RenderMinMaxMarkers(GLRenderEngine& re, CGLContext& rc);
+	void RenderDiscreteElement(GLRenderEngine& re, int n);
+	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 };
 
 class GLPostPlotItem : public GLPostSceneItem

@@ -142,10 +142,20 @@ void OpenGLRenderer::rotate(double angleDeg, double x, double y, double z)
 	glRotated(angleDeg, x, y, z);
 }
 
+void OpenGLRenderer::scale(double x, double y, double z)
+{
+	glScaled(x, y, z);
+}
+
 void OpenGLRenderer::transform(const vec3d& pos, const quatd& rot)
 {
 	translate(pos);
 	rotate(rot);
+}
+
+void OpenGLRenderer::multTransform(const double* m)
+{
+	glMultMatrixd(m);
 }
 
 void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
@@ -153,6 +163,8 @@ void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 	switch (flag)
 	{
 	case GLRenderEngine::LIGHTING : glEnable(GL_LIGHTING); break;
+	case GLRenderEngine::DEPTHTEST: glEnable(GL_DEPTH_TEST); break;
+	case GLRenderEngine::CULLFACE : glEnable(GL_CULL_FACE); break;
 	case GLRenderEngine::CLIPPLANE: glEnable(GL_CLIP_PLANE0); break;
 	}
 }
@@ -162,6 +174,8 @@ void OpenGLRenderer::disable(GLRenderEngine::StateFlag flag)
 	switch (flag)
 	{
 	case GLRenderEngine::LIGHTING : glDisable(GL_LIGHTING); break;
+	case GLRenderEngine::DEPTHTEST: glDisable(GL_DEPTH_TEST); break;
+	case GLRenderEngine::CULLFACE : glDisable(GL_CULL_FACE); break;
 	case GLRenderEngine::CLIPPLANE: glDisable(GL_CLIP_PLANE0); break;
 	}
 }
@@ -284,23 +298,41 @@ void OpenGLRenderer::positionCamera(const CGLCamera& cam)
 	translate(-cam.GetPosition());
 }
 
-void OpenGLRenderer::renderPoint(const vec3d& r)
+void OpenGLRenderer::begin(PrimitiveType prim)
 {
-	glBegin(GL_POINTS);
+	switch (prim)
 	{
-		glVertex3d(r.x, r.y, r.z);
+	case PrimitiveType::POINTS     : glBegin(GL_POINTS); break;
+	case PrimitiveType::LINES      : glBegin(GL_LINES); break;
+	case PrimitiveType::LINELOOP   : glBegin(GL_LINE_LOOP); break;
+	case PrimitiveType::LINESTRIP  : glBegin(GL_LINE_STRIP); break;
+	case PrimitiveType::TRIANGLES  : glBegin(GL_TRIANGLES); break;
+	case PrimitiveType::TRIANGLEFAN: glBegin(GL_TRIANGLE_FAN); break;
+	case PrimitiveType::QUADS      : glBegin(GL_QUADS); break;
+	case PrimitiveType::QUADSTRIP  : glBegin(GL_QUAD_STRIP); break;
+	default:
+		assert(false);
 	}
+}
+
+void OpenGLRenderer::end()
+{
 	glEnd();
 }
 
-void OpenGLRenderer::renderLine(const vec3d& a, const vec3d& b)
+void OpenGLRenderer::vertex(const vec3d& r)
 {
-	glBegin(GL_LINES);
-	{
-		glVertex3d(a.x, a.y, a.z);
-		glVertex3d(b.x, b.y, b.z);
-	}
-	glEnd();
+	glVertex3d(r.x, r.y, r.z);
+}
+
+void OpenGLRenderer::normal(const vec3d& r)
+{
+	glNormal3d(r.x, r.y, r.z);
+}
+
+void OpenGLRenderer::texCoord1d(double t)
+{
+	glTexCoord1d(t);
 }
 
 void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)

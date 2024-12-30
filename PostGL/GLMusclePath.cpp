@@ -260,14 +260,14 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 
 		// draw the muscle path
 		glColor3ub(gray.r, gray.g, gray.b);
-		glx::drawSmoothPath(points, R);
+		glx::drawSmoothPath(re, points, R);
 
 		// draw the end points
-		glx::glcolor(col0);
-		glx::drawSphere(r0, 1.5 * R);
+		re.setColor(col0);
+		glx::drawSphere(re, r0, 1.5 * R);
 
-		glx::glcolor(col1);
-		glx::drawSphere(r1, 1.5 * R);
+		re.setColor(col1);
+		glx::drawSphere(re, r1, 1.5 * R);
 
 		return;
 	}
@@ -275,9 +275,6 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 	vector<vec3d> points = path->GetPoints();
 
 	int renderMode = GetIntValue(RENDER_MODE);
-
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	// draw the path
 	int N = (int) path->m_points.size();
@@ -288,16 +285,16 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 
 		// draw the muscle path
 		glColor3ub(c.r, c.g, c.b);
-		glx::drawSmoothPath(points, R);
+		glx::drawSmoothPath(re, points, R);
 
 		if ((renderMode == 0) || (renderMode == 1))
 		{
 			// draw the end points
-			glx::glcolor(col0);
-			glx::drawSphere(r0, 1.5 * R);
+			re.setColor(col0);
+			glx::drawSphere(re, r0, 1.5 * R);
 
-			glx::glcolor(col1);
-			glx::drawSphere(r1, 1.5 * R);
+			re.setColor(col1);
+			glx::drawSphere(re, r1, 1.5 * R);
 
 			for (int i = 0; i < N; ++i)
 			{
@@ -322,7 +319,7 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 						glColor3ub(255, 255, 255);
 					}
 
-					glx::drawSphere(r0, sphereRadius);
+					glx::drawSphere(re, r0, sphereRadius);
 				}
 
 				// draw the tangent vector
@@ -349,17 +346,15 @@ void GLMusclePath::Render(GLRenderEngine& re, CGLContext& rc)
 
 					double D = 1.25 * R;
 
-					gluCylinder(pglyph, D, D, L, 20, 1);
-					glTranslatef(0.f, 0.f, (float)L * 0.9f);
-					gluCylinder(pglyph, 2*D, 0, 0.5*L, 20, 1);
+					glx::drawCylinder(re, D, L, 20);
+					re.translate(vec3d(0, 0, L * 0.9));
+					glx::drawCone(re, 2 * D, 0.5 * L, 20);
 
 					re.popTransform();
 				}
 			}
 		}
 	}
-
-	gluDeleteQuadric(pglyph);
 }
 
 bool GLMusclePath::Intersects(Ray& ray, Intersection& q)

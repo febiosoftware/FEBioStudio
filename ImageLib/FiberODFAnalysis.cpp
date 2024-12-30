@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FiberODFAnalysis.h"
-#include <qopengl.h>
 #include "ImageModel.h"
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/spherePoints.h>
@@ -41,25 +40,12 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
 #include <FEBioOpt/FEBioOpt.h>
-#include "../FEBioStudio/OpenGLRenderer.h"
-
-#include <algorithm>
-
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 #ifdef min
 #undef min
 #endif
 #ifdef max
 #undef max
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#else
-#include <GL/glu.h>
 #endif
 
 #ifndef M_PI
@@ -928,7 +914,7 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 	}
 }
 
-void RenderEllipsoid(GLRenderEngine& re, GLUquadricObj* po, float* l, vec3f* e)
+void RenderEllipsoid(GLRenderEngine& re, float* l, vec3f* e)
 {
 	float smax = 0.f;
 	float sx = fabs(l[0]); if (sx > smax) smax = sx;
@@ -943,15 +929,15 @@ void RenderEllipsoid(GLRenderEngine& re, GLUquadricObj* po, float* l, vec3f* e)
 	re.pushTransform();
 	vec3f n = e[0] ^ e[1];
 	if (n * e[2] < 0) e[2] = -e[2];
-	GLfloat m[4][4] = { 0 };
-	m[3][3] = 1.f;
+	double m[4][4] = { 0 };
+	m[3][3] = 1.0;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(sx, sy, sz);
-	gluSphere(po, 1.f, 32, 32);
+	re.scale(sx, sy, sz);
+	glx::drawSphere(re, 1.f);
 	re.popTransform();
 }
 
@@ -968,9 +954,6 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 	}
 
 	re.pushState();
-    glEnable(GL_COLOR_MATERIAL);
-    GLfloat spc[4] = { 0, 0, 0, 1.f };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
 	// render the meshes (and selection box)
     bool showBoundingBoxes = GetBoolValue(SHOW_BOUND_BOX);
@@ -988,7 +971,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
         if (odf->m_active && odf->IsValid())
         {
 			re.pushTransform();
-            glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
+            re.scale(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
             renderODFMesh(re, odf, rc.m_cam);
 			re.popTransform();
         }
@@ -1004,7 +987,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, CGLContext& rc)
 	// show selected box
 	if (sel && showSelBox)
 	{
-		glDisable(GL_DEPTH_TEST);
+		re.disable(GLRenderEngine::DEPTHTEST);
 		re.pushTransform();
 		re.translate(sel->m_position);
 		glx::renderBox(re, sel->m_box, GLColor(255, 255, 0), false, 1);
@@ -1022,15 +1005,12 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* 
 
     if (showMesh == 3)
     {
-        glEnable(GL_COLOR_MATERIAL);
-
-		GLUquadricObj* pglyph = gluNewQuadric();
-		gluQuadricNormals(pglyph, GLU_SMOOTH);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
 
         if (odf->m_active && odf->IsValid())
         {
             GLColor c = m_map.map(odf->m_FA);
-            glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 
             float l[3] = { 0.f }, lmax = -1e34;
             vec3f e[3];
@@ -1045,11 +1025,9 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* 
                 l[0] /= lmax;
                 l[1] /= lmax;
                 l[2] /= lmax;
-                RenderEllipsoid(re, pglyph, l, e);
+                RenderEllipsoid(re, l, e);
             }
         }
-
-		gluDeleteQuadric(pglyph);
 
         return;
     }
@@ -1073,9 +1051,6 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, CGLCamera* 
 
 	if (meshLines)
 	{
-        glEnable(GL_BLEND);
-        glLineWidth(1.5f);
-
 		re.setMaterial(GLMaterial::CONSTANT, GLColor(0,0,0,128));
 		re.renderGMeshEdges(*mesh, false);
 	}

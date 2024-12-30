@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLShader.h"
 #include "GLTexture1D.h"
-#include <GLLib/glx.h>
+#include <qopengl.h>
 
 GLShader* GLShader::m_activeShader = nullptr;
 
@@ -280,7 +280,7 @@ void GLOutlineShader::Deactivate()
 
 void GLOutlineShader::Render(const GMesh::EDGE& e)
 {
-	glx::line(e.vr[0], e.vr[1]);
+
 }
 
 GLLineColorShader::GLLineColorShader()
@@ -310,7 +310,7 @@ void GLLineColorShader::Deactivate()
 
 void GLLineColorShader::Render(const GMesh::EDGE& e)
 {
-	glx::line(e.vr[0], e.vr[1]);
+
 }
 
 
@@ -342,8 +342,6 @@ void GLNormalShader::Render(const GMesh::EDGE& edge)
 	GLfloat b = (GLfloat)fabs(N.z);
 
 	vec3f r2 = r1 + N * m_scale;
-
-	glx::line(r1, r2, GLColor::White(), GLColor::FromRGBf(r, g, b));
 }
 
 GLPointColorShader::GLPointColorShader()

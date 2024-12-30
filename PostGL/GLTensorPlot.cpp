@@ -600,7 +600,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 
 		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
 
-		glx::glcolor(m_gcl);
+		re.setColor(m_gcl);
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
@@ -614,8 +614,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, CGLContext& rc)
 				if (m_ncol != Glyph_Col_Solid)
 				{
 					float w = (t.f  - fmin)/ (fmax - fmin);
-					GLColor c = map.map(w);
-					glx::glcolor(c);
+					re.setColor(map.map(w));
 				}
 
 				re.translate(r);
@@ -703,8 +702,8 @@ void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, floa
 			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
 		}
 
-		glx::glcolor(c[i]);
-		glx::drawLine(0, 0, 0, 0, 0, L);
+		re.setColor(c[i]);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, L));
 
 		re.popTransform();
 	}
@@ -764,6 +763,6 @@ void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale, GLUquad
 	glMultMatrixf(&m[0][0]);
 
 	glScalef(scale*sx, scale*sy, scale*sz);
-	glx::drawBox(0.5, 0.5, 0.5);
+	glx::drawBox(re, 0.5, 0.5, 0.5);
 	re.popTransform();
 }

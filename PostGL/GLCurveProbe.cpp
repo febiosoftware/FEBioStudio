@@ -65,11 +65,11 @@ void GLCurveProbe::Render(GLRenderEngine& re, CGLContext& rc)
 		for (int i = 0; i < m_path.size(); ++i)
 		{
 			vec3d r = m_path[i]* m_scale;
-			glx::vertex3d(r);
+			re.vertex(r);
 		}
 		glEnd();
 		glBegin(GL_POINTS);
-		glx::vertex3d(m_path[0]* m_scale);
+		re.vertex(m_path[0]* m_scale);
 		glEnd();
 		glPopAttrib();
 	}

@@ -50,7 +50,9 @@ public:
 	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
 	void rotate(double angleDeg, double x, double y, double z) override;
+	void scale(double x, double y, double z) override;
 	void transform(const vec3d& pos, const quatd& rot) override;
+	void multTransform(const double* m) override;
 
 public:
 	void pushState() override;
@@ -68,9 +70,14 @@ public:
 	void positionCamera(const CGLCamera& cam) override;
 
 public:
-	void renderPoint(const vec3d& r) override;
-	void renderLine(const vec3d& a, const vec3d& b) override;
+	void begin(PrimitiveType prim) override;
+	void end() override;
 
+	void vertex(const vec3d& r) override;
+	void normal(const vec3d& r) override;
+	void texCoord1d(double t) override;
+
+public:
 	void renderGMesh(const GMesh& mesh, bool cacheMesh = true) override;
 	void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh) override;
 

@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
 #include "../FEBioStudio/GLRenderEngine.h"
+#include <qopengl.h>
 
 using namespace Post;
 
@@ -113,7 +114,7 @@ void CImageModel::Render(GLRenderEngine& re, CGLContext& rc)
 	BOX box = GetBoundingBox();
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
-	glTranslated(r0.x, r0.y, r0.z);
+	re.translate(r0);
 
 	mat3d Q = GetOrientation();
 

@@ -1741,6 +1741,20 @@ void CGLView::RenderCanvas(CGLContext& rc)
 	painter.end();
 }
 
+void renderCircle(const vec3d& c, double R, int N)
+{
+	glBegin(GL_LINE_LOOP);
+	{
+		for (int i = 0; i < N; ++i)
+		{
+			double x = c.x + R * cos(i * 2 * PI / N);
+			double y = c.y + R * sin(i * 2 * PI / N);
+			glVertex3d(x, y, c.z);
+		}
+	}
+	glEnd();
+}
+
 void CGLView::Render3DCursor()
 {
 	// only render if the 3D cursor is valid
@@ -1775,11 +1789,13 @@ void CGLView::Render3DCursor()
 	gluOrtho2D(0, width(), 0, height());
 
 	glColor3ub(255, 164, 164);
-	glx::drawLine(p.x - R, p.y, p.x - R + c, p.y);
-	glx::drawLine(p.x + R, p.y, p.x + R - c, p.y);
-	glx::drawLine(p.x, p.y - R, p.x, p.y - R + c);
-	glx::drawLine(p.x, p.y + R, p.x, p.y + R - c);
-	glx::drawCircle(p, R, 36);
+	glBegin(GL_LINES);
+	glVertex2d(p.x - R, p.y); glVertex2d(p.x - R + c, p.y);
+	glVertex2d(p.x + R, p.y); glVertex2d(p.x + R - c, p.y);
+	glVertex2d(p.x, p.y - R); glVertex2d(p.x, p.y - R + c);
+	glVertex2d(p.x, p.y + R); glVertex2d(p.x, p.y + R - c);
+	renderCircle(p, R, 36);
+	glEnd();
 
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
@@ -1934,7 +1950,7 @@ void CGLView::RenderRubberBand()
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
 			double R = sqrt(dx*dx + dy*dy);
-			glx::drawCircle(vec3d(m_x0, m_y0, 0), R, 24);
+			renderCircle(vec3d(m_x0, m_y0, 0), R, 24);
 		}
 		break;
 	case REGION_SELECT_FREE:
@@ -1979,7 +1995,7 @@ void CGLView::RenderBrush()
 	double R = GetViewSettings().m_brushSize;
 	int n = (int)(R / 2);
 	if (n < 12) n = 12;
-	glx::drawCircle(vec3d(m_x1, m_y1, 0), R, n);
+	renderCircle(vec3d(m_x1, m_y1, 0), R, n);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopAttrib();

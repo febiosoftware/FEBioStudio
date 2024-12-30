@@ -27,10 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/color.h>
 #include <FSCore/math3d.h>
-#include <qopengl.h>
 #include <vector>
 #include <FSCore/box.h>
-#include "../FEBioStudio/GLRenderEngine.h"
+
+class GLRenderEngine;
 
 namespace glx {
 
@@ -46,105 +46,46 @@ namespace glx {
 	};
 
 
-void drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n);
-void drawCircle(double R, int N);
-void drawCircle(const vec3d& c, double R, int N);
-void drawCircle(const vec3d& c, const vec3d& normal, double R, int N);
-void drawPoint(const vec3d& p);
-void drawLine(const vec3d& a, const vec3d& b);
-void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+void drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n);
 
-void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
-void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
-void line(const vec3d& a, const vec3d& b);
+void drawCircle(GLRenderEngine& re, double R, int N);
+void drawCircle(GLRenderEngine& re, const vec3d& c, double R, int N);
+void drawCircle(GLRenderEngine& re, const vec3d& c, const vec3d& normal, double R, int N);
 
-void drawArc(const vec3d& c, double R, double w0, double w1, int N);
-void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
+void drawArc(GLRenderEngine& re, const vec3d& c, double R, double w0, double w1, int N);
+void drawHelix(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R, double p, int N);
 
-void drawSphere(const vec3d& r, float R);
-void drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f);
-void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
-void drawSmoothPath(const std::vector<vec3d>& path, float R, float t0 = 0.f, float t1 = 1.f, int leftCap = 0, int rightCap = 0);
-void drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
-void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16, int leftCap = 0, int rightCap = 0);
+void drawSphere(GLRenderEngine& re, const vec3d& center, float radius);
+void drawSphere(GLRenderEngine& re, float radius);
+void drawHalfSphere(GLRenderEngine& re, float R);
+void drawSmoothPath(GLRenderEngine& re, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
+void drawSmoothPath(GLRenderEngine& re, const std::vector<vec3d>& path, float R, float t0 = 0.f, float t1 = 1.f, int leftCap = 0, int rightCap = 0);
+void drawCappedCylinder(GLRenderEngine& re, float radius, float height, float t0, float t1, int N = 16, int leftCap = 0, int rightCap = 0);
+void drawCappedCylinder(GLRenderEngine& re, float radius, float height, int N = 16);
 
-void drawRect(double x0, double y0, double x1, double x2);
-void drawDisk(float baseRadius, int N = 16);
-void drawCone(float baseRadius, float height, int N = 16);
-void drawCylinder(float radius, float height, int N = 16);
-void drawCappedCylinder(float radius, float height, int N = 16);
+void drawDisk(GLRenderEngine& re, float baseRadius, int N = 16);
+void drawCone(GLRenderEngine& re, float baseRadius, float height, int N = 16);
+void drawCylinder(GLRenderEngine& re, float radius, float height, float t0, float t1, int N = 16);
+void drawCylinder(GLRenderEngine& re, float radius, float height, int N = 16);
 
 vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t);
 
-void quad4(const vec3d* r, const vec3f* n);
-void quad4(const vec3d* r, const vec3f* n, const GLColor* c);
-void quad4(const vec3d* r, const vec3f* n, const float* t);
-void quad8(const vec3d* r, const vec3f* n, const float* t);
-void quad9(const vec3d* r, const vec3f* n, const float* t);
+void drawBox(GLRenderEngine& re, double wx, double wy, double wz);
 
-void tri3(const vec3d* r, const vec3f* n);
-void tri3(const vec3d* r, const vec3f* n);
-void tri3(const vec3d* r, const vec3f* n, const GLColor* c);
-void tri3(const vec3d* r, const vec3f* n, const float* t);
-
-void tri6(vec3d r[6], vec3f n[6], float t[6]);
-void tri7(vec3d r[7], vec3f n[7], float t[7]);
-void tri10(vec3d r[10], vec3f n[10], float t[10]);
-
-// use inside GL_LINES
-void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3);
-void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4);
-void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6);
-void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6, const vec3d& r7, const vec3d& r8);
-void lineLoop(const vec3d r[9]);
-
-void drawLine(double x0, double y0, double x1, double y1);
-void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);
-void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2);
-
-void drawBox(double wx, double wy, double wz);
-
-inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3f& n) { glNormal3f(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3f(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
-inline void vertex3d(const vec3d& r, const vec3f& n, const GLColor& c) { glNormal3f(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
-
-inline void glcolor(const GLColor& c) { glColor3ub(c.r, c.g, c.b); }
-
-inline void line(const vec3f& a, const vec3f& b) { glVertex3fv(&a.x); glVertex3fv(&b.x); }
-
-void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
-void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);
-void smoothQUAD9(vec3d r[ 9], vec3f n[ 9], float t[ 9], int ndivs);
-void smoothTRI6 (vec3d r[ 6], vec3f n[ 6], float t[ 6], int ndivs);
-void smoothTRI7 (vec3d r[ 7], vec3f n[ 7], float t[ 7], int ndivs);
-void smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs);
-
-void renderRigidBody(double R);
-void renderJoint(double R);
-void renderRevoluteJoint(double R);
-void renderCylindricalJoint(double R);
-void renderPlanarJoint(double R);
-void renderPrismaticJoint(double R);
-void renderRigidLock(double R);
-void renderAxis(double R);
-void renderAxes(double R, const vec3d& pos, const quatd& q, GLColor c);
-void renderSpring(const vec3d& a, const vec3d& b, double R, int N = 25);
-void renderDamper(const vec3d& a, const vec3d& b, double R);
-void renderContractileForce(const vec3d& a, const vec3d& b, double R);
-void renderRigidWall(double R);
+void renderGlyph(GLRenderEngine& re, GlyphType glyph, float scale, GLColor c);
+void renderRigidBody(GLRenderEngine& re, double R);
+void renderJoint(GLRenderEngine& re, double R);
+void renderRevoluteJoint(GLRenderEngine& re, double R);
+void renderCylindricalJoint(GLRenderEngine& re, double R);
+void renderPlanarJoint(GLRenderEngine& re, double R);
+void renderPrismaticJoint(GLRenderEngine& re, double R);
+void renderRigidLock(GLRenderEngine& re, double R);
+void renderAxis(GLRenderEngine& re, double R);
+void renderAxes(GLRenderEngine& re, double R, const vec3d& pos, const quatd& q);
+void renderSpring(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R, int N = 25);
+void renderDamper(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R);
+void renderContractileForce(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R);
+void renderRigidWall(GLRenderEngine& re, double R);
 
 void renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
-
-void renderGlyph(GlyphType glyph, float scale, GLColor c);
-
-}
-
-inline void glxColor(const GLColor& c)
-{
-	glColor3ub(c.r, c.g, c.b);
 }

@@ -40,7 +40,20 @@ class GLRenderEngine
 public:
 	enum StateFlag {
 		LIGHTING = 1,
+		DEPTHTEST,
+		CULLFACE,
 		CLIPPLANE
+	};
+
+	enum PrimitiveType {
+		POINTS,
+		LINES,
+		LINELOOP,
+		LINESTRIP,
+		TRIANGLES,
+		TRIANGLEFAN,
+		QUADS,
+		QUADSTRIP
 	};
 
 public:
@@ -64,7 +77,12 @@ public:
 	virtual void translate(const vec3d& r) {}
 	virtual void rotate(const quatd& rot) {}
 	virtual void rotate(double angleDeg, double x, double y, double z) {}
+	virtual void scale(double x, double y, double z) {}
 	virtual void transform(const vec3d& pos, const quatd& rot) {}
+	virtual void multTransform(const double* m) {}
+
+	void transform(const vec3d& r0, const vec3d& r1);
+	void rotate(const vec3d& r, vec3d ref = vec3d(0, 0, 1));
 
 public:
 	virtual void pushState() {}
@@ -81,10 +99,22 @@ public:
 
 	virtual void positionCamera(const CGLCamera& cam) {}
 
-public:
-	virtual void renderPoint(const vec3d& r) {}
-	virtual void renderLine(const vec3d& a, const vec3d& b) {}
+public: // immediate mode rendering
+	virtual void begin(PrimitiveType prim) {}
+	virtual void end() {}
 
+	virtual void vertex(const vec3d& r) {}
+	virtual void normal(const vec3d& r) {}
+	virtual void texCoord1d(double t) {}
+
+public: // uses immediate mode
+	void renderPoint(const vec3d& r);
+	void renderLine(const vec3d& a, const vec3d& b);
+	void renderLine(const vec3d& a, const vec3d& b, const vec3d& c);
+	void renderPath(const std::vector<vec3d>& points);
+	void renderRect(double x0, double y0, double x1, double y1);
+
+public:
 	virtual void renderGMesh(const GMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh = true) {}
 

@@ -118,7 +118,7 @@ void GLPointProbe::Render(GLRenderEngine& re, CGLContext& rc)
 		for (int i = 0; i <= ntime; ++i)
 		{
 			vec3d& r = m_path[i];
-			glx::vertex3d(r);
+			re.vertex(r);
 		}
 		glEnd();
 		glPopAttrib();

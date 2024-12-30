@@ -118,8 +118,8 @@ void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 	int i1 =  n+nx;
 
 	// render the major axis
-	glx::drawLine(0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
-	glx::drawLine((-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
+	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
+	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
 
 	// grid lines color
 	GLColor c1(0,0,0);
@@ -135,7 +135,7 @@ void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 		a = 0.35*a*a;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine(i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
 	}
 
 	// render the y-lines
@@ -151,7 +151,7 @@ void GGrid::Render(GLRenderEngine& re, CGLContext& renderContext)
 		if (i != 0) a *= 0.25;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine((-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, (-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
 	}
 
 	// restore modelview matrix

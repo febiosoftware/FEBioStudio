@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLModel.h>
+#include <qopengl.h>
 
 using namespace Post;
 
@@ -93,7 +94,7 @@ void GLPostMirrorItem::renderMirror(GLRenderEngine& re, CGLContext& rc, int star
 
 			re.pushTransform();
 			re.translate(vec3d(-offset * norm.x, -offset * norm.y, -offset * norm.z));
-			glScalef(scl.x, scl.y, scl.z);
+			re.scale(scl.x, scl.y, scl.z);
 
 			int frontFace;
 			glGetIntegerv(GL_FRONT_FACE, &frontFace);
@@ -118,7 +119,7 @@ void GLPostModelItem::render(GLRenderEngine& re, CGLContext& rc)
 	glm->m_scaleNormals = vs.m_scaleNormals;
 	glm->m_doZSorting = vs.m_bzsorting;
 
-	glDisable(GL_CULL_FACE);
+	re.disable(GLRenderEngine::CULLFACE);
 
 	// match the selection mode
 	SelectionType selectionMode = SELECT_FE_ELEMS;
@@ -137,13 +138,13 @@ void GLPostModelItem::render(GLRenderEngine& re, CGLContext& rc)
 	RenderModel(re, rc);
 
 	// Render discrete elements
-	RenderDiscrete(rc);
+	RenderDiscrete(re, rc);
 
 	// render min/max markers
 	Post::CGLColorMap* pcm = glm->GetColorMap();
 	if (pcm && pcm->ShowMinMaxMarkers())
 	{
-		RenderMinMaxMarkers(rc);
+		RenderMinMaxMarkers(re, rc);
 	}
 
 	CGLPlaneCutPlot::DisableClipPlanes();
@@ -636,20 +637,20 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, CGLContext& rc)
 	re.renderGMeshEdges(*mesh, false);
 }
 
-void GLPostModelItem::RenderDiscrete(CGLContext& rc)
+void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, CGLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	if (gm.ShowBeam2Solid())
 	{
-		RenderDiscreteAsSolid(rc);
+		RenderDiscreteAsSolid(re, rc);
 	}
 	else
 	{
-		RenderDiscreteAsLines(rc);
+		RenderDiscreteAsLines(re, rc);
 	}
 }
 
-void GLPostModelItem::RenderDiscreteAsLines(CGLContext& rc)
+void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, CGLContext& rc)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
@@ -691,7 +692,7 @@ void GLPostModelItem::RenderDiscreteAsLines(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible) RenderDiscreteElement(i);
+				if (bvisible) RenderDiscreteElement(re, i);
 			}
 		}
 		glEnd();
@@ -720,7 +721,7 @@ void GLPostModelItem::RenderDiscreteAsLines(CGLContext& rc)
 				if (colmap->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible) RenderDiscreteElement(i);
+			if (bvisible) RenderDiscreteElement(re, i);
 		}
 	}
 	glEnd();
@@ -734,7 +735,7 @@ void GLPostModelItem::RenderDiscreteAsLines(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			RenderDiscreteElement(i);
+			RenderDiscreteElement(re, i);
 		}
 	}
 	glEnd();
@@ -744,7 +745,7 @@ void GLPostModelItem::RenderDiscreteAsLines(CGLContext& rc)
 	glLineWidth(lineWidth);
 }
 
-void GLPostModelItem::RenderDiscreteAsSolid(CGLContext& rc)
+void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, CGLContext& rc)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
@@ -802,7 +803,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible) RenderDiscreteElementAsSolid(i, W);
+				if (bvisible) RenderDiscreteElementAsSolid(re, i, W);
 			}
 		}
 	}
@@ -831,7 +832,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(CGLContext& rc)
 				if (colmap->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible) RenderDiscreteElementAsSolid(i, W);
+			if (bvisible) RenderDiscreteElementAsSolid(re, i, W);
 		}
 	}
 
@@ -859,7 +860,11 @@ void GLPostModelItem::RenderDiscreteAsSolid(CGLContext& rc)
 			{
 				vec3d r0 = mesh.Node(edge.n0).r;
 				vec3d r1 = mesh.Node(edge.n1).r;
-				glx::drawCappedCylinder(r0, r1, W);
+				double H = (r1 - r0).Length();
+				re.pushTransform();
+				re.transform(r0, r1);
+				glx::drawCappedCylinder(re, W, H, 16);
+				re.popTransform();
 			}
 		}
 	}
@@ -873,14 +878,14 @@ void GLPostModelItem::RenderDiscreteAsSolid(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			RenderDiscreteElementAsSolid(i, W);
+			RenderDiscreteElementAsSolid(re, i, W);
 		}
 	}
 
 	glPopAttrib();
 }
 
-void GLPostModelItem::RenderDiscreteElement(int i)
+void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -927,7 +932,7 @@ void GLPostModelItem::RenderDiscreteElement(int i)
 	}
 }
 
-void GLPostModelItem::RenderDiscreteElementAsSolid(int i, double W)
+void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, double W)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -946,7 +951,11 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(int i, double W)
 		int leftCap = (pe->m_nbr[0] == -1 ? 1 : 0);
 		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
 
-		glx::drawCappedCylinder(r0, r1, W, t0, t1, 16, leftCap, rightCap);
+		double H = (r1 - r0).Length();
+		re.pushTransform();
+		re.transform(r0, r1);
+		glx::drawCappedCylinder(re, W, t0, t1, 16, leftCap, rightCap);
+		re.popTransform();
 	}
 	else if (pe->Type() == FE_BEAM3)
 	{
@@ -966,11 +975,11 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(int i, double W)
 		int leftCap = (pe->m_nbr[0] == -1 ? 1 : 0);
 		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
 
-		glx::drawSmoothPath(p, W, edge.tex[0], edge.tex[1], leftCap, rightCap);
+		glx::drawSmoothPath(re, p, W, edge.tex[0], edge.tex[1], leftCap, rightCap);
 	}
 }
 
-void GLPostModelItem::RenderMinMaxMarkers(CGLContext& rc)
+void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, CGLContext& rc)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
@@ -1063,15 +1072,15 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 			re.setColor(c);
 			switch (ob.m_tag)
 			{
-			case 1: if (renderRB) glx::renderRigidBody(size); break;
-			case 2: if (renderRJ) glx::renderJoint(size); break;
-			case 3: if (renderRJ) glx::renderJoint(size); break;
-			case 4: if (renderRJ) glx::renderPrismaticJoint(size); break;
-			case 5: if (renderRJ) glx::renderRevoluteJoint(size); break;
-			case 6: if (renderRJ) glx::renderCylindricalJoint(size); break;
-			case 7: if (renderRJ) glx::renderPlanarJoint(size); break;
+			case 1: if (renderRB) glx::renderRigidBody(re, size); break;
+			case 2: if (renderRJ) glx::renderJoint(re, size); break;
+			case 3: if (renderRJ) glx::renderJoint(re, size); break;
+			case 4: if (renderRJ) glx::renderPrismaticJoint(re, size); break;
+			case 5: if (renderRJ) glx::renderRevoluteJoint(re, size); break;
+			case 6: if (renderRJ) glx::renderCylindricalJoint(re, size); break;
+			case 7: if (renderRJ) glx::renderPlanarJoint(re, size); break;
 			default:
-				if (renderRB) glx::renderAxis(size);
+				if (renderRB) glx::renderAxis(re, size);
 			}
 			re.popTransform();
 		}
@@ -1096,11 +1105,11 @@ void GLPostObjectItem::render(GLRenderEngine& re, CGLContext& rc)
 			re.setColor(c);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderSpring(a, b, R, (R == 0 ? 25 : L0 / R)); break;
-			case 2: glx::renderDamper(a, b, R); break;
-			case 4: glx::renderContractileForce(a, b, R); break;
+			case 1: glx::renderSpring(re, a, b, R, (R == 0 ? 25 : L0 / R)); break;
+			case 2: glx::renderDamper(re, a, b, R); break;
+			case 4: glx::renderContractileForce(re, a, b, R); break;
 			default:
-				glx::drawLine(a, b);
+				re.renderLine(a, b);
 			}
 			re.popTransform();
 		}
@@ -1204,7 +1213,10 @@ void CGLPostScene::Render(GLRenderEngine& engine, CGLContext& rc)
 	// update and render the tracking
 	if (m_btrack)
 	{
-		glx::renderAxes(m_trackScale, m_trgPos, m_trgRot, GLColor(255, 0, 255));
+		engine.pushState();
+		engine.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 255));
+		glx::renderAxes(engine, m_trackScale, m_trgPos, m_trgRot);
+		engine.popState();
 	}
 
 	ClearTags();

@@ -2605,7 +2605,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, CGLContext& rc) const
 			re.pushTransform();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
 
-			glx::renderGlyph(glx::RIGID_BODY, R, c);
+			glx::renderGlyph(re, glx::RIGID_BODY, R, c);
 
 			re.popTransform();
 		}
@@ -2641,7 +2641,7 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, CGLContext& rc) const
 				re.pushTransform();
 				{
 					re.transform(p, q);
-					glx::renderGlyph(glx::RIGID_WALL, R, GLColor::Black());
+					glx::renderGlyph(re, glx::RIGID_WALL, R, GLColor::Black());
 				}
 				re.popTransform();
 			}
@@ -2669,7 +2669,7 @@ void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, CGLContext& rc) const
 				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
 				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
-				glx::renderGlyph(glx::RIGID_JOINT, R, GLColor::Red());
+				glx::renderGlyph(re, glx::RIGID_JOINT, R, GLColor::Red());
 				re.popTransform();
 			}
 		}
@@ -2703,7 +2703,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 
 				re.pushTransform();
 				glTranslated(r.x, r.y, r.z);
-				glx::renderGlyph(glx::RIGID_JOINT, R, c);
+				glx::renderGlyph(re, glx::RIGID_JOINT, R, c);
 				re.popTransform();
 			}
 			else if (rci->IsType("rigid revolute joint"))
@@ -2728,7 +2728,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(0, 0, 255);
 				else
 					col = GLColor(64, 64, 64);
-				glx::renderGlyph(glx::REVOLUTE_JOINT, R, col);
+				glx::renderGlyph(re, glx::REVOLUTE_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2754,7 +2754,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 					col = GLColor(0, 255, 0);
 				else
 					col = GLColor(64, 64, 64);
-				glx::renderGlyph(glx::PRISMATIC_JOINT, R, col);
+				glx::renderGlyph(re, glx::PRISMATIC_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2781,7 +2781,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					col = GLColor(64, 64, 64);
 
-				glx::renderGlyph(glx::CYLINDRICAL_JOINT, R, col);
+				glx::renderGlyph(re, glx::CYLINDRICAL_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2808,7 +2808,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					col = GLColor(64, 64, 64);
 
-				glx::renderGlyph(glx::PLANAR_JOINT, R, col);
+				glx::renderGlyph(re, glx::PLANAR_JOINT, R, col);
 
 				re.popTransform();
 			}
@@ -2830,7 +2830,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				glMultMatrixf(Q4);
 
 				GLColor col = (rci->IsActive() ? GLColor(255, 127, 0) : GLColor(64, 64, 64));
-				glx::renderGlyph(glx::RIGID_LOCK, R, col);
+				glx::renderGlyph(re, glx::RIGID_LOCK, R, col);
 
 				re.popTransform();
 			}
@@ -2845,7 +2845,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					glColor3ub(64, 64, 64);
 
-				glx::renderSpring(xa, xb, R);
+				glx::renderSpring(re, xa, xb, R);
 				re.popTransform();
 			}
 			else if (rci->IsType("rigid damper"))
@@ -2860,7 +2860,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					glColor3ub(64, 64, 64);
 
-				glx::renderDamper(xa, xb, R);
+				glx::renderDamper(re, xa, xb, R);
 
 				re.popTransform();
 			}
@@ -2876,7 +2876,7 @@ void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, CGLContext& rc) co
 				else
 					glColor3ub(64, 64, 64);
 
-				glx::renderContractileForce(xa, xb, R);
+				glx::renderContractileForce(re, xa, xb, R);
 
 				re.popTransform();
 			}
