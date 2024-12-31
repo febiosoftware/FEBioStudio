@@ -142,8 +142,7 @@ public:
 	CGLSceneView* glv;
 
 	bool useVertexColors = false;
-	bool useTexture1D = false;
-	bool useTexture3D = false;
+	bool useTexture = false;
 
 	bool shaderInit = false;
 
@@ -333,16 +332,18 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 	if (map == GLMaterial::DiffuseMap::VERTEX_COLOR) m.useVertexColors = true;
 	else m.useVertexColors = false;
 
-	if (map == GLMaterial::DiffuseMap::TEXTURE_1D) m.useTexture1D = true;
-	else m.useTexture1D = false;
+	m.useTexture = false;
+	if (map == GLMaterial::DiffuseMap::TEXTURE_1D) m.useTexture = true;
+	if (map == GLMaterial::DiffuseMap::TEXTURE_2D) m.useTexture = true;
+	if (map == GLMaterial::DiffuseMap::TEXTURE_3D) m.useTexture = true;
 
-	if (map == GLMaterial::DiffuseMap::TEXTURE_3D) m.useTexture3D = true;
-	else m.useTexture3D = false;
-
-	if (m.useTexture1D) glEnable(GL_TEXTURE_1D);
+	if (map == GLMaterial::DiffuseMap::TEXTURE_1D) glEnable(GL_TEXTURE_1D);
 	else glDisable(GL_TEXTURE_1D);
 
-	if (m.useTexture3D) glEnable(GL_TEXTURE_3D);
+	if (map == GLMaterial::DiffuseMap::TEXTURE_2D) glEnable(GL_TEXTURE_2D);
+	else glDisable(GL_TEXTURE_2D);
+
+	if (map == GLMaterial::DiffuseMap::TEXTURE_3D) glEnable(GL_TEXTURE_3D);
 	else glDisable(GL_TEXTURE_3D);
 
 	switch (mat)
@@ -487,6 +488,11 @@ void OpenGLRenderer::texCoord1d(double t)
 	glTexCoord1d(t);
 }
 
+void OpenGLRenderer::texCoord2d(double r, double s)
+{
+	glTexCoord2d(r, s);
+}
+
 void OpenGLRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
 	OGLTriMesh* glm = nullptr;
@@ -516,7 +522,7 @@ void OpenGLRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	{
 		unsigned int flags = OGLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
-		if (m.useTexture1D || m.useTexture3D) flags |= OGLMesh::FLAG_TEXTURE;
+		if (m.useTexture) flags |= OGLMesh::FLAG_TEXTURE;
 		glm->Render(flags);
 		m_stats.triangles += glm->Vertices() / 3;
 
@@ -556,7 +562,7 @@ void OpenGLRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 	{
 		unsigned int flags = OGLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
-		if (m.useTexture1D) flags |= OGLMesh::FLAG_TEXTURE;
+		if (m.useTexture) flags |= OGLMesh::FLAG_TEXTURE;
 
 		const GLMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf, flags);
@@ -834,6 +840,39 @@ void OpenGLRenderer::setTexture(GLTexture1D& tex)
 	{
 		glTexImage1D(GL_TEXTURE_1D, 0, 3, tex.Size(), 0, GL_RGB, GL_UNSIGNED_BYTE, tex.GetBytes());
 		tex.Update(false);
+	}
+}
+
+void OpenGLRenderer::setTexture(GLTexture2D& tex)
+{
+	CRGBAImage* im = tex.GetImage();
+	if (im == nullptr) return;
+
+	unsigned int texID = tex.GetTexID();
+	if (texID == 0)
+	{
+		glGenTextures(1, &texID);
+		tex.SetTexID(texID);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	if (tex.IsModified())
+	{
+		// set texture parameter for 2D textures
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		int nx = im->Width();
+		int ny = im->Height();
+		if (nx * ny > 0)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, 4, nx, ny, 0, GL_RGBA, GL_UNSIGNED_BYTE, im->GetBytes());
+		}
+		tex.SetModified(false);
 	}
 }
 

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLMaterial.h"
 #include "GLCamera.h"
 #include "GLTexture1D.h"
+#include "GLTexture2D.h"
 #include "GLTexture3D.h"
 #include <FECore/FETransform.h>
 
@@ -113,6 +114,7 @@ public: // immediate mode rendering
 	virtual void vertex(const vec3d& r) {}
 	virtual void normal(const vec3d& r) {}
 	virtual void texCoord1d(double t) {}
+	virtual void texCoord2d(double r, double s) {}
 
 public: // uses immediate mode
 	void renderPoint(const vec3d& r);
@@ -141,6 +143,7 @@ public:
 
 public:
 	virtual void setTexture(GLTexture1D& tex) {}
+	virtual void setTexture(GLTexture2D& tex) {}
 	virtual void setTexture(GLTexture3D& tex) {}
 
 protected:

@@ -25,16 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#ifdef WIN32
-#include <Windows.h>
-#include <gl/GL.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#endif
-#ifdef LINUX
-#include <GL/gl.h>
-#endif
 #include "MarchingCubes.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>

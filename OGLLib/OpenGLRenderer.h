@@ -76,6 +76,7 @@ public:
 	void vertex(const vec3d& r) override;
 	void normal(const vec3d& r) override;
 	void texCoord1d(double t) override;
+	void texCoord2d(double r, double s) override;
 
 public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
@@ -97,6 +98,7 @@ public:
 
 public:
 	void setTexture(GLTexture1D& tex) override;
+	void setTexture(GLTexture2D& tex) override;
 	void setTexture(GLTexture3D& tex) override;
 
 private:

@@ -23,64 +23,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <ImageLib/3DImage.h>
-#include <FSCore/box.h>
-#include "GLImageRenderer.h"
 #include <ImageLib/RGBAImage.h>
-#include <PostGL/ColorTexture.h>
-#include <GLLib/GLTexture2D.h>
-#include "ColorMap.h"
 
-class CImageModel;
-class CImage;
-
-namespace Post {
-
-class CImageSlicer : public CGLImageRenderer
+class GLTexture2D
 {
-	enum { ORIENTATION, OFFSET, COLOR_MAP, TRANSPARENCY };
-
 public:
-	CImageSlicer(CImageModel* img);
-	~CImageSlicer();
+	GLTexture2D();
 
-	void Create();
+	unsigned int GetTexID() const { return m_texID; }
+	void SetTexID(unsigned int id) { m_texID = id; m_isModified = true; }
 
-	void Update() override;
+	void SetImage(CRGBAImage* im) { m_im = im; m_isModified = true; }
+	CRGBAImage* GetImage() { return m_im; }
 
-	void Render(GLRenderEngine& re, GLContext& rc) override;
-
-	int GetOrientation() const;
-	void SetOrientation(int n);
-
-	double GetOffset() const;
-	void SetOffset(double f);
-
-	int GetColorMap() const { return m_Col.GetColorMap(); }
-	void SetColorMap(int n) { m_Col.SetColorMap(n); }
-
-	bool UpdateData(bool bsave = true) override;
-
-    void SetImageSlice(CImage* img);
+	bool IsModified() const { return m_isModified; }
+	void SetModified(bool b = true) { m_isModified = b; }
 
 private:
-	void BuildLUT();
-
-	void UpdateSlice();
-
-    template<class pType>
-    void CreateCRGBAImage(CImage& slice);
-
-private:
-	CRGBAImage		m_im;	// 2D image that will be displayed
-	int				m_LUTC[4][256];	// color lookup table
-
-	CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
-
-	Post::CColorTexture	m_Col;
-
-	GLTexture2D m_tex;
+	unsigned int m_texID;
+	CRGBAImage* m_im;
+	bool	m_isModified;
 };
-}
