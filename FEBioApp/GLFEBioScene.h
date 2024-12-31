@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include "../FEBioStudio/GLSceneView.h"
 #include <PostGL/ColorTexture.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include "FEBioAppDocument.h"
 #include <QMutex>
 
@@ -50,7 +50,7 @@ public:
 	void render(GLRenderEngine& engine, GLContext& rc) override;
 
 private:
-	GMesh		m_mesh;
+	GLMesh		m_mesh;
 	GLColor		m_col;
 	vec3d		m_pos;
 	quatd		m_rot;
@@ -96,7 +96,7 @@ private:
 
 private:
 	FEBioModel& m_fem;
-	GMesh* m_renderMesh;
+	GLMesh* m_renderMesh;
 	FESurface* m_febSurface;
 	CGLSceneView* m_view;
 	GLLegendBar* m_legend;

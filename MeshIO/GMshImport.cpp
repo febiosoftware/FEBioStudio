@@ -509,7 +509,7 @@ bool GMeshLegacyFormat::ReadElements()
 
 		// number of tags
 		int ntags = n[2];
-		if (ntags == 0) ntags = 2;	// According to the documentation GMesh files should have at least two tags
+		if (ntags == 0) ntags = 2;	// According to the documentation GLMesh files should have at least two tags
 
 		// TODO: The first tag stores the physical entity, which I think is a user-partition
 		// and requires the physical entities to be defined in the file. The second tag

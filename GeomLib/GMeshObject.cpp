@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FEElementData.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -179,14 +179,14 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 		}
 	}
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 }
 
 //-----------------------------------------------------------------------------
 // This function updates the geometry information and takes a boolean parameter
 // (default = true) to indicate whether the mesh has to be repartitioned. This
-// function will also rebuild the GMesh for rendering.
+// function will also rebuild the GLMesh for rendering.
 bool GMeshObject::Update(bool b)
 {
 	FSMesh* pm = GetFEMesh();
@@ -745,7 +745,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GMesh* gmesh = new GMesh();
+	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();

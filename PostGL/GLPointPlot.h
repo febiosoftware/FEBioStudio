@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <PostLib/FEState.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
@@ -150,6 +150,6 @@ private:
 
 	PointDataModel* m_pointData;
 
-	GMesh	m_pointMesh;	// mesh used for rendering points
+	GLMesh	m_pointMesh;	// mesh used for rendering points
 };
 } // namespace Post

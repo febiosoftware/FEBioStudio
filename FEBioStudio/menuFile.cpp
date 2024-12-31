@@ -756,7 +756,7 @@ void CMainWindow::ExportGeometry()
 	filters << "Mesh files (*.mesh)";
 	filters << "TetGen files (*.ele)";
 	filters << "VTK files (*.vtk)";
-	filters << "GMesh files (*.msh)";
+	filters << "GLMesh files (*.msh)";
     filters << "Fluent files (*.msh)";
 
 	// default extensions
@@ -903,7 +903,7 @@ void CMainWindow::ExportGeometry()
 		{
 			GMeshExport writer(fem);
 			if (!writer.Write(szfile))
-				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to GMesh file."));
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to GLMesh file."));
 		}
 		break;
         case 11:

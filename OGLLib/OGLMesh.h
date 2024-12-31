@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
 
-class GMesh;
+class GLMesh;
 class GLCamera;
 
 #ifndef ubyte
@@ -89,6 +89,7 @@ public:
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
 	void AddVertex(const vec3f& r, const vec3f& n, const GLColor& c);
 	void AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, float tex);
+	void AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, const vec3f& tex);
 	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
 	void AddVertex(const vec3f& r, float tex);
@@ -208,6 +209,15 @@ inline void OGLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c,
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] =   0; m_vt[3 * i + 2] = 0; }
 }
 
+inline void OGLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c, const vec3f& t)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
+	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
+	if (m_vt) { m_vt[3 * i] = t.x; m_vt[3 * i + 1] = t.y; m_vt[3 * i + 2] = t.z; }
+}
+
 inline void OGLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
@@ -294,9 +304,9 @@ public:
 	void SortBackwards();
 	void SortForwards();
 
-	// create from a GMesh
-	void CreateFromGMesh(const GMesh& gmsh, unsigned int flags = FLAG_NORMAL | FLAG_COLOR);
-	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
+	// create from a GLMesh
+	void CreateFromGMesh(const GLMesh& gmsh, unsigned int flags = FLAG_NORMAL | FLAG_COLOR);
+	void CreateFromGMesh(const GLMesh& gmsh, int surfaceID, unsigned int flags);
 };
 
 inline void OGLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
@@ -328,7 +338,7 @@ public:
 	void AddLine(const vec3d& r0, const vec3d& r1);
 	void AddLine(const vec3f& r0, const vec3f& r1, GLColor& c);
 
-	void CreateFromGMesh(const GMesh& mesh, unsigned int flags = 0);
+	void CreateFromGMesh(const GLMesh& mesh, unsigned int flags = 0);
 };
 
 inline void OGLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)
@@ -358,5 +368,5 @@ public:
 
 	void Create(int maxVertices, unsigned int flags = 0);
 
-	void CreateFromGMesh(const GMesh& mesh);
+	void CreateFromGMesh(const GLMesh& mesh);
 };

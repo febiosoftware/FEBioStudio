@@ -28,17 +28,15 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/color.h>
 #include <vector>
-//using namespace std;
 
 using std::vector;
 using std::pair;
 
-//-----------------------------------------------------------------------------
-// The GMesh class defines a triangulated surface. GMesh classes are used to
+// The GLMesh class defines a triangulated surface. GLMesh classes are used to
 // represent the surface of a geometry object. The pid members of the mesh
 // item classes refer to the corresponding item in the parent object.
 //
-class GMesh
+class GLMesh
 {
 public:
 	struct NODE
@@ -48,7 +46,7 @@ public:
 		GLColor c;
 		int		tag = 0;	// multipurpose tag
 		int		pid = 0;	// GNode parent local ID
-		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GMesh)
+		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GLMesh)
 	};
 
 	struct EDGE
@@ -74,7 +72,7 @@ public:
 		vec3f	vn[3];	// node normals
 		vec3f	vr[3];	// nodal coordinates
 		GLColor	c[3];	// node colors
-		float	t[3];	// texture coordinates
+		vec3f	t[3];	// texture coordinates
 	};
 
 	struct PARTITION
@@ -84,8 +82,8 @@ public:
 	};
 
 public:
-	GMesh(void);
-	virtual ~GMesh(void);
+	GLMesh(void);
+	virtual ~GLMesh(void);
 
 	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
@@ -112,7 +110,7 @@ public:
 
 	BOX GetBoundingBox() { return m_box; }
 
-	void Attach(GMesh& m, bool bupdate = true);
+	void Attach(GLMesh& m, bool bupdate = true);
 
 	void AutoSmooth(double angleDegrees);
 

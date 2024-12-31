@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FECone.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 
 class GConeManipulator : public GObjectManipulator
@@ -100,7 +100,7 @@ FEMesher* GCone::CreateDefaultMesher()
 //-----------------------------------------------------------------------------
 void GCone::Create()
 {
-	GMesh* gmesh = new GMesh();
+	GLMesh* gmesh = new GLMesh();
 	SetRenderMesh(gmesh);
 
 	// build the nodes
@@ -182,7 +182,7 @@ void GCone::BuildGMesh()
 	int NH = 4*a;
 	int NR = 12;
 
-	GMesh& m = *GetRenderMesh();
+	GLMesh& m = *GetRenderMesh();
 	int NN0 = m.Nodes();
 	int NF0 = m.Faces();
 	int NE0 = m.Edges();
@@ -202,7 +202,7 @@ void GCone::BuildGMesh()
 	{
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::NODE& n0 = m.Node(nn++);
+			GLMesh::NODE& n0 = m.Node(nn++);
 			double w = 2.0*i*PI/ND;
 			double cw = cos(w);
 			double sw = sin(w);
@@ -218,7 +218,7 @@ void GCone::BuildGMesh()
 		double rj = r0 + j*(r1 - r0)/NH;
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::NODE& n0 = m.Node(nn++);
+			GLMesh::NODE& n0 = m.Node(nn++);
 		
 			double w = 2.0*i*PI/ND;
 			double cw = cos(w);
@@ -232,7 +232,7 @@ void GCone::BuildGMesh()
 	{
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::NODE& n0 = m.Node(nn++);
+			GLMesh::NODE& n0 = m.Node(nn++);
 		
 			double w = 2.0*i*PI/ND;
 			double cw = cos(w);
@@ -251,7 +251,7 @@ void GCone::BuildGMesh()
 		// bottom face
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(nf++);
+			GLMesh::FACE& f = m.Face(nf++);
 			f.n[0] = 0;
 			f.n[1] = 1 + (i+1)%ND;
 			f.n[2] = 1 + i;
@@ -265,14 +265,14 @@ void GCone::BuildGMesh()
 		{
 			for (i=0; i<ND; ++i)
 			{
-				GMesh::FACE& f1 = m.Face(nf++);
+				GLMesh::FACE& f1 = m.Face(nf++);
 				f1.n[0] = 1 + j*ND + i;
 				f1.n[1] = 1 + j*ND + (i+1)%ND;
 				f1.n[2] = 1 + (j+1)*ND + (i+1)%ND;
 				f1.pid = 4;
 				f1.sid = 0;
 
-				GMesh::FACE& f2 = m.Face(nf++);
+				GLMesh::FACE& f2 = m.Face(nf++);
 				f2.n[0] = 1 + (j+1)*ND + (i+1)%ND;
 				f2.n[1] = 1 + (j+1)*ND + i;
 				f2.n[2] = 1 + j*ND + i;
@@ -288,14 +288,14 @@ void GCone::BuildGMesh()
 			{
 				int n[4] = {i, (i+1)%ND, ND+i, ND+(i+1)%ND};
 
-				GMesh::FACE& f1 = m.Face(nf++);
+				GLMesh::FACE& f1 = m.Face(nf++);
 				f1.n[0] = NR*ND + j*ND + 1 + n[0];
 				f1.n[1] = NR*ND + j*ND + 1 + n[1];
 				f1.n[2] = NR*ND + j*ND + 1 + n[3];
 				f1.pid = 4*i/ND;
 				f1.sid = 1;
 
-				GMesh::FACE& f2 = m.Face(nf++);
+				GLMesh::FACE& f2 = m.Face(nf++);
 				f2.n[0] = NR*ND + j*ND + 1 + n[3];
 				f2.n[1] = NR*ND + j*ND + 1 + n[2];
 				f2.n[2] = NR*ND + j*ND + 1 + n[0];
@@ -307,7 +307,7 @@ void GCone::BuildGMesh()
 		// top face
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(nf++);
+			GLMesh::FACE& f = m.Face(nf++);
 			f.n[0] = 1 + NR*ND + (NH+1)*ND + (i+1)%ND;
 			f.n[1] = NN-1;
 			f.n[2] = 1 + NR * ND + (NH + 1) * ND + i;
@@ -319,8 +319,8 @@ void GCone::BuildGMesh()
 		{
 			for (i=0; i<ND; ++i)
 			{
-				GMesh::FACE& f1 = m.Face(nf++);
-				GMesh::FACE& f2 = m.Face(nf++);
+				GLMesh::FACE& f1 = m.Face(nf++);
+				GLMesh::FACE& f2 = m.Face(nf++);
 				f1.n[0] = 1 + NR*ND + (NH+1)*ND + j*ND + i;
 				f1.n[2] = 1 + NR*ND + (NH+1)*ND + j*ND + (i+1)%ND;
 				f1.n[1] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + (i+1)%ND;
@@ -342,7 +342,7 @@ void GCone::BuildGMesh()
 		// bottom edges
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(ne++);
+			GLMesh::EDGE& e = m.Edge(ne++);
 			e.n[0] = 1 + NR*ND + i;
 			e.n[1] = 1 + NR*ND + (i+1)%ND;
 			e.pid = 4*i/ND;
@@ -353,7 +353,7 @@ void GCone::BuildGMesh()
 		{
 			for (i=0; i<4; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(ne++);
+				GLMesh::EDGE& e = m.Edge(ne++);
 				e.n[0] = 1 + NR*ND + j*ND + i*ND/4;
 				e.n[1] = 1 + NR*ND + (j+1)*ND + i*ND/4;
 				e.pid = 8 + i;
@@ -363,7 +363,7 @@ void GCone::BuildGMesh()
 		// top edges
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(ne++);
+			GLMesh::EDGE& e = m.Edge(ne++);
 			e.n[0] = 1 + 2*NR*ND-ND + (NH+1)*ND + i;
 			e.n[1] = 1 + 2*NR*ND-ND + (NH+1)*ND + (i+1)%ND;
 			e.pid = 4 + 4*i/ND;

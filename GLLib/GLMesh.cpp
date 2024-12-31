@@ -24,26 +24,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "GMesh.h"
+#include "GLMesh.h"
 #include <stack>
 #include <algorithm>
-#include <MeshLib/quad8.h>
 #include <assert.h>
 
 using std::stack;
 
-//-----------------------------------------------------------------------------
-GMesh::GMesh(void)
+GLMesh::GLMesh(void)
 {
 }
 
-//-----------------------------------------------------------------------------
-GMesh::~GMesh(void)
+GLMesh::~GLMesh(void)
 {
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::Create(int nodes, int faces, int edges)
+void GLMesh::Create(int nodes, int faces, int edges)
 {
 	if (nodes > 0) m_Node.resize(nodes);
 	if (faces > 0) m_Face.resize(faces);
@@ -52,8 +48,7 @@ void GMesh::Create(int nodes, int faces, int edges)
 	m_EIL.clear();
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::Clear()
+void GLMesh::Clear()
 {
 	m_Node.clear();
 	m_Edge.clear();
@@ -62,8 +57,7 @@ void GMesh::Clear()
 	m_EIL.clear();
 }
 
-//-----------------------------------------------------------------------------
-int GMesh::AddNode(const vec3f& r, int gid)
+int GLMesh::AddNode(const vec3f& r, int gid)
 {
 	NODE v;
 	v.r = r;
@@ -73,8 +67,7 @@ int GMesh::AddNode(const vec3f& r, int gid)
 	return ((int)m_Node.size() - 1);
 }
 
-//-----------------------------------------------------------------------------
-int GMesh::AddNode(const vec3f& r, int nodeID, int gid)
+int GLMesh::AddNode(const vec3f& r, int nodeID, int gid)
 {
 	NODE v;
 	v.r = r;
@@ -84,7 +77,7 @@ int GMesh::AddNode(const vec3f& r, int nodeID, int gid)
 	return ((int)m_Node.size() - 1);
 }
 
-int	GMesh::AddNode(const vec3f& r, GLColor c)
+int	GLMesh::AddNode(const vec3f& r, GLColor c)
 {
 	NODE v;
 	v.r = r;
@@ -95,8 +88,7 @@ int	GMesh::AddNode(const vec3f& r, GLColor c)
 	return ((int)m_Node.size() - 1);
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::AddEdge(int* n, int nodes, int gid)
+void GLMesh::AddEdge(int* n, int nodes, int gid)
 {
 	EDGE e;
 	if (nodes == 2)
@@ -138,7 +130,7 @@ void GMesh::AddEdge(int* n, int nodes, int gid)
 	else assert(false);
 }
 
-void GMesh::AddEdge(vec3f* r, int nodes, int gid)
+void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
 {
 	EDGE e;
 	if (nodes == 2)
@@ -192,7 +184,7 @@ void GMesh::AddEdge(vec3f* r, int nodes, int gid)
 	else assert(false);
 }
 
-void GMesh::AddEdge(vec3f r[2], GLColor c)
+void GLMesh::AddEdge(vec3f r[2], GLColor c)
 {
 	EDGE e;
 	e.n[0] = AddNode(r[0]);
@@ -204,7 +196,7 @@ void GMesh::AddEdge(vec3f r[2], GLColor c)
 	m_Edge.push_back(e);
 }
 
-void GMesh::AddEdge(vec3f r[2], GLColor c[2])
+void GLMesh::AddEdge(vec3f r[2], GLColor c[2])
 {
 	EDGE e;
 	e.n[0] = AddNode(r[0]);
@@ -217,7 +209,7 @@ void GMesh::AddEdge(vec3f r[2], GLColor c[2])
 	m_Edge.push_back(e);
 }
 
-void GMesh::AddEdge(const vec3f& a, const vec3f& b)
+void GLMesh::AddEdge(const vec3f& a, const vec3f& b)
 {
 	EDGE e;
 	e.n[0] = AddNode(a);
@@ -228,7 +220,7 @@ void GMesh::AddEdge(const vec3f& a, const vec3f& b)
 	m_Edge.push_back(e);
 }
 
-int GMesh::AddFace(const GMesh::FACE& face)
+int GLMesh::AddFace(const GLMesh::FACE& face)
 {
 	if (m_FIL.empty()) NewPartition();
 	auto& fil = m_FIL.back();
@@ -237,7 +229,7 @@ int GMesh::AddFace(const GMesh::FACE& face)
 	return ((int)m_Face.size() - 1);
 }
 
-void GMesh::NewPartition()
+void GLMesh::NewPartition()
 {
 	PARTITION p;
 	p.n0 = m_Face.size();
@@ -245,7 +237,7 @@ void GMesh::NewPartition()
 	m_FIL.push_back(p);
 }
 
-int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
+int GLMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
 {
 	FACE f;
 	f.n[0] = n0;
@@ -263,8 +255,7 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext,
 	return AddFace(f);
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
+void GLMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bext, int faceId, int elemId, int mat)
 {
 	switch (nodes)
 	{
@@ -337,8 +328,7 @@ void GMesh::AddFace(const int* n, int nodes, int groupID, int smoothID, bool bex
 	}
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::AddFace(vec3f* r, int gid, int smoothId, bool bext)
+void GLMesh::AddFace(vec3f* r, int gid, int smoothId, bool bext)
 {
 	int n[3];
 	n[0] = AddNode(r[0]);
@@ -348,7 +338,7 @@ void GMesh::AddFace(vec3f* r, int gid, int smoothId, bool bext)
 	AddFace(n, 3, gid, smoothId, bext);
 }
 
-void GMesh::AddFace(vec3f r[3], GLColor c)
+void GLMesh::AddFace(vec3f r[3], GLColor c)
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -365,7 +355,7 @@ void GMesh::AddFace(vec3f r[3], GLColor c)
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
+void GLMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -385,7 +375,7 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c)
+void GLMesh::AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c)
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -401,12 +391,12 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c)
 	face.vr[0] = r[0];
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
-	face.t[0] = face.t[1] = face.t[2] = tex;
+	face.t[0] = face.t[1] = face.t[2] = vec3f(tex, 0, 0);
 	face.c[0] = face.c[1] = face.c[2] = c;
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c)
+void GLMesh::AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c)
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -422,14 +412,14 @@ void GMesh::AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c)
 	face.vr[0] = r[0];
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
-	face.t[0] = tex[0];
-	face.t[1] = tex[1];
-	face.t[2] = tex[2];
+	face.t[0] = vec3f(tex[0], 0, 0);
+	face.t[1] = vec3f(tex[1], 0, 0);
+	face.t[2] = vec3f(tex[2], 0, 0);
 	face.c[0] = face.c[1] = face.c[2] = c;
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
+void GLMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -442,16 +432,16 @@ void GMesh::AddFace(vec3f r[3], float t[3], GLColor c[3])
 	face.vr[0] = r[0];
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
-	face.t[0] = t[0];
-	face.t[1] = t[1];
-	face.t[2] = t[2];
+	face.t[0] = vec3f(t[0], 0, 0);
+	face.t[1] = vec3f(t[1], 0, 0);
+	face.t[2] = vec3f(t[2], 0, 0);
 	face.c[0] = c[0];
 	face.c[1] = c[1];
 	face.c[2] = c[2];
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], GLColor c[3])
+void GLMesh::AddFace(vec3f r[3], GLColor c[3])
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -470,7 +460,7 @@ void GMesh::AddFace(vec3f r[3], GLColor c[3])
 	AddFace(face);
 }
 
-void GMesh::AddFace(vec3f r[3], float t[3])
+void GLMesh::AddFace(vec3f r[3], float t[3])
 {
 	int n0 = AddNode(r[0]);
 	int n1 = AddNode(r[1]);
@@ -483,81 +473,81 @@ void GMesh::AddFace(vec3f r[3], float t[3])
 	face.vr[0] = r[0];
 	face.vr[1] = r[1];
 	face.vr[2] = r[2];
-	face.t[0] = t[0];
-	face.t[1] = t[1];
-	face.t[2] = t[2];
+	face.t[0] = vec3f(t[0], 0, 0);
+	face.t[1] = vec3f(t[1], 0, 0);
+	face.t[2] = vec3f(t[2], 0, 0);
 	AddFace(face);
 }
 
-int GMesh::SetFaceTex(int f0, float* t, int n)
+int GLMesh::SetFaceTex(int f0, float* t, int n)
 {
-	GMesh::FACE* pf = &m_Face[f0];
+	GLMesh::FACE* pf = &m_Face[f0];
 	switch (n)
 	{
 	case 3:
-		pf->t[0] = t[0]; pf->t[1] = t[1]; pf->t[2] = t[2];
+		pf->t[0].x = t[0]; pf->t[1].x = t[1]; pf->t[2].x = t[2];
 		return f0 + 1;
 	break;
 	case 4:
-		pf->t[0] = t[2]; pf->t[1] = t[3]; pf->t[2] = t[0]; pf++;
-		pf->t[0] = t[0]; pf->t[1] = t[1]; pf->t[2] = t[2]; pf++;
+		pf->t[0].x = t[2]; pf->t[1].x = t[3]; pf->t[2].x = t[0]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[1]; pf->t[2].x = t[2]; pf++;
 		return f0 + 2;
 		break;
 	case 6:
 	{
-		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[5]; pf++;
-		pf->t[0] = t[1]; pf->t[1] = t[4]; pf->t[2] = t[3]; pf++;
-		pf->t[0] = t[2]; pf->t[1] = t[5]; pf->t[2] = t[4]; pf++;
-		pf->t[0] = t[3]; pf->t[1] = t[4]; pf->t[2] = t[5]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[3]; pf->t[2].x = t[5]; pf++;
+		pf->t[0].x = t[1]; pf->t[1].x = t[4]; pf->t[2].x = t[3]; pf++;
+		pf->t[0].x = t[2]; pf->t[1].x = t[5]; pf->t[2].x = t[4]; pf++;
+		pf->t[0].x = t[3]; pf->t[1].x = t[4]; pf->t[2].x = t[5]; pf++;
 		return f0 + 4;
 	}
 	break;
 	case 7: // TRI7
 	{
-		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[1]; pf->t[1] = t[6]; pf->t[2] = t[3]; pf++;
-		pf->t[0] = t[1]; pf->t[1] = t[4]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[2]; pf->t[1] = t[6]; pf->t[2] = t[4]; pf++;
-		pf->t[0] = t[2]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[0]; pf->t[1] = t[6]; pf->t[2] = t[5]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[3]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[1]; pf->t[1].x = t[6]; pf->t[2].x = t[3]; pf++;
+		pf->t[0].x = t[1]; pf->t[1].x = t[4]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[2]; pf->t[1].x = t[6]; pf->t[2].x = t[4]; pf++;
+		pf->t[0].x = t[2]; pf->t[1].x = t[5]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[6]; pf->t[2].x = t[5]; pf++;
 		return f0 + 6;
 	}
 	break;
 	case 8: // QUAD8
 	{
-		pf->t[0] = t[0]; pf->t[1] = t[4]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[4]; pf->t[1] = t[1]; pf->t[2] = t[5]; pf++;
-		pf->t[0] = t[5]; pf->t[1] = t[2]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[6]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[5]; pf->t[1] = t[6]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[4]; pf->t[1] = t[5]; pf->t[2] = t[7]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[4]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[4]; pf->t[1].x = t[1]; pf->t[2].x = t[5]; pf++;
+		pf->t[0].x = t[5]; pf->t[1].x = t[2]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[6]; pf->t[1].x = t[3]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[5]; pf->t[1].x = t[6]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[4]; pf->t[1].x = t[5]; pf->t[2].x = t[7]; pf++;
 		return f0 + 6;
 	}
 	break;
 	case 9: // QUAD9
 	{
-		pf->t[0] = t[0]; pf->t[1] = t[4]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[4]; pf->t[1] = t[1]; pf->t[2] = t[5]; pf++;
-		pf->t[0] = t[5]; pf->t[1] = t[2]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[6]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[4]; pf->t[1] = t[8]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[4]; pf->t[1] = t[5]; pf->t[2] = t[8]; pf++;
-		pf->t[0] = t[8]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[8]; pf->t[1] = t[6]; pf->t[2] = t[7]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[4]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[4]; pf->t[1].x = t[1]; pf->t[2].x = t[5]; pf++;
+		pf->t[0].x = t[5]; pf->t[1].x = t[2]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[6]; pf->t[1].x = t[3]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[4]; pf->t[1].x = t[8]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[4]; pf->t[1].x = t[5]; pf->t[2].x = t[8]; pf++;
+		pf->t[0].x = t[8]; pf->t[1].x = t[5]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[8]; pf->t[1].x = t[6]; pf->t[2].x = t[7]; pf++;
 		return f0 + 8;
 	}
 	break;
 	case 10: // TRI10
 	{
-		pf->t[0] = t[0]; pf->t[1] = t[3]; pf->t[2] = t[7]; pf++;
-		pf->t[0] = t[1]; pf->t[1] = t[5]; pf->t[2] = t[4]; pf++;
-		pf->t[0] = t[2]; pf->t[1] = t[8]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[7]; pf->t[2] = t[3]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[3]; pf->t[2] = t[4]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[4]; pf->t[2] = t[5]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[5]; pf->t[2] = t[6]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[6]; pf->t[2] = t[8]; pf++;
-		pf->t[0] = t[9]; pf->t[1] = t[8]; pf->t[2] = t[7]; pf++;
+		pf->t[0].x = t[0]; pf->t[1].x = t[3]; pf->t[2].x = t[7]; pf++;
+		pf->t[0].x = t[1]; pf->t[1].x = t[5]; pf->t[2].x = t[4]; pf++;
+		pf->t[0].x = t[2]; pf->t[1].x = t[8]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[7]; pf->t[2].x = t[3]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[3]; pf->t[2].x = t[4]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[4]; pf->t[2].x = t[5]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[5]; pf->t[2].x = t[6]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[6]; pf->t[2].x = t[8]; pf++;
+		pf->t[0].x = t[9]; pf->t[1].x = t[8]; pf->t[2].x = t[7]; pf++;
 		return f0 + 9;
 	}
 	break;
@@ -567,9 +557,8 @@ int GMesh::SetFaceTex(int f0, float* t, int n)
 	return f0;
 }
 
-//-----------------------------------------------------------------------------
 // Update normals for all faces using smoothing groups
-void GMesh::UpdateNormals()
+void GLMesh::UpdateNormals()
 {
 	int NF = Faces();
 	if (NF == 0) return;
@@ -676,18 +665,17 @@ void GMesh::UpdateNormals()
 	}
 }
 
-//-----------------------------------------------------------------------------
-bool CmpFace(GMesh::FACE f1, GMesh::FACE f2)
+bool CmpFace(GLMesh::FACE f1, GLMesh::FACE f2)
 {
 	return (f1.pid < f2.pid);
 }
 
-bool CmpEdge(GMesh::EDGE e1, GMesh::EDGE e2)
+bool CmpEdge(GLMesh::EDGE e1, GLMesh::EDGE e2)
 {
 	return (e1.pid < e2.pid);
 }
 
-void GMesh::AutoPartition()
+void GLMesh::AutoPartition()
 {
 	int NF = m_Face.size();
 	m_FIL.clear();
@@ -712,7 +700,7 @@ void GMesh::AutoPartition()
 	for (int i=1; i<FID; ++i) m_FIL[i].n0 = m_FIL[i-1].n0 + m_FIL[i-1].nf;
 }
 
-void GMesh::Update()
+void GLMesh::Update()
 {
 	if (m_FIL.empty()) AutoPartition();
 
@@ -766,8 +754,7 @@ void GMesh::Update()
 }
 
 /*
-//-----------------------------------------------------------------------------
-void GMesh::Extrude(double d, vec3d t)
+void GLMesh::Extrude(double d, vec3d t)
 {
 	int i;
 
@@ -875,8 +862,7 @@ void GMesh::Extrude(double d, vec3d t)
 }
 */
 
-//-----------------------------------------------------------------------------
-void GMesh::UpdateBoundingBox()
+void GLMesh::UpdateBoundingBox()
 {
 	m_box.x0 = m_box.y0 = m_box.z0 = 0.0;
 	m_box.x1 = m_box.y1 = m_box.z1 = 0.0;
@@ -892,8 +878,7 @@ void GMesh::UpdateBoundingBox()
 	}
 }
 
-//-----------------------------------------------------------------------------
-void GMesh::FindNeighbors()
+void GLMesh::FindNeighbors()
 {
 	int i, j, k;
 
@@ -962,8 +947,7 @@ void GMesh::FindNeighbors()
 }
 
 
-//-----------------------------------------------------------------------------
-void GMesh::Attach(GMesh &m, bool bupdate)
+void GLMesh::Attach(GLMesh &m, bool bupdate)
 {
 	int N0 = Nodes();
 	int E0 = Edges();
@@ -998,7 +982,7 @@ void GMesh::Attach(GMesh &m, bool bupdate)
 	if (bupdate) Update();
 }
 
-void GMesh::AutoSmooth(double angleDegrees)
+void GLMesh::AutoSmooth(double angleDegrees)
 {
 	int NF = Faces();
 

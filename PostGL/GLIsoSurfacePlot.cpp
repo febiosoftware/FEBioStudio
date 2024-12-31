@@ -163,9 +163,9 @@ void CGLIsoSurfacePlot::UpdateMesh()
 	float vmax = m_crng.y;
 	float D = vmax - vmin;
 
-	// build a GMesh
+	// build a GLMesh
 	m_renderMesh.Clear();
-	GMesh mesh;
+	GLMesh mesh;
 	for (int i = 0; i < m_nslices; ++i)
 	{
 		float ref = vmin + ((float)i + 0.5f)* D / (m_nslices);
@@ -181,7 +181,7 @@ void CGLIsoSurfacePlot::UpdateMesh()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLIsoSurfacePlot::UpdateSlice(GMesh& mesh, float ref, GLColor col)
+void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 {
 	float ev[8];	// element nodal values
 	vec3f ex[8];	// element nodal positions

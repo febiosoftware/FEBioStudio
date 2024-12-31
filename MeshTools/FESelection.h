@@ -529,5 +529,5 @@ protected:
 };
 
 // TODO: Is this a good place to put this?
-class GMesh;
-bool BuildSelectionMesh(FESelection* sel, GMesh& mesh);
+class GLMesh;
+bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh);

@@ -35,7 +35,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 class GObject;
 class FSMesh;
-class GMesh;
+class GLMesh;
 class FSModel;
 
 //-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ public:
 	virtual ~GModifier(void);
 
 	virtual void Apply(GObject* po) = 0;
-	virtual GMesh* BuildGMesh(GObject* po) = 0;
+	virtual GLMesh* BuildGMesh(GObject* po) = 0;
 	virtual FSMesh* BuildFEMesh(GObject* po) = 0; 
 };
 
@@ -58,7 +58,7 @@ public:
 public:
 	GTwistModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -71,7 +71,7 @@ public:
 public:
 	GPinchModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -84,7 +84,7 @@ public:
 public:
 	GBendModifier();
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 
 protected:
@@ -109,7 +109,7 @@ public:
 public:
 	GSkewModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -121,7 +121,7 @@ public:
 public:
 	GWrapModifier();
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po) { return 0; }
+	virtual GLMesh* BuildGMesh(GObject* po) { return 0; }
 	FSMesh* BuildFEMesh(GObject* po) { return 0; }
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
 
@@ -142,7 +142,7 @@ public:
 public:
 	GExtrudeModifier();
 	void Apply(GObject* po);
-	GMesh* BuildGMesh(GObject* po);
+	GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -156,7 +156,7 @@ public:
 public:
 	GRevolveModifier();
 	void Apply(GObject* po);
-	GMesh* BuildGMesh(GObject* po);
+	GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 

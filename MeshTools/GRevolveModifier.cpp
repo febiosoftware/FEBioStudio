@@ -317,7 +317,7 @@ void GRevolveModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GRevolveModifier::BuildGMesh(GObject* po)
+GLMesh* GRevolveModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
 	return 0;

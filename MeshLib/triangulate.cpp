@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "triangulate.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
 
@@ -93,19 +93,19 @@ inline bool LeftOn   (vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) >= 0
 inline bool Collinear(vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) == 0; }
 
 //-----------------------------------------------------------------------------
-GMesh* triangulate(GTriangulate& c)
+GLMesh* triangulate(GTriangulate& c)
 {
 	assert(c.Nodes() == c.Edges());
 
 	int N = c.Nodes();
 
-	GMesh* pm = new GMesh;
+	GLMesh* pm = new GLMesh;
 	pm->Create(N, N-2, N);
 
 	// create the Nodes
 	for (int i=0; i<N; ++i)
 	{
-		GMesh::NODE& n = pm->Node(i);
+		GLMesh::NODE& n = pm->Node(i);
 		n.r = to_vec3f(c.Node(i).r);
 		n.pid = c.Node(i).nid;
 		c.Node(i).ntag = i+1;
@@ -115,7 +115,7 @@ GMesh* triangulate(GTriangulate& c)
 	int NE = pm->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		GMesh::EDGE& e = pm->Edge(i);
+		GLMesh::EDGE& e = pm->Edge(i);
 		e.pid = c.Edge(i).nid;
 		e.n[0] = i;
 		e.n[1] = (i+1)%NE;
@@ -138,7 +138,7 @@ GMesh* triangulate(GTriangulate& c)
 			  GTriangulate::NODE& v1 = c.NodeCycle(i-1); //GTriangulate::NODE& v0 = c.NodeCycle(i-2); 
 
 				// add a triangle to the mesh
-				GMesh::FACE& f = pm->Face(NF++);
+				GLMesh::FACE& f = pm->Face(NF++);
 				f.n[0] = abs(v1.ntag)-1;
 				f.n[1] = abs(v2.ntag)-1;
 				f.n[2] = abs(v3.ntag)-1;
@@ -169,7 +169,7 @@ GMesh* triangulate(GTriangulate& c)
 	GTriangulate::NODE& v2 = c.Node(1);
 	GTriangulate::NODE& v3 = c.Node(2);
 
-	GMesh::FACE& f = pm->Face(NF++);
+	GLMesh::FACE& f = pm->Face(NF++);
 	f.n[0] = abs(v1.ntag)-1;
 	f.n[1] = abs(v2.ntag)-1;
 	f.n[2] = abs(v3.ntag)-1;
@@ -258,7 +258,7 @@ double Area2(vec3d& a, vec3d& b, vec3d& c)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* triangulate(GFace& face)
+GLMesh* triangulate(GFace& face)
 {
 	assert(face.m_ntype == FACE_POLYGON);
 
@@ -449,7 +449,7 @@ GMesh* triangulate(GFace& face)
 		}
 	}
 
-	GMesh* pm = triangulate(c);
+	GLMesh* pm = triangulate(c);
 
 	// Position the face at the correct position
 	for (int i = 0; i < pm->Nodes(); ++i)

@@ -249,7 +249,7 @@ void GPLCObject::Create(GSketch &s)
 	// we only add one part for now
 	AddSolidPart();
 
-	// Build the GMesh
+	// Build the GLMesh
 	BuildGMesh();
 
 	// find all vertices

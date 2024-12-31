@@ -225,7 +225,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 
 	Post::FEPostMesh* pm = glm.GetActiveMesh();
 
-	GMesh* gm = glm.GetPostObject()->GetFERenderMesh();
+	GLMesh* gm = glm.GetPostObject()->GetFERenderMesh();
 
 	const int VISIBLE_FLAG = 1;
 	const int SELECT_FLAG = 2;
@@ -234,7 +234,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		FSNode& n = pm->Node(i);
-		GMesh::NODE& gn = gm->Node(i);
+		GLMesh::NODE& gn = gm->Node(i);
 		gn.tag = 0;
 		if (n.IsVisible())
 		{
@@ -264,10 +264,10 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	GMesh pointMesh;
+	GLMesh pointMesh;
 	for (int i = 0; i < gm->Nodes(); ++i)
 	{
-		GMesh::NODE& gn = gm->Node(i);
+		GLMesh::NODE& gn = gm->Node(i);
 		if (gn.tag & VISIBLE_FLAG)
 		{
 			pointMesh.AddNode(gn.r);
@@ -288,7 +288,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 		FENodeSelection* sel = dynamic_cast<FENodeSelection*>(m_scene->GetSelection());
 		if (sel && sel->Count())
 		{
-			GMesh selMesh;
+			GLMesh selMesh;
 			const std::vector<int>& items = sel->Items();
 			for (int n : items)
 			{
@@ -308,7 +308,7 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 	int NE = mesh.Edges();
 	if (NE == 0) return;
 
-	GMesh lineMesh;
+	GLMesh lineMesh;
 	vec3f r[3];
 	for (int i = 0; i < NE; ++i)
 	{
@@ -341,7 +341,7 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 		FEEdgeSelection* sel = dynamic_cast<FEEdgeSelection*>(m_scene->GetSelection());
 		if (sel && sel->Count())
 		{
-			GMesh selMesh;
+			GLMesh selMesh;
 			int n = sel->Count();
 			for (int i = 0; i < n; ++i)
 			{
@@ -375,12 +375,12 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	CPostObject* po = glm.GetPostObject();
-	GMesh* mesh = po->GetFERenderMesh();
+	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
 	for (int i = 0; i < po->Faces(); ++i)
 	{
-		const GMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::PARTITION& p = mesh->Partition(i);
 		if (p.nf > 0)
 		{
 			int n0 = p.n0;
@@ -421,7 +421,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-// TODO: This is identical to RenderFaces, except that we loop over all the GMesh partitions
+// TODO: This is identical to RenderFaces, except that we loop over all the GLMesh partitions
 //       Maybe I can combine these two functions.
 void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 {
@@ -430,12 +430,12 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	CPostObject* po = glm.GetPostObject();
-	GMesh* mesh = po->GetFERenderMesh();
+	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
 	for (int i = 0; i < mesh->Partitions(); ++i)
 	{
-		const GMesh::PARTITION& p = mesh->Partition(i);
+		const GLMesh::PARTITION& p = mesh->Partition(i);
 		if (p.nf > 0)
 		{
 			int n0 = p.n0;
@@ -499,7 +499,7 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 
 	double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * glm.m_scaleNormals;
 
-	GMesh lineMesh;
+	GLMesh lineMesh;
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		const FSFace& face = pm->Face(i);
@@ -522,7 +522,7 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 		float g = fabs(fn.y);
 		float b = fabs(fn.z);
 
-		GMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+		GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
 		edge.c[0] = GLColor::White();
 		edge.c[1] = GLColor::FromRGBf(r, g, b);
 	}
@@ -543,7 +543,7 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
 
 	double eps = cos(glm.GetSmoothingAngleRadians());
 
-	GMesh lineMesh;
+	GLMesh lineMesh;
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		FSFace& f = pm->Face(i);
@@ -610,7 +610,7 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 	FEPostModel* ps = m_scene->GetFSModel();
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
-	GMesh* pm = po->GetFERenderMesh();
+	GLMesh* pm = po->GetFERenderMesh();
 	if (pm == nullptr) return;
 
 	Transform T;
@@ -628,7 +628,7 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
 
-	GMesh* mesh = po->GetFERenderMesh();
+	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
 	GLColor c = rc.m_settings.m_meshColor;

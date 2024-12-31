@@ -58,14 +58,14 @@ void CPostObject::ClearInternalSurfaces()
 
 void CPostObject::UpdateMesh()
 {
-	GMesh* mesh = GetFERenderMesh(); assert(mesh);
+	GLMesh* mesh = GetFERenderMesh(); assert(mesh);
 	if (mesh == nullptr) return;
 
 	FSMesh* pm = GetFEMesh();
 
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
-		GMesh::NODE& nd = mesh->Node(i);
+		GLMesh::NODE& nd = mesh->Node(i);
 		FSNode& ns = pm->Node(nd.nid);
 
 		nd.r = to_vec3f(ns.r);
@@ -75,16 +75,16 @@ void CPostObject::UpdateMesh()
 	vector<double> buf(pm->Nodes());
 	for (int i = 0; i < mesh->Faces(); ++i)
 	{
-		GMesh::FACE& face = mesh->Face(i);
+		GLMesh::FACE& face = mesh->Face(i);
 		if (face.pid < Faces())
 		{
 			assert(face.fid >= 0);
 			FSFace& f = pm->Face(face.fid);
 			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
 			
-			face.t[0] = buf[face.n[0]];
-			face.t[1] = buf[face.n[1]];
-			face.t[2] = buf[face.n[2]];
+			face.t[0].x = buf[face.n[0]];
+			face.t[1].x = buf[face.n[1]];
+			face.t[2].x = buf[face.n[2]];
 		}
 		else
 		{
@@ -93,9 +93,9 @@ void CPostObject::UpdateMesh()
 			FSElement& e = pm->Element(face.eid);
 			for (int j = 0; j < f.Nodes(); ++j) buf[f.n[j]] = f.m_tex[j];
 
-			face.t[0] = buf[face.n[0]];
-			face.t[1] = buf[face.n[1]];
-			face.t[2] = buf[face.n[2]];
+			face.t[0].x = buf[face.n[0]];
+			face.t[1].x = buf[face.n[1]];
+			face.t[2].x = buf[face.n[2]];
 		}
 	}
 }
@@ -108,8 +108,8 @@ void CPostObject::BuildFERenderMesh()
 	int nsurf = Faces();
 	if (nsurf == 0) return;
 
-	GMesh* pgm = new GMesh;
-	GMesh& gm = *pgm;
+	GLMesh* pgm = new GLMesh;
+	GLMesh& gm = *pgm;
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{

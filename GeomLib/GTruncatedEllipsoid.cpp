@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FETruncatedEllipsoid.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 {
@@ -78,7 +78,7 @@ bool GTruncatedEllipsoid::Update(bool b)
 
 void GTruncatedEllipsoid::Create()
 {
-	SetRenderMesh(new GMesh());
+	SetRenderMesh(new GLMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<10; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -152,7 +152,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 	int NF = 2*(NS+NS*2*(NZ-1)) + 2*NS;
 	int NE = 8*NZ+2*NS+4;
 
-	GMesh& m = *GetRenderMesh();
+	GLMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -181,7 +181,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			double y = (Rb + wt)*cu*sv;
 			double z = (Rc + wt)*su;
 
-			GMesh::NODE& n = m.Node((j-1)*NS+i+1);
+			GLMesh::NODE& n = m.Node((j-1)*NS+i+1);
 			n.r = vec3f(x, y, z);
 		}
 	}
@@ -202,7 +202,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			double y = (Rb - wt)*cu*sv;
 			double z = (Rc - wt)*su;
 
-			GMesh::NODE& n = m.Node((j-1)*NS + i + 1 + NN/2);
+			GLMesh::NODE& n = m.Node((j-1)*NS + i + 1 + NN/2);
 			n.r = vec3f(x, y, z);
 		}
 	}
@@ -214,7 +214,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 		// outside-bottom
 		for (int i=0; i<NS; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = NodeIndex(i, 0, NS); assert(f.n[0] < NN);
 			f.n[2] = NodeIndex(i, 1, NS); assert(f.n[1] < NN);
 			f.n[1] = NodeIndex(i+1, 1, NS); assert(f.n[2] < NN);
@@ -227,8 +227,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 		{
 			for (int j=0; j<NS; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				f1.n[0] = NodeIndex(j  , i  , NS); assert(f1.n[0] < NN);
 				f1.n[2] = NodeIndex(j  , i+1, NS); assert(f1.n[1] < NN);
@@ -247,7 +247,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 		// inside-bottom
 		for (int i=0; i<NS; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = NodeIndex(i, 0, NS) + NN/2; assert(f.n[0] < NN);
 			f.n[1] = NodeIndex(i, 1, NS) + NN/2; assert(f.n[1] < NN);
 			f.n[2] = NodeIndex(i+1, 1, NS) + NN/2; assert(f.n[2] < NN);
@@ -260,8 +260,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 		{
 			for (int j=0; j<NS; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				f1.n[0] = NodeIndex(j  , i  , NS) + NN/2; assert(f1.n[0] < NN);
 				f1.n[1] = NodeIndex(j  , i+1, NS) + NN/2; assert(f1.n[1] < NN);
@@ -280,8 +280,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 		// top
 		for (int i=0; i<NS; ++i)
 		{
-			GMesh::FACE& f1 = m.Face(n++);
-			GMesh::FACE& f2 = m.Face(n++);
+			GLMesh::FACE& f1 = m.Face(n++);
+			GLMesh::FACE& f2 = m.Face(n++);
 			
 			f1.n[0] = NodeIndex(i, NZ, NS); assert(f1.n[0] < NN);
 			f1.n[1] = NodeIndex(i+1, NZ, NS) + NN/2; assert(f1.n[1] < NN);
@@ -305,7 +305,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			{
 				for (int i=0; i<NZ; ++i)
 				{
-					GMesh::EDGE& e = m.Edge(n++);
+					GLMesh::EDGE& e = m.Edge(n++);
 					e.n[0] = n0 + NodeIndex(j*NS/4, i, NS);
 					e.n[1] = n0 + NodeIndex(j*NS/4, i+1, NS);
 					e.pid = k*4+j;
@@ -315,7 +315,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 
 		for (int i=0; i<4; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i*NS/4, NZ, NS);
 			e.n[1] = NodeIndex(i*NS/4, NZ, NS) + NN/2;
 			e.pid = 8+i;
@@ -326,7 +326,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			int n0 = k*NN/2;
 			for (int i=0; i<NS; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(i, NZ, NS);
 				e.n[1] = n0 + NodeIndex(i+1, NZ, NS);
 				e.pid = 12+k*4+i/(NS/4);

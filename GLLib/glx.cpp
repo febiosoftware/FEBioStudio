@@ -25,9 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <qopengl.h>
 #include "glx.h"
-#include <MeshLib/GMesh.h>
+#include "GLMesh.h"
 #include "GLRenderEngine.h"
 
 void glx::drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
@@ -876,7 +875,7 @@ void glx::renderRigidWall(GLRenderEngine& re, double R)
 		re.vertex(vec3d(R, R, 0));
 		re.vertex(vec3d(-R, R, 0));
 	}
-	glEnd();
+	re.end();
 
 	vec3d r[6];
 	r[0] = vec3d(0, 0, 0); r[1] = vec3d(0, 0, R / 2);
@@ -899,7 +898,7 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	re.pushState();
 	re.setMaterial(GLMaterial::CONSTANT, col);
 
-	GMesh mesh;
+	GLMesh mesh;
 
 	if (partial)
 	{

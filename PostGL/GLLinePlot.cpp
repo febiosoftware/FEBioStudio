@@ -514,7 +514,7 @@ void CGLLinePlot::Update3DLines(FEState& s, int ntime)
 
 
 //-----------------------------------------------------------------------------
-void tesselateSmoothPath(GMesh& mesh, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, GLColor c, int nsegs, int ndivs)
+void tesselateSmoothPath(GLMesh& mesh, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, GLColor c, int nsegs, int ndivs)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 	quatd q1(vec3d(0, 0, 1), n1);
@@ -579,7 +579,7 @@ void tesselateSmoothPath(GMesh& mesh, const vec3d& r0, const vec3d& r1, float R,
 	}
 }
 
-void tesselateHalfSphere(GMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
+void tesselateHalfSphere(GLMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 	const int M = nsecs;

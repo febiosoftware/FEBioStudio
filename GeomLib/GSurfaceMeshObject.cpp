@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <PostLib/ColorMap.h>
 #include "GOCCObject.h"
@@ -395,7 +395,7 @@ void GSurfaceMeshObject::UpdateSurfaces()
 void GSurfaceMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GMesh* gmesh = new GMesh();
+	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
 	FSSurfaceMesh* pm = m_surfmesh;
@@ -448,7 +448,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	// edges to render as feature edges. So, we need to set them to -1
 	for (int i = 0; i < gmesh->Edges(); ++i)
 	{
-		GMesh::EDGE& edge = gmesh->Edge(i);
+		GLMesh::EDGE& edge = gmesh->Edge(i);
 		if (edge.pid == max_gid) edge.pid = -1;
 	}
 
@@ -1040,7 +1040,7 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	BuildGMesh();
 }
 
-FSSurfaceMesh* createSurfaceMesh(GMesh* glmesh)
+FSSurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
 {
 	if (glmesh == nullptr) return nullptr;
 
@@ -1053,14 +1053,14 @@ FSSurfaceMesh* createSurfaceMesh(GMesh* glmesh)
 	for (int i = 0; i < NN; ++i)
 	{
 		FSNode& nodei = pm->Node(i);
-		const GMesh::NODE& glnode = glmesh->Node(i);
+		const GLMesh::NODE& glnode = glmesh->Node(i);
 		nodei.r = to_vec3d(glnode.r);
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& facei = pm->Face(i);
-		const GMesh::FACE& glface = glmesh->Face(i);
+		const GLMesh::FACE& glface = glmesh->Face(i);
 		facei.SetType(FE_FACE_TRI3);
 		facei.m_gid = glface.pid;
 		facei.n[0] = glface.n[0];
@@ -1088,10 +1088,10 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 	else if (dynamic_cast<GOCCObject*>(po))
 	{
 		// If this is an OCC, we'll use the render mesh
-		GMesh* glmesh = po->GetRenderMesh();
+		GLMesh* glmesh = po->GetRenderMesh();
 		if (glmesh == nullptr) return nullptr;
 
-		// create FSSurfaceMesh from GMesh
+		// create FSSurfaceMesh from GLMesh
 		FSSurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
 
 		// create the surface mesh object
@@ -1121,7 +1121,7 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 
 void GSurfaceMeshObject::UpdateSurfaceMeshData()
 {
-	GMesh* gmsh = GetRenderMesh();
+	GLMesh* gmsh = GetRenderMesh();
 	if (gmsh == nullptr) return;
 
 	FSSurfaceMesh* pm = GetSurfaceMesh();
@@ -1143,7 +1143,7 @@ void GSurfaceMeshObject::UpdateSurfaceMeshData()
 	int NF = gmsh->Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		GMesh::FACE& fi = gmsh->Face(i);
+		GLMesh::FACE& fi = gmsh->Face(i);
 		int fid = fi.fid;
 		FSFace* pf = pm->FacePtr(fid);
 		if (pf)

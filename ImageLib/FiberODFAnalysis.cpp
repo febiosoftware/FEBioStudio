@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FEAMR/spherePoints.h>
 #include <MeshTools/FENNQuery.h>
 #include <PostLib/ColorMap.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
@@ -1032,7 +1032,7 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* c
         return;
     }
 
-    GMesh* mesh = nullptr;
+    GLMesh* mesh = nullptr;
 	if ((showMesh == 1) || cam->IsMoving()) mesh = &odf->m_remesh;
 	else mesh = &odf->m_mesh;
 
@@ -1175,7 +1175,7 @@ double CFiberODFAnalysis::GFA(std::vector<double>& vals)
 
 void CFiberODFAnalysis::buildMesh(CODF* odf)
 {
-	GMesh& mesh = odf->m_mesh;
+	GLMesh& mesh = odf->m_mesh;
 	odf->m_mesh.Create(NPTS, NCON);
 
 	// create nodes
@@ -1212,7 +1212,7 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 	if (rmax == 0.0) rmax = 1.0;
 
 	// udpate nodes
-	GMesh& mesh = odf->m_mesh;
+	GLMesh& mesh = odf->m_mesh;
 	for (int i = 0; i < NPTS; ++i)
 	{
 		auto& node = mesh.Node(i);
@@ -1251,7 +1251,7 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
     remeshFull(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
 
 	// get the new mesh sizes
-	GMesh& mesh = odf->m_remesh;
+	GLMesh& mesh = odf->m_remesh;
     int NN = (int)nodePos.size();
     int NF = (int)elems.size();
 	mesh.Create(NN, NF);
@@ -1321,7 +1321,7 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	double scale = (min == max ? 1.0 : 1.0 / (max - min));
 
 	// create nodes
-	GMesh& mesh = odf->m_remesh;
+	GLMesh& mesh = odf->m_remesh;
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		auto& node = mesh.Node(i);

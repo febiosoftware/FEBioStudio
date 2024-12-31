@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphere.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 class GSphereManipulator : public GObjectManipulator
 {
@@ -93,7 +93,7 @@ bool GSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GSphere::Create()
 {
-	SetRenderMesh(new GMesh());
+	SetRenderMesh(new GLMesh());
 
 	// create the nodes
 	assert(m_Node.empty());
@@ -161,7 +161,7 @@ void GSphere::BuildGMesh()
 	int NF = 2*ND + (NZ-2)*(2*ND);
 	int NE = ND + 4*NZ;
 
-	GMesh& m = *GetRenderMesh();
+	GLMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -181,7 +181,7 @@ void GSphere::BuildGMesh()
 			double sw = sin(w);
 			double d = R*sqrt(1 - z*z);
 
-			GMesh::NODE& n = m.Node((i-1)*ND + j + 1);
+			GLMesh::NODE& n = m.Node((i-1)*ND + j + 1);
 			n.r = vec3f(d*cw, d*sw, R*z);
 		}
 	}
@@ -193,7 +193,7 @@ void GSphere::BuildGMesh()
 		int n = 0;
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = 0;
 			f.n[1] = (i+1)%ND + 1;
 			f.n[2] = i + 1;
@@ -206,8 +206,8 @@ void GSphere::BuildGMesh()
 		{
 			for (j=0; j<ND; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				int m[4] = {1+i*ND+j, 1+i*ND+(j+1)%ND, 1+(i+1)*ND+j, 1+(i+1)*ND+(j+1)%ND};
 
@@ -230,7 +230,7 @@ void GSphere::BuildGMesh()
 		// top
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = NN-1;
 			f.n[1] = 1 + (NZ-2)*ND + i;
 			f.n[2] = 1 + (NZ-2)*ND + (i+1)%ND;
@@ -244,7 +244,7 @@ void GSphere::BuildGMesh()
 		n = 0;
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(NZ/2, i, ND, NZ);
 			e.n[1] = NodeIndex(NZ/2, i+1, ND, NZ);
 			e.pid = 4*i/ND;
@@ -252,7 +252,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(NZ/2+i, 0, ND, NZ);
 			e.n[1] = NodeIndex(NZ/2+i+1, 0, ND, NZ);
 			e.pid = 4;
@@ -260,7 +260,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(NZ/2+i  , ND/4, ND, NZ);
 			e.n[1] = NodeIndex(NZ/2+i+1, ND/4, ND, NZ);
 			e.pid = 5;
@@ -268,7 +268,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(NZ/2+i  , 2*ND/4, ND, NZ);
 			e.n[1] = NodeIndex(NZ/2+i+1, 2*ND/4, ND, NZ);
 			e.pid = 6;
@@ -276,7 +276,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(NZ/2+i  , 3*ND/4, ND, NZ);
 			e.n[1] = NodeIndex(NZ/2+i+1, 3*ND/4, ND, NZ);
 			e.pid = 7;
@@ -284,7 +284,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 0, ND, NZ);
 			e.n[1] = NodeIndex(i+1, 0, ND, NZ);
 			e.pid = 8;
@@ -292,7 +292,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , ND/4, ND, NZ);
 			e.n[1] = NodeIndex(i+1, ND/4, ND, NZ);
 			e.pid = 9;
@@ -300,7 +300,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 2*ND/4, ND, NZ);
 			e.n[1] = NodeIndex(i+1, 2*ND/4, ND, NZ);
 			e.pid = 10;
@@ -308,7 +308,7 @@ void GSphere::BuildGMesh()
 
 		for (i=0; i<NZ/2; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 3*ND/4, ND, NZ);
 			e.n[1] = NodeIndex(i+1, 3*ND/4, ND, NZ);
 			e.pid = 11;

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <FSCore/ClassDescriptor.h>
@@ -80,9 +80,9 @@ public:
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
+	GLMesh*		m_pGMesh;	//!< the mesh for rendering geometry
 	
-	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
+	GLMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
 
 	GObjectManipulator* m_objManip;
 };
@@ -215,8 +215,8 @@ void GObject::BuildFERenderMesh()
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	m.m_glFaceMesh = new GMesh;
-	GMesh& gm = *m.m_glFaceMesh;
+	m.m_glFaceMesh = new GLMesh;
+	GLMesh& gm = *m.m_glFaceMesh;
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
@@ -352,21 +352,21 @@ void GObject::UpdateFERenderMesh()
 	if (pm == nullptr) return;
 	if (imp->m_glFaceMesh == nullptr) return;
 
-	GMesh& gm = *imp->m_glFaceMesh;
+	GLMesh& gm = *imp->m_glFaceMesh;
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		gm.Node(i).r = to_vec3f(pm->Node(i).r);
 	}
 	for (int i = 0; i < gm.Faces(); ++i)
 	{
-		GMesh::FACE& face = gm.Face(i);
+		GLMesh::FACE& face = gm.Face(i);
 		face.vr[0] = gm.Node(face.n[0]).r;
 		face.vr[1] = gm.Node(face.n[1]).r;
 		face.vr[2] = gm.Node(face.n[2]).r;
 	}
 	for (int i = 0; i < gm.Edges(); ++i)
 	{
-		GMesh::EDGE& edge = gm.Edge(i);
+		GLMesh::EDGE& edge = gm.Edge(i);
 		edge.vr[0] = gm.Node(edge.n[0]).r;
 		edge.vr[1] = gm.Node(edge.n[1]).r;
 	}
@@ -377,13 +377,13 @@ void GObject::UpdateFERenderMesh()
 
 //-----------------------------------------------------------------------------
 // set the render mesh
-void GObject::SetRenderMesh(GMesh* mesh)
+void GObject::SetRenderMesh(GLMesh* mesh)
 {
 	delete imp->m_pGMesh;
 	imp->m_pGMesh = mesh;
 }
 
-void GObject::SetFERenderMesh(GMesh* mesh)
+void GObject::SetFERenderMesh(GLMesh* mesh)
 {
 	delete imp->m_glFaceMesh;
 	imp->m_glFaceMesh = mesh;
@@ -681,12 +681,12 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 
 //-----------------------------------------------------------------------------
 // get the render mesh
-GMesh*	GObject::GetRenderMesh()
+GLMesh*	GObject::GetRenderMesh()
 { 
 	return imp->m_pGMesh;
 }
 
-GMesh* GObject::GetFERenderMesh()
+GLMesh* GObject::GetFERenderMesh()
 {
 	if (imp->m_glFaceMesh == nullptr) BuildFERenderMesh();
 	return imp->m_glFaceMesh;
@@ -1544,7 +1544,7 @@ GObject* GObjectManipulator::GetObject()
 
 void GObject::UpdateMeshData()
 {
-	GMesh* gmsh = GetFERenderMesh();
+	GLMesh* gmsh = GetFERenderMesh();
 	if (gmsh == nullptr) return;
 
 	FSMesh* pm = GetFEMesh();
@@ -1566,7 +1566,7 @@ void GObject::UpdateMeshData()
 	int NF = gmsh->Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		GMesh::FACE& fi = gmsh->Face(i);
+		GLMesh::FACE& fi = gmsh->Face(i);
 		int fid = fi.fid;
 		FSFace* pf = pm->FacePtr(fid);
 		if (pf)

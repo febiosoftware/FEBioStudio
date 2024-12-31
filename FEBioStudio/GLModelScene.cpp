@@ -947,7 +947,7 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& 
 	if ((ncase > 0) && (ncase < 255))
 	{
 		int edge[15][2], edgeNode[15][2], etag[15];
-		GMesh plane;
+		GLMesh plane;
 		int* pf = LUT[ncase];
 		int ne = 0;
 		for (int l = 0; l < 5; l++)
@@ -997,7 +997,7 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& 
 					edge[ne][1] = n2;
 					etag[ne] = 0;
 
-					GMesh::FACE& face = plane.Face(plane.Faces() - 1);
+					GLMesh::FACE& face = plane.Face(plane.Faces() - 1);
 					edgeNode[ne][0] = face.n[k];
 					edgeNode[ne][1] = face.n[(k + 1) % 3];
 					++ne;
@@ -1019,7 +1019,7 @@ void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& 
 	}
 }
 
-bool BuildSelectionMesh(FESelection* sel, GMesh& mesh)
+bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
 {
 	mesh.Clear();
 	if (sel == nullptr) return false;
@@ -1290,10 +1290,10 @@ GLObjectItem::GLObjectItem(CGLModelScene* scene, GObject* po) : GLModelSceneItem
 	}
 }
 
-void GLObjectItem::UpdateGMeshColor(GMesh& msh)
+void GLObjectItem::UpdateGMeshColor(GLMesh& msh)
 {
 	if (m_po == nullptr) return;
-	GMesh* gm = m_po->GetRenderMesh();
+	GLMesh* gm = m_po->GetRenderMesh();
 
 	// color the meshes
 	int objColorMode = m_scene->GetObjectColorMode();
@@ -1307,51 +1307,51 @@ void GLObjectItem::UpdateGMeshColor(GMesh& msh)
 	}
 }
 
-void GLObjectItem::ColorByDefault(GMesh& msh)
+void GLObjectItem::ColorByDefault(GLMesh& msh)
 {
 	GLColor c = m_po->GetColor();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
-		const GMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
 		GLColor c = m_scene->GetFaceColor(*pf);
 
 		for (int i = 0; i < p.nf; ++i)
 		{
-			GMesh::FACE& face = msh.Face(i + p.n0);
+			GLMesh::FACE& face = msh.Face(i + p.n0);
 			face.c[0] = face.c[1] = face.c[2] = c;
 		}
 	}
 }
 
-void GLObjectItem::ColorByObject(GMesh& msh)
+void GLObjectItem::ColorByObject(GLMesh& msh)
 {
 	GLColor c = m_po->GetColor();
 	for (int i = 0; i < msh.Faces(); ++i)
 	{
-		GMesh::FACE& face = msh.Face(i);
+		GLMesh::FACE& face = msh.Face(i);
 		face.c[0] = face.c[1] = face.c[2] = c;
 	}
 }
 
-void GLObjectItem::ColorByMaterialType(GMesh& msh)
+void GLObjectItem::ColorByMaterialType(GLMesh& msh)
 {
 	GLColor c = m_po->GetColor();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
-		const GMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
 		GLColor c = m_scene->GetFaceColor(*pf);
 
 		for (int i = 0; i < p.nf; ++i)
 		{
-			GMesh::FACE& face = msh.Face(i + p.n0);
+			GLMesh::FACE& face = msh.Face(i + p.n0);
 			face.c[0] = face.c[1] = face.c[2] = c;
 		}
 	}
 }
 
-void GLObjectItem::ColorByElementType(GMesh& msh)
+void GLObjectItem::ColorByElementType(GLMesh& msh)
 {
 	FSMesh* pm = m_po->GetFEMesh();
 	if (pm == nullptr)
@@ -1362,7 +1362,7 @@ void GLObjectItem::ColorByElementType(GMesh& msh)
 
 	for (int i = 0; i < msh.Faces(); ++i)
 	{
-		GMesh::FACE& face = msh.Face(i);
+		GLMesh::FACE& face = msh.Face(i);
 
 		GLColor col(212, 212, 212);
 		if (face.eid >= 0)
@@ -1406,18 +1406,18 @@ void GLObjectItem::ColorByElementType(GMesh& msh)
 	}
 }
 
-void GLObjectItem::ColorByPhysics(GMesh& msh)
+void GLObjectItem::ColorByPhysics(GLMesh& msh)
 {
 	GLColor c = m_po->GetColor();
 	for (int n = 0; n < msh.Partitions(); ++n)
 	{
-		const GMesh::PARTITION& p = msh.Partition(n);
+		const GLMesh::PARTITION& p = msh.Partition(n);
 		GFace* pf = m_po->Face(n);
 		GLColor c = m_scene->GetFaceColor(*pf);
 
 		for (int i = 0; i < p.nf; ++i)
 		{
-			GMesh::FACE& face = msh.Face(i + p.n0);
+			GLMesh::FACE& face = msh.Face(i + p.n0);
 			face.c[0] = face.c[1] = face.c[2] = c;
 		}
 	}
@@ -1468,20 +1468,20 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 		{
 			if (view.m_bcontour)
 			{
-				GMesh* gm = po->GetFERenderMesh();
+				GLMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(re, rc);
 				else RenderObject(re, rc);
 			}
 			else if (objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
 			{
-				GMesh* gm = po->GetFERenderMesh();
+				GLMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				else RenderObject(re, rc);
 			}
 			else if (view.m_showPlaneCut && (view.m_planeCutMode == Planecut_Mode::HIDE_ELEMENTS))
 			{
-				GMesh* gm = po->GetFERenderMesh();
+				GLMesh* gm = po->GetFERenderMesh();
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 			}
 			else RenderObject(re, rc);
@@ -1535,7 +1535,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			}
 			else if (item == ITEM_FACE)
 			{
-				GMesh* gm = po->GetFERenderMesh(); assert(gm);
+				GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm)
 				{
 					RenderFEFacesFromGMesh(re, rc);
@@ -1545,7 +1545,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			}
 			else if (item == ITEM_EDGE)
 			{
-				GMesh* gm = po->GetFERenderMesh(); assert(gm);
+				GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				cam.LineDrawMode(true);
 				re.positionCamera(cam);
@@ -1556,7 +1556,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			}
 			else if (item == ITEM_NODE)
 			{
-				GMesh* gm = po->GetFERenderMesh(); assert(gm);
+				GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				RenderFENodes(re, rc);
 			}
@@ -1596,9 +1596,9 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 
 	GObject* po = m_po;
 
-	// get the GMesh
+	// get the GLMesh
 	FSModel& fem = *m_scene->GetFSModel();
-	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
 	// render non-selected parts
@@ -1636,9 +1636,9 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 
 	GObject* po = m_po;
 
-	// get the GMesh
+	// get the GLMesh
 	FSModel& fem = *m_scene->GetFSModel();
-	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
 	// render non-selected faces
@@ -1674,7 +1674,7 @@ void GLObjectItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	GObject* po = m_po;
 	if ((po == nullptr) || (po->Nodes() == 0)) return;
 
-	GMesh points;
+	GLMesh points;
 	for (int i = 0; i < po->Nodes(); ++i)
 	{
 		// only render nodes that are not selected
@@ -1696,7 +1696,7 @@ void GLObjectItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 void GLObjectItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 {
 	GObject* po = m_po;
-	GMesh* m = po->GetRenderMesh();
+	GLMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::Blue());
@@ -1716,7 +1716,7 @@ void GLObjectItem::RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc)
 {
 	GObject* po = m_po;
 
-	GMesh* gm = po->GetFERenderMesh();
+	GLMesh* gm = po->GetFERenderMesh();
 	if (gm == nullptr) return;
 
 	GLViewSettings& vs = rc.m_settings;
@@ -1747,7 +1747,7 @@ void GLObjectItem::RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc)
 void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 {
 	GObject* po = m_po;
-	GMesh* gm = po->GetFERenderMesh();
+	GLMesh* gm = po->GetFERenderMesh();
 	if (gm == nullptr) return;
 
 	GLViewSettings& vs = rc.m_settings;
@@ -1812,7 +1812,7 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 
 void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
 {
-	GMesh* gm = m_po->GetFERenderMesh();
+	GLMesh* gm = m_po->GetFERenderMesh();
 	if (gm == nullptr) return;
 
 	GLViewSettings& vs = rc.m_settings;
@@ -1833,7 +1833,7 @@ void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
 	re.renderGMesh(*gm);
 }
 
-void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GMesh& mesh)
+void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh)
 {
 	GLViewSettings& vs = rc.m_settings;
 	bool useStipple = false;
@@ -1864,7 +1864,7 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 
 	re.setPointSize(rc.m_settings.m_node_size);
 
-	GMesh* gm = po->GetFERenderMesh(); assert(gm);
+	GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 	assert(gm->Nodes() == pm->Nodes());
 
 	// render the visible nodes
@@ -1877,7 +1877,7 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 	FENodeSelection* sel = dynamic_cast<FENodeSelection*>(m_scene->GetCurrentSelection());
 	if (sel && sel->Size())
 	{
-		GMesh& selectionMesh = m_scene->GetSelectionMesh();
+		GLMesh& selectionMesh = m_scene->GetSelectionMesh();
 		if (selectionMesh.Nodes() > 0)
 		{
 			re.setMaterial(GLMaterial::OVERLAY, GLColor::Red());
@@ -1894,7 +1894,7 @@ void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc)
 	if ((sel == nullptr) || (sel->Count() == 0)) return;
 	if (sel->GetMesh() != po->GetFEMesh()) return;
 
-	GMesh& selMesh = m_scene->GetSelectionMesh();
+	GLMesh& selMesh = m_scene->GetSelectionMesh();
 
 	re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Red());
 	re.renderGMesh(selMesh, false);
@@ -1931,7 +1931,7 @@ void GLObjectItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc)
 	{
 		// reset all tags
 		int NN = mesh->Nodes();
-		GMesh pointMesh;
+		GLMesh pointMesh;
 		for (int i = 0; i < NN; ++i)
 		{
 			FSNode& node = mesh->Node(i);
@@ -1969,7 +1969,7 @@ void GLObjectItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc)
 void GLObjectItem::RenderFEEdges(GLRenderEngine& re, GLContext& rc)
 {
 	// render the unselected edges
-	GMesh* mesh = m_po->GetFERenderMesh();
+	GLMesh* mesh = m_po->GetFERenderMesh();
 	if (mesh)
 	{
 		re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
@@ -1977,7 +1977,7 @@ void GLObjectItem::RenderFEEdges(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// render the selected edges
-	GMesh& selectionMesh = m_scene->GetSelectionMesh();
+	GLMesh& selectionMesh = m_scene->GetSelectionMesh();
 	if (selectionMesh.Edges() > 0)
 	{
 		re.setMaterial(GLMaterial::OVERLAY, GLColor(255, 0, 0, 128));
@@ -1992,7 +1992,7 @@ void GLObjectItem::RenderAllBeamElements(GLRenderEngine& re, GLContext& rc)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	GMesh beamMesh;
+	GLMesh beamMesh;
 	vec3f r[3];
 	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
@@ -2026,7 +2026,7 @@ void GLObjectItem::RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& r
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	GMesh beamMesh;
+	GLMesh beamMesh;
 	vec3f r[3];
 	int NE = pm->Edges();
 	for (int i = 0; i < NE; ++i)
@@ -2061,7 +2061,7 @@ void GLObjectItem::RenderNormals(GLRenderEngine& re, GLContext& rc, double scale
 	if (pm == 0) return;
 	double R = 0.05 * pm->GetBoundingBox().GetMaxExtent() * scale;
 
-	GMesh lineMesh;
+	GLMesh lineMesh;
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		const FSFace& face = pm->Face(i);
@@ -2084,7 +2084,7 @@ void GLObjectItem::RenderNormals(GLRenderEngine& re, GLContext& rc, double scale
 		float g = fabs(fn.y);
 		float b = fabs(fn.z);
 
-		GMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+		GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
 		edge.c[0] = GLColor::White();
 		edge.c[1] = GLColor::FromRGBf(r, g, b);
 	}
@@ -2103,9 +2103,9 @@ void GLObjectItem::RenderBeamParts(GLRenderEngine& re, GLContext& rc)
 
 	GLViewSettings& vs = rc.m_settings;
 
-	// get the GMesh
+	// get the GLMesh
 	FSModel& fem = *m_scene->GetFSModel();
-	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
 
 	re.setMaterial(GLMaterial::CONSTANT, po->GetColor());
@@ -2126,7 +2126,7 @@ void GLObjectItem::RenderBeamParts(GLRenderEngine& re, GLContext& rc)
 
 void GLObjectItem::RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc)
 {
-	GMesh* mesh = m_po->GetRenderMesh();
+	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
 	// render the unselected edges
@@ -2140,7 +2140,7 @@ void GLObjectItem::RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc)
 
 void GLObjectItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
 {
-	GMesh& selectionMesh = m_scene->GetSelectionMesh();
+	GLMesh& selectionMesh = m_scene->GetSelectionMesh();
 	if (selectionMesh.Faces() > 0)
 	{
 		re.setMaterial(GLMaterial::HIGHLIGHT, GLColor::Red());
@@ -2172,7 +2172,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor(), GLMaterial::VERTEX_COLOR);
 	else re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor(), GLMaterial::VERTEX_COLOR);
 
-	GMesh* mesh = m_po->GetRenderMesh();
+	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
 	if (m_clearCache)
@@ -2236,7 +2236,7 @@ void GLObjectItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc)
 	// render the unselected faces
 	if (showContour)
 	{
-		GMesh* gmesh = surfaceObject->GetRenderMesh();
+		GLMesh* gmesh = surfaceObject->GetRenderMesh();
 
 		// We don't use the cached mesh, since it probably won't have the 
 		// vertex colors stored, which we need here. 
@@ -2492,7 +2492,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 				SetModelView(po);
 				if (nitem != ITEM_EDGE)
 				{
-					GMesh* lineMesh = po->GetFERenderMesh(); assert(lineMesh);
+					GLMesh* lineMesh = po->GetFERenderMesh(); assert(lineMesh);
 					if (lineMesh)
 					{
 						re.renderGMeshEdges(*lineMesh);
@@ -2502,7 +2502,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
 			{
-				GMesh* gmesh = po->GetRenderMesh();
+				GLMesh* gmesh = po->GetRenderMesh();
 				if (gmesh && (nitem != ITEM_EDGE))
 				{
 					re.pushTransform();
@@ -2548,7 +2548,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 					re.pushTransform();
 					SetModelView(po);
 
-					GMesh* m = po->GetRenderMesh();
+					GLMesh* m = po->GetRenderMesh();
 					if (m)
 					{
 						re.renderGMeshEdges(*m);
@@ -3019,7 +3019,7 @@ void GLSelectionItem::RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GOb
 {
 	if ((po == nullptr) || (po->Nodes() == 0)) return;
 
-	GMesh points;
+	GLMesh points;
 	for (int i = 0; i < po->Nodes(); ++i)
 	{
 		GNode& n = *po->Node(i);
@@ -3036,11 +3036,11 @@ void GLSelectionItem::RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GOb
 	re.renderGMeshNodes(points, false);
 
 #ifndef NDEBUG
-	// Draw FE nodes on top of GMesh nodes to make sure they match
+	// Draw FE nodes on top of GLMesh nodes to make sure they match
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
-		GMesh fenodes;
+		GLMesh fenodes;
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
 			FSNode& node = pm->Node(i);
@@ -3065,12 +3065,12 @@ void GLSelectionItem::RenderSelectedNodes(GLRenderEngine& re, GLContext& rc, GOb
 // render selected edges
 void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, GLContext& rc, GObject* po) const
 {
-	GMesh* m = po->GetRenderMesh();
+	GLMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow());
 
-	GMesh pointMesh;
+	GLMesh pointMesh;
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
@@ -3096,12 +3096,12 @@ void GLSelectionItem::RenderSelectedEdges(GLRenderEngine& re, GLContext& rc, GOb
 	}
 
 #ifndef NDEBUG
-	// Render FE edges onto GMesh edges to make sure they are consistent
+	// Render FE edges onto GLMesh edges to make sure they are consistent
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		// TODO: Add the edges to the render mesh
-		GMesh edges;
+		GLMesh edges;
 		vec3f r[FSEdge::MAX_NODES];
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
@@ -3131,7 +3131,7 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 {
 	if (!po->IsVisible()) return;
 
-	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
 	int NF = po->Faces();
@@ -3163,7 +3163,7 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			GMesh msh;
+			GLMesh msh;
 			vec3f rf[FSElement::MAX_NODES];
 			for (int i = 0; i < pm->Faces(); ++i)
 			{
@@ -3201,7 +3201,7 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GObject* po) const
 {
 	if (!po->IsVisible()) return;
-	GMesh* m = po->GetRenderMesh();
+	GLMesh* m = po->GetRenderMesh();
 	if (m == nullptr) return;
 
 	int NF = po->Faces();
@@ -3298,7 +3298,7 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge,
 	re.pushTransform();
 	SetModelView(po);
 
-	GMesh& m = *po->GetRenderMesh();
+	GLMesh& m = *po->GetRenderMesh();
 
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshEdges(m, edge->GetLocalID());
@@ -3308,7 +3308,7 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge,
 
 	if (n0 && n1)
 	{
-		GMesh endPoints;
+		GLMesh endPoints;
 		vec3d r0 = n0->LocalPosition();
 		vec3d r1 = n1->LocalPosition();
 		endPoints.AddNode(to_vec3f(r0));
@@ -3327,7 +3327,7 @@ void GLHighlighterItem::drawNode(GLRenderEngine& re, GLContext& rc, GNode* node,
 
 	re.pushTransform();
 	SetModelView(po);
-	GMesh pt;
+	GLMesh pt;
 	pt.AddNode(to_vec3f(node->LocalPosition()));
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshNodes(pt, false);
@@ -3338,7 +3338,7 @@ void GLHighlighterItem::drawFace(GLRenderEngine& re, GLContext& rc, GFace* face,
 {
 	GObject* po = dynamic_cast<GObject*>(face->Object());
 	if (po == 0) return;
-	GMesh* mesh = po->GetRenderMesh();
+	GLMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
 	re.pushTransform();
@@ -3357,7 +3357,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, GLContext& rc, GPart* part,
 {
 	GObject* po = dynamic_cast<GObject*>(part->Object());
 	if (po == 0) return;
-	GMesh* mesh = po->GetRenderMesh();
+	GLMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return;
 
 	int pid = part->GetLocalID();
@@ -3399,12 +3399,12 @@ void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeS
 	GObject* po = mesh->GetGObject();
 	if (po == nullptr) return;
 
-	GMesh* gm = po->GetFERenderMesh();
+	GLMesh* gm = po->GetFERenderMesh();
 	if (gm == nullptr) return;
 	assert(gm->Nodes() == mesh->Nodes());
 
 	std::vector<int> nodeList = nodeSet->CopyItems();
-	GMesh pointMesh;
+	GLMesh pointMesh;
 	pointMesh.Create(nodeList.size(), 0, 0);
 	for (int i = 0; i<nodeList.size(); ++i)
 	{
@@ -3434,7 +3434,7 @@ void GLHighlighterItem::drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurfa
 	{
 		SetModelView(po);
 
-		GMesh gmesh;
+		GLMesh gmesh;
 		gmesh.NewPartition();
 		int m[FSFace::MAX_NODES];
 		for (int n : faceList)

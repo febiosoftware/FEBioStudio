@@ -35,7 +35,7 @@ SOFTWARE.*/
 #ifdef LINUX
 #include <GL/gl.h>
 #endif
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <algorithm>
 #include <GLLib/GLCamera.h>
 
@@ -433,7 +433,7 @@ void OGLTriMesh::SortForwards()
 }
 
 
-void OGLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
+void OGLTriMesh::CreateFromGMesh(const GLMesh& gmsh, unsigned int flags)
 {
 	int faces = gmsh.Faces();
 	AllocVertexBuffers(3 * faces, flags);
@@ -451,23 +451,23 @@ void OGLTriMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 	EndMesh();
 }
 
-void OGLTriMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
+void OGLTriMesh::CreateFromGMesh(const GLMesh& gmsh, int surfID, unsigned int flags)
 {
 	if ((surfID < 0) || (surfID >= gmsh.Partitions())) { assert(false); return; }
 
-	const GMesh::PARTITION& part = gmsh.Partition(surfID);
+	const GLMesh::PARTITION& part = gmsh.Partition(surfID);
 	int faces = part.nf;
 	AllocVertexBuffers(3 * faces, flags);
 
 	BeginMesh();
 	for (int i = 0; i < faces; ++i)
 	{
-		const GMesh::FACE& f = gmsh.Face(i + part.n0);
+		const GLMesh::FACE& f = gmsh.Face(i + part.n0);
 		assert(f.pid == surfID);
 		for (int j = 0; j < 3; ++j)
 		{
 			auto& vj = gmsh.Node(f.n[j]);
-			AddVertex(vj.r, f.vn[j], f.c[j]);
+			AddVertex(vj.r, f.vn[j], f.c[j], f.t[j]);
 		}
 	}
 	EndMesh();
@@ -494,7 +494,7 @@ void OGLLineMesh::Create(int maxLines, unsigned int flags)
 	AllocVertexBuffers(2 * maxLines, flags);
 }
 
-void OGLLineMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
+void OGLLineMesh::CreateFromGMesh(const GLMesh& gmsh, unsigned int flags)
 {
 	int edges = gmsh.Edges();
 	AllocVertexBuffers(2 * edges, flags);
@@ -525,7 +525,7 @@ void OGLPointMesh::Create(int maxVertices, unsigned int flags)
 	AllocVertexBuffers(maxVertices, flags);
 }
 
-void OGLPointMesh::CreateFromGMesh(const GMesh& gmsh)
+void OGLPointMesh::CreateFromGMesh(const GLMesh& gmsh)
 {
 	int nodes = gmsh.Nodes();
 	AllocVertexBuffers(nodes, 0);
@@ -533,7 +533,7 @@ void OGLPointMesh::CreateFromGMesh(const GMesh& gmsh)
 	BeginMesh();
 	for (int i = 0; i < gmsh.Nodes(); ++i)
 	{
-		const GMesh::NODE& node = gmsh.Node(i);
+		const GLMesh::NODE& node = gmsh.Node(i);
 		AddVertex(node.r);
 	}
 	EndMesh();

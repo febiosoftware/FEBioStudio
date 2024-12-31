@@ -461,7 +461,7 @@ void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 // in FSMesh.cpp
 double gain(double g, double x);
 
-void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GMesh& mesh)
+void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)
 {
 	// count the faces
 	int totalFaces = 0;

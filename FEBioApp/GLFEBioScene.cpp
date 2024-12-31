@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLFEBioScene.h"
 #include <QMutexLocker>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <FECore/FEMesh.h>
 #include <FECore/FESurface.h>
 #include <FEBioLib/FEBioModel.h>
@@ -73,7 +73,7 @@ bool GLSceneObject::LoadFromFile(const std::string& fileName)
 	STLimport stl(tmp);
 	if (stl.Load(fileName.c_str()) == false) return false;
 	GObject* po = tmp.GetFSModel().GetModel().Object(0);
-	GMesh* m = po->GetRenderMesh();
+	GLMesh* m = po->GetRenderMesh();
 	if (m)
 	{
 		m_mesh = *m;
@@ -144,7 +144,7 @@ void GLFEBioScene::Clear()
 	for (int i = 0; i < m_renderMesh->Nodes(); ++i)
 	{
 		FENode& feNode = m_febSurface->Node(i);
-		GMesh::NODE& gnode = m_renderMesh->Node(i);
+		GLMesh::NODE& gnode = m_renderMesh->Node(i);
 		gnode.r = to_vec3f(feNode.m_r0);
 	}
 	m_renderMesh->UpdateNormals();
@@ -165,7 +165,7 @@ void GLFEBioScene::Update(double time)
 	for (int i = 0; i < m_renderMesh->Nodes(); ++i)
 	{
 		FENode& feNode = m_febSurface->Node(i);
-		GMesh::NODE& gnode = m_renderMesh->Node(i);
+		GLMesh::NODE& gnode = m_renderMesh->Node(i);
 		gnode.r = to_vec3f(feNode.m_rt);
 
 		if (ndof >= 0) val[i] = feNode.get(ndof);
@@ -192,13 +192,13 @@ void GLFEBioScene::Update(double time)
 
 	for (int i = 0; i < m_renderMesh->Faces(); ++i)
 	{
-		GMesh::FACE& f = m_renderMesh->Face(i);
+		GLMesh::FACE& f = m_renderMesh->Face(i);
 		for (int j = 0; j < 3; ++j)
 		{
-			GMesh::NODE& node = m_renderMesh->Node(f.n[j]);
+			GLMesh::NODE& node = m_renderMesh->Node(f.n[j]);
 			double t = (val[f.n[j]] - vmin) / (vmax - vmin);
 			if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-			f.t[j] = t;
+			f.t[j].x = t;
 		}
 	}
 
@@ -256,12 +256,12 @@ void GLFEBioScene::BuildRenderMesh()
 		if (el.Nodes() == 4) NF += 2;
 	}
 
-	GMesh* mesh = new GMesh;
+	GLMesh* mesh = new GLMesh;
 	mesh->Create(NN, NF);
 
 	for (int i = 0; i < NN; ++i)
 	{
-		GMesh::NODE& gnode = mesh->Node(i);
+		GLMesh::NODE& gnode = mesh->Node(i);
 		FENode& fenode = surf->Node(i);
 		gnode.r = to_vec3f(fenode.m_r0);
 	}
@@ -279,7 +279,7 @@ void GLFEBioScene::BuildRenderMesh()
 		if (mid < 0) mid = 0;
 		GLColor col = pal.Color(mid % pal.Colors());
 
-		GMesh::FACE& f1 = mesh->Face(NF++);
+		GLMesh::FACE& f1 = mesh->Face(NF++);
 		f1.n[0] = el.m_lnode[0];
 		f1.n[1] = el.m_lnode[1];
 		f1.n[2] = el.m_lnode[2];
@@ -288,7 +288,7 @@ void GLFEBioScene::BuildRenderMesh()
 
 		if (el.Nodes() == 4)
 		{
-			GMesh::FACE& f2 = mesh->Face(NF++);
+			GLMesh::FACE& f2 = mesh->Face(NF++);
 			f2.n[0] = el.m_lnode[2];
 			f2.n[1] = el.m_lnode[3];
 			f2.n[2] = el.m_lnode[0];

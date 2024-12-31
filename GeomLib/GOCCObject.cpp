@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GOCCObject.h"
 #include <MeshTools/NetGenOCCMesher.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshLib/FEMesh.h>
 
 #ifdef HAS_OCC
@@ -191,8 +191,8 @@ void GOCCObject::BuildGMesh()
 		}
 	}
 
-	// create a new GMesh object
-	GMesh* gmesh = new GMesh;
+	// create a new GLMesh object
+	GLMesh* gmesh = new GLMesh;
 	gmesh->Create(aNbNodes, aNbTriangles, aNbEdges);
 
 	Standard_Integer aNodeOffset = 0;
@@ -210,7 +210,7 @@ void GOCCObject::BuildGMesh()
 		gp_Trsf aTrsf = aLoc.Transformation();
 		for (Standard_Integer aNodeIter = 1; aNodeIter <= aTriangulation->NbNodes(); ++aNodeIter)
 		{
-			GMesh::NODE& node = gmesh->Node(aNodeIter + aNodeOffset - 1);
+			GLMesh::NODE& node = gmesh->Node(aNodeIter + aNodeOffset - 1);
 			gp_Pnt aPnt = aTriangulation->Node(aNodeIter);
 			aPnt.Transform(aTrsf);
 			node.r = vec3f(aPnt.X(), aPnt.Y(), aPnt.Z());
@@ -232,7 +232,7 @@ void GOCCObject::BuildGMesh()
 				anId[2] = aTmpIdx;
 			}
 
-			GMesh::FACE& face = gmesh->Face(aTriIter + aTriangleOffet - 1);
+			GLMesh::FACE& face = gmesh->Face(aTriIter + aTriangleOffet - 1);
 			face.n[0] = anId[0] + aNodeOffset-1;
 			face.n[1] = anId[1] + aNodeOffset-1;
 			face.n[2] = anId[2] + aNodeOffset-1;
@@ -258,7 +258,7 @@ void GOCCObject::BuildGMesh()
 					int inode0 = nodeList.Value(j);
 					int inode1 = nodeList.Value(j + 1);
 
-					GMesh::EDGE& edge = gmesh->Edge(edges);
+					GLMesh::EDGE& edge = gmesh->Edge(edges);
 					edge.n[0] = inode0 - 1 + aNodeOffset;
 					edge.n[1] = inode1 - 1 + aNodeOffset;
 					edge.pid = edgeID++;
@@ -270,7 +270,7 @@ void GOCCObject::BuildGMesh()
 		aTriangleOffet += aTriangulation->NbTriangles();
 	}
 
-	// update the GMesh
+	// update the GLMesh
 	gmesh->Update();
 	SetRenderMesh(gmesh);
 

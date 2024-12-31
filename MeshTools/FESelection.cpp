@@ -31,12 +31,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESelection.h"
 #include <GeomLib/GGroup.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
-#include <MeshLib/GMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection
@@ -332,11 +331,11 @@ void GPartSelection::UpdateBoundingBox()
 	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
-		GMesh* pm = po->GetRenderMesh();
+		GLMesh* pm = po->GetRenderMesh();
 		int NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			GMesh::FACE& f = pm->Face(i);
+			GLMesh::FACE& f = pm->Face(i);
 			GFace* pf = po->Face(f.pid); assert(pf);
 			GPart* pg = (pf ? po->Part(pf->m_nPID[0]) : nullptr);
 			assert(pg);
@@ -472,11 +471,11 @@ void GFaceSelection::UpdateBoundingBox()
 		GObject* po = dynamic_cast<GObject*>(pf->Object());
 		if (po)
 		{
-			GMesh* pm = po->GetRenderMesh();
+			GLMesh* pm = po->GetRenderMesh();
 			int NF = pm->Faces();
 			for (int i = 0; i < NF; ++i)
 			{
-				GMesh::FACE& f = pm->Face(i);
+				GLMesh::FACE& f = pm->Face(i);
 				if (f.pid == pf->GetLocalID())
 				{
 					for (int j = 0; j < 3; ++j)
@@ -583,12 +582,12 @@ void GEdgeSelection::UpdateBoundingBox()
 	for (int k = 0; k < model.Objects(); ++k)
 	{
 		GObject* po = model.Object(k);
-		GMesh* pm = po->GetRenderMesh();
+		GLMesh* pm = po->GetRenderMesh();
 
 		int NE = pm->Edges();
 		for (int i = 0; i < NE; ++i)
 		{
-			GMesh::EDGE& e = pm->Edge(i);
+			GLMesh::EDGE& e = pm->Edge(i);
 			GEdge* pe = po->Edge(e.pid);
 			assert(pe);
 			if (pe && pe->IsSelected())

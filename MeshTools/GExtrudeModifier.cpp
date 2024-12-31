@@ -239,7 +239,7 @@ void GExtrudeModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GExtrudeModifier::BuildGMesh(GObject* po)
+GLMesh* GExtrudeModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
 	return 0;

@@ -41,7 +41,7 @@ public:
 	void finish() override;
 
 public:
-	void deleteCachedMesh(GMesh* gm) override;
+	void deleteCachedMesh(GLMesh* gm) override;
 
 public:
 	void pushTransform() override;
@@ -78,15 +78,15 @@ public:
 	void texCoord1d(double t) override;
 
 public:
-	void renderGMesh(const GMesh& mesh, bool cacheMesh = true) override;
-	void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh) override;
+	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh) override;
 
-	void renderGMeshNodes(const GMesh& mesh, bool cacheMesh = true) override;
+	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
 
-	void renderGMeshEdges(const GMesh& mesh, bool cacheMesh) override;
-	void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh) override;
+	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh) override;
+	void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh) override;
 
-	void renderGMeshOutline(GLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) override;
+	void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T, int surfID) override;
 
 public:
 	unsigned int LoadEnvironmentMap(const std::string& fileName) override;

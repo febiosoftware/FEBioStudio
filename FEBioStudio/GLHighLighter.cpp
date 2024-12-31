@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include "GLView.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshLib/FEMesh.h>
 
 GLHighlighter GLHighlighter::This;
@@ -151,12 +151,12 @@ BOX GLHighlighter::GetBoundingBox()
 		if (face)
 		{
 			GObject* po = dynamic_cast<GObject*>(face->Object());
-			GMesh* m = po->GetRenderMesh();
+			GLMesh* m = po->GetRenderMesh();
 			if (m)
 			{
 				for (int i=0; i<m->Faces(); ++i)
 				{ 
-					GMesh::FACE& f = m->Face(i);
+					GLMesh::FACE& f = m->Face(i);
 					if (f.pid == face->GetLocalID())
 					{
 						vec3d r0 = to_vec3d(m->Node(f.n[0]).r); box += po->GetTransform().LocalToGlobal(r0);
@@ -171,13 +171,13 @@ BOX GLHighlighter::GetBoundingBox()
 		if (part)
 		{
 			GObject* po = dynamic_cast<GObject*>(part->Object());
-			GMesh* m = po->GetRenderMesh();
+			GLMesh* m = po->GetRenderMesh();
 			if (m)
 			{
 				int pid = part->GetLocalID();
 				for (int i = 0; i < m->Faces(); ++i)
 				{
-					GMesh::FACE& f = m->Face(i);
+					GLMesh::FACE& f = m->Face(i);
 					GFace* face = po->Face(f.pid);
 					if ((face->m_nPID[0] == pid) || 
 						(face->m_nPID[1] == pid) ||

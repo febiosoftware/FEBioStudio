@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include "ImageAnalysis.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <FECore/vec3d.h>
 #include <GLWLib/GLWidget.h>
 #include <GLWLib/GLLegendBar.h>
@@ -46,8 +46,8 @@ public:
 	std::vector<double> m_odf;
 	std::vector<double> m_sphHarmonics;
 	vec3d m_position;
-	GMesh m_mesh;
-	GMesh m_remesh;
+	GLMesh m_mesh;
+	GLMesh m_remesh;
 	double m_radius;
     double m_meanIntensity;
 

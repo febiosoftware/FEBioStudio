@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include "ColorTexture.h"
 namespace Post {
 
@@ -102,6 +102,6 @@ private:
 
 	LineDataModel* m_lineData;
 
-	GMesh	m_mesh;
+	GLMesh	m_mesh;
 };
 }

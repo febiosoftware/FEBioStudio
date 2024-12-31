@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSModel.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
@@ -85,8 +85,8 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	int edge[15][2], edgeNode[15][2], etag[15];
 
 	if (m_planeCut) delete m_planeCut;
-	m_planeCut = new GMesh;
-	GMesh* planeCut = m_planeCut;
+	m_planeCut = new GLMesh;
+	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
 	Post::CColorMap colormap;
@@ -224,7 +224,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 
 						int nf = planeCut->Faces();
 						planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
-						GMesh::FACE& face = planeCut->Face(nf);
+						GLMesh::FACE& face = planeCut->Face(nf);
 						if (po == poa)
 						{
 							face.eid = i;
@@ -284,7 +284,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 								edge[ne][1] = n2;
 								etag[ne] = 0;
 
-								GMesh::FACE& face = planeCut->Face(planeCut->Faces() - 1);
+								GLMesh::FACE& face = planeCut->Face(planeCut->Faces() - 1);
 								edgeNode[ne][0] = face.n[k];
 								edgeNode[ne][1] = face.n[(k + 1) % 3];
 								++ne;
@@ -317,8 +317,8 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	if (mdl.Objects() == 0) return;
 
 	if (m_planeCut) delete m_planeCut;
-	m_planeCut = new GMesh;
-	GMesh* planeCut = m_planeCut;
+	m_planeCut = new GLMesh;
+	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
 	Post::CColorMap colormap;
@@ -501,7 +501,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 
 								int nf = planeCut->Faces();
 								planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
-								GMesh::FACE& face = planeCut->Face(nf);
+								GLMesh::FACE& face = planeCut->Face(nf);
 								if (po == poa)
 								{
 									face.eid = i;
@@ -584,7 +584,7 @@ bool GLPlaneCut::Intersect(const vec3d& p, const Ray& ray, Intersection& q)
 			int nface = q.m_index;
 			if ((nface >= 0) && (nface < m_planeCut->Faces()))
 			{
-				GMesh::FACE& face = m_planeCut->Face(nface);
+				GLMesh::FACE& face = m_planeCut->Face(nface);
 				q.m_index = face.eid;
 				if (q.m_index < 0) bfound = false;
 			}

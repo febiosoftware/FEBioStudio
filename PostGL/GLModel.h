@@ -309,7 +309,7 @@ public:
 
 	// selected items
 	FESelection* m_selection;
-	GMesh m_selectionMesh;
+	GLMesh m_selectionMesh;
 
 	GPlotList			m_pPlot;	// list of plots
 

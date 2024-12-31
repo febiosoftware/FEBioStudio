@@ -495,7 +495,7 @@ void CMarchingCubes::CreateSurface()
 	// create vertex arrays from mesh
 	int faces = mesh.Faces();
 	delete m_mesh;
-	m_mesh = new GMesh;
+	m_mesh = new GLMesh;
 	for (int i = 0; i < faces; ++i)
 	{
 		Post::TriMesh::TRI& face = mesh.Face(i);
@@ -579,7 +579,7 @@ bool CMarchingCubes::GetMesh(FSMesh& mesh)
 	mesh.Create(nodes, 0, faces);
 	for (int i = 0; i < nodes; ++i)
 	{
-		GMesh::NODE& v = m_mesh->Node(i);
+		GLMesh::NODE& v = m_mesh->Node(i);
 		mesh.Node(i).r = to_vec3d(v.r);
 	}
 

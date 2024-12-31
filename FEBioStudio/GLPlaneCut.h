@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 
 class FSModel;
-class GMesh;
+class GLMesh;
 class GLContext;
 class GLRenderEngine;
 
@@ -64,6 +64,6 @@ private:
 	void CreateHideElements(FSModel& fem, bool showMeshData);
 
 private:
-	GMesh* m_planeCut = nullptr;
+	GLMesh* m_planeCut = nullptr;
 	double	m_plane[4] = { 1.0, 0.0, 0.0, 0.0 };
 };

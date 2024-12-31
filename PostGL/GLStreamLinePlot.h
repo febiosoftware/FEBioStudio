@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GLWLib/GLLegendBar.h"
 #include <PostLib/FEPostMesh.h>
 #include <MeshLib/FEFindElement.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
@@ -144,6 +144,6 @@ private:
 	double	m_userMin, m_userMax;		//!< range for user-defined range
 	double	m_rngMin, m_rngMax;
 
-	GMesh	m_mesh;
+	GLMesh	m_mesh;
 };
 }

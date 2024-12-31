@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLParticleFlowPlot.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
@@ -161,7 +161,7 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	glDisable(GL_TEXTURE_1D);
 
 	// build a point mesh
-	GMesh mesh;
+	GLMesh mesh;
 	for (int i=0; i<NP; ++i)
 	{
 		FlowParticle& p = m_particles[i];
@@ -198,7 +198,7 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 			}
 
 			// allocate line mesh
-			GMesh lineMesh;
+			GLMesh lineMesh;
 
 			glColor3ub(0,0,255);
 			for (int i = 0; i<NP; ++i)

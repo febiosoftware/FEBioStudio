@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "OpenGLRenderer.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GL/glew.h>
 #include <qopengl.h>
 #include <QImage>
@@ -149,8 +149,8 @@ public:
 
 	OGLProgram* activeProgram = nullptr;
 
-	std::map<const GMesh*, OGLTriMesh*> triMesh;
-	std::map<const GMesh*, OGLLineMesh*> lineMesh;
+	std::map<const GLMesh*, OGLTriMesh*> triMesh;
+	std::map<const GLMesh*, OGLLineMesh*> lineMesh;
 
 	size_t cachedObjects() { return triMesh.size() + lineMesh.size(); }
 
@@ -216,7 +216,7 @@ void OpenGLRenderer::finish()
 	m_stats.cachedObjects = m.cachedObjects();
 }
 
-void OpenGLRenderer::deleteCachedMesh(GMesh* gm)
+void OpenGLRenderer::deleteCachedMesh(GLMesh* gm)
 {
 	auto it1 = m.triMesh.find(gm);
 	if (it1 != m.triMesh.end())
@@ -487,7 +487,7 @@ void OpenGLRenderer::texCoord1d(double t)
 	glTexCoord1d(t);
 }
 
-void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
+void OpenGLRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
 	OGLTriMesh* glm = nullptr;
 	if (cacheMesh)
@@ -525,7 +525,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, bool cacheMesh)
 	}
 }
 
-void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
+void OpenGLRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 {
 	if ((surfId < 0) || (surfId >= mesh.Partitions())) return;
 
@@ -558,7 +558,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 		if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
 		if (m.useTexture1D) flags |= OGLMesh::FLAG_TEXTURE;
 
-		const GMesh::PARTITION& p = mesh.Partition(surfId);
+		const GLMesh::PARTITION& p = mesh.Partition(surfId);
 		glm->Render(3*p.n0, 3*p.nf, flags);
 		m_stats.triangles += p.nf;
 
@@ -567,7 +567,7 @@ void OpenGLRenderer::renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh)
 	}
 }
 
-void OpenGLRenderer::renderGMeshNodes(const GMesh& mesh, bool cacheMesh)
+void OpenGLRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
 	// TODO: implement mesh caching for point meshes
 	OGLPointMesh points;
@@ -578,7 +578,7 @@ void OpenGLRenderer::renderGMeshNodes(const GMesh& mesh, bool cacheMesh)
 	m_stats.points += points.Vertices();
 }
 
-void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
+void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	OGLLineMesh* glm = nullptr;
 	if (cacheMesh)
@@ -616,7 +616,7 @@ void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, bool cacheMesh)
 	}
 }
 
-void OpenGLRenderer::renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh)
+void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh)
 {
 	if ((edgeId < 0) || (edgeId >= mesh.EILs())) return;
 
@@ -722,7 +722,7 @@ void OpenGLRenderer::setClipPlane(unsigned int n, const double* v)
 	glClipPlane(GL_CLIP_PLANE0 + n, v);
 }
 
-void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GMesh& gmsh, const Transform& T, int surfID)
+void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
 {
 	// get some settings
 	quatd q = cam.GetOrientation();
@@ -731,14 +731,14 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GMesh& gmsh, const 
 	// this array will collect all points to render
 	vector<vec3f> points; points.reserve(1024);
 
-	const GMesh::PARTITION& part = gmsh.Partition(surfID);
+	const GLMesh::PARTITION& part = gmsh.Partition(surfID);
 	int NF = part.nf;
 	if (NF > 0)
 	{
 		// loop over all faces
 		for (int i = 0; i < NF; ++i)
 		{
-			const GMesh::FACE& f = gmsh.Face(i + part.n0);
+			const GLMesh::FACE& f = gmsh.Face(i + part.n0);
 			for (int j = 0; j < 3; ++j)
 			{
 				bool bdraw = false;
@@ -749,7 +749,7 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GMesh& gmsh, const 
 				}
 				else
 				{
-					const GMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
+					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 
 					if (f.pid != f2.pid)
 					{
@@ -796,7 +796,7 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GMesh& gmsh, const 
 	if (points.empty()) return;
 
 	// build the line mesh
-	GMesh lineMesh;
+	GLMesh lineMesh;
 	int NN = (int)points.size();
 	int NE = (int)points.size() / 2;
 	lineMesh.Create(NN, 0, NE);

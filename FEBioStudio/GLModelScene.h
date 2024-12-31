@@ -89,7 +89,7 @@ private:
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
 	void RenderMeshByDefault(GLRenderEngine& re, GLContext& rc);
 	void RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
-	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GMesh& mesh);
+	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
 
 	void RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& rc);
 	void RenderSelectedFEElements(GLRenderEngine& re, GLContext& rc);
@@ -103,13 +103,13 @@ private:
 	void RenderSelection(GLRenderEngine& re, GLContext& rc);
 
 private:
-	void UpdateGMeshColor(GMesh& msh);
+	void UpdateGMeshColor(GLMesh& msh);
 
-	void ColorByDefault     (GMesh& msh);
-	void ColorByObject      (GMesh& msh);
-	void ColorByMaterialType(GMesh& msh);
-	void ColorByElementType (GMesh& msh);
-	void ColorByPhysics     (GMesh& msh);
+	void ColorByDefault     (GLMesh& msh);
+	void ColorByObject      (GLMesh& msh);
+	void ColorByMaterialType(GLMesh& msh);
+	void ColorByElementType (GLMesh& msh);
+	void ColorByPhysics     (GLMesh& msh);
 
 private:
 	GObject* m_po;
@@ -236,7 +236,7 @@ public:
 
 	void UpdateFiberViz();
 
-	GMesh& GetSelectionMesh() { return m_selectionMesh; }
+	GLMesh& GetSelectionMesh() { return m_selectionMesh; }
 
 	void UpdateSelectionMesh(FESelection* sel);
 
@@ -276,7 +276,7 @@ public:
 
 private:
 	CModelDocument* m_doc;
-	GMesh			m_selectionMesh;
+	GLMesh			m_selectionMesh;
 	
 	OBJECT_COLOR_MODE	m_objectColor;
 

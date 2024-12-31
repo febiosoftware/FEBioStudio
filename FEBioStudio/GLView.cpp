@@ -1219,9 +1219,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				pdoc->Update();
 			}
 
-			// TODO: Find a better way to update the GMesh when necessary. 
-			//       When I move FE nodes, I need to rebuild the GMesh. 
-			//       This still causes a delay between the GMesh update since we do this
+			// TODO: Find a better way to update the GLMesh when necessary. 
+			//       When I move FE nodes, I need to rebuild the GLMesh. 
+			//       This still causes a delay between the GLMesh update since we do this
 			//       when the mouse is released, but I'm not sure how to do this better.
 	//		if (pdoc->GetActiveObject()) pdoc->GetActiveObject()->BuildGMesh();
 		}
@@ -2226,13 +2226,13 @@ void CGLView::HighlightEdge(int x, int y)
 		if (po->IsVisible())
 		{
 			Transform& T = po->GetRenderTransform();
-			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int edges = mesh->Edges();
 				for (int j = 0; j<edges; ++j)
 				{
-					GMesh::EDGE& edge = mesh->Edge(j);
+					GLMesh::EDGE& edge = mesh->Edge(j);
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
@@ -2356,7 +2356,7 @@ void CGLView::HighlightSurface(int x, int y)
 			Transform& T = po->GetRenderTransform();
 			localRay.origin = T.GlobalToLocal(ray.origin);
 			localRay.direction = T.GlobalToLocalNormal(ray.direction);
-			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int surfs = po->Faces();
@@ -2365,12 +2365,12 @@ void CGLView::HighlightSurface(int x, int y)
 					GFace* gface = po->Face(k);
 					if (gface->IsVisible() && !gface->IsSelected())
 					{
-						const GMesh::PARTITION& pk = mesh->Partition(k);
+						const GLMesh::PARTITION& pk = mesh->Partition(k);
 						int NF = pk.nf;
 						int N0 = pk.n0;
 						for (int j = 0; j < NF; ++j)
 						{
-							GMesh::FACE& face = mesh->Face(j + N0);
+							GLMesh::FACE& face = mesh->Face(j + N0);
 
 							vec3d r0 = to_vec3d(face.vr[0]);
 							vec3d r1 = to_vec3d(face.vr[1]);
@@ -2429,13 +2429,13 @@ GPart* CGLView::PickPart(int x, int y)
 		if (po->IsVisible())
 		{
 			Transform& T = po->GetRenderTransform();
-			GMesh* mesh = po->GetRenderMesh();
+			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
 				for (int j = 0; j < NF; ++j)
 				{
-					GMesh::FACE& face = mesh->Face(j);
+					GLMesh::FACE& face = mesh->Face(j);
 
 					vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
 					vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));

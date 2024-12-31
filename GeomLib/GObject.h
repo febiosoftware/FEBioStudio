@@ -43,7 +43,7 @@ class FSMeshBase;
 class FSLineMesh;
 class FSNode;
 class FSGroup;
-class GMesh;
+class GLMesh;
 class GObject;
 class GObjectManipulator;
 
@@ -178,10 +178,10 @@ public:
 	virtual void BuildGMesh();
 
 	// get the render mesh
-	GMesh*	GetRenderMesh();
+	GLMesh*	GetRenderMesh();
 
 	// get the mesh for rendering the FE mesh
-	GMesh* GetFERenderMesh();
+	GLMesh* GetFERenderMesh();
 
 	// get the local bounding box 
 	BOX GetLocalBox() const;
@@ -229,8 +229,8 @@ public:
 
 protected:
 	// set the render mesh
-	void SetRenderMesh(GMesh* mesh);
-	void SetFERenderMesh(GMesh* mesh);
+	void SetRenderMesh(GLMesh* mesh);
+	void SetFERenderMesh(GLMesh* mesh);
 
 	void SetValidFlag(bool b);
 

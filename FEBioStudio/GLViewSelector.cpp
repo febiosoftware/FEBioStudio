@@ -1326,7 +1326,7 @@ void GLViewSelector::SelectPostObject(int x, int y)
 //-----------------------------------------------------------------------------
 bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 {
-	GMesh* mesh = po->GetRenderMesh();
+	GLMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return false;
 
 	Transform& T = po->GetRenderTransform();
@@ -1337,7 +1337,7 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 	bool intersect = false;
 	for (int j = 0; j < NF; ++j)
 	{
-		GMesh::FACE& face = mesh->Face(j);
+		GLMesh::FACE& face = mesh->Face(j);
 
 		if (po->Face(face.pid)->IsVisible())
 		{
@@ -1483,13 +1483,13 @@ void GLViewSelector::SelectParts(int x, int y)
 		{
 			Transform& T = po->GetRenderTransform();
 
-			GMesh* mesh = po->GetRenderMesh();
+			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
 				for (int j = 0; j < NF; ++j)
 				{
-					GMesh::FACE& face = mesh->Face(j);
+					GLMesh::FACE& face = mesh->Face(j);
 
 					vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
 					vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
@@ -1597,13 +1597,13 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 		{
 			Transform& T = po->GetRenderTransform();
 
-			GMesh* mesh = po->GetRenderMesh();
+			GLMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
 				for (int j = 0; j < NF; ++j)
 				{
-					GMesh::FACE& face = mesh->Face(j);
+					GLMesh::FACE& face = mesh->Face(j);
 					GFace* gface = po->Face(face.pid);
 					if (po->IsFaceVisible(gface))
 					{
@@ -1653,7 +1653,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 
 GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin)
 {
-	GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+	GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
 	if (mesh == nullptr) return nullptr;
 
 	Transform& T = po->GetRenderTransform();
@@ -1666,7 +1666,7 @@ GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform
 	int edges = mesh->Edges();
 	for (int j = 0; j < edges; ++j)
 	{
-		GMesh::EDGE& edge = mesh->Edge(j);
+		GLMesh::EDGE& edge = mesh->Edge(j);
 
 		vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[0]).r));
 		vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(edge.n[1]).r));
@@ -2247,14 +2247,14 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GMesh* mesh = po->GetRenderMesh();
+		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			Transform& T = po->GetRenderTransform();
 			bool intersect = false;
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
-				GMesh::FACE& face = mesh->Face(j);
+				GLMesh::FACE& face = mesh->Face(j);
 
 				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
 				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
@@ -2277,7 +2277,7 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 			{
 				for (int j = 0; j < mesh->Nodes(); ++j)
 				{
-					GMesh::NODE& node = mesh->Node(j);
+					GLMesh::NODE& node = mesh->Node(j);
 
 					vec3d r = T.LocalToGlobal(to_vec3d(node.r));
 					vec3d p = transform.WorldToScreen(r);
@@ -2322,14 +2322,14 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GMesh* mesh = po->GetRenderMesh();
+		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			Transform& T = po->GetRenderTransform();
 
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
-				GMesh::FACE& face = mesh->Face(j);
+				GLMesh::FACE& face = mesh->Face(j);
 
 				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
 				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));
@@ -2409,14 +2409,14 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GMesh* mesh = po->GetRenderMesh();
+		GLMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			Transform& T = po->GetRenderTransform();
 
 			for (int j = 0; j < mesh->Faces(); ++j)
 			{
-				GMesh::FACE& face = mesh->Face(j);
+				GLMesh::FACE& face = mesh->Face(j);
 
 				vec3d r0 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[0]).r));
 				vec3d r1 = T.LocalToGlobal(to_vec3d(mesh->Node(face.n[1]).r));

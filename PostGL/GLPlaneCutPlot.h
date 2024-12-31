@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FECore/FETransform.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <vector>
 
 namespace Post {
@@ -162,10 +162,10 @@ protected:
 	static	std::vector<int>				m_clip;	// avaialabe clip planes
 	static	std::vector<CGLPlaneCutPlot*>	m_pcp;
 
-	GMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
-	GMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
-	GMesh	m_lineMesh;	// for rendering mesh lines
-	GMesh	m_outlineMesh;	// for rendering the outline
+	GLMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
+	GLMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
+	GLMesh	m_lineMesh;	// for rendering mesh lines
+	GLMesh	m_outlineMesh;	// for rendering the outline
 
 	bool	m_bupdateSlice; // update slice before rendering
 };

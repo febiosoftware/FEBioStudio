@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include "GLTexture3D.h"
 #include <FECore/FETransform.h>
 
-class GMesh;
+class GLMesh;
 class GLCamera;
 
 class GLRenderEngine
@@ -75,7 +75,7 @@ public:
 	virtual void finish() {}
 
 public:
-	virtual void deleteCachedMesh(GMesh* gm) {}
+	virtual void deleteCachedMesh(GLMesh* gm) {}
 	 
 public:
 	virtual void pushTransform() {}
@@ -122,15 +122,15 @@ public: // uses immediate mode
 	void renderRect(double x0, double y0, double x1, double y1);
 
 public:
-	virtual void renderGMesh(const GMesh& mesh, bool cacheMesh = true) {}
-	virtual void renderGMesh(const GMesh& mesh, int surfId, bool cacheMesh = true) {}
+	virtual void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) {}
+	virtual void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) {}
 
-	virtual void renderGMeshNodes(const GMesh& mesh, bool cacheMesh = true) {}
+	virtual void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) {}
 
-	virtual void renderGMeshEdges(const GMesh& mesh, bool cacheMesh = true) {}
-	virtual void renderGMeshEdges(const GMesh& mesh, int edgeId, bool cacheMesh = true) {}
+	virtual void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) {}
+	virtual void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh = true) {}
 
-	virtual void renderGMeshOutline(GLCamera& cam, const GMesh& mesh, const Transform& T, int surfID) {}
+	virtual void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T, int surfID) {}
 
 public:
 	virtual unsigned int LoadEnvironmentMap(const std::string& fileName) { return 0; }

@@ -73,7 +73,7 @@ GMultiPatch::GMultiPatch(GObject* po) : GObject(GMULTI_PATCH)
 	// build the object data from the multi-block
 	BuildObject(*mb);
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 }
 
@@ -348,7 +348,7 @@ bool GMultiPatch::DeletePart(GPart* pg)
 		else m_Node[i]->SetLocalID(n++);
 	}
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	return true;
@@ -571,7 +571,7 @@ bool GMultiPatch::Merge(GMultiPatch& mb)
 		for (int l = 0; l < 1; ++l) newPart.m_face[l] = mb.Face(bi.m_face[l])->m_ntag;
 	}
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	return true;

@@ -107,7 +107,7 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	// build the object data from the multi-block
 	BuildObject(*mb);
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	SetManipulator(new GMultiBoxManipulator(*this));
@@ -384,7 +384,7 @@ bool GMultiBox::DeletePart(GPart* pg)
 		else m_Node[i]->SetLocalID(n++);
 	}
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	return true;
@@ -616,7 +616,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		for (int l = 0; l < 12; ++l) newPart.m_edge[l] = mb.Edge(bi.m_edge[l])->m_ntag;
 	}
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	return true;

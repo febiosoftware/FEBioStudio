@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifiedObject.h"
 #include <FEMLib/FSModel.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifiedObject::GModifiedObject(GObject* po) : GObject(GMODIFIED_OBJECT)
@@ -153,8 +153,8 @@ void GModifiedObject::BuildGMesh()
 {
 	delete GetRenderMesh();
 	m_po->BuildGMesh();
-	GMesh* pm = m_po->GetRenderMesh();
-	GMesh* gmesh = new GMesh(*pm);
+	GLMesh* pm = m_po->GetRenderMesh();
+	GLMesh* gmesh = new GLMesh(*pm);
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{
@@ -176,7 +176,7 @@ bool GModifiedObject::Update(bool b)
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i) m_pStack->Modifier(i)->Apply(this);
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	// if we have an FE mesh, we should rebuild that one as well

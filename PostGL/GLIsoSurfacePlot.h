@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include "PostLib/DataMap.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
@@ -80,7 +80,7 @@ public:
 
 protected:
 	void UpdateMesh();
-	void UpdateSlice(GMesh& mesh, float ref, GLColor col);
+	void UpdateSlice(GLMesh& mesh, float ref, GLColor col);
 
 protected:
 	int		m_nslices;		// nr. of iso surface slices
@@ -104,7 +104,7 @@ protected:
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
 
-	GMesh	m_renderMesh; // the mesh to render
+	GLMesh	m_renderMesh; // the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;
