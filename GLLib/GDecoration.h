@@ -30,7 +30,8 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <vector>
 
-//-------------------------------------------------------------------
+class GLRenderEngine;
+
 // A GDecoration is something that will be drawn onto the Graphics View
 class GDecoration
 {
@@ -38,7 +39,7 @@ public:
 	GDecoration() { bvisible = true; m_col = GLColor(255, 255, 0); m_col2 = GLColor(0, 0, 0); }
 	virtual ~GDecoration(){}
 
-	virtual void render() = 0;
+	virtual void render(GLRenderEngine& re) = 0;
 
 	bool isVisible() const { return bvisible; }
 	void setVisible(bool b) { bvisible = b; }
@@ -58,7 +59,7 @@ public:
 	GPointDecoration() { m_renderAura = false; }
 	GPointDecoration(const vec3f& r) : m_pos(r) { m_renderAura = false; }
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 	void setPosition(const vec3f& r) { m_pos = r; }
 
@@ -80,7 +81,7 @@ public:
 	GLineDecoration(const vec3f& a, const vec3f& b);
 	~GLineDecoration();
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	bool	m_del;
@@ -112,7 +113,7 @@ public:
 		p3 = new GPointDecoration(c);
 	}
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	bool m_del;
@@ -128,7 +129,7 @@ class GArcDecoration : public GDecoration
 public:
 	GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs = 10, double scale = 0.25);
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	vec3f	m_c;
@@ -145,7 +146,7 @@ class GSphereDecoration : public GDecoration
 public:
 	GSphereDecoration(const vec3f& a, double R);
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	vec3d	m_c;
@@ -160,7 +161,7 @@ public:
 	~GCompositeDecoration();
 	void AddDecoration(GDecoration* deco);
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	std::vector<GDecoration*>	m_deco;
@@ -176,7 +177,7 @@ public:
 	void setBoundingBox(BOX box);
 	void setPlane(double n0, double n1, double n2, double d);
 
-	void render();
+	void render(GLRenderEngine& re) override;
 
 private:
 	BOX		m_box;

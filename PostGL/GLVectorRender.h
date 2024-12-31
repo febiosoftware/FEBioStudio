@@ -50,9 +50,6 @@ public:
 
 	void AddVector(const VECTOR& vector);
 
-	void Init();
-
-	void Finish();
 
 public:
 	void SetScaleFactor(double s);
@@ -62,6 +59,8 @@ public:
 
 private:
 	void RenderVector(GLRenderEngine& re, const VECTOR& fiber);
+	void Init(GLRenderEngine& re);
+	void Finish(GLRenderEngine& re);
 
 private:
 	Imp& m;

@@ -35,7 +35,6 @@ public:
 	double	lineWidth = 1.0;
 	double	scale = 1.0;
 	double	density = 1.0;
-	GLUquadricObj* glyph = nullptr;
 
 	std::vector<VECTOR>	vectors;
 };
@@ -56,25 +55,23 @@ void GLVectorRenderer::SetLineStyle(int n) { m.lineStyle = n; }
 void GLVectorRenderer::SetLineWidth(double l) { m.lineWidth = l; }
 void GLVectorRenderer::SetDensity(double d) { m.density = d; }
 
-void GLVectorRenderer::Init()
+void GLVectorRenderer::Init(GLRenderEngine& re)
 {
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
+	re.pushState();
 	if (m.lineStyle == 0)
 	{
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_LINES);
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
+		re.begin(GLRenderEngine::LINES);
 	}
 	else
 	{
-		m.glyph = gluNewQuadric();
-		gluQuadricNormals(m.glyph, GLU_SMOOTH);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
 	}
 }
 
 void GLVectorRenderer::RenderVectors(GLRenderEngine& re)
 {
+	Init(re);
 	srand(0);
 	for (auto& vector : m.vectors)
 	{
@@ -82,6 +79,7 @@ void GLVectorRenderer::RenderVectors(GLRenderEngine& re)
 		if (r < m.density)
 			RenderVector(re, vector);
 	}
+	Finish(re);
 }
 
 void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::VECTOR& vector)
@@ -89,32 +87,27 @@ void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::
 	vec3d p0 = vector.r - vector.n * (m.scale * 0.5);
 	vec3d p1 = vector.r + vector.n * (m.scale * 0.5);
 
-	glColor3ub(vector.c.r, vector.c.g, vector.c.b);
+	re.setColor(vector.c);
 	if (m.lineStyle == 0)
 	{
-		glVertex3d(p0.x, p0.y, p0.z);
-		glVertex3d(p1.x, p1.y, p1.z);
+		re.vertex(p0);
+		re.vertex(p1);
 	}
 	else
 	{
 		re.pushTransform();
 
 		re.transform(p0, quatd(vec3d(0, 0, 1), vector.n));
-		gluCylinder(m.glyph, m.lineWidth, m.lineWidth, m.scale, 10, 1);
-
+		glx::drawCylinder(re, m.lineWidth, m.scale, 10);
 		re.popTransform();
 	}
 }
 
-void GLVectorRenderer::Finish()
+void GLVectorRenderer::Finish(GLRenderEngine& re)
 {
 	if (m.lineStyle == 0)
 	{
-		glEnd(); // GL_LINES
+		re.end(); // LINES
 	}
-	else
-	{
-		gluDeleteQuadric(m.glyph);
-	}
-	glPopAttrib();
+	re.popState();
 }

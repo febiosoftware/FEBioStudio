@@ -45,12 +45,7 @@ public:
 		LIGHTING = 1,
 		DEPTHTEST,
 		CULLFACE,
-		CLIPPLANE0,
-		CLIPPLANE1,
-		CLIPPLANE2,
-		CLIPPLANE3,
-		CLIPPLANE4,
-		CLIPPLANE5,
+		BLENDING
 	};
 
 	enum PrimitiveType {
@@ -62,6 +57,11 @@ public:
 		TRIANGLEFAN,
 		QUADS,
 		QUADSTRIP
+	};
+
+	enum FrontFace {
+		COUNTER_CLOCKWISE,
+		CLOCKWISE
 	};
 
 public:
@@ -105,6 +105,12 @@ public:
 	virtual void setPointSize(float f) {}
 	virtual void setLineWidth(float f) {}
 
+	virtual float pointSize() const { return 0.f; }
+	virtual float lineWidth() const { return 0.f; }
+
+	virtual FrontFace frontFace() const { return FrontFace::COUNTER_CLOCKWISE; }
+	virtual void setFrontFace(FrontFace f) {}
+
 	virtual void positionCamera(const GLCamera& cam) {}
 
 public: // immediate mode rendering
@@ -140,6 +146,8 @@ public:
 	virtual void DeactivateEnvironmentMap(unsigned int mapid) {}
 
 	virtual void setClipPlane(unsigned int n, const double* v) {}
+	virtual void enableClipPlane(unsigned int n) {}
+	virtual void disableClipPlane(unsigned int n) {}
 
 public:
 	virtual void setTexture(GLTexture1D& tex) {}

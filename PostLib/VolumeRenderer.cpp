@@ -180,9 +180,9 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	m_tex.Amin = (float) vs->GetFloatValue(CImageViewSettings::MIN_ALPHA);
 	m_tex.Amax = (float) vs->GetFloatValue(CImageViewSettings::MAX_ALPHA);
 	m_tex.gamma = (float) vs->GetFloatValue(CImageViewSettings::GAMMA);
-	m_tex.hue = vs->GetFloatValue(CImageViewSettings::HUE);
-	m_tex.sat = vs->GetFloatValue(CImageViewSettings::SAT);
-	m_tex.lum = vs->GetFloatValue(CImageViewSettings::LUM);
+	m_tex.hue = (float) vs->GetFloatValue(CImageViewSettings::HUE);
+	m_tex.sat = (float) vs->GetFloatValue(CImageViewSettings::SAT);
+	m_tex.lum = (float) vs->GetFloatValue(CImageViewSettings::LUM);
 	m_tex.cmap = (int) GetIntValue(COLOR_MAP);
 
 	GLColor col = HSV2RGB(360.0*m_tex.hue, m_tex.sat, m_tex.lum);
@@ -190,9 +190,9 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	if ((im3d.PixelType() == CImage::INT_RGB8) || (im3d.PixelType() == CImage::UINT_RGB8) 
         || (im3d.PixelType() == CImage::INT_RGB16) || (im3d.PixelType() == CImage::UINT_RGB16))
 	{
-		float hue1 = vs->GetFloatValue(CImageViewSettings::CHANNEL1_HUE);
-		float hue2 = vs->GetFloatValue(CImageViewSettings::CHANNEL2_HUE);
-		float hue3 = vs->GetFloatValue(CImageViewSettings::CHANNEL3_HUE);
+		float hue1 = (float)vs->GetFloatValue(CImageViewSettings::CHANNEL1_HUE);
+		float hue2 = (float)vs->GetFloatValue(CImageViewSettings::CHANNEL2_HUE);
+		float hue3 = (float)vs->GetFloatValue(CImageViewSettings::CHANNEL3_HUE);
 
 		m_tex.col1 = HSV2RGB(360.0 * hue1, 1.0, 1.0);
 		m_tex.col2 = HSV2RGB(360.0 * hue2, 1.0, 1.0);
@@ -225,12 +225,12 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 		{ 0, 0,-1,  (g[2][1]*(dr.z))},
 	};
 
-	re.setClipPlane(0, clip[0]); re.enable(GLRenderEngine::CLIPPLANE0);
-	re.setClipPlane(1, clip[1]); re.enable(GLRenderEngine::CLIPPLANE1);
-	re.setClipPlane(2, clip[2]); re.enable(GLRenderEngine::CLIPPLANE2);
-	re.setClipPlane(3, clip[3]); re.enable(GLRenderEngine::CLIPPLANE3);
-	re.setClipPlane(4, clip[4]); re.enable(GLRenderEngine::CLIPPLANE4);
-	re.setClipPlane(5, clip[5]); re.enable(GLRenderEngine::CLIPPLANE5);
+	re.setClipPlane(0, clip[0]); re.enableClipPlane(0);
+	re.setClipPlane(1, clip[1]); re.enableClipPlane(1);
+	re.setClipPlane(2, clip[2]); re.enableClipPlane(2);
+	re.setClipPlane(3, clip[3]); re.enableClipPlane(3);
+	re.setClipPlane(4, clip[4]); re.enableClipPlane(4);
+	re.setClipPlane(5, clip[5]); re.enableClipPlane(5);
 
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
@@ -254,12 +254,12 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	// clean up
 	re.setMaterial(GLMaterial::INVALID, GLColor::White());
 
-	re.disable(GLRenderEngine::CLIPPLANE0);
-	re.disable(GLRenderEngine::CLIPPLANE1);
-	re.disable(GLRenderEngine::CLIPPLANE2);
-	re.disable(GLRenderEngine::CLIPPLANE3);
-	re.disable(GLRenderEngine::CLIPPLANE4);
-	re.disable(GLRenderEngine::CLIPPLANE5);
+	re.disableClipPlane(0);
+	re.disableClipPlane(1);
+	re.disableClipPlane(2);
+	re.disableClipPlane(3);
+	re.disableClipPlane(4);
+	re.disableClipPlane(5);
 
 	re.popState();
 }
@@ -325,17 +325,17 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 				int n1 = ET_HEX[pf[k]][0];
 				int n2 = ET_HEX[pf[k]][1];
 
-				double w = (t - nv[n1]) / (nv[n2] - nv[n1]);
+				double w = (float)((t - nv[n1]) / (nv[n2] - nv[n1]));
 
 				// position coordinates
-				vr[k].x = c[n1].x * (1 - w) + c[n2].x * w;
-				vr[k].y = c[n1].y * (1 - w) + c[n2].y * w;
-				vr[k].z = c[n1].z * (1 - w) + c[n2].z * w;
+				vr[k].x = (float)(c[n1].x * (1 - w) + c[n2].x * w);
+				vr[k].y = (float)(c[n1].y * (1 - w) + c[n2].y * w);
+				vr[k].z = (float)(c[n1].z * (1 - w) + c[n2].z * w);
 
 				// texture coordinates
-				vt[0] = (vr[0]) / W;
-				vt[1] = (vr[1]) / H;
-				vt[2] = (vr[2]) / D;
+				vt[0] = (vr[0]) / (float)W;
+				vt[1] = (vr[1]) / (float)H;
+				vt[2] = (vr[2]) / (float)D;
 			}
 
 			mesh.AddFace(vr, vt);

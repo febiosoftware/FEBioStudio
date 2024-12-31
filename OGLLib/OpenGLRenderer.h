@@ -67,6 +67,12 @@ public:
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;
 
+	float pointSize() const override;
+	float lineWidth() const override;
+
+	FrontFace frontFace() const override;
+	void setFrontFace(FrontFace f) override;
+
 	void positionCamera(const GLCamera& cam) override;
 
 public:
@@ -95,6 +101,8 @@ public:
 	void DeactivateEnvironmentMap(unsigned int mapid) override;
 
 	void setClipPlane(unsigned int n, const double* v) override;
+	void enableClipPlane(unsigned int n) override;
+	void disableClipPlane(unsigned int n) override;
 
 public:
 	void setTexture(GLTexture1D& tex) override;

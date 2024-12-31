@@ -120,8 +120,6 @@ public:
 
 	bool HasDisplacementMap();
 
-	void SetMaterialParams(Material* pm);
-
 	//! set the smoothing angle
 	void SetSmoothingAngle(double w);
 

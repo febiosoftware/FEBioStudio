@@ -72,41 +72,28 @@ void CGLPlane::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glDisable(GL_TEXTURE_1D);
-	glDisable(GL_CULL_FACE);
-	GLfloat zero[4] = {0.f};
-	GLfloat one[4] = {1.f, 1.f, 1.f, 1.f};
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+	re.pushState();
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::NONE, false);
 
 	double R = m_pfem->GetBoundingBox().Radius();
 
 	re.pushTransform();
-	glTranslatef(m_rc.x, m_rc.y, m_rc.z);
-
+	re.translate(m_rc);
 	quatd q(vec3d(0,0,1), m_e[2]);
-	double w = q.GetAngle();
-	if (w != 0)
-	{
-		vec3d r = q.GetVector();
-		glRotated((w*RAD2DEG), r.x, r.y, r.z);
-	}
+	re.rotate(q);
 
-	glColor4ub(255, 0, 0, 128);
-	glNormal3d(0,0,1);
-	glBegin(GL_QUADS);
+	re.setColor(GLColor(255, 0, 0, 128));
+	re.normal(vec3d(0,0,1));
+	re.begin(GLRenderEngine::QUADS);
 	{
-		glVertex2d(-R, -R); 
-		glVertex2d( R, -R); 
-		glVertex2d( R,  R); 
-		glVertex2d(-R,  R); 
+		re.vertex(vec3d(-R, -R, 0)); 
+		re.vertex(vec3d( R, -R, 0)); 
+		re.vertex(vec3d( R,  R, 0)); 
+		re.vertex(vec3d(-R,  R, 0)); 
 	}
-	glEnd();
+	re.end();
 
 	re.popTransform();
 
-	glPopAttrib();
+	re.popState();
 }

@@ -1502,15 +1502,13 @@ void CGLView::RenderDecorations()
 {
 	if (m_deco.empty() == false)
 	{
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		glColor3ub(255, 255, 0);
+		m_ogl.pushState();
+		m_ogl.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
-			m_deco[i]->render();
+			m_deco[i]->render(m_ogl);
 		}
-		glPopAttrib();
+		m_ogl.popState();
 	}
 }
 

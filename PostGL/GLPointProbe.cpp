@@ -95,33 +95,28 @@ bool GLPointProbe::UpdateData(bool bsave)
 void GLPointProbe::Render(GLRenderEngine& re, GLContext& rc)
 {
 	double R = m_R * m_size;
-	GLUquadricObj* pobj = gluNewQuadric();
-	glColor3ub(m_col.r, m_col.g, m_col.b);
+	re.setColor(m_col);
 	re.pushTransform();
 	{
 		re.translate(m_pos);
-		gluSphere(pobj, R, 32, 32);
+		glx::drawSphere(re, R);
 	}
 	re.popTransform();
-
-	gluDeleteQuadric(pobj);
 
 	int ntime = GetModel()->CurrentTimeIndex();
 	if (m_bshowPath && (m_path.size() > ntime) && (ntime >= 1))
 	{
 		GLColor c = GetColorValue(PATH_COLOR);
-		glColor3ub(c.r, c.g, c.b);
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINE_STRIP);
+		re.pushState();
+		re.setMaterial(GLMaterial::OVERLAY, c);
+		re.begin(GLRenderEngine::LINESTRIP);
 		for (int i = 0; i <= ntime; ++i)
 		{
 			vec3d& r = m_path[i];
 			re.vertex(r);
 		}
-		glEnd();
-		glPopAttrib();
+		re.end();
+		re.popState();
 	}
 }
 

@@ -430,24 +430,8 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 	if (m_ntensor == 0) return;
 
-	GLfloat ambient[] = { 0.1f,0.1f,0.1f,1.f };
-	GLfloat specular[] = { 0.0f,0.0f,0.0f,1 };
-	GLfloat emission[] = { 0,0,0,1 };
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-	//	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
-
 	// store attributes
-	glPushAttrib(GL_LIGHTING_BIT);
-
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
+	re.pushState();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -459,19 +443,13 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 	float scale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
 
-	if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
+	if (m_nglyph == Glyph_Line)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, m_gcl);
+	}
 	else
 	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
-
-		GLfloat dif[] = { 1.f, 1.f, 1.f, 1.f };
-		GLfloat amb[] = { 0.1f, 0.1f, 0.1f, 1.f };
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
+		re.setMaterial(GLMaterial::PLASTIC, m_gcl);
 	}
 
 	if (IS_ELEM_FIELD(m_ntensor))
@@ -538,12 +516,12 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 				{
 					float w = (t.f - fmin) / (fmax - fmin);
 					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
+					re.setColor(c);
 				}
 
-				glTranslatef(r.x, r.y, r.z);
-				RenderGlyphs(re, t, scale*auto_scale, pglyph);
-				glTranslatef(-r.x, -r.y, -r.z);
+				re.translate(r);
+				RenderGlyphs(re, t, scale*auto_scale);
+				re.translate(-r);
 			}
 		}
 	}
@@ -598,8 +576,6 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 		if (fmax == fmin) fmax++;
 
-		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
-
 		re.setColor(m_gcl);
 
 		for (int i = 0; i < pm->Nodes(); ++i)
@@ -618,32 +594,28 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 				}
 
 				re.translate(r);
-				RenderGlyphs(re, t, scale*auto_scale, pglyph);
+				RenderGlyphs(re, t, scale*auto_scale);
 				re.translate(-r);
 			}
 		}
 	}
 
-	gluDeleteQuadric(pglyph);
-
 	// restore attributes
-	glPopAttrib();
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	re.popState();
 }
 
-void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	switch (m_nglyph)
 	{
-	case Glyph_Arrow : RenderArrows(re, t, scale, glyph); break;
-	case Glyph_Line  : RenderLines (re, t, scale, glyph); break;
-	case Glyph_Sphere: RenderSphere(re, t, scale, glyph); break;
-	case Glyph_Box   : RenderBox   (re, t, scale, glyph); break;
+	case Glyph_Arrow : RenderArrows(re, t, scale); break;
+	case Glyph_Line  : RenderLines (re, t, scale); break;
+	case Glyph_Sphere: RenderSphere(re, t, scale); break;
+	case Glyph_Box   : RenderBox   (re, t, scale); break;
 	}
 }
 
-void GLTensorPlot::RenderArrows(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderArrows(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -664,23 +636,18 @@ void GLTensorPlot::RenderArrows(GLRenderEngine& re, GLTensorPlot::TENSOR& t, flo
 		float r1 = L * 0.15;
 
 		quatd q = quatd(vec3d(0,0,1), to_vec3d(v));
-		float w = q.GetAngle();
-		if (fabs(w) > 1e-6)
-		{
-			vec3d p = q.GetVector();
-			if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-		}
+		re.rotate(q);
 
-		glColor3ub(c[i].r, c[i].g, c[i].b);
-		gluCylinder(pglyph, r0, r0, l0, 5, 1);
-		glTranslatef(0.f, 0.f, (float)l0*0.9f);
-		gluCylinder(pglyph, r1, 0, l1, 10, 1);
+		re.setColor(c[i]);
+		glx::drawCylinder(re, r0, l0, 5);
+		re.translate(vec3d(0, 0, l0*0.9));
+		glx::drawCone(re, r1, l1, 10);
 
 		re.popTransform();
 	}
 }
 
-void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -695,12 +662,7 @@ void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, floa
 
 		vec3f v = t.r[i];
 		quatd q = quatd(vec3d(0, 0, 1), to_vec3d(v));
-		float w = q.GetAngle();
-		if (fabs(w) > 1e-6)
-		{
-			vec3d p = q.GetVector();
-			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
-		}
+		re.rotate(q);
 
 		re.setColor(c[i]);
 		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, L));
@@ -709,7 +671,7 @@ void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, floa
 	}
 }
 
-void GLTensorPlot::RenderSphere(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderSphere(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	if (scale <= 0.f) return;
 
@@ -727,19 +689,19 @@ void GLTensorPlot::RenderSphere(GLRenderEngine& re, TENSOR& t, float scale, GLUq
 	vec3f* e = t.r;
 	vec3f n = e[0] ^ e[1];
 	if (n*e[2] < 0) e[2] = -e[2];
-	GLfloat m[4][4] = {0};
+	double m[4][4] = {0};
 	m[3][3] = 1.f;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(scale*sx, scale*sy, scale*sz);
-	gluSphere(glyph, 1.f, 16, 16);
+	re.scale(scale*sx, scale*sy, scale*sz);
+	glx::drawSphere(re, 1.f);
 	re.popTransform();
 }
 
-void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	if (scale <= 0.f) return;
 
@@ -755,14 +717,14 @@ void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale, GLUquad
 
 	re.pushTransform();
 	vec3f* e = t.r;
-	GLfloat m[4][4] = { 0 };
+	double m[4][4] = { 0 };
 	m[3][3] = 1.f;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(scale*sx, scale*sy, scale*sz);
+	re.scale(scale*sx, scale*sy, scale*sz);
 	glx::drawBox(re, 0.5, 0.5, 0.5);
 	re.popTransform();
 }

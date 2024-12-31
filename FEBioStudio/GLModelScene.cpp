@@ -1251,7 +1251,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 
 		// then turn on the clipping plane before rendering the other geometry
 		re.setClipPlane(0, rc.m_settings.m_planeCut);
-		re.enable(GLRenderEngine::CLIPPLANE0);
+		re.enableClipPlane(0);
 	}
 
 	// render the children
@@ -1260,7 +1260,7 @@ void GLPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 	if (rc.m_settings.m_showPlaneCut)
 	{
 		// turn off clipping plane
-		re.disable(GLRenderEngine::CLIPPLANE0);
+		re.disableClipPlane(0);
 	}
 }
 
@@ -2902,9 +2902,7 @@ void GLPhysicsItem::RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) cons
 	fiberRender->SetLineStyle(vs.m_fibLineStyle);
 	fiberRender->SetDensity(vs.m_fiber_density);
 
-	fiberRender->Init();
 	fiberRender->RenderVectors(re);
-	fiberRender->Finish();
 }
 
 void GLPhysicsItem::RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const
@@ -3405,7 +3403,7 @@ void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeS
 
 	std::vector<int> nodeList = nodeSet->CopyItems();
 	GLMesh pointMesh;
-	pointMesh.Create(nodeList.size(), 0, 0);
+	pointMesh.Create((int)nodeList.size(), 0, 0);
 	for (int i = 0; i<nodeList.size(); ++i)
 	{
 		pointMesh.Node(i).r = gm->Node(nodeList[i]).r;

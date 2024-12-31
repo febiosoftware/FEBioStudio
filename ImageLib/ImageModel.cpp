@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLRenderEngine.h>
-#include <qopengl.h>
 
 using namespace Post;
 
@@ -124,7 +123,7 @@ void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 		Q(0,2), Q(1,2), Q(2,2), 0.0,
 		0.0, 0.0, 0.0, 1.0
 	};
-	glMultMatrixd(q);
+	re.multTransform(q);
 
     for(int j = 0; j < ImageAnalyses(); j++)
     {
@@ -146,8 +145,6 @@ void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 		Post::CGLImageRenderer* pir = GetImageRenderer(j);
 		if (pir && pir->IsActive())
 		{
-//			if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
-//			else CGLPlaneCutPlot::DisableClipPlanes();
 			pir->Render(re, rc);
 		}
 	}

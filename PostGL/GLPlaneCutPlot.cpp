@@ -133,42 +133,42 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLPlaneCutPlot::DisableClipPlanes()
+void CGLPlaneCutPlot::DisableClipPlanes(GLRenderEngine& re)
 {
 	for (int i=0; i<(int) m_clip.size(); ++i)
 	{
-		if (m_clip[i] != 0) glDisable(GL_CLIP_PLANE0 + i);
+		if (m_clip[i] != 0) re.disableClipPlane(i);
 	}
 }
 
-void CGLPlaneCutPlot::ClearClipPlanes()
+void CGLPlaneCutPlot::ClearClipPlanes(GLRenderEngine& re)
 {
 	for (int i = 0; i<(int)m_clip.size(); ++i)
 	{
-		if (m_clip[i] != 0) glDisable(GL_CLIP_PLANE0 + i);
+		if (m_clip[i] != 0) re.disableClipPlane(i);
 		m_clip[i] = 0;
 		m_pcp[i] = nullptr;
 	}
 }
 
-void CGLPlaneCutPlot::EnableClipPlanes()
+void CGLPlaneCutPlot::EnableClipPlanes(GLRenderEngine& re)
 {
 	for (int i=0; i<(int) m_clip.size(); ++i)
 	{
 		if (m_clip[i] != 0)
 		{
-			glEnable(GL_CLIP_PLANE0 + i);
+			re.enableClipPlane(i);
 
 			CGLPlaneCutPlot* pc = m_pcp[i];
 
 			if (pc)
 			{
 				// get the plane equations
-				GLdouble a[4];
+				double a[4];
 				pc->GetNormalizedEquations(a);
 
 				// set the clip plane coefficients
-				glClipPlane(GL_CLIP_PLANE0 + i, a);
+				re.setClipPlane(i, a);
 			}
 		}
 	}
@@ -179,11 +179,9 @@ void CGLPlaneCutPlot::InitClipPlanes()
 	// allocate the clip array
 	if (m_clip.size() == 0)
 	{
-		int N = 0;
-		glGetIntegerv(GL_MAX_CLIP_PLANES, &N);
-		assert(N);
-		m_clip.assign(N, 0);
-		m_pcp.assign(N, 0);
+		const int MAX_CLIP_PLANES = 6;
+		m_clip.assign(MAX_CLIP_PLANES, 0);
+		m_pcp.assign(MAX_CLIP_PLANES, 0);
 	}
 }
 
@@ -253,7 +251,7 @@ vec3d CGLPlaneCutPlot::GetPlanePosition() const
 void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	// make sure we have a clip plane ID assigned
-	if (m_nclip == -1) return;
+	if ((m_nclip == -1) || !IsActive()) return;
 
 	vec3d r = m_T.GetPosition();
 	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
@@ -266,15 +264,8 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 		m_bupdateSlice = false;
 	}
 
-	// get the plane equations
-	GLdouble a[4];
-	GetNormalizedEquations(a);
-
-	// set the clip plane coefficients
-	glClipPlane(GL_CLIP_PLANE0 + m_nclip, a);
-
-	// make sure the current clip plane is not active
-	glDisable(GL_CLIP_PLANE0 + m_nclip);
+	// turn off the current planecut so we can render the slice
+	re.disableClipPlane(m_nclip);
 
 	// render the slice
 	if (rc.m_settings.m_nrender != RENDER_WIREFRAME)
@@ -297,18 +288,13 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	// render the plane
 	if (m_bshowplane)
 	{
-		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-		glDisable(GL_LIGHTING);
-		DisableClipPlanes();
-//		rc.m_cam->LineDrawMode(true);
+		DisableClipPlanes(re);
 		RenderPlane(re);
-//		rc.m_cam->LineDrawMode(false);
-		EnableClipPlanes();
-		glPopAttrib();
+		EnableClipPlanes(re);
 	}
 
-	// enable the clip plane
-	glEnable(GL_CLIP_PLANE0 + m_nclip);
+	// re-enable the clip plane
+	re.enableClipPlane(m_nclip);
 }
 
 //-----------------------------------------------------------------------------
@@ -571,7 +557,7 @@ void CGLPlaneCutPlot::RenderOutline(GLRenderEngine& re)
 	// because plots are drawn before the mesh
 	// we get visual artifacts from the background seeping through.
 	// therefor we turn blending of
-	glDisable(GL_BLEND);
+	re.disable(GLRenderEngine::BLENDING);
 
 	re.renderGMeshEdges(m_outlineMesh, false);
 
@@ -598,7 +584,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	m_scl = (R == 0.0 ? 1.0 : R);
 
 	// get the plane equations
-	GLdouble a[4];
+	double a[4];
 	GetNormalizedEquations(a);
 
 	// set the plane normal
@@ -643,7 +629,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	MeshDomain& dom = pm->Domain(n);
 
 	// get the plane equations
-	GLdouble a[4];
+	double a[4];
 	GetNormalizedEquations(a);
 
 	// set the plane normal
@@ -851,7 +837,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 	Post::FEState& state = *ps->CurrentState();
 
 	// get the plane equations
-	GLdouble a[4];
+	double a[4];
 	GetNormalizedEquations(a);
 
 	// set the plane normal
@@ -1054,7 +1040,7 @@ void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 	vec3d norm0 = m_normal;
 	norm0.Normalize();
 
-	GLdouble a[4];
+	double a[4];
 	GetNormalizedEquations(a);
 	vec3d norm(a[0], a[1], a[2]);
 
@@ -1063,61 +1049,48 @@ void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 
 	re.pushTransform();
 
-	glTranslatef(-p0.x, -p0.y, -p0.z);
+	re.translate(-p0);
 
 	quatd q = quatd(vec3d(0,0,1), norm);
-	float w = q.GetAngle();
-	if (w != 0)
-	{
-		vec3d v = q.GetVector();
-		glRotatef(w*180/PI, v.x, v.y, v.z);
-	}
-	else if (vec3d(0, 0, 1) * norm <= -0.99999)
-	{
-		glRotatef(180, 1, 0, 0);
-	}
+	re.rotate(q);
 
-	glRotatef(m_rot, 0, 0, 1);
+	re.rotate(m_rot, 0, 0, 1);
 
-	glTranslatef(0.f, 0.f, (float)m_scl*m_offset);
+	re.translate(vec3d(0.f, 0.f, (float)m_scl*m_offset));
 
 	float R = m_scl;
 
 	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
+	re.pushState();
 
-	GLdouble r = fabs(norm0.x);
-	GLdouble g = fabs(norm0.y);
-	GLdouble b = fabs(norm0.z);
+	double r = fabs(norm0.x);
+	double g = fabs(norm0.y);
+	double b = fabs(norm0.z);
 
-	glColor4d(r, g, b, m_transparency);
-	glDepthMask(false);
-	glNormal3f(0,0,1);
-	glBegin(GL_QUADS);
+	re.setMaterial(GLMaterial::OVERLAY, GLColor(r, g, b, m_transparency));
+	re.normal(vec3d(0,0,1));
+	re.begin(GLRenderEngine::QUADS);
 	{
-		glVertex3f(-R, -R, 0);
-		glVertex3f( R, -R, 0);
-		glVertex3f( R,  R, 0);
-		glVertex3f(-R,  R, 0);
+		re.vertex(vec3d(-R, -R, 0));
+		re.vertex(vec3d( R, -R, 0));
+		re.vertex(vec3d( R,  R, 0));
+		re.vertex(vec3d(-R,  R, 0));
 	}
-	glEnd();
-	glDepthMask(true);
+	re.end();
 
-	glColor3ub(255, 255, 0);
-	glDisable(GL_LIGHTING);
-	glBegin(GL_LINE_LOOP);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::Yellow());
+	re.begin(GLRenderEngine::LINELOOP);
 	{
-		glVertex3f(-R, -R, 0);
-		glVertex3f( R, -R, 0);
-		glVertex3f( R,  R, 0);
-		glVertex3f(-R,  R, 0);
+		re.vertex(vec3d(-R, -R, 0));
+		re.vertex(vec3d( R, -R, 0));
+		re.vertex(vec3d( R,  R, 0));
+		re.vertex(vec3d(-R,  R, 0));
 	}
-	glEnd();
+	re.end();
+
+	re.popState();
 
 	re.popTransform();
-
-	// restore attributes
-	glPopAttrib();
 }
 
 void CGLPlaneCutPlot::Activate(bool bact)

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
 #include <GLLib/GLRenderEngine.h>
+#include <GLLib/glx.h>
 
 using namespace Post;
 
@@ -76,7 +77,7 @@ void PointData::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
 	PointData::POINT p;
 	p.m_r = a;
 	p.nlabel = nlabel;
-	int n = data.size();
+	int n = (int)data.size();
 	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
 	for (int i = 0; i < n; ++i) p.val[i] = data[i];
 	m_pt.push_back(p);
@@ -133,7 +134,7 @@ int stringlist_to_szstring(std::vector<std::string>& sl, char* sz)
 	int nsize = 0;
 	for (int i = 0; i < sl.size(); ++i)
 	{
-		nsize += sl[i].length();
+		nsize += (int)sl[i].length();
 		nsize += 1; // null character
 	}
 	nsize++; // final null character
@@ -251,8 +252,7 @@ void CGLPointPlot::Render(GLRenderEngine& re, GLContext& rc)
 void CGLPointPlot::RenderPoints(GLRenderEngine& re)
 {
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-	GLfloat size_old;
-	glGetFloatv(GL_POINT_SIZE, &size_old);
+	float size_old = re.pointSize();
 	re.setPointSize(m_pointSize);
 
 	re.renderGMeshNodes(m_pointMesh, false);
@@ -263,9 +263,7 @@ void CGLPointPlot::RenderSpheres(GLRenderEngine& re)
 {
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.setColor(m_solidColor);
 
 	double pointSize = m_pointSize;
 
@@ -283,7 +281,7 @@ void CGLPointPlot::RenderSpheres(GLRenderEngine& re)
 		if (m_colorMode == 1)
 		{
 			GLColor c = map.map(p.tex);
-			glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 		}
 
 		if (pointSizeSource > 0)
@@ -296,12 +294,11 @@ void CGLPointPlot::RenderSpheres(GLRenderEngine& re)
 			re.pushTransform();
 			{
 				re.translate(c);
-				gluSphere(pobj, pointSize, 32, 32);
+				glx::drawSphere(re, pointSize);
 			}
 			re.popTransform();
 		}
 	}
-	gluDeleteQuadric(pobj);
 }
 
 void CGLPointPlot::Update(int ntime, float dt, bool breset)

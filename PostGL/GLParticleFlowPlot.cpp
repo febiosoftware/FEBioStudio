@@ -156,9 +156,8 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// build a point mesh
 	GLMesh mesh;
@@ -200,7 +199,7 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 			// allocate line mesh
 			GLMesh lineMesh;
 
-			glColor3ub(0,0,255);
+			re.setColor(GLColor::Blue());
 			for (int i = 0; i<NP; ++i)
 			{
 				FlowParticle& p = m_particles[i];
@@ -231,7 +230,7 @@ void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	glPopAttrib();
+	re.popState();
 }
 
 void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)

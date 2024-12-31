@@ -62,14 +62,14 @@ public:
 		point[3]->setPosition(d);
 	}
 
-	void render()
+	void render(GLRenderEngine& re) override
 	{
-		point[0]->render();
-		point[1]->render();
-		point[2]->render();
-		point[3]->render();
-		line[0]->render();
-		line[1]->render();
+		point[0]->render(re);
+		point[1]->render(re);
+		point[2]->render(re);
+		point[3]->render(re);
+		line[0]->render(re);
+		line[1]->render(re);
 	}
 
 private:

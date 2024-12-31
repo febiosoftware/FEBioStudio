@@ -170,16 +170,6 @@ void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 	FEPostModel& fem = *glm.GetFSModel();
 	int ns = glm.CurrentTimeIndex();
 
-	GLfloat zero[4] = { 0.f };
-	GLfloat one[4] = { 1.f, 1.f, 1.f, 1.f };
-	GLfloat col[4] = { (GLfloat)m_col.r, (GLfloat)m_col.g, (GLfloat)m_col.b, 1.f};
-	GLfloat amb[4] = { 0.1f, 0.1f, 0.1f, 1.f };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, one);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
-
 	if ((ns >= 0) && (ns <fem.GetStates()))
 	{
 		FEState& s = *fem.GetState(ns);
@@ -187,7 +177,7 @@ void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 		int NL = lineData.Lines();
 		if (NL > 0)
 		{
-			glPushAttrib(GL_ENABLE_BIT);
+			re.pushState();
 			{
 				switch (m_nmode)
 				{
@@ -196,7 +186,7 @@ void CGLLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 				case 2: Render3DSmoothLines(re); break;
 				}
 			}
-			glPopAttrib();
+			re.popState();
 		}
 	}
 }
@@ -213,8 +203,7 @@ int randomize(int n, int nmax)
 void CGLLinePlot::RenderLines(GLRenderEngine& re)
 {
 	re.setMaterial(GLMaterial::CONSTANT, m_col);
-	GLfloat line_old;
-	glGetFloatv(GL_LINE_WIDTH, &line_old);
+	float line_old = re.lineWidth();
 	re.setLineWidth(m_line);
 	re.renderGMeshEdges(m_mesh, false);
 	re.setLineWidth(line_old);

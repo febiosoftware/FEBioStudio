@@ -46,7 +46,7 @@ void glx::drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y
 		a = (255.0 * (h1 * a0 + h2 * a0 + h3 * a1));
 		if (a > 255) a = 255;
 		if (a < 0) a = 0;
-		c.a = a;
+		c.a = (uint8_t)a;
 		re.setColor(c);
 
 		x = x0 + i * (x1 - x0) / n;
@@ -141,7 +141,7 @@ void glx::drawHelix(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R
 		e.Normalize();
 		vec3d d = e ^ c; d.Normalize();
 		double fp = (L - 2 * R) / p;
-		int n = fp * N;
+		int n = (int)(fp * N);
 		double dq = 2 * PI / N;
 
 		vec3d va = a + c * R;
@@ -412,8 +412,8 @@ void glx::drawSmoothPath(GLRenderEngine& re, const std::vector<vec3d>& path, flo
 			e2 = r1 - r0; e2.Normalize();
 		}
 
-		float tex0 = t0 + (i / (NP - 1.0) * (t1 - t0));
-		float tex1 = t0 + ((i + 1) / (NP - 1.0) * (t1 - t0));
+		float tex0 = (float)(t0 + (i / (NP - 1.0) * (t1 - t0)));
+		float tex1 = (float)(t0 + ((i + 1) / (NP - 1.0) * (t1 - t0)));
 
 		// render cylinder
 		glx::drawSmoothPath(re, r0, r1, R, e1, e2, tex0, tex1, 32);
@@ -556,18 +556,27 @@ void glx::drawCappedCylinder(GLRenderEngine& re, float radius, float height, int
 
 void glx::drawCone(GLRenderEngine& re, float baseRadius, float height, int N)
 {
+	double w = atan2(height, baseRadius);
+	double cw = cos(w);
+	double sw = sin(w);
+
 	re.begin(GLRenderEngine::TRIANGLES);
 	for (int i = 0; i <= N; ++i)
 	{
 		double wa = 2 * PI * i / (double)N;
 		double wb = 2 * PI * (i + 1) / (double)N;
-		double xa = baseRadius * cos(wa);
-		double ya = baseRadius * sin(wa);
-		double xb = baseRadius * cos(wb);
-		double yb = baseRadius * sin(wb);
+		double ca = cos(wa);
+		double sa = sin(wa);
 
-		re.vertex(vec3d(xa, ya, 0));
-		re.vertex(vec3d(xb, yb, 0));
+		double cb = cos(wb);
+		double sb = sin(wb);
+
+		re.normal(vec3d(ca * cw, sa * cw, sw));
+		re.vertex(vec3d(baseRadius * ca, baseRadius * sa, 0));
+
+		re.normal(vec3d(cb * cw, sb * cw, sw));
+		re.vertex(vec3d(baseRadius * cb, baseRadius * sb, 0));
+
 		re.vertex(vec3d(0, 0, height));
 	}
 	re.end();

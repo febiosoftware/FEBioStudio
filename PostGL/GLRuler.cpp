@@ -102,43 +102,29 @@ void GLRuler::Render(GLRenderEngine& re, GLContext& rc)
 	double H = t.Length(); t.Normalize();
 	double R = m_R * m_size;
 
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.setMaterial(GLMaterial::PLASTIC, m_col);
 	re.pushTransform();
 	{
-		glTranslated(ra.x, ra.y, ra.z);
 		quatd q(vec3d(0, 0, 1), t);
-		if (q.GetAngle() != 0)
-		{
-			double w = q.GetAngle() * RAD2DEG;
-			vec3d v = q.GetVector();
-			glRotated(w, v.x, v.y, v.z);
-		}
-		gluCylinder(pobj, R, R, H, 12, 1);
+		re.transform(ra, q);
+		glx::drawCylinder(re, R, H, 12);
 	}
 	re.popTransform();
 
 	re.pushTransform();
 	{
-		glTranslated(ra.x, ra.y, ra.z);
-		gluSphere(pobj, R, 12, 12);
-		glTranslated(-ra.x, -ra.y, -ra.z);
-		glTranslated(rb.x, rb.y, rb.z);
-		gluSphere(pobj, R, 12, 12);
+		re.translate(ra);
+		glx::drawSphere(re, R);
+		re.translate(-ra);
+		re.translate(rb);
+		glx::drawSphere(re, R);
 	}
 	re.popTransform();
-
-	gluDeleteQuadric(pobj);
 
 	re.pushState();
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glBegin(GL_LINES);
-	{
-		glVertex3d(ra.x, ra.y, ra.z);
-		glVertex3d(rb.x, rb.y, rb.z);
-	}
-	glEnd();
+
+	re.setMaterial(GLMaterial::OVERLAY, m_col);
+	re.renderLine(ra, rb);
 	re.popState();
 }
 

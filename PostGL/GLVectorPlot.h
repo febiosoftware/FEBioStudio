@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
-class GLUquadric;
 class GLRenderEngine;
 
 namespace Post {
@@ -116,7 +115,7 @@ public:
 
 private:
 	// render a vector n at position r
-	void RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GLUquadric* pglyph);
+	void RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v);
 
 	void UpdateState(int nstate);
 

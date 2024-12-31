@@ -165,24 +165,8 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nvec == -1) return;
 
-	GLfloat ambient[] = {0.1f,0.1f,0.1f,1.f};
-	GLfloat specular[] = {0.0f,0.0f,0.0f,1};
-	GLfloat emission[] = {0,0,0,1};
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-//	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
-
 	// store attributes
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
+	re.pushState();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -211,16 +195,13 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		m_fscale *= autoscale;
 	}
 
-	if (m_nglyph == GLYPH_LINE) glDisable(GL_LIGHTING);
+	if (m_nglyph == GLYPH_LINE)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, m_gcl);
+	}
 	else
 	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-
-		GLfloat dif[] = {1.f, 1.f, 1.f, 1.f};
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, dif);
+		re.setMaterial(GLMaterial::PLASTIC, m_gcl);
 	}
 
 	if (IS_ELEM_FIELD(m_nvec))
@@ -254,7 +235,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			{
 				vec3f r = to_vec3f(pm->ElementCenter(elem));
 				vec3f v = m_val[i];
-				RenderVector(re, r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
@@ -293,7 +274,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			{
 				vec3f r = to_vec3f(pm->FaceCenter(face));
 				vec3f v = m_val[i];
-				RenderVector(re, r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
@@ -330,20 +311,16 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 
 				vec3f v = m_val[i];
 
-				RenderVector(re, r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
 
-	gluDeleteQuadric(pglyph);
-
 	// restore attributes
-	glPopAttrib();
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	re.popState();
 }
 
-void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GLUquadric* pglyph)
+void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
 {
 	float L = v.Length();
 	if (L == 0.f) return;
@@ -360,19 +337,19 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GL
 	switch (m_ncol)
 	{
 	case GLYPH_COL_LENGTH:
-		glColor3ub(col.r, col.g, col.b);
+		re.setColor(col);
 		break;
 	case GLYPH_COL_ORIENT:
 	{
-		GLdouble r = fabs(v.x);
-		GLdouble g = fabs(v.y);
-		GLdouble b = fabs(v.z);
-		glColor3d(r, g, b);
+		double r = fabs(v.x);
+		double g = fabs(v.y);
+		double b = fabs(v.z);
+		re.setColor(GLColor::FromRGBf(r,g,b));
 	}
 	break;
 	case GLYPH_COL_SOLID:
 	default:
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
+		re.setColor(m_gcl);
 	}
 
 	if (m_bnorm) L = 1;
@@ -385,24 +362,18 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GL
 
 	re.pushTransform();
 
-	glTranslatef(r.x, r.y, r.z);
+	re.translate(to_vec3d(r));
 	quatd q;
 	vec3d V = to_vec3d(v);
 	if (V * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
 	else q = quatd(vec3d(0, 0, 1), to_vec3d(v));
-	float w = q.GetAngle();
-	if (fabs(w) > 1e-6)
-	{
-		vec3d p = q.GetVector();
-		if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-		else glRotated(w * 180 / PI, 1, 0, 0);
-	}
+	re.rotate(q);
 
 	switch (m_nglyph)
 	{
 	case GLYPH_ARROW:
 		glx::drawCylinder(re, r0, l0, 5);
-		glTranslatef(0.f, 0.f, (float)l0*0.9f);
+		re.translate(vec3d(0, 0, l0*0.9));
 		glx::drawCone(re, r1, l1, 10);
 		break;
 	case GLYPH_CONE:
@@ -412,7 +383,7 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v, GL
 		glx::drawCylinder(re, r1, l0, 10);
 		break;
 	case GLYPH_SPHERE:
-		gluSphere(pglyph, r1, 10, 5);
+		glx::drawSphere(re, r1);
 		break;
 	case GLYPH_BOX:
 		glx::drawBox(re, r0, r0, r0);

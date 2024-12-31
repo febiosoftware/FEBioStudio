@@ -169,7 +169,7 @@ void GLMusclePath::SetModel(CGLModel* pm)
 		Post::Material* gm = fem->GetMaterial(i);
 		string name = gm->GetName();
 		const char* sn = name.c_str();
-		int n = strlen(sn);
+		int n = (int)strlen(sn);
 		sprintf(sz, "%s", sn); sz += n; *sz++ = 0;
 	}
 	*sz = 0;
@@ -259,7 +259,7 @@ void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 		GLColor gray((uint8_t)r, (uint8_t)g, (uint8_t)b);
 
 		// draw the muscle path
-		glColor3ub(gray.r, gray.g, gray.b);
+		re.setColor(gray);
 		glx::drawSmoothPath(re, points, R);
 
 		// draw the end points
@@ -284,7 +284,7 @@ void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 		vec3d r1 = path->m_points[N - 1].r;
 
 		// draw the muscle path
-		glColor3ub(c.r, c.g, c.b);
+		re.setColor(c);
 		glx::drawSmoothPath(re, points, R);
 
 		if ((renderMode == 0) || (renderMode == 1))
@@ -305,18 +305,18 @@ void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 					float sphereRadius = 1.5f * R;
 					switch (ntag)
 					{
-					case 0: glColor3ub(0, 128, 0); break;
-					case 1: glColor3ub(0, 255, 0); break;
-					case 2: glColor3ub(255, 255, 0); break;
+					case 0: re.setColor(GLColor(0, 128, 0)); break;
+					case 1: re.setColor(GLColor(0, 255, 0)); break;
+					case 2: re.setColor(GLColor(255, 255, 0)); break;
 					default:
-						glColor3ub(0, 0, 0);
+						re.setColor(GLColor::Black());
 					}
 					vec3d r0 = pt.r;
 
 					if (i == m_selectedPoint)
 					{
 						sphereRadius = 2.0 * R;
-						glColor3ub(255, 255, 255);
+						re.setColor(GLColor::White());
 					}
 
 					glx::drawSphere(re, r0, sphereRadius);
@@ -332,17 +332,11 @@ void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 
 					re.pushTransform();
 
-					glTranslatef(r.x, r.y, r.z);
+					re.translate(r);
 					quatd q;
 					if (t * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
 					else q = quatd(vec3d(0, 0, 1), t);
-					float w = q.GetAngle();
-					if (fabs(w) > 1e-6)
-					{
-						vec3d p = q.GetVector();
-						if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-						else glRotated(w * 180 / PI, 1, 0, 0);
-					}
+					re.rotate(q);
 
 					double D = 1.25 * R;
 
@@ -611,7 +605,7 @@ void GLMusclePath::UpdatePathData(int ntime)
 		return;
 	}
 
-	int n = path->Points();
+	int n = (int)path->Points();
 	if (n >= 2)
 	{
 		// start and end point coordinates
@@ -1020,7 +1014,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 	for (int i = 0; i < path->Points(); ++i)
 	{
 		PathData::Point& pt = path->m_points[i];
-		int nface = faceMesh.FindFace(pt.r, D);
+		int nface = (int)faceMesh.FindFace(pt.r, D);
 		pt.tag = (nface == -1 ? 0 : 1);
 		if ((depart == -1) && (nface >= 0))
 		{

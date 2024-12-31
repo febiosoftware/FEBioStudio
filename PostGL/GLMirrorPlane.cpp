@@ -163,32 +163,29 @@ void CGLMirrorPlane::RenderPlane(GLRenderEngine& re)
 	// store attributes
 	re.pushState();
 
-	GLdouble r = fabs(norm.x);
-	GLdouble g = fabs(norm.y);
-	GLdouble b = fabs(norm.z);
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::FromRGBf(r, g, b, m_transparency), GLMaterial::NONE, false);
-
-	glDepthMask(false);
-	glNormal3f(0, 0, 1);
-	glBegin(GL_QUADS);
+	double r = fabs(norm.x);
+	double g = fabs(norm.y);
+	double b = fabs(norm.z);
+	re.setMaterial(GLMaterial::GLASS, GLColor::FromRGBf(r, g, b, m_transparency), GLMaterial::NONE, false);
+	re.normal(vec3d(0, 0, 1));
+	re.begin(GLRenderEngine::QUADS);
 	{
-		glVertex3f(-R, -R, 0);
-		glVertex3f(R, -R, 0);
-		glVertex3f(R, R, 0);
-		glVertex3f(-R, R, 0);
+		re.vertex(vec3d(-R, -R, 0));
+		re.vertex(vec3d(R, -R, 0));
+		re.vertex(vec3d(R, R, 0));
+		re.vertex(vec3d(-R, R, 0));
 	}
-	glEnd();
+	re.end();
 
-	re.setColor(GLColor(255, 255, 0));
-	glDepthMask(true);
-	glBegin(GL_LINE_LOOP);
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
+	re.begin(GLRenderEngine::LINELOOP);
 	{
-		glVertex3f(-R, -R, 0);
-		glVertex3f(R, -R, 0);
-		glVertex3f(R, R, 0);
-		glVertex3f(-R, R, 0);
+		re.vertex(vec3d(-R, -R, 0));
+		re.vertex(vec3d(R, -R, 0));
+		re.vertex(vec3d(R, R, 0));
+		re.vertex(vec3d(-R, R, 0));
 	}
-	glEnd();
+	re.end();
 
 	re.popState();
 	re.popTransform();

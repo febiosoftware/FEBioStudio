@@ -308,38 +308,6 @@ void CGLModel::UpdateDisplacements(int nstate, bool breset)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::SetMaterialParams(Material* pm)
-{
-	GLfloat fv[4] = {0,0,0,1};
-	const float f = 1.f / 255.f;
-
-	GLubyte a = (GLubyte) (255.f*pm->transparency);
-
-	glColor4ub(pm->diffuse.r, pm->diffuse.g, pm->diffuse.b, a);
-
-/*	fv[0] = (float) pm->ambient.r*f;
-	fv[1] = (float) pm->ambient.g*f;
-	fv[2] = (float) pm->ambient.b*f;
-	fv[3] = (float) a*f;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fv);
-*/
-
-	fv[0] = (float) pm->specular.r*f;
-	fv[1] = (float) pm->specular.g*f;
-	fv[2] = (float) pm->specular.b*f;
-	fv[3] = 1.f;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, fv);
-
-	fv[0] = (float) pm->emission.r*f;
-	fv[1] = (float) pm->emission.g*f;
-	fv[2] = (float) pm->emission.b*f;
-	fv[3] = 1.f;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, fv);
-
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, pm->shininess*64.f);
-}
-
-//-----------------------------------------------------------------------------
 void CGLModel::SetSmoothingAngle(double w)
 { 
 	m_stol = w;

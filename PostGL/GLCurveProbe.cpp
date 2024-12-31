@@ -56,22 +56,23 @@ void GLCurveProbe::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_path.size())
 	{
-		GLColor c = m_col;
-		glColor3ub(c.r, c.g, c.b);
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINE_STRIP);
-		for (int i = 0; i < m_path.size(); ++i)
+		re.setMaterial(GLMaterial::OVERLAY, m_col);
+		
+		re.begin(GLRenderEngine::LINESTRIP);
 		{
-			vec3d r = m_path[i]* m_scale;
-			re.vertex(r);
+			for (int i = 0; i < m_path.size(); ++i)
+			{
+				vec3d r = m_path[i] * m_scale;
+				re.vertex(r);
+			}
 		}
-		glEnd();
-		glBegin(GL_POINTS);
-		re.vertex(m_path[0]* m_scale);
-		glEnd();
-		glPopAttrib();
+		re.end();
+
+		re.begin(GLRenderEngine::POINTS);
+		{
+			re.vertex(m_path[0] * m_scale);
+		}
+		re.end();
 	}
 }
 

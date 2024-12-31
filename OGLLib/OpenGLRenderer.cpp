@@ -297,12 +297,7 @@ void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 	case GLRenderEngine::LIGHTING  : glEnable(GL_LIGHTING); break;
 	case GLRenderEngine::DEPTHTEST : glEnable(GL_DEPTH_TEST); break;
 	case GLRenderEngine::CULLFACE  : glEnable(GL_CULL_FACE); break;
-	case GLRenderEngine::CLIPPLANE0: glEnable(GL_CLIP_PLANE0); break;
-	case GLRenderEngine::CLIPPLANE1: glEnable(GL_CLIP_PLANE1); break;
-	case GLRenderEngine::CLIPPLANE2: glEnable(GL_CLIP_PLANE2); break;
-	case GLRenderEngine::CLIPPLANE3: glEnable(GL_CLIP_PLANE3); break;
-	case GLRenderEngine::CLIPPLANE4: glEnable(GL_CLIP_PLANE4); break;
-	case GLRenderEngine::CLIPPLANE5: glEnable(GL_CLIP_PLANE5); break;
+	case GLRenderEngine::BLENDING  : glEnable(GL_BLEND); break;
 	}
 }
 
@@ -313,12 +308,7 @@ void OpenGLRenderer::disable(GLRenderEngine::StateFlag flag)
 	case GLRenderEngine::LIGHTING  : glDisable(GL_LIGHTING); break;
 	case GLRenderEngine::DEPTHTEST : glDisable(GL_DEPTH_TEST); break;
 	case GLRenderEngine::CULLFACE  : glDisable(GL_CULL_FACE); break;
-	case GLRenderEngine::CLIPPLANE0: glDisable(GL_CLIP_PLANE0); break;
-	case GLRenderEngine::CLIPPLANE1: glDisable(GL_CLIP_PLANE1); break;
-	case GLRenderEngine::CLIPPLANE2: glDisable(GL_CLIP_PLANE2); break;
-	case GLRenderEngine::CLIPPLANE3: glDisable(GL_CLIP_PLANE3); break;
-	case GLRenderEngine::CLIPPLANE4: glDisable(GL_CLIP_PLANE4); break;
-	case GLRenderEngine::CLIPPLANE5: glDisable(GL_CLIP_PLANE5); break;
+	case GLRenderEngine::BLENDING  : glDisable(GL_BLEND); break;
 	}
 }
 
@@ -421,9 +411,38 @@ void OpenGLRenderer::setPointSize(float f)
 	glPointSize(f);
 }
 
+float OpenGLRenderer::pointSize() const
+{
+	float pointSize;
+	glGetFloatv(GL_POINT_SIZE, &pointSize);
+	return pointSize;
+}
+
+float OpenGLRenderer::lineWidth() const
+{
+	float lineWidth;
+	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+	return lineWidth;
+}
+
 void OpenGLRenderer::setLineWidth(float f)
 {
 	glLineWidth(f);
+}
+
+GLRenderEngine::FrontFace OpenGLRenderer::frontFace() const
+{
+	int frontFace;
+	glGetIntegerv(GL_FRONT_FACE, &frontFace);
+	if (frontFace == GL_CCW) return GLRenderEngine::COUNTER_CLOCKWISE;
+	else return GLRenderEngine::CLOCKWISE;
+}
+
+void OpenGLRenderer::setFrontFace(GLRenderEngine::FrontFace f)
+{
+	int frontFace = GL_CCW;
+	if (f == GLRenderEngine::CLOCKWISE) frontFace = GL_CW;
+	glFrontFace(frontFace);
 }
 
 void OpenGLRenderer::positionCamera(const GLCamera& cam)
@@ -726,6 +745,16 @@ void OpenGLRenderer::DeactivateEnvironmentMap(unsigned int mapid)
 void OpenGLRenderer::setClipPlane(unsigned int n, const double* v)
 {
 	glClipPlane(GL_CLIP_PLANE0 + n, v);
+}
+
+void OpenGLRenderer::enableClipPlane(unsigned int n)
+{
+	glEnable(GL_CLIP_PLANE0 + n);
+}
+
+void OpenGLRenderer::disableClipPlane(unsigned int n)
+{
+	glDisable(GL_CLIP_PLANE0 + n);
 }
 
 void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)

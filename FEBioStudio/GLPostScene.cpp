@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLModel.h>
-#include <qopengl.h>
 
 using namespace Post;
 
@@ -45,30 +44,29 @@ void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 	GPlotList& PL = gm.GetPlotList();
 
 	// clear all clipping planes
-	CGLPlaneCutPlot::ClearClipPlanes();
+	CGLPlaneCutPlot::ClearClipPlanes(re);
 	for (int i = 0; i < (int)PL.Size(); ++i)
 	{
 		CGLPlaneCutPlot* p = dynamic_cast<CGLPlaneCutPlot*>(PL[i]);
 		if (p && p->IsActive()) p->Activate(true);
 	}
 
-	Post::CGLPlaneCutPlot::EnableClipPlanes();
+	Post::CGLPlaneCutPlot::EnableClipPlanes(re);
 
 	GLCompositeSceneItem::render(re, rc);
 
-	Post::CGLPlaneCutPlot::DisableClipPlanes();
+	Post::CGLPlaneCutPlot::DisableClipPlanes(re);
 }
 
 void GLPostMirrorItem::render(GLRenderEngine& re, GLContext& rc)
 {
-	int frontFace;
-	glGetIntegerv(GL_FRONT_FACE, &frontFace);
+	GLRenderEngine::FrontFace frontFace = re.frontFace();
 
 	re.pushTransform();
 	renderMirror(re, rc, 0, CGLMirrorPlane::MAX_MIRROR_PLANES);
 	re.popTransform();
 
-	glFrontFace(frontFace);
+	re.setFrontFace(frontFace);
 }
 
 void GLPostMirrorItem::renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end)
@@ -96,12 +94,11 @@ void GLPostMirrorItem::renderMirror(GLRenderEngine& re, GLContext& rc, int start
 			re.translate(vec3d(-offset * norm.x, -offset * norm.y, -offset * norm.z));
 			re.scale(scl.x, scl.y, scl.z);
 
-			int frontFace;
-			glGetIntegerv(GL_FRONT_FACE, &frontFace);
-			glFrontFace(frontFace == GL_CW ? GL_CCW : GL_CW);
+			GLRenderEngine::FrontFace frontFace = re.frontFace();
+			re.setFrontFace(frontFace == GLRenderEngine::CLOCKWISE ? GLRenderEngine::COUNTER_CLOCKWISE : GLRenderEngine::CLOCKWISE);
 
 			renderMirror(re, rc, 0, i);
-			glFrontFace(frontFace);
+			re.setFrontFace(frontFace);
 			re.popTransform();
 		}
 	}
@@ -133,7 +130,7 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	}
 	glm->SetSelectionType(selectionMode);
 
-	CGLPlaneCutPlot::EnableClipPlanes();
+	CGLPlaneCutPlot::EnableClipPlanes(re);
 
 	RenderModel(re, rc);
 
@@ -147,7 +144,7 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 		RenderMinMaxMarkers(re, rc);
 	}
 
-	CGLPlaneCutPlot::DisableClipPlanes();
+	CGLPlaneCutPlot::DisableClipPlanes(re);
 }
 
 void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
@@ -244,9 +241,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// see if backface-culling is enabled or not
-	GLboolean bcull;
-	glGetBooleanv(GL_CULL_FACE, &bcull);
-	if (bcull)
+	if (rc.m_settings.m_bcull)
 	{
 		quatd q = rc.m_cam->GetOrientation();
 		vec3f f;
@@ -655,13 +650,11 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
 
-	float lineWidth;
-	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-	glLineWidth(rc.m_settings.m_line_size);
+	float lineWidth = re.lineWidth();
+	re.setLineWidth(rc.m_settings.m_line_size);
 
 	Post::CGLModel& gm = *m_scene->GetGLModel();
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
+	re.pushState();
 	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
@@ -671,12 +664,10 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 
 	if (colmap && colmap->IsActive())
 	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
 		re.setTexture(colmap->GetColorMap()->GetTexture());
 
-		glEnable(GL_TEXTURE_1D);
-
-		glColor3ub(255, 255, 255);
-		glBegin(GL_LINES);
+		re.begin(GLRenderEngine::LINES);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -695,15 +686,13 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 				if (bvisible) RenderDiscreteElement(re, i);
 			}
 		}
-		glEnd();
+		re.end();
 	}
 
-	// turn-off texturing for the rest
-	glDisable(GL_TEXTURE_1D);
-
 	// loop over un-selected, inactive elements
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 	curMat = -1;
-	glBegin(GL_LINES);
+	re.begin(GLRenderEngine::LINES);
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -714,8 +703,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 			if (mat != curMat)
 			{
 				Material* pmat = ps->GetMaterial(mat);
-				GLColor c = pmat->diffuse;
-				glColor3ub(c.r, c.g, c.b);
+				re.setColor(pmat->diffuse);
 				curMat = mat;
 				bvisible = pmat->bvisible;
 				if (colmap->IsActive() && pmat->benable) bvisible = false;
@@ -724,11 +712,10 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 			if (bvisible) RenderDiscreteElement(re, i);
 		}
 	}
-	glEnd();
+	re.end();
 
 	// loop over selected elements
-	glColor3ub(255, 0, 0);
-	glBegin(GL_LINES);
+	re.setColor(GLColor::Red());
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -738,11 +725,11 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 			RenderDiscreteElement(re, i);
 		}
 	}
-	glEnd();
+	re.end();
 
-	glPopAttrib();
+	re.popState();
 
-	glLineWidth(lineWidth);
+	re.setLineWidth(lineWidth);
 }
 
 void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
@@ -751,7 +738,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	if (ps == nullptr) return;
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
-	glPushAttrib(GL_ENABLE_BIT);
+	re.pushState();
 	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
@@ -806,9 +793,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	// turn-off texturing for the rest
-	glDisable(GL_TEXTURE_1D);
-	glEnable(GL_CULL_FACE);
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
 
 	// loop over un-selected, inactive elements, non-transparent
 	curMat = -1;
@@ -824,8 +809,8 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 				Material* pmat = ps->GetMaterial(mat);
 				bvisible = pmat->bvisible && (pmat->transparency > 0.999f);
 				GLColor c = pmat->diffuse;
-				unsigned char a = (unsigned char)(255.f * pmat->transparency);
-				glColor4ub(c.r, c.g, c.b, a);
+				c.a = (unsigned char)(255.f * pmat->transparency);
+				re.setColor(c);
 				curMat = mat;
 				if (colmap->IsActive() && pmat->benable) bvisible = false;
 			}
@@ -848,8 +833,8 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 				Material* pmat = ps->GetMaterial(mat);
 				bvisible = pmat->bvisible && (pmat->transparency < 0.999f);
 				GLColor c = pmat->diffuse;
-				unsigned char a = (unsigned char)(255.f * pmat->transparency);
-				glColor4ub(c.r, c.g, c.b, a);
+				c.a = (unsigned char)(255.f * pmat->transparency);
+				re.setColor(c);
 				curMat = mat;
 				if (colmap->IsActive() && pmat->benable) bvisible = false;
 			}
@@ -869,7 +854,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 
 
 	// loop over selected elements
-	glColor3ub(255, 0, 0);
+	re.setColor(GLColor::Red());
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -880,7 +865,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	glPopAttrib();
+	re.popState();
 }
 
 void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
@@ -898,8 +883,8 @@ void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
 		float t1 = edge.tex[1];
 		vec3d r0 = mesh.Node(edge.n0).r;
 		vec3d r1 = mesh.Node(edge.n1).r;
-		glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
-		glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
+		re.texCoord1d(t0); re.vertex(r0);
+		re.texCoord1d(t1); re.vertex(r1);
 	}
 	else if (pe->Type() == FE_BEAM3)
 	{
@@ -921,8 +906,8 @@ void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
 			vec3d rn = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
 			float tn = t[0] * H[0] + t[1] * H[1] + t[2] * H[2];
 
-			glTexCoord1d(tp); glVertex3d(rp.x, rp.y, rp.z);
-			glTexCoord1d(tn); glVertex3d(rn.x, rn.y, rn.z);
+			re.texCoord1d(tp); re.vertex(rp);
+			re.texCoord1d(tn); re.vertex(rn);
 
 			rp = rn;
 			tp = tn;
@@ -994,30 +979,26 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 	GLColor c1 = map.GetColor(map.Colors() - 1);
 
 	// TODO: Can I render this as tags instead of here
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	float pointSize = re.pointSize();
+	re.setPointSize(15.f);
 
-	float pointSize;
-	glGetFloatv(GL_POINT_SIZE, &pointSize);
+	re.begin(GLRenderEngine::POINTS);
+	re.setColor(GLColor::White());
+	re.vertex(rmin);
+	re.vertex(rmax);
+	re.end();
 
-	glPointSize(15.f);
-	glBegin(GL_POINTS);
-	glColor3ub(255, 255, 255);
-	glVertex3d(rmin.x, rmin.y, rmin.z);
-	glVertex3d(rmax.x, rmax.y, rmax.z);
-	glEnd();
+	re.setPointSize(10.f);
+	re.begin(GLRenderEngine::POINTS);
+	re.setColor(c0.r); re.vertex(rmin);
+	re.setColor(c1.r); re.vertex(rmax);
+	re.end();
 
-	glPointSize(10.f);
-	glBegin(GL_POINTS);
-	glColor3ub(c0.r, c0.g, c0.b); glVertex3d(rmin.x, rmin.y, rmin.z);
-	glColor3ub(c1.r, c1.g, c1.b); glVertex3d(rmax.x, rmax.y, rmax.z);
-	glEnd();
+	re.setPointSize(pointSize);
 
-	glPointSize(pointSize);
-
-	glPopAttrib();
+	re.popState();
 }
 
 void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
@@ -1029,13 +1010,13 @@ void GLPostPlotItem::render(GLRenderEngine& re, GLContext& rc)
 		Post::CGLPlot& plt = *plotList[i];
 		if (plt.IsActive())
 		{
-			if (plt.AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
-			else CGLPlaneCutPlot::DisableClipPlanes();
+			if (plt.AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes(re);
+			else CGLPlaneCutPlot::DisableClipPlanes(re);
 
 			plt.Render(re, rc);
 		}
 	}
-	CGLPlaneCutPlot::DisableClipPlanes();
+	CGLPlaneCutPlot::DisableClipPlanes(re);
 }
 
 void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)

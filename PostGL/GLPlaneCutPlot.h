@@ -95,9 +95,9 @@ public:
 	float Integrate(FEState* ps);
 
 	static void InitClipPlanes();
-	static void DisableClipPlanes();
-	static void ClearClipPlanes();
-	static void EnableClipPlanes();
+	static void DisableClipPlanes(GLRenderEngine& re);
+	static void ClearClipPlanes(GLRenderEngine& re);
+	static void EnableClipPlanes(GLRenderEngine& re);
 
 	void Activate(bool bact) override;
 

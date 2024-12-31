@@ -23,16 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
 #include "ColorTexture.h"
 using namespace Post;
 
@@ -66,7 +56,7 @@ void CColorTexture::operator = (const CColorTexture& col)
 void CColorTexture::UpdateTexture()
 {
 	int n = m_tex.Size();
-	GLubyte* pb = m_tex.GetBytes();
+	unsigned char* pb = m_tex.GetBytes();
 
 	int N = (m_bsmooth ? n : m_ndivs);
 	if (N < 2) N = 2;
