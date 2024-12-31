@@ -26,8 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
 #include <GLLib/GLTexture3D.h>
-#include <OGLLib/OGLMesh.h>
-
 class CImageModel;
 class GLRenderEngine;
 
@@ -53,7 +51,7 @@ public:
 private:
 	void Init();
 	void ReloadTexture();
-	void UpdateGeometry(const vec3d& view);
+	void RenderSlices(GLRenderEngine& re, const vec3d& view);
 
 private:
 	GLTexture3D m_tex;
@@ -62,7 +60,6 @@ private:
 	bool	m_vrReset;
 
 	int	m_nslices = 0;
-	OGLTriMesh m_mesh;
 };
 
 }

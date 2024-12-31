@@ -516,7 +516,7 @@ void OpenGLRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	{
 		unsigned int flags = OGLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
-		if (m.useTexture1D) flags |= OGLMesh::FLAG_TEXTURE;
+		if (m.useTexture1D || m.useTexture3D) flags |= OGLMesh::FLAG_TEXTURE;
 		glm->Render(flags);
 		m_stats.triangles += glm->Vertices() / 3;
 

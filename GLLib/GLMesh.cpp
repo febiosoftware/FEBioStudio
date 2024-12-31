@@ -479,6 +479,24 @@ void GLMesh::AddFace(vec3f r[3], float t[3])
 	AddFace(face);
 }
 
+void GLMesh::AddFace(vec3f r[3], vec3f t[3])
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.vr[0] = r[0];
+	face.vr[1] = r[1];
+	face.vr[2] = r[2];
+	face.t[0] = t[0];
+	face.t[1] = t[1];
+	face.t[2] = t[2];
+	AddFace(face);
+}
 int GLMesh::SetFaceTex(int f0, float* t, int n)
 {
 	GLMesh::FACE* pf = &m_Face[f0];

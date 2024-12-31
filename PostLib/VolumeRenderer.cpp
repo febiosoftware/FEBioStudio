@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
-#include <OGLLib/OGLMesh.h>
+#include <GLLib/GLMesh.h>
 #include <sstream>
 #include <limits>
 using namespace Post;
@@ -106,9 +106,6 @@ void CVolumeRenderer::ReloadTexture()
 	double wz = (double)nz;
 	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
 	m_nslices = (int)wt;
-
-	// max 5 triangles per slice, (m_nslices+1) slices
-	m_mesh.Create(5 * (m_nslices + 1), OGLMesh::FLAG_TEXTURE);
 }
 
 extern int LUT[256][15];
@@ -252,8 +249,7 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	re.normal(view);
 
 	// update geometry and render
-	UpdateGeometry(view);
-	m_mesh.Render(OGLMesh::FLAG_TEXTURE);
+	RenderSlices(re, view);
 
 	// clean up
 	re.setMaterial(GLMaterial::INVALID, GLColor::White());
@@ -268,9 +264,11 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	re.popState();
 }
 
-void CVolumeRenderer::UpdateGeometry(const vec3d& view)
+void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 {
 	CImageModel& img = *GetImageModel();
+
+	vec3f normal = to_vec3f(view);
 
 	// get the bounding box corners
 	BOX box = img.GetBoundingBox();
@@ -299,9 +297,9 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 		if (ti > tmax) tmax = ti;
 	}
 
-	m_mesh.BeginMesh();
-	double vr[3];
-	double vt[3];
+	GLMesh mesh;
+	vec3f vr[3];
+	vec3f vt[3];
 	for (int i = 0; i <= m_nslices; ++i)
 	{
 		double t = tmin + (double)i * (tmax - tmin) / m_nslices;
@@ -330,21 +328,25 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 				double w = (t - nv[n1]) / (nv[n2] - nv[n1]);
 
 				// position coordinates
-				vr[0] = c[n1].x * (1 - w) + c[n2].x * w;
-				vr[1] = c[n1].y * (1 - w) + c[n2].y * w;
-				vr[2] = c[n1].z * (1 - w) + c[n2].z * w;
+				vr[k].x = c[n1].x * (1 - w) + c[n2].x * w;
+				vr[k].y = c[n1].y * (1 - w) + c[n2].y * w;
+				vr[k].z = c[n1].z * (1 - w) + c[n2].z * w;
 
 				// texture coordinates
 				vt[0] = (vr[0]) / W;
 				vt[1] = (vr[1]) / H;
 				vt[2] = (vr[2]) / D;
-
-				m_mesh.AddVertex(vr, nullptr, vt);
 			}
+
+			mesh.AddFace(vr, vt);
+			GLMesh::FACE& face = mesh.Face(mesh.Faces() - 1);
+			face.fn = normal;
+			face.vn[0] = face.vn[1] = face.vn[2] = normal;
 
 			// on to the next face
 			pf += 3;
 		}
 	}
-	m_mesh.EndMesh();
+
+	re.renderGMesh(mesh, false);
 }
