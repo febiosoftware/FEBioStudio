@@ -66,6 +66,24 @@ static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
 	GLColor(120,   0, 240)
 };
 
+void SetModelView(GLRenderEngine& re, GObject* po)
+{
+	// get transform data
+	Transform& T = po->GetRenderTransform();
+	vec3d r = T.GetPosition();
+	vec3d s = T.GetScale();
+	quatd q = T.GetRotation();
+
+	// translate mesh
+	re.translate(r);
+
+	// orient mesh
+	re.rotate(q);
+
+	// scale the mesh
+	re.scale(s.x, s.y, s.z);
+}
+
 class GLFiberRenderer : public GLVectorRenderer
 {
 public:
@@ -1432,7 +1450,7 @@ void GLObjectItem::render(GLRenderEngine& re, GLContext& rc)
 		if (m_po && m_po->IsValid())
 		{
 			re.pushTransform();
-			SetModelView(m_po);
+			SetModelView(re, m_po);
 			RenderGObject(re, rc);
 			re.popTransform();
 		}
@@ -1494,11 +1512,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			RenderObject(re, rc);
 			cam.LineDrawMode(true);
 			re.positionCamera(cam);
-			SetModelView(po);
+			SetModelView(re, po);
 			RenderEdges(re, rc);
 			cam.LineDrawMode(false);
 			re.positionCamera(cam);
-			SetModelView(po);
+			SetModelView(re, po);
 		}
 		break;
 		case SELECT_NODE:
@@ -1506,11 +1524,11 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			RenderObject(re, rc);
 			cam.LineDrawMode(true);
 			re.positionCamera(cam);
-			SetModelView(po);
+			SetModelView(re, po);
 			RenderNodes(re, rc);
 			cam.LineDrawMode(false);
 			re.positionCamera(cam);
-			SetModelView(po);
+			SetModelView(re, po);
 		}
 		break;
 		case SELECT_DISCRETE:
@@ -1549,7 +1567,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 				if (gm) RenderFEFacesFromGMesh(re, rc);
 				cam.LineDrawMode(true);
 				re.positionCamera(cam);
-				SetModelView(po);
+				SetModelView(re, po);
 				RenderFEEdges(re, rc);
 				cam.LineDrawMode(false);
 				re.positionCamera(cam);
@@ -1572,7 +1590,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 				RenderSurfaceMeshFaces(re, rc);
 				cam.LineDrawMode(true);
 				re.positionCamera(cam);
-				SetModelView(po);
+				SetModelView(re, po);
 				RenderSurfaceMeshEdges(re, rc);
 				cam.LineDrawMode(false);
 				re.positionCamera(cam);
@@ -2438,7 +2456,7 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 			if (po->IsVisible())
 			{
 				re.pushTransform();
-				SetModelView(po);
+				SetModelView(re, po);
 
 				if (nsel == SELECT_OBJECT)
 				{
@@ -2459,7 +2477,7 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 	else if (poa)
 	{
 		re.pushTransform();
-		SetModelView(poa);
+		SetModelView(re, poa);
 		glx::renderBox(re, poa->GetLocalBox(), GLColor(255, 255, 0), true, 1.025);
 		re.popTransform();
 	}
@@ -2489,7 +2507,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 			if (pm)
 			{
 				re.pushTransform();
-				SetModelView(po);
+				SetModelView(re, po);
 				if (nitem != ITEM_EDGE)
 				{
 					GLMesh* lineMesh = po->GetFERenderMesh(); assert(lineMesh);
@@ -2506,7 +2524,7 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 				if (gmesh && (nitem != ITEM_EDGE))
 				{
 					re.pushTransform();
-					SetModelView(po);
+					SetModelView(re, po);
 					re.renderGMeshEdges(*gmesh);
 					re.popTransform();
 				}
@@ -2546,7 +2564,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 				if (po->IsVisible())
 				{
 					re.pushTransform();
-					SetModelView(po);
+					SetModelView(re, po);
 
 					GLMesh* m = po->GetRenderMesh();
 					if (m)
@@ -2999,7 +3017,7 @@ void GLSelectionItem::render(GLRenderEngine& re, GLContext& rc)
 		if (po->IsVisible() && po->IsValid())
 		{
 			re.pushTransform();
-			SetModelView(po);
+			SetModelView(re, po);
 			switch (nsel)
 			{
 			case SELECT_PART: RenderSelectedParts(re, rc, po); break;
@@ -3294,7 +3312,7 @@ void GLHighlighterItem::drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge,
 	if (po == 0) return;
 
 	re.pushTransform();
-	SetModelView(po);
+	SetModelView(re, po);
 
 	GLMesh& m = *po->GetRenderMesh();
 
@@ -3324,7 +3342,7 @@ void GLHighlighterItem::drawNode(GLRenderEngine& re, GLContext& rc, GNode* node,
 	if (po == nullptr) return;
 
 	re.pushTransform();
-	SetModelView(po);
+	SetModelView(re, po);
 	GLMesh pt;
 	pt.AddNode(to_vec3f(node->LocalPosition()));
 	re.setMaterial(GLMaterial::OVERLAY, c);
@@ -3340,7 +3358,7 @@ void GLHighlighterItem::drawFace(GLRenderEngine& re, GLContext& rc, GFace* face,
 	if (mesh == nullptr) return;
 
 	re.pushTransform();
-	SetModelView(po);
+	SetModelView(re, po);
 
 	re.setMaterial(GLMaterial::HIGHLIGHT, c);
 	re.renderGMesh(*mesh, face->GetLocalID());
@@ -3371,7 +3389,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, GLContext& rc, GPart* part,
 	if (faceList.empty()) return;
 
 	re.pushTransform();
-	SetModelView(po);
+	SetModelView(re, po);
 
 	re.setMaterial(GLMaterial::HIGHLIGHT, c);
 	for (int surfID : faceList)
@@ -3410,7 +3428,7 @@ void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeS
 	}
 
 	re.pushTransform();
-	SetModelView(po);
+	SetModelView(re, po);
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	re.renderGMeshNodes(pointMesh, false);
 	re.popTransform();
@@ -3430,7 +3448,7 @@ void GLHighlighterItem::drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurfa
 
 	re.pushTransform();
 	{
-		SetModelView(po);
+		SetModelView(re, po);
 
 		GLMesh gmesh;
 		gmesh.NewPartition();

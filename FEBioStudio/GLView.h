@@ -328,4 +328,3 @@ private:
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
-void SetModelView(GObject* po);
