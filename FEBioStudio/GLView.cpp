@@ -1815,29 +1815,6 @@ void CGLView::ShowMeshData(bool b)
 	if (scene) scene->Update();
 }
 
-void SetModelView(GObject* po)
-{
-	// get transform data
-	Transform& T = po->GetRenderTransform();
-	vec3d r = T.GetPosition();
-	vec3d s = T.GetScale();
-	quatd q = T.GetRotation();
-
-	// translate mesh
-	glTranslated(r.x, r.y, r.z);
-
-	// orient mesh
-	double w = 180 * q.GetAngle() / PI;
-	if (w != 0)
-	{
-		vec3d r = q.GetVector();
-		glRotated(w, r.x, r.y, r.z);
-	}
-
-	// scale the mesh
-	glScaled(s.x, s.y, s.z);
-}
-
 void CGLView::SetCoordinateSystem(int nmode)
 {
 	m_coord = nmode;
