@@ -333,9 +333,9 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 				vr[k].z = (float)(c[n1].z * (1 - w) + c[n2].z * w);
 
 				// texture coordinates
-				vt[0] = (vr[0]) / (float)W;
-				vt[1] = (vr[1]) / (float)H;
-				vt[2] = (vr[2]) / (float)D;
+				vt[0].x = vr[0].x / (float)W; vt[0].y = vr[0].y / (float)H; vt[0].z = vr[0].z / (float)D;
+				vt[1].x = vr[1].x / (float)W; vt[1].y = vr[1].y / (float)H; vt[1].z = vr[1].z / (float)D;
+				vt[2].x = vr[2].x / (float)W; vt[2].y = vr[2].y / (float)H; vt[2].z = vr[2].z / (float)D;
 			}
 
 			mesh.AddFace(vr, vt);
