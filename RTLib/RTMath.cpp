@@ -23,28 +23,63 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "RTMath.h"
 
-#include <QDialog>
-
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
-class CMainWindow;
-
-class CDlgScreenCapture : public QDialog
+bool rt::Box::isInside(const rt::Vec3& p, double eps) const
 {
-    Q_OBJECT;
+	if (p.x() + eps < x0) return false;
+	if (p.x() - eps > x1) return false;
 
-public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+	if (p.y() + eps < y0) return false;
+	if (p.y() - eps > y1) return false;
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+	if (p.z() + eps < z0) return false;
+	if (p.z() - eps > z1) return false;
 
-private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-};
+	return true;
+}
+
+bool rt::Box::intersect(const rt::Ray& ray) const
+{
+	if (!valid) return false;
+
+	Vec3 c[6] = {
+		Vec3(x0, y0, z0),
+		Vec3(x1, y0, z0),
+		Vec3(x1, y1, z0),
+		Vec3(x0, y1, z0),
+		Vec3(x0, y0, z0),
+		Vec3(x0, y0, z1)
+	};
+
+	const Vec3 n[6] = {
+		Vec3( 0, -1,  0),
+		Vec3( 1,  0,  0),
+		Vec3( 0,  1,  0),
+		Vec3(-1,  0,  0),
+		Vec3( 0,  0, -1),
+		Vec3( 0,  0,  1),
+	};
+
+	const Vec3& o = ray.origin;
+	const Vec3& t = ray.direction;
+
+	for (int i = 0; i < 6; ++i)
+	{
+		double D = t * n[i];
+		if (D != 0)
+		{
+			double l = (n[i] * ( c[i] - o)) / D;
+			if (l >= 0)
+			{
+				Vec3 q = o + t * l;
+				if (isInside(q, 1e-5))
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+

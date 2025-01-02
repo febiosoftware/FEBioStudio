@@ -23,28 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "RayTraceSurface.h"
+#include <memory>
 
-#include <QDialog>
-
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
-class CMainWindow;
-
-class CDlgScreenCapture : public QDialog
+RayTraceSurface::RayTraceSurface(size_t W, size_t H)
 {
-    Q_OBJECT;
+	w = W;
+	h = H;
+	d = new float[w * h * 4];
+	memset(d, 0, w * h * 4);
+}
 
-public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+RayTraceSurface::~RayTraceSurface()
+{
+	delete d;
+}
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+float* RayTraceSurface::value(size_t x, size_t y)
+{
+	return d + ((y * w + x) << 2);
+}
 
-private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-};
+GLColor RayTraceSurface::colorValue(size_t x, size_t y)
+{
+	float* v = value(x, y);
+	return GLColor::FromRGBf(v[0], v[1], v[2], v[3]);
+}

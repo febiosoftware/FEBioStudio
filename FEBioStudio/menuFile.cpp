@@ -116,11 +116,15 @@ SOFTWARE.*/
 #include <sstream>
 #include <PostGL/PostObject.h>
 #include "DlgScreenCapture.h"
+#include "DlgRayTrace.h"
+#include "DlgStartThread.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
 #include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
 #include "BatchConverter.h"
+#include <GLLib/GLScene.h>
+#include <RTLib/RayTracer.h>
 
 // register file reader classes
 REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
@@ -1282,9 +1286,95 @@ void CMainWindow::on_actionSnapShot_triggered()
 {
 	QImage img = GetGLView()->CaptureScreen();
 
-    CDlgScreenCapture dlg(&img, this);
+    CDlgScreenCapture dlg(img, this);
 
     dlg.exec();
+}
+
+class CRayTracerThread : public CustomThread
+{
+public:
+	CRayTracerThread(GLScene* scene, GLContext rc, QImage* img, int multiSample) : m_img(img), m_scene(scene), m_rc(rc) 
+	{
+		m_multiSample = multiSample;
+	}
+
+	~CRayTracerThread()
+	{
+		delete rayTracer;
+		rayTracer = nullptr;
+	}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		int W = m_img->width();
+		int H = m_img->height();
+		RayTraceSurface trg(W, H);
+		rayTracer = new RayTracer(trg);
+		rayTracer->setMultiSample(m_multiSample);
+		rayTracer->start();
+		m_scene->Render(*rayTracer, m_rc);
+		rayTracer->finish();
+		for (size_t j=0; j<H; ++j)
+			for (size_t i = 0; i < W; ++i)
+			{
+				GLColor c = trg.colorValue(i, j);
+				QRgb rgb = qRgb(c.r, c.g, c.b);
+				m_img->setPixel(i, j, rgb);
+			}
+		emit resultReady(true);
+	}
+
+public:
+	bool hasProgress() override { return true; }
+
+	double progress() override { 
+		return (rayTracer ? rayTracer->progress() : 0.);
+	}
+
+	const char* currentTask() override { return "thinking ..."; }
+
+	void stop() override {}
+
+private:
+	QImage* m_img = nullptr;
+	GLScene* m_scene = nullptr;
+	GLContext m_rc;
+	RayTracer* rayTracer = nullptr;
+	int m_multiSample = 1;
+};
+
+void CMainWindow::on_actionRayTrace_triggered()
+{
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return;
+
+	GLScene* scene = doc->GetScene();
+	if (scene == nullptr) return;
+
+	CDlgRayTrace dlg(this);
+	if (dlg.exec())
+	{
+		const int W = dlg.ImageWidth();
+		const int H = dlg.ImageHeight();
+		const int ms = dlg.Multisample();
+		GLContext rc;
+		rc.m_x = 0;
+		rc.m_y = 0;
+		rc.m_w = W;
+		rc.m_h = H;
+		rc.m_settings = GetGLView()->GetViewSettings();
+		rc.m_cam = &scene->GetCamera();
+		QImage img(W, H, QImage::Format_RGB32);
+		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, ms);
+		CDlgStartThread dlg2(this, render_thread);
+		dlg2.setTask("Rendering scene ...");
+		if (dlg2.exec())
+		{
+			CDlgScreenCapture dlg3(img, this);
+			dlg3.exec();
+		}
+	}
 }
 
 void CMainWindow::on_actionSaveProject_triggered()

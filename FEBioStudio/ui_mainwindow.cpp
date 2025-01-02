@@ -109,6 +109,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionSaveAll = addAction("Save All", "actionSaveAll");
 	QAction* actionCloseAll = addAction("Close All", "actionCloseAll");
 	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot"); actionSnapShot->setShortcut(Qt::AltModifier | Qt::Key_F2);
+	actionRayTrace = addAction("Ray Tracer ...", "actionRayTrace", "teapot");
 	QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
 	actionExportFE = addAction("Export FE model ...", "actionExportFEModel");
 	actionImportGeom = addAction("Import Geometry ...", "actionImportGeometry");
@@ -719,6 +720,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	mainToolBar->addAction(actionOpen);
 	mainToolBar->addAction(actionSave);
 	mainToolBar->addAction(actionSnapShot);
+	mainToolBar->addAction(actionRayTrace);
 
 	// Build tool bar
 	coord = new QComboBox;

@@ -23,28 +23,45 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <FSCore/math3d.h>
+#include <FSCore/color.h>
+#include "RTMath.h"
 
-#include <QDialog>
+namespace rt {
 
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
-class CMainWindow;
+	struct Point {
+		Vec3 r;
+		Vec3 n;
+		Vec3 t;
+		Color c;
+	};
 
-class CDlgScreenCapture : public QDialog
-{
-    Q_OBJECT;
+	struct Tri
+	{
+		Vec3 r[3];
+		Vec3 n[3];
+		Vec3 t[3];
+		Color c[3];
+	};
 
-public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+	class Mesh
+	{
+	public:
+		Mesh();
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+		void clear();
 
-private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-};
+		void addTri(const Tri& t) { tri.push_back(t); }
+
+		size_t triangles() const { return tri.size(); }
+
+		Tri& triangle(size_t n) { return tri[n]; }
+		const Tri& triangle(size_t n) const { return tri[n]; }
+
+	private:
+		std::vector<Tri> tri;
+	};
+
+	bool intersect(Mesh& mesh, const Ray& ray, Point& q);
+}

@@ -39,6 +39,7 @@ void Ui::CUIConfig::Apply()
 	ui->menuRecentGeomFiles->menuAction()->setEnabled(false);
 	ui->menuImportImage->menuAction()->setEnabled(false);
 	ui->actionSnapShot->setEnabled(false);
+	ui->actionRayTrace->setEnabled(false);
 
 	// disable some FEBio menu items
 	ui->actionFEBioRun->setEnabled(false);
@@ -167,6 +168,7 @@ void Ui::CModelConfig::Apply()
 	ui->actionExportGeom->setEnabled(true);
 	ui->actionExportFE->setEnabled(true);
 	ui->actionSnapShot->setEnabled(true);
+	ui->actionRayTrace->setEnabled(true);
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
 	ui->actionFEBioCheck->setEnabled(true);
@@ -224,6 +226,7 @@ void Ui::CPostConfig::Apply()
 	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
 	ui->menuImportImage->menuAction()->setEnabled(true);
 	ui->actionSnapShot->setEnabled(true);
+	ui->actionRayTrace->setEnabled(true);
 
 	ui->actionMeshInspector->setEnabled(true);
 	ui->actionMeshDiagnostic->setEnabled(true);

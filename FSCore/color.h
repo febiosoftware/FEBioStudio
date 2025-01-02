@@ -67,6 +67,14 @@ public:
 		f[3] = (float)a / 255.f;
 	}
 
+	void toDouble(double d[4]) const
+	{
+		d[0] = (double)r / 255.0;
+		d[1] = (double)g / 255.0;
+		d[2] = (double)b / 255.0;
+		d[3] = (double)a / 255.0;
+	}
+
 	static GLColor White() { return GLColor(255, 255, 255); }
 	static GLColor Red()   { return GLColor(255,   0,   0); }
 	static GLColor Green() { return GLColor(  0, 255,   0); }

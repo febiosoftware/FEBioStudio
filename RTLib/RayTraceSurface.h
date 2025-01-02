@@ -23,28 +23,24 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <FSCore/color.h>
 
-#include <QDialog>
-
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
-class CMainWindow;
-
-class CDlgScreenCapture : public QDialog
+class RayTraceSurface
 {
-    Q_OBJECT;
+public:
+	RayTraceSurface(size_t W, size_t H);
+	~RayTraceSurface();
 
 public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+	size_t width() const { return w; }
+	size_t height() const { return h; }
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+public:
+	float* value(size_t x, size_t y);
+	GLColor colorValue(size_t x, size_t y);
 
 private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
+	size_t w, h;
+	float* d;
 };

@@ -352,6 +352,7 @@ public:
 	QAction* actionImportGeom;
 	QAction* actionExportGeom;
 	QAction* actionSnapShot;
+	QAction* actionRayTrace;
 
 	// FEBIO menu
 	QAction* actionFEBioRun;

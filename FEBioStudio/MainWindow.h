@@ -375,6 +375,7 @@ public slots:
 	void on_actionSaveAll_triggered();
 	void on_actionCloseAll_triggered();
 	void on_actionSnapShot_triggered();
+	void on_actionRayTrace_triggered();
 	void on_actionSaveProject_triggered();
 	void on_actionExportFEModel_triggered();
 	void on_actionImportGeometry_triggered();

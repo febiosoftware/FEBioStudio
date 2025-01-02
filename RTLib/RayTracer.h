@@ -23,28 +23,60 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include <GLLib/GLRenderEngine.h>
+#include "RayTraceSurface.h"
+#include "RTMesh.h"
+#include "RTMath.h"
+#include <stack>
 
-#include <QDialog>
-
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
-class CMainWindow;
-
-class CDlgScreenCapture : public QDialog
+class RayTracer : public GLRenderEngine
 {
-    Q_OBJECT;
+public:
+	RayTracer(RayTraceSurface& target);
+
+	void setupProjection(double fov, double fnear);
+
+	void setMultiSample(int ms);
 
 public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+	void start() override;
+	void finish() override;
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+	double progress();
+
+public:
+	void pushTransform() override;
+	void popTransform() override;
+	void translate(const vec3d& r) override;
+	void rotate(const quatd& rot) override;
+
+	void positionCamera(const GLCamera& cam) override;
+
+public:
+	void setColor(GLColor c) override;
+	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true)  override;
+
+public:
+	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
 
 private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
+	void render();
+	rt::Color castRay(rt::Ray& ray);
+
+private:
+	RayTraceSurface& surf;
+	rt::Mesh mesh;
+	rt::Matrix4 modelView;
+	std::stack<rt::Matrix4> mvStack;
+
+	double fieldOfView;
+	double nearPlane;
+
+	int multiSample = 1;
+
+	double percentCompleted;
+
+	GLColor currentColor;
+	bool useVertexColor;
 };

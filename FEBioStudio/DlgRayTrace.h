@@ -26,25 +26,23 @@ SOFTWARE.*/
 
 #include <QDialog>
 
-class QImage;
-class QGraphicsScene;
-class QGraphicsView;
 class CMainWindow;
 
-class CDlgScreenCapture : public QDialog
+class CDlgRayTraceUI;
+
+class CDlgRayTrace : public QDialog
 {
-    Q_OBJECT;
+	Q_OBJECT;
 
 public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+	CDlgRayTrace(CMainWindow* wnd);
 
-private slots:
-    void on_saveButton_clicked();
-    void on_copyButton_clicked();
+	int ImageWidth();
+	int ImageHeight();
+	int Multisample();
+
+	void accept() override;
 
 private:
-    CMainWindow* m_wnd;
-    QImage m_img;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
+	CDlgRayTraceUI* ui;
 };

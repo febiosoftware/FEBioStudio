@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include "MainWindow.h"
 
-CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
+CDlgScreenCapture::CDlgScreenCapture(const QImage& img, CMainWindow* wnd)
     : m_wnd(wnd), m_img(img)
 {
     QVBoxLayout* layout = new QVBoxLayout;
@@ -44,7 +44,7 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
     m_view = new QGraphicsView;
     m_view->setScene(m_scene);
 
-    QGraphicsPixmapItem* item = m_scene->addPixmap(QPixmap::fromImage(*img));
+    QGraphicsPixmapItem* item = m_scene->addPixmap(QPixmap::fromImage(img));
 
     layout->addWidget(m_view);
 
@@ -67,12 +67,12 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
 
 void CDlgScreenCapture::on_saveButton_clicked()
 {
-    m_wnd->SaveImage(*m_img);
+    m_wnd->SaveImage(m_img);
 }
 
 void CDlgScreenCapture::on_copyButton_clicked()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
 
-    clipboard->setImage(*m_img);
+    clipboard->setImage(m_img);
 }
