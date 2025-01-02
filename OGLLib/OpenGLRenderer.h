@@ -76,6 +76,9 @@ public:
 	void positionCamera(const GLCamera& cam) override;
 
 public:
+	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
+
+public:
 	void begin(PrimitiveType prim) override;
 	void end() override;
 

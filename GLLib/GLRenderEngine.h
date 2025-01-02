@@ -113,6 +113,9 @@ public:
 
 	virtual void positionCamera(const GLCamera& cam) {}
 
+public:
+	virtual void setLightPosition(unsigned int lightIndex, const vec3f& p) {}
+
 public: // immediate mode rendering
 	virtual void begin(PrimitiveType prim) {}
 	virtual void end() {}
