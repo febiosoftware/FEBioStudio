@@ -470,6 +470,13 @@ void OpenGLRenderer::positionCamera(const GLCamera& cam)
 	translate(-cam.GetPosition());
 }
 
+void OpenGLRenderer::setLightPosition(unsigned int lightIndex, const vec3f& p)
+{
+	GLfloat fv[4] = { 0 };
+	fv[0] = p.x; fv[1] = p.y; fv[2] = p.z;
+	glLightfv(GL_LIGHT0 + lightIndex, GL_POSITION, fv);
+}
+
 void OpenGLRenderer::begin(PrimitiveType prim)
 {
 	switch (prim)

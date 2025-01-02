@@ -187,9 +187,11 @@ void CGLSceneView::RenderBackground()
 void CGLSceneView::paintGL()
 {
 	// Render the 3D scene
+	m_ogl.start();
 	PrepScene();
 	RenderBackground();
 	RenderScene();
+	m_ogl.finish();
 
 	// render the 2D canvas
 	RenderCanvas();
@@ -205,7 +207,6 @@ void CGLSceneView::paintGL()
 
 void CGLSceneView::RenderScene()
 {
-	m_ogl.start();
 	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
@@ -220,7 +221,6 @@ void CGLSceneView::RenderScene()
 		scene->Render(m_ogl, rc);
 
 	}
-	m_ogl.finish();
 }
 
 void CGLSceneView::RenderCanvas()
@@ -370,9 +370,7 @@ void CGLSceneView::PrepScene()
 
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
-	GLfloat fv[4] = { 0 };
-	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-	glLightfv(GL_LIGHT0, GL_POSITION, fv);
+	m_ogl.setLightPosition(0, lp);
 
 	GLScene* scene = GetActiveScene();
 	if (scene)
