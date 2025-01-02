@@ -1312,7 +1312,11 @@ public:
 		RayTraceSurface trg(W, H);
 		rayTracer = new RayTracer(trg);
 		rayTracer->setMultiSample(m_multiSample);
+		
+		vec3f lp = m_rc.m_settings.m_light; lp.Normalize();
+
 		rayTracer->start();
+		rayTracer->setLightPosition(0, lp);
 		m_scene->Render(*rayTracer, m_rc);
 		rayTracer->finish();
 		for (size_t j=0; j<H; ++j)

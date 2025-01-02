@@ -34,14 +34,27 @@ Mesh::Mesh()
 void Mesh::clear()
 {
 	const size_t ALLOC_SIZE = 1024 * 1024;
-	tri.clear();
-	tri.reserve(ALLOC_SIZE);
+	triList.clear();
+	triList.reserve(ALLOC_SIZE);
+}
+
+void Mesh::addTri(rt::Tri& tri)
+{
+	// process face
+	Vec3* v = tri.r;
+	Vec3 e1 = v[1] - v[0];
+	Vec3 e2 = v[2] - v[0];
+	tri.fn = Vec3::cross(e1, e2);
+	tri.fn.normalize();
+
+	triList.push_back(tri);
 }
 
 bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 {
 	const double tol = 0.0001;
 
+	const Vec3& fn = tri.fn;
 	const Vec3& v1 = tri.r[0];
 	const Vec3& v2 = tri.r[1];
 	const Vec3& v3 = tri.r[2];
@@ -49,20 +62,16 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 	Vec3 e1 = v2 - v1;
 	Vec3 e2 = v3 - v1;
 
-	// calculate the triangle normal
-	Vec3 fn = Vec3::cross(e1, e2);
-	fn.normalize();
-
 	// find the intersection of the point with the plane
-	const Vec3& r0 = ray.origin;
-	const Vec3& nn = ray.direction;
-	if (fn * nn == 0.0) return false;
-	double l = fn * (v1 - r0) / (fn * nn);
+	const Vec3& o = ray.origin;
+	const Vec3& t = ray.direction;
+	double D = fn * t;
+	if (D == 0.0) return false;
+	double l = fn * (v1 - o) / D;
 	if (l < 0) return false;
-	Vec3 q = r0 + nn * l;
+	Vec3 q = o + t * l;
 
 	// find  the natural coordinates
-
 	double A[2][2] = { { e1 * e1, e1 * e2 }, { e2 * e1, e2 * e2 } };
 	double Di = 1.0 / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
 	double Ai[2][2] = {

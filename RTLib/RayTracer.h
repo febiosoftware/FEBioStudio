@@ -56,6 +56,8 @@ public:
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true)  override;
 
+	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
+
 public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
@@ -69,6 +71,8 @@ private:
 	rt::Mesh mesh;
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
+
+	rt::Vec4 lightPos;
 
 	double fieldOfView;
 	double nearPlane;

@@ -43,6 +43,8 @@ namespace rt {
 		Vec3 n[3];
 		Vec3 t[3];
 		Color c[3];
+
+		Vec3 fn;
 	};
 
 	class Mesh
@@ -52,15 +54,15 @@ namespace rt {
 
 		void clear();
 
-		void addTri(const Tri& t) { tri.push_back(t); }
+		void addTri(Tri& t);
 
-		size_t triangles() const { return tri.size(); }
+		size_t triangles() const { return triList.size(); }
 
-		Tri& triangle(size_t n) { return tri[n]; }
-		const Tri& triangle(size_t n) const { return tri[n]; }
+		Tri& triangle(size_t n) { return triList[n]; }
+		const Tri& triangle(size_t n) const { return triList[n]; }
 
 	private:
-		std::vector<Tri> tri;
+		std::vector<Tri> triList;
 	};
 
 	bool intersect(Mesh& mesh, const Ray& ray, Point& q);

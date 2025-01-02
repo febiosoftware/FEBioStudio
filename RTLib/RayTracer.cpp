@@ -123,6 +123,12 @@ void RayTracer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Diffuse
 	useVertexColor = (map == GLMaterial::VERTEX_COLOR);
 }
 
+void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
+{
+	Vec4 r(p, 0);
+	lightPos = modelView * r;
+}
+
 void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 {
 	int NF = gmesh.Faces();
@@ -243,8 +249,29 @@ rt::Color RayTracer::castRay(rt::Ray& ray)
 	if (intersect(mesh, ray, q))
 	{
 		Color& c = q.c;
-		double f = -(ray.direction * q.n);
-		if (f >= 0) fragCol = Color(c.r() * f, c.g()*f, c.b()*f, c.a());
+
+		Vec3& t = ray.direction;
+		Vec3& N = q.n;
+		Vec3 L(lightPos);
+
+		// diffuse component
+		double f = N * L;
+		if (f < 0) f = 0;
+		Color diffuse = c * f;
+
+		// ambient
+		Color ambient = c * 0.1;
+
+		// specular component
+		Vec3 H = t - N * (2 * (t * N));
+		f = H * L;
+		double s = (f > 0 ? pow(f, 32) : 0);
+		Color spec = Color(s, s, s);
+
+		fragCol = diffuse + spec + ambient;
+		fragCol.a(c.a());
+
+		fragCol.clamp();
 	}
 	return fragCol;
 }
