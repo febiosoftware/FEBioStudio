@@ -561,9 +561,9 @@ void OpenGLRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 {
 	if ((surfId < 0) || (surfId >= mesh.Partitions())) return;
 
-	OGLTriMesh* glm = nullptr;
 	if (cacheMesh)
 	{
+		OGLTriMesh* glm = nullptr;
 		auto it = m.triMesh.find(&mesh);
 		if (it == m.triMesh.end())
 		{
@@ -576,26 +576,36 @@ void OpenGLRenderer::renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh)
 		{
 			glm = it->second;
 		}
+
+		if (glm)
+		{
+			unsigned int flags = OGLMesh::FLAG_NORMAL;
+			if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
+			if (m.useTexture) flags |= OGLMesh::FLAG_TEXTURE;
+
+			const GLMesh::PARTITION& p = mesh.Partition(surfId);
+			glm->Render(3 * p.n0, 3 * p.nf, flags);
+			m_stats.triangles += p.nf;
+
+			glm->incRef();
+		}
 	}
 	else
 	{
-		glm = new OGLTriMesh;
+		OGLTriMesh* glm = new OGLTriMesh;
 		glm->SetRenderMode(OGLMesh::VertexArrayMode);
-		glm->CreateFromGMesh(mesh, OGLMesh::FLAG_NORMAL | OGLMesh::FLAG_COLOR | OGLMesh::FLAG_TEXTURE);
-	}
+		glm->CreateFromGMesh(mesh, surfId, OGLMesh::FLAG_NORMAL | OGLMesh::FLAG_COLOR | OGLMesh::FLAG_TEXTURE);
 
-	if (glm)
-	{
 		unsigned int flags = OGLMesh::FLAG_NORMAL;
 		if (m.useVertexColors) flags |= OGLMesh::FLAG_COLOR;
 		if (m.useTexture) flags |= OGLMesh::FLAG_TEXTURE;
 
+		glm->Render(flags);
+
 		const GLMesh::PARTITION& p = mesh.Partition(surfId);
-		glm->Render(3*p.n0, 3*p.nf, flags);
 		m_stats.triangles += p.nf;
 
-		glm->incRef();
-		if (!cacheMesh) delete glm;
+		delete glm;
 	}
 }
 
