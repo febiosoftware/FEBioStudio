@@ -1544,8 +1544,8 @@ void CGLView::RenderScene()
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 		double fps = (sec != 0 ? 1.0 / sec : 0);
 
-		if (m_fps.size() >= 50) m_fps.pop();
-		m_fps.push(fps);
+		if (m_fps.size() >= 50) m_fps.pop_back();
+		m_fps.push_front(fps);
 	}
 
 	m_ogl.positionCamera(cam);
@@ -1673,9 +1673,8 @@ void CGLView::RenderCanvas(GLContext& rc)
 		double fps = 0;
 		if (!m_fps.empty())
 		{
-			auto& container = m_fps._Get_container();
-			for (double f : container) fps += f;
-			fps /= (container.size());
+			for (double f : m_fps) fps += f;
+			fps /= (m_fps.size());
 		}
 
 		QRect rt = rect();
