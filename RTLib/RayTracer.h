@@ -71,9 +71,16 @@ public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
 
+public:
+	void setClipPlane(unsigned int n, const double* v) override;
+	void enableClipPlane(unsigned int n) override;
+	void disableClipPlane(unsigned int n) override;
+
 private:
 	void render();
 	rt::Color castRay(rt::Btree& octree, rt::Ray& ray);
+
+	void addTriangle(rt::Tri& tri);
 
 private:
 	RayTraceSurface& surf;
@@ -95,6 +102,9 @@ private:
 
 	GLColor currentColor;
 	bool useVertexColor;
+
+	bool useClipPlane = false;
+	double clipPlane[4] = { 0,0,0,0 };
 
 	bool cancelled;
 };

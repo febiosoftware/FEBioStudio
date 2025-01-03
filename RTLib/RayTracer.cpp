@@ -166,12 +166,14 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 			tri.t[j] = Vec3(face.t[j]);
 			tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 		}
-		mesh.addTri(tri);
+		addTriangle(tri);
 	}
 }
 
 void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 {
+	if ((surfId < 0) || (surfId >= gmesh.Partitions())) return;
+
 	const GLMesh::PARTITION& p = gmesh.Partition(surfId);
 	for (int i = 0; i < p.nf; ++i)
 	{
@@ -184,7 +186,116 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 			tri.t[j] = Vec3(face.t[j]);
 			tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
 		}
-		mesh.addTri(tri);
+		addTriangle(tri);
+	}
+}
+
+Point interpolate(const Point& a, const Point& b, double w)
+{
+	double w1 = 1.0 - w;
+	Point c;
+	c.r = a.r * w1 + b.r * w;
+	c.n = a.n * w1 + b.n * w; c.n.normalize();
+	c.t = a.t * w1 + b.t * w;
+	c.c = a.c * w1 + b.c * w;
+	return c;
+}
+
+const int rtLUT[8][7] = {
+	{-1, -1, -1, -1, -1, -1, -1},
+	{ 3,  1,  2,  2,  5,  3, -1},
+	{ 2,  0,  3,  3,  4,  2, -1},
+	{ 2,  5,  4, -1, -1, -1, -1},
+	{ 0,  1,  5,  1,  4,  5, -1},
+	{ 1,  4,  3, -1, -1, -1, -1},
+	{ 0,  3,  5, -1, -1, -1, -1},
+	{-1, -1, -1, -1, -1, -1, -1},
+};
+
+void RayTracer::addTriangle(rt::Tri& tri)
+{
+	// process triangle
+	if (!tri.process()) return;
+
+	// TODO: do frustum clipping
+
+	// process clip plane
+	if (useClipPlane)
+	{
+		double* c = clipPlane;
+		Vec3 N(c[0], c[1], c[2]);
+		Vec3* v = tri.r;
+		unsigned int ncase = 0;
+		for (int i = 0; i < 3; ++i)
+		{
+			double l = N * v[i] + c[3];
+			if (l < 0) ncase |= (1 << i);
+		}
+
+		if (ncase == 0) mesh.addTri(tri);
+		else if (ncase < 7)
+		{
+			Point p[6];
+			p[0] = tri.point(0);
+			p[1] = tri.point(1);
+			p[2] = tri.point(2);
+
+			for (int i = 0; i < 3; ++i)
+			{
+				Vec3 a = v[i];
+				Vec3 b = v[(i + 1) % 3];
+				Vec3 t = b - a;
+				double D = N * t;
+				if (D != 0)
+				{
+					double l = -(c[3] + N * a)/D;
+					if (l < 0) l = 0;
+					else if (l > 1) l = 1;
+					p[i+3] = interpolate(p[i], p[(i+1)%3], l);
+				}
+			}
+
+			const int* pf = rtLUT[ncase];
+			while (*pf != -1)
+			{
+				rt::Tri tri_n(p[pf[0]], p[pf[1]], p[pf[2]]);
+				if (tri_n.process())
+					mesh.addTri(tri_n);
+				pf += 3;
+			}
+		}
+	}
+	else mesh.addTri(tri);
+}
+
+void RayTracer::setClipPlane(unsigned int n, const double* v)
+{
+	if (n == 0)
+	{
+		Vec4 N(v[0], v[1], v[2], 0);
+		Vec4 Np = modelView * N;
+		double v3 = v[3] - (modelView[0][3] * Np[0] + modelView[1][3] * Np[1] + modelView[2][3] * Np[2]);
+
+		clipPlane[0] = Np[0];
+		clipPlane[1] = Np[1];
+		clipPlane[2] = Np[2];
+		clipPlane[3] = v3;
+	}
+}
+
+void RayTracer::enableClipPlane(unsigned int n)
+{
+	if (n == 0)
+	{
+		useClipPlane = true;
+	}
+}
+
+void RayTracer::disableClipPlane(unsigned int n)
+{
+	if (n == 0)
+	{
+		useClipPlane = false;
 	}
 }
 
@@ -276,14 +387,22 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 	Color fragCol(0,0,0,0);
 	if (octree.intersect(ray, q))
 	{
-		Color& c = q.c;
+		Color c = q.c;
 		Vec3& t = ray.direction;
-		Vec3& N = q.n;
+		Vec3 N = q.n;
+
+		// see if we've reached the front or back face
+		if (t * N >= 0)
+		{
+			// it's the back. Change normal and color
+			N = -N;
+			c = Color(0.8, 0.6, 0.6);
+		}
 
 		Vec3 L(lightPos); L.normalize();
 
 		// see if the point is occluded or not
-		Vec3 p = q.r + q.n * 0.001; // add a little offset to make sure we're not hitting the same face
+		Vec3 p = q.r + N * 0.001; // add a little offset to make sure we're not hitting the same face
 		Ray ray2(p, L);
 
 		// calculate an ambient value

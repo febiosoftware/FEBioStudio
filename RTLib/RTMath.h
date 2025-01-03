@@ -36,6 +36,11 @@ namespace rt
 		Vec3() { d[0] = d[1] = d[2] = 0.0; }
 		Vec3(double x, double y, double z) { d[0] = x; d[1] = y; d[2] = z; }
 
+		bool operator == (const Vec3& a) const
+		{
+			return (d[0] == a.d[0]) && (d[1] == a.d[1]) && (d[2] == a.d[2]);
+		}
+
 		explicit Vec3(const vec3f& v)
 		{
 			d[0] = v.x;
@@ -104,6 +109,11 @@ namespace rt
 		double operator * (const Vec3& a) const
 		{
 			return d[0] * a.d[0] + d[1] * a.d[1] + d[2] * a.d[2];
+		}
+
+		Vec3 operator - () const
+		{
+			return Vec3(-d[0], -d[1], -d[2]);
 		}
 
 		static Vec3 cross(const Vec3& a, const Vec3& b)
@@ -289,12 +299,12 @@ namespace rt
 			v[3] /= a;
 		}
 
-		Color operator * (double a)
+		Color operator * (double a) const
 		{
 			return Color(a*v[0], a*v[1], a*v[2], a*v[3]);
 		}
 
-		Color operator / (double a)
+		Color operator / (double a) const
 		{
 			return Color(v[0]/a, v[1]/a, v[2]/a, v[3]/a);
 		}

@@ -44,6 +44,33 @@ namespace rt {
 		Vec3 t[3];
 		Color c[3];
 
+		Point point(unsigned int i) const
+		{
+			return Point{ r[i], n[i], t[i], c[i] };
+		}
+
+		Tri() {}
+
+		Tri(const Point& a, const Point& b, const Point& d)
+		{
+			r[0] = a.r; r[1] = b.r; r[2] = d.r;
+			n[0] = a.n; n[1] = b.n; n[2] = d.n;
+			t[0] = a.t; t[1] = b.t; t[2] = d.t;
+			c[0] = a.c; c[1] = b.c; c[2] = d.c;
+		}
+
+		bool process()
+		{
+			if ((r[0] == r[1]) || (r[0] == r[2]) || (r[1] == r[2])) return false;
+
+			Vec3 e1 = r[1] - r[0];
+			Vec3 e2 = r[2] - r[0];
+			fn = Vec3::cross(e1, e2);
+			fn.normalize();
+
+			return true;
+		}
+
 		Vec3 fn;
 	};
 

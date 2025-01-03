@@ -40,13 +40,6 @@ void Mesh::clear()
 
 void Mesh::addTri(rt::Tri& tri)
 {
-	// process face
-	Vec3* v = tri.r;
-	Vec3 e1 = v[1] - v[0];
-	Vec3 e2 = v[2] - v[0];
-	tri.fn = Vec3::cross(e1, e2);
-	tri.fn.normalize();
-
 	triList.push_back(tri);
 }
 
@@ -289,7 +282,7 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 	int imin = -1;
 	double zmax = 0;
 	Intersect q;
-	for (size_t i = 0; i < tris.size(); ++i)
+	for (int i = 0; i < (int)tris.size(); ++i)
 	{
 		rt::Tri& tri = *tris[i];
 		Vec3* v = tri.r;
