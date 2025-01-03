@@ -15,7 +15,7 @@ jobs:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable-pull-request.yml@develop
     with:
       register-runner-timeout: 10
-      aws-ami-id: ami-0ecb160c4a6bfd01d
+      aws-ami-id: ami-083a9a9faa1d3dddc
       aws-sg-id: sg-0ca7912782cf1538b
       aws-instance-type: c5a.8xlarge
       package-name: febio-studio
