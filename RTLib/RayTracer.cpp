@@ -32,7 +32,9 @@ RayTracer::RayTracer(RayTraceSurface& trg) : surf(trg)
 	fieldOfView = 60.0;
 	nearPlane = 0.01;
 	percentCompleted = 0.0;
+	renderStarted = false;
 	useVertexColor = false;
+	cancelled = false;
 }
 
 void RayTracer::setupProjection(double fov, double fnear)
@@ -48,8 +50,19 @@ void RayTracer::setMultiSample(int ms)
 	multiSample = ms;
 }
 
+void RayTracer::useShadows(bool b)
+{
+	renderShadows = b;
+}
+
+void RayTracer::setBTreeLevels(int levels)
+{
+	treeLevels = levels;
+}
+
 void RayTracer::start()
 {
+	cancelled = false;
 	GLRenderEngine::start();
 	mesh.clear();
 	modelView.makeIdentity();
@@ -58,6 +71,16 @@ void RayTracer::start()
 double RayTracer::progress()
 {
 	return percentCompleted;
+}
+
+bool RayTracer::hasProgress()
+{
+	return renderStarted;
+}
+
+void RayTracer::cancel()
+{
+	cancelled = true;
 }
 
 void RayTracer::finish()
@@ -167,6 +190,9 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 
 void RayTracer::render()
 {
+	renderStarted = false;
+	percentCompleted = 0;
+
 	// start ray-tracing process
 	size_t W = surf.width();
 	size_t H = surf.height();
@@ -177,101 +203,113 @@ void RayTracer::render()
 	double fw = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
 	double fh = fw / ar;
 
-	rt::Box box;
-	for (size_t i = 0; i < mesh.triangles(); ++i)
+	int levels = treeLevels;
+	if (levels < 0)
 	{
-		rt::Tri& tri = mesh.triangle(i);
-		box += tri.r[0];
-		box += tri.r[1];
-		box += tri.r[2];
+		size_t triangles = mesh.triangles();
+		levels = (int)log2((double)triangles);
 	}
+	if (levels < 0) levels = 0;
+	if (levels > 16) levels = 16;
+
+	rt::Btree btree;
+	btree.Build(mesh, levels);
 
 	int samples = multiSample;
 	if (samples < 1) samples = 1;
 	if (samples > 4) samples = 4;
 
-	percentCompleted = 0;
+	renderStarted = true;
 #pragma omp parallel
 	for (size_t j = 0; j < H; ++j)
 	{
-#pragma omp critical
-		percentCompleted = 100.0 * j / H;
+#pragma omp master
+		percentCompleted = (100.0 * j) / (double) H;
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(dynamic, 5)
 		for (int i = 0; i < W; ++i)
 		{
-			double x = -fw + 2.0 * i * fw / (W - 1.0);
-			double y =  fh - 2.0 * j * fh / (H - 1.0);
-			double z = -nearPlane;
+			if (!cancelled)
+			{
+				double x = -fw + 2.0 * i * fw / (W - 1.0);
+				double y = fh - 2.0 * j * fh / (H - 1.0);
+				double z = -nearPlane;
 
-			double dx = fw / W;
-			double dy = fh / H;
+				double dx = fw / W;
+				double dy = fh / H;
 
-			Color c(0, 0, 0, 0);
-			for (int k=0; k< samples; ++k)
-				for (int l = 0; l < samples; ++l)
-				{
-					double fx = (2.0 * k + 1 - samples) / (double)samples;
-					double fy = (2.0 * l + 1 - samples) / (double)samples;
-
-					double xf = x + fx*dx;
-					double yf = y + fy*dy;
-
-					Vec3 origin(xf, yf, z);
-					Vec3 direction = origin; direction.normalize();
-
-					Ray ray(origin, direction);
-
-					Color fragCol;
-					if (box.intersect(ray))
+				Color c(0, 0, 0, 0);
+				for (int k = 0; k < samples; ++k)
+					for (int l = 0; l < samples; ++l)
 					{
-						fragCol = castRay(ray);
+						double fx = (2.0 * k + 1 - samples) / (double)samples;
+						double fy = (2.0 * l + 1 - samples) / (double)samples;
+
+						double xf = x + fx * dx;
+						double yf = y + fy * dy;
+
+						Vec3 origin(xf, yf, z);
+						Vec3 direction = origin; direction.normalize();
+
+						Ray ray(origin, direction);
+
+						Color fragCol = castRay(btree, ray);
+
+						c += fragCol;
 					}
+				c /= (double)(samples * samples);
 
-					c += fragCol;
-				}
-			c /= (double)(samples * samples);
-
-			float* v = surf.value(i, j);
-			v[0] = (float)c.r();
-			v[1] = (float)c.g();
-			v[2] = (float)c.b();
-			v[3] = (float)c.a();
+				float* v = surf.value(i, j);
+				v[0] = (float)c.r();
+				v[1] = (float)c.g();
+				v[2] = (float)c.b();
+				v[3] = (float)c.a();
+			}
 		}
 	}
 	percentCompleted = 100.0;
 }
 
-rt::Color RayTracer::castRay(rt::Ray& ray)
+rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 {
 	rt::Point q;
 	Color fragCol(0,0,0,0);
-	if (intersect(mesh, ray, q))
+	if (octree.intersect(ray, q))
 	{
 		Color& c = q.c;
-
 		Vec3& t = ray.direction;
 		Vec3& N = q.n;
-		Vec3 L(lightPos);
 
-		// diffuse component
-		double f = N * L;
+		Vec3 L(lightPos); L.normalize();
+
+		// see if the point is occluded or not
+		Vec3 p = q.r + q.n * 0.001; // add a little offset to make sure we're not hitting the same face
+		Ray ray2(p, L);
+
+		// calculate an ambient value
+		fragCol = c*0.2;
+		double f = N * Vec3(0, 0, 1);
 		if (f < 0) f = 0;
-		Color diffuse = c * f;
+		fragCol += c * (f * 0.2);
 
-		// ambient
-		Color ambient = c * 0.1;
+		rt::Point q2;
+		if (!renderShadows || !octree.intersect(ray2, q2))
+		{
+			// diffuse component
+			double f = N * L;
+			if (f < 0) f = 0;
+			Color diffuse = c * f;
 
-		// specular component
-		Vec3 H = t - N * (2 * (t * N));
-		f = H * L;
-		double s = (f > 0 ? pow(f, 32) : 0);
-		Color spec = Color(s, s, s);
+			// specular component
+			Vec3 H = t - N * (2 * (t * N));
+			f = H * L;
+			double s = (f > 0 ? pow(f, 32) : 0);
+			Color spec = Color(s, s, s);
 
-		fragCol = diffuse + spec + ambient;
+			fragCol += (diffuse + spec)*0.8;
+		}
 		fragCol.a(c.a());
-
-		fragCol.clamp();
 	}
+	fragCol.clamp();
 	return fragCol;
 }

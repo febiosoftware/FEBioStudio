@@ -1294,31 +1294,25 @@ void CMainWindow::on_actionSnapShot_triggered()
 class CRayTracerThread : public CustomThread
 {
 public:
-	CRayTracerThread(GLScene* scene, GLContext rc, QImage* img, int multiSample) : m_img(img), m_scene(scene), m_rc(rc) 
+	CRayTracerThread(GLScene* scene, GLContext rc, QImage* img, RayTracer* rayTracer) : m_img(img), m_scene(scene), m_rc(rc) 
 	{
-		m_multiSample = multiSample;
-	}
-
-	~CRayTracerThread()
-	{
-		delete rayTracer;
-		rayTracer = nullptr;
+		m_rayTracer = rayTracer;
 	}
 
 	void run() Q_DECL_OVERRIDE
 	{
-		int W = m_img->width();
-		int H = m_img->height();
-		RayTraceSurface trg(W, H);
-		rayTracer = new RayTracer(trg);
-		rayTracer->setMultiSample(m_multiSample);
-		
+	
 		vec3f lp = m_rc.m_settings.m_light; lp.Normalize();
 
-		rayTracer->start();
-		rayTracer->setLightPosition(0, lp);
-		m_scene->Render(*rayTracer, m_rc);
-		rayTracer->finish();
+		m_rayTracer->start();
+		m_rayTracer->setLightPosition(0, lp);
+		m_scene->Render(*m_rayTracer, m_rc);
+		m_rayTracer->finish();
+
+		RayTraceSurface& trg = m_rayTracer->surface();
+		int W = m_img->width();
+		int H = m_img->height();
+
 		for (size_t j=0; j<H; ++j)
 			for (size_t i = 0; i < W; ++i)
 			{
@@ -1330,22 +1324,25 @@ public:
 	}
 
 public:
-	bool hasProgress() override { return true; }
+	bool hasProgress() override { return (m_rayTracer ? m_rayTracer->hasProgress() : 0.); }
 
 	double progress() override { 
-		return (rayTracer ? rayTracer->progress() : 0.);
+		return (m_rayTracer ? m_rayTracer->progress() : 0.);
 	}
 
-	const char* currentTask() override { return "thinking ..."; }
+	const char* currentTask() override 
+	{ 
+		if (hasProgress()) return "Rendering ...";
+		else return "Processing scene ..."; 
+	}
 
-	void stop() override {}
+	void stop() override { if (m_rayTracer) m_rayTracer->cancel(); }
 
 private:
 	QImage* m_img = nullptr;
 	GLScene* m_scene = nullptr;
 	GLContext m_rc;
-	RayTracer* rayTracer = nullptr;
-	int m_multiSample = 1;
+	RayTracer* m_rayTracer = nullptr;
 };
 
 void CMainWindow::on_actionRayTrace_triggered()
@@ -1361,7 +1358,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 	{
 		const int W = dlg.ImageWidth();
 		const int H = dlg.ImageHeight();
-		const int ms = dlg.Multisample();
+
 		GLContext rc;
 		rc.m_x = 0;
 		rc.m_y = 0;
@@ -1370,7 +1367,14 @@ void CMainWindow::on_actionRayTrace_triggered()
 		rc.m_settings = GetGLView()->GetViewSettings();
 		rc.m_cam = &scene->GetCamera();
 		QImage img(W, H, QImage::Format_RGB32);
-		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, ms);
+
+		RayTraceSurface trg(W, H);
+		RayTracer* rayTracer = new RayTracer(trg);
+		rayTracer->setMultiSample(dlg.Multisample());
+		rayTracer->setBTreeLevels(dlg.BTreeLevels());
+		rayTracer->useShadows(dlg.UseShadows());
+
+		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);
 		CDlgStartThread dlg2(this, render_thread);
 		dlg2.setTask("Rendering scene ...");
 		if (dlg2.exec())
@@ -1378,6 +1382,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 			CDlgScreenCapture dlg3(img, this);
 			dlg3.exec();
 		}
+		delete rayTracer;
 	}
 }
 

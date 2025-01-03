@@ -38,11 +38,20 @@ public:
 
 	void setMultiSample(int ms);
 
+	void setBTreeLevels(int levels);
+
+	void useShadows(bool b);
+
+	RayTraceSurface& surface() { return surf; }
+
 public:
 	void start() override;
 	void finish() override;
 
 	double progress();
+	bool hasProgress();
+
+	void cancel();
 
 public:
 	void pushTransform() override;
@@ -64,7 +73,7 @@ public:
 
 private:
 	void render();
-	rt::Color castRay(rt::Ray& ray);
+	rt::Color castRay(rt::Btree& octree, rt::Ray& ray);
 
 private:
 	RayTraceSurface& surf;
@@ -77,10 +86,15 @@ private:
 	double fieldOfView;
 	double nearPlane;
 
+	bool renderShadows = true;
 	int multiSample = 1;
+	int treeLevels = 8;
 
+	bool renderStarted;
 	double percentCompleted;
 
 	GLColor currentColor;
 	bool useVertexColor;
+
+	bool cancelled;
 };

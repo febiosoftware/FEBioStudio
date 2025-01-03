@@ -66,4 +66,40 @@ namespace rt {
 	};
 
 	bool intersect(Mesh& mesh, const Ray& ray, Point& q);
+
+	class Btree
+	{
+	public:
+		struct Block
+		{
+			Block() {}
+			~Block() { delete child[0]; delete child[1]; };
+
+			void split(int levels);
+			bool add(rt::Tri& tri);
+
+			void prune();
+
+			int level = 0;
+			Box box;
+			Block* child[2] = { nullptr };
+			std::vector<rt::Tri*> tris;
+
+			bool intersect(const Ray& ray, Point& p);
+
+			size_t size() const;
+		};
+
+		Btree() {}
+		~Btree() { delete root; }
+
+		Block* root = nullptr;
+
+		void Build(rt::Mesh& mesh, int levels);
+
+		bool intersect(const rt::Ray& ray, rt::Point& p);
+
+	private:
+		void prune();
+	};
 }

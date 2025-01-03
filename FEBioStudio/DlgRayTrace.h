@@ -40,6 +40,8 @@ public:
 	int ImageWidth();
 	int ImageHeight();
 	int Multisample();
+	int BTreeLevels();
+	bool UseShadows();
 
 	void accept() override;
 

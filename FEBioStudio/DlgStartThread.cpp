@@ -186,12 +186,8 @@ void CDlgStartThread::checkProgress()
 	}
 	else
 	{
-		if ((ui->m_cancelled == false) && (ui->m_thread->hasProgress()))
+		if ((ui->m_cancelled == false))
 		{
-			ui->m_progress->setRange(0.0, 100.0);
-			double p = ui->m_thread->progress();
-			ui->m_progress->setValue((int)p);
-
 			// NOTE: There could be a race condition here. What
 			//       if the task string is being updated while we get here? 
 			const char* sztask = ui->m_thread->currentTask();
@@ -201,11 +197,18 @@ void CDlgStartThread::checkProgress()
 				ui->m_task->setText(ui->m_currentTask);
 			}
 
-			double f = p / 100.0;
-			if (f > 0.01)
+			if (ui->m_thread->hasProgress())
 			{
-				double frem = fsec * (1.0 - f) / f;
-				ui->m_timeLeft->setText(sec2str(frem));
+				ui->m_progress->setRange(0.0, 100.0);
+				double p = ui->m_thread->progress();
+				ui->m_progress->setValue((int)p);
+
+				double f = p / 100.0;
+				if (f > 0.01)
+				{
+					double frem = fsec * (1.0 - f) / f;
+					ui->m_timeLeft->setText(sec2str(frem));
+				}
 			}
 		}
 

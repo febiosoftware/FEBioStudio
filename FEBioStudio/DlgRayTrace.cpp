@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QValidator>
 #include <QComboBox>
+#include <QSpinBox>
+#include <QCheckBox>
 
 class CDlgRayTraceUI
 {
@@ -39,10 +41,14 @@ public:
 	QLineEdit* width;
 	QLineEdit* height;
 	QComboBox* sample;
+	QSpinBox* levels;
+	QCheckBox* shadows;
 
 	static int lastWidth;
 	static int lastHeight;
 	static int lastSamples;
+	static int lastLevels;
+	static bool lastShadows;
 
 public:
 	void setup(CDlgRayTrace* dlg)
@@ -50,11 +56,14 @@ public:
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Width: ", width = new QLineEdit); width->setValidator(new QIntValidator(1, 2048));
 		form->addRow("Height: ", height = new QLineEdit); height->setValidator(new QIntValidator(1, 2048));
+		form->addRow("Shadows: ", shadows = new QCheckBox); shadows->setChecked(lastShadows);
 		form->addRow("Multisample: ", sample = new QComboBox); sample->addItems({ "Off","2", "3", "4" });
+		form->addRow("BTree levels: ", levels = new QSpinBox); levels->setRange(-1, 16); levels->setSpecialValueText("auto");
 
 		width->setText(QString::number(lastWidth));
 		height->setText(QString::number(lastHeight));
 		sample->setCurrentIndex(lastSamples - 1);
+		levels->setValue(lastLevels);
 
 		QVBoxLayout* l = new QVBoxLayout;
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -71,6 +80,8 @@ public:
 int CDlgRayTraceUI::lastWidth = 256;
 int CDlgRayTraceUI::lastHeight = 256;
 int CDlgRayTraceUI::lastSamples = 1;
+int CDlgRayTraceUI::lastLevels = -1;
+bool CDlgRayTraceUI::lastShadows = true;
 
 CDlgRayTrace::CDlgRayTrace(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgRayTraceUI)
 {
@@ -93,10 +104,22 @@ void CDlgRayTrace::accept()
 	ui->lastWidth = ImageWidth();
 	ui->lastHeight = ImageHeight();
 	ui->lastSamples = Multisample();
+	ui->lastLevels = BTreeLevels();
+	ui->lastShadows= UseShadows();
 	QDialog::accept();
 }
 
 int CDlgRayTrace::Multisample()
 {
 	return ui->sample->currentIndex() + 1;
+}
+
+int CDlgRayTrace::BTreeLevels()
+{
+	return ui->levels->value();
+}
+
+bool CDlgRayTrace::UseShadows()
+{
+	return ui->shadows->isChecked();
 }

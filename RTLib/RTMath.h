@@ -96,6 +96,11 @@ namespace rt
 			return Vec3(a * d[0], a * d[1], a * d[2]);
 		}
 
+		Vec3 operator / (double a) const
+		{
+			return Vec3(d[0]/a , d[1]/a, d[2]/a);
+		}
+
 		double operator * (const Vec3& a) const
 		{
 			return d[0] * a.d[0] + d[1] * a.d[1] + d[2] * a.d[2];
@@ -328,6 +333,20 @@ namespace rt
 		double x1 = 0, y1 = 0, z1 = 0;
 		bool valid = false;
 
+		double width () const { return x1 - x0; }
+		double height() const { return y1 - y0; }
+		double depth () const { return z1 - z0; }
+
+		double maxExtent() const
+		{
+			double w = width();
+			double h = height();
+			double d = depth();
+			if ((w >= h) && (w >= d)) return w;
+			if ((h >= w) && (h >= d)) return h;
+			return d;
+		}
+
 		void operator += (const Vec3& r)
 		{
 			if (!valid)
@@ -360,5 +379,43 @@ namespace rt
 		bool isInside(const Vec3& p, double eps = 0) const;
 
 		bool intersect(const Ray& ray) const;
+
+		bool intersect(const Vec3& a, const Vec3& b) const;
+
+		Vec3 corner(unsigned int n) const
+		{
+			switch (n)
+			{
+			case 0: return Vec3(x0, y0, z0); break;
+			case 1: return Vec3(x1, y0, z0); break;
+			case 2: return Vec3(x1, y1, z0); break;
+			case 3: return Vec3(x0, y1, z0); break;
+			case 4: return Vec3(x0, y0, z1); break;
+			case 5: return Vec3(x1, y0, z1); break;
+			case 6: return Vec3(x1, y1, z1); break;
+			case 7: return Vec3(x0, y1, z1); break;
+			}
+			assert(false);
+			return Vec3(0, 0, 0);
+		}
+
+		void edge(unsigned int n, Vec3& a, Vec3& b)
+		{
+			switch (n)
+			{
+			case  0: a = Vec3(x0, y0, z0); b = Vec3(x1, y0, z0); break;
+			case  1: a = Vec3(x1, y0, z0); b = Vec3(x1, y1, z0); break;
+			case  2: a = Vec3(x1, y1, z0); b = Vec3(x0, y1, z0); break;
+			case  3: a = Vec3(x0, y1, z0); b = Vec3(x0, y0, z0); break;
+			case  4: a = Vec3(x0, y0, z1); b = Vec3(x1, y0, z1); break;
+			case  5: a = Vec3(x1, y0, z1); b = Vec3(x1, y1, z1); break;
+			case  6: a = Vec3(x1, y1, z1); b = Vec3(x0, y1, z1); break;
+			case  7: a = Vec3(x0, y1, z1); b = Vec3(x0, y0, z1); break;
+			case  8: a = Vec3(x0, y0, z0); b = Vec3(x0, y0, z1); break;
+			case  9: a = Vec3(x1, y0, z0); b = Vec3(x1, y0, z1); break;
+			case 10: a = Vec3(x1, y1, z0); b = Vec3(x1, y1, z1); break;
+			case 11: a = Vec3(x0, y1, z0); b = Vec3(x0, y1, z1); break;
+			}
+		}
 	};
 }

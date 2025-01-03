@@ -73,7 +73,7 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 			if (l >= 0)
 			{
 				Vec3 q = o + t * l;
-				if (isInside(q, 1e-5))
+				if (isInside(q, 1e-8))
 				{
 					return true;
 				}
@@ -83,3 +83,44 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 	return false;
 }
 
+bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
+{
+	if (!valid) return false;
+
+	Vec3 c[6] = {
+		Vec3(x0, y0, z0),
+		Vec3(x1, y0, z0),
+		Vec3(x1, y1, z0),
+		Vec3(x0, y1, z0),
+		Vec3(x0, y0, z0),
+		Vec3(x0, y0, z1)
+	};
+
+	const Vec3 n[6] = {
+		Vec3( 0, -1,  0),
+		Vec3( 1,  0,  0),
+		Vec3( 0,  1,  0),
+		Vec3(-1,  0,  0),
+		Vec3( 0,  0, -1),
+		Vec3( 0,  0,  1),
+	};
+
+	Vec3 t = b - a;
+	for (int i = 0; i < 6; ++i)
+	{
+		double D = t * n[i];
+		if (D != 0)
+		{
+			double l = (n[i] * (c[i] - a)) / D;
+			if ((l >= 0) && (l <= 1))
+			{
+				Vec3 q = a + t * l;
+				if (isInside(q, 1e-8))
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
