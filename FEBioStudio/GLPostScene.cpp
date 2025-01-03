@@ -216,6 +216,26 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
+void GLPostModelItem::RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId)
+{
+	if (mesh.IsModified())
+	{
+		re.deleteCachedMesh(&mesh);
+		mesh.setModified(false);
+	}
+	re.renderGMesh(mesh, surfId, true);
+}
+
+void GLPostModelItem::RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh)
+{
+	if (mesh.IsModified())
+	{
+		re.deleteCachedMesh(&mesh);
+		mesh.setModified(false);
+	}
+	re.renderGMeshEdges(mesh, true);
+}
+
 void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
@@ -410,7 +430,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 					re.setMaterial(GLMaterial::PLASTIC, c);
 				}
 
-				re.renderGMesh(*mesh, i, false);
+				RenderMesh(re, *mesh, i);
 			}
 		}
 	}
@@ -465,7 +485,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 					re.setMaterial(GLMaterial::PLASTIC, c);
 				}
 
-				re.renderGMesh(*mesh, i, false);
+				RenderMesh(re, *mesh, i);
 			}
 		}
 	}
@@ -629,7 +649,7 @@ void GLPostModelItem::RenderMeshLines(GLRenderEngine& re, GLContext& rc)
 	GLColor c = rc.m_settings.m_meshColor;
 	c.a = 128;
 	re.setMaterial(GLMaterial::CONSTANT, c);
-	re.renderGMeshEdges(*mesh, false);
+	RenderMeshEdges(re, *mesh);
 }
 
 void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)

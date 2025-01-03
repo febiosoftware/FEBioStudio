@@ -98,6 +98,8 @@ void CPostObject::UpdateMesh()
 			face.t[2].x = buf[face.n[2]];
 		}
 	}
+
+	mesh->setModified(true);
 }
 
 void CPostObject::BuildFERenderMesh()
