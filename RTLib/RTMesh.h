@@ -35,6 +35,7 @@ namespace rt {
 		Vec3 n;
 		Vec3 t;
 		Color c;
+		int matid = -1;
 	};
 
 	struct Tri
@@ -43,6 +44,7 @@ namespace rt {
 		Vec3 n[3];
 		Vec3 t[3];
 		Color c[3];
+		int matid = -1;
 
 		Point point(unsigned int i) const
 		{

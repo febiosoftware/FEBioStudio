@@ -308,6 +308,7 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 		point.n = interpolate(tri.n, q.r); point.n.normalize();
 		point.t = interpolate(tri.t, q.r);
 		point.c = interpolate(tri.c, q.r); point.c.clamp();
+		point.matid = tri.matid;
 	}
 
 	return (imin != -1);

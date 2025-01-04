@@ -27,12 +27,22 @@ SOFTWARE.*/
 #include "RayTraceSurface.h"
 #include "RTMesh.h"
 #include "RTMath.h"
+#include "RTTexture.h"
 #include <stack>
+
+namespace rt {
+	struct Material 
+	{
+		int shininess = 0;
+		int tex1d = -1;
+	};
+}
 
 class RayTracer : public GLRenderEngine
 {
 public:
 	RayTracer(RayTraceSurface& target);
+	~RayTracer();
 
 	void setupProjection(double fov, double fnear);
 
@@ -82,6 +92,9 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
+public:
+	void setTexture(GLTexture1D& tex) override;
+
 private:
 	void render();
 	rt::Color castRay(rt::Btree& octree, rt::Ray& ray);
@@ -93,6 +106,13 @@ private:
 	rt::Mesh mesh;
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
+
+	std::vector<rt::Texture1D*> tex1d;
+	int currentTexture = -1;
+	bool useTexture1D = false;
+
+	int currentMaterial = -1;
+	std::vector<rt::Material> matList;
 
 	rt::Vec4 lightPos;
 

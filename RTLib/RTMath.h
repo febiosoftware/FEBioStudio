@@ -319,6 +319,13 @@ namespace rt
 			return Color(v[0]/a, v[1]/a, v[2]/a, v[3]/a);
 		}
 
+		void operator *= (const Color& c)
+		{
+			v[0] *= c.v[0];
+			v[1] *= c.v[1];
+			v[2] *= c.v[2];
+		}
+
 		void clamp()
 		{
 			v[0] = (v[0] < 0 ? 0 : (v[0] > 1 ? 1 : v[0]));

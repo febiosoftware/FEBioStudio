@@ -37,6 +37,12 @@ RayTracer::RayTracer(RayTraceSurface& trg) : surf(trg)
 	cancelled = false;
 }
 
+RayTracer::~RayTracer()
+{
+	for (rt::Texture1D* t : tex1d) delete t;
+	tex1d.clear();
+}
+
 void RayTracer::setupProjection(double fov, double fnear)
 {
 	fieldOfView = fov;
@@ -162,10 +168,26 @@ void RayTracer::setColor(GLColor c)
 	currentColor = c;
 }
 
-void RayTracer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
+void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	currentColor = c;
 	useVertexColor = (map == GLMaterial::VERTEX_COLOR);
+	useTexture1D = (map == GLMaterial::TEXTURE_1D);
+
+	rt::Material mat;
+	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
+	{
+		mat.shininess = 64;
+	}
+
+	if (useTexture1D)
+	{
+		mat.tex1d = currentTexture;
+		mat.shininess = 0; // don't add specular component when using textures
+	}
+
+	matList.push_back(mat);
+	currentMaterial = matList.size() - 1;
 }
 
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
@@ -201,6 +223,7 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
 		}
+		tri.matid = currentMaterial;
 		addTriangle(tri);
 	}
 }
@@ -234,6 +257,7 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
 			}
 		}
+		tri.matid = currentMaterial;
 		addTriangle(tri);
 	}
 }
@@ -250,7 +274,7 @@ Point interpolate(const Point& a, const Point& b, double w)
 }
 
 const int rtLUT[8][7] = {
-	{-1, -1, -1, -1, -1, -1, -1},
+	{ 0,  1,  2, -1, -1, -1, -1},
 	{ 3,  1,  2,  2,  5,  3, -1},
 	{ 2,  0,  3,  3,  4,  2, -1},
 	{ 2,  5,  4, -1, -1, -1, -1},
@@ -307,6 +331,7 @@ void RayTracer::addTriangle(rt::Tri& tri)
 			while (*pf != -1)
 			{
 				rt::Tri tri_n(p[pf[0]], p[pf[1]], p[pf[2]]);
+				tri_n.matid = tri.matid;
 				if (tri_n.process())
 					mesh.addTri(tri_n);
 				pf += 3;
@@ -345,6 +370,14 @@ void RayTracer::disableClipPlane(unsigned int n)
 	{
 		useClipPlane = false;
 	}
+}
+
+void RayTracer::setTexture(GLTexture1D& tex)
+{
+	rt::Texture1D* t1d = new rt::Texture1D();
+	t1d->setImageData(tex.Size(), tex.GetBytes());
+	tex1d.push_back(t1d);
+	currentTexture = tex1d.size() - 1;
 }
 
 void RayTracer::render()
@@ -436,6 +469,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 	if (octree.intersect(ray, q))
 	{
 		Color c = q.c;
+
 		Vec3& t = ray.direction;
 		Vec3 N = q.n;
 
@@ -445,6 +479,19 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			// it's the back. Change normal and color
 			N = -N;
 			c = Color(0.8, 0.6, 0.6);
+		}
+
+		// apply texture
+		int shininess = 0;
+		if (q.matid >= 0)
+		{
+			rt::Material& m = matList[q.matid];
+			if (m.tex1d >= 0)
+			{
+				Color t = tex1d[m.tex1d]->sample(q.t[0]);
+				c *= t;
+			}
+			shininess = m.shininess;
 		}
 
 		Vec3 L(lightPos); L.normalize();
@@ -468,10 +515,14 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			Color diffuse = c * f;
 
 			// specular component
-			Vec3 H = t - N * (2 * (t * N));
-			f = H * L;
-			double s = (f > 0 ? pow(f, 32) : 0);
-			Color spec = Color(s, s, s);
+			Color spec(0, 0, 0);
+			if (shininess > 0)
+			{
+				Vec3 H = t - N * (2 * (t * N));
+				f = H * L;
+				double s = (f > 0 ? pow(f, shininess) : 0);
+				spec = Color(s, s, s);
+			}
 
 			fragCol += (diffuse + spec)*0.8;
 		}
