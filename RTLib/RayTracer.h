@@ -58,6 +58,12 @@ public:
 	void popTransform() override;
 	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
+	void rotate(double deg, double x, double y, double z) override;
+	void scale(double x, double, double z) override;
+
+public:
+	GLRenderEngine::FrontFace frontFace() const;
+	void setFrontFace(FrontFace f);
 
 	void positionCamera(const GLCamera& cam) override;
 
@@ -102,6 +108,8 @@ private:
 
 	GLColor currentColor;
 	bool useVertexColor;
+
+	GLRenderEngine::FrontFace front = GLRenderEngine::COUNTER_CLOCKWISE;
 
 	bool useClipPlane = false;
 	double clipPlane[4] = { 0,0,0,0 };

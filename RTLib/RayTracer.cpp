@@ -117,6 +117,28 @@ void RayTracer::rotate(const quatd& rot)
 	modelView *= R;
 }
 
+void RayTracer::rotate(double deg, double x, double y, double z)
+{
+	quatd q(deg * DEG2RAD, x, y, z);
+	rotate(q);
+}
+
+void RayTracer::scale(double x, double y, double z)
+{
+	Matrix4 S = Matrix4::scale(x, y, z);
+	modelView *= S;
+}
+
+GLRenderEngine::FrontFace RayTracer::frontFace() const
+{
+	return front;
+}
+
+void RayTracer::setFrontFace(GLRenderEngine::FrontFace f)
+{
+	front = f;
+}
+
 void RayTracer::positionCamera(const GLCamera& cam)
 {
 	// reset the modelview matrix mode
@@ -159,12 +181,25 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 	{
 		const GLMesh::FACE& face = gmesh.Face(i);
 		rt::Tri tri;
-		for (int j = 0; j < 3; ++j)
+		if (front == GLRenderEngine::COUNTER_CLOCKWISE)
 		{
-			tri.r[j] = modelView * Vec4(face.vr[j], 1);
-			tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
-			tri.t[j] = Vec3(face.t[j]);
-			tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
+			for (int j = 0; j < 3; ++j)
+			{
+				tri.r[j] = modelView * Vec4(face.vr[j], 1);
+				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.t[j] = Vec3(face.t[j]);
+				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
+			}
+		}
+		else
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
+				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.t[2-j] = Vec3(face.t[j]);
+				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
+			}
 		}
 		addTriangle(tri);
 	}
@@ -179,12 +214,25 @@ void RayTracer::renderGMesh(const GLMesh& gmesh, int surfId, bool cacheMesh)
 	{
 		const GLMesh::FACE& face = gmesh.Face(p.n0 + i);
 		rt::Tri tri;
-		for (int j = 0; j < 3; ++j)
+		if (front == GLRenderEngine::COUNTER_CLOCKWISE)
 		{
-			tri.r[j] = modelView * Vec4(face.vr[j], 1);
-			tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
-			tri.t[j] = Vec3(face.t[j]);
-			tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
+			for (int j = 0; j < 3; ++j)
+			{
+				tri.r[j] = modelView * Vec4(face.vr[j], 1);
+				tri.n[j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.t[j] = Vec3(face.t[j]);
+				tri.c[j] = (useVertexColor ? face.c[j] : currentColor);
+			}
+		}
+		else
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				tri.r[2-j] = modelView * Vec4(face.vr[j], 1);
+				tri.n[2-j] = modelView * Vec4(face.vn[j], 0); tri.n[j].normalize();
+				tri.t[2-j] = Vec3(face.t[j]);
+				tri.c[2-j] = (useVertexColor ? face.c[j] : currentColor);
+			}
 		}
 		addTriangle(tri);
 	}
