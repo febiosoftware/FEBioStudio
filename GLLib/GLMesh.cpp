@@ -33,6 +33,7 @@ using std::stack;
 
 GLMesh::GLMesh(void)
 {
+	m_hasNeighborList = false;
 }
 
 GLMesh::~GLMesh(void)
@@ -47,6 +48,7 @@ void GLMesh::Create(int nodes, int faces, int edges)
 	m_FIL.clear();
 	m_EIL.clear();
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 void GLMesh::Clear()
@@ -57,6 +59,7 @@ void GLMesh::Clear()
 	m_FIL.clear();
 	m_EIL.clear();
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 int GLMesh::AddNode(const vec3f& r, int gid)
@@ -67,6 +70,7 @@ int GLMesh::AddNode(const vec3f& r, int gid)
 	v.nid = -1;
 	m_Node.push_back(v);
 	setModified(true);
+	m_hasNeighborList = false;
 	return ((int)m_Node.size() - 1);
 }
 
@@ -78,6 +82,7 @@ int GLMesh::AddNode(const vec3f& r, int nodeID, int gid)
 	v.nid = nodeID;
 	m_Node.push_back(v);
 	setModified(true);
+	m_hasNeighborList = false;
 	return ((int)m_Node.size() - 1);
 }
 
@@ -90,6 +95,7 @@ int	GLMesh::AddNode(const vec3f& r, GLColor c)
 	v.nid = 0;
 	m_Node.push_back(v);
 	setModified(true);
+	m_hasNeighborList = false;
 	return ((int)m_Node.size() - 1);
 }
 
@@ -134,6 +140,7 @@ void GLMesh::AddEdge(int* n, int nodes, int gid)
 	}
 	else assert(false);
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
@@ -189,6 +196,7 @@ void GLMesh::AddEdge(vec3f* r, int nodes, int gid)
 	}
 	else assert(false);
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 void GLMesh::AddEdge(vec3f r[2], GLColor c)
@@ -202,6 +210,7 @@ void GLMesh::AddEdge(vec3f r[2], GLColor c)
 	e.pid = 0;
 	m_Edge.push_back(e);
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 void GLMesh::AddEdge(vec3f r[2], GLColor c[2])
@@ -216,6 +225,7 @@ void GLMesh::AddEdge(vec3f r[2], GLColor c[2])
 	e.pid = 0;
 	m_Edge.push_back(e);
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 void GLMesh::AddEdge(const vec3f& a, const vec3f& b)
@@ -228,6 +238,7 @@ void GLMesh::AddEdge(const vec3f& a, const vec3f& b)
 	e.pid = 0;
 	m_Edge.push_back(e);
 	setModified(true);
+	m_hasNeighborList = false;
 }
 
 int GLMesh::AddFace(const GLMesh::FACE& face)
@@ -237,6 +248,7 @@ int GLMesh::AddFace(const GLMesh::FACE& face)
 	fil.nf++;
 	m_Face.push_back(face);
 	setModified(true);
+	m_hasNeighborList = false;
 	return ((int)m_Face.size() - 1);
 }
 
@@ -784,7 +796,7 @@ void GLMesh::Update()
 	}
 
 	UpdateBoundingBox();
-	FindNeighbors();
+	if (!m_hasNeighborList) FindNeighbors();
 	UpdateNormals();
 }
 
@@ -979,6 +991,7 @@ void GLMesh::FindNeighbors()
 			}
 		}
 	}
+	m_hasNeighborList = true;
 }
 
 

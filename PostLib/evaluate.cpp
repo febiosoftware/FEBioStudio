@@ -234,49 +234,54 @@ void FEPostModel::EvalNodeField(int ntime, int nfield)
 	// get the state data 
 	FEState& state = *m_State[ntime];
 	FEPostMesh* mesh = state.GetFEMesh();
+	ValArray& faceData = state.m_FaceData;
+	ValArray& elemData = state.m_ElemData;
 
 	// first, we evaluate all the nodes
-	int i, j;
-	for (i=0; i<mesh->Nodes(); ++i)
+#pragma omp parallel
 	{
-		FSNode& node = mesh->Node(i);
-		NODEDATA& d = state.m_NODE[i];
-		d.m_val = 0;
-		d.m_ntag = 0;
-		if (node.IsEnabled()) EvaluateNode(i, ntime, nfield, d);
-	}
-
-	// Next, we project the nodal data onto the faces
-	ValArray& faceData = state.m_FaceData;
-	for (i=0; i<mesh->Faces(); ++i)
-	{
-		FSFace& f = mesh->Face(i);
-		FACEDATA& d = state.m_FACE[i];
-		d.m_val = 0.f;
-		d.m_ntag = 0;
-		if (f.IsEnabled())
+#pragma omp for
+		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
-			d.m_ntag = 1;
-			for (j=0; j<f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
-			d.m_val /= (float) f.Nodes();
+			FSNode& node = mesh->Node(i);
+			NODEDATA& d = state.m_NODE[i];
+			d.m_val = 0;
+			d.m_ntag = 0;
+			if (node.IsEnabled()) EvaluateNode(i, ntime, nfield, d);
 		}
-	}
 
-	// Finally, we project the nodal data onto the elements
-	ValArray& elemData = state.m_ElemData;
-	for (i=0; i<mesh->Elements(); ++i)
-	{
-		FEElement_& e = mesh->ElementRef(i);
-		ELEMDATA& d = state.m_ELEM[i];
-		d.m_val = 0.f;
-		d.m_state &= ~StatusFlags::ACTIVE;
-		e.Deactivate();
-		if (e.IsEnabled())
+		// Next, we project the nodal data onto the faces
+#pragma omp for nowait
+		for (int i = 0; i < mesh->Faces(); ++i)
 		{
-			d.m_state |= StatusFlags::ACTIVE;
-			e.Activate();
-			for (j=0; j<e.Nodes(); ++j) { float val = state.m_NODE[e.m_node[j]].m_val; elemData.value(i,j) = val; d.m_val += val; }
-			d.m_val /= (float) e.Nodes();
+			FSFace& f = mesh->Face(i);
+			FACEDATA& d = state.m_FACE[i];
+			d.m_val = 0.f;
+			d.m_ntag = 0;
+			if (f.IsEnabled())
+			{
+				d.m_ntag = 1;
+				for (int j = 0; j < f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
+				d.m_val /= (float)f.Nodes();
+			}
+		}
+
+		// Finally, we project the nodal data onto the elements
+#pragma omp for
+		for (int i = 0; i < mesh->Elements(); ++i)
+		{
+			FEElement_& e = mesh->ElementRef(i);
+			ELEMDATA& d = state.m_ELEM[i];
+			d.m_val = 0.f;
+			d.m_state &= ~StatusFlags::ACTIVE;
+			e.Deactivate();
+			if (e.IsEnabled())
+			{
+				d.m_state |= StatusFlags::ACTIVE;
+				e.Activate();
+				for (int j = 0; j < e.Nodes(); ++j) { float val = state.m_NODE[e.m_node[j]].m_val; elemData.value(i, j) = val; d.m_val += val; }
+				d.m_val /= (float)e.Nodes();
+			}
 		}
 	}
 }

@@ -177,4 +177,5 @@ private:
 	vector<pair<int, int> >	m_EIL;
 
 	bool m_isModified = false;
+	bool m_hasNeighborList = false;
 };
