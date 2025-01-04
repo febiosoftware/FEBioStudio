@@ -1620,7 +1620,6 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 	if (pm == nullptr) return;
 
 	// render non-selected parts
-	GPart* pgmat = nullptr; // the part that defines the material
 	int NF = po->Faces();
 	for (int n = 0; n < NF; ++n)
 	{
@@ -1628,19 +1627,31 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 		GFace& f = *po->Face(n);
 		if (f.IsVisible())
 		{
-			GLColor c = m_scene->GetFaceColor(f);
-
-			bool useStipple = false;
-			if (c.a != 255)
+			// get the part (that is visible)
+			int* pid = f.m_nPID;
+			GPart* pg = po->Part(pid[0]);
+			if (pg && pg->IsVisible() == false)
 			{
-				c.a = 255;
-				useStipple = true;
+				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = nullptr;
+				if (pg && (pg->IsVisible() == false)) pg = nullptr;
 			}
 
-			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-			else re.setMaterial(GLMaterial::PLASTIC, c);
-			re.renderGMesh(*pm, n);
+			if (pg && !pg->IsSelected())
+			{
+				GLColor c = m_scene->GetFaceColor(f);
+
+				bool useStipple = false;
+				if (c.a != 255)
+				{
+					c.a = 255;
+					useStipple = true;
+				}
+
+				// render the face
+				if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
+				else re.setMaterial(GLMaterial::PLASTIC, c);
+				re.renderGMesh(*pm, n);
+			}
 		}
 	}
 

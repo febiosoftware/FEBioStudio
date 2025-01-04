@@ -345,6 +345,7 @@ namespace rt
 
 		Vec3 origin;
 		Vec3 direction;
+		int bounce = 0;
 	};
 
 	struct Intersect

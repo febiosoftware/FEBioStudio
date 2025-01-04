@@ -178,6 +178,13 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
 	{
 		mat.shininess = 64;
+		mat.opacity = (matType == GLMaterial::PLASTIC ? 1 : 0.4);
+	}
+
+	if (matType == GLMaterial::HIGHLIGHT)
+	{
+		mat.shininess = 0;
+		mat.opacity = 0.4;
 	}
 
 	if (useTexture1D)
@@ -481,51 +488,74 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			c = Color(0.8, 0.6, 0.6);
 		}
 
-		// apply texture
+		// get some material props
 		int shininess = 0;
+		int texid = -1;
+		double opacity = 1;
 		if (q.matid >= 0)
 		{
 			rt::Material& m = matList[q.matid];
-			if (m.tex1d >= 0)
-			{
-				Color t = tex1d[m.tex1d]->sample(q.t[0]);
-				c *= t;
-			}
 			shininess = m.shininess;
+			texid = m.tex1d;
+			opacity = m.opacity;
 		}
 
-		Vec3 L(lightPos); L.normalize();
-
-		// see if the point is occluded or not
-		Vec3 p = q.r + N * 0.001; // add a little offset to make sure we're not hitting the same face
-		Ray ray2(p, L);
+		// apply texture
+		if (texid >= 0)
+		{
+			Color t = tex1d[texid]->sample(q.t[0]);
+			c *= t;
+		}
 
 		// calculate an ambient value
-		fragCol = c*0.2;
+		fragCol = c * 0.2;
 		double f = N * Vec3(0, 0, 1);
 		if (f < 0) f = 0;
 		fragCol += c * (f * 0.2);
 
-		rt::Point q2;
-		if (!renderShadows || !octree.intersect(ray2, q2))
+		// see if the point is occluded or not
+		Vec3 L(lightPos); L.normalize();
+		bool isOccluded = false;
+		if (renderShadows)
+		{
+			Vec3 p = q.r + N * 0.001; // add a little offset to make sure we're not hitting the same face
+			Ray ray2(p, L);
+			ray2.bounce = ray.bounce + 1;
+			rt::Point q2;
+			if (octree.intersect(ray2, q2)) isOccluded = true;
+		}
+
+		if (!isOccluded)
 		{
 			// diffuse component
 			double f = N * L;
 			if (f < 0) f = 0;
 			Color diffuse = c * f;
-
-			// specular component
-			Color spec(0, 0, 0);
-			if (shininess > 0)
-			{
-				Vec3 H = t - N * (2 * (t * N));
-				f = H * L;
-				double s = (f > 0 ? pow(f, shininess) : 0);
-				spec = Color(s, s, s);
-			}
-
-			fragCol += (diffuse + spec)*0.8;
+			fragCol += diffuse;
 		}
+
+		if ((opacity < 0.99) && (ray.bounce < 5))
+		{
+			Vec3 p = q.r - N * 0.001; // add a little offset to make sure we're not hitting the same face
+			Ray ray2(p, ray.direction);
+			ray2.bounce = ray.bounce + 1;
+
+			rt::Point q2;
+			Color c2 = castRay(octree, ray2);
+			fragCol = fragCol * opacity + c2 * (1 - opacity);
+		}
+
+		// add specular component
+		Color spec(0, 0, 0);
+		if (!isOccluded && (shininess > 0))
+		{
+			Vec3 H = t - N * (2 * (t * N));
+			f = H * L;
+			double s = (f > 0 ? pow(f, shininess) : 0);
+			spec = Color(s, s, s);
+		}
+		fragCol = (fragCol + spec) * 0.8;
+
 		fragCol.a(c.a());
 	}
 	fragCol.clamp();
