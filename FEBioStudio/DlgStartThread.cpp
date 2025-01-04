@@ -55,7 +55,7 @@ public:
 	QLabel*			m_time;
 	QLabel*			m_timeLeft;
 
-	time_point<steady_clock>	m_start;	//!< time at start
+	time_point<steady_clock>	m_start, m_tic;	//!< time at start
 
 public:
 	CDlgStartThreadUI()
@@ -106,11 +106,6 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
 	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
-
-	ui->m_start = steady_clock::now();
-
-	ui->m_thread->start();
-	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::setTask(const QString& taskString)
@@ -120,8 +115,9 @@ void CDlgStartThread::setTask(const QString& taskString)
 
 void CDlgStartThread::showEvent(QShowEvent* ev) 
 {
-    ui->m_thread->start();
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
+	ui->m_start = ui->m_tic = steady_clock::now();
+	ui->m_thread->start();
+	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::closeEvent(QCloseEvent* ev)
@@ -206,13 +202,19 @@ void CDlgStartThread::checkProgress()
 				double f = p / 100.0;
 				if (f > 0.01)
 				{
+					double fsec = duration_cast<dseconds>(pause - ui->m_tic).count();
 					double frem = fsec * (1.0 - f) / f;
 					ui->m_timeLeft->setText(sec2str(frem));
 				}
 			}
+			else
+			{
+				ui->m_tic = pause;
+				ui->m_timeLeft->setText("");
+			}
 		}
 
-		QTimer::singleShot(500, this, SLOT(checkProgress()));
+		QTimer::singleShot(250, this, SLOT(checkProgress()));
 	}
 }
 

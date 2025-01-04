@@ -37,7 +37,7 @@ class CDlgStartThread : public QDialog
 public:
 	CDlgStartThread(CMainWindow* parent, CustomThread* thread);
 
-    void showEvent(QShowEvent* ev) override;
+	void showEvent(QShowEvent* ev) override;
 	void closeEvent(QCloseEvent* ev) override;
 
 	void accept();
