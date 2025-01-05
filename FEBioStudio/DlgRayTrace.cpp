@@ -57,8 +57,8 @@ public:
 		form->addRow("Width: ", width = new QLineEdit); width->setValidator(new QIntValidator(1, 2048));
 		form->addRow("Height: ", height = new QLineEdit); height->setValidator(new QIntValidator(1, 2048));
 		form->addRow("Shadows: ", shadows = new QCheckBox); shadows->setChecked(lastShadows);
-		form->addRow("Multisample: ", sample = new QComboBox); sample->addItems({ "Off","2", "3", "4" });
-		form->addRow("BTree levels: ", levels = new QSpinBox); levels->setRange(-1, 16); levels->setSpecialValueText("auto");
+		form->addRow("Multisample: ", sample = new QComboBox); sample->addItems({ "Off","2x2", "3x3", "4x4" });
+		form->addRow("BTree levels: ", levels = new QSpinBox); levels->setRange(-1, 20); levels->setSpecialValueText("auto");
 
 		width->setText(QString::number(lastWidth));
 		height->setText(QString::number(lastHeight));

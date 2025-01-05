@@ -105,8 +105,23 @@ SOFTWARE.*/
 #include <FEBioMonitor/FEBioReportDoc.h>
 #include "RemoteJob.h"
 #include "DlgRemoteProgress.h"
+#include <FSCore/FSLogger.h>
 
 extern GLColor col[];
+
+class FSMainWindowOutput : public FSLogOutput
+{
+public:
+	FSMainWindowOutput(CMainWindow* w) : wnd(w) {}
+
+	void Write(const std::string& s) override
+	{
+		if (wnd) wnd->AddLogEntry(QString::fromStdString(s));
+	}
+
+private:
+	CMainWindow* wnd;
+};
 
 CMainWindow*	CResource::m_wnd = nullptr;
 
@@ -216,6 +231,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		QObject::connect(&ui->m_updateWidget, &CUpdateWidget::ready, this, &CMainWindow::autoUpdateCheck);
 		ui->m_updateWidget.checkForUpdate();
 	}
+
+	FSLogger::SetOutput(new FSMainWindowOutput(this));
 }
 
 //-----------------------------------------------------------------------------
@@ -854,7 +871,7 @@ bool compare_filename(const std::string& file1, const std::string& file2)
 {
 	if (file1.size() != file2.size()) return false;
 
-	int l = file1.size();
+	int l = (int)file1.size();
 	for (int i = 0; i < l; ++i)
 	{
 		char c1 = file1[i];

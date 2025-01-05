@@ -445,5 +445,33 @@ namespace rt
 			case 11: a = Vec3(x0, y1, z0); b = Vec3(x0, y1, z1); break;
 			}
 		}
+
+		Box split(int i)
+		{
+			double dx = 0.5 * width();
+			double dy = 0.5 * height();
+			double dz = 0.5 * depth();
+			Box box;
+			if ((dx >= dy) && (dx >= dz))
+			{
+				box.x0 = x0 + i * dx; box.x1 = x0 + (i + 1) * dx;
+				box.y0 = y0; box.y1 = y1;
+				box.z0 = z0; box.z1 = z1;
+			}
+			else if ((dy >= dx) && (dy >= dz))
+			{
+				box.x0 = x0; box.x1 = x1;
+				box.y0 = y0 + i * dy; box.y1 = y0 + (i + 1) * dy;
+				box.z0 = z0; box.z1 = z1;
+			}
+			else if ((dz >= dx) && (dz >= dy))
+			{
+				box.x0 = x0; box.x1 = x1;
+				box.y0 = y0; box.y1 = y1;
+				box.z0 = z0 + i * dz; box.z1 = z0 + (i + 1) * dz;
+			}
+			box.valid = true;
+			return box;
+		}
 	};
 }

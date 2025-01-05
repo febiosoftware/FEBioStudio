@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RTMesh.h"
+#include <FSCore/FSLogger.h>
 #include <stack>
 using namespace rt;
 
@@ -86,36 +87,32 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 
 bool intersectTri(rt::Tri& tri, const Vec3& a, const Vec3& b)
 {
-	const double tol = 0.0001;
+	constexpr double tol = 0.0001;
 
 	const Vec3& fn = tri.fn;
 	Vec3* v = tri.r;
 
 	// find the intersection of the point with the plane
-	const Vec3& o = a;
-	const Vec3& t = b - a;
+	const Vec3 t = b - a;
 	double D = fn * t;
 	if (D == 0.0) return false;
-	double l = fn * (v[0] - o) / D;
+	double l = fn * (v[0] - a) / D;
 	if ((l < 0) || (l > 1)) return false;
-	Vec3 q = o + t * l;
 
 	// find the natural coordinates
 	Vec3 e1 = v[1] - v[0];
 	Vec3 e2 = v[2] - v[0];
-	double A[2][2] = { { e1 * e1, e1 * e2 }, { e2 * e1, e2 * e2 } };
-	D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	double A[3] = { e1 * e1, e2 * e2, e1 * e2};
+	D = A[0] * A[1] - A[2] * A[2];
 	if (D == 0) return false;
-	double Ai[2][2] = {
-		{  A[1][1] / D, -A[0][1] / D},
-		{ -A[1][0] / D,  A[0][0] / D}
-	};
+	double Ai[3] = { A[1] / D, A[0] / D, -A[2] / D };
 
-	Vec3 E1 = e1 * Ai[0][0] + e2 * Ai[0][1];
-	Vec3 E2 = e1 * Ai[1][0] + e2 * Ai[1][1];
-
-	double r = (q - v[0]) * E1;
-	double s = (q - v[0]) * E2;
+	Vec3 q = a + t * l;
+	Vec3 q0 = q - v[0];
+	double q01 = q0 * e1;
+	double q02 = q0 * e2;
+	double r = q01 * Ai[0] + q02 * Ai[2];
+	double s = q01 * Ai[2] + q02 * Ai[1];
 	return ((r >= -tol) && (s >= -tol) && (r + s <= 1.0 + tol));
 }
 
@@ -162,49 +159,15 @@ bool rt::intersect(Mesh& mesh, const Ray& ray, Point& point)
 	return (imin != -1);
 }
 
-void rt::Btree::Block::split(int levels)
+bool insideBox(Box& box, rt::Tri& tri)
 {
-	level = levels;
-	if (levels == 0)
+	const double eps = 1e-7;
+	Vec3* v = tri.r;
+	if (box.isInside(v[0], eps) && box.isInside(v[1], eps) && box.isInside(v[2], eps))
 	{
-		tris.reserve(1024);
-		return;
+		return true;
 	}
-
-	double dx = 0.5 * box.width();
-	double dy = 0.5 * box.height();
-	double dz = 0.5 * box.depth();
-
-	for (int i = 0; i < 2; ++i)
-	{
-		Box box_n;
-		if ((dx >= dy) && (dx >= dz))
-		{
-			box_n.x0 = box.x0 + i * dx; box_n.x1 = box.x0 + (i + 1) * dx;
-			box_n.y0 = box.y0; box_n.y1 = box.y1;
-			box_n.z0 = box.z0; box_n.z1 = box.z1;
-		}
-		else if ((dy >= dx) && (dy >= dz))
-		{
-			box_n.x0 = box.x0; box_n.x1 = box.x1;
-			box_n.y0 = box.y0 + i * dy; box_n.y1 = box.y0 + (i + 1) * dy;
-			box_n.z0 = box.z0; box_n.z1 = box.z1;
-		}
-		else if ((dz >= dx) && (dz >= dy))
-		{
-			box_n.x0 = box.x0; box_n.x1 = box.x1;
-			box_n.y0 = box.y0; box_n.y1 = box.y1;
-			box_n.z0 = box.z0 + i * dz; box_n.z1 = box.z0 + (i + 1) * dz;
-		}
-
-		box_n.valid = true;
-		double R = box_n.maxExtent();
-		box_n.inflate(R*1e-9);
-
-		child[i] = new Block;
-		child[i]->box = box_n;
-		child[i]->split(levels - 1);
-	}
+	return false;
 }
 
 bool intersectBox(Box& box, rt::Tri& tri)
@@ -256,27 +219,6 @@ bool intersectBox(Box& box, rt::Tri& tri)
 	return false;
 }
 
-bool rt::Btree::Block::add(rt::Tri& tri)
-{
-	if (!box.valid) return false;
-	if (intersectBox(box, tri))
-	{
-		if (level == 0)
-		{
-			tris.push_back(&tri);
-			return true;
-		}
-		else
-		{
-			bool b1 = false, b2 = false;
-			if (child[0]) b1 = child[0]->add(tri);
-			if (child[1]) b2 = child[1]->add(tri);
-			return (b1 || b2);
-		}
-	}
-	return false;
-}
-
 bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point)
 {
 	Vec3 c = ray.origin;
@@ -315,30 +257,25 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 
 size_t rt::Btree::Block::size() const
 {
-	if (level == 0) return tris.size();
-	else
-	{
-		size_t n = 0;
-		if (child[0]) n += child[0]->size();
-		if (child[1]) n += child[1]->size();
-		return n;
-	}
+	size_t n = tris.size();
+	if (child[0]) n += child[0]->size();
+	if (child[1]) n += child[1]->size();
+	return n;
 }
 
-void rt::Btree::Block::prune()
+size_t rt::Btree::blocks() const
 {
-	for (int i = 0; i < 2; ++i)
+	size_t n = 0;
+	std::stack<rt::Btree::Block*> S;
+	S.push(root);
+	while (!S.empty())
 	{
-		if (child[i])
-		{
-			if (child[i]->size() == 0)
-			{
-				delete child[i];
-				child[i] = nullptr;
-			}
-			else child[i]->prune();
-		}
+		rt::Btree::Block* b = S.top(); S.pop();
+		n++;
+		if (b->child[0]) S.push(b->child[0]);
+		if (b->child[1]) S.push(b->child[1]);
 	}
+	return n;
 }
 
 void rt::Btree::Build(Mesh& mesh, int levels)
@@ -346,6 +283,9 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 	delete root;
 	root = new Block;
 
+	FSLogger::Write("Building binary tree ...\n");
+	int ntriangles = (int)mesh.triangles();
+	FSLogger::Write("  Nr of triangles : %d\n", ntriangles);
 	rt::Box box;
 	for (size_t i = 0; i < mesh.triangles(); ++i)
 	{
@@ -355,20 +295,22 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 		box += tri.r[2];
 	}
 	double R = box.maxExtent();
-	box.inflate(R*1e-9);
+	box.inflate(R * 1e-9);
 
 	root->box = box;
 
 	if (levels < 0) levels = 0;
-	root->split(levels);
-
-	for (int i = 0; i < mesh.triangles(); ++i)
+	FSLogger::Write("  Splitting levels : %d\n", levels);
+	std::vector<rt::Btree::Block*> work((int)pow(2, levels + 1), nullptr);
+	for (int i = 0; i < ntriangles; ++i)
 	{
 		rt::Tri& tri = mesh.triangle(i);
-		root->add(tri);
+		add(&tri, levels, work);
 	}
 
-	root->prune();
+	int nrblocks = (int)blocks();
+	FSLogger::Write("  Nr. of blocks : %d\n", nrblocks);
+	FSLogger::Write("  Nr. of triangles in BTree : %d\n", (int)root->size());
 }
 
 bool rt::Btree::intersect(const Ray& ray, Point& p)
@@ -383,7 +325,7 @@ bool rt::Btree::intersect(const Ray& ray, Point& p)
 	while (!S.empty())
 	{
 		rt::Btree::Block* block = S.top(); S.pop();
-		if (block->level == 0)
+		if (block->tris.empty() == false)
 		{
 			rt::Point tmp;
 			if (intersectTriangles(block->tris, ray, tmp))
@@ -397,18 +339,49 @@ bool rt::Btree::intersect(const Ray& ray, Point& p)
 				}
 			}
 		}
-		else
-		{
-			if ((block->child[0]) && (block->child[0]->box.intersect(ray))) S.push(block->child[0]);
-			if ((block->child[1]) && (block->child[1]->box.intersect(ray))) S.push(block->child[1]);
-		}
+
+		if ((block->child[0]) && (block->child[0]->box.intersect(ray))) S.push(block->child[0]);
+		if ((block->child[1]) && (block->child[1]->box.intersect(ray))) S.push(block->child[1]);
 	}
 
 	return found;
 }
 
-void rt::Btree::prune()
+void rt::Btree::add(rt::Tri* tri, int levels, std::vector<rt::Btree::Block*>& S)
 {
-	root->prune();
-}
+	root->level = levels;
+	size_t n = 0;
+	S[n++] = root;
+	while (n > 0)
+	{
+		Block* b = S[--n];
+		if (b->level == 0)
+		{
+			b->tris.push_back(tri);
+		}
+		else
+		{
+			for (int i = 0; i < 2; ++i)
+			{
+				if (b->child[i] == nullptr)
+				{
+					Box box_n = b->box.split(i);
+					double R = box_n.maxExtent();
+					box_n.inflate(R * 1e-9);
 
+					if (intersectBox(box_n, *tri))
+					{
+						b->child[i] = new Block;
+						b->child[i]->box = box_n;
+						b->child[i]->level = b->level - 1;
+						S[n++] = b->child[i];
+					}
+				}
+				else if (intersectBox(b->child[i]->box, *tri))
+				{
+					S[n++] = b->child[i];
+				}
+			}
+		}
+	}
+}

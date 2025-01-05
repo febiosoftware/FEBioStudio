@@ -25,7 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RayTracer.h"
 #include <GLLib/GLMesh.h>
+#include <FSCore/FSLogger.h>
 using namespace rt;
+
+#include <chrono>
+using namespace std::chrono;
+using dseconds = duration<double>;
+
 
 RayTracer::RayTracer(RayTraceSurface& trg) : surf(trg)
 {
@@ -92,7 +98,17 @@ void RayTracer::cancel()
 void RayTracer::finish()
 {
 	// let's get to work!
+	time_point<steady_clock> tic = steady_clock::now();
+	preprocess();
+	time_point<steady_clock> toc = steady_clock::now();
+	double sec1 = duration_cast<dseconds>(toc - tic).count();
+	FSLogger::Write("Preprocessing completed in %lg sec.\n", sec1);
+	tic = toc;
 	render();
+	toc = steady_clock::now();
+	double sec2 = duration_cast<dseconds>(toc - tic).count();
+	FSLogger::Write("Rendering completed in %lg sec.\n", sec2);
+	FSLogger::Write("Total elapsed time : %lg\n", sec1 + sec2);
 
 	// clean up
 	mesh.clear();
@@ -194,7 +210,7 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	}
 
 	matList.push_back(mat);
-	currentMaterial = matList.size() - 1;
+	currentMaterial = (int)matList.size() - 1;
 }
 
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
@@ -384,7 +400,20 @@ void RayTracer::setTexture(GLTexture1D& tex)
 	rt::Texture1D* t1d = new rt::Texture1D();
 	t1d->setImageData(tex.Size(), tex.GetBytes());
 	tex1d.push_back(t1d);
-	currentTexture = tex1d.size() - 1;
+	currentTexture = (int)tex1d.size() - 1;
+}
+
+void RayTracer::preprocess()
+{
+	int levels = treeLevels;
+	if (levels < 0)
+	{
+		size_t triangles = mesh.triangles();
+		levels = (int)log2((double)triangles);
+	}
+	if (levels < 0) levels = 0;
+	if (levels > 20) levels = 20;
+	btree.Build(mesh, levels);
 }
 
 void RayTracer::render()
@@ -401,18 +430,6 @@ void RayTracer::render()
 
 	double fw = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
 	double fh = fw / ar;
-
-	int levels = treeLevels;
-	if (levels < 0)
-	{
-		size_t triangles = mesh.triangles();
-		levels = (int)log2((double)triangles);
-	}
-	if (levels < 0) levels = 0;
-	if (levels > 16) levels = 16;
-
-	rt::Btree btree;
-	btree.Build(mesh, levels);
 
 	int samples = multiSample;
 	if (samples < 1) samples = 1;
@@ -503,7 +520,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 		// apply texture
 		if (texid >= 0)
 		{
-			Color t = tex1d[texid]->sample(q.t[0]);
+			Color t = tex1d[texid]->sample((float)q.t[0]);
 			c *= t;
 		}
 

@@ -97,6 +97,7 @@ public:
 	void setTexture(GLTexture1D& tex) override;
 
 private:
+	void preprocess();
 	void render();
 	rt::Color castRay(rt::Btree& octree, rt::Ray& ray);
 
@@ -105,6 +106,7 @@ private:
 private:
 	RayTraceSurface& surf;
 	rt::Mesh mesh;
+	rt::Btree btree;
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
 

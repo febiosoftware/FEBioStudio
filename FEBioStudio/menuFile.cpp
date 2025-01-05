@@ -1318,7 +1318,7 @@ public:
 			{
 				GLColor c = trg.colorValue(i, j);
 				QRgb rgb = qRgb(c.r, c.g, c.b);
-				m_img->setPixel(i, j, rgb);
+				m_img->setPixel((int)i, (int)j, rgb);
 			}
 		emit resultReady(true);
 	}

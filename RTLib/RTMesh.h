@@ -104,11 +104,6 @@ namespace rt {
 			Block() {}
 			~Block() { delete child[0]; delete child[1]; };
 
-			void split(int levels);
-			bool add(rt::Tri& tri);
-
-			void prune();
-
 			int level = 0;
 			Box box;
 			Block* child[2] = { nullptr };
@@ -126,7 +121,8 @@ namespace rt {
 
 		bool intersect(const rt::Ray& ray, rt::Point& p);
 
-	private:
-		void prune();
+		void add(rt::Tri* tri, int levels, std::vector<Block*>& work);
+
+		size_t blocks() const;
 	};
 }
