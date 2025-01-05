@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RTMesh.h"
+#include <stack>
 using namespace rt;
 
 Mesh::Mesh()
@@ -57,30 +58,30 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 	if (D == 0.0) return false;
 	double l = fn * (v[0] - o) / D;
 	if (l < 0) return false;
-	Vec3 q = o + t * l;
 
 	// find the natural coordinates
-	Vec3 e1 = v[1] - v[0];
-	Vec3 e2 = v[2] - v[0];
-	double A[2][2] = { { e1 * e1, e1 * e2 }, { e2 * e1, e2 * e2 } };
-	D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	const Vec3 e1 = v[1] - v[0];
+	const Vec3 e2 = v[2] - v[0];
+	double A[3] = { e1 * e1, e2 * e2, e1 * e2 };
+	D = A[0] * A[1] - A[2] * A[2];
 	if (D == 0) return false;
-	double Ai[2][2] = {
-		{  A[1][1] / D, -A[0][1] / D},
-		{ -A[1][0] / D,  A[0][0] / D}
-	};
+	double Ai[3] = { A[1] / D, A[0] / D, -A[2] / D};
 
-	Vec3 E1 = e1 * Ai[0][0] + e2 * Ai[0][1];
-	Vec3 E2 = e1 * Ai[1][0] + e2 * Ai[1][1];
+	Vec3 q = o + t * l;
+	const Vec3 qo = q - v[0];
+	double qe1 = qo * e1;
+	double qe2 = qo * e2;
+	double r = (qe1 * Ai[0] + qe2 * Ai[2]);
+	double s = (qe1 * Ai[2] + qe2 * Ai[1]);
 
-	double r = (q - v[0]) * E1;
-	double s = (q - v[0]) * E2;
-
-	intersect.point = q;
-	intersect.r[0] = r;
-	intersect.r[1] = s;
-
-	return ((r >= -tol) && (s >= -tol) && (r + s <= 1.0 + tol));
+	if ((r >= -tol) && (s >= -tol) && (r + s <= 1.0 + tol))
+	{
+		intersect.point = q;
+		intersect.r[0] = r;
+		intersect.r[1] = s;
+		return true;
+	}
+	else return false;
 }
 
 bool intersectTri(rt::Tri& tri, const Vec3& a, const Vec3& b)
@@ -280,23 +281,21 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 {
 	Vec3 c = ray.origin;
 	int imin = -1;
-	double zmax = 0;
+	double Dmin = 0;
 	Intersect q;
 	for (int i = 0; i < (int)tris.size(); ++i)
 	{
 		rt::Tri& tri = *tris[i];
 		Vec3* v = tri.r;
-		if ((imin == -1) || (v[0].z() > zmax) || (v[1].z() > zmax) || (v[2].z() > zmax))
+		Intersect p;
+		if (intersectTri(tri, ray, p))
 		{
-			Intersect p;
-			if (intersectTri(tri, ray, p))
+			double D2 = (p.point - ray.origin).sqrLength();
+			if ((imin == -1) || (D2 < Dmin))
 			{
-				if ((imin == -1) || (p.point.z() > zmax))
-				{
-					imin = i;
-					zmax = p.point.z();
-					q = p;
-				}
+				imin = i;
+				Dmin = D2;
+				q = p;
 			}
 		}
 	}
@@ -312,35 +311,6 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 	}
 
 	return (imin != -1);
-}
-
-bool rt::Btree::Block::intersect(const rt::Ray& ray, rt::Point& point)
-{
-	if (!box.valid) return false;
-
-	if (box.intersect(ray))
-	{
-		if (level == 0)
-		{
-			return intersectTriangles(tris, ray, point);
-		}
-		else
-		{
-			Point q1, q2;
-			bool b1 = (child[0] ? child[0]->intersect(ray, q1) : false);
-			bool b2 = (child[1] ? child[1]->intersect(ray, q2) : false);
-
-			if (b1 && b2)
-			{
-				if (q1.r.z() > q2.r.z()) point = q1; else point = q2;
-			}
-			else if (b1) point = q1;
-			else if (b2) point = q2;
-
-			return (b1 || b2);
-		}
-	}
-	else return false;
 }
 
 size_t rt::Btree::Block::size() const
@@ -403,7 +373,38 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 
 bool rt::Btree::intersect(const Ray& ray, Point& p)
 {
-	return root->intersect(ray, p);
+	if (root->box.intersect(ray) == false) return false;
+
+	bool found = false;
+	double Dmin = 0;
+
+	std::stack<rt::Btree::Block*> S;
+	S.push(root);
+	while (!S.empty())
+	{
+		rt::Btree::Block* block = S.top(); S.pop();
+		if (block->level == 0)
+		{
+			rt::Point tmp;
+			if (intersectTriangles(block->tris, ray, tmp))
+			{
+				double D2 = (tmp.r - ray.origin).sqrLength();
+				if ((found == false) || (D2 < Dmin))
+				{
+					found = true;
+					Dmin = D2;
+					p = tmp;
+				}
+			}
+		}
+		else
+		{
+			if ((block->child[0]) && (block->child[0]->box.intersect(ray))) S.push(block->child[0]);
+			if ((block->child[1]) && (block->child[1]->box.intersect(ray))) S.push(block->child[1]);
+		}
+	}
+
+	return found;
 }
 
 void rt::Btree::prune()

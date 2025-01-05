@@ -114,8 +114,6 @@ namespace rt {
 			Block* child[2] = { nullptr };
 			std::vector<rt::Tri*> tris;
 
-			bool intersect(const Ray& ray, Point& p);
-
 			size_t size() const;
 		};
 
