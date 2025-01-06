@@ -125,8 +125,8 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 			}
 
 			// repeat over all elements
-			GLColor defaultColor(200, 200, 200);
-			GLColor c(defaultColor);
+			GLColor inactiveColor(200, 200, 200);
+			GLColor c(po->GetColor());
 			int matId = -1;
 			int NE = mesh->Elements();
 			for (int i = 0; i < NE; ++i)
@@ -186,7 +186,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 							if (data.GetElementDataTag(i) > 0)
 								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
 							else
-								ec[k] = defaultColor;
+								ec[k] = inactiveColor;
 						}
 					}
 
@@ -402,8 +402,8 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 				}
 			}
 
-			GLColor defaultColor(200, 200, 200);
-			GLColor c(defaultColor);
+			GLColor inactiveColor(200, 200, 200);
+			GLColor c(po->GetColor());
 			int matId = -1;
 			for (int i = 0; i < NE; ++i)
 			{
@@ -449,25 +449,23 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 								ev[3] = ev[2];
 							}
 
-/*							if (showContour)
+							if (showContour)
 							{
 								for (int k = 0; k < 8; ++k)
 								{
 									if (data.GetElementDataTag(i) > 0)
-										ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
+										ec[k] = colormap.map(data.GetElementValue(i, k));
 									else
-										ec[k] = defaultColor;
+										ec[k] = inactiveColor;
 								}
 							}
-*/
+
 							// calculate the case of the face
 							int ncase = 0;
 							for (int k = 0; k < 4; ++k)
 							{
 								if (ev[k] > ref * 0.999999) ncase |= (1 << k);
 							}
-
-							// TODO: why do we need to do this?
 							ncase = 15 - ncase;
 
 							// loop over faces
@@ -483,7 +481,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 									int node = pf[m];
 									if (node < 4)
 									{
-										r[m] = to_vec3f(ex[node]);
+										r[m] = to_vec3f(T.LocalToGlobal(ex[node]));
 									}
 									else
 									{
@@ -495,7 +493,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 
 										float w = (ref - (float)v1) / ((float)v2 - (float)v1);
 										vec3d p = ex[n1] * (1.f - w) + ex[n2] * w;
-										r[m] = to_vec3f(p);
+										r[m] = to_vec3f(T.LocalToGlobal(p));
 									}
 								}
 
@@ -518,8 +516,8 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 								int n0 = f.n[k];
 								int n1 = f.n[(k+1)%ne];
 
-								r[0] = to_vec3f(mesh->Node(n0).r);
-								r[1] = to_vec3f(mesh->Node(n1).r);
+								r[0] = to_vec3f(T.LocalToGlobal(mesh->Node(n0).r));
+								r[1] = to_vec3f(T.LocalToGlobal(mesh->Node(n1).r));
 
 								planeCut->AddEdge(r, 2, (el.IsSelected() ? 1 : 0));
 							}
@@ -538,7 +536,7 @@ void GLPlaneCut::Render(GLRenderEngine& re, GLContext& rc)
 	if (m_planeCut == nullptr) return;
 
 	// render the unselected faces
-	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200));
+	re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 200, 200), GLMaterial::VERTEX_COLOR);
 	re.renderGMesh(*m_planeCut, 0, false);
 
 	// render the selected faces
