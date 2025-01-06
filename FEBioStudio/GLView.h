@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <PostGL/ColorTexture.h>
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
-#include <queue>
+#include <list>
 
 class CMainWindow;
 class CGLDocument;
@@ -268,7 +268,7 @@ protected:
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
-	std::queue<double>	m_fps;
+	std::list<double>	m_fps;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;

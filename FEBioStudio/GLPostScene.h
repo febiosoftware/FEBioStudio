@@ -68,6 +68,10 @@ private:
 	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
+
+private:
+	void RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId);
+	void RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh);
 };
 
 class GLPostPlotItem : public GLPostSceneItem

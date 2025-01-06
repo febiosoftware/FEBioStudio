@@ -94,6 +94,8 @@ public:
 
 	virtual void Update();
 
+	bool IsModified() const { return m_isModified; }
+
 	int Nodes() const { return (int) m_Node.size(); }
 	int Edges() const { return (int)m_Edge.size(); }
 	int Faces() const { return (int)m_Face.size(); }
@@ -159,6 +161,8 @@ public:
 	void UpdateBoundingBox();
 	void UpdateNormals();
 
+	void setModified(bool b) { m_isModified = b; }
+
 private:
 	int AddFace(const FACE& face);
 
@@ -171,4 +175,7 @@ protected:
 private:
 	vector<PARTITION>		m_FIL;
 	vector<pair<int, int> >	m_EIL;
+
+	bool m_isModified = false;
+	bool m_hasNeighborList = false;
 };
