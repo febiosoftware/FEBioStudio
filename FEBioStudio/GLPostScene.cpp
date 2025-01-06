@@ -710,42 +710,44 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// loop over un-selected, inactive elements
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
-	curMat = -1;
-	re.begin(GLRenderEngine::LINES);
-	for (int i = 0; i < gm.DiscreteEdges(); ++i)
+	if (gm.DiscreteEdges() > 0)
 	{
-		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
-		if (pe && !pe->IsSelected() && pe->IsVisible())
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
+		curMat = -1;
+		re.begin(GLRenderEngine::LINES);
+		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
-			int mat = edge.mat;
-			if (mat != curMat)
+			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
+			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
-				Material* pmat = ps->GetMaterial(mat);
-				re.setColor(pmat->diffuse);
-				curMat = mat;
-				bvisible = pmat->bvisible;
-				if (colmap->IsActive() && pmat->benable) bvisible = false;
+				int mat = edge.mat;
+				if (mat != curMat)
+				{
+					Material* pmat = ps->GetMaterial(mat);
+					re.setColor(pmat->diffuse);
+					curMat = mat;
+					bvisible = pmat->bvisible;
+					if (colmap->IsActive() && pmat->benable) bvisible = false;
+				}
+
+				if (bvisible) RenderDiscreteElement(re, i);
 			}
-
-			if (bvisible) RenderDiscreteElement(re, i);
 		}
-	}
-	re.end();
 
-	// loop over selected elements
-	re.setColor(GLColor::Red());
-	for (int i = 0; i < gm.DiscreteEdges(); ++i)
-	{
-		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
-		if (pe && pe->IsSelected() && pe->IsVisible())
+		// loop over selected elements
+		re.setColor(GLColor::Red());
+		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
-			RenderDiscreteElement(re, i);
+			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
+			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			if (pe && pe->IsSelected() && pe->IsVisible())
+			{
+				RenderDiscreteElement(re, i);
+			}
 		}
+		re.end();
 	}
-	re.end();
 
 	re.popState();
 
