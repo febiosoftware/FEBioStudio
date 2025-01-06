@@ -194,12 +194,12 @@ void glx::drawSphere(GLRenderEngine& re, float R)
 		{
 			re.begin(GLRenderEngine::TRIANGLEFAN);
 			{
-				vec3d ri1(0, 0, 0);
+				vec3d ri1(0, 0, -R);
 				vec3d rb = ri1;
 				vec3d nb(0, 0, -1);
 				re.normal(nb); re.vertex(rb);
 
-				for (int i = 0; i <= N; ++i)
+				for (int i = N; i >= 0; --i)
 				{
 					double w = 2 * PI * i / (double)N;
 					double x = cos(w);
