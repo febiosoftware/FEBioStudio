@@ -2558,7 +2558,6 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 		int nitem = m_scene->GetItemMode();
 		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE))
 		{
-
 			GLCamera& cam = *rc.m_cam;
 
 			cam.LineDrawMode(true);
@@ -2580,7 +2579,15 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 					GLMesh* m = po->GetRenderMesh();
 					if (m)
 					{
-						re.renderGMeshEdges(*m);
+						re.setColor(GLColor::Black());
+						for (int j=0; j<po->Edges(); ++j)
+							re.renderGMeshEdges(*m, j);
+
+						if (vs.m_nrender == RENDER_WIREFRAME)
+						{
+							re.setColor(GLColor(32, 0, 0));
+							re.renderGMeshOutline(*rc.m_cam, *m, po->GetRenderTransform());
+						}
 					}
 					re.popTransform();
 				}

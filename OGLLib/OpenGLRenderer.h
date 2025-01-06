@@ -96,6 +96,7 @@ public:
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh) override;
 	void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh) override;
 
+	void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T) override;
 	void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T, int surfID) override;
 
 public:

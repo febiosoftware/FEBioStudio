@@ -141,6 +141,7 @@ public:
 	virtual void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh = true) {}
 
+	virtual void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T) {}
 	virtual void renderGMeshOutline(GLCamera& cam, const GLMesh& mesh, const Transform& T, int surfID) {}
 
 public:

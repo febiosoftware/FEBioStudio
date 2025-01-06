@@ -774,6 +774,84 @@ void OpenGLRenderer::disableClipPlane(unsigned int n)
 	glDisable(GL_CLIP_PLANE0 + n);
 }
 
+void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T)
+{
+	// get some settings
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
+
+	// this array will collect all points to render
+	vector<vec3f> points; points.reserve(1024);
+
+	int NF = gmsh.Faces();
+	if (NF > 0)
+	{
+		// loop over all faces
+		for (int i = 0; i < NF; ++i)
+		{
+			const GLMesh::FACE& f = gmsh.Face(i);
+			for (int j = 0; j < 3; ++j)
+			{
+				bool bdraw = false;
+
+				if (f.nbr[j] >= 0)
+				{
+					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
+					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
+					vec3d n2 = T.LocalToGlobalNormal(to_vec3d(f2.fn));
+
+					if (cam.IsOrtho())
+					{
+						q.RotateVector(n1);
+						q.RotateVector(n2);
+						if (n1.z * n2.z <= 0) bdraw = true;
+					}
+					else
+					{
+						int a = j;
+						int b = (j + 1) % 3;
+						vec3d ra = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[a]).r));
+						vec3d rb = T.LocalToGlobal(to_vec3d(gmsh.Node(f.n[b]).r));
+						vec3d c = (ra + rb) * 0.5;
+						vec3d pc = p - c;
+						double d1 = pc * n1;
+						double d2 = pc * n2;
+						if (d1 * d2 <= 0) bdraw = true;
+					}
+				}
+
+				if (bdraw)
+				{
+					int a = f.n[j];
+					int b = f.n[(j + 1) % 3];
+					if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+					points.push_back(gmsh.Node(a).r);
+					points.push_back(gmsh.Node(b).r);
+				}
+			}
+		}
+	}
+	if (points.empty()) return;
+
+	// build the line mesh
+	GLMesh lineMesh;
+	int NN = (int)points.size();
+	int NE = (int)points.size() / 2;
+	lineMesh.Create(NN, 0, NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		lineMesh.Node(2 * i).r = points[2 * i];
+		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
+		lineMesh.Edge(i).n[0] = 2 * i;
+		lineMesh.Edge(i).n[1] = 2 * i + 1;
+	}
+	lineMesh.Update();
+
+	// render the active edges
+	renderGMeshEdges(lineMesh, false);
+}
+
 void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
 {
 	// get some settings
