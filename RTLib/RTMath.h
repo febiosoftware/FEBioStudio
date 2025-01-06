@@ -150,6 +150,14 @@ namespace rt
 			d[3] = w;
 		}
 
+		explicit Vec4(const Vec3& v, double w = 1)
+		{
+			d[0] = v.x();
+			d[1] = v.y();
+			d[2] = v.z();
+			d[3] = w;
+		}
+
 		double x() const { return d[0]; }
 		double y() const { return d[1]; }
 		double z() const { return d[2]; }

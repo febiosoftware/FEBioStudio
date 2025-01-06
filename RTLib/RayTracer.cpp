@@ -219,6 +219,91 @@ void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 	lightPos = modelView * r;
 }
 
+void RayTracer::begin(PrimitiveType prim)
+{
+	assert(immediateMode == false);
+	assert(verts.empty());
+	immediateMode = true;
+	primType = prim;
+	verts.reserve(1024 * 1024);
+}
+
+void RayTracer::end()
+{
+	assert(immediateMode);
+	if (immediateMode)
+	{
+		size_t vertices = verts.size();
+		size_t n = 0;
+		switch (primType)
+		{
+		case GLRenderEngine::TRIANGLES:
+		{
+			size_t ntri = vertices / 3;
+			for (size_t i = 0; i < ntri; ++i, n += 3)
+			{
+				rt::Tri tri(verts[n], verts[n+1], verts[n+2]);
+				tri.matid = currentMaterial;
+				addTriangle(tri);
+			}
+		}
+		break;
+		case GLRenderEngine::TRIANGLEFAN:
+		{
+			size_t ntri = vertices - 2;
+			for (size_t i = 0; i < ntri; ++i, n++)
+			{
+				rt::Tri tri(verts[0], verts[n + 1], verts[n + 2]);
+				tri.matid = currentMaterial;
+				addTriangle(tri);
+			}
+		}
+		break;
+		case GLRenderEngine::QUADSTRIP:
+		{
+			size_t nquads = (vertices - 2) / 2;
+			for (size_t i = 0; i < nquads; ++i, n += 2)
+			{
+				rt::Tri tri1(verts[n], verts[n + 1], verts[n + 2]);
+				rt::Tri tri2(verts[n+2], verts[n + 3], verts[n + 1]);
+				tri1.matid = currentMaterial;
+				tri2.matid = currentMaterial;
+				addTriangle(tri1);
+				addTriangle(tri2);
+			}
+		}
+		break;
+		}
+	}
+	immediateMode = false;
+	verts.clear();
+}
+
+void RayTracer::vertex(const vec3d& r)
+{
+	Point p;
+	p.r = modelView * Vec4(r);
+	p.n = modelView * Vec4(currentNormal, 0); p.n.normalize();
+	p.c = currentColor;
+	p.t = currentTexCoord;
+	verts.push_back(p);
+}
+
+void RayTracer::normal(const vec3d& r)
+{
+	currentNormal = Vec3(r);
+}
+
+void RayTracer::texCoord1d(double t)
+{
+	currentTexCoord = Vec3(t, 0, 0);
+}
+
+void RayTracer::texCoord2d(double r, double s)
+{
+	currentTexCoord = Vec3(r, s, 0);
+}
+
 void RayTracer::renderGMesh(const GLMesh& gmesh, bool cacheMesh)
 {
 	int NF = gmesh.Faces();

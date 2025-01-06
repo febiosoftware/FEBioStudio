@@ -85,6 +85,15 @@ public:
 
 	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
 
+public: // immediate mode rendering
+	void begin(PrimitiveType prim) override;
+	void end() override;
+
+	void vertex(const vec3d& r) override;
+	void normal(const vec3d& r) override;
+	void texCoord1d(double t) override;
+	void texCoord2d(double r, double s) override;
+
 public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) override;
@@ -126,6 +135,12 @@ private:
 	bool renderShadows = true;
 	int multiSample = 1;
 	int treeLevels = 8;
+
+	bool immediateMode = false;
+	PrimitiveType primType = POINTS;
+	std::vector<rt::Point> verts;
+	rt::Vec3 currentNormal;
+	rt::Vec3 currentTexCoord;
 
 	bool renderStarted;
 	double percentCompleted;
