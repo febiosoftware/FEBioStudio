@@ -24,77 +24,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/math3d.h>
-#include <FSCore/color.h>
 #include "RTMath.h"
+#include "RTMesh.h"
 
-namespace rt {
-
-	struct Point {
-		Vec3 r;
-		Vec3 n;
-		Vec3 t;
-		Color c;
-		int matid = -1;
-	};
-
-	struct Tri
-	{
-		Vec3 r[3];
-		Vec3 n[3];
-		Vec3 t[3];
-		Color c[3];
-		int matid = -1;
-
-		Point point(unsigned int i) const
-		{
-			return Point{ r[i], n[i], t[i], c[i] };
-		}
-
-		Tri() {}
-
-		Tri(const Point& a, const Point& b, const Point& d)
-		{
-			r[0] = a.r; r[1] = b.r; r[2] = d.r;
-			n[0] = a.n; n[1] = b.n; n[2] = d.n;
-			t[0] = a.t; t[1] = b.t; t[2] = d.t;
-			c[0] = a.c; c[1] = b.c; c[2] = d.c;
-		}
-
-		bool process()
-		{
-			if ((r[0] == r[1]) || (r[0] == r[2]) || (r[1] == r[2])) return false;
-
-			Vec3 e1 = r[1] - r[0];
-			Vec3 e2 = r[2] - r[0];
-			fn = Vec3::cross(e1, e2);
-			fn.normalize();
-
-			return true;
-		}
-
-		Vec3 fn;
-	};
-
-	class Mesh
+namespace rt
+{
+	class Btree
 	{
 	public:
-		Mesh();
+		struct Block
+		{
+			Block() {}
+			~Block() { delete child[0]; delete child[1]; };
 
-		void clear();
+			void split(int level);
 
-		void addTri(Tri& t);
+			void add(rt::Tri* tri, int level);
 
-		size_t triangles() const { return triList.size(); }
+			size_t size() const;
 
-		Tri& triangle(size_t n) { return triList[n]; }
-		const Tri& triangle(size_t n) const { return triList[n]; }
+			Box box;
+			Block* child[2] = { nullptr };
+			std::vector<rt::Tri*> tris;
+		};
 
-	private:
-		std::vector<Tri> triList;
+		Btree() {}
+		~Btree() { delete root; }
+
+		Block* root = nullptr;
+
+		void Build(rt::Mesh& mesh, int levels);
+
+		bool intersect(const rt::Ray& ray, rt::Point& p);
+
+		std::vector<rt::Btree::Block*> leaves();
+
+		size_t blocks() const;
 	};
-
-	bool intersect(Mesh& mesh, const Ray& ray, Point& q);
-	bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point);
-	bool intersectBox(Box& box, rt::Tri& tri);
 }

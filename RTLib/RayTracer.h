@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include <GLLib/GLRenderEngine.h>
 #include "RayTraceSurface.h"
 #include "RTMesh.h"
+#include "RTBTree.h"
 #include "RTMath.h"
 #include "RTTexture.h"
 #include <stack>

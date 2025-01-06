@@ -170,7 +170,7 @@ bool insideBox(Box& box, rt::Tri& tri)
 	return false;
 }
 
-bool intersectBox(Box& box, rt::Tri& tri)
+bool rt::intersectBox(Box& box, rt::Tri& tri)
 {
 	// quick check to see if any of the triangle nodes are inside the box.
 	const double eps = 1e-7;
@@ -219,7 +219,7 @@ bool intersectBox(Box& box, rt::Tri& tri)
 	return false;
 }
 
-bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point)
+bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point)
 {
 	Vec3 c = ray.origin;
 	int imin = -1;
@@ -253,135 +253,4 @@ bool intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Poi
 	}
 
 	return (imin != -1);
-}
-
-size_t rt::Btree::Block::size() const
-{
-	size_t n = tris.size();
-	if (child[0]) n += child[0]->size();
-	if (child[1]) n += child[1]->size();
-	return n;
-}
-
-size_t rt::Btree::blocks() const
-{
-	size_t n = 0;
-	std::stack<rt::Btree::Block*> S;
-	S.push(root);
-	while (!S.empty())
-	{
-		rt::Btree::Block* b = S.top(); S.pop();
-		n++;
-		if (b->child[0]) S.push(b->child[0]);
-		if (b->child[1]) S.push(b->child[1]);
-	}
-	return n;
-}
-
-void rt::Btree::Build(Mesh& mesh, int levels)
-{
-	delete root;
-	root = new Block;
-
-	FSLogger::Write("Building binary tree ...\n");
-	int ntriangles = (int)mesh.triangles();
-	FSLogger::Write("  Nr of triangles : %d\n", ntriangles);
-	rt::Box box;
-	for (size_t i = 0; i < mesh.triangles(); ++i)
-	{
-		rt::Tri& tri = mesh.triangle(i);
-		box += tri.r[0];
-		box += tri.r[1];
-		box += tri.r[2];
-	}
-	double R = box.maxExtent();
-	box.inflate(R * 1e-9);
-
-	root->box = box;
-
-	if (levels < 0) levels = 0;
-	FSLogger::Write("  Splitting levels : %d\n", levels);
-	std::vector<rt::Btree::Block*> work((int)pow(2, levels + 1), nullptr);
-	for (int i = 0; i < ntriangles; ++i)
-	{
-		rt::Tri& tri = mesh.triangle(i);
-		add(&tri, levels, work);
-	}
-
-	int nrblocks = (int)blocks();
-	FSLogger::Write("  Nr. of blocks : %d\n", nrblocks);
-	FSLogger::Write("  Nr. of triangles in BTree : %d\n", (int)root->size());
-}
-
-bool rt::Btree::intersect(const Ray& ray, Point& p)
-{
-	if (root->box.intersect(ray) == false) return false;
-
-	bool found = false;
-	double Dmin = 0;
-
-	std::stack<rt::Btree::Block*> S;
-	S.push(root);
-	while (!S.empty())
-	{
-		rt::Btree::Block* block = S.top(); S.pop();
-		if (block->tris.empty() == false)
-		{
-			rt::Point tmp;
-			if (intersectTriangles(block->tris, ray, tmp))
-			{
-				double D2 = (tmp.r - ray.origin).sqrLength();
-				if ((found == false) || (D2 < Dmin))
-				{
-					found = true;
-					Dmin = D2;
-					p = tmp;
-				}
-			}
-		}
-
-		if ((block->child[0]) && (block->child[0]->box.intersect(ray))) S.push(block->child[0]);
-		if ((block->child[1]) && (block->child[1]->box.intersect(ray))) S.push(block->child[1]);
-	}
-
-	return found;
-}
-
-void rt::Btree::add(rt::Tri* tri, int levels, std::vector<rt::Btree::Block*>& S)
-{
-	root->level = levels;
-	size_t n = 0;
-	S[n++] = root;
-	while (n > 0)
-	{
-		Block* b = S[--n];
-		if (b->level == 0)
-		{
-			b->tris.push_back(tri);
-		}
-		else
-		{
-			for (int i = 0; i < 2; ++i)
-			{
-				if (b->child[i] == nullptr)
-				{
-					Box box_n = b->box.split(i);
-					double R = box_n.maxExtent();
-					box_n.inflate(R * 1e-9);
-
-					if (intersectBox(box_n, *tri))
-					{
-						b->child[i] = new Block;
-						b->child[i]->box = box_n;
-						b->child[i]->level = b->level - 1;
-						S[n++] = b->child[i];
-					}
-				}
-				else if (intersectBox(b->child[i]->box, *tri))
-				{
-					S[n++] = b->child[i];
-				}
-			}
-		}
-	}
 }
