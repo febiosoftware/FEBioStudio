@@ -488,10 +488,12 @@ void RayTracer::setTexture(GLTexture1D& tex)
 
 void RayTracer::preprocess()
 {
+	size_t triangles = mesh.triangles();
+	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = i;
+	
 	int levels = treeLevels;
 	if (levels < 0)
 	{
-		size_t triangles = mesh.triangles();
 		levels = (int)log2((double)triangles);
 	}
 	if (levels < 0) levels = 0;
@@ -616,8 +618,8 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 		bool isOccluded = false;
 		if (renderShadows)
 		{
-			Vec3 p = q.r + N * 0.001; // add a little offset to make sure we're not hitting the same face
-			Ray ray2(p, L);
+			Vec3 p = q.r;
+			Ray ray2(p, L, q.tri_id);
 			ray2.bounce = ray.bounce + 1;
 			rt::Point q2;
 			if (octree.intersect(ray2, q2)) isOccluded = true;
@@ -635,8 +637,8 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 		double opacity = c.a();
 		if ((c.a() < 0.99) && (ray.bounce < 5))
 		{
-			Vec3 p = q.r - N * 0.001; // add a little offset to make sure we're not hitting the same face
-			Ray ray2(p, ray.direction);
+			Vec3 p = q.r;
+			Ray ray2(p, ray.direction, q.tri_id);
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;

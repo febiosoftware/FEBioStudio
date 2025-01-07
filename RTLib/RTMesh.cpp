@@ -230,7 +230,7 @@ bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt:
 		rt::Tri& tri = *tris[i];
 		Vec3* v = tri.r;
 		Intersect p;
-		if (intersectTri(tri, ray, p))
+		if ((tri.id != ray.tri_id) && intersectTri(tri, ray, p))
 		{
 			double D2 = (p.point - ray.origin).sqrLength();
 			if ((imin == -1) || (D2 < Dmin))
@@ -250,6 +250,7 @@ bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt:
 		point.t = interpolate(tri.t, q.r);
 		point.c = interpolate(tri.c, q.r); point.c.clamp();
 		point.matid = tri.matid;
+		point.tri_id = tri.id;
 	}
 
 	return (imin != -1);
