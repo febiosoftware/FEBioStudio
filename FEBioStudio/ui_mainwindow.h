@@ -81,6 +81,7 @@ SOFTWARE.*/
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
 #include "DlgPartViewer.h"
+#include "DlgScreenCapture.h"
 #include <PyLib/PythonToolsPanel.h>
 #include "DlgPartViewer.h"
 #include <FEBioApp/FEBioAppView.h>
@@ -312,6 +313,7 @@ public:
 	::CDlgExplodedView* explodeTool = nullptr;
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
+	::CDlgScreenCapture* imageView = nullptr;
 
 	CDlgPartViewer* partViewer = nullptr;
 

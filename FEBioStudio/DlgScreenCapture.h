@@ -23,20 +23,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
+#pragma once
 #include <QDialog>
 
 class QImage;
 class QGraphicsScene;
 class QGraphicsView;
 class CMainWindow;
+class QGraphicsPixmapItem;
 
 class CDlgScreenCapture : public QDialog
 {
     Q_OBJECT;
 
 public:
-    CDlgScreenCapture(const QImage& img, CMainWindow* wnd);
+    CDlgScreenCapture(CMainWindow* wnd);
+
+	void SetImage(const QImage& img);
 
 private slots:
     void on_saveButton_clicked();
@@ -47,4 +50,5 @@ private:
     QImage m_img;
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;
+	QGraphicsPixmapItem* m_imgItem;
 };

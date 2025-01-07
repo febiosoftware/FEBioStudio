@@ -1285,10 +1285,7 @@ void CMainWindow::on_actionCloseAll_triggered()
 void CMainWindow::on_actionSnapShot_triggered()
 {
 	QImage img = GetGLView()->CaptureScreen();
-
-    CDlgScreenCapture dlg(img, this);
-
-    dlg.exec();
+	ShowImageViewer(img);
 }
 
 class CRayTracerThread : public CustomThread
@@ -1386,8 +1383,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		dlg2.setTask("Rendering scene ...");
 		if (dlg2.exec())
 		{
-			CDlgScreenCapture dlg3(img, this);
-			dlg3.exec();
+			ShowImageViewer(img);
 		}
 		delete rayTracer;
 	}

@@ -221,23 +221,26 @@ bool rt::intersectBox(Box& box, rt::Tri& tri)
 
 bool rt::intersectTriangles(std::vector<rt::Tri*>& tris, const rt::Ray& ray, rt::Point& point)
 {
-	Vec3 c = ray.origin;
 	int imin = -1;
 	double Dmin = 0;
-	Intersect q;
+	Intersect p, q;
+	const Vec3& t = ray.direction;
+	const Vec3& o = q.point;
 	for (int i = 0; i < (int)tris.size(); ++i)
 	{
 		rt::Tri& tri = *tris[i];
 		Vec3* v = tri.r;
-		Intersect p;
-		if ((tri.id != ray.tri_id) && intersectTri(tri, ray, p))
+		if ((imin == -1) || ((v[0] - o) * t <= 0) || ((v[1] - o) * t <= 0) || ((v[2] - o) * t <= 0))
 		{
-			double D2 = (p.point - ray.origin).sqrLength();
-			if ((imin == -1) || (D2 < Dmin))
+			if ((tri.id != ray.tri_id) && intersectTri(tri, ray, p))
 			{
-				imin = i;
-				Dmin = D2;
-				q = p;
+				double D2 = (p.point - ray.origin).sqrLength();
+				if ((imin == -1) || (D2 < Dmin))
+				{
+					imin = i;
+					Dmin = D2;
+					q = p;
+				}
 			}
 		}
 	}

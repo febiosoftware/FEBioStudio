@@ -1294,6 +1294,16 @@ C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
     return ui->centralWidget->timeView2D;
 }
 
+void CMainWindow::ShowImageViewer(QImage img)
+{
+	if (ui->imageView == nullptr) ui->imageView = new CDlgScreenCapture(this);
+	ui->imageView->SetImage(img);
+	if (ui->imageView->isVisible() == false)
+	{
+		ui->imageView->show();
+	}
+}
+
 CLogPanel* CMainWindow::GetLogPanel()
 {
 	return ui->logPanel;

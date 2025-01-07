@@ -706,6 +706,8 @@ public slots:
     CImageSliceView* GetImageSliceView();
     C2DImageTimeView* GetC2DImageTimeView();
 
+	void ShowImageViewer(QImage img);
+
 	void UpdateGraphs(bool breset);
 
 	Post::CGLModel* GetCurrentModel();
