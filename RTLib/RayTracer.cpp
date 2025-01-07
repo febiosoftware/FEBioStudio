@@ -216,6 +216,25 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	currentMaterial = (int)matList.size() - 1;
 }
 
+void RayTracer::setMaterial(const GLMaterial& glmat)
+{
+	currentColor = glmat.diffuse;
+	useVertexColor = false;
+	useTexture1D = false;
+
+	rt::Material mat;
+	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
+	{
+		mat.shininess = 128* glmat.shininess;
+		if (mat.shininess < 0) mat.shininess = 0;
+		if (mat.shininess > 128) mat.shininess = 128;
+		mat.reflection = glmat.reflection;
+	}
+
+	matList.push_back(mat);
+	currentMaterial = (int)matList.size() - 1;
+}
+
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 {
 	Vec4 r(p, 0);
@@ -582,10 +601,31 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 	Color fragCol(backgroundCol);
 	if (octree.intersect(ray, q))
 	{
+		// get some material props
+		int shininess = 0;
+		int texid = -1;
+		double reflection = 0;
+		if (q.matid >= 0)
+		{
+			rt::Material& m = matList[q.matid];
+			shininess = m.shininess;
+			reflection = m.reflection;
+			texid = m.tex1d;
+		}
+
 		Color c = q.c;
 
 		Vec3& t = ray.direction;
 		Vec3 N = q.n;
+
+		// reflection
+		if ((reflection > 0) && (ray.bounce < 2))
+		{
+			Vec3 H = t - N * (2 * (t * N));
+			Ray ray2(q.r, H, q.tri_id);
+			ray2.bounce = ray.bounce + 1;
+			c = c*(1 - reflection) + castRay(octree, ray2) * reflection;
+		}
 
 		// see if we've reached the front or back face
 		if (t * N >= 0)
@@ -593,16 +633,6 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			// it's the back. Change normal and color
 			N = -N;
 			c = Color(0.8, 0.6, 0.6, c.a());
-		}
-
-		// get some material props
-		int shininess = 0;
-		int texid = -1;
-		if (q.matid >= 0)
-		{
-			rt::Material& m = matList[q.matid];
-			shininess = m.shininess;
-			texid = m.tex1d;
 		}
 
 		// apply texture

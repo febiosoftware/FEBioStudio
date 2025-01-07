@@ -63,6 +63,7 @@ public:
 
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;
+	void setMaterial(const GLMaterial& mat) override;
 
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;

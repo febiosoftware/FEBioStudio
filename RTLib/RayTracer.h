@@ -36,6 +36,7 @@ namespace rt {
 	{
 		int shininess = 0;
 		int tex1d = -1;
+		double reflection = 0;
 	};
 }
 
@@ -83,6 +84,7 @@ public:
 public:
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true)  override;
+	void setMaterial(const GLMaterial& mat) override;
 
 	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
 

@@ -47,11 +47,13 @@ public:
 	};
 
 public:
+	Type type = INVALID;
 	GLColor		diffuse;	// diffuse color of material
 	GLColor		ambient;	// ambient color of material
 	GLColor		specular;	// specular color of material
 	GLColor		emission;	// emission color of material
-	double		shininess;	// shininess factor
+	double		shininess = 0;	// shininess factor
+	double		reflection = 0; // reflection factor
 
 public:
 	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }

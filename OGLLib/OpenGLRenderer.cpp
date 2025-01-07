@@ -317,6 +317,11 @@ void OpenGLRenderer::setColor(GLColor c)
 	glColor4ub(c.r, c.g, c.b, c.a);
 }
 
+void OpenGLRenderer::setMaterial(const GLMaterial& mat)
+{
+	setMaterial(mat.type, mat.diffuse);
+}
+
 void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	if (map == GLMaterial::DiffuseMap::VERTEX_COLOR) m.useVertexColors = true;
