@@ -359,7 +359,7 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 		else
 			glEnable(GL_POLYGON_STIPPLE);
 
-		GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
+		GLfloat rev[] = { 0.8f, 0.6f, 0.6f, c.a/255.f };
 		GLfloat spc[] = { 0.5f, 0.5f, 0.5f, 1.f };
 		GLfloat emi[] = { 0.0f, 0.0f, 0.0f, 1.f };
 

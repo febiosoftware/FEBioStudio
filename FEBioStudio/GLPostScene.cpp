@@ -161,23 +161,26 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 
 	int mode = glm.GetSelectionType();
 
-	// render the faces
-	if (mode == SELECT_FE_FACES)
+	if (rc.m_settings.m_nrender == RENDER_SOLID)
 	{
-		RenderFaces(re, rc);
-	}
-	else if (mode == SELECT_FE_ELEMS)
-	{
-		RenderElems(re, rc);
-	}
-	else
-	{
-		// for nodes, edges, draw the faces as well
-		RenderFaces(re, rc);
+		// render the faces
+		if (mode == SELECT_FE_FACES)
+		{
+			RenderFaces(re, rc);
+		}
+		else if (mode == SELECT_FE_ELEMS)
+		{
+			RenderElems(re, rc);
+		}
+		else
+		{
+			// for nodes, edges, draw the faces as well
+			RenderFaces(re, rc);
+		}
 	}
 
 	// render outline
-	if (rc.m_settings.m_bfeat)
+	if (rc.m_settings.m_bfeat || (rc.m_settings.m_nrender == RENDER_WIREFRAME))
 	{
 		rc.m_cam->LineDrawMode(true);
 		RenderOutline(re, rc);
