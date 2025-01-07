@@ -47,7 +47,7 @@ void Mesh::addTri(rt::Tri& tri)
 
 bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 {
-	const double tol = 0.0001;
+	const double tol = 0;// 0.0001;
 
 	const Vec3& fn = tri.fn;
 	Vec3* v = tri.r;

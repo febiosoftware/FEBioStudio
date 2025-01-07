@@ -1353,7 +1353,11 @@ void CMainWindow::on_actionRayTrace_triggered()
 	GLScene* scene = doc->GetScene();
 	if (scene == nullptr) return;
 
+	int W = GetGLView()->width();
+	int H = GetGLView()->height();
+
 	CDlgRayTrace dlg(this);
+	dlg.SetImageSize(W, H);
 	if (dlg.exec())
 	{
 		const int W = dlg.ImageWidth();
@@ -1370,9 +1374,12 @@ void CMainWindow::on_actionRayTrace_triggered()
 
 		RayTraceSurface trg(W, H);
 		RayTracer* rayTracer = new RayTracer(trg);
+		CGView& view = scene->GetView();
+		rayTracer->setupProjection(view.m_fov, view.m_fnear);
 		rayTracer->setMultiSample(dlg.Multisample());
 		rayTracer->setBTreeLevels(dlg.BTreeLevels());
 		rayTracer->useShadows(dlg.UseShadows());
+		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);
 		CDlgStartThread dlg2(this, render_thread);

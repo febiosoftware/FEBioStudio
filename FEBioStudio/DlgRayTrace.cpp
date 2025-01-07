@@ -89,6 +89,12 @@ CDlgRayTrace::CDlgRayTrace(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgRayTrace
 	ui->setup(this);
 }
 
+void CDlgRayTrace::SetImageSize(int W, int H)
+{
+	ui->width->setText(QString::number(W));
+	ui->height->setText(QString::number(H));
+}
+
 int CDlgRayTrace::ImageWidth()
 {
 	return ui->width->text().toInt();

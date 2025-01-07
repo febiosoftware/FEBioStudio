@@ -67,6 +67,11 @@ void RayTracer::useShadows(bool b)
 	renderShadows = b;
 }
 
+void RayTracer::setBackgroundColor(GLColor c)
+{
+	backgroundCol = c;
+}
+
 void RayTracer::setBTreeLevels(int levels)
 {
 	treeLevels = levels;
@@ -513,8 +518,8 @@ void RayTracer::render()
 
 	double ar = (double)W / (double)H;
 
-	double fw = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
-	double fh = fw / ar;
+	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
+	double fw = fh * ar;
 
 	int samples = multiSample;
 	if (samples < 1) samples = 1;
@@ -574,7 +579,7 @@ void RayTracer::render()
 rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 {
 	rt::Point q;
-	Color fragCol(0,0,0,0);
+	Color fragCol(backgroundCol);
 	if (octree.intersect(ray, q))
 	{
 		Color c = q.c;

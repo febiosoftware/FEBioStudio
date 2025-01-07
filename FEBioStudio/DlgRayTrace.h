@@ -37,6 +37,8 @@ class CDlgRayTrace : public QDialog
 public:
 	CDlgRayTrace(CMainWindow* wnd);
 
+	void SetImageSize(int W, int H);
+
 	int ImageWidth();
 	int ImageHeight();
 	int Multisample();

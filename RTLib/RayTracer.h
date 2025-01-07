@@ -53,6 +53,8 @@ public:
 
 	void useShadows(bool b);
 
+	void setBackgroundColor(GLColor c);
+
 	RayTraceSurface& surface() { return surf; }
 
 public:
@@ -146,6 +148,8 @@ private:
 
 	GLColor currentColor;
 	bool useVertexColor;
+
+	GLColor backgroundCol;
 
 	GLRenderEngine::FrontFace front = GLRenderEngine::COUNTER_CLOCKWISE;
 
