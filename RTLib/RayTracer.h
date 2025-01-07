@@ -36,7 +36,6 @@ namespace rt {
 	{
 		int shininess = 0;
 		int tex1d = -1;
-		double opacity = 1;
 	};
 }
 

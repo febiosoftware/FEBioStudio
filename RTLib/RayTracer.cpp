@@ -194,13 +194,11 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
 	{
 		mat.shininess = 64;
-		mat.opacity = (matType == GLMaterial::PLASTIC ? 1 : 0.4);
 	}
 
 	if (matType == GLMaterial::HIGHLIGHT)
 	{
 		mat.shininess = 0;
-		mat.opacity = 0.4;
 	}
 
 	if (useTexture1D)
@@ -587,19 +585,17 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 		{
 			// it's the back. Change normal and color
 			N = -N;
-			c = Color(0.8, 0.6, 0.6);
+			c = Color(0.8, 0.6, 0.6, c.a());
 		}
 
 		// get some material props
 		int shininess = 0;
 		int texid = -1;
-		double opacity = 1;
 		if (q.matid >= 0)
 		{
 			rt::Material& m = matList[q.matid];
 			shininess = m.shininess;
 			texid = m.tex1d;
-			opacity = m.opacity;
 		}
 
 		// apply texture
@@ -636,7 +632,8 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			fragCol += diffuse;
 		}
 
-		if ((opacity < 0.99) && (ray.bounce < 5))
+		double opacity = c.a();
+		if ((c.a() < 0.99) && (ray.bounce < 5))
 		{
 			Vec3 p = q.r - N * 0.001; // add a little offset to make sure we're not hitting the same face
 			Ray ray2(p, ray.direction);
@@ -657,8 +654,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			spec = Color(s, s, s);
 		}
 		fragCol = (fragCol + spec) * 0.8;
-
-		fragCol.a(c.a());
+		fragCol.a() = c.a();
 	}
 	fragCol.clamp();
 	return fragCol;
