@@ -34,8 +34,10 @@ SOFTWARE.*/
 namespace rt {
 	struct Material 
 	{
+		bool lighting = true;
 		int shininess = 0;
 		int tex1d = -1;
+		int tex3d = -1;
 		double reflection = 0;
 	};
 }
@@ -108,6 +110,7 @@ public:
 
 public:
 	void setTexture(GLTexture1D& tex) override;
+	void setTexture(GLTexture3D& tex) override;
 
 private:
 	void preprocess();
@@ -124,8 +127,12 @@ private:
 	std::stack<rt::Matrix4> mvStack;
 
 	std::vector<rt::Texture1D*> tex1d;
-	int currentTexture = -1;
+	int currentTexture1D = -1;
 	bool useTexture1D = false;
+
+	std::vector<rt::Texture3D*> tex3d;
+	int currentTexture3D = -1;
+	bool useTexture3D = false;
 
 	int currentMaterial = -1;
 	std::vector<rt::Material> matList;

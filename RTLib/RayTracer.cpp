@@ -47,6 +47,9 @@ RayTracer::~RayTracer()
 {
 	for (rt::Texture1D* t : tex1d) delete t;
 	tex1d.clear();
+
+	for (rt::Texture3D* t : tex3d) delete t;
+	tex3d.clear();
 }
 
 void RayTracer::setupProjection(double fov, double fnear)
@@ -194,6 +197,7 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 	currentColor = c;
 	useVertexColor = (map == GLMaterial::VERTEX_COLOR);
 	useTexture1D = (map == GLMaterial::TEXTURE_1D);
+	useTexture3D = (map == GLMaterial::TEXTURE_3D);
 
 	rt::Material mat;
 	if ((matType == GLMaterial::PLASTIC) || (matType == GLMaterial::GLASS))
@@ -201,14 +205,21 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 		mat.shininess = 64;
 	}
 
-	if (matType == GLMaterial::HIGHLIGHT)
+	if ((matType == GLMaterial::HIGHLIGHT) || (matType == GLMaterial::CONSTANT))
 	{
 		mat.shininess = 0;
+		mat.lighting = false;
 	}
 
 	if (useTexture1D)
 	{
-		mat.tex1d = currentTexture;
+		mat.tex1d = currentTexture1D;
+		mat.shininess = 0; // don't add specular component when using textures
+	}
+
+	if (useTexture3D)
+	{
+		mat.tex3d = currentTexture3D;
 		mat.shininess = 0; // don't add specular component when using textures
 	}
 
@@ -507,7 +518,16 @@ void RayTracer::setTexture(GLTexture1D& tex)
 	rt::Texture1D* t1d = new rt::Texture1D();
 	t1d->setImageData(tex.Size(), tex.GetBytes());
 	tex1d.push_back(t1d);
-	currentTexture = (int)tex1d.size() - 1;
+	currentTexture1D = (int)tex1d.size() - 1;
+}
+
+void RayTracer::setTexture(GLTexture3D& tex)
+{
+	rt::Texture3D* t3d = new rt::Texture3D();
+	t3d->setImageData(tex.Get3DImage());
+	tex3d.push_back(t3d);
+	currentTexture3D = (int)tex3d.size() - 1;
+	if (currentMaterial >= 0) matList[currentMaterial].tex3d = currentTexture3D;
 }
 
 void RayTracer::preprocess()
@@ -602,29 +622,27 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 	if (octree.intersect(ray, q))
 	{
 		// get some material props
-		int shininess = 0;
-		int texid = -1;
-		double reflection = 0;
+		rt::Material mat;
 		if (q.matid >= 0)
 		{
 			rt::Material& m = matList[q.matid];
-			shininess = m.shininess;
-			reflection = m.reflection;
-			texid = m.tex1d;
+			mat = m;
 		}
 
 		Color c = q.c;
-
 		Vec3& t = ray.direction;
 		Vec3 N = q.n;
 
-		// reflection
-		if ((reflection > 0) && (ray.bounce < 2))
+		if (mat.lighting)
 		{
-			Vec3 H = t - N * (2 * (t * N));
-			Ray ray2(q.r, H, q.tri_id);
-			ray2.bounce = ray.bounce + 1;
-			c = c*(1 - reflection) + castRay(octree, ray2) * reflection;
+			// reflection
+			if ((mat.reflection > 0) && (ray.bounce < 2))
+			{
+				Vec3 H = t - N * (2 * (t * N));
+				Ray ray2(q.r, H, q.tri_id);
+				ray2.bounce = ray.bounce + 1;
+				c = c * (1 - mat.reflection) + castRay(octree, ray2) * mat.reflection;
+			}
 		}
 
 		// see if we've reached the front or back face
@@ -634,43 +652,54 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			N = -N;
 			c = Color(0.8, 0.6, 0.6, c.a());
 		}
+		Vec3 L(lightPos); L.normalize();
 
 		// apply texture
-		if (texid >= 0)
+		if (mat.tex1d >= 0)
 		{
-			Color t = tex1d[texid]->sample((float)q.t[0]);
+			Color t = tex1d[mat.tex1d]->sample((float)q.t[0]);
 			c *= t;
 		}
 
-		// calculate an ambient value
-		fragCol = c * 0.2;
-		double f = N * Vec3(0, 0, 1);
-		if (f < 0) f = 0;
-		fragCol += c * (f * 0.2);
-
-		// see if the point is occluded or not
-		Vec3 L(lightPos); L.normalize();
+		if (mat.tex3d >= 0)
+		{
+			Color t = tex3d[mat.tex3d]->sample((float)q.t[0], (float)q.t[1], (float)q.t[2]);
+			double a = t.a();
+			c.a() *= a;
+		}
+		
 		bool isOccluded = false;
-		if (renderShadows)
+		if (mat.lighting)
 		{
-			Vec3 p = q.r;
-			Ray ray2(p, L, q.tri_id);
-			ray2.bounce = ray.bounce + 1;
-			rt::Point q2;
-			if (octree.intersect(ray2, q2)) isOccluded = true;
-		}
-
-		if (!isOccluded)
-		{
-			// diffuse component
-			double f = N * L;
+			// calculate an ambient value
+			fragCol = c * 0.2;
+			double f = N * Vec3(0, 0, 1);
 			if (f < 0) f = 0;
-			Color diffuse = c * f;
-			fragCol += diffuse;
+			fragCol += c * (f * 0.2);
+
+			// see if the point is occluded or not
+			if (renderShadows)
+			{
+				Vec3 p = q.r;
+				Ray ray2(p, L, q.tri_id);
+				ray2.bounce = ray.bounce + 1;
+				rt::Point q2;
+				if (octree.intersect(ray2, q2)) isOccluded = true;
+			}
+
+			if (!isOccluded)
+			{
+				// diffuse component
+				double f = N * L;
+				if (f < 0) f = 0;
+				Color diffuse = c * f;
+				fragCol += diffuse;
+			}
 		}
+		else fragCol = c;
 
 		double opacity = c.a();
-		if ((c.a() < 0.99) && (ray.bounce < 5))
+		if ((c.a() < 0.99) && (ray.bounce < 100))
 		{
 			Vec3 p = q.r;
 			Ray ray2(p, ray.direction, q.tri_id);
@@ -683,14 +712,14 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 
 		// add specular component
 		Color spec(0, 0, 0);
-		if (!isOccluded && (shininess > 0))
+		if (!isOccluded && (mat.shininess > 0) && mat.lighting)
 		{
 			Vec3 H = t - N * (2 * (t * N));
-			f = H * L;
-			double s = (f > 0 ? pow(f, shininess) : 0);
+			double f = H * L;
+			double s = (f > 0 ? pow(f, mat.shininess) : 0);
 			spec = Color(s, s, s);
+			fragCol = (fragCol + spec) * 0.8;
 		}
-		fragCol = (fragCol + spec) * 0.8;
 		fragCol.a() = c.a();
 	}
 	fragCol.clamp();

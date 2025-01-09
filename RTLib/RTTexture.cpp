@@ -65,3 +65,30 @@ rt::Color rt::Texture1D::sample(float r)
 	float* v = data + 3 * n;
 	return rt::Color(v[0], v[1], v[2]);
 }
+
+rt::Texture3D::Texture3D()
+{
+	img = nullptr;
+}
+
+rt::Texture3D::~Texture3D()
+{
+	img = nullptr;
+}
+
+void rt::Texture3D::setImageData(C3DImage* img3d)
+{
+	img = img3d;
+}
+
+rt::Color rt::Texture3D::sample(float r, float s, float t)
+{
+	if (img == nullptr) return rt::Color(0, 0, 0);
+
+	double v = img->Value(r, s, t);
+	double vmin, vmax;
+	img->GetMinMax(vmin, vmax, false);
+	if (vmax == vmin) vmax++;
+	double f = (v - vmin) / (vmax - vmin);
+	return rt::Color(f, f, f, f);
+}

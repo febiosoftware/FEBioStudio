@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "RTMath.h"
+#include <ImageLib/3DImage.h>
 
 namespace rt {
 
@@ -41,5 +42,19 @@ namespace rt {
 	private:
 		size_t size = 0;
 		float* data = nullptr;
+	};
+
+	class Texture3D
+	{
+	public:
+		Texture3D();
+		~Texture3D();
+
+		void setImageData(C3DImage* img3d);
+
+		rt::Color sample(float r, float s, float t);
+
+	private:
+		C3DImage* img;
 	};
 }

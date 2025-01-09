@@ -105,7 +105,7 @@ void CVolumeRenderer::ReloadTexture()
 	double wy = (double)ny;
 	double wz = (double)nz;
 	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
-	m_nslices = (int)wt;
+	m_nslices = 50;// (int)wt;
 }
 
 extern int LUT[256][15];
@@ -224,14 +224,14 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 		{ 0, 0, 1, -(g[2][0]*(dr.z))},
 		{ 0, 0,-1,  (g[2][1]*(dr.z))},
 	};
-
+/*
 	re.setClipPlane(0, clip[0]); re.enableClipPlane(0);
 	re.setClipPlane(1, clip[1]); re.enableClipPlane(1);
 	re.setClipPlane(2, clip[2]); re.enableClipPlane(2);
 	re.setClipPlane(3, clip[3]); re.enableClipPlane(3);
 	re.setClipPlane(4, clip[4]); re.enableClipPlane(4);
 	re.setClipPlane(5, clip[5]); re.enableClipPlane(5);
-
+*/
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
 	re.setColor(GLColor(col.r, col.g, col.b, (unsigned char) (255.0*alphaScale)));
@@ -253,14 +253,14 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 
 	// clean up
 	re.setMaterial(GLMaterial::INVALID, GLColor::White());
-
+/*
 	re.disableClipPlane(0);
 	re.disableClipPlane(1);
 	re.disableClipPlane(2);
 	re.disableClipPlane(3);
 	re.disableClipPlane(4);
 	re.disableClipPlane(5);
-
+*/
 	re.popState();
 }
 
