@@ -32,6 +32,7 @@ private:
 	bool parse_mesh_elementset(XMLTag& tag);
 	bool parse_plot(XMLTag& tag);
 	bool parse_view(XMLTag& tag);
+	bool parse_graph(XMLTag& tag);
 
 private: // obsolete tags (for backward compatibility with 1.0)
 	bool parse_open(XMLTag& tag);
@@ -60,6 +61,7 @@ private:
 	void WriteMeshSelections();
 	void WritePlots();
 	void WriteView();
+	void WriteGraphs();
 
 private:
 	CPostDocument* m_doc;

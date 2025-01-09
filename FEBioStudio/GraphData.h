@@ -81,6 +81,7 @@ public:
 
 	// get a data point
 	QPointF& Point(int i) { return m_data[i]; }
+	QPointF Point(int i) const { return m_data[i]; }
 
 	// get the bounding rectangle
 	QRectF boundRect() const;

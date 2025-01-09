@@ -18,6 +18,7 @@
 #include <PostGL/GLPlotGroup.h>
 #include <FSCore/ClassDescriptor.h>
 #include <sstream>
+#include <GLWLib/convert.h> // for toGLColor
 
 template <> std::string type_to_string<GLColor>(const GLColor& v)
 {
@@ -152,6 +153,10 @@ bool PostSessionFileReader::Load(const char* szfile)
 			else if (tag == "view")
 			{
 				if (parse_view(tag) == false) return false;
+			}
+			else if (tag == "graph")
+			{
+				if (parse_graph(tag) == false) return false;
 			}
 //			else xml.SkipTag(tag);
 			else return false;
@@ -627,6 +632,71 @@ bool PostSessionFileReader::parse_view(XMLTag& tag)
 	return true;
 }
 
+bool PostSessionFileReader::parse_graph(XMLTag& tag)
+{
+	CGraphData graph;
+	const char* sztitle = tag.AttributeValue("title", true);
+	if (sztitle) graph.m_title = QString(sztitle);
+
+	++tag;
+	do
+	{
+		if (tag == "data")
+		{
+			CPlotData* plt = new CPlotData();
+			graph.AddPlotData(plt);
+			const char* szlabel = tag.AttributeValue("label", true);
+			if (szlabel) plt->setLabel(szlabel);
+
+			std::vector<double> x, y;
+			++tag;
+			do
+			{
+				if (tag == "x")
+				{
+					tag.value(x);
+				}
+				else if (tag == "y")
+				{
+					tag.value(y);
+				}
+				else if (tag == "line_color")
+				{
+					GLColor col;
+					tag.value(col);
+					plt->setLineColor(toQColor(col));
+				}
+				else if (tag == "fill_color")
+				{
+					GLColor col;
+					tag.value(col);
+					plt->setFillColor(toQColor(col));
+				}
+				else if (tag == "marker_type")
+				{
+					int markerType = 0;
+					tag.value(markerType);
+					plt->setMarkerType(markerType);
+				}
+				else tag.skip();
+				++tag;
+			} while (!tag.isend());
+
+			int n = std::min(x.size(), y.size());
+			for (int i = 0; i < n; ++i)
+			{
+				plt->addPoint(x[i], y[i]);
+			}
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
+
+	m_doc->AddGraph(graph);
+
+	return true;
+}
+
 //=============================================================================
 // helper function for writing parameters
 void fsps_write_parameters(FSObject* po, XMLWriter& xml)
@@ -693,6 +763,9 @@ bool PostSessionFileWriter::Write(const char* szfile)
 			WritePlots();
 			WriteView();
 		}
+
+		// write saved graphs
+		WriteGraphs();
 	}
 	xml.close_branch(); // root
 
@@ -1045,6 +1118,45 @@ void PostSessionFileWriter::WriteView()
 				}
 				xml.close_branch();
 			}
+		}
+		xml.close_branch();
+	}
+}
+
+void PostSessionFileWriter::WriteGraphs()
+{
+	if ((m_doc == nullptr) || (m_doc->Graphs() == 0)) return;
+	XMLWriter& xml = *m_xml;
+	for (int i = 0; i < m_doc->Graphs(); ++i)
+	{
+		const CGraphData* data = m_doc->GetGraphData(i);
+		XMLElement graph("graph");
+		graph.add_attribute("title", data->m_title.toStdString());
+		xml.add_branch(graph);
+		int plots = (int)data->m_data.size();
+		for (int j = 0; j < plots; ++j)
+		{
+			const CPlotData& pltData = *data->m_data[j];
+			XMLElement plt("data");
+			plt.add_attribute("label", pltData.label().toStdString());
+			xml.add_branch(plt);
+
+			GLColor lineCol = toGLColor(pltData.lineColor());
+			GLColor fillCol = toGLColor(pltData.fillColor());
+			xml.add_leaf("line_color", lineCol);
+			xml.add_leaf("fill_color", fillCol);
+			xml.add_leaf("marker_type", pltData.markerType());
+
+			std::vector<double> x, y;
+			for (int k = 0; k < pltData.size(); ++k)
+			{
+				QPointF p = pltData.Point(k);
+				x.push_back(p.x());
+				y.push_back(p.y());
+			}
+			xml.add_leaf("x", x.data(), (int) x.size());
+			xml.add_leaf("y", y.data(), (int) y.size());
+			xml.close_branch();
 		}
 		xml.close_branch();
 	}
