@@ -359,6 +359,8 @@ public:
 
 	void SetLoadCurve(LoadCurve* lc);
 
+	void SetXRange(double xmin, double xmax);
+
 public slots:
 	void on_plot_pointClicked(QPointF p, bool shift);
 	void on_plot_draggingStart(QPoint p);

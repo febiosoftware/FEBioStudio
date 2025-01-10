@@ -97,6 +97,22 @@ void CCurveEditor::Update()
 	m_fem = doc->GetFSModel();
 	if (m_fem == nullptr) return;
 
+	// get the time range of all the steps (skip initial step)
+	double tmin = 0, tmax = 0;
+	int steps = m_fem->Steps();
+	if (steps > 1)
+	{
+		for (int i = 1; i < steps; ++i)
+		{
+			FSStep* step = m_fem->GetStep(i);
+			int timeSteps = step->GetParamInt("time_steps");
+			double dt = step->GetParamFloat("step_size");
+			double timeSpan = timeSteps * dt;
+			tmax += timeSpan;
+		}
+	}
+	ui->plot->SetXRange(tmin, tmax);
+
 	// fill the load controller selection widget
 	ui->selectLC->clear();
 	ui->selectLC->addItem("(none)");

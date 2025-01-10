@@ -2249,6 +2249,11 @@ void CCurveEditWidget::SetLoadCurve(LoadCurve* lc)
 	}
 }
 
+void CCurveEditWidget::SetXRange(double xmin, double xmax)
+{
+	ui->plt->SetHighlightInterval(xmin, xmax);
+}
+
 void CCurveEditWidget::on_plot_pointClicked(QPointF p, bool shift)
 {
 	LoadCurve* lc = ui->plt->GetLoadCurve();
