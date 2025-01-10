@@ -125,9 +125,10 @@ public:
 	void resetRef();
 	int refs() const;
 
+	virtual ~OGLMesh();
+
 protected:
 	OGLMesh(unsigned int mode);
-	virtual ~OGLMesh();
 
 	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
 

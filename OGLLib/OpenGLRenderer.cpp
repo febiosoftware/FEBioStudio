@@ -199,6 +199,7 @@ void OpenGLRenderer::finish()
 		OGLMesh* gm = it->second;
 		if (gm->refs() == 0)
 		{
+			delete gm;
 			it = m.triMesh.erase(it);
 		}
 		else it++;
@@ -208,6 +209,7 @@ void OpenGLRenderer::finish()
 		OGLMesh* gm = it->second;
 		if (gm->refs() == 0)
 		{
+			delete gm;
 			it = m.lineMesh.erase(it);
 		}
 		else it++;
