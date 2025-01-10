@@ -1435,7 +1435,7 @@ void CPostDataPanel::on_fieldName_editingFinished()
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
 		CPostDocument& doc = *GetActiveDocument();
-//		doc.GetFSModel()->UpdateDependants();
+		doc.GetFSModel()->UpdateDependants();
 	}
 }
 
