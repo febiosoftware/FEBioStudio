@@ -521,7 +521,7 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, const std::vector<i
 double Post::IntegrateElems(Post::FEPostMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[FSElement::MAX_NODES];
+	float v[FSElement::MAX_NODES] = { 0.f };
 	vec3f r[FSElement::MAX_NODES];
 	int NE = (int)elemList.size();
 	for (int i = 0; i < NE; ++i)
@@ -565,6 +565,23 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, const std::vector<int>& elem
 
 			// add to integral
 			res += IntegrateHex(r, v);
+		}
+		else if (e.IsShell() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			int nn = e.Nodes();
+
+			// get the nodal values and coordinates
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_ElemData.value(i, j);
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
+
+			switch (e.Type())
+			{
+			case FE_TRI3:
+				v[3] = v[2]; r[3] = r[2];
+				break;
+			}
+
+			res += IntegrateQuad(r, v);
 		}
 
 		// TODO: This was done so that discrete element variables can be added, but I don't think that makes sense

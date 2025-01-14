@@ -1191,7 +1191,8 @@ void CMainWindow::UpdateGraphs(bool breset)
 	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();
 	for (int i = 0; i < ui->graphList.size(); ++i, ++it)
 	{
-		(*it)->Update(breset);
+		if ((*it)->isVisible())
+			(*it)->Update(breset);
 	}
 }
 
