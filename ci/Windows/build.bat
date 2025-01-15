@@ -20,6 +20,6 @@ cmake -L . -B cmbuild ^
   -DBUILD_UPDATER=ON
 )
 cd cmbuild
-msbuild /v:m /P:Configuration=Release /P:WarningLevel=0 /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
+msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
 cd ..
 exit 0
