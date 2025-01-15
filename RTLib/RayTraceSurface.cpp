@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RayTraceSurface.h"
 #include <memory>
+#include <cstring>
 
 RayTraceSurface::RayTraceSurface(size_t W, size_t H)
 {

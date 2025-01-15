@@ -26,6 +26,8 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/color.h>
 
+using std::size_t;
+
 class RayTraceSurface
 {
 public:
