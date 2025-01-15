@@ -180,5 +180,5 @@ void init_FBSCore(py::module& m)
     FSElementLibrary::InitLibrary();
 }
 #else
-void init_FBSCore(py::module_& m) {}
+void init_FBSCore(pybind11::module_& m) {}
 #endif

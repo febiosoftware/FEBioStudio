@@ -65,5 +65,5 @@ void init_FBSUI(py::module& m)
 }
 
 #else
-void init_FBSUI(py::module_& m) {}
+void init_FBSUI(pybind11::module_& m) {}
 #endif

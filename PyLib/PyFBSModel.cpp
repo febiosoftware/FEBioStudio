@@ -257,5 +257,5 @@ void init_FBSModel(py::module& m)
 	mdl.def("intersect_with_object", IntersectWithObject);
 }
 #else
-void init_FBSModel(py::module_& m) {}
+void init_FBSModel(pybind11::module_& m) {}
 #endif

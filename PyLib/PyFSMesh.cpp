@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include "PyFSMesh.h"
+
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEItem.h>
 #include <MeshLib/FENode.h>
@@ -114,5 +116,5 @@ void init_FSMesh(py::module_& m)
 }
 
 #else
-void init_FSMesh(py::module_& m) {}
+void init_FSMesh(pybind11::module_& m) {}
 #endif

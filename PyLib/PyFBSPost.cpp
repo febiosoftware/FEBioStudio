@@ -23,11 +23,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "PyFBSPost.h"
+
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include "PyFBSPost.h"
 
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
@@ -189,5 +189,5 @@ void init_FBSPost(py::module& m)
 }
 
 #else
-void init_FBSPost(py::module_& m) {}
+void init_FBSPost(pybind11::module_& m) {}
 #endif
