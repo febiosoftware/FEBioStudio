@@ -131,7 +131,7 @@ public:
 	enum { ELSIZE, QUALITY, ELTYPE, SPLIT_FACES, HOLE, HOLE_COORD };
 
 public:
-	FETetGenMesher(){}
+	FETetGenMesher();
 	FETetGenMesher(GObject* po);
 
 	// build the mesh

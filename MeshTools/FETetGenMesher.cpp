@@ -44,6 +44,18 @@ using namespace std;
 
 REGISTER_CLASS3(FETetGenMesher, CLASS_MESHER, TetGen_Mesher, "tetgen", 0, 0);
 
+FETetGenMesher::FETetGenMesher() : m_po(nullptr)
+{
+	SetType(TetGen_Mesher);
+
+	AddDoubleParam(0, "elsize", "Element Size");
+	AddDoubleParam(2.0, "Quality", "Quality");
+	AddIntParam(0, "eltype", "element type")->SetEnumNames("Tet4\0Tet10\0Tet15\0Tet20\0");
+	AddBoolParam(true, "splitfaces", "split faces");
+	AddBoolParam(false, "hole", "hole");
+	AddVecParam(vec3d(0, 0, 0), "hole_coord", "hole coordinates");
+}
+
 FETetGenMesher::FETetGenMesher(GObject* po) : m_po(po)
 {
 	SetType(TetGen_Mesher);
