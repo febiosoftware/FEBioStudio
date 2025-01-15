@@ -59,11 +59,17 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
+	// This is only used to process some older fsm files.
+	int GetMeshID() const { return m_meshID; }
+	void SetMesh(FSMesh* mesh) { assert(m_mesh == nullptr); m_mesh = mesh; }
+
 public:
 	int m_ntag;
 
 protected:
 	FSMesh* m_mesh;
+
+	int m_meshID = -1; // this is obsolete, but we still need to read some older files.
 };
 
 //-----------------------------------------------------------------------------

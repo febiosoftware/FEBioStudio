@@ -92,14 +92,16 @@ bool CAreaCalculatorTool::OnApply()
                 for (int j=0; j<f.Nodes(); ++j)
                     x[j] = y[f.n[j]];
                 int nint = f.gauss(gr, gs, gw);
+				vec3d Ai(0, 0, 0);
                 for (int k=0; k<nint; ++k) {
                     vec3d g1 = f.eval_deriv1(x, gr[k], gs[k]);
                     vec3d g2 = f.eval_deriv2(x, gr[k], gs[k]);
                     vec3d g1xg2 = g1 ^ g2;
-                    A += g1xg2*gw[k];
-                    Amag += g1xg2.Length();
+                    Ai += g1xg2*gw[k];
                 }
-            }
+				A += Ai;
+				Amag += Ai.Length();
+			}
         }
 
         // update GUI

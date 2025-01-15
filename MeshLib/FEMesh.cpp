@@ -85,6 +85,12 @@ FSMesh::FSMesh(FSMesh& m)
 	m_Edge.resize(m.Edges());
 	for (int i = 0; i<Edges(); ++i) m_Edge[i] = m.m_Edge[i];
 
+	m_NLT = m.m_NLT;
+	m_ELT = m.m_ELT;
+	m_NFL = m.m_NFL;
+	m_eltmin = m.m_eltmin;
+	m_nltmin = m.m_nltmin;
+
 	// copy element data
 	m_data = m.m_data;
 

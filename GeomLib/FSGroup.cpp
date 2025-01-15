@@ -83,7 +83,6 @@ void FSGroup::Load(IArchive &ar)
 	m_Item.clear();
 
 	int N, n;
-	int meshId = 0;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -93,7 +92,7 @@ void FSGroup::Load(IArchive &ar)
 		case NAME: { char sz[256]; ar.read(sz); SetName(sz); } break;
 		case SIZE: ar.read(N); break;
 		case ITEM: ar.read(n); m_Item.push_back(n); break;
-		case MESHID: ar.read(meshId); break;
+		case MESHID: ar.read(m_meshID); break;
 		default:
 			throw ReadError("unknown CID in FSGroup::Load");
 		}
