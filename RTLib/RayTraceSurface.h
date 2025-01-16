@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FSCore/color.h>
+#include <cstddef>
 
-using std::size_t;
 
 class RayTraceSurface
 {
