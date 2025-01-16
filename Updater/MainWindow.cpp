@@ -442,7 +442,7 @@ void CMainWindow::initializePage(int id)
 	switch(id)
 	{
 	case 1:
-		ui->updateWidget->checkForUpdate(m_devChannel, true, m_updaterUpdateCheck);
+		ui->updateWidget->checkForUpdate(m_devChannel, true, m_updaterUpdateCheck, m_branch);
 		break;
 	case 2:
 		deleteFiles();
