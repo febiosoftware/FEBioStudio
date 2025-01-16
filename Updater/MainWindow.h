@@ -31,7 +31,7 @@ class CMainWindow : public QWizard
 	Q_OBJECT
 
 public:
-	CMainWindow(bool devChannel, bool updaterUpdateCheck);
+	CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& branch);
 
     void makePath(QString path);
     void addNewFile(const QString filename);
@@ -68,4 +68,5 @@ private:
 	bool m_devChannel;
 	bool m_updaterUpdateCheck;
     bool m_downloadingSDK;
+    QString m_branch;
 };

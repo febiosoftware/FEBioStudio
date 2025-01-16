@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
 		// Check if --devChannel flag is present
 		bool devChannel = false;
 		bool updaterUpdateCheck = true;
+        QString branch = "";
 		for(int index = 1; index < argc; index++)
 		{
 			if(QString(argv[index]) == QString("--devChannel") || QString(argv[index]) == QString("-d"))
@@ -71,10 +72,15 @@ int main(int argc, char* argv[])
 			{
 				updaterUpdateCheck = false;
 			}
+            else if((QString(argv[index]) == QString("--branch") || QString(argv[index]) == QString("-b")) && index + 1 < argc)
+            {
+                devChannel = true;
+                branch = QString(argv[index + 1]);
+            }
 		}
 
 		// create the main window
-		CMainWindow wnd(devChannel, updaterUpdateCheck);
+		CMainWindow wnd(devChannel, updaterUpdateCheck, branch);
 		wnd.show();
 
 		return app.exec();

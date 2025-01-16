@@ -16,6 +16,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QSslError>
+#include <QUrlQuery>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -178,9 +179,9 @@ public:
 };
 
 
-CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck) 
+CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& branch) 
 	: ui(new Ui::CMainWindow), restclient(new QNetworkAccessManager), m_devChannel(devChannel), 
-    m_updaterUpdateCheck(updaterUpdateCheck), m_downloadingSDK(false)
+    m_updaterUpdateCheck(updaterUpdateCheck), m_downloadingSDK(false), m_branch(branch)
 {
 	QString dir = QApplication::applicationDirPath();
 	bool correctDir = false;
@@ -283,6 +284,14 @@ void CMainWindow::getFile()
 	myurl.setPort(ServerSettings::Port());
 
 	myurl.setPath(currentFile.baseURL + "/" + currentFile.name);
+
+    if(!m_branch.isEmpty())
+    {
+        QUrlQuery query;
+        query.addQueryItem("branch", m_branch);
+
+        myurl.setQuery(query);
+    }
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -610,6 +619,11 @@ void CMainWindow::onFinish()
 		QStringList args;
 		args.push_back(QApplication::applicationDirPath() + FBSUPDATERBINARY);
 		if(m_devChannel) args.push_back("-d");
+        if(!m_branch.isEmpty())
+        {
+            args.push_back("-b");
+            args.push_back(m_branch);
+        }
 
 		for(auto file : ui->updateWidget->updateFiles)
 		{
