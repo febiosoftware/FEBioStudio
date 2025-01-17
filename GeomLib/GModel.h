@@ -72,6 +72,7 @@ public:
 
 	//! clear groups
 	void ClearGroups();
+	void ClearUnusedGroups();
 
 	//! clear all discrete objects
 	void ClearDiscrete();
