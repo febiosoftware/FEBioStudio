@@ -718,7 +718,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
 			spec = Color(s, s, s);
-			fragCol = (fragCol + spec) * 0.8;
+			fragCol += spec * 0.8;
 		}
 		fragCol.a() = c.a();
 	}
