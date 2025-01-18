@@ -93,7 +93,7 @@ class CUpdateWidget : public QWidget
 public:
     CUpdateWidget(QWidget* parent = nullptr);
 
-    void checkForUpdate(bool dev = false, bool checkSDK = false, bool updaterUpdateCheck = false);
+    void checkForUpdate(bool dev = false, bool checkSDK = false, bool updaterUpdateCheck = false, QString branch = "");
 
     QString getServerMessage();
 
@@ -144,6 +144,7 @@ public:
 
 	bool devChannel;
     bool devAlreadyParsed;
+    QString m_branch;
 	bool updaterUpdateCheck;
 	bool doingUpdaterUpdate;
 

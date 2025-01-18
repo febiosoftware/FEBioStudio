@@ -314,6 +314,14 @@ void GModel::ClearGroups()
 	imp->m_GNode.Clear();
 }
 
+void GModel::ClearUnusedGroups()
+{
+	clearVector<GPartList>(imp->m_GPart, [](GPartList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<GFaceList>(imp->m_GFace, [](GFaceList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<GEdgeList>(imp->m_GEdge, [](GEdgeList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<GNodeList>(imp->m_GNode, [](GNodeList* pg) { return (pg->GetReferenceCount() == 0); });
+}
+
 //-----------------------------------------------------------------------------
 void GModel::ClearDiscrete()
 {
@@ -1625,11 +1633,11 @@ void GModel::RemoveNamedSelections()
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
 		GObject& obj = *imp->m_Obj[i];
-		obj.ClearFEGroups();
+		obj.RemoveUnusedFEGroups();
 	}
 
 	// remove all geometry selections
-	ClearGroups();
+	ClearUnusedGroups();
 }
 
 void GModel::RemoveMeshData()

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QUrlQuery>
 #include "UpdateChecker.h"
 #include "ServerSettings.h"
 #include "version.h"
@@ -84,11 +85,12 @@ void CUpdateWidget::connFinished(QNetworkReply *r)
 	}
 }
 
-void CUpdateWidget::checkForUpdate(bool dev, bool checkSDK, bool upCheck)
+void CUpdateWidget::checkForUpdate(bool dev, bool checkSDK, bool upCheck, QString branch)
 {
 	updaterUpdateCheck = upCheck;
 	devChannel = dev;
     m_askSDK = checkSDK;
+    m_branch = branch;
 
 	if(updaterUpdateCheck)
 	{
@@ -118,6 +120,14 @@ void CUpdateWidget::checkForAppUpdate()
 	myurl.setHost(ServerSettings::URL());
 	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(urlBase + ".xml");
+
+    if(!m_branch.isEmpty())
+    {
+        QUrlQuery query;
+        query.addQueryItem("branch", m_branch);
+
+        myurl.setQuery(query);
+    }
 
 	QNetworkRequest request;
 	request.setUrl(myurl);

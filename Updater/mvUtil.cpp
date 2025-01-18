@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
+#include <string>
 #include <sys/stat.h>
 
 #ifdef WIN32
@@ -38,11 +39,18 @@ int main(int argc, char* argv[])
 
     int start = 2;
     bool dev = false;
+    std::string branch;
 
     if(strcmp(argv[2], "-d") == 0)
     {
         start++;
         dev = true;
+    }
+
+    if(argc > 4 && strcmp(argv[3], "-b") == 0)
+    {
+        start += 2;
+        branch = argv[4];
     }
 
     if((argc - start) % 2 != 0) return -1;
@@ -78,7 +86,14 @@ int main(int argc, char* argv[])
 
     if(dev)
     {
-        sprintf(command, "\"%s\" --noUpdaterCheck --devChannel", argv[1]);
+        if(branch.empty())
+        {
+            sprintf(command, "\"%s\" --noUpdaterCheck --devChannel", argv[1]);
+        }
+        else
+        {
+            sprintf(command, "\"%s\" --noUpdaterCheck --devChannel --branch %s", argv[1], branch.c_str());
+        }
     }
     else
     {
