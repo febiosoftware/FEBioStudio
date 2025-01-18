@@ -448,6 +448,8 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	CPostObject* po = glm.GetPostObject();
+	if (po == nullptr) return;
+
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
@@ -1173,7 +1175,8 @@ BOX CGLPostScene::GetBoundingBox()
 	if (m_doc && m_doc->IsValid())
 	{
 		CGLModel& gm = *m_doc->GetGLModel();
-		box = gm.GetPostObject()->GetBoundingBox();
+		CPostObject* po = gm.GetPostObject();
+		if (po) box = po->GetBoundingBox();
 	}
 	return box;
 }
