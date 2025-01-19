@@ -23,43 +23,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-#include "stdafx.h"
-#include "FEGroup.h"
-#include "FEPostMesh.h"
+#include "FSMeshPartition.h"
+#include "FEMesh.h"
 using namespace std;
 
-//-----------------------------------------------------------------------------
-// FSDomain constructor
-Post::MeshDomain::MeshDomain(Post::FEPostMesh *pm)
+FSMeshPartition::FSMeshPartition(FSMesh* pm)
 {
 	m_pm = pm;
 	m_nmat = -1;
 	m_ntype = -1;
 }
 
-//-----------------------------------------------------------------------------
-void Post::MeshDomain::Reserve(int nelems, int nfaces)
+void FSMeshPartition::Reserve(int nelems, int nfaces)
 {
 	m_Elem.reserve(nelems);
 	m_Face.reserve(nfaces);
 }
 
-//-----------------------------------------------------------------------------
-void Post::MeshDomain::SetMatID(int matid)
+void FSMeshPartition::SetMatID(int matid)
 {
 	m_nmat = matid;
 }
 
-//-----------------------------------------------------------------------------
-FSFace& Post::MeshDomain::Face(int n)
-{ 
-	return m_pm->Face(m_Face[n]); 
+FSFace& FSMeshPartition::Face(int n)
+{
+	return m_pm->Face(m_Face[n]);
 }
 
-//-----------------------------------------------------------------------------
-FEElement_& Post::MeshDomain::Element(int n)
+FEElement_& FSMeshPartition::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }
-

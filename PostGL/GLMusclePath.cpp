@@ -1041,7 +1041,7 @@ void GLMusclePath::BuildGuideMesh()
 	int faces = 0;
 	mesh.TagAllNodes(-1);
 	mesh.TagAllFaces(-1);
-	Post::MeshDomain& dom = mesh.Domain(partID);
+	FSMeshPartition& dom = mesh.MeshPartition(partID);
 	for (int i = 0; i < dom.Faces(); ++i)
 	{
 		FSFace& f = dom.Face(i);

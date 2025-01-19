@@ -380,7 +380,7 @@ bool xpltFileExport::WriteNodeSection(FEPostModel& fem)
 bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 {
 	// make sure there are parts
-	int NP = mesh.Domains();
+	int NP = mesh.MeshPartitions();
 	if (NP == 0) return false;
 
 	// write all partitions
@@ -388,7 +388,7 @@ bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 	{
 		m_ar.BeginChunk(PLT_DOMAIN);
 		{
-			if (WritePart(mesh, mesh.Domain(nd)) == false) return false;
+			if (WritePart(mesh, mesh.MeshPartition(nd)) == false) return false;
 		}
 		m_ar.EndChunk();
 	}
@@ -397,7 +397,7 @@ bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::MeshDomain& part)
+bool xpltFileExport::WritePart(FEPostMesh& mesh, FSMeshPartition& part)
 {
 	// number of elements
 	int NE = part.Elements();

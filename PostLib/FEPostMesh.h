@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <MeshLib/FENode.h>
 #include <MeshLib/FEElement.h>
 #include <MeshLib/FEMesh.h>
-#include "FEGroup.h"
 #include <MeshLib/FENodeElementList.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <FSCore/box.h>
@@ -59,30 +58,15 @@ public:
 	void ClearAll();
 
 public:
-	// --- G E O M E T R Y ---
-
-	//! return domains
-	int Domains() const { return (int) m_Dom.size(); }
-
-	//! return a domain
-	MeshDomain& Domain(int i) { return *m_Dom[i]; }
-
-	// --- D A T A   U P D A T E ---
-
 	//! update mesh data
 	void BuildMesh() override;
 
 protected:
 	void UpdateDomains();
 
-	void ClearDomains();
 	void ClearElemSets();
 	void ClearSurfaces();
 	void ClearNodeSets();
-
-protected:
-	// --- G E O M E T R Y ---
-	std::vector<MeshDomain*>	m_Dom;	// domains
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

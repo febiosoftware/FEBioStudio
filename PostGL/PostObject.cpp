@@ -207,14 +207,14 @@ void CPostObject::BuildInternalSurfaces()
 	if (pmesh == nullptr) return;
 	Post::FEPostMesh& mesh = *pmesh;
 
-	int ndom = mesh.Domains();
+	int ndom = mesh.MeshPartitions();
 	for (int i = 0; i < ndom; ++i) m_innerSurface.push_back(new Post::GLSurface);
 
 	int nsurf = Faces();
 	FSFace face;
 	for (int m = 0; m < ndom; ++m)
 	{
-		Post::MeshDomain& dom = mesh.Domain(m);
+		FSMeshPartition& dom = mesh.MeshPartition(m);
 		int NE = dom.Elements();
 
 		for (int i = 0; i < NE; ++i)

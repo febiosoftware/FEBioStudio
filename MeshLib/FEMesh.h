@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FECoreMesh.h"
 #include <GeomLib/FSGroup.h>
+#include "FSMeshPartition.h"
 #include "FEMeshData.h"
 #include "Mesh_Data.h"
 #include "FENodeElementList.h"
@@ -223,6 +224,12 @@ public:
 	void RemoveEmptyFEGroups();
 	void RemoveUnusedFEGroups();
 
+public:
+	int MeshPartitions() const { return (int)m_Dom.Size(); }
+	void ClearMeshPartitions();
+
+	FSMeshPartition& MeshPartition(int i) { return *m_Dom[i]; }
+
 public: // --- M E S H   Q U E R I E S ---
 	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);
 
@@ -263,6 +270,8 @@ protected:
 	FSObjectList<FSEdgeSet>		m_pFEEdgeSet;
 	FSObjectList<FSNodeSet>		m_pFENodeSet;
 	FSObjectList<FSPartSet>		m_pFEPartSet;
+
+	FSObjectList<FSMeshPartition>	m_Dom;	// domains
 
 protected:
 	// Node index look up table

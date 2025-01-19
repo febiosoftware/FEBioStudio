@@ -57,11 +57,11 @@ bool AbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 	}
 
 	// write elements
-	int ndom = mesh->Domains();
+	int ndom = mesh->MeshPartitions();
 	int ne = 1;
 	for (int i = 0; i < ndom; ++i)
 	{
-		Post::MeshDomain& dom = mesh->Domain(i);
+		FSMeshPartition& dom = mesh->MeshPartition(i);
 
 		if (dom.Elements() > 0)
 		{

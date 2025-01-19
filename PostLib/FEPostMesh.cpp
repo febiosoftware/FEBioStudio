@@ -58,7 +58,7 @@ void Post::FEPostMesh::CleanUp()
 	m_NEL.Clear();
 	m_NFL.Clear();
 
-	ClearDomains();
+	ClearMeshPartitions();
 	ClearElemSets();
 	ClearSurfaces();
 	ClearNodeSets();
@@ -73,14 +73,6 @@ void Post::FEPostMesh::ClearAll()
 	m_Edge.clear();
 	m_Face.clear();
 	m_Elem.clear();
-}
-
-//-----------------------------------------------------------------------------
-// Clear all the domains
-void Post::FEPostMesh::ClearDomains()
-{
-	for (int i=0; i<(int) m_Dom.size(); ++i) delete m_Dom[i];
-	m_Dom.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +133,7 @@ void Post::FEPostMesh::Create(int nodes, int elems, int faces, int edges)
 // Build the parts
 void Post::FEPostMesh::UpdateDomains()
 {
-	ClearDomains();
+	ClearMeshPartitions();
 
 	// figure out how many domains there are
 	int ndom = 0;
@@ -171,12 +163,13 @@ void Post::FEPostMesh::UpdateDomains()
 		if (mb >= 0) faceSize[mb]++;
 	}
 
-	m_Dom.resize(ndom);
+	m_Dom.Clear();
 	for (int i=0; i<ndom; ++i) 
 	{
-		m_Dom[i] = new MeshDomain(this);
-		m_Dom[i]->SetMatID(i);
-		m_Dom[i]->Reserve(elemSize[i], faceSize[i]);
+		FSMeshPartition* dom = new FSMeshPartition(this);
+		dom->SetMatID(i);
+		dom->Reserve(elemSize[i], faceSize[i]);
+		m_Dom.Add(dom);
 	}
 
 	for (int i=0; i<NE; ++i)

@@ -23,49 +23,40 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <MeshLib/FEElement.h>
+#include "FECoreMesh.h"
+#include <FSCore/FSObject.h>
 #include <vector>
 
-class FSCoreMesh;
+class FSMesh;
 
-namespace Post {
-//-----------------------------------------------------------------------------
-// forward declaration of the mesh class
-class FEPostMesh;
-
-//-----------------------------------------------------------------------------
-// A doman is an internal organization of elements. A domain is created for each material.
-class MeshDomain
+class FSMeshPartition : public FSObject
 {
 public:
-	MeshDomain(FEPostMesh* pm);
+	FSMeshPartition(FSMesh* pm);
 
 	void SetMatID(int matid);
 	int GetMatID() const { return m_nmat; }
 
 	int Type() const { return m_ntype; }
 
-	int Faces() { return (int) m_Face.size(); }
+	int Faces() { return (int)m_Face.size(); }
 	FSFace& Face(int n);
 
-	int Elements() { return (int) m_Elem.size(); }
+	int Elements() { return (int)m_Elem.size(); }
 	FEElement_& Element(int n);
 
 	void Reserve(int nelems, int nfaces);
 
 	void AddElement(int n) { m_Elem.push_back(n); }
-	void AddFace   (int n) { m_Face.push_back(n); }
+	void AddFace(int n) { m_Face.push_back(n); }
 
 	const std::vector<int>& FaceList() { return m_Face; }
 
 protected:
-	FEPostMesh*	m_pm;
+	FSMesh*		m_pm;
 	int			m_nmat;	// material index
 	int			m_ntype;
 	std::vector<int>	m_Face;	// face indices 
 	std::vector<int>	m_Elem;	// element indices
 };
-
-}

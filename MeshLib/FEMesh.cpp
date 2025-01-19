@@ -2944,6 +2944,11 @@ void FSMesh::RemoveUnusedFEGroups()
 	clearVector<FSNodeSet>(m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
 }
 
+void FSMesh::ClearMeshPartitions()
+{
+	m_Dom.Clear();
+}
+
 FSSurface* FSMesh::FindFESurface(const string& name)
 {
 	return m_pFESurface.FindByName(name);

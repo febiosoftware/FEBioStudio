@@ -29,6 +29,7 @@ SOFTWARE.*/
 
 class FSElemSet;
 class FSSurface;
+class FSMeshPartition;
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -37,7 +38,6 @@ class FEPostModel;
 class ModelDataField;
 class FEState;
 class FEMeshData;
-class MeshDomain;
 
 //-----------------------------------------------------------------------------
 // Class for writing FEBio XPLT files.
@@ -169,7 +169,7 @@ protected:
 	bool WritePartSection   (FEPostMesh& m);
 	bool WriteSurfaceSection(FEPostMesh& m);
 
-	bool WritePart(FEPostMesh& m, MeshDomain& part);
+	bool WritePart(FEPostMesh& m, FSMeshPartition& part);
 
 	bool WriteState(FEPostModel& fem, FEState& state);
 	bool WriteNodeData(FEPostModel& fem, FEState& state);

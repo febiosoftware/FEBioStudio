@@ -600,9 +600,9 @@ void CGLPlaneCutPlot::UpdateSlice()
 	Post::FEState& state = *ps->CurrentState();
 
 	// loop over all domains
-	for (int n = 0; n < pm->Domains(); ++n)
+	for (int n = 0; n < pm->MeshPartitions(); ++n)
 	{
-		MeshDomain& dom = pm->Domain(n);
+		FSMeshPartition& dom = pm->MeshPartition(n);
 		int matId = dom.GetMatID();
 		if ((matId >= 0) && (matId < ps->Materials()))
 		{
@@ -626,7 +626,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	int en[8];
 	int	rf[3];
 
-	MeshDomain& dom = pm->Domain(n);
+	FSMeshPartition& dom = pm->MeshPartition(n);
 
 	// get the plane equations
 	double a[4];
@@ -854,7 +854,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 		int pid = el.m_MatID;
 		if (pid >= 0)
 		{
-			MeshDomain& dom = pm->Domain(pid);
+			FSMeshPartition& dom = pm->MeshPartition(pid);
 			int matId = dom.GetMatID();
 			if ((matId >= 0) && (matId < ps->Materials()))
 			{

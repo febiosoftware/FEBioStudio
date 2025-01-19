@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEPostMesh.h>
-#include <PostLib/FEGroup.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEDataField.h>
