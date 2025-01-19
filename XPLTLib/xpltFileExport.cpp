@@ -340,7 +340,7 @@ bool xpltFileExport::WriteGeometry(FEPostModel& fem)
 	m_ar.EndChunk();
 
 	// surface section
-	if (m.Surfaces() > 0)
+	if (m.FESurfaces() > 0)
 	{
 		m_ar.BeginChunk(PLT_SURFACE_SECTION);
 		{
@@ -463,11 +463,11 @@ bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::MeshDomain& part)
 //-----------------------------------------------------------------------------
 bool xpltFileExport::WriteSurfaceSection(Post::FEPostMesh& mesh)
 {
-	int NS = mesh.Surfaces();
+	int NS = mesh.FESurfaces();
 	for (int n=0; n<NS; ++n)
 	{
-		FSSurface& s = mesh.Surface(n);
-		int NF = s.Size();
+		FSSurface& s = *mesh.GetFESurface(n);
+		int NF = s.size();
 
 		// we need to cast away the const on the name
 		char* szname = const_cast<char*>(s.GetName().c_str());
@@ -488,7 +488,7 @@ bool xpltFileExport::WriteSurfaceSection(Post::FEPostMesh& mesh)
 				int n[PLT_MAX_FACET_NODES + 2];
 				for (int i=0; i<NF; ++i)
 				{
-					FSFace& f = mesh.Face(s.m_Face[i]);
+					FSFace& f = *s.GetFace(i);
 					int nf = f.Nodes();
 					n[0] = i+1;
 					n[1] = nf;
@@ -616,10 +616,10 @@ bool xpltFileExport::WriteElemData(FEPostModel& fem, FEState& state)
 				vector<float> val;
 				m_ar.BeginChunk(PLT_STATE_VAR_DATA);
 				{
-					int ND = mesh.ElemSets();
+					int ND = mesh.FEElemSets();
 					for (int i=0; i<ND; ++i)
 					{
-						FSElemSet& part = mesh.ElemSet(i);
+						FSElemSet& part = *mesh.GetFEElemSet(i);
 
 						if (FillElemDataArray(val, data, part) == false) return false;
 
@@ -657,10 +657,10 @@ bool xpltFileExport::WriteFaceData(FEPostModel& fem, FEState& state)
 				vector<float> val;
 				m_ar.BeginChunk(PLT_STATE_VAR_DATA);
 				{
-					int NS = mesh.Surfaces();
+					int NS = mesh.FESurfaces();
 					for (int i=0; i<NS; ++i)
 					{
-						FSSurface& surf = mesh.Surface(i);
+						FSSurface& surf = *mesh.GetFESurface(i);
 
 						if (FillFaceDataArray(val, data, surf) == false) return false;
 
@@ -741,7 +741,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSElemSet& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, FSElemSet& part)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -749,11 +749,11 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();
 
-	int NE = part.Size();
+	int NE = part.size();
 	if (NE == 0) return false;
 
 	// number of nodes per element
-	int ne = mesh.ElementRef(part.m_Elem[0]).Nodes();
+	int ne = mesh.ElementRef(part[0]).Nodes();
 
 	// number of actually written values
 	int nval = 0;
@@ -766,7 +766,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NE, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid)) { data.eval(eid, &val[i]); nval++; }
 			}
 		}
@@ -776,7 +776,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(3*NE, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					vec3f v(0.f, 0.f, 0.f);
@@ -793,7 +793,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(6*NE, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 
 				if (data.active(eid))
 				{
@@ -811,7 +811,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(3*NE, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 
 				if (data.active(eid))
 				{
@@ -833,7 +833,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NE*ne, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				float v[FSElement::MAX_NODES] = {0.f};
 				if (data.active(eid))
 				{
@@ -849,7 +849,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NE*ne*3, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				vec3f v[FSElement::MAX_NODES] = {vec3f(0.f,0.f,0.f)};
 				if (data.active(eid))
 				{
@@ -866,7 +866,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -882,7 +882,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -907,7 +907,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			float v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -924,7 +924,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			vec3f v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -941,7 +941,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -958,7 +958,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
-				int eid = part.m_Elem[i];
+				int eid = part[i];
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -979,7 +979,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSSurface& surf)
+bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, FSSurface& surf)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -987,7 +987,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();
 
-	int NF = surf.Size();
+	int NF = surf.size();
 	int nval = 0;
 	if (nfmt == DATA_ITEM)
 	{
@@ -997,7 +997,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NF, 0.f);
 			for (int i=0; i<NF; ++i) 
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >=0) && data.active(fid)) { data.eval(fid, &val[i]); nval++; }
 			}
 		}
@@ -1007,7 +1007,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(3*NF, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					vec3f v(0.f, 0.f, 0.f);
@@ -1024,7 +1024,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(6*NF, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					mat3fs v;
@@ -1041,7 +1041,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(3*NF, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					mat3fd v;
@@ -1062,7 +1062,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NF*PLT_MAX_FACET_NODES, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				float v[PLT_MAX_FACET_NODES] = {0.f};
 				if ((fid >= 0) && data.active(fid))
 				{
@@ -1081,7 +1081,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NF*PLT_MAX_FACET_NODES*3, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				vec3f v[PLT_MAX_FACET_NODES] = {vec3f(0.f,0.f,0.f)};
 				if ((fid >= 0) && data.active(fid))
 				{
@@ -1099,7 +1099,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NF*PLT_MAX_FACET_NODES*6, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				mat3fs v[PLT_MAX_FACET_NODES];
 				if ((fid >= 0) && data.active(fid))
 				{
@@ -1117,7 +1117,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			val.assign(NF*PLT_MAX_FACET_NODES*3, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				mat3fd v[PLT_MAX_FACET_NODES];
 				if ((fid >= 0) && data.active(fid))
 				{
@@ -1146,7 +1146,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					data.eval(fid, v);
@@ -1166,7 +1166,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					data.eval(fid, v);
@@ -1186,7 +1186,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					data.eval(fid, v);
@@ -1206,7 +1206,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
-				int fid = surf.m_Face[i];
+				int fid = surf[i];
 				if ((fid >= 0) && data.active(fid))
 				{
 					data.eval(fid, v);

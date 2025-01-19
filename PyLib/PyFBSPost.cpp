@@ -127,24 +127,24 @@ void init_FBSPost(py::module& m)
 #endif
 
 	py::class_<FEPostMesh, FSMesh>(post, "FEPostMesh")
-        .def("surfaces", &FEPostMesh::Surfaces)
-        .def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
-        .def("nodesets", &FEPostMesh::NodeSets)
-        .def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference)
-        .def("elemsets", &FEPostMesh::ElemSets)
-        .def("elemset", &FEPostMesh::ElemSet, py::return_value_policy::reference);
+		.def("surfaces", &FEPostMesh::FESurfaces)
+//		.def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
+		.def("nodesets", &FEPostMesh::FENodeSets)
+//		.def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference)
+		.def("elemsets", &FEPostMesh::FEElemSets);
+//        .def("elemset", &FEPostMesh::GetFEElemSet, py::return_value_policy::reference);
 
-	py::class_<Post::FSSurface>(post, "FESurface")
-        .def_readonly("faces", &Post::FSSurface::m_Face, py::return_value_policy::reference)
-        .def("name", &Post::FSSurface::GetName);
+	py::class_<FSSurface>(post, "FESurface")
+//        .def_readonly("faces", &FSSurface::m_Face, py::return_value_policy::reference)
+        .def("name", &FSSurface::GetName);
 
-	py::class_<Post::FSNodeSet>(post, "FSNodeSet")
-        .def_readonly("nodes", &Post::FSNodeSet::m_Node, py::return_value_policy::reference)
-        .def("name", &Post::FSNodeSet::GetName);
+	py::class_<FSNodeSet>(post, "FSNodeSet")
+//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
+        .def("name", &FSNodeSet::GetName);
 
-    py::class_<Post::FSElemSet>(post, "FSElemSet")
-        .def_readonly("elems", &Post::FSElemSet::m_Elem, py::return_value_policy::reference)
-        .def("name", &Post::FSElemSet::GetName);
+    py::class_<FSElemSet>(post, "FSElemSet")
+//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
+        .def("name", &FSElemSet::GetName);
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)

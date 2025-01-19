@@ -67,37 +67,6 @@ public:
 	//! return a domain
 	MeshDomain& Domain(int i) { return *m_Dom[i]; }
 
-	//! nr of element sets
-	int ElemSets() const { return (int) m_ESet.size(); }
-
-	//! add a element set
-	void AddElemSet(FSElemSet* pg) { m_ESet.push_back(pg); }
-
-	//! return an element set
-	FSElemSet& ElemSet(int n) { return *m_ESet[n]; }
-
-	// number of surfaces
-	int Surfaces() const { return (int) m_Surf.size(); }
-
-	// return a surface
-	FSSurface& Surface(int n) { return *m_Surf[n]; }
-
-	FSSurface* FindSurface(const std::string& s);
-
-	// Add a surface
-	void AddSurface(FSSurface* ps) { m_Surf.push_back(ps); }
-
-	//! number of node sets
-	int NodeSets() const { return (int) m_NSet.size(); }
-
-	//! return a node set
-	FSNodeSet& NodeSet(int i) { return *m_NSet[i]; }
-
-	//! Add a node set
-	void AddNodeSet(FSNodeSet* ps) { m_NSet.push_back(ps); }
-
-	FSNodeSet* FindNodeSet(const std::string& s);
-
 	// --- D A T A   U P D A T E ---
 
 	//! update mesh data
@@ -114,11 +83,6 @@ protected:
 protected:
 	// --- G E O M E T R Y ---
 	std::vector<MeshDomain*>	m_Dom;	// domains
-
-	// user-defined partitions
-	std::vector<FSElemSet*>	m_ESet;	// element sets
-	std::vector<FSSurface*>	m_Surf;	// surfaces
-	std::vector<FSNodeSet*>	m_NSet;	// node sets
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

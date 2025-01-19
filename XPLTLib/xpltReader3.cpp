@@ -1520,11 +1520,10 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.nodeSets(); ++n)
 	{
 		NodeSet& s = m_xmesh.nodeSet(n);
-		Post::FSNodeSet* ps = new Post::FSNodeSet(pmesh);
+		FSNodeSet* ps = new FSNodeSet(pmesh, s.node);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
-		ps->m_Node = s.node;
-		pmesh->AddNodeSet(ps);
+		pmesh->AddFENodeSet(ps);
 	}
 
 	// let's create the FE surfaces
@@ -1535,12 +1534,12 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		for (int n=0; n< m_xmesh.surfaces(); ++n)
 		{
 			Surface& s = m_xmesh.surface(n);
-			Post::FSSurface* ps = new Post::FSSurface(pmesh);
+			FSSurface* ps = new FSSurface(pmesh);
 			if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 			else ps->SetName(s.szname);
-			ps->m_Face.reserve(s.nfaces);
-			for (int i=0; i<s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
-			pmesh->AddSurface(ps);
+			ps->reserve(s.nfaces);
+			for (int i=0; i<s.nfaces; ++i) ps->add(s.face[i].nid);
+			pmesh->AddFESurface(ps);
 		}
 	}
 	else
@@ -1548,12 +1547,12 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		for (int n = 0; n < m_xmesh.facetSets(); ++n)
 		{
 			Surface& s = m_xmesh.facetSet(n);
-			Post::FSSurface* ps = new Post::FSSurface(pmesh);
+			FSSurface* ps = new FSSurface(pmesh);
 			if (s.szname[0] == 0) { sprintf(szname, "surface%02d", n + 1); ps->SetName(szname); }
 			else ps->SetName(s.szname);
-			ps->m_Face.reserve(s.nfaces);
-			for (int i = 0; i < s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
-			pmesh->AddSurface(ps);
+			ps->reserve(s.nfaces);
+			for (int i = 0; i < s.nfaces; ++i) ps->add(s.face[i].nid);
+			pmesh->AddFESurface(ps);
 		}
 	}
 
@@ -1580,15 +1579,15 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		for (int n = 0; n < m_xmesh.elementSets(); ++n)
 		{
 			ElemSet& e = m_xmesh.elementSet(n);
-			Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+			FSElemSet* pg = new FSElemSet(pmesh);
 			if (e.szname[0] == 0) { sprintf(szname, "ElementSet%02d", n + 1); pg->SetName(szname); }
 			else pg->SetName(e.szname);
-			pg->m_Elem.resize(e.ne);
+			pg->reserve(e.ne);
 			for (int i = 0; i < e.elem.size(); ++i)
 			{
-				pg->m_Elem[i] = lut[e.elem[i] - minId];
+				pg->add(lut[e.elem[i] - minId]);
 			}
-			pmesh->AddElemSet(pg);
+			pmesh->AddFEElemSet(pg);
 		}
 	}
 
@@ -1600,12 +1599,10 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		for (int n = 0; n < m_xmesh.domains(); ++n)
 		{
 			Domain& s = m_xmesh.domain(n);
-			Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+			FSElemSet* pg = new FSElemSet(pmesh, s.elist);
 			if (s.szname[0] == 0) { sprintf(szname, "part%02d", n + 1); pg->SetName(szname); }
 			else pg->SetName(s.szname);
-			pg->m_Elem.resize(s.ne);
-			pg->m_Elem = s.elist;
-			pmesh->AddElemSet(pg);
+			pmesh->AddFEElemSet(pg);
 		}
 	}
 

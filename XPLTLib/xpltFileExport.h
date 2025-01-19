@@ -27,13 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "xpltArchive.h"
 
+class FSElemSet;
+class FSSurface;
+
 namespace Post {
 //-----------------------------------------------------------------------------
 class FEPostMesh;
 class FEPostModel;
 class ModelDataField;
-class FSElemSet;
-class FSSurface;
 class FEState;
 class FEMeshData;
 class MeshDomain;

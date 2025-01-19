@@ -96,6 +96,7 @@ public:
 	void add(int n) { m_Item.push_back(n); }
 	void add(const std::vector<int>& nodeList);
 	void remove(int i);
+	void reserve(size_t n) { m_Item.reserve(n); }
 	int size() const { return (int)m_Item.size(); }
 	Iterator begin() { return m_Item.begin(); }
 	Iterator end() { return m_Item.end(); }

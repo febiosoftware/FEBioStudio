@@ -87,42 +87,21 @@ void Post::FEPostMesh::ClearDomains()
 // Clear all the parts
 void Post::FEPostMesh::ClearElemSets()
 {
-	for (int i=0; i<(int) m_ESet.size(); ++i) delete m_ESet[i];
-	m_ESet.clear();
+	m_pFEElemSet.Clear();
 }
 
 //-----------------------------------------------------------------------------
 // Clear all the surfaces
 void Post::FEPostMesh::ClearSurfaces()
 {
-	for (int i=0; i<(int) m_Surf.size(); ++i) delete m_Surf[i];
-	m_Surf.clear();
+	m_pFESurface.Clear();
 }
 
 //-----------------------------------------------------------------------------
 // Clear all the node sets
 void Post::FEPostMesh::ClearNodeSets()
 {
-	for (int i=0; i<(int) m_NSet.size(); ++i) delete m_NSet[i];
-	m_NSet.clear();
-}
-
-Post::FSSurface* Post::FEPostMesh::FindSurface(const std::string& s)
-{
-	for (auto& surf : m_Surf)
-	{
-		if (surf->GetName() == s) return surf;
-	}
-	return nullptr;
-}
-
-Post::FSNodeSet* Post::FEPostMesh::FindNodeSet(const std::string& s)
-{
-	for (auto& nset : m_NSet)
-	{
-		if (nset->GetName() == s) return nset;
-	}
-	return nullptr;
+	m_pFENodeSet.Clear();
 }
 
 //-----------------------------------------------------------------------------

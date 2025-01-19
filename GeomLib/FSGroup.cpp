@@ -187,6 +187,45 @@ FSNodeList* FSElemSet::BuildNodeList()
 	return pg;
 }
 
+void FSElemSet::GetNodeList(vector<int>& node, vector<int>& lnode)
+{
+	FSCoreMesh& mesh = *GetMesh();
+	int NN = mesh.Nodes();
+	int NE = size();
+
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+	int n = 0, nne = 0;
+	std::vector<int> elemList = CopyItems();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		nne += ne;
+		for (int j = 0; j < ne; ++j)
+		{
+			if (mesh.Node(el.m_node[j]).m_ntag == -1) mesh.Node(el.m_node[j]).m_ntag = n++;
+		}
+	}
+
+	node.resize(n);
+	for (int i = 0; i < NN; ++i)
+		if (mesh.Node(i).m_ntag >= 0) node[mesh.Node(i).m_ntag] = i;
+
+	lnode.resize(nne); nne = 0;
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			int lid = mesh.Node(el.m_node[j]).m_ntag; assert(lid >= 0);
+			lnode[nne + j] = lid;
+		}
+		nne += ne;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 // FSPartSet
 //////////////////////////////////////////////////////////////////////
@@ -293,6 +332,44 @@ FEItemListBuilder* FSSurface::Copy()
 	FSSurface* pg = new FSSurface(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
+}
+
+void FSSurface::GetNodeList(vector<int>& node, vector<int>& lnode)
+{
+	FSCoreMesh& mesh = *GetMesh();
+	int NN = mesh.Nodes();
+	int NF = size();
+
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+	int n = 0, nnf = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = *GetFace(i);
+		int nf = face.Nodes();
+		nnf += nf;
+		for (int j = 0; j < nf; ++j)
+		{
+			if (mesh.Node(face.n[j]).m_ntag == -1) mesh.Node(face.n[j]).m_ntag = n++;
+		}
+	}
+
+	node.resize(n);
+	for (int i = 0; i < NN; ++i)
+		if (mesh.Node(i).m_ntag >= 0) node[mesh.Node(i).m_ntag] = i;
+
+	lnode.resize(nnf); nnf = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = *GetFace(i);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			int lid = mesh.Node(face.n[j]).m_ntag; assert(lid >= 0);
+			lnode[nnf + j] = lid;
+		}
+		nnf += nf;
+	}
 }
 
 FSFace* FSSurface::GetFace(int n)

@@ -26,9 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEElement.h>
-#include <GeomLib/FSGroup.h>
 #include <vector>
-//using namespace std;
 
 class FSCoreMesh;
 
@@ -36,25 +34,6 @@ namespace Post {
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh class
 class FEPostMesh;
-
-//-----------------------------------------------------------------------------
-// Base class that describes a list of mesh items. 
-class MeshItemList : public FSObject
-{
-public:
-	MeshItemList(FSCoreMesh* pm, int ntype) { m_pm = pm; m_type = ntype; }
-	virtual ~MeshItemList(void) {}
-
-	FSCoreMesh* GetMesh() const { return m_pm; }
-
-private:
-	MeshItemList(const MeshItemList&) {}
-	void operator = (const MeshItemList&){}
-
-protected:
-	int			m_type;
-	FSCoreMesh*	m_pm;	// pointer to the parent mesh
-};
 
 //-----------------------------------------------------------------------------
 // A doman is an internal organization of elements. A domain is created for each material.
@@ -89,50 +68,4 @@ protected:
 	std::vector<int>	m_Elem;	// element indices
 };
 
-//-----------------------------------------------------------------------------
-// Class that describes a group of elements
-class FSElemSet : public Post::MeshItemList
-{
-public:
-	FSElemSet(FSCoreMesh* pm) : MeshItemList(pm, FE_ELEMSET) {}
-
-	int Size() const { return (int) m_Elem.size(); }
-
-	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
-
-	std::vector<int> GetElementList() const { return m_Elem; }
-
-public:
-	std::vector<int>	m_Elem;	// element indices
-};
-
-//-------------------------------------------------------------------------
-// Class that describes a group of faces
-class FSSurface : public MeshItemList
-{
-public:
-	FSSurface(FSCoreMesh* pm) : MeshItemList(pm, FE_SURFACE) {}
-
-	int Size() const { return (int) m_Face.size(); }
-
-	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
-
-	std::vector<int> GetFaceList() const { return m_Face; }
-
-public:
-	std::vector<int>	m_Face;	// face indices
-};
-
-//-------------------------------------------------------------------------
-//! Class that defines a node set
-class FSNodeSet : public MeshItemList
-{
-public:
-	FSNodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
-
-	std::vector<int> GetNodeList() const { return m_Node; }
-
-public:
-	std::vector<int>	m_Node;
-};
 }

@@ -87,6 +87,9 @@ public:
 	FEElemList* BuildElemList();
 	FSNodeList* BuildNodeList();
 
+	// TODO: Replace this will call to BuildNodeList
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
+
 	FEElement_* GetElement(int n);
 
 	FEItemListBuilder* Copy();
@@ -124,6 +127,9 @@ public:
 
 	FSNodeList* BuildNodeList();
 	FEFaceList* BuildFaceList();
+
+	// TODO: Replace with call to BuildNodeList
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
 	FSFace* GetFace(int n);
 

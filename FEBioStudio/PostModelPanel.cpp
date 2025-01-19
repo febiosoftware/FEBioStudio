@@ -799,20 +799,12 @@ void CPostModelPanel::BuildModelTree()
 				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
 
 				// add node sets
-				int nsets = mesh.NodeSets() + (po ? po->FENodeSets() : 0);
+				int nsets = mesh.FENodeSets();
 				CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, QString("Node Sets (%1)").arg(nsets), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.NodeSets(); ++i)
+				for (int i = 0; i < mesh.FENodeSets(); ++i)
 				{
-					Post::FSNodeSet& nset = mesh.NodeSet(i);
-					ui->AddItem(pi3, &nset, QString::fromStdString(nset.GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FENodeSets(); ++i)
-					{
-						FSNodeSet* pg = po->GetFENodeSet(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
+					FSNodeSet* nset = mesh.GetFENodeSet(i);
+					ui->AddItem(pi3, nset, QString::fromStdString(nset->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
 
 				// add edges
@@ -828,37 +820,21 @@ void CPostModelPanel::BuildModelTree()
 				}
 
 				// add surfaces
-				int nsurf = mesh.Surfaces() + (po ? po->FESurfaces() : 0);
+				int nsurf = mesh.FESurfaces();
 				pi3 = ui->AddItem(pi2, nullptr, QString("Surfaces (%1)").arg(nsurf), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.Surfaces(); ++i)
+				for (int i = 0; i < mesh.FESurfaces(); ++i)
 				{
-					Post::FSSurface& surf = mesh.Surface(i);
+					FSSurface& surf = *mesh.GetFESurface(i);
 					ui->AddItem(pi3, &surf, QString::fromStdString(surf.GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FESurfaces(); ++i)
-					{
-						FSSurface* pg = po->GetFESurface(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
 				}
 
 				// add element sets
-				int eset = mesh.ElemSets() + (po ? po->FEElemSets() : 0);
+				int eset = mesh.FEElemSets();
 				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.ElemSets(); ++i)
+				for (int i = 0; i < mesh.FEElemSets(); ++i)
 				{
-					Post::FSElemSet& part = mesh.ElemSet(i);
+					FSElemSet& part = *mesh.GetFEElemSet(i);
 					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FEElemSets(); ++i)
-					{
-						FSElemSet* pg = po->GetFEElemSet(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
 				}
 			}
 
@@ -1078,27 +1054,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
 	}
 
-	Post::FSNodeSet* pn2 = dynamic_cast<Post::FSNodeSet*>(po);
-	if (pn2)
-	{
-		// the tree is populated from the initial mesh
-		// but if the initial mesh is remeshed, we need to find the mesh
-		// of the active time step
-		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-		if (postDoc)
-		{
-			Post::FEPostModel* mdl = postDoc->GetFSModel();
-			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
-
-			Post::FSNodeSet* pn3 = pm->FindNodeSet(pn2->GetName());
-			if (pn3) pn2 = pn3;
-
-			std::vector<int> items = pn2->GetNodeList();
-			doc->SetItemMode(ITEM_NODE);
-			doc->DoCommand(new CCmdSelectFENodes(pn2->GetMesh(), items, false));
-		}
-	}
-
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);
 	if (pe)
 	{
@@ -1111,14 +1066,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
-		std::vector<int> items = ps->CopyItems();
-		std::vector<int> vitems(items.begin(), items.end());
-		doc->SetItemMode(ITEM_FACE);
-		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
-	}
-	Post::FSSurface* ps2 = dynamic_cast<Post::FSSurface*>(po);
-	if (ps2)
-	{
 		// the tree is populated from the initial mesh
 		// but if the initial mesh is remeshed, we need to find the mesh
 		// of the active time step
@@ -1128,12 +1075,12 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 			Post::FEPostModel* mdl = postDoc->GetFSModel();
 			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
 
-			Post::FSSurface* ps3 = pm->FindSurface(ps2->GetName());
-			if (ps3) ps2 = ps3;
+			FSSurface* ps2 = pm->FindFESurface(ps->GetName());
+			if (ps2) ps = ps2;
 
-			std::vector<int> items = ps2->GetFaceList();
+			std::vector<int> items = ps->CopyItems();
 			doc->SetItemMode(ITEM_FACE);
-			doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
+			doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), items, false));
 		}
 	}
 
@@ -1144,13 +1091,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
-	}
-	Post::FSElemSet* pg2 = dynamic_cast<Post::FSElemSet*>(po);
-	if (pg2)
-	{
-		std::vector<int> items = pg2->GetElementList();
-		doc->SetItemMode(ITEM_ELEM);
-		doc->DoCommand(new CCmdSelectElements(pg2->GetMesh(), items, false));
 	}
 
 	GetMainWindow()->UpdateGLControlBar();
@@ -1276,7 +1216,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::FSNodeSet* ns = dynamic_cast<Post::FSNodeSet*>(po);
+	FSNodeSet* ns = dynamic_cast<FSNodeSet*>(po);
 	if (ns)
 	{
 		QMenu menu(this);
@@ -1284,16 +1224,8 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSNodeSet* ns2 = dynamic_cast<::FSNodeSet*>(po);
-	if (ns2)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Nodes", this, SLOT(OnSelectNodes()));
-		menu.exec(ev->globalPos());
-		return;
-	}
 
-	Post::FSSurface* ps = dynamic_cast<Post::FSSurface*>(po);
+	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
 		QMenu menu(this);
@@ -1301,26 +1233,9 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSSurface* ps2 = dynamic_cast<::FSSurface*>(po);
-	if (ps2)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Faces", this, SLOT(OnSelectFaces()));
-		menu.exec(ev->globalPos());
-		return;
-	}
 
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
-		menu.addAction("Hide Elements", this, SLOT(OnHideElements()));
-		menu.exec(ev->globalPos());
-		return;
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
 	{
 		QMenu menu(this);
 		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
@@ -1439,23 +1354,13 @@ void CPostModelPanel::OnSelectNodes()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	Post::FSNodeSet* pg = dynamic_cast<Post::FSNodeSet*>(po);
+	FSNodeSet* pg = dynamic_cast<FSNodeSet*>(po);
 	if (pg)
 	{
 		CGLModelDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
-		vector<int>pgl = pg->GetNodeList();
-		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
-	}
-
-	::FSNodeSet* pg2 = dynamic_cast<::FSNodeSet*>(po);
-	if (pg2)
-	{
-		CGLModelDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
-		pdoc->SetItemMode(ITEM_NODE);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1470,22 +1375,13 @@ void CPostModelPanel::OnSelectFaces()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	Post::FSSurface* pg = dynamic_cast<Post::FSSurface*>(po);
-	if (pg)
+	FSSurface* ps = dynamic_cast<::FSSurface*>(po);
+	if (ps)
 	{
 		CGLModelDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
-		vector<int>pgl = pg->GetFaceList();
-		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
-	}
-	::FSSurface* pg2 = dynamic_cast<::FSSurface*>(po);
-	if (pg2)
-	{
-		CGLModelDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
-		pdoc->SetItemMode(ITEM_FACE);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = ps->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1502,18 +1398,11 @@ void CPostModelPanel::OnSelectElements()
 
 	CGLModelDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	FSElemSet* pg = dynamic_cast<::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
-        vector<int>pgl = pg->GetElementList();
-		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
-	{
-		pdoc->SetItemMode(ITEM_ELEM);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1530,15 +1419,10 @@ void CPostModelPanel::OnHideElements()
 	CGLModelDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
-		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
-	{
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
@@ -2003,7 +1887,7 @@ void CPostModelPanel::OnCurveProbePlotData()
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
-		int N = po->Points();
+		int N = (int)po->Points();
 		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
@@ -2045,7 +1929,7 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 
 		TIMESETTINGS& time = doc->GetTimeSettings();
 
-		int N = po->Points();
+		int N = (int)po->Points();
 		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for

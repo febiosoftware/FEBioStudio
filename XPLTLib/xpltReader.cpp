@@ -1127,35 +1127,32 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 	for (int n=0; n<(int)m_NodeSet.size(); ++n)
 	{
 		NodeSet& s = m_NodeSet[n];
-		Post::FSNodeSet* ps = new Post::FSNodeSet(pmesh);
+		FSNodeSet* ps = new FSNodeSet(pmesh, s.node);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
-		ps->m_Node = s.node;
-		pmesh->AddNodeSet(ps);
+		pmesh->AddFENodeSet(ps);
 	}
 
 	// let's create the FE surfaces
 	for (int n=0; n<(int) m_Surf.size(); ++n)
 	{
 		Surface& s = m_Surf[n];
-		Post::FSSurface* ps = new Post::FSSurface(pmesh);
+		FSSurface* ps = new FSSurface(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
-		ps->m_Face.reserve(s.nf);
-		for (int i=0; i<s.nf; ++i) ps->m_Face.push_back(s.face[i].nid);
-		pmesh->AddSurface(ps);
+		ps->reserve(s.nf);
+		for (int i=0; i<s.nf; ++i) ps->add(s.face[i].nid);
+		pmesh->AddFESurface(ps);
 	}
 
 	// let's create the parts
 	for (int n=0; n<(int) m_Dom.size(); ++n)
 	{
 		Domain& s = m_Dom[n];
-		Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+		FSElemSet* pg = new FSElemSet(pmesh, s.elist);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
-		pg->m_Elem.resize(s.ne);
-		pg->m_Elem = s.elist;
-		pmesh->AddElemSet(pg);
+		pmesh->AddFEElemSet(pg);
 	}
 
 	fem.UpdateBoundingBox();
