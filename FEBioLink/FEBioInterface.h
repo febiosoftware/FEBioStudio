@@ -33,9 +33,9 @@ struct MaterialTest
 	double		strain = 0.1;	// strain level
 	FSMaterial* mat = nullptr;	// material to test
 
-	string	testName;	// name of test
-	string	xvalName;	// name of output value for x axis
-	string	yvalName;	// name of output value for y axis
+	std::string	testName;	// name of test
+	std::string	xvalName;	// name of output value for x axis
+	std::string	yvalName;	// name of output value for y axis
 
 	// control parameters
 	double	time = 1.0;
@@ -46,5 +46,5 @@ namespace FEBio {
 
 	// run a material test in FEBio. 
 	// returns stress-strain data in out
-	bool RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out);
+	bool RunMaterialTest(MaterialTest test, std::vector<std::pair<double, double> >& out);
 }

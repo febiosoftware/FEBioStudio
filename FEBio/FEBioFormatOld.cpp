@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
+using namespace std;
 
 FEBioFormatOld::FEBioFormatOld(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {

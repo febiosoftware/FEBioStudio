@@ -141,7 +141,7 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 	// create a new mesh
 	int nodes = (int)vtk.Points();
 	int elems = (int)vtk.Cells();
-	FEPostMesh* pm = new FEPostMesh;
+	FSMesh* pm = new FSMesh;
 
 	// Build the FE mesh from the VTK mesh
 	// don't split polys since otherwise this could mess up the data counts
@@ -153,7 +153,7 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 
 	// We need to build the mesh before allocating a state so that we have 
 	// the faces. 
-	pm->BuildMesh();
+	pm->RebuildMesh();
 
 	FEPostModel& fem = *m_fem;
 	fem.AddMesh(pm);
@@ -204,7 +204,7 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 	}
 
 	// update the mesh
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	return true;

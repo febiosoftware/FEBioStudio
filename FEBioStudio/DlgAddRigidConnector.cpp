@@ -113,7 +113,7 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FSProject& prj, QWidget* parent) : 
 	unsigned int mod = prj.GetModule();
 //	vector<FEClassFactory*> v =  FEMKernel::FindAllClasses(mod, FE_RIGID_CONNECTOR);
 	int rigidConnectorId = FEBio::GetBaseClassIndex("FERigidConnector"); assert(rigidConnectorId != -1);
-	vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FENLCONSTRAINT_ID, rigidConnectorId);
+	std::vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FENLCONSTRAINT_ID, rigidConnectorId);
 	for (int i=0; i<(int)v.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = v[i];

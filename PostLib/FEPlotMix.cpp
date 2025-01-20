@@ -66,7 +66,7 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 	pfem->GetState(1)->m_time = 1;
 
 	// get the mesh
-	FEPostMesh& m1 = *pfem->GetFEMesh(0);
+	FSMesh& m1 = *pfem->GetFEMesh(0);
 
 	// get the datamanager
 	FEDataManager* pdm1 = pfem->GetDataManager();
@@ -76,7 +76,7 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 	s1.m_time = 0;
 
 	// get the mesh of the new model
-	FEPostMesh* mesh = pfem->GetFEMesh(0);
+	FSMesh* mesh = pfem->GetFEMesh(0);
 
 	// load the other models
 	for (int i=1; i<n; ++i)
@@ -100,7 +100,7 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 		delete pfr;
 
 		// make sure the mesh size is the same
-		FEPostMesh& m2 = *fem2.GetFEMesh(0);
+		FSMesh& m2 = *fem2.GetFEMesh(0);
 		if ((m1.Nodes   () != m2.Nodes()) ||
 			(m1.Elements() != m2.Elements())) { delete pfem; return 0; } 
 

@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include <QWidget>
 #include <vector>
 #include <list>
-//using namespace std;
-
-using std::vector;
-using std::list;
 
 class QListWidgetItem;
 
@@ -64,17 +60,17 @@ public:
 
 	void clearData();
 	void addData(const QString& item, int data, int fmt = 0, bool checkForDuplicates = true);
-	void addData(const vector<int>& data);
+	void addData(const std::vector<int>& data);
 
 	void removeData(int ndata);
-	void removeData(const vector<int>& data);
+	void removeData(const std::vector<int>& data);
 
-	void getSelectedItems(vector<int>& sel);
-	void getSelectedItems(list<int>& sel);
+	void getSelectedItems(std::vector<int>& sel);
+	void getSelectedItems(std::list<int>& sel);
 
 	void removeSelectedItems();
 
-	void getAllItems(vector<int>& data);
+	void getAllItems(std::vector<int>& data);
 	void getAllNames(QStringList& names);
 
 	void showNameType(bool b);
@@ -109,7 +105,7 @@ private slots:
 
 private:
 	Ui::CSelectionBox*	ui;
-	vector<Item>		m_items;
+	std::vector<Item>		m_items;
 };
 
 //-----------------------------------------------------------------------------

@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <vector>
-//using namespace std;
 
 // selection type
 enum SelectionType
@@ -78,7 +77,7 @@ public:
 
 	virtual FEItemListBuilder* CreateItemList() = 0;
 
-	virtual string GetName() { return "current selection"; }
+	virtual std::string GetName() { return "current selection"; }
 
 protected:
 	virtual void Update() = 0;
@@ -118,11 +117,11 @@ public:
 
 	GObject* Object(int i);
 
-	string GetName() override;
+	std::string GetName() override;
 
 protected:
 	GModel*		m_mdl;
-	vector<int>	m_item;
+	std::vector<int>	m_item;
 };
 
 // base class for geometry selections

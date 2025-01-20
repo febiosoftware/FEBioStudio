@@ -839,7 +839,7 @@ void CModelDocument::HideUnselected()
 		else if (selMode == SELECT_PART)
 		{
 			GModel* mdl = GetGModel();
-			list<GPart*> partList;
+			std::list<GPart*> partList;
 			for (int i = 0; i<mdl->Objects(); ++i)
 			{
 				GObject* po = mdl->Object(i);

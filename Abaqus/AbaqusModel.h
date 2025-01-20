@@ -29,11 +29,6 @@ SOFTWARE.*/
 #include <list>
 #include <vector>
 #include <map>
-//using namespace std;
-
-using std::vector;
-using std::list;
-using std::map;
 
 class AbaqusModel
 {
@@ -56,7 +51,7 @@ public:
 		double x, y, z;		// nodal coordinates
 	};
 
-	typedef vector<NODE>::iterator Tnode_itr;
+	typedef std::vector<NODE>::iterator Tnode_itr;
 
 	// Element
 	struct ELEMENT
@@ -66,7 +61,7 @@ public:
 		int type;
 		int n[Max_Nodes];
 	};
-	typedef vector<ELEMENT>::iterator Telem_itr;
+	typedef std::vector<ELEMENT>::iterator Telem_itr;
 
 	// Spring element
 	struct SPRING_ELEMENT
@@ -74,7 +69,7 @@ public:
 		int	id;
 		int	n[2];
 	};
-	typedef list<SPRING_ELEMENT>::iterator Tspring_itr;
+	typedef std::list<SPRING_ELEMENT>::iterator Tspring_itr;
 
 	// Face
 	struct FACE
@@ -90,7 +85,7 @@ public:
 	{
 		char		szname[Max_Name + 1];
 		PART*		part;
-		list<Tnode_itr>	node;
+		std::list<Tnode_itr>	node;
 	};
 
 	// Element set
@@ -98,14 +93,14 @@ public:
 	{
 		char szname[Max_Name + 1] = { 0 };	// element set name
 		PART*			part = nullptr;
-		vector<int>		elem;
+		std::vector<int>		elem;
 	};
 
 	// Surface
 	struct SURFACE
 	{
 		char szname[Max_Name + 1];	// surface name
-		list<FACE> face;			// face list
+		std::list<FACE> face;			// face list
 		PART*		part;
 	};
 
@@ -151,7 +146,7 @@ public:
 
 	public:
 		char			m_szname[Max_Name + 1];
-		vector<ENTRY>	m_data;
+		std::vector<ENTRY>	m_data;
 	};
 
 	class Amplitude
@@ -166,7 +161,7 @@ public:
 		Amplitude() { m_type = 0; }
 
 	public:
-		string	m_name;
+		std::string	m_name;
 		int		m_type;
 		std::vector<vec2d>	m_points;
 	};
@@ -174,7 +169,7 @@ public:
 	class SpringSet
 	{
 	public:
-		vector<SPRING_ELEMENT> m_Elem;
+		std::vector<SPRING_ELEMENT> m_Elem;
 		LoadCurve m_lc;
 	};
 
@@ -253,19 +248,19 @@ public:
 
 	public:
 		char m_szname[256];
-		vector<NODE>				m_Node;		// list of nodes
-		vector<ELEMENT>				m_Elem;		// list of elements
-		list<SPRING_ELEMENT>		m_Spring;	// list of springs
-		map<string, NODE_SET*>		m_NSet;		// node sets
-		map<string, ELEMENT_SET*>	m_ESet;		// element sets
-		map<string, SURFACE*>		m_Surf;		// surfaces
-		map<string, SpringSet>		m_SpringSet; // set of springs
-		map<string, SOLID_SECTION>	m_Solid;	// solid sections
-		map<string, SHELL_SECTION>	m_Shell;	// shell sections
-		list<Orientation>			m_Orient;
-		list<Distribution>			m_Distr;
+		std::vector<NODE>				m_Node;		// list of nodes
+		std::vector<ELEMENT>				m_Elem;		// list of elements
+		std::list<SPRING_ELEMENT>		m_Spring;	// list of springs
+		std::map<std::string, NODE_SET*>		m_NSet;		// node sets
+		std::map<std::string, ELEMENT_SET*>	m_ESet;		// element sets
+		std::map<std::string, SURFACE*>		m_Surf;		// surfaces
+		std::map<std::string, SpringSet>		m_SpringSet; // set of springs
+		std::map<std::string, SOLID_SECTION>	m_Solid;	// solid sections
+		std::map<std::string, SHELL_SECTION>	m_Shell;	// shell sections
+		std::list<Orientation>			m_Orient;
+		std::list<Distribution>			m_Distr;
 
-		vector<Tnode_itr>	m_NLT;	// Node look-up table
+		std::vector<Tnode_itr>	m_NLT;	// Node look-up table
 		int					m_ioff;	// node id offset (min node id)
 
 		GObject*			m_po;	// object created based on this part
@@ -330,7 +325,7 @@ public:
 		}
 
 	public:
-		vector<SURF>	m_surf;
+		std::vector<SURF>	m_surf;
 		int				m_ampl = -1;
 	};
 
@@ -355,15 +350,15 @@ public:
 		}
 
 	public:
-		vector<NSET>	m_nodeSet;
+		std::vector<NSET>	m_nodeSet;
 		int				m_ampl = -1;
 	};
 
 	struct CONTACT_PAIR
 	{
-		string	name;
-		string surf1;
-		string surf2;
+		std::string	name;
+		std::string surf1;
+		std::string surf2;
 
 		double friction = 0.0;
 	};
@@ -394,11 +389,11 @@ public:
 		void ClearCurrentInstance();
 
 		// get instance list
-		list<INSTANCE*>& InstanceList() { return m_Instance; }
+		std::list<INSTANCE*>& InstanceList() { return m_Instance; }
 
 	public:
 		std::string	m_name;
-		list<INSTANCE*>	m_Instance;		// list of instances
+		std::list<INSTANCE*>	m_Instance;		// list of instances
 		INSTANCE*	m_currentInstance;	// current active instance
 	};
 
@@ -431,7 +426,7 @@ public:
 	void SetCurrentPart(PART* part) { m_currentPart = part; }
 
 	// get part list
-	list<PART*>&	PartList() { return m_Part; }
+	std::list<PART*>&	PartList() { return m_Part; }
 
 	SURFACE* FindSurface(const char* szname);
 
@@ -442,19 +437,19 @@ public:
 	MATERIAL* AddMaterial(const char* szname);
 
 	// get material list
-	list<MATERIAL>& MaterialList() { return m_Mat; }
+	std::list<MATERIAL>& MaterialList() { return m_Mat; }
 
 	// add a pressure load
 	DSLOAD*	AddPressureLoad(DSLOAD& p);
 
 	// list of pressure loads
-	list<DSLOAD>& SurfaceLoadList() { return m_SLoads; }
+	std::list<DSLOAD>& SurfaceLoadList() { return m_SLoads; }
 
 	// add a boundary condition
 	BOUNDARY* AddBoundaryCondition(BOUNDARY& p);
 
 	// list of boundary conditions
-	list<BOUNDARY>& BoundaryConditionList() { return m_Boundary; }
+	std::list<BOUNDARY>& BoundaryConditionList() { return m_Boundary; }
 
 	// add a step
 	STEP* AddStep(const char* szname);
@@ -465,7 +460,7 @@ public:
 	// get the current step
 	STEP* CurrentStep() { return m_currentStep; }
 
-	list<STEP>& StepList() { return m_Step; }
+	std::list<STEP>& StepList() { return m_Step; }
 
 	// get the Assembly
 	ASSEMBLY* GetAssembly() { return m_Assembly; }
@@ -493,17 +488,17 @@ public:
 private:
 	FSModel*	m_fem;		// the model
 
-	list<PART*>	m_Part;		// list of parts
+	std::list<PART*>	m_Part;		// list of parts
 	PART*		m_currentPart;	// current part
 
 	ASSEMBLY*	m_Assembly;	// the assembly
 	ASSEMBLY*	m_currentAssembly;	// the current assembly (is not nullptr between ASSEMBLY and END ASSEMBLY
 
 private:	// physics
-	list<MATERIAL>		m_Mat;			// materials
-	list<DSLOAD>		m_SLoads;		// surface loads
-	list<BOUNDARY>		m_Boundary;		// boundary conditions
-	list<STEP>			m_Step;			// steps
+	std::list<MATERIAL>		m_Mat;			// materials
+	std::list<DSLOAD>		m_SLoads;		// surface loads
+	std::list<BOUNDARY>		m_Boundary;		// boundary conditions
+	std::list<STEP>			m_Step;			// steps
 	STEP*				m_currentStep;	// current step
 	std::vector<Amplitude>		m_Amp;
 	std::vector<CONTACT_PAIR>	m_ContactPair;

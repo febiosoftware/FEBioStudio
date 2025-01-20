@@ -252,7 +252,7 @@ void CGLMonitorScene::BuildMesh()
 			(domType != ET_PYRA5)) blinear = false;
 	}
 
-	Post::FEPostMesh* pmesh = new Post::FEPostMesh;
+	FSMesh* pmesh = new FSMesh;
 	pmesh->Create(NN, NE);
 
 	// read the element connectivity
@@ -527,7 +527,7 @@ void CGLMonitorScene::UpdateMeshState(FEModel* fem)
 	Post::FEState* state = m_postModel->CurrentState(); assert(state);
 	if (state == nullptr) return;
 
-	Post::FEPostMesh& postMesh = *m_postModel->GetFEMesh(0);
+	FSMesh& postMesh = *m_postModel->GetFEMesh(0);
 	assert(mesh.Nodes() == postMesh.Nodes());
 	assert(mesh.Elements() == postMesh.Elements());
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "FEMaterial.h"
 #include <vector>
-//using namespace std;
 
 class FSMultiphasicMaterial;
 class FSModel;
@@ -556,16 +555,16 @@ public:
 	void AddReactantMaterial(FSReactantMaterial* pm);
 	void AddProductMaterial(FSProductMaterial* pm);
 
-	void GetSoluteReactants(vector<int>& solR);
-	void GetSBMReactants(vector<int>& sbmR);
-	void GetSoluteProducts(vector<int>& solP);
-	void GetSBMProducts(vector<int>& sbmP);
+	void GetSoluteReactants(std::vector<int>& solR);
+	void GetSBMReactants(std::vector<int>& sbmR);
+	void GetSoluteProducts(std::vector<int>& solP);
+	void GetSBMProducts(std::vector<int>& sbmP);
 
 	void ClearReactants();
 	void ClearProducts();
 };
 
-string buildReactionEquation(FSReactionMaterial* mat, FSModel& fem);
+std::string buildReactionEquation(FSReactionMaterial* mat, FSModel& fem);
 
 // helper class for managing chemical reactions using the FEBio classes
 class FEBioReactionMaterial
@@ -608,10 +607,10 @@ public:
     void AddReactantMaterial(FSMaterialProperty* pm);
     void AddProductMaterial(FSMaterialProperty* pm);
 
-    void GetSoluteReactants(vector<int>& solR);
-    void GetSBMReactants(vector<int>& sbmR);
-    void GetSoluteProducts(vector<int>& solP);
-    void GetSBMProducts(vector<int>& sbmP);
+    void GetSoluteReactants(std::vector<int>& solR);
+    void GetSBMReactants(std::vector<int>& sbmR);
+    void GetSoluteProducts(std::vector<int>& solP);
+    void GetSBMProducts(std::vector<int>& sbmP);
 
     void ClearReactants();
     void ClearProducts();
@@ -671,14 +670,14 @@ public:
     void AddReactantMaterial(FSMaterialProperty* pm);
     void AddProductMaterial(FSMaterialProperty* pm);
 
-    void GetSoluteReactants(vector<int>& solR);
-    void GetInternalSoluteReactants(vector<int>& solRi);
-    void GetExternalSoluteReactants(vector<int>& solRe);
-    void GetSBMReactants(vector<int>& sbmR);
-    void GetSoluteProducts(vector<int>& solP);
-    void GetInternalSoluteProducts(vector<int>& solPi);
-    void GetExternalSoluteProducts(vector<int>& solPe);
-    void GetSBMProducts(vector<int>& sbmP);
+    void GetSoluteReactants(std::vector<int>& solR);
+    void GetInternalSoluteReactants(std::vector<int>& solRi);
+    void GetExternalSoluteReactants(std::vector<int>& solRe);
+    void GetSBMReactants(std::vector<int>& sbmR);
+    void GetSoluteProducts(std::vector<int>& solP);
+    void GetInternalSoluteProducts(std::vector<int>& solPi);
+    void GetExternalSoluteProducts(std::vector<int>& solPe);
+    void GetSBMProducts(std::vector<int>& sbmP);
 
     void ClearReactants();
     void ClearProducts();
@@ -751,20 +750,20 @@ public:
     void AddExternalReactantMaterial(FSExternalReactantMaterial* pm);
     void AddExternalProductMaterial(FSExternalProductMaterial* pm);
 
-    void GetSoluteReactants(vector<int>& solR);
-    void GetSBMReactants(vector<int>& sbmR);
-    void GetSoluteProducts(vector<int>& solP);
-    void GetSBMProducts(vector<int>& sbmP);
-    void GetInternalSoluteReactants(vector<int>& solRi);
-    void GetInternalSoluteProducts(vector<int>& solPi);
-    void GetExternalSoluteReactants(vector<int>& solRe);
-    void GetExternalSoluteProducts(vector<int>& solPe);
+    void GetSoluteReactants(std::vector<int>& solR);
+    void GetSBMReactants(std::vector<int>& sbmR);
+    void GetSoluteProducts(std::vector<int>& solP);
+    void GetSBMProducts(std::vector<int>& sbmP);
+    void GetInternalSoluteReactants(std::vector<int>& solRi);
+    void GetInternalSoluteProducts(std::vector<int>& solPi);
+    void GetExternalSoluteReactants(std::vector<int>& solRe);
+    void GetExternalSoluteProducts(std::vector<int>& solPe);
 
     void ClearReactants();
     void ClearProducts();
 };
 
-string buildMembraneReactionEquation(FSMembraneReactionMaterial* mat, FSModel& fem);
+std::string buildMembraneReactionEquation(FSMembraneReactionMaterial* mat, FSModel& fem);
 
 //-----------------------------------------------------------------------------
 // multiphasic

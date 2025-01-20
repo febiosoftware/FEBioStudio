@@ -29,11 +29,12 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <MeshLib/enums.h>
 
+class FSMesh;
+
 namespace Post {
 
 class FEPostModel;
 class FEState;
-class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 enum Data_Tensor_Type {
@@ -56,7 +57,7 @@ public:
 
 	FEState* GetFEState() { return m_state; }
 
-	FEPostMesh* GetFEMesh();
+	FSMesh* GetFEMesh();
 
 	FEPostModel* GetFSModel();
 

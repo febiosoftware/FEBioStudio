@@ -30,15 +30,12 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/FSObject.h>
 #include <list>
-//using namespace std;
 
-//-----------------------------------------------------------------------------
 class GObject;
 class FSMesh;
 class GLMesh;
 class FSModel;
 
-//-----------------------------------------------------------------------------
 class GModifier : public FSObject
 {
 public:
@@ -181,7 +178,7 @@ public:
 
 	GModifier* Modifier(int n)
 	{
-		list<GModifier*>::iterator pi = m_Mod.begin();
+		std::list<GModifier*>::iterator pi = m_Mod.begin();
 		for (int i=0; i<n; ++i) ++pi;
 		return (*pi);
 	}
@@ -199,5 +196,5 @@ protected:
 	GObject*	m_po;		// the object that owns this stack
 	FSMesh*		m_pmesh;	// the original mesh
 
-	list<GModifier*>	m_Mod;	// the actual modifier stack
+	std::list<GModifier*>	m_Mod;	// the actual modifier stack
 };

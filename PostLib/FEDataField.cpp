@@ -457,7 +457,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = (int) states.size();
 
@@ -519,7 +519,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = (int)states.size();
 
@@ -724,7 +724,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = (int)states.size();
 
@@ -1035,7 +1035,7 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostMesh& m = *fem.GetFEMesh(0);
+	FSMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;
@@ -1154,7 +1154,7 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostMesh& m = *fem.GetFEMesh(0);
+	FSMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;
@@ -1273,7 +1273,7 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostMesh& m = *fem.GetFEMesh(0);
+	FSMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;

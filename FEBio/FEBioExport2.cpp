@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <memory>
 #include <FECore/FETransform.h>
 
-using std::unique_ptr;
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

@@ -43,8 +43,8 @@ SOFTWARE.*/
 #include <sstream>
 #include <FECore/FETransform.h>
 
-using std::unique_ptr;
-using std::stringstream;
+using namespace std;
+
 
 //-----------------------------------------------------------------------------
 FSNodeList* BuildNodeList(GFace* pf)

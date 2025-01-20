@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GPrimitive.h>
 
-vector<DocTemplate*> TemplateManager::m_doc;
+std::vector<DocTemplate*> TemplateManager::m_doc;
 string TemplateManager::m_path = "$(PREVIEW_PATH)\\templates\\";
 
 DocTemplate::DocTemplate()

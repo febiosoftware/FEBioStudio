@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <string.h>
 #include <sstream>
+using namespace std;
 
 #define ABS(x) ((x)>=0?(x):(-(x)))
 

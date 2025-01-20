@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/GDiscreteObject.h>
 #include <sstream>
 #include <unordered_map>
+using namespace std;
 
 LSDYNAModel::LSDYNAModel()
 {

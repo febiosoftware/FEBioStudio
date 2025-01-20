@@ -152,7 +152,7 @@ bool FSThreadedTask::errf(const char* szerr, ...)
 	// append to the error string
 	if (m_err.empty())
 	{
-		m_err = string(sz);
+		m_err = std::string(sz);
 	}
 	else m_err.append("\n").append(sz);
 

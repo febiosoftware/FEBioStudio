@@ -33,7 +33,7 @@ SOFTWARE.*/
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
+void FEAreaCoverage::Surface::Create(FSMesh& mesh)
 {
 	// this assumes that the m_face member has initialized
 	int NF = (int)m_face.size();
@@ -141,7 +141,7 @@ Post::ModelDataField* Post::FEAreaCoverage::Clone() const
 //-----------------------------------------------------------------------------
 void Post::FEAreaCoverage::InitSurface(int n)
 {
-	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vector<int> L;
 	for (int i = 0; i<mesh.Faces(); ++i) if (mesh.Face(i).IsSelected()) L.push_back(i);
@@ -175,7 +175,7 @@ void FEAreaCoverage::Apply()
 	FEPostModel& fem = *m_fem;
 
 	// get the mesh
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// build the node lists
 	m_surf1.Create(mesh);
@@ -218,7 +218,7 @@ void FEAreaCoverage::Apply()
 void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 {
 	// get the mesh
-	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 	FEState& state = *m_fem->GetState(nstate);
 	int NF = s.Faces();
 	int NN = s.Nodes();
@@ -325,7 +325,7 @@ bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::S
 bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray, int nface, Intersection& q)
 {
 	q.m_index = -1;
-	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vec3f rn[4];
 	FSFace& face = mesh.Face(surf.m_face[nface]);

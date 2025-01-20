@@ -161,7 +161,7 @@ float FEPostModel::GetTimeValue(int ntime)
 }
 
 //-----------------------------------------------------------------------------
-void FEPostModel::AddMesh(FEPostMesh* mesh)
+void FEPostModel::AddMesh(FSMesh* mesh)
 {
 	m_mesh.push_back(mesh);
 
@@ -182,7 +182,7 @@ int FEPostModel::Meshes() const
 }
 
 //-----------------------------------------------------------------------------
-FEPostMesh* FEPostModel::GetFEMesh(int n)
+FSMesh* FEPostModel::GetFEMesh(int n)
 {
 	if ((n>=0) && (n<m_mesh.size()))
 		return m_mesh[n];
@@ -632,9 +632,9 @@ void FEPostModel::InterpolateStateData(FEState* ps)
 void FEPostModel::DeleteState(int n)
 {
 	vector<FEState*>::iterator it = m_State.begin();
-	int N = m_State.size();
+	size_t N = m_State.size();
 	assert((n>=0) && (n<N));
-	for (int i=0; i<n; ++i) ++it;
+	for (size_t i=0; i<n; ++i) ++it;
 	m_State.erase(it);
 
 	// reindex the states
@@ -885,7 +885,7 @@ template <typename T> void cached_copy_face_data_ITEM(FEMeshData& dst, FEMeshDat
 	}
 }
 
-template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
+template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshData& src, FSMesh& mesh)
 {
 	FEFaceData<T, DATA_MULT>& d = dynamic_cast<FEFaceData<T, DATA_MULT>&>(dst);
 	FEFaceData_T<T, DATA_MULT>& s = dynamic_cast<FEFaceData_T<T, DATA_MULT>&>(src);
@@ -904,7 +904,7 @@ template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshDat
 	}
 }
 
-template <typename T> void cached_copy_face_data_NODE(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
+template <typename T> void cached_copy_face_data_NODE(FEMeshData& dst, FEMeshData& src, FSMesh& mesh)
 {
 	FEFaceData<T, DATA_NODE>& d = dynamic_cast<FEFaceData<T, DATA_NODE>&>(dst);
 	FEFaceData_T<T, DATA_NODE>& s = dynamic_cast<FEFaceData_T<T, DATA_NODE>&>(src);
@@ -969,7 +969,7 @@ template <typename T> void cached_copy_elem_data_REGION(FEMeshData& dst, FEMeshD
 	}
 }
 
-template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
+template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshData& src, FSMesh& mesh)
 {
 	FEElementData<T, DATA_MULT>& d = dynamic_cast<FEElementData<T, DATA_MULT>&>(dst);
 	FEElemData_T<T, DATA_MULT>& s = dynamic_cast<FEElemData_T<T, DATA_MULT>&>(src);
@@ -988,7 +988,7 @@ template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshDat
 	}
 }
 
-template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
+template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshData& src, FSMesh& mesh)
 {
 	FEElementData<T, DATA_NODE>& d = dynamic_cast<FEElementData<T, DATA_NODE>&>(dst);
 	FEElemData_T<T, DATA_NODE>& s = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
@@ -1041,7 +1041,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 	DATA_FORMAT nfmt = pd->Format();
 
 	// loop over all the states
-	FEPostMesh& mesh = *GetFEMesh(0);
+	FSMesh& mesh = *GetFEMesh(0);
 	int nstates = GetStates();
 	for (int i = 0; i<nstates; ++i)
 	{
@@ -1231,13 +1231,13 @@ vec3f FEPostModel::NodePosition(int n, int ntime)
 	{
 		FEState* state = GetState(ntime);
 		FERefState& ref = *state->m_ref;
-		FEPostMesh* mesh = state->GetFEMesh();
+		FSMesh* mesh = state->GetFEMesh();
 		r = ref.m_Node[n].m_rt;
 		if (m_ndisp >= 0) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else
 	{
-		FEPostMesh* mesh = GetFEMesh(0);
+		FSMesh* mesh = GetFEMesh(0);
 		r = to_vec3f(mesh->Node(n).r);
 	}
 
@@ -1247,7 +1247,7 @@ vec3f FEPostModel::NodePosition(int n, int ntime)
 //-----------------------------------------------------------------------------
 vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 {
-	FEPostMesh* mesh = GetState(ntime)->GetFEMesh();
+	FSMesh* mesh = GetState(ntime)->GetFEMesh();
 
 	// find the element in which this node lies
 	int iel = -1; double iso[3] = {0};
@@ -1285,7 +1285,7 @@ vec3f FEPostModel::FaceNormal(FSFace& f, int ntime)
 // get the nodal coordinates of an element at time n
 void FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 {
-	FEPostMesh* mesh = GetState(ntime)->GetFEMesh();
+	FSMesh* mesh = GetState(ntime)->GetFEMesh();
 	FEElement_& elem = mesh->ElementRef(iel);
 	NODEDATA* pn = &m_State[ntime]->m_NODE[0];
 
@@ -1298,7 +1298,7 @@ void FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 // configuration, not the current configuration
 void FEPostModel::UpdateBoundingBox()
 {
-	FEPostMesh* mesh = GetFEMesh(0);
+	FSMesh* mesh = GetFEMesh(0);
 	if (mesh == nullptr)
 	{
 		m_bbox = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
@@ -1334,18 +1334,18 @@ void FEPostModel::AddDependant(FEModelDependant* pc)
 //-----------------------------------------------------------------------------
 void FEPostModel::UpdateDependants()
 {
-	int N = m_Dependants.size();
-	for (int i=0; i<N; ++i) m_Dependants[i]->Update(this);
+	size_t N = m_Dependants.size();
+	for (size_t i=0; i<N; ++i) m_Dependants[i]->Update(this);
 }
 
 //-----------------------------------------------------------------------------
 void FEPostModel::RemoveDependant(FEModelDependant* pc)
 {
-	int N = m_Dependants.size();
+	size_t N = m_Dependants.size();
 	if (N > 0)
 	{
 		vector<FEModelDependant*>::iterator it = m_Dependants.begin();
-		for (int i=0; i<N; ++i, it++) 
+		for (size_t i=0; i<N; ++i, it++) 
 		{
 			if (m_Dependants[i] == pc) 
 			{
@@ -1360,12 +1360,10 @@ void FEPostModel::RemoveDependant(FEModelDependant* pc)
 //-----------------------------------------------------------------------------
 void FEPostModel::ClearDependants()
 {
-	int N = m_Dependants.size();
-	if (N > 0)
+	if (!m_Dependants.empty())
 	{
 		// inform the dependents that the model is about to be deleted
-		vector<FEModelDependant*>::iterator it = m_Dependants.begin();
-		for (int i = 0; i<N; ++i) m_Dependants[i]->Update(0);
+		for (FEModelDependant* dep : m_Dependants) dep->Update(0);
 		m_Dependants.clear();
 	}
 }
@@ -1375,7 +1373,7 @@ void FEPostModel::UpdateMeshState(int ntime)
 {
 	FEState& state = *GetState(ntime);
 
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 	int NE = mesh->Elements();
 	bool elemsModified = false;
 	for (int i = 0; i < NE; ++i)
@@ -1451,7 +1449,7 @@ FEPostModel::PlotObject* FEPostModel::GetPlotObject(int n)
 //-----------------------------------------------------------------------------
 int FEPostModel::PointObjects() const
 {
-	return m_Points.size();
+	return (int)m_Points.size();
 }
 
 void FEPostModel::AddPointObject(FEPostModel::PointObject* ob)
@@ -1565,7 +1563,7 @@ int FEPostModel::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfol
 {
 	Post::FEState* state = GetState(nstate);
 	Post::FERefState* ps = state->m_ref;
-	Post::FEPostMesh& mesh = *state->GetFEMesh();
+	FSMesh& mesh = *state->GetFEMesh();
 
 	rt = to_vec3d(r0);
 

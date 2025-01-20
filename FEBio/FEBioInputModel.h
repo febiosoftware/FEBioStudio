@@ -300,7 +300,7 @@ public:
 		void Add(Domain* pg) { m_domList.push_back(pg); }
 
 	public:
-		string	m_name;
+		std::string	m_name;
 		std::vector<Domain*> m_domList;
 		Part* m_part;
 	};
@@ -327,7 +327,7 @@ public:
 		EdgeSet* FindEdgeSet(const std::string& name);
 
 	public:
-		Domain* AddDomain(const string& name, int matID);
+		Domain* AddDomain(const std::string& name, int matID);
 		int Domains() const { return (int)m_dom.size(); }
 		Domain& GetDomain(int i) { return m_dom[i]; }
 		Domain* FindDomain(const std::string& name);
@@ -383,7 +383,7 @@ public:
 
 	public:
 		FEBioMesh				m_mesh;
-		string					m_name;
+		std::string				m_name;
 
 	private:
 		std::vector<NodeSet>		m_nset;
@@ -451,7 +451,7 @@ public:
 		vec3d	m_scl;
 
 	private:
-		string			m_name;
+		std::string		m_name;
 		Part*			m_part;
 		GMeshObject*	m_po;
 

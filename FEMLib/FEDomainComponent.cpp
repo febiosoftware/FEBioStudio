@@ -4,6 +4,7 @@
 #include <GeomLib/GGroup.h>
 #include "FEMKernel.h"
 #include <sstream>
+using std::string;
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {

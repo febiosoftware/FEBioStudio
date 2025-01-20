@@ -130,7 +130,7 @@ public:
 	double GetSmoothingAngleRadians() { return PI*m_stol/180.0; }
 
 	//! get the active mesh
-	Post::FEPostMesh* GetActiveMesh();
+	FSMesh* GetActiveMesh();
 
 	//! get the active state
 	Post::FEState* GetActiveState();
@@ -303,7 +303,7 @@ public:
 	CGLDisplacementMap*		m_pdis;
 	CGLColorMap*			m_pcol;
 
-	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
+	FSMesh*	m_lastMesh;	// mesh of last evaluated state
 
 	// selected items
 	FESelection* m_selection;

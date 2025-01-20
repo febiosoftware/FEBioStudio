@@ -233,8 +233,8 @@ void CScalarFieldTool::OnApply()
 	GModel& model = ps->GetModel();
 
 	int NN = pm->Nodes();
-	vector<int> bn(NN, 0);
-	vector<double> val(NN, 0.0);
+	std::vector<int> bn(NN, 0);
+	std::vector<double> val(NN, 0.0);
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{

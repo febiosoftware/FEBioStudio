@@ -47,7 +47,7 @@ bool FENikeExport::Save(FEPostModel &fem, const char *szfile)
 	int i;
 
 	FEState& s = *fem.CurrentState();
-	FEPostMesh* pm = s.GetFEMesh();
+	FSMesh* pm = s.GetFEMesh();
 
 	// export nodes
 	for (i=0; i<pm->Nodes(); ++i)

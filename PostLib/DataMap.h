@@ -28,8 +28,9 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <vector>
 
+class FSMesh;
+
 namespace Post {
-class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 template <typename T>
@@ -57,12 +58,12 @@ public:
 
 	void Clear() { m_Data.clear(); m_tag.clear(); }
 
-	void SetFEMesh(FEPostMesh* pm) { m_pmesh = pm; }
+	void SetFEMesh(FSMesh* pm) { m_pmesh = pm; }
 
 protected:
 	std::vector<int>	m_tag;
 	std::vector< std::vector<T> >	m_Data;
-	FEPostMesh*	m_pmesh;
+	FSMesh*	m_pmesh;
 };
 
 //-----------------------------------------------------------------------------

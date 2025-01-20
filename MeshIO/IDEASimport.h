@@ -27,9 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
-
 #include <list>
-//using namespace std;
 
 class IDEASimport : public FSFileImport
 {
@@ -62,7 +60,7 @@ protected:
 	bool ReadElements(bool& bend);
 
 protected:
-	list<NODE>		m_Node;
-	list<ELEMENT>	m_Elem;
+	std::list<NODE>		m_Node;
+	std::list<ELEMENT>	m_Elem;
 	FSModel*	m_pfem;
 };

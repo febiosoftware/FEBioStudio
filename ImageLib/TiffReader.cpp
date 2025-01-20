@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+using std::string;
 
 #ifndef  WORD
 #define WORD	uint16_t

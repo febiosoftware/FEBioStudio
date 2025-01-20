@@ -161,7 +161,7 @@ void CIntegrateWindow::UpdateSourceOptions()
 	SetDataSource(sources);
 }
 
-std::vector<int> GetSelectedNodes(Post::FEPostMesh& mesh)
+std::vector<int> GetSelectedNodes(FSMesh& mesh)
 {
 	int N = mesh.Nodes();
 	std::vector<int> sel; if (N > 0) sel.reserve(N);
@@ -173,7 +173,7 @@ std::vector<int> GetSelectedNodes(Post::FEPostMesh& mesh)
 	return sel;
 }
 
-std::vector<int> GetSelectedEdges(Post::FEPostMesh& mesh)
+std::vector<int> GetSelectedEdges(FSMesh& mesh)
 {
 	int N = mesh.Edges();
 	std::vector<int> sel; if (N > 0) sel.reserve(N);
@@ -185,7 +185,7 @@ std::vector<int> GetSelectedEdges(Post::FEPostMesh& mesh)
 	return sel;
 }
 
-std::vector<int> GetSelectedFaces(Post::FEPostMesh& mesh)
+std::vector<int> GetSelectedFaces(FSMesh& mesh)
 {
 	int N = mesh.Faces();
 	std::vector<int> sel; if (N > 0) sel.reserve(N);
@@ -197,7 +197,7 @@ std::vector<int> GetSelectedFaces(Post::FEPostMesh& mesh)
 	return sel;
 }
 
-std::vector<int> GetSelectedElements(Post::FEPostMesh& mesh)
+std::vector<int> GetSelectedElements(FSMesh& mesh)
 {
 	int N = mesh.Elements();
 	std::vector<int> sel; if (N > 0) sel.reserve(N);
@@ -215,7 +215,7 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
 	Post::FEPostModel& fem = *pdoc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 
 	data.clear();
@@ -374,7 +374,7 @@ void CIntegrateSurfaceWindow::IntegrateSelection(CPlotData& dataX, CPlotData& da
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
 	Post::FEPostModel& fem = *pdoc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 
 	dataX.clear();

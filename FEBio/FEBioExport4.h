@@ -142,10 +142,10 @@ private:
 	{
 	public:
 		GObject* m_obj;
-		vector<NodeSet*>		m_NSet;
-		vector<Surface*>		m_Surf;
-		vector<ElementList*>	m_ELst;
-		vector<Domain*>			m_Dom;
+		std::vector<NodeSet*>		m_NSet;
+		std::vector<Surface*>		m_Surf;
+		std::vector<ElementList*>	m_ELst;
+		std::vector<Domain*>			m_Dom;
 
 	public:
 		Part(GObject* po) : m_obj(po) {}
@@ -183,8 +183,8 @@ private:
 	public:
 		FSCoreMesh* m_mesh;
 		int			m_matID;
-		string		m_name;
-		vector<int>	m_elem;
+		std::string		m_name;
+		std::vector<int>	m_elem;
 
 	public:
 		ElementSet() { m_mesh = 0; }

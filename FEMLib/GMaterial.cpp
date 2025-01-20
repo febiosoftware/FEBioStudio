@@ -166,8 +166,8 @@ void GMaterial::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_MAT_ID: { int mid; ar.read(mid); SetID(mid); } break;
-		case CID_MAT_NAME: { string name; ar.read(name); SetName(name); break; }
-		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_MAT_NAME: { std::string name; ar.read(name); SetName(name); break; }
+		case CID_FEOBJ_INFO: { std::string info; ar.read(info); SetInfo(info); } break;
 		case CID_MAT_DIFFUSE: ar.read(m_glmat.diffuse); break;
 		case CID_MAT_AMBIENT: ar.read(m_glmat.ambient); break;
 		case CID_MAT_SPECULAR: ar.read(m_glmat.specular); break;
@@ -277,7 +277,7 @@ void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 	GPartList* partList = dynamic_cast<GPartList*>(pi);
 	if (partList)
 	{
-		vector<GPart*> parts = partList->GetPartList();
+		std::vector<GPart*> parts = partList->GetPartList();
 		for (GPart* pg : parts)
 		{
 			GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);

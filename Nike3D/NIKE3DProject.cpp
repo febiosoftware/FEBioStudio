@@ -1060,7 +1060,7 @@ bool NIKE3DProject::BuildNodalLoads(FSProject& prj)
 
 			vec3d t = ptc->GetVecValue(FSSurfaceTraction::LOAD);
 
-			vector<vec3d> fn; fn.resize(m_Ctrl.numnp);
+			std::vector<vec3d> fn; fn.resize(m_Ctrl.numnp);
 			FEFaceList::Iterator pf = ps->First();
 			FSMesh* pm;
 			for (k=0; k<ps->Size(); ++k, ++pf)

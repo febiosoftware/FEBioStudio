@@ -168,8 +168,8 @@ public:
 	void GetSpeciesNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
-	void GetDOFNames(FEDOFVariable& var, std::vector<string>& dofList);
-	void GetDOFSymbols(FEDOFVariable& var, std::vector<string>& dofList);
+	void GetDOFNames(FEDOFVariable& var, std::vector<std::string>& dofList);
+	void GetDOFSymbols(FEDOFVariable& var, std::vector<std::string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);

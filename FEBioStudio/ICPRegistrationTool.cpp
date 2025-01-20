@@ -41,6 +41,7 @@
 #include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "Commands.h"
+using namespace std;
 
 class ICPRegistrationToolUI : public QWidget
 {

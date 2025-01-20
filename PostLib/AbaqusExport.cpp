@@ -48,7 +48,7 @@ bool AbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 
 	// write nodes
 	fprintf(fp, "*NODE\n");
-	Post::FEPostMesh* mesh = fem.GetFEMesh(0);
+	FSMesh* mesh = fem.GetFEMesh(0);
 	int NN = mesh->Nodes();
 	for (int i = 0; i < NN; ++i)
 	{

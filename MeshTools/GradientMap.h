@@ -26,9 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-//using namespace std;
-
-using std::vector;
 
 //-----------------------------------------------------------------------------
 class FENodeData;
@@ -41,5 +38,5 @@ class GradientMap
 public:
 	GradientMap();
 
-	void Apply(const FENodeData& data, vector<vec3d>& out, int niter);
+	void Apply(const FENodeData& data, std::vector<vec3d>& out, int niter);
 };

@@ -35,7 +35,7 @@ InsertCurves::InsertCurves()
 {
 }
 
-FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
+FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, std::vector<GEdge*>& curveList, bool insertEdges, double tol)
 {
 	// make sure we have at least one curve
 	if (curveList.empty()) return 0;
@@ -68,7 +68,7 @@ FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList,
 
 		// insert all the nodes
 		int N = ps->Nodes();
-		vector<TriMesh::NODEP> nodeList;
+		std::vector<TriMesh::NODEP> nodeList;
 		for (int i = 0; i<N; ++i)
 		{
 			vec3d r = ps->Node(i).r;

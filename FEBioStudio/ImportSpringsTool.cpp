@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <VTKLib/VTKLegacyFileReader.h>
 #include <QDir>
+using namespace std;
 
 // in GMaterial.cpp
 extern GLColor col[GMaterial::MAX_COLORS];

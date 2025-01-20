@@ -199,7 +199,7 @@ void GLVolumeFlowPlot::UpdateBoundingBox()
 {
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
 	BOX box;
@@ -225,7 +225,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
@@ -333,7 +333,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	vec2f rng;
 	rng.x = m_range.min;

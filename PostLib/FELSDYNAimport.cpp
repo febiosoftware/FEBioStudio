@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 #include "constants.h"
 
+using namespace std;
 using namespace Post;
 
 FELSDYNAimport::FELSDYNAimport(FEPostModel* fem) : FEFileReader(fem)
@@ -271,7 +272,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	BuildMaterials(fem);
 
 	// build the mesh
-	FEPostMesh* pm = m_pm = new FEPostMesh;
+	FSMesh* pm = m_pm = new FSMesh;
 	pm->Create(nodes, elems);
 	BuildNLT();
 
@@ -343,7 +344,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	}
 
 	// update the mesh
-	m_pm->BuildMesh();
+	m_pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	// add some data

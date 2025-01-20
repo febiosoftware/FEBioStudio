@@ -339,14 +339,14 @@ void GCurveMeshObject::Load(IArchive& ar)
 			// object name
 		case CID_OBJ_NAME:
 		{
-			string name;
+			std::string name;
 			ar.read(name);
 			SetName(name);
 		}
 		break;
 		case CID_FEOBJ_INFO:
 		{
-			string info;
+			std::string info;
 			ar.read(info);
 			SetInfo(info);
 		}

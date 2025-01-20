@@ -141,7 +141,7 @@ void FEElementData::Save(OArchive& ar)
 {
 	int dataType = (int) GetDataType();
 	int dataFmt  = (int) GetDataFormat();
-	const string& dataName = GetName();
+	const std::string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME  , szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE  , dataType);
@@ -347,7 +347,7 @@ void FEPartData::Save(OArchive& ar)
 {
 	int dataType = (int) GetDataType();
 	int dataFmt  = (int) GetDataFormat();
-	const string& dataName = GetName();
+	const std::string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME  , szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE  , dataType);

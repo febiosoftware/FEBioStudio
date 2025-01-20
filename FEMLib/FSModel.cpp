@@ -49,10 +49,7 @@ SOFTWARE.*/
 #include <sstream>
 #include <algorithm>
 #include <cstring>
-//using namespace std;
-
-using std::vector;
-using std::stringstream;
+using namespace std;
 
 #ifndef WIN32
 #define _stricmp strcasecmp

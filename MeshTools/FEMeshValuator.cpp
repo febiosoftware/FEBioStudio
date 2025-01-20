@@ -99,7 +99,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			if (m_mesh.IsShell())
 			{
 				int NN = m_mesh.Nodes();
-				vector<double> nodeData(NN, 0.0);
+				std::vector<double> nodeData(NN, 0.0);
 				for (int i = 0; i < NN; ++i)
 				{
 					try {

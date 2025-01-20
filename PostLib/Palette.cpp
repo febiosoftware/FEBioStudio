@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
 using namespace Post;
+using std::string;
 
 CPalette::CPalette(const string& name) : m_name(name)
 {

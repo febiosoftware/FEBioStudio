@@ -140,11 +140,11 @@ protected:
 	GLColor			m_gcl;	// glyph color (for GLYPH_COL_SOLID)
 	CColorTexture	m_Col;	// glyph color (for not GLYPH_COL_SOLID)
 
-	vector<vec2f>	m_rng;	// nodal ranges
+	std::vector<vec2f>	m_rng;	// nodal ranges
 	DataMap<vec3f>	m_map;	// nodal values map
 	
 	int				m_ntime;	// current time at which this plot is evaluated
-	vector<vec3f>	m_val;	// current values
+	std::vector<vec3f>	m_val;	// current values
 	vec2f			m_crng;	// current range
 
 	int				m_rngType;

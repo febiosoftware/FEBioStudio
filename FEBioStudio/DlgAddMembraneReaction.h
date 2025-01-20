@@ -28,11 +28,6 @@
 #include <vector>
 #include <list>
 #include <QDialog>
-//using namespace std;
-
-using std::string;
-using std::vector;
-using std::pair;
 
 class CMainWindow;
 class QListWidget;
@@ -105,16 +100,16 @@ private:
     GMaterial*                      m_pmp;          // parent multiphasic material
     FEBioMembraneReactionMaterial*  m_reaction;	    // active reaction
 
-    string              m_name;         // name of chemical reaction
+	std::string         m_name;         // name of chemical reaction
     bool                m_bovrd;        // override calculated Vbar
-    vector<int>         m_solR;         // solute reactants
-    vector<int>         m_solRi;        // internal solute reactants
-    vector<int>         m_solRe;        // external solute reactants
-    vector<int>         m_sbmR;         // solid-bound molecule reactants
-    vector<int>         m_solP;         // solute products
-    vector<int>         m_solPi;        // internal solute products
-    vector<int>         m_solPe;        // external solute products
-    vector<int>         m_sbmP;         // solid-bound molecule products
+    std::vector<int>    m_solR;         // solute reactants
+    std::vector<int>    m_solRi;        // internal solute reactants
+    std::vector<int>    m_solRe;        // external solute reactants
+    std::vector<int>    m_sbmR;         // solid-bound molecule reactants
+    std::vector<int>    m_solP;         // solute products
+    std::vector<int>    m_solPi;        // internal solute products
+    std::vector<int>    m_solPe;        // external solute products
+    std::vector<int>    m_sbmP;         // solid-bound molecule products
     
     int             m_reactionMat;      // reaction material
     int             m_fwdMat;           // forward rate material
@@ -124,5 +119,5 @@ private:
 private:
     CMainWindow*    m_wnd;
     Ui::CDlgAddMembraneReaction*    ui;
-    vector<pair<string, int> >      m_species;
+	std::vector<std::pair<std::string, int> >      m_species;
 };

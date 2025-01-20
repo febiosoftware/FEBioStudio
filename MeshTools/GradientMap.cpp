@@ -34,7 +34,7 @@ GradientMap::GradientMap()
 {
 }
 
-void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
+void GradientMap::Apply(const FENodeData& data, std::vector<vec3d>& out, int niter)
 {
 	FSMesh* pm = data.GetMesh();
 	if (pm==0) return;

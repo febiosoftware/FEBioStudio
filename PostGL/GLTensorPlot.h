@@ -128,7 +128,7 @@ protected:
 
 	int				m_ntime;
 	DataMap<TENSOR>	m_map;	// nodal values map
-	vector<TENSOR>	m_val;	// current nodal values
+	std::vector<TENSOR>	m_val;	// current nodal values
 
 	GLColor			m_gcl;	// glyph color (for GLYPH_COL_SOLID)
 	CColorTexture	m_Col;	// glyph color (for not GLYPH_COL_SOLID)

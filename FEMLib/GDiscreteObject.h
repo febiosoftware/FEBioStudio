@@ -180,7 +180,7 @@ public:
 	void Load(IArchive& ar);
 
 protected:
-	vector<GDiscreteElement*>	m_elem;
+	std::vector<GDiscreteElement*>	m_elem;
 };
 
 //-----------------------------------------------------------------------------

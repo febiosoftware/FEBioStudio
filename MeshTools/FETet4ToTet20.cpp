@@ -88,7 +88,7 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	// create the edge nodes
 	for (int i = 0; i<NC; i++)
 	{
-		pair<int, int>& edge = ET[i];
+		std::pair<int, int>& edge = ET[i];
 		FSNode& n0 = pnew->Node(NN + 2*i);
 		FSNode& n1 = pnew->Node(NN + 2*i+1);
 		vec3d& ra = pm->Node(edge.first).r;

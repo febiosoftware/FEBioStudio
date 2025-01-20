@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include "IHasItemList.h"
 #include "enums.h"
 #include <string>
-//using namespace std;
 
 class FSMesh;
 

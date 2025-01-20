@@ -81,7 +81,7 @@ CDocument* CDocManager::GetDocument(int i)
 std::string CDocManager::GenerateNewDocName()
 {
 	int n = 1;
-	string docTitle;
+	std::string docTitle;
 	bool bok = true;
 	do
 	{

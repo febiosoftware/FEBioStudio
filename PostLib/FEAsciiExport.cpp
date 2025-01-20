@@ -140,7 +140,7 @@ bool FEASCIIExport::UpdateData(bool bsave)
 
 bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 {
-	FEPostMesh& m = *pfem->GetFEMesh(0);
+	FSMesh& m = *pfem->GetFEMesh(0);
 
 	int NN = m.Nodes();
 	int NE = m.Elements();

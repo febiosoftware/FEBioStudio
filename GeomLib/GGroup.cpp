@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+using namespace std;
 
 GGroup::GGroup(GModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {

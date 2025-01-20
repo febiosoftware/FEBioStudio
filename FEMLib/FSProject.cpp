@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
-//using namespace std;
+using namespace std;
 
 //=================================================================================================
 CLogDataSettings::CLogDataSettings() : m_fem(nullptr)

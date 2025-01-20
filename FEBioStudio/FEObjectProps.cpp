@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "ModelViewer.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
+using namespace std;
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)

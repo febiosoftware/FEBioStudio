@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioImport.h"
 #include "FEPostModel.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FEMesh.h>
 using namespace Post;
 
 FEBioFileImport::FEBioFileImport(FEPostModel* fem) : FEFileReader(fem)
@@ -63,7 +63,7 @@ bool FEBioFileImport::ParseVersion(XMLTag& tag)
 bool FEBioFileImport::Load(const char* szfile)
 {
 	m_fem->Clear();
-	m_pm = new FEPostMesh;
+	m_pm = new FSMesh;
 	m_fem->AddMesh(m_pm);
 
     SetFileName(szfile);
@@ -113,7 +113,7 @@ bool FEBioFileImport::Load(const char* szfile)
 	}
 
 	// update the mesh
-	m_pm->BuildMesh();
+	m_pm->RebuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state

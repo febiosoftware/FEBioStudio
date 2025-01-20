@@ -225,7 +225,7 @@ public:
 	void Update();
 
 public:
-	vector<CPlotTool*>	m_tools;
+	std::vector<CPlotTool*>	m_tools;
 };
 
 //=================================================================================================

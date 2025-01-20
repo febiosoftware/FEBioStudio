@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/FENodeElementList.h>
 #include <MeshLib/MeshMetrics.h>
+using namespace std;
 
 LaplaceSolver::LaplaceSolver()
 {

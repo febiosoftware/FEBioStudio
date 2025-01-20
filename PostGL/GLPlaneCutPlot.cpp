@@ -381,7 +381,7 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 {
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	EDGE edge[15];
 	int en[8];
@@ -593,7 +593,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	double ref = -a[3];
 
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	m_slice.Clear();
 
@@ -617,7 +617,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	AddFaces(pm);
 }
 
-void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
+void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 {
 	float ev[8];
 	vec3d ex[8];
@@ -826,7 +826,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	}
 }
 
-void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
+void CGLPlaneCutPlot::AddFaces(FSMesh* pm)
 {
 	float ev[8];
 	vec3d ex[8];
@@ -936,7 +936,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	CGLModel* mdl = GetModel();
 
 	FEPostModel* pfem = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// Integral
 	float sum = 0.f;

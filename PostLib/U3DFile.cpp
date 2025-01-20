@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "U3DFile.h"
 #include <assert.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 U3DFile::BLOCK::BLOCK() 

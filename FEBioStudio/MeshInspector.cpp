@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include "Commands.h"
 #include <GLLib/GLScene.h>
+using namespace std;
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {

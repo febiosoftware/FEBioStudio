@@ -3,7 +3,6 @@
 #include <GeomLib/FSGroup.h>
 #include <MeshLib/FEItemListBuilder.h>
 #include <list>
-//using namespace std;
 
 //=============================================================================
 // Base class for fixed and prescribed BCs

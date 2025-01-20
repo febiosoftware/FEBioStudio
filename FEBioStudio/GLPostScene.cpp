@@ -243,7 +243,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
-	Post::FEPostMesh* pm = glm.GetActiveMesh();
+	FSMesh* pm = glm.GetActiveMesh();
 
 	GLMesh* gm = glm.GetPostObject()->GetFERenderMesh();
 
@@ -322,7 +322,7 @@ void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
-	Post::FEPostMesh& mesh = *glm.GetActiveMesh();
+	FSMesh& mesh = *glm.GetActiveMesh();
 	int NE = mesh.Edges();
 	if (NE == 0) return;
 
@@ -680,7 +680,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	re.pushState();
-	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
+	FSMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
 
@@ -766,7 +766,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
 	re.pushState();
-	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
+	FSMesh& mesh = *gm.GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
 
@@ -900,7 +900,7 @@ void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
 
-	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
+	FSMesh& mesh = *gm.GetActiveMesh();
 	FEElement_* pe = mesh.ElementPtr(edge.elem);
 	if (pe == nullptr) return;
 
@@ -947,7 +947,7 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
 
-	Post::FEPostMesh& mesh = *gm.GetActiveMesh();
+	FSMesh& mesh = *gm.GetActiveMesh();
 	FEElement_* pe = mesh.ElementPtr(edge.elem);
 	if (pe == nullptr) return;
 

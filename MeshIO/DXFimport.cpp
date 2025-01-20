@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "DXFimport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
+using namespace std;
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 

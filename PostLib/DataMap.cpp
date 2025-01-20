@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DataMap.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FEMesh.h>
 #include <assert.h>
 using namespace Post;
 
@@ -41,7 +41,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	assert(m_pmesh);
 	if (m_pmesh == 0) return;
 	std::vector<vec3f>& G = m_Data[ntime];
-	FEPostMesh& mesh = *m_pmesh;
+	FSMesh& mesh = *m_pmesh;
 
 	int i, k;
 

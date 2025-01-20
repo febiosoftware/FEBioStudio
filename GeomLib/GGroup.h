@@ -63,7 +63,7 @@ public:
 	GNodeList(GModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
 	GNodeList(GModel* ps, GNodeSelection* pn);
 
-	vector<GNode*>	GetNodeList();
+	std::vector<GNode*>	GetNodeList();
 
 	FEItemListBuilder* Copy() override;
 
@@ -81,7 +81,7 @@ public:
 	GFaceList(GModel* ps, GFaceSelection* pf);
 	GFaceList(GModel* ps, GFace* pf);
 
-	vector<GFace*>	GetFaceList();
+	std::vector<GFace*>	GetFaceList();
 
 	FEItemListBuilder* Copy() override;
 
@@ -99,7 +99,7 @@ public:
 	GEdgeList(GModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
 	GEdgeList(GModel* ps, GEdgeSelection* pe);
 
-	vector<GEdge*>	GetEdgeList();
+	std::vector<GEdge*>	GetEdgeList();
 
 	GEdge* GetEdge(int n);
 
@@ -122,7 +122,7 @@ public:
 
 	void Create(GObject* po);
 
-	vector<GPart*>	GetPartList();
+	std::vector<GPart*>	GetPartList();
 
 	FEItemListBuilder* Copy() override;
 

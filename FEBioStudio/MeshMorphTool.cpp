@@ -249,8 +249,8 @@ void CMeshMorphTool::OnApply()
 	GModel& model = ps->GetModel();
 
 	int NN = pm->Nodes();
-	vector<int> bn(NN, 0);
-	vector<double> val[3];
+	std::vector<int> bn(NN, 0);
+	std::vector<double> val[3];
 	val[0].assign(NN, 0.0);
 	val[1].assign(NN, 0.0);
 	val[2].assign(NN, 0.0);

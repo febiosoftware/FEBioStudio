@@ -110,7 +110,7 @@ public:
 	QComboBox* logList;
 	CustomLineEdit* logEdit;
 
-	vector<CPlotVariable>	m_plt;
+	std::vector<CPlotVariable>	m_plt;
 
 public:
 	void setup(QDialog* dlg)
@@ -385,7 +385,7 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 		ui->m_plt.push_back(var);
 	}
 
-	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FEPLOTDATA_ID);
+	std::vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FEPLOTDATA_ID);
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& feb = pltClasses[i];
@@ -451,7 +451,7 @@ void CDlgEditOutput::OnAddSelection()
 	}
 
 	FSModel& fem = m_prj.GetFSModel();
-	vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var->domainType());
+	std::vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var->domainType());
 
 	QStringList names;
 	for (size_t i=0; i<list.size(); ++i)
@@ -847,7 +847,7 @@ void CDlgEditOutput::OnNewVariable()
 		DOMAIN_TYPE n = dlg.getCategory();
 		if (s.isEmpty() == false)
 		{
-			string varName = s.toStdString();
+			std::string varName = s.toStdString();
 			// make sure we don't have it yet
 			for (auto& var : ui->m_plt)
 			{

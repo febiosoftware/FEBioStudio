@@ -64,8 +64,7 @@ SOFTWARE.*/
 #include <MeshTools/GModifier.h>
 #include <FSCore/FSCore.h>
 #include <sstream>
-
-using std::stringstream;
+using namespace std;
 
 CCreateButtonPanel::CCreateButtonPanel(QWidget* parent) : QWidget(parent)
 {
@@ -303,7 +302,7 @@ FSObject* CCreateLoftSurface::Create()
 {
 	if (m_edge.size() < 2) return 0;
 
-	vector<FECurveMesh*> curves;
+	std::vector<FECurveMesh*> curves;
 	for (int i=0; i<(int)m_edge.size(); ++i)
 	{
 		GEdge& edge = *m_edge[i];
@@ -427,7 +426,7 @@ class Ui::CCreatePanel
 public:
 	CCreateButtonPanel*	but;
 	QStackedWidget* panes;
-	vector<CCreatePane*> page;
+	std::vector<CCreatePane*> page;
 	CCreatePane*	activePane;
 	QPushButton* createButton;
 

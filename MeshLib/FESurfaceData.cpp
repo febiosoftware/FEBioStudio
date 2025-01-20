@@ -109,7 +109,7 @@ void FESurfaceData::Save(OArchive& ar)
 {
 	int dataFmt  = (int)GetDataFormat();
 	int dataType = (int)GetDataType();
-	const string& dataName = GetName();
+	const std::string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int) dataType);

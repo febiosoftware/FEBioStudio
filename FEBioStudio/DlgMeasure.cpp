@@ -56,7 +56,7 @@ public:
 
 	QListWidget*			m_list;
 	QStackedWidget*			m_stack;
-	vector<CAbstractTool*>	m_tools;
+	std::vector<CAbstractTool*>	m_tools;
 	QLabel* m_info;
 
 	QRect	m_rt;

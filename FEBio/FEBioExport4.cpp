@@ -43,8 +43,7 @@ SOFTWARE.*/
 #include <GeomLib/GPartSection.h>
 #include <FEMLib/FEElementFormulation.h>
 
-using std::stringstream;
-using std::unique_ptr;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // defined in FEFEBioExport25.cpp

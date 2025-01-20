@@ -252,7 +252,7 @@ GObject* STLimport::build_mesh()
 	m_Node.reserve(NF*3);
 	
 	// create the nodes
-	list<FACET>::iterator pf = m_Face.begin();
+	std::list<FACET>::iterator pf = m_Face.begin();
 	int nid = 0;
 	for (i=0; i<NF; ++i, ++pf)
 	{
@@ -277,7 +277,7 @@ GObject* STLimport::build_mesh()
 	}
 
 	// create elements
-	list<FACET>::iterator is = m_Face.begin();
+	std::list<FACET>::iterator is = m_Face.begin();
 	for (i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
@@ -339,7 +339,7 @@ int STLimport::find_node(const vec3d& r, const double eps)
 //-----------------------------------------------------------------------------
 BOX STLimport::BoundingBox()
 {
-	list<FACET>::iterator pf = m_Face.begin();
+	std::list<FACET>::iterator pf = m_Face.begin();
 	vec3d r = vec3d(pf->v1[0], pf->v1[1], pf->v1[2]);
 	BOX b(r, r);
 	for (pf = m_Face.begin(); pf != m_Face.end(); ++pf)

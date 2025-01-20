@@ -73,7 +73,7 @@ void CScatterWindow::Update(bool breset, bool bfit)
 
 	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEState* state = fem.CurrentState();
-	Post::FEPostMesh* mesh = state->GetFEMesh();
+	FSMesh* mesh = state->GetFEMesh();
 	int ntime = fem.CurrentTimeIndex();
 	if (IS_NODE_FIELD(xdata))
 	{

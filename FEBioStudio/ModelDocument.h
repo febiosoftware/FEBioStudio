@@ -127,7 +127,7 @@ public:
 	// checks the model for issues and returns the warnings as a string array
 	std::vector<MODEL_ERROR>	CheckModel();
 
-	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
+	bool ExportMaterials(const std::string& fileName, const std::vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
 	bool ImportFEBioMaterials(const std::string& fileName);
 

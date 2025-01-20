@@ -672,7 +672,7 @@ void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 		ui->math2->SetMath(QString::fromStdString(p->GetStringValue()));
 		ui->math2->setLeftExtend(plc->GetParam("left_extend")->GetIntValue());
 		ui->math2->setRightExtend(plc->GetParam("right_extend")->GetIntValue());
-		vector<double> v = plc->GetParam("interval")->GetArrayDoubleValue();
+		std::vector<double> v = plc->GetParam("interval")->GetArrayDoubleValue();
 		ui->math2->setMinMaxRange(v[0], v[1]);
 	}
 	else
@@ -689,9 +689,9 @@ void CCurveEditor::on_filter_currentIndexChanged(int n)
 	Update();
 }
 
-vector<double> processLine(const char* szline, char delim)
+std::vector<double> processLine(const char* szline, char delim)
 {
-	vector<double> v;
+	std::vector<double> v;
 	const char* sz = szline;
 	while (sz)
 	{
@@ -812,7 +812,7 @@ void CCurveEditor::on_math2_minChanged(double v)
 	if (m_plc->IsType("math-interval") == false) return;
 
 	Param* p = m_plc->GetParam("interval"); assert(p);
-	vector<double> d = p->GetArrayDoubleValue();
+	std::vector<double> d = p->GetArrayDoubleValue();
 	d[0] = v;
 	p->SetArrayDoubleValue(d);
 }
@@ -823,7 +823,7 @@ void CCurveEditor::on_math2_maxChanged(double v)
 	if (m_plc->IsType("math-interval") == false) return;
 
 	Param* p = m_plc->GetParam("interval"); assert(p);
-	vector<double> d = p->GetArrayDoubleValue();
+	std::vector<double> d = p->GetArrayDoubleValue();
 	d[1] = v;
 	p->SetArrayDoubleValue(d);
 }

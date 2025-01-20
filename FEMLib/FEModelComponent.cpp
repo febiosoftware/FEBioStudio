@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElementData.h>
 #include <exception>
 #include <sstream>
+using namespace std;
 
 FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 {

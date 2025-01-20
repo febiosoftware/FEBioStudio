@@ -72,7 +72,7 @@ public:
 	void setRemoteDir(const std::string& remoteDir);
 
 	void SendFileToServer(const std::string& localFile);
-	void RunRemoteJob(SchedulerType scheduler, const::string& runScript);
+	void RunRemoteJob(SchedulerType scheduler, const std::string& runScript);
 	void RequestRemoteFiles(const std::string& localFile);
 	void RequestRemoteFile(const std::string& localFile);
 	void RequestQueueStatus();

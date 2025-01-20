@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <exception>
 #include <sstream>
+using namespace std;
 
 //=============================================================================
 // FSAxisMaterial

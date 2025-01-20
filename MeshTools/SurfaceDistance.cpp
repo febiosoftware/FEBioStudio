@@ -54,7 +54,7 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 
 	// allocate buffer for storing nodal distances
 	int nodes = ps->Nodes();
-	vector<double> dist(nodes, 0.0);
+	std::vector<double> dist(nodes, 0.0);
 
 	// calculate nodal distances
 	bool bret = false;
@@ -96,7 +96,7 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 	return true;
 }
 
-bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>& dist)
+bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, std::vector<double>& dist)
 {
 	FSMesh* ps = pso->GetFEMesh();
 	FSMesh* pm = pmo->GetFEMesh();
@@ -105,7 +105,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	int nodes = ps->Nodes();
 
 	// calculate node normals
-	vector<vec3d> nu;
+	std::vector<vec3d> nu;
 	nu.assign(nodes, vec3d(0,0,0));
 	for (int i=0; i<ps->Faces(); ++i)
 	{
@@ -253,7 +253,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	return true;
 }
 
-bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& dist)
+bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, std::vector<double>& dist)
 {
 	// get the meshes
 	FSMesh* ps = pso->GetFEMesh();

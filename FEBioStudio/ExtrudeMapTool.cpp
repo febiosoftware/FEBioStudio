@@ -71,8 +71,8 @@ bool CExtrudeMapTool::OnApply()
 		return false;
 	}
 
-	vector<int> node;
-	vector<double> data[3];
+	std::vector<int> node;
+	std::vector<double> data[3];
 
 	QFile mapFile(m_filename);
 	if (!mapFile.open(QIODeviceBase::Text | QIODeviceBase::ReadOnly))

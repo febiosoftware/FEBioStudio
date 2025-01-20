@@ -2,11 +2,6 @@
 #include <list>
 #include <vector>
 #include <string>
-//using namespace std;
-
-using std::list;
-using std::vector;
-using std::string;
 
 class FSMaterial;
 class FSModel;
@@ -59,7 +54,7 @@ public:
 	FSMaterial* Create(FSModel* fem) override { return new T(fem); }
 };
 
-typedef list<FEMatDescriptor*>::iterator FEMatDescIter;
+typedef std::list<FEMatDescriptor*>::iterator FEMatDescIter;
 
 //-----------------------------------------------------------------------------
 class FEMatCategory
@@ -112,7 +107,7 @@ public:
 	static int ClassID(FSMaterial* pm);
 
 	// return a list of material types for a given material class
-	static list<FEMatDescriptor*> Enumerate(int matClass);
+	static std::list<FEMatDescriptor*> Enumerate(int matClass);
 
 	static void AddCategory(const std::string& name, int module, int catID);
 
@@ -132,8 +127,8 @@ private:
 protected:
 	static FEMaterialFactory*	m_pFac;
 
-	list<FEMatDescriptor*>		m_Desc;
-	vector<FEMatCategory>		m_Cat;
+	std::list<FEMatDescriptor*>		m_Desc;
+	std::vector<FEMatCategory>		m_Cat;
 };
 
 //-----------------------------------------------------------------------------

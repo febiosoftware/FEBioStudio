@@ -203,9 +203,9 @@ void CPostObject::BuildInternalSurfaces()
 {
 	ClearInternalSurfaces();
 
-	Post::FEPostMesh* pmesh = dynamic_cast<Post::FEPostMesh*>(GetFEMesh());
+	FSMesh* pmesh = dynamic_cast<FSMesh*>(GetFEMesh());
 	if (pmesh == nullptr) return;
-	Post::FEPostMesh& mesh = *pmesh;
+	FSMesh& mesh = *pmesh;
 
 	int ndom = mesh.MeshPartitions();
 	for (int i = 0; i < ndom; ++i) m_innerSurface.push_back(new Post::GLSurface);

@@ -45,7 +45,6 @@ SOFTWARE.*/
 #include <cstdarg>
 #include <vector>
 #include <sstream>
-//using namespace std;
 
 extern GLColor col[];
 

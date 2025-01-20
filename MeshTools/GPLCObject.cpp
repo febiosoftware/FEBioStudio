@@ -192,7 +192,7 @@ void GPLCObject::Create(GSketch &s)
 
 			// add the edge and start node
 			node.push_back(pe->m_node[en0]);
-			edge.push_back(pair<int, int>(pe->GetLocalID(), ew));
+			edge.push_back(std::pair<int, int>(pe->GetLocalID(), ew));
 
 			// see if we reached the end of the loop
 			if (pe->m_node[en1] == node[0]) break; 

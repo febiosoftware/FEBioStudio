@@ -362,7 +362,7 @@ public:
 		// build variables list
 		std::vector< std::string> names = FEMeshValuator::GetDataFieldNames();
 		QStringList items;
-		for (string& s : names) items << QString::fromStdString(s);
+		for (std::string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 
@@ -398,7 +398,7 @@ public:
 
 		std::vector< std::string> names = FESurfaceMeshValuator::GetDataFieldNames();
 		QStringList items;
-		for (string& s : names) items << QString::fromStdString(s);
+		for (std::string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 

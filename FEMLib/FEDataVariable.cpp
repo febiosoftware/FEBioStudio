@@ -48,7 +48,7 @@ FEDataVariable::FEDataVariable(const FEDataVariable& v)
 //-----------------------------------------------------------------------------
 void FEDataVariable::SetString(int n, const char* sz)
 {
-	m_v[n] = string(sz);
+	m_v[n] = std::string(sz);
 }
 
 //-----------------------------------------------------------------------------

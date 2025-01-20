@@ -29,10 +29,6 @@ SOFTWARE.*/
 #include <GLLib/GLTexture1D.h>
 #include <vector>
 #include <string>
-//using namespace std;
-
-using std::vector;
-using std::string;
 
 namespace Post {
 
@@ -122,7 +118,7 @@ public:
 	static int UserColorMaps();
 
 	// return the name of a template
-	static string GetColorMapName(int n);
+	static std::string GetColorMapName(int n);
 
 	// return the index of a color map from its name (returns -1 if not found)
 	static int FindColorMapFromName(const std::string& mapName);
@@ -131,7 +127,7 @@ public:
 	static void SetColorMapName(int n, const std::string& newName);
 
 	// add a color map template
-	static void AddColormap(const string& name, const CColorMap& map);
+	static void AddColormap(const std::string& name, const CColorMap& map);
 
 	// get a reference to the color map template
 	static CColorMap& GetColorMap(int n);
@@ -151,7 +147,7 @@ private:
 	ColorMapManager(const ColorMapManager&){}
 
 private:
-	static vector<class ColorMapTemplate>	m_map;
+	static std::vector<class ColorMapTemplate>	m_map;
 	static int m_defaultMap;
 };
 }

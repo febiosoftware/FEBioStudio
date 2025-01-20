@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "AnsysImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
+using namespace std;
 
 AnsysImport::AnsysImport(FSProject& prj) : FSFileImport(prj)
 {

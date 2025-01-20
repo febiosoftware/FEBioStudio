@@ -239,7 +239,7 @@ GObject* GObjectSelection::Object(int i)
 	return m.Object(m_item[i]);
 }
 
-string GObjectSelection::GetName()
+std::string GObjectSelection::GetName()
 {
 	int N = Count();
 	if (N == 1)

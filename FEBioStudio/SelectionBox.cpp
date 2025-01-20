@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "DlgPickNamedSelection.h"
+using namespace std;
 
 class Ui::CSelectionBox
 {

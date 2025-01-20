@@ -30,11 +30,6 @@ SOFTWARE.*/
 #include <string>
 #include <cstring>
 
-//using namespace std;
-
-using std::vector;
-using std::list;
-
 class FSModel;
 class GMeshObject;
 class FSMesh;
@@ -225,7 +220,7 @@ public:
 
 	public:
 		int				m_nsid;	// segment ID
-		vector<FACE>	m_face;	// face list
+		std::vector<FACE>	m_face;	// face list
 		char			m_szname[256];
 	};
 
@@ -236,7 +231,7 @@ public:
 
 	public:
 		int				m_nid = -1;
-		vector<int>		m_nodelist;
+		std::vector<int>		m_nodelist;
 		std::string		m_name;
 	};
 
@@ -301,7 +296,7 @@ public:
 
 	GMeshObject* TakeObject() { GMeshObject* po = m_po; m_po = 0; return po; }
 
-	int FindNode(int id, list<NODE>::iterator& pn);
+	int FindNode(int id, std::list<NODE>::iterator& pn);
 
 	int FindFace(int n[4]);
 
@@ -309,7 +304,7 @@ public:
 
 	void UpdateMesh(FSMesh& mesh);
 
-	void allocData(int N) { m_Data.assign(N, vector<double>(2)); }
+	void allocData(int N) { m_Data.assign(N, std::vector<double>(2)); }
 	double& NodeData(int i, int j) { return m_Data[i][j]; }
 
 protected:
@@ -323,29 +318,29 @@ protected:
 	int NodeIndex(int nodeId) { return m_NLT[nodeId - m_off]; }
 
 public:
-	vector<ELEMENT_SOLID>		m_solid;
-	vector<ELEMENT_SHELL>		m_shell;
-    vector<SECTION_SHELL>		m_shellsection;
-    vector<SECTION_SOLID>		m_solidsection;
-    vector<ELEMENT_DISCRETE>	m_discrete;
-	vector<NODE>				m_node;
-	vector<PART>				m_part;
-	list<MATERIAL*>       		m_Mat;
-	list<SET_SEGMENT_TITLE>		m_set;
-	list<SET_NODE_LIST_TITLE>	m_nodelist;
-	vector<LOAD_CURVE>	m_lc;
-	vector<PARAMETER>	m_param;
+	std::vector<ELEMENT_SOLID>		m_solid;
+	std::vector<ELEMENT_SHELL>		m_shell;
+    std::vector<SECTION_SHELL>		m_shellsection;
+    std::vector<SECTION_SOLID>		m_solidsection;
+    std::vector<ELEMENT_DISCRETE>	m_discrete;
+	std::vector<NODE>				m_node;
+	std::vector<PART>				m_part;
+	std::list<MATERIAL*>       		m_Mat;
+	std::list<SET_SEGMENT_TITLE>		m_set;
+	std::list<SET_NODE_LIST_TITLE>	m_nodelist;
+	std::vector<LOAD_CURVE>	m_lc;
+	std::vector<PARAMETER>	m_param;
 	GMeshObject*	m_po; 
-	vector<int>		m_iFace;
-	vector<int*>	m_pFace;
-	vector<int>		m_nFace;
-	vector< vector<double> >	m_Data;	// nodal data
+	std::vector<int>		m_iFace;
+	std::vector<int*>	m_pFace;
+	std::vector<int>		m_nFace;
+	std::vector< std::vector<double> >	m_Data;	// nodal data
 
 	// node lookup table
-	vector<int> m_NLT;
+	std::vector<int> m_NLT;
 	int m_off;
 
 	// load curve lookup table
-	vector<int> m_LCT;
+	std::vector<int> m_LCT;
 	int m_lct_off;
 };

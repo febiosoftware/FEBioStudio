@@ -26,14 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "FEPostMesh.h"
+#include <MeshLib/FEMesh.h>
 #include "Material.h"
 #include "FEState.h"
 #include "FEDataManager.h"
 #include "GLObject.h"
 #include <FSCore/box.h>
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
@@ -254,9 +253,9 @@ public:
 	void ClearDependants();
 
 public:
-	void AddMesh(FEPostMesh* mesh);
+	void AddMesh(FSMesh* mesh);
 	int Meshes() const;
-	FEPostMesh* GetFEMesh(int i);
+	FSMesh* GetFEMesh(int i);
 
 	void UpdateMeshState(int ntime);
 
@@ -301,7 +300,7 @@ protected:
 
 	// --- M E S H ---
 	std::vector<FERefState*>		m_RefState;	// reference state for meshes
-	std::vector<FEPostMesh*>		m_mesh;		// the list of meshes
+	std::vector<FSMesh*>		m_mesh;		// the list of meshes
 	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---

@@ -26,9 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-//using namespace std;
-
-using std::vector;
 
 class GObject;
 
@@ -72,8 +69,8 @@ protected:
 	int		m_ntype;
 
 protected:
-	bool NormalProject(GObject* pso, GObject* pmo, vector<double>& dist);
-	bool ClosestPoint (GObject* pso, GObject* pmo, vector<double>& dist);
+	bool NormalProject(GObject* pso, GObject* pmo, std::vector<double>& dist);
+	bool ClosestPoint (GObject* pso, GObject* pmo, std::vector<double>& dist);
 
 public:
 	double	m_mean;

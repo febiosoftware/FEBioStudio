@@ -61,6 +61,7 @@ SOFTWARE.*/
 #include <QFileInfo>
 #include <MeshIO/STLExport.h>
 #include "PropertyList.h"
+using namespace std;
 
 class CDlgWarnings : public QDialog
 {

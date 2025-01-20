@@ -75,7 +75,7 @@ public:
 	unsigned int	m_nversion;	// stores the version nr of the file being loaded
 
 	// read data
-	stack<CHUNK*>	m_Chunk;
+	std::stack<CHUNK*>	m_Chunk;
 
 #ifdef HAVE_ZLIB
 	z_stream		strm;

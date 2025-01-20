@@ -67,7 +67,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 		// clear tags
 		// first = count of how often a node was visited
 		// second = ID (edge or face) that the nodes should be back-projected to
-		std::vector< std::pair<int, int> > tag(N, pair<int, int>(0, -1));
+		std::vector< std::pair<int, int> > tag(N, std::pair<int, int>(0, -1));
 
 		// storage for new node positions
 		std::vector<vec3d> newPos(N, vec3d(0, 0, 0));

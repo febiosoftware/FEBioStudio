@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "ColorMap.h"
 #include <assert.h>
 #include <string>
-//using namespace std;
+using namespace std;
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////

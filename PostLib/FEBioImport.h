@@ -28,10 +28,11 @@ SOFTWARE.*/
 #include "FEFileReader.h"
 #include <XML/XMLReader.h>
 
+class FSMesh;
+
 namespace Post {
 
 class FEPostModel;
-class FEPostMesh;
 
 class FEBioFileImport :	public FEFileReader
 {
@@ -48,7 +49,7 @@ protected:
 	bool ParseVersion(XMLTag& tag);
 
 protected:
-	FEPostMesh*		m_pm;
+	FSMesh*		m_pm;
 
 	int		m_nmat;
 	int		m_nversion;

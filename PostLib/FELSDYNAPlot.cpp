@@ -215,8 +215,8 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	int i, j;
 
 	// get the mesh
-	FEPostMesh* pm = new FEPostMesh;
-	FEPostMesh& mesh = *pm;
+	FSMesh* pm = new FSMesh;
+	FSMesh& mesh = *pm;
 
 	// clear the state data
 	fem.ClearStates();
@@ -251,7 +251,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 		if (nread != 9)
 		{
 			Close();
-			mesh.ClearAll();
+			mesh.Clear();
 			return errf("Error while reading element connectivity");
 		}
 
@@ -290,7 +290,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 		if ((n[8] <= 0) || (n[8] > nmat))
 		{
 			Close();
-			mesh.ClearAll();
+			mesh.Clear();
 			return errf("Invalid element definition. Data may be corrupted.");
 		}
 
@@ -388,7 +388,7 @@ bool FELSDYNAPlotImport::ReadStates(FEPostModel& fem)
 	FEState* pprev = 0;	// previously read state
 	FEState* pstate = 0;
 
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	bool bfirst = true;
 
@@ -586,7 +586,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	else
 		strcpy(plh.Title, sztitle);
 
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	plh.neips = 2000;
 	plh.flagU = (bflag[2]?1:0);

@@ -124,7 +124,7 @@ void CDlgPlotMix::OnApply()
 	Post::FEPlotMix reader;
 
 	int nitems = ui->list->count();
-	vector<string> str(nitems);
+	std::vector<std::string> str(nitems);
 	for (int i = 0; i<nitems; ++i)
 	{
 		QListWidgetItem* pi = ui->list->item(i);
@@ -132,7 +132,7 @@ void CDlgPlotMix::OnApply()
 		str[i] = s.toStdString();
 	}
 
-	vector<const char*> sz(nitems, 0);
+	std::vector<const char*> sz(nitems, 0);
 	for (int i = 0; i<nitems; ++i) sz[i] = str[i].c_str();
 
 

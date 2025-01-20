@@ -32,15 +32,8 @@ SOFTWARE.*/
 #include "color.h"
 #include "CallTracer.h"
 #include <stack>
-#include <list>
 #include <string>
 #include "memtool.h"
-//using namespace std;
-
-using std::string;
-using std::stack;
-using std::list;
-using std::pair;
 
 //-----------------------------------------------------------------------------
 // Used for reading archives
@@ -203,7 +196,7 @@ protected:
 
 	unsigned int	m_nversion;	// stores the version nr of the file being loaded
 
-	stack<CHUNK*>	m_Chunk;
+	std::stack<CHUNK*>	m_Chunk;
 
 	FILE*	m_fp;		// the file pointer
 
@@ -246,7 +239,7 @@ public:
 		m_pChunk->AddChild(new OLeaf<const char*>(nid, sz));
 	}
 
-	void WriteChunk(unsigned int nid, const string& s)
+	void WriteChunk(unsigned int nid, const std::string& s)
 	{
 		m_pChunk->AddChild(new OLeaf<const char*>(nid, s.c_str()));
 	}

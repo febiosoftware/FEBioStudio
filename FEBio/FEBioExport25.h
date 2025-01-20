@@ -70,8 +70,8 @@ private:
 	public:
 		FSCoreMesh*	mesh;
 		int			matID;
-		string		name;
-		vector<int>	elem;
+		std::string		name;
+		std::vector<int>	elem;
 
 	public:
 		ElementSet(){ mesh = 0; }
@@ -96,8 +96,8 @@ private:
 	{
 	public:
 		GObject*			m_obj;
-		vector<NodeSet*>	m_NSet;
-		vector<Surface*>	m_Surf;
+		std::vector<NodeSet*>	m_NSet;
+		std::vector<Surface*>	m_Surf;
 
 	public:
 		Part(GObject* po) : m_obj(po){}

@@ -27,10 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <string>
-//using namespace std;
-
-using std::vector;
-using std::string;
 
 class CModelDocument;
 
@@ -43,9 +39,9 @@ public:
 	virtual bool Load(CModelDocument* doc) = 0;
 
 public:
-	string	title;
-	string	description;
-	string	fileName;
+	std::string	title;
+	std::string	description;
+	std::string	fileName;
 	int		module;		// list of active modules
 };
 
@@ -60,13 +56,13 @@ public:
 
 	static DocTemplate& GetTemplate(int i);
 
-	static string TemplatePath();
+	static std::string TemplatePath();
 
 private:
 	TemplateManager();
 
-	static vector<DocTemplate*>	m_doc;
-	static string m_path;
+	static std::vector<DocTemplate*>	m_doc;
+	static std::string m_path;
 };
 
 //===========================================================================

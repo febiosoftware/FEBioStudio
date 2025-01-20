@@ -27,9 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
-
 #include <list>
-//using namespace std;
 
 class DXFimport : public FSFileImport
 {
@@ -49,8 +47,8 @@ protected:
 
 	struct POLYFACE
 	{
-		list<NODE>	m_Node;
-		list<FACE>	m_Face;
+		std::list<NODE>	m_Node;
+		std::list<FACE>	m_Face;
 	};
 
 	struct FACE3D
@@ -71,12 +69,12 @@ protected:
 	bool read_POLYLINE();
 	bool read_3DFACE();
 
-	void MakePolyFace(list<FACE3D>& Face);
+	void MakePolyFace(std::list<FACE3D>& Face);
 
 protected:
 	char	m_szline[256];
 
-	list<POLYFACE*>	m_Obj;
-	list<FACE3D>	m_Face;
+	std::list<POLYFACE*>	m_Obj;
+	std::list<FACE3D>	m_Face;
 	FSModel*		m_pfem;
 };

@@ -3,7 +3,6 @@
 #include <MeshLib/FEItemListBuilder.h>
 #include "GMaterial.h"
 #include <list>
-//using namespace std;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces

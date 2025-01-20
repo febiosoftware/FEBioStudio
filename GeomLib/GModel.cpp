@@ -44,8 +44,8 @@ SOFTWARE.*/
 #include <GeomLib/MeshLayer.h>
 #include <map>
 
+using namespace std;
 
-using std::stringstream;
 //=============================================================================
 GNodeIterator::GNodeIterator(GModel& m) : m_mdl(m)
 {

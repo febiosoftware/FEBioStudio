@@ -26,13 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-//using namespace std;
-
-using std::vector;
 
 class FSMesh;
 
-//-----------------------------------------------------------------------------
 //! This class solves the Laplace equation using an iterative method
 class LaplaceSolver
 {
@@ -47,7 +43,7 @@ public:
 	// Input: val = initial values for all nodes
 	//        bn  = boundary flags: 0 = free, 1 = fixed
 	// Output: val = solution
-	bool Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
+	bool Solve(FSMesh* pm, std::vector<double>& val, std::vector<int>& bn, int elemTag = 0);
 
 public: // output
 	int GetIterationCount() const;

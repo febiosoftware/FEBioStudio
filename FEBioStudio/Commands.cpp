@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMeshBuilder.h>
 #include <ImageLib/ImageAnalysis.h>
 #include <FEMLib/FERigidLoad.h>
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddObject

@@ -105,7 +105,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 
 	Post::FEState* ps = doc->GetGLModel()->GetActiveState();
 
-	Post::FEPostMesh* pm = doc->GetFSModel()->GetFEMesh(0);
+	FSMesh* pm = doc->GetFSModel()->GetFEMesh(0);
 
 	bool belemfield = IS_ELEM_FIELD(doc->GetEvalField());
 

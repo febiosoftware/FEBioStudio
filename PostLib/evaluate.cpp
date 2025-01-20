@@ -207,7 +207,7 @@ bool FEPostModel::Evaluate(int nfield, int ntime, bool breset)
 {
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 	if (mesh->Nodes() == 0) return false;
 
 	// make sure that we have to reevaluate
@@ -233,7 +233,7 @@ void FEPostModel::EvalNodeField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 	ValArray& faceData = state.m_FaceData;
 	ValArray& elemData = state.m_ElemData;
 
@@ -294,7 +294,7 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// get the data ID
 	int ndata = FIELD_CODE(nfield);
@@ -411,7 +411,7 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// first evaluate all elements
 	float data[FSElement::MAX_NODES] = {0.f};
@@ -749,7 +749,7 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// the return value
 	d.m_val = 0.f;
@@ -875,7 +875,7 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 void FEPostModel::EvaluateNode(const vec3f& p, int ntime, int nfield, NODEDATA& d)
 {
 	// find the element in which this point lies
-	FEPostMesh& mesh = *GetState(ntime)->GetFEMesh();
+	FSMesh& mesh = *GetState(ntime)->GetFEMesh();
 	int elid = -1;
 	double r[3];
 	if (FindElementRef(mesh, p, elid, r) == false)
@@ -908,7 +908,7 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 {
 	// get the face
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	FSFace& f = mesh->Face(n);
 	int nf = f.Nodes();
@@ -1559,7 +1559,7 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& val)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// get the element
 	FEElement_& el = mesh->ElementRef(n);
@@ -2042,7 +2042,7 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	vec3f r;
 
@@ -2129,7 +2129,7 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	FSFace& f = mesh->Face(n);
 
@@ -2244,7 +2244,7 @@ bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	vec3f r;
 
@@ -2370,7 +2370,7 @@ vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 mat3f FEPostModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	mat3f m;
 
@@ -2474,7 +2474,7 @@ mat3f FEPostModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 mat3f FEPostModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	mat3f m;
 

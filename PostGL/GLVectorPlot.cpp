@@ -174,7 +174,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 	srand(m_seed);
 
 	FEPostModel* pfem = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// calculate scale factor for rendering
 	m_fscale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
@@ -426,7 +426,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int N = pfem->GetStates();
@@ -442,7 +442,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		int NM = 0;
 		for (int i = 0; i < NS; ++i)
 		{
-			FEPostMesh* pmi = pfem->GetState(i)->GetFEMesh();
+			FSMesh* pmi = pfem->GetState(i)->GetFEMesh();
 			int NN = pmi->Nodes();
 			int NE = pmi->Elements();
 			if (NN > NM) NM = NN;
@@ -534,7 +534,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 void CGLVectorPlot::UpdateState(int nstate)
 {
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	// check the tag

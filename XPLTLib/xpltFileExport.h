@@ -30,10 +30,10 @@ SOFTWARE.*/
 class FSElemSet;
 class FSSurface;
 class FSMeshPartition;
+class FSMesh;
 
 namespace Post {
 //-----------------------------------------------------------------------------
-class FEPostMesh;
 class FEPostModel;
 class ModelDataField;
 class FEState;
@@ -166,10 +166,10 @@ protected:
 	bool WriteDataField (ModelDataField& data);
 
 	bool WriteNodeSection   (FEPostModel& fem);
-	bool WritePartSection   (FEPostMesh& m);
-	bool WriteSurfaceSection(FEPostMesh& m);
+	bool WritePartSection   (FSMesh& m);
+	bool WriteSurfaceSection(FSMesh& m);
 
-	bool WritePart(FEPostMesh& m, FSMeshPartition& part);
+	bool WritePart(FSMesh& m, FSMeshPartition& part);
 
 	bool WriteState(FEPostModel& fem, FEState& state);
 	bool WriteNodeData(FEPostModel& fem, FEState& state);

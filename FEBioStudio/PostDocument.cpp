@@ -169,7 +169,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		for (int i = 0; i<N; ++i) *ps->GetMaterial(i) = m_mat[i];
 
 		// update the mesh state
-		Post::FEPostMesh* pmesh = po->GetActiveMesh();
+		FSMesh* pmesh = po->GetActiveMesh();
 		for (int i = 0; i<N; ++i)
 		{
 			Post::Material* pm = ps->GetMaterial(i);

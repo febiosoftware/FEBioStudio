@@ -202,7 +202,7 @@ int CGLSlicePlot::UpdateSlice(float ref, std::vector<std::pair<int, float> >& ac
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	vec3d norm = to_vec3d(m_norm);
 	norm.Normalize();
@@ -282,7 +282,7 @@ void CGLSlicePlot::UpdateBoundingBox()
 {
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
 	BOX box;
@@ -311,7 +311,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 
 	UpdateBoundingBox();
 
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
@@ -399,7 +399,7 @@ void CGLSlicePlot::UpdateMesh()
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	vector<pair<int, float> > activeElements;
 	activeElements.reserve(pm->Faces());

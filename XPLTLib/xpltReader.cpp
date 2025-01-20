@@ -29,13 +29,13 @@ SOFTWARE.*/
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <PostLib/FEPostModel.h>
 
 using namespace Post;
 using namespace std;
 
-template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEPostMesh& m, XpltReader::Surface &s, Post::FEMeshData &data)
+template <class Type> void ReadFaceData_REGION(xpltArchive& ar, FSMesh& m, XpltReader::Surface &s, Post::FEMeshData &data)
 {
 	int NF = s.nf;
 	vector<int> face(NF);
@@ -1028,7 +1028,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 			(domType != PLT_ELEM_PYRA5)) blinear = false;
 	}
 
-	Post::FEPostMesh* pmesh = new Post::FEPostMesh;
+	FSMesh* pmesh = new FSMesh;
 	pmesh->Create(NN, NE);
 
 	// read the element connectivity
@@ -1105,7 +1105,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 
 	// Update the mesh
 	// This will also build the faces
-	pmesh->BuildMesh();
+	pmesh->RebuildMesh();
 
 	// Next, we'll build a Node-Face lookup table
 	FSNodeFaceList NFT; NFT.Build(pmesh);
@@ -1164,7 +1164,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 bool XpltReader::ReadStateSection(FEPostModel& fem)
 {
 	// get the mesh
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// add a state
 	FEState* ps = 0;
@@ -1253,7 +1253,7 @@ bool XpltReader::ReadMaterialData(FEPostModel& fem, FEState* pstate)
 //-----------------------------------------------------------------------------
 bool XpltReader::ReadNodeData(FEPostModel& fem, FEState* pstate)
 {
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -1353,7 +1353,7 @@ bool XpltReader::ReadNodeData(FEPostModel& fem, FEState* pstate)
 //-----------------------------------------------------------------------------
 bool XpltReader::ReadElemData(FEPostModel &fem, FEState* pstate)
 {
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -1426,7 +1426,7 @@ bool XpltReader::ReadElemData(FEPostModel &fem, FEState* pstate)
 
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadElemData_NODE(Post::FEPostMesh& m, XpltReader::Domain &d, Post::FEMeshData &data, int ntype, int arrSize)
+bool XpltReader::ReadElemData_NODE(FSMesh& m, XpltReader::Domain &d, Post::FEMeshData &data, int ntype, int arrSize)
 {
 	int ne = 0;
 	switch (d.etype)
@@ -1732,7 +1732,7 @@ bool XpltReader::ReadElemData_MULT(XpltReader::Domain& dom, Post::FEMeshData& s,
 //-----------------------------------------------------------------------------
 bool XpltReader::ReadFaceData(FEPostModel& fem, FEState* pstate)
 {
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -1799,7 +1799,7 @@ bool XpltReader::ReadFaceData(FEPostModel& fem, FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader::ReadFaceData_MULT(FSMesh& m, XpltReader::Surface &s, Post::FEMeshData &data, int ntype)
 {
 	// It is possible that the node ordering of the FACE's are different than the FSFace's
 	// so we setup up an array to unscramble the nodal values
@@ -1988,7 +1988,7 @@ bool XpltReader::ReadFaceData_ITEM(XpltReader::Surface &s, Post::FEMeshData &dat
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadFaceData_NODE(Post::FEPostMesh& m, XpltReader::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader::ReadFaceData_NODE(FSMesh& m, XpltReader::Surface &s, Post::FEMeshData &data, int ntype)
 {
 	// set nodal tags to local node number
 	int NN = m.Nodes();

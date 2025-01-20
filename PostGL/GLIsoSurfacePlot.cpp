@@ -196,7 +196,7 @@ void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 	FEPostModel* ps = mdl->GetFSModel();
 
 	// get the mesh
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	const int* nt = nullptr;
 
@@ -314,7 +314,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();

@@ -33,9 +33,10 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh
+class FSMesh;
+
 namespace Post {
 	class FEPostModel;
-	class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 enum StatusFlags {
@@ -137,15 +138,15 @@ public:
 class FEState
 {
 public:
-	FEState(float time, FEPostModel* fem, FEPostMesh* mesh);
+	FEState(float time, FEPostModel* fem, FSMesh* mesh);
 	FEState(float time, FEPostModel* fem, FEState* state);
 
 	void SetID(int n);
 
 	int GetID() const;
 
-	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
-	FEPostMesh* GetFEMesh() { return m_mesh; }
+	void SetFEMesh(FSMesh* pm) { m_mesh = pm; }
+	FSMesh* GetFEMesh() { return m_mesh; }
 
 	FEPostModel* GetFSModel() { return m_fem; }
 
@@ -182,6 +183,23 @@ public:
 public:
 	FEPostModel*	m_fem;	//!< model this state belongs to
 	FERefState*		m_ref;	//!< the reference state for this state
-	FEPostMesh*		m_mesh;	//!< The mesh this state uses
+	FSMesh*		m_mesh;	//!< The mesh this state uses
 };
+
+double IntegrateNodes(FSMesh& mesh, const std::vector<int>& nodeList, Post::FEState* ps);
+double IntegrateEdges(FSMesh& mesh, const std::vector<int>& edgeList, Post::FEState* ps);
+
+// This function calculates the integral over a surface. Note that if the surface
+// is triangular, then we calculate the integral from a degenerate quad.
+double IntegrateFaces(FSMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps);
+double IntegrateReferenceFaces(FSMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps);
+
+// integrates the surface normal scaled by the data field
+vec3d IntegrateSurfaceNormal(FSMesh& mesh, Post::FEState* ps);
+
+// This function calculates the integral over a volume. Note that if the volume
+// is not hexahedral, then we calculate the integral from a degenerate hex.
+double IntegrateElems(FSMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps);
+double IntegrateReferenceElems(FSMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps);
+
 }

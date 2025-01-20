@@ -216,9 +216,9 @@ public:
 
 	FSGroup* FindFEGroup(int nid);
 	FSPartSet* FindFEPartSet(const std::string& name);
-	FSSurface* FindFESurface(const string& szname);
-	FSEdgeSet* FindFEEdgeSet(const string& szname);
-	FSNodeSet* FindFENodeSet(const string& szname);
+	FSSurface* FindFESurface(const std::string& szname);
+	FSEdgeSet* FindFEEdgeSet(const std::string& szname);
+	FSNodeSet* FindFENodeSet(const std::string& szname);
 
 	void ClearFEGroups();
 	void RemoveEmptyFEGroups();
@@ -229,6 +229,8 @@ public:
 	void ClearMeshPartitions();
 
 	FSMeshPartition& MeshPartition(int i) { return *m_Dom[i]; }
+
+	void UpdateMeshPartitions();
 
 public: // --- M E S H   Q U E R I E S ---
 	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);

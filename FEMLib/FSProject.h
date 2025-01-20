@@ -79,8 +79,8 @@ public:
 
 private:
 	int			m_type;			// type of data
-	string		m_sdata;		// data string
-	string		m_fileName;		// file name (optional)
+	std::string	m_sdata;		// data string
+	std::string	m_fileName;		// file name (optional)
 };
 
 //-----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ public:
 	void Load(IArchive& ar);
 
 	//! Get the project title
-	const string& GetTitle() { return m_title; }
+	const std::string& GetTitle() { return m_title; }
 
 	//! set the project title
 	void SetTitle(const std::string& title);
@@ -222,7 +222,7 @@ public:
 	void Reset();
 
 	//! validate the project
-	int Validate(string& szerr);
+	int Validate(std::string& szerr);
 
 	//! Get the plot file settings
 	CPlotDataSettings& GetPlotDataSettings() { return m_plt; }
@@ -266,7 +266,7 @@ protected:
 	void ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
-	string				m_title;	// Project Title
+	std::string			m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
 	int					m_module;	// active module
 	int					m_units;	// unit system (read from feb file)

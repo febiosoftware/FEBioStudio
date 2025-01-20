@@ -490,7 +490,7 @@ void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<std::pair<int, int> >& edge, int ntype)
 {
 	GFace* f = new GFace(this);
 	f->SetID(GFace::CreateUniqueID());

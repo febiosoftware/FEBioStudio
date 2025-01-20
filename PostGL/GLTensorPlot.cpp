@@ -209,7 +209,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
@@ -439,7 +439,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 	srand(m_seed);
 
 	FEPostModel* pfem = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	float scale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
 

@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <sstream>
 
-using std::stringstream;
+using namespace std;
 
 class FSObjectRef
 {

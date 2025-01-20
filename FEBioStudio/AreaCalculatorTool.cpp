@@ -76,7 +76,7 @@ bool CAreaCalculatorTool::OnApply()
         }
 
         // transform nodal coordinates
-        vector<vec3d> y(N);
+        std::vector<vec3d> y(N);
         for (int i=0; i<N; ++i)
             y[i] = po->GetTransform().LocalToGlobal(mesh.Node(i).r);
 

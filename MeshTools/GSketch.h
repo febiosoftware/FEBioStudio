@@ -28,9 +28,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FSCore/FSObject.h>
 #include <vector>
-//using namespace std;
 
-//-----------------------------------------------------------------------------
 // This class defines a 2D sketch
 class GSketch
 {

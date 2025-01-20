@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <MeshLib/FEFindElement.h>
 
 namespace Post {
@@ -66,8 +66,8 @@ class CGLParticleFlowPlot : public CGLPlot
 		GLColor			m_col;		// particles color
 		bool			m_balive;	// is particle alive at current position?
 		int				m_ndeath;	// time of death
-		vector<vec3f>	m_pos;		// particle position at various times
-		vector<vec3f>	m_vel;		// particle velocity at various times
+		std::vector<vec3f>	m_pos;		// particle position at various times
+		std::vector<vec3f>	m_vel;		// particle velocity at various times
 	};
 
 public:
@@ -124,7 +124,7 @@ private:
 	bool	m_showPath;
 	int		m_pathLength;
 
-	vector<vec2f>	m_rng;	// nodal ranges
+	std::vector<vec2f>	m_rng;	// nodal ranges
 	DataMap<vec3f>	m_map;	// nodal values map
 	vec2f			m_crng;	// current range
 
@@ -136,6 +136,6 @@ private:
 
 	FEFindElement*	m_find;
 
-	vector<FlowParticle>	m_particles;
+	std::vector<FlowParticle>	m_particles;
 };
 }

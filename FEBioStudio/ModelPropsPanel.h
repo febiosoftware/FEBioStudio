@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QDialog>
 #include <vector>
-//using namespace std;
-
-using std::vector;
-using std::pair;
 
 class CMainWindow;
 class FSObject;
@@ -102,7 +98,7 @@ public:
 
 	void setType(const QString& name);
 
-	void setStepValues(const vector<pair<QString, int> >& l);
+	void setStepValues(const std::vector<std::pair<QString, int> >& l);
 
 	void setStepID(int n);
 

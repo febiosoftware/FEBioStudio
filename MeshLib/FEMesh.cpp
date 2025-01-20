@@ -159,6 +159,7 @@ void FSMesh::Clear()
 	m_Face.clear();
 	m_Elem.clear();
 	m_Node.clear();
+	m_Dom.Clear();
 	ClearNLT();
 	ClearMeshData();
 	m_NEL.Clear();
@@ -546,6 +547,15 @@ void FSMesh::UpdateMesh()
 	// rebuild the lookup tables
 	BuildNLT();
 	BuildELT();
+
+	// Build the node-element list
+	if (m_NEL.IsEmpty()) m_NEL.Build(this);
+
+	// build the node-face list
+	m_NFL.Build(this);
+
+	// create the parts
+	UpdateMeshPartitions();
 }
 
 //-----------------------------------------------------------------------------
@@ -2947,6 +2957,66 @@ void FSMesh::RemoveUnusedFEGroups()
 void FSMesh::ClearMeshPartitions()
 {
 	m_Dom.Clear();
+}
+
+// Build the parts
+void FSMesh::UpdateMeshPartitions()
+{
+	ClearMeshPartitions();
+
+	// figure out how many domains there are
+	int ndom = 0;
+	int NE = Elements();
+	for (int i = 0; i < NE; ++i) if (ElementRef(i).m_MatID > ndom) ndom = ElementRef(i).m_MatID;
+	++ndom;
+
+	// figure out the domain sizes
+	vector<int> elemSize(ndom, 0);
+	vector<int> faceSize(ndom, 0);
+
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = ElementRef(i);
+		elemSize[el.m_MatID]++;
+	}
+
+	int NF = Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = Face(i);
+
+		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
+
+		faceSize[ma]++;
+		if (mb >= 0) faceSize[mb]++;
+	}
+
+	m_Dom.Clear();
+	for (int i = 0; i < ndom; ++i)
+	{
+		FSMeshPartition* dom = new FSMeshPartition(this);
+		dom->SetMatID(i);
+		dom->Reserve(elemSize[i], faceSize[i]);
+		m_Dom.Add(dom);
+	}
+
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = ElementRef(i);
+		m_Dom[el.m_MatID]->AddElement(i);
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = Face(i);
+
+		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
+
+		m_Dom[ma]->AddFace(i);
+		if (mb >= 0) m_Dom[mb]->AddFace(i);
+	}
 }
 
 FSSurface* FSMesh::FindFESurface(const string& name)

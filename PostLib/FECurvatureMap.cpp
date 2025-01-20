@@ -30,7 +30,7 @@ using namespace Post;
 using namespace std;
 
 //-----------------------------------------------------------------------------
-void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
+void FECongruencyMap::Surface::BuildNodeList(FSMesh& mesh)
 {
 	// tag all nodes that belong to this surface
 	int N = mesh.Nodes();
@@ -105,7 +105,7 @@ void FECongruencyMap::Apply(FEPostModel& fem)
 	int NDATA = fem.GetDataManager()->DataFields()-1;
 
 	// get the mesh
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// build the node lists
 	m_surf1.BuildNodeList(mesh);
@@ -143,7 +143,7 @@ void FECongruencyMap::Apply(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 void FECongruencyMap::EvalSurface(FECongruencyMap::Surface& s, FEState* ps)
 {
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	FSMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// init values and tags
 	int NN = s.Nodes();
@@ -173,7 +173,7 @@ void FECongruencyMap::EvalSurface(FECongruencyMap::Surface& s, FEState* ps)
 //-----------------------------------------------------------------------------
 float FECongruencyMap::project(FECongruencyMap::Surface& surf, vec3f& r, int ntime)
 {
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	FSMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// find the closest surface node
 	vec3f q = m_pfem->NodePosition(surf.m_node[0].node, ntime);
@@ -223,7 +223,7 @@ float FECongruencyMap::project(FECongruencyMap::Surface& surf, vec3f& r, int nti
 bool FECongruencyMap::ProjectToFacet(FECongruencyMap::Surface& surf, int iface, vec3f& x, int ntime, vec3f& q, float& val)
 {
 	// get the mesh to which this surface belongs
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	FSMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
 	FSFace& f = mesh.Face(surf.m_face[iface]);
@@ -248,7 +248,7 @@ bool FECongruencyMap::ProjectToFacet(FECongruencyMap::Surface& surf, int iface, 
 bool FECongruencyMap::ProjectToTriangle(FECongruencyMap::Surface& surf, int iface, vec3f& x, int ntime, vec3f& q, float& val)
 {
 	// get the mesh to which this surface belongs
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	FSMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
 	FSFace& face = mesh.Face(surf.m_face[iface]);
@@ -317,7 +317,7 @@ bool FECongruencyMap::ProjectToQuad(FECongruencyMap::Surface& surf, int iface, v
 	int NMAX = 50, n=0;
 
 	// get the mesh to which this surface belongs
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	FSMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
 	FSFace& face = mesh.Face(surf.m_face[iface]);

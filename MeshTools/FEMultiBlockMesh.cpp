@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <algorithm>
 #include "FESelection.h"
 #include <GeomLib/GGroup.h>
+using namespace std;
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {

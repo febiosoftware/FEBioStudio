@@ -32,9 +32,9 @@ SOFTWARE.*/
 
 class CMainWindow;
 class CPlotData;
+class FSMesh;
 
 namespace Post {
-	class FEPostMesh;
 	class FEState;
 	class CGLPlaneCutPlot;
 }

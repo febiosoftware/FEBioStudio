@@ -120,8 +120,8 @@ protected:
 	void ReleasePlane();
 	static int GetFreePlane();
 
-	void AddDomain(FEPostMesh* pm, int n);
-	void AddFaces(FEPostMesh* pm);
+	void AddDomain(FSMesh* pm, int n);
+	void AddFaces(FSMesh* pm);
 
 	void UpdateTriMesh();
 	void UpdateLineMesh();

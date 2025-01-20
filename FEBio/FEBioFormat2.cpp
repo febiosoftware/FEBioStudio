@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <sstream>
 #include <FEBioLink/FEBioModule.h>
 
-using std::stringstream;
+using namespace std;
 
 FEBioFormat2::FEBioFormat2(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {

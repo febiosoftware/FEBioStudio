@@ -61,7 +61,7 @@ const std::string& FSObject::GetName() const
 
 std::string FSObject::GetNameAndType() const
 {
-	string s = GetName();
+	std::string s = GetName();
 	s += " [";
 	s += (GetTypeString() ? GetTypeString() : "<unknown>");
 	s += "]";

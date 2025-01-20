@@ -30,10 +30,8 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <set>
 #include <memory>
-//using namespace std;
 
-using std::set;
-using std::unique_ptr;
+using namespace std;
 
 //=============================================================================
 // FSInterface

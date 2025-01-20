@@ -26,11 +26,9 @@ SOFTWARE.*/
 #pragma once
 #include "FEElement.h"
 
-//-----------------------------------------------------------------------------
 class FSMesh;
 class FSSurfaceMesh;
 
-//-----------------------------------------------------------------------------
 class Mesh_Data
 {
 	struct DATA

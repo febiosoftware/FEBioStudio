@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QMessageBox>
 #include <PostLib/constants.h>
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include "PostDocument.h"
@@ -90,7 +90,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 
 	Post::CGLModel* po = doc->GetGLModel();
 	Post::FEPostModel* pfem = doc->GetFSModel();
-	Post::FEPostMesh* pfe = po->GetActiveMesh();
+	FSMesh* pfe = po->GetActiveMesh();
 	int nodes = pfe->Nodes();
 
 	// get the selection mode
@@ -203,7 +203,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEPostModel& fem, int 
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
 	Post::FEState& state = *fem.GetState(nstate);
-	Post::FEPostMesh& mesh = *state.GetFEMesh();
+	FSMesh& mesh = *state.GetFEMesh();
 
 	float sum = 0;
 	
@@ -234,7 +234,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEPostModel& fem, int 
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
 	Post::FEState& state = *fem.GetState(nstate);
-	Post::FEPostMesh& mesh = *state.GetFEMesh();
+	FSMesh& mesh = *state.GetFEMesh();
 
 	float sum = 0;
 	
@@ -265,7 +265,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalElemRange(Post::FEPostModel& fem, int 
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
 	Post::FEState& state = *fem.GetState(nstate);
-	Post::FEPostMesh& mesh = *state.GetFEMesh();
+	FSMesh& mesh = *state.GetFEMesh();
 
 	ValArray& elemData = state.m_ElemData;
 
@@ -307,7 +307,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEPostModel& fem, int 
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
 	Post::FEState& state = *fem.GetState(nstate);
-	Post::FEPostMesh& mesh = *state.GetFEMesh();
+	FSMesh& mesh = *state.GetFEMesh();
 
 	float sum = 0.f;
 	int NF = mesh.Faces();

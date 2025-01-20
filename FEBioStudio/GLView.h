@@ -310,7 +310,7 @@ protected:
 	bool	m_showContextMenu;
 
 private:
-	vector<GDecoration*>	m_deco;
+	std::vector<GDecoration*>	m_deco;
 
 public:
 	GLContext	m_rc;

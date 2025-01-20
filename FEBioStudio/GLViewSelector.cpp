@@ -746,7 +746,7 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 		{
 			assert((q.m_index >= 0) && (q.m_index < faces));
 			mesh.TagAllFaces(0);
-			stack<int> S;
+			std::stack<int> S;
 			S.push(q.m_index);
 			while (S.empty() == false)
 			{

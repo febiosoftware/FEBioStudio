@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "AbaqusModel.h"
+using namespace std;
 
 #ifdef LINUX // same for Linux and Mac OS X
 #define stricmp strcasecmp

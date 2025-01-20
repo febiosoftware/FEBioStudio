@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include <list>
-//using namespace std;
 
 class AnsysImport : public FSFileImport
 {
@@ -62,8 +61,8 @@ protected:
 	bool BuildMesh(FSModel& fem);
 
 protected:
-	list<NODE>	m_Node;
-	list<ELEM>	m_Elem;
+	std::list<NODE>	m_Node;
+	std::list<ELEM>	m_Elem;
 
 private:
 	char	m_szline[256];

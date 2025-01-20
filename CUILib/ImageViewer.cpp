@@ -190,7 +190,7 @@ void CImageViewer::UpdatePath()
 		CGLModel* mdl = ui->m_img->GetModel();
 		if (mdl == nullptr) return;
 
-		Post::FEPostMesh* mesh = mdl->GetActiveMesh();
+		FSMesh* mesh = mdl->GetActiveMesh();
 		if (mesh == nullptr) return;
 
 		C3DImage& im3d = *ui->m_img->Get3DImage();

@@ -247,7 +247,7 @@ vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
 	vec3f ve[FSElement::MAX_NODES];
-	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
+	FSMesh& mesh = *GetModel()->GetActiveMesh();
 	int nelem;
 	double q[3];
 	if (m_find->FindElement(r, nelem, q))
@@ -286,7 +286,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	float vtol = fabs(m_vtol);
 
 	// get the mesh
-	FEPostMesh& mesh = *mdl->GetActiveMesh();
+	FSMesh& mesh = *mdl->GetActiveMesh();
 
 	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();

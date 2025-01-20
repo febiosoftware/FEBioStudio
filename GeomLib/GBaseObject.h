@@ -79,7 +79,7 @@ public:
 	int AddCircularArc(int n1, int n2, int n3);
 	int AddArcSection(int n1, int n2, int n3);
 	int AddBezierSection(const std::vector<int>& n);
-	void AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype);
+	void AddFacet(const std::vector<int>& node, const std::vector<std::pair<int, int> >& edge, int ntype);
 	void AddFacet(const std::vector<int>& edge, int ntype);
 	void AddSurface(GFace* f);
 	GPart* AddPart ();

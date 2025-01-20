@@ -32,7 +32,6 @@ class FSModel;
 class GObject;
 class FSMesh;
 
-//-----------------------------------------------------------------------------
 // Class describing the foam generator.
 class FoamGen
 {

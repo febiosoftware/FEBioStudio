@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FELoadController.h"
 #include <FECore/fecore_enum.h>
+using namespace std;
 
 int FSLoadController::m_nref = 1;
 

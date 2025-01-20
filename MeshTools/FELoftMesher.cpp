@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/triangulate.h>
 #include <FSCore/LoadCurve.h>
+using namespace std;
 
 int closestNode(FECurveMesh& c, const vec3d& r)
 {

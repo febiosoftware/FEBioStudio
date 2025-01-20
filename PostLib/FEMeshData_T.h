@@ -28,10 +28,9 @@ SOFTWARE.*/
 
 #include "FEMeshData.h"
 #include "FEState.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FEMesh.h>
 #include "FEDataField.h"
 #include <set>
-//using namespace std;
 
 namespace Post {
 
@@ -404,7 +403,7 @@ class FEElemArrayDataNode : public FEElemItemData
 public:
 	FEElemArrayDataNode(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_NODE)
 	{
-		FEPostMesh& m = *state->GetFEMesh();
+		FSMesh& m = *state->GetFEMesh();
 		m_stride = nsize;
 		if (m_elem.empty())
 		{
@@ -634,7 +633,7 @@ template <typename T> class FEElementData<T, DATA_NODE> : public FEElemData_T<T,
 public:
 	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_NODE>(state, pdf)
 	{
-		FEPostMesh& m = *state->GetFEMesh();
+		FSMesh& m = *state->GetFEMesh();
 		if (m_elem.empty())
 		{
 			int N = m.Elements();

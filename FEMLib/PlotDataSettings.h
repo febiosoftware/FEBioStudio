@@ -36,12 +36,12 @@ class FSProject;
 class CPlotVariable
 {
 public:
-	CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	CPlotVariable(const std::string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
 	~CPlotVariable();
 	CPlotVariable(const CPlotVariable& v);
 	void operator = (const CPlotVariable& v);
 
-	const string& name() const { return m_name; }
+	const std::string& name() const { return m_name; }
 	void setName(const std::string& s) { m_name = s; }
 
 	bool isActive() const { return m_bactive; }
@@ -64,7 +64,7 @@ public:
 	void removeDomain(int n);
 
 private:
-	string			m_name;						// name of variable (as in FEBio file)
+	std::string		m_name;						// name of variable (as in FEBio file)
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
 	bool			m_bcustom;					// user defined

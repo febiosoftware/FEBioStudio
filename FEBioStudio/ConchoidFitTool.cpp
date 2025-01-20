@@ -84,7 +84,7 @@ bool CConchoidFitTool::OnApply()
 			}
 		}
 
-		vector<vec3d> y;
+		std::vector<vec3d> y;
 		for (int i = 0; i<N; ++i)
 		{
 			if (mesh.Node(i).m_ntag == 1) y.push_back(mesh.Node(i).r);

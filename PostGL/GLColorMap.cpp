@@ -175,7 +175,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	CGLModel* po = GetModel();
 
 	// get the mesh
-	FEPostMesh* pm = po->GetActiveMesh();
+	FSMesh* pm = po->GetActiveMesh();
 	FEPostModel* pfem = po->GetFSModel();
 
 	int N = pfem->GetStates();

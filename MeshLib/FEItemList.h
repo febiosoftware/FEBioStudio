@@ -46,7 +46,7 @@ public:
 		int		m_lid;
 	};
 
-	typedef typename list<ITEM>::iterator Iterator;
+	typedef typename std::list<ITEM>::iterator Iterator;
 
 public:
 	FEItemList_T(){}

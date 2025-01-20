@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include <FEBioLink/FEBioClass.h>
 
-using std::stringstream;
+using namespace std;
 
 //=============================================================================
 //								VISCO-ELASTIC

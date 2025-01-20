@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include "EditVariableParam.h"
+using namespace std;
 
 QStringList GetEnumValues(FSModel* fem, const char* ch)
 {

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <set>
 #include <memory>
-//using namespace std;
+using namespace std;
 
 //=============================================================================
 // FSRigidConnector

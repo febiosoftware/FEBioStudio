@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <vector>
-//using namespace std;
+using namespace std;
 
 IDEASimport::IDEASimport(FSProject& prj) : FSFileImport(prj)
 {

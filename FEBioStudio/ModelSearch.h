@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <vector>
-//using namespace std;
 
 class CDocument;
 class FSObject;

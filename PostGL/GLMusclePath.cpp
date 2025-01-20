@@ -236,7 +236,7 @@ void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 		int n0 = GetIntValue(START_POINT) - 1;
 		int n1 = GetIntValue(END_POINT) - 1;
 
-		FEPostMesh& mesh = *glm->GetActiveMesh();
+		FSMesh& mesh = *glm->GetActiveMesh();
 		int NN = mesh.Nodes();
 		if ((n0 < 0) || (n0 >= NN)) return;
 		if ((n1 < 0) || (n1 >= NN)) return;
@@ -559,7 +559,7 @@ void GLMusclePath::UpdatePath(int ntime)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -709,7 +709,7 @@ double GLMusclePath::DataValue(int field, int step)
 	return val;
 }
 
-void BuildFaceMesh(FSTriMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
+void BuildFaceMesh(FSTriMesh& faceMesh, Post::FEPostModel& fem, FSMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
 {
 	vec3d t = r1 - r0; t.Normalize();
 
@@ -822,7 +822,7 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	// get the nodal positions of the two end points
 	int n0 = GetIntValue(START_POINT) - 1;
@@ -928,7 +928,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -1033,7 +1033,7 @@ void GLMusclePath::BuildGuideMesh()
 
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int partID = m_pathGuide - 1;
 	if (partID < 0) return;

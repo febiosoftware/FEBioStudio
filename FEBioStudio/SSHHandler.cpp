@@ -240,7 +240,7 @@ void CSSHHandler::GetJobFiles()
 	}
 
 	// Get local .log file name
-	string localFile = m_data->localFile;
+	std::string localFile = m_data->localFile;
 	localFile.replace(localFile.end()-4, localFile.end(), "log");
 
 	// Get remote .log file name
@@ -1120,13 +1120,13 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 			size_t c2 = temp.find('\007');
 			if (c2 != -1)
 			{
-				string t = temp.substr(c1 + 4, c2 - c1 - 4);
+				std::string t = temp.substr(c1 + 4, c2 - c1 - 4);
 				QRegularExpression e("\\([^\\)]*\\)");
 				QRegularExpressionMatch m = e.match(QString::fromStdString(t));
 				if (m.isValid())
 				{
 					QString s = m.captured(0);
-					string sz = s.toStdString();
+					std::string sz = s.toStdString();
 					double f = atof(sz.c_str() + 1);
 					UpdateProgress(f);
 				}
@@ -1255,7 +1255,7 @@ void CSSHHandler::SendFileToServer(const std::string& localFile)
 	}
 }
 
-void CSSHHandler::RunRemoteJob(CSSHHandler::SchedulerType scheduler, const::string& runScript)
+void CSSHHandler::RunRemoteJob(CSSHHandler::SchedulerType scheduler, const std::string& runScript)
 {
 	if (!IsBusy())
 	{

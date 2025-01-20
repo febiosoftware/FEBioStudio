@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <sstream>
-////using namespace std;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)

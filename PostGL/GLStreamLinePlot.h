@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include "GLWLib/GLLegendBar.h"
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <MeshLib/FEFindElement.h>
 #include <GLLib/GLMesh.h>
 

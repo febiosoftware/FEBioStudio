@@ -178,7 +178,7 @@ void GCurveObject::MergeNodes(GNodeSelection* sel)
 	}
 
 	// remove the tagged nodes
-	vector<GNode*> newNodes;
+	std::vector<GNode*> newNodes;
 	for (int i = 0; i < Nodes(); ++i)
 	{
 		GNode* pn = Node(i);

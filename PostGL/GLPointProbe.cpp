@@ -138,7 +138,7 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return;
 
-	FEPostMesh* mesh = mdl->GetActiveMesh();
+	FSMesh* mesh = mdl->GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	FEPostModel* fem = mdl->GetFSModel();

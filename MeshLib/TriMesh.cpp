@@ -520,7 +520,7 @@ void TriMesh::PartitionSurface()
 
 		if (f == m_Face.end()) break;
 
-		stack<FACEP> S; 
+		std::stack<FACEP> S;
 		S.push(f);
 		f->ntag = 1;
 		while (S.empty() == false)
@@ -803,7 +803,7 @@ TriMesh::NODEP insertPoint(TriMesh& mesh, const vec3d& r, const double eps)
 
 void insertEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1, std::vector<TriMesh::NODEP>& nodeList, int tag, const double eps)
 {
-	stack<NodePair> S;
+	std::stack<NodePair> S;
 	S.push(NodePair(n0, n1));
 
 	const int MAXITER = 50;
@@ -1238,7 +1238,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		removalList.push_back(closestFace);
 
 		// create a stack
-		stack<TriMesh::FACEP> stack;
+		std::stack<TriMesh::FACEP> stack;
 
 		// add all unmarked neighbors to stack
 		for (int i = 0; i<3; ++i)

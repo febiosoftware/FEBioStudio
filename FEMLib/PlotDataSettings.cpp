@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "PlotDataSettings.h"
 #include "FSProject.h"
 #include <GeomLib/GModel.h>
+using namespace std;
 
 CPlotVariable::CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
 {

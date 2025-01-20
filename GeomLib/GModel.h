@@ -94,7 +94,7 @@ public:
 	GObject* FindObject(int id);
 
 	// find an object from its name
-	GObject* FindObject(const string& name);
+	GObject* FindObject(const std::string& name);
 
 	// get the currently active object
 	GObject* GetActiveObject();
@@ -157,7 +157,7 @@ public:
 	GEdge* FindEdge(int nid);
 
 	// find an edge from its name
-	GEdge* FindEdgeFromName(const string& name);
+	GEdge* FindEdgeFromName(const std::string& name);
 
 	// --- node functions ---
 	int Nodes();
@@ -232,7 +232,7 @@ public:
 
 	// if match is true, the list of parts with this material is returend.
 	// if match is false, the list of parts that don't have this material is returned.
-	list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
+	std::list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
 
 public:
 	// create a clone
@@ -245,7 +245,7 @@ public:
 	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
 
 	// merge the selected objects
-	GObject* MergeSelectedObjects(GObjectSelection* sel, const string& newObjectName, bool weld, double tol);
+	GObject* MergeSelectedObjects(GObjectSelection* sel, const std::string& newObjectName, bool weld, double tol);
 
 	// detach the discrete set
 	GObject* DetachDiscreteSet(GDiscreteElementSet* set);

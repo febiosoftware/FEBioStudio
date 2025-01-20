@@ -4,9 +4,6 @@
 #include "GMaterial.h"
 #include <list>
 #include <MeshLib/IHasItemList.h>
-//using namespace std;
-
-using std::list;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces
@@ -334,7 +331,7 @@ public:
 
 	double SpringConstant() const;
 
-	void BuildSpringList(std::vector<pair<int, int> >& L);
+	void BuildSpringList(std::vector<std::pair<int, int> >& L);
 };
 
 //-----------------------------------------------------------------------------

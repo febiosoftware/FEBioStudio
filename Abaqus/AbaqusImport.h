@@ -28,13 +28,9 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include "AbaqusModel.h"
-
 #include <list>
-////using namespace std;
 
-//-----------------------------------------------------------------------------
 // Implements a class to import ABAQUS files
-// 
 class AbaqusImport : public FSFileImport
 {
 	enum {MAX_ATTRIB = 16};

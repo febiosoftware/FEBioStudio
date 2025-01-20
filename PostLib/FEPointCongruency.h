@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <set>
-//using namespace std;
 
 class FSFace;
 

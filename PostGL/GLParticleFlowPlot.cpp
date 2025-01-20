@@ -384,7 +384,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 	vec3f v(0.f, 0.f, 0.f);
 	vec3f ve0[FSElement::MAX_NODES];
 	vec3f ve1[FSElement::MAX_NODES];
-	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
+	FSMesh& mesh = *GetModel()->GetActiveMesh();
 
 	vector<vec3f>& val0 = m_map.State(ntime    );
 	vector<vec3f>& val1 = m_map.State(ntime + 1);

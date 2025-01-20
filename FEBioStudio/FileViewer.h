@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <QWidget>
 #include <vector>
 #include <QProcess>
-//using namespace std;
 
 class QTreeWidgetItem;
 class CMainWindow;

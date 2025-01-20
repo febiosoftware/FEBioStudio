@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GModel.h>
-
+using namespace std;
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------

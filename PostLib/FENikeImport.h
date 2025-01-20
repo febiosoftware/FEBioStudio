@@ -27,9 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include "FEFileReader.h"
 
-namespace Post {
+class FSMesh;
 
-class FEPostMesh;
+namespace Post {
 
 class FENikeImport : public FEFileReader
 {
@@ -53,6 +53,6 @@ protected:
 	int	m_nbel;	// nr of beam elements
 	int	m_nsel;	// nr of shell elements
 
-	FEPostMesh*	m_pm;
+	FSMesh*	m_pm;
 };
 }

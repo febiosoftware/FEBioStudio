@@ -137,7 +137,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 	Post::FEPostModel& fem = *pfem;
 
 	// add the first state
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	int NMAT = fem.Materials();
 	int NN = mesh.Nodes();
 	int NE = mesh.Elements();

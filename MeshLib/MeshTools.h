@@ -127,3 +127,7 @@ bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p
 
 // find the shortest path on a mesh (along the mesh' edges)
 std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1);
+
+// find the element and the iso-parametric coordinates of a point inside the mesh
+// the x coordinates is assumed to be in reference frame
+bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);

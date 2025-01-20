@@ -89,7 +89,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	// create the edge nodes
 	for (int i=0; i<NC; ++i)
 	{
-		pair<int,int>& edge = ET[i];
+		std::pair<int,int>& edge = ET[i];
 		FSNode& n0 = pnew->Node(i + NN);
 		vec3d& ra = pm->Node(edge.first ).r;
 		vec3d& rb = pm->Node(edge.second).r;

@@ -432,7 +432,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 
 	// create the mesh
 	ZONE& zone = m_Zone[0];
-	FEPostMesh* pm = new FEPostMesh;
+	FSMesh* pm = new FSMesh;
 
 	pm->Create(zone.m_nn, zone.m_ne);
 
@@ -459,7 +459,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 		int* n = zone.m_Elem[i].node;
 		for (int j=0; j<e.Nodes(); ++j) e.m_node[j] = n[j]-1;
 	}
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	// create a single material
@@ -480,7 +480,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	// create the variables
 	FEDataManager* pdm = fem.GetDataManager();
 	pdm->Clear();
-	list<VARIABLE>::iterator pv = m_Var.begin();
+	std::list<VARIABLE>::iterator pv = m_Var.begin();
 	for (int i=0; i<(int) m_Var.size(); ++i, ++pv)
 	{
 		pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), pv->szname);

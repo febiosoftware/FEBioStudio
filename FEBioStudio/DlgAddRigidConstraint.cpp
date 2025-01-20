@@ -109,7 +109,7 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FSProject& prj, QWidget* parent) 
 	int mod = prj.GetModule();
 //	vector<FEClassFactory*> v = FEMKernel::FindAllClasses(mod, FE_RIGID_CONSTRAINT);
 	int rigidBCId = FEBio::GetBaseClassIndex("FERigidBC"); assert(rigidBCId != -1);
-	vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FEBC_ID, rigidBCId);
+	std::vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FEBC_ID, rigidBCId);
 	for (int i=0; i<(int)v.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = v[i];

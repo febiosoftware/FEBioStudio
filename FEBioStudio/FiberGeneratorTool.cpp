@@ -252,8 +252,8 @@ void CFiberGeneratorTool::OnApply()
 	}
 
 	int NN = pm->Nodes();
-	vector<int> bn(NN, 0);
-	vector<double> val(NN, 0.0);
+	std::vector<int> bn(NN, 0);
+	std::vector<double> val(NN, 0.0);
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{
@@ -345,7 +345,7 @@ void CFiberGeneratorTool::OnApply()
 	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
-	vector<vec3d> grad;
+	std::vector<vec3d> grad;
 	GradientMap G;
 	G.Apply(data, grad, m_nsmoothIters);
 

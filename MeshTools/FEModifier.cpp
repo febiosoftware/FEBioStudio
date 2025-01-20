@@ -1321,7 +1321,7 @@ FSMesh* RefineMesh::Apply(FSMesh* pm)
 
 		if (pmold == nullptr)
 		{
-			string err = mod->GetErrorString();
+			std::string err = mod->GetErrorString();
 			if (!err.empty()) SetError(err.c_str());
 			break;
 		}

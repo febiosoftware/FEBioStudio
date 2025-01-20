@@ -335,7 +335,7 @@ bool MeshLayerManager::AddLayer(const std::string& layerName)
 	// make sure the name does not exist yet.
 	for (int i = 0; i < m_layerList.size(); ++i)
 	{
-		const string& si = m_layerList[i]->name();
+		const std::string& si = m_layerList[i]->name();
 		if (si.compare(layerName) == 0) return false;
 	}
 
@@ -373,7 +373,7 @@ void MeshLayerManager::DeleteLayer(int n)
 	delete meshLayer;
 }
 
-const string& MeshLayerManager::GetLayerName(int i)
+const std::string& MeshLayerManager::GetLayerName(int i)
 {
 	return m_layerList[i]->name();
 }
@@ -421,7 +421,7 @@ int MeshLayerManager::FindMeshLayer(const std::string& s)
 {
 	for (int i = 0; i < Layers(); ++i)
 	{
-		const string& si = m_layerList[i]->name();
+		const std::string& si = m_layerList[i]->name();
 		if (si.compare(s) == 0)
 		{
 			return i;

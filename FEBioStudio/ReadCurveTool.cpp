@@ -67,7 +67,7 @@ bool CReadCurveTool::OnApply()
 			return false;
 		}
 
-		vector<vec3d> pt;
+		std::vector<vec3d> pt;
 		double x, y, z;
 		while (feof(fp) == 0)
 		{

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ParamBlock.h"
 #include "LoadCurve.h"
 #include <assert.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! parameter constructor. Set all default values.

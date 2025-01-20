@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 #include <GLLib/GLMesh.h>
-
+using std::list;
 //-----------------------------------------------------------------------------
 GModifier::GModifier(void)
 {

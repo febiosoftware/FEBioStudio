@@ -148,7 +148,7 @@ class CMeshProps : public CPropertyList
 public:
 	CMeshProps(Post::FEPostModel* fem) : m_fem(fem)
 	{
-		Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
+		FSMesh& mesh = *fem->GetFEMesh(0);
 		addProperty("Nodes"         , CProperty::Int, "Number of nodes"         )->setFlags(CProperty::Visible);
 		addProperty("Faces"         , CProperty::Int, "Number of faces"         )->setFlags(CProperty::Visible);
 		addProperty("Solid Elements", CProperty::Int, "Number of solid elements")->setFlags(CProperty::Visible);
@@ -161,7 +161,7 @@ public:
 		QVariant v;
 		if (m_fem)
 		{
-			Post::FEPostMesh& mesh = *m_fem->CurrentState()->GetFEMesh();
+			FSMesh& mesh = *m_fem->CurrentState()->GetFEMesh();
 			switch (i)
 			{
 			case 0: v = mesh.Nodes(); break;
@@ -795,7 +795,7 @@ void CPostModelPanel::BuildModelTree()
 			// add the mesh
 			if (fem)
 			{
-				Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
+				FSMesh& mesh = *fem->GetFEMesh(0);
 				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
 
 				// add node sets
@@ -1073,7 +1073,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		if (postDoc)
 		{
 			Post::FEPostModel* mdl = postDoc->GetFSModel();
-			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
+			FSMesh* pm = mdl->CurrentState()->GetFEMesh();
 
 			FSSurface* ps2 = pm->FindFESurface(ps->GetName());
 			if (ps2) ps = ps2;

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include "GMaterial.h"
 #include <sstream>
+using std::string;
 
 GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
 {

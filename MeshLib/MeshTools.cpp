@@ -1336,3 +1336,55 @@ std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 
 	return path;
 }
+
+bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
+{
+	vec3f y[FSElement::MAX_NODES];
+	int NE = m.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& e = m.ElementRef(i);
+		int ne = e.Nodes();
+		nelem = i;
+
+		// do a quick bounding box test
+		vec3f r0 = to_vec3f(m.Node(e.m_node[0]).r);
+		vec3f r1 = r0;
+		for (int j = 1; j < ne; ++j)
+		{
+			vec3f rj = to_vec3f(m.Node(e.m_node[j]).r);
+			if (rj.x < r0.x) r0.x = rj.x;
+			if (rj.y < r0.y) r0.y = rj.y;
+			if (rj.z < r0.z) r0.z = rj.z;
+			if (rj.x > r1.x) r1.x = rj.x;
+			if (rj.y > r1.y) r1.y = rj.y;
+			if (rj.z > r1.z) r1.z = rj.z;
+		}
+
+		float dx = fabs(r0.x - r1.x);
+		float dy = fabs(r0.y - r1.y);
+		float dz = fabs(r0.z - r1.z);
+
+		float R = dx;
+		if (dy > R) R = dy;
+		if (dz > R) R = dz;
+		float eps = R * 0.001f;
+
+		r0.x -= eps;
+		r0.y -= eps;
+		r0.z -= eps;
+
+		r1.x += eps;
+		r1.y += eps;
+		r1.z += eps;
+
+		if ((p.x >= r0.x) && (p.x <= r1.x) &&
+			(p.y >= r0.y) && (p.y <= r1.y) &&
+			(p.z >= r0.z) && (p.z <= r1.z))
+		{
+			if (ProjectInsideReferenceElement(m, e, p, r)) return true;
+		}
+	}
+
+	return false;
+}

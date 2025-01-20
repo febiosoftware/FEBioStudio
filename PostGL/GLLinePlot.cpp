@@ -214,7 +214,7 @@ bool CGLLinePlot::ShowLine(LINESEGMENT& l, FEState& s)
 {
 	if ((l.m_elem[0] == -1) || (l.m_elem[1] == -1)) return true;
 
-	Post::FEPostMesh* m = s.GetFEMesh();
+	FSMesh* m = s.GetFEMesh();
 	FSElement& e0 = m->Element(l.m_elem[0]);
 	FSElement& e1 = m->Element(l.m_elem[1]);
 

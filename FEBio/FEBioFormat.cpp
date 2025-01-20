@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+using namespace std;
 
 #ifndef WIN32
 #define stricmp strcmp

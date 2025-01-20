@@ -28,10 +28,9 @@ SOFTWARE.*/
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEDataField.h>
@@ -49,6 +48,7 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 
+using namespace std;
 using namespace Post;
 namespace py = pybind11;
 
@@ -124,15 +124,15 @@ void init_FBSPost(py::module& m)
 #ifndef PY_EXTERNAL
 	post.def("active_model", &getActiveModel, py::return_value_policy::reference);
 #endif
-
-	py::class_<FEPostMesh, FSMesh>(post, "FEPostMesh")
-		.def("surfaces", &FEPostMesh::FESurfaces)
-//		.def("surface", &FEPostMesh::Surface, py::return_value_policy::reference)
-		.def("nodesets", &FEPostMesh::FENodeSets)
-//		.def("nodeset", &FEPostMesh::NodeSet, py::return_value_policy::reference)
-		.def("elemsets", &FEPostMesh::FEElemSets);
-//        .def("elemset", &FEPostMesh::GetFEElemSet, py::return_value_policy::reference);
-
+/*
+	py::class_<FSMesh, FSMesh>(post, "FSMesh")
+		.def("surfaces", &FSMesh::FESurfaces)
+//		.def("surface", &FSMesh::Surface, py::return_value_policy::reference)
+		.def("nodesets", &FSMesh::FENodeSets)
+//		.def("nodeset", &FSMesh::NodeSet, py::return_value_policy::reference)
+		.def("elemsets", &FSMesh::FEElemSets);
+//        .def("elemset", &FSMesh::GetFEElemSet, py::return_value_policy::reference);
+*/
 	py::class_<FSSurface>(post, "FESurface")
 //        .def_readonly("faces", &FSSurface::m_Face, py::return_value_policy::reference)
         .def("name", &FSSurface::GetName);

@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <memory>
 #include <FECore/FETransform.h>
 
-using std::unique_ptr;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEBioExport12::FEBioExport12(FSProject& prj) : FEBioExport(prj)
