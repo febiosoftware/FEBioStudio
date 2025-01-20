@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEAutoPartition.h"
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 
 //-----------------------------------------------------------------------------
 FEAutoPartition::FEAutoPartition() : FEModifier("Auto Partition")
@@ -39,7 +39,7 @@ FSMesh* FEAutoPartition::Apply(FSMesh* pm)
 {
 	double w = GetFloatValue(0);
 	FSMesh* newMesh = new FSMesh(*pm);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.AutoPartition(w);
 	return newMesh;
 }
@@ -53,7 +53,7 @@ FSMesh* FEAutoPartition::Apply(FSGroup* pg)
 
 	double w = GetFloatValue(0);
 	FSMesh* newMesh = new FSMesh(*pm);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 
 	if (dynamic_cast<FSEdgeSet*>(pg))
 	{
@@ -92,7 +92,7 @@ FSMesh* FERebuildMesh::Apply(FSMesh* pm)
 	double w = GetFloatValue(1);
 
 	FSMesh* newMesh = new FSMesh(*pm);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.RebuildMesh(w, repartition);
 	return newMesh;
 }

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 class GEdge;
-class FECurveMesh;
+class FSCurveMesh;
 
 //-----------------------------------------------------------------------------
 // Class for generating a mesh for edges
@@ -41,11 +41,11 @@ public:
 	void SetElementSize(double h);
 
 	// create the mesh
-	FECurveMesh* BuildMesh(GEdge* edge);
+	FSCurveMesh* BuildMesh(GEdge* edge);
 
 private:
-	FECurveMesh* BuildLineMesh(GEdge* edge);
-	FECurveMesh* BuildEdgeMesh(GEdge* edge);
+	FSCurveMesh* BuildLineMesh(GEdge* edge);
+	FSCurveMesh* BuildEdgeMesh(GEdge* edge);
 
 private:
 	double	m_elemSize;

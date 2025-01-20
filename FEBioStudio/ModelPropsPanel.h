@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 class CMainWindow;
 class FSObject;
-class FEItemListBuilder;
+class FSItemListBuilder;
 class GMaterial;
 class CPropertyList;
 class QLineEdit;
@@ -238,8 +238,8 @@ private slots:
 	void on_plt_dataChanged();
 
 private:
-	void SetSelection(int n, FEItemListBuilder* it);
-	void SetSelection(int n, FEItemListBuilder* it, bool showNameType);
+	void SetSelection(int n, FSItemListBuilder* it);
+	void SetSelection(int n, FSItemListBuilder* it, bool showNameType);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);

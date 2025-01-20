@@ -416,20 +416,20 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
-		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		FSItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FSItemListBuilder* ps2 = pci->GetSecondarySurface();
 		if (ps1) SelectItemList(ps1);
 		if (ps2) SelectItemList(ps2);
 	}
 	else if (dynamic_cast<IHasItemLists*>(po))
 	{
 		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList(0);
+		FSItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
-	else if (dynamic_cast<FEItemListBuilder*>(po))
+	else if (dynamic_cast<FSItemListBuilder*>(po))
 	{
-		FEItemListBuilder* pi = dynamic_cast<FEItemListBuilder*>(po);
+		FSItemListBuilder* pi = dynamic_cast<FSItemListBuilder*>(po);
 		SelectItemList(pi);
 	}
 	else if (dynamic_cast<GPart*>(po))
@@ -477,7 +477,7 @@ void CModelViewer::on_selectButton_clicked()
 	GetMainWindow()->Update(this);
 }
 
-void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
+void CModelViewer::SelectItemList(FSItemListBuilder *pitem, bool badd)
 {
 	CCommand* pcmd = 0;
 
@@ -485,7 +485,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	if (n == 0) return;
 
 	int* pi = new int[n];
-	FEItemListBuilder::Iterator it = pitem->begin();
+	FSItemListBuilder::Iterator it = pitem->begin();
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -2199,7 +2199,7 @@ void CModelViewer::OnDeleteAllJobs()
 
 void CModelViewer::OnEditMeshData()
 {
-	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	FSMeshData* data = dynamic_cast<FSMeshData*>(m_currentObject);
 	if (data == nullptr) return;
 
 	CDlgEditMeshData dlg(data, this);

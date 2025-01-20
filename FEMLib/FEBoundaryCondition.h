@@ -1,7 +1,7 @@
 #pragma once
 #include "FEDomainComponent.h"
 #include <GeomLib/FSGroup.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include <list>
 
 //=============================================================================
@@ -12,7 +12,7 @@ public:
 	FSBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FSDomainComponent(ntype, fem, nstep){
 		m_superClassID = FEBC_ID;
 	}
-	FSBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, fem, pi, nstep){
+	FSBoundaryCondition(int ntype, FSModel* fem, FSItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, fem, pi, nstep){
 		m_superClassID = FEBC_ID;
 	}
 };
@@ -24,7 +24,7 @@ class FSFixedDOF : public FSBoundaryCondition
 
 public:
 	FSFixedDOF(int ntype, FSModel* fem);
-	FSFixedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
+	FSFixedDOF(int ntype, FSModel* ps, FSItemListBuilder* pi, int nstep = 0);
 
 	int GetVarID() const { return m_nvar; }
 
@@ -58,7 +58,7 @@ class FSFixedDisplacement : public FSFixedDOF
 {
 public:
 	FSFixedDisplacement(FSModel* ps);
-	FSFixedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FSFixedDisplacement(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -72,7 +72,7 @@ class FSFixedShellDisplacement : public FSFixedDOF
 {
 public:
 	FSFixedShellDisplacement(FSModel* ps);
-	FSFixedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FSFixedShellDisplacement(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 
@@ -88,7 +88,7 @@ class FSFixedRotation : public FSFixedDOF
 {
 public:
 	FSFixedRotation(FSModel* ps);
-	FSFixedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FSFixedRotation(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -98,7 +98,7 @@ class FSFixedFluidPressure : public FSFixedDOF
 {
 public:
 	FSFixedFluidPressure(FSModel* ps);
-	FSFixedFluidPressure(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FSFixedFluidPressure(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -108,7 +108,7 @@ class FSFixedTemperature : public FSFixedDOF
 {
 public:
 	FSFixedTemperature(FSModel* ps);
-	FSFixedTemperature(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FSFixedTemperature(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -118,7 +118,7 @@ class FSFixedConcentration : public FSFixedDOF
 {
 public:
 	FSFixedConcentration(FSModel* ps);
-	FSFixedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FSFixedConcentration(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -133,7 +133,7 @@ class FSFixedFluidVelocity : public FSFixedDOF
 {
 public:
     FSFixedFluidVelocity(FSModel* ps);
-    FSFixedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+    FSFixedFluidVelocity(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -146,7 +146,7 @@ public:
     
 public:
     FSFixedFluidDilatation(FSModel* ps);
-    FSFixedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+    FSFixedFluidDilatation(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -161,7 +161,7 @@ class FSFixedFluidAngularVelocity : public FSFixedDOF
 {
 public:
     FSFixedFluidAngularVelocity(FSModel* ps);
-    FSFixedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+    FSFixedFluidAngularVelocity(FSModel* ps, FSItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -174,7 +174,7 @@ public:
 
 public:
 	FSPrescribedDOF(int ntype, FSModel* ps, int nstep = 0);
-	FSPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FSPrescribedDOF(int ntype, FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 
 	int GetVarID() const { return m_nvar; }
 	void SetVarID(int n);
@@ -204,7 +204,7 @@ class FSPrescribedDisplacement : public FSPrescribedDOF
 {
 public:
 	FSPrescribedDisplacement(FSModel* ps);
-	FSPrescribedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FSPrescribedDisplacement(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -214,7 +214,7 @@ class FSPrescribedShellDisplacement : public FSPrescribedDOF
 {
 public:
 	FSPrescribedShellDisplacement(FSModel* ps);
-	FSPrescribedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FSPrescribedShellDisplacement(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -224,7 +224,7 @@ class FSPrescribedRotation : public FSPrescribedDOF
 {
 public:
 	FSPrescribedRotation(FSModel* ps);
-	FSPrescribedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FSPrescribedRotation(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -234,7 +234,7 @@ class FSPrescribedFluidPressure : public FSPrescribedDOF
 {
 public:
 	FSPrescribedFluidPressure(FSModel* ps);
-	FSPrescribedFluidPressure(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+	FSPrescribedFluidPressure(FSModel* ps, FSItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -244,7 +244,7 @@ class FSPrescribedTemperature : public FSPrescribedDOF
 {
 public:
 	FSPrescribedTemperature(FSModel* ps);
-	FSPrescribedTemperature(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+	FSPrescribedTemperature(FSModel* ps, FSItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -254,7 +254,7 @@ class FSPrescribedConcentration : public FSPrescribedDOF
 {
 public:
 	FSPrescribedConcentration(FSModel* ps);
-	FSPrescribedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep);
+	FSPrescribedConcentration(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep);
 };
 
 //=============================================================================
@@ -264,7 +264,7 @@ class FSPrescribedFluidVelocity : public FSPrescribedDOF
 {
 public:
     FSPrescribedFluidVelocity(FSModel* ps);
-    FSPrescribedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+    FSPrescribedFluidVelocity(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -274,7 +274,7 @@ class FSPrescribedFluidDilatation : public FSPrescribedDOF
 {
 public:
     FSPrescribedFluidDilatation(FSModel* ps);
-    FSPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+    FSPrescribedFluidDilatation(FSModel* ps, FSItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -284,7 +284,7 @@ class FSPrescribedFluidAngularVelocity : public FSPrescribedDOF
 {
 public:
     FSPrescribedFluidAngularVelocity(FSModel* ps);
-    FSPrescribedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+    FSPrescribedFluidAngularVelocity(FSModel* ps, FSItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================

@@ -52,8 +52,8 @@ private:
     CSelectionBox* m_trg;
 
 private:
-    FEItemListBuilder* m_srcList;
-    FEItemListBuilder* m_trgList;
+	FSItemListBuilder* m_srcList;
+	FSItemListBuilder* m_trgList;
 
 public:
     ICPRegistrationToolUI(CICPRegistrationTool* w)
@@ -114,7 +114,7 @@ public:
     double tolerance() { return m_tol->text().toDouble(); }
     int maxIterations() { return m_maxiter->text().toInt(); }
 
-	bool UpdateSelectionList(FEItemListBuilder*& pl, FEItemListBuilder* items)
+	bool UpdateSelectionList(FSItemListBuilder*& pl, FSItemListBuilder* items)
 	{
 		if (pl == nullptr) pl = items;
 		else
@@ -140,24 +140,24 @@ public:
 		return true;
 	}
 
-	FEItemListBuilder* sourceList() { return m_srcList; }
-	FEItemListBuilder* targetList() { return m_trgList; }
+	FSItemListBuilder* sourceList() { return m_srcList; }
+	FSItemListBuilder* targetList() { return m_trgList; }
 
-	bool SetSourceList(FEItemListBuilder* items)
+	bool SetSourceList(FSItemListBuilder* items)
 	{
 		if (UpdateSelectionList(m_srcList, items) == false) return false;
 		SetSelection(m_src, m_srcList);
         return true;
     }
 
-	bool SetTargetList(FEItemListBuilder* items)
+	bool SetTargetList(FSItemListBuilder* items)
 	{
 		if (UpdateSelectionList(m_trgList, items) == false) return false;
 		SetSelection(m_trg, m_trgList);
 		return true;
 	}
 
-	void SetSelection(CSelectionBox* sel, FEItemListBuilder* item)
+	void SetSelection(CSelectionBox* sel, FSItemListBuilder* item)
 	{
 		if (item == 0)
 		{
@@ -184,7 +184,7 @@ public:
 			sel->setType("Domains");
 			GPartList& g = dynamic_cast<GPartList&>(*item);
 			vector<GPart*> parts = g.GetPartList();
-			FEItemListBuilder::Iterator it = item->begin();
+			FSItemListBuilder::Iterator it = item->begin();
 			for (int i = 0; i < parts.size(); ++i, ++it)
 			{
 				GPart* pg = parts[i];
@@ -198,7 +198,7 @@ public:
 			sel->setType("Surfaces");
 			GFaceList& g = dynamic_cast<GFaceList&>(*item);
 			vector<GFace*> surfs = g.GetFaceList();
-			FEItemListBuilder::Iterator it = item->begin();
+			FSItemListBuilder::Iterator it = item->begin();
 			for (int i = 0; i < surfs.size(); ++i, ++it)
 			{
 				GFace* pg = surfs[i];
@@ -212,7 +212,7 @@ public:
 			sel->setType("Curves");
 			GEdgeList& g = dynamic_cast<GEdgeList&>(*item);
 			vector<GEdge*> edges = g.GetEdgeList();
-			FEItemListBuilder::Iterator it = item->begin();
+			FSItemListBuilder::Iterator it = item->begin();
 			for (int i = 0; i < edges.size(); ++i, ++it)
 			{
 				GEdge* pg = edges[i];
@@ -226,7 +226,7 @@ public:
 			sel->setType("Nodes");
 			GNodeList& g = dynamic_cast<GNodeList&>(*item);
 			vector<GNode*> nodes = g.GetNodeList();
-			FEItemListBuilder::Iterator it = item->begin();
+			FSItemListBuilder::Iterator it = item->begin();
 			for (int i = 0; i < nodes.size(); ++i, ++it)
 			{
 				GNode* pg = nodes[i];
@@ -352,8 +352,8 @@ void CICPRegistrationTool::OnApply()
     CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
     if ((doc == nullptr) || (!doc->IsValid())) return;
 
-	FEItemListBuilder* src = ui->sourceList();
-	FEItemListBuilder* trg = ui->targetList();
+	FSItemListBuilder* src = ui->sourceList();
+	FSItemListBuilder* trg = ui->targetList();
 
 	// get the part list
 	GPartList* psrc = dynamic_cast<GPartList*>(src);
@@ -418,7 +418,7 @@ void CICPRegistrationTool::Deactivate()
 	ui->clearSelections();
 }
 
-FEItemListBuilder* CICPRegistrationTool::getSelection()
+FSItemListBuilder* CICPRegistrationTool::getSelection()
 {
 	// get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -428,13 +428,13 @@ FEItemListBuilder* CICPRegistrationTool::getSelection()
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if ((ps == 0) || (ps->Size() == 0)) return nullptr;
 
-	FEItemListBuilder* item = ps->CreateItemList();
+	FSItemListBuilder* item = ps->CreateItemList();
 	return item;
 }
 
 void CICPRegistrationTool::on_src_addButtonClicked()
 {
-	FEItemListBuilder* item = getSelection();
+	FSItemListBuilder* item = getSelection();
     if (item) ui->SetSourceList(item);
 }
 
@@ -445,7 +445,7 @@ void CICPRegistrationTool::on_src_clearButtonClicked() {}
 
 void CICPRegistrationTool::on_trg_addButtonClicked() 
 {
-	FEItemListBuilder* item = getSelection();
+	FSItemListBuilder* item = getSelection();
 	if (item) ui->SetTargetList(item);
 }
 

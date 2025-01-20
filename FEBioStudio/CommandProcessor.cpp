@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GPrimitive.h>

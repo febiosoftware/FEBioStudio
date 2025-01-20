@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FSModel.h"
 #include "FECoreMaterial.h"	// for FEElementRef
 #include "FEMaterial.h" // for fiber generator defines
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 #include <exception>
 #include <sstream>
 using namespace std;
@@ -416,11 +416,11 @@ vec3d FSVec3dValuator::GetFiberVector(const FEElementRef& el)
 		FSMesh* pm = dynamic_cast<FSMesh*>(el.m_pmesh);
 		if (pm)
 		{
-			FEMeshData* pmd = pm->FindMeshDataField(m_map);
+			FSMeshData* pmd = pm->FindMeshDataField(m_map);
 			if (pmd)
 			{
-				FEElementData* ped = dynamic_cast<FEElementData*>(pmd);
-				FEPartData* ppd = dynamic_cast<FEPartData*>(pmd);
+				FSElementData* ped = dynamic_cast<FSElementData*>(pmd);
+				FSPartData* ppd = dynamic_cast<FSPartData*>(pmd);
 				if (ped)
 				{
 					double d[3];

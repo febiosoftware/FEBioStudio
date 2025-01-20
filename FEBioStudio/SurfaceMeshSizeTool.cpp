@@ -31,8 +31,8 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GOCCObject.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>

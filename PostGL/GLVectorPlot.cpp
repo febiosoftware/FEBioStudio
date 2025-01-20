@@ -209,7 +209,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		pm->TagAllElements(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -222,7 +222,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			// make sure no vector is drawn for hidden elements
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
-				FEElement_& elem = pm->ElementRef(i);
+				FSElement_& elem = pm->ElementRef(i);
 				if (elem.IsVisible() == false) elem.m_ntag = 0;
 			}
 		}
@@ -230,7 +230,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		// render the vectors at the elements' centers
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& elem = pm->ElementRef(i);
+			FSElement_& elem = pm->ElementRef(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
 				vec3f r = to_vec3f(pm->ElementCenter(elem));
@@ -245,7 +245,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
 			FSFace& f = pm->Face(i);
-			FEElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
+			FSElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
 			if (pe)
 			{
 				Material* mat = ps->GetMaterial(pe->m_MatID);
@@ -283,7 +283,7 @@ void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{

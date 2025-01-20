@@ -52,7 +52,7 @@ FSInterface::~FSInterface()
 }
 
 //-----------------------------------------------------------------------------
-void FSInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FSInterface::SaveList(FSItemListBuilder* pitem, OArchive& ar)
 {
 	if (pitem)
 	{
@@ -63,9 +63,9 @@ void FSInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
+FSItemListBuilder* FSInterface::LoadList(IArchive& ar)
 {
-	FEItemListBuilder* pitem = 0;
+	FSItemListBuilder* pitem = 0;
 
 	FSModel* fem = GetFSModel();
 	GModel* gm = &fem->GetModel();
@@ -123,27 +123,27 @@ FSPairedInterface::~FSPairedInterface()
 }
 
 //-----------------------------------------------------------------------------
-void FSPairedInterface::SetPrimarySurface(FEItemListBuilder* pg)
+void FSPairedInterface::SetPrimarySurface(FSItemListBuilder* pg)
 { 
 	SetItemList(pg, 0);
 }
 
 //-----------------------------------------------------------------------------
-void FSPairedInterface::SetSecondarySurface(FEItemListBuilder* pg)
+void FSPairedInterface::SetSecondarySurface(FSItemListBuilder* pg)
 { 
 	SetItemList(pg, 1);
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FSPairedInterface::GetPrimarySurface() { return GetItemList(0); }
+FSItemListBuilder* FSPairedInterface::GetPrimarySurface() { return GetItemList(0); }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FSPairedInterface::GetSecondarySurface() { return GetItemList(1); }
+FSItemListBuilder* FSPairedInterface::GetSecondarySurface() { return GetItemList(1); }
 
 //-----------------------------------------------------------------------------
 void FSPairedInterface::SwapPrimarySecondary()
 {
-	FEItemListBuilder* tmp = GetItemList(0);
+	FSItemListBuilder* tmp = GetItemList(0);
 	SetItemList(GetItemList(1), 0);
 	SetItemList(tmp, 1);
 }
@@ -161,8 +161,8 @@ void FSPairedInterface::Save(OArchive& ar)
 	}
 	ar.EndChunk();
 
-	FEItemListBuilder* surf1 = GetItemList(0);
-	FEItemListBuilder* surf2 = GetItemList(1);
+	FSItemListBuilder* surf1 = GetItemList(0);
+	FSItemListBuilder* surf2 = GetItemList(1);
 	if (surf1) ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, surf1->GetID());
 	if (surf2) ar.WriteChunk(CID_INTERFACE_SURFACE2_ID, surf2->GetID());
 }
@@ -187,7 +187,7 @@ void FSPairedInterface::Load(IArchive &ar)
 		{ 
 			int nid = -1; 
 			ar.read(nid); 
-			FEItemListBuilder* surf1 = mdl.FindNamedSelection(nid); 
+			FSItemListBuilder* surf1 = mdl.FindNamedSelection(nid); 
 			SetItemList(surf1, 0);
 		}
 		break;
@@ -195,13 +195,13 @@ void FSPairedInterface::Load(IArchive &ar)
 		{ 
 			int nid = -1; 
 			ar.read(nid); 
-			FEItemListBuilder* surf2 = mdl.FindNamedSelection(nid); 
+			FSItemListBuilder* surf2 = mdl.FindNamedSelection(nid); 
 			SetItemList(surf2, 1);
 		} 
 		break;
 		case CID_INTERFACE_SURFACE1: // obsolete in 2.1
 		{
-			FEItemListBuilder* surf1 = FSInterface::LoadList(ar);
+			FSItemListBuilder* surf1 = FSInterface::LoadList(ar);
 			if (surf1)
 			{
 				if (surf1->GetName().empty())
@@ -217,7 +217,7 @@ void FSPairedInterface::Load(IArchive &ar)
 		break;
 		case CID_INTERFACE_SURFACE2: // obsolete in 2.1
 		{
-			FEItemListBuilder* surf2 = FSInterface::LoadList(ar);
+			FSItemListBuilder* surf2 = FSInterface::LoadList(ar);
 			if (surf2)
 			{
 				if (surf2->GetName().empty())
@@ -235,7 +235,7 @@ void FSPairedInterface::Load(IArchive &ar)
 		{
 			// The old master surface is now the secondary surface
 			int nid; ar.read(nid);
-			FEItemListBuilder* surf2 = mdl.FindNamedSelection(nid); assert(surf2);
+			FSItemListBuilder* surf2 = mdl.FindNamedSelection(nid); assert(surf2);
 			SetSecondarySurface(surf2);
 		}
 		break;
@@ -243,7 +243,7 @@ void FSPairedInterface::Load(IArchive &ar)
 		{
 			// The old slave surface is now the primary surface
 			int nid; ar.read(nid);
-			FEItemListBuilder* surf1 = mdl.FindNamedSelection(nid); assert(surf1);
+			FSItemListBuilder* surf1 = mdl.FindNamedSelection(nid); assert(surf1);
 			SetPrimarySurface(surf1);
 		}
 		break;
@@ -278,7 +278,7 @@ void FSSoloInterface::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEOBJ_INFO      , GetInfo());
 	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
 	ar.WriteChunk(CID_INTERFACE_STEP  , m_nstepID);
-	FEItemListBuilder* pl = GetItemList();
+	FSItemListBuilder* pl = GetItemList();
 	if (pl)
 	{
 		ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, pl->GetID());
@@ -311,7 +311,7 @@ void FSSoloInterface::Load(IArchive &ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 			SetItemList(pItem);
 		}
 		break;
@@ -320,7 +320,7 @@ void FSSoloInterface::Load(IArchive &ar)
 			// NOTE: We should only get here for older files (< FBS2.1)
 			//       since model components no longer manage their own lists.
 			//       If we get here, we'll read the list and then add it to the model
-			FEItemListBuilder* pItem = FSInterface::LoadList(ar);
+			FSItemListBuilder* pItem = FSInterface::LoadList(ar);
 			if (pItem)
 			{
 				// this selection probably doesn't have a name yet.
@@ -355,7 +355,7 @@ FSRigidInterface::FSRigidInterface(FSModel* ps, int nstep) : FSSoloInterface(FE_
 }
 
 //-----------------------------------------------------------------------------
-FSRigidInterface::FSRigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep) : FSSoloInterface(FE_RIGID_INTERFACE, ps, nstep)
+FSRigidInterface::FSRigidInterface(FSModel* ps, GMaterial* pm, FSItemListBuilder* pi, int nstep) : FSSoloInterface(FE_RIGID_INTERFACE, ps, nstep)
 {
 	SetTypeString("Rigid");
 	m_pmat = pm; 
@@ -371,7 +371,7 @@ void FSRigidInterface::Save(OArchive &ar)
 	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
 	ar.WriteChunk(CID_RI_RIGIDBODY, mid);
 
-	FEItemListBuilder* pl = GetItemList();
+	FSItemListBuilder* pl = GetItemList();
 	if (pl) 
 	{ 
 		ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, pl->GetID());
@@ -409,7 +409,7 @@ void FSRigidInterface::Load(IArchive &ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 			SetItemList(pItem);
 		}
 		break;
@@ -418,7 +418,7 @@ void FSRigidInterface::Load(IArchive &ar)
 			// NOTE: We should only get here for older files (< FBS2.1)
 			//       since model components no longer manage their own lists.
 			//       If we get here, we'll read the list and then add it to the model
-			FEItemListBuilder* pItem = FSInterface::LoadList(ar);
+			FSItemListBuilder* pItem = FSInterface::LoadList(ar);
 			if (pItem)
 			{
 				// this selection probably doesn't have a name yet.
@@ -436,7 +436,7 @@ void FSRigidInterface::Load(IArchive &ar)
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
-				FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+				FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 				assert(pItem);
 				SetItemList(pItem);
 			}
@@ -963,16 +963,16 @@ double FSSpringTiedInterface::SpringConstant() const
 
 void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 {
-	FEFaceList* pfl = GetPrimarySurface()->BuildFaceList();
+	FSFaceList* pfl = GetPrimarySurface()->BuildFaceList();
 	FSNodeList* pnl = GetSecondarySurface()->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
-	unique_ptr<FEFaceList> ps(pfl);
+	unique_ptr<FSFaceList> ps(pfl);
 	unique_ptr<FSNodeList> pm(pnl);
 
 	set<pair<int, int> > S;
 
-	FEFaceList::Iterator its = ps->First();
+	FSFaceList::Iterator its = ps->First();
 	for (int i=0; i<ps->Size(); ++i, ++its)
 	{
 		FSFace& f = *(its->m_pi);

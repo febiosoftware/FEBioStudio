@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/triangulate.h>
 
 GLMesher::GLMesher(GObject* po) : m_po(po)
@@ -164,7 +164,7 @@ void GLMesher::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 	GObject& o = *m_po;
 
 	// This assumes there is a mesh
-	FECurveMesh* mesh = o.GetFECurveMesh(e.GetLocalID());
+	FSCurveMesh* mesh = o.GetFECurveMesh(e.GetLocalID());
 	assert(mesh);
 	if (mesh == 0) return;
 

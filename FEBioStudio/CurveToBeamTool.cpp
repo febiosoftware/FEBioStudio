@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "CurveToBeamTool.h"
 #include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <QMessageBox>
 #include "MainWindow.h"

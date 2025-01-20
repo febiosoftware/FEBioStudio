@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <GLLib/GLScene.h>
 #include <PostGL/GLModel.h>
-#include "../MeshLib/FENodeFaceList.h"
+#include <MeshLib/FSNodeFaceList.h>
 #include <PostGL/PostObject.h>
 #include "../FEBioStudio/GLPostScene.h"
 #include <QMutex>

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEModifier.h"
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 
 FERezoneMesh::FERezoneMesh() : FEModifier("Rezone")
 {

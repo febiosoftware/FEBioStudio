@@ -80,11 +80,11 @@ public:
 
 public:	// IHasItemList
 	int ItemLists() const override { return 1; }
-	FEItemListBuilder* GetItemList(int n = 0) override;
+	FSItemListBuilder* GetItemList(int n = 0) override;
 	virtual unsigned int GetMeshItemType() const override;
 
 private:
-	void SetItemList(FEItemListBuilder* pi, int n = 0) override;
+	void SetItemList(FSItemListBuilder* pi, int n = 0) override;
 	virtual void SetMeshItemType(unsigned int meshItem){};
 
 public:

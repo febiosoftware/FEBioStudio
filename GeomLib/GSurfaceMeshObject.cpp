@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FEModifier.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GLLib/GLMesh.h>
-#include <MeshLib/FENodeEdgeList.h>
+#include <MeshLib/FSNodeEdgeList.h>
 #include <PostLib/ColorMap.h>
 #include "GOCCObject.h"
 #include <FSCore/ClassDescriptor.h>
@@ -473,7 +473,7 @@ void GSurfaceMeshObject::ReplaceSurfaceMesh(FSSurfaceMesh* newMesh)
 }
 
 // get the mesh of an edge curve
-FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
+FSCurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 {
 	FSSurfaceMesh* mesh = GetSurfaceMesh();
 	if (mesh == 0) return 0;
@@ -492,7 +492,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 
 	int NN = mesh->Nodes();
 	int nn = 0;

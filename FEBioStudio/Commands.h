@@ -55,7 +55,7 @@ class FSRigidBC;
 class FSRigidIC;
 class FSMeshAdaptor;
 class FSLoadController;
-class FEMeshData;
+class FSMeshData;
 class FSMeshDataGenerator;
 
 //-----------------------------------------------------------------------------
@@ -225,7 +225,7 @@ protected:
 class CCmdAddMeshDataField : public CCommand
 {
 public:
-	CCmdAddMeshDataField(FSMesh* pm, FEMeshData* pmd);
+	CCmdAddMeshDataField(FSMesh* pm, FSMeshData* pmd);
 	~CCmdAddMeshDataField();
 
 	void Execute();
@@ -233,7 +233,7 @@ public:
 
 protected:
 	FSMesh* m_pm;
-	FEMeshData* m_pmd;
+	FSMeshData* m_pmd;
 	bool		m_bdel;
 };
 
@@ -1476,7 +1476,7 @@ protected:
 class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n);
+	CCmdSetItemList(IHasItemLists* pbc, FSItemListBuilder* pl, int n);
 	~CCmdSetItemList();
 
 	void Execute();
@@ -1484,7 +1484,7 @@ public:
 
 protected:
 	IHasItemLists*		m_pbc;
-	FEItemListBuilder*	m_pl;
+	FSItemListBuilder*	m_pl;
 	int					m_index;
 };
 
@@ -1492,13 +1492,13 @@ protected:
 class CCmdAddToItemListBuilder : public CCommand
 {
 public:
-	CCmdAddToItemListBuilder(FEItemListBuilder* pold, std::vector<int>& lnew);
+	CCmdAddToItemListBuilder(FSItemListBuilder* pold, std::vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEItemListBuilder* m_pold;
+	FSItemListBuilder* m_pold;
 	std::vector<int>	m_lnew;
 	std::vector<int>	m_tmp;
 };
@@ -1507,13 +1507,13 @@ protected:
 class CCmdRemoveFromItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, std::vector<int>& lnew);
+	CCmdRemoveFromItemListBuilder(FSItemListBuilder* pold, std::vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEItemListBuilder* m_pold;
+	FSItemListBuilder* m_pold;
 	std::vector<int>	m_lnew;
 	std::vector<int>	m_tmp;
 };
@@ -1529,7 +1529,7 @@ public:
 	void UnExecute();
 
 private:
-	FEItemListBuilder*	m_pitem;
+	FSItemListBuilder*	m_pitem;
 	IHasItemLists*		m_pmc;
 	int	m_index;
 };
@@ -1562,7 +1562,7 @@ public:
 
 protected:
 	FSModelComponent* m_obj;
-	std::vector<FEItemListBuilder*> m_sel;
+	std::vector<FSItemListBuilder*> m_sel;
 };
 
 //-----------------------------------------------------------------------------
@@ -1631,14 +1631,14 @@ protected:
 class CCmdRemoveMeshData : public CCommand
 {
 public:
-	CCmdRemoveMeshData(FEMeshData* meshData);
+	CCmdRemoveMeshData(FSMeshData* meshData);
 	~CCmdRemoveMeshData();
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	FEMeshData*	m_data;
+	FSMeshData*	m_data;
 	int		m_index;
 };
 

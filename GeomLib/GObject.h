@@ -35,7 +35,7 @@ class FSSurface;
 class FSEdgeSet;
 class FSNodeSet;
 class FSPartSet;
-class FECurveMesh;
+class FSCurveMesh;
 class FSSurfaceMesh;
 class FEMesher;
 class FSMesh;
@@ -159,7 +159,7 @@ public:
 	virtual void UpdateMesh() {}
 
 	// get the mesh of an edge curve
-	virtual FECurveMesh* GetFECurveMesh(int edgeId);
+	virtual FSCurveMesh* GetFECurveMesh(int edgeId);
 
 	// --- G E O M E T R Y ---
 

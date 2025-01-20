@@ -50,7 +50,7 @@ SOFTWARE.*/
 #include "ToolBox.h"
 #include <FSCore/ClassDescriptor.h>
 #include "ObjectProps.h"
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshTools/GObject2D.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/FELoftMesher.h>
@@ -302,14 +302,14 @@ FSObject* CCreateLoftSurface::Create()
 {
 	if (m_edge.size() < 2) return 0;
 
-	std::vector<FECurveMesh*> curves;
+	std::vector<FSCurveMesh*> curves;
 	for (int i=0; i<(int)m_edge.size(); ++i)
 	{
 		GEdge& edge = *m_edge[i];
 		GObject* po = dynamic_cast<GObject*>(edge.Object()); assert(po);
 		if (po == 0) return 0;
 
-		FECurveMesh* c = po->GetFECurveMesh(edge.GetLocalID());
+		FSCurveMesh* c = po->GetFECurveMesh(edge.GetLocalID());
 		assert(c);
 		if (c == 0) return 0;
 		curves.push_back(c);

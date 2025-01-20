@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageSource.h>
 #include "3DImage.h"
 #include <PostGL/GLModel.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSFindElement.h>
 #include "ImageFilterSITK.h"
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
@@ -264,7 +264,7 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 	}
 	else
 	{
-		FEFindElement fe(*mesh);
+		FSFindElement fe(*mesh);
 		fe.Init();
 
 		// 3D case

@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "insertCurve.h"
 #include <MeshLib/TriMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GObject.h>
 #include "FECurveMesher.h"
 
@@ -54,7 +54,7 @@ FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, std::vector<GEdge*>& curve
 
 		// get a mesh for this curve
 		GObject* pco = dynamic_cast<GObject*>(pc->Object());
-		FECurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
+		FSCurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
 		if (ps == 0)
 		{
 			if (pco->GetType() == GCURVE)

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/triangulate.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/FSTriMesh.h>
@@ -416,7 +416,7 @@ public:
 
 	quatd GetOrientation() { return m_rot; }
 	
-	FEItemListBuilder* CreateItemList() { return nullptr; }
+	FSItemListBuilder* CreateItemList() { return nullptr; }
 
 protected:
 	void Update()

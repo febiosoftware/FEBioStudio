@@ -2096,7 +2096,7 @@ void FSModel::ClearSelections()
 		for (int i = 0; i<step->ICs(); ++i)
 		{
 			FSInitialCondition* pic = step->IC(i);
-			FEItemListBuilder* pi = pic->GetItemList();
+			FSItemListBuilder* pi = pic->GetItemList();
 			pic->SetItemList(nullptr);
 		}
 

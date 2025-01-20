@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
 
 namespace Post {
 
@@ -134,7 +134,7 @@ private:
 	float	m_lastTime;
 	float	m_lastDt;
 
-	FEFindElement*	m_find;
+	FSFindElement*	m_find;
 
 	std::vector<FlowParticle>	m_particles;
 };

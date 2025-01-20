@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "NetGenMesher.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
 
 #ifdef _MSC_VER

@@ -404,7 +404,7 @@ bool xpltFileExport::WritePart(FSMesh& mesh, FSMeshPartition& part)
 	if (NE == 0) return false;
 
 	// figure out element type
-	FEElement_& e0 = part.Element(0);
+	FSElement_& e0 = part.Element(0);
 	int matid = e0.m_MatID + 1;
 
 	int ne = 0;
@@ -449,7 +449,7 @@ bool xpltFileExport::WritePart(FSMesh& mesh, FSMeshPartition& part)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement_& el = part.Element(i);
+			FSElement_& el = part.Element(i);
 			n[0] = el.GetID();
 			for (int j=0; j<ne; ++j) n[j+1] = el.m_node[j];
 			m_ar.WriteChunk(PLT_ELEMENT, n, ne+1);

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEMortarProjection.h"
 #include <GeomLib/geomlib.h>
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 
 //-----------------------------------------------------------------------------
 FEMortarProjection::FEMortarProjection()
@@ -58,7 +58,7 @@ FSMesh* FEMortarProjection::Apply(FSSurface* pslave, FSSurface* pmaster)
 	int nr = 0;
 
 	// loop over all slave facets
-	FEItemListBuilder::Iterator pi = pslave->begin();
+	FSItemListBuilder::Iterator pi = pslave->begin();
 	int NFS = pslave->size();
 	for (int i=0; i<NFS; ++i, ++pi)
 	{
@@ -97,7 +97,7 @@ FSMesh* FEMortarProjection::Apply(FSSurface* pslave, FSSurface* pmaster)
 
 
 		// loop over all master facets
-		FEItemListBuilder::Iterator pj = pmaster->begin();
+		FSItemListBuilder::Iterator pj = pmaster->begin();
 		int NFM = pmaster->size();
 		for (int j=0; j<NFM; ++j, ++pj)
 		{
@@ -188,7 +188,7 @@ FSMesh* FEMortarProjection::Apply(FSSurface* pslave, FSSurface* pmaster)
 				ptri->RebuildMesh();
 
 				// add the triangle to the mesh
-				FEMeshBuilder meshBuilder(*pnew);
+				FSMeshBuilder meshBuilder(*pnew);
 				meshBuilder.Attach(*ptri);
 			}
 		}

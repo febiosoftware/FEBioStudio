@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QGridLayout>
 #include <QMessageBox>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
@@ -432,7 +432,7 @@ CItemListSelectionBox::CItemListSelectionBox(QWidget* parent) : CSelectionBox(pa
 
 }
 
-void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
+void CItemListSelectionBox::SetItemList(FSItemListBuilder* item)
 {
 	// make sure we have an item list
 	if (item == 0)
@@ -459,7 +459,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType("Domains");
 		GPartList& g = dynamic_cast<GPartList&>(*item);
 		vector<GPart*> parts = g.GetPartList();
-		FEItemListBuilder::Iterator it = item->begin();
+		FSItemListBuilder::Iterator it = item->begin();
 		for (int i = 0; i < parts.size(); ++i, ++it)
 		{
 			GPart* pg = parts[i];
@@ -473,7 +473,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType("Surfaces");
 		GFaceList& g = dynamic_cast<GFaceList&>(*item);
 		vector<GFace*> surfs = g.GetFaceList();
-		FEItemListBuilder::Iterator it = item->begin();
+		FSItemListBuilder::Iterator it = item->begin();
 		for (int i = 0; i < surfs.size(); ++i, ++it)
 		{
 			GFace* pg = surfs[i];
@@ -487,7 +487,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType("Curves");
 		GEdgeList& g = dynamic_cast<GEdgeList&>(*item);
 		vector<GEdge*> edges = g.GetEdgeList();
-		FEItemListBuilder::Iterator it = item->begin();
+		FSItemListBuilder::Iterator it = item->begin();
 		for (int i = 0; i < edges.size(); ++i, ++it)
 		{
 			GEdge* pg = edges[i];
@@ -501,7 +501,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType("Nodes");
 		GNodeList& g = dynamic_cast<GNodeList&>(*item);
 		vector<GNode*> nodes = g.GetNodeList();
-		FEItemListBuilder::Iterator it = item->begin();
+		FSItemListBuilder::Iterator it = item->begin();
 		for (int i = 0; i < nodes.size(); ++i, ++it)
 		{
 			GNode* pg = nodes[i];
@@ -559,7 +559,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 			FSElemSet& eset = dynamic_cast<FSElemSet&>(*item);
 			for (int i = 0; i < eset.size(); ++i)
 			{
-				FEElement_* el = eset.GetElement(i);
+				FSElement_* el = eset.GetElement(i);
 				int nid = el->m_nid;
 				if (nid <= 0) nid = items[i] + 1;
 				addData(QString::number(nid), items[i], 0, false);
@@ -617,7 +617,7 @@ void CMeshSelectionBox::SetSelection(FSMeshSelection* pms)
 
 void CMeshSelectionBox::onNameChanged(const QString& t)
 {
-	FEItemListBuilder* pi = (m_pms ? m_pms->GetItemList() : nullptr);
+	FSItemListBuilder* pi = (m_pms ? m_pms->GetItemList() : nullptr);
 	if (pi) pi->SetName(t.toStdString());
 }
 
@@ -635,7 +635,7 @@ void CMeshSelectionBox::onAddButtonClicked()
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
 	// create the item list from the selection
-	FEItemListBuilder* pg = ps->CreateItemList();
+	FSItemListBuilder* pg = ps->CreateItemList();
 	if (pg == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
@@ -643,7 +643,7 @@ void CMeshSelectionBox::onAddButtonClicked()
 	}
 
 	// get the current item list
-	FEItemListBuilder* pl = m_pms->GetItemList();
+	FSItemListBuilder* pl = m_pms->GetItemList();
 
 	// see whether the current list exists or not
 	if (pl == nullptr)
@@ -699,11 +699,11 @@ void CMeshSelectionBox::onSubButtonClicked()
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
 	// get the current item list
-	FEItemListBuilder* pl = m_pms->GetItemList();
+	FSItemListBuilder* pl = m_pms->GetItemList();
 	if (pl == nullptr) return;
 
 	// create the item list builder
-	FEItemListBuilder* pg = ps->CreateItemList();
+	FSItemListBuilder* pg = ps->CreateItemList();
 
 	// subtract from the current list
 	if (pg->Type() == pl->Type())
@@ -720,7 +720,7 @@ void CMeshSelectionBox::onSubButtonClicked()
 void CMeshSelectionBox::onDelButtonClicked()
 {
 	if (m_pms == nullptr) return;
-	FEItemListBuilder* pl = m_pms->GetItemList();
+	FSItemListBuilder* pl = m_pms->GetItemList();
 	if (pl == nullptr) return;
 
 	vector<int> items;
@@ -756,7 +756,7 @@ void CMeshSelectionBox::onClearButtonClicked()
 {
 	if (m_pms == nullptr) return;
 
-	FEItemListBuilder* pl = m_pms->GetItemList();
+	FSItemListBuilder* pl = m_pms->GetItemList();
 	if (pl)
 	{
 		m_pms->SetItemList(nullptr);
@@ -797,7 +797,7 @@ void CMeshSelectionBox::onPickButtonClicked()
 	}
 
 	// get the current selection
-	FEItemListBuilder* pl = m_pms->GetItemList(0);
+	FSItemListBuilder* pl = m_pms->GetItemList(0);
 
 	CDlgPickNamedSelection dlg(this);
 	dlg.setNameList(names);

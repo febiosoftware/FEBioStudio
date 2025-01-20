@@ -26,12 +26,12 @@ SOFTWARE.*/
 
 #include "PyFSMesh.h"
 
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEItem.h>
-#include <MeshLib/FENode.h>
-#include <MeshLib/FEEdge.h>
-#include <MeshLib/FEFace.h>
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSMeshItem.h>
+#include <MeshLib/FSNode.h>
+#include <MeshLib/FSEdge.h>
+#include <MeshLib/FSFace.h>
+#include <MeshLib/FSElement.h>
 
 
 #ifdef HAS_PYTHON
@@ -64,43 +64,43 @@ void init_FSMesh(py::module_& m)
 
     ///////////////// FSMesh /////////////////
 
-    ///////////////// MeshItem /////////////////
-	py::class_<MeshItem, std::unique_ptr<MeshItem, py::nodelete>>(mesh, "MeshItem")
-        .def("is_hidden", &MeshItem::IsHidden)
-        .def("is_selected", &MeshItem::IsSelected)
-        .def("is_disabled", &MeshItem::IsDisabled)
-        .def("is_active", &MeshItem::IsActive)
-        .def("is_invisible", &MeshItem::IsInvisible)
-        .def("is_visible", &MeshItem::IsVisible)
+    ///////////////// FSMeshItem /////////////////
+	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "FSMeshItem")
+        .def("is_hidden", &FSMeshItem::IsHidden)
+        .def("is_selected", &FSMeshItem::IsSelected)
+        .def("is_disabled", &FSMeshItem::IsDisabled)
+        .def("is_active", &FSMeshItem::IsActive)
+        .def("is_invisible", &FSMeshItem::IsInvisible)
+        .def("is_visible", &FSMeshItem::IsVisible)
 
-        .def("select", &MeshItem::Select)
-        .def("unselect", &MeshItem::Unselect)
+        .def("select", &FSMeshItem::Select)
+        .def("unselect", &FSMeshItem::Unselect)
 
-        .def("hide", &MeshItem::Hide)
-        .def("unhide", &MeshItem::Unhide)
+        .def("hide", &FSMeshItem::Hide)
+        .def("unhide", &FSMeshItem::Unhide)
 
-        .def("enable", &MeshItem::Enable)
-        .def("disable", &MeshItem::Disable)
+        .def("enable", &FSMeshItem::Enable)
+        .def("disable", &FSMeshItem::Disable)
 
-        .def("activate", &MeshItem::Activate)
-        .def("deactivate", &MeshItem::Deactivate)
+        .def("activate", &FSMeshItem::Activate)
+        .def("deactivate", &FSMeshItem::Deactivate)
 
-        .def("hide", &MeshItem::Hide)
-        .def("unhide", &MeshItem::Unhide)
+        .def("hide", &FSMeshItem::Hide)
+        .def("unhide", &FSMeshItem::Unhide)
 
-        .def("show", &MeshItem::Show)
+        .def("show", &FSMeshItem::Show)
 
-        .def("id", &MeshItem::GetID)
-        .def("set_id", &MeshItem::SetID)
+        .def("id", &FSMeshItem::GetID)
+        .def("set_id", &FSMeshItem::SetID)
 
-        .def_readwrite("ntag", &MeshItem::m_ntag)
-        .def_readwrite("gid", &MeshItem::m_gid)
-        .def_readwrite("nid", &MeshItem::m_nid)
+        .def_readwrite("ntag", &FSMeshItem::m_ntag)
+        .def_readwrite("gid", &FSMeshItem::m_gid)
+        .def_readwrite("nid", &FSMeshItem::m_nid)
         ;
-    ///////////////// MeshItem /////////////////
+    ///////////////// FSMeshItem /////////////////
 
     ///////////////// FSElement /////////////////
-	py::class_<FSElement, MeshItem, std::unique_ptr<FSElement, py::nodelete>>(mesh, "Element")
+	py::class_<FSElement, FSMeshItem, std::unique_ptr<FSElement, py::nodelete>>(mesh, "Element")
         .def("nodes", &FSElement::Nodes)
         .def("node", [](FSElement& self, int i){ return self.m_node[i]; })
         ;
@@ -109,7 +109,7 @@ void init_FSMesh(py::module_& m)
 
 
     ///////////////// FSNode /////////////////
-	py::class_<FSNode, MeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")
+	py::class_<FSNode, FSMeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")
         .def_readwrite("pos", &FSNode::r)
         ;
     ///////////////// FSNode /////////////////

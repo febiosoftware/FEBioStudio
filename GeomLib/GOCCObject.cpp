@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "GOCCObject.h"
 #include <MeshTools/NetGenOCCMesher.h>
 #include <GLLib/GLMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 #ifdef HAS_OCC
 #include <gp_Pnt.hxx>

@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/GDiscreteObject.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 #include <GeomLib/GModel.h>
 #include <sstream>
 #include <FEBioLink/FEBioModule.h>
@@ -198,7 +198,7 @@ void FEBioFormat2::ParseGeometryElements(FEBioInputModel::Part& part, XMLTag& ta
 
 	// get the required type attribute
 	const char* sztype = tag.AttributeValue("type");
-	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
+	FSElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8") == 0) ntype = FE_HEX8;
 	else if (strcmp(sztype, "hex20") == 0) ntype = FE_HEX20;
 	else if (strcmp(sztype, "hex27") == 0) ntype = FE_HEX27;
@@ -306,7 +306,7 @@ void FEBioFormat2::ParseGeometryElementData(FEBioInputModel::Part& part, XMLTag&
 {
 	FSMesh* pm = part.GetFEMesh();
 
-	FEElementData* pdata = 0;
+	FSElementData* pdata = 0;
 	// read additional element data
 	int i = 0;
 	++tag;
@@ -403,7 +403,7 @@ void FEBioFormat2::ParseGeometryElementData(FEBioInputModel::Part& part, XMLTag&
 					if ((pdata == 0) || (pdata->GetName() != dataName))
 					{
 						// see if we can find this data field
-						pdata = dynamic_cast<FEElementData*>(pm->FindMeshDataField(dataName));
+						pdata = dynamic_cast<FSElementData*>(pm->FindMeshDataField(dataName));
 
 						// if we couldn't find it, let's create a new one
 						if (pdata == 0)

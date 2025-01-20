@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 
 class FEMeshValuator
 {

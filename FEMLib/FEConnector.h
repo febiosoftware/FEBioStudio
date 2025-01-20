@@ -1,6 +1,6 @@
 #pragma once
 #include "FEStepComponent.h"
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include "GMaterial.h"
 #include <list>
 
@@ -24,8 +24,8 @@ public:
     virtual int GetRigidBody2() const = 0;
 
 protected:
-	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
-	FEItemListBuilder* LoadList(IArchive& ar);
+	void SaveList(FSItemListBuilder* pitem, OArchive& ar);
+	FSItemListBuilder* LoadList(IArchive& ar);
 
 protected:
 	int		m_ntype;

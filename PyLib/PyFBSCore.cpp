@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include "PyExceptions.h"
 
-#include <MeshLib/FEElementLibrary.h>
+#include <MeshLib/FSElementLibrary.h>
 #include <FEMLib/FSProject.h>
 #include <MeshIO/VTKExport.h>
 #include <GeomLib/GModel.h>

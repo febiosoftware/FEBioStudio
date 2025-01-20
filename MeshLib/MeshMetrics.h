@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesh.h"
+#include "FSMesh.h"
 
 namespace FEMeshMetrics {
 
@@ -75,7 +75,7 @@ double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& e, bool brel 
 vec3d Gradient(const FSMesh& mesh, const FSElement& el, int node, double* v);
 
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
-vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb);
+vec3d ShapeGradient(const FSMesh& mesh, const FSElement_& el, int na, int nb);
 
 // get the min edge length of an element
 double MinEdgeLength(const FSMesh& mesh, const FSElement& e);

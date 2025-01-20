@@ -142,21 +142,21 @@ protected:
 	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteTCNLOrthoMaterial(FSMaterial* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
-	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);
+	void WriteSurfaceSection(FSFaceList& s);
+	void WriteSurface(XMLElement& el, FSItemListBuilder* pl);
 
 protected:
 	FSModel*		m_pfem;
 
 protected:
-	bool HasSurface(FEItemListBuilder* pl);
-	bool HasNodeSet(FEItemListBuilder* pl);
+	bool HasSurface(FSItemListBuilder* pl);
+	bool HasNodeSet(FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
 protected:
-	std::vector<FEItemListBuilder*>	m_pSurf;	//!< list of named surfaces
-	std::vector<FEItemListBuilder*>	m_pNSet;	//!< list of named node sets
+	std::vector<FSItemListBuilder*>	m_pSurf;	//!< list of named surfaces
+	std::vector<FSItemListBuilder*>	m_pNSet;	//!< list of named node sets
 
 	int m_nodes;	// number of nodes
 	int	m_nsteps;	// number of steps

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/3DGradientMap.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <sstream>
 #include <algorithm>
 #include <assert.h>

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMesher.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GeomLib/GItem.h>
 #include <vector>
 

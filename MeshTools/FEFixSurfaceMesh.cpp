@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include "FEFillHole.h"
 #include "FEFillQuadHole.h"
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSNodeFaceList.h>
 
 //-----------------------------------------------------------------------------
 FEFixSurfaceMesh::FEFixSurfaceMesh() : FESurfaceModifier("Fix mesh")

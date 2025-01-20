@@ -39,7 +39,7 @@
 // #include <MeshTools/GModel.h>
 // #include <FEBioStudio/MainWindow.h>
 // #include <FEBioStudio/ModelDocument.h>
-// #include <MeshTools/FEElementData.h>
+// #include <MeshTools/FSElementData.h>
 // #include <iostream>
 
 // using std::complex;
@@ -552,19 +552,19 @@
 //     }
 
 //     FSMesh* mesh = obj->GetFEMesh();
-//     FEPartData* pdata = new FEPartData(mesh);
+//     FSPartData* pdata = new FSPartData(mesh);
 //     pdata->SetName(name);
-//     pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+//     pdata->Create(partList, FSMeshData::DATA_SCALAR, FSMeshData::DATA_MULT);
 //     mesh->AddMeshDataField(pdata);
     
 //     double PtArea = 4*M_PI/(NPTS);
 
-//     FEElemList* elemList = pdata->BuildElemList();
+//     FSElemList* elemList = pdata->BuildElemList();
 //     int NE = elemList->Size();
 //     auto it = elemList->First();
 //     for (int i = 0; i < NE; ++i, ++it)
 //     {
-//         FEElement_& el = *it->m_pi;
+//         FSElement_& el = *it->m_pi;
 //         int ne = el.Nodes();
 //         for (int j = 0; j < ne; ++j)
 //         {

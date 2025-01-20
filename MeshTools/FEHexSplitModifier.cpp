@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESplitModifier.h"
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 using namespace std;
 
 FEHexSplitModifier::FEHexSplitModifier() : FEModifier("Split")
@@ -52,7 +52,7 @@ FSMesh* FEHexSplitModifier::RefineMesh(FSMesh* pm)
 	if (pm->IsType(FE_HEX8) == false) return nullptr;
 
 	// build the edge table of the mesh (each edge will add a node)
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 	FSElementEdgeList EET(*pm, ET);
 
 	// build the face table (each face will add a node)
@@ -266,7 +266,7 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 			splitElems++;
 			for (int j = 0; j < 6; ++j)
 			{
-				FEElement_* elj = pm->ElementPtr(el.m_nbr[j]);
+				FSElement_* elj = pm->ElementPtr(el.m_nbr[j]);
 				if (elj && (!elj->IsSelected()))
 				{
 					SetError("Invalid selection.");
@@ -286,7 +286,7 @@ FSMesh* FEHexSplitModifier::RefineSelection(FSMesh* pm)
 
 	// build the edge table of the mesh
 	// and count how many edges will be split
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 	vector<int> edgeTag(ET.size(), 0);
 	FSElementEdgeList EET(*pm, ET);
 	for (int i = 0; i < NE0; ++i)

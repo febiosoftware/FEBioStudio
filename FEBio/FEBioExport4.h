@@ -50,7 +50,7 @@ private:
 	public:
 		std::string			m_name;
 		std::string			m_extName;
-		FEItemListBuilder* m_list;
+		FSItemListBuilder* m_list;
 		FSObject* m_parent;
 		bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
 
@@ -61,7 +61,7 @@ private:
 			m_duplicate = false;
 		}
 
-		NamedItemList(const std::string& name, FEItemListBuilder* itemList, bool duplicate = false)
+		NamedItemList(const std::string& name, FSItemListBuilder* itemList, bool duplicate = false)
 		{
 			m_name = name;
 			m_parent = nullptr;
@@ -69,7 +69,7 @@ private:
 			m_duplicate = duplicate;
 		}
 
-		NamedItemList(const std::string& name, FSObject* parent, FEItemListBuilder* itemList, bool duplicate = false)
+		NamedItemList(const std::string& name, FSObject* parent, FSItemListBuilder* itemList, bool duplicate = false)
 		{
 			m_name = name;
 			m_parent = parent;
@@ -107,10 +107,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FEFaceList* m_faceList;
+		FSFaceList* m_faceList;
 
 	public:
-		Surface(const string& name, FEFaceList* faceList) : m_name(name), m_faceList(faceList) {}
+		Surface(const string& name, FSFaceList* faceList) : m_name(name), m_faceList(faceList) {}
 		~Surface() { delete m_faceList; }
 	};
 
@@ -118,10 +118,10 @@ private:
 	{
 	public:
 		string		m_name;
-		FEElemList* m_elemList;
+		FSElemList* m_elemList;
 
 	public:
-		ElementList(const string& name, FEElemList* elemList) : m_name(name), m_elemList(elemList) {}
+		ElementList(const string& name, FSElemList* elemList) : m_name(name), m_elemList(elemList) {}
 		~ElementList() { delete m_elemList; }
 	};
 
@@ -289,10 +289,10 @@ protected:
 
 	void WriteModelComponent(FSModelComponent* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
+	void WriteSurfaceSection(FSFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
 	void WriteEdgeSection(NamedItemList& l);
-	void WriteElementList(FEElemList& el);
+	void WriteElementList(FSElemList& el);
 
 protected:
 	FSModel* m_pfem;
@@ -305,16 +305,16 @@ protected:
 	void setProgressTask(const char* sztask);
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists = false);
-	string GetNodeSetName(FEItemListBuilder* pl);
-	const char* GetEdgeSetName(FEItemListBuilder* pl);
-	string GetElementSetName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FSItemListBuilder* pl, bool allowPartLists = false);
+	string GetNodeSetName(FSItemListBuilder* pl);
+	const char* GetEdgeSetName(FSItemListBuilder* pl);
+	string GetElementSetName(FSItemListBuilder* pl);
 
-	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddEdgeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddSurface(const std::string& name, FEItemListBuilder* pl);
-	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
-	void AddPartList(const std::string& name, FEItemListBuilder* pl);
+	void AddNodeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddEdgeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddSurface(const std::string& name, FSItemListBuilder* pl);
+	void AddElemSet(const std::string& name, FSItemListBuilder* pl);
+	void AddPartList(const std::string& name, FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 

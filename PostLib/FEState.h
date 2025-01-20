@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData.h"
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSElement.h>
 #include <vector>
 #include "ValArray.h"
 #include <FSCore/math3d.h>

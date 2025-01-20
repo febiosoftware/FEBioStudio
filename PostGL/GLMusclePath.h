@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 
 class FSMesh;
 

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include <vector>
 
 class GObject;
@@ -43,7 +43,7 @@ class GFaceList;
 class GEdgeList;
 class GNodeList;
 class GObjectSelection;
-class FEItemListBuilder;
+class FSItemListBuilder;
 class GDiscreteObject;
 class GDiscreteElementSet;
 class ObjectMeshList;
@@ -182,10 +182,10 @@ public:
 
 	// count named selections
 	int CountNamedSelections() const;
-	FEItemListBuilder* FindNamedSelection(int nid);
-	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
-	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
-	void AddNamedSelection(FEItemListBuilder* itemList);
+	FSItemListBuilder* FindNamedSelection(int nid);
+	FSItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	std::vector<FSItemListBuilder*> AllNamedSelections(int ntype = 0);
+	void AddNamedSelection(FSItemListBuilder* itemList);
 
 	// --- GPartList ---
 	void AddPartList(GPartList* pg);

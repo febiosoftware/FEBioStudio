@@ -210,7 +210,7 @@ FSMesh* FEShellSphere::BuildMesh()
 	// assign shell thickness
 	for (i=0; i<elems; ++i)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		pe->m_h[0] = t;
 		pe->m_h[1] = t;
@@ -237,7 +237,7 @@ void FEShellSphere::BuildFaces(FSMesh* pm)
 	FSFace* pf = pm->FacePtr();
 	for (i=0; i<nfaces; ++i, ++pf)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		FSFace& f = *pf;
 		f.SetType(FE_FACE_QUAD4);

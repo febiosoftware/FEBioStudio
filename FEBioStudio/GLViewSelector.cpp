@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "MainWindow.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FENodeEdgeList.h>
+#include <MeshLib/FSNodeEdgeList.h>
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
 #include "CommandWindow.h"
@@ -402,7 +402,7 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 				for (int j = 0; j < el.Faces(); ++j)
 				{
 					int nbr = el.m_nbr[j];
-					FEElement_* pej = (nbr >= 0 ? pm->ElementPtr(nbr) : nullptr);
+					FSElement_* pej = (nbr >= 0 ? pm->ElementPtr(nbr) : nullptr);
 					if ((pej == nullptr) || (pej->IsVisible() == false)) {
 						process = true; break;
 					}

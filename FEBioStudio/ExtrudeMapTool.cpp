@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include <GeomLib/GMeshObject.h>
 #include <QFile>
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSNodeData.h>
 #include "DlgImportData.h"
 
 CExtrudeMapTool::CExtrudeMapTool(CMainWindow* wnd) : CBasicTool(wnd, "Extrude map", HAS_APPLY_BUTTON)
@@ -119,7 +119,7 @@ bool CExtrudeMapTool::OnApply()
 	}
 
 	// create a data map
-	FENodeData map(po);
+	FSNodeData map(po);
 	if (fields == 1)
 	{
 		map.Create(&nodeSet, 0, DATA_SCALAR);

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEExtrudeFaces.h"
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
 FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
@@ -65,7 +65,7 @@ void FEExtrudeFaces::SetSymmetricBias(bool b)
 	SetBoolValue(4, b);
 }
 
-void FEExtrudeFaces::SetNodalMap(FENodeData* map)
+void FEExtrudeFaces::SetNodalMap(FSNodeData* map)
 {
 	m_map = map;
 }
@@ -85,7 +85,7 @@ FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 	}
 
 	vector<int> faceList;
-	for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
+	for (FSItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
 	{
 		faceList.push_back(*it);
 	}
@@ -590,7 +590,7 @@ bool FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	}
 
 	// delete extraneous nodes (if any)
-	FEMeshBuilder meshBuilder(*pm);
+	FSMeshBuilder meshBuilder(*pm);
 	meshBuilder.RemoveIsolatedNodes();
 
 	return true;

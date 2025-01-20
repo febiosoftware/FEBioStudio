@@ -45,7 +45,7 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include <ImageLib/ImageModel.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 #include <MeshLib/MeshTools.h>
 #include <ImageLib/3DImage.h>
 #include <FEMLib/FSModel.h>
@@ -291,7 +291,7 @@ void CImageMapTool::OnCreate()
 	po->AddFEPartSet(partSet);
 
     FSMesh* mesh = po->GetFEMesh();
-    FEPartData* pdata = new FEPartData(mesh);
+	FSPartData* pdata = new FSPartData(mesh);
     pdata->SetName(name.toStdString());
     
     if(ui->methodBox->currentIndex() == SAMPLE_NODES)
@@ -308,11 +308,11 @@ void CImageMapTool::OnCreate()
     bool useFilter = ui->useFilter->isChecked();
     std::vector<double> mathArguments = { 0 };
 
-    FEElemList* elemList = pdata->BuildElemList();
+    FSElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
     auto it = elemList->First();
 
-    std::vector<FEElement_*> elems;
+    std::vector<FSElement_*> elems;
     for(int i = 0; i < NE; ++i, ++it)
     {
         elems.push_back(it->m_pi);
@@ -562,7 +562,7 @@ void CImageMapTool::OnCreate()
 
         for (int i = 0; i < NE; ++i)
         {
-            FEElement_* el = elems[i];
+            FSElement_* el = elems[i];
             int ne = el->Nodes();
             for (int j = 0; j < ne; ++j)
             {
@@ -573,7 +573,7 @@ void CImageMapTool::OnCreate()
         #pragma omp parallel for
         for (int i = 0; i < NE; ++i)
         {
-            FEElement_* el = elems[i];
+            FSElement_* el = elems[i];
             int ne = el->Nodes();
             for (int j = 0; j < ne; ++j)
             {
@@ -603,7 +603,7 @@ void CImageMapTool::OnCreate()
         #pragma omp parallel for
         for (int i = 0; i < NE; ++i)
         {
-            FEElement_* el = elems[i];
+            FSElement_* el = elems[i];
             int ne = el->Nodes();
             
             // Find element centroid
@@ -668,7 +668,7 @@ void CImageMapTool::OnCreate()
         #pragma omp parallel for
         for (int elID = 0; elID < NE; ++elID)
         {
-            FEElement_* el = elems[elID];
+            FSElement_* el = elems[elID];
 
             // find bounding box of element
             double minX, maxX, minY, maxY, minZ, maxZ;

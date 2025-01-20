@@ -113,7 +113,7 @@ void CGLMonitorScene::RenderTags(GLContext& rc)
 	{
 		if ((mode == ITEM_ELEM) && pm)
 		{
-			ForAllSelectedElements(*pm, [&](FEElement_& el) {
+			ForAllSelectedElements(*pm, [&](FSElement_& el) {
 				GLTAG tag;
 				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 				tag.c = extcol;
@@ -268,7 +268,7 @@ void CGLMonitorScene::BuildMesh()
 			el.m_gid = i;
 			el.SetID(E.GetID());
 
-			FEElementType etype;
+			FSElementType etype;
 			switch (E.Shape())
 			{
 			case ET_HEX8: etype = FE_HEX8; break;
@@ -337,7 +337,7 @@ void CGLMonitorScene::BuildMesh()
 	for (int i = 0; i < NN; ++i) pmesh->Node(i).Disable();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& el = pmesh->ElementRef(i);
+		FSElement_& el = pmesh->ElementRef(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();

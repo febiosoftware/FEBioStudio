@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
-#include <MeshLib/FEElementLibrary.h>
+#include <MeshLib/FSElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
 #include <QPainter>

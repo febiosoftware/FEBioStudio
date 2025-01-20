@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESmoothSurfaceMesh.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/MeshTools.h>
 
 FESmoothSurfaceMesh::FESmoothSurfaceMesh() : FESurfaceModifier("Smooth")

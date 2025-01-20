@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 class QTreeWidgetItem;
 class FSObject;
-class FEItemListBuilder;
+class FSItemListBuilder;
 class FSCoreBase;
 class Param;
 struct CModelTreeItem;
@@ -65,7 +65,7 @@ public:
 	void SelectObjects(const std::vector<FSObject*>& objList);
 
 	// select an item list
-	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
+	void SelectItemList(FSItemListBuilder*pitem, bool badd = false);
 
 	// assign the current selection to the currently selected item in the tree
 	void AssignCurrentSelection(int ntarget = 0);

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "PointDistanceTool.h"
 #include <GLLib/GDecoration.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 QVariant CPointDistanceTool::GetPropertyValue(int i)
 {

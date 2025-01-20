@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEQuartDogBone.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)

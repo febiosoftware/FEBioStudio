@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMeshOverlap.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <PostLib/tools.h>
 #include <GeomLib/GObject.h>
 using namespace MeshTools;

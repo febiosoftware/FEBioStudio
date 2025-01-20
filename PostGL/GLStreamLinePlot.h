@@ -27,8 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include "GLWLib/GLLegendBar.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
 #include <GLLib/GLMesh.h>
 
 namespace Post {
@@ -138,7 +138,7 @@ private:
 	vector<StreamLine>	m_streamLines;
 	vector<float>		m_prob;
 
-	FEFindElement*	m_find;
+	FSFindElement*	m_find;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range

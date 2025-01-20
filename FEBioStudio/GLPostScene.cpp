@@ -696,7 +696,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			FSElement_* pe = mesh.ElementPtr(edge.elem);
 			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
 				int mat = edge.mat;
@@ -723,7 +723,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			FSElement_* pe = mesh.ElementPtr(edge.elem);
 			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
 				int mat = edge.mat;
@@ -745,7 +745,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			FSElement_* pe = mesh.ElementPtr(edge.elem);
 			if (pe && pe->IsSelected() && pe->IsVisible())
 			{
 				RenderDiscreteElement(re, i);
@@ -775,7 +775,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		FSElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe)
 		{
 			vec3d r0 = mesh.Node(edge.n0).r;
@@ -803,7 +803,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			FSElement_* pe = mesh.ElementPtr(edge.elem);
 			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
 				int mat = edge.mat;
@@ -827,7 +827,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		FSElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && !pe->IsSelected() && pe->IsVisible())
 		{
 			int mat = edge.mat;
@@ -851,7 +851,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		FSElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && !pe->IsSelected() && pe->IsVisible())
 		{
 			int mat = edge.mat;
@@ -885,7 +885,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < gm.DiscreteEdges(); ++i)
 	{
 		GLEdge::EDGE& edge = gm.DiscreteEdge(i);
-		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		FSElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
 			RenderDiscreteElementAsSolid(re, i, W);
@@ -901,7 +901,7 @@ void GLPostModelItem::RenderDiscreteElement(GLRenderEngine& re, int i)
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
 
 	FSMesh& mesh = *gm.GetActiveMesh();
-	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	FSElement_* pe = mesh.ElementPtr(edge.elem);
 	if (pe == nullptr) return;
 
 	if (pe->Type() == FE_BEAM2)
@@ -948,7 +948,7 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	GLEdge::EDGE& edge = gm.DiscreteEdge(i);
 
 	FSMesh& mesh = *gm.GetActiveMesh();
-	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	FSElement_* pe = mesh.ElementPtr(edge.elem);
 	if (pe == nullptr) return;
 
 	if (pe->Type() == FE_BEAM2)
@@ -1291,7 +1291,7 @@ void CGLPostScene::CreateTags(GLContext& rc)
 				int NE = selection->Count();
 				for (int i = 0; i < NE; i++)
 				{
-					FEElement_& el = *selection->Element(i); assert(el.IsSelected());
+					FSElement_& el = *selection->Element(i); assert(el.IsSelected());
 					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 					tag.c = extcol;
 					int nid = el.GetID();
@@ -1510,7 +1510,7 @@ void CGLPostScene::ToggleTrackSelection()
 			FEElementSelection* selElems = dynamic_cast<FEElementSelection*>(m_doc->GetCurrentSelection());
 			if (selElems && (selElems->Size() > 0))
 			{
-				FEElement_& el = *selElems->Element(0);
+				FSElement_& el = *selElems->Element(0);
 				int* n = el.m_node;
 				m[0] = n[0]; m[1] = n[1]; m[2] = n[2];
 				m_btrack = true;

@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <QGroupBox>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include <FEBioLink/FEBioClass.h>
@@ -148,7 +148,7 @@ void CCreateSpringPane::showEvent(QShowEvent* ev)
 
 	if (ui->m_curves == 0) 
 	{
-		FECurveMesh* mesh = new FECurveMesh;
+		FSCurveMesh* mesh = new FSCurveMesh;
 		ui->m_curves = new GCurveMeshObject(mesh);
 	}
 
@@ -304,7 +304,7 @@ bool CCreateSpringPane::updateTempObject()
 	bool ret = gen.generate(node1, node2, springs);
 	if (ret)
 	{
-		FECurveMesh* cm = ui->m_curves->GetCurveMesh();
+		FSCurveMesh* cm = ui->m_curves->GetCurveMesh();
 		int n1 = (int)node1.size();
 		int n2 = (int)node2.size();
 		for (int i=0; i<node1.size(); ++i) cm->AddNode(node1[i], false);

@@ -59,7 +59,7 @@ bool FENikeExport::Save(FEPostModel &fem, const char *szfile)
 	// export elements
 	for (i=0; i<pm->Elements(); ++i)
 	{
-		FEElement_& e = pm->ElementRef(i);
+		FSElement_& e = pm->ElementRef(i);
 		int* n = e.m_node;
 		fprintf(fp,"%8d%5d%8d%8d%8d%8d%8d%8d%8d%8d\n", i+1, 1,n[0]+1,n[1]+1,n[2]+1,n[3]+1,n[4]+1,n[5]+1,n[6]+1,n[7]+1);
 	}

@@ -148,7 +148,7 @@ bool IDEASimport::BuildMesh(FSModel& fem)
 	int ne;
 	for (i=0; i<elems; ++i, ++ie)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		switch (ie->ntype)
 		{

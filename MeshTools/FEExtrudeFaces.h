@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEModifier.h"
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSNodeData.h>
 
 class FEExtrudeFaces : public FEModifier
 {
@@ -42,11 +42,11 @@ public:
 	void SetMeshBiasFactor(double g);
 	void SetSymmetricBias(bool b);
 
-	void SetNodalMap(FENodeData* map);
+	void SetNodalMap(FSNodeData* map);
 
 protected:
 	bool Extrude(FSMesh* pm, std::vector<int>& faceList);
 
 private:
-	FENodeData* m_map;
+	FSNodeData* m_map;
 };

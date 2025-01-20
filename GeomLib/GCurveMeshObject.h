@@ -27,24 +27,24 @@ SOFTWARE.*/
 #pragma once
 #include "GObject.h"
 
-class FECurveMesh;
+class FSCurveMesh;
 
-// An object build from a FECurveMesh
+// An object build from a FSCurveMesh
 class GCurveMeshObject : public GObject
 {
 public:
 	// constructor
-	GCurveMeshObject(FECurveMesh* pm = 0);
+	GCurveMeshObject(FSCurveMesh* pm = 0);
 
 	// updates the GObject data structures based on the curve mesh
 	void Update();
 
 	// return the curve mesh
-	FECurveMesh* GetCurveMesh();
+	FSCurveMesh* GetCurveMesh();
 
 	// get the mesh of an edge
 	// (overridden from base class)
-	FECurveMesh* GetFECurveMesh(int edgeId) override;
+	FSCurveMesh* GetFECurveMesh(int edgeId) override;
 
 	// Serialization
 	void Save(OArchive& ar) override;
@@ -55,5 +55,5 @@ public:
 	void ClearMesh();
 
 private:
-	FECurveMesh*	m_curve;
+	FSCurveMesh*	m_curve;
 };

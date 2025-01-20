@@ -300,13 +300,13 @@ bool LSDYNAexport::write_SET_SHELL_LIST()
 				fprintf(m_fp, "%10d%15.10lg%15.10lg%15.10lg%15.10lg\n", n++, 0., 0., 0., 0.);
 
 				FSElemSet* pg = po->GetFEElemSet(j);
-				unique_ptr<FEElemList> pl(pg->BuildElemList());
+				unique_ptr<FSElemList> pl(pg->BuildElemList());
 				int N = pl->Size();
-				FEElemList::Iterator pi = pl->First();
+				FSElemList::Iterator pi = pl->First();
 				int ne[8], nc = 0;
 				for (int k=0; k<N; ++k, ++pi)
 				{
-					FEElement_* pe = pi->m_pi;
+					FSElement_* pe = pi->m_pi;
 					switch (pe->Type())
 					{
 					case FE_TRI3 : ne[nc++] = pe->m_ntag; break;

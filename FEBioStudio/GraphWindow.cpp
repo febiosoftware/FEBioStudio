@@ -2610,7 +2610,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 0:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2628,7 +2628,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 1:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2646,7 +2646,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 2:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2666,7 +2666,7 @@ void CModelGraphWindow::addSelectedElems()
 		vector<int> sel;
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected()) sel.push_back(i);
 		}
 
@@ -2686,7 +2686,7 @@ void CModelGraphWindow::addSelectedElems()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				FEElement_& e = mesh.ElementRef(sel[i]);
+				FSElement_& e = mesh.ElementRef(sel[i]);
 				if (e.IsSelected())
 				{
 					// evaluate x-field

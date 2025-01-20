@@ -62,7 +62,7 @@ int FSRigidConnector::Type()
 }
 
 //-----------------------------------------------------------------------------
-void FSRigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FSRigidConnector::SaveList(FSItemListBuilder* pitem, OArchive& ar)
 {
     if (pitem)
     {
@@ -73,9 +73,9 @@ void FSRigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
+FSItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
 {
-    FEItemListBuilder* pitem = 0;
+	FSItemListBuilder* pitem = 0;
 
     FSModel* fem = GetFSModel();
 	GModel* gm = &fem->GetModel();

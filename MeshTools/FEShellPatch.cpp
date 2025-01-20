@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FEShellPatch.h"
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/geom.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "FEMultiQuadMesh.h"
 
 //////////////////////////////////////////////////////////////////////

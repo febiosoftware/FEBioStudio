@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMultiQuadMesh.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiPatch.h>
 

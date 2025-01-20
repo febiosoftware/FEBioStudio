@@ -569,13 +569,13 @@ public:
 	FSElemSet* BuildFEElemSet(const char* szname);
 	FSElemSet* BuildFEElemSet(Domain* dom);
 	GPart* FindGPart(const char* szname);
-	FEItemListBuilder* BuildItemList(const char* szname);
+	FSItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	ElementSet* FindElementSet(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
 
-	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	FSItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
 	FSNodeSet* FindNamedNodeSet(const std::string& name);
 	FSSurface* FindNamedSurface(const std::string& name);
 	FSElemSet* FindNamedElementSet(const std::string& name);

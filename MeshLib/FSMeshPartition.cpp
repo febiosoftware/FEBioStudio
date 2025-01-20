@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FSMeshPartition.h"
-#include "FEMesh.h"
+#include "FSMesh.h"
 using namespace std;
 
 FSMeshPartition::FSMeshPartition(FSMesh* pm)
@@ -50,7 +50,7 @@ FSFace& FSMeshPartition::Face(int n)
 	return m_pm->Face(m_Face[n]);
 }
 
-FEElement_& FSMeshPartition::Element(int n)
+FSElement_& FSMeshPartition::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }

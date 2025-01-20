@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "FEModifier.h"
 //using namespace std;
 
@@ -91,7 +91,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 			// make sure this is not connected to a hex
 			for (int j = 0; j < el.Faces(); ++j)
 			{
-				FEElement_* pne = pm->ElementPtr(el.m_nbr[j]);
+				FSElement_* pne = pm->ElementPtr(el.m_nbr[j]);
 				if ((pne != nullptr) && (pne->Type() == FE_HEX8)) return nullptr;
 			}
 		}

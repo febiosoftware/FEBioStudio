@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <MeshLib/Intersect.h>
-#include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FSNodeFaceList.h>
 #include <set>
 
 class FSFace;

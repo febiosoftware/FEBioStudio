@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include "MeshButtonBox.h"
 #include <MeshTools/FEModifier.h>
 #include <MeshTools/FECurveIntersect.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include "MainWindow.h"
 #include "Document.h"
 #include "InputWidgets.h"

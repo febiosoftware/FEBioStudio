@@ -134,7 +134,7 @@ public:
 class CDlgEditMeshDataUI
 {
 public:
-	FEMeshData* m_data;
+	FSMeshData* m_data;
 	QTableWidget* m_table;
 
 public:
@@ -209,7 +209,7 @@ public:
 	}
 };
 
-CDlgEditMeshData::CDlgEditMeshData(FEMeshData* pm, QWidget* pw) : QDialog(pw), ui(new CDlgEditMeshDataUI)
+CDlgEditMeshData::CDlgEditMeshData(FSMeshData* pm, QWidget* pw) : QDialog(pw), ui(new CDlgEditMeshDataUI)
 {
 	ui->m_data = pm;
 	ui->setup(this);

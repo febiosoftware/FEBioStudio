@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "GCurveObject.h"
 #include <MeshTools/FSCurveObjectMesher.h>
 #include <MeshTools/FESelection.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <map>
 
 GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)

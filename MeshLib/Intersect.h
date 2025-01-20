@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
-#include <MeshLib/FEMeshBase.h>
-#include <MeshLib/FEMesh.h>
+#include "FSMeshBase.h"
+#include "FSMesh.h"
 #include <GLLib/GLMesh.h>
 
 // tools for finding intersections

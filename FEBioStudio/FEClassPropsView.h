@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QStyledItemDelegate>
 #include <QComboBox>
 #include <QLineEdit>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 class FSCoreBase;
 class FSModel;
@@ -76,7 +76,7 @@ private:
 	GModel&		m_mdl;
 	FSProperty* m_pp;
 	DOMAIN_TYPE m_domainType;
-	std::vector<FEItemListBuilder*> m_itemList;
+	std::vector<FSItemListBuilder*> m_itemList;
 };
 
 class FEClassPropsDelegate : public QStyledItemDelegate

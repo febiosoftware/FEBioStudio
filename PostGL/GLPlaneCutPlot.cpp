@@ -411,7 +411,7 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 	for (int i=0; i<pm->Elements(); ++i)
 	{
 		// render only when visible
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		if (el.m_MatID != matId)
 		{
 			pmat = ps->GetMaterial(el.m_MatID);
@@ -647,7 +647,7 @@ void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 	for (int i = 0; i < dom.Elements(); ++i)
 	{
 		// render only when visible
-		FEElement_& el = dom.Element(i);
+		FSElement_& el = dom.Element(i);
 		if ((el.IsVisible() || m_bcut_hidden) && el.IsSolid())
 		{
 			const int *nt = nullptr;
@@ -954,7 +954,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	for (int i=0; i<NE; ++i)
 	{
 		// consider only solid elements that are visible
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = pfem->GetMaterial(el.m_MatID);
 		if (el.IsSolid() && el.IsVisible() && pmat->bvisible)
 		{
@@ -1206,7 +1206,7 @@ public:
 		return quatd(vec3d(0,0,1), N); 
 	}
 
-	FEItemListBuilder* CreateItemList() { return nullptr; }
+	FSItemListBuilder* CreateItemList() { return nullptr; }
 
 	void Update() 
 	{

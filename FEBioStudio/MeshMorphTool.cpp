@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GGroup.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -133,7 +133,7 @@ void CMeshMorphTool::OnAddClicked()
 		FESelection* sel = doc->GetCurrentSelection();
 		if (sel)
 		{
-			FEItemListBuilder* items = sel->CreateItemList();
+			FSItemListBuilder* items = sel->CreateItemList();
 			if (items)
 			{
 				m_data.push_back(items);
@@ -257,7 +257,7 @@ void CMeshMorphTool::OnApply()
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{
-		FEItemListBuilder* item = m_data[i];
+		FSItemListBuilder* item = m_data[i];
 		vec3d v = StringToVec3d(ui->m_table->item(i, 1)->text());
 
 		FSNodeList* node = item->BuildNodeList(); assert(node);

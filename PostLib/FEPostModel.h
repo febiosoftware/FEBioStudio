@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "Material.h"
 #include "FEState.h"
 #include "FEDataManager.h"

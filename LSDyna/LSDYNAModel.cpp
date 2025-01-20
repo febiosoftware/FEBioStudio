@@ -181,7 +181,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	{
 		for (int i = 0; i<solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			ELEMENT_SOLID& ih = m_solid[i];
 			ih.tag = i;
@@ -222,7 +222,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	{
 		for (int i = 0; i<shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			ELEMENT_SHELL& is = m_shell[i];
 			is.tag = solids + i;
@@ -271,7 +271,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		int eid = 0;
 		for (int i = 0; i < solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			int n = pe->m_gid - minpid;
 			if ((n < 0) || (n >= PLT.size())) return false;
 			PLT[n]++;
@@ -279,7 +279,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 
 		for (int i = 0; i < shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			int n = pe->m_gid - minpid;
 			if ((n < 0) || (n >= PLT.size())) return false;
 			PLT[n]++;
@@ -295,12 +295,12 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		eid = 0;
 		for (int i = 0; i < solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			pe->m_gid = PLT[pe->m_gid - minpid];
 		}
 		for (int i = 0; i < shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			pe->m_gid = PLT[pe->m_gid - minpid];
 		}
 

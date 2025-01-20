@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/triangulate.h>
 #include <GeomLib/GGroup.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSElementData.h>
 #include <MeshLib/MeshTools.h>
 
 //-----------------------------------------------------------------------------
@@ -159,12 +159,12 @@ void FEMeshValuator::Evaluate(int nfield)
 		nfield -= MAX_DEFAULT_FIELDS;
 		if ((nfield >= 0) && (nfield < m_mesh.MeshDataFields()))
 		{
-			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
+			FSMeshData* meshData = m_mesh.GetMeshDataField(nfield);
 			switch (meshData->GetDataClass())
 			{
 			case NODE_DATA:
 			{
-				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
+				FSNodeData& nodeData = dynamic_cast<FSNodeData&>(*meshData);
 				if (nodeData.GetDataType() == DATA_SCALAR)
 				{
 					FSMesh* mesh = nodeData.GetMesh();
@@ -187,9 +187,9 @@ void FEMeshValuator::Evaluate(int nfield)
 				break;
 			case ELEM_DATA:
 			{
-				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
+				FSElementData& elemData = dynamic_cast<FSElementData&>(*meshData);
 				const FSElemSet* pg = elemData.GetElementSet();
-				FEItemListBuilder::ConstIterator it = pg->begin();
+				FSItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{
 					int elemId = *it;
@@ -201,10 +201,10 @@ void FEMeshValuator::Evaluate(int nfield)
 			break;
 			case PART_DATA:
 			{
-				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
+				FSPartData& partData = dynamic_cast<FSPartData&>(*meshData);
 				if (partData.GetDataType() == DATA_SCALAR)
 				{
-					FEElemList* pg = partData.BuildElemList();
+					FSElemList* pg = partData.BuildElemList();
 					if (pg)
 					{
 						auto it = pg->First();
@@ -221,7 +221,7 @@ void FEMeshValuator::Evaluate(int nfield)
 							}
 							else if (partData.GetDataFormat() == DATA_MULT)
 							{
-								FEElement_* pe = it->m_pi;
+								FSElement_* pe = it->m_pi;
 								int nn = pe->Nodes();
 								for (int j = 0; j < nn; ++j)
 								{

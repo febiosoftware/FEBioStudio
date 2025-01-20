@@ -88,7 +88,7 @@ class FSLogNodeData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogNodeData() : FSLogData(LD_NODE) { SetMeshItemType(FE_NODE_FLAG); }
-	FSLogNodeData(FEItemListBuilder* pl) : FSLogData(LD_NODE) { 
+	FSLogNodeData(FSItemListBuilder* pl) : FSLogData(LD_NODE) { 
 		SetMeshItemType(FE_NODE_FLAG); 
 		SetItemList(pl); 
 	}
@@ -99,7 +99,7 @@ class FSLogElemData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogElemData() : FSLogData(LD_ELEM) { SetMeshItemType(FE_ELEM_FLAG); }
-	FSLogElemData(FEItemListBuilder* pl) : FSLogData(LD_ELEM) {
+	FSLogElemData(FSItemListBuilder* pl) : FSLogData(LD_ELEM) {
 		SetMeshItemType(FE_ELEM_FLAG);
 		SetItemList(pl);
 	}
@@ -110,7 +110,7 @@ class FSLogFaceData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogFaceData() : FSLogData(LD_FACE) { SetMeshItemType(FE_FACE_FLAG); }
-	FSLogFaceData(FEItemListBuilder* pl) : FSLogData(LD_FACE) {
+	FSLogFaceData(FSItemListBuilder* pl) : FSLogData(LD_FACE) {
 		SetMeshItemType(FE_FACE_FLAG);
 		SetItemList(pl);
 	}
@@ -120,7 +120,7 @@ class FSLogSurfaceData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogSurfaceData() : FSLogData(LD_SURFACE) { SetMeshItemType(FE_FACE_FLAG); }
-	FSLogSurfaceData(FEItemListBuilder* pl) : FSLogData(LD_SURFACE) {
+	FSLogSurfaceData(FSItemListBuilder* pl) : FSLogData(LD_SURFACE) {
 		SetMeshItemType(FE_FACE_FLAG);
 		SetItemList(pl);
 	}
@@ -130,7 +130,7 @@ class FSLogDomainData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogDomainData() : FSLogData(LD_DOMAIN) { SetMeshItemType(FE_PART_FLAG); }
-	FSLogDomainData(FEItemListBuilder* pl) : FSLogData(LD_DOMAIN) {
+	FSLogDomainData(FSItemListBuilder* pl) : FSLogData(LD_DOMAIN) {
 		SetMeshItemType(FE_PART_FLAG);
 		SetItemList(pl);
 	}

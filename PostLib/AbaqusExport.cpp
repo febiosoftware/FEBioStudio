@@ -88,7 +88,7 @@ bool AbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 
 			for (int j = 0; j < dom.Elements(); ++j)
 			{
-				FEElement_& el = dom.Element(j);
+				FSElement_& el = dom.Element(j);
 
 				fprintf(fp, "%d", ne++);
 

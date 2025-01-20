@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #include "GObject.h"
 #include <GeomLib/FSGroup.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <FSCore/FSObjectList.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <MeshTools/FEMesher.h>
 #include <GLLib/GLMesh.h>
 #include <MeshTools/GLMesher.h>
@@ -703,7 +703,7 @@ void GObject::BuildGMesh()
 }
 
 // get the mesh of an edge curve
-FECurveMesh* GObject::GetFECurveMesh(int edgeId)
+FSCurveMesh* GObject::GetFECurveMesh(int edgeId)
 {
 	FSMesh* mesh = GetFEMesh();
 	if (mesh == 0) return 0;
@@ -722,7 +722,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 
 	int NN = mesh->Nodes();
 	int nn = 0;

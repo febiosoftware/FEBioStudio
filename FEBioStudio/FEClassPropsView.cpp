@@ -147,12 +147,12 @@ CMeshItemPropertySelector::CMeshItemPropertySelector(GModel& m, FSProperty* pp, 
 	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pp->GetComponent()); assert(pms);
 	if (pms)
 	{
-		FEItemListBuilder* pg = pms->GetItemList();
+		FSItemListBuilder* pg = pms->GetItemList();
 		m_itemList = m.AllNamedSelections(m_domainType);
 		int n = -1;
 		for (int i=0; i< m_itemList.size(); ++i)
 		{
-			FEItemListBuilder* pi = m_itemList[i];
+			FSItemListBuilder* pi = m_itemList[i];
 			addItem(QString::fromStdString(pi->GetName()));
 			if (pi == pg) n = i;
 		}
@@ -565,7 +565,7 @@ public:
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
 						{
-							FEItemListBuilder* pi = pms->GetItemList();
+							FSItemListBuilder* pi = pms->GetItemList();
 							if (pi == nullptr) return QString("(empty)");
 							string s = pi->GetName();
 							if (s.empty()) return QString("(unnamed)");
@@ -577,7 +577,7 @@ public:
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
 						{
-							FEItemListBuilder* pi = pms->GetItemList();
+							FSItemListBuilder* pi = pms->GetItemList();
 							if (pi == nullptr) return QString("(empty)");
 							string s = pi->GetName();
 							if (s.empty()) return QString("(unnamed)");
@@ -1320,7 +1320,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						int n = pm->MeshDataFields();
 						for (int j = 0; j < n; ++j)
 						{
-							FEMeshData* md = pm->GetMeshDataField(j);
+							FSMeshData* md = pm->GetMeshDataField(j);
 							pw->addItem(QString::fromStdString(md->GetName()));
 						}
 					}

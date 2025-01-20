@@ -205,7 +205,7 @@ void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && (el.IsVisible() || m_bcut_hidden) && el.IsSolid())
 		{
@@ -341,7 +341,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& el = pm->ElementRef(i);
+			FSElement_& el = pm->ElementRef(i);
 			Material* pmat = pfem->GetMaterial(el.m_MatID);
 			if (pmat->benable && el.IsVisible())
 			{

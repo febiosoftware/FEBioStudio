@@ -154,12 +154,12 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); m_prob.clear(); }
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
-		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
+		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
@@ -253,7 +253,7 @@ vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.ElementRef(nelem);
+		FSElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i=0; i<ne; ++i) ve[i] = m_val[el.m_node[i]];
@@ -324,7 +324,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 
 			// project the seed into the adjacent solid element
 			int nelem = f.m_elem[0].eid;
-			FEElement_* el = &mesh.ElementRef(nelem);
+			FSElement_* el = &mesh.ElementRef(nelem);
 			el->m_ntag = 1;
 			ProjectInsideReferenceElement(mesh, *el, cf, q);
 

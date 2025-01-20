@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FoamMesh.h"
 #include <GeomLib/GMeshObject.h>
 #include "FEWeldModifier.h"
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <stdlib.h>
 
 //-----------------------------------------------------------------------------

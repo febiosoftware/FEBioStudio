@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "Tool.h"
 
 class UIFiberGeneratorTool;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CFiberGeneratorTool : public CAbstractTool
 {
@@ -53,5 +53,5 @@ private:
 	int	m_nsmoothIters;
 	UIFiberGeneratorTool*	ui;
 	GObject*	m_po;
-	std::vector<FEItemListBuilder*>	m_data;
+	std::vector<FSItemListBuilder*>	m_data;
 };

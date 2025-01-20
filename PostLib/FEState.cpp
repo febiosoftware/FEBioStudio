@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEState.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "FEPostModel.h"
 #include "FEMeshData_T.h"
 
@@ -118,7 +118,7 @@ FEState::FEState(float time, FEPostModel* fem, FSMesh* pmesh) : m_fem(fem), m_me
 	// allocate element data
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 	}
@@ -359,7 +359,7 @@ void FEState::RebuildData()
 	m_ElemData.clear();
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 
@@ -680,7 +680,7 @@ double Post::IntegrateReferenceElems(FSMesh& mesh, const std::vector<int>& elemL
 	int NE = (int)elemList.size();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& e = mesh.ElementRef(elemList[i]);
+		FSElement_& e = mesh.ElementRef(elemList[i]);
 		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();
@@ -733,7 +733,7 @@ double Post::IntegrateElems(FSMesh& mesh, const std::vector<int>& elemList, Post
 	int NE = (int)elemList.size();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& e = mesh.ElementRef(elemList[i]);
+		FSElement_& e = mesh.ElementRef(elemList[i]);
 		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();

@@ -52,7 +52,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveObject.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSFindElement.h>
 #include "TextDocument.h"
 #include <GLLib/GLScene.h>
 #include <sstream>
@@ -531,7 +531,7 @@ vector<int> findNodesByCoordinates(FSMesh* pm, const vec3d& p)
 vector<int> findElementsByCoordinates(FSMesh* pm, const vec3d& p)
 {
 	vector<int> items;
-	FEFindElement FE(*pm);
+	FSFindElement FE(*pm);
 	FE.Init();
 	int nelem = -1;
 	double r[3] = { 0 };

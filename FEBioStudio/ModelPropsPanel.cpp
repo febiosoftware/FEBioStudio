@@ -62,7 +62,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
@@ -558,7 +558,7 @@ public:
 		tool->getToolItem(GPARTINFO_PANEL)->setVisible(b);
 	}
 
-	void showMeshDataInfo(bool b, FEMeshData* meshdata = nullptr)
+	void showMeshDataInfo(bool b, FSMeshData* meshdata = nullptr)
 	{
 		if (b && meshdata)
 		{
@@ -937,9 +937,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					ui->showObjectInfo(false);
 					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
 				}
-				else if (dynamic_cast<FEMeshData*>(po))
+				else if (dynamic_cast<FSMeshData*>(po))
 				{
-					FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+					FSMeshData* pd = dynamic_cast<FSMeshData*>(po);
 					ui->showMeshDataInfo(true, pd);
 					ui->showObjectInfo(false);
 				}
@@ -1033,8 +1033,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
             }
 			// TODO: This actually prevents the user from making an initial assignment, 
 			//       so need to come up with a different solution here. 
-/*            // It doesn't make sense to change the selection of FEMeshData objects
-            else if(dynamic_cast<FEMeshData*>(m_currentObject))
+/*            // It doesn't make sense to change the selection of FSMeshData objects
+            else if(dynamic_cast<FSMeshData*>(m_currentObject))
             {
                 CItemListSelectionBox* sel = ui->selectionPanel(0);
                 sel->SetItemList(hil->GetItemList(0));
@@ -1051,7 +1051,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			return;
 		}
 
-		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+		FSItemListBuilder* pl = dynamic_cast<FSItemListBuilder*>(m_currentObject);
 		if (pl) { 
 			SetSelection(0, pl, false); 
 			return;
@@ -1069,13 +1069,13 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	}
 }
 
-void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
+void CModelPropsPanel::SetSelection(int n, FSItemListBuilder* item)
 {
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
 	sel->SetItemList(item);
 }
 
-void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item, bool showNameType)
+void CModelPropsPanel::SetSelection(int n, FSItemListBuilder* item, bool showNameType)
 {
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
 	sel->SetItemList(item);
@@ -1128,7 +1128,7 @@ void CModelPropsPanel::addSelection(int n)
 	if (pil)
 	{
 		// create the item list from the selection
-		FEItemListBuilder* pg = ps->CreateItemList();
+		FSItemListBuilder* pg = ps->CreateItemList();
 		if (pg == nullptr)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
@@ -1136,7 +1136,7 @@ void CModelPropsPanel::addSelection(int n)
 		}
 
 		// get the current item list
-		FEItemListBuilder* pl = pil->GetItemList(n);
+		FSItemListBuilder* pl = pil->GetItemList(n);
 
 		// see whether the current list exists or not
 		if (pl == nullptr)
@@ -1151,7 +1151,7 @@ void CModelPropsPanel::addSelection(int n)
 			}
 
 			// for part data, we need to convert to an FSPartSet
-			FEPartData* pd = dynamic_cast<FEPartData*>(m_currentObject);
+			FSPartData* pd = dynamic_cast<FSPartData*>(m_currentObject);
 			if (pd)
 			{
 				// make sure it's a part list
@@ -1191,7 +1191,7 @@ void CModelPropsPanel::addSelection(int n)
 
 			// for model components and mesh data, we need to give this new list a name and add it to the model
 			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
-			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
+			FSMeshData* pmd = dynamic_cast<FSMeshData*>(m_currentObject);
 			if (pmc || pmd)
 			{
 				string s = m_currentObject->GetName();
@@ -1249,11 +1249,11 @@ void CModelPropsPanel::addSelection(int n)
 		return;
 	}
 
-	FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+	FSItemListBuilder* pl = dynamic_cast<FSItemListBuilder*>(m_currentObject);
 	if (pl)
 	{
 		// create the item list builder
-		FEItemListBuilder* pg = ps->CreateItemList();
+		FSItemListBuilder* pg = ps->CreateItemList();
 
 		// merge with the current list
 		if (pg->Type() != pl->Type())
@@ -1298,12 +1298,12 @@ void CModelPropsPanel::subSelection(int n)
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
 	// get the item list
-	FEItemListBuilder* pl = nullptr;
+	FSItemListBuilder* pl = nullptr;
 
 	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
 	if (pmc) pl = pmc->GetItemList(n);
 
-	FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+	FSItemListBuilder* pil = dynamic_cast<FSItemListBuilder*>(m_currentObject);
 	if (pil) pl = pil;
 
 	if (pl)
@@ -1318,7 +1318,7 @@ void CModelPropsPanel::subSelection(int n)
 		}
 
 		// create the item list builder
-		FEItemListBuilder* pg = ps->CreateItemList();
+		FSItemListBuilder* pg = ps->CreateItemList();
 
 		// subtract from the current list
 		if (pg->Type() == pl->Type())
@@ -1343,7 +1343,7 @@ void CModelPropsPanel::delSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
-	FEItemListBuilder* pl = nullptr;
+	FSItemListBuilder* pl = nullptr;
 
 	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
 	if (pmc)
@@ -1360,7 +1360,7 @@ void CModelPropsPanel::delSelection(int n)
 	}
 	else
 	{
-		FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+		FSItemListBuilder* pil = dynamic_cast<FSItemListBuilder*>(m_currentObject);
 		if (pil) pl = pil;
 	}
 
@@ -1385,7 +1385,7 @@ void CModelPropsPanel::on_select2_selButtonClicked() { selSelection(1); }
 
 void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 {
-	FEItemListBuilder* pl = 0;
+	FSItemListBuilder* pl = 0;
 
 	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
 	if (pmc) pl = pmc->GetItemList(0);
@@ -1440,7 +1440,7 @@ void CModelPropsPanel::PickSelection(int n)
 	}
 
 	// get the current selection
-	FEItemListBuilder* pl = nullptr;
+	FSItemListBuilder* pl = nullptr;
 	if (hil) pl = hil->GetItemList(n);
 
 	CDlgPickNamedSelection dlg(this);
@@ -1466,7 +1466,7 @@ void CModelPropsPanel::clearSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
-	FEItemListBuilder* pl = 0;
+	FSItemListBuilder* pl = 0;
 
 	if (dynamic_cast<IHasItemLists*>(m_currentObject))
 	{
@@ -1483,7 +1483,7 @@ void CModelPropsPanel::clearSelection(int n)
 
 void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 {
-	FEItemListBuilder* pl = 0;
+	FSItemListBuilder* pl = 0;
 
 	// this is only used by paired interfaces
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);

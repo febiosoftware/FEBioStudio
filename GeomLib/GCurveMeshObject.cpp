@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GCurveMeshObject.h"
-#include <MeshLib/FECurveMesh.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshTools/FEAdvancingFrontMesher2D.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSMesh.h>
 
-GCurveMeshObject::GCurveMeshObject(FECurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
+GCurveMeshObject::GCurveMeshObject(FSCurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
 {
 	if (m_curve) 
 	{
@@ -39,7 +38,7 @@ GCurveMeshObject::GCurveMeshObject(FECurveMesh* pm) : m_curve(pm), GObject(GCURV
 }
 
 // return the curve mesh
-FECurveMesh* GCurveMeshObject::GetCurveMesh()
+FSCurveMesh* GCurveMeshObject::GetCurveMesh()
 {
 	return m_curve;
 }
@@ -148,7 +147,7 @@ void GCurveMeshObject::Update()
 
 //-----------------------------------------------------------------------------
 // Return a curve mesh for edge with ID edgeId
-FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
+FSCurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 {
 	if (m_curve == 0) return 0;
 
@@ -166,7 +165,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 
 	int NN = m_curve->Nodes();
 	int nn = 0;
@@ -525,7 +524,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 			break;
 		case CID_CURVE_MESH:
 			if (m_curve) delete m_curve;
-			m_curve = new FECurveMesh;
+			m_curve = new FSCurveMesh;
 			m_curve->SetGObject(this);
 			m_curve->Load(ar);
 			break;

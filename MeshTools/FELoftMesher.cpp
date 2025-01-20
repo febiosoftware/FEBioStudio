@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELoftMesher.h"
-#include <MeshLib/FECurveMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/triangulate.h>
 #include <FSCore/LoadCurve.h>
 using namespace std;
 
-int closestNode(FECurveMesh& c, const vec3d& r)
+int closestNode(FSCurveMesh& c, const vec3d& r)
 {
 	double minD2 = 1e99;
 	int imin = -1;
@@ -83,7 +83,7 @@ struct LOFT_NODE
 	double	s;		// parametric position on curve (from 0 to 1)
 };
 
-FSSurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::Apply(vector<FSCurveMesh*> curve)
 {
 	switch(m_elem)
 	{
@@ -97,7 +97,7 @@ FSSurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
 }
 
 
-FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FSCurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -143,8 +143,8 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 		{
 			if (i < NC - 1)
 			{
-				FECurveMesh* curve0 = curve[i];
-				FECurveMesh* curve1 = curve[i + 1];
+				FSCurveMesh* curve0 = curve[i];
+				FSCurveMesh* curve1 = curve[i + 1];
 
 				for (int l = 0; l < ND; ++l)
 				{
@@ -159,7 +159,7 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 			}
 			else
 			{
-				FECurveMesh* curvei = curve[i];
+				FSCurveMesh* curvei = curve[i];
 				int nn = curvei->Nodes();
 				for (int j = 0; j < nn; ++j) mesh->Node(NN++).r = curvei->Node(j).r;
 			}
@@ -167,9 +167,9 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 	}
 	else if (NC == 3)
 	{
-		FECurveMesh* curve0 = curve[0];
-		FECurveMesh* curve1 = curve[1];
-		FECurveMesh* curve2 = curve[2];
+		FSCurveMesh* curve0 = curve[0];
+		FSCurveMesh* curve1 = curve[1];
+		FSCurveMesh* curve2 = curve[2];
 
 		// quadratic interpolation
 		for (int l = 0; l <= 2 * ND; ++l)
@@ -193,7 +193,7 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 		for (int i = 0; i < NC - 1; ++i)
 		{
 			// cubic interpolation
-			FECurveMesh* c[4];
+			FSCurveMesh* c[4];
 			int l0, l1;
 			if (i == 0)
 			{
@@ -242,7 +242,7 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 				}
 			}
 		}
-		FECurveMesh* curvei = curve[NC-1];
+		FSCurveMesh* curvei = curve[NC-1];
 		int nn = curvei->Nodes();
 		for (int j = 0; j < nn; ++j) mesh->Node(NN++).r = curvei->Node(j).r;
 	}
@@ -537,7 +537,7 @@ void updateCurve(vector<LOFT_NODE>& c)
 	}
 }
 
-double findClosestNodes(const FECurveMesh& c1, const FECurveMesh& c2, int node[2])
+double findClosestNodes(const FSCurveMesh& c1, const FSCurveMesh& c2, int node[2])
 {
 	if ((c1.Nodes() == 0) || (c2.Nodes() == 0)) return 0.0;
 
@@ -577,7 +577,7 @@ void flipCurve(vector<LOFT_NODE>& curve)
 	}
 }
 
-FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FSCurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -587,7 +587,7 @@ FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	// make sure there is at least one edge and two nodes
 	for (int i=0; i<NC; ++i)
 	{
-		FECurveMesh* c = curve[i];
+		FSCurveMesh* c = curve[i];
 		if (c->Nodes() < 2) return 0;
 		if (c->Edges() < 1) return 0;
 	}
@@ -598,9 +598,9 @@ FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 
 	// The lofting requires a slightly different approach for closed or non-closed loops
 	// (and a mix of closed and open curves is not allowed), so let's figure out what we're dealing with
-	bool bclosed = curve[0]->Type() == FECurveMesh::CLOSED_CURVE;
+	bool bclosed = curve[0]->Type() == FSCurveMesh::CLOSED_CURVE;
 	for (int i=1; i<NC; ++i)
-		if ((curve[i]->Type() == FECurveMesh::CLOSED_CURVE) != bclosed) return 0;
+		if ((curve[i]->Type() == FSCurveMesh::CLOSED_CURVE) != bclosed) return 0;
 
 	// next, we create the loft curves
 	vector< vector<LOFT_NODE> > loftCurve(NC);
@@ -620,7 +620,7 @@ FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 		for (int i = 0; i<NC; ++i)
 		{
 			vector<LOFT_NODE>& loft = loftCurve[i];
-			FECurveMesh& c = *curve[i];
+			FSCurveMesh& c = *curve[i];
 
 			int NNi = c.Nodes();
 			loft.resize(NNi);
@@ -658,7 +658,7 @@ FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 		vec3d refNormal(0,0,1);
 		for (int i=0; i<NC; ++i)
 		{
-			FECurveMesh& c = *curve[i];
+			FSCurveMesh& c = *curve[i];
 			int NNi = c.Nodes();
 			vector<LOFT_NODE>& loft = loftCurve[i];
 			loft.resize(NNi);

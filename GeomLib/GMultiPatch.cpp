@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GMultiPatch.h"
 #include <MeshTools/FEMultiQuadMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <algorithm>
 
 //-----------------------------------------------------------------------------

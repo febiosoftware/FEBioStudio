@@ -248,7 +248,7 @@ void CEditPanel::on_modParams_apply()
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FESelection* sel = doc->GetCurrentSelection();
-	FEItemListBuilder* list = sel->CreateItemList();
+	FSItemListBuilder* list = sel->CreateItemList();
 	FSGroup* g = 0;
 	if (sel->Size() > 0)
 	{

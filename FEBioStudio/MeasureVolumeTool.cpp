@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MeasureVolumeTool.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
 
 //-----------------------------------------------------------------------------

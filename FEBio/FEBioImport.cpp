@@ -456,7 +456,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		if (domain.empty() == false)
 		{
 			//NOTE: This assumes the domain name is a surface
-			FEItemListBuilder* surf = m_febio->FindNamedSurface(domain);
+			FSItemListBuilder* surf = m_febio->FindNamedSurface(domain);
 			if (surf)
 			{
 				pv->addDomain(surf);

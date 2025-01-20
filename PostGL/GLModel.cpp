@@ -471,7 +471,7 @@ void CGLModel::HideMaterial(int nmat)
 	// Hide the elements with the material ID
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.m_MatID == nmat)
 		{
 			el.Show(false);
@@ -490,8 +490,8 @@ void CGLModel::HideMaterial(int nmat)
 		}
 		else
 		{
-			FEElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
-			FEElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
+			FSElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
+			FSElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
 
 			if (e0.IsInvisible() && e1.IsInvisible()) f.Show(false);
 		}
@@ -502,7 +502,7 @@ void CGLModel::HideMaterial(int nmat)
 	for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsInvisible() == false)
 		{
 			int ne = el.Nodes();
@@ -532,7 +532,7 @@ void CGLModel::ShowMaterial(int nmat)
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i) 
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 		if (e.m_MatID == nmat) mesh.ElementRef(i).Show(true);
 	}
 
@@ -548,8 +548,8 @@ void CGLModel::ShowMaterial(int nmat)
 		}
 		else
 		{
-			FEElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
-			FEElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
+			FSElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
+			FSElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
 			if (!e0.IsInvisible() || !e1.IsInvisible()) f.Show(true);
 		}
 	}
@@ -559,7 +559,7 @@ void CGLModel::ShowMaterial(int nmat)
 	for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsInvisible() == false)
 		{
 			int ne = el.Nodes();
@@ -587,7 +587,7 @@ void CGLModel::UpdateMeshVisibility()
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 		if (e.m_MatID >= 0)
 		{
 			Post::Material* mat = fem.GetMaterial(e.m_MatID);
@@ -607,8 +607,8 @@ void CGLModel::UpdateMeshVisibility()
 		}
 		else
 		{
-			FEElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
-			FEElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
+			FSElement_& e0 = mesh.ElementRef(f.m_elem[0].eid);
+			FSElement_& e1 = mesh.ElementRef(f.m_elem[1].eid);
 			if (!e0.IsInvisible() || !e1.IsInvisible()) bshow = true;
 		}
 		f.Show(bshow);
@@ -619,7 +619,7 @@ void CGLModel::UpdateMeshVisibility()
 	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsInvisible() == false)
 		{
 			int ne = el.Nodes();
@@ -657,7 +657,7 @@ void CGLModel::UpdateMeshState()
 		// update the elements
 		for (int i = 0; i < mesh.Elements(); ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 			int nmat = el.m_MatID;
 			if (fem.GetMaterial(nmat)->enabled()) el.Enable();
 			else el.Disable();
@@ -667,7 +667,7 @@ void CGLModel::UpdateMeshState()
 		for (int i = 0; i < mesh.Nodes(); ++i) mesh.Node(i).Disable();
 		for (int i = 0; i < mesh.Elements(); ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 			if (el.IsEnabled())
 			{
 				int n = el.Nodes();
@@ -694,7 +694,7 @@ void CGLModel::SelectElemsInRange(float fmin, float fmax, bool bsel)
 	FEState* ps = GetActiveState();
 	for (int i = 0; i<N; ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		if (el.IsEnabled() && el.IsVisible() && ((bsel == false) || (el.IsSelected())))
 		{
 			float v = ps->m_ELEM[i].m_val;
@@ -768,7 +768,7 @@ void CGLModel::HideSelectedElements()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; i++)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 		if (e.IsSelected()) e.Hide();
 	}
 
@@ -777,7 +777,7 @@ void CGLModel::HideSelectedElements()
 	for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsHidden() == false)
 		{
 			int ne = el.Nodes();
@@ -817,7 +817,7 @@ void CGLModel::HideUnselectedElements()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; i++)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 		if (!e.IsSelected()) e.Hide();
 	}
 
@@ -826,7 +826,7 @@ void CGLModel::HideUnselectedElements()
 	for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsHidden() == false)
 		{
 			int ne = el.Nodes();
@@ -883,7 +883,7 @@ void CGLModel::HideSelectedFaces()
 	for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsHidden() == false)
 		{
 			int ne = el.Nodes();
@@ -960,7 +960,7 @@ void CGLModel::HideSelectedEdges()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsHidden() == false)
 		{
 			int ne = el.Nodes();
@@ -998,7 +998,7 @@ void CGLModel::HideSelectedNodes()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j) 
 		{
@@ -1010,7 +1010,7 @@ void CGLModel::HideSelectedNodes()
 	// hide nodes that were hidden by hiding elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsHidden())
 		{
 			int ne = el.Nodes();
@@ -1046,7 +1046,7 @@ void CGLModel::UpdateEdge()
 
 	for (int i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement_& el = mesh->ElementRef(i);
+		FSElement_& el = mesh->ElementRef(i);
 		if (el.IsBeam())
 		{
 			GLEdge::EDGE edge;

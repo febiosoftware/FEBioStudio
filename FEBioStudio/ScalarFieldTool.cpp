@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -143,7 +143,7 @@ void CScalarFieldTool::OnAddClicked()
 		FESelection* sel = doc->GetCurrentSelection();
 		if (sel)
 		{
-			FEItemListBuilder* items = sel->CreateItemList();
+			FSItemListBuilder* items = sel->CreateItemList();
 			if (items)
 			{
 				m_data.push_back(items);
@@ -238,7 +238,7 @@ void CScalarFieldTool::OnApply()
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{
-		FEItemListBuilder* item = m_data[i];
+		FSItemListBuilder* item = m_data[i];
 		double v = ui->m_table->item(i, 1)->text().toDouble();
 
 		FSNodeList* node = item->BuildNodeList(); assert(node);
@@ -337,17 +337,17 @@ void CScalarFieldTool::OnApply()
 		}
 		pm->AddFEPartSet(partSet);
 
-		FEPartData* pdata = new FEPartData(po->GetFEMesh());
+		FSPartData* pdata = new FSPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
 		pdata->Create(partSet, DATA_SCALAR, DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
-		FEElemList* elemList = pdata->BuildElemList();
+		FSElemList* elemList = pdata->BuildElemList();
 		int NE = elemList->Size();
 		auto it = elemList->First();
 		for (int i = 0; i < NE; ++i, ++it)
 		{
-			FEElement_& el = *it->m_pi;
+			FSElement_& el = *it->m_pi;
 			int ne = el.Nodes();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -373,17 +373,17 @@ void CScalarFieldTool::OnApply()
 		}
 		pm->AddFEPartSet(partSet);
 
-		FEPartData* pdata = new FEPartData(po->GetFEMesh());
+		FSPartData* pdata = new FSPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
 		pdata->Create(partSet, DATA_SCALAR, DATA_ITEM);
 		pm->AddMeshDataField(pdata);
 
-		FEElemList* elemList = pdata->BuildElemList();
+		FSElemList* elemList = pdata->BuildElemList();
 		int NE = elemList->Size();
 		auto it = elemList->First();
 		for (int i = 0; i < NE; ++i, ++it)
 		{
-			FEElement_& el = *it->m_pi;
+			FSElement_& el = *it->m_pi;
 			int ne = el.Nodes();
 			double v = 0.0;
 			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
@@ -402,7 +402,7 @@ void CScalarFieldTool::OnApply()
 		pm->AddFENodeSet(nodeSet);
 
 		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, DATA_SCALAR);
+		FSNodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, DATA_SCALAR);
 		for (int i = 0; i < NN; i++) pdata->setScalar(i, val[i]);
 	}
 

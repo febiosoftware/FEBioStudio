@@ -31,15 +31,15 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEModifier.h"
 #include "FENNQuery.h"
-#include <MeshLib/FENodeNodeList.h>
-#include <MeshLib/FENodeElementList.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSNodeNodeList.h>
+#include <MeshLib/FSNodeElementList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 #include "FELinearToQuadratic.h"
 #include "FESplitModifier.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
 #include <FECore/units.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <GeomLib/GGroup.h>
 
 std::string FEModifier::m_error;
@@ -56,7 +56,7 @@ FSMesh* FEModifier::Apply(GObject* po, FESelection* sel)
 	if (oldMesh == nullptr) return nullptr;
 
 	FSMesh* newMesh = nullptr;
-	FEItemListBuilder* list(sel->CreateItemList());
+	FSItemListBuilder* list(sel->CreateItemList());
 	FSGroup* pg = dynamic_cast<FSGroup*>(list);
 	if (pg && (pg->GetMesh() == oldMesh))
 	{
@@ -126,7 +126,7 @@ FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 	}
 
 	FSMesh* newMesh = new FSMesh(*pm);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.PartitionElementSelection(gid);
 
 	return newMesh;
@@ -149,7 +149,7 @@ FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 	}
 
 	FSMesh* newMesh = new FSMesh(*oldMesh);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 
 	FSSurface* s = dynamic_cast<FSSurface*>(pg);
 	if (s)
@@ -200,12 +200,12 @@ FSMesh* FERemoveDuplicateElements::Apply(FSMesh* pm)
 		int ne = NEL.Valence(i);
 		for (j=0; j<ne; ++j)
 		{
-			FEElement_& ej = *NEL.Element(i, j);
+			FSElement_& ej = *NEL.Element(i, j);
 			if (ej.m_ntag != -1)
 			{
 				for (k=j+1; k<ne; ++k)
 				{
-					FEElement_& ek = *NEL.Element(i, k);
+					FSElement_& ek = *NEL.Element(i, k);
 					if ((ek.m_ntag!=-1) && (ej.is_equal(ek))) 
 					{
 						ej.m_ntag = -1;
@@ -217,7 +217,7 @@ FSMesh* FERemoveDuplicateElements::Apply(FSMesh* pm)
 	}
 
 	// delete tagged elements
-	FEMeshBuilder meshBuilder(m);
+	FSMeshBuilder meshBuilder(m);
 	meshBuilder.DeleteTaggedElements(-1);
 
 	return pnm;
@@ -968,7 +968,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 	}
 
 	// invert elements
-	FEMeshBuilder meshBuilder(*pmn);
+	FSMeshBuilder meshBuilder(*pmn);
 	meshBuilder.InvertSelectedElements();
 
 	return pmn;
@@ -1113,7 +1113,7 @@ FSMesh* FETri2Quad::Apply(FSMesh* pm)
 	}
 
 	// build the edge tables
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 	FSElementEdgeList EET(*pm, ET);
 
 	// create a new mesh
@@ -1569,7 +1569,7 @@ FSMesh* FEAddNode::Apply(FSMesh* pm)
 	GObject* po = pm->GetGObject();
 	if (po) r = po->GetTransform().GlobalToLocal(r);
 
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.AddNode(r);
 
 	return newMesh;
@@ -1600,7 +1600,7 @@ FSMesh* FEAddTriangle::Apply(FSMesh* pm)
 
 		FSMesh* newMesh = new FSMesh(*pm);
 
-		FEMeshBuilder meshBuilder(*newMesh);
+		FSMeshBuilder meshBuilder(*newMesh);
 		meshBuilder.AddTriangle(n0, n1, n2);
 
 		return newMesh;
@@ -1608,7 +1608,7 @@ FSMesh* FEAddTriangle::Apply(FSMesh* pm)
 	else
 	{
 		FSMesh* newMesh = new FSMesh(*pm);
-		FEMeshBuilder meshBuilder(*newMesh);
+		FSMeshBuilder meshBuilder(*newMesh);
 		meshBuilder.AddTriangles(m_stack);
 		return newMesh;
 	}
@@ -1648,7 +1648,7 @@ FSMesh* FEInvertMesh::Apply(FSMesh* pm)
 	bool invertFaces = GetBoolValue(1);
 
 	FSMesh* newMesh = new FSMesh(*pm);
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 
 	if (invertElems)
 	{

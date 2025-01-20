@@ -523,7 +523,7 @@ bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 				int NE = mesh.Elements();
 				for (int i=0; i<NE; ++i)
 				{
-					FEElement_& el = mesh.ElementRef(i);
+					FSElement_& el = mesh.ElementRef(i);
 					int ne = el.Nodes();
 					for (int j=0; j<ne; ++j)
 					{
@@ -555,7 +555,7 @@ bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 				int NE = mesh.Elements();
 				for (int i = 0; i<NE; ++i)
 				{
-					FEElement_& el = mesh.ElementRef(i);
+					FSElement_& el = mesh.ElementRef(i);
 					int ne = el.Nodes();
 					for (int j = 0; j<ne; ++j)
 					{
@@ -597,11 +597,11 @@ bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 				// evaluate the average value of the neighbors
 				for (int i=0; i<NE; ++i)
 				{
-					FEElement_& el = mesh.ElementRef(i);
+					FSElement_& el = mesh.ElementRef(i);
 					int nf = el.Faces();
 					for (int j=0; j<nf; ++j)
 					{
-						FEElement_* pj = mesh.ElementPtr(el.m_nbr[j]);
+						FSElement_* pj = mesh.ElementPtr(el.m_nbr[j]);
 						if (pj && (data.active(pj->m_ntag)))
 						{
 							float f;
@@ -938,7 +938,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 					float ed[FSElement::MAX_NODES] = {0.f};
 					for (int i=0; i<mesh->Elements(); ++i)
 					{
-						FEElement_& el = mesh->ElementRef(i);
+						FSElement_& el = mesh->ElementRef(i);
 						if (ps->active(i))
 						{
 							ps->eval(i, ed);
@@ -960,7 +960,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 					float ed =  0.f;
 					for (int i = 0; i<mesh->Elements(); ++i)
 					{
-						FEElement_& el = mesh->ElementRef(i);
+						FSElement_& el = mesh->ElementRef(i);
 						if (ps->active(i))
 						{
 							ps->eval(i, &ed);
@@ -982,7 +982,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 					float ed[FSElement::MAX_NODES] = { 0.f };
 					for (int i = 0; i<mesh->Elements(); ++i)
 					{
-						FEElement_& el = mesh->ElementRef(i);
+						FSElement_& el = mesh->ElementRef(i);
 						if (ps->active(i))
 						{
 							ps->eval(i, ed);
@@ -1006,7 +1006,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 		vector<int> tag(NN, 0);
 		for (int i=0; i<mesh->Elements(); ++i)
 		{
-			FEElement_& el = mesh->ElementRef(i);
+			FSElement_& el = mesh->ElementRef(i);
 
 			for (int j = 0; j<el.Nodes(); ++j) ed[j] = (float)d[el.m_node[j]];
 
@@ -1094,7 +1094,7 @@ void extractElemDataComponentITEM_ARRAY(Post::FEMeshData& dst, Post::FEMeshData&
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -1118,7 +1118,7 @@ void extractElemDataComponentITEM_ARRAY_VEC3F(Post::FEMeshData& dst, Post::FEMes
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -1155,7 +1155,7 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	vector<int> elemList; elemList.reserve(NE);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (vec.active(i))
 		{
 			elemList.push_back(i);
@@ -1170,7 +1170,7 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	vector<int> l(ne_max * elemList.size());
 	for (int i : elemList)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j) l[i * ne_max + j] = mesh.Node(el.m_node[j]).m_ntag;
 	}
@@ -1178,7 +1178,7 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	T data[FSElement::MAX_NODES];
 	for (int i : elemList)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		vec.eval(i, data);
 
 		int ne = el.Nodes();
@@ -1204,7 +1204,7 @@ void extractElemDataComponentNODE_ARRAY(Post::FEMeshData& dst, Post::FEMeshData&
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -1247,7 +1247,7 @@ template <typename T> void extractElemDataComponentCOMP_T(Post::FEMeshData& dst,
 	vector<float> data;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -1389,7 +1389,7 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 				mat3fs ev;
 				for (int i = 0; i<mesh->Elements(); ++i)
 				{
-					FEElement_& el = mesh->ElementRef(i);
+					FSElement_& el = mesh->ElementRef(i);
 					if (pv->active(i))
 					{
 						pv->eval(i, &ev);

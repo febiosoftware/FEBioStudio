@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GMeshImport.h"
 #include <FSCore/color.h>
 #include "FEPostModel.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 using namespace Post;
 
 GMeshImport::GMeshImport(FEPostModel* fem) : FEFileReader(fem)

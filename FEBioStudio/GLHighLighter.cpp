@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <GeomLib/GObject.h>
 #include <GLLib/GLMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 GLHighlighter GLHighlighter::This;
 

@@ -50,7 +50,7 @@ FSMesh* FECreateShells::Apply(FSGroup* pg)
     }
     
     vector<int> faceList;
-    for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
+    for (FSItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
     {
         faceList.push_back(*it);
     }

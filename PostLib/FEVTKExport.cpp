@@ -506,7 +506,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
         ModelDataField& data = *(*pd);
         if ((data.DataClass() == ELEM_DATA))// && (data.Flags() & EXPORT_DATA))
         {
-            FEMeshData& meshData = ps->m_Data[n];
+			FEMeshData& meshData = ps->m_Data[n];
             DATA_FORMAT dfmt = meshData.GetFormat();
             if (dfmt == DATA_ITEM) {
                 ModelDataField& data = *(*pd);
@@ -703,7 +703,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			float v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -718,7 +718,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			vec3f v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -735,7 +735,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -752,7 +752,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -771,7 +771,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			float v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -786,7 +786,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			vec3f v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -803,7 +803,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -820,7 +820,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);

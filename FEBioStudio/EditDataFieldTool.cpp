@@ -35,8 +35,8 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QLineEdit>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSElementData.h>
 
 class UIEditDataFieldTool : public QWidget
 {
@@ -93,7 +93,7 @@ void CEditDataFieldTool::Activate()
 	ui->pc->clear();
 	for (int i = 0; i < pm->MeshDataFields(); ++i)
 	{
-		FEMeshData& md = *pm->GetMeshDataField(i);
+		FSMeshData& md = *pm->GetMeshDataField(i);
 		ui->pc->addItem(QString::fromStdString(md.GetName()));
 	}
 
@@ -110,7 +110,7 @@ void CEditDataFieldTool::OnApply()
 	int n = ui->pc->currentIndex();
 	if ((n >= 0) && (n < pm->MeshDataFields()))
 	{
-		FEPartData* pd = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
+		FSPartData* pd = dynamic_cast<FSPartData*>(pm->GetMeshDataField(n));
 		if (pd && (pd->GetDataFormat() == DATA_ITEM) && (pd->GetDataType() == DATA_SCALAR))
 		{
 			for (int i = 0; i < pm->Elements(); ++i)

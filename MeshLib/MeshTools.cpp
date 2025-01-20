@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "MeshTools.h"
-#include "FENodeNodeList.h"
+#include "FSNodeNodeList.h"
 #include "Intersect.h"
 using namespace std;
 
@@ -1011,7 +1011,7 @@ bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& e = m.ElementRef(i);
+		FSElement_& e = m.ElementRef(i);
 		int ne = e.Nodes();
 		nelem = i;
 
@@ -1058,7 +1058,7 @@ bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 }
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool ProjectInsideElement(FSCoreMesh& m, FSElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1089,7 +1089,7 @@ bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f
 }
 
 //-----------------------------------------------------------------------------
-bool IsInsideElement(FEElement_& el, double r[3], const double tol)
+bool IsInsideElement(FSElement_& el, double r[3], const double tol)
 {
 	switch (el.Type())
 	{
@@ -1111,7 +1111,7 @@ bool IsInsideElement(FEElement_& el, double r[3], const double tol)
 }
 
 //-----------------------------------------------------------------------------
-void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x)
+void project_inside_element(FSElement_& el, const vec3f& p, double r[3], vec3f* x)
 {
 	const double tol = 0.0001;
 	const int nmax = 10;
@@ -1160,7 +1160,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 }
 
 //-----------------------------------------------------------------------------
-bool project_inside_element2d(FEElement_& el, vec3d* x, const vec2d& p, double q[2])
+bool project_inside_element2d(FSElement_& el, vec3d* x, const vec2d& p, double q[2])
 {
 	if (el.IsShell() == false) return false;
 
@@ -1222,7 +1222,7 @@ bool project_inside_element2d(FEElement_& el, vec3d* x, const vec2d& p, double q
 
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool ProjectInsideReferenceElement(FSCoreMesh& m, FSElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1343,7 +1343,7 @@ bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem, doub
 	int NE = m.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& e = m.ElementRef(i);
+		FSElement_& e = m.ElementRef(i);
 		int ne = e.Nodes();
 		nelem = i;
 

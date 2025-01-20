@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
 #include <sstream>

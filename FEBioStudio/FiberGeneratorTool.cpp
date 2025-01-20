@@ -31,8 +31,8 @@ SOFTWARE.*/
 #include <MeshTools/GradientMap.h>
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -185,7 +185,7 @@ void CFiberGeneratorTool::OnAddClicked()
 		FESelection* sel = doc->GetCurrentSelection();
 		if (sel)
 		{
-			FEItemListBuilder* items = sel->CreateItemList();
+			FSItemListBuilder* items = sel->CreateItemList();
 			if (items)
 			{
 				m_data.push_back(items);
@@ -257,7 +257,7 @@ void CFiberGeneratorTool::OnApply()
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{
-		FEItemListBuilder* item = m_data[i];
+		FSItemListBuilder* item = m_data[i];
 		double v = ui->m_table->item(i, 1)->text().toDouble();
 
 		FSNodeList* node = item->BuildNodeList(); assert(node);
@@ -340,7 +340,7 @@ void CFiberGeneratorTool::OnApply()
 	nodeSet.CreateFromMesh();
 
 	// create node data
-	FENodeData data(m_po);
+	FSNodeData data(m_po);
 	data.Create(&nodeSet, 0.0);
 	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
@@ -406,7 +406,7 @@ void CFiberGeneratorTool::OnApply()
 			}
 			po->AddFEPartSet(partSet);
 
-			FEPartData* pdata = new FEPartData(po->GetFEMesh());
+			FSPartData* pdata = new FSPartData(po->GetFEMesh());
 			pdata->SetName(mapName.toStdString());
 			pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
 			pm->AddMeshDataField(pdata);
@@ -416,14 +416,14 @@ void CFiberGeneratorTool::OnApply()
 				pm->Element(i).m_ntag = i;
 			}
 
-			FEElemList* elemList = pdata->BuildElemList();
+			FSElemList* elemList = pdata->BuildElemList();
 			int NE = elemList->Size();
 			auto it = elemList->First();
 			int n = 0;
 			for (int i = 0; i < NE; ++i, ++it)
 			{
-				FEElement_& el = *it->m_pi;
-				pdata->FEMeshData::set(n++, grad[el.m_ntag]);
+				FSElement_& el = *it->m_pi;
+				pdata->FSMeshData::set(n++, grad[el.m_ntag]);
 			}
 			delete elemList;
 

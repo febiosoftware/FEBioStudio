@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModifier.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/MeshTools.h>
 using namespace std;
 

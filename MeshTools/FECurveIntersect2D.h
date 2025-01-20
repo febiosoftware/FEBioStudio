@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEModifier.h"
 
-class FECurveMesh;
+class FSCurveMesh;
 class GCurveMeshObject;
 class DynamicMesh2D;
 

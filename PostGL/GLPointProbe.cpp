@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
@@ -154,7 +154,7 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	BOX box = mdl->GetFSModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (bdisp == false) return;
@@ -254,7 +254,7 @@ public:
 
 	quatd GetOrientation() { return quatd(); }
 
-	FEItemListBuilder* CreateItemList() { return nullptr; }
+	FSItemListBuilder* CreateItemList() { return nullptr; }
 
 	void Update()
 	{

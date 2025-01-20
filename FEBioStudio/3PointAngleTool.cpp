@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "3PointAngleTool.h"
 #include <GLLib/GDecoration.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 class C3PointAngleDecoration : public GDecoration

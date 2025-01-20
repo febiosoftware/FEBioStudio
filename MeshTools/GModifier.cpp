@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GLLib/GLMesh.h>
 using std::list;
 //-----------------------------------------------------------------------------

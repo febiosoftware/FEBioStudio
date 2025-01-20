@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "FEModifier.h"
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 //using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	if (pm->IsType(FE_TET4) == false) return 0;
 
 	// build the edge table
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 
 	// build the element-edge table
 	FSElementEdgeList EET(*pm, ET);

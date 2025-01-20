@@ -195,7 +195,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 	list<ELEM>::iterator ih = m_Elem.begin();
 	for (i=0; i<elems; ++i, ++ih)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		pe->m_gid = ih->mid;
 		ih->tag = i;

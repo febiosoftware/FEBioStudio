@@ -38,8 +38,8 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QCheckBox>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/FEMeshValuator.h>
@@ -373,7 +373,7 @@ public:
 
 			for (int i = 0; i < pm->MeshDataFields(); ++i)
 			{
-				FEMeshData& di = *pm->GetMeshDataField(i);
+				FSMeshData& di = *pm->GetMeshDataField(i);
 				var->addItem(QString::fromStdString(di.GetName()));
 			}
 		}

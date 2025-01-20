@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "MeshMetrics.h"
 #include "triangulate.h"
 #include "MeshTools.h"
-#include "FENodeFaceList.h"
+#include "FSNodeFaceList.h"
 #include "hex.h"
 #include "tet.h"
 #include "penta.h"
@@ -846,10 +846,10 @@ vec3d GradientShell(const FSMesh& mesh, const FSElement& el, int node, double* v
 //-----------------------------------------------------------------------------
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
 
-vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int nb);
-vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int nb);
+vec3d ShapeGradientSolid(const FSMesh& mesh, const FSElement_& el, int na, int nb);
+vec3d ShapeGradientShell(const FSMesh& mesh, const FSElement_& el, int na, int nb);
 
-vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradient(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	if (el.IsSolid()) return ShapeGradientSolid(mesh, el, na, nb);
 	else if (el.IsShell()) return ShapeGradientShell(mesh, el, na, nb);
@@ -857,7 +857,7 @@ vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb)
 	return vec3d(0, 0, 0);
 }
 
-vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradientSolid(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
@@ -966,7 +966,7 @@ vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int n
 }
 
 // NOTE: This is a work in progress and was implemented to apply the scalar field tool to shells.
-vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradientShell(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];

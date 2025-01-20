@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <vector>
 
 class GObject;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CMeshMorphTool : public CAbstractTool
 {
@@ -54,6 +54,6 @@ private:
 
 private:
 	GObject* m_po;
-	std::vector<FEItemListBuilder*>	m_data;
+	std::vector<FSItemListBuilder*>	m_data;
 	Ui* ui;
 };

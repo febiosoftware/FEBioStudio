@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FESurfaceModifier.h"
 #include <vector>
 
-class FECurveMesh;
+class FSCurveMesh;
 class GEdge;
 class TriMesh;
 

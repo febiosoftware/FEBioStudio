@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include "FEMMGRemesh.h"
 #include "FETetGenModifier.h"
 #include "FEAutoPartition.h"
-#include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/FENodeNodeList.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMeshBuilder.h>
+#include <MeshLib/FSNodeNodeList.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <MeshLib/MeshTools.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>

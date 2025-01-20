@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioImport.h"
 #include "FEPostModel.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 using namespace Post;
 
 FEBioFileImport::FEBioFileImport(FEPostModel* fem) : FEFileReader(fem)
@@ -197,7 +197,7 @@ void FEBioFileImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 			int nsel = 0;
 			for (i=0; i<elems; ++i)
 			{
-				FEElementType etype;
+				FSElementType etype;
 				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(i));
 				if      (tag == "hex8"   ) { etype = FE_HEX8;    ++nbel; }
 				else if (tag == "hex20"  ) { etype = FE_HEX20;   ++nbel; }
@@ -265,7 +265,7 @@ void FEBioFileImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 		{
 			// get the element type
 			const char* sztype = tag.AttributeValue("type");
-			FEElementType etype;
+			FSElementType etype;
 			if      (strcmp(sztype, "hex8"   ) == 0) etype = FE_HEX8;
 			else if (strcmp(sztype, "tet4"   ) == 0) etype = FE_TET4;
 			else if (strcmp(sztype, "penta6" ) == 0) etype = FE_PENTA6;

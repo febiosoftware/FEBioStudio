@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMultiBlockMesh.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -703,7 +703,7 @@ void FEMultiBlockMesh::BuildFEElements(FSMesh* pm)
 				int ni = 0;
 				for (int i=0; i<nx; ++i)
 				{
-					FEElement_* pe = pm->ElementPtr(eid++);
+					FSElement_* pe = pm->ElementPtr(eid++);
 					pe->m_gid = b.m_gid;
 					pe->SetType(m_elemType);
 
@@ -1958,7 +1958,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
 	if (mb)
 	{
-		FEItemListBuilder* list = sel->CreateItemList();
+		FSItemListBuilder* list = sel->CreateItemList();
 
 		double w = GetFloatValue(0);
 
@@ -1993,7 +1993,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 	{
 		GMultiPatch* mp = dynamic_cast<GMultiPatch*>(po);
 
-		FEItemListBuilder* list = sel->CreateItemList();
+		FSItemListBuilder* list = sel->CreateItemList();
 
 		double w = GetFloatValue(0);
 

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <vector>
 
 class FSSurfaceMesh;
-class FECurveMesh;
+class FSCurveMesh;
 
 class FELoftMesher
 {
@@ -41,11 +41,11 @@ public:
 
 	void setSmooth(bool b) { m_bsmooth = b; }
 
-	FSSurfaceMesh* Apply(std::vector<FECurveMesh*> curve);
+	FSSurfaceMesh* Apply(std::vector<FSCurveMesh*> curve);
 
 private:
-	FSSurfaceMesh* BuildTriMesh(std::vector<FECurveMesh*> curve);
-	FSSurfaceMesh* BuildQuadMesh(std::vector<FECurveMesh*> curve);
+	FSSurfaceMesh* BuildTriMesh(std::vector<FSCurveMesh*> curve);
+	FSSurfaceMesh* BuildQuadMesh(std::vector<FSCurveMesh*> curve);
 
 private:
 	int m_elem;

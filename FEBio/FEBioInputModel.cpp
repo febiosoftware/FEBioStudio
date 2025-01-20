@@ -1242,7 +1242,7 @@ FEBioInputModel::PartInstance* FEBioInputModel::FindInstance(const char* szname)
 	return 0;
 }
 
-FEItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
+FSItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
 {
 	if ((szname == 0) || (strlen(szname) == 0)) return nullptr;
 
@@ -1674,7 +1674,7 @@ GPartList* FEBioInputModel::FindNamedPartList(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
+FSItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
 	string sname = name;
 	if (filter == MESH_ITEM_FLAGS::FE_ALL_FLAGS)
@@ -1733,7 +1733,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FEParts();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPart(i);
+				FSItemListBuilder* pg = po->GetFEPart(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}
@@ -1744,7 +1744,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FEElemSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEElemSet(i);
+				FSItemListBuilder* pg = po->GetFEElemSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 
@@ -1765,7 +1765,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FESurfaces();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFESurface(i);
+				FSItemListBuilder* pg = po->GetFESurface(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}
@@ -1775,7 +1775,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FEEdgeSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				FSItemListBuilder* pg = po->GetFEEdgeSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}
@@ -1785,7 +1785,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FENodeSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				FSItemListBuilder* pg = po->GetFENodeSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 
@@ -1812,7 +1812,7 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			int N = po->FEPartSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPartSet(i);
+				FSItemListBuilder* pg = po->GetFEPartSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}

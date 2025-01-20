@@ -25,17 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "xpltReader3.h"
-#include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FSNodeFaceList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostModel.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 using namespace Post;
 using namespace std;
 
-template <class Type> void ReadFaceData_REGION(xpltArchive& ar, FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData &data)
+template <class Type> void ReadFaceData_REGION(xpltArchive& ar, FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData& data)
 {
 	int NF = s.nfaces;
 	vector<int> face(NF);
@@ -1365,7 +1365,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			el.m_gid = i;
 			el.SetID(E.eid);
 
-			FEElementType srcType;
+			FSElementType srcType;
 			switch (D.etype)
 			{
 			case PLT_ELEM_HEX8   : srcType = FE_HEX8  ; break;
@@ -1470,7 +1470,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->ElementRef(i);
+		FSElement_& el = pmesh->ElementRef(i);
 		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -1478,7 +1478,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).Disable();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->ElementRef(i);
+		FSElement_& el = pmesh->ElementRef(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -2140,7 +2140,7 @@ bool XpltReader3::ReadElemData(FEPostModel &fem, FEState* pstate)
 
 
 //-----------------------------------------------------------------------------
-bool XpltReader3::ReadElemData_NODE(FSMesh& m, XpltReader3::Domain &d, Post::FEMeshData &data, int ntype, int arrSize)
+bool XpltReader3::ReadElemData_NODE(FSMesh& m, XpltReader3::Domain &d, Post::FEMeshData& data, int ntype, int arrSize)
 {
 	int ne = 0;
 	switch (d.etype)
@@ -2517,7 +2517,7 @@ bool XpltReader3::ReadFaceData(FEPostModel& fem, FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader3::ReadFaceData_MULT(FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader3::ReadFaceData_MULT(FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	// It is possible that the node ordering of the FACE's are different than the FSFace's
 	// so we setup up an array to unscramble the nodal values
@@ -2641,7 +2641,7 @@ bool XpltReader3::ReadFaceData_MULT(FSMesh& m, XpltReader3::Surface &s, Post::FE
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	int NF = s.nfaces;
 	switch (ntype)
@@ -2702,7 +2702,7 @@ bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData &d
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader3::ReadFaceData_NODE(FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader3::ReadFaceData_NODE(FSMesh& m, XpltReader3::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	// set nodal tags to local node number
 	int NN = m.Nodes();

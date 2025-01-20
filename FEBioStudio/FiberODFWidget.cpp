@@ -62,8 +62,8 @@ SOFTWARE.*/
 #include <ImageLib/FiberODFAnalysis.h>
 #include <FEAMR/spherePoints.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSElementData.h>
 #include "DlgStartThread.h"
 #include "PropertyListForm.h"
 #include "PropertyList.h"
@@ -816,16 +816,16 @@ void CFiberODFWidget::on_copyEFD_triggered()
     po->AddFEPartSet(partSet);
     
 
-    FEPartData* pdata = new FEPartData(mesh);
+	FSPartData* pdata = new FSPartData(mesh);
     pdata->SetName(datamapName);
     pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
     pm->AddMeshDataField(pdata);
 
-    FEElemList* elemList = pdata->BuildElemList();
+    FSElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
     auto it = elemList->First();
 
-    std::vector<FEElement_*> elems;
+    std::vector<FSElement_*> elems;
     for(int i = 0; i < NE; ++i, ++it)
     {
         elems.push_back(it->m_pi);
@@ -834,7 +834,7 @@ void CFiberODFWidget::on_copyEFD_triggered()
     #pragma omp parallel for
     for (int i = 0; i < NE; ++i)
     {
-        FEElement_* el = elems[i];
+        FSElement_* el = elems[i];
         
         // Calculate the centroid of the element
         vec3d pos(0);

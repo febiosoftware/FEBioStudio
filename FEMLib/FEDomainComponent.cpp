@@ -12,7 +12,7 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStep
 	m_ntype = ntype;
 }
 
-FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSStepComponent(ps)
+FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FSItemListBuilder* pi, int nstep) : FSStepComponent(ps)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
@@ -39,7 +39,7 @@ void FSDomainComponent::Save(OArchive& ar)
 	ar.WriteChunk(SELECTION_TYPE, GetMeshItemType());
 
 	// write list ID
-	FEItemListBuilder* pl = GetItemList();
+	FSItemListBuilder* pl = GetItemList();
 	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
 
 	// write the parameters
@@ -88,7 +88,7 @@ void FSDomainComponent::Load(IArchive& ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 			SetItemList(pItem);
 		}
 		break;
@@ -100,7 +100,7 @@ void FSDomainComponent::Load(IArchive& ar)
 			ar.OpenChunk();
 			{
 				int ntype = ar.GetChunkID();
-				FEItemListBuilder* pItem = nullptr;
+				FSItemListBuilder* pItem = nullptr;
 				switch (ntype)
 				{
 				case GO_NODE: pItem = new GNodeList(pgm); break;
@@ -113,7 +113,7 @@ void FSDomainComponent::Load(IArchive& ar)
 				case FE_ELEMSET: pItem = new FSElemSet(nullptr); break;
 				default:
 					assert(false);
-					throw ReadError("Unknown FEItemListBuilder type in FSBoundaryCondition::Load");
+					throw ReadError("Unknown FSItemListBuilder type in FSBoundaryCondition::Load");
 				}
 				pItem->Load(ar);
 
@@ -161,7 +161,7 @@ FSMeshSelection::FSMeshSelection(FSModel* fem) : FSModelComponent(fem)
 void FSMeshSelection::Save(OArchive& ar)
 {
 	// write list ID
-	FEItemListBuilder* pl = GetItemList();
+	FSItemListBuilder* pl = GetItemList();
 	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
 }
 
@@ -182,7 +182,7 @@ void FSMeshSelection::Load(IArchive& ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 			SetItemList(pItem);
 		}
 		break;

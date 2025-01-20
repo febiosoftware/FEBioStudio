@@ -26,15 +26,15 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GradientMap.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSNodeData.h>
 
 GradientMap::GradientMap()
 {
 }
 
-void GradientMap::Apply(const FENodeData& data, std::vector<vec3d>& out, int niter)
+void GradientMap::Apply(const FSNodeData& data, std::vector<vec3d>& out, int niter)
 {
 	FSMesh* pm = data.GetMesh();
 	if (pm==0) return;

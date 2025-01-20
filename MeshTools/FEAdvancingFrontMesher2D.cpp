@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEAdvancingFrontMesher2D.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include "FEMMGRemesh.h"
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GLLib/GLMesh.h>
 #include <list>
 //using namespace std;
@@ -312,7 +312,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	// get the one-and-only surface
 	FECurveMesher curveMesher;
 	curveMesher.SetElementSize(GetFloatValue(1));
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 	int NS = m_obj->Faces();
 	if (NS > 0)
 	{
@@ -323,7 +323,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 			for (int i=0; i<surfEdges; ++i)
 			{
 				GEdge* e = m_obj->Edge(surf->m_edge[i].nid);
-				FECurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
+				FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 				curve->Attach(*edgeMesh);
 				delete edgeMesh;
 			}
@@ -336,7 +336,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 		for (int i=0; i<NC; ++i)
 		{
 			GEdge* e = m_obj->Edge(i);
-			FECurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
+			FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 			curve->Attach(*edgeMesh);
 			delete edgeMesh;
 		}
@@ -353,7 +353,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	curve->Sort();
 
 	// make sure it's closed
-	if (curve->Type() != FECurveMesh::CLOSED_CURVE) return 0;
+	if (curve->Type() != FSCurveMesh::CLOSED_CURVE) return 0;
 
 	// now we can get started
 	// copy the nodes 

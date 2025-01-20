@@ -153,7 +153,7 @@ public:
 	{
 		m_err = 0;
 		if (m_pbc == 0) { m_err = 1; return false; }
-		FEItemListBuilder* item = m_pbc->GetItemList();
+		FSItemListBuilder* item = m_pbc->GetItemList();
 		if ((m_pbc->GetMeshItemType() != 0) && 
 			((item==0) || (item->size() == 0))) { m_err = 1; return false; }
 		else if (item && (item->IsValid() == false)) { m_err = 2; return false; }
@@ -261,8 +261,8 @@ public:
 	bool IsValid()
 	{
 		if (m_pci == 0) return false;
-		FEItemListBuilder* surf1 = m_pci->GetPrimarySurface();
-		FEItemListBuilder* surf2 = m_pci->GetSecondarySurface();
+		FSItemListBuilder* surf1 = m_pci->GetPrimarySurface();
+		FSItemListBuilder* surf2 = m_pci->GetSecondarySurface();
 		if ((surf1 == 0) || (surf1->size() == 0)) return false;
 		if ((surf2 == 0) || (surf2->size() == 0)) return false;
 		return true;
@@ -334,7 +334,7 @@ private:
 class CGroupValidator : public CObjectValidator
 {
 public:
-	CGroupValidator(FEItemListBuilder* pl) : m_pl(pl) {}
+	CGroupValidator(FSItemListBuilder* pl) : m_pl(pl) {}
 
 	QString GetErrorString() const override
 	{
@@ -351,7 +351,7 @@ public:
 	}
 
 private:
-	FEItemListBuilder* m_pl;
+	FSItemListBuilder* m_pl;
 };
 
 class CImageModelValidator : public CObjectValidator
@@ -1616,7 +1616,7 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 		{
 			for (int j = 0; j < mesh->MeshDataFields(); ++j)
 			{
-				FEMeshData& data = *mesh->GetMeshDataField(j);
+				FSMeshData& data = *mesh->GetMeshDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 		}

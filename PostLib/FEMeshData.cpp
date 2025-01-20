@@ -66,7 +66,7 @@ void Post::shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f
 	FSMesh& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement_& el = m.ElementRef(elem);
+	FSElement_& el = m.ElementRef(elem);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements
@@ -115,7 +115,7 @@ void Post::shape_grad_ref(FEPostModel& fem, int elem, double q[3], int nstate, v
 	FSMesh& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement_& el = m.ElementRef(elem);
+	FSElement_& el = m.ElementRef(elem);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements
@@ -165,7 +165,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	FSMesh& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement_& el = m.ElementRef(n);
+	FSElement_& el = m.ElementRef(n);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements
@@ -244,7 +244,7 @@ mat2d deform_grad_2d(FEPostModel& fem, int n, double r, double s, int nstate, in
 	FSMesh& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement_& el = m.ElementRef(n);
+	FSElement_& el = m.ElementRef(n);
 	int N = el.Nodes();
 
 	// we can only define this for shell elements
@@ -319,7 +319,7 @@ DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEE
 void DeformationGradient::eval(int n, mat3f* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// if this is not a solid element, return 0
 	if (e.IsSolid() == false)
@@ -375,7 +375,7 @@ Post::FEMeshData* StrainDataField::CreateData(FEState* pstate)
 void InfStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -412,7 +412,7 @@ void InfStrain::eval(int n, mat3fs* pv)
 void RightCauchyGreen::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -451,7 +451,7 @@ void RightCauchyGreen::eval(int n, mat3fs* pv)
 void RightStretch::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -509,7 +509,7 @@ void RightStretch::eval(int n, mat3fs* pv)
 void LagrangeStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// get the state
 	int nstate = m_state->GetID();
@@ -581,7 +581,7 @@ void LagrangeStrain::eval(int n, mat3fs* pv)
 void LagrangeStrain2D::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// get the state
 	int nstate = m_state->GetID();
@@ -625,7 +625,7 @@ void LagrangeStrain2D::eval(int n, mat3fs* pv)
 void InfStrain2D::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// get the state
 	int nstate = m_state->GetID();
@@ -667,7 +667,7 @@ void InfStrain2D::eval(int n, mat3fs* pv)
 void BiotStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (e.IsSolid() == false)
@@ -733,7 +733,7 @@ void BiotStrain::eval(int n, mat3fs* pv)
 void RightHencky::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (e.IsSolid() == false)
@@ -799,7 +799,7 @@ void RightHencky::eval(int n, mat3fs* pv)
 void LeftCauchyGreen::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (e.IsSolid() == false)
@@ -846,7 +846,7 @@ void LeftCauchyGreen::eval(int n, mat3fs* pv)
 void LeftStretch::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (e.IsSolid() == false)
@@ -912,7 +912,7 @@ void LeftStretch::eval(int n, mat3fs* pv)
 void LeftHencky::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (e.IsSolid() == false)
@@ -978,7 +978,7 @@ void LeftHencky::eval(int n, mat3fs* pv)
 void AlmansiStrain::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement_& el = GetFEState()->GetFEMesh()->ElementRef(n);
+	FSElement_& el = GetFEState()->GetFEMesh()->ElementRef(n);
 
 	// make sure it's a solid
 	if (el.IsSolid() == false)
@@ -1057,7 +1057,7 @@ void VolumeRatio::eval(int n, float* pv)
 	FEPostModel& fem = *GetFSModel();
 	FSMesh& m = *GetFEMesh();
 
-	FEElement_* pe = &m.ElementRef(n);
+	FSElement_* pe = &m.ElementRef(n);
 
 	// get the initial and current nodal positions
 	int N = pe->Nodes();
@@ -1097,7 +1097,7 @@ void VolumeRatio::eval(int n, float* pv)
 
 	FEPostModel& fem = *GetFSModel();
 	FSMesh& m = *GetFEMesh();
-	FEElement_* pe = &m.ElementRef(n);
+	FSElement_* pe = &m.ElementRef(n);
 
 	double *dN1, *dN2, *dN3;
 	int N = pe->Nodes();
@@ -1219,7 +1219,7 @@ void ElementVolume::eval(int n, float* pv)
 void AspectRatio::eval(int iel, float* pv)
 {
 	FSMesh& m = *GetFEState()->GetFEMesh();
-	FEElement_& el = m.ElementRef(iel);
+	FSElement_& el = m.ElementRef(iel);
 	int nn = el.Nodes();
 	if (el.Type() == FE_HEX20) nn = 8;
 	if (el.Type() == FE_HEX27) nn = 8;
@@ -1265,7 +1265,7 @@ void MaxEdgeAngle::eval(int iel, float* pv)
 {
 	FEPostModel& fem = *GetFSModel();
 	FSMesh& m = *GetFEState()->GetFEMesh();
-	FEElement_& el = m.ElementRef(iel);
+	FSElement_& el = m.ElementRef(iel);
 
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
 
@@ -1330,7 +1330,7 @@ void MinEdgeAngle::eval(int iel, float* pv)
 {
 	FEPostModel& fem = *GetFSModel();
 	FSMesh& m = *GetFEState()->GetFEMesh();
-	FEElement_& el = m.ElementRef(iel);
+	FSElement_& el = m.ElementRef(iel);
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
 
 	int ntime = GetFEState()->GetID();
@@ -1909,7 +1909,7 @@ void VolumeStrain::eval(int n, float* pv)
 		{-3,  0, -1,  0, 0, 0, 4, 0, 0, 0 },
 		{-3,  0,  0, -1, 0, 0, 0, 4, 0, 0 } };
 
-	FEElement_* pe = &GetFEMesh()->ElementRef(n);
+	FSElement_* pe = &GetFEMesh()->ElementRef(n);
 
 	// TODO: Some higher-order elements are mapped to lower-order elements.
 	int N = pe->Nodes();

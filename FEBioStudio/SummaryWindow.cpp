@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QMessageBox>
 #include <PostLib/constants.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include "PostDocument.h"
@@ -273,7 +273,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalElemRange(Post::FEPostModel& fem, int 
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; i++)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 		int ne = e.Nodes();
 
 		if ((bsel == false) || (e.IsSelected()))

@@ -6,7 +6,7 @@
 #include <PostGL/GLModel.h>
 #include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FELSDYNAimport.h>
 #include <PostLib/FEKinemat.h>

@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMMGRemesh.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #ifdef HAS_MMG
 #include "mmg/mmg3d/libmmg3d.h"
 #include <mmg/mmgs/libmmgs.h>
 #include <mmg/mmg2d/libmmg2d.h>
 #endif
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
 extern int ET_TET[6][2]; // in lut.cpp
@@ -344,7 +344,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 
 	// NOTE: Not sure why, but it appears the edge data returned by MMG is not always correct
 	//       See github issue #26. For now, I'm forcing rebuild of edge data
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.RepairEdges();
 
 	// Clean up
@@ -585,7 +585,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 
 	// NOTE: Not sure why, but it appears the edge data returned by MMG is not always correct
 	//       See github issue #26. For now, I'm forcing rebuild of edge data
-	FEMeshBuilder meshBuilder(*newMesh);
+	FSMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.RepairEdges();
 
 	// Clean up

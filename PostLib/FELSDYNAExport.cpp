@@ -237,7 +237,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 	for (i=0; i<NN; ++i) m.Node(i).m_ntag = -1;
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_& e = m.ElementRef(i);
+		FSElement_& e = m.ElementRef(i);
 		if ((m_bsel == false) || (e.IsSelected()))
 		{
 			int ne = e.Nodes();
@@ -267,7 +267,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 		fprintf(fp, "*ELEMENT_SOLID\n");
 		for (i=0; i<NE; ++i)
 		{
-			FEElement_& e = m.ElementRef(i);
+			FSElement_& e = m.ElementRef(i);
 			if (e.IsSolid())
 			{
 				if ((m_bsel == false) || (e.IsSelected()))
@@ -334,7 +334,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 		fprintf(fp, "*ELEMENT_SHELL\n");
 		for (i=0; i<NE; ++i)
 		{
-			FEElement_& e = m.ElementRef(i);
+			FSElement_& e = m.ElementRef(i);
 			if (e.IsShell())
 			{
 				if ((m_bsel == false) || (e.IsSelected()))

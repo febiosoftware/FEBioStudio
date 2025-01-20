@@ -243,12 +243,12 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
-		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
+		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
@@ -394,7 +394,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.ElementRef(nelem);
+		FSElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i = 0; i<ne; ++i)

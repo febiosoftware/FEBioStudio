@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FSCurveObjectMesher.h"
 #include <GeomLib/GCurveObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 FSCurveObjectMesher::FSCurveObjectMesher(GCurveObject* po) : m_po(po)
 {
@@ -144,7 +144,7 @@ FSMesh* FSCurveObjectMesher::BuildMesh()
 		FSEdge& ed = mesh->Edge(i);
 		if (el.Type() == FE_BEAM2)
 		{
-			ed.SetType(FEEdgeType::FE_EDGE2);
+			ed.SetType(FSEdgeType::FE_EDGE2);
 			ed.n[0] = el.m_node[0];
 			ed.n[1] = el.m_node[1];
 			ed.n[2] = ed.n[3] = -1;
@@ -152,7 +152,7 @@ FSMesh* FSCurveObjectMesher::BuildMesh()
 		}
 		else if (el.Type() == FE_BEAM3)
 		{
-			ed.SetType(FEEdgeType::FE_EDGE3);
+			ed.SetType(FSEdgeType::FE_EDGE3);
 			ed.n[0] = el.m_node[0];
 			ed.n[1] = el.m_node[1];
 			ed.n[2] = el.m_node[2];

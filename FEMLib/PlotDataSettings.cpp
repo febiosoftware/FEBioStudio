@@ -72,17 +72,17 @@ int CPlotVariable::Domains() const
 	return (int)m_domains.size();
 }
 
-FEItemListBuilder* CPlotVariable::GetDomain(int i)
+FSItemListBuilder* CPlotVariable::GetDomain(int i)
 {
 	return m_domains[i];
 }
 
-const FEItemListBuilder* CPlotVariable::GetDomain(int i) const
+const FSItemListBuilder* CPlotVariable::GetDomain(int i) const
 {
 	return m_domains[i];
 }
 
-void CPlotVariable::addDomain(FEItemListBuilder* pi)
+void CPlotVariable::addDomain(FSItemListBuilder* pi)
 {
 	// make sure the domain is not already added
 	for (size_t i=0; i<m_domains.size(); ++i)
@@ -95,7 +95,7 @@ void CPlotVariable::addDomain(FEItemListBuilder* pi)
 	pi->IncRef();
 }
 
-void CPlotVariable::removeDomain(FEItemListBuilder* pi)
+void CPlotVariable::removeDomain(FSItemListBuilder* pi)
 {
 	for (size_t i = 0; i<m_domains.size(); ++i)
 	{
@@ -351,7 +351,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 			int c = (v.isCustom()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_CUSTOM , c);
 			for (int j=0; j<v.Domains(); ++j)
 			{
-				FEItemListBuilder* pl = v.GetDomain(j);
+				FSItemListBuilder* pl = v.GetDomain(j);
 				if (pl) ar.WriteChunk(CID_PRJ_OUTPUT_VAR_DOMAINID, pl->GetID());
 			}
 		}
@@ -399,7 +399,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 
 			for (int i=0; i<dom.size(); ++i)
 			{
-				FEItemListBuilder* pl = mdl.FindNamedSelection(dom[i]);
+				FSItemListBuilder* pl = mdl.FindNamedSelection(dom[i]);
 				if (pl)
 				{
 					pv->addDomain(pl);

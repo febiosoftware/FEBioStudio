@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QCheckBox>
 #include <GeomLib/GMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include "ModelDocument.h"
 #include "MainWindow.h"
@@ -90,7 +90,7 @@ bool CReadCurveTool::OnApply()
 			char sz[256] = {0};
 			snprintf(sz, sizeof sz, "CurveObject%d", n++);
 
-			FECurveMesh* pm = new FECurveMesh;
+			FSCurveMesh* pm = new FSCurveMesh;
 			int nodes = (int) pt.size();
 			pm->Create(nodes, m_bcheck);
 			for (int i=0; i<nodes; ++i) pm->Node(i).r = pt[i];

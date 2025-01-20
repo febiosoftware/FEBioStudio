@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEHollowSphere.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <math.h>
 
 //////////////////////////////////////////////////////////////////////

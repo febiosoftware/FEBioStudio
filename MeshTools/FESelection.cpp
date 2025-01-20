@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FESelection.h"
 #include <GeomLib/GGroup.h>
 #include <GLLib/GLMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
@@ -93,7 +93,7 @@ int GObjectSelection::Count() const
 	return (int)m_item.size();
 }
 
-FEItemListBuilder* GObjectSelection::CreateItemList()
+FSItemListBuilder* GObjectSelection::CreateItemList()
 {
 	GPartList* partList = new GPartList(m_mdl);
 	GModel& m = *m_mdl;
@@ -358,7 +358,7 @@ quatd GPartSelection::GetOrientation()
 	return quatd(0,0,0);
 }
 
-FEItemListBuilder* GPartSelection::CreateItemList()
+FSItemListBuilder* GPartSelection::CreateItemList()
 {
 	return new GPartList(GetGModel(), this);
 }
@@ -492,7 +492,7 @@ void GFaceSelection::UpdateBoundingBox()
 	m_box = box;
 }
 
-FEItemListBuilder* GFaceSelection::CreateItemList()
+FSItemListBuilder* GFaceSelection::CreateItemList()
 {
 	return new GFaceList(GetGModel(), this);
 }
@@ -606,7 +606,7 @@ void GEdgeSelection::UpdateBoundingBox()
 	m_box = box;
 }
 
-FEItemListBuilder* GEdgeSelection::CreateItemList()
+FSItemListBuilder* GEdgeSelection::CreateItemList()
 {
 	return new GEdgeList(GetGModel(), this);
 }
@@ -730,7 +730,7 @@ void GNodeSelection::UpdateBoundingBox()
 	m_box = box;
 }
 
-FEItemListBuilder* GNodeSelection::CreateItemList()
+FSItemListBuilder* GNodeSelection::CreateItemList()
 {
 	return new GNodeList(GetGModel(), this);
 }
@@ -986,7 +986,7 @@ void FEElementSelection::Translate(vec3d dr)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
+		FSElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		assert(pe->IsSelected());
 		l = pe->Nodes();
 		for (j=0; j<l; ++j)
@@ -1034,7 +1034,7 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
+		FSElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		l = pe->Nodes();
 		for (j=0; j<l; ++j) pn[pe->m_node[j]].m_ntag = 1;
 
@@ -1080,7 +1080,7 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
+		FSElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		assert(pe->IsSelected());
 		l = pe->Nodes();
 		for (j=0; j<l; ++j) pn[pe->m_node[j]].m_ntag = 1;
@@ -1114,13 +1114,13 @@ quatd FEElementSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEItemListBuilder* FEElementSelection::CreateItemList()
+FSItemListBuilder* FEElementSelection::CreateItemList()
 {
 	FSMesh* pm = GetMesh();
 	return new FSElemSet(pm, m_item);
 }
 
-FEElement_* FEElementSelection::Element(size_t i)
+FSElement_* FEElementSelection::Element(size_t i)
 {
 	if ((i<0) || (i>= m_item.size())) return nullptr;
 	return m_pMesh->ElementPtr(m_item[i]);
@@ -1359,7 +1359,7 @@ void FEFaceSelection::Iterator::operator ++()
 	}
 }
 
-FEItemListBuilder* FEFaceSelection::CreateItemList()
+FSItemListBuilder* FEFaceSelection::CreateItemList()
 {
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
@@ -1588,7 +1588,7 @@ void FEEdgeSelection::Iterator::operator ++()
 	}
 }
 
-FEItemListBuilder* FEEdgeSelection::CreateItemList()
+FSItemListBuilder* FEEdgeSelection::CreateItemList()
 {
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
@@ -1773,7 +1773,7 @@ void FENodeSelection::Iterator::operator ++()
 	}
 }
 
-FEItemListBuilder* FENodeSelection::CreateItemList()
+FSItemListBuilder* FENodeSelection::CreateItemList()
 {
 	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;

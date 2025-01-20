@@ -596,7 +596,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 								// loop over all neighbors
 								for (int k = 0; k < 4; ++k)
 								{
-									FEElement_* elk = pmesh->ElementPtr(eli.m_nbr[k]);
+									FSElement_* elk = pmesh->ElementPtr(eli.m_nbr[k]);
 									if (elk && (elk->m_gid == -1))
 									{
 										// don't cross an internal face

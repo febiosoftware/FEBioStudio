@@ -1570,7 +1570,7 @@ void CMainWindow::ReportSelection()
 			if (es->Size() == 1)
 			{
 				FSMesh* pm = es->GetMesh();
-				FEElement_* el = es->Element(0);
+				FSElement_* el = es->Element(0);
 				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementIndex(0) + 1);
 				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
@@ -3487,7 +3487,7 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 			for (int i = 0; i < itemLists; ++i)
 			{
 				int colorMode = (i == 0 ? 0 : 1);
-				FEItemListBuilder* pg = il->GetItemList(i);
+				FSItemListBuilder* pg = il->GetItemList(i);
 				GPartList* partList = dynamic_cast<GPartList*>(pg);
 				if (partList)
 				{
@@ -3527,9 +3527,9 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 				}
 			}
 		}
-		else if (dynamic_cast<FEItemListBuilder*>(po))
+		else if (dynamic_cast<FSItemListBuilder*>(po))
 		{
-			FEItemListBuilder* pg = dynamic_cast<FEItemListBuilder*>(po);
+			FSItemListBuilder* pg = dynamic_cast<FSItemListBuilder*>(po);
 			GPartList* partList = dynamic_cast<GPartList*>(pg);
 			if (partList)
 			{

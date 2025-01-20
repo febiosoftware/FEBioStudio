@@ -507,7 +507,7 @@ void CMeshPanel::on_modParams_apply()
 	}
 
 	FESelection* sel = doc->GetCurrentSelection();
-	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
+	FSItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
 	FSGroup* g = dynamic_cast<FSGroup*>(list);
 	if (g == 0) 
 	{ 

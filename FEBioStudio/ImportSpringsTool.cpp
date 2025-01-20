@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <FEBioLink/FEBioClass.h>
 #include <VTKLib/VTKLegacyFileReader.h>
 #include <QDir>
@@ -348,7 +348,7 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 		el.m_node[1] = nb;
 
 		FSEdge& ed = m.Edge(NC0 + i);
-		ed.SetType(FEEdgeType::FE_EDGE2);
+		ed.SetType(FSEdgeType::FE_EDGE2);
 		ed.SetExterior(true);
 		ed.m_gid = cid++;
 		ed.n[0] = na;

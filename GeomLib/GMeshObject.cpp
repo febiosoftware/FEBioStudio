@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "GMeshObject.h"
 #include "GSurfaceMeshObject.h"
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSMeshBuilder.h>
+#include <MeshLib/FSElementData.h>
 #include <GLLib/GLMesh.h>
 #include <list>
 #include <stack>
@@ -161,16 +161,16 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	FSMesh* md = GetFEMesh();
 	for (int i = 0; i < ms->MeshDataFields(); ++i)
 	{
-		FEMeshData* mds = ms->GetMeshDataField(i);
-		if (dynamic_cast<FEPartData*>(mds))
+		FSMeshData* mds = ms->GetMeshDataField(i);
+		if (dynamic_cast<FSPartData*>(mds))
 		{
-			FEPartData* pds = dynamic_cast<FEPartData*>(mds);
-			FEItemListBuilder* ls = pds->GetItemList();
+			FSPartData* pds = dynamic_cast<FSPartData*>(mds);
+			FSItemListBuilder* ls = pds->GetItemList();
 			FSPartSet* pg = FindFEPartSet(ls->GetName()); assert(pg);
 
 			if (pg)
 			{
-				FEPartData* pdd = new FEPartData(md);
+				FSPartData* pdd = new FSPartData(md);
 				pdd->Create(pg, pds->GetDataType(), pds->GetDataFormat());
 				pdd->SetData(pds->GetData());
 				pdd->SetName(pds->GetName());
@@ -409,7 +409,7 @@ void GMeshObject::UpdateSurfaces()
 	assert(m.CountFacePartitions() == Faces());
 
 	// assign part ID's
-	FEElement_* pe;
+	FSElement_* pe;
 	for (int i=0; i<m.Faces(); ++i)
 	{
 		// get the face
@@ -713,7 +713,7 @@ int GMeshObject::AddNode(vec3d r)
 	FSMesh& m = *GetFEMesh();
 
 	// add the node
-	FEMeshBuilder meshBuilder(m);
+	FSMeshBuilder meshBuilder(m);
 	FSNode* newNode = meshBuilder.AddNode(r);
 
 	// create a geometry node for this
@@ -1380,7 +1380,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 
 	// attach to the new mesh
 	FSMesh* pm = po->GetFEMesh();
-	FEMeshBuilder meshBuilder(*GetFEMesh());
+	FSMeshBuilder meshBuilder(*GetFEMesh());
 	if (bweld)
 	{
 		meshBuilder.AttachAndWeld(*pm, tol);
@@ -1417,7 +1417,7 @@ bool GMeshObject::DeletePart(GPart* pg)
 	try {
 
 		// delete the elements of this part
-		FEMeshBuilder meshBuilder(*pm);
+		FSMeshBuilder meshBuilder(*pm);
 		FSMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
 
 		if (newMesh)
@@ -1463,7 +1463,7 @@ bool GMeshObject::DeleteParts(std::vector<GPart*> partList)
 	try {
 
 		// delete the elements of this part
-		FEMeshBuilder meshBuilder(*pm);
+		FSMeshBuilder meshBuilder(*pm);
 		FSMesh* newMesh = meshBuilder.DeleteParts(*pm, localIDs);
 
 		if (newMesh)
@@ -1502,7 +1502,7 @@ GMeshObject* GMeshObject::DetachSelection()
 		el.m_MatID = pg->GetMaterialID();
 	}
 
-	FEMeshBuilder meshBuilder(*oldMesh);
+	FSMeshBuilder meshBuilder(*oldMesh);
 	FSMesh* newMesh = meshBuilder.DetachSelectedMesh();
 	Update(true);
 

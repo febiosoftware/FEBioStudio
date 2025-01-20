@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
-typedef std::pair<std::string, FEItemListBuilder*> NamedList;
+typedef std::pair<std::string, FSItemListBuilder*> NamedList;
 
 //-----------------------------------------------------------------------------
 class FS1DPointFunction;
@@ -58,10 +58,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FEFaceList*		m_faceList;
+		FSFaceList*		m_faceList;
 
 	public:
-		Surface(const string& name, FEFaceList* faceList) : m_name(name), m_faceList(faceList) {}
+		Surface(const string& name, FSFaceList* faceList) : m_name(name), m_faceList(faceList) {}
 		~Surface() { delete m_faceList; }
 	};
 
@@ -246,8 +246,8 @@ protected:
 	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
-	void WriteElementList(FEElemList& el);
+	void WriteSurfaceSection(FSFaceList& s);
+	void WriteElementList(FSElemList& el);
 
 	void WritePointCurve(FS1DPointFunction* f1d, XMLElement& el);
 
@@ -258,12 +258,12 @@ protected:
 	bool	m_writeNotes;
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl);
-	const char* GetNodeSetName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FSItemListBuilder* pl);
+	const char* GetNodeSetName(FSItemListBuilder* pl);
 
-	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddSurface(const std::string& name, FEItemListBuilder* pl);
-	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
+	void AddNodeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddSurface(const std::string& name, FSItemListBuilder* pl);
+	void AddElemSet(const std::string& name, FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 

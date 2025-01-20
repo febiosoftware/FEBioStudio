@@ -45,7 +45,7 @@ SOFTWARE.*/
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.
-// 3.11: changes to FEMeshData classes. 
+// 3.11: changes to FSMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
 // 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.

@@ -211,7 +211,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			int NE = pm->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = pm->ElementRef(i);
+				FSElement_& el = pm->ElementRef(i);
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -232,7 +232,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			int NE = pm->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = pm->ElementRef(i);
+				FSElement_& el = pm->ElementRef(i);
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -444,7 +444,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	// update element textures
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		ELEMDATA& d0 = s0.m_ELEM[i];
 		ELEMDATA& d1 = s1.m_ELEM[i];
 		if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))

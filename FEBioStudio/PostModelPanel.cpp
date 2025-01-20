@@ -1439,7 +1439,7 @@ void CPostModelPanel::OnShowAllElements()
 	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 	if (mesh)
 	{
-		ForAllElements(*mesh, [](FEElement_& el) {
+		ForAllElements(*mesh, [](FSElement_& el) {
 			el.Unhide();
 		});
 		mesh->UpdateItemVisibility();

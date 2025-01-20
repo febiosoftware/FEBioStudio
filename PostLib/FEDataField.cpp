@@ -734,7 +734,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 		int NE = mesh.Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 
 			if ((selOnly == false) || el.IsSelected())
 			{
@@ -755,7 +755,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 	int NE = mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 
 		if ((selOnly == false) || el.IsSelected())
 		{

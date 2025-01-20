@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "NetGenOCCMesher.h"
 #include <GeomLib/GOCCObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <FSCore/FSLogger.h>
 
 // NOTE: Can't build with Netgen in debug config, so just turning it off for now. 

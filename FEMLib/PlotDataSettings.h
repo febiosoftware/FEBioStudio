@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 class FSProject;
 
@@ -56,11 +56,11 @@ public:
 	void setDomainType(DOMAIN_TYPE domainType) { m_domainType = domainType; }
 
 	int Domains() const;
-	FEItemListBuilder* GetDomain(int i);
-	const FEItemListBuilder* GetDomain(int i) const;
+	FSItemListBuilder* GetDomain(int i);
+	const FSItemListBuilder* GetDomain(int i) const;
 
-	void addDomain(FEItemListBuilder* pi);
-	void removeDomain(FEItemListBuilder* pi);
+	void addDomain(FSItemListBuilder* pi);
+	void removeDomain(FSItemListBuilder* pi);
 	void removeDomain(int n);
 
 private:
@@ -69,7 +69,7 @@ private:
 	bool			m_bshow;					// show flag
 	bool			m_bcustom;					// user defined
 	unsigned int	m_domainType;				// domain type for variable
-	std::vector<FEItemListBuilder*>		m_domains;	// domains 
+	std::vector<FSItemListBuilder*>		m_domains;	// domains 
 };
 
 //-----------------------------------------------------------------------------

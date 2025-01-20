@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/geom.h>
 #include "GSketch.h"
 #include <MeshLib/triangulate.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)

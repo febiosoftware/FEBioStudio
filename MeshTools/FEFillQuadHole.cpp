@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEFillQuadHole.h"
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FENodeEdgeList.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSNodeEdgeList.h>
 #include <FECore/matrix.h>
 #include <limits.h>
 using namespace std;

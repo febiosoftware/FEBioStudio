@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECone.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))

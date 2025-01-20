@@ -40,7 +40,7 @@ class NamedItemList
 {
 public:
 	std::string			m_name;
-	FEItemListBuilder*	m_list;
+	FSItemListBuilder*	m_list;
 	FSObject*			m_parent;
 	bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
 
@@ -51,7 +51,7 @@ public:
 		m_duplicate = false;
 	}
 
-	NamedItemList(const std::string& name, FEItemListBuilder* itemList, bool duplicate = false)
+	NamedItemList(const std::string& name, FSItemListBuilder* itemList, bool duplicate = false)
 	{
 		m_name = name;
 		m_parent = nullptr;
@@ -59,7 +59,7 @@ public:
 		m_duplicate = duplicate;
 	}
 
-	NamedItemList(const std::string& name, FSObject* parent, FEItemListBuilder* itemList, bool duplicate = false)
+	NamedItemList(const std::string& name, FSObject* parent, FSItemListBuilder* itemList, bool duplicate = false)
 	{
 		m_name = name;
 		m_parent = parent;
@@ -102,10 +102,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FEFaceList*		m_faceList;
+		FSFaceList*		m_faceList;
 
 	public:
-		Surface(const string& name, FEFaceList* faceList) : m_name(name), m_faceList(faceList) {}
+		Surface(const string& name, FSFaceList* faceList) : m_name(name), m_faceList(faceList) {}
 		~Surface() { delete m_faceList; }
 	};
 
@@ -113,10 +113,10 @@ private:
 	{
 	public:
 		string		m_name;
-		FEElemList*	m_elemList;
+		FSElemList*	m_elemList;
 
 	public:
-		ElementList(const string& name, FEElemList* elemList) : m_name(name), m_elemList(elemList) {}
+		ElementList(const string& name, FSElemList* elemList) : m_name(name), m_elemList(elemList) {}
 		~ElementList() { delete m_elemList; }
 	};
 
@@ -316,9 +316,9 @@ public:
 	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
     void WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
+	void WriteSurfaceSection(FSFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
-	void WriteElementList(FEElemList& el);
+	void WriteElementList(FSElemList& el);
 
 protected:
 	FSModel*		m_pfem;
@@ -327,13 +327,13 @@ protected:
 	bool	m_writeControlSection;	// write Control section for single step analysis
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl);
-	string GetNodeSetName(FEItemListBuilder* pl);
-	string GetElementSetName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FSItemListBuilder* pl);
+	string GetNodeSetName(FSItemListBuilder* pl);
+	string GetElementSetName(FSItemListBuilder* pl);
 
-	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddSurface(const std::string& name, FEItemListBuilder* pl);
-	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
+	void AddNodeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddSurface(const std::string& name, FSItemListBuilder* pl);
+	void AddElemSet(const std::string& name, FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 

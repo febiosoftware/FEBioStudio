@@ -219,12 +219,12 @@ void CPostObject::BuildInternalSurfaces()
 
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement_& el = dom.Element(i);
+			FSElement_& el = dom.Element(i);
 			if (el.IsVisible())
 			{
 				for (int j = 0; j < el.Faces(); ++j)
 				{
-					FEElement_* pen = mesh.ElementPtr(el.m_nbr[j]);
+					FSElement_* pen = mesh.ElementPtr(el.m_nbr[j]);
 					if (pen && (pen->m_MatID == el.m_MatID) && !pen->IsVisible())
 					{
 						el.GetFace(j, face);

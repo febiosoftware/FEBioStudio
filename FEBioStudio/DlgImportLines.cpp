@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include <PostGL/GLLinePlot.h>
 #include "MainWindow.h"
 #include "PostDocument.h"
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSFindElement.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPointPlot.h>
 #include <sstream>

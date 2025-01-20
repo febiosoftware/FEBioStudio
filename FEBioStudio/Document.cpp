@@ -46,9 +46,9 @@ SOFTWARE.*/
 #include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageAnalysis.h>
 #include <GeomLib/GModel.h>
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FESurfaceData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSSurfaceData.h>
+#include <MeshLib/FSElementData.h>
 #include <FSCore/FSDir.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <QtCore/QDir>
@@ -843,18 +843,18 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		ss << "Mesh data generator" << " [" << sztype << "]";
 		return ss.str();
 	}
-	else if (dynamic_cast<FEMeshData*>(po))
+	else if (dynamic_cast<FSMeshData*>(po))
 	{
-		FENodeData* nodeData = dynamic_cast<FENodeData*>(po);
+		FSNodeData* nodeData = dynamic_cast<FSNodeData*>(po);
 		if (nodeData) return "Node data";
 
-		FESurfaceData* surfData = dynamic_cast<FESurfaceData*>(po);
+		FSSurfaceData* surfData = dynamic_cast<FSSurfaceData*>(po);
 		if (surfData) return "Surface data";
 
-		FEElementData* elemData = dynamic_cast<FEElementData*>(po);
+		FSElementData* elemData = dynamic_cast<FSElementData*>(po);
 		if (elemData) return "Element data";
 
-		FEPartData* partData = dynamic_cast<FEPartData*>(po);
+		FSPartData* partData = dynamic_cast<FSPartData*>(po);
 		if (partData) return "Part data";
 
 		assert(false);

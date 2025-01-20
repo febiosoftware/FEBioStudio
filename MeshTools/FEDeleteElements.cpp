@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEModifier.h"
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 
 FEDeleteElements::FEDeleteElements() : FEModifier("delete elements")
 {
@@ -223,15 +223,15 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 	// copy data
 	for (int i = 0; i < pm->MeshDataFields(); ++i)
 	{
-		FEPartData* ps = dynamic_cast<FEPartData*>(pm->GetMeshDataField(i));
+		FSPartData* ps = dynamic_cast<FSPartData*>(pm->GetMeshDataField(i));
 		if (ps)
 		{
-			FEItemListBuilder* ls = ps->GetItemList();
+			FSItemListBuilder* ls = ps->GetItemList();
 			FSPartSet* pg = newMesh->FindFEPartSet(ls->GetName()); assert(pg);
 
 			if (pg)
 			{
-				FEPartData* pd = new FEPartData(newMesh);
+				FSPartData* pd = new FSPartData(newMesh);
 				pd->Create(pg, ps->GetDataType(), ps->GetDataFormat());
 				pd->SetName(ps->GetName());
 				newMesh->AddMeshDataField(pd);
@@ -240,14 +240,14 @@ FSMesh* FEDeleteElements::Apply(FSMesh* pm)
 				{
 					std::vector<int> tag(NE0, -1);
 
-					FEElemList* srcList = ps->BuildElemList();
-					FEElemList::Iterator it = srcList->First();
+					FSElemList* srcList = ps->BuildElemList();
+					FSElemList::Iterator it = srcList->First();
 					for (int j = 0; j < srcList->Size(); ++j, ++it)
 					{
 						tag[it->m_lid] = j;
 					}
 
-					FEElemList* elemList = pd->BuildElemList();
+					FSElemList* elemList = pd->BuildElemList();
 					it = elemList->First();
 					for (int j = 0; j < elemList->Size(); ++j, ++it)
 					{

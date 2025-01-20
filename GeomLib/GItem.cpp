@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "geom.h"
 #include "GPartSection.h"
 #include <GeomLib/FSGroup.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables

@@ -544,7 +544,7 @@ bool NIKE3DProject::BuildNodes(FSProject& prj)
 		if (pbc)
 		{
 			int bc;
-			FEItemListBuilder* pitem = pbc->GetItemList();
+			FSItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
 			FSNodeList::Iterator pn = pg->First();
@@ -559,7 +559,7 @@ bool NIKE3DProject::BuildNodes(FSProject& prj)
 		if (pbc)
 		{
 			int rc;
-			FEItemListBuilder* pitem = pbc->GetItemList();
+			FSItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
 			FSNodeList::Iterator pn = pg->First();
@@ -766,7 +766,7 @@ bool NIKE3DProject::BuildRigidNodes(FSProject &prj)
 			rf.nsize = 4;
 			int n = 0;
 
-			FEItemListBuilder* pitem = pi->GetItemList();
+			FSItemListBuilder* pitem = pi->GetItemList();
 			if (pitem)
 			{
 				unique_ptr<FSNodeList> pg(pitem->BuildNodeList() );
@@ -886,12 +886,12 @@ bool NIKE3DProject::BuildInterfaces(FSProject &prj)
 
 			// count slave faces
 			n = 0;
-			FEItemListBuilder* pss = pi->GetPrimarySurface();
+			FSItemListBuilder* pss = pi->GetPrimarySurface();
 			if (pss)
 			{
-				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
+				unique_ptr<FSFaceList> pgs(pss->BuildFaceList());
 				FSMesh* pm;
-				FEFaceList::Iterator pf = pgs->First();
+				FSFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
 				{
 					FSFace& rf = *(pf->m_pi);
@@ -909,12 +909,12 @@ bool NIKE3DProject::BuildInterfaces(FSProject &prj)
 			
 			// count master surfaces
 			n = 0;
-			FEItemListBuilder* pms = pi->GetSecondarySurface();
+			FSItemListBuilder* pms = pi->GetSecondarySurface();
 			if (pms)
 			{
-				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());
+				unique_ptr<FSFaceList> pgm(pms->BuildFaceList());
 				FSMesh* pm;
-				FEFaceList::Iterator pf = pgm->First();
+				FSFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
 				{
 					FSFace& rf = *(pf->m_pi);
@@ -965,12 +965,12 @@ bool NIKE3DProject::BuildInterfaces(FSProject &prj)
 
 			// count slave faces
 			n = 0;
-			FEItemListBuilder* pss = pt->GetPrimarySurface();
+			FSItemListBuilder* pss = pt->GetPrimarySurface();
 			if (pss)
 			{
-				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
+				unique_ptr<FSFaceList> pgs(pss->BuildFaceList());
 				FSMesh* pm;
-				FEFaceList::Iterator pf = pgs->First();
+				FSFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
 				{
 					FSFace& rf = *(pf->m_pi);
@@ -988,12 +988,12 @@ bool NIKE3DProject::BuildInterfaces(FSProject &prj)
 
 			// count master surfaces
 			n = 0;
-			FEItemListBuilder* pms = pt->GetSecondarySurface();
+			FSItemListBuilder* pms = pt->GetSecondarySurface();
 			if (pms)
 			{
-				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());
+				unique_ptr<FSFaceList> pgm(pms->BuildFaceList());
 				FSMesh* pm;
-				FEFaceList::Iterator pf = pgm->First();
+				FSFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
 				{
 					FSFace& rf = *(pf->m_pi);
@@ -1033,7 +1033,7 @@ bool NIKE3DProject::BuildNodalLoads(FSProject& prj)
 //			LoadCurve& lc = *fem.GetParamCurve(pbc->GetParam(FSNodalDOFLoad::LOAD));
 			int nlc = -1;// AddLoadCurve(lc);
 			int bc = pbc->GetDOF() + 1;
-			FEItemListBuilder* pitem = pbc->GetItemList();
+			FSItemListBuilder* pitem = pbc->GetItemList();
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList() );
 			FSNodeList::Iterator pn = pg->First();
 			for (k=0; k<pg->Size(); ++k, ++pn)
@@ -1055,13 +1055,13 @@ bool NIKE3DProject::BuildNodalLoads(FSProject& prj)
 //			LoadCurve& lc = *ptc->GetLoadCurve(FSSurfaceTraction::LOAD);
 			int nlc = -1;// AddLoadCurve(lc);
 
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			unique_ptr<FEFaceList> ps(pitem->BuildFaceList());
+			FSItemListBuilder* pitem = ptc->GetItemList();
+			unique_ptr<FSFaceList> ps(pitem->BuildFaceList());
 
 			vec3d t = ptc->GetVecValue(FSSurfaceTraction::LOAD);
 
 			std::vector<vec3d> fn; fn.resize(m_Ctrl.numnp);
-			FEFaceList::Iterator pf = ps->First();
+			FSFaceList::Iterator pf = ps->First();
 			FSMesh* pm;
 			for (k=0; k<ps->Size(); ++k, ++pf)
 			{
@@ -1129,10 +1129,10 @@ bool NIKE3DProject::BuildPressureLoads(FSProject &prj)
 			int nlc = -1;// AddLoadCurve(lc);
 			
 			PRESSURE_LOAD pl;
-			FEItemListBuilder* pitem = ppl->GetItemList();
-			unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
+			FSItemListBuilder* pitem = ppl->GetItemList();
+			unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
 			FSMesh* pm;
-			FEFaceList::Iterator pf = pg->First();
+			FSFaceList::Iterator pf = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pf)
 			{
 				FSFace& f = *(pf->m_pi);
@@ -1179,7 +1179,7 @@ bool NIKE3DProject::BuildDisplacements(FSProject &prj)
 			int nlc = -1;// AddLoadCurve(lc);
 			int bc = pbc->GetDOF()+1;
 
-			FEItemListBuilder* pitem = pbc->GetItemList();
+			FSItemListBuilder* pitem = pbc->GetItemList();
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
 			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
@@ -1255,7 +1255,7 @@ bool NIKE3DProject::BuildNodalVelocities(FSProject &prj)
 		if (pbc)
 		{
 			vec3d v = pbc->GetVelocity();
-			FEItemListBuilder* pitem = pbc->GetItemList();
+			FSItemListBuilder* pitem = pbc->GetItemList();
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
 			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)

@@ -205,7 +205,7 @@ void GLVolumeFlowPlot::UpdateBoundingBox()
 	BOX box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible())
 		{
@@ -254,7 +254,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& el = pm->ElementRef(i);
+			FSElement_& el = pm->ElementRef(i);
 			Material* pmat = pfem->GetMaterial(el.m_MatID);
 			if (pmat->benable && el.IsVisible())
 			{
@@ -349,7 +349,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(iel);
+		FSElement_& el = pm->ElementRef(iel);
 		if (el.m_MatID != matId)
 		{
 			pmat = ps->GetMaterial(el.m_MatID);

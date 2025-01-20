@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FESurfaceModifier.h"
-#include <MeshLib/FENodeEdgeList.h>
+#include <MeshLib/FSNodeEdgeList.h>
 
 //-----------------------------------------------------------------------------
 // This class implements a modifier that fills a hole in a quad mesh. 

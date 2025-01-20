@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEMeshAdaptor.h"
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 FSMeshAdaptor::FSMeshAdaptor(FSModel* fem, int ntype) : FSDomainComponent(ntype, fem)
 {

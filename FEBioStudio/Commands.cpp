@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/MeshLayer.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <ImageLib/ImageAnalysis.h>
 #include <FEMLib/FERigidLoad.h>
 using namespace std;
@@ -297,7 +297,7 @@ void CCmdAddLoadController::UnExecute()
 }
 
 //=============================================================================
-CCmdAddMeshDataField::CCmdAddMeshDataField(FSMesh* pm, FEMeshData* pmd) : CCommand("Add mesh data")
+CCmdAddMeshDataField::CCmdAddMeshDataField(FSMesh* pm, FSMeshData* pmd) : CCommand("Add mesh data")
 {
 	m_pm = pm;
 	m_pmd = pmd;
@@ -1784,7 +1784,7 @@ void CCmdSelectElements::UnExecute()
 {
 	for (int i = 0; i<m_pm->Elements(); ++i)
 	{
-		FEElement_& el = m_pm->ElementRef(i);
+		FSElement_& el = m_pm->ElementRef(i);
 		if (m_ptag[i])
 			el.Select();
 		else
@@ -2365,7 +2365,7 @@ void CCmdDeleteFESelection::Execute()
 	if (m_pnew == 0)
 	{
 		m_pnew = new FSMesh(*m_pold);
-		FEMeshBuilder meshBuilder(*m_pnew);
+		FSMeshBuilder meshBuilder(*m_pnew);
 
 		if      (m_nitem == ITEM_ELEM) meshBuilder.DeleteSelectedElements();
 		else if (m_nitem == ITEM_FACE) meshBuilder.DeleteSelectedFaces();
@@ -3210,7 +3210,7 @@ CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
 void CCmdInvertElements::Execute()
 {
 	FSMesh* pm = m_po->GetFEMesh();
-	FEMeshBuilder meshBuilder(*pm);
+	FSMeshBuilder meshBuilder(*pm);
 	meshBuilder.InvertSelectedElements();
 	m_po->Update(false);
 }
@@ -3489,7 +3489,7 @@ void CCmdAddMaterial::UnExecute()
 // CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n) : CCommand("Assign selection")
+CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FSItemListBuilder* pl, int n) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
@@ -3503,7 +3503,7 @@ CCmdSetItemList::~CCmdSetItemList()
 
 void CCmdSetItemList::Execute()
 {
-	FEItemListBuilder* pold = m_pbc->GetItemList(m_index);
+	FSItemListBuilder* pold = m_pbc->GetItemList(m_index);
 	m_pbc->SetItemList(m_pl, m_index);
 	m_pl = pold;
 }
@@ -3517,7 +3517,7 @@ void CCmdSetItemList::UnExecute()
 // CCmdAddToItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
+CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FSItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3525,7 +3525,7 @@ CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vect
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		FEItemListBuilder::Iterator it = m_pold->begin();
+		FSItemListBuilder::Iterator it = m_pold->begin();
 		for (int i = 0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }
@@ -3546,7 +3546,7 @@ void CCmdAddToItemListBuilder::UnExecute()
 // CCmdRemoveFromItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
+CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FSItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3554,7 +3554,7 @@ CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* 
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		FEItemListBuilder::Iterator it = m_pold->begin();
+		FSItemListBuilder::Iterator it = m_pold->begin();
 		for (int i = 0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }
@@ -3649,7 +3649,7 @@ CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : C
 	{
 		for (int i = 0; i < pil->ItemLists(); ++i)
 		{
-			FEItemListBuilder* pl = pil->GetItemList(i);
+			FSItemListBuilder* pl = pil->GetItemList(i);
 			m_sel.push_back(pl);
 			if (pl && (pl->GetReferenceCount() == 1)) AddCommand(new CCmdDeleteFSObject(pl));
 		}
@@ -3796,7 +3796,7 @@ void CCmdDeleteMeshLayer::UnExecute()
 // CCmdRemoveMeshData
 //-----------------------------------------------------------------------------
 
-CCmdRemoveMeshData::CCmdRemoveMeshData(FEMeshData* meshData) : CCommand("Remove mesh data")
+CCmdRemoveMeshData::CCmdRemoveMeshData(FSMeshData* meshData) : CCommand("Remove mesh data")
 {
 	m_data = meshData;
 	m_index = -1;

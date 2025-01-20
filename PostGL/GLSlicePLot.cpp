@@ -213,7 +213,7 @@ int CGLSlicePlot::UpdateSlice(float ref, std::vector<std::pair<int, float> >& ac
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible() && el.IsSolid())
 		{
@@ -288,7 +288,7 @@ void CGLSlicePlot::UpdateBoundingBox()
 	BOX box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible())
 		{
@@ -340,7 +340,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& el = pm->ElementRef(i);
+			FSElement_& el = pm->ElementRef(i);
 			Material* pmat = pfem->GetMaterial(el.m_MatID);
 			if (pmat->benable && el.IsVisible())
 			{
@@ -428,7 +428,7 @@ void CGLSlicePlot::UpdateMesh()
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(activeElements[i].first);
+		FSElement_& el = pm->ElementRef(activeElements[i].first);
 
 		const int* nt = nullptr;
 		switch (el.Type())

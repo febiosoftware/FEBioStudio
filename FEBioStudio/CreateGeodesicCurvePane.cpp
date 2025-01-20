@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QSpinBox>
 #include <GeomLib/GCurveMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include "GLHighlighter.h"
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/GLMesh.h>
@@ -216,7 +216,7 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	PathOnMesh path = ProjectToGeodesic(triMesh, pt, 100, 1e-6);
 
 	// create the curve mesh
-	FECurveMesh* pc = new FECurveMesh;
+	FSCurveMesh* pc = new FSCurveMesh;
 	pc->Create(path.Points(), path.Points() - 1);
 	for (int i = 0; i < path.Points(); ++i)
 	{

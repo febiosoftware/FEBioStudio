@@ -109,14 +109,14 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CItemListSelectionBox : public CSelectionBox
 {
 public:
 	CItemListSelectionBox(QWidget* parent = nullptr);
 
-	void SetItemList(FEItemListBuilder* pItem);
+	void SetItemList(FSItemListBuilder* pItem);
 };
 
 class CMainWindow;

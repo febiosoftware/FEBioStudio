@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEBoundaryLayerMesher.h"
 #include "FEDomain.h"
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <map>
 using namespace std;
 
@@ -132,7 +132,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			dom.AddElement(iel);
 			// set meshing parameters
 			const FSFace& face = pm->Face(fdata[it->second[0]]);
-			FEElement_& el = pm->Element(iel);
+			FSElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
 				// get the box from this domain
 				int ibox = dom.Boxes() - 1;
@@ -182,7 +182,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// only allow two shared nodes
 			if (cn.size() != 2) return false;
 			int iel = (int)it->first;
-			FEElement_& el = pm->Element(iel);
+			FSElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
 				// we have an external corner
 				// add element to domain
@@ -231,7 +231,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 					// find the neighboring element
 					int jel = -1;
 					for (int k = 0; k<pm->Elements(); ++k) {
-						FEElement_& oel = pm->Element(k);
+						FSElement_& oel = pm->Element(k);
 						if ((k != iel) && (oel.Type() == FE_TET4))
 							if (oel.FindFace(opface[i]) != -1) {
 								jel = k;
@@ -266,7 +266,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	for (ie = fne.begin(); ie != fne.end(); ++ie) {
 		// we have an internal corner
 		int iel = (int)ie->first;
-		FEElement_& el = pm->Element(iel);
+		FSElement_& el = pm->Element(iel);
 		if ((ie->second.size() == 2) && (el.Type() == FE_HEX8)) {
 			// add element to domain
 			dom.AddElement(iel);
@@ -370,7 +370,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	for (int i = 0; i<ne0; ++i)
 		if (delem[i]) pm->Element(i).m_ntag = -1;
 
-	FEMeshBuilder meshBuilder(*pm);
+	FSMeshBuilder meshBuilder(*pm);
 	meshBuilder.DeleteTaggedElements(-1);
 
 	// rebuild the object

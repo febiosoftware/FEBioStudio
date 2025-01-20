@@ -765,7 +765,7 @@ void CGLModelScene::RenderTags(GLContext& rc)
 				int NE = selection->Count();
 				for (int i = 0; i < NE; i++)
 				{
-					FEElement_& el = *selection->Element(i); assert(el.IsSelected());
+					FSElement_& el = *selection->Element(i); assert(el.IsSelected());
 					tag.r = T.LocalToGlobal(pm->ElementCenter(el));
 					tag.c = extcol;
 					int nid = el.GetID();
@@ -1051,14 +1051,14 @@ bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh)
 		int n[FSFace::MAX_NODES];
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement_& el = *esel->Element(i); assert(el.IsSelected());
+			FSElement_& el = *esel->Element(i); assert(el.IsSelected());
 			if (el.IsSolid())
 			{
 				int nf = el.Faces();
 				for (int j = 0; j < nf; ++j)
 				{
 					int nj = el.m_nbr[j];
-					FEElement_* pej = pm->ElementPtr(nj);
+					FSElement_* pej = pm->ElementPtr(nj);
 					if ((pej == nullptr) || (!pej->IsSelected()))
 					{
 						FSFace f = el.GetFace(j);
@@ -1385,7 +1385,7 @@ void GLObjectItem::ColorByElementType(GLMesh& msh)
 		GLColor col(212, 212, 212);
 		if (face.eid >= 0)
 		{
-			FEElement_* pe = pm->ElementPtr(face.eid);
+			FSElement_* pe = pm->ElementPtr(face.eid);
 			if (pe)
 			{
 				const int a = 212;

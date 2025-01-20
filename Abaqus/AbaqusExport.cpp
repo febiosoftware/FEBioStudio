@@ -107,7 +107,7 @@ bool AbaqusExport::Write(const char* szfile)
 
 				for (int j = i; j < NE; ++j)
 				{
-					FEElement_& elj = mesh->Element(j);
+					FSElement_& elj = mesh->Element(j);
 
 					if ((elj.m_gid == gid) && (elj.Type() == ntype))
 					{

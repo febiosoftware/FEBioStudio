@@ -180,7 +180,7 @@ void GMaterial::Load(IArchive &ar)
 	}
 }
 
-FEItemListBuilder* GMaterial::GetItemList(int n)
+FSItemListBuilder* GMaterial::GetItemList(int n)
 {
 	assert(n == 0);
 	GModel& mdl = m_ps->GetModel();
@@ -251,7 +251,7 @@ FEItemListBuilder* GMaterial::GetItemList(int n)
 	return m_partList;
 }
 
-void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
+void GMaterial::SetItemList(FSItemListBuilder* pi, int n)
 {
 	assert(n == 0);
 

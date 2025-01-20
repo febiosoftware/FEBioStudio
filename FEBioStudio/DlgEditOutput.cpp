@@ -302,7 +302,7 @@ public:
 		int N = var.Domains();
 		for (int i=0; i<N; ++i)
 		{
-			const FEItemListBuilder* item = var.GetDomain(i);
+			const FSItemListBuilder* item = var.GetDomain(i);
 			domList->addItem(QString::fromStdString(item->GetName()));
 		}
 	}
@@ -451,7 +451,7 @@ void CDlgEditOutput::OnAddSelection()
 	}
 
 	FSModel& fem = m_prj.GetFSModel();
-	std::vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var->domainType());
+	std::vector<FSItemListBuilder*> list = fem.GetModel().AllNamedSelections(var->domainType());
 
 	QStringList names;
 	for (size_t i=0; i<list.size(); ++i)
@@ -540,7 +540,7 @@ void CDlgEditOutput::UpdateLogTable()
 		else
 		{
 			FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&logi);
-			FEItemListBuilder* pl = pil->GetItemList();
+			FSItemListBuilder* pl = pil->GetItemList();
 			if (pl == nullptr)
 			{
 				if (logi.Type() == FSLogData::LD_NODE) list = "(all nodes)";

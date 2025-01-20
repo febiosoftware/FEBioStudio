@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DataMap.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <assert.h>
 using namespace Post;
 
@@ -71,7 +71,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 
 	for (i=0; i<mesh.Elements(); i++)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 
 		if (e.IsSolid())
 		{

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "xpltFileReader.h"
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSElement.h>
 
 class FSMesh;
 

@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
-#include <MeshLib/FEElement.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSElement.h>
+#include <MeshLib/FSMesh.h>
 
 // This file contains helper classes for the FEBoundaryLayerMesher class
 class FSDomain;

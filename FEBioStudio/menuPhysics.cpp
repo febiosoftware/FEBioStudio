@@ -40,9 +40,9 @@ SOFTWARE.*/
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
 #include "DlgStepViewer.h"
-#include <MeshLib/FENodeData.h>
-#include <MeshLib/FESurfaceData.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSNodeData.h>
+#include <MeshLib/FSSurfaceData.h>
+#include <MeshLib/FSElementData.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
@@ -98,7 +98,7 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 				case SELECT_FE_EDGES:
 				case SELECT_FE_NODES:
 					{
-						FEItemListBuilder* items = psel->CreateItemList();
+						FSItemListBuilder* items = psel->CreateItemList();
 						if (items)
 						{
 							items->SetName(name);
@@ -154,7 +154,7 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 				{
-					FEItemListBuilder* items = psel->CreateItemList();
+					FSItemListBuilder* items = psel->CreateItemList();
 					if (items)
 					{
 						items->SetName(name);
@@ -246,7 +246,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 				case SELECT_FE_EDGES:
 				case SELECT_FE_NODES:
 				{
-					FEItemListBuilder* items = psel->CreateItemList();
+					FSItemListBuilder* items = psel->CreateItemList();
 					if (items)
 					{
 						items->SetName(name);
@@ -302,7 +302,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 					{
-						FEItemListBuilder* items = psel->CreateItemList();
+						FSItemListBuilder* items = psel->CreateItemList();
 						if (items)
 						{
 							items->SetName(name);
@@ -416,7 +416,7 @@ void CMainWindow::on_actionAddIC_triggered()
 				int itemType = pic->GetMeshItemType();
 				if (psel->Supports(itemType))
 				{
-					FEItemListBuilder* items = psel->CreateItemList();
+					FSItemListBuilder* items = psel->CreateItemList();
 					if (items)
 					{
 						items->SetName(name);
@@ -476,7 +476,7 @@ void CMainWindow::on_actionAddContact_triggered()
 					case SELECT_SURFACES:
 					case SELECT_FE_FACES:
 						{
-							FEItemListBuilder* items = psel->CreateItemList();
+							FSItemListBuilder* items = psel->CreateItemList();
 							items->SetName(name);
 							gm.AddNamedSelection(items);
 							si.SetItemList(items);
@@ -560,7 +560,7 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 				case SELECT_SURFACES:
 				case SELECT_FE_FACES:
 				{
-					FEItemListBuilder* items = psel->CreateItemList();
+					FSItemListBuilder* items = psel->CreateItemList();
 					items->SetName(name);
 					gm.AddNamedSelection(items);
 					pi->SetItemList(items);
@@ -839,13 +839,13 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		}
 		else
 		{
-			FEMeshData* data = nullptr;
+			FSMeshData* data = nullptr;
 			switch (dlg.GetType())
 			{
-			case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
-			case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-			case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-			case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case NODE_DATA: data = new FSNodeData   (po, dlg.GetDataType()); break;
+			case FACE_DATA: data = new FSSurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case ELEM_DATA: data = new FSElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case PART_DATA: data = new FSPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
 			}
 
 			if (data)

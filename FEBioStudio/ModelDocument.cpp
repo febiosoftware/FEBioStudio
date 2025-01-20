@@ -366,9 +366,9 @@ void CModelDocument::DeleteObject(FSObject* po)
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}
-	else if (dynamic_cast<FEMeshData*>(po))
+	else if (dynamic_cast<FSMeshData*>(po))
 	{
-		FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+		FSMeshData* pd = dynamic_cast<FSMeshData*>(po);
 		DoCommand(new CCmdRemoveMeshData(pd));
 	}
 	else
@@ -893,7 +893,7 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 	FSModel* ps = GetFSModel();
 
 	// create the selection command
-	FEItemListBuilder* pl = 0;
+	FSItemListBuilder* pl = 0;
 
 	IHasItemLists* phs = dynamic_cast<IHasItemLists*>(po);
 	if (phs) pl = phs->GetItemList(n);

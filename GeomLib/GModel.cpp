@@ -38,9 +38,9 @@ SOFTWARE.*/
 #include <MeshTools/GObject2D.h>
 #include <FSCore/FSObjectList.h>
 #include <FEMLib/GDiscreteObject.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include "GGroup.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/MeshLayer.h>
 #include <map>
 
@@ -923,14 +923,14 @@ int GModel::CountNamedSelections() const
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GModel::FindNamedSelection(int nid)
+FSItemListBuilder* GModel::FindNamedSelection(int nid)
 {
 	// don't bother looking if the ID is invalid
 	if (nid < 0) return 0;
 
 	int i, N;
 
-	FEItemListBuilder* pg = 0;
+	FSItemListBuilder* pg = 0;
 
 	// search the GGroups
 	N = PartLists();
@@ -1000,7 +1000,7 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned int filter)
+FSItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
 	if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 	{
@@ -1008,7 +1008,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 		int N = PartLists();
 		for (int i = 0; i < N; ++i)
 		{
-			FEItemListBuilder* pg = PartList(i);
+			FSItemListBuilder* pg = PartList(i);
 			if (pg->GetName() == name) return pg;
 		}
 	}
@@ -1018,7 +1018,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 		int N = FaceLists();
 		for (int i = 0; i < N; ++i)
 		{
-			FEItemListBuilder* pg = FaceList(i);
+			FSItemListBuilder* pg = FaceList(i);
 			if (pg->GetName() == name) return pg;
 		}
 	}
@@ -1028,7 +1028,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 		int N = EdgeLists();
 		for (int i = 0; i < N; ++i)
 		{
-			FEItemListBuilder* pg = EdgeList(i);
+			FSItemListBuilder* pg = EdgeList(i);
 			if (pg->GetName() == name) return pg;
 		}
 	}
@@ -1038,7 +1038,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 		int N = NodeLists();
 		for (int i = 0; i < N; ++i)
 		{
-			FEItemListBuilder* pg = NodeList(i);
+			FSItemListBuilder* pg = NodeList(i);
 			if (pg->GetName() == name) return pg;
 		}
 	}
@@ -1054,7 +1054,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 			int N = po->FEElemSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEElemSet(i);
+				FSItemListBuilder* pg = po->GetFEElemSet(i);
 				if (pg->GetName() == name) return pg;
 			}
 		}
@@ -1064,7 +1064,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 			int N = po->FESurfaces();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFESurface(i);
+				FSItemListBuilder* pg = po->GetFESurface(i);
 				if (pg->GetName() == name) return pg;
 			}
 		}
@@ -1074,7 +1074,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 			int N = po->FEEdgeSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				FSItemListBuilder* pg = po->GetFEEdgeSet(i);
 				if (pg->GetName() == name) return pg;
 			}
 		}
@@ -1084,7 +1084,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 			int N = po->FENodeSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				FSItemListBuilder* pg = po->GetFENodeSet(i);
 				if (pg->GetName() == name) return pg;
 			}
 		}
@@ -1094,15 +1094,15 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 }
 
 //-----------------------------------------------------------------------------
-vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
+vector<FSItemListBuilder*> GModel::AllNamedSelections(int ntype)
 {
-	vector<FEItemListBuilder*> list;
+	vector<FSItemListBuilder*> list;
 
 	if (ntype == DOMAIN_PART)
 	{
 		for (int i = 0; i<PartLists(); ++i)
 		{
-			FEItemListBuilder* pg = PartList(i);
+			FSItemListBuilder* pg = PartList(i);
 			list.push_back(pg);
 		}
 	}
@@ -1111,7 +1111,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 	{
 		for (int i = 0; i<FaceLists(); ++i)
 		{
-			FEItemListBuilder* pg = FaceList(i);
+			FSItemListBuilder* pg = FaceList(i);
 			list.push_back(pg);
 		}
 	}
@@ -1120,7 +1120,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 	{
 		for (int i = 0; i<EdgeLists(); ++i)
 		{
-			FEItemListBuilder* pg = EdgeList(i);
+			FSItemListBuilder* pg = EdgeList(i);
 			list.push_back(pg);
 		}
 	}
@@ -1129,7 +1129,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 	{
 		for (int i = 0; i<NodeLists(); ++i)
 		{
-			FEItemListBuilder* pg = NodeList(i);
+			FSItemListBuilder* pg = NodeList(i);
 			list.push_back(pg);
 		}
 	}
@@ -1144,7 +1144,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		{
 			for (int i = 0; i<po->FEElemSets(); ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEElemSet(i);
+				FSItemListBuilder* pg = po->GetFEElemSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1153,7 +1153,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		{
 			for (int i = 0; i<po->FESurfaces(); ++i)
 			{
-				FEItemListBuilder*pg = po->GetFESurface(i);
+				FSItemListBuilder*pg = po->GetFESurface(i);
 				list.push_back(pg);
 			}
 		}
@@ -1162,7 +1162,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		{
 			for (int i = 0; i < po->FEEdgeSets(); ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				FSItemListBuilder* pg = po->GetFEEdgeSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1171,7 +1171,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 		{
 			for (int i = 0; i<po->FENodeSets(); ++i)
 			{
-				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				FSItemListBuilder* pg = po->GetFENodeSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1181,7 +1181,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void GModel::AddNamedSelection(FEItemListBuilder* itemList)
+void GModel::AddNamedSelection(FSItemListBuilder* itemList)
 {
 	if      (dynamic_cast<GNodeList*>(itemList)) AddNodeList(dynamic_cast<GNodeList*>(itemList));
 	else if (dynamic_cast<GEdgeList*>(itemList)) AddEdgeList(dynamic_cast<GEdgeList*>(itemList));

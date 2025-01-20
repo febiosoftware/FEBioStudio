@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GObject.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 
 class tetgenio;
 class GOCCObject;
@@ -64,7 +64,7 @@ public:
 	FSLineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
 
 	// get the mesh of an edge curve
-	FECurveMesh* GetFECurveMesh(int edgeId) override;
+	FSCurveMesh* GetFECurveMesh(int edgeId) override;
 
 	void ReplaceSurfaceMesh(FSSurfaceMesh* newMesh) override;
 

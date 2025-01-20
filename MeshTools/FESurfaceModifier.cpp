@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESurfaceModifier.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GeomLib/FSGroup.h>
 #include <stdarg.h>
 

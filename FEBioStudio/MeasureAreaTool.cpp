@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MeasureAreaTool.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Area")

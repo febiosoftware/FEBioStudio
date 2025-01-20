@@ -94,7 +94,7 @@ void CLogDataSettings::Save(OArchive& ar)
 				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
 				if (pil)
 				{
-					FEItemListBuilder* pl = pil->GetItemList();
+					FSItemListBuilder* pl = pil->GetItemList();
 					if (pl) ar.WriteChunk(CID_PRJ_LOGDATA_GID, pl->GetID());
 				}
 			}

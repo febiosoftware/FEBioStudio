@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEDataField.h>

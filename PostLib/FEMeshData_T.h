@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #include "FEMeshData.h"
 #include "FEState.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include "FEDataField.h"
 #include <set>
 

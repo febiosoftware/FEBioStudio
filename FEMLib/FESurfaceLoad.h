@@ -8,7 +8,7 @@ class FSSurfaceLoad : public FSLoad
 {
 public:
     FSSurfaceLoad(int ntype, FSModel* ps);
-    FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep);
+    FSSurfaceLoad(int ntype, FSModel* ps, FSItemListBuilder* pi, int nstep);
 };
 
 //-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ public:
 	enum { LOAD, NTYPE };
 
 public:
-	FSPressureLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSPressureLoad(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLinearFlag(bool b) { SetBoolValue(NTYPE, b); }
 	bool GetLinearFlag() { return GetBoolValue(NTYPE); }
@@ -41,7 +41,7 @@ public:
 	enum { LOAD, NTYPE, NFLUX };
 
 public:
-	FSFluidFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSFluidFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -65,7 +65,7 @@ public:
 	enum { LOAD, NTYPE, NTRAC };
 
 public:
-	FSBPNormalTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSBPNormalTraction(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -89,7 +89,7 @@ public:
 	enum { LOAD, NTYPE, BC };
 
 public:
-	FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSSoluteFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -113,7 +113,7 @@ public:
     enum { SID, BSHL };
     
 public:
-    FSSoluteNaturalFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSSoluteNaturalFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
     
     int GetBC() { return GetIntValue(SID); }
     void SetBC(int n) { SetIntValue(SID, n); }
@@ -132,7 +132,7 @@ public:
     enum { AMBP, AMBC, BSHL };
 
 public:
-    FSMatchingOsmoticCoefficient(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSMatchingOsmoticCoefficient(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
     void SetLoadP(double f) { SetFloatValue(AMBP, f); }
     double GetLoadP() { return GetFloatValue(AMBP); }
@@ -154,7 +154,7 @@ public:
 	enum { FLUX };
 
 public:
-	FSHeatFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSHeatFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(FLUX, f); }
 	double GetLoad() { return GetFloatValue(FLUX); }
@@ -172,7 +172,7 @@ public:
 	enum { HC, TREF };
 
 public:
-	FSConvectiveHeatFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSConvectiveHeatFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	double GetCoefficient() { return GetFloatValue(HC); }
 	double GetTemperature() { return GetFloatValue(TREF); }
@@ -192,7 +192,7 @@ public:
 	enum { LOAD, TRACTION };
 
 public:
-	FSSurfaceTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSSurfaceTraction(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetScale(double f) { SetFloatValue(LOAD, f); }
 	double GetScale() { return GetFloatValue(LOAD); }
@@ -212,7 +212,7 @@ public:
     enum { SCALE, FORCE };
     
 public:
-    FSSurfaceForceUniform(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSSurfaceForceUniform(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
     
     void SetScale(double f) { SetFloatValue(SCALE, f); }
     double GetScale() { return GetFloatValue(SCALE); }
@@ -228,7 +228,7 @@ public:
     enum { SCALE, FORCE, PROFILE, NTYPE };
     
 public:
-    FSBearingLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSBearingLoad(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -239,7 +239,7 @@ public:
 	enum { LOAD, TRACTION };
 
 public:
-	FSFluidTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSFluidTraction(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetScale(double s);
 	double GetScale();
@@ -260,7 +260,7 @@ public:
     enum { LOAD };
     
 public:
-    FSFluidPressureLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSFluidPressureLoad(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -278,7 +278,7 @@ public:
     
 public:
     FSFluidVelocity(FSModel* ps);
-    FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, int nstep = 0);
+    FSFluidVelocity(FSModel* ps, FSItemListBuilder* pi, vec3d t, int nstep = 0);
     
     void SetLoad(vec3d t) { SetVecValue(LOAD, t); }
     vec3d GetLoad() { return GetVecValue(LOAD); }
@@ -293,7 +293,7 @@ public:
     
 public:
     FSFluidNormalVelocity(FSModel* ps);
-    FSFluidNormalVelocity(FSModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep = 0);
+    FSFluidNormalVelocity(FSModel* ps, FSItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -317,7 +317,7 @@ public:
     
 public:
     FSFluidRotationalVelocity(FSModel* ps);
-    FSFluidRotationalVelocity(FSModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep = 0);
+    FSFluidRotationalVelocity(FSModel* ps, FSItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep = 0);
     
     void SetLoad(double w) { SetFloatValue(LOAD, w); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -338,7 +338,7 @@ public:
     
 public:
     FSFluidFlowResistance(FSModel* ps);
-    FSFluidFlowResistance(FSModel* ps, FEItemListBuilder* pi, double b, double p, int nstep = 0);
+    FSFluidFlowResistance(FSModel* ps, FSItemListBuilder* pi, double b, double p, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -357,7 +357,7 @@ public:
     
 public:
     FSFluidFlowRCR(FSModel* ps);
-    FSFluidFlowRCR(FSModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep = 0);
+    FSFluidFlowRCR(FSModel* ps, FSItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -385,7 +385,7 @@ public:
     
 public:
     FSFluidBackflowStabilization(FSModel* ps);
-    FSFluidBackflowStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
+    FSFluidBackflowStabilization(FSModel* ps, FSItemListBuilder* pi, double b, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -401,7 +401,7 @@ public:
     
 public:
     FSFluidTangentialStabilization(FSModel* ps);
-    FSFluidTangentialStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
+    FSFluidTangentialStabilization(FSModel* ps, FSItemListBuilder* pi, double b, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -414,7 +414,7 @@ class FSFSITraction : public FSSurfaceLoad
 {
 public:
     FSFSITraction(FSModel* ps);
-    FSFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
+    FSFSITraction(FSModel* ps, FSItemListBuilder* pi, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -423,7 +423,7 @@ class FSBFSITraction : public FSSurfaceLoad
 {
 public:
     FSBFSITraction(FSModel* ps);
-    FSBFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
+    FSBFSITraction(FSModel* ps, FSItemListBuilder* pi, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -461,7 +461,7 @@ public:
     enum { SID };
     
 public:
-    FSFluidSolutesNaturalFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    FSFluidSolutesNaturalFlux(FSModel* ps, FSItemListBuilder* pi = 0, int nstep = 0);
     
     int GetBC() { return GetIntValue(SID); }
     void SetBC(int n) { SetIntValue(SID, n); }

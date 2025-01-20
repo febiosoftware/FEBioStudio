@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECylinder.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 extern double gain2(double x, double r, double n);
 
@@ -486,7 +486,7 @@ FSMesh* FECylinder::BuildWedged()
 		// wedge elements
 		for (k=0; k<m_nd; ++k)
 		{
-			FEElement_* ph = pm->ElementPtr(eid++);
+			FSElement_* ph = pm->ElementPtr(eid++);
 
 			ph->SetType(FE_PENTA6);
 			ph->m_gid = 0;
@@ -504,7 +504,7 @@ FSMesh* FECylinder::BuildWedged()
 		{
 			for (k=0; k<m_nd; ++k)
 			{
-				FEElement_* ph = pm->ElementPtr(eid++);
+				FSElement_* ph = pm->ElementPtr(eid++);
 
 				ph->SetType(FE_HEX8);
 				ph->m_gid = 0;
@@ -1079,7 +1079,7 @@ FSMesh* FECylinder2::BuildWedged()
 		// wedge elements
 		for (k=0; k<m_nd; ++k)
 		{
-			FEElement_* ph = pm->ElementPtr(eid++);
+			FSElement_* ph = pm->ElementPtr(eid++);
 
 			ph->SetType(FE_PENTA6);
 			ph->m_gid = 0;
@@ -1097,7 +1097,7 @@ FSMesh* FECylinder2::BuildWedged()
 		{
 			for (k=0; k<m_nd; ++k)
 			{
-				FEElement_* ph = pm->ElementPtr(eid++);
+				FSElement_* ph = pm->ElementPtr(eid++);
 
 				ph->SetType(FE_HEX8);
 				ph->m_gid = 0;

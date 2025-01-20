@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GMultiBox.h"
 #include <MeshTools/FEMultiBlockMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <algorithm>
 
 class GMultiBoxManipulator : public GObjectManipulator

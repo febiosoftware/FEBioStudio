@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesh.h"
+#include "FSMesh.h"
 #include <FSCore/math3d.h>
-#include "FEMeshBase.h"
-#include "FECoreMesh.h"
+#include "FSMeshBase.h"
+#include "FSCoreMesh.h"
 
 // project a node to a particular edge
 vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid);
@@ -111,19 +111,19 @@ bool FindElementRef(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 
 // project the point p in the current frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
+bool ProjectInsideElement(FSCoreMesh& m, FSElement_& el, const vec3f& p, double r[3]);
 
 bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q);
 
-bool IsInsideElement(FEElement_& el, double r[3], const double tol);
+bool IsInsideElement(FSElement_& el, double r[3], const double tol);
 
-void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x);
+void project_inside_element(FSElement_& el, const vec3f& p, double r[3], vec3f* x);
 
-bool project_inside_element2d(FEElement_& el, vec3d* x, const vec2d& p, double q[2]);
+bool project_inside_element2d(FSElement_& el, vec3d* x, const vec2d& p, double q[2]);
 
 // project the point p in the reference frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
+bool ProjectInsideReferenceElement(FSCoreMesh& m, FSElement_& el, const vec3f& p, double r[3]);
 
 // find the shortest path on a mesh (along the mesh' edges)
 std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1);
