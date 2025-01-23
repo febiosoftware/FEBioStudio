@@ -231,8 +231,9 @@ void FSProject::SetModule(int mod, bool setDefaultPlotVariables)
 		FSModel& fem = GetFSModel();
 		FEBio::InitFSModel(fem);
 
-		if (setDefaultPlotVariables && (m_plt.PlotVariables() == 0))
+		if (setDefaultPlotVariables)
 		{
+			m_plt.Clear();
 			// add some default variables
 			// TODO: Maybe I can pull this info from FEBio somehow
 			SetDefaultPlotVariables();
