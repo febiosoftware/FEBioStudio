@@ -47,6 +47,7 @@ private slots:
 	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
 	void progress(qint64 bytesReceived, qint64 bytesTotal);
     void unzipFinished();
+    void unzipSDKFinished();
 
 private:
     bool checkBinaries();
@@ -54,6 +55,8 @@ private:
 
 	void getFile();
 	void getFileReponse(QNetworkReply *r);
+
+    void unzipFiles();
 
     void getSDK();
     void getSDKResponse(QNetworkReply *r);
