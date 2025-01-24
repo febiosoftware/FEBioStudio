@@ -453,10 +453,11 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
+	bool renderInnerSurfaces = glm.RenderInnerSurfaces();
 	for (int i = 0; i < mesh->Partitions(); ++i)
 	{
 		const GLMesh::PARTITION& p = mesh->Partition(i);
-		if (p.nf > 0)
+		if ((p.nf > 0) && (renderInnerSurfaces || (p.tag == 0)))
 		{
 			int n0 = p.n0;
 			int matID = mesh->Face(n0).mid;

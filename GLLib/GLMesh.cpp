@@ -252,11 +252,12 @@ int GLMesh::AddFace(const GLMesh::FACE& face)
 	return ((int)m_Face.size() - 1);
 }
 
-void GLMesh::NewPartition()
+void GLMesh::NewPartition(int tag)
 {
 	PARTITION p;
 	p.n0 = m_Face.size();
 	p.nf = 0;
+	p.tag = tag;
 	m_FIL.push_back(p);
 }
 

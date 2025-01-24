@@ -77,8 +77,9 @@ public:
 
 	struct PARTITION
 	{
-		int n0; // start index into face list
-		int nf; // nr of faces in partition
+		int n0 = 0; // start index into face list
+		int nf = 0; // nr of faces in partition
+		int tag = 0; // used to define partition attributes such as whether it's internal/external
 	};
 
 public:
@@ -88,7 +89,7 @@ public:
 	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
 
-	void NewPartition();
+	void NewPartition(int tag = 0);
 
 	void AutoPartition();
 
