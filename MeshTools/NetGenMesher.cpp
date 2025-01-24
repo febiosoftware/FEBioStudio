@@ -32,12 +32,14 @@ SOFTWARE.*/
 #define NOMINMAX
 #endif
 
+#ifdef HAS_NETGEN
 namespace nglib {
 #include <nglib.h>
 }
 #include <meshing.hpp>
 
 using namespace nglib;
+#endif
 
 NetGenMesher::NetGenMesher()
 {
