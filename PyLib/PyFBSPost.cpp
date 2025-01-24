@@ -168,6 +168,7 @@ void init_FBSPost(py::module& m)
         .def_readonly("ElemData", &FEState::m_ELEM, py::return_value_policy::reference);
 
 	py::class_<NODEDATA>(post, "NODEDATA")
+        .def_readonly("r", &NODEDATA::m_rt)
         .def_readonly("val", &NODEDATA::m_val)
         .def_readonly("tag", &NODEDATA::m_ntag);
 
