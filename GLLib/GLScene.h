@@ -30,7 +30,6 @@ SOFTWARE.*/
 
 #include "GLGrid.h"
 #include "GLRenderEngine.h"
-#include <QString>
 
 class GLContext;
 class GObject;
@@ -104,7 +103,7 @@ public:
 	quatd GetGridOrientation() { return m_grid.m_q; }
 	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
 
-	void SetEnvironmentMap(QString filename) { m_envMap = filename; }
+	void SetEnvironmentMap(const std::string& filename) { m_envMap = filename; }
 
 	void ActivateEnvironmentMap(GLRenderEngine& re);
 	void DeactivateEnvironmentMap(GLRenderEngine& re);
@@ -146,7 +145,7 @@ protected:
 	GLGrid	m_grid;		// the grid object
 
 	unsigned int	m_envtex;	// enironment texture ID
-	QString m_envMap; // file name used for environment mapping 
+	std::string		m_envMap; // file name used for environment mapping 
 
 	std::vector<GLTAG> m_tags;
 

@@ -82,7 +82,7 @@ macro(findHdrSrcFEBio name)
 	file(GLOB SRC_${name} "${FEBioDir}/${name}/*.cpp")
 endmacro()
 
-set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink)
+set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink GLLib)
 set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot XML NumCore FEBioTest FEBioFluid FEBioMix)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)

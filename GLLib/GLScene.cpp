@@ -74,8 +74,8 @@ void GLScene::DeactivateEnvironmentMap(GLRenderEngine& re)
 void GLScene::LoadEnvironmentMap(GLRenderEngine& re)
 {
 	if (m_envtex != 0) return;
-	if (m_envMap.isEmpty()) return;
-	m_envtex = re.LoadEnvironmentMap(m_envMap.toStdString());
+	if (m_envMap.empty()) return;
+	m_envtex = re.LoadEnvironmentMap(m_envMap);
 }
 
 // this function will only adjust the camera if the currently

@@ -238,7 +238,7 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDo
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
 
 	SetItemMode(ITEM_ELEM);
 
