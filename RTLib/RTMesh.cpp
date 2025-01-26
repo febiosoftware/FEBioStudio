@@ -47,8 +47,6 @@ void Mesh::addTri(rt::Tri& tri)
 
 bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 {
-	const double tol = 0;// 0.0001;
-
 	const Vec3& fn = tri.fn;
 	Vec3* v = tri.r;
 
@@ -75,7 +73,7 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 	double r = (qe1 * Ai[0] + qe2 * Ai[2]);
 	double s = (qe1 * Ai[2] + qe2 * Ai[1]);
 
-	if ((r >= -tol) && (s >= -tol) && (r + s <= 1.0 + tol))
+	if ((r >= 0) && (s >= 0) && (r + s <= 1.0))
 	{
 		intersect.point = q;
 		intersect.r[0] = r;
@@ -87,8 +85,6 @@ bool intersectTri(rt::Tri& tri, const Ray& ray, Intersect& intersect)
 
 bool intersectTri(rt::Tri& tri, const Vec3& a, const Vec3& b)
 {
-	constexpr double tol = 0.0001;
-
 	const Vec3& fn = tri.fn;
 	Vec3* v = tri.r;
 
@@ -113,7 +109,7 @@ bool intersectTri(rt::Tri& tri, const Vec3& a, const Vec3& b)
 	double q02 = q0 * e2;
 	double r = q01 * Ai[0] + q02 * Ai[2];
 	double s = q01 * Ai[2] + q02 * Ai[1];
-	return ((r >= -tol) && (s >= -tol) && (r + s <= 1.0 + tol));
+	return ((r >= 0) && (s >= 0) && (r + s <= 1.0));
 }
 
 template <class T>
@@ -161,9 +157,8 @@ bool rt::intersect(Mesh& mesh, const Ray& ray, Point& point)
 
 bool insideBox(Box& box, rt::Tri& tri)
 {
-	const double eps = 1e-7;
 	Vec3* v = tri.r;
-	if (box.isInside(v[0], eps) && box.isInside(v[1], eps) && box.isInside(v[2], eps))
+	if (box.isInside(v[0]) && box.isInside(v[1]) && box.isInside(v[2]))
 	{
 		return true;
 	}
@@ -173,9 +168,8 @@ bool insideBox(Box& box, rt::Tri& tri)
 bool rt::intersectBox(Box& box, rt::Tri& tri)
 {
 	// quick check to see if any of the triangle nodes are inside the box.
-	const double eps = 1e-7;
 	Vec3* v = tri.r;
-	if (box.isInside(v[0], eps) || box.isInside(v[1], eps) || box.isInside(v[2], eps))
+	if (box.isInside(v[0]) || box.isInside(v[1]) || box.isInside(v[2]))
 	{
 		return true;
 	}

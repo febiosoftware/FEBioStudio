@@ -27,17 +27,25 @@ SOFTWARE.*/
 #include <memory>
 #include <cstring>
 
-RayTraceSurface::RayTraceSurface(size_t W, size_t H)
+RayTraceSurface::RayTraceSurface()
 {
-	w = W;
-	h = H;
-	d = new float[w * h * 4];
-	memset(d, 0, w * h * 4);
+	w = 0;
+	h = 0;
+	d = nullptr;
 }
 
 RayTraceSurface::~RayTraceSurface()
 {
 	delete d;
+}
+
+void RayTraceSurface::create(size_t W, size_t H)
+{
+	if (d) delete d;
+	w = W;
+	h = H;
+	d = new float[w * h * 4];
+	memset(d, 0, w * h * 4);
 }
 
 float* RayTraceSurface::value(size_t x, size_t y)

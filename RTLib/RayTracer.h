@@ -44,21 +44,22 @@ namespace rt {
 
 class RayTracer : public GLRenderEngine
 {
+	enum { WIDTH, HEIGHT, SHADOWS, MULTI_SAMPLE, BHV_LEVELS };
+
 public:
-	RayTracer(RayTraceSurface& target);
+	RayTracer();
 	~RayTracer();
 
 	void setupProjection(double fov, double fnear);
 
-	void setMultiSample(int ms);
-
-	void setBTreeLevels(int levels);
-
-	void useShadows(bool b);
-
 	void setBackgroundColor(GLColor c);
 
+	void setWidth (size_t W) { SetIntValue(WIDTH , (int) W); }
+	void setHeight(size_t H) { SetIntValue(HEIGHT, (int) H); }
 	RayTraceSurface& surface() { return surf; }
+
+	int width() const { return GetIntValue(WIDTH); }
+	int height() const { return GetIntValue(HEIGHT); }
 
 public:
 	void start() override;
@@ -115,14 +116,15 @@ public:
 private:
 	void preprocess();
 	void render();
-	rt::Color castRay(rt::Btree& octree, rt::Ray& ray);
+	rt::Color castRay(rt::Btree& bhv, rt::Ray& ray);
 
 	void addTriangle(rt::Tri& tri);
 
 private:
-	RayTraceSurface& surf;
+	RayTraceSurface surf;
+
 	rt::Mesh mesh;
-	rt::Btree btree;
+	rt::Btree bhv;
 	rt::Matrix4 modelView;
 	std::stack<rt::Matrix4> mvStack;
 
@@ -141,10 +143,6 @@ private:
 
 	double fieldOfView;
 	double nearPlane;
-
-	bool renderShadows = true;
-	int multiSample = 1;
-	int treeLevels = 8;
 
 	bool immediateMode = false;
 	PrimitiveType primType = POINTS;

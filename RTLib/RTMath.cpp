@@ -25,30 +25,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "RTMath.h"
 
-bool rt::Box::isInside(const rt::Vec3& p, double eps) const
+bool rt::Box::isInside(const rt::Vec3& p) const
 {
-	if (p.x() + eps < x0) return false;
-	if (p.x() - eps > x1) return false;
+	if (p.x()< x0) return false;
+	if (p.x()> x1) return false;
 
-	if (p.y() + eps < y0) return false;
-	if (p.y() - eps > y1) return false;
+	if (p.y()< y0) return false;
+	if (p.y()> y1) return false;
 
-	if (p.z() + eps < z0) return false;
-	if (p.z() - eps > z1) return false;
+	if (p.z()< z0) return false;
+	if (p.z()> z1) return false;
 
 	return true;
 }
 
-bool rt::Box::intersect(const rt::Ray& ray) const
+bool rt::Box::intersect(const rt::Ray& ray, Vec3& q) const
 {
 	if (!valid) return false;
 
 	const Vec3& o = ray.origin;
 	const Vec3& t = ray.direction;
 
-	constexpr double eps = 1e-8;
+	bool intersected = false;
 
-	double l = 0;
+	double l = 0, lmin = 0;
 	if (t[0] != 0)
 	{
 		l = (x0 - o[0]) / t[0];
@@ -56,8 +56,13 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double y = o[1] + t[1] * l;
 			double z = o[2] + t[2] * l;
-			if ((y + eps >= y0) && (y - eps <= y1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((y >= y0) && (y <= y1) &&
+				(z >= z0) && (z <= z1))
+			{
+				q = Vec3(x0, y, z);
+				lmin = l;
+				intersected = true;
+			}
 		}
 
 		l = (x1 - o[0]) / t[0];
@@ -65,8 +70,16 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double y = o[1] + t[1] * l;
 			double z = o[2] + t[2] * l;
-			if ((y + eps >= y0) && (y - eps <= y1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((y >= y0) && (y <= y1) &&
+				(z >= z0) && (z <= z1))
+			{
+				if ((intersected == false) || (l < lmin))
+				{
+					q = Vec3(x1, y, z);
+					lmin = l;
+					intersected = true;
+				}
+			}
 		}
 	}
 
@@ -77,8 +90,16 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double x = o[0] + t[0] * l;
 			double z = o[2] + t[2] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(z >= z0) && (z <= z1))
+			{
+				if (!intersected || (l < lmin))
+				{
+					q = Vec3(x, y0, z);
+					lmin = l;
+					intersected = true;
+				}
+			}
 		}
 
 		l = (y1 - o[1]) / t[1];
@@ -86,8 +107,16 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double x = o[0] + t[0] * l;
 			double z = o[2] + t[2] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(z >= z0) && (z <= z1))
+			{
+				if (!intersected || (l < lmin))
+				{
+					q = Vec3(x, y1, z);
+					lmin = l;
+					intersected = true;
+				}
+			}
 		}
 	}
 
@@ -98,8 +127,16 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double x = o[0] + t[0] * l;
 			double y = o[1] + t[1] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) && 
-				(y + eps >= y0) && (y - eps <= y1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(y >= y0) && (y <= y1))
+			{
+				if (!intersected || (l < lmin))
+				{
+					q = Vec3(x, y, z0);
+					lmin = l;
+					intersected = true;
+				}
+			}
 		}
 
 		l = (z1 - o[2]) / t[2];
@@ -107,12 +144,20 @@ bool rt::Box::intersect(const rt::Ray& ray) const
 		{
 			double x = o[0] + t[0] * l;
 			double y = o[1] + t[1] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(y + eps >= y0) && (y - eps <= y1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(y >= y0) && (y <= y1))
+			{
+				if (!intersected || (l < lmin))
+				{
+					q = Vec3(x, y, z1);
+					lmin = l;
+					intersected = true;
+				}
+			}
 		}
 	}
 
-	return false;
+	return intersected;
 }
 
 bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
@@ -122,8 +167,6 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 	const Vec3 o = a;
 	const Vec3 t = b - a;
 
-	constexpr double eps = 1e-8;
-
 	double l = 0;
 	if (t[0] != 0)
 	{
@@ -132,8 +175,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double y = o[1] + t[1] * l;
 			double z = o[2] + t[2] * l;
-			if ((y + eps >= y0) && (y - eps <= y1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((y >= y0) && (y <= y1) &&
+				(z >= z0) && (z <= z1)) return true;
 		}
 
 		l = (x1 - o[0]) / t[0];
@@ -141,8 +184,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double y = o[1] + t[1] * l;
 			double z = o[2] + t[2] * l;
-			if ((y + eps >= y0) && (y - eps <= y1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((y >= y0) && (y <= y1) &&
+				(z >= z0) && (z <= z1)) return true;
 		}
 	}
 
@@ -153,8 +196,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double x = o[0] + t[0] * l;
 			double z = o[2] + t[2] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(z >= z0) && (z <= z1)) return true;
 		}
 
 		l = (y1 - o[1]) / t[1];
@@ -162,8 +205,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double x = o[0] + t[0] * l;
 			double z = o[2] + t[2] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(z + eps >= z0) && (z - eps <= z1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(z >= z0) && (z <= z1)) return true;
 		}
 	}
 
@@ -174,8 +217,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double x = o[0] + t[0] * l;
 			double y = o[1] + t[1] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(y + eps >= y0) && (y - eps <= y1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(y >= y0) && (y <= y1)) return true;
 		}
 
 		l = (z1 - o[2]) / t[2];
@@ -183,8 +226,8 @@ bool rt::Box::intersect(const Vec3& a, const Vec3& b) const
 		{
 			double x = o[0] + t[0] * l;
 			double y = o[1] + t[1] * l;
-			if ((x + eps >= x0) && (x - eps <= x1) &&
-				(y + eps >= y0) && (y - eps <= y1)) return true;
+			if ((x >= x0) && (x <= x1) &&
+				(y >= y0) && (y <= y1)) return true;
 		}
 	}
 

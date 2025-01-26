@@ -116,7 +116,6 @@ SOFTWARE.*/
 #include <sstream>
 #include <PostGL/PostObject.h>
 #include "DlgScreenCapture.h"
-#include "DlgRayTrace.h"
 #include "DlgStartThread.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
@@ -1353,12 +1352,15 @@ void CMainWindow::on_actionRayTrace_triggered()
 	int W = GetGLView()->width();
 	int H = GetGLView()->height();
 
-	CDlgRayTrace dlg(this);
-	dlg.SetImageSize(W, H);
+	RayTracer* rayTracer = new RayTracer;
+	rayTracer->setWidth(W);
+	rayTracer->setHeight(H);
+
+	CDlgEditObject dlg(rayTracer, "RayTracer Settings", this);
 	if (dlg.exec())
 	{
-		const int W = dlg.ImageWidth();
-		const int H = dlg.ImageHeight();
+		W = rayTracer->width();
+		H = rayTracer->height();
 
 		GLContext rc;
 		rc.m_x = 0;
@@ -1369,13 +1371,8 @@ void CMainWindow::on_actionRayTrace_triggered()
 		rc.m_cam = &scene->GetCamera();
 		QImage img(W, H, QImage::Format_RGB32);
 
-		RayTraceSurface trg(W, H);
-		RayTracer* rayTracer = new RayTracer(trg);
 		CGView& view = scene->GetView();
 		rayTracer->setupProjection(view.m_fov, view.m_fnear);
-		rayTracer->setMultiSample(dlg.Multisample());
-		rayTracer->setBTreeLevels(dlg.BTreeLevels());
-		rayTracer->useShadows(dlg.UseShadows());
 		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);

@@ -413,11 +413,16 @@ namespace rt
 			z0 -= a; z1 += a;
 		}
 
-		bool isInside(const Vec3& p, double eps = 0) const;
+		bool isInside(const Vec3& p) const;
 
-		bool intersect(const Ray& ray) const;
+		bool intersect(const Ray& ray, Vec3& q) const;
 
 		bool intersect(const Vec3& a, const Vec3& b) const;
+
+		Vec3 center() const
+		{
+			return Vec3((x0 + x1) * 0.5, (y0 + y1) * 0.5, (z0 + z1) * 0.5);
+		}
 
 		Vec3 corner(unsigned int n) const
 		{

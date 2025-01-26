@@ -34,11 +34,12 @@ SOFTWARE.*/
 #include "GLTexture2D.h"
 #include "GLTexture3D.h"
 #include <FECore/FETransform.h>
+#include <FSCore/FSObject.h>
 
 class GLMesh;
 class GLCamera;
 
-class GLRenderEngine
+class GLRenderEngine : public FSObject
 {
 public:
 	enum StateFlag {

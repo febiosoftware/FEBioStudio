@@ -64,8 +64,6 @@ void rt::Btree::Block::add(rt::Tri* tri, int level)
 			if (child[i] == nullptr)
 			{
 				Box box_n = box.split(i);
-				double R = box_n.maxExtent();
-				box_n.inflate(R * 1e-9);
 
 				if (intersectBox(box_n, *tri))
 				{
@@ -134,9 +132,6 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 		box += tri.r[1];
 		box += tri.r[2];
 	}
-	double R = box.maxExtent();
-	box.inflate(R * 1e-9);
-
 	root->box = box;
 
 	if (levels < 0) levels = 0;
@@ -193,7 +188,8 @@ void rt::Btree::Build(Mesh& mesh, int levels)
 
 bool rt::Btree::intersect(const Ray& ray, Point& p)
 {
-	if (root->box.intersect(ray) == false) return false;
+	Vec3 c;
+	if (root->box.intersect(ray, c) == false) return false;
 
 	bool found = false;
 	double Dmin = 0;
@@ -218,8 +214,18 @@ bool rt::Btree::intersect(const Ray& ray, Point& p)
 			}
 		}
 
-		if ((block->child[0]) && (block->child[0]->box.intersect(ray))) S.push(block->child[0]);
-		if ((block->child[1]) && (block->child[1]->box.intersect(ray))) S.push(block->child[1]);
+		Vec3 c1, c2;
+		bool b1 = (block->child[0] ? block->child[0]->box.intersect(ray, c1) : false);
+		bool b2 = (block->child[1] ? block->child[1]->box.intersect(ray, c2) : false);
+
+		if (b1)
+		{
+			if (!found || ((c1 - ray.origin).sqrLength() < Dmin)) S.push(block->child[0]);
+		}
+		if (b2)
+		{
+			if (!found || ((c2 - ray.origin).sqrLength() < Dmin)) S.push(block->child[1]);
+		}
 	}
 
 	return found;

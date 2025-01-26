@@ -33,7 +33,7 @@ using namespace std::chrono;
 using dseconds = duration<double>;
 
 
-RayTracer::RayTracer(RayTraceSurface& trg) : surf(trg)
+RayTracer::RayTracer()
 {
 	fieldOfView = 60.0;
 	nearPlane = 0.01;
@@ -41,6 +41,12 @@ RayTracer::RayTracer(RayTraceSurface& trg) : surf(trg)
 	renderStarted = false;
 	useVertexColor = false;
 	cancelled = false;
+
+	AddIntParam(0, "Width");
+	AddIntParam(0, "Height");
+	AddBoolParam(true, "Shadows");
+	AddChoiceParam(0, "Multisample")->SetEnumNames(" Off\0 2x2\0 3x3\0 4x4\0");
+	AddIntParam(-1, "BHV Levels")->SetIntRange(-1, 32);
 }
 
 RayTracer::~RayTracer()
@@ -58,26 +64,9 @@ void RayTracer::setupProjection(double fov, double fnear)
 	nearPlane = fnear;
 }
 
-void RayTracer::setMultiSample(int ms)
-{
-	if (ms < 1) ms = 1;
-	if (ms > 4) ms = 4;
-	multiSample = ms;
-}
-
-void RayTracer::useShadows(bool b)
-{
-	renderShadows = b;
-}
-
 void RayTracer::setBackgroundColor(GLColor c)
 {
 	backgroundCol = c;
-}
-
-void RayTracer::setBTreeLevels(int levels)
-{
-	treeLevels = levels;
 }
 
 void RayTracer::start()
@@ -236,7 +225,7 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
 	{
-		mat.shininess = 128* glmat.shininess;
+		mat.shininess = (int)(128* glmat.shininess);
 		if (mat.shininess < 0) mat.shininess = 0;
 		if (mat.shininess > 128) mat.shininess = 128;
 		mat.reflection = glmat.reflection;
@@ -533,16 +522,16 @@ void RayTracer::setTexture(GLTexture3D& tex)
 void RayTracer::preprocess()
 {
 	size_t triangles = mesh.triangles();
-	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = i;
-	
-	int levels = treeLevels;
+	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int) i;
+
+	int levels = GetIntValue(BHV_LEVELS);
 	if (levels < 0)
 	{
 		levels = (int)log2((double)triangles);
 	}
 	if (levels < 0) levels = 0;
 	if (levels > 20) levels = 20;
-	btree.Build(mesh, levels);
+	bhv.Build(mesh, levels);
 }
 
 void RayTracer::render()
@@ -551,16 +540,17 @@ void RayTracer::render()
 	percentCompleted = 0;
 
 	// start ray-tracing process
-	size_t W = surf.width();
-	size_t H = surf.height();
+	size_t W = GetIntValue(WIDTH);
+	size_t H = GetIntValue(HEIGHT);
 	if ((W == 0) || (H == 0)) return;
+	surf.create(W, H);
 
 	double ar = (double)W / (double)H;
 
 	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
 	double fw = fh * ar;
 
-	int samples = multiSample;
+	int samples = GetIntValue(MULTI_SAMPLE);
 	if (samples < 1) samples = 1;
 	if (samples > 4) samples = 4;
 
@@ -598,7 +588,7 @@ void RayTracer::render()
 
 						Ray ray(origin, direction);
 
-						Color fragCol = castRay(btree, ray);
+						Color fragCol = castRay(bhv, ray);
 
 						c += fragCol;
 					}
@@ -615,11 +605,14 @@ void RayTracer::render()
 	percentCompleted = 100.0;
 }
 
-rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
+rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 {
 	rt::Point q;
 	Color fragCol(backgroundCol);
-	if (octree.intersect(ray, q))
+	bool intersectMesh = (bhv.intersect(ray, q));
+	bool renderShadows = GetBoolValue(SHADOWS);
+
+	if (intersectMesh)
 	{
 		// get some material props
 		rt::Material mat;
@@ -641,7 +634,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 				Vec3 H = t - N * (2 * (t * N));
 				Ray ray2(q.r, H, q.tri_id);
 				ray2.bounce = ray.bounce + 1;
-				c = c * (1 - mat.reflection) + castRay(octree, ray2) * mat.reflection;
+				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
 			}
 		}
 
@@ -684,7 +677,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 				Ray ray2(p, L, q.tri_id);
 				ray2.bounce = ray.bounce + 1;
 				rt::Point q2;
-				if (octree.intersect(ray2, q2)) isOccluded = true;
+				if (bhv.intersect(ray2, q2)) isOccluded = true;
 			}
 
 			if (!isOccluded)
@@ -706,7 +699,7 @@ rt::Color RayTracer::castRay(rt::Btree& octree, rt::Ray& ray)
 			ray2.bounce = ray.bounce + 1;
 
 			rt::Point q2;
-			Color c2 = castRay(octree, ray2);
+			Color c2 = castRay(bhv, ray2);
 			fragCol = fragCol * opacity + c2 * (1 - opacity);
 		}
 

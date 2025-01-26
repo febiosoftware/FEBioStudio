@@ -31,8 +31,10 @@ SOFTWARE.*/
 class RayTraceSurface
 {
 public:
-	RayTraceSurface(size_t W, size_t H);
+	RayTraceSurface();
 	~RayTraceSurface();
+
+	void create(size_t W, size_t H);
 
 public:
 	size_t width() const { return w; }
