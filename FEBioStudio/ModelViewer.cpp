@@ -54,12 +54,13 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
-
+#include <PostGL/GLModel.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
 #include <MeshIO/STLExport.h>
+#include "FEObjectProps.h"
 #include "PropertyList.h"
 using namespace std;
 
@@ -230,12 +231,20 @@ void CModelViewer::SetCurrentItem(int item)
 	if (item >= 0)
 	{
 		CModelTreeItem& it = ui->tree->m_data[item];
-		CPropertyList* props = it.props;
+
+		CPropertyList* propsList = nullptr;
+		if (ui->tree->m_props.find(it.type) != ui->tree->m_props.end())
+		{
+			CFSObjectProps* props = ui->tree->m_props[it.type].props;
+			if (props) props->SetFSObject(it.obj);
+			propsList = props;
+		}
+
 		FSObject* po = it.obj;
 		if (it.flag & CModelTree::OBJECT_NOT_EDITABLE)
 			ui->props->SetObjectProps(0, 0, 0);
 		else
-			ui->props->SetObjectProps(po, props, it.flag);
+			ui->props->SetObjectProps(po, propsList, it.flag);
 		m_currentObject = po;
 	}
 	else
@@ -250,12 +259,19 @@ void CModelViewer::SetCurrentItem(int item)
 
 void CModelViewer::SetCurrentItem(CModelTreeItem& it)
 {
-	CPropertyList* props = it.props;
+	CPropertyList* propsList = nullptr;
+	if (ui->tree->m_props.find(it.type) != ui->tree->m_props.end())
+	{
+		CFSObjectProps* props = ui->tree->m_props[it.type].props;
+		if (props) props->SetFSObject(it.obj);
+		propsList = props;
+	}
+
 	FSObject* po = it.obj;
 	if (it.flag & CModelTree::OBJECT_NOT_EDITABLE)
 		ui->props->SetObjectProps(0, 0, 0);
 	else
-		ui->props->SetObjectProps(po, props, it.flag);
+		ui->props->SetObjectProps(po, propsList, it.flag);
 	m_currentObject = po;
 }
 
@@ -643,7 +659,13 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 
 void CModelViewer::on_props_selectionChanged()
 {
-	ui->tree->UpdateObject(ui->props->GetCurrentObject());
+	FSObject* po = ui->props->GetCurrentObject();
+	if (dynamic_cast<GMaterial*>(po))
+	{
+		GMaterial* gm = dynamic_cast<GMaterial*>(po);
+		gm->UpdateParts();
+	}
+	ui->tree->UpdateObject(po);
 	GetMainWindow()->RedrawGL();
 }
 
@@ -1669,9 +1691,12 @@ void CModelViewer::UpdateCurrentItem()
 	CModelTreeItem* item = ui->tree->GetCurrentData();
 	if (item)
 	{
-		CPropertyList* prop = item->props;
-		if (prop) prop->Update();
-		SetCurrentItem(*item);
+		if (ui->tree->m_props.find(item->type) != ui->tree->m_props.end())
+		{
+			CPropertyList* props = ui->tree->m_props[item->type].props;
+			if (props) props->Update();
+			SetCurrentItem(*item);
+		}
 	}
 }
 

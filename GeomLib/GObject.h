@@ -163,14 +163,6 @@ public:
 
 	// --- G E O M E T R Y ---
 
-	// assign a material to all parts of this object
-	void AssignMaterial(int matid);
-
-	// assign a material to a part
-	void AssignMaterial(int partid, int matid);
-
-	void AssignMaterial(GPart* part, int matid);
-
 	// render the geometry of the object (not the FE mesh)
 //	virtual void Render(GLCanvas* pc);
 
@@ -219,7 +211,6 @@ public:
 
 	// update the element material IDs
 	void UpdateFEElementMatIDs();
-	void UpdateFEElementMatIDs(int partIndex);
 
 public:
 	bool IsFaceVisible(const GFace* pf) const;

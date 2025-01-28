@@ -45,8 +45,14 @@ class FSMaterial;
 class GPart;
 class FSStep;
 class CModelViewer;
-
+class CMainWindow;
+class CFEBioJob;
 class CImageModel;
+class GDiscreteObject;
+
+namespace Post {
+	class CGLModel;
+}
 
 class FEObjectProps : public CObjectProps
 {
@@ -56,118 +62,97 @@ public:
 protected:
 	QStringList GetEnumValues(const char* ch) override;
 
-private:
+protected:
 	FSModel*	m_fem;
 };
 
-class CFixedDOFProps : public CPropertyList
+class CFSObjectProps : public FEObjectProps
 {
 public:
-	CFixedDOFProps(FSFixedDOF* pbc);
-
-	QVariant GetPropertyValue(int i);
-
-	void SetPropertyValue(int i, const QVariant& v);
-
-private:
-	FSFixedDOF*	m_bc;
+	CFSObjectProps(FSModel* fem = nullptr) : FEObjectProps(nullptr, fem) {}
+	virtual void SetFSObject(FSObject* po);
 };
 
-class CAnalysisTimeSettings : public CObjectProps
+template <class T>
+class CFSObjectProps_T : public CFSObjectProps
 {
 public:
-	CAnalysisTimeSettings(FSAnalysisStep* step);
+	CFSObjectProps_T(FSModel* fem = nullptr) : CFSObjectProps(fem), m_pobj(nullptr) {}
 
-	QVariant GetPropertyValue(int i);
+	void SetFSObject(FSObject* po) override
+	{
+		Clear();
+		m_pobj = dynamic_cast<T*>(po);
+		m_po = m_pobj;
+		if (m_pobj != nullptr) BuildProperties();
+	}
 
-	void SetPropertyValue(int i, const QVariant& v);
+	virtual void BuildProperties()
+	{
+		BuildParamList(m_pobj);
+	}
 
-private:
-	FSAnalysisStep*	m_step;
+protected:
+	T* m_pobj;
 };
 
-class CStepSettings : public CObjectProps
+class CStepSettings : public CFSObjectProps_T<FSStep>
 {
 public:
-	CStepSettings(FSProject& prj, FSStep* step);
+	CStepSettings(FSProject& prj);
+
+	void BuildProperties() override;
+
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	void BuildStepProperties();
-
-private:
-	FSStep* m_step;
 	int		m_moduleId;
 };
 
-class CRigidInterfaceSettings : public CPropertyList
+class CRigidConnectorSettings : public CFSObjectProps_T<FSRigidConnector>
 {
 public:
-	CRigidInterfaceSettings(FSModel&fem, FSRigidInterface* pi);
+	CRigidConnectorSettings(FSModel* fem);
+
+	void BuildProperties() override;
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FSRigidInterface*	m_ri;
-	std::vector<GMaterial*>	m_mat;
-	int					m_sel;
-};
-
-class CRigidConstraintSettings : public CObjectProps
-{
-public:
-	CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* rc);
-
-	QVariant GetPropertyValue(int i);
-
-	void SetPropertyValue(int i, const QVariant& v);
-
-private:
-	FSRigidConstraint*	m_rc;
-	std::vector<GMaterial*>	m_mat;
-	int					m_sel;
-};
-
-class CRigidConnectorSettings : public CObjectProps
-{
-public:
-	CRigidConnectorSettings(FSModel& fem, FSRigidConnector* rc);
-
-	QVariant GetPropertyValue(int i);
-
-	void SetPropertyValue(int i, const QVariant& v);
-
-private:
-	FSRigidConnector*	m_rc;
 	std::vector<GMaterial*>	m_mat;
 	int					m_rbA;
 	int					m_rbB;
 };
 
-
-class CMaterialProps : public FEObjectProps
+class CMaterialProps : public CFSObjectProps_T<GMaterial>
 {
 public:
-	CMaterialProps(FSModel& fem, FSMaterial* mat);
+	CMaterialProps(FSModel* fem);
 
-	QVariant GetPropertyValue(int i);
+	void BuildProperties() override;
 
-	void SetPropertyValue(int i, const QVariant& v);
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
 
 private:
 	void BuildPropertyList();
-
-private:
-	FSMaterial*	m_mat;
+	FSMaterial* m_mat;
 };
 
-class CLogfileProperties : public CObjectProps
+class CLogfileProperties : public CFSObjectProps
 {
 public:
 	CLogfileProperties(CModelViewer* wnd, FSProject& prj);
+
+	void SetFSObject(FSObject* po) override
+	{
+		Update();
+	}
+
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 	void Update() override;
@@ -179,60 +164,109 @@ private:
 };
 
 
-class CReactionReactantProperties : public CObjectProps
+class CReactionReactantProperties : public CFSObjectProps_T<FSReactionMaterial>
 {
 public:
-	CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem);
+	CReactionReactantProperties(FSModel* fem);
+
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
+
+private:
+	int					m_nsols;
+};
+
+class CReactionProductProperties : public CFSObjectProps_T<FSReactionMaterial>
+{
+public:
+	CReactionProductProperties(FSModel* fem);
+
+	void BuildProperties() override;
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FSReactionMaterial*	m_mat;
-	int					m_nsols;
+	int m_nsols;
 };
 
-class CReactionProductProperties : public CObjectProps
+class CPartProperties : public CFSObjectProps_T<GPart>
 {
 public:
-	CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem);
-
-	QVariant GetPropertyValue(int i);
-
-	void SetPropertyValue(int i, const QVariant& v);
-
-private:
-	FSReactionMaterial*	m_mat;
-	int					m_nsols;
-};
-
-class CPartProperties : public FEObjectProps
-{
-public:
-	CPartProperties(GPart* pg, FSModel& fem);
+	CPartProperties(FSModel& fem) : CFSObjectProps_T(&fem) {}
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
 	QStringList GetEnumValues(const char* ch) override;
 
-private:
-	GPart*	m_pg;
-	FSModel*	m_fem;
+	void BuildProperties() override;
 };
 
-class CImageModelProperties : public CObjectProps
+class CImageModelProperties : public CFSObjectProps_T<CImageModel>
 {
 public:
-    CImageModelProperties(CImageModel* model);
+	CImageModelProperties();
 
-    QVariant GetPropertyValue(int i);
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-    enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+	enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+};
+
+class CFEBioJobProps : public CFSObjectProps_T<CFEBioJob>
+{
+public:
+	CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree);
+
+	void BuildProperties() override;
+
+	QVariant GetPropertyValue(int i) override;
+
+	void SetPropertyValue(int i, const QVariant& v) override;
 
 private:
-    CImageModel* m_model;
+	CModelViewer*	m_tree;
+	CMainWindow*	m_wnd;
+};
 
+class CPlotfileProperties : public CFSObjectProps
+{
+public:
+	CPlotfileProperties(CModelViewer* wnd, FSProject& prj);
+
+	void SetFSObject(FSObject* po) override;
+
+	void Update() override;
+
+	QVariant GetPropertyValue(int i);
+
+	void SetPropertyValue(int i, const QVariant& v);
+
+private:
+	CModelViewer* m_wnd;
+	FSProject& m_prj;
+	int	m_actionIndex;
+};
+
+class CDiscreteObjectProps : public CFSObjectProps_T<GDiscreteObject>
+{
+public:
+	CDiscreteObjectProps() {}
+
+	void BuildProperties() override;
+};
+
+class FSGlobalsProps : public CFSObjectProps
+{
+public:
+	FSGlobalsProps(FSModel* fem) : CFSObjectProps(fem) {}
+
+	void SetFSObject(FSObject* po) override;
 };

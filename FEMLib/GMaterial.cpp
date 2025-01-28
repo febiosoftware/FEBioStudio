@@ -59,6 +59,8 @@ GLColor col[GMaterial::MAX_COLORS] = {
 
 GMaterial::GMaterial(FSMaterial* pm)
 {
+	SetMeshItemType(FE_PART_FLAG);
+
 	m_pm = pm;
 	if (m_pm) m_pm->SetOwner(this);
 	m_ntag = 0;
@@ -88,6 +90,7 @@ GMaterial::GMaterial(FSMaterial* pm)
 
 GMaterial::~GMaterial(void)
 {
+	SetItemList(nullptr);
 	delete m_partList;
 	delete m_pm;
 }
@@ -180,113 +183,57 @@ void GMaterial::Load(IArchive &ar)
 	}
 }
 
-FSItemListBuilder* GMaterial::GetItemList(int n)
+void GMaterial::AddPart(GPart* pg)
 {
-	assert(n == 0);
-	GModel& mdl = m_ps->GetModel();
+	m_partList->add(pg->GetID());
+}
 
-	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
+void GMaterial::ClearParts()
+{
 	m_partList->clear();
+}
 
-	// set the items
-	int NO = mdl.Objects();
-	for (int i = 0; i < NO; ++i)
+void GMaterial::UpdateParts()
+{
+	// assign material to parts
+	std::vector<GPart*> partList = m_partList->GetPartList();
+	for (GPart* pg : partList)
 	{
-		GObject* po = mdl.Object(i);
-		int NP = po->Parts();
-		for (int j = 0; j < NP; ++j)
-		{
-			GPart* pg = po->Part(j);
-			if (pg->GetMaterialID() == GetID())
-			{
-				BOX b = pg->GetGlobalBox();
-				m_partList->add(pg->GetID());
-				m_pos += b.Center();
-			}
-		}
+		pg->SetMaterialID(GetID());
 	}
+	m_ps->UpdateMaterials();
+}
 
-	// update center of mass (only used by rigid bodies)
-	m_pos = vec3d(0, 0, 0);
-	int count = 0;
-	for (int i = 0; i < NO; ++i)
+void GMaterial::SetModel(FSModel* ps)
+{
+	m_ps = ps;
+	GModel& mdl = m_ps->GetModel();
+	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
+	SetItemList(m_partList);
+	m_partList->clear();
+}
+
+vec3d GMaterial::GetPosition()
+{
+	return m_pos;
+}
+
+void GMaterial::UpdatePosition()
+{
+	vec3d pos(0, 0, 0);
+	if (m_partList)
 	{
-		GObject* po = mdl.Object(i);
-		FSMesh* pm = po->GetFEMesh();
-		if (pm == nullptr)
+		int count = 0;
+		std::vector<GPart*> partList = m_partList->GetPartList();
+		for (int i = 0; i < partList.size(); ++i)
 		{
-			int NP = po->Parts();
-			for (int j = 0; j < NP; ++j)
-			{
-				GPart* pg = po->Part(j);
-				if (pg->GetMaterialID() == GetID())
-				{
-					BOX b = pg->GetGlobalBox();
-					m_pos += b.Center();
-					count++;
-				}
-			}
-		}
-		else
-		{
-			vec3d rc(0, 0, 0);
-			int nc = 0;
-			int NE = pm->Elements();
-			for (int j = 0; j < NE; ++j)
-			{
-				FSElement& el = pm->Element(j);
-				if (el.m_MatID == GetID())
-				{
-					rc += pm->ElementCenter(el);
-					nc++;
-				}
-			}
-			if (nc > 0) rc /= nc;
-			m_pos += pm->LocalToGlobal(rc);
+			GPart* pg = partList[i];
+			assert(pg->GetMaterialID() == GetID());
+			BOX b = pg->GetGlobalBox();
+			pos += b.Center();
 			count++;
 		}
+		if (count > 0) pos /= (double)count;
 	}
-	if (count > 0) m_pos /= (double)count;
-
-	return m_partList;
-}
-
-void GMaterial::SetItemList(FSItemListBuilder* pi, int n)
-{
-	assert(n == 0);
-
-	// clear all parts that have this material
-	// set the items
-	GModel& mdl = m_ps->GetModel();
-	int NO = mdl.Objects();
-	for (int i = 0; i < NO; ++i)
-	{
-		GObject* po = mdl.Object(i);
-		int NP = po->Parts();
-		for (int j = 0; j < NP; ++j)
-		{
-			GPart* pg = po->Part(j);
-			if (pg->GetMaterialID() == GetID())
-			{
-				po->AssignMaterial(pg, 0);
-			}
-		}
-	}
-
-	// re-assign material IDs
-	GPartList* partList = dynamic_cast<GPartList*>(pi);
-	if (partList)
-	{
-		std::vector<GPart*> parts = partList->GetPartList();
-		for (GPart* pg : parts)
-		{
-			GObject* po = dynamic_cast<GObject*>(pg->Object()); assert(po);
-			if (po) po->AssignMaterial(pg, GetID());
-		}
-	}
-}
-
-unsigned int GMaterial::GetMeshItemType() const
-{
-	return FE_PART_FLAG;
+	m_pos = pos;
 }

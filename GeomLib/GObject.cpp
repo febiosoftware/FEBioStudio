@@ -496,34 +496,6 @@ void GObject::CollapseTransform()
 }
 
 //-----------------------------------------------------------------------------
-// Assign a material to all parts of this obbject.
-void GObject::AssignMaterial(int matid)
-{
-	for (int i=0; i<Parts(); ++i)
-	{
-		GPart& g = *m_Part[i];
-		g.SetMaterialID(matid);
-	}
-	UpdateFEElementMatIDs();
-}
-
-//-----------------------------------------------------------------------------
-// Assign a material to a part. The partid parameter is the global ID of the part,
-// matId is the global material ID
-void GObject::AssignMaterial(int partid, int matid)
-{
-	GPart* pg = FindPart(partid); assert(pg);
-	if (pg) AssignMaterial(pg, matid);
-}
-
-void GObject::AssignMaterial(GPart* part, int matid)
-{
-	assert(part && (part->Object() == this));
-	part->SetMaterialID(matid);
-	UpdateFEElementMatIDs(part->GetLocalID());
-}
-
-//-----------------------------------------------------------------------------
 //! This function makes sure that the GNodes correspond to the mesh' nodes
 //! When the mesh is transformed independently from the gobject te nodes
 //! might not coincide any more and this function should be called. 
@@ -563,9 +535,37 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool GObject::Update(bool b)
 {
-	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		pg->m_face.clear();
+		pg->m_node.clear();
+	}
 
-	// assign part materials to element matIDs. 
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace* pf = Face(i);
+		if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
+		if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
+		if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
+	}
+
+	for (int i = 0; i < Parts(); ++i)
+	{
+		std::set<int> nodes;
+		GPart* pg = Part(i);
+		for (int j = 0; j < pg->Faces(); ++j)
+		{
+			GFace* pf = Face(pg->m_face[j]);
+			nodes.insert(pf->m_node.begin(), pf->m_node.end());
+		}
+
+		pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+
+		pg->Update(false);
+	}
+
+	// assign part materials to element matIDs.
 	UpdateFEElementMatIDs();
 
 	BuildGMesh();
@@ -583,21 +583,6 @@ void GObject::UpdateFEElementMatIDs()
 		FSElement& el = pm->Element(i);
 		GPart* pg = Part(el.m_gid);
 		if (pg) el.m_MatID = pg->GetMaterialID();
-	}
-}
-
-void GObject::UpdateFEElementMatIDs(int partIndex)
-{
-	FSMesh* pm = GetFEMesh();
-	if (pm == nullptr) return;
-	if ((partIndex < 0) || (partIndex >= Parts())) return;
-
-	GPart* pg = Part(partIndex);
-	int matId = pg->GetMaterialID();
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		FSElement& el = pm->Element(i);
-		if (el.m_gid == partIndex) el.m_MatID = matId;
 	}
 }
 

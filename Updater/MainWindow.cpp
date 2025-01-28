@@ -86,7 +86,7 @@ public:
 	QProgressBar* fileProgress;
 	QCheckBox* relaunch;
 
-    CMainWindow() : currentIndex(0), overallSize(0), downloadedSize(0) { }
+    CMainWindow() : currentIndex(0), currentZippedIndex(0), overallSize(0), downloadedSize(0) { }
 
 	void setup(::CMainWindow* wnd, bool correctDir)
 	{
@@ -174,6 +174,8 @@ public:
     QStringList newFiles;
 	QStringList newDirs;
 	int currentIndex;
+    int currentZippedIndex;
+    std::vector<int> zippedFiles;
 	qint64 overallSize;
 	qint64 downloadedSize;
 };
@@ -343,6 +345,11 @@ void CMainWindow::getFileReponse(QNetworkReply *r)
 
 	file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::WriteUser | QFileDevice::ExeUser | QFileDevice::ReadUser);
 
+    if(currentFile.name.endsWith(".zip"))
+    {
+        ui->zippedFiles.push_back(ui->currentIndex);
+    }
+
 	ui->currentIndex++;
 	ui->downloadedSize += data.size();
 
@@ -350,15 +357,64 @@ void CMainWindow::getFileReponse(QNetworkReply *r)
 	{
 		getFile();
 	}
-	else if(ui->updateWidget->m_getSDK && ui->updateWidget->m_getSDK->isChecked())
-    {
-        getSDK();
-    }
     else
 	{
-		downloadsFinished();
+		unzipFiles();
 	}
 }
+
+void CMainWindow::unzipFiles()
+{
+    if(ui->currentZippedIndex < ui->zippedFiles.size())
+    {
+        ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->zippedFiles[ui->currentZippedIndex]];
+
+        ui->downloadOverallLabel->hide();
+        ui->overallProgress->hide();
+
+        ui->downloadFileLabel->setText(QString("Unzipping %1...").arg(currentFile.name));
+
+        QFileInfo info(QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name);
+
+        QString zipFileName = info.absoluteFilePath();
+        QString outDir = info.absolutePath();
+
+        ZipThread* thread = new ZipThread(this, zipFileName, outDir);
+
+        connect(thread, &ZipThread::progress, this, &CMainWindow::progress);
+        connect(thread, &ZipThread::resultReady, this, &CMainWindow::unzipFinished);
+
+        thread->run();
+    }
+    else
+    {
+        if(ui->updateWidget->m_getSDK && ui->updateWidget->m_getSDK->isChecked())
+        {
+            getSDK();
+        }
+        else
+        {
+            downloadsFinished();
+	    }
+    }
+}
+
+void CMainWindow::unzipFinished()
+{
+    ReleaseFile& currentFile = ui->updateWidget->updateFiles[ui->zippedFiles[ui->currentZippedIndex]];
+
+    QFile zip = QApplication::applicationDirPath() + QString(REL_ROOT) + currentFile.name;
+
+    if(zip.exists())
+    {
+        zip.remove();
+    }
+
+    ui->currentZippedIndex++;
+
+    unzipFiles();
+}
+
 
 void CMainWindow::getSDK()
 {
@@ -420,12 +476,12 @@ void CMainWindow::getSDKResponse(QNetworkReply *r)
     ZipThread* thread = new ZipThread(this, zipFileName, sdkDirName);
 
     connect(thread, &ZipThread::progress, this, &CMainWindow::progress);
-    connect(thread, &ZipThread::resultReady, this, &CMainWindow::unzipFinished);
+    connect(thread, &ZipThread::resultReady, this, &CMainWindow::unzipSDKFinished);
 
     thread->run();
 }
 
-void CMainWindow::unzipFinished()
+void CMainWindow::unzipSDKFinished()
 {
     QFile zip(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk.zip");
 

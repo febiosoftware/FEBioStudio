@@ -865,6 +865,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
             // don't show the object info pane
             ui->showObjectInfo(false);
 		}
+		if (dynamic_cast<FSModel*>(m_currentObject))
+		{
+			// don't show the object info pane
+			ui->showObjectInfo(false);
+		}
 		else
 		{
 			// set the object's name

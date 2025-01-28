@@ -72,7 +72,7 @@ bool CKinematBuildTool::OnApply()
 		GMaterial* gm = new GMaterial(pm);
 		gm->SetName(pg->GetName());
 		fem.AddMaterial(gm);
-		po->AssignMaterial(pg, gm->GetID());
+		fem.AssignMaterial(pg, gm);
 	}
 
 	// read the kine file

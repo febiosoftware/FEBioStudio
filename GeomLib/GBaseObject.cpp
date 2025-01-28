@@ -535,7 +535,6 @@ GPart* GBaseObject::AddPart()
 	GPart* p = new GPart(this);
 	p->SetID(GPart::CreateUniqueID());
 	p->SetLocalID(m_Part.size());
-	p->SetMaterialID(-1);
 	char szname[256] = {0};
 	sprintf(szname, "Part%d", p->GetID());
 	p->SetName(szname);

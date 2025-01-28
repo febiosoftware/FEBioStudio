@@ -187,6 +187,7 @@ void CObjectProps::BuildParamList(FSBase* po, bool showNonPersistent)
 {
 	m_po = po;
 	m_params.clear();
+	if (po == nullptr) return;
 	int NP = po->Parameters();
 	int ng = -1;
 	ParamBlock& PB = po->GetParamBlock();

@@ -1135,6 +1135,7 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 			if (pmat == pold) pp->SetMaterialID(pnew->GetID());
 		}
 	}
+	UpdateMaterials();
 	ClearMLT();
 }
 
@@ -1199,6 +1200,7 @@ int FSModel::DeleteMaterial(GMaterial* pmat)
 			if (pm == pmat) pp->SetMaterialID(-1);
 		}
 	}
+	UpdateMaterials();
 	ClearMLT();
 	return m_pMat.Remove(pmat);
 }
@@ -1261,6 +1263,56 @@ GMaterial* FSModel::FindMaterial(const char* szname)
 	}
 
 	return 0;
+}
+
+void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
+{
+	int matID = (mat ? mat->GetID() : -1);
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		pg->SetMaterialID(matID);
+	}
+	UpdateMaterials();
+}
+
+void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
+{
+	int matID = (mat ? mat->GetID() : -1);
+	pg->SetMaterialID(matID);
+	UpdateMaterials();
+}
+
+void FSModel::UpdateMaterials()
+{
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		mat->ClearParts();
+	}
+
+	GModel& gm = GetModel();
+	for (int i = 0; i < gm.Objects(); ++i)
+	{
+		GObject* po = gm.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			int matID = pg->GetMaterialID();
+			GMaterial* mat = GetMaterialFromID(matID);
+			if (mat)
+			{
+				mat->AddPart(pg);
+			}
+		}
+		po->UpdateFEElementMatIDs();
+	}
+
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* pm = GetMaterial(i);
+		pm->UpdatePosition();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1523,11 +1575,7 @@ void FSModel::Load(IArchive& ar)
 
 	// update materials item lists
 	// (This is needed so that the rigid material's glyphs can be positioned correctly.)
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* pm = GetMaterial(i);
-		pm->GetItemList();
-	}
+	UpdateMaterials();
 }
 
 //-----------------------------------------------------------------------------
@@ -1887,7 +1935,7 @@ void FSModel::DeleteAllMaterials()
 	for (int i = 0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		po->AssignMaterial(0);
+		AssignMaterial(po, nullptr);
 	}
 
 	// delete all materials

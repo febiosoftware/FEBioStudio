@@ -33,12 +33,13 @@ SOFTWARE.*/
 class FSModel;
 class FSMaterial;
 class GPartList;
+class GPart;
 
 //-----------------------------------------------------------------------------
 // This class defines a material. It stores the material properties (as a 
 // FSMaterial class), the material name and other attributes, mostly used for rendering
 //
-class GMaterial : public FSObject, public IHasItemLists
+class GMaterial : public FSObject, public FSHasOneItemList
 {
 public:
 	enum {MAX_COLORS = 16};
@@ -53,8 +54,12 @@ public:
 	FSMaterial* GetMaterialProperties();
 	FSMaterial* TakeMaterialProperties();
 
-	void SetModel(FSModel* ps) { m_ps = ps; }
+	void SetModel(FSModel* ps);
 	FSModel* GetModel() { return m_ps; }
+
+	void AddPart(GPart* pg);
+	void UpdateParts();
+	void ClearParts();
 
 	int GetID() { return m_nID; }
 	void SetID(int nid)
@@ -67,6 +72,8 @@ public:
 
 	const char* GetFullName();
 
+	const char* GetTypeString() const;
+
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
@@ -74,18 +81,10 @@ public:
 	GLColor GetColor() const { return m_glmat.diffuse; }
 	GLMaterial& GetGLMaterial() { return m_glmat; }
 
-	vec3d GetPosition() const { return m_pos; }
+	// location where glyph will be rendered (e.g. for rigid bodies)
+	vec3d GetPosition();
 
-	const char* GetTypeString() const override;
-
-public:	// IHasItemList
-	int ItemLists() const override { return 1; }
-	FSItemListBuilder* GetItemList(int n = 0) override;
-	virtual unsigned int GetMeshItemType() const override;
-
-private:
-	void SetItemList(FSItemListBuilder* pi, int n = 0) override;
-	virtual void SetMeshItemType(unsigned int meshItem){};
+	void UpdatePosition();
 
 public:
 	static void ResetCounter() { m_nref = 1; }

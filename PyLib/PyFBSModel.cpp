@@ -213,8 +213,8 @@ void init_FBSModel(py::module& m)
 		.def("Node", [](GObject& self, int i) {return self.Node(i); })
 		.def("Part", [](GObject& self, int i) {return self.Part(i); })
 		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); })
-		.def("BuildMesh", &GObject::BuildMesh)
-		.def("AssignMaterial", [](GObject& self, GMaterial* m) { self.AssignMaterial(m->GetID()); });
+		.def("BuildMesh", &GObject::BuildMesh);
+//		.def("AssignMaterial", [](GObject& self, GMaterial* m) { self.AssignMaterial(m->GetID()); });
     ///////////////// GObject /////////////////
 
     ///////////////// GNode /////////////////
