@@ -526,27 +526,6 @@ void GPart::operator =(const GPart &p)
 //-----------------------------------------------------------------------------
 bool GPart::Update(bool b)
 {
-	int id = GetLocalID();
-	if (m_node.empty())
-	{
-		GBaseObject* po = Object();
-		for (int i = 0; i < po->Nodes(); ++i) po->Node(i)->m_ntag = 0;
-		for (int i = 0; i < po->Faces(); ++i)
-		{
-			GFace* pf = po->Face(i);
-			if ((pf->m_nPID[0] == id) || (pf->m_nPID[1] == id))
-			{
-				for (int k : pf->m_node)
-				{
-					GNode* pn = po->Node(k);
-					if (pn) po->Node(k)->m_ntag = 1;
-				}
-			}
-		}
-
-		for (int i = 0; i < po->Nodes(); ++i)
-			if (po->Node(i)->m_ntag == 1) m_node.push_back(i);
-	}
 	UpdateBoundingBox();
 	return true;
 }

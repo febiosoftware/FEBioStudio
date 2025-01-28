@@ -194,7 +194,7 @@ public:
 	BOX GetGlobalBox() const;
 	void UpdateBoundingBox();
 	bool Update(bool b) override;
-    
+
 public:
 	int Nodes() const { return (int)m_node.size(); }
 	int Edges() const { return (int)m_edge.size(); }
