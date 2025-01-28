@@ -358,7 +358,7 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 	FSMaterial* pmat = FEBio::CreateMaterial("linear truss", fem);
 	GMaterial* gmat = new GMaterial(pmat);
 	fem->AddMaterial(gmat);
-	po->AssignMaterial(pg->GetID(), gmat->GetID());
+	fem->AssignMaterial(pg, gmat);
 
 	FEBeamFormulation* bf = FEBio::CreateBeamFormulation("linear-truss", fem);
 	pb->SetElementFormulation(bf);

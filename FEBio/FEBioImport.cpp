@@ -371,6 +371,9 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		}
 	}
 
+	// update material part lists
+	fem.UpdateMaterials();
+
 	// resolve all load curve references
 	int NLC = m_febio->LoadCurves();
 	if (NLC > 0)

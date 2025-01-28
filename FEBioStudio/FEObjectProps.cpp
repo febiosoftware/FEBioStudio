@@ -40,6 +40,11 @@ SOFTWARE.*/
 #include "ModelViewer.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
+#include "SSHThread.h"
+#include "SSHHandler.h"
+#include "FEBioJob.h"
+#include <PostGL/GLModel.h>
+#include <FEMLib/PlotDataSettings.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -71,161 +76,13 @@ QStringList FEObjectProps::GetEnumValues(const char* ch)
 	return ops;
 }
 
-//=======================================================================================
-CFixedDOFProps::CFixedDOFProps(FSFixedDOF* pbc) : m_bc(pbc)
+void CFSObjectProps::SetFSObject(FSObject* po)
 {
-	FSModel& fem = *pbc->GetFSModel();
-	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
-	for (int i = 0; i<var.DOFs(); ++i)
-	{
-		FEDOF& dof = var.GetDOF(i);
-		addProperty(dof.name(), CProperty::Bool);
-	}
-}
-
-QVariant CFixedDOFProps::GetPropertyValue(int i)
-{
-	return m_bc->GetBC(i);
-}
-
-void CFixedDOFProps::SetPropertyValue(int i, const QVariant& v)
-{
-	m_bc->SetBC(i, v.toBool());
+	Clear();
+	BuildParamList(po);
 }
 
 //=======================================================================================
-CAnalysisTimeSettings::CAnalysisTimeSettings(FSAnalysisStep* step) : CObjectProps(0)
-{
-	m_step = step;
-	addProperty("Analysis", CProperty::Group);
-
-	vector<string> s = step->GetAnalysisStrings();
-	QStringList sl;
-	for (int i = 0; i<(int)s.size(); ++i) sl << QString::fromStdString(s[i]);
-	addProperty("Type", CProperty::Enum)->setEnumValues(sl);
-
-	addProperty("Time settings", CProperty::Group);
-	addProperty("Time steps", CProperty::Int);
-	addProperty("Step size", CProperty::Float);
-	addProperty("Max step size", CProperty::Float);
-	addProperty("Min step size", CProperty::Float);
-	addProperty("Auto time stepper", CProperty::Bool);
-	addProperty("Use must points", CProperty::Bool);
-	addProperty("Max retries", CProperty::Int);
-	addProperty("Optimal iterations", CProperty::Int);
-	addProperty("Cutback", CProperty::Enum)->setEnumValues(QStringList() << "default" << "aggressive");
-
-	addProperty("Linear solver", CProperty::Group);
-	addProperty("Matrix Symmetry", CProperty::Enum)->setEnumValues(QStringList() << "default" << "symmetric" << "non-symmetric");
-	addProperty("Equation Scheme", CProperty::Enum)->setEnumValues(QStringList() << "default" << "block");
-
-	addProperty("Nonlinear solver", CProperty::Group);
-	BuildParamList(step);
-	addProperty("Max reformations", CProperty::Int);
-	addProperty("Max udpates", CProperty::Int);
-	addProperty("Reform on diverge", CProperty::Bool);
-	addProperty("Reform each timestep", CProperty::Bool);
-
-	addProperty("Output options", CProperty::Group);
-	addProperty("plot level", CProperty::Enum)->setEnumValues(QStringList() << "Never" << "Major iterations" << "Minor iterations" << "Must points" << "Final" << "Augmentations" << "Step final");
-	addProperty("plot stride", CProperty::Int);
-}
-
-QVariant CAnalysisTimeSettings::GetPropertyValue(int i)
-{
-	STEP_SETTINGS& set = m_step->GetSettings();
-
-	switch (i)
-	{
-	case 0: return 0;
-	case 1: return set.nanalysis;
-	case 2: return 0;
-	case 3: return set.ntime;
-	case 4: return set.dt;
-	case 5: return set.dtmax;
-	case 6: return set.dtmin;
-	case 7: return set.bauto;
-	case 8: return set.bmust;
-	case 9: return set.mxback;
-	case 10: return set.iteopt;
-	case 11: return set.ncut;
-	case 12: return 0;
-	case 13: return set.nmatfmt;
-	case 14: return set.neqscheme;
-	case 15: return 0;
-	default:
-	{
-		i -= 16;
-		int N = m_params.size();
-		if (i < N)
-			return CObjectProps::GetPropertyValue(i);
-		else
-		{
-			i -= N;
-			switch (i)
-			{
-			case 0: return set.maxref; break;
-			case 1: return set.ilimit; break;
-			case 2: return set.bdivref; break;
-			case 3: return set.brefstep; break;
-			case 4: return 0; break;
-			case 5: return set.plot_level; break;
-			case 6: return set.plot_stride; break;
-			}
-		}
-	}
-	}
-
-	assert(false);
-	return QVariant();
-}
-
-void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
-{
-	STEP_SETTINGS& set = m_step->GetSettings();
-
-	switch (i)
-	{
-	case 0: break;
-	case 1: set.nanalysis = v.toInt(); break;
-	case 2: break;
-	case 3: set.ntime = v.toInt(); break;
-	case 4: set.dt = v.toDouble(); break;
-	case 5: set.dtmax = v.toDouble(); break;
-	case 6: set.dtmin = v.toDouble(); break;
-	case 7: set.bauto = v.toBool(); break;
-	case 8: set.bmust = v.toBool(); break;
-	case 9: set.mxback = v.toInt(); break;
-	case 10: set.iteopt = v.toInt(); break;
-	case 11: set.ncut = v.toInt(); break;
-	case 12: break;
-	case 13: set.nmatfmt = v.toInt(); break;
-	case 14: set.neqscheme = v.toInt(); break;
-	case 15: break;
-	default:
-	{
-		i -= 16;
-		int N = m_params.size();
-		if (i < N)
-			CObjectProps::SetPropertyValue(i, v);
-		else
-		{
-			i -= N;
-			switch (i)
-			{
-			case 0: set.maxref = v.toInt(); break;
-			case 1: set.ilimit = v.toInt(); break;
-			case 2: set.bdivref = v.toBool(); break;
-			case 3: set.brefstep = v.toBool(); break;
-			case 4: break;
-			case 5: set.plot_level = v.toInt(); break;
-			case 6: set.plot_stride = v.toInt(); break;
-			}
-		}
-	}
-	}
-}
-
 QStringList GetFEBioChoices(int moduleId, int superClassId)
 {
 	vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, superClassId, -1, FEBio::ClassSearchFlags::IncludeFECoreClasses);
@@ -238,39 +95,43 @@ QStringList GetFEBioChoices(int moduleId, int superClassId)
 	return ops;
 }
 
-CStepSettings::CStepSettings(FSProject& prj, FSStep* step) : CObjectProps(0)
+CStepSettings::CStepSettings(FSProject& prj)
 {
-	m_step = step;
 	m_moduleId = prj.GetModule();
-	BuildStepProperties();
 }
 
-void CStepSettings::BuildStepProperties()
+void CStepSettings::BuildProperties()
 {
 	Clear();
-	BuildParamList(m_step);
-	for (int i = 0; i < m_step->Properties(); ++i)
+	FSStep* step = m_pobj;
+	if (step)
 	{
-		FSProperty& prop = m_step->GetProperty(i);
-		QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
-		if (prop.IsRequired() == false) ops << "(none)";
-		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
-		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
-		if (pc) BuildParamList(pc);
+		BuildParamList(step);
+		for (int i = 0; i < step->Properties(); ++i)
+		{
+			FSProperty& prop = step->GetProperty(i);
+			QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
+			if (prop.IsRequired() == false) ops << "(none)";
+			addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
+			FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
+			if (pc) BuildParamList(pc);
+		}
 	}
 }
 
 QVariant CStepSettings::GetPropertyValue(int n)
 {
-	int params = m_step->Parameters();
+	FSStep* step = m_pobj;
+
+	int params = step->Parameters();
 	if (n < params)
 	{
-		return CObjectProps::GetPropertyValue(m_step->GetParam(n));
+		return CObjectProps::GetPropertyValue(step->GetParam(n));
 	}
 	n -= params;
-	for (int i = 0; i < m_step->Properties(); ++i)
+	for (int i = 0; i < step->Properties(); ++i)
 	{
-		FSProperty& prop = m_step->GetProperty(i);
+		FSProperty& prop = step->GetProperty(i);
 		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
 		if (n == 0)
 		{
@@ -298,16 +159,17 @@ QVariant CStepSettings::GetPropertyValue(int n)
 
 void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 {
-	int params = m_step->Parameters();
+	FSStep* step = m_pobj;
+	int params = step->Parameters();
 	if (n < params)
 	{
-		CObjectProps::SetPropertyValue(m_step->GetParam(n), v);
+		CObjectProps::SetPropertyValue(step->GetParam(n), v);
 		return;
 	}
 	n -= params;
-	for (int i = 0; i < m_step->Properties(); ++i)
+	for (int i = 0; i < step->Properties(); ++i)
 	{
-		FSProperty& prop = m_step->GetProperty(i);
+		FSProperty& prop = step->GetProperty(i);
 		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
 		if (n == 0)
 		{
@@ -315,10 +177,10 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 			int m = v.toInt();
 			if ((m >= 0) && (m < fci.size()))
 			{
-				FSModelComponent* pc = FEBio::CreateClass(fci[m].classId, m_step->GetFSModel()); assert(pc);
+				FSModelComponent* pc = FEBio::CreateClass(fci[m].classId, step->GetFSModel()); assert(pc);
 				prop.SetComponent(pc);
 			}
-			BuildStepProperties();
+			BuildProperties();
 			SetModified(true);
 			return;
 		}
@@ -332,88 +194,20 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidInterfaceSettings::CRigidInterfaceSettings(FSModel& fem, FSRigidInterface* pi) : m_ri(pi)
+CRigidConnectorSettings::CRigidConnectorSettings(FSModel* fem) : CFSObjectProps_T<FSRigidConnector>(fem)
 {
-	QStringList mats;
-	m_sel = -1;
-	int n = 0;
-	for (int i = 0; i<fem.Materials(); ++i)
-	{
-		GMaterial* pm = fem.GetMaterial(i);
-		if (pm->GetMaterialProperties()->IsRigid())
-		{
-			m_mat.push_back(pm);
-			mats.push_back(QString::fromStdString(pm->GetName()));
-			if (pi->GetRigidBody() == pm) m_sel = n;
-			n++;
-		}
-	}
-	addProperty("Rigid Material", CProperty::Enum)->setEnumValues(mats);
 }
 
-QVariant CRigidInterfaceSettings::GetPropertyValue(int i)
+void CRigidConnectorSettings::BuildProperties()
 {
-	return m_sel;
-}
+	FSRigidConnector* pi = m_pobj;
+	if (pi == nullptr) return;
 
-void CRigidInterfaceSettings::SetPropertyValue(int i, const QVariant& v)
-{
-	m_sel = v.toInt();
-	if ((m_mat.empty() == false) && (m_sel != -1))
-	{
-		m_ri->SetRigidBody(m_mat[m_sel]);
-	}
-	else m_ri->SetRigidBody(0);
-}
-
-//=======================================================================================
-CRigidConstraintSettings::CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* pi) : CObjectProps(0), m_rc(pi)
-{
-	QStringList mats;
-	m_sel = -1;
-	for (int i = 0; i<fem.Materials(); ++i)
-	{
-		GMaterial* pm = fem.GetMaterial(i);
-		if (pm->GetMaterialProperties()->IsRigid())
-		{
-			m_mat.push_back(pm);
-			mats.push_back(QString::fromStdString(pm->GetName()));
-			if (pm->GetID() == pi->GetMaterialID()) m_sel = (int)m_mat.size() - 1;
-		}
-	}
-	addProperty("Rigid Material", CProperty::Enum)->setEnumValues(mats);
-
-	// add the parameters
-	BuildParamList(m_rc);
-}
-
-QVariant CRigidConstraintSettings::GetPropertyValue(int i)
-{
-	if (i == 0) return m_sel;
-	else return CObjectProps::GetPropertyValue(i - 1);
-}
-
-void CRigidConstraintSettings::SetPropertyValue(int i, const QVariant& v)
-{
-	if (i == 0)
-	{
-		m_sel = v.toInt();
-		if (m_mat.empty() == false)
-		{
-			m_rc->SetMaterialID(m_mat[m_sel]->GetID());
-		}
-	}
-	else CObjectProps::SetPropertyValue(i - 1, v);
-}
-
-//=======================================================================================
-CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FSRigidConnector* pi) : CObjectProps(0), m_rc(pi)
-{
 	QStringList mats;
 	m_rbA = -1, m_rbB = -1;
-	for (int i = 0; i<fem.Materials(); ++i)
+	for (int i = 0; i<m_fem->Materials(); ++i)
 	{
-		GMaterial* pm = fem.GetMaterial(i);
+		GMaterial* pm = m_fem->GetMaterial(i);
 		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
@@ -426,7 +220,7 @@ CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FSRigidConnector*
 	addProperty("Rigid Material B", CProperty::Enum)->setEnumValues(mats);
 
 	// add the parameters
-	BuildParamList(m_rc);
+	BuildParamList(pi);
 }
 
 QVariant CRigidConnectorSettings::GetPropertyValue(int i)
@@ -444,12 +238,15 @@ QVariant CRigidConnectorSettings::GetPropertyValue(int i)
 
 void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 {
+	FSRigidConnector* pi = m_pobj;
+	if (pi == nullptr) return;
+
 	if (i == 0)
 	{
 		m_rbA = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->SetRigidBody1(m_mat[m_rbA]->GetID());
+			pi->SetRigidBody1(m_mat[m_rbA]->GetID());
 		}
 	}
 	else if (i == 1)
@@ -457,16 +254,24 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 		m_rbB = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->SetRigidBody2(m_mat[m_rbB]->GetID());
+			pi->SetRigidBody2(m_mat[m_rbB]->GetID());
 		}
 	}
 	else CObjectProps::SetPropertyValue(i - 2, v);
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FSModel& fem, FSMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
+CMaterialProps::CMaterialProps(FSModel* fem) : CFSObjectProps_T<GMaterial>(fem)
 {
-	BuildPropertyList();
+}
+
+void CMaterialProps::BuildProperties()
+{
+	m_mat = nullptr;
+	GMaterial* gmat = m_pobj;
+	if (gmat) { m_mat = gmat->GetMaterialProperties(); }
+
+	if (m_mat) BuildPropertyList();
 }
 
 void CMaterialProps::BuildPropertyList()
@@ -475,7 +280,6 @@ void CMaterialProps::BuildPropertyList()
 	Clear();
 	m_params.clear();
 
-	// get the material properties
 	FSMaterial* pm = m_mat;
 
 	// add the parameters
@@ -739,11 +543,10 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CLogfileProperties::CLogfileProperties(CModelViewer* wnd, FSProject& prj) : CObjectProps(0)
+CLogfileProperties::CLogfileProperties(CModelViewer* wnd, FSProject& prj) : CFSObjectProps(0)
 {
 	m_prj = &prj;
 	m_wnd = wnd;
-	Update();
 }
 
 void CLogfileProperties::Update()
@@ -779,23 +582,31 @@ void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CReactionReactantProperties::CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionReactantProperties::CReactionReactantProperties(FSModel* fem) : CFSObjectProps_T<FSReactionMaterial>(fem)
 {
-	int NR = m_mat->Reactants();
+
+}
+
+void CReactionReactantProperties::BuildProperties()
+{
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return;
+
+	int NR = mat->Reactants();
 	for (int i = 0; i<NR; ++i)
 	{
-		FSReactantMaterial* pr = m_mat->Reactant(i);
+		FSReactantMaterial* pr = mat->Reactant(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetReactantType() == 1)
 		{
-			SoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = m_fem->GetSoluteData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			SoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = m_fem->GetSBMData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
@@ -804,34 +615,47 @@ CReactionReactantProperties::CReactionReactantProperties(FSReactionMaterial* mat
 
 QVariant CReactionReactantProperties::GetPropertyValue(int i)
 {
-	FSReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return QVariant();
+
+	FSReactantMaterial* pr = mat->Reactant(i);
 	return pr->GetCoef();
 }
 
 void CReactionReactantProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FSReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return;
+
+	FSReactantMaterial* pr = mat->Reactant(i);
 	pr->SetCoeff(v.toInt());
 }
 
 //=======================================================================================
-CReactionProductProperties::CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionProductProperties::CReactionProductProperties(FSModel* fem) : CFSObjectProps_T<FSReactionMaterial>(fem)
 {
-	int NP = m_mat->Products();
+}
+
+void CReactionProductProperties::BuildProperties()
+{
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return;
+
+	int NP = mat->Products();
 	for (int i = 0; i<NP; ++i)
 	{
-		FSProductMaterial* pr = m_mat->Product(i);
+		FSProductMaterial* pr = mat->Product(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetProductType() == 1)
 		{
-			SoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = m_fem->GetSoluteData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			SoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = m_fem->GetSBMData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
@@ -840,21 +664,27 @@ CReactionProductProperties::CReactionProductProperties(FSReactionMaterial* mat, 
 
 QVariant CReactionProductProperties::GetPropertyValue(int i)
 {
-	FSProductMaterial* pr = m_mat->Product(i);
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return QVariant();
+
+	FSProductMaterial* pr = mat->Product(i);
 	return pr->GetCoef();
 }
 
 void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FSProductMaterial* pr = m_mat->Product(i);
+	FSReactionMaterial* mat = m_pobj;
+	if (mat == nullptr) return;
+
+	FSProductMaterial* pr = mat->Product(i);
 	pr->SetCoeff(v.toInt());
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
+void CPartProperties::BuildProperties()
 {
-	m_fem = &fem;
-	m_pg = pg;
+	GPart* pg = m_pobj;
+	if (pg == nullptr) return;
 
 	GPartSection* section = pg->GetSection();
 	if (section)
@@ -883,17 +713,23 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 		}
 	}
 
-	QStringList mats;
-	for (int i = 0; i < fem.Materials(); ++i)
+	if (m_fem)
 	{
-		GMaterial* m = fem.GetMaterial(i);
-		mats.push_back(QString::fromStdString(m->GetName()));
+		QStringList mats;
+		for (int i = 0; i < m_fem->Materials(); ++i)
+		{
+			GMaterial* m = m_fem->GetMaterial(i);
+			mats.push_back(QString::fromStdString(m->GetName()));
+		}
+		addProperty("material", CProperty::Enum)->setEnumValues(mats);
 	}
-	addProperty("material", CProperty::Enum)->setEnumValues(mats);
 }
 
 QStringList CPartProperties::GetEnumValues(const char* ch)
 {
+	GPart* pg = m_pobj;
+	if (pg == nullptr) return QStringList();
+
 	if (strcmp(ch, "$(solid_domain)") == 0)
 	{
 		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
@@ -923,15 +759,15 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 
 	if (strcmp(ch, "$(solid_element)") == 0)
 	{
-		assert(m_pg->IsSolid());
+		assert(pg->IsSolid());
 		QStringList sl;
 		sl << "default";
 
-		GObject* po = dynamic_cast<GObject*>(m_pg->Object());
+		GObject* po = dynamic_cast<GObject*>(pg->Object());
 		if (po && po->GetFEMesh())
 		{
 			FSMesh* pm = po->GetFEMesh();
-			int lid = m_pg->GetLocalID();
+			int lid = pg->GetLocalID();
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
 				FSElement& el = pm->Element(i);
@@ -961,8 +797,11 @@ QVariant CPartProperties::GetPropertyValue(int i)
 {
 	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
 
+	GPart* pg = m_pobj;
+	if (pg == nullptr) return QVariant();
+
 	int lid = -1;
-	int mid = m_pg->GetMaterialID();
+	int mid = pg->GetMaterialID();
 	for (int i = 0; i < m_fem->Materials(); ++i)
 	{
 		GMaterial* m = m_fem->GetMaterial(i);
@@ -978,26 +817,31 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
 	else
 	{
-		GObject* po = dynamic_cast<GObject*>(m_pg->Object());
+		GPart* pg = m_pobj;
+		if (pg == nullptr) return;
+
+		GObject* po = dynamic_cast<GObject*>(pg->Object());
 		if (po)
 		{
 			int lid = v.toInt();
 			if (lid < 0)
 			{
-				po->AssignMaterial(m_pg, -1);
+				m_fem->AssignMaterial(pg, nullptr);
 			}
 			else
 			{
 				GMaterial* m = m_fem->GetMaterial(lid);
-				po->AssignMaterial(m_pg, m->GetID());
+				m_fem->AssignMaterial(pg, m);
 			}
 		}
 	}
 }
 
-//=======================================================================================
-CImageModelProperties::CImageModelProperties(CImageModel* model)
-    : m_model(model), CObjectProps(nullptr)
+CImageModelProperties::CImageModelProperties()
+{
+}
+
+void CImageModelProperties::BuildProperties()
 {
     addProperty("Pixel Type", CProperty::String)->setFlags(CProperty::Visible);
     addProperty("Dimensions (voxels)", CProperty::String)->setFlags(CProperty::Visible);
@@ -1008,41 +852,43 @@ CImageModelProperties::CImageModelProperties(CImageModel* model)
     addProperty("x1", CProperty::Float);
     addProperty("y1", CProperty::Float);
     addProperty("z1", CProperty::Float);
-
 }
 
 QVariant CImageModelProperties::GetPropertyValue(int i)
 {
-    BOX box = m_model->GetBoundingBox();
+	CImageModel* imgModel = m_pobj;
+	if (imgModel == nullptr) return QVariant();
+
+    BOX box = imgModel->GetBoundingBox();
 
     switch (i)
     {
     case PIXELTYPE:
     {
-        if(!m_model->Get3DImage())
+        if(!imgModel->Get3DImage())
         {
             return "";
         }
         else
         {
-            return m_model->Get3DImage()->PixelTypeString().c_str();
+            return imgModel->Get3DImage()->PixelTypeString().c_str();
         }
         
     }
     case PXLDIM:
     {
-        C3DImage* img = m_model->Get3DImage();
-        if(!img)
+        C3DImage* img3d = imgModel->Get3DImage();
+        if(!img3d)
         {
             return "";
         }
         else
         {
-            return QString("%1, %2, %3").arg(img->Width()).arg(img->Height()).arg(img->Depth());
+            return QString("%1, %2, %3").arg(img3d->Width()).arg(img3d->Height()).arg(img3d->Depth());
         }
     }
     case SHOWBOX:
-        return m_model->ShowBox();
+        return imgModel->ShowBox();
     case X0:
         return box.x0;
     case Y0:
@@ -1062,38 +908,263 @@ QVariant CImageModelProperties::GetPropertyValue(int i)
 
 void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
 {
-    BOX box = m_model->GetBoundingBox();
+	CImageModel* imgModel = m_pobj;
+	if (imgModel == nullptr) return;
+
+    BOX box = imgModel->GetBoundingBox();
 
     switch (i)
     {
     case SHOWBOX:
-        m_model->ShowBox(v.toBool());
+		imgModel->ShowBox(v.toBool());
         break;
     case X0:
         box.x0 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     case Y0:
         box.y0 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     case Z0:
         box.z0 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     case X1:
         box.x1 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     case Y1:
         box.y1 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     case Z1:
         box.z1 = v.toDouble();
-        m_model->SetBoundingBox(box);
+		imgModel->SetBoundingBox(box);
         break;
     default:
         break;
     }
+}
+
+CFEBioJobProps::CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree) : m_wnd(wnd), m_tree(tree)
+{
+}
+
+void CFEBioJobProps::BuildProperties()
+{
+	CFEBioJob* job = m_pobj;
+	if (job == nullptr) return;
+
+	addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
+	addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Plot File", CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Log File", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+
+	int launchType = job->GetLaunchConfig()->type;
+	if ((launchType != LOCAL) && (launchType != DEFAULT))
+	{
+		addProperty("", CProperty::Action)->info = QString("Get Remote Files");
+//		addProperty("", CProperty::Action)->info = QString("Orphan Process");
+	}
+
+	if (launchType == PBS || launchType == SLURM)
+	{
+		addProperty("", CProperty::Action)->info = QString("Get Queue Status");
+	}
+}
+
+QVariant CFEBioJobProps::GetPropertyValue(int i)
+{
+	CFEBioJob* job = m_pobj;
+	if (job == nullptr) return QVariant();
+
+	switch (i)
+	{
+	case 0: return job->GetStatus();
+	case 1:
+	{
+		QStringList fileNames;
+		fileNames.append(QString(job->GetFEBFileName().c_str()));
+		fileNames.append(QString(job->GetFEBFileName(true).c_str()));
+		return fileNames;
+	}
+	case 2:
+	{
+		QStringList fileNames;
+		fileNames.append(QString(job->GetPlotFileName().c_str()));
+		fileNames.append(QString(job->GetPlotFileName(true).c_str()));
+		return fileNames;
+	}
+	case 3:
+	{
+		QStringList fileNames;
+		fileNames.append(QString(job->GetLogFileName().c_str()));
+		fileNames.append(QString(job->GetLogFileName(true).c_str()));
+		return fileNames;
+	}
+	}
+
+	return QVariant();
+}
+
+void CFEBioJobProps::SetPropertyValue(int i, const QVariant& v)
+{
+	CFEBioJob* job = m_pobj;
+	if (job == nullptr) return;
+
+#ifdef HAS_SSH
+	if (i == 4)
+	{
+		if (!job->GetSSHHandler()->IsBusy())
+		{
+			// Copy remote files to local dir
+			job->GetSSHHandler()->SetTargetFunction(GETJOBFILES);
+
+			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTSSHSESSION);
+			QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
+			sshThread->start();
+		}
+	}
+//		else if (i == 6)
+//		{
+//			job->GetSSHHandler()->Orphan();
+//		}
+	else if (i == 5)
+	{
+		if (!job->GetSSHHandler()->IsBusy())
+		{
+			// Copy remote files to local dir
+			m_wnd->ClearOutput();
+
+			job->GetSSHHandler()->SetTargetFunction(GETQUEUESTATUS);
+			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTSSHSESSION);
+			QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
+			sshThread->start();
+		}
+	}
+#endif // HAS_SSH
+}
+
+void CPostModelProps::BuildProperties()
+{
+	addProperty("Element subdivisions", CProperty::Int)->setIntRange(0, 10).setAutoValue(true);
+	addProperty("Render mode", CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
+	addProperty("Render undeformed outline", CProperty::Bool);
+	addProperty("Outline color", CProperty::Color);
+	addProperty("Node color", CProperty::Color);
+	addProperty("Selection color", CProperty::Color);
+	addProperty("Render shells as solid", CProperty::Bool);
+	addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+	addProperty("Render beams as solid", CProperty::Bool);
+	addProperty("Smoothing angle", CProperty::Float);
+	addProperty("Render internal surfaces", CProperty::Bool);
+}
+
+QVariant CPostModelProps::GetPropertyValue(int i)
+{
+	Post::CGLModel* glm = m_pobj;
+	if (glm == nullptr) return QVariant();
+
+	QVariant v;
+	switch (i)
+	{
+	case 0: v = glm->m_nDivs; break;
+	case 1: v = glm->m_nrender; break;
+	case 2: v = glm->m_bghost; break;
+	case 3: v = toQColor(glm->m_line_col); break;
+	case 4: v = toQColor(glm->m_node_col); break;
+	case 5: v = toQColor(glm->m_sel_col); break;
+	case 6: v = glm->ShowShell2Solid(); break;
+	case 7: v = glm->ShellReferenceSurface(); break;
+	case 8: v = glm->ShowBeam2Solid(); break;
+	case 9: v = glm->GetSmoothingAngle(); break;
+	case 10: v = glm->RenderInnerSurfaces(); break;
+	}
+	return v;
+}
+
+void CPostModelProps::SetPropertyValue(int i, const QVariant& v)
+{
+	Post::CGLModel* glm = m_pobj;
+	if (glm == nullptr) return;
+
+	switch (i)
+	{
+	case 0: glm->m_nDivs = v.toInt(); break;
+	case 1: glm->m_nrender = v.toInt(); break;
+	case 2: glm->m_bghost = v.toBool(); break;
+	case 3: glm->m_line_col = toGLColor(v.value<QColor>());
+	case 4: glm->m_node_col = toGLColor(v.value<QColor>());
+	case 5: glm->m_sel_col = toGLColor(v.value<QColor>());
+	case 6: glm->ShowShell2Solid(v.toBool()); break;
+	case 7: glm->ShellReferenceSurface(v.toInt()); break;
+	case 8: glm->ShowBeam2Solid(v.toBool()); break;
+	case 9: glm->SetSmoothingAngle(v.toDouble());  break;
+	case 10: glm->RenderInnerSurfaces(v.toBool()); break;
+	}
+}
+
+void CDiscreteObjectProps::BuildProperties()
+{
+	GDiscreteObject* po = m_pobj;
+
+	if (dynamic_cast<GDiscreteSpringSet*>(po))
+	{
+		GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
+		FSDiscreteMaterial* dm = pg->GetMaterial();
+		if (dm) BuildParamList(dm);
+	}
+	else if (dynamic_cast<GDeformableSpring*>(po))
+	{
+		BuildParamList(po);
+	}
+}
+
+CPlotfileProperties::CPlotfileProperties(CModelViewer* wnd, FSProject& prj) : CFSObjectProps(0), m_wnd(wnd), m_prj(prj)
+{
+}
+
+void CPlotfileProperties::SetFSObject(FSObject* po)
+{
+	Update();
+}
+
+void CPlotfileProperties::Update()
+{
+	Clear();
+
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+
+	int ncount = 0;
+	for (int i = 0; i < plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& var = plt.PlotVariable(i);
+		if (var.isShown() && var.isActive())
+		{
+			addProperty(QString::fromStdString(var.name()), CProperty::Bool)->setFlags(CProperty::Visible);
+			ncount++;
+		}
+	}
+
+	addProperty("", CProperty::Action, "Edit plot variables ...");
+	m_actionIndex = ncount;
+}
+
+QVariant CPlotfileProperties::GetPropertyValue(int i) { return (i != m_actionIndex ? true : QVariant()); }
+
+void CPlotfileProperties::SetPropertyValue(int i, const QVariant& v)
+{
+	if (i == m_actionIndex)
+	{
+		m_wnd->blockUpdate(true);
+		m_wnd->OnEditOutput();
+		m_wnd->blockUpdate(false);
+	}
+}
+
+void FSGlobalsProps::SetFSObject(FSObject* po)
+{
+	Clear();
+	BuildParamList(m_fem);
 }

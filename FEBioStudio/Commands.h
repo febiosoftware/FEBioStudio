@@ -49,6 +49,7 @@ class CModelDocument;
 class CGLDocument;
 class CGView;
 class CImageAnalysis;
+class GMaterial;
 
 //-----------------------------------------------------------------------------
 
@@ -899,72 +900,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
-class CCmdAssignPartMaterial : public CCommand
-{
-public:
-	CCmdAssignPartMaterial(GModel* model, vector<int> npart, int nmat);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_model;
-	vector<int>	m_part;
-
-	vector<int>	m_old;	// old materials
-	int			m_mat;	// new material
-};
-
-//-----------------------------------------------------------------------------
-
-class CCmdAssignObjectMaterial : public CCommand
-{
-public:
-	CCmdAssignObjectMaterial(GObject* po, int mat);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GObject*	m_po;
-	int			m_mat;
-	vector<int>	m_old;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdAssignObjectListMaterial : public CCmdGroup
-{
-public:
-	CCmdAssignObjectListMaterial(vector<GObject*> o, int mat);
-};
-
-//-----------------------------------------------------------------------------
-// Obsolete as of 1.4
-/*
-class CCmdAssignMaterial : public CCommand
-{
-public:
-CCmdAssignMaterial(GObject* po, FSMaterial* pmat, int* pel=0, int N=0);
-~CCmdAssignMaterial(){ delete [] m_ppmat; }
-
-void Execute();
-void UnExecute();
-
-protected:
-FSMaterial*	m_pmat;
-FSMesh*	m_pm;
-GObject* m_po;
-
-int*	m_pel;
-int		m_N;
-
-FSMaterial**	m_ppmat;
-};
-*/
-
-//-----------------------------------------------------------------------------
-
 class CCmdDeleteFESelection : public CCommand
 {
 public:

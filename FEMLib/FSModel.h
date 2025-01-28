@@ -119,8 +119,17 @@ public:
 	// find a material from its name
 	GMaterial* FindMaterial(const char* szname);
 
-    // find a rigid connector from its ID
-    FSRigidConnector* GetRigidConnectorFromID(int id);
+	// find a rigid connector from its ID
+	FSRigidConnector* GetRigidConnectorFromID(int id);
+
+	// assign material to object
+	void AssignMaterial(GObject* po, GMaterial* mat);
+
+	// assign material to part
+	void AssignMaterial(GPart* pg, GMaterial* mat);
+
+	// update materials' part list
+	void UpdateMaterials();
 
 	// --- serialization ---
 

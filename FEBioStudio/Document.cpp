@@ -770,9 +770,9 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po); assert(plt);
 		return plt->GetTypeString();
 	}
-	else
+	else if (po)
 	{
-		assert(false);
+		return po->GetTypeString();
 	}
 
 	return "(unknown)";

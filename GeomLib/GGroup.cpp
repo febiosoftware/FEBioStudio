@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+#include <map>
 
 GGroup::GGroup(GModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
@@ -617,13 +618,24 @@ FEItemListBuilder* GPartList::Copy()
 //-----------------------------------------------------------------------------
 vector<GPart*> GPartList::GetPartList()
 {
-	vector<GPart*> partList;
 	GModel& model = *m_ps;
+	std::map<int, GPart*> allParts;
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			allParts[pg->GetID()] = pg;
+		}
+	}
+
+	vector<GPart*> partList;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
-		GPart *pg = model.FindPart(*it);
+		GPart *pg = allParts[*it];
 		partList.push_back(pg);
 	}
 

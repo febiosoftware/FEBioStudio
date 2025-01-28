@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QTreeWidget>
 #include <vector>
+#include <map>
 
 class CModelViewer;
 class CModelDocument;
@@ -42,6 +43,7 @@ class FSProject;
 class FSModelComponent;
 
 class CObjectValidator;
+class CFSObjectProps;
 
 enum ModelTreeType
 {
@@ -51,6 +53,7 @@ enum ModelTreeType
 	MT_SURFACE,
 	MT_EDGE,
 	MT_NODE,
+	MT_FEMODEL,
 	MT_MATERIAL_LIST,
 	MT_SOLUTES_LIST,
 	MT_SOLUTE,
@@ -97,15 +100,18 @@ enum ModelTreeType
 	MT_CONSTRAINT,
 	MT_STEP,
 	MT_MATERIAL,
+	MT_MATERIAL_REACTANTS,
+	MT_MATERIAL_PRODUCTS,
 	MT_DATAMAP,
 	MT_JOBLIST,
 	MT_JOB,
 	MT_POST_MODEL,
 	MT_POST_PLOT,
 	MT_3DIMAGE,
-    MT_IMGANALYSIS,
+	MT_IMGANALYSIS,
 	MT_MESH_DATA_LIST,
 	MT_MESH_DATA,
+	MT_MESH_DATA_GENERATOR,
 	MT_MESH_ADAPTOR_LIST,
 	MT_MESH_ADAPTOR
 };
@@ -124,11 +130,15 @@ enum ModelTreeFilter
 struct CModelTreeItem
 {
 	FSObject*			obj;	// the object
-	CPropertyList*		props;	// the property list
-	CObjectValidator*	val;	// the validator
 	int					flag;	// 0 = list view, 1 = form view
 	int					type;	// the object type
 	const char*			szicon = nullptr;	// the icon
+};
+
+struct CPropertyItem
+{
+	CFSObjectProps* props = nullptr;
+	CObjectValidator* val = nullptr;
 };
 
 class CModelTree : public QTreeWidget
@@ -174,7 +184,7 @@ public:
 protected:
 	void ClearData();
 
-	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0, const char* szicon = nullptr);
+	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = nullptr, int flags = 0, const char* szicon = nullptr);
 
 	void UpdateModelData      (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateObjects        (QTreeWidgetItem* t1, FSModel& fem);
@@ -195,13 +205,15 @@ protected:
 	void UpdateMeshData       (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateMeshAdaptors   (QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep);
 
-	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FSMaterial* pmat, FSModel& fem, bool topLevel);
-	void AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* mat, FSModel& fem);
-
 	CModelTreeItem* GetCurrentData();
 
 private:
-	std::vector<CModelTreeItem>	m_data;
+	void BuildPropertyLists(CModelDocument* doc);
+
+private:
+	std::vector<CModelTreeItem>		m_data;
+	std::map<int, CPropertyItem>	m_props;
+
 	CModelViewer*				m_view;
 	int							m_nfilter;
 

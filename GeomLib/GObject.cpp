@@ -432,34 +432,6 @@ void GObject::CollapseTransform()
 }
 
 //-----------------------------------------------------------------------------
-// Assign a material to all parts of this obbject.
-void GObject::AssignMaterial(int matid)
-{
-	for (int i=0; i<Parts(); ++i)
-	{
-		GPart& g = *m_Part[i];
-		g.SetMaterialID(matid);
-	}
-	UpdateFEElementMatIDs();
-}
-
-//-----------------------------------------------------------------------------
-// Assign a material to a part. The partid parameter is the global ID of the part,
-// matId is the global material ID
-void GObject::AssignMaterial(int partid, int matid)
-{
-	GPart* pg = FindPart(partid); assert(pg);
-	if (pg) AssignMaterial(pg, matid);
-}
-
-void GObject::AssignMaterial(GPart* part, int matid)
-{
-	assert(part && (part->Object() == this));
-	part->SetMaterialID(matid);
-	UpdateFEElementMatIDs(part->GetLocalID());
-}
-
-//-----------------------------------------------------------------------------
 //! This function makes sure that the GNodes correspond to the mesh' nodes
 //! When the mesh is transformed independently from the gobject te nodes
 //! might not coincide any more and this function should be called. 
@@ -547,21 +519,6 @@ void GObject::UpdateFEElementMatIDs()
 		FSElement& el = pm->Element(i);
 		GPart* pg = Part(el.m_gid);
 		if (pg) el.m_MatID = pg->GetMaterialID();
-	}
-}
-
-void GObject::UpdateFEElementMatIDs(int partIndex)
-{
-	FSMesh* pm = GetFEMesh();
-	if (pm == nullptr) return;
-	if ((partIndex < 0) || (partIndex >= Parts())) return;
-
-	GPart* pg = Part(partIndex);
-	int matId = pg->GetMaterialID();
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		FSElement& el = pm->Element(i);
-		if (el.m_gid == partIndex) el.m_MatID = matId;
 	}
 }
 
