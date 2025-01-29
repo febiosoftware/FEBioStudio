@@ -165,6 +165,7 @@ void init_FBSModel(py::module& m)
         // --- material functions ---
         .def("GetMaterial", &FSModel::GetMaterial)
         .def("AddMaterial", &FSModel::AddMaterial)
+        .def("AssignMaterial", static_cast<void (FSModel::*)(GObject*, GMaterial*)>(&FSModel::AssignMaterial))
         .def("ReplaceMaterial", &FSModel::ReplaceMaterial)
         .def("CanDeleteMaterial", &FSModel::CanDeleteMaterial)
         .def("DeleteMaterial", &FSModel::DeleteMaterial)
