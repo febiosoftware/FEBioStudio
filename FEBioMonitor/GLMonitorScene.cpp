@@ -347,7 +347,7 @@ void CGLMonitorScene::BuildMesh()
 
 	// Update the mesh
 	// This will also build the faces
-	pmesh->BuildMesh();
+	pmesh->RebuildMesh();
 	m_glm->GetPostObject()->SetFEMesh(pmesh);
 	m_glm->GetPostObject()->Update(true);
 
