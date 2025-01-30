@@ -165,7 +165,8 @@ void init_FBSPost(py::module& m)
         .def_readonly("NodeData", &FEState::m_NODE, py::return_value_policy::reference)
         .def_readonly("EdgeData", &FEState::m_EDGE, py::return_value_policy::reference)
         .def_readonly("FaceData", &FEState::m_FACE, py::return_value_policy::reference)
-        .def_readonly("ElemData", &FEState::m_ELEM, py::return_value_policy::reference);
+        .def_readonly("ElemData", &FEState::m_ELEM, py::return_value_policy::reference)
+        .def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index));});
 
 	py::class_<NODEDATA>(post, "NODEDATA")
         .def("r",  [](NODEDATA& self){return to_vec3d(self.m_rt);})
