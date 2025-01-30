@@ -162,7 +162,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 3)
+		if (i == 2)
 		{
 			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear all the recent files list.\nThis can not be undone!") == QMessageBox::Yes)
 			{

@@ -82,6 +82,7 @@ public:
 	void enableAllButtons(bool b);
 
 	void setCollapsed(bool b);
+	bool isCollapsed() const;
 
 signals:
 	void addButtonClicked();
@@ -91,6 +92,7 @@ signals:
 	void clearButtonClicked();
 	void nameChanged(const QString& t);
 	void pickClicked();
+	void currentItemChanged(int item);
 
 private slots:
 	void on_addButton_clicked();
@@ -99,6 +101,7 @@ private slots:
 	void on_selButton_clicked();
 	void on_name_textEdited(const QString& t);
 	void on_list_itemDoubleClicked(QListWidgetItem *item);
+	void on_list_currentRowChanged(int nrow);
 	void on_clearSelection_clicked();
 	void on_toggleCollapse_toggled(bool b);
 	void on_pick_clicked(bool b);
@@ -117,6 +120,11 @@ public:
 	CItemListSelectionBox(QWidget* parent = nullptr);
 
 	void SetItemList(FSItemListBuilder* pItem);
+
+	FSItemListBuilder* GetItemList() { return itemList; }
+
+private:
+	FSItemListBuilder* itemList;
 };
 
 class CMainWindow;

@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <MeshIO/STLExport.h>
 #include "FEObjectProps.h"
 #include "PropertyList.h"
+#include "GLHighlighter.h"
 using namespace std;
 
 class CDlgWarnings : public QDialog
@@ -688,6 +689,57 @@ void CModelViewer::on_props_dataChanged(bool b)
 void CModelViewer::on_props_modelChanged()
 {
 	Update();
+}
+
+void CModelViewer::on_props_itemSelected(FSItemListBuilder* il, std::vector<int>& items)
+{
+	if (IsHighlightSelectionEnabled())
+	{
+		GLHighlighter::ClearHighlights();
+		GNodeList* nl = dynamic_cast<GNodeList*>(il);
+		if (nl) {
+			std::vector<GNode*> nodes = nl->GetNodeList();
+			for (int i : items) {
+				for (GNode* pn : nodes) {
+					if (pn->GetID() == i)
+						GLHighlighter::PickItem(pn);
+				}
+			}
+		}
+
+		GEdgeList* el = dynamic_cast<GEdgeList*>(il);
+		if (el) {
+			std::vector<GEdge*> edges = el->GetEdgeList();
+			for (int i : items) {
+				for (GEdge * pe : edges) {
+					if (pe->GetID() == i)
+						GLHighlighter::PickItem(pe);
+				}
+			}
+		}
+
+		GFaceList* fl = dynamic_cast<GFaceList*>(il);
+		if (fl) {
+			std::vector<GFace*> surfaces = fl->GetFaceList();
+			for (int i : items) {
+				for (GFace* pf : surfaces) {
+					if (pf->GetID() == i)
+						GLHighlighter::PickItem(pf);
+				}
+			}
+		}
+
+		GPartList* pl = dynamic_cast<GPartList*>(il);
+		if (pl) {
+			std::vector<GPart*> parts = pl->GetPartList();
+			for (int i : items) {
+				for (GPart* pg : parts) {
+					if (pg->GetID() == i)
+						GLHighlighter::PickItem(pg);
+				}
+			}
+		}
+	}
 }
 
 void CModelViewer::on_filter_currentIndexChanged(int n)
