@@ -1433,7 +1433,27 @@ void CModelPropsPanel::on_select1_currentItemChanged(int nrow)
 
 void CModelPropsPanel::on_select2_currentItemChanged(int nrow)
 {
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if ((pdoc == nullptr) || !pdoc->IsValid()) return;
 
+	FSItemListBuilder* itemList = ui->sel2->GetItemList();
+	if (itemList)
+	{
+		std::vector<int> allItems;
+		ui->sel2->getAllItems(allItems);
+
+		std::vector<int> l;
+		if (!ui->sel2->isCollapsed()) l = allItems;
+		else
+		{
+			if ((nrow >= 0) && (nrow < allItems.size())) l.push_back(allItems[nrow]);
+		}
+
+		if (!l.empty())
+		{
+			emit itemSelected(itemList, l);
+		}
+	}
 }
 
 void CModelPropsPanel::PickSelection(int n)
