@@ -3068,7 +3068,7 @@ void GLMeshRender::RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor
 	vec3d& r1 = pm->Node(face.n[0]).r;
 	vec3d& r2 = pm->Node(face.n[1]).r;
 	vec3d& r3 = pm->Node(face.n[2]).r;
-	vec3d r4 = (face.n[3] >= 0 ? pm->Node(face.n[3]).r : r3);
+	vec3d r4;
 
 	vec3f& n1 = face.m_nn[0];
 	vec3f& n2 = face.m_nn[1];
@@ -3085,6 +3085,7 @@ void GLMeshRender::RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor
 	case FE_FACE_QUAD4:
 	case FE_FACE_QUAD8:
 	case FE_FACE_QUAD9:
+		r4 = pm->Node(face.n[3]).r;
 		if (m_ndivs <= 1)
 		{
 			glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
