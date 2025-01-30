@@ -185,6 +185,11 @@ void CSelectionBox::setCollapsed(bool b)
 	ui->collapse->setChecked(!b);
 }
 
+bool CSelectionBox::isCollapsed() const
+{
+	return ui->collapse->isChecked();
+}
+
 void CSelectionBox::on_addButton_clicked()
 {
 	emit addButtonClicked();
@@ -246,6 +251,11 @@ void CSelectionBox::on_list_itemDoubleClicked(QListWidgetItem *item)
 	{
 		emit selButtonClicked();
 	}
+}
+
+void CSelectionBox::on_list_currentRowChanged(int nrow)
+{
+	emit currentItemChanged(nrow);
 }
 
 void CSelectionBox::clearData()
@@ -429,11 +439,13 @@ void CSelectionBox::removeSelectedItems()
 //-----------------------------------------------------------------------------
 CItemListSelectionBox::CItemListSelectionBox(QWidget* parent) : CSelectionBox(parent)
 {
-
+	itemList = nullptr;
 }
 
 void CItemListSelectionBox::SetItemList(FSItemListBuilder* item)
 {
+	itemList = item;
+
 	// make sure we have an item list
 	if (item == 0)
 	{

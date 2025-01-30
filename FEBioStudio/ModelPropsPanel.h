@@ -215,6 +215,8 @@ private slots:
 	void on_select2_nameChanged(const QString& t);
 	void on_select1_pickClicked();
 	void on_select2_pickClicked();
+	void on_select1_currentItemChanged(int nrow);
+	void on_select2_currentItemChanged(int nrow);
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_itemInfo_nameChanged(const QString&);
@@ -255,6 +257,7 @@ signals:
 	void dataChanged(bool b);
 	void modelChanged();
 	void paramChanged(FSCoreBase* pc, Param* p);
+	void itemSelected(FSItemListBuilder* il, std::vector<int>& items);
 
 private:
 	Ui::CModelPropsPanel* ui;

@@ -119,6 +119,7 @@ public slots:
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
 	void on_props_modelChanged();
+	void on_props_itemSelected(FSItemListBuilder* il, std::vector<int>& items);
 	void on_filter_currentIndexChanged(int n);
 	void on_warnings_clicked();
 	void on_props_paramChanged(FSCoreBase* pc, Param* p);

@@ -1406,6 +1406,36 @@ void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
 void CModelPropsPanel::on_select1_pickClicked() { PickSelection(0); }
 void CModelPropsPanel::on_select2_pickClicked() { PickSelection(1); }
 
+void CModelPropsPanel::on_select1_currentItemChanged(int nrow)
+{
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if ((pdoc == nullptr) || !pdoc->IsValid()) return;
+
+	FSItemListBuilder* itemList = ui->sel1->GetItemList();
+	if (itemList)
+	{
+		std::vector<int> allItems;
+		ui->sel1->getAllItems(allItems);
+		
+		std::vector<int> l;
+		if (!ui->sel1->isCollapsed()) l = allItems;
+		else
+		{
+			if ((nrow >= 0) && (nrow < allItems.size())) l.push_back(allItems[nrow]);
+		}
+
+		if (!l.empty())
+		{
+			emit itemSelected(itemList, l);
+		}
+	}
+}
+
+void CModelPropsPanel::on_select2_currentItemChanged(int nrow)
+{
+
+}
+
 void CModelPropsPanel::PickSelection(int n)
 {
 	CModelDocument* pdoc = m_wnd->GetModelDocument();
