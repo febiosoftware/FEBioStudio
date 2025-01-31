@@ -267,8 +267,6 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 			for (i = 0; i <= nsteps; i++)
 			{
 				yt = y0 + i * (y1 - y0) / nsteps;
-				f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
-
 				glVertex2i(x0 + 1, yt);
 				glVertex2i(x1 - 1, yt);
 			}
@@ -312,7 +310,9 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 		for (i = 0; i <= nsteps; i++)
 		{
 			yt = y0 + i * (y1 - y0) / nsteps;
-			f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
+			if      (i ==      0) f = m_fmax;
+			else if (i == nsteps) f = m_fmin;
+			else f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
 
 			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 			QString s(str);
@@ -415,8 +415,6 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 			for (i = 0; i <= nsteps; i++)
 			{
 				int xt = x0 + i * (x1 - x0) / nsteps;
-				double f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
-
 				glVertex2i(xt, y0 + 1);
 				glVertex2i(xt, y1 - 1);
 			}
@@ -459,10 +457,13 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		char szfmt[16] = { 0 };
 		sprintf(szfmt, "%%.%dg", m_nprec);
 
+		double f = 0;
 		for (i = 0; i <= nsteps; i++)
 		{
 			int xt = x0 + i * (x1 - x0) / nsteps;
-			double f = m_fmin + i * (m_fmax - m_fmin) / nsteps;
+			if      (i ==      0) f = m_fmax;
+			else if (i == nsteps) f = m_fmin;
+			else f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
 
 			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 			QString s(str);

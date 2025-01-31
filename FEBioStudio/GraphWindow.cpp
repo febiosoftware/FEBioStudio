@@ -171,6 +171,9 @@ public:
 	QLineEdit*		title;
 	QLineEdit*		xlabel;
 	QLineEdit*		ylabel;
+	QLineEdit*		titleFontSize;
+	QLineEdit*		legendFontSize;
+	QLineEdit*		axesFontSize;
 
 	CGraphWidget*	m_graph;
 
@@ -213,6 +216,24 @@ public:
 		h->addWidget(ylabel = new QLineEdit());
 		l->addLayout(h);
 
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Title font size"));
+		h->addWidget(titleFontSize = new QLineEdit()); titleFontSize->setValidator(new QIntValidator(6, 32));
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Legend font size"));
+		h->addWidget(legendFontSize = new QLineEdit()); legendFontSize->setValidator(new QIntValidator(6, 32));
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Axes font size"));
+		h->addWidget(axesFontSize = new QLineEdit()); axesFontSize->setValidator(new QIntValidator(6, 32));
+		l->addLayout(h);
+
 		l->addStretch();
 		w->setLayout(l);
 
@@ -231,6 +252,10 @@ public:
 		QObject::connect(title, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
 		QObject::connect(xlabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
 		QObject::connect(ylabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(ylabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(titleFontSize, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(legendFontSize, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(axesFontSize, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
 	}
 
 	void setDrawGrid(bool b)
@@ -302,6 +327,27 @@ public:
 		ylabel->setText(t);
 		ylabel->blockSignals(false);
 	}
+
+	void setTitleFontSize(int n)
+	{
+		titleFontSize->blockSignals(true);
+		titleFontSize->setText(QString::number(n));
+		titleFontSize->blockSignals(false);
+	}
+
+	void setLegendFontSize(int n)
+	{
+		legendFontSize->blockSignals(true);
+		legendFontSize->setText(QString::number(n));
+		legendFontSize->blockSignals(false);
+	}
+
+	void setAxesFontSize(int n)
+	{
+		axesFontSize->blockSignals(true);
+		axesFontSize->setText(QString::number(n));
+		axesFontSize->blockSignals(false);
+	}
 };
 
 GraphOptions::GraphOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new GraphOptionsUI)
@@ -323,6 +369,9 @@ void GraphOptions::onOptionsChanged()
 	ui->m_graph->setTitle(ui->title->text());
 	ui->m_graph->setXAxisLabel(ui->xlabel->text());
 	ui->m_graph->setYAxisLabel(ui->ylabel->text());
+	ui->m_graph->setTitleFontSize(ui->titleFontSize->text().toInt());
+	ui->m_graph->setLegendFontSize(ui->legendFontSize->text().toInt());
+	ui->m_graph->setAxesFontSize(ui->axesFontSize->text().toInt());
 	ui->m_graph->repaint();
 }
 
@@ -338,6 +387,9 @@ void GraphOptions::Update()
 	ui->setTitle(ui->m_graph->title());
 	ui->setXLabel(ui->m_graph->XAxisLabel());
 	ui->setYLabel(ui->m_graph->YAxisLabel());
+	ui->setTitleFontSize(ui->m_graph->titleFontSize());
+	ui->setLegendFontSize(ui->m_graph->legendFontSize());
+	ui->setAxesFontSize(ui->m_graph->axesFontSize());
 }
 
 bool GraphOptions::lineSmoothing()

@@ -1106,7 +1106,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	}
 
 	// render the title
-	QFont f("Times", 12, QFont::Bold);
+	QFont f("Times", m_data.m_titleFontSize, QFont::Bold);
 	p.setFont(f);
 	QFontMetrics fm(f);
 	m_titleRect = m_screenRect;
@@ -1170,7 +1170,7 @@ void CPlotWidget::drawLegend(QPainter& p)
 	legendRect.setLeft(m_plotRect.right());
 	legendRect.setRight(rect().right());
 
-	QFont f("Arial", 10);
+	QFont f("Arial", m_data.m_legendFontSize);
 	QFontMetrics fm(f);
 	p.setFont(f);
 
@@ -1259,7 +1259,7 @@ void CPlotWidget::drawTitle(QPainter& p)
 {
 	QPen pen(Qt::black, 1);
 	p.setPen(pen);
-	QFont f("Times", 12, QFont::Bold);
+	QFont f("Times", m_data.m_titleFontSize, QFont::Bold);
 	p.setFont(f);
 	QFontMetrics fm(f);
 	p.drawText(m_titleRect, Qt::AlignCenter, m_data.m_title);
@@ -1268,7 +1268,7 @@ void CPlotWidget::drawTitle(QPainter& p)
 //-----------------------------------------------------------------------------
 void CPlotWidget::drawAxesLabels(QPainter& p)
 {
-	QFont f("Arial", 12);
+	QFont f("Arial", m_data.m_axesFontSize);
 	f.setBold(true);
 	p.setFont(f);
 
@@ -1291,7 +1291,7 @@ void CPlotWidget::drawAxesLabels(QPainter& p)
 void CPlotWidget::drawAxesTicks(QPainter& p)
 {
 	char sz[256] = { 0 };
-	QFont f("Arial", 10);
+	QFont f("Arial", m_data.m_axesFontSize);
 	QFontMetrics fm(f);
 	p.setFont(f);
 
