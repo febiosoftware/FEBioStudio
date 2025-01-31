@@ -543,7 +543,9 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 		for (i=0; i<=nsteps; i++)
 		{
 			yt = y0 + i*(y1 - y0)/nsteps;
-			f = m_fmax + i*(m_fmin - m_fmax)/nsteps;
+			if (i == 0) f = m_fmax;
+			else if (i == nsteps) f = m_fmin;
+			else f = m_fmax + i*(m_fmin - m_fmax)/nsteps;
 
 			sprintf(str, szfmt, (fabs(f/p) < 1e-5 ? 0 : f/p));
 			QString s(str);
