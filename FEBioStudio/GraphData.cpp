@@ -37,6 +37,10 @@ CGraphData::CGraphData()
 	m_bdrawTitle = true;
 	m_bdrawAxesLabels = false;
 
+	m_titleFontSize = 12;
+	m_legendFontSize = 10;
+	m_axesFontSize = 10;
+
 	m_bgCol = QColor(255, 255, 255);
 	m_gridCol = QColor(192, 192, 192);
 	m_xAxisCol = QColor(0, 0, 0);

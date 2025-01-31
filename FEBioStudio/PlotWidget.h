@@ -172,6 +172,15 @@ public:
 	void setXAxisLabel(const QString& label) { m_data.m_xAxis.label = label; }
 	void setYAxisLabel(const QString& label) { m_data.m_yAxis.label = label; }
 
+	int titleFontSize() const { return m_data.m_titleFontSize; }
+	void setTitleFontSize(int fontSize) { m_data.m_titleFontSize = fontSize; }
+
+	int legendFontSize() const { return m_data.m_legendFontSize; }
+	void setLegendFontSize(int fontSize) { m_data.m_legendFontSize = fontSize; }
+
+	int axesFontSize() const { return m_data.m_axesFontSize; }
+	void setAxesFontSize(int fontSize) { m_data.m_axesFontSize = fontSize; }
+
 	void selectPoint(int ndata, int npoint);
 
 	QRect ScreenRect() const { return m_screenRect; }

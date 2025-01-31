@@ -186,6 +186,10 @@ public:
 	bool				m_bdrawTitle;
 	bool				m_bdrawAxesLabels;
 
+	int		m_titleFontSize;
+	int		m_legendFontSize;
+	int		m_axesFontSize;
+
 	QColor	m_bgCol;
 	QColor	m_gridCol;
 	QColor	m_xAxisCol;
