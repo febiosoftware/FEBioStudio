@@ -39,13 +39,12 @@ SOFTWARE.*/
 #include "PyFBSCore.h"
 #include "PyFBSPost.h"
 #include "PyFSMesh.h"
+#include "PyFBSGeom.h"
 
 #ifndef PY_EXTERNAL
 #include "PyFBSModel.h"
 #include "PyFBSUI.h"
 #endif
-
-#include <FSCore/math3d.h>
 
 namespace py = pybind11;
 
@@ -54,6 +53,7 @@ PY_MODULE_TYPE(fbs, m)
 	init_FBSCore(m);
     init_FSMesh(m);
 	init_FBSPost(m);
+	init_FBSGeom(m);
 
 #ifndef PY_EXTERNAL
     init_FBSUI(m);

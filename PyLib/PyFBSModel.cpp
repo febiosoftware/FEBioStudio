@@ -30,21 +30,15 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
-#include <GeomLib/GPrimitive.h>
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
-#include <FEBioStudio/Commands.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
-#include <GeomLib/GPrimitive.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
-#include <GeomLib/GBaseObject.h>
-#include <GeomLib/GItem.h>
-#include "PySpringFunctions.h"
 #include <FEBio/FEBioExport4.h>
-#include "PyFSMesh.h"
+#include "PyExceptions.h"
 
 namespace py = pybind11;
 
@@ -67,25 +61,19 @@ GModel* GetActiveGModel()
 	return doc->GetGModel();
 }
 
-// Create a box primitve
-GObject* CreateBox(std::string& name, vec3d pos, double width, double height, double depth)
+void AddObject(GObject* po)
 {
-	// create the box
-	GBox* gbox = new GBox();
-	gbox->SetName(name);
-	gbox->SetFloatValue(GBox::WIDTH, width);
-	gbox->SetFloatValue(GBox::HEIGHT, height);
-	gbox->SetFloatValue(GBox::DEPTH, depth);
-	gbox->Update();
-	gbox->GetTransform().SetPosition(pos);
-	return gbox;
+	GetActiveGModel()->AddObject(po);
 }
 
-// Create a box primitve
-GObject* CreateMeshObject(const std::string& name, FSMesh* pm)
+GObject* GetActiveObject()
 {
-	GMeshObject* po = new GMeshObject(pm);
-	po->SetName(name);
+	CModelDocument* doc = GetActiveDocument();
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr)
+	{
+		throw pyGenericExcept("There is no currently selected object.");
+	}
 	return po;
 }
 
@@ -104,12 +92,54 @@ GMaterial* AddMaterial(std::string& name, std::string& type)
 	return nullptr;
 }
 
-FSStep* AddStep(std::string& name)
+void AssignMaterial(GObject* po, GMaterial* pmat)
 {
 	FSModel* fem = GetActiveFSModel();
-	FSStep* step = FEBio::CreateStep("solid", fem);
-	if (step) fem->AddStep(step);
+	fem->AssignMaterial(po, pmat);
+}
+
+FSStep* AddStep(std::string& name, std::string& typeString)
+{
+	FSModel* fem = GetActiveFSModel();
+	FSStep* step = FEBio::CreateStep(typeString, fem);
+	if (step)
+	{
+		step->SetName(name);
+		fem->AddStep(step);
+	}
 	return step;
+}
+
+GDiscreteSpringSet* AddSpringSet(const std::string& name, const std::string& typeStr)
+{
+	auto gmodel = GetActiveGModel();
+	FSModel* fem = GetActiveFSModel();
+
+	auto set = new GDiscreteSpringSet(gmodel);
+
+	if (typeStr == "Linear")
+	{
+		set->SetMaterial(new FSLinearSpringMaterial(fem));
+	}
+	else if (typeStr == "Nonlinear")
+	{
+		set->SetMaterial(new FSNonLinearSpringMaterial(fem));
+	}
+	else if (typeStr == "Hill")
+	{
+		set->SetMaterial(new FSHillContractileMaterial(fem));
+	}
+	else
+	{
+		delete set;
+		return nullptr;
+	}
+
+	set->SetName(name);
+
+	gmodel->AddDiscreteObject(set);
+
+	return set;
 }
 
 bool ExportFEB(std::string& fileName)
@@ -122,14 +152,17 @@ bool ExportFEB(std::string& fileName)
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
-	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio model.");
+	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio Studio model.");
 
+	mdl.def("GetActiveObject", GetActiveObject);
+	mdl.def("AddObject"      , AddObject);
+	mdl.def("AddMaterial"    , AddMaterial);
+	mdl.def("AssignMaterial" , AssignMaterial);
+	mdl.def("AddStep"        , AddStep);
+	mdl.def("AddSpringSet"   , AddSpringSet);
+	mdl.def("ExportFEB"      , ExportFEB);
 
-    ///////////////// FSModel /////////////////
-    mdl.def("GetActiveFSModel", &GetActiveFSModel);
-
-	mdl.def("GetActiveModel", GetActiveGModel);
-
+/*
 	py::class_<GModel, std::unique_ptr<GModel, py::nodelete>>(mdl, "Model")
 		.def("AddObject", &GModel::AddObject);
 
@@ -193,43 +226,10 @@ void init_FBSModel(py::module& m)
         .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
         .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
         ;
-    ///////////////// FSModel /////////////////
+	*/
 
-    ///////////////// GObject /////////////////
-	py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(mdl, "GObject")
-		.def("Parts", &GBaseObject::Parts)
-		.def("Faces", &GBaseObject::Faces)
-		.def("Edges", &GBaseObject::Edges)
-		.def("Nodes", &GBaseObject::Nodes)
-		.def("Part", [](GObject& self, int i) {return self.Part(i); })
-		.def("Face", [](GObject& self, int i) {return self.Face(i); })
-		.def("Edge", [](GObject& self, int i) {return self.Edge(i); })
-		.def("Node", [](GObject& self, int i) {return self.Node(i); })
-		.def("Part", [](GObject& self, int i) {return self.Part(i); })
-		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); })
-		.def("BuildMesh", &GObject::BuildMesh);
-//		.def("AssignMaterial", [](GObject& self, GMaterial* m) { self.AssignMaterial(m->GetID()); });
-    ///////////////// GObject /////////////////
-
-    ///////////////// GNode /////////////////
-	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(mdl, "GNode")
-        .def("Type", &GNode::Type)
-        .def("SetType", &GNode::SetType)
-        .def("LocalPosition", static_cast<vec3d& (GNode::*)()>(&GNode::LocalPosition))
-        .def("Position", &GNode::Position)
-        .def("MakeRequired", &GNode::MakeRequired)
-        ;
-    ///////////////// GNode /////////////////
-    
-
-	mdl.def("CreateBox", CreateBox);
-	mdl.def("CreateMeshObject", CreateMeshObject);
-
-	mdl.def("AddMaterial", AddMaterial);
-	mdl.def("AddStep", AddStep);
-	mdl.def("ExportFEB", ExportFEB);
-
-	py::class_<FSStep, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep");
+	py::class_<FSStep, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep")
+		.def("SetName", &FSObject::SetName);
 
 	py::class_<GMaterial, std::unique_ptr<GMaterial, py::nodelete>>(mdl, "GMaterial")
 		.def("set", [](GMaterial* gm, std::string& paramName, float value) {
@@ -238,17 +238,11 @@ void init_FBSModel(py::module& m)
 				Param* p = pm->GetParam(paramName.c_str());
 				if (p) p->SetFloatValue(value);
 			}
-		});
-
-	mdl.def("MeshFromCurve", MeshFromCurve, py::arg("points"), py::arg("radius"),
-		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
+		})
+		.def("SetName", &FSObject::SetName);
 
 	py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet")
-		.def(py::init(&SpringSet_init))
 		.def("AddSpring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement));
-
-	mdl.def("FindOrMakeNode", FindOrMakeNode);
-	mdl.def("IntersectWithObject", IntersectWithObject);
 }
 #else
 void init_FBSModel(pybind11::module_& m) {}

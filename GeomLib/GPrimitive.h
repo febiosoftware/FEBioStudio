@@ -67,6 +67,7 @@ public:
 
 public:
 	GBox();
+	GBox(double W, double H, double D);
 	bool Update(bool b = true) override;
 
 private:
@@ -372,10 +373,15 @@ public:
 
 public:
 	GDisc();
+	GDisc(double radius);
+
 	bool Update(bool b = true) override;
 
 	double Radius() const;
 	void SetRadius(double R);
+
+public:
+	FSMesh* CreateMesh(int ndiv, int nsegs, double ratio);
 
 protected:
 	void Create() override;

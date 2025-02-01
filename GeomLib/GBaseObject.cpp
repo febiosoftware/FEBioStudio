@@ -593,6 +593,11 @@ void GBaseObject::UpdateNodeTypes()
 	}
 }
 
+void GBaseObject::SetPosition(const vec3d& position)
+{
+	m_transform.SetPosition(position);
+}
+
 //-----------------------------------------------------------------------------
 void GBaseObject::CopyTransform(GBaseObject* po)
 {

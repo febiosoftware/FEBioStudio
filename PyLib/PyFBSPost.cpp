@@ -43,8 +43,6 @@ SOFTWARE.*/
 #include <FEBioStudio/PostDocument.h>
 #endif
 
-#include <iostream>
-
 #include <vector>
 #include <string>
 

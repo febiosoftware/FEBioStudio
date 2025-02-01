@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,18 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <vector>
-#include <string>
+namespace pybind11
+{
+	class module_;
+}
 
-class GDiscreteSpringSet;
-class vec3d;
-class GObject;
-class FSMesh;
+void init_FBSGeom(pybind11::module_& m);
 
-GDiscreteSpringSet* SpringSet_init(const char* name, char* type);
-
-int FindOrMakeNode(vec3d r, double tol);
-
-void IntersectWithObject(vec3d& r0, vec3d& r1, double tol);
-
-FSMesh* MeshFromCurve(const std::vector<vec3d>& points, double radius, int div, int seg, double ratio);

@@ -66,6 +66,31 @@ GDisc::GDisc() : GShellPrimitive(GDISC)
 	Create();
 }
 
+GDisc::GDisc(double R) : GShellPrimitive(GDISC)
+{
+	// define parameters
+	AddDoubleParam(R, "R", "radius");
+
+	// assign default mesher
+	SetFEMesher(new FEShellDisc(this));
+
+	SetManipulator(new GDiscManipulator(*this));
+
+	// build the object
+	Create();
+
+	Update();
+}
+
+FSMesh* GDisc::CreateMesh(int ndiv, int nsegs, double ratio)
+{
+	FEMesher* mesher = dynamic_cast<FEShellDisc*>(GetFEMesher());
+	mesher->SetIntValue(FEShellDisc::NDIV, ndiv);
+	mesher->SetIntValue(FEShellDisc::NSEG, nsegs);
+	mesher->SetFloatValue(FEShellDisc::RATIO, ratio);
+	return BuildMesh();
+}
+
 double GDisc::Radius() const { return GetFloatValue(RADIUS); }
 void GDisc::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 

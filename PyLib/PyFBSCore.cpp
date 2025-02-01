@@ -40,8 +40,8 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <MeshTools/FEShellDisc.h>
-
 #include <FECore/mat3d.h>
+#include <FECore/FETransform.h>
 
 namespace py = pybind11;
 
@@ -176,6 +176,16 @@ void init_FBSCore(py::module& m)
             [](const vec3d& v){
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
             });
+
+	py::class_<quatd>(core, "quatd")
+		.def(py::init<>())
+		.def(py::init<const vec3d&, const vec3d&>())
+		;
+
+	py::class_<Transform>(core, "Transform")
+		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate))
+		.def("SetPosition", &Transform::SetPosition)
+		;
 
     FSElementLibrary::InitLibrary();
 }
