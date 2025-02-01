@@ -38,4 +38,4 @@ int FindOrMakeNode(vec3d r, double tol);
 
 void IntersectWithObject(vec3d& r0, vec3d& r1, double tol);
 
-FSMesh* meshFromCurve(const std::vector<vec3d>& points, double radius, int div, int seg, double ratio);
+FSMesh* MeshFromCurve(const std::vector<vec3d>& points, double radius, int div, int seg, double ratio);

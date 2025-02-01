@@ -45,7 +45,7 @@ SOFTWARE.*/
 
 namespace py = pybind11;
 
-void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
+void CurveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
 	GDisc disc;
 	disc.SetFloatValue(GDisc::RADIUS, radius);
@@ -151,7 +151,7 @@ void init_FBSCore(py::module& m)
 		.def_readwrite("b", &GLColor::b)
 		.def_readwrite("a", &GLColor::a);
 
-    core.def("curveToVTKMesh", curveToVTKMesh);//, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve", 
+    core.def("CurveToVTKMesh", CurveToVTKMesh);//, py::arg("points"), py::arg("radius"), py::arg("name") = "Curve", 
         // py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
 	py::class_<vec3d>(core, "vec3d")

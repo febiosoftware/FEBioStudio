@@ -67,13 +67,6 @@ GModel* GetActiveGModel()
 	return doc->GetGModel();
 }
 
-// This function will add an object to the currently active model
-void AddObjectToModel(GObject* po)
-{
-	GModel* gm = GetActiveGModel();
-	gm->AddObject(po);
-}
-
 // Create a box primitve
 GObject* CreateBox(std::string& name, vec3d pos, double width, double height, double depth)
 {
@@ -135,10 +128,10 @@ void init_FBSModel(py::module& m)
     ///////////////// FSModel /////////////////
     mdl.def("GetActiveFSModel", &GetActiveFSModel);
 
-	mdl.def("active_model", GetActiveGModel);
+	mdl.def("GetActiveModel", GetActiveGModel);
 
 	py::class_<GModel, std::unique_ptr<GModel, py::nodelete>>(mdl, "Model")
-		.def("add_object", &GModel::AddObject);
+		.def("AddObject", &GModel::AddObject);
 
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "FSModel")
         .def("Clear", &FSModel::Clear)
@@ -229,8 +222,8 @@ void init_FBSModel(py::module& m)
     ///////////////// GNode /////////////////
     
 
-	mdl.def("create_box", CreateBox);
-	mdl.def("create_mesh_object", CreateMeshObject);
+	mdl.def("CreateBox", CreateBox);
+	mdl.def("CreateMeshObject", CreateMeshObject);
 
 	mdl.def("AddMaterial", AddMaterial);
 	mdl.def("AddStep", AddStep);
@@ -247,15 +240,15 @@ void init_FBSModel(py::module& m)
 			}
 		});
 
-	mdl.def("mesh_from_curve", meshFromCurve, py::arg("points"), py::arg("radius"),
+	mdl.def("MeshFromCurve", MeshFromCurve, py::arg("points"), py::arg("radius"),
 		py::arg("divisions") = 6, py::arg("segments") = 6, py::arg("ratio") = 0.5);
 
 	py::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, py::nodelete>>(mdl, "SpringSet")
 		.def(py::init(&SpringSet_init))
-		.def("add_spring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement));
+		.def("AddSpring", static_cast<void (GDiscreteSpringSet::*)(int, int)>(&GDiscreteSpringSet::AddElement));
 
-	mdl.def("find_or_make_node", FindOrMakeNode);
-	mdl.def("intersect_with_object", IntersectWithObject);
+	mdl.def("FindOrMakeNode", FindOrMakeNode);
+	mdl.def("IntersectWithObject", IntersectWithObject);
 }
 #else
 void init_FBSModel(pybind11::module_& m) {}

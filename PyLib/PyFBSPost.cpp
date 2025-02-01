@@ -65,7 +65,7 @@ FEPostModel* readPlotFile(std::string filename)
 }
 
 #ifndef PY_EXTERNAL
-FEPostModel* getActiveModel()
+FEPostModel* GetActiveModel()
 {
 	CMainWindow* wnd = FBS::getMainWindow();
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(FBS::getActiveDocument());
@@ -108,8 +108,8 @@ void init_FBSPost(py::module& m)
 		.def("hide", &Material::hide);
 
 	py::class_<FEPostModel>(post, "FEPostModel")
-		.def("materials", &FEPostModel::Materials)
-		.def("material", &FEPostModel::GetMaterial, py::return_value_policy::reference)
+		.def("Materials", &FEPostModel::Materials)
+		.def("GetMaterial", &FEPostModel::GetMaterial, py::return_value_policy::reference)
         .def("GetFEMesh", &FEPostModel::GetFEMesh, py::return_value_policy::reference)
         .def("GetStates", &FEPostModel::GetStates)
         .def("GetState", &FEPostModel::GetStates, py::return_value_policy::reference)
@@ -122,7 +122,7 @@ void init_FBSPost(py::module& m)
             }, py::return_value_policy::reference);
 
 #ifndef PY_EXTERNAL
-	post.def("active_model", &getActiveModel, py::return_value_policy::reference);
+	post.def("GetActiveModel", &GetActiveModel, py::return_value_policy::reference);
 #endif
 /*
 	py::class_<FSMesh, FSMesh>(post, "FSMesh")

@@ -59,9 +59,9 @@ void init_FBSUI(py::module& m)
 
     ui.def("openFile", openFile);
 
-    pytools.def("set_progress_text", PySetProgressText);
-    pytools.def("set_progress", static_cast<void (*) (int)>(PySetProgress));
-    pytools.def("set_progress", static_cast<void (*) (float)>(PySetProgress));
+    pytools.def("SetProgressText", PySetProgressText);
+    pytools.def("SetProgress", static_cast<void (*) (int)>(PySetProgress));
+    pytools.def("SetProgress", static_cast<void (*) (float)>(PySetProgress));
 }
 
 #else
