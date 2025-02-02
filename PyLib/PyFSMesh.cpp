@@ -50,7 +50,6 @@ void init_FSMesh(py::module_& m)
 
 	py::class_<FSMeshBase, std::unique_ptr<FSMeshBase, py::nodelete>>(mesh, "MeshBase");
 
-    ///////////////// FSMesh /////////////////
 	py::class_<FSMesh, FSMeshBase, std::unique_ptr<FSMesh, py::nodelete>>(mesh, "Mesh")
 		.def(py::init<>())
         .def("Create", &FSMesh::Create)
@@ -73,9 +72,6 @@ void init_FSMesh(py::module_& m)
 		.def("NodePosition", &FSMesh::NodePosition)
         ;
 
-    ///////////////// FSMesh /////////////////
-
-    ///////////////// FSMeshItem /////////////////
 	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "FSMeshItem")
         .def("IsHidden", &FSMeshItem::IsHidden)
         .def("IsSelected", &FSMeshItem::IsSelected)
@@ -105,28 +101,34 @@ void init_FSMesh(py::module_& m)
         .def_readwrite("gid", &FSMeshItem::m_gid)
         .def_readwrite("nid", &FSMeshItem::m_nid)
         ;
-    ///////////////// FSMeshItem /////////////////
 
 	py::enum_<FSElementType>(mesh, "ElementType")
 		.value("FE_HEX8", FSElementType::FE_HEX8)
 		;
 
-    ///////////////// FSElement /////////////////
 	py::class_<FSElement, FSMeshItem, std::unique_ptr<FSElement, py::nodelete>>(mesh, "Element")
         .def("Nodes", &FSElement::Nodes)
 		.def("Node", [](FSElement& self, int node) { return self.m_node[node]; })
 		.def("SetNode", [](FSElement& self, int node, int val) { self.m_node[node] = val; })
 		.def("SetType", &FSElement::SetType)
         ;
-        
-    ///////////////// FSElement /////////////////
 
-
-    ///////////////// FSNode /////////////////
 	py::class_<FSNode, FSMeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")
         .def_readwrite("pos", &FSNode::r)
         ;
-    ///////////////// FSNode /////////////////
+
+	py::class_<FSSurface>(mesh, "FESurface")
+	//        .def_readonly("faces", &FSSurface::m_Face, py::return_value_policy::reference)
+		.def("name", &FSSurface::GetName);
+
+	py::class_<FSNodeSet>(mesh, "FSNodeSet")
+	//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
+		.def("name", &FSNodeSet::GetName);
+
+	py::class_<FSElemSet>(mesh, "FSElemSet")
+	//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
+		.def("name", &FSElemSet::GetName);
+
 }
 
 #else

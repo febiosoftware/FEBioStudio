@@ -35,14 +35,25 @@ namespace py = pybind11;
 
 #include "PythonThread.h"
 #include "PyFBS.h"
+#include "PyRunContext.h"
+#include <FEBioStudio/Document.h>
 
-CPyThread::CPyThread(const QString& filename, CCachedPropertyList* params) : m_filename(filename), m_params(params)
+CPyThread::CPyThread(CDocument* doc, const QString& filename, CCachedPropertyList* params) : m_doc(doc), m_filename(filename), m_params(params)
 {
 	QObject::connect(this, &QThread::finished, this, &QObject::deleteLater);
 }
 
 void CPyThread::run()
 {
+	// let's clear the undo stack, since we won't be able to undo the result
+	// of the python script anyways
+	CUndoDocument* undoDoc = dynamic_cast<CUndoDocument*>(m_doc);
+	if (undoDoc) undoDoc->ClearCommandStack();
+
+	// Store the document that was active when the thread started.
+	// This will be the document that will be modified
+	PyRunContext::SetDocument(m_doc);
+
 	init_fbs_python();
 
 	bool b = runScript();
@@ -50,6 +61,8 @@ void CPyThread::run()
 	emit threadFinished(b);
 
 	finish_fbs_python();
+
+	PyRunContext::SetDocument(nullptr);
 }
 
 bool CPyThread::runScript()

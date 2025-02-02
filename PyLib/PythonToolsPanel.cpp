@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
+#include <FEBioStudio/Document.h>
 #include <PyLib/PythonThread.h>
 #include <FEBioStudio/LogPanel.h>
 #include <QMessageBox>
@@ -49,8 +50,9 @@ void CPythonToolsPanel::startThread()
 
 	if (ui->m_pythonThread == nullptr)
 	{
+		CGLDocument* doc = GetDocument();
 		CCachedPropertyList* props = tool->GetProperties();
-		ui->m_pythonThread = new CPyThread(tool->GetFilePath(), props);
+		ui->m_pythonThread = new CPyThread(doc, tool->GetFilePath(), props);
 		connect(ui->m_pythonThread, &CPyThread::threadFinished, this, &CPythonToolsPanel::on_pythonThread_threadFinished);
 		ui->m_pythonThread->start();
 	}

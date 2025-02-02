@@ -30,8 +30,6 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
-#include <FEBioStudio/FEBioStudio.h>
-#include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
@@ -39,95 +37,57 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FEBio/FEBioExport4.h>
 #include "PyExceptions.h"
+#include "PyRunContext.h"
 
 namespace py = pybind11;
 
 CModelDocument* GetActiveDocument()
 {
-	CMainWindow* wnd = FBS::getMainWindow();
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-	return doc;
+	return dynamic_cast<CModelDocument*>(PyRunContext::GetDocument());
 }
 
-FSModel* GetActiveFSModel()
+GMaterial* AddMaterial(FSModel& fem, const std::string& name, const std::string& type)
 {
-	CModelDocument* doc = GetActiveDocument();
-	return doc->GetFSModel();
-}
-
-GModel* GetActiveGModel()
-{
-	CModelDocument* doc = GetActiveDocument();
-	return doc->GetGModel();
-}
-
-void AddObject(GObject* po)
-{
-	GetActiveGModel()->AddObject(po);
-}
-
-GObject* GetActiveObject()
-{
-	CModelDocument* doc = GetActiveDocument();
-	GObject* po = doc->GetActiveObject();
-	if (po == nullptr)
-	{
-		throw pyGenericExcept("There is no currently selected object.");
-	}
-	return po;
-}
-
-GMaterial* AddMaterial(std::string& name, std::string& type)
-{
-	FSModel* fem = GetActiveFSModel();
-	FSMaterial* pm = FEBio::CreateMaterial(type, fem);
+	FSMaterial* pm = FEBio::CreateMaterial(type, &fem);
 	if (pm)
 	{
 		GMaterial* gm = new GMaterial;
 		gm->SetName(name);
 		gm->SetMaterialProperties(pm);
-		fem->AddMaterial(gm);
+		fem.AddMaterial(gm);
 		return gm;
 	}
 	return nullptr;
 }
 
-void AssignMaterial(GObject* po, GMaterial* pmat)
+FSStep* AddStep(FSModel& fem, const std::string& name, const std::string& typeString)
 {
-	FSModel* fem = GetActiveFSModel();
-	fem->AssignMaterial(po, pmat);
-}
-
-FSStep* AddStep(std::string& name, std::string& typeString)
-{
-	FSModel* fem = GetActiveFSModel();
-	FSStep* step = FEBio::CreateStep(typeString, fem);
+	FSStep* step = FEBio::CreateStep(typeString, &fem);
 	if (step)
 	{
 		step->SetName(name);
-		fem->AddStep(step);
+		fem.AddStep(step);
 	}
 	return step;
 }
 
-GDiscreteSpringSet* AddSpringSet(const std::string& name, const std::string& typeStr)
+GDiscreteSpringSet* AddSpringSet(FSModel& fem, const std::string& name, const std::string& typeStr)
 {
-	auto gmodel = GetActiveGModel();
-	FSModel* fem = GetActiveFSModel();
+	GModel& gmodel = fem.GetModel();
 
-	auto set = new GDiscreteSpringSet(gmodel);
+	auto set = new GDiscreteSpringSet(&gmodel);
 
 	if (typeStr == "Linear")
 	{
-		set->SetMaterial(new FSLinearSpringMaterial(fem));
+		set->SetMaterial(new FSLinearSpringMaterial(&fem));
 	}
 	else if (typeStr == "Nonlinear")
 	{
-		set->SetMaterial(new FSNonLinearSpringMaterial(fem));
+		set->SetMaterial(new FSNonLinearSpringMaterial(&fem));
 	}
 	else if (typeStr == "Hill")
 	{
-		set->SetMaterial(new FSHillContractileMaterial(fem));
+		set->SetMaterial(new FSHillContractileMaterial(&fem));
 	}
 	else
 	{
@@ -137,7 +97,7 @@ GDiscreteSpringSet* AddSpringSet(const std::string& name, const std::string& typ
 
 	set->SetName(name);
 
-	gmodel->AddDiscreteObject(set);
+	gmodel.AddDiscreteObject(set);
 
 	return set;
 }
@@ -149,26 +109,25 @@ bool ExportFEB(std::string& fileName)
 	return feb.Write(fileName.c_str());
 }
 
+FSModel* GetActiveModel()
+{
+	CModelDocument* doc = GetActiveDocument();
+	return (doc ? doc->GetFSModel() : nullptr);
+}
+
 // Initializes the fbs.mdl module
 void init_FBSModel(py::module& m)
 {
 	py::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio Studio model.");
 
-	mdl.def("GetActiveObject", GetActiveObject);
-	mdl.def("AddObject"      , AddObject);
-	mdl.def("AddMaterial"    , AddMaterial);
-	mdl.def("AssignMaterial" , AssignMaterial);
-	mdl.def("AddStep"        , AddStep);
-	mdl.def("AddSpringSet"   , AddSpringSet);
-	mdl.def("ExportFEB"      , ExportFEB);
+	mdl.def("GetActiveModel", GetActiveModel);
+	mdl.def("GetActiveObject", &PyRunContext::GetActiveObject);
 
-/*
-	py::class_<GModel, std::unique_ptr<GModel, py::nodelete>>(mdl, "Model")
-		.def("AddObject", &GModel::AddObject);
-
-	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "FSModel")
+	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "Model")
         .def("Clear", &FSModel::Clear)
         .def("Purge", &FSModel::Purge)
+
+		.def("ExportFEB", &ExportFEB)
 
         // --- functions to delete all components ---
         .def("DeleteAllMaterials", &FSModel::DeleteAllMaterials)
@@ -186,11 +145,10 @@ void init_FBSModel(py::module& m)
         
         .def("ClearSelections", &FSModel::ClearSelections)
         .def("New", &FSModel::New)
-        .def("GetModel", &FSModel::GetModel)
 
         // --- material functions ---
-        .def("GetMaterial", &FSModel::GetMaterial)
-        .def("AddMaterial", &FSModel::AddMaterial)
+		.def("AddMaterial", [](FSModel& self, const std::string& name, const std::string& type) { return AddMaterial(self, name, type); })
+		.def("GetMaterial", &FSModel::GetMaterial)
         .def("AssignMaterial", static_cast<void (FSModel::*)(GObject*, GMaterial*)>(&FSModel::AssignMaterial))
         .def("ReplaceMaterial", &FSModel::ReplaceMaterial)
         .def("CanDeleteMaterial", &FSModel::CanDeleteMaterial)
@@ -200,14 +158,13 @@ void init_FBSModel(py::module& m)
         .def("GetMaterialFromID", &FSModel::GetMaterialFromID)
         .def("FindMaterial", &FSModel::FindMaterial)
         .def("GetRigidConnectorFromID", &FSModel::GetRigidConnectorFromID)
-        .def("GetModel", &FSModel::GetModel)
         
         // --- Analysis steps ---
-        .def("Steps", &FSModel::Steps)
+		.def("AddStep", [](FSModel& self, const std::string& name, const std::string& type) { return AddStep(self, name, type); })
+		.def("Steps", &FSModel::Steps)
         .def("GetStep", &FSModel::GetStep)
         .def("FindStep", &FSModel::FindStep)
         .def("GetStepIndex", &FSModel::GetStepIndex)
-        .def("AddStep", &FSModel::AddStep)
         .def("DeleteStep", &FSModel::DeleteStep)
         .def("InsertStep", &FSModel::InsertStep)
         .def("SwapSteps", &FSModel::SwapSteps)
@@ -217,16 +174,17 @@ void init_FBSModel(py::module& m)
         // --- Object functions ---
         .def("Objects", [] (FSModel& self){return self.GetModel().Objects();})
         .def("Object", [] (FSModel& self, int i){return self.GetModel().Object(i);})
+		.def("AddObject", [](FSModel& self, GObject * po) { self.GetModel().AddObject(po); })
         .def("FindObject", [] (FSModel& self, int i){return self.GetModel().FindObject(i);})
         .def("FindObject", [] (FSModel& self, const string& str){return self.GetModel().FindObject(str);})
         .def("FindObjectIndex", [] (FSModel& self, GObject* obj){return self.GetModel().FindObjectIndex(obj);})
         .def("ReplaceObject", [] (FSModel& self, int i, GObject* obj){return self.GetModel().ReplaceObject(i, obj);})
         .def("ReplaceObject", [] (FSModel& self, GObject* obj1, GObject* obj2){return self.GetModel().ReplaceObject(obj1, obj2);})
-        .def("AddObject", [] (FSModel& self, GObject* obj){return self.GetModel().AddObject(obj);})
         .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
         .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
-        ;
-	*/
+
+		.def("AddSpringSet", [](FSModel& self, const std::string& name, const std::string& type) { return AddSpringSet(self, name, type); })
+		;
 
 	py::class_<FSStep, std::unique_ptr<FSStep, py::nodelete>>(mdl, "FSStep")
 		.def("SetName", &FSObject::SetName);

@@ -30,17 +30,17 @@ SOFTWARE.*/
 #include <pybind11/stl.h>
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEPostModel.h>
-#include <MeshLib/FSMesh.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEMeshData.h>
 #include <PostLib/constants.h>
 #include <PostLib/FEDistanceMap.h>
-#include <FEBioStudio/FEBioStudio.h>
 
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
+#include "PyRunContext.h"
+#include "PyExceptions.h"
 #endif
 
 #include <vector>
@@ -63,15 +63,15 @@ FEPostModel* readPlotFile(std::string filename)
 }
 
 #ifndef PY_EXTERNAL
+
 FEPostModel* GetActiveModel()
 {
-	CMainWindow* wnd = FBS::getMainWindow();
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(FBS::getActiveDocument());
-	if (doc && doc->IsValid())
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
+	if (doc == nullptr)
 	{
-		return doc->GetFSModel();
+		throw pyGenericExcept("There is no active post document.");
 	}
-	else return nullptr;
+	return (doc ? doc->GetFSModel() : nullptr);
 }
 #endif
 
@@ -122,26 +122,6 @@ void init_FBSPost(py::module& m)
 #ifndef PY_EXTERNAL
 	post.def("GetActiveModel", &GetActiveModel, py::return_value_policy::reference);
 #endif
-/*
-	py::class_<FSMesh, FSMesh>(post, "FSMesh")
-		.def("surfaces", &FSMesh::FESurfaces)
-//		.def("surface", &FSMesh::Surface, py::return_value_policy::reference)
-		.def("nodesets", &FSMesh::FENodeSets)
-//		.def("nodeset", &FSMesh::NodeSet, py::return_value_policy::reference)
-		.def("elemsets", &FSMesh::FEElemSets);
-//        .def("elemset", &FSMesh::GetFEElemSet, py::return_value_policy::reference);
-*/
-	py::class_<FSSurface>(post, "FESurface")
-//        .def_readonly("faces", &FSSurface::m_Face, py::return_value_policy::reference)
-        .def("name", &FSSurface::GetName);
-
-	py::class_<FSNodeSet>(post, "FSNodeSet")
-//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
-        .def("name", &FSNodeSet::GetName);
-
-    py::class_<FSElemSet>(post, "FSElemSet")
-//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
-        .def("name", &FSElemSet::GetName);
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
