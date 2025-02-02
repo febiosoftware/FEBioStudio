@@ -50,7 +50,7 @@ using namespace std;
 using namespace Post;
 namespace py = pybind11;
 
-FEPostModel* readPlotFile(std::string filename)
+FEPostModel* ReadPlotFile(std::string filename)
 {
     FEPostModel* model = new FEPostModel;
     xpltFileReader reader(model);
@@ -75,27 +75,12 @@ FEPostModel* GetActiveModel()
 }
 #endif
 
-ModelDataField* runDistanceMap(FEPostModel* model, std::vector<int>& sel1, std::vector<int>& sel2, bool sign)
-{
-    FEDistanceMap* distanceMap = new FEDistanceMap(model, 0);
-    model->AddDataField(distanceMap);
-    
-    distanceMap->SetSelection1(sel1);
-    distanceMap->SetSelection2(sel2);
-    distanceMap->SetSigned(sign);
-
-    distanceMap->Apply();
-
-    return distanceMap;
-}
-
 void init_FBSPost(py::module& m)
 {
 	py::module post = m.def_submodule("post", "Module used to interact with plot files");
 
-    post.def("readPlotFile", &readPlotFile);
-    post.def("runDistanceMap", &runDistanceMap);
-
+    post.def("ReadPlotFile", &ReadPlotFile);
+ 
     InitStandardDataFields();
     post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField));
 
@@ -111,6 +96,12 @@ void init_FBSPost(py::module& m)
         .def("GetFEMesh", &FEPostModel::GetFEMesh, py::return_value_policy::reference)
         .def("GetStates", &FEPostModel::GetStates)
         .def("GetState", &FEPostModel::GetStates, py::return_value_policy::reference)
+		.def("AddDataField", static_cast<void(FEPostModel::*)(ModelDataField*, const std::string&)>(&FEPostModel::AddDataField))
+		.def("GetDataField", [](FEPostModel& self, const std::string& dataField) {
+				FEDataManager* dm = self.GetDataManager();
+				int index = dm->FindDataField(dataField);
+				return *dm->DataField(index);
+			}, py::return_value_policy::reference)
         .def("GetDataManager", &FEPostModel::GetDataManager, py::return_value_policy::reference)
         .def("Evaluate", [](FEPostModel& self, ModelDataField& field, int component, int time)
             {
@@ -140,10 +131,10 @@ void init_FBSPost(py::module& m)
         .def("set_name", &ModelDataField::SetName);
 
 	py::class_<FEState>(post, "State")
-        .def_readonly("NodeData", &FEState::m_NODE, py::return_value_policy::reference)
-        .def_readonly("EdgeData", &FEState::m_EDGE, py::return_value_policy::reference)
-        .def_readonly("FaceData", &FEState::m_FACE, py::return_value_policy::reference)
-        .def_readonly("ElemData", &FEState::m_ELEM, py::return_value_policy::reference)
+        .def_readonly("nodeData", &FEState::m_NODE, py::return_value_policy::reference)
+        .def_readonly("edgeData", &FEState::m_EDGE, py::return_value_policy::reference)
+        .def_readonly("faceData", &FEState::m_FACE, py::return_value_policy::reference)
+        .def_readonly("elemData", &FEState::m_ELEM, py::return_value_policy::reference)
         .def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index));});
 
 	py::class_<NODEDATA>(post, "NODEDATA")
@@ -165,6 +156,34 @@ void init_FBSPost(py::module& m)
         .def_readonly("val", &FACEDATA::m_val)
         .def_readonly("tag", &FACEDATA::m_ntag);
 
+	py::enum_<Data_Mat3ds_Component>(post, "MAT3DS")
+		.value("XX", Data_Mat3ds_Component::MAT3DS_XX)
+		.value("YY", Data_Mat3ds_Component::MAT3DS_YY)
+		.value("ZZ", Data_Mat3ds_Component::MAT3DS_ZZ)
+		.value("XY", Data_Mat3ds_Component::MAT3DS_XY)
+		.value("YZ", Data_Mat3ds_Component::MAT3DS_YZ)
+		.value("XZ", Data_Mat3ds_Component::MAT3DS_XZ)
+		.value("EFFECTIVE", Data_Mat3ds_Component::MAT3DS_EFFECTIVE)
+		.value("P1", Data_Mat3ds_Component::MAT3DS_P1)
+		.value("P2", Data_Mat3ds_Component::MAT3DS_P2)
+		.value("P3", Data_Mat3ds_Component::MAT3DS_P3)
+		.value("DEV_P1", Data_Mat3ds_Component::MAT3DS_DEV_P1)
+		.value("DEV_P2", Data_Mat3ds_Component::MAT3DS_DEV_P2)
+		.value("DEV_P3", Data_Mat3ds_Component::MAT3DS_DEV_P3)
+		.value("MAX_SHEAR", Data_Mat3ds_Component::MAT3DS_MAX_SHEAR)
+		.value("MAGNITUDE", Data_Mat3ds_Component::MAT3DS_MAGNITUDE)
+		.value("I1", Data_Mat3ds_Component::MAT3DS_I1)
+		.value("I2", Data_Mat3ds_Component::MAT3DS_I2)
+		.value("I3", Data_Mat3ds_Component::MAT3DS_I3)
+		;
+
+	py::class_<FEDistanceMap, ModelDataField, std::unique_ptr<FEDistanceMap, py::nodelete>>(post, "DistanceMap")
+		.def(py::init<FEPostModel*, int>())
+		.def("SetSelection1", &FEDistanceMap::SetSelection1)
+		.def("SetSelection2", &FEDistanceMap::SetSelection2)
+		.def("SetSigned", &FEDistanceMap::SetSigned)
+		.def("Apply", &FEDistanceMap::Apply)
+		;
 }
 
 #else

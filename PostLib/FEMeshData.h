@@ -43,6 +43,28 @@ enum Data_Tensor_Type {
 	TENSOR_TENSOR2,
 };
 
+enum Data_Mat3ds_Component
+{
+	MAT3DS_XX,
+	MAT3DS_YY,
+	MAT3DS_ZZ,
+	MAT3DS_XY,
+	MAT3DS_YZ,
+	MAT3DS_XZ,
+	MAT3DS_EFFECTIVE,
+	MAT3DS_P1,
+	MAT3DS_P2,
+	MAT3DS_P3,
+	MAT3DS_DEV_P1,
+	MAT3DS_DEV_P2,
+	MAT3DS_DEV_P3,
+	MAT3DS_MAX_SHEAR,
+	MAT3DS_MAGNITUDE,
+	MAT3DS_I1,
+	MAT3DS_I2,
+	MAT3DS_I3
+};
+
 //-----------------------------------------------------------------------------
 //! Base class for mesh data classes
 //!

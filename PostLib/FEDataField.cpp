@@ -206,24 +206,24 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 		break;
 		case DATA_MAT3S:
 		{
-			if (ncomp == 0) sprintf(szline, "X - %s", sz);
-			else if (ncomp == 1) sprintf(szline, "Y - %s", sz);
-			else if (ncomp == 2) sprintf(szline, "Z - %s", sz);
-			else if (ncomp == 3) sprintf(szline, "XY - %s", sz);
-			else if (ncomp == 4) sprintf(szline, "YZ - %s", sz);
-			else if (ncomp == 5) sprintf(szline, "XZ - %s", sz);
-			else if (ncomp == 6) sprintf(szline, "Effective %s", sz);
-			else if (ncomp == 7) sprintf(szline, "1 Principal %s", sz);
-			else if (ncomp == 8) sprintf(szline, "2 Principal %s", sz);
-			else if (ncomp == 9) sprintf(szline, "3 Principal %s", sz);
-			else if (ncomp == 10) sprintf(szline, "1 Dev Principal %s", sz);
-			else if (ncomp == 11) sprintf(szline, "2 Dev Principal %s", sz);
-			else if (ncomp == 12) sprintf(szline, "3 Dev Principal %s", sz);
-			else if (ncomp == 13) sprintf(szline, "Max Shear %s", sz);
-			else if (ncomp == 14) sprintf(szline, "%s Magnitude", sz);
-            else if (ncomp == 15) sprintf(szline, "1 Invariant of %s", sz);
-            else if (ncomp == 16) sprintf(szline, "2 Invariant of %s", sz);
-            else if (ncomp == 17) sprintf(szline, "3 Invariant of %s", sz);
+			if      (ncomp == Data_Mat3ds_Component::MAT3DS_XX) sprintf(szline, "X - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_YY) sprintf(szline, "Y - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_ZZ) sprintf(szline, "Z - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_XY) sprintf(szline, "XY - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_YZ) sprintf(szline, "YZ - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_XZ) sprintf(szline, "XZ - %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_EFFECTIVE) sprintf(szline, "Effective %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_P1) sprintf(szline, "1 Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_P2) sprintf(szline, "2 Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_P3) sprintf(szline, "3 Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_DEV_P1) sprintf(szline, "1 Dev Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_DEV_P2) sprintf(szline, "2 Dev Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_DEV_P3) sprintf(szline, "3 Dev Principal %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_MAX_SHEAR) sprintf(szline, "Max Shear %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_MAGNITUDE) sprintf(szline, "%s Magnitude", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_I1) sprintf(szline, "1 Invariant of %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_I2) sprintf(szline, "2 Invariant of %s", sz);
+			else if (ncomp == Data_Mat3ds_Component::MAT3DS_I3) sprintf(szline, "3 Invariant of %s", sz);
 			return szline;
 		}
 		break;

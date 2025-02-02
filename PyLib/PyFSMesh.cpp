@@ -70,6 +70,9 @@ void init_FSMesh(py::module_& m)
 		.def("LocalToGlobal", &FSMesh::LocalToGlobal)
 		.def("RebuildMesh", &FSMesh::RebuildMesh)
 		.def("NodePosition", &FSMesh::NodePosition)
+
+		.def("Surfaces", &FSMesh::FESurfaces)
+		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference)
         ;
 
 	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "FSMeshItem")
@@ -118,16 +121,16 @@ void init_FSMesh(py::module_& m)
         ;
 
 	py::class_<FSSurface>(mesh, "FESurface")
-	//        .def_readonly("faces", &FSSurface::m_Face, py::return_value_policy::reference)
-		.def("name", &FSSurface::GetName);
+		.def("GetFaceIndices", [](FSSurface& self) { return self.CopyItems(); })
+		.def("GetName", &FSSurface::GetName);
 
 	py::class_<FSNodeSet>(mesh, "FSNodeSet")
 	//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
-		.def("name", &FSNodeSet::GetName);
+		.def("GetName", &FSNodeSet::GetName);
 
 	py::class_<FSElemSet>(mesh, "FSElemSet")
 	//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
-		.def("name", &FSElemSet::GetName);
+		.def("GetName", &FSElemSet::GetName);
 
 }
 
