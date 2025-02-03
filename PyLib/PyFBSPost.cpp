@@ -64,7 +64,7 @@ FEPostModel* ReadPlotFile(std::string filename)
 
 #ifndef PY_EXTERNAL
 
-FEPostModel* GetActiveModel()
+FEPostModel* GetActivePostModel()
 {
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(PyRunContext::GetDocument());
 	if (doc == nullptr)
@@ -111,7 +111,7 @@ void init_FBSPost(py::module& m)
             }, py::return_value_policy::reference);
 
 #ifndef PY_EXTERNAL
-	post.def("GetActiveModel", &GetActiveModel, py::return_value_policy::reference);
+	post.def("GetActiveModel", &GetActivePostModel, py::return_value_policy::reference);
 #endif
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
