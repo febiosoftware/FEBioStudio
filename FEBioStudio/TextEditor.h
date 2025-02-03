@@ -2,8 +2,6 @@
 #include <QPlainTextEdit>
 #include "DocumentView.h"
 
-class CMainWindow;
-
 class CTextEditor : public QPlainTextEdit
 {
 	Q_OBJECT
@@ -13,11 +11,12 @@ public:
 		PLAIN,
 		XML,
 		CODE,
-		CMAKE
+		CMAKE,
+		PYTHON
 	};
 
 public:
-	CTextEditor(CMainWindow* parent);
+	CTextEditor(QWidget* parent);
 
 	void lineNumberAreaPaintEvent(QPaintEvent* event);
 	int lineNumberAreaWidth();
@@ -27,6 +26,8 @@ public:
 	void toggleLineComment();
 	void duplicateLine();
 	void deleteLine();
+
+	void useDarkTheme(bool b);
 
 protected:
 	void resizeEvent(QResizeEvent* event) override;
@@ -40,9 +41,9 @@ private slots:
 	void updateLinearNumberArea(const QRect&, int);
 
 private:
-	CMainWindow*		m_wnd;
 	QWidget*			lineNumberArea;
 	QPair<int, int>		m_countCache;
+	bool				m_useDarkTheme;
 };
 
 class LineNumberArea : public QWidget

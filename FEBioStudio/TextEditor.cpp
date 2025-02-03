@@ -6,13 +6,13 @@
 #include <qsyntaxhighlighter.h>
 #include <QDockWidget>
 #include <QApplication>
-#include "MainWindow.h"
 #include <QTextCursor>
 #include <QTextBlock>
 #include <QRegularExpression>
 #include <QBoxLayout>
 #include "TextDocument.h"
 #include "XMLDocument.h"
+#include "MainWindow.h"
 
 class HighlightRule
 {
@@ -310,14 +310,89 @@ public:
 	}
 };
 
-CTextEditor::CTextEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
+const char* szpythonkeys[] = {
+	"and", "as", "assert",
+	"break",
+	"class", "continue",
+	"def", "del",
+	"elif", "else", "except",
+	"False", "finally",
+	"for", "from",
+	"global",
+	"if", "import", "in", "is", 
+	"lambda",
+	"None", "nonlocal", "not",
+	"or",
+	"pass",
+	"raise", "return",
+	"True", "try",
+	"while", "with",
+	"yield"
+};
+
+const char* szpythonfncs[] = {
+	"abs", "all", "any", "ascii",
+	"bin", "bool", "bytearray", "bytes",
+	"callable", "chr", "classmethod", "compile", "complex",
+	"delattr", "dict", "dir", "divmod",
+	"enumerate", "eval", "exec",
+	"filter", "float", "format", "frozenset",
+	"getattr", "globals",
+	"hasattr", "hash", "help", "hex",
+	"id", "input", "int", "isinstance", "issubclass", "iter",
+	"len", "list", "locals",
+	"map", "max", "memoryview", "min",
+	"next",
+	"object", "oct", "open", "ord",
+	"pow", "print", "property", "range", "repr", "reversed", "round",
+	"set", "setattr", "slice", "sorted", "staticmethod", "str", "sum", "super",
+	"tuple", "type",
+	"vars",
+	"zip",
+};
+
+class CPythonHighlighter : public CSyntaxHighlighter
+{
+public:
+	CPythonHighlighter(QTextDocument* doc, int theme) : CSyntaxHighlighter(doc)
+	{
+		QString keywords = toString(szpythonkeys, sizeof(szpythonkeys) / sizeof(const char*));
+		QString funcs    = toString(szpythonfncs, sizeof(szpythonfncs) / sizeof(const char*));
+
+		QString lineComment("#.*");
+		QString stringLiterals("\".*\"");
+		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
+		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
+		QString braces("[\\(\\[\\{\\)\\]\\}]");
+
+		if (theme == 0) // light theme
+		{
+			AddRule(keywords, Qt::darkMagenta);
+			AddRule(funcs, Qt::darkMagenta);
+			AddRule(numbers, Qt::darkCyan);
+			AddRule(braces, QColor("gold"));
+			AddRule(allcaps, Qt::green);
+			AddRule(stringLiterals, QColor("orangered"));
+			AddRule(lineComment, Qt::darkGreen);
+		}
+		else // dark theme
+		{
+			AddRule(keywords, QColor("plum"));
+			AddRule(funcs, QColor("khaki"));
+			AddRule(numbers, Qt::cyan);
+			AddRule(braces, QColor("gold"));
+			AddRule(allcaps, QColor("lightskyblue"));
+			AddRule(stringLiterals, QColor("orange"));
+			AddRule(lineComment, QColor("forestgreen"));
+		}
+	}
+};
+
+CTextEditor::CTextEditor(QWidget* parent) : QPlainTextEdit(parent)
 {
 	m_countCache.first = -1;
 	m_countCache.second = -1;
-
-	QPalette p = palette();
-	p.setColor(QPalette::Text, (wnd->usingDarkTheme() ? Qt::lightGray : Qt::black));// QColor::fromRgb(51, 153, 255)));
-	setPalette(p);
+	m_useDarkTheme = false;
 
 	lineNumberArea = new LineNumberArea(this);
 
@@ -330,15 +405,25 @@ CTextEditor::CTextEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 //	highlightCurrentLine();
 }
 
+void CTextEditor::useDarkTheme(bool b)
+{
+	m_useDarkTheme = b;
+
+	QPalette p = palette();
+	p.setColor(QPalette::Text, (b ? Qt::lightGray : Qt::black));// QColor::fromRgb(51, 153, 255)));
+	setPalette(p);
+}
+
 void CTextEditor::SetHighlighter(QTextDocument* doc, TextFormat fmt)
 {
 	CSyntaxHighlighter* hl = nullptr;
 	switch (fmt)
 	{
-	case TextFormat::PLAIN: hl = new PlainTextHighlighter(doc); break;
-	case TextFormat::XML  : hl = new XMLHighlighter  (doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
-	case TextFormat::CODE : hl = new CppHighlighter  (doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
-	case TextFormat::CMAKE: hl = new CMakeHighlighter(doc, (m_wnd->usingDarkTheme() ? 1 : 0)); break;
+	case TextFormat::PLAIN : hl = new PlainTextHighlighter(doc); break;
+	case TextFormat::XML   : hl = new XMLHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::CODE  : hl = new CppHighlighter      (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::CMAKE : hl = new CMakeHighlighter    (doc, (m_useDarkTheme ? 1 : 0)); break;
+	case TextFormat::PYTHON: hl = new CPythonHighlighter  (doc, (m_useDarkTheme ? 1 : 0)); break;
 	default:
 		assert(false);
 	}
@@ -463,7 +548,7 @@ void CTextEditor::highlightCurrentLine()
 	QList<QTextEdit::ExtraSelection> extraSelection;
 
 	QBrush bg;
-	if (m_wnd->usingDarkTheme())
+	if (m_useDarkTheme)
 		bg = QColor::fromRgb(0, 51, 102);
 	else
 		bg = QColor::fromRgb(240, 240, 255);
@@ -490,7 +575,7 @@ void CTextEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 		return;
 	}
 
-	int theme = (m_wnd->usingDarkTheme() ? 1 : 0);
+	int theme = (m_useDarkTheme ? 1 : 0);
 	painter.fillRect(e->rect(), (theme == 0 ? Qt::darkGray : Qt::black));
 	painter.setPen((theme == 0 ? Qt::white : Qt::darkGray));
 
@@ -576,6 +661,7 @@ CTextEditView::CTextEditView(CMainWindow* wnd) : CDocumentView(wnd)
 {
 	QVBoxLayout* l = new QVBoxLayout;
 	l->addWidget(m_edit = new CTextEditor(wnd));
+	m_edit->useDarkTheme(wnd->usingDarkTheme());
 	m_edit->setObjectName("txtedit");
 	setLayout(l);
 }
@@ -618,6 +704,7 @@ void CTextEditView::setDocument(CDocument* doc)
 		QString title = QString::fromStdString(txtDoc->GetDocTitle());
 		CTextEditor::TextFormat fmt = CTextEditor::PLAIN;
 		if (title.indexOf(QRegularExpression("\\.(hpp|cpp|cxx|h)")) != -1) fmt = CTextEditor::CODE;
+		if (title.indexOf(QRegularExpression("\\.(py)")) != -1) fmt = CTextEditor::PYTHON;
 		if (title.indexOf("CMakeLists.txt") != -1) fmt = CTextEditor::CMAKE;
 
 		m_edit->blockSignals(true);
