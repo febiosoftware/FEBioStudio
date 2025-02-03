@@ -206,6 +206,7 @@
         <file>icons/error_small.png</file>
         <file>icons/report.png</file>
         <file>icons/explode.png</file>
+        <file>icons/scroll_down.png</file>
         <file>icons/teapot.png</file>
 	</qresource>
 </RCC>

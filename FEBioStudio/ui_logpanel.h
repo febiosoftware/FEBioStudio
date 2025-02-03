@@ -68,11 +68,13 @@ public:
 
 		QToolButton* b1 = new QToolButton; b1->setIcon(QIcon(":/icons/save.png")); b1->setAutoRaise(true); b1->setObjectName("logSave"); b1->setToolTip("<font color=\"black\">Save log");
 		QToolButton* b2 = new QToolButton; b2->setIcon(QIcon(":/icons/clear.png")); b2->setAutoRaise(true); b2->setObjectName("logClear"); b2->setToolTip("<font color=\"black\">Clear log");
+		QToolButton* b3 = new QToolButton; b3->setIcon(QIcon(":/icons/scroll_down.png")); b3->setAutoRaise(true); b3->setObjectName("logScroll"); b3->setToolTip("<font color=\"black\">Scroll to end");
 		QHBoxLayout* pv = new QHBoxLayout;
 		pv->addWidget(new QLabel("Show output from:"));
 		pv->addWidget(combo);
 		pv->addWidget(b1);
 		pv->addWidget(b2);
+		pv->addWidget(b3);
 		pv->addStretch();
 
 		pl->addLayout(pv);

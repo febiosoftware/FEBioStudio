@@ -60,6 +60,7 @@ public:
 private slots:
 	void on_logSave_clicked(bool b);
 	void on_logClear_clicked(bool b);
+	void on_logScroll_clicked(bool b);
 	void on_combo_currentIndexChanged(int i);
 
 private:
