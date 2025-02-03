@@ -1123,6 +1123,64 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	{
 		m_plotRect.setTop(m_titleRect.bottom());
 		m_plotRect.adjust(50, 0, -90, -2*fontHeight - 2);
+
+		double gy = 1;
+		if (m_bscaleAxisLabels)
+		{
+			int nydiv = (int)log10(m_yscale);
+			if (nydiv != 0)
+			{
+				gy = pow(10.0, nydiv);
+			}
+		}
+
+		if ((m_data.m_yAxis.labelPosition == LOW) && (m_data.m_yAxis.labelAlignment == ALIGN_LABEL_LEFT))
+		{
+			QFont f("Arial", m_data.m_axesFontSize);
+			QFontMetrics fm(f);
+
+			int y1 = m_plotRect.bottom();
+			int maxWidth = 0;
+			char sz[256] = { 0 };
+			double fy = m_yscale * (int)(m_viewRect.top() / m_yscale);
+			while (fy < m_viewRect.bottom())
+			{
+				int iy = ViewToScreen(QPointF(0.0, fy)).y();
+				if (iy < y1)
+				{
+					double g = fy / gy;
+					if (fabs(g) < 1e-7) g = 0;
+					snprintf(sz, sizeof sz, "%lg", g);
+					QString s(sz);
+
+					int w = fm.horizontalAdvance(s);
+					if (w > maxWidth) maxWidth = w;
+				}
+				fy += m_yscale;
+			}
+			maxWidth += 10;
+			if (maxWidth > m_plotRect.left()) m_plotRect.setLeft(m_screenRect.left() + maxWidth);
+		}
+
+		if (m_data.m_bshowLegend && !m_data.m_data.empty())
+		{
+			int maxWidth = 0;
+			int N = (int)m_data.m_data.size();
+			QFont f("Arial", m_data.m_legendFontSize);
+			QFontMetrics fm(f);
+
+			for (int i = 0; i < N; ++i)
+			{
+				CPlotData& plot = *m_data.m_data[i];
+				int w = fm.horizontalAdvance(plot.label());
+				if (w > maxWidth) maxWidth = w;
+			}
+
+			maxWidth += 10 + 40; // 40 is the space taken up by the line (=25 + 15 padding)
+			double W = m_screenRect.right() - m_plotRect.right();
+			if (maxWidth > W) m_plotRect.setRight(m_screenRect.right() - maxWidth);
+		}
+
 		p.setPen(QPen(Qt::black));
 		p.setBrush(Qt::NoBrush);
 		p.drawRect(m_plotRect);
@@ -1314,7 +1372,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		{
 			gy = pow(10.0, nydiv);
 			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
-			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
+			p.drawText(x0 - 30, y0 - fm.descent() - 5, QString(sz));
 		}
 	}
 
