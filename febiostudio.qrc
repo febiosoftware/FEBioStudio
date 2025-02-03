@@ -198,5 +198,6 @@
         <file>icons/deriv_neg.png</file>
         <file>icons/pickcolor.png</file>
         <file>icons/explode.png</file>
+        <file>icons/scroll_down.png</file>
 	</qresource>
 </RCC>

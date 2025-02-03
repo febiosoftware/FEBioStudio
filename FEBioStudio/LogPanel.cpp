@@ -90,6 +90,13 @@ void CLogPanel::on_logClear_clicked(bool b)
 	ui->currentTxt()->clear();
 }
 
+void CLogPanel::on_logScroll_clicked(bool b)
+{
+	QTextCursor cursor = ui->currentTxt()->textCursor();
+	cursor.movePosition(QTextCursor::End);
+	ui->currentTxt()->setTextCursor(cursor);
+}
+
 void CLogPanel::on_combo_currentIndexChanged(int i)
 {
 	ui->setOutput(i);
