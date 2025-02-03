@@ -38,9 +38,23 @@ namespace py = pybind11;
 #include "PyRunContext.h"
 #include <FEBioStudio/Document.h>
 
-CPyThread::CPyThread(CDocument* doc, const QString& filename, CCachedPropertyList* params) : m_doc(doc), m_filename(filename), m_params(params)
+CPyThread::CPyThread(CDocument* doc, CCachedPropertyList* params) : m_doc(doc), m_params(params)
 {
 	QObject::connect(this, &QThread::finished, this, &QObject::deleteLater);
+}
+
+void CPyThread::runFile(const QString& filename)
+{
+	m_filename = filename;
+	m_script.clear();
+	start();
+}
+
+void CPyThread::runScript(const QString& script)
+{
+	m_filename.clear();
+	m_script = script;
+	start();
 }
 
 void CPyThread::run()
@@ -125,9 +139,17 @@ bool CPyThread::runScript()
 		auto m = py::module::import("fbs");
 		m.attr("args") = kwargs;
 
-		PyObject* obj = Py_BuildValue("s", m_filename.toStdString().c_str());
-		FILE* file = _Py_fopen_obj(obj, "r+");
-		PyRun_SimpleFile(file, m_filename.toStdString().c_str());
+		if (!m_filename.isEmpty())
+		{
+			PyObject* obj = Py_BuildValue("s", m_filename.toStdString().c_str());
+			FILE* file = _Py_fopen_obj(obj, "r+");
+			PyRun_SimpleFile(file, m_filename.toStdString().c_str());
+		}
+		else if (!m_script.isEmpty())
+		{
+			std::string s = m_script.toStdString();
+			PyRun_SimpleString(s.c_str());
+		}
 	}
 	catch (py::error_already_set& e)
 	{

@@ -249,6 +249,14 @@ void CMainWindow::on_actionPlotMix_triggered()
 	dlg.exec();
 }
 
+void CMainWindow::on_actionEditPython_triggered()
+{
+	if (ui->pythonEditor == nullptr) ui->pythonEditor = new ::CPythonEditor(this);
+	ui->pythonEditor->show();
+	ui->pythonEditor->raise();
+	ui->pythonEditor->activateWindow();
+}
+
 void CMainWindow::on_actionOptions_triggered()
 {
 	CDlgSettings dlg(this);

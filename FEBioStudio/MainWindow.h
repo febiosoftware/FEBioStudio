@@ -478,6 +478,7 @@ public slots:
 	void on_actionUnitConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();
+	void on_actionEditPython_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioPause_triggered();

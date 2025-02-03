@@ -233,6 +233,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionMaterialTest = addAction("Material test ...", "actionMaterialTest");
 	QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
+	QAction* actionPython = addAction("Python editor ...", "actionEditPython");
 	actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 	QAction* actionLayerInfo = addAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::AltModifier | Qt::Key_L);
@@ -639,6 +640,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuTools->addAction(actionMaterialTest);
 	menuTools->addAction(actionKinemat);
 	menuTools->addAction(actionPlotMix);
+	menuTools->addAction(actionPython);
 	menuTools->addAction(actionOptions);
 
 	// View menu

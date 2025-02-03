@@ -91,6 +91,7 @@ SOFTWARE.*/
 #include <FEBioMonitor/FEBioReportView.h>
 #include <vector>
 #include "HTMLBrowser.h"
+#include "PythonEditor.h"
 
 class QProcess;
 
@@ -314,6 +315,7 @@ public:
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
 	::CDlgScreenCapture* imageView = nullptr;
+	::CPythonEditor* pythonEditor = nullptr;
 
 	CDlgPartViewer* partViewer = nullptr;
 

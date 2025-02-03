@@ -52,9 +52,9 @@ void CPythonToolsPanel::startThread()
 	{
 		CGLDocument* doc = GetDocument();
 		CCachedPropertyList* props = tool->GetProperties();
-		ui->m_pythonThread = new CPyThread(doc, tool->GetFilePath(), props);
+		ui->m_pythonThread = new CPyThread(doc, props);
 		connect(ui->m_pythonThread, &CPyThread::threadFinished, this, &CPythonToolsPanel::on_pythonThread_threadFinished);
-		ui->m_pythonThread->start();
+		ui->m_pythonThread->runFile(tool->GetFilePath());
 	}
 }
 
