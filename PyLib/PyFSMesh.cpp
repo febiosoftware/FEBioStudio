@@ -75,7 +75,7 @@ void init_FSMesh(py::module_& m)
 		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference)
         ;
 
-	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "FSMeshItem")
+	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "MeshItem")
         .def("IsHidden", &FSMeshItem::IsHidden)
         .def("IsSelected", &FSMeshItem::IsSelected)
         .def("IsDisabled", &FSMeshItem::IsDisabled)
@@ -100,7 +100,7 @@ void init_FSMesh(py::module_& m)
         .def("GetID", &FSMeshItem::GetID)
         .def("SetID", &FSMeshItem::SetID)
 
-        .def_readwrite("ntag", &FSMeshItem::m_ntag)
+        .def_readwrite("tag", &FSMeshItem::m_ntag)
         .def_readwrite("gid", &FSMeshItem::m_gid)
         .def_readwrite("nid", &FSMeshItem::m_nid)
         ;

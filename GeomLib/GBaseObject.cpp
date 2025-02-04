@@ -598,6 +598,11 @@ void GBaseObject::SetPosition(const vec3d& position)
 	m_transform.SetPosition(position);
 }
 
+vec3d GBaseObject::GetPosition() const
+{
+	return m_transform.GetPosition();
+}
+
 //-----------------------------------------------------------------------------
 void GBaseObject::CopyTransform(GBaseObject* po)
 {

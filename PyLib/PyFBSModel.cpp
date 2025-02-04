@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <FEBio/FEBioExport4.h>
+#include <MeshIO/VTKExport.h>
 #include "PyExceptions.h"
 #include "PyRunContext.h"
 
@@ -109,6 +110,13 @@ bool ExportFEB(std::string& fileName)
 	return feb.Write(fileName.c_str());
 }
 
+bool ExportVTK(std::string& fileName)
+{
+	CModelDocument* doc = GetActiveDocument();
+	VTKExport vtk(doc->GetProject());
+	return vtk.Write(fileName.c_str());
+}
+
 FSModel* GetActiveModel()
 {
 	CModelDocument* doc = GetActiveDocument();
@@ -128,6 +136,7 @@ void init_FBSModel(py::module& m)
         .def("Purge", &FSModel::Purge)
 
 		.def("ExportFEB", &ExportFEB)
+		.def("ExportVTK", &ExportVTK)
 
         // --- functions to delete all components ---
         .def("DeleteAllMaterials", &FSModel::DeleteAllMaterials)

@@ -80,22 +80,27 @@ void init_FBSPost(py::module& m)
 	py::module post = m.def_submodule("post", "Module used to interact with plot files");
 
     post.def("ReadPlotFile", &ReadPlotFile);
- 
+#ifndef PY_EXTERNAL
+	post.def("GetActiveModel", &GetActivePostModel, py::return_value_policy::reference);
+#endif
+
     InitStandardDataFields();
     post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField));
 
 	py::class_<Material>(post, "Material")
-		.def("setColor", &Material::setColor)
-		.def("name", &Material::GetName)
-		.def("show", &Material::show)
-		.def("hide", &Material::hide);
+		.def_property("name", &Material::GetName, &Material::SetName)
+		.def("SetColor", &Material::setColor)
+		.def("Show", &Material::show)
+		.def("Hide", &Material::hide);
 
-	py::class_<FEPostModel>(post, "FEPostModel")
+	py::class_<FEPostModel>(post, "PostModel")
 		.def("Materials", &FEPostModel::Materials)
-		.def("GetMaterial", &FEPostModel::GetMaterial, py::return_value_policy::reference)
+		.def("Material", &FEPostModel::GetMaterial, py::return_value_policy::reference)
         .def("GetFEMesh", &FEPostModel::GetFEMesh, py::return_value_policy::reference)
-        .def("GetStates", &FEPostModel::GetStates)
-        .def("GetState", &FEPostModel::GetStates, py::return_value_policy::reference)
+        .def("States", &FEPostModel::GetStates)
+        .def("State", &FEPostModel::GetState, py::return_value_policy::reference)
+		.def("DataFields", [](FEPostModel& self) { return self.GetDataManager()->DataFields(); })
+		.def("DataField", [](FEPostModel& self, int n) { return *self.GetDataManager()->DataField(n); }, py::return_value_policy::reference)
 		.def("AddDataField", static_cast<void(FEPostModel::*)(ModelDataField*, const std::string&)>(&FEPostModel::AddDataField))
 		.def("GetDataField", [](FEPostModel& self, const std::string& dataField) {
 				FEDataManager* dm = self.GetDataManager();
@@ -106,36 +111,34 @@ void init_FBSPost(py::module& m)
         .def("Evaluate", [](FEPostModel& self, ModelDataField& field, int component, int time)
             {
                 self.Evaluate(field.GetFieldID() | component, time);
-
                 return self.GetState(time);
             }, py::return_value_policy::reference);
-
-#ifndef PY_EXTERNAL
-	post.def("GetActiveModel", &GetActivePostModel, py::return_value_policy::reference);
-#endif
 
 	py::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", Data_Tensor_Type::TENSOR_SCALAR)
         .value("DATA_VECTOR", Data_Tensor_Type::TENSOR_VECTOR)
         .value("DATA_TENSOR2", Data_Tensor_Type::TENSOR_TENSOR2);
 
-	py::class_<FEDataManager>(post, "FEDataManager")
-        .def("datafields", &FEDataManager::DataFields)
-        .def("datafield", [](FEDataManager& self, int i){return *self.DataField(i); }, py::return_value_policy::reference)
-        .def("find_datafield", &FEDataManager::FindDataField);
+	py::class_<FEDataManager>(post, "DataManager")
+        .def("DataFields", &FEDataManager::DataFields)
+        .def("DataField", &FEDataManager::DataField, py::return_value_policy::reference)
+        .def("FindDataField", &FEDataManager::FindDataField);
 
 	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField")
-        .def("components", &ModelDataField::components)
-        .def("component_name", &ModelDataField::componentName)
-        .def("name", &ModelDataField::GetName)
-        .def("set_name", &ModelDataField::SetName);
+		.def_property("name", &ModelDataField::GetName, &ModelDataField::SetName)
+		.def("Components", &ModelDataField::components)
+		.def("ComponentName", &ModelDataField::componentName)
+		;
 
 	py::class_<FEState>(post, "State")
-        .def_readonly("nodeData", &FEState::m_NODE, py::return_value_policy::reference)
-        .def_readonly("edgeData", &FEState::m_EDGE, py::return_value_policy::reference)
-        .def_readonly("faceData", &FEState::m_FACE, py::return_value_policy::reference)
-        .def_readonly("elemData", &FEState::m_ELEM, py::return_value_policy::reference)
-        .def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index));});
+		.def_readonly("nodeData", &FEState::m_NODE, py::return_value_policy::reference)
+		.def_readonly("edgeData", &FEState::m_EDGE, py::return_value_policy::reference)
+		.def_readonly("faceData", &FEState::m_FACE, py::return_value_policy::reference)
+		.def_readonly("elemData", &FEState::m_ELEM, py::return_value_policy::reference)
+		.def("NodePosition", [](FEState& self, int index) { return to_vec3d(self.NodePosition(index)); })
+		.def_readonly("time", &FEState::m_time);
+		;
+		
 
 	py::class_<NODEDATA>(post, "NODEDATA")
         .def("r",  [](NODEDATA& self){return to_vec3d(self.m_rt);})

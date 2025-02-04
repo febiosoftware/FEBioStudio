@@ -115,6 +115,7 @@ public: // transformation
 	const Transform& GetTransform() const { return m_transform; }
 
 	void SetPosition(const vec3d& position);
+	vec3d GetPosition() const;
 
 	// copy transform info
 	void CopyTransform(GBaseObject* po);

@@ -45,7 +45,7 @@ void init_FBSGeom(py::module& m)
 {
 	py::module geom = m.def_submodule("geom", "Module used to create geometry.");
 
-	py::class_<GObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject")
+	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject")
 		.def("Parts", &GBaseObject::Parts)
 		.def("Faces", &GBaseObject::Faces)
 		.def("Edges", &GBaseObject::Edges)
@@ -57,9 +57,8 @@ void init_FBSGeom(py::module& m)
 		.def("Part", [](GObject& self, int i) {return self.Part(i); })
 		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); })
 		.def("BuildMesh", &GObject::BuildMesh)
-		.def("SetName", &GBaseObject::SetName)
-		.def("SetPosition", &GBaseObject::SetPosition)
 		.def("GetTransform", static_cast<Transform&(GBaseObject::*)()>(&GBaseObject::GetTransform), py::return_value_policy::reference)
+		.def_property("pos", &GBaseObject::GetPosition, &GBaseObject::SetPosition)
 		;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject")
