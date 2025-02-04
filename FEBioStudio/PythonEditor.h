@@ -44,10 +44,13 @@ private slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
+	void on_actionSaveAs_triggered();
+	void on_actionClose_triggered();
 	void on_actionRun_triggered();
 	void on_pythread_threadFinished(bool b);
 
 private:
 	Ui::CPythonEditor* ui;
-	CMainWindow* m_wnd;
+	CMainWindow* mainWnd;
+	QString fileName;
 };

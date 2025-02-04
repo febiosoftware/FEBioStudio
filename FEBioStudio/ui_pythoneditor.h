@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "IconProvider.h"
 #include <PyLib/PythonThread.h>
+#include <QMenuBar>
+#include <QMenu>
 
 class Ui::CPythonEditor
 {
@@ -62,14 +64,29 @@ public:
 		edit->SetDocument(doc, CTextEditor::PYTHON);
 		wnd->setCentralWidget(edit);
 
+		QAction* actionNew    = new QAction("New" , wnd); actionNew ->setObjectName("actionNew" ); actionNew ->setIcon(CIconProvider::GetIcon("new"));
+		QAction* actionOpen   = new QAction("Open ...", wnd); actionOpen->setObjectName("actionOpen"); actionOpen->setIcon(CIconProvider::GetIcon("open"));
+		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save"));
+		QAction* actionSaveAs = new QAction("Save as ...", wnd); actionSaveAs->setObjectName("actionSaveAs");
+		QAction* actionClose  = new QAction("Close", wnd); actionClose->setObjectName("actionClose");
+		QAction* actionRun    = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
+
+		QMenuBar* menuBar = wnd->menuBar();
+		QMenu* menuFile = new QMenu("File", menuBar);
+		menuBar->addAction(menuFile->menuAction());
+
+		menuFile->addAction(actionNew);
+		menuFile->addAction(actionOpen);
+		menuFile->addAction(actionSave);
+		menuFile->addAction(actionSaveAs);
+		menuFile->addAction(actionClose);
+
+		QMenu* menuPython = new QMenu("Python", menuBar);
+		menuBar->addAction(menuPython->menuAction());
+		menuPython->addAction(actionRun);
+
 		QToolBar* mainToolBar = wnd->addToolBar("mainToolBar");
 		mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-
-		QAction* actionNew  = new QAction("New" , wnd); actionNew ->setObjectName("actionNew" ); actionNew ->setIcon(CIconProvider::GetIcon("new"));
-		QAction* actionOpen = new QAction("Open", wnd); actionOpen->setObjectName("actionOpen"); actionOpen->setIcon(CIconProvider::GetIcon("open"));
-		QAction* actionSave = new QAction("Save", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save"));
-		QAction* actionRun  = new QAction("Run" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
-
 		mainToolBar->addAction(actionNew);
 		mainToolBar->addAction(actionOpen);
 		mainToolBar->addAction(actionSave);

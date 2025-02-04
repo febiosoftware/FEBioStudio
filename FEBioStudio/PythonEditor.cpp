@@ -28,11 +28,12 @@ SOFTWARE.*/
 #include "LogPanel.h"
 #include "ui_pythoneditor.h"
 
-CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), m_wnd(wnd), ui(new Ui::CPythonEditor)
+CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(new Ui::CPythonEditor)
 {
 	setWindowTitle("Python Editor");
 	setMinimumSize(800, 600);
 	ui->setup(this, wnd->usingDarkTheme());
+	ui->edit->appendPlainText("from fbs import *\n");
 }
 
 void CPythonEditor::on_actionNew_triggered()
@@ -40,6 +41,8 @@ void CPythonEditor::on_actionNew_triggered()
 	if (QMessageBox::question(this, "New Script", "Are you sure you want to start a new script?") == QMessageBox::Yes)
 	{
 		ui->edit->clear();
+		ui->edit->appendPlainText("from fbs import *\n");
+		fileName.clear();
 		setWindowTitle("Python Editor");
 	}
 }
@@ -65,44 +68,79 @@ void CPythonEditor::on_actionOpen_triggered()
 
 		ui->edit->setPlainText(fileContent);
 
+		fileName = filePath;
 		QFileInfo fi(filePath);
 		setWindowTitle("Python Editor [" + fi.fileName() + "]");
 	}
 }
 
+bool SaveScript(const QString& filePath, const QString& fileText)
+{
+	if (filePath.isEmpty()) return false;
+
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+	{
+		return false;
+	}
+
+	// Read the entire file contents using QTextStream
+	QTextStream out(&file);
+	out << fileText;
+
+	// Close the file
+	file.close();
+
+	return true;
+}
+
 void CPythonEditor::on_actionSave_triggered()
+{
+	if (fileName.isEmpty())
+	{
+		on_actionSaveAs_triggered();
+	}
+	else
+	{
+		QString script = ui->edit->toPlainText();
+		if (!SaveScript(fileName, script))
+		{
+			QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
+		}
+	}
+}
+
+void CPythonEditor::on_actionSaveAs_triggered()
 {
 	QString filePath = QFileDialog::getSaveFileName(this, "Save Python file", "", "Python files (*.py)");
 	if (!filePath.isEmpty())
 	{
-		QFile file(filePath);
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		QString script = ui->edit->toPlainText();
+		if (SaveScript(filePath, script))
 		{
-			QMessageBox::critical(this, "Save Python file", "Failed to save the file!");
-			return;
+			fileName = filePath;
+			QFileInfo fi(fileName);
+			setWindowTitle("Python Editor [" + fi.fileName() + "]");
 		}
-
-		QString fileContent = ui->edit->toPlainText();
-
-		// Read the entire file contents using QTextStream
-		QTextStream out(&file);
-		out << fileContent;
-
-		// Close the file
-		file.close();
-
-		QFileInfo fi(filePath);
-		setWindowTitle("Python Editor [" + fi.fileName() + "]");
+		else
+		{
+			QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
+		}
 	}
+}
+
+void CPythonEditor::on_actionClose_triggered()
+{
+	close();
 }
 
 void CPythonEditor::on_actionRun_triggered()
 {
 	if (ui->pythread == nullptr)
 	{
-		m_wnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-		m_wnd->AddPythonLogEntry(QString(">>> running python ...\n"));
-		CDocument* doc = m_wnd->GetDocument();
+		mainWnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+		mainWnd->AddPythonLogEntry(QString(">>> running python ...\n"));
+		CDocument* doc = mainWnd->GetDocument();
 		ui->pythread = new CPyThread(doc, nullptr);
 		connect(ui->pythread, &CPyThread::threadFinished, this, &CPythonEditor::on_pythread_threadFinished);
 
@@ -118,5 +156,5 @@ void CPythonEditor::on_actionRun_triggered()
 void CPythonEditor::on_pythread_threadFinished(bool b)
 {
 	ui->pythread = nullptr;
-	m_wnd->AddPythonLogEntry(QString(">>> python completed!\n"));
+	mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
 }
