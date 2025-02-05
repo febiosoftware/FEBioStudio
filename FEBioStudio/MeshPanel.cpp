@@ -443,6 +443,14 @@ void CMeshPanel::on_apply_clicked(bool b)
 		}
 	}
 
+	// clear any selection on the object
+	FSMesh* mesh = activeObject->GetFEMesh();
+	if (mesh)
+	{
+		mesh->ClearSelections();
+		doc->UpdateSelection(false);
+	}
+
 	MeshingThread* thread = new MeshingThread(activeObject);
 	CDlgStartThread dlg(GetMainWindow(), thread);
 	if (dlg.exec())
