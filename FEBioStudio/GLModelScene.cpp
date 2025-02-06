@@ -2094,28 +2094,30 @@ void GLObjectItem::RenderNormals(GLRenderEngine& re, GLContext& rc, double scale
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		const FSFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			vec3f p[2];
+			p[0] = vec3f(0, 0, 0);
+			vec3f fn = face.m_fn;
 
-		vec3f p[2];
-		p[0] = vec3f(0, 0, 0);
-		vec3f fn = face.m_fn;
+			vec3d c(0, 0, 0);
+			int nf = face.Nodes();
+			for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
+			c /= nf;
 
-		vec3d c(0, 0, 0);
-		int nf = face.Nodes();
-		for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
-		c /= nf;
+			p[0] = to_vec3f(c);
+			p[1] = p[0] + fn * R;
 
-		p[0] = to_vec3f(c);
-		p[1] = p[0] + fn * R;
+			lineMesh.AddEdge(p, 2);
 
-		lineMesh.AddEdge(p, 2);
+			float r = fabs(fn.x);
+			float g = fabs(fn.y);
+			float b = fabs(fn.z);
 
-		float r = fabs(fn.x);
-		float g = fabs(fn.y);
-		float b = fabs(fn.z);
-
-		GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
-		edge.c[0] = GLColor::White();
-		edge.c[1] = GLColor::FromRGBf(r, g, b);
+			GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+			edge.c[0] = GLColor::White();
+			edge.c[1] = GLColor::FromRGBf(r, g, b);
+		}
 	}
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
