@@ -156,7 +156,6 @@ void CDocument::SetActiveDocument(CDocument* doc)
 	if (doc) m_activeDoc->Activate();
 }
 
-//-----------------------------------------------------------------------------
 CDocument::~CDocument()
 {
 	// make sure it's not the active doc
@@ -168,7 +167,6 @@ CDocument::~CDocument()
 	m_Observers.clear();
 }
 
-//-----------------------------------------------------------------------------
 void CDocument::Clear()
 {
 	// reset the filename
@@ -180,13 +178,16 @@ void CDocument::Clear()
 	m_bValid = true;
 }
 
-//-----------------------------------------------------------------------------
 bool CDocument::Initialize()
 {
 	return true;
 }
 
-//-----------------------------------------------------------------------------
+void CDocument::Update()
+{
+
+}
+
 // will be called when the document is activated
 void CDocument::Activate()
 {
@@ -199,14 +200,12 @@ void CDocument::Deactivate()
 
 }
 
-//-----------------------------------------------------------------------------
 CMainWindow* CDocument::GetMainWindow() 
 { 
 	return m_wnd; 
 }
 
-//-----------------------------------------------------------------------------
-bool CDocument::IsModified()
+bool CDocument::IsModified() const
 {
 	return m_bModified;
 }
@@ -217,8 +216,7 @@ void CDocument::SetModifiedFlag(bool bset)
 	m_bModified = bset;
 }
 
-//-----------------------------------------------------------------------------
-bool CDocument::IsValid() { return m_bValid; }
+bool CDocument::IsValid() const { return m_bValid; }
 
 //-----------------------------------------------------------------------------
 void CDocument::AddObserver(CDocObserver* observer)
@@ -553,11 +551,6 @@ void CUndoDocument::ClearCommandStack()
 
 //-----------------------------------------------------------------------------
 void CUndoDocument::UpdateSelection(bool breport)
-{
-
-}
-
-void CUndoDocument::Update()
 {
 
 }

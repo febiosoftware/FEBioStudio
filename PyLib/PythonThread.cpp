@@ -76,6 +76,8 @@ void CPyThread::run()
 
 	finish_fbs_python();
 
+	if (undoDoc) undoDoc->Update();
+
 	PyRunContext::SetDocument(nullptr);
 }
 

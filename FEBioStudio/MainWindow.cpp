@@ -1188,6 +1188,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		}
 		else
 		{
+			if (file.m_doc) file.m_doc->Update();
 			SetActiveDocument(file.m_doc);
 		}
 	}
