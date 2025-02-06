@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <MeshIO/VTKExport.h>
 #include "PyExceptions.h"
 #include "PyRunContext.h"
+#include <GeomLib/GPrimitive.h>
+#include <GeomLib/GMeshObject.h>
 
 namespace py = pybind11;
 
@@ -138,6 +140,23 @@ void init_FBSModel(py::module& m)
 		.def("ExportFEB", &ExportFEB)
 		.def("ExportVTK", &ExportVTK)
 
+		// functions for adding geometry
+		.def("AddBox", [](FSModel& self, double W, double H, double D) {
+				GBox* box = new GBox(W, H, D);
+				self.GetModel().AddObject(box);
+				return box;}, py::return_value_policy::reference)
+		
+		.def("AddDisc", [](FSModel& self, double R) {
+				GDisc* disc = new GDisc(R);
+				self.GetModel().AddObject(disc);
+				return disc;}, py::return_value_policy::reference)
+
+		.def("AddMeshObject", [](FSModel& self, FSMesh* mesh) {
+				GMeshObject* po = new GMeshObject(mesh);
+				self.GetModel().AddObject(po);
+				return po;
+			}, py::return_value_policy::reference)
+
         // --- functions to delete all components ---
         .def("DeleteAllMaterials", &FSModel::DeleteAllMaterials)
         .def("DeleteAllBC", &FSModel::DeleteAllBC)
@@ -191,6 +210,7 @@ void init_FBSModel(py::module& m)
         .def("ReplaceObject", [] (FSModel& self, GObject* obj1, GObject* obj2){return self.GetModel().ReplaceObject(obj1, obj2);})
         .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
         .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
+		.def("DeleteObject", [](FSModel& self, GObject* po) { self.GetModel().RemoveObject(po, true); delete po; })
 
 		.def("AddSpringSet", [](FSModel& self, const std::string& name, const std::string& type) { return AddSpringSet(self, name, type); })
 		;
