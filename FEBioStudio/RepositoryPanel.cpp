@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
-#include "RepoConnectionHandler.h"
+#include "ModelRepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "WzdUpload.h"
@@ -81,7 +81,7 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
     connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
 
 	dbHandler = new CLocalDatabaseHandler(this);
-	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
+	repoHandler = new CModelRepoConnectionHandler(this, dbHandler, m_wnd);
 
 	QMetaObject::connectSlotsByName(this);
 }

@@ -36,7 +36,7 @@ namespace Ui {
 }
 
 class CMainWindow;
-class CRepoConnectionHandler;
+class CModelRepoConnectionHandler;
 class CLocalDatabaseHandler;
 class QTreeWidgetItem;
 class QLabel;
@@ -148,7 +148,7 @@ private:
 private:
 	CMainWindow*		m_wnd;
 	QDockWidget* dock;
-	CRepoConnectionHandler*	repoHandler;
+	CModelRepoConnectionHandler*	repoHandler;
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
 	QString linkToOpen;

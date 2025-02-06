@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/FEModule.h>
 #include <QMenu>
+#include "PluginListWidget.h"
 #include "MainWindow.h"
 
 class CDlgFEBioPluginsUI
@@ -51,10 +52,14 @@ public:
 
 	QMenu* recentPlugins;
 
+    PluginListWidget* pluginListWidget;
+
 public:
 	void setup(QDialog* dlg)
 	{
-		QPushButton* loadPlugin = new QPushButton("Load ...");
+		QVBoxLayout* l = new QVBoxLayout;
+        
+        QPushButton* loadPlugin = new QPushButton("Load ...");
 
 		recentPlugins = new QMenu(dlg);
 		loadPlugin->setMenu(recentPlugins);
@@ -67,10 +72,12 @@ public:
 		h->addWidget(unloadPlugin);
 		h->addStretch();
 
+        pluginListWidget = new PluginListWidget(dlg);
+
 		plugins = new QTreeWidget;
 		plugins->setColumnCount(3);
 		plugins->setHeaderLabels(QStringList() << "name" << "version" << "path");
-		QVBoxLayout* l = new QVBoxLayout;
+		
 
 		features = new QTreeWidget;
 		features->setColumnCount(5);
@@ -85,6 +92,7 @@ public:
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
 		
+        l->addWidget(pluginListWidget);
 		l->addLayout(h);
 		l->addWidget(split);
 		l->addWidget(bb);

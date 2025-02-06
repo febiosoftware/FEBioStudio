@@ -38,7 +38,7 @@ namespace Ui {
 class QTreeWidgetItem;
 class CPublicationWidget;
 class CLocalDatabaseHandler;
-class CRepoConnectionHandler;
+class CModelRepoConnectionHandler;
 class FEBioStudioProject;
 //class CExportProjectWidget;
 
@@ -90,7 +90,7 @@ class CWzdUpload : public QWizard
 	Q_OBJECT
 
 public:
-	CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify = 0); //, FEBioStudioProject* project = nullptr);
+	CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CModelRepoConnectionHandler* repoHandler, int modify = 0); //, FEBioStudioProject* project = nullptr);
 
 	void setName(QString name);
 	void setDescription(QString desc);
@@ -150,5 +150,5 @@ private:
 private:
 	Ui::CWzdUpload*	ui;
 	CLocalDatabaseHandler* dbHandler;
-	CRepoConnectionHandler* repoHandler;
+	CModelRepoConnectionHandler* repoHandler;
 };
