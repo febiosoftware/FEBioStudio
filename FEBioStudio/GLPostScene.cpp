@@ -631,14 +631,19 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 	FEPostModel* ps = m_scene->GetFSModel();
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
-	GLMesh* pm = po->GetFERenderMesh();
+	GLMesh* pm = po->GetRenderMesh();
 	if (pm == nullptr) return;
 
-	Transform T;
 	re.setMaterial(GLMaterial::CONSTANT, glm.m_line_col);
-	for (int i = 0; i < pm->Partitions(); ++i)
+
+	for (int j = 0; j < po->Edges(); ++j)
+		re.renderGMeshEdges(*pm, j);
+
+	if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
 	{
-		re.renderGMeshOutline(*rc.m_cam, *pm, T, i);
+		Transform T;
+		re.setColor(GLColor(32, 0, 0));
+		re.renderGMeshOutline(*rc.m_cam, *pm, T);
 	}
 }
 
