@@ -39,11 +39,13 @@ class Ui::CPythonEditor
 public:
 	CTextEditor* edit = nullptr;
 	CPyThread* pythread = nullptr;
+	bool isModified = false;
 
 public:
 	void setup(QMainWindow* wnd, bool darkTheme)
 	{
 		edit = new CTextEditor(wnd);
+		edit->setObjectName("edit");
 		edit->useDarkTheme(darkTheme);
 
 		QTextDocument* doc = new QTextDocument;

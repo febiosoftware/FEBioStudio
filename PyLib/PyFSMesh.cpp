@@ -73,6 +73,7 @@ void init_FSMesh(py::module_& m)
 
 		.def("Surfaces", &FSMesh::FESurfaces)
 		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference)
+		.def("NodeIndexFromID", &FSMesh::NodeIndexFromID)
         ;
 
 	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "MeshItem")

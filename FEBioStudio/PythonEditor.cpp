@@ -43,7 +43,8 @@ void CPythonEditor::on_actionNew_triggered()
 		ui->edit->clear();
 		ui->edit->appendPlainText("from fbs import *\n");
 		fileName.clear();
-		setWindowTitle("Python Editor");
+		ui->isModified = false;
+		updateWindowTitle();
 	}
 }
 
@@ -69,8 +70,8 @@ void CPythonEditor::on_actionOpen_triggered()
 		ui->edit->setPlainText(fileContent);
 
 		fileName = filePath;
-		QFileInfo fi(filePath);
-		setWindowTitle("Python Editor [" + fi.fileName() + "]");
+		ui->isModified = false;
+		updateWindowTitle();
 	}
 }
 
@@ -94,6 +95,22 @@ bool SaveScript(const QString& filePath, const QString& fileText)
 	return true;
 }
 
+void CPythonEditor::updateWindowTitle()
+{
+	if (fileName.isEmpty())
+	{
+		setWindowTitle("Python Editor");
+	}
+	else
+	{
+		QFileInfo fi(fileName);
+		if (ui->isModified)
+			setWindowTitle("Python Editor [" + fi.fileName() + "*]");
+		else
+			setWindowTitle("Python Editor [" + fi.fileName() + "]");
+	}
+}
+
 void CPythonEditor::on_actionSave_triggered()
 {
 	if (fileName.isEmpty())
@@ -107,6 +124,9 @@ void CPythonEditor::on_actionSave_triggered()
 		{
 			QMessageBox::critical(this, "Python Editor", "Failed to save the script to file.");
 		}
+
+		ui->isModified = false;
+		updateWindowTitle();
 	}
 }
 
@@ -119,8 +139,8 @@ void CPythonEditor::on_actionSaveAs_triggered()
 		if (SaveScript(filePath, script))
 		{
 			fileName = filePath;
-			QFileInfo fi(fileName);
-			setWindowTitle("Python Editor [" + fi.fileName() + "]");
+			ui->isModified = false;
+			updateWindowTitle();
 		}
 		else
 		{
@@ -157,4 +177,13 @@ void CPythonEditor::on_pythread_threadFinished(bool b)
 {
 	ui->pythread = nullptr;
 	mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
+}
+
+void CPythonEditor::on_edit_textChanged()
+{
+	if (!ui->isModified)
+	{
+		ui->isModified = true;
+		updateWindowTitle();
+	}
 }

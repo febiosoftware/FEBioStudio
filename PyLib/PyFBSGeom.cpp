@@ -62,16 +62,13 @@ void init_FBSGeom(py::module& m)
 		;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject")
-		.def(py::init<FSMesh*>())
 		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode))
 		.def("MakeGNode", &GMeshObject::MakeGNode)
 		;
 
-	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "GBox")
-		.def(py::init<double, double, double>());
+	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "GBox");
 
 	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "GDisc")
-		.def(py::init<double>())
 		.def("CreateMesh", &GDisc::CreateMesh)
 		;
 

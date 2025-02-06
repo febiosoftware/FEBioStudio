@@ -146,6 +146,9 @@ public:
 	// this is called after a document was loaded
 	virtual bool Initialize();
 
+	// update internals
+	virtual void Update();
+
 	// will be called when the document is activated
 	virtual void Activate();
 
@@ -156,9 +159,9 @@ public:
 
 public:
 	// --- Document validation ---
-	bool IsModified();
+	bool IsModified() const;
 	virtual void SetModifiedFlag(bool bset = true);
-	bool IsValid();
+	bool IsValid() const;
 
 public:
 	// --- I/O-routines ---
@@ -288,9 +291,7 @@ public:
 	const std::string& GetCommandErrorString() const;
 
 	// TODO: Move this to Update ?
-    virtual void UpdateSelection(bool breport = true);
-
-	virtual void Update();
+	virtual void UpdateSelection(bool breport = true);
 
 public:
 	//! Get the change log
