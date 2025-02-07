@@ -37,6 +37,12 @@ namespace VTK {
 			CELL_DATA
 		};
 
+		enum FieldDataType {
+			INT,
+			FLOAT,
+			STRING
+		};
+
 	public:
 		vtkLegacyFileReader();
 
