@@ -103,7 +103,6 @@ class FESurfaceModifier;
 class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
-enum class ImageFileType;
 class CImageModel;
 
 //-----------------------------------------------------------------------------

@@ -30,14 +30,16 @@ SOFTWARE.*/
 #include "SITKTools.h"
 #include <FSCore/FSDir.h>
 #include <cstring>
+#include <filesystem>
 
 using namespace Post;
+namespace fs = std::filesystem;
 
 #ifdef HAS_ITK
 
 //========================================================================
 
-CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type) 
+CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, int type) 
     : CImageSource(CImageSource::ITK, imgModel), m_filename(filename), m_fileType(type)
 {
     SetName(FSDir::fileName(filename));
@@ -55,7 +57,7 @@ bool CITKImageSource::Load()
 
     sitk::Image sitkImage;
 
-    if(m_fileType == ImageFileType::DICOM)
+    if(m_fileType == CITKImageSource::DICOM)
     {
         sitk::ImageSeriesReader reader;
 
@@ -209,9 +211,15 @@ bool CITKImageSource::Load()
 
 void CITKImageSource::Save(OArchive& ar)
 {
-    ar.WriteChunk(0, m_filename);
-    ar.WriteChunk(1, (int)m_type);
-    ar.WriteChunk(2, (int)m_fileType);
+    // save image path relative to model file
+    fs::path image = m_filename;
+    fs::path mdl = ar.GetFilename();
+
+    string relFilename = fs::relative(image, mdl.parent_path()).string();
+
+    ar.WriteChunk(0, relFilename);
+    ar.WriteChunk(1, m_type);
+    ar.WriteChunk(2, m_fileType);
 
 	if (m_originalImage)
 	{
@@ -250,7 +258,7 @@ void CITKImageSource::Load(IArchive& ar)
         {
             int fileType;
             ar.read(fileType);
-            m_fileType = (ImageFileType)fileType;
+            m_fileType = fileType;
             break;
         }
 			
@@ -277,6 +285,16 @@ void CITKImageSource::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+
+    // Convert relative file path back to absolute file path
+    fs::path image = m_filename;
+    fs::path mdl = ar.GetFilename();
+
+    // Old files may have saved absolute paths
+    if(image.is_relative())
+    {
+        m_filename = fs::absolute(mdl.parent_path() / image).string();
+    }
 
     // Read in image data
     Load();
@@ -309,7 +327,19 @@ bool CITKSeriesImageSource::Load()
 
     sitk::ImageFileReader reader;
     reader.SetFileName(m_filenames[0]);
-    sitk::Image slice = reader.Execute();
+
+    sitk::Image slice;
+
+    try {
+        // this can throw exceptions. 
+        // If this is called while loading the fs2 file, this could cause problems.
+        // Therefore, we catch the exception and just return false.
+        slice = reader.Execute();
+    }
+    catch (...)
+    {
+        return false;
+    }
 
     unsigned int nx = slice.GetWidth();
     unsigned int ny = slice.GetHeight();
@@ -333,7 +363,18 @@ bool CITKSeriesImageSource::Load()
         for(int index = 0; index < m_filenames.size(); index++)
         {
             reader.SetFileName(m_filenames[index]);
-            sitk::Image slice = reader.Execute();
+            sitk::Image slice;
+
+            try {
+                // this can throw exceptions. 
+                // If this is called while loading the fs2 file, this could cause problems.
+                // Therefore, we catch the exception and just return false.
+                slice = reader.Execute();
+            }
+            catch (...)
+            {
+                return false;
+            }
 
             if(slice.GetDimension() != 2)
             {
@@ -371,7 +412,13 @@ void CITKSeriesImageSource::Save(OArchive& ar)
 {
     for(auto filename : m_filenames)
     {
-        ar.WriteChunk(0, filename);
+        // save image path relative to model file
+        fs::path image = filename;
+        fs::path mdl = ar.GetFilename();
+
+        string relFilename = fs::relative(image, mdl.parent_path()).string();
+
+        ar.WriteChunk(0, relFilename);
     }
 
 	if (m_originalImage)
@@ -401,6 +448,17 @@ void CITKSeriesImageSource::Load(IArchive& ar)
         {
             std::string temp;
             ar.read(temp);
+
+            // Convert relative file path back to absolute file path
+            fs::path image = temp;
+            fs::path mdl = ar.GetFilename();
+
+            // Old files may have saved absolute paths
+            if(image.is_relative())
+            {
+                temp = fs::absolute(mdl.parent_path() / image).string();
+            }
+
             m_filenames.push_back(temp);
             break;
         }
@@ -429,7 +487,7 @@ void CITKSeriesImageSource::Load(IArchive& ar)
 	}
 
     // Read in image data
-    Load();
+    if(!Load()) return;
 
     // Set location of image if it was saved
     if(foundBox)
@@ -440,7 +498,7 @@ void CITKSeriesImageSource::Load(IArchive& ar)
 
 #else
 //========================================================================
-CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type)
+CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, int type)
     : CImageSource(0, imgModel) {}
 CITKImageSource::CITKImageSource(CImageModel* imgModel) : CImageSource(0, imgModel) {}
 bool CITKImageSource::Load() { return false; }
