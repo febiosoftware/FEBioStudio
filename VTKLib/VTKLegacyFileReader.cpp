@@ -675,23 +675,38 @@ bool vtkLegacyFileReader::read_FIELD(vtkPiece& vtkMesh)
 
 		bool isLabels = ((att[0] == "labels") && (numComp == 1) && (numTuples == vtkMesh.Cells()));
 
-		double v[9];
-		int nsize = numComp * numTuples;
-		int nreadTotal = 0;
-		while (nreadTotal < nsize)
+		int fieldDataType = -1;
+		if      (att[3] == "int"   ) fieldDataType = FieldDataType::INT;
+		else if (att[3] == "float" ) fieldDataType = FieldDataType::FLOAT;
+		else if (att[3] == "string") fieldDataType = FieldDataType::STRING;
+
+		if (fieldDataType == FieldDataType::STRING)
 		{
-			if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
-
-			int nread = sscanf(m_szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", v, v + 1, v + 2, v + 3, v + 4, v + 5, v + 6, v + 7, v + 8);
-
-			// TODO: Do something with this data
-			if (isLabels)
+			for (int i = 0; i < numTuples; ++i)
 			{
-//				for (int i = 0; i < nread; ++i) vtkMesh.m_cellList[nreadTotal + i].label = (int)v[i];
+				if (nextLine() == false) return errf("An unexpected error occured while reading the field data.");
 			}
-			nreadTotal += nread;
 		}
-		assert(nreadTotal == nsize);
+		else
+		{
+			double v[9];
+			int nsize = numComp * numTuples;
+			int nreadTotal = 0;
+			while (nreadTotal < nsize)
+			{
+				if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+
+				int nread = sscanf(m_szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", v, v + 1, v + 2, v + 3, v + 4, v + 5, v + 6, v + 7, v + 8);
+
+				// TODO: Do something with this data
+				if (isLabels)
+				{
+					//				for (int i = 0; i < nread; ++i) vtkMesh.m_cellList[nreadTotal + i].label = (int)v[i];
+				}
+				nreadTotal += nread;
+			}
+			assert(nreadTotal == nsize);
+		}
 	}
 	return true;
 }
