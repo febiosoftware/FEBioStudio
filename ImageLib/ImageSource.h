@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 
-enum class ImageFileType;
-
 #include <vector>
 #include <string>
 #include <FSCore/FSObjectList.h>

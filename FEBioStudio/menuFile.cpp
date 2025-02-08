@@ -1590,32 +1590,9 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+		ProcessITKImage(filedlg.selectedFiles()[0], CITKImageSource::DICOM);
 	}
 }
-
-// void CMainWindow::on_actionImportTiffImage_triggered()
-// {
-//     CGLDocument* doc = GetGLDocument();
-//     if(!doc)
-//     {
-//         QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
-//         return;
-//     }
-
-// 	QFileDialog filedlg(this);
-// 	filedlg.setFileMode(QFileDialog::ExistingFile);
-// 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
-
-// 	QStringList filters;
-// 	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
-// 	filedlg.setNameFilters(filters);
-
-// 	if (filedlg.exec())
-// 	{
-// 		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
-// 	}
-// }
 
 void CMainWindow::on_actionImportTiffImage_triggered()
 {
@@ -1652,30 +1629,6 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 	}
 }
 
-void CMainWindow::on_actionImportOMETiffImage_triggered()
-{
-    CGLDocument* doc = GetGLDocument();
-    if(!doc)
-    {
-        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
-        return;
-    }
-
-	QFileDialog filedlg(this);
-	filedlg.setDirectory(CurrentWorkingDirectory());
-	filedlg.setFileMode(QFileDialog::ExistingFile);
-	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
-
-	QStringList filters;
-	filters << "OME Tiff XML Files (*.xml)";
-	filedlg.setNameFilters(filters);
-
-	if (filedlg.exec())
-	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
-	}
-}
-
 void CMainWindow::on_actionImportNrrdImage_triggered()
 {
     CGLDocument* doc = GetGLDocument();
@@ -1695,7 +1648,7 @@ void CMainWindow::on_actionImportNrrdImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+		ProcessITKImage(filedlg.selectedFiles()[0], CITKImageSource::NRRD);
 	}
 }
 
@@ -1715,7 +1668,7 @@ void CMainWindow::on_actionImportImageOther_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+		ProcessITKImage(filedlg.selectedFiles()[0], CITKImageSource::OTHER);
 	}
 }
 

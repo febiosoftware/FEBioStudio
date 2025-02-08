@@ -31,15 +31,16 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
 #include "ImageFilterSITK.h"
+#include <limits>
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
+REGISTER_CLASS(PadImageFilter, CLASS_IMAGE_FILTER, "Padding Filter", 0);
 
 #ifdef HAS_ITK
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
 REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
 #endif
-
 
 CImageFilter::CImageFilter() : m_model(nullptr)
 {
@@ -165,6 +166,168 @@ void ThresholdImageFilter::SetImageModel(CImageModel* model)
     }
 
     CImageFilter::SetImageModel(model);
+}
+
+PadImageFilter::PadImageFilter()
+{
+    static int n = 1;
+    char sz[64] = { 0 };
+    sprintf(sz, "PadImageFilter%02d", n++);
+    SetName(sz);
+
+    
+    AddIntParam(0, "pad_x_low", "Lower X Padding");
+    AddIntParam(0, "pad_x_up", "Upper X Padding");
+    AddIntParam(0, "pad_y_low", "Lower Y Padding");
+    AddIntParam(0, "pad_y_up", "Upper Y Padding");
+    AddIntParam(0, "pad_z_low", "Lower Z Padding");
+    AddIntParam(0, "pad_z_up", "Upper Z Padding");
+
+    AddChoiceParam(0, "value", "Value")->SetEnumNames("Min Used\0Max Used\0Min Possible\0Max Possible\0");
+    AddChoiceParam(0, "scale", "Image Scaling")->SetEnumNames("Maintain Size\0Maintain Spacing\0");
+}
+
+template<class pType> void PadImageFilter::FitlerTemplate()
+{
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    int xLow = GetIntValue(0);
+    int xUp = GetIntValue(1);
+    int yLow = GetIntValue(2);
+    int yUp = GetIntValue(3);
+    int zLow = GetIntValue(4);
+    int zUp = GetIntValue(5);
+    int valueChoice = GetIntValue(6);
+    int scaleChoice = GetIntValue(7);
+
+    pType value;
+
+    switch(valueChoice)
+    {
+        case 0:
+        {
+            double min, max;
+            image->GetMinMax(min, max, true);
+            value = (pType)min;
+            break;
+        }
+        case 1:
+        {
+            double min, max;
+            image->GetMinMax(min, max, true);
+            value = (pType)max;
+            break;
+        }
+        case 2:
+        {
+            value = std::numeric_limits<pType>::lowest();
+            break;
+        }
+        case 3:
+        {
+            value = std::numeric_limits<pType>::max();
+            break;
+        }
+        default:
+            assert(false);
+    }
+
+    int originalX = image->Width();
+    int originalY = image->Height();
+    int originalZ = image->Depth();
+
+    int nx = originalX + xUp + xLow;
+	int ny = originalY + yUp + yLow;
+	int nz = originalZ + zUp + zLow;
+    uint8_t* dest_buf = new uint8_t[nx * ny * nz * image->BPS()];
+    pType* filteredBytes = (pType*)dest_buf;
+
+    #pragma omp parallel for
+    for(int index = 0; index < nx*ny*nz; index++)
+    {
+        int x = index % nx;
+        int y = (index / nx) % ny;
+        int z = index / (nx*ny);
+
+        if(x < xLow || x >= nx - xUp || y < yLow || y >= ny - yUp || z < zLow || z >= nz - zUp)
+        {
+            filteredBytes[index] = value;
+        }
+        else
+        {
+            int originalIndex = (x - xLow) + (y - yLow) * originalX + (z - zLow) * originalX * originalY;
+            filteredBytes[index] = ((pType*)image->GetBytes())[originalIndex];
+        }
+    }
+
+    C3DImage* imageToFilter = m_model->GetImageSource()->GetImageToFilter();
+    imageToFilter->Create(nx, ny, nz, dest_buf, image->PixelType());
+
+    // Scale the physical dimensions of the image
+    if(scaleChoice == 1)
+    {
+        BOX box = image->GetBoundingBox();
+
+        double xSpacing = box.Width() / originalX;
+        double ySpacing = box.Height() / originalY;
+        double zSpacing = box.Depth() / originalZ;
+
+        BOX newBox(box.x0 - xLow * xSpacing, box.y0 - yLow * ySpacing, box.z0 - zLow * zSpacing,
+            box.x1 + xUp * xSpacing, box.y1 + yUp * ySpacing, box.z1 + zUp * zSpacing);
+
+        imageToFilter->SetBoundingBox(newBox);
+    }
+}
+
+void PadImageFilter::ApplyFilter()
+{
+    if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    if(!image) return;
+
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        FitlerTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        FitlerTemplate<int32_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
 }
 
 

@@ -26,12 +26,20 @@ SOFTWARE.*/
 
 #include "ImageSource.h"
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
 class CITKImageSource : public CImageSource
 {
 public:
-    CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
+    enum FileType
+    {
+        RAW, // Currently unused
+        DICOM, 
+        TIFF, // Currently unused. We use our own TIFF reader.
+        NRRD, 
+        OTHER
+    };
+
+public:
+    CITKImageSource(CImageModel* imgModel, const std::string& filename, int type);
     CITKImageSource(CImageModel* imgModel);
 
     bool Load() override;
@@ -39,10 +47,14 @@ public:
     void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+    void SetFileName(const std::string& filename) { m_filename = filename; }
+
+    int GetFileType() const { return m_fileType; }
+
 private:
     std::string m_filename;
 
-    ImageFileType m_fileType;
+    int m_fileType;
 };
 
 class CITKSeriesImageSource : public CImageSource
@@ -55,6 +67,8 @@ public:
 
     void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
+
+    void SetFileNames(const std::vector<std::string>& filenames) { m_filenames = filenames; }
 
 private:
     std::vector<std::string> m_filenames;

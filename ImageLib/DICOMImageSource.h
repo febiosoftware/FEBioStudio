@@ -41,7 +41,6 @@ private:
     // std::string m_filename;
     std::vector<std::string> m_filenames;
     // std::string m_filename;
-    // ImageFileType m_type;
 
 
 };
