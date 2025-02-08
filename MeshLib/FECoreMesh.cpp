@@ -1326,14 +1326,6 @@ void FSCoreMesh::TagAllElements(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-// get the local node positions of a element
-void FSCoreMesh::ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const
-{
-	int ne = e.Nodes();
-	for (int i = 0; i<ne; ++i) r[i] = m_Node[e.m_node[i]].r;
-}
-
-//-----------------------------------------------------------------------------
 // See if this is a shell mesh.
 bool FSCoreMesh::IsShell() const
 {

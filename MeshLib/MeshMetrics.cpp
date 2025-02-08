@@ -354,6 +354,14 @@ double ShellArea(const FSMesh& mesh, const FSElement& el)
 	return val;
 }
 
+void ElementNodePositions(const FSMesh& mesh, const FEElement_& e, vec3d* r)
+{
+	for (int i = 0; i < e.Nodes(); ++i)
+	{
+		r[i] = mesh.NodePosition(e.m_node[i]);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Calculate min jacobian of a solid element
 // Evaluates the jacobian at the element's nodes and find the smallest (or most negative) value
@@ -363,7 +371,7 @@ double SolidJacobian(const FSMesh& mesh, const FSElement& el)
 
     // nodal coordinates
     vec3d r[FSElement::MAX_NODES];
-    mesh.ElementNodeLocalPositions(el, r);
+    ElementNodePositions(mesh, el, r);
 
 	// calculate jacobian based on element type
     // use flag 'true' to evaluate min Jacobian
@@ -420,7 +428,7 @@ double ElementVolume(const FSMesh& mesh, const FSElement &e)
 {
 	// nodal coordinates
     vec3d r[FSElement::MAX_NODES];
-	mesh.ElementNodeLocalPositions(e, r);
+	ElementNodePositions(mesh, e, r);
 
     switch (e.Type())
     {
@@ -459,16 +467,16 @@ double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& el, bool brel
 		{
 			ok = true;
 			int* n = FTTET10[i];
-			a[0] = mesh.Node(el.m_node[n[0]]).r;
-			a[1] = mesh.Node(el.m_node[n[1]]).r;
-			a[2] = mesh.Node(el.m_node[n[2]]).r;
+			a[0] = mesh.NodePosition(el.m_node[n[0]]);
+			a[1] = mesh.NodePosition(el.m_node[n[1]]);
+			a[2] = mesh.NodePosition(el.m_node[n[2]]);
 
 			vec3d N = (a[1] - a[0]) ^ (a[2] - a[0]);
 			N.Normalize();
 
 			for (int j = 0; j<3; ++j)
 			{
-				vec3d r = mesh.Node(el.m_node[n[3 + j]]).r;
+				vec3d r = mesh.NodePosition(el.m_node[n[3 + j]]);
 				vec3d dr = r - a[j];
 				vec3d t = a[(j + 1) % 3] - a[j];
 				vec3d e = t.Normalized();
@@ -500,7 +508,7 @@ double TriQuality(const FSMesh& mesh, const FSElement& el)
 
 	// get the tet's nodal coordinates
 	vec3d r[3];
-	for (int i = 0; i<3; ++i) r[i] = mesh.Node(el.m_node[i]).r;
+	for (int i = 0; i<3; ++i) r[i] = mesh.NodePosition(el.m_node[i]);
 
 	return TriangleQuality(r);
 }
@@ -535,7 +543,7 @@ double TetQuality(const FSMesh& mesh, const FSElement& el)
 
 	// get the tet's nodal coordinates
 	vec3d p[4];
-	for (int i = 0; i<4; ++i) p[i] = mesh.Node(el.m_node[i]).r;
+	for (int i = 0; i<4; ++i) p[i] = mesh.NodePosition(el.m_node[i]);
 
 	// setup system of equation
 	mat3d A;
@@ -581,7 +589,7 @@ double TetMinDihedralAngle(const FSMesh& mesh, const FSElement& el)
 
 	// get the nodal coordinates
 	vec3d r[4];
-	for (int i = 0; i<4; ++i) r[i] = mesh.Node(el.m_node[i]).r;
+	for (int i = 0; i<4; ++i) r[i] = mesh.NodePosition(el.m_node[i]);
 
 	// find the normals of all four faces
 	vec3d fn[4];
@@ -612,7 +620,7 @@ double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& el)
 
 	// get the nodal coordinates
 	vec3d r[4];
-	for (int i = 0; i<4; ++i) r[i] = mesh.Node(el.m_node[i]).r;
+	for (int i = 0; i<4; ++i) r[i] = mesh.NodePosition(el.m_node[i]);
 
 	// find the normals of all four faces
 	vec3d fn[4];
@@ -652,7 +660,7 @@ vec3d GradientSolid(const FSMesh& mesh, const FSElement& el, int node, double* v
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
-	mesh.ElementNodeLocalPositions(el, r);
+	ElementNodePositions(mesh, el, r);
 
 	// shape function derivatives at node
 	double G[3][MN] = { 0 };
@@ -772,7 +780,7 @@ vec3d GradientShell(const FSMesh& mesh, const FSElement& el, int node, double* v
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
-	mesh.ElementNodeLocalPositions(el, r);
+	ElementNodePositions(mesh, el, r);
 
 	// shape function derivatives at node
 	double G[2][MN] = { 0 };
@@ -862,7 +870,7 @@ vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int n
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
-	mesh.ElementNodeLocalPositions(el, r);
+	ElementNodePositions(mesh, el, r);
 
 	// shape function derivatives at node
 	double G[3][FSElement::MAX_NODES] = { 0 };
@@ -971,7 +979,7 @@ vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int n
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
-	mesh.ElementNodeLocalPositions(el, r);
+	ElementNodePositions(mesh, el, r);
 
 	// shape function derivatives at node
 	double G[2][FSElement::MAX_NODES] = { 0 };
@@ -1056,8 +1064,8 @@ double MinEdgeLength(const FSMesh& mesh, const FSElement& e)
 	double Lmin = 1e99;
 	for (int i = 0; i < edges; ++i)
 	{
-		vec3d r1 = mesh.Node(e.m_node[ET[i][0]]).pos();
-		vec3d r2 = mesh.Node(e.m_node[ET[i][1]]).pos();
+		vec3d r1 = mesh.NodePosition(e.m_node[ET[i][0]]);
+		vec3d r2 = mesh.NodePosition(e.m_node[ET[i][1]]);
 
 		double L = (r2 - r1).Length();
 		if (L < Lmin) Lmin = L;
@@ -1092,8 +1100,8 @@ double MaxEdgeLength(const FSMesh& mesh, const FSElement& e)
 	double Lmax = 0.0;
 	for (int i = 0; i < edges; ++i)
 	{
-		vec3d r1 = mesh.Node(e.m_node[ET[i][0]]).pos();
-		vec3d r2 = mesh.Node(e.m_node[ET[i][1]]).pos();
+		vec3d r1 = mesh.NodePosition(e.m_node[ET[i][0]]);
+		vec3d r2 = mesh.NodePosition(e.m_node[ET[i][1]]);
 
 		double L = (r2 - r1).Length();
 		if (L > Lmax) Lmax = L;
@@ -1121,8 +1129,8 @@ double MinEdgeLength(const FSMeshBase& mesh, const FSFace& f)
 	double Lmin = 1e99;
 	for (int i = 0; i < edges; ++i)
 	{
-		vec3d r1 = mesh.Node(f.n[ET[i][0]]).pos();
-		vec3d r2 = mesh.Node(f.n[ET[i][1]]).pos();
+		vec3d r1 = mesh.NodePosition(f.n[ET[i][0]]);
+		vec3d r2 = mesh.NodePosition(f.n[ET[i][1]]);
 
 		double L = (r2 - r1).Length();
 		if (L < Lmin) Lmin = L;
@@ -1150,8 +1158,8 @@ double MaxEdgeLength(const FSMeshBase& mesh, const FSFace& f)
 	double Lmax = 0.0;
 	for (int i = 0; i < edges; ++i)
 	{
-		vec3d r1 = mesh.Node(f.n[ET[i][0]]).pos();
-		vec3d r2 = mesh.Node(f.n[ET[i][1]]).pos();
+		vec3d r1 = mesh.NodePosition(f.n[ET[i][0]]);
+		vec3d r2 = mesh.NodePosition(f.n[ET[i][1]]);
 
 		double L = (r2 - r1).Length();
 		if (L > Lmax) Lmax = L;
@@ -1163,7 +1171,7 @@ double MaxEdgeLength(const FSMeshBase& mesh, const FSFace& f)
 double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, bool extQuad)
 {
 	// get the reference nodal position
-	vec3f r0 = to_vec3f(mesh.Node(node).pos());
+	vec3f r0 = to_vec3f(mesh.NodePosition(node));
 
 	// get the node-face list
 	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(node);
@@ -1194,7 +1202,7 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, 
 	set<int>::iterator it;
 	for (it = nl1.begin(); it != nl1.end(); ++it)
 	{
-		if (*it != node) x.push_back(to_vec3f(mesh.Node(*it).pos()));
+		if (*it != node) x.push_back(to_vec3f(mesh.NodePosition(*it)));
 	}
 
 	// evaluate curvature

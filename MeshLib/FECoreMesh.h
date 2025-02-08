@@ -80,9 +80,6 @@ public:
 public:
 	vec3d ElementCenter(const FEElement_& el) const;
 
-	// get the local positions of an element
-	void ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const;
-
 	// element volume
 	double ElementVolume(int iel);
 	double ElementVolume(const FEElement_& el);
