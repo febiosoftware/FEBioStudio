@@ -310,7 +310,13 @@ CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, pa
 void CMeshPanel::Update(bool breset)
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
+	if (doc == nullptr)
+	{
+		ui->m_currentObject = nullptr;
+		ui->obj->Update();
+		ui->hideAllPanels();
+		return;
+	}
 
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
@@ -438,6 +444,14 @@ void CMeshPanel::on_apply_clicked(bool b)
 				return;
 			}
 		}
+	}
+
+	// clear any selection on the object
+	FSMesh* mesh = activeObject->GetFEMesh();
+	if (mesh)
+	{
+		mesh->ClearSelections();
+		doc->UpdateSelection(false);
 	}
 
 	MeshingThread* thread = new MeshingThread(activeObject);

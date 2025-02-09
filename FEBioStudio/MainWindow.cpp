@@ -3690,23 +3690,23 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 }
 
 #ifdef HAS_ITK
-	void CMainWindow::ImportITKImage(const QString& fileName, ImageFileType type)
-	{
-		CGLDocument* doc = GetGLDocument();
+void CMainWindow::ProcessITKImage(const QString& fileName, int type)
+{
+	CGLDocument* doc = GetGLDocument();
 
-        // we pass the relative path to the image model
-	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
+	// we pass the relative path to the image model
+	string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-		CImageModel* imageModel = new CImageModel(nullptr);
-        imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
+	CImageModel* imageModel = new CImageModel(nullptr);
+    imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
 
-        if(!ImportImage(imageModel))
-        {
-			delete imageModel;
-        }
-	}
+    if(!ImportImage(imageModel))
+    {
+		delete imageModel;
+    }
+}
 #else
-	void CMainWindow::ImportITKImage(const QString& fileName, ImageFileType type) {}
+void CMainWindow::ProcessITKImage(const QString& fileName, int type) {}
 #endif
 
 void CMainWindow::OnDeleteAllLoadControllers()

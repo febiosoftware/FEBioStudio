@@ -63,6 +63,18 @@ private:
     void FitlerTemplate();
 };
 
+class PadImageFilter : public CImageFilter
+{
+public:
+    PadImageFilter();
+
+    void ApplyFilter() override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
+};
+
 
 class WarpImageFilter : public CImageFilter
 {

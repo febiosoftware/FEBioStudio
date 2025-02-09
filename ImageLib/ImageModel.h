@@ -68,14 +68,14 @@ public:
     void ClearFilters();
     int ImageFilters() const { return (int)m_filters.Size(); }
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
-	size_t RemoveFilter(CImageFilter* filter);
+	void RemoveFilter(CImageFilter* filter);
     void MoveFilter(int fromIndex, int toIndex) { m_filters.Move(fromIndex, toIndex); }
 	void AddImageFilter(CImageFilter* imageFilter);
 
     int ImageAnalyses() const { return (int)m_analyses.Size(); }
 	CImageAnalysis* GetImageAnalysis(int i) { return m_analyses[i]; }
     void AddImageAnalysis(CImageAnalysis* analysis) { m_analyses.Add(analysis); }
-	size_t RemoveAnalysis(CImageAnalysis* analysis);
+	void RemoveAnalysis(CImageAnalysis* analysis);
 
 	BOX GetBoundingBox();
 

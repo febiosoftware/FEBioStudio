@@ -165,6 +165,14 @@ void FSMesh::Clear()
 	m_NEL.Clear();
 }
 
+void FSMesh::ClearSelections()
+{
+	for (int i = 0; i < Nodes(); ++i) Node(i).Unselect();
+	for (int i = 0; i < Edges(); ++i) Edge(i).Unselect();
+	for (int i = 0; i < Faces(); ++i) Face(i).Unselect();
+	for (int i = 0; i < Elements(); ++i) Element(i).Unselect();
+}
+
 //-----------------------------------------------------------------------------
 void FSMesh::ClearMeshData()
 {

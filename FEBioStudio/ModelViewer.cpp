@@ -48,9 +48,12 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
+#include <FSCore/FSDir.h>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageSource.h>
+#include <ImageLib/SITKImageSource.h>
+#include <ImageLib/TiffReader.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
@@ -2303,21 +2306,101 @@ void CModelViewer::OnFindImage()
 	if (img == nullptr) return;
 	if (img->Get3DImage()) return;
 
-	CRawImageSource* src = dynamic_cast<CRawImageSource*>(img->GetImageSource());
-	if (src)
-	{
-		QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Load Image", "", "Raw image (*.raw)");
-		if (filename.isEmpty() == false)
-		{
-			src->SetFileName(filename.toStdString());
-			img->Reload();
-			Update();
-		}
-	}
-	else
-	{
-		QMessageBox::information(this, "Find image", "Finding image is currently only supported for RAW images.");
-	}
+	int type = img->GetImageSource()->Type();
+
+	switch(type)
+    {
+        case CImageSource::RAW:
+        {
+            QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Find Image", "", "Raw image (*.raw);;All Files (*)");
+            if (filename.isEmpty() == false)
+            {
+                // we pass the relative path to the image source
+	            string relFile = FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)");
+
+                dynamic_cast<CRawImageSource*>(img->GetImageSource())->SetFileName(relFile);
+                img->Reload();
+                Update();
+            }
+            break;
+        }
+        case CImageSource::ITK:
+        {
+            CITKImageSource* src = dynamic_cast<CITKImageSource*>(img->GetImageSource());
+
+            QString filters;
+            switch(src->GetFileType())
+            {
+                case CITKImageSource::DICOM:
+                {
+                    filters = "DICOM Files (*.dcm *.dicom);;All Files (*)";
+                    break;
+                }
+                case CITKImageSource::NRRD:
+                {
+                    filters = "NRRD Files (*.nrrd *.nhdr );;All Files (*)";
+                    break;
+                }
+                default:
+                {
+                    filters = "All Files (*)";
+                }
+            }
+
+            QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Find Image", "", filters);
+            if (filename.isEmpty() == false)
+            {
+                // we pass the relative path to the image source
+	            string relFile = FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)");
+
+                src->SetFileName(relFile);
+                img->Reload();
+                Update();
+            }
+            break;
+        }
+        case CImageSource::SERIES:
+        {
+            CITKSeriesImageSource* src = dynamic_cast<CITKSeriesImageSource*>(img->GetImageSource());
+
+            QStringList filenames = QFileDialog::getOpenFileNames(GetMainWindow(), "Find Image", "", "");
+
+            if (!filenames.empty())
+            {
+                std::vector<std::string> stdFiles;
+                for(auto filename : filenames)
+                {
+                    // we pass the relative path to the image source
+                    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+                }
+
+                src->SetFileNames(stdFiles);
+                img->Reload();
+                Update();
+            }
+            break;
+        }
+        case CImageSource::TIFF:
+        {
+            CTiffImageSource* src = dynamic_cast<CTiffImageSource*>(img->GetImageSource());
+
+            QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Find Image", "", "TIFF Files (*.tiff *.tif);;All Files (*)");
+            if (filename.isEmpty() == false)
+            {
+                // we pass the relative path to the image source
+	            string relFile = FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)");
+
+                src->SetFileName(relFile);
+                img->Reload();
+                Update();
+            }
+            break;
+        }
+        default:
+        {
+            QMessageBox::information(this, "Find image", "Finding image is currently only supported for RAW images.");
+        }
+    }
 }
 
 void CModelViewer::OnExportRawImage()

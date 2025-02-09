@@ -30,7 +30,10 @@ SOFTWARE.*/
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 using std::string;
+
+namespace fs = std::filesystem;
 
 #ifndef  WORD
 #define WORD	uint16_t
@@ -725,7 +728,13 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 
 void CTiffImageSource::Save(OArchive& ar)
 {
-    ar.WriteChunk(0, m->filename);
+    // save image path relative to model file
+    fs::path image = m->filename;
+    fs::path mdl = ar.GetFilename();
+
+    string relFilename = fs::relative(image, mdl.parent_path()).string();
+
+    ar.WriteChunk(0, relFilename);
     ar.WriteChunk(1, (int)m_type);
 
 	if (m_originalImage)
@@ -786,6 +795,16 @@ void CTiffImageSource::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
+    // Convert relative file path back to absolute file path
+    fs::path image = m->filename;
+    fs::path mdl = ar.GetFilename();
+
+    // Old files may have saved absolute paths
+    if(image.is_relative())
+    {
+        m->filename = fs::absolute(mdl.parent_path() / image).string();
+    }
+
     // Read in image data
     Load();
 
@@ -794,6 +813,11 @@ void CTiffImageSource::Load(IArchive& ar)
     {
         m_img->SetBoundingBox(tempBox);
     }
+}
+
+void CTiffImageSource::SetFileName(const std::string& filename)
+{
+    m->filename = filename;
 }
 
 class LZWDecompress

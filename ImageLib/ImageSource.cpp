@@ -28,8 +28,10 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 #include <FSCore/FSDir.h>
+#include <filesystem>
 
 using namespace Post;
+namespace fs = std::filesystem;
 
 CImageSource::CImageSource(int type, CImageModel* imgModel)
     : m_type(type), m_imgModel(imgModel), m_img(nullptr), m_originalImage(nullptr)
@@ -177,8 +179,6 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im)
 	// cleanup
 	fclose(fp);
 
-    // enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
-
     if(m_byteSwap)
     {
         switch (im->PixelType())
@@ -221,7 +221,13 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im)
 
 void CRawImageSource::Save(OArchive& ar)
 {
-    ar.WriteChunk(0, m_filename);
+    // save image path relative to model file
+    fs::path image = m_filename;
+    fs::path mdl = ar.GetFilename();
+
+    string relFilename = fs::relative(image, mdl.parent_path()).string();
+
+    ar.WriteChunk(0, relFilename);
     
     ar.WriteChunk(1, m_nx);
     ar.WriteChunk(2, m_ny);
@@ -286,6 +292,16 @@ void CRawImageSource::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
+    // Convert relative file path back to absolute file path
+    fs::path image = m_filename;
+    fs::path mdl = ar.GetFilename();
+
+    // Old files may have saved absolute paths
+    if(image.is_relative())
+    {
+        m_filename = fs::absolute(mdl.parent_path() / image).string();
+    }
+    
     // Read in image data
     Load();
 

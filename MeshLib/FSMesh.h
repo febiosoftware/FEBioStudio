@@ -70,6 +70,9 @@ public:
 	//! clear this mesh
 	void Clear();
 
+	// clear all selections
+	void ClearSelections();
+
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 

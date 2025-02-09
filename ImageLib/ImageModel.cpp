@@ -191,10 +191,10 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 	m_render.Add(render);
 }
 
-size_t CImageModel::RemoveFilter(CImageFilter* filter)
+void CImageModel::RemoveFilter(CImageFilter* filter)
 {
+    m_filters.Remove(filter);
     delete filter;
-    return m_filters.Remove(filter);
 }
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)
@@ -203,9 +203,10 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 	m_filters.Add(imageFilter);
 }
 
-size_t CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
+void CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
 {
-    return m_analyses.Remove(analysis);
+    m_analyses.Remove(analysis);
+    delete analysis;
 }
 
 BOX CImageModel::GetBoundingBox()

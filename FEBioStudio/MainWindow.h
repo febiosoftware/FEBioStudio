@@ -69,8 +69,6 @@ class CCommandWindow;
 class CLogPanel;
 struct ProgressTracker; // in FEBio/FEBioExport4
 
-enum class ImageFileType;
-
 namespace Ui {
 	class CMainWindow;
 }
@@ -343,7 +341,7 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
-	void ImportITKImage(const QString& fileName, ImageFileType type);
+	void ProcessITKImage(const QString& fileName, int type);
 
 	bool ImportImage(CImageModel* imgModel);
 
@@ -385,7 +383,6 @@ public slots:
 	void on_actionImportRawImage_triggered();
 	void on_actionImportDICOMImage_triggered();
 	void on_actionImportTiffImage_triggered();
-	void on_actionImportOMETiffImage_triggered();
     void on_actionImportNrrdImage_triggered();
 	void on_actionImportImageSequence_triggered();
     void on_actionImportImageOther_triggered();

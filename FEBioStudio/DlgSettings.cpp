@@ -519,9 +519,14 @@ void CColormapWidget::updateMaps()
 
 void CColormapWidget::onSetDefault(int nstate)
 {
-	int n = m_maps->currentIndex();
-	Post::ColorMapManager::SetDefaultMap(n);
-	m_default->setDisabled(true);
+	if (nstate == Qt::Checked)
+	{
+		int n = m_maps->currentIndex();
+		Post::ColorMapManager::SetDefaultMap(n);
+		m_default->setDisabled(true);
+	}
+	else
+		m_default->setDisabled(false);
 }
 
 void CColormapWidget::onNew()

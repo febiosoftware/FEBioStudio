@@ -42,6 +42,8 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+    void SetFileName(const std::string& filename);
+
 private:
 	Impl* m;
 };
