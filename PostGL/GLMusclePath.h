@@ -34,7 +34,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_GUIDE, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
+	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_GUIDE, START_TIME, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 public:
 	class PathData;
@@ -103,6 +103,7 @@ private:
 	double	m_searchRadius;
 	double	m_snaptol;
 	int		m_pathGuide;
+	int		m_startTime;
 
 	FSSurfaceMesh	m_guideMesh;
 
