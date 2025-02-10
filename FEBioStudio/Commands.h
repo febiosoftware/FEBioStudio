@@ -1117,6 +1117,19 @@ protected:
 	FSMesh*		m_pnew;
 };
 
+class CCmdChangeFENodes : public CCommand
+{
+public:
+	CCmdChangeFENodes(GObject* po, const std::vector<vec3d>& newPos);
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	GObject* m_po;
+	std::vector<vec3d> m_newPos;
+};
+
 //-----------------------------------------------------------------------------
 class CCmdChangeFESurfaceMesh : public CCommand
 {

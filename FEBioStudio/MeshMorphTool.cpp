@@ -307,22 +307,22 @@ void CMeshMorphTool::OnApply()
 		int niters = L.GetIterationCount();
 	}
 
-	FSMesh* newMesh = new FSMesh(*pm);
-
 	// apply morph
+	vector<vec3d> newPos(pm->Nodes());
 #pragma omp parallel for
-	for (int i = 0; i < newMesh->Nodes(); ++i)
+	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		vec3d& ri = newMesh->Node(i).r;
+		vec3d ri = pm->Node(i).r;
 		double dx = val[0][i];
 		double dy = val[1][i];
 		double dz = val[2][i];
 		ri.x += dx;
 		ri.y += dy;
 		ri.z += dz;
+		newPos[i] = ri;
 	}
-	newMesh->UpdateNormals();
-	newMesh->UpdateBoundingBox();
 
-	pdoc->DoCommand(new CCmdChangeFEMesh(po, newMesh));
+	pdoc->DoCommand(new CCmdChangeFENodes(po, newPos));
+
+	GetMainWindow()->RedrawGL();
 }
