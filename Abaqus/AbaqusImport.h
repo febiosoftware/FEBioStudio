@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include "AbaqusModel.h"
-#include <list>
 
 // Implements a class to import ABAQUS files
 class AbaqusImport : public FSFileImport

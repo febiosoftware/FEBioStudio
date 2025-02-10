@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FEFEBioExport2.cpp: implementation of the FEFEBioExport2 class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FEBioExport25.h"
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
@@ -1553,13 +1548,13 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 	{
 		XMLElement el("mat_axis");
 		XMLElement::intFormat = "%d";
-		if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
+		if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 		{
 			el.add_attribute("type", "local");
 			el.value(pm->m_axes->m_n, 3);
 			m_xml.add_leaf(el);
 		}
-		else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
+		else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_VECTOR)
 		{
 			el.add_attribute("type", "vector");
 			m_xml.add_branch(el);
@@ -1569,7 +1564,7 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 			}
 			m_xml.close_branch();
 		}
-        else if (pm->m_axes->m_naopt == FE_AXES_ANGLES)
+        else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_ANGLES)
         {
             el.add_attribute("type", "angles");
             m_xml.add_branch(el);
@@ -1579,7 +1574,7 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
             }
             m_xml.close_branch();
         }
-		else if (pm->m_axes->m_naopt == FE_AXES_CYLINDRICAL)
+		else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_CYLINDRICAL)
 		{
 			el.add_attribute("type", "cylindrical");
 			m_xml.add_branch(el);
@@ -1590,7 +1585,7 @@ void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 			}
 			m_xml.close_branch();
 		}
-		else if (pm->m_axes->m_naopt == FE_AXES_SPHERICAL)
+		else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_SPHERICAL)
 		{
 			el.add_attribute("type", "spherical");
 			m_xml.add_branch(el);

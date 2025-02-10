@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInit.h"
 #include <FEBioLib/febio.h>
-#include <FEMLib/FSProject.h>
 #include "FEBioModule.h"
 
 namespace febio {

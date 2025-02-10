@@ -25,11 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEBoundaryCondition.h"
-#include <MeshLib/FSMesh.h>
 #include "FSModel.h"
-#include <GeomLib/GGroup.h>
 #include <FECore/units.h>
-#include <FECore/fecore_enum.h>
 
 //=============================================================================
 FSFixedDOF::FSFixedDOF(int ntype, FSModel* fem) : FSBoundaryCondition(ntype, fem)

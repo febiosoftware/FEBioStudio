@@ -354,16 +354,16 @@ void CMaterialProps::BuildPropertyList()
 
 			switch (pm->m_axes->m_naopt)
 			{
-			case FE_AXES_LOCAL:
+			case MaterialAxesGeneratorType::AXES_LOCAL:
 				addProperty("n0", CProperty::Int);
 				addProperty("n1", CProperty::Int);
 				addProperty("n2", CProperty::Int);
 				break;
-			case FE_AXES_VECTOR:
+			case MaterialAxesGeneratorType::AXES_VECTOR:
 				addProperty("a", CProperty::String);
 				addProperty("d", CProperty::String);
 				break;
-            case FE_AXES_ANGLES:
+            case MaterialAxesGeneratorType::AXES_ANGLES:
                 addProperty("theta", CProperty::String);
                 addProperty("phi", CProperty::String);
                 break;
@@ -424,16 +424,16 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 
 		switch (m_mat->m_axes->m_naopt)
 		{
-		case FE_AXES_LOCAL:
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			if (i == 1) return m_mat->m_axes->m_n[0] + 1;
 			if (i == 2) return m_mat->m_axes->m_n[1] + 1;
 			if (i == 3) return m_mat->m_axes->m_n[2] + 1;
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			if (i == 1) return Vec3dToString(m_mat->m_axes->m_a);
 			if (i == 2) return Vec3dToString(m_mat->m_axes->m_d);
 			break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) return m_mat->m_axes->m_theta;
             if (i == 2) return m_mat->m_axes->m_phi;
             break;
@@ -522,16 +522,16 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 
 		switch (m_mat->m_axes->m_naopt)
 		{
-		case FE_AXES_LOCAL:
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			if (i == 1) { m_mat->m_axes->m_n[0] = v.toInt() - 1; return; }
 			if (i == 2) { m_mat->m_axes->m_n[1] = v.toInt() - 1; return; }
 			if (i == 3) { m_mat->m_axes->m_n[2] = v.toInt() - 1; return; }
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString()); return; }
 			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString()); return; }
 			break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) { m_mat->m_axes->m_theta = v.toFloat(); return; }
             if (i == 2) { m_mat->m_axes->m_phi   = v.toFloat(); return; }
             break;

@@ -2288,10 +2288,10 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	
 	if (!pg->m_SpringSet.empty())
 	{
-		int NS = pg->m_SpringSet.size();
+		int NS = (int)pg->m_SpringSet.size();
 		for (auto& s : pg->m_SpringSet)
 		{
-			int nsize = s.second.m_Elem.size();
+			int nsize = (int)s.second.m_Elem.size();
 			GDiscreteSpringSet* dis = new GDiscreteSpringSet(&gm);
 			dis->SetName(s.first);
 

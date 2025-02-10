@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include <sstream>
 #include "GModel.h"
-#include <GeomLib/GPrimitive.h>
-#include <GeomLib/GMultiPatch.h>
-#include <GeomLib/GMeshObject.h>
-#include <GeomLib/GSurfaceMeshObject.h>
-#include <GeomLib/GCurveMeshObject.h>
-#include <GeomLib/GOCCObject.h>
-#include <GeomLib/GCurveObject.h>
+#include "GPrimitive.h"
+#include "GMultiPatch.h"
+#include "GMeshObject.h"
+#include "GSurfaceMeshObject.h"
+#include "GCurveMeshObject.h"
+#include "GOCCObject.h"
+#include "GCurveObject.h"
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/GPLCObject.h>
 #include <MeshTools/GObject2D.h>
@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <MeshLib/FSItemListBuilder.h>
 #include "GGroup.h"
 #include <MeshLib/FSMesh.h>
-#include <GeomLib/MeshLayer.h>
+#include "MeshLayer.h"
 #include <map>
 
 using namespace std;

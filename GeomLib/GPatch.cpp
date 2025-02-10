@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 //#include "stdafx.h"
-#include <GeomLib/GPrimitive.h>
+#include "GPrimitive.h"
 #include <MeshTools/FEShellPatch.h>
 #include <MeshTools/FEAdvancingFrontMesher2D.h>
 using namespace std;

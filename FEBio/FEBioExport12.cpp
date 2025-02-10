@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FEBioExport12.cpp: implementation of the FEBioExport12 class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FEBioExport12.h"
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GModel.h>
@@ -37,7 +32,6 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshLib/FSMesh.h>
-#include <GeomLib/GGroup.h>
 #include <memory>
 #include <FECore/FETransform.h>
 
@@ -900,13 +894,13 @@ void FEBioExport12::WriteMaterial(FSMaterial *pm, XMLElement& el)
 	{
 		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
-			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
+			if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
 				el.value(pm->m_axes->m_n, 3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);
@@ -1093,13 +1087,13 @@ void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		// write the material axes (if any)
 		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
-			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
+			if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
 				el.value(pm->m_axes->m_n, 3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);

@@ -34,8 +34,6 @@ SOFTWARE.*/
 #include "FEModelConstraint.h"
 #include "FERigidLoad.h"
 #include "FELoadController.h"
-#include "FEMeshDataGenerator.h"
-#include "FEElementFormulation.h"
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
@@ -973,7 +971,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 	switch (axis->m_naopt)
 	{
 	case -1: break;
-	case FE_AXES_LOCAL:
+	case MaterialAxesGeneratorType::AXES_LOCAL:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", fem); assert(febAxis);
 		if (febAxis)
@@ -983,7 +981,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 		}
 	}
 	break;
-	case FE_AXES_VECTOR:
+	case MaterialAxesGeneratorType::AXES_VECTOR:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", fem); assert(febAxis);
 		if (febAxis)
@@ -993,7 +991,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 		}
 	}
 	break;
-	case FE_AXES_ANGLES:
+	case MaterialAxesGeneratorType::AXES_ANGLES:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "angles", fem); assert(febAxis);
 		if (febAxis)
@@ -1003,7 +1001,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 		}
 	}
 	break;
-	case FE_AXES_CYLINDRICAL:
+	case MaterialAxesGeneratorType::AXES_CYLINDRICAL:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "cylindrical", fem); assert(febAxis);
 		if (febAxis)
@@ -1014,7 +1012,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 		}
 	}
 	break;
-	case FE_AXES_SPHERICAL:
+	case MaterialAxesGeneratorType::AXES_SPHERICAL:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "spherical", fem); assert(febAxis);
 		if (febAxis)

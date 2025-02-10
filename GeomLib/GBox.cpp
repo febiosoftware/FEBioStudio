@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FEBox.h>
-#include <GeomLib/GObject.h>
+#include "GObject.h"
 
 class GBoxManipulator : public GObjectManipulator
 {

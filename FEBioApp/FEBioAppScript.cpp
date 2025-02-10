@@ -26,10 +26,7 @@ SOFTWARE.*/
 #include "FEBioAppScript.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppWidget.h"
-#include "../FEBioStudio/MainWindow.h"
 #include <QMessageBox>
-#include <QPushButton>
-#include <QLabel>
 #include "JSParser.h"
 #include "JSInterpreter.h"
 #include <FEBioLib/FEBioModel.h>

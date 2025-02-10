@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "MeshLayer.h"
 #include <assert.h>
-#include <GeomLib/GObject.h>
+#include "GObject.h"
 #include <MeshLib/FSMesh.h>
 #include "GModel.h"
 #include <MeshTools/FEMesher.h>

@@ -23,13 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// XmlImport.cpp: implementation of the FEBioFileImport class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FEBioImport.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEBioLink/FEBioModule.h>

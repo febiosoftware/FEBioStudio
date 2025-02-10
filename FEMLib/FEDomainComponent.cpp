@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEDomainComponent.h"
-#include <FEMLib/FSModel.h>
+#include "FSModel.h"
 #include <GeomLib/GGroup.h>
 #include "FEMKernel.h"
 #include <sstream>

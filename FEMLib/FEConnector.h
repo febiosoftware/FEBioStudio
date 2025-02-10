@@ -1,8 +1,6 @@
 #pragma once
 #include "FEStepComponent.h"
 #include <MeshLib/FSItemListBuilder.h>
-#include "GMaterial.h"
-#include <list>
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces

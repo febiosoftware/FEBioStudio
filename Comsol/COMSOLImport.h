@@ -1,9 +1,7 @@
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
-
 #include <list>
-#include <vector>
 #include <string>
 #include <map>
 

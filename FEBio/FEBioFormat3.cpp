@@ -3190,7 +3190,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 				while (ch)
 				{
 					const char* ch2 = strchr(ch, ',');
-					int n = (ch2 ? ch2 - ch : strlen(ch));
+					int n = (int)(ch2 ? ch2 - ch : strlen(ch));
 					if (strncmp(ch, szdof[0], n) == 0) pc->SetDOF(0, true);
 					if (strncmp(ch, szdof[1], n) == 0) pc->SetDOF(1, true);
 					if (strncmp(ch, szdof[2], n) == 0) pc->SetDOF(2, true);

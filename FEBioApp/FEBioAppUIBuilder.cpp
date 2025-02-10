@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <QLabel>
-#include <QPushButton>
 #include <QGroupBox>
 #include <QLineEdit>
 #include <QCheckBox>
@@ -38,7 +37,6 @@ SOFTWARE.*/
 #include "../FEBioStudio/GLSceneView.h"
 #include "../FEBioStudio/InputWidgets.h"
 #include "../FEBioStudio/PlotWidget.h"
-#include "../FEBioStudio/MainWindow.h"
 #include "FEBioAppView.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppWidget.h"

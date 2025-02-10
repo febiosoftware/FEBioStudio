@@ -23,9 +23,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-#include <cstring>
 #include "stdafx.h"
+#include <cstring>
 #include "FEBioFormat.h"
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
@@ -890,12 +889,12 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		axes->m_naopt = FE_AXES_LOCAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 	}
 	else if (atype == "vector")
 	{
-		axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_VECTOR;
 		vec3d a(1, 0, 0), d(0, 1, 0);
 		++tag;
 		do
@@ -910,7 +909,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	}
     else if (atype == "angles")
     {
-        axes->m_naopt = FE_AXES_ANGLES;
+        axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
         ++tag;
         do
         {
@@ -925,7 +924,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "cylindrical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_CYLINDRICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);
@@ -939,7 +938,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "spherical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_SPHERICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_SPHERICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);
@@ -965,21 +964,21 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	if (atype == "local")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_LOCAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "vector")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_VECTOR;
 		tag.value(axes->m_a);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "angles")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_ANGLES;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
 
 		++tag;
 		do
@@ -996,7 +995,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "cylindrical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_CYLINDRICAL;
 		++tag;
 		do {
 			if (tag == "center") tag.value(axes->m_center);
@@ -1010,7 +1009,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "spherical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_SPHERICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_SPHERICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);

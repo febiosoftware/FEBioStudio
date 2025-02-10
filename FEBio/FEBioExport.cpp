@@ -26,13 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioExport.h"
-#include <FEMLib/FERigidConstraint.h>
-#include <FEMLib/FEMultiMaterial.h>
-#include <FEMLib/FELoad.h>
-#include <FEMLib/FEModelConstraint.h>
-#include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
-#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSProject.h>
 #include <sstream>

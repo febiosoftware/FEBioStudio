@@ -1647,7 +1647,7 @@ void FSPrescribedActiveContractionUniaxial::Convert(FSPrescribedActiveContractio
     SetFloatValue(MP_T0, pold->GetFloatValue(FSPrescribedActiveContractionUniaxialOld::MP_T0));
     
 	SetAxisMaterial(new FSAxisMaterial(GetFSModel()));
-	m_axes->m_naopt = FE_AXES_ANGLES;
+	m_axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FSPrescribedActiveContractionUniaxialOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FSPrescribedActiveContractionUniaxialOld::MP_PH);
 }
@@ -1685,7 +1685,7 @@ void FSPrescribedActiveContractionTransIso::Convert(FSPrescribedActiveContractio
     SetFloatValue(MP_T0, pold->GetFloatValue(FSPrescribedActiveContractionTransIsoOld::MP_T0));
     
 	SetAxisMaterial(new FSAxisMaterial(GetFSModel()));
-	m_axes->m_naopt = FE_AXES_ANGLES;
+	m_axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FSPrescribedActiveContractionTransIsoOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FSPrescribedActiveContractionTransIsoOld::MP_PH);
 }
@@ -1746,7 +1746,7 @@ void FSPrescribedActiveContractionUniaxialUC::Convert(FSPrescribedActiveContract
     SetFloatValue(MP_T0, pold->GetFloatValue(FSPrescribedActiveContractionUniaxialUCOld::MP_T0));
     
 	SetAxisMaterial(new FSAxisMaterial(GetFSModel()));
-	m_axes->m_naopt = FE_AXES_ANGLES;
+	m_axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FSPrescribedActiveContractionUniaxialUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FSPrescribedActiveContractionUniaxialUCOld::MP_PH);
 }
@@ -1783,7 +1783,7 @@ void FSPrescribedActiveContractionTransIsoUC::Convert(FSPrescribedActiveContract
     SetFloatValue(MP_T0, pold->GetFloatValue(FSPrescribedActiveContractionTransIsoUCOld::MP_T0));
     
 	SetAxisMaterial(new FSAxisMaterial(GetFSModel()));
-	m_axes->m_naopt = FE_AXES_ANGLES;
+	m_axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FSPrescribedActiveContractionTransIsoUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FSPrescribedActiveContractionTransIsoUCOld::MP_PH);
 }
@@ -2108,19 +2108,19 @@ void FSFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 	{
 		switch (Q->m_naopt)
 		{
-		case FE_AXES_LOCAL:
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			SetFiberGenerator(new FSFiberGeneratorLocal(fem, Q->m_n[0], Q->m_n[1]));
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			SetFiberGenerator(new FSFiberGeneratorVector(fem, Q->m_a));
 			break;
-		case FE_AXES_ANGLES:
+		case MaterialAxesGeneratorType::AXES_ANGLES:
 			SetFiberGenerator(new FSAnglesVectorGenerator(fem, Q->m_theta, Q->m_phi));
 			break;
-		case FE_AXES_CYLINDRICAL:
+		case MaterialAxesGeneratorType::AXES_CYLINDRICAL:
 			SetFiberGenerator(new FSCylindricalVectorGenerator(fem, Q->m_center, Q->m_axis, Q->m_vec));
 			break;
-		case FE_AXES_SPHERICAL:
+		case MaterialAxesGeneratorType::AXES_SPHERICAL:
 			SetFiberGenerator(new FSSphericalVectorGenerator(fem, Q->m_center, Q->m_vec));
 			break;
 		default:

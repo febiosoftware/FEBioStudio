@@ -1,8 +1,6 @@
 #pragma once
 #include "FEDomainComponent.h"
-#include <GeomLib/FSGroup.h>
 #include <MeshLib/FSItemListBuilder.h>
-#include <list>
 
 //=============================================================================
 // Base class for fixed and prescribed BCs

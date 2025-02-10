@@ -25,13 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FSGroup.h"
 #include <MeshLib/FSMesh.h>
-#include <FEMLib/FSModel.h>
 #include "GObject.h"
 using namespace std;
-
-//////////////////////////////////////////////////////////////////////
-// FSGroup
-//////////////////////////////////////////////////////////////////////
 
 FSGroup::FSGroup(FSMesh* pm, int ntype, unsigned int flags) : FSItemListBuilder(ntype, flags)
 {

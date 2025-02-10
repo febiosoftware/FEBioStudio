@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <stdio.h>
 #include <string.h>
-#include <FSCore/math3d.h>
+#include "math3d.h"
 #include <FEBioPlot/PltArchive.h>
 #include "color.h"
 #include "CallTracer.h"

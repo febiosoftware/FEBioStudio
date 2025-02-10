@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GObject.h"
-#include <GeomLib/FSGroup.h>
+#include "FSGroup.h"
 #include <MeshLib/FSCurveMesh.h>
 #include <FSCore/FSObjectList.h>
 #include <MeshLib/FSMesh.h>
