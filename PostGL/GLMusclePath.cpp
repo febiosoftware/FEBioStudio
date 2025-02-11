@@ -404,6 +404,7 @@ public:
 		Update();
 		m_L = path->GetPath(0)->m_data.pathLength;
 		if (m_softRadius <= 0.0) m_softRadius = 1.0;
+		SetMovable(true);
 	}
 
 public:
