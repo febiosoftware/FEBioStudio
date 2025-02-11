@@ -240,4 +240,5 @@ void CGLDisplacementMap::UpdateNodes()
 
 	// update the normals
 	pm->UpdateNormals();
+    pm->UpdateBoundingBox();
 }

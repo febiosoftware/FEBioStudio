@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 
 class CPostDocument;
+class CMainWindow;
 
 namespace Ui {
     class CDlgWarpImage;
@@ -39,9 +40,13 @@ class CDlgWarpImage : public QDialog
     Q_OBJECT
 
 public:
-    CDlgWarpImage(CPostDocument* doc, QWidget* parent = 0);
+    CDlgWarpImage(CPostDocument* doc, CMainWindow* parent);
 
     void accept() override;
+
+public slots:
+    void on_browse_clicked();
+    void on_filename_changed();
 
 private:
     Ui::CDlgWarpImage* ui;

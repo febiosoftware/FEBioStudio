@@ -314,7 +314,7 @@ void CMainWindow::on_actionImageWarp_triggered()
         return;
     }
 
-    CDlgWarpImage dlg(postDoc);
+    CDlgWarpImage dlg(postDoc, this);
 
     dlg.exec();
 

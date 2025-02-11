@@ -29,11 +29,20 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QPushButton>
+#include <QMessageBox>
+#include <QSpinBox>
 #include <QDir>
+#include <QFileDialog>
+#include <QLabel>
 #include "DlgWarpImage.h"
 #include "PostDocument.h"
 #include <PostLib/FEPostModel.h>
 #include <PostGL/GLModel.h>
+#include "ImageThread.h"
+#include "DlgStartThread.h"
+#include "MainWindow.h"
+#include "IconProvider.h"
 
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.
@@ -103,14 +112,17 @@ public:
     QComboBox* img;
     QLineEdit* states;
     QLineEdit* dir;
+    QPushButton* browse;
     QLineEdit* filename;
+    QSpinBox* digits;
+    QComboBox* type;
+    QLabel* filenameExample;
 
 public:
-    CDlgWarpImage(CPostDocument* doc) : doc(doc) {}
+    CDlgWarpImage(CPostDocument* doc, ::CMainWindow* wnd) : doc(doc), wnd(wnd) {}
 
-    void setupUi(QDialog* parent)
+    void setupUi(::CDlgWarpImage* parent)
     {
-
         QVBoxLayout* layout = new QVBoxLayout;
 
         QFormLayout* form = new QFormLayout;
@@ -128,10 +140,34 @@ public:
         states->setPlaceholderText("(e.g.:1,2,3:6,10:100:5)");
         form->addRow("States:", states);
 
-        form->addRow("Output Dir:", dir = new QLineEdit);
-        form->addRow("Filename:", filename = new QLineEdit);
+        QHBoxLayout* dirLayout = new QHBoxLayout;
+        dirLayout->setContentsMargins(0, 0, 0, 0);
+
+        dirLayout->addWidget(dir = new QLineEdit);
+
+        browse = new QPushButton;
+        browse->setIcon(CIconProvider::GetIcon("open"));
+        dirLayout->addWidget(browse);
+
+        form->addRow("Output Dir:", dirLayout);
+
+        filename = new QLineEdit;
+        filename->setText("warped");
+        form->addRow("Filename:", filename);
+        
+        type = new QComboBox;
+        type->addItems(QStringList() << "TIFF" << "NRRD" << "RAW");
+        form->addRow("Image Type:", type);
+        
+        digits = new QSpinBox;
+        digits->setValue(4);
+        digits->setMinimum(1);
+        digits->setMaximum(100);
+        form->addRow("Digits:", digits);
 
         layout->addLayout(form);
+
+        form->addRow("Example Filename:", filenameExample = new QLabel);
         
         QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
         layout->addWidget(buttonBox);
@@ -139,16 +175,23 @@ public:
         parent->setLayout(layout);
         parent->setWindowTitle("Warp Image");
 
+        parent->on_filename_changed();
+
+        QObject::connect(browse, &QPushButton::clicked, parent, &::CDlgWarpImage::on_browse_clicked);
+        QObject::connect(filename, &QLineEdit::textChanged, parent, &::CDlgWarpImage::on_filename_changed);
+        QObject::connect(digits, &QSpinBox::valueChanged, parent, &::CDlgWarpImage::on_filename_changed);
+        QObject::connect(type, &QComboBox::currentIndexChanged, parent, &::CDlgWarpImage::on_filename_changed);
         QObject::connect(buttonBox, &QDialogButtonBox::accepted, parent, &QDialog::accept);
         QObject::connect(buttonBox, &QDialogButtonBox::rejected, parent, &QDialog::reject);
     }
 
 public:
+    ::CMainWindow* wnd;
     CPostDocument* doc;
 };
 
-CDlgWarpImage::CDlgWarpImage(CPostDocument* doc, QWidget* parent)
-    : QDialog(parent), ui(new Ui::CDlgWarpImage(doc))
+CDlgWarpImage::CDlgWarpImage(CPostDocument* doc, CMainWindow* parent)
+    : QDialog(parent), ui(new Ui::CDlgWarpImage(doc, parent))
 {
     ui->setupUi(this);
 }
@@ -164,27 +207,78 @@ void CDlgWarpImage::accept()
     string_to_int_list(buf, states);
 
     QDir dir = ui->dir->text();
+    if(!dir.exists())
+    {
+        QMessageBox::critical(this, "Error", QString("The directory %1 does not exist.").arg(dir.absolutePath()));
+        return;
+    }
+
     QString filename = ui->filename->text();
 
-    int digits = states.size() / 10 + 1;
+    Post::CGLModel& mdl = *ui->doc->GetGLModel();
+    int currentStateIndex = mdl.GetActiveState()->GetID();
+
     for(int time : states)
     {
-        ui->doc->GetFSModel()->SetCurrentTimeIndex(time);
-        ui->doc->GetGLModel()->Update(true);
+        if(time < 0 || time >= mdl.GetFSModel()->GetStates())
+        {
+            QMessageBox::warning(this, "Error", QString("Time step %1 does not exist.\nSkipping.").arg(time + 1));
+            continue;
+        };
 
-        // create the image warp filter
-        Post::CGLModel& mdl = *ui->doc->GetGLModel();
+        mdl.GetFSModel()->SetCurrentTimeIndex(time);;
+        mdl.Update(true);
         
         WarpImageFilter* warp = new WarpImageFilter(&mdl);
         img->AddImageFilter(warp);
-        img->ApplyFilters();
 
-        QString currentFilename = filename + QString::number(time).rightJustified(digits, '0') + ".tiff";
+        CImageFilterThread* thread = new CImageFilterThread(img);
+        thread->setUpdateTask(false);
+        
+        CDlgStartThread dlg(ui->wnd, thread);
+        dlg.setTask("Warping Image at time step " + QString::number(time + 1));
 
-        img->ExportSITKImage(dir.filePath(currentFilename).toStdString());
+        if(!dlg.exec())
+        {
+            img->RemoveFilter(warp);
+            img->ClearFilters();
+
+            mdl.GetFSModel()->SetCurrentTimeIndex(currentStateIndex);;
+            mdl.Update(true);
+
+            return;
+        }
+
+        QString currentFilename = filename + QString::number(time + 1).rightJustified(ui->digits->value(), '0') 
+            + "." + ui->type->currentText().toLower();
+
+        if(ui->type->currentIndex() == 2)
+        {
+            img->ExportRAWImage(dir.filePath(currentFilename).toStdString());
+        }
+        else
+        {
+            img->ExportSITKImage(dir.filePath(currentFilename).toStdString());
+        }
 
         img->RemoveFilter(warp);
+        img->ClearFilters();
     }
 
+    mdl.GetFSModel()->SetCurrentTimeIndex(currentStateIndex);;
+    mdl.Update(true);
+
     QDialog::accept();
+}
+
+void CDlgWarpImage::on_browse_clicked()
+{
+    ui->dir->setText(QFileDialog::getExistingDirectory());
+}
+
+void CDlgWarpImage::on_filename_changed()
+{
+    ui->filenameExample->setText(ui->filename->text() + 
+        QString::number(1).rightJustified(ui->digits->value(), '0') + "." +
+        ui->type->currentText().toLower());
 }

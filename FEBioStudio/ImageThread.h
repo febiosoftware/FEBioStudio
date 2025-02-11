@@ -57,7 +57,10 @@ public:
 
     void stop() override;
 
+    void setUpdateTask(bool update) { updateTask = update; }
+
 private:
 	CImageModel* m_imgModel;
 	bool	m_canceled;
+    bool updateTask;
 };
