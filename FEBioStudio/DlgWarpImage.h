@@ -24,43 +24,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "CustomThread.h"
+#pragma once
+
 #include <QDialog>
 
-class CImageModel;
+class CPostDocument;
+class CMainWindow;
 
-class CImageReadThread : public CustomThread
+namespace Ui {
+    class CDlgWarpImage;
+}
+
+class CDlgWarpImage : public QDialog
 {
+    Q_OBJECT
+
 public:
-    CImageReadThread(CImageModel* imgModel);
-    
-    void run() override;
+    CDlgWarpImage(CPostDocument* doc, CMainWindow* parent);
 
-	bool hasProgress() override;
+    void accept() override;
 
-	double progress() override;
-
-	const char* currentTask() override;
-
-	void stop() override;
+public slots:
+    void on_browse_clicked();
+    void on_filename_changed();
 
 private:
-	CImageModel* m_imgModel;
-};
+    Ui::CDlgWarpImage* ui;
 
-class CImageFilterThread : public CustomThread
-{
-public:
-    CImageFilterThread(CImageModel* imgModel);
-    
-    void run() override;
-
-    void stop() override;
-
-    void setUpdateTask(bool update) { updateTask = update; }
-
-private:
-	CImageModel* m_imgModel;
-	bool	m_canceled;
-    bool updateTask;
 };

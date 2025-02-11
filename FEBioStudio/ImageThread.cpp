@@ -102,9 +102,9 @@ void CImageReadThread::stop()
 
 //--------------------------------------------------------------------
 
-CImageFilterThread::CImageFilterThread(CImageModel* imgModel) : m_imgModel(imgModel)
+CImageFilterThread::CImageFilterThread(CImageModel* imgModel) 
+    : m_imgModel(imgModel), m_canceled(false), updateTask(true)
 {
-	m_canceled = false;
 }
     
 void CImageFilterThread::run()
@@ -115,7 +115,10 @@ void CImageFilterThread::run()
     {
         for(int index = 0; index < m_imgModel->ImageFilters(); index++)
         {
-            emit taskChanged(QString("Applying %1...").arg(m_imgModel->GetImageFilter(index)->GetName().c_str()));
+            if(updateTask)
+            {
+                emit taskChanged(QString("Applying %1...").arg(m_imgModel->GetImageFilter(index)->GetName().c_str()));
+            }
 
             if(m_canceled)
             {
