@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <MeshTools/FERefineSurface.h>
 #include <MeshTools/FEWeldModifier.h>
 #include <MeshTools/FEMMGRemesh.h>
+#include <MeshTools/FEFillHole.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GPrimitive.h>
@@ -111,19 +112,20 @@ void SurfaceModifierThread::stop()
 }
 
 //=======================================================================================
-REGISTER_CLASS(FESurfaceAutoPartition     , CLASS_SURFACE_MODIFIER, "Auto partition", 0xFF);
-REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);
-REGISTER_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"       , 0xFF);
-REGISTER_CLASS(FEEdgeCollapse             , CLASS_SURFACE_MODIFIER, "Edge Collapse", 0xFF);
-REGISTER_CLASS(FEFixSurfaceMesh           , CLASS_SURFACE_MODIFIER, "Fix Mesh"     , 0xFF);
-REGISTER_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"     , 0xFF);
-REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"   , 0xFF);
-REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
-REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
-REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
-REGISTER_CLASS(MMGSurfaceRemesh           , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
+REGISTER_CLASS(FESurfaceAutoPartition     , CLASS_SURFACE_MODIFIER, "Auto partition"  , 0xFF);
+REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"       , 0xFF);
+REGISTER_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"          , 0xFF);
+REGISTER_CLASS(FEEdgeCollapse             , CLASS_SURFACE_MODIFIER, "Edge Collapse"   , 0xFF);
+REGISTER_CLASS(FEFixSurfaceMesh           , CLASS_SURFACE_MODIFIER, "Fix Mesh"        , 0xFF);
+REGISTER_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"        , 0xFF);
+REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"      , 0xFF);
+REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"          , 0xFF);
+REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve"   , 0xFF);
+REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"      , 0xFF);
+REGISTER_CLASS(MMGSurfaceRemesh           , CLASS_SURFACE_MODIFIER, "MMG Remesh"      , 0xFF);
 REGISTER_CLASS(FEFixJaggedEdges           , CLASS_SURFACE_MODIFIER, "Fix Jagged Edges", 0xFF);
-REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges", 0xFF);
+REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges"   , 0xFF);
+REGISTER_CLASS(FEFillHole                 , CLASS_SURFACE_MODIFIER, "Fill Holes"      , 0xFF);
 
 CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {

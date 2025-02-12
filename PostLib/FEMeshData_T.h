@@ -616,8 +616,14 @@ public:
 		{
 			m_elem[2*n  ] = (int) m_data.size(); 
 			m_elem[2*n+1] = m;
+			for (int j=0; j<m; ++j) m_data.push_back(d[j]); 
 		}
-		for (int j=0; j<m; ++j) m_data.push_back(d[j]); 
+		else
+		{
+			int n0 = m_elem[2 * n];
+			assert(m_elem[2 * n + 1] == m);
+			for (int j = 0; j < m; ++j) m_data[n0 + j] = d[j];
+		}
 	}
 	int size() { return (int) m_data.size(); }
 	T& operator [] (int i) { return m_data[i]; }

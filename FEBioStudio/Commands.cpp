@@ -3059,6 +3059,44 @@ void CCmdChangeFEMesh::UnExecute()
 	Execute();
 }
 
+
+CCmdChangeFENodes::CCmdChangeFENodes(GObject* po, const std::vector<vec3d>& newPos) : CCommand("Change mesh")
+{
+	m_po = po;
+	m_newPos = newPos;
+}
+
+void CCmdChangeFENodes::Execute()
+{
+	if (m_po == nullptr) return;
+
+	FSMesh* pm = m_po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	if (m_newPos.size() != pm->Nodes())
+	{
+		assert(false);
+		return;
+	}
+
+	vector<vec3d> oldPos(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		oldPos[i] = pm->Node(i).r;
+		pm->Node(i).r = m_newPos[i];
+	}
+	m_newPos = oldPos;
+
+	pm->UpdateBoundingBox();
+	pm->UpdateNormals();
+	m_po->Update();
+}
+
+void CCmdChangeFENodes::UnExecute()
+{
+	Execute();
+}
+
 //=============================================================================
 // CCmdChangeFESurfaceMesh
 //-----------------------------------------------------------------------------

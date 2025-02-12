@@ -715,6 +715,61 @@ vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID
 	return rmin;
 }
 
+vec3d projectToSurfaceEdges(const FSMeshBase& m, const vec3d& p, int gid, int* faceID, Intersection* intersect)
+{
+	const double eps = 1e-5;
+	double Dmin = 1e99;
+	vec3d rmin = p;
+	vec3d r[4];
+	if (faceID) *faceID = -1;
+	if (intersect) intersect->m_faceIndex = -1;
+	for (int i = 0; i < m.Faces(); ++i)
+	{
+		const FSFace& face = m.Face(i);
+		if ((face.m_gid == gid) || (gid == -1))
+		{
+			int nf = face.Nodes();
+			for (int j = 0; j < nf; ++j) r[j] = m.Node(face.n[j]).r;
+
+			int ne = face.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				vec3d a = r[j];
+				vec3d b = r[(j + 1) % nf];
+
+				double R2 = (b - a).SqrLength();
+				if (R2 != 0)
+				{
+					double l = ((p - a) * (b - a)) / R2;
+					if ((l >= -eps) && (l <= 1 + eps))
+					{
+						vec3d q = a + (b - a)*l;
+						double dj = (p - q).SqrLength();
+						if (dj < Dmin)
+						{
+							Dmin = dj;
+							rmin = q;
+							vec3d qtmp;
+							Intersection is;
+							if      (nf == 3) projectToTriangle(q, r[0], r[1], r[2], qtmp, &is);
+							else if (nf == 4) projectToQuad(q, r, qtmp, &is);
+
+							if (faceID) *faceID = i;
+							if (intersect)
+							{
+								*intersect = is;
+								intersect->m_faceIndex = i;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return rmin;
+}
+
 vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l)
 {
 	double Dmin = 1e99;

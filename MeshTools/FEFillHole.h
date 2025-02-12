@@ -89,6 +89,7 @@ public:
 	// fill all holes
 	void FillAllHoles(FSSurfaceMesh* pm);
 
+	void FillPieHole(FSSurfaceMesh* pm);
 
 private:
 	// Find the ring based on a node (TODO: should I move this to the FSMesh class?)

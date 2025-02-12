@@ -47,6 +47,8 @@ FEFillHole::FEFillHole() : FESurfaceModifier("Fill hole")
 {
 	m_optimize = false;
 	m_insertNodes = false;
+
+	AddChoiceParam(0, "method")->SetEnumNames("default\0pie-fill\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -54,6 +56,20 @@ FEFillHole::FEFillHole() : FESurfaceModifier("Fill hole")
 // that lies on the edge of the hole.
 FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 {
+	int method = GetIntValue(0);
+
+	// find a selected node
+	int inode = -1;
+	for (int i = 0; i < pm->Nodes(); i++) { if (pm->Node(i).IsSelected()) { inode = i; break; } }
+	if (inode == -1)
+	{
+		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
+
+		if (method == 0) FillAllHoles(newMesh);
+		else FillPieHole(newMesh);
+		return newMesh;
+	}
+
 	// build the node normals
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
 	for (int i = 0; i < pm->Faces(); i++)
@@ -65,11 +81,6 @@ FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
-
-	// find a selected node
-	int inode = -1;
-	for (int i=0; i<pm->Nodes(); i++) { if (pm->Node(i).IsSelected()) { inode = i; break; }}
-	if (inode == -1) return 0;
 
 	// find the ring that this node belongs to
 	// where a ring is a closed loop of ordered edges
@@ -1216,4 +1227,132 @@ vec3d FEFillHole::newNode(vec3d current_node, vec3d next_node, vec3d prev_node,v
 	
 	return v_new;
 
+}
+
+void FEFillHole::FillPieHole(FSSurfaceMesh* pm)
+{
+	// clear tags
+	pm->TagAllNodes(0);
+
+	// build the node-edge table
+	m_NEL.Build(pm);
+
+	// build the node normals
+	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		FSFace& Face = pm->Face(i);
+		for (int j = 0; j < Face.Nodes(); j++)
+		{
+			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
+		}
+	}
+	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
+
+	// tag all the nodes that are on edge boundaries
+	pm->TagAllNodes(0);
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		int fe = face.Edges();
+		for (int j = 0; j < fe; ++j)
+		{
+			if (face.m_nbr[j] == -1)
+			{
+				FSEdge ej = face.GetEdge(j);
+				pm->Node(ej.n[0]).m_ntag += 1;
+				pm->Node(ej.n[1]).m_ntag += 1;
+			}
+		}
+	}
+
+	// find the edge rings
+	vector<EdgeRing> ring;
+	setProgress(0.0);
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		if (pm->Node(i).m_ntag > 0)
+		{
+			EdgeRing ri;
+			if (FindEdgeRing(*pm, i, ri))
+			{
+				ring.push_back(ri);
+				for (int j = 0; j < ri.size(); ++j) pm->Node(ri[j]).m_ntag -= 2;
+			}
+		}
+		setProgress(100.0 * (i + 1.0) / (double)pm->Nodes());
+	}
+
+	SetError("Found %d holes", ring.size());
+	if (ring.empty()) return;
+
+	int fixedHoles = 0;
+	vector<vec3d> center;
+	vector<FACE> tri_list;
+	for (int i = 0; i < ring.size(); ++i)
+	{
+		EdgeRing& edge = ring[i];
+		vec3d c(0, 0, 0);
+		for (size_t j = 0; j < edge.size(); ++j) c += edge.m_r[j];
+		c /= edge.size();
+		center.push_back(c);
+	}
+
+	int N0 = pm->Nodes();
+	pm->Create(N0 + center.size(), 0, 0);
+	for (int i = 0; i < center.size(); ++i)
+	{
+		pm->Node(N0 + i).r = center[i];
+	}
+
+	for (int i = 0; i < ring.size(); ++i)
+	{
+		EdgeRing& edge = ring[i];
+		vector<FACE> tri;
+		int n0 = N0 + i;
+		for (int j = 0; j < edge.size(); ++j)
+		{
+			FACE f;
+			f.n[0] = n0;
+			if (edge.m_winding == 1)
+			{
+				f.n[1] = edge[j];
+				f.n[2] = edge[(j + 1) % edge.size()];
+			}
+			else
+			{
+				f.n[2] = edge[j];
+				f.n[1] = edge[(j + 1) % edge.size()];
+			}
+			tri.push_back(f);
+		}
+
+		fixedHoles++;
+		tri_list.insert(tri_list.end(), tri.begin(), tri.end());
+	}
+
+	SetError("Fixed %d holes", fixedHoles);
+
+	// see how many new faces we have
+	int new_faces = (int)tri_list.size();
+	SetError("Inserted %d new faces", new_faces);
+
+	// allocate room for the new faces
+	int NF = pm->Faces();
+	pm->Create(0, 0, NF + new_faces);
+
+	// insert the new triangles into the mesh
+	for (int i = 0; i < new_faces; ++i)
+	{
+		FSFace& face = pm->Face(i + NF);
+		FACE& fi = tri_list[i];
+		face.SetType(FE_FACE_TRI3);
+		face.n[0] = fi.n[0];
+		face.n[1] = fi.n[1];
+		face.n[2] = fi.n[2];
+		face.m_gid = 0;
+	}
+
+	// next, we use the auto-mesher to reconstruct all faces, edges and nodes
+	pm->RebuildMesh();
 }

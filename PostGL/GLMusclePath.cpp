@@ -122,6 +122,7 @@ GLMusclePath::GLMusclePath()
 	m_selectedPoint = -1;
 	m_selectionRadius = 0.2;
 	m_pathGuide = 0;
+	m_startTime = 0;
 
 	m_part[0] = m_part[1] = -1;
 
@@ -133,6 +134,7 @@ GLMusclePath::GLMusclePath()
 	AddDoubleParam(m_snaptol, "snap_tol", "Snap tolerance");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
 	AddChoiceParam(m_pathGuide, "path_guide", "Path guide")->SetEnumNames("(none)\0");
+	AddIntParam(m_startTime, "start_time", "Start time");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddColorParam(GLColor(164, 0, 164), "color0", "start point color");
@@ -393,6 +395,7 @@ public:
 		Update();
 		m_L = path->GetPath(0)->m_data.pathLength;
 		if (m_softRadius <= 0.0) m_softRadius = 1.0;
+		SetMovable(true);
 	}
 
 public:
@@ -656,14 +659,15 @@ bool GLMusclePath::UpdateData(bool bsave)
 	{
 		bool reset = false;
 
-		int node0     = GetIntValue(START_POINT     ); if (node0  != m_node0        ) { m_node0        =   node0; reset = true; }
-		int node1     = GetIntValue(END_POINT       ); if (node1  != m_node1        ) { m_node1        =   node1; reset = true; }
-		int ndiv      = GetIntValue(SUBDIVISIONS    ); if (ndiv    != m_ndiv        ) { m_ndiv         =    ndiv; reset = true; }
-		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = false; }
-		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = false; }
-		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius  != m_searchRadius) { m_searchRadius =  radius; reset = false; }
-		double snaptol= GetFloatValue(SNAP_TOL      ); if (snaptol != m_snaptol     ) { m_snaptol      =  snaptol; reset = true; }
-		int guide     = GetIntValue(PATH_GUIDE      ); if (guide   != m_pathGuide   ) { m_pathGuide    =    guide; reset = true; }
+		int node0     = GetIntValue(START_POINT     ); if (node0     != m_node0       ) { m_node0        =     node0; reset = true; }
+		int node1     = GetIntValue(END_POINT       ); if (node1     != m_node1       ) { m_node1        =     node1; reset = true; }
+		int ndiv      = GetIntValue(SUBDIVISIONS    ); if (ndiv      != m_ndiv        ) { m_ndiv         =      ndiv; reset = true; }
+		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter   != m_maxIter     ) { m_maxIter      =   maxIter; reset = false; }
+		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol       != m_tol         ) { m_tol          =       tol; reset = false; }
+		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius    != m_searchRadius) { m_searchRadius =    radius; reset = false; }
+		double snaptol= GetFloatValue(SNAP_TOL      ); if (snaptol   != m_snaptol     ) { m_snaptol      =   snaptol; reset = true; }
+		int guide     = GetIntValue(PATH_GUIDE      ); if (guide     != m_pathGuide   ) { m_pathGuide    =     guide; reset = true; }
+		int startTime = GetIntValue(START_TIME      ); if (startTime != m_startTime   ) { m_startTime    = startTime; reset = true; }
 
 		if (reset) ClearInitPath();
 		
@@ -947,7 +951,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 	FSTriMesh faceMesh;
 	BuildFaceMesh(faceMesh, fem, mesh, ntime, R, r0, r1, m_part);
 
-	if (reset && (ntime == 0))
+	if (reset && (ntime == m_startTime))
 	{
 		// generate initial straight line
 		vector<vec3d> points;
@@ -972,36 +976,56 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 			auto& pt = initPath[i];
 			Intersection is;
 			vec3d p = projectToSurface(m_guideMesh, pt.r, -1, nullptr, &is);
+			if (is.m_faceIndex == -1)
+			{
+				p = projectToSurfaceEdges(m_guideMesh, pt.r, -1, nullptr, &is);
+			}
 			pt.nproj = is.m_faceIndex;
 			pt.q = vec2d(is.r[0], is.r[1]);
 		}
 	}
 
 	// make sure we have the initial path
-	if (m_initPath == nullptr) return false;
-
-	if (path->Points() != m_initPath->Points())
-		path->SetPoints(m_initPath->GetPoints());
-
-	// we do update the first and last point
-	auto& startPoint = (*path)[0];
-	startPoint.r = r0;
-	path->EndPoint().r = r1;
-
-	// project other points
-	for (int i = 1; i < path->Points() - 1; ++i)
+	if (m_initPath)
 	{
-		auto& p0 = (*m_initPath)[i];
-		auto& p1 = (*path)[i];
+		if (path->Points() != m_initPath->Points())
+			path->SetPoints(m_initPath->GetPoints());
 
-		vec3d r[FSFace::MAX_NODES];
-		if (p0.nproj >= 0)
+		// we do update the first and last point
+		auto& startPoint = (*path)[0];
+		startPoint.r = r0;
+		path->EndPoint().r = r1;
+
+		// project other points
+		for (int i = 1; i < path->Points() - 1; ++i)
 		{
-			FSFace& f = m_guideMesh.Face(p0.nproj);
-			m_guideMesh.FaceNodePosition(f, r);
-			vec3d q = f.eval(r, p0.q.x(), p0.q.y());
-			p1.r = q;
+			auto& p0 = (*m_initPath)[i];
+			auto& p1 = (*path)[i];
+
+			vec3d r[FSFace::MAX_NODES];
+			if (p0.nproj >= 0)
+			{
+				FSFace& f = m_guideMesh.Face(p0.nproj);
+				m_guideMesh.FaceNodePosition(f, r);
+				vec3d q = f.eval(r, p0.q.x(), p0.q.y());
+				p1.r = q;
+			}
 		}
+	}
+	else
+	{
+		vector<vec3d> points;
+		points.push_back(r0);
+		const int STEPS = GetIntValue(SUBDIVISIONS);
+		for (int i = 1; i < STEPS; ++i)
+		{
+			double w = (double)i / (double)STEPS;
+			vec3d p = r0 + (r1 - r0) * w;
+			points.push_back(p);
+		}
+		points.push_back(r1);
+
+		path->SetPoints(points);
 	}
 
 	// project all points onto the faceMesh
