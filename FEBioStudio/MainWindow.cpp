@@ -3694,11 +3694,8 @@ void CMainWindow::ProcessITKImage(const QString& fileName, int type)
 {
 	CGLDocument* doc = GetGLDocument();
 
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
-
-	CImageModel* imageModel = new CImageModel(nullptr);
-    imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
+		CImageModel* imageModel = new CImageModel(nullptr);
+        imageModel->SetImageSource(new CITKImageSource(imageModel, fileName.toStdString(), type));
 
     if(!ImportImage(imageModel))
     {

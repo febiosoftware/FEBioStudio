@@ -565,11 +565,7 @@ public:
 	{
 		int m = (int)m_data.size();
 		m_data.push_back(v);
-		if (m_elem[item] == -1) m_elem[item] = m;
-		else
-		{
-			assert(m_elem[item] == m);
-		}
+		m_elem[item] = m;
 	}
 
 	int size() const { return (int) m_data.size(); }

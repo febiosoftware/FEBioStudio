@@ -778,7 +778,7 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 					}
 					else return false;
 				}
-				else
+				else if (fmt == DATA_MULT)
 				{
 					FEElementData<float, DATA_MULT>* pd = dynamic_cast<FEElementData<float, DATA_MULT>*>(&d);
 					FEElemData_T<float, DATA_MULT>* ps = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&s);
@@ -803,6 +803,33 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 						}
 					}
 					else return false;
+				}
+				else if (fmt == DATA_REGION)
+				{
+					FEElementData<float, DATA_REGION>* pd = dynamic_cast<FEElementData<float, DATA_REGION>*>(&d);
+					FEElemData_T<float, DATA_REGION>* ps = dynamic_cast<FEElemData_T<float, DATA_REGION>*>(&s);
+					if (pd && ps)
+					{
+						int N = mesh.Elements();
+						for (int i = 0; i < N; ++i)
+						{
+							FSElement& el = mesh.Element(i);
+							float vs = 0.f, vd = 0.f;
+							if (pd->active(i) || ps->active(i))
+							{
+								if (pd->active(i)) pd->eval(i, &vd);
+								if (ps->active(i)) ps->eval(i, &vs);
+
+								float vr = (float)f(vd, vs);
+								pd->add(i, vr);
+							}
+						}
+					}
+					else return false;
+				}
+				else
+				{
+					return false;
 				}
 			}
 			else if (d.GetType() == DATA_MAT3S)
