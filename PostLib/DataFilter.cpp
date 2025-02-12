@@ -1680,6 +1680,40 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					pnew->add(nodeData, elem, index, ne);
 				}
 			}
+			else if ((nfmt == DATA_REGION) && (newFormat == DATA_MULT))
+			{
+				newField = new FEDataField_T<FEElementData<float, DATA_MULT> >(&fem, EXPORT_DATA);
+				fem.AddDataField(newField, name);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NE = mesh.Elements();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					FEElemData_T<float, DATA_REGION>* pold = dynamic_cast<FEElemData_T<float, DATA_REGION>*>(&state->m_Data[nold]);
+					FEElementData<float, DATA_MULT>* pnew = dynamic_cast<FEElementData<float, DATA_MULT>*>(&state->m_Data[nnew]);
+
+					float vr[FSElement::MAX_NODES] = { 0.f };
+					for (int i = 0; i < NE; ++i)
+					{
+						FSElement& el = mesh.Element(i);
+						if (pold->active(i))
+						{
+							float v = 0.f;
+							pold->eval(i, &v);
+
+							int ne = el.Nodes();
+							for (int j = 0; j < ne; ++j) vr[j] = v;
+
+							pnew->add(i, ne, vr);
+						}
+					}
+				}
+			}
 		}
 		else if ((nclass == ELEM_DATA) && (newClass == NODE_DATA))
 		{
