@@ -1542,7 +1542,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
 	filedlg.setDirectory(CurrentWorkingDirectory());
-	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	QStringList filters;
@@ -1551,22 +1551,22 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	if (filedlg.exec())
 	{
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-            // we pass the relative path to the image model
-	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
-
-			CImageModel* imageModel = new CImageModel(nullptr);
-            imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
-
-            if(!ImportImage(imageModel))
+        for(auto filename : filedlg.selectedFiles())
+        {
+            CDlgRAWImport dlg(this);
+            if (dlg.exec())
             {
-                delete imageModel;
+                BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+
+                CImageModel* imageModel = new CImageModel(nullptr);
+                imageModel->SetImageSource(new CRawImageSource(imageModel, filename.toStdString(), dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
+
+                if(!ImportImage(imageModel))
+                {
+                    delete imageModel;
+                }
             }
-		}
+        }
 	}
 }
 
@@ -1605,7 +1605,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 	QFileDialog filedlg(this);
 	filedlg.setDirectory(CurrentWorkingDirectory());
-	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	QStringList filters;
@@ -1614,18 +1614,15 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 	if (filedlg.exec())
 	{
-		std::string fileName = filedlg.selectedFiles()[0].toStdString();
-
-		// we pass the relative path to the image model
-		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-		CImageModel* imageModel = new CImageModel(nullptr);
-		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
-		if (!ImportImage(imageModel))
-		{
-			delete imageModel;
-			return;
-		}
+        for(auto filename : filedlg.selectedFiles())
+        {
+            CImageModel* imageModel = new CImageModel(nullptr);
+            imageModel->SetImageSource(new CTiffImageSource(imageModel, filename.toStdString()));
+            if (!ImportImage(imageModel))
+            {
+                delete imageModel;
+            }
+        }
 	}
 }
 
@@ -1639,7 +1636,7 @@ void CMainWindow::on_actionImportNrrdImage_triggered()
     }
 
 	QFileDialog filedlg(this);
-	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	QStringList filters;
@@ -1648,7 +1645,10 @@ void CMainWindow::on_actionImportNrrdImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], CITKImageSource::NRRD);
+        for(auto filename : filedlg.selectedFiles())
+        {
+            ProcessITKImage(filename, CITKImageSource::NRRD);
+        }
 	}
 }
 
@@ -1663,12 +1663,15 @@ void CMainWindow::on_actionImportImageOther_triggered()
 
 	QFileDialog filedlg(this);
 	filedlg.setDirectory(CurrentWorkingDirectory());
-	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], CITKImageSource::OTHER);
+        for(auto filename : filedlg.selectedFiles())
+        {
+		    ProcessITKImage(filename, CITKImageSource::OTHER);
+        }
 	}
 }
 
