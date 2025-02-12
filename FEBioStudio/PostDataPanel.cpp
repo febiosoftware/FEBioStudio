@@ -770,6 +770,7 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 	ui->convFmt->clear();
 	ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
 	ui->convFmt->addItem("NODE", (int)DATA_NODE);
+	ui->convFmt->addItem("MIXED", (int)DATA_MULT);
 
 	DATA_CLASS cls = pdf->DataClass();
 	ui->convClass->clear();
