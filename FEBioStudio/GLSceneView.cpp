@@ -25,17 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include <GL/glew.h>
-#include "GLSceneView.h"
-#include "GLScene.h"
-#include <GLLib/GLContext.h>
-#include <QMouseEvent>
-#include <QTimer>
-
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
 #else
 #include <GL/glu.h>
 #endif
+#include "GLSceneView.h"
+#include "GLScene.h"
+#include <GLLib/GLContext.h>
+#include <QMouseEvent>
+#include <QTimer>
 
 static bool initGlew = false;
 
