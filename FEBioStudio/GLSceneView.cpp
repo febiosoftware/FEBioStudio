@@ -31,6 +31,12 @@ SOFTWARE.*/
 #include <QMouseEvent>
 #include <QTimer>
 
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#else
+#include <GL/glu.h>
+#endif
+
 static bool initGlew = false;
 
 CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
