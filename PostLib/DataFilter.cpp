@@ -780,7 +780,29 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 				}
 				else
 				{
-					return false;
+					FEElementData<float, DATA_MULT>* pd = dynamic_cast<FEElementData<float, DATA_MULT>*>(&d);
+					FEElemData_T<float, DATA_MULT>* ps = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&s);
+					if (pd && ps)
+					{
+						int N = mesh.Elements();
+						for (int i = 0; i < N; ++i)
+						{
+							FSElement& el = mesh.Element(i);
+							float vs[FSElement::MAX_NODES] = { 0.f }, vd[FSElement::MAX_NODES] = { 0.f }, vr[FSElement::MAX_NODES] = { 0.f };
+							if (pd->active(i) || ps->active(i))
+							{
+								if (pd->active(i)) pd->eval(i, vd);
+								if (ps->active(i)) ps->eval(i, vs);
+
+								for (int j = 0; j < el.Nodes(); ++j)
+								{
+									vr[j] = (float)f(vd[j], vs[j]);
+								}
+								pd->add(i, el.Nodes(), vr);
+							}
+						}
+					}
+					else return false;
 				}
 			}
 			else if (d.GetType() == DATA_MAT3S)
