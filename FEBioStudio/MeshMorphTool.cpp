@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include "MainWindow.h"
 #include "Commands.h"
+using namespace std;
 
 class CMeshMorphTool::Ui : public QWidget
 {

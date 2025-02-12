@@ -461,7 +461,7 @@ bool FSMat3dValuator::UpdateData(bool bsave)
 	const char* sztype = GetTypeString();
 	if (sztype && (strcmp(sztype, "local") == 0))
 	{
-		m_naopt = FE_AXES_LOCAL;
+		m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		Param* p = GetParam("local"); assert(p);
 		if (p)
 		{
@@ -484,7 +484,7 @@ mat3d FSMat3dValuator::GetMatAxis(const FEElementRef& el) const
 	FSCoreMesh* mesh = el.m_pmesh;
 	switch (m_naopt)
 	{
-	case FE_AXES_LOCAL:
+	case MaterialAxesGeneratorType::AXES_LOCAL:
 	{
 		vec3d r0[FSElement::MAX_NODES];
 		for (int i = 0; i < el->Nodes(); ++i) r0[i] = mesh->Node(el->m_node[i]).pos();
