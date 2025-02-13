@@ -25,6 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
 #include "GLSceneView.h"
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
