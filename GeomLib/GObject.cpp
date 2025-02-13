@@ -220,8 +220,10 @@ void GObject::BuildFERenderMesh()
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+		FSNode& ni = pm->Node(i);
+		gm.Node(i).r = to_vec3f(ni.r);
 		gm.Node(i).nid = i;
+		gm.Node(i).tag = (ni.IsVisible() ? 1 : 0);
 	}
 
 	int nsurf = Faces();

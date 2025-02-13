@@ -538,3 +538,17 @@ void OGLPointMesh::CreateFromGMesh(const GLMesh& gmsh)
 	}
 	EndMesh();
 }
+
+void OGLPointMesh::CreateFromTaggedGMesh(const GLMesh& gmsh, int tag)
+{
+	int nodes = gmsh.Nodes();
+	AllocVertexBuffers(nodes, 0);
+
+	BeginMesh();
+	for (int i = 0; i < gmsh.Nodes(); ++i)
+	{
+		const GLMesh::NODE& node = gmsh.Node(i);
+		if (node.tag == tag) AddVertex(node.r);
+	}
+	EndMesh();
+}

@@ -93,6 +93,7 @@ public:
 	void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh) override;
 
 	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderTaggedGMeshNodes(const GLMesh& mesh, int ntag) override;
 
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh) override;
 	void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh) override;

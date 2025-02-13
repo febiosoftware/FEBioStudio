@@ -139,6 +139,7 @@ public:
 	virtual void renderGMesh(const GLMesh& mesh, int surfId, bool cacheMesh = true) {}
 
 	virtual void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) {}
+	virtual void renderTaggedGMeshNodes(const GLMesh& mesh, int tag) {}
 
 	virtual void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) {}
 	virtual void renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cacheMesh = true) {}

@@ -627,6 +627,16 @@ void OpenGLRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	m_stats.points += points.Vertices();
 }
 
+void OpenGLRenderer::renderTaggedGMeshNodes(const GLMesh& mesh, int tag)
+{
+	OGLPointMesh points;
+	points.SetRenderMode(OGLMesh::VertexArrayMode);
+	points.CreateFromTaggedGMesh(mesh, tag);
+	points.Render();
+
+	m_stats.points += points.Vertices();
+}
+
 void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	OGLLineMesh* glm = nullptr;

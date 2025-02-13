@@ -370,4 +370,5 @@ public:
 	void Create(int maxVertices, unsigned int flags = 0);
 
 	void CreateFromGMesh(const GLMesh& mesh);
+	void CreateFromTaggedGMesh(const GLMesh& mesh, int tag);
 };

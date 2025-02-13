@@ -1897,9 +1897,8 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 	assert(gm->Nodes() == pm->Nodes());
 
 	// render the visible nodes
-	// TODO: Can I make it so that the render mesh only contains the visible nodes?
 	re.setMaterial(GLMaterial::CONSTANT, GLColor(0, 0, 255, 128));
-	re.renderGMeshNodes(*gm);
+	re.renderTaggedGMeshNodes(*gm, 1);
 
 	// render selected nodes
 	// TODO: Shouldn't this be done in the GLSelectionItem?
