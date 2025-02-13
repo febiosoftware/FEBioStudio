@@ -25,12 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <GL/glew.h>
-#include "GLView.h"
 #ifdef __APPLE__
-#include <OpenGL/GLU.h>
+#include <OpenGL/glu.h>
+#elif WIN32
+#include <Windows.h>
+#include <GL/glu.h>
 #else
 #include <GL/glu.h>
 #endif
+#include "GLView.h"
 #include "MainWindow.h"
 #include <QApplication>
 #include <QStyleHints>
