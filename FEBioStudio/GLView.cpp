@@ -561,6 +561,8 @@ void CGLView::changeViewMode(View_Mode vm)
 	{
 		m_pWnd->toggleOrtho();
 	}
+
+	SetViewMode(vm);
 }
 
 void CGLView::SetColorMap(unsigned int n)
