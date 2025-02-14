@@ -295,10 +295,11 @@ double Post::IntegrateNodes(Post::FEPostMesh& mesh, const std::vector<int>& node
 	int N = (int) nodeList.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FSNode& node = mesh.Node( nodeList[i] );
-		if (ps->m_NODE[i].m_ntag > 0)
+		int n = nodeList[i];
+		FSNode& node = mesh.Node(n);
+		if (ps->m_NODE[n].m_ntag > 0)
 		{
-			res += ps->m_NODE[i].m_val;
+			res += ps->m_NODE[n].m_val;
 		}
 	}
 	return res;
