@@ -2973,10 +2973,12 @@ void FSMesh::UpdateMeshPartitions()
 	ClearMeshPartitions();
 
 	// figure out how many domains there are
-	int ndom = 0;
+	int ndom = -1;
 	int NE = Elements();
 	for (int i = 0; i < NE; ++i) if (ElementRef(i).m_MatID > ndom) ndom = ElementRef(i).m_MatID;
 	++ndom;
+
+	if (ndom == 0) return;
 
 	// figure out the domain sizes
 	vector<int> elemSize(ndom, 0);

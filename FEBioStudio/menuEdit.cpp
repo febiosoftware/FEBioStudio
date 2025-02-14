@@ -1394,6 +1394,8 @@ void CMainWindow::on_actionDetach_triggered()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject()); assert(po);
 		if (po == 0) return;
 
+		doc->SetCurrentSelection(nullptr);
+
 		// create a new object for this mesh
 		GMeshObject* newObject = po->DetachSelection();
 
