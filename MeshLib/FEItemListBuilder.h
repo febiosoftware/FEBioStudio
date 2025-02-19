@@ -121,6 +121,8 @@ public:
 
 	bool HasItem(int n) const;
 
+	int FindItem(int n) const;
+
 public:
 	int GetReferenceCount() const;
 	void IncRef();

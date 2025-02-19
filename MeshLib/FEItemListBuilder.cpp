@@ -162,6 +162,15 @@ bool FEItemListBuilder::HasItem(int n) const
 	return false;
 }
 
+int FEItemListBuilder::FindItem(int n) const
+{
+	for (int i = 0; i < m_Item.size(); ++i)
+	{
+		if (m_Item[i] == n) return i;
+	}
+	return -1;
+}
+
 int FEItemListBuilder::GetReferenceCount() const { return m_refs; }
 void FEItemListBuilder::IncRef() { m_refs++; }
 void FEItemListBuilder::DecRef() { m_refs--; assert(m_refs >= 0); }

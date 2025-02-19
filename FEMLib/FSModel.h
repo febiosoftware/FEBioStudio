@@ -128,8 +128,11 @@ public:
 	// assign material to part
 	void AssignMaterial(GPart* pg, GMaterial* mat);
 
-	// update materials' part list
-	void UpdateMaterials();
+	// update materials' part list (using parts' material IDs)
+	void UpdateMaterialSelections();
+
+	// update part mat IDs from the material selections
+	void UpdateMaterialAssignments();
 
 	// --- serialization ---
 

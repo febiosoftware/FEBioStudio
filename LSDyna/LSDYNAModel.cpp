@@ -562,7 +562,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			}
 		}
 	}
-	fem.UpdateMaterials();
+	fem.UpdateMaterialSelections();
 
 	return true;
 }
