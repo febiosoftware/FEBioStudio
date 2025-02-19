@@ -234,13 +234,14 @@ void GObject::BuildFERenderMesh()
 			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid);
 
 			int ne = face.Edges();
+			int n[FSEdge::MAX_NODES] = { -1 };
 			for (int j = 0; j < ne; ++j)
 			{
 				int j1 = (j + 1) % ne;
 				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
 				{
-					int m[2] = { face.n[j], face.n[j1] };
-					gm.AddEdge(m, 2);
+					int m = face.GetEdgeNodes(j, n);
+					gm.AddEdge(n, m);
 				}
 			}
 		}
@@ -271,10 +272,7 @@ void GObject::BuildFERenderMesh()
 						for (int k = 0; k < ne; ++k)
 						{
 							int m = face.GetEdgeNodes(k, n);
-							if (m == 2)
-							{
-								if (n[0] < n[1]) gm.AddEdge(n, 2, -1);
-							}
+							if (n[0] < n[1]) gm.AddEdge(n, m, -1);
 						}
 					}
 				}
