@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "xpltReader3.h"
 #include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FENodeEdgeList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
@@ -45,6 +46,18 @@ template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEPostMesh
 	Type a;
 	ar.read(a);
 	df.add(face, a);
+}
+
+template <class Type> void ReadEdgeData_REGION(xpltArchive& ar, Post::FEPostMesh& m, XpltReader3::Edge& e, Post::FEMeshData& data)
+{
+	int NL = e.nlines;
+	vector<int> line(NL);
+	for (int i = 0; i < (int)line.size(); ++i) line[i] = e.line[i].id;
+
+	FEEdgeData<Type, DATA_REGION>& df = dynamic_cast<FEEdgeData<Type, DATA_REGION>&>(data);
+	Type a;
+	ar.read(a);
+	df.add(line, a);
 }
 
 template <class Type> void ReadElemData_REGION(xpltArchive& ar, XpltReader3::Domain& dom, Post::FEMeshData& s, int ntype)
@@ -92,43 +105,41 @@ void XpltReader3::XMesh::Clear()
 	m_FacetSet.clear();
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addMaterial(MATERIAL& mat)
 {
 	m_Mat.push_back(mat);
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addNodes(std::vector<XpltReader3::NODE>& nodes)
 {
 	m_Node.insert(m_Node.end(), nodes.begin(), nodes.end());
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addDomain(XpltReader3::Domain& dom)
 {
 	m_Dom.push_back(dom);
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addSurface(XpltReader3::Surface& surf)
 {
 	m_Surf.push_back(surf);
 }
 
-//-----------------------------------------------------------------------------
+void XpltReader3::XMesh::addEdge(XpltReader3::Edge& edge)
+{
+	m_Edge.push_back(edge);
+}
+
 void XpltReader3::XMesh::addNodeSet(XpltReader3::NodeSet& nset)
 {
 	m_NodeSet.push_back(nset);
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addElementSet(XpltReader3::ElemSet& eset)
 {
 	m_ElemSet.push_back(eset);
 }
 
-//-----------------------------------------------------------------------------
 void XpltReader3::XMesh::addFacetSet(XpltReader3::Surface& surf)
 {
 	m_FacetSet.push_back(surf);
@@ -324,6 +335,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		case PLT_DIC_NODAL    : ReadNodeDicItems    (); break;
 		case PLT_DIC_DOMAIN   : ReadElemDicItems    (); break;
 		case PLT_DIC_SURFACE  : ReadFaceDicItems    (); break;
+		case PLT_DIC_EDGE     : ReadEdgeDicItems    (); break;
 		default:
 			return errf("Error while reading Dictionary.");
 		}
@@ -592,6 +604,85 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(pdf, it.szname);
 	}
 
+	// read edge variables
+	nv = (int) m_dic.m_Edge.size();
+	for (i=0; i<nv; ++i)
+	{
+		DICT_ITEM& it = m_dic.m_Edge[i];
+		it.index = nfields++;
+
+		Post::ModelDataField* pdf = nullptr;
+		switch (it.nfmt)
+		{
+		case FMT_NODE:
+			{
+				switch (it.ntype)
+				{
+				case FLOAT  : pdf = new FEDataField_T<FEEdgeData<float  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEEdgeData<vec3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEEdgeData<mat3fs ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEEdgeData<mat3fd ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case TENS4FS: pdf = new FEDataField_T<FEEdgeData<tens4fs,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEEdgeData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				default:
+					assert(false);
+				}
+			}
+			break;
+		case FMT_ITEM:
+			{
+				switch (it.ntype)
+				{
+				case FLOAT  : pdf = new FEDataField_T<FEEdgeData<float  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEEdgeData<vec3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEEdgeData<mat3fs ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEEdgeData<mat3fd ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case TENS4FS: pdf = new FEDataField_T<FEEdgeData<tens4fs,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEEdgeData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				default:
+					assert(false);
+				}
+			}
+			break;
+		case FMT_MULT:
+			{
+				switch (it.ntype)
+				{
+				case FLOAT  : pdf = new FEDataField_T<FEEdgeData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEEdgeData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEEdgeData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEEdgeData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case TENS4FS: pdf = new FEDataField_T<FEEdgeData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEEdgeData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				default:
+					assert(false);
+				}
+			}
+			break;
+		case FMT_REGION:
+			{
+				switch (it.ntype)
+				{
+				case FLOAT  : pdf = new FEDataField_T<FEEdgeData<float  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEEdgeData<vec3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEEdgeData<mat3fs ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEEdgeData<mat3fd ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case TENS4FS: pdf = new FEDataField_T<FEEdgeData<tens4fs,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEEdgeData<mat3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				default:
+					assert(false);
+				}
+			}
+			break;
+		default:
+			assert(false);
+			return errf("Error reading dictionary");
+		}
+		if (pdf == nullptr) return false;
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
+		pdm->AddDataField(pdf, it.szname);
+	}
+
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
@@ -716,7 +807,6 @@ bool XpltReader3::ReadElemDicItems()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool XpltReader3::ReadFaceDicItems()
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
@@ -732,6 +822,27 @@ bool XpltReader3::ReadFaceDicItems()
 		{
 			assert(false);
 			return errf("Error reading Face section in Dictionary");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
+}
+
+bool XpltReader3::ReadEdgeDicItems()
+{
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		int nid = m_ar.GetChunkID();
+		if (nid == PLT_DIC_ITEM)
+		{
+			DICT_ITEM it;
+			ReadDictItem(it);
+			m_dic.m_Edge.push_back(it);
+		}
+		else
+		{
+			assert(false);
+			return errf("Error reading Edge section in Dictionary");
 		}
 		m_ar.CloseChunk();
 	}
@@ -912,6 +1023,7 @@ bool XpltReader3::ReadMesh(FEPostModel &fem)
 		case PLT_NODE_SECTION      : if (ReadNodeSection      (fem) == false) return false; break;
 		case PLT_DOMAIN_SECTION    : if (ReadDomainSection    (fem) == false) return false; break;
 		case PLT_SURFACE_SECTION   : if (ReadSurfaceSection   (fem) == false) return false; break;
+		case PLT_EDGE_SECTION      : if (ReadEdgeSection      (fem) == false) return false; break;
 		case PLT_NODESET_SECTION   : if (ReadNodeSetSection   (fem) == false) return false; break;
 		case PLT_ELEMENTSET_SECTION: if (ReadElementSetSection(fem) == false) return false; break;
 		case PLT_FACETSET_SECTION  : if (ReadFacetSetSection  (fem) == false) return false; break;
@@ -1142,6 +1254,73 @@ bool XpltReader3::ReadSurfaceSection(FEPostModel &fem)
 		{
 			assert(false);
 			return errf("Error while reading Surface section");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
+}
+
+bool XpltReader3::ReadEdgeSection(FEPostModel& fem)
+{
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_EDGE)
+		{
+			Edge E;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_EDGE_HDR)
+				{
+					// read the header
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						switch (m_ar.GetChunkID())
+						{
+						case PLT_EDGE_ID: m_ar.read(E.eid); break;
+						case PLT_EDGE_LINES: m_ar.read(E.nlines); break;
+						case PLT_EDGE_NAME: m_ar.sread(E.szname, DI_NAME_SIZE); break;
+						case PLT_EDGE_MAX_NODES: m_ar.read(E.maxNodes); break;
+						default:
+							assert(false);
+							return errf("Error while reading Edge section");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else if (nid == PLT_EDGE_LIST)
+				{
+					assert(E.nlines > 0);
+					E.line.reserve(E.nlines);
+					int n[12];
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						if (m_ar.GetChunkID() == PLT_LINE)
+						{
+							m_ar.read(n, E.maxNodes + 2);
+							LINE l;
+							l.id = n[0];
+							l.nn = n[1];
+							for (int i = 0; i < l.nn; ++i) l.node[i] = n[2 + i];
+							E.line.push_back(l);
+						}
+						else
+						{
+							assert(false);
+							return errf("Error while reading Edge section");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				m_ar.CloseChunk();
+			}
+			assert(E.nlines == E.line.size());
+			m_xmesh.addEdge(E);
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading Edge section");
 		}
 		m_ar.CloseChunk();
 	}
@@ -1515,6 +1694,34 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		}
 	}
 
+	// do the same for the edges
+	if (m_xmesh.edges() > 0)
+	{
+		FSNodeEdgeList NEL; NEL.Build(pmesh);
+
+		for (int n = 0; n < m_xmesh.edges(); ++n)
+		{
+			Edge& e = m_xmesh.edge(n);
+			for (int i = 0; i < e.nlines; ++i)
+			{
+				LINE& l = e.line[i];
+				l.id = -1;
+				const std::vector<NodeEdgeRef>& edgeList = NEL.EdgeList(l.node[0]);
+				for (NodeEdgeRef e : edgeList)
+				{
+					const FSEdge& edge = *e.pe;
+					if (((edge.n[0] == l.node[0]) && (edge.n[1] == l.node[1])) ||
+						((edge.n[0] == l.node[1]) && (edge.n[1] == l.node[0])))
+					{
+						l.id = e.eid;
+						break;
+					}
+				}
+				assert(l.id != -1);
+			}
+		}
+	}
+
 	// let's create the nodesets
 	char szname[128]={0};
 	for (int n=0; n< m_xmesh.nodeSets(); ++n)
@@ -1554,6 +1761,19 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			ps->m_Face.reserve(s.nfaces);
 			for (int i = 0; i < s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
 			pmesh->AddSurface(ps);
+		}
+
+		for (int n = 0; n < m_xmesh.edges(); ++n)
+		{
+			Edge& e = m_xmesh.edge(n);
+			FSEdgeSet* pe = new FSEdgeSet(pmesh);
+			if (e.szname[0] == 0) { sprintf(szname, "surface%02d", n + 1); pe->SetName(szname); }
+			else pe->SetName(e.szname);
+			for (int i = 0; i < e.nlines; ++i)
+			{
+				if (e.line[i].id != -1) pe->add(e.line[i].id);
+			}
+			pmesh->AddFEEdgeSet(pe);
 		}
 	}
 
@@ -1660,6 +1880,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 				case PLT_NODE_DATA    : if (ReadNodeData    (fem, ps) == false) return false; break;
 				case PLT_ELEMENT_DATA : if (ReadElemData    (fem, ps) == false) return false; break;
 				case PLT_FACE_DATA    : if (ReadFaceData    (fem, ps) == false) return false; break;
+				case PLT_EDGE_DATA    : if (ReadEdgeData    (fem, ps) == false) return false; break;
 				default:
 					assert(false);
 					return errf("Invalid chunk ID");
@@ -2449,7 +2670,6 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool XpltReader3::ReadFaceData(FEPostModel& fem, FEState* pstate)
 {
 	Post::FEPostMesh& mesh = *GetCurrentMesh();
@@ -2513,6 +2733,75 @@ bool XpltReader3::ReadFaceData(FEPostModel& fem, FEState* pstate)
 		else 
 		{
 			return errf("Failed reading face data");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
+}
+
+bool XpltReader3::ReadEdgeData(FEPostModel& fem, FEState* pstate)
+{
+	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	FEDataManager& dm = *fem.GetDataManager();
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
+		{
+			int nv = -1;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
+				else if (nid ==	PLT_STATE_VAR_DATA)
+				{
+					nv--;
+					assert((nv>=0)&&(nv<(int)m_dic.m_Edge.size()));
+					if ((nv < 0) || (nv >= (int)m_dic.m_Edge.size())) return errf("Failed reading all state data");
+					const DICT_ITEM& it = m_dic.m_Edge[nv];
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						int ns = m_ar.GetChunkID() - 1;
+						assert((ns >= 0)&&(ns < m_xmesh.edges()));
+						if ((ns < 0) || (ns >= m_xmesh.edges())) return errf("Failed reading all state data");
+
+//						int nfield = dm.FindDataField(it.szname);
+						int nfield = it.index;
+
+						Edge& e = m_xmesh.edge(ns);
+						switch (it.nfmt)
+						{
+						case FMT_NODE  : if (ReadEdgeData_NODE  (mesh, e, pstate->m_Data[nfield], it.ntype) == false) return errf("Failed reading edge data"); break;
+						case FMT_ITEM  : if (ReadEdgeData_ITEM  (e, pstate->m_Data[nfield], it.ntype   ) == false) return errf("Failed reading edge data"); break;
+						case FMT_MULT  : if (ReadEdgeData_MULT  (mesh, e, pstate->m_Data[nfield], it.ntype) == false) return errf("Failed reading edge data"); break;
+						case FMT_REGION: 
+							switch (it.ntype)
+							{
+								case FLOAT  : ReadEdgeData_REGION<float  >(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								case VEC3F  : ReadEdgeData_REGION<vec3f  >(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								case MAT3FS : ReadEdgeData_REGION<mat3fs >(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								case MAT3FD : ReadEdgeData_REGION<mat3fd >(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								case TENS4FS: ReadEdgeData_REGION<tens4fs>(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								case MAT3F  : ReadEdgeData_REGION<mat3f  >(m_ar, mesh, e, pstate->m_Data[nfield]); break;
+								default:
+									return errf("Failed reading edge data");
+							}
+							break;
+						default:
+							return errf("Failed reading edge data");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else
+				{
+					return errf("Failed reading edge data");
+				}
+				m_ar.CloseChunk();
+			}
+		}
+		else 
+		{
+			return errf("Failed reading edge data");
 		}
 		m_ar.CloseChunk();
 	}
@@ -2794,6 +3083,284 @@ bool XpltReader3::ReadFaceData_NODE(Post::FEPostMesh& m, XpltReader3::Surface &s
 		break;
 	default:
 		return errf("Failed reading face data");
+	}
+
+	return true;
+}
+
+bool XpltReader3::ReadEdgeData_MULT(Post::FEPostMesh& m, XpltReader3::Edge& e, Post::FEMeshData& data, int ntype)
+{
+	// It is possible that the node ordering of the FACE's are different than the FSFace's
+	// so we setup up an array to unscramble the nodal values
+	int NL = e.nlines;
+	vector<int> tag;
+	tag.assign(m.Nodes(), -1);
+	const int NFM = e.maxNodes;
+	vector<vector<int> > lut(NL, vector<int>(NFM));
+	for (int i = 0; i < NL; ++i)
+	{
+		LINE& l = e.line[i];
+		if (l.id >= 0)
+		{
+			FSEdge& em = m.Edge(l.id);
+			for (int j = 0; j < l.nn; ++j) tag[l.node[j]] = j;
+			for (int j = 0; j < l.nn; ++j) lut[i][j] = tag[em.n[j]];
+		}
+	}
+
+	bool bok = true;
+
+	switch (ntype)
+	{
+	case FLOAT:
+	{
+		FEEdgeData<float, DATA_MULT>& df = dynamic_cast<FEEdgeData<float, DATA_MULT>&>(data);
+		vector<float> a(NFM * NL);
+		m_ar.read(a);
+		float v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	case VEC3F:
+	{
+		FEEdgeData<vec3f, DATA_MULT>& df = dynamic_cast<FEEdgeData<vec3f, DATA_MULT>&>(data);
+		vector<vec3f> a(NFM * NL);
+		m_ar.read(a);
+		vec3f v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	case MAT3FS:
+	{
+		FEEdgeData<mat3fs, DATA_MULT>& df = dynamic_cast<FEEdgeData<mat3fs, DATA_MULT>&>(data);
+		vector<mat3fs> a(NFM * NL);
+		m_ar.read(a);
+		mat3fs v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	case MAT3F:
+	{
+		FEEdgeData<mat3f, DATA_MULT>& df = dynamic_cast<FEEdgeData<mat3f, DATA_MULT>&>(data);
+		vector<mat3f> a(NFM * NL);
+		m_ar.read(a);
+		mat3f v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	case MAT3FD:
+	{
+		FEEdgeData<mat3fd, DATA_MULT>& df = dynamic_cast<FEEdgeData<mat3fd, DATA_MULT>&>(data);
+		vector<mat3fd> a(NFM * NL);
+		m_ar.read(a);
+		mat3fd v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	case TENS4FS:
+	{
+		FEEdgeData<tens4fs, DATA_MULT>& df = dynamic_cast<FEEdgeData<tens4fs, DATA_MULT>&>(data);
+		vector<tens4fs> a(NFM * NL);
+		m_ar.read(a);
+		tens4fs v[4];
+		for (int i = 0; i < NL; ++i)
+		{
+			LINE& l = e.line[i];
+			vector<int>& li = lut[i];
+			for (int j = 0; j < l.nn; ++j) v[j] = a[NFM * i + li[j]];
+			if (l.id >= 0) bok &= df.add(l.id, v, l.nn);
+		}
+	}
+	break;
+	default:
+		return errf("Failed reading edge data");
+	}
+
+	if (bok == false) addWarning(XPLT_READ_DUPLICATE_EDGES);
+
+	return true;
+}
+
+bool XpltReader3::ReadEdgeData_ITEM(XpltReader3::Edge& e, Post::FEMeshData& data, int ntype)
+{
+	int NL = e.nlines;
+	switch (ntype)
+	{
+	case FLOAT:
+	{
+		FEEdgeData<float, DATA_ITEM>& df = dynamic_cast<FEEdgeData<float, DATA_ITEM>&>(data);
+		vector<float> a(NL);
+		m_ar.read(a);
+		for (int i = 0; i < NL; ++i) df.add(e.line[i].id, a[i]);
+	}
+	break;
+	case VEC3F:
+	{
+		vector<vec3f> a(NL);
+		m_ar.read(a);
+		FEEdgeData<vec3f, DATA_ITEM>& dv = dynamic_cast<FEEdgeData<vec3f, DATA_ITEM>&>(data);
+		for (int i = 0; i < NL; ++i) dv.add(e.line[i].id, a[i]);
+	}
+	break;
+	case MAT3FS:
+	{
+		vector<mat3fs> a(NL);
+		m_ar.read(a);
+		FEEdgeData<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEEdgeData<mat3fs, DATA_ITEM>&>(data);
+		for (int i = 0; i < NL; ++i) dm.add(e.line[i].id, a[i]);
+	}
+	break;
+	case MAT3F:
+	{
+		vector<mat3f> a(NL);
+		m_ar.read(a);
+		FEEdgeData<mat3f, DATA_ITEM>& dm = dynamic_cast<FEEdgeData<mat3f, DATA_ITEM>&>(data);
+		for (int i = 0; i < NL; ++i) dm.add(e.line[i].id, a[i]);
+	}
+	break;
+	case MAT3FD:
+	{
+		vector<mat3fd> a(NL);
+		m_ar.read(a);
+		FEEdgeData<mat3fd, DATA_ITEM>& dm = dynamic_cast<FEEdgeData<mat3fd, DATA_ITEM>&>(data);
+		for (int i = 0; i < NL; ++i) dm.add(e.line[i].id, a[i]);
+	}
+	break;
+	case TENS4FS:
+	{
+		vector<tens4fs> a(NL);
+		m_ar.read(a);
+		FEEdgeData<tens4fs, DATA_ITEM>& dm = dynamic_cast<FEEdgeData<tens4fs, DATA_ITEM>&>(data);
+		for (int i = 0; i < NL; ++i) dm.add(e.line[i].id, a[i]);
+	}
+	break;
+	default:
+		return errf("Failed reading edge data");
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool XpltReader3::ReadEdgeData_NODE(Post::FEPostMesh& m, XpltReader3::Edge& e, Post::FEMeshData& data, int ntype)
+{
+	// set nodal tags to local node number
+	int NN = m.Nodes();
+	for (int i = 0; i < NN; ++i) m.Node(i).m_ntag = -1;
+
+	int n = 0;
+	for (int i = 0; i < e.nlines; ++i)
+	{
+		LINE& l = e.line[i];
+		int nf = l.nn;
+		for (int j = 0; j < nf; ++j)
+			if (m.Node(l.node[j]).m_ntag == -1) m.Node(l.node[j]).m_ntag = n++;
+	}
+
+	// create the edge list
+	vector<int> f(e.nlines);
+	for (int i = 0; i < e.nlines; ++i) f[i] = e.line[i].id;
+
+	// create vector that stores the number of nodes for each facet
+	vector<int> fn(e.nlines, 0);
+	for (int i = 0; i < e.nlines; ++i) fn[i] = e.line[i].nn;
+
+	// create the local node index list
+	vector<int> l; l.reserve(e.nlines * FSEdge::MAX_NODES);
+	for (int i = 0; i < e.nlines; ++i)
+	{
+		FSEdge& f = m.Edge(e.line[i].id);
+		int nn = f.Nodes();
+		for (int j = 0; j < nn; ++j)
+		{
+			int n = m.Node(f.n[j]).m_ntag; assert(n >= 0);
+			l.push_back(n);
+		}
+	}
+
+	// get the data
+	switch (ntype)
+	{
+	case FLOAT:
+	{
+		FEEdgeData<float, DATA_NODE>& df = dynamic_cast<FEEdgeData<float, DATA_NODE>&>(data);
+		vector<float> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	case VEC3F:
+	{
+		FEEdgeData<vec3f, DATA_NODE>& df = dynamic_cast<FEEdgeData<vec3f, DATA_NODE>&>(data);
+		vector<vec3f> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	case MAT3FS:
+	{
+		FEEdgeData<mat3fs, DATA_NODE>& df = dynamic_cast<FEEdgeData<mat3fs, DATA_NODE>&>(data);
+		vector<mat3fs> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	case MAT3F:
+	{
+		FEEdgeData<mat3f, DATA_NODE>& df = dynamic_cast<FEEdgeData<mat3f, DATA_NODE>&>(data);
+		vector<mat3f> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	case MAT3FD:
+	{
+		FEEdgeData<mat3fd, DATA_NODE>& df = dynamic_cast<FEEdgeData<mat3fd, DATA_NODE>&>(data);
+		vector<mat3fd> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	case TENS4FS:
+	{
+		FEEdgeData<tens4fs, DATA_NODE>& df = dynamic_cast<FEEdgeData<tens4fs, DATA_NODE>&>(data);
+		vector<tens4fs> a(n);
+		m_ar.read(a);
+		df.add(a, f, l, fn);
+	}
+	break;
+	default:
+		return errf("Failed reading edge data");
 	}
 
 	return true;

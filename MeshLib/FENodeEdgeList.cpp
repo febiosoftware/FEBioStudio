@@ -59,17 +59,16 @@ void FSNodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		const FSEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if ((segsOnly == false) || (edge.IsExterior()))
 		{
-			int n0 = edge.n[0];
-			int n1 = edge.n[1];
-
-			vector<int>& l0 = m_edge[n0];
-			vector<int>& l1 = m_edge[n1];
-
-			l0.push_back(i);
-			l1.push_back(i);
+			for (int j = 0; j < edge.Nodes(); ++j)
+			{
+				int nj = edge.n[j];
+				vector<NodeEdgeRef>& lj = m_edge[nj];
+				NodeEdgeRef ref = { i, j, &edge };
+				lj.push_back(ref);
+			}
 		}
 	}
 }
@@ -77,15 +76,15 @@ void FSNodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 // Return the edge for a given node
 const FSEdge* FSNodeEdgeList::Edge(int node, int edge) const
 {
-	return m_mesh->EdgePtr(m_edge[node][edge]);
+	return m_edge[node][edge].pe;
 }
 
 int FSNodeEdgeList::EdgeIndex(int node, int edge) const 
 { 
-	return m_edge[node][edge]; 
+	return m_edge[node][edge].eid; 
 }
 
-const std::vector<int>& FSNodeEdgeList::EdgeIndexList(int node) const
+const std::vector<NodeEdgeRef>& FSNodeEdgeList::EdgeList(int node) const
 {
 	return m_edge[node];
 }

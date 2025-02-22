@@ -131,6 +131,14 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		m_FaceData.append(nf);
 	}
 
+	// allocate edge data
+	for (int i = 0; i < edges; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		int ne = edge.Nodes();
+		m_EdgeData.append(ne);
+	}
+
 	// initialize data
 	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = to_vec3f(mesh.Node(i).r);
 	for (int i=0; i<elems; ++i)
@@ -376,6 +384,15 @@ void FEState::RebuildData()
 		FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		m_FaceData.append(nf);
+	}
+
+	// allocate edge data
+	m_EdgeData.clear();
+	for (int i = 0; i < edges; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		int ne = edge.Nodes();
+		m_EdgeData.append(ne);
 	}
 
 	// initialize data

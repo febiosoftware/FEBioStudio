@@ -37,7 +37,8 @@ enum XPLT_READ_STATE_FLAG {
 };
 
 enum XPLT_READ_WARNING {
-	XPLT_READ_DUPLICATE_FACES			// warning issued when surface values are overwritten
+	XPLT_READ_DUPLICATE_FACES,			// warning issued when surface values are overwritten
+	XPLT_READ_DUPLICATE_EDGES			// warning issued when edge values are overwritten
 };
 
 class xpltParser;

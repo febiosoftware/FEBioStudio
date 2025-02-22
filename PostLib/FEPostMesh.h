@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FEGroup.h"
 #include <MeshLib/FENodeElementList.h>
 #include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FENodeEdgeList.h>
 #include <FSCore/box.h>
 #include <utility>
 #include <vector>
