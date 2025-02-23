@@ -218,7 +218,7 @@ public:
 
 	// evaluate scalar functions
 	void EvaluateNode   (int n, int ntime, int nfield, NODEDATA& d);
-	void EvaluateEdge   (int n, int ntime, int nfield, EDGEDATA& d);
+	bool EvaluateEdge   (int n, int ntime, int nfield, EDGEDATA& d);
 	bool EvaluateFace   (int n, int ntime, int nfield, float* data, float& val);
 	bool EvaluateElement(int n, int ntime, int nfield, float* data, float& val);
 
@@ -285,6 +285,7 @@ public:
 protected:
 	// Helper functions for data evaluation
 	void EvalNodeField(int ntime, int nfield);
+	void EvalEdgeField(int ntime, int nfield);
 	void EvalFaceField(int ntime, int nfield);
 	void EvalElemField(int ntime, int nfield);
 	

@@ -36,9 +36,10 @@ namespace Post {
 }
 
 //-----------------------------------------------------------------------------
-// This class reads the XPLT file, version 3.2, 3.3, 3.4
+// This class reads the XPLT file, version 3.2, 3.3, 3.4, 3.5
 // 3.3: node IDs are stored in Node section
 // 3.4: Added support for beam elements
+// 3.5: Added support for edge output variables
 class XpltReader3 : public xpltParser
 {
 public:
@@ -66,6 +67,7 @@ public:
 			PLT_DIC_NODAL				= 0x01023000,
 			PLT_DIC_DOMAIN				= 0x01024000,
 			PLT_DIC_SURFACE				= 0x01025000,
+			PLT_DIC_EDGE				= 0x01026000,
 //		PLT_MATERIALS					= 0x01030000,		// This was removed
 //			PLT_MATERIAL				= 0x01030001,
 //			PLT_MAT_ID					= 0x01030002,
@@ -127,6 +129,16 @@ public:
 				PLT_FACETSET_LIST			= 0x01047200,
 					PLT_FACET				= 0x01047201,
 
+			PLT_EDGE_SECTION			= 0x01048000, // new in 3.5
+				PLT_EDGE				= 0x01048100,
+					PLT_EDGE_HDR		= 0x01048101,
+					PLT_EDGE_ID			= 0x01048102,
+					PLT_EDGE_LINES		= 0x01048103,
+					PLT_EDGE_NAME		= 0x01048104,
+					PLT_EDGE_MAX_NODES	= 0x01048105,
+				PLT_EDGE_LIST			= 0x01048200,
+					PLT_LINE			= 0x01048201,
+
 			PLT_OBJECTS_SECTION			= 0x01050000,
 					PLT_OBJECT_ID		= 0x01050001,
 					PLT_OBJECT_NAME		= 0x01050002,
@@ -150,10 +162,11 @@ public:
 				PLT_STATE_VAR_ID		= 0x02020002,
 				PLT_STATE_VAR_DATA		= 0x02020003,
 				PLT_GLOBAL_DATA			= 0x02020100,
-//				PLT_MATERIAL_DATA		= 0x02020200,		// this was removed
+//				PLT_MATERIAL_DATA		= 0x02020200,	// this was removed
 				PLT_NODE_DATA			= 0x02020300,
 				PLT_ELEMENT_DATA		= 0x02020400,
 				PLT_FACE_DATA			= 0x02020500,
+				PLT_EDGE_DATA			= 0x02020600, // new in 3.5
 			PLT_MESH_STATE				= 0x02030000,
 				PLT_ELEMENT_STATE		= 0x02030001,
 			PLT_OBJECTS_STATE			= 0x02040000
@@ -223,6 +236,7 @@ public:
 		std::vector<DICT_ITEM>	m_Node;
 		std::vector<DICT_ITEM>	m_Elem;
 		std::vector<DICT_ITEM>	m_Face;
+		std::vector<DICT_ITEM>	m_Edge;
 
 	public:
 		void Clear()
@@ -232,6 +246,7 @@ public:
 			m_Node.clear();
 			m_Elem.clear();
 			m_Face.clear();
+			m_Edge.clear();
 		}
 	};
 
@@ -261,6 +276,13 @@ public:
 		int		node[9];
 	};
 
+	struct LINE
+	{
+		int id;
+		int nn;
+		int node[4];
+	};
+
 	class Domain
 	{
 	public:
@@ -288,9 +310,24 @@ public:
 		char			szname[DI_NAME_SIZE];
 
 	public:
-		Surface() { nfaces = 0; maxNodes = 0; szname[0] = 0; }
-		Surface(const Surface& s) { nfaces = s.nfaces; maxNodes = s.maxNodes; face = s.face; strncpy(szname, s.szname, 64); }
+		Surface() { sid = -1; nfaces = 0; maxNodes = 0; szname[0] = 0; }
+		Surface(const Surface& s) { sid = -1; nfaces = s.nfaces; maxNodes = s.maxNodes; face = s.face; strncpy(szname, s.szname, 64); }
 		void operator = (const Surface& s) { nfaces = s.nfaces; maxNodes = s.maxNodes; face = s.face; }
+	};
+
+	class Edge
+	{
+	public:
+		int				eid;
+		int				nlines;		// number of lines
+		int				maxNodes;	// max nr of nodes per line element
+		std::vector<LINE>	line;
+		char			szname[DI_NAME_SIZE];
+
+	public:
+		Edge() { eid = -1; nlines = 0; maxNodes = 0; szname[0] = 0; }
+		Edge(const Edge& e) { eid = -1; nlines = e.nlines; maxNodes = e.maxNodes; line = e.line; strncpy(szname, e.szname, 64); }
+		void operator = (const Edge& e) { nlines = e.nlines; maxNodes = e.maxNodes; line = e.line; }
 	};
 
 	class NodeSet
@@ -332,6 +369,7 @@ public:
 		std::vector<NODE>		m_Node;
 		std::vector<Domain>		m_Dom;
 		std::vector<Surface>	m_Surf;
+		std::vector<Edge>		m_Edge;
 		std::vector<NodeSet>	m_NodeSet;
 		std::vector<ElemSet>	m_ElemSet;
 		std::vector<Surface>	m_FacetSet;
@@ -354,6 +392,10 @@ public:
 		int surfaces() const { return (int)m_Surf.size(); }
 		void addSurface(Surface& surf);
 		Surface& surface(int i) { return m_Surf[i]; }
+
+		int edges() const { return (int)m_Edge.size(); }
+		void addEdge(Edge& edge);
+		Edge& edge(int i) { return m_Edge[i]; }
 
 		int nodeSets() const { return (int)m_NodeSet.size(); }
 		void addNodeSet(NodeSet& nset);
@@ -393,10 +435,12 @@ protected:
 	bool ReadNodeDicItems    ();
 	bool ReadElemDicItems    ();
 	bool ReadFaceDicItems    ();
+	bool ReadEdgeDicItems    ();
 
 	bool ReadNodeSection      (Post::FEPostModel& fem);
 	bool ReadDomainSection    (Post::FEPostModel& fem);
 	bool ReadSurfaceSection   (Post::FEPostModel& fem);
+	bool ReadEdgeSection      (Post::FEPostModel& fem);
 	bool ReadNodeSetSection   (Post::FEPostModel& fem);
 	bool ReadElementSetSection(Post::FEPostModel& fem);
 	bool ReadFacetSetSection  (Post::FEPostModel& fem);
@@ -408,6 +452,7 @@ protected:
 	bool ReadNodeData    (Post::FEPostModel& fem, Post::FEState* pstate);
 	bool ReadElemData    (Post::FEPostModel& fem, Post::FEState* pstate);
 	bool ReadFaceData    (Post::FEPostModel& fem, Post::FEState* pstate);
+	bool ReadEdgeData    (Post::FEPostModel& fem, Post::FEState* pstate);
 
 	bool ReadElemData_NODE(FSMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
@@ -416,6 +461,10 @@ protected:
 	bool ReadFaceData_NODE(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype);
 	bool ReadFaceData_MULT(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
+
+	bool ReadEdgeData_NODE(FSMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
+	bool ReadEdgeData_ITEM(Edge& e, Post::FEMeshData& data, int ntype);
+	bool ReadEdgeData_MULT(FSMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
 
 	void Clear();
 

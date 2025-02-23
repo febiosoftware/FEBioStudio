@@ -1117,7 +1117,7 @@ void CMainWindow::on_actionClone_triggered()
 
 		// add and select the new object
 		doc->DoCommand(new CCmdAddAndSelectObject(&m, pco));
-		doc->GetFSModel()->UpdateMaterials();
+		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update windows
 		Update(0, true);
@@ -1198,7 +1198,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 	GLScene* scene = doc->GetScene();
 	if (scene) scene->ZoomToObject(copyObject);
 	copyObject = nullptr;
-	doc->GetFSModel()->UpdateMaterials();
+	doc->GetFSModel()->UpdateMaterialSelections();
 
 	// update windows
 	Update(0, true);
@@ -1237,7 +1237,7 @@ void CMainWindow::on_actionCloneGrid_triggered()
 			cmd->AddCommand(new CCmdAddObject(&m, newObjects[i]));
 		}
 		doc->DoCommand(cmd);
-		doc->GetFSModel()->UpdateMaterials();
+		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1276,7 +1276,7 @@ void CMainWindow::on_actionCloneRevolve_triggered()
 			cmd->AddCommand(new CCmdAddObject(&m, newObjects[i]));
 		}
 		doc->DoCommand(cmd);
-		doc->GetFSModel()->UpdateMaterials();
+		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1331,7 +1331,7 @@ void CMainWindow::on_actionMerge_triggered()
 
 		// perform the operation
 		doc->DoCommand(pcmd);
-		doc->GetFSModel()->UpdateMaterials();
+		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1406,7 +1406,7 @@ void CMainWindow::on_actionDetach_triggered()
 		// add it to the pile
 		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
-		doc->GetFSModel()->UpdateMaterials();
+		doc->GetFSModel()->UpdateMaterialSelections();
 
 		UpdateModel(newObject, true);
 	}

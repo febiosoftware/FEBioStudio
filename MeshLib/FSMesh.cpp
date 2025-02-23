@@ -88,6 +88,7 @@ FSMesh::FSMesh(FSMesh& m)
 	m_NLT = m.m_NLT;
 	m_ELT = m.m_ELT;
 	m_NFL = m.m_NFL;
+	m_NLL = m.m_NLL;
 	m_eltmin = m.m_eltmin;
 	m_nltmin = m.m_nltmin;
 
@@ -629,6 +630,9 @@ void FSMesh::RebuildEdgeData()
 
 	// Build the edge neighbors (Only applies to exterior edges)
 	UpdateEdgeNeighbors();
+
+	// rebuild the node-edge list
+	m_NLL.Build(this);
 }
 
 //-----------------------------------------------------------------------------

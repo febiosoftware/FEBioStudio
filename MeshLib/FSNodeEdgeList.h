@@ -30,6 +30,13 @@ SOFTWARE.*/
 class FSLineMesh;
 class FSEdge;
 
+struct NodeEdgeRef
+{
+	int eid; //edge id
+	int nid; // local edge index of node
+	FSEdge* pe; // pointer to edge
+};
+
 class FSNodeEdgeList
 {
 public:
@@ -50,9 +57,9 @@ public:
 	// return the edge index
 	int EdgeIndex(int node, int edge) const;
 
-	const std::vector<int>& EdgeIndexList(int node) const;
+	const std::vector<NodeEdgeRef>& EdgeList(int node) const;
 
 private:
 	FSLineMesh*			m_mesh;
-	std::vector< std::vector<int> >	m_edge;		// edge list
+	std::vector< std::vector<NodeEdgeRef> >	m_edge;		// edge list
 };

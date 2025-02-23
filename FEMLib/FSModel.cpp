@@ -1130,7 +1130,7 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 			if (pmat == pold) pp->SetMaterialID(pnew->GetID());
 		}
 	}
-	UpdateMaterials();
+	UpdateMaterialSelections();
 	ClearMLT();
 }
 
@@ -1195,7 +1195,7 @@ int FSModel::DeleteMaterial(GMaterial* pmat)
 			if (pm == pmat) pp->SetMaterialID(-1);
 		}
 	}
-	UpdateMaterials();
+	UpdateMaterialSelections();
 	ClearMLT();
 	return m_pMat.Remove(pmat);
 }
@@ -1268,17 +1268,17 @@ void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 		GPart* pg = po->Part(i);
 		pg->SetMaterialID(matID);
 	}
-	UpdateMaterials();
+	UpdateMaterialSelections();
 }
 
 void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 {
 	int matID = (mat ? mat->GetID() : -1);
 	pg->SetMaterialID(matID);
-	UpdateMaterials();
+	UpdateMaterialSelections();
 }
 
-void FSModel::UpdateMaterials()
+void FSModel::UpdateMaterialSelections()
 {
 	for (int i = 0; i < Materials(); ++i)
 	{
@@ -1300,6 +1300,47 @@ void FSModel::UpdateMaterials()
 				mat->AddPart(pg);
 			}
 		}
+		po->UpdateFEElementMatIDs();
+	}
+
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* pm = GetMaterial(i);
+		pm->UpdatePosition();
+	}
+}
+
+void FSModel::UpdateMaterialAssignments()
+{
+	GModel& gm = GetModel();
+	for (int i = 0; i < gm.Objects(); ++i)
+	{
+		GObject* po = gm.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			pg->SetMaterialID(-1);
+		}
+	}
+
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* pm = GetMaterial(i);
+		GPartList* partList = dynamic_cast<GPartList*>(pm->GetItemList()); assert(partList);
+		if (partList)
+		{
+			vector<GPart*> parts = partList->GetPartList();
+			for (GPart* pg : parts)
+			{
+				assert(pg->GetMaterialID() == -1);
+				pg->SetMaterialID(pm->GetID());
+			}
+		}
+	}
+
+	for (int i = 0; i < gm.Objects(); ++i)
+	{
+		GObject* po = gm.Object(i);
 		po->UpdateFEElementMatIDs();
 	}
 
@@ -1570,7 +1611,7 @@ void FSModel::Load(IArchive& ar)
 
 	// update materials item lists
 	// (This is needed so that the rigid material's glyphs can be positioned correctly.)
-	UpdateMaterials();
+	UpdateMaterialSelections();
 }
 
 //-----------------------------------------------------------------------------

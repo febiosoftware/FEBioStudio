@@ -364,9 +364,6 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		}
 	}
 
-	// update material part lists
-	fem.UpdateMaterials();
-
 	// resolve all load curve references
 	int NLC = m_febio->LoadCurves();
 	if (NLC > 0)
@@ -477,6 +474,9 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		// pass ownership to the model
 		fem.GetModel().AddObject(po);
 	}
+
+	// update material part lists
+	fem.UpdateMaterialSelections();
 
 	// update log variables
 	GModel& model = fem.GetModel();

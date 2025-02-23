@@ -176,6 +176,7 @@ public:
 
 	ValArray	m_ElemData;	// element data
 	ValArray	m_FaceData;	// face data
+	ValArray	m_EdgeData;	// edge data
 
 	// Data
 	FEMeshDataList	m_Data;	// data

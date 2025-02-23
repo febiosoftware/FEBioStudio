@@ -199,9 +199,18 @@ void GMaterial::UpdateParts()
 	std::vector<GPart*> partList = m_partList->GetPartList();
 	for (GPart* pg : partList)
 	{
-		pg->SetMaterialID(GetID());
+		if (pg->GetMaterialID() != GetID())
+		{
+			GMaterial* pm = m_ps->GetMaterialFromID(pg->GetMaterialID());
+			if (pm)
+			{
+				int m = pm->m_partList->FindItem(pg->GetID()); assert(m >= 0);
+				if (m >= 0) pm->m_partList->remove(m);
+			}
+			pg->SetMaterialID(GetID());
+		}
 	}
-	m_ps->UpdateMaterials();
+	m_ps->UpdateMaterialAssignments();
 }
 
 void GMaterial::SetModel(FSModel* ps)

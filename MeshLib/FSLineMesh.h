@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FSNode.h"
 #include "FSEdge.h"
 #include <FSCore/box.h>
+#include "FSNodeEdgeList.h"
 #include <vector>
 
 class GObject;
@@ -94,12 +95,15 @@ public:
 	// update the bounding box
 	void UpdateBoundingBox();
 
+	const std::vector<NodeEdgeRef>& NodeEdgeList(int node) const;
+
 protected:
 	GObject*	m_pobj;		//!< owning object
 	BOX			m_box;		//!< bounding box
 
 	std::vector<FSNode>	m_Node;		//!< Node list
 	std::vector<FSEdge>	m_Edge;		//!< Edge list
+	FSNodeEdgeList		m_NLL;
 };
 
 namespace MeshTools {

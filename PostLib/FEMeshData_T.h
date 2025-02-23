@@ -158,6 +158,186 @@ protected:
 
 //=============================================================================
 // 
+//    E D G E   D A T A
+// 
+//=============================================================================
+
+// base class for edge data
+class FEEdgeItemData : public FEMeshData
+{
+public:
+	FEEdgeItemData(FEState* state, DATA_TYPE ntype, DATA_FORMAT nfmt) : FEMeshData(state, ntype, nfmt) {}
+};
+
+// template base class for defining the data value
+template <typename T, DATA_FORMAT fmt> class FEEdgeData_T : public FEEdgeItemData
+{
+public:
+	FEEdgeData_T(FEState* state, ModelDataField* pdf) : FEEdgeItemData(state, FEMeshDataTraits<T>::Type(), fmt) {}
+	virtual void eval(int n, T* pv) = 0;
+	virtual bool active(int n) { return true; }
+
+	static DATA_TYPE Type() { return FEMeshDataTraits<T>::Type(); }
+	static DATA_FORMAT Format() { return fmt; }
+	static DATA_CLASS Class() { return EDGE_DATA; }
+};
+
+// template class for edge data stored in vectors
+template <typename T, DATA_FORMAT fmt> class FEEdgeData : public FEEdgeData_T<T, fmt> {};
+
+// *** specialization for DATA_ITEM format ***
+template <typename T> class FEEdgeData<T, DATA_ITEM> : public FEEdgeData_T<T, DATA_ITEM>
+{
+public:
+	FEEdgeData(FEState* state, ModelDataField* pdf) : FEEdgeData_T<T, DATA_ITEM>(state, pdf)
+	{
+		if (m_edge.empty())
+			m_edge.assign(state->GetFEMesh()->Edges(), -1);
+	}
+	void eval(int n, T* pv) { (*pv) = m_data[m_edge[n]]; }
+	bool active(int n) { return (m_edge[n] >= 0); }
+	void copy(FEEdgeData<T, DATA_ITEM>& d) { m_data = d.m_data; m_edge = d.m_edge; }
+	bool add(int n, const T& d)
+	{
+		if ((n < 0) || (n >= m_edge.size())) return false;
+		if (m_edge[n] >= 0)
+		{
+//			assert(m_edge[n] == (int) m_data.size());
+			if (m_edge[n] != (int)m_data.size()) return false;
+		}
+		else m_edge[n] = (int)m_data.size();
+		m_data.push_back(d);
+		return true;
+	}
+
+	int size() const { return (int)m_data.size(); }
+	T& operator [] (int n) { return m_data[n]; }
+
+protected:
+	std::vector<T>		m_data;
+	std::vector<int>	m_edge;
+};
+
+// *** specialization for DATA_REGION format ***
+template <typename T> class FEEdgeData<T, DATA_REGION> : public FEEdgeData_T<T, DATA_REGION>
+{
+public:
+	FEEdgeData(FEState* state, ModelDataField* pdf) : FEEdgeData_T<T, DATA_REGION>(state, pdf)
+	{
+		if (m_edge.empty())
+			m_edge.assign(state->GetFEMesh()->Edges(), -1);
+	}
+	void eval(int n, T* pv) { (*pv) = m_data[m_edge[n]]; }
+	bool active(int n) { return (m_edge[n] >= 0); }
+	void copy(FEEdgeData<T, DATA_REGION>& d) { m_edge = d.m_edge; m_data = d.m_data; }
+	bool add(std::vector<int>& item, const T& v)
+	{
+		int m = (int)m_data.size();
+		m_data.push_back(v);
+		for (int i = 0; i < (int)item.size(); ++i)
+		{
+			if (m_edge[item[i]] == -1) m_edge[item[i]] = m;
+			else
+			{
+//				assert(m_edge[item[i]] == m);
+				if (m_edge[item[i]] != m) return false;
+			}
+		}
+
+		return true;
+	}
+
+	int size() const { return (int)m_data.size(); }
+	T& operator [] (int n) { return m_data[n]; }
+
+protected:
+	std::vector<T>		m_data;
+	std::vector<int>	m_edge;
+};
+
+
+// *** specialization for DATA_MULT format ***
+template <typename T> class FEEdgeData<T, DATA_MULT> : public FEEdgeData_T<T, DATA_MULT>
+{
+public:
+	FEEdgeData(FEState* state, ModelDataField* pdf) : FEEdgeData_T<T, DATA_MULT>(state, pdf)
+	{
+		if (m_edge.empty())
+			m_edge.assign(state->GetFEMesh()->Edges(), -1);
+	}
+	void eval(int n, T* pv)
+	{
+		int m = FEMeshData::GetFEState()->GetFEMesh()->Edge(n).Nodes();
+		for (int i = 0; i < m; ++i) pv[i] = m_data[m_edge[n] + i];
+	}
+	bool active(int n) { return (m_edge[n] >= 0); }
+	void copy(FEEdgeData<T, DATA_MULT>& d) { m_data = d.m_data; m_edge = d.m_edge; }
+	bool add(int n, T* d, int m)
+	{
+		if (m_edge[n] >= 0)
+		{
+//			assert(m_edge[n] == (int) m_data.size());
+			if (m_edge[n] != (int)m_data.size()) return false;
+		}
+		else m_edge[n] = (int)m_data.size();
+		for (int i = 0; i < m; ++i) m_data.push_back(d[i]);
+		return true;
+	}
+
+	int size() const { return (int)m_data.size(); }
+	T& operator [] (int n) { return m_data[n]; }
+
+protected:
+	std::vector<T>		m_data;
+	std::vector<int>	m_edge;
+};
+
+// *** specialization for DATA_NODE format ***
+template <typename T> class FEEdgeData<T, DATA_NODE> : public FEEdgeData_T<T, DATA_NODE>
+{
+public:
+	FEEdgeData(FEState* state, ModelDataField* pdf) : FEEdgeData_T<T, DATA_NODE>(state, pdf)
+	{
+		if (m_edge.empty())
+		{
+			int N = state->GetFEMesh()->Edges();
+			m_edge.resize(2 * N);
+			for (int i = 0; i < N; ++i) { m_edge[2 * i] = -1; m_edge[2 * i + 1] = 0; }
+		}
+	}
+	void eval(int nedge, T* pv)
+	{
+		int n = m_edge[2 * nedge];
+		int m = m_edge[2 * nedge + 1];
+		for (int i = 0; i < m; ++i) pv[i] = m_data[m_indx[n + i]];
+	}
+	bool active(int n) { return (m_edge[2 * n] >= 0); }
+	void copy(FEEdgeData<T, DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; }
+	void add(std::vector<T>& data, std::vector<int>& edge, std::vector<int>& index, std::vector<int>& ne)
+	{
+		int n0 = (int)m_data.size();
+		m_data.insert(m_data.end(), data.begin(), data.end());
+		int c = 0;
+		for (int i = 0; i < (int)edge.size(); ++i)
+		{
+			m_edge[2 * edge[i]] = (int)m_indx.size();
+			m_edge[2 * edge[i] + 1] = ne[i];
+			for (int j = 0; j < ne[i]; ++j, ++c) m_indx.push_back(index[c] + n0);
+		}
+	}
+
+	int size() const { return (int)m_data.size(); }
+	T& operator [] (int n) { return m_data[n]; }
+
+protected:
+	std::vector<T>		m_data;
+	std::vector<int>	m_edge;
+	std::vector<int>	m_indx;
+};
+
+
+//=============================================================================
+// 
 //    F A C E   D A T A
 // 
 //=============================================================================

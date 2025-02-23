@@ -39,6 +39,11 @@ bool FSLineMesh::IsEditable() const
 	return (dynamic_cast<const GMeshObject*>(GetGObject()) != nullptr);
 }
 
+const std::vector<NodeEdgeRef>& FSLineMesh::NodeEdgeList(int node) const
+{
+	return m_NLL.EdgeList(node);
+}
+
 //-----------------------------------------------------------------------------
 // Tag all nodes
 void FSLineMesh::TagAllNodes(int ntag)

@@ -185,10 +185,10 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 			int n1 = pm->Node(src.n[1]).m_ntag;
 
 			FSEdge* pe = nullptr;
-			const std::vector<int>& el = NEL.EdgeIndexList(n0);
+			const std::vector<NodeEdgeRef>& el = NEL.EdgeList(n0);
 			for (int k = 0; k < el.size(); ++k)
 			{
-				FSEdge& e = m_surfmesh->Edge(el[k]);
+				FSEdge& e = *el[k].pe;
 				if (((e.n[0] == n0) && (e.n[1] == n1)) ||
 					((e.n[0] == n1) && (e.n[1] == n0)))
 				{
