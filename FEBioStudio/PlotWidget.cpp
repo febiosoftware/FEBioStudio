@@ -1142,7 +1142,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 			int y1 = m_plotRect.bottom();
 			int maxWidth = 0;
 			char sz[256] = { 0 };
-			double fy = m_yscale * (int)(m_viewRect.top() / m_yscale);
+			double fy = m_yscale * floor(m_viewRect.top() / m_yscale);
 			while (fy < m_viewRect.bottom())
 			{
 				int iy = ViewToScreen(QPointF(0.0, fy)).y();
@@ -1404,7 +1404,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			if (xPos < x0) xPos = x0; else if (xPos > x1) xPos = x1;
 			break;
 		}
-		double fy = yscale*(int)(m_viewRect.top() / yscale);
+		double fy = yscale*floor(m_viewRect.top() / yscale);
 		while (fy < m_viewRect.bottom())
 		{
 			int iy = ViewToScreen(QPointF(0.0, fy)).y();
@@ -1442,7 +1442,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			if (yPos < y0) yPos = y0; else if (yPos > y1) yPos = y1;
 			break;
 		}
-		double fx = xscale*(int)(m_viewRect.left() / xscale);
+		double fx = xscale*floor(m_viewRect.left() / xscale);
 		while (fx < m_viewRect.right())
 		{
 			int ix = ViewToScreen(QPointF(fx, 0.0)).x();
@@ -1485,7 +1485,7 @@ void CPlotWidget::drawGrid(QPainter& p)
 	// draw the y-grid lines
 	if (m_data.m_bdrawYLines)
 	{
-		double fy = yscale*(int)(m_viewRect.top()/yscale);
+		double fy = yscale*floor(m_viewRect.top()/yscale);
 		while (fy < m_viewRect.bottom())
 		{
 			int iy = ViewToScreen(QPointF(0.0, fy)).y();
@@ -1503,7 +1503,7 @@ void CPlotWidget::drawGrid(QPainter& p)
 	// draw the x-grid lines
 	if (m_data.m_bdrawXLines)
 	{
-		double fx = xscale*(int)(m_viewRect.left() / xscale);
+		double fx = xscale*floor(m_viewRect.left() / xscale);
 		while (fx < m_viewRect.right())
 		{
 			int ix = ViewToScreen(QPointF(fx, 0.0)).x();
