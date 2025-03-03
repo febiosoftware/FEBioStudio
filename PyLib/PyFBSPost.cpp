@@ -121,8 +121,9 @@ void init_FBSPost(py::module& m)
 
 	py::class_<FEDataManager>(post, "DataManager")
         .def("DataFields", &FEDataManager::DataFields)
-        .def("DataField", &FEDataManager::DataField, py::return_value_policy::reference)
-        .def("FindDataField", &FEDataManager::FindDataField);
+        .def("DataField", [](FEDataManager& self, int i){return *self.DataField(i); }, py::return_value_policy::reference)
+        .def("FindDataField", &FEDataManager::FindDataField)
+        ;
 
 	py::class_<ModelDataField, std::unique_ptr<ModelDataField, py::nodelete>>(post, "ModelDataField")
 		.def_property("name", &ModelDataField::GetName, &ModelDataField::SetName)
