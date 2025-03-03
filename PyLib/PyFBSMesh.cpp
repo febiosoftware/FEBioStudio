@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "PyFSMesh.h"
+#include "PyFBSMesh.h"
 
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSMeshItem.h>
@@ -115,6 +115,20 @@ void init_FSMesh(py::module_& m)
 		.def("Node", [](FSElement& self, int node) { return self.m_node[node]; })
 		.def("SetNode", [](FSElement& self, int node, int val) { self.m_node[node] = val; })
 		.def("SetType", &FSElement::SetType)
+        ;
+
+    py::class_<FSFace, FSMeshItem, std::unique_ptr<FSFace, py::nodelete>>(mesh, "Face")
+        .def("Nodes", &FSFace::Nodes)
+		.def("Node", [](FSFace& self, int node) { return self.n[node]; })
+        .def("Edges", &FSFace::Edges)
+		.def("Edge", &FSFace::GetEdge)
+        .def("Normal", [](FSFace& self) { return to_vec3d(self.m_fn); })
+        .def("NodeNormal", [](FSFace& self, int node) { return to_vec3d(self.m_nn[node]); })
+        ;
+
+    py::class_<FSEdge, FSMeshItem, std::unique_ptr<FSEdge, py::nodelete>>(mesh, "Edge")
+        .def("Nodes", &FSEdge::Nodes)
+		.def("Node", [](FSEdge& self, int node) { return self.n[node]; })
         ;
 
 	py::class_<FSNode, FSMeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")

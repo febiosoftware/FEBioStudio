@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 #include "PyFBSCore.h"
 #include "PyFBSPost.h"
-#include "PyFSMesh.h"
+#include "PyFBSMesh.h"
 #include "PyFBSGeom.h"
 
 #ifndef PY_EXTERNAL
