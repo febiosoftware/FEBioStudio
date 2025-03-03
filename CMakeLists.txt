@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.11.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -152,7 +152,7 @@ if(CAD_FEATURES)
         endforeach(name)    
     endif()
 
-    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
+    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKDESTL TKFillet TKBO TKDEIGES TKDESTEP  TKXSBase TKG3d TKLCAF TKVCAF)
     foreach(name IN LISTS OCCT_LIB_NAMES)
         findLib(OCCT_LIB_DIR OCCT_LIB ${name})
         list(APPEND OCCT_LIBS ${OCCT_LIB})
@@ -298,9 +298,9 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-    
+#    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+#    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)
     endif()
@@ -416,6 +416,9 @@ elseif(APPLE)
 	
 	add_executable(${FBS_BIN_NAME} MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+    set_target_properties(${FBS_BIN_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Xcode/FEBioStudio/Supporting Files/Info.plist.template")
+    set_target_properties(${FBS_BIN_NAME} PROPERTIES XCODE_GENERATE_SCHEME YES)
+    set(CMAKE_XCODE_SCHEME_ENVIRONMENT "PDL_LIB_PATH=/Users/gerard/panua-pardiso-20240630-mac_arm64/lib;PDL_MSG=1")
 
 else()
 	add_executable(${FBS_BIN_NAME} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
