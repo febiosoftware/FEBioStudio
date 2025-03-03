@@ -37,6 +37,8 @@ eqs-within-sections
 \output_sync 0
 \bibtex_command default
 \index_command default
+\float_placement class
+\float_alignment class
 \paperfontsize 11
 \spacing single
 \use_hyperref true
@@ -96,7 +98,7 @@ eqs-within-sections
 \tracking_changes false
 \output_changes false
 \change_bars false
-\postpone_fragile_content false
+\postpone_fragile_content true
 \html_math_output 0
 \html_css_as_file 0
 \html_be_strict false
@@ -21680,10 +21682,6 @@ name "fig:imageMapEx2"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -21772,6 +21770,882 @@ Variable
 Name
 \emph default
  parameter.
+\end_layout
+
+\begin_layout Subsection
+Fiber ODF Analysis
+\end_layout
+
+\begin_layout Standard
+The Fiber ODF (Orientation Distribution Function) analysis feature in FEBio Studio is a tool designed to bridge the gap between experimental imaging data and finite element modeling.
+ This analysis calculates ODFs directly from 3D image data,
+ providing an accurate and detailed representation of the anisotropic material properties.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Figures/figFiberODF2.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Type I collagen hydrogel image volume and its fibril orientation distribution function (ODF) characterized using our image analysis technique.
+ (A) Isometricview of the image dataset exhibiting collagen fibrils that are largely oriented along the X-direction.
+ The dataset was acquired with a multiphoton microscope and pre-processed to correct for systematic distortions and improve contrast.
+ (B) Top view of the first slice in the image stack,
+ highlighted in a red dashed box in panel A.
+ The image demonstrates the dataset is composed of fibrils that have considerable dispersion and some spatial heterogeneity.
+ (C) Isometric view of the fiber ODF characterized over the entire volume.
+ The ODF is visualized with the radial representation,
+ where the probability of each direction is represented by its distance from the origin and a colormap.
+ (D) Top and front views of the ODF.
+ These views show the predominant orientation of the fibrils is along the X-axis and the dispersion is primarily within the XY plane.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The analysis removes the need to rely on idealized or parametric approximations of fiber orientations,
+ by enabling the direct use of experimentally measured,
+ high-resolution,
+ non-parametric ODFs.
+ This approach eliminates the loss of detail and accuracy that often accompanies parametric fitting,
+ providing a more faithful representation of real-world materials.
+ It allows users to subdivide image domains into spatial subregions,
+ customize processing parameters,
+ and visualize the resulting ODFs alongside the original image data.
+ The resulting ODF information can then be copied into a constitutive model designed to utilize this orientation information in FEBio.
+\end_layout
+
+\begin_layout Standard
+A full description of this algorithm is beyond the scope of this document,
+ and it is recommended that the manuscripts published on this topic be consulted for a more in depth explanation of the process 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rauff_nonparametric_2022,rauff_algorithmic_2024"
+literal "false"
+
+\end_inset
+
+.
+ However,
+ a brief explanation follows.
+ After some minimal preprocessing with a Butterworth filter,
+ a 2D Fourier transform is applied to the volumetric image.
+ The power spectrum is computed from the Fourier domain representation of the image.
+ The power spectrum is then summed along the frequencies to determine the contribution to each direction in space.
+ This results in a condensed power spectrum defined on the unit sphere.
+ The power spectrum is then discretized on the unit sphere by dividing the surface into equal-area triangles using a tessellated icosahedron.
+ The ODF is then obtained by applying the Q-ball algorithm to the condensed power spectra.
+ The resulting ODF is then represented using spherical harmonics based on Legendre polynomials.
+\end_layout
+
+\begin_layout Subsubsection
+Running a Fiber ODF Analysis 
+\end_layout
+
+\begin_layout Standard
+To start a Fiber ODF analysis load the desired 3D image into FEBio Studio,
+ then right-click the image in the 
+\emph on
+Model Tree
+\emph default
+ and select 
+\emph on
+Fiber ODF Analysis
+\emph default
+.
+ A new 
+\emph on
+Fiber ODF Analysis
+\emph default
+ item will appear in the 
+\emph on
+Model Tree
+\emph default
+.
+ Selecting this item opens the 
+\emph on
+Properties
+\emph default
+ Panel and 
+\emph on
+Fiber ODF Analysis
+\emph default
+ Panel.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Figures/figFiberODF1.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Parts of the user interface that control the inputs for ODF analysis in FEBio Studio.
+ (A) The first page of the Parameters tab in the Fiber ODF Analysis provides control how the image is divided into subdomains.
+ (B) The graphics view in FEBio Studio,
+ showing the image and a preview of the user-specified subdomains.
+ (C) The second page of the Parameters tab in the Fiber ODF Analysis panel allows the user to specify parameters that control the Fiber ODF analysis.
+ The Run button allows the user to run the analysis with the specified parameters either for every subvolume,
+ or an individual subdomain.
+ (D) Visualization of the results of the ODF analysis showing radial representations of the ODFs for all subdomains based on the parameters in panel C.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+In the 
+\emph on
+Parameters
+\emph default
+ tab of the 
+\emph on
+Fiber ODF Analysis
+\emph default
+ Panel,
+ the number of image subdivisions,
+ and their percent overlap may be specified.
+ Clicking the 
+\emph on
+Generate subvolumes
+\emph default
+ button creates these subvolumes,
+ and allows the 
+\emph on
+Next
+\emph default
+ button to appear.
+ If the image has been subdivided into more than one region,
+ a drop-down menu will also appear,
+ allowing the user to specify a given subvolume as the 
+\begin_inset Quotes eld
+\end_inset
+
+current
+\begin_inset Quotes erd
+\end_inset
+
+ subvolume.
+ Clicking the 
+\emph on
+Next
+\emph default
+ button shows parameters controlling the band-pass Butterworth filter,
+ the harmonic order of the spherical harmonic representation,
+ and a check box controlling whether or not a fitting analysis will be performed.
+\end_layout
+
+\begin_layout Standard
+A Butterworth filter is applied to the image before the Fourier analysis.
+ It removes unwanted noise by attenuating high and low frequency noise in the image.
+ The high and low frequency cutoff values can be specified along with the Butterworth fraction and steepness.
+ The Butterworth fraction defines the fraction of the frequency spectrum retained.
+ A low fraction (e.g.
+ 0.2) focuses on broad trends and removes small,
+ sharp variations (high-frequency noise).
+ A high fraction (e.g.
+ 0.8) retains more detail but risks including noise.
+ The Butterworth steepness controls how sharply the filter transitions between retaining and attenuating frequencies.
+ A high steepness value creates a sharp cutoff,
+ effectively eliminating unwanted frequencies but may risk distorting the signal if the cutoff is too aggressive.
+ A low steepness value creates a smoother transition,
+ which may allow some noise to pass but avoids abrupt changes that could distort the ODF.
+\end_layout
+
+\begin_layout Standard
+In order to reduce the storage size of the resulting ODFs,
+ they are represented using spherical harmonics based on Legendre polynomials.
+ The user is able to choose a harmonic order for the spherical harmonic representation of the ODFs,
+ and it is important to insure that a reasonable value is chosen for a given dataset.
+ A higher harmonic order (e.g.
+ 20) allows for finer angular resolution,
+ capturing sharp directional features in the ODF,
+ but increases computational cost and memory usage.
+ A lower harmonic order (e.g.
+ 10) produces a smoother,
+ lower-resolution ODF representation,
+ reducing computational demand,
+ but may miss fine details.
+ It is generally best to choose the lowest harmonic order that captures the most important features of a given ODF.
+\end_layout
+
+\begin_layout Standard
+In some cases,
+ the ODF calculated from the image data may be adequately described by either an ellipsoidal fiber distribution (EFD),
+ or a Von-Mises distribution (VM3),
+ rather than the full,
+ non-parametric ODF.
+ Using either the EFD or VM3 representations of the ODF can reduce the necessary computation time during an FE analysis.
+ The Fiber ODF Analysis tool can also perform a fitting analysis on the calculated ODFs.
+ If this option is enabled then,
+ for each ODF,
+ an optimization routine is run to calculate the parameters for both EFD and VM3 representations that most closely match the original ODF.
+ If an EFD or VM3 representation is used in place of the full ODF,
+ care should be taken to ensure that this approximation does not significantly alter the FE results.
+\end_layout
+
+\begin_layout Standard
+Once these parameters are set,
+ the analysis may be started by clicking the 
+\emph on
+Run
+\emph default
+ button,
+ and then choosing to either run the analysis for the currently selected subvolume,
+ or for all subvolumes.
+ When the analysis finishes,
+ 3D graphical representations of the ODF(s) will appear in the graphics view area,
+ and several new tabs will appear in the 
+\emph on
+Fiber ODF Analysis 
+\emph default
+panel.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+ODF
+\emph default
+ tab shows a 3D render of the currently selected subvolume.
+ This render is controlled by the visualization options described in the next section.
+ The 
+\emph on
+Spherical Harmonics
+\emph default
+ tab displays the spherical harmonic coefficients for the currently selected ODF.
+ The 
+\emph on
+Analysis 
+\emph default
+tab shows other information about the currently selected ODF such as its position,
+ mean direction,
+ fractional and general fractional anisotropy,
+ and the EFD and VM3 fitting parameters if a fitting analysis was performed.
+\end_layout
+
+\begin_layout Standard
+After an analysis is performed,
+ the ODF information needs to be copied to a special 
+\emph on
+Fiber ODF
+\emph default
+ constitutive model so that it can be used in an FE Analysis.
+ It is important to understand how the 
+\emph on
+Fiber ODF
+\emph default
+ constitutive model works before using it.
+ Please see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Fiber-ODF-constitutive-model"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for more information on this material.
+ The 
+\emph on
+Copy to Material 
+\emph default
+button allows the ODF information to be copied to an existing 
+\emph on
+Fiber ODF
+\emph default
+ material in the open model.
+ It also allows the optimized EFD parameters to be copied to an existing EFD material in the open model,
+ if the fitting analysis was performed.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Save to XML
+\emph default
+ button allows results from the analysis to be exported to an XML file so that it can be easily parsed by external tools for further analysis.
+ The 
+\emph on
+ODFs
+\emph default
+ option exports the full-resolution ODFs with the nodal coordinates of the ODF,
+ the position of each ODF,
+ and the values of each ODF at each nodal coordinate.
+ The 
+\emph on
+Spherical Harmonics
+\emph default
+ option exports the position and spherical harmonic coefficients of each ODF.
+ The 
+\emph on
+Statistics
+\emph default
+ option exports the information displayed in the 
+\emph on
+Analysis
+\emph default
+ tab for each ODF.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+The Fiber ODF Analysis UI
+\end_layout
+
+\begin_layout Standard
+The following is a breakdown of the Fiber ODF Analysis GUI elements.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Properties Panel
+\end_layout
+
+\begin_layout Standard
+This panel controls the visualization and rendering of ODFs.
+\end_layout
+
+\begin_layout Itemize
+Rendering Options:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Render Scale
+\emph default
+:
+ Adjusts the visual size of ODF plots in the graphics view.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Render Mesh Lines
+\emph default
+:
+ Toggles the visibility of the ODF mesh lines.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Render ODF As
+\emph default
+:
+ Changes how the ODF is rendered in the graphics view.
+ Choose between:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Full-Resolution ODF
+\end_layout
+
+\begin_layout Itemize
+Remeshed ODF (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Fiber-ODF-constitutive-model"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for more details)
+\end_layout
+
+\begin_layout Itemize
+Fitted EFD/VM Distributions
+\end_layout
+
+\begin_layout Itemize
+Glyph Representations for simplified visualization.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\emph on
+Radial Mesh
+\emph default
+:
+ Scales radii of vectors proportional to ODF values.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Bounding Box Options:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Show Bounding Boxes
+\emph default
+:
+ Displays the boundaries of subdomains.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Show Selection Box
+\emph default
+:
+ Highlights the active subdomain.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Legend Options:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Coloring mode
+\emph default
+:
+ Colors the ODFs based on either the ODF values,
+ or their fractional anisotropy.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Legend Divisions
+\emph default
+:
+ Controls the number of divisions in the legend.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Legend Range
+\emph default
+:
+ Choose between automatic and manual legend ranges.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Legend Min
+\emph default
+:
+ The minimum value on the legend.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Legend Max
+\emph default
+:
+ The maximum value on the legend.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+
+\series bold
+\emph on
+Fiber ODF Analysis Panel - Parameters
+\emph default
+ Tab
+\end_layout
+
+\begin_layout Standard
+The first tab allows users to configure the subdivision of the image domain and set parameters for ODF analysis.
+\end_layout
+
+\begin_layout Itemize
+Subdivision Parameters:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+X,
+ Y,
+ Z Divisions
+\emph default
+:
+ Specifies the number of subdomains along each axis.
+ This is important for analyzing spatially inhomogeneous samples.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Overlap Percentage
+\emph default
+:
+ Defines the overlap between adjacent subdomains to ensure smooth transitions and consistent analysis.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Generate Subvolumes
+\emph default
+:
+ Generates and displays the subdomains in the graphics view for inspection and adjustment.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Other Analysis Settings:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Harmonic Order
+\emph default
+:
+ Sets the maximum order of spherical harmonics for ODF representation,
+ impacting resolution and computational cost.
+\end_layout
+
+\begin_layout Itemize
+Frequency Cutoffs:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Low-Frequency Cutoff
+\emph default
+:
+ Filters out large-scale noise.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+High-Frequency Cutoff
+\emph default
+:
+ Removes high-frequency noise that may obscure fine details.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\emph on
+Butterworth fraction
+\emph default
+:
+ Defines the fraction of the frequency spectrum retained.
+ A smaller value keeps only the most dominant frequencies,
+ which correspond to larger-scale structures in the image.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Butterworth steepness
+\emph default
+:
+ Controls how sharply the filter transitions between retaining and attenuating frequencies.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Do Fitting Analysis
+\emph default
+:
+ Toggles whether the software fits parametric distributions (e.g.,
+ EFD,
+ VM) to the computed ODFs.
+ This enables comparison between measured and idealized ODF models.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Run
+\emph default
+:
+ Click 
+\emph on
+Run
+\emph default
+ to start the analysis and choose whether to analyze all subdomains or a selected one.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+
+\series bold
+\emph on
+Fiber ODF Analysis Panel - Other
+\emph default
+ Tabs
+\end_layout
+
+\begin_layout Standard
+The other tabs on the 
+\emph on
+Fiber ODF Analysis Panel 
+\emph default
+appear only after the analysis has run.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+ODF
+\emph default
+ Tab:
+ Shows a 3D render of the currently selected ODF.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Spherical Harmonics
+\emph default
+ Tab:
+ Displays the spherical harmonic coefficients for the currently selected ODF.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Analysis 
+\emph default
+Tab:
+ Shows other information about the currently selected ODF such as its position,
+ mean direction,
+ fractional and general fractional anisotropy,
+ and the EFD and VM3 fitting parameters if a fitting analysis was performed.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+The Fiber ODF Constitutive Model
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Fiber-ODF-constitutive-model"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Fiber ODF
+\emph default
+ constitutive model is a special version of the 
+\emph on
+Continuous Fiber Distribution
+\emph default
+ constitutive model,
+ with its own distribution type,
+ and a unique integration scheme.
+ (Please see the FEBio User Manual on continuous fiber distributions for more information).
+ The Fiber ODF material takes any number of ODFs as parameters,
+ each with a position in space,
+ and a list of spherical harmonic coefficients.
+ When an FE simulation is run using this material,
+ some preprocessing is done on the ODFs in order to reduce the computational load during the simulation.
+ The following is a description of these preprocessing steps.
+ For a more detailed description,
+ please see the associated manuscript 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rauff_algorithmic_2024"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to prevent sharp changes in the fiber direction between elements,
+ a unique ODF is interpolated for each element in the mesh based on the element’s physical distance from the nearby ODFs in the discrete ODF field.
+ This interpolation is done using a weighted-mean approach utilizing the objective distance metric afforded by the Fisher-Rao inner product space 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rauff_algorithmic_2024"
+literal "false"
+
+\end_inset
+
+.
+ This results in a unique ODF for each FE element in the domain of the constitutive model which smoothly transition between ODFs defined in each of the original image's subdivisions.
+ If only a single ODF is defined for the domain (in other words,
+ if the image was not subdivided before the analysis) then this step is skipped and the original ODF is used for all elements in the domain.
+\end_layout
+
+\begin_layout Standard
+Constitutive models using continuous fiber distributions require an efficient integration scheme over the unit sphere to compute stress contributions from the fiber family.
+ Because there is no analytical representation of these non-parametric ODFs,
+ this integration is performed by sampling the values of the ODFs at its defined points.
+ To ensure faithful representation of the ODF,
+ all ODF calculations up to this point in the process use a high resolution,
+ pre-defined set evenly-spaced points on the unit sphere.
+ Integrating the stress contributions across the ODFs at their full resolution proved to be prohibitively computationally expensive,
+ as this integration must occur at every integration point in the FE mesh for each stress calculation in the analysis.
+\end_layout
+
+\begin_layout Standard
+To address this issue,
+ we developed a mechanism to reduce the number of sampling points on the ODF using an approach based on finite element remeshing technology.
+ The gradient of each ODF is calculated,
+ and a triangulated mesh of the ODF probability surface and its gradient is passed to the mmg remeshing library.
+ The mmg algorithm remeshes a surface of triangular elements,
+ adjusting the relative nodal density of the ODF mesh based on the magnitude of the gradient,
+ resulting in a higher sampling density in areas of high curvature while reducing the overall number of sample points,
+ thereby preserving sharp changes in orientation (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fiberODFRmesh"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+).
+ The visualization parameter 
+\emph on
+Render ODF As -> Remeshed ODF
+\emph default
+ in the properties panel in FEBio Studio allows the user to see this remeshed version of the ODF as a 3D render.
+ 
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Figures/fiberODFRemesh.png
+	width 100text%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Spherical representations of an ODF showing the results of the remeshing algorithm.
+ (A) A full-resolution,
+ spherical representation of an ODF.
+ (B) An enlarged portion of the same ODF showing the area inside the black square in panel A.
+ In this panel,
+ the ODF’s mesh has been made visible to show the density of sampling points at the full-resolution of 40,962 points.
+ (C) The remeshed surface of the same ODF showing the area inside the black square in panel A.
+ The density of the ODF’s sampling points has been greatly reduced in the regions of the ODF where there is little variation in the ODF’s value,
+ while maintaining high density in regions where there are sharp changes in value.
+ This preserves the general shape of the ODF while significantly reducing the number of sampling points.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:fiberODFRmesh"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The number of integration points in the remeshed ODFs varies depending on the ODF topology,
+ but the number points is generally reduced by about two orders of magnitude.
+ Since the resampling of the ODFs only takes place once,
+ at the beginning of the FE analysis,
+ the time required for the remeshing step is small relative to the overall time involved in a FE analysis.
+ The reduction in points dramatically increases the speed of stress computations without significantly altering the results.
+\end_layout
+
+\begin_layout Standard
+After the interpolation and remeshing steps,
+ the material initialization is complete,
+ and the FE analysis continues normally.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -23409,6 +24283,19 @@ name "tab3-1-2"
 
 
 \end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "FEBioStudio"
+options "bibtotoc,plain"
+encoding "default"
 
 \end_inset
 
