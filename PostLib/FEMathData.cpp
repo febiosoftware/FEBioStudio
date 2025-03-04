@@ -27,9 +27,31 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMathData.h"
 #include "FEPostModel.h"
-#include <FECore/MathObject.h>
-
 using namespace Post;
+
+FEMathDataField::FEMathDataField(Post::FEPostModel* fem, unsigned int flag) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, NODE_DATA, flag)
+{
+	m_eq = "";
+	m_math.AddVariable("x", 0.0);
+	m_math.AddVariable("y", 0.0);
+	m_math.AddVariable("z", 0.0);
+	m_math.AddVariable("t", 0.0);
+	BuildMath();
+}
+
+void FEMathDataField::BuildMath()
+{
+	m_math.Create(m_eq);
+}
+
+double FEMathDataField::value(double x, double y, double z, double t)
+{
+	if (!m_math.IsValid()) return 0.0;
+
+	std::vector<double> vars = { x, y, z, t };
+	double v = m_math.value_s(vars);
+	return v;
+}
 
 FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<float>(state, pdf)
 {
@@ -39,21 +61,44 @@ FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<floa
 // evaluate all the nodal data for this state
 void FEMathData::eval(int n, float* pv)
 {
-	double time = m_state->m_time;
-	MSimpleExpression math;
-	math.AddVariable("t", time);
+	if ((m_pdf == nullptr) || (pv == nullptr)) return;
 
+	double time = m_state->m_time;
 	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, m_state->GetID());
-	math.AddVariable("x", (double)r.x);
-	math.AddVariable("y", (double)r.y);
-	math.AddVariable("z", (double)r.z);
+	double v = m_pdf->value(r.x, r.y, r.z, time);
+	*pv = (float)v;
+}
 
-	const std::string& eq = m_pdf->EquationString();
-	math.Create(eq);
+FEMathVec3DataField::FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag) : ModelDataField(fem, DATA_VEC3, DATA_NODE, NODE_DATA, flag)
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		m_eq[i] = "";
+		m_math[i].AddVariable("x");
+		m_math[i].AddVariable("y");
+		m_math[i].AddVariable("z");
+		m_math[i].AddVariable("t");
+	}
+	BuildMath();
+}
 
-	double v = math.value();
-	if (pv) *pv = (float) v;
+void FEMathVec3DataField::BuildMath()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		m_math[i].Create(m_eq[i]);
+	}
+}
+
+vec3d FEMathVec3DataField::value(double x, double y, double z, double t)
+{
+	vec3d v;
+	std::vector<double> vars = { x, y, z, t };
+	if (m_math[0].IsValid()) v.x = m_math[0].value_s(vars);
+	if (m_math[1].IsValid()) v.y = m_math[1].value_s(vars);
+	if (m_math[2].IsValid()) v.z = m_math[2].value_s(vars);
+	return v;
 }
 
 FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENodeData_T<vec3f>(state, pdf)
@@ -64,29 +109,58 @@ FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENod
 // evaluate all the nodal data for this state
 void FEMathVec3Data::eval(int n, vec3f* pv)
 {
+	if (pv == nullptr) return;
+
 	FEState& state = *m_state;
 	int ntime = state.GetID();
 	double time = (double)state.m_time;
 
-	MSimpleExpression math;
-	math.AddVariable("t", time);
-
 	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, ntime);
-	math.AddVariable("x", (double)r.x);
-	math.AddVariable("y", (double)r.y);
-	math.AddVariable("z", (double)r.z);
+	vec3d v = m_pdf->value(r.x, r.y, r.z, time);
 
-	const std::string& x = m_pdf->EquationString(0);
-	const std::string& y = m_pdf->EquationString(1);
-	const std::string& z = m_pdf->EquationString(2);
+	vec3f vf;
+	vf.x = (float)(v.x);
+	vf.y = (float)(v.y);
+	vf.z = (float)(v.z);
+	*pv = vf;
+}
 
-	vec3f v;
-	v.x = (float)math.value(x);
-	v.y = (float)math.value(y);
-	v.z = (float)math.value(z);
+FEMathMat3DataField::FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag) : ModelDataField(fem, DATA_MAT3, DATA_NODE, NODE_DATA, flag)
+{
+	for (int i = 0; i < 9; ++i)
+	{
+		m_eq[i] = "";
+		m_math[i].AddVariable("x");
+		m_math[i].AddVariable("y");
+		m_math[i].AddVariable("z");
+		m_math[i].AddVariable("t");
+	}
+	BuildMath();
+}
 
-	if (pv) *pv = v;
+void FEMathMat3DataField::BuildMath()
+{
+	for (int i = 0; i < 9; ++i)
+	{
+		m_math[i].Create(m_eq[i]);
+	}
+}
+
+mat3d FEMathMat3DataField::value(double x, double y, double z, double t)
+{
+	mat3d m;
+	std::vector<double> vars = { x, y, z, t };
+	if (m_math[0].IsValid()) m[0][0] = m_math[0].value_s(vars);
+	if (m_math[1].IsValid()) m[0][1] = m_math[1].value_s(vars);
+	if (m_math[2].IsValid()) m[0][2] = m_math[2].value_s(vars);
+	if (m_math[3].IsValid()) m[1][0] = m_math[3].value_s(vars);
+	if (m_math[4].IsValid()) m[1][1] = m_math[4].value_s(vars);
+	if (m_math[5].IsValid()) m[1][2] = m_math[5].value_s(vars);
+	if (m_math[6].IsValid()) m[2][0] = m_math[6].value_s(vars);
+	if (m_math[7].IsValid()) m[2][1] = m_math[7].value_s(vars);
+	if (m_math[8].IsValid()) m[2][2] = m_math[8].value_s(vars);
+	return m;
 }
 
 FEMathMat3Data::FEMathMat3Data(FEState* state, FEMathMat3DataField* pdf) : FENodeData_T<mat3f>(state, pdf)
@@ -97,26 +171,15 @@ FEMathMat3Data::FEMathMat3Data(FEState* state, FEMathMat3DataField* pdf) : FENod
 // evaluate the nodal data for this state
 void FEMathMat3Data::eval(int n, mat3f* pv)
 {
-	if (pv == nullptr) return;
+	if ((m_pdf==nullptr)||(pv == nullptr)) return;
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();
 	double time = (double)state.m_time;
-	MSimpleExpression math;
-	math.AddVariable("t", time);
 
 	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, ntime);
-	math.AddVariable("x", (double)r.x);
-	math.AddVariable("y", (double)r.y);
-	math.AddVariable("z", (double)r.z);
 
-	float m[9] = { 0.f };
-	for (int i = 0; i < 9; ++i)
-	{
-		const std::string& eq = m_pdf->EquationString(i);
-		m[i] = (float) math.value(eq);
-	}
-
-	*pv = mat3f(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
+	mat3d m = m_pdf->value(r.x, r.y, r.z, time);
+	*pv = mat3f(m[0][0], m[0][1], m[0][2], m[1][3], m[1][4], m[1][5], m[2][6], m[2][7], m[2][8]);
 }
