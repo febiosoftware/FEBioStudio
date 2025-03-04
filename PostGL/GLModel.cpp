@@ -206,20 +206,6 @@ Post::FEState* CGLModel::GetActiveState()
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::ResetAllStates()
-{
-	FEPostModel* fem = GetFSModel();
-	if ((fem == 0) || (fem->GetStates() == 0)) return;
-
-	int N = fem->GetStates();
-	for (int i=0; i<N; ++i)
-	{
-		FEState* ps = fem->GetState(i);
-		ps->m_nField = -1;
-	}
-}
-
-//-----------------------------------------------------------------------------
 float CGLModel::CurrentTime() const { return (m_ps ? m_ps->CurrentTime() : 0.f); }
 
 //-----------------------------------------------------------------------------
@@ -348,7 +334,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 	}
 	else ps->SetDisplacementField(-1);
 
-	ResetAllStates();
+	GetFSModel()->ResetAllStates();
 
 	return true;
 }
@@ -391,7 +377,7 @@ void CGLModel::RemoveDisplacementMap()
 	ResetMesh();
 
 	// just to be safe, let's reset all states to force them to reevaluate
-	ResetAllStates();
+	GetFSModel()->ResetAllStates();
 }
 
 //-----------------------------------------------------------------------------
@@ -643,47 +629,6 @@ void CGLModel::UpdateMeshVisibility()
 	}
 
 	m_postObj->BuildInternalSurfaces();
-}
-
-//-----------------------------------------------------------------------------
-// Enable elements with a certain mat ID
-void CGLModel::UpdateMeshState()
-{
-	FEPostModel& fem = *GetFSModel();
-	for (int i = 0; i < fem.Meshes(); ++i)
-	{
-		FSMesh& mesh = *fem.GetFEMesh(i);
-
-		// update the elements
-		for (int i = 0; i < mesh.Elements(); ++i)
-		{
-			FSElement_& el = mesh.ElementRef(i);
-			int nmat = el.m_MatID;
-			if (fem.GetMaterial(nmat)->enabled()) el.Enable();
-			else el.Disable();
-		}
-
-		// now we update the nodes
-		for (int i = 0; i < mesh.Nodes(); ++i) mesh.Node(i).Disable();
-		for (int i = 0; i < mesh.Elements(); ++i)
-		{
-			FSElement_& el = mesh.ElementRef(i);
-			if (el.IsEnabled())
-			{
-				int n = el.Nodes();
-				for (int j = 0; j < n; ++j) mesh.Node(el.m_node[j]).Enable();
-			}
-		}
-
-		// enable the faces
-		for (int i = 0; i < mesh.Faces(); ++i)
-		{
-			FSFace& f = mesh.Face(i);
-			f.Disable();
-			if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
-			else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
