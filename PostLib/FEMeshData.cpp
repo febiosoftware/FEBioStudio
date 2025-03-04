@@ -1203,11 +1203,36 @@ void VolumeRatio::eval(int n, float* pv)
 }
 */
 
-//-----------------------------------------------------------------------------
-
-void ElementVolume::eval(int n, float* pv)
+void ElementVolume::eval(int iel, float* pv)
 {
-	*pv = GetFEState()->GetFEMesh()->ElementVolume(n);
+	FSMesh& m = *GetFEState()->GetFEMesh();
+	FSElement_& el = m.ElementRef(iel);
+	int nn = el.Nodes();
+
+	int ntime = GetFEState()->GetID();
+	FEPostModel& fem = *GetFSModel();
+	vec3d rt[FSElement::MAX_NODES];
+	for (int i = 0; i < nn; ++i) rt[i] = to_vec3d(fem.NodePosition(el.m_node[i], ntime));
+
+	double vol = 0.0;
+	switch (el.Type())
+	{
+	case FE_HEX8   : vol = hex8_volume   (rt); break;
+	case FE_HEX20  : vol = hex20_volume  (rt); break;
+	case FE_HEX27  : vol = hex27_volume  (rt); break;
+	case FE_TET4   : vol = tet4_volume   (rt); break;
+	case FE_TET5   : vol = tet5_volume   (rt); break;
+	case FE_TET10  : vol = tet10_volume  (rt); break;
+	case FE_TET15  : vol = tet15_volume  (rt); break;
+	case FE_TET20  : vol = tet20_volume  (rt); break;
+	case FE_PENTA6 : vol = penta6_volume (rt); break;
+	case FE_PENTA15: vol = penta15_volume(rt); break;
+	case FE_PYRA5  : vol = pyra5_volume  (rt); break;
+	case FE_PYRA13 : vol = pyra13_volume (rt); break;
+	default:
+		break;
+	}
+	*pv = (float)vol;
 }
 
 //-----------------------------------------------------------------------------

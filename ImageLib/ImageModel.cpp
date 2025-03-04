@@ -72,15 +72,7 @@ void CImageModel::SetImageSource(CImageSource* imgSource)
 bool CImageModel::Load()
 {
     if(!m_img) return false;
-
-    if (!m_img->Load())
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	return true;
+	return m_img->Load();
 }
 
 void CImageModel::Reload()

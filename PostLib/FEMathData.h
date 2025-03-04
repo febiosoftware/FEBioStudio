@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData_T.h"
+#include <FECore/MathObject.h>
 
 namespace Post {
 
@@ -72,16 +73,13 @@ private:
 class FEMathDataField : public ModelDataField
 {
 public:
-	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, NODE_DATA, flag)
-	{
-		m_eq = "";
-	}
+	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0);
 
 	//! Create a copy
 	ModelDataField* Clone() const override
 	{
 		FEMathDataField* pd = new FEMathDataField(m_fem);
-		pd->m_eq = m_eq;
+		pd->SetEquationString(m_eq);
 		return pd;
 	}
 
@@ -91,31 +89,30 @@ public:
 		return new FEMathData(pstate, this);
 	}
 
-	void SetEquationString(const std::string& eq) { m_eq = eq; }
+	void SetEquationString(const std::string& eq) { m_eq = eq; BuildMath(); }
 
 	const std::string& EquationString() const { return m_eq; }
 
+	double value(double x, double y, double z, double t);
+
+private:
+	void BuildMath();
+
 private:
 	std::string	m_eq;		//!< equation string
+	MSimpleExpression	m_math;
 };
 
 class FEMathVec3DataField : public ModelDataField
 {
 public:
-	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_VEC3, DATA_NODE, NODE_DATA, flag)
-	{
-		m_eq[0] = "";
-		m_eq[1] = "";
-		m_eq[2] = "";
-	}
+	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0);
 
 	//! Create a copy
 	ModelDataField* Clone() const override
 	{
 		FEMathVec3DataField* pd = new FEMathVec3DataField(m_fem);
-		pd->m_eq[0] = m_eq[0];
-		pd->m_eq[1] = m_eq[1];
-		pd->m_eq[2] = m_eq[2];
+		pd->SetEquationStrings(m_eq[0], m_eq[1], m_eq[2]);
 		return pd;
 	}
 
@@ -130,28 +127,37 @@ public:
 		m_eq[0] = x; 
 		m_eq[1] = y;
 		m_eq[2] = z;
+		BuildMath();
 	}
 
-	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; }
+	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; BuildMath(); }
 
 	const std::string& EquationString(int n) const { return m_eq[n]; }
 
+	vec3d value(double x, double y, double z, double t);
+
+private:
+	void BuildMath();
+
 private:
 	std::string	m_eq[3];		//!< equation string
+	MSimpleExpression	m_math[3];
 };
 
 class FEMathMat3DataField : public ModelDataField
 {
 public:
-	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_MAT3, DATA_NODE, NODE_DATA, flag)
-	{
-	}
+	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0);
 
 	//! Create a copy
 	ModelDataField* Clone() const override
 	{
 		FEMathMat3DataField* pd = new FEMathMat3DataField(m_fem);
-		for (int i = 0; i < 9; ++i) pd->m_eq[i] = m_eq[i];
+		pd->SetEquationStrings(
+			m_eq[0], m_eq[1], m_eq[2],
+			m_eq[3], m_eq[4], m_eq[5],
+			m_eq[6], m_eq[7], m_eq[8]
+		);
 		return pd;
 	}
 
@@ -169,13 +175,20 @@ public:
 		m_eq[0] = m00; m_eq[1] = m01; m_eq[2] = m02;
 		m_eq[3] = m10; m_eq[4] = m11; m_eq[5] = m12;
 		m_eq[6] = m20; m_eq[7] = m21; m_eq[8] = m22;
+		BuildMath();
 	}
 
-	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; }
+	void SetEquationString(int n, const std::string& eq) { m_eq[n] = eq; BuildMath(); }
 
 	const std::string& EquationString(int n) const { return m_eq[n]; }
 
+	mat3d value(double x, double y, double z, double t);
+
+private:
+	void BuildMath();
+
 private:
 	std::string	m_eq[9];		//!< equation string
+	MSimpleExpression	m_math[9];
 };
 }

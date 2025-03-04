@@ -2305,6 +2305,7 @@ void CModelViewer::OnFindImage()
 	CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
 	if (img == nullptr) return;
 	if (img->Get3DImage()) return;
+	if (img->GetImageSource() == nullptr) return;
 
 	int type = img->GetImageSource()->Type();
 

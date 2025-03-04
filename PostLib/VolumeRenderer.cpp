@@ -76,7 +76,12 @@ void CVolumeRenderer::Init()
 	assert(m_vrInit == false);
 	if (m_vrInit) return;
 
-	if (GetImageModel() == nullptr) return;
+	CImageModel* img = GetImageModel();
+	if (img == nullptr) return;
+
+	CImageSource* src = img->GetImageSource();
+	if (src == nullptr) return;
+	if (src->Get3DImage() == nullptr) return;
 
 	ReloadTexture();
 
