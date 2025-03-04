@@ -93,8 +93,6 @@ void init_FBSPost(py::module& m)
 		.def("Show", &Material::show)
 		.def("Hide", &Material::hide)
         .def("Enabled", &Material::enabled)
-        .def("Enable", &Material::enable)
-        .def("Disable", &Material::disable)
         ;
 
 	py::class_<FEPostModel>(post, "PostModel")
