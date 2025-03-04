@@ -135,9 +135,6 @@ public:
 	//! get the active state
 	Post::FEState* GetActiveState();
 
-	//! Reset all the states so any update will force the state to be evaluated
-	void ResetAllStates();
-
 	//! reset the mesh nodes
 	void ResetMesh();
 
@@ -208,9 +205,6 @@ public: // Selection
 
 	//! update visibility of all materials
 	void UpdateMeshVisibility();
-
-	//! enable or disable mesh items based on material's state
-	void UpdateMeshState();
 
 	//! hide selected elements
 	void HideSelectedElements();

@@ -212,7 +212,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		}
 	}
 
-	po->UpdateMeshState();
+	ps->UpdateMeshState();
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;
 	po->SetCurrentTimeIndex(ntime);

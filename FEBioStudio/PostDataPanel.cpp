@@ -1497,7 +1497,10 @@ void CPostDataPanel::on_props_dataChanged(bool b)
 {
 	Post::CGLModel* glm = GetActiveModel();
 	if (glm == nullptr) return;
-	glm->ResetAllStates();
+    Post::FEPostModel* fem = glm->GetFSModel();
+    if (fem == nullptr) return;
+	
+    fem->ResetAllStates();
 	glm->Update(true);
 	GetMainWindow()->RedrawGL();
 }

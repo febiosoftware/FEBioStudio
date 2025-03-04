@@ -245,6 +245,14 @@ void FEPostModel::AddMaterial(Material& mat)
 	m_Mat.push_back(mat); 
 }
 
+void FEPostModel::EnableMaterial(int i, bool enable)
+{
+    m_Mat.at(i).benable = enable;
+
+    UpdateMeshState();
+    ResetAllStates();
+}
+
 //-----------------------------------------------------------------------------
 // clear the FE-states
 void FEPostModel::ClearStates()
@@ -1369,6 +1377,46 @@ void FEPostModel::ClearDependants()
 }
 
 //-----------------------------------------------------------------------------
+// Enable elements with a certain mat ID
+void FEPostModel::UpdateMeshState()
+{
+	for (int i = 0; i < Meshes(); ++i)
+	{
+		FSMesh& mesh = *GetFEMesh(i);
+
+		// update the elements
+		for (int i = 0; i < mesh.Elements(); ++i)
+		{
+			FSElement_& el = mesh.ElementRef(i);
+			int nmat = el.m_MatID;
+			if (GetMaterial(nmat)->enabled()) el.Enable();
+			else el.Disable();
+		}
+
+		// now we update the nodes
+		for (int i = 0; i < mesh.Nodes(); ++i) mesh.Node(i).Disable();
+		for (int i = 0; i < mesh.Elements(); ++i)
+		{
+			FSElement_& el = mesh.ElementRef(i);
+			if (el.IsEnabled())
+			{
+				int n = el.Nodes();
+				for (int j = 0; j < n; ++j) mesh.Node(el.m_node[j]).Enable();
+			}
+		}
+
+		// enable the faces
+		for (int i = 0; i < mesh.Faces(); ++i)
+		{
+			FSFace& f = mesh.Face(i);
+			f.Disable();
+			if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
+			else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEPostModel::UpdateMeshState(int ntime)
 {
 	FEState& state = *GetState(ntime);
@@ -1430,6 +1478,19 @@ void FEPostModel::UpdateMeshState(int ntime)
 
 		po.m_r1 = di.m_r1;
 		po.m_r2 = di.m_r2;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEPostModel::ResetAllStates()
+{
+	if (GetStates() == 0) return;
+
+	int N = GetStates();
+	for (int i=0; i<N; ++i)
+	{
+		FEState* ps = GetState(i);
+		ps->m_nField = -1;
 	}
 }
 

@@ -157,6 +157,9 @@ public:
 	// add a material to the model
 	void AddMaterial(Material& mat);
 
+    // enable or disable a material
+    void EnableMaterial(int i, bool enable);
+
 	// --- S T A T E   M A N A G M E N T ---
 	//! add a state to the mesh
 	void AddState(FEState* pFEState);
@@ -257,7 +260,12 @@ public:
 	int Meshes() const;
 	FSMesh* GetFEMesh(int i);
 
-	void UpdateMeshState(int ntime);
+    //! enable or disable mesh items based on material's state
+    void UpdateMeshState();
+    void UpdateMeshState(int ntime);
+
+    //! Reset all the states so any update will force the state to be evaluated
+	void ResetAllStates();
 
 public:
 	bool Merge(FEPostModel* fem);
