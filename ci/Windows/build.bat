@@ -30,11 +30,14 @@ cd ..
 :: Standalone Python module
 cd PyLib
 git clone --depth 1 https://github.com/febiosoftware/FEBio.git
+:: TODO: Cmake requires 6 runs to generate correctly
+for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
   -DFEBioDir=FEBio ^
   -DPython3_INCLUDE_DIR="C:\Program Files\Python313\include" ^
   -DPython3_LIBRARY="C:\Program Files\Python313\libs\python313.lib" ^
   -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe"
+)
 cd cmbuild
 msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
 cd ..\..
