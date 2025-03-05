@@ -17,6 +17,18 @@ main() {
 	else
 		echo "Skipping postbuild.sh"
 	fi
+
+    # Standalone Python module
+    pushd PyLib
+    git clone --depth 1 https://github.com/febiosoftware/FEBio.git
+    cmake -L . -B cmbuild \
+        -DFEBioDir=FEBio \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+		-DCMAKE_OSX_ARCHITECTURES=x86_64 
+    pushd cmbuild
+    make -j $(sysctl -n hw.ncpu)
+    popd
+    popd
 }
 
 main

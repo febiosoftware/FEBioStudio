@@ -6,3 +6,4 @@ if [ $# == 1 ] && [ "$1" != "develop" ]; then
 fi
 
 scp cmbuild/bin/Release/* repo:~/$REMOTE_PATH/bin
+scp pythonModule/* repo:~/download
