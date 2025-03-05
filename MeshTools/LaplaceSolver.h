@@ -49,6 +49,8 @@ public:
 	// Output: val = solution
 	bool Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
 
+	bool Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, const vector<double>& weights, int elemTag = 0);
+
 public: // output
 	int GetIterationCount() const;
 	double GetRelativeNorm() const;

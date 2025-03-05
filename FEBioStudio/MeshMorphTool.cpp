@@ -68,7 +68,7 @@ public:
 		m_del = new QPushButton("Remove");
 		m_clr = new QPushButton("Clear");
 		m_val = new QLineEdit;
-		m_val->setText(Vec3dToString(vec3d(0,0,0)));
+		m_val->setText("0,0,0,1");
 
 		QHBoxLayout* h2 = new QHBoxLayout;
 		h2->addWidget(new QLabel("Value"));
@@ -123,7 +123,7 @@ QWidget* CMeshMorphTool::createUi()
 
 void CMeshMorphTool::OnAddClicked()
 {
-	vec3d v = StringToVec3d(ui->m_val->text());
+	QString v = ui->m_val->text();
 
 	GObject* po = GetMainWindow()->GetActiveObject();
 	if (m_po == nullptr) m_po = po;
@@ -172,7 +172,7 @@ void CMeshMorphTool::OnAddClicked()
 				ui->m_table->setItem(n, 0, it0);
 
 				QTableWidgetItem* it1 = new QTableWidgetItem;
-				it1->setText(Vec3dToString(v));
+				it1->setText(v);
 				it1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 				ui->m_table->setItem(n, 1, it1);
 			}
@@ -250,15 +250,23 @@ void CMeshMorphTool::OnApply()
 
 	int NN = pm->Nodes();
 	vector<int> bn(NN, 0);
-	vector<double> val[3];
+	vector<double> val[4];
 	val[0].assign(NN, 0.0);
 	val[1].assign(NN, 0.0);
 	val[2].assign(NN, 0.0);
+	val[3].assign(NN, 1.0);
 
 	for (int i = 0; i < m_data.size(); ++i)
 	{
 		FEItemListBuilder* item = m_data[i];
-		vec3d v = StringToVec3d(ui->m_table->item(i, 1)->text());
+		QString s = ui->m_table->item(i, 1)->text();
+		QStringList sl = s.split(',');
+
+		double v[4] = { 0,0,0,1 };
+		if (s.size() > 0) v[0] = sl.at(0).toDouble();
+		if (s.size() > 1) v[1] = sl.at(1).toDouble();
+		if (s.size() > 2) v[2] = sl.at(2).toDouble();
+		if (s.size() > 3) v[3] = sl.at(3).toDouble();
 
 		FSNodeList* node = item->BuildNodeList(); assert(node);
 		if (node)
@@ -272,9 +280,10 @@ void CMeshMorphTool::OnApply()
 				assert(it->m_pm == pm);
 				int nid = it->m_pi->m_ntag;
 				assert((nid >= 0) && (nid < NN));
-				val[0][nid] = v.x;
-				val[1][nid] = v.y;
-				val[2][nid] = v.z;
+				val[0][nid] = v[0];
+				val[1][nid] = v[1];
+				val[2][nid] = v[2];
+				val[3][nid] = v[3];
 				bn[nid] = 1;
 			}
 		}
@@ -295,6 +304,15 @@ void CMeshMorphTool::OnApply()
 	wnd->AddLogEntry(QString("tolerance     = %1\n").arg(tol));
 	wnd->AddLogEntry(QString("SOR parameter = %1\n").arg(w));
 
+	// first solve for the weights
+	LaplaceSolver L;
+	L.SetMaxIterations(maxIter);
+	L.SetTolerance(tol);
+	L.SetRelaxation(w);
+	bool b = L.Solve(pm, val[3], bn, 1);
+	int niters = L.GetIterationCount();
+
+
 	// solve Laplace equation
 #pragma omp parallel for
 	for (int i = 0; i < 3; ++i)
@@ -303,7 +321,7 @@ void CMeshMorphTool::OnApply()
 		L.SetMaxIterations(maxIter);
 		L.SetTolerance(tol);
 		L.SetRelaxation(w);
-		bool b = L.Solve(pm, val[i], bn, 1);
+		bool b = L.Solve(pm, val[i], bn, val[3], 1);
 		int niters = L.GetIterationCount();
 	}
 
