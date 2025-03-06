@@ -111,6 +111,7 @@ add_subdirectory(${PYBIND11_DIR} ./pybind11)
 find_package(ZLIB)
 
 target_compile_definitions(XPLTLib PRIVATE HAVE_ZLIB)
+target_include_directories(XPLTLib PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
 
 pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp PyFBSMesh.cpp PyFBSGeom.cpp)
