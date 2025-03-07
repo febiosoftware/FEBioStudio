@@ -66,11 +66,17 @@ double LaplaceSolver::GetRelativeNorm() const
 	return m_relNorm;
 }
 
+bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag)
+{
+	std::vector<double> w(pm->Nodes(), 1.0);
+	return Solve(pm, val, bn, w, elemTag);
+}
+
 // Solves the Laplace equation on the mesh.
 // Input: val = initial values for all nodes
 //        bn  = boundary flags: 0 = free, 1 = fixed
 // Output: val = solution
-bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag)
+bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, const vector<double>& weights, int elemTag)
 {
 	m_niters = 0;
 
@@ -191,7 +197,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 					for (int k = 0; k < nj; ++k)
 					{
 						vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ej, na, k);
-						dot += Ga * Ga;
+						dot += weights[i] * (Ga * Ga);
 					}
 					dot *= Vj / nj;
 
@@ -236,7 +242,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 						{
 							vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ek, na, k);
 							vec3d Gb = FEMeshMetrics::ShapeGradient(*pm, ek, nb, k);
-							dot += Ga * Gb;
+							dot += weights[nj]*(Ga * Gb);
 						}
 						dot *= Vk / nk;
 
