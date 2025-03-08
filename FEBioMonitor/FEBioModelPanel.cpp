@@ -141,9 +141,13 @@ public: // overrides from base class
 			}
 			else if (row == N)
 			{
-				beginInsertRows(QModelIndex(), row, row + 1);
-				m_doc->AddWatchVariable(value.toString());
-				endInsertRows();
+				QString v = value.toString();
+				if (!v.isEmpty())
+				{
+					beginInsertRows(QModelIndex(), row, row + 1);
+					m_doc->AddWatchVariable(value.toString());
+					endInsertRows();
+				}
 			}
 		}
 		return false;
@@ -164,6 +168,8 @@ public: // overrides from base class
 		beginResetModel();
 		endResetModel();
 	}
+
+	FEBioMonitorDoc* GetDocument() { return m_doc; }
 
 private:
 	FEBioMonitorDoc* m_doc;
@@ -223,6 +229,20 @@ public:
 			m_tree->setModel(nullptr);
 		}
 	}
+
+	void deleteSelection()
+	{
+		if (m_data == nullptr) return;
+		FEBioMonitorDoc* doc = m_data->GetDocument(); assert(doc);
+		if (doc == nullptr) return;
+		QModelIndexList indices = m_tree->selectionModel()->selectedIndexes();
+		if (indices.size() == 2) // size==2 because we have two columns.
+		{
+			QModelIndex i = indices[0];
+			doc->DeleteWatchVariable(i.row());
+			m_data->update();
+		}
+	}
 };
 
 CFEBioModelPanel::CFEBioModelPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CFEBioModelPanel)
@@ -233,6 +253,14 @@ CFEBioModelPanel::CFEBioModelPanel(CMainWindow* wnd, QWidget* parent) : CWindowP
 FEBioMonitorDoc* CFEBioModelPanel::GetCurrentDocument()
 {
 	return dynamic_cast<FEBioMonitorDoc*>(GetMainWindow()->GetDocument());
+}
+
+void CFEBioModelPanel::keyPressEvent(QKeyEvent* e)
+{
+	if (e->key() == Qt::Key_Delete)
+	{
+		ui->deleteSelection();
+	}
 }
 
 void CFEBioModelPanel::Clear()

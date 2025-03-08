@@ -622,7 +622,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
-	emit updateViews(false, updateGL);
+	emit updateViews(nevent == CB_INIT, updateGL);
 	m->mutex.lock();
 
 	constexpr double eps = std::numeric_limits<double>::epsilon();
@@ -631,7 +631,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	{
 		m->outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();
-		emit updateViews(true, true);
+		emit updateViews(false, true);
 		m->isPaused = true;
 		jobIsPaused.wait(&m->mutex);
 		m->isPaused = false;
@@ -693,6 +693,11 @@ void FEBioMonitorDoc::SetWatchVariable(int n, const QString& name)
 	FEBioWatchVariable* var = m->watches[n];
 	var->setName(name);
 	UpdateWatchVariable(*var);
+}
+
+void FEBioMonitorDoc::DeleteWatchVariable(int n)
+{
+	m->watches.removeAt(n);
 }
 
 void FEBioMonitorDoc::InitDefaultWatchVariables()

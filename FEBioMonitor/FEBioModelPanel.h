@@ -46,6 +46,8 @@ public:
 
 	FEBioMonitorDoc* GetCurrentDocument();
 
+	void keyPressEvent(QKeyEvent* e) override;
+
 public slots:
 	void launchMatrixInspector();
 

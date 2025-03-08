@@ -174,6 +174,8 @@ public:
 	int GetWatchVariables() const;
 	void SetWatchVariable(int n, const QString& name);
 
+	void DeleteWatchVariable(int n);
+
 public:
 	FEGlobalMatrix* GetStiffnessMatrix();
 
