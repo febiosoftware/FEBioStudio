@@ -1493,7 +1493,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			if (item->m_index < 0)
 			{
 				QSpinBox* ps = new QSpinBox(parent);
-				ps->setRange(0, 100);
+				ps->setRange(0, 999999);
 				ps->setValue(prop.Size());
 
 				return ps;
