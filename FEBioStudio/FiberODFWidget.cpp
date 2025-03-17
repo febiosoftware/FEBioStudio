@@ -164,6 +164,8 @@ void CFiberGLWidget::paintGL()
 {
     glEnable(GL_DEPTH_TEST);
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -189,8 +191,6 @@ void CFiberGLWidget::paintGL()
 
     m_ptriad->setOrientation(m_cam.GetOrientation());
     m_ptriad->draw(&painter);
-
-    QOpenGLWidget::paintGL();
 }
 
 void CFiberGLWidget::mousePressEvent(QMouseEvent* ev)
