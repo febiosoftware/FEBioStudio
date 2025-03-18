@@ -1822,6 +1822,18 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 	if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 	{
 		GModel& m = GetFSModel().GetModel();
+
+		sname = name;
+		if (name[0] == '@')
+		{
+			size_t p = name.find("@part_list:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 11, string::npos);
+			}
+			else return nullptr;
+		}
+
 		GPartList* pg = m.FindPartList(sname);
 		if (pg) return pg;
 	}
