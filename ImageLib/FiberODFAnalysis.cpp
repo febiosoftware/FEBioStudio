@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <qopengl.h>
 #include "ImageModel.h"
 #include <FEAMR/sphericalHarmonics.h>
-#include <FEAMR/spherePoints.h>
+#include <FEAMR/SpherePointsGenerator.h>
 #include <MeshTools/FENNQuery.h>
 #include <PostLib/ColorMap.h>
 #include <MeshLib/GMesh.h>
@@ -61,9 +61,10 @@ SOFTWARE.*/
 
 using std::vector;
 using std::complex;
+using sphere = SpherePointsGenerator;
 
 //==================================================================
-CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
+CODF::CODF() : m_odf(sphere::GetNumNodes(FULL), 0.0), m_meanIntensity(0)
 {
 	m_el[0] = m_el[1] = m_el[2] = 1.0;
 	m_ev[0] = vec3d(1, 0, 0);
@@ -130,7 +131,7 @@ public:
         odf.m_sphHarmonics.resize(nsh);
 
         // project image onto unit sphere
-        std::vector<double> reduced = std::vector<double>(NPTS, 0);
+        std::vector<double> reduced = std::vector<double>(sphere::GetNumNodes(FULL), 0);
         reduceAmp(img, reduced);
 
         // see if user cancelled
@@ -143,7 +144,7 @@ public:
         parent->updateProgressIncrement(0.75);
 
         // normalize odf
-        parent->normalizeODF(&odf);
+        parent->normalizeODF(odf.m_odf);
 
         // Calculate spherical harmonics
         parent->m_B.mult(odf.m_odf, odf.m_sphHarmonics);
@@ -151,7 +152,7 @@ public:
         // Recalc ODF based on spherical harmonics
         parent->m_T.mult(odf.m_sphHarmonics, odf.m_odf);
 
-        parent->normalizeODF(&odf);
+        parent->normalizeODF(odf.m_odf);
 
         // Calcualte ODF_GFA
         odf.m_GFA = stddev(odf.m_odf) / rms(odf.m_odf);
@@ -159,6 +160,8 @@ public:
         // build the meshes
         parent->buildMesh(&odf);
         parent->buildRemesh(&odf);
+
+        parent->normalizeODF(odf.m_remeshODF);
 
         // do the fitting stats
         if (parent->GetBoolValue(FITTING)) parent->calculateFits(&odf);
@@ -333,12 +336,14 @@ public:
 
         double zcount = 0;
 
+        auto& points = sphere::GetNodes(FULL);
+
         #pragma omp parallel shared(img)
         {
-            FSNNQuery query(&parent->m_points);
+            FSNNQuery query(&points);
             query.Init();
             
-            std::vector<double> tmp(NPTS, 0.0);
+            std::vector<double> tmp(points.size(), 0.0);
 
             #pragma omp for schedule(dynamic)
             for (int z = 0; z < nz; z++)
@@ -379,7 +384,7 @@ public:
             }
 
             #pragma omp critical
-            for (int i = 0; i < NPTS; ++i)
+            for (int i = 0; i < points.size(); ++i)
             {
                 reduced[i] += tmp[i];
             }
@@ -429,7 +434,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
-	AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
+	AddIntParam(m_nshowMesh, "Show ODF", "Render ODF As...")->SetEnumNames("ODF\0ODF remeshed\0EFD\0VM3\0");
     AddBoolParam(true, "Show Bounding boxes");
     AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
@@ -444,6 +449,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 	m_tex.SetSmooth(true);
 
     m_map.jet();
+    m_remeshMap.jet();
 	m_pbar = new GLLegendBar(&m_tex, 0, 0, 120, 600, GLLegendBar::ORIENT_VERTICAL);
 	m_pbar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
 	m_pbar->SetType(GLLegendBar::GRADIENT);
@@ -606,20 +612,15 @@ void CFiberODFAnalysis::run()
     sitk::ExtractImageFilter extractFilter;
     extractFilter.SetSize(std::vector<unsigned int> {xDivSize, yDivSize, zDivSize});
 
-	// copy point data to vector<vec3d> which is convenient for certain parts of the algorithm (i.e. reduceAmp)
-	m_points.resize(NPTS);
-	for (int index = 0; index < NPTS; index++)
-	{
-		m_points[index] = vec3d(XCOORDS[index], YCOORDS[index], ZCOORDS[index]);
-	}
+    vector<vec3d>& points = sphere::GetNodes(FULL);
 
 	// calculate the spherical coordinates of the points
-    vector<double> theta(NPTS);
-	vector<double> phi(NPTS);
-    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta.data(), phi.data());
+    vector<double> theta;
+	vector<double> phi;
+    getSphereCoords(points, theta, phi);
 
 	// Calculate spherical harmonics coefficients
-    m_T = *compSH(GetIntValue(ORDER), NPTS, theta.data(), phi.data());
+    m_T = *compSH(GetIntValue(ORDER), theta, phi);
 	auto C = complLapBel_Coef();
 	m_A = m_T*(*C);
 
@@ -775,11 +776,11 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 		{
 			switch (nshow)
 			{
-			case 0: UpdateMesh(odf, odf->m_odf, m_ODFmin, m_ODFmax, bradial); break;
-			case 1: UpdateRemesh(odf, bradial); break;
-			case 2: UpdateMesh(odf, odf->m_EFD_ODF, m_EFDmin, m_EFDmax, bradial); break;
-			case 3: break; // no mesh will be used for this
-			case 4: UpdateMesh(odf, odf->m_VM3_ODF, m_VM3min, m_VM3max, bradial); break;
+            // Don't break here so remesh is always updated
+			case 0: UpdateMesh(odf, odf->m_odf, m_ODFmin, m_ODFmax, bradial); 
+			case 1: UpdateRemesh(odf, bradial); break; 
+			case 2: UpdateSmallMesh(odf, odf->m_EFD_ODF, bradial); break;
+			case 3: UpdateSmallMesh(odf, odf->m_VM3_ODF, bradial); break;
 			}
 		}
 	}
@@ -802,6 +803,21 @@ void CFiberODFAnalysis::UpdateStats()
 			double max = *std::max_element(val.begin(), val.end());
 			if (min < m_ODFmin) m_ODFmin = min;
 			if (max > m_ODFmax) m_ODFmax = max;
+		}
+	}
+
+    // global remeshed ODF ranges
+	m_remeshMin = 1e12;
+	m_remeshMax = 0;
+	for (auto odf : m_ODFs)
+	{
+		vector<double>& val = odf->m_remeshODF;
+		if (val.empty() == false)
+		{
+			double min = *std::min_element(val.begin(), val.end());
+			double max = *std::max_element(val.begin(), val.end());
+			if (min < m_remeshMin) m_remeshMin = min;
+			if (max > m_remeshMax) m_remeshMax = max;
 		}
 	}
 
@@ -856,17 +872,34 @@ void CFiberODFAnalysis::UpdateColorBar()
 		switch (nshow)
 		{
 		case 0: vmin = m_ODFmin; vmax = m_ODFmax; szlabel = "ODF"; break;
-		case 1: vmin = m_ODFmin; vmax = m_ODFmax; szlabel = "ODF"; break;
+		case 1: vmin = m_remeshMin; vmax = m_remeshMax; szlabel = "ODF"; break;
 		case 2: vmin = m_EFDmin; vmax = m_EFDmax; szlabel = "EFD"; break;
-		case 3: break; // no mesh will be used for this
-		case 4: vmin = m_VM3min; vmax = m_VM3max; szlabel = "VM3"; break;
+		case 3: vmin = m_VM3min; vmax = m_VM3max; szlabel = "VM3"; break;
 		}
 
 		if (m_rangeOption != 0)
 		{
 			vmin = m_userMin;
 			vmax = m_userMax;
+            
+            // The remshed ODFs are shown when the camera is moving even when the option to display the
+            // full resultoion ODFs is selected. To keep the color mapping consistent, we need to adjust
+            // the range of the remeshed ODFs to match the full resolution ODFs.
+            if(nshow == 0)
+            {
+                double low = m_userMin - (m_userMax - m_userMin) * (m_remeshMin - m_ODFmin) / (m_ODFmax - m_ODFmin);
+                double high = m_userMin + (m_userMax - m_userMin) * (m_remeshMax - m_ODFmin) / (m_ODFmax - m_ODFmin);
+                m_remeshMap.SetRange(low, high);
+            }
+            // Otherwise, we just use the user defined range
+            else m_remeshMap.SetRange(m_userMin, m_userMax);
 		}
+        else
+        {
+            // Here we set the range of the remeshed ODFs in the event that we are displaying the 
+            // full resolution ODFs. This keeps the color mapping consistent while the camera is moving.
+            m_remeshMap.SetRange(m_remeshMin, m_remeshMax);
+        }
 
 		m_pbar->SetRange(vmin, vmax);
 		m_pbar->copy_label(szlabel);
@@ -891,33 +924,33 @@ void CFiberODFAnalysis::UpdateColorBar()
 	}
 }
 
-void CFiberODFAnalysis::normalizeODF(CODF* odf)
+void CFiberODFAnalysis::normalizeODF(std::vector<double>& odf)
 {
 	// normalize odf
-	double gfa = GFA(odf->m_odf);
-	double min = *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
-	double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
+	double gfa = GFA(odf);
+	double min = *std::min_element(odf.begin(), odf.end());
+	double max = *std::max_element(odf.begin(), odf.end());
 
 	double sum = 0;
-	for (int index = 0; index < odf->m_odf.size(); index++)
+	for (int index = 0; index < odf.size(); index++)
 	{
-		double val = (odf->m_odf)[index] - (min + (max - min) * 0.1 * gfa);
+		double val = odf[index] - (min + (max - min) * 0.1 * gfa);
 
 		if (val < 0)
 		{
-			odf->m_odf[index] = 0;
+			odf[index] = 0;
 		}
 		else
 		{
-			odf->m_odf[index] = val;
+			odf[index] = val;
 		}
 
-		sum += odf->m_odf[index];
+		sum += odf[index];
 	}
 
-	for (int index = 0; index < odf->m_odf.size(); index++)
+	for (int index = 0; index < odf.size(); index++)
 	{
-		odf->m_odf[index] /= sum;
+		odf[index] /= sum;
 	}
 }
 
@@ -995,7 +1028,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
         glPopMatrix();
     }
 
-	// show selected box
+    // show selected box
 	if (sel && showSelBox)
 	{
 		glColor3ub(255, 255, 0);
@@ -1012,11 +1045,12 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
+    bool radial = GetBoolValue(RADIAL);
 	int showMesh = GetIntValue(SHOW_MESH);
 	int ncolor = GetIntValue(COLOR_MODE);
 
 	
-    if (showMesh == 3)
+    if (showMesh == 2 && radial)
     {
         glEnable(GL_COLOR_MATERIAL);
 
@@ -1051,7 +1085,14 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
     }
 
     GMesh* mesh = nullptr;
-	if ((showMesh == 1) || cam->IsMoving()) mesh = &odf->m_remesh;
+	if(showMesh == 2 || showMesh == 3)
+    {
+        mesh = &odf->m_smallMesh;
+    }
+    else if ((showMesh == 1) || cam->IsMoving()) 
+    {
+        mesh = &odf->m_remesh;
+    }
 	else mesh = &odf->m_mesh;
 
 	if (ncolor == 0)
@@ -1199,27 +1240,56 @@ double CFiberODFAnalysis::GFA(std::vector<double>& vals)
 
 void CFiberODFAnalysis::buildMesh(CODF* odf)
 {
+    auto& nodes = sphere::GetNodes(FULL);
+    auto& faces = sphere::GetFaces(FULL);
+
 	GMesh& mesh = odf->m_mesh;
-	odf->m_mesh.Create(NPTS, NCON);
+	odf->m_mesh.Create(nodes.size(), faces.size());
 
 	// create nodes
-	for (int i=0; i<NPTS; ++i)
+	for (int i=0; i<nodes.size(); ++i)
 	{
 		auto& node = mesh.Node(i);
-		node.r = vec3f(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+		node.r = to_vec3f(nodes[i]);
 	}
 
 	// create elements
-	for (int i=0; i<NCON; ++i)
+	for (int i=0; i<faces.size(); ++i)
 	{
 		auto& el = mesh.Face(i);
-		el.n[0] = CONN1[i]-1;
-		el.n[1] = CONN2[i]-1;
-		el.n[2] = CONN3[i]-1;
+		el.n[0] = faces[i][0];
+		el.n[1] = faces[i][1];
+		el.n[2] = faces[i][2];
 	}
 
 	// update the mesh
 	mesh.Update();
+
+    // Build small mesh for vm3 odf
+    auto& vm3Nodes = sphere::GetNodes(SMALL);
+    auto& vm3Faces = sphere::GetFaces(SMALL);
+
+    GMesh& m_vm3Mesh = odf->m_smallMesh;
+	odf->m_smallMesh.Create(vm3Nodes.size(), vm3Faces.size());
+
+	// create nodes
+	for (int i=0; i<vm3Nodes.size(); ++i)
+	{
+		auto& node = m_vm3Mesh.Node(i);
+		node.r = to_vec3f(vm3Nodes[i]);
+	}
+
+	// create elements
+	for (int i=0; i<vm3Faces.size(); ++i)
+	{
+		auto& el = m_vm3Mesh.Face(i);
+		el.n[0] = vm3Faces[i][0];
+		el.n[1] = vm3Faces[i][1];
+		el.n[2] = vm3Faces[i][2];
+	}
+
+	// update the mesh
+	m_vm3Mesh.Update();
 }
 
 void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double vmin, double vmax, bool bradial)
@@ -1237,20 +1307,21 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 
 	// udpate nodes
 	GMesh& mesh = odf->m_mesh;
-	for (int i = 0; i < NPTS; ++i)
+    auto& nodes = sphere::GetNodes(FULL);
+	for (int i = 0; i < nodes.size(); ++i)
 	{
 		auto& node = mesh.Node(i);
 
 		if (bradial)
 		{
 			double val_i = val[i] / rmax;
-			node.r = vec3f(XCOORDS[i] * val_i, YCOORDS[i] * val_i, ZCOORDS[i] * val_i);
+			node.r = to_vec3f(nodes[i]) * val_i;
 		}
-		else node.r = vec3f(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+		else node.r = to_vec3f(nodes[i]);
 	}
 
 	// update colors
-	for (int i = 0; i < NCON; ++i)
+	for (int i = 0; i < mesh.Faces(); ++i)
 	{
 		auto& el = mesh.Face(i);
 		el.c[0] = m_map.map((val[el.n[0]]));
@@ -1259,6 +1330,38 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 	}
 
 	mesh.Update();
+}
+
+void CFiberODFAnalysis::UpdateSmallMesh(CODF* odf, const vector<double>& val, bool bradial)
+{
+    double rmax = *std::max_element(val.begin(), val.end());
+	if (rmax == 0.0) rmax = 1.0;
+
+	// update nodes
+	GMesh& mesh = odf->m_smallMesh;
+    auto& nodes = sphere::GetNodes(SMALL);
+	for (int i = 0; i < mesh.Nodes(); ++i)
+	{
+		auto& node = mesh.Node(i);
+
+		if (bradial)
+		{
+			double val_i = val[i] / rmax;
+			node.r = to_vec3f(nodes[i]) * val_i;
+		}
+		else node.r = to_vec3f(nodes[i]);   
+    }
+
+	// update colors
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		auto& el = mesh.Face(i);
+		el.c[0] = m_map.map((val[el.n[0]]));
+		el.c[1] = m_map.map((val[el.n[1]]));
+		el.c[2] = m_map.map((val[el.n[2]]));
+	}
+
+	mesh.Update(); 
 }
 
 void CFiberODFAnalysis::buildRemesh(CODF* odf)
@@ -1287,35 +1390,17 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
 		node.r = to_vec3f(nodePos[i]);
 	}
 
-    double* xCoords = new double[NN] {};
-    double* yCoords = new double[NN] {};
-    double* zCoords = new double[NN] {};
-    for(int index = 0; index < NN; index++)
-    {
-        vec3f vec = mesh.Node(index).r;
+    vector<double> theta;
+    vector<double> phi;
 
-        xCoords[index] = vec.x;
-        yCoords[index] = vec.y;
-        zCoords[index] = vec.z;
-    }
+    getSphereCoords(nodePos, theta, phi);
 
-    double* theta = new double[NN] {};
-    double* phi = new double[NN] {};
-
-    getSphereCoords(NN, xCoords, yCoords, zCoords, theta, phi);
-
-    auto T = compSH(GetIntValue(ORDER), NN, theta, phi);
+    auto T = compSH(GetIntValue(ORDER), theta, phi);
 
 	// store the new coordinates
-	odf->remeshCoord = nodePos;
+	odf->m_remeshCoord = nodePos;
 
-    delete[] xCoords;
-    delete[] yCoords;
-    delete[] zCoords;
-    delete[] theta;
-    delete[] phi;
-
-	vector<double>& newODF = odf->newODF;
+	vector<double>& newODF = odf->m_remeshODF;
     newODF.assign(NN, 0);  
     (*T).mult(odf->m_sphHarmonics, newODF);
 
@@ -1330,16 +1415,16 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
         el.n[1] = elems[i].y;
         el.n[2] = elems[i].z;
 
-        el.c[0] = m_map.map(newODF[el.n[0]]);
-        el.c[1] = m_map.map(newODF[el.n[1]]);
-        el.c[2] = m_map.map(newODF[el.n[2]]);
+        el.c[0] = m_remeshMap.map(newODF[el.n[0]]);
+        el.c[1] = m_remeshMap.map(newODF[el.n[1]]);
+        el.c[2] = m_remeshMap.map(newODF[el.n[2]]);
 	}
     mesh.Update();
 }
 
 void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 {
-	vector<double>& val = odf->newODF;
+	vector<double>& val = odf->m_remeshODF;
 	double min = 0;// *std::min_element(val.begin(), val.end());
 	double max = *std::max_element(val.begin(), val.end());
 	double scale = (min == max ? 1.0 : 1.0 / (max - min));
@@ -1349,7 +1434,7 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		auto& node = mesh.Node(i);
-		node.r = to_vec3f(odf->remeshCoord[i]);
+		node.r = to_vec3f(odf->m_remeshCoord[i]);
 		if (bradial)
 		{
 			double val_i = (val[i] - min) * scale;
@@ -1361,23 +1446,22 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
 		auto& el = mesh.Face(i);
-		el.c[0] = m_map.map((val[el.n[0]]));
-		el.c[1] = m_map.map((val[el.n[1]]));
-		el.c[2] = m_map.map((val[el.n[2]]));
+		el.c[0] = m_remeshMap.map((val[el.n[0]]));
+		el.c[1] = m_remeshMap.map((val[el.n[1]]));
+		el.c[2] = m_remeshMap.map((val[el.n[2]]));
 	}
 
 	mesh.Update();
 }
 
 void EFD_ODF(
-	const vector<double>& odf,
 	const vector<vec3d>& x, 
 	const vector<double>& alpha, 
 	const matrix& V,
 	const vector<double>& l,
 	vector<double>& EFDODF)
 {
-	int npt = (int)odf.size();
+	size_t npt = x.size();
 	double D11 = alpha[0] * l[0];
 	double D22 = alpha[1] * l[1];
 	double D33 = alpha[2] * l[2];
@@ -1420,11 +1504,12 @@ vec3d cart2sph(const vec3d& p)
 }
 
 void VM3_ODF(
-	const vector<double>& odf,
 	const vector<vec3d>& x,
 	const vector<double>& beta,
 	vector<double>& VM3ODF)
 {
+    size_t npt = x.size();
+
 	// concentration parameter(1 / dispersion)
 	double b = fabs(beta[0]);
 
@@ -1442,7 +1527,6 @@ void VM3_ODF(
 	double nc = b / (2.0 * PI * i0(b));
 
 	double sum = 0.0;
-	int npt = (int)odf.size();
 	VM3ODF.resize(npt);
 	for (int i = 0; i < npt; ++i)
 	{
@@ -1488,7 +1572,7 @@ void efd_objfun(double* p, double* hx, int m, int n, void* adata)
 	vector<double> alpha = { p[0], p[1], p[2] };
 
 	// calculate the EFD_ODF
-	EFD_ODF(odf, x, alpha, V, l, efd);
+	EFD_ODF(x, alpha, V, l, efd);
 
 	// evaluate measurement
 	const double eps = 1e-12;
@@ -1522,7 +1606,7 @@ void vm3_objfun(double* p, double* hx, int m, int n, void* adata)
 	vector<double> beta = { p[0], p[1], p[2] };
 
 	// calculate the EFD_ODF
-	VM3_ODF(odf, x, beta, vm3);
+	VM3_ODF(x, beta, vm3);
 
 	// evaluate measurement
 	const double eps = 1e-12;
@@ -1588,7 +1672,7 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 	vector<double> lb; lb.assign(n, 0.01);
 	vector<double> ub; ub.assign(n, 100.0);
 
-	vector<double> tmp(NPTS);
+	vector<double> tmp(sphere::GetNumNodes(FULL));
 	OBJDATA data;
 	data.podf = &odf;
 	data.px = &x;
@@ -1647,7 +1731,7 @@ vector<double> CFiberODFAnalysis::optimize_vm3(
 	vector<double> lb = {0.01, -PI, -PI/2};
 	vector<double> ub = {1e3, PI, PI/2};
 
-	vector<double> tmp(NPTS);
+	vector<double> tmp(sphere::GetNumNodes(FULL));
 	OBJDATA data;
 	data.podf = &odf;
 	data.px = &x;
@@ -1725,9 +1809,9 @@ double computeFisherRao(std::vector<double>& odf1, std::vector<double>& odf2)
 void CFiberODFAnalysis::calculateFits(CODF* odf)
 {
 	// get the spatial coordinates
-	int npt = NPTS;
-	vector<vec3d> x(npt);
-	for (int i = 0; i < npt; ++i) x[i] = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+	int npt = sphere::GetNumNodes(FULL);
+	vector<vec3d>& x = sphere::GetNodes(FULL);
+    vector<vec3d>& xSmall = sphere::GetNodes(SMALL);
 
 	// build matrix of nodal coordinates, weighted by ODF
 	matrix A(npt, 3);
@@ -1800,12 +1884,15 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("optimized alpha: %lg, %lg, %lg\n", odf->m_EFD_alpha.x, odf->m_EFD_alpha.y, odf->m_EFD_alpha.z);
 
 	// calculate EFD ODF
-	vector<double>& EFDODF = odf->m_EFD_ODF;
-	EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
+	vector<double> EFDODF;
+	EFD_ODF(x, alpha, V, l, EFDODF);
 
 	// calculate Fisher-Rao distance
-	odf->m_EFD_FRD = computeFisherRao(odf->m_odf, odf->m_EFD_ODF);
+	odf->m_EFD_FRD = computeFisherRao(odf->m_odf, EFDODF);
 	Log("Fisher-Rao distance: %lg\n", odf->m_EFD_FRD);
+
+    // calculate small EFD for visualization
+	EFD_ODF(xSmall, alpha, V, l, odf->m_EFD_ODF);
 
 	// do optimization of VM3 parameters
 	Log("\nFitting VM3\n");
@@ -1816,13 +1903,16 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	odf->m_VM3_beta = vec3d(beta[0], beta[1], beta[2]);
 	Log("optimized beta: %lg, %lg, %lg\n", beta[0], beta[1], beta[2]);
 
-	// calculate VM3 ODF
-	vector<double>& VM3ODF = odf->m_VM3_ODF;
-	VM3_ODF(odf->m_odf, x, beta, VM3ODF);
+	// calculate VM3 ODF for Fisher-Rao Calculation
+	vector<double> VM3ODF;
+	VM3_ODF(x, beta, VM3ODF);
 
 	// calculate Fisher-Rao distance
-	odf->m_VM3_FRD = computeFisherRao(odf->m_odf, odf->m_VM3_ODF);
+	odf->m_VM3_FRD = computeFisherRao(odf->m_odf, VM3ODF);
 	Log("Fisher-Rao distance: %lg\n", odf->m_VM3_FRD);
+
+    // calculate small VM3 for visualization
+	VM3_ODF(xSmall, beta, odf->m_VM3_ODF);
 }
 
 enum IDs { ODF_SPH_HARM = 0, ODF_POS, ODF_RAD, ODF_REMESH_COORD, ODF_BOX_X0, ODF_BOX_Y0, ODF_BOX_Z0, 
@@ -1847,7 +1937,7 @@ void CFiberODFAnalysis::Save(OArchive& ar)
                 ar.WriteChunk(ODF_POS, odf->m_position);
                 ar.WriteChunk(ODF_RAD, odf->m_radius);
                 ar.WriteChunk(ODF_MEAN_INT, odf->m_meanIntensity);
-                ar.WriteChunk(ODF_REMESH_COORD, odf->remeshCoord);
+                ar.WriteChunk(ODF_REMESH_COORD, odf->m_remeshCoord);
                 ar.WriteChunk(ODF_BOX_X0, odf->m_box.x0);
                 ar.WriteChunk(ODF_BOX_Y0, odf->m_box.y0);
                 ar.WriteChunk(ODF_BOX_Z0, odf->m_box.z0);
@@ -1908,7 +1998,7 @@ void CFiberODFAnalysis::Load(IArchive& ar)
                         ar.read(odf->m_meanIntensity);
                         break;
                     case ODF_REMESH_COORD:
-                        ar.read(odf->remeshCoord);
+                        ar.read(odf->m_remeshCoord);
                         break;
                     case ODF_BOX_X0:
                         ar.read(odf->m_box.x0);
@@ -1988,17 +2078,15 @@ void CFiberODFAnalysis::Load(IArchive& ar)
 
     auto C = complLapBel_Coef();
 
-    double* theta = new double[NPTS] {};
-    double* phi = new double[NPTS] {};
+    vector<vec3d>& coords = sphere::GetNodes(FULL);
+    vector<double> theta;
+    vector<double> phi;
 
-    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta, phi);
+    getSphereCoords(coords, theta, phi);
 
-    auto T = compSH(GetIntValue(ORDER), NPTS, theta, phi);
+    auto T = compSH(GetIntValue(ORDER), theta, phi);
 
-    // get the spatial coordinates
-	int npt = NPTS;
-	vector<vec3d> x(npt);
-	for (int i = 0; i < npt; ++i) x[i] = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+    auto& coordsSmall = sphere::GetNodes(SMALL);
 	
     #pragma omp parallel for
     for(int i = 0; i < m_ODFs.size(); i++)
@@ -2010,9 +2098,11 @@ void CFiberODFAnalysis::Load(IArchive& ar)
         // Recalc ODF based on spherical harmonics
         (*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
+        normalizeODF(odf->m_odf);
+
         // calculate VM3 ODF
         vector<double> beta {odf->m_VM3_beta.x, odf->m_VM3_beta.y, odf->m_VM3_beta.z };
-        VM3_ODF(odf->m_odf, x, beta, odf->m_VM3_ODF);
+        VM3_ODF(coordsSmall, beta, odf->m_VM3_ODF);
 
         // calculate EFD ODF
         vector<double> l(3,0);
@@ -2032,11 +2122,13 @@ void CFiberODFAnalysis::Load(IArchive& ar)
         V[2][2] = odf->m_ev[2].z;
 
         vector<double> alpha {odf->m_EFD_alpha.x, odf->m_EFD_alpha.y, odf->m_EFD_alpha.z };
-        EFD_ODF(odf->m_odf, x, alpha, V, l, odf->m_EFD_ODF);
+        EFD_ODF(coordsSmall, alpha, V, l, odf->m_EFD_ODF);
 
         // build the meshes
         buildMesh(odf);
         buildRemesh(odf);
+
+        normalizeODF(odf->m_remeshODF);
     }
 
     if(m_ODFs.size() != 0)
