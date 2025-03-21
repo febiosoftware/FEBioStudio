@@ -18,16 +18,16 @@ main() {
 		echo "Skipping postbuild.sh"
 	fi
 
-    # Standalone Python module
-    pushd PyLib
-    git clone --depth 1 https://github.com/febiosoftware/FEBio.git
-    cmake -L . -B cmbuild \
-        -DFEBioDir=FEBio \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 
-    pushd cmbuild
-    make -j $(sysctl -n hw.ncpu)
-    popd
-    popd
+    # Standalone Python module - CAUSINY ISSUES ON MACOS NOT CURRENTLY BUILDING
+    # pushd PyLib
+    # git clone --depth 1 https://github.com/febiosoftware/FEBio.git
+    # cmake -L . -B cmbuild \
+    #     -DFEBioDir=FEBio \
+    #     -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 
+    # pushd cmbuild
+    # make -j $(sysctl -n hw.ncpu)
+    # popd
+    # popd
 }
 
 main
