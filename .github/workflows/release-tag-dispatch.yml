@@ -15,18 +15,18 @@ jobs:
         with:
           github-pat-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # dispatch-release-workflow:
-  #   name: "Repository dispatch release workflow"
-  #   runs-on: "ubuntu-latest"
-  #   needs: annotate-tag
-  #   steps:
-  #     - name: "Dispatch repository with release-published"
-  #       uses: febiosoftware/febio-workflows/.github/actions/repository-dispatch@develop
-  #       with:
-  #         github-pat-token: ${{ secrets.GITHUB_TOKEN }}
-  #         repository: "febiosoftware/FEBioStudio"
-  #         client-payload: "client_payload[ref_name]=${{ github.ref_name }}"
-  #         event-type: release-published
+  dispatch-release-workflow:
+    name: "Repository dispatch release workflow"
+    runs-on: "ubuntu-latest"
+    needs: annotate-tag
+    steps:
+      - name: "Dispatch repository with release-published"
+        uses: febiosoftware/febio-workflows/.github/actions/repository-dispatch@develop
+        with:
+          github-pat-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "febiosoftware/FEBioStudio"
+          client-payload: "client_payload[ref_name]=${{ github.ref_name }}"
+          event-type: release-published
   
   dispatch-manuals-workflow:
     name: "Repository dispatch manuals workflow"
