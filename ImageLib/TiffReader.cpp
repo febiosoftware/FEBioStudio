@@ -260,6 +260,9 @@ bool CTiffImageSource::Load()
 	{
 		CImageModel* mdl = GetImageModel();
 		mdl->SetInfo(szdescription);
+        
+        std::string name = fs::path(m->filename).filename().string();
+        mdl->SetName(name);
 
 		// see if this is an xml formatted text
 		if (strncmp(szdescription, "<?xml", 5) == 0)

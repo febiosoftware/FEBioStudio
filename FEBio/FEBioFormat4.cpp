@@ -1884,17 +1884,21 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 		FEBioInputModel::PartInstance& part = *febio.GetInstance(0);
 		GObject* po = part.GetGObject();
 
-		GPart* pg = po->FindPartFromName(szelemSetName);
-		if (pg)
+		partList = febio.FindNamedPartList(szelemSetName);
+		if (partList == nullptr)
 		{
-			partList = new GPartList(&gm);
-			partList->SetName(szelemSetName);
-			partList->add(pg->GetID());
-			gm.AddPartList(partList);
-		}
-		else
-		{
-			AddLogEntry("Cannot find part %s for %s", szelemSetName, name.c_str());
+			GPart* pg = po->FindPartFromName(szelemSetName);
+			if (pg)
+			{
+				partList = new GPartList(&gm);
+				partList->SetName(szelemSetName);
+				partList->add(pg->GetID());
+				gm.AddPartList(partList);
+			}
+			else
+			{
+				AddLogEntry("Cannot find part %s for %s", szelemSetName, name.c_str());
+			}
 		}
 	}
 

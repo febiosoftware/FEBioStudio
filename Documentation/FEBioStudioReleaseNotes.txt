@@ -7,6 +7,119 @@
 
 ===========================================================================
 
+ R E L E A S E   2.9   3/19/2025
+
+===========================================================================
+
+New Features:
+* A new tool, the Fiber ODF (Orientation Distribution Function) analysis tool, was added to FEBio Studio. This tool calculates ODFs directly from 3D image data.
+* Added support for edge data field variables.
+* Added PadImageFilter
+* Added Butterworth image filter.
+* Added button to scroll to end on log panel.
+* Added options to set font sizes for title, legend, and axes on graphs.
+* Implemented the NetGenSTLMesher, which is now used as an option to mesh editable surfaces.
+* TetGen mesher can now be used directly on primitives.
+* Implemented exploded view feature.
+* Added tool to extract curve and turn it into a beam mesh.
+* Committed new surface meshsize tool.
+* Added Set Axes option to clear the local material axes.
+* Added option to add local weights to Laplace solver. Now using this in MeshMorphTool.
+* Added option to convert "region" element data to "mixed".
+* Added support for "region" format to arithmetic filter for scalar element data.
+* Added filter option to add two element DATA_MULT fields.
+
+Improvements:
+* Some minor refactoring of the math datafields in order to make them work a bit faster.
+* Point probe now always added, even when nothing selected.
+* Discard mesh tool now removes the current mesh of a primitive (#131).
+* Ensured that edges of higher-order elements interpolate the nodes (#132).
+* Multiple images can now be imported at once.
+* Warping images is now done in batches.
+* Made sure that nodes of muscle paths can be moved.
+* Added option to muscle path to select start time of mesh projection.
+* The mesh morph tool no longer creates a copy of the mesh, but applies the changes directly to the active mesh.
+* Implemented pie-filling algorithm for filling holes.
+* Implemented Find Image feature for missing images of all types. Models now save relative paths to images.
+* Updated mesh metrics so that transformed nodal positions are used.
+* Model tree now uses shared property lists instead of unique lists. This speeds up building the model tree considerably for large models. 
+* Modified update of parts to make it more efficient.
+* Added support for integrating over shells.
+* Added support for saving and loading graphs from session file (#125)
+* Now, when model components fail to allocate, an error is shown instead of aborting the import.
+* Loading or deleting images now clears the command stack.
+* 3D Image controls are hidden when no image model selected. Image controls remain active when image analysis is selected. Name of current model shown on panel.
+* Added active flag for image analyses.
+* Image view settings are now saved on the image model
+* Image sources now save a filepath relative to the fs2 file
+* Tiff file reader now has save and load logic
+* Added time info to DlgStartThread.
+* Added conversion to sitk image in tiffreader.
+* Added mechanism for custom threads to output to the log panel.
+* Now converting raw images to ITK images when ITK is supported.
+* Implemented different algorithm for updating element partitioning in tetgen mesher.
+* Removing a selectable property no longer asks for confirmation on macOS due to a still unsolved crash
+* Implemented algorithm in tetgen mesher that reconstructs element partitioning.
+* Ensured that parts are always visible when loaded.
+* Named selections are now preserved by the "set axes from curvature" tool.
+* Added error checking in equation editor.
+* Modified extrude faces modified so that it retains partitioning and named selections.
+* Modified tri-to-quad convertor to work with quad-dominant meshes.
+* Checked whether the OCC object is shell or solid.
+* Some tweaks to the netgen parameters that affect granularity.
+* Moved mesh sizing for OCC objects to NetGenMesher. SurfaceMeshSize tool now lists surface names and responds to updates.
+
+Bug Fixes:
+* Fixed issue with processing part lists for body loads.
+* Fixed problem when image reload fails. (#140)
+* Fixed problem with the volume renderer's shader initialization. (#139)
+* Fixed bug with Volume datafield that produces constant values in graphs. (#137)
+* Replaced cast to int with floor to avoid numerical overflow issues.
+* Fixed problem with building material selections when importing feb files.
+* Fixed issue with keeping materials' selections and parts' material IDs consistent. (#129)
+* Fixed bug in integration of nodal values.
+* Fixed issue with reading VTK files that contain string field data.
+* Now clearing selection before remeshing in order to avoid crash. (#116)
+* Fixed issue with mesh panel update when no document is open (#117)
+* Fixed issue with default color map being changed inadvertently (#122).
+* Fixed build error when not using HAS_SSH (#123)
+* Fixed some layout issues with the plot widget.
+* Fixed issue caused by numerical round-off when calculating the legend bar labels.
+* Fixed issue when rendering quads in GLMeshRender.
+* Fixed issue with clear recent files list.
+* default plot variables are reset when changing the physics module.
+* Fixed issue with puring selections.
+* Fixed problem with creating FETetGenMesher from fs2 files.
+* Fixed issues with reading older fsm files.
+* When copying mesh, made sure that node and element lookup tables are copied as well.
+* Fixed bug in area calculator tool.
+* Fixed issue with updating plot field dropdown when plot field name is changed. (#127)
+* Fixed bug in calculation of volume ratio and volume strain standard data fields (#126)
+* Fixed issue where Repo project description would sometimes erroneously have a scroll bar
+* Fixed issue with setting face descriptors of netgen mesh generation.
+* Fixed issue with populating property list for CSurfaceMesherProps.
+* Fixed potential crash when parsing model component with unrecognized type string.
+* Fixed bug with face colors in RenderGLMesh.
+* Fixed bug in Log function of FSThreadedTask
+* Fixed issue with cancelling of threaded task.
+* Fixed deallocation bug in FEBioFileImport::AddLogEntry
+* Resetting GL_UNPACK_ALIGNMENT after updating 3d texture, to avoid issues with qt rendering.
+* Fixed issue with initialization of volume renderer.
+* Fixed issue with the extract component filter for element data using NODE format.
+* Fixed crash caused by sampling outside image domain during image map
+* Fixed issue with febio export allowing degenerate elements.
+* Fixed bug in copying rigid BC.
+* Fixed issue that name of rigid connectors was not assigned when reading feb file.
+* Fixed issue in counting of step components that was causing a problem when exporting single-step analyses with mesh adaptors.
+* Disabled local mesh modifier parameter since it's seem to crash netgen when turned off.
+* Changing granularity now updates netgen mesher parameter values.
+* Fixed some crashes.
+* Fixed problem with incorrect property flags when loading material components from fs2 file.
+* Fixed issue with invert tool for quadratic triangular shells.
+
+
+===========================================================================
+
  R E L E A S E   2.8   11/7/2024
 
 ===========================================================================

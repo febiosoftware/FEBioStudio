@@ -48,11 +48,12 @@ public:
 	vec3d m_position;
 	GLMesh m_mesh;
 	GLMesh m_remesh;
+    GLMesh m_smallMesh;
 	double m_radius;
     double m_meanIntensity;
 
-	vector<double>	newODF;
-	vector<vec3d>	remeshCoord;
+	vector<double>	m_remeshODF;
+	vector<vec3d>	m_remeshCoord;
 
 	BOX		m_box;
 	bool	m_selected = false;
@@ -69,8 +70,8 @@ public:
 	vec3d	m_EFD_alpha;	// alpha values of EFD fit
 	double	m_EFD_FRD;			// Fisher-Rao distance
 
-	vector<double>	m_VM3_ODF;	// The EDF ODF
-	vec3d	m_VM3_beta;			// beta values of EFD fit
+	vector<double>	m_VM3_ODF;	// The VM3 ODF
+	vec3d	m_VM3_beta;			// beta values of VM3 fit
 	double	m_VM3_FRD;			// Fisher-Rao distance
 };
 
@@ -125,11 +126,12 @@ private:
     std::unique_ptr<matrix> complLapBel_Coef();
     double GFA(std::vector<double>& vals);
 
-	void normalizeODF(CODF* odf);
+	void normalizeODF(std::vector<double>& odf);
     void buildMesh(CODF* odf);
     void buildRemesh(CODF* odf);
 	void calculateFits(CODF* odf);
 	void UpdateMesh(CODF* odf, const vector<double>& val, double vmin, double vmax, bool bradial);
+    void UpdateSmallMesh(CODF* odf, const vector<double>& val, bool bradial);
 	void UpdateRemesh(CODF* odf, bool bradial);
 
 	void UpdateAllMeshes();
@@ -164,6 +166,7 @@ private:
 	// overall stats
 	double	m_FAmin, m_FAmax;	// min, max range of FA
 	double	m_ODFmin, m_ODFmax;
+    double	m_remeshMin, m_remeshMax;
 	double	m_EFDmin, m_EFDmax;
 	double	m_VM3min, m_VM3max;
 
@@ -186,6 +189,7 @@ private:
 	Post::CColorTexture	m_tex;
 	GLLegendBar* m_pbar;
     Post::CColorMap m_map;
+    Post::CColorMap m_remeshMap;
 
 	// temp data for calculating ODFs
 	matrix	m_A, m_B, m_T;
