@@ -74,7 +74,14 @@ void init_FSMesh(py::module_& m)
 		.def("Surfaces", &FSMesh::FESurfaces)
 		.def("Surface", &FSMesh::GetFESurface, py::return_value_policy::reference)
 		.def("NodeIndexFromID", &FSMesh::NodeIndexFromID)
+
+		.def("MeshDataFields", &FSMesh::MeshDataFields)
+		.def("GetMeshDataField", &FSMesh::GetMeshDataField, py::return_value_policy::reference)
         ;
+
+	py::class_<FSMeshData, FSObject, std::unique_ptr<FSMeshData, py::nodelete>>(mesh, "MeshData")
+		.def("getVec3d", &FSMeshData::getVec3d)
+		;
 
 	py::class_<FSMeshItem, std::unique_ptr<FSMeshItem, py::nodelete>>(mesh, "MeshItem")
         .def("IsHidden", &FSMeshItem::IsHidden)
@@ -115,6 +122,7 @@ void init_FSMesh(py::module_& m)
 		.def("Node", [](FSElement& self, int node) { return self.m_node[node]; })
 		.def("SetNode", [](FSElement& self, int node, int val) { self.m_node[node] = val; })
 		.def("SetType", &FSElement::SetType)
+		.def("SetAxes", &FSElement::setAxes)
         ;
 
     py::class_<FSFace, FSMeshItem, std::unique_ptr<FSFace, py::nodelete>>(mesh, "Face")
