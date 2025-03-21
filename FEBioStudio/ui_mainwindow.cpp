@@ -248,6 +248,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
 	QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
 	QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
+	QAction* actionVectorGlyph = addAction("Vector Glyph", "actionVectorGlyph");
 
 	QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
 	QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
@@ -603,6 +604,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuPost->addAction(actionAddCurveProbe);
 	menuPost->addAction(actionAddRuler);
 	menuPost->addAction(actionMusclePath);
+	menuPost->addAction(actionVectorGlyph);
 	menuPost->addAction(actionPlotGroup);
 	menuPost->addSeparator();
 	menuPost->addAction(actionImageSlicer);

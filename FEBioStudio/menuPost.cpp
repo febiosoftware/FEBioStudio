@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
+#include <PostGL/GLPlotObjectGlyph.h>
 #include <ImageLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolumeRenderer.h>
@@ -61,6 +62,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "DlgWarpImage.h"
 #include <ImageLib/ImageFilter.h>
+#include <sstream>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -190,6 +192,30 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 	RedrawGL();
 }
 
+
+void CMainWindow::on_actionVectorGlyph_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::FEPostModel::PointObject* pointObj = dynamic_cast<Post::FEPostModel::PointObject*>(ui->postPanel->GetSelectedObject());
+	if (pointObj == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select a valid object first in the model tree.");
+		return;
+	}
+
+	Post::GLPlotObjectVector* vectorGlyph = new Post::GLPlotObjectVector(pointObj);
+	glm->AddPlot(vectorGlyph);
+
+	if (GetPostDocument()) UpdatePostPanel(true, vectorGlyph);
+	else Update(nullptr, true);
+	RedrawGL();
+}
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {

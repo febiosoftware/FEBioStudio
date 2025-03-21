@@ -503,6 +503,7 @@ public slots:
 	void on_actionStreamLinePlot_triggered();
 	void on_actionParticleFlowPlot_triggered();
 	void on_actionVolumeFlowPlot_triggered();
+	void on_actionVectorGlyph_triggered();
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
