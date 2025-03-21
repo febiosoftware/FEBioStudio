@@ -36,7 +36,7 @@ jobs:
       - name: "Dispatch Manuals repository with release-published"
         uses: febiosoftware/febio-workflows/.github/actions/repository-dispatch@develop
         with:
-          github-pat-token: ${{ secrets.GITHUB_TOKEN }}
+          github-pat-token: ${{ secrets.MANUALS_TOKEN }}
           repository: "febiosoftware/Manuals"
           client-payload: "client_payload[ref_name]=${{ github.ref_name }}"
           event-type: release-published
