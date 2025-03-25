@@ -2991,7 +2991,7 @@ void FSMesh::UpdateMeshPartitions()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement_& el = ElementRef(i);
-		elemSize[el.m_MatID]++;
+		if (el.m_MatID >= 0) elemSize[el.m_MatID]++;
 	}
 
 	int NF = Faces();
@@ -3002,7 +3002,7 @@ void FSMesh::UpdateMeshPartitions()
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
 
-		faceSize[ma]++;
+		if (ma >= 0) faceSize[ma]++;
 		if (mb >= 0) faceSize[mb]++;
 	}
 
@@ -3018,7 +3018,7 @@ void FSMesh::UpdateMeshPartitions()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement_& el = ElementRef(i);
-		m_Dom[el.m_MatID]->AddElement(i);
+		if (el.m_MatID >= 0) m_Dom[el.m_MatID]->AddElement(i);
 	}
 
 	for (int i = 0; i < NF; ++i)
@@ -3028,7 +3028,7 @@ void FSMesh::UpdateMeshPartitions()
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
 
-		m_Dom[ma]->AddFace(i);
+		if (ma >= 0) m_Dom[ma]->AddFace(i);
 		if (mb >= 0) m_Dom[mb]->AddFace(i);
 	}
 }
