@@ -7,9 +7,10 @@
 
 ===========================================================================
 
- R E L E A S E   2.9   3/19/2025
+ R E L E A S E   2.9   3/24/2025
 
 ===========================================================================
+
 
 New Features:
 * A new tool, the Fiber ODF (Orientation Distribution Function) analysis tool, was added to FEBio Studio. This tool calculates ODFs directly from 3D image data.
