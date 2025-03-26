@@ -926,16 +926,10 @@ void CFiberODFAnalysis::UpdateColorBar()
 
 void CFiberODFAnalysis::normalizeODF(std::vector<double>& odf)
 {
-	// normalize odf
-	double gfa = GFA(odf);
-	double min = *std::min_element(odf.begin(), odf.end());
-	double max = *std::max_element(odf.begin(), odf.end());
-
 	double sum = 0;
 	for (int index = 0; index < odf.size(); index++)
 	{
-		double val = odf[index] - (min + (max - min) * 0.1 * gfa);
-
+        double val = odf[index];
 		if (val < 0)
 		{
 			odf[index] = 0;
@@ -1211,31 +1205,6 @@ std::unique_ptr<matrix> CFiberODFAnalysis::complLapBel_Coef()
     }
 
     return std::move(out);
-}
-
-double CFiberODFAnalysis::GFA(std::vector<double>& vals)
-{
-    // Standard deviation and root mean square
-    double mean = 0;
-    for(auto val : vals)
-    {
-        mean += val;
-    }
-    mean /= vals.size();
-
-    double stdDev = 0;
-    double rms = 0;
-    for(auto val : vals)
-    {
-        double diff = val - mean;
-        stdDev += diff*diff;
-        
-        rms += val*val;
-    }
-    stdDev = sqrt(stdDev/vals.size());
-    rms = sqrt(rms/vals.size());
-
-    return stdDev/rms;
 }
 
 void CFiberODFAnalysis::buildMesh(CODF* odf)
