@@ -1290,10 +1290,14 @@ void GMeshObject::Load(IArchive& ar)
 			break;
 		// the mesh object
 		case CID_MESH:
+		{
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FSMesh);
-			GetFEMesh()->Load(ar);
-			break;
+			FSMesh* mesh = new FSMesh;
+			mesh->SetGObject(this);
+			mesh->Load(ar);
+			SetFEMesh(mesh);
+		}
+		break;
 		}
 		ar.CloseChunk();
 	}

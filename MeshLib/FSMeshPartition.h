@@ -53,6 +53,8 @@ public:
 
 	const std::vector<int>& FaceList() { return m_Face; }
 
+	FSMesh* GetMesh() { return m_pm; }
+
 protected:
 	FSMesh*		m_pm;
 	int			m_nmat;	// material index

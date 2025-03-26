@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <vector>
 
+class FSMeshPartition;
+
 namespace Post {
 
 	class FEState;
@@ -120,7 +122,7 @@ protected:
 	void ReleasePlane();
 	static int GetFreePlane();
 
-	void AddDomain(FSMesh* pm, int n);
+	void AddDomain(FSMeshPartition& dom);
 	void AddFaces(FSMesh* pm);
 
 	void UpdateTriMesh();

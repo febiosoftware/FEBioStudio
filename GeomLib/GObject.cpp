@@ -201,6 +201,7 @@ void GObject::SetFEMesh(FSMesh* pm)
 	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
 	if (pm)
 	{
+		Update();
 		UpdateFEElementMatIDs();
 		BuildFERenderMesh();
 	}
@@ -511,7 +512,6 @@ void GObject::ReplaceFEMesh(FSMesh* pm, bool bup, bool bdel)
 {
 	if (bdel) delete imp->m_pmesh;
 	SetFEMesh(pm);
-	Update(bup);
 }
 
 //-----------------------------------------------------------------------------

@@ -2971,7 +2971,7 @@ void FSMesh::ClearMeshPartitions()
 	m_Dom.Clear();
 }
 
-// Build the parts
+// Build the partitions
 void FSMesh::UpdateMeshPartitions()
 {
 	ClearMeshPartitions();
@@ -2979,7 +2979,7 @@ void FSMesh::UpdateMeshPartitions()
 	// figure out how many domains there are
 	int ndom = -1;
 	int NE = Elements();
-	for (int i = 0; i < NE; ++i) if (ElementRef(i).m_MatID > ndom) ndom = ElementRef(i).m_MatID;
+	for (int i = 0; i < NE; ++i) if (ElementRef(i).m_gid > ndom) ndom = ElementRef(i).m_gid;
 	++ndom;
 
 	if (ndom == 0) return;
@@ -2991,7 +2991,7 @@ void FSMesh::UpdateMeshPartitions()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement_& el = ElementRef(i);
-		if (el.m_MatID >= 0) elemSize[el.m_MatID]++;
+		elemSize[el.m_gid]++;
 	}
 
 	int NF = Faces();
@@ -2999,8 +2999,8 @@ void FSMesh::UpdateMeshPartitions()
 	{
 		FSFace& face = Face(i);
 
-		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
-		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
+		int ma = ElementRef(face.m_elem[0].eid).m_gid;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_gid : -1);
 
 		if (ma >= 0) faceSize[ma]++;
 		if (mb >= 0) faceSize[mb]++;
@@ -3010,7 +3010,6 @@ void FSMesh::UpdateMeshPartitions()
 	for (int i = 0; i < ndom; ++i)
 	{
 		FSMeshPartition* dom = new FSMeshPartition(this);
-		dom->SetMatID(i);
 		dom->Reserve(elemSize[i], faceSize[i]);
 		m_Dom.Add(dom);
 	}
@@ -3018,15 +3017,19 @@ void FSMesh::UpdateMeshPartitions()
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement_& el = ElementRef(i);
-		if (el.m_MatID >= 0) m_Dom[el.m_MatID]->AddElement(i);
+		if (el.m_gid >= 0)
+		{
+			m_Dom[el.m_gid]->AddElement(i);
+			m_Dom[el.m_gid]->SetMatID(el.m_MatID);
+		}
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& face = Face(i);
 
-		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
-		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
+		int ma = ElementRef(face.m_elem[0].eid).m_gid;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_gid : -1);
 
 		if (ma >= 0) m_Dom[ma]->AddFace(i);
 		if (mb >= 0) m_Dom[mb]->AddFace(i);

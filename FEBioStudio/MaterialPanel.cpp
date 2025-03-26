@@ -398,8 +398,8 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 			{
 				fem.UpdateMeshState();
 				fem.ResetAllStates();
-				mdl.Update(true);
 			}
+			mdl.Update(true);
 		}
 
 		GLHighlighter::ClearHighlights();

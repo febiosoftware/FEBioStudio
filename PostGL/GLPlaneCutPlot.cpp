@@ -46,10 +46,6 @@ const int PYR_NT[8] = {0, 1, 2, 3, 4, 4, 4, 4};
 const int QUAD_NT[4] = { 0, 1, 2, 3 };
 const int TRI_NT[4]  = { 0, 1, 2, 2 };
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
 vector<int> CGLPlaneCutPlot::m_clip;
 vector<CGLPlaneCutPlot*> CGLPlaneCutPlot::m_pcp;
 
@@ -190,8 +186,6 @@ void CGLPlaneCutPlot::Update(int ntime, float dt, bool breset)
 	m_bupdateSlice = true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
 void CGLPlaneCutPlot::GetNormalizedEquations(double a[4])
 {
 	vec3d n(m_normal);
@@ -206,8 +200,6 @@ void CGLPlaneCutPlot::GetNormalizedEquations(double a[4])
 	a[3] = a3;
 }
 
-//-----------------------------------------------------------------------------
-// Return the plane normal
 vec3d CGLPlaneCutPlot::GetPlaneNormal() const
 {
 	return m_normal;
@@ -245,8 +237,6 @@ vec3d CGLPlaneCutPlot::GetPlanePosition() const
 	p += N * (m_scl * m_offset);
 	return p;
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
@@ -297,7 +287,6 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	re.enableClipPlane(m_nclip);
 }
 
-//-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateTriMesh()
 {
 	CGLModel* mdl = GetModel();
@@ -310,46 +299,38 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	if (rng[1] == rng[0]) ++rng[1];
 
 	bool activeMap = colorMap.IsActive();
+	GLColor inactiveCol = colorMap.GetInactiveColor();
 
 	m_activeMesh.Clear();
 	m_inactiveMesh.Clear();
 
-	// loop over all enabled materials
-	for (int n = 0; n < ps->Materials(); ++n)
+	// repeat over all active faces
+	int nmats = ps->Materials();
+	int NF = m_slice.Faces();
+	for (int i = 0; i < NF; ++i)
 	{
-		Material* pmat = ps->GetMaterial(n);
-		if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
+		GLSlice::FACE& face = m_slice.Face(i);
+		if ((face.mat >= 0) && (face.mat < nmats))
 		{
-			// repeat over all active faces
-			int NF = m_slice.Faces();
-			for (int i = 0; i < NF; ++i)
+			Material* pmat = ps->GetMaterial(face.mat);
+			if (activeMap && face.bactive)
 			{
-				GLSlice::FACE& face = m_slice.Face(i);
-				if ((face.mat == n) && (face.bactive) && activeMap)
-				{
-					vec3f* r = face.r;
-					float* tex = face.tex;
+				vec3f* r = face.r;
+				float* tex = face.tex;
 
-					float t[3];
-					t[0] = (tex[0] - rng[0]) / (rng[1] - rng[0]);
-					t[1] = (tex[1] - rng[0]) / (rng[1] - rng[0]);
-					t[2] = (tex[2] - rng[0]) / (rng[1] - rng[0]);
-					m_activeMesh.AddFace(r, t);
-				}
+				float t[3];
+				t[0] = (tex[0] - rng[0]) / (rng[1] - rng[0]);
+				t[1] = (tex[1] - rng[0]) / (rng[1] - rng[0]);
+				t[2] = (tex[2] - rng[0]) / (rng[1] - rng[0]);
+				m_activeMesh.AddFace(r, t);
 			}
-
-			// render inactive faces
-			for (int i = 0; i < NF; ++i)
+			else
 			{
-				GLSlice::FACE& face = m_slice.Face(i);
-				if (!activeMap || ((face.mat == n) && (!face.bactive)))
-				{
-					vec3f* r = face.r;
-					float* tex = face.tex;
-					GLColor c = pmat->diffuse;
-					c.a = (uint8_t)(255 * pmat->transparency);
-					m_inactiveMesh.AddFace(r, c);
-				}
+				vec3f* r = face.r;
+				float* tex = face.tex;
+				GLColor c = (activeMap ? inactiveCol : pmat->diffuse);
+				c.a = (uint8_t)(255 * pmat->transparency);
+				m_inactiveMesh.AddFace(r, c);
 			}
 		}
 	}
@@ -358,7 +339,6 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	m_inactiveMesh.Update();
 }
 
-//-----------------------------------------------------------------------------
 // Render the plane cut slice 
 void CGLPlaneCutPlot::RenderSlice(GLRenderEngine& re)
 {
@@ -366,17 +346,22 @@ void CGLPlaneCutPlot::RenderSlice(GLRenderEngine& re)
 	CGLColorMap* pcol = mdl->GetColorMap();
 
 	// render active (i.e. textured) mesh
-	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
-	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
-	re.setTexture(tex);
-	re.renderGMesh(m_activeMesh, false);
+	if (m_activeMesh.Faces() > 0)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
+		GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
+		re.setTexture(tex);
+		re.renderGMesh(m_activeMesh, false);
+	}
 
 	// now render the inactive mesh
-	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
-	re.renderGMesh(m_inactiveMesh, false);
+	if (m_inactiveMesh.Faces() > 0)
+	{
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+		re.renderGMesh(m_inactiveMesh, false);
+	}
 }
 
-//-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateLineMesh()
 {
 	CGLModel* mdl = GetModel();
@@ -523,7 +508,6 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Render the mesh of the plane cut
 void CGLPlaneCutPlot::RenderMeshLines(GLRenderEngine& re)
 {
@@ -533,7 +517,6 @@ void CGLPlaneCutPlot::RenderMeshLines(GLRenderEngine& re)
 	re.popState();
 }
 
-//-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateOutlineMesh()
 {
 	vec3f r[2];
@@ -547,7 +530,6 @@ void CGLPlaneCutPlot::UpdateOutlineMesh()
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Render the outline of the mesh of the plane cut
 void CGLPlaneCutPlot::RenderOutline(GLRenderEngine& re)
 {
@@ -565,7 +547,6 @@ void CGLPlaneCutPlot::RenderOutline(GLRenderEngine& re)
 	re.popState();
 }
 
-//-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdatePlaneCut()
 {
 	UpdateSlice();
@@ -574,7 +555,6 @@ void CGLPlaneCutPlot::UpdatePlaneCut()
 	UpdateOutlineMesh();
 }
 
-//-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateSlice()
 {
 	// Get the bounding box. We need it for determining the scale
@@ -609,7 +589,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 			Material* pmat = ps->GetMaterial(matId);
 			if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 			{
-				AddDomain(pm, n);
+				AddDomain(dom);
 			}
 		}
 	}
@@ -617,7 +597,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	AddFaces(pm);
 }
 
-void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
+void CGLPlaneCutPlot::AddDomain(FSMeshPartition& dom)
 {
 	float ev[8];
 	vec3d ex[8];
@@ -626,7 +606,7 @@ void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 	int en[8];
 	int	rf[3];
 
-	FSMeshPartition& dom = pm->MeshPartition(n);
+	FSMesh* pm = dom.GetMesh();
 
 	// get the plane equations
 	double a[4];
@@ -664,7 +644,7 @@ void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 			case FE_TET15: nt = TET_NT; break;
 			case FE_TET20: nt = TET_NT; break;
 			case FE_PYRA5: nt = PYR_NT; break;
-            case FE_PYRA13: nt = PYR_NT; break;
+			case FE_PYRA13: nt = PYR_NT; break;
 			}
 
 			// get the nodal values
@@ -717,7 +697,7 @@ void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 					}
 
 					GLSlice::FACE face;
-					face.mat = n;
+					face.mat = dom.GetMatID();
 					face.r[0] = to_vec3f(r[0]);
 					face.r[1] = to_vec3f(r[1]);
 					face.r[2] = to_vec3f(r[2]);
@@ -805,7 +785,7 @@ void CGLPlaneCutPlot::AddDomain(FSMesh* pm, int n)
 								}
 
 								GLSlice::FACE face;
-								face.mat = n;
+								face.mat = dom.GetMatID();
 								face.r[0] = to_vec3f(r[0]);
 								face.r[1] = to_vec3f(r[1]);
 								face.r[2] = to_vec3f(r[2]);
@@ -929,7 +909,6 @@ void CGLPlaneCutPlot::AddFaces(FSMesh* pm)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // Calculate the integral over the plane cut
 float CGLPlaneCutPlot::Integrate(FEState* ps)
 {
@@ -1033,7 +1012,6 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	return sum;
 }
 
-//-----------------------------------------------------------------------------
 // Render the cutting plane
 void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 {
