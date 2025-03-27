@@ -98,7 +98,7 @@ void GLVectorRenderer::RenderVector(GLRenderEngine& re, const GLVectorRenderer::
 		re.pushTransform();
 
 		re.transform(p0, quatd(vec3d(0, 0, 1), vector.n));
-		glx::drawCylinder(re, m.lineWidth, m.scale, 10);
+		glx::drawCylinder(re, (float)m.lineWidth, (float)m.scale, 10);
 		re.popTransform();
 	}
 }

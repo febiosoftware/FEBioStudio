@@ -281,7 +281,7 @@ bool xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 	do {
 		if (im.strm.avail_in == 0)
 		{
-			im.strm.avail_in = im.m_fp->read(in, 1, CHUNK);
+			im.strm.avail_in = (uInt) im.m_fp->read(in, 1, CHUNK);
 			if (ferror(im.m_fp->FilePtr())) {
 				(void)inflateEnd(&im.strm);
 				return Z_ERRNO;
@@ -365,7 +365,7 @@ int xpltArchive::OpenChunk()
 			if (feof(im.m_fp->FilePtr()) || ferror(im.m_fp->FilePtr())) return IO_ERROR;
 
 			// get the master chunk id and size
-			int nret = im.m_fp->read(&id, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
+			size_t nret = im.m_fp->read(&id, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
 			if (im.m_bswap) bswap(id);
 			nret = im.m_fp->read(&nsize, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
 			if (im.m_bswap) bswap(nsize);
