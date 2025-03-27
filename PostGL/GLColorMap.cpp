@@ -201,8 +201,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	// update the range
 	float fmin = 1e29f, fmax = -1e29f;
-	ValArray& faceData0 = s0.m_FaceData;
-	ValArray& faceData1 = s1.m_FaceData;
 	if (IS_ELEM_FIELD(m_nfield) && (m_bDispNodeVals == false))
 	{
 		int ndata = FIELD_CODE(m_nfield);
@@ -316,6 +314,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	if (m_bDispNodeVals == false)
 	{
 		int NF = pm->Faces();
+		ValArray& faceData0 = s0.m_FaceData;
+		ValArray& faceData1 = s1.m_FaceData;
 		for (int i = 0; i<NF; ++i)
 		{
 			FSFace& face = pm->Face(i);

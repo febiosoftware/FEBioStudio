@@ -96,6 +96,12 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels = 1, int maxIte
 
 }
 
+extern int FTTRI3[1][3];
+extern int FTTRI6[1][6];
+extern int FTTRI7[1][7];
+extern int FTQUAD4[1][4];
+extern int FTQUAD8[1][8];
+extern int FTQUAD9[1][9];
 extern int FTHEX8[6][4];
 extern int FTHEX20[6][8];
 extern int FTHEX27[6][9];
