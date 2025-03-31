@@ -376,6 +376,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 		assert(false);
 	}
 
+	Update();
 	SetModifiedFlag(true);
 }
 
