@@ -110,7 +110,7 @@ void CVolumeRenderer::ReloadTexture()
 	double wy = (double)ny;
 	double wz = (double)nz;
 	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
-	m_nslices = 50;// (int)wt;
+	m_nslices = (int)wt;
 }
 
 extern int LUT[256][15];
@@ -250,9 +250,6 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	mat3d Qt = Q.transpose();
 	view = Qt * view;
 
-	// the normal will be view direction
-	re.normal(view);
-
 	// update geometry and render
 	RenderSlices(re, view);
 
@@ -338,9 +335,9 @@ void CVolumeRenderer::RenderSlices(GLRenderEngine& re, const vec3d& view)
 				vr[k].z = (float)(c[n1].z * (1 - w) + c[n2].z * w);
 
 				// texture coordinates
-				vt[0].x = vr[0].x / (float)W; vt[0].y = vr[0].y / (float)H; vt[0].z = vr[0].z / (float)D;
-				vt[1].x = vr[1].x / (float)W; vt[1].y = vr[1].y / (float)H; vt[1].z = vr[1].z / (float)D;
-				vt[2].x = vr[2].x / (float)W; vt[2].y = vr[2].y / (float)H; vt[2].z = vr[2].z / (float)D;
+				vt[k].x = vr[k].x / (float)W;
+				vt[k].y = vr[k].y / (float)H;
+				vt[k].z = vr[k].z / (float)D;
 			}
 
 			mesh.AddFace(vr, vt);
