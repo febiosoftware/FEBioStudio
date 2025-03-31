@@ -636,6 +636,12 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 
 	re.setMaterial(GLMaterial::CONSTANT, glm.m_line_col);
 
+	if (pm->IsModified())
+	{
+		re.deleteCachedMesh(pm);
+		pm->setModified(false);
+	}
+
 	for (int j = 0; j < po->Edges(); ++j)
 		re.renderGMeshEdges(*pm, j);
 

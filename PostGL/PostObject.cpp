@@ -100,6 +100,20 @@ void CPostObject::UpdateMesh()
 	}
 
 	mesh->setModified(true);
+
+	GLMesh* renderMesh = GetRenderMesh();
+	if (renderMesh)
+	{
+		for (int i = 0; i < renderMesh->Nodes(); ++i)
+		{
+			GLMesh::NODE& nd = renderMesh->Node(i);
+			FSNode& ns = pm->Node(nd.nid);
+
+			nd.r = to_vec3f(ns.r);
+		}
+		renderMesh->Update();
+		renderMesh->setModified(true);
+	}
 }
 
 void CPostObject::BuildFERenderMesh()
