@@ -62,8 +62,8 @@ SOFTWARE.*/
 #include <FECore/fecore_enum.h>
 #include <FECore/mat3d.h>
 #include <FECore/mathalg.h>
+#include <FEAMR/SpherePointsGenerator.h>
 #include <ImageLib/FiberODFAnalysis.h>
-#include <FEAMR/spherePoints.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEElementData.h>
@@ -81,6 +81,7 @@ SOFTWARE.*/
 
 using std::vector;
 using std::complex;
+using sphere = SpherePointsGenerator;
 
 CFiberGLWidget::CFiberGLWidget() : m_ODF(nullptr), m_analysis(nullptr)
 {
@@ -164,6 +165,8 @@ void CFiberGLWidget::paintGL()
 {
     glEnable(GL_DEPTH_TEST);
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -189,8 +192,6 @@ void CFiberGLWidget::paintGL()
 
     m_ptriad->setOrientation(m_cam.GetOrientation());
     m_ptriad->draw(&painter);
-
-    QOpenGLWidget::paintGL();
 }
 
 void CFiberGLWidget::mousePressEvent(QMouseEvent* ev)
@@ -1184,14 +1185,16 @@ void CFiberODFWidget::on_saveODFs_triggered()
     XMLElement nodes("Nodes");
     writer.add_branch(nodes);
 
+    auto& coords = sphere::GetNodes(FULL);
+
     std::vector<double> position(3,0);
 
-    for(int i = 0; i < NPTS; i++)
+    for(int i = 0; i < coords.size(); i++)
     {
         XMLElement current("node");
-        position[0] = XCOORDS[i];
-        position[1] = YCOORDS[i];
-        position[2] = ZCOORDS[i];
+        position[0] = coords[i].x;
+        position[1] = coords[i].y;
+        position[2] = coords[i].z;
         current.value(position);
         writer.add_leaf(current);
     }

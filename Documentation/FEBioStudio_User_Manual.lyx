@@ -135,15 +135,15 @@ status open
 User's Manual
 \series default
 \emph on
-Version 2.8
+ Version 2.9
 \end_layout
 
 \begin_layout Date
 
 \series bold
 Last Updated:
- November 7,
- 2024
+ March 24,
+ 2025
 \end_layout
 
 \begin_layout Standard
@@ -21798,7 +21798,8 @@ status open
 
 \begin_layout Plain Layout
 Type I collagen hydrogel image volume and its fibril orientation distribution function (ODF) characterized using our image analysis technique.
- (A) Isometricview of the image dataset exhibiting collagen fibrils that are largely oriented along the X-direction.
+ (A) Isometric view of the image dataset,
+ exhibiting collagen fibrils that are largely oriented along the X-direction.
  The dataset was acquired with a multiphoton microscope and pre-processed to correct for systematic distortions and improve contrast.
  (B) Top view of the first slice in the image stack,
  highlighted in a red dashed box in panel A.
@@ -21825,8 +21826,7 @@ Type I collagen hydrogel image volume and its fibril orientation distribution fu
 \end_layout
 
 \begin_layout Standard
-The analysis removes the need to rely on idealized or parametric approximations of fiber orientations,
- by enabling the direct use of experimentally measured,
+The analysis removes the need to rely on idealized or parametric approximations of fiber orientation distrubutions by enabling the direct use of experimentally measured,
  high-resolution,
  non-parametric ODFs.
  This approach eliminates the loss of detail and accuracy that often accompanies parametric fitting,
@@ -21839,7 +21839,7 @@ The analysis removes the need to rely on idealized or parametric approximations 
 
 \begin_layout Standard
 A full description of this algorithm is beyond the scope of this document,
- and it is recommended that the manuscripts published on this topic be consulted for a more in depth explanation of the process 
+ and users should consult the manuscript published on this topic for a more in depth explanation of the process 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "rauff_nonparametric_2022,rauff_algorithmic_2024"
@@ -21865,7 +21865,8 @@ Running a Fiber ODF Analysis
 \end_layout
 
 \begin_layout Standard
-To start a Fiber ODF analysis load the desired 3D image into FEBio Studio,
+To start a Fiber ODF analysis,
+ load the desired 3D image into FEBio Studio,
  then right-click the image in the 
 \emph on
 Model Tree
@@ -21923,7 +21924,7 @@ Parts of the user interface that control the inputs for ODF analysis in FEBio St
  showing the image and a preview of the user-specified subdomains.
  (C) The second page of the Parameters tab in the Fiber ODF Analysis panel allows the user to specify parameters that control the Fiber ODF analysis.
  The Run button allows the user to run the analysis with the specified parameters either for every subvolume,
- or an individual subdomain.
+ or for an individual subdomain.
  (D) Visualization of the results of the ODF analysis showing radial representations of the ODFs for all subdomains based on the parameters in panel C.
 \end_layout
 
@@ -21943,8 +21944,7 @@ Parameters
 Fiber ODF Analysis
 \emph default
  Panel,
- the number of image subdivisions,
- and their percent overlap may be specified.
+ the number of image subdivisions and their percent overlap may be specified.
  Clicking the 
 \emph on
 Generate subvolumes
@@ -22048,8 +22048,8 @@ The
 \emph on
 ODF
 \emph default
- tab shows a 3D render of the currently selected subvolume.
- This render is controlled by the visualization options described in the next section.
+ tab shows a 3D rendering of the currently selected subvolume.
+ This rendering is controlled by the visualization options described in the next section.
  The 
 \emph on
 Spherical Harmonics
@@ -22539,7 +22539,7 @@ literal "false"
 \end_inset
 
 .
- This results in a unique ODF for each FE element in the domain of the constitutive model which smoothly transition between ODFs defined in each of the original image's subdivisions.
+ This results in a unique ODF for each finite element in the domain of the constitutive model which smoothly transitions between ODFs defined in each of the original image's subdivisions.
  If only a single ODF is defined for the domain (in other words,
  if the image was not subdivided before the analysis) then this step is skipped and the original ODF is used for all elements in the domain.
 \end_layout

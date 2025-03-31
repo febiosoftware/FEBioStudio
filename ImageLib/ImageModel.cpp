@@ -200,7 +200,6 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 void CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
 {
     m_analyses.Remove(analysis);
-    delete analysis;
 }
 
 BOX CImageModel::GetBoundingBox()
