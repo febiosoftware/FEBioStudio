@@ -1179,7 +1179,7 @@ CMD_RETURN_CODE CommandProcessor::cmd_selconnect(QStringList ops)
 	{
 		int index = pm->NodeIndexFromID(nid);
 		if (index < 0) return Error("Invalid node ID.");
-		std::vector<int> nodeList = MeshTools::GetConnectedNodes(pm, index, w, true);
+		std::vector<int> nodeList = MeshTools::GetConnectedNodes(pm, index, w, true, true);
 		if (!nodeList.empty())
 			doc->DoCommand(new CCmdSelectFENodes(pm, nodeList, false));
 	}
