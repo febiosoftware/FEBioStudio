@@ -313,6 +313,8 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 	case TRANSFORM_MOVE  : m_mode = m_Ttor.Pick(x, y); break;
 	case TRANSFORM_ROTATE: m_mode = m_Rtor.Pick(x, y); break;
 	case TRANSFORM_SCALE : m_mode = m_Stor.Pick(x, y); break;
+	default:
+		m_mode = PIVOT_SELECTION_MODE::SELECT_NONE;
 	}
 	return m_mode;
 }
