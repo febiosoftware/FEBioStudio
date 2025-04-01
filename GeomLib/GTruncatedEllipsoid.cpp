@@ -122,7 +122,18 @@ void GTruncatedEllipsoid::Create()
 	};
 	assert(m_Face.empty());
 	m_Face.reserve(12);
-	for (int i=0; i<12; ++i)
+	for (int i=0; i<8; ++i)
+	{
+		GFace* f = new GFace(this);
+		f->m_node.resize(3);
+		f->m_node[0] = FT[i][0];
+		f->m_node[1] = FT[i][1];
+		f->m_node[2] = FT[i][2];
+		f->m_nPID[0] = 0;
+		AddSurface(f);
+	}
+
+	for (int i = 8; i < 12; ++i)
 	{
 		GFace* f = new GFace(this);
 		f->m_node.resize(4);
