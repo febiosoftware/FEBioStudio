@@ -39,8 +39,8 @@ SOFTWARE.*/
 #include "ImageLib/3DImage.h"
 #include "IconProvider.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
 
 class UIMeshToImageTool : public QWidget
 {
@@ -192,7 +192,7 @@ void CMeshToImageTool::OnCreate()
     BOX box = pm->GetBoundingBox();
     img.SetBoundingBox(box);
 
-    FEFindElement finder(*pm);
+    FSFindElement finder(*pm);
     finder.Init();
 
     size_t nx = img.Width();
