@@ -468,6 +468,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 		}
 		else doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
 
+		doc->Update();
 		Update();
 		CMainWindow* w = GetMainWindow();
 		w->UpdateModel(activeObject, false);
@@ -551,10 +552,17 @@ void CMeshPanel::on_modParams_apply()
 			{
 				newMesh->ClearFaceSelection();
 			}
+			else
+			{
+				// If there is no mesh we need to make sure that we are not in a mesh selection mode
+				// otherwise we'll crash.
+				doc->SetSelectionMode(SELECT_OBJECT);
+			}
 
 			// swap the meshes
 			string ss = mod->GetName();
 			doc->DoCommand(new CCmdChangeFEMesh(activeObject, newMesh), ss.c_str(), false);
+			Update();
 
 			std::string err = mod->GetErrorString();
 			if (err.empty() == false)
