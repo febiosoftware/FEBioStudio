@@ -212,7 +212,7 @@ void CMeshToImageTool::OnCreate()
         {
             for(int i = 0; i < img.Width(); ++i)
             {
-                vec3f r = r0 + vec3f(i*dx, j*dy, k*dz);
+                vec3f r = r0 + vec3f(i*dx + dx/2, j*dy + dy/2, k*dz + dz/2);
                 int nelem;
                 double r0[3];
                 if(finder.FindElement(r, nelem, r0))
