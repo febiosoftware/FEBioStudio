@@ -692,6 +692,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 		PB.SetActiveGroup(param.GetParamGroup());
 
 		if ((param.IsHidden() == false) &&
+			(param.IsObsolete() == false) &&
 			((param.IsTopLevel() == false) || isTopLevel))
 		{
 			int ndim = param.dim();

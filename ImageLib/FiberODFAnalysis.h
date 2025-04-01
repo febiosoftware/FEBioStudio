@@ -124,7 +124,6 @@ private:
     void clear();
 
     std::unique_ptr<matrix> complLapBel_Coef();
-    double GFA(std::vector<double>& vals);
 
 	void normalizeODF(std::vector<double>& odf);
     void buildMesh(CODF* odf);

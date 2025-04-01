@@ -707,10 +707,10 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 	}
 }
 
-std::vector<int> MeshTools::GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax)
+std::vector<int> MeshTools::GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax, bool respectPartitions)
 {
 	const int TAG = 1;
-	TagConnectedNodes(pm, startNode, tolAngleDeg, bmax, TAG);
+	TagConnectedNodes(pm, startNode, tolAngleDeg, bmax, respectPartitions, TAG);
 
 	std::vector<int> nodeList;
 	nodeList.reserve(pm->Nodes());
@@ -848,7 +848,7 @@ std::vector<int> MeshTools::GetConnectedEdgesByPath(FSMeshBase* pm, int startEdg
 	return edgeList;
 }
 
-void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax, int tag)
+void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax, bool respectPartitions, int tag)
 {
 	// clear all tags
 	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
@@ -899,7 +899,8 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 					if (pe->m_nbr[i] >= 0)
 					{
 						FSEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
-						if (pe2->m_ntag >= 0 && pe2->IsVisible() && (pe2->m_gid == pe->m_gid))
+						if ((pe2->m_ntag) >= 0 && pe2->IsVisible() && 
+							((pe2->m_gid == pe->m_gid) || (!respectPartitions)))
 						{
 							pe2->m_ntag = -1;
 							stack.push(pe2);
@@ -949,7 +950,9 @@ void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, b
 					if (pf->m_nbr[i] >= 0)
 					{
 						FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
-						if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn * to_vec3f(t) >= tr) || (bangle == false)))
+						if (pf2->m_ntag >= 0 && pf2->IsVisible() && 
+							((pf2->m_gid == pf->m_gid) || !respectPartitions ) &&
+							((pf2->m_fn * to_vec3f(t) >= tr) || (bangle == false)))
 						{
 							pf2->m_ntag = -1;
 							stack.push(pf2);

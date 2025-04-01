@@ -2179,7 +2179,7 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 	{
 		if (view.m_bconn && pm)
 		{
-			MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax, 1);
+			MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax, view.m_bpart, 1);
 			lastIndex = -1;
 
 			// fill the pint array
@@ -2703,7 +2703,7 @@ void GLViewSelector::SelectFENodes(int x, int y)
 		if (view.m_bconn && pm)
 		{
 			vector<int> nodeList;
-			nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
+			nodeList = MeshTools::GetConnectedNodes(pm, index, view.m_fconn, view.m_bmax, view.m_bpart);
 			lastIndex = -1;
 			if (!nodeList.empty())
 			{
