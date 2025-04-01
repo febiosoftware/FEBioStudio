@@ -217,7 +217,7 @@ void CMeshToImageTool::OnCreate()
                 double r0[3];
                 if(finder.FindElement(r, nelem, r0))
                 {
-                    data[nx*(k*ny + j) + i] = 1;
+                    data[nx*(k*ny + j) + i] = 255;
                 }
                 else
                 {
