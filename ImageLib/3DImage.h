@@ -78,6 +78,10 @@ public:
 
 	void Zero();
 
+public:
+    bool ExportRAW(const std::string& filename);
+    bool ExportSITK(const std::string& filename);
+
 private:
     template <class pType> 
     void CopySliceX(pType* dest, int n, int channels = 1);
