@@ -393,7 +393,12 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 			}
 
 			UpdateStates();
-			if      (ncol == 1) mdl.UpdateMeshVisibility();
+			if (ncol == 1)
+			{
+				mdl.UpdateMeshVisibility();
+				CGLDocument* postDoc = GetDocument();
+				if (postDoc) postDoc->UpdateSelection(false);
+			}
 			else if (ncol == 2)
 			{
 				fem.UpdateMeshState();

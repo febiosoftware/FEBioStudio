@@ -482,6 +482,7 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	}
 	*/
+	CGLDocument::Update();
 }
 
 std::string CPostDocument::GetFieldString()

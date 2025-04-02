@@ -963,6 +963,7 @@ void CPostModelPanel::BuildModelTree()
 
 	// This can crash if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
+	selectObject(nullptr);
 }
 
 void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
@@ -1133,6 +1134,8 @@ void CPostModelPanel::on_deleteButton_clicked()
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
+	emit currentObjectChanged(nullptr);
+
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(pobj);
 	CGraphData* graph = dynamic_cast<CGraphData*>(pobj);
 	if (po)
@@ -1142,7 +1145,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 		ui->HideImageViewer();
 		
 		doc->DeleteObject(po);
-		item->SetObject(0);
+		item->SetObject(nullptr);
 		Update(true);
 		GetMainWindow()->RedrawGL();
 	}
