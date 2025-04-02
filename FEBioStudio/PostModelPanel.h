@@ -58,6 +58,9 @@ public:
 
 	void ShowContextMenu(QContextMenuEvent* ev);
 
+signals:
+    void currentObjectChanged(FSObject* po);
+
 private slots:
 	void on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_postModel_itemClicked(QTreeWidgetItem* item, int column);

@@ -44,7 +44,7 @@ public:
 	QTabWidget*	tab;
 
 public:
-	void setup(QWidget* parent, CMainWindow* wnd)
+	void setup(::CPostPanel* parent, CMainWindow* wnd)
 	{
 		tab = new QTabWidget; tab->setObjectName("postTab");
 
@@ -60,6 +60,8 @@ public:
 		parent->setLayout(l);
 
 		QMetaObject::connectSlotsByName(parent);
+
+        QObject::connect(mdl, &::CPostModelPanel::currentObjectChanged, parent, &::CPostPanel::postTree_currentObjectChanged);
 	}
 
 	CWindowPanel* currentPanel()

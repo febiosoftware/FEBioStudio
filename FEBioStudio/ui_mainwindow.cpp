@@ -87,6 +87,10 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 	QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
 	QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, centralWidget->sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
 	QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, centralWidget->timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
+
+    QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
+    QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
+    QObject::connect(postPanel, &::CPostPanel::postTree_currentObjectChanged, centralWidget->timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
 }
 
 QAction* Ui::CMainWindow::addAction(const QString& title, const QString& name, const QString& iconFile, bool bcheckable)

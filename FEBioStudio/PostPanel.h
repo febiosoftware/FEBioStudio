@@ -55,6 +55,9 @@ public:
 public slots:
 	void on_postTab_currentChanged(int index);
 
+signals:
+    void postTree_currentObjectChanged(FSObject* po);
+
 private:
 	Ui::CPostPanel*	ui;
 };

@@ -219,7 +219,23 @@ void Ui::CPostConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	ui->setActiveCentralView(CMainCentralWidget::GL_VIEWER);
+    ::CMainWindow* wnd = ui->m_wnd;
+    CGLDocument* doc = wnd->GetGLDocument();
+	if (doc)
+	{
+		switch (doc->GetUIViewMode())
+		{
+		case CGLDocument::MODEL_VIEW:
+			ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+			break;
+		case CGLDocument::SLICE_VIEW:
+			ui->centralWidget->setActiveView(CMainCentralWidget::IMG_SLICE);
+			break;
+		case CGLDocument::TIME_VIEW_2D:
+			ui->centralWidget->setActiveView(CMainCentralWidget::TIME_VIEW_2D);
+			break;
+		}
+	}
 
 	ui->actionImportGeom->setEnabled(true);
 	ui->actionExportGeom->setEnabled(true);
@@ -242,7 +258,7 @@ void Ui::CPostConfig::Apply()
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->show();
-	ui->imageToolBar->hide();
+	ui->imageToolBar->show();
 	ui->pFontToolBar->show();
 	ui->xmlToolbar->hide();
 
@@ -254,7 +270,6 @@ void Ui::CPostConfig::Apply()
 	ui->timePanel->parentWidget()->show();
 	ui->logPanel->parentWidget()->show();
 	ui->infoPanel->parentWidget()->show();
-	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
@@ -263,7 +278,6 @@ void Ui::CPostConfig::Apply()
 
 	ui->showTimeline();
 
-	::CMainWindow* wnd = ui->m_wnd;
 	wnd->UpdatePostPanel();
 	CPostDocument* postDoc = wnd->GetPostDocument(); assert(postDoc);
 	if (postDoc && postDoc->IsValid()) ui->postToolBar->Update();
