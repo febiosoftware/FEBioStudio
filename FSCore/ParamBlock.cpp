@@ -102,7 +102,7 @@ Param* Param::CopyEnumNames(const char* sz)
 //-----------------------------------------------------------------------------
 void Param::SetFloatRange(double fmin, double fmax, double fstep)
 {
-	assert(m_ntype == Param_FLOAT);
+	assert((m_ntype == Param_FLOAT) || (m_ntype == Param_ARRAY_DOUBLE));
 	m_floatRange = true;
 	m_fmin = fmin;
 	m_fmax = fmax;
@@ -156,6 +156,16 @@ bool Param::IsValueValid() const
 	{
 		double v = GetFloatValue();
 		return is_value_in_range(m_rngType, v, m_fmin, m_fmax);
+	}
+	if ((m_ntype == Param_ARRAY_DOUBLE) && m_floatRange)
+	{
+		std::vector<double> v = val<std::vector<double> >();
+		for (double vi : v)
+		{
+			bool b = is_value_in_range(m_rngType, vi, m_fmin, m_fmax);
+			if (b == false) return false;
+		}
+		return true;
 	}
 
 	return true;

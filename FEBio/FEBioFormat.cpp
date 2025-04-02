@@ -694,6 +694,10 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 
 	FSModel& fem = GetFSModel();
 
+	// clear solutes and sbms (TODO: I don't think this is necessary)
+	fem.ClearSolutes();
+	fem.ClearSBMs();
+
 	++tag;
 	do
 	{
@@ -731,11 +735,8 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (tag == "Solutes")
+		else if ((tag == "Solutes") || (tag == "SolidBoundMolecules"))
 		{
-			// clear solutes (TODO: I don't think this is necessary)
-			fem.ClearSolutes();
-
 			++tag;
 			do
 			{
@@ -760,19 +761,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 					}
 					fem.AddSolute(name, z, M, d);
 				}
-				else ParseUnknownTag(tag);
-				++tag;
-			} while (!tag.isend());
-		}
-		else if (tag == "SolidBoundMolecules")
-		{
-			// clear solid-bound molecules (TODO: I don't think this is necessary)
-			fem.ClearSBMs();
-
-			++tag;
-			do
-			{
-				if (tag == "solid_bound")
+				else if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
 					string name = tag.Attribute("name").cvalue();
@@ -790,8 +779,8 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							else ParseUnknownTag(tag);
 							++tag;
 						} while (!tag.isend());
-						fem.AddSBM(name, z, M, d);
 					}
+					fem.AddSBM(name, z, M, d);
 				}
 				else ParseUnknownTag(tag);
 				++tag;

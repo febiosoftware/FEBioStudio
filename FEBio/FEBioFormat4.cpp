@@ -275,18 +275,23 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 				FSProperty* pc = pstep->FindProperty(sztag); assert(pc);
 
 				// see if this is a property
+				std::string typeStr;
 				const char* sztype = tag.AttributeValue("type", true);
-				if (sztype == 0)
+				if (sztype == nullptr)
 				{
-					sztype = tag.Name();
-
 					// The default solver should be the solver with the same name as the module
-					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetActiveModuleName();
+					if (tag.Name() == "solver") typeStr = FEBio::GetActiveModuleName();
+					else
+					{
+						typeStr = pc->GetDefaultType();
+						if (typeStr.empty()) typeStr = tag.Name();
+					}
 				}
+				else typeStr = sztype;
 
 				if (pc->GetComponent() == nullptr)
 				{
-					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), typeStr, &fem);
 					pc->SetComponent(psc);
 				}
 
@@ -1433,7 +1438,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			const char* szset = elset->cvalue();
 			if (strncmp(szset, "@part_list:", 11) == 0)
 			{
-				FSPartSet* pg = feb.FindNamedPartSet(szset+11);
+				GPartList* pg = feb.FindNamedPartList(szset+11);
 				if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
 				else gen->SetItemList(pg);
 			}
