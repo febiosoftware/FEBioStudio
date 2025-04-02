@@ -70,6 +70,7 @@ SOFTWARE.*/
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
+#include "ImageFilterWidget.h"
 #include "GLView.h"
 #include "PostDocument.h"
 #include "GLModelDocument.h"
@@ -496,7 +497,7 @@ public:
 	::CPropertyListView*	m_props;
 
 	CImageViewer*	m_imgView;
-
+    CImageFilterWidget* m_imgFilters;
 	CHistogramViewer* m_histo;
 
 	QTabWidget*	m_tab;
@@ -509,7 +510,7 @@ public:
 	QPushButton* delButton;
 
 public:
-	void setupUi(::CPostModelPanel* parent)
+	void setupUi(::CMainWindow* wnd, ::CPostModelPanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setContentsMargins(0,0,0,0);
@@ -534,7 +535,7 @@ public:
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
 		
-    pvl->setContentsMargins(0,0,0,0);
+        pvl->setContentsMargins(0,0,0,0);
 		
 		QHBoxLayout* phl = new QHBoxLayout;
 		phl->addWidget(new QLabel("name:"));
@@ -564,14 +565,13 @@ public:
 		m_props = new ::CPropertyListView;
 		m_props->setObjectName("props");
 		m_tab->addTab(m_props, "Properties");
-		//		tab->setTabPosition(QTabWidget::West);
 
 		m_imgView = new CImageViewer;
-		//		m_tab->addTab(m_imgView, "Image Viewer");
-
+        m_imgFilters = new CImageFilterWidget(wnd);
 		m_histo = new CHistogramViewer;
 
 		m_imgView->hide();
+        m_imgFilters->hide();
 		m_histo->hide();
 
 		pvl->addWidget(m_tab);
@@ -603,9 +603,11 @@ public:
 	{
 		if (m_tab->count() == 1)
 		{
+            m_tab->addTab(m_imgFilters, "Filters");
 			m_tab->addTab(m_imgView, "Image Viewer");
 			m_tab->addTab(m_histo, "Histogram");
 		}
+        m_imgFilters->SetImageModel(img);
 		m_imgView->SetImageModel(img);
 		m_histo->SetImageModel(img);
 	}
@@ -614,9 +616,11 @@ public:
 	{
 		if (m_tab->count() != 1)
 		{
-			m_tab->removeTab(2);
+			m_tab->removeTab(3);
+            m_tab->removeTab(2);
 			m_tab->removeTab(1);
 		}
+        m_imgFilters->SetImageModel(nullptr);
 		m_imgView->SetImageModel(nullptr);
 		m_histo->SetImageModel(nullptr);
 	}
@@ -715,7 +719,7 @@ public:
 
 CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
 {
-	ui->setupUi(this);
+	ui->setupUi(pwnd, this);
 
 	QObject::connect(this, SIGNAL(postObjectStateChanged()), pwnd, SLOT(OnPostObjectStateChanged()));
 	QObject::connect(this, SIGNAL(postObjectPropsChanged(FSObject*)), pwnd, SLOT(OnPostObjectPropsChanged(FSObject*)));
@@ -982,6 +986,8 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 			ui->HideImageViewer();
 			ui->delButton->setEnabled(false);
 		}
+
+        emit currentObjectChanged(po);
 
 		ui->name->setText(item->text(0));
 		ui->name->setEnabled(item->CanRename());
