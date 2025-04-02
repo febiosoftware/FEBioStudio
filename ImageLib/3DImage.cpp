@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <cstring>
 #include <string>
 #include <algorithm>
+#include <fstream>
+#include "SITKTools.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -1035,3 +1037,27 @@ void C3DImage::Zero()
         assert(false);
     }
 }
+
+bool C3DImage::ExportRAW(const std::string& filename)
+{
+	if (m_pb == nullptr) return false;
+
+	int nsize = m_cx * m_cy * m_cz * m_bps;
+	if (nsize <= 0) return false;
+
+	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
+	if (!file.is_open()) return false;
+	file.write(reinterpret_cast<char*>(m_pb), nsize);
+	file.close();
+
+	return true;
+}
+
+#ifdef HAS_ITK
+bool C3DImage::ExportSITK(const std::string& filename)
+{
+    return WriteSITKImage(this, filename);
+}
+#else
+bool C3DImage::ExportSITKImage(const std::string& filename) { return false; }
+#endif

@@ -414,29 +414,13 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 	C3DImage* im = Get3DImage();
 	if (im == nullptr) return false;
 
-	uint8_t* pb = im->GetBytes();
-	if (pb == nullptr) return false;
-
-	int nx = im->Width();
-	int ny = im->Height();
-	int nz = im->Depth();
-
-	int nsize = nx * ny * nz;
-	if (nsize <= 0) return false;
-
-	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
-	if (!file.is_open()) return false;
-	file.write(reinterpret_cast<char*>(pb), nsize);
-	file.close();
-
-	return true;
+	return im->ExportRAW(filename);
 }
 
-#ifdef HAS_ITK
 bool CImageModel::ExportSITKImage(const std::string& filename)
 {
-    return WriteSITKImage(Get3DImage(), filename);
+    C3DImage* im = Get3DImage();
+	if (im == nullptr) return false;
+
+	return im->ExportSITK(filename);
 }
-#else
-bool CImageModel::ExportSITKImage(const std::string& filename) { return false; }
-#endif
