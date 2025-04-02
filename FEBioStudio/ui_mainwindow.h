@@ -288,6 +288,7 @@ public:
 	QMenu* menuRecentProjects;
 	QMenu* menuRecentGeomFiles;
 	QMenu* menuImportImage;
+	QMenu* menuRecentImages;
 	QMenu* menuWindows;
 	QMenu* menuViews;
 
@@ -348,6 +349,7 @@ public:
 	QActionGroup* recentProjectsActionGroup;
 	QActionGroup* recentFEFilesActionGroup;
 	QActionGroup* recentGeomFilesActionGroup;
+	QActionGroup* recentImageFilesActionGroup;
 
 	// --- menu actions ---
 
@@ -438,6 +440,7 @@ public:
 	QStringList	m_recentGeomFiles;
 	QStringList m_recentProjects;
 	QStringList m_recentPlugins;
+	QStringList m_recentImages;
 
 	QString m_envMapFile;
 
@@ -516,6 +519,8 @@ public:
 
 	void setRecentGeomFiles(QStringList& recentFiles);
 
+	void setRecentImageFiles(QStringList& recentImages);
+
 	void addToRecentFiles(const QString& file);
 
 	void addToRecentProjects(const QString& file);
@@ -523,6 +528,8 @@ public:
 	void addToRecentPlugins(const QString& file);
 
 	void addToRecentGeomFiles(const QString& file);
+
+	void addToRecentImageFiles(const QString& file);
 
 	void showFileViewer();
 

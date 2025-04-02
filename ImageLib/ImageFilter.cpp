@@ -383,6 +383,7 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
 	double wz = (nz < 2 ? 0 : 1.0 / (nz - 1.0));
 
+	box.Scale(0.9999f); // scale a bit to avoid roundoff errors near the edges.
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
 

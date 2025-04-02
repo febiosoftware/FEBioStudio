@@ -414,6 +414,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuRecentFiles = new QMenu("Open Recent");
 	menuRecentProjects = new QMenu("Open Recent Project");
 	menuRecentGeomFiles = new QMenu("Import Recent Geometry");
+	menuRecentImages = new QMenu("Recent Images");
 
 	recentFilesActionGroup = new QActionGroup(mainWindow);
 	recentFilesActionGroup->setObjectName("recentFiles");
@@ -426,6 +427,9 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	recentGeomFilesActionGroup = new QActionGroup(mainWindow);
 	recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
+
+	recentImageFilesActionGroup = new QActionGroup(mainWindow);
+	recentImageFilesActionGroup->setObjectName("recentImages");
 
 	menuImportImage = new QMenu("Import Image");
 
@@ -464,7 +468,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuImportImage->addAction(actionImportImageSequence);
 	menuImportImage->addAction(actionImportImageOther);
 #endif
-
+	menuImportImage->addSeparator();
+	menuImportImage->addAction(menuRecentImages->menuAction());
 
 	QMenu* ConvertMenu = new QMenu("Batch convert");
 	ConvertMenu->addAction(actionConvertFeb);
@@ -1027,6 +1032,11 @@ void Ui::CMainWindow::setRecentGeomFiles(QStringList& recentFiles)
 	setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
 }
 
+void Ui::CMainWindow::setRecentImageFiles(QStringList& recentImages)
+{
+	setRecentFileList(m_recentImages, recentImages, menuRecentImages, recentImageFilesActionGroup);
+}
+
 void Ui::CMainWindow::addToRecentFiles(const QString& file)
 {
 	addToRecentFilesList(m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
@@ -1045,6 +1055,11 @@ void Ui::CMainWindow::addToRecentPlugins(const QString& file)
 void Ui::CMainWindow::addToRecentGeomFiles(const QString& file)
 {
 	addToRecentFilesList(m_recentGeomFiles, file, menuRecentGeomFiles, recentGeomFilesActionGroup);
+}
+
+void Ui::CMainWindow::addToRecentImageFiles(const QString& file)
+{
+	addToRecentFilesList(m_recentImages, file, menuRecentImages, recentImageFilesActionGroup);
 }
 
 void Ui::CMainWindow::showFileViewer()
