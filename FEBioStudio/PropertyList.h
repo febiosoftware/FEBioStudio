@@ -212,8 +212,10 @@ protected:
 
 QString Vec2dToString(const vec2d& r);
 QString Vec3dToString(const vec3d& r);
+QString Vec3fToString(const vec3f& r);
 vec2d StringToVec2d(const QString& s);
 vec3d StringToVec3d(const QString& s);
+vec3f StringToVec3f(const QString& s);
 mat3d StringToMat3d(const QString& s);
 mat3ds StringToMat3ds(const QString& s);
 QString Mat3dToString(const mat3d& a);

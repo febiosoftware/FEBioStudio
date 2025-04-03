@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include "RemoteJob.h"
 #include "DlgRemoteProgress.h"
 #include <FSCore/FSLogger.h>
+#include "PropertyList.h"
 
 extern GLColor col[];
 
@@ -1874,50 +1875,71 @@ void CMainWindow::writeSettings()
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
-	QSettings settings("MRLSoftware", "FEBio Studio");
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, "MRLSoftware", "FEBioStudio");
 	settings.setValue("version", version);
 	settings.beginGroup("MainWindow");
 	{
 		settings.setValue("geometry", saveGeometry());
 		settings.setValue("state", saveState());
 
-		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
-		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
-		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
-		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
-		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
-		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
-		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
-
-		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
-		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
-		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-		settings.setValue("meshColor", vs.m_meshColor.to_uint());
-		settings.setValue("linewidth", vs.m_line_size);
-		settings.setValue("bgStyle", vs.m_nbgstyle);
-		settings.setValue("lighting", vs.m_bLighting);
-		settings.setValue("shadows", vs.m_bShadows);
-		settings.setValue("multiViewProjection", vs.m_nconv);
-		//	settings.setValue("showMaterialFibers", vs.m_bfiber);
-		settings.setValue("showMaterialAxes", vs.m_blma);
-		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
-		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
-		settings.setValue("showGrid", vs.m_bgrid);
-		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
-		settings.setValue("tagFontSize", vs.m_tagFontSize);
-		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
-		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
 		rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 		rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
 	}
 	settings.endGroup();
 
-	settings.beginGroup("PostSettings");
+	settings.beginGroup("Settings");
 	{
+		// background
+		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+		settings.setValue("bgStyle", vs.m_nbgstyle);
+
+		// display
+		settings.setValue("nodeSize", vs.m_node_size);
+		settings.setValue("lineWidth", vs.m_line_size);
+		settings.setValue("meshColor", vs.m_meshColor.to_uint());
+		settings.setValue("normalsScaleFactor", vs.m_scaleNormals);
+		settings.setValue("multiViewProjection", vs.m_nconv);
+		settings.setValue("improvedTransparency", vs.m_bzsorting);
+		settings.setValue("showGrid", vs.m_bgrid);
+		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
+		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
+		settings.setValue("tagFontSize", vs.m_tagFontSize);
+		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+
+		// FEBio
+		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
+		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
+		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
+		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
+		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
+
+		// Lighting
+		settings.setValue("lighting", vs.m_bLighting);
+		settings.setValue("shadows", vs.m_bShadows);
+		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
+		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
+		settings.setValue("environmentMap", ui->m_envMapFile);
+
+		// Physics
+		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
+		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+
+		// Post options
 		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
 		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
+
+		// Selection
+		settings.setValue("respectPartitions", vs.m_bpart);
+
+		// UI
+		settings.setValue("emulateApply", vs.m_apply);
+		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
+
+		// Units
+		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
 	}
 	settings.endGroup();
 
@@ -1977,7 +1999,7 @@ void CMainWindow::writeSettings()
 
 	// store user colormaps
 	int n = Post::ColorMapManager::UserColorMaps();
-	settings.beginGroup("usercolormaps");
+	settings.beginGroup("UserColorMaps");
 	{
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
@@ -2011,57 +2033,12 @@ void CMainWindow::writeSettings()
 void CMainWindow::readSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
-	QSettings settings("MRLSoftware", "FEBio Studio");
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, "MRLSoftware", "FEBioStudio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
 	{
 		restoreGeometry(settings.value("geometry").toByteArray());
 		restoreState(settings.value("state").toByteArray());
-
-		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
-		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
-		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
-		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
-
-        QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
-
-		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
-		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
-		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
-
-		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
-		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
-		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
-		// alpha component used to not be stored so set it to default if zero
-		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
-		vs.m_line_size = settings.value("linewidth", vs.m_line_size).toInt();
-		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
-		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
-		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
-		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-		//	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
-		//	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
-		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
-		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
-		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
-		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
-
-		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
-
-		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
-		GLWidget::set_default_font(font);
-
-		QString envmap = settings.value("environmentMap").toString();
-		ui->m_envMapFile = envmap;
-
-		if (vs.m_defaultFGColorOption != 0)
-		{
-			GLWidget::set_base_color(vs.m_defaultFGColor);
-		}
-
-		Units::SetUnitSystem(ui->m_settings.defaultUnits);
 
 		QRect rt;
 		QRect defaultRect(geometry().center().x() - 400, geometry().center().y() - 300, 800, 600);
@@ -2072,10 +2049,71 @@ void CMainWindow::readSettings()
 	}
 	settings.endGroup();
 
-	settings.beginGroup("PostSettings");
+	settings.beginGroup("Settings");
 	{
+		// background
+		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
+
+		// display
+		vs.m_node_size = settings.value("nodeSize", vs.m_node_size).toInt();
+		vs.m_line_size = settings.value("lineWidth", vs.m_line_size).toInt();
+		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
+		// alpha component used to not be stored so set it to default if zero
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
+		vs.m_scaleNormals = settings.value("normalsScaleFactor", vs.m_scaleNormals).toDouble();
+		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
+		vs.m_bzsorting = settings.value("improvedTransparency", vs.m_bzsorting).toBool();
+		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
+		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
+		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
+		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
+		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
+		GLWidget::set_default_font(font);
+
+		// FEBio
+		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
+		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
+		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
+		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
+		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
+
+		// Lighting
+		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
+		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
+		vs.m_shadow_intensity = settings.value("shadowIntensity", vs.m_shadow_intensity).toFloat();
+		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
+		QString envmap = settings.value("environmentMap").toString();
+		ui->m_envMapFile = envmap;
+
+		// Physics
+		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
+		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+
+		// Post options
 		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
 		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
+
+		// Selection
+		vs.m_bpart = settings.value("respectPartitions", vs.m_bpart).toBool();
+
+		// UI
+		vs.m_apply = settings.value("emulateApply", vs.m_apply).toBool();
+		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+
+		// Units
+		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
+
+
+		if (vs.m_defaultFGColorOption != 0)
+		{
+			GLWidget::set_base_color(vs.m_defaultFGColor);
+		}
+
+		Units::SetUnitSystem(ui->m_settings.defaultUnits);
 	}
 	settings.endGroup();
 
@@ -2148,7 +2186,7 @@ void CMainWindow::readSettings()
 	}
 	settings.endGroup();
 
-	settings.beginGroup("usercolormaps");
+	settings.beginGroup("UserColorMaps");
 	{
 		QStringList l = settings.childGroups();
 		for (int i = 0; i < l.size(); ++i)

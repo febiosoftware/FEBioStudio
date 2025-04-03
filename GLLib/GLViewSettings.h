@@ -77,21 +77,12 @@ enum Planecut_Mode
 //! view settings
 struct GLViewSettings
 {
-	bool	m_bcull;	//!< cull backface flag
-	bool	m_bconn;	//!< select connected
-	bool	m_bmax;		//!< max angle constraint for select connected
-	bool	m_bpart;	//!< respect partition boundaries flag
-	bool	m_bext;		//!< ignore interior nodes
-	bool	m_bsoft;	//!< soft selection mode
-	bool	m_bcullSel;	//!< ignore backfacing when selecting
-	
-	bool	m_bselbrush;//!< brush selection mode
-	float	m_brushSize;//!< size of brush
+	// background
+	GLColor	m_col1, m_col2;		//!< background colors
+	GLColor	m_fgcol;			//!< foreground color
+	int		m_nbgstyle;			//!< back ground style
 
-	bool	m_bselpath;	//!< select by shortest path
-
-	float	m_fconn;	//!< max connectivity angle (for selecting faces)
-
+	// display
 	bool	m_bgrid;	//!< show grid flag
 	bool	m_bmesh;	//!< show edged faces
 	bool	m_bfeat;	//!< show feature edges
@@ -99,54 +90,37 @@ struct GLViewSettings
 	double	m_scaleNormals;	//!< scale factor for normals
 	int		m_nrender;	//!< render mode
 	int     m_nconv;    //!< multiview projection convention
-
-	int		m_apply;	//!< emulate apply via middle mouse button
-
-	bool	m_bjoint;	//!< show rigid joints
-	bool	m_bwall;	//!< show rigid walls
-	bool	m_brigid;	//!< show rigid kinematics
-	
-	bool	m_bfiber;	//!< show material fibers
-	int		m_fibColor;
-	int		m_fibLineStyle;
-
 	bool	m_bcontour;	//!< show contour plot
-	bool	m_blma;		//!< show local material axes
-	double	m_fiber_scale;	//!< scale factor for rendering fibers
-	double	m_fiber_width;	//!< line width
-	double	m_fiber_density; //!< density of fibers
-	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
-	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
-
-	bool	m_showDiscrete;		//!< render discrete sets
-	bool	m_showRigidLabels;	//!< show labels on rigid bodies
-
-	GLColor	m_col1, m_col2;		//!< background colors
-	GLColor	m_fgcol;			//!< foreground color
 	GLColor	m_meshColor;		//!< mesh line color
-	int		m_nbgstyle;			//!< back ground style
 	float	m_node_size;		//!< size of nodes when displayed
 	float	m_line_size;		//!< line size
 	bool	m_bline_smooth;		//!< line smoothing flag
 	bool	m_bpoint_smooth;	//!< point smoothing flag
 	bool	m_bzsorting;
-
 	int		m_defaultFGColorOption;	//!< determines how default FG color for widgets is set (0=theme, 1=user)
 	GLColor	m_defaultFGColor;		//!< the default FG color (when m_defaultFGColorOption == 1)
-
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes
-
-	bool	m_show3DCursor = false;
-	vec3d	m_pos3d;	// The location of the 3D cursor
 
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
 	int		m_tagFontSize;	// font size used for tags
+	bool	m_show3DCursor = false;
+	vec3d	m_pos3d;	// The location of the 3D cursor
+	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
+	bool	m_showHighlights;
 
-	bool	m_selectAndHide;
+	bool m_explode; // enable/disable exploded view
+	int m_explode_direction;
+	double m_explode_strength;
 
-	// lighting settings
+	bool		m_showPlaneCut = false;
+	int			m_planeCutMode = 0;
+	double		m_planeCut[4] = { 0 };
+
+	View_Mode	m_nview = VIEW_USER;
+
+	// Lighting
 	bool	m_bLighting;	// use lighting or not
 	bool	m_bShadows;		// use shadows or not
 	float	m_shadow_intensity;	// shadow intensity
@@ -155,23 +129,38 @@ struct GLViewSettings
 	bool	m_use_environment_map;	// use the environment map (if one is provided)
 	vec3f	m_light;
 
-	// object appearance
-	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
+	// Physics
+	bool	m_bjoint;	//!< show rigid joints
+	bool	m_bwall;	//!< show rigid walls
+	bool	m_brigid;	//!< show rigid kinematics
+	bool	m_bfiber;	//!< show material fibers
+	int		m_fibColor;
+	int		m_fibLineStyle;
+	bool	m_blma;		//!< show local material axes
+	double	m_fiber_scale;	//!< scale factor for rendering fibers
+	double	m_fiber_width;	//!< line width
+	double	m_fiber_density; //!< density of fibers
+	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
+	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
+	bool	m_showDiscrete;		//!< render discrete sets
+	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 
-	bool m_showHighlights;
+	// Selection
+	bool	m_bcull;	//!< cull backface flag
+	bool	m_bconn;	//!< select connected
+	bool	m_bmax;		//!< max angle constraint for select connected
+	bool	m_bpart;	//!< respect partition boundaries flag
+	bool	m_bext;		//!< ignore interior nodes
+	bool	m_bsoft;	//!< soft selection mode
+	bool	m_bcullSel;	//!< ignore backfacing when selecting
+	bool	m_bselbrush;//!< brush selection mode
+	float	m_brushSize;//!< size of brush
+	bool	m_bselpath;	//!< select by shortest path
+	float	m_fconn;	//!< max connectivity angle (for selecting faces)
+	bool	m_selectAndHide;
 
-	// exploded view settings
-	bool m_explode; // enable/disable exploded view
-	int m_explode_direction;
-	double m_explode_strength;
-
-	// planecut settings
-	bool		m_showPlaneCut = false;
-	int			m_planeCutMode = 0;
-	double		m_planeCut[4] = { 0 };
-
-	// view mode
-	View_Mode	m_nview = VIEW_USER;
+	// UI
+	int		m_apply;	//!< emulate apply via middle mouse button
 
 	void Defaults(int ntheme = 0);
 };

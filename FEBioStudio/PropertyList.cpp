@@ -62,6 +62,21 @@ vec3d StringToVec3d(const QString& s)
 	return r;
 }
 
+vec3f StringToVec3f(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	vec3f r(0, 0, 0);
+	if (strcmp(sz, "x") == 0) return vec3f(1, 0, 0);
+	if (strcmp(sz, "y") == 0) return vec3f(0, 1, 0);
+	if (strcmp(sz, "z") == 0) return vec3f(0, 0, 1);
+	if (sz[0] == '{')
+		sscanf(sz, "{%g,%g,%g}", &r.x, &r.y, &r.z);
+	else
+		sscanf(sz, "%g,%g,%g", &r.x, &r.y, &r.z);
+	return r;
+}
+
 mat3d StringToMat3d(const QString& s)
 {
 	string st = s.toStdString();
@@ -161,6 +176,11 @@ QString Vec2dToString(const vec2d& r)
 }
 
 QString Vec3dToString(const vec3d& r)
+{
+	return QString("{%1,%2,%3}").arg(r.x).arg(r.y).arg(r.z);
+}
+
+QString Vec3fToString(const vec3f& r)
 {
 	return QString("{%1,%2,%3}").arg(r.x).arg(r.y).arg(r.z);
 }
