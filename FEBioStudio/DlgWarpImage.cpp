@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <PostGL/GLModel.h>
 #include "ImageThread.h"
+#include <ImageLib/3DImage.h>
 #include "DlgStartThread.h"
 #include "MainWindow.h"
 #include "IconProvider.h"
@@ -227,6 +228,8 @@ void CDlgWarpImage::accept()
     Post::CGLModel& mdl = *ui->doc->GetGLModel();
     int currentStateIndex = mdl.GetActiveState()->GetID();
 
+    QString rawData("Raw Image Data\nFilename\tPixels X\tPixels Y\tPixels Z\tBox X0\tBox Y0\tBox Z0\tBox X1\tBox Y1\tBox Z1\n");
+
     for(int time : states)
     {
         if(time < 0 || time >= mdl.GetFSModel()->GetStates())
@@ -270,8 +273,27 @@ void CDlgWarpImage::accept()
             img->ExportSITKImage(dir.filePath(currentFilename).toStdString());
         }
 
+        BOX box = img->GetBoundingBox();
+
+        rawData += QString("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\t%10\n")
+            .arg(currentFilename)
+            .arg(img->Get3DImage()->Width())
+            .arg(img->Get3DImage()->Height())
+            .arg(img->Get3DImage()->Depth())
+            .arg(box.x0)
+            .arg(box.y0)
+            .arg(box.z0)
+            .arg(box.x1)
+            .arg(box.y1)
+            .arg(box.z1);
+
         img->RemoveFilter(warp);
         img->ClearFilters();
+    }
+
+    if(ui->type->currentIndex() == 2)
+    {
+        ui->wnd->AddLogEntry(rawData);
     }
 
     mdl.GetFSModel()->SetCurrentTimeIndex(currentStateIndex);;
