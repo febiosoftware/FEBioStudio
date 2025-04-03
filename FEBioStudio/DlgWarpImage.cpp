@@ -228,7 +228,7 @@ void CDlgWarpImage::accept()
     Post::CGLModel& mdl = *ui->doc->GetGLModel();
     int currentStateIndex = mdl.GetActiveState()->GetID();
 
-    QString rawData("Raw Image Data\nFilename\tPixels X\tPixels Y\tPixels Z\tBox X0\tBox Y0\tBox Z0\tBox X1\tBox Y1\tBox Z1\n");
+    ui->wnd->AddLogEntry("Image Metadata\nFilename\tPixels X\tPixels Y\tPixels Z\tBox X0\tBox Y0\tBox Z0\tBox X1\tBox Y1\tBox Z1\n");
 
     for(int time : states)
     {
@@ -275,7 +275,7 @@ void CDlgWarpImage::accept()
 
         BOX box = img->GetBoundingBox();
 
-        rawData += QString("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\t%10\n")
+        ui->wnd->AddLogEntry(QString("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\t%10\n")
             .arg(currentFilename)
             .arg(img->Get3DImage()->Width())
             .arg(img->Get3DImage()->Height())
@@ -285,15 +285,10 @@ void CDlgWarpImage::accept()
             .arg(box.z0)
             .arg(box.x1)
             .arg(box.y1)
-            .arg(box.z1);
+            .arg(box.z1));
 
         img->RemoveFilter(warp);
         img->ClearFilters();
-    }
-
-    if(ui->type->currentIndex() == 2)
-    {
-        ui->wnd->AddLogEntry(rawData);
     }
 
     mdl.GetFSModel()->SetCurrentTimeIndex(currentStateIndex);;
