@@ -111,6 +111,7 @@ class Ui::CDlgWarpImage
 public:
     QComboBox* img;
     QLineEdit* states;
+    QLabel* statesExample;
     QLineEdit* dir;
     QPushButton* browse;
     QLineEdit* filename;
@@ -136,9 +137,11 @@ public:
 
         form->addRow("Image:", img);
 
-        states = new QLineEdit;
-        states->setPlaceholderText("(e.g.:1,2,3:6,10:100:5)");
+        states = new QLineEdit(QString::number(doc->GetActiveState() + 1));
         form->addRow("States:", states);
+
+        statesExample = new QLabel("(e.g. 1,2,3:6,10:100:5)");
+        form->addRow("", statesExample);
 
         QHBoxLayout* dirLayout = new QHBoxLayout;
         dirLayout->setContentsMargins(0, 0, 0, 0);
@@ -205,6 +208,12 @@ void CDlgWarpImage::accept()
     char buf[256] = {0}; 
 	strcpy(buf, ui->states->text().toStdString().c_str());
     string_to_int_list(buf, states);
+
+    if(states.empty())
+    {
+        QMessageBox::critical(this, "Error", "No valid states were specified.");
+        return;
+    }
 
     QDir dir = ui->dir->text();
     if(!dir.exists())
