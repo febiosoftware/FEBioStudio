@@ -34,11 +34,9 @@ SOFTWARE.*/
 #include <MeshLib/FSMeshBuilder.h>
 #include <FEBioLink/FEBioClass.h>
 #include <VTKLib/VTKLegacyFileReader.h>
+#include <FSCore/Palette.h>
 #include <QDir>
 using namespace std;
-
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
 
 #include <iostream>
 
@@ -309,8 +307,10 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 		dset->AddElement(spring.n0, spring.n1);
 	}
 
+	const CPalette& pal = CPaletteManager::CurrentPalette();
+
 	int n = gm->DiscreteObjects();
-	dset->SetColor(col[n % GMaterial::MAX_COLORS]);
+	dset->SetColor(pal.Color(n % pal.Colors()));
 
 	return true;
 }

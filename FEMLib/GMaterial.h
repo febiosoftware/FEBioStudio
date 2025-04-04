@@ -42,9 +42,6 @@ class GPart;
 class GMaterial : public FSObject, public FSHasOneItemList
 {
 public:
-	enum {MAX_COLORS = 16};
-
-public:
 	GMaterial(FSMaterial* pm = 0);
 	~GMaterial(void);
 

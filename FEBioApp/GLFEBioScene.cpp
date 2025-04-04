@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshIO/STLimport.h>
 #include <FEMLib/FSProject.h>
 #include <GeomLib/GObject.h>
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLContext.h>
 #include <QPainter>
@@ -266,7 +266,7 @@ void GLFEBioScene::BuildRenderMesh()
 		gnode.r = to_vec3f(fenode.m_r0);
 	}
 
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	const CPalette& pal = CPaletteManager::CurrentPalette();
 
 	NF = 0;
 	for (int i = 0; i < NE; ++i)

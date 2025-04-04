@@ -89,7 +89,7 @@ void init_FBSPost(py::module& m)
 
 	py::class_<Material>(post, "Material")
 		.def_property("name", &Material::GetName, &Material::SetName)
-		.def("SetColor", &Material::setColor)
+		.def("SetColor", static_cast<void(Material::*)(uint8_t, uint8_t, uint8_t)>(&Material::setColor))
 		.def("Show", &Material::show)
 		.def("Hide", &Material::hide)
         .def("Enabled", &Material::enabled)

@@ -52,14 +52,17 @@ SOFTWARE.*/
 #include "PropertyListView.h"
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <PostGL/GLColorMap.h>
+#include "ModelDocument.h"
 #include "RepositoryPanel.h"
 #include "units.h"
 #include "DlgSetRepoFolder.h"
 #include "IconProvider.h"
 #include "PostDocument.h"
 #include <PostGL/GLModel.h>
+#include <QFileDialog>
+#include "PaletteViewer.h"
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -397,47 +400,188 @@ void ColorGradient::paintEvent(QPaintEvent* ev)
 }
 
 //=================================================================================================
-//-----------------------------------------------------------------------------
-class CPaletteWidget : public QWidget
+CPaletteWidget::CPaletteWidget(QWidget* parent) : QWidget(parent)
 {
-public:
-	QComboBox*	pal;
+	QLabel* label = new QLabel("Current palette:");
+	label->setFixedWidth(120);
+	label->setAlignment(Qt::AlignRight | Qt::AlignCenter);
 
-public:
-	CPaletteWidget(QWidget* parent = 0) : QWidget(parent)
+	// build the palette selector
+	pal = new QComboBox; label->setBuddy(pal); pal->setObjectName("select");
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	int pals = PM.Palettes();
+	for (int i = 0; i < pals; ++i)
 	{
-		QLabel* label = new QLabel("Current palette:");
-		label->setFixedWidth(100);
-		label->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-		pal = new QComboBox; label->setBuddy(pal);
-
-		QHBoxLayout* h0 = new QHBoxLayout;
-		h0->addWidget(label);
-		h0->addWidget(pal);
-
-		QPushButton* load = new QPushButton("Load Palette ..."); load->setObjectName("load");
-		QPushButton* save = new QPushButton("Save Palette ..."); save->setObjectName("save");
-		QPushButton* create = new QPushButton("Create palette from materials ..."); create->setObjectName("create");
-		QPushButton* apply = new QPushButton("Apply palette to materials ..."); apply->setObjectName("apply");
-
-		QVBoxLayout* buttons = new QVBoxLayout;
-		buttons->addWidget(load);
-		buttons->addWidget(save);
-		buttons->addWidget(create);
-		buttons->addWidget(apply);
-
-		QHBoxLayout* h1 = new QHBoxLayout;
-		h1->addStretch();
-		h1->addLayout(buttons);
-
-		QVBoxLayout* pl = new QVBoxLayout;
-		pl->addLayout(h0);
-		pl->addLayout(h1);
-		pl->addStretch();
-
-		setLayout(pl);
+		pal->addItem(QString::fromStdString(PM.Palette(i).Name()));
 	}
-};
+	pal->setCurrentIndex(PM.CurrentIndex());
+
+	// build the layout
+	QHBoxLayout* h0 = new QHBoxLayout;
+	h0->addWidget(label);
+	h0->addWidget(pal);
+
+	QPushButton* load = new QPushButton("Load Palette ..."); load->setObjectName("load");
+	QPushButton* save = new QPushButton("Save Palette ..."); save->setObjectName("save");
+	QPushButton* create = new QPushButton("Create palette from materials ..."); create->setObjectName("create");
+	QPushButton* apply = new QPushButton("Apply palette to materials ..."); apply->setObjectName("apply");
+
+	QVBoxLayout* buttons = new QVBoxLayout;
+	buttons->addWidget(load);
+	buttons->addWidget(save);
+	buttons->addWidget(create);
+	buttons->addWidget(apply);
+
+	QHBoxLayout* h1 = new QHBoxLayout;
+	h1->addWidget(view = new CPaletteViewer);
+	h1->addLayout(buttons);
+
+	view->setPalette(PM.CurrentPalette());
+
+	QVBoxLayout* pl = new QVBoxLayout;
+	pl->addLayout(h0);
+	pl->addLayout(h1);
+	pl->addStretch();
+
+	setLayout(pl);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
+int CPaletteWidget::currentPalette() const
+{
+	return pal->currentIndex();
+}
+
+void CPaletteWidget::on_select_currentIndexChanged(int n)
+{
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	if ((n >= 0) && (n < PM.Palettes()))
+	{
+		view->setPalette(PM.Palette(n));
+	}
+}
+
+void CPaletteWidget::on_load_clicked()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, "Load Palette", "", "FBS Palette (*.xml)");
+	if (!fileName.isEmpty())
+	{
+		CPaletteManager& PM = CPaletteManager::GetInstance();
+		string filename = fileName.toStdString();
+		if (!PM.Load(filename))
+		{
+			QMessageBox::critical(this, "Load Palette", "Failed to load palette from file.");
+		}
+		else
+		{
+			const CPalette& newPalette = PM.Palette(PM.Palettes() - 1);
+			pal->addItem(QString::fromStdString(newPalette.Name()));
+		}
+	}
+}
+
+void CPaletteWidget::on_save_clicked()
+{
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	int n = currentPalette();
+	if ((n < 0) || (n >= PM.Palettes())) return;
+	const CPalette& pal = PM.Palette(n);
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Save Palette", "", "FBS Palette (*.xml)");
+	if (!fileName.isEmpty())
+	{
+		string filename = fileName.toStdString();
+		if (!PM.Save(filename, pal))
+		{
+			QMessageBox::critical(this, "Save Palette", "Failed to save current palette to file.");
+		}
+	}
+}
+
+void CPaletteWidget::on_create_clicked()
+{
+	QString name = QInputDialog::getText(this, "Create palette", "Name:");
+	if (!name.isEmpty())
+	{
+		CPalette palette(name.toStdString());
+		CDocument* doc = CDocument::GetActiveDocument();
+
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+		if (modelDoc)
+		{
+			FSModel* fem = modelDoc->GetFSModel();
+			if (fem)
+			{
+				for (int i = 0; i < fem->Materials(); ++i)
+				{
+					GMaterial* mat = fem->GetMaterial(i);
+					palette.AddColor(mat->GetColor());
+				}
+			}
+		}
+
+		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+		if (postDoc)
+		{
+			Post::FEPostModel* fem = postDoc->GetFSModel();
+			if (fem)
+			{
+				for (int i = 0; i < fem->Materials(); ++i)
+				{
+					Post::Material* mat = fem->GetMaterial(i);
+					palette.AddColor(mat->diffuse);
+				}
+			}
+		}
+
+		if (palette.Colors() > 0)
+		{
+			CPaletteManager& PM = CPaletteManager::GetInstance();
+			PM.AddPalette(palette);
+			pal->addItem(name);
+		}
+	}
+}
+
+void CPaletteWidget::on_apply_clicked()
+{
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	int n = currentPalette();
+	if ((n < 0) || (n >= PM.Palettes())) return;
+	const CPalette& pal = PM.Palette(n);
+	int ncol = pal.Colors();
+
+	CDocument* doc = CDocument::GetActiveDocument();
+
+	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+	if (modelDoc)
+	{
+		FSModel* fem = modelDoc->GetFSModel();
+		if (fem)
+		{
+			for (int i = 0; i < fem->Materials(); ++i)
+			{
+				GMaterial* mat = fem->GetMaterial(i);
+				mat->SetColor(pal.Color(i % ncol));
+			}
+		}
+	}
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+	if (postDoc)
+	{
+		Post::FEPostModel* fem = postDoc->GetFSModel();
+		if (fem)
+		{
+			for (int i = 0; i < fem->Materials(); ++i)
+			{
+				Post::Material* mat = fem->GetMaterial(i);
+				mat->setColor(pal.Color(i % ncol));
+			}
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
@@ -1103,9 +1247,6 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	ui->setupUi(this, m_pwnd);
 
-	// fill the palette list
-	UpdatePalettes();
-
 	pwnd->GetDatabasePanel()->GetRepositoryFolder();
 }
 
@@ -1177,20 +1318,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
 	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
 	ui->m_febio->SetCreatePluginPath(m_pwnd->GetCreatePluginPath());
-}
-
-void CDlgSettings::UpdatePalettes()
-{
-	ui->m_pal->pal->clear();
-
-	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
-	int pals = PM.Palettes();
-	for (int i = 0; i<pals; ++i)
-	{
-		ui->m_pal->pal->addItem(QString::fromStdString(PM.Palette(i).Name()));
-	}
-
-	ui->m_pal->pal->setCurrentIndex(PM.CurrentIndex());
 }
 
 void CDlgSettings::showEvent(QShowEvent* ev)
@@ -1325,6 +1452,10 @@ void CDlgSettings::apply()
 
 	ui->m_map->Apply();
 	UpdateColormap();
+
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	int n = ui->m_pal->currentPalette();
+	if ((n >= 0) && (n < PM.Palettes())) PM.SetCurrentIndex(n);
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 

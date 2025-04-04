@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <PostGL/PostObject.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/ColorTexture.h>
 #include <GeomLib/GModel.h>
@@ -291,7 +291,7 @@ bool CPostDocument::Initialize()
 	SetCurrentSelection(nullptr);
 
 	// assign default material attributes
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	const CPalette& pal = CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
 	// make sure the correct GLWidgetManager's edit layer is active
@@ -618,7 +618,7 @@ void CPostDocument::UpdateSelection(bool report)
 	}
 }
 
-void CPostDocument::ApplyPalette(const Post::CPalette& pal)
+void CPostDocument::ApplyPalette(const CPalette& pal)
 {
 	int NCOL = pal.Colors();
 	int nmat = m_fem->Materials();

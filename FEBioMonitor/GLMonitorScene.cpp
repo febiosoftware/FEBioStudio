@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FECore/FEMaterial.h>
 #include <FECore/FEPlotDataStore.h>
 #include <FECore/FEPlotData.h>
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEDataField.h>
 #include <GLLib/GLContext.h>
@@ -302,7 +302,7 @@ void CGLMonitorScene::BuildMesh()
 	}
 
 	// initialize material properties
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	const CPalette& pal = CPaletteManager::CurrentPalette();
 	int NCOL = pal.Colors();
 	m_postModel->ClearMaterials();
 	int nmat = fem->Materials();

@@ -59,6 +59,7 @@ public:
 	void enable() { benable = true; }
 	void disable() { benable = false; }
 
+	void setColor(GLColor c) { diffuse = ambient = c; }
 	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = ambient = GLColor(r,g,b); }
 
 public:

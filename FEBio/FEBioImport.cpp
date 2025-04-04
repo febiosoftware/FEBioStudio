@@ -40,8 +40,6 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 
-extern GLColor col[];
-
 //-----------------------------------------------------------------------------
 FEBioFileImport::FEBioFileImport(FSProject& prj) : FSFileImport(prj)
 {

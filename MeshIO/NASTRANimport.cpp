@@ -27,8 +27,9 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GModel.h>
+#include <FSCore/Palette.h>
 using namespace std;
-extern GLColor col[];
+
 
 //-----------------------------------------------------------------------------
 bool NASTRANimport::Load(const char* szfile)
@@ -339,6 +340,10 @@ bool NASTRANimport::BuildMesh(FSModel& fem)
 	// create materials
 	if (m_Mat.size())
 	{
+		CPaletteManager& PM = CPaletteManager::GetInstance();
+		const CPalette& pal = PM.CurrentPalette();
+		int NCOL = pal.Colors();
+
 		list<MAT1>::iterator im = m_Mat.begin();
 		for (i=0; i<(int) m_Mat.size(); ++i, ++im)
 		{
@@ -349,7 +354,7 @@ bool NASTRANimport::BuildMesh(FSModel& fem)
 			pmat->SetFloatValue(FSIsotropicElastic::MP_v, mat.v);
 
 			GMaterial* pgm = new GMaterial(pmat);
-			pgm->SetColor(col[i%16]);
+			pgm->SetColor(pal.Color(i%NCOL));
 			fem.AddMaterial(pgm);
 
 			// see if there is a part that has this material

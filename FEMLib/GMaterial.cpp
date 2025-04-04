@@ -33,29 +33,11 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FEMLib/FSModel.h>
 #include <sstream>
+#include <FSCore/Palette.h>
 
 using std::stringstream;
 
 int GMaterial::m_nref = 1;
-
-GLColor col[GMaterial::MAX_COLORS] = {
-	GLColor(240, 164, 96),
-	GLColor(240, 240, 0),
-	GLColor(240, 0, 240),
-	GLColor(0, 240, 240),
-	GLColor(240, 180, 0),
-	GLColor(240, 0, 180),
-	GLColor(180, 240, 0),
-	GLColor(0, 240, 180),
-	GLColor(180, 0, 240),
-	GLColor(0, 180, 240),
-	GLColor(0, 180, 0),
-	GLColor(0, 0, 180),
-	GLColor(180, 180, 0),
-	GLColor(0, 180, 180),
-	GLColor(180, 0, 180),
-	GLColor(120, 0, 240)
-};
 
 GMaterial::GMaterial(FSMaterial* pm)
 {
@@ -83,7 +65,11 @@ GMaterial::GMaterial(FSMaterial* pm)
 	ss << "Material" << m_nID;
 	SetName(ss.str());
 
-	m_glmat.AmbientDiffuse(col[(m_nID-1) % 16]);
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
+
+	m_glmat.AmbientDiffuse(pal.Color((m_nID-1) % NCOL));
 
 	m_partList = nullptr;
 }

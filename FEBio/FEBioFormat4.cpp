@@ -41,12 +41,10 @@ SOFTWARE.*/
 #include <GeomLib/FSGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FSCore/Palette.h>
 #include <assert.h>
 #include <sstream>
 using namespace std;
-
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
 
 //-----------------------------------------------------------------------------
 static vector<string> GetDOFList(string sz)
@@ -2201,6 +2199,10 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 	FSModel& fem = GetFSModel();
 	GModel& gm = fem.GetModel();
 
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
+
 	vector<GDiscreteElementSet*> set;
 	++tag;
 	int nc = 0;
@@ -2215,7 +2217,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 			GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-			pg->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
+			pg->SetColor(pal.Color((nc++) % NCOL));
 			pg->SetMaterial(pdm);
 			pg->SetName(szname);
 			fem.GetModel().AddDiscreteObject(pg);

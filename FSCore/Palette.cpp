@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "Palette.h"
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
-using namespace Post;
+
 using std::string;
 
 CPalette::CPalette(const string& name) : m_name(name)
@@ -69,8 +69,7 @@ CPaletteManager*	CPaletteManager::m_this = 0;
 CPaletteManager::CPaletteManager()
 {
 	// add standard palette
-	CPalette pal("Standard");
-
+	CPalette pal("standard");
 	pal.AddColor(GLColor(128, 255, 0));
 	pal.AddColor(GLColor(128,  0,255));
 	pal.AddColor(GLColor(  0,  0,255));
@@ -99,7 +98,56 @@ CPaletteManager::CPaletteManager()
 
 	AddPalette(pal);
 
-	m_currentIndex = 0;
+	// add old preview palette
+	CPalette prv("preview");
+	prv.AddColor(GLColor(240, 164,  96));
+	prv.AddColor(GLColor(240, 240,   0));
+	prv.AddColor(GLColor(240,   0, 240));
+	prv.AddColor(GLColor(  0, 240, 240));
+	prv.AddColor(GLColor(240, 180,   0));
+	prv.AddColor(GLColor(240,   0, 180));
+	prv.AddColor(GLColor(180, 240,   0));
+	prv.AddColor(GLColor(  0, 240, 180));
+	prv.AddColor(GLColor(180,   0, 240));
+	prv.AddColor(GLColor(  0, 180, 240));
+	prv.AddColor(GLColor(  0, 180,   0));
+	prv.AddColor(GLColor(  0,   0, 180));
+	prv.AddColor(GLColor(180, 180,   0));
+	prv.AddColor(GLColor(  0, 180, 180));
+	prv.AddColor(GLColor(180,   0, 180));
+	prv.AddColor(GLColor(120,   0, 240));
+	AddPalette(prv);
+
+	// add new palette
+	CPalette claude("claude");
+	claude.AddColor(GLColor(255, 85, 0));
+	claude.AddColor(GLColor(255, 0, 255));
+	claude.AddColor(GLColor(0, 255, 255));
+	claude.AddColor(GLColor(255, 255, 0));
+	claude.AddColor(GLColor(136, 0, 255));
+	claude.AddColor(GLColor(255, 0, 136));
+	claude.AddColor(GLColor(0, 221, 221));
+	claude.AddColor(GLColor(221, 0, 221));
+	claude.AddColor(GLColor(221, 221, 0));
+	claude.AddColor(GLColor(255, 136, 0));
+	claude.AddColor(GLColor(136, 0, 136));
+	claude.AddColor(GLColor(0, 136, 136));
+	claude.AddColor(GLColor(136, 68, 0));
+	claude.AddColor(GLColor(255, 0, 68));
+	claude.AddColor(GLColor(0, 170, 170));
+	claude.AddColor(GLColor(170, 0, 170));
+	claude.AddColor(GLColor(170, 170, 0));
+	claude.AddColor(GLColor(255, 136, 255));
+	claude.AddColor(GLColor(136, 255, 255));
+	claude.AddColor(GLColor(255, 255, 136));
+	claude.AddColor(GLColor(136, 0, 0));
+	claude.AddColor(GLColor(0, 136, 0));
+	claude.AddColor(GLColor(0, 0, 136));
+	claude.AddColor(GLColor(68, 68, 68));
+	claude.AddColor(GLColor(255, 170, 0));
+	AddPalette(claude);
+
+	m_currentIndex = 1; // Make the preview palette the default
 }
 
 CPaletteManager& CPaletteManager::GetInstance()

@@ -47,7 +47,8 @@ extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
 extern int ET_PYR[8][2];
 
-static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
+const int MAX_FIBER_COLORS = 16;
+static GLColor fiberColorPalette[MAX_FIBER_COLORS] = {
 	GLColor(255, 128, 128),
 	GLColor(128, 255, 128),
 	GLColor(128, 128, 255),
@@ -460,7 +461,7 @@ void GLFiberRenderer::BuildFiberVectors(
 			FSMaterial* matj = pmat->GetMaterialProperty(i, j);
 			if (matj)
 			{
-				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % MAX_FIBER_COLORS];
 				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
@@ -468,7 +469,7 @@ void GLFiberRenderer::BuildFiberVectors(
 				FSMaterialProperty* matProp = dynamic_cast<FSMaterialProperty*>(pmat->GetProperty(i).GetComponent(j));
 				if (matProp)
 				{
-					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % MAX_FIBER_COLORS];
 					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}
@@ -519,7 +520,7 @@ void GLFiberRenderer::BuildFiberVectors(
 			FSMaterial* matj = dynamic_cast<FSMaterial*>(pmat->GetProperty(i).GetComponent(j));
 			if (matj)
 			{
-				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % MAX_FIBER_COLORS];
 				BuildFiberVectors(po, matj, rel, c, Q);
 			}
 			else
@@ -527,7 +528,7 @@ void GLFiberRenderer::BuildFiberVectors(
 				FSMaterialProperty* matProp = dynamic_cast<FSMaterialProperty*>(pmat->GetProperty(i).GetComponent(j));
 				if (matProp)
 				{
-					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % MAX_FIBER_COLORS];
 					BuildFiberVectors(po, matProp, rel, c, Q);
 				}
 			}

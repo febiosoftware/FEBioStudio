@@ -31,10 +31,10 @@ SOFTWARE.*/
 
 class CModelDocument;
 class CPostObject;
+class CPalette;
 
 namespace Post {
 	class FEPostModel;
-	class CPalette;
 	class FEFileReader;
 	class CGLModel;
 }
@@ -200,7 +200,7 @@ public:
 	void DeleteGraph(const CGraphData* data);
 
 private:
-	void ApplyPalette(const Post::CPalette& pal);
+	void ApplyPalette(const CPalette& pal);
 
 signals:
 	void selectionChanged();

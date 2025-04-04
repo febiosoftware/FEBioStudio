@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/GDiscreteObject.h>
+#include <FSCore/Palette.h>
 #include <sstream>
 #include <unordered_map>
 using namespace std;
@@ -635,12 +636,13 @@ bool LSDYNAModel::BuildParameters(FSModel& fem)
 	return true;
 }
 
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
-
 bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 {
 	GModel& m = fem.GetModel();
+
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
 
 	// first, for each spring material, create a discrete spring set
 	auto it = m_Mat.begin();
@@ -652,7 +654,7 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 		if (mat)
 		{
 			GDiscreteSpringSet* ps = new GDiscreteSpringSet(&m);
-			ps->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
+			ps->SetColor(pal.Color((nc++) % NCOL));
 			
 			FSNonLinearSpringMaterial* sm = new FSNonLinearSpringMaterial(&fem);
 			Param* pF = sm->GetParam("force");

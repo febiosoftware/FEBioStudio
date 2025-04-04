@@ -193,6 +193,29 @@ private:
 	QLineEdit* m_pluginPath = nullptr;
 };
 
+class CPaletteViewer;
+
+class CPaletteWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	QComboBox* pal;
+	CPaletteViewer* view;
+
+public:
+	CPaletteWidget(QWidget* parent = 0);
+
+	int currentPalette() const;
+
+private slots:
+	void on_select_currentIndexChanged(int n);
+	void on_load_clicked();
+	void on_save_clicked();
+	void on_create_clicked();
+	void on_apply_clicked();
+};
+
 class CDlgSettings : public QDialog
 {
 	Q_OBJECT
@@ -210,7 +233,6 @@ public slots:
 	void onReset();
 
 private:
-	void UpdatePalettes();
 	void UpdateSettings();
 	void UpdateUI();
 	void UpdateColormap();
