@@ -1261,19 +1261,3 @@ void CGLDocument::ShrinkElementSelection(FSMesh* pm)
 		delete[] pe;
 	}
 }
-
-//===================================================================================================
-CMainWindow* CActiveSelection::m_wnd = nullptr;
-
-void CActiveSelection::SetMainWindow(CMainWindow* wnd)
-{
-	m_wnd = wnd;
-}
-
-FESelection* CActiveSelection::GetCurrentSelection()
-{
-	if (m_wnd == nullptr) return nullptr;
-	CGLDocument* doc = m_wnd->GetGLDocument();
-	if (doc == nullptr) return nullptr;
-	return doc->GetCurrentSelection();
-}

@@ -147,8 +147,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	m_fileThread = nullptr;
 
-	CActiveSelection::SetMainWindow(this);
-
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
 
 	// Instantiate IconProvider singleton

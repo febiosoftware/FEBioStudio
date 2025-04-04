@@ -126,32 +126,3 @@ public:
 private:
 	FSItemListBuilder* itemList;
 };
-
-class CMainWindow;
-class FSMeshSelection;
-
-class CMeshSelectionBox : public CItemListSelectionBox
-{
-	Q_OBJECT
-
-public:
-	CMeshSelectionBox(CMainWindow* wnd, QWidget* parent = nullptr);
-
-	void SetSelection(FSMeshSelection* pms);
-
-private slots:
-	void onAddButtonClicked();
-	void onSubButtonClicked();
-	void onDelButtonClicked();
-	void onSelButtonClicked();
-	void onClearButtonClicked();
-	void onPickButtonClicked();
-	void onNameChanged(const QString& t);
-
-signals:
-	void selectionChanged();
-
-private:
-	CMainWindow* m_wnd;
-	FSMeshSelection* m_pms;
-};
