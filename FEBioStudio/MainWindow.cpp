@@ -558,8 +558,9 @@ void CMainWindow::ReadFile(QueuedFile& qfile)
 	else
 	{
 		assert(m_fileThread == nullptr);
-		m_fileThread = new CFileThread(this, qfile);
-		m_fileThread->start();
+		m_fileThread = new CFileThread();
+		QObject::connect(m_fileThread, &CFileThread::resultReady, this, &CMainWindow::on_finishedReadingFile);
+		m_fileThread->readFile(qfile);
 		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
 		ui->progressBar->setRange(0, 100);
 		ui->progressBar->setValue(0);
