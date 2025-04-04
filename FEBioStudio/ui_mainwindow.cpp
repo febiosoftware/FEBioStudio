@@ -73,12 +73,8 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 	buildDockWidgets(wnd);
 
 	// build status bar
-	statusBar = new QStatusBar(m_wnd);
+	statusBar = new CMainStatusBar();
 	m_wnd->setStatusBar(statusBar);
-
-	progressBar = new QProgressBar;
-	progressBar->setMaximumWidth(200);
-	progressBar->setMaximumHeight(15);
 
 	BuildConfigs();
 

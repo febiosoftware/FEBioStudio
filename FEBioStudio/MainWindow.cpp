@@ -562,10 +562,7 @@ void CMainWindow::ReadFile(QueuedFile& qfile)
 		QObject::connect(m_fileThread, &CFileThread::resultReady, this, &CMainWindow::on_finishedReadingFile);
 		m_fileThread->readFile(qfile);
 		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
-		ui->progressBar->setRange(0, 100);
-		ui->progressBar->setValue(0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
+		ui->statusBar->showProgress();
 		AddLogEntry(QString("Reading file %1 ... ").arg(qfile.m_fileName));
 		QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 	}
@@ -1019,7 +1016,7 @@ void CMainWindow::checkFileProgress()
 	else return;
 
 	int n = (int)(100.f*f);
-	ui->progressBar->setValue(n);
+	ui->statusBar->setProgress(n);
 	if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 }
 
@@ -1037,7 +1034,7 @@ void CMainWindow::on_finishedReadingFile(bool success, const QString& errorStrin
 void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QString& errorString)
 {
 	ui->statusBar->clearMessage();
-	ui->statusBar->removeWidget(ui->progressBar);
+	ui->statusBar->hideProgress();
 
 	if (success == false)
 	{
@@ -3455,15 +3452,12 @@ void CMainWindow::ShowProgress(bool show, QString message)
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->progressBar->setRange(0, 100);
-		ui->progressBar->setValue(0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
+		ui->statusBar->showProgress();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->progressBar);
+		ui->statusBar->hideProgress();
 	}
 }
 
@@ -3472,20 +3466,18 @@ void CMainWindow::ShowIndeterminateProgress(bool show, QString message)
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->progressBar->setRange(0, 0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
+		ui->statusBar->showIndeterminateProgress();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->progressBar);
+		ui->statusBar->hideProgress();
 	}
 }
 
 void CMainWindow::UpdateProgress(int n)
 {
-	ui->progressBar->setValue(n);
+	ui->statusBar->setProgress(n);
 }
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)

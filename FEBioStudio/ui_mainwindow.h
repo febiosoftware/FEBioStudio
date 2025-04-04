@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-#include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
 #include <QComboBox>
@@ -64,6 +63,7 @@ SOFTWARE.*/
 #include "InfoPanel.h"
 #include "LaunchConfig.h"
 #include "MainTabBar.h"
+#include "MainStatusBar.h"
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "DlgPickColor.h"
@@ -320,8 +320,7 @@ public:
 
 	CDlgPartViewer* partViewer = nullptr;
 
-	QStatusBar* statusBar;
-	QProgressBar* progressBar;
+	CMainStatusBar* statusBar;
 
 	// toolbars
 	QToolBar* mainToolBar;
