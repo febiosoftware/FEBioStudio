@@ -69,8 +69,10 @@ public:
     int ImageFilters() const { return (int)m_filters.Size(); }
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
 	void RemoveFilter(CImageFilter* filter);
-    void MoveFilter(int fromIndex, int toIndex) { m_filters.Move(fromIndex, toIndex); }
+    void MoveFilter(int fromIndex, int toIndex);
 	void AddImageFilter(CImageFilter* imageFilter);
+    void FilterPropsChanged() { m_unappliedFilters = true; }
+    bool AreFiltersUnapplied() { return m_unappliedFilters; }
 
     int ImageAnalyses() const { return (int)m_analyses.Size(); }
 	CImageAnalysis* GetImageAnalysis(int i) { return m_analyses[i]; }
@@ -104,6 +106,7 @@ public:
 
 private:
 	bool			m_showBox;					//!< show box in Graphics View
+    bool m_unappliedFilters;	//!< filters applied
 	FSObjectList<Post::CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;
     FSObjectList<CImageAnalysis> m_analyses;

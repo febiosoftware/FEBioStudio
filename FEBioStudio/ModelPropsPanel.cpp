@@ -72,6 +72,7 @@ SOFTWARE.*/
 #include "DlgPickNamedSelection.h"
 #include "FiberODFWidget.h"
 #include <ImageLib/FiberODFAnalysis.h>
+#include "IconProvider.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -770,6 +771,8 @@ CModelPropsPanel::CModelPropsPanel(CMainWindow* wnd, QWidget* parent) : QWidget(
 	m_currentObject = 0;
 	m_isUpdating = false;
 	ui->setupUi(wnd, this);
+
+    connect(ui->imageFilters, &CImageFilterWidget::filterStatusChanged, this, &CModelPropsPanel::on_imageFilter_statusChanged);
 }
 
 void CModelPropsPanel::Update()
@@ -1749,4 +1752,18 @@ void CModelPropsPanel::on_plt_dataChanged()
 	{
 		plc->UpdateData(true);
 	}
+}
+
+void CModelPropsPanel::on_imageFilter_statusChanged(bool unapplied)
+{
+    if(unapplied)
+    {
+        ui->imageTab->setTabIcon(1, CIconProvider::GetIcon("emblems/caution"));
+        ui->imageTab->setTabToolTip(1, "Image filters have not been applied");
+    }
+    else
+    {
+        ui->imageTab->setTabIcon(1, QIcon());
+        ui->imageTab->setTabToolTip(1, "");
+    }
 }
