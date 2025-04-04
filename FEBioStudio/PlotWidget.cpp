@@ -51,7 +51,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QtCore/QMimeData>
 #include <FSCore/LoadCurve.h>
-#include "MainWindow.h"	// for CResource
 #include "DlgFormula.h"
 #include "Command.h"
 #include "DlgImportData.h"
@@ -2121,7 +2120,7 @@ public:
 		redo->setIcon(QIcon(":/icons/redo.png"));
 
 		math = new QToolButton; math->setObjectName("math");
-		math->setIcon(CResource::Icon("formula"));
+		math->setIcon(CIconProvider::GetIcon("formula"));
 
 		copy = new QToolButton; copy->setObjectName("copy");
 		copy->setIcon(QIcon(":/icons/clipboard.png"));

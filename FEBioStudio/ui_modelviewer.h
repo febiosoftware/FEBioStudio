@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "ModelPropsPanel.h"
 #include "ModelSearch.h"
 #include "MainWindow.h"
+#include "IconProvider.h"
 
 class WarningLabel : public QToolButton
 {
@@ -96,7 +97,7 @@ public:
 		selectButton->setToolTip("<font color=\"black\">Select in Graphics View");
 
 		QToolButton* deleteButton = new QToolButton; 
-		deleteButton->setIcon(CResource::Icon("delete")); 
+		deleteButton->setIcon(CIconProvider::GetIcon("delete"));
 		deleteButton->setObjectName("deleteButton"); 
 		deleteButton->setAutoRaise(true);
 		deleteButton->setToolTip("<font color=\"black\">Delete item");

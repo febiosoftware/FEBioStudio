@@ -769,16 +769,4 @@ private:
 	static CMainWindow*		m_mainWnd;
 };
 
-class CResource
-{
-public:
-	static QIcon Icon(const QString& iconName);
-
-public:
-	static void Init(CMainWindow* wnd);
-
-private:
-	static CMainWindow*	m_wnd;
-};
-
 QString createFileName(const QString& fileName, const QString& dirName, const QString& ext);

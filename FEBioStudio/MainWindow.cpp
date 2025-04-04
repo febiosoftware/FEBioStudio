@@ -124,16 +124,6 @@ private:
 	CMainWindow* wnd;
 };
 
-CMainWindow*	CResource::m_wnd = nullptr;
-
-void CResource::Init(CMainWindow* wnd) { m_wnd = wnd; }
-
-QIcon CResource::Icon(const QString& iconName)
-{
-	assert(m_wnd);
-	return CIconProvider::GetIcon(iconName);
-}
-
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
@@ -156,8 +146,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	m_DocManager = new CDocManager(this);
 
 	m_fileThread = nullptr;
-
-	CResource::Init(this);
 
 	CActiveSelection::SetMainWindow(this);
 
