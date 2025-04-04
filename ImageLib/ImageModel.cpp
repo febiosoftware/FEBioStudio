@@ -50,6 +50,7 @@ enum SaveIDs { BASE = 0, IMAGESOURCE, FILTERS, ANALYSES, VIEWSETTINGS};
 CImageModel::CImageModel(Post::CGLModel* mdl) : CGLObject(mdl)
 {
 	m_showBox = true;
+    m_unappliedFilters = false;
 	m_img = nullptr;
 }
 
@@ -156,12 +157,16 @@ void CImageModel::ApplyFilters()
 	for (int i = 0; i < (int)m_render.Size(); ++i)
 	{
 		m_render[i]->Update();
-	} 
+	}
+    
+    m_unappliedFilters = false;
 }
 
 void CImageModel::ClearFilters()
 {
     m_img->ClearFilters();
+
+    m_unappliedFilters = false;
 }
 
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
@@ -187,12 +192,32 @@ void CImageModel::RemoveFilter(CImageFilter* filter)
 {
     m_filters.Remove(filter);
     delete filter;
+
+    if(m_filters.IsEmpty())
+    {
+        m_img->ClearFilters();
+        UpdateRenderers();
+
+        m_unappliedFilters = false;
+    }
+    else
+    {
+        m_unappliedFilters = true;
+    }
+}
+
+void CImageModel::MoveFilter(int fromIndex, int toIndex)
+{
+    m_filters.Move(fromIndex, toIndex);
+    m_unappliedFilters = true;
 }
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 {
     imageFilter->SetImageModel(this);
 	m_filters.Add(imageFilter);
+
+    m_unappliedFilters = true;
 }
 
 void CImageModel::RemoveAnalysis(CImageAnalysis* analysis)

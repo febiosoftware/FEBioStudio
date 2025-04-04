@@ -89,14 +89,17 @@ CImageFilterWidget::CImageFilterWidget(CMainWindow* wnd)
 
     layout->addWidget(filterBox);
 
-    QPushButton* applyFilters = new QPushButton("Apply");
-    applyFilters->setObjectName("applyFilters");
+    m_applyFilters = new QPushButton("Apply Filter Changes");
+    m_applyFilters->setIcon(CIconProvider::GetIcon("emblems/caution"));
+    m_applyFilters->setObjectName("applyFilters");
+    m_applyFilters->hide();
 
-    layout->addWidget(applyFilters);
+    layout->addWidget(m_applyFilters);
 
     setLayout(layout);
 
     QMetaObject::connectSlotsByName(this);
+    connect(m_filterProps, &CPropertyListView::dataChanged, this, &CImageFilterWidget::on_filterProps_changed);
 }
 
 CImageFilterWidget::~CImageFilterWidget()
@@ -120,8 +123,23 @@ void CImageFilterWidget::Clear()
         delete prop;
     }
     m_props.clear();
-
     m_filterProps->Update(nullptr);
+}
+
+void CImageFilterWidget::UpdateApplyButton()
+{
+    if(m_imgModel)
+    {
+        if(m_imgModel->AreFiltersUnapplied())
+        {
+            m_applyFilters->show();
+            emit filterStatusChanged(true);
+            return;
+        }
+    }
+
+    m_applyFilters->hide();
+    emit filterStatusChanged(false);
 }
 
 void CImageFilterWidget::Update()
@@ -140,6 +158,8 @@ void CImageFilterWidget::Update()
             m_props.push_back(new CObjectProps(current));
         }
     }
+
+    UpdateApplyButton();
 }
 
 void CImageFilterWidget::on_list_itemSelectionChanged()
@@ -214,4 +234,16 @@ void CImageFilterWidget::on_applyFilters_clicked()
 
         m_imgModel->UpdateRenderers();
     }
+
+    UpdateApplyButton();
+}
+
+void CImageFilterWidget::on_filterProps_changed()
+{
+    if(m_imgModel)
+    {
+        m_imgModel->FilterPropsChanged();
+    }
+
+    UpdateApplyButton();
 }

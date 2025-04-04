@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <PostGL/GLModel.h>
 #include "ImageThread.h"
+#include <ImageLib/3DImage.h>
 #include "DlgStartThread.h"
 #include "MainWindow.h"
 #include "IconProvider.h"
@@ -111,6 +112,7 @@ class Ui::CDlgWarpImage
 public:
     QComboBox* img;
     QLineEdit* states;
+    QLabel* statesExample;
     QLineEdit* dir;
     QPushButton* browse;
     QLineEdit* filename;
@@ -136,9 +138,11 @@ public:
 
         form->addRow("Image:", img);
 
-        states = new QLineEdit;
-        states->setPlaceholderText("(e.g.:1,2,3:6,10:100:5)");
+        states = new QLineEdit(QString::number(doc->GetActiveState() + 1));
         form->addRow("States:", states);
+
+        statesExample = new QLabel("(e.g. 1,2,3:6,10:100:5)");
+        form->addRow("", statesExample);
 
         QHBoxLayout* dirLayout = new QHBoxLayout;
         dirLayout->setContentsMargins(0, 0, 0, 0);
@@ -206,6 +210,12 @@ void CDlgWarpImage::accept()
 	strcpy(buf, ui->states->text().toStdString().c_str());
     string_to_int_list(buf, states);
 
+    if(states.empty())
+    {
+        QMessageBox::critical(this, "Error", "No valid states were specified.");
+        return;
+    }
+
     QDir dir = ui->dir->text();
     if(!dir.exists())
     {
@@ -217,6 +227,8 @@ void CDlgWarpImage::accept()
 
     Post::CGLModel& mdl = *ui->doc->GetGLModel();
     int currentStateIndex = mdl.GetActiveState()->GetID();
+
+    ui->wnd->AddLogEntry("Image Metadata\nFilename\tPixels X\tPixels Y\tPixels Z\tBox X0\tBox Y0\tBox Z0\tBox X1\tBox Y1\tBox Z1\n");
 
     for(int time : states)
     {
@@ -260,6 +272,20 @@ void CDlgWarpImage::accept()
         {
             img->ExportSITKImage(dir.filePath(currentFilename).toStdString());
         }
+
+        BOX box = img->GetBoundingBox();
+
+        ui->wnd->AddLogEntry(QString("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\t%10\n")
+            .arg(currentFilename)
+            .arg(img->Get3DImage()->Width())
+            .arg(img->Get3DImage()->Height())
+            .arg(img->Get3DImage()->Depth())
+            .arg(box.x0)
+            .arg(box.y0)
+            .arg(box.z0)
+            .arg(box.x1)
+            .arg(box.y1)
+            .arg(box.z1));
 
         img->RemoveFilter(warp);
         img->ClearFilters();
