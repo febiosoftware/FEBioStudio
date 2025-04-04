@@ -189,6 +189,12 @@ void CImageModel::RemoveFilter(CImageFilter* filter)
 {
     m_filters.Remove(filter);
     delete filter;
+
+    if(m_filters.IsEmpty())
+    {
+        m_img->ClearFilters();
+        UpdateRenderers();
+    }
 }
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)
