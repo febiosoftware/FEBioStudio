@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string>
 #include <sstream>
 
-CDocManager::CDocManager(CMainWindow* wnd) : m_wnd(wnd)
+CDocManager::CDocManager()
 {
 
 }

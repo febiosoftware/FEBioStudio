@@ -143,7 +143,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	std::locale::global(std::locale::classic());
 #endif
 
-	m_DocManager = new CDocManager(this);
+	m_DocManager = new CDocManager();
 
 	m_fileThread = nullptr;
 

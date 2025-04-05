@@ -29,13 +29,12 @@ SOFTWARE.*/
 #include <string>
 
 class CDocument;
-class CMainWindow;
 
 // This class manages the currently open documents
 class CDocManager
 {
 public:
-	CDocManager(CMainWindow* wnd);
+	CDocManager();
 
 	~CDocManager();
 
@@ -55,6 +54,5 @@ public:
 	std::string GenerateNewDocName();
 
 private:
-	CMainWindow*	m_wnd;
 	std::vector<CDocument*>	m_docList;
 };
