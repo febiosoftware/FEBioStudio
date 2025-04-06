@@ -375,46 +375,6 @@ void CMainWindow::on_xmlTree_modelEdited()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
-{
-	QString ref = link.toString();
-	if      (ref == "#new") on_actionNewModel_triggered();
-	else if (ref == "#newproject") on_actionNewProject_triggered();
-	else if (ref == "#open") on_actionOpen_triggered();
-	else if (ref == "#openproject") on_actionOpenProject_triggered();
-	else if (ref == "#febio") on_actionFEBioURL_triggered();
-	else if (ref == "#help") on_actionFEBioResources_triggered();
-	else if (ref == "#forum") on_actionFEBioForum_triggered();
-	else if (ref == "#update") on_actionUpdate_triggered();
-    else if (ref.contains("#http"))
-    {
-        QString temp = link.toString().replace("#http", "https://");
-
-        QDesktopServices::openUrl(QUrl(temp));
-    }
-    else if (ref == "#bugreport") on_actionBugReport_triggered();
-	else
-	{
-		string s = ref.toStdString();
-		const char* sz = s.c_str();
-		if (strncmp(sz, "#recent_", 8) == 0)
-		{
-			int n = atoi(sz + 8);
-
-			QStringList recentFiles = GetRecentFileList();
-			OpenFile(recentFiles.at(n));
-		}
-		if (strncmp(sz, "#recentproject_", 15) == 0)
-		{
-			int n = atoi(sz + 15);
-
-			QStringList recentProjects = GetRecentProjectsList();
-			OpenFile(recentProjects.at(n));
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Read a file asynchronously
 // doc        : the document that is being modified 
 // fileName   : the file name of the file that is read

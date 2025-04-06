@@ -26,7 +26,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "HTMLBrowser.h"
 #include <QBoxLayout>
+#include <QDesktopServices>
 #include "TextDocument.h"
+#include "MainWindow.h"
 
 CHTMLBrowser::CHTMLBrowser(CMainWindow* wnd) : CDocumentView(wnd)
 {
@@ -36,6 +38,8 @@ CHTMLBrowser::CHTMLBrowser(CMainWindow* wnd) : CDocumentView(wnd)
 	m_txt->setObjectName("htmlview");
 	l->addWidget(m_txt);
 	setLayout(l);
+
+	QObject::connect(m_txt, &QTextBrowser::anchorClicked, this, &CHTMLBrowser::on_htmlview_anchorClicked);
 }
 
 void CHTMLBrowser::setDocument(CDocument* doc)
@@ -52,5 +56,46 @@ void CHTMLBrowser::setDocument(CDocument* doc)
 					</html>");
 		m_txt->setDocument(nullptr);
 		m_txt->setHtml(html);
+	}
+}
+
+void CHTMLBrowser::on_htmlview_anchorClicked(const QUrl& link)
+{
+	CMainWindow* wnd = mainWindow();
+	if (wnd == nullptr) return;
+
+	QString ref = link.toString();
+	if      (ref == "#new"        ) wnd->on_actionNewModel_triggered();
+	else if (ref == "#newproject" ) wnd->on_actionNewProject_triggered();
+	else if (ref == "#open"       ) wnd->on_actionOpen_triggered();
+	else if (ref == "#openproject") wnd->on_actionOpenProject_triggered();
+	else if (ref == "#febio"      ) wnd->on_actionFEBioURL_triggered();
+	else if (ref == "#help"       ) wnd->on_actionFEBioResources_triggered();
+	else if (ref == "#forum"      ) wnd->on_actionFEBioForum_triggered();
+	else if (ref == "#update"     ) wnd->on_actionUpdate_triggered();
+	else if (ref.contains("#http"))
+	{
+		QString temp = link.toString().replace("#http", "https://");
+		QDesktopServices::openUrl(QUrl(temp));
+	}
+	else if (ref == "#bugreport") wnd->on_actionBugReport_triggered();
+	else
+	{
+		std::string s = ref.toStdString();
+		const char* sz = s.c_str();
+		if (strncmp(sz, "#recent_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentFiles = wnd->GetRecentFileList();
+			wnd->OpenFile(recentFiles.at(n));
+		}
+		if (strncmp(sz, "#recentproject_", 15) == 0)
+		{
+			int n = atoi(sz + 15);
+
+			QStringList recentProjects = wnd->GetRecentProjectsList();
+			wnd->OpenFile(recentProjects.at(n));
+		}
 	}
 }

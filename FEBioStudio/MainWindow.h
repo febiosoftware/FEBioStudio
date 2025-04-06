@@ -633,7 +633,6 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
-	void on_htmlview_anchorClicked(const QUrl& link);
 	void on_txtedit_textChanged();
     void on_xmlTree_modelEdited();
 
