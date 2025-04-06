@@ -108,6 +108,8 @@ SOFTWARE.*/
 #include <FSCore/FSLogger.h>
 #include "PropertyList.h"
 
+#include "FileProcessor.h"
+
 extern GLColor col[];
 
 class FSMainWindowOutput : public FSLogOutput
@@ -145,7 +147,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	m_DocManager = new CDocManager();
 
-	m_fileThread = nullptr;
+	m_fileProcessor = new CFileProcessor(this);
 
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
 
@@ -213,6 +215,7 @@ CMainWindow::~CMainWindow()
 {
 	// delete document
 	delete m_DocManager;
+	delete m_fileProcessor;
 	delete ui;
 }
 
@@ -419,8 +422,8 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 // flags      : flags indicating what to do after the file is read
 void CMainWindow::ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags)
 {
-	m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, flags));
-	ReadNextFileInQueue();
+	m_fileProcessor->AddFile(QueuedFile(doc, fileName, fileReader, flags));
+	m_fileProcessor->ReadNextFileInQueue();
 }
 
 void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal, bool openInThread)
@@ -522,49 +525,6 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		// Open any other files (e.g. log files) with the system's associated program
 		QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-		//		assert(false);
-		//		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::ReadFile(QueuedFile& qfile)
-{
-	// if this is a reload, clear the document
-	if (qfile.m_doc && (qfile.m_flags & QueuedFile::RELOAD_DOCUMENT))
-	{
-		qfile.m_doc->Clear();
-		Update(nullptr, true);
-	}
-
-	// read the file, either threaded or directly
-	if (qfile.m_flags & QueuedFile::NO_THREAD)
-	{
-		bool bret = false;
-		QString errorString;
-		if (qfile.m_fileReader == nullptr)
-		{
-			AddLogEntry("Don't know how to read file.");
-		}
-		else
-		{
-			string sfile = qfile.m_fileName.toStdString();
-			bret = qfile.m_fileReader->Load(sfile.c_str());
-			std::string err = qfile.m_fileReader->GetErrorString();
-			errorString = QString::fromStdString(err);
-		}
-		finishedReadingFile(bret, qfile, errorString);
-	}
-	else
-	{
-		assert(m_fileThread == nullptr);
-		m_fileThread = new CFileThread();
-		QObject::connect(m_fileThread, &CFileThread::resultReady, this, &CMainWindow::on_finishedReadingFile);
-		m_fileThread->readFile(qfile);
-		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
-		ui->statusBar->showProgress();
-		AddLogEntry(QString("Reading file %1 ... ").arg(qfile.m_fileName));
-		QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 	}
 }
 
@@ -600,7 +560,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 		FileReader* fileReader = CreateFileReader(fileName);
 		if (fileReader)
 		{
-			m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, 0));
+			m_fileProcessor->AddFile(QueuedFile(doc, fileName, fileReader, 0));
 		}
 		else
 		{
@@ -614,7 +574,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 	}
 
 	// start the process
-	ReadNextFileInQueue();
+	m_fileProcessor->ReadNextFileInQueue();
 
 	for (int i=0; i<files.count(); ++i)
 		ui->addToRecentGeomFiles(files[i]);
@@ -666,25 +626,6 @@ void CMainWindow::ImportProjectArchive(const QString& fileName)
 #else
 void CMainWindow::ImportProjectArchive(const QString& fileName) {}
 #endif
-
-//-----------------------------------------------------------------------------
-void CMainWindow::ReadNextFileInQueue()
-{
-	// If a file is being processed, just wait
-	if (m_fileThread) return;
-
-	// make sure we have a file
-	if (m_fileQueue.empty()) return;
-
-	// get the next file name
-	QueuedFile nextFile = m_fileQueue[0];
-
-	// remove the last file that was read
-	m_fileQueue.erase(m_fileQueue.begin());
-
-	// start reading the file
-	ReadFile(nextFile);
-}
 
 //-----------------------------------------------------------------------------
 // Open a project
@@ -996,6 +937,8 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 	}
 	else
 	{
+		doc->Clear();
+		Update(nullptr, true);
 		ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::RELOAD_DOCUMENT);
 	}
 }
@@ -1009,36 +952,16 @@ int CMainWindow::GetMeshMode()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::checkFileProgress()
-{
-	float f = 1.f;
-	if (m_fileThread) f = m_fileThread->getFileProgress();
-	else return;
-
-	int n = (int)(100.f*f);
-	ui->statusBar->setProgress(n);
-	if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_finishedReadingFile(bool success, const QString& errorString)
-{
-	assert(m_fileThread);
-	if (m_fileThread == nullptr) return;
-	QueuedFile qfile = m_fileThread->GetFile();
-	m_fileThread = nullptr;
-	finishedReadingFile(success, qfile, errorString);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QString& errorString)
+void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorString)
 {
 	ui->statusBar->clearMessage();
 	ui->statusBar->hideProgress();
 
+	bool success = file.m_success;
+
 	if (success == false)
 	{
-		if (m_fileQueue.empty())
+		if (m_fileProcessor->IsQueueEmpty())
 		{
 			QString err = QString("Failed reading file :\n%1\n\nERROR: %2").arg(file.m_fileName).arg(errorString);
 			QMessageBox::critical(this, "FEBio Studio", err);
@@ -1062,7 +985,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	{
 		if (errorString.isEmpty() == false)
 		{
-			if (m_fileQueue.empty())
+			if (m_fileProcessor->IsQueueEmpty())
 			{
 				QStringList stringList = errorString.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 				QString err = QString("Warnings were generated while reading the file:\n%1\n\n").arg(file.m_fileName);
@@ -1164,9 +1087,9 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		}
 	}
 
-	if (m_fileQueue.empty() == false)
+	if (m_fileProcessor->IsQueueEmpty() == false)
 	{
-		ReadNextFileInQueue();
+		m_fileProcessor->ReadNextFileInQueue();
 	}
 	else
 	{
@@ -1317,7 +1240,11 @@ CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
 	return ui->pythonToolsPanel;
 }
 
-//-----------------------------------------------------------------------------
+CMainStatusBar* CMainWindow::GetStatusBar()
+{
+	return ui->statusBar;
+}
+
 //! close the current open project
 void CMainWindow::CloseProject()
 {

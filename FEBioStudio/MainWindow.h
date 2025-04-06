@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <FEMLib/GMaterial.h>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
-
 class FSObject;
 class CDocument;
 class CGLDocument;
@@ -67,6 +66,8 @@ class CFEBioMonitorView;
 class CModelViewer;
 class CCommandWindow;
 class CLogPanel;
+class CFileProcessor;
+class CMainStatusBar;
 struct ProgressTracker; // in FEBio/FEBioExport4
 
 namespace Ui {
@@ -155,6 +156,8 @@ public:
 
 	// get the model viewer
 	CModelViewer* GetModelViewer();
+
+	CMainStatusBar* GetStatusBar();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -305,9 +308,6 @@ private:
 public:
 	// Read a file
 	void ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags);
-
-	// Made public to expose to python interface
-	void ReadFile(QueuedFile& qfile);
 
 	FileReader* CreateFileReader(const QString& fileName);
 
@@ -670,9 +670,7 @@ public slots:
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);
 
-	void on_finishedReadingFile(bool success, const QString& errorString);
-	void finishedReadingFile(bool success, QueuedFile& qfile, const QString& errorString);
-	void checkFileProgress();
+	void on_finishedReadingFile(QueuedFile file, const QString& errorString);
 
 	void StopAnimation();
 
@@ -744,9 +742,6 @@ public:
 
 	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false, ProgressTracker* prg = nullptr);
 
-private:
-	void ReadNextFileInQueue();
-
 public:
 	int Views();
 	void SetActiveView(int n);
@@ -763,8 +758,7 @@ private:
 
 	CDocManager*		m_DocManager;
 
-	CFileThread*		m_fileThread;
-	std::vector<QueuedFile>	m_fileQueue;
+	CFileProcessor*		m_fileProcessor;
 
 	static CMainWindow*		m_mainWnd;
 };

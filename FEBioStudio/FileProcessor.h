@@ -23,60 +23,40 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QtCore/QThread>
-#include <queue>
+#include <QObject>
+#include "FileThread.h"
 
-class FileReader;
-class CDocument;
+class CMainWindow;
 
-class QueuedFile
-{
-public:
-	enum Flags {
-		NO_THREAD = 0x01,
-		NEW_DOCUMENT = 0x02,
-		RELOAD_DOCUMENT = 0x04,
-		AUTO_SAVE_RECOVERY = 0x08
-	};
-
-public:
-	QueuedFile() {}
-	QueuedFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags)
-	{
-		m_doc = doc;
-		m_fileName = fileName;
-		m_fileReader = fileReader;
-		m_flags = flags;
-	}
-
-public:
-	CDocument*		m_doc = nullptr;
-	QString			m_fileName;
-	FileReader*		m_fileReader = nullptr;
-	int				m_flags = 0;
-	bool			m_success = false;
-};
-
-class CFileThread : public QThread
+class CFileProcessor : public QObject
 {
 	Q_OBJECT
 
-	void run() Q_DECL_OVERRIDE;
-
 public:
-	CFileThread();
+	CFileProcessor(CMainWindow* wnd);
 
-	void readFile(const QueuedFile& file);
+	void ReadFile(QueuedFile file);
 
-	float getFileProgress() const;
+	void AddFile(QueuedFile file);
 
-	QueuedFile GetFile();
+	void ReadNextFileInQueue();
 
-signals:
-	void resultReady(QueuedFile, QString);
+	float GetFileProgress() const;
+
+	bool IsReadingFile() const;
+
+	bool IsQueueEmpty() const { return m_fileQueue.empty(); }
+
+	QString GetCurrentFileName() { return m_fileName; }
+
+private slots:
+	void on_finishedReadingFile(QueuedFile file, QString errorString);
+	void checkFileProgress();
 
 private:
-	QueuedFile m_file;
+	CMainWindow* m_wnd = nullptr;
+	CFileThread* m_fileThread = nullptr;
+	QString m_fileName;
+	std::vector<QueuedFile>	m_fileQueue;
 };

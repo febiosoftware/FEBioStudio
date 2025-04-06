@@ -455,8 +455,6 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenFEModel(const QString& fileName)
 {
-	m_fileQueue.clear();
-
 	// create a new document
 	CModelDocument* doc = new CModelDocument(this);
 	doc->SetFileWriter(nullptr);

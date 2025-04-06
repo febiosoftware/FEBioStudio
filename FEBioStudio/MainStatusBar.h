@@ -38,6 +38,8 @@ public:
 
 	void setProgress(int n);
 
+	bool IsProgressVisible();
+
 private:
 	QProgressBar* progressBar;
 };

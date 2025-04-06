@@ -45,13 +45,14 @@ void CFileThread::run()
 	const char* szfile = sfile.c_str();
 	if (m_file.m_fileReader == nullptr)
 	{
-		emit resultReady(false, QString("Don't know how to read this file!"));
+		m_file.m_success = false;
+		emit resultReady(m_file, QString("Don't know how to read this file!"));
 	}
 	else
 	{
 		m_file.m_success = m_file.m_fileReader->Load(szfile);
 		std::string err = m_file.m_fileReader->GetErrorString();
-		emit resultReady(m_file.m_success, QString(err.c_str()));
+		emit resultReady(m_file, QString(err.c_str()));
 	}
 }
 

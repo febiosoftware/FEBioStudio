@@ -57,3 +57,8 @@ void CMainStatusBar::setProgress(int n)
 {
 	progressBar->setValue(n);
 }
+
+bool CMainStatusBar::IsProgressVisible()
+{
+	return progressBar->isVisible();
+}
