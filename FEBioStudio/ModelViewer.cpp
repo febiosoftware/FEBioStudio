@@ -1789,6 +1789,47 @@ void CModelViewer::OnRemoveUnusedLoadControllers()
 	Update();
 }
 
+void CModelViewer::OnDeleteAllLoadControllers()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all load controllers?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllLoadControllers();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnDeleteAllMeshData()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllMeshDataGenerators();
+		fem->DeleteAllMeshData();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -2111,7 +2152,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_LOAD_CONTROLLERS:
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
 		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
-		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_LOAD_CONTROLLER:
 		del = true;
@@ -2119,7 +2160,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MESH_DATA_LIST:
 		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
 		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
-		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
 		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
@@ -2211,7 +2252,18 @@ void CModelViewer::OnImportMaterials(QAction* action)
 
 void CModelViewer::OnDeleteAllMaterials()
 {
-	GetMainWindow()->DeleteAllMaterials();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllMaterials();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnSwapContactSurfaces()
@@ -2227,54 +2279,188 @@ void CModelViewer::OnSwapContactSurfaces()
 void CModelViewer::OnReplaceContactInterface()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pci)
+	if (pci == nullptr) return;
+
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	if (dlg.exec())
 	{
-		GetMainWindow()->OnReplaceContactInterface(pci);
+		int id = dlg.GetClassID();
+		if (id == -1) return;
+
+		FSPairedInterface* pi = FEBio::CreateFEBioClass<FSPairedInterface>(id, &fem); assert(pi);
+		if (pi)
+		{
+			FEBio::InitDefaultProps(pi);
+
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = pci->GetName();
+			pi->SetName(name);
+
+			// swap the surfaces
+			pi->SetPrimarySurface(pci->GetPrimarySurface()); pci->SetPrimarySurface(nullptr);
+			pi->SetSecondarySurface(pci->GetSecondarySurface()); pci->SetSecondarySurface(nullptr);
+
+			// try to map parameters
+			pi->MapParams(*pci);
+
+			// assign it to the correct step
+			FSStep* step = fem.FindStep(pci->GetStep()); assert(step);
+			if (step)
+			{
+				pi->SetStep(step->GetID());
+				step->ReplaceInterface(pci, pi);
+			}
+			
+			CMainWindow* wnd = GetMainWindow();
+			wnd->UpdateModel(pi);
+		}
 	}
 }
 
 
 void CModelViewer::OnDeleteAllBC()
 {
-	GetMainWindow()->DeleteAllBC();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllBC();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+
 }
 
 void CModelViewer::OnDeleteAllLoads()
 {
-	GetMainWindow()->DeleteAllLoads();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllLoads();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllIC()
 {
-	GetMainWindow()->DeleteAllIC();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllIC();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllContact()
 {
-	GetMainWindow()->DeleteAllContact();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllContact();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllConstraints()
 {
-	GetMainWindow()->DeleteAllConstraints();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllConstraints();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllRigidComponents()
 {
-	GetMainWindow()->DeleteAllRigidBCs();
-	GetMainWindow()->DeleteAllRigidICs();
-	GetMainWindow()->DeleteAllRigidLoads();
-	GetMainWindow()->DeleteAllRigidConnectors();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid components?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllRigidBCs();
+		fem.DeleteAllRigidICs();
+		fem.DeleteAllRigidLoads();
+		fem.DeleteAllRigidConnectors();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllSteps()
 {
-	GetMainWindow()->DeleteAllSteps();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllSteps();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllJobs()
 {
-	GetMainWindow()->DeleteAllJobs();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all jobs?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		doc->DeleteAllJobs();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnEditMeshData()

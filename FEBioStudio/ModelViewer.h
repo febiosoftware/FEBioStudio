@@ -172,7 +172,9 @@ public slots:
 	void OnRemoveEmptySelections();
 	void OnRemoveUnusedSelections();
 	void OnRemoveUnusedLoadControllers();
+	void OnDeleteAllLoadControllers();
 	void OnRemoveAllSelections();
+	void OnDeleteAllMeshData();
 	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
 	void OnMaterialHideParts();

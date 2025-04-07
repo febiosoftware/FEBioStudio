@@ -37,8 +37,6 @@ class CDocument;
 class CGLDocument;
 class CModelDocument;
 class CPostDocument;
-class CFileThread;
-class CPostFileThread;
 class FileReader;
 class GMaterial;
 class CCreatePanel;
@@ -47,10 +45,6 @@ class CRepositoryPanel;
 class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
-class CPostDocument;
-class CFEBioJob;
-class CSSHHandler;
-class xpltFileReader;
 class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
@@ -86,6 +80,8 @@ class CMainWindow : public QMainWindow
 public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
 	~CMainWindow();
+
+	static CMainWindow* GetInstance();
 
 public:
 	//! reset window data
@@ -132,6 +128,12 @@ public:
 	void ClearBuildLog();
 
 	void ClearPythonLog();
+
+	CGLView* GetGLView();
+
+	CImageSliceView* GetImageSliceView();
+
+	C2DImageTimeView* GetC2DImageTimeView();
 
 	// get the log panel
 	CLogPanel* GetLogPanel();
@@ -245,13 +247,22 @@ public:
 	//! Update the toolbar
 	void UpdateToolbar();
 
+	// update the font toolbar
+	// (e.g. when a GL widget gets selected)
+	void UpdateFontToolbar();
+
+	void UpdateGraphs(bool breset);
+
+public:
 	//! set the selection mode
 	void SetSelectionMode(int nselect);
 
 	//! set item selection mode
 	void SetItemSelectionMode(int nselect, int nitem);
 
-	// ----------------------
+	void CloseView(int n, bool forceClose = false);
+
+	void CloseView(CDocument* doc);
 
 	//! redraw the GLView
 	void RedrawGL();
@@ -284,6 +295,10 @@ public:
 
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
+
+	void ShowImageViewer(QImage img);
+
+	void SetCurrentState(int n);
 
 public:
 	QString GetSDKIncludePath() const;
@@ -357,6 +372,44 @@ public:
 	void AddOutputEntry(const QString& txt);
 	void AddBuildLogEntry(const QString& txt);
 	void AddPythonLogEntry(const QString& txt);
+
+public:
+	void ShowProgress(bool show, QString message = "");
+	void ShowIndeterminateProgress(bool show, QString message = "");
+	void UpdateProgress(int);
+
+	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
+
+	QStringList GetRecentFileList();
+	QStringList GetRecentProjectsList();
+	QStringList GetRecentPluginsList();
+
+	QString GetEnvironmentMap();
+	void SetEnvironmentMap(const QString& filename);
+
+	void AddRecentPlugin(const QString& fileName);
+
+	QString ProjectFolder();
+	QString ProjectName();
+
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false, ProgressTracker* prg = nullptr);
+
+	void StopAnimation();
+
+	void closeEvent(QCloseEvent* ev) override;
+
+	void keyPressEvent(QKeyEvent* ev) override;
+
+public:
+	int Views();
+	void SetActiveView(int n);
+	void AddView(const std::string& viewName, CDocument* doc, bool makeActive = true);
+	int FindView(CDocument* doc);
+	GObject* GetActiveObject();
+
+	Post::CGLModel* GetCurrentModel();
+
+	QSize GetEditorSize();
 
 public slots:
 	void AddLogEntrySlot(const QString& txt);
@@ -661,19 +714,9 @@ public slots:
 	void OnSelectObjectTransparencyMode(QAction* ac);
 	void OnSelectObjectColorMode(QAction* ac);
 
-	void CloseView(int n, bool forceClose = false);
-	void CloseView(CDocument* doc);
-
-	void SetCurrentState(int n);
-
-	void closeEvent(QCloseEvent* ev);
-	void keyPressEvent(QKeyEvent* ev);
-
 	void on_finishedReadingFile(QueuedFile file, const QString& errorString);
 
-	void StopAnimation();
-
-	void onTimer();
+	void onTimer(); // timer slot for post side animation. 
 
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
@@ -683,74 +726,11 @@ public slots:
 	void onImportMaterials();
 	void onImportMaterialsFromModel(CModelDocument* src);
 
-	void DeleteAllMaterials();
-	void DeleteAllBC();
-	void DeleteAllLoads();
-	void DeleteAllIC();
-	void DeleteAllContact();
-	void DeleteAllConstraints();
-	void DeleteAllRigidLoads();
-	void DeleteAllRigidBCs();
-	void DeleteAllRigidICs();
-	void DeleteAllRigidConnectors();
-	void DeleteAllSteps();
-	void DeleteAllJobs();
-	void OnDeleteAllLoadControllers();
-	void OnDeleteAllMeshData();
-
-	void OnReplaceContactInterface(FSPairedInterface* pci);
-
-	CGLView* GetGLView();
-    CImageSliceView* GetImageSliceView();
-    C2DImageTimeView* GetC2DImageTimeView();
-
-	void ShowImageViewer(QImage img);
-
-	void UpdateGraphs(bool breset);
-
-	Post::CGLModel* GetCurrentModel();
-
-	// update the font toolbar
-	// (e.g. when a GL widget gets selected)
-	void UpdateFontToolbar();
-
-	void ShowProgress(bool show, QString message = "");
-	void ShowIndeterminateProgress(bool show, QString message = "");
-	void UpdateProgress(int);
-
-	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
-
 	void toggleOrtho();
 
 	void autosave();
 
 	void autoUpdateCheck(bool update);
-
-public:
-	QStringList GetRecentFileList();
-	QStringList GetRecentProjectsList();
-	QStringList GetRecentPluginsList();
-
-	QString GetEnvironmentMap();
-	void SetEnvironmentMap(const QString& filename);
-
-	void AddRecentPlugin(const QString& fileName);
-
-	QString ProjectFolder();
-	QString ProjectName();
-
-	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false, ProgressTracker* prg = nullptr);
-
-public:
-	int Views();
-	void SetActiveView(int n);
-	void AddView(const std::string& viewName, CDocument* doc, bool makeActive = true);
-	int FindView(CDocument* doc);
-	GObject* GetActiveObject();
-
-    QSize GetEditorSize();
-
-	static CMainWindow* GetInstance();
 
 private:
 	Ui::CMainWindow*	ui;
