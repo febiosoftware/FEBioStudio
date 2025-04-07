@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "Document.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/TetOverlap.h>
+#include <MeshLib/FSMesh.h>
 
 // constructor
 CTetOverlapTool::CTetOverlapTool(CMainWindow* wnd) : CBasicTool(wnd, "Tet Overlap", HAS_APPLY_BUTTON)

@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include "DlgAddEquation.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FECore/fecore_enum.h>
 
 class CCurvatureProps : public CPropertyList
 {

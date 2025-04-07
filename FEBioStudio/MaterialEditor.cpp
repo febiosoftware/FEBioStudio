@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <FEMLib/FEMaterialFactory.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEMLib/GMaterial.h>
+#include <FEMLib/FSProject.h>
 #include <assert.h>
 
 #ifndef WIN32

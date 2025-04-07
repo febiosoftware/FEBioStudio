@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QComboBox>
 #include <QStackedWidget>
-#include "Document.h"
+#include "GLDocument.h"
 #include <PostGL/GLModel.h>
 #include "MainWindow.h"
 #include "DragBox.h"

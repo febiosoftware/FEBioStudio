@@ -30,6 +30,7 @@ SOFTWARE.*/
 class CGLModelDocument;
 class CGLPostScene;
 class CImageModel;
+class FESelection;
 
 namespace Post {
 	class CGLPlot;

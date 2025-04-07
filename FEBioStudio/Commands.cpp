@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <GeomLib/MeshLayer.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <ImageLib/ImageAnalysis.h>
+#include <ImageLib/ImageModel.h>
 #include <FEMLib/FERigidLoad.h>
 using namespace std;
 

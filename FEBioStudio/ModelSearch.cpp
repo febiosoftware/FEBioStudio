@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QContextMenuEvent>
 #include <QHeaderView>
-#include "Document.h"
+#include "GLDocument.h"
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FELoad.h>
 #include "ModelViewer.h"
@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
 #include "FEBioJob.h"
+#include <ImageLib/ImageModel.h>
 
 CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent) : QWidget(parent), m_view(view), m_tree(tree)
 {

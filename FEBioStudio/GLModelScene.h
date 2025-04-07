@@ -37,11 +37,16 @@ enum OBJECT_COLOR_MODE {
 };
 
 class CModelDocument;
+class GNode;
+class GEdge;
+class GFace;
 class GPart;
 class GLFiberRenderer;
 class CGLModelScene;
 class GModel;
 class FSModel;
+class FESelection;
+class CImageModel;
 
 class GLModelSceneItem : public GLSceneItem
 {

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "Document.h"
+#include "UndoDocument.h"
 #include "XMLTreeModel.h"
 #include <QTreeView>
 

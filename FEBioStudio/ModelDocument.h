@@ -25,9 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "Document.h"
+#include "GLDocument.h"
 #include "FEBioJob.h"
 #include <MeshIO/FSFileImport.h>
+#include <FEMLib/FSProject.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------
@@ -36,6 +37,9 @@ typedef FSObjectList<CFEBioJob> CFEBioJobList;
 //-----------------------------------------------------------------------------
 class CModelContext;
 class FSObject;
+class FEModifier;
+class FESurfaceModifier;
+class GSurfaceMeshObject;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -124,9 +128,6 @@ public:
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
 public:
-	// checks the model for issues and returns the warnings as a string array
-	std::vector<MODEL_ERROR>	CheckModel();
-
 	bool ExportMaterials(const std::string& fileName, const std::vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
 	bool ImportFEBioMaterials(const std::string& fileName);

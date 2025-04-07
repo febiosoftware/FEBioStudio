@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "ImageToolBar.h"
 #include <GLLib/GView.h> 
-#include "Document.h"
+#include "GLDocument.h"
 #include "DlgPixelInspector.h"
 #include "ImageSliceView.h"
 #include "2DImageTimeView.h"

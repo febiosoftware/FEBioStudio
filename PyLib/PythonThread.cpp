@@ -37,6 +37,7 @@ namespace py = pybind11;
 #include "PyFBS.h"
 #include "PyRunContext.h"
 #include <FEBioStudio/Document.h>
+#include <FEBioStudio/UndoDocument.h>
 
 CPyThread::CPyThread(CDocument* doc, CCachedPropertyList* params) : m_doc(doc), m_params(params)
 {

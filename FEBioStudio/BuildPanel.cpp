@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ui_buildpanel.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 
 CBuildPanel::CBuildPanel(::CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CBuildPanel)
 {

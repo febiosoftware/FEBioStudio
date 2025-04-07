@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
-#include <FEBioStudio/Document.h>
+#include <FEBioStudio/GLDocument.h>
 #include <PyLib/PythonThread.h>
 #include <FEBioStudio/LogPanel.h>
 #include <QMessageBox>

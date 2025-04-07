@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshLib/FSItemListBuilder.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GObject.h>
+#include <MeshLib/FSMesh.h>
 #include "DlgPickNamedSelection.h"
 using namespace std;
 

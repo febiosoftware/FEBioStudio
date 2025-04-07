@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QMainWindow>
 #include "PlotWidget.h"
 #include "Document.h"
+#include <FSCore/LoadCurve.h>
 
 class CMainWindow;
 class CGraphWidget;

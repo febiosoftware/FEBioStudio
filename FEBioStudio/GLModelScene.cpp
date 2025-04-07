@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FELoad.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <PostGL/GLVectorRender.h>
+#include <ImageLib/ImageModel.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };

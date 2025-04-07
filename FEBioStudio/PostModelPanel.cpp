@@ -78,6 +78,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <QFileDialog>
 #include "DlgImportData.h"
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList

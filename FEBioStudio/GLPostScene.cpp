@@ -31,10 +31,10 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #include <MeshTools/FESelection.h>
 #include <PostGL/PostObject.h>
-
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLModel.h>
+#include <ImageLib/ImageModel.h>
 
 using namespace Post;
 

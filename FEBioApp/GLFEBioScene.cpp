@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FSCore/Palette.h>
 #include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLContext.h>
+#include <PostGL/GLModel.h>
 #include <QPainter>
 
 GLSceneObject::GLSceneObject() 

@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioFormat.h>
 #include <FEBio/FEBioExport.h>
 //---------------------------------------
+#include <ImageLib/ImageModel.h>
 #include <XPLTLib/xpltFileReader.h>
 #include "PostSessionFile.h"
 #include "units.h"

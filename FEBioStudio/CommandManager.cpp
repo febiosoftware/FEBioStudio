@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "CommandManager.h"
 #include "Command.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include <GeomLib/GObject.h>
 
 std::string CBasicCmdManager::m_err;

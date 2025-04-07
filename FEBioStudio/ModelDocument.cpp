@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include "GLHighlighter.h"
 #include <QJsonDocument>
 #include "DocManager.h"
-
+#include <ImageLib/ImageModel.h>
 class CModelContext
 {
 public:
@@ -570,13 +570,6 @@ bool CModelDocument::LoadTemplate(int n)
 	if ((n<0) || (n >= N)) return false;
 	DocTemplate& doc = TemplateManager::GetTemplate(n);
 	return doc.Load(this);
-}
-
-std::vector<MODEL_ERROR> CModelDocument::CheckModel()
-{
-	vector<MODEL_ERROR> errorList;
-	checkModel(GetProject(), errorList);
-	return errorList;
 }
 
 bool CModelDocument::ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList)

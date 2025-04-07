@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "MaterialMapTool.h"
 #include <LSDyna/LSDYNAimport.h>
-#include "Document.h"
+#include "GLDocument.h"
 #include <PostLib/ColorMap.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "ui_meshinspector.h"
 #include "MainWindow.h"
 #include "GLView.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include <MeshTools/FEMeshValuator.h>
 #include <PostLib/ColorMap.h>
 #include "Commands.h"

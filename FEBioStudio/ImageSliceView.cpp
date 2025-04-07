@@ -28,13 +28,12 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include "GLView.h"
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
 #include <ImageLib/ImageModel.h>
 #include "DlgPixelInspector.h"
-
 #include "ImageSliceView.h"
 #include "ImageSlice.h"
 

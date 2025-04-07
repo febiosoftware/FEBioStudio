@@ -88,6 +88,7 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include <FSCore/Palette.h>
 #include <ImageLib/SITKImageSource.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
@@ -107,8 +108,8 @@ SOFTWARE.*/
 #include "DlgRemoteProgress.h"
 #include <FSCore/FSLogger.h>
 #include "PropertyList.h"
-
 #include "FileProcessor.h"
+#include "modelcheck.h"
 
 extern GLColor col[];
 
@@ -3237,7 +3238,8 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 {
 	if (doc == nullptr) return false;
 
-	vector<MODEL_ERROR> warnings = doc->CheckModel();
+	vector<MODEL_ERROR> warnings;
+	checkModel(doc->GetProject(), warnings);
 
 	if (!askRunQuestion && warnings.empty())
 	{
