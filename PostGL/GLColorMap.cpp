@@ -136,10 +136,9 @@ void CGLColorMap::SetEvalField(int n)
 	{
 		m_nfield = n;
 		m_breset = true;
-		UpdateData(false);
-
 		if (m_nfield == -1) m_pbar->hide();
 		else m_pbar->show();
+		UpdateData(false);
 	}
 }
 
