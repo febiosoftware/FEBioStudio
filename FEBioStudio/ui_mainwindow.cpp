@@ -41,7 +41,7 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 	m_wnd = wnd;
 
 #ifdef WIN32
-	m_defaultProjectParent = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+	m_settings.m_defaultProjectParent = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
 	m_jobManager = new CFEBioJobManager(wnd);
 
@@ -54,7 +54,7 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 	m_updateDevChannel = false;
 
 	// initialize current path
-	m_currentPath = QDir::currentPath();
+	m_settings.m_currentPath = QDir::currentPath();
 
 	// set the initial window size
 //        QRect screenSize = QDesktopWidget().availableGeometry(wnd);
@@ -1010,52 +1010,52 @@ void Ui::CMainWindow::updateMeshInspector()
 
 void Ui::CMainWindow::setRecentFiles(QStringList& recentFiles)
 {
-	setRecentFileList(m_recentFiles, recentFiles, menuRecentFiles, recentFilesActionGroup);
+	setRecentFileList(m_settings.m_recentFiles, recentFiles, menuRecentFiles, recentFilesActionGroup);
 }
 
 void Ui::CMainWindow::setRecentProjects(QStringList& recentFiles)
 {
-	setRecentFileList(m_recentProjects, recentFiles, menuRecentProjects, recentProjectsActionGroup);
+	setRecentFileList(m_settings.m_recentProjects, recentFiles, menuRecentProjects, recentProjectsActionGroup);
 }
 
 void Ui::CMainWindow::setRecentPlugins(QStringList& recentPlugins)
 {
-	setRecentFileList(m_recentPlugins, recentPlugins, nullptr, nullptr);
+	setRecentFileList(m_settings.m_recentPlugins, recentPlugins, nullptr, nullptr);
 }
 
 void Ui::CMainWindow::setRecentGeomFiles(QStringList& recentFiles)
 {
-	setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
+	setRecentFileList(m_settings.m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
 }
 
 void Ui::CMainWindow::setRecentImageFiles(QStringList& recentImages)
 {
-	setRecentFileList(m_recentImages, recentImages, menuRecentImages, recentImageFilesActionGroup);
+	setRecentFileList(m_settings.m_recentImages, recentImages, menuRecentImages, recentImageFilesActionGroup);
 }
 
 void Ui::CMainWindow::addToRecentFiles(const QString& file)
 {
-	addToRecentFilesList(m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
+	addToRecentFilesList(m_settings.m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
 }
 
 void Ui::CMainWindow::addToRecentProjects(const QString& file)
 {
-	addToRecentFilesList(m_recentProjects, file, menuRecentProjects, recentProjectsActionGroup);
+	addToRecentFilesList(m_settings.m_recentProjects, file, menuRecentProjects, recentProjectsActionGroup);
 }
 
 void Ui::CMainWindow::addToRecentPlugins(const QString& file)
 {
-	addToRecentFilesList(m_recentPlugins, file);
+	addToRecentFilesList(m_settings.m_recentPlugins, file);
 }
 
 void Ui::CMainWindow::addToRecentGeomFiles(const QString& file)
 {
-	addToRecentFilesList(m_recentGeomFiles, file, menuRecentGeomFiles, recentGeomFilesActionGroup);
+	addToRecentFilesList(m_settings.m_recentGeomFiles, file, menuRecentGeomFiles, recentGeomFilesActionGroup);
 }
 
 void Ui::CMainWindow::addToRecentImageFiles(const QString& file)
 {
-	addToRecentFilesList(m_recentImages, file, menuRecentImages, recentImageFilesActionGroup);
+	addToRecentFilesList(m_settings.m_recentImages, file, menuRecentImages, recentImageFilesActionGroup);
 }
 
 void Ui::CMainWindow::showFileViewer()

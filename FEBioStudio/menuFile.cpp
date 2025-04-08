@@ -219,11 +219,11 @@ void CMainWindow::on_actionNewModel_triggered()
 void CMainWindow::on_actionNewProject_triggered()
 {
 	CDlgNewProject dlg(this);
-	dlg.SetProjectFolder(ui->m_defaultProjectParent);
+	dlg.SetProjectFolder(ui->m_settings.m_defaultProjectParent);
 	if (dlg.exec())
 	{
 		ui->fileViewer->Update();
-		ui->m_defaultProjectParent = dlg.GetProjectFolder();
+		ui->m_settings.m_defaultProjectParent = dlg.GetProjectFolder();
 	}
 }
 
@@ -1130,7 +1130,7 @@ void CMainWindow::SavePostDoc()
 //-----------------------------------------------------------------------------
 QString CMainWindow::CurrentWorkingDirectory()
 {
-	QString path = ui->m_currentPath;
+	QString path = ui->m_settings.m_currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
 		QFileInfo fi(ui->m_project.GetProjectFileName());

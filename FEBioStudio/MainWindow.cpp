@@ -166,7 +166,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	else
 	{
 		// Add the default launch configuration
-		ui->m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
+		ui->m_settings.m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 	}
 
 	// allow drop events
@@ -1670,7 +1670,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
 {
-	ui->m_currentPath = folder;
+	ui->m_settings.m_currentPath = folder;
 }
 
 // get the current project
@@ -1730,6 +1730,7 @@ void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileN
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	FBS_SETTINGS& fbs = ui->m_settings;
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
@@ -1779,7 +1780,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("shadows", vs.m_bShadows);
 		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
 		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
-		settings.setValue("environmentMap", ui->m_envMapFile);
+		settings.setValue("environmentMap", fbs.m_envMapFile);
 
 		// Physics
 		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
@@ -1803,17 +1804,17 @@ void CMainWindow::writeSettings()
 
 	settings.beginGroup("FolderSettings");
 	{
-		settings.setValue("currentPath", ui->m_currentPath);
+		settings.setValue("currentPath", ui->m_settings.m_currentPath);
 
-		settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
+		settings.setValue("defaultProjectFolder", ui->m_settings.m_defaultProjectParent);
 		settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
 		settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
 
-		settings.setValue("recentFiles", ui->m_recentFiles);
-		settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
-		settings.setValue("recentProjects", ui->m_recentProjects);
-		settings.setValue("recentPlugins", ui->m_recentPlugins);
-		settings.setValue("recentImages", ui->m_recentImages);
+		settings.setValue("recentFiles", fbs.m_recentFiles);
+		settings.setValue("recentGeomFiles", fbs.m_recentGeomFiles);
+		settings.setValue("recentProjects", fbs.m_recentProjects);
+		settings.setValue("recentPlugins", fbs.m_recentPlugins);
+		settings.setValue("recentImages", fbs.m_recentImages);
 	}
 	settings.endGroup();
 
@@ -1821,11 +1822,11 @@ void CMainWindow::writeSettings()
 	{
 		// Create and save a list of launch config names
 		// NOTE: We do not save the first config, which should be the DEFAULT one
-		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0]->type() == CLaunchConfig::DEFAULT));
+		assert((fbs.m_launch_configs.size() > 0) && (fbs.m_launch_configs[0]->type() == CLaunchConfig::DEFAULT));
 		QStringList launch_config_names;
-		for (int i = 1; i < ui->m_launch_configs.size(); ++i)
+		for (int i = 1; i < fbs.m_launch_configs.size(); ++i)
 		{
-			CLaunchConfig& confi = *ui->m_launch_configs[i];
+			CLaunchConfig& confi = *fbs.m_launch_configs[i];
 			launch_config_names.append(QString::fromStdString(confi.name()));
 		}
 		settings.setValue("launchConfigNames", launch_config_names);
@@ -1833,7 +1834,7 @@ void CMainWindow::writeSettings()
 		// Save launch configs
 		for (int i = 0; i < launch_config_names.count(); i++)
 		{
-			CLaunchConfig& confi = *ui->m_launch_configs[i + 1];
+			CLaunchConfig& confi = *fbs.m_launch_configs[i + 1];
 			QString configName = "launchConfigs/" + launch_config_names[i];
 
 			settings.setValue(configName + "/type", confi.type());
@@ -1891,6 +1892,8 @@ void CMainWindow::writeSettings()
 void CMainWindow::readSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	FBS_SETTINGS& fbs = ui->m_settings;
+
 	QSettings settings(QSettings::IniFormat, QSettings::UserScope, "MRLSoftware", "FEBioStudio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
@@ -1945,7 +1948,7 @@ void CMainWindow::readSettings()
 		vs.m_shadow_intensity = settings.value("shadowIntensity", vs.m_shadow_intensity).toFloat();
 		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
 		QString envmap = settings.value("environmentMap").toString();
-		ui->m_envMapFile = envmap;
+		fbs.m_envMapFile = envmap;
 
 		// Physics
 		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
@@ -1977,9 +1980,9 @@ void CMainWindow::readSettings()
 
 	settings.beginGroup("FolderSettings");
 	{
-		ui->m_currentPath = settings.value("currentPath", QDir::homePath()).toString();
+		fbs.m_currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-		ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+		fbs.m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
 		QString repositoryFolder = settings.value("repositoryFolder").toString();
 		ui->databasePanel->SetRepositoryFolder(repositoryFolder);
 		qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
@@ -1999,10 +2002,10 @@ void CMainWindow::readSettings()
 		launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
 		// clear launch configurations
-		ui->m_launch_configs.clear();
+		fbs.m_launch_configs.clear();
 
 		// create the default launch configuration
-		ui->m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
+		fbs.m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 
 		for (QString conf : launch_config_names)
 		{
@@ -2023,7 +2026,7 @@ void CMainWindow::readSettings()
 
 			if (lc)
 			{
-				ui->m_launch_configs.push_back(lc);
+				fbs.m_launch_configs.push_back(lc);
 
 				for (int n = 0; n < lc->Parameters(); ++n)
 				{
@@ -2892,9 +2895,9 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 //-----------------------------------------------------------------------------
 void CMainWindow::ClearRecentFilesList()
 {
-	ui->m_recentFiles.clear();
-	ui->m_recentProjects.clear();
-	ui->m_recentImages.clear();
+	ui->m_settings.m_recentFiles.clear();
+	ui->m_settings.m_recentProjects.clear();
+	ui->m_settings.m_recentImages.clear();
 }
 
 void CMainWindow::OnCameraChanged()
@@ -3292,27 +3295,27 @@ void CMainWindow::toggleOrtho()
 
 QStringList CMainWindow::GetRecentFileList()
 {
-	return ui->m_recentFiles;
+	return ui->m_settings.m_recentFiles;
 }
 
 QString CMainWindow::GetEnvironmentMap()
 {
-	return ui->m_envMapFile;
+	return ui->m_settings.m_envMapFile;
 }
 
 void CMainWindow::SetEnvironmentMap(const QString& filename)
 {
-	ui->m_envMapFile = filename;
+	ui->m_settings.m_envMapFile = filename;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()
 {
-	return ui->m_recentProjects;
+	return ui->m_settings.m_recentProjects;
 }
 
 QStringList CMainWindow::GetRecentPluginsList()
 {
-	return ui->m_recentPlugins;
+	return ui->m_settings.m_recentPlugins;
 }
 
 void CMainWindow::AddRecentPlugin(const QString& fileName)

@@ -127,7 +127,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	dlg.SetWorkingDirectory(jobPath);
 	if (jobList.isEmpty() == false) dlg.SetJobNames(jobList);
 	if (jobName.isEmpty() == false) dlg.SetJobName(jobName);
-	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
+	dlg.SetLaunchConfig(ui->m_settings.m_launch_configs, lastLaunchConfigIndex);
 	dlg.SetFEBioFileVersion(lastFEBioFileVersion);
 
 	static bool showAdvancedSettings = false;
@@ -279,7 +279,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 		UpdateTab(job->GetDocument());
 		// start the job
-		if (ui->m_jobManager->StartJob(job, ui->m_launch_configs.at(lastLaunchConfigIndex)) == false)
+		if (ui->m_jobManager->StartJob(job, ui->m_settings.m_launch_configs.at(lastLaunchConfigIndex)) == false)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
 		}

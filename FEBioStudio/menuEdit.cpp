@@ -1815,13 +1815,7 @@ void CMainWindow::on_actionFindTxt_triggered()
 	QString txt = QInputDialog::getText(this, "FEBio Studio", "Text:");
 	if (txt.isEmpty() == false)
 	{
-		ui->m_lastFindText = txt;
-
-		if (ui->centralWidget->txtEdit->find(txt) == false)
-		{
-			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
-		}
-		else ui->centralWidget->txtEdit->centerCursor();
+		ui->centralWidget->txtEdit->find(txt);
 	}
 }
 
@@ -1829,15 +1823,7 @@ void CMainWindow::on_actionFindAgain_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-
-	if (ui->m_lastFindText.isEmpty() == false)
-	{
-		if (ui->centralWidget->txtEdit->find(ui->m_lastFindText) == false)
-		{
-			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
-		}
-		else ui->centralWidget->txtEdit->centerCursor();
-	}
+	ui->centralWidget->txtEdit->findAgain();
 }
 
 void CMainWindow::on_actionToggleComment_triggered()

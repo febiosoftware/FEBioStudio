@@ -13,6 +13,7 @@
 #include "TextDocument.h"
 #include "XMLDocument.h"
 #include "MainWindow.h"
+#include "QMessageBox"
 
 class HighlightRule
 {
@@ -673,7 +674,22 @@ QTextDocument* CTextEditView::textDocument()
 
 bool CTextEditView::find(const QString& txt)
 {
-	return m_edit->find(txt);
+	bool b = m_edit->find(txt);
+	if (b)
+	{
+		m_lastFindText = txt;
+		centerCursor();
+	}
+	else
+		QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
+
+	return b;
+}
+
+bool CTextEditView::findAgain()
+{
+	if (m_lastFindText.isEmpty()) return true;
+	return find(m_lastFindText);
 }
 
 void CTextEditView::centerCursor()

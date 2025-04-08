@@ -77,6 +77,7 @@ public:
 	QTextDocument* textDocument();
 
 	bool find(const QString& txt);
+	bool findAgain();
 	void centerCursor();
 	void toggleLineComment();
 	void duplicateLine();
@@ -84,4 +85,5 @@ public:
 
 private:
 	CTextEditor* m_edit;
+	QString m_lastFindText;
 };

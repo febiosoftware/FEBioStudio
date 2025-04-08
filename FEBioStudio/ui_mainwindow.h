@@ -258,6 +258,19 @@ struct FBS_SETTINGS
 	QString createPluginPath;	// default path to FEBio plugins
 
 	bool	clearUndoOnSave;	// clear the undo stack on save
+
+	// folder settings
+	QString		m_defaultProjectParent;
+	QString		m_currentPath;
+	QStringList	m_recentFiles;
+	QStringList	m_recentGeomFiles;
+	QStringList m_recentProjects;
+	QStringList m_recentPlugins;
+	QStringList m_recentImages;
+
+	QString m_envMapFile;
+
+	vector<CLaunchConfig*> m_launch_configs;
 };
 
 class Ui::CMainWindow
@@ -432,18 +445,7 @@ public:
 	QAction* selectFree;
 
 public:
-	// folder settings
-	QString		m_defaultProjectParent;
-	QString		m_currentPath;
-	QStringList	m_recentFiles;
-	QStringList	m_recentGeomFiles;
-	QStringList m_recentProjects;
-	QStringList m_recentPlugins;
-	QStringList m_recentImages;
-
-	QString m_envMapFile;
-
-	vector<CLaunchConfig*>		m_launch_configs;
+	FBS_SETTINGS m_settings;
 
 	CFEBioJobManager* m_jobManager;
 
@@ -455,16 +457,12 @@ public:
 
 	QTimer* m_autoSaveTimer = nullptr;
 
-	FBS_SETTINGS m_settings;
-
 	CUpdateWidget m_updateWidget; // TODO: Why is this a widget? It is not used as a widget.
 	QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
-
-	QString m_lastFindText;
 
 public:
 	CGLDocument* m_copySrc = nullptr; // source for copy selection operation
@@ -482,7 +480,7 @@ public:
 
 	CLaunchConfig* findLaunchConfig(const std::string& name)
 	{
-		for (auto lc : m_launch_configs)
+		for (auto lc : m_settings.m_launch_configs)
 		{
 			if (lc->name() == name) return lc;
 		}
