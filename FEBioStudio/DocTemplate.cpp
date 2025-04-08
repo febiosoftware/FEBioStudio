@@ -104,6 +104,11 @@ bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 	GFace* yn = po->Face(0);
 	GFace* zn = po->Face(4);
 
+	GFaceList* xnl = new GFaceList(&gm, xn); gm.AddFaceList(xnl); xnl->SetName("Left");
+	GFaceList* xpl = new GFaceList(&gm, xp); gm.AddFaceList(xpl); xpl->SetName("Right");
+	GFaceList* ynl = new GFaceList(&gm, yn); gm.AddFaceList(ynl); ynl->SetName("Front");
+	GFaceList* znl = new GFaceList(&gm, zn); gm.AddFaceList(znl); znl->SetName("Bottom");
+
 	// add a step
 	FSStep* step = FEBio::CreateStep("solid", &fsm);
 	step->SetName("Step1");
@@ -114,30 +119,31 @@ bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 	FSBoundaryCondition* bcx = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcx->SetName("fix-x");
 	bcx->SetParamBool("x_dof", true);
-	bcx->SetItemList(new GFaceList(&gm, xn));
+	bcx->SetItemList(xnl);
 	step->AddBC(bcx);
 
 	FSBoundaryCondition* bcy = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcy->SetName("fix-y");
 	bcy->SetParamBool("y_dof", true);
-	bcy->SetItemList(new GFaceList(&gm, yn));
+	bcy->SetItemList(ynl);
 	step->AddBC(bcy);
 
 	FSBoundaryCondition* bcz = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcz->SetName("fix-z");
 	bcz->SetParamBool("z_dof", true);
-	bcz->SetItemList(new GFaceList(&gm, zn));
+	bcz->SetItemList(znl);
 	step->AddBC(bcz);
 
 	FSBoundaryCondition* dcx = FEBio::CreateBoundaryCondition("prescribed displacement", &fsm);
 	dcx->SetName("displace");
 	dcx->SetParamInt("dof", 0);
 	dcx->SetParamFloat("value", 1.0);
-	dcx->SetItemList(new GFaceList(&gm, xp));
+	dcx->SetItemList(xpl);
 	step->AddBC(dcx);
 
 	// create load controller and assign to parameter
 	LoadCurve lc;
+	lc.Clear();
 	lc.Add(0, 0);
 	lc.Add(1, 1);
 	FSLoadController* plc = fsm.AddLoadCurve(lc);
