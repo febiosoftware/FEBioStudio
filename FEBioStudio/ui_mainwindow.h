@@ -92,6 +92,7 @@ SOFTWARE.*/
 #include <vector>
 #include "HTMLBrowser.h"
 #include "PythonEditor.h"
+#include "MainMenu.h"
 
 class QProcess;
 
@@ -285,26 +286,6 @@ public:
 
 	CMainCentralWidget* centralWidget;
 
-	QMenu* menuFile;
-	QMenu* menuEdit;
-	QMenu* menuEditPost;
-	QMenu* menuEditTxt;
-	QMenu* menuEditXml;
-	QMenu* menuPhysics;
-	QMenu* menuTools;
-	QMenu* menuPost;
-	QMenu* menuFEBio;
-	QMenu* menuRecord;
-	QMenu* menuView;
-	QMenu* menuHelp;
-	QMenu* menuRecentFiles;
-	QMenu* menuRecentProjects;
-	QMenu* menuRecentGeomFiles;
-	QMenu* menuImportImage;
-	QMenu* menuRecentImages;
-	QMenu* menuWindows;
-	QMenu* menuViews;
-
 	// dockable widgets
 	::CFileViewer* fileViewer;
 	::CModelViewer* modelViewer;
@@ -357,92 +338,7 @@ public:
 	QToolBar* monitorToolBar;
 
 public:
-	QActionGroup* recentFilesActionGroup;
-	QActionGroup* recentProjectsActionGroup;
-	QActionGroup* recentFEFilesActionGroup;
-	QActionGroup* recentGeomFilesActionGroup;
-	QActionGroup* recentImageFilesActionGroup;
-
-	// --- menu actions ---
-
-	// FILE menu
-	QAction* actionExportFE;
-	QAction* actionImportGeom;
-	QAction* actionExportGeom;
-	QAction* actionSnapShot;
-	QAction* actionRayTrace;
-
-	// FEBIO menu
-	QAction* actionFEBioRun;
-	QAction* actionFEBioMonitor;
-	QAction* actionFEBioMonitorSettings;
-	QAction* actionFEBioContinue;
-	QAction* actionFEBioStop;
-	QAction* actionFEBioCheck;
-	QAction* actionFEBioPause;
-	QAction* actionFEBioNext;
-
-	// PHYSICS menu
-	QAction* actionAddRigidConnector;
-	QAction* actionSoluteTable;
-	QAction* actionSBMTable;
-	QAction* actionAddReaction;
-	QAction* actionAddMembraneReaction;
-
-	// TOOLS menu
-	QAction* actionCurveEditor;
-	QAction* actionMeshInspector;
-	QAction* actionMeshDiagnostic;
-	QAction* actionMaterialTest;
-
-	// VIEW menu
-	QAction* actionUndoViewChange;
-	QAction* actionRedoViewChange;
-	QAction* actionShowGVContext;
-	QAction* actionZoomSelect;
-	QAction* actionZoomExtents;
-	QAction* actionViewCapture;
-	QAction* actionShowGrid;
-	QAction* actionShowMeshLines;
-	QAction* actionShowEdgeLines;
-	QAction* actionBackfaceCulling;
-	QAction* actionViewSmooth;
-	QAction* actionShowNormals;
-	QAction* actionOrtho;
-	QAction* actionFront;
-	QAction* actionBack;
-	QAction* actionRight;
-	QAction* actionLeft;
-	QAction* actionTop;
-	QAction* actionBottom;
-	QAction* actionIsometric;
-	QAction* actionOptions;
-	QAction* actionRenderMode;
-	QAction* actionShowFibers;
-	QAction* actionShowMatAxes;
-	QAction* actionShowDiscrete;
-	QAction* actionShowRigidBodies;
-	QAction* actionShowRigidJoints;
-	QAction* actionShowRigidLabels;
-	QAction* actionToggleLight;
-	QAction* actionToggleTagInfo;
-
-	// other actions
-	QAction* actionSelectObjects;
-	QAction* actionSelectParts;
-	QAction* actionSelectSurfaces;
-	QAction* actionSelectCurves;
-	QAction* actionSelectNodes;
-	QAction* actionSelectDiscrete;
-	QAction* actionMeasureTool;
-	QAction* actionPlaneCutTool;
-	QAction* actionPickColor;
-	QAction* actionExplodedView;
-	QAction* actionRotate;
-	QAction* actionTranslate;
-	QAction* selectRect;
-	QAction* selectCircle;
-	QAction* selectFree;
+	CMainMenu* mainMenu;
 
 public:
 	FBS_SETTINGS m_settings;
@@ -490,8 +386,8 @@ public:
 private:
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false);
 
-	// create actions and menu
-	void buildMenu(::CMainWindow* mainWindow);
+	// create toolbars
+	void buildToolbars(::CMainWindow* mainWindow);
 
 	// build the dockable windows
 	// Note that this must be called after the menu is created.

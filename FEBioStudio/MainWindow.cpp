@@ -1651,11 +1651,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 	else if ((ev->key() == Qt::Key_R))
 	{
-		if (GetPostDocument()) ui->actionRotate->toggle();
+		if (GetPostDocument()) ui->mainMenu->actionRotate->toggle();
 	}
 	else if ((ev->key() == Qt::Key_T))
 	{
-		if (GetPostDocument()) ui->actionTranslate->toggle();
+		if (GetPostDocument()) ui->mainMenu->actionTranslate->toggle();
 	}
 	else if ((ev->key() == Qt::Key_A))
 	{
@@ -2103,13 +2103,15 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
+	CMainMenu* menu = ui->mainMenu;
+
 	GLViewSettings& view = GetGLView()->GetViewSettings();
-	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
-	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
-	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
+	if (view.m_blma   != menu->actionShowMatAxes->isChecked()) menu->actionShowMatAxes->trigger();
+	if (view.m_bmesh  != menu->actionShowMeshLines->isChecked()) menu->actionShowMeshLines->trigger();
+	if (view.m_bgrid  != menu->actionShowGrid->isChecked()) menu->actionShowGrid->trigger();
 
 	CGView& gv = *doc->GetView();
-	if (gv.m_bortho != ui->actionOrtho->isChecked()) ui->actionOrtho->trigger();
+	if (gv.m_bortho != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
 
 	if (ui->buildToolBar->isVisible())
 	{
@@ -2641,39 +2643,41 @@ void CMainWindow::ClearStatusMessage()
 //-----------------------------------------------------------------------------
 void CMainWindow::BuildContextMenu(QMenu& menu)
 {
-	menu.addAction(ui->actionZoomSelect);
-	menu.addAction(ui->actionShowGrid);
-	menu.addAction(ui->actionShowMeshLines);
-	menu.addAction(ui->actionShowEdgeLines);
-	menu.addAction(ui->actionOrtho);
+	CMainMenu* mainMenu = ui->mainMenu;
+
+	menu.addAction(mainMenu->actionZoomSelect);
+	menu.addAction(mainMenu->actionShowGrid);
+	menu.addAction(mainMenu->actionShowMeshLines);
+	menu.addAction(mainMenu->actionShowEdgeLines);
+	menu.addAction(mainMenu->actionOrtho);
 	menu.addSeparator();
 
 	QMenu* view = new QMenu("Standard views");
-	view->addAction(ui->actionFront);
-	view->addAction(ui->actionBack);
-	view->addAction(ui->actionLeft);
-	view->addAction(ui->actionRight);
-	view->addAction(ui->actionTop);
-	view->addAction(ui->actionBottom);
-    view->addAction(ui->actionIsometric);
+	view->addAction(mainMenu->actionFront);
+	view->addAction(mainMenu->actionBack);
+	view->addAction(mainMenu->actionLeft);
+	view->addAction(mainMenu->actionRight);
+	view->addAction(mainMenu->actionTop);
+	view->addAction(mainMenu->actionBottom);
+    view->addAction(mainMenu->actionIsometric);
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 
-	menu.addAction(ui->actionRenderMode);
+	menu.addAction(mainMenu->actionRenderMode);
 
 	CModelDocument* doc = GetModelDocument();
 	if (doc)
 	{
-		menu.addAction(ui->actionShowNormals);
+		menu.addAction(mainMenu->actionShowNormals);
 
 		QMenu* physicsMenu = new QMenu("Physics");
 
-		physicsMenu->addAction(ui->actionShowFibers);
-		physicsMenu->addAction(ui->actionShowMatAxes);
-		physicsMenu->addAction(ui->actionShowDiscrete);
-		physicsMenu->addAction(ui->actionShowRigidBodies);
-		physicsMenu->addAction(ui->actionShowRigidJoints);
-		physicsMenu->addAction(ui->actionShowRigidLabels);
+		physicsMenu->addAction(mainMenu->actionShowFibers);
+		physicsMenu->addAction(mainMenu->actionShowMatAxes);
+		physicsMenu->addAction(mainMenu->actionShowDiscrete);
+		physicsMenu->addAction(mainMenu->actionShowRigidBodies);
+		physicsMenu->addAction(mainMenu->actionShowRigidJoints);
+		physicsMenu->addAction(mainMenu->actionShowRigidLabels);
 		menu.addMenu(physicsMenu);
 
 		menu.addSeparator();
@@ -2722,7 +2726,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 			menu.addSeparator();
 		}
 	}
-	menu.addAction(ui->actionOptions);
+	menu.addAction(mainMenu->actionOptions);
 }
 
 //-----------------------------------------------------------------------------
@@ -3290,7 +3294,7 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 
 void CMainWindow::toggleOrtho()
 {
-	ui->actionOrtho->trigger();
+	ui->mainMenu->actionOrtho->trigger();
 }
 
 QStringList CMainWindow::GetRecentFileList()

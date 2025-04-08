@@ -33,24 +33,24 @@ SOFTWARE.*/
 void Ui::CUIConfig::Apply()
 {
 	// disable some File menu items
-	ui->actionImportGeom->setEnabled(false);
-	ui->actionExportGeom->setEnabled(false);
-	ui->actionExportFE->setEnabled(false);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(false);
-	ui->menuImportImage->menuAction()->setEnabled(false);
-	ui->actionSnapShot->setEnabled(false);
-	ui->actionRayTrace->setEnabled(false);
+	ui->mainMenu->actionImportGeom->setEnabled(false);
+	ui->mainMenu->actionExportGeom->setEnabled(false);
+	ui->mainMenu->actionExportFE->setEnabled(false);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(false);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(false);
+	ui->mainMenu->actionSnapShot->setEnabled(false);
+	ui->mainMenu->actionRayTrace->setEnabled(false);
 
 	// disable some FEBio menu items
-	ui->actionFEBioRun->setEnabled(false);
-	ui->actionFEBioStop->setEnabled(false);
-	ui->actionFEBioCheck->setEnabled(false);
+	ui->mainMenu->actionFEBioRun->setEnabled(false);
+	ui->mainMenu->actionFEBioStop->setEnabled(false);
+	ui->mainMenu->actionFEBioCheck->setEnabled(false);
 
 	// disable some Tools menu items
-	ui->actionCurveEditor->setEnabled(false);
-	ui->actionMeshInspector->setEnabled(false);
-	ui->actionMeshDiagnostic->setEnabled(false);
-	ui->actionMaterialTest->setEnabled(false);
+	ui->mainMenu->actionCurveEditor->setEnabled(false);
+	ui->mainMenu->actionMeshInspector->setEnabled(false);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(false);
+	ui->mainMenu->actionMaterialTest->setEnabled(false);
 
 	// hide some toolbars
 	ui->monitorToolBar->hide();
@@ -61,14 +61,14 @@ void Ui::CEmptyConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -104,14 +104,14 @@ void Ui::CHTMLConfig::Apply()
 
 	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -163,32 +163,32 @@ void Ui::CModelConfig::Apply()
 		}
 	}
 
-	ui->actionFEBioMonitor->setEnabled(true);
-	ui->actionImportGeom->setEnabled(true);
-	ui->actionExportGeom->setEnabled(true);
-	ui->actionExportFE->setEnabled(true);
-	ui->actionSnapShot->setEnabled(true);
-	ui->actionRayTrace->setEnabled(true);
-	ui->actionFEBioRun->setEnabled(true);
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioCheck->setEnabled(true);
+	ui->mainMenu->actionFEBioMonitor->setEnabled(true);
+	ui->mainMenu->actionImportGeom->setEnabled(true);
+	ui->mainMenu->actionExportGeom->setEnabled(true);
+	ui->mainMenu->actionExportFE->setEnabled(true);
+	ui->mainMenu->actionSnapShot->setEnabled(true);
+	ui->mainMenu->actionRayTrace->setEnabled(true);
+	ui->mainMenu->actionFEBioRun->setEnabled(true);
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
-	ui->actionCurveEditor->setEnabled(true);
-	ui->actionMeshInspector->setEnabled(true);
-	ui->actionMeshDiagnostic->setEnabled(true);
-	ui->actionMaterialTest->setEnabled(true);
+	ui->mainMenu->actionCurveEditor->setEnabled(true);
+	ui->mainMenu->actionMeshInspector->setEnabled(true);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
+	ui->mainMenu->actionMaterialTest->setEnabled(true);
 
-	ui->menuFEBio->menuAction()->setVisible(true);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
-	ui->menuImportImage->menuAction()->setEnabled(true);
-	ui->menuEdit->menuAction()->setVisible(true);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(true);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(true);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(true);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(true);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(true);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->show();
 	ui->postToolBar->hide();
@@ -237,24 +237,24 @@ void Ui::CPostConfig::Apply()
 		}
 	}
 
-	ui->actionImportGeom->setEnabled(true);
-	ui->actionExportGeom->setEnabled(true);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
-	ui->menuImportImage->menuAction()->setEnabled(true);
-	ui->actionSnapShot->setEnabled(true);
-	ui->actionRayTrace->setEnabled(true);
+	ui->mainMenu->actionImportGeom->setEnabled(true);
+	ui->mainMenu->actionExportGeom->setEnabled(true);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(true);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(true);
+	ui->mainMenu->actionSnapShot->setEnabled(true);
+	ui->mainMenu->actionRayTrace->setEnabled(true);
 
-	ui->actionMeshInspector->setEnabled(true);
-	ui->actionMeshDiagnostic->setEnabled(true);
+	ui->mainMenu->actionMeshInspector->setEnabled(true);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(true);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(true);
-	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(true);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->show();
@@ -297,18 +297,18 @@ void Ui::CTextConfig::Apply()
 
 	ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(true);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
-	ui->actionFEBioRun->setEnabled(true);
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioCheck->setEnabled(true);
+	ui->mainMenu->actionFEBioRun->setEnabled(true);
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -346,22 +346,22 @@ void Ui::CXMLConfig::Apply()
 		ui->actionEditXmlAsText->setChecked(xmlDoc->EditingText());
 		ui->actionEditXmlAsText->blockSignals(false);
 
-		ui->actionFEBioRun->setEnabled(true);
-		ui->actionFEBioStop->setEnabled(true);
-		ui->actionFEBioCheck->setEnabled(true);
+		ui->mainMenu->actionFEBioRun->setEnabled(true);
+		ui->mainMenu->actionFEBioStop->setEnabled(true);
+		ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
 		if (xmlDoc->EditingText())
 		{
 			ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
-			ui->menuEdit->menuAction()->setVisible(false);
-			ui->menuEditPost->menuAction()->setVisible(false);
-			ui->menuEditTxt->menuAction()->setVisible(true);
-			ui->menuEditXml->menuAction()->setVisible(false);
-			ui->menuPhysics->menuAction()->setVisible(false);
-			ui->menuPost->menuAction()->setVisible(false);
-			ui->menuRecord->menuAction()->setVisible(false);
-			ui->menuView->menuAction()->setVisible(false);
+			ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditTxt->menuAction()->setVisible(true);
+			ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+			ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+			ui->mainMenu->menuPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+			ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 			ui->buildToolBar->hide();
 			ui->postToolBar->hide();
@@ -390,13 +390,13 @@ void Ui::CXMLConfig::Apply()
 		{
 			ui->setActiveCentralView(CMainCentralWidget::XML_VIEWER);
 
-			ui->menuEdit->menuAction()->setVisible(false);
-			ui->menuEditPost->menuAction()->setVisible(false);
-			ui->menuEditTxt->menuAction()->setVisible(false);
-			ui->menuEditXml->menuAction()->setVisible(true);
-			ui->menuPhysics->menuAction()->setVisible(false);
-			ui->menuPost->menuAction()->setVisible(false);
-			ui->menuRecord->menuAction()->setVisible(false);
+			ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditXml->menuAction()->setVisible(true);
+			ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+			ui->mainMenu->menuPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuRecord->menuAction()->setVisible(false);
 
 			ui->buildToolBar->hide();
 			ui->postToolBar->hide();
@@ -432,14 +432,14 @@ void Ui::CAPPConfig::Apply()
 {
 	CUIConfig::Apply();
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -471,17 +471,17 @@ void Ui::CMonitorConfig::Apply()
 
 	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
 
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitor->setEnabled(false);
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioMonitor->setEnabled(false);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(true);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(true);
-	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(true);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -517,15 +517,15 @@ void Ui::CFEBReportConfig::Apply()
 
 	ui->setActiveCentralView(CMainCentralWidget::FEBREPORT_VIEW);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
-	ui->menuFEBio->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
