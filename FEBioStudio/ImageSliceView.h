@@ -51,6 +51,8 @@ public:
 
     CImageModel* GetImageModel() { return m_imgModel; }
 
+	CGLView* GetGLView() { return m_glView; }
+
     void RenderSlicers(GLRenderEngine& re, GLContext& rc);
 
     void SetInspector(CDlgPixelInspector* inspector) override;

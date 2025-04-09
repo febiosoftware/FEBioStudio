@@ -732,6 +732,8 @@ public slots:
 
 	void autoUpdateCheck(bool update);
 
+	void on_planecut_dataChanged();
+
 private:
 	Ui::CMainWindow*	ui;
 

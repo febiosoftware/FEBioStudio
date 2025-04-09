@@ -71,7 +71,8 @@ private:
 	void wheelEvent(QWheelEvent* ev) override;
 
 protected:
-	GLViewSettings	m_view;
+	static GLViewSettings	m_view;
+
 	int	m_viewport[4];		//!< store viewport coordinates
 	double	m_ox;
 	double	m_oy;

@@ -3446,3 +3446,21 @@ QString CMainWindow::GetCreatePluginPath() const { return ui->m_settings.createP
 void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_settings.FEBioSDKInc = s; }
 void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_settings.FEBioSDKLib = s; }
 void CMainWindow::SetCreatePluginPath(const QString& s) { ui->m_settings.createPluginPath = s; }
+
+void CMainWindow::on_planecut_dataChanged()
+{
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return;
+	
+	CGLView* glview = nullptr;
+	if (doc->GetUIViewMode() == CGLDocument::MODEL_VIEW)
+	{
+		glview = GetGLView();
+	}
+	else
+	{
+		CImageSliceView* v = GetImageSliceView();
+		if (v) glview = v->GetGLView();
+	}
+	if (glview) glview->UpdateScene();
+}

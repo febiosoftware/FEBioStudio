@@ -109,6 +109,8 @@ CDlgPlaneCut::CDlgPlaneCut(CMainWindow* wnd) : QDialog(wnd), ui(new UIDlgPlaneCu
 	setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 	ui->m_view = wnd->GetGLView();
 	ui->setup(this);
+
+	QObject::connect(this, &CDlgPlaneCut::dataChanged, wnd, &CMainWindow::on_planecut_dataChanged);
 }
 
 CDlgPlaneCut::~CDlgPlaneCut()
@@ -123,21 +125,20 @@ void CDlgPlaneCut::Update()
 
 void CDlgPlaneCut::showEvent(QShowEvent* ev)
 {
-	onDataChanged();
 	ui->m_view->GetViewSettings().m_showPlaneCut = true;
-	ui->m_view->UpdateScene();
+	onDataChanged();
 }
 
 void CDlgPlaneCut::closeEvent(QCloseEvent* ev)
 {
 	ui->m_view->GetViewSettings().m_showPlaneCut = false;
-	ui->m_view->UpdateScene();
+	onDataChanged();
 }
 
 void CDlgPlaneCut::reject()
 {
 	ui->m_view->GetViewSettings().m_showPlaneCut = false;
-	ui->m_view->UpdateScene();
+	onDataChanged();
 	QDialog::reject();
 }
 
@@ -164,7 +165,8 @@ void CDlgPlaneCut::onDataChanged()
 	if (ui->m_rb[0]->isChecked()) nop = 0;
 	if (ui->m_rb[1]->isChecked()) nop = 1;
 	ui->m_view->GetViewSettings().m_planeCutMode = nop;
-	ui->m_view->UpdateScene();
+
+	emit dataChanged();
 }
 
 void CDlgPlaneCut::setPlaneCoordinates(double d[4])

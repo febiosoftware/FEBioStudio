@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QPainter>
 
 static bool initGlew = false;
+GLViewSettings	CGLSceneView::m_view;
 
 CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent), m_ogl(this)
 {
