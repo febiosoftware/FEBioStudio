@@ -127,8 +127,10 @@ public:
 		layout->setContentsMargins(0, 0, 0, 0);
 
 		layout->addWidget(spinLeft  = new QDoubleSpinBox);
+        spinLeft->setDecimals(4);
 		layout->addWidget(slider    = new CRangeSlider);
 		layout->addWidget(spinRight = new QDoubleSpinBox);
+        spinRight->setDecimals(4);
 
 		QObject::connect(slider, &CRangeSlider::positionChanged, parent, &::CImageParam2::updateSlider);
 		QObject::connect(spinLeft , &QDoubleSpinBox::valueChanged, parent, &::CImageParam2::updateSpinBox);
