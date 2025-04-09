@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData.h>
 #include <PostLib/constants.h>
 #include <PostLib/FEDistanceMap.h>
+#include <PostLib/DataFilter.h>
 
 #ifndef PY_EXTERNAL
 #include <FEBioStudio/PostDocument.h>
@@ -86,6 +87,8 @@ void init_FBSPost(py::module& m)
 
     InitStandardDataFields();
     post.def("AddStandardDataField", pybind11::overload_cast<FEPostModel&, const std::string&>(&AddStandardDataField));
+
+	post.def("SurfaceNormalProjection", &Post::SurfaceNormalProjection, py::return_value_policy::reference);
 
 	py::class_<Material>(post, "Material")
 		.def_property("name", &Material::GetName, &Material::SetName)
