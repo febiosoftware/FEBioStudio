@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "DlgImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
 #include "DlgStartThread.h"
+#include "MainWindow.h"
 
 CImageFilterWidget::CImageFilterWidget(CMainWindow* wnd)
     : m_imgModel(nullptr), m_wnd(wnd)
@@ -217,6 +218,10 @@ void CImageFilterWidget::on_delFilterBtn_clicked()
 
     Update();
 
+    // If the last filter was removed, the filters are automatically cleared
+    // so we need to ensure all image representations are updated
+    m_wnd->UpdateUiView();
+
 }
 
 void CImageFilterWidget::on_applyFilters_clicked()
@@ -236,6 +241,9 @@ void CImageFilterWidget::on_applyFilters_clicked()
     }
 
     UpdateApplyButton();
+
+    // Ensure all image representations are updated
+    m_wnd->UpdateUiView();
 }
 
 void CImageFilterWidget::on_filterProps_changed()

@@ -64,6 +64,10 @@ void CImageSource::ClearFilters()
     {
         delete m_img;
         m_img = m_originalImage;
+
+        // Manually force a recalc of min and max values
+        double min, max;
+        m_img->GetMinMax(min, max, true);
     }
 }
 
