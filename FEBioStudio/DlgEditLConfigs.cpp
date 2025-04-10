@@ -88,8 +88,8 @@ public:
 		QObject::connect(bb, &QDialogButtonBox::accepted, dlg, &::CDlgEditLaunchConfigs::accept);
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgEditLaunchConfigs::reject);
 		QObject::connect(launchConfigList, &QListWidget::currentItemChanged, dlg, &::CDlgEditLaunchConfigs::on_selection_change);
+		QObject::connect(launchConfigList, &QListWidget::itemChanged, dlg, &::CDlgEditLaunchConfigs::on_nameChanged);
 
-        QObject::connect(launchConfigList, &QListWidget::itemChanged, dlg, &::CDlgEditLaunchConfigs::on_launchConfigList_itemChanged);
 		QObject::connect(edit, &QPlainTextEdit::textChanged, dlg, &::CDlgEditLaunchConfigs::on_textChanged);
 	}
 
@@ -165,6 +165,16 @@ public:
 
 		return rightPane;
 	}
+
+	CLaunchConfig* currentConfig()
+	{
+		int n = launchConfigList->currentIndex().row();
+		if ((n >= 0) && (n < (int)launchConfigs.size()))
+		{
+			return launchConfigs[n];
+		}
+		return nullptr;
+	}
 };
 
 CDlgEditLaunchConfigs::CDlgEditLaunchConfigs(QWidget* parent, std::vector<CLaunchConfig*>* launchConfigs, int select)
@@ -225,19 +235,6 @@ void CDlgEditLaunchConfigs::on_selection_change(QListWidgetItem* current, QListW
 	}
 }
 
-void CDlgEditLaunchConfigs::on_launchConfigList_itemChanged(QListWidgetItem *item)
-{
-    if (item)
-    {
-        int index = item->data(Qt::UserRole).toInt();
-        if (index >= 0)
-        {
-            CLaunchConfig* lc = ui->launchConfigs[index];
-            lc->setName(item->text().toStdString());
-        }
-    }
-}
-
 void CDlgEditLaunchConfigs::on_addConfigBtn_Clicked()
 {
 	QStringList types = { "local", "remote", "PBS", "SLURM", "custom" };
@@ -261,7 +258,7 @@ void CDlgEditLaunchConfigs::on_addConfigBtn_Clicked()
 	newItem->setText(QString::fromStdString(defaultName));
 	newItem->setData(Qt::UserRole, n);
 	newItem->setFlags(newItem->flags () | Qt::ItemIsEditable);
-    ui->launchConfigList->addItem(newItem);
+	ui->launchConfigList->addItem(newItem);
 
 	ui->launchConfigList->setCurrentItem(newItem);
 	ui->launchConfigList->editItem(newItem);
@@ -282,7 +279,20 @@ void CDlgEditLaunchConfigs::on_delConfigBtn_Clicked()
 	ui->launchConfigList->setCurrentRow(0);
 }
 
+void CDlgEditLaunchConfigs::on_nameChanged(QListWidgetItem* item)
+{
+	if (item == nullptr) return;
+
+	std::string s = item->text().toStdString();
+	CLaunchConfig* lc = ui->currentConfig();
+	if (lc && (lc->name() != s))
+	{
+		lc->setName(s);
+	}
+}
+
 int CDlgEditLaunchConfigs::GetLCIndex()
 {
 	return ui->launchConfigList->currentRow();
 }
+

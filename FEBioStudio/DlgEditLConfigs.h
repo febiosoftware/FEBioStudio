@@ -48,10 +48,10 @@ public:
 
 public slots:
 	void on_selection_change(QListWidgetItem* current, QListWidgetItem* previous);
-    void on_launchConfigList_itemChanged(QListWidgetItem *item);
 	void on_addConfigBtn_Clicked();
 	void on_delConfigBtn_Clicked();
 	void on_textChanged();
+	void on_nameChanged(QListWidgetItem* item);
 
 private:
 	Ui::CDlgEditLaunchConfigs* ui;

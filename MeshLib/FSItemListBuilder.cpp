@@ -149,7 +149,8 @@ void FSItemListBuilder::Subtract(std::vector<int>& o)
 			it = m_Item.erase(it);
 			++it2;
 		}
-		else ++it;
+		else if (*it < *it2) ++it;
+		else ++it2;
 	}
 }
 

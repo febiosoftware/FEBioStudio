@@ -222,7 +222,7 @@ void CMainWindow::on_actionNewProject_triggered()
 	dlg.SetProjectFolder(ui->m_settings.m_defaultProjectParent);
 	if (dlg.exec())
 	{
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		ui->m_settings.m_defaultProjectParent = dlg.GetProjectFolder();
 	}
 }
@@ -384,7 +384,7 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 		UpdateTab(doc);
 		ui->addToRecentFiles(fileName);
 		ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 	}
 	else
 	{
@@ -1012,7 +1012,7 @@ void CMainWindow::SavePostDoc()
 			{
 				ui->addToRecentFiles(fileName);
 				ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
-				ui->fileViewer->Update();
+				ui->projectViewer->Update();
 			}
 		}
 		break;
@@ -1406,7 +1406,7 @@ void CMainWindow::on_actionSaveProject_triggered()
 			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
 		}
 		else ui->addToRecentProjects(fileName);
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		UpdateTitle();
 	}
 }
