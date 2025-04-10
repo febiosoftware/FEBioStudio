@@ -501,8 +501,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 
 	m_recorder.AttachToView(this);
 
-	m_showContextMenu = true;
-
 	m_ballocDefaultWidgets = true;
 	m_Widget = nullptr;
 
@@ -515,11 +513,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 
 CGLView::~CGLView()
 {
-}
-
-void CGLView::ShowContextMenu(bool b)
-{
-	m_showContextMenu = b;
 }
 
 void CGLView::AllocateDefaultWidgets(bool b)
@@ -1166,12 +1159,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			if ((m_x0 == m_x1) && (m_y0 == m_y1))
 			{
-				if (m_showContextMenu)
-				{
-					QMenu menu(this);
-					m_pWnd->BuildContextMenu(menu);
-					menu.exec(ev->globalPos());
-				}
+				QMenu menu(this);
+				m_pWnd->BuildContextMenu(menu);
+				menu.exec(ev->globalPos());
 			}
 			else
 			{
