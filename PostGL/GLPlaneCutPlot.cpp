@@ -1045,7 +1045,7 @@ void CGLPlaneCutPlot::RenderPlane(GLRenderEngine& re)
 	double g = fabs(norm0.y);
 	double b = fabs(norm0.z);
 
-	re.setMaterial(GLMaterial::OVERLAY, GLColor(r, g, b, m_transparency));
+	re.setMaterial(GLMaterial::OVERLAY, GLColor::FromRGBf(r, g, b, m_transparency));
 	re.normal(vec3d(0,0,1));
 	re.begin(GLRenderEngine::QUADS);
 	{
