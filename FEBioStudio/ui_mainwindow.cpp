@@ -239,9 +239,9 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 
 	QDockWidget* dock1 = new QDockWidget("Project", m_wnd); dock1->setObjectName("dockFiles");
 	dock1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-	fileViewer = new ::CFileViewer(m_wnd, dock1);
-	fileViewer->setObjectName(QStringLiteral("fileViewer"));
-	dock1->setWidget(fileViewer);
+	projectViewer = new ::CProjectViewer(m_wnd, dock1);
+	projectViewer->setObjectName(QStringLiteral("projectViewer"));
+	dock1->setWidget(projectViewer);
 	m_wnd->addDockWidget(Qt::LeftDockWidgetArea, dock1);
 	mainMenu->menuWindows->addAction(dock1->toggleViewAction());
 
@@ -442,9 +442,9 @@ void Ui::CMainWindow::addToRecentImageFiles(const QString& file)
 	addToRecentFilesList(m_settings.m_recentImages, file, mainMenu->menuRecentImages, mainMenu->recentImageFilesActionGroup);
 }
 
-void Ui::CMainWindow::showFileViewer()
+void Ui::CMainWindow::showProjectViewer()
 {
-	fileViewer->parentWidget()->raise();
+	projectViewer->parentWidget()->raise();
 }
 
 void Ui::CMainWindow::showModelViewer()

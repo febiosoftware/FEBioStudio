@@ -33,15 +33,15 @@ class QTreeWidgetItem;
 class CMainWindow;
 
 namespace Ui {
-	class CFileViewer;
+	class CProjectViewer;
 }
 
-class CFileViewer : public QWidget
+class CProjectViewer : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CFileViewer(CMainWindow* pwnd, QWidget* parent = 0);
+	CProjectViewer(CMainWindow* pwnd, QWidget* parent = 0);
 
 	void Update();
 
@@ -73,7 +73,7 @@ private slots:
 	void onErrorOccurred(QProcess::ProcessError);
 
 private:
-	Ui::CFileViewer*	ui;
+	Ui::CProjectViewer*	ui;
 };
 
 class CPluginProcess : public QProcess

@@ -623,7 +623,7 @@ void CMainWindow::on_actionCreatePlugin_triggered()
 	CDlgCreatePlugin dlg(this);
 	if (dlg.exec())
 	{
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 	}
 }
 

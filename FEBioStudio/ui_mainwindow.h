@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include <QMimeData>
 #include <QLabel>
 #include "XMLTreeView.h"
-#include "FileViewer.h"
+#include "ProjectViewer.h"
 #include "ModelViewer.h"
 #include "ModelTree.h"
 #include "CurveEditor.h"
@@ -287,7 +287,7 @@ public:
 	CMainCentralWidget* centralWidget;
 
 	// dockable widgets
-	::CFileViewer* fileViewer;
+	::CProjectViewer* projectViewer;
 	::CModelViewer* modelViewer;
 	::CBuildPanel* buildPanel;
 	::CLogPanel* logPanel;
@@ -424,7 +424,7 @@ public:
 
 	void addToRecentImageFiles(const QString& file);
 
-	void showFileViewer();
+	void showProjectViewer();
 
 	void showModelViewer();
 

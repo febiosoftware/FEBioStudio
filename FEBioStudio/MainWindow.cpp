@@ -172,8 +172,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// allow drop events
 	setAcceptDrops(true);
 
-	// make sure the file viewer is visible
-	ui->showFileViewer();
+	// make sure the project viewer is visible
+	ui->showProjectViewer();
 
 	// show the welcome page
 	ShowWelcomePage();
@@ -291,7 +291,7 @@ void CMainWindow::UpdateTab(CDocument* doc)
 
 	ui->centralWidget->SetDocumentTabText(doc, tabTitle, tabTooltip);
 
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 }
 
 bool CMainWindow::usingDarkTheme() const
@@ -307,7 +307,7 @@ void CMainWindow::on_clearProject()
 	if (QMessageBox::question(this, "Clear Project", "Are you sure you want to clear the current project?\nThis cannot be undone.") == QMessageBox::Yes)
 	{
 		ui->m_project.Clear();
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		UpdateTitle();
 	}
 }
@@ -316,7 +316,7 @@ void CMainWindow::on_clearProject()
 void CMainWindow::on_closeProject()
 {
 	ui->m_project.Close();
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	UpdateTitle();
 }
 
@@ -327,7 +327,7 @@ void CMainWindow::on_closeFile(const QString& file)
 	if (doc)
 	{
 		CloseView(doc);
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		UpdateTitle();
 	}
 }
@@ -336,7 +336,7 @@ void CMainWindow::on_closeFile(const QString& file)
 void CMainWindow::on_addToProject(const QString& file)
 {
 	ui->m_project.AddFile(file);
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	UpdateTitle();
 }
 
@@ -599,10 +599,10 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 		return false;
 	}
 
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	ui->addToRecentProjects(projectFile);
-	ui->fileViewer->parentWidget()->show();
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->show();
+	ui->projectViewer->parentWidget()->raise();
 	UpdateTitle();
 
 	CloseWelcomePage();
@@ -735,7 +735,7 @@ void CMainWindow::AddDocument(CDocument* doc)
 	if (modelDoc && (modelDoc->GetDocFilePath().empty() == false))
 	{
 		ui->m_project.AddFile(QString::fromStdString(modelDoc->GetDocFilePath()));
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 	}
 }
 
@@ -783,8 +783,8 @@ bool CMainWindow::CreateNewProject(QString fileName)
 
 	if (ret) ui->addToRecentProjects(fileName);
 
-	ui->fileViewer->parentWidget()->show();
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->show();
+	ui->projectViewer->parentWidget()->raise();
 
 	return ret;
 }
@@ -1631,7 +1631,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() & Qt::CTRL))
 	{
-		ui->showFileViewer();
+		ui->showProjectViewer();
 		ev->accept();
 	}
 	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() & Qt::CTRL))
@@ -2312,7 +2312,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
 	CloseView(n);
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 }
 
 //-----------------------------------------------------------------------------

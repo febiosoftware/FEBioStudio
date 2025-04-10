@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "FileViewer.h"
+#include "ProjectViewer.h"
 #include "MainWindow.h"
 #include "DocManager.h"
 #include "Document.h"
@@ -60,7 +60,7 @@ enum FileItemType {
 	EXTERNAL_FILE
 };
 
-class Ui::CFileViewer
+class Ui::CProjectViewer
 {
 public:
 	::CMainWindow*	m_wnd;
@@ -106,7 +106,7 @@ public:
 	}
 };
 
-CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), ui(new Ui::CFileViewer)
+CProjectViewer::CProjectViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), ui(new Ui::CProjectViewer)
 {
 	ui->m_wnd = pwnd;
 	// build Ui
@@ -115,7 +115,7 @@ CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), 
 	QMetaObject::connectSlotsByName(this);
 }
 
-void CFileViewer::on_fileList_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+void CProjectViewer::on_fileList_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
 	if (current == nullptr)
 	{
@@ -139,7 +139,7 @@ void CFileViewer::on_fileList_currentItemChanged(QTreeWidgetItem* current, QTree
 	}
 }
 
-void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column)
+void CProjectViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column)
 {
 	int ntype = item->data(0, Qt::UserRole).toInt();
 
@@ -177,7 +177,7 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 	}
 }
 
-void CFileViewer::on_info_textChanged()
+void CProjectViewer::on_info_textChanged()
 {
 	QTreeWidgetItem* current = ui->m_tree->currentItem();
 	if (current == nullptr) return;
@@ -191,7 +191,7 @@ void CFileViewer::on_info_textChanged()
 	}
 }
 
-void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
+void CProjectViewer::contextMenuEvent(QContextMenuEvent* ev)
 {
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return;
@@ -300,7 +300,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 	}
 }
 
-void CFileViewer::onShowInExplorer()
+void CProjectViewer::onShowInExplorer()
 {
 #ifdef WIN32
 	QList<QTreeWidgetItem*> itemList = ui->m_tree->selectedItems();
@@ -444,7 +444,7 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 	}
 }
 
-void CFileViewer::Update()
+void CProjectViewer::Update()
 {
 	ui->m_tree->clear();
 
@@ -513,14 +513,14 @@ void CFileViewer::Update()
 	ui->m_tree->expandAll();
 }
 
-QTreeWidgetItem* CFileViewer::currentItem()
+QTreeWidgetItem* CProjectViewer::currentItem()
 {
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return nullptr;
 	return sel[0];
 }
 
-void CFileViewer::SelectItem(int itemId)
+void CProjectViewer::SelectItem(int itemId)
 {
 	QTreeWidgetItemIterator it(ui->m_tree);
 	while (*it) 
@@ -535,9 +535,9 @@ void CFileViewer::SelectItem(int itemId)
 	}
 }
 
-void CFileViewer::onCreateGroup()
+void CProjectViewer::onCreateGroup()
 {
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	if (item == nullptr) return;
 
 	int ntype = item->data(0, Qt::UserRole).toInt();
@@ -565,9 +565,9 @@ void CFileViewer::onCreateGroup()
 	}
 }
 
-void CFileViewer::onMoveToGroup(int i)
+void CProjectViewer::onMoveToGroup(int i)
 {
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype == PROJECT_FILE)
 	{
@@ -588,9 +588,9 @@ void CFileViewer::onMoveToGroup(int i)
 	}
 }
 
-void CFileViewer::onRemoveGroup()
+void CProjectViewer::onRemoveGroup()
 {
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype == PROJECT_GROUP)
 	{
@@ -604,9 +604,9 @@ void CFileViewer::onRemoveGroup()
 	}
 }
 
-void CFileViewer::onRenameGroup()
+void CProjectViewer::onRenameGroup()
 {
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype == PROJECT_GROUP)
 	{
@@ -621,9 +621,9 @@ void CFileViewer::onRenameGroup()
 	}
 }
 
-void CFileViewer::onRemoveFromProject()
+void CProjectViewer::onRemoveFromProject()
 {
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype == PROJECT_FILE)
 	{
@@ -637,14 +637,14 @@ void CFileViewer::onRemoveFromProject()
 	}
 }
 
-void CFileViewer::onAddFile()
+void CProjectViewer::onAddFile()
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (prj == nullptr) return;
 
 	QString projectPath = prj->GetProjectPath();
 
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	QString fileName = QFileDialog::getOpenFileName(this, "Add File", projectPath);
 	if (fileName.isEmpty() == false)
@@ -671,7 +671,7 @@ void CFileViewer::onAddFile()
 	}
 }
 
-void CFileViewer::onImportFolder()
+void CProjectViewer::onImportFolder()
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (prj == nullptr) return;
@@ -698,7 +698,7 @@ void CFileViewer::onImportFolder()
 	}
 }
 
-void CFileViewer::onBuildPlugin()
+void CProjectViewer::onBuildPlugin()
 {
 	if (ui->m_process)
 	{
@@ -713,7 +713,7 @@ void CFileViewer::onBuildPlugin()
 		return;
 	}
 
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype != PROJECT_PLUGIN)
 	{
@@ -739,7 +739,7 @@ void CFileViewer::onBuildPlugin()
 	ui->m_process->run();
 }
 
-void CFileViewer::onLoadPlugin()
+void CProjectViewer::onLoadPlugin()
 {
 	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (prj == nullptr)
@@ -748,7 +748,7 @@ void CFileViewer::onLoadPlugin()
 		return;
 	}
 
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype != PROJECT_PLUGIN)
 	{
@@ -795,7 +795,7 @@ void CFileViewer::onLoadPlugin()
 	}
 }
 
-void CFileViewer::onAddFEBioFeature()
+void CProjectViewer::onAddFEBioFeature()
 {
 	if (ui->m_process)
 	{
@@ -810,7 +810,7 @@ void CFileViewer::onAddFEBioFeature()
 		return;
 	}
 
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
 	if (ntype != PROJECT_PLUGIN)
 	{
@@ -833,7 +833,7 @@ void CFileViewer::onAddFEBioFeature()
 	}
 }
 
-void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
+void CProjectViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
 {
 	if ((exitCode != 0) || (es != QProcess::NormalExit))
 	{
@@ -846,7 +846,7 @@ void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
 
 	delete ui->m_process;
 
-	QTreeWidgetItem* item = CFileViewer::currentItem();
+	QTreeWidgetItem* item = CProjectViewer::currentItem();
 	QString relPath = item->text(0);
 
 	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
@@ -856,7 +856,7 @@ void CFileViewer::onConfigureFinished(int exitCode, QProcess::ExitStatus es)
 	ui->m_process->run();
 }
 
-void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
+void CProjectViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
 {
 	if (es == QProcess::NormalExit)
 	{
@@ -876,7 +876,7 @@ void CFileViewer::onBuildFinished(int exitCode, QProcess::ExitStatus es)
 	ui->m_process = nullptr;
 }
 
-void CFileViewer::onReadyRead()
+void CProjectViewer::onReadyRead()
 {
 	if (ui->m_process == nullptr) return;
 
@@ -885,7 +885,7 @@ void CFileViewer::onReadyRead()
 	ui->m_wnd->AddBuildLogEntry(output);
 }
 
-void CFileViewer::onErrorOccurred(QProcess::ProcessError err)
+void CProjectViewer::onErrorOccurred(QProcess::ProcessError err)
 {
 	QString errString;
 	switch (err)

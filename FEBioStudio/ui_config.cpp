@@ -91,7 +91,7 @@ void Ui::CEmptyConfig::Apply()
     ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->raise();
 
 	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 	ui->ShowDefaultBackground();
@@ -134,7 +134,7 @@ void Ui::CHTMLConfig::Apply()
     ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->raise();
 }
 
 // Configure for model document
@@ -461,7 +461,7 @@ void Ui::CAPPConfig::Apply()
 	ui->febioMonitorView->parentWidget()->hide();
 
 	ui->setActiveCentralView(CMainCentralWidget::APP_VIEWER);
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->raise();
 }
 
 // Configure for app document
