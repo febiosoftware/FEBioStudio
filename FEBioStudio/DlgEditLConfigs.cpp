@@ -105,7 +105,6 @@ public:
 			CLaunchConfig* lc = launchConfigs[i];
 			QListWidgetItem* item = new QListWidgetItem(lc->name().c_str(), launchConfigList);
 			item->setFlags(item->flags() | Qt::ItemIsEditable);
-			item->setData(Qt::UserRole, i);
 		}
 
 		// build the add config button
@@ -190,7 +189,7 @@ void CDlgEditLaunchConfigs::on_textChanged()
 	QListWidgetItem* it = ui->launchConfigList->currentItem();
 	if (it)
 	{
-		int index = it->data(Qt::UserRole).toInt();
+		int index = ui->launchConfigList->row(it);
 		if (index >= 0)
 		{
 			CLaunchConfig* lc = ui->launchConfigs[index];
@@ -209,7 +208,7 @@ void CDlgEditLaunchConfigs::on_selection_change(QListWidgetItem* current, QListW
 	if(!current) return;
 
 	// Change to the current config
-	int index = current->data(Qt::UserRole).toInt();
+	int index = ui->launchConfigList->row(current);
 	if (index >= 0)
 	{
 		CLaunchConfig* lc = ui->launchConfigs[index];
@@ -256,7 +255,6 @@ void CDlgEditLaunchConfigs::on_addConfigBtn_Clicked()
 	int n = ui->launchConfigList->count();
 	QListWidgetItem* newItem = new QListWidgetItem;
 	newItem->setText(QString::fromStdString(defaultName));
-	newItem->setData(Qt::UserRole, n);
 	newItem->setFlags(newItem->flags () | Qt::ItemIsEditable);
 	ui->launchConfigList->addItem(newItem);
 
@@ -272,8 +270,8 @@ void CDlgEditLaunchConfigs::on_delConfigBtn_Clicked()
 		return;
 	}
 
-	QListWidgetItem* current = ui->launchConfigList->takeItem(ui->launchConfigList->currentRow());
-	int n = current->data(Qt::UserRole).toInt();
+    int n = ui->launchConfigList->currentRow();
+	QListWidgetItem* current = ui->launchConfigList->takeItem(n);
 	ui->launchConfigs.erase(ui->launchConfigs.begin() + n);
 	delete current;
 	ui->launchConfigList->setCurrentRow(0);
