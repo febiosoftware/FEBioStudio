@@ -1661,6 +1661,8 @@ void CModelPropsPanel::on_object_colorChanged(const QColor& col)
 		pd->SetColor(toGLColor(col));
 	}
 
+	CModelDocument* doc = m_wnd->GetModelDocument();
+	if (doc) doc->Update();
 	m_wnd->RedrawGL();
 }
 
