@@ -40,6 +40,7 @@ public:
     CImageToolBar(CMainWindow* wnd);
 
     void InspectorClosed();
+    void SetView(int view);
 
 private slots:
     void on_viewAction_triggered(QAction* action);

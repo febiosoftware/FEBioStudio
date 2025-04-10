@@ -161,6 +161,8 @@ void Ui::CModelConfig::Apply()
 			ui->modelViewer->SetFilter(FILTER_IMAGES);
 			break;
 		}
+
+        ui->imageToolBar->SetView(doc->GetUIViewMode());
 	}
 
 	ui->mainMenu->actionFEBioMonitor->setEnabled(true);
@@ -235,6 +237,8 @@ void Ui::CPostConfig::Apply()
 			ui->centralWidget->setActiveView(CMainCentralWidget::TIME_VIEW_2D);
 			break;
 		}
+
+        ui->imageToolBar->SetView(doc->GetUIViewMode());
 	}
 
 	ui->mainMenu->actionImportGeom->setEnabled(true);
