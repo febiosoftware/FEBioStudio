@@ -48,7 +48,7 @@ public:
 
 public slots:
 	void on_selection_change(QListWidgetItem* current, QListWidgetItem* previous);
-	void on_dblClick(QListWidgetItem* item);
+    void on_launchConfigList_itemChanged(QListWidgetItem *item);
 	void on_addConfigBtn_Clicked();
 	void on_delConfigBtn_Clicked();
 	void on_textChanged();

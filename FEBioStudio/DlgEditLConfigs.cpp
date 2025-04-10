@@ -59,7 +59,7 @@ public:
 
 	CDlgEditLaunchConfigs(std::vector<CLaunchConfig*>& launchConfigs) : launchConfigs(launchConfigs){}
 
-	void setup(QDialog* dlg)
+	void setup(::CDlgEditLaunchConfigs* dlg)
 	{
 		// build the left, right panes
 		QWidget* leftPane = buildLeftPane();
@@ -77,19 +77,20 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(split);
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
 		mainLayout->addWidget(bb);
 
 		dlg->setLayout(mainLayout);
 
-		QObject::connect(addConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_addConfigBtn_Clicked()));
-		QObject::connect(delConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_delConfigBtn_Clicked()));
+		QObject::connect(addConfigBtn, &QToolButton::clicked, dlg, &::CDlgEditLaunchConfigs::on_addConfigBtn_Clicked);
+		QObject::connect(delConfigBtn, &QToolButton::clicked, dlg, &::CDlgEditLaunchConfigs::on_delConfigBtn_Clicked);
 
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(launchConfigList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), dlg, SLOT(on_selection_change(QListWidgetItem*, QListWidgetItem*)));
+		QObject::connect(bb, &QDialogButtonBox::accepted, dlg, &::CDlgEditLaunchConfigs::accept);
+		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgEditLaunchConfigs::reject);
+		QObject::connect(launchConfigList, &QListWidget::currentItemChanged, dlg, &::CDlgEditLaunchConfigs::on_selection_change);
 
-		QObject::connect(edit, SIGNAL(textChanged()), dlg, SLOT(on_textChanged()));
+        QObject::connect(launchConfigList, &QListWidget::itemChanged, dlg, &::CDlgEditLaunchConfigs::on_launchConfigList_itemChanged);
+		QObject::connect(edit, &QPlainTextEdit::textChanged, dlg, &::CDlgEditLaunchConfigs::on_textChanged);
 	}
 
 	QWidget* buildLeftPane()
@@ -224,11 +225,17 @@ void CDlgEditLaunchConfigs::on_selection_change(QListWidgetItem* current, QListW
 	}
 }
 
-void CDlgEditLaunchConfigs::on_dblClick(QListWidgetItem* item)
+void CDlgEditLaunchConfigs::on_launchConfigList_itemChanged(QListWidgetItem *item)
 {
-	item->setFlags (item->flags () | Qt::ItemIsEditable);
-
-	ui->launchConfigList->editItem(item);
+    if (item)
+    {
+        int index = item->data(Qt::UserRole).toInt();
+        if (index >= 0)
+        {
+            CLaunchConfig* lc = ui->launchConfigs[index];
+            lc->setName(item->text().toStdString());
+        }
+    }
 }
 
 void CDlgEditLaunchConfigs::on_addConfigBtn_Clicked()
@@ -247,13 +254,15 @@ void CDlgEditLaunchConfigs::on_addConfigBtn_Clicked()
 	if (choice == "custom") lc = new CCustomLaunchConfig(defaultName);
 	if (lc == nullptr) return;
 
+    ui->launchConfigs.push_back(lc);
+
 	int n = ui->launchConfigList->count();
-	QListWidgetItem* newItem = new QListWidgetItem(ui->launchConfigList);
+	QListWidgetItem* newItem = new QListWidgetItem;
 	newItem->setText(QString::fromStdString(defaultName));
 	newItem->setData(Qt::UserRole, n);
 	newItem->setFlags(newItem->flags () | Qt::ItemIsEditable);
+    ui->launchConfigList->addItem(newItem);
 
-	ui->launchConfigs.push_back(lc);
 	ui->launchConfigList->setCurrentItem(newItem);
 	ui->launchConfigList->editItem(newItem);
 }
