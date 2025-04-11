@@ -48,7 +48,7 @@ public:
 	MaterialProps()
 	{
 		m_mat = 0;
-		addProperty("Render mode"      , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
+		addProperty("Render mode"      , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "solid" << "wireframe");
 		addProperty("Color"            , CProperty::Color );
 //		addProperty("Ambient"          , CProperty::Color );
 		addProperty("Specular color"   , CProperty::Color );

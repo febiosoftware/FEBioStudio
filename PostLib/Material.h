@@ -29,9 +29,11 @@ SOFTWARE.*/
 #include <string>
 
 // rendering modes
-#define RENDER_MODE_DEFAULT	0
-#define RENDER_MODE_SOLID	1
-#define RENDER_MODE_WIRE	2
+enum MaterialRenderMode {
+	RENDER_MODE_DEFAULT = 0,
+	RENDER_MODE_SOLID = 1,
+	RENDER_MODE_WIRE = 2
+};
 
 enum TransparencyMode {
 	RENDER_TRANS_CONSTANT,

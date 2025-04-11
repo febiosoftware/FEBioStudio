@@ -161,22 +161,19 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 
 	int mode = glm.GetSelectionType();
 
-	if (rc.m_settings.m_nrender == RENDER_SOLID)
+	// render the faces
+	if (mode == SELECT_FE_FACES)
 	{
-		// render the faces
-		if (mode == SELECT_FE_FACES)
-		{
-			RenderFaces(re, rc);
-		}
-		else if (mode == SELECT_FE_ELEMS)
-		{
-			RenderElems(re, rc);
-		}
-		else
-		{
-			// for nodes, edges, draw the faces as well
-			RenderFaces(re, rc);
-		}
+		RenderFaces(re, rc);
+	}
+	else if (mode == SELECT_FE_ELEMS)
+	{
+		RenderElems(re, rc);
+	}
+	else
+	{
+		// for nodes, edges, draw the faces as well
+		RenderFaces(re, rc);
 	}
 
 	// render outline
@@ -392,6 +389,8 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
+	int defaultRenderMode = rc.m_settings.m_nrender;
+
 	CPostObject* po = glm.GetPostObject();
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
@@ -405,7 +404,10 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			int matID = mesh->Face(n0).mid;
 
 			Post::Material& mat = *ps->GetMaterial(matID);
-			if (mat.bvisible)
+			bool isSolid = false;
+			if (mat.m_nrender == RENDER_MODE_SOLID) isSolid = true;
+			if ((mat.m_nrender == RENDER_MODE_DEFAULT) && (defaultRenderMode == RENDER_SOLID)) isSolid = true;
+			if (mat.bvisible && isSolid)
 			{
 				if (colorMapEnabled)
 				{
@@ -447,6 +449,8 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
+	int defaultRenderMode = rc.m_settings.m_nrender;
+
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
 
@@ -463,7 +467,10 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			int matID = mesh->Face(n0).mid;
 
 			Post::Material& mat = *ps->GetMaterial(matID);
-			if (mat.bvisible)
+			bool isSolid = false;
+			if (mat.m_nrender == RENDER_MODE_SOLID) isSolid = true;
+			if ((mat.m_nrender == RENDER_MODE_DEFAULT) && (defaultRenderMode == RENDER_SOLID)) isSolid = true;
+			if (mat.bvisible && isSolid)
 			{
 				if (colorMapEnabled)
 				{
