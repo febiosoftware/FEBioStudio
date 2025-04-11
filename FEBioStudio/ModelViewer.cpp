@@ -919,7 +919,7 @@ void CModelViewer::OnShowObject()
 			m.ShowObject(po, true);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
-			if (item) item->setForeground(0, Qt::black);
+			if (item) item->setForeground(0, QBrush());
 		}
 	}
 	CMainWindow* wnd = GetMainWindow();
