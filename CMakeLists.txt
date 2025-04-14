@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
+# set the name of the executable
+set(FBS_BIN_NAME FEBioStudio)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -399,13 +402,6 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 endforeach(name)
 
 ##### Add binaries #####
-
-# set the name of the executable
-if (WIN32)
-    set(FBS_BIN_NAME FEBioStudio2)
-else()
-    set(FBS_BIN_NAME FEBioStudio)
-endif()
 
 if(USE_PYTHON)
     add_definitions(-DHAS_PYTHON)
