@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/fecore_enum.h>
 #include "LaunchConfig.h"
+#include "FEBioJob.h"
 
 
 class Ui::CDlgRun
@@ -62,8 +63,6 @@ public:
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
-	CFEBioFormatSelector* febioFormat;
-	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
 
@@ -78,7 +77,7 @@ public:
 	int m_last_index = -1;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(::CDlgRun* dlg)
 	{
 		jobName = new QComboBox;
 		jobName->setEditable(true);
@@ -105,9 +104,6 @@ public:
 
 		jobFolder = new QWidget;
 		jobFolder->setLayout(cwdLayout);
-
-		febioFormat = new CFEBioFormatSelector;
-		febioFormat->setFEBioFormat(0x0400);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
@@ -141,7 +137,6 @@ public:
 		settings->setLayout(form);
 
 		QFormLayout* febl = new QFormLayout;
-		febl->addRow("FEBio file format:", febioFormat);
 		febl->addRow("", writeNotes = new QCheckBox("Write Notes"));
 		febl->addRow("", allowMixedMesh = new QCheckBox("Allow degenerate elements"));
 
@@ -204,6 +199,8 @@ public:
 		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(taskName, SIGNAL(currentTextChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(taskFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+
+        QObject::connect(jobName, &QComboBox::currentIndexChanged, dlg, &::CDlgRun::on_jobName_currentIndexChanged);
 	}
 };
 
@@ -230,16 +227,6 @@ bool CDlgRun::AdvancedSettingsShown()
 	return ui->more->isChecked();
 }
 
-void CDlgRun::SetDebugFlag(bool b)
-{
-	ui->debug->setChecked(b);
-}
-
-bool CDlgRun::HasDebugFlag()
-{
-	return ui->debug->isChecked();
-}
-
 void CDlgRun::ShowFEBioSaveOptions(bool b)
 {
 	ui->febops->setVisible(b);
@@ -249,6 +236,21 @@ void CDlgRun::EnableJobSettings(bool b)
 {
 	ui->jobName->setEnabled(b);
 	ui->jobFolder->setEnabled(b);
+}
+
+void CDlgRun::on_jobName_currentIndexChanged(int index)
+{
+    if(index < 0 || index >= m_jobs.size()) return;
+
+    CFEBioJob* job = m_jobs[index];
+    ui->cwd->setText(job->GetWorkingDirectory().c_str());
+    ui->writeNotes->setChecked(job->m_writeNotes);
+    ui->allowMixedMesh->setChecked(job->m_allowMixedMesh);
+    ui->configFile->setText(job->GetConfigFileName().c_str());
+    ui->taskName->setCurrentText(job->GetTask().c_str());
+    ui->taskFile->setText(job->GetTaskFileName().c_str());
+    ui->debug->setChecked(job->m_debug);
+    ui->cmd->setText(job->GetCommand().c_str());
 }
 
 void CDlgRun::updateDefaultCommand()
@@ -277,10 +279,9 @@ void CDlgRun::updateDefaultCommand()
 
 void CDlgRun::on_setCWDBtn_Clicked()
 {
-	QFileDialog dlg(this, "Working Directory",GetWorkingDirectory());
+	QFileDialog dlg(this, "Working Directory", ui->cwd->text());
 	dlg.setFileMode(QFileDialog::Directory);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setDirectory(GetWorkingDirectory());
 
 	if (dlg.exec())
 	{
@@ -301,11 +302,6 @@ void CDlgRun::SetWorkingDirectory(const QString& wd)
 void CDlgRun::SetJobName(const QString& fn)
 {
 	ui->jobName->setEditText(fn);
-}
-
-void CDlgRun::SetJobNames(QStringList& jobNames)
-{
-	ui->jobName->addItems(jobNames);
 }
 
 void CDlgRun::UpdateLaunchConfigBox(int index)
@@ -332,11 +328,6 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig*>& launchConfigs, int nd
 	ui->m_last_index = ndefault;
 }
 
-void CDlgRun::SetFEBioFileVersion(int fileVersion)
-{
-	ui->febioFormat->setFEBioFormat(fileVersion);
-}
-
 QString CDlgRun::GetWorkingDirectory()
 {
 	return ui->cwd->text();
@@ -347,14 +338,26 @@ QString CDlgRun::GetJobName()
 	return ui->jobName->currentText();
 }
 
-QString CDlgRun::GetConfigFileName()
+void CDlgRun::SetCurrentJob(const QString& jobName)
 {
-	return ui->configFile->text();
+    int index = ui->jobName->findText(jobName);
+    if(index >= 0)
+    {
+        ui->jobName->setCurrentIndex(index);
+    }
 }
 
-void CDlgRun::SetConfigFileName(const QString& configFile)
+void CDlgRun::GetJobInfo(CFEBioJob* job)
 {
-	ui->configFile->setText(configFile);
+    job->SetName(ui->jobName->currentText().toStdString());
+    job->SetWorkingDirectory(ui->cwd->text().toStdString());
+    job->m_writeNotes = ui->writeNotes->isChecked();
+    job->m_allowMixedMesh = ui->allowMixedMesh->isChecked();
+    job->SetConfigFileName(ui->configFile->text().toStdString());
+    job->SetTask(ui->taskName->currentText().toStdString());
+    job->SetTaskFileName(ui->taskFile->text().toStdString());
+    job->m_debug = ui->debug->isChecked();
+    job->SetCommand(ui->cmd->text().toStdString());
 }
 
 bool CDlgRun::DoAutoSave()
@@ -367,30 +370,18 @@ int CDlgRun::GetLaunchConfig()
 	return ui->launchConfig->currentIndex();
 }
 
-int CDlgRun::GetFEBioFileVersion()
-{
-	return ui->febioFormat->FEBioFormat();
-}
-
-bool CDlgRun::WriteNotes()
-{
-	return ui->writeNotes->isChecked();
-}
-
-bool CDlgRun::AllowMixedMesh()
-{
-	return ui->allowMixedMesh->isChecked();
-}
-
-QString CDlgRun::CommandLine()
-{
-	return ui->cmd->text();
-}
-
-CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
+CDlgRun::CDlgRun(QWidget* parent, std::vector<CFEBioJob*>& jobs) 
+    : QDialog(parent), m_jobs(jobs), ui(new Ui::CDlgRun)
 {
 	ui->setup(this);
+    
+    for(CFEBioJob* job : jobs)
+    {
+        ui->jobName->addItem(QString::fromStdString(job->GetName()));
+    }
+    on_jobName_currentIndexChanged(0);
 	ui->jobName->setFocus();
+
 	setWindowTitle("Run FEBio");
 	resize(500, 300);
 }
@@ -421,22 +412,6 @@ void CDlgRun::accept()
 	FSDir dir(spath);
 	spath = dir.expandMacros();
 
-	// check if it exists
-	// TODO: Commenting this out since it was annoying to see this question every time. 
-/*
-	QDir qdir(QString::fromStdString(spath));
-	if (path.isEmpty() || (qdir.exists() == false))
-	{
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::question(this, "FEBio Studio", "The directory you specified does not exist. Create it?",
-				QMessageBox::Yes|QMessageBox::No);
-
-		if(!(reply == QMessageBox::Yes))
-		{
-			return;
-		}
-	}
-*/
 	// see if the job name is defined
 	if (ui->jobName->currentText().isEmpty())
 	{

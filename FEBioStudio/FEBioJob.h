@@ -61,7 +61,14 @@ public:
 	void SetConfigFileName(const std::string& configFile);
 	std::string GetConfigFileName() const;
 
-	void UpdateWorkingDirectory(const std::string& dir);
+    void SetTask(const std::string& task);
+    std::string GetTask() const;
+
+    void SetTaskFileName(const std::string& taskFile);
+    std::string GetTaskFileName() const;
+
+    void SetWorkingDirectory(const std::string& dir);
+    std::string GetWorkingDirectory();
 
 	void SetCommand(const std::string& cmd);
 	const std::string& GetCommand() const;
@@ -89,9 +96,9 @@ public: // FEBio output
 	std::vector<ModelStats> m_stepStats;
 
 	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
-	int  m_febVersion;	// the .feb file version
 	bool m_writeNotes;	// write notes to .feb file
 	bool m_allowMixedMesh;	// allow mixed mesh on export
+    bool m_debug;	// debug mode
 
 	// progress management
 	std::string	m_cmd;			// command line options
@@ -104,6 +111,8 @@ private:
 	std::string		m_plotFile;	// the .xplt file name
 	std::string		m_logFile;	// the .log file name
 	std::string		m_cnfFile;	// the config file
+    std::string     m_task;	    // the task name
+    std::string     m_taskFile;	// the take control file
 	int				m_status;	// return status
 
 private:

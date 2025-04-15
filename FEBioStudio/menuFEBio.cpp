@@ -56,9 +56,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	static QString lastJobName;
 
 	// these will store defaults for job name, job path, and previous job list
-	QString jobName;
-	QString jobPath;
-	QStringList jobList;
+	QString defaultJobName;
+	QString defaultJobPath;
 
 	// get the document
 	CDocument* doc = GetDocument();
@@ -75,9 +74,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			return;
 		}
 
-		jobName = QString::fromStdString(doc->GetDocFileName());
-		jobPath = docFolder;
+		defaultJobName = QString::fromStdString(doc->GetDocFileName());
+		defaultJobPath = docFolder;
 	}
+
+    std::vector<CFEBioJob*> jobs;
 
 	// fill in job list
 	if (modelDoc)
@@ -93,57 +94,33 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		}
 
 		// By default, the job path will be the project folder
-		// unless the project folder is not defined, in which case we'll reuse the last path
-		jobPath = docFolder + "/jobs";
+		defaultJobPath = docFolder + "/jobs";
+        defaultJobName = docName;
 
-		// get the list of all the job names so far
-		jobName.clear();
-		for (int i = 0; i < modelDoc->FEBioJobs(); ++i)
-		{
-			CFEBioJob* job = modelDoc->GetFEBioJob(i);
-			QString jobNamei = QString::fromStdString(job->GetName());
-			if (jobNamei == lastJobName) jobName = lastJobName;
-			jobList.append(jobNamei);
-		}
-
-		// we'll take the last job's name or create a new one if the job list is empty
-		if (jobList.empty())
-		{
-			// create a name for this job
-			jobName = docName;
-		}
-		else if (jobName.isEmpty())
-		{
-			jobName = jobList.last();
-		}
+        for (int i = 0; i < modelDoc->FEBioJobs(); ++i)
+        {
+            jobs.push_back(modelDoc->GetFEBioJob(i));
+        }
 	}
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
-	static int lastFEBioFileVersion = 0x0400;	// default to 4.0
+    static bool showAdvancedSettings = false;
 
 	// setup the run dialog
-	CDlgRun dlg(this);
-	dlg.SetWorkingDirectory(jobPath);
-	if (jobList.isEmpty() == false) dlg.SetJobNames(jobList);
-	if (jobName.isEmpty() == false) dlg.SetJobName(jobName);
+	CDlgRun dlg(this, jobs);
 	dlg.SetLaunchConfig(ui->m_settings.m_launch_configs, lastLaunchConfigIndex);
-	dlg.SetFEBioFileVersion(lastFEBioFileVersion);
-
-	static bool showAdvancedSettings = false;
-	static bool debugFlag = false;
-	dlg.ShowAdvancedSettings(showAdvancedSettings);
-	dlg.SetDebugFlag(debugFlag);
-
-	if (modelDoc && modelDoc->FEBioJobs() > 0)
-	{
-		CFEBioJob* job = modelDoc->GetFEBioJob(0);
-		std::string s = job->GetConfigFileName();
-		if (s.empty() == false)
-		{
-			dlg.SetConfigFileName(QString::fromStdString(s));
-		}
-	}
+    dlg.ShowAdvancedSettings(showAdvancedSettings);
+    
+    if(jobs.empty())
+    {
+        dlg.SetJobName(defaultJobName);
+        dlg.SetWorkingDirectory(defaultJobPath);
+    }
+    else
+    {
+        dlg.SetCurrentJob(lastJobName);
+    }
 
 	if (modelDoc == nullptr)
 	{
@@ -153,15 +130,42 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 	if (dlg.exec())
 	{
-		showAdvancedSettings = dlg.AdvancedSettingsShown();
-		debugFlag = dlg.HasDebugFlag();
+        CFEBioJob* job = nullptr;
 
-		// get the working directory and job name
-		jobPath = dlg.GetWorkingDirectory();
-		jobName = dlg.GetJobName();
+        std::string jobName = dlg.GetJobName().toStdString();
+
+        // store the name of the job
+        lastJobName = jobName.c_str();
+
+        if(modelDoc)
+        {
+            // see if a job with this name already exists
+            job = modelDoc->FindFEBioJob(jobName);
+        }
+
+        if(!job)
+        {
+            QString jobPath = dlg.GetWorkingDirectory();
+            QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
+		    string relPath = modelDir.relativeFilePath(jobPath).toStdString();
+
+            job = new CFEBioJob(doc, jobName, relPath);
+
+			if (modelDoc)
+			{
+				modelDoc->AddFEbioJob(job);
+			}
+        }
+
+        dlg.GetJobInfo(job);
+
+        // show it in the model viewer
+        UpdateModel(job);
+
+        std::string jobPath = job->GetWorkingDirectory();
 
 		// do string replacement
-		QString absDir = QString::fromStdString(FSDir::expandMacros(jobPath.toStdString()));
+		QString absDir = QString::fromStdString(FSDir::expandMacros(jobPath));
 
 		// create job directory if it doesn't exist.
 		if (!QFile(absDir).exists())
@@ -177,52 +181,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// for default jobs we want to change the working directory to the jobs folder
 		QDir::setCurrent(absDir);
 
-		CFEBioJob* job = nullptr;
-
-		QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
-		string relPath = modelDir.relativeFilePath(jobPath).toStdString();
-
-		// find the relative path with respect to the model's folder
-		if (modelDoc)
-		{
-			// see if a job with this name already exists
-			job = modelDoc->FindFEBioJob(jobName.toStdString());
-		}
-
 		// update with the selected launch configuration index
 		lastLaunchConfigIndex = dlg.GetLaunchConfig();
-
-		// if not, create a new job
-		if (job == nullptr)
-		{
-			// create a new new job
-			job = new CFEBioJob(doc, jobName.toStdString(), relPath);
-
-			if (modelDoc)
-			{
-				modelDoc->AddFEbioJob(job);
-				// show it in the model viewer
-				UpdateModel(job);
-			}
-		}
-		else
-		{
-			job->UpdateWorkingDirectory(relPath);
-
-			// show it in the model viewer
-			UpdateModel(job);
-		}
-
-		QString configFile = dlg.GetConfigFileName();
-		if (configFile.isEmpty() == false) job->SetConfigFileName(configFile.toStdString());
-
-		// get the selected FEBio file version
-		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
-
-		job->m_febVersion = lastFEBioFileVersion;
-		job->m_writeNotes = dlg.WriteNotes();
-		job->m_allowMixedMesh = dlg.AllowMixedMesh();
-		job->SetCommand(dlg.CommandLine().toStdString());
 
 		// do a model check
 		if (modelDoc && (DoModelCheck(modelDoc) == false)) return;
@@ -241,8 +201,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
 		}
 
-		// store the name of the job
-		lastJobName = jobName;
+        showAdvancedSettings = dlg.AdvancedSettingsShown();
 
 		// export to FEBio
 		if (modelDoc)
@@ -253,13 +212,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			QFile file(QString::fromStdString(febFile));
 			if (file.exists())
 			{
-				QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(jobName);
+				QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(defaultJobName);
 				int n = QMessageBox::warning(this, "Run FEBio", msg, QMessageBox::Yes, QMessageBox::No);
 				if (n != QMessageBox::Yes) return;
 			}
 
 			// save the FEBio file
-			if (ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion, job->m_allowMixedMesh) == false)
+			if (ExportFEBioFile(modelDoc, febFile, 0x0400, job->m_allowMixedMesh) == false)
 			{
 				return;
 			}
@@ -426,13 +385,12 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 		}
 		else
 		{
-			job->UpdateWorkingDirectory(relPath);
+			job->SetWorkingDirectory(relPath);
 
 			// show it in the model viewer
 			UpdateModel(job);
 		}
 
-		job->m_febVersion = 0x0400;
 		job->m_writeNotes = true;
 		job->m_allowMixedMesh = false;
 
