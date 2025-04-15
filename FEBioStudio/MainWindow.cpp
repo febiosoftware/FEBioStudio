@@ -404,8 +404,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 
 	// check to extension to see what to do
 	QString ext = QFileInfo(fileName).suffix();
-	if ((ext.compare("fs2", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+	if ((ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("fs2", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("prv", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
 	{

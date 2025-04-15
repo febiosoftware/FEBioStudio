@@ -350,7 +350,7 @@ public:
 		{
 			fileItem->setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
 		}
-		else if(path.endsWith(".fsm") || path.endsWith(".fsprj") || path.endsWith(".prv"))
+		else if(path.endsWith(".fsm") || path.endsWith(".fs2") || path.endsWith(".fsprj") || path.endsWith(".prv"))
 		{
 			fileItem->setIcon(0, CIconProvider::GetIcon("PreView"));
 		}

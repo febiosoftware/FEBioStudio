@@ -230,8 +230,8 @@ void CMainWindow::on_actionNewProject_triggered()
 QString CMainWindow::GetOpenModelFilename()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.vtu *.vtp *.vtm *.fsps *.k *.dyn *.stl)";
-	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
+	filters << "All supported files (*.fsm *.fs2 *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.vtu *.vtp *.vtm *.fsps *.k *.dyn *.stl)";
+	filters << "FEBioStudio Model (*.fsm *.fs2 *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
 	filters << "FEBioStudio Post Session (*.fsps)";
@@ -286,12 +286,12 @@ void CMainWindow::on_actionSave_triggered()
 
         if(modelDoc)
         {
-            // if the extension is fsm or feb, we are going to change it to fs2
+            // if the extension is fs2 or feb, we are going to change it to fsm
             size_t n = fileName.rfind('.');
             if (n != string::npos)
             {
                 string ext = fileName.substr(n);
-                if (ext == ".fsm" || ext == ".feb")
+                if (ext == ".fs2" || ext == ".feb")
                 {
                     on_actionSaveAs_triggered();
                     return;
@@ -1152,8 +1152,8 @@ QString CMainWindow::GetSaveModelFilename(QString currentPath, QString fileName)
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
-	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
-	dlg.setDefaultSuffix("fs2");
+	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
+	dlg.setDefaultSuffix("fsm");
 	dlg.selectFile(fileName);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	fileName.clear();
@@ -1220,9 +1220,9 @@ void CMainWindow::on_actionSaveAs_triggered()
 			if (n != string::npos)
 			{
 				string ext = fileName.substr(n);
-				if ((ext == ".fsm") || (ext == ".feb"))
+				if ((ext == ".fs2") || (ext == ".feb"))
 				{
-					fileName.replace(n, 4, ".fs2");
+					fileName.replace(n, 4, ".fsm");
 				}
 			}
 		}

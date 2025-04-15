@@ -686,7 +686,7 @@ void CProjectViewer::onImportFolder()
 		{
 			QString path = folders.at(0);
 
-			QDirIterator it(path, { "*.fs2", "*.fsm", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+			QDirIterator it(path, { "*.fsm", "*.fs2", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot);
 			while (it.hasNext())
 			{
 				QString file = it.next();
