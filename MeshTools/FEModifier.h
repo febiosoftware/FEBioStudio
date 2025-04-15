@@ -48,12 +48,12 @@ public:
 	// (see e.g. FEDiscardMesh)
 	virtual bool AllowNullMesh() { return false; }
 
-	static bool SetError(const char* szerr, ...);
+	bool SetError(const char* szerr, ...);
 
-	static std::string GetErrorString();
+	std::string GetErrorString();
 
 protected:
-	static std::string	m_error;
+	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------

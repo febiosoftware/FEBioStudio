@@ -42,8 +42,6 @@ SOFTWARE.*/
 #include <MeshLib/FSMeshBuilder.h>
 #include <GeomLib/GGroup.h>
 
-std::string FEModifier::m_error;
-
 FEModifier::FEModifier(const char* sz) { SetName(sz); }
 FEModifier::~FEModifier() {}
 
