@@ -1468,7 +1468,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 	{
 		QFileInfo fi(fileName);
 		path = fi.absolutePath();
-		fileName = fi.baseName() + QString(".feb");
+		fileName = fi.completeBaseName() + QString(".feb");
 	}
 
 	// present file save dialog
