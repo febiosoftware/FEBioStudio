@@ -49,6 +49,9 @@ CReadCurveTool::CReadCurveTool(CMainWindow* wnd) : CBasicTool(wnd, "Read Curve",
 
 bool CReadCurveTool::OnApply()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return false;
+
 	QString fileName = m_file;
 	if (fileName.isEmpty())
 	{
@@ -98,7 +101,6 @@ bool CReadCurveTool::OnApply()
 			GCurveMeshObject* po = new GCurveMeshObject(pm);
 			po->SetName(sz);
 
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			doc->AddObject(po);
 		}
 	}

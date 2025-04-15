@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "UndoDocument.h"
-#include "MainWindow.h"
+#include <FSCore/FSLogger.h>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -70,11 +70,6 @@ void ChangeLog::fromJson(const QString& json)
 CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	m_pCmd = new CCommandManager(this);
-
-	// Clear the command history
-	m_pCmd->Clear();
-
-	QObject::connect(this, SIGNAL(doCommand(QString)), wnd, SLOT(on_doCommand(QString)));
 }
 
 CUndoDocument::~CUndoDocument()
@@ -94,58 +89,36 @@ bool CUndoDocument::CanUndo() { return m_pCmd->CanUndo(); }
 
 bool CUndoDocument::CanRedo() { return m_pCmd->CanRedo(); }
 
-void CUndoDocument::AddCommand(CCommand* pcmd)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	Update();
-	QString msg = pcmd->GetName();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
-	AppendChangeLog(msg);
-}
-
 void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
 {
+	assert(pcmd);
+	if (pcmd == nullptr) return;
+
+	const char* szname = pcmd->GetName();
+	string msg = (szname ? szname : "<unknown>");
+	if (s.empty() == false) msg += " (" + s + ")";
+	AppendChangeLog(QString::fromStdString(msg));
+	FSLogger::Write("Executing command: " + msg + "\n");
+
 	m_pCmd->AddCommand(pcmd);
 	SetModifiedFlag();
 	Update();
-	CMainWindow* wnd = GetMainWindow();
-
-	QString msg;
-	if (s.empty() == false)
-		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
-	else
-		msg = pcmd->GetName();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
-	AppendChangeLog(msg);
 }
 
 const char* CUndoDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
 
 const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 
-bool CUndoDocument::DoCommand(CCommand* pcmd)
-{
-	QString msg = pcmd->GetName();
-	emit doCommand(QString("Executing command: %1\n").arg(msg));
-	bool ret = m_pCmd->DoCommand(pcmd);
-	AppendChangeLog(msg);
-	SetModifiedFlag();
-	Update();
-	return ret;
-}
-
 bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s)
 {
-	QString msg;
-	if (s.empty() == false)
-	{
-		msg = QString("%1 (%2)").arg(pcmd->GetName()).arg(QString::fromStdString(s));
-	}
-	else msg = pcmd->GetName();
-	m_wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
-	AppendChangeLog(msg);
+	assert(pcmd);
+	if (pcmd == nullptr) return false;
+
+	const char* szname = pcmd->GetName();
+	string msg = (szname ? szname : "<unknown>");
+	if (s.empty() == false) msg += " (" + s + ")";
+	AppendChangeLog(QString::fromStdString(msg));
+	FSLogger::Write("Executing command: " + msg + "\n");
 
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
@@ -164,10 +137,10 @@ void CUndoDocument::UndoCommand()
 	m_pCmd->UndoCommand();
 	SetModifiedFlag();
 	Update();
-	QString msg = QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName));
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(msg);
-	AppendChangeLog(msg);
+
+	string msg = "Undo last command (" + cmdName + ")\n";
+	FSLogger::Write(msg);
+	AppendChangeLog(QString::fromStdString(msg));
 }
 
 void CUndoDocument::RedoCommand()
@@ -176,10 +149,10 @@ void CUndoDocument::RedoCommand()
 	m_pCmd->RedoCommand();
 	SetModifiedFlag();
 	Update();
-	QString msg = QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName));
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(msg);
-	AppendChangeLog(msg);
+
+	string msg = "Redo last command (" + cmdName + ")\n";
+	FSLogger::Write(msg);
+	AppendChangeLog(QString::fromStdString(msg));
 }
 
 void CUndoDocument::ClearCommandStack()

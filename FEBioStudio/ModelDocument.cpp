@@ -238,7 +238,6 @@ std::string CModelDocument::GetRenderString()
 void CModelDocument::AddObject(GObject* po)
 {
 	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po), po->GetNameAndType());
-	Update();
 }
 
 void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)

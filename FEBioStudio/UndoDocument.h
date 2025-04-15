@@ -67,10 +67,8 @@ public:
 	// --- Command history functions ---
 	bool CanUndo();
 	bool CanRedo();
-	void AddCommand(CCommand* pcmd);
-	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd);
-	bool DoCommand(CCommand* pcmd, const std::string& s);
+	void AddCommand(CCommand* pcmd, const std::string& s = "");
+	bool DoCommand(CCommand* pcmd, const std::string& s = "");
 	void UndoCommand();
 	void RedoCommand();
 	const char* GetUndoCmdName();
@@ -88,12 +86,8 @@ public:
 protected:
 	void SetChangeLog(const ChangeLog& log);
 
-signals:
-	void doCommand(QString s);
-
 protected:
 	// The command manager
 	CCommandManager* m_pCmd;		// the command manager
 	ChangeLog			m_changeLog;
 };
-
