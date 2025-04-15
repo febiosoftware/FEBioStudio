@@ -330,8 +330,6 @@ public:
 	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true, bool openInThread = true);
 	void OpenRemoteFile(const QString& fileName);
 
-	bool SaveDocument(const QString& fileName);
-
 	void ExportGeometry();
 	void ExportPostGeometry();
 
@@ -350,6 +348,8 @@ private:
 	void OpenFEBioFile(const QString& fileName);
 	void OpenTextFile(const QString& fileName);
 	void OpenFEBioAppFile(const QString& fileName);
+
+	bool SaveDocument(CDocument* doc, const QString& fileName);
 
 	void SavePostDoc();
 

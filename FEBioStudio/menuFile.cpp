@@ -299,7 +299,7 @@ void CMainWindow::on_actionSave_triggered()
             }
         }
 		
-		SaveDocument(QString::fromStdString(fileName));
+		SaveDocument(doc, QString::fromStdString(fileName));
 	}
 }
 
@@ -352,17 +352,11 @@ void CMainWindow::on_actionImportProject_triggered() {}
 void CMainWindow::on_actionExportProject_triggered() {}
 #endif
 
-bool CMainWindow::SaveDocument(const QString& fileName)
+bool CMainWindow::SaveDocument(CDocument* doc, const QString& fileName)
 {
-	CDocument* doc = GetDocument();
 	if (doc == nullptr) return false;
 
-	CGLDocument* glDoc = dynamic_cast<CGLDocument*>(doc);
-	if (glDoc && (glDoc->GetFileWriter() == nullptr))
-	{
-		on_actionSaveAs_triggered();
-		return true;
-	}
+	if (fileName.isEmpty()) return false;
 
 	// start log message
 	ui->logPanel->AddText(QString("Saving file: %1 ...").arg(fileName));
@@ -373,8 +367,8 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 	// clear the command stack
 	if (ui->m_settings.clearUndoOnSave)
 	{
-		CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
-		if (gldoc) gldoc->ClearCommandStack();
+		CUndoDocument* undoDoc = dynamic_cast<CUndoDocument*>(doc);
+		if (undoDoc) undoDoc->ClearCommandStack();
 	}
 
 	ui->logPanel->AddText(success ? "SUCCESS\n" : "FAILED\n");
@@ -1199,7 +1193,9 @@ void CMainWindow::on_actionSaveAs_triggered()
             if (dlg.exec())
             {
                 QStringList fileNames = dlg.selectedFiles();
-                SaveDocument(QDir::toNativeSeparators(fileNames[0]));
+				QString fileName = QDir::toNativeSeparators(fileNames[0]);
+				if (!fileName.isEmpty())
+					SaveDocument(xmlDoc, fileName);
             }
         }
 		return;
@@ -1238,7 +1234,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 		// clear the jobs
 		doc->DeleteAllJobs();
 		doc->SetFileWriter(new CModelFileWriter(doc));
-		SaveDocument(filename);
+		SaveDocument(doc, filename);
 		UpdateModel();
 	}
 }
