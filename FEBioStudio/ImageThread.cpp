@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageSource.h>
+#include <ImageLib/3DImage.h>
 
 //--------------------------------------------------------------------
 CImageReadThread::CImageReadThread(CImageModel* imgModel) : m_imgModel(imgModel)
@@ -138,6 +139,10 @@ void CImageFilterThread::run()
         success = false;
         SetErrorString(e.what());
     }
+
+    // Manually force a recalc of min and max values
+    double min, max;
+    m_imgModel->Get3DImage()->GetMinMax(min, max, true);
 
 	emit resultReady(success);
 }

@@ -197,7 +197,10 @@ bool FEBioFileImport::Load(const char* szfile)
 	}
 
 	// if we get here we are good to go!
-	UpdateFEModel(fem);
+	if (UpdateFEModel(fem) == false)
+	{
+		return errf("FATAL ERROR: Failed constructing model.");
+	}
 
 	// copy the log to the error string
 	const char* szlog = GetLog();
@@ -206,6 +209,7 @@ bool FEBioFileImport::Load(const char* szfile)
 		errf(szlog);
 	}
 
+	// TODO: This function (Load) can return without reaching this line! Fix this! 
 	SetFileStream(nullptr);
 
 	// we're done!
@@ -468,6 +472,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 
 		// Take the GObject from the part (the part no longer keeps a pointer to this object)
 		GMeshObject* po = part.TakeGObject();
+		if (po == nullptr) return false;
 
 		// pass ownership to the model
 		fem.GetModel().AddObject(po);
