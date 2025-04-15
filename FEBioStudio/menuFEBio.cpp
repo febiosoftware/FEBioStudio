@@ -212,7 +212,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			QFile file(QString::fromStdString(febFile));
 			if (file.exists())
 			{
-				QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(defaultJobName);
+				QString jobName = QString::fromStdString(job->GetName());
+				QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(jobName);
 				int n = QMessageBox::warning(this, "Run FEBio", msg, QMessageBox::Yes, QMessageBox::No);
 				if (n != QMessageBox::Yes) return;
 			}
