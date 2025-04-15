@@ -37,34 +37,27 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgEditOutput.h"
 #include "DlgAddMeshData.h"
-#include "MaterialEditor.h"
-#include <FEMLib/FEMultiMaterial.h>
-#include <FEMLib/FEMKernel.h>
-#include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
-#include <GeomLib/MeshLayer.h>
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
 #include <FSCore/FSDir.h>
 #include <ImageLib/ImageModel.h>
-#include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
 #include <ImageLib/TiffReader.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
-#include <PostGL/GLModel.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
 #include <MeshIO/STLExport.h>
 #include "FEObjectProps.h"
-#include "PropertyList.h"
 #include "GLHighlighter.h"
 using namespace std;
 
@@ -922,6 +915,7 @@ void CModelViewer::OnShowObject()
 			if (item) item->setForeground(0, QBrush());
 		}
 	}
+	doc->Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
