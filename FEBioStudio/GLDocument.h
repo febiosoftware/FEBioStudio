@@ -110,13 +110,13 @@ public:
 	void SetTransformMode(TransformMode mode);
 
 	int GetSelectionMode() { return m_vs.nselect; }
-	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(false); }
+	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(); }
 
 	void SetSelectionStyle(int nstyle) { m_vs.nstyle = nstyle; }
 	int GetSelectionStyle() { return m_vs.nstyle; }
 
 	int GetItemMode() { return m_vs.nitem; }
-	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(false); }
+	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
 
 	static std::string GetTypeString(FSObject* po);
 
@@ -132,7 +132,7 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
-	virtual void UpdateSelection(bool breport = true);
+	virtual void UpdateSelection();
 
 	virtual GObject* GetActiveObject();
 

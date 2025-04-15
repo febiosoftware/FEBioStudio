@@ -451,7 +451,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (mesh)
 	{
 		mesh->ClearSelections();
-		doc->UpdateSelection(false);
+		doc->UpdateSelection();
 	}
 
 	MeshingThread* thread = new MeshingThread(activeObject);
@@ -561,7 +561,7 @@ void CMeshPanel::on_modParams_apply()
 
 			// swap the meshes
 			string ss = mod->GetName();
-			doc->DoCommand(new CCmdChangeFEMesh(activeObject, newMesh), ss.c_str(), false);
+			doc->DoCommand(new CCmdChangeFEMesh(activeObject, newMesh), ss.c_str());
 			Update();
 
 			std::string err = mod->GetErrorString();

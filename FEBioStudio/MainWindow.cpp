@@ -2626,6 +2626,7 @@ void CMainWindow::on_glview_pointPicked(const vec3d& r)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_glview_selectionChanged()
 {
+	ReportSelection();
 }
 
 //-----------------------------------------------------------------------------
@@ -3436,7 +3437,7 @@ void CMainWindow::on_doCommand(QString msg)
 
 void CMainWindow::on_selectionChanged()
 {
-	ReportSelection();
+//	ReportSelection();
 }
 
 QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }

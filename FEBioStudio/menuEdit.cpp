@@ -450,7 +450,7 @@ void CMainWindow::on_actionHideSelection_triggered()
 		case SELECT_FE_ELEMS: mdl.HideSelectedElements(); break;
 		}
 		mdl.UpdateMeshVisibility();
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -473,7 +473,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -724,7 +724,11 @@ void CMainWindow::on_actionFind_triggered()
 			}
 
 			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-			if (postDoc) postDoc->UpdateSelection(true);
+			if (postDoc)
+			{
+				postDoc->UpdateSelection();
+				ReportSelection();
+			}
 
 			ReportSelection();
 			RedrawGL();
@@ -766,7 +770,7 @@ void CMainWindow::on_actionSelectRange_triggered()
 		case SELECT_FE_ELEMS: doc->SetItemMode(ITEM_ELEM); model->SelectElemsInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
 		}
 
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		ReportSelection();
 		UpdateGLControlBar();

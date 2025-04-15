@@ -586,7 +586,7 @@ void CPostDocument::SetInitFlag(bool b)
 	m_binit = b;
 }
 
-void CPostDocument::UpdateSelection(bool report)
+void CPostDocument::UpdateSelection()
 {
 	Post::CGLModel* mdl = GetGLModel();
 
@@ -613,10 +613,7 @@ void CPostDocument::UpdateSelection(bool report)
 
 	if (mdl) mdl->SetSelection(m_psel);
 
-	if (report)
-	{
-		emit selectionChanged();
-	}
+	emit selectionChanged();
 }
 
 void CPostDocument::ApplyPalette(const CPalette& pal)

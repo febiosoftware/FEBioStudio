@@ -136,7 +136,7 @@ public:
 
 	void SetInitFlag(bool b);
 
-	void UpdateSelection(bool report) override;
+	void UpdateSelection() override;
 
 public: // overrides for CGLModelDocument
 

@@ -828,7 +828,7 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 		if (badd) face.Select(); else face.Unselect();
 	}
 	
-	pdoc->UpdateSelection(false);
+	pdoc->UpdateSelection();
 }
 
 void GLViewSelector::Finish()

@@ -98,7 +98,7 @@ void CUndoDocument::AddCommand(CCommand* pcmd)
 {
 	m_pCmd->AddCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	Update();
 	QString msg = pcmd->GetName();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->AddLogEntry(QString("Executing command: %1\n").arg(msg));
@@ -109,7 +109,7 @@ void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
 {
 	m_pCmd->AddCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	Update();
 	CMainWindow* wnd = GetMainWindow();
 
 	QString msg;
@@ -125,19 +125,18 @@ const char* CUndoDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
 
 const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 
-bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
+bool CUndoDocument::DoCommand(CCommand* pcmd)
 {
 	QString msg = pcmd->GetName();
 	emit doCommand(QString("Executing command: %1\n").arg(msg));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	AppendChangeLog(msg);
 	SetModifiedFlag();
-	if (b) UpdateSelection();
 	Update();
 	return ret;
 }
 
-bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
+bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s)
 {
 	QString msg;
 	if (s.empty() == false)
@@ -150,7 +149,6 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection(b);
 	Update();
 	return ret;
 }
@@ -165,7 +163,6 @@ void CUndoDocument::UndoCommand()
 	string cmdName = m_pCmd->GetUndoCmdName();
 	m_pCmd->UndoCommand();
 	SetModifiedFlag();
-	UpdateSelection();
 	Update();
 	QString msg = QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName));
 	CMainWindow* wnd = GetMainWindow();
@@ -178,7 +175,6 @@ void CUndoDocument::RedoCommand()
 	string cmdName = m_pCmd->GetRedoCmdName();
 	m_pCmd->RedoCommand();
 	SetModifiedFlag();
-	UpdateSelection();
 	Update();
 	QString msg = QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName));
 	CMainWindow* wnd = GetMainWindow();
@@ -189,11 +185,6 @@ void CUndoDocument::RedoCommand()
 void CUndoDocument::ClearCommandStack()
 {
 	m_pCmd->Clear();
-}
-
-void CUndoDocument::UpdateSelection(bool breport)
-{
-
 }
 
 void CUndoDocument::AppendChangeLog(const QString& s)

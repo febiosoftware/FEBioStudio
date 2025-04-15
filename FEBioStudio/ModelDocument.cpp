@@ -723,7 +723,7 @@ void CModelDocument::AddImageModel(CImageModel* imgModel)
 //-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------
-void CModelDocument::UpdateSelection(bool report)
+void CModelDocument::UpdateSelection()
 {
 	// delete old selection
 	if (m_psel) delete m_psel;
@@ -782,10 +782,7 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	if (report)
-	{
-		emit selectionChanged();
-	}
+	emit selectionChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -1011,7 +1008,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 
 	// swap the meshes
 	string ss = modifier.GetName();
-	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
+	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str());
 }
 
 bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel)
@@ -1045,7 +1042,7 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd, po->GetName(), false);
+	return DoCommand(cmd, po->GetName());
 }
 
 template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)

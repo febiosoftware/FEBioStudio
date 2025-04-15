@@ -284,7 +284,7 @@ void CEditPanel::on_modParams_apply()
 			CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
 			cmdg->AddCommand(new CCmdChangeFEMesh(surfaceObject, nullptr));
 			cmdg->AddCommand(new CCmdChangeFESurfaceMesh(surfaceObject, thread->newMesh()));
-			doc->DoCommand(cmdg, false);
+			doc->DoCommand(cmdg);
 		}
 		GetMainWindow()->RedrawGL();
 		GetMainWindow()->UpdateModel(activeObject, true);

@@ -69,17 +69,14 @@ public:
 	bool CanRedo();
 	void AddCommand(CCommand* pcmd);
 	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd, bool b = true);
-	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
+	bool DoCommand(CCommand* pcmd);
+	bool DoCommand(CCommand* pcmd, const std::string& s);
 	void UndoCommand();
 	void RedoCommand();
 	const char* GetUndoCmdName();
 	const char* GetRedoCmdName();
 	void ClearCommandStack();
 	const std::string& GetCommandErrorString() const;
-
-	// TODO: Move this to Update ?
-	virtual void UpdateSelection(bool breport = true);
 
 public:
 	//! Get the change log

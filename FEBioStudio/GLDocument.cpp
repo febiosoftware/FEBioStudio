@@ -136,7 +136,7 @@ void CGLDocument::SetCurrentSelection(FESelection* psel)
 	m_psel = psel;
 }
 
-void CGLDocument::UpdateSelection(bool breport)
+void CGLDocument::UpdateSelection()
 {
 
 }
@@ -144,14 +144,14 @@ void CGLDocument::UpdateSelection(bool breport)
 void CGLDocument::SetViewState(VIEW_STATE vs)
 {
 	m_vs = vs;
-	UpdateSelection(false);
+	UpdateSelection();
 	//	if (m_wnd) m_wnd->UpdateUI();
 }
 
 void CGLDocument::SetTransformMode(TransformMode mode)
 {
 	m_vs.ntrans = (int)mode;
-	UpdateSelection(false);
+	UpdateSelection();
 }
 
 GObject* CGLDocument::GetActiveObject()
@@ -171,6 +171,7 @@ GLScene* CGLDocument::GetScene()
 
 void CGLDocument::Update()
 {
+	UpdateSelection();
 	if (m_scene) m_scene->Update();
 }
 

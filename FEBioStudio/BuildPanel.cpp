@@ -48,7 +48,7 @@ void CBuildPanel::Update(bool breset)
 	if (doc)
 	{
 		ui->mainWindow->UpdateGLControlBar();
-		doc->UpdateSelection(false);
+		doc->UpdateSelection();
 		ui->mainWindow->RedrawGL();
 	}
 }

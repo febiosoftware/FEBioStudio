@@ -105,7 +105,7 @@ public:
 	void AddImageModel(CImageModel* imgModel) override;
 
 public: // selection
-	void UpdateSelection(bool report = true) override;
+	void UpdateSelection() override;
 
 	void HideCurrentSelection();
 	void HideUnselected();
