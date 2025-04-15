@@ -189,7 +189,7 @@ public:
 		b->setIcon(icon);
 		b->setCheckable(isCheckable);
 		b->setAutoRaise(true);
-		b->setToolTip(QString("<font color=\"black\">") + toolTip);
+		b->setToolTip(toolTip);
 		return b;
 	}
 
