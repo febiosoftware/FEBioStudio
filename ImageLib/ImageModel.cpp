@@ -427,11 +427,6 @@ void CImageModel::Load(IArchive& ar)
 	}
 
     ApplyFilters();
-
-    // Create Volume Renderer
-    auto vr = new Post::CVolumeRenderer(this);
-    vr->Create();
-    m_render.Add(vr);
 }
 
 bool CImageModel::ExportRAWImage(const std::string& filename)
