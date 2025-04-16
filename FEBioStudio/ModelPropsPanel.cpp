@@ -1087,7 +1087,7 @@ void CModelPropsPanel::SetSelection(GMaterial* mat)
 	FSModel* fem = mat->GetModel();
 	vector<GPart*> partList = fem->GetMaterialPartList(mat);
 	sel->clearData();
-	int N = partList.size();
+	int N = (int) partList.size();
 	for (int i = 0; i < N; ++i)
 	{
 		GPart* pg = partList[i];
@@ -1311,8 +1311,7 @@ void CModelPropsPanel::addSelection(int n)
 		else
 		{
 			std::vector<GPart*> parts = partList->GetPartList();
-			FSModel* fem = mat->GetModel();
-			fem->AssignMaterial(parts, mat);
+			pdoc->DoCommand(new CCmdAssignMaterial(mat->GetModel(), parts, mat));
 			SetSelection(mat);
 		}
 
@@ -1395,8 +1394,7 @@ void CModelPropsPanel::subSelection(int n)
 				if (pg && (pg->GetMaterialID() == matID)) partsToRemove.push_back(pg);
 			}
 
-			FSModel* fem = mat->GetModel();
-			fem->AssignMaterial(partsToRemove, nullptr);
+			pdoc->DoCommand(new CCmdAssignMaterial(mat->GetModel(), partsToRemove, nullptr));
 			SetSelection(mat);
 		}
 
@@ -1466,7 +1464,7 @@ void CModelPropsPanel::delSelection(int n)
 			GPart* pg = gm.FindPart(gid); assert(pg);
 			if (pg) partsToRemove.push_back(pg);
 		}
-		fem->AssignMaterial(partsToRemove, nullptr);
+		pdoc->DoCommand(new CCmdAssignMaterial(fem, partsToRemove, nullptr));
 		SetSelection(mat);
 
 		emit selectionChanged();

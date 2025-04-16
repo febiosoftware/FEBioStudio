@@ -125,6 +125,7 @@ public:
 	// assign material to part
 	void AssignMaterial(GPart* pg, GMaterial* mat);
 	void AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat);
+	void AssignMaterial(const std::vector<GPart*>& partList, const std::vector<GMaterial*>& matList);
 
 	std::vector<GPart*> GetMaterialPartList(GMaterial* mat);
 

@@ -1420,7 +1420,21 @@ protected:
 	GMaterial*	m_pm;
 };
 
-//-----------------------------------------------------------------------------
+class CCmdAssignMaterial : public CCommand
+{
+public:
+	CCmdAssignMaterial(FSModel* fem, GPart* pg, GMaterial* mat);
+	CCmdAssignMaterial(FSModel* fem, std::vector<GPart*>& partList, GMaterial* mat);
+	void Execute();
+	void UnExecute();
+
+private:
+	FSModel* m_fem;
+	GMaterial* m_newMat;
+	std::vector<GPart*> m_partList;
+	std::vector<GMaterial*> m_oldMats;
+};
+
 class CCmdSetItemList : public CCommand
 {
 public:

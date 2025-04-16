@@ -3436,6 +3436,33 @@ void CCmdAddMaterial::UnExecute()
 	m_fem->DeleteMaterial(m_pm);
 }
 
+CCmdAssignMaterial::CCmdAssignMaterial(FSModel* fem, GPart* pg, GMaterial* mat) : CCommand("Assign material")
+{
+	m_partList.push_back(pg);
+	m_newMat = mat;
+	m_fem = fem;
+	m_oldMats.push_back(fem->GetMaterialFromID(pg->GetMaterialID()));
+}
+
+CCmdAssignMaterial::CCmdAssignMaterial(FSModel* fem, std::vector<GPart*>& partList, GMaterial* mat) : CCommand("Assign material")
+{
+	m_partList = partList;
+	m_newMat = mat;
+	m_fem = fem;
+	for (int i=0; i<m_partList.size(); ++i)
+		m_oldMats.push_back(fem->GetMaterialFromID(m_partList[i]->GetMaterialID()));
+}
+
+void CCmdAssignMaterial::Execute()
+{
+	m_fem->AssignMaterial(m_partList, m_newMat);
+}
+
+void CCmdAssignMaterial::UnExecute()
+{
+	m_fem->AssignMaterial(m_partList, m_oldMats);
+}
+
 //-----------------------------------------------------------------------------
 // CCmdSetItemList
 //-----------------------------------------------------------------------------

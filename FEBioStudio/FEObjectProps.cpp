@@ -40,6 +40,8 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <FEMLib/GDiscreteObject.h>
+#include "ModelDocument.h"
+#include "Commands.h"
 #include "FEBioJob.h"
 using namespace std;
 
@@ -817,20 +819,12 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 		GPart* pg = m_pobj;
 		if (pg == nullptr) return;
 
-		GObject* po = dynamic_cast<GObject*>(pg->Object());
-		if (po)
-		{
-			int lid = v.toInt();
-			if (lid < 0)
-			{
-				m_fem->AssignMaterial(pg, nullptr);
-			}
-			else
-			{
-				GMaterial* m = m_fem->GetMaterial(lid);
-				m_fem->AssignMaterial(pg, m);
-			}
-		}
+		GMaterial* mat = nullptr;
+		int lid = v.toInt();
+		if (lid >= 0) mat = m_fem->GetMaterial(lid);
+
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(CDocument::GetActiveDocument());
+		if (doc) doc->DoCommand(new CCmdAssignMaterial(m_fem, pg, mat));
 	}
 }
 

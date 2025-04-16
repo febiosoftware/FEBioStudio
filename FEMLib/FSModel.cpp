@@ -1230,7 +1230,7 @@ void FSModel::BuildMLT()
 GMaterial* FSModel::GetMaterialFromID(int id)
 {
 	// don't bother looking of ID is invalid
-	if (id < 0) return 0;
+	if (id < 0) return nullptr;
 
 	if (m_MLT.empty()) BuildMLT();
 
@@ -1282,6 +1282,24 @@ void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat
 	std::set<GObject*> obj;
 	for (auto pg : partList)
 	{
+		pg->SetMaterialID(matID);
+		obj.insert(dynamic_cast<GObject*>(pg->Object()));
+	}
+	for (auto po : obj) po->UpdateFEElementMatIDs();
+	UpdateMaterialPositions();
+}
+
+void FSModel::AssignMaterial(const std::vector<GPart*>& partList, const std::vector<GMaterial*>& matList)
+{
+	if (partList.size() != matList.size()) { assert(false); return; }
+
+	std::set<GObject*> obj;
+	for (int i=0; i<partList.size(); ++i)
+	{
+		GPart* pg = partList[i];
+		GMaterial* mat = matList[i];
+
+		int matID = (mat ? mat->GetID() : -1);
 		pg->SetMaterialID(matID);
 		obj.insert(dynamic_cast<GObject*>(pg->Object()));
 	}
