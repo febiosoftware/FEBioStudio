@@ -93,6 +93,7 @@ protected:
 	void UpdateSurfaces();
 	void UpdateEdges();
 	void UpdateNodes();
+	void UpdateFaceNodes();
 	virtual void UpdateSections(); // TODO: made this virtual so I can override it in PostObject. Probably need to find better solution.
 };
 

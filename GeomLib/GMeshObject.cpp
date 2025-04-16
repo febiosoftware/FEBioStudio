@@ -33,10 +33,12 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <list>
 #include <stack>
+#include <set>
 #include <sstream>
 //using namespace std;
 
 using std::list;
+using std::set;
 using std::stack;
 using std::stringstream;
 
@@ -196,6 +198,7 @@ bool GMeshObject::Update(bool b)
 	UpdateSurfaces();
 	UpdateNodes();
 	UpdateEdges();
+	UpdateFaceNodes();
 
 	return GObject::Update(b);
 }
@@ -599,8 +602,6 @@ void GMeshObject::UpdateEdges()
 	}
 }
 
-//-----------------------------------------------------------------------------
-
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
@@ -668,10 +669,41 @@ void GMeshObject::UpdateNodes()
 	assert(m.CountNodePartitions() == Nodes());
 }
 
-//-----------------------------------------------------------------------------
-// This function converts an FE node to a GNode and return the ID
-// of the GNode
-//
+// This function constructs the faces' nodelists, since for GMeshObject
+// they have to be constructed from the mesh. (The node lists of parts are constructed in GObject::Update
+// which uses the faces' node lists.)
+void GMeshObject::UpdateFaceNodes()
+{
+	int nfaces = Faces();
+	if (nfaces == 0) return;
+
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	vector<set<int>> nodeLists(nfaces);
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			FSNode& node = pm->Node(face.n[j]);
+			if (node.m_gid != -1)
+			{
+				int lid = face.m_gid;
+				if ((lid >= 0) && (lid < nfaces)) nodeLists[lid].insert(node.m_gid);
+			}
+		}
+	}
+
+	for (int i = 0; i < nfaces; ++i)
+	{
+		GFace* pf = Face(i);
+		pf->m_node.clear();
+		for (int n : nodeLists[i]) pf->m_node.push_back(n);
+	}
+}
+
+// This function converts an FE node to a GNode and return the ID of the GNode
 int GMeshObject::MakeGNode(int n)
 {
 	// get the mesh

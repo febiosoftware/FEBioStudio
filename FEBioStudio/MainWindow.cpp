@@ -1339,6 +1339,16 @@ void CMainWindow::ReportSelection()
 				GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
 				GPartSelection::Iterator it(&ps);
 				msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+#ifndef NDEBUG
+				GPart* pg = it;
+				msg += QString("\nnodes = (%1)[").arg(pg->m_node.size());
+				for (int i = 0; i < pg->m_node.size(); ++i)
+				{
+					if (i != 0) msg += ",";
+					msg += QString::number(pg->m_node[i]);
+				}
+				msg += "]\n";
+#endif
 			}
 			else msg = QString("%1 Parts selected").arg(N);
 		}

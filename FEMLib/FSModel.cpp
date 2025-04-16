@@ -1625,6 +1625,7 @@ void FSModel::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+	UpdateMaterialPositions();
 }
 
 //-----------------------------------------------------------------------------
