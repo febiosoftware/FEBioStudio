@@ -3877,3 +3877,26 @@ void CCmdDeleteImageAnalysis::UnExecute()
     m_analysis->GetImageModel()->AddImageAnalysis(m_analysis);
     m_del = false;
 }
+
+CCmdSwapMaterialProps::CCmdSwapMaterialProps(GMaterial* gmat, FSMaterial* props) : CCommand("Change materials")
+{
+	m_gmat = gmat;
+	m_props = props;
+}
+
+CCmdSwapMaterialProps::~CCmdSwapMaterialProps()
+{
+	delete m_props;
+}
+
+void CCmdSwapMaterialProps::Execute()
+{
+	FSMaterial* oldMat = m_gmat->TakeMaterialProperties();
+	m_gmat->SetMaterialProperties(m_props);
+	m_props = oldMat;
+}
+
+void CCmdSwapMaterialProps::UnExecute()
+{
+	Execute();
+}

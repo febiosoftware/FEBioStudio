@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <MeshIO/STLExport.h>
 #include "FEObjectProps.h"
 #include "GLHighlighter.h"
+#include "Command.h"
 using namespace std;
 
 class CDlgWarnings : public QDialog
@@ -1332,14 +1333,21 @@ void CModelViewer::OnChangeMaterial()
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
-			FSMaterial* oldMat = gmat->TakeMaterialProperties();
+			FSMaterial* oldMat = gmat->GetMaterialProperties();
 			if (oldMat)
 			{
+				// Copy this material to a property if applicable
 				FSProperty* prop = pmat->FindProperty("elastic");
-				if (prop) prop->SetComponent(oldMat);
-				else delete oldMat;
+				if (prop)
+				{
+					FSMaterial* copyMat = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(oldMat, &fem));
+					assert(copyMat);
+					prop->SetComponent(copyMat);
+				}
 			}
-			gmat->SetMaterialProperties(pmat);
+
+			doc->DoCommand(new CCmdSwapMaterialProps(gmat, pmat));
+
 			Update();
 			Select(gmat);
 		}

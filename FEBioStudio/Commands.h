@@ -1645,3 +1645,20 @@ private:
     bool m_del;
 	CImageAnalysis*	m_analysis;
 };
+
+// this command swaps the material properties of a GMaterial
+class CCmdSwapMaterialProps : public CCommand
+{
+public:
+	CCmdSwapMaterialProps(GMaterial* gmat, FSMaterial* props);
+
+	~CCmdSwapMaterialProps();
+
+	void Execute() override;
+
+	void UnExecute() override;
+
+private:
+	GMaterial* m_gmat;
+	FSMaterial* m_props;
+};
