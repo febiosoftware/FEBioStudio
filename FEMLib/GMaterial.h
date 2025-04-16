@@ -26,20 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <MeshLib/IHasItemList.h>
 #include <GLLib/GLMaterial.h>
 
-//-----------------------------------------------------------------------------
-class FSModel;
 class FSMaterial;
-class GPartList;
-class GPart;
+class FSModel;
 
-//-----------------------------------------------------------------------------
 // This class defines a material. It stores the material properties (as a 
 // FSMaterial class), the material name and other attributes, mostly used for rendering
-//
-class GMaterial : public FSObject, public FSHasOneItemList
+class GMaterial : public FSObject
 {
 public:
 	GMaterial(FSMaterial* pm = 0);
@@ -51,19 +45,15 @@ public:
 	FSMaterial* GetMaterialProperties();
 	FSMaterial* TakeMaterialProperties();
 
-	void SetModel(FSModel* ps);
-	FSModel* GetModel() { return m_ps; }
-
-	void AddPart(GPart* pg);
-	void UpdateParts();
-	void ClearParts();
-
 	int GetID() { return m_nID; }
 	void SetID(int nid)
 	{
 		m_nID = nid;
 		m_nref = (nid >= m_nref ? nid+1:m_nref);
 	}
+
+	void SetModel(FSModel* fem) { m_fem = fem; }
+	FSModel* GetModel() { return m_fem; }
 
 	GMaterial* Clone();
 
@@ -79,9 +69,8 @@ public:
 	GLMaterial& GetGLMaterial() { return m_glmat; }
 
 	// location where glyph will be rendered (e.g. for rigid bodies)
-	vec3d GetPosition();
-
-	void UpdatePosition();
+	vec3d GetPosition() const { return m_pos; }
+	void SetPosition(const vec3d& v) { m_pos = v; }
 
 public:
 	static void ResetCounter() { m_nref = 1; }
@@ -101,10 +90,8 @@ protected:
 protected:
 	int			m_nID;	//!< unique material ID
 	FSMaterial*	m_pm;	//!< the material properties
-	FSModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
+	FSModel* m_fem = nullptr;
 
 private:
-	GPartList* m_partList;
-
 	static	int	m_nref;
 };

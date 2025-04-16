@@ -657,12 +657,9 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	FSObject* po = ui->props->GetCurrentObject();
-	if (dynamic_cast<GMaterial*>(po))
-	{
-		GMaterial* gm = dynamic_cast<GMaterial*>(po);
-		gm->UpdateParts();
-	}
 	ui->tree->UpdateObject(po);
+	CDocument* doc = GetDocument();
+	if (doc) doc->Update();
 	GetMainWindow()->RedrawGL();
 }
 
@@ -687,7 +684,7 @@ void CModelViewer::on_props_modelChanged()
 	Update();
 }
 
-void CModelViewer::on_props_itemSelected(FSItemListBuilder* il, std::vector<int>& items)
+void CModelViewer::on_props_itemSelected(FSObject* il, std::vector<int>& items)
 {
 	if (IsHighlightSelectionEnabled())
 	{
@@ -732,6 +729,22 @@ void CModelViewer::on_props_itemSelected(FSItemListBuilder* il, std::vector<int>
 				for (GPart* pg : parts) {
 					if (pg->GetID() == i)
 						GLHighlighter::PickItem(pg);
+				}
+			}
+		}
+
+		GMaterial* mat = dynamic_cast<GMaterial*>(il);
+		if (mat)
+		{
+			FSModel* fem = mat->GetModel();
+			if (fem)
+			{
+				std::vector<GPart*> parts = fem->GetMaterialPartList(mat);
+				for (int i : items) {
+					for (GPart* pg : parts) {
+						if (pg->GetID() == i)
+							GLHighlighter::PickItem(pg);
+					}
 				}
 			}
 		}

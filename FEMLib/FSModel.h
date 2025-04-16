@@ -119,20 +119,20 @@ public:
 	// find a material from its name
 	GMaterial* FindMaterial(const char* szname);
 
-	// find a rigid connector from its ID
-	FSRigidConnector* GetRigidConnectorFromID(int id);
-
 	// assign material to object
 	void AssignMaterial(GObject* po, GMaterial* mat);
 
 	// assign material to part
 	void AssignMaterial(GPart* pg, GMaterial* mat);
+	void AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat);
 
-	// update materials' part list (using parts' material IDs)
-	void UpdateMaterialSelections();
+	std::vector<GPart*> GetMaterialPartList(GMaterial* mat);
 
-	// update part mat IDs from the material selections
-	void UpdateMaterialAssignments();
+	void UpdateMaterialPositions();
+
+	// --- rigid connectors ---
+	// find a rigid connector from its ID
+	FSRigidConnector* GetRigidConnectorFromID(int id);
 
 	// --- serialization ---
 

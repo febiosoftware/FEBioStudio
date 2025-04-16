@@ -1793,7 +1793,6 @@ bool AbaqusImport::build_physics()
 			}
 		}
 	}
-	fem.UpdateMaterialSelections();
 
 	// add the steps
 	list<AbaqusModel::STEP>& Step = m_inp.StepList();

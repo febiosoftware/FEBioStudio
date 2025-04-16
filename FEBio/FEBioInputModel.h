@@ -33,6 +33,7 @@ SOFTWARE.*/
 class GMeshObject;
 class GDiscreteElementSet;
 class GPart;
+class GPartList;
 
 //-----------------------------------------------------------------------------
 // Helper class for processing and finding mesh data 

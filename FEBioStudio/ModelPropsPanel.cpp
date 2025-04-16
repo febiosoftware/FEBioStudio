@@ -812,269 +812,256 @@ void CModelPropsPanel::AssignCurrentSelection(int ntarget)
 
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
 {
-	if ((po == 0) && (props == 0))
+	if ((po == nullptr) && (props == nullptr))
 	{
 		ui->showProperties(false);
-		m_currentObject = 0;
+		m_currentObject = nullptr;
+		return;
+	}
+
+	ui->showProperties(true);
+	ui->showImagePanel(false);
+	ui->showFiberODFWidget(false);
+    CImageModel* img = dynamic_cast<CImageModel*>(po);
+    if(img)
+    {
+        ui->showPropsPanel(false);
+        ui->showImagePanel(true, img, props);
+        props = nullptr;
+    }
+
+	m_currentObject = po;
+	SetSelection(0, nullptr);
+	SetSelection(1, nullptr);
+
+	ui->showBCObjectInfo(false);
+	ui->showGItemInfo(false);
+	ui->showGPartInfo(false);
+	ui->showMeshDataInfo(false);
+
+	if (dynamic_cast<GObject*>(m_currentObject))
+		ui->showMeshInfoPanel(true);
+	else
+		ui->showMeshInfoPanel(false);
+
+	if (dynamic_cast<GPart*>(m_currentObject))
+	{
+		ui->showPartInfoPanel(true);
+	}
+	else
+		ui->showPartInfoPanel(false);
+
+	if (dynamic_cast<FSMaterial*>(m_currentObject))
+	{
+		// don't show the object info pane
+		ui->showObjectInfo(false);
+	}
+	if (dynamic_cast<FSModel*>(m_currentObject))
+	{
+		// don't show the object info pane
+		ui->showObjectInfo(false);
 	}
 	else
 	{
-		ui->showProperties(true);
-		ui->showImagePanel(false);
-        ui->showFiberODFWidget(false);
-		// CImageSource* imgSrc = dynamic_cast<CImageSource*>(po);
-		// if (imgSrc)
-		// {
-		// 	CImageModel* img = imgSrc->GetImageModel();
-		// 	if (img)
-		// 	{
-		// 		ui->showPropsPanel(false);
-		// 		ui->showImagePanel(true, img);
-		// 		props = nullptr;
-		// 	}
-		// }
-
-        CImageModel* img = dynamic_cast<CImageModel*>(po);
-        if(img)
-        {
-            ui->showPropsPanel(false);
-            ui->showImagePanel(true, img, props);
-            props = nullptr;
-        }
-
-		m_currentObject = po;
-		SetSelection(0, 0);
-		SetSelection(1, 0);
-
-		ui->showBCObjectInfo(false);
-		ui->showGItemInfo(false);
-		ui->showGPartInfo(false);
-		ui->showMeshDataInfo(false);
-
-		if (dynamic_cast<GObject*>(m_currentObject))
-			ui->showMeshInfoPanel(true);
-		else
-			ui->showMeshInfoPanel(false);
-
-		if (dynamic_cast<GPart*>(m_currentObject))
+		// set the object's name
+		if (m_currentObject)
 		{
-			ui->showPartInfoPanel(true);
-		}
-		else
-			ui->showPartInfoPanel(false);
+			QString name = QString::fromStdString(m_currentObject->GetName());
+			ui->setName(name);
 
-		if (dynamic_cast<FSMaterial*>(m_currentObject))
-		{
-            // don't show the object info pane
-            ui->showObjectInfo(false);
-		}
-		if (dynamic_cast<FSModel*>(m_currentObject))
-		{
-			// don't show the object info pane
-			ui->showObjectInfo(false);
-		}
-		else
-		{
-			// set the object's name
-			if (m_currentObject)
+			std::string stype = CGLDocument::GetTypeString(m_currentObject);
+			QString type(stype.c_str());
+			ui->setType(type);
+
+			bool nameEditable = !(flags & 0x08); // 0x08 == CModelTree::NAME_NOT_EDITABLE
+
+			// show the color if it's a material or an object
+			// TODO: maybe encode that in the flag?
+			if (dynamic_cast<GObject*>(po))
 			{
-				QString name = QString::fromStdString(m_currentObject->GetName());
-				ui->setName(name);
-
-				std::string stype = CGLDocument::GetTypeString(m_currentObject);
-				QString type(stype.c_str());
-				ui->setType(type);
-
-				bool nameEditable = !(flags & 0x08);
-
-				// show the color if it's a material or an object
-				// TODO: maybe encode that in the flag?
-				if (dynamic_cast<GObject*>(po))
-				{
-					GObject* go = dynamic_cast<GObject*>(po);
-					ui->showObjectInfo(true, true, nameEditable, toQColor(go->GetColor()));
-					ui->showMeshInfoPanel(true);
-					ui->setObject(go);
-				}
-				else if (dynamic_cast<GMaterial*>(po))
-				{
-					GMaterial* mo = dynamic_cast<GMaterial*>(po);
-					ui->showObjectInfo(true, true, nameEditable, toQColor(mo->GetColor()));
-				}
-				else if (dynamic_cast<GDiscreteElementSet*>(po))
-				{
-					GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
-					bool isActive = pd->IsActive();
-					ui->showObjectInfo(true, true, nameEditable, toQColor(pd->GetColor()), true, isActive);
-				}
-				else if (dynamic_cast<FSStepComponent*>(po))
-				{
-					FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
-
-					ui->showObjectInfo(false, false, nameEditable);
-
-					ui->setBCName(name);
-					ui->setBCType(type);
-					ui->setCurrentStepID(pc->GetStep());
-					ui->showBCObjectInfo(true, true, pc->IsActive());
-				}
-				else if (dynamic_cast<Post::CGLObject*>(po))
-				{
-					Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
-					ui->showObjectInfo(true, false, nameEditable, QColor(0, 0, 0), true, plot->IsActive());
-				}
-				else if (dynamic_cast<GPart*>(po))
-				{
-					GPart* pg = dynamic_cast<GPart*>(po);
-					QString typeStr("Part");
-					ui->setPart(pg);
-					ui->showObjectInfo(false);
-					bool isActive = pg->IsActive();
-					ui->showGPartInfo(true, QString::fromStdString(pg->GetName()), typeStr, pg->GetID(), isActive);
-				}
-				else if (dynamic_cast<GItem*>(po))
-				{
-					GItem* git = dynamic_cast<GItem*>(po);
-					QString typeStr("unknown");
-					if (dynamic_cast<GPart*>(git)) {
-						typeStr = "Part"; ui->setPart(dynamic_cast<GPart*>(git)); }
-					if (dynamic_cast<GFace*>(git)) typeStr = "Surface";
-					if (dynamic_cast<GEdge*>(git)) typeStr = "Edge";
-					if (dynamic_cast<GNode*>(git)) typeStr = "Node";
-
-					ui->showObjectInfo(false);
-					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
-				}
-				else if (dynamic_cast<FSMeshData*>(po))
-				{
-					FSMeshData* pd = dynamic_cast<FSMeshData*>(po);
-					ui->showMeshDataInfo(true, pd);
-					ui->showObjectInfo(false);
-				}
-				else if (dynamic_cast<CImageAnalysis*>(po))
-				{
-					CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(po);
-					ui->showObjectInfo(true, false, nameEditable, QColor(), true, ima->IsActive());
-				}
-				else ui->showObjectInfo(true, false, nameEditable);
+				GObject* go = dynamic_cast<GObject*>(po);
+				ui->showObjectInfo(true, true, nameEditable, toQColor(go->GetColor()));
+				ui->showMeshInfoPanel(true);
+				ui->setObject(go);
 			}
-			else ui->showObjectInfo(false);
-		}
-
-		// show the property list
-		if (dynamic_cast<GMaterial*>(po))
-		{
-            std::string stype = CGLDocument::GetTypeString(m_currentObject);
-
-            GMaterial* mo = dynamic_cast<GMaterial*>(po);
-//			ui->setMaterialData(mo);
-            ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
-            ui->showPropsPanel(true);
-		}
-		else if (dynamic_cast<FSLoadController*>(po))
-		{
-			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
-			if (plc && plc->IsType("loadcurve"))
-				ui->showPlotWidget(plc);
-			else if (plc && plc->IsType("math"))
-				ui->showMathWidget(plc);
-			else if (plc && plc->IsType("math-interval"))
-				ui->showMathIntervalWidget(plc);
-			else
+			else if (dynamic_cast<GMaterial*>(po))
 			{
-				ui->setFEClassData(plc, plc->GetFSModel());
-				ui->showPropsPanel(true);
+				GMaterial* mo = dynamic_cast<GMaterial*>(po);
+				ui->showObjectInfo(true, true, nameEditable, toQColor(mo->GetColor()));
 			}
-		}
-		else if (dynamic_cast<FSModelComponent*>(po))
-		{
-			FSModelComponent* pc = dynamic_cast<FSModelComponent*>(po);
-			ui->setFEClassData(pc, pc->GetFSModel());
-			ui->showPropsPanel(true);
-		}
-		else if (dynamic_cast<GDiscreteSpringSet*>(po))
-		{
-			GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(po);
-			ui->setFEClassData(pds->GetMaterial(), pds->GetModel()->GetFSModel());
-			ui->showPropsPanel(true);
-		}
-        else if (dynamic_cast<CFiberODFAnalysis*>(po))
-        {
-            ui->showFiberODFWidget(true, dynamic_cast<CFiberODFAnalysis*>(po));
-            ui->setPropertyList(props);
-            ui->showPropsPanel(true);
-        }
-		else if (props)
-		{
-			if (flags & 1)
-				ui->setPropertyForm(props);
-			else
-				ui->setPropertyList(props);
+			else if (dynamic_cast<GDiscreteElementSet*>(po))
+			{
+				GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
+				bool isActive = pd->IsActive();
+				ui->showObjectInfo(true, true, nameEditable, toQColor(pd->GetColor()), true, isActive);
+			}
+			else if (dynamic_cast<FSStepComponent*>(po))
+			{
+				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 
-			ui->showPropsPanel(true);
+				ui->showObjectInfo(false, false, nameEditable);
+
+				ui->setBCName(name);
+				ui->setBCType(type);
+				ui->setCurrentStepID(pc->GetStep());
+				ui->showBCObjectInfo(true, true, pc->IsActive());
+			}
+			else if (dynamic_cast<Post::CGLObject*>(po))
+			{
+				Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
+				ui->showObjectInfo(true, false, nameEditable, QColor(0, 0, 0), true, plot->IsActive());
+			}
+			else if (dynamic_cast<GPart*>(po))
+			{
+				GPart* pg = dynamic_cast<GPart*>(po);
+				QString typeStr("Part");
+				ui->setPart(pg);
+				ui->showObjectInfo(false);
+				bool isActive = pg->IsActive();
+				ui->showGPartInfo(true, QString::fromStdString(pg->GetName()), typeStr, pg->GetID(), isActive);
+			}
+			else if (dynamic_cast<GItem*>(po))
+			{
+				GItem* git = dynamic_cast<GItem*>(po);
+				QString typeStr("unknown");
+				if (dynamic_cast<GPart*>(git)) {
+					typeStr = "Part"; ui->setPart(dynamic_cast<GPart*>(git)); }
+				if (dynamic_cast<GFace*>(git)) typeStr = "Surface";
+				if (dynamic_cast<GEdge*>(git)) typeStr = "Edge";
+				if (dynamic_cast<GNode*>(git)) typeStr = "Node";
+
+				ui->showObjectInfo(false);
+				ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
+			}
+			else if (dynamic_cast<FSMeshData*>(po))
+			{
+				FSMeshData* pd = dynamic_cast<FSMeshData*>(po);
+				ui->showMeshDataInfo(true, pd);
+				ui->showObjectInfo(false);
+			}
+			else if (dynamic_cast<CImageAnalysis*>(po))
+			{
+				CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(po);
+				ui->showObjectInfo(true, false, nameEditable, QColor(), true, ima->IsActive());
+			}
+			else ui->showObjectInfo(true, false, nameEditable);
 		}
-		else ui->showPropsPanel(false);
-
-		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
-		ui->showSelectionPanel2(false);
-
-		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-		if (pi)
-		{
-			ui->setSelection1Title("Primary");
-			ui->setSelection2Title("Secondary");
-			ui->showSelectionPanel2(true);
-			SetSelection(0, pi->GetPrimarySurface(), true);
-			SetSelection(1, pi->GetSecondarySurface(), true);
-			return;
-		}
-
-		IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
-		if (hil && (hil->GetMeshItemType() != 0))
-		{
-			ui->showSelectionPanel1(true);
-
-            // GMaterials don't use named selections and can only be assinged to parts
-			if (dynamic_cast<GMaterial*>(m_currentObject))
-            {
-				SetSelection(0, hil->GetItemList(0), false);
-            }
-			// TODO: This actually prevents the user from making an initial assignment, 
-			//       so need to come up with a different solution here. 
-/*            // It doesn't make sense to change the selection of FSMeshData objects
-            else if(dynamic_cast<FSMeshData*>(m_currentObject))
-            {
-                CItemListSelectionBox* sel = ui->selectionPanel(0);
-                sel->SetItemList(hil->GetItemList(0));
-                sel->showNameType(false);
-                sel->enableAddButton(false);
-                sel->enableRemoveButton(false);
-                sel->enableDeleteButton(false);
-            }
-*/
-			else
-            {
-                SetSelection(0, hil->GetItemList(0), true);
-            }
-			return;
-		}
-
-		FSItemListBuilder* pl = dynamic_cast<FSItemListBuilder*>(m_currentObject);
-		if (pl) { 
-			SetSelection(0, pl, false); 
-			return;
-		}
-
-		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
-		if (ds)
-		{
-			SetSelection(ds);
-			return;
-		}
-
-		ui->showSelectionPanel1(false);
-		ui->showSelectionPanel2(false);
+		else ui->showObjectInfo(false);
 	}
+
+	// show the property list
+	if (dynamic_cast<GMaterial*>(po))
+	{
+        std::string stype = CGLDocument::GetTypeString(m_currentObject);
+
+        GMaterial* mo = dynamic_cast<GMaterial*>(po);
+//			ui->setMaterialData(mo);
+        ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
+        ui->showPropsPanel(true);
+	}
+	else if (dynamic_cast<FSLoadController*>(po))
+	{
+		FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+		if (plc && plc->IsType("loadcurve"))
+			ui->showPlotWidget(plc);
+		else if (plc && plc->IsType("math"))
+			ui->showMathWidget(plc);
+		else if (plc && plc->IsType("math-interval"))
+			ui->showMathIntervalWidget(plc);
+		else
+		{
+			ui->setFEClassData(plc, plc->GetFSModel());
+			ui->showPropsPanel(true);
+		}
+	}
+	else if (dynamic_cast<FSModelComponent*>(po))
+	{
+		FSModelComponent* pc = dynamic_cast<FSModelComponent*>(po);
+		ui->setFEClassData(pc, pc->GetFSModel());
+		ui->showPropsPanel(true);
+	}
+	else if (dynamic_cast<GDiscreteSpringSet*>(po))
+	{
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(po);
+		ui->setFEClassData(pds->GetMaterial(), pds->GetModel()->GetFSModel());
+		ui->showPropsPanel(true);
+	}
+    else if (dynamic_cast<CFiberODFAnalysis*>(po))
+    {
+        ui->showFiberODFWidget(true, dynamic_cast<CFiberODFAnalysis*>(po));
+        ui->setPropertyList(props);
+        ui->showPropsPanel(true);
+    }
+	else if (props)
+	{
+		if (flags & 1)
+			ui->setPropertyForm(props);
+		else
+			ui->setPropertyList(props);
+
+		ui->showPropsPanel(true);
+	}
+	else ui->showPropsPanel(false);
+
+	ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
+	ui->showSelectionPanel2(false);
+
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	if (pi)
+	{
+		ui->setSelection1Title("Primary");
+		ui->setSelection2Title("Secondary");
+		ui->showSelectionPanel2(true);
+		SetSelection(0, pi->GetPrimarySurface(), true);
+		SetSelection(1, pi->GetSecondarySurface(), true);
+		return;
+	}
+
+	// GMaterials don't use named selections and can only be assinged to parts
+	if (dynamic_cast<GMaterial*>(m_currentObject))
+	{
+		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
+		SetSelection(mat);
+		return;
+	}
+
+	// TODO: This actually prevents the user from making an initial assignment, 
+	//       so need to come up with a different solution here. 
+/*            // It doesn't make sense to change the selection of FSMeshData objects
+		if(dynamic_cast<FSMeshData*>(m_currentObject))
+		{
+			CItemListSelectionBox* sel = ui->selectionPanel(0);
+			sel->SetItemList(hil->GetItemList(0));
+			sel->showNameType(false);
+			sel->enableAddButton(false);
+			sel->enableRemoveButton(false);
+			sel->enableDeleteButton(false);
+		}
+*/
+
+	IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (hil && (hil->GetMeshItemType() != 0))
+	{
+		ui->showSelectionPanel1(true);
+		SetSelection(0, hil->GetItemList(0), true);
+		return;
+	}
+
+	FSItemListBuilder* pl = dynamic_cast<FSItemListBuilder*>(m_currentObject);
+	if (pl) { 
+		SetSelection(0, pl, false); 
+		return;
+	}
+
+	GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
+	if (ds)
+	{
+		SetSelection(ds);
+		return;
+	}
+
+	ui->showSelectionPanel1(false);
+	ui->showSelectionPanel2(false);
 }
 
 void CModelPropsPanel::SetSelection(int n, FSItemListBuilder* item)
@@ -1088,6 +1075,24 @@ void CModelPropsPanel::SetSelection(int n, FSItemListBuilder* item, bool showNam
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
 	sel->SetItemList(item);
 	sel->showNameType(showNameType);
+}
+
+void CModelPropsPanel::SetSelection(GMaterial* mat)
+{
+	::CSelectionBox* sel = ui->selectionPanel(0);
+	sel->showNameType(false);
+	sel->setType("Parts");
+
+	// set the items
+	FSModel* fem = mat->GetModel();
+	vector<GPart*> partList = fem->GetMaterialPartList(mat);
+	sel->clearData();
+	int N = partList.size();
+	for (int i = 0; i < N; ++i)
+	{
+		GPart* pg = partList[i];
+		sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
+	}
 }
 
 void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
@@ -1291,6 +1296,32 @@ void CModelPropsPanel::addSelection(int n)
 		emit selectionChanged();
 		return;
 	}
+
+	GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
+	if (mat)
+	{
+		// create the item list builder
+		FSItemListBuilder* pg = ps->CreateItemList();
+
+		GPartList* partList = dynamic_cast<GPartList*>(pg);
+		if (partList == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
+		}
+		else
+		{
+			std::vector<GPart*> parts = partList->GetPartList();
+			FSModel* fem = mat->GetModel();
+			fem->AssignMaterial(parts, mat);
+			SetSelection(mat);
+		}
+
+		// don't forget to clean up
+		delete pg;
+
+		emit selectionChanged();
+		return;
+	}
 }
 
 void CModelPropsPanel::on_select1_subButtonClicked() { subSelection(0); }
@@ -1342,6 +1373,39 @@ void CModelPropsPanel::subSelection(int n)
 		emit selectionChanged();
 		return;
 	}
+
+	GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
+	if (mat)
+	{
+		// create the item list builder
+		FSItemListBuilder* pg = ps->CreateItemList();
+
+		GPartList* partList = dynamic_cast<GPartList*>(pg);
+		if (partList == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
+		}
+		else
+		{
+			std::vector<GPart*> selectedParts = partList->GetPartList();
+			int matID = mat->GetID();
+			std::vector<GPart*> partsToRemove;
+			for (auto pg : selectedParts)
+			{
+				if (pg && (pg->GetMaterialID() == matID)) partsToRemove.push_back(pg);
+			}
+
+			FSModel* fem = mat->GetModel();
+			fem->AssignMaterial(partsToRemove, nullptr);
+			SetSelection(mat);
+		}
+
+		// don't forget to clean up
+		delete pg;
+
+		emit selectionChanged();
+		return;
+	}
 }
 
 void CModelPropsPanel::on_select1_delButtonClicked() { delSelection(0); }
@@ -1386,6 +1450,28 @@ void CModelPropsPanel::delSelection(int n)
 		SetSelection(n, pl);
 		emit selectionChanged();
 	}
+
+	GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
+	if (mat)
+	{
+		CSelectionBox* sel = ui->selectionPanel(n);
+		vector<int> items;
+		sel->getSelectedItems(items);
+
+		std::vector<GPart*> partsToRemove;
+		FSModel* fem = mat->GetModel();
+		GModel& gm = fem->GetModel();
+		for (int gid : items)
+		{
+			GPart* pg = gm.FindPart(gid); assert(pg);
+			if (pg) partsToRemove.push_back(pg);
+		}
+		fem->AssignMaterial(partsToRemove, nullptr);
+		SetSelection(mat);
+
+		emit selectionChanged();
+		return;
+	}
 }
 
 void CModelPropsPanel::on_select1_selButtonClicked() { selSelection(0); }
@@ -1414,23 +1500,19 @@ void CModelPropsPanel::on_select1_currentItemChanged(int nrow)
 	CModelDocument* pdoc = m_wnd->GetModelDocument();
 	if ((pdoc == nullptr) || !pdoc->IsValid()) return;
 
-	FSItemListBuilder* itemList = ui->sel1->GetItemList();
-	if (itemList)
-	{
-		std::vector<int> allItems;
-		ui->sel1->getAllItems(allItems);
+	std::vector<int> allItems;
+	ui->sel1->getAllItems(allItems);
 		
-		std::vector<int> l;
-		if (!ui->sel1->isCollapsed()) l = allItems;
-		else
-		{
-			if ((nrow >= 0) && (nrow < allItems.size())) l.push_back(allItems[nrow]);
-		}
+	std::vector<int> l;
+	if (!ui->sel1->isCollapsed()) l = allItems;
+	else
+	{
+		if ((nrow >= 0) && (nrow < allItems.size())) l.push_back(allItems[nrow]);
+	}
 
-		if (!l.empty())
-		{
-			emit itemSelected(itemList, l);
-		}
+	if (!l.empty())
+	{
+		emit itemSelected(m_currentObject, l);
 	}
 }
 

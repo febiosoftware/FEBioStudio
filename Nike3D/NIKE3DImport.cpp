@@ -331,8 +331,6 @@ void NIKE3DImport::build_mesh(NIKE3DProject &nike)
 	}
 
 	UpdateMesh(*pm);
-
-	fem.UpdateMaterialSelections();
 }
 
 //-----------------------------------------------------------------------------

@@ -478,9 +478,6 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		fem.GetModel().AddObject(po);
 	}
 
-	// update material part lists
-	fem.UpdateMaterialSelections();
-
 	// update log variables
 	GModel& model = fem.GetModel();
 	GMeshObject* po = 0;

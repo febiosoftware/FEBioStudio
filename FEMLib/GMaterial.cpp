@@ -26,12 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GMaterial.h"
-#include "FEUserMaterial.h"
 #include "FEMaterial.h"
-#include <GeomLib/GGroup.h>
-#include <GeomLib/GModel.h>
-#include <GeomLib/GObject.h>
-#include <FEMLib/FSModel.h>
 #include <sstream>
 #include <FSCore/Palette.h>
 
@@ -41,8 +36,6 @@ int GMaterial::m_nref = 1;
 
 GMaterial::GMaterial(FSMaterial* pm)
 {
-	SetMeshItemType(FE_PART_FLAG);
-
 	m_pm = pm;
 	if (m_pm) m_pm->SetOwner(this);
 	m_ntag = 0;
@@ -70,14 +63,10 @@ GMaterial::GMaterial(FSMaterial* pm)
 	int NCOL = pal.Colors();
 
 	m_glmat.AmbientDiffuse(pal.Color((m_nID-1) % NCOL));
-
-	m_partList = nullptr;
 }
 
 GMaterial::~GMaterial(void)
 {
-	SetItemList(nullptr);
-	delete m_partList;
 	delete m_pm;
 }
 
@@ -167,68 +156,4 @@ void GMaterial::Load(IArchive &ar)
 		}
 		ar.CloseChunk();
 	}
-}
-
-void GMaterial::AddPart(GPart* pg)
-{
-	m_partList->add(pg->GetID());
-}
-
-void GMaterial::ClearParts()
-{
-	m_partList->clear();
-}
-
-void GMaterial::UpdateParts()
-{
-	// assign material to parts
-	std::vector<GPart*> partList = m_partList->GetPartList();
-	for (GPart* pg : partList)
-	{
-		if (pg->GetMaterialID() != GetID())
-		{
-			GMaterial* pm = m_ps->GetMaterialFromID(pg->GetMaterialID());
-			if (pm)
-			{
-				int m = pm->m_partList->FindItem(pg->GetID()); assert(m >= 0);
-				if (m >= 0) pm->m_partList->remove(m);
-			}
-			pg->SetMaterialID(GetID());
-		}
-	}
-	m_ps->UpdateMaterialAssignments();
-}
-
-void GMaterial::SetModel(FSModel* ps)
-{
-	m_ps = ps;
-	GModel& mdl = m_ps->GetModel();
-	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
-	SetItemList(m_partList);
-	m_partList->clear();
-}
-
-vec3d GMaterial::GetPosition()
-{
-	return m_pos;
-}
-
-void GMaterial::UpdatePosition()
-{
-	vec3d pos(0, 0, 0);
-	if (m_partList)
-	{
-		int count = 0;
-		std::vector<GPart*> partList = m_partList->GetPartList();
-		for (int i = 0; i < partList.size(); ++i)
-		{
-			GPart* pg = partList[i];
-			assert(pg->GetMaterialID() == GetID());
-			BOX b = pg->GetGlobalBox();
-			pos += b.Center();
-			count++;
-		}
-		if (count > 0) pos /= (double)count;
-	}
-	m_pos = pos;
 }

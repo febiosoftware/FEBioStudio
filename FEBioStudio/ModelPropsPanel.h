@@ -243,6 +243,7 @@ private slots:
 private:
 	void SetSelection(int n, FSItemListBuilder* it);
 	void SetSelection(int n, FSItemListBuilder* it, bool showNameType);
+	void SetSelection(GMaterial* mat);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);
@@ -258,7 +259,7 @@ signals:
 	void dataChanged(bool b);
 	void modelChanged();
 	void paramChanged(FSCoreBase* pc, Param* p);
-	void itemSelected(FSItemListBuilder* il, std::vector<int>& items);
+	void itemSelected(FSObject* il, std::vector<int>& items);
 
 private:
 	Ui::CModelPropsPanel* ui;

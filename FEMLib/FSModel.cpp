@@ -1129,22 +1129,17 @@ void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 			GMaterial* pmat = GetMaterialFromID(pp->GetMaterialID());
 			if (pmat == pold) pp->SetMaterialID(pnew->GetID());
 		}
+		po->UpdateFEElementMatIDs();
 	}
-	UpdateMaterialSelections();
 	ClearMLT();
 }
 
-//-----------------------------------------------------------------------------
-
 bool FSModel::CanDeleteMaterial(GMaterial* pmat)
 {
-	int i, j;
-
-	// first, we see if this material being used by a mesh
-	for (i=0; i<m_pModel->Objects(); ++i)
+	for (int i=0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		for (j=0; j<po->Parts(); ++j)
+		for (int j=0; j<po->Parts(); ++j)
 		{
 			GPart* pp = po->Part(j);
 			GMaterial* pm = GetMaterialFromID(pp->GetMaterialID());
@@ -1155,47 +1150,47 @@ bool FSModel::CanDeleteMaterial(GMaterial* pmat)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 GMaterial* FSModel::GetMaterial(int n)
 {
 	return (n<0 || n >= (int)m_pMat.Size() ? 0 : m_pMat[n]);
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::AddMaterial(GMaterial* pmat)
 {
 	m_pMat.Add(pmat); pmat->SetModel(this);
 	ClearMLT();
 }
 
-//-----------------------------------------------------------------------------
 void FSModel::InsertMaterial(int n, GMaterial* pm)
 { 
 	m_pMat.Insert(n, pm); 
 	ClearMLT();
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::Materials()
 { 
 	return (int)m_pMat.Size(); 
 }
 
-//-----------------------------------------------------------------------------
 int FSModel::DeleteMaterial(GMaterial* pmat)
 {
 	// first, we see if this material being used by a mesh
 	for (int i = 0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
+		bool needsUpdate = false;
 		for (int j = 0; j<po->Parts(); ++j)
 		{
 			GPart* pp = po->Part(j);
 			GMaterial* pm = GetMaterialFromID(pp->GetMaterialID());
-			if (pm == pmat) pp->SetMaterialID(-1);
+			if (pm == pmat)
+			{
+				pp->SetMaterialID(-1);
+				needsUpdate = true;
+			}
 		}
+		if (needsUpdate) po->UpdateFEElementMatIDs();
 	}
-	UpdateMaterialSelections();
 	ClearMLT();
 	return m_pMat.Remove(pmat);
 }
@@ -1268,22 +1263,64 @@ void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
 		GPart* pg = po->Part(i);
 		pg->SetMaterialID(matID);
 	}
-	UpdateMaterialSelections();
+	po->UpdateFEElementMatIDs();
+	UpdateMaterialPositions();
 }
 
 void FSModel::AssignMaterial(GPart* pg, GMaterial* mat)
 {
 	int matID = (mat ? mat->GetID() : -1);
 	pg->SetMaterialID(matID);
-	UpdateMaterialSelections();
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	po->UpdateFEElementMatIDs();
+	UpdateMaterialPositions();
 }
 
-void FSModel::UpdateMaterialSelections()
+void FSModel::AssignMaterial(const std::vector<GPart*>& partList, GMaterial* mat)
 {
-	for (int i = 0; i < Materials(); ++i)
+	int matID = (mat ? mat->GetID() : -1);
+	std::set<GObject*> obj;
+	for (auto pg : partList)
+	{
+		pg->SetMaterialID(matID);
+		obj.insert(dynamic_cast<GObject*>(pg->Object()));
+	}
+	for (auto po : obj) po->UpdateFEElementMatIDs();
+	UpdateMaterialPositions();
+}
+
+std::vector<GPart*> FSModel::GetMaterialPartList(GMaterial* mat)
+{
+	std::vector<GPart*> partList;
+	if (mat)
+	{
+		GModel& gm = GetModel();
+		int matID = mat->GetID();
+		for (int i = 0; i < gm.Objects(); ++i)
+		{
+			GObject* po = gm.Object(i);
+			for (int j = 0; j < po->Parts(); ++j)
+			{
+				GPart* pg = po->Part(j); assert(pg);
+				if (pg && (pg->GetMaterialID() == matID)) partList.push_back(pg);
+			}
+		}
+	}
+
+	return partList;
+}
+
+void FSModel::UpdateMaterialPositions()
+{
+	int NMAT = Materials();
+	if (NMAT == 0) return;
+
+	std::map<GMaterial*, int> tag;
+	for (int i = 0; i < NMAT; ++i)
 	{
 		GMaterial* mat = GetMaterial(i);
-		mat->ClearParts();
+		mat->m_pos = vec3d(0, 0, 0);
+		tag[mat] = 0;
 	}
 
 	GModel& gm = GetModel();
@@ -1293,61 +1330,23 @@ void FSModel::UpdateMaterialSelections()
 		for (int j = 0; j < po->Parts(); ++j)
 		{
 			GPart* pg = po->Part(j);
-			int matID = pg->GetMaterialID();
-			GMaterial* mat = GetMaterialFromID(matID);
-			if (mat)
+			if (pg)
 			{
-				mat->AddPart(pg);
-			}
-		}
-		po->UpdateFEElementMatIDs();
-	}
-
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* pm = GetMaterial(i);
-		pm->UpdatePosition();
-	}
-}
-
-void FSModel::UpdateMaterialAssignments()
-{
-	GModel& gm = GetModel();
-	for (int i = 0; i < gm.Objects(); ++i)
-	{
-		GObject* po = gm.Object(i);
-		for (int j = 0; j < po->Parts(); ++j)
-		{
-			GPart* pg = po->Part(j);
-			pg->SetMaterialID(-1);
-		}
-	}
-
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* pm = GetMaterial(i);
-		GPartList* partList = dynamic_cast<GPartList*>(pm->GetItemList()); assert(partList);
-		if (partList)
-		{
-			vector<GPart*> parts = partList->GetPartList();
-			for (GPart* pg : parts)
-			{
-				assert(pg->GetMaterialID() == -1);
-				pg->SetMaterialID(pm->GetID());
+				GMaterial* mat = GetMaterialFromID(pg->GetMaterialID());
+				if (mat)
+				{
+					mat->m_pos += pg->GetGlobalBox().Center();
+					tag[mat]++;
+				}
 			}
 		}
 	}
 
-	for (int i = 0; i < gm.Objects(); ++i)
+	for (int i = 0; i < NMAT; ++i)
 	{
-		GObject* po = gm.Object(i);
-		po->UpdateFEElementMatIDs();
-	}
-
-	for (int i = 0; i < Materials(); ++i)
-	{
-		GMaterial* pm = GetMaterial(i);
-		pm->UpdatePosition();
+		GMaterial* mat = GetMaterial(i);
+		int count = tag[mat];
+		if (count != 0) mat->m_pos /= count;
 	}
 }
 
@@ -1608,10 +1607,6 @@ void FSModel::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
-
-	// update materials item lists
-	// (This is needed so that the rigid material's glyphs can be positioned correctly.)
-	UpdateMaterialSelections();
 }
 
 //-----------------------------------------------------------------------------

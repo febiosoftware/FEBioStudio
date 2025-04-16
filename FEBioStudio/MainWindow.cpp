@@ -3289,6 +3289,16 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 		{
 			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
 		}
+		else if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* mat = dynamic_cast<GMaterial*>(po);
+			FSModel* fem = mat->GetModel();
+			if (fem)
+			{
+				std::vector<GPart*> parts = fem->GetMaterialPartList(mat);
+				for (GPart* pg : parts) GLHighlighter::PickItem(pg);
+			}
+		}
 	}
 	RedrawGL();
 }
