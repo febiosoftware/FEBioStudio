@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QGuiApplication>
 #include "DlgScreenCapture.h"
 #include "MainWindow.h"
+#include <algorithm>
 
 CDlgScreenCapture::CDlgScreenCapture(CMainWindow* wnd) : m_wnd(wnd), QDialog(wnd)
 {
@@ -42,6 +43,10 @@ CDlgScreenCapture::CDlgScreenCapture(CMainWindow* wnd) : m_wnd(wnd), QDialog(wnd
     m_scene = new QGraphicsScene;
     m_view = new QGraphicsView;
     m_view->setScene(m_scene);
+
+	m_scene->setBackgroundBrush(Qt::NoBrush);
+	m_view->setBackgroundBrush(Qt::NoBrush);
+
 	m_imgItem = nullptr;
 
     layout->addWidget(m_view);
@@ -67,7 +72,8 @@ void CDlgScreenCapture::SetImage(const QImage& img)
 {
 	m_img = img;
 	if (m_imgItem) delete m_imgItem;
-	m_imgItem = m_scene->addPixmap(QPixmap::fromImage(img));
+	m_imgItem = m_scene->addPixmap(QPixmap::fromImage(m_img));
+	m_scene->setSceneRect(m_imgItem->boundingRect());
 }
 
 void CDlgScreenCapture::on_saveButton_clicked()

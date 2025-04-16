@@ -1477,17 +1477,43 @@ void CGLView::showSubtitle(bool b)
 	}
 }
 
+QImage correct_premultiplied_image(const QImage& image)
+{
+	if (image.format() != QImage::Format_ARGB32_Premultiplied)
+		return image;
+
+	QImage result = QImage(image.size(), QImage::Format_ARGB32);
+
+	for (int y = 0; y < image.height(); y++)
+	{
+		for (int x = 0; x < image.width(); x++)
+		{
+			QRgb pixel = image.pixel(x, y);
+			pixel = (pixel | (0xff << 24));
+			result.setPixel(x, y, pixel);
+		}
+	}
+
+	return result;
+}
+
+
 QImage CGLView::CaptureScreen()
 {
+	QImage im = grabFramebuffer();
+
 	if (m_pframe && m_pframe->visible())
 	{
-		QImage im = grabFramebuffer();
-
 		// crop based on the capture frame
 		double dpr = devicePixelRatio();
-		return im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
+		im = im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
-	else return grabFramebuffer();
+
+	// NOTE: The image returned from grabFrameBuffer has a format of QImage::Format_ARGB32_Premultiplied.
+	// But that does not appear to be correct and as a result an image with transparency will not be
+	// processed correctly. As a workaround, we modify the format by essentially stripping the alpha
+	// channel. This might be a bug in Qt so should revisit when we update to a newer version. 
+	return correct_premultiplied_image(im);
 }
 
 void CGLView::updateView()
