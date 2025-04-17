@@ -559,7 +559,7 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 		if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, Emblem::Caution));
 		else t2->setIcon(0, QIcon(":/icons/warning.png"));
 
-		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
+		t2->setToolTip(0, val->GetErrorString());
 		if (parent) parent->setExpanded(true);
 		if (m_view) m_view->IncWarningCount();
 	}
@@ -692,7 +692,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 				else item->setIcon(0, QIcon(":/icons/warning.png"));
 			}
 
-			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
+			item->setToolTip(0, val->GetErrorString());
 			return;
 		}
 	}
