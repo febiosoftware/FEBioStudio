@@ -34,8 +34,6 @@ SOFTWARE.*/
 GMultiPatch::GMultiPatch() : GObject(GMULTI_PATCH)
 {
 	SetFEMesher(new FEMultiQuadMesher(this));
-
-	SetSaveFlags(0);	// this prevents the mesh from getting serialized
 }
 
 //-----------------------------------------------------------------------------
@@ -45,8 +43,6 @@ GMultiPatch::GMultiPatch() : GObject(GMULTI_PATCH)
 // a GMultiBox
 GMultiPatch::GMultiPatch(GObject* po) : GObject(GMULTI_PATCH)
 {
-	SetSaveFlags(0);	// this prevents the mesh from getting serialized
-
 	// copy to old object's ID
 	SetID(po->GetID());
 

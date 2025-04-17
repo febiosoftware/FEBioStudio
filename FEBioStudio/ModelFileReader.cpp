@@ -123,11 +123,6 @@ bool ModelFileReader::ReadFile(const char* szfile)
 		Close();
 		return errf(errMsg.c_str());
 	}
-	catch (GObjectException e)
-	{
-		Close();
-		return errf("An error occurred processing model:\n%s", e.ErrorMsg());
-	}
 	catch (std::exception e)
 	{
 		Close();

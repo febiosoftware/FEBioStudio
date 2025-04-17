@@ -195,6 +195,10 @@ public:
 	void SetMaterialID(int mid) { m_matid = mid; }
 
 public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+public:
 	BOX GetLocalBox() const;
 	BOX GetGlobalBox() const;
 	void UpdateBoundingBox();
@@ -245,6 +249,10 @@ public:
 	void Invert();
 
 public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+public:
 	int				m_ntype;	// face type
 	int				m_nPID[3];	// part ID's
 	std::vector<int>	m_node;		// node ID's
@@ -266,6 +274,10 @@ public:
 	bool operator == (const GEdge& e);
 
 	GNode* Node(int i);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 public:
 	double Length();
@@ -320,6 +332,10 @@ public:
 
 	void SetNodeIndex(int n) { m_node = n; }
 	int GetNodeIndex() const { return m_node; }
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	vec3d		m_r;		// node position (in local coordinates)

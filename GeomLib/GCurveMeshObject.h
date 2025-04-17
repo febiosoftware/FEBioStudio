@@ -47,7 +47,6 @@ public:
 	FSCurveMesh* GetFECurveMesh(int edgeId) override;
 
 	// Serialization
-	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
 	FSLineMesh* GetEditableLineMesh() override;

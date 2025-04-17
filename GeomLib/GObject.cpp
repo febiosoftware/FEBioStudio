@@ -59,8 +59,6 @@ public:
 		m_col = GLColor(200, 200, 200);
 
 		m_bValid = true;
-
-		m_saveFlag = ObjectSaveFlags::ALL_FLAGS;
 	}
 
 	~Imp()
@@ -76,7 +74,6 @@ public:
 	int	m_ntype;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
 	bool	m_bValid;
-	unsigned int m_saveFlag;
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
@@ -304,7 +301,7 @@ void GObject::BuildFERenderMesh()
 	FSFace face;
 	for (int i = 0; i < nparts; ++i)
 	{
-		int ne = partElems[i].size();
+		int ne = (int)partElems[i].size();
 		gm.NewPartition();
 		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
 		{
@@ -875,12 +872,6 @@ GNode* GObject::FindNodeFromTag(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-void GObject::SetSaveFlags(unsigned int flags)
-{
-	imp->m_saveFlag = flags;
-}
-
-//-----------------------------------------------------------------------------
 // Save data to file
 void GObject::Save(OArchive &ar)
 {
@@ -930,60 +921,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_PART);
 				{
 					GPart& p = *Part(i);
-					int nid = p.GetID();
-					int mid = p.GetMaterialID();
-					ar.WriteChunk(CID_OBJ_PART_ID, nid);
-					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-					ar.WriteChunk(CID_OBJ_PART_MESHWEIGHT, p.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
-
-					if (!p.m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, p.m_node);
-					if (!p.m_edge.empty()) ar.WriteChunk(CID_OBJ_PART_EDGELIST, p.m_edge);
-					if (!p.m_face.empty()) ar.WriteChunk(CID_OBJ_PART_FACELIST, p.m_face);
-
-					if (p.Parameters() > 0)
-					{
-						ar.BeginChunk(CID_OBJ_PART_PARAMS);
-						{
-							p.ParamContainer::Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GPartSection* section = p.GetSection();
-					if (section)
-					{
-						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
-						if (solid)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
-							{
-								solid->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GShellSection* shell = dynamic_cast<GShellSection*>(section);
-						if (shell)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
-							{
-								shell->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
-						if (beam)
-						{
-							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
-							{
-								beam->Save(ar);
-							}
-							ar.EndChunk();
-						}
-					}
+					p.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1001,17 +939,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_FACE);
 				{
 					GFace& f = *Face(i);
-					int nid = f.GetID();
-					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-					ar.WriteChunk(CID_OBJ_FACE_TYPE, f.m_ntype);
-					ar.WriteChunk(CID_OBJ_FACE_MESHWEIGHT, f.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
-					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
-					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
-					ar.WriteChunk(CID_OBJ_FACE_PID2, f.m_nPID[2]);
-
-					if (!f.m_node.empty()) ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
-					if (!f.m_edge.empty()) ar.WriteChunk(CID_OBJ_FACE_EDGELIST, f.m_edge);
+					f.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1029,15 +957,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_EDGE);
 				{
 					GEdge& e = *Edge(i);
-					int nid = e.GetID();
-					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
-					ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
-					ar.WriteChunk(CID_OBJ_EDGE_MESHWEIGHT, e.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
+					e.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1057,12 +977,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_NODE);
 				{
 					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_TYPE, v.Type());
-					ar.WriteChunk(CID_OBJ_NODE_MESHWEIGHT, v.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
+					v.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1087,11 +1002,11 @@ void GObject::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (imp->m_pmesh && (imp->m_saveFlag & SAVE_MESH))
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			imp->m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -1184,65 +1099,10 @@ void GObject::Load(IArchive& ar)
 					m_Part.push_back(p);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid, mid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
-					case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-					case CID_OBJ_PART_MESHWEIGHT: { double w = 0.0; ar.read(w); p->SetMeshWeight(w); } break;
-					case CID_OBJ_PART_NAME:
-						{
-							char szname[256] = { 0 };
-							ar.read(szname);
-							p->SetName(szname);
-						}
-						break;
-					case CID_OBJ_PART_STATUS:
-					{
-						unsigned int state = 0;
-						ar.read(state);
-						// let's make sure the part is visible
-						state |= GEO_VISIBLE;
-						p->SetState(state);
-					}
-					break;
-					case CID_OBJ_PART_PARAMS:
-						{
-							p->ParamContainer::Load(ar);
-						}
-						break;
-					case CID_OBJ_PART_SOLIDSECTION:
-					{
-						GSolidSection* solid = new GSolidSection(p);
-						p->SetSection(solid);
-						solid->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_SHELLSECTION:
-					{
-						GShellSection* shell = new GShellSection(p);
-						p->SetSection(shell);
-						shell->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_BEAMSECTION:
-					{
-						GBeamSection* beam = new GBeamSection(p);
-						p->SetSection(beam);
-						beam->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_NODELIST: ar.read(p->m_node); break;
-					case CID_OBJ_PART_EDGELIST: ar.read(p->m_edge); break;
-					case CID_OBJ_PART_FACELIST: ar.read(p->m_face); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				p->Load(ar);
 				p->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Part.size() == nparts);
 		}
@@ -1265,31 +1125,10 @@ void GObject::Load(IArchive& ar)
 					m_Face.push_back(f);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
-					case CID_OBJ_FACE_TYPE: ar.read(f->m_ntype); break;
-					case CID_OBJ_FACE_MESHWEIGHT: { double w = 0.0; ar.read(w); f->SetMeshWeight(w); } break;
-					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node); break;
-					case CID_OBJ_FACE_EDGELIST: ar.read(f->m_edge); break;
-					case CID_OBJ_FACE_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						f->SetName(szname);
-					}
-					break;
-					case CID_OBJ_FACE_PID0    : ar.read(f->m_nPID[0]); break;
-					case CID_OBJ_FACE_PID1    : ar.read(f->m_nPID[1]); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				f->Load(ar);
 				f->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Face.size() == nfaces);
 		}
@@ -1312,31 +1151,10 @@ void GObject::Load(IArchive& ar)
 					m_Edge.push_back(e);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
-					case CID_OBJ_EDGE_MESHWEIGHT: { double w = 0.0; ar.read(w); e->SetMeshWeight(w); } break;
-					case CID_OBJ_EDGE_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						e->SetName(szname);
-					}
-					break;
-					case CID_OBJ_EDGE_ORIENT: ar.read(e->m_orient); break;
-					case CID_OBJ_EDGE_NODE0 : ar.read(e->m_node[0]); break;
-					case CID_OBJ_EDGE_NODE1 : ar.read(e->m_node[1]); break;
-					case CID_OBJ_EDGE_NODE2 : ar.read(e->m_cnode); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				e->Load(ar);
 				e->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Edge.size() == nedges);
 		}
@@ -1361,28 +1179,10 @@ void GObject::Load(IArchive& ar)
 						m_Node.push_back(n);
 					}
 
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-						case CID_OBJ_NODE_TYPE: { int ntype;  ar.read(ntype); n->SetType(ntype); } break;
-						case CID_OBJ_NODE_MESHWEIGHT: { double w = 0.0; ar.read(w); n->SetMeshWeight(w); } break;
-						case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-						case CID_OBJ_NODE_NAME:
-						{
-							char szname[256] = { 0 };
-							ar.read(szname);
-							n->SetName(szname);
-						}
-						break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					n->Load(ar);
 					n->SetLocalID(m++);
+
+					ar.CloseChunk();
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
@@ -1424,8 +1224,10 @@ void GObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (imp->m_pmesh) delete imp->m_pmesh;
-			SetFEMesh(new FSMesh);
-			imp->m_pmesh->Load(ar);
+			FSMesh* mesh = new FSMesh;
+			mesh->SetGObject(this);
+			mesh->Load(ar);
+			imp->m_pmesh = mesh;
 			break;
 		}
 		ar.CloseChunk();

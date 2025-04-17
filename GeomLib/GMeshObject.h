@@ -67,7 +67,6 @@ public:
 	virtual FSMesh* BuildMesh() override;
 
 	// serialization
-	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
 	// cloning

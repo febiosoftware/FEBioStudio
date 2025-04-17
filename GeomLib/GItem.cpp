@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GPartSection.h"
 #include <GeomLib/FSGroup.h>
 #include <MeshLib/FSMesh.h>
+#include <FSCore/enum.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables
@@ -108,6 +109,39 @@ void GNode::MakeRequired()
 			FSNode* pn = pm->NodePtr(m_node); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
+	}
+}
+
+void GNode::Save(OArchive& ar)
+{
+	int nid = GetID();
+	ar.WriteChunk(CID_OBJ_NODE_ID, nid);
+	ar.WriteChunk(CID_OBJ_NODE_TYPE, Type());
+	ar.WriteChunk(CID_OBJ_NODE_MESHWEIGHT, GetMeshWeight());
+	ar.WriteChunk(CID_OBJ_NODE_POS, LocalPosition());
+	ar.WriteChunk(CID_OBJ_NODE_NAME, GetName());
+}
+
+void GNode::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_NODE_ID: ar.read(nid); SetID(nid); break;
+		case CID_OBJ_NODE_TYPE: { int ntype;  ar.read(ntype); SetType(ntype); } break;
+		case CID_OBJ_NODE_MESHWEIGHT: { double w = 0.0; ar.read(w); SetMeshWeight(w); } break;
+		case CID_OBJ_NODE_POS: ar.read(LocalPosition()); break;
+		case CID_OBJ_NODE_NAME:
+		{
+			char szname[256] = { 0 };
+			ar.read(szname);
+			SetName(szname);
+		}
+		break;
+		}
+		ar.CloseChunk();
 	}
 }
 
@@ -461,6 +495,39 @@ FSEdgeSet* GEdge::GetFEEdgeSet() const
 	return edge;
 }
 
+void GEdge::Save(OArchive& ar)
+{
+	int nid = GetID();
+	ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
+	ar.WriteChunk(CID_OBJ_EDGE_NAME, GetName());
+	ar.WriteChunk(CID_OBJ_EDGE_TYPE, Type());
+	ar.WriteChunk(CID_OBJ_EDGE_MESHWEIGHT, GetMeshWeight());
+	ar.WriteChunk(CID_OBJ_EDGE_ORIENT, m_orient);
+	ar.WriteChunk(CID_OBJ_EDGE_NODE0, m_node[0]);
+	ar.WriteChunk(CID_OBJ_EDGE_NODE1, m_node[1]);
+	ar.WriteChunk(CID_OBJ_EDGE_NODE2, m_cnode);
+}
+
+void GEdge::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_EDGE_ID: ar.read(nid); SetID(nid); break;
+		case CID_OBJ_EDGE_TYPE: ar.read(m_ntype); break;
+		case CID_OBJ_EDGE_MESHWEIGHT: { double w = 0.0; ar.read(w); SetMeshWeight(w); } break;
+		case CID_OBJ_EDGE_NAME: { char szname[256] = { 0 }; ar.read(szname); SetName(szname); } break;
+		case CID_OBJ_EDGE_ORIENT: ar.read(m_orient); break;
+		case CID_OBJ_EDGE_NODE0: ar.read(m_node[0]); break;
+		case CID_OBJ_EDGE_NODE1: ar.read(m_node[1]); break;
+		case CID_OBJ_EDGE_NODE2: ar.read(m_cnode); break;
+		}
+
+		ar.CloseChunk();
+	}
+}
 
 //=============================================================================
 // GFace
@@ -553,6 +620,42 @@ void GFace::Invert()
 	{
 		m_edge[j].nid = fe[ne - j - 1];
 		m_edge[j].nwn = -fw[ne - j - 1];
+	}
+}
+
+void GFace::Save(OArchive& ar)
+{
+	int nid = GetID();
+	ar.WriteChunk(CID_OBJ_FACE_ID, nid);
+	ar.WriteChunk(CID_OBJ_FACE_TYPE, m_ntype);
+	ar.WriteChunk(CID_OBJ_FACE_MESHWEIGHT, GetMeshWeight());
+	ar.WriteChunk(CID_OBJ_FACE_NAME, GetName());
+	ar.WriteChunk(CID_OBJ_FACE_PID0, m_nPID[0]);
+	ar.WriteChunk(CID_OBJ_FACE_PID1, m_nPID[1]);
+	ar.WriteChunk(CID_OBJ_FACE_PID2, m_nPID[2]);
+
+	if (!m_node.empty()) ar.WriteChunk(CID_OBJ_FACE_NODELIST, m_node);
+	if (!m_edge.empty()) ar.WriteChunk(CID_OBJ_FACE_EDGELIST, m_edge);
+}
+
+void GFace::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_FACE_ID: ar.read(nid); SetID(nid); break;
+		case CID_OBJ_FACE_TYPE: ar.read(m_ntype); break;
+		case CID_OBJ_FACE_MESHWEIGHT: { double w = 0.0; ar.read(w); SetMeshWeight(w); } break;
+		case CID_OBJ_FACE_NAME: { char szname[256] = { 0 }; ar.read(szname); SetName(szname); } break;
+		case CID_OBJ_FACE_PID0: ar.read(m_nPID[0]); break;
+		case CID_OBJ_FACE_PID1: ar.read(m_nPID[1]); break;
+		case CID_OBJ_FACE_PID2: ar.read(m_nPID[2]); break;
+		case CID_OBJ_FACE_NODELIST: ar.read(m_node); break;
+		case CID_OBJ_FACE_EDGELIST: ar.read(m_edge); break;
+		}
+		ar.CloseChunk();
 	}
 }
 
@@ -668,4 +771,122 @@ BOX GPart::GetGlobalBox() const
 	r0 = po->GetTransform().LocalToGlobal(r0);
 	r1 = po->GetTransform().LocalToGlobal(r1);
 	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
+}
+
+void GPart::Save(OArchive& ar)
+{
+	int nid = GetID();
+	int mid = GetMaterialID();
+	ar.WriteChunk(CID_OBJ_PART_ID, nid);
+	ar.WriteChunk(CID_OBJ_PART_MAT, mid);
+	ar.WriteChunk(CID_OBJ_PART_MESHWEIGHT, GetMeshWeight());
+	ar.WriteChunk(CID_OBJ_PART_NAME, GetName());
+	ar.WriteChunk(CID_OBJ_PART_STATUS, GetState());
+
+	if (!m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, m_node);
+	if (!m_edge.empty()) ar.WriteChunk(CID_OBJ_PART_EDGELIST, m_edge);
+	if (!m_face.empty()) ar.WriteChunk(CID_OBJ_PART_FACELIST, m_face);
+
+	if (Parameters() > 0)
+	{
+		ar.BeginChunk(CID_OBJ_PART_PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
+	}
+
+	GPartSection* section = GetSection();
+	if (section)
+	{
+		GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+		if (solid)
+		{
+			ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+			{
+				solid->Save(ar);
+			}
+			ar.EndChunk();
+		}
+
+		GShellSection* shell = dynamic_cast<GShellSection*>(section);
+		if (shell)
+		{
+			ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+			{
+				shell->Save(ar);
+			}
+			ar.EndChunk();
+		}
+
+		GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+		if (beam)
+		{
+			ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+			{
+				beam->Save(ar);
+			}
+			ar.EndChunk();
+		}
+	}
+}
+
+void GPart::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid, mid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_PART_ID: ar.read(nid); SetID(nid); break;
+		case CID_OBJ_PART_MAT: ar.read(mid); SetMaterialID(mid); break;
+		case CID_OBJ_PART_MESHWEIGHT: { double w = 0.0; ar.read(w); SetMeshWeight(w); } break;
+		case CID_OBJ_PART_NAME:
+		{
+			char szname[256] = { 0 };
+			ar.read(szname);
+			SetName(szname);
+		}
+		break;
+		case CID_OBJ_PART_STATUS:
+		{
+			unsigned int state = 0;
+			ar.read(state);
+			// let's make sure the part is visible
+			state |= GEO_VISIBLE;
+			SetState(state);
+		}
+		break;
+		case CID_OBJ_PART_PARAMS:
+		{
+			ParamContainer::Load(ar);
+		}
+		break;
+		case CID_OBJ_PART_SOLIDSECTION:
+		{
+			GSolidSection* solid = new GSolidSection(this);
+			SetSection(solid);
+			solid->Load(ar);
+		}
+		break;
+		case CID_OBJ_PART_SHELLSECTION:
+		{
+			GShellSection* shell = new GShellSection(this);
+			SetSection(shell);
+			shell->Load(ar);
+		}
+		break;
+		case CID_OBJ_PART_BEAMSECTION:
+		{
+			GBeamSection* beam = new GBeamSection(this);
+			SetSection(beam);
+			beam->Load(ar);
+		}
+		break;
+		case CID_OBJ_PART_NODELIST: ar.read(m_node); break;
+		case CID_OBJ_PART_EDGELIST: ar.read(m_edge); break;
+		case CID_OBJ_PART_FACELIST: ar.read(m_face); break;
+		}
+		ar.CloseChunk();
+	}
 }

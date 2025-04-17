@@ -47,30 +47,7 @@ class GLMesh;
 class GObject;
 class GObjectManipulator;
 
-//-----------------------------------------------------------------------------
-enum ObjectSaveFlags {
-	SAVE_MESH = 1,
-	ALL_FLAGS = 0xFF
-};
-
-//-----------------------------------------------------------------------------
-// some exceptions that may be thrown in case of throuble
-class GObjectException
-{
-public:
-	GObjectException(GObject* po, const char* szerr) : m_po(po), m_szerr(szerr){}
-	const char* ErrorMsg() { return m_szerr; }
-
-	GObject* GetGObject() const { return m_po; }
-
-protected:
-	const char* m_szerr;
-	GObject* m_po;
-};
-
-//-----------------------------------------------------------------------------
 // GObject is the base class for all geometry objects
-//
 class GObject : public GBaseObject
 {
 	class Imp;
@@ -104,11 +81,8 @@ public:
 	void CollapseTransform();
 
 	// serialization
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
-	// set save flag options
-	void SetSaveFlags(unsigned int flags);
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	// --- M E S H I N G ---
 

@@ -182,18 +182,6 @@ bool CCommandManager::DoCommand(CCommand* pcmd)
 		// TODO: should I clear redo stack?
 		return false;
 	}
-	catch (GObjectException e)
-	{
-		GObject* po = e.GetGObject();
-		if (po)
-		{
-			po->Update(true);
-		}
-
-		SetErrorString("Object exception has occurred");
-
-		return false;
-	}
 	catch (...)
 	{
 		SetErrorString("Object exception has occurred");

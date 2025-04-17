@@ -889,186 +889,6 @@ FSMeshBase* GMeshObject::GetEditableMesh() { return GetFEMesh(); }
 FSLineMesh* GMeshObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
-// Save data to file
-void GMeshObject::Save(OArchive &ar)
-{
-	// save the name
-	ar.WriteChunk(CID_OBJ_NAME, GetName());
-	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
-
-	// save the transform stuff
-	ar.BeginChunk(CID_OBJ_HEADER);
-	{
-		int nid = GetID();
-		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
-
-		int nparts = Parts();
-		int nfaces = Faces();
-		int nedges = Edges();
-		int nnodes = Nodes();
-
-		ar.WriteChunk(CID_OBJ_PARTS, nparts);
-		ar.WriteChunk(CID_OBJ_FACES, nfaces);
-		ar.WriteChunk(CID_OBJ_EDGES, nedges);
-		ar.WriteChunk(CID_OBJ_NODES, nnodes);
-	}
-	ar.EndChunk();
-
-	// save the parameters
-	if (Parameters() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PARAMS);
-		{
-			ParamContainer::Save(ar);
-		}
-		ar.EndChunk();
-	}
-
-	// save the parts
-	if (Parts() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PART_LIST);
-		{
-			for (int i = 0; i < Parts(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_PART);
-				{
-					GPart& p = *Part(i);
-					int nid = p.GetID();
-					int mid = p.GetMaterialID();
-					ar.WriteChunk(CID_OBJ_PART_ID, nid);
-					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
-
-					if (p.Parameters() > 0)
-					{
-						ar.BeginChunk(CID_OBJ_PART_PARAMS);
-						{
-							p.ParamContainer::Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GPartSection* section = p.GetSection();
-					if (section)
-					{
-						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
-						if (solid)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
-							{
-								solid->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GShellSection* shell = dynamic_cast<GShellSection*>(section);
-						if (shell)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
-							{
-								shell->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
-						if (beam)
-						{
-							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
-							{
-								beam->Save(ar);
-							}
-							ar.EndChunk();
-						}
-					}
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the surfaces
-	if (Faces() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_FACE_LIST);
-		{
-			for (int i = 0; i < Faces(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_FACE);
-				{
-					GFace& f = *Face(i);
-					int nid = f.GetID();
-					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the edges
-	if (Edges() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_EDGE_LIST);
-		{
-			for (int i = 0; i < Edges(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_EDGE);
-				{
-					GEdge& e = *Edge(i);
-					int nid = e.GetID();
-					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the nodes
-	// note that it is possible that an object doesn't have any nodes
-	// for instance, a shell disc
-	if (Nodes()>0)
-	{
-		ar.BeginChunk(CID_OBJ_NODE_LIST);
-		{
-			for (int i=0; i<Nodes(); ++i)
-			{	
-				ar.BeginChunk(CID_OBJ_NODE);
-				{
-					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the mesh
-	if (GetFEMesh())
-	{
-		ar.BeginChunk(CID_MESH);
-		{
-			GetFEMesh()->Save(ar);
-		}
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Load data from file
 void GMeshObject::Load(IArchive& ar)
 {
@@ -1144,67 +964,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GMeshObject::Load)");
 
 					GPart* p = new GPart(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid, mid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
-						case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-						case CID_OBJ_PART_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								p->SetName(szname);
-							}
-							break;
-						case CID_OBJ_PART_STATUS:
-						{
-							unsigned int state = 0;
-							ar.read(state);
-							// let's make sure the part is visible
-							state |= GEO_VISIBLE;
-							p->SetState(state);
-						}
-						break;
-						case CID_OBJ_PART_PARAMS:
-						{
-							// TODO: Parts no longer have parameters, since the parameters
-							//       are now managed by for the FEElementFormulation class. 
-							//		 We need to read in the parameters, and then somehow map them to the 
-							//       FEElementFormulation class. 
-//							p->ParamContainer::Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_SOLIDSECTION:
-						{
-							GSolidSection* solid = new GSolidSection(p);
-							p->SetSection(solid);
-							solid->Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_SHELLSECTION:
-						{
-							GShellSection* shell = new GShellSection(p);
-							p->SetSection(shell);
-							shell->Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_BEAMSECTION:
-						{
-							GBeamSection* beam = new GBeamSection(p);
-							p->SetSection(beam);
-							beam->Load(ar);
-						}
-						break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					p->Load(ar);
 					p->SetLocalID(n++);
-
 					m_Part.push_back(p);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Part.size() == nparts);
 			}
@@ -1219,27 +983,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GMeshObject::Load)");
 
 					GFace* f = new GFace(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
-						case CID_OBJ_FACE_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								f->SetName(szname);
-							}
-							break;					
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					f->Load(ar);
 					f->SetLocalID(n++);
-
 					m_Face.push_back(f);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Face.size() == nfaces);
 			}
@@ -1255,27 +1003,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GMeshObject::Load)");
 
 					GEdge* e = new GEdge(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-						case CID_OBJ_EDGE_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								e->SetName(szname);
-							}
-							break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					e->Load(ar);
 					e->SetLocalID(n++);
-
 					m_Edge.push_back(e);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Edge.size() == nedges);
 			}
@@ -1293,28 +1025,11 @@ void GMeshObject::Load(IArchive& ar)
 						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GMeshObject::Load)");
 
 						GNode* n = new GNode(this);
-						while (IArchive::IO_OK == ar.OpenChunk())
-						{
-							int nid;
-							switch (ar.GetChunkID())
-							{
-							case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-							case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-							case CID_OBJ_NODE_NAME:
-								{
-									char szname[256]={0};
-									ar.read(szname);
-									n->SetName(szname);
-								}
-								break;		
-							}
-							ar.CloseChunk();
-						}
-						ar.CloseChunk();
-
+						n->Load(ar);
 						n->SetLocalID(m++);
-
 						m_Node.push_back(n);
+
+						ar.CloseChunk();
 					}
 					assert((int) m_Node.size() == nnodes);
 				}
