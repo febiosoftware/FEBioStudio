@@ -284,7 +284,7 @@ bool GCylinder2::Update(bool b)
 	}
 
 	// rebuild the GLMesh
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 
 	return true;
 }

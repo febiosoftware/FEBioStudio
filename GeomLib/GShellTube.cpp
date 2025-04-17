@@ -194,7 +194,8 @@ bool GCylindricalPatch::Update(bool b)
 	m_Node[4]->LocalPosition() = vec3d( 0, -l, 0);
 	m_Node[5]->LocalPosition() = vec3d( 0, -l, h);
 
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }

@@ -103,7 +103,7 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	BuildObject(*mb);
 
 	// rebuild the GLMesh
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 
 	SetManipulator(new GMultiBoxManipulator(*this));
 }
@@ -379,8 +379,8 @@ bool GMultiBox::DeletePart(GPart* pg)
 		else m_Node[i]->SetLocalID(n++);
 	}
 
-	// rebuild the GLMesh
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }
@@ -611,8 +611,8 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		for (int l = 0; l < 12; ++l) newPart.m_edge[l] = mb.Edge(bi.m_edge[l])->m_ntag;
 	}
 
-	// rebuild the GLMesh
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }

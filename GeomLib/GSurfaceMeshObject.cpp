@@ -260,7 +260,8 @@ void GSurfaceMeshObject::Update()
 	// update edges
 	UpdateEdges();
 
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -721,10 +722,12 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	BuildGMesh();
 	UpdateFEElementMatIDs();
 	UpdateItemVisibility();
-	BuildFERenderMesh();
+
+	// rebuild the render meshes
+	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 }
 
 void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double weldTolerance)
@@ -813,7 +816,8 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 
 	newMesh->UpdateMesh();
 
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 }
 
 FSSurfaceMesh* createSurfaceMesh(GLMesh* glmesh)

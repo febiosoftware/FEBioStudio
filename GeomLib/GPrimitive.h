@@ -251,6 +251,7 @@ public:
 private:
 	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
+	void BuildGMesh() override;
 };
 
 //-----------------------------------------------------------------------------

@@ -56,11 +56,11 @@ void GCurveMeshObject::ClearMesh()
 
 void GCurveMeshObject::Update()
 {
-	if (m_curve == 0)
+	if (m_curve == nullptr)
 	{
 		m_Node.clear();
 		m_Edge.clear();
-		BuildGMesh();
+		SetRenderMesh(nullptr);
 		return;
 	}
 
@@ -142,7 +142,7 @@ void GCurveMeshObject::Update()
 		}
 	}
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -338,5 +338,5 @@ void GCurveMeshObject::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }

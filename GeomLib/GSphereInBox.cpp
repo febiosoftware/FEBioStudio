@@ -70,37 +70,6 @@ bool GSphereInBox::Update(bool b)
 		n.LocalPosition() = vec3d(x[i], y[i], z[i]);
 	}
 
-	BuildGMesh();
-
-	// project nodes onto surface
-	GLMesh* pm = GetRenderMesh();
-
-	// find all nodes for the inner surface and project to a sphere
-	for (int i=0; i<pm->Nodes(); ++i) pm->Node(i).tag = 0;
-	for (int i=0; i<pm->Faces(); ++i)
-	{
-		GLMesh::FACE& f = pm->Face(i);
-		if (f.pid >= 6)
-		{
-			pm->Node(f.n[0]).tag = 1;
-			pm->Node(f.n[1]).tag = 1;
-			pm->Node(f.n[2]).tag = 1;
-			f.sid = 6;
-		}
-	}
-	for (int i=0; i<pm->Nodes(); ++i)
-	{
-		GLMesh::NODE& n = pm->Node(i);
-		if (n.tag == 1)
-		{
-			n.r.Normalize();
-			n.r *= R;
-		}
-	}
-
-	// move all nodes up so that the primitive lies on the xy-plane
-	for (int i=0; i<pm->Nodes(); ++i) pm->Node(i).r.z += d;
-
 	for (int i=8; i<16; ++i)
 	{
 		GNode& n = *m_Node[i];
@@ -116,7 +85,7 @@ bool GSphereInBox::Update(bool b)
 		n.LocalPosition() = pos;
 	}
 
-	pm->Update();
+	SetRenderMesh(nullptr);
 
 	return true;
 }
@@ -166,4 +135,43 @@ void GSphereInBox::Create()
 	}
 
 	Update();
+}
+
+void GSphereInBox::BuildGMesh()
+{
+	double D = GetFloatValue(DEPTH);
+	double R = GetFloatValue(RADIUS);
+	double d = D * 0.5;
+
+	GPrimitive::BuildGMesh();
+
+	// project nodes onto surface
+	GLMesh* pm = GetRenderMesh();
+
+	// find all nodes for the inner surface and project to a sphere
+	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).tag = 0;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		GLMesh::FACE& f = pm->Face(i);
+		if (f.pid >= 6)
+		{
+			pm->Node(f.n[0]).tag = 1;
+			pm->Node(f.n[1]).tag = 1;
+			pm->Node(f.n[2]).tag = 1;
+			f.sid = 6;
+		}
+	}
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		GLMesh::NODE& n = pm->Node(i);
+		if (n.tag == 1)
+		{
+			n.r.z -= d;
+			n.r.Normalize();
+			n.r *= R;
+			n.r.z += d;
+		}
+	}
+
+	pm->Update();
 }

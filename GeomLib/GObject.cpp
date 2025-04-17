@@ -71,7 +71,7 @@ public:
 	}
 
 public:
-	int	m_ntype;	//!< object type identifier
+	int	m_ntype = -1;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
 	bool	m_bValid;
 
@@ -200,7 +200,6 @@ void GObject::SetFEMesh(FSMesh* pm)
 	{
 		Update();
 		UpdateFEElementMatIDs();
-		BuildFERenderMesh();
 	}
 }
 
@@ -208,7 +207,11 @@ void GObject::BuildFERenderMesh()
 {
 	Imp& m = *imp;
 
-	delete m.m_glFaceMesh; m.m_glFaceMesh = nullptr;
+	if (m.m_glFaceMesh)
+	{
+		delete m.m_glFaceMesh;
+		m.m_glFaceMesh = nullptr;
+	}
 
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
@@ -499,7 +502,8 @@ void GObject::UpdateGNodes()
 		if (n.m_gid >= 0) m_Node[n.m_gid]->LocalPosition() = n.r;
 	}
 
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -555,8 +559,9 @@ bool GObject::Update(bool b)
 	// assign part materials to element matIDs.
 	UpdateFEElementMatIDs();
 
-	BuildGMesh();
-	BuildFERenderMesh();
+	// rebuild the render meshes
+	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 	return GBaseObject::Update(b);
 }
 
@@ -655,6 +660,7 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 // get the render mesh
 GLMesh*	GObject::GetRenderMesh()
 { 
+	if (imp->m_pGMesh == nullptr) BuildGMesh();
 	return imp->m_pGMesh;
 }
 
@@ -856,7 +862,7 @@ void GObject::UpdateItemVisibility()
 	}
 
 	// rebuild render meshes
-	BuildFERenderMesh();
+	SetFERenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -1275,7 +1281,7 @@ void GObject::ShowElements(vector<int>& elemList, bool show)
 	if (mesh)
 	{
 		mesh->ShowElements(elemList, show);
-		BuildFERenderMesh();
+		SetFERenderMesh(nullptr);
 	}
 }
 

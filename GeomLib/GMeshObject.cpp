@@ -182,7 +182,7 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	}
 
 	// rebuild the GLMesh
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -760,7 +760,7 @@ int GMeshObject::AddNode(vec3d r)
 	ss << "Node" << gn->GetID();
 	gn->SetName(ss.str());
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 
 	return gn->GetID();
 }
@@ -1144,7 +1144,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 
 	GetFEMesh()->UpdateMesh();
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }
 
 bool GMeshObject::DeletePart(GPart* pg)

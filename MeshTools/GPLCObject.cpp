@@ -249,8 +249,8 @@ void GPLCObject::Create(GSketch &s)
 	// we only add one part for now
 	AddSolidPart();
 
-	// Build the GLMesh
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	// find all vertices
 	UpdateNodeTypes();

@@ -87,7 +87,7 @@ void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)
 	if (bupdate)
 	{
 		BuildGObject();
-		BuildGMesh();
+		SetRenderMesh(nullptr);
 	}
 #endif
 }
@@ -308,7 +308,7 @@ void GOCCObject::Load(IArchive& ar)
 			std::stringstream ss(s);
 			BRep_Builder aBuilder;
 			BRepTools::Read(m_occ->m_shape, ss, aBuilder);
-			BuildGMesh();
+			SetRenderMesh(nullptr);
 		}
 		break;
 		}
@@ -435,7 +435,7 @@ bool GOCCBox::Update(bool b)
 	BuildGObject();
 
 	// build the viz mesh
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 
 	return true;
 #else
