@@ -26,10 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEFixMesh.h"
-#include "FEFillHole.h"
-#include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FSSurfaceMesh.h>
-#include <MeshLib/FSNodeFaceList.h>
 #include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
