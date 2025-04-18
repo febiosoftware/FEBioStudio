@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FSMeshBase.h"
 #include "FSFace.h"
 #include <assert.h>
+#include <FSCore/FunctionTimer.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -80,7 +81,20 @@ void FSNodeFaceList::Build(FSMeshBase* pm)
 	int NN = m.Nodes();
 	int NF = m.Faces();
 
-	m_face.resize(NN);
+	std::vector<int> val(NN, 0);
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = m.Face(i);
+		int nf = f.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			int n = f.n[j];
+			val[n]++;
+		}
+	}
+
+	m_face.resize(val); // this also resets all vals to zero
+
 	for (int i=0; i<NF; ++i)
 	{
 		FSFace& f = m.Face(i);
@@ -88,20 +102,17 @@ void FSNodeFaceList::Build(FSMeshBase* pm)
 		for (int j = 0; j<nf; ++j)
 		{
 			int n = f.n[j];
-			vector<NodeFaceRef>& li = m_face[n];
-
-			NodeFaceRef ref;
+			NodeFaceRef& ref = m_face.item(n, val[n]);
 			ref.fid = i;
 			ref.nid = j;
 			ref.pf = &f;
-
-			li.push_back(ref);
+			val[n]++;
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool FSNodeFaceList::HasFace(int n, FSFace* pf)
+bool FSNodeFaceList::HasFace(int n, FSFace* pf) const
 {
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i) if (Face(n, i) == pf) return true;
@@ -129,7 +140,7 @@ bool FSNodeFaceList::Sort(int node)
 
 	for (int i=0; i<nval; ++i) Face(node, i)->m_ntag = 0;
 
-	NodeFaceRef ref = m_face[node][0];
+	NodeFaceRef ref = m_face.item(node, 0);
 	ref.pf->m_ntag = 1;
 	fl.push_back(ref);
 	bool bdone = false;
@@ -161,8 +172,8 @@ bool FSNodeFaceList::Sort(int node)
 				}
 				assert(k < nval);
 
-				fl.push_back(m_face[node][k]);
-				ref = m_face[node][k];
+				fl.push_back(m_face.item(node,k));
+				ref = m_face.item(node,k);
 				bdone = false;
 			}
 		}
@@ -172,15 +183,19 @@ bool FSNodeFaceList::Sort(int node)
 	// for non-manifold topologies this algorithm
 	// can fail. In that case, we return false
 	if ((int)fl.size() != nval) return false;
-	m_face[node] = fl;
+
+	for (int i =0; i<fl.size(); ++i)
+	m_face.item(node, i) = fl[i];
 
 	return true;
 }
 
+/*
 const vector<NodeFaceRef>& FSNodeFaceList::FaceList(int n) const
 { 
 	return m_face[n]; 
 }
+*/
 
 //-----------------------------------------------------------------------------
 // This function will fail if the facet could not be found. 
@@ -204,12 +219,12 @@ int FSNodeFaceList::FindFace(int inode, int n[10], int m)
 		assert(false);
 	};
 
-	vector<NodeFaceRef>& ni = m_face[inode];
-	int nf = (int)ni.size();
+	int nf = (int)m_face.items(inode);
 	for (int i = 0; i<nf; ++i)
 	{
-		FSFace& f = m_pm->Face(ni[i].fid);
-		if (f == ft) return ni[i].fid;
+		NodeFaceRef& ref = m_face.item(inode, i);
+		FSFace& f = m_pm->Face(ref.fid);
+		if (f == ft) return ref.fid;
 	}
 	return -1;
 }

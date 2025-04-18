@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include "FSCoreMesh.h"
+#include <FSCore/NestedArray.h>
 
 //-----------------------------------------------------------------------------
 // the first index is the element number
@@ -48,16 +49,14 @@ public:
 
 	bool IsEmpty() const;
 
-	int Valence(int n) const { return (int)m_elem[n].size(); }
-	FSElement_* Element(int n, int j) { return m_elem[n][j].pe; }
-	int ElementIndex(int n, int j) const { return m_elem[n][j].eid; }
+	int Valence(int n) const { return (int)m_elem.items(n); }
+	FSElement_* Element(int n, int j) { return m_elem.item(n,j).pe; }
+	int ElementIndex(int n, int j) const { return m_elem.item(n,j).eid; }
+	int ElementNodeIndex(int n, int j) const { return m_elem.item(n,j).nid; }
 
 	bool HasElement(int node, int iel) const;
 
-	std::vector<int> ElementIndexList(int n) const;
-	const std::vector<NodeElemRef>& ElementList(int n) const { return m_elem[n]; }
-
 protected:
 	FSCoreMesh*	m_pm;
-	std::vector< std::vector<NodeElemRef> >	m_elem;
+	NestedArray<NodeElemRef> m_elem;
 };

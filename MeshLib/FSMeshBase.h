@@ -87,9 +87,9 @@ public: // interface for accessing mesh items
 	FSFace* FacePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
 	const FSFace* FacePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
 
-	void DeleteFaces() { if (!m_Face.empty()) m_Face.clear(); }
-	void DeleteEdges() { if (!m_Edge.empty()) m_Edge.clear(); }
-	void DeleteNodes() { if (!m_Node.empty()) m_Node.clear(); }
+	void DeleteFaces() { if (!m_Face.empty()) m_Face.clear(); m_NFL.Clear(); }
+	void DeleteEdges() { if (!m_Edge.empty()) m_Edge.clear(); m_NFL.Clear(); }
+	void DeleteNodes() { if (!m_Node.empty()) m_Node.clear(); m_NFL.Clear(); }
 
 public:
 	void TagAllFaces(int ntag);
@@ -106,7 +106,7 @@ public:
 
 	bool IsCreaseEdge(int n0, int n1);
 
-	const std::vector<NodeFaceRef>& NodeFaceList(int n) const;
+	FSNodeFaceList& NodeFaceList();
 
 protected:
 	void RemoveEdges(int ntag);

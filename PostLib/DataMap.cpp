@@ -158,10 +158,11 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	}
 
 	// "normalize" the gradients
+	FSNodeElementList& NEL = mesh.NodeElementList();
 	for (i=0; i<mesh.Nodes(); i++)
 	{
-		const std::vector<NodeElemRef>& nel = mesh.NodeElemList(i);
-		if (!nel.empty()) G[i] /= (float) nel.size();
+		int ne = NEL.Valence(i);
+		if (ne != 0) G[i] /= (float) ne;
 		G[i] *= -1;
 	}
 }

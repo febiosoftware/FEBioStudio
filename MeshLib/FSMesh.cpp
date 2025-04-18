@@ -189,7 +189,7 @@ void FSMesh::Create(int nodes, int elems, int faces, int edges)
 	// allocate storage
 	if (nodes > 0) { if (nodes != m_Node.size()) ResizeNodes(nodes); }
 	if (elems > 0) { if (elems != m_Elem.size()) ResizeElems(elems); }
-	if (faces > 0) { if (faces != m_Face.size()) m_Face.resize(faces); }
+	if (faces > 0) { if (faces != m_Face.size()) ResizeFaces(faces); }
 	if (edges > 0) { if (edges != m_Edge.size()) m_Edge.resize(edges); }
 
 	// clear mesh data
@@ -214,6 +214,7 @@ void FSMesh::ResizeEdges(int newSize)
 void FSMesh::ResizeFaces(int newSize)
 {
 	m_Face.resize(newSize);
+	m_NFL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -863,6 +864,7 @@ void FSMesh::UpdateElementNeighbors()
 void FSMesh::MarkExteriorElements()
 {
 	// set exterior flags
+#pragma omp parallel for
 	for (int i = 0; i < Elements(); ++i)
 	{
 		FSElement& el = Element(i);
@@ -880,16 +882,6 @@ void FSMesh::MarkExteriorElements()
 			}
 		}
 		else el.SetExterior(true);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FSMesh::MarkExteriorFaces()
-{
-	for (int i = 0; i < Faces(); ++i)
-	{
-		FSFace& face = Face(i);
-		face.SetExterior(face.m_elem[1].eid == -1);
 	}
 }
 
@@ -938,30 +930,35 @@ void FSMesh::UpdateFaceElementTable()
 	if ((NF == 0) || (NE == 0)) return;
 
 	// clear all face-element connectivity
-	for (int i = 0; i<NF; ++i)
+#pragma omp parallel
 	{
-		FSFace& f = Face(i);
-		f.m_elem[0].eid = -1; f.m_elem[0].lid = -1;
-		f.m_elem[1].eid = -1; f.m_elem[1].lid = -1;
-		f.m_elem[2].eid = -1; f.m_elem[2].lid = -1;
-	}
-
-	for (int i = 0; i<NE; ++i)
-	{
-		FSElement& el = Element(i);
-
-		// solid elements
-		int nf = el.Faces();
-		for (int i = 0; i<nf; ++i)
+#pragma omp for nowait
+		for (int i = 0; i < NF; ++i)
 		{
-			el.m_face[i] = -1;
+			FSFace& f = Face(i);
+			f.m_elem[0].eid = -1; f.m_elem[0].lid = -1;
+			f.m_elem[1].eid = -1; f.m_elem[1].lid = -1;
+			f.m_elem[2].eid = -1; f.m_elem[2].lid = -1;
 		}
 
-		// shell elements
-		int ne = el.Edges();
-		if (ne > 0)
+#pragma omp for nowait
+		for (int i = 0; i < NE; ++i)
 		{
-			el.m_face[0] = -1;
+			FSElement& el = Element(i);
+
+			// solid elements
+			int nf = el.Faces();
+			for (int i = 0; i < nf; ++i)
+			{
+				el.m_face[i] = -1;
+			}
+
+			// shell elements
+			int ne = el.Edges();
+			if (ne > 0)
+			{
+				el.m_face[0] = -1;
+			}
 		}
 	}
 
@@ -969,10 +966,11 @@ void FSMesh::UpdateFaceElementTable()
 	FSNodeElementList& NET = NodeElementList();
 
 	// loop over all faces
-	FSFace f2;
+#pragma omp parallel for shared(NET)
 	for (int i = 0; i<NF; ++i)
 	{
 		FSFace& face = Face(i);
+		FSFace f2;
 
 		int n0 = face.n[0];
 		int nval = NET.Valence(n0);
@@ -1070,9 +1068,10 @@ void FSMesh::UpdateFaceElementTable()
 		}
 
 		assert(face.m_elem[0].eid != -1);
-	}
 
-	MarkExteriorFaces();
+		// mark exterior faces
+		face.SetExterior(face.m_elem[1].eid == -1);
+	}
 }
 
 void FSMesh::UpdateEdgeElementTable()
@@ -1176,8 +1175,7 @@ void FSMesh::UpdateFaceNeighbors()
 	while (S.empty() == false);
 
 	// build the node-face table
-	FSNodeFaceList NFT;
-	NFT.Build(this);
+	FSNodeFaceList& NFT = NodeFaceList();
 
 	// find all face neighbours
 	int n[4];

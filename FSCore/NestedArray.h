@@ -23,74 +23,49 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <vector>
 
-#include "FSNodeElementList.h"
-#include <FSCore/FunctionTimer.h>
-
-FSNodeElementList::FSNodeElementList()
+template <class T>
+struct NestedArray
 {
-	m_pm = nullptr;
-}
+	std::vector<int> ind; // size n + 1
+	std::vector<T> data;
 
-FSNodeElementList::~FSNodeElementList()
-{
-}
-
-void FSNodeElementList::Build(FSCoreMesh* pm)
-{
-	m_pm = pm;
-	assert(m_pm);
-
-	int NN = m_pm->Nodes();
-	int NE = m_pm->Elements();
-	if ((NE == 0) || (NN == 0)) return;
-
-	std::vector<int> val(NN);
-	for (int i = 0; i < NE; ++i)
-	{
-		FSElement_& el = m_pm->ElementRef(i);
-		int ne = el.Nodes();
-		for (int j = 0; j < ne; ++j)
-		{
-			int n = el.m_node[j];
-			val[n]++;
-		}
+	int items(int n) const { return ind[n + 1] - ind[n]; }
+	T& item(int n, int j) {
+		assert(j < items(n));
+		return data[ind[n] + j];
 	}
-	m_elem.resize(val); // this also resets all vals to zero
 
-	for (int i=0; i<NE; ++i)
-	{
-		FSElement_& el = m_pm->ElementRef(i);
-		int ne = el.Nodes();
-		for (int j=0; j<ne; ++j) 
-		{
-			int n = el.m_node[j];
-
-			NodeElemRef& ref = m_elem.item(n, val[n]);
-			ref.eid = i;
-			ref.nid = j;
-			ref.pe = &el;
-			val[n]++;
-		}
+	const T& item(int n, int j) const {
+		assert(j < items(n));
+		return data[ind[n] + j];
 	}
-}
 
-void FSNodeElementList::Clear()
-{
-	m_pm = nullptr;
-	m_elem.clear();
-}
+	void clear()
+	{
+		ind.clear();
+		data.clear();
+	}
 
-bool FSNodeElementList::IsEmpty() const
-{
-	return m_elem.empty();
-}
+	bool empty() const { return data.empty(); }
 
-bool FSNodeElementList::HasElement(int node, int iel) const
-{
-	int nval = Valence(node);
-	for (int i=0; i<nval; ++i) 
-		if (ElementIndex(node, i) == iel) return true;
+	void resize(std::vector<int>& val)
+	{
+		clear();
 
-	return false;
-}
+		size_t N = val.size();
+		ind.resize(N + 1);
+		int n0 = 0;
+		for (int i = 0; i < N; ++i)
+		{
+			int ni = val[i];
+			ind[i] = n0;
+			n0 += ni;
+			val[i] = 0;
+		}
+		ind[N] = n0;
+		data.resize(n0);
+	}
+};

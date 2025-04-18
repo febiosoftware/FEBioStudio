@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <vector>
+#include <assert.h>
+#include <FSCore/NestedArray.h>
 
 class FSFace;
 class FSMeshBase;
@@ -48,22 +50,23 @@ public:
 
 	bool IsEmpty() const;
 
-	int Valence(int i) const { return (int) m_face[i].size(); }
-	FSFace* Face(int n, int i) { return m_face[n][i].pf; }
-	int FaceIndex(int n, int i) { return m_face[n][i].fid; }
+	int Valence(int i) const { return (int) m_face.items(i); }
+	FSFace* Face(int n, int i) { return m_face.item(n, i).pf; }
+	const FSFace* Face(int n, int i) const { return m_face.item(n, i).pf; }
+	int FaceIndex(int n, int i) const { return m_face.item(n, i).fid; }
+	int FaceNodeIndex(int n, int i) const { return m_face.item(n, i).nid; }
 
-	bool HasFace(int n, FSFace* pf);
+	bool HasFace(int n, FSFace* pf) const;
 
 	int FindFace(const FSFace& f);
 
 	int FindFace(int inode, int n[10], int m);
-
-	const std::vector<NodeFaceRef>& FaceList(int n) const;
 
 protected:
 	bool Sort(int node);
 
 protected:
 	FSMeshBase*	m_pm;
-	std::vector< std::vector<NodeFaceRef> >	m_face;
+
+	NestedArray<NodeFaceRef> m_face;
 };

@@ -309,6 +309,8 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 	FEMeshData& rd = state.m_Data[ndata];
 	DATA_FORMAT fmt = rd.GetFormat();
 
+	FSNodeFaceList& NFL = mesh->NodeFaceList();
+
 	// for float/node face data we evaluate the nodal values directly.
 	if ((rd.GetType() == DATA_SCALAR) && (fmt == DATA_NODE))
 	{
@@ -375,16 +377,18 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			NODEDATA& node = state.m_NODE[i];
-			const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(i);
 			node.m_val = 0.f;
 			node.m_ntag = 0;
 			int n = 0;
-			for (int j = 0; j < (int)nfl.size(); ++j)
+			int NF = NFL.Valence(i);
+			for (int j = 0; j < NF; ++j)
 			{
-				FACEDATA& f = state.m_FACE[nfl[j].fid];
+				int fid = NFL.FaceIndex(i, j);
+				int nid = NFL.FaceNodeIndex(i, j);
+				FACEDATA& f = state.m_FACE[fid];
 				if (f.m_ntag > 0)
 				{
-					node.m_val += faceData.value(nfl[j].fid, nfl[j].nid);
+					node.m_val += faceData.value(fid, nid);
 					++n;
 				}
 			}
@@ -548,6 +552,7 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 
 	// now evaluate the nodes
 	ValArray& elemData = state.m_ElemData;
+	FSNodeElementList& NEL = mesh->NodeElementList();
 	for (int i=0; i<mesh->Nodes(); ++i)
 	{
 		FSNode& node = mesh->Node(i);
@@ -555,15 +560,16 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 		state.m_NODE[i].m_ntag = 0;
 		if (node.IsEnabled())
 		{
-			const vector<NodeElemRef>& nel = mesh->NodeElemList(i);
-			int m = (int) nel.size(), n=0;
+			int m = NEL.Valence(i), n=0;
 			float val = 0.f;
 			for (int j=0; j<m; ++j)
 			{
-				ELEMDATA& e = state.m_ELEM[nel[j].eid];
+				int eid = NEL.ElementIndex(i, j);
+				int nid = NEL.ElementNodeIndex(i, j);
+				ELEMDATA& e = state.m_ELEM[eid];
 				if (e.m_state & StatusFlags::ACTIVE)
 				{
-					val += elemData.value(nel[j].eid, nel[j].nid);
+					val += elemData.value(eid, nid);
 					++n;
 				}
 			}
@@ -731,16 +737,17 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 	else if (IS_FACE_FIELD(nfield))
 	{
 		// we take the average of the adjacent face values
-		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
-		if (!nfl.empty())
+		FSNodeFaceList& NFL = mesh->NodeFaceList();
+		int NF = NFL.Valence(n);
+		if (NF != 0)
 		{
-			int nf = (int)nfl.size(), n = 0;
+			int n = 0;
 			float data[FSFace::MAX_NODES], val;
-			for (int i=0; i<nf; ++i)
+			for (int i=0; i<NF; ++i)
 			{
-				if (EvaluateFace(nfl[i].fid, ntime, nfield, data, val))
+				if (EvaluateFace(NFL.FaceIndex(n, i), ntime, nfield, data, val))
 				{
-					d.m_val += data[nfl[i].nid];
+					d.m_val += data[NFL.FaceNodeIndex(n, i)];
 					++n;
 				}
 			}
@@ -750,20 +757,22 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 	else if (IS_ELEM_FIELD(nfield))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
+		FSNodeElementList& NEL = mesh->NodeElementList();
 		float data[FSElement::MAX_NODES] = {0.f}, val;
-		int ne = (int)nel.size(), n = 0;
-		if (!nel.empty())
+		int ne = NEL.Valence(n), m = 0;
+		if (ne > 0)
 		{
 			for (int i=0; i<ne; ++i)
 			{
-				if (EvaluateElement(nel[i].eid, ntime, nfield, data, val))
+				int eid = NEL.ElementIndex(n, i);
+				int nid = NEL.ElementNodeIndex(n, i);
+				if (EvaluateElement(eid, ntime, nfield, data, val))
 				{
-					d.m_val += data[nel[i].nid];
-					++n;
+					d.m_val += data[nid];
+					++m;
 				}
 			}
-			if (n != 0) d.m_val /= (float) n;
+			if (m != 0) d.m_val /= (float) m;
 		}
 	}
 	else assert(false);
@@ -2387,35 +2396,37 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 	else if (IS_ELEM_FIELD(nvec))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
-		if (!nel.empty())
+		FSNodeElementList& NEL = mesh->NodeElementList();
+		int ne = NEL.Valence(n);
+		if (ne > 0)
 		{
-			int n = 0;
-			for (int i = 0; i < (int)nel.size(); ++i)
+			int m = 0;
+			for (int i = 0; i < ne; ++i)
 			{
-				int iel = nel[i].eid;
+				int iel = NEL.ElementIndex(n, i);
 				FSElement_& el = mesh->ElementRef(iel);
 				Material* mat = GetMaterial(el.m_MatID);
 				if (mat->benable)
 				{
 					r += EvaluateElemVector(iel, ntime, nvec);
-					n++;
+					m++;
 				}
 			}
-			if (n != 0) r /= (float)n;
+			if (m != 0) r /= (float)m;
 		}
 	}
 	else if (IS_FACE_FIELD(nvec))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
-		if (!nfl.empty())
+		FSNodeFaceList& NFL = mesh->NodeFaceList();
+		int NF = NFL.Valence(n);
+		if (NF > 0)
 		{
 			int n = 0;
 			vec3f fv;
-			for (int i = 0; i < (int)nfl.size(); ++i)
+			for (int i = 0; i < NF; ++i)
 			{
-				if (EvaluateFaceVector(nfl[i].fid, ntime, nvec, fv)) { r += fv; n++; }
+				if (EvaluateFaceVector(NFL.FaceIndex(n, i), ntime, nvec, fv)) { r += fv; n++; }
 			}
 			r /= (float)n;
 		}
@@ -2710,11 +2721,12 @@ mat3f FEPostModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 	else
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
-		if (!nel.empty())
+		FSNodeElementList& NEL = mesh->NodeElementList();
+		int ne = NEL.Valence(n);
+		if (ne > 0)
 		{
-			for (int i = 0; i < (int)nel.size(); ++i) m += EvaluateElemTensor(nel[i].eid, ntime, nten, ntype);
-			m /= (float)nel.size();
+			for (int i = 0; i < ne; ++i) m += EvaluateElemTensor(NEL.ElementIndex(n, i), ntime, nten, ntype);
+			m /= (float)ne;
 		}
 	}
 

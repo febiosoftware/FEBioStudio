@@ -145,7 +145,6 @@ public: // Helper functions for updating mesh data structures
 	int RemoveElements(int ntag);
 
 	void MarkExteriorElements();
-	void MarkExteriorFaces();
 	void MarkExteriorEdges();
 
 	// mesh validation
@@ -245,8 +244,6 @@ public: // --- M E S H   Q U E R I E S ---
 	std::vector<int> GetElementsFromSelectedFaces();
 
 	FSNodeElementList& NodeElementList();
-
-	const std::vector<NodeElemRef>& NodeElemList(int nodeIndex) const { return m_NEL.ElementList(nodeIndex); }
 
 	int FindFaceIndex(FSFace& face);
 

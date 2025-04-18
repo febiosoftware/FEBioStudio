@@ -96,9 +96,10 @@ bool FSMeshBase::IsCreaseEdge(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
-const vector<NodeFaceRef>& FSMeshBase::NodeFaceList(int n) const 
+FSNodeFaceList& FSMeshBase::NodeFaceList()
 { 
-	return m_NFL.FaceList(n); 
+	if (m_NFL.IsEmpty()) m_NFL.Build(this);
+	return m_NFL; 
 }
 
 //-----------------------------------------------------------------------------
@@ -118,6 +119,7 @@ void FSMeshBase::RemoveFaces(int ntag)
 		}
 	}
 	m_Face.resize(n);
+	m_NFL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -137,6 +139,7 @@ void FSMeshBase::RemoveEdges(int ntag)
 		}
 	}
 	m_Edge.resize(n);
+	m_NFL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -661,6 +664,8 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 	// add the first node
 	nl1.insert(inode);
 
+	FSNodeFaceList& NFL = NodeFaceList();
+
 	// loop over all levels
 	vector<int> nl2; nl2.reserve(64);
 	for (int k = 0; k <= levels; ++k)
@@ -669,14 +674,11 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 		std::set<int>::iterator it;
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i = 0; i < NF; ++i)
 			{
-				FSFace& f = Face(nfl[i].fid);
+				FSFace& f = *NFL.Face(*it, i);
 				f.m_ntag = 0;
 			}
 		}
@@ -685,14 +687,11 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 		nl2.clear();
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i = 0; i < NF; ++i)
 			{
-				FSFace& f = Face(nfl[i].fid);
+				FSFace& f = *NFL.Face(*it, i);
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();
@@ -1097,8 +1096,7 @@ void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1, int tag)
 	}
 	else
 	{
-		FSNodeFaceList NFL;
-		NFL.Build(pm);
+		FSNodeFaceList& NFL = pm->NodeFaceList();
 
 		int n = n0;
 		do

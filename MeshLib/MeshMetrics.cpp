@@ -1198,14 +1198,14 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, 
 	vec3f r0 = to_vec3f(mesh.NodePosition(node));
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(node);
-	int NF = nfl.size();
+	FSNodeFaceList& NFL = mesh.NodeFaceList();
+	int NF = NFL.Valence(node);
 
 	// estimate surface normal
 	vec3f sn(0, 0, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		const FSFace& f = mesh.Face(nfl[i].fid);
+		const FSFace& f = *NFL.Face(node, i);
 		sn += f.m_fn;
 	}
 	sn.Normalize();

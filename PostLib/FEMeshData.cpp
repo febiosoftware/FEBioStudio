@@ -1446,6 +1446,8 @@ void Curvature::level(int n, int l, set<int>& nl1)
 	FEPostModel* pfem = GetFSModel();
 	FSMesh* pmesh = GetFEState()->GetFEMesh();
 
+	FSNodeFaceList& NFL = pmesh->NodeFaceList();
+
 	// add the first node
 	nl1.insert(n);
 
@@ -1457,16 +1459,14 @@ void Curvature::level(int n, int l, set<int>& nl1)
 		set<int>::iterator it;
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i=0; i<NF; ++i)
 			{
-				if (m_face[nfl[i].fid] == 1)
+				int fid = NFL.FaceIndex(*it, i);
+				if (m_face[fid] == 1)
 				{
-					FSFace& f = pmesh->Face(nfl[i].fid); 
+					FSFace& f = pmesh->Face(fid); 
 					f.m_ntag = 0;
 				}
 			}
@@ -1476,15 +1476,13 @@ void Curvature::level(int n, int l, set<int>& nl1)
 		nl2.clear();
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i=0; i<NF; ++i)
 			{
-				FSFace& f = pmesh->Face(nfl[i].fid);
-				if (m_face[nfl[i].fid] == 1)
+				int fid = NFL.FaceIndex(*it, i);
+				FSFace& f = *NFL.Face(*it, i);
+				if (m_face[fid] == 1)
 				{
 					if (f.m_ntag == 0)
 					{
@@ -1536,16 +1534,17 @@ float Curvature::nodal_curvature(int n, int measure)
 	vec3f r0 = pfem->NodePosition(n, ntime);
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
-	int NF = nfl.size();
+	FSNodeFaceList& NFL = pmesh->NodeFaceList();
+	int NF = NFL.Valence(n);
 
 	// estimate surface normal
 	vec3f sn(0,0,0);
 	for (int i=0; i<NF; ++i) 
 	{
-		if (m_face[nfl[i].fid] == 1)
+		int fid = NFL.FaceIndex(n, i);
+		if (m_face[fid] == 1)
 		{
-			FSFace& f = pmesh->Face(nfl[i].fid);
+			FSFace& f = pmesh->Face(fid);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}
@@ -1592,6 +1591,8 @@ void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 	// add the first node
 	nl1.insert(n);
 
+	FSNodeFaceList& NFL = pmesh->NodeFaceList();
+
 	// loop over all levels
 	vector<int> nl2; nl2.reserve(64);
 	for (int k=0; k<=l; ++k)
@@ -1600,16 +1601,14 @@ void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 		set<int>::iterator it;
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i=0; i<NF; ++i)
 			{
-				if (m_face[nfl[i].fid] == 1)
+				int fid = NFL.FaceIndex(*it, i);
+				if (m_face[fid] == 1)
 				{
-					FSFace& f = pmesh->Face(nfl[i].fid); 
+					FSFace& f = *NFL.Face(*it, i);
 					f.m_ntag = 0;
 				}
 			}
@@ -1619,15 +1618,13 @@ void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 		nl2.clear();
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
-			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
-			int NF = nfl.size();
-
 			// add the other nodes
+			int NF = NFL.Valence(*it);
 			for (int i=0; i<NF; ++i)
 			{
-				FSFace& f = pmesh->Face(nfl[i].fid);
-				if (m_face[nfl[i].fid] == 1)
+				int fid = NFL.FaceIndex(*it, i);
+				FSFace& f = *NFL.Face(*it, i);
+				if (m_face[fid] == 1)
 				{
 					if (f.m_ntag == 0)
 					{
@@ -1679,16 +1676,16 @@ vec3f PrincCurvatureVector::nodal_curvature(int n, int m)
 	vec3f r0 = pfem->NodePosition(n, ntime);
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
-	int NF = nfl.size();
+	FSNodeFaceList& NFL = pmesh->NodeFaceList();
+	int NF = NFL.Valence(n);
 
 	// estimate surface normal
 	vec3f sn(0,0,0);
 	for (int i=0; i<NF; ++i) 
 	{
-		if (m_face[nfl[i].fid] == 1)
+		if (m_face[NFL.FaceIndex(n, i)] == 1)
 		{
-			FSFace& f = pmesh->Face(nfl[i].fid);
+			FSFace& f = *NFL.Face(n, i);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}
