@@ -698,8 +698,11 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	re.setLineWidth(rc.m_settings.m_line_size);
 
 	Post::CGLModel& gm = *m_scene->GetGLModel();
-	re.pushState();
+	if (gm.GetActiveMesh() == nullptr) return;
+
 	FSMesh& mesh = *gm.GetActiveMesh();
+
+	re.pushState();
 	int curMat = -1;
 	bool bvisible = true;
 
