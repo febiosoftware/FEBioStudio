@@ -591,10 +591,6 @@ void FSMesh::RebuildElementData()
 	// Update the element neighbours
 	// (Depends on element connectivity)
 	UpdateElementNeighbors();
-
-	// mark exterior elements 
-	// (Depends on element neighbors)
-	MarkExteriorElements();
 }
 
 //-----------------------------------------------------------------------------
@@ -746,55 +742,95 @@ void FSMesh::UpdateElementNeighbors()
 	{
 		FSElement_* pe = ElementPtr(i);
 		// do the solid elements first
-		int n = pe->Faces();
-		FSFace f1, f2;
-		for (int j = 0; j < n; j++)
+		if (pe->IsSolid())
 		{
-			// check if we already have a neighbor assigned
-			if (pe->m_nbr[j] == -1)
+			pe->SetExterior(false);
+			int n = pe->Faces();
+			FSFace f1, f2;
+			for (int j = 0; j < n; j++)
 			{
-				// get the corresponding element face
-				pe->GetFace(j, f1);
-
-				// pick a node on the face
-				int inode = f1.n[0];
-				int nval = NET.Valence(inode);
-				bool bfound = false;
-
-				// search for shell neighbors first
-				// This is necessary since a shell can share a face with a solid. 
-				// This requires a bit of special handling, so we need to check for that first
-				for (int k = 0; k < nval; k++)
+				// check if we already have a neighbor assigned
+				if (pe->m_nbr[j] == -1)
 				{
-					int nbe = NET.ElementIndex(inode, k);
-					FSElement_* pne = NET.Element(inode, k);
-					if ((pne != pe) && pne->IsShell())
-					{
-						// get the shell surface facet
-						pne->GetShellFace(f2);
-						if (f1 == f2)
-						{
-							bfound = true;
-							pe->m_nbr[j] = nbe;
-							break;
-						}
-					}
-				}
+					// get the corresponding element face
+					pe->GetFace(j, f1);
 
-				if (bfound == false)
-				{
-					// search for solid neighbors next
+					// pick a node on the face
+					int inode = f1.n[0];
+					int nval = NET.Valence(inode);
+					bool bfound = false;
+
+					// search for shell neighbors first
+					// This is necessary since a shell can share a face with a solid. 
+					// This requires a bit of special handling, so we need to check for that first
 					for (int k = 0; k < nval; k++)
 					{
 						int nbe = NET.ElementIndex(inode, k);
-						FSElement_* pne = ElementPtr(nbe);
-						if ((pne != pe) && pne->IsSolid())
+						FSElement_* pne = NET.Element(inode, k);
+						if ((pne != pe) && pne->IsShell())
 						{
-							int l = pne->FindFace(f1);
-							if (l != -1)
+							// get the shell surface facet
+							pne->GetShellFace(f2);
+							if (f1 == f2)
 							{
 								bfound = true;
 								pe->m_nbr[j] = nbe;
+								break;
+							}
+						}
+					}
+
+					if (bfound == false)
+					{
+						// search for solid neighbors next
+						for (int k = 0; k < nval; k++)
+						{
+							int nbe = NET.ElementIndex(inode, k);
+							FSElement_* pne = ElementPtr(nbe);
+							if ((pne != pe) && pne->IsSolid())
+							{
+								int l = pne->FindFace(f1);
+								if (l != -1)
+								{
+									bfound = true;
+									pe->m_nbr[j] = nbe;
+									pne->m_nbr[l] = i;
+									break;
+								}
+							}
+						}
+					}
+
+					if (bfound == false) pe->SetExterior(true);
+				}
+			}
+		}
+
+		// do the shell elements next
+		if (pe->IsShell())
+		{
+			pe->SetExterior(true);
+			int n = pe->Edges();
+			for (int j = 0; j < n; j++)
+			{
+				if (pe->m_nbr[j] == -1)
+				{
+					FSEdge edge = pe->GetEdge(j);
+
+					// find the neighbour element
+					int inode = edge.n[0];
+					int nval = NET.Valence(inode);
+					bool bfound = false;
+					for (int k = 0; k < nval; k++)
+					{
+						FSElement_* pne = NET.Element(inode, k);
+						if ((pne != pe) && (pe->is_equal(*pne) == false) && pne->IsShell())
+						{
+							int l = pne->FindEdge(edge);
+							if (l != -1)
+							{
+								bfound = true;
+								pe->m_nbr[j] = NET.ElementIndex(inode, k);
 								pne->m_nbr[l] = i;
 								break;
 							}
@@ -804,39 +840,10 @@ void FSMesh::UpdateElementNeighbors()
 			}
 		}
 
-		// do the shell elements next
-		n = pe->Edges();
-		for (int j = 0; j < n; j++)
-		{
-			if (pe->m_nbr[j] == -1)
-			{
-				FSEdge edge = pe->GetEdge(j);
-
-				// find the neighbour element
-				int inode = edge.n[0];
-				int nval = NET.Valence(inode);
-				bool bfound = false;
-				for (int k = 0; k < nval; k++)
-				{
-					FSElement_* pne = NET.Element(inode, k);
-					if ((pne != pe) && (pe->is_equal(*pne) == false) && pne->IsShell())
-					{
-						int l = pne->FindEdge(edge);
-						if (l != -1)
-						{
-							bfound = true;
-							pe->m_nbr[j] = NET.ElementIndex(inode, k);
-							pne->m_nbr[l] = i;
-							break;
-						}
-					}
-				}
-			}
-		}
-
 		// do the beam elements
 		if (pe->IsBeam())
 		{
+			pe->SetExterior(true);
 			for (int j = 0; j < 2; ++j)
 			{
 				pe->m_nbr[j] = -1;
@@ -857,31 +864,6 @@ void FSMesh::UpdateElementNeighbors()
 				}
 			}
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FSMesh::MarkExteriorElements()
-{
-	// set exterior flags
-#pragma omp parallel for
-	for (int i = 0; i < Elements(); ++i)
-	{
-		FSElement& el = Element(i);
-		if (el.IsSolid())
-		{
-			el.SetExterior(false);
-			int nn = el.Faces();
-			for (int j = 0; j < nn; ++j)
-			{
-				if (el.m_nbr[j] < 0)
-				{
-					el.SetExterior(true);
-					break;
-				}
-			}
-		}
-		else el.SetExterior(true);
 	}
 }
 

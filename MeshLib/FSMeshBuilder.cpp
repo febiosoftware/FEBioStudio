@@ -523,9 +523,6 @@ FSMesh* FSMeshBuilder::DeleteTaggedParts(FSMesh& oldMesh, int TAG)
 	// update the element neighbours
 	mesh.UpdateElementNeighbors();
 
-	// mark the exterior elements
-	mesh.MarkExteriorElements();
-
 	// update face data
 	mesh.RebuildFaceData();
 
@@ -1847,9 +1844,6 @@ void FSMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh, bool 
 {
 	// update the element neighbours
 	m_mesh.UpdateElementNeighbors();
-
-	// mark the exterior elements
-	m_mesh.MarkExteriorElements();
 
 	// update element partitioning
 	if (partitionMesh)

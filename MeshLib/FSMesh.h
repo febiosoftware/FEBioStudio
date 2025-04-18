@@ -144,7 +144,6 @@ public: // Helper functions for updating mesh data structures
 
 	int RemoveElements(int ntag);
 
-	void MarkExteriorElements();
 	void MarkExteriorEdges();
 
 	// mesh validation
