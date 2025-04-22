@@ -51,6 +51,11 @@ bool AnsysImport::Load(const char* szfile)
 	// parse the file
 	while (!feof(m_fp) && !ferror(m_fp))
 	{
+		if (strstr(m_szline, "SFE") || strstr(m_szline, "sfe"))
+		{
+			// skip this
+			fgets(m_szline, 255, m_fp);
+		}
 		if (strstr(m_szline, "NBLOCK") || strstr(m_szline, "nblock"))
 		{
 			if (read_NBLOCK() == false) return errf("Error while reading NBLOCK");

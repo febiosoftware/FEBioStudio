@@ -800,7 +800,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// step data
-			if (WriteSection(FEBIO_STEPS))
+			if (WriteSection(FEBIO_STEPS) && (m_nsteps > 1))
 			{
 				if ((m_writeControlSection == false) || (m_nsteps > 2) || (bsingle_step == false))
 				{
