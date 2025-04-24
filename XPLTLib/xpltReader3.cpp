@@ -560,6 +560,14 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
                 case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case ARRAY  :
+				{
+					FEArrayDataField* data = new FEArrayDataField(&fem, FACE_DATA, DATA_ITEM, EXPORT_DATA);
+					data->SetArraySize(it.arraySize);
+					data->SetArrayNames(it.arrayNames);
+					pdf = data;
+				}
+				break;
 				default:
 					assert(false);
 				}
@@ -2702,7 +2710,7 @@ bool XpltReader3::ReadFaceData(FEPostModel& fem, FEState* pstate)
 						switch (it.nfmt)
 						{
 						case FMT_NODE  : if (ReadFaceData_NODE  (mesh, s, pstate->m_Data[nfield], it.ntype) == false) return errf("Failed reading face data"); break;
-						case FMT_ITEM  : if (ReadFaceData_ITEM  (s, pstate->m_Data[nfield], it.ntype   ) == false) return errf("Failed reading face data"); break;
+						case FMT_ITEM  : if (ReadFaceData_ITEM  (s, pstate->m_Data[nfield], it.ntype, it.arraySize) == false) return errf("Failed reading face data"); break;
 						case FMT_MULT  : if (ReadFaceData_MULT  (mesh, s, pstate->m_Data[nfield], it.ntype) == false) return errf("Failed reading face data"); break;
 						case FMT_REGION: 
 							switch (it.ntype)
@@ -2933,7 +2941,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData &data, int ntype, int arrSize)
 {
 	int NF = s.nfaces;
 	switch (ntype)
@@ -2986,6 +2994,21 @@ bool XpltReader3::ReadFaceData_ITEM(XpltReader3::Surface &s, Post::FEMeshData &d
 			for (int i=0; i<NF; ++i) dm.add(s.face[i].nid, a[i]);
 		}
         break;
+	case ARRAY:
+		{
+			vector<float> a(NF * arrSize);
+			if (arrSize > 0)
+			{
+				m_ar.read(a);
+				FEFaceArrayDataItem& dm = dynamic_cast<FEFaceArrayDataItem&>(data);
+
+				vector<int> face(NF);
+				for (int i = 0; i < NF; ++i) face[i] = s.face[i].nid;
+
+				dm.setData(a, face);
+			}
+		}
+		break;
 	default:
 		return errf("Failed reading face data");
 	}
