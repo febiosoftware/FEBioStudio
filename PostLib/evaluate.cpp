@@ -1553,68 +1553,80 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 		}
 		break;
 		case DATA_TENS4S:
-		{
-			if (fmt == DATA_NODE)
 			{
-				FEFaceData_T<tens4fs, DATA_NODE>& df = dynamic_cast<FEFaceData_T<tens4fs, DATA_NODE>&>(rd);
-				if (df.active(n))
+				if (fmt == DATA_NODE)
 				{
-					tens4fs m[FSFace::MAX_NODES];
-					df.eval(n, m);
-					int nf = f.Nodes();
-					val = 0.f;
-					for (int i = 0; i < nf; ++i)
+					FEFaceData_T<tens4fs,DATA_NODE>& df = dynamic_cast<FEFaceData_T<tens4fs,DATA_NODE>&>(rd);
+					if (df.active(n))
 					{
-						data[i] = component(m[i], ncomp);
-						val += data[i];
+						tens4fs m[FSFace::MAX_NODES];
+						df.eval(n, m);
+						int nf = f.Nodes();
+						val = 0.f;
+						for (int i=0; i<nf; ++i)
+						{
+							data[i] = component(m[i], ncomp);
+							val += data[i];
+						}
+						val /= (float) nf;
+						ntag = 1;
 					}
-					val /= (float)nf;
-					ntag = 1;
 				}
-			}
-			else if (fmt == DATA_ITEM)
-			{
-				FEFaceData_T<tens4fs, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<tens4fs, DATA_ITEM>&>(rd);
-				if (dv.active(n))
+				else if (fmt == DATA_ITEM)
 				{
-					tens4fs m;
-					dv.eval(n, &m);
-					val = component(m, ncomp);
-					for (int i = 0; i < nf; ++i) data[0] = val;
-					ntag = 1;
-				}
-			}
-			else if (fmt == DATA_MULT)
-			{
-				FEFaceData_T<tens4fs, DATA_MULT>& df = dynamic_cast<FEFaceData_T<tens4fs, DATA_MULT>&>(rd);
-				if (df.active(n))
-				{
-					tens4fs m[FSFace::MAX_NODES];
-					df.eval(n, m);
-					val = 0.f;
-					for (int i = 0; i < nf; ++i)
+					FEFaceData_T<tens4fs,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<tens4fs,DATA_ITEM>&>(rd);
+					if (dv.active(n))
 					{
-						data[i] = component(m[i], ncomp);
-						val += data[i];
+						tens4fs m;
+						dv.eval(n, &m);
+						val = component(m, ncomp);
+						for (int i=0; i<nf; ++i) data[0] = val;
+						ntag = 1;
 					}
-					val /= (float)nf;
-					ntag = 1;
+				}
+				else if (fmt == DATA_MULT)
+				{
+					FEFaceData_T<tens4fs,DATA_MULT>& df = dynamic_cast<FEFaceData_T<tens4fs,DATA_MULT>&>(rd);
+					if (df.active(n))
+					{
+						tens4fs m[FSFace::MAX_NODES];
+						df.eval(n, m);
+						val = 0.f;
+						for (int i=0; i<nf; ++i) 
+						{
+							data[i] = component(m[i], ncomp);
+							val += data[i];
+						}
+						val /= (float) nf;
+						ntag = 1;
+					}
+				}
+				else if (fmt == DATA_REGION)
+				{
+					FEFaceData_T<tens4fs,DATA_REGION>& dv = dynamic_cast<FEFaceData_T<tens4fs,DATA_REGION>&>(rd);
+					if (dv.active(n))
+					{
+						tens4fs m;
+						dv.eval(n, &m);
+						val = component(m, ncomp);
+						for (int i=0; i<nf; ++i) data[i] = val;
+						ntag = 1;
+					}
 				}
 			}
-			else if (fmt == DATA_REGION)
+			break;
+		case DATA_ARRAY:
+			if (fmt == DATA_ITEM)
 			{
-				FEFaceData_T<tens4fs, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<tens4fs, DATA_REGION>&>(rd);
-				if (dv.active(n))
+				FEFaceArrayDataItem& dm = dynamic_cast<FEFaceArrayDataItem&>(rd);
+				if (dm.active(n))
 				{
-					tens4fs m;
-					dv.eval(n, &m);
-					val = component(m, ncomp);
+					val = dm.eval(n, ncomp);
 					for (int i = 0; i < nf; ++i) data[i] = val;
 					ntag = 1;
 				}
 			}
-		}
-		break;
+			break;
 		}
 	}
 	else if (IS_NODE_FIELD(nfield))

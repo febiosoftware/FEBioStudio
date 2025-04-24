@@ -394,6 +394,12 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
+	case FACE_DATA:
+		switch (Format())
+		{
+		case DATA_ITEM: return new FEFaceArrayDataItem(pstate, GetArraySize(), this); break;
+		}
+		break;
 	case OBJECT_DATA: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
