@@ -92,8 +92,7 @@ public:
 
 	FSElement_* GetElement(int n);
 
-	FSItemListBuilder* Copy();
-	void Copy(FSElemSet* pg);
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -105,8 +104,7 @@ public:
 	FSPartSet(FSMesh* pm) : FSGroup(pm, FE_PARTSET, FE_PART_FLAG) {}
 	~FSPartSet() {}
 
-	FSItemListBuilder* Copy();
-	void Copy(FSPartSet* pg);
+	FSItemListBuilder* Copy() override;
 
 	GPart* GetPart(size_t n);
 
@@ -133,8 +131,7 @@ public:
 
 	FSFace* GetFace(int n);
 
-	FSItemListBuilder* Copy();
-	void Copy(FSSurface* pg);
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -152,8 +149,7 @@ public:
 
 	FSEdge* Edge(FSItemListBuilder::Iterator it);
 
-	FSItemListBuilder* Copy();
-	void Copy(FSEdgeSet* pg);
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -169,8 +165,7 @@ public:
 
 	void CreateFromMesh();
 
-	FSItemListBuilder* Copy();
-	void Copy(FSNodeSet* pg);
+	FSItemListBuilder* Copy() override;
 
 	FSNode* GetNode(size_t n);
 

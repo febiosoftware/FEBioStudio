@@ -104,12 +104,6 @@ FSElemSet::FSElemSet(FSMesh* pm, const vector<int>& elset) : FSGroup(pm, FE_ELEM
 	}
 }
 
-void FSElemSet::Copy(FSElemSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
 FSItemListBuilder* FSElemSet::Copy()
 {
 	FSElemSet* pg = new FSElemSet(m_mesh);
@@ -227,12 +221,6 @@ FSItemListBuilder* FSPartSet::Copy()
 	return pg;
 }
 
-void FSPartSet::Copy(FSPartSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
 GPart* FSPartSet::GetPart(size_t n)
 {
 	if ((n < 0) || (n >= m_Item.size())) return nullptr;
@@ -309,12 +297,6 @@ FSSurface::FSSurface(FSMesh* pm, vector<int>& face) : FSGroup(pm, FE_SURFACE, FE
 	{
 		for (int i=0; i<n; ++i) add(face[i]);
 	}
-}
-
-void FSSurface::Copy(FSSurface* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
 }
 
 FSItemListBuilder* FSSurface::Copy()
@@ -426,12 +408,6 @@ FSEdgeSet::FSEdgeSet(FSMesh* pm, vector<int>& edge) : FSGroup(pm, FE_EDGESET, FE
 	}
 }
 
-void FSEdgeSet::Copy(FSEdgeSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
 FSItemListBuilder* FSEdgeSet::Copy()
 {
 	FSEdgeSet* pg = new FSEdgeSet(m_mesh);
@@ -506,12 +482,6 @@ FSNodeSet::FSNodeSet(FSMesh* pm, const vector<int>& node) : FSGroup(pm, FE_NODES
 	{
 		for (int i=0; i<n; ++i) add(node[i]);
 	}
-}
-
-void FSNodeSet::Copy(FSNodeSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
 }
 
 FSItemListBuilder* FSNodeSet::Copy()

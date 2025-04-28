@@ -1686,9 +1686,9 @@ void FEBioFormatOld::ParseContact(FSStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormatOld::ParseContactSurface(FSSurface* ps, XMLTag& tag)
+FSSurface* FEBioFormatOld::ParseContactSurface(XMLTag& tag)
 {
-	FSMesh* pm = ps->GetMesh();
+	FSMesh* pm = &GetFEMesh();
 	FEBioMesh& mesh = GetFEBioMesh();
 
 	// see if the set is defined 
@@ -1699,13 +1699,15 @@ void FEBioFormatOld::ParseContactSurface(FSSurface* ps, XMLTag& tag)
 
 		// find the surface
 		FSSurface* psurf = pm->FindFESurface(szset);
-		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
+		if (psurf == nullptr) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
-		// copy the surface to the new surface
-		ps->Copy(psurf);
+		return psurf;
 	}
 	else
 	{
+		FSSurface* ps = new FSSurface(pm);
+		pm->AddFESurface(ps);
+
 		// count nr of faces
 		int faces = 0, N = 0, nf[8], m;
 		XMLTag t(tag); ++t;
@@ -1734,6 +1736,8 @@ void FEBioFormatOld::ParseContactSurface(FSSurface* ps, XMLTag& tag)
 
 			++tag;
 		}
+
+		return ps;
 	}
 }
 
@@ -1776,8 +1780,7 @@ void FEBioFormatOld::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(pm);
-				pm->AddFESurface(ps);
+				FSSurface* ps = ParseContactSurface(tag);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -1798,9 +1801,6 @@ void FEBioFormatOld::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 					}
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -1849,7 +1849,7 @@ void FEBioFormatOld::ParseContactF2FSliding(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FSSurface* ps = new FSSurface(pm);
+				FSSurface* ps = ParseContactSurface(tag);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -1862,9 +1862,6 @@ void FEBioFormatOld::ParseContactF2FSliding(FSStep* pstep, XMLTag& tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -1907,7 +1904,7 @@ void FEBioFormatOld::ParseContactBiphasic(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -1920,9 +1917,6 @@ void FEBioFormatOld::ParseContactBiphasic(FSStep* pstep, XMLTag& tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -1965,8 +1959,7 @@ void FEBioFormatOld::ParseContactSolute(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -1979,9 +1972,6 @@ void FEBioFormatOld::ParseContactSolute(FSStep* pstep, XMLTag& tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2024,8 +2014,7 @@ void FEBioFormatOld::ParseContactMultiphasic(FSStep* pstep, XMLTag& tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2038,9 +2027,6 @@ void FEBioFormatOld::ParseContactMultiphasic(FSStep* pstep, XMLTag& tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2083,8 +2069,7 @@ void FEBioFormatOld::ParseContactTied(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2097,9 +2082,6 @@ void FEBioFormatOld::ParseContactTied(FSStep *pstep, XMLTag &tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2142,8 +2124,7 @@ void FEBioFormatOld::ParseContactSticky(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2156,9 +2137,6 @@ void FEBioFormatOld::ParseContactSticky(FSStep *pstep, XMLTag &tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2201,8 +2179,7 @@ void FEBioFormatOld::ParseContactPeriodic(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2215,9 +2192,6 @@ void FEBioFormatOld::ParseContactPeriodic(FSStep *pstep, XMLTag &tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2260,8 +2234,7 @@ void FEBioFormatOld::ParseContactTC(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2274,9 +2247,6 @@ void FEBioFormatOld::ParseContactTC(FSStep *pstep, XMLTag &tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2319,8 +2289,7 @@ void FEBioFormatOld::ParseContactTiedPoro(FSStep *pstep, XMLTag &tag)
 
 				const char* szn = tag.AttributeValue("name", true);
 
-				FSSurface* ps = new FSSurface(pm);
-
+				FSSurface* ps = ParseContactSurface(tag); assert(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
@@ -2333,9 +2302,6 @@ void FEBioFormatOld::ParseContactTiedPoro(FSStep *pstep, XMLTag &tag)
 					if (szn) ps->SetName(szn);
 					pi->SetPrimarySurface(ps);
 				}
-
-				// read the surface
-				ParseContactSurface(ps, tag);
 			}
 		}
 		++tag;
@@ -2390,13 +2356,9 @@ void FEBioFormatOld::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 		{
 			const char* szn = tag.AttributeValue("name", true);
 
-			FSSurface* ps = new FSSurface(pm);
+			FSSurface* ps = ParseContactSurface(tag); assert(ps);
 			pci->SetItemList(ps);
 			if (szn) ps->SetName(szn);
-			pm->AddFESurface(ps);
-
-			// read the surface
-			ParseContactSurface(ps, tag);
 		}
 		++tag;
 	} while (!tag.isend());
@@ -3075,16 +3037,19 @@ void FEBioFormatOld::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 				// if no name is provided a default one will be provided
 				const char* szn = tag.AttributeValue("name", true);
 
-				// create a new surface
-				FSSurface* ps = new FSSurface(pm);
-				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FSVolumeConstraint>(fem));
-				ps->SetName(szn ? szn : szbuf);
+				// process the surface
+				FSSurface* ps = ParseContactSurface(tag);
+				if (ps)
+				{
+					if (ps->GetName().empty())
+					{
+						sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FSVolumeConstraint>(fem));
+						ps->SetName(szn ? szn : szbuf);
+					}
 
-				// assign the surface
-				pi->SetItemList(ps);
-
-				// read the surface
-				ParseContactSurface(ps, tag);
+					// assign the surface
+					pi->SetItemList(ps);
+				}
 			}
 			else ParseUnknownTag(tag);
 		}

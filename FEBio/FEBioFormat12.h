@@ -91,7 +91,8 @@ private:
 	void ParseContactTiedPoro   (FSStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FSStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FSStep* pstep, XMLTag& tag);
-	void ParseContactSurface    (FSSurface* ps, XMLTag& tag);
+
+	FSSurface* ParseContactSurface(XMLTag& tag);
 
 private:
 	// constraint input functions
