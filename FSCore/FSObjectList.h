@@ -41,8 +41,11 @@ public:
 	{
 		for (size_t i = 0; i < m_obs.size(); ++i)
 		{
-			m_obs[i]->SetParent(nullptr);
-			delete m_obs[i];
+			if (m_obs[i])
+			{
+				m_obs[i]->SetParent(nullptr);
+				delete m_obs[i];
+			}
 		}
 		if (m_obs.empty()==false) m_obs.clear();
 	}
@@ -76,8 +79,8 @@ protected:
 	FSObject* replace(int i, FSObject* po)
 	{
 		FSObject* old = m_obs[i];
-		old->SetParent(nullptr);
-		po->SetParent(this);
+		if (old) old->SetParent(nullptr);
+		if (po) po->SetParent(this);
 		m_obs[i] = po;
 		return old;
 	}
