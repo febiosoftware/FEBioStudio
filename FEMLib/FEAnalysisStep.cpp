@@ -1027,7 +1027,7 @@ void FSStep::Load(IArchive &ar)
 								FSFixedRotation* prc = new FSFixedRotation(fem);
 								prc->SetName(pbc->GetName());
 								prc->SetBC(bc);
-								prc->SetItemList(pb->GetItemList()->Copy());
+								prc->SetItemList(pb->GetItemList());
 								AddBC(prc);
 							}
 						}
@@ -1042,7 +1042,7 @@ void FSStep::Load(IArchive &ar)
 								FSPrescribedRotation* prc = new FSPrescribedRotation(fem);
 								prc->SetName(pdc->GetName());
 								prc->SetDOF(bc);
-								prc->SetItemList(pdc->GetItemList()->Copy());
+								prc->SetItemList(pdc->GetItemList());
 								delete pdc;
 								pb = prc;
 							}
