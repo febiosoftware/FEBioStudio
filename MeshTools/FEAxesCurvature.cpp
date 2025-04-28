@@ -78,9 +78,6 @@ void FEAxesCurvature::clearData()
 FSMesh* FEAxesCurvature::Apply(FSMesh* pm)
 {
     FSMesh* pnm = new FSMesh(*pm);
-	pnm->CopyFENodeSets(pm);
-	pnm->CopyFESurfaces(pm);
-	pnm->CopyFEElemSets(pm);
     
     bool apply = GetBoolValue(1);
     bool part = GetBoolValue(2);

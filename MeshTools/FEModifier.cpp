@@ -400,6 +400,8 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 		}
 	}
 
+	pnm->UpdateMesh();
+
 	return pnm;
 }
 
@@ -1403,7 +1405,7 @@ char* buildMeshConvertOptions(char* sz, ...)
 	while (n != END_OF_LIST)
 	{
 		const char* szn = FEConvertMeshOptions[n]; assert(szn);
-		int l = strlen(szn);
+		int l = (int)strlen(szn);
 		strcpy(sz, szn);
 		sz += l + 1;
 		n = va_arg(args, int);
