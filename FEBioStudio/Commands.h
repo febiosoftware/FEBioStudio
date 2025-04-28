@@ -1224,14 +1224,13 @@ protected:
 class CCmdChangeFEMesh : public CCommand
 {
 public:
-	CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool up = false);
+	CCmdChangeFEMesh(GObject* po, FSMesh* pm);
 	~CCmdChangeFEMesh() { delete m_pnew; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	bool		m_update;
 	GObject*	m_po;
 	FSMesh*		m_pnew;
 };

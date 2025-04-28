@@ -2289,7 +2289,7 @@ void CCmdDeleteFESelection::Execute()
 	}
 
 	// set the object's mesh
-	m_pobj->ReplaceFEMesh(m_pnew, false);
+	m_pobj->ReplaceFEMesh(m_pnew);
 
 	// swap meshes
 	FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
@@ -3030,20 +3030,16 @@ void CCmdApplySurfaceModifier::UnExecute()
 // CCmdChangeFEMesh
 //-----------------------------------------------------------------------------
 
-CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool bup) : CCommand("Change mesh")
+CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FSMesh* pm) : CCommand("Change mesh")
 {
 	assert(po);
-	m_update = bup;
 	m_po = po;
 	m_pnew = pm;
 }
 
 void CCmdChangeFEMesh::Execute()
 {
-	FSMesh* pm = m_po->GetFEMesh();
-	m_po->ReplaceFEMesh(m_pnew, m_update);
-
-	m_pnew = pm;
+	m_pnew = m_po->ReplaceFEMesh(m_pnew);
 }
 
 void CCmdChangeFEMesh::UnExecute()

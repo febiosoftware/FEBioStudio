@@ -105,8 +105,8 @@ public:
 	// get the editable line mesh
 	virtual FSLineMesh* GetEditableLineMesh() { return 0; }
 
-	// replace the current mesh
-	void ReplaceFEMesh(FSMesh* pm, bool bup = false, bool bdel = false);
+	// replace the current mesh (returns old mesh)
+	FSMesh* ReplaceFEMesh(FSMesh* pm);
 
 	// set the FE mesh
 	void SetFEMesh(FSMesh* pm);

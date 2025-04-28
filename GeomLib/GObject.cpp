@@ -506,13 +506,13 @@ void GObject::UpdateGNodes()
 	SetRenderMesh(nullptr);
 }
 
-//-----------------------------------------------------------------------------
 // Replace the current mesh. Note that we don't delete the current mesh since
 // it is assumed that another class will take care of that.
-void GObject::ReplaceFEMesh(FSMesh* pm, bool bup, bool bdel)
+FSMesh* GObject::ReplaceFEMesh(FSMesh* pm)
 {
-	if (bdel) delete imp->m_pmesh;
+	FSMesh* oldMesh = GetFEMesh();
 	SetFEMesh(pm);
+	return oldMesh;
 }
 
 //-----------------------------------------------------------------------------

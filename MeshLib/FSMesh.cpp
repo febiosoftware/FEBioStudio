@@ -100,6 +100,13 @@ FSMesh::FSMesh(FSMesh& m)
 
 	// don't copy object (two meshes cannot be owned by the same object)
 	m_pobj = nullptr;
+
+	// copy all selections
+	CopyFENodeSets(&m);
+	CopyFEEdgeSets(&m);
+	CopyFESurfaces(&m);
+	CopyFEElemSets(&m);
+	CopyFEPartSets(&m);
 }
 
 //-----------------------------------------------------------------------------
@@ -3290,7 +3297,22 @@ void FSMesh::CopyFENodeSets(FSMesh* pm)
 		FSNodeSet* newset = new FSNodeSet(this);
 		newset->add(nodeList);
 		newset->SetName(nset.GetName());
+		newset->SetID(nset.GetID());
 		AddFENodeSet(newset);
+	}
+}
+
+void FSMesh::CopyFEEdgeSets(FSMesh* pm)
+{
+	for (int i = 0; i < pm->FEEdgeSets(); ++i)
+	{
+		FSEdgeSet& eset = *pm->GetFEEdgeSet(i);
+		std::vector<int> edgeList = eset.CopyItems();
+		FSEdgeSet* newset = new FSEdgeSet(this);
+		newset->add(edgeList);
+		newset->SetName(eset.GetName());
+		newset->SetID(eset.GetID());
+		AddFEEdgeSet(newset);
 	}
 }
 
@@ -3303,6 +3325,7 @@ void FSMesh::CopyFEElemSets(FSMesh* pm)
 		FSElemSet* newset = new FSElemSet(this);
 		newset->add(elemList);
 		newset->SetName(eset.GetName());
+		newset->SetID(eset.GetID());
 		AddFEElemSet(newset);
 	}
 }
@@ -3316,6 +3339,21 @@ void FSMesh::CopyFESurfaces(FSMesh* pm)
 		FSSurface* newsurf = new FSSurface(this);
 		newsurf->add(faceList);
 		newsurf->SetName(surf.GetName());
+		newsurf->SetID(surf.GetID());
 		AddFESurface(newsurf);
+	}
+}
+
+void FSMesh::CopyFEPartSets(FSMesh* pm)
+{
+	for (int i = 0; i < pm->FEPartSets(); ++i)
+	{
+		FSPartSet& pset = *pm->GetFEPartSet(i);
+		std::vector<int> partList = pset.CopyItems();
+		FSPartSet* newset = new FSPartSet(this);
+		newset->add(partList);
+		newset->SetName(pset.GetName());
+		newset->SetID(pset.GetID());
+		AddFEPartSet(newset);
 	}
 }

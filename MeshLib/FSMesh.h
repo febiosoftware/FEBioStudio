@@ -252,9 +252,12 @@ public:
 	void MapFEElemSets(FSMesh* pm);
 	void MapFESurfaces(FSMesh* pm);
 
+private:
 	void CopyFENodeSets(FSMesh* pm);
-	void CopyFEElemSets(FSMesh* pm);
+	void CopyFEEdgeSets(FSMesh* pm);
 	void CopyFESurfaces(FSMesh* pm);
+	void CopyFEElemSets(FSMesh* pm);
+	void CopyFEPartSets(FSMesh* pm);
 
 protected:
 	// elements
