@@ -3236,6 +3236,14 @@ CCmdSwapObjects::~CCmdSwapObjects()
 
 void CCmdSwapObjects::Execute()
 {
+	FSMesh* oldMesh = m_pold->GetFEMesh();
+	FSMesh* newMesh = m_pnew->GetFEMesh();
+	if (oldMesh && newMesh)
+	{
+		newMesh->TakeItemLists(oldMesh);
+		newMesh->TakeMeshData(oldMesh);
+	}
+
 	// replace the old object with the new one
 	m_model->ReplaceObject(m_pold, m_pnew);
 	GObject* tmp = m_pold;
