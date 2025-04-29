@@ -59,6 +59,8 @@ public:
 	// return mesh this data field belongs to
 	FSMesh* GetMesh() const;
 
+	void SetMesh(FSMesh* mesh);
+
 	// get the data
 	const std::vector<double>& GetData() const { return m_data; };
 	void SetData(const std::vector<double>& data) { m_data = data; }
@@ -81,7 +83,6 @@ public:
 	mat3d getMat3d(size_t i) const;
 
 protected:
-	void SetMesh(FSMesh* mesh);
 	void SetDataType(DATA_TYPE dataType);
 	void SetDataFormat(DATA_FORMAT dataFormat);
 

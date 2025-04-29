@@ -61,7 +61,8 @@ public:
 
 	// This is only used to process some older fsm files.
 	int GetMeshID() const { return m_meshID; }
-	void SetMesh(FSMesh* mesh) { assert(m_mesh == nullptr); m_mesh = mesh; }
+
+	void SetMesh(FSMesh* mesh) { m_mesh = mesh; }
 
 public:
 	int m_ntag;

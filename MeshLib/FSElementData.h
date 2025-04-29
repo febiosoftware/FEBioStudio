@@ -64,8 +64,8 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	double		m_scale;	//!< scale factor
-	int			m_maxNodesPerElem;
+	double		m_scale = 1;	//!< scale factor
+	int			m_maxNodesPerElem = 0;
 
 private:
 	FSElementData(const FSElementData& d);

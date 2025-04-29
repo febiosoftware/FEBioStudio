@@ -113,6 +113,19 @@ public:
 		return -1;
 	}
 
+	T* Remove(size_t pos)
+	{
+		if (pos < m_obs.size())
+		{
+			T* po = static_cast<T*>(m_obs[pos]);
+			if (po) po->SetParent(nullptr);
+			m_obs.erase(m_obs.begin() + pos);
+			return po;
+		}
+		assert(false);
+		return nullptr;
+	}
+
 	void Insert(size_t pos, T* obj)
 	{
 		InsertChild(pos, obj);

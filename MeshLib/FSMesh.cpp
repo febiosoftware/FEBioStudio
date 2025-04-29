@@ -100,13 +100,6 @@ FSMesh::FSMesh(FSMesh& m)
 
 	// don't copy object (two meshes cannot be owned by the same object)
 	m_pobj = nullptr;
-
-	// copy all selections
-	CopyFENodeSets(&m);
-	CopyFEEdgeSets(&m);
-	CopyFESurfaces(&m);
-	CopyFEElemSets(&m);
-	CopyFEPartSets(&m);
 }
 
 //-----------------------------------------------------------------------------
@@ -185,8 +178,7 @@ void FSMesh::ClearSelections()
 void FSMesh::ClearMeshData()
 {
 	m_data.Clear();
-	for (int i = 0; i < m_meshData.size(); ++i) delete m_meshData[i];
-	m_meshData.clear();
+	m_meshData.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -464,7 +456,7 @@ int FSMesh::RemoveElements(int ntag)
 		}
 	}
 
-	int N0 = m_Elem.size();
+	int N0 = (int)m_Elem.size();
 	if (n < N0)
 	{
 		m_Elem.resize(n);
@@ -1824,7 +1816,7 @@ void FSMesh::Save(OArchive &ar)
 		ar.BeginChunk(CID_MESH_DATA_SECTION);
 		{
 			// node data
-			for (int n = 0; n<(int)m_meshData.size(); ++n)
+			for (int n = 0; n<(int)m_meshData.Size(); ++n)
 			{
 				FSMeshData* meshData = m_meshData[n];
 				switch (meshData->GetDataClass())
@@ -2465,28 +2457,28 @@ void FSMesh::Load(IArchive& ar)
 						{
 							FSNodeData* data = new FSNodeData(GetGObject());
 							data->Load(ar);
-							m_meshData.push_back(data);
+							m_meshData.Add(data);
 						}
 						break;
 					case CID_MESH_SURFACE_DATA:
 						{
 							FSSurfaceData* pmap = new FSSurfaceData(this);
 							pmap->Load(ar);
-							m_meshData.push_back(pmap);
+							m_meshData.Add(pmap);
 						}
 						break;
 					case CID_MESH_ELEM_DATA:
 						{
 							FSElementData* pmap = new FSElementData(this);
 							pmap->Load(ar);
-							m_meshData.push_back(pmap);
+							m_meshData.Add(pmap);
 						}
 						break;
 					case CID_MESH_PART_DATA:
 						{
 							FSPartData* pmap = new FSPartData(this);
 							pmap->Load(ar);
-							m_meshData.push_back(pmap);
+							m_meshData.Add(pmap);
 						}
 						break;
 					}
@@ -2518,19 +2510,16 @@ void FSMesh::ShallowCopy(FSMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-int FSMesh::MeshDataFields() const { return (int)m_meshData.size(); }
+int FSMesh::MeshDataFields() const { return (int)m_meshData.Size(); }
 
-//-----------------------------------------------------------------------------
 FSMeshData* FSMesh::GetMeshDataField(int i) { return m_meshData[i]; }
 
-//-----------------------------------------------------------------------------
 Mesh_Data& FSMesh::GetMeshData() { return m_data; }
 
-//-----------------------------------------------------------------------------
 FSMeshData* FSMesh::FindMeshDataField(const string& sz)
 {
-	if (m_meshData.empty()) return 0;
-	for (int i = 0; i<m_meshData.size(); ++i)
+	if (m_meshData.IsEmpty()) return nullptr;
+	for (int i = 0; i<m_meshData.Size(); ++i)
 	{
 		const string& name = m_meshData[i]->GetName();
 		if (name == sz) return m_meshData[i];
@@ -2538,86 +2527,77 @@ FSMeshData* FSMesh::FindMeshDataField(const string& sz)
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
 void FSMesh::RemoveMeshDataField(int i)
 {
-	m_meshData.erase(m_meshData.begin() + i);
+	m_meshData.Remove(i);
 }
 
-//-----------------------------------------------------------------------------
 void FSMesh::RemoveMeshDataField(FSMeshData* data)
 {
 	int n = GetMeshDataIndex(data); assert(n >= 0);
 	if (n >= 0) RemoveMeshDataField(n);
 }
 
-//-----------------------------------------------------------------------------
 int FSMesh::GetMeshDataIndex(FSMeshData* data)
 {
-	for (int i = 0; i < m_meshData.size(); ++i)
+	for (int i = 0; i < m_meshData.Size(); ++i)
 		if (m_meshData[i] == data) return i;
 	return -1;
 }
 
-//-----------------------------------------------------------------------------
 void FSMesh::InsertMeshData(int i, FSMeshData* data)
 {
-	m_meshData.insert(m_meshData.begin() + i, data);
+	m_meshData.Insert(i, data);
 }
 
-//-----------------------------------------------------------------------------
 void FSMesh::AddMeshDataField(FSMeshData* data)
 {
 	assert(data);
-	if (data) m_meshData.push_back(data);
+	if (data) m_meshData.Add(data);
 }
 
-//-----------------------------------------------------------------------------
 FSNodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, DATA_TYPE dataType)
 {
 	FSNodeData* data = new FSNodeData(GetGObject());
 	data->Create(nodeset, 0.0, dataType);
 	data->SetName(name);
-	m_meshData.push_back(data);
+	m_meshData.Add(data);
 	return data;
 }
 
-//-----------------------------------------------------------------------------
 FSSurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, DATA_TYPE dataType)
 {
 	FSSurfaceData* data = new FSSurfaceData;
 	data->Create(this, surface, dataType, DATA_ITEM);
 	data->SetName(name);
-	m_meshData.push_back(data);
+	m_meshData.Add(data);
 	return data;
 }
 
-//-----------------------------------------------------------------------------
 FSElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, DATA_TYPE dataType)
 {
 	FSElementData* map = new FSElementData;
 	map->Create(this, part, dataType, DATA_ITEM);
 	map->SetName(sz);
-	m_meshData.push_back(map);
+	m_meshData.Add(map);
 	return map;
 }
 
-//-----------------------------------------------------------------------------
 FSPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, DATA_TYPE dataType)
 {
 	FSPartData* map = new FSPartData(this);
 	map->Create(part, dataType, DATA_ITEM);
 	map->SetName(sz);
-	m_meshData.push_back(map);
+	m_meshData.Add(map);
 	return map;
 }
 
 FSPartData* FSMesh::FindPartDataField(const std::string& name)
 {
-	for (FSMeshData* pd : m_meshData)
+	for (int i=0; i< m_meshData.Size(); ++i)
 	{
-		FSPartData* partData = dynamic_cast<FSPartData*>(pd);
-		if (pd && (pd->GetName() == name)) return partData;
+		FSPartData* partData = dynamic_cast<FSPartData*>(m_meshData[i]);
+		if (partData && (partData->GetName() == name)) return partData;
 	}
 	return nullptr;
 }
@@ -3288,72 +3268,61 @@ void FSMesh::MapFESurfaces(FSMesh* pm)
 	}
 }
 
-void FSMesh::CopyFENodeSets(FSMesh* pm)
+void FSMesh::TakeItemLists(FSMesh* pm)
 {
+	ClearFEGroups();
 	for (int i = 0; i < pm->FENodeSets(); ++i)
 	{
-		FSNodeSet& nset = *pm->GetFENodeSet(i);
-		std::vector<int> nodeList = nset.CopyItems();
-		FSNodeSet* newset = new FSNodeSet(this);
-		newset->add(nodeList);
-		newset->SetName(nset.GetName());
-		newset->SetID(nset.GetID());
-		AddFENodeSet(newset);
+		FSNodeSet* ps = pm->GetFENodeSet(i);
+		ps->SetMesh(this);
+		pm->m_pFENodeSet.Set(i, nullptr);
+		m_pFENodeSet.Add(ps);
 	}
-}
 
-void FSMesh::CopyFEEdgeSets(FSMesh* pm)
-{
 	for (int i = 0; i < pm->FEEdgeSets(); ++i)
 	{
-		FSEdgeSet& eset = *pm->GetFEEdgeSet(i);
-		std::vector<int> edgeList = eset.CopyItems();
-		FSEdgeSet* newset = new FSEdgeSet(this);
-		newset->add(edgeList);
-		newset->SetName(eset.GetName());
-		newset->SetID(eset.GetID());
-		AddFEEdgeSet(newset);
+		FSEdgeSet* ps = pm->GetFEEdgeSet(i);
+		ps->SetMesh(this);
+		pm->m_pFEEdgeSet.Set(i, nullptr);
+		m_pFEEdgeSet.Add(ps);
 	}
-}
 
-void FSMesh::CopyFEElemSets(FSMesh* pm)
-{
-	for (int i = 0; i < pm->FEElemSets(); ++i)
-	{
-		FSElemSet& eset = *pm->GetFEElemSet(i);
-		std::vector<int> elemList = eset.CopyItems();
-		FSElemSet* newset = new FSElemSet(this);
-		newset->add(elemList);
-		newset->SetName(eset.GetName());
-		newset->SetID(eset.GetID());
-		AddFEElemSet(newset);
-	}
-}
-
-void FSMesh::CopyFESurfaces(FSMesh* pm)
-{
 	for (int i = 0; i < pm->FESurfaces(); ++i)
 	{
-		FSSurface& surf = *pm->GetFESurface(i);
-		std::vector<int> faceList = surf.CopyItems();
-		FSSurface* newsurf = new FSSurface(this);
-		newsurf->add(faceList);
-		newsurf->SetName(surf.GetName());
-		newsurf->SetID(surf.GetID());
-		AddFESurface(newsurf);
+		FSSurface* ps = pm->GetFESurface(i);
+		ps->SetMesh(this);
+		pm->m_pFESurface.Set(i, nullptr);
+		m_pFESurface.Add(ps);
 	}
-}
 
-void FSMesh::CopyFEPartSets(FSMesh* pm)
-{
+	for (int i = 0; i < pm->FEElemSets(); ++i)
+	{
+		FSElemSet* ps = pm->GetFEElemSet(i);
+		ps->SetMesh(this);
+		pm->m_pFEElemSet.Set(i, nullptr);
+		m_pFEElemSet.Add(ps);
+	}
+
 	for (int i = 0; i < pm->FEPartSets(); ++i)
 	{
-		FSPartSet& pset = *pm->GetFEPartSet(i);
-		std::vector<int> partList = pset.CopyItems();
-		FSPartSet* newset = new FSPartSet(this);
-		newset->add(partList);
-		newset->SetName(pset.GetName());
-		newset->SetID(pset.GetID());
-		AddFEPartSet(newset);
+		FSPartSet* ps = pm->GetFEPartSet(i);
+		ps->SetMesh(this);
+		pm->m_pFEPartSet.Set(i, nullptr);
+		m_pFEPartSet.Add(ps);
 	}
+
+	pm->ClearFEGroups();
+}
+
+void FSMesh::TakeMeshData(FSMesh* pm)
+{
+	ClearMeshData();
+	for (int i = 0; i < pm->MeshDataFields(); ++i)
+	{
+		FSMeshData* pd = pm->GetMeshDataField(i);
+		pm->m_meshData.Set(i, nullptr);
+		pd->SetMesh(this);
+		m_meshData.Add(pd);
+	}
+	pm->ClearMeshData();
 }

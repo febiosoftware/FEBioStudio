@@ -511,6 +511,8 @@ void GObject::UpdateGNodes()
 FSMesh* GObject::ReplaceFEMesh(FSMesh* pm)
 {
 	FSMesh* oldMesh = GetFEMesh();
+	pm->TakeItemLists(oldMesh);
+	pm->TakeMeshData(oldMesh);
 	SetFEMesh(pm);
 	return oldMesh;
 }

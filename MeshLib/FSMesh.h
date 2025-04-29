@@ -226,6 +226,10 @@ public:
 	void RemoveUnusedFEGroups();
 
 public:
+	void TakeItemLists(FSMesh* pm);
+	void TakeMeshData(FSMesh* pm);
+
+public:
 	int MeshPartitions() const { return (int)m_Dom.Size(); }
 	void ClearMeshPartitions();
 
@@ -252,13 +256,6 @@ public:
 	void MapFEElemSets(FSMesh* pm);
 	void MapFESurfaces(FSMesh* pm);
 
-private:
-	void CopyFENodeSets(FSMesh* pm);
-	void CopyFEEdgeSets(FSMesh* pm);
-	void CopyFESurfaces(FSMesh* pm);
-	void CopyFEElemSets(FSMesh* pm);
-	void CopyFEPartSets(FSMesh* pm);
-
 protected:
 	// elements
 	std::vector<FSElement>	m_Elem;	//!< FE elements
@@ -267,8 +264,9 @@ protected:
 	Mesh_Data	m_data;
 
 	// data fields
-	std::vector<FSMeshData*>		m_meshData;
+	FSObjectList<FSMeshData>	m_meshData;
 
+	// named selections
 	FSObjectList<FSElemSet>		m_pFEElemSet;
 	FSObjectList<FSSurface>		m_pFESurface;
 	FSObjectList<FSEdgeSet>		m_pFEEdgeSet;
