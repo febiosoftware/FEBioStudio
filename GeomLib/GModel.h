@@ -46,9 +46,6 @@ class GObjectSelection;
 class FSItemListBuilder;
 class GDiscreteObject;
 class GDiscreteElementSet;
-class ObjectMeshList;
-class MeshLayer;
-class MeshLayerManager;
 
 //-----------------------------------------------------------------------------
 // The GModel class manages all GObjects and GGroups that are created by
@@ -112,10 +109,10 @@ public:
 	void AddObject(GObject* po);
 
 	// remove an object from the model
-	int RemoveObject(GObject* po, bool deleteMeshList = false);
+	int RemoveObject(GObject* po);
 
 	// insert an object before the index
-	void InsertObject(GObject* po, int n, bool updateManager = true);
+	void InsertObject(GObject* po, int n);
 
 	// --- part functions ---
 
@@ -274,22 +271,6 @@ public:
 	bool DeleteParts(std::vector<GPart*>& partList);
 
 public:
-	int MeshLayers() const; 
-	int GetActiveMeshLayer() const;
-	void SetActiveMeshLayer(int n);
-	int FindMeshLayer(const std::string& s);
-	const std::string& GetMeshLayerName(int i) const;
-	bool AddMeshLayer(const std::string& layerName);
-	void DeleteMeshLayer(int n);
-
-	ObjectMeshList* GetObjectMeshList(GObject* po);
-	void InsertObjectMeshList(ObjectMeshList* oml);
-
-	MeshLayer* RemoveMeshLayer(int index);
-	void InsertMeshLayer(int index, MeshLayer* layer);
-
-	MeshLayerManager* GetMeshLayerManager();
-
     void SetLoadOnlyDiscreteFlag(bool flag);
 
 private:

@@ -128,8 +128,6 @@ public slots:
 	// slots for model tree context menu actions
 	void OnDeleteItem();
 	void OnUnhideAllObjects();
-	void OnCreateNewMeshLayer();
-	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnHideInactiveParts();
 	void OnDeleteNamedSelection();

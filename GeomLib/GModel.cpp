@@ -41,7 +41,6 @@ SOFTWARE.*/
 #include <MeshLib/FSItemListBuilder.h>
 #include "GGroup.h"
 #include <MeshLib/FSMesh.h>
-#include "MeshLayer.h"
 #include <map>
 
 using namespace std;
@@ -169,15 +168,9 @@ class GModel::Imp
 public:
 	Imp()
 	{
-		m_mlm = nullptr;
 		m_ps = nullptr;
 
         m_loadOnlyDiscrete = false;
-	}
-
-	~Imp()
-	{
-		delete m_mlm;
 	}
 
 	void ValidateNames(GObject* po);
@@ -186,8 +179,6 @@ public:
 	GModel*				m_parent;
 	FSModel*			m_ps;	//!< pointer to model
 	BOX					m_box;	//!< bounding box
-
-	MeshLayerManager*	m_mlm;
 
 	FSObjectList<GObject>	m_Obj;	//!< list of objects
 
@@ -266,8 +257,6 @@ GModel::GModel(FSModel* ps): imp(new GModel::Imp)
 	SetName("Model");
 	imp->m_parent = this;
 	imp->m_ps = ps;
-	imp->m_mlm = new MeshLayerManager(this);
-	imp->m_mlm->AddLayer("Default");
 }
 
 //-----------------------------------------------------------------------------
@@ -288,11 +277,6 @@ void GModel::Clear()
 {
 	// cleanup all objects
 	imp->m_Obj.Clear();
-
-	// clear mesh layers
-	delete imp->m_mlm;
-	imp->m_mlm = new MeshLayerManager(this);
-	imp->m_mlm->AddLayer("Default");
 
 	// cleanup all groups
 	imp->m_GPart.Clear();
@@ -330,13 +314,10 @@ void GModel::ClearDiscrete()
 }
 
 //-----------------------------------------------------------------------------
-int GModel::RemoveObject(GObject* po, bool deleteMeshList)
+int GModel::RemoveObject(GObject* po)
 {
 	// remove the object from the list
 	size_t n = imp->m_Obj.Remove(po);
-
-	// remove it from the mesh layers
-	imp->m_mlm->RemoveObject(po, deleteMeshList);
 
 	// update the bounding box
 	UpdateBoundingBox();
@@ -348,15 +329,12 @@ int GModel::RemoveObject(GObject* po, bool deleteMeshList)
 
 //-----------------------------------------------------------------------------
 
-void GModel::InsertObject(GObject* po, int n, bool updateManager)
+void GModel::InsertObject(GObject* po, int n)
 {
 	assert( (n>=0) && (n<=Objects()) );
 
 	// insert the mesh to the list
 	imp->m_Obj.Insert(n, po);
-
-	// insert the object in the mesh layer manager
-	if (updateManager) imp->m_mlm->InsertObject(n, po);
 
 	// update bounding box
 	UpdateBoundingBox();
@@ -567,9 +545,6 @@ void GModel::AddObject(GObject* po)
 
 	// add the object to the object list
 	imp->m_Obj.Add(po);
-
-	// add the object to the layers
-	imp->m_mlm->AddObject(po);
 
 	UpdateBoundingBox();
 }
@@ -1222,13 +1197,6 @@ void GModel::Save(OArchive &ar)
 	}
 	ar.EndChunk();
 
-	// save mesh layers
-	ar.BeginChunk(CID_MESH_LAYERS);
-	{
-		imp->m_mlm->Save(ar);
-	}
-	ar.EndChunk();
-
 	// save the parts
 	for (int i=0; i<(int)imp->m_GPart.Size(); ++i)
 	{
@@ -1344,11 +1312,6 @@ void GModel::Load(IArchive &ar)
 {
 	TRACE("GModel::Load");
 
-	// re-allocate mesh layer manager
-	delete imp->m_mlm;
-	imp->m_mlm = new MeshLayerManager(this);
-	imp->m_mlm->AddLayer("Default");
-
     if(imp->m_loadOnlyDiscrete)
     {
         while (IArchive::IO_OK == ar.OpenChunk())
@@ -1382,11 +1345,7 @@ void GModel::Load(IArchive &ar)
                     SetInfo(info);
                 }
             break;
-            case CID_MESH_LAYERS:
-                {
-                    imp->m_mlm->Load(ar);
-                }
-                break;
+            case CID_MESH_LAYERS: break; // mesh layers are no longer supported
             case CID_OBJ_GOBJECTS:
                 {
                     while (IArchive::IO_OK == ar.OpenChunk())
@@ -2451,66 +2410,6 @@ list<GPart*> GModel::FindPartsFromMaterial(int matId, bool bmatch)
 		}
 	}
 	return partList;
-}
-
-int GModel::MeshLayers() const
-{
-	return imp->m_mlm->Layers();
-}
-
-int GModel::GetActiveMeshLayer() const
-{
-	return imp->m_mlm->GetActiveLayer();
-}
-
-void GModel::SetActiveMeshLayer(int n)
-{
-	imp->m_mlm->SetActiveLayer(n);
-}
-
-int GModel::FindMeshLayer(const std::string& s)
-{
-	return imp->m_mlm->FindMeshLayer(s);
-}
-
-const std::string& GModel::GetMeshLayerName(int i) const
-{
-	return imp->m_mlm->GetLayerName(i);
-}
-
-bool GModel::AddMeshLayer(const std::string& layerName)
-{
-	return imp->m_mlm->AddLayer(layerName);
-}
-
-ObjectMeshList* GModel::GetObjectMeshList(GObject* po)
-{
-	return imp->m_mlm->GetObjectMeshList(po);
-}
-
-void GModel::InsertObjectMeshList(ObjectMeshList* oml)
-{
-	imp->m_mlm->InsertObjectMeshList(oml);
-}
-
-void GModel::DeleteMeshLayer(int n)
-{
-	imp->m_mlm->DeleteLayer(n);
-}
-
-MeshLayer* GModel::RemoveMeshLayer(int index) 
-{
-	return imp->m_mlm->RemoveMeshLayer(index);
-}
-
-void GModel::InsertMeshLayer(int index, MeshLayer* layer)
-{
-	imp->m_mlm->InsertMeshLayer(index, layer);
-}
-
-MeshLayerManager* GModel::GetMeshLayerManager()
-{
-	return imp->m_mlm;
 }
 
 void GModel::SetLoadOnlyDiscreteFlag(bool flag)

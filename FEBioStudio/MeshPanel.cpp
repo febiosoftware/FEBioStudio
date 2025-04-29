@@ -341,14 +341,7 @@ void CMeshPanel::Update(bool breset)
 	if (dynamic_cast<GMeshObject*>(activeObject))
 	{
 		GMeshObject*  meshObject = dynamic_cast<GMeshObject*>(activeObject);
-
-		// show the modifiers for editable meshes
-		// only for the default mesh layer, otherwise
-		// we show only the non-editable mesh modifiers
-		if (gm->GetActiveMeshLayer() == 0)
-			ui->showButtonsPanel(true);
-		else
-			ui->showButtonsPanel2(true);
+		ui->showButtonsPanel(true);
 	}
 	else
 	{

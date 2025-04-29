@@ -710,7 +710,6 @@ public slots:
 
 	void checkJobProgress();
 
-	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
 	void OnSelectObjectColorMode(QAction* ac);
 

@@ -780,59 +780,6 @@ void CModelViewer::OnUnhideAllObjects()
 	GetMainWindow()->RedrawGL();
 }
 
-void CModelViewer::OnCreateNewMeshLayer()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-	int layers = gm->MeshLayers();
-	QString s = QString("Layer") + QString::number(layers + 1);
-	QString newLayer = QInputDialog::getText(this, "New Layer", "Layer name:", QLineEdit::Normal, s);
-	if (newLayer.isEmpty() == false)
-	{
-		string layerName = newLayer.toStdString();
-		int n = gm->FindMeshLayer(layerName);
-		if (n >= 0)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Failed creating layer. Layer name already taken.");
-		}
-		else
-		{
-			CCmdGroup* cmd = new CCmdGroup(string("Add mesh layer: ") + layerName);
-			cmd->AddCommand(new CCmdAddMeshLayer(gm, layerName));
-			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, layers));
-			doc->DoCommand(cmd);
-			Update();
-			GetMainWindow()->RedrawGL();
-		}
-	}
-}
-
-void CModelViewer::OnDeleteMeshLayer()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-	int layers = gm->MeshLayers();
-	int activeLayer = gm->GetActiveMeshLayer();
-	if ((activeLayer == 0) || (layers == 1))
-	{
-		QMessageBox::warning(this, "FEBio Studio", "You cannot delete the Default mesh layer.");
-		return;
-	}
-	else
-	{
-		if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete the current mesh layer?"))
-		{
-			// to delete the active mesh layer, we must first select a different layer as the active layer.
-			// We'll choose the default layer
-			string s = gm->GetMeshLayerName(activeLayer);
-			CCmdGroup* cmd = new CCmdGroup(string("Delete mesh layer: " + s));
-			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, 0));
-			cmd->AddCommand(new CCmdDeleteMeshLayer(gm, activeLayer));
-			doc->DoCommand(cmd);
-		}
-	}
-}
-
 void CModelViewer::OnUnhideAllParts()
 {
 	GObject* po = dynamic_cast<GObject*>(m_currentObject);
@@ -1903,28 +1850,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	{
 		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
 		menu.addAction("Part Viewer ...", GetMainWindow(), SLOT(onShowPartViewer()));
-		menu.addSeparator();
-
-		QMenu* sub = new QMenu("Set Active Mesh Layer");
-		int layers = gm->MeshLayers();
-		int activeLayer = gm->GetActiveMeshLayer();
-		for (int i = 0; i < layers; ++i)
-		{
-			string s = gm->GetMeshLayerName(i);
-			QAction* a = sub->addAction(QString::fromStdString(s));
-			a->setCheckable(true);
-			if (i == activeLayer) a->setChecked(true);
-		}
-
-		QObject::connect(sub, SIGNAL(triggered(QAction*)), GetMainWindow(), SLOT(OnSelectMeshLayer(QAction*)));
-
-		menu.addAction(sub->menuAction());
-		menu.addAction("New Mesh Layer ...", this, SLOT(OnCreateNewMeshLayer()));
-
-		if (layers > 1)
-		{
-			menu.addAction("Delete Active Mesh Layer", this, SLOT(OnDeleteMeshLayer()));
-		}
 	}
 	break;
 	case MT_PART_LIST:

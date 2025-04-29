@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include "DlgMaterialTest.h"
 #include <QMessageBox>
 #include <QFileDialog>
-#include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include "ModelDocument.h"
@@ -269,69 +268,8 @@ void CMainWindow::on_actionLayerInfo_triggered()
 	if (doc == nullptr) return;
 
 	CLogPanel* log = ui->logPanel;
-	log->AddText("\nMesh Layer Info:\n===================\n");
 	GModel* gm = doc->GetGModel();
 	int nobjs = gm->Objects();
-	int layers = gm->MeshLayers();
-	MeshLayerManager* mlm = gm->GetMeshLayerManager();
-
-	// get the longest layer name
-	int l = 0;
-	for (int i = 0; i < layers; ++i)
-	{
-		const std::string& s = gm->GetMeshLayerName(i);
-		int sl = s.length();
-		if (sl > l) l = sl;
-	}
-
-	int activeLayer = gm->GetActiveMeshLayer();
-	for (int i = 0; i < layers; ++i)
-	{
-		log->AddText(QString::number(i) + ".");
-		QString name = QString::fromStdString(gm->GetMeshLayerName(i));
-		log->AddText(QString("%1:").arg(name, -l));
-
-		int nc = nobjs;
-		int meshes = mlm->FEMeshes(i);
-		if (meshes != nobjs)
-		{
-			log->AddText(QString("(Incorrect number of meshes: %1 / %2)").arg(meshes).arg(nobjs));
-		}
-		else
-		{
-			for (int j = 0; j < nc; ++j)
-			{
-				const FEMesher* mesher = nullptr;
-				const FSMesh*	mesh = nullptr;
-
-				if (i == activeLayer)
-				{
-					mesher = gm->Object(j)->GetFEMesher();
-					mesh = gm->Object(j)->GetFEMesh();
-				}
-				else
-				{
-					mesher = mlm->GetFEMesher(i, j);
-					mesh = mlm->GetFEMesh(i, j);
-				}
-
-				ulong pmesher = (ulong)mesher;
-				ulong pmesh = (ulong)mesh;
-
-				QString s1; s1.setNum(pmesher, 16);
-				QString s2; s2.setNum(pmesh, 16);
-
-				log->AddText(QString("%1|%2").arg(s1, 8, '0').arg(s2, 8, '0'));
-
-				if (j != nobjs - 1) log->AddText(",");
-			}
-		}
-
-		if (i == activeLayer)
-			log->AddText("***\n");
-		else
-			log->AddText("\n");
-	}
 
 	// print object info
 	log->AddText("\nObject Info:\n===================\n");

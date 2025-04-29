@@ -2716,57 +2716,8 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
 			menu.addAction(colorMode->menuAction());
 		}
-
-		menu.addSeparator();
-
-		GModel* gm = doc->GetGModel();
-		int layers = gm->MeshLayers();
-		if (layers > 1)
-		{
-			QMenu* sub = new QMenu("Set Active Mesh Layer");
-			int activeLayer = gm->GetActiveMeshLayer();
-			for (int i = 0; i < layers; ++i)
-			{
-				string s = gm->GetMeshLayerName(i);
-				QAction* a = sub->addAction(QString::fromStdString(s));
-				a->setCheckable(true);
-				if (i == activeLayer) a->setChecked(true);
-			}
-			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
-			menu.addAction(sub->menuAction());
-			menu.addSeparator();
-		}
 	}
 	menu.addAction(mainMenu->actionOptions);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::OnSelectMeshLayer(QAction* ac)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-
-	string s = ac->text().toStdString();
-
-	int layer = gm->FindMeshLayer(s); assert(layer >= 0);
-
-	if (layer != gm->GetActiveMeshLayer())
-	{
-		// since objects may not have meshes in the new layer, we make sure we are 
-		// in object selection mode
-		if (doc->GetItemMode() != ITEM_MESH)
-		{
-			doc->SetItemMode(ITEM_MESH);
-			UpdateGLControlBar();
-		}
-
-		// change the mesh layer
-		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
-		UpdateModel();
-		UpdateGLControlBar();
-		ui->buildPanel->Update(true);
-		RedrawGL();
-	}
 }
 
 //-----------------------------------------------------------------------------

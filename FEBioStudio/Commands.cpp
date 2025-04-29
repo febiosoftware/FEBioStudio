@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GModel.h>
-#include <GeomLib/MeshLayer.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <ImageLib/ImageAnalysis.h>
 #include <ImageLib/ImageModel.h>
@@ -67,7 +66,7 @@ void CCmdAddObject::Execute()
 void CCmdAddObject::UnExecute()
 {
 	// remove the mesh from the model
-	m_model->RemoveObject(m_pobj, true);
+	m_model->RemoveObject(m_pobj);
 
 	m_bdel = true;
 }
@@ -3228,36 +3227,25 @@ CCmdSwapObjects::CCmdSwapObjects(GModel* model, GObject* pold, GObject* pnew) : 
 	m_model = model;
 	m_pold = pold;
 	m_pnew = pnew;
-	m_oml = nullptr;
 }
 
 CCmdSwapObjects::~CCmdSwapObjects()
 {
-	if (m_oml)
-	{
-		MeshLayerManager::Destroy(m_oml);
-		delete m_pold;
-	}
-	else delete m_pnew;
+	delete m_pnew;
 }
 
 void CCmdSwapObjects::Execute()
 {
-	// get the old object's meshlist
-	m_oml = m_model->GetObjectMeshList(m_pold);
-
 	// replace the old object with the new one
 	m_model->ReplaceObject(m_pold, m_pnew);
+	GObject* tmp = m_pold;
+	m_pold = m_pnew;
+	m_pnew = tmp;
 }
 
 void CCmdSwapObjects::UnExecute()
 {
-	// remove the new object
-	m_model->RemoveObject(m_pnew, true);
-
-	// add the oml back
-	m_model->InsertObjectMeshList(m_oml);
-	m_oml = nullptr;
+	Execute();
 }
 
 //-----------------------------------------------------------------------------
@@ -3583,31 +3571,23 @@ CCmdDeleteGObject::CCmdDeleteGObject(GModel* gm, GObject* po) : CCommand(string(
 {
 	m_gm = gm;
 	m_po = po;
-	m_poml = nullptr;
 }
 
 CCmdDeleteGObject::~CCmdDeleteGObject()
 {
-	if (m_poml) 
-	{
-		MeshLayerManager::Destroy(m_poml);
-		delete m_po;
-	}
+	if (m_pos >= 0) delete m_po;
 }
 
 void CCmdDeleteGObject::Execute()
 {
-	m_poml = m_gm->GetObjectMeshList(m_po);
-	m_gm->RemoveObject(m_po);
+	m_pos = m_gm->RemoveObject(m_po);
 }
 
 void CCmdDeleteGObject::UnExecute()
 {
 	// re-insert the object and its mesh list
-	m_gm->InsertObjectMeshList(m_poml);
-
-	// delete the OML
-	m_poml = nullptr;
+	m_gm->InsertObject(m_po, m_pos);
+	m_pos = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -3693,79 +3673,6 @@ void CCmdDeleteFSObject::UnExecute()
 	m_parent->InsertChild(m_insertPos, m_obj);
 	assert(m_obj->GetParent() == m_parent);
 	m_delObject = false;
-}
-
-//-----------------------------------------------------------------------------
-// CCmdSetActiveMeshLayer
-//-----------------------------------------------------------------------------
-
-CCmdSetActiveMeshLayer::CCmdSetActiveMeshLayer(GModel* mdl, int activeLayer) : CCommand("Change active layer")
-{
-	m_gm = mdl;
-	m_activeLayer = activeLayer;
-}
-
-void CCmdSetActiveMeshLayer::Execute()
-{
-	int currentLayer = m_gm->GetActiveMeshLayer();
-	m_gm->SetActiveMeshLayer(m_activeLayer);
-	m_activeLayer = currentLayer;
-}
-
-void CCmdSetActiveMeshLayer::UnExecute()
-{
-	Execute();
-}
-
-//-----------------------------------------------------------------------------
-// CCmdAddMeshLayer
-//-----------------------------------------------------------------------------
-
-CCmdAddMeshLayer::CCmdAddMeshLayer(GModel* mdl, const std::string& layerName) : CCommand( string("Add Mesh Layer: ") + layerName)
-{
-	m_gm = mdl;
-	m_layerName = layerName;
-	m_layerIndex = -1;
-}
-
-void CCmdAddMeshLayer::Execute()
-{
-	m_layerIndex = m_gm->MeshLayers();
-	m_gm->AddMeshLayer(m_layerName);
-}
-
-void CCmdAddMeshLayer::UnExecute()
-{
-	m_gm->DeleteMeshLayer(m_layerIndex);
-}
-
-//-----------------------------------------------------------------------------
-// CCmdDeleteMeshLayer
-//-----------------------------------------------------------------------------
-
-
-CCmdDeleteMeshLayer::CCmdDeleteMeshLayer(GModel* mdl, int layerIndex) : CCommand("Delete mesh layer")
-{
-	m_gm = mdl;
-	m_layerIndex = layerIndex;
-	m_layer = nullptr;
-	assert(layerIndex != 0);		// make sure we are not trying to delete the default layer
-}
-
-CCmdDeleteMeshLayer::~CCmdDeleteMeshLayer()
-{
-	if (m_layer) MeshLayerManager::Destroy(m_layer);
-}
-
-void CCmdDeleteMeshLayer::Execute()
-{
-	m_layer = m_gm->RemoveMeshLayer(m_layerIndex);
-}
-
-void CCmdDeleteMeshLayer::UnExecute()
-{
-	m_gm->InsertMeshLayer(m_layerIndex, m_layer);
-	m_layer = nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -43,8 +43,6 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GLLib/GLCamera.h>
 
-class ObjectMeshList;
-class MeshLayer;
 class CModelDocument;
 class CGLDocument;
 class CGView;
@@ -1337,7 +1335,6 @@ protected:
 	GModel*		m_model;
 	GObject*	m_pold;	// the original object
 	GObject*	m_pnew;	// the new mesh object
-	ObjectMeshList*	m_oml;	// old object list
 };
 
 //-----------------------------------------------------------------------------
@@ -1508,7 +1505,7 @@ public:
 protected:
 	GModel*			m_gm;
 	GObject*		m_po;
-	ObjectMeshList*	m_poml;
+	int m_pos = -1;
 };
 
 //-----------------------------------------------------------------------------
@@ -1543,52 +1540,6 @@ protected:
 	size_t		m_insertPos;
 };
 
-//-----------------------------------------------------------------------------
-class CCmdSetActiveMeshLayer : public CCommand
-{
-public:
-	CCmdSetActiveMeshLayer(GModel* mdl, int activeLayer);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_gm;
-	int			m_activeLayer;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdAddMeshLayer : public CCommand
-{
-public:
-	CCmdAddMeshLayer(GModel* mdl, const std::string& layerName);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_gm;
-	std::string	m_layerName;
-	int			m_layerIndex;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdDeleteMeshLayer : public CCommand
-{
-public:
-	CCmdDeleteMeshLayer(GModel* mdl, int layerIndex);
-	~CCmdDeleteMeshLayer();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*	m_gm;
-	int		m_layerIndex;
-	MeshLayer*	m_layer;
-};
-
-//-----------------------------------------------------------------------------
 class CCmdRemoveMeshData : public CCommand
 {
 public:

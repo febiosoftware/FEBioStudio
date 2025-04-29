@@ -210,8 +210,7 @@ void init_FBSModel(py::module& m)
         .def("ReplaceObject", [] (FSModel& self, GObject* obj1, GObject* obj2){return self.GetModel().ReplaceObject(obj1, obj2);})
         .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
         .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
-		.def("DeleteObject", [](FSModel& self, GObject* po) { self.GetModel().RemoveObject(po, true); delete po; })
-
+		.def("DeleteObject", [](FSModel& self, GObject* po) { self.GetModel().RemoveObject(po); delete po; })
 		.def("AddSpringSet", [](FSModel& self, const std::string& name, const std::string& type) { return AddSpringSet(self, name, type); })
 		;
 
