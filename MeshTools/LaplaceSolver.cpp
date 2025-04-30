@@ -37,6 +37,7 @@ LaplaceSolver::LaplaceSolver()
 	m_maxIters = 1000;
 	m_tol = 1e-4;
 	m_w = 1.0;
+	m_relNorm = 0;
 
 	m_niters = 0;
 }

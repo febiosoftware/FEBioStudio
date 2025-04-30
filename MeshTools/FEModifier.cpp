@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include <MeshLib/FSMeshBuilder.h>
 #include <GeomLib/GGroup.h>
+#include <MeshTools/LaplaceSolver.h>
 
 FEModifier::FEModifier(const char* sz) { SetName(sz); }
 FEModifier::~FEModifier() {}
@@ -341,6 +342,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 FEAlignNodes::FEAlignNodes() : FEModifier("Align")
 {
 	AddChoiceParam(0, "align", "align")->SetEnumNames("+X\0-X\0+Y\0-Y\0+Z\0-Z\0");
+	AddBoolParam(true, "smooth", "smooth internal");
 }
 
 FSMesh* FEAlignNodes::Apply(FSMesh* pm)
@@ -351,13 +353,13 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 	vec3d rc;
 	int iref = -1;
-	for (int i=0; i<pnm->Nodes(); ++i)
+	for (int i = 0; i < pnm->Nodes(); ++i)
 	{
 		FSNode& node = pnm->Node(i);
 		vec3d ri = node.pos();
 		if (node.IsSelected())
 		{
-			if (iref == -1) 
+			if (iref == -1)
 			{
 				iref = i;
 				rc = ri;
@@ -377,30 +379,99 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 		}
 	}
 
-	if (iref == -1) { delete pnm; return 0; }
+	if (iref == -1) { delete pnm; return nullptr; }
 
-	for (int i = 0; i<pnm->Nodes(); ++i)
+	bool bsmooth = GetBoolValue(1);
+	if (bsmooth)
 	{
-		FSNode& node = pnm->Node(i);
-		if (node.IsSelected())
+		pnm->TagAllElements(0);
+
+		int NN = pnm->Nodes();
+		std::vector<int> bn(NN, 0);
+
+		std::vector<double> val[3];
+		val[0].resize(NN, 0);
+		val[1].resize(NN, 0);
+		val[2].resize(NN, 0);
+
+		for (int i = 0; i < pnm->Nodes(); ++i)
 		{
-			vec3d ri = node.pos();
-
-			switch (nalign)
+			FSNode& node = pnm->Node(i);
+			if (node.IsSelected())
 			{
-			case 0:
-			case 1: ri.x = rc.x; break;
-			case 2:
-			case 3: ri.y = rc.y; break;
-			case 4:
-			case 5: ri.z = rc.z; break;
-			}
+				vec3d r0 = node.pos();
+				vec3d r1(r0);
 
-			node.pos(ri);
+				switch (nalign)
+				{
+				case 0:
+				case 1: r1.x = rc.x; break;
+				case 2:
+				case 3: r1.y = rc.y; break;
+				case 4:
+				case 5: r1.z = rc.z; break;
+				}
+
+				vec3d d = r1 - r0;
+				bn[i] = 1;
+				val[0][i] = d.x;
+				val[1][i] = d.y;
+				val[2][i] = d.z;
+			}
+			else
+				bn[i] = (node.IsExterior() ? 1 : 0);
+		}
+
+		// solve Laplace equation
+#pragma omp parallel for
+		for (int i = 0; i < 3; ++i)
+		{
+			LaplaceSolver L;
+			bool b = L.Solve(pnm, val[i], bn);
+			int niters = L.GetIterationCount();
+		}
+
+		// apply morph
+#pragma omp parallel for
+		for (int i = 0; i < pnm->Nodes(); ++i)
+		{
+			vec3d ri = pnm->Node(i).r;
+			double dx = val[0][i];
+			double dy = val[1][i];
+			double dz = val[2][i];
+			ri.x += dx;
+			ri.y += dy;
+			ri.z += dz;
+
+			pnm->Node(i).r = ri;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < pnm->Nodes(); ++i)
+		{
+			FSNode& node = pnm->Node(i);
+			if (node.IsSelected())
+			{
+				vec3d ri = node.pos();
+
+				switch (nalign)
+				{
+				case 0:
+				case 1: ri.x = rc.x; break;
+				case 2:
+				case 3: ri.y = rc.y; break;
+				case 4:
+				case 5: ri.z = rc.z; break;
+				}
+
+				node.pos(ri);
+			}
 		}
 	}
 
-	pnm->UpdateMesh();
+	pnm->UpdateNormals();
+	pnm->UpdateBoundingBox();
 
 	return pnm;
 }
