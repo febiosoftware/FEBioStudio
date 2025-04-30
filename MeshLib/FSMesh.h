@@ -238,7 +238,6 @@ public:
 	void UpdateMeshPartitions();
 
 public: // --- M E S H   Q U E R I E S ---
-	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);
 
 	void FindDuplicateFaces(std::vector<int>& l);
 	void FindDuplicateEdges(std::vector<int>& l);

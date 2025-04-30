@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <vector>
+#include <set>
 
 class FSMesh;
 class FSSurfaceMesh;
@@ -57,4 +58,17 @@ protected:
 	std::vector<int>	m_node;		// node list
 
 	std::vector<double>	m_data;
+};
+
+// Build the node-node table for surface nodes only. 
+// That is table of node indices that each node connects to.
+class FSSurfaceNodeNodeList
+{
+public:
+	FSSurfaceNodeNodeList(FSMesh* pm);
+
+	std::set<int>& operator [] (size_t pos) { return NNT[pos]; }
+
+private:
+	std::vector<std::set<int> > NNT;
 };

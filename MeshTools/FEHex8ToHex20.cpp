@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEModifier.h"
 #include <FECore/matrix.h>
+#include <MeshLib/FSNodeNodeList.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -323,8 +324,7 @@ void FEHex20Smooth::Apply(FSMesh* pmesh)
 	for (int i=0; i<NN; ++i) sn[i].Normalize();
 
 	// build the node-node list
-	vector< set<int> > NNL(NN);
-	pmesh->BuildSurfaceNodeNodeTable(NNL);
+	FSSurfaceNodeNodeList NNL(pmesh);
 
 	// loop over all corner nodes
 	for (int n=0; n<NN; ++n)

@@ -248,3 +248,28 @@ void FSNodeNodeList::InitValues(double v)
 {
 	m_data.assign(m_node.size(), v);
 }
+
+FSSurfaceNodeNodeList::FSSurfaceNodeNodeList(FSMesh* pm)
+{
+	// reset node-node table
+	int NN = pm->Nodes();
+	NNT.resize(NN);
+	for (int i = 0; i < NN; ++i) NNT[i].clear();
+
+	// loop over all faces
+	int NF = pm->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = pm->Face(i);
+		int nf = f.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			int nj = f.n[j];
+			for (int k = 0; k < nf; ++k)
+			{
+				int nk = f.n[k];
+				if (nj != nk) NNT[nj].insert(nk);
+			}
+		}
+	}
+}

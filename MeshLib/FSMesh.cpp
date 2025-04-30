@@ -511,34 +511,6 @@ void FSMesh::FindDuplicateEdges(vector<int>& l)
 }
 
 //-----------------------------------------------------------------------------
-// Build the node-node table for surface nodes only. That is table of node indices that each node
-// connects to.
-void FSMesh::BuildSurfaceNodeNodeTable(vector<set<int> >& NNT)
-{
-	// reset node-node table
-	int NN = Nodes();
-	NNT.resize(NN);
-	for (int i=0; i<NN; ++i) NNT[i].clear();
-
-	// loop over all faces
-	int NF = Faces();
-	for (int i=0; i<NF; ++i)
-	{
-		FSFace& f = Face(i);
-		int nf = f.Nodes();
-		for (int j=0; j<nf; ++j)
-		{
-			int nj = f.n[j];
-			for (int k=0; k<nf; ++k)
-			{
-				int nk = f.n[k];
-				if (nj != nk) NNT[nj].insert(nk);										
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Build mesh data structures
 // This assumes that at all nodes, edges, faces, and elements are created and partitioned.
 void FSMesh::BuildMesh()
