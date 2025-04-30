@@ -636,28 +636,22 @@ void GLMesh::UpdateNormals()
 	vector<FACE*> F(NF);
 	int FC = 0;
 
-	stack<FACE*> stack;
+	vector<FACE*> stack(NF);
+	int FS = 0;
 	int nsg = 0;
 	for (int i=0; i < NF; ++i)
 	{
 		FACE* pf = &m_Face[i];
 		if ((pf->tag == -1) && (pf->sid >= 0))
 		{
-			// clear normals
-			for (int j = 0; j<FC; ++j)
-			{
-				FACE* pf2 = F[j];
-				norm[pf2->n[0]] = vec3f(0, 0, 0);
-				norm[pf2->n[1]] = vec3f(0, 0, 0);
-				norm[pf2->n[2]] = vec3f(0, 0, 0);
-			}
+			if (FC > 0) norm.assign(NN, vec3f(0, 0, 0));
 			FC = 0;
 
-			stack.push(pf);
-			while (stack.empty() == false)
+			stack[FS++] = pf;
+			while (FS > 0)
 			{
 				// pop a face
-				pf = stack.top(); stack.pop();
+				pf = stack[--FS];
 
 				// mark as processed
 				pf->tag = nsg;
@@ -678,7 +672,7 @@ void GLMesh::UpdateNormals()
 						if ((pf2->tag == -1) && (pf->sid == pf2->sid))
 						{
 							pf2->tag = -2;
-							stack.push(pf2);
+							stack[FS++] = pf2;
 						}
 					}
 				}

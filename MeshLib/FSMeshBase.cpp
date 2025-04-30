@@ -276,6 +276,10 @@ void FSMeshBase::UpdateNormals()
 		FSFace* pf = FacePtr(i);
 		if (pf->m_ntag == -1)
 		{
+			// clear normals
+			if (FC > 0) norm.assign(NN, vec3f(0.f, 0.f, 0.f));
+			FC = 0;
+
 			// find all connected faces
 			stack[ns++] = pf;
 			while (ns > 0)
@@ -314,15 +318,7 @@ void FSMeshBase::UpdateNormals()
 				for (int k = 0; k<nf; ++k) pf->m_nn[k] = norm[pf->n[k]];
 			}
 
-			// clear normals
-			for (int j = 0; j<FC; ++j)
-			{
-				pf = F[j];
-				int nf = pf->Nodes();
-				for (int k = 0; k<nf; ++k) norm[pf->n[k]] = vec3f(0.f, 0.f, 0.f);
-			}
 			++nsg;
-			FC = 0;
 		}
 	}
 
