@@ -161,9 +161,19 @@ void FSMesh::Clear()
 	m_Elem.clear();
 	m_Node.clear();
 	m_Dom.Clear();
+
 	ClearNLT();
+	ClearELT();
+
 	ClearMeshData();
+	ClearMeshTopo();
+}
+
+void FSMesh::ClearMeshTopo()
+{
 	m_NEL.Clear();
+	m_NFL.Clear();
+	m_NLL.Clear();
 }
 
 void FSMesh::ClearSelections()
@@ -461,6 +471,7 @@ int FSMesh::RemoveElements(int ntag)
 	{
 		m_Elem.resize(n);
 		m_data.Clear();
+		ClearMeshTopo();
 	}
 	return (N0 - n);
 }

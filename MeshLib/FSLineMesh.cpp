@@ -41,6 +41,11 @@ bool FSLineMesh::IsEditable() const
 
 const std::vector<NodeEdgeRef>& FSLineMesh::NodeEdgeList(int node) const
 {
+	if (m_NLL.IsEmpty())
+	{
+		FSNodeEdgeList& NLL = const_cast<FSNodeEdgeList&>(m_NLL);
+		NLL.Build(const_cast<FSLineMesh*>(this));
+	}
 	return m_NLL.EdgeList(node);
 }
 
