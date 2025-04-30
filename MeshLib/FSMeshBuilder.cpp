@@ -1842,6 +1842,8 @@ void FSMeshBuilder::AutoPartitionSurface()
 // This function builds the surface, edges and node of the mesh
 void FSMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh, bool creaseInternal)
 {
+	m_mesh.ClearMeshTopo();
+
 	// update the element neighbours
 	m_mesh.UpdateElementNeighbors();
 

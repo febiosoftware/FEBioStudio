@@ -203,6 +203,7 @@ void FSMesh::Create(int nodes, int elems, int faces, int edges)
 
 	// clear mesh data
 	ClearMeshData();
+	ClearMeshTopo();
 }
 
 //-----------------------------------------------------------------------------
@@ -540,12 +541,6 @@ void FSMesh::UpdateMesh()
 	BuildNLT();
 	BuildELT();
 
-	// Build the node-element list
-	if (m_NEL.IsEmpty()) m_NEL.Build(this);
-
-	// build the node-face list
-	m_NFL.Build(this);
-
 	// create the parts
 	UpdateMeshPartitions();
 }
@@ -554,7 +549,6 @@ void FSMesh::UpdateMesh()
 // Convenience function that calls the mesh builder to do all the work
 void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 {
-	m_NEL.Clear();
 	FSMeshBuilder meshBuilder(*this);
 	meshBuilder.RebuildMesh(smoothingAngle, partitionMesh);
 }
@@ -589,9 +583,6 @@ void FSMesh::RebuildFaceData()
 	// update face neighbours
 	// (Depends on element neighbors)
 	UpdateFaceNeighbors();
-
-	// build the node-face list
-	m_NFL.Build(this);
 }
 
 //-----------------------------------------------------------------------------
