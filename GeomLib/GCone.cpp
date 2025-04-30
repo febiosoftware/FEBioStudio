@@ -100,9 +100,6 @@ FEMesher* GCone::CreateDefaultMesher()
 //-----------------------------------------------------------------------------
 void GCone::Create()
 {
-	GLMesh* gmesh = new GLMesh();
-	SetRenderMesh(gmesh);
-
 	// build the nodes
 	assert(m_Node.empty());
 	for (int i=0; i<8; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -182,7 +179,8 @@ void GCone::BuildGMesh()
 	int NH = 4*a;
 	int NR = 12;
 
-	GLMesh& m = *GetRenderMesh();
+	GLMesh* pm = new GLMesh();
+	GLMesh& m = *pm;
 	int NN0 = m.Nodes();
 	int NF0 = m.Faces();
 	int NE0 = m.Edges();
@@ -371,4 +369,6 @@ void GCone::BuildGMesh()
 		assert(ne == NE);
 	}
 	m.Update();
+
+	SetRenderMesh(pm);
 }

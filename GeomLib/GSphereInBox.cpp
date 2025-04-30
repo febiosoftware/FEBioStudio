@@ -146,7 +146,7 @@ void GSphereInBox::BuildGMesh()
 	GPrimitive::BuildGMesh();
 
 	// project nodes onto surface
-	GLMesh* pm = GetRenderMesh();
+	GLMesh* pm = new GLMesh();
 
 	// find all nodes for the inner surface and project to a sphere
 	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).tag = 0;
@@ -174,4 +174,6 @@ void GSphereInBox::BuildGMesh()
 	}
 
 	pm->Update();
+
+	SetRenderMesh(pm);
 }

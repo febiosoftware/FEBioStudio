@@ -93,8 +93,6 @@ bool GSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GSphere::Create()
 {
-	SetRenderMesh(new GLMesh());
-
 	// create the nodes
 	assert(m_Node.empty());
 	for (int i=0; i<6; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -161,7 +159,8 @@ void GSphere::BuildGMesh()
 	int NF = 2*ND + (NZ-2)*(2*ND);
 	int NE = ND + 4*NZ;
 
-	GLMesh& m = *GetRenderMesh();
+	GLMesh* pm = new GLMesh();
+	GLMesh& m = *pm;
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -315,4 +314,6 @@ void GSphere::BuildGMesh()
 		}
 	}
 	m.Update();
+
+	SetRenderMesh(pm);
 }

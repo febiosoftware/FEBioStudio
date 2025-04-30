@@ -163,7 +163,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 	int NF = 2*(NS+NS*2*(NZ-1)) + 2*NS;
 	int NE = 8*NZ+2*NS+4;
 
-	GLMesh& m = *GetRenderMesh();
+	GLMesh& m = *(new GLMesh());
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -345,6 +345,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 		}
 	}
 	m.Update();
+
+	SetRenderMesh(&m);
 }
 
 int GTruncatedEllipsoid::NodeIndex(int i, int j, int NS)
