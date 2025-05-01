@@ -58,7 +58,7 @@ GDisc::GDisc() : GShellPrimitive(GDISC)
 	AddDoubleParam(1.0, "R", "radius");
 
 	// assign default mesher
-	SetFEMesher(new FEShellDisc(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	SetManipulator(new GDiscManipulator(*this));
 
@@ -72,7 +72,7 @@ void GDisc::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 //-----------------------------------------------------------------------------
 FEMesher* GDisc::CreateDefaultMesher()
 {
-	return new FEShellDisc(this);
+	return new FEShellDisc();
 }
 
 //-----------------------------------------------------------------------------

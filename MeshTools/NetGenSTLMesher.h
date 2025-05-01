@@ -32,9 +32,8 @@ class NetGenSTLMesher : public NetGenMesher
 {
 public:
 	NetGenSTLMesher();
-	NetGenSTLMesher(GSurfaceMeshObject* po);
 
-	FSMesh* BuildMesh() override;
+	FSMesh* BuildMesh(GObject* po) override;
 
 private:
 	GSurfaceMeshObject* m_pso;

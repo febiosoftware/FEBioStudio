@@ -231,8 +231,7 @@ public:
 
 	void ClearMB();
 
-	// build the mesh
-	FSMesh* BuildMesh();
+	FSMesh* BuildMBMesh();
 
 	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
 
@@ -298,6 +297,10 @@ protected:
 
 	int GetBlockFaceNodeIndex(MBBlock& b, int nf, int i, int j);
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
+
+private:
+	// build the mesh
+	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
 
 protected:
 	class MQPoint
@@ -408,10 +411,10 @@ class FEMultiBlockMesher : public FEMultiBlockMesh
 	enum { DIVS, ELEM_TYPE };
 
 public:
-	FEMultiBlockMesher(GMultiBox* po);
+	FEMultiBlockMesher();
 
 	// build the mesh
-	FSMesh* BuildMesh() override;
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiBlock() override;
 

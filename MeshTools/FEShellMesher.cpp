@@ -34,22 +34,16 @@ REGISTER_CLASS3(FEShellMesher, CLASS_MESHER, Shell_Mesher, "shell_mesher", 0, 0)
 
 FEShellMesher::FEShellMesher()
 {
-	m_po = nullptr;
-}
-
-FEShellMesher::FEShellMesher(GObject* po)
-{
 	AddDoubleParam(0.01, "shell thickness");
-	m_po = po;
 }
 
 // build the mesh
-FSMesh*	FEShellMesher::BuildMesh()
+FSMesh*	FEShellMesher::BuildMesh(GObject* po)
 {
-	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(m_po);
-	if (po == nullptr) return nullptr;
+	GSurfaceMeshObject* psmo = dynamic_cast<GSurfaceMeshObject*>(po);
+	if (psmo == nullptr) return nullptr;
 
-	FSSurfaceMesh* surfaceMesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* surfaceMesh = psmo->GetSurfaceMesh();
 	if (surfaceMesh == nullptr) return nullptr;
 
 	int NF = surfaceMesh->Faces();
@@ -97,9 +91,9 @@ FSMesh*	FEShellMesher::BuildMesh()
 		FSElement& el = mesh->Element(i);
 
 		assert(sf.m_gid >= 0);
-		GFace* pf = po->Face(sf.m_gid);
+		GFace* pf = psmo->Face(sf.m_gid);
 		assert(pf->m_nPID[0] >= 0);
-		int pid = po->Part(pf->m_nPID[0])->GetLocalID();
+		int pid = psmo->Part(pf->m_nPID[0])->GetLocalID();
 
 		el.m_gid = pid;
 		switch (sf.Type())

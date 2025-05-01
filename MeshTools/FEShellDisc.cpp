@@ -38,9 +38,9 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEShellDisc::FEShellDisc(GDisc* po)
+FEShellDisc::FEShellDisc()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_r = 0.5;
 	m_t = 0.01;
@@ -53,8 +53,11 @@ FEShellDisc::FEShellDisc(GDisc* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellDisc::BuildMesh()
+FSMesh* FEShellDisc::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GDisc*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	if (BuildMultiQuad() == false) return nullptr;
 
 	// set element type
@@ -67,7 +70,7 @@ FSMesh* FEShellDisc::BuildMesh()
 	};
 
 	// Build the mesh
-	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMQMesh();
 	if (pm == nullptr) return nullptr;
 
 	pm->BuildMesh();

@@ -35,9 +35,9 @@ public:
 	enum { T, NSLICE, NDIV, ELEM_TYPE };
 
 public:
-	FEShellRing(){}
-	FEShellRing(GRing* po);
-	FSMesh* BuildMesh();
+	FEShellRing();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiQuad() override;
 

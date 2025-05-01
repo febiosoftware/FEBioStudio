@@ -56,18 +56,6 @@ FETetGenMesher::FETetGenMesher() : m_po(nullptr)
 	AddVecParam(vec3d(0, 0, 0), "hole_coord", "hole coordinates");
 }
 
-FETetGenMesher::FETetGenMesher(GObject* po) : m_po(po)
-{
-	SetType(TetGen_Mesher);
-
-	AddDoubleParam(  0, "elsize", "Element Size");
-	AddDoubleParam(2.0, "Quality", "Quality");
-	AddIntParam(0, "eltype", "element type")->SetEnumNames("Tet4\0Tet10\0Tet15\0Tet20\0");
-	AddBoolParam(true, "splitfaces", "split faces");
-	AddBoolParam(false, "hole", "hole");
-	AddVecParam(vec3d(0,0,0), "hole_coord", "hole coordinates");
-}
-
 //-----------------------------------------------------------------------------
 double FETetGenMesher::ElementSize()
 {
@@ -106,8 +94,9 @@ int FETetGenMesher::ElementType()
 // and then passes this structure to tetgen which builds the tet mesh. On
 // a successful return the FE mesh is processed and partitioned. 
 //
-FSMesh* FETetGenMesher::BuildMesh()
+FSMesh* FETetGenMesher::BuildMesh(GObject* po)
 {
+	m_po = po;
 	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (surfObj)
 	{

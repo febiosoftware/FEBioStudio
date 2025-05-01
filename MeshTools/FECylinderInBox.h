@@ -36,8 +36,8 @@ public:
 
 public:
 	FECylinderInBox();
-	FECylinderInBox(GCylinderInBox* po);
-	FSMesh* BuildMesh();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	bool BuildMultiBlock() override;

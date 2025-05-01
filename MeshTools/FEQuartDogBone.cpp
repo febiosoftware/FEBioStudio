@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
-FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
+FEQuartDogBone::FEQuartDogBone()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	AddIntParam(10, "nx", "Nx");
 	AddIntParam(30, "ny", "Ny");
@@ -58,8 +58,11 @@ bool FEQuartDogBone::BuildMultiBlock()
 	else return BuildMultiBlockMesh6();
 }
 
-FSMesh* FEQuartDogBone::BuildMesh()
+FSMesh* FEQuartDogBone::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GQuartDogBone*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -72,7 +75,7 @@ FSMesh* FEQuartDogBone::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	return pm;
 }
@@ -515,7 +518,7 @@ FSMesh* FEQuartDogBone::BuildMeshLegacy()
 	m_MBNode[21].SetID(14);
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// get all the nodes from block 1
 	std::vector<int> node;

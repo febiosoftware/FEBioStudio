@@ -86,7 +86,7 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 	AddDoubleParam(m_H, "h", "height");
 	AddDoubleParam(m_w, "w", "angle" );
 
-	SetFEMesher(new FESlice(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GSliceManipulator(*this));
 
 	Create();
@@ -95,7 +95,7 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 //-----------------------------------------------------------------------------
 FEMesher* GSlice::CreateDefaultMesher()
 {
-	return new FESlice(this);
+	return new FESlice();
 }
 
 //-----------------------------------------------------------------------------

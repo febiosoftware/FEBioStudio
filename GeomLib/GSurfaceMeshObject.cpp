@@ -36,7 +36,7 @@ SOFTWARE.*/
 
 GSurfaceMeshObject::GSurfaceMeshObject(FSSurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
 {
-	SetFEMesher(new FETetGenMesher(this));
+	SetFEMesher(new FETetGenMesher());
 	if (m_surfmesh)
 	{
 		m_surfmesh->SetGObject(this);
@@ -46,7 +46,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(FSSurfaceMesh* pm) : GObject(GSURFACEMESH
 
 GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJECT)
 {
-	SetFEMesher(new FETetGenMesher(this));
+	SetFEMesher(new FETetGenMesher());
 
 	// next, we copy the geometry info
 	// --- Nodes ---
@@ -213,7 +213,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 // default mesher
 FEMesher* GSurfaceMeshObject::CreateDefaultMesher()
 {
-	return new FETetGenMesher(this);
+	return new FETetGenMesher();
 }
 
 FSMesh* GSurfaceMeshObject::BuildMesh()
@@ -236,7 +236,7 @@ FSMesh* GSurfaceMeshObject::BuildMesh()
 	FSMesh* pold = GetFEMesh();
 
 	// create a new mesh
-	FSMesh* pmesh = mesher->BuildMesh();
+	FSMesh* pmesh = mesher->BuildMesh(this);
 	SetFEMesh(pmesh);
 
 	// now it is safe to delete the old mesh

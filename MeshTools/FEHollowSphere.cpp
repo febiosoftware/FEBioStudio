@@ -38,9 +38,9 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEHollowSphere::FEHollowSphere(GHollowSphere* po)
+FEHollowSphere::FEHollowSphere()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 	m_nd = 6;
 	m_ns = 1;
 	m_gr = 1;
@@ -422,8 +422,11 @@ bool FEHollowSphere::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEHollowSphere::BuildMesh()
+FSMesh* FEHollowSphere::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GHollowSphere*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -436,7 +439,7 @@ FSMesh* FEHollowSphere::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

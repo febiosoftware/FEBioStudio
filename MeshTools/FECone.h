@@ -35,9 +35,8 @@ public:
 	enum { RB, NDIV, NSEG, NSTACK, GZ, GR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FECone(){}
-	FECone(GCone* po);
-	FSMesh* BuildMesh();
+	FECone();
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	bool BuildMultiBlock() override;

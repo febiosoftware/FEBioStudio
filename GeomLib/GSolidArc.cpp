@@ -97,7 +97,7 @@ GSolidArc::GSolidArc() : GPrimitive(GSOLIDARC)
 	AddDoubleParam(1.0, "h", "Height");				// height
 	AddDoubleParam(90., "alpha", "Angle");				// alpha angle (in degrees)
 
-	SetFEMesher(new FESolidArc(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GSolidArcManipulator(*this));
 
 	Create();
@@ -106,7 +106,7 @@ GSolidArc::GSolidArc() : GPrimitive(GSOLIDARC)
 //-----------------------------------------------------------------------------
 FEMesher* GSolidArc::CreateDefaultMesher()
 {
-	return new FESolidArc(this);
+	return new FESolidArc();
 }
 
 //-----------------------------------------------------------------------------

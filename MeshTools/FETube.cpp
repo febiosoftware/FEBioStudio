@@ -38,9 +38,9 @@ SOFTWARE.*/
 // FETube
 //////////////////////////////////////////////////////////////////////
 
-FETube::FETube(GTube* po)
+FETube::FETube()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_nd = 8;
 	m_ns = 4;
@@ -64,8 +64,11 @@ FETube::FETube(GTube* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0Tet4\0Tet10\0");
 }
 
-FSMesh* FETube::BuildMesh()
+FSMesh* FETube::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GTube*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
@@ -196,7 +199,7 @@ FSMesh* FETube::BuildMultiBlockMesh()
 	}
 
 	// all done
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 	if (pm == nullptr) return nullptr;
 
 	if ((nelem == 3) || (nelem == 4))
@@ -529,9 +532,9 @@ void FETube::BuildEdges(FSMesh* pm)
 // FETube2
 //////////////////////////////////////////////////////////////////////
 
-FETube2::FETube2(GTube2* po)
+FETube2::FETube2()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_nd = 8;
 	m_ns = 4;
@@ -553,9 +556,10 @@ FETube2::FETube2(GTube2* po)
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-FSMesh* FETube2::BuildMesh()
+FSMesh* FETube2::BuildMesh(GObject* po)
 {
-	assert(m_pobj);
+	m_pobj = dynamic_cast<GTube2*>(po); assert(m_pobj);
+	if (m_pobj == nullptr) return nullptr;
 
 	int i, j, k, n;
 

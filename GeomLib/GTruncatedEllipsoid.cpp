@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 {
-	SetFEMesher(new FETruncatedEllipsoid(this));
+	SetFEMesher(new FETruncatedEllipsoid());
 	m_Ra = m_Rb = m_Rc = 1.0;
 	m_wt = 0.1;
 	m_vend = 0.0;
@@ -47,7 +47,7 @@ GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 //-----------------------------------------------------------------------------
 FEMesher* GTruncatedEllipsoid::CreateDefaultMesher()
 {
-	return new FETruncatedEllipsoid(this);
+	return new FETruncatedEllipsoid();
 }
 
 bool GTruncatedEllipsoid::Update(bool b)
@@ -125,11 +125,10 @@ void GTruncatedEllipsoid::Create()
 	for (int i=0; i<12; ++i)
 	{
 		GFace* f = new GFace(this);
-		f->m_node.resize(4);
-		f->m_node[0] = FT[i][0];
-		f->m_node[1] = FT[i][1];
-		f->m_node[2] = FT[i][2];
-		f->m_node[3] = FT[i][3];
+		f->m_node.push_back(FT[i][0]);
+		f->m_node.push_back(FT[i][1]);
+		f->m_node.push_back(FT[i][2]);
+		if (FT[i][3] != -1) f->m_node.push_back(FT[i][3]);
 		f->m_nPID[0] = 0;
 		AddSurface(f);
 	}

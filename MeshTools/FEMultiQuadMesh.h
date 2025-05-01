@@ -43,7 +43,7 @@ public:
 	virtual ~FEMultiQuadMesh();
 
 	// build the mesh
-	FSMesh* BuildMesh();
+	FSMesh* BuildMQMesh();
 
 	// set the quad mesh flag
 	void SetElementType(int elemType);
@@ -99,6 +99,9 @@ protected:
 
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
+private:
+	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
+
 protected:
 	class MQPoint
 	{
@@ -146,10 +149,10 @@ class FEMultiQuadMesher : public FEMultiQuadMesh
 	enum { DIVS, ELEM_TYPE };
 
 public:
-	FEMultiQuadMesher(GMultiPatch* po);
+	FEMultiQuadMesher();
 
 	// build the mesh
-	FSMesh* BuildMesh() override;
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiQuad() override;
 

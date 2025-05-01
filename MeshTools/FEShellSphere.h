@@ -35,11 +35,10 @@ public:
 	enum {T, NDIV};
 
 public:
-	FEShellSphere(){}
-	FEShellSphere(GSphere* po);
+	FEShellSphere();
 	virtual ~FEShellSphere();
 
-	FSMesh* BuildMesh();
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	int GetElementID(int i, int j, int n1, int n2, int n3, int n4)

@@ -34,13 +34,9 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include "FEMultiQuadMesh.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FEShellTube::FEShellTube(GThinTube* po)
+FEShellTube::FEShellTube()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_t = 0.01;
 	m_nd = 16;
@@ -52,8 +48,11 @@ FEShellTube::FEShellTube(GThinTube* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellTube::BuildMesh()
+FSMesh* FEShellTube::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GThinTube*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	if (BuildMultiQuad() == false) return nullptr;
 
 	// set element type
@@ -66,7 +65,7 @@ FSMesh* FEShellTube::BuildMesh()
 	};
 
 	// Build the mesh
-	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMQMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness to section

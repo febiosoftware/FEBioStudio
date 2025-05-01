@@ -87,7 +87,8 @@ GPatch::GPatch() : GShellPrimitive(GPATCH)
 	AddDoubleParam(m_w, "w", "Width" );
 	AddDoubleParam(m_h, "h", "Height");
 	
-	SetFEMesher(new FEShellPatch(this));
+	SetFEMesher(CreateDefaultMesher());
+
 	SetManipulator(new GPatchManipulator(*this));
 
 	Create();
@@ -96,7 +97,7 @@ GPatch::GPatch() : GShellPrimitive(GPATCH)
 //-----------------------------------------------------------------------------
 FEMesher* GPatch::CreateDefaultMesher()
 {
-	return new FEShellPatch(this);
+	return new FEShellPatch();
 }
 
 //-----------------------------------------------------------------------------

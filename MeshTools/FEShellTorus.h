@@ -29,16 +29,15 @@ SOFTWARE.*/
 
 class GTorus;
 
-class FEShellTorus : public FEMesher  
+class FEShellTorus : public FEMesher
 {
 public:
 	enum { T, NDIV, NSEG };
 
 public:
-	FEShellTorus(){}
-	FEShellTorus(GTorus* po);
+	FEShellTorus();
 	
-	FSMesh* BuildMesh();
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	void BuildNodes(FSMesh* pm);

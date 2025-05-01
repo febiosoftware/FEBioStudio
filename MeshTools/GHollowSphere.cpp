@@ -41,7 +41,7 @@ GHollowSphere::GHollowSphere() : GPrimitive(GHOLLOW_SPHERE)
 	AddDoubleParam(m_Ri, "Ri", "Inner radius");
 	AddDoubleParam(m_Ro, "Ro", "Outer radius");
 
-	SetFEMesher(new FEHollowSphere(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
@@ -49,7 +49,7 @@ GHollowSphere::GHollowSphere() : GPrimitive(GHOLLOW_SPHERE)
 //-----------------------------------------------------------------------------
 FEMesher* GHollowSphere::CreateDefaultMesher()
 {
-	return new FEHollowSphere(this);
+	return new FEHollowSphere();
 }
 
 //-----------------------------------------------------------------------------
