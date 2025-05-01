@@ -39,7 +39,7 @@ GTorus::GTorus() : GPrimitive(GTORUS)
 	AddDoubleParam(m_R0, "R0", "outer radius");
 	AddDoubleParam(m_R1, "R1", "inner radius");
 
-	SetFEMesher(new FETorus(this));
+	SetFEMesher(new FETorus());
 
 	Create();
 }
@@ -47,7 +47,7 @@ GTorus::GTorus() : GPrimitive(GTORUS)
 //-----------------------------------------------------------------------------
 FEMesher* GTorus::CreateDefaultMesher()
 {
-	return new FETorus(this);
+	return new FETorus();
 }
 
 //----------------------------------------------------------------------------

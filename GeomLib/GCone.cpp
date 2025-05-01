@@ -77,7 +77,7 @@ GCone::GCone() : GPrimitive(GCONE)
 	AddDoubleParam(m_R1, "R1", "Top radius");
 	AddDoubleParam(m_h , "h" , "Height");
 
-	SetFEMesher(new FECone(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GConeManipulator(*this));
 
 	Create();
@@ -94,7 +94,7 @@ void GCone::SetHeight(double h) { SetFloatValue(H, h); }
 //-----------------------------------------------------------------------------
 FEMesher* GCone::CreateDefaultMesher()
 {
-	return new FECone(this);
+	return new FECone();
 }
 
 //-----------------------------------------------------------------------------

@@ -326,7 +326,7 @@ GLMesh* GRevolveModifier::BuildGMesh(GObject* po)
 //-----------------------------------------------------------------------------
 FSMesh* GRevolveModifier::BuildFEMesh(GObject* po)
 {
-	FETetGenMesher tet(po);
+	FETetGenMesher tet;
 	tet.SetFloatValue(FETetGenMesher::ELSIZE, 0.2);
-	return tet.BuildMesh();
+	return tet.BuildMesh(po);
 }

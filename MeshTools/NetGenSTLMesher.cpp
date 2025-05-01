@@ -47,17 +47,14 @@ REGISTER_CLASS3(NetGenSTLMesher, CLASS_MESHER, NetGen_STL_Mesher, "ng_stl_mesher
 
 NetGenSTLMesher::NetGenSTLMesher() 
 {
+	m_pso = nullptr;
 	SetType(NetGen_STL_Mesher);
 }
 
-NetGenSTLMesher::NetGenSTLMesher(GSurfaceMeshObject* po) : m_pso(po)
-{
-	SetType(NetGen_STL_Mesher);
-}
-
-FSMesh* NetGenSTLMesher::BuildMesh()
+FSMesh* NetGenSTLMesher::BuildMesh(GObject* po)
 {
 #ifdef HAS_NETGEN
+	m_pso = dynamic_cast<GSurfaceMeshObject*>(po);
 	if (m_pso == nullptr) return nullptr;
 
 	FSSurfaceMesh* surfMesh = m_pso->GetSurfaceMesh();

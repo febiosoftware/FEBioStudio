@@ -37,9 +37,9 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEShellTorus::FEShellTorus(GTorus* po)
+FEShellTorus::FEShellTorus()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_t = 0.01;
 	m_nd = 6;
@@ -50,9 +50,10 @@ FEShellTorus::FEShellTorus(GTorus* po)
 	AddIntParam(m_ns, "ns", "Segments");
 }
 
-FSMesh* FEShellTorus::BuildMesh()
+FSMesh* FEShellTorus::BuildMesh(GObject* po)
 {
-	int i, j;
+	m_pobj = dynamic_cast<GTorus*>(po);
+	if (m_pobj == nullptr) return nullptr;
 
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -85,12 +86,12 @@ FSMesh* FEShellTorus::BuildMesh()
 	// create nodes
 	vec3d r;
 	FSNode* pn = pm->NodePtr();
-	for (i=0; i<nd; ++i)
+	for (int i=0; i<nd; ++i)
 	{
 		double w0 = 2.0*i*PI/nd - PI*0.5;
 		double cw0 = cos(w0), sw0 = sin(w0);
 
-		for (j=0; j<ns; ++j, ++pn)
+		for (int j=0; j<ns; ++j, ++pn)
 		{
 			double w1 = 2.0*PI - 2.0*j*PI/ns;
 
@@ -106,9 +107,9 @@ FSMesh* FEShellTorus::BuildMesh()
 
 	// create elements
 	int eid = 0;
-	for (i=0; i<nd; ++i)
+	for (int i=0; i<nd; ++i)
 	{
-		for (j=0; j<ns; ++j)
+		for (int j=0; j<ns; ++j)
 		{
 			FSElement_* pe = pm->ElementPtr(eid++);
 
@@ -125,7 +126,7 @@ FSMesh* FEShellTorus::BuildMesh()
 	}
 	
 	// assign shell thickness
-	for (i=0; i<elems; ++i)
+	for (int i=0; i<elems; ++i)
 	{
 		FSElement_* pe = pm->ElementPtr(i);
 

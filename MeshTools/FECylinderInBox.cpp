@@ -29,16 +29,9 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include "FEModifier.h"
 
-//-----------------------------------------------------------------------------
 FECylinderInBox::FECylinderInBox()
 {
-	m_po = 0;
-}
-
-//-----------------------------------------------------------------------------
-FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
-{
-	m_po = po;
+	m_po = nullptr;
 	m_nx = 10;
 	m_ny = 10;
 	m_nz = 10;
@@ -186,8 +179,11 @@ bool FECylinderInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FECylinderInBox::BuildMesh()
+FSMesh* FECylinderInBox::BuildMesh(GObject* po)
 {
+	m_po = dynamic_cast<GCylinderInBox*>(po);
+	if (m_po == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -200,7 +196,7 @@ FSMesh* FECylinderInBox::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

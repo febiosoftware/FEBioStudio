@@ -31,12 +31,12 @@ SOFTWARE.*/
 
 GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)
 {
-	SetFEMesher(new FSCurveObjectMesher(this));
+	SetFEMesher(new FSCurveObjectMesher());
 }
 
 GCurveObject::GCurveObject(GCurveObject* po) : GObject(GCURVE_OBJECT)
 {
-	SetFEMesher(new FSCurveObjectMesher(this));
+	SetFEMesher(new FSCurveObjectMesher());
 
 	// copy transform
 	GetTransform() = po->GetTransform();

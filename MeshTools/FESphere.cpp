@@ -38,9 +38,9 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 
-FESphere::FESphere(GSphere* po)
+FESphere::FESphere()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_r = 0.5;
 
@@ -345,8 +345,11 @@ bool FESphere::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FESphere::BuildMesh()
+FSMesh* FESphere::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GSphere*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -359,7 +362,7 @@ FSMesh* FESphere::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. Instead we assign

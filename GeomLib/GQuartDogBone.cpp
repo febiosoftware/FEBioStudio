@@ -37,7 +37,7 @@ GQuartDogBone::GQuartDogBone() : GPrimitive(GQUART_DOG_BONE)
 	AddDoubleParam(1.0, "D", "Depth");
 	AddDoubleParam(0.1, "W", "Wing" );
 
-	SetFEMesher(new FEQuartDogBone(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
@@ -45,7 +45,7 @@ GQuartDogBone::GQuartDogBone() : GPrimitive(GQUART_DOG_BONE)
 //-----------------------------------------------------------------------------
 FEMesher* GQuartDogBone::CreateDefaultMesher()
 {
-	return new FEQuartDogBone(this);
+	return new FEQuartDogBone();
 }
 
 //-----------------------------------------------------------------------------

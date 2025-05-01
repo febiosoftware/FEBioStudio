@@ -33,7 +33,7 @@ SOFTWARE.*/
 //! Constructor
 GMultiPatch::GMultiPatch() : GObject(GMULTI_PATCH)
 {
-	SetFEMesher(new FEMultiQuadMesher(this));
+	SetFEMesher(new FEMultiQuadMesher());
 }
 
 //-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ GMultiPatch::GMultiPatch(GObject* po) : GObject(GMULTI_PATCH)
 	GItem_T<GBaseObject>::DecreaseCounter();
 
 	// define the default mesher
-	FEMultiQuadMesher* mbMesher = new FEMultiQuadMesher(this);
+	FEMultiQuadMesher* mbMesher = new FEMultiQuadMesher();
 	SetFEMesher(mbMesher);
 
 	// we need the multi block mesher to pull out the multiblock geometry

@@ -70,11 +70,6 @@ NetGenOCCMesher::NetGenOCCMesher() : m_occ(nullptr)
 	SetType(NetGen_OCC_Mesher);
 }
 
-NetGenOCCMesher::NetGenOCCMesher(GOCCObject* po) : m_occ(po)
-{
-	SetType(NetGen_OCC_Mesher);
-}
-
 namespace netgen
 {
 #ifdef HAS_NETGEN
@@ -94,10 +89,11 @@ public:
 };
 #endif
 
-FSMesh*	NetGenOCCMesher::BuildMesh()
+FSMesh*	NetGenOCCMesher::BuildMesh(GObject* po)
 {
 #ifdef HAS_NETGEN
-    //using namespace std;
+	m_occ = dynamic_cast<GOCCObject*>(po);
+	if (m_occ == nullptr) return nullptr;
     
     // Define pointer to OCC Geometry
     Ng_OCC_Geometry *occ_geom;

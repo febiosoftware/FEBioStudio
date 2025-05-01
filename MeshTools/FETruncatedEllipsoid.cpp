@@ -29,9 +29,9 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSMesh.h>
 
-FETruncatedEllipsoid::FETruncatedEllipsoid(GTruncatedEllipsoid* po)
+FETruncatedEllipsoid::FETruncatedEllipsoid()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 	m_ns = 6;
 	m_nz = 6;
 	m_nr = 1;
@@ -50,9 +50,10 @@ FETruncatedEllipsoid::FETruncatedEllipsoid(GTruncatedEllipsoid* po)
 
 extern double gain2(double x, double r, double n);
 
-FSMesh* FETruncatedEllipsoid::BuildMesh()
+FSMesh* FETruncatedEllipsoid::BuildMesh(GObject* po)
 {
-	assert(m_pobj);
+	m_pobj = dynamic_cast<GTruncatedEllipsoid*>(po);
+	if (m_pobj == nullptr) return nullptr;
 
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -280,7 +281,7 @@ FSMesh* FETruncatedEllipsoid::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// project nodes to geometry
 	int NN = pm->Nodes();

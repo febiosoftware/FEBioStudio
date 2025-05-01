@@ -36,7 +36,7 @@ GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
 	AddDoubleParam(1.0, "d", "depth"); // depth
 	AddDoubleParam(0.25, "R", "radius"); // radius (of cavity)
 	
-	SetFEMesher(new FESphereInBox(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
@@ -44,7 +44,7 @@ GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
 //-----------------------------------------------------------------------------
 FEMesher* GSphereInBox::CreateDefaultMesher()
 {
-	return new FESphereInBox(this);
+	return new FESphereInBox();
 }
 
 //-----------------------------------------------------------------------------

@@ -51,7 +51,7 @@ public:
 	FEGregoryPatch(void);
 	~FEGregoryPatch(void);
 
-	FSMesh* BuildMesh();
+	FSMesh* BuildMesh(GObject* po) override;
 
 	GNode&  GetNode(int i) { return m_GNode[i]; }
 	FSMesh* BuildFEMesh();

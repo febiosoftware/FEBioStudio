@@ -125,7 +125,7 @@ bool FEMultiBlockMesh::BuildMultiBlock()
 //-----------------------------------------------------------------------------
 // build the FE mesh
 //
-FSMesh* FEMultiBlockMesh::BuildMesh()
+FSMesh* FEMultiBlockMesh::BuildMBMesh()
 {
 	if ((m_elemType != FE_HEX8) && (m_elemType != FE_HEX20) && (m_elemType != FE_HEX27))
 	{
@@ -1704,7 +1704,7 @@ bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
 }
 
 //==============================================================
-FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
+FEMultiBlockMesher::FEMultiBlockMesher() : m_po(nullptr)
 {
 	AddDoubleParam(0.1, "h", "Element size");
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
@@ -1770,8 +1770,9 @@ bool FEMultiBlockMesher::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEMultiBlockMesher::BuildMesh()
+FSMesh* FEMultiBlockMesher::BuildMesh(GObject* po)
 {
+	m_po = dynamic_cast<GMultiBox*>(po);
 	if (m_po == nullptr) return nullptr;
 	GMultiBox& o = *m_po;
 
@@ -1884,7 +1885,7 @@ FSMesh* FEMultiBlockMesher::BuildMesh()
 		assert(false);
 	}
 
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 void FEMultiBlockMesher::RebuildMB()
@@ -1987,7 +1988,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 		}
 
 		// don't call po->BuildMesh() since that deletes the current mesh
-		return po->GetFEMesher()->BuildMesh();
+		return po->GetFEMesher()->BuildMesh(po);
 	}
 	else if (dynamic_cast<GMultiPatch*>(po))
 	{
@@ -2018,7 +2019,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 		}
 
 		// don't call po->BuildMesh() since that deletes the current mesh
-		return po->GetFEMesher()->BuildMesh();
+		return po->GetFEMesher()->BuildMesh(po);
 	}
 
 	return nullptr;

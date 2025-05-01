@@ -37,9 +37,8 @@ public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FETube(){}
-	FETube(GTube* po);
-	FSMesh* BuildMesh();
+	FETube();
+	FSMesh* BuildMesh(GObject* po) override;
 
 	FSMesh* BuildMeshLegacy();
 	FSMesh* BuildMultiBlockMesh();
@@ -71,9 +70,8 @@ public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2 };
 
 public:
-	FETube2(){}
-	FETube2(GTube2* po);
-	FSMesh* BuildMesh();
+	FETube2();
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	void BuildFaces(FSMesh* pm);

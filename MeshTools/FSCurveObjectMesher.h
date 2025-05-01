@@ -36,9 +36,9 @@ class FSCurveObjectMesher : public FEMesher
 	};
 
 public:
-	FSCurveObjectMesher(GCurveObject* po);
+	FSCurveObjectMesher();
 
-	FSMesh* BuildMesh() override;
+	FSMesh* BuildMesh(GObject* po) override;
 
 private:
 	GCurveObject* m_po;

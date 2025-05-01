@@ -35,13 +35,9 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include "FEMultiQuadMesh.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FEShellPatch::FEShellPatch(GPatch* po)
+FEShellPatch::FEShellPatch()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_t = 0.01;
 	m_nx = m_ny = 10;
@@ -52,8 +48,11 @@ FEShellPatch::FEShellPatch(GPatch* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellPatch::BuildMesh()
+FSMesh* FEShellPatch::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GPatch*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	// get mesh parameters
 	m_nx = GetIntValue(NX);
 	m_ny = GetIntValue(NY);
@@ -70,7 +69,7 @@ FSMesh* FEShellPatch::BuildMesh()
 	};
 
 	// create the MB
-	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMQMesh();
 
 	// assign shell thickness to section
 	double t = GetFloatValue(T);
@@ -97,9 +96,9 @@ bool FEShellPatch::BuildMultiQuad()
 // FECylndricalPatch
 //////////////////////////////////////////////////////////////////////
 
-FECylndricalPatch::FECylndricalPatch(GCylindricalPatch* po)
+FECylndricalPatch::FECylndricalPatch()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_t = 0.01;
 	m_nx = m_ny = 10;
@@ -110,8 +109,11 @@ FECylndricalPatch::FECylndricalPatch(GCylindricalPatch* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FECylndricalPatch::BuildMesh()
+FSMesh* FECylndricalPatch::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GCylindricalPatch*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	if (BuildMultiQuad() == false) return nullptr;
 
 	int elemType = GetIntValue(ELEM_TYPE);
@@ -123,7 +125,7 @@ FSMesh* FECylndricalPatch::BuildMesh()
 	};
 
 	// Build the mesh
-	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMQMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness

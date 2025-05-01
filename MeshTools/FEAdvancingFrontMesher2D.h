@@ -37,22 +37,16 @@ class FEAdvancingFrontMesher2D : public FEMesher
 {
 public:
 	// constructor
-	FEAdvancingFrontMesher2D(GObject* po);
+	FEAdvancingFrontMesher2D();
 
 	// generate the mesh
-	FSMesh* BuildMesh();
-
-protected:
-	GObject*	m_obj;
+	FSMesh* BuildMesh(GObject* po) override;
 };
 
 //-----------------------------------------------------------------------------
 class FEMMG2DMesher : public FEMesher
 {
 public:
-	FEMMG2DMesher(GObject* po);
-	FSMesh* BuildMesh();
-
-protected:
-	GObject*	m_po;
+	FEMMG2DMesher();
+	FSMesh* BuildMesh(GObject* po) override;
 };

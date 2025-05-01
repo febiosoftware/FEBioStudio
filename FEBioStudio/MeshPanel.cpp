@@ -100,7 +100,7 @@ public:
 			}
 			else if ((val == 1) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_po->SetFEMesher(new FETetGenMesher(m_po));
+				m_po->SetFEMesher(new FETetGenMesher());
 				BuildParameterList();
 				SetModified(true);
 			}
@@ -150,19 +150,19 @@ public:
 			int val = v.toInt();
 			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_pso->SetFEMesher(new FETetGenMesher(m_pso));
+				m_pso->SetFEMesher(new FETetGenMesher());
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if ((val == 1) && (dynamic_cast<NetGenSTLMesher*>(mesher) == nullptr))
 			{
-				m_pso->SetFEMesher(new NetGenSTLMesher(m_pso));
+				m_pso->SetFEMesher(new NetGenSTLMesher());
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
 			{
-				m_pso->SetFEMesher(new FEShellMesher(m_pso));
+				m_pso->SetFEMesher(new FEShellMesher());
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}

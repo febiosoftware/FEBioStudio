@@ -35,9 +35,9 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Class constructor
-FEBoxMesher::FEBoxMesher(GBox* po)
+FEBoxMesher::FEBoxMesher()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_ctype = SIMPLE;
 	m_nelem = 0;
@@ -78,9 +78,10 @@ void FEBoxMesher::SetResolution(int nx, int ny, int nz)
 
 //-----------------------------------------------------------------------------
 // Build the FSMesh
-FSMesh* FEBoxMesher::BuildMesh()
+FSMesh* FEBoxMesher::BuildMesh(GObject* po)
 {
-	assert(m_pobj);
+	m_pobj = dynamic_cast<GBox*>(po);
+	if (m_pobj == nullptr) return nullptr;
 
 	FSMesh* pm = 0;
 
@@ -477,7 +478,7 @@ FSMesh* FEBoxMesher::CreateButterfly3D()
 	}
 
 	// create the MB
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -497,7 +498,7 @@ FSMesh* FEBoxMesher::CreateButterfly2D()
 	}
 
 	// create the MB
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -534,7 +535,7 @@ FSMesh* FEBoxMesher::CreateRegularHEX()
 		break;
 	}
 
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 //-----------------------------------------------------------------------------

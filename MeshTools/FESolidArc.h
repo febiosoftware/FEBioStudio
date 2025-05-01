@@ -35,9 +35,9 @@ public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FESolidArc(){}
-	FESolidArc(GSolidArc* po);
-	FSMesh* BuildMesh();
+	FESolidArc();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	FSMesh* BuildMeshLegacy();

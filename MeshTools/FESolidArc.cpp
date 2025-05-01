@@ -33,9 +33,9 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FESolidArc::FESolidArc(GSolidArc* po)
+FESolidArc::FESolidArc()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_nd = 8;
 	m_ns = 4;
@@ -59,8 +59,11 @@ FESolidArc::FESolidArc(GSolidArc* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FSMesh* FESolidArc::BuildMesh()
+FSMesh* FESolidArc::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GSolidArc*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
@@ -148,7 +151,7 @@ FSMesh* FESolidArc::BuildMultiBlockMesh()
 	}
 
 	// build mesh and return
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 FSMesh* FESolidArc::BuildMeshLegacy()

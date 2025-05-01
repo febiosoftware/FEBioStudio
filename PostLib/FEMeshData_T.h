@@ -653,6 +653,7 @@ public:
 			for (int j = 0; j<ne; ++j) m_indx.push_back(m_stride*l[i*ne + j] + n0);
 		}
 	}
+	int arraySize() const { return m_stride; }
 
 protected:
 	int m_stride;

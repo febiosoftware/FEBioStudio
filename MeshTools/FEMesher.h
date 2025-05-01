@@ -57,7 +57,7 @@ public:
 	virtual ~FEMesher();
 
 	// build the mesh
-	virtual FSMesh*	BuildMesh() = 0;
+	virtual FSMesh*	BuildMesh(GObject* po) = 0;
 
 	// save/load
 	void Save(OArchive& ar);

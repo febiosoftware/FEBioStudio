@@ -35,9 +35,9 @@ public:
 	enum {NSLICE, NSTACK, NDIV, GR, GR2, ELEM_TYPE};
 
 public:
-	FETruncatedEllipsoid(){}
-	FETruncatedEllipsoid(GTruncatedEllipsoid* po);
-	FSMesh* BuildMesh();
+	FETruncatedEllipsoid();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	GTruncatedEllipsoid*	m_pobj;

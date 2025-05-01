@@ -128,7 +128,7 @@ void FEMultiQuadMesh::ClearMQ()
 //-----------------------------------------------------------------------------
 // build the FE mesh
 //
-FSMesh* FEMultiQuadMesh::BuildMesh()
+FSMesh* FEMultiQuadMesh::BuildMQMesh()
 {
 	if ((m_elemType != FE_QUAD4) && (m_elemType != FE_QUAD8) && (m_elemType != FE_QUAD9))
 	{
@@ -924,15 +924,16 @@ int FEMultiQuadMesh::GetFENode(MBNode& node)
 }
 
 //==================================================================================
-FEMultiQuadMesher::FEMultiQuadMesher(GMultiPatch* po) : m_po(po)
+FEMultiQuadMesher::FEMultiQuadMesher() : m_po(nullptr)
 {
 	AddIntParam(10, "divs", "divisions");
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Quad4\0");
 }
 
 // build the mesh
-FSMesh* FEMultiQuadMesher::BuildMesh()
+FSMesh* FEMultiQuadMesher::BuildMesh(GObject* po)
 {
+	m_po = dynamic_cast<GMultiPatch*>(po);
 	if (m_po == nullptr) return nullptr;
 	GMultiPatch& o = *m_po;
 
@@ -982,7 +983,7 @@ FSMesh* FEMultiQuadMesher::BuildMesh()
 		assert(false);
 	}
 
-	return FEMultiQuadMesh::BuildMesh();
+	return FEMultiQuadMesh::BuildMQMesh();
 }
 
 bool FEMultiQuadMesher::BuildMultiQuad()

@@ -35,13 +35,9 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FETorus::FETorus(GTorus* po)
+FETorus::FETorus()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_nd = 2;
 	m_ns = 8;
@@ -52,8 +48,11 @@ FETorus::FETorus(GTorus* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FSMesh* FETorus::BuildMesh()
+FSMesh* FETorus::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GTorus*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
@@ -303,7 +302,7 @@ FSMesh* FETorus::BuildMultiBlockMesh()
 	case 2: SetElementType(FE_HEX27); break;
 	}
 
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }
 
 FSMesh* FETorus::BuildMeshLegacy()

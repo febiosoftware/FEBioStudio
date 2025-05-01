@@ -88,7 +88,7 @@ FEMesher* FEMesher::Create(GObject* po, int classType)
 	switch (classType)
 	{
 	case 0: mesher = po->CreateDefaultMesher(); break;
-	case 1: mesher = new FETetGenMesher(po); break;
+	case 1: mesher = new FETetGenMesher(); break;
 	default:
 		assert(false);
 	}

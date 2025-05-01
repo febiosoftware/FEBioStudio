@@ -27,14 +27,15 @@ SOFTWARE.*/
 #include <GeomLib/GCurveObject.h>
 #include <MeshLib/FSMesh.h>
 
-FSCurveObjectMesher::FSCurveObjectMesher(GCurveObject* po) : m_po(po)
+FSCurveObjectMesher::FSCurveObjectMesher() : m_po(nullptr)
 {
 	AddDoubleParam(0, "element size");
 	AddIntParam(0, "element type")->SetEnumNames("linear\0quadratic\0");
 }
 
-FSMesh* FSCurveObjectMesher::BuildMesh()
+FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 {
+	m_po = dynamic_cast<GCurveObject*>(po);
 	if (m_po == nullptr) return nullptr;
 	if (m_po->Edges() == 0) return nullptr;
 
