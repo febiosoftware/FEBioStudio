@@ -395,6 +395,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
 
+	std::deque<int> visibleSurfaces;
 	for (int i = 0; i < po->Faces(); ++i)
 	{
 		const GLMesh::PARTITION& p = mesh->Partition(i);
@@ -409,35 +410,48 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			if ((mat.m_nrender == RENDER_MODE_DEFAULT) && (defaultRenderMode == RENDER_SOLID)) isSolid = true;
 			if (mat.bvisible && isSolid)
 			{
-				if (colorMapEnabled)
-				{
-					if (mat.benable)
-					{
-						float alpha = mat.transparency;
-						GLColor c = GLColor::White();
-						c.a = (uint8_t)(255.f * alpha);
-						re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-						re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
-					}
-					else
-					{
-						float alpha = mat.transparency;
-						GLColor c = glm.m_pcol->GetInactiveColor();
-						c.a = (uint8_t)(255.f * alpha);
-						re.setMaterial(GLMaterial::PLASTIC, c);
-					}
-				}
-				else
-				{
-					float alpha = mat.transparency;
-					GLColor c = mat.diffuse;
-					c.a = (uint8_t)(255.f * alpha);
-					re.setMaterial(GLMaterial::PLASTIC, c);
-				}
-
-				RenderMesh(re, *mesh, i);
+				if (mat.transparency > 0.99f)
+					visibleSurfaces.push_front(i);
+				else if (mat.transparency > 0.01f)
+					visibleSurfaces.push_back(i);
 			}
 		}
+	}
+
+	for (int i : visibleSurfaces)
+	{
+		const GLMesh::PARTITION& p = mesh->Partition(i);
+		int n0 = p.n0;
+		int matID = mesh->Face(n0).mid;
+		Post::Material& mat = *ps->GetMaterial(matID);
+
+		if (colorMapEnabled)
+		{
+			if (mat.benable)
+			{
+				float alpha = mat.transparency;
+				GLColor c = GLColor::White();
+				c.a = (uint8_t)(255.f * alpha);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+			}
+			else
+			{
+				float alpha = mat.transparency;
+				GLColor c = glm.m_pcol->GetInactiveColor();
+				c.a = (uint8_t)(255.f * alpha);
+				re.setMaterial(GLMaterial::PLASTIC, c);
+			}
+		}
+		else
+		{
+			float alpha = mat.transparency;
+			GLColor c = mat.diffuse;
+			c.a = (uint8_t)(255.f * alpha);
+			re.setMaterial(GLMaterial::PLASTIC, c);
+		}
+
+		RenderMesh(re, *mesh, i);
 	}
 }
 
@@ -458,6 +472,9 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	if (mesh == nullptr) return;
 
 	bool renderInnerSurfaces = glm.RenderInnerSurfaces();
+
+	// find the visible surfaces and sort them so that transparent surfaces are rendered last.
+	std::deque<int> visibleSurfaces;
 	for (int i = 0; i < mesh->Partitions(); ++i)
 	{
 		const GLMesh::PARTITION& p = mesh->Partition(i);
@@ -472,35 +489,48 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			if ((mat.m_nrender == RENDER_MODE_DEFAULT) && (defaultRenderMode == RENDER_SOLID)) isSolid = true;
 			if (mat.bvisible && isSolid)
 			{
-				if (colorMapEnabled)
-				{
-					if (mat.benable)
-					{
-						float alpha = mat.transparency;
-						GLColor c = GLColor::White();
-						c.a = (uint8_t)(255.f * alpha);
-						re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-						re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
-					}
-					else
-					{
-						float alpha = mat.transparency;
-						GLColor c = glm.m_pcol->GetInactiveColor();
-						c.a = (uint8_t)(255.f * alpha);
-						re.setMaterial(GLMaterial::PLASTIC, c);
-					}
-				}
-				else
-				{
-					float alpha = mat.transparency;
-					GLColor c = mat.diffuse;
-					c.a = (uint8_t)(255.f * alpha);
-					re.setMaterial(GLMaterial::PLASTIC, c);
-				}
-
-				RenderMesh(re, *mesh, i);
+				if (mat.transparency > 0.99f)
+					visibleSurfaces.push_front(i);
+				else if (mat.transparency > 0.01f)
+					visibleSurfaces.push_back(i);
 			}
 		}
+	}
+
+	for (int i : visibleSurfaces)
+	{
+		const GLMesh::PARTITION& p = mesh->Partition(i);
+		int n0 = p.n0;
+		int matID = mesh->Face(n0).mid;
+		Post::Material& mat = *ps->GetMaterial(matID);
+
+		if (colorMapEnabled)
+		{
+			if (mat.benable)
+			{
+				float alpha = mat.transparency;
+				GLColor c = GLColor::White();
+				c.a = (uint8_t)(255.f * alpha);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+			}
+			else
+			{
+				float alpha = mat.transparency;
+				GLColor c = glm.m_pcol->GetInactiveColor();
+				c.a = (uint8_t)(255.f * alpha);
+				re.setMaterial(GLMaterial::PLASTIC, c);
+			}
+		}
+		else
+		{
+			float alpha = mat.transparency;
+			GLColor c = mat.diffuse;
+			c.a = (uint8_t)(255.f * alpha);
+			re.setMaterial(GLMaterial::PLASTIC, c);
+		}
+
+		RenderMesh(re, *mesh, i);
 	}
 }
 
