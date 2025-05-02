@@ -277,7 +277,12 @@ void FSMeshBase::UpdateNormals()
 		if (pf->m_ntag == -1)
 		{
 			// clear normals
-			if (FC > 0) norm.assign(NN, vec3f(0.f, 0.f, 0.f));
+			for (int j = 0; j < FC; ++j)
+			{
+				pf = F[j];
+				int nf = pf->Nodes();
+				for (int k = 0; k < nf; ++k) norm[pf->n[k]] = vec3f(0.f, 0.f, 0.f);
+			}
 			FC = 0;
 
 			// find all connected faces

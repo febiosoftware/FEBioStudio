@@ -644,7 +644,14 @@ void GLMesh::UpdateNormals()
 		FACE* pf = &m_Face[i];
 		if ((pf->tag == -1) && (pf->sid >= 0))
 		{
-			if (FC > 0) norm.assign(NN, vec3f(0, 0, 0));
+			// assign node normals
+			for (int j = 0; j < FC; ++j)
+			{
+				FACE* pf2 = F[j];
+				norm[pf2->n[0]] = vec3f(0.f, 0.f, 0.f);
+				norm[pf2->n[1]] = vec3f(0.f, 0.f, 0.f);
+				norm[pf2->n[2]] = vec3f(0.f, 0.f, 0.f);
+			}
 			FC = 0;
 
 			stack[FS++] = pf;
