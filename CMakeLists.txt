@@ -152,7 +152,7 @@ if(CAD_FEATURES)
         endforeach(name)    
     endif()
 
-    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
+    set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKFillet TKBO TKXSBase TKG3d TKLCAF TKVCAF TKDEIGES TKDESTEP TKDESTL)
     foreach(name IN LISTS OCCT_LIB_NAMES)
         findLib(OCCT_LIB_DIR OCCT_LIB ${name})
         list(APPEND OCCT_LIBS ${OCCT_LIB})

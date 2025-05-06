@@ -232,11 +232,11 @@ if(WIN32)
 		DOC "Netgen library path")
 else()
   find_path(NETGEN_INC include/occgeom.hpp
-        PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app
+        PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app /usr/include/*
         PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ" "Contents/Resources/include"
     DOC "Netgen include directory")
 	find_library(NETGEN_LIB nglib
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app /usr/lib/*
         PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS" "Contents/MacOS"
 		DOC "Netgen library path")
 endif()
