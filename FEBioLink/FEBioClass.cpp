@@ -1356,9 +1356,9 @@ FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
 }
 
-FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
+FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem, unsigned int flags)
 {
-	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem);
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem, flags);
 }
 
 FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
@@ -1527,7 +1527,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 {
 	switch (superClassID)
 	{
-	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem); break;
+	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem, flags); break;
 	case FEMATERIALPROP_ID    : return CreateMaterialProperty(typeStr, fem); break;
 	case FEDISCRETEMATERIAL_ID: return CreateDiscreteMaterial(typeStr, fem); break;
 	case FECLASS_ID           : return CreateGenericClass    (typeStr, fem); break;
