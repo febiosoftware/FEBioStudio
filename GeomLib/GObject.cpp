@@ -364,6 +364,7 @@ void GObject::UpdateFERenderMesh()
 
 	gm.UpdateBoundingBox();
 	gm.UpdateNormals();
+	gm.setModified(true);
 }
 
 //-----------------------------------------------------------------------------

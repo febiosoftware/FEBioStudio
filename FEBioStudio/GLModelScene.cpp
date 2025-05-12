@@ -1451,6 +1451,20 @@ void GLObjectItem::render(GLRenderEngine& re, GLContext& rc)
 	{
 		if (m_po && m_po->IsValid())
 		{
+			GLMesh* gm = m_po->GetRenderMesh();
+			if (gm && gm->IsModified())
+			{
+				re.deleteCachedMesh(gm);
+				gm->setModified(false);
+			}
+
+			gm = m_po->GetFERenderMesh();
+			if (gm && gm->IsModified())
+			{
+				re.deleteCachedMesh(gm);
+				gm->setModified(false);
+			}
+
 			re.pushTransform();
 			SetModelView(re, m_po);
 			RenderGObject(re, rc);
