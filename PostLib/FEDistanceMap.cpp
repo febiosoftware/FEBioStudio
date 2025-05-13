@@ -181,6 +181,7 @@ void Post::FEDistanceMap::Apply()
 
 		// loop over all nodes of surface 1
 		vector<float> a(m_surf1.Nodes());
+        #pragma omp parallel for
 		for (int i = 0; i < m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i];
@@ -200,6 +201,7 @@ void Post::FEDistanceMap::Apply()
 
 		// loop over all nodes of surface 2
 		vector<float> b(m_surf2.Nodes());
+        #pragma omp parallel for
 		for (int i = 0; i < m_surf2.Nodes(); ++i)
 		{
 			int inode = m_surf2.m_node[i];
