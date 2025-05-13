@@ -48,19 +48,32 @@ if(NOT PYBIND11_DIR)
     message(FATAL_ERROR "Could not automatically locate pybind11. Please specify pybind11 directory in PYBIND11_DIR")
 endif()
 
+if(NOT WIN32)
+    find_package(OpenMP QUIET)
+endif()
+
 if(WIN32)
     add_definitions(-DWIN32)
-    add_compile_options(/MP)
+    add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
     add_compile_options(-fPIC)
+
+    if(${OpenMP_CXX_FOUND})
+        add_compile_options(-Xpreprocessor -fopenmp -w)
+        link_libraries(${OpenMP_CXX_LIBRARIES})
+    endif()
 else()
 	add_definitions(-DLINUX)
-    add_compile_options(-w -Wall)
+    add_compile_options(-w -Wall -fPIC)
     
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
-    add_compile_options(-fPIC)
+    
+    if(${OpenMP_CXX_FOUND})
+        add_compile_options(-fopenmp)
+        link_libraries(${OpenMP_CXX_LIBRARIES})
+    endif()
 endif()
 
 
