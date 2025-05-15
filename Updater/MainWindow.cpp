@@ -227,6 +227,12 @@ CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& bran
 bool CMainWindow::checkBinaries()
 {
 #ifdef WIN32
+    // Hack for febiostudio 3 branch
+    if(!isFileWriteable(QApplication::applicationDirPath() + "\\FEBioStudio.exe", "FEBio Studio"))
+    {
+        return false;
+    }
+
     if(!isFileWriteable(QApplication::applicationDirPath() + FBSBINARY, "FEBio Studio"))
     {
         return false;
@@ -256,6 +262,12 @@ bool CMainWindow::isFileWriteable(QString filename, QString niceName)
     connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
 
     QFile file(filename);
+    
+    if(!file.exists())
+    {
+        return true;
+    }
+
     while(true)
     {
         if(file.open(QIODevice::Append))
