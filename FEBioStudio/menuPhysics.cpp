@@ -394,7 +394,7 @@ void CMainWindow::on_actionAddIC_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	GModel& gm = fem.GetModel();
-	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, -1, &fem, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, FEBio::GetBaseClassIndex("FEInitialCondition"), &fem, true, true, this);
 	if (dlg.exec())
 	{
         int id = dlg.GetClassID();
