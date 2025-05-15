@@ -52,7 +52,11 @@ public:
 protected slots:
 	void on_addParameter_clicked();
 	void on_addData_clicked();
+	void on_addElemData_clicked();
+	void on_addNodeData_clicked();
 	void on_pasteData_clicked();
+	void on_pasteElemData_clicked();
+	void on_pasteNodeData_clicked();
 	void on_addvar_clicked();
 
 private:

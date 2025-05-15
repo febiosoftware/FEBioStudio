@@ -83,6 +83,12 @@ public:
 		double	m_value;
 	};
 
+	struct IDValue
+	{
+		int		m_id;
+		double	m_value;
+	};
+
 	class TargetVar
 	{
 	public:
@@ -134,9 +140,11 @@ public:
 
 	// element-data model
 	std::string m_edVar;
+	std::vector<IDValue> m_edData;
 
 	// node-data model
 	std::string m_ndVar;
+	std::vector<IDValue> m_ndData;
 };
 
 bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
