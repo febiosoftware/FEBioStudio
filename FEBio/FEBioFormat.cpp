@@ -2829,7 +2829,10 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						// some classes allow names for their properties (e.g. chemical reactions)
 						const char* szname = tag.AttributeValue("name", true);
 
-						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem, 0);
+						int flags = 0;
+						if (prop->IsTopLevel()) flags |= FSProperty::TOPLEVEL;
+
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem, flags);
 						if (pc)
 						{
 							assert(pc->GetSuperClassID() == prop->GetSuperClassID());

@@ -879,6 +879,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
 		if (prop.IsPreferred())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
+		if (prop.IsTopLevel())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::TOPLEVEL);
 
 		// set the (optional) default type
 		if (prop.GetDefaultType())
