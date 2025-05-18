@@ -30,7 +30,7 @@ using namespace VTK;
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 
-bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt maxOutSize)
+bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt maxOutSize, uInt& outSize)
 {
 	z_stream zstrm;
 
@@ -64,7 +64,7 @@ bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt ma
 			(void)inflateEnd(&zstrm);
 			return false;
 		}
-		uInt have = maxOutSize - zstrm.avail_out;
+		outSize = zstrm.total_out;
 
 		//		buf.append(out, have);
 
@@ -511,7 +511,7 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 	else if (strcmp(sztype, "Int8"   ) == 0) vtkDataArray.m_type = vtkDataArray::INT8;
 	else if (strcmp(sztype, "UInt8"  ) == 0) vtkDataArray.m_type = vtkDataArray::UINT8;
 	else if (strcmp(sztype, "Int64"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
-	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
+	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT32;
 	else return errf("Unknown data array type %s", sztype);
 
 	// get the number of components
@@ -565,8 +565,33 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 		size_t headerSize = 0;
 		if (m_headerType == UInt32) headerSize = 4;
 		if (m_headerType == UInt64) headerSize = 8;
-		d += headerSize;
-		n -= headerSize;
+
+		// check for compression
+		std::vector<unsigned char> buf2;
+
+		if (m_compressor == ZLibCompression)
+		{
+			unsigned int blocks = *((unsigned int*)d);
+			unsigned int decompressedSize = *((unsigned int*)(d + 4));
+			unsigned int not_sure_what_this_is = *((unsigned int*)(d + 8));
+			unsigned int compressedSize = *((unsigned int*)(d + 12));
+
+			d += 16;
+			n -= 16;
+
+			buf2.assign(decompressedSize, 0);
+			unsigned char* d2 = buf2.data();
+			uInt outsize = 0;
+
+			if (decompress(d, n, d2, buf2.size(), outsize) == false) return errf("Error decompressing data");
+			d = d2;
+			n = outsize;
+		}
+		else
+		{
+			d += headerSize;
+			n -= headerSize;
+		}
 
 		// process array
 		if (vtkDataArray.m_type == vtkDataArray::FLOAT32)

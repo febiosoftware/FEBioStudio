@@ -114,7 +114,10 @@ namespace VTK {
 			VTK_VOXEL = 11,
 			VTK_HEXAHEDRON = 12,
 			VTK_WEDGE = 13,
-			VTK_PYRAMID = 14
+			VTK_PYRAMID = 14,
+
+			// Arbitrary order Lagrange elements
+			VTK_LAGRANGE_HEXAHEDRON = 72
 		};
 
 		vtkCell()

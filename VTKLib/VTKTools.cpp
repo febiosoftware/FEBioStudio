@@ -77,6 +77,9 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 			}
 		}
 		break;
+		case VTK::vtkCell::VTK_LAGRANGE_HEXAHEDRON:
+			elems += 1;
+			break;
 		default:
 			return false;
 		}
@@ -132,6 +135,18 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 					el.m_node[2] = n[j + 2];
 				}
 			}
+		}
+		else if (cell.m_cellType == VTK::vtkCell::VTK_LAGRANGE_HEXAHEDRON)
+		{
+			if (cell.m_numNodes == 8)
+			{
+				FSElement& el = pm->Element(elems++);
+				el.m_gid = cell.m_label; assert(el.m_gid >= 0);
+				if (el.m_gid < 0) el.m_gid = 0;
+				el.SetType(FE_HEX8);
+				for (int j = 0; j < 8; ++j) el.m_node[j] = cell.m_node[j];
+			}
+			else return false;
 		}
 		else
 		{
