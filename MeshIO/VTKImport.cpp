@@ -58,7 +58,8 @@ bool VTKimport::BuildMesh(const VTK::vtkModel& vtk)
 	FSModel& fem = m_prj.GetFSModel();
 
 	// get the number of nodes and elements
-	const VTK::vtkPiece& piece = vtk.Piece(0);
+	const VTK::vtkDataSet& dataSet = vtk.DataSet(0);
+	const VTK::vtkPiece& piece = dataSet.Piece(0);
 
 	FSMesh* pm = VTKTools::BuildFEMesh(piece);
 	if (pm == nullptr) return false;

@@ -99,3 +99,6 @@ inline int szcmp(const char* sz1, const char* sz2)
 {
 	return strncmp(sz1, sz2, strlen(sz2));
 }
+
+// helper function for getting the file path from a file name
+std::string getFilePath(const std::string& file);

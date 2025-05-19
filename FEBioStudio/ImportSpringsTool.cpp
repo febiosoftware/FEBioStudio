@@ -111,7 +111,8 @@ bool CImportSpringsTool::ReadVTKFile()
 	VTK::vtkLegacyFileReader vtk;
 	if (!vtk.Load(file.c_str())) return false;
 
-	const VTK::vtkPiece& piece = vtk.GetVTKModel().Piece(0);
+	const VTK::vtkDataSet& dataSet = vtk.GetVTKModel().DataSet(0);
+	const VTK::vtkPiece& piece = dataSet.Piece(0);
 	size_t NP = piece.Points();
 	vector<vec3d> points(NP);
 	for (size_t i = 0; i < NP; ++i)

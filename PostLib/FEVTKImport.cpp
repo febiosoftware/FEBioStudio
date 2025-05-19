@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <VTKLib/VTKLegacyFileReader.h>
 #include <VTKLib/VTUFileReader.h>
 #include <VTKLib/PVTUFileReader.h>
+#include <VTKLib/PVDFileReader.h>
 #include <VTKLib/VTKTools.h>
 #include <XML/XMLReader.h>
 
@@ -54,13 +55,24 @@ bool VTKFileImport::Load(const char* szfile)
 	VTK::vtkModel vtk;
 	if (!LoadVTKModel(szfile, vtk)) return false;
 
-	const VTK::vtkPiece& piece = vtk.Piece(0);
+	if (vtk.DataSets() == 0) return false;
+
+	const VTK::vtkDataSet& dataSet = vtk.DataSet(0);
+
+	const VTK::vtkPiece& piece = dataSet.Piece(0);
 	if (!BuildMesh(piece)) return false;
 	if (!UpdateModel(piece)) return false;
-	if (!BuildState(m_currentTime, piece)) return false;
+
+	for (int i = 0; i < vtk.DataSets(); ++i)
+	{
+		const VTK::vtkDataSet& dataSet = vtk.DataSet(i);
+		const VTK::vtkPiece& piece = dataSet.Piece(0);
+		if (!BuildState(dataSet.m_time, piece)) return false;
+	}
 
 	// This file might be part of a series, so check and try to read it in
-	if (ProcessSeries(szfile) == false) return false;
+	if (m_processSeries)
+		if (ProcessSeries(szfile) == false) return false;
 
 	return true;
 }
@@ -114,7 +126,8 @@ bool VTKFileImport::ProcessSeries(const char* szfile)
 			}
 			else
 			{
-				const VTK::vtkPiece& piece = vtk.Piece(0);
+				const VTK::vtkDataSet& dataSet = vtk.DataSet(0);
+				const VTK::vtkPiece& piece = dataSet.Piece(0);
 
 				// some sanity checks
 				FSMesh* pm = fem.GetFEMesh(0);
@@ -470,5 +483,18 @@ bool PVTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 	}
 
 	vtk = pvtuReader.GetVTKModel();
+	return true;
+}
+
+bool PVDImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	VTK::PVDFileReader pvdReader;
+	if (!pvdReader.Load(szfilename))
+	{
+		setErrorString(pvdReader.GetErrorString());
+		return false;
+	}
+
+	vtk = pvdReader.GetVTKModel();
 	return true;
 }

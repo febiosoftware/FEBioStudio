@@ -23,62 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "VTUFileReader.h"
-#include <XML/XMLReader.h>
-using namespace VTK;
+#pragma once
+#include "VTKFileReader.h"
+#include <string>
 
-VTUFileReader::VTUFileReader()
-{
+namespace VTK {
 
-}
-
-bool VTUFileReader::Load(const char* szfile)
-{
-	m_vtk.Clear();
-
-	// Open the file
-	XMLReader xml;
-	if (xml.Open(szfile, false) == false) return false;
-
-	// get the VTKFile tag
-	XMLTag tag;
-	if (xml.FindTag("VTKFile", tag) == false) return false;
-	if (ParseFileHeader(tag) == false) return false;
-
-	// This reader is for unstructured grids at this point
-	if (m_type != UnstructuredGrid) return false;
-
-	vtkAppendedData data;
-
-	vtkDataSet dataSet;
-
-	// parse the file
-	try {
-		++tag;
-		do
-		{
-			if (tag == "UnstructuredGrid")
-			{
-				if (ParseUnstructuredGrid(tag, dataSet) == false) return false;
-			}
-			else if (tag == "AppendedData")
-			{
-				if (ParseAppendedData(tag, data) == false) return false;
-			}
-			else return false;
-			++tag;
-		} while (!tag.isend());
-	}
-	catch (...)
+	class PVDFileReader : public VTKFileReader
 	{
+	public:
+		PVDFileReader();
+		bool Load(const char* szfile) override;
 
-	}
-	xml.Close();
+	private:
+		bool ParseCollection(XMLTag& tag, vtkModel& vtk);
 
-	// process the appended arrays
-	if (ProcessDataArrays(dataSet, data) == false) return false;
-
-	m_vtk.AddDataSet(dataSet);
-
-	return true;
+	private:
+		std::string m_path;
+	};
 }

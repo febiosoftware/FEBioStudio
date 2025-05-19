@@ -94,4 +94,11 @@ private:
 	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
 };
 
+class PVDImport : public VTKFileImport
+{
+public:
+	PVDImport(FEPostModel* fem) : VTKFileImport(fem) { m_processSeries = false; m_bmapNodes = true;	}
+
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
 }

@@ -23,18 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "VTUFileReader.h"
+#include "PVDFileReader.h"
+#include "PVTUFileReader.h"
 #include <XML/XMLReader.h>
 using namespace VTK;
 
-VTUFileReader::VTUFileReader()
+PVDFileReader::PVDFileReader()
 {
 
 }
 
-bool VTUFileReader::Load(const char* szfile)
+bool PVDFileReader::Load(const char* szfile)
 {
 	m_vtk.Clear();
+
+	// extract the filepath
+	m_path = getFilePath(szfile);
 
 	// Open the file
 	XMLReader xml;
@@ -46,24 +50,16 @@ bool VTUFileReader::Load(const char* szfile)
 	if (ParseFileHeader(tag) == false) return false;
 
 	// This reader is for unstructured grids at this point
-	if (m_type != UnstructuredGrid) return false;
-
-	vtkAppendedData data;
-
-	vtkDataSet dataSet;
+	if (m_type != Collection) return false;
 
 	// parse the file
 	try {
 		++tag;
 		do
 		{
-			if (tag == "UnstructuredGrid")
+			if (tag == "Collection")
 			{
-				if (ParseUnstructuredGrid(tag, dataSet) == false) return false;
-			}
-			else if (tag == "AppendedData")
-			{
-				if (ParseAppendedData(tag, data) == false) return false;
+				if (ParseCollection(tag, m_vtk) == false) return false;
 			}
 			else return false;
 			++tag;
@@ -75,10 +71,44 @@ bool VTUFileReader::Load(const char* szfile)
 	}
 	xml.Close();
 
-	// process the appended arrays
-	if (ProcessDataArrays(dataSet, data) == false) return false;
+	return true;
+}
 
-	m_vtk.AddDataSet(dataSet);
+bool PVDFileReader::ParseCollection(XMLTag& tag, vtkModel& vtk)
+{
+	++tag;
+	do
+	{
+		if (tag == "DataSet")
+		{
+			const char* szsrc = tag.AttributeValue("file");
 
+			const char* sztime = tag.AttributeValue("timestep");
+			double timeValue = (sztime ? atof(sztime) : 0);
+
+			std::string file;
+			if (!m_path.empty())
+			{
+				file = m_path + szsrc;
+			}
+			else
+			{
+				file = szsrc;
+			}
+
+			PVTUFileReader vtu;
+			if (vtu.Load(file.c_str()) == false) return false;
+
+			const VTK::vtkModel& vtk = vtu.GetVTKModel();
+
+			for (int i = 0; i < vtk.DataSets(); ++i)
+			{
+				const VTK::vtkDataSet& set_i = vtk.DataSet(i);
+				m_vtk.AddDataSet(set_i, timeValue);
+			}
+		}
+		else tag.skip();
+		++tag;
+	} while (!tag.isend());
 	return true;
 }

@@ -50,6 +50,8 @@ bool VTPFileReader::Load(const char* szfile)
 
 	vtkAppendedData data;
 
+	vtkDataSet dataSet;
+
 	// parse the file
 	try {
 		++tag;
@@ -57,7 +59,7 @@ bool VTPFileReader::Load(const char* szfile)
 		{
 			if (tag == "PolyData")
 			{
-				if (ParsePolyData(tag, m_vtk) == false) return false;
+				if (ParsePolyData(tag, dataSet) == false) return false;
 			}
 			else if (tag == "AppendedData")
 			{
@@ -75,7 +77,9 @@ bool VTPFileReader::Load(const char* szfile)
 	xml.Close();
 
 	// process the appended arrays
-	if (ProcessDataArrays(m_vtk, data) == false) return false;
+	if (ProcessDataArrays(dataSet, data) == false) return false;
+
+	m_vtk.AddDataSet(dataSet);
 
 	return true;
 }

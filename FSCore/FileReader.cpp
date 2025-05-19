@@ -161,3 +161,25 @@ std::string FileReader::GetFileName() const
 	return m_fileName;
 }
 
+std::string getFilePath(const std::string& file)
+{
+	size_t pos1 = file.find_last_of("\\");
+	size_t pos2 = file.find_last_of("/");
+	size_t pos;
+	if ((pos1 == std::string::npos) && (pos2 == std::string::npos)) return "";
+	if ((pos1 != std::string::npos) && (pos2 != std::string::npos))
+	{
+		pos = std::max(pos1, pos2);
+	}
+	else if (pos1 != std::string::npos)
+	{
+		pos = pos1;
+	}
+	else
+	{
+		pos = pos2;
+	}
+
+	std::string path = file.substr(0, pos + 1);
+	return path;
+}

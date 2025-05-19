@@ -296,7 +296,7 @@ bool VTKFileReader::ParseFileHeader(XMLTag& tag)
 	return true;
 }
 
-bool VTKFileReader::ProcessDataArrays(vtkModel& vtk, vtkAppendedData& data)
+bool VTKFileReader::ProcessDataArrays(vtkDataSet& vtk, vtkAppendedData& data)
 {
 	for (vtkPiece& piece : vtk.m_pieces)
 	{
@@ -310,7 +310,7 @@ bool VTKFileReader::ProcessDataArrays(vtkModel& vtk, vtkAppendedData& data)
 }
 
 
-bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkDataSet& vtk)
 {
 	++tag;
 	do
@@ -326,7 +326,7 @@ bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
 	return true;
 }
 
-bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkDataSet& vtk)
 {
 	++tag;
 	do
@@ -342,7 +342,7 @@ bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkModel& vtk)
 	return true;
 }
 
-bool VTKFileReader::ParsePiece(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParsePiece(XMLTag& tag, vtkDataSet& vtk)
 {
 	vtkPiece piece;
 	piece.m_numPoints = tag.AttributeValue<int>("NumberOfPoints", 0);

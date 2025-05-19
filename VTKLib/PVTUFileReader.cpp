@@ -28,29 +28,6 @@ SOFTWARE.*/
 #include <XML/XMLReader.h>
 using namespace VTK;
 
-std::string getFilePath(const std::string& file)
-{
-	size_t pos1 = file.find_last_of("\\");
-	size_t pos2 = file.find_last_of("/");
-	size_t pos;
-	if ((pos1 == std::string::npos) && (pos2 == std::string::npos)) return "";
-	if ((pos1 != std::string::npos) && (pos2 != std::string::npos))
-	{
-		pos = std::max(pos1, pos2);
-	}
-	else if (pos1 != std::string::npos)
-	{
-		pos = pos1;
-	}
-	else
-	{
-		pos = pos2;
-	}
-
-	std::string path = file.substr(0, pos+1);
-	return path;
-}
-
 PVTUFileReader::PVTUFileReader()
 {
 
@@ -99,6 +76,8 @@ bool PVTUFileReader::Load(const char* szfile)
 
 bool PVTUFileReader::ParsePUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
 {
+	vtkDataSet dataSet;
+
 	++tag;
 	do
 	{
@@ -120,15 +99,16 @@ bool PVTUFileReader::ParsePUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
 			if (vtu.Load(file.c_str()) == false) return false;
 
 			const VTK::vtkModel& vtk = vtu.GetVTKModel();
-
-			for (int i = 0; i < vtk.Pieces(); ++i)
+			const vtkDataSet& src = vtk.DataSet(0);
+				
+			for (int i = 0; i < src.Pieces(); ++i)
 			{
-				const VTK::vtkPiece& piece_i = vtk.Piece(i);
+				const VTK::vtkPiece& piece_i = src.Piece(i);
 
-				if (m_vtk.Pieces() == 0) m_vtk.AddPiece(piece_i);
+				if (dataSet.Pieces() == 0) dataSet.AddPiece(piece_i);
 				else
 				{
-					vtkPiece& piece = m_vtk.Piece(0);
+					vtkPiece& piece = dataSet.Piece(0);
 					piece.Merge(piece_i);
 				}
 			}
@@ -136,5 +116,8 @@ bool PVTUFileReader::ParsePUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
 		else tag.skip();
 		++tag;
 	} while (!tag.isend());
+
+	m_vtk.AddDataSet(dataSet, 0.0);
+
 	return true;
 }

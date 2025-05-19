@@ -59,9 +59,9 @@ namespace VTK {
 
 	protected:
 		bool ParseFileHeader(XMLTag& tag);
-		bool ParseUnstructuredGrid(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePolyData(XMLTag& tag, VTK::vtkModel& vtk);
-		bool ParsePiece(XMLTag& tag, VTK::vtkModel& vtk);
+		bool ParseUnstructuredGrid(XMLTag& tag, VTK::vtkDataSet& vtk);
+		bool ParsePolyData(XMLTag& tag, VTK::vtkDataSet& vtk);
+		bool ParsePiece(XMLTag& tag, VTK::vtkDataSet& vtk);
 		bool ParsePoints(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParseCells(XMLTag& tag, VTK::vtkPiece& piece);
 		bool ParsePolys(XMLTag& tag, VTK::vtkPiece& piece);
@@ -71,7 +71,7 @@ namespace VTK {
 		bool ParseAppendedData(XMLTag& tag, VTK::vtkAppendedData& vtkAppendedData);
 
 		bool ProcessAppendedDataArray(VTK::vtkDataArray& ar, VTK::vtkAppendedData& data);
-		bool ProcessDataArrays(VTK::vtkModel& vtk, VTK::vtkAppendedData& data);
+		bool ProcessDataArrays(VTK::vtkDataSet& vtk, VTK::vtkAppendedData& data);
 
 	protected:
 		vtkDataFileType	m_type;
