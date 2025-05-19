@@ -254,8 +254,10 @@ bool VTKFileReader::ParseFileHeader(XMLTag& tag)
 	// read the type attribute
 	const char* sztype = tag.AttributeValue("type", true);
 	if (sztype) {
-		if (strcmp(sztype, "UnstructuredGrid") == 0) m_type = UnstructuredGrid;
-		else if (strcmp(sztype, "PolyData") == 0) m_type = PolyData;
+		if      (strcmp(sztype, "UnstructuredGrid" ) == 0) m_type = UnstructuredGrid;
+		else if (strcmp(sztype, "PolyData"         ) == 0) m_type = PolyData;
+		else if (strcmp(sztype, "PUnstructuredGrid") == 0) m_type = PUnstructuredGrid;
+		else if (strcmp(sztype, "Collection"       ) == 0) m_type = Collection;
 		else return errf("Can't read %s vtk files", sztype);
 	}
 	else return errf("Missing type attribute in vtk file.");

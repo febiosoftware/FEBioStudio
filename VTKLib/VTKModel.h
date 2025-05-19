@@ -37,7 +37,9 @@ namespace VTK {
 	enum vtkDataFileType {
 		Invalid,
 		UnstructuredGrid,
-		PolyData
+		PolyData,
+		PUnstructuredGrid,
+		Collection
 	};
 
 	class vtkDataArray
@@ -151,6 +153,8 @@ namespace VTK {
 		vtkCell Cell(int n) const;
 
 		std::string name() const { return m_name; }
+
+		void Merge(const vtkPiece& piece);
 
 	public:
 		int m_numPoints;

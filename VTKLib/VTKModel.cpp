@@ -111,3 +111,38 @@ vtkCell vtkPiece::Cell(int n) const
 
 	return cell;
 }
+
+void vtkPiece::Merge(const vtkPiece& piece)
+{
+	size_t numpoints = m_numPoints;
+	m_numPoints += piece.m_numPoints;
+	m_numCells += piece.m_numCells;
+
+	m_points.m_values_float.insert(m_points.m_values_float.end(), piece.m_points.m_values_float.begin(), piece.m_points.m_values_float.end());
+
+	size_t offset = m_cell_connect.m_values_int.size();
+
+	std::vector<int> newconn(piece.m_cell_connect.m_values_int);
+	for (int i = 0; i < newconn.size(); ++i) newconn[i] += numpoints;
+	m_cell_connect.m_values_int.insert(m_cell_connect.m_values_int.end(), newconn.begin(), newconn.end());
+
+	std::vector<int> newoffset(piece.m_cell_offsets.m_values_int);
+	for (int i = 0; i < newoffset.size(); ++i) newoffset[i] += offset;
+	m_cell_offsets.m_values_int.insert(m_cell_offsets.m_values_int.end(), newoffset.begin(), newoffset.end());
+	
+	m_cell_types.m_values_int.insert(m_cell_types.m_values_int.end(), piece.m_cell_types.m_values_int.begin(), piece.m_cell_types.m_values_int.end());
+
+	assert(m_pointData.size() == piece.m_pointData.size());
+	for (int i = 0; i < piece.m_pointData.size(); ++i)
+	{
+		const vtkDataArray& data = piece.m_pointData[i];
+		m_pointData[i].m_values_float.insert(m_pointData[i].m_values_float.end(), data.m_values_float.begin(), data.m_values_float.end());
+	}
+
+	assert(m_cellData.size() == piece.m_cellData.size());
+	for (int i = 0; i < piece.m_cellData.size(); ++i)
+	{
+		const vtkDataArray& data = piece.m_cellData[i];
+		m_cellData[i].m_values_float.insert(m_cellData[i].m_values_float.end(), data.m_values_float.begin(), data.m_values_float.end());
+	}
+}

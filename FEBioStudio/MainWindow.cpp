@@ -414,6 +414,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtu" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("pvtu", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtm" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
@@ -865,6 +866,11 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			Post::VTUImport* vtu = new Post::VTUImport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtu, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("pvtu", Qt::CaseInsensitive) == 0)
+		{
+			Post::PVTUImport* pvtu = new Post::PVTUImport(doc->GetFSModel());
+			ReadFile(doc, fileName, pvtu, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("vtm", Qt::CaseInsensitive) == 0)
 		{

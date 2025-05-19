@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <VTKLib/VTUFileReader.h>
+#include <VTKLib/PVTUFileReader.h>
 #include <VTKLib/VTPFileReader.h>
 #include <VTKLib/VTKTools.h>
 
@@ -89,4 +90,23 @@ bool BuildMeshFromVTKModel(FSProject& prj, const VTK::vtkModel& vtk)
 	}
 
 	return true;
+}
+
+PVTUimport::PVTUimport(FSProject& prj) : FSFileImport(prj)
+{
+
+}
+
+bool PVTUimport::Load(const char* szfile)
+{
+	VTK::PVTUFileReader pvtu;
+
+	if (pvtu.Load(szfile) == false)
+	{
+		setErrorString(pvtu.GetErrorString());
+		return false;
+	}
+
+	const VTK::vtkModel& vtk = pvtu.GetVTKModel();
+	return BuildMeshFromVTKModel(GetProject(), vtk);
 }

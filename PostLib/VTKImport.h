@@ -52,8 +52,11 @@ private:
 
 protected:
 	FEState*	m_ps;
+	bool		m_bmapNodes = false;
+	std::vector<int> m_nodeMap;
 	double	m_currentTime;
 	int		m_fileCount;
+	bool	m_processSeries = true;
 };
 
 class VTKImport : public VTKFileImport
@@ -79,6 +82,15 @@ class VTMImport : public VTKFileImport
 public:
 	VTMImport(FEPostModel* fem);
 
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
+
+class PVTUImport : public VTKFileImport
+{
+public:
+	PVTUImport(FEPostModel* fem) : VTKFileImport(fem) { m_bmapNodes = true; }
+
+private:
 	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
 };
 

@@ -23,32 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include "VTKFileReader.h"
+#include <string>
 
-// reader for unstructured grid files
-class VTUimport : public FSFileImport
-{
-public:
-	VTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+namespace VTK {
 
-// reader for polygon files
-class VTPimport : public FSFileImport
-{
+	class PVTUFileReader : public VTKFileReader
+	{
+	public:
+		PVTUFileReader();
+		bool Load(const char* szfile) override;
 
-public:
-	VTPimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+	private:
+		bool ParsePUnstructuredGrid(XMLTag& tag, vtkModel& vtk);
 
-// reader for parallel unstructured grid files
-class PVTUimport : public FSFileImport
-{
-public:
-	PVTUimport(FSProject& prj);
-	bool Load(const char* szfile) override;
-};
+	private:
+		std::string m_path;
+	};
+}

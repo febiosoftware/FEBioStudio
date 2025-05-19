@@ -28,7 +28,8 @@ SOFTWARE.*/
 FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys)
 {
 	FSMesh* pm = new FSMesh();
-	if (BuildFEMesh(vtkMesh, pm, splitPolys)) return pm;
+	std::vector<int> nodeMap;
+	if (BuildFEMesh(vtkMesh, pm, nodeMap, splitPolys, false)) return pm;
 	else
 	{
 		delete pm;
@@ -36,12 +37,54 @@ FSMesh* VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys)
 	}
 }
 
-bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitPolys)
+bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, std::vector<int>& nodeMap, bool splitPolys, bool mapNodes)
 {
 	if (pm == nullptr) return false;
 
 	// get the number of nodes and elements
 	int nodes = (int)vtkMesh.Points();
+
+	// get the point coordinates
+	std::vector<vec3d> points(nodes);
+	for (int i = 0; i < nodes; ++i)
+	{
+		VTK::vtkPoint pt = vtkMesh.Point(i);
+		points[i] = vec3d(pt.x, pt.y, pt.z);
+	}
+
+	// count the number of unique nodes
+	size_t uniqueNodes = 0;
+	if (mapNodes)
+	{
+		nodeMap.assign(nodes, -1);
+		for (int i = 0; i < nodes; ++i)
+		{
+			vec3d ri = points[i];
+			int id = -1;
+			for (int j = 0; j < i; ++j)
+			{
+				double norm2 = (ri - points[j]).norm2();
+				if (norm2 < 1e-12)
+				{
+					id = nodeMap[j];
+					assert(id != -1);
+					break;
+				}
+			}
+
+			if (id == -1)
+			{
+				nodeMap[i] = uniqueNodes++;
+			}
+			else nodeMap[i] = id;
+		}
+	}
+	else
+	{
+		nodeMap.assign(nodes, -1);
+		for (int i = 0; i < nodes; ++i) nodeMap[i] = i;
+		uniqueNodes = nodes;
+	}
 
 	int elems = 0;
 	for (int i = 0; i < vtkMesh.Cells(); i++)
@@ -86,15 +129,19 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 	}
 
 	// create a new mesh
-	pm->Create(nodes, elems);
+	pm->Create(uniqueNodes, elems);
 
 	// copy nodal data
+	uniqueNodes = 0;
 	for (int i = 0; i < nodes; ++i)
 	{
-		FSNode& node = pm->Node(i);
-		VTK::vtkPoint pt = vtkMesh.Point(i);
-		node.r = vec3d(pt.x, pt.y, pt.z);
+		if (nodeMap[i] >= uniqueNodes)
+		{
+			FSNode& node = pm->Node(uniqueNodes++);
+			node.r = points[i];
+		}
 	}
+	assert(uniqueNodes == pm->Nodes());
 
 	// copy element data
 	elems = 0;
@@ -110,7 +157,7 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 				el.m_gid = cell.m_label; assert(el.m_gid >= 0);
 				if (el.m_gid < 0) el.m_gid = 0;
 				el.SetType(FE_TRI3);
-				for (int j = 0; j < 3; ++j) el.m_node[j] = cell.m_node[j];
+				for (int j = 0; j < 3; ++j) el.m_node[j] = nodeMap[cell.m_node[j]];
 			}
 			else if (cell.m_numNodes == 4)
 			{
@@ -118,7 +165,7 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 				el.m_gid = cell.m_label; assert(el.m_gid >= 0);
 				if (el.m_gid < 0) el.m_gid = 0;
 				el.SetType(FE_QUAD4);
-				for (int j = 0; j < 4; ++j) el.m_node[j] = cell.m_node[j];
+				for (int j = 0; j < 4; ++j) el.m_node[j] = nodeMap[cell.m_node[j]];
 			}
 			else
 			{
@@ -130,9 +177,9 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 					el.SetType(FE_TRI3);
 					el.m_gid = cell.m_label; assert(el.m_gid >= 0);
 					if (el.m_gid < 0) el.m_gid = 0;
-					el.m_node[0] = n[0];
-					el.m_node[1] = n[j + 1];
-					el.m_node[2] = n[j + 2];
+					el.m_node[0] = nodeMap[n[0]];
+					el.m_node[1] = nodeMap[n[j + 1]];
+					el.m_node[2] = nodeMap[n[j + 2]];
 				}
 			}
 		}
@@ -144,7 +191,7 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 				el.m_gid = cell.m_label; assert(el.m_gid >= 0);
 				if (el.m_gid < 0) el.m_gid = 0;
 				el.SetType(FE_HEX8);
-				for (int j = 0; j < 8; ++j) el.m_node[j] = cell.m_node[j];
+				for (int j = 0; j < 8; ++j) el.m_node[j] = nodeMap[cell.m_node[j]];
 			}
 			else return false;
 		}
@@ -170,11 +217,23 @@ bool VTKTools::BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitP
 
 			int nn = el.Nodes();
 			assert(nn == cell.m_numNodes);
-			for (int j = 0; j < nn; ++j) el.m_node[j] = cell.m_node[j];
+			for (int j = 0; j < nn; ++j) el.m_node[j] = nodeMap[cell.m_node[j]];
 		}
 	}
 
 	pm->RebuildMesh();
+
+	// invert the node map
+	std::vector<int> tmp(nodeMap);
+	nodeMap.assign(uniqueNodes, -1);
+	uniqueNodes = 0;
+	for (int i = 0; i < nodes; ++i)
+	{
+		if (tmp[i] >= uniqueNodes)
+		{
+			nodeMap[uniqueNodes++] = i;
+		}
+	}
 
 	return true;
 }
