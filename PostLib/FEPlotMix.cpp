@@ -38,7 +38,7 @@ using namespace Post;
 // FEPlotMix
 //------------------------------------------------------------------------------
 
-FEPlotMix::FEPlotMix(void)
+FEPlotMix::FEPlotMix(FEPostModel* fem) : m_fem(fem)
 {
 
 }
@@ -49,34 +49,34 @@ FEPlotMix::~FEPlotMix(void)
 }
 
 //------------------------------------------------------------------------------
-FEPostModel* FEPlotMix::Load(const char **szfile, int n)
+bool FEPlotMix::Load(const char **szfile, int n)
 {
-	if (n <= 0) return 0;
+	if (n <= 0) return false;
+	if (m_fem == nullptr) return false;
 
 	// load the first model
-	FEPostModel* pfem = new FEPostModel;
-	pfem->SetTitle("PlotMix");
-	xpltFileReader* pfr = new xpltFileReader(pfem);
+	m_fem->SetTitle("PlotMix");
+	xpltFileReader* pfr = new xpltFileReader(m_fem);
 	pfr->SetReadStateFlag(XPLT_READ_FIRST_AND_LAST);
-	if (pfr->Load(szfile[0]) == false) { delete pfem; delete pfr; return 0; }
+	if (pfr->Load(szfile[0]) == false) { delete pfr; return false; }
 	delete pfr;
 
 	// the "time" value will be the state
-	pfem->GetState(0)->m_time = 0;
-	pfem->GetState(1)->m_time = 1;
+	m_fem->GetState(0)->m_time = 0;
+	m_fem->GetState(1)->m_time = 1;
 
 	// get the mesh
-	FSMesh& m1 = *pfem->GetFEMesh(0);
+	FSMesh& m1 = *m_fem->GetFEMesh(0);
 
 	// get the datamanager
-	FEDataManager* pdm1 = pfem->GetDataManager();
+	FEDataManager* pdm1 = m_fem->GetDataManager();
 
 	// set the time indicator of the first state
-	FEState& s1 = *pfem->GetState(0);
+	FEState& s1 = *m_fem->GetState(0);
 	s1.m_time = 0;
 
 	// get the mesh of the new model
-	FSMesh* mesh = pfem->GetFEMesh(0);
+	FSMesh* mesh = m_fem->GetFEMesh(0);
 
 	// load the other models
 	for (int i=1; i<n; ++i)
@@ -93,24 +93,23 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 		// try to load the scene
 		if (pfr->Load(szfile[i]) == false)
 		{
-			delete pfem;
 			delete pfr;
-			return 0;
+			return false;
 		}
 		delete pfr;
 
 		// make sure the mesh size is the same
 		FSMesh& m2 = *fem2.GetFEMesh(0);
 		if ((m1.Nodes   () != m2.Nodes()) ||
-			(m1.Elements() != m2.Elements())) { delete pfem; return 0; } 
+			(m1.Elements() != m2.Elements())) { return false; } 
 
 		// see if the data size is the same
 		FEDataManager* pdm2 = fem2.GetDataManager();
 
-		if (pdm1->DataFields() != pdm2->DataFields()) { delete pfem; return 0; }
+		if (pdm1->DataFields() != pdm2->DataFields()) { return false; }
 
 		// need to modify the displacement field such that it is relative to the first file
-		FEState* ps1 = pfem->GetState(0);
+		FEState* ps1 = m_fem->GetState(0);
 		FEState* ps2 = fem2.GetState(0);
 		FENodeData<vec3f>& dr2 = dynamic_cast<FENodeData<vec3f>&>(ps2->m_Data[0]);
 		for (int j=0; j<m1.Nodes(); ++j)
@@ -123,15 +122,15 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 		}
 
 		// add a new state by copying it from fem2
-		FEState* pstate = new FEState((float) i + 1.f, pfem, fem2.GetState(0));
+		FEState* pstate = new FEState((float) i + 1.f, m_fem, fem2.GetState(0));
 
 		// the state's mesh was set to the fem2 mesh, but we don't want that
 		pstate->SetFEMesh(mesh);
 
-		pfem->AddState(pstate);
+		m_fem->AddState(pstate);
 	}
 
-	return pfem;
+	return true;
 }
 
 //------------------------------------------------------------------------------

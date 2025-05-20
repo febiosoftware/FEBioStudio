@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <PostLib/FEPlotMix.h>
+#include <PostGL/GLModel.h>
 #include "PostDocument.h"
 
 class CDlgPlotMixUI
@@ -121,7 +122,6 @@ void CDlgPlotMix::OnMoveDown()
 
 void CDlgPlotMix::OnApply()
 {
-	Post::FEPlotMix reader;
 
 	int nitems = ui->list->count();
 	std::vector<std::string> str(nitems);
@@ -137,16 +137,36 @@ void CDlgPlotMix::OnApply()
 
 
 	// Create a new document
-	/*	CDocument* doc = m_wnd->NewDocument("plotmix");
+	CPostDocument* doc = new CPostDocument(ui->m_wnd);
+	doc->SetDocTitle("PlotMix");
+	Post::FEPlotMix reader(doc->GetFSModel());
 
-	FSModel* pnew = reader.Load(&sz[0], nitems);
-	if (pnew == 0) QMessageBox::critical(0, "Plot Mix Tool", "An error occured reading the plot files.");
+	if (reader.Load(&sz[0], nitems) == false)
+	{
+		QMessageBox::critical(0, "PlotMix Tool", "An error occured reading the plot files.");
+		delete doc;
+	}
 	else
 	{
-	doc->SetFEModel(pnew);
+		// update post document
+		doc->Initialize();
+
+		// a new model is created when the doc is initialized
+		Post::CGLModel* glm = doc->GetGLModel();
+
+		// update displacements on all states
+		if (glm->GetDisplacementMap() == nullptr)
+		{
+			glm->AddDisplacementMap("Displacement");
+		}
+		int nstates = glm->GetFSModel()->GetStates();
+		for (int i = 0; i < nstates; ++i) glm->UpdateDisplacements(i, true);
+
+
+		ui->m_wnd->AddDocument(doc);
 	}
+
 	ui->list->clear();
-	*/
 
 	accept();
 }

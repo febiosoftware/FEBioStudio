@@ -794,7 +794,10 @@ void CPostModelPanel::BuildModelTree()
 		CModelTreeItem* pi1 = nullptr;
 		if (mdl)
 		{
-			pi1 = ui->AddItem(nullptr, nullptr, QString::fromStdString(pdoc->GetDocFileName()), "PostView", new CModelProps(mdl), CModelTreeItem::ALL_FLAGS);
+			std::string title = pdoc->GetDocFileName();
+			if (title.empty()) title = pdoc->GetDocTitle();
+			if (title.empty()) title = "<untitled>";
+			pi1 = ui->AddItem(nullptr, nullptr, QString::fromStdString(title), "PostView", new CModelProps(mdl), CModelTreeItem::ALL_FLAGS);
 			pi1->setExpanded(true);
 
 			// add the mesh

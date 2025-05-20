@@ -33,12 +33,15 @@ class FEPostModel;
 class FEPlotMix
 {
 public:
-	FEPlotMix(void);
+	FEPlotMix(FEPostModel* fem);
 	~FEPlotMix(void);
 
-	FEPostModel* Load(const char** szfile, int n);
+	bool Load(const char** szfile, int n);
 
 protected:
 	void ClearStates(FEPostModel& fem);
+
+private:
+	FEPostModel* m_fem;
 };
 }

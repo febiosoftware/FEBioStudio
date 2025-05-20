@@ -219,8 +219,8 @@ bool XpltReader3::Load(FEPostModel& fem)
 				if (m_pstate) { delete m_pstate; m_pstate = 0; }
 				if (ReadStateSection(fem) == false) break;
 				if (read_state_flag == XPLT_READ_ALL_STATES) { fem.AddState(m_pstate); m_pstate = 0; }
-				else if (read_state_flag == XPLT_READ_ALL_CONVERGED_STATES) 
-				{ 
+				else if (read_state_flag == XPLT_READ_ALL_CONVERGED_STATES)
+				{
 					if (m_pstate->m_status == 0)
 					{
 						fem.AddState(m_pstate);
@@ -230,17 +230,30 @@ bool XpltReader3::Load(FEPostModel& fem)
 				else if (read_state_flag == XPLT_READ_STATES_FROM_LIST)
 				{
 					vector<int> state_list = m_xplt->GetReadStates();
-					int n = (int) state_list.size();
-					for (int i=0; i<n; ++i)
+					int n = (int)state_list.size();
+					for (int i = 0; i < n; ++i)
 					{
 						if (state_list[i] == nstate)
 						{
-							fem.AddState(m_pstate); 
+							fem.AddState(m_pstate);
 							m_pstate = 0;
 							break;
 						}
 					}
 				}
+				else if (read_state_flag == XPLT_READ_LAST_STATE_ONLY)
+				{
+					// nothing to do here ...
+				}
+				else if (read_state_flag == XPLT_READ_FIRST_AND_LAST)
+				{
+					if (nstate == 0)
+					{
+						fem.AddState(m_pstate);
+						m_pstate = 0;
+					}
+				}
+				else assert(false);
 			}
 			else if (m_ar.GetChunkID() == PLT_MESH)
 			{
@@ -258,7 +271,8 @@ bool XpltReader3::Load(FEPostModel& fem)
 
 			++nstate;
 		}
-		if (read_state_flag == XPLT_READ_LAST_STATE_ONLY) { fem.AddState(m_pstate); m_pstate = 0; }
+		if ((read_state_flag == XPLT_READ_LAST_STATE_ONLY) ||
+			(read_state_flag == XPLT_READ_FIRST_AND_LAST)) { fem.AddState(m_pstate); m_pstate = 0; }
 	}
 	catch (...)
 	{
