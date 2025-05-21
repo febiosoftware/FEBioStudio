@@ -511,7 +511,7 @@ target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWi
 if(WIN32)
 elseif(APPLE)
 else()
-    set_property(TARGET PostLib PROPERTY CXX_STANDARD 17)
+    target_link_libraries(PostLib stdc++fs)
     
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
