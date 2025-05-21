@@ -320,44 +320,46 @@ bool FEPlotMix::MergeModels(const char** szfile, int n)
 					{
 						FEPostModel& fem = *models[k];
 						FEDataManager* pdmi = fem.GetDataManager();
-						int nfield = pdmi->FindDataField((*pdf)->GetName());
-						if (nfield == -1) continue;
-
 						Post::FEState* state_i = fem.GetState(i);
-						if (state_i == nullptr) continue;
-						Post::FENodeItemData& nd_i = dynamic_cast<Post::FENodeItemData&>(state_i->m_Data[nfield]);
-						assert(nd_i.GetType() == nd.GetType());
-
 						FSMesh* mesh_i = state_i->GetFEMesh();
-						if (nd.GetType() == DATA_SCALAR)
-						{
-							Post::FENodeData<float>& src = dynamic_cast<Post::FENodeData<float>&>(nd_i);
-							Post::FENodeData<float>& dst = dynamic_cast<Post::FENodeData<float>&>(nd);
 
-							for (int k = 0; k < mesh_i->Nodes(); ++k)
-							{
-								float f = src[k];
-								dst[k + nodeOffset] = f;
-							}
-						}
-						else if (nd.GetType() == DATA_VEC3)
+						int nfield = pdmi->FindDataField((*pdf)->GetName());
+						if (nfield != -1)
 						{
-							Post::FENodeData<vec3f>& src = dynamic_cast<Post::FENodeData<vec3f>&>(nd_i);
-							Post::FENodeData<vec3f>& dst = dynamic_cast<Post::FENodeData<vec3f>&>(nd);
-							for (int k = 0; k < mesh_i->Nodes(); ++k)
+							if (state_i == nullptr) continue;
+							Post::FENodeItemData& nd_i = dynamic_cast<Post::FENodeItemData&>(state_i->m_Data[nfield]);
+							assert(nd_i.GetType() == nd.GetType());
+
+							if (nd.GetType() == DATA_SCALAR)
 							{
-								vec3f f = src[k];
-								dst[k + nodeOffset] = f;
+								Post::FENodeData<float>& src = dynamic_cast<Post::FENodeData<float>&>(nd_i);
+								Post::FENodeData<float>& dst = dynamic_cast<Post::FENodeData<float>&>(nd);
+
+								for (int k = 0; k < mesh_i->Nodes(); ++k)
+								{
+									float f = src[k];
+									dst[k + nodeOffset] = f;
+								}
 							}
-						}
-						else if (nd.GetType() == DATA_MAT3)
-						{
-							Post::FENodeData<mat3f>& src = dynamic_cast<Post::FENodeData<mat3f>&>(nd_i);
-							Post::FENodeData<mat3f>& dst = dynamic_cast<Post::FENodeData<mat3f>&>(nd);
-							for (int k = 0; k < mesh_i->Nodes(); ++k)
+							else if (nd.GetType() == DATA_VEC3)
 							{
-								mat3f f = src[k];
-								dst[k + nodeOffset] = f;
+								Post::FENodeData<vec3f>& src = dynamic_cast<Post::FENodeData<vec3f>&>(nd_i);
+								Post::FENodeData<vec3f>& dst = dynamic_cast<Post::FENodeData<vec3f>&>(nd);
+								for (int k = 0; k < mesh_i->Nodes(); ++k)
+								{
+									vec3f f = src[k];
+									dst[k + nodeOffset] = f;
+								}
+							}
+							else if (nd.GetType() == DATA_MAT3)
+							{
+								Post::FENodeData<mat3f>& src = dynamic_cast<Post::FENodeData<mat3f>&>(nd_i);
+								Post::FENodeData<mat3f>& dst = dynamic_cast<Post::FENodeData<mat3f>&>(nd);
+								for (int k = 0; k < mesh_i->Nodes(); ++k)
+								{
+									mat3f f = src[k];
+									dst[k + nodeOffset] = f;
+								}
 							}
 						}
 						nodeOffset += mesh_i->Nodes();
