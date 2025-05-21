@@ -168,6 +168,8 @@ bool FEPlotMix::LoadFile(const char* szfile, FEPostModel* fem)
 	{
 		return false;
 	}
+
+	return true;
 }
 
 bool FEPlotMix::MergeModels(const char** szfile, int n)
