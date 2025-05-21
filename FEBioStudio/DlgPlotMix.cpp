@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QLabel>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <PostLib/FEPlotMix.h>
 #include <PostGL/GLModel.h>
@@ -40,8 +42,9 @@ SOFTWARE.*/
 class CDlgPlotMixUI
 {
 public:
-	CMainWindow*	m_wnd;
-	QListWidget* list;
+	CMainWindow* m_wnd = nullptr;
+	QListWidget* list = nullptr;
+	QComboBox* op = nullptr;
 
 public:
 	void setup(QDialog* parent)
@@ -49,7 +52,7 @@ public:
 		QVBoxLayout* pv = new QVBoxLayout;
 		QHBoxLayout* ph = new QHBoxLayout;
 
-		QPushButton* browse = new QPushButton("Add file ...");
+		QPushButton* browse = new QPushButton("Add file(s) ...");
 		QPushButton* remove = new QPushButton("Remove");
 		QPushButton* moveUp = new QPushButton("Move Up");
 		QPushButton* moveDown = new QPushButton("Move Down");
@@ -57,10 +60,20 @@ public:
 		ph->addWidget(remove);
 		ph->addWidget(moveUp);
 		ph->addWidget(moveDown);
+		ph->addStretch();
 		pv->addLayout(ph);
 
 		list = new QListWidget;
 		pv->addWidget(list);
+
+		ph = new QHBoxLayout;
+		ph->addWidget(new QLabel("operation:"));
+		op = new QComboBox;
+		op->addItem("stitch last time steps");
+		op->addItem("merge files");
+		ph->addWidget(op);
+		ph->addStretch();
+		pv->addLayout(ph);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		pv->addWidget(bb);
@@ -79,13 +92,14 @@ public:
 CDlgPlotMix::CDlgPlotMix(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPlotMixUI)
 {
 	setWindowTitle("Plot Mix");
+	setMinimumSize(600, 400);
 	ui->m_wnd = wnd;
 	ui->setup(this);
 }
 
 void CDlgPlotMix::OnBrowse()
 {
-	QStringList filenames = QFileDialog::getOpenFileNames(0, "Open file", 0, "XPLT files(*.xplt)");
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Open file", 0, "All supported files (*.xplt *.pvd);;XPLT files(*.xplt);;VTK files (*.pvd)");
 	if (filenames.isEmpty() == false)
 	{
 		for (int i = 0; i<filenames.count(); ++i)
@@ -122,7 +136,6 @@ void CDlgPlotMix::OnMoveDown()
 
 void CDlgPlotMix::OnApply()
 {
-
 	int nitems = ui->list->count();
 	std::vector<std::string> str(nitems);
 	for (int i = 0; i<nitems; ++i)
@@ -140,6 +153,7 @@ void CDlgPlotMix::OnApply()
 	CPostDocument* doc = new CPostDocument(ui->m_wnd);
 	doc->SetDocTitle("PlotMix");
 	Post::FEPlotMix reader(doc->GetFSModel());
+	reader.SetOperation(ui->op->currentIndex());
 
 	if (reader.Load(&sz[0], nitems) == false)
 	{
@@ -151,17 +165,19 @@ void CDlgPlotMix::OnApply()
 		// update post document
 		doc->Initialize();
 
-		// a new model is created when the doc is initialized
-		Post::CGLModel* glm = doc->GetGLModel();
-
-		// update displacements on all states
-		if (glm->GetDisplacementMap() == nullptr)
+		if (ui->op->currentIndex() == 0)
 		{
-			glm->AddDisplacementMap("Displacement");
-		}
-		int nstates = glm->GetFSModel()->GetStates();
-		for (int i = 0; i < nstates; ++i) glm->UpdateDisplacements(i, true);
+			// a new model is created when the doc is initialized
+			Post::CGLModel* glm = doc->GetGLModel();
 
+			// update displacements on all states
+			if (glm->GetDisplacementMap() == nullptr)
+			{
+				glm->AddDisplacementMap("Displacement");
+			}
+			int nstates = glm->GetFSModel()->GetStates();
+			for (int i = 0; i < nstates; ++i) glm->UpdateDisplacements(i, true);
+		}
 
 		ui->m_wnd->AddDocument(doc);
 	}

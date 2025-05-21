@@ -36,12 +36,20 @@ public:
 	FEPlotMix(FEPostModel* fem);
 	~FEPlotMix(void);
 
+	void SetOperation(int op) { m_op = op; }
+
 	bool Load(const char** szfile, int n);
 
 protected:
 	void ClearStates(FEPostModel& fem);
 
+	bool StitchFinalStates(const char** szfile, int n);
+	bool MergeModels(const char** szfile, int n);
+
+	bool LoadFile(const char* szfile, FEPostModel* fem);
+
 private:
 	FEPostModel* m_fem;
+	int	m_op = 0;
 };
 }
