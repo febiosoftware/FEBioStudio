@@ -41,9 +41,11 @@ enum {
 
 //-----------------------------------------------------------------------------
 // Node types
-#define NODE_UNKNOWN	0
-#define NODE_VERTEX		1		// vertex defines a node that is part of the geometry
-#define NODE_SHAPE		2		// a shape node is only used to define the geometry but is not considered part of it.
+enum NodeType {
+	NODE_UNKNOWN = 0,
+	NODE_VERTEX	 = 1,		// vertex defines a node that is part of the geometry
+	NODE_SHAPE	 = 2		// a shape node is only used to define the geometry but is not considered part of it.
+};
 
 //-----------------------------------------------------------------------------
 // Edge types

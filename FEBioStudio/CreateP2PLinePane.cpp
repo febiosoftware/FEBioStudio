@@ -127,16 +127,16 @@ void CCreateP2PLinePane::AddPoint(const vec3d& r)
 	// Add the new point
 	// this will check if the point already coincides with a node
 	// of the curve, in which case it will return the (local) node ID. 
-	int newNode = m_tmp->AddNode(r)->GetLocalID();
+	int newNodeID = m_tmp->AddNode(r)->GetLocalID();
 
 	// add a new edge connecting the last added node to this new node.
 	bool addEdge = false;
 	if (m_lineType == 0)
 	{
-		if ((m_lastNode != -1) && (newNode != m_lastNode))
+		if ((m_lastNode != -1) && (newNodeID != m_lastNode))
 		{
 			int edges = m_tmp->Edges();
-			m_tmp->AddLine(m_lastNode, newNode);
+			m_tmp->AddLine(m_lastNode, newNodeID);
 			if (m_tmp->Edges() > edges)
 			{
 				addEdge = true;
@@ -149,24 +149,26 @@ void CCreateP2PLinePane::AddPoint(const vec3d& r)
 		{
 			GEdge* edge = new GEdge(m_tmp);
 			edge->m_ntype = EDGE_BEZIER;
-			edge->m_node[0] = edge->m_node[1] = newNode;
+			edge->m_node[0] = edge->m_node[1] = newNodeID;
 			m_tmp->AddEdge(edge);
 		}
 		else
 		{
 			GEdge* edge = m_tmp->Edge(m_tmp->Edges() - 1);
 			if (edge->m_node[0] == edge->m_node[1])
-				edge->m_node[1] = newNode;
+				edge->m_node[1] = newNodeID;
 			else
 			{
+				GNode* node1 = m_tmp->Node(edge->m_node[1]);
+				node1->SetType(NODE_SHAPE);
 				edge->m_cnode.push_back(edge->m_node[1]);
-				edge->m_node[1] = newNode;
+				edge->m_node[1] = newNodeID;
 			}
 		}
 	}
 
 	// update the last added node
-	m_lastNode = newNode;
+	m_lastNode = newNodeID;
 
 	// update the Object
 	m_tmp->Update();
@@ -273,7 +275,12 @@ FSObject* CCreateP2PLinePane::Create()
 		GObject2D* po = new GObject2D;
 
 		// add nodes
-		for (int i = 0; i<m_tmp->Nodes(); ++i) po->AddNode(m_tmp->Node(i)->LocalPosition());
+		for (int i = 0; i < m_tmp->Nodes(); ++i)
+		{
+			GNode* tmpNode = m_tmp->Node(i);
+			GNode* newNode = po->AddNode(tmpNode->LocalPosition());
+			newNode->SetType(tmpNode->Type());
+		}
 
 		// add edges
 		for (int i = 0; i<m_tmp->Edges(); ++i)
@@ -316,7 +323,12 @@ FSObject* CCreateP2PLinePane::Create()
 		GCurveObject* po = new GCurveObject;
 
 		// add nodes
-		for (int i = 0; i < m_tmp->Nodes(); ++i) po->AddNode(m_tmp->Node(i)->LocalPosition());
+		for (int i = 0; i < m_tmp->Nodes(); ++i)
+		{
+			GNode* tmpNode = m_tmp->Node(i);
+			GNode* newNode = po->AddNode(tmpNode->LocalPosition());
+			newNode->SetType(tmpNode->Type());
+		}
 
 		// add edges
 		for (int i = 0; i < m_tmp->Edges(); ++i)
