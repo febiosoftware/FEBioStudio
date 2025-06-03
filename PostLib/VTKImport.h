@@ -102,7 +102,7 @@ private:
 class PVDImport : public VTKFileImport
 {
 public:
-	PVDImport(FEPostModel* fem) : VTKFileImport(fem) { m_processSeries = false; m_bmapNodes = true;	}
+	PVDImport(FEPostModel* fem);
 
 	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
 };

@@ -78,11 +78,18 @@ bool PVDFileReader::Load(const char* szfile)
 	return true;
 }
 
+struct VTKDataSetInfo
+{
+	std::string filename;
+	double timestamp = 0;
+	bool success = false;
+};
+
 bool PVDFileReader::ParseCollection(XMLTag& tag, vtkModel& vtk)
 {
-	const int datasets = tag.children();
-	int numRead = 0;
 	pct = 0.f;
+
+	std::vector<VTKDataSetInfo> datasets;
 
 	++tag;
 	do
@@ -104,25 +111,54 @@ bool PVDFileReader::ParseCollection(XMLTag& tag, vtkModel& vtk)
 				file = szsrc;
 			}
 
-			PVTUFileReader vtu;
-			if (vtu.Load(file.c_str()) == false) return false;
-
-			const VTK::vtkModel& vtk = vtu.GetVTKModel();
-
-			for (int i = 0; i < vtk.DataSets(); ++i)
-			{
-				const VTK::vtkDataSet& set_i = vtk.DataSet(i);
-				m_vtk.AddDataSet(set_i, timeValue);
-			}
+			VTKDataSetInfo ds;
+			ds.filename = file;
+			ds.timestamp = timeValue;
+			datasets.push_back(ds);
 		}
 		else tag.skip();
 		++tag;
 
-		numRead++;
-		pct = (datasets > 0 ? (float)numRead / (float)datasets : 0.f);
 	} while (!tag.isend());
 
+	if (datasets.empty()) return true;
+
+	std::vector<PVTUFileReader*> vtu(datasets.size(), nullptr);
+	for (int i = 0; i < datasets.size(); ++i)
+	{
+		vtu[i] = new PVTUFileReader;
+	}
+
+	int numRead = 0;
+	int numDataSets = (int)datasets.size();
+
+#pragma omp parallel for shared(numRead)
+	for (int i = 0; i < numDataSets; ++i)
+	{
+		VTKDataSetInfo& ds = datasets[i];
+		ds.success = vtu[i]->Load(ds.filename.c_str());
+
+#pragma omp critical
+		{
+			numRead++;
+			pct = (float)numRead / (float)numDataSets;
+		}
+	}
 	pct = 1.f;
+
+
+	for (int i = 0; i < datasets.size(); ++i)
+	{
+		const VTK::vtkModel& vtk = vtu[i]->GetVTKModel();
+
+		for (int j = 0; j < vtk.DataSets(); ++j)
+		{
+			const VTK::vtkDataSet& set_i = vtk.DataSet(j);
+			m_vtk.AddDataSet(set_i, datasets[i].timestamp);
+		}
+
+		delete vtu[i];
+	}
 
 	return true;
 }

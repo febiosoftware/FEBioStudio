@@ -492,6 +492,12 @@ bool PVTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 	return true;
 }
 
+PVDImport::PVDImport(FEPostModel* fem) : VTKFileImport(fem) 
+{ 
+	m_processSeries = false; 
+	m_bmapNodes = true; 
+}
+
 bool PVDImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 {
 	VTK::PVDFileReader pvdReader;
