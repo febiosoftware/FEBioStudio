@@ -35,10 +35,13 @@ namespace VTK {
 		PVDFileReader();
 		bool Load(const char* szfile) override;
 
+		float GetFileProgress() const override;
+
 	private:
 		bool ParseCollection(XMLTag& tag, vtkModel& vtk);
 
 	private:
 		std::string m_path;
+		float pct = 0.f;
 	};
 }

@@ -50,6 +50,12 @@ VTKFileImport::~VTKFileImport(void)
 {
 }
 
+float VTKFileImport::GetFileProgress() const
+{
+	if (m_vtkReader) return m_vtkReader->GetFileProgress();
+	return 1.f;
+}
+
 bool VTKFileImport::Load(const char* szfile)
 {
 	VTK::vtkModel vtk;
@@ -489,7 +495,11 @@ bool PVTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 bool PVDImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 {
 	VTK::PVDFileReader pvdReader;
-	if (!pvdReader.Load(szfilename))
+	SetFileReader(&pvdReader);
+	bool success = pvdReader.Load(szfilename);
+	SetFileReader(nullptr);
+
+	if (!success)
 	{
 		setErrorString(pvdReader.GetErrorString());
 		return false;

@@ -33,8 +33,12 @@ PVDFileReader::PVDFileReader()
 
 }
 
+float PVDFileReader::GetFileProgress() const { return pct; }
+
 bool PVDFileReader::Load(const char* szfile)
 {
+	pct = 0.f;
+
 	m_vtk.Clear();
 
 	// extract the filepath
@@ -76,6 +80,10 @@ bool PVDFileReader::Load(const char* szfile)
 
 bool PVDFileReader::ParseCollection(XMLTag& tag, vtkModel& vtk)
 {
+	const int datasets = tag.children();
+	int numRead = 0;
+	pct = 0.f;
+
 	++tag;
 	do
 	{
@@ -109,6 +117,12 @@ bool PVDFileReader::ParseCollection(XMLTag& tag, vtkModel& vtk)
 		}
 		else tag.skip();
 		++tag;
+
+		numRead++;
+		pct = (datasets > 0 ? (float)numRead / (float)datasets : 0.f);
 	} while (!tag.isend());
+
+	pct = 1.f;
+
 	return true;
 }
