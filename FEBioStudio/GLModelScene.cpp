@@ -1664,8 +1664,9 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 				}
 
 				// render the face
-				if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-				else re.setMaterial(GLMaterial::PLASTIC, c);
+				bool frontOnly = vs.m_identifyBackfacing;
+				if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, frontOnly);
+				else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 				re.renderGMesh(*pm, n);
 			}
 		}

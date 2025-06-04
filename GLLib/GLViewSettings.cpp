@@ -113,6 +113,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_diffuse = 0.8f;
 	m_use_environment_map = false;
 
+	m_identifyBackfacing = true;
+
 	m_transparencyMode = 0; // = off
 
 	m_showHighlights = true;

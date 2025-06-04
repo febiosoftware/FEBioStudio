@@ -2720,11 +2720,14 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		{
 			OBJECT_COLOR_MODE mode = scene->ObjectColorMode();
 			QMenu* colorMode = new QMenu("Color mode");
-			a = colorMode->addAction("Default"         ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
-			a = colorMode->addAction("By object"       ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
-			a = colorMode->addAction("By material type"); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
-			a = colorMode->addAction("By element type" ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
-			a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			a = colorMode->addAction("Default"         ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::DEFAULT_COLOR ); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
+			a = colorMode->addAction("By object"       ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::OBJECT_COLOR  ); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
+			a = colorMode->addAction("By material type"); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::MATERIAL_TYPE ); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
+			a = colorMode->addAction("By element type" ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::FSELEMENT_TYPE); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
+			a = colorMode->addAction("By physics"      ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::PHYSICS_TYPE  ); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			colorMode->addSeparator();
+			a = colorMode->addAction("Identify backfacing surfaces"); a->setCheckable(true); if (vs.m_identifyBackfacing) a->setChecked(true);
+			a->setData(0xFF);
 			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
 			menu.addAction(colorMode->menuAction());
 		}
@@ -2753,11 +2756,18 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
 	if (scene == nullptr) return;
 
-	if      (ac->text() == "Default"         ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
-	else if (ac->text() == "By object"       ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
-	else if (ac->text() == "By material type") scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
-	else if (ac->text() == "By element type" ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
-	else if (ac->text() == "By physics"      ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
+	int data = ac->data().toInt();
+
+	if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
+	else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
+	else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
+	else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+	else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
+	else if (data == 0xFF)
+	{
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
+		vs.m_identifyBackfacing = !vs.m_identifyBackfacing;
+	}
 
 	RedrawGL();
 }

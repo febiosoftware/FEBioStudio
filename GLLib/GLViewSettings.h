@@ -101,6 +101,7 @@ struct GLViewSettings
 	GLColor	m_defaultFGColor;		//!< the default FG color (when m_defaultFGColorOption == 1)
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes
+	bool	m_identifyBackfacing;
 
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
