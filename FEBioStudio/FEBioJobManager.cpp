@@ -248,7 +248,7 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		dlg.SetFEBioJob(job);
 		if (dlg.exec())
 		{
-			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
+			im->wnd->OpenPostFile(QString::fromStdString(job->GetPlotFileName()), dynamic_cast<CModelDocument*>(job->GetDocument()), false, true);
 		}
 
 		im->wnd->UpdateTab(job->GetDocument());
