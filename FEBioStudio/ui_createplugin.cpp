@@ -532,9 +532,6 @@ bool GeneratePluginFiles(const PluginConfig& config)
 			SDKInc.replace("\\", "/");
 			SDKLib.replace("\\", "/");
 			if (SDKLib.last(1) != "/") SDKLib += "/";
-#ifdef WIN32
-			SDKLib += "$<CONFIG>";
-#endif
 
             QString febioLibs = "";
             for(auto lib : config.febioLibs)

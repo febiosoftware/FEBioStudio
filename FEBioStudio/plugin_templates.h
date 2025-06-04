@@ -58,7 +58,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 project($(PLUGIN_NAME))
 
 # Name of the FEBio libraries you need to link to
-set(FEBio_LIB_NAMES $(FEBIO_LIB_NAMES))
+set(FEBIO_LIB_NAMES $(FEBIO_LIB_NAMES))
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -73,11 +73,16 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Find FEBio Libs
-set(FEBio_LIBS "")
+set(FEBIO_LIBS "")
+set(FEBIO_DEBUG_LIBS "")
 
-foreach(name IN LISTS FEBio_LIB_NAMES)
-    find_library(TEMP NAMES ${name} PATHS $(PLUGIN_SDK_LIBS))
-    list(APPEND FEBio_DEBUG_LIBS ${TEMP})
+foreach(name IN LISTS FEBIO_LIB_NAMES)
+    find_library(TEMP NAMES ${name} PATHS "$(PLUGIN_SDK_LIBS)Release")
+    list(APPEND FEBIO_LIBS ${TEMP})
+    unset(TEMP CACHE)
+
+    find_library(TEMP NAMES ${name} PATHS "$(PLUGIN_SDK_LIBS)Debug")
+    list(APPEND FEBIO_DEBUG_LIBS ${TEMP})
     unset(TEMP CACHE)
 endforeach(name)
 
@@ -105,7 +110,14 @@ add_library($(PLUGIN_NAME) SHARED $(CLASS_NAME).h $(CLASS_NAME).cpp main.cpp)
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))
 
 # Link FEBio Libraries
-target_link_libraries($(PLUGIN_NAME) ${FEBio_LIBS})
+foreach(name IN LISTS FEBIO_LIBS)
+    target_link_libraries($(PLUGIN_NAME) optimized ${name})
+endforeach()
+
+foreach(name IN LISTS FEBIO_DEBUG_LIBS)
+    target_link_libraries($(PLUGIN_NAME) debug ${name})
+endforeach()
+
 )delim";
 
 // This defines the main.cpp file, which registers feature classes.
