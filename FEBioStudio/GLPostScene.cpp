@@ -1137,6 +1137,7 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 			case 5: if (renderRJ) glx::renderRevoluteJoint(re, size); break;
 			case 6: if (renderRJ) glx::renderCylindricalJoint(re, size); break;
 			case 7: if (renderRJ) glx::renderPlanarJoint(re, size); break;
+			case 8: if (renderRB) glx::renderHelicalAxis(re, size); break;
 			default:
 				if (renderRB) glx::renderAxis(re, size);
 			}

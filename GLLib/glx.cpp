@@ -979,6 +979,30 @@ void glx::renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col, bool parti
 	re.popState();
 }
 
+void glx::renderHelicalAxis(GLRenderEngine& re, double R)
+{
+	re.begin(GLRenderEngine::LINES);
+	{
+		re.vertex(vec3d(0, 0, 1));
+		re.vertex(vec3d(0, 0, R));
+	}
+	re.end();
+
+	double d = R / 6;
+	const int NDIV = 50;
+	re.begin(GLRenderEngine::LINESTRIP);
+	{
+		for (int i = 0; i <= NDIV; ++i)
+		{
+			double w = PI * 4 * i / (double)NDIV;
+			double x = d * cos(w);
+			double y = d * sin(w);
+			double z = i * R / (double)NDIV;
+			re.vertex(vec3d(x, y, z));
+		}
+	}
+	re.end();
+}
 
 void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLColor c)
 {
@@ -995,7 +1019,9 @@ void glx::renderGlyph(GLRenderEngine& re, glx::GlyphType glyph, float scale, GLC
 	case GlyphType::CYLINDRICAL_JOINT: glx::renderCylindricalJoint(re, scale); break;
 	case GlyphType::PLANAR_JOINT: glx::renderPlanarJoint(re, scale); break;
 	case GlyphType::RIGID_LOCK: glx::renderRigidLock(re, scale); break;
+	case GlyphType::HELICAL_AXIS: glx::renderHelicalAxis(re, scale); break;
 	}
 
+	// restore attributes
 	re.popState();
 }

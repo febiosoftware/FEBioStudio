@@ -42,7 +42,8 @@ namespace glx {
 		PRISMATIC_JOINT,
 		CYLINDRICAL_JOINT,
 		PLANAR_JOINT,
-		RIGID_LOCK
+		RIGID_LOCK,
+		HELICAL_AXIS,
 	};
 
 
@@ -86,6 +87,7 @@ void renderSpring(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R, 
 void renderDamper(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R);
 void renderContractileForce(GLRenderEngine& re, const vec3d& a, const vec3d& b, double R);
 void renderRigidWall(GLRenderEngine& re, double R);
+void renderHelicalAxis(GLRenderEngine& re, double R);
 
 void renderBox(GLRenderEngine& re, const BOX& bbox, GLColor col = GLColor::White(), bool partial = true, double scale = 1.0);
 }
