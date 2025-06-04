@@ -2277,6 +2277,7 @@ void CGLModel::RenderObjects(CGLContext& rc)
 			case 5: if (renderRJ) glx::renderRevoluteJoint(size); break;
 			case 6: if (renderRJ) glx::renderCylindricalJoint(size); break;
 			case 7: if (renderRJ) glx::renderPlanarJoint(size); break;
+			case 8: if (renderRJ) glx::renderHelicalAxis(size); break;
 			default:
 				if (renderRB) glx::renderAxis(size);
 			}
