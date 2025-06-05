@@ -1687,6 +1687,8 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 	GLMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == nullptr) return;
 
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
 	// render non-selected faces
 	int NF = po->Faces();
 	for (int n = 0; n < NF; ++n)
@@ -1695,7 +1697,7 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 		GFace& f = *po->Face(n);
 
 		// make sure this face is not selected
-		if (f.IsSelected() == false)
+		if (f.IsVisible() && (f.IsSelected() == false))
 		{
 			GLColor c = m_scene->GetFaceColor(f);
 
@@ -1707,8 +1709,8 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 			}
 
 			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-			else re.setMaterial(GLMaterial::PLASTIC, c);
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, frontOnly);
+			else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			re.renderGMesh(*pm, n);
 		}
 	}
@@ -1817,8 +1819,8 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 		}
 
 		// render the face
-		if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-		else re.setMaterial(GLMaterial::PLASTIC, c);
+		if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+		else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
 		re.renderGMesh(*gm, n);
 	}
 
@@ -1849,8 +1851,8 @@ void GLObjectItem::RenderMeshByDefault(GLRenderEngine& re, GLContext& rc)
 			}
 
 			// render the face
-			if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-			else re.setMaterial(GLMaterial::PLASTIC, c);
+			if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+			else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
 			re.renderGMesh(*gm, NF + i);
 		}
 	}
@@ -1873,8 +1875,8 @@ void GLObjectItem::RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc)
 	}
 
 	GLColor c = m_po->GetColor();
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, c);
-	else re.setMaterial(GLMaterial::PLASTIC, c);
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
+	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, rc.m_settings.m_identifyBackfacing);
 
 	re.renderGMesh(*gm);
 }
@@ -1893,8 +1895,8 @@ void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GL
 	}
 
 	GLColor c = m_po->GetColor();
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::VERTEX_COLOR);
-	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::VERTEX_COLOR);
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, c, GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
+	else re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::VERTEX_COLOR, rc.m_settings.m_identifyBackfacing);
 
 	re.renderGMesh(mesh);
 }
@@ -2216,8 +2218,10 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor(), GLMaterial::VERTEX_COLOR);
-	else re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor(), GLMaterial::VERTEX_COLOR);
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
+	if (useStipple) re.setMaterial(GLMaterial::GLASS, m_po->GetColor(), GLMaterial::VERTEX_COLOR, frontOnly);
+	else re.setMaterial(GLMaterial::PLASTIC, m_po->GetColor(), GLMaterial::VERTEX_COLOR, frontOnly);
 
 	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
