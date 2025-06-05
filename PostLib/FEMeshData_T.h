@@ -352,6 +352,49 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEFaceArrayDataItem : public FEFaceItemData
+{
+public:
+	FEFaceArrayDataItem(FEState* state, int nsize, ModelDataField* pdf) : FEFaceItemData(state, DATA_ARRAY, DATA_ITEM)
+	{
+		int NF = state->GetFEMesh()->Faces();
+		m_stride = nsize;
+		m_data.resize(NF * nsize, 0.f);
+		m_face.resize(NF, -1);
+	}
+
+	bool active(int n) { return (m_face.empty() == false) && (m_face[n] >= 0); }
+
+	float eval(int n, int comp)
+	{
+		return m_data[m_face[n] * m_stride + comp];
+	}
+
+	int arraySize() const { return m_stride; }
+
+	void setData(std::vector<float>& data, std::vector<int>& face)
+	{
+		assert(data.size() == m_stride * face.size());
+		for (int i = 0; i < (int)face.size(); ++i)
+		{
+			int m = face[i];
+			for (int j = 0; j < m_stride; ++j)
+			{
+				m_data[m * m_stride + j] = data[i * m_stride + j];
+			}
+			m_face[m] = m;
+		}
+	}
+
+	int components() const { return m_stride; }
+
+protected:
+	int					m_stride;
+	std::vector<float>	m_data;
+	std::vector<int>	m_face;
+};
+
+//-----------------------------------------------------------------------------
 // template base class for defining the data value
 template <typename T, DATA_FORMAT fmt> class FEFaceData_T : public FEFaceItemData
 {
@@ -610,6 +653,7 @@ public:
 			for (int j = 0; j<ne; ++j) m_indx.push_back(m_stride*l[i*ne + j] + n0);
 		}
 	}
+	int arraySize() const { return m_stride; }
 
 protected:
 	int m_stride;

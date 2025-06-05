@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <iostream>
 
 class QListWidget;
+class QPushButton;
 class CPropertyListView;
 class CPropertyList;
 class CMainWindow;
@@ -78,9 +79,13 @@ public:
 
 private:
     void Clear();
+    void UpdateApplyButton();
 
 public slots:
     void Update();
+
+signals:
+    void filterStatusChanged(bool unapplied);
 
 private slots:
     void on_list_itemSelectionChanged();
@@ -88,11 +93,13 @@ private slots:
     void on_addFilterBtn_clicked();
     void on_delFilterBtn_clicked();
     void on_applyFilters_clicked();
+    void on_filterProps_changed();
 
 private:
     CImageModel* m_imgModel;
     
     QListWidget* m_list;
+    QPushButton* m_applyFilters;
     CPropertyListView* m_filterProps;
 
     std::vector<CPropertyList*> m_props;

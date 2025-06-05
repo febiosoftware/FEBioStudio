@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEBioMix/FEBiphasicAnalysis.h>
 #include <FEBioMix/FEBiphasicSoluteAnalysis.h>
 #include <FEBioMix/FEMultiphasicAnalysis.h>
+#include <FEBioMix/FESlidingInterfaceBiphasic.h>
 #include <FEBioMech/FEContactInterface.h>
 #include <FEBioMech/FESlidingElasticInterface.h>
 #include <FEBioMech/FEFacet2FacetSliding.h>
@@ -186,6 +187,7 @@ namespace febio {
 		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) { pc->m_maxref = 25; });
 		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 15; });
 		addDefaultCreateHandler<FEBiphasicAnalysis>([](FEBiphasicAnalysis* pc) { pc->m_nanalysis = FEBiphasicAnalysis::TRANSIENT; });
+		addDefaultCreateHandler<FESlidingInterfaceBiphasic>([](FESlidingInterfaceBiphasic* pc) { pc->m_bautopen = true; });
 
 		// biphasic-solute module handlers
 		fecore.SetActiveModule("solute");
@@ -690,6 +692,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 		PB.SetActiveGroup(param.GetParamGroup());
 
 		if ((param.IsHidden() == false) &&
+			(param.IsObsolete() == false) &&
 			((param.IsTopLevel() == false) || isTopLevel))
 		{
 			int ndim = param.dim();
@@ -1355,9 +1358,9 @@ FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
 }
 
-FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
+FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem, unsigned int flags)
 {
-	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem);
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem, flags);
 }
 
 FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
@@ -1526,7 +1529,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 {
 	switch (superClassID)
 	{
-	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem); break;
+	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem, flags); break;
 	case FEMATERIALPROP_ID    : return CreateMaterialProperty(typeStr, fem); break;
 	case FEDISCRETEMATERIAL_ID: return CreateDiscreteMaterial(typeStr, fem); break;
 	case FECLASS_ID           : return CreateGenericClass    (typeStr, fem); break;

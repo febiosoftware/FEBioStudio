@@ -2129,16 +2129,22 @@ CPlotData* CModelGraphWindow::nextData()
 }
 
 //-----------------------------------------------------------------------------
-void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
+void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostModel::PlotObject* po = fem.GetPlotObject(nobj);
 	int nsteps = fem.GetStates();
 
-	for (int j = 0; j < nsteps; ++j)
+	if (nmin < 0) nmin = 0;
+	if (nmax == -1) nmax = nsteps - 1;
+	if (nmax >= nsteps) nmax = nsteps - 1;
+	if (nmax < nmin) nmax = nmin;
+	int nn = nmax - nmin + 1;
+
+	for (int j = 0; j < nn; ++j)
 	{
-		Post::FEState* state = fem.GetState(j + m_firstState);
+		Post::FEState* state = fem.GetState(j + nmin);
 		Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
 
 		Post::ObjectData* data = pointData.data;
@@ -2242,18 +2248,18 @@ void CModelGraphWindow::addObjectData(int n)
 	break;
 	case 2: // scatter
 	{
-		TrackObjectHistory(n, xdata.data(), m_dataX);
+		TrackObjectHistory(n, xdata.data(), m_dataX, m_firstState, m_lastState);
 	}
 	break;
 	case 3: // time-scatter
 	{
 		// TODO: implement this!
-		TrackObjectHistory(n, xdata.data(), m_dataX);
+		TrackObjectHistory(n, xdata.data(), m_dataX, m_firstState, m_lastState);
 	}
 	break;
 	}
 
-	TrackObjectHistory(n, ydata.data(), m_dataY);
+	TrackObjectHistory(n, ydata.data(), m_dataY, m_firstState, m_lastState);
 
 	CPlotData* plot = nextData();
 	plot->setLabel(QString::fromStdString((po->GetName())));

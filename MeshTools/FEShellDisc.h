@@ -35,9 +35,9 @@ public:
 	enum {RATIO, T, NDIV, NSEG, ELEM_TYPE };
 
 public:
-	FEShellDisc(){}
-	FEShellDisc(GDisc* po);
-	FSMesh* BuildMesh();
+	FEShellDisc();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiQuad() override;
 

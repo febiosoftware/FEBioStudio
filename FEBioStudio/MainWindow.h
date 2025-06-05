@@ -295,9 +295,10 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
-	void ProcessITKImage(const QString& fileName, int type);
+	bool ProcessITKImage(const QString& fileName, int type);
 
 	bool ImportImage(CImageModel* imgModel);
+	bool ImportImage(const QString& fileName);
 
 	QString CurrentWorkingDirectory();
 
@@ -339,6 +340,7 @@ public slots:
 	void on_recentProjects_triggered(QAction* action);
 	void on_recentFEFiles_triggered(QAction* action);
 	void on_recentGeomFiles_triggered(QAction* action);
+	void on_recentImages_triggered(QAction* action);
 
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();

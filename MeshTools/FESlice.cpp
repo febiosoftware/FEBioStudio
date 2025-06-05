@@ -29,9 +29,9 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEMesh.h>
 
-FESlice::FESlice(GSlice* po)
+FESlice::FESlice()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_nd = m_ns = 4;
 	m_nz = 8;
@@ -63,9 +63,10 @@ int FESlice::NodeIndex(int i, int j, int k)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FESlice::BuildMesh()
+FSMesh* FESlice::BuildMesh(GObject* po)
 {
-	assert(m_pobj);
+	m_pobj = dynamic_cast<GSlice*>(po);
+	if (m_pobj == nullptr) return nullptr;
 
 	int i, j, k;
 

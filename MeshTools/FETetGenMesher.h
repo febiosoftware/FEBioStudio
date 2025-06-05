@@ -132,10 +132,9 @@ public:
 
 public:
 	FETetGenMesher();
-	FETetGenMesher(GObject* po);
 
 	// build the mesh
-	FSMesh*	BuildMesh() override;
+	FSMesh*	BuildMesh(GObject* po) override;
 
 	double ElementSize();
 
@@ -176,5 +175,5 @@ public:
 	FSMesh* Create(const std::vector<vec3d>& pointCloud);
 
 protected:
-	FSMesh* BuildMesh() override { return nullptr; }
+	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
 };

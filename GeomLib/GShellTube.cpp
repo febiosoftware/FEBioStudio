@@ -72,7 +72,7 @@ GThinTube::GThinTube() : GShellPrimitive(GSHELL_TUBE)
 	AddDoubleParam(m_R, "R", "radius");
 	AddDoubleParam(m_h, "h", "height");
 
-	SetFEMesher(new FEShellTube(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GThinTubeManipulator(*this));
 
 	Create();
@@ -87,7 +87,7 @@ void GThinTube::SetHeight(double h) { SetFloatValue(H, h); }
 //-----------------------------------------------------------------------------
 FEMesher* GThinTube::CreateDefaultMesher()
 {
-	return new FEShellTube(this);
+	return new FEShellTube();
 }
 
 //-----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ GCylindricalPatch::GCylindricalPatch() : GShellPrimitive(GCYLINDRICAL_PATCH)
 	AddDoubleParam(1.0, "h", "height");
 	AddDoubleParam(1.0, "r", "radius");
 
-	SetFEMesher(new FECylndricalPatch(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
@@ -169,7 +169,7 @@ GCylindricalPatch::GCylindricalPatch() : GShellPrimitive(GCYLINDRICAL_PATCH)
 //-----------------------------------------------------------------------------
 FEMesher* GCylindricalPatch::CreateDefaultMesher()
 {
-	return new FECylndricalPatch(this);
+	return new FECylndricalPatch();
 }
 
 double GCylindricalPatch::Width() const { return GetFloatValue(W); }

@@ -60,7 +60,7 @@ GSphere::GSphere() : GPrimitive(GSPHERE)
 
 	AddDoubleParam(m_R, "R", "radius");	// radius
 
-	SetFEMesher(new FESphere(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GSphereManipulator(*this));
 
 	Create();
@@ -72,7 +72,7 @@ void GSphere::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 //-----------------------------------------------------------------------------
 FEMesher* GSphere::CreateDefaultMesher()
 {
-	return new FESphere(this);
+	return new FESphere();
 }
 
 //-----------------------------------------------------------------------------

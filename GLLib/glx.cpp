@@ -1438,3 +1438,27 @@ void glx::renderBox(const BOX& bbox, bool partial, double scale)
 	// restore attributes
 	glPopAttrib();
 }
+
+void glx::renderHelicalAxis(double R)
+{
+	glBegin(GL_LINES);
+	{
+		glVertex3d(0, 0, 0); glVertex3d(0, 0, R);
+	}
+	glEnd();
+
+	double d = R / 6;
+	const int NDIV = 50;
+	glBegin(GL_LINE_STRIP);
+	{
+		for (int i = 0; i <= NDIV; ++i)
+		{
+			double w = PI * 4 * i / (double)NDIV;
+			double x = d * cos(w);
+			double y = d * sin(w);
+			double z = i * R / (double)NDIV;
+			glVertex3d(x, y, z);
+		}
+	}
+	glEnd();
+}

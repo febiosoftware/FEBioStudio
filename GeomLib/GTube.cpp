@@ -85,7 +85,7 @@ GTube::GTube() : GPrimitive(GTUBE)
 	AddDoubleParam(m_Ro, "Ro", "outer radius");	// outer radius
 	AddDoubleParam(m_h, "h", "height");	// height
 
-	SetFEMesher(new FETube(this));
+	SetFEMesher(new FETube());
 	SetManipulator(new GTubeManipulator(*this));
 
 	Create();
@@ -94,7 +94,7 @@ GTube::GTube() : GPrimitive(GTUBE)
 //-----------------------------------------------------------------------------
 FEMesher* GTube::CreateDefaultMesher()
 {
-	return new FETube(this);
+	return new FETube();
 }
 
 double GTube::InnerRadius() const { return GetFloatValue(RIN); }
@@ -219,7 +219,7 @@ GTube2::GTube2() : GPrimitive(GTUBE2)
 	AddDoubleParam(m_Roy, "Roy", "outer y-radius");	// outer y-radius
 	AddDoubleParam(m_h, "h", "height");	// height
 
-	SetFEMesher(new FETube2(this));
+	SetFEMesher(new FETube2());
 
 	Create();
 }
@@ -227,7 +227,7 @@ GTube2::GTube2() : GPrimitive(GTUBE2)
 //-----------------------------------------------------------------------------
 FEMesher* GTube2::CreateDefaultMesher()
 {
-	return new FETube2(this);
+	return new FETube2();
 }
 
 //-----------------------------------------------------------------------------

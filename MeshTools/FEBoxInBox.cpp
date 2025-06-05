@@ -28,16 +28,9 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEElement.h>
 
-//-----------------------------------------------------------------------------
 FEBoxInBox::FEBoxInBox()
 {
 	m_pobj = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-FEBoxInBox::FEBoxInBox(GBoxInBox* po)
-{
-	m_pobj = po;
 
 	AddIntParam(10, "nx", "Nx");
 	AddIntParam(10, "ny", "Ny");
@@ -230,8 +223,11 @@ bool FEBoxInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEBoxInBox::BuildMesh()
+FSMesh* FEBoxInBox::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GBoxInBox*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -244,5 +240,5 @@ FSMesh* FEBoxInBox::BuildMesh()
 	}
 
 	// create the MB
-	return FEMultiBlockMesh::BuildMesh();
+	return FEMultiBlockMesh::BuildMBMesh();
 }

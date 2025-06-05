@@ -39,9 +39,9 @@ public:
 	enum { BUTTERFLY, WEDGED };
 
 public:
-	FECylinder(){}
-	FECylinder(GCylinder* po);
-	FSMesh* BuildMesh();
+	FECylinder();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiBlock() override;
 
@@ -78,9 +78,8 @@ public:
 	enum { BUTTERFLY, WEDGED };
 
 public:
-	FECylinder2(){}
-	FECylinder2(GCylinder2* po);
-	FSMesh* BuildMesh();
+	FECylinder2();
+	FSMesh* BuildMesh(GObject* op) override;
 
 protected:
 	FSMesh* BuildButterfly();

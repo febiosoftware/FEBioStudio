@@ -431,7 +431,7 @@ private:
 	void TrackFaceHistory(int nface, float* pval, int nfield, int nmin = 0, int nmax = -1);
 	void TrackEdgeHistory(int edge, float* pval, int nfield, int nmin = 0, int nmax = -1);
 	void TrackNodeHistory(int node, float* pval, int nfield, int nmin = 0, int nmax = -1);
-	void TrackObjectHistory(int nobj, float* pval, int nfield);
+	void TrackObjectHistory(int nobj, float* pval, int nfield, int nmin = 0, int nmax = -1);
 
 private:
 	void addSelectedNodes();

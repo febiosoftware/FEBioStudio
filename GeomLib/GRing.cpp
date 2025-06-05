@@ -69,7 +69,7 @@ GRing::GRing() : GShellPrimitive(GRING)
 	AddDoubleParam(m_Ri, "Ri", "Inner radius");
 	AddDoubleParam(m_Ro, "Ro", "Outer radius");
 
-	SetFEMesher(new FEShellRing(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GRingManipulator(*this));
 
 	Create();
@@ -81,7 +81,7 @@ void GRing::SetOuterRadius(double ro) { SetFloatValue(ROUT, ro); }
 //-----------------------------------------------------------------------------
 FEMesher* GRing::CreateDefaultMesher()
 {
-	return new FEShellRing(this);
+	return new FEShellRing();
 }
 
 //-----------------------------------------------------------------------------

@@ -35,9 +35,9 @@ public:
 	enum { NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
-	FEHollowSphere(){}
-	FEHollowSphere(GHollowSphere* po);
-	FSMesh* BuildMesh();
+	FEHollowSphere();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	bool BuildMultiBlock() override;

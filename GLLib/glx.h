@@ -120,6 +120,7 @@ void renderAxes(double R, const vec3d& pos, const quatd& q, GLColor c);
 void renderSpring(const vec3d& a, const vec3d& b, double R, int N = 25);
 void renderDamper(const vec3d& a, const vec3d& b, double R);
 void renderContractileForce(const vec3d& a, const vec3d& b, double R);
+void renderHelicalAxis(double R);
 
 void renderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 }

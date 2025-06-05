@@ -130,7 +130,7 @@ namespace MeshTools {
 
 	std::vector<int> GetConnectedFacesByPath(FSMeshBase* pm, int startFace, int endFace);
 
-	std::vector<int> GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax);
+	std::vector<int> GetConnectedNodes(FSMeshBase* pm, int startNode, double tolAngleDeg, bool bmax, bool respectPartitions);
 
 	std::vector<int> GetConnectedNodesByPath(FSMeshBase* pm, int startNode, int endNode);
 
@@ -138,7 +138,7 @@ namespace MeshTools {
 
 	std::vector<int> GetConnectedEdges(FSMeshBase* pm, int startEdge, double tolAngleDeg, bool bmax);
 
-	void TagConnectedNodes(FSMeshBase* pm, int node, double tolAngleDeg, bool bmax, int tag);
+	void TagConnectedNodes(FSMeshBase* pm, int node, double tolAngleDeg, bool bmax, bool respectPartitions, int tag);
 
 	void TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1, int tag);
 }

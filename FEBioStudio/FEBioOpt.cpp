@@ -121,12 +121,40 @@ bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
 			XMLElement var("var");
 			var.add_attribute("type", opt.m_edVar.c_str());
 			xml.add_empty(var);
+
+			xml.add_branch("data");
+			{
+				XMLElement el("elem");
+				int n1 = el.add_attribute("id", 0);
+				for (int i = 0; i < (int)opt.m_edData.size(); ++i)
+				{
+					FEBioOpt::IDValue& di = opt.m_edData[i];
+					el.set_attribute(n1, di.m_id);
+					el.value(di.m_value);
+					xml.add_leaf(el, false);
+				}
+			}
+			xml.close_branch();
 		}
 		else if (opt.m_objective == FEBioOpt::NodeData)
 		{
 			XMLElement var("var");
 			var.add_attribute("type", opt.m_ndVar.c_str());
 			xml.add_empty(var);
+
+			xml.add_branch("data");
+			{
+				XMLElement el("node");
+				int n1 = el.add_attribute("id", 0);
+				for (int i = 0; i < (int)opt.m_ndData.size(); ++i)
+				{
+					FEBioOpt::IDValue& di = opt.m_ndData[i];
+					el.set_attribute(n1, di.m_id);
+					el.value(di.m_value);
+					xml.add_leaf(el, false);
+				}
+			}
+			xml.close_branch();
 		}
 	}
 	xml.close_branch();

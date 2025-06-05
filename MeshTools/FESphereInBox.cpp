@@ -29,16 +29,10 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEMesh.h>
 
-//-----------------------------------------------------------------------------
+
 FESphereInBox::FESphereInBox()
 {
-	m_po = 0;
-}
-
-//-----------------------------------------------------------------------------
-FESphereInBox::FESphereInBox(GSphereInBox* po)
-{
-	m_po = po;
+	m_po = nullptr;
 
 	// define the tube parameters
 	AddIntParam(5, "nx", "Nx");
@@ -529,8 +523,11 @@ bool FESphereInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FESphereInBox::BuildMesh()
+FSMesh* FESphereInBox::BuildMesh(GObject* po)
 {
+	m_po = dynamic_cast<GSphereInBox*>(po);
+	if (m_po == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -543,7 +540,7 @@ FSMesh* FESphereInBox::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

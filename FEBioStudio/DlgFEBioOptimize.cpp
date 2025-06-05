@@ -47,6 +47,43 @@ SOFTWARE.*/
 #include <QtCore/QMimeData>
 #include "DlgImportData.h"
 
+class CDlgGenerateData : public QDialog
+{
+public:
+	CDlgGenerateData(QWidget* parent) : QDialog(parent)
+	{
+		QFormLayout* form = new QFormLayout;
+		form->addRow("start index:", m_start = new QLineEdit);
+		form->addRow("end index:", m_end = new QLineEdit);
+		form->addRow("value:", m_val = new QLineEdit);
+
+		m_start->setValidator(new QIntValidator);
+		m_end->setValidator(new QIntValidator);
+		m_val->setValidator(new QDoubleValidator);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(form);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		setWindowTitle("Generate data points");
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	int GetStart() { return m_start->text().toInt(); }
+	int GetEnd() { return m_end->text().toInt(); }
+	double GetValue() { return m_val->text().toDouble(); }
+
+private:
+	QLineEdit* m_start;
+	QLineEdit* m_end;
+	QLineEdit* m_val;
+};
+
 class Ui::CDlgSelectParam
 {
 public:
@@ -246,8 +283,10 @@ public:
 	QTableWidget* trgVar;
 	// 4.3 element-data pane
 	QLineEdit* edVar;
+	QTableWidget* elemDataTable;
 	// 4.3 node-data pane
 	QLineEdit* ndVar;
+	QTableWidget* nodeDataTable;
 
 public:
 	void setup(QWizard* w)
@@ -298,10 +337,6 @@ public:
 			opt.m_trgVar.push_back(var);
 		}
 
-		opt.m_edVar = edVar->text().toStdString();
-
-		opt.m_ndVar = ndVar->text().toStdString();
-
 		// get data points
 		opt.m_data.clear();
 		for (int i = 0; i < dataTable->rowCount(); ++i)
@@ -310,6 +345,26 @@ public:
 			double v = dataTable->item(i, 1)->text().toDouble();
 
 			opt.AddData(t, v);
+		}
+
+		// get element data points
+		opt.m_edVar = edVar->text().toStdString();
+		opt.m_edData.clear();
+		for (int i = 0; i < elemDataTable->rowCount(); ++i)
+		{
+			int id   = elemDataTable->item(i, 0)->text().toInt();
+			double v = elemDataTable->item(i, 1)->text().toDouble();
+			opt.m_edData.push_back({ id, v });
+		}
+
+		// get node data points
+		opt.m_ndVar = ndVar->text().toStdString();
+		opt.m_ndData.clear();
+		for (int i = 0; i < nodeDataTable->rowCount(); ++i)
+		{
+			int id = nodeDataTable->item(i, 0)->text().toInt();
+			double v = nodeDataTable->item(i, 1)->text().toDouble();
+			opt.m_ndData.push_back({ id, v });
 		}
 	}
 
@@ -345,6 +400,22 @@ public:
 		dataTable->setRowCount(rows + 1);
 		dataTable->setItem(rows, 0, new QTableWidgetItem(QString::number(x)));
 		dataTable->setItem(rows, 1, new QTableWidgetItem(QString::number(y)));
+	}
+
+	void addElemDataPoint(int x, double y)
+	{
+		int rows = elemDataTable->rowCount();
+		elemDataTable->setRowCount(rows + 1);
+		elemDataTable->setItem(rows, 0, new QTableWidgetItem(QString::number(x)));
+		elemDataTable->setItem(rows, 1, new QTableWidgetItem(QString::number(y)));
+	}
+
+	void addNodeDataPoint(int x, double y)
+	{
+		int rows = nodeDataTable->rowCount();
+		nodeDataTable->setRowCount(rows + 1);
+		nodeDataTable->setItem(rows, 0, new QTableWidgetItem(QString::number(x)));
+		nodeDataTable->setItem(rows, 1, new QTableWidgetItem(QString::number(y)));
 	}
 
 	QWizardPage* GenerateIntro()
@@ -514,6 +585,25 @@ public:
 			QFormLayout* form = new QFormLayout;
 			form->addRow("variable:", edVar = new QLineEdit());
 			l3->addLayout(form);
+
+			QHBoxLayout* h = new QHBoxLayout;
+			QPushButton* add = new QPushButton("Generate data ...");
+			add->setObjectName("addElemData");
+			h->addWidget(add);
+			QPushButton* paste = new QPushButton("Paste clipboard");
+			paste->setObjectName("pasteElemData");
+			h->addWidget(paste);
+			h->addStretch();
+			l3->addLayout(h);
+
+			elemDataTable = new QTableWidget(0, 2);
+			elemDataTable->setObjectName("elemDataTable");
+			elemDataTable->setHorizontalHeaderLabels(QStringList() << "ID" << "value");
+			elemDataTable->horizontalHeader()->setStretchLastSection(true);
+			elemDataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+			elemDataTable->setSelectionMode(QAbstractItemView::SingleSelection);
+			elemDataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+			l3->addWidget(elemDataTable);
 		}
 		w3->setLayout(l3);
 		stack->addWidget(w3);
@@ -525,6 +615,25 @@ public:
 			QFormLayout* form = new QFormLayout;
 			form->addRow("variable:", ndVar = new QLineEdit());
 			l4->addLayout(form);
+
+			QHBoxLayout* h = new QHBoxLayout;
+			QPushButton* add = new QPushButton("Generate data ...");
+			add->setObjectName("addNodeData");
+			h->addWidget(add);
+			QPushButton* paste = new QPushButton("Paste clipboard");
+			paste->setObjectName("pasteNodeData");
+			h->addWidget(paste);
+			h->addStretch();
+			l4->addLayout(h);
+
+			nodeDataTable = new QTableWidget(0, 2);
+			nodeDataTable->setObjectName("nodeDataTable");
+			nodeDataTable->setHorizontalHeaderLabels(QStringList() << "ID" << "value");
+			nodeDataTable->horizontalHeader()->setStretchLastSection(true);
+			nodeDataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+			nodeDataTable->setSelectionMode(QAbstractItemView::SingleSelection);
+			nodeDataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+			l4->addWidget(nodeDataTable);
 		}
 		w4->setLayout(l4);
 		stack->addWidget(w4);
@@ -542,6 +651,11 @@ public:
 
 CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(new Ui::CDlgFEBioOptimize)
 {
+#ifdef WIN32
+	// We need this style, since the default Aero style doesn't look right in dark mode.
+	setWizardStyle(QWizard::ModernStyle);
+#endif
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(parent->GetDocument());
 
 	setWindowTitle("Generate FEBio optimization");
@@ -577,6 +691,38 @@ void CDlgFEBioOptimize::on_addData_clicked()
 	}
 }
 
+void CDlgFEBioOptimize::on_addElemData_clicked()
+{
+	CDlgGenerateData dlg(this);
+	if (dlg.exec())
+	{
+		int start = dlg.GetStart();
+		int end = dlg.GetEnd();
+		double val = dlg.GetValue();
+		ui->elemDataTable->setRowCount(0);
+		for (int i = start; i <= end; ++i)
+		{
+			ui->addElemDataPoint(i, val);
+		}
+	}
+}
+
+void CDlgFEBioOptimize::on_addNodeData_clicked()
+{
+	CDlgGenerateData dlg(this);
+	if (dlg.exec())
+	{
+		int start = dlg.GetStart();
+		int end = dlg.GetEnd();
+		double val = dlg.GetValue();
+		ui->nodeDataTable->setRowCount(0);
+		for (int i = start; i <= end; ++i)
+		{
+			ui->addNodeDataPoint(i, val);
+		}
+	}
+}
+
 void CDlgFEBioOptimize::on_pasteData_clicked()
 {
 	QClipboard* clipboard = QApplication::clipboard();
@@ -606,7 +752,68 @@ void CDlgFEBioOptimize::on_pasteData_clicked()
 	{
 		QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
 	}
+}
 
+void CDlgFEBioOptimize::on_pasteElemData_clicked()
+{
+	QClipboard* clipboard = QApplication::clipboard();
+	if (clipboard == nullptr) return;
+	const QMimeData* mimeData = clipboard->mimeData();
+	if (mimeData == nullptr) return;
+
+	if (mimeData->hasText())
+	{
+		QString text = clipboard->text();
+		CDlgImportData dlg(text, DataType::DOUBLE, 2);
+		if (dlg.exec())
+		{
+			QList<QStringList> values = dlg.GetValues();
+
+			ui->elemDataTable->setRowCount(0);
+
+			for (auto row : values)
+			{
+				int x = row.at(0).toInt();
+				double y = row.at(1).toDouble();
+				ui->addElemDataPoint(x, y);
+			}
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
+	}
+}
+
+void CDlgFEBioOptimize::on_pasteNodeData_clicked()
+{
+	QClipboard* clipboard = QApplication::clipboard();
+	if (clipboard == nullptr) return;
+	const QMimeData* mimeData = clipboard->mimeData();
+	if (mimeData == nullptr) return;
+
+	if (mimeData->hasText())
+	{
+		QString text = clipboard->text();
+		CDlgImportData dlg(text, DataType::DOUBLE, 2);
+		if (dlg.exec())
+		{
+			QList<QStringList> values = dlg.GetValues();
+
+			ui->nodeDataTable->setRowCount(0);
+
+			for (auto row : values)
+			{
+				int x = row.at(0).toInt();
+				double y = row.at(1).toDouble();
+				ui->addNodeDataPoint(x, y);
+			}
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
+	}
 }
 
 void CDlgFEBioOptimize::on_addvar_clicked()

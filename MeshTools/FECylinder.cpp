@@ -37,9 +37,9 @@ extern double gain2(double x, double r, double n);
 
 //-----------------------------------------------------------------------------
 // Constructor
-FECylinder::FECylinder(GCylinder* po)
+FECylinder::FECylinder()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_r = 0.5;
 	m_nd = m_ns = 4;
@@ -68,8 +68,11 @@ FECylinder::FECylinder(GCylinder* po)
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder::BuildMesh()
+FSMesh* FECylinder::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GCylinder*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -326,7 +329,7 @@ FSMesh* FECylinder::BuildButterfly()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 
@@ -628,9 +631,9 @@ FSMesh* FECylinder::BuildWedged()
 // C Y L I N D E R 2
 //=============================================================================
 // Constructor
-FECylinder2::FECylinder2(GCylinder2* po)
+FECylinder2::FECylinder2()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_r = 0.5;
 	m_nd = m_ns = 4;
@@ -657,8 +660,11 @@ FECylinder2::FECylinder2(GCylinder2* po)
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder2::BuildMesh()
+FSMesh* FECylinder2::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GCylinder2*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -869,7 +875,7 @@ FSMesh* FECylinder2::BuildButterfly()
 	m_MBNode[27].SetID(7);
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// project the nodes onto a cylinder
 	vec3d r0, r1;

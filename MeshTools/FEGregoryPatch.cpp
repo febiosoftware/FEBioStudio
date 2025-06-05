@@ -46,7 +46,7 @@ FEGregoryPatch::~FEGregoryPatch(void)
 {
 }
 
-FSMesh* FEGregoryPatch::BuildMesh()
+FSMesh* FEGregoryPatch::BuildMesh(GObject* po)
 {
 	// first, build the patches
 	BuildPatches();

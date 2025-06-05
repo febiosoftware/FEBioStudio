@@ -30,5 +30,5 @@ SOFTWARE.*/
 
 GObject2D::GObject2D() : GObject(GOBJECT2D)
 {
-	SetFEMesher(new FEMMG2DMesher(this));
+	SetFEMesher(new FEMMG2DMesher());
 }

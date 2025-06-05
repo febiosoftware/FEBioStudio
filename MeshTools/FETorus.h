@@ -35,9 +35,9 @@ public:
 	enum { NDIV, NSEG, ELEM_TYPE };
 
 public:
-	FETorus(){}
-	FETorus(GTorus* po);
-	FSMesh* BuildMesh();
+	FETorus();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	FSMesh* BuildMeshLegacy();

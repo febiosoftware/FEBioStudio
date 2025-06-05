@@ -139,7 +139,7 @@ namespace FEBio {
 
 	// helper functions for creating FEBio classes.
 	FSStep*              CreateStep             (const std::string& typeStr, FSModel* fem);
-	FSMaterial*          CreateMaterial         (const std::string& typeStr, FSModel* fem);
+	FSMaterial*          CreateMaterial         (const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSMaterialProperty*  CreateMaterialProperty (const std::string& typeStr, FSModel* fem);
 	FSDiscreteMaterial*  CreateDiscreteMaterial (const std::string& typeStr, FSModel* fem);
 	FSBoundaryCondition* CreateBoundaryCondition(const std::string& typeStr, FSModel* fem);

@@ -658,6 +658,11 @@ public:
 CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
 	: QWizard(parent), ui(new Ui::CWzdUpload), dbHandler(dbHandler), repoHandler(repoHandler)
 {
+#ifdef WIN32
+	// We need this style, since the default Aero style doesn't look right in dark mode.
+	setWizardStyle(QWizard::ModernStyle);
+#endif
+
 	ui->setup(this, uploadPermissions, modify); //, project);
 
 	QObject::connect(new FocusWatcher(ui->fileDescription), &FocusWatcher::focusChanged, this, &CWzdUpload::fileDescriptionChanged);

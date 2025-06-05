@@ -36,9 +36,9 @@ public:
 	enum { T, NX, NY, ELEM_TYPE};
 
 public:
-	FEShellPatch(){}
-	FEShellPatch(GPatch* po);
-	FSMesh* BuildMesh();
+	FEShellPatch();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiQuad() override;
 
@@ -55,9 +55,9 @@ public:
 	enum { T, NX, NY, ELEM_TYPE };
 
 public:
-	FECylndricalPatch() {}
-	FECylndricalPatch(GCylindricalPatch* po);
-	FSMesh* BuildMesh();
+	FECylndricalPatch();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 	bool BuildMultiQuad() override;
 

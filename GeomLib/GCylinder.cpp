@@ -71,7 +71,7 @@ GCylinder::GCylinder() : GPrimitive(GCYLINDER)
 	AddDoubleParam(m_R, "R", "radius");
 	AddDoubleParam(m_h, "h", "height");
 
-	SetFEMesher(new FECylinder(this));
+	SetFEMesher(CreateDefaultMesher());
 	SetManipulator(new GCylinderManipulator(*this));
 
 	Create();
@@ -86,7 +86,7 @@ void GCylinder::SetHeight(double H) { SetFloatValue(1, H); Update(); }
 //-----------------------------------------------------------------------------
 FEMesher* GCylinder::CreateDefaultMesher()
 {
-	return new FECylinder(this);
+	return new FECylinder();
 }
 
 //-----------------------------------------------------------------------------
@@ -189,7 +189,7 @@ GCylinder2::GCylinder2() : GPrimitive(GCYLINDER2)
 	AddDoubleParam(m_Ry, "Ry", "Y-radius");
 	AddDoubleParam(m_h , "h" , "Height"  );
 
-	SetFEMesher(new FECylinder2(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
@@ -197,7 +197,7 @@ GCylinder2::GCylinder2() : GPrimitive(GCYLINDER2)
 //-----------------------------------------------------------------------------
 FEMesher* GCylinder2::CreateDefaultMesher()
 {
-	return new FECylinder2(this);
+	return new FECylinder2();
 }
 
 //-----------------------------------------------------------------------------

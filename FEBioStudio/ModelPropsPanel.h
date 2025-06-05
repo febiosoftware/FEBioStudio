@@ -235,8 +235,8 @@ private slots:
 	void on_math2_rightExtendChanged(int n);
 	void on_math2_minChanged(double vmin);
 	void on_math2_maxChanged(double vmax);
-
 	void on_plt_dataChanged();
+    void on_imageFilter_statusChanged(bool unapplied);
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);

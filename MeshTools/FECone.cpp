@@ -41,9 +41,9 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FECone::FECone(GCone* po)
+FECone::FECone()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_Rb = 0.5;
 	m_nd = m_ns = 4;
@@ -283,8 +283,11 @@ bool FECone::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FECone::BuildMesh()
+FSMesh* FECone::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GCone*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	BuildMultiBlock();
 
 	// set element type
@@ -297,7 +300,7 @@ FSMesh* FECone::BuildMesh()
 	}
 
 	// create the MB
-	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

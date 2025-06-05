@@ -1828,6 +1828,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
 		settings.setValue("recentProjects", ui->m_recentProjects);
 		settings.setValue("recentPlugins", ui->m_recentPlugins);
+		settings.setValue("recentImages", ui->m_recentImages);
 	}
 	settings.endGroup();
 
@@ -1975,6 +1976,7 @@ void CMainWindow::readSettings()
 		QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
 		QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
 		QStringList recentPlugins = settings.value("recentPlugins").toStringList(); ui->setRecentPlugins(recentPlugins);
+		QStringList recentImages = settings.value("recentImages").toStringList(); ui->setRecentImageFiles(recentImages);
 	}
 	settings.endGroup();
 
@@ -2987,6 +2989,7 @@ void CMainWindow::ClearRecentFilesList()
 {
 	ui->m_recentFiles.clear();
 	ui->m_recentProjects.clear();
+	ui->m_recentImages.clear();
 }
 
 void CMainWindow::OnCameraChanged()
@@ -3568,7 +3571,7 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 }
 
 #ifdef HAS_ITK
-	void CMainWindow::ProcessITKImage(const QString& fileName, int type)
+	bool CMainWindow::ProcessITKImage(const QString& fileName, int type)
 	{
 		CGLDocument* doc = GetGLDocument();
 
@@ -3578,10 +3581,13 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
         if(!ImportImage(imageModel))
         {
 			delete imageModel;
+			return false;
         }
+		else ui->addToRecentImageFiles(fileName);
+		return true;
 	}
 #else
-	void CMainWindow::ProcessITKImage(const QString& fileName, int type) {}
+	bool CMainWindow::ProcessITKImage(const QString& fileName, int type) { return false; }
 #endif
 
 void CMainWindow::OnDeleteAllLoadControllers()

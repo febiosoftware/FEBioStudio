@@ -36,8 +36,7 @@ public:
 
 public:
 	FEBoxInBox();
-	FEBoxInBox(GBoxInBox* po);
-	FSMesh* BuildMesh() override;
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	bool BuildMultiBlock() override;

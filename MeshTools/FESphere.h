@@ -36,9 +36,9 @@ public:
 	enum { RATIO, NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
-	FESphere(){}
-	FESphere(GSphere* po);
-	FSMesh* BuildMesh();
+	FESphere();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	bool BuildMultiBlock() override;

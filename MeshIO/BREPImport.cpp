@@ -98,6 +98,8 @@ bool IGESImport::Load( const char* szfile)
 		Reader.TransferRoots();
 		TopoDS_Shape aShape = Reader.OneShape();
 
+		if (aShape.IsNull()) return error("Shape is NULL.");
+
 		GOCCObject* occ = new GOCCObject;
 		occ->SetShape(aShape);
 

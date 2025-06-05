@@ -34,13 +34,9 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include "FEMultiQuadMesh.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FEShellRing::FEShellRing(GRing* po)
+FEShellRing::FEShellRing()
 {
-	m_pobj = po;
+	m_pobj = nullptr;
 
 	m_t = 0.01;
 	m_ns = 16;
@@ -52,8 +48,11 @@ FEShellRing::FEShellRing(GRing* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellRing::BuildMesh()
+FSMesh* FEShellRing::BuildMesh(GObject* po)
 {
+	m_pobj = dynamic_cast<GRing*>(po);
+	if (m_pobj == nullptr) return nullptr;
+
 	if (BuildMultiQuad() == false) return nullptr;
 
 	// set element type
@@ -66,7 +65,7 @@ FSMesh* FEShellRing::BuildMesh()
 	};
 
 	// Build the mesh
-	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMQMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness to section

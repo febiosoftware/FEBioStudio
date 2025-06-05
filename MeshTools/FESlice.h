@@ -34,9 +34,9 @@ public:
 	enum { NSLICE, NLOOP, NSTACK, ZZ, GR, GZ2, GR2};
 
 public:
-	FESlice(){}
-	FESlice(GSlice* po);
-	FSMesh* BuildMesh();
+	FESlice();
+
+	FSMesh* BuildMesh(GObject* po) override;
 
 protected:
 	void BuildWedgedFaces(FSMesh* pm);

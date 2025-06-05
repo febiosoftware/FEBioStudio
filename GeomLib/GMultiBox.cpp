@@ -65,7 +65,7 @@ private:
 //! Constructor
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 {
-	SetFEMesher(new FEMultiBlockMesher(this));
+	SetFEMesher(new FEMultiBlockMesher());
 
 	SetSaveFlags(0);	// this prevents the mesh from getting serialized
 
@@ -95,7 +95,7 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	GItem_T<GBaseObject>::DecreaseCounter();
 
 	// define the default mesher
-	FEMultiBlockMesher* mbMesher = new FEMultiBlockMesher(this);
+	FEMultiBlockMesher* mbMesher = new FEMultiBlockMesher();
 	SetFEMesher(mbMesher);
 
 	// we need the multi block mesher to pull out the multiblock geometry

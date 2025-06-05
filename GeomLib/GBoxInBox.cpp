@@ -35,14 +35,14 @@ GBoxInBox::GBoxInBox() : GPrimitive(GBOX_IN_BOX)
 	AddDoubleParam(0.5, "Inner Height (Y)");
 	AddDoubleParam(0.5, "Inner Depth (Z)");
 
-	SetFEMesher(new FEBoxInBox(this));
+	SetFEMesher(CreateDefaultMesher());
 
 	Create();
 }
 
 FEMesher* GBoxInBox::CreateDefaultMesher()
 {
-	return new FEBoxInBox(this);
+	return new FEBoxInBox();
 }
 
 double GBoxInBox::OuterWidth () const { return GetFloatValue(0); }

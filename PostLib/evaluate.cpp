@@ -1818,6 +1818,18 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 				}
 			}
             break;
+		case DATA_ARRAY:
+			if (fmt == DATA_ITEM)
+			{
+				FEFaceArrayDataItem& dm = dynamic_cast<FEFaceArrayDataItem&>(rd);
+				if (dm.active(n))
+				{
+					val = dm.eval(n, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			break;
 		}
 	}
 	else if (IS_NODE_FIELD(nfield))

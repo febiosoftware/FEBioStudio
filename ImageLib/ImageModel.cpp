@@ -49,6 +49,7 @@ enum SaveIDs { BASE = 0, IMAGESOURCE, FILTERS, ANALYSES, VIEWSETTINGS};
 CImageModel::CImageModel(Post::CGLModel* mdl) : CGLObject(mdl)
 {
 	m_showBox = true;
+    m_unappliedFilters = false;
 	m_img = nullptr;
 }
 
@@ -158,12 +159,16 @@ void CImageModel::ApplyFilters()
 	for (int i = 0; i < (int)m_render.Size(); ++i)
 	{
 		m_render[i]->Update();
-	} 
+	}
+    
+    m_unappliedFilters = false;
 }
 
 void CImageModel::ClearFilters()
 {
     m_img->ClearFilters();
+
+    m_unappliedFilters = false;
 }
 
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
@@ -189,12 +194,32 @@ void CImageModel::RemoveFilter(CImageFilter* filter)
 {
     m_filters.Remove(filter);
     delete filter;
+
+    if(m_filters.IsEmpty())
+    {
+        m_img->ClearFilters();
+        UpdateRenderers();
+
+        m_unappliedFilters = false;
+    }
+    else
+    {
+        m_unappliedFilters = true;
+    }
+}
+
+void CImageModel::MoveFilter(int fromIndex, int toIndex)
+{
+    m_filters.Move(fromIndex, toIndex);
+    m_unappliedFilters = true;
 }
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 {
     imageFilter->SetImageModel(this);
 	m_filters.Add(imageFilter);
+
+    m_unappliedFilters = true;
 }
 
 void CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
@@ -416,29 +441,13 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 	C3DImage* im = Get3DImage();
 	if (im == nullptr) return false;
 
-	uint8_t* pb = im->GetBytes();
-	if (pb == nullptr) return false;
-
-	int nx = im->Width();
-	int ny = im->Height();
-	int nz = im->Depth();
-
-	int nsize = nx * ny * nz;
-	if (nsize <= 0) return false;
-
-	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
-	if (!file.is_open()) return false;
-	file.write(reinterpret_cast<char*>(pb), nsize);
-	file.close();
-
-	return true;
+	return im->ExportRAW(filename);
 }
 
-#ifdef HAS_ITK
 bool CImageModel::ExportSITKImage(const std::string& filename)
 {
-    return WriteSITKImage(Get3DImage(), filename);
+    C3DImage* im = Get3DImage();
+	if (im == nullptr) return false;
+
+	return im->ExportSITK(filename);
 }
-#else
-bool CImageModel::ExportSITKImage(const std::string& filename) { return false; }
-#endif

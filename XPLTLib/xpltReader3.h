@@ -458,7 +458,7 @@ protected:
 	bool ReadElemData_MULT(Domain& d, Post::FEMeshData& s, int ntype);
 
 	bool ReadFaceData_NODE(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
-	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype, int arrSize);
 	bool ReadFaceData_MULT(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 
 	bool ReadEdgeData_NODE(Post::FEPostMesh& m, Edge& e, Post::FEMeshData& data, int ntype);

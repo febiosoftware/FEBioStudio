@@ -916,6 +916,15 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 	ImportFiles(QStringList(fileName));
 }
 
+void CMainWindow::on_recentImages_triggered(QAction* action)
+{
+	QString fileName = action->text();
+	if (!ImportImage(fileName))
+	{
+		QMessageBox::critical(this, "Import image", QString("Failed to import image:\n%1").arg(fileName));
+	}
+}
+
 //-----------------------------------------------------------------------------
 void CMainWindow::SavePostDoc()
 {
@@ -1530,6 +1539,50 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	}
 }
 
+bool CMainWindow::ImportImage(const QString& fileName)
+{
+	QFileInfo fi(fileName);
+	QString ext = fi.suffix();
+	if ((ext.compare("tiff", Qt::CaseInsensitive)==0) || (ext.compare("tif", Qt::CaseInsensitive)==0))
+	{
+		CImageModel* imageModel = new CImageModel(nullptr);
+		imageModel->SetImageSource(new CTiffImageSource(imageModel, fileName.toStdString()));
+		if (!ImportImage(imageModel))
+		{
+			delete imageModel;
+			return false;
+		}
+		else ui->addToRecentImageFiles(fileName);
+		return true;
+	}
+	else if (ext.compare("raw", Qt::CaseInsensitive)==0)
+	{
+		CDlgRAWImport dlg(this);
+		if (dlg.exec())
+		{
+			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+
+			CImageModel* imageModel = new CImageModel(nullptr);
+			imageModel->SetImageSource(new CRawImageSource(imageModel, fileName.toStdString(), dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
+
+			if (!ImportImage(imageModel))
+			{
+				delete imageModel;
+			}
+			else ui->addToRecentImageFiles(fileName);
+		}
+	}
+	else if ((ext.compare("nrrd", Qt::CaseInsensitive) == 0) || (ext.compare("nhdr", Qt::CaseInsensitive) == 0))
+	{
+		return ProcessITKImage(fileName, CITKImageSource::NRRD);
+	}
+	else if ((ext.compare("dcm", Qt::CaseInsensitive) == 0) || (ext.compare("dicom", Qt::CaseInsensitive) == 0))
+	{
+		return ProcessITKImage(fileName, CITKImageSource::DICOM);
+	}
+	return false;
+}
+
 void CMainWindow::on_actionImportRawImage_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
@@ -1565,6 +1618,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
                 {
                     delete imageModel;
                 }
+				else ui->addToRecentImageFiles(filename);
             }
         }
 	}
@@ -1622,6 +1676,8 @@ void CMainWindow::on_actionImportTiffImage_triggered()
             {
                 delete imageModel;
             }
+			else ui->addToRecentImageFiles(filename);
+
         }
 	}
 }

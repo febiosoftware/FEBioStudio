@@ -31,11 +31,7 @@ class FEShellMesher : public FEMesher
 {
 public:
 	FEShellMesher();
-	FEShellMesher(GObject* po);
 
 	// build the mesh
-	FSMesh*	BuildMesh() override;
-
-private:
-	GObject*	m_po;
+	FSMesh* BuildMesh(GObject* po) override;
 };
