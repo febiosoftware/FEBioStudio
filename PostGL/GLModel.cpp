@@ -2243,8 +2243,7 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	Post::FEPostModel* fem = GetFSModel();
 	if ((fem->PointObjects() == 0) && (fem->LineObjects() == 0)) return;
 
-	double scale = 0.05*(double)rc.m_cam->GetTargetDistance();
-	double R = 0.5*scale;
+	double R = 0.05*(double)rc.m_cam->GetTargetDistance();
 
 	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -2277,7 +2276,7 @@ void CGLModel::RenderObjects(CGLContext& rc)
 			case 5: if (renderRJ) glx::renderRevoluteJoint(size); break;
 			case 6: if (renderRJ) glx::renderCylindricalJoint(size); break;
 			case 7: if (renderRJ) glx::renderPlanarJoint(size); break;
-			case 8: if (renderRJ) glx::renderHelicalAxis(size); break;
+			case 8: if (renderRB) glx::renderHelicalAxis(size); break;
 			default:
 				if (renderRB) glx::renderAxis(size);
 			}

@@ -46,7 +46,7 @@ FEPostModel* FEPostModel::m_pThis = 0;
 FEPostModel::PlotObject::PlotObject() 
 { 
 	AddColorParam(GLColor::White(), "Color");
-	AddDoubleParam(1, "Scale")->SetFloatRange(0, 100);
+	AddDoubleParam(1, "Scale")->SetFloatRange(0, 10, 0.1);
 	m_tag = 0; m_id = -1; 
 }
 
