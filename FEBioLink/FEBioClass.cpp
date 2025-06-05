@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <FEBioMix/FEBiphasicAnalysis.h>
 #include <FEBioMix/FEBiphasicSoluteAnalysis.h>
 #include <FEBioMix/FEMultiphasicAnalysis.h>
+#include <FEBioMix/FESlidingInterfaceBiphasic.h>
 #include <FEBioMech/FEContactInterface.h>
 #include <FEBioMech/FESlidingElasticInterface.h>
 #include <FEBioMech/FEFacet2FacetSliding.h>
@@ -188,6 +189,7 @@ namespace febio {
 		addDefaultCreateHandler<FENewtonSolver>([](FENewtonSolver* pc) { pc->m_maxref = 25; });
 		addDefaultCreateHandler<FETimeStepController>([](FETimeStepController* pc) { pc->m_iteopt = 15; });
 		addDefaultCreateHandler<FEBiphasicAnalysis>([](FEBiphasicAnalysis* pc) { pc->m_nanalysis = FEBiphasicAnalysis::TRANSIENT; });
+		addDefaultCreateHandler<FESlidingInterfaceBiphasic>([](FESlidingInterfaceBiphasic* pc) { pc->m_bautopen = true; });
 
 		// biphasic-solute module handlers
 		fecore.SetActiveModule("solute");
