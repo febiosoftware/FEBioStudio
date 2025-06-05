@@ -442,6 +442,12 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 
 	// update plot variables
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+
+	CPlotDataSettings::PlotFormat fmt = CPlotDataSettings::PLOT_FEBIO;
+	if      (m_febio->m_plotFormat == "febio") fmt = CPlotDataSettings::PLOT_FEBIO;
+	else if (m_febio->m_plotFormat == "vtk"  ) fmt = CPlotDataSettings::PLOT_VTK;
+	plt.SetPlotFormat(fmt);
+
 	GModel& mdl = fem.GetModel();
 	for (int i=0; i<m_febio->PlotVariables(); ++i)
 	{

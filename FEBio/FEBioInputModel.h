@@ -584,6 +584,7 @@ public:
 
 public:
 	bool	m_shellNodalNormals;
+	string	m_plotFormat;
 
 private:
 	FSModel&					m_fem;
