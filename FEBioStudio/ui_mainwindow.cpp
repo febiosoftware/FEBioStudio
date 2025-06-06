@@ -247,6 +247,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionAddProbe = addAction("Point Probe", "actionAddProbe", "probe");
 	QAction* actionAddCurveProbe = addAction("Curve Probe", "actionAddCurveProbe");
 	QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
+	QAction* actionHelicalAxis = addAction("Helical Axis", "actionHelicalAxis", "helix");
 	QAction* actionMusclePath = addAction("Muscle Path", "actionMusclePath", "musclepath");
 	QAction* actionPlotGroup = addAction("Plot Group", "actionPlotGroup", "folder");
 	QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
@@ -593,6 +594,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuPost->addAction(actionAddProbe);
 	menuPost->addAction(actionAddCurveProbe);
 	menuPost->addAction(actionAddRuler);
+	menuPost->addAction(actionHelicalAxis);
 	menuPost->addAction(actionMusclePath);
 	menuPost->addAction(actionPlotGroup);
 	menuPost->addSeparator();

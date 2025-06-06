@@ -447,6 +447,7 @@ public slots:
 	void on_actionAddProbe_triggered();
 	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
+	void on_actionHelicalAxis_triggered();
 	void on_actionMusclePath_triggered();
 	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();

@@ -199,5 +199,6 @@
         <file>icons/pickcolor.png</file>
         <file>icons/explode.png</file>
         <file>icons/scroll_down.png</file>
+        <file>icons/helix.png</file>
 	</qresource>
 </RCC>

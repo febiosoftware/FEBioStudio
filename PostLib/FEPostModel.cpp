@@ -65,6 +65,16 @@ double FEPostModel::PlotObject::Scale() const
 	return GetFloatValue(1);
 }
 
+int FEPostModel::PlotObject::FindObjectDataIndex(const std::string& name) const
+{
+	for (int i=0; i<m_data.size(); ++i)
+	{
+		auto p = m_data[i];
+		if (p->GetName() == name) return i;
+	}
+	return -1;
+}
+
 //=============================================================================
 //								F E P O S T M O D E L
 //=============================================================================
