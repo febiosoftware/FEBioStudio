@@ -3448,7 +3448,14 @@ void FEBioExport4::WriteOutputSection()
 	{
 		XMLElement p;
 		p.name("plotfile");
-		p.add_attribute("type", "febio");
+
+		const char* szfmt = "febio";
+		switch (plt.GetPlotFormat())
+		{
+		case CPlotDataSettings::PLOT_FEBIO: szfmt = "febio"; break;
+		case CPlotDataSettings::PLOT_VTK  : szfmt = "vtk"; break;
+		}
+		p.add_attribute("type", szfmt);
 
 		// count the nr of active plot variables
 		int na = 0;

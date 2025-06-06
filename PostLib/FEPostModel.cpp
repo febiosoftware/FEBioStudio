@@ -47,7 +47,7 @@ FEPostModel* FEPostModel::m_pThis = 0;
 FEPostModel::PlotObject::PlotObject() 
 { 
 	AddColorParam(GLColor::White(), "Color");
-	AddDoubleParam(1, "Scale")->SetFloatRange(0, 100);
+	AddDoubleParam(1, "Scale")->SetFloatRange(0, 10, 0.1);
 	m_tag = 0; m_id = -1; 
 }
 
@@ -64,6 +64,16 @@ void FEPostModel::PlotObject::SetColor(const GLColor& c)
 double FEPostModel::PlotObject::Scale() const
 {
 	return GetFloatValue(1);
+}
+
+int FEPostModel::PlotObject::FindObjectDataIndex(const std::string& name) const
+{
+	for (int i=0; i<m_data.size(); ++i)
+	{
+		auto p = m_data[i];
+		if (p->GetName() == name) return i;
+	}
+	return -1;
 }
 
 //=============================================================================

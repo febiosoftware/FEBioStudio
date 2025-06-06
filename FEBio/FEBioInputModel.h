@@ -584,7 +584,8 @@ public:
 	GPartList* FindNamedPartList(const std::string& name);
 
 public:
-	bool	m_shellNodalNormals;
+	bool		m_shellNodalNormals;
+	std::string	m_plotFormat;
 
 private:
 	FSModel&					m_fem;

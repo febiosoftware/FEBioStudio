@@ -75,6 +75,8 @@ public:
 
 		double Scale() const;
 
+		int FindObjectDataIndex(const std::string& name) const;
+
 	public:
 		int				m_id;
 		int				m_tag;

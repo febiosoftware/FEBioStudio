@@ -181,6 +181,7 @@ public:
 	QAction* actionParticleFlowPlot;
 	QAction* actionVolumeFlowPlot;
 	QAction* actionVectorGlyph;
+	QAction* actionHelicalAxis;
 
 	QAction* actionImageSlicer;
 	QAction* actionVolumeRender;

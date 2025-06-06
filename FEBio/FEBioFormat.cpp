@@ -2363,8 +2363,20 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 {
 	FEBioInputModel &fem = GetFEBioModel();
 
+	fem.m_plotFormat = "febio";
+
 	XMLAtt* pat = tag.AttributePtr("type");
-	if ((pat == 0) || ((*pat != "febio") && (*pat != "febio2"))) { ParseUnknownAttribute(tag, "type"); return true; }
+	if (pat)
+	{
+		string fmt = pat->m_val;
+		if ((fmt != "febio") && (fmt != "vtk"))
+		{
+			AddLogEntry("Unknown value for attribute plotfile.type");
+			fmt = "febio";
+		}
+		fem.m_plotFormat = pat->m_val;
+	}
+
 	if (tag.isleaf())
 	{
 		// add the default ones

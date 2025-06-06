@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
+#include <PostGL/GLPlotHelicalAxis.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
@@ -779,6 +780,7 @@ void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
 	else if (dynamic_cast<Post::CGLPointPlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
 	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
 	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
+	else if (dynamic_cast<Post::GLPlotHelicalAxis  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/helix.png")));
 }
 
 void CPostModelPanel::BuildModelTree()
@@ -880,6 +882,7 @@ void CPostModelPanel::BuildModelTree()
 				Post::CGLPlot& plot = *pl[n];
 				CModelTreeItem::Flags flags;
 				if (plot.IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+
 				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot), flags);
 				setPlotIcon(&plot, pi1);
 
