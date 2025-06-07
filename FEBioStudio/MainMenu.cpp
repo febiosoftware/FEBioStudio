@@ -185,6 +185,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionVolumeFlowPlot = createAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
 	actionVectorGlyph = createAction("Vector Glyph", "actionVectorGlyph");
 	actionHelicalAxis = createAction("Helical Axis", "actionHelicalAxis", "helix");
+	actionStaticMesh = createAction("Static Mesh", "actionStaticMesh", "mesh");
 
 	actionImageSlicer = createAction("Image Slicer", "actionImageSlicer", "imageslice");
 	actionVolumeRender = createAction("Volume Render", "actionVolumeRender", "volrender");
@@ -546,6 +547,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuPost->addAction(actionMusclePath);
 	menuPost->addAction(actionVectorGlyph);
 	menuPost->addAction(actionHelicalAxis);
+	menuPost->addAction(actionStaticMesh);
 	menuPost->addAction(actionPlotGroup);
 	menuPost->addSeparator();
 	menuPost->addAction(actionImageSlicer);

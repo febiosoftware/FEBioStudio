@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
 #include <PostGL/GLPlotGroup.h>
+#include <PostGL/GLPlotStaticMesh.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -64,6 +65,8 @@ SOFTWARE.*/
 #include "DlgWarpImage.h"
 #include <ImageLib/ImageFilter.h>
 #include <sstream>
+#include <QFileDialog>
+#include <MeshIO/STLimport.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -434,6 +437,39 @@ void CMainWindow::on_actionHelicalAxis_triggered()
 	glm->AddPlot(plot);
 	UpdatePostPanel(true, plot);
 	RedrawGL();
+}
+
+void CMainWindow::on_actionStaticMesh_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return;
+
+	QString filter = "STL Files (*.stl)";
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", filter);
+	if (fileNames.isEmpty() == false)
+	{
+		for (int i = 0; i < fileNames.size(); ++i)
+		{
+			QString fileName = fileNames[i];
+
+			string sfile = fileName.toStdString();
+
+			FSProject dummy;
+			STLimport stl(dummy);
+			if (stl.Load(sfile.c_str()))
+			{
+				GObject* po = dummy.GetFSModel().GetModel().Object(0);
+				GLMesh* pm = po->GetRenderMesh();
+
+				Post::GLPlotStaticMesh* plt = new Post::GLPlotStaticMesh;
+				plt->SetMesh(*pm);
+
+				glm->AddPlot(plt);
+				UpdatePostPanel(true, plt);
+			}
+		}
+		RedrawGL();
+	}
 }
 
 void CMainWindow::on_actionMusclePath_triggered()

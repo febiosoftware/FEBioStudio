@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <PostGL/GLPlotHelicalAxis.h>
+#include <PostGL/GLPlotStaticMesh.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
@@ -781,6 +782,7 @@ void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
 	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
 	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
 	else if (dynamic_cast<Post::GLPlotHelicalAxis  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/helix.png")));
+	else if (dynamic_cast<Post::GLPlotStaticMesh   *>(plot)) it->setIcon(0, QIcon(QString(":/icons/mesh.png")));
 }
 
 void CPostModelPanel::BuildModelTree()
