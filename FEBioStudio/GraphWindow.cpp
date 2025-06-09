@@ -2364,7 +2364,7 @@ void CModelGraphWindow::addSelectedNodes()
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
 				CPlotData* plot = nextData();
-				plot->setLabel(QString("N%1").arg(i + 1));
+				plot->setLabel(QString("N%1").arg(node.GetID()));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
 		}
@@ -2383,7 +2383,7 @@ void CModelGraphWindow::addSelectedNodes()
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
 				CPlotData* plot = nextData();
-				plot->setLabel(QString("N%1").arg(i + 1));
+				plot->setLabel(QString("N%1").arg(node.GetID()));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
 		}
@@ -2402,7 +2402,7 @@ void CModelGraphWindow::addSelectedNodes()
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
 				CPlotData* plot = nextData();
-				plot->setLabel(QString("N%1").arg(i + 1));
+				plot->setLabel(QString("N%1").arg(node.GetID()));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
 		}
