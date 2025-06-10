@@ -68,7 +68,7 @@ public:
 
 		QAction* actionNew    = new QAction("New" , wnd); actionNew ->setObjectName("actionNew" ); actionNew ->setIcon(CIconProvider::GetIcon("new"));
 		QAction* actionOpen   = new QAction("Open ...", wnd); actionOpen->setObjectName("actionOpen"); actionOpen->setIcon(CIconProvider::GetIcon("open"));
-		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save"));
+		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save")); actionSave->setShortcut(Qt::Key_S | Qt::ControlModifier);
 		QAction* actionSaveAs = new QAction("Save as ...", wnd); actionSaveAs->setObjectName("actionSaveAs");
 		QAction* actionClose  = new QAction("Close", wnd); actionClose->setObjectName("actionClose");
 		QAction* actionRun    = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
