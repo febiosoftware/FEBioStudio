@@ -77,7 +77,9 @@ void init_FBSCore(py::module& m)
 		.def("__repr__",
 			[](const quatd& q) {
 				return "(" + std::to_string(q.x) + ", " + std::to_string(q.y) + ", " + std::to_string(q.z) + ", " + std::to_string(q.w) + ")";
-			});
+			})
+		.def("Inverse", &quatd::Inverse)
+		;
 
 	py::class_<Transform>(core, "Transform")
 		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate))
