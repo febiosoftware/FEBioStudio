@@ -511,8 +511,8 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
 				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
 			}
 			else
 			{

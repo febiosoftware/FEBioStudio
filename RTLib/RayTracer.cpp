@@ -550,7 +550,7 @@ void RayTracer::render()
 	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
 	double fw = fh * ar;
 
-	int samples = GetIntValue(MULTI_SAMPLE);
+	int samples = GetIntValue(MULTI_SAMPLE) + 1;
 	if (samples < 1) samples = 1;
 	if (samples > 4) samples = 4;
 
