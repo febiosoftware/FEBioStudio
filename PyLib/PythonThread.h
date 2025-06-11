@@ -43,6 +43,8 @@ public:
 	void runFile(const QString& fileName);
 	void runScript(const QString& script);
 
+	void interrupt();
+
 private:
 	bool runScript();
 

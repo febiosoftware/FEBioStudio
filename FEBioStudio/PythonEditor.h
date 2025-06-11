@@ -47,6 +47,7 @@ private slots:
 	void on_actionSaveAs_triggered();
 	void on_actionClose_triggered();
 	void on_actionRun_triggered();
+	void on_actionStop_triggered();
 	void on_edit_textChanged();
 	void on_pythread_threadFinished(bool b);
 

@@ -177,3 +177,13 @@ bool CPyThread::runScript()
 
 	return true;
 }
+
+void CPyThread::interrupt()
+{
+#ifdef HAS_PYTHON
+	// Acquire GIL and inject interrupt
+	PyGILState_STATE gstate = PyGILState_Ensure();
+	PyErr_SetInterrupt();  // Simulate Ctrl+C
+	PyGILState_Release(gstate);
+#endif
+}

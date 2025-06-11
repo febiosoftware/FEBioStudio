@@ -166,6 +166,9 @@ void CPythonEditor::on_actionRun_triggered()
 
 		QString script = ui->edit->toPlainText();
 		ui->pythread->runScript(script);
+
+		ui->actionRun->setEnabled(false);
+		ui->actionStop->setEnabled(true);
 	}
 	else
 	{
@@ -173,10 +176,21 @@ void CPythonEditor::on_actionRun_triggered()
 	}
 }
 
+void CPythonEditor::on_actionStop_triggered()
+{
+	if (ui->pythread) ui->pythread->interrupt();
+}
+
 void CPythonEditor::on_pythread_threadFinished(bool b)
 {
 	ui->pythread = nullptr;
-	mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
+	if (b)
+		mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
+	else
+		mainWnd->AddPythonLogEntry(QString(">>> python interrupted!\n"));
+
+	ui->actionRun->setEnabled(true);
+	ui->actionStop->setEnabled(false);
 }
 
 void CPythonEditor::on_edit_textChanged()
