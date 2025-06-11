@@ -84,6 +84,7 @@ void init_FBSCore(py::module& m)
 	py::class_<Transform>(core, "Transform")
 		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate))
 		.def("SetPosition", &Transform::SetPosition)
+		.def("SetEulerAngles", static_cast<void (Transform::*)(double, double, double)> (&Transform::SetRotation))
 		;
 
 	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject")

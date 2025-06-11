@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <FEBioStudio/ModelDocument.h>
+#include <FEBioStudio/MainWindow.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
@@ -119,6 +120,33 @@ bool ExportVTK(std::string& fileName)
 	return vtk.Write(fileName.c_str());
 }
 
+GObject* ImportGeometryFromFile(FSModel& fem, std::string& fileName)
+{
+	if (fileName.empty()) return nullptr;
+
+	CModelDocument* doc = GetActiveDocument();
+	if (doc == nullptr) return nullptr;
+
+	CMainWindow* wnd = doc->GetMainWindow();
+	if (wnd == nullptr) return nullptr;
+
+	FileReader* fileReader = wnd->CreateFileReader(QString::fromStdString(fileName));
+	if (fileReader == nullptr) return nullptr;
+
+	GObject* po = nullptr;
+	if (fileReader->Load(fileName.c_str()))
+	{
+		GModel& mdl = fem.GetModel();
+		if (mdl.Objects())
+		{
+			po = mdl.Object(mdl.Objects() - 1);
+		}
+	}
+
+	delete fileReader;
+	return po;
+}
+
 FSModel* GetActiveModel()
 {
 	CModelDocument* doc = GetActiveDocument();
@@ -134,11 +162,13 @@ void init_FBSModel(py::module& m)
 	mdl.def("GetActiveObject", &PyRunContext::GetActiveObject);
 
 	py::class_<FSModel, std::unique_ptr<FSModel, py::nodelete>>(mdl, "Model")
-        .def("Clear", &FSModel::Clear)
-        .def("Purge", &FSModel::Purge)
+		.def("Clear", &FSModel::Clear)
+		.def("Purge", &FSModel::Purge)
 
 		.def("ExportFEB", &ExportFEB)
 		.def("ExportVTK", &ExportVTK)
+
+		.def("ImportGeometryFromFile", &ImportGeometryFromFile)
 
 		// functions for adding geometry
 		.def("AddBox", [](FSModel& self, double W, double H, double D) {

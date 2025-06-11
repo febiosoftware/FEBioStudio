@@ -187,10 +187,12 @@ void CPythonEditor::on_pythread_threadFinished(bool b)
 	if (b)
 		mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
 	else
-		mainWnd->AddPythonLogEntry(QString(">>> python interrupted!\n"));
+		mainWnd->AddPythonLogEntry(QString(">>> python failed!\n"));
 
 	ui->actionRun->setEnabled(true);
 	ui->actionStop->setEnabled(false);
+
+	mainWnd->Update(this, true);
 }
 
 void CPythonEditor::on_edit_textChanged()
