@@ -1374,6 +1374,10 @@ void CPostDataPanel::on_ExportButton_clicked()
 					{
 						QMessageBox::critical(this, "Export Data", "Export Failed!");
 					}
+					else
+					{
+						QMessageBox::information(this, "Export Data", QString("Data successfully exported to:\n%1").arg(file));
+					}
 				}
 			}
 		}
