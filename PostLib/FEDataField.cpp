@@ -476,7 +476,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 		if ((selOnly == false) || node.IsSelected())
 		{
 			// write the node ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", node.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)
@@ -745,7 +745,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 			if ((selOnly == false) || el.IsSelected())
 			{
 				// write the element ID
-				fprintf(fp, "%d,", i + 1);
+				fprintf(fp, "%d,", el.GetID());
 				int ne = el.Nodes();
 				for (int j = 0; j < ne; ++j)
 				{
@@ -766,7 +766,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 		if ((selOnly == false) || el.IsSelected())
 		{
 			// write the element ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", el.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)
