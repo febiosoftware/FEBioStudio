@@ -30,7 +30,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFileDialog>
 #include "IconProvider.h"
-#include <PyLib/PythonThread.h>
 #include <QMenuBar>
 #include <QMenu>
 
@@ -38,7 +37,6 @@ class Ui::CPythonEditor
 {
 public:
 	CTextEditor* edit = nullptr;
-	CPyThread* pythread = nullptr;
 	bool isModified = false;
 	QAction* actionRun = nullptr;
 	QAction* actionStop = nullptr;

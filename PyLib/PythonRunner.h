@@ -23,13 +23,41 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QtCore/QObject>
+#include <FEBioStudio/PropertyList.h>
 
-#include <string>
+// This singleton class is used to interact with Python.
+// This class is stored in a separate thread so the best way to interact with it is through signal/slot
+// The only exception is calling the interrupt member, which is supposed to interrupt a long python call.
+class CPythonRunner : public QObject
+{
+	Q_OBJECT
 
-void PySetProgressText(const char* txt);
-void PySetProgress(int prog);
-void PySetProgress(float prog);
+public:
+	CPythonRunner(QObject* parent = nullptr);
+	~CPythonRunner();
 
-//std::string PyGetString(const char* txt);
-//int PyGetInt(const char* txt);
-//int PyGetSelection(const char* txt);
+	bool isBusy() const;
+
+	void interrupt();
+
+	// Use this method to get a pointer to the runner. 
+	static CPythonRunner* GetInstance();
+
+public slots:
+	void runFile(QString fileName);
+	void runTool(CCachedPropertyList* tool);
+	void runScript(QString script);
+
+signals:
+	void runFileFinished(bool);
+	void runToolFinished(bool);
+	void runScriptFinished(bool);
+
+private:
+	bool m_busy = false;
+	bool m_pythonInitialized = false;
+
+	static CPythonRunner* m_This;
+};

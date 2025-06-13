@@ -25,8 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "PythonTool.h"
 #include <FEBioStudio/PropertyListForm.h>
+#include <FEBioStudio/MainWindow.h>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QPushButton>
+#include "PythonRunner.h"
+#include "PyRunContext.h"
 
 CPythonTool::CPythonTool(CMainWindow* wnd, const QString& name) : CAbstractTool(wnd, name)
 {
@@ -78,7 +82,23 @@ QWidget* CPythonTool::createUi()
 	form = new CPropertyListForm;
 	form->setPropertyList(m_props);
 	l->addWidget(form);
+	QPushButton* pb = new QPushButton("Run");
+	l->addWidget(pb);
 	l->addStretch();
 	w->setLayout(l);
+
+	CPythonRunner* pyrun = CPythonRunner::GetInstance();
+
+	connect(pb, &QPushButton::clicked, this, &CPythonTool::onRun);
+	connect(this, &CPythonTool::runTool, pyrun, &CPythonRunner::runTool);
+
 	return w;
+}
+
+void CPythonTool::onRun()
+{
+	if (m_props == nullptr) return;
+	PyRunContext::Init();
+	GetMainWindow()->AddPythonLogEntry(QString(">>> Running tool %1 ...\n").arg(name()));
+	emit runTool(m_props);
 }

@@ -43,6 +43,8 @@ void init_FBSCore(py::module& m)
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
 	py::class_<GLColor>(core, "color")
+		.def(py::init<>())
+		.def(py::init<uint8_t, uint8_t, uint8_t>())
 		.def_readwrite("r", &GLColor::r)
 		.def_readwrite("g", &GLColor::g)
 		.def_readwrite("b", &GLColor::b)

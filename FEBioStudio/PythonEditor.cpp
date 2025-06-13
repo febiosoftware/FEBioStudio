@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "LogPanel.h"
 #include "ui_pythoneditor.h"
+#include <PyLib/PythonRunner.h>
+#include <PyLib/PyRunContext.h>
 
 CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd), ui(new Ui::CPythonEditor)
 {
@@ -34,6 +36,11 @@ CPythonEditor::CPythonEditor(CMainWindow* wnd) : QMainWindow(wnd), mainWnd(wnd),
 	setMinimumSize(800, 600);
 	ui->setup(this, wnd->usingDarkTheme());
 	ui->edit->appendPlainText("from fbs import *\n");
+
+	// Hook this up to the python runner (remember, this lives on a separate thread)
+	CPythonRunner* pyrun = CPythonRunner::GetInstance(); assert(pyrun);
+	connect(this, &CPythonEditor::runScript, pyrun, &CPythonRunner::runScript);
+	connect(pyrun, &CPythonRunner::runScriptFinished, this, &CPythonEditor::on_python_finished);
 }
 
 void CPythonEditor::on_actionNew_triggered()
@@ -156,43 +163,41 @@ void CPythonEditor::on_actionClose_triggered()
 
 void CPythonEditor::on_actionRun_triggered()
 {
-	if (ui->pythread == nullptr)
+	CPythonRunner* pyrun = CPythonRunner::GetInstance();
+	if (pyrun->isBusy())
 	{
-		mainWnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
-		mainWnd->AddPythonLogEntry(QString(">>> running python ...\n"));
-		CDocument* doc = mainWnd->GetDocument();
-		ui->pythread = new CPyThread(doc, nullptr);
-		connect(ui->pythread, &CPyThread::threadFinished, this, &CPythonEditor::on_pythread_threadFinished);
-
-		QString script = ui->edit->toPlainText();
-		ui->pythread->runScript(script);
-
-		ui->actionRun->setEnabled(false);
-		ui->actionStop->setEnabled(true);
+		QMessageBox::critical(this, "Python", "A python script is still running. Please wait.");
+		return;
 	}
-	else
-	{
-		QMessageBox::information(this, "Run Python", "Python is already running. Please wait until it is finished.");
-	}
+
+	mainWnd->GetLogPanel()->ShowLog(CLogPanel::PYTHON_LOG);
+	mainWnd->AddPythonLogEntry(QString(">>> running python ...\n"));
+		
+	CDocument* doc = mainWnd->GetDocument();
+	PyRunContext::SetDocument(doc);
+	
+	ui->actionRun->setEnabled(false);
+	ui->actionStop->setEnabled(true);
+
+	QString script = ui->edit->toPlainText();
+	emit runScript(script);
 }
 
 void CPythonEditor::on_actionStop_triggered()
 {
-	if (ui->pythread) ui->pythread->interrupt();
+	CPythonRunner* pyrun = CPythonRunner::GetInstance();
+	pyrun->interrupt();
 }
 
-void CPythonEditor::on_pythread_threadFinished(bool b)
+void CPythonEditor::on_python_finished(bool b)
 {
-	ui->pythread = nullptr;
-	if (b)
-		mainWnd->AddPythonLogEntry(QString(">>> python completed!\n"));
-	else
-		mainWnd->AddPythonLogEntry(QString(">>> python failed!\n"));
+	if (b == false) QMessageBox::critical(this, "Python", "An error occurred while running the Python script.");
 
 	ui->actionRun->setEnabled(true);
 	ui->actionStop->setEnabled(false);
 
 	mainWnd->Update(this, true);
+	mainWnd->AddPythonLogEntry(QString(">>> python stopped\n"));
 }
 
 void CPythonEditor::on_edit_textChanged()

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FEBioStudio/WindowPanel.h>
+#include <FEBioStudio/PropertyList.h>
 
 namespace Ui {
 	class CPythonToolsPanel;
@@ -42,22 +43,22 @@ public:
 	void Update(bool breset = true) override;
 
 private:
-	void startThread();
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
 
-	void LoadToolFromFile(const QString& filename);
-
 public slots:
-	void setProgressText(const QString& txt);
-	void setProgress(int prog);
+	void addPythonTool(QString toolName, CCachedPropertyList* props, QString info);
 
 private slots:
-    void on_pythonThread_threadFinished(bool b);
+	void on_pyRunner_runFileFinished(bool b);
+	void on_pyRunner_runToolFinished(bool b);
 	void on_buttons_idClicked(int id);
 	void on_importScript_triggered();
 	void on_refresh_triggered();
-	void on_run_clicked();
+
+signals:
+	void runFile(QString fileName);
+	void runTool(CCachedPropertyList* tool);
 
 private:
 	Ui::CPythonToolsPanel*	ui;
