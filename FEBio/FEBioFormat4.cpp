@@ -1186,26 +1186,30 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 			FSMesh* feMesh = nodeSet->GetMesh();
 
 			FSNodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+			const int items = nodeData->Size();
 
 			++tag;
 			do
 			{
 				int lid = -1;
 				tag.AttributePtr("lid")->value(lid);
+				int index = lid - 1;
+				if ((index < 0) || (index >= items)) throw XMLReader::InvalidAttributeValue(tag, "lid");
+
 				switch (dataType)
 				{
 				case DATA_SCALAR:
 				{
 					double val = 0.0;
 					tag.value(val);
-					nodeData->setScalar(lid - 1, val);
+					nodeData->setScalar(index, val);
 				}
 				break;
 				case DATA_VEC3:
 				{
 					vec3d val;
 					tag.value(val);
-					nodeData->setVec3d(lid - 1, val);
+					nodeData->setVec3d(index, val);
 				}
 				break;
 				default:
