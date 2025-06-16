@@ -55,7 +55,6 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ImageSettingsPanel.h"
 #include "2DImageTimeView.h"
-#include "CommandWindow.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include <FEBioApp/FEBioAppDocument.h>
@@ -299,7 +298,6 @@ public:
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
 	CFEBioMonitorView* febioMonitorView;
-	::CCommandWindow* commandWnd;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

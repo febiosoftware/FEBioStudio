@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
-#include "CommandWindow.h"
 #include <GLLib/GLScene.h>
 
 //------------------------------------------------------------------------------------------------------------
@@ -196,9 +195,6 @@ void CCreatePanel::on_create_clicked()
 				scene->ZoomSelection(false);
 				wnd->RedrawGL();
 			}
-
-			CCommandLine cmd("create");
-			CCommandLogger::Log(cmd << po->GetTypeString() << Stringify(*po));
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{

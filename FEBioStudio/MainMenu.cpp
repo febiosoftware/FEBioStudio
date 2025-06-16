@@ -67,7 +67,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionUndo = createAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 	actionRedo = createAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
 	QAction* actionChangeLog = createAction("Change log ...", "actionChangeLog");
-	QAction* actionShowCmdWnd = createAction("Command Window", "actionShowCmdWnd"); actionShowCmdWnd->setShortcut(Qt::Key_F1);
 	QAction* actionInvertSelection = createAction("Invert Selection", "actionInvertSelection"); actionInvertSelection->setShortcut(Qt::AltModifier | Qt::Key_I);
 	QAction* actionClearSelection = createAction("Clear Selection", "actionClearSelection");
 	QAction* actionDeleteSelection = createAction("Delete Selection", "actionDeleteSelection"); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
@@ -429,7 +428,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuEdit->addAction(actionUndo);
 	menuEdit->addAction(actionRedo);
 	menuEdit->addAction(actionChangeLog);
-	menuEdit->addAction(actionShowCmdWnd);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionInvertSelection);
 	menuEdit->addAction(actionClearSelection);

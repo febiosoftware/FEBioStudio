@@ -56,7 +56,6 @@ SOFTWARE.*/
 #include "Commands.h"
 #include "Tool.h"
 #include <GLLib/GDecoration.h>
-#include "CommandWindow.h"
 
 class CPrimitiveMesherProps : public CObjectProps
 {
@@ -480,7 +479,6 @@ void CMeshPanel::on_apply_clicked(bool b)
 			report += QString("- Elements = %1\n").arg(mesh->Elements());
 			QMessageBox::information(this, "FEBio Studio", report);
 			w->AddLogEntry(report);
-			CCommandLogger::Log("genmesh");
 		}
 	}
 }

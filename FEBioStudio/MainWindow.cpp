@@ -1019,8 +1019,6 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 				FSDir::setMacro("ProjectDir", ".");
 			}
 			else ui->addToRecentFiles(file.m_fileName);
-
-			CCommandLogger::Log({ "open", file.m_fileName });
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
@@ -2916,11 +2914,6 @@ CDlgPickColor* CMainWindow::GetPickColorDialog()
 {
 	if (IsColorPickerActive()) return ui->pickColorTool;
 	return nullptr;
-}
-
-CCommandWindow* CMainWindow::GetCommandWindow()
-{
-	return ui->commandWnd;
 }
 
 // remove a graph from the list

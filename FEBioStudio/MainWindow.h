@@ -58,7 +58,6 @@ class CDlgPickColor;
 class CFEBioMonitorPanel;
 class CFEBioMonitorView;
 class CModelViewer;
-class CCommandWindow;
 class CLogPanel;
 class CFileProcessor;
 class CMainStatusBar;
@@ -310,8 +309,6 @@ public:
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
 
-	CCommandWindow* GetCommandWindow();
-
 	bool IsColorPickerActive() const;
 
 	CDlgPickColor* GetPickColorDialog();
@@ -454,7 +451,6 @@ public slots:
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
 	void on_actionChangeLog_triggered();
-	void on_actionShowCmdWnd_triggered();
 	void on_actionInvertSelection_triggered();
 	void on_actionClearSelection_triggered();
 	void on_actionDeleteSelection_triggered();

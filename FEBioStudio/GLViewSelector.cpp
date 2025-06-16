@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <MeshLib/FSNodeEdgeList.h>
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
-#include "CommandWindow.h"
 
 //-----------------------------------------------------------------------------
 GLViewSelector::GLViewSelector(CGLView* glview) : m_glv(glview) 
@@ -2730,10 +2729,6 @@ void GLViewSelector::SelectFENodes(int x, int y)
 				else
 				{
 					pcmd = new CCmdSelectFENodes(pm, nodeList, m_bshift);
-
-					// log command
-					QString s = QString("N%1").arg(globalIndex);
-					CCommandLogger::Log({ "selconnect", QString::number(view.m_fconn), s});
 				}
 			}
 		}
@@ -2743,10 +2738,6 @@ void GLViewSelector::SelectFENodes(int x, int y)
 			else
 			{
 				pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
-
-				// log command
-				QString s = QString("N%1").arg(globalIndex);
-				CCommandLogger::Log({ "sel", s });
 
 				// print value of currently selected node
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);

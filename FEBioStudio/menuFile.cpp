@@ -205,13 +205,6 @@ void CMainWindow::on_actionNewModel_triggered()
 			int units = doc->GetUnitSystem();
 			Units::SetUnitSystem(units);
 			AddDocument(doc);
-
-			if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
-			{
-				QString modulename(FEBio::GetModuleName(dlg.GetSelection()));
-				QString documentName = QString::fromStdString(docName);
-				CCommandLogger::Log({ "new", modulename, documentName });
-			}
 		}
 	}
 }
