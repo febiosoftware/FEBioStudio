@@ -48,6 +48,9 @@ SOFTWARE.*/
 #include "MeasureMOITool.h"
 #include "PlaneTool.h"
 #include "PointCongruencyTool.h"
+#include "QuadricFitTool.h"
+#include "ConchoidFitTool.h"
+#include "AreaCalculatorTool.h"
 
 class Ui::CDlgMeasure
 {
@@ -130,6 +133,9 @@ public:
 		m_tools.push_back(new CPointCongruencyTool(m_wnd));
 		m_tools.push_back(new CMeasureCOMTool(m_wnd));
 		m_tools.push_back(new CMeasureMOITool(m_wnd));
+		m_tools.push_back(new CQuadricFitTool(m_wnd));
+		m_tools.push_back(new CConchoidFitTool(m_wnd));
+		m_tools.push_back(new CAreaCalculatorTool(m_wnd));
 	}
 
 	void clearTools()

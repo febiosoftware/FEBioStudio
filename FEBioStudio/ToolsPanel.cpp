@@ -28,8 +28,6 @@ SOFTWARE.*/
 #include "ToolsPanel.h"
 #include "ui_toolspanel.h"
 #include "MainWindow.h"
-#include "ConchoidFitTool.h"
-#include "QuadricFitTool.h"
 #include "ReadCurveTool.h"
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
@@ -69,7 +67,6 @@ void CToolsPanel::Update(bool breset)
 void CToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
-	tools.push_back(new CConchoidFitTool   (wnd));
 	tools.push_back(new CReadCurveTool     (wnd));
 	tools.push_back(new CFoamGeneratorTool (wnd));
 	tools.push_back(new CMaterialMapTool   (wnd));
@@ -77,9 +74,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CEditDataFieldTool (wnd));
 	tools.push_back(new CPlaneCutTool      (wnd));
 	tools.push_back(new CFiberGeneratorTool(wnd));
-    tools.push_back(new CAreaCalculatorTool(wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
-    tools.push_back(new CQuadricFitTool    (wnd));
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CMeshToImageTool   (wnd));
