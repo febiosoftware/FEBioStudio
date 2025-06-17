@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "LinkPropertyEdit.h"
 #include <QDesktopServices>
@@ -33,57 +32,47 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QApplication>
-#include <QUrl>
-#include <FSCore/FSDir.h>
 #include "MainWindow.h"
 
 class Ui::CLinkPropertyEdit
 {
 public:
-	QLineEdit*		m_relativePathEdit;
-	QToolButton*	m_open;
-
 	QString fullPath;
 	QString relativePath;
-	bool internal;
+	bool internal = false;
 
 public:
-	CLinkPropertyEdit(QStringList& paths, bool internal)
-		: internal(internal)
-	{
-		fullPath = paths[0];
-		relativePath = paths[1];
-	}
+	CLinkPropertyEdit() {}
 
 	void setup(QWidget* w)
 	{
-		m_relativePathEdit = new QLineEdit(relativePath);
-		m_relativePathEdit->setDisabled(true);
-		m_relativePathEdit->setToolTip(fullPath);
+		QLineEdit* relativePathEdit = new QLineEdit(relativePath);
+		relativePathEdit->setDisabled(true);
+		relativePathEdit->setToolTip(fullPath);
 
-		m_open = new QToolButton;
-		m_open->setIcon(QIcon(":/icons/open.png"));
+		QToolButton* open = new QToolButton;
+		open->setIcon(QIcon(":/icons/open.png"));
 
-		if(internal) m_open->setToolTip("Open file");
-		else m_open->setToolTip("Open in external editor");
+		if (internal) open->setToolTip("Open file");
+		else open->setToolTip("Open in external editor");
 
 		QHBoxLayout* h = new QHBoxLayout;
-		h->addWidget(m_relativePathEdit);
-		h->addWidget(m_open);
+		h->addWidget(relativePathEdit);
+		h->addWidget(open);
 		h->setSpacing(0);
 		h->setContentsMargins(0,0,0,0);
 		w->setLayout(h);
 
-		QObject::connect(m_open, SIGNAL(clicked(bool)), w, SLOT(buttonPressed()));
+		QObject::connect(open, SIGNAL(clicked(bool)), w, SLOT(buttonPressed()));
 	}
 };
 
-
-//=================================================================================================
-
-CLinkPropertyEdit::CLinkPropertyEdit(QStringList& paths, bool internal, QWidget* parent)
-	: QWidget(parent), ui(new Ui::CLinkPropertyEdit(paths, internal))
+CLinkPropertyEdit::CLinkPropertyEdit(const QString& filepath, const QString& relPath, bool internal, QWidget* parent)
+	: QWidget(parent), ui(new Ui::CLinkPropertyEdit)
 {
+	ui->fullPath = filepath;
+	ui->relativePath = relPath;
+	ui->internal = internal;
 	ui->setup(this);
 }
 
