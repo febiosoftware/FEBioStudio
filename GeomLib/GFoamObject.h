@@ -23,22 +23,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "PropertyList.h"
-#include "Tool.h"
-#include <MeshTools/FoamMesh.h>
+#include "GObject.h"
 
-class GMeshObject;
-
-class CFoamGeneratorTool : public CBasicTool
+class GFoamObject : public GObject
 {
 public:
-	CFoamGeneratorTool(CMainWindow* wnd);
+	enum { WIDTH, HEIGHT, DEPTH };
 
-	bool OnApply();
+public:
+	GFoamObject();
+
+	bool Update(bool b = true) override;
 
 private:
-	FoamGen	m_foam;
-	GMeshObject*	m_pfo;
+	FEMesher* CreateDefaultMesher() override;
+	void Create() override;
+
+private:
+	double	m_w, m_h, m_d;
 };

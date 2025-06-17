@@ -209,5 +209,6 @@
         <file>icons/scroll_down.png</file>
         <file>icons/helix.png</file>
         <file>icons/teapot.png</file>
+        <file>icons/foam.png</file>
 	</qresource>
 </RCC>

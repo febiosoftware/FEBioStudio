@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ToolsPanel.h"
 #include "ui_toolspanel.h"
 #include "MainWindow.h"
-#include "FoamGeneratorTool.h"
 #include "ScalarFieldTool.h"
 #include "SurfaceMeshSizeTool.h"
 #include "EditDataFieldTool.h"
@@ -65,7 +64,6 @@ void CToolsPanel::Update(bool breset)
 void CToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
-	tools.push_back(new CFoamGeneratorTool (wnd));
 	tools.push_back(new CScalarFieldTool   (wnd));
 	tools.push_back(new CEditDataFieldTool (wnd));
 	tools.push_back(new CPlaneCutTool      (wnd));
