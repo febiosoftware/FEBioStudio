@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/FSFace.h>
 #include <MeshLib/FSElement.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshLib/FSCurveMesh.h>
 
 
 #ifdef HAS_PYTHON
@@ -48,21 +49,23 @@ void init_FSMesh(py::module_& m)
 
 	mesh.def("FindAllIntersections", FindAllIntersections);
 
-	py::class_<FSMeshBase, std::unique_ptr<FSMeshBase, py::nodelete>>(mesh, "MeshBase");
+	py::class_<FSLineMesh, std::unique_ptr<FSLineMesh, py::nodelete>>(mesh, "LineMesh")
+		.def("Nodes", &FSLineMesh::Nodes)
+		.def("Node", [](FSLineMesh& self, int i) {return &self.Node(i); })
+
+		.def("Edges", &FSLineMesh::Edges)
+		.def("Edge", [](FSLineMesh& self, int i) {return &self.Edge(i); })
+		;
+
+	py::class_<FSMeshBase, FSLineMesh, std::unique_ptr<FSMeshBase, py::nodelete>>(mesh, "MeshBase")
+		.def("Faces", &FSMesh::Faces)
+		.def("Face", [](FSMeshBase& self, int i) {return &self.Face(i); })
+		;
 
 	py::class_<FSMesh, FSMeshBase, std::unique_ptr<FSMesh, py::nodelete>>(mesh, "Mesh")
 		.def(py::init<>())
         .def("Create", &FSMesh::Create)
         .def("Clear", &FSMesh::Clear)
-
-        .def("Nodes", &FSMesh::Nodes)
-        .def("Node", [](FSMesh& self, int i) {return &self.Node(i);})
-
-        .def("Edges", &FSMesh::Edges)
-        .def("Edge", [](FSMesh& self, int i) {return &self.Edge(i);})
-
-        .def("Faces", &FSMesh::Faces)
-        .def("Face", [](FSMesh& self, int i) {return &self.Face(i);})
 
         .def("Elements", &FSMesh::Elements)
         .def("Element", [](FSMesh& self, int i) {return &self.Element(i); })
@@ -78,6 +81,11 @@ void init_FSMesh(py::module_& m)
 		.def("MeshDataFields", &FSMesh::MeshDataFields)
 		.def("GetMeshDataField", &FSMesh::GetMeshDataField, py::return_value_policy::reference)
         ;
+
+	py::class_<FSCurveMesh, FSLineMesh, std::unique_ptr<FSCurveMesh, py::nodelete>>(mesh, "CurveMesh")
+		.def(py::init<>())
+		.def("CreateFromPoints", &FSCurveMesh::CreateFromPoints)
+		;
 
 	py::class_<FSMeshData, FSObject, std::unique_ptr<FSMeshData, py::nodelete>>(mesh, "MeshData")
 		.def("getVec3d", &FSMeshData::getVec3d)

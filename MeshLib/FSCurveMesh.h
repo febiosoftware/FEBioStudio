@@ -55,6 +55,8 @@ public:
 	// allocate storage for mesh
 	void Create(int nodes, int edges);
 
+	void CreateFromPoints(const std::vector<vec3d>& points, bool isClosed);
+
 	// return the type of the curve
 	CurveType Type() const;
 

@@ -42,6 +42,8 @@ SOFTWARE.*/
 #include "PyRunContext.h"
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GCurveMeshObject.h>
+#include <MeshLib/FSCurveMesh.h>
 
 namespace py = pybind11;
 
@@ -183,6 +185,12 @@ void init_FBSModel(py::module& m)
 
 		.def("AddMeshObject", [](FSModel& self, FSMesh* mesh) {
 				GMeshObject* po = new GMeshObject(mesh);
+				self.GetModel().AddObject(po);
+				return po;
+			}, py::return_value_policy::reference)
+
+		.def("AddCurveMeshObject", [](FSModel& self, FSCurveMesh* mesh) {
+				GObject* po = new GCurveMeshObject(mesh);
 				self.GetModel().AddObject(po);
 				return po;
 			}, py::return_value_policy::reference)
