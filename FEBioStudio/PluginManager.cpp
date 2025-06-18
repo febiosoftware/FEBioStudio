@@ -37,6 +37,11 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #include <sstream>
 
+// This is need on Windows since one of the windows headers introduces a max macro. 
+#ifdef WIN32
+#undef max
+#endif
+
 class CPluginManager::Imp
 {
 public:
