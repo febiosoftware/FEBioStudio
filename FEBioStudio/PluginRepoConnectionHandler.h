@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include <QDialog>
 
+#include <QObject>
+
+class CPluginManager;
+class QNetworkReply;
+class QNetworkAccessManager;
+class QSslError;
+class CRepositoryPanel;
+class CPluginDatabaseHandler;
+class CPluginManager;
 class CMainWindow;
-class CDlgFEBioPluginsUI;
 
-class CDlgFEBioPlugins : public QDialog
+class CPluginRepoConnectionHandler : public QObject
 {
 	Q_OBJECT
 
 public:
-	CDlgFEBioPlugins(CMainWindow* parent);
+	CPluginRepoConnectionHandler(CPluginManager* manager, CPluginDatabaseHandler* dbHandler);
+
+    void getPluginFiles(int pluginID, int fileNumber = 0);
+
+    void getSchema();
+	void getTables();
+
+private:
+    bool NetworkAccessibleCheck();
+    void outOfDate();
+    void getSchemaReply(QNetworkReply *r);
+	void getTablesReply(QNetworkReply *r);
+    void getPluginFilesReply(QNetworkReply *r);
 
 private slots:
-	void updateFeaturesList();
-	void onLoadPlugin();
-	void onMenuTriggered(QAction* action);
-	void onUnloadPlugin();
+	void connFinished(QNetworkReply *r);
+	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
+	void progress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
-	void LoadPlugin(const QString& fileName);
-
-private:
-    friend class CDlgFEBioPluginsUI;
-	CDlgFEBioPluginsUI* ui;
+    CPluginManager* manager;
+    CPluginDatabaseHandler* dbHandler;
+	CMainWindow* wnd;
+	QNetworkAccessManager* restclient;
 };
-
-bool LoadFEBioPlugin(const QString& pluginFile);

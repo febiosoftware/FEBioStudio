@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QDialog>
 
-class CMainWindow;
-class CDlgFEBioPluginsUI;
+#include <vector>
+#include <string>
 
-class CDlgFEBioPlugins : public QDialog
+class CPluginManager; 
+
+class CPluginXML
 {
-	Q_OBJECT
+public:
+    struct PluginInfo
+    {
+        int ID;
+        std::string version;
+        std::string febioVersion;
+        std::vector<std::string> files;
+    };
 
 public:
-	CDlgFEBioPlugins(CMainWindow* parent);
+    CPluginXML(CPluginManager* manager);
 
-private slots:
-	void updateFeaturesList();
-	void onLoadPlugin();
-	void onMenuTriggered(QAction* action);
-	void onUnloadPlugin();
+    void SetPath(const std::string& path) { m_path = path; }
 
-private:
-	void LoadPlugin(const QString& fileName);
+    bool LoadXML();
+    void WriteXML();
 
 private:
-    friend class CDlgFEBioPluginsUI;
-	CDlgFEBioPluginsUI* ui;
+    CPluginManager* m_manager;
+    std::string m_path;
 };
-
-bool LoadFEBioPlugin(const QString& pluginFile);

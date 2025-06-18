@@ -539,6 +539,7 @@ public slots:
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
 	void on_actionFEBioPlugins_triggered();
+    void on_actionPluginRepo_triggered();
 	void on_actionCreatePlugin_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();

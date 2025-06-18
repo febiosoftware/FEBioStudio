@@ -33,20 +33,20 @@ SOFTWARE.*/
 class QNetworkReply;
 //class QSslError;
 class CRepositoryPanel;
-class CLocalDatabaseHandler;
+class CModelDatabaseHandler;
 class CMainWindow;
 
 #define API_URL "/modelRepo/api/v1.03/"
 
-class CRepoConnectionHandler : public QObject
+class CModelRepoConnectionHandler : public QObject
 {
 	Q_OBJECT
 
 	class Imp;
 
 public:
-	CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd);
-	~CRepoConnectionHandler();
+	CModelRepoConnectionHandler(CRepositoryPanel* dbPanel, CModelDatabaseHandler* dbHandler, CMainWindow* wnd);
+	~CModelRepoConnectionHandler();
 
 	void authenticate(QString userName, QString password);
 	void getSchema();
@@ -79,11 +79,9 @@ private slots:
 
 private:
 	bool NetworkAccessibleCheck();
-//	bool AuthCheck();
 	void getMessages();
 
 	void authReply(QNetworkReply *r);
-//	void authCheckReply(QNetworkReply *r);
 	void getSchemaReply(QNetworkReply *r);
 	void getTablesReply(QNetworkReply *r);
 	void getFileReply(QNetworkReply *r);
@@ -96,6 +94,7 @@ private:
 	void modifyProjectUploadReply(QNetworkReply *r);
 	void deleteProjectRepy(QNetworkReply *r);
 
+private:
 	Imp* imp;
 
 };

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,64 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QDialog>
 
-class CMainWindow;
-class CDlgFEBioPluginsUI;
+#include <QWidget>
 
-class CDlgFEBioPlugins : public QDialog
+class QLineEdit;
+class QScrollArea;
+class QGridLayout;
+struct Plugin;
+
+namespace Ui {
+    class PluginListWidget;
+}
+
+class PluginThumbnail : public QWidget 
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	CDlgFEBioPlugins(CMainWindow* parent);
+    PluginThumbnail(const Plugin& plugin);
 
-private slots:
-	void updateFeaturesList();
-	void onLoadPlugin();
-	void onMenuTriggered(QAction* action);
-	void onUnloadPlugin();
+    void SetStatus(int status);
+
+    int getID();
+
+signals:
+    void clicked(int id);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void enterEvent(QEnterEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 
 private:
-	void LoadPlugin(const QString& fileName);
-
-private:
-    friend class CDlgFEBioPluginsUI;
-	CDlgFEBioPluginsUI* ui;
+    Ui::PluginListWidget* ui;
 };
 
-bool LoadFEBioPlugin(const QString& pluginFile);
+class PluginListWidget : public QWidget 
+{
+    Q_OBJECT
+
+public:
+    PluginListWidget();
+
+    void AddPlugin(const Plugin& plugin);
+
+    void Clear();
+
+signals:
+    void pluginThumbnailClicked(int id);
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
+private:
+    QLineEdit* searchInput;
+    QScrollArea* scrollArea;
+    QGridLayout* gridLayout;
+    QList<PluginThumbnail*> pluginCards;
+
+    void updateGridLayout();
+};

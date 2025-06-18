@@ -24,11 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "LocalDatabaseHandler.h"
+#include "ModelDatabaseHandler.h"
 #include <QString>
 
 #ifdef MODEL_REPO
-#include <sqlite3.h>
+// #include <sqlite3.h>
 #include <vector>
 #include <string>
 #include <QJsonDocument>
@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <QFile>
 #include <QVariantMap>
 #include "RepositoryPanel.h"
+#include "DatabaseInterface.h"
+#include "ModelTypeInfoReader.h"
 
 #include <iostream>
 
@@ -91,70 +93,21 @@ static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char 
 	return 0;
 }
 
-class CLocalDatabaseHandler::Imp
+class CModelDatabaseHandler::Imp
 {
 public:
-	Imp(CRepositoryPanel* dbPanel)
-		: dbPanel(dbPanel), db(NULL)	{}
-
-	void updateDBPath()
-	{
-		dbPath = dbPanel->GetRepositoryFolder() += "/localdb.db";
-	}
-
-    bool openDatabase()
-    {
-        int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
-
-		if( rc )
-		{
-			fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
-			sqlite3_close(db);
-			return false;
-		}
-
-        return true;
-    }
-
-    void closeDatabase()
-    {
-        sqlite3_close(db);
-    }
-
-	void initDatabase(std::string schema)
-	{
-		char *zErrMsg = 0;
-
-        // Before we close and delete it, we need to copy the downloaded date for the files
-        saveDownloadDates();
-
-		if(!openDatabase()) return;
-
-        // Completely empty the database
-        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 1, 0);
-        sqlite3_exec(db, "VACUUM", 0, 0, 0);
-        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 0, 0);
-
-		int rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
-
-		if( rc!=SQLITE_OK )
-		{
-			fprintf(stderr, "SQL error: %s\n", zErrMsg);
-			sqlite3_free(zErrMsg);
-		}
-
-        closeDatabase();
-	}
+	Imp(CRepositoryPanel* dbPanel, CDatabaseInterface* interface)
+		: dbPanel(dbPanel), interface(interface) {}
 
     void saveDownloadDates()
     {
-        if(!openDatabase()) return;
+        if(!interface->openDatabase()) return;
 
         char **table;
 		int rows, cols;
 
 		std::string query = "SELECT ID, downloadTime FROM filenames";
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
         if(rows != 0)
         {
@@ -164,85 +117,11 @@ public:
             }
         }
 
-        sqlite3_free_table(table);
+        interface->freeTable(table);
 
-        closeDatabase();
+        interface->closeDatabase();
     }
 
-	void execute(std::string& query, int (*callback)(void*,int,char**,char**)=NULL, void* arg = NULL)
-	{
-        if(!openDatabase()) return;
-
-		char *zErrMsg = 0;
-
-		int rc = sqlite3_exec(db, query.c_str(), callback, arg, &zErrMsg);
-
-		if( rc!=SQLITE_OK )
-		{
-			fprintf(stderr, "SQL error: %s\n", zErrMsg);
-			sqlite3_free(zErrMsg);
-		}
-
-        closeDatabase();
-	}
-
-	void getTable(std::string& query, char ***table, int* rows, int* cols)
-	{
-        if(!openDatabase()) return;
-
-		char *zErrMsg = 0;
-
-		int rc = sqlite3_get_table(db, query.c_str(), table, rows, cols, &zErrMsg);
-
-		if( rc!=SQLITE_OK )
-		{
-			fprintf(stderr, "SQL error: %s\n", zErrMsg);
-			sqlite3_free(zErrMsg);
-		}
-
-        closeDatabase();
-	}
-
-	void insert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
-    {
-        std::string query("INSERT INTO ");
-        query += tableName;
-        query += "(" + columns[0];
-        for(int index = 1; index < columns.size(); index++)
-        {
-            query += ", " + columns[index];
-        }
-        query += ") ";
-        query += "VALUES " + values;
-
-        execute(query);
-    }
-
-	void upsert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
-	{
-		std::string query("INSERT INTO ");
-		query += tableName;
-		query += "(" + columns[0];
-		for(int index = 1; index < columns.size(); index++)
-		{
-			query += ", " + columns[index];
-		}
-		query += ") ";
-		query += "VALUES " + values;
-
-		if(conflict.compare("") !=0)
-		{
-			query += " ON CONFLICT(ID) DO UPDATE SET ";
-			query += columns[0] + "=excluded." + columns[0];
-			for(int index = 1; index < columns.size(); index++)
-			{
-				query += ", " + columns[index] + "=excluded." + columns[index];
-			}
-		}
-		query += ";";
-
-		execute(query);
-	}
 
 	void checkLocalCopies()
 	{
@@ -250,7 +129,7 @@ public:
 		int rows, cols;
 
 		std::string query = "SELECT ID FROM filenames";
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		std::string hasCopy = "UPDATE filenames set localCopy = 1 WHERE ID IN (";
 		std::string noCopy = "UPDATE filenames set localCopy = 0 WHERE ID IN (";
@@ -309,11 +188,11 @@ public:
 		hasCopy += ");";
 		noCopy += ");";
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
-		if(updateHasCopy) execute(hasCopy);
-		if(updateNoCopy) execute(noCopy);
-        execute(dtimes);
+		if(updateHasCopy) interface->execute(hasCopy);
+		if(updateNoCopy) interface->execute(noCopy);
+        interface->execute(dtimes);
 
         downloadTimes.clear();
 	}
@@ -325,7 +204,7 @@ public:
 
 		std::string query = "SELECT name FROM projects WHERE ID = " + std::to_string(ID);
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		QString name;
 		if(rows == 1)
@@ -333,7 +212,7 @@ public:
 			name = table[1];
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return name;
 	}
@@ -352,7 +231,7 @@ public:
 			query += "SELECT categories.category FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ";
 			query += std::to_string(ID);
 
-			getTable(query, &table, &rows, &cols);
+			interface->getTable(query, &table, &rows, &cols);
 
 			if(rows == 1)
 			{
@@ -365,7 +244,7 @@ public:
 			query += "SELECT categories.category, projects.name FROM projects JOIN categories ON projects.category = categories.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
 			query += std::to_string(ID);
 
-			getTable(query, &table, &rows, &cols);
+			interface->getTable(query, &table, &rows, &cols);
 
 			if(rows == 1)
 			{
@@ -375,7 +254,7 @@ public:
 			}
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return path;
 	}
@@ -402,7 +281,7 @@ public:
 
 		}
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		if(rows == 1)
 		{
@@ -411,7 +290,7 @@ public:
 			if(type == FULL) filename += ".prj";
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return filename;
 	}
@@ -445,7 +324,7 @@ public:
 		std::string query("SELECT categories.category FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ");
 		query += std::to_string(ID);
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		QString category;
 		if(rows == 1)
@@ -453,7 +332,7 @@ public:
 			category = table[1];
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return category;
 	}
@@ -466,7 +345,7 @@ public:
 		std::string query("SELECT project FROM filenames WHERE ID = ");
 		query += std::to_string(ID);
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		int projID = 0;
 		if(rows == 1)
@@ -474,7 +353,7 @@ public:
 			projID = std::stoi(table[1]);
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return projID;
 	}
@@ -487,14 +366,14 @@ public:
         std::string query("SELECT ID FROM filenames WHERE project = ");
         query += std::to_string(ID);
 
-        getTable(query, &table, &rows, &cols);
+        interface->getTable(query, &table, &rows, &cols);
 
         for(int row = 1; row < rows + 1; row++)
         {
             ids.push_back(std::stoi(table[row]));
         }
 
-        sqlite3_free_table(table);
+        interface->freeTable(table);
     }
 
 	int CategoryIDFromName(std::string name)
@@ -506,7 +385,7 @@ public:
 		query += name;
 		query += "'";
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		int catID = 1;
 		if(rows == 1)
@@ -514,7 +393,7 @@ public:
 			catID = std::stoi(table[1]);
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return catID;
 	}
@@ -528,9 +407,9 @@ public:
 				"projects.category = categories.ID WHERE projects.name = '%1' "
 				"AND categories.category = '%3'").arg(projectName).arg(category).toStdString();
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return rows == 0;
 	}
@@ -543,7 +422,7 @@ public:
 		std::string query = QString("SELECT filenames.size FROM filenames JOIN projects ON filenames.project = projects.ID "
 				"JOIN users ON users.ID = projects.owner WHERE users.username = '%1'").arg(username).toStdString();
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		qint64 totalSize = 0;
 		for(int row = 1; row < rows + 1; row++)
@@ -551,7 +430,7 @@ public:
 			totalSize += QString(table[row]).toLongLong();
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return totalSize;
 	}
@@ -563,7 +442,7 @@ public:
 
 		std::string query = QString("SELECT size FROM filenames WHERE project = '%1'").arg(ID).toStdString();
 
-		getTable(query, &table, &rows, &cols);
+		interface->getTable(query, &table, &rows, &cols);
 
 		qint64 totalSize = 0;
 		for(int row = 1; row < rows + 1; row++)
@@ -571,7 +450,7 @@ public:
 			totalSize += QString(table[row]).toLongLong();
 		}
 
-		sqlite3_free_table(table);
+		interface->freeTable(table);
 
 		return totalSize;
 	}
@@ -603,76 +482,57 @@ public:
             query += "=" + std::to_string(ID);
         }
 
-        execute(query);
+        interface->execute(query);
     }
 
 public:
-	sqlite3* db;
+    CDatabaseInterface* interface;
 	CRepositoryPanel* dbPanel;
-	QString dbPath;
 
     std::map<qint64, qint64> downloadTimes;
 };
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel)
+CModelDatabaseHandler::CModelDatabaseHandler(CRepositoryPanel* dbPanel)
 {
-	imp = new Imp(dbPanel);
+	imp = new Imp(dbPanel, &interface);
 }
 
-CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
+CModelDatabaseHandler::~CModelDatabaseHandler(){}
 
-void CLocalDatabaseHandler::init(std::string schema)
+void CModelDatabaseHandler::init(std::string schema)
 {
-	imp->updateDBPath();
+	interface.setDBPath((imp->dbPanel->GetRepositoryFolder() += "/localdb.db").toStdString());
 
-	imp->initDatabase(schema);
+    // Before we close and delete it, we need to copy the downloaded date for the files
+    imp->saveDownloadDates();
+
+	interface.initDatabase(schema);
 }
 
-void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
+void CModelDatabaseHandler::update(QJsonDocument& jsonDoc)
 {
-	QJsonArray jsonProjects = jsonDoc.array();
-	for(QJsonValueRef jsonProject : jsonProjects)
-	{
-		QJsonObject projectObj = jsonProject.toObject();
-		std::string name = projectObj.value("name").toString().toStdString();
+    interface.update(jsonDoc);
 
-		std::string conflict("");
-		std::vector<std::string> columnNames;
-		QJsonArray columns = projectObj.value("columns").toArray();
-		for(QJsonValueRef column : columns)
-		{
-			std::string columnName = column.toString().toStdString();
-			if(columnName.compare("ID") == 0) conflict = "ID";
-			columnNames.push_back(column.toString().toStdString());
-		}
-
-		if(columnNames.size() == 0) continue;
-
-		std::string values = projectObj.value("values").toString().toStdString();
-
-		imp->insert(name, columnNames, values, conflict);
-	}
-
-	imp->checkLocalCopies();
+    imp->checkLocalCopies();
 }
 
-void CLocalDatabaseHandler::GetCategories()
+void CModelDatabaseHandler::GetCategories()
 {
     // This will grab the category names, but only categories that actually have projects. 
     // This way we no longer need to delete empty categories after adding them
 	std::string query("SELECT categories.category FROM projects JOIN categories ON projects.category=categories.ID GROUP BY projects.category");
 
-	imp->execute(query, addCategoryCallback, imp->dbPanel);
+	interface.execute(query, addCategoryCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetProjects()
+void CModelDatabaseHandler::GetProjects()
 {
 	std::string query("SELECT projects.ID, projects.name, users.username, categories.category, projects.authorized FROM projects JOIN categories ON projects.category = categories.ID JOIN users ON projects.owner = users.ID");
 
-	imp->execute(query, addProjectCallback, imp->dbPanel);
+	interface.execute(query, addProjectCallback, imp->dbPanel);
 }
 
-QStringList CLocalDatabaseHandler::GetTags()
+QStringList CModelDatabaseHandler::GetTags()
 {
 	char **table;
 	int rows, cols;
@@ -683,58 +543,58 @@ QStringList CLocalDatabaseHandler::GetTags()
 	QString query = QString("SELECT tag FROM tags;");
 	std::string queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+	interface.getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
 	{
 		tags.append(table[row]);
 	}
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 
 	return tags;
 }
 
-void CLocalDatabaseHandler::GetProjectFiles(int ID)
+void CModelDatabaseHandler::GetProjectFiles(int ID)
 {
 	std::string query("SELECT ID, filename, localCopy, size, uploadTime, downloadTime from filenames where project = ");
 	query += std::to_string(ID);
 
-	imp->execute(query, addProjectFilesCallback, imp->dbPanel);
+	interface.execute(query, addProjectFilesCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetProjectData(int ID)
+void CModelDatabaseHandler::GetProjectData(int ID)
 {
 	std::string query("SELECT name, description, username FROM projects JOIN users on users.id = projects.owner WHERE projects.id = ");
 	query += std::to_string(ID);
 
-	imp->execute(query, setProjectDataCallback, imp->dbPanel);
+	interface.execute(query, setProjectDataCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetFileData(int ID)
+void CModelDatabaseHandler::GetFileData(int ID)
 {
 	std::string query("SELECT filename, description FROM filenames WHERE id = ");
 	query += std::to_string(ID);
 
-	imp->execute(query, setFileDataCallback, imp->dbPanel);
+	interface.execute(query, setFileDataCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetFileTags(int ID)
+void CModelDatabaseHandler::GetFileTags(int ID)
 {
 	std::string query("SELECT tags.tag FROM tags JOIN fileTags on tags.id = fileTags.tag WHERE fileTags.file = ");
 	query += std::to_string(ID);
 
-	imp->execute(query, addCurrentFileTagCallback, imp->dbPanel);
+	interface.execute(query, addCurrentFileTagCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryMap)
+void CModelDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryMap)
 {
 	char **table;
 	int rows, cols;
 
 	std::string query = "SELECT * FROM categories";
 
-	imp->getTable(query, &table, &rows, &cols);
+	interface.getTable(query, &table, &rows, &cols);
 
 	// Extract information about each project
 	for(int row = 1; row <= rows; row++)
@@ -744,10 +604,10 @@ void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryM
 		categoryMap[std::stoi(table[rowStart])] = std::string(table[rowStart + 1]);
 	}
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 }
 
-QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
+QList<QList<QVariant>> CModelDatabaseHandler::GetProjectFileInfo(int projID)
 {
 	QList<QList<QVariant>> fileInfo;
 
@@ -757,7 +617,7 @@ QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
 	QString query = QString("SELECT ID, filename, description, size FROM filenames WHERE project = %1").arg(projID);
 	std::string queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+	interface.getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
 	{
@@ -776,7 +636,7 @@ QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
 		QString query2 = QString("SELECT tags.tag FROM fileTags JOIN tags ON fileTags.tag = tags.ID WHERE fileTags.file = %1").arg(fileID);
 		std::string queryStd2 = query2.toStdString();
 
-		imp->getTable(queryStd2, &table2, &rows2, &cols2);
+		interface.getTable(queryStd2, &table2, &rows2, &cols2);
 
 		QStringList tags;
 		for(int row2 = 1; row2 <= rows2; row2++)
@@ -786,26 +646,26 @@ QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
 
 		currentInfo.push_back(tags);
 
-		sqlite3_free_table(table2);
+		interface.freeTable(table2);
 
 		fileInfo.push_back(currentInfo);
 	}
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 
 
 	return fileInfo;
 }
 
-void CLocalDatabaseHandler::GetProjectTags(int ID)
+void CModelDatabaseHandler::GetProjectTags(int ID)
 {
 	std::string query("SELECT tags.tag FROM tags JOIN projectTags on tags.id = projectTags.tag WHERE projectTags.project = ");
 	query += std::to_string(ID);
 
-	imp->execute(query, addCurrentTagCallback, imp->dbPanel);
+	interface.execute(query, addCurrentTagCallback, imp->dbPanel);
 }
 
-void CLocalDatabaseHandler::GetProjectPubs(int ID)
+void CModelDatabaseHandler::GetProjectPubs(int ID)
 {
 	char **table;
 	int rows, cols;
@@ -816,7 +676,7 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 	QString query = QString("SELECT publications.ID, title, year, journal, volume, issue, pages, DOI FROM publications JOIN projectPubs ON publications.ID = projectPubs.publication WHERE projectPubs.project = %1").arg(ID);
 	std::string queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+	interface.getTable(queryStd, &table, &rows, &cols);
 
 	// Extract information about each project
 	for(int row = 1; row <= rows; row++)
@@ -838,7 +698,7 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 		QString query2 = QString("SELECT firstName, lastName FROM authors JOIN publicationAuthors ON publicationAuthors.author = authors.ID WHERE publicationAuthors.publication = %1 ORDER BY publicationAuthors.ordering").arg(table[rowStart]);
 		std::string queryStd2 = query2.toStdString();
 
-		imp->getTable(queryStd2, &table2, &rows2, &cols2);
+		interface.getTable(queryStd2, &table2, &rows2, &cols2);
 
 		QStringList authorGiven;
 		QStringList authorFamily;
@@ -852,7 +712,7 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 		}
 
-		sqlite3_free_table(table2);
+		interface.freeTable(table2);
 
 		data["authorGiven"] = authorGiven;
 		data["authorFamily"] = authorFamily;
@@ -861,11 +721,11 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 	}
 
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 
 }
 
-std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString term)
+std::set<int> CModelDatabaseHandler::ProjectSearch(QString dataType, QString term)
 {
 	if(term.isEmpty()) return std::set<int>();
 
@@ -897,14 +757,14 @@ std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString ter
 
     std::string queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+	interface.getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
 	{
 		projects.insert(std::stoi(table[row]));
 	}
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 
     if(dataType == "all" || dataType == "tag")
     {
@@ -912,20 +772,20 @@ std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString ter
         query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
         queryStd = query.toStdString();
 
-        imp->getTable(queryStd, &table, &rows, &cols);
+        interface.getTable(queryStd, &table, &rows, &cols);
 
         for(int row = 1; row <= rows; row++)
         {
             projects.insert(std::stoi(table[row]));
         }
 
-        sqlite3_free_table(table);
+        interface.freeTable(table);
     }
 
 	return projects;
 }
 
-std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
+std::set<int> CModelDatabaseHandler::FileSearch(QString dataType, QString term)
 {
     if(term.isEmpty()) return std::set<int>();
 
@@ -957,14 +817,14 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
 
 	std::string queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+	interface.getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
 	{
 		files.insert(std::stoi(table[row]));
 	}
 
-	sqlite3_free_table(table);
+	interface.freeTable(table);
 
     if(dataType == "all" || dataType == "tag")
     {
@@ -974,14 +834,14 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
         query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
         queryStd = query.toStdString();
 
-        imp->getTable(queryStd, &table, &rows, &cols);
+        interface.getTable(queryStd, &table, &rows, &cols);
 
         for(int row = 1; row <= rows; row++)
         {
             files.insert(std::stoi(table[row]));
         }
 
-        sqlite3_free_table(table);
+        interface.freeTable(table);
     }
 
     if(dataType == "all")
@@ -991,14 +851,14 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
             "dataTypes ON fileDataTypes.type=dataTypes.ID WHERE dataTypes.type LIKE '%%1%'").arg(term);
         queryStd = query.toStdString();
 
-        imp->getTable(queryStd, &table, &rows, &cols);
+        interface.getTable(queryStd, &table, &rows, &cols);
 
         for(int row = 1; row <= rows; row++)
         {
             files.insert(std::stoi(table[row]));
         }
 
-        sqlite3_free_table(table);
+        interface.freeTable(table);
     }
 	
     if(otherType)
@@ -1009,20 +869,20 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
             "LIKE '%%1%' and dataTypes.type LIKE '%%2%'").arg(dataType).arg(term);
         std::string queryStd = query.toStdString();
 
-        imp->getTable(queryStd, &table, &rows, &cols);
+        interface.getTable(queryStd, &table, &rows, &cols);
 
         for(int row = 1; row <= rows; row++)
         {
             files.insert(std::stoi(table[row]));
         }
 
-        sqlite3_free_table(table);
+        interface.freeTable(table);
     }
 
 	return files;
 }
 
-std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedSearchInfo()
+std::vector<std::pair<QString, QStringList>> CModelDatabaseHandler::GetAdvancedSearchInfo()
 {
     std::vector<std::pair<QString, QStringList>> info;
 
@@ -1035,7 +895,7 @@ std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedS
 
     // Get users from database
     std::string query = "SELECT username FROM users";
-    imp->getTable(query, &table, &rows, &cols);
+    interface.getTable(query, &table, &rows, &cols);
 
     QStringList users;
     for(int row = 1; row <= rows; row++)
@@ -1045,11 +905,11 @@ std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedS
 
     info.emplace_back("User", users);
 
-    sqlite3_free_table(table);
+    interface.freeTable(table);
 
     // Get tags from database
     query = "SELECT tag FROM tags";
-    imp->getTable(query, &table, &rows, &cols);
+    interface.getTable(query, &table, &rows, &cols);
 
     QStringList tags;
     for(int row = 1; row <= rows; row++)
@@ -1059,12 +919,12 @@ std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedS
 
     info.emplace_back("Tag", tags);
 
-    sqlite3_free_table(table);
+    interface.freeTable(table);
 
     // Get section names and associated datatypes from database
     query = "SELECT sections.section, type FROM sections JOIN dataTypes on sections.ID = dataTypes.section";
 
-    imp->getTable(query, &table, &rows, &cols);
+    interface.getTable(query, &table, &rows, &cols);
 
     // Since the query doesn't return a sorted list, it's easier to first add the data to a map
     // and then transfer it to our vector
@@ -1085,7 +945,7 @@ std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedS
         
 	}
 
-    sqlite3_free_table(table);
+    interface.freeTable(table);
 
     // Here we copy the data to the vector
     for(auto item : dataTypeInfo)
@@ -1096,70 +956,70 @@ std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedS
     return info;
 }
 
-QString CLocalDatabaseHandler::ProjectNameFromID(int ID)
+QString CModelDatabaseHandler::ProjectNameFromID(int ID)
 {
 	return imp->ProjectNameFromID(ID);
 }
 
-QString CLocalDatabaseHandler::FilePathFromID(int ID, int type)
+QString CModelDatabaseHandler::FilePathFromID(int ID, int type)
 {
 	return imp->GetFilePath(ID, type);
 }
 
-QString CLocalDatabaseHandler::FileNameFromID(int ID, int type)
+QString CModelDatabaseHandler::FileNameFromID(int ID, int type)
 {
 	return imp->GetFileName(ID, type);
 }
 
-QString CLocalDatabaseHandler::FullFileNameFromID(int ID, int type)
+QString CModelDatabaseHandler::FullFileNameFromID(int ID, int type)
 {
 	return imp->GetFullFilename(ID, type);
 }
 
-QString CLocalDatabaseHandler::CategoryFromID(int ID)
+QString CModelDatabaseHandler::CategoryFromID(int ID)
 {
 	return imp->CategoryFromID(ID);
 }
 
-int CLocalDatabaseHandler::ProjectIDFromFileID(int ID)
+int CModelDatabaseHandler::ProjectIDFromFileID(int ID)
 {
 	return imp->ProjectIDFromFileID(ID);
 }
 
-int CLocalDatabaseHandler::CategoryIDFromName(std::string name)
+int CModelDatabaseHandler::CategoryIDFromName(std::string name)
 {
 	return imp->CategoryIDFromName(name);
 }
 
-bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category)
+bool CModelDatabaseHandler::isValidUpload(QString& projectName, QString& category)
 {
 	return imp->isValidUpload(projectName, category);
 }
 
-qint64 CLocalDatabaseHandler::currentProjectsSize(QString username)
+qint64 CModelDatabaseHandler::currentProjectsSize(QString username)
 {
 	return imp->currentProjectsSize(username);
 }
 
-qint64 CLocalDatabaseHandler::projectsSize(int ID)
+qint64 CModelDatabaseHandler::projectsSize(int ID)
 {
 	return imp->projectSize(ID);
 }
 
-void CLocalDatabaseHandler::setDownloadTime(int ID, int type, qint64 time)
+void CModelDatabaseHandler::setDownloadTime(int ID, int type, qint64 time)
 {
     imp->setDownloadTime(ID, type, time);
 }
 
 #else
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel) {}
-CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
-void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
-bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category) { return false;  }
-qint64 CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
-QString CLocalDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
-qint64 CLocalDatabaseHandler::projectsSize(int ID) { return 0; }
+CModelDatabaseHandler::CModelDatabaseHandler(CRepositoryPanel* dbPanel) {}
+CModelDatabaseHandler::~CModelDatabaseHandler(){}
+void CModelDatabaseHandler::update(QJsonDocument& jsonDoc){}
+bool CModelDatabaseHandler::isValidUpload(QString& projectName, QString& category) { return false;  }
+qint64 CModelDatabaseHandler::currentProjectsSize(QString username) { return 0; }
+QString CModelDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
+qint64 CModelDatabaseHandler::projectsSize(int ID) { return 0; }
 
 void setDownloadTime(int ID, int type, qint64 time) {}
 #endif

@@ -154,6 +154,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionFEBioOptimize = createAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
+    QAction* actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo");
 	QAction* actionFEBioPlugins = createAction("Manage FEBio plugins ...", "actionFEBioPlugins");
 	QAction* actionCreatePlugin = createAction("Create FEBio plugin ...", "actionCreatePlugin");
 
@@ -524,6 +525,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
+    menuFEBio->addAction(actionPluginRepo);
 	menuFEBio->addAction(actionFEBioPlugins);
 	menuFEBio->addAction(actionCreatePlugin);
 

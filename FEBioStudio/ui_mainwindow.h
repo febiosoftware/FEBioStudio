@@ -92,6 +92,7 @@ SOFTWARE.*/
 #include "HTMLBrowser.h"
 #include "PythonEditor.h"
 #include "MainMenu.h"
+#include "PluginManager.h"
 
 class QProcess;
 
@@ -357,6 +358,8 @@ public:
 	bool m_updateAvailable;
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
+
+    CPluginManager m_pluginManager;
 
 public:
 	CGLDocument* m_copySrc = nullptr; // source for copy selection operation

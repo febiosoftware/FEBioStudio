@@ -31,7 +31,6 @@ SOFTWARE.*/
 #ifdef MODEL_REPO
 #include <vector>
 #include <map>
-// #include <JlCompress.h>
 #include <QStandardPaths>
 #include <QDockWidget>
 #include <QDesktopServices>
@@ -43,13 +42,13 @@ SOFTWARE.*/
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
-#include "RepoConnectionHandler.h"
+#include "ModelRepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "WzdUpload.h"
 #include "DlgRequestUploadPerm.h"
 #include "DlgSetRepoFolder.h"
-#include "LocalDatabaseHandler.h"
+#include "ModelDatabaseHandler.h"
 #include "ToolBox.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
@@ -80,8 +79,8 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
     connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvancedClear_triggered);
     connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
 
-	dbHandler = new CLocalDatabaseHandler(this);
-	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
+	dbHandler = new CModelDatabaseHandler(this);
+	repoHandler = new CModelRepoConnectionHandler(this, dbHandler, m_wnd);
 
 	QMetaObject::connectSlotsByName(this);
 }
@@ -1619,7 +1618,7 @@ void CRepositoryPanel::AddCurrentTag(char **data)
 	ui->currentTags.append(data[0]);
 }
 
-void CRepositoryPanel::AddPublication(QVariantMap data)
+void CRepositoryPanel::AddPublication(QVariantMap& data)
 {
 	ui->projectPubs->addPublication(data);
 }
@@ -1693,7 +1692,7 @@ void CRepositoryPanel::AddProjectFile(char **argv) {}
 void CRepositoryPanel::SetProjectData(char **argv) {}
 void CRepositoryPanel::SetFileData(char **argv) {}
 void CRepositoryPanel::AddCurrentTag(char **argv) {}
-void CRepositoryPanel::AddPublication(QVariantMap data) {}
+void CRepositoryPanel::AddPublication(QVariantMap& data) {}
 QString CRepositoryPanel::GetRepositoryFolder() { return QString(); }
 void CRepositoryPanel::SetRepositoryFolder(QString folder) {}
 qint64 CRepositoryPanel::GetLastMessageTime() { return -1; }

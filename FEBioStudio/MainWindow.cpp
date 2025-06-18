@@ -209,6 +209,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	}
 
 	FSLogger::SetOutput(new FSMainWindowOutput(this));
+
+    ui->m_pluginManager.LoadXML();
+    ui->m_pluginManager.LoadAllPlugins();
 }
 
 //-----------------------------------------------------------------------------

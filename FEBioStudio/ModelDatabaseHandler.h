@@ -32,25 +32,24 @@ SOFTWARE.*/
 #include <QList>
 #include <QtGlobal>
 #include <QStringList>
+#include "DatabaseInterface.h"
 
 class QJsonDocument;
 class QString;
 class QVariant;
-//class QStringList;
 class CRepoProject;
 class CRepositoryPanel;
 
-class CLocalDatabaseHandler
+class CModelDatabaseHandler
 {
 	class Imp;
 
 public:
-	CLocalDatabaseHandler(CRepositoryPanel* dbPanel);
-	~CLocalDatabaseHandler();
+    CModelDatabaseHandler(CRepositoryPanel* dbPanel);
+	~CModelDatabaseHandler();
 
 	void init(std::string schema);
-
-	void update(QJsonDocument& jsonDoc);
+    void update(QJsonDocument& jsonDoc);
 
 	void GetCategories();
 	void GetProjects();
@@ -86,5 +85,6 @@ public:
     void setDownloadTime(int ID, int type, qint64 time);
 
 private:
+    CDatabaseInterface interface;
 	Imp* imp;
 };

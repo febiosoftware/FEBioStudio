@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QtCore/QTimer>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
+#include "DlgPluginRepo.h"
 #include <FEBioMonitor/DlgMonitorSettings.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include "DlgCreatePlugin.h"
@@ -574,6 +575,12 @@ void CMainWindow::on_actionFEBioInfo_triggered()
 void CMainWindow::on_actionFEBioPlugins_triggered()
 {
 	CDlgFEBioPlugins dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionPluginRepo_triggered()
+{
+	CDlgPluginRepo dlg(&ui->m_pluginManager, this);
 	dlg.exec();
 }
 

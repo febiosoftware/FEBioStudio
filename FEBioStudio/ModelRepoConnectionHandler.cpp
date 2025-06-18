@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "RepoConnectionHandler.h"
+#include "ModelRepoConnectionHandler.h"
 
 #ifdef MODEL_REPO
 #include <QEventLoop>
@@ -51,7 +51,7 @@ SOFTWARE.*/
 #include "RepositoryPanel.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include "LocalDatabaseHandler.h"
+#include "ModelDatabaseHandler.h"
 #include "ZipFiles.h"
 #include "ServerSettings.h"
 #include <iostream>
@@ -59,10 +59,10 @@ SOFTWARE.*/
 using std::cout;
 using std::endl;
 
-class CRepoConnectionHandler::Imp
+class CModelRepoConnectionHandler::Imp
 {
 public:
-	Imp(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* handler, CMainWindow* wnd)
+	Imp(CRepositoryPanel* dbPanel, CModelDatabaseHandler* dbHandler, CModelRepoConnectionHandler* handler, CMainWindow* wnd)
 		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd), uploadPermission(0), sizeLimit(0), authenticated(false), uploadReady(false)
 	{
 		restclient = new QNetworkAccessManager(handler);
@@ -88,7 +88,7 @@ public:
 	}
 
 	CRepositoryPanel* dbPanel;
-	CLocalDatabaseHandler* dbHandler;
+	CModelDatabaseHandler* dbHandler;
 	CMainWindow* m_wnd;
 
 	QNetworkAccessManager* restclient;
@@ -104,7 +104,7 @@ public:
 };
 
 
-CRepoConnectionHandler::CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd)
+CModelRepoConnectionHandler::CModelRepoConnectionHandler(CRepositoryPanel* dbPanel, CModelDatabaseHandler* dbHandler, CMainWindow* wnd)
 {
 	imp = new Imp(dbPanel, dbHandler, this, wnd);
 
@@ -112,12 +112,12 @@ CRepoConnectionHandler::CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocal
 	connect(imp->restclient, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), this, SLOT(sslErrorHandler(QNetworkReply*, const QList<QSslError>&)));
 }
 
-CRepoConnectionHandler::~CRepoConnectionHandler()
+CModelRepoConnectionHandler::~CModelRepoConnectionHandler()
 {
 	delete imp;
 }
 
-void CRepoConnectionHandler::authenticate(QString username, QString password)
+void CModelRepoConnectionHandler::authenticate(QString username, QString password)
 {
 	imp->username = username;
 
@@ -146,7 +146,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 
 }
 
-void CRepoConnectionHandler::getSchema()
+void CModelRepoConnectionHandler::getSchema()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -164,7 +164,7 @@ void CRepoConnectionHandler::getSchema()
 	}
 }
 
-void CRepoConnectionHandler::getTables()
+void CModelRepoConnectionHandler::getTables()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -185,7 +185,7 @@ void CRepoConnectionHandler::getTables()
 
 }
 
-void CRepoConnectionHandler::getFile(int id, int type)
+void CModelRepoConnectionHandler::getFile(int id, int type)
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -207,7 +207,7 @@ void CRepoConnectionHandler::getFile(int id, int type)
 
 }
 
-void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
+void CModelRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -229,7 +229,7 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 	}
 }
 
-void CRepoConnectionHandler::uploadFile()
+void CModelRepoConnectionHandler::uploadFile()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -262,7 +262,7 @@ void CRepoConnectionHandler::uploadFile()
 	}
 }
 
-void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
+void CModelRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -283,7 +283,7 @@ void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 	}
 }
 
-void CRepoConnectionHandler::getMessages()
+void CModelRepoConnectionHandler::getMessages()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -300,7 +300,7 @@ void CRepoConnectionHandler::getMessages()
 	}
 }
 
-void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
+void CModelRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -322,7 +322,7 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 	}
 }
 
-void CRepoConnectionHandler::modifyProjectUpload()
+void CModelRepoConnectionHandler::modifyProjectUpload()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -355,7 +355,7 @@ void CRepoConnectionHandler::modifyProjectUpload()
 	}
 }
 
-void CRepoConnectionHandler::deleteProject(int id)
+void CModelRepoConnectionHandler::deleteProject(int id)
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -376,7 +376,7 @@ void CRepoConnectionHandler::deleteProject(int id)
 	}
 }
 
-void CRepoConnectionHandler::cancelUpload()
+void CModelRepoConnectionHandler::cancelUpload()
 {
 	QUrl myurl;
 	myurl.setScheme(ServerSettings::Scheme());
@@ -400,7 +400,7 @@ void CRepoConnectionHandler::cancelUpload()
 	imp->uploadReady = false;
 }
 
-void CRepoConnectionHandler::connFinished(QNetworkReply *r)
+void CModelRepoConnectionHandler::connFinished(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -464,7 +464,7 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 
 }
 
-void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors)
+void CModelRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors)
 {
 	for(QSslError error : errors)
 	{
@@ -475,12 +475,12 @@ void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<Q
 
 }
 
-void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
+void CModelRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
 {
 	imp->m_wnd->UpdateProgress((float)bytesReceived/(float)bytesTotal*100);
 }
 
-bool CRepoConnectionHandler::NetworkAccessibleCheck()
+bool CModelRepoConnectionHandler::NetworkAccessibleCheck()
 {
 	// if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
 	// {
@@ -496,30 +496,7 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 	return true;
 }
 
-//bool CRepoConnectionHandler::AuthCheck()
-//{
-//	QUrl myurl;
-//	myurl.setScheme(ServerSettings::Scheme());
-//	myurl.setHost(ServerSettings::URL());
-//	myurl.setPort(ServerSettings::Port());
-//	myurl.setPath(QString(API_URL) + "authCheck");
-//
-//	QNetworkRequest request;
-//	request.setUrl(myurl);
-//	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
-//	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
-//	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-//
-//	imp->restclient->get(request);
-//
-//	QEventLoop loop;
-//	connect( this, &CRepoConnectionHandler::authCheckDone, &loop, &QEventLoop::quit );
-//	loop.exec();
-//
-//	return imp->authorized;
-//}
-
-void CRepoConnectionHandler::authReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::authReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -567,18 +544,7 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 
 }
 
-//void CRepoConnectionHandler::authCheckReply(QNetworkReply *r)
-//{
-//	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//
-//	imp->authorized = (statusCode == 200);
-//
-//	cout << "authCheck response code: " << statusCode << endl;
-//
-//	emit authCheckDone();
-//}
-
-void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -603,7 +569,7 @@ void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
 	}
 }
 
-void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -630,7 +596,7 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 	getMessages();
 }
 
-void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::getFileReply(QNetworkReply *r)
 {
 	imp->m_wnd->ShowProgress(false);
 
@@ -644,12 +610,6 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 	{
 		int fileID = r->rawHeader(QByteArray("fileID")).toInt();
 		int IDType = r->rawHeader(QByteArray("IDType")).toInt();
-
-//		QString path = imp->dbPanel->GetRepositoryFolder() + "/";
-//		path += imp->dbHandler->FilePathFromID(fileID, IDType);
-//
-//		QString filename = path + "/";
-//		filename += imp->dbHandler->FileNameFromID(fileID, IDType);
 
 		QString filename = imp->dbHandler->FullFileNameFromID(fileID, IDType);
 
@@ -687,7 +647,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 	imp->dbPanel->showMainPage();
 }
 
-void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -715,7 +675,7 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 	}
 }
 
-void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -757,7 +717,7 @@ void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 	}
 }
 
-void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
+void CModelRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -784,7 +744,7 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 
 }
 
-void CRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -821,7 +781,7 @@ void CRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
 	}
 }
 
-void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
+void CModelRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -834,7 +794,7 @@ void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
 
 }
 
-void CRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -852,7 +812,7 @@ void CRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
 	}
 }
 
-void CRepoConnectionHandler::getMessagesReply(QNetworkReply *r)
+void CModelRepoConnectionHandler::getMessagesReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -863,56 +823,56 @@ void CRepoConnectionHandler::getMessagesReply(QNetworkReply *r)
 }
 
 
-QString CRepoConnectionHandler::getUsername()
+QString CModelRepoConnectionHandler::getUsername()
 {
 	return imp->username;
 }
 
-int CRepoConnectionHandler::getUploadPermission()
+int CModelRepoConnectionHandler::getUploadPermission()
 {
 	return imp->uploadPermission;
 }
 
-qint64 CRepoConnectionHandler::getSizeLimit()
+qint64 CModelRepoConnectionHandler::getSizeLimit()
 {
 	return imp->sizeLimit;
 }
 
-bool CRepoConnectionHandler::isAuthenticated()
+bool CModelRepoConnectionHandler::isAuthenticated()
 {
 	return imp->authenticated;
 }
 
-void CRepoConnectionHandler::setUploadReady(bool ready)
+void CModelRepoConnectionHandler::setUploadReady(bool ready)
 {
 	imp->uploadReady = ready;
 }
 
-bool CRepoConnectionHandler::isUploadReady()
+bool CModelRepoConnectionHandler::isUploadReady()
 {
 	return imp->uploadReady;
 }
 
-void CRepoConnectionHandler::loggedOut()
+void CModelRepoConnectionHandler::loggedOut()
 {
 	imp->loggedOut();
 }
 
 #else
 
-CRepoConnectionHandler::CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
-CRepoConnectionHandler::~CRepoConnectionHandler(){}
-void CRepoConnectionHandler::authenticate(QString userName, QString password){}
-void CRepoConnectionHandler::getFile(int id, int type){}
-//void CRepoConnectionHandler::upload(QByteArray projectInfo){}
-void CRepoConnectionHandler::connFinished(QNetworkReply *r){}
-void CRepoConnectionHandler::authReply(QNetworkReply *r){}
-void CRepoConnectionHandler::getFileReply(QNetworkReply *r){}
-//void CRepoConnectionHandler::uploadReply(QNetworkReply *r){}
-//void CRepoConnectionHandler::TCPUpload(QString fileToken){}
-void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors) {}
-void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal) {}
-QString CRepoConnectionHandler::getUsername() {	return ""; }
-qint64 CRepoConnectionHandler::getSizeLimit() { return 0; }
+CModelRepoConnectionHandler::CModelRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
+CModelRepoConnectionHandler::~CModelRepoConnectionHandler(){}
+void CModelRepoConnectionHandler::authenticate(QString userName, QString password){}
+void CModelRepoConnectionHandler::getFile(int id, int type){}
+//void CModelRepoConnectionHandler::upload(QByteArray projectInfo){}
+void CModelRepoConnectionHandler::connFinished(QNetworkReply *r){}
+void CModelRepoConnectionHandler::authReply(QNetworkReply *r){}
+void CModelRepoConnectionHandler::getFileReply(QNetworkReply *r){}
+//void CModelRepoConnectionHandler::uploadReply(QNetworkReply *r){}
+//void CModelRepoConnectionHandler::TCPUpload(QString fileToken){}
+void CModelRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors) {}
+void CModelRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal) {}
+QString CModelRepoConnectionHandler::getUsername() {	return ""; }
+qint64 CModelRepoConnectionHandler::getSizeLimit() { return 0; }
 
 #endif

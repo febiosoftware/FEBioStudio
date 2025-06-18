@@ -61,8 +61,8 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "FocusWatcher.h"
 #include "PublicationWidgetView.h"
-#include "LocalDatabaseHandler.h"
-#include "RepoConnectionHandler.h"
+#include "ModelDatabaseHandler.h"
+#include "ModelRepoConnectionHandler.h"
 
 using std::unordered_map;
 using std::out_of_range;
@@ -655,7 +655,7 @@ public:
 
 };
 
-CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
+CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CModelDatabaseHandler* dbHandler, CModelRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
 	: QWizard(parent), ui(new Ui::CWzdUpload), dbHandler(dbHandler), repoHandler(repoHandler)
 {
 #ifdef WIN32

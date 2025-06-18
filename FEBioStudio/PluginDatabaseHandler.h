@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include <QDialog>
 
-class CMainWindow;
-class CDlgFEBioPluginsUI;
+#include <map>
+#include "DatabaseInterface.h"
 
-class CDlgFEBioPlugins : public QDialog
+class CPluginManager;
+struct Plugin;
+
+class CPluginDatabaseHandler
 {
-	Q_OBJECT
 
 public:
-	CDlgFEBioPlugins(CMainWindow* parent);
+    CPluginDatabaseHandler(CPluginManager* manager);
+    ~CPluginDatabaseHandler();
 
-private slots:
-	void updateFeaturesList();
-	void onLoadPlugin();
-	void onMenuTriggered(QAction* action);
-	void onUnloadPlugin();
+    void init(std::string schema);
+    void update(QJsonDocument& jsonDoc);
+
+    void GetPlugins();
+
+    void GetPluginPubs(int ID);
+
+    std::vector<std::string> GetPluginVersions(int ID);
 
 private:
-	void LoadPlugin(const QString& fileName);
-
-private:
-    friend class CDlgFEBioPluginsUI;
-	CDlgFEBioPluginsUI* ui;
+    CDatabaseInterface interface;
+    CPluginManager* manager;
 };
-
-bool LoadFEBioPlugin(const QString& pluginFile);

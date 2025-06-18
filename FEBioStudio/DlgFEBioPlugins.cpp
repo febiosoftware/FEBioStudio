@@ -23,6 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #include "stdafx.h"
 #include "DlgFEBioPlugins.h"
 #include <QBoxLayout>
@@ -32,13 +33,23 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QLabel>
+#include <QToolBar>
+#include <QProgressBar>
+#include "IconProvider.h"
 #include <FEBioLib/plugin.h>
 #include <FEBioLib/febio.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/FEModule.h>
 #include <QMenu>
+#include "PluginListWidget.h"
+#include "PublicationWidgetView.h"
 #include "MainWindow.h"
+#include "PluginManager.h"
+#include "DynamicStackedWidget.h"
+#include <string>
 
+#include <QDebug>
 class CDlgFEBioPluginsUI
 {
 public:
@@ -52,9 +63,12 @@ public:
 	QMenu* recentPlugins;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(CDlgFEBioPlugins* dlg)
 	{
-		QPushButton* loadPlugin = new QPushButton("Load ...");
+		QVBoxLayout* l = new QVBoxLayout;
+
+        
+        QPushButton* loadPlugin = new QPushButton("Load ...");
 
 		recentPlugins = new QMenu(dlg);
 		loadPlugin->setMenu(recentPlugins);
@@ -70,7 +84,7 @@ public:
 		plugins = new QTreeWidget;
 		plugins->setColumnCount(3);
 		plugins->setHeaderLabels(QStringList() << "name" << "version" << "path");
-		QVBoxLayout* l = new QVBoxLayout;
+		
 
 		features = new QTreeWidget;
 		features->setColumnCount(5);
@@ -84,17 +98,18 @@ public:
 		split->setStretchFactor(1, 2);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
-		
+        
 		l->addLayout(h);
 		l->addWidget(split);
 		l->addWidget(bb);
 
-		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(plugins, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), dlg, SLOT(updateFeaturesList()));
-//		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
-		QObject::connect(recentPlugins, SIGNAL(triggered(QAction*)), dlg, SLOT(onMenuTriggered(QAction*)));
-		QObject::connect(unloadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onUnloadPlugin()));
+		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &CDlgFEBioPlugins::reject);
+		QObject::connect(plugins, &QTreeWidget::currentItemChanged, dlg, &CDlgFEBioPlugins::updateFeaturesList);
+		// QObject::connect(loadPlugin, &QPushButton::clicked, dlg, &CDlgFEBioPlugins::onLoadPlugin);
+		QObject::connect(recentPlugins, &QMenu::triggered, dlg, &CDlgFEBioPlugins::onMenuTriggered);
+		QObject::connect(unloadPlugin, &QPushButton::clicked, dlg, &CDlgFEBioPlugins::onUnloadPlugin);
 		dlg->setLayout(l);
+
 	}
 
 	void addPlugin(const QString& name, const QString& version, const QString& path)
@@ -182,9 +197,11 @@ public:
 			addFeature(ci.sztype, superClass, ci.szclass, baseClass, ci.szmod);
 		}
 	}
+
 };
 
-CDlgFEBioPlugins::CDlgFEBioPlugins(CMainWindow* parent) : QDialog(parent), ui(new CDlgFEBioPluginsUI)
+CDlgFEBioPlugins::CDlgFEBioPlugins(CMainWindow* parent) 
+    : QDialog(parent), ui(new CDlgFEBioPluginsUI)
 {
 	setWindowTitle("FEBio Plugins");
 
@@ -194,7 +211,10 @@ CDlgFEBioPlugins::CDlgFEBioPlugins(CMainWindow* parent) : QDialog(parent), ui(ne
 	ui->setup(this);
 	ui->updateRecentPlugins();
 	ui->updatePluginsList();
+
+    
 }
+
 
 void CDlgFEBioPlugins::updateFeaturesList()
 {
