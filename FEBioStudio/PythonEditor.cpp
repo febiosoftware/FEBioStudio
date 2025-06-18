@@ -179,6 +179,8 @@ void CPythonEditor::on_actionRun_triggered()
 	ui->actionRun->setEnabled(false);
 	ui->actionStop->setEnabled(true);
 
+	pyrun->SetWorkingDirectory(ui->editCwd->text());
+
 	QString script = ui->edit->toPlainText();
 	emit runScript(script);
 }

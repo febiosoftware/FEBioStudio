@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <pybind11/embed.h>
 #include "PythonRunner.h"
 #include "PyFBS.h"
+#include <algorithm>
 namespace py = pybind11;
 
 CPythonRunner* CPythonRunner::m_This = nullptr;
@@ -53,6 +54,11 @@ CPythonRunner::~CPythonRunner()
 	}
 #endif
 	m_This = nullptr;
+}
+
+void CPythonRunner::SetWorkingDirectory(QString cwd)
+{
+	m_cwd = cwd.toStdString();
 }
 
 bool CPythonRunner::isBusy() const
@@ -92,6 +98,15 @@ void CPythonRunner::runFile(QString fileName)
 	}
 
 	std::string sfile = fileName.toStdString();
+	std::replace(sfile.begin(), sfile.end(), '\\', '/');
+
+	size_t n = sfile.rfind('/');
+	if (n != std::string::npos)
+	{
+		std::string cwd = sfile.substr(0, n);
+		setPythonCWD(cwd);
+	}
+
 	const char* szfile = sfile.c_str();
 
 	PyObject* obj = Py_BuildValue("s", szfile);
@@ -173,12 +188,15 @@ void CPythonRunner::runTool(CCachedPropertyList* tool)
 
 	try {
 		QString fncName = tool->GetPropertyValue(QString("_function_")).toString();
+		QString modName = tool->GetPropertyValue(QString("_module_")).toString();
 		if (!fncName.isEmpty())
 		{
 			std::string sfnc = fncName.toStdString();
+			std::string smod = modName.toStdString();
+			if (smod.empty()) smod = "__main__";
 
 			// Get the function by name
-			auto func = py::module_::import("__main__").attr(sfnc.c_str());
+			auto func = py::module_::import(smod.c_str()).attr(sfnc.c_str());
 
 			// call the function
 			py::dict kwargs;
@@ -220,9 +238,23 @@ void CPythonRunner::runScript(QString script)
 		m_pythonInitialized = true;
 	}
 
+	if (!m_cwd.empty())
+	{
+		// make sure all backslashes are replaced with forward slashes.
+		std::string path(m_cwd);
+		std::replace(path.begin(), path.end(), '\\', '/');
+		setPythonCWD(path);
+	}
+
 	std::string s = script.toStdString();
 	PyRun_SimpleString(s.c_str());
 
 #endif
 	emit runScriptFinished(true);
+}
+
+void CPythonRunner::setPythonCWD(const std::string& cwd)
+{
+	std::string changeCWD = "import os\nos.chdir('" + cwd + "')\n";
+	py::exec(changeCWD.c_str());
 }

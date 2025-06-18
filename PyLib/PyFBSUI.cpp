@@ -130,7 +130,9 @@ void PyAddTool(std::string toolName, py::dict props, py::function func, std::str
 	std::string mod_name = py::str(func.attr("__module__"));
 
 	QString fncName = QString::fromStdString(func_name);
+	QString modName = QString::fromStdString(mod_name);
 	CProperty* prop = p->addStringProperty(fncName, "_function_"); prop->setFlags(0); // make this hidden and uneditable
+	prop = p->addStringProperty(modName, "_module_"); prop->setFlags(0); // make this hidden and uneditable
 
 	auto wnd = FBS::getMainWindow();
 	auto panel = wnd->GetPythonToolsPanel();

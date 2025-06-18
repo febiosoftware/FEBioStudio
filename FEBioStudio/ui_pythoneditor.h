@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include <QMenuBar>
 #include <QMenu>
+#include <QLineEdit>
 
 class Ui::CPythonEditor
 {
@@ -40,6 +41,7 @@ public:
 	bool isModified = false;
 	QAction* actionRun = nullptr;
 	QAction* actionStop = nullptr;
+	QLineEdit* editCwd = nullptr;
 
 public:
 	void setup(QMainWindow* wnd, bool darkTheme)
@@ -98,6 +100,8 @@ public:
 		mainToolBar->addAction(actionSave);
 		mainToolBar->addAction(actionRun);
 		mainToolBar->addAction(actionStop);
+		mainToolBar->addWidget(editCwd = new QLineEdit);
+		editCwd->setPlaceholderText("set working directory");
 
 		QMetaObject::connectSlotsByName(wnd);
 	}

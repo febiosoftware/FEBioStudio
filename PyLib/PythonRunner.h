@@ -42,6 +42,8 @@ public:
 
 	void interrupt();
 
+	void SetWorkingDirectory(QString cwd);
+
 	// Use this method to get a pointer to the runner. 
 	static CPythonRunner* GetInstance();
 
@@ -56,8 +58,13 @@ signals:
 	void runScriptFinished(bool);
 
 private:
+	void setPythonCWD(const std::string& cwd);
+
+private:
 	bool m_busy = false;
 	bool m_pythonInitialized = false;
+
+	std::string	m_cwd;
 
 	static CPythonRunner* m_This;
 };
