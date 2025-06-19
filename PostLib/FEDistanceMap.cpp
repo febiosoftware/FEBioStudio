@@ -196,7 +196,7 @@ void Post::FEDistanceMap::Apply()
 			}
 		}
 		vector<int> nf1(m_surf1.Faces());
-		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN; //mesh.Face(m_surf1.m_face[i]).Nodes();
+		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN;
 		df->add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
 
 		// loop over all nodes of surface 2
@@ -216,7 +216,7 @@ void Post::FEDistanceMap::Apply()
 			}
 		}
 		vector<int> nf2(m_surf2.Faces());
-		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN; //mesh.Face(m_surf2.m_face[i]).Nodes();
+		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN;
 		df->add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
 	}
 }
@@ -243,9 +243,10 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 		}
 	}
 
-	// loop over all facets connected to this node
+	// Look into the nearest node's star first. 
+	bool found = false;
 	vector<int>& FT = surf.m_NLT[imin];
-	for (int i=0; i<(int) FT.size(); ++i)
+	for (int i = 0; i < (int)FT.size(); ++i)
 	{
 		// get the i-th facet
 		FSFace& face = mesh.Face(FT[i]);
@@ -255,11 +256,37 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 		if (ProjectToFacet(face, r, ntime, p))
 		{
 			// return the closest projection
-			float D = (p - r)*(p - r);
+			float D = (p - r) * (p - r);
 			if (D < Dmin)
 			{
 				q = p;
 				Dmin = D;
+				found = true;
+			}
+		}
+	}
+
+	if (!found)
+	{
+		// The previous search can fail since the nearest node's star may not contain
+		// the point r. This shouldn't happen a lot, but if it does happen, let's do an expensive search
+		// over all facets.
+		for (int i = 0; i < (int)surf.Faces(); ++i)
+		{
+			// get the i-th facet
+			FSFace& face = mesh.Face(surf.m_face[i]);
+
+			// project r onto the the facet
+			vec3f p;
+			if (ProjectToFacet(face, r, ntime, p))
+			{
+				// return the closest projection
+				float D = (p - r) * (p - r);
+				if (D < Dmin)
+				{
+					q = p;
+					Dmin = D;
+				}
 			}
 		}
 	}
