@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <GeomLib/GItem.h>
 #include <MeshLib/FSMesh.h>
 #include <FECore/FETransform.h>
+#include "DocHeaders/PyGeomDocs.h"
 
 namespace py = pybind11;
 
@@ -45,39 +46,39 @@ void init_FBSGeom(py::module& m)
 {
 	py::module geom = m.def_submodule("geom", "Module used to create geometry.");
 
-	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject")
-		.def("Parts", &GBaseObject::Parts)
-		.def("Faces", &GBaseObject::Faces)
-		.def("Edges", &GBaseObject::Edges)
-		.def("Nodes", &GBaseObject::Nodes)
-		.def("Part", [](GObject& self, int i) {return self.Part(i); })
-		.def("Face", [](GObject& self, int i) {return self.Face(i); })
-		.def("Edge", [](GObject& self, int i) {return self.Edge(i); })
-		.def("Node", [](GObject& self, int i) {return self.Node(i); })
-		.def("Part", [](GObject& self, int i) {return self.Part(i); })
-		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); })
-		.def("BuildMesh", &GObject::BuildMesh)
-		.def("GetTransform", static_cast<Transform&(GBaseObject::*)()>(&GBaseObject::GetTransform), py::return_value_policy::reference)
-		.def_property("pos", &GBaseObject::GetPosition, &GBaseObject::SetPosition)
+	py::class_<GObject, FSObject, std::unique_ptr<GObject, py::nodelete>>(geom, "GObject", DOC(GObject))
+		.def("Parts", &GBaseObject::Parts, DOC(GBaseObject, Parts))
+		.def("Faces", &GBaseObject::Faces, DOC(GBaseObject, Faces))
+		.def("Edges", &GBaseObject::Edges, DOC(GBaseObject, Edges))
+		.def("Nodes", &GBaseObject::Nodes, DOC(GBaseObject, Nodes))
+		.def("Part", [](GObject& self, int i) {return self.Part(i); }, DOC(GBaseObject, Part))
+		.def("Face", [](GObject& self, int i) {return self.Face(i); }, DOC(GBaseObject, Face))
+		.def("Edge", [](GObject& self, int i) {return self.Edge(i); }, DOC(GBaseObject, Edge))
+		.def("Node", [](GObject& self, int i) {return self.Node(i); }, DOC(GBaseObject, Node))
+		.def("Part", [](GObject& self, int i) {return self.Part(i); }, DOC(GBaseObject, Part))
+		.def("GetFEMesh", [](GObject& self) {return self.GetFEMesh(); }, DOC(GObject, GetFEMesh))
+		.def("BuildMesh", &GObject::BuildMesh, DOC(GObject, BuildMesh))
+		.def("GetTransform", static_cast<Transform&(GBaseObject::*)()>(&GBaseObject::GetTransform), py::return_value_policy::reference, DOC(GBaseObject, GetTransform))
+		.def_property("pos", &GBaseObject::GetPosition, &GBaseObject::SetPosition, "The position of the object in world coordinates. This is a property that can be set or retrieved.")
 		;
 
-	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject")
-		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode))
-		.def("MakeGNode", &GMeshObject::MakeGNode)
+	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject", DOC(GMeshObject))
+		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))
+		.def("MakeGNode", &GMeshObject::MakeGNode, DOC(GMeshObject, MakeGNode))
 		;
 
-	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "GBox");
+	py::class_<GBox, GObject, std::unique_ptr<GBox, py::nodelete>>(geom, "GBox", DOC(GBox));
 
-	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "GDisc")
-		.def("CreateMesh", &GDisc::CreateMesh)
+	py::class_<GDisc, GObject, std::unique_ptr<GDisc, py::nodelete>>(geom, "GDisc", DOC(GDisc))
+		.def("CreateMesh", &GDisc::CreateMesh, DOC(GDisc, CreateMesh))
 		;
 
-	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(geom, "GNode")
-		.def("Type", &GNode::Type)
-		.def("SetType", &GNode::SetType)
-		.def("LocalPosition", static_cast<vec3d & (GNode::*)()>(&GNode::LocalPosition))
-		.def("Position", &GNode::Position)
-		.def("MakeRequired", &GNode::MakeRequired)
+	py::class_<GNode, std::unique_ptr<GNode, py::nodelete>>(geom, "GNode", DOC(GNode))
+		.def("Type", &GNode::Type, DOC(GNode, Type))
+		.def("SetType", &GNode::SetType, DOC(GNode, SetType))
+		.def("LocalPosition", static_cast<vec3d & (GNode::*)()>(&GNode::LocalPosition), DOC(GNode, LocalPosition))
+		.def("Position", &GNode::Position, DOC(GNode, Position))
+		.def("MakeRequired", &GNode::MakeRequired, DOC(GNode, MakeRequired))
 		;
 }
 #else
