@@ -27,28 +27,35 @@ SOFTWARE.*/
 #pragma once
 #include <cstdint>
 
+//! OpenGL color class with RGBA components stored as 8-bit unsigned integers
 class GLColor
 {
 public:
+	//! Alpha component (0-255)
 	uint8_t	a, b, g, r;
 
 public:
+	//! Default constructor - creates black color with full opacity
 	GLColor() : a(255), b(0), g(0), r(0) {}
+	//! Constructor with RGB components and optional alpha
 	GLColor(uint8_t ur, uint8_t ug, uint8_t ub, uint8_t ua = 255)
 	{
 		r = ur;	g = ug;	b = ub;	a = ua;
 	}
 
+	//! Scalar multiplication operator - scales RGB components by factor
 	GLColor operator * (double f)
 	{
 		return GLColor((uint8_t)(r*f), (uint8_t)(g*f), (uint8_t)(b*f));
 	}
 
+	//! Color addition operator - adds RGB components
 	GLColor operator + (GLColor& c)
 	{
 		return GLColor(r + c.r, g + c.g, b + c.b);
 	}
 
+	//! Constructor from packed 32-bit unsigned integer (RGBA format)
 	GLColor(unsigned int c)
 	{
 		r = ((c >> 24) & 0xFF);
@@ -57,8 +64,10 @@ public:
 		a = ((c      ) & 0xFF);
 	}
 
+	//! Convert color to packed 32-bit unsigned integer
 	unsigned int to_uint() { return (unsigned int)((r << 24) | (g << 16) | (b << 8) | a); }
 
+	//! Convert color components to normalized float array (0.0-1.0)
 	void toFloat(float f[4]) const
 	{
 		f[0] = (float)r / 255.f;
@@ -67,6 +76,7 @@ public:
 		f[3] = (float)a / 255.f;
 	}
 
+	//! Convert color components to normalized double array (0.0-1.0)
 	void toDouble(double d[4]) const
 	{
 		d[0] = (double)r / 255.0;
@@ -75,11 +85,18 @@ public:
 		d[3] = (double)a / 255.0;
 	}
 
+	//! Create white color (255, 255, 255)
 	static GLColor White() { return GLColor(255, 255, 255); }
+	//! Create red color (255, 0, 0)
 	static GLColor Red()   { return GLColor(255,   0,   0); }
+	//! Create green color (0, 255, 0)
 	static GLColor Green() { return GLColor(  0, 255,   0); }
+	//! Create blue color (0, 0, 255)
 	static GLColor Blue()  { return GLColor(  0,   0, 255); }
+	//! Create yellow color (255, 255, 0)
 	static GLColor Yellow(){ return GLColor(255, 255,   0); }
+	//! Create black color (0, 0, 0)
 	static GLColor Black() { return GLColor(  0,   0,   0); }
+	//! Create color from normalized float RGB values (0.0-1.0)
 	static GLColor FromRGBf(float r, float g, float b, float a = 1.f) { return GLColor((uint8_t)(r*255.f), (uint8_t)(g*255.f), (uint8_t)(b*255.f), (uint8_t)(a * 255.f)); }
 };
