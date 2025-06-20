@@ -1059,5 +1059,5 @@ bool C3DImage::ExportSITK(const std::string& filename)
     return WriteSITKImage(this, filename);
 }
 #else
-bool C3DImage::ExportSITKImage(const std::string& filename) { return false; }
+bool C3DImage::ExportSITK(const std::string& filename) { return false; }
 #endif
