@@ -45,7 +45,7 @@ enum DataFieldFlags {
 };
 
 //-----------------------------------------------------------------------------
-// Base class describing a data field
+//! Base class describing a data field
 class ModelDataField : public FSObject
 {
 public:
