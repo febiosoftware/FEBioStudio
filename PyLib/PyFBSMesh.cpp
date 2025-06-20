@@ -144,26 +144,26 @@ void init_FSMesh(py::module_& m)
         .def("NodeNormal", [](FSFace& self, int node) { return to_vec3d(self.m_nn[node]); }, "Get the normal vector at the specified node.")
         ;
 
-    py::class_<FSEdge, FSMeshItem, std::unique_ptr<FSEdge, py::nodelete>>(mesh, "Edge")
-        .def("Nodes", &FSEdge::Nodes)
-		.def("Node", [](FSEdge& self, int node) { return self.n[node]; })
+    py::class_<FSEdge, FSMeshItem, std::unique_ptr<FSEdge, py::nodelete>>(mesh, "Edge", "Class representing a mesh edge.")
+        .def("Nodes", &FSEdge::Nodes, "Get the node IDs of the edge.")
+		.def("Node", [](FSEdge& self, int node) { return self.n[node]; }, "Get the node ID at the specified index.")
         ;
 
-	py::class_<FSNode, FSMeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node")
-        .def_readwrite("pos", &FSNode::r)
+	py::class_<FSNode, FSMeshItem, std::unique_ptr<FSNode, py::nodelete>>(mesh, "Node", "Class representing a mesh node.")
+        .def_readwrite("pos", &FSNode::r, "Get the position of the node.")
         ;
 
-	py::class_<FSSurface>(mesh, "FESurface")
-		.def("GetFaceIndices", [](FSSurface& self) { return self.CopyItems(); })
-		.def("GetName", &FSSurface::GetName);
+	py::class_<FSSurface>(mesh, "FESurface", "Class representing a mesh surface.")
+		.def("GetFaceIndices", [](FSSurface& self) { return self.CopyItems(); }, "Get the face indices of the surface.")
+		.def("GetName", &FSSurface::GetName, "Get the name of the surface.");
 
-	py::class_<FSNodeSet>(mesh, "FSNodeSet")
+	py::class_<FSNodeSet>(mesh, "FSNodeSet", "Class representing a set of mesh nodes.")
 	//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
-		.def("GetName", &FSNodeSet::GetName);
+		.def("GetName", &FSNodeSet::GetName, "Get the name of the node set.");
 
-	py::class_<FSElemSet>(mesh, "FSElemSet")
+	py::class_<FSElemSet>(mesh, "FSElemSet", "Class representing a set of mesh elements.")
 	//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
-		.def("GetName", &FSElemSet::GetName);
+		.def("GetName", &FSElemSet::GetName, "Get the name of the element set.");
 
 }
 
