@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
+#include <PostGL/GLPlotHelicalAxis.h>
 #include <ImageLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolumeRenderer.h>
@@ -384,6 +385,19 @@ void CMainWindow::on_actionAddRuler_triggered()
 	glm->AddPlot(ruler);
 
 	UpdatePostPanel(true, ruler);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionHelicalAxis_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return; 
+
+	Post::GLPlotHelicalAxis* plot = new Post::GLPlotHelicalAxis();
+	plot->SetGLModel(glm);
+
+	glm->AddPlot(plot);
+	UpdatePostPanel(true, plot);
 	RedrawGL();
 }
 

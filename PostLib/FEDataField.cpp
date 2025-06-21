@@ -476,7 +476,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 		if ((selOnly == false) || node.IsSelected())
 		{
 			// write the node ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", node.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)
@@ -546,7 +546,8 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				int nf = face.Nodes();
 				for (int j = 0; j < nf; ++j)
 				{
-					fprintf(fp, " %d", face.n[j] + 1);
+					FSNode& node = mesh.Node(face.n[j]);
+					fprintf(fp, " %d", node.GetID());
 					if (j != nf - 1) fprintf(fp, ",");
 				}
 				fprintf(fp, "\n");
@@ -554,7 +555,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 		}
 	}
 
-	// loop over all elements
+	// loop over all faces
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -562,7 +563,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 
 		if ((selOnly == false) || face.IsSelected())
 		{
-			// write the element ID
+			// write the face ID
 			char* sz = buf;
 			sprintf(sz, "%d,", i + 1); sz += strlen(sz);
 
@@ -745,11 +746,12 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 			if ((selOnly == false) || el.IsSelected())
 			{
 				// write the element ID
-				fprintf(fp, "%d,", i + 1);
+				fprintf(fp, "%d,", el.GetID());
 				int ne = el.Nodes();
 				for (int j = 0; j < ne; ++j)
 				{
-					fprintf(fp, " %d", el.m_node[j] + 1);
+					FSNode& node = mesh.Node(el.m_node[j]);
+					fprintf(fp, " %d", node.GetID());
 					if (j != ne - 1) fprintf(fp, ",");
 				}
 				fprintf(fp, "\n");
@@ -766,7 +768,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 		if ((selOnly == false) || el.IsSelected())
 		{
 			// write the element ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", el.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)

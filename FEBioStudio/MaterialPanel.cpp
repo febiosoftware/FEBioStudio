@@ -258,6 +258,7 @@ void CMaterialPanel::Update(bool breset)
 				ui->setColor(it, mat.diffuse);
 
 				it = new QTableWidgetItem();
+				it->setData(Qt::UserRole, i);
 				it->setTextAlignment(Qt::AlignRight);
 				if (mat.bvisible)
 					it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
@@ -268,6 +269,7 @@ void CMaterialPanel::Update(bool breset)
 				ui->m_list->setItem(nrows, 1, it);
 
 				it = new QTableWidgetItem();
+				it->setData(Qt::UserRole, i);
 				if (mat.benable)
 					it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
 				else
@@ -361,19 +363,22 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 				mat.benable = !mat.benable;
 			}
 
-			// update all the other selected materials
-			QItemSelectionModel* pselect = ui->m_list->selectionModel();
-			QModelIndexList selection = pselect->selectedRows();
-			int ncount = selection.count();
-			for (int i = 0; i < ncount; ++i)
+			if (item->isSelected())
 			{
-				QModelIndex index = selection.at(i);
-				if (index.row() != nrow)
+				// update all the other selected materials
+				QItemSelectionModel* pselect = ui->m_list->selectionModel();
+				QModelIndexList selection = pselect->selectedRows();
+				int ncount = selection.count();
+				for (int i = 0; i < ncount; ++i)
 				{
-					int imat = ui->m_list->item(index.row(), 0)->data(Qt::UserRole).toInt();
-					Post::Material& mati = *fem.GetMaterial(imat);
-					mati.bvisible = mat.bvisible;
-					mati.benable = mat.benable;
+					QModelIndex index = selection.at(i);
+					if (index.row() != nrow)
+					{
+						int imat = ui->m_list->item(index.row(), 0)->data(Qt::UserRole).toInt();
+						Post::Material& mati = *fem.GetMaterial(imat);
+						mati.bvisible = mat.bvisible;
+						mati.benable = mat.benable;
+					}
 				}
 			}
 

@@ -77,6 +77,12 @@ private:
 class CPlotDataSettings : public CSerializable
 {
 public:
+	enum PlotFormat {
+		PLOT_FEBIO,
+		PLOT_VTK
+	};
+
+public:
 	CPlotDataSettings(FSProject& prj);
 
 	//! save to file
@@ -91,6 +97,9 @@ public:
 	// Clear all plot variables
 	void Clear();
 
+	void SetPlotFormat(PlotFormat format) { m_plotFormat = format; }
+	PlotFormat GetPlotFormat() const { return m_plotFormat; }
+
 public:
 	int PlotVariables() { return (int)m_plot.size(); }
 	CPlotVariable& PlotVariable(int i) { return m_plot[i]; }
@@ -100,5 +109,6 @@ public:
 
 private:
 	FSProject&	m_prj;
+	PlotFormat m_plotFormat = PLOT_FEBIO;
 	std::vector<CPlotVariable>	m_plot;		// plot file variables
 };
