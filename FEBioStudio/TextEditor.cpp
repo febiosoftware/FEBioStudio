@@ -222,7 +222,7 @@ public:
 		QString cppControls(controls);
 		QString directives("#.*");
 		QString lineComment("//.*");
-		QString stringLiterals("\".*\"");
+		QString stringLiterals("([\"'])(.*?)\\1");
 		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
@@ -287,7 +287,7 @@ public:
 		QString control(ctrlList);
 		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
-		QString stringLiterals("\".*\"");
+		QString stringLiterals("([\"'])(.*?)\\1");
 		QString lineComment("#.*");
 
 		if (theme == 0) // light theme
@@ -361,7 +361,7 @@ public:
 		QString funcs    = toString(szpythonfncs, sizeof(szpythonfncs) / sizeof(const char*));
 
 		QString lineComment("#.*");
-		QString stringLiterals("\".*\"");
+		QString stringLiterals("([\"'])(.*?)\\1");
 		QString numbers("(?<!\\w)[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 		QString allcaps("\\b[A-Z][A-Z_\\d]*\\b");
 		QString braces("[\\(\\[\\{\\)\\]\\}]");
