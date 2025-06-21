@@ -33,8 +33,8 @@ SOFTWARE.*/
 #include "FSFace.h"
 
 //-----------------------------------------------------------------------------
-// element types
-// (NOTE: do not change the order or values of these macros.)
+//! element types
+//! (NOTE: do not change the order or values of these macros.)
 enum FSElementType {
 	FE_INVALID_ELEMENT_TYPE,
 	FE_HEX8,
@@ -60,7 +60,7 @@ enum FSElementType {
 	FE_PYRA13
 };
 
-// Element shapes
+//! Element shapes
 enum FSElemShape {
 	ELEM_LINE,
 	ELEM_TRI,
@@ -71,7 +71,7 @@ enum FSElemShape {
 	ELEM_PYRA
 };
 
-// Element class
+//! Element class
 enum FSElemClass
 {
 	ELEM_BEAM,
@@ -79,25 +79,31 @@ enum FSElemClass
 	ELEM_SOLID
 };
 
-// Element traits
+//! Element traits
 struct FSElemTraits
 {
-	int	ntype;	// type of element
-	int	nshape;	// shape of element
-	int	nclass; // element class
-	int	nodes;	// number of nodes
-	int	faces;	// number of faces (only for solid elements)
-	int	edges;	// number of edges (only for shell elements)
+	//! type of element
+	int	ntype;
+	//! shape of element
+	int	nshape;
+	//! element class
+	int nclass;
+	//! number of nodes
+	int	nodes;
+	//! number of faces (only for solid elements)
+	int	faces;
+	//! number of edges (only for shell elements)
+	int	edges;
 };
 
 //-----------------------------------------------------------------------------
-// The FSElement_ class defines the data interface to the element data. 
-// Specialized element classes are then defined by deriving from this base class.
-// A note on shells:
-//  - shells require a thickness, which is stored in _h. 
-//  - shells can lie on top of solids or sandwhiched between solids
-//    For such shells, the _nbr[4] and _nbr[5] are used to identify the elements
-//    on top of which they sit.
+//! The FSElement_ class defines the data interface to the element data. 
+//! Specialized element classes are then defined by deriving from this base class.
+//! A note on shells:
+//!  - shells require a thickness, which is stored in _h. 
+//!  - shells can lie on top of solids or sandwhiched between solids
+//!    For such shells, the _nbr[4] and _nbr[5] are used to identify the elements
+//!    on top of which they sit.
 class FSElement_ : public FSMeshItem
 {
 public:
@@ -108,24 +114,35 @@ public:
 	//! Set the element type
 	void SetType(int ntype);
 
+	//! Get the element type
 	int Type () const { return m_traits->ntype; }
+	//! Get the element shape
 	int Shape() const { return m_traits->nshape; }
+	//! Get the element class
 	int Class() const { return m_traits->nclass; }
 
+	//! Check if element is a solid element
 	bool IsSolid() const { return (m_traits->nclass == ELEM_SOLID); }
+	//! Check if element is a shell element
 	bool IsShell() const { return (m_traits->nclass == ELEM_SHELL); }
+	//! Check if element is a beam element
 	bool IsBeam () const { return (m_traits->nclass == ELEM_BEAM ); }
 
+	//! Get the number of nodes
 	int Nodes() const { return m_traits->nodes; }
+	//! Get the number of faces
 	int Faces() const { return m_traits->faces; }
+	//! Get the number of edges
 	int Edges() const { return m_traits->edges; }
 
 public:
-	// comparison operator
+	//! comparison operator
 	bool is_equal(FSElement_& e);
 
+	//! inequality operator
 	bool operator != (FSElement_& el);
 
+	//! Check if element has a specific node
 	bool HasNode(int node) const;
 
 	//! Is the element of this type
@@ -138,10 +155,12 @@ public: // for solid elements only
 
 	//! Get the face i
 	FSFace GetFace(int i) const;
+	//! Get the face i
 	void GetFace(int i, FSFace& face) const;
+	//! Get local face indices
 	int GetLocalFaceIndices(int i, int* n) const;
 
-	// Find the face. Returns local index in face array
+	//! Find the face. Returns local index in face array
 	int FindFace(const FSFace& f);
 
 public: // for shell elements only
@@ -156,42 +175,42 @@ public: // for shell elements only
 	int FindEdge(const FSEdge& edge) const;
 
 public:
-	// evaluate shape function at iso-parameteric point (r,s,t)
+	//! evaluate shape function at iso-parameteric point (r,s,t)
 	void shape(double* H, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s,t)
+	//! evaluate a vector expression at iso-points (r,s,t)
 	double eval(double* d, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s,t)
+	//! evaluate a vector expression at iso-points (r,s,t)
 	float eval(float* d, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s,t)
+	//! evaluate a vector expression at iso-points (r,s,t)
 	vec3f eval(vec3f* v, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s)
+	//! evaluate a vector expression at iso-points (r,s)
 	vec3f eval(vec3f* v, double r, double s);
 
-	// shape function derivatives
+	//! shape function derivatives
 	void shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t);
 
-	// get iso-param coordinates of the nodes
+	//! get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
 
-	// get iso-param coordinates of the nodes
+	//! get iso-param coordinates of the nodes
 	void iso_coord_2d(int n, double q[2]);
 
-	// set the material axis
+	//! set the material axis
 	void setAxes(const vec3d& a, const vec3d& d);
 
 public:
-	// evaluate shape function at iso-parameteric point (r,s) (for 2D elements only!)
+	//! evaluate shape function at iso-parameteric point (r,s) (for 2D elements only!)
 	void shape_2d(double* H, double r, double s);
 
-	// shape function derivatives (for 2D elements only)
+	//! shape function derivatives (for 2D elements only)
 	void shape_deriv_2d(double* Hr, double* Hs, double r, double s);
 
 protected:
-	// help class for copy-ing element data
+	//! help class for copy-ing element data
 	void copy(const FSElement_& el);
 
 public:
@@ -201,9 +220,9 @@ public:
 	double* 	m_h;		//!< element thickness (only used by shells)
 
 public:
-	int			m_lid;		// local ID (zero-based index into element array)
-	int			m_MatID;	// material id
-	float		m_tex;		// element texture coordinate
+	int			m_lid;		//!< local ID (zero-based index into element array)
+	int			m_MatID;	//!< material id
+	float		m_tex;		//!< element texture coordinate
 
 public:
 	vec3d	m_fiber;	//!< fiber orientation \todo maybe I can add an element attribute section
@@ -212,12 +231,13 @@ public:
 	double	m_a0;		//!< cross-sectional area (only used by truss elements)
 	
 protected:
-	const FSElemTraits* m_traits;	// element traits
+	//! element traits
+	const FSElemTraits* m_traits;
 };
 
 //-----------------------------------------------------------------------------
-// The FSElement class can be used to represent a general purpose element. 
-// This class can represent an element of all different types. 
+//! The FSElement class can be used to represent a general purpose element. 
+//! This class can represent an element of all different types. 
 class FSElement : public FSElement_
 {
 public:
@@ -241,7 +261,7 @@ private:
 };
 
 //=============================================================================
-// Element traits classes
+//! Element traits classes
 template <int Type> class FSElementTraits {};
 // Each of these classes defines:
 // Nodes: number of nodes
@@ -268,9 +288,11 @@ template <> class FSElementTraits<FE_PYRA5  > { public: enum { Nodes =  5 }; enu
 template <> class FSElementTraits<FE_TET5   > { public: enum { Nodes =  5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FSElementType Type() { return FE_TET5; } };
 template <> class FSElementTraits<FE_PYRA13 > { public: enum { Nodes = 13 }; enum { Faces = 5 }; enum { Edges = 0 }; static FSElementType Type() { return FE_PYRA13; } };
 
+//! Base element class template
 template <class T> class FSElementBase : public FSElement_
 {
 public:
+	//! constructor
 	FSElementBase()
 	{
 		SetType(T::Type());
@@ -281,6 +303,7 @@ public:
 		for (int i = 0; i<T::Nodes; ++i) m_node[i] = -1;
 	}
 
+	//! copy constructor
 	FSElementBase(const FSElementBase& el) : FSElement_(el)
 	{
 		m_node = _node;
@@ -288,6 +311,7 @@ public:
 		m_nbr = _nbr;
 	}
 
+	//! assignment operator
 	void operator = (const FSElementBase& el)
 	{
 		FSElement_::operator = (el);
@@ -295,8 +319,8 @@ public:
 	}
 
 public:
-	int		_node[T::Nodes];
-	int		_nbr[6];
+	int		_node[T::Nodes];	//!< node array
+	int		_nbr[6];			//!< neighbour elements
 	int		_face[6];			//!< faces (-1 for interior faces)
 	double 	_h[9];				//!< element thickness (only used by shells)
 };
@@ -322,20 +346,23 @@ typedef FSElementBase< FSElementTraits<FE_TET5   > > FETet5;
 typedef FSElementBase< FSElementTraits<FE_PYRA13 > > FEPyra13;
 
 //-----------------------------------------------------------------------------
-// This element class can represent any of the linear elements.
+//! This element class can represent any of the linear elements.
 class FSLinearElement : public FSElement_
 {
 public:
 	enum { MAX_NODES = 8 };
 
 public:
+	//! constructor
 	FSLinearElement();
+	//! copy constructor
 	FSLinearElement(const FSLinearElement& e);
+	//! assignment operator
 	void operator = (const FSLinearElement& e);
 
 public:
-	int		_node[MAX_NODES];	// array of nodes ID
-	int		_nbr[6];
+	int		_node[MAX_NODES];	//!< array of node IDs
+	int		_nbr[6];            //!< neighbour elements
 	int		_face[6];			//!< faces (-1 for interior faces)
 	double 	_h[9];				//!< element thickness (only used by shells)
 };

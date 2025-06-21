@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 #include <FSCore/FSObject.h>
 #include <FECore/FETransform.h>
+#include "DocHeaders/PyCoreDocs.h"
 
 namespace py = pybind11;
 
@@ -42,55 +43,55 @@ void init_FBSCore(py::module& m)
 {
     py::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
 
-	py::class_<GLColor>(core, "color")
-		.def(py::init<>())
-		.def(py::init<uint8_t, uint8_t, uint8_t>())
-		.def_readwrite("r", &GLColor::r)
-		.def_readwrite("g", &GLColor::g)
-		.def_readwrite("b", &GLColor::b)
-		.def_readwrite("a", &GLColor::a);
+	py::class_<GLColor>(core, "color", DOC(GLColor))
+		.def(py::init<>(), DOC(GLColor, GLColor))
+		.def(py::init<uint8_t, uint8_t, uint8_t>(), DOC(GLColor, GLColor, 3))
+		.def_readwrite("r", &GLColor::r, DOC(GLColor, r))
+		.def_readwrite("g", &GLColor::g, DOC(GLColor, g))
+		.def_readwrite("b", &GLColor::b, DOC(GLColor, b))
+		.def_readwrite("a", &GLColor::a, DOC(GLColor, a));
 
 	py::class_<vec3d>(core, "vec3d")
-        .def(py::init<>())
-        .def(py::init<double, double, double>())
-        .def(py::self + py::self)
-        .def(py::self - py::self)
-        .def(py::self * py::self)
-        .def(py::self ^ py::self)
-        .def(py::self == py::self)
-        .def(-py::self)
-        .def(py::self * double())
-        .def(py::self / double())
-        .def("Length", &vec3d::Length)
-        .def("SqrLength", &vec3d::SqrLength)
-        .def("Normalize", &vec3d::Normalize)
-        .def("Normalized", &vec3d::Normalized)
-        .def_readwrite("x", &vec3d::x)
-        .def_readwrite("y", &vec3d::y)
-        .def_readwrite("z", &vec3d::z)
+        .def(py::init<>(), DOC(vec3d, vec3d))
+        .def(py::init<double, double, double>(), DOC(vec3d, vec3d, 3))
+        .def(py::self + py::self, DOC(vec3d, operator_add))
+        .def(py::self - py::self, DOC(vec3d, operator_sub))
+        .def(py::self * py::self, DOC(vec3d, operator_mul_2))
+        .def(py::self ^ py::self, DOC(vec3d, operator))
+        .def(py::self == py::self, DOC(vec3d, operator_eq))
+        .def(-py::self, DOC(vec3d, operator_sub_2))
+        .def(py::self * double(), DOC(vec3d, operator_mul))
+        .def(py::self / double(), DOC(vec3d, operator_div))
+        .def("Length", &vec3d::Length, DOC(vec3d, Length))
+        .def("SqrLength", &vec3d::SqrLength, DOC(vec3d, SqrLength))
+        .def("Normalize", &vec3d::Normalize, DOC(vec3d, Normalize))
+        .def("Normalized", &vec3d::Normalized, DOC(vec3d, Normalized))
+        .def_readwrite("x", &vec3d::x, DOC(vec3d, x))
+        .def_readwrite("y", &vec3d::y, DOC(vec3d, y))
+        .def_readwrite("z", &vec3d::z, DOC(vec3d, z))
         .def("__repr__",
             [](const vec3d& v){
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
             });
 
-	py::class_<quatd>(core, "quatd")
-		.def(py::init<>())
-		.def(py::init<const vec3d&, const vec3d&>())
+	py::class_<quatd>(core, "quatd", DOC(quatd))
+		.def(py::init<>(), DOC(quatd, quatd))
+		.def(py::init<const vec3d&, const vec3d&>(), DOC(quatd, quatd, 4))
 		.def("__repr__",
 			[](const quatd& q) {
 				return "(" + std::to_string(q.x) + ", " + std::to_string(q.y) + ", " + std::to_string(q.z) + ", " + std::to_string(q.w) + ")";
 			})
-		.def("Inverse", &quatd::Inverse)
+		.def("Inverse", &quatd::Inverse, DOC(quatd, Inverse))
 		;
 
-	py::class_<Transform>(core, "Transform")
-		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate))
-		.def("SetPosition", &Transform::SetPosition)
-		.def("SetEulerAngles", static_cast<void (Transform::*)(double, double, double)> (&Transform::SetRotation))
+	py::class_<Transform>(core, "Transform", DOC(Transform))
+		.def("Rotate", static_cast<void (Transform::*)(quatd, vec3d)> (&Transform::Rotate), DOC(Transform, Rotate))
+		.def("SetPosition", &Transform::SetPosition, DOC(Transform, SetPosition))
+		.def("SetEulerAngles", static_cast<void (Transform::*)(double, double, double)> (&Transform::SetRotation), DOC(Transform, SetRotation))
 		;
 
-	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject")
-		.def_property("name", &FSObject::GetName, &FSObject::SetName)
+	py::class_<FSObject, std::unique_ptr<FSObject, py::nodelete>>(core, "FSObject", "Base class for all FEBio Studio objects")
+		.def_property("name", &FSObject::GetName, &FSObject::SetName, "Get or set the name of the object")
 		;
 
     FSElementLibrary::InitLibrary();
