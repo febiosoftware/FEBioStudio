@@ -93,6 +93,7 @@ SOFTWARE.*/
 #include "PythonEditor.h"
 #include "MainMenu.h"
 #include "PluginManager.h"
+#include <PyLib/PythonRunner.h>
 
 class QProcess;
 
@@ -335,6 +336,10 @@ public:
 	QAction* actionEditXmlAsText;
 
 	QToolBar* monitorToolBar;
+
+	// Python stuff
+	QThread m_pyThread;
+	CPythonRunner* m_pyRunner = nullptr;
 
 public:
 	CMainMenu* mainMenu;

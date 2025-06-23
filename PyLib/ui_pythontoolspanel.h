@@ -139,9 +139,6 @@ public:
 	::CPythonToolsPanel* parent = nullptr;
 
 public:
-	QThread m_pyThread;
-	CPythonRunner* m_pyRunner = nullptr;
-
 	CPythonTool* m_activeTool = nullptr;
 	std::vector<CPythonTool*>	tools;
 

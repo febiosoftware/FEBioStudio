@@ -217,6 +217,14 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 //-----------------------------------------------------------------------------
 CMainWindow::~CMainWindow()
 {
+#ifdef HAS_PYTHON
+	if (ui->m_pyThread.isRunning())
+	{
+		ui->m_pyThread.quit();
+		ui->m_pyThread.wait();
+	}
+#endif
+
 	// delete document
 	delete m_DocManager;
 	delete m_fileProcessor;

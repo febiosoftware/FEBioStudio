@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include <QMenuBar>
+#include <QThread>
+
 #include "IconProvider.h"
 
 Ui::CMainWindow::CMainWindow()
@@ -64,6 +66,14 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 		// build the central widget
 	centralWidget = new CMainCentralWidget(wnd);
 	wnd->setCentralWidget(centralWidget);
+
+	// init Python stuff
+#ifdef HAS_PYTHON
+	m_pyRunner = new CPythonRunner;
+	m_pyRunner->moveToThread(&m_pyThread);
+	QObject::connect(&m_pyThread, &QThread::finished, m_pyRunner, &QObject::deleteLater);
+	m_pyThread.start();
+#endif
 
 	// build the menu
 	mainMenu = new CMainMenu(wnd);

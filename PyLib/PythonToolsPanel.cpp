@@ -38,25 +38,12 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent)
 {
 	ui->setupUi(this);
 
-	ui->m_pyRunner = new CPythonRunner;
-	ui->m_pyRunner->moveToThread(&ui->m_pyThread);
+	CPythonRunner* pyRunner = CPythonRunner::GetInstance();
 
-	connect(&ui->m_pyThread, &QThread::finished, ui->m_pyRunner, &QObject::deleteLater);
-	connect(this, &CPythonToolsPanel::runFile, ui->m_pyRunner, &CPythonRunner::runFile);
-	connect(this, &CPythonToolsPanel::runTool, ui->m_pyRunner, &CPythonRunner::runTool);
-	connect(ui->m_pyRunner, &CPythonRunner::runFileFinished, this, &CPythonToolsPanel::on_pyRunner_runFileFinished);
-	connect(ui->m_pyRunner, &CPythonRunner::runToolFinished, this, &CPythonToolsPanel::on_pyRunner_runToolFinished);
-
-	ui->m_pyThread.start();
-}
-
-CPythonToolsPanel::~CPythonToolsPanel()
-{
-	if (ui->m_pyThread.isRunning())
-	{
-		ui->m_pyThread.quit();
-		ui->m_pyThread.wait();
-	}
+	connect(this, &CPythonToolsPanel::runFile, pyRunner, &CPythonRunner::runFile);
+	connect(this, &CPythonToolsPanel::runTool, pyRunner, &CPythonRunner::runTool);
+	connect(pyRunner, &CPythonRunner::runFileFinished, this, &CPythonToolsPanel::on_pyRunner_runFileFinished);
+	connect(pyRunner, &CPythonRunner::runToolFinished, this, &CPythonToolsPanel::on_pyRunner_runToolFinished);
 }
 
 void CPythonToolsPanel::Update(bool breset)
@@ -78,7 +65,10 @@ void CPythonToolsPanel::addPythonTool(QString toolName, CCachedPropertyList* pro
 
 void CPythonToolsPanel::on_importScript_triggered()
 {
-	if (ui->m_pyRunner->isBusy())
+	CPythonRunner* pyRunner = CPythonRunner::GetInstance();
+	if (pyRunner == nullptr) return;
+
+	if (pyRunner->isBusy())
 	{
 		QMessageBox::information(this, "Python", "A Python script is still running. Please wait.");
 		return;
