@@ -135,12 +135,12 @@ void PyAddTool(std::string toolName, py::dict props, py::function func, std::str
 	prop = p->addStringProperty(modName, "_module_"); prop->setFlags(0); // make this hidden and uneditable
 
 	auto wnd = FBS::getMainWindow();
-	auto panel = wnd->GetPythonToolsPanel();
+//	auto panel = wnd->GetPythonToolsPanel();
 
 	QString name = QString::fromStdString(toolName);
 	QString info = QString::fromStdString(infoStr);
 
-	QMetaObject::invokeMethod(panel, "addPythonTool", Q_ARG(QString, name), Q_ARG(CCachedPropertyList*, p), Q_ARG(QString, info));
+//	QMetaObject::invokeMethod(panel, "addPythonTool", Q_ARG(QString, name), Q_ARG(CCachedPropertyList*, p), Q_ARG(QString, info));
 }
 
 class CPyOutput
@@ -160,8 +160,8 @@ void init_FBSUI(py::module& m)
 {
     py::module ui = m.def_submodule("ui", "Module used to interact with the FEBio Studio GUI");
 
-	py::module panels = ui.def_submodule("panels", "Module used for interacting with FBS panels");
-	py::module pytools = panels.def_submodule("pytools", "Module used for interacting with Python panel");
+//	py::module panels = ui.def_submodule("panels", "Module used for interacting with FBS panels");
+//	py::module pytools = panels.def_submodule("pytools", "Module used for interacting with Python panel");
 
     py::class_<CPyOutput>(ui, "PyOutput")
         .def(py::init())
@@ -170,7 +170,7 @@ void init_FBSUI(py::module& m)
 
     ui.def("openFile", openFile);
 
-	pytools.def("AddTool", PyAddTool, py::arg("toolName"), py::arg("props"), py::arg("func"), py::arg("infoStr") = "");
+//	pytools.def("AddTool", PyAddTool, py::arg("toolName"), py::arg("props"), py::arg("func"), py::arg("infoStr") = "");
 }
 
 #else

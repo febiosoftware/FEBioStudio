@@ -88,7 +88,7 @@ void Ui::CEmptyConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 	ui->projectViewer->parentWidget()->raise();
@@ -131,7 +131,7 @@ void Ui::CHTMLConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 	ui->projectViewer->parentWidget()->raise();
@@ -209,7 +209,7 @@ void Ui::CModelConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->show();
+//    ui->pythonToolsPanel->parentWidget()->show();
 #endif
 
 	wnd->UpdateUiView();
@@ -277,7 +277,7 @@ void Ui::CPostConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->show();
+//    ui->pythonToolsPanel->parentWidget()->show();
 #endif
 
 	ui->showTimeline();
@@ -331,7 +331,7 @@ void Ui::CTextConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 }
 
@@ -420,7 +420,7 @@ void Ui::CXMLConfig::Apply()
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-            ui->pythonToolsPanel->parentWidget()->hide();
+//            ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 			for (auto action : ui->xmlToolbar->actions())

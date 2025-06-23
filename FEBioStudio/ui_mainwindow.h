@@ -295,7 +295,7 @@ public:
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
-    ::CPythonToolsPanel*	pythonToolsPanel;
+//    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;

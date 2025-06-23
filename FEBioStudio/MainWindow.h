@@ -147,7 +147,7 @@ public:
 	CRepositoryPanel* GetDatabasePanel();
 
 	// get the python panel
-	CPythonToolsPanel* GetPythonToolsPanel();
+//	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();
