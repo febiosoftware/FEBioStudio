@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <MeshLib/FSEdge.h>
 #include <MeshLib/FSFace.h>
 #include <MeshLib/FSElement.h>
+#include <MeshLib/FSItemListBuilder.h>
+#include <GeomLib/FSGroup.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FSCurveMesh.h>
 
@@ -82,6 +84,9 @@ void init_FSMesh(py::module_& m)
 
 		.def("MeshDataFields", &FSMesh::MeshDataFields, DOC(FSMesh, MeshDataFields))
 		.def("GetMeshDataField", &FSMesh::GetMeshDataField, py::return_value_policy::reference, DOC(FSMesh, GetMeshDataField))
+
+        .def("MeshPartitions", &FSMesh::MeshPartitions, DOC(FSMesh, MeshPartitions))
+        .def("MeshPartition", &FSMesh::MeshPartition, py::return_value_policy::reference, DOC(FSMesh, MeshPartition))
         ;
 
 	py::class_<FSCurveMesh, FSLineMesh, std::unique_ptr<FSCurveMesh, py::nodelete>>(mesh, "CurveMesh", DOC(FSCurveMesh))
@@ -153,17 +158,30 @@ void init_FSMesh(py::module_& m)
         .def_readwrite("pos", &FSNode::r, "Get the position of the node.")
         ;
 
-	py::class_<FSSurface>(mesh, "FESurface", "Class representing a mesh surface.")
-		.def("GetFaceIndices", [](FSSurface& self) { return self.CopyItems(); }, "Get the face indices of the surface.")
-		.def("GetName", &FSSurface::GetName, "Get the name of the surface.");
+    py::class_<FSItemListBuilder, FSObject>(mesh, "FSItemListBuilder", "Class for building a list of mesh items.")
+        .def("CopyItems", &FSItemListBuilder::CopyItems, "Get a copy of the items in the list.")
+        ;
 
-	py::class_<FSNodeSet>(mesh, "FSNodeSet", "Class representing a set of mesh nodes.")
-	//        .def_readonly("nodes", &FSNodeSet::m_Item, py::return_value_policy::reference)
-		.def("GetName", &FSNodeSet::GetName, "Get the name of the node set.");
+    py::class_<FSGroup, FSItemListBuilder, std::unique_ptr<FSGroup, py::nodelete>>(mesh, "Group", "Class representing a group of mesh items.")
+        .def("GetMesh", &FSGroup::GetMesh, py::return_value_policy::reference, "Get the mesh associated with this group.")
+        ;
 
-	py::class_<FSElemSet>(mesh, "FSElemSet", "Class representing a set of mesh elements.")
-	//        .def_readonly("elems", &FSElemSet::m_Item, py::return_value_policy::reference)
-		.def("GetName", &FSElemSet::GetName, "Get the name of the element set.");
+	py::class_<FSSurface, FSGroup>(mesh, "FESurface", "Class representing a mesh surface.");
+
+	py::class_<FSNodeSet, FSGroup>(mesh, "FSNodeSet", "Class representing a set of mesh nodes.");
+
+	py::class_<FSElemSet, FSGroup>(mesh, "FSElemSet", "Class representing a set of mesh elements.");
+
+    py::class_<FSMeshPartition, FSObject, std::unique_ptr<FSMeshPartition, py::nodelete>>(mesh, "MeshPartition", "Class representing a partition of a mesh.")
+        .def("SetMatID", &FSMeshPartition::SetMatID, "Set the material ID for this partition.")
+        .def("GetMatID", &FSMeshPartition::GetMatID, "Get the material ID for this partition.")
+        .def("Faces", &FSMeshPartition::Faces, "Get the number of faces in this partition.")
+        .def("Face", &FSMeshPartition::Face, py::return_value_policy::reference, "Get the face at the specified index.")
+        .def("Elements", &FSMeshPartition::Elements, "Get the number of elements in this partition.")
+        .def("Element", &FSMeshPartition::Element, py::return_value_policy::reference, "Get the element at the specified index.")
+        .def("FaceList", &FSMeshPartition::FaceList, "Get the list of face indices in this partition.")
+        .def("ElementList", &FSMeshPartition::ElementList, "Get the list of element indices in this partition.")
+        ;
 
 }
 
