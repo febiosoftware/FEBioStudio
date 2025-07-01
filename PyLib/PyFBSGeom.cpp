@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <GeomLib/GBaseObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GItem.h>
 #include <MeshLib/FSMesh.h>
 #include <FECore/FETransform.h>
@@ -61,6 +62,10 @@ void init_FBSGeom(py::module& m)
 		.def("GetTransform", static_cast<Transform&(GBaseObject::*)()>(&GBaseObject::GetTransform), py::return_value_policy::reference, DOC(GBaseObject, GetTransform))
 		.def_property("pos", &GBaseObject::GetPosition, &GBaseObject::SetPosition, "The position of the object in world coordinates. This is a property that can be set or retrieved.")
 		;
+
+    py::class_<GSurfaceMeshObject, GObject, std::unique_ptr<GSurfaceMeshObject, py::nodelete>>(geom, "GSurfaceMeshObject")
+        .def(py::init<FSSurfaceMesh*>())
+        ;
 
 	py::class_<GMeshObject, GObject, std::unique_ptr<GMeshObject, py::nodelete>>(geom, "GMeshObject", DOC(GMeshObject))
 		.def("AddNode", static_cast<int (GMeshObject::*)(vec3d)>(&GMeshObject::AddNode), DOC(GMeshObject, AddNode))

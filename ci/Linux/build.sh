@@ -15,7 +15,7 @@ main() {
     # Standalone Python module
     pushd PyLib
     git clone --depth 1 https://github.com/febiosoftware/FEBio.git
-    cmake -L . -B cmbuild -DFEBioDir=FEBio
+    cmake -L . -B cmbuild -DFEBioDir=FEBio -DUSE_TETGEN=ON
     pushd cmbuild
     make -j $(nproc)
     popd

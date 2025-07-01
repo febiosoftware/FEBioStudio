@@ -331,11 +331,6 @@ if(USE_MMG)
 	include_directories(${MMG_INC})
 endif()
 
-if(USE_TETGEN)
-	add_definitions(-DTETLIBRARY)
-	include_directories(${TETGEN_INC})
-endif()
-
 if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
@@ -472,7 +467,12 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
             crossExecProcess(DEVCOMMIT)
             
             if(${SUCCESS} EQUAL 0)
-                target_compile_definitions(${FBS_BIN_NAME} PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+                set_source_files_properties(
+                    FEBioStudio/menuHelp.cpp
+                    FEBioStudio/welcomePage.cpp
+                    PROPERTIES
+                    COMPILE_DEFINITIONS "DEVCOMMIT=\"${DEVCOMMIT}\""
+                )
             endif()
         endif()
     else()
@@ -529,6 +529,9 @@ if(USE_MMG)
 endif()
 
 if(USE_TETGEN)
+    target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
+    target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
     
     if(DEFINED TETGEN_DBG_LIBS)

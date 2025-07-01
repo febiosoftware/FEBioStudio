@@ -52,6 +52,78 @@ if(NOT WIN32)
     find_package(OpenMP QUIET)
 endif()
 
+# TETGEN
+if(WIN32)
+  find_path(TETGEN_INC tetgen.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
+        DOC "TetGen include directory")
+  find_library(TETGEN_LIB tet tetgen
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "lib" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "x64/Release" "x64/Debug"
+        DOC "TetGen library path")
+else()
+	find_path(TETGEN_INC tetgen.h
+        PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
+        DOC "TetGen include directory")
+	find_library(TETGEN_LIB tet
+        PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug" "lib"
+        DOC "TetGen library path")
+endif()
+
+if(TETGEN_LIB)
+    get_filename_component(TETGEN_TEMP ${TETGEN_LIB} DIRECTORY)
+    set(TETGEN_LIB_DIR ${TETGEN_TEMP} CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
+    unset(TETGEN_TEMP)
+    unset(TETGEN_LIB CACHE)
+else()
+	set(TETGEN_LIB_DIR "TETGEN_LIB_DIR-NOTFOUND" CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
+    unset(TETGEN_LIB CACHE)
+endif()
+
+if(TETGEN_INC AND TETGEN_LIB_DIR)
+	option(USE_TETGEN "Required for adaptive remeshing" ON)
+    mark_as_advanced(TETGEN_INC TETGEN_LIB_DIR)
+else()
+	option(USE_TETGEN "Required for adaptive remeshing" OFF)
+    mark_as_advanced(CLEAR TETGEN_INC TETGEN_LIB_DIR)
+endif()
+
+set(TETGEN_DBG_LIB_DIR CACHE PATH "Path to the TET debug lib directory")
+mark_as_advanced(TETGEN_DBG_LIB_DIR)
+
+function(findLib libDir libOut libName)
+    # Optional arguments ARGV3-ARVG6 can be used as alernative names for the library
+    find_library(TEMP NAMES ${libName} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6}
+        PATHS ${${libDir}} NO_DEFAULT_PATH)
+    
+    if(TEMP)
+        set(${libOut} ${TEMP} PARENT_SCOPE)
+        unset(TEMP CACHE)
+    else()
+        if(WIN32)
+            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libDir}.")
+        elseif(APPLE)
+            message(SEND_ERROR "Could not find lib${libName}.so, lib${libName}.a, or lib${libName}.dylib Check ${libDir}.")
+        else()
+            message(SEND_ERROR "Could not find lib${libName}.so, or lib${libName}.a. Check ${libDir}")
+        endif()
+        unset(TEMP CACHE)
+    endif()
+endfunction()
+
+if(USE_TETGEN)
+    findLib(TETGEN_LIB_DIR TETGEN_LIB tet tetgen)
+    
+    if(TETGEN_DBG_LIB_DIR STREQUAL "")
+        unset(TETGEN_DBG_LIB)
+    else()
+        findLib(TETGEN_DBG_LIB_DIR TETGEN_DBG_LIB tet tetgen)
+    endif()
+endif()
+
 if(WIN32)
     add_definitions(-DWIN32)
     add_compile_options(/MP /openmp)
@@ -128,6 +200,19 @@ target_include_directories(XPLTLib PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
 
 pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp PyFBSMesh.cpp PyFBSGeom.cpp)
+
+if(USE_TETGEN)
+	target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
+    target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
+
+	target_link_libraries(fbs PRIVATE optimized ${TETGEN_LIB})
+    
+    if(DEFINED TETGEN_DBG_LIBS)
+        target_link_libraries(fbs PRIVATE debug ${TETGEN_DBG_LIB})
+    else()
+        target_link_libraries(fbs PRIVATE debug ${TETGEN_LIB})
+    endif()
+endif()
 
 if(WIN32)
     target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
