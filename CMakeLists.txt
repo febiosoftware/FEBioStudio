@@ -331,11 +331,6 @@ if(USE_MMG)
 	include_directories(${MMG_INC})
 endif()
 
-if(USE_TETGEN)
-	add_definitions(-DTETLIBRARY)
-	include_directories(${TETGEN_INC})
-endif()
-
 if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
@@ -537,6 +532,9 @@ if(USE_MMG)
 endif()
 
 if(USE_TETGEN)
+    target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
+    target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
     
     if(DEFINED TETGEN_DBG_LIBS)

@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <GeomLib/FSGroup.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 
 
 #ifdef HAS_PYTHON
@@ -67,6 +68,12 @@ void init_FSMesh(py::module_& m)
 		.def("Faces", &FSMesh::Faces, DOC(FSMeshBase, Faces))
 		.def("Face", [](FSMeshBase& self, int i) {return &self.Face(i); }, DOC(FSMeshBase, Face))
 		;
+
+    py::class_<FSSurfaceMesh, FSMeshBase, std::unique_ptr<FSSurfaceMesh, py::nodelete>>(mesh, "SurfaceMesh", DOC(FSSurfaceMesh))
+        .def(py::init<>())
+        .def("Create", &FSSurfaceMesh::Create)
+        .def("RebuildMesh", &FSSurfaceMesh::RebuildMesh)
+        ;
 
 	py::class_<FSMesh, FSMeshBase, std::unique_ptr<FSMesh, py::nodelete>>(mesh, "Mesh", DOC(FSMesh))
 		.def(py::init<>())
@@ -143,8 +150,11 @@ void init_FSMesh(py::module_& m)
     py::class_<FSFace, FSMeshItem, std::unique_ptr<FSFace, py::nodelete>>(mesh, "Face", DOC(FSFace))
         .def("Nodes", &FSFace::Nodes, DOC(FSFace, Nodes))
 		.def("Node", [](FSFace& self, int node) { return self.n[node]; }, "Get the node ID at the specified index.")
+        .def("SetNode", [](FSFace& self, int node, int val) { self.n[node] = val; }, "Set the node ID at the specified index.")
         .def("Edges", &FSFace::Edges, DOC(FSFace, Edges))
 		.def("Edge", &FSFace::GetEdge, DOC(FSFace, GetEdge))
+        .def("Type", &FSFace::Type, DOC(FSFace, Type))
+        .def("SetType", &FSFace::SetType, DOC(FSFace, SetType))
         .def("Normal", [](FSFace& self) { return to_vec3d(self.m_fn); }, "Get the face normal")
         .def("NodeNormal", [](FSFace& self, int node) { return to_vec3d(self.m_nn[node]); }, "Get the normal vector at the specified node.")
         ;
