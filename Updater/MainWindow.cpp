@@ -723,7 +723,11 @@ void CMainWindow::getNextPlugin()
 {
     if(ui->currentPluginID < ui->pluginIDs.size())
     {
-        ui->downloadFileLabel->setText("Updating Plugins...");
+        ui->downloadOverallLabel->hide();
+        ui->overallProgress->hide();
+        ui->fileProgress->setValue(0);
+
+        ui->downloadFileLabel->setText(QString("Downloading Plugin %1 of %2").arg(ui->currentPluginID + 1).arg(ui->pluginIDs.size()));
 
         int pluginID = ui->pluginIDs[ui->currentPluginID];
         ui->pluginManager.DownloadPlugin(pluginID);
