@@ -90,6 +90,8 @@ bool CPluginXML::LoadXML()
     {
         return false;
     }
+
+    return true;
 }
 
 void CPluginXML::WriteXML()
