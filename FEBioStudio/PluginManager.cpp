@@ -31,11 +31,15 @@ SOFTWARE.*/
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <unordered_map>
+#include <sstream>
+
+#ifndef UPDATER
 #include <FECore/version.h>
 #include <FEBioLib/plugin.h>
 #include <FEBioLib/febio.h>
 #include <FECore/FEModule.h>
-#include <sstream>
+#endif
+
 
 // This is need on Windows since one of the windows headers introduces a max macro. 
 #ifdef WIN32
@@ -73,6 +77,12 @@ bool CPluginManager::LoadXML()
     return imp->m_xml.LoadXML();
 }
 
+void CPluginManager::Connect()
+{
+    imp->m_repo.getSchema();
+}
+
+#ifndef UPDATER
 void CPluginManager::LoadAllPlugins()
 {
     for(auto& [id, plugin] : imp->m_plugins)
@@ -82,11 +92,6 @@ void CPluginManager::LoadAllPlugins()
             if(LoadFEBioPlugin(plugin)) plugin.loaded = true;
         }
     }
-}
-
-void CPluginManager::Connect()
-{
-    imp->m_repo.getSchema();
 }
 
 void CPluginManager::ReadDatabase()
@@ -124,6 +129,10 @@ void CPluginManager::ReadDatabase()
 
     emit PluginsReady();
 }
+#else
+void CPluginManager::LoadAllPlugins() {}
+void CPluginManager::ReadDatabase() {}
+#endif
 
 const std::unordered_map<int, Plugin>& CPluginManager::GetPlugins()
 {
@@ -140,6 +149,17 @@ Plugin* CPluginManager::GetPlugin(int id)
     {
         return nullptr;
     }
+}
+
+Plugin* CPluginManager::AddPlugin(int id)
+{
+    if(imp->m_plugins.count(id) == 0)
+    {
+        Plugin plugin;
+        plugin.id = id;
+        imp->m_plugins.insert({id, plugin});
+    }
+    return &imp->m_plugins[id];
 }
 
 void CPluginManager::DownloadPlugin(int id)
@@ -185,6 +205,7 @@ bool CPluginManager::DeletePlugin(int id)
     return true;
 }
 
+#ifndef UPDATER
 bool CPluginManager::LoadPlugin(int id)
 {
     if(imp->m_plugins.count(id) == 0)
@@ -225,17 +246,6 @@ bool CPluginManager::UnloadPlugin(int id)
     return true;
 }
 
-Plugin* CPluginManager::AddPlugin(int id)
-{
-    if(imp->m_plugins.count(id) == 0)
-    {
-        Plugin plugin;
-        plugin.id = id;
-        imp->m_plugins.insert({id, plugin});
-    }
-    return &imp->m_plugins[id];
-}
-
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data)
 {
     if(imp->m_plugins.count(pluginID) == 0)
@@ -245,6 +255,11 @@ void CPluginManager::AddPublication(int pluginID, const QVariantMap& data)
 
     imp->m_plugins[pluginID].publications.push_back(data);
 }
+#else
+bool CPluginManager::LoadPlugin(int id) { return false; }
+bool CPluginManager::UnloadPlugin(int id) { return false; }
+void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
+#endif
 
 void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, const std::string& version, const std::string& febioVersion)
 {
@@ -280,6 +295,8 @@ void CPluginManager::OnDownloadFinished(int id)
 
     emit DownloadFinished();
 }
+
+#ifndef UPDATER
 
 void CPluginManager::AddRepoPlugin(char** argv)
 {
@@ -404,3 +421,10 @@ bool CPluginManager::IsVersion2Newer(const std::string& version1, const std::str
     
     return false; // versions are equal
 }
+
+#else
+void CPluginManager::AddRepoPlugin(char** argv) {}
+bool CPluginManager::LoadFEBioPlugin(Plugin& plugin) { return false; }
+void CPluginManager::SetPluginStatus(Plugin& plugin) {}
+bool CPluginManager::IsVersion2Newer(const std::string& version1, const std::string& version2) { return false; }
+#endif

@@ -36,7 +36,10 @@ SOFTWARE.*/
 #include "ServerSettings.h"
 #include "PluginDatabaseHandler.h"
 #include "PluginManager.h"
+
+#ifndef UPDATER
 #include <FECore/version.h>
+#endif
 
 #include <iostream>
 
@@ -50,41 +53,8 @@ SOFTWARE.*/
     #define OS_ID "3"
 #endif
 
-// class CPluginRepoConnectionHandler::Imp
-// {
-// public:
-// 	Imp(CPluginManager* manager, CPluginRepoConnectionHandler* handler)
-// 		: manager(manager), uploadPermission(0), sizeLimit(0), authenticated(false), uploadReady(false)
-// 	{
-// 	}
-
-// 	void loggedOut()
-// 	{
-// 		username = "";
-// 		token = "";
-// 		uploadPermission = 0;
-// 		sizeLimit = 0;
-// 		authenticated = false;
-
-// 		fileToken = "";
-// 		uploadReady = false;
-// 	}
-
-//     CPluginManager* manager;
-
-// 	QString username;
-// 	QString token;
-// 	int uploadPermission;
-// 	qint64 sizeLimit;
-// 	bool authenticated;
-
-// 	QString fileToken;
-// 	bool uploadReady;
-// };
-
-
 CPluginRepoConnectionHandler::CPluginRepoConnectionHandler(CPluginManager* manager, CPluginDatabaseHandler* dbHandler)
-    : manager(manager), dbHandler(dbHandler), wnd(wnd), restclient(new QNetworkAccessManager(this))
+    : manager(manager), dbHandler(dbHandler), restclient(new QNetworkAccessManager(this))
 {
 	connect(restclient, &QNetworkAccessManager::finished, this, &CPluginRepoConnectionHandler::connFinished);
 	connect(restclient, &QNetworkAccessManager::sslErrors, this, &CPluginRepoConnectionHandler::sslErrorHandler);
@@ -120,7 +90,6 @@ void CPluginRepoConnectionHandler::getTables()
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
-    request.setRawHeader(QByteArray("sdk"), QString("%1.%2.%3").arg(FE_SDK_MAJOR_VERSION).arg(FE_SDK_SUB_VERSION).arg(FE_SDK_SUBSUB_VERSION).toUtf8());
     request.setRawHeader(QByteArray("os"), OS_ID);
 
 	if(NetworkAccessibleCheck())
@@ -167,11 +136,6 @@ void CPluginRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const Q
 	reply->ignoreSslErrors();
 }
 
-void CPluginRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
-{
-	wnd->UpdateProgress((float)bytesReceived/(float)bytesTotal*100);
-}
-
 bool CPluginRepoConnectionHandler::NetworkAccessibleCheck()
 {
 	// if(restclient->networkAccessible() == QNetworkAccessManager::Accessible)
@@ -200,7 +164,11 @@ void CPluginRepoConnectionHandler::getPluginFiles(int pluginID, int fileNumber)
     request.setUrl(myurl);
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
+// The updater just get the latest version of the plugin, so it does not need the SDK version
+#ifndef UPDATER
     request.setRawHeader(QByteArray("sdk"), QString("%1.%2.%3").arg(FE_SDK_MAJOR_VERSION).arg(FE_SDK_SUB_VERSION).arg(FE_SDK_SUBSUB_VERSION).toUtf8());
+#endif
+
     request.setRawHeader(QByteArray("os"), OS_ID);
     request.setRawHeader(QByteArray("fileID"), QString::number(fileNumber).toUtf8());
 

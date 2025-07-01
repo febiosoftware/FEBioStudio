@@ -35,6 +35,7 @@
 #include <XML/XMLWriter.h>
 #include <FEBioStudio/UpdateChecker.h>
 #include <FEBioStudio/ServerSettings.h>
+#include <FEBioStudio/PluginManager.h>
 #include "ZipThread.h"
 
 #include <iostream>
@@ -178,6 +179,10 @@ public:
     std::vector<int> zippedFiles;
 	qint64 overallSize;
 	qint64 downloadedSize;
+
+    CPluginManager pluginManager;
+    int currentPluginID;
+    std::vector<int> pluginIDs;
 };
 
 
@@ -222,6 +227,9 @@ CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& bran
 	connect(this->button(QWizard::FinishButton), &QPushButton::clicked, this, &CMainWindow::onFinish);
 	connect(restclient, &QNetworkAccessManager::finished, this, &CMainWindow::connFinished);
 	connect(restclient, &QNetworkAccessManager::sslErrors, this, &CMainWindow::sslErrorHandler);
+    
+    connect(&ui->pluginManager, &CPluginManager::downloadProgress, this, &CMainWindow::progress);
+    connect(&ui->pluginManager, &CPluginManager::DownloadFinished, this, &CMainWindow::pluginDownloadFinished);
 }
 
 bool CMainWindow::checkBinaries()
@@ -406,7 +414,7 @@ void CMainWindow::unzipFiles()
         }
         else
         {
-            downloadsFinished();
+            updatePlugins();
 	    }
     }
 }
@@ -502,7 +510,12 @@ void CMainWindow::unzipSDKFinished()
 		zip.remove();
 	}
 
-    downloadsFinished();
+    updatePlugins();
+}
+
+void CMainWindow::pluginDownloadFinished()
+{
+    getNextPlugin();
 }
 
 void CMainWindow::initializePage(int id)
@@ -678,6 +691,48 @@ void CMainWindow::downloadsFinished()
 	writer.close();
 
 	ui->downloadsFinished();
+}
+
+void CMainWindow::updatePlugins()
+{
+    if(!ui->updateWidget->doingUpdaterUpdate)
+    {
+        ui->currentPluginID = 0;
+        ui->pluginIDs.clear();
+
+        ui->pluginManager.LoadXML();
+        ui->pluginManager.Connect();
+
+        for(auto& [id, plugin] : ui->pluginManager.GetPlugins())
+        {
+            if(plugin.localCopy)
+            {
+                ui->pluginIDs.push_back(id);
+            }
+        }
+
+        getNextPlugin();
+    }
+    else
+    {
+        downloadsFinished();
+    }
+}
+
+void CMainWindow::getNextPlugin()
+{
+    if(ui->currentPluginID < ui->pluginIDs.size())
+    {
+        ui->downloadFileLabel->setText("Updating Plugins...");
+
+        int pluginID = ui->pluginIDs[ui->currentPluginID];
+        ui->pluginManager.DownloadPlugin(pluginID);
+        ui->currentPluginID++;
+    }
+    else
+    {
+        downloadsFinished();
+    }
 }
 
 void CMainWindow::onFinish()

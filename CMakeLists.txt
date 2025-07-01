@@ -350,14 +350,6 @@ if(USE_SSH)
 	include_directories(${SSH_INC} ${SSL_INC})
 endif()
 
-if(MODEL_REPO)
-	add_definitions(-DHAS_LIBZIP)
-	include_directories(${LIBZIP_INC})
-
-	add_definitions(-DMODEL_REPO)
-	include_directories(${SQLITE_INC})
-endif()
-
 if(USE_FFMPEG)
 	add_definitions(-DFFMPEG)
 	include_directories(${FFMPEG_INC})
@@ -583,6 +575,9 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
+    target_compile_definitions(${FBS_BIN_NAME} PUBLIC "MODEL_REPO" "HAS_LIBZIP")
+    target_include_directories(${FBS_BIN_NAME} PRIVATE ${LIBZIP_INC} ${SQLITE_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${LIBZIP_LIB})
     
     if(DEFINED LIBZIP_DBG_LIB)
@@ -660,7 +655,8 @@ if(BUILD_UPDATER)
 
     set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
         Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
-        FEBioStudio/ServerSettings.cpp)
+        FEBioStudio/ServerSettings.cpp FEBioStudio/PluginManager.cpp FEBioStudio/PluginRepoConnectionHandler.cpp
+        FEBioStudio/PluginDatabaseHandler.cpp FEBioStudio/DatabaseInterface.cpp FEBioStudio/PluginXML.cpp)
 
     add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
     set_property(TARGET FEBioStudioUpdater PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudioUpdater_autogen)
@@ -675,6 +671,8 @@ if(BUILD_UPDATER)
     endif()
 
     target_include_directories(FEBioStudioUpdater PRIVATE "Updater")
+
+    target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
     findLib(FEBio_LIB_DIR XML_LIB xml)
 

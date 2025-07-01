@@ -27,15 +27,14 @@ SOFTWARE.*/
 #pragma once
 
 #include <QObject>
+#include <QSslError>
 
 class CPluginManager;
 class QNetworkReply;
 class QNetworkAccessManager;
-class QSslError;
 class CRepositoryPanel;
 class CPluginDatabaseHandler;
 class CPluginManager;
-class CMainWindow;
 
 class CPluginRepoConnectionHandler : public QObject
 {
@@ -59,11 +58,9 @@ private:
 private slots:
 	void connFinished(QNetworkReply *r);
 	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
-	void progress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
     CPluginManager* manager;
     CPluginDatabaseHandler* dbHandler;
-	CMainWindow* wnd;
 	QNetworkAccessManager* restclient;
 };

@@ -69,9 +69,9 @@ public:
     ~CPluginManager();
 
     bool LoadXML();
-    void LoadAllPlugins();
-
     void Connect();
+
+    void LoadAllPlugins();
     void ReadDatabase();
 
     const std::unordered_map<int, Plugin>& GetPlugins();

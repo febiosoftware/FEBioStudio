@@ -217,7 +217,9 @@ void CDatabaseInterface::closeDatabase() {}
 void CDatabaseInterface::initDatabase(string schema) {}
 void CDatabaseInterface::execute(string& query, int (*callback)(void*,int,char**,char**), void* arg) {}
 void CDatabaseInterface::getTable(string& query, char ***table, int* rows, int* cols) {}
-void CDatabaseInterface::insert(string& tableName, vector<string>& columns, string& values, string conflict = "") {}
-void CDatabaseInterface::upsert(string& tableName, vector<string>& columns, string& values, string conflict = "") {}
+void CDatabaseInterface::insert(string& tableName, vector<string>& columns, string& values, string conflict) {}
+void CDatabaseInterface::upsert(string& tableName, vector<string>& columns, string& values, string conflict) {}
 void CDatabaseInterface::freeTable(char** table) {}
+void CDatabaseInterface::update(QJsonDocument& jsonDoc) {}
+std::string CDatabaseInterface::getSingleValue(string& query) { return ""; }
 #endif
