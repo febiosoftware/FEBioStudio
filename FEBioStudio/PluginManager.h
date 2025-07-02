@@ -55,6 +55,7 @@ struct Plugin
     std::string localVersion;
     std::string localFebioVersion;
     std::vector<std::string> files; // paths to plugin files
+    int mainFileIndex = 0; // index of the file that should be loaded
 };
 
 
@@ -85,7 +86,7 @@ public:
 
     void AddRepoPlugin(char** argv);
     void AddPublication(int pluginID, const QVariantMap& data);
-    void AddPluginFile(int pluginID, const std::string& filePath, const std::string& version, const std::string& febioVersion);
+    void AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion);
 
     void OnDownloadFinished(int id);
 

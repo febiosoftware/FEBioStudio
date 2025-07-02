@@ -32,15 +32,6 @@ class CPluginManager;
 class CPluginXML
 {
 public:
-    struct PluginInfo
-    {
-        int ID;
-        std::string version;
-        std::string febioVersion;
-        std::vector<std::string> files;
-    };
-
-public:
     CPluginXML(CPluginManager* manager);
 
     void SetPath(const std::string& path) { m_path = path; }

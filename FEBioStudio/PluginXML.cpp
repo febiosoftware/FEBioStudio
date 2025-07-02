@@ -51,7 +51,6 @@ bool CPluginXML::LoadXML()
             {
                 if(tag == "plugin")
                 {
-                    // PluginInfo plugin;
                     int ID = tag.AttributeValue("ID", 0);
 
                     Plugin* plugin = m_manager->GetPlugin(ID);
@@ -71,9 +70,16 @@ bool CPluginXML::LoadXML()
                         {
                             if (tag == "file")
                             {
+                                int main = tag.AttributeValue("main", 1);
+
                                 std::string filePath;
                                 tag.value(filePath);
                                 plugin->files.push_back(filePath);
+
+                                if(main == 1)
+                                {
+                                    plugin->mainFileIndex = plugin->files.size() - 1; // Set the last file as the main file
+                                }
 
                                 plugin->localCopy = true;
                             }
@@ -111,9 +117,13 @@ void CPluginXML::WriteXML()
             pluginElement.add_attribute("febioVersion", plugin.localFebioVersion);
             xml.add_branch(pluginElement);
 
-            for (const std::string& file : plugin.files)
+            for(int index = 0; index < plugin.files.size(); ++index)
             {
-                xml.add_leaf("file", file);
+                const std::string& file = plugin.files[index];
+                XMLElement fileElement("file");
+                fileElement.add_attribute("main", (index == plugin.mainFileIndex) ? 1 : 0);
+                fileElement.value(file);
+                xml.add_leaf(fileElement);
             }
             
             xml.close_branch(); // Close Plugin branch

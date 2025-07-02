@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #endif
 
-
 // This is need on Windows since one of the windows headers introduces a max macro. 
 #ifdef WIN32
 #undef max
@@ -261,7 +260,7 @@ bool CPluginManager::UnloadPlugin(int id) { return false; }
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
 #endif
 
-void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, const std::string& version, const std::string& febioVersion)
+void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion)
 {
     if(imp->m_plugins.count(pluginID) == 0)
     {
@@ -274,6 +273,11 @@ void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, co
     plugin.localFebioVersion = febioVersion;
 
     plugin.files.push_back(filePath);
+
+    if(main == 1)
+    {
+        plugin.mainFileIndex = plugin.files.size() - 1; // Set the last file as the main file
+    }
 }
 
 void CPluginManager::OnDownloadFinished(int id)
@@ -322,7 +326,7 @@ void CPluginManager::AddRepoPlugin(char** argv)
 
 bool CPluginManager::LoadFEBioPlugin(Plugin& plugin)
 {
-	std::string sfile = plugin.files[0];
+	std::string sfile = plugin.files[plugin.mainFileIndex];
 
 	// get the currently active module
 	// We need this, since importing the plugin might change this.
