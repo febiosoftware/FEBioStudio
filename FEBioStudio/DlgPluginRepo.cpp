@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QProgressBar>
+#include <QScrollArea>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QStyleHints>
@@ -273,16 +274,26 @@ public:
 
         pluginRightLayout->addLayout(nameLayout);
 
-        pluginRightLayout->addWidget(descriptionLabel = new QLabel);
+        QScrollArea* scrollArea = new QScrollArea;
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setFrameShape(QFrame::NoFrame);
+        QWidget* scrollContent = new QWidget;
+        QVBoxLayout* scrollLayout = new QVBoxLayout(scrollContent);
+        scrollLayout->setContentsMargins(0, 0, 0, 0);
+
+        scrollLayout->addWidget(descriptionLabel = new QLabel);
         descriptionLabel->setWordWrap(true);
 
-        pluginRightLayout->addWidget(publicationWidget = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
+        scrollLayout->addWidget(publicationWidget = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
 
-        pluginRightLayout->addWidget(tagLabel = new QLabel);
+        scrollLayout->addWidget(tagLabel = new QLabel);
         tagLabel->setWordWrap(true);
-        tagLabel->hide();
 
-        pluginRightLayout->addStretch();
+        scrollLayout->addStretch();
+
+        scrollContent->setLayout(scrollLayout);
+        scrollArea->setWidget(scrollContent);
+        pluginRightLayout->addWidget(scrollArea);
 
         sourceButton = new CFrameButton("Source Code");
         pluginRightLayout->addWidget(sourceButton, 0, Qt::AlignRight);
@@ -336,11 +347,18 @@ public:
             imageLabel->clear();
         }
 
-        publicationWidget->clear();
-
-        for(auto& pub : plugin->publications)
+        if(plugin->publications.size() == 0)
         {
-            publicationWidget->addPublication(pub);
+            publicationWidget->hide();
+        }
+        else
+        {
+            publicationWidget->clear();
+
+            for(auto& pub : plugin->publications)
+            {
+                publicationWidget->addPublication(pub);
+            }
         }
 
         if(plugin->tags.size() > 0)
