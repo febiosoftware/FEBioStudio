@@ -159,6 +159,7 @@ public:
     QLabel* nameLabel;
     QLabel* ownerLabel;
     QLabel* descriptionLabel;
+    QLabel* tagLabel;
     CFrameButton* downloadButton;
     CFrameButton* loadButton;
     CFrameButton* unloadButton;
@@ -277,10 +278,14 @@ public:
 
         pluginRightLayout->addWidget(publicationWidget = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
 
-        sourceButton = new CFrameButton("Source Code");
-        pluginRightLayout->addWidget(sourceButton, 0, Qt::AlignRight);
+        pluginRightLayout->addWidget(tagLabel = new QLabel);
+        tagLabel->setWordWrap(true);
+        tagLabel->hide();
 
         pluginRightLayout->addStretch();
+
+        sourceButton = new CFrameButton("Source Code");
+        pluginRightLayout->addWidget(sourceButton, 0, Qt::AlignRight);
 
         pluginBottomLayout->addLayout(pluginRightLayout, 1);
 
@@ -291,9 +296,7 @@ public:
 
         l->addWidget(stackedWidget);
         
-
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
-		
         
 		l->addWidget(bb);
 
@@ -340,7 +343,28 @@ public:
             publicationWidget->addPublication(pub);
         }
 
-        hideButtons();
+        if(plugin->tags.size() > 0)
+        {
+            QString tagText("Tags: ");
+            tagText += plugin->tags[0].c_str();
+
+            for(size_t i = 1; i < plugin->tags.size(); ++i)
+            {
+                tagText += QString(", ") + plugin->tags[i].c_str();
+            }
+
+            tagLabel->setText(tagText);
+            tagLabel->show();
+        }
+        else
+        {
+            tagLabel->hide();
+        }
+
+        downloadButton->hide();
+        loadButton->hide();
+        unloadButton->hide();
+        deleteButton->hide();
         
         if(plugin->status == PLUGIN_BROKEN)
         {
@@ -387,17 +411,9 @@ public:
         stackedWidget->setCurrentIndex(2);
     }
 
-    void hideButtons()
-    {
-        downloadButton->hide();
-        loadButton->hide();
-        unloadButton->hide();
-        deleteButton->hide();
-    }
-
 public:
     CPluginManager* m_manager;
-
+    std::vector<std::string> m_tags;
     int m_pluginID = -1;
 };
 
@@ -411,15 +427,9 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
 
     connect(ui->m_manager, &CPluginManager::DownloadFinished, this, &CDlgPluginRepo::DownloadFinished);
     connect(ui->m_manager, &CPluginManager::PluginsReady, this, &CDlgPluginRepo::on_PluginsReady);
-    connect(ui->m_manager, &CPluginManager::PluginsReady, this, &CDlgPluginRepo::on_PluginsReady);
     connect(ui->m_manager, &CPluginManager::HTMLError, this, &CDlgPluginRepo::on_HTMLError);
 
     ui->m_manager->Connect();
-}
-
-void CDlgPluginRepo::AddPublication(QVariantMap& data)
-{
-    ui->publicationWidget->addPublication(data);
 }
 
 void CDlgPluginRepo::DownloadFinished()

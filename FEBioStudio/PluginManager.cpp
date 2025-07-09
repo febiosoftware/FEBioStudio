@@ -123,6 +123,10 @@ void CPluginManager::ReadDatabase()
     {
         plugin.publications.clear();
         imp->m_db.GetPluginPubs(id);
+
+        plugin.tags.clear();
+        imp->m_db.GetPluginTags(id);
+
         SetPluginStatus(plugin);
     }
 
@@ -254,10 +258,21 @@ void CPluginManager::AddPublication(int pluginID, const QVariantMap& data)
 
     imp->m_plugins[pluginID].publications.push_back(data);
 }
+
+void CPluginManager::AddTag(int pluginID, const std::string& tag)
+{
+   if(imp->m_plugins.count(pluginID) == 0)
+   {
+       return; // Plugin does not exist
+   }
+
+   imp->m_plugins[pluginID].tags.push_back(tag);
+}
 #else
 bool CPluginManager::LoadPlugin(int id) { return false; }
 bool CPluginManager::UnloadPlugin(int id) { return false; }
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
+void CPluginManager::AddTag(int pluginID, const std::string& tag) {}
 #endif
 
 void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion)

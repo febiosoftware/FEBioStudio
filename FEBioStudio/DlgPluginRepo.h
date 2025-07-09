@@ -63,8 +63,6 @@ class CDlgPluginRepo : public QDialog
 public:
     CDlgPluginRepo(CPluginManager* manager, QWidget *parent);
 
-    void AddPublication(QVariantMap& data);
-
     void DownloadFinished();
 
 public slots:

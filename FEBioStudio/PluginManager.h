@@ -49,6 +49,7 @@ struct Plugin
     std::string sourceURL;
     QByteArray imageData; // thumbnail image data
     std::vector<QVariantMap> publications; // plugin publications
+    std::vector<std::string> tags; // versions from the database
     
     bool localCopy = false;
     bool loaded = false;
@@ -86,6 +87,7 @@ public:
 
     void AddRepoPlugin(char** argv);
     void AddPublication(int pluginID, const QVariantMap& data);
+    void AddTag(int pluginID, const std::string& tag);
     void AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion);
 
     void OnDownloadFinished(int id);

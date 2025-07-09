@@ -145,6 +145,23 @@ void CPluginDatabaseHandler::GetPluginPubs(int ID)
 	interface.freeTable(table);
 }
 
+void CPluginDatabaseHandler::GetPluginTags(int ID)
+{
+    char **table;
+    int rows, cols;
+
+    std::string query = "SELECT tags.tag FROM tags JOIN pluginTags ON tags.ID = pluginTags.tag JOIN plugins ON pluginTags.plugin = plugins.ID WHERE plugins.ID = " + std::to_string(ID);
+
+    interface.getTable(query, &table, &rows, &cols);
+
+    for(int row = 1; row <= rows; row++)
+    {
+        manager->AddTag(ID, table[row]);
+    }
+
+    interface.freeTable(table);
+}
+
 
 std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID)
 {

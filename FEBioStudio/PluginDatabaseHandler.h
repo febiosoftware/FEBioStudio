@@ -46,6 +46,8 @@ public:
 
     void GetPluginPubs(int ID);
 
+    void GetPluginTags(int ID);
+
     std::vector<std::string> GetPluginVersions(int ID);
 
 private:
