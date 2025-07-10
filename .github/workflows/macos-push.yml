@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   call_workflow:
-    needs: get_sdk_version
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@plugin
     with:
       package-name: febio-studio
