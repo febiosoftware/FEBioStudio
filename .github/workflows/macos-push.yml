@@ -17,7 +17,7 @@ jobs:
       sdk_version: ${{ steps.get_sdk_version.outputs.sdk_version }}
     steps:
       - id: get_sdk_version
-        uses: febiosoftware/febio-workflows/.github/actions/get-sdk-version.yml@plugin
+        uses: febiosoftware/febio-workflows/.github/actions/get-sdk-version@plugin
   call_workflow:
     needs: get_sdk_version
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@plugin
