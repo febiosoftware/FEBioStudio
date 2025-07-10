@@ -12,27 +12,7 @@ permissions:
 
 jobs:
   get_sdk_version:
-    runs-on: ubuntu-latest
-    outputs:
-      sdk_version: ${{ steps.get_version.outputs.version }}
-    steps:
-      - name: Checkout FEBio
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          path: FEBio
-          repository: febiosoftware/FEBio
-          ref: develop
-
-      - name: Extract SDK version
-        id: get_version
-        run: |
-          major=$(grep '#define FE_SDK_MAJOR_VERSION' FEBio/FECore/version.h | awk '{print $3}')
-          minor=$(grep '#define FE_SDK_SUB_VERSION' FEBio/FECore/version.h | awk '{print $3}')
-          patch=$(grep '#define FE_SDK_SUBSUB_VERSION' FEBio/FECore/version.h | awk '{print $3}')
-          echo "version=$major.$minor.$patch" >> $GITHUB_OUTPUT
-
-      - run: echo "Version is ${{ steps.get_version.outputs.version }}"
+    uses: febiosoftware/febio-workflows/.github/actions/get-sdk-version.yml@plugin
   call_workflow:
     needs: get_sdk_version
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@plugin
