@@ -27,9 +27,9 @@ jobs:
       - name: Extract SDK version
         id: get_version
         run: |
-          major=$(grep '#define FE_SDK_MAJOR_VERSION' path/to/header.h | awk '{print $3}')
-          minor=$(grep '#define FE_SDK_SUB_VERSION' path/to/header.h | awk '{print $3}')
-          patch=$(grep '#define FE_SDK_SUBSUB_VERSION' path/to/header.h | awk '{print $3}')
+          major=$(grep '#define FE_SDK_MAJOR_VERSION' FEBio/FECore/version.h | awk '{print $3}')
+          minor=$(grep '#define FE_SDK_SUB_VERSION' FEBio/FECore/version.h | awk '{print $3}')
+          patch=$(grep '#define FE_SDK_SUBSUB_VERSION' FEBio/FECore/version.h | awk '{print $3}')
           echo "version=$major.$minor.$patch" >> $GITHUB_OUTPUT
 
       - run: echo "Version is ${{ steps.get_version.outputs.version }}"
