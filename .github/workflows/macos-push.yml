@@ -11,14 +11,6 @@ permissions:
   contents: read  # This is required for actions/checkout
 
 jobs:
-  get_sdk_version:
-    runs-on: ubuntu-latest
-    outputs:
-      sdk_version: ${{ steps.get_sdk_version.outputs.sdk_version }}
-    steps:
-      - name: Get SDK Version
-        id: get_sdk_version
-        uses: febiosoftware/febio-workflows/.github/actions/get-sdk-version@plugin
   call_workflow:
     needs: get_sdk_version
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-push.yml@plugin
@@ -27,5 +19,4 @@ jobs:
       requires-sdk: true
       post-build: true
       python-module: false
-      sdk-version: ${{ needs.get_sdk_version.outputs.sdk_version }}
     secrets: inherit
