@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QStandardPaths>
 #include <QDir>
 #include <QFileInfo>
+#include <QString>
 #include "DatabaseInterface.h"
 #include "PluginManager.h"
 #include <FECore/version.h>
@@ -193,4 +194,43 @@ std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID)
     interface.freeTable(table);
 
     return versions;
+}
+
+std::unordered_set<int> CPluginDatabaseHandler::GetPluginSearchResults(const QString& searchTerm)
+{
+	if(searchTerm.isEmpty()) return std::unordered_set<int>();
+
+    QString query = QString("SELECT plugins.ID FROM plugins JOIN users ON plugins.owner=users.ID WHERE username LIKE '%%1%' "
+            "OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(searchTerm);
+
+	char **table;
+	int rows, cols;
+
+	std::unordered_set<int> plugins;
+
+    std::string queryStd = query.toStdString();
+
+	interface.getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		plugins.insert(std::stoi(table[row]));
+	}
+
+	interface.freeTable(table);
+
+    // Matches plugin tags
+    query = QString("SELECT pluginTags.plugin FROM tags JOIN pluginTags ON tags.ID = pluginTags.tag WHERE tags.tag LIKE '%%1%'").arg(searchTerm);
+    queryStd = query.toStdString();
+
+    interface.getTable(queryStd, &table, &rows, &cols);
+
+    for(int row = 1; row <= rows; row++)
+    {
+        plugins.insert(std::stoi(table[row]));
+    }
+
+    interface.freeTable(table);
+
+	return plugins;
 }

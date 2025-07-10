@@ -132,9 +132,16 @@ void CPluginManager::ReadDatabase()
 
     emit PluginsReady();
 }
+
+std::unordered_set<int> CPluginManager::SearchPlugins(const QString& searchTerm)
+{
+    return imp->m_db.GetPluginSearchResults(searchTerm);
+}
+
 #else
 void CPluginManager::LoadAllPlugins() {}
 void CPluginManager::ReadDatabase() {}
+std::unordered_set<int> CPluginManager::SearchPlugins(const QString& searchTerm) { return std::unordered_set<int>(); }
 #endif
 
 const std::unordered_map<int, Plugin>& CPluginManager::GetPlugins()

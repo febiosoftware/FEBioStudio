@@ -73,6 +73,8 @@ private slots:
     void on_HTMLError(QString& message, bool bclose);
     void on_UnknownError(QString& message);
     void on_pluginThumbnail_clicked(int id);
+    void on_actionSearch_triggered();
+    void on_actionClear_triggered();
     void on_BackButton_clicked();
     void on_downloadButton_clicked();
     void on_deleteButton_clicked();

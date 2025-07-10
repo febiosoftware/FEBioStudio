@@ -25,14 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
+#include <unordered_set>
 
-class QLineEdit;
-class QScrollArea;
-class QGridLayout;
 struct Plugin;
 
 namespace Ui {
-    class PluginListWidget;
+    class PluginThumbnail;
 }
 
 class PluginThumbnail : public QWidget 
@@ -56,9 +54,12 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 private:
-    Ui::PluginListWidget* ui;
+    Ui::PluginThumbnail* ui;
 };
 
+namespace Ui {
+    class PluginListWidget;
+}
 class PluginListWidget : public QWidget 
 {
     Q_OBJECT
@@ -70,6 +71,8 @@ public:
 
     void Clear();
 
+    void SetSearchResults(const std::unordered_set<int>& results);
+
 signals:
     void pluginThumbnailClicked(int id);
 
@@ -77,10 +80,5 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
-    QLineEdit* searchInput;
-    QScrollArea* scrollArea;
-    QGridLayout* gridLayout;
-    QList<PluginThumbnail*> pluginCards;
-
-    void updateGridLayout();
+    Ui::PluginListWidget* ui;
 };

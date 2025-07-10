@@ -26,10 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <map>
+#include <unordered_set>
 #include "DatabaseInterface.h"
 
 class CPluginManager;
+class QString;
 struct Plugin;
 
 class CPluginDatabaseHandler
@@ -49,6 +50,8 @@ public:
     void GetPluginTags(int ID);
 
     std::vector<std::string> GetPluginVersions(int ID);
+
+    std::unordered_set<int> GetPluginSearchResults(const QString& searchTerm);
 
 private:
     CDatabaseInterface interface;

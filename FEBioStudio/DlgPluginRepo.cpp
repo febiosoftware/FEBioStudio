@@ -29,12 +29,14 @@ SOFTWARE.*/
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QStackedWidget>
+#include <QLineEdit>
 #include <QProgressBar>
 #include <QScrollArea>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QStyleHints>
 #include <QPainter>
+#include <QAction>
 #include <QPen>
 #include <QPalette>
 #include <QMouseEvent>
@@ -43,6 +45,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include "DlgPluginRepo.h"
 #include "PluginListWidget.h"
+#include "IconProvider.h"
 #include "PublicationWidgetView.h"
 #include "PluginManager.h"
 #include "WrapLabel.h"
@@ -154,6 +157,9 @@ public:
 
     QToolBar* toolBar;
     QPushButton* backButton;
+    QLineEdit* searchLineEdit;
+    QAction* actionSearch;
+    QAction* actionClear;
     QLabel* imageLabel;
     QLabel* statusLabel;
     QLabel* downloadsLabel;
@@ -193,9 +199,25 @@ public:
         loadingLayout->addStretch();
         loadingWidget->setLayout(loadingLayout);
         stackedWidget->addWidget(loadingWidget);
+        
+        QWidget* listParentWidget = new QWidget;
+        QVBoxLayout* listParentLayout = new QVBoxLayout;
+        listParentLayout->setContentsMargins(0, 0, 0, 0);
+
+        QToolBar* searchToolBar = new QToolBar;
+        searchToolBar->addWidget(searchLineEdit = new QLineEdit);
+        searchLineEdit->setPlaceholderText("Search plugins...");
+        actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search");
+		searchToolBar->addAction(actionSearch);
+		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
+		searchToolBar->addAction(actionClear);
+        listParentLayout->addWidget(searchToolBar);
 
         pluginListWidget = new ::PluginListWidget;
-        stackedWidget->addWidget(pluginListWidget);
+        listParentLayout->addWidget(pluginListWidget);        
+        
+        listParentWidget->setLayout(listParentLayout);
+        stackedWidget->addWidget(listParentWidget);
 
         QWidget* pluginCard = new QWidget;
         QVBoxLayout* pluginCardLayout = new QVBoxLayout;
@@ -312,6 +334,9 @@ public:
 		l->addWidget(bb);
 
         QObject::connect(pluginListWidget, &::PluginListWidget::pluginThumbnailClicked, dlg, &::CDlgPluginRepo::on_pluginThumbnail_clicked);
+        QObject::connect(searchLineEdit, &QLineEdit::returnPressed, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
+        QObject::connect(actionSearch, &QAction::triggered, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
+        QObject::connect(actionClear, &QAction::triggered, dlg, &::CDlgPluginRepo::on_actionClear_triggered);
         QObject::connect(backButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_BackButton_clicked);
         QObject::connect(downloadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_downloadButton_clicked);
         QObject::connect(deleteButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_deleteButton_clicked);
@@ -471,7 +496,9 @@ void CDlgPluginRepo::on_PluginsReady()
     {
         ui->pluginListWidget->AddPlugin(plugin);
     }
-    
+
+    on_actionSearch_triggered();
+
     ui->stackedWidget->setCurrentIndex(1);
 }
 
@@ -499,6 +526,27 @@ void CDlgPluginRepo::on_UnknownError(QString& message)
 void CDlgPluginRepo::on_pluginThumbnail_clicked(int id)
 {
     ui->setActivePlugin(id);
+}
+
+void CDlgPluginRepo::on_actionSearch_triggered()
+{
+    QString searchTerm = ui->searchLineEdit->text();
+    if(searchTerm.isEmpty())
+    {
+        on_actionClear_triggered();
+        return;
+    }
+
+    std::unordered_set<int> searchResults = ui->m_manager->SearchPlugins(searchTerm);
+    ui->pluginListWidget->SetSearchResults(searchResults);
+}
+void CDlgPluginRepo::on_actionClear_triggered()
+{
+    ui->searchLineEdit->clear();
+
+    std::unordered_set<int> clearResults;
+    clearResults.insert(-1);
+    ui->pluginListWidget->SetSearchResults(clearResults);
 }
 
 void CDlgPluginRepo::on_BackButton_clicked()

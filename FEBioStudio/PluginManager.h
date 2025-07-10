@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QObject>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 enum PluginStatus
 {
@@ -75,6 +76,8 @@ public:
 
     void LoadAllPlugins();
     void ReadDatabase();
+
+    std::unordered_set<int> SearchPlugins(const QString& searchTerm);
 
     const std::unordered_map<int, Plugin>& GetPlugins();
     Plugin* GetPlugin(int id);

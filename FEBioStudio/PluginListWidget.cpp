@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include "PluginListWidget.h"
 #include "PluginManager.h"
 
-class Ui::PluginListWidget
+class Ui::PluginThumbnail
 {
 public:
     QLabel* imageLabel;
@@ -91,7 +91,7 @@ public:
 };
 
 PluginThumbnail::PluginThumbnail(const Plugin& plugin)
-    : ui(new Ui::PluginListWidget)
+    : ui(new Ui::PluginThumbnail)
 {
     ui->setupUi(this, plugin);
 
@@ -170,79 +170,146 @@ void PluginThumbnail::mousePressEvent(QMouseEvent* event)
         emit clicked(ui->m_id);
     }
 }
-    
-PluginListWidget::PluginListWidget()
+
+class Ui::PluginListWidget
 {
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+public:
+    QLineEdit* searchInput;
+    QScrollArea* scrollArea;
+    QGridLayout* gridLayout;
 
-    // Search Bar
-    // QHBoxLayout* searchLayout = new QHBoxLayout();
-    // searchInput = new QLineEdit(this);
-    // searchInput->setPlaceholderText("Search plugins...");
-    // QPushButton* searchButton = new QPushButton("Search", this);
+public:
 
-    // searchLayout->addWidget(searchInput);
-    // searchLayout->addWidget(searchButton);
+    void setupUi(::PluginListWidget* parent)
+    {
+        m_parent = parent;
 
-    // mainLayout->addLayout(searchLayout);
+        QVBoxLayout* mainLayout = new QVBoxLayout;
+        mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // Scrollable Plugin Grid
-    scrollArea = new QScrollArea(this);
-    QWidget* scrollWidget = new QWidget();
-    gridLayout = new QGridLayout(scrollWidget);
-    scrollWidget->setLayout(gridLayout);
+        // Scrollable Plugin Grid
+        scrollArea = new QScrollArea;
+        QWidget* scrollWidget = new QWidget();
+        gridLayout = new QGridLayout(scrollWidget);
+        scrollWidget->setLayout(gridLayout);
 
-    scrollArea->setWidget(scrollWidget);
-    scrollArea->setWidgetResizable(true);
-    mainLayout->addWidget(scrollArea);
+        scrollArea->setWidget(scrollWidget);
+        scrollArea->setWidgetResizable(true);
+        mainLayout->addWidget(scrollArea);
 
-    setLayout(mainLayout);
+        parent->setLayout(mainLayout);
+    }
+
+    void updateGridLayout() 
+    {
+        int columns = m_parent->width() / 220; // Adjust columns based on available width
+        if(columns < 1) columns = 1;
+
+        // Removes the items from the grid layout, but does not delete the
+        // widgets themselves.
+        QLayoutItem* item;
+        while((item = gridLayout->takeAt(0)) != nullptr) 
+        {
+            delete item;
+        }
+
+        // empty widgets to fill empty spaces in the grid layout
+        qDeleteAll(emptyWidgets);
+        emptyWidgets.clear();
+
+        if(searchResults.empty())
+        {
+            for(::PluginThumbnail* thumbnail : pluginThumbnails) 
+            {
+                thumbnail->hide();
+            }
+        }
+
+        int row = 0, col = 0;
+        for(::PluginThumbnail* thumbnail : pluginThumbnails) 
+        {
+            thumbnail->show();
+
+            // If there is only one search result and it's -1, show all plugins
+            if(!((searchResults.size() == 1) && (searchResults.count(-1) == 1)))
+            {
+                // Otherwise skip if the thumbnail ID is not in the search results
+                if(searchResults.count(thumbnail->getID()) == 0) 
+                {
+                    thumbnail->hide();
+                    continue; // Skip if not in search results
+                }
+            }
+
+            gridLayout->addWidget(thumbnail, row, col);
+
+            col++;
+            if (col >= columns) 
+            {
+                col = 0;
+                row++;
+            }
+        }
+
+        // If there is only one row and it is not full, add empty widgets to fill the row
+        if(col < columns && row == 0)
+        {
+            for(int i = col; i < columns; ++i) 
+            {
+                QWidget* emptyWidget = new QWidget();
+                emptyWidget->setFixedSize(200, 200); // Match the size of the thumbnails
+                emptyWidgets.append(emptyWidget);
+                gridLayout->addWidget(emptyWidget, row, i);
+            }
+        }
+    }
+
+
+public:
+    ::PluginListWidget* m_parent;
+    std::unordered_set<int> searchResults; 
+
+    QList<::PluginThumbnail*> pluginThumbnails;
+    QList<QWidget*> emptyWidgets; // For filling empty spaces in the grid layout
+};
+    
+PluginListWidget::PluginListWidget() : ui(new Ui::PluginListWidget)
+{
+    ui->setupUi(this);
+
+    ui->searchResults.insert(-1); // Default to showing all plugins
 }
 
 void PluginListWidget::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    updateGridLayout();
+    ui->updateGridLayout();
 }
 
 void PluginListWidget::AddPlugin(const Plugin& plugin)
 {
-    PluginThumbnail* card = new PluginThumbnail(plugin);
-    pluginCards.append(card);
+    PluginThumbnail* thumbnail = new PluginThumbnail(plugin);
+    connect(thumbnail, &::PluginThumbnail::clicked, this, &PluginListWidget::pluginThumbnailClicked);
+    ui->pluginThumbnails.append(thumbnail);
     
-    updateGridLayout();
+    ui->updateGridLayout();
 }
 
 void PluginListWidget::Clear()
 {
-    qDeleteAll(pluginCards);
-    pluginCards.clear();
-    updateGridLayout();
+    qDeleteAll(ui->pluginThumbnails);
+    ui->pluginThumbnails.clear();
+
+    ui->searchResults.clear();
+    ui->searchResults.insert(-1);
+
+    ui->updateGridLayout();
 }
 
-void PluginListWidget::updateGridLayout() 
+void PluginListWidget::SetSearchResults(const std::unordered_set<int>& results)
 {
-    int columns = width() / 220; // Adjust columns based on available width
-    if (columns < 1) columns = 1;
+    ui->searchResults = results;
 
-    QLayoutItem* item;
-    while ((item = gridLayout->takeAt(0)) != nullptr) 
-    {
-        delete item;
-    }
-
-    int row = 0, col = 0;
-    for (PluginThumbnail* card : pluginCards) 
-    {
-        gridLayout->addWidget(card, row, col);
-
-        connect(card, &PluginThumbnail::clicked, this, &PluginListWidget::pluginThumbnailClicked);
-
-        col++;
-        if (col >= columns) 
-        {
-            col = 0;
-            row++;
-        }
-    }
+    ui->updateGridLayout();
 }
+
