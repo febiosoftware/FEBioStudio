@@ -232,5 +232,21 @@ std::unordered_set<int> CPluginDatabaseHandler::GetPluginSearchResults(const QSt
 
     interface.freeTable(table);
 
+    // Matches plugin publications
+    query = QString("SELECT pluginPubs.plugin FROM publications JOIN pluginPubs ON publications.ID = pluginPubs.publication "
+                    "JOIN publicationAuthors ON publications.ID = publicationAuthors.publication JOIN authors ON publicationAuthors.author = authors.ID "
+                    "WHERE publications.title LIKE '%%1%' OR publications.journal LIKE '%%1%' OR publications.DOI LIKE '%%1%'"
+                    "OR authors.firstName LIKE '%%1%' OR authors.lastName LIKE '%%1%'").arg(searchTerm);
+    queryStd = query.toStdString();
+
+    interface.getTable(queryStd, &table, &rows, &cols);
+
+    for(int row = 1; row <= rows; row++)
+    {
+        plugins.insert(std::stoi(table[row]));
+    }
+
+    interface.freeTable(table);
+
 	return plugins;
 }
