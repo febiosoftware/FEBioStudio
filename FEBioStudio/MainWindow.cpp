@@ -110,6 +110,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
+#include "DlgListMaterials.h"
 
 extern GLColor col[];
 
@@ -2855,39 +2856,32 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 		return;
 	}
 
-	QStringList items;
+	std::vector<GMaterial*> items;
 	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
 		GMaterial* gm = srcfem->GetMaterial(i);
-		items.push_back(gm->GetFullName());
+		items.push_back(gm);
 	}
 
 	FSModel* dstfem = doc->GetFSModel();
 
-	QInputDialog input;
-	input.setOption(QInputDialog::UseListViewForComboBoxItems);
-	input.setLabelText("Select material:");
-	input.setComboBoxItems(items);
+	CDlgListMaterials input(this);
+	input.SetMaterials(items);
 	if (input.exec())
 	{
-		QString item = input.textValue();
+		std::vector<GMaterial*> matList = input.GetSelectedMaterials();
 
-		for (int i = 0; i < srcfem->Materials(); ++i)
+		GMaterial* newMat = nullptr;
+		for (GMaterial* gm : matList)
 		{
-			GMaterial* gm = srcfem->GetMaterial(i);
-			QString name = gm->GetFullName();
-			if (name == item)
-			{
-				FSMaterial* pmsrc = gm->GetMaterialProperties();
-				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
-				GMaterial* newMat = new GMaterial(pmnew);
-				newMat->SetName(name.toStdString());
-				newMat->SetColor(gm->GetColor());
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
-				UpdateModel(newMat);
-				return;
-			}
+			FSMaterial* pmsrc = gm->GetMaterialProperties();
+			FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+			newMat = new GMaterial(pmnew);
+			newMat->SetName(gm->GetName());
+			newMat->SetColor(gm->GetColor());
+			doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 		}
+		UpdateModel(newMat);
 	}
 }
 
