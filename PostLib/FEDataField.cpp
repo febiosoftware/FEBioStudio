@@ -873,6 +873,18 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 						}
 					}
 					break;
+					case DATA_MAT3:
+					{
+						FEElemData_T<mat3f, DATA_MULT>* pf = dynamic_cast<FEElemData_T<mat3f, DATA_MULT>*>(&d);
+						if (pf->active(i))
+						{
+							mat3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+							mat3f f; f.zero();
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g,%g,%g,%g,%g,%g,%g", f(0,0), f(0,1), f(0,2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
+						}
+					}
+					break;
 					}
 				}
 				else if (fmt == DATA_NODE)
