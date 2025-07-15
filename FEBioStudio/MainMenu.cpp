@@ -164,6 +164,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionMeshDiagnostic = createAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 	QAction* actionElasticityConvertor = createAction("Elasticity Converter ...", "actionElasticityConvertor");
 	QAction* actionUnitConverter = createAction("Unit Converter ...", "actionUnitConverter");
+	QAction* actionRotationConverter = createAction("Rotation Converter ...", "actionRotationConverter");
 	actionMaterialTest = createAction("Material test ...", "actionMaterialTest");
 	QAction* actionKinemat = createAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = createAction("Plotmix ...", "actionPlotMix");

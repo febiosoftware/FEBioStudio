@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAimport.h>
 #include <PostGL/GLModel.h>
 #include "FEKinematFileReader.h"
+#include "DlgRotationConverter.h"
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -86,6 +87,12 @@ void CMainWindow::on_actionMaterialTest_triggered()
 void CMainWindow::on_actionUnitConverter_triggered()
 {
 	CDlgUnitConverter dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionRotationConverter_triggered()
+{
+	CDlgRotationConverter dlg(this);
 	dlg.exec();
 }
 
