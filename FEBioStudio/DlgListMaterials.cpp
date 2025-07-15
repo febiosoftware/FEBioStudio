@@ -57,7 +57,7 @@ void CDlgListMaterials::SetMaterials(const std::vector<GMaterial*>& materialList
 		GMaterial* gm = materialList[n];
 		QListWidgetItem* item = new QListWidgetItem();
 		item->setText(gm->GetFullName());
-		item->setData(Qt::UserRole, n);
+		item->setData(Qt::UserRole, (qulonglong)n);
 		w->addItem(item);
 	}
 }
