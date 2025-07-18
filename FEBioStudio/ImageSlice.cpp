@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <QToolBar>
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 
 #include "ImageSlice.h"
 

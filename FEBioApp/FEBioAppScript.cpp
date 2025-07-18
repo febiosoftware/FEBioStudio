@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioAppScript.h"
-#include "FEBioAppDocument.h"
+#include "FEBioApp.h"
 #include "FEBioAppWidget.h"
 #include <QMessageBox>
 #include "JSParser.h"
@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEBioLib/FEBioModel.h>
 #include <FECore/FEMaterial.h>
 
-FEBioAppScript::FEBioAppScript(FEBioAppDocument* doc) : m_doc(doc)
+FEBioAppScript::FEBioAppScript(FEBioApp* app) : m_app(app)
 {
 
 }
@@ -76,7 +76,7 @@ QString ObjectListToString(const std::list<JSObject>& args)
 
 void FEBioAppScript::initJSModules(JSInterpreter& interpreter)
 {
-	FEBioAppWidget* uiWidget = m_doc->GetUI();
+	FEBioAppWidget* uiWidget = m_app->GetUI();
 
 	// global module
 	JSObject& global = interpreter.addVar("");
@@ -91,10 +91,10 @@ void FEBioAppScript::initJSModules(JSInterpreter& interpreter)
 	// app module
 	JSObject& app = interpreter.addVar("app");
 	app.m_functions["runModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
-		m_doc->runModel();
+		m_app->runModel();
 		};
 	app.m_functions["stopModel"] = [=](const std::list<JSObject>& args, JSObject& ret) {
-		m_doc->stopModel();
+		m_app->stopModel();
 		};
 
 	// ui module
@@ -113,7 +113,7 @@ void FEBioAppScript::initJSModules(JSInterpreter& interpreter)
 		};
 
 	// fem module
-	FEBioModel* febioModel = m_doc->GetFEBioModel();
+	FEBioModel* febioModel = m_app->GetFEBioModel();
 	JSObject& fem = interpreter.addVar("fem");
 	ObjectValue* v = new ObjectValue;
 	ArrayValue* mat = new ArrayValue(febioModel->Materials());
@@ -170,7 +170,7 @@ bool FEBioAppScript::runScript()
 	catch (std::runtime_error e)
 	{
 		m_error = QString::fromStdString(e.what());
-		m_doc->GetUI()->error(m_error);
+		m_app->GetUI()->error(m_error);
 		return false;
 	}
 

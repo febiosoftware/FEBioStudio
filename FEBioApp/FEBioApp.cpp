@@ -23,67 +23,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "FEBioAppDocument.h"
+#include "FEBioApp.h"
 #include <FEBioLib/FEBioModel.h>
-#include <FEBioLink/FEBioModule.h>
+#include <QMessageBox>
+#include "FEBioAppScript.h"	
 #include <FECore/FECoreTask.h>
 #include <FECore/FECoreKernel.h>
-#include <QWidget>
 #include <QThread>
-#include <QMessageBox>
-#include "../FEBioStudio/MainWindow.h"
-#include "FEBioAppScript.h"
-#include <map>
-#include <functional>
 
 class CFEBioAppThread : public QThread
 {
 public:
-	CFEBioAppThread(FEBioAppDocument* doc) : QThread(doc), m_doc(doc)
+	CFEBioAppThread(FEBioApp* app) : QThread(app), m_app(app)
 	{
 		QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 	}
 	void run() Q_DECL_OVERRIDE
 	{
-		if (m_doc) m_doc->RunFEBioModel();
+		if (m_app) m_app->RunFEBioModel();
 	}
 private:
-	FEBioAppDocument* m_doc;
+	FEBioApp* m_app;
 };
 
-FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fem(nullptr)
+
+FEBioApp::FEBioApp()
 {
-	SetIcon(":/icons/febiorun.png");
-	m_forceStop = false;
-	m_isInitialized = false;
-	m_isRunning = false;
-	m_ui = nullptr;
+
 }
 
-FEBioAppDocument::~FEBioAppDocument()
+FEBioApp::~FEBioApp()
 {
 	delete m_fem;
 }
 
-void FEBioAppDocument::SetUI(FEBioAppWidget* w)
+void FEBioApp::SetTask(const std::string& taskName, const std::string& taskInputFilename)
 {
-	m_ui = w;
+	m_taskName = taskName;
+	m_taskInputFile = taskInputFilename;
 }
 
-FEBioAppWidget* FEBioAppDocument::GetUI()
+void FEBioApp::AddModelDataSource(CFEBioModelDataSource* dataSrc)
 {
-	return m_ui;
+	m_dataSources.push_back(dataSrc);
 }
 
-bool FEBioAppDocument::febio_cb(FEModel* fem, unsigned int nevent, void* pd)
+bool FEBioApp::ProcessFEBioEvent(int nevent)
 {
-	FEBioAppDocument* doc = (FEBioAppDocument*)(pd);
-	return doc->ProcessFEBioEvent(nevent);
-}
-
-bool FEBioAppDocument::ProcessFEBioEvent(int nevent)
-{
-	// process all model data sources
 	for (auto data : m_dataSources)
 	{
 		switch (nevent)
@@ -106,18 +92,21 @@ bool FEBioAppDocument::ProcessFEBioEvent(int nevent)
 	return true;
 }
 
-bool FEBioAppDocument::LoadModelFromFile(QString fileName)
+bool febio_cb(FEModel* fem, unsigned int nevent, void* pd)
+{
+	FEBioApp* app= (FEBioApp*)(pd);
+	return app->ProcessFEBioEvent(nevent);
+}
+
+bool FEBioApp::LoadModelFromFile(const std::string& fileName)
 {
 	if (m_fem) delete m_fem;
 	m_fem = new FEBioModel;
 	FEBioModel& fem = *m_fem;
 	fem.SetName("fem");
+	bool b = fem.Input(fileName.c_str());
 
 	fem.AddCallback(febio_cb, CB_ALWAYS, this);
-	string sfile = fileName.toStdString();
-	FEBio::BlockCreateEvents(true);
-	bool b = fem.Input(sfile.c_str());
-	FEBio::BlockCreateEvents(false);
 
 	// call this so that the parameter list is initialized
 	if (b) fem.GetParameterList();
@@ -125,34 +114,24 @@ bool FEBioAppDocument::LoadModelFromFile(QString fileName)
 	return b;
 }
 
-void FEBioAppDocument::SetTask(const std::string& taskName, const std::string& taskInputFilename)
+std::string FEBioApp::GetModelFilename()
 {
-	m_taskName = taskName;
-	m_taskInputFile = taskInputFilename;
+	if (m_fem == nullptr) return std::string();
+	return m_fem->GetInputFileName();
 }
 
-FEBioModel* FEBioAppDocument::GetFEBioModel()
-{
-	return m_fem;
-}
-
-void FEBioAppDocument::AddModelDataSource(CFEBioModelDataSource* dataSrc)
-{
-	m_dataSources.push_back(dataSrc);
-}
-
-std::vector<FEParamValue> FEBioAppDocument::GetFEBioParameterList(const char* szparams)
+std::vector<FEParamValue> FEBioApp::GetFEBioParameterList(const char* szparams)
 {
 	std::vector<FEParamValue> paramList;
-	if (m_fem == nullptr) return paramList;
-	FEBioModel& fem = *m_fem;
+	FEBioModel* fem = GetFEBioModel();
+	if (fem == nullptr) return paramList;
 
 	ParamString ps(szparams);
 
 	string modelName = "fem";
 	if (ps == modelName)
 	{
-		FECoreBase* pc = fem.FindComponent(ps);
+		FECoreBase* pc = fem->FindComponent(ps);
 
 		FEParameterList& pl = pc->GetParameterList();
 		int n = pl.Parameters();
@@ -182,42 +161,27 @@ std::vector<FEParamValue> FEBioAppDocument::GetFEBioParameterList(const char* sz
 	return paramList;
 }
 
-FEParamValue FEBioAppDocument::GetFEBioParameter(const char* szparams)
+FEParamValue FEBioApp::GetFEBioParameter(const char* szparams)
 {
 	ParamString ps(szparams);
 	return m_fem->GetParameterValue(ps);
 }
 
-void FEBioAppDocument::runModel()
+void FEBioApp::runScript(const QString& script)
 {
-	if (m_fem && !m_isRunning)
-	{
-		CFEBioAppThread* thread = new CFEBioAppThread(this);
-		thread->start();
-	}
-}
-
-void FEBioAppDocument::stopModel()
-{
-	m_forceStop = true;
-}
-
-void FEBioAppDocument::runScript(const QString& script)
-{
-	QObject* po = QObject::sender();
-
 	FEBioAppScript appScript(this);
 	if (!appScript.run(script))
 	{
-		QMessageBox::critical(GetMainWindow(), "FEBio Studio", QString("Failed to execute script.\n%1").arg(appScript.errorString()));
+		QMessageBox::critical(nullptr, "FEBioApp", QString("Failed to execute script.\n%1").arg(appScript.errorString()));
 	}
 }
 
 // This is the actual function that runs the FEBio model. It is called from a
 // separate thread.
-void FEBioAppDocument::RunFEBioModel()
+void FEBioApp::RunFEBioModel()
 {
-	if (m_fem == nullptr) return;
+	FEBioModel* fem = GetFEBioModel();
+	if (fem == nullptr) return;
 
 	assert(m_isRunning == false);
 	m_isRunning = true;
@@ -225,7 +189,7 @@ void FEBioAppDocument::RunFEBioModel()
 
 	if (m_taskName.empty() == false)
 	{
-		std::unique_ptr<FECoreTask> task(fecore_new<FECoreTask>(m_taskName.c_str(), m_fem));
+		std::unique_ptr<FECoreTask> task(fecore_new<FECoreTask>(m_taskName.c_str(), fem));
 		if (task == nullptr) emit modelFinished(false);
 
 		const char* sztaskfile = (m_taskInputFile.empty() ? nullptr : m_taskInputFile.c_str());
@@ -242,19 +206,34 @@ void FEBioAppDocument::RunFEBioModel()
 	else
 	{
 		bool b = false;
-		if (m_isInitialized) b = m_fem->Reset();
+		if (m_isInitialized) b = fem->Reset();
 		else
 		{
-			m_isInitialized = m_fem->Init();
+			m_isInitialized = fem->Init();
 			b = m_isInitialized;
 		}
 		if (b)
 		{
 			emit modelStarted();
-			b = m_fem->Solve();
+			b = fem->Solve();
 			if (m_forceStop) b = true;
 			emit modelFinished(b);
 		}
 	}
 	m_isRunning = false;
+}
+
+
+void FEBioApp::runModel()
+{
+	if (GetFEBioModel() && !m_isRunning)
+	{
+		CFEBioAppThread* thread = new CFEBioAppThread(this);
+		thread->start();
+	}
+}
+
+void FEBioApp::stopModel()
+{
+	m_forceStop = true;
 }

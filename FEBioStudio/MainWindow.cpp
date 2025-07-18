@@ -90,7 +90,7 @@ SOFTWARE.*/
 #include <ImageLib/SITKImageSource.h>
 #include <ImageLib/ImageModel.h>
 #include <PostGL/GLColorMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLWLib/convert.h>
 #include <GLWLib/GLLabel.h>
 #include <GLWLib/GLTriad.h>
@@ -101,7 +101,7 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
-#include <FEBioApp/FEBioAppDocument.h>
+#include "FEBioAppDocument.h"
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioReportDoc.h>
 #include "RemoteJob.h"
@@ -1819,7 +1819,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 
 		// Post options
-		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+		settings.setValue("defaultMap", ColorMapManager::GetDefaultMap());
 		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
 
 		// Selection
@@ -1889,14 +1889,14 @@ void CMainWindow::writeSettings()
 	settings.endGroup();
 
 	// store user colormaps
-	int n = Post::ColorMapManager::UserColorMaps();
+	int n = ColorMapManager::UserColorMaps();
 	settings.beginGroup("UserColorMaps");
 	{
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			Post::CColorMap& c = Post::ColorMapManager::GetColorMap(Post::ColorMapManager::USER + i);
-			string sname = Post::ColorMapManager::GetColorMapName(Post::ColorMapManager::USER + i);
+			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
 				int m = c.Colors();
@@ -1987,7 +1987,7 @@ void CMainWindow::readSettings()
 		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 
 		// Post options
-		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+		ColorMapManager::SetDefaultMap(settings.value("defaultMap", ColorMapManager::JET).toInt());
 		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
 
 		// Selection
@@ -2085,7 +2085,7 @@ void CMainWindow::readSettings()
 		for (int i = 0; i < l.size(); ++i)
 		{
 			QString name = l.at(i);
-			Post::CColorMap c; c.SetColors(0);
+			CColorMap c; c.SetColors(0);
 			settings.beginGroup(name);
 			{
 				int m = settings.value("colors", 0).toInt();
@@ -2100,7 +2100,7 @@ void CMainWindow::readSettings()
 				}
 			}
 			settings.endGroup();
-			if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
+			if (c.Colors() > 0) ColorMapManager::AddColormap(name.toStdString(), c);
 		}
 	}
 	settings.endGroup();

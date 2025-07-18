@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <GLLib/GLScene.h>
-#include "../FEBioStudio/GLSceneView.h"
-#include <PostGL/ColorTexture.h>
+#include <CUILib/GLSceneView.h>
+#include <GLLib/ColorTexture.h>
 #include <GLLib/GLMesh.h>
-#include "FEBioAppDocument.h"
 #include <QMutex>
+#include "FEBioApp.h"
 
 class FESurface;
 class GLLegendBar;
@@ -107,5 +107,5 @@ private:
 	double m_userRange[2];
 
 	BOX	m_box;
-	Post::CColorTexture m_col;
+	CColorTexture m_col;
 };

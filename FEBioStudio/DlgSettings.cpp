@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <QFileDialog>
 #include "PaletteViewer.h"
+#include <FSCore/ColorMapManager.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -359,7 +360,7 @@ QSize ColorGradient::sizeHint() const
 	return QSize(20, 20);
 }
 
-void ColorGradient::setColorMap(const Post::CColorMap& m)
+void ColorGradient::setColorMap(const CColorMap& m)
 {
 	m_map = m;
 	repaint();
@@ -654,9 +655,9 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 void CColormapWidget::updateMaps()
 {
 	m_maps->clear();
-	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	for (int i = 0; i < ColorMapManager::ColorMaps(); ++i)
 	{
-		string name = Post::ColorMapManager::GetColorMapName(i);
+		string name = ColorMapManager::GetColorMapName(i);
 		m_maps->addItem(QString(name.c_str()));
 	}
 }
@@ -666,7 +667,7 @@ void CColormapWidget::onSetDefault(int nstate)
 	if (nstate == Qt::Checked)
 	{
 		int n = m_maps->currentIndex();
-		Post::ColorMapManager::SetDefaultMap(n);
+		ColorMapManager::SetDefaultMap(n);
 		m_default->setDisabled(true);
 	}
 	else
@@ -675,24 +676,24 @@ void CColormapWidget::onSetDefault(int nstate)
 
 void CColormapWidget::onNew()
 {
-	int n = Post::ColorMapManager::UserColorMaps() + 1;
+	int n = ColorMapManager::UserColorMaps() + 1;
 	QString name = QString("user%1").arg(n);
 	bool bok = true;
 	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+		CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
 		string sname = newName.toStdString();
-		Post::ColorMapManager::AddColormap(sname, map);
+		ColorMapManager::AddColormap(sname, map);
 
 		updateMaps();
-		m_maps->setCurrentIndex(Post::ColorMapManager::ColorMaps() - 1);
+		m_maps->setCurrentIndex(ColorMapManager::ColorMaps() - 1);
 	}
 }
 
 void CColormapWidget::onDelete()
 {
-	if (Post::ColorMapManager::RemoveColormap(m_currentMap) == false)
+	if (ColorMapManager::RemoveColormap(m_currentMap) == false)
 	{
 		QMessageBox::critical(this, "Delete Colormap", "Cannot delete default color maps.");
 	}
@@ -704,13 +705,13 @@ void CColormapWidget::onDelete()
 
 void CColormapWidget::onEdit()
 {
-	string sname = Post::ColorMapManager::GetColorMapName(m_currentMap);
+	string sname = ColorMapManager::GetColorMapName(m_currentMap);
 	QString name = QString::fromStdString(sname);
 	bool bok = true;
 	QString newName = QInputDialog::getText(this, "Edit color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		Post::ColorMapManager::SetColorMapName(m_currentMap, newName.toStdString());
+		ColorMapManager::SetColorMapName(m_currentMap, newName.toStdString());
 		m_maps->setItemText(m_currentMap, newName);
 	}
 }
@@ -722,7 +723,7 @@ void CColormapWidget::onInvert()
 	m_changed = true;
 }
 
-void CColormapWidget::updateColorMap(const Post::CColorMap& map)
+void CColormapWidget::updateColorMap(const CColorMap& map)
 {
 	clearGrid();
 
@@ -758,7 +759,7 @@ void CColormapWidget::clearGrid()
 
 void CColormapWidget::Apply()
 {
-	Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+	CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 	tex = m_map;
 }
 
@@ -768,7 +769,7 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
-			Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+			CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 			tex = m_map;
 			emit colormapChanged(m_currentMap);
 		}
@@ -779,12 +780,12 @@ void CColormapWidget::currentMapChanged(int n)
 	if (n != -1)
 	{
 		m_currentMap = n;
-		Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+		CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 		m_map = tex;
 
-		updateColorMap(Post::ColorMapManager::GetColorMap(n));
+		updateColorMap(ColorMapManager::GetColorMap(n));
 
-		int defaultMap = Post::ColorMapManager::GetDefaultMap();
+		int defaultMap = ColorMapManager::GetDefaultMap();
 		if (n == defaultMap)
 		{
 			m_default->setChecked(true);
@@ -801,7 +802,7 @@ void CColormapWidget::currentMapChanged(int n)
 
 void CColormapWidget::onDataChanged()
 {
-	Post::CColorMap& map = m_map;
+	CColorMap& map = m_map;
 	for (int i = 0; i<map.Colors(); ++i)
 	{
 		QLineEdit* pos = dynamic_cast<QLineEdit*>(m_grid->itemAtPosition(i, 1)->widget()); assert(pos);

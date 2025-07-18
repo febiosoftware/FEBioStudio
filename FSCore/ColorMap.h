@@ -25,79 +25,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <GLLib/GLTexture1D.h>
-#include <PostLib/GLObject.h>
-#include <PostLib/DataMap.h>
-#include <FSCore/ColorMap.h>
-#include <FSCore/box.h>
-#include <GLLib/ColorTexture.h>
+#include "color.h"
 
-class GLLegendBar;
-
-// used for intersection testing
-// defined in MeshLib/Intersect.h
-struct Ray;
-struct Intersection;
-class FESelection;
-
-namespace Post {
-
-class CGLModel;
-class GLPlotGroup;
-
-class CGLPlot : public CGLVisual
+class CColorMap  
 {
+public:
+	enum { MAX_MAP_COLORS = 9 };
+
+public:
+	CColorMap();
+	CColorMap(const CColorMap& map);
+	virtual ~CColorMap();
+
+	void operator = (const CColorMap& map);
+
+	void jet    ();
+	void gray   ();
+	void autumn ();
+	void winter ();
+	void spring ();
+	void summer ();
+	void red    ();
+	void redgreen();
+	void green  ();
+	void hotcold();
+	void blue   ();
+	void rbb    ();
+	void fire   ();
+	void parula ();
+
+	GLColor map(float fval) const;
+
+	int Colors() const { return m_ncol; }
+	void SetColors(int n) { m_ncol = n; }
+
+	GLColor GetColor(int i) const { return m_col[i]; }
+	void SetColor(int i, GLColor c) { m_col[i] = c; }
+
+	float GetColorPos(int i) const { return m_pos[i]; }
+	void SetColorPos(int i, float v) { m_pos[i] = v; }
+
+	void Invert();
+
+	void SetRange(float fmin, float fmax);
+
 protected:
-	struct SUBELEMENT
-	{
-		float   vf[8];		// vector values
-		float    h[8][8];	// shapefunctions
-	};
-
-public:
-	CGLPlot(CGLModel* po = 0);
-	virtual ~CGLPlot();
-
-	virtual void UpdateTexture();
-
-	void SetRenderOrder(int renderOrder);
-	int GetRenderOrder() const;
-
-	virtual void Reload();
-
-	void SetGroup(GLPlotGroup* pg);
-	GLPlotGroup* GetGroup();
-
-public:
-	virtual bool Intersects(Ray& ray, Intersection& q);
-
-	virtual FESelection* SelectComponent(int index);
-
-	virtual void ClearSelection();
-
-private:
-	int	m_renderOrder;
-	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
+	int		m_ncol;
+	GLColor	m_col[MAX_MAP_COLORS];
+	float	m_pos[MAX_MAP_COLORS];
+	float	m_min, m_max;	// range of color map
 };
-
-class CGLLegendPlot : public CGLPlot
-{
-public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
-
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
-
-	void ChangeName(const std::string& name) override;
-
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
-
-	void Activate(bool b) override;
-
-private:
-	GLLegendBar*	m_pbar;
-};
-
-}

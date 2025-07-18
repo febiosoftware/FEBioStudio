@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLLib/GLRenderEngine.h>
 using namespace Post;
 

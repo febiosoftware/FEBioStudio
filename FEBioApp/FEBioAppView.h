@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QWidget>
-#include <QPushButton>
 #include "../FEBioStudio/DocumentView.h"
 
 class CMainWindow;
@@ -46,31 +44,4 @@ public:
 
 private:
 	FEBioAppViewUI* ui;
-};
-
-class CActionButton : public QPushButton
-{
-	Q_OBJECT
-
-public:
-	CActionButton(const QString& text, QWidget* parent = nullptr) : QPushButton(text, parent) 
-	{
-		connect(this, &QPushButton::clicked, this, &CActionButton::onClicked);
-	}
-
-	void setAction(const QString& script) { m_script = script; }
-
-	QString script() const { return m_script; }
-
-private slots:
-	void onClicked()
-	{
-		emit doAction(m_script);
-	}
-
-signals:
-	void doAction(const QString& script);
-
-private:
-	QString m_script;
 };

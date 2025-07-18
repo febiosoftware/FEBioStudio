@@ -23,12 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "util.h"
+#include <math.h>
 
-#include "stdafx.h"
-#include "PostView.h"
-#include <PostLib/ColorMap.h>
-
-void Post::Initialize()
+double bias(double b, double x)
 {
-	ColorMapManager::Initialize();
+	const double f = 1.f / (double)log(0.5);
+	return (double)pow(x, log(b) * f);
+}
+
+double gain(double g, double x)
+{
+	if (x < 0.5f)
+		return bias(1.f - g, 2.f * x) * 0.5f;
+	else
+		return 1.f - bias(1.f - g, 2.f - 2.f * x) * 0.5f;
 }

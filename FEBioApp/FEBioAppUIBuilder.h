@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 class QBoxLayout;
 class XMLTag;
-class FEBioAppDocument;
+class FEBioApp;
 class FEBioAppWidget;
 
 class FEBioAppUIBuilder
@@ -36,7 +36,7 @@ class FEBioAppUIBuilder
 public:
 	FEBioAppUIBuilder();
 
-	FEBioAppWidget* BuildUIFromFile(QString filePath, FEBioAppDocument* app);
+	FEBioAppWidget* BuildUIFromFile(QString filePath, FEBioApp* app);
 
 private:
 	FEBioAppWidget* error();
@@ -49,7 +49,6 @@ private:
 	void parseButton   (XMLTag& tag, QBoxLayout* layout);
 	void parseGraph    (XMLTag& tag, QBoxLayout* layout);
 	void parseInputList(XMLTag& tag, QBoxLayout* layout);
-	void parseGroup    (XMLTag& tag, QBoxLayout* playout);
 	void parseVGroup   (XMLTag& tag, QBoxLayout* playout);
 	void parseHGroup   (XMLTag& tag, QBoxLayout* playout);
 	void parseStretch  (XMLTag& tag, QBoxLayout* playout);
@@ -60,6 +59,6 @@ private:
 
 private:
 	FEBioAppWidget* ui;
-	FEBioAppDocument* app;
+	FEBioApp* app;
 	QString	m_appFolder;
 };

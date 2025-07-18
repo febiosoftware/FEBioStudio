@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
-#include "GLSceneView.h"
+#include <CUILib/GLSceneView.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLScene.h>
 

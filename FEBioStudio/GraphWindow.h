@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QMainWindow>
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "Document.h"
 #include <FSCore/LoadCurve.h>
 

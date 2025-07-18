@@ -28,11 +28,6 @@ SOFTWARE.*/
 #include <assert.h>
 #include <string>
 using namespace std;
-using namespace Post;
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
 
 CColorMap::CColorMap()
 {
@@ -44,6 +39,9 @@ CColorMap::CColorMap()
 
 CColorMap::CColorMap(const CColorMap& m)
 {
+	m_min = m.m_min;
+	m_max = m.m_max;
+
 	m_ncol = m.m_ncol;
 	for (int i=0; i<MAX_MAP_COLORS; ++i)
 	{
@@ -253,7 +251,6 @@ void CColorMap::fire()
 	m_pos[4] = 1.00f; m_col[4] = GLColor(255, 255, 255); // white
 }
 
-//-----------------------------------------------------------------------------
 // Invert the colormap
 void CColorMap::Invert()
 {
@@ -263,129 +260,4 @@ void CColorMap::Invert()
 		m_col[i] = m_col[m_ncol-i-1];
 		m_col[m_ncol-i-1] = c;
 	}
-}
-
-//=============================================================================
-class Post::ColorMapTemplate
-{
-public:
-	ColorMapTemplate(){}
-	ColorMapTemplate(const string& name, const CColorMap& map) : m_name(name), m_map(map) {}
-	ColorMapTemplate(const ColorMapTemplate& cmt)
-	{
-		m_name = cmt.m_name;
-		m_map  = cmt.m_map;
-	}
-	void operator = (const ColorMapTemplate& cmt)
-	{
-		m_name = cmt.m_name;
-		m_map  = cmt.m_map;
-	}
-
-	const string& name() const { return m_name; }
-
-	void setName(const std::string& newName) { m_name = newName; }
-
-	CColorMap& colormap() { return m_map; }
-
-private: 
-	string		m_name;
-	CColorMap	m_map;
-};
-
-//=============================================================================
-vector<class ColorMapTemplate>	ColorMapManager::m_map;
-int ColorMapManager::m_defaultMap = ColorMapManager::JET;
-
-// set the default color map
-void ColorMapManager::SetDefaultMap(int map)
-{
-	if ((map >= 0) && (map < ColorMaps()))
-	{
-		m_defaultMap = map;
-	}
-}
-
-int ColorMapManager::GetDefaultMap()
-{ 
-	return m_defaultMap; 
-}
-
-int ColorMapManager::ColorMaps()
-{
-	return (int) m_map.size();
-}
-
-int ColorMapManager::UserColorMaps()
-{
-	return (int)m_map.size() - USER;
-}
-
-void ColorMapManager::Initialize()
-{
-	if (m_map.empty() == false) return;
-
-	CColorMap map;
-	map.autumn (); AddColormap("Autumn", map);
-	map.blue   (); AddColormap("Blue"  , map);
-	map.fire   (); AddColormap("Fire"  , map);
-	map.gray   (); AddColormap("Gray"  , map);
-	map.green  (); AddColormap("Green" , map);
-	map.hotcold(); AddColormap("Hot-Cold", map);
-	map.jet    (); AddColormap("Jet"   , map);
-	map.parula (); AddColormap("Parula", map);
-	map.rbb    (); AddColormap("RBB"   , map);
-	map.red    (); AddColormap("Red"   , map);
-	map.redgreen(); AddColormap("Red-Green", map);
-	map.spring (); AddColormap("Spring", map);
-	map.summer (); AddColormap("Summer", map);
-	map.winter (); AddColormap("Winter", map);
-}
-
-string ColorMapManager::GetColorMapName(int n)
-{
-	if ((n>=0) && (n < ColorMaps()))
-	{
-		return m_map[n].name();
-	}
-	else 
-	{
-		assert(false);	
-		return "";
-	}
-}
-
-int ColorMapManager::FindColorMapFromName(const std::string& mapName)
-{
-	for (int i=0; i<m_map.size(); ++i)
-	{
-		if (m_map[i].name() == mapName) return i;
-	}
-	return -1;
-}
-
-// set the colormap name
-void ColorMapManager::SetColorMapName(int n, const std::string& newName)
-{
-	m_map[n].setName(newName);
-}
-
-CColorMap& ColorMapManager::GetColorMap(int n)
-{
-	if ((n<0) || (n>=m_map.size())) n = 0;
-	return m_map[n].colormap();
-}
-
-void ColorMapManager::AddColormap(const string& name, const CColorMap& map)
-{
-	ColorMapTemplate newTemplate(name, map);
-	m_map.push_back(newTemplate);	
-}
-
-// remove a color map template (can't delete default templates)
-bool ColorMapManager::RemoveColormap(int n)
-{
-	if (n < USER) return false;
-	m_map.erase(m_map.begin() + n);
-	return true;
 }

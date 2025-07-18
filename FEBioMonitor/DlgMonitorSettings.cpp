@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <QFormLayout>
 #include <QGroupBox>
-#include <FEBioStudio/InputWidgets.h>
+#include <CUILib/InputWidgets.h>
 #include <FEBioStudio/ResourceEdit.h>
 
 class CDlgMonitorSettings::Ui

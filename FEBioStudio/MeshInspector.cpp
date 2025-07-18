@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "GLDocument.h"
 #include <MeshTools/FEMeshValuator.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include "Commands.h"
 #include <GLLib/GLScene.h>
 using namespace std;
@@ -41,7 +41,7 @@ CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd),
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
 
-	ui->m_map = Post::ColorMapManager::GetDefaultMap();
+	ui->m_map = ColorMapManager::GetDefaultMap();
 }
 
 void CMeshInspector::Update(bool reset)
@@ -77,9 +77,9 @@ void CMeshInspector::showEvent(QShowEvent* ev)
 {
 	ui->col->blockSignals(true);
 	ui->col->clear();
-	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	for (int i = 0; i < ColorMapManager::ColorMaps(); ++i)
 	{
-		string name = Post::ColorMapManager::GetColorMapName(i);
+		string name = ColorMapManager::GetColorMapName(i);
 		ui->col->addItem(QString::fromStdString(name));
 	}
 	ui->col->setCurrentIndex(ui->m_map);

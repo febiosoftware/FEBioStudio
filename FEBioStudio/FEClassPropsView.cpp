@@ -37,7 +37,8 @@ SOFTWARE.*/
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
-#include "PlotWidget.h"
+#include "CurveEditWidget.h"
+#include "MathEditWidget.h"
 #include "IconProvider.h"
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEBase.h>

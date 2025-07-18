@@ -29,10 +29,8 @@ SOFTWARE.*/
 #include <FECore/FEMesh.h>
 #include <FECore/FESurface.h>
 #include <FEBioLib/FEBioModel.h>
-#include <PostLib/ColorMap.h>
-#include <MeshIO/STLimport.h>
-#include <FEMLib/FSProject.h>
-#include <GeomLib/GObject.h>
+#include <FSCore/ColorMapManager.h>
+#include <GLLib/STLReader.h>
 #include <FSCore/Palette.h>
 #include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLContext.h>
@@ -70,16 +68,13 @@ void GLSceneObject::SetRotation(quatd q)
 
 bool GLSceneObject::LoadFromFile(const std::string& fileName)
 {
-	FSProject tmp;
-	STLimport stl(tmp);
-	if (stl.Load(fileName.c_str()) == false) return false;
-	GObject* po = tmp.GetFSModel().GetModel().Object(0);
-	GLMesh* m = po->GetRenderMesh();
-	if (m)
+	STLReader stl;
+	GLMesh* pm = stl.Load(fileName);
+	if (pm)
 	{
-		m_mesh = *m;
+		m_mesh = *pm;
 	}
-	return true;
+	return (pm != nullptr);
 }
 
 GLFEBioScene::GLFEBioScene(FEBioModel& fem) : m_fem(fem)
@@ -133,7 +128,7 @@ void GLFEBioScene::AddSceneObject(GLSceneObject* po)
 
 void GLFEBioScene::SetColorMap(const std::string& colorMapName)
 {
-	int n = Post::ColorMapManager::FindColorMapFromName(colorMapName);
+	int n = ColorMapManager::FindColorMapFromName(colorMapName);
 	assert(n >= 0);
 	if (n >= 0) m_col.SetColorMap(n);
 }
@@ -187,7 +182,7 @@ void GLFEBioScene::Update(double time)
 	}
 	if (vmax == vmin) vmax++;
 
-	Post::CColorMap col;
+	CColorMap col;
 	col.SetRange(vmin, vmax);
 	m_legend->SetRange(vmin, vmax);
 

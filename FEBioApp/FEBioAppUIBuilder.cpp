@@ -34,12 +34,11 @@ SOFTWARE.*/
 #include <QTabWidget>
 #include <QFileInfo>
 #include <QPlainTextEdit>
-#include "../FEBioStudio/GLSceneView.h"
-#include "../FEBioStudio/InputWidgets.h"
-#include "../FEBioStudio/PlotWidget.h"
-#include "FEBioAppView.h"
-#include "FEBioAppDocument.h"
+#include <CUILib/GLSceneView.h>
+#include <CUILib/InputWidgets.h>
+#include <CUILib/PlotWidget.h>
 #include "FEBioAppWidget.h"
+#include "ActionButton.h"
 #include "GLFEBioScene.h"
 #include <FECore/FEParam.h>
 #include <FECore/FECoreKernel.h>
@@ -84,7 +83,7 @@ FEBioAppWidget* FEBioAppUIBuilder::error()
 	return nullptr;
 }
 
-FEBioAppWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioAppDocument* app)
+FEBioAppWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioApp* app)
 {
 	if (app == nullptr) return nullptr;
 	this->app = app;
@@ -136,7 +135,7 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 
 	// add the new model
 	QString fileName = m_appFolder + QString("/%1").arg(szfile);
-	bool b = app->LoadModelFromFile(fileName);
+	bool b = app->LoadModelFromFile(fileName.toStdString()); // TODO: Did I move the febio_cb in this function?
 
 	if (sztask)
 	{
@@ -166,7 +165,6 @@ bool FEBioAppUIBuilder::parseGUITags(XMLTag& tag, QBoxLayout* playout)
 	do
 	{
 		if      (tag == "label"     ) parseLabel    (tag, playout);
-		else if (tag == "group"     ) parseGroup    (tag, playout);
 		else if (tag == "vgroup"    ) parseVGroup   (tag, playout);
 		else if (tag == "hgroup"    ) parseHGroup   (tag, playout);
 		else if (tag == "tab_group" ) parseTabGroup (tag, playout);
@@ -223,7 +221,7 @@ void FEBioAppUIBuilder::parseButton(XMLTag& tag, QBoxLayout* playout)
 	if (szaction)
 	{
 		pb->setAction(szaction);
-		QObject::connect(pb, &CActionButton::doAction, app, &FEBioAppDocument::runScript);
+		QObject::connect(pb, &CActionButton::doAction, app, &FEBioApp::runScript);
 	}
 
 	playout->addWidget(pb);
@@ -378,28 +376,6 @@ void FEBioAppUIBuilder::parseInputList(XMLTag& tag, QBoxLayout* playout)
 	{
 		printf("ERROR: Cannot find property: %s\n", tag.szvalue());
 	}
-}
-
-void FEBioAppUIBuilder::parseGroup(XMLTag& tag, QBoxLayout* playout)
-{
-	const char* szalign = tag.AttributeValue("align");
-	const char* szname = tag.AttributeValue("title", true);
-
-	QGroupBox* pg = 0;
-	if (szname) pg = new QGroupBox(szname);
-
-	QBoxLayout* pl = 0;
-	if (strcmp(szalign, "vertical") == 0) pl = new QVBoxLayout;
-	else if (strcmp(szalign, "horizontal") == 0) pl = new QHBoxLayout;
-
-	parseGUITags(tag, pl);
-
-	if (pg)
-	{
-		pg->setLayout(pl);
-		playout->addWidget(pg);
-	}
-	else playout->addLayout(pl);
 }
 
 void FEBioAppUIBuilder::parseVGroup(XMLTag& tag, QBoxLayout* playout)

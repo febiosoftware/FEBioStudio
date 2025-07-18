@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageAnalysis.h>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "RangeSlider.h"
 #include <vector>
 

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <stdlib.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);

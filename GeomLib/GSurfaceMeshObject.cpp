@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/FSCurveMesh.h>
 #include <GLLib/GLMesh.h>
 #include <MeshLib/FSNodeEdgeList.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include "GOCCObject.h"
 #include <FSCore/ClassDescriptor.h>
 
@@ -917,7 +917,7 @@ void GSurfaceMeshObject::UpdateSurfaceMeshData()
 	int NN = pm->Nodes();
 	vector<double> val(NN, 0);
 
-	Post::CColorMap map;
+	CColorMap map;
 	map.SetRange((float)vmin, (float)vmax);
 
 	int NF = gmsh->Faces();

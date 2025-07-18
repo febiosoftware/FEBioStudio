@@ -35,10 +35,10 @@ SOFTWARE.*/
 
 #include "GLLegendBar.h"
 #include "convert.h"
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <QPainter>
 
-GLLegendBar::GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
+GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
 {
 	m_pMap = pm;
 	m_ntype = GRADIENT;
@@ -572,7 +572,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		//		char szfmt[16]={0};
 		//		sprintf(szfmt, "%%.%dg", m_nprec);
 
-		Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_pMap->GetColorMap());
+		CColorMap& map = ColorMapManager::GetColorMap(m_pMap->GetColorMap());
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "PlaneTool.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <QApplication>
 #include <QClipboard>
 #include <QBoxLayout>

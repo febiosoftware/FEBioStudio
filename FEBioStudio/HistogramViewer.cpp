@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QLabel>
-#include <FEBioStudio/PlotWidget.h>
+#include <CUILib/PlotWidget.h>
 #include <limits>
 
 using namespace Post;

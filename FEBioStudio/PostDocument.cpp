@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <FSCore/Palette.h>
 #include <PostGL/GLModel.h>
-#include <PostGL/ColorTexture.h>
+#include <GLLib/ColorTexture.h>
 #include <GeomLib/GModel.h>
 #include <GLWLib/GLWidgetManager.h>
 //---------------------------------------
@@ -102,7 +102,7 @@ void ModelData::ReadData(Post::CGLModel* po)
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
+		CColorTexture* pcm = pglmap->GetColorMap();
 		m_cmap.m_ntype = pcm->GetColorMap();
 		m_cmap.m_ndivs = pcm->GetDivisions();
 		m_cmap.m_bsmooth = pcm->GetSmooth();
@@ -150,7 +150,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
+		CColorTexture* pcm = pglmap->GetColorMap();
 		pcm->SetColorMap(m_cmap.m_ntype);
 		pcm->SetDivisions(m_cmap.m_ndivs);
 		pcm->SetSmooth(m_cmap.m_bsmooth);

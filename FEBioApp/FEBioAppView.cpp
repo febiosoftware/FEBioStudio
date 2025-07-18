@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioAppView.h"
 #include "../FEBioStudio/MainWindow.h"
+#include "../FEBioStudio/FEBioAppDocument.h"
 #include <QBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
 #include <QStackedWidget>
 #include "FEBioAppUIBuilder.h"
-#include "FEBioAppDocument.h"
 #include "FEBioAppWidget.h"
 
 class FEBioAppViewUI
@@ -59,25 +59,27 @@ FEBioAppView::FEBioAppView(CMainWindow* wnd) : CDocumentView(wnd), ui(new FEBioA
 
 void FEBioAppView::setDocument(CDocument* doc)
 {
-	FEBioAppDocument* app = dynamic_cast<FEBioAppDocument*>(doc);
+	FEBioAppDocument* appDoc = dynamic_cast<FEBioAppDocument*>(doc);
 
 	// see if we already have a UI for this document
 	FEBioAppWidget* w = nullptr;
-	if (app)
+	if (appDoc)
 	{
-		if (ui->widgets.contains(app))
+		if (ui->widgets.contains(appDoc))
 		{
-			w = ui->widgets.value(app);
+			w = ui->widgets.value(appDoc);
 		}
 		else
 		{
+			FEBioApp* app = appDoc->GetFEBioApp();
+
 			// build a new widget
 			FEBioAppUIBuilder UIBuilder;
-			w = UIBuilder.BuildUIFromFile(QString::fromStdString(app->GetDocFilePath()), app);
+			w = UIBuilder.BuildUIFromFile(QString::fromStdString(appDoc->GetDocFilePath()), app);
 			if (w == nullptr) QMessageBox::critical(this, "FEBio Studio", "Failed to read file!");
 			else
 			{
-				ui->widgets[app] = w;
+				ui->widgets[appDoc] = w;
 				ui->stack->addWidget(w);
 				app->SetUI(w);
 			}

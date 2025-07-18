@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QCheckBox>
 #include <QDialogButtonBox>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 
 class Ui::CDlgSelectRange
 {

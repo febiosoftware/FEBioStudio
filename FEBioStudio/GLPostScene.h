@@ -35,6 +35,7 @@ class FESelection;
 namespace Post {
 	class CGLPlot;
 	class FEPostModel;
+	class CGLModel;
 }
 
 class GLPostSceneItem : public GLSceneItem

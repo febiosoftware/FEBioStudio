@@ -29,13 +29,13 @@ SOFTWARE.*/
 #include <assert.h>
 #include <stdexcept>
 
-class FEBioAppDocument;
+class FEBioApp;
 class JSInterpreter;
 
 class FEBioAppScript
 {
 public:
-	FEBioAppScript(FEBioAppDocument* doc);
+	FEBioAppScript(FEBioApp* app);
 
 	~FEBioAppScript();
 
@@ -48,7 +48,7 @@ private:
 	void initJSModules(JSInterpreter& interpreter);
 
 private:
-	FEBioAppDocument* m_doc;
+	FEBioApp* m_app;
 	QString m_error;
 	QString m_script;
 };

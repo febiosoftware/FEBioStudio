@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QCheckBox>
 #include <FECore/FEParam.h>
-#include "../FEBioStudio/InputWidgets.h"
+#include "../CUILib/InputWidgets.h"
 
 class QPlainTextEdit;
 
-class FEBioAppDocument;
+class FEBioApp;
 
 class CFEBioParamEdit : public QObject
 {
@@ -87,7 +87,7 @@ class FEBioAppWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FEBioAppWidget(FEBioAppDocument* doc);
+	FEBioAppWidget(FEBioApp* app);
 	void AddRepaintChild(QWidget* w);
 
 	UIElement GetElementByID(const QString& objName);
@@ -109,7 +109,7 @@ signals:
 	void modelFinished();
 
 private:
-	FEBioAppDocument* m_doc;
+	FEBioApp* m_app;
 	QPlainTextEdit* m_output;
 	std::vector<QWidget*>	m_children;
 };

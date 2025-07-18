@@ -493,7 +493,7 @@ endif()
 
 # Linking the Qt libraries also pulls in the include files
 target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(CUILib Qt6::Widgets)
+target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(PostGL Qt6::Gui)
 target_link_libraries(PostLib Qt6::Gui)

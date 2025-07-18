@@ -23,81 +23,77 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <GLLib/GLTexture1D.h>
-#include <PostLib/GLObject.h>
-#include <PostLib/DataMap.h>
-#include <FSCore/ColorMap.h>
-#include <FSCore/box.h>
-#include <GLLib/ColorTexture.h>
+#include <vector>
+#include <list>
+#include <FSCore/math3d.h>
+#include "GLMesh.h"
+#include <string>
 
-class GLLegendBar;
-
-// used for intersection testing
-// defined in MeshLib/Intersect.h
-struct Ray;
-struct Intersection;
-class FESelection;
-
-namespace Post {
-
-class CGLModel;
-class GLPlotGroup;
-
-class CGLPlot : public CGLVisual
+class STLReader
 {
-protected:
-	struct SUBELEMENT
+	struct FACET
 	{
-		float   vf[8];		// vector values
-		float    h[8][8];	// shapefunctions
+		float	norm[3];
+		float	v1[3];
+		float	v2[3];
+		float	v3[3];
+		int		n[3];
+		int		nid;
+	};
+
+	struct NODE
+	{
+		vec3d	r;
+		int		n;
+	};
+
+	class OBOX
+	{
+	public:
+		vec3d		r0, r1;		// points defining box
+		std::vector<int>	NL;			// list of nodes inside this box
+
+	public:
+		OBOX() {}
+		OBOX(const OBOX& b)
+		{
+			r0 = b.r0; r1 = b.r1;
+			NL = b.NL;
+		}
 	};
 
 public:
-	CGLPlot(CGLModel* po = 0);
-	virtual ~CGLPlot();
+	STLReader();
 
-	virtual void UpdateTexture();
+	GLMesh* Load(const std::string& filename);
 
-	void SetRenderOrder(int renderOrder);
-	int GetRenderOrder() const;
+protected:
+	bool read_line(char* szline, const char* sz);
 
-	virtual void Reload();
+	int find_node(const vec3d& r, const double eps = 1e-14);
+	int FindBox(const vec3d& r);
 
-	void SetGroup(GLPlotGroup* pg);
-	GLPlotGroup* GetGroup();
-
-public:
-	virtual bool Intersects(Ray& ray, Intersection& q);
-
-	virtual FESelection* SelectComponent(int index);
-
-	virtual void ClearSelection();
+	::BOX BoundingBox();
 
 private:
-	int	m_renderOrder;
-	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
-};
-
-class CGLLegendPlot : public CGLPlot
-{
-public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
-
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
-
-	void ChangeName(const std::string& name) override;
-
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
-
-	void Activate(bool b) override;
+	bool read_ascii(const char* szfile);
+	bool read_binary(const char* szfile);
 
 private:
-	GLLegendBar*	m_pbar;
-};
+	bool read_facet(FACET& f);
 
-}
+	GLMesh* BuildMesh();
+
+protected:
+	std::list<FACET>	m_Face;
+	std::vector<NODE>	m_Node;
+	int					m_nline;	// line counter
+
+	int					m_NB;
+	std::vector<OBOX>	m_BL;		// box lists
+
+	BOX				m_box;		// bounding box
+
+	FILE* m_fp = nullptr;
+};

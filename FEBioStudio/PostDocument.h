@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLModelDocument.h"
 #include <PostLib/Material.h>
-#include "GraphData.h"
+#include <CUILib/GraphData.h>
 
 class CModelDocument;
 class CPostObject;
@@ -37,6 +37,7 @@ namespace Post {
 	class FEPostModel;
 	class FEFileReader;
 	class CGLModel;
+	class CGLObject;
 }
 
 // Timer modes

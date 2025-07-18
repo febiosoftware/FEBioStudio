@@ -24,13 +24,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioAppWidget.h"
-#include "FEBioAppDocument.h"
-#include "../FEBioStudio/MainWindow.h"
-#include "../FEBioStudio/PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QLabel>
 #include <QPlainTextEdit>
+#include "FEBioApp.h"
 
 void UIElement::setText(const QString& txt) const
 {
@@ -47,13 +46,13 @@ void UIElement::setText(const QString& txt) const
 	if (pp) pp->setTitle(txt);
 }
 
-FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)
+FEBioAppWidget::FEBioAppWidget(FEBioApp* app) : m_app(app)
 {
 	m_output = nullptr;
 
-	QObject::connect(doc, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
-	QObject::connect(doc, SIGNAL(modelFinished(bool)), this, SLOT(onModelFinished(bool)));
-	QObject::connect(doc, SIGNAL(modelStarted()), this, SLOT(onModelStarted()));
+	QObject::connect(app, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
+	QObject::connect(app, SIGNAL(modelFinished(bool)), this, SLOT(onModelFinished(bool)));
+	QObject::connect(app, SIGNAL(modelStarted()), this, SLOT(onModelStarted()));
 }
 
 void FEBioAppWidget::onDataChanged()
@@ -63,8 +62,6 @@ void FEBioAppWidget::onDataChanged()
 
 void FEBioAppWidget::onModelStarted()
 {
-	QString fileName = QString::fromStdString(m_doc->GetDocFileName());
-	window()->setWindowTitle(QString("[RUNNING %1]").arg(fileName));
 }
 
 void FEBioAppWidget::onModelFinished(bool returnCode)
@@ -80,8 +77,6 @@ void FEBioAppWidget::onModelFinished(bool returnCode)
 		QMessageBox::critical(this, "FEBio App", "FEBio failed!");
 	}
 	repaint();
-	CMainWindow* wnd = dynamic_cast<CMainWindow*>(window());
-	if (wnd) wnd->UpdateTitle();
 
 	emit modelFinished();
 }

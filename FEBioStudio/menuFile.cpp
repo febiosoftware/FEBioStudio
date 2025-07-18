@@ -119,7 +119,7 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
-#include <FEBioApp/FEBioAppDocument.h>
+#include "FEBioAppDocument.h"
 #include <FEBioLink/FEBioModule.h>
 #include "BatchConverter.h"
 #include <GLLib/GLScene.h>

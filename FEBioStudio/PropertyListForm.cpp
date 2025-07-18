@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QListWidget>
 #include <QToolButton>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
 #include "LinkPropertyEdit.h"

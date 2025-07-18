@@ -24,13 +24,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/Document.h"
-#include <FECore/FEParam.h>
+#include <QObject>
 #include <vector>
+#include <string>
+#include <FECore/FEParam.h>
 
 class FEBioModel;
-class FEModel;
-
 class FEBioAppWidget;
 
 class CFEBioModelDataSource
@@ -43,58 +42,65 @@ public:
 	virtual void Update(double time) = 0;
 };
 
-class FEBioAppDocument : public CDocument
+class FEBioApp : public QObject
 {
 	Q_OBJECT
 
 public:
-	FEBioAppDocument(CMainWindow* wnd);
-	~FEBioAppDocument();
+	FEBioApp();
+	~FEBioApp();
 
-	bool LoadModelFromFile(QString fileName);
+	FEBioModel* GetFEBioModel() { return m_fem; }
 
 	void SetTask(const std::string& taskName, const std::string& taskInputFilename = "");
+
+	const std::string& GetTaskName() { return m_taskName; }
+	const std::string& GetTaskInputFile() { return m_taskInputFile; }
+
+	void AddModelDataSource(CFEBioModelDataSource* dataSrc);
+
+	bool ProcessFEBioEvent(int nevent);
+
+	bool LoadModelFromFile(const std::string& fileName);
+
+	std::string GetModelFilename();
 
 	std::vector<FEParamValue> GetFEBioParameterList(const char* szparams);
 	FEParamValue GetFEBioParameter(const char* szparams);
 
-	FEBioModel* GetFEBioModel();
-
-	void AddModelDataSource(CFEBioModelDataSource* dataSrc);
-
-	void SetUI(FEBioAppWidget* w);
-	FEBioAppWidget* GetUI();
-
-public slots:
-	void runScript(const QString& script); // called by action buttons
-
-signals:
-	void modelStarted();
-	void modelFinished(bool returnCode);
-	void dataChanged();
-
-private:
-	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
-	bool ProcessFEBioEvent(int nevent);
-
-	// this function actuallys run FEBio, but is called from a separate thread
-	void RunFEBioModel();
+	void SetUI(FEBioAppWidget* w) { m_ui = w; }	
+	FEBioAppWidget* GetUI() { return m_ui; }
 
 public:
 	void runModel();
 	void stopModel();
 
+public slots:
+	void runScript(const QString& script); // called by action buttons
+
+signals:
+	void dataChanged();
+	void modelStarted();
+	void modelFinished(bool returnCode);
+
 private:
-	bool	m_isInitialized;
-	bool	m_isRunning;
-	bool	m_forceStop;
-	FEBioModel* m_fem;
+	// this function actuallys run FEBio, but is called from a separate thread
+	void RunFEBioModel();
+
+private:
+	bool	m_isInitialized = false;
+	bool	m_isRunning = false;
+	bool	m_forceStop = false;
+
+	FEBioModel* m_fem = nullptr;
+
 	std::vector<CFEBioModelDataSource*>	m_dataSources;
 
 	std::string m_taskName;
 	std::string m_taskInputFile;
 
-	FEBioAppWidget* m_ui;
+	FEBioAppWidget* m_ui = nullptr;
+
 
 	friend class CFEBioAppThread;
 };

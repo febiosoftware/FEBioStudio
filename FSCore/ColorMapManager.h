@@ -23,67 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <FSCore/color.h>
-#include <GLLib/GLTexture1D.h>
+#include "ColorMap.h"
 #include <vector>
 #include <string>
 
-namespace Post {
-
 class ColorMapTemplate;
 
-class CColorMap  
-{
-public:
-	enum { MAX_MAP_COLORS = 9 };
-
-public:
-	CColorMap();
-	CColorMap(const CColorMap& map);
-	virtual ~CColorMap();
-
-	void operator = (const CColorMap& map);
-
-	void jet    ();
-	void gray   ();
-	void autumn ();
-	void winter ();
-	void spring ();
-	void summer ();
-	void red    ();
-	void redgreen();
-	void green  ();
-	void hotcold();
-	void blue   ();
-	void rbb    ();
-	void fire   ();
-	void parula ();
-
-	GLColor map(float fval) const;
-
-	int Colors() const { return m_ncol; }
-	void SetColors(int n) { m_ncol = n; }
-
-	GLColor GetColor(int i) const { return m_col[i]; }
-	void SetColor(int i, GLColor c) { m_col[i] = c; }
-
-	float GetColorPos(int i) const { return m_pos[i]; }
-	void SetColorPos(int i, float v) { m_pos[i] = v; }
-
-	void Invert();
-
-	void SetRange(float fmin, float fmax);
-
-protected:
-	int		m_ncol;
-	GLColor	m_col[MAX_MAP_COLORS];
-	float	m_pos[MAX_MAP_COLORS];
-	float	m_min, m_max;	// range of color map
-};
-
-//-----------------------------------------------------------------------------
 // Class for managing available color maps
 class ColorMapManager
 {
@@ -143,11 +89,11 @@ public:
 
 private:
 	// this is a singleton so don't try to instantiate this
-	ColorMapManager(){}
-	ColorMapManager(const ColorMapManager&){}
+	ColorMapManager() {}
+	ColorMapManager(const ColorMapManager&) {}
 
 private:
 	static std::vector<class ColorMapTemplate>	m_map;
 	static int m_defaultMap;
 };
-}
+

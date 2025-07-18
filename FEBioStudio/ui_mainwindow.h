@@ -57,7 +57,7 @@ SOFTWARE.*/
 #include "2DImageTimeView.h"
 #include "GLControlBar.h"
 #include "Document.h"
-#include <FEBioApp/FEBioAppDocument.h>
+#include "FEBioAppDocument.h"
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include "LaunchConfig.h"

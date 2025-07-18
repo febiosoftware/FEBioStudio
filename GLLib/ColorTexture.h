@@ -23,81 +23,36 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <GLLib/GLTexture1D.h>
-#include <PostLib/GLObject.h>
-#include <PostLib/DataMap.h>
 #include <FSCore/ColorMap.h>
-#include <FSCore/box.h>
-#include <GLLib/ColorTexture.h>
+#include "GLTexture1D.h"
 
-class GLLegendBar;
-
-// used for intersection testing
-// defined in MeshLib/Intersect.h
-struct Ray;
-struct Intersection;
-class FESelection;
-
-namespace Post {
-
-class CGLModel;
-class GLPlotGroup;
-
-class CGLPlot : public CGLVisual
-{
-protected:
-	struct SUBELEMENT
-	{
-		float   vf[8];		// vector values
-		float    h[8][8];	// shapefunctions
-	};
-
-public:
-	CGLPlot(CGLModel* po = 0);
-	virtual ~CGLPlot();
-
-	virtual void UpdateTexture();
-
-	void SetRenderOrder(int renderOrder);
-	int GetRenderOrder() const;
-
-	virtual void Reload();
-
-	void SetGroup(GLPlotGroup* pg);
-	GLPlotGroup* GetGroup();
-
-public:
-	virtual bool Intersects(Ray& ray, Intersection& q);
-
-	virtual FESelection* SelectComponent(int index);
-
-	virtual void ClearSelection();
-
-private:
-	int	m_renderOrder;
-	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
-};
-
-class CGLLegendPlot : public CGLPlot
+class CColorTexture
 {
 public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
+	CColorTexture();
+	CColorTexture(const CColorTexture& col);
+	void operator = (const CColorTexture& col);
 
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
+	GLTexture1D& GetTexture() { return m_tex; }
 
-	void ChangeName(const std::string& name) override;
+	void UpdateTexture();
 
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
+	int GetDivisions() const;
+	void SetDivisions(int n);
 
-	void Activate(bool b) override;
+	bool GetSmooth() const;
+	void SetSmooth(bool b);
+
+	void SetColorMap(int n);
+	int GetColorMap() const;
+
+	CColorMap& ColorMap();
 
 private:
-	GLLegendBar*	m_pbar;
-};
+	int		m_colorMap;		// index of template to use
+	int		m_ndivs;		// number of divisions
+	bool	m_bsmooth;		// smooth interpolation or not
 
-}
+	GLTexture1D m_tex;	// the actual texture
+};

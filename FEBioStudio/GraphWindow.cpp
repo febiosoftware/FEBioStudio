@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GraphWindow.h"
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "DataFieldSelector.h"
 #include <QToolBar>
 #include <QStackedWidget>

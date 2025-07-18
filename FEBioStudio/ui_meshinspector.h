@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QComboBox>
 #include <QPushButton>
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include <QGroupBox>
 #include <QLineEdit>
 #include <QSpinBox>
