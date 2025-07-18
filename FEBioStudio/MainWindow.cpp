@@ -101,7 +101,6 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
-#include "FEBioAppDocument.h"
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioReportDoc.h>
 #include "RemoteJob.h"
@@ -458,10 +457,6 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
-	}
-	else if (ext.compare("fex", Qt::CaseInsensitive) == 0)
-	{
-		OpenFEBioAppFile(fileName);
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
@@ -2247,10 +2242,6 @@ void CMainWindow::UpdateUIConfig()
 	{
 		ui->setUIConfig(Ui::Config::XML_CONFIG);
 	}
-	else if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->setUIConfig(Ui::Config::APP_CONFIG);
-	}
 	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::MONITOR_CONFIG);
@@ -2420,11 +2411,6 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
 		ui->modelViewer->Clear();
-	}
-
-	if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->centralWidget->appView->removeDocument(dynamic_cast<FEBioAppDocument*>(doc));
 	}
 
 	// now, remove from the doc manager

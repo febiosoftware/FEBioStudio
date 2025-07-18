@@ -36,7 +36,6 @@ namespace Ui {
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
 		XML_CONFIG,			// text document	(i.e. feb file)
-		APP_CONFIG,			// app document	(i.e. fex file)
 		MONITOR_CONFIG,		// febio monitor document
 		FEBREPORT_CONFIG,	// febio report document
 	};
@@ -105,14 +104,6 @@ namespace Ui {
 	{
 	public:
 		CXMLConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::XML_CONFIG) {}
-		void Apply() override;
-	};
-
-	// Configuration for showing an febio app
-	class CAPPConfig : public CUIConfig
-	{
-	public:
-		CAPPConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::APP_CONFIG) {}
 		void Apply() override;
 	};
 

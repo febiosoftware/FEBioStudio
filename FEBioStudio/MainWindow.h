@@ -344,7 +344,6 @@ private:
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
 	void OpenTextFile(const QString& fileName);
-	void OpenFEBioAppFile(const QString& fileName);
 
 	bool SaveDocument(CDocument* doc, const QString& fileName);
 

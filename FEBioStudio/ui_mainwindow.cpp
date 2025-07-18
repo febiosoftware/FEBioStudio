@@ -344,7 +344,6 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CPostConfig(this));
 	m_configs.push_back(new CTextConfig(this));
 	m_configs.push_back(new CXMLConfig(this));
-	m_configs.push_back(new CAPPConfig(this));
 	m_configs.push_back(new CMonitorConfig(this));
 	m_configs.push_back(new CFEBReportConfig(this));
 
