@@ -127,6 +127,14 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEProjectNodes : public FEModifier
+{
+public:
+    FEProjectNodes();
+    FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 
 class FESetShellThickness : public FEModifier
 {

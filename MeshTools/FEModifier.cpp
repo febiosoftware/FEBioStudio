@@ -406,6 +406,47 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 }
 
 
+//=============================================================================
+// FEProjectNodes
+//=============================================================================
+
+FEProjectNodes::FEProjectNodes() : FEModifier("Project")
+{
+    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0");
+}
+
+FSMesh* FEProjectNodes::Apply(FSMesh* pm)
+{
+    int nplane = GetIntValue(0);
+    
+    FSMesh* pnm = new FSMesh(*pm);
+    
+    vec3d rc;
+    int iref = -1;
+    for (int i=0; i<pnm->Nodes(); ++i)
+    {
+        FSNode& node = pnm->Node(i);
+        vec3d ri = node.pos();
+        if (node.IsSelected())
+        {
+            iref = 0;
+            rc = ri;
+            switch (nplane)
+            {
+                case 0: rc.x = 0; break;
+                case 1: rc.y = 0; break;
+                case 2: rc.z = 0; break;
+            }
+            node.pos(rc);
+        }
+    }
+    
+    if (iref == -1) { delete pnm; return 0; }
+    
+    return pnm;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // FESetShellThickness
 //////////////////////////////////////////////////////////////////////

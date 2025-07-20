@@ -286,6 +286,7 @@ REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDI
 REGISTER_CLASS(MMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
 #endif
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
+REGISTER_CLASS(FEProjectNodes         , CLASS_FEMODIFIER, "Project"        , EDIT_NODE);
 REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
 REGISTER_CLASS(RefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
