@@ -177,88 +177,24 @@ class CDoubleSlider : public QWidget
 	Q_OBJECT
 
 public:
-	CDoubleSlider(QWidget* parent = nullptr)
-        : QWidget(parent), m_min(0), m_max(1), m_steps(100)
-	{
-		QHBoxLayout* layout = new QHBoxLayout;
-		layout->setContentsMargins(0,0,0,0);
+	CDoubleSlider(QWidget* parent = nullptr);
 
-		box = new QDoubleSpinBox(parent);
-        box->setRange(m_min, m_max);
-        box->setSingleStep((m_max - m_min)/m_steps);
+	void setRange(double min, double max);
 
-		slider = new QSlider(parent);
-		slider->setOrientation(Qt::Horizontal);
-		slider->setRange(0,m_steps);
+	void setValue(double val);
 
-		layout->addWidget(box);
-		layout->addWidget(slider);
+	void setSingleStep(double stepSize);
 
-		setLayout(layout);
-
-		connect(box, &QDoubleSpinBox::valueChanged, this, &CDoubleSlider::boxValueChanged);
-		connect(slider, &QSlider::valueChanged, this, &CDoubleSlider::sliderValueChanged);
-	}
-
-	void setRange(double min, double max)
-	{
-        m_min = min;
-        m_max = max;
-
-		box->setRange(min, max);
-		box->setSingleStep((max - min)/m_steps);
-	}
-
-	void setValue(double val)
-	{
-		if(val > m_max) val = m_max;
-		else if(val < m_min) val = m_min;
-
-		box->setValue(val);
-
-		slider->setValue(static_cast<int>(m_steps * (val-m_min)/(m_max-m_min)));
-	}
-
-	void setSingleStep(double stepSize)
-	{
-		if (stepSize <= 0) return;
-		m_steps = (m_max - m_min) / stepSize;
-		if (m_steps < 1) m_steps = 1;
-		if (m_steps > 100) m_steps = 100;
-		double step = (m_max - m_min) / m_steps;
-		box->setSingleStep(step);
-		slider->setRange(0, m_steps);
-	}
-
-	double getValue()
-	{
-		return box->value();
-	}
+	double getValue();
 
 signals:
 
 	void valueChanged(double val);
 
 private slots:
-    void boxValueChanged(double val)
-    {
-        slider->blockSignals(true);
-        slider->setValue(m_steps * (val-m_min)/(m_max-m_min));
-        slider->blockSignals(false);
+	void boxValueChanged(double val);
 
-        emit valueChanged(val);
-    }
-
-    void sliderValueChanged(int val)
-    {
-        double realVal = (double)val/ m_steps *(m_max-m_min) + m_min;
-
-        box->blockSignals(true);
-        box->setValue(realVal);
-        box->blockSignals(false);
-
-        emit valueChanged(realVal); 
-    }
+	void sliderValueChanged(int val);
 
 private:
 	QDoubleSpinBox* box;
@@ -266,5 +202,4 @@ private:
 
 	double m_min, m_max;
 	int		m_steps;
-
 };

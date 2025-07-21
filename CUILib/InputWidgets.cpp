@@ -55,3 +55,81 @@ vec3f CVec3Input::value() const
 {
 	return stringToVec(text());
 }
+
+CDoubleSlider::CDoubleSlider(QWidget* parent) : QWidget(parent), m_min(0), m_max(1), m_steps(100)
+{
+	QHBoxLayout* layout = new QHBoxLayout;
+	layout->setContentsMargins(0, 0, 0, 0);
+
+	box = new QDoubleSpinBox(parent);
+	box->setRange(m_min, m_max);
+	box->setSingleStep((m_max - m_min) / m_steps);
+	box->setMinimumWidth(150);
+
+	slider = new QSlider(parent);
+	slider->setOrientation(Qt::Horizontal);
+	slider->setRange(0, m_steps);
+
+	layout->addWidget(box);
+	layout->addWidget(slider);
+
+	setLayout(layout);
+
+	connect(box, &QDoubleSpinBox::valueChanged, this, &CDoubleSlider::boxValueChanged);
+	connect(slider, &QSlider::valueChanged, this, &CDoubleSlider::sliderValueChanged);
+}
+
+void CDoubleSlider::setRange(double min, double max)
+{
+	m_min = min;
+	m_max = max;
+
+	box->setRange(min, max);
+	box->setSingleStep((max - min) / m_steps);
+}
+
+void CDoubleSlider::setValue(double val)
+{
+	if (val > m_max) val = m_max;
+	else if (val < m_min) val = m_min;
+
+	box->setValue(val);
+
+	slider->setValue(static_cast<int>(m_steps * (val - m_min) / (m_max - m_min)));
+}
+
+void CDoubleSlider::setSingleStep(double stepSize)
+{
+	if (stepSize <= 0) return;
+	m_steps = (m_max - m_min) / stepSize;
+	if (m_steps < 1) m_steps = 1;
+	if (m_steps > 100) m_steps = 100;
+	double step = (m_max - m_min) / m_steps;
+	box->setSingleStep(step);
+	slider->setRange(0, m_steps);
+}
+
+double CDoubleSlider::getValue()
+{
+	return box->value();
+}
+
+void CDoubleSlider::boxValueChanged(double val)
+{
+	slider->blockSignals(true);
+	slider->setValue(m_steps * (val - m_min) / (m_max - m_min));
+	slider->blockSignals(false);
+
+	emit valueChanged(val);
+}
+
+void CDoubleSlider::sliderValueChanged(int val)
+{
+	double realVal = (double)val / m_steps * (m_max - m_min) + m_min;
+
+	box->blockSignals(true);
+	box->setValue(realVal);
+	box->blockSignals(false);
+
+	emit valueChanged(realVal);
+}
