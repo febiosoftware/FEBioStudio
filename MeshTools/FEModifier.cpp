@@ -406,7 +406,7 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 // FEProjectNodes
 //=============================================================================
 
-FEProjectNodes::FEProjectNodes() : FEModifier("Project")
+FEProjectNodes::FEProjectNodes() : FEModifier("Project Nodes")
 {
     AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0Surface\0");
 }
@@ -417,28 +417,33 @@ FSMesh* FEProjectNodes::Apply(FSMesh* pm)
 	if (nplane < 0 || nplane > 2) return nullptr;
     
     FSMesh* pnm = new FSMesh(*pm);
-    
-    vec3d rc;
+
+	GObject* po = pm->GetGObject();
+	Transform T;
+	if (po) T = po->GetTransform();
+
     int iref = -1;
     for (int i=0; i<pnm->Nodes(); ++i)
     {
         FSNode& node = pnm->Node(i);
-        vec3d ri = node.pos();
         if (node.IsSelected())
         {
+	        vec3d ri = T.LocalToGlobal(node.pos());
             iref = 0;
-            rc = ri;
             switch (nplane)
             {
-                case 0: rc.x = 0; break;
-                case 1: rc.y = 0; break;
-                case 2: rc.z = 0; break;
+                case 0: ri.x = 0; break;
+                case 1: ri.y = 0; break;
+                case 2: ri.z = 0; break;
             }
-            node.pos(rc);
+            node.pos(T.GlobalToLocal(ri));
         }
     }
     
     if (iref == -1) { delete pnm; return 0; }
+
+	pnm->UpdateBoundingBox();
+	pnm->UpdateNormals();
     
     return pnm;
 }
