@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshLib/Intersect.h>
 #include <GeomLib/GGroup.h>
 
 std::string FEModifier::m_error;
@@ -495,7 +496,16 @@ FSMesh* FEProjectNodes::ProjectToSurface(GObject* po, GFace* pg)
 			vec3d r_local = po2->GetTransform().GlobalToLocal(r_global);
 
 			// project this node onto the surface
-			vec3d q = projectToSurface(*pm2, r_local, pg->GetLocalID(), nullptr, nullptr);
+			Intersection Q;
+			vec3d q = projectToSurface(*pm2, r_local, pg->GetLocalID(), nullptr, &Q);
+			if (Q.m_faceIndex == -1)
+			{
+				q = projectToSurfaceEdges(*pm2, r_local, pg->GetLocalID(), nullptr, &Q);
+				if (Q.m_faceIndex == -1)
+				{
+					q = projectToSurfaceNodes(*pm2, r_local, pg->GetLocalID());
+				}
+			}
 
 			// convert back to global coordinates
 			r_global = po2->GetTransform().LocalToGlobal(q);
