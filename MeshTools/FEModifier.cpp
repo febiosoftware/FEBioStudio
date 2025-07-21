@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FEModifier.cpp: implementation of the FEModifier class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "FEModifier.h"
 #include "FENNQuery.h"
@@ -40,6 +35,7 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/MeshTools.h>
 #include <GeomLib/GGroup.h>
 
 std::string FEModifier::m_error;
@@ -412,12 +408,13 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 FEProjectNodes::FEProjectNodes() : FEModifier("Project")
 {
-    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0");
+    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0Surface\0");
 }
 
 FSMesh* FEProjectNodes::Apply(FSMesh* pm)
 {
     int nplane = GetIntValue(0);
+	if (nplane < 0 || nplane > 2) return nullptr;
     
     FSMesh* pnm = new FSMesh(*pm);
     
@@ -446,6 +443,66 @@ FSMesh* FEProjectNodes::Apply(FSMesh* pm)
     return pnm;
 }
 
+FSMesh* FEProjectNodes::Apply(GObject* po, FESelection* pg)
+{
+	int nplane = GetIntValue(0);
+
+	if ((nplane >= 0) && (nplane <= 2))
+	{
+		// make surface we only have a node selection on the current mesh
+		FSMesh* pm = po->GetFEMesh();
+		FENodeSelection* sel = dynamic_cast<FENodeSelection*>(pg);
+		if (sel && (sel->GetMesh() == pm)) return Apply(pm);
+	}
+	else if (nplane == 3)
+	{
+		// make sure we have a surface selection
+		GFaceSelection* sel = dynamic_cast<GFaceSelection*>(pg);
+		if (sel && (sel->Count() == 1))
+		{
+			return ProjectToSurface(po, sel->Face(0));
+		}
+	}
+
+	return nullptr;
+}
+
+FSMesh* FEProjectNodes::ProjectToSurface(GObject* po, GFace* pg)
+{
+	// get the mesh of the selected face
+	GObject* po2 = dynamic_cast<GObject*>(pg->Object());
+	if (po2 == nullptr) return nullptr;
+	FSMesh* pm2 = po2->GetFEMesh();
+	if (pm2 == nullptr) return nullptr;
+
+	// create a new mesh
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return nullptr;
+	FSMesh* pnm = new FSMesh(*pm);
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		if (pm->Node(i).IsSelected())
+		{
+			// get the global position of the node
+			vec3d r_global = po->GetTransform().LocalToGlobal(pm->Node(i).r);
+
+			// convert to local coordinates of the surface mesh
+			vec3d r_local = po2->GetTransform().GlobalToLocal(r_global);
+
+			// project this node onto the surface
+			vec3d q = projectToSurface(*pm2, r_local, pg->GetLocalID(), nullptr, nullptr);
+
+			// convert back to global coordinates
+			r_global = po2->GetTransform().LocalToGlobal(q);
+
+			pnm->Node(i).r = po->GetTransform().GlobalToLocal(r_global);
+		}
+	}
+	pnm->UpdateBoundingBox();
+	pnm->UpdateNormals();
+
+	return pnm;
+}
 
 //////////////////////////////////////////////////////////////////////
 // FESetShellThickness
