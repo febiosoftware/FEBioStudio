@@ -109,6 +109,8 @@ void CPluginXML::WriteXML()
 
     for (const auto& [id, plugin] : plugins)
     {
+        if(id < 0) continue;
+
         if(plugin.localCopy)
         {
             XMLElement pluginElement("plugin");

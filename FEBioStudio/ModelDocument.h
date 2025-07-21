@@ -132,6 +132,9 @@ public:
 
 	void SetUnitSystem(int unitSystem) override;
 
+    bool SkipPluginCheck();
+    void SetSkipPluginCheck(bool skip);
+
 signals:
 	void selectionChanged();
 
@@ -143,6 +146,8 @@ private:
 	CFEBioJobList	m_JobList;
 
 	CModelContext*	m_context;
+
+    bool m_skipPluginCheck;
 };
 
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name = "", int units = -1);

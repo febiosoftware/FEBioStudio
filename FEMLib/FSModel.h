@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "FEDOF.h"
 #include "FEInitialCondition.h"
 #include <FSCore/FSObjectList.h>
+#include <unordered_set>
 
 class GModel;
 class FSReactionMaterial;
@@ -341,6 +342,9 @@ public:
 
     //! Set whether to skip geometry during loading
     void SetSkipGeometry(bool skip);
+
+    //! Get allocator IDs of all in-use plugins
+    void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
 protected:
 	// I/O helper functions

@@ -110,6 +110,7 @@ namespace FEBio {
 		const char*		szclass;		// the (C++) class name
 		const char*		szmod;			// the module name
 		int				spec;			// spec ID (i.e. FEBio file version)
+        int             allocId;		// allocator ID 
 	};
 
 	enum ClassSearchFlags {

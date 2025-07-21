@@ -590,6 +590,12 @@ SOFTWARE.*/
 
 #define CID_MESH_ADAPTOR_SECTION	0x00300000
 
+// --- plugin section
+#define CID_PLUGIN_SECTION			0x00400000
+#define CID_PLUGIN_INFO 			0x00400100
+#define CID_PLUGIN_NAME 			0x00400101
+#define CID_PLUGIN_ID 	    		0x00400102
+
 //--------------------------------------------------------
 // Mesh type
 #define FE_MESH					0x0000

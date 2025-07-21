@@ -41,7 +41,7 @@ enum PluginStatus
 
 struct Plugin
 {
-    int id;
+    int id; // non-repo plugins have negative IDs
     int status;
     int downloads = 0;
     std::string name;
@@ -58,6 +58,8 @@ struct Plugin
     std::string localFebioVersion;
     std::vector<std::string> files; // paths to plugin files
     int mainFileIndex = 0; // index of the file that should be loaded
+
+    int allocatorID = 0;
 };
 
 
@@ -72,7 +74,7 @@ public:
     ~CPluginManager();
 
     bool LoadXML();
-    void Connect();
+    void Connect(int force = true);
 
     void LoadAllPlugins();
     void ReadDatabase();
@@ -83,10 +85,14 @@ public:
     Plugin* GetPlugin(int id);
     Plugin* AddPlugin(int id);
 
+    Plugin* GetPluginFromAllocatorID(int allocId);
+
     void DownloadPlugin(int id);
     bool DeletePlugin(int id);
+
     bool LoadPlugin(int id);
     bool UnloadPlugin(int id);
+    bool LoadNonRepoPlugin(std::string& path);
 
     void AddRepoPlugin(char** argv);
     void AddPublication(int pluginID, const QVariantMap& data);
@@ -96,12 +102,15 @@ public:
     void OnDownloadFinished(int id);
 
 signals:
-    void DownloadFinished();
+    void DownloadFinished(int id);
     void HTMLError(QString& message, bool close = false);
     void PluginsReady();
-    void downloadProgress(qint64 bytesSent, qint64 bytesTotal);
+    void downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id);
 
 private:
+    Plugin* AddNonRepoPlugin();
+    void SyncWithFEBioPluginManager();
+    bool LoadPluginFile(std::string& path);
     bool LoadFEBioPlugin(Plugin& plugin);
     void SetPluginStatus(Plugin& plugin);
     bool IsVersion2Newer(const std::string& version1, const std::string& version2);

@@ -47,6 +47,8 @@ SOFTWARE.*/
 #include <QJsonDocument>
 #include "DocManager.h"
 #include <ImageLib/ImageModel.h>
+#include "PluginManager.h"
+
 class CModelContext
 {
 public:
@@ -114,7 +116,7 @@ CModelDocument::~CModelDocument()
 	m_scene = nullptr;
 }
 
-CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
+CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd), m_skipPluginCheck(false)
 {
 	SetIcon(":/icons/FEBioStudio.png");
 
@@ -427,6 +429,38 @@ void CModelDocument::Save(OArchive& ar)
 	}
 	ar.EndChunk();
 
+    // Find plugin info for in-use plugins
+    std::unordered_set<int> allocatorIDs;
+    m_Project.GetActivePluginIDs(allocatorIDs);
+
+    CPluginManager* manager = m_wnd->GetPluginManager();
+
+    std::vector<Plugin*> plugins;
+    for(int id : allocatorIDs)
+    {
+        Plugin* current = manager->GetPluginFromAllocatorID(id);
+
+        if(current) plugins.push_back(current);
+    }
+
+    // Write plugin info for in-use plugins
+    if(!plugins.empty())
+    {
+        ar.BeginChunk(CID_PLUGIN_SECTION);
+        {
+            for(Plugin* plugin : plugins)
+            {
+                ar.BeginChunk(CID_PLUGIN_INFO);
+                {
+                    ar.WriteChunk(CID_PLUGIN_NAME, plugin->name);
+                    ar.WriteChunk(CID_PLUGIN_ID, plugin->id);
+                };
+                ar.EndChunk();
+            }
+        }
+        ar.EndChunk();
+    }
+
 	// save resources
 	if (ImageModels() > 0)
 	{
@@ -516,6 +550,110 @@ void CModelDocument::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 		}
+        else if(nid == CID_PLUGIN_SECTION)
+        {
+            CPluginManager* pluginManager = m_wnd->GetPluginManager();
+            vector<pair<int, string>> missingPlugins;
+
+            while(ar.OpenChunk() == IArchive::IO_OK)
+            {
+                int nid = ar.GetChunkID();
+                if(nid == CID_PLUGIN_INFO)
+                {
+                    int pluginID = 0;
+                    string pluginName;
+
+                    while(ar.OpenChunk() == IArchive::IO_OK)
+                    {
+                        int nid = ar.GetChunkID();
+                        if(nid == CID_PLUGIN_NAME)
+                        {
+                            ar.read(pluginName);
+                        }
+                        else if(nid == CID_PLUGIN_ID)
+                        {
+                            ar.read(pluginID);
+                        }
+                        
+                        ar.CloseChunk();
+                    }
+
+                    if(pluginID == 0 || pluginName.empty())
+                    {
+                        // TODO: this should never happen, shoudl we handle this?
+                    }
+                    else
+                    {
+                        bool missing = false;
+
+                        // If the plugin ID is negative, it's a non-repo plugin and we can't 
+                        // rely on the ID to find it in the manager. Instead, we check if the 
+                        // name exists in the manager. This can lead to false positives, but
+                        // it's the best we can do
+                        if(pluginID < 0)
+                        {
+                            bool found = false;
+                            for(auto& [id, plugin] : pluginManager->GetPlugins())
+                            {
+                                if(pluginName == plugin.name)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            missing = !found;
+
+                        }
+                        else
+                        {
+                            Plugin* plugin = pluginManager->GetPlugin(pluginID);
+
+                            // The manager doesn't know about the plugin at all
+                            if(plugin == nullptr)
+                            {
+                                missing = true;
+                            }
+                            else
+                            {
+
+                                if(!plugin->loaded)
+                                {
+                                    // We can't try to load the plugin at this point. 
+                                    // FEBio::BlockCreateEvents(true); was called 
+
+                                    // // If we have a local copy, and it's not loaded, try to load it
+                                    // // Otherwise, we consider it missing
+                                    // if(plugin->localCopy)
+                                    // {
+                                    //     if(!pluginManager->LoadPlugin(pluginID))
+                                    //     {
+                                    //         missing = true;
+                                    //     }
+                                    // }
+                                    // else
+                                    // {
+                                    //     missing = true;
+                                    // }
+
+                                    missing = true;
+                                }
+                            }
+                        }
+
+                        if(missing) missingPlugins.emplace_back(pluginID, pluginName);
+                    }
+
+                }
+
+                ar.CloseChunk();
+            }
+
+            if(!missingPlugins.empty() && !m_skipPluginCheck)
+            {
+                throw MissingPluginError(missingPlugins);
+            }
+        }
 		else if (nid == CID_RESOURCE_SECTION)
 		{
 			LoadResources(ar);
@@ -689,6 +827,16 @@ void CModelDocument::SetUnitSystem(int unitSystem)
         if (pP) pP->SetFloatValue(Units::Convert(pP->GetFloatValue(), UNIT_PRESSURE, Units::SI, unitSystem));
 
 	}
+}
+
+bool CModelDocument::SkipPluginCheck()
+{
+    return m_skipPluginCheck;
+}
+
+void CModelDocument::SetSkipPluginCheck(bool skip)
+{
+    m_skipPluginCheck = skip;
 }
 
 void CModelDocument::AddImageModel(CImageModel* imgModel)

@@ -52,13 +52,6 @@ static int addPluginCallback(void *manager, int argc, char **argv, char **azColN
 CPluginDatabaseHandler::CPluginDatabaseHandler(CPluginManager* manager)
     : manager(manager)
 {
-
-}
-
-CPluginDatabaseHandler::~CPluginDatabaseHandler() {}
-
-void CPluginDatabaseHandler::init(std::string schema)
-{
     // Grab a system path for the database
     QString dbPath = (QStandardPaths::writableLocation(
         QStandardPaths::AppLocalDataLocation) + "/plugins/");
@@ -68,7 +61,12 @@ void CPluginDatabaseHandler::init(std::string schema)
     dir.mkpath(dbPath);
 
     interface.setDBPath((dbPath + "plugins.db").toStdString());
+}
 
+CPluginDatabaseHandler::~CPluginDatabaseHandler() {}
+
+void CPluginDatabaseHandler::init(std::string schema)
+{
 	interface.initDatabase(schema);
 }
 
@@ -79,8 +77,8 @@ void CPluginDatabaseHandler::update(QJsonDocument& jsonDoc)
 
 void CPluginDatabaseHandler::GetPlugins()
 {
-    std::string query("SELECT plugins.ID, plugins.name, users.username, plugins.description, plugins.source, plugins.image, "
-        "COALESCE(SUM(downloads.downloads), 0) AS total_downloads FROM plugins JOIN users ON plugins.owner "
+    std::string query("SELECT plugins.ID, plugins.name, users.username, plugins.description, plugins.source, "
+        "plugins.image, COALESCE(SUM(downloads.downloads), 0) AS total_downloads FROM plugins JOIN users ON plugins.owner "
         "= users.ID LEFT JOIN downloads ON plugins.ID = downloads.plugin GROUP BY plugins.ID, plugins.name, "
         "users.username, plugins.description, plugins.image");
 

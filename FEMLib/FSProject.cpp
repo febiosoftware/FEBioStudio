@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
+#include <unordered_set>
 using namespace std;
 
 //=================================================================================================
@@ -588,6 +589,18 @@ void FSProject::SetUnits(int units)
 int FSProject::GetUnits() const
 {
 	return m_units;
+}
+
+//-------------------------------------------------------------------------------------------------
+void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
+{
+    // Get the module allocator ID
+    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_module));
+
+    m_fem.GetActivePluginIDs(allocatorIDs);
+
+    // Remove the FEBio allocator ID
+    allocatorIDs.erase(0);
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -61,6 +61,7 @@ class CModelViewer;
 class CLogPanel;
 class CFileProcessor;
 class CMainStatusBar;
+class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 
 namespace Ui {
@@ -300,6 +301,8 @@ public:
 	void SetCurrentState(int n);
 
 public:
+    CPluginManager* GetPluginManager();
+
 	QString GetSDKIncludePath() const;
 	void SetSDKIncludePath(const QString& s);
 

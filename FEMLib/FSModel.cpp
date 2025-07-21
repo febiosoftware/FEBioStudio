@@ -2674,6 +2674,136 @@ int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
 	return (int)m_MD.Remove(pmd);
 }
 
+void GetAllocatorIDsRecursive(FSCoreBase* obj, std::unordered_set<int>& allocatorIDs)
+{
+    if (obj == nullptr) return;
+
+    FEBio::FEBioClassInfo ci = FEBio::GetClassInfo(obj->GetClassID());
+    allocatorIDs.insert(ci.allocId);
+
+    // check properties
+    for (int i = 0; i < obj->Properties(); ++i)
+    {
+        FSProperty& prop = obj->GetProperty(i);
+        for (int j = 0; j < prop.Size(); ++j)
+        {
+            GetAllocatorIDsRecursive(prop.GetComponent(j), allocatorIDs);
+        }
+    }
+}
+
+void FSModel::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
+{
+    // Materials
+    for(int index = 0; index < m_pMat.Size(); index++)
+    {
+        GMaterial* pgm = m_pMat[index];
+        FSMaterial* pmat = pgm->GetMaterialProperties();
+        if (pmat)
+        {
+            GetAllocatorIDsRecursive(pmat, allocatorIDs);
+        }
+    }
+
+    // Steps
+    for (int index = 0; index < Steps(); ++index)
+    {
+        FSStep* ps = GetStep(index);
+        // GetAllocatorIDsRecursive(ps, allocatorIDs);
+
+        // Boundary Conditions
+        for (int j = 0; j < ps->BCs(); ++j)
+        {
+            FSBoundaryCondition* pbc = ps->BC(j);
+            GetAllocatorIDsRecursive(pbc, allocatorIDs);
+        }
+
+        // Loads
+        for (int j = 0; j < ps->Loads(); ++j)
+        {
+            FSLoad* pl = ps->Load(j);
+            GetAllocatorIDsRecursive(pl, allocatorIDs);
+        }
+
+        // Initial Conditions
+        for (int j = 0; j < ps->ICs(); ++j)
+        {
+            FSInitialCondition* pic = ps->IC(j);
+            GetAllocatorIDsRecursive(pic, allocatorIDs);
+        }
+
+        // Contact Interfaces
+        for (int j = 0; j < ps->Interfaces(); ++j)
+        {
+            FSInterface* pi = ps->Interface(j);
+            GetAllocatorIDsRecursive(pi, allocatorIDs);
+        }
+
+        // Non-linear Constraints
+        for (int j = 0; j < ps->Constraints(); ++j)
+        {
+            FSModelConstraint* pmc = ps->Constraint(j);
+            GetAllocatorIDsRecursive(pmc, allocatorIDs);
+        }
+
+        // Rigid Constraints
+        for (int j = 0; j < ps->RigidConstraints(); ++j)
+        {
+            FSRigidConstraint* prc = ps->RigidConstraint(j);
+            GetAllocatorIDsRecursive(prc, allocatorIDs);
+        }
+
+        // Rigid Loads
+        for (int j = 0; j < ps->RigidLoads(); ++j)
+        {
+            FSRigidLoad* prl = ps->RigidLoad(j);
+            GetAllocatorIDsRecursive(prl, allocatorIDs);
+        }
+
+        // Rigid Boundary Conditions
+        for (int j = 0; j < ps->RigidBCs(); ++j)
+        {
+            FSRigidBC* prb = ps->RigidBC(j);
+            GetAllocatorIDsRecursive(prb, allocatorIDs);
+        }   
+
+        // Rigid Initial Conditions
+        for (int j = 0; j < ps->RigidICs(); ++j)
+        {
+            FSRigidIC* pic = ps->RigidIC(j);
+            GetAllocatorIDsRecursive(pic, allocatorIDs);
+        }
+
+        // Rigid Connectors
+        for (int j = 0; j < ps->RigidConnectors(); ++j)
+        {
+            FSRigidConnector* prc = ps->RigidConnector(j);
+            GetAllocatorIDsRecursive(prc, allocatorIDs);
+        }
+
+        // Mesh Adaptors
+        for (int j = 0; j < ps->MeshAdaptors(); ++j)
+        {
+            FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+            GetAllocatorIDsRecursive(pma, allocatorIDs);
+        }
+    }
+
+    // FSLoadControllers
+    for (int index = 0; index < LoadControllers(); ++index)
+    {
+        FSLoadController* plc = GetLoadController(index);
+        GetAllocatorIDsRecursive(plc, allocatorIDs);
+    }
+
+    // FSMeshDataGenerators
+    for (int index = 0; index < MeshDataGenerators(); ++index)
+    {
+        FSMeshDataGenerator* pmd = GetMeshDataGenerator(index);
+        GetAllocatorIDsRecursive(pmd, allocatorIDs);
+    }
+}
+
 //----------------------------------------------------------------------------------------
 int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
 {

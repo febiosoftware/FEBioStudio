@@ -110,6 +110,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
+#include "DlgMissingPlugins.h"
 
 extern GLColor col[];
 
@@ -212,6 +213,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
     ui->m_pluginManager.LoadXML();
     ui->m_pluginManager.LoadAllPlugins();
+    ui->m_pluginManager.ReadDatabase();
+    ui->m_pluginManager.Connect();
 }
 
 //-----------------------------------------------------------------------------
@@ -945,6 +948,35 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 
 	if (success == false)
 	{
+        ModelFileReader* reader = dynamic_cast<ModelFileReader*>(file.m_fileReader);
+        CModelDocument* doc = dynamic_cast<CModelDocument*>(file.m_doc);
+        if (reader && doc)
+        {
+            auto missingPlugins = reader->GetMissingPlugins();
+
+            if (!missingPlugins.empty())
+            {
+                CDlgMissingPlugins dlg(this, missingPlugins);
+
+                if(dlg.exec())
+                {
+                    if(dlg.SkipPlugins())
+                    {
+                        doc->SetSkipPluginCheck(true);
+                    }
+                    else
+                    {
+                        doc->SetSkipPluginCheck(false);
+                    }
+
+                    m_fileProcessor->ReadFile(file);
+                }
+            }
+
+            return;
+        }
+
+
 		if (m_fileProcessor->IsQueueEmpty())
 		{
 			QString err = QString("Failed reading file :\n%1\n\nERROR: %2").arg(file.m_fileName).arg(errorString);
@@ -3438,6 +3470,8 @@ void CMainWindow::on_selectionChanged()
 {
 //	ReportSelection();
 }
+
+CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }
 
 QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
 QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }

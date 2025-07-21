@@ -176,7 +176,11 @@ void CPluginRepoConnectionHandler::getPluginFiles(int pluginID, int fileNumber)
     {
         QNetworkReply* reply = restclient->get(request);
 
-        QObject::connect(reply, &QNetworkReply::downloadProgress, manager, &CPluginManager::downloadProgress);
+        QObject::connect(reply, &QNetworkReply::downloadProgress, this, 
+            [pluginID, this](qint64 bytesSent, qint64 bytesTotal) 
+            {
+                emit manager->downloadProgress(bytesSent, bytesTotal, pluginID);
+            });
     }
 }
 

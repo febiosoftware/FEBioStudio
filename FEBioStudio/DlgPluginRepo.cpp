@@ -468,6 +468,7 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
 
     ui->setupUI(this, manager);
 
+    connect(ui->m_manager, &CPluginManager::downloadProgress, this, &CDlgPluginRepo::downloadProgress);
     connect(ui->m_manager, &CPluginManager::DownloadFinished, this, &CDlgPluginRepo::DownloadFinished);
     connect(ui->m_manager, &CPluginManager::PluginsReady, this, &CDlgPluginRepo::on_PluginsReady);
     connect(ui->m_manager, &CPluginManager::HTMLError, this, &CDlgPluginRepo::on_HTMLError);

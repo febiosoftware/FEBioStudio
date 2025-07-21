@@ -48,7 +48,7 @@ SOFTWARE.*/
 class CPluginManager::Imp
 {
 public:
-    Imp(CPluginManager* parent) : m_db(parent), m_xml(parent), m_repo(parent, &m_db) 
+    Imp(CPluginManager* parent) : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_connected(false)
     {
         m_xml.SetPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/plugins/plugins.xml");
     }
@@ -59,6 +59,9 @@ public:
     CPluginRepoConnectionHandler m_repo;
 
     std::unordered_map<int, Plugin> m_plugins;
+    int m_localID;
+
+    bool m_connected;
 };
 
 CPluginManager::CPluginManager() : imp(new Imp(this))
@@ -76,9 +79,16 @@ bool CPluginManager::LoadXML()
     return imp->m_xml.LoadXML();
 }
 
-void CPluginManager::Connect()
-{
-    imp->m_repo.getSchema();
+void CPluginManager::Connect(int force)
+{   
+    if(!imp->m_connected || force)
+    {
+        imp->m_repo.getSchema();
+    }
+    else
+    {
+        emit PluginsReady();
+    }
 }
 
 #ifndef UPDATER
@@ -86,7 +96,7 @@ void CPluginManager::LoadAllPlugins()
 {
     for(auto& [id, plugin] : imp->m_plugins)
     {
-        if(!plugin.loaded)
+        if(plugin.localCopy && !plugin.loaded)
         {
             if(LoadFEBioPlugin(plugin)) plugin.loaded = true;
         }
@@ -97,27 +107,7 @@ void CPluginManager::ReadDatabase()
 {
     imp->m_db.GetPlugins();
 
-    // Ensure that this plugin manager agrees with the FEBioPluginManager
-    // about what is loaded
-    FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
-    for(auto& [id, plugin] : imp->m_plugins)
-    {
-        if(plugin.localCopy && plugin.files.size() > 0)
-        {
-            plugin.loaded = false;
-
-            for(int index = 0; index < pm->Plugins(); index++)
-            {
-                const FEBioPlugin& fbPlugin = pm->GetPlugin(index);
-
-                if(fbPlugin.GetFilePath() == plugin.files[0])
-                {
-                    plugin.loaded = true;
-                    break;
-                }
-            }
-        }
-    }
+    SyncWithFEBioPluginManager();
 
     for(auto& [id, plugin] : imp->m_plugins)
     {
@@ -129,6 +119,8 @@ void CPluginManager::ReadDatabase()
 
         SetPluginStatus(plugin);
     }
+
+    imp->m_connected = true;
 
     emit PluginsReady();
 }
@@ -170,6 +162,16 @@ Plugin* CPluginManager::AddPlugin(int id)
         imp->m_plugins.insert({id, plugin});
     }
     return &imp->m_plugins[id];
+}
+
+Plugin* CPluginManager::GetPluginFromAllocatorID(int allocId)
+{
+    for(auto& [id, plugin] : imp->m_plugins)
+    {
+        if(plugin.allocatorID == allocId) return &plugin;
+    }
+
+    return nullptr;
 }
 
 void CPluginManager::DownloadPlugin(int id)
@@ -256,6 +258,26 @@ bool CPluginManager::UnloadPlugin(int id)
     return true;
 }
 
+bool CPluginManager::LoadNonRepoPlugin(std::string& path)
+{
+    bool success = LoadPluginFile(path);
+
+    if(success)
+    {
+        FEBioPluginManager* pm = FEBioPluginManager::GetInstance();
+        const FEBioPlugin& pl = pm->GetPlugin(pm->Plugins() - 1);
+
+        Plugin* plugin = AddNonRepoPlugin();
+        plugin->name = pl.GetName();
+        plugin->files.push_back(path);
+        plugin->localCopy = true;
+        plugin->loaded = true;
+        plugin->allocatorID = pl.GetAllocatorID();
+    }
+
+    return success;
+}
+
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data)
 {
     if(imp->m_plugins.count(pluginID) == 0)
@@ -278,6 +300,7 @@ void CPluginManager::AddTag(int pluginID, const std::string& tag)
 #else
 bool CPluginManager::LoadPlugin(int id) { return false; }
 bool CPluginManager::UnloadPlugin(int id) { return false; }
+bool CPluginManager::LoadNonRepoPlugin(std::string& path) { return false; }
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
 void CPluginManager::AddTag(int pluginID, const std::string& tag) {}
 #endif
@@ -319,7 +342,18 @@ void CPluginManager::OnDownloadFinished(int id)
 
     SetPluginStatus(plugin);
 
-    emit DownloadFinished();
+    emit DownloadFinished(id);
+}
+
+Plugin* CPluginManager::AddNonRepoPlugin()
+{
+    Plugin plugin;
+    plugin.id = imp->m_localID;
+    imp->m_plugins.insert({imp->m_localID, plugin});
+
+    imp->m_localID--;
+
+    return &imp->m_plugins[imp->m_localID + 1];
 }
 
 #ifndef UPDATER
@@ -346,25 +380,81 @@ void CPluginManager::AddRepoPlugin(char** argv)
     imp->m_plugins[id] = plugin;
 }
 
-bool CPluginManager::LoadFEBioPlugin(Plugin& plugin)
-{
-	std::string sfile = plugin.files[plugin.mainFileIndex];
+// Ensure that this plugin manager agrees with the FEBioPluginManager
+// about what is loaded
+void CPluginManager::SyncWithFEBioPluginManager()
+{  
+    for(auto& [id, plugin] : imp->m_plugins)
+    {
+        plugin.loaded = false;
+    }
 
-	// get the currently active module
+    FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
+    for(int i = 0; i < pm->Plugins(); i++)
+    {
+        const FEBioPlugin& fbPlugin = pm->GetPlugin(i);
+
+        bool foundPlugin = false;
+
+        for(auto& [id, plugin] : imp->m_plugins)
+        {
+            if(plugin.localCopy && plugin.files.size() > 0)
+            {
+                if(fbPlugin.GetFilePath() == plugin.files[plugin.mainFileIndex])
+                {
+                    plugin.loaded = true;
+                    foundPlugin = true;
+                    break;
+                }
+            }
+        }
+
+        if(!foundPlugin)
+        {
+            Plugin* nrPlugin = AddNonRepoPlugin();
+            nrPlugin->name = fbPlugin.GetName();
+            nrPlugin->files.push_back(fbPlugin.GetFilePath());
+            nrPlugin->allocatorID = fbPlugin.GetAllocatorID();
+            nrPlugin->localCopy = true;
+            nrPlugin->loaded = true;
+        }
+    }
+}
+
+bool CPluginManager::LoadPluginFile(std::string& path)
+{
+    // get the currently active module
 	// We need this, since importing the plugin might change this.
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 
-	FEModule* activeMod = fecore.GetActiveModule();
+    FEModule* activeMod = fecore.GetActiveModule();
 	int modId = -1;
 	if (activeMod) modId = activeMod->GetModuleID();
 
 	// try to import the plugin
-	bool bsuccess = febio::ImportPlugin(sfile.c_str());
+	bool success = febio::ImportPlugin(path.c_str());
 
-	// restore active module
+    // restore active module
 	fecore.SetActiveModule(modId);
 
-	return bsuccess;
+    return success;
+}
+
+bool CPluginManager::LoadFEBioPlugin(Plugin& plugin)
+{
+	std::string sfile = plugin.files[plugin.mainFileIndex];
+	
+    bool success = LoadPluginFile(sfile);
+
+    if(success)
+    {
+        FEBioPluginManager* pm = FEBioPluginManager::GetInstance();
+        const FEBioPlugin& pl = pm->GetPlugin(pm->Plugins() - 1);
+
+        plugin.allocatorID = pl.GetAllocatorID();
+    }
+
+	return success;
 }
 
 void CPluginManager::SetPluginStatus(Plugin& plugin)
@@ -407,6 +497,13 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
     plugin.status = PLUGIN_UP_TO_DATE;
 }
 
+#else
+void CPluginManager::AddRepoPlugin(char** argv) {}
+void CPluginManager::SyncWithFEBioPluginManager() {};
+bool CPluginManager::LoadFEBioPlugin(Plugin& plugin) { return false; }
+void CPluginManager::SetPluginStatus(Plugin& plugin) {}
+#endif
+
 // Compare two version strings (e.g., "1.2.3" and "1.2.4")
 // Returns true if version2 is newer than version1, false otherwise
 bool CPluginManager::IsVersion2Newer(const std::string& version1, const std::string& version2)
@@ -447,10 +544,3 @@ bool CPluginManager::IsVersion2Newer(const std::string& version1, const std::str
     
     return false; // versions are equal
 }
-
-#else
-void CPluginManager::AddRepoPlugin(char** argv) {}
-bool CPluginManager::LoadFEBioPlugin(Plugin& plugin) { return false; }
-void CPluginManager::SetPluginStatus(Plugin& plugin) {}
-bool CPluginManager::IsVersion2Newer(const std::string& version1, const std::string& version2) { return false; }
-#endif

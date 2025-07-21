@@ -368,6 +368,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
 	ci.spec = fac->GetSpecID();
+    ci.allocId = fac->GetAllocatorID();
 
 	return ci;
 }
@@ -1009,6 +1010,12 @@ int FEBio::GetModuleId(const std::string& moduleName)
 		if (modName == moduleName) return mod.m_id;
 	}
 	return -1;
+}
+
+int FEBio::GetModuleAllocatorID(int moduleId)
+{
+    FECoreKernel& fecore = FECoreKernel::GetInstance();
+    return fecore.GetModuleAllocatorID(moduleId - 1);
 }
 
 void FEBio::SetActiveModule(int moduleID)
