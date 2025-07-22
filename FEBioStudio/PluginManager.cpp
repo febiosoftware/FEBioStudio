@@ -91,6 +91,11 @@ void CPluginManager::Connect(int force)
     }
 }
 
+void CPluginManager::SetConnected(bool connected)
+{
+    imp->m_connected = connected;
+}
+
 #ifndef UPDATER
 void CPluginManager::LoadAllPlugins()
 {
@@ -119,8 +124,6 @@ void CPluginManager::ReadDatabase()
 
         SetPluginStatus(plugin);
     }
-
-    imp->m_connected = true;
 
     emit PluginsReady();
 }

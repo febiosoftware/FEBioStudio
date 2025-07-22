@@ -75,6 +75,7 @@ public:
 
     bool LoadXML();
     void Connect(int force = true);
+    void SetConnected(bool connected);
 
     void LoadAllPlugins();
     void ReadDatabase();
