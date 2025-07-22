@@ -1022,6 +1022,7 @@ void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
 	delete febioModel; febioModel = nullptr;
+	if (moduleID < 0) return;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
