@@ -580,7 +580,7 @@ void CModelDocument::Load(IArchive& ar)
 
                     if(pluginID == 0 || pluginName.empty())
                     {
-                        // TODO: this should never happen, shoudl we handle this?
+                        // TODO: this should never happen, should we handle this?
                     }
                     else
                     {
@@ -595,7 +595,7 @@ void CModelDocument::Load(IArchive& ar)
                             bool found = false;
                             for(auto& [id, plugin] : pluginManager->GetPlugins())
                             {
-                                if(pluginName == plugin.name)
+                                if(id < 0 && pluginName == plugin.name && plugin.loaded)
                                 {
                                     found = true;
                                     break;

@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QProgressBar>
+#include <QVariantAnimation>
+#include <QTimer>
 #include "MainWindow.h"
 #include "PluginManager.h"
 
@@ -145,6 +147,7 @@ void CPluginWidget::downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id
 class Ui::CDlgMissingPlugins
 {
 public:
+    QWidget* errorWidget;
     QLabel* errorLabel;
     QPushButton* retryButton;
     QDialogButtonBox* buttonBox;
@@ -211,23 +214,29 @@ public:
 
         if(!m_hasRepoPlugins) repoPluginsLabel->hide();
 
+        errorWidget = new QWidget;
+        errorWidget->hide();
+        QVBoxLayout* errorLayout = new QVBoxLayout;
+
         errorLabel = new QLabel;
         errorLabel->setWordWrap(true);
         errorLabel->setAlignment(Qt::AlignCenter);
-        errorLabel->hide();
-        layout->addWidget(errorLabel);
+        errorLayout->addWidget(errorLabel);
         
         QHBoxLayout* retryLayout = new QHBoxLayout;
         retryLayout->setContentsMargins(0,0,0,0);
         retryLayout->addStretch();
         
         retryButton = new QPushButton("Retry Connection");
-        retryButton->hide();
         retryLayout->addWidget(retryButton);
 
         retryLayout->addStretch();
 
-        layout->addLayout(retryLayout);
+        errorLayout->addLayout(retryLayout);
+
+        errorWidget->setLayout(errorLayout);
+
+        layout->addWidget(errorWidget);
 
         buttonBox = new QDialogButtonBox;
         buttonBox->addButton(QDialogButtonBox::Cancel);
@@ -259,18 +268,20 @@ public:
 
             m_skipPlugins = false;
         }
+
+        m_parent->adjustSize();
     }
 
     void ShowHTMLError(QString& message)
     {
         if(!m_hasRepoPlugins) return;
 
+        errorWidget->show();
+
         errorLabel->setText(message);
-        errorLabel->show();
         
         retryButton->setText("Retry Connection");
         retryButton->setEnabled(true);
-        retryButton->show();
 
         for(auto widget : m_pluginWidets)
         {
@@ -279,6 +290,48 @@ public:
                 widget->hide();
             }
         }
+
+        m_parent->adjustSize();
+
+        flashErrorWidget();
+    }
+
+    void flashErrorWidget(int duration = 400)
+    {
+        QWidget* widget = errorWidget;
+
+        // Store the original background color
+        QColor originalColor = widget->palette().color(QPalette::Window);
+        QColor highlightColor = widget->palette().color(QPalette::Highlight);
+
+        // Apply auto fill background if not already set
+        widget->setAutoFillBackground(true);
+
+        // Set highlight color first
+        QPalette palette = widget->palette();
+        palette.setColor(QPalette::Window, highlightColor);
+        widget->setPalette(palette);
+        widget->update();
+
+        // Animate back to the original color
+        auto* animation = new QVariantAnimation(widget);
+        animation->setDuration(duration);
+        animation->setStartValue(highlightColor);
+        animation->setEndValue(originalColor);
+
+        QObject::connect(animation, &QVariantAnimation::valueChanged, widget, [=](const QVariant &value) {
+            QPalette p = widget->palette();
+            p.setColor(QPalette::Window, value.value<QColor>());
+            widget->setPalette(p);
+            widget->update();
+        });
+
+        // Clean up after done
+        QObject::connect(animation, &QVariantAnimation::finished, widget, [=]() {
+            animation->deleteLater();
+        });
+
+        animation->start();
     }
 
 public:
@@ -349,13 +402,14 @@ void CDlgMissingPlugins::on_pluginButton_clicked(CPluginWidget* widget)
 
 void CDlgMissingPlugins::on_pluginsReady()
 {
-    ui->errorLabel->hide();
-    ui->retryButton->hide();
+    ui->errorWidget->hide();
 
     for(auto widget : ui->m_pluginWidets)
     {
         widget->MarkReady();
     }
+
+    adjustSize();
 }
 
 void CDlgMissingPlugins::on_downloadFinished(CPluginWidget* widget)

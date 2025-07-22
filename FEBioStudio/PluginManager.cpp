@@ -87,7 +87,7 @@ void CPluginManager::Connect(int force)
     }
     else
     {
-        emit PluginsReady();
+        ReadDatabase();
     }
 }
 
@@ -387,9 +387,20 @@ void CPluginManager::AddRepoPlugin(char** argv)
 // about what is loaded
 void CPluginManager::SyncWithFEBioPluginManager()
 {  
+    // Set everything as unloaded since the FEBio plugin manager is 
+    // the authority on that matter. We'll set the loaded flag on the
+    // loaded plugins later
+    std::vector<int> localIDs;
     for(auto& [id, plugin] : imp->m_plugins)
     {
         plugin.loaded = false;
+
+        if(id < 0) localIDs.push_back(id);
+    }
+
+    for(int id : localIDs)
+    {
+        imp->m_plugins.erase(id);
     }
 
     FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
