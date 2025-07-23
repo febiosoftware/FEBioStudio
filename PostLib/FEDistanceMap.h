@@ -54,6 +54,12 @@ private:
 		std::vector< std::vector<int> >	m_NLT;	// node-facet look-up table
 	};
 
+	struct Projection
+	{
+		vec3f q; // position
+		vec3f n; // normal
+	};
+
 public:
 	FEDistanceMap(FEPostModel* fem, int flags);
 
@@ -80,10 +86,10 @@ protected:
 	void BuildNormalList(FEDistanceMap::Surface& s);
 
 	// project r onto the surface
-	vec3f project(Surface& surf, vec3f& r, int ntime);
+	Projection project(Surface& surf, vec3f& r, int ntime);
 
 	// project r onto a facet
-	bool ProjectToFacet(FSFace& face, vec3f& r, int ntime, vec3f& q);
+	bool ProjectToFacet(FSFace& face, vec3f& r, int ntime, Projection& P);
 
 protected:
 	Surface			m_surf1;

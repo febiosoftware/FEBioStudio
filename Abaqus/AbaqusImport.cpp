@@ -2233,7 +2233,11 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				pg->SetName(ns->second->szname);
 				list<AbaqusModel::Tnode_itr>::iterator pn = ns->second->node.begin();
 				nn = (int) ns->second->node.size();
-				for (j=0; j<nn; ++j, ++pn) pg->add((*pn)->id);
+				for (j = 0; j < nn; ++j, ++pn)
+				{
+					int lid = pm->NodeIndexFromID((*pn)->id);
+					pg->add(lid);
+				}
 				pm->AddFENodeSet(pg);
 			}
 		}
