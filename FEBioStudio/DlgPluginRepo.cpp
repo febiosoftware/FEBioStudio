@@ -43,6 +43,11 @@ SOFTWARE.*/
 #include <QToolBar>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QTreeWidget>
+#include <QHeaderView>
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioLib/plugin.h>
 #include "DlgPluginRepo.h"
 #include "PluginListWidget.h"
 #include "IconProvider.h"
@@ -145,6 +150,98 @@ void CFrameButton::mousePressEvent(QMouseEvent* event)
     }
 }
 
+class CCollapsibleHeader : public QWidget
+{
+public:
+    CCollapsibleHeader(QString text)
+        : contents(nullptr), visible(false)
+    {
+        QVBoxLayout* outerLayout = new QVBoxLayout;
+        outerLayout->setContentsMargins(20,0,0,0);
+
+        QHBoxLayout* titleLayout = new QHBoxLayout;
+        titleLayout->setContentsMargins(0,0,0,0);
+        titleLayout->addWidget(label = new QLabel(text));
+        label->setCursor(Qt::PointingHandCursor);
+
+        QFrame* divider = new QFrame;
+        divider->setFrameShape(QFrame::HLine);
+        divider->setFrameShadow(QFrame::Sunken);
+        divider->setCursor(Qt::PointingHandCursor);
+        divider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        titleLayout->addWidget(divider, 1);
+
+        outerLayout->addLayout(titleLayout);
+
+        setLayout(outerLayout);
+    }
+
+    void SetContents(QWidget* widget)
+    {
+        if(contents)
+        {
+            layout()->removeWidget(contents);
+            contents->deleteLater();
+        }
+
+        contents = widget;
+
+        if(contents)
+        {
+            layout()->addWidget(contents);
+
+            contents->hide();
+        }
+
+        visible = false;
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override
+    {
+        QWidget::paintEvent(event);
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        int padding = 3;
+        QRect box(padding, label->y() + padding, label->height() - padding*2, label->height() - padding*2); 
+
+        int squash = 2; // used to squash triangle from base to tip by double squash value
+        QPolygon triangle;
+        if (visible) {
+            // Down-facing triangle
+            triangle << QPoint(box.left(), box.top() + squash)
+                    << QPoint(box.right(), box.top() + squash)
+                    << QPoint(box.center().x(), box.bottom() - squash);
+        } else {
+            // Right-facing triangle
+            triangle << QPoint(box.left() + squash, box.top())
+                    << QPoint(box.right() - squash, box.center().y())
+                    << QPoint(box.left() + squash, box.bottom());
+        }
+
+        // Draw filled triangle
+        painter.setBrush(qApp->palette().color(QPalette::WindowText));
+        painter.setPen(Qt::NoPen);
+        painter.drawPolygon(triangle);
+    }
+
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if(event->button() == Qt::LeftButton && contents) 
+        {
+            visible = !visible;
+
+            contents->setVisible(visible);
+        }
+    }
+
+private:
+    QLabel* label;
+    bool visible;
+    QWidget* contents;
+
+};
 
 class Ui::CDlgPluginRepo
 {
@@ -164,6 +261,7 @@ public:
     QLabel* statusLabel;
     QLabel* downloadsLabel;
     QLabel* nameLabel;
+    QLabel* byLabel;
     QLabel* ownerLabel;
     QLabel* descriptionLabel;
     QLabel* tagLabel;
@@ -174,6 +272,11 @@ public:
     CFrameButton* sourceButton;
     
     ::CPublicationWidgetView* publicationWidget;
+
+    CCollapsibleHeader* advancedHeader;
+    QTreeWidget* features;
+
+    QDialogButtonBox* bb;
 
     void setupUI(::CDlgPluginRepo* dlg, CPluginManager* manager)
     {
@@ -279,7 +382,7 @@ public:
         font.setPointSize(18);
         nameLabel->setFont(font);
 
-        QLabel* byLabel = new QLabel("by");
+        byLabel = new QLabel("by");
         QFont byFont = byLabel->font();
         byFont.setPointSize(18);
         byLabel->setFont(byFont);
@@ -311,6 +414,17 @@ public:
         scrollLayout->addWidget(tagLabel = new QLabel);
         tagLabel->setWordWrap(true);
 
+        advancedHeader = new CCollapsibleHeader("<b>Advanced</b>");
+
+        features = new QTreeWidget;
+		features->setColumnCount(5);
+		features->setHeaderLabels(QStringList() << "type string" << "super class" << "class name" << "base class" << "module");
+        features->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+        advancedHeader->SetContents(features);
+
+        scrollLayout->addWidget(advancedHeader);
+
         scrollLayout->addStretch();
 
         scrollContent->setLayout(scrollLayout);
@@ -329,7 +443,8 @@ public:
 
         l->addWidget(stackedWidget);
         
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+		bb = new QDialogButtonBox(QDialogButtonBox::Close);
+        bb->addButton("Load Local Plugin", QDialogButtonBox::ResetRole);
         
 		l->addWidget(bb);
 
@@ -345,6 +460,7 @@ public:
         QObject::connect(sourceButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_sourceButton_clicked);
 
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgPluginRepo::reject);
+        QObject::connect(bb, &QDialogButtonBox::clicked, dlg, &::CDlgPluginRepo::on_bbButton_clicked);
 		dlg->setLayout(l);
     }
 
@@ -353,23 +469,40 @@ public:
         Plugin* plugin = m_manager->GetPlugin(id);
 
         m_pluginID = plugin->id;
-        nameLabel->setText(plugin->name.c_str());
-        ownerLabel->setText(plugin->owner.c_str());
-        downloadsLabel->setText(QString::number(plugin->downloads));
-        descriptionLabel->setText(plugin->description.c_str());
 
-        QByteArray image(plugin->imageData);
-        if (image.size() > 0)
+        if(id > 0)
         {
-            QByteArray imageDataByteArray = QByteArray::fromBase64(image);
+            nameLabel->setText(plugin->name.c_str());
+            byLabel->show();
+            ownerLabel->setText(plugin->owner.c_str());
+            downloadsLabel->setText(QString::number(plugin->downloads));
+            downloadsLabel->show();
+            descriptionLabel->setText(plugin->description.c_str());
 
-            QPixmap pixmap;
-            pixmap.loadFromData(imageDataByteArray);
-            imageLabel->setPixmap(pixmap.scaled(200, 200, Qt::KeepAspectRatio));
+            QByteArray image(plugin->imageData);
+            if (image.size() > 0)
+            {
+                QByteArray imageDataByteArray = QByteArray::fromBase64(image);
+
+                QPixmap pixmap;
+                pixmap.loadFromData(imageDataByteArray);
+                imageLabel->setPixmap(pixmap.scaled(200, 200, Qt::KeepAspectRatio));
+            }
+            else
+            {
+                imageLabel->clear();
+            }
         }
         else
         {
-            imageLabel->clear();
+            nameLabel->setText(plugin->name.c_str());
+            byLabel->hide();
+            ownerLabel->setText("");
+            downloadsLabel->hide();
+            descriptionLabel->setText(QString::fromStdString( plugin->description + "\n\nPath: " + plugin->files[0]));
+
+            QPixmap pixmap(":/icons/febio_large.png");
+            imageLabel->setPixmap(pixmap.scaled(200, 200, Qt::KeepAspectRatio));
         }
 
         if(plugin->publications.size() == 0)
@@ -450,9 +583,62 @@ public:
 
             deleteButton->show();
         }
+        else if(plugin->status == PLUGIN_LOCAL)
+        {
+            statusLabel->setText("Local Plugin");
+
+            if(plugin->loaded)
+            {
+                unloadButton->show();
+            }
+            else
+            {
+                loadButton->show();
+            }
+        }
+
+        advancedHeader->hide();
+        if(plugin->loaded)
+        {
+            updateFeaturesList(plugin);
+            advancedHeader->show();
+        }
 
         stackedWidget->setCurrentIndex(2);
     }
+
+    void addFeature(const QString& type, const QString& superClass, const QString& className, const QString& baseClass, const QString moduleName)
+	{
+		QTreeWidgetItem* twi = new QTreeWidgetItem(features);
+		twi->setText(0, type);
+		twi->setText(1, superClass);
+		twi->setText(2, className);
+		twi->setText(3, baseClass);
+		twi->setText(4, moduleName);
+	}
+
+	void updateFeaturesList(Plugin* plugin)
+	{
+		FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
+
+		features->clear();
+
+		std::vector<FEBio::FEBioClassInfo> classList = FEBio::FindAllPluginClasses(plugin->allocatorID);
+		for (FEBio::FEBioClassInfo& ci : classList)
+		{
+			QString baseClass = QString::fromStdString(FEBio::GetBaseClassName(ci.baseClassId));
+			QString superClass = FEBio::GetSuperClassString(ci.superClassId);
+			addFeature(ci.sztype, superClass, ci.szclass, baseClass, ci.szmod);
+		}
+
+        int totalHeight = features->header()->height();
+        for (int i = 0; i < features->topLevelItemCount(); ++i) {
+            QTreeWidgetItem* item = features->topLevelItem(i);
+            totalHeight += features->visualItemRect(item).height();
+        }
+        totalHeight += 10;
+        features->setFixedHeight(totalHeight);
+	}
 
 public:
     CPluginManager* m_manager;
@@ -479,6 +665,35 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
 void CDlgPluginRepo::DownloadFinished()
 {
     ui->setActivePlugin(ui->m_pluginID);
+}
+
+void CDlgPluginRepo::LoadLocalPlugin()
+{
+    QString filter;
+#ifdef WIN32
+        filter = "*.dll";
+#elif __APPLE__
+        filter = "*.dylib";
+#else
+        filter = "*.so";
+#endif
+
+    std::string filename = QFileDialog::getOpenFileName(this, 
+        QString("Load Local Plugin"), "", filter).toStdString();
+
+    if(filename.empty()) return;
+
+    if(ui->m_manager->LoadNonRepoPlugin(filename))
+    {
+        on_PluginsReady();
+    }
+    else
+    {
+        QString message = QString("Unable to load %1").arg(filename.c_str());
+        QMessageBox::critical(this, "Plugin Error", message);
+
+        return;
+    }
 }
 
 void CDlgPluginRepo::downloadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -604,5 +819,13 @@ void CDlgPluginRepo::on_sourceButton_clicked()
     if(plugin)
     {
         QDesktopServices::openUrl(QUrl(plugin->sourceURL.c_str()));
+    }
+}
+
+void CDlgPluginRepo::on_bbButton_clicked(QAbstractButton *button)
+{
+    if(ui->bb->buttonRole(button) == QDialogButtonBox::ResetRole)
+    {
+        LoadLocalPlugin();
     }
 }

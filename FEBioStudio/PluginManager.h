@@ -36,7 +36,8 @@ enum PluginStatus
     PLUGIN_NOT_INSTALLED = 0,
     PLUGIN_BROKEN,
     PLUGIN_UP_TO_DATE,
-    PLUGIN_OUT_OF_DATE
+    PLUGIN_OUT_OF_DATE,
+    PLUGIN_LOCAL
 };
 
 struct Plugin

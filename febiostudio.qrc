@@ -82,6 +82,7 @@
 		<file>icons/detach.png</file>
 		<file>icons/extract.png</file>
 		<file>icons/febio.png</file>
+        <file>icons/febio_large.png</file>
 		<file>icons/zoom_x.png</file>
 		<file>icons/zoom_y.png</file>
 		<file>icons/sphereinbox.png</file>

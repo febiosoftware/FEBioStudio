@@ -155,7 +155,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
     QAction* actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo");
-	QAction* actionFEBioPlugins = createAction("Manage FEBio plugins ...", "actionFEBioPlugins");
 	QAction* actionCreatePlugin = createAction("Create FEBio plugin ...", "actionCreatePlugin");
 
 	// --- Tools menu ---
@@ -526,7 +525,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
     menuFEBio->addAction(actionPluginRepo);
-	menuFEBio->addAction(actionFEBioPlugins);
 	menuFEBio->addAction(actionCreatePlugin);
 
 	// Post menu

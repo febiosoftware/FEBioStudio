@@ -53,10 +53,16 @@ public:
         layout->setAlignment(Qt::AlignHCenter);
         imageLabel = new QLabel;
 
-        QByteArray imageDataByteArray = QByteArray::fromBase64(plugin.imageData);
+        if(plugin.id > 0)
+        {
+            QByteArray imageDataByteArray = QByteArray::fromBase64(plugin.imageData);
+            image.loadFromData(imageDataByteArray);
+        }
+        else
+        {
+            image.load(":/icons/febio_large.png");
+        }
 
-        image.loadFromData(imageDataByteArray);
-        
         imageLabel->setPixmap(image.scaled(150, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         imageLabel->setAlignment(Qt::AlignHCenter);
 
@@ -125,6 +131,10 @@ void PluginThumbnail::SetStatus(int status)
         setToolTip("This plugin is up to date.");
         ui->statusLabel->setText("Up to Date");
         break;
+    case PLUGIN_LOCAL:
+        setToolTip("This plugin in not part of the repository, but was loaded from a local file.");
+        ui->statusLabel->setText("Local Plugin");
+        ui->ownerLabel->hide();
     }
 
     QPainter painter(&pluginImg);

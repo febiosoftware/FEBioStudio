@@ -270,7 +270,22 @@ bool CPluginManager::LoadNonRepoPlugin(std::string& path)
         FEBioPluginManager* pm = FEBioPluginManager::GetInstance();
         const FEBioPlugin& pl = pm->GetPlugin(pm->Plugins() - 1);
 
-        Plugin* plugin = AddNonRepoPlugin();
+        Plugin* plugin = nullptr;
+        
+        // Check to see if we are already tracking a plugin with this name
+        QFileInfo info(path.c_str());
+        std::string filename = info.fileName().toStdString();
+        for(auto& [id, pl] : imp->m_plugins)
+        {
+            if(id < 0 && filename == pl.name)
+            {
+                plugin = &pl;
+            }
+        }
+
+        // If we're not, add a new plugin
+        if(!plugin)plugin = AddNonRepoPlugin();
+
         plugin->name = pl.GetName();
         plugin->files.push_back(path);
         plugin->localCopy = true;
@@ -352,6 +367,8 @@ Plugin* CPluginManager::AddNonRepoPlugin()
 {
     Plugin plugin;
     plugin.id = imp->m_localID;
+    plugin.status = PLUGIN_LOCAL;
+    plugin.description = "This plugin is not part of the repository. It was loaded locally from your machine.";
     imp->m_plugins.insert({imp->m_localID, plugin});
 
     imp->m_localID--;
@@ -390,17 +407,9 @@ void CPluginManager::SyncWithFEBioPluginManager()
     // Set everything as unloaded since the FEBio plugin manager is 
     // the authority on that matter. We'll set the loaded flag on the
     // loaded plugins later
-    std::vector<int> localIDs;
     for(auto& [id, plugin] : imp->m_plugins)
     {
         plugin.loaded = false;
-
-        if(id < 0) localIDs.push_back(id);
-    }
-
-    for(int id : localIDs)
-    {
-        imp->m_plugins.erase(id);
     }
 
     FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
@@ -473,6 +482,12 @@ bool CPluginManager::LoadFEBioPlugin(Plugin& plugin)
 
 void CPluginManager::SetPluginStatus(Plugin& plugin)
 {
+    if(plugin.id < 0)
+    {
+        plugin.status = PLUGIN_LOCAL;
+        return;
+    }
+
     if(!plugin.localCopy)
     {
         plugin.status = PLUGIN_NOT_INSTALLED;

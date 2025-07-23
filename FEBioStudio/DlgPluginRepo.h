@@ -65,6 +65,9 @@ public:
 
     void DownloadFinished();
 
+private:
+    void LoadLocalPlugin();
+
 public slots:
     void downloadProgress(qint64 bytesSent, qint64 bytesTotal);
 
@@ -81,6 +84,7 @@ private slots:
     void on_loadButton_clicked();
     void on_unloadButton_clicked();
     void on_sourceButton_clicked();
+    void on_bbButton_clicked(QAbstractButton *button);
     
 private:
     friend class Ui::CDlgPluginRepo;
