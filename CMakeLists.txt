@@ -477,7 +477,12 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
             crossExecProcess(DEVCOMMIT)
             
             if(${SUCCESS} EQUAL 0)
-                target_compile_definitions(${FBS_BIN_NAME} PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+                set_source_files_properties(
+                    FEBioStudio/menuHelp.cpp
+                    FEBioStudio/welcomePage.cpp
+                    PROPERTIES
+                    COMPILE_DEFINITIONS "DEVCOMMIT=\"${DEVCOMMIT}\""
+                )
             endif()
         endif()
     else()

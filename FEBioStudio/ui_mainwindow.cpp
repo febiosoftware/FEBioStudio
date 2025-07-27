@@ -220,6 +220,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionMeshDiagnostic = addAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 	QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 	QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
+	QAction* actionRotationConverter = addAction("Rotation Converter ...", "actionRotationConverter");
 	actionMaterialTest = addAction("Material test ...", "actionMaterialTest");
 	QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
@@ -627,6 +628,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuTools->addAction(actionMeshInspector);
 	menuTools->addAction(actionMeshDiagnostic);
 	menuTools->addAction(actionUnitConverter);
+	menuTools->addAction(actionRotationConverter);
 	menuTools->addAction(actionElasticityConvertor);
 	menuTools->addAction(actionMaterialTest);
 	menuTools->addAction(actionKinemat);

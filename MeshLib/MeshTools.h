@@ -48,6 +48,8 @@ vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid = -1, int* f
 
 vec3d projectToSurfaceEdges(const FSMeshBase& m, const vec3d& p, int gid = -1, int* faceID = nullptr, Intersection* intersect = nullptr);
 
+vec3d projectToSurfaceNodes(const FSMeshBase& m, const vec3d& p, int gid = -1, int* faceID = nullptr, Intersection* intersect = nullptr);
+
 // prjoect to a patch of a surface
 vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l);
 
