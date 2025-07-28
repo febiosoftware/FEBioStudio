@@ -517,6 +517,8 @@ public:
             {
                 publicationWidget->addPublication(pub);
             }
+
+            publicationWidget->show();
         }
 
         if(plugin->tags.size() > 0)
