@@ -539,6 +539,8 @@ public:
             tagLabel->hide();
         }
 
+        sourceButton->setVisible(!plugin->sourceURL.empty());
+
         downloadButton->hide();
         loadButton->hide();
         unloadButton->hide();
