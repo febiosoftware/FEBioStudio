@@ -31,8 +31,8 @@ SOFTWARE.*/
 #include <FECore/vec3d.h>
 #include <GLWLib/GLWidget.h>
 #include <GLWLib/GLLegendBar.h>
-#include <PostLib/ColorMap.h>
-#include <PostGL/ColorTexture.h>
+#include <FSCore/ColorMap.h>
+#include <GLLib/ColorTexture.h>
 
 class matrix;
 
@@ -185,10 +185,10 @@ private:
 	double	m_progress;
 	std::string	m_task;
 
-	Post::CColorTexture	m_tex;
+	CColorTexture	m_tex;
 	GLLegendBar* m_pbar;
-    Post::CColorMap m_map;
-    Post::CColorMap m_remeshMap;
+	CColorMap m_map;
+	CColorMap m_remeshMap;
 
 	// temp data for calculating ODFs
 	matrix	m_A, m_B, m_T;

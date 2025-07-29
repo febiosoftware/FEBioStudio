@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "IntegrateWindow.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "DataFieldSelector.h"
 #include <QComboBox>
 #include <QToolBar>

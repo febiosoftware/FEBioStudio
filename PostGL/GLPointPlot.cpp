@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
 #include <GLLib/GLRenderEngine.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLLib/glx.h>
 
 using namespace Post;

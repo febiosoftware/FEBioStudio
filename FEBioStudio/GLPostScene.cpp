@@ -1051,7 +1051,7 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 	vec3d rmin = pcm->GetMinPosition();
 	vec3d rmax = pcm->GetMaxPosition();
 
-	Post::CColorTexture* tex = pcm->GetColorMap();
+	CColorTexture* tex = pcm->GetColorMap();
 	CColorMap& map = tex->ColorMap();
 
 	GLColor c0 = map.GetColor(0);

@@ -347,7 +347,6 @@ private:
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
 	void OpenTextFile(const QString& fileName);
-	void OpenFEBioAppFile(const QString& fileName);
 
 	bool SaveDocument(CDocument* doc, const QString& fileName);
 
@@ -527,6 +526,7 @@ public slots:
 	void on_actionElasticityConvertor_triggered();
 	void on_actionMaterialTest_triggered();
 	void on_actionUnitConverter_triggered();
+	void on_actionRotationConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();
 	void on_actionEditPython_triggered();

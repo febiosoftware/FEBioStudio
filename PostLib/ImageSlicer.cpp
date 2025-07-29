@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageSlicer.h"
 #include <ImageLib/ImageModel.h>
+#include <FSCore/ColorMapManager.h>
 #include <assert.h>
 #include <sstream>
 

@@ -31,8 +31,8 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "version.h"
 #include <stdio.h>
-#include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
+#include <FSCore/ColorMapManager.h>
 #include <MeshLib/FSElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
@@ -87,10 +87,11 @@ int main(int argc, char* argv[])
 {
 	// Initialize the libraries
 	FSElementLibrary::InitLibrary();
-	Post::Initialize();
 
 	// initialize the FEBio library
 	FEBio::InitFEBioLibrary();
+
+	ColorMapManager::Initialize();
 
 	// create the application object
 	FBSApplication app(argc, argv);

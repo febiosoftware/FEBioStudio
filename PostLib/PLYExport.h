@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEFileExport.h"
 #include "FEPostModel.h"
-#include "ColorMap.h"
+#include <FSCore/ColorMap.h>
 
 namespace Post {
 

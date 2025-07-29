@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QListWidget>
 #include "PropertyListForm.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <FSCore/math3d.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GCurveObject.h>

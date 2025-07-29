@@ -70,8 +70,8 @@ SOFTWARE.*/
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLPlotGroup.h>
 #include "ObjectProps.h"
-#include <CUILib/ImageViewer.h>
-#include <CUILib/HistogramViewer.h>
+#include "ImageViewer.h"
+#include "HistogramViewer.h"
 #include "ImageFilterWidget.h"
 #include "GLView.h"
 #include "PostDocument.h"

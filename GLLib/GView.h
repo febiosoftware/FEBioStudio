@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLCamera.h"
-#include <PostLib/GLObject.h>
+#include <FSCore/FSObject.h>
 
-class CGViewKey : public Post::CGLObject
+class CGViewKey : public FSObject
 {
 public:
 	GLCameraTransform transform;

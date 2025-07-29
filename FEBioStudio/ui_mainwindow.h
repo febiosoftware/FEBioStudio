@@ -57,7 +57,6 @@ SOFTWARE.*/
 #include "2DImageTimeView.h"
 #include "GLControlBar.h"
 #include "Document.h"
-#include <FEBioApp/FEBioAppDocument.h>
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include "LaunchConfig.h"
@@ -83,7 +82,6 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include <PyLib/PythonToolsPanel.h>
 #include "DlgPartViewer.h"
-#include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
 #include <FEBioMonitor/FEBioMonitorView.h>
@@ -158,7 +156,6 @@ public:
 		IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		APP_VIEWER,
 		FEBREPORT_VIEW
 	};
 
@@ -172,7 +169,6 @@ public:
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
-	FEBioAppView* appView;
 	CFEBioReportView* febReportView;
 
 public:
@@ -208,11 +204,6 @@ public:
 
 		glw = new CGLViewer(wnd);
 		stack->addWidget(glw);
-
-		appView = new FEBioAppView(wnd);
-		appView->setObjectName("appview");
-		appView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		stack->addWidget(appView);
 
 		febReportView = new CFEBioReportView(wnd);
 		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

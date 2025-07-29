@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <QMainWindow>
 #include "CommandManager.h"
 #include "Command.h"
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/ParamBlock.h>
 

@@ -90,7 +90,7 @@ SOFTWARE.*/
 #include <ImageLib/SITKImageSource.h>
 #include <ImageLib/ImageModel.h>
 #include <PostGL/GLColorMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLWLib/convert.h>
 #include <GLWLib/GLLabel.h>
 #include <GLWLib/GLTriad.h>
@@ -101,7 +101,6 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
-#include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioReportDoc.h>
 #include "RemoteJob.h"
@@ -110,6 +109,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
+#include "DlgListMaterials.h"
 #include "DlgMissingPlugins.h"
 
 extern GLColor col[];
@@ -460,10 +460,6 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
-	}
-	else if (ext.compare("fex", Qt::CaseInsensitive) == 0)
-	{
-		OpenFEBioAppFile(fileName);
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
@@ -1850,7 +1846,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 
 		// Post options
-		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+		settings.setValue("defaultMap", ColorMapManager::GetDefaultMap());
 		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
 
 		// Selection
@@ -1920,14 +1916,14 @@ void CMainWindow::writeSettings()
 	settings.endGroup();
 
 	// store user colormaps
-	int n = Post::ColorMapManager::UserColorMaps();
+	int n = ColorMapManager::UserColorMaps();
 	settings.beginGroup("UserColorMaps");
 	{
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			Post::CColorMap& c = Post::ColorMapManager::GetColorMap(Post::ColorMapManager::USER + i);
-			string sname = Post::ColorMapManager::GetColorMapName(Post::ColorMapManager::USER + i);
+			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
 				int m = c.Colors();
@@ -2018,7 +2014,7 @@ void CMainWindow::readSettings()
 		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 
 		// Post options
-		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+		ColorMapManager::SetDefaultMap(settings.value("defaultMap", ColorMapManager::JET).toInt());
 		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
 
 		// Selection
@@ -2116,7 +2112,7 @@ void CMainWindow::readSettings()
 		for (int i = 0; i < l.size(); ++i)
 		{
 			QString name = l.at(i);
-			Post::CColorMap c; c.SetColors(0);
+			CColorMap c; c.SetColors(0);
 			settings.beginGroup(name);
 			{
 				int m = settings.value("colors", 0).toInt();
@@ -2131,7 +2127,7 @@ void CMainWindow::readSettings()
 				}
 			}
 			settings.endGroup();
-			if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
+			if (c.Colors() > 0) ColorMapManager::AddColormap(name.toStdString(), c);
 		}
 	}
 	settings.endGroup();
@@ -2277,10 +2273,6 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CXMLDocument*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::XML_CONFIG);
-	}
-	else if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->setUIConfig(Ui::Config::APP_CONFIG);
 	}
 	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
 	{
@@ -2451,11 +2443,6 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
 		ui->modelViewer->Clear();
-	}
-
-	if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->centralWidget->appView->removeDocument(dynamic_cast<FEBioAppDocument*>(doc));
 	}
 
 	// now, remove from the doc manager
@@ -2887,39 +2874,32 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 		return;
 	}
 
-	QStringList items;
+	std::vector<GMaterial*> items;
 	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
 		GMaterial* gm = srcfem->GetMaterial(i);
-		items.push_back(gm->GetFullName());
+		items.push_back(gm);
 	}
 
 	FSModel* dstfem = doc->GetFSModel();
 
-	QInputDialog input;
-	input.setOption(QInputDialog::UseListViewForComboBoxItems);
-	input.setLabelText("Select material:");
-	input.setComboBoxItems(items);
+	CDlgListMaterials input(this);
+	input.SetMaterials(items);
 	if (input.exec())
 	{
-		QString item = input.textValue();
+		std::vector<GMaterial*> matList = input.GetSelectedMaterials();
 
-		for (int i = 0; i < srcfem->Materials(); ++i)
+		GMaterial* newMat = nullptr;
+		for (GMaterial* gm : matList)
 		{
-			GMaterial* gm = srcfem->GetMaterial(i);
-			QString name = gm->GetFullName();
-			if (name == item)
-			{
-				FSMaterial* pmsrc = gm->GetMaterialProperties();
-				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
-				GMaterial* newMat = new GMaterial(pmnew);
-				newMat->SetName(name.toStdString());
-				newMat->SetColor(gm->GetColor());
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
-				UpdateModel(newMat);
-				return;
-			}
+			FSMaterial* pmsrc = gm->GetMaterialProperties();
+			FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+			newMat = new GMaterial(pmnew);
+			newMat->SetName(gm->GetName());
+			newMat->SetColor(gm->GetColor());
+			doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 		}
+		UpdateModel(newMat);
 	}
 }
 

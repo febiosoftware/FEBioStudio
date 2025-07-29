@@ -27,9 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLDataMap.h"
 #include <GLWLib/GLLegendBar.h>
-#include <GLLib/GLTexture1D.h>
-#include <PostGL/ColorTexture.h>
-#include <PostLib/ColorMap.h>
+#include <GLLib/ColorTexture.h>
 
 namespace Post {
 
@@ -45,7 +43,7 @@ public:
 	CGLColorMap(CGLModel* po);
 	~CGLColorMap();
 
-	Post::CColorTexture* GetColorMap() { return &m_Col; }
+	CColorTexture* GetColorMap() { return &m_Col; }
 
 	void Update(int ntime, float dt, bool breset) override;
 
@@ -95,7 +93,7 @@ protected:
 public:
 	bool	m_bDispNodeVals;	// render nodal values
 
-	Post::CColorTexture	m_Col;	// colormap used for rendering
+	CColorTexture	m_Col;	// colormap used for rendering
 
 	GLLegendBar*	m_pbar;	// the legend bar
 

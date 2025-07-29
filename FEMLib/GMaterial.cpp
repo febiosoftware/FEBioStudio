@@ -100,7 +100,7 @@ GMaterial* GMaterial::Clone()
 	return new GMaterial(pmCopy);
 }
 
-const char* GMaterial::GetFullName()
+const char* GMaterial::GetFullName() const
 {
 	static char sz[256];
 	sprintf(sz, "%s (%s)", GetName().c_str(), m_pm->GetTypeString());

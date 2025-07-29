@@ -187,12 +187,12 @@ void Post::FEDistanceMap::Apply()
 			int inode = m_surf1.m_node[i];
 			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
-			vec3f q = project(m_surf2, r, n);
-			a[i] = (q - r).Length();
+			Projection P = project(m_surf2, r, n);
+			a[i] = (P.q - r).Length();
 			if (m_bsigned)
 			{
-				double s = (q - r)*m_surf1.m_norm[i];
-				if (s < 0) a[i] = -a[i];
+				double s = (P.q - r)*P.n;
+				if (s > 0) a[i] = -a[i];
 			}
 		}
 		vector<int> nf1(m_surf1.Faces());
@@ -207,12 +207,12 @@ void Post::FEDistanceMap::Apply()
 			int inode = m_surf2.m_node[i];
 			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
-			vec3f q = project(m_surf1, r, n);
-			b[i] = (q - r).Length();
+			Projection P = project(m_surf1, r, n);
+			b[i] = (P.q - r).Length();
 			if (m_bsigned)
 			{
-				double s = (q - r)*m_surf2.m_norm[i];
-				if (s < 0) b[i] = -b[i];
+				double s = (P.q - r)*P.n;
+				if (s > 0) b[i] = -b[i];
 			}
 		}
 		vector<int> nf2(m_surf2.Faces());
@@ -222,10 +222,12 @@ void Post::FEDistanceMap::Apply()
 }
 
 //-----------------------------------------------------------------------------
-vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r, int ntime)
+Post::FEDistanceMap::Projection Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 {
 	Post::FEPostModel& fem = *GetModel();
 	FSMesh& mesh = *fem.GetFEMesh(0);
+
+	Post::FEDistanceMap::Projection P;
 
 	// find the closest surface node
 	vec3f q = fem.NodePosition(surf.m_node[0], ntime);
@@ -242,6 +244,7 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 			imin = i;
 		}
 	}
+	P.q = q;
 
 	// Look into the nearest node's star first. 
 	bool found = false;
@@ -252,14 +255,14 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 		FSFace& face = mesh.Face(FT[i]);
 
 		// project r onto the the facet
-		vec3f p;
-		if (ProjectToFacet(face, r, ntime, p))
+		Projection Pi;
+		if (ProjectToFacet(face, r, ntime, Pi))
 		{
 			// return the closest projection
-			float D = (p - r) * (p - r);
+			float D = (Pi.q - r) * (Pi.q - r);
 			if (D < Dmin)
 			{
-				q = p;
+				P = Pi;
 				Dmin = D;
 				found = true;
 			}
@@ -277,25 +280,25 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 			FSFace& face = mesh.Face(surf.m_face[i]);
 
 			// project r onto the the facet
-			vec3f p;
-			if (ProjectToFacet(face, r, ntime, p))
+			Projection Pi;
+			if (ProjectToFacet(face, r, ntime, Pi))
 			{
 				// return the closest projection
-				float D = (p - r) * (p - r);
+				float D = (Pi.q - r) * (Pi.q - r);
 				if (D < Dmin)
 				{
-					q = p;
+					P = Pi;
 					Dmin = D;
 				}
 			}
 		}
 	}
 
-	return q;
+	return P;
 }
 
 //-----------------------------------------------------------------------------
-bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, vec3f& q)
+bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, Projection& P)
 {
 	Post::FEPostModel& fem = *GetModel();
 
@@ -318,7 +321,13 @@ bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, vec3f& 
 	case FE_FACE_TRI10:
 		{
 			for (int i = 0; i<3; ++i) y[i] = fem.NodePosition(f.n[i], ntime);
-			return ProjectToTriangle(y, x, q, m_tol);
+			bool b = ProjectToTriangle(y, x, P.q, m_tol);
+			if (b)
+			{
+				P.n = (y[1] - y[0]) ^ (y[2] - y[0]);
+				P.n.Normalize();
+			}
+			return b;
 		}
 		break;
 	case FE_FACE_QUAD4:
@@ -326,7 +335,13 @@ bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, vec3f& 
 	case FE_FACE_QUAD9:
 		{
 			for (int i = 0; i<4; ++i) y[i] = fem.NodePosition(f.n[i], ntime);
-			return ProjectToQuad(y, x, q, m_tol);
+			bool b = ProjectToQuad(y, x, P.q, m_tol);
+			if (b)
+			{
+				P.n = (y[1] - y[0]) ^ (y[2] - y[0]);
+				P.n.Normalize();
+			}
+			return b;
 		}
 		break;
 	default:

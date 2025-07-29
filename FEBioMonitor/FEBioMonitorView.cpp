@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioMonitorView.h"
 #include <QBoxLayout>
-#include "../FEBioStudio/PlotWidget.h"
+#include "../CUILib/PlotWidget.h"
 #include "FEBioMonitorDoc.h"
 #include <FECore/Callback.h>
 #include <QSplitter>

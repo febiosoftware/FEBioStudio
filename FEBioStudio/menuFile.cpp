@@ -119,7 +119,6 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
-#include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
 #include "BatchConverter.h"
 #include <GLLib/GLScene.h>
@@ -550,13 +549,6 @@ QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 		formatOption.clear();
 	}
 	return fileName;
-}
-
-void CMainWindow::OpenFEBioAppFile(const QString& fileName)
-{
-	FEBioAppDocument* feapp = new FEBioAppDocument(this);
-	feapp->SetDocFilePath(fileName.toStdString());
-	AddDocument(feapp);
 }
 
 void CMainWindow::ExportPostGeometry()

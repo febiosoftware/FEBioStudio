@@ -1194,7 +1194,19 @@ void CMainWindow::on_actionPasteObject_triggered()
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
 	GLScene* scene = doc->GetScene();
-	if (scene) scene->ZoomToObject(copyObject);
+	if (scene)
+	{
+		BOX box = copyObject->GetGlobalBox();
+
+		double f = box.GetMaxExtent();
+		if (f == 0) f = 1;
+
+		GLCamera& cam = scene->GetCamera();
+
+		cam.SetTarget(box.Center());
+		cam.SetTargetDistance(2.0 * f);
+		cam.SetOrientation(copyObject->GetRenderTransform().GetRotationInverse());
+	}
 	copyObject = nullptr;
 
 	// update windows

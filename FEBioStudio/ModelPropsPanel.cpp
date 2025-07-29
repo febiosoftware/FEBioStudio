@@ -57,8 +57,8 @@ SOFTWARE.*/
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
 #include <GeomLib/GGroup.h>
-#include <CUILib/ImageViewer.h>
-#include <CUILib/HistogramViewer.h>
+#include "ImageViewer.h"
+#include "HistogramViewer.h"
 #include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
@@ -66,7 +66,8 @@ SOFTWARE.*/
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
-#include "PlotWidget.h"
+#include "CurveEditWidget.h"
+#include "MathEditWidget.h"
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
 #include "DlgPickNamedSelection.h"

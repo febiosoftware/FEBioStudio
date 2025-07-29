@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GraphWindow.h"
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "DataFieldSelector.h"
 #include <QToolBar>
 #include <QStackedWidget>
@@ -437,6 +437,7 @@ RegressionUi::RegressionUi(CGraphWidget* graph, QWidget* parent) : CPlotTool(par
 	m_fnc->addItem("Linear");
 	m_fnc->addItem("Quadratic");
 	m_fnc->addItem("Exponential");
+	m_fnc->addItem("Power");
 
 	m_col.setRgb(0,0,0);
 
@@ -504,6 +505,7 @@ void RegressionUi::onFunctionChanged(int n)
 	case 0: showParameters(2); m_math->setText("<p>y = <b>a</b>*x + <b>b</b></p>"); break;
 	case 1: showParameters(3); m_math->setText("<p>y = <b>a</b>*x^2 + <b>b</b>*x + <b>c</b></p>"); break;
 	case 2: showParameters(2); m_math->setText("<p>y = <b>a</b>*exp(<b>b</b>*x)</p>"); break;
+	case 3: showParameters(2); m_math->setText("<p>y = <b>a</b>*x^<b>b</b></p>"); break;
 	}
 
 	clearParameters();
@@ -584,22 +586,136 @@ void RegressionUi::onCalculate()
 	}
 	else if (nfc == 2)
 	{
-		// do a linear regression on the log
-		for (int i=0; i<pt.size(); ++i)
+		// remove any 0 values from the data set
+		vector<pair<double, double> > pt2;
+		for (int i=0; i < pt.size(); ++i)
 		{
 			pair<double, double>& pi = pt[i];
-			if (pi.second > 0) pi.second = log(pi.second);
-			else return;
+			if (pi.second != 0) pt2.push_back(pi);
 		}
-		pair<double, double> ans;
-		if (LinearRegression(pt, ans))
+
+		// determine wether the function values are positive or negative
+		int pos_count = std::count_if(pt2.begin(), pt2.end(),
+			[](const std::pair<double, double>& p) {
+				return p.second > 0;
+			});
+		if (pos_count == pt2.size())
 		{
-			m_a = exp(ans.second);
-			m_b = ans.first;
-			m_par[0]->setText(QString::number(m_a));
-			m_par[1]->setText(QString::number(m_b));
-			m_bvalid = true;
-			m_graph->repaint();
+			// do a linear regression on the log
+			for (int i = 0; i < pt2.size(); ++i)
+			{
+				pair<double, double>& pi = pt2[i];
+				pi.second = log(pi.second);
+			}
+			pair<double, double> ans;
+			if (LinearRegression(pt2, ans))
+			{
+				m_a = exp(ans.second);
+				m_b = ans.first;
+				m_par[0]->setText(QString::number(m_a));
+				m_par[1]->setText(QString::number(m_b));
+				m_bvalid = true;
+				m_graph->repaint();
+			}
+		}
+
+		int neg_count = std::count_if(pt2.begin(), pt2.end(),
+			[](const std::pair<double, double>& p) {
+				return p.second < 0;
+			});
+
+		if (neg_count == pt2.size())
+		{
+			// do a linear regression on the log
+			for (int i = 0; i < pt2.size(); ++i)
+			{
+				pair<double, double>& pi = pt2[i];
+				pi.second = log(-pi.second);
+			}
+			pair<double, double> ans;
+			if (LinearRegression(pt2, ans))
+			{
+				m_a = -exp(ans.second);
+				m_b = ans.first;
+				m_par[0]->setText(QString::number(m_a));
+				m_par[1]->setText(QString::number(m_b));
+				m_bvalid = true;
+				m_graph->repaint();
+			}
+		}
+	}
+	else if (nfc == 3)
+	{
+		// make sure all X values are positive
+		for (int i = 0; i < pt.size(); ++i)
+		{
+			if (pt[i].first < 0) return;
+		}
+		
+		// remove any 0 values from the data set
+		vector<pair<double, double> > pt2;
+		for (int i = 0; i < pt.size(); ++i)
+		{
+			pair<double, double>& pi = pt[i];
+			if ((pi.first != 0) && (pi.second != 0)) pt2.push_back(pi);
+		}
+		if (pt2.size() < 2) return;
+
+		// take the log of the X values
+		for (int i = 0; i < pt2.size(); ++i)
+		{
+			pair<double, double>& pi = pt2[i];
+			pi.first = log(pi.first);
+		}
+
+		// determine wether the function values are positive or negative
+		int pos_count = std::count_if(pt2.begin(), pt2.end(),
+			[](const std::pair<double, double>& p) {
+				return p.second > 0;
+			});
+		if (pos_count == pt2.size())
+		{
+			// do a linear regression on the log
+			for (int i = 0; i < pt2.size(); ++i)
+			{
+				pair<double, double>& pi = pt2[i];
+				pi.second = log(pi.second);
+			}
+			pair<double, double> ans;
+			if (LinearRegression(pt2, ans))
+			{
+				m_a = exp(ans.second);
+				m_b = ans.first;
+				m_par[0]->setText(QString::number(m_a));
+				m_par[1]->setText(QString::number(m_b));
+				m_bvalid = true;
+				m_graph->repaint();
+			}
+		}
+
+		int neg_count = std::count_if(pt2.begin(), pt2.end(),
+			[](const std::pair<double, double>& p) {
+				return p.second < 0;
+			});
+
+		if (neg_count == pt2.size())
+		{
+			// do a linear regression on the log
+			for (int i = 0; i < pt2.size(); ++i)
+			{
+				pair<double, double>& pi = pt2[i];
+				pi.second = log(-pi.second);
+			}
+			pair<double, double> ans;
+			if (LinearRegression(pt2, ans))
+			{
+				m_a = -exp(ans.second);
+				m_b = ans.first;
+				m_par[0]->setText(QString::number(m_a));
+				m_par[1]->setText(QString::number(m_b));
+				m_bvalid = true;
+				m_graph->repaint();
+			}
 		}
 	}
 }
@@ -627,6 +743,7 @@ void RegressionUi::draw(QPainter& p)
 		case 0: y = m_a*x + m_b; break;
 		case 1: y = m_a*x*x + m_b*x + m_c; break;
 		case 2: y = m_a*exp(m_b*x); break;
+		case 3: y = m_a*pow(x, m_b); break;
 		}
 
 		p1 = m_graph->ViewToScreen(QPointF(x, y));

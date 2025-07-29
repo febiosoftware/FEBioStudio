@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include <GLLib/GLTexture1D.h>
 #include <PostLib/GLObject.h>
 #include <PostLib/DataMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include <FSCore/box.h>
-#include "ColorTexture.h"
+#include <GLLib/ColorTexture.h>
 
 class GLLegendBar;
 

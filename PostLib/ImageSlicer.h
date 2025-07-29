@@ -29,9 +29,8 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include "GLImageRenderer.h"
 #include <ImageLib/RGBAImage.h>
-#include <PostGL/ColorTexture.h>
+#include <GLLib/ColorTexture.h>
 #include <GLLib/GLTexture2D.h>
-#include "ColorMap.h"
 
 class CImageModel;
 class CImage;
@@ -79,7 +78,7 @@ private:
 
 	CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
 
-	Post::CColorTexture	m_Col;
+	CColorTexture	m_Col;
 
 	GLTexture2D m_tex;
 };

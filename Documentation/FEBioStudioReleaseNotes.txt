@@ -4,6 +4,63 @@
 
 *****************************************************************
 
+===========================================================================
+
+ R E L E A S E   2.10   7/23/2025
+
+===========================================================================
+
+New Features:
+* Added new modifier that projects nodes onto either one of the global coordinate planes, or onto a selected surface.
+* Added tool to convert between rotation representations (see menu Tools/Convert Rotations).
+* Added "helical axis" plot feature and added visualization for helical axes.
+* Added support for different plot file formats. (Currently, only FEBio and VTK are supported.)
+* Added export option for element data with DATA_NODE format.
+* Added support for array data stored on faces.
+* Added recent image file menu.
+* Added MeshToImage tool. Moved image export functions to C3DImage.
+
+Improvements:
+* Improved fitting to exponential function in Graph window. Also added ability to fit to power function.
+* Added support for exporting MAT3 element data.
+* Added checks to make sure that data is available for export.
+* Fixed minor logic issue in post material panel.
+* Added check to see if local IDs of node data section are valid.
+* Some minor tweaks to visualization of point objects.
+* auto-penalty is now activated by default for sliding-biphasic.
+* Now using ModernStyle for the upload wizard on Windows, since the default style doesn't look right in dark mode.
+* Added widgets for entering element data and node data in the FEBio optimization wizard.
+* Now ommitting Step section in febio4 export if no analysis steps are defined.
+* Added check for "SFE" keywords in Ansys reader, since this was causing issues with reading the EBLOCK.
+* Added check to IGES import to make sure shape is not null.
+* All image views will now automatically update when filters are applied
+* ImageSettingsPanel now has more significant digits available on some settings.
+* Udpated image filter UI to make it more clear when there are unapplied filters.
+* Images will now automatically revert to the original image when the last filter is removed from the pipeline.
+* Warped image tool now outputs image metadata for all image types.
+* Warp image tool now prints out image size information when writing raw images.
+* Warp image dialog now defaults to the current state.
+* Scaled bounding box a bit in warp image filter to avoid roundoff near image boundaries.
+* MeshToImage tool now writes in-mesh values as 255 instead of 1.
+* Fixed some logo issues in the documentation
+* Updated FiberODF normalization to match normalization done in constitutive model
+* Now ignoring obsolete FEBio parameters.
+* Made sure selection mode is reset when no transform mode is active.
+
+Bug Fixes:
+* Fixed minor bug for those who compile FEBioStudio without SITK.
+* Fixed issue with distance map calculation.
+* Fixed issue with writing nodal connectivity when exporting element or face datafields.
+* Fixed issue with IDs that are written when exporting data from post panel.
+* Ensured that nodal IDs display in graphs are correct.
+* Fixed bug in updater when updating to febiostudio3 branch.
+* Fixed issue with processing top-level-only parameters when reading feb files.
+* Fixed bug in TruncatedEllipsoid which caused a crash.
+* Fixed crash in Graph window when displaying object data on limited time intervals.
+* Added check to avoid crash in case GMeshObject was not constructed when reading feb file.
+* Fixed sampling coordinates for MeshToImage tool
+* Node selection now respects the "respect partition" selection option. (#142)
+
 
 ===========================================================================
 

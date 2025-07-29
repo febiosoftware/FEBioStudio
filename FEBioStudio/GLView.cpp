@@ -49,7 +49,6 @@ SOFTWARE.*/
 #include "GLViewTransform.h"
 #include <GLLib/glx.h>
 #include <GLLib/GDecoration.h>
-#include <PostLib/ColorMap.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <QMenu>
@@ -568,7 +567,7 @@ void CGLView::SetColorMap(unsigned int n)
 	m_colorMap.SetColorMap(n);
 }
 
-Post::CColorMap& CGLView::GetColorMap()
+CColorMap& CGLView::GetColorMap()
 {
 	return m_colorMap.ColorMap();
 }

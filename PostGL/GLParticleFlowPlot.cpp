@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLRenderEngine.h>
+#include <FSCore/ColorMapManager.h>
+
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);

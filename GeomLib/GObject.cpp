@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GLMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <FSCore/ClassDescriptor.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include <sstream>
 
 using namespace std;
@@ -1346,7 +1346,7 @@ void GObject::UpdateMeshData()
 	int NN = pm->Nodes();
 	vector<double> val(NN, 0);
 
-	Post::CColorMap map;
+	CColorMap map;
 	map.SetRange((float)vmin, (float)vmax);
 
 	int NF = gmsh->Faces();

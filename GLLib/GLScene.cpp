@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLScene.h"
-#include <GeomLib/GObject.h>
-
 GLScene::GLScene() 
 {
 	m_envtex = 0;
@@ -126,20 +124,6 @@ void GLScene::ZoomTo(const BOX& box)
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0 * f);
-}
-
-void GLScene::ZoomToObject(GObject* po)
-{
-	BOX box = po->GetGlobalBox();
-
-	double f = box.GetMaxExtent();
-	if (f == 0) f = 1;
-
-	GLCamera& cam = GetCamera();
-
-	cam.SetTarget(box.Center());
-	cam.SetTargetDistance(2.0 * f);
-	cam.SetOrientation(po->GetRenderTransform().GetRotationInverse());
 }
 
 void GLScene::clear()

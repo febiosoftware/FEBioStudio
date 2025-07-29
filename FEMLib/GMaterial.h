@@ -57,7 +57,7 @@ public:
 
 	GMaterial* Clone();
 
-	const char* GetFullName();
+	const char* GetFullName() const;
 
 	const char* GetTypeString() const;
 

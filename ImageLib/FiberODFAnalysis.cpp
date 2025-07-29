@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/SpherePointsGenerator.h>
 #include <MeshTools/FENNQuery.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>

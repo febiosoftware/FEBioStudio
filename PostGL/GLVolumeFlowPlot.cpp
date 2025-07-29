@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/util.h>
 #include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
@@ -458,9 +459,6 @@ void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	re.popState();
 }
 
-// in FSMesh.cpp
-double gain(double g, double x);
-
 void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)
 {
 	// count the faces
@@ -475,7 +473,7 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 	// allocate the mesh
 	mesh.Clear();
 
-	Post::CColorMap& col = m_Col.ColorMap();
+	CColorMap& col = m_Col.ColorMap();
 
 	// build the mesh
 	for (int i = 0; i < n; i++)

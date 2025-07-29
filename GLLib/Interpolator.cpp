@@ -26,21 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "Interpolator.h"
+#include <FSCore/util.h> // for gain function
 
 int Interpolator::m_nsteps = 20;
 double Interpolator::m_smooth = 0.8;
-
-// NOTE: These functions are defined in FSMesh.cpp
-double bias(double g, double x);
-//{
-//    return pow(x,log(g)/log(0.5));
-//}
-
-double gain(double g, double x);
-//{
-//  if (x < 0.5) return bias(1-g,2.0*x)*0.5;
-//     else return 1 - bias(1-g,2-2*x)*0.5;
-// }
 
 //=============================================================================
 Interpolator::Interpolator()

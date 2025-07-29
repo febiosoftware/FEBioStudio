@@ -30,7 +30,9 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLLib/GLRenderEngine.h>
+
 using namespace Post;
 
 REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);

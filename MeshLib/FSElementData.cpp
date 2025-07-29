@@ -260,18 +260,21 @@ void FSPartData::AllocateData()
 	int nsize = 0;
 	FSPartSet* partList = GetPartSet();
 	m_lut.assign(NE, -1);
-	for (int i = 0; i < partList->size(); ++i)
+	if (partList)
 	{
-		int pid = (*partList)[i];
-		for (int i = 0; i < NE; ++i)
+		for (int i = 0; i < partList->size(); ++i)
 		{
-			FSElement& el = mesh->Element(i);
-			if (el.m_gid == pid)
+			int pid = (*partList)[i];
+			for (int i = 0; i < NE; ++i)
 			{
-				int nn = el.Nodes();
-				if (nn > maxNodes) maxNodes = nn;
+				FSElement& el = mesh->Element(i);
+				if (el.m_gid == pid)
+				{
+					int nn = el.Nodes();
+					if (nn > maxNodes) maxNodes = nn;
 
-				m_lut[i] = nsize++;
+					m_lut[i] = nsize++;
+				}
 			}
 		}
 	}

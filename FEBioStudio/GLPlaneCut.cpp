@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include <GLLib/GLRenderEngine.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -89,7 +89,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
-	Post::CColorMap colormap;
+	CColorMap colormap;
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -321,7 +321,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	GLMesh* planeCut = m_planeCut;
 
 	// TODO: swith to texture
-	Post::CColorMap colormap;
+	CColorMap colormap;
 
 	for (int n = 0; n < mdl.Objects(); ++n)
 	{
