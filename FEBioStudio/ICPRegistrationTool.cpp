@@ -504,7 +504,7 @@ vector<vec3d> extractSurfaceNodes(GObject* po, FSNodeSet* nodeSet)
 	return points;
 }
 
-GObject* GetSelectionNodes(FEItemListBuilder* sel, std::vector<vec3d>& nodes)
+GObject* GetSelectionNodes(FSItemListBuilder* sel, std::vector<vec3d>& nodes)
 {
 	GObject* po = nullptr;
 	if (dynamic_cast<GPartList*>(sel))

@@ -56,7 +56,7 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	FSMesh* pgMesh = pgObj->GetFEMesh();
 	if (pgMesh == nullptr) return nullptr;
 	pgMesh->TagAllNodes(0);
-	vector<int> FLT(pgObj->Faces(), 0);
+	std::vector<int> FLT(pgObj->Faces(), 0);
 	for (int i = 0; i < pfs->Size(); ++i)
 	{
 		GFace* pf = pfs->Face(i);
