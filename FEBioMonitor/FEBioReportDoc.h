@@ -38,6 +38,8 @@ public:
 
 	void setJob(CFEBioJob* job);
 
+	bool LoadFromLogFile(const QString& logFile);
+
 public:
 	QString m_jobName;
 	QString m_febFile;
@@ -47,4 +49,5 @@ public:
 	TimingInfo m_timingInfo;
 	ModelStats m_modelStats;
 	std::vector<ModelStats> m_stepStats;
+	std::vector<TimeStepStats> m_iterationStats;
 };
