@@ -137,6 +137,13 @@ public:
 	FSMesh* ProjectToSurface(GObject* po, GFace* pg);
 };
 
+class FEExtrudeToSurface : public FEModifier
+{
+public:
+	FEExtrudeToSurface();
+	FSMesh* Apply(GObject* po, FESelection* pg) override;
+};
+
 //-----------------------------------------------------------------------------
 
 class FESetShellThickness : public FEModifier
