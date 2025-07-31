@@ -399,6 +399,44 @@ vector<vec3d> extractSurfaceNodes(GObject* po, vector<GFace*> faceList)
 	return points;
 }
 
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GEdge*> edgeList)
+{
+	vector<vec3d> points;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return points;
+
+	pm->TagAllNodes(0);
+
+	for (GEdge* pg : edgeList)
+	{
+		int pid = pg->GetLocalID();
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FSEdge& edge = pm->Edge(i);
+			if (edge.m_gid == pid)
+			{
+				int nn = edge.Nodes();
+				for (int j = 0; j < nn; ++j) pm->Node(edge.n[j]).m_ntag = 2;
+			}
+		}
+	}
+
+	const Transform& Q = po->GetTransform();
+	points.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& ni = pm->Node(i);
+		if (ni.m_ntag == 2)
+		{
+			vec3d r = ni.pos();
+			vec3d p = Q.LocalToGlobal(r);
+			points.push_back(p);
+		}
+	}
+
+	return points;
+}
+
 vector<vec3d> extractSurfaceNodes(GObject* po, FSSurface* surface)
 {
 	vector<vec3d> points;
@@ -499,6 +537,22 @@ GObject* GetSelectionNodes(FEItemListBuilder* sel, std::vector<vec3d>& nodes)
 			if (poi != po) return nullptr;
 		}
 		nodes = extractSurfaceNodes(po, surfs);
+	}
+	else if (dynamic_cast<GEdgeList*>(sel))
+	{
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(sel);
+		vector<GEdge*> edges = edgeList->GetEdgeList();
+		if (edges.empty()) return nullptr;
+
+		// make sure all parts belong to the same object
+		po = dynamic_cast<GObject*>(edges[0]->Object());
+		if (po == nullptr) return nullptr;
+		for (int i = 1; i < edges.size(); ++i)
+		{
+			GObject* poi = dynamic_cast<GObject*>(edges[i]->Object());
+			if (poi != po) return nullptr;
+		}
+		nodes = extractSurfaceNodes(po, edges);
 	}
 	else if (dynamic_cast<FSSurface*>(sel))
 	{
