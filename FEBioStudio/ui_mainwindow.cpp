@@ -34,8 +34,6 @@ Ui::CMainWindow::CMainWindow()
 	m_settings.defaultUnits = 0;
 	m_settings.clearUndoOnSave = true;
 	m_settings.autoSaveInterval = 600;
-	m_settings.loadFEBioConfigFile = true;
-	m_settings.febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
 }
 
 void Ui::CMainWindow::setupUi(::CMainWindow* wnd)

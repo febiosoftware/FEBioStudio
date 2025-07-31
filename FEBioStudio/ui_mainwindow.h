@@ -243,9 +243,6 @@ struct FBS_SETTINGS
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
 
-	bool	loadFEBioConfigFile;	// load the FEBio config file on startup
-	QString	febioConfigFileName;	// the path to the default FEBio config file
-
 	QString FEBioSDKInc;	// path to FEBio SDK includes
 	QString FEBioSDKLib;	// path to FEBio SDK libraries
 	QString createPluginPath;	// default path to FEBio plugins

@@ -167,12 +167,6 @@ public:
 	CFEBioSettingsWidget(QWidget* parent = nullptr);
 
 public:
-	bool GetLoadConfigFlag();
-	QString GetConfigFileName();
-
-	void SetLoadConfigFlag(bool b);
-	void SetConfigFileName(QString s);
-
 	QString GetSDKIncludePath() const;
 	void SetSDKIncludePath(const QString& s);
 
@@ -182,12 +176,7 @@ public:
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
 
-protected slots:
-	void editConfigFilePath();
-
 private:
-	QCheckBox* m_loadConfig = nullptr;
-	QLineEdit* m_configEdit = nullptr;
 	QLineEdit* m_sdkInc = nullptr;
 	QLineEdit* m_sdkLib = nullptr;
 	QLineEdit* m_pluginPath = nullptr;

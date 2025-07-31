@@ -202,13 +202,6 @@ public:
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
 
-	// febio config file
-	bool GetLoadConfigFlag();
-	QString GetConfigFileName();
-
-	void SetLoadConfigFlag(bool b);
-	void SetConfigFileName(QString s);
-
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
