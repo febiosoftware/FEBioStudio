@@ -49,5 +49,5 @@ public:
 	TimingInfo m_timingInfo;
 	ModelStats m_modelStats;
 	std::vector<ModelStats> m_stepStats;
-	std::vector<TimeStepStats> m_iterationStats;
+	std::vector<TimeStepStats> m_timestepStats;
 };

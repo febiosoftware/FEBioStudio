@@ -47,8 +47,7 @@ void CFEBioReportDoc::setJob(CFEBioJob* job)
 	m_timingInfo = job->m_timingInfo;
 	m_modelStats = job->m_modelStats;
 	m_stepStats  = job->m_stepStats;
-
-	m_iterationStats = job->m_iterationStats;
+	m_timestepStats = job->m_timestepStats;
 
 	QString title = QString("Report [%1]").arg(m_jobName);
 	SetDocTitle(title.toStdString());
@@ -118,14 +117,14 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 
 	QFileInfo fi(logFile);
 
-	m_jobName = fi.baseName();
+	m_jobName = fi.fileName();
 	m_logFile.clear();
 	m_febFile.clear();
 	m_pltFile.clear();
 
 	int rhsEvals = 0;
 	int reforms = 0;
-	m_iterationStats.clear();
+	m_timestepStats.clear();
 
 	QTextStream in(&file);
 	while (!in.atEnd()) {
@@ -153,7 +152,7 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 			match = extractFloat(line, "converged at time", time);
 			if (match)
 			{
-				m_iterationStats.push_back({ 0, rhsEvals, reforms, 1 });
+				m_timestepStats.push_back({ 0, rhsEvals, reforms, 1 });
 				rhsEvals = 0;
 				reforms = 0;
 			}
@@ -168,7 +167,7 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 			match = extractFloat(line, "failed to converge", time);
 			if (match)
 			{
-				m_iterationStats.push_back({ 0, rhsEvals, reforms, 0 });
+				m_timestepStats.push_back({ 0, rhsEvals, reforms, 0 });
 				rhsEvals = 0;
 				reforms = 0;
 			}

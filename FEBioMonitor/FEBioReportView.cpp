@@ -361,7 +361,7 @@ void CFEBioReportView::setDocument(CDocument* doc)
 		}
 
 		// iteration stats
-		std::vector<TimeStepStats> iters = report->m_iterationStats;
+		std::vector<TimeStepStats> iters = report->m_timestepStats;
 		if (!iters.empty())
 		{
 			BarchartBuilder bar(800, 400);
