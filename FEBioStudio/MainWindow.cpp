@@ -1789,6 +1789,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
 		settings.setValue("meshColor", vs.m_meshColor.to_uint());
 		settings.setValue("linewidth", vs.m_line_size);
+		settings.setValue("nodesize", vs.m_node_size);
 		settings.setValue("bgStyle", vs.m_nbgstyle);
 		settings.setValue("lighting", vs.m_bLighting);
 		settings.setValue("shadows", vs.m_bShadows);
@@ -1919,6 +1920,7 @@ void CMainWindow::readSettings()
 		// alpha component used to not be stored so set it to default if zero
 		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
 		vs.m_line_size = settings.value("linewidth", vs.m_line_size).toInt();
+		vs.m_node_size = settings.value("nodesize", vs.m_node_size).toInt();
 		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
