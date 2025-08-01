@@ -41,6 +41,7 @@ public:
 
 private:
 	void UpdateView();
+	bool ExportData(const QString& filename);
 
 private slots:
 	void on_htmlview_anchorClicked(const QUrl& link);

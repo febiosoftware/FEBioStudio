@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <QPixmap>
 #include <QPainter>
 #include <QMessageBox>
+#include <QFileDialog>
 
 class HTMLComposer
 {
@@ -217,6 +218,7 @@ private:
 			p.setPen(Qt::black);
 			QFont f = p.font();
 			f.setPixelSize(16);
+			f.setBold(true);
 			p.setFont(f);
 			QRect rt = pix.rect();
 			rt.setBottom(topMargin - 5);
@@ -249,7 +251,7 @@ private:
 			p.drawText(leftMargin - 30, y0 + 5, QString::number(y)); // y-axis labels
 		}
 
-		int N = m_data.size();
+		int N = (int)m_data.size();
 		for (int i = 0; i < N; ++i)
 		{
 			auto it = m_data[i];
@@ -281,7 +283,7 @@ class CFEBioReportView::Ui
 {
 public:
 	QTextBrowser* txt;
-	int barOption = 1;
+	int barOption = 0;
 	CFEBioReportDoc* m_doc = nullptr;
 
 public:
@@ -429,6 +431,8 @@ void CFEBioReportView::UpdateView()
 		html.paragraph(""); // Added to make sure there is a line break before the bar chart
 		t->addResource(QTextDocument::ImageResource, QUrl("barchart"), bar.pixmap());
 		html.image("barchart");
+
+		html.paragraph("<a href=\"#export\">export data to file ...</a>");
 	}
 
 	// Timings
@@ -477,11 +481,46 @@ void CFEBioReportView::UpdateView()
 
 void CFEBioReportView::on_htmlview_anchorClicked(const QUrl& link)
 {
-	ui->barOption = 0;
+	int oldOption = ui->barOption;
 	QString a = link.toString();
 	if      (a == "#iters") ui->barOption = 0;
 	else if (a == "#rhs"  ) ui->barOption = 1;
 	else if (a == "#refs" ) ui->barOption = 2;
+	else if (a == "#export")
+	{
+		CFEBioReportDoc* report = ui->m_doc;
+		if (report == nullptr || !report->IsValid()) return;
+		QString fileName = QFileDialog::getSaveFileName(this, "Export data to file", QString(), "CSV files (*.csv);;All files (*.*)");
+		if (!fileName.isEmpty())
+		{
+			if (!ExportData(fileName))
+			{
+				QMessageBox::warning(this, "Export failed", "Failed to export data to file: " + fileName);
+			}
+		}
+		return;
+	}
 
-	UpdateView();
+	if (oldOption != ui->barOption)
+		UpdateView();
+}
+
+bool CFEBioReportView::ExportData(const QString& fileName)
+{
+	CFEBioReportDoc* report = ui->m_doc;
+	if (report == nullptr || !report->IsValid()) return false;
+	QFile file(fileName);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return false;
+	QTextStream out(&file);
+	// write the header
+	out << "step,iter,rhs,refs,status\n";
+	// write the data
+	auto& data = report->m_timestepStats;
+	for (int i=0; i<data.size(); ++i)
+	{
+		const TimeStepStats& s = data[i];
+		out << i + 1 << "," << s.iters << "," << "," << s.nrhs << "," << s.refs << "," << s.status << "\n";
+	}
+	file.close();
+	return true;
 }
