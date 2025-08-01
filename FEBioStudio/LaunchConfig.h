@@ -106,6 +106,4 @@ class CDefaultLaunchConfig : public CLaunchConfig
 {
 public:
 	CDefaultLaunchConfig(const std::string& configname);
-
-	bool GenerateJobReport();
 };

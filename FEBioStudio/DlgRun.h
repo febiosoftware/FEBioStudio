@@ -60,6 +60,8 @@ public:
 	void ShowAdvancedSettings(bool b);
 	bool AdvancedSettingsShown();
 
+	bool GenerateReport() const;
+
 	void accept() override;
 
 protected slots:

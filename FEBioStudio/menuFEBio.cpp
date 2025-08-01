@@ -158,6 +158,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
         }
 
+		job->m_generateReport = dlg.GenerateReport();
+
         dlg.GetJobInfo(job);
 
         // show it in the model viewer

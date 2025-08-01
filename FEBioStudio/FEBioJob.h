@@ -107,6 +107,8 @@ public: // FEBio output
 	double	m_pct;
 	double	m_tic, m_toc;
 
+	bool m_generateReport = false;
+
 private:
 	std::string		m_febFile;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
