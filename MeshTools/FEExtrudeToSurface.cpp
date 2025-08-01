@@ -121,20 +121,40 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	{
 		for (int i = 0; i < NF; ++i)
 		{
-			FSElement& el = newMesh->Element(l * NF + i);
-			el.SetType(FE_HEX8);
-			el.m_gid = 0;
-
 			FSFace& f = pm->Face(i);
-			el.m_node[0] = l * NN + f.n[0];
-			el.m_node[1] = l * NN + f.n[1];
-			el.m_node[2] = l * NN + f.n[2];
-			el.m_node[3] = l * NN + f.n[3];
+			if (f.Type() == FE_FACE_QUAD4)
+			{
+				FSElement& el = newMesh->Element(l * NF + i);
+				el.SetType(FE_HEX8);
+				el.m_gid = 0;
 
-			el.m_node[4] = (l+1) * NN + f.n[0];
-			el.m_node[5] = (l+1) * NN + f.n[1];
-			el.m_node[6] = (l+1) * NN + f.n[2];
-			el.m_node[7] = (l+1) * NN + f.n[3];
+				el.m_node[0] = l * NN + f.n[0];
+				el.m_node[1] = l * NN + f.n[1];
+				el.m_node[2] = l * NN + f.n[2];
+				el.m_node[3] = l * NN + f.n[3];
+
+				el.m_node[4] = (l + 1) * NN + f.n[0];
+				el.m_node[5] = (l + 1) * NN + f.n[1];
+				el.m_node[6] = (l + 1) * NN + f.n[2];
+				el.m_node[7] = (l + 1) * NN + f.n[3];
+			}
+			else if (f.Type() == FE_FACE_TRI3)
+			{
+				FSElement& el = newMesh->Element(l * NF + i);
+				el.SetType(FE_PENTA6);
+				el.m_gid = 0;
+				el.m_node[0] = l * NN + f.n[0];
+				el.m_node[1] = l * NN + f.n[1];
+				el.m_node[2] = l * NN + f.n[2];
+
+				el.m_node[3] = (l+1) * NN + f.n[0];
+				el.m_node[4] = (l+1) * NN + f.n[1];
+				el.m_node[5] = (l+1) * NN + f.n[2];
+			}
+			else
+			{
+				assert(false); // unsupported face type
+			}
 		}
 	}
 
