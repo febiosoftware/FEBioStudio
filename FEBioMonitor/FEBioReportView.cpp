@@ -25,11 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioReportView.h"
 #include "FEBioReportDoc.h"
-#include <QTextEdit>
+#include <QTextBrowser>
 #include <QBoxLayout>
 #include "../FEBioStudio/MainWindow.h"
 #include <QPixmap>
 #include <QPainter>
+#include <QMessageBox>
 
 class HTMLComposer
 {
@@ -193,6 +194,11 @@ public:
 		m_data.push_back(std::make_pair(val, c));
 	}
 
+	void setTitle(const QString& title)
+	{
+		m_title = title;
+	}
+
 	QPixmap& pixmap() { Build(); return pix; }
 
 private:
@@ -200,11 +206,23 @@ private:
 	{
 		const int leftMargin = 50;
 		const int rightMargin = 10;
-		const int topMargin = 10;
+		const int topMargin = (m_title.isEmpty() ? 10 : 30);
 		const int bottomMargin = 30;
 
 		QPainter p(&pix);
 		p.setRenderHint(QPainter::RenderHint::Antialiasing);
+
+		if (!m_title.isEmpty())
+		{
+			p.setPen(Qt::black);
+			QFont f = p.font();
+			f.setPixelSize(16);
+			p.setFont(f);
+			QRect rt = pix.rect();
+			rt.setBottom(topMargin - 5);
+			p.drawText(rt, Qt::AlignHCenter | Qt::AlignTop, m_title);
+		}
+
 		QRect rt = pix.rect();
 		int W = rt.width() - (leftMargin + rightMargin);
 		int H = rt.height() - (topMargin + bottomMargin);
@@ -254,6 +272,7 @@ private:
 	}
 
 private:
+	QString m_title;
 	QPixmap pix;
 	std::vector<std::pair<double, QColor>> m_data;
 };
@@ -261,13 +280,15 @@ private:
 class CFEBioReportView::Ui
 {
 public:
-	QTextEdit* txt;
+	QTextBrowser* txt;
+	int barOption = 1;
+	CFEBioReportDoc* m_doc = nullptr;
 
 public:
 	void setup(CFEBioReportView* view)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-		txt = new QTextEdit;
+		txt = new QTextBrowser;
 		txt->setReadOnly(true);
 		l->addWidget(txt);
 		view->setLayout(l);
@@ -277,6 +298,9 @@ public:
 CFEBioReportView::CFEBioReportView(CMainWindow* wnd) : CDocumentView(wnd), ui(new CFEBioReportView::Ui)
 {
 	ui->setup(this);
+
+	QObject::connect(ui->txt, &QTextBrowser::anchorClicked, this, &CFEBioReportView::on_htmlview_anchorClicked);
+
 }
 
 QStringList composeRow(const QString& label, double sec, double f, const QString& description)
@@ -324,100 +348,140 @@ void CFEBioReportView::setDocument(CDocument* doc)
 	}
 	else
 	{
-		HTMLComposer html;
-
-		html.heading1("FEBio Job Report");
-		html.heading2("Files");
-		html.paragraph("Files used in the job.");
-		html.table_start();
-		html.table_row({ "<b>input</b>", report->m_febFile });
-		html.table_row({ "<b>log</b>"  , report->m_logFile });
-		html.table_row({ "<b>plot</b>" , report->m_pltFile });
-		html.table_end();
-
-		// Model Stats
-		html.heading2("Stats");
-		html.paragraph("Overall statistics.");
-		html.table_start();
-		ModelStats stats = report->m_modelStats;
-		html.table_row({ "<b>timesteps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
-		html.table_row({ "<b>total iters</b>"  , HTMLComposer::align_right, QString::number(stats.ntotalIters  ), "Total number of Quasi-Newton iterations."});
-		html.table_row({ "<b>total RHS</b>"    , HTMLComposer::align_right, QString::number(stats.ntotalRHS    ), "Total number of residual evaluations."});
-		html.table_row({ "<b>total reforms</b>", HTMLComposer::align_right, QString::number(stats.ntotalReforms), "Total number of stiffness matrix reformations."});
-		html.table_end();
-
-		// Step stats
-		if (!report->m_stepStats.empty())
-		{
-			html.paragraph("Breakdown of stats per step.");
-			html.table_start();
-			html.table_headings({ "step", "timesteps", "total iters", "total RHS", "total reforms" });
-			for (int i = 0; i < report->m_stepStats.size(); ++i)
-			{
-				ModelStats& s = report->m_stepStats[i];
-				html.table_row(composeRow({ i + 1, s.ntimeSteps, s.ntotalIters, s.ntotalRHS, s.ntotalReforms }));
-			}
-			html.table_end();
-		}
-
-		// iteration stats
-		std::vector<TimeStepStats> iters = report->m_timestepStats;
-		if (!iters.empty())
-		{
-			BarchartBuilder bar(800, 400);
-
-			for (const TimeStepStats& s : iters)
-			{
-				bar.addBar(s.nrhs, (s.status == 0 ? Qt::red : Qt::darkGreen));
-			}
-
-			html.paragraph("Right hand side evaluations per time step.");
-			html.paragraph(""); // Added to make sure there is a line break before the bar chart
-			t->addResource(QTextDocument::ImageResource, QUrl("barchart"), bar.pixmap());
-			html.image("barchart");
-		}
-
-		// Timings
-		TimingInfo ti = report->m_timingInfo;
-		double tot = ti.total_time;
-		if (tot == 0) tot = 1.0; // avoid division by zero
-		std::vector<TimingEntry> entries;
-		if (ti.input_time         > 0) entries.push_back({ "input"    , ti.input_time        , ti.input_time         / tot, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
-		if (ti.init_time          > 0) entries.push_back({ "init"     , ti.init_time         , ti.init_time          / tot, "Time to initialize all model data" , QColor::fromRgb(220, 120, 60) });
-		if (ti.io_time            > 0) entries.push_back({ "output"   , ti.io_time           , ti.io_time            / tot, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0) });
-		if (ti.total_reform       > 0) entries.push_back({ "reforms"  , ti.total_reform      , ti.total_reform       / tot, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
-		if (ti.total_stiff        > 0) entries.push_back({ "stiff"    , ti.total_stiff       , ti.total_stiff        / tot, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
-		if (ti.total_rhs          > 0) entries.push_back({ "rhs"      , ti.total_rhs         , ti.total_rhs          / tot, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
-		if (ti.total_update       > 0) entries.push_back({ "update"   , ti.total_update      , ti.total_update       / tot, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 165, 103) });
-		if (ti.total_qn           > 0) entries.push_back({ "QN"       , ti.total_qn          , ti.total_qn           / tot, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(200, 200, 250) });
-		if (ti.total_ls_factor    > 0) entries.push_back({ "factor"   , ti.total_ls_factor   , ti.total_ls_factor    / tot, "Time spent factorizing stiffness matrix" , QColor::fromRgb(32, 165, 218) });
-		if (ti.total_ls_backsolve > 0) entries.push_back({ "backsolve", ti.total_ls_backsolve, ti.total_ls_backsolve / tot, "Time spent doing backsolves" , QColor::fromRgb(32, 100, 158) });
-		if (ti.total_serialize    > 0) entries.push_back({ "serialize", ti.total_serialize   , ti.total_serialize    / tot, "Time spent serializing model data" , QColor::fromRgb(218, 165, 32) });
-		if (ti.total_callback     > 0) entries.push_back({ "callback" , ti.total_callback    , ti.total_callback     / tot, "Time spent in callback routines (excl. output)" , QColor::fromRgb(208, 32, 32) });
-		if (ti.total_other        > 0) entries.push_back({ "other"    , ti.total_other       , ti.total_other        / tot, "Time spent outside of timed routines" , QColor::fromRgb(255, 0, 255) });
-
-		if (!entries.empty())
-		{
-			std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec > b.sec; });
-
-			html.heading2("Timings");
-			html.paragraph("Breakdown of total runtime.");
-			html.table_start();
-			html.table_row(composeRow("Total time", ti.total_time, 1.0, "Total time to run the job"));
-			for (auto& e : entries)
-				html.table_row(composeRow(e.label, e.sec, e.f, e.desc));
-			html.table_end();
-
-			std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec < b.sec; });
-			PiechartBuilder pie(400, 400);
-			for (auto& e : entries)
-				pie.addSlice(e.f, e.col, e.label);
-
-			t->addResource(QTextDocument::ImageResource, QUrl("piechart"), pie.pixmap());
-
-			html.image("piechart");
-		}
-
-		txt->setHtml(html.text());
+		ui->m_doc = report;
+		UpdateView();
 	}
+}
+
+void CFEBioReportView::UpdateView()
+{
+	CFEBioReportDoc* report = ui->m_doc;
+	if (report == nullptr || !report->IsValid()) return;
+
+	QTextEdit* txt = ui->txt;
+	if (txt == nullptr) return;
+
+	QTextDocument* t = txt->document(); assert(t);
+	if (t == nullptr) return;
+
+	HTMLComposer html;
+
+	html.heading1("FEBio Job Report");
+	html.heading2("Files");
+	html.paragraph("Files used in the job.");
+	html.table_start();
+	html.table_row({ "<b>input</b>", report->m_febFile });
+	html.table_row({ "<b>log</b>"  , report->m_logFile });
+	html.table_row({ "<b>plot</b>" , report->m_pltFile });
+	html.table_end();
+
+	// Model Stats
+	html.heading2("Stats");
+	html.paragraph("Overall statistics.");
+	html.table_start();
+	ModelStats stats = report->m_modelStats;
+	html.table_row({ "<b>timesteps</b>"   , HTMLComposer::align_right, QString::number(stats.ntimeSteps   ), "Total number of time steps completed."});
+	html.table_row({ "<b>total iters</b>"  , HTMLComposer::align_right, QString::number(stats.ntotalIters  ), "Total number of Quasi-Newton iterations."});
+	html.table_row({ "<b>total RHS</b>"    , HTMLComposer::align_right, QString::number(stats.ntotalRHS    ), "Total number of residual evaluations."});
+	html.table_row({ "<b>total reforms</b>", HTMLComposer::align_right, QString::number(stats.ntotalReforms), "Total number of stiffness matrix reformations."});
+	html.table_end();
+
+	// Step stats
+	if (!report->m_stepStats.empty())
+	{
+		html.paragraph("Breakdown of stats per step.");
+		html.table_start();
+		html.table_headings({ "step", "timesteps", "total iters", "total RHS", "total reforms" });
+		for (int i = 0; i < report->m_stepStats.size(); ++i)
+		{
+			ModelStats& s = report->m_stepStats[i];
+			html.table_row(composeRow({ i + 1, s.ntimeSteps, s.ntotalIters, s.ntotalRHS, s.ntotalReforms }));
+		}
+		html.table_end();
+	}
+
+	// iteration stats
+	std::vector<TimeStepStats> iters = report->m_timestepStats;
+	if (!iters.empty())
+	{
+		BarchartBuilder bar(800, 400);
+
+		switch (ui->barOption)
+		{
+		case 0: bar.setTitle("Number of iterations per time step"); break;
+		case 1: bar.setTitle("Number of residual evaluations per time step"); break;
+		case 2: bar.setTitle("Number of reforms per time step"); break;
+		}
+
+		for (const TimeStepStats& s : iters)
+		{
+			switch (ui->barOption)
+			{
+			case 0: bar.addBar(s.iters, (s.status == 0 ? Qt::red : Qt::darkGreen)); break;
+			case 1: bar.addBar(s.nrhs , (s.status == 0 ? Qt::red : Qt::darkGreen)); break;
+			case 2: bar.addBar(s.refs , (s.status == 0 ? Qt::red : Qt::darkGreen)); break;
+			}
+		}
+
+		QString link = QString("<a href=\"#iters\">[ iters </a>|<a href=\"#rhs\"> rhs </a>|<a href=\"#refs\"> refs ]</a>");
+
+		html.paragraph(link);
+		html.paragraph(""); // Added to make sure there is a line break before the bar chart
+		t->addResource(QTextDocument::ImageResource, QUrl("barchart"), bar.pixmap());
+		html.image("barchart");
+	}
+
+	// Timings
+	TimingInfo ti = report->m_timingInfo;
+	double tot = ti.total_time;
+	if (tot == 0) tot = 1.0; // avoid division by zero
+	std::vector<TimingEntry> entries;
+	if (ti.input_time         > 0) entries.push_back({ "input"    , ti.input_time        , ti.input_time         / tot, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
+	if (ti.init_time          > 0) entries.push_back({ "init"     , ti.init_time         , ti.init_time          / tot, "Time to initialize all model data" , QColor::fromRgb(220, 120, 60) });
+	if (ti.io_time            > 0) entries.push_back({ "output"   , ti.io_time           , ti.io_time            / tot, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0) });
+	if (ti.total_reform       > 0) entries.push_back({ "reforms"  , ti.total_reform      , ti.total_reform       / tot, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
+	if (ti.total_stiff        > 0) entries.push_back({ "stiff"    , ti.total_stiff       , ti.total_stiff        / tot, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
+	if (ti.total_rhs          > 0) entries.push_back({ "rhs"      , ti.total_rhs         , ti.total_rhs          / tot, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
+	if (ti.total_update       > 0) entries.push_back({ "update"   , ti.total_update      , ti.total_update       / tot, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 165, 103) });
+	if (ti.total_qn           > 0) entries.push_back({ "QN"       , ti.total_qn          , ti.total_qn           / tot, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(200, 200, 250) });
+	if (ti.total_ls_factor    > 0) entries.push_back({ "factor"   , ti.total_ls_factor   , ti.total_ls_factor    / tot, "Time spent factorizing stiffness matrix" , QColor::fromRgb(32, 165, 218) });
+	if (ti.total_ls_backsolve > 0) entries.push_back({ "backsolve", ti.total_ls_backsolve, ti.total_ls_backsolve / tot, "Time spent doing backsolves" , QColor::fromRgb(32, 100, 158) });
+	if (ti.total_serialize    > 0) entries.push_back({ "serialize", ti.total_serialize   , ti.total_serialize    / tot, "Time spent serializing model data" , QColor::fromRgb(218, 165, 32) });
+	if (ti.total_callback     > 0) entries.push_back({ "callback" , ti.total_callback    , ti.total_callback     / tot, "Time spent in callback routines (excl. output)" , QColor::fromRgb(208, 32, 32) });
+	if (ti.total_other        > 0) entries.push_back({ "other"    , ti.total_other       , ti.total_other        / tot, "Time spent outside of timed routines" , QColor::fromRgb(255, 0, 255) });
+
+	if (!entries.empty())
+	{
+		std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec > b.sec; });
+
+		html.heading2("Timings");
+		html.paragraph("Breakdown of total runtime.");
+		html.table_start();
+		html.table_row(composeRow("Total time", ti.total_time, 1.0, "Total time to run the job"));
+		for (auto& e : entries)
+			html.table_row(composeRow(e.label, e.sec, e.f, e.desc));
+		html.table_end();
+
+		std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec < b.sec; });
+		PiechartBuilder pie(400, 400);
+		for (auto& e : entries)
+			pie.addSlice(e.f, e.col, e.label);
+
+		t->addResource(QTextDocument::ImageResource, QUrl("piechart"), pie.pixmap());
+
+		html.image("piechart");
+	}
+
+	ui->txt->setHtml(html.text());
+}
+
+void CFEBioReportView::on_htmlview_anchorClicked(const QUrl& link)
+{
+	ui->barOption = 0;
+	QString a = link.toString();
+	if      (a == "#iters") ui->barOption = 0;
+	else if (a == "#rhs"  ) ui->barOption = 1;
+	else if (a == "#refs" ) ui->barOption = 2;
+
+	UpdateView();
 }

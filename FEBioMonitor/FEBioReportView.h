@@ -40,5 +40,11 @@ public:
 	void setDocument(CDocument* doc) override;
 
 private:
+	void UpdateView();
+
+private slots:
+	void on_htmlview_anchorClicked(const QUrl& link);
+
+private:
 	Ui* ui;
 };
