@@ -43,23 +43,23 @@ public:
 	};
 
 public:
-	FSNNQuery(std::vector<vec3d>* ps = 0);
+	FSNNQuery(const std::vector<vec3d>& points);
 	virtual ~FSNNQuery();
 
 	//! initialize search structures
 	void Init();
 
-	//! attach to a surface
-	void Attach(std::vector<vec3d>* ps) { m_ps = ps; }
+	//! find the neirest neighbour's index of x
+	int FindIndex(const vec3d& x);
 
-	//! find the neirest neighbour of r
-	int Find(vec3d x);	
+	//! find the neirest neighbour's of x
+	const vec3d& Find(const vec3d& x);
 
 protected:
 	int FindRadius(double r);
 
 protected:
-	std::vector<vec3d>*	m_ps;	//!< the node array to search
+	const std::vector<vec3d>&	m_points;	//!< the node array to search
 	std::vector<NODE>	m_bk;	// BK tree
 
 	vec3d	m_q1;	// pivot 1

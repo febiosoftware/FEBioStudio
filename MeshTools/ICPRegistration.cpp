@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <FECore/matrix.h>
+#include <MeshTools/FENNQuery.h>
 using namespace std;
 
 vec3d CenterOfMass(const vector<vec3d>& S)
@@ -152,8 +153,28 @@ quatd q_init[] = {
 	quatd(1, -1,  0, 1),
 };
 
+void ClosestPointSet(FSNNQuery& X, const vector<vec3d>& P, vector<vec3d>& Y)
+{
+	// get the vector sizes
+	int NP = (int)P.size();
+
+	// make sure Y is the right size
+	// (must be same size as P)
+	Y.resize(NP);
+
+	// Find the closest node int X for each point in P
+	// and store in Y
+	for (int i = 0; i < NP; i++)
+	{
+		Y[i] = X.Find(P[i]);
+	}
+}
+
 Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>& P0)
 {
+	FSNNQuery NNQ(X);
+	NNQ.Init();
+
 	int NX = (int)X.size();
 	int NP = (int)P0.size();
 
@@ -208,7 +229,7 @@ Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>
 		for (m_iters = 0; m_iters < m_maxiter; m_iters++)
 		{
 			// Compute the closest point set Y
-			ClosestPointSet(X, P, Y);
+			ClosestPointSet(NNQ, P, Y);
 
 			// compute the registration
 			Q = Register(P0, Y, &m_err);
@@ -234,35 +255,6 @@ Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>
 	m_err = min_err;
 
 	return Q_min;
-}
-
-void GICPRegistration::ClosestPointSet(const vector<vec3d>& X, const vector<vec3d>& P, vector<vec3d>& Y)
-{
-	// get the vector sizes
-	int NX = (int) X.size();
-	int NP = (int) P.size();
-
-	// make sure Y is the right size
-	// (must be same size as P)
-	Y.resize(NP);
-
-	// Find the closest node int X for each point in P
-	// and store in Y
-	for (int i = 0; i<NP; i++)
-	{
-		double min_dist = 1e99;
-		const vec3d& Pi = P[i];
-		for(int j = 0; j<NX; j++)
-		{
-			const vec3d& Xj = X[j];
-			double dist = (Pi - Xj).SqrLength();
-			if (dist < min_dist)
-			{
-				min_dist = dist;
-				Y[i] = Xj;
-			}
-		}
-	}
 }
 
 Transform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>& Y, double* perr)
