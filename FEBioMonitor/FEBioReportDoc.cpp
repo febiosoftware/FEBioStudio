@@ -24,6 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioReportDoc.h"
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
 
 CFEBioReportDoc::CFEBioReportDoc(CMainWindow* wnd) : CDocument(wnd)
 {
@@ -44,6 +47,7 @@ void CFEBioReportDoc::setJob(CFEBioJob* job)
 	m_timingInfo = job->m_timingInfo;
 	m_modelStats = job->m_modelStats;
 	m_stepStats  = job->m_stepStats;
+	m_timestepStats = job->m_timestepStats;
 
 	QString title = QString("Report [%1]").arg(m_jobName);
 	SetDocTitle(title.toStdString());
@@ -54,4 +58,241 @@ void CFEBioReportDoc::setJob(CFEBioJob* job)
 bool CFEBioReportDoc::SaveDocument()
 {
 	return false;
+}
+
+bool extractString(const QString& str, const QString& key, QString& out, QChar sep = ':')
+{
+	if (str.contains(key))
+	{
+		int start = str.indexOf(sep) + 1;
+		int end = str.indexOf('\n', start);
+		if (end < 0) end = str.length();
+		out = str.mid(start, end - start).trimmed();
+		return true;
+	}
+	return false;
+}
+
+bool extractInt(const QString& str, const QString& key, int& out, QChar sep = ':')
+{
+	QString tmp;
+	if (extractString(str, key, tmp, sep))
+	{
+		out = tmp.toInt();
+		return true;
+	}
+	return false;
+}
+
+bool extractFloat(const QString& str, const QString& key, double& out, QChar sep = ':')
+{
+	QString tmp;
+	if (extractString(str, key, tmp, sep))
+	{
+		out = tmp.toDouble();
+		return true;
+	}
+	return false;
+}
+
+double extractSeconds(const QString& str)
+{
+	int lpos = str.indexOf('(');
+	if (lpos >= 0)
+	{
+		int rpos = str.indexOf("sec", lpos + 1);
+		QString t = str.mid(lpos + 1, rpos - lpos - 1).trimmed();
+		return t.toDouble();
+	}
+	return 0.0;
+}
+
+bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
+{
+	QFile file(logFile);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		qWarning() << "Could not open file:" << file.errorString();
+		return false;
+	}
+
+	QFileInfo fi(logFile);
+
+	m_jobName = fi.fileName();
+	m_logFile.clear();
+	m_febFile.clear();
+	m_pltFile.clear();
+
+	int rhsEvals = 0;
+	int reforms = 0;
+	m_timestepStats.clear();
+
+	QTextStream in(&file);
+	while (!in.atEnd()) {
+		QString line = in.readLine();
+
+		if (m_febFile.isEmpty())
+		{
+			extractString(line, "Input file", m_febFile);
+		}
+		if (m_logFile.isEmpty())
+		{
+			extractString(line, "Log file", m_logFile);
+		}
+		if (m_pltFile.isEmpty())
+		{
+			extractString(line, "Plot file", m_pltFile);
+		}
+
+		bool match = false;
+		match = extractInt(line, "right hand side evaluations", rhsEvals, '=');
+		if (!match) match = extractInt(line, "stiffness matrix reformations", reforms, '=');
+		if (!match)
+		{
+			double time = 0.0;
+			match = extractFloat(line, "converged at time", time);
+			if (match)
+			{
+				m_timestepStats.push_back({ 0, rhsEvals, reforms, 1 });
+				rhsEvals = 0;
+				reforms = 0;
+			}
+		}
+		if (!match) match = extractInt(line, "Number of time steps completed", m_modelStats.ntimeSteps);
+		if (!match) match = extractInt(line, "Total number of equilibrium iterations", m_modelStats.ntotalIters);
+		if (!match) match = extractInt(line, "Total number of right hand evaluations", m_modelStats.ntotalRHS);
+		if (!match) match = extractInt(line, "Total number of stiffness reformations", m_modelStats.ntotalReforms);
+		if (!match)
+		{
+			double time = 0.0;
+			match = extractFloat(line, "failed to converge", time);
+			if (match)
+			{
+				m_timestepStats.push_back({ 0, rhsEvals, reforms, 0 });
+				rhsEvals = 0;
+				reforms = 0;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "Total elapsed time", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_time = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "IO-time", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.io_time = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "Input time", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.input_time = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "Initialization time", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.init_time = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "time in linear solver", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_ls_factor = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "reforming stiffness", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_reform = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "evaluating stiffness", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_stiff = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "evaluating residual", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_rhs = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "model update", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_update = sec;
+			}
+		}
+		if (!match)
+		{
+			QString tmp;
+			match = extractString(line, "QN updates", tmp);
+			if (match)
+			{
+				double sec = extractSeconds(tmp);
+				m_timingInfo.total_qn = sec;
+			}
+		}
+	}
+
+	// calculate the remaining timing info
+	double sum = 0;
+	sum += m_timingInfo.io_time;
+	sum += m_timingInfo.init_time;
+	sum += m_timingInfo.input_time;
+	sum += m_timingInfo.total_ls_factor;
+	sum += m_timingInfo.total_reform;
+	sum += m_timingInfo.total_stiff;
+	sum += m_timingInfo.total_rhs;
+	sum += m_timingInfo.total_update;
+	sum += m_timingInfo.total_qn;
+	m_timingInfo.total_other = m_timingInfo.total_time - sum;
+	if (m_timingInfo.total_other < 0) m_timingInfo.total_other = 0.0;
+
+	file.close(); // optional, as QFile destructor closes the file
+
+	QString title = QString("Report [%1]").arg(m_jobName);
+	SetDocTitle(title.toStdString());
+
+	m_bValid = true;
+	return true;
 }

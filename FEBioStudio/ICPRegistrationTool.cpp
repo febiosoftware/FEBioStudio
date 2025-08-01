@@ -69,7 +69,7 @@ public:
 
         f->setAlignment(Qt::AlignRight);
 
-        m_tol->setText(QString::number(0.01));
+        m_tol->setText(QString::number(1e-5));
         m_maxiter->setText(QString::number(100));
 
         QGroupBox* pg1 = new QGroupBox("Source");

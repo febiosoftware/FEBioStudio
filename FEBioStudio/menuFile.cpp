@@ -113,6 +113,7 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
 #include <ImageLib/TiffReader.h>
+#include <FEBioMonitor/FEBioReportDoc.h>
 #include <sstream>
 #include <PostGL/PostObject.h>
 #include "DlgScreenCapture.h"
@@ -514,6 +515,18 @@ void CMainWindow::OpenTextFile(const QString& fileName)
 	}
 	txt->SetDocFilePath(fileName.toStdString());
 	AddDocument(txt);
+}
+
+bool CMainWindow::OpenFEBioLogFile(const QString& fileName)
+{
+	CFEBioReportDoc* doc = new CFEBioReportDoc(this);
+	if (doc->LoadFromLogFile(fileName) == false)
+	{
+		delete doc;
+		return false;
+	}
+	AddDocument(doc);
+	return true;
 }
 
 QString CMainWindow::GetExportGeometryFilename(QString& formatOption)

@@ -179,6 +179,85 @@ private:
 	double	m_start;
 };
 
+
+class BarchartBuilder
+{
+public:
+	BarchartBuilder(int w, int h) : pix(w, h)
+	{
+		pix.fill(Qt::white);
+	}
+
+	void addBar(double val, QColor c)
+	{
+		m_data.push_back(std::make_pair(val, c));
+	}
+
+	QPixmap& pixmap() { Build(); return pix; }
+
+private:
+	void Build()
+	{
+		const int leftMargin = 50;
+		const int rightMargin = 10;
+		const int topMargin = 10;
+		const int bottomMargin = 30;
+
+		QPainter p(&pix);
+		p.setRenderHint(QPainter::RenderHint::Antialiasing);
+		QRect rt = pix.rect();
+		int W = rt.width() - (leftMargin + rightMargin);
+		int H = rt.height() - (topMargin + bottomMargin);
+		p.setPen(Qt::NoPen);
+
+		// get the maximum value in the data
+		double maxVal = 0.0;
+		for (auto it : m_data) if (it.first > maxVal) maxVal = it.first;
+
+		// draw the horizontal grid lines
+		int steps = 5;
+		if (maxVal >= 100) steps = 10;
+		if (maxVal <= 5) { maxVal = 5; steps = 1; }
+
+		int maxY = steps * ceil(maxVal / steps);
+		if (maxY == 0) { maxY = 1; steps = 1; }
+
+		for (int y = 0; y <= maxY; y += steps)
+		{
+			int y0 = topMargin + H - (int)(H * y / maxY);
+			p.setPen(QPen(Qt::lightGray, 1.0));
+			p.drawLine(leftMargin, y0, leftMargin + W, y0); // horizontal lines
+			p.setPen(Qt::black);
+			p.drawText(leftMargin - 30, y0 + 5, QString::number(y)); // y-axis labels
+		}
+
+		int N = m_data.size();
+		for (int i = 0; i < N; ++i)
+		{
+			auto it = m_data[i];
+			double v = it.first;
+			if (v > 0.0)
+			{
+				int x0 = leftMargin + i * W / N;
+				int x1 = leftMargin + (i + 1) * W / N - 2;
+				int y0 = topMargin + H;
+				int y1 = topMargin + H - (int)(H * v / maxY);
+				p.setPen(Qt::PenStyle::NoPen);
+				p.setBrush(it.second);
+				p.drawRect(x0, y0, x1 - x0, y1 - y0);
+			}
+		}
+
+		p.setPen(QPen(Qt::black, 1.0));
+		p.drawLine(leftMargin, topMargin + H, leftMargin + W, topMargin + H); // x-axis
+		p.drawLine(leftMargin, topMargin, leftMargin, topMargin + H); // y-axis
+	}
+
+private:
+	QPixmap pix;
+	std::vector<std::pair<double, QColor>> m_data;
+};
+
 class CFEBioReportView::Ui
 {
 public:
@@ -245,25 +324,8 @@ void CFEBioReportView::setDocument(CDocument* doc)
 	}
 	else
 	{
-		TimingInfo ti = report->m_timingInfo;
-
-		std::vector<TimingEntry> entries;
-		entries.push_back({ "input"    , ti.input_time        , ti.input_time         / ti.total_time, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
-		entries.push_back({ "init"     , ti.init_time         , ti.init_time          / ti.total_time, "Time to initialize all model data" , QColor::fromRgb(220, 120, 60)});
-		entries.push_back({ "output"   , ti.io_time           , ti.io_time            / ti.total_time, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0)});
-		entries.push_back({ "reforms"  , ti.total_reform      , ti.total_reform       / ti.total_time, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
-		entries.push_back({ "stiff"    , ti.total_stiff       , ti.total_stiff        / ti.total_time, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
-		entries.push_back({ "rhs"      , ti.total_rhs         , ti.total_rhs          / ti.total_time, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
-		entries.push_back({ "update"   , ti.total_update      , ti.total_update       / ti.total_time, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 165, 103) });
-		entries.push_back({ "QN"       , ti.total_qn          , ti.total_qn           / ti.total_time, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(200, 200, 250) });
-		entries.push_back({ "factor"   , ti.total_ls_factor   , ti.total_ls_factor    / ti.total_time, "Time spent factorizing stiffness matrix" , QColor::fromRgb(32, 165, 218) });
-		entries.push_back({ "backsolve", ti.total_ls_backsolve, ti.total_ls_backsolve / ti.total_time, "Time spent doing backsolves" , QColor::fromRgb(32, 100, 158) });
-		entries.push_back({ "serialize", ti.total_serialize   , ti.total_serialize    / ti.total_time, "Time spent serializing model data" , QColor::fromRgb(218, 165, 32) });
-		entries.push_back({ "callback" , ti.total_callback    , ti.total_callback     / ti.total_time, "Time spent in callback routines (excl. output)" , QColor::fromRgb(208, 32, 32) });
-		entries.push_back({ "other"    , ti.total_other       , ti.total_other        / ti.total_time, "Time spent outside of timed routines" , QColor::fromRgb(255, 0, 255) });
-		std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec > b.sec; });
-
 		HTMLComposer html;
+
 		html.heading1("FEBio Job Report");
 		html.heading2("Files");
 		html.paragraph("Files used in the job.");
@@ -285,34 +347,76 @@ void CFEBioReportView::setDocument(CDocument* doc)
 		html.table_end();
 
 		// Step stats
-		html.paragraph("Breakdown of stats per step.");
-		html.table_start();
-		html.table_headings({ "step", "timesteps", "total iters", "total RHS", "total reforms" });
-		for (int i = 0; i < report->m_stepStats.size(); ++i)
+		if (!report->m_stepStats.empty())
 		{
-			ModelStats& s = report->m_stepStats[i];
-			html.table_row(composeRow({ i + 1, s.ntimeSteps, s.ntotalIters, s.ntotalRHS, s.ntotalReforms }));
+			html.paragraph("Breakdown of stats per step.");
+			html.table_start();
+			html.table_headings({ "step", "timesteps", "total iters", "total RHS", "total reforms" });
+			for (int i = 0; i < report->m_stepStats.size(); ++i)
+			{
+				ModelStats& s = report->m_stepStats[i];
+				html.table_row(composeRow({ i + 1, s.ntimeSteps, s.ntotalIters, s.ntotalRHS, s.ntotalReforms }));
+			}
+			html.table_end();
 		}
-		html.table_end();
+
+		// iteration stats
+		std::vector<TimeStepStats> iters = report->m_timestepStats;
+		if (!iters.empty())
+		{
+			BarchartBuilder bar(800, 400);
+
+			for (const TimeStepStats& s : iters)
+			{
+				bar.addBar(s.nrhs, (s.status == 0 ? Qt::red : Qt::darkGreen));
+			}
+
+			html.paragraph("Right hand side evaluations per time step.");
+			html.paragraph(""); // Added to make sure there is a line break before the bar chart
+			t->addResource(QTextDocument::ImageResource, QUrl("barchart"), bar.pixmap());
+			html.image("barchart");
+		}
 
 		// Timings
-		html.heading2("Timings");
-		html.paragraph("Breakdown of total runtime.");
-		html.table_start();
-		html.table_row(composeRow("Total time", ti.total_time  , 1.0, "Total time to run the job"));
-		for (auto& e : entries)
-			html.table_row(composeRow(e.label, e.sec, e.f, e.desc));
-		html.table_end();
-
-		std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec < b.sec; });
-		PiechartBuilder pie(400, 400);
+		TimingInfo ti = report->m_timingInfo;
 		double tot = ti.total_time;
-		for (auto& e : entries)
-			pie.addSlice(e.f, e.col, e.label);
+		if (tot == 0) tot = 1.0; // avoid division by zero
+		std::vector<TimingEntry> entries;
+		if (ti.input_time         > 0) entries.push_back({ "input"    , ti.input_time        , ti.input_time         / tot, "Time to process the input file" , QColor::fromRgb(200, 224, 16) });
+		if (ti.init_time          > 0) entries.push_back({ "init"     , ti.init_time         , ti.init_time          / tot, "Time to initialize all model data" , QColor::fromRgb(220, 120, 60) });
+		if (ti.io_time            > 0) entries.push_back({ "output"   , ti.io_time           , ti.io_time            / tot, "Time to write output files (plot, dmp, data)" , QColor::fromRgb(255, 255, 0) });
+		if (ti.total_reform       > 0) entries.push_back({ "reforms"  , ti.total_reform      , ti.total_reform       / tot, "Time spent reforming the stiffness matrix" , QColor::fromRgb(175, 0, 230) });
+		if (ti.total_stiff        > 0) entries.push_back({ "stiff"    , ti.total_stiff       , ti.total_stiff        / tot, "Time spent evaluating the stiffness matrix" , QColor::fromRgb(0, 201, 87) });
+		if (ti.total_rhs          > 0) entries.push_back({ "rhs"      , ti.total_rhs         , ti.total_rhs          / tot, "Time spent evaluating the residual (i.e. all forces, including internal and external)" , QColor::fromRgb(255, 127, 80) });
+		if (ti.total_update       > 0) entries.push_back({ "update"   , ti.total_update      , ti.total_update       / tot, "Time spent updating model (i.e. applying increments to solution and reevaluating model state)" , QColor::fromRgb(0, 165, 103) });
+		if (ti.total_qn           > 0) entries.push_back({ "QN"       , ti.total_qn          , ti.total_qn           / tot, "Time evaluating the Quasi-Newton updates" , QColor::fromRgb(200, 200, 250) });
+		if (ti.total_ls_factor    > 0) entries.push_back({ "factor"   , ti.total_ls_factor   , ti.total_ls_factor    / tot, "Time spent factorizing stiffness matrix" , QColor::fromRgb(32, 165, 218) });
+		if (ti.total_ls_backsolve > 0) entries.push_back({ "backsolve", ti.total_ls_backsolve, ti.total_ls_backsolve / tot, "Time spent doing backsolves" , QColor::fromRgb(32, 100, 158) });
+		if (ti.total_serialize    > 0) entries.push_back({ "serialize", ti.total_serialize   , ti.total_serialize    / tot, "Time spent serializing model data" , QColor::fromRgb(218, 165, 32) });
+		if (ti.total_callback     > 0) entries.push_back({ "callback" , ti.total_callback    , ti.total_callback     / tot, "Time spent in callback routines (excl. output)" , QColor::fromRgb(208, 32, 32) });
+		if (ti.total_other        > 0) entries.push_back({ "other"    , ti.total_other       , ti.total_other        / tot, "Time spent outside of timed routines" , QColor::fromRgb(255, 0, 255) });
 
-		t->addResource(QTextDocument::ImageResource, QUrl("piechart"), pie.pixmap());
+		if (!entries.empty())
+		{
+			std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec > b.sec; });
 
-		html.image("piechart");
+			html.heading2("Timings");
+			html.paragraph("Breakdown of total runtime.");
+			html.table_start();
+			html.table_row(composeRow("Total time", ti.total_time, 1.0, "Total time to run the job"));
+			for (auto& e : entries)
+				html.table_row(composeRow(e.label, e.sec, e.f, e.desc));
+			html.table_end();
+
+			std::sort(entries.begin(), entries.end(), [](TimingEntry& a, TimingEntry& b) { return a.sec < b.sec; });
+			PiechartBuilder pie(400, 400);
+			for (auto& e : entries)
+				pie.addSlice(e.f, e.col, e.label);
+
+			t->addResource(QTextDocument::ImageResource, QUrl("piechart"), pie.pixmap());
+
+			html.image("piechart");
+		}
 
 		txt->setHtml(html.text());
 	}

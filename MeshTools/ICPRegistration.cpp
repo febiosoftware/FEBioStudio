@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <FECore/matrix.h>
+#include <MeshTools/FENNQuery.h>
 using namespace std;
 
 vec3d CenterOfMass(const vector<vec3d>& S)
@@ -125,80 +126,37 @@ Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc)
 	return Q;
 }
 
-Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>& S)
-{
-	vector<vec3d> P = S;
+quatd q_init[] = { 
 
-	int NX = (int)X.size();
-	int NP = (int)P.size();
+	quatd(0,  0,  0, 1),
 
-	//find center of mass
-	vec3d cp0 = CenterOfMass(P);
-	vec3d cx0 = CenterOfMass(X);
+	quatd(1,  0,  0, 0),
+	quatd(0,  1,  0, 0),
+	quatd(0,  0,  1, 0),
+	quatd(1,  1,  0, 0),
+	quatd(1,  0,  1, 0),
+	quatd(0,  1,  1, 0),
+	quatd(1,  1,  1, 0),
+	quatd(1,  0, -1, 0),
+	quatd(0,  1, -1, 0),
+	quatd(1, -1,  0, 0),
 
-	// store the initial coordinates
-	vector<vec3d> P0 = P;
+	quatd(1,  0,  0, 1),
+	quatd(0,  1,  0, 1),
+	quatd(0,  0,  1, 1),
+	quatd(1,  1,  0, 1),
+	quatd(1,  0,  1, 1),
+	quatd(0,  1,  1, 1),
+	quatd(1,  1,  1, 1),
+	quatd(1,  0, -1, 1),
+	quatd(0,  1, -1, 1),
+	quatd(1, -1,  0, 1),
+};
 
-	// calculate the initial displacements to bring the points closer together
-	vec3d t0 = cx0 - cp0;
-	for (int i = 0; i<NP; i++) P[i] += t0;
-
-	// do an initial alignment
-/*	if (m_align)
-	{
-		mat3d QP = orientation(P);
-		mat3d QX = orientation(X);
-		mat3d Q0 = QX * QP.transpose();
-		for (int i = 0; i < NP; ++i)
-		{
-			vec3d pi = P[i] - cx0;
-			vec3d qi = Q0 * pi;
-			P[i] = qi + cx0;
-		}
-	}
-*/
-
-	// estimate the size of the model so we can make the error dimensionless
-	BOX box(P[0], P[0]);
-	for (int i=1; i<NP; ++i) box += P[i];
-	double R = box.Radius();
-
-	// reserve space for the Y-vector
-	// (stores the closest points in X to P)
-	vector<vec3d> Y(NP);
-
-	m_iters = 0;
-	m_err = 0.0;
-
-	// loop over max iteration
-	Transform Q;
-	double prev_err = 0.0;
-	for (m_iters = 1; m_iters < m_maxiter; m_iters++)
-	{
-		// Compute the closest point set Y
-		ClosestPointSet(X, P, Y);
-
-		// compute the registration
-		Q = Register(P0, Y, &m_err);
-
-		// apply the registration
-		ApplyTransform(P0, Q, P);
-
-		// check convergence
-		double rel = (m_err - prev_err) / R;
-		if (fabs(rel) < m_tol) break;
-
-		prev_err = m_err;
-	}
-
-	return Q;
-}
-
-void GICPRegistration::ClosestPointSet(const vector<vec3d>& X, const vector<vec3d>& P, vector<vec3d>& Y)
+void ClosestPointSet(FSNNQuery& X, const vector<vec3d>& P, vector<vec3d>& Y)
 {
 	// get the vector sizes
-	int NX = (int) X.size();
-	int NP = (int) P.size();
+	int NP = (int)P.size();
 
 	// make sure Y is the right size
 	// (must be same size as P)
@@ -206,21 +164,97 @@ void GICPRegistration::ClosestPointSet(const vector<vec3d>& X, const vector<vec3
 
 	// Find the closest node int X for each point in P
 	// and store in Y
-	for (int i = 0; i<NP; i++)
+	for (int i = 0; i < NP; i++)
 	{
-		double min_dist = 1e99;
-		const vec3d& Pi = P[i];
-		for(int j = 0; j<NX; j++)
+		Y[i] = X.Find(P[i]);
+	}
+}
+
+Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>& P0)
+{
+	FSNNQuery NNQ(X);
+	NNQ.Init();
+
+	int NX = (int)X.size();
+	int NP = (int)P0.size();
+
+	//find center of mass
+	vec3d cp0 = CenterOfMass(P0);
+	vec3d cx0 = CenterOfMass(X);
+
+	// estimate the size of the model so we can make the error dimensionless
+	BOX box(P0[0], P0[0]);
+	for (int i = 1; i < NP; ++i) box += P0[i];
+	double R = box.Radius();
+
+	// loop over different initial configuration to try find the global minimum
+	Transform Q_min;
+	double min_err = 0;
+	const int MAX_INIT = sizeof(q_init) / sizeof(quatd);
+	for (int n = 0; n < MAX_INIT; ++n)
+	{
+		// set the initial coordinates
+		vector<vec3d> P = P0;
+
+		// calculate the initial transformation to bring the points closer together
+		quatd q0 = q_init[n]; q0.MakeUnit();
+		vec3d t0 = cx0 - cp0;
+		for (int i = 0; i < NP; i++) P[i] = q0*P0[i] + t0;
+
+		// do an initial alignment
+	/*	if (m_align)
 		{
-			const vec3d& Xj = X[j];
-			double dist = (Pi - Xj).Length();
-			if (dist < min_dist)
+			mat3d QP = orientation(P);
+			mat3d QX = orientation(X);
+			mat3d Q0 = QX * QP.transpose();
+			for (int i = 0; i < NP; ++i)
 			{
-				min_dist = dist;
-				Y[i] = Xj;
+				vec3d pi = P[i] - cx0;
+				vec3d qi = Q0 * pi;
+				P[i] = qi + cx0;
 			}
 		}
+	*/
+
+		// reserve space for the Y-vector
+		// (stores the closest points in X to P)
+		vector<vec3d> Y(NP);
+
+		m_iters = 0;
+		m_err = 0.0;
+
+		// loop over max iteration
+		Transform Q;
+		double prev_err = 0.0;
+		for (m_iters = 0; m_iters < m_maxiter; m_iters++)
+		{
+			// Compute the closest point set Y
+			ClosestPointSet(NNQ, P, Y);
+
+			// compute the registration
+			Q = Register(P0, Y, &m_err);
+
+			// apply the registration
+			ApplyTransform(P0, Q, P);
+
+			// check convergence
+			double rel = (m_err - prev_err) / R;
+			if (fabs(rel) < m_tol) {
+				m_iters++; break;
+			}
+
+			prev_err = m_err;
+		}
+
+		if ((n == 0) || (m_err < min_err))
+		{
+			min_err = m_err;
+			Q_min = Q;
+		}
 	}
+	m_err = min_err;
+
+	return Q_min;
 }
 
 Transform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>& Y, double* perr)
