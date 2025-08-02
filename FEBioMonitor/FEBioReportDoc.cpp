@@ -127,6 +127,10 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 	int reforms = 0;
 	m_timestepStats.clear();
 
+	bool processInfoBox = false;
+
+	QString report;
+
 	QTextStream in(&file);
 	while (!in.atEnd()) {
 		QString line = in.readLine();
@@ -145,7 +149,32 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 		}
 
 		bool match = false;
-		match = extractInt(line, "right hand side evaluations", rhsEvals, '=');
+
+		if (processInfoBox)
+		{
+			if (line.contains("WARNING")) report += "Warning: ";
+			else if (line.contains("ERROR")) report += "Error: ";
+			else if (line.contains("*****"))
+			{
+				report += "\n";
+				processInfoBox = false;
+			}
+			else
+			{
+				QString tmp = line;
+				tmp.replace('*', ' ');
+				report += tmp.trimmed();
+			}
+
+			match = true;
+		}
+		else if (line.contains("*****"))
+		{
+			processInfoBox = true;
+			match = true;
+		}
+
+		if (!match) match = extractInt(line, "right hand side evaluations", rhsEvals, '=');
 		if (!match) match = extractInt(line, "stiffness matrix reformations", reforms, '=');
 		if (!match)
 		{
@@ -283,6 +312,8 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 			if (ok) iters = n;
 		}
 	}
+
+	m_report = report;
 
 	// calculate the remaining timing info
 	double sum = 0;

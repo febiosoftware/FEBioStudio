@@ -54,6 +54,7 @@ public:
 	void heading1(const QString& s) { append(wrap("h1", s)); }
 	void heading2(const QString& s) { append(wrap("h2", s)); }
 	void paragraph(const QString& s) { append(wrap("p", s)); }
+	void pre(const QString& s) { append(wrap("pre", s)); }
 	void table(const QStringList& v)
 	{
 		QString s;
@@ -486,6 +487,12 @@ void CFEBioReportView::UpdateView()
 		t->addResource(QTextDocument::ImageResource, QUrl("piechart"), pie.pixmap());
 
 		html.image("piechart");
+	}
+
+	if (!report->m_report.isEmpty())
+	{
+		html.heading2("Warnings and Errors");
+		html.pre(report->m_report);
 	}
 
 	ui->txt->setHtml(html.text());
