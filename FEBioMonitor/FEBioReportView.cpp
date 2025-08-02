@@ -212,11 +212,11 @@ private:
 
 		QPainter p(&pix);
 		p.setRenderHint(QPainter::RenderHint::Antialiasing);
+		QFont f = p.font();
 
 		if (!m_title.isEmpty())
 		{
 			p.setPen(Qt::black);
-			QFont f = p.font();
 			f.setPixelSize(16);
 			f.setBold(true);
 			p.setFont(f);
@@ -242,6 +242,9 @@ private:
 		int maxY = steps * ceil(maxVal / steps);
 		if (maxY == 0) { maxY = 1; steps = 1; }
 
+		f.setPixelSize(12);
+		f.setBold(false);
+		p.setFont(f);
 		for (int y = 0; y <= maxY; y += steps)
 		{
 			int y0 = topMargin + H - (int)(H * y / maxY);
@@ -250,6 +253,8 @@ private:
 			p.setPen(Qt::black);
 			p.drawText(leftMargin - 30, y0 + 5, QString::number(y)); // y-axis labels
 		}
+
+		int xdivs = 5;
 
 		int N = (int)m_data.size();
 		for (int i = 0; i < N; ++i)
@@ -265,6 +270,13 @@ private:
 				p.setPen(Qt::PenStyle::NoPen);
 				p.setBrush(it.second);
 				p.drawRect(x0, y0, x1 - x0, y1 - y0);
+
+				if ((i+1) % xdivs == 0)
+				{
+					p.setPen(Qt::black);
+					p.drawLine(x0 + (x1 - x0) / 2, y0, x0 + (x1 - x0) / 2, y0 + 5); // vertical lines
+					p.drawText(x0 + (x1 - x0) / 2 - 5, y0 + 15, QString::number(i + 1)); // x-axis labels
+				}
 			}
 		}
 
