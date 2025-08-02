@@ -107,11 +107,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
     static bool showAdvancedSettings = false;
+	static bool generateReport = false;
 
 	// setup the run dialog
 	CDlgRun dlg(this, jobs);
 	dlg.SetLaunchConfig(ui->m_settings.m_launch_configs, lastLaunchConfigIndex);
     dlg.ShowAdvancedSettings(showAdvancedSettings);
+	dlg.SetGenerateReport(generateReport);
     
     if(jobs.empty())
     {
@@ -137,6 +139,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
         // store the name of the job
         lastJobName = jobName.c_str();
+
+		generateReport = dlg.GenerateReport();
 
         if(modelDoc)
         {

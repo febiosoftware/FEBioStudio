@@ -232,6 +232,11 @@ bool CDlgRun::AdvancedSettingsShown()
 	return ui->more->isChecked();
 }
 
+void CDlgRun::SetGenerateReport(bool b) const
+{
+	ui->genReport->setChecked(b);
+}
+
 bool CDlgRun::GenerateReport() const
 {
 	return ui->genReport->isChecked();
