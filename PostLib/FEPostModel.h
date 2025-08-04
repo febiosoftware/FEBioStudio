@@ -247,8 +247,8 @@ public:
 	//! Evaluate a field at a given time
 	bool Evaluate(int nfield, int ntime, bool breset = false);
 
-	//! Get the nodal coordinates of an element at time
-	void GetElementCoords(int iel, int ntime, vec3f* r);
+	//! Get the nodal coordinates of an element at time (returns nr of nodes of element)
+	int GetElementCoords(int iel, int ntime, vec3f* r);
 
 	//! Project a point onto the mesh
 	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfollow);

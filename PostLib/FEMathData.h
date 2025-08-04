@@ -30,20 +30,36 @@ SOFTWARE.*/
 
 namespace Post {
 
-class FEMathDataField;
+class FEMathNodeDataField;
+class FEMathElemDataField;
 class FEMathVec3DataField;
 class FEMathMat3DataField;
 
-class FEMathData : public FENodeData_T<float>
+class FEMathNodeData : public FENodeData_T<float>
 {
 public:
-	FEMathData(FEState* state, FEMathDataField* pdf);
+	FEMathNodeData(FEState* state, FEMathNodeDataField* pdf);
 
 	// evaluate the nodal data for this state
 	void eval(int n, float* pv) override;
 
 private:
-	FEMathDataField*	m_pdf;
+	FEMathNodeDataField*	m_pdf;
+};
+
+class FEMathElemData : public FEElemData_T<float, DATA_ITEM>
+{
+public:
+	FEMathElemData(FEState* state, FEMathElemDataField* pdf);
+
+	// evaluate the nodal data for this state
+	void eval(int n, float* pv) override;
+
+	void AddVariable(FEElemData_T<float, DATA_ITEM>* var) { m_vars.push_back(var); }
+
+private:
+	FEMathElemDataField* m_pdf;
+	std::vector< FEElemData_T<float, DATA_ITEM>*> m_vars;
 };
 
 class FEMathVec3Data : public FENodeData_T<vec3f>
@@ -70,15 +86,15 @@ private:
 	FEMathMat3DataField*	m_pdf;
 };
 
-class FEMathDataField : public ModelDataField
+class FEMathNodeDataField : public ModelDataField
 {
 public:
-	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0);
+	FEMathNodeDataField(Post::FEPostModel* fem, unsigned int flag = 0);
 
 	//! Create a copy
-	ModelDataField* Clone() const override
+	FEMathNodeDataField* Clone() const override
 	{
-		FEMathDataField* pd = new FEMathDataField(m_fem);
+		FEMathNodeDataField* pd = new FEMathNodeDataField(m_fem);
 		pd->SetEquationString(m_eq);
 		return pd;
 	}
@@ -86,7 +102,7 @@ public:
 	//! FEMeshData constructor
 	FEMeshData* CreateData(FEState* pstate) override
 	{
-		return new FEMathData(pstate, this);
+		return new FEMathNodeData(pstate, this);
 	}
 
 	void SetEquationString(const std::string& eq) { m_eq = eq; BuildMath(); }
@@ -101,6 +117,37 @@ private:
 private:
 	std::string	m_eq;		//!< equation string
 	MSimpleExpression	m_math;
+};
+
+class FEMathElemDataField : public ModelDataField
+{
+public:
+	FEMathElemDataField(Post::FEPostModel* fem, unsigned int flag = 0);
+
+	//! Create a copy
+	FEMathElemDataField* Clone() const override
+	{
+		FEMathElemDataField* pd = new FEMathElemDataField(m_fem);
+		pd->SetEquationString(m_eq);
+		return pd;
+	}
+
+	//! FEMeshData constructor
+	FEMeshData* CreateData(FEState* pstate) override;
+
+	void SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; BuildMath(updateVars); }
+
+	const std::string& EquationString() const { return m_eq; }
+
+	double value(const std::vector<double>& vars);
+
+private:
+	bool BuildMath(bool updateVars);
+
+private:
+	std::string	m_eq;		//!< equation string
+	MSimpleExpression	m_math;
+	std::vector<std::pair<std::string, ModelDataField*>> m_var;
 };
 
 class FEMathVec3DataField : public ModelDataField
