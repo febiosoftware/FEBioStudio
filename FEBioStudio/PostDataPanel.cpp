@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QStackedWidget>
 #include <QSplitter>
+#include <QGroupBox>
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEPostModel.h>
@@ -103,12 +104,12 @@ public:
 	}
 };
 
-class CMathNodeDataProps : public CPropertyList
+class CMathScalarDataProps : public CPropertyList
 {
 public:
-	Post::FEMathNodeDataField*	m_pd;
+	Post::FEScalarMathDataField*	m_pd;
 
-	CMathNodeDataProps(Post::FEMathNodeDataField* pd) : m_pd(pd)
+	CMathScalarDataProps(Post::FEScalarMathDataField* pd) : m_pd(pd)
 	{
 		addProperty("Equation", CProperty::String);
 	}
@@ -501,8 +502,15 @@ public:
 		l->setContentsMargins(0,0,0,0);
 		w->setLayout(l);
 
-		l->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
-		l->addWidget(m_prop);
+		QHBoxLayout* nameLayout = new QHBoxLayout;
+		nameLayout->addWidget(new QLabel("name:"));
+		nameLayout->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
+		l->addLayout(nameLayout);
+		QGroupBox* propBox = new QGroupBox("Properties");
+		QVBoxLayout* propBoxLayout = new QVBoxLayout;
+		propBoxLayout->addWidget(m_prop);
+		propBox->setLayout(propBoxLayout);
+		l->addWidget(propBox);
 
 		psplitter->addWidget(w);
 
@@ -1496,15 +1504,10 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 		Post::CurvatureField* pf = dynamic_cast<Post::CurvatureField*>(p);
 		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
-	else if (dynamic_cast<Post::FEMathNodeDataField*>(p))
+	else if (dynamic_cast<Post::FEScalarMathDataField*>(p))
 	{
-		Post::FEMathNodeDataField* pm = dynamic_cast<Post::FEMathNodeDataField*>(p);
-		ui->m_prop->setPropertyList(new CMathNodeDataProps(pm));
-	}
-	else if (dynamic_cast<Post::FEMathElemDataField*>(p))
-	{
-		Post::FEMathElemDataField* pm = dynamic_cast<Post::FEMathElemDataField*>(p);
-		ui->m_prop->setPropertyList(new CMathElemDataProps(pm));
+		Post::FEScalarMathDataField* pm = dynamic_cast<Post::FEScalarMathDataField*>(p);
+		ui->m_prop->setPropertyList(new CMathScalarDataProps(pm));
 	}
 	else if (dynamic_cast<Post::FEMathVec3DataField*>(p))
 	{

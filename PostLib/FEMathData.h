@@ -43,8 +43,11 @@ public:
 	// evaluate the nodal data for this state
 	void eval(int n, float* pv) override;
 
+	void AddVariable(FENodeData_T<float>* var) { m_vars.push_back(var); }
+
 private:
 	FEMathNodeDataField*	m_pdf;
+	std::vector< FENodeData_T<float>*> m_vars;
 };
 
 class FEMathElemData : public FEElemData_T<float, DATA_ITEM>
@@ -82,11 +85,32 @@ public:
 	// evaluate the nodal data for this state
 	void eval(int n, mat3f* pv) override;
 
+
 private:
 	FEMathMat3DataField*	m_pdf;
 };
 
-class FEMathNodeDataField : public ModelDataField
+class FEScalarMathDataField : public ModelDataField
+{
+public:
+	FEScalarMathDataField(Post::FEPostModel* fem, DATA_CLASS dataClass, unsigned int flag = 0);
+
+	void SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; BuildMath(updateVars); }
+
+	const std::string& EquationString() const { return m_eq; }
+
+	double value(const std::vector<double>& vars);
+
+protected:
+	virtual bool BuildMath(bool updateVars) = 0;
+
+protected:
+	std::string	m_eq;		//!< equation string
+	MSimpleExpression	m_math;
+	std::vector<std::pair<std::string, ModelDataField*>> m_var;
+};
+
+class FEMathNodeDataField : public FEScalarMathDataField
 {
 public:
 	FEMathNodeDataField(Post::FEPostModel* fem, unsigned int flag = 0);
@@ -100,26 +124,13 @@ public:
 	}
 
 	//! FEMeshData constructor
-	FEMeshData* CreateData(FEState* pstate) override
-	{
-		return new FEMathNodeData(pstate, this);
-	}
-
-	void SetEquationString(const std::string& eq) { m_eq = eq; BuildMath(); }
-
-	const std::string& EquationString() const { return m_eq; }
-
-	double value(double x, double y, double z, double t);
+	FEMeshData* CreateData(FEState* pstate) override;
 
 private:
-	void BuildMath();
-
-private:
-	std::string	m_eq;		//!< equation string
-	MSimpleExpression	m_math;
+	bool BuildMath(bool updateVars) override;
 };
 
-class FEMathElemDataField : public ModelDataField
+class FEMathElemDataField : public FEScalarMathDataField
 {
 public:
 	FEMathElemDataField(Post::FEPostModel* fem, unsigned int flag = 0);
@@ -137,17 +148,8 @@ public:
 
 	void SetEquationString(const std::string& eq, bool updateVars = true) { m_eq = eq; BuildMath(updateVars); }
 
-	const std::string& EquationString() const { return m_eq; }
-
-	double value(const std::vector<double>& vars);
-
 private:
-	bool BuildMath(bool updateVars);
-
-private:
-	std::string	m_eq;		//!< equation string
-	MSimpleExpression	m_math;
-	std::vector<std::pair<std::string, ModelDataField*>> m_var;
+	bool BuildMath(bool updateVars) override;
 };
 
 class FEMathVec3DataField : public ModelDataField
