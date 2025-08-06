@@ -340,7 +340,7 @@ public:
 
         #pragma omp parallel shared(img)
         {
-            FSNNQuery query(&points);
+            FSNNQuery query(points);
             query.Init();
             
             std::vector<double> tmp(points.size(), 0.0);
@@ -368,7 +368,7 @@ public:
                         
                         if(rad == 0) continue;
 
-                        int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
+                        int closestIndex = query.FindIndex(vec3d(realX/rad, realY/rad, realZ/rad));
                         
                         int index = x + y*nx + z*nx*ny;
                         

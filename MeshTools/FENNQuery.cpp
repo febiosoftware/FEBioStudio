@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FSNNQuery.cpp: implementation of the FSNNQuery class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "FENNQuery.h"
 #include <stdlib.h>
@@ -41,13 +36,9 @@ int cmp_node(const void* e1, const void* e2)
 	return (n1.d1 > n2.d1 ? 1 : -1);
 }
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FSNNQuery::FSNNQuery(std::vector<vec3d>* ps)
+FSNNQuery::FSNNQuery(const std::vector<vec3d>& points) : m_points(points)
 {
-	m_ps = ps;
+	m_imin = -1;
 }
 
 FSNNQuery::~FSNNQuery()
@@ -55,24 +46,19 @@ FSNNQuery::~FSNNQuery()
 
 }
 
-//-----------------------------------------------------------------------------
-
 void FSNNQuery::Init()
 {
-	assert(m_ps);
-
-	int i;
 	vec3d r0, r;
-	int N = (int) m_ps->size();
+	int N = (int)m_points.size();
 
 	// pick a random point as pivot
-	r0 = m_q1 = (*m_ps)[0];
+	r0 = m_q1 = m_points[0];
 
 	// find the furtest node of this node
 	double dmax = 0, d;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
-		r = (*m_ps)[i];
+		r = m_points[i];
 		d = (r - r0)*(r - r0);
 		if (d > dmax)
 		{
@@ -84,9 +70,9 @@ void FSNNQuery::Init()
 	// let's find the furthest node of this node
 	r0 = m_q2 = m_q1;
 	dmax = 0;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
-		r = (*m_ps)[i];
+		r = m_points[i];
 		d = (r - r0)*(r - r0);
 		if (d > dmax)
 		{
@@ -97,9 +83,9 @@ void FSNNQuery::Init()
 
 	// create the BK-"tree"
 	m_bk.resize(N);
-	for (i=0; i<N; ++i) 
+	for (int i=0; i<N; ++i)
 	{
-		r = (*m_ps)[i];
+		r = m_points[i];
 		m_bk[i].i = i;
 		m_bk[i].r = r;
 		m_bk[i].d1 = (m_q1 - r)*(m_q1 - r);
@@ -113,9 +99,12 @@ void FSNNQuery::Init()
 	m_imin = 0;
 }
 
-//-----------------------------------------------------------------------------
+const vec3d& FSNNQuery::Find(const vec3d& x)
+{
+	return m_points[FindIndex(x)];
+}
 
-int FSNNQuery::Find(vec3d x)
+int FSNNQuery::FindIndex(const vec3d& x)
 {
 	double rmin1, rmin2, rmax1, rmax2;
 	double rmin1s, rmin2s, rmax1s, rmax2s;
@@ -132,7 +121,7 @@ int FSNNQuery::Find(vec3d x)
 	rmax2 = 2*d2;
 
 	// check the last found item
-	r = (*m_ps)[m_imin];
+	r = m_points[m_imin];
 	dmin = (r - x)*(r - x);
 	d = sqrt(dmin);
 	
@@ -183,11 +172,11 @@ int FSNNQuery::Find(vec3d x)
 /*
 	// do it the hard way
 	int imin = 0;
-	r = m_ps->Node(imin).m_rt;
+	r = m_points[imin];
 	double d0 = (r - x)*(r - x);
-	for (i=0; i<m_ps->Nodes(); ++i)
+	for (int i=0; i<m_points.size(); ++i)
 	{
-		r = m_ps->Node(i).m_rt;
+		r = m_points[i];
 		d = (r - x)*(r - x);
 		if (d < d0)
 		{
@@ -195,7 +184,7 @@ int FSNNQuery::Find(vec3d x)
 			imin = i;
 		}
 	}
-	assert(imin == m_imin);
+	assert(dmin == d0);
 */
 	return m_imin;
 }
