@@ -41,8 +41,14 @@ public:
     PluginThumbnail(const Plugin& plugin);
 
     void SetStatus(int status);
+    void SetPixmap();
 
     int getID();
+
+    void setInstalled(bool installed);
+    bool installed();
+
+    void setSelected(bool selected);
 
 signals:
     void clicked(int id);
@@ -67,17 +73,22 @@ class PluginListWidget : public QWidget
 public:
     PluginListWidget();
 
+    void UpdateUi();
+
     void AddPlugin(const Plugin& plugin);
 
     void Clear();
 
     void SetSearchResults(const std::unordered_set<int>& results);
 
+    void SetPluginInstalled(int id, bool installed);
+    void SetPluginStatus(int id, int status);
+
+public slots:
+    void on_pluginThumbnailClicked(int id);
+
 signals:
     void pluginThumbnailClicked(int id);
-
-protected:
-    void resizeEvent(QResizeEvent* event) override;
 
 private:
     Ui::PluginListWidget* ui;

@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QPainter>
 #include "PluginListWidget.h"
 #include "PluginManager.h"
+#include "DlgPluginRepo.h"
 
 class Ui::PluginThumbnail
 {
@@ -47,10 +48,17 @@ public:
 
 public:
 
-    void setupUi(::PluginThumbnail* parent, const Plugin& plugin)
+    PluginThumbnail(::PluginThumbnail* parent)
+        : m_parent(parent), m_id(0), m_installed(false), m_selected(false)
     {
-        QVBoxLayout* layout = new QVBoxLayout;
-        layout->setAlignment(Qt::AlignHCenter);
+
+    }
+
+    void setupUi(const Plugin& plugin)
+    {
+        QHBoxLayout* layout = new QHBoxLayout;
+        layout->setAlignment(Qt::AlignLeft);
+        
         imageLabel = new QLabel;
 
         if(plugin.id > 0)
@@ -63,57 +71,86 @@ public:
             image.load(":/icons/febio_large.png");
         }
 
-        imageLabel->setPixmap(image.scaled(150, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        imageLabel->setAlignment(Qt::AlignHCenter);
-
-        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin.name + "</b>"));
-        nameLabel->setAlignment(Qt::AlignHCenter);
-        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin.owner + "</i>"));
-        ownerLabel->setAlignment(Qt::AlignHCenter);
-        statusLabel = new QLabel(QString::fromStdString(plugin.description));
-        statusLabel->setAlignment(Qt::AlignHCenter);
-        statusLabel->setWordWrap(true);
+        imageLabel->setAlignment(Qt::AlignVCenter);
 
         layout->addWidget(imageLabel);
-        layout->addWidget(nameLabel);
-        layout->addWidget(ownerLabel);
-        layout->addWidget(statusLabel);
 
-        parent->setLayout(layout);
-        parent->setFixedSize(200, 200);
+        layout->addSpacing(5);
 
-        parent->setAttribute(Qt::WA_Hover, true);
-        parent->setCursor(Qt::PointingHandCursor);
+        QVBoxLayout* infoLayout = new QVBoxLayout;
+        infoLayout->setContentsMargins(0,0,0,0);
+
+        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin.name + "</b>"));
+        nameLabel->setAlignment(Qt::AlignLeft);
+        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin.owner + "</i>"));
+        ownerLabel->setAlignment(Qt::AlignLeft);
+        statusLabel = new QLabel(QString::fromStdString(plugin.description));
+        statusLabel->setAlignment(Qt::AlignLeft);
+        statusLabel->setWordWrap(true);
+
+        infoLayout->addWidget(nameLabel);
+        infoLayout->addWidget(ownerLabel);
+        infoLayout->addWidget(statusLabel);
+
+        layout->addLayout(infoLayout);
+
+        m_parent->setLayout(layout);
+
+        m_parent->setAttribute(Qt::WA_Hover, true);
+        m_parent->setCursor(Qt::PointingHandCursor);
+
+        m_parent->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
 
         backgroundColor = qApp->palette().color(QPalette::Window);
+        
         m_id = plugin.id;
+        m_installed = plugin.localCopy;
+    }
+
+    void SetPixmap()
+    {
+        int left, top, right, bottom;
+        m_parent->layout()->getContentsMargins(&left, &top, &right, &bottom);
+
+        int height = m_parent->height() - top - bottom;
+
+        imageLabel->setPixmap(image.scaled(height, height, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        imageLabel->setFixedWidth(height);
+        imageLabel->setAlignment(Qt::AlignCenter);
     }
 
 public:
+    QWidget* m_parent;
     QColor backgroundColor;
     QPixmap image;
     int m_id;
-
+    bool m_installed;
+    bool m_selected;
 };
 
 PluginThumbnail::PluginThumbnail(const Plugin& plugin)
-    : ui(new Ui::PluginThumbnail)
+    : ui(new Ui::PluginThumbnail(this))
 {
-    ui->setupUi(this, plugin);
+    ui->setupUi(plugin);
 
     SetStatus(plugin.status);
 }
 
+void PluginThumbnail::SetPixmap()
+{
+    ui->SetPixmap();
+}
+
 void PluginThumbnail::SetStatus(int status)
 {
-    QPixmap pluginImg = ui->imageLabel->pixmap();
+    // QPixmap pluginImg = ui->imageLabel->pixmap();
 
-    QPixmap emblem;
+    // QPixmap emblem;
 
     switch (status)
     {
     case PLUGIN_BROKEN:
-        emblem = QPixmap(":/icons/emblems/warning.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // emblem = QPixmap(":/icons/emblems/warning.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is broken and cannot be used.");
         ui->statusLabel->setText("Broken");
         break;
@@ -122,12 +159,12 @@ void PluginThumbnail::SetStatus(int status)
         ui->statusLabel->setText("Not Installed");
         break;
     case PLUGIN_OUT_OF_DATE:
-        emblem = QPixmap(":/icons/emblems/caution.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // emblem = QPixmap(":/icons/emblems/caution.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is out of date.");
         ui->statusLabel->setText("Out of Date");
         break;
     case PLUGIN_UP_TO_DATE:
-        emblem = QPixmap(":/icons/emblems/greenCheck.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // emblem = QPixmap(":/icons/emblems/greenCheck.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is up to date.");
         ui->statusLabel->setText("Up to Date");
         break;
@@ -137,10 +174,10 @@ void PluginThumbnail::SetStatus(int status)
         ui->ownerLabel->hide();
     }
 
-    QPainter painter(&pluginImg);
-	painter.drawPixmap(pluginImg.width() - emblem.width(), pluginImg.height() - emblem.height(), emblem);
+    // QPainter painter(&pluginImg);
+	// painter.drawPixmap(pluginImg.width() - emblem.width(), pluginImg.height() - emblem.height(), emblem);
 
-    ui->imageLabel->setPixmap(pluginImg);
+    // ui->imageLabel->setPixmap(pluginImg);
 }
 
 int PluginThumbnail::getID()
@@ -148,24 +185,39 @@ int PluginThumbnail::getID()
     return ui->m_id;
 }
 
+void PluginThumbnail::setInstalled(bool installed)
+{
+    ui->m_installed = installed;
+}
+
+bool PluginThumbnail::installed()
+{
+    return ui->m_installed;
+}
+
+void PluginThumbnail::setSelected(bool selected)
+{
+    ui->m_selected = selected;
+}
+
 void PluginThumbnail::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
+    QColor color = ui->backgroundColor;
+    if(ui->m_selected) color = qApp->palette().color(QPalette::Highlight);
+
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    int radius = 15;
-
     painter.setPen(Qt::NoPen);
-    painter.setBrush(ui->backgroundColor);
-    painter.drawRoundedRect(rect(), radius, radius);
+    painter.setBrush(color);
+    painter.drawRoundedRect(rect(), 5, 5);
 }
 
 void PluginThumbnail::enterEvent(QEnterEvent* event)
 {
     ui->backgroundColor = qApp->palette().color(QPalette::Highlight);
-    // update();
 }
 
 void PluginThumbnail::leaveEvent(QEvent* event)
@@ -185,8 +237,10 @@ class Ui::PluginListWidget
 {
 public:
     QLineEdit* searchInput;
-    QScrollArea* scrollArea;
-    QGridLayout* gridLayout;
+    CCollapsibleHeader* installedPlugins;
+    QVBoxLayout* installedLayout;
+    CCollapsibleHeader* repoPlugins;
+    QVBoxLayout* repoLayout;
 
 public:
 
@@ -197,35 +251,62 @@ public:
         QVBoxLayout* mainLayout = new QVBoxLayout;
         mainLayout->setContentsMargins(0, 0, 0, 0);
 
-        // Scrollable Plugin Grid
-        scrollArea = new QScrollArea;
-        QWidget* scrollWidget = new QWidget();
-        gridLayout = new QGridLayout(scrollWidget);
-        scrollWidget->setLayout(gridLayout);
+        QScrollArea* scrollArea = new QScrollArea;
+        QWidget* scrollWidget = new QWidget;
+        QVBoxLayout* scrollLayout = new QVBoxLayout;
+        scrollLayout->setContentsMargins(0,0,0,0);
+        scrollWidget->setLayout(scrollLayout);
 
+        installedPlugins = new CCollapsibleHeader("Installed");
+        installedPlugins->SetExpanded(true);
+
+        QWidget* installedWidget = new QWidget;
+        installedLayout = new QVBoxLayout;
+        installedLayout->setContentsMargins(0,0,0,0);
+        installedWidget->setLayout(installedLayout);
+
+        installedPlugins->SetContents(installedWidget);
+
+        scrollLayout->addWidget(installedPlugins);
+
+        repoPlugins = new CCollapsibleHeader("Repository");
+        repoPlugins->SetExpanded(true);
+
+        QWidget* repoWidget = new QWidget;
+        repoLayout = new QVBoxLayout;
+        repoLayout->setContentsMargins(0,0,0,0);
+        repoWidget->setLayout(repoLayout);
+
+        repoPlugins->SetContents(repoWidget);
+
+        scrollLayout->addWidget(repoPlugins);
+
+        scrollLayout->addStretch();
+        
         scrollArea->setWidget(scrollWidget);
         scrollArea->setWidgetResizable(true);
+        
         mainLayout->addWidget(scrollArea);
 
         parent->setLayout(mainLayout);
+
+        parent->setMinimumWidth(250);
     }
 
-    void updateGridLayout() 
+    void updateUi()
     {
-        int columns = m_parent->width() / 220; // Adjust columns based on available width
-        if(columns < 1) columns = 1;
-
-        // Removes the items from the grid layout, but does not delete the
+        // Removes the items from the layout, but does not delete the
         // widgets themselves.
         QLayoutItem* item;
-        while((item = gridLayout->takeAt(0)) != nullptr) 
+        while((item = installedLayout->takeAt(0)) != nullptr) 
         {
             delete item;
         }
 
-        // empty widgets to fill empty spaces in the grid layout
-        qDeleteAll(emptyWidgets);
-        emptyWidgets.clear();
+        while((item = repoLayout->takeAt(0)) != nullptr) 
+        {
+            delete item;
+        }
 
         if(searchResults.empty())
         {
@@ -235,7 +316,9 @@ public:
             }
         }
 
-        int row = 0, col = 0;
+        bool showInstalled = false;
+        bool showRepo = false;
+
         for(::PluginThumbnail* thumbnail : pluginThumbnails) 
         {
             thumbnail->show();
@@ -251,27 +334,23 @@ public:
                 }
             }
 
-            gridLayout->addWidget(thumbnail, row, col);
-
-            col++;
-            if (col >= columns) 
+            if(thumbnail->installed())
             {
-                col = 0;
-                row++;
+                installedLayout->addWidget(thumbnail);
+                showInstalled = true;
             }
+            else
+            {
+                repoLayout->addWidget(thumbnail);
+                showRepo = true;
+            }
+
+            thumbnail->SetPixmap();
         }
 
-        // If there is only one row and it is not full, add empty widgets to fill the row
-        if(col < columns && row == 0)
-        {
-            for(int i = col; i < columns; ++i) 
-            {
-                QWidget* emptyWidget = new QWidget();
-                emptyWidget->setFixedSize(200, 200); // Match the size of the thumbnails
-                emptyWidgets.append(emptyWidget);
-                gridLayout->addWidget(emptyWidget, row, i);
-            }
-        }
+        installedPlugins->setVisible(showInstalled);
+        repoPlugins->setVisible(showRepo);
+
     }
 
 
@@ -280,7 +359,6 @@ public:
     std::unordered_set<int> searchResults; 
 
     QList<::PluginThumbnail*> pluginThumbnails;
-    QList<QWidget*> emptyWidgets; // For filling empty spaces in the grid layout
 };
     
 PluginListWidget::PluginListWidget() : ui(new Ui::PluginListWidget)
@@ -290,19 +368,19 @@ PluginListWidget::PluginListWidget() : ui(new Ui::PluginListWidget)
     ui->searchResults.insert(-1); // Default to showing all plugins
 }
 
-void PluginListWidget::resizeEvent(QResizeEvent* event)
+void PluginListWidget::UpdateUi()
 {
-    QWidget::resizeEvent(event);
-    ui->updateGridLayout();
+    ui->updateUi();
 }
 
 void PluginListWidget::AddPlugin(const Plugin& plugin)
 {
     PluginThumbnail* thumbnail = new PluginThumbnail(plugin);
-    connect(thumbnail, &::PluginThumbnail::clicked, this, &PluginListWidget::pluginThumbnailClicked);
+    thumbnail->setInstalled(plugin.localCopy);
+    connect(thumbnail, &::PluginThumbnail::clicked, this, &PluginListWidget::on_pluginThumbnailClicked);
     ui->pluginThumbnails.append(thumbnail);
     
-    ui->updateGridLayout();
+    ui->updateUi();
 }
 
 void PluginListWidget::Clear()
@@ -313,13 +391,55 @@ void PluginListWidget::Clear()
     ui->searchResults.clear();
     ui->searchResults.insert(-1);
 
-    ui->updateGridLayout();
+    ui->updateUi();
 }
 
 void PluginListWidget::SetSearchResults(const std::unordered_set<int>& results)
 {
     ui->searchResults = results;
 
-    ui->updateGridLayout();
+    ui->updateUi();
 }
 
+void PluginListWidget::SetPluginInstalled(int id, bool installed)
+{
+    for(auto plugin : ui->pluginThumbnails)
+    {
+        if(plugin->getID() == id)
+        {
+            plugin->setInstalled(installed);
+            return;
+        }
+    }
+}
+
+void PluginListWidget::SetPluginStatus(int id, int status)
+{
+    for(auto plugin : ui->pluginThumbnails)
+    {
+        if(plugin->getID() == id)
+        {
+            plugin->SetStatus(status);
+            return;
+        }
+    }
+}
+
+void PluginListWidget::on_pluginThumbnailClicked(int id)
+{
+    for(auto plugin : ui->pluginThumbnails)
+    {
+        if(plugin->getID() == id)
+        {
+            plugin->setSelected(true);
+        }
+        else
+        {
+            plugin->setSelected(false);
+        }
+
+        plugin->update();
+    }
+
+    emit pluginThumbnailClicked(id);
+}

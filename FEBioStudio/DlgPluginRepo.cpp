@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QStackedWidget>
+#include <QSplitter>
 #include <QLineEdit>
 #include <QProgressBar>
 #include <QScrollArea>
@@ -150,113 +151,107 @@ void CFrameButton::mousePressEvent(QMouseEvent* event)
     }
 }
 
-class CCollapsibleHeader : public QWidget
+CCollapsibleHeader::CCollapsibleHeader(QString text)
+    : contents(nullptr), expanded(false)
 {
-public:
-    CCollapsibleHeader(QString text)
-        : contents(nullptr), visible(false)
+    QVBoxLayout* outerLayout = new QVBoxLayout;
+    outerLayout->setContentsMargins(20,0,20,0);
+
+    QHBoxLayout* titleLayout = new QHBoxLayout;
+    titleLayout->setContentsMargins(0,0,0,0);
+    titleLayout->addWidget(label = new QLabel(text));
+    label->setCursor(Qt::PointingHandCursor);
+
+    QFrame* divider = new QFrame;
+    divider->setFrameShape(QFrame::HLine);
+    divider->setFrameShadow(QFrame::Sunken);
+    divider->setCursor(Qt::PointingHandCursor);
+    divider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    titleLayout->addWidget(divider, 1);
+
+    outerLayout->addLayout(titleLayout);
+
+    setLayout(outerLayout);
+}
+
+void CCollapsibleHeader::SetContents(QWidget* widget)
+{
+    if(contents)
     {
-        QVBoxLayout* outerLayout = new QVBoxLayout;
-        outerLayout->setContentsMargins(20,0,0,0);
-
-        QHBoxLayout* titleLayout = new QHBoxLayout;
-        titleLayout->setContentsMargins(0,0,0,0);
-        titleLayout->addWidget(label = new QLabel(text));
-        label->setCursor(Qt::PointingHandCursor);
-
-        QFrame* divider = new QFrame;
-        divider->setFrameShape(QFrame::HLine);
-        divider->setFrameShadow(QFrame::Sunken);
-        divider->setCursor(Qt::PointingHandCursor);
-        divider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-        titleLayout->addWidget(divider, 1);
-
-        outerLayout->addLayout(titleLayout);
-
-        setLayout(outerLayout);
+        layout()->removeWidget(contents);
+        contents->deleteLater();
     }
 
-    void SetContents(QWidget* widget)
+    contents = widget;
+
+    if(contents)
     {
-        if(contents)
-        {
-            layout()->removeWidget(contents);
-            contents->deleteLater();
-        }
+        layout()->addWidget(contents);
 
-        contents = widget;
+        contents->setVisible(expanded);
+    }
+}
 
-        if(contents)
-        {
-            layout()->addWidget(contents);
+void CCollapsibleHeader::SetExpanded(bool exp)
+{
+    expanded = exp;
 
-            contents->hide();
-        }
+    if(contents) contents->setVisible(expanded);
+}
 
-        visible = false;
+void CCollapsibleHeader::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    int padding = 3;
+    QRect box(padding, label->y() + padding, label->height() - padding*2, label->height() - padding*2); 
+
+    int squash = 2; // used to squash triangle from base to tip by double squash value
+    QPolygon triangle;
+    if (expanded) {
+        // Down-facing triangle
+        triangle << QPoint(box.left(), box.top() + squash)
+                << QPoint(box.right(), box.top() + squash)
+                << QPoint(box.center().x(), box.bottom() - squash);
+    } else {
+        // Right-facing triangle
+        triangle << QPoint(box.left() + squash, box.top())
+                << QPoint(box.right() - squash, box.center().y())
+                << QPoint(box.left() + squash, box.bottom());
     }
 
-protected:
-    void paintEvent(QPaintEvent *event) override
+    // Draw filled triangle
+    painter.setBrush(qApp->palette().color(QPalette::WindowText));
+    painter.setPen(Qt::NoPen);
+    painter.drawPolygon(triangle);
+}
+
+void CCollapsibleHeader::mousePressEvent(QMouseEvent* event)
+{
+    if(event->button() == Qt::LeftButton && contents) 
     {
-        QWidget::paintEvent(event);
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
+        expanded = !expanded;
 
-        int padding = 3;
-        QRect box(padding, label->y() + padding, label->height() - padding*2, label->height() - padding*2); 
-
-        int squash = 2; // used to squash triangle from base to tip by double squash value
-        QPolygon triangle;
-        if (visible) {
-            // Down-facing triangle
-            triangle << QPoint(box.left(), box.top() + squash)
-                    << QPoint(box.right(), box.top() + squash)
-                    << QPoint(box.center().x(), box.bottom() - squash);
-        } else {
-            // Right-facing triangle
-            triangle << QPoint(box.left() + squash, box.top())
-                    << QPoint(box.right() - squash, box.center().y())
-                    << QPoint(box.left() + squash, box.bottom());
-        }
-
-        // Draw filled triangle
-        painter.setBrush(qApp->palette().color(QPalette::WindowText));
-        painter.setPen(Qt::NoPen);
-        painter.drawPolygon(triangle);
+        contents->setVisible(expanded);
     }
-
-    void mousePressEvent(QMouseEvent* event) override
-    {
-        if(event->button() == Qt::LeftButton && contents) 
-        {
-            visible = !visible;
-
-            contents->setVisible(visible);
-        }
-    }
-
-private:
-    QLabel* label;
-    bool visible;
-    QWidget* contents;
-
-};
+}
 
 class Ui::CDlgPluginRepo
 {
 public:
-    QStackedWidget* stackedWidget;
+    QStackedWidget* outerStackedWidget;
     ::PluginListWidget* pluginListWidget;
 
     QLabel* loadingMessage;
     QProgressBar* downloadProgress;
 
-    QToolBar* toolBar;
-    QPushButton* backButton;
     QLineEdit* searchLineEdit;
     QAction* actionSearch;
     QAction* actionClear;
+
+    QStackedWidget* innerStackedWidget;
     QLabel* imageLabel;
     QLabel* statusLabel;
     QLabel* downloadsLabel;
@@ -284,7 +279,7 @@ public:
 
         QVBoxLayout* l = new QVBoxLayout;
 
-        stackedWidget = new QStackedWidget;
+        outerStackedWidget = new QStackedWidget;
 
         QWidget* loadingWidget = new QWidget;
         QHBoxLayout* loadingLayout = new QHBoxLayout;
@@ -301,11 +296,12 @@ public:
         loadingLayout->addLayout(innerLoadingLayout);
         loadingLayout->addStretch();
         loadingWidget->setLayout(loadingLayout);
-        stackedWidget->addWidget(loadingWidget);
+        outerStackedWidget->addWidget(loadingWidget);
         
-        QWidget* listParentWidget = new QWidget;
-        QVBoxLayout* listParentLayout = new QVBoxLayout;
-        listParentLayout->setContentsMargins(0, 0, 0, 0);
+        QWidget* pluginParentWidget = new QWidget;
+        QVBoxLayout* pluginParentLayout = new QVBoxLayout;
+        pluginParentLayout->setContentsMargins(0, 0, 0, 0);
+        pluginParentWidget->setLayout(pluginParentLayout);
 
         QToolBar* searchToolBar = new QToolBar;
         searchToolBar->addWidget(searchLineEdit = new QLineEdit);
@@ -314,22 +310,26 @@ public:
 		searchToolBar->addAction(actionSearch);
 		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
 		searchToolBar->addAction(actionClear);
-        listParentLayout->addWidget(searchToolBar);
+        pluginParentLayout->addWidget(searchToolBar);
 
-        pluginListWidget = new ::PluginListWidget;
-        listParentLayout->addWidget(pluginListWidget);        
+        QSplitter* splitter = new QSplitter(Qt::Horizontal);
         
-        listParentWidget->setLayout(listParentLayout);
-        stackedWidget->addWidget(listParentWidget);
+        pluginListWidget = new ::PluginListWidget;
+        splitter->addWidget(pluginListWidget);
+        
+        innerStackedWidget = new QStackedWidget;
+        
+        QWidget* welcomeCard = new QWidget;
+        QVBoxLayout* welcomeLayout = new QVBoxLayout;
+        welcomeLayout->setContentsMargins(0,0,0,0);
+        welcomeCard->setLayout(welcomeLayout);
 
+        innerStackedWidget->addWidget(welcomeCard);
+        
         QWidget* pluginCard = new QWidget;
-        QVBoxLayout* pluginCardLayout = new QVBoxLayout;
+        QHBoxLayout* pluginCardLayout = new QHBoxLayout;
 
-        toolBar = new QToolBar;
-        toolBar->addWidget(backButton = new QPushButton("Back"));
-        pluginCardLayout->addWidget(toolBar);
-
-        QHBoxLayout* pluginBottomLayout = new QHBoxLayout;
+        // QHBoxLayout* pluginBottomLayout = new QHBoxLayout;
 
         QVBoxLayout* pluginLeftLayout = new QVBoxLayout;
         pluginLeftLayout->setAlignment(Qt::AlignHCenter);
@@ -369,7 +369,7 @@ public:
         pluginLeftLayout->addWidget(deleteButton, 0, Qt::AlignHCenter);
 
         pluginLeftLayout->addStretch();
-        pluginBottomLayout->addLayout(pluginLeftLayout, 0);
+        pluginCardLayout->addLayout(pluginLeftLayout, 0);
 
         QVBoxLayout* pluginRightLayout = new QVBoxLayout;
 
@@ -434,14 +434,22 @@ public:
         sourceButton = new CFrameButton("Source Code");
         pluginRightLayout->addWidget(sourceButton, 0, Qt::AlignRight);
 
-        pluginBottomLayout->addLayout(pluginRightLayout, 1);
+        pluginCardLayout->addLayout(pluginRightLayout, 1);
 
-        pluginCardLayout->addLayout(pluginBottomLayout);
+        // pluginCardLayout->addLayout(pluginBottomLayout);
         pluginCard->setLayout(pluginCardLayout);
 
-        stackedWidget->addWidget(pluginCard);
+        innerStackedWidget->addWidget(pluginCard);
 
-        l->addWidget(stackedWidget);
+        splitter->addWidget(innerStackedWidget);
+        QList<int> sizes = {1, dlg->width()};
+        splitter->setSizes(sizes);
+
+        pluginParentLayout->addWidget(splitter);
+
+        outerStackedWidget->addWidget(pluginParentWidget);
+
+        l->addWidget(outerStackedWidget);
         
 		bb = new QDialogButtonBox(QDialogButtonBox::Close);
         bb->addButton("Load Local Plugin", QDialogButtonBox::ResetRole);
@@ -452,7 +460,6 @@ public:
         QObject::connect(searchLineEdit, &QLineEdit::returnPressed, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
         QObject::connect(actionSearch, &QAction::triggered, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
         QObject::connect(actionClear, &QAction::triggered, dlg, &::CDlgPluginRepo::on_actionClear_triggered);
-        QObject::connect(backButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_BackButton_clicked);
         QObject::connect(downloadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_downloadButton_clicked);
         QObject::connect(deleteButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_deleteButton_clicked);
         QObject::connect(loadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_loadButton_clicked);
@@ -608,7 +615,10 @@ public:
             advancedHeader->show();
         }
 
-        stackedWidget->setCurrentIndex(2);
+        pluginListWidget->UpdateUi();
+
+        innerStackedWidget->setCurrentIndex(1);
+        outerStackedWidget->setCurrentIndex(1);
     }
 
     void addFeature(const QString& type, const QString& superClass, const QString& className, const QString& baseClass, const QString moduleName)
@@ -653,7 +663,7 @@ public:
 CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
     : QDialog(parent), ui(new Ui::CDlgPluginRepo)
 {
-    resize(800, 500);
+    resize(1100, 600);
     setWindowTitle("Plugin Repository");
 
     ui->setupUI(this, manager);
@@ -668,6 +678,9 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
 
 void CDlgPluginRepo::DownloadFinished()
 {
+    ui->pluginListWidget->SetPluginInstalled(ui->m_pluginID, true);
+    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
+    
     ui->setActivePlugin(ui->m_pluginID);
 }
 
@@ -719,7 +732,7 @@ void CDlgPluginRepo::on_PluginsReady()
 
     on_actionSearch_triggered();
 
-    ui->stackedWidget->setCurrentIndex(1);
+    ui->outerStackedWidget->setCurrentIndex(1);
 }
 
 void CDlgPluginRepo::on_HTMLError(QString& message, bool bclose)
@@ -769,18 +782,13 @@ void CDlgPluginRepo::on_actionClear_triggered()
     ui->pluginListWidget->SetSearchResults(clearResults);
 }
 
-void CDlgPluginRepo::on_BackButton_clicked()
-{
-    on_PluginsReady();
-}
-
 void CDlgPluginRepo::on_downloadButton_clicked()
 {
     ui->downloadProgress->setValue(0);
     ui->downloadProgress->show();
     ui->loadingMessage->setText("Downloading " + ui->nameLabel->text() + " ...");
 
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->outerStackedWidget->setCurrentIndex(0);
 
     ui->m_manager->DownloadPlugin(ui->m_pluginID);
 }
@@ -792,6 +800,9 @@ void CDlgPluginRepo::on_deleteButton_clicked()
         QMessageBox::warning(this, "Error", "Unable to delete plugin.");
     }
 
+    ui->pluginListWidget->SetPluginInstalled(ui->m_pluginID, false);
+    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
+    
     ui->setActivePlugin(ui->m_pluginID);
 }
 
@@ -802,6 +813,7 @@ void CDlgPluginRepo::on_loadButton_clicked()
         QMessageBox::warning(this, "Error", "Unable to load plugin.");
     }
 
+    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
     ui->setActivePlugin(ui->m_pluginID);
 }
 
@@ -812,6 +824,7 @@ void CDlgPluginRepo::on_unloadButton_clicked()
         QMessageBox::warning(this, "Error", "Unable to unload plugin.");
     }
 
+    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
     ui->setActivePlugin(ui->m_pluginID);
 }
 

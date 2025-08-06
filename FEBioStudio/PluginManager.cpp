@@ -506,6 +506,15 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
         }
     }
 
+    std::string currentFEBioVersion = std::to_string(FE_SDK_MAJOR_VERSION) + "." 
+        + std::to_string(FE_SDK_SUB_VERSION) + "." + std::to_string(FE_SDK_SUBSUB_VERSION);
+
+    if(IsVersion2Newer(plugin.localFebioVersion, currentFEBioVersion))
+    {
+        plugin.status = PLUGIN_OUT_OF_DATE;
+        return;
+    }
+
     std::vector<std::string> dbVersions = imp->m_db.GetPluginVersions(plugin.id);
 
     if(dbVersions.empty())

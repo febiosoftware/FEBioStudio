@@ -52,6 +52,24 @@ private:
     QColor defaultColor;
 };
 
+class CCollapsibleHeader : public QWidget
+{
+public:
+    CCollapsibleHeader(QString text);
+
+    void SetContents(QWidget* widget);
+    void SetExpanded(bool exp);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+    void mousePressEvent(QMouseEvent* event) override;
+private:
+    QLabel* label;
+    bool expanded;
+    QWidget* contents;
+};
+
 namespace Ui {
 class CDlgPluginRepo;
 }
@@ -78,7 +96,6 @@ private slots:
     void on_pluginThumbnail_clicked(int id);
     void on_actionSearch_triggered();
     void on_actionClear_triggered();
-    void on_BackButton_clicked();
     void on_downloadButton_clicked();
     void on_deleteButton_clicked();
     void on_loadButton_clicked();
