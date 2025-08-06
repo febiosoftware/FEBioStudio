@@ -261,6 +261,8 @@ void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)
 	{
 		if (objList[i]) DeleteObject(objList[i]);
 	}
+
+	GetFSModel()->UpdateMaterialSelections();
 }
 
 void CModelDocument::DeleteObject(FSObject* po)
@@ -323,6 +325,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 		}
 
 		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
+		GetFSModel()->UpdateMaterialSelections();
 	}
     else if (dynamic_cast<CImageModel*>(po))
     {
