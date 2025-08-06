@@ -273,6 +273,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 						pcmd->AddCommand(new CCmdDeleteGObject(&model, po));
 				}
 				doc->DoCommand(pcmd);
+				ps->UpdateMaterialSelections();
 			}
 			else
 			{
