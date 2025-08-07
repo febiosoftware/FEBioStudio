@@ -38,10 +38,11 @@ class PluginThumbnail : public QWidget
     Q_OBJECT
 
 public:
-    PluginThumbnail(const Plugin& plugin);
+    PluginThumbnail(const Plugin* plugin);
 
     void SetStatus(int status);
     void SetPixmap();
+    void SetErrorText(const QString& text);
 
     int getID();
 
@@ -73,7 +74,7 @@ class PluginListWidget : public QWidget
 public:
     PluginListWidget();
 
-    void UpdateUi();
+    void UpdateUi(int repoStatus);
 
     void AddPlugin(const Plugin& plugin);
 

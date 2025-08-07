@@ -71,12 +71,22 @@ class CPluginManager : public QObject
     class Imp;
 
 public:
+    enum
+    {
+        UNCONNECTED,
+        CONNECTING,
+        CONNECTED,
+        ERROR
+    };
+
+public:
     CPluginManager();
     ~CPluginManager();
 
     bool LoadXML();
     void Connect(int force = true);
-    void SetConnected(bool connected);
+
+    int Status();
 
     void LoadAllPlugins();
     void ReadDatabase();
@@ -101,11 +111,13 @@ public:
     void AddTag(int pluginID, const std::string& tag);
     void AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion);
 
+    void OnConnectionFinished();
     void OnDownloadFinished(int id);
+    void OnHTMLError(QString& message);
 
 signals:
     void DownloadFinished(int id);
-    void HTMLError(QString& message, bool close = false);
+    void HTMLError(QString& message);
     void PluginsReady();
     void downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id);
 

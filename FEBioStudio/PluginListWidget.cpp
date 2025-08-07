@@ -54,16 +54,47 @@ public:
 
     }
 
-    void setupUi(const Plugin& plugin)
+    void setupUi(const Plugin* plugin)
     {
+        m_parent->setAttribute(Qt::WA_Hover, true);
+        m_parent->setCursor(Qt::PointingHandCursor);
+        m_parent->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
+
+        backgroundColor = qApp->palette().color(QPalette::Window);
+
+        // This widget is also used to display the status of the repo while
+        // it is connecting, or if there is an error. A nullptr value for
+        // the plugin is the signal that this object is used for showing the
+        // status 
+        if(!plugin)
+        {
+            m_id = 0;
+
+            QVBoxLayout* layout = new QVBoxLayout;
+            layout->setAlignment(Qt::AlignHCenter);
+
+            imageLabel = new QLabel;
+            nameLabel = new QLabel;
+            ownerLabel = new QLabel("<b>Connecting...</b>");
+            statusLabel = new QLabel;
+
+            layout->addWidget(nameLabel, 0, Qt::AlignHCenter);
+            layout->addWidget(ownerLabel, 0, Qt::AlignHCenter);
+            layout->addWidget(statusLabel, 0, Qt::AlignHCenter);
+
+            m_parent->setLayout(layout);
+
+            return;
+        }
+
         QHBoxLayout* layout = new QHBoxLayout;
         layout->setAlignment(Qt::AlignLeft);
         
         imageLabel = new QLabel;
 
-        if(plugin.id > 0)
+        if(plugin->id > 0)
         {
-            QByteArray imageDataByteArray = QByteArray::fromBase64(plugin.imageData);
+            QByteArray imageDataByteArray = QByteArray::fromBase64(plugin->imageData);
             image.loadFromData(imageDataByteArray);
         }
         else
@@ -80,13 +111,12 @@ public:
         QVBoxLayout* infoLayout = new QVBoxLayout;
         infoLayout->setContentsMargins(0,0,0,0);
 
-        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin.name + "</b>"));
+        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin->name + "</b>"));
         nameLabel->setAlignment(Qt::AlignLeft);
-        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin.owner + "</i>"));
+        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin->owner + "</i>"));
         ownerLabel->setAlignment(Qt::AlignLeft);
-        statusLabel = new QLabel(QString::fromStdString(plugin.description));
+        statusLabel = new QLabel(QString::fromStdString(plugin->description));
         statusLabel->setAlignment(Qt::AlignLeft);
-        statusLabel->setWordWrap(true);
 
         infoLayout->addWidget(nameLabel);
         infoLayout->addWidget(ownerLabel);
@@ -96,15 +126,8 @@ public:
 
         m_parent->setLayout(layout);
 
-        m_parent->setAttribute(Qt::WA_Hover, true);
-        m_parent->setCursor(Qt::PointingHandCursor);
-
-        m_parent->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-
-        backgroundColor = qApp->palette().color(QPalette::Window);
-        
-        m_id = plugin.id;
-        m_installed = plugin.localCopy;
+        m_id = plugin->id;
+        m_installed = plugin->localCopy;
     }
 
     void SetPixmap()
@@ -128,17 +151,23 @@ public:
     bool m_selected;
 };
 
-PluginThumbnail::PluginThumbnail(const Plugin& plugin)
+PluginThumbnail::PluginThumbnail(const Plugin* plugin)
     : ui(new Ui::PluginThumbnail(this))
 {
     ui->setupUi(plugin);
 
-    SetStatus(plugin.status);
+    if(plugin) SetStatus(plugin->status);
 }
+
 
 void PluginThumbnail::SetPixmap()
 {
     ui->SetPixmap();
+}
+
+void PluginThumbnail::SetErrorText(const QString& text)
+{
+    ui->ownerLabel->setText(text);
 }
 
 void PluginThumbnail::SetStatus(int status)
@@ -241,6 +270,7 @@ public:
     QVBoxLayout* installedLayout;
     CCollapsibleHeader* repoPlugins;
     QVBoxLayout* repoLayout;
+    ::PluginThumbnail* statusThumbnail;
 
 public:
 
@@ -277,6 +307,9 @@ public:
         repoLayout->setContentsMargins(0,0,0,0);
         repoWidget->setLayout(repoLayout);
 
+        repoLayout->addWidget(statusThumbnail = new ::PluginThumbnail(nullptr));
+        QObject::connect(statusThumbnail, &::PluginThumbnail::clicked, parent, &::PluginListWidget::on_pluginThumbnailClicked);
+
         repoPlugins->SetContents(repoWidget);
 
         scrollLayout->addWidget(repoPlugins);
@@ -293,7 +326,7 @@ public:
         parent->setMinimumWidth(250);
     }
 
-    void updateUi()
+    void updateUi(int repoStatus = CPluginManager::CONNECTED)
     {
         // Removes the items from the layout, but does not delete the
         // widgets themselves.
@@ -337,11 +370,20 @@ public:
             if(thumbnail->installed())
             {
                 installedLayout->addWidget(thumbnail);
+                thumbnail->show();
                 showInstalled = true;
             }
             else
             {
-                repoLayout->addWidget(thumbnail);
+                if(repoStatus == CPluginManager::CONNECTED)
+                {
+                    repoLayout->addWidget(thumbnail);
+                    thumbnail->show();
+                }
+                else
+                {
+                    thumbnail->hide();
+                }
                 showRepo = true;
             }
 
@@ -349,11 +391,33 @@ public:
         }
 
         installedPlugins->setVisible(showInstalled);
+
+        if(repoStatus != CPluginManager::CONNECTED)
+        {
+            statusThumbnail->show();
+
+            if(repoStatus == CPluginManager::ERROR)
+            {
+                statusThumbnail->SetErrorText("<b>Connection Error</b>");
+            }
+            else
+            {
+                statusThumbnail->SetErrorText("<b>Connecting...</b>");
+            }
+
+            repoLayout->addWidget(statusThumbnail);
+            
+            showRepo = true;
+        }
+        else
+        {
+            statusThumbnail->hide();
+        }
+
         repoPlugins->setVisible(showRepo);
 
         m_connected = false;
     }
-
 
 public:
     ::PluginListWidget* m_parent;
@@ -371,14 +435,14 @@ PluginListWidget::PluginListWidget() : ui(new Ui::PluginListWidget)
     ui->searchResults.insert(-1); // Default to showing all plugins
 }
 
-void PluginListWidget::UpdateUi()
+void PluginListWidget::UpdateUi(int repoStatus)
 {
-    ui->updateUi();
+    ui->updateUi(repoStatus);
 }
 
 void PluginListWidget::AddPlugin(const Plugin& plugin)
 {
-    PluginThumbnail* thumbnail = new PluginThumbnail(plugin);
+    PluginThumbnail* thumbnail = new PluginThumbnail(&plugin);
     thumbnail->setInstalled(plugin.localCopy);
     connect(thumbnail, &::PluginThumbnail::clicked, this, &PluginListWidget::on_pluginThumbnailClicked);
     ui->pluginThumbnails.append(thumbnail);
@@ -430,6 +494,9 @@ void PluginListWidget::SetPluginStatus(int id, int status)
 
 void PluginListWidget::on_pluginThumbnailClicked(int id)
 {
+    ui->statusThumbnail->setSelected(id==0);
+    ui->statusThumbnail->update();
+
     for(auto plugin : ui->pluginThumbnails)
     {
         if(plugin->getID() == id)

@@ -80,7 +80,7 @@ public slots:
     void on_pluginButton_clicked(CPluginWidget* widget);
     void on_pluginsReady();
     void on_downloadFinished(CPluginWidget* widget);
-    void on_HTMLError(QString& message, bool bclose);
+    void on_HTMLError(QString& message);
     void RetryConnection();
 
 private:

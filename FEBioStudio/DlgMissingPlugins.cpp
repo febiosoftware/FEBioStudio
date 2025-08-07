@@ -417,7 +417,7 @@ void CDlgMissingPlugins::on_downloadFinished(CPluginWidget* widget)
     ui->MarkFixed(widget);
 }
 
-void CDlgMissingPlugins::on_HTMLError(QString& message, bool bclose)
+void CDlgMissingPlugins::on_HTMLError(QString& message)
 {
     ui->ShowHTMLError(message);
 }

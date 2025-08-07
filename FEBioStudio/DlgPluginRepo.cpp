@@ -254,9 +254,12 @@ public:
     QAction* actionClear;
 
     QStackedWidget* innerStackedWidget;
+    QLabel* repoStatusLabel;
+    CFrameButton* retryButton;
     QLabel* imageLabel;
     QLabel* statusLabel;
-    QLabel* downloadsLabel;
+    QLabel* downloadLabel;
+    QLabel* downloadNumberLabel;
     QLabel* nameLabel;
     QLabel* byLabel;
     QLabel* ownerLabel;
@@ -323,10 +326,48 @@ public:
         
         QWidget* welcomeCard = new QWidget;
         QVBoxLayout* welcomeLayout = new QVBoxLayout;
-        welcomeLayout->setContentsMargins(0,0,0,0);
         welcomeCard->setLayout(welcomeLayout);
 
-        welcomeLayout->addWidget(new QLabel("Connecting..."), 0, Qt::AlignCenter);
+        welcomeLayout->addStretch();
+
+        QLabel* welcomeLabel = new QLabel("Welcome to the FEBio Studio Plugin Repository!");
+        QFont font = welcomeLabel->font();
+        font.setBold(true);
+        font.setPointSize(18);
+        welcomeLabel->setFont(font);
+        welcomeLayout->addWidget(welcomeLabel, 0, Qt::AlignHCenter);
+
+        QHBoxLayout* welcomeMessageLayout = new QHBoxLayout;
+        welcomeMessageLayout->setContentsMargins(0,0,0,0);
+
+        // welcomeMessageLayout->addSpacing(50);
+
+        const char* welcomeMessage = "<br>Here you can find plugins for FEBio and FEBio Studio written by the FEBio Team " \
+            "and others. Browse or search for plugins in the list on the left. Detailed information about the selected " \
+            "plugin will be shown in this panel. After selecting the plugin, you can click the <i>Download</i> button " \
+            "to download and automactially load the plugin into FEBio Studio.<br><br>Any downloaded plugins will be " \
+            "automatically loaded into FEBio Studio each time it is launched. You can also load a plugin from a local " \
+            "file by clicking the <i>Load Local Plugin</i> button.";
+
+        QLabel* welcomeMessageLabel = new QLabel(welcomeMessage);
+        welcomeMessageLabel->setWordWrap(true);
+        welcomeMessageLabel->setAlignment(Qt::AlignCenter);
+        welcomeMessageLabel->setMaximumWidth(700);
+        welcomeMessageLayout->addWidget(welcomeMessageLabel);
+
+        // welcomeMessageLayout->addSpacing(50);
+
+        welcomeLayout->addLayout(welcomeMessageLayout);
+
+        welcomeLayout->addStretch();
+
+        welcomeLayout->addWidget(repoStatusLabel = new QLabel, 0, Qt::AlignHCenter);
+        repoStatusLabel->setAlignment(Qt::AlignCenter);
+        welcomeLayout->addWidget(retryButton = new CFrameButton("Retry Connection"), 0, Qt::AlignHCenter);
+        
+        welcomeLayout->addStretch();
+
+        SetRepoStatus();
 
         innerStackedWidget->addWidget(welcomeCard);
         
@@ -350,8 +391,8 @@ public:
         QHBoxLayout* downloadsLayout = new QHBoxLayout;
         downloadsLayout->setContentsMargins(0, 0, 0, 0);
         downloadsLayout->addStretch();
-        downloadsLayout->addWidget(new QLabel("Downloads:"));
-        downloadsLayout->addWidget(downloadsLabel = new QLabel);
+        downloadsLayout->addWidget(downloadLabel = new QLabel("Downloads:"));
+        downloadsLayout->addWidget(downloadNumberLabel = new QLabel);
         downloadsLayout->addStretch();
         pluginLeftLayout->addLayout(downloadsLayout);
 
@@ -386,10 +427,10 @@ public:
         nameLayout->setContentsMargins(0, 0, 0, 0);
 
         nameLayout->addWidget(nameLabel = new QLabel);
-        QFont font = nameLabel->font();
-        font.setBold(true);
-        font.setPointSize(18);
-        nameLabel->setFont(font);
+        QFont nameFont = nameLabel->font();
+        nameFont.setBold(true);
+        nameFont.setPointSize(18);
+        nameLabel->setFont(nameFont);
 
         byLabel = new QLabel("by");
         QFont byFont = byLabel->font();
@@ -474,14 +515,49 @@ public:
         QObject::connect(loadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_loadButton_clicked);
         QObject::connect(unloadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_unloadButton_clicked);
         QObject::connect(sourceButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_sourceButton_clicked);
+        QObject::connect(retryButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_retryButton_clicked);
 
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgPluginRepo::reject);
         QObject::connect(bb, &QDialogButtonBox::clicked, dlg, &::CDlgPluginRepo::on_bbButton_clicked);
 		dlg->setLayout(l);
     }
 
+    void SetRepoStatus(QString error = "")
+    {
+        switch (m_manager->Status())
+        {
+        case CPluginManager::UNCONNECTED:
+        case CPluginManager::CONNECTING:
+            repoStatusLabel->setText("Connecting...");
+            repoStatusLabel->show();
+            retryButton->hide();
+            break;
+        case CPluginManager::ERROR:
+            repoStatusLabel->setText(error);
+            repoStatusLabel->show();
+            retryButton->show();
+            break;
+        default:
+            repoStatusLabel->hide();
+            retryButton->hide();
+            break;
+        }
+
+        pluginListWidget->UpdateUi(m_manager->Status());
+    }
+
     void setActivePlugin(int id)
     {
+        if(id == 0)
+        {
+            pluginListWidget->UpdateUi(m_manager->Status());
+
+            innerStackedWidget->setCurrentIndex(0);
+            outerStackedWidget->setCurrentIndex(1);
+
+            return;
+        }
+
         Plugin* plugin = m_manager->GetPlugin(id);
 
         m_pluginID = plugin->id;
@@ -491,8 +567,9 @@ public:
             nameLabel->setText(plugin->name.c_str());
             byLabel->show();
             ownerLabel->setText(plugin->owner.c_str());
-            downloadsLabel->setText(QString::number(plugin->downloads));
-            downloadsLabel->show();
+            downloadLabel->show();
+            downloadNumberLabel->setText(QString::number(plugin->downloads));
+            downloadNumberLabel->show();
             descriptionLabel->setText(plugin->description.c_str());
 
             QByteArray image(plugin->imageData);
@@ -514,7 +591,8 @@ public:
             nameLabel->setText(plugin->name.c_str());
             byLabel->hide();
             ownerLabel->setText("");
-            downloadsLabel->hide();
+            downloadLabel->hide();
+            downloadNumberLabel->hide();
             descriptionLabel->setText(QString::fromStdString( plugin->description + "\n\nPath: " + plugin->files[0]));
 
             QPixmap pixmap(":/icons/febio_large.png");
@@ -624,7 +702,7 @@ public:
             advancedHeader->show();
         }
 
-        pluginListWidget->UpdateUi();
+        pluginListWidget->UpdateUi(m_manager->Status());
 
         innerStackedWidget->setCurrentIndex(1);
         outerStackedWidget->setCurrentIndex(1);
@@ -682,7 +760,9 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
     connect(ui->m_manager, &CPluginManager::PluginsReady, this, &CDlgPluginRepo::on_PluginsReady);
     connect(ui->m_manager, &CPluginManager::HTMLError, this, &CDlgPluginRepo::on_HTMLError);
 
-    ui->m_manager->Connect();
+    ui->m_manager->ReadDatabase();
+
+    ui->m_manager->Connect(false);
 }
 
 void CDlgPluginRepo::DownloadFinished()
@@ -741,28 +821,23 @@ void CDlgPluginRepo::on_PluginsReady()
 
     on_actionSearch_triggered();
 
+    ui->SetRepoStatus();
+
     ui->outerStackedWidget->setCurrentIndex(1);
 }
 
-void CDlgPluginRepo::on_HTMLError(QString& message, bool bclose)
+void CDlgPluginRepo::on_HTMLError(QString& message)
 {
-    QMessageBox::warning(this, "Error", message);
+    ui->SetRepoStatus(message);
 
-    if(bclose)
-    {
-        close();
-    }
-    else
-    {
-        ui->setActivePlugin(ui->m_pluginID);
-    }
+    ui->setActivePlugin(0);
 }
 
 void CDlgPluginRepo::on_UnknownError(QString& message)
 {
-    QMessageBox::warning(this, "Error", message);
+    ui->SetRepoStatus(message);
 
-    ui->setActivePlugin(ui->m_pluginID);
+    ui->setActivePlugin(0);
 }
 
 void CDlgPluginRepo::on_pluginThumbnail_clicked(int id)
@@ -807,12 +882,15 @@ void CDlgPluginRepo::on_deleteButton_clicked()
     if(!ui->m_manager->DeletePlugin(ui->m_pluginID))
     {
         QMessageBox::warning(this, "Error", "Unable to delete plugin.");
+        return;
     }
 
     ui->pluginListWidget->SetPluginInstalled(ui->m_pluginID, false);
     ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
     
-    ui->setActivePlugin(ui->m_pluginID);
+    int id = ui->m_pluginID;
+    if(ui->m_manager->Status() != CPluginManager::CONNECTED) id = 0;
+    ui->setActivePlugin(id);
 }
 
 void CDlgPluginRepo::on_loadButton_clicked()
@@ -846,6 +924,13 @@ void CDlgPluginRepo::on_sourceButton_clicked()
     {
         QDesktopServices::openUrl(QUrl(plugin->sourceURL.c_str()));
     }
+}
+
+void CDlgPluginRepo::on_retryButton_clicked()
+{
+    ui->m_manager->Connect();
+
+    ui->SetRepoStatus();
 }
 
 void CDlgPluginRepo::on_bbButton_clicked(QAbstractButton *button)

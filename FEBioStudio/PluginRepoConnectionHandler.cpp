@@ -206,9 +206,7 @@ void CPluginRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
         QString msg = "Unable to connect to the plugin repository."
             "\nPlease check your connection or try again later";
 		
-        manager->SetConnected(false);
-
-        emit manager->HTMLError(msg, true);
+        manager->OnHTMLError(msg);
 	}
 }
 
@@ -222,18 +220,14 @@ void CPluginRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 
 		dbHandler->update(jsonDoc);
 
-        manager->ReadDatabase();
-
-        manager->SetConnected(true);
+        manager->OnConnectionFinished();
 	}
 	else
 	{
 		QString msg = "Unable to connect to the plugin repository."
             "\nPlease check your connection or try again later";
 		
-        manager->SetConnected(false);
-        
-        emit manager->HTMLError(msg, true);
+        manager->OnHTMLError(msg);
 	}
 }
 
@@ -286,17 +280,13 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
 	{
         QString msg = "Unable to download file.\nPlease check your connection or try again later";
 
-        manager->SetConnected(false);
-
-		emit manager->HTMLError(msg);
+		manager->OnHTMLError(msg);
 	}
 	else
 	{
 		QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		msg += std::to_string(statusCode).c_str();
 
-        manager->SetConnected(false);
-
-		emit manager->HTMLError(msg);
+		manager->OnHTMLError(msg);
 	}
 }

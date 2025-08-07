@@ -91,7 +91,7 @@ public slots:
 
 private slots:
     void on_PluginsReady();
-    void on_HTMLError(QString& message, bool bclose);
+    void on_HTMLError(QString& message);
     void on_UnknownError(QString& message);
     void on_pluginThumbnail_clicked(int id);
     void on_actionSearch_triggered();
@@ -101,6 +101,7 @@ private slots:
     void on_loadButton_clicked();
     void on_unloadButton_clicked();
     void on_sourceButton_clicked();
+    void on_retryButton_clicked();
     void on_bbButton_clicked(QAbstractButton *button);
     
 private:

@@ -48,7 +48,8 @@ SOFTWARE.*/
 class CPluginManager::Imp
 {
 public:
-    Imp(CPluginManager* parent) : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_connected(false)
+    Imp(CPluginManager* parent) 
+        : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_status(CPluginManager::UNCONNECTED) 
     {
         m_xml.SetPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/plugins/plugins.xml");
     }
@@ -61,7 +62,7 @@ public:
     std::unordered_map<int, Plugin> m_plugins;
     int m_localID;
 
-    bool m_connected;
+    int m_status;
 };
 
 CPluginManager::CPluginManager() : imp(new Imp(this))
@@ -81,8 +82,10 @@ bool CPluginManager::LoadXML()
 
 void CPluginManager::Connect(int force)
 {   
-    if(!imp->m_connected || force)
+    if((imp->m_status != CONNECTED && imp->m_status != CONNECTING) || force)
     {
+        imp->m_status = CONNECTING;
+
         imp->m_repo.getSchema();
     }
     else
@@ -91,9 +94,9 @@ void CPluginManager::Connect(int force)
     }
 }
 
-void CPluginManager::SetConnected(bool connected)
+int CPluginManager::Status()
 {
-    imp->m_connected = connected;
+    return imp->m_status;
 }
 
 #ifndef UPDATER
@@ -343,6 +346,13 @@ void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, in
     }
 }
 
+void CPluginManager::OnConnectionFinished()
+{
+    imp->m_status = CONNECTED;
+
+    ReadDatabase();
+}
+
 void CPluginManager::OnDownloadFinished(int id)
 {
     imp->m_xml.WriteXML();
@@ -361,6 +371,13 @@ void CPluginManager::OnDownloadFinished(int id)
     SetPluginStatus(plugin);
 
     emit DownloadFinished(id);
+}
+
+void CPluginManager::OnHTMLError(QString& message)
+{
+    imp->m_status = ERROR;
+
+    emit HTMLError(message);
 }
 
 Plugin* CPluginManager::AddNonRepoPlugin()
