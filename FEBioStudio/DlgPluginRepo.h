@@ -36,6 +36,9 @@ class CFrameButton : public QWidget
 public:
     CFrameButton(QString text, QWidget* parent = nullptr);
 
+    void SetText(QString text);
+    void SetProgress(float prog);
+
 signals:
     void clicked();
 
@@ -50,6 +53,8 @@ private:
     QLabel* label;
     QColor backgroundColor;
     QColor defaultColor;
+
+    float progress;
 };
 
 class CCollapsibleHeader : public QWidget
@@ -81,13 +86,12 @@ class CDlgPluginRepo : public QDialog
 public:
     CDlgPluginRepo(CPluginManager* manager, QWidget *parent);
 
-    void DownloadFinished();
-
 private:
     void LoadLocalPlugin();
 
 public slots:
-    void downloadProgress(qint64 bytesSent, qint64 bytesTotal);
+    void DownloadFinished(int id);
+    void downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id);
 
 private slots:
     void on_PluginsReady();

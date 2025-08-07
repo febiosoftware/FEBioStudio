@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <QDesktopServices>
 #include <QStyleHints>
 #include <QPainter>
+#include <QPainterPath>
 #include <QAction>
 #include <QPen>
 #include <QPalette>
@@ -59,7 +60,8 @@ SOFTWARE.*/
 
 #define IMAGE_SIZE 200
 
-CFrameButton::CFrameButton(QString text, QWidget* parent) : QWidget(parent)
+CFrameButton::CFrameButton(QString text, QWidget* parent) 
+    : QWidget(parent), progress(1)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -95,6 +97,17 @@ CFrameButton::CFrameButton(QString text, QWidget* parent) : QWidget(parent)
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
+void CFrameButton::SetText(QString text)
+{
+    label->setText(text);
+}
+
+void CFrameButton::SetProgress(float prog)
+{
+    progress = prog;
+    update();
+}
+
 void CFrameButton::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -104,19 +117,36 @@ void CFrameButton::paintEvent(QPaintEvent *event)
 
     QPalette palette = qApp->palette();
 
-    // Customize border color, thickness, and corner radius
     QColor borderColor = palette.color(QPalette::WindowText);
-    // Customize border and fill
     int borderWidth = 2;
     int radius = 15;
 
     QRectF borderRect = rect().adjusted(borderWidth / 2.0, borderWidth / 2.0,
                                         -borderWidth / 2.0, -borderWidth / 2.0);
 
-    // First draw background
     painter.setPen(Qt::NoPen);
-    painter.setBrush(backgroundColor);
-    painter.drawRoundedRect(borderRect, radius, radius);
+
+    if(progress < 1)
+    {
+        QPainterPath backgroundPath;
+        backgroundPath.addRoundedRect(borderRect, radius, radius);
+        painter.fillPath(backgroundPath, defaultColor);
+
+        painter.setClipPath(backgroundPath);
+
+        QRectF progressRect = borderRect;
+        progressRect.setRight(borderRect.width() * progress);
+
+        QPainterPath progressPath;
+        progressPath.addRect(progressRect);
+
+        painter.fillPath(progressPath, qApp->palette().color(QPalette::Highlight));
+    }
+    else
+    {
+        painter.setBrush(backgroundColor);
+        painter.drawRoundedRect(borderRect, radius, radius);
+    }
 
     // Then draw the border
     QPen pen(borderColor, borderWidth);
@@ -243,17 +273,13 @@ void CCollapsibleHeader::mousePressEvent(QMouseEvent* event)
 class Ui::CDlgPluginRepo
 {
 public:
-    QStackedWidget* outerStackedWidget;
     ::PluginListWidget* pluginListWidget;
-
-    QLabel* loadingMessage;
-    QProgressBar* downloadProgress;
 
     QLineEdit* searchLineEdit;
     QAction* actionSearch;
     QAction* actionClear;
 
-    QStackedWidget* innerStackedWidget;
+    QStackedWidget* stackedWidget;
     QLabel* repoStatusLabel;
     CFrameButton* retryButton;
     QLabel* imageLabel;
@@ -266,6 +292,7 @@ public:
     QLabel* descriptionLabel;
     QLabel* tagLabel;
     CFrameButton* downloadButton;
+    CFrameButton* downloadingButton;
     CFrameButton* loadButton;
     CFrameButton* unloadButton;
     CFrameButton* deleteButton;
@@ -282,31 +309,7 @@ public:
     {
         m_manager = manager;
 
-        QVBoxLayout* l = new QVBoxLayout;
-
-        outerStackedWidget = new QStackedWidget;
-
-        QWidget* loadingWidget = new QWidget;
-        QHBoxLayout* loadingLayout = new QHBoxLayout;
-        loadingLayout->setContentsMargins(0, 0, 0, 0);
-        loadingLayout->addStretch();
-
-        QVBoxLayout* innerLoadingLayout = new QVBoxLayout;
-        innerLoadingLayout->addStretch();
-        innerLoadingLayout->addWidget(loadingMessage = new QLabel);
-        innerLoadingLayout->addWidget(downloadProgress = new QProgressBar);
-        downloadProgress->hide();
-        innerLoadingLayout->addStretch();
-
-        loadingLayout->addLayout(innerLoadingLayout);
-        loadingLayout->addStretch();
-        loadingWidget->setLayout(loadingLayout);
-        outerStackedWidget->addWidget(loadingWidget);
-        
-        QWidget* pluginParentWidget = new QWidget;
-        QVBoxLayout* pluginParentLayout = new QVBoxLayout;
-        pluginParentLayout->setContentsMargins(0, 0, 0, 0);
-        pluginParentWidget->setLayout(pluginParentLayout);
+        QVBoxLayout* layout = new QVBoxLayout;
 
         QToolBar* searchToolBar = new QToolBar;
         searchToolBar->addWidget(searchLineEdit = new QLineEdit);
@@ -315,14 +318,14 @@ public:
 		searchToolBar->addAction(actionSearch);
 		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
 		searchToolBar->addAction(actionClear);
-        pluginParentLayout->addWidget(searchToolBar);
+        layout->addWidget(searchToolBar);
 
         QSplitter* splitter = new QSplitter(Qt::Horizontal);
         
         pluginListWidget = new ::PluginListWidget;
         splitter->addWidget(pluginListWidget);
         
-        innerStackedWidget = new QStackedWidget;
+        stackedWidget = new QStackedWidget;
         
         QWidget* welcomeCard = new QWidget;
         QVBoxLayout* welcomeLayout = new QVBoxLayout;
@@ -337,10 +340,9 @@ public:
         welcomeLabel->setFont(font);
         welcomeLayout->addWidget(welcomeLabel, 0, Qt::AlignHCenter);
 
+        // Needs to be in its own layout for the horizontal spacing to work out
         QHBoxLayout* welcomeMessageLayout = new QHBoxLayout;
         welcomeMessageLayout->setContentsMargins(0,0,0,0);
-
-        // welcomeMessageLayout->addSpacing(50);
 
         const char* welcomeMessage = "<br>Here you can find plugins for FEBio and FEBio Studio written by the FEBio Team " \
             "and others. Browse or search for plugins in the list on the left. Detailed information about the selected " \
@@ -352,10 +354,10 @@ public:
         QLabel* welcomeMessageLabel = new QLabel(welcomeMessage);
         welcomeMessageLabel->setWordWrap(true);
         welcomeMessageLabel->setAlignment(Qt::AlignCenter);
+        
         welcomeMessageLabel->setMaximumWidth(700);
+        
         welcomeMessageLayout->addWidget(welcomeMessageLabel);
-
-        // welcomeMessageLayout->addSpacing(50);
 
         welcomeLayout->addLayout(welcomeMessageLayout);
 
@@ -369,7 +371,7 @@ public:
 
         SetRepoStatus();
 
-        innerStackedWidget->addWidget(welcomeCard);
+        stackedWidget->addWidget(welcomeCard);
         
         QWidget* pluginCard = new QWidget;
         QHBoxLayout* pluginCardLayout = new QHBoxLayout;
@@ -399,6 +401,10 @@ public:
         downloadButton = new CFrameButton("Download Plugin");
         downloadButton->hide();
         pluginLeftLayout->addWidget(downloadButton, 0, Qt::AlignHCenter);
+
+        downloadingButton = new CFrameButton("Downloading...");
+        downloadingButton->hide();
+        pluginLeftLayout->addWidget(downloadingButton, 0, Qt::AlignHCenter);
 
         loadButton = new CFrameButton("Load Plugin");
         loadButton->hide();
@@ -488,23 +494,18 @@ public:
 
         pluginCard->setLayout(pluginCardLayout);
 
-        innerStackedWidget->addWidget(pluginCard);
+        stackedWidget->addWidget(pluginCard);
 
-        splitter->addWidget(innerStackedWidget);
+        splitter->addWidget(stackedWidget);
         QList<int> sizes = {1, dlg->width()};
         splitter->setSizes(sizes);
 
-        pluginParentLayout->addWidget(splitter);
+        layout->addWidget(splitter);
 
-        outerStackedWidget->addWidget(pluginParentWidget);
-        outerStackedWidget->setCurrentIndex(1);
-
-        l->addWidget(outerStackedWidget);
-        
 		bb = new QDialogButtonBox(QDialogButtonBox::Close);
         bb->addButton("Load Local Plugin", QDialogButtonBox::ResetRole);
         
-		l->addWidget(bb);
+		layout->addWidget(bb);
 
         QObject::connect(pluginListWidget, &::PluginListWidget::pluginThumbnailClicked, dlg, &::CDlgPluginRepo::on_pluginThumbnail_clicked);
         QObject::connect(searchLineEdit, &QLineEdit::returnPressed, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
@@ -519,7 +520,8 @@ public:
 
 		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgPluginRepo::reject);
         QObject::connect(bb, &QDialogButtonBox::clicked, dlg, &::CDlgPluginRepo::on_bbButton_clicked);
-		dlg->setLayout(l);
+		
+        dlg->setLayout(layout);
     }
 
     void SetRepoStatus(QString error = "")
@@ -552,8 +554,7 @@ public:
         {
             pluginListWidget->UpdateUi(m_manager->Status());
 
-            innerStackedWidget->setCurrentIndex(0);
-            outerStackedWidget->setCurrentIndex(1);
+            stackedWidget->setCurrentIndex(0);
 
             return;
         }
@@ -636,6 +637,7 @@ public:
         sourceButton->setVisible(!plugin->sourceURL.empty());
 
         downloadButton->hide();
+        downloadingButton->hide();
         loadButton->hide();
         unloadButton->hide();
         deleteButton->hide();
@@ -644,6 +646,11 @@ public:
         {
             statusLabel->setText("Broken");
             downloadButton->show();
+        }
+        if(plugin->status == PLUGIN_DOWNLOADING)
+        {
+            statusLabel->setText("Downloading...");
+            downloadingButton->show();
         }
         else if(plugin->status ==  PLUGIN_NOT_INSTALLED)
         {
@@ -704,8 +711,7 @@ public:
 
         pluginListWidget->UpdateUi(m_manager->Status());
 
-        innerStackedWidget->setCurrentIndex(1);
-        outerStackedWidget->setCurrentIndex(1);
+        stackedWidget->setCurrentIndex(1);
     }
 
     void addFeature(const QString& type, const QString& superClass, const QString& className, const QString& baseClass, const QString moduleName)
@@ -765,14 +771,6 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
     ui->m_manager->Connect(false);
 }
 
-void CDlgPluginRepo::DownloadFinished()
-{
-    ui->pluginListWidget->SetPluginInstalled(ui->m_pluginID, true);
-    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
-    
-    ui->setActivePlugin(ui->m_pluginID);
-}
-
 void CDlgPluginRepo::LoadLocalPlugin()
 {
     QString filter;
@@ -802,10 +800,24 @@ void CDlgPluginRepo::LoadLocalPlugin()
     }
 }
 
-void CDlgPluginRepo::downloadProgress(qint64 bytesSent, qint64 bytesTotal)
+void CDlgPluginRepo::DownloadFinished(int id)
 {
-    ui->downloadProgress->setRange(0, bytesTotal);
-    ui->downloadProgress->setValue(bytesSent);
+    ui->pluginListWidget->SetPluginInstalled(id, true);
+    ui->pluginListWidget->SetPluginStatus(id, ui->m_manager->GetPlugin(id)->status);
+    
+    ui->setActivePlugin(ui->m_pluginID);
+}
+
+void CDlgPluginRepo::downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id)
+{
+    float progress = (float) bytesSent / (float) bytesTotal;
+
+    if(ui->m_pluginID == id)
+    {
+        ui->downloadingButton->SetProgress(progress);
+    }
+
+    ui->pluginListWidget->SetPluginProgress(id, progress);
 }
 
 void CDlgPluginRepo::on_PluginsReady()
@@ -822,8 +834,6 @@ void CDlgPluginRepo::on_PluginsReady()
     on_actionSearch_triggered();
 
     ui->SetRepoStatus();
-
-    ui->outerStackedWidget->setCurrentIndex(1);
 }
 
 void CDlgPluginRepo::on_HTMLError(QString& message)
@@ -868,13 +878,11 @@ void CDlgPluginRepo::on_actionClear_triggered()
 
 void CDlgPluginRepo::on_downloadButton_clicked()
 {
-    ui->downloadProgress->setValue(0);
-    ui->downloadProgress->show();
-    ui->loadingMessage->setText("Downloading " + ui->nameLabel->text() + " ...");
-
-    ui->outerStackedWidget->setCurrentIndex(0);
-
     ui->m_manager->DownloadPlugin(ui->m_pluginID);
+    
+    ui->pluginListWidget->SetPluginStatus(ui->m_pluginID, ui->m_manager->GetPlugin(ui->m_pluginID)->status);
+    
+    ui->setActivePlugin(ui->m_pluginID);
 }
 
 void CDlgPluginRepo::on_deleteButton_clicked()

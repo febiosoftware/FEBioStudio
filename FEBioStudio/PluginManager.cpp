@@ -184,6 +184,9 @@ void CPluginManager::DownloadPlugin(int id)
 {
     DeletePlugin(id);
 
+    Plugin* plugin = GetPlugin(id);
+    if(plugin) plugin->status = PLUGIN_DOWNLOADING;
+
     imp->m_repo.getPluginFiles(id);
 }
 
@@ -373,8 +376,13 @@ void CPluginManager::OnDownloadFinished(int id)
     emit DownloadFinished(id);
 }
 
-void CPluginManager::OnHTMLError(QString& message)
+void CPluginManager::OnHTMLError(QString& message, int pluginID)
 {
+    if(imp->m_plugins.count(pluginID) != 0)
+    {
+        SetPluginStatus(imp->m_plugins[pluginID]);
+    }
+
     imp->m_status = ERROR;
 
     emit HTMLError(message);

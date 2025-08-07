@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QProgressBar>
 #include <QLabel>
 #include <QScrollArea>
 #include <QResizeEvent>
@@ -41,10 +42,12 @@ SOFTWARE.*/
 class Ui::PluginThumbnail
 {
 public:
+    QHBoxLayout* layout;
     QLabel* imageLabel;
     QLabel* nameLabel;
     QLabel* ownerLabel;
     QLabel* statusLabel;
+    QProgressBar* progress;
 
 public:
 
@@ -87,7 +90,10 @@ public:
             return;
         }
 
-        QHBoxLayout* layout = new QHBoxLayout;
+        QVBoxLayout* outerLayout = new QVBoxLayout;
+
+        layout = new QHBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
         layout->setAlignment(Qt::AlignLeft);
         
         imageLabel = new QLabel;
@@ -124,7 +130,13 @@ public:
 
         layout->addLayout(infoLayout);
 
-        m_parent->setLayout(layout);
+        outerLayout->addLayout(layout);
+
+        outerLayout->addWidget(progress = new QProgressBar);
+        progress->setRange(0, 100);
+        progress->hide();
+
+        m_parent->setLayout(outerLayout);
 
         m_id = plugin->id;
         m_installed = plugin->localCopy;
@@ -132,10 +144,7 @@ public:
 
     void SetPixmap()
     {
-        int left, top, right, bottom;
-        m_parent->layout()->getContentsMargins(&left, &top, &right, &bottom);
-
-        int height = m_parent->height() - top - bottom;
+        int height = nameLabel->height() + ownerLabel->height() + statusLabel->height() + layout->spacing()*2;
 
         imageLabel->setPixmap(image.scaled(height, height, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         imageLabel->setFixedWidth(height);
@@ -165,6 +174,11 @@ void PluginThumbnail::SetPixmap()
     ui->SetPixmap();
 }
 
+void PluginThumbnail::SetProgress(float progress)
+{
+    ui->progress->setValue(100*progress);
+}
+
 void PluginThumbnail::SetErrorText(const QString& text)
 {
     ui->ownerLabel->setText(text);
@@ -175,6 +189,8 @@ void PluginThumbnail::SetStatus(int status)
     // QPixmap pluginImg = ui->imageLabel->pixmap();
 
     // QPixmap emblem;
+
+    ui->progress->hide();
 
     switch (status)
     {
@@ -201,6 +217,10 @@ void PluginThumbnail::SetStatus(int status)
         setToolTip("This plugin in not part of the repository, but was loaded from a local file.");
         ui->statusLabel->setText("Local Plugin");
         ui->ownerLabel->hide();
+    case PLUGIN_DOWNLOADING:
+        setToolTip("Downloading...");
+        ui->statusLabel->setText("Downloading...");
+        ui->progress->show();
     }
 
     // QPainter painter(&pluginImg);
@@ -487,6 +507,18 @@ void PluginListWidget::SetPluginStatus(int id, int status)
         if(plugin->getID() == id)
         {
             plugin->SetStatus(status);
+            return;
+        }
+    }
+}
+
+void PluginListWidget::SetPluginProgress(int id, float progress)
+{
+    for(auto plugin : ui->pluginThumbnails)
+    {
+        if(plugin->getID() == id)
+        {
+            plugin->SetProgress(progress);
             return;
         }
     }

@@ -42,6 +42,8 @@ public:
 
     void SetStatus(int status);
     void SetPixmap();
+    void SetProgress(float progress);
+
     void SetErrorText(const QString& text);
 
     int getID();
@@ -84,6 +86,7 @@ public:
 
     void SetPluginInstalled(int id, bool installed);
     void SetPluginStatus(int id, int status);
+    void SetPluginProgress(int id, float progress);
 
 public slots:
     void on_pluginThumbnailClicked(int id);

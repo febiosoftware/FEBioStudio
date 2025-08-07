@@ -37,6 +37,7 @@ enum PluginStatus
     PLUGIN_BROKEN,
     PLUGIN_UP_TO_DATE,
     PLUGIN_OUT_OF_DATE,
+    PLUGIN_DOWNLOADING,
     PLUGIN_LOCAL
 };
 
@@ -113,7 +114,7 @@ public:
 
     void OnConnectionFinished();
     void OnDownloadFinished(int id);
-    void OnHTMLError(QString& message);
+    void OnHTMLError(QString& message, int pluginID = 0);
 
 signals:
     void DownloadFinished(int id);
