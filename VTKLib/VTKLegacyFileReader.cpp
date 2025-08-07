@@ -478,10 +478,16 @@ bool vtkLegacyFileReader::read_SCALARS(VTK::vtkPiece& vtk)
 		{
 			std::vector<int>& data = scalars.m_values_int;
 			data.resize(cells, 0);
-			for (int i = 0; i < cells; ++i)
+			int n[10] = { 0 };
+			for (int i = 0; i < cells;)
 			{
 				if (!nextLine()) return false;
-				data[i] = atoi(m_szline);
+				int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
+				for (int j = 0; j < nread; ++j, ++i)
+				{
+					if (i >= cells) break;
+					data[i] = n[j];
+				}
 			}
 		}
 		vtk.m_cellData.push_back(scalars);
@@ -726,4 +732,6 @@ bool vtkLegacyFileReader::read_METADATA(VTK::vtkPiece& vtk)
 		// read DATA
 		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
 	}
+
+	return true;
 }
