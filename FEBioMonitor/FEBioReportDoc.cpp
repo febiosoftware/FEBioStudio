@@ -122,9 +122,14 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 	m_febFile.clear();
 	m_pltFile.clear();
 
+	int iters = 0;
 	int rhsEvals = 0;
 	int reforms = 0;
 	m_timestepStats.clear();
+
+	bool processInfoBox = false;
+
+	QString report;
 
 	QTextStream in(&file);
 	while (!in.atEnd()) {
@@ -144,7 +149,32 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 		}
 
 		bool match = false;
-		match = extractInt(line, "right hand side evaluations", rhsEvals, '=');
+
+		if (processInfoBox)
+		{
+			if (line.contains("WARNING")) report += "Warning: ";
+			else if (line.contains("ERROR")) report += "Error: ";
+			else if (line.contains("*****"))
+			{
+				report += "\n";
+				processInfoBox = false;
+			}
+			else
+			{
+				QString tmp = line;
+				tmp.replace('*', ' ');
+				report += tmp.trimmed();
+			}
+
+			match = true;
+		}
+		else if (line.contains("*****"))
+		{
+			processInfoBox = true;
+			match = true;
+		}
+
+		if (!match) match = extractInt(line, "right hand side evaluations", rhsEvals, '=');
 		if (!match) match = extractInt(line, "stiffness matrix reformations", reforms, '=');
 		if (!match)
 		{
@@ -152,7 +182,8 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 			match = extractFloat(line, "converged at time", time);
 			if (match)
 			{
-				m_timestepStats.push_back({ 0, rhsEvals, reforms, 1 });
+				m_timestepStats.push_back({ iters, rhsEvals, reforms, 1 });
+				iters = 0;
 				rhsEvals = 0;
 				reforms = 0;
 			}
@@ -167,7 +198,8 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 			match = extractFloat(line, "failed to converge", time);
 			if (match)
 			{
-				m_timestepStats.push_back({ 0, rhsEvals, reforms, 0 });
+				m_timestepStats.push_back({ iters, rhsEvals, reforms, 0 });
+				iters = 0;
 				rhsEvals = 0;
 				reforms = 0;
 			}
@@ -272,7 +304,16 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 				m_timingInfo.total_qn = sec;
 			}
 		}
+		if (!match)
+		{
+			QString tmp = line.trimmed();
+			bool ok = false;
+			int n = tmp.toInt(&ok);
+			if (ok) iters = n;
+		}
 	}
+
+	m_report = report;
 
 	// calculate the remaining timing info
 	double sum = 0;

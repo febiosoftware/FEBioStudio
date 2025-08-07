@@ -40,5 +40,12 @@ public:
 	void setDocument(CDocument* doc) override;
 
 private:
+	void UpdateView();
+	bool ExportData(const QString& filename);
+
+private slots:
+	void on_htmlview_anchorClicked(const QUrl& link);
+
+private:
 	Ui* ui;
 };

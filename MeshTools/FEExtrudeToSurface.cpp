@@ -34,6 +34,23 @@ FEExtrudeToSurface::FEExtrudeToSurface() : FEModifier("Project Nodes")
 	AddIntParam(1, "divisions");
 }
 
+int degenerate_hex(int* n)
+{
+	// todo: add more checks for degenerate elements
+	if ((n[0] == n[4]) && (n[3] == n[7]))
+	{
+		int n1 = n[1];
+		n[0] = n[3];
+		n[1] = n[2];
+		n[2] = n[6];
+		n[3] = n[4];
+		n[4] = n1;
+		n[5] = n[5];
+		return FE_PENTA6;
+	}
+	return FE_HEX8;
+}
+
 FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 {
 	if ((pg == nullptr) || (po == nullptr)) return nullptr;
@@ -105,37 +122,112 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 		srcPoints.push_back(node.r);
 	}
 
+	// count the number of new nodes to create. 
+	// In theory, this should be NN * (ndiv + 1), however it is possible
+	// that some source nodes coincide with target nodes, so we need to check for that.
+	int newNodes = 0, sharedNodes = 0;
+	std::vector<int> tag(NN, 0);
+	for (int i = 0; i < NN; ++i)
+	{
+		vec3d pi = srcPoints[i];
+		vec3d ti = trgPoints[i];
+		if ((pi - ti).Length() < 1.0e-9)
+		{
+			// this node coincides so we only add it once
+			newNodes++;
+			sharedNodes++;
+			tag[i] = 1;
+		}
+		else newNodes += ndiv + 1;
+	}
+
+	// allocate mesh
 	FSMesh* newMesh = new FSMesh;
-	newMesh->Create(NN * (ndiv + 1), NF * ndiv);
-	for (int l = 0; l<= ndiv; ++l)
+	newMesh->Create(newNodes, NF * ndiv);
+
+	// create new nodes
+	std::vector<int> ids(NN, -1);
+	newNodes = 0;
+
+	// first layer
+	for (int i = 0; i < NN; ++i)
+	{
+		vec3d r = srcPoints[i];
+		newMesh->Node(newNodes++).pos(r);
+		ids[i] = i;
+	}
+
+	// next layers
+	for (int l = 1; l<= ndiv; ++l)
 	{
 		double s = double(l) / double(ndiv);
 		for (int i = 0; i < NN; ++i)
 		{
-			vec3d r = srcPoints[i] * (1 - s) + trgPoints[i] * s;
-			newMesh->Node(i + l * NN).pos(r);
+			if (tag[i] == 0)
+			{
+				vec3d r = srcPoints[i] * (1 - s) + trgPoints[i] * s;
+				newMesh->Node(newNodes++).pos(r);
+			}
 		}
 	}
 
+	// build elements
+	std::vector<int> id2(NN, -1);
+	newNodes = NN;
 	for (int l = 0; l < ndiv; ++l)
 	{
+		// update id list
+		for (int i = 0; i < NN; ++i)
+		{
+			if (tag[i] == 0) id2[i] = newNodes++;
+			else id2[i] = ids[i];
+		}
+
 		for (int i = 0; i < NF; ++i)
 		{
-			FSElement& el = newMesh->Element(l * NF + i);
-			el.SetType(FE_HEX8);
-			el.m_gid = 0;
-
 			FSFace& f = pm->Face(i);
-			el.m_node[0] = l * NN + f.n[0];
-			el.m_node[1] = l * NN + f.n[1];
-			el.m_node[2] = l * NN + f.n[2];
-			el.m_node[3] = l * NN + f.n[3];
+			if (f.Type() == FE_FACE_QUAD4)
+			{
+				int n[8] = { 0 };
+				FSElement& el = newMesh->Element(l * NF + i);
+				el.m_gid = 0;
 
-			el.m_node[4] = (l+1) * NN + f.n[0];
-			el.m_node[5] = (l+1) * NN + f.n[1];
-			el.m_node[6] = (l+1) * NN + f.n[2];
-			el.m_node[7] = (l+1) * NN + f.n[3];
+				// get the 8 nodes
+				n[0] = ids[f.n[0]];
+				n[1] = ids[f.n[1]];
+				n[2] = ids[f.n[2]];
+				n[3] = ids[f.n[3]];
+				n[4] = id2[f.n[0]];
+				n[5] = id2[f.n[1]];
+				n[6] = id2[f.n[2]];
+				n[7] = id2[f.n[3]];
+
+				// it's possible that we have a degenerate elements, so let's check
+				int elemType = degenerate_hex(n);
+				assert(elemType != -1);
+				el.SetType(elemType);
+				for (int i = 0; i < el.Nodes(); ++i) el.m_node[i] = n[i];
+			}
+			else if (f.Type() == FE_FACE_TRI3)
+			{
+				FSElement& el = newMesh->Element(l * NF + i);
+				el.SetType(FE_PENTA6);
+				el.m_gid = 0;
+				el.m_node[0] = ids[f.n[0]];
+				el.m_node[1] = ids[f.n[1]];
+				el.m_node[2] = ids[f.n[2]];
+
+				el.m_node[3] = id2[f.n[0]];
+				el.m_node[4] = id2[f.n[1]];
+				el.m_node[5] = id2[f.n[2]];
+			}
+			else
+			{
+				assert(false); // unsupported face type
+			}
 		}
+
+		ids = id2;
 	}
 
 	newMesh->RebuildMesh(30.0);

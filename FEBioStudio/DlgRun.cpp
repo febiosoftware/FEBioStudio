@@ -72,6 +72,8 @@ public:
 	QGroupBox*	advSettings;
 	QPushButton* more;
 
+	QCheckBox* genReport;
+
 	std::vector<CLaunchConfig*>* m_launch_configs;
 
 	int m_last_index = -1;
@@ -143,12 +145,15 @@ public:
 		febops = new QGroupBox("FEBio export settings:");
 		febops->setLayout(febl);
 
+		genReport = new QCheckBox;
+
 		QFormLayout* ext = new QFormLayout;
 		ext->setLabelAlignment(Qt::AlignRight);
 		ext->addRow("Debug mode:", debug = new QCheckBox(""));
 		ext->addRow("Config file:", configLayout);
 		ext->addRow("Task name:", taskName);
 		ext->addRow("Task control file:", taskFile);
+		ext->addRow("Generate report", genReport);
 
 		writeNotes->setChecked(true);
 
@@ -225,6 +230,16 @@ void CDlgRun::ShowAdvancedSettings(bool b)
 bool CDlgRun::AdvancedSettingsShown()
 {
 	return ui->more->isChecked();
+}
+
+void CDlgRun::SetGenerateReport(bool b) const
+{
+	ui->genReport->setChecked(b);
+}
+
+bool CDlgRun::GenerateReport() const
+{
+	return ui->genReport->isChecked();
 }
 
 void CDlgRun::ShowFEBioSaveOptions(bool b)
