@@ -1875,7 +1875,7 @@ void BuildTriMesh(TriMesh& dyna, FSSurfaceMesh* pm)
 void FSSurfaceMesh::ShowFaces(const vector<int>& face, bool bshow)
 {
 	if (bshow)
-        for (int i : face) Face(i).Show();
+        for (int i : face) Face(i).Unhide();
 	else
         for (int i : face) Face(i).Hide();
 
