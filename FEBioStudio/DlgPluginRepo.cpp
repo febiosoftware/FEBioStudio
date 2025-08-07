@@ -57,6 +57,8 @@ SOFTWARE.*/
 #include "WrapLabel.h"
 #include "MainWindow.h"
 
+#define IMAGE_SIZE 200
+
 CFrameButton::CFrameButton(QString text, QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -288,7 +290,7 @@ public:
 
         QVBoxLayout* innerLoadingLayout = new QVBoxLayout;
         innerLoadingLayout->addStretch();
-        innerLoadingLayout->addWidget(loadingMessage = new QLabel("Connecting ..."));
+        innerLoadingLayout->addWidget(loadingMessage = new QLabel);
         innerLoadingLayout->addWidget(downloadProgress = new QProgressBar);
         downloadProgress->hide();
         innerLoadingLayout->addStretch();
@@ -324,13 +326,14 @@ public:
         welcomeLayout->setContentsMargins(0,0,0,0);
         welcomeCard->setLayout(welcomeLayout);
 
+        welcomeLayout->addWidget(new QLabel("Connecting..."), 0, Qt::AlignCenter);
+
         innerStackedWidget->addWidget(welcomeCard);
         
         QWidget* pluginCard = new QWidget;
         QHBoxLayout* pluginCardLayout = new QHBoxLayout;
 
-        // QHBoxLayout* pluginBottomLayout = new QHBoxLayout;
-
+        QWidget* pluginLeftWidget = new QWidget;
         QVBoxLayout* pluginLeftLayout = new QVBoxLayout;
         pluginLeftLayout->setAlignment(Qt::AlignHCenter);
         pluginLeftLayout->addWidget(imageLabel = new QLabel);
@@ -369,7 +372,13 @@ public:
         pluginLeftLayout->addWidget(deleteButton, 0, Qt::AlignHCenter);
 
         pluginLeftLayout->addStretch();
-        pluginCardLayout->addLayout(pluginLeftLayout, 0);
+        pluginLeftWidget->setLayout(pluginLeftLayout);
+
+        int left, top, right, bottom;
+        pluginLeftLayout->getContentsMargins(&left, &top , &right, &bottom);
+        pluginLeftWidget->setFixedWidth(IMAGE_SIZE + left + right);
+
+        pluginCardLayout->addWidget(pluginLeftWidget);
 
         QVBoxLayout* pluginRightLayout = new QVBoxLayout;
 
@@ -436,7 +445,6 @@ public:
 
         pluginCardLayout->addLayout(pluginRightLayout, 1);
 
-        // pluginCardLayout->addLayout(pluginBottomLayout);
         pluginCard->setLayout(pluginCardLayout);
 
         innerStackedWidget->addWidget(pluginCard);
@@ -448,6 +456,7 @@ public:
         pluginParentLayout->addWidget(splitter);
 
         outerStackedWidget->addWidget(pluginParentWidget);
+        outerStackedWidget->setCurrentIndex(1);
 
         l->addWidget(outerStackedWidget);
         
@@ -493,7 +502,7 @@ public:
 
                 QPixmap pixmap;
                 pixmap.loadFromData(imageDataByteArray);
-                imageLabel->setPixmap(pixmap.scaled(200, 200, Qt::KeepAspectRatio));
+                imageLabel->setPixmap(pixmap.scaledToHeight(IMAGE_SIZE, Qt::SmoothTransformation));
             }
             else
             {
@@ -509,7 +518,7 @@ public:
             descriptionLabel->setText(QString::fromStdString( plugin->description + "\n\nPath: " + plugin->files[0]));
 
             QPixmap pixmap(":/icons/febio_large.png");
-            imageLabel->setPixmap(pixmap.scaled(200, 200, Qt::KeepAspectRatio));
+            imageLabel->setPixmap(pixmap.scaledToHeight(IMAGE_SIZE, Qt::SmoothTransformation));
         }
 
         if(plugin->publications.size() == 0)

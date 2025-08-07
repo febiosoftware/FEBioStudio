@@ -351,6 +351,7 @@ public:
         installedPlugins->setVisible(showInstalled);
         repoPlugins->setVisible(showRepo);
 
+        m_connected = false;
     }
 
 
@@ -359,6 +360,8 @@ public:
     std::unordered_set<int> searchResults; 
 
     QList<::PluginThumbnail*> pluginThumbnails;
+
+    bool m_connected;
 };
     
 PluginListWidget::PluginListWidget() : ui(new Ui::PluginListWidget)
