@@ -212,7 +212,7 @@ std::string CDatabaseInterface::getSingleValue(string& query)
 #else
 CDatabaseInterface::CDatabaseInterface() {}
 void CDatabaseInterface::setDBPath(string path) {}
-bool CDatabaseInterface::openDatabase() {}
+bool CDatabaseInterface::openDatabase() { return false; }
 void CDatabaseInterface::closeDatabase() {}
 void CDatabaseInterface::initDatabase(string schema) {}
 void CDatabaseInterface::execute(string& query, int (*callback)(void*,int,char**,char**), void* arg) {}
