@@ -42,7 +42,6 @@ SOFTWARE.*/
 class Ui::PluginThumbnail
 {
 public:
-    QHBoxLayout* layout;
     QLabel* imageLabel;
     QLabel* nameLabel;
     QLabel* ownerLabel;
@@ -76,7 +75,6 @@ public:
             QVBoxLayout* layout = new QVBoxLayout;
             layout->setAlignment(Qt::AlignHCenter);
 
-            imageLabel = new QLabel;
             nameLabel = new QLabel;
             ownerLabel = new QLabel("<b>Connecting...</b>");
             statusLabel = new QLabel;
@@ -92,7 +90,7 @@ public:
 
         QVBoxLayout* outerLayout = new QVBoxLayout;
 
-        layout = new QHBoxLayout;
+        QHBoxLayout* layout = new QHBoxLayout;
         layout->setContentsMargins(0,0,0,0);
         layout->setAlignment(Qt::AlignLeft);
         
@@ -292,7 +290,6 @@ void PluginThumbnail::mousePressEvent(QMouseEvent* event)
 class Ui::PluginListWidget
 {
 public:
-    QLineEdit* searchInput;
     CCollapsibleHeader* installedPlugins;
     QVBoxLayout* installedLayout;
     CCollapsibleHeader* repoPlugins;
@@ -355,6 +352,13 @@ public:
 
     void updateUi(int repoStatus = CPluginManager::CONNECTED)
     {
+        statusThumbnail->hide();
+        
+        for(::PluginThumbnail* widget : pluginThumbnails)
+        {
+            widget->hide();
+        }
+
         // Removes the items from the layout, but does not delete the
         // widgets themselves.
         QLayoutItem* item;
@@ -368,28 +372,17 @@ public:
             delete item;
         }
 
-        if(searchResults.empty())
-        {
-            for(::PluginThumbnail* thumbnail : pluginThumbnails) 
-            {
-                thumbnail->hide();
-            }
-        }
-
         bool showInstalled = false;
         bool showRepo = false;
 
         for(::PluginThumbnail* thumbnail : pluginThumbnails) 
         {
-            thumbnail->show();
-
             // If there is only one search result and it's -1, show all plugins
             if(!((searchResults.size() == 1) && (searchResults.count(-1) == 1)))
             {
                 // Otherwise skip if the thumbnail ID is not in the search results
                 if(searchResults.count(thumbnail->getID()) == 0) 
                 {
-                    thumbnail->hide();
                     continue; // Skip if not in search results
                 }
             }
@@ -407,10 +400,7 @@ public:
                     repoLayout->addWidget(thumbnail);
                     thumbnail->show();
                 }
-                else
-                {
-                    thumbnail->hide();
-                }
+                
                 showRepo = true;
             }
         }
@@ -433,10 +423,6 @@ public:
             repoLayout->addWidget(statusThumbnail);
             
             showRepo = true;
-        }
-        else
-        {
-            statusThumbnail->hide();
         }
 
         repoPlugins->setVisible(showRepo);
@@ -471,8 +457,6 @@ void PluginListWidget::AddPlugin(const Plugin& plugin)
     thumbnail->setInstalled(plugin.localCopy);
     connect(thumbnail, &::PluginThumbnail::clicked, this, &PluginListWidget::on_pluginThumbnailClicked);
     ui->pluginThumbnails.append(thumbnail);
-    
-    ui->updateUi();
 }
 
 void PluginListWidget::RemovePlugin(int id)
