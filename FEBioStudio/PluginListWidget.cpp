@@ -96,8 +96,35 @@ public:
         layout->setContentsMargins(0,0,0,0);
         layout->setAlignment(Qt::AlignLeft);
         
-        imageLabel = new QLabel;
+        QVBoxLayout* infoLayout = new QVBoxLayout;
+        infoLayout->setContentsMargins(0,0,0,0);
+        infoLayout->setSpacing(6);
+        infoLayout->setAlignment(Qt::AlignVCenter);
 
+        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin->name + "</b>"));
+        nameLabel->setAlignment(Qt::AlignLeft);
+        QFont nameFont = nameLabel->font();
+        nameFont.setBold(true);
+        nameLabel->setFont(nameFont);
+        
+        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin->owner + "</i>"));
+        ownerLabel->setAlignment(Qt::AlignLeft);
+        QFont ownerFont = ownerLabel->font();
+        ownerFont.setItalic(true);
+        ownerLabel->setFont(ownerFont);
+
+        statusLabel = new QLabel(QString::fromStdString(plugin->description));
+        statusLabel->setAlignment(Qt::AlignLeft);
+        QFont statusFont = statusLabel->font();
+
+        infoLayout->addWidget(nameLabel);
+        infoLayout->addWidget(ownerLabel);
+        infoLayout->addWidget(statusLabel);
+
+        // In order to get the appropriate size for the image label, we need
+        // to have the fonts for the other labels, so even though the image label
+        // gets added to the layout first, we instantiate it and set the pixmap
+        // after adding the other labels
         if(plugin->id > 0)
         {
             QByteArray imageDataByteArray = QByteArray::fromBase64(plugin->imageData);
@@ -108,26 +135,19 @@ public:
             image.load(":/icons/febio_large.png");
         }
 
-        imageLabel->setAlignment(Qt::AlignVCenter);
+        imageLabel = new QLabel;
+        imageLabel->setAlignment(Qt::AlignCenter);
+
+        int imageHeight = QFontMetrics(nameFont).height();
+        imageHeight += QFontMetrics(ownerFont).height();
+        imageHeight += QFontMetrics(statusFont).height();
+        imageHeight += infoLayout->spacing()*2;
+
+        imageLabel->setPixmap(image.scaled(imageHeight, imageHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        imageLabel->setFixedWidth(imageHeight);
 
         layout->addWidget(imageLabel);
-
         layout->addSpacing(5);
-
-        QVBoxLayout* infoLayout = new QVBoxLayout;
-        infoLayout->setContentsMargins(0,0,0,0);
-
-        nameLabel = new QLabel(QString::fromStdString("<b>" + plugin->name + "</b>"));
-        nameLabel->setAlignment(Qt::AlignLeft);
-        ownerLabel = new QLabel(QString::fromStdString("<i>" + plugin->owner + "</i>"));
-        ownerLabel->setAlignment(Qt::AlignLeft);
-        statusLabel = new QLabel(QString::fromStdString(plugin->description));
-        statusLabel->setAlignment(Qt::AlignLeft);
-
-        infoLayout->addWidget(nameLabel);
-        infoLayout->addWidget(ownerLabel);
-        infoLayout->addWidget(statusLabel);
-
         layout->addLayout(infoLayout);
 
         outerLayout->addLayout(layout);
@@ -140,15 +160,6 @@ public:
 
         m_id = plugin->id;
         m_installed = plugin->localCopy;
-    }
-
-    void SetPixmap()
-    {
-        int height = nameLabel->height() + ownerLabel->height() + statusLabel->height() + layout->spacing()*2;
-
-        imageLabel->setPixmap(image.scaled(height, height, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        imageLabel->setFixedWidth(height);
-        imageLabel->setAlignment(Qt::AlignCenter);
     }
 
 public:
@@ -166,12 +177,6 @@ PluginThumbnail::PluginThumbnail(const Plugin* plugin)
     ui->setupUi(plugin);
 
     if(plugin) SetStatus(plugin->status);
-}
-
-
-void PluginThumbnail::SetPixmap()
-{
-    ui->SetPixmap();
 }
 
 void PluginThumbnail::SetProgress(float progress)
@@ -217,10 +222,12 @@ void PluginThumbnail::SetStatus(int status)
         setToolTip("This plugin in not part of the repository, but was loaded from a local file.");
         ui->statusLabel->setText("Local Plugin");
         ui->ownerLabel->hide();
+        break;
     case PLUGIN_DOWNLOADING:
         setToolTip("Downloading...");
         ui->statusLabel->setText("Downloading...");
         ui->progress->show();
+        break;
     }
 
     // QPainter painter(&pluginImg);
@@ -406,8 +413,6 @@ public:
                 }
                 showRepo = true;
             }
-
-            thumbnail->SetPixmap();
         }
 
         installedPlugins->setVisible(showInstalled);
@@ -468,6 +473,28 @@ void PluginListWidget::AddPlugin(const Plugin& plugin)
     ui->pluginThumbnails.append(thumbnail);
     
     ui->updateUi();
+}
+
+void PluginListWidget::RemovePlugin(int id)
+{
+    bool found = false;
+    int index;
+    for(index = 0; index < ui->pluginThumbnails.size(); index++)
+    {
+        if(ui->pluginThumbnails[index]->getID() == id)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if(found)
+    {
+        ui->pluginThumbnails[index]->deleteLater();
+        ui->pluginThumbnails.remove(index);
+
+        ui->updateUi();
+    }
 }
 
 void PluginListWidget::Clear()

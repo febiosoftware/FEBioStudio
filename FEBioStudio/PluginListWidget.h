@@ -41,7 +41,6 @@ public:
     PluginThumbnail(const Plugin* plugin);
 
     void SetStatus(int status);
-    void SetPixmap();
     void SetProgress(float progress);
 
     void SetErrorText(const QString& text);
@@ -79,6 +78,7 @@ public:
     void UpdateUi(int repoStatus);
 
     void AddPlugin(const Plugin& plugin);
+    void RemovePlugin(int id);
 
     void Clear();
 

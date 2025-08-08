@@ -42,4 +42,5 @@ public:
 private:
     CPluginManager* m_manager;
     std::string m_path;
+    bool m_busy;
 };

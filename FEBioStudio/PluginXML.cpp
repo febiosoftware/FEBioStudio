@@ -30,19 +30,26 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 
 CPluginXML::CPluginXML(CPluginManager* manager) 
-    :  m_manager(manager)
+    :  m_manager(manager), m_busy(false)
 {
 
 }
 
 bool CPluginXML::LoadXML()
 {
+    if(m_busy) return false;
+
+    m_busy = true;
     XMLReader xml;
     if (xml.Open(m_path.c_str()))
     {
         XMLTag tag;
 
-        if(!xml.FindTag("plugins", tag)) return false;
+        if(!xml.FindTag("plugins", tag))
+        {
+            m_busy = false;
+            return false;
+        }
 
         if(!tag.isleaf())
         {
@@ -53,15 +60,27 @@ bool CPluginXML::LoadXML()
                 {
                     int ID = tag.AttributeValue("ID", 0);
 
-                    Plugin* plugin = m_manager->GetPlugin(ID);
+                    // If the plugin is a repo plugin, it will have a positive ID,
+                    // and will get added to the manager. If it's not, the ID will 
+                    // be negative, and this pointer remains null
+                    Plugin* plugin = nullptr;
 
-                    if(!plugin)
+                    if(ID > 0)
                     {
-                        plugin = m_manager->AddPlugin(ID);
+                        plugin = m_manager->GetPlugin(ID);
+
+                        if(!plugin)
+                        {
+                            plugin = m_manager->AddPlugin(ID);
+                        }
                     }
 
-                    plugin->localVersion = tag.AttributeValue("version", std::string());
-                    plugin->localFebioVersion = tag.AttributeValue("febioVersion", std::string());
+                    // Only do this for repo plugins
+                    if(plugin)
+                    {
+                        plugin->localVersion = tag.AttributeValue("version", std::string());
+                        plugin->localFebioVersion = tag.AttributeValue("febioVersion", std::string());
+                    }
 
                     if(!tag.isleaf())
                     {
@@ -74,14 +93,29 @@ bool CPluginXML::LoadXML()
 
                                 std::string filePath;
                                 tag.value(filePath);
-                                plugin->files.push_back(filePath);
 
-                                if(main == 1)
+                                // Only do this for repo plugins
+                                if(plugin)
                                 {
-                                    plugin->mainFileIndex = plugin->files.size() - 1; // Set the last file as the main file
-                                }
+                                    plugin->files.push_back(filePath);
 
-                                plugin->localCopy = true;
+                                    if(main == 1)
+                                    {
+                                        // Set the last file as the main file
+                                        plugin->mainFileIndex = plugin->files.size() - 1;
+                                    }
+
+                                    plugin->localCopy = true;
+                                }
+                                // For nonrepo plugins we load them using this function which 
+                                // initializes them properly. LoadNonRepoPlugin has an empty 
+                                // definition when building the updater, so we don't have to 
+                                // worry about the updater trying to fetch these
+                                else
+                                {
+                                    m_manager->LoadNonRepoPlugin(filePath);
+                                }
+                                
                             }
 
                             ++tag;
@@ -94,14 +128,20 @@ bool CPluginXML::LoadXML()
     }
     else
     {
+        m_busy = false;
         return false;
     }
 
+    m_busy = false;
     return true;
 }
 
 void CPluginXML::WriteXML()
 {
+    if(m_busy) return;
+
+    m_busy = false;
+
     XMLWriter xml;
     xml.open(m_path.c_str());
     xml.add_branch("plugins");
@@ -109,12 +149,12 @@ void CPluginXML::WriteXML()
 
     for (const auto& [id, plugin] : plugins)
     {
-        if(id < 0) continue;
+        int plID = plugin.id;
 
         if(plugin.localCopy)
         {
             XMLElement pluginElement("plugin");
-            pluginElement.add_attribute("ID", plugin.id);
+            pluginElement.add_attribute("ID", plID);
             pluginElement.add_attribute("version", plugin.localVersion);
             pluginElement.add_attribute("febioVersion", plugin.localFebioVersion);
             xml.add_branch(pluginElement);
@@ -133,4 +173,6 @@ void CPluginXML::WriteXML()
     }
     xml.close_branch(); // Close plugins branch
     xml.close(); // Close the XML file
+
+    m_busy = false;
 }

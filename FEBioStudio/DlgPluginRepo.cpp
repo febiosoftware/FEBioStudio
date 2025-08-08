@@ -295,6 +295,7 @@ public:
     CFrameButton* loadButton;
     CFrameButton* unloadButton;
     CFrameButton* deleteButton;
+    CFrameButton* removeButton;
     CFrameButton* sourceButton;
     
     ::CPublicationWidgetView* publicationWidget;
@@ -417,6 +418,10 @@ public:
         deleteButton->hide();
         pluginLeftLayout->addWidget(deleteButton, 0, Qt::AlignHCenter);
 
+        removeButton = new CFrameButton("Remove Plugin");
+        removeButton->hide();
+        pluginLeftLayout->addWidget(removeButton, 0, Qt::AlignHCenter);
+
         pluginLeftLayout->addStretch();
         pluginLeftWidget->setLayout(pluginLeftLayout);
 
@@ -512,6 +517,7 @@ public:
         QObject::connect(actionClear, &QAction::triggered, dlg, &::CDlgPluginRepo::on_actionClear_triggered);
         QObject::connect(downloadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_downloadButton_clicked);
         QObject::connect(deleteButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_deleteButton_clicked);
+        QObject::connect(removeButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_removeButton_clicked);
         QObject::connect(loadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_loadButton_clicked);
         QObject::connect(unloadButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_unloadButton_clicked);
         QObject::connect(sourceButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_sourceButton_clicked);
@@ -640,6 +646,7 @@ public:
         loadButton->hide();
         unloadButton->hide();
         deleteButton->hide();
+        removeButton->hide();
         
         if(plugin->status == PLUGIN_BROKEN)
         {
@@ -699,6 +706,8 @@ public:
             {
                 loadButton->show();
             }
+
+            removeButton->show();
         }
 
         advancedHeader->hide();
@@ -898,6 +907,19 @@ void CDlgPluginRepo::on_deleteButton_clicked()
     int id = ui->m_pluginID;
     if(ui->m_manager->Status() != CPluginManager::CONNECTED) id = 0;
     ui->setActivePlugin(id);
+}
+
+void CDlgPluginRepo::on_removeButton_clicked()
+{
+    if(!ui->m_manager->RemoveNonRepoPlugin(ui->m_pluginID))
+    {
+        QMessageBox::warning(this, "Error", "Unable to load plugin.");
+        return;
+    }
+
+    ui->pluginListWidget->RemovePlugin(ui->m_pluginID);
+
+    ui->setActivePlugin(0);
 }
 
 void CDlgPluginRepo::on_loadButton_clicked()

@@ -109,6 +109,7 @@ public:
     bool LoadPlugin(int id);
     bool UnloadPlugin(int id);
     bool LoadNonRepoPlugin(std::string& path);
+    bool RemoveNonRepoPlugin(int id);
 
     void AddRepoPlugin(char** argv);
     void AddPublication(int pluginID, const QVariantMap& data);

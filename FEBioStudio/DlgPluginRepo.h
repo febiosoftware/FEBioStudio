@@ -102,6 +102,7 @@ private slots:
     void on_actionClear_triggered();
     void on_downloadButton_clicked();
     void on_deleteButton_clicked();
+    void on_removeButton_clicked();
     void on_loadButton_clicked();
     void on_unloadButton_clicked();
     void on_sourceButton_clicked();

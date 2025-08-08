@@ -297,10 +297,30 @@ bool CPluginManager::LoadNonRepoPlugin(std::string& path)
         plugin->files.push_back(path);
         plugin->localCopy = true;
         plugin->loaded = true;
+        plugin->status = PLUGIN_LOCAL;
         plugin->allocatorID = pl.GetAllocatorID();
     }
 
+    imp->m_xml.WriteXML();
+
     return success;
+}
+
+bool CPluginManager::RemoveNonRepoPlugin(int id)
+{
+    if(!UnloadPlugin(id)) return false;
+
+    if(imp->m_plugins.count(id) == 0)
+    {
+        assert(false);
+        return false; // Plugin does not exist
+    }
+
+    imp->m_plugins.erase(id);
+
+    imp->m_xml.WriteXML();
+
+    return true;
 }
 
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data)
@@ -326,6 +346,7 @@ void CPluginManager::AddTag(int pluginID, const std::string& tag)
 bool CPluginManager::LoadPlugin(int id) { return false; }
 bool CPluginManager::UnloadPlugin(int id) { return false; }
 bool CPluginManager::LoadNonRepoPlugin(std::string& path) { return false; }
+bool CPluginManager::RemoveNonRepoPlugin(int id) { return false; }
 void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
 void CPluginManager::AddTag(int pluginID, const std::string& tag) {}
 #endif
