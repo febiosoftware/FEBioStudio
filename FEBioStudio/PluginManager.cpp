@@ -51,7 +51,8 @@ public:
     Imp(CPluginManager* parent) 
         : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_status(CPluginManager::UNCONNECTED) 
     {
-        m_xml.SetPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString() + "/plugins/plugins.xml");
+		string path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation).toStdString() + "/plugins/plugins.xml";
+        m_xml.SetPath(path);
     }
 
 public:

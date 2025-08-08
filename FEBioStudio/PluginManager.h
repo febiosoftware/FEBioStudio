@@ -64,6 +64,9 @@ struct Plugin
     int allocatorID = 0;
 };
 
+#ifdef ERROR
+#undef ERROR // avoid conflict with Windows ERROR macro
+#endif
 
 class CPluginManager : public QObject
 {

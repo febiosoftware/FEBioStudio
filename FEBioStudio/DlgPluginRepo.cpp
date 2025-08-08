@@ -23,7 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
+#include <FEBioLib/plugin.h>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -49,7 +49,6 @@ SOFTWARE.*/
 #include <QTreeWidget>
 #include <QHeaderView>
 #include <FEBioLink/FEBioClass.h>
-#include <FEBioLib/plugin.h>
 #include "DlgPluginRepo.h"
 #include "PluginListWidget.h"
 #include "IconProvider.h"

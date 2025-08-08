@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+#include "AVIAnimation.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include "ImgAnimation.h"
-#include "AVIAnimation.h"
 #include "MPEGAnimation.h"
 #include "GIFAnimation.h"
 #include "PostDocument.h"
