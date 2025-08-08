@@ -29,8 +29,7 @@ SOFTWARE.*/
 #include "enum.h"
 #include "CallTracer.h"
 #include <string>
-
-using namespace std;
+#include <vector>
 
 class InvalidVersion {};
 
@@ -45,10 +44,10 @@ public:
 class MissingPluginError
 {
 public:
-    MissingPluginError(vector<pair<int,string>> plugins) : m_plugins(plugins) { CCallStack::FlagError(); }
+    MissingPluginError(std::vector<std::pair<int, std::string>> plugins) : m_plugins(plugins) { CCallStack::FlagError(); }
 
 public:
-    vector<pair<int,string>> m_plugins; // plugin ID and name
+	std::vector<std::pair<int, std::string>> m_plugins; // plugin ID and name
 };
 
 class CSerializable  
