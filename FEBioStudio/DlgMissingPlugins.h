@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 #include <QDialog>
 
-using namespace std;
-
 class CMainWindow;
 
 namespace Ui {
@@ -72,7 +70,7 @@ class CDlgMissingPlugins : public QDialog
     Q_OBJECT
 
 public:
-    CDlgMissingPlugins(CMainWindow* wnd, vector<pair<int, string>> missingPlugins, QWidget *parent = nullptr);
+    CDlgMissingPlugins(CMainWindow* wnd, std::vector<std::pair<int, std::string>> missingPlugins, QWidget *parent = nullptr);
 
     bool SkipPlugins();
 

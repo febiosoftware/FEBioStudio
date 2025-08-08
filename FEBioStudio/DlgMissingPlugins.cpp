@@ -39,6 +39,8 @@ SOFTWARE.*/
 
 #include "DlgMissingPlugins.h"
 
+using namespace std;
+
 class Ui::CPluginWidget
 {
 public:
