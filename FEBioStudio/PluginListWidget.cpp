@@ -46,7 +46,6 @@ public:
     QLabel* nameLabel;
     QLabel* ownerLabel;
     QLabel* statusLabel;
-    QProgressBar* progress;
 
 public:
 
@@ -88,10 +87,7 @@ public:
             return;
         }
 
-        QVBoxLayout* outerLayout = new QVBoxLayout;
-
         QHBoxLayout* layout = new QHBoxLayout;
-        layout->setContentsMargins(0,0,0,0);
         layout->setAlignment(Qt::AlignLeft);
         
         QVBoxLayout* infoLayout = new QVBoxLayout;
@@ -126,11 +122,11 @@ public:
         if(plugin->id > 0)
         {
             QByteArray imageDataByteArray = QByteArray::fromBase64(plugin->imageData);
-            image.loadFromData(imageDataByteArray);
+            pixmap.loadFromData(imageDataByteArray);
         }
         else
         {
-            image.load(":/icons/febio_large.png");
+            pixmap.load(":/icons/febio_large.png");
         }
 
         imageLabel = new QLabel;
@@ -141,20 +137,32 @@ public:
         imageHeight += QFontMetrics(statusFont).height();
         imageHeight += infoLayout->spacing()*2;
 
-        imageLabel->setPixmap(image.scaled(imageHeight, imageHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        pixmap = pixmap.scaled(imageHeight, imageHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+        imageLabel->setPixmap(pixmap);
         imageLabel->setFixedWidth(imageHeight);
+        
+        // Make a grayscale version of the image to be used to show download progress
+        QImage grayImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        QColor c;
+        for (int y = 0; y < pixmap.height(); ++y)
+        {
+            QRgb *scanLine = reinterpret_cast<QRgb*>(grayImage.scanLine(y));
+            
+            for (int x = 0; x < pixmap.width(); ++x)
+            {
+                c.setRgba(scanLine[x]);
+                int grayValue = qGray(c.darker().rgb()); 
+                scanLine[x] = qRgba(grayValue, grayValue, grayValue, c.alpha()); 
+            }
+        }
+        grayPixmap = QPixmap::fromImage(grayImage);
 
         layout->addWidget(imageLabel);
         layout->addSpacing(5);
         layout->addLayout(infoLayout);
 
-        outerLayout->addLayout(layout);
-
-        outerLayout->addWidget(progress = new QProgressBar);
-        progress->setRange(0, 100);
-        progress->hide();
-
-        m_parent->setLayout(outerLayout);
+        m_parent->setLayout(layout);
 
         m_id = plugin->id;
         m_installed = plugin->localCopy;
@@ -163,7 +171,8 @@ public:
 public:
     QWidget* m_parent;
     QColor backgroundColor;
-    QPixmap image;
+    QPixmap pixmap;
+    QPixmap grayPixmap;
     int m_id;
     bool m_installed;
     bool m_selected;
@@ -179,7 +188,28 @@ PluginThumbnail::PluginThumbnail(const Plugin* plugin)
 
 void PluginThumbnail::SetProgress(float progress)
 {
-    ui->progress->setValue(100*progress);
+    // Start with fully gray
+    QPixmap result(ui->grayPixmap.size());
+    result.fill(Qt::transparent);
+
+    QPainter painter(&result);
+    painter.drawPixmap(0, 0, ui->grayPixmap);
+
+    // Determine height of the colored portion
+    int colorHeight = result.height() * progress;
+
+    if (colorHeight > 0) 
+    {
+        QRect colorRect(0, result.height() - colorHeight,
+                        result.width(), colorHeight);
+
+        painter.setClipRect(colorRect);
+        painter.drawPixmap(0, 0, ui->pixmap);
+    }
+
+    painter.end();
+
+    ui->imageLabel->setPixmap(result);
 }
 
 void PluginThumbnail::SetErrorText(const QString& text)
@@ -189,16 +219,16 @@ void PluginThumbnail::SetErrorText(const QString& text)
 
 void PluginThumbnail::SetStatus(int status)
 {
-    // QPixmap pluginImg = ui->imageLabel->pixmap();
+    ui->imageLabel->setPixmap(ui->pixmap);
 
-    // QPixmap emblem;
+    QPixmap pluginImg = ui->imageLabel->pixmap();
 
-    ui->progress->hide();
+    QPixmap emblem;
 
     switch (status)
     {
     case PLUGIN_BROKEN:
-        // emblem = QPixmap(":/icons/emblems/warning.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        emblem = QPixmap(":/icons/emblems/warning.png").scaled(17, 17, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is broken and cannot be used.");
         ui->statusLabel->setText("Broken");
         break;
@@ -207,12 +237,12 @@ void PluginThumbnail::SetStatus(int status)
         ui->statusLabel->setText("Not Installed");
         break;
     case PLUGIN_OUT_OF_DATE:
-        // emblem = QPixmap(":/icons/emblems/caution.png").scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        emblem = QPixmap(":/icons/emblems/caution.png").scaled(17, 17, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is out of date.");
         ui->statusLabel->setText("Out of Date");
         break;
     case PLUGIN_UP_TO_DATE:
-        // emblem = QPixmap(":/icons/emblems/greenCheck.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        emblem = QPixmap(":/icons/emblems/greenCheck.png").scaled(15, 15, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setToolTip("This plugin is up to date.");
         ui->statusLabel->setText("Up to Date");
         break;
@@ -224,14 +254,13 @@ void PluginThumbnail::SetStatus(int status)
     case PLUGIN_DOWNLOADING:
         setToolTip("Downloading...");
         ui->statusLabel->setText("Downloading...");
-        ui->progress->show();
         break;
     }
 
-    // QPainter painter(&pluginImg);
-	// painter.drawPixmap(pluginImg.width() - emblem.width(), pluginImg.height() - emblem.height(), emblem);
+    QPainter painter(&pluginImg);
+	painter.drawPixmap(pluginImg.width() - emblem.width(), pluginImg.height() - emblem.height(), emblem);
 
-    // ui->imageLabel->setPixmap(pluginImg);
+    ui->imageLabel->setPixmap(pluginImg);
 }
 
 int PluginThumbnail::getID()
