@@ -22,4 +22,5 @@ cmake -L . -B cmbuild ^
 cd cmbuild
 msbuild /v:m /P:Configuration=Release /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
 cd ..
-exit 0
+
+exit /b %errorlevel%
