@@ -1314,7 +1314,7 @@ public:
 			for (size_t i = 0; i < W; ++i)
 			{
 				GLColor c = trg.colorValue(i, j);
-				QRgb rgb = qRgb(c.r, c.g, c.b);
+				QRgb rgb = qRgba(c.r, c.g, c.b, c.a);
 				m_img->setPixel((int)i, (int)j, rgb);
 			}
 		emit resultReady(true);
@@ -1370,7 +1370,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		rc.m_h = H;
 		rc.m_settings = GetGLView()->GetViewSettings();
 		rc.m_cam = &scene->GetCamera();
-		QImage img(W, H, QImage::Format_RGB32);
+		QImage img(W, H, QImage::Format_ARGB32);
 
 		CGView& view = scene->GetView();
 		rayTracer->setupProjection(view.m_fov, view.m_fnear);
