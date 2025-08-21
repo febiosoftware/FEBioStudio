@@ -47,6 +47,7 @@ class CDlgFEBioOptimize : public QWizard
 public:
 	CDlgFEBioOptimize(CMainWindow* parent);
 
+	void SetFEBioOpt(FEBioOpt ops);
 	FEBioOpt GetFEBioOpt();
 
 protected slots:
@@ -78,6 +79,7 @@ public:
 
 	void clear();
 	QString text();
+	void setText(const QString& txt);
 
 private slots:
 	void onSelectClicked();

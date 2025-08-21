@@ -151,7 +151,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionFEBioContinue = createAction("Pause FEBio", "actionFEBioContinue", "play"); actionFEBioContinue->setShortcut(Qt::ControlModifier | Qt::Key_F5);
 	actionFEBioPause = createAction("Pause FEBio", "actionFEBioPause", "pause"); actionFEBioPause->setShortcut(Qt::ShiftModifier | Qt::Key_F5);
 	actionFEBioNext = createAction("Advance FEBio", "actionFEBioNext", "next"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
-	QAction* actionFEBioOptimize = createAction("Generate optimization file ...", "actionFEBioOptimize");
+	QAction* actionFEBioOptimize = createAction("Create optimization Study ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
     QAction* actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo");

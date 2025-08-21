@@ -242,6 +242,11 @@ void CSelectParam::clear() { m_edit->clear();	}
 
 QString CSelectParam::text() { return m_edit->text(); }
 
+void CSelectParam::setText(const QString& txt)
+{
+	m_edit->setText(txt);
+}
+
 void CSelectParam::onSelectClicked()
 {
 	CDlgSelectParam dlg(m_fem, m_paramOption);
@@ -300,6 +305,58 @@ public:
 		method->setCurrentIndex(opt.m_method);
 		objTol->setText(QString::number(opt.m_obj_tol));
 		fDiffScale->setText(QString::number(opt.m_f_diff_scale));
+	}
+
+	void SetOptions(FEBioOpt ops)
+	{
+		opt = ops;
+
+		// set control parameters
+		method->setCurrentIndex(opt.m_method);
+		objTol->setText(QString::number(opt.m_obj_tol));
+		fDiffScale->setText(QString::number(opt.m_f_diff_scale));
+		out->setCurrentIndex(opt.m_outLevel);
+		print->setCurrentIndex(opt.m_printLevel);
+
+		// set parameters
+		paramTable->clear();
+		paramTable->setColumnCount(4);
+		for (auto& p : opt.m_params)
+		{
+			addTableEntry(QString::fromStdString(p.m_name), QString::number(p.m_initVal), QString::number(p.m_minVal), QString::number(p.m_maxVal));
+		}
+
+		// set objective data
+		objFun->setCurrentIndex(opt.m_objective);
+		objParam->setText(QString::fromStdString(opt.m_objParam));
+
+		// data-fit pane
+		dataTable->clear();
+		for (auto& d : opt.m_data)
+		{
+			addDataPoint(d.m_time, d.m_value);
+		}
+
+		// target pane
+		trgVar->clear();
+		for (auto& v : opt.m_trgVar)
+		{
+			addTargetVariable(QString::fromStdString(v.m_name), v.m_val);
+		}
+
+		// elem data pane
+		elemDataTable->clear();
+		for (auto& d : opt.m_edData)
+		{
+			addElemDataPoint(d.m_id, d.m_value);
+		}
+
+		// node data pane
+		nodeDataTable->clear();
+		for (auto& d : opt.m_ndData)
+		{
+			addNodeDataPoint(d.m_id, d.m_value);
+		}
 	}
 
 	void Update()
@@ -368,14 +425,19 @@ public:
 		}
 	}
 
-	void addParameter()
+	void addTableEntry(QString name, QString val0, QString valMin, QString valMax)
 	{
 		int rows = paramTable->rowCount();
 		paramTable->setRowCount(rows + 1);
-		paramTable->setItem(rows, 0, new QTableWidgetItem(paramName->text()));
-		paramTable->setItem(rows, 1, new QTableWidgetItem(initVal->text()));
-		paramTable->setItem(rows, 2, new QTableWidgetItem(minVal->text()));
-		paramTable->setItem(rows, 3, new QTableWidgetItem(maxVal->text()));
+		paramTable->setItem(rows, 0, new QTableWidgetItem(name));
+		paramTable->setItem(rows, 1, new QTableWidgetItem(val0));
+		paramTable->setItem(rows, 2, new QTableWidgetItem(valMin));
+		paramTable->setItem(rows, 3, new QTableWidgetItem(valMax));
+	}
+
+	void addParameter()
+	{
+		addTableEntry(paramName->text(), initVal->text(), minVal->text(), maxVal->text());
 
 		paramName->clear();
 		initVal->clear();
@@ -383,13 +445,17 @@ public:
 		maxVal->clear();
 	}
 
-	void addTargetVariable()
+	void addTargetVariable(QString name, double val)
 	{
 		int rows = trgVar->rowCount();
 		trgVar->setRowCount(rows + 1);
-		trgVar->setItem(rows, 0, new QTableWidgetItem(trgName->text()));
-		trgVar->setItem(rows, 1, new QTableWidgetItem(trgVal->text()));
+		trgVar->setItem(rows, 0, new QTableWidgetItem(name));
+		trgVar->setItem(rows, 1, new QTableWidgetItem(QString::number(val)));
+	}
 
+	void addTargetVariable()
+	{
+		addTargetVariable(trgName->text(), trgVal->text().toDouble());
 		trgName->clear();
 		trgVal->clear();
 	}
@@ -663,6 +729,11 @@ CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(
 	ui->setup(this);
 
 	QMetaObject::connectSlotsByName(this);
+}
+
+void CDlgFEBioOptimize::SetFEBioOpt(FEBioOpt ops)
+{
+	ui->SetOptions(ops);
 }
 
 FEBioOpt CDlgFEBioOptimize::GetFEBioOpt()
