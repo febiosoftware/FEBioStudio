@@ -175,7 +175,14 @@ public:
 	{
 	public:
 		vector<SPRING_ELEMENT> m_Elem;
+	};
+
+	class SPRING
+	{
+	public:
+		string elset;
 		LoadCurve m_lc;
+		bool nonlinear = false;
 	};
 
 	// part
@@ -255,7 +262,8 @@ public:
 		char m_szname[256];
 		vector<NODE>				m_Node;		// list of nodes
 		vector<ELEMENT>				m_Elem;		// list of elements
-		list<SPRING_ELEMENT>		m_Spring;	// list of springs
+		list<SPRING_ELEMENT>		m_SpringElem;	// list of spring elements
+		list<SPRING>				m_Spring;	// spring data
 		map<string, NODE_SET*>		m_NSet;		// node sets
 		map<string, ELEMENT_SET*>	m_ESet;		// element sets
 		map<string, SURFACE*>		m_Surf;		// surfaces

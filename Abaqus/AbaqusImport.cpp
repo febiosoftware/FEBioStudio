@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// AbaqusImport.cpp: implementation of the AbaqusImport class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "AbaqusImport.h"
 #include <stdlib.h>
 #include <GeomLib/GMeshObject.h>
@@ -39,9 +34,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <sstream>
-////using namespace std;
 
-//-----------------------------------------------------------------------------
 AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 {
 	// default options
@@ -62,12 +55,10 @@ AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 	AddBoolParam(true, "process_solid_sections", "Process solid sections");
 }
 
-//-----------------------------------------------------------------------------
 AbaqusImport::~AbaqusImport()
 {
 }
 
-//-----------------------------------------------------------------------------
 bool AbaqusImport::UpdateData(bool bsave)
 {
 	if (bsave)
@@ -92,7 +83,6 @@ bool AbaqusImport::UpdateData(bool bsave)
 	return false;
 }
 
-//-----------------------------------------------------------------------------
 bool AbaqusImport::read_line(char* szline, FILE* fp)
 {
 	// read a line but skip over comments (i.e.lines that start with **)
@@ -111,7 +101,6 @@ bool AbaqusImport::read_line(char* szline, FILE* fp)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool AbaqusImport::skip_keyword(char* szline, FILE* fp)
 {
 	do
@@ -122,7 +111,6 @@ bool AbaqusImport::skip_keyword(char* szline, FILE* fp)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 // see if sz2 is contained in sz1, ignoring case
 bool szicnt(const char* sz1, const char* sz2)
 {
@@ -147,7 +135,6 @@ bool szicnt(const char* sz1, const char* sz2)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 // compare two strings, not considering case
 bool szicmp(const char* sz1, const char* sz2)
 {
@@ -171,7 +158,6 @@ bool szicmp(const char* sz1, const char* sz2)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 //! Load an Abaqus model file
 bool AbaqusImport::Load(const char* szfile)
 {
@@ -209,7 +195,6 @@ bool AbaqusImport::Load(const char* szfile)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 //! Parse an abaqus model file
 bool AbaqusImport::parse_file(FILE* fp)
 {
@@ -224,6 +209,11 @@ bool AbaqusImport::parse_file(FILE* fp)
 		if (szicnt(szline, "*HEADING"))	// read the heading
 		{
 			if (!read_heading(szline, fp)) return errf("Error while reading keyword HEADING (line %d)", m_nline);
+		}
+		else if (szicnt(szline, "*PREPRINT"))
+		{
+			// just skip this
+			read_line(szline, fp);
 		}
 		else if (szicnt(szline, "*NODE PRINT"))
 		{
@@ -1247,7 +1237,7 @@ bool AbaqusImport::read_surface(char* szline, FILE* fp)
 
 		// first see it the line refers to an element set
 		// loop over all the parts
-		AbaqusModel::ELEMENT_SET* pset = m_inp.FindElementSet(szline);
+		AbaqusModel::ELEMENT_SET* pset = (pg ? pg->FindElementSet(szline) : m_inp.FindElementSet(szline));
 
 		if (pset)
 		{
@@ -1635,29 +1625,29 @@ bool AbaqusImport::build_mesh()
 
 			// build a part
 			GObject* po = build_part(pinst->GetPart());
-			assert(po);
-			if (po == 0) return false;
-
-			// apply translation
-			double t[3];
-			pinst->GetTranslation(t);
-			po->GetTransform().SetPosition(vec3d(t[0], t[1], t[2]));
-
-			// apply rotation
-			double R[7];
-			pinst->GetRotation(R);
-			if (R[6] != 0.0)
+			if (po)
 			{
-				vec3d a = vec3d(R[0], R[1], R[2]);
-				vec3d b = vec3d(R[3], R[4], R[5]);
-				po->GetTransform().Rotate(a, b, R[6]);
-			}
+				// apply translation
+				double t[3];
+				pinst->GetTranslation(t);
+				po->GetTransform().SetPosition(vec3d(t[0], t[1], t[2]));
 
-			// if we get here we are good to go!
-			const char* szname = (*pi)->GetName();
-			if ((szname == 0) || (strlen(szname) == 0)) szname = szdefaultName;
-			po->SetName(szname);
-			fem.GetModel().AddObject(po);
+				// apply rotation
+				double R[7];
+				pinst->GetRotation(R);
+				if (R[6] != 0.0)
+				{
+					vec3d a = vec3d(R[0], R[1], R[2]);
+					vec3d b = vec3d(R[3], R[4], R[5]);
+					po->GetTransform().Rotate(a, b, R[6]);
+				}
+
+				// if we get here we are good to go!
+				const char* szname = (*pi)->GetName();
+				if ((szname == 0) || (strlen(szname) == 0)) szname = szdefaultName;
+				po->SetName(szname);
+				fem.GetModel().AddObject(po);
+			}
 		}
 	}
 	else
@@ -2271,7 +2261,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		int NS = pg->Springs();
 		list<AbaqusModel::SPRING_ELEMENT>::iterator ps;
 		int n = 1;
-		for (ps = pg->m_Spring.begin(); ps != pg->m_Spring.end(); ++ps, ++n)
+		for (ps = pg->m_SpringElem.begin(); ps != pg->m_SpringElem.end(); ++ps, ++n)
 		{
 			AbaqusModel::SPRING_ELEMENT& s = *ps;
 			AbaqusModel::Tnode_itr pn1 = part.FindNode(s.n[0]);
@@ -2290,55 +2280,59 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		}
 	}
 	
-	if (!pg->m_SpringSet.empty())
+	if (!pg->m_Spring.empty())
 	{
-		int NS = pg->m_SpringSet.size();
-		for (auto& s : pg->m_SpringSet)
+		int NS = pg->m_Spring.size();
+		for (auto& s : pg->m_Spring)
 		{
-			int nsize = s.second.m_Elem.size();
-			GDiscreteSpringSet* dis = new GDiscreteSpringSet(&gm);
-			dis->SetName(s.first);
-
-			auto& springs = s.second.m_Elem;
-			for (int i = 0; i < springs.size(); ++i)
+			AbaqusModel::SpringSet* set = m_inp.FindSpringSet(s.elset.c_str());
+			if (set)
 			{
-				AbaqusModel::SPRING_ELEMENT& el = springs[i];
+				int nsize = set->m_Elem.size();
+				GDiscreteSpringSet* dis = new GDiscreteSpringSet(&gm);
+				dis->SetName(s.elset);
 
-				AbaqusModel::Tnode_itr pn1 = part.FindNode(el.n[0]);
-				AbaqusModel::Tnode_itr pn2 = part.FindNode(el.n[1]);
-
-				int n0 = po->MakeGNode(pn1->n);
-				int n1 = po->MakeGNode(pn2->n);
-
-				GNode* gn0 = po->FindNode(n0);
-				GNode* gn1 = po->FindNode(n1);
-
-				dis->AddElement(gn0, gn1);
-			}
-
-			if (s.second.m_lc.Points() > 0)
-			{
-				FSModel& fem = m_prj.GetFSModel();
-				FSDiscreteMaterial* dmat = FEBio::CreateDiscreteMaterial("nonlinear spring", &fem);
-				dis->SetMaterial(dmat);
-
-				FSProperty* prop = dmat->FindProperty("force");
-				if (prop)
+				auto& springs = set->m_Elem;
+				for (int i = 0; i < springs.size(); ++i)
 				{
-					FSFunction1D* plc = FEBio::CreateFunction1D("point", &fem);
-					prop->SetComponent(plc);
+					AbaqusModel::SPRING_ELEMENT& el = springs[i];
 
-					Param* p = plc->GetParam("points");
-					if (p)
-					{ 
-						LoadCurve& lc = s.second.m_lc;
-						std::vector<vec2d> v = lc.GetPoints();
-						p->SetVectorVec2dValue(v);
+					AbaqusModel::Tnode_itr pn1 = part.FindNode(el.n[0]);
+					AbaqusModel::Tnode_itr pn2 = part.FindNode(el.n[1]);
+
+					int n0 = po->MakeGNode(pn1->n);
+					int n1 = po->MakeGNode(pn2->n);
+
+					GNode* gn0 = po->FindNode(n0);
+					GNode* gn1 = po->FindNode(n1);
+
+					dis->AddElement(gn0, gn1);
+				}
+
+				if (s.m_lc.Points() > 0)
+				{
+					FSModel& fem = m_prj.GetFSModel();
+					FSDiscreteMaterial* dmat = FEBio::CreateDiscreteMaterial("nonlinear spring", &fem);
+					dis->SetMaterial(dmat);
+
+					FSProperty* prop = dmat->FindProperty("force");
+					if (prop)
+					{
+						FSFunction1D* plc = FEBio::CreateFunction1D("point", &fem);
+						prop->SetComponent(plc);
+
+						Param* p = plc->GetParam("points");
+						if (p)
+						{
+							LoadCurve& lc = s.m_lc;
+							std::vector<vec2d> v = lc.GetPoints();
+							p->SetVectorVec2dValue(v);
+						}
 					}
 				}
-			}
 
-			fem.GetModel().AddDiscreteObject(dis);
+				fem.GetModel().AddDiscreteObject(dis);
+			}
 		}
 	}
 
@@ -2554,7 +2548,6 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 	return false;
 }
 
-//-----------------------------------------------------------------------------
 bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 {
 	AbaqusModel::BOUNDARY BC;
@@ -2592,8 +2585,18 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 					strncpy(szbuf, szset, ch - szset);
 					AbaqusModel::INSTANCE* inst = m_inp.FindInstance(szbuf);
 					if (inst == nullptr) return false;
-					part = inst->GetPart();
-					nid = atoi(ch + 1);
+
+					const char* nset = ch + 1;
+					ns = inst->GetPart()->FindNodeSet(nset);
+					if (ns)
+					{
+						BC.add(ns, ndof, val);
+					}
+					else
+					{
+						part = inst->GetPart();
+						nid = atoi(ch + 1);
+					}
 				}
 				else
 				{
@@ -2866,22 +2869,23 @@ bool AbaqusImport::read_spring(char* szline, FILE* fp)
 	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 	bool nonlinear = false;
-	AbaqusModel::SpringSet* springset = nullptr;
+
+	AbaqusModel::SPRING spring;
+
 	if (szicnt(att[1].szatt, "ELSET"))
 	{
 		const char* szset = att[1].szval;
-		springset = m_inp.FindSpringSet(szset);
+		spring.elset = szset;
 	}
 	if (szicnt(att[2].szatt, "nonlinear"))
 	{
-		nonlinear = true;
+		spring.nonlinear = true;
 	}
-	if (springset == nullptr) return false;
 
 	// skip a line
 	read_line(szline, fp);
 	read_line(szline, fp);
-	LoadCurve& lc = springset->m_lc;
+	LoadCurve& lc = spring.m_lc;
 	lc.Clear();
 	while (!feof(fp) && (szline[0] != '*'))
 	{
