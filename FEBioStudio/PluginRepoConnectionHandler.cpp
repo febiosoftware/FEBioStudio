@@ -152,7 +152,7 @@ bool CPluginRepoConnectionHandler::NetworkAccessibleCheck()
 	return true;
 }
 
-void CPluginRepoConnectionHandler::getPluginFiles(int pluginID, int fileNumber)
+void CPluginRepoConnectionHandler::getPluginFiles(int pluginID, int fileNumber, bool develop)
 {
     QUrl myurl;
     myurl.setScheme(ServerSettings::Scheme());
@@ -171,6 +171,9 @@ void CPluginRepoConnectionHandler::getPluginFiles(int pluginID, int fileNumber)
 
     request.setRawHeader(QByteArray("os"), OS_ID);
     request.setRawHeader(QByteArray("fileID"), QString::number(fileNumber).toUtf8());
+
+    QString devString = develop ? "1" : "0";
+    request.setRawHeader(QByteArray("develop"), devString.toUtf8());
 
     if(NetworkAccessibleCheck())
     {
@@ -251,6 +254,7 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
         QString version = r->rawHeader("version");
         QString sdk = r->rawHeader("sdk");
         int main = r->rawHeader("main").toInt();
+        bool develop = r->rawHeader("develop").toInt() == 1;
 
 		QFileInfo info(filename);
 
@@ -269,7 +273,7 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
 
         if(nextFileID > 0)
         {
-            getPluginFiles(pluginID, nextFileID);
+            getPluginFiles(pluginID, nextFileID, develop);
         }
         else
         {

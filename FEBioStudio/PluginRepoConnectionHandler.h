@@ -43,7 +43,7 @@ class CPluginRepoConnectionHandler : public QObject
 public:
 	CPluginRepoConnectionHandler(CPluginManager* manager, CPluginDatabaseHandler* dbHandler);
 
-    void getPluginFiles(int pluginID, int fileNumber = 0);
+    void getPluginFiles(int pluginID, int fileNumber, bool develop);
 
     void getSchema();
 	void getTables();

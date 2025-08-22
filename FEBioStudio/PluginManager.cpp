@@ -49,10 +49,15 @@ class CPluginManager::Imp
 {
 public:
     Imp(CPluginManager* parent) 
-        : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_status(CPluginManager::UNCONNECTED) 
+        : m_db(parent), m_xml(parent), m_repo(parent, &m_db), m_localID(-1), m_status(CPluginManager::UNCONNECTED), m_develop(false)
     {
 		string path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation).toStdString() + "/plugins/plugins.xml";
         m_xml.SetPath(path);
+
+        // Ensure that dev versions of FBS always get dev plugins
+        #ifdef DEVCOMMIT
+            m_develop = true;
+        #endif
     }
 
 public:
@@ -64,6 +69,8 @@ public:
     int m_localID;
 
     int m_status;
+
+    bool m_develop;
 };
 
 CPluginManager::CPluginManager() : imp(new Imp(this))
@@ -98,6 +105,11 @@ void CPluginManager::Connect(int force)
 int CPluginManager::Status()
 {
     return imp->m_status;
+}
+
+void CPluginManager::SetDevelop(bool develop)
+{
+    imp->m_develop = develop;
 }
 
 #ifndef UPDATER
@@ -188,7 +200,7 @@ void CPluginManager::DownloadPlugin(int id)
     Plugin* plugin = GetPlugin(id);
     if(plugin) plugin->status = PLUGIN_DOWNLOADING;
 
-    imp->m_repo.getPluginFiles(id);
+    imp->m_repo.getPluginFiles(id, 0, imp->m_develop);
 }
 
 bool CPluginManager::DeletePlugin(int id)
@@ -438,9 +450,9 @@ void CPluginManager::AddRepoPlugin(char** argv)
 
     plugin.id = id;
     plugin.name = argv[1];
-    plugin.owner = argv[2];
-    plugin.description = argv[3];
-    plugin.sourceURL = argv[4];
+    plugin.repoName = argv[2];
+    plugin.owner = argv[3];
+    plugin.description = argv[4];
     plugin.imageData = argv[5];
     plugin.downloads = std::stoi(argv[6]);
 
@@ -562,7 +574,7 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
         return;
     }
 
-    std::vector<std::string> dbVersions = imp->m_db.GetPluginVersions(plugin.id);
+    std::vector<std::string> dbVersions = imp->m_db.GetPluginVersions(plugin.id, imp->m_develop);
 
     if(dbVersions.empty())
     {

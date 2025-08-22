@@ -224,6 +224,8 @@ CMainWindow::CMainWindow(bool devChannel, bool updaterUpdateCheck, QString& bran
   	button_layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton;
   	setButtonLayout(button_layout);
 
+    ui->pluginManager.SetDevelop(m_devChannel);
+
 	connect(this->button(QWizard::FinishButton), &QPushButton::clicked, this, &CMainWindow::onFinish);
 	connect(restclient, &QNetworkAccessManager::finished, this, &CMainWindow::connFinished);
 	connect(restclient, &QNetworkAccessManager::sslErrors, this, &CMainWindow::sslErrorHandler);
@@ -705,7 +707,7 @@ void CMainWindow::updatePlugins()
 
         for(auto& [id, plugin] : ui->pluginManager.GetPlugins())
         {
-            if(plugin.localCopy)
+            if(plugin.localCopy && id > 0)
             {
                 ui->pluginIDs.push_back(id);
             }

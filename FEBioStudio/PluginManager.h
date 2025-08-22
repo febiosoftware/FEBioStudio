@@ -47,9 +47,9 @@ struct Plugin
     int status;
     int downloads = 0;
     std::string name;
+    std::string repoName;
     std::string owner;
     std::string description;
-    std::string sourceURL;
     QByteArray imageData; // thumbnail image data
     std::vector<QVariantMap> publications; // plugin publications
     std::vector<std::string> tags; // versions from the database
@@ -91,6 +91,9 @@ public:
     void Connect(int force = true);
 
     int Status();
+
+    // Used by the updater
+    void SetDevelop(bool develop);
 
     void LoadAllPlugins();
     void ReadDatabase();

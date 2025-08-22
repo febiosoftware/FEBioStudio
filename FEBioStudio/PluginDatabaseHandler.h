@@ -49,7 +49,7 @@ public:
 
     void GetPluginTags(int ID);
 
-    std::vector<std::string> GetPluginVersions(int ID);
+    std::vector<std::string> GetPluginVersions(int ID, bool develop);
 
     std::unordered_set<int> GetPluginSearchResults(const QString& searchTerm);
 

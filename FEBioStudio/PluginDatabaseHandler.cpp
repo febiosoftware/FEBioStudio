@@ -77,7 +77,7 @@ void CPluginDatabaseHandler::update(QJsonDocument& jsonDoc)
 
 void CPluginDatabaseHandler::GetPlugins()
 {
-    std::string query("SELECT plugins.ID, plugins.name, users.username, plugins.description, plugins.source, "
+    std::string query("SELECT plugins.ID, plugins.name, plugins.repoName, users.username, plugins.description, "
         "plugins.image, COALESCE(SUM(downloads.downloads), 0) AS total_downloads FROM plugins JOIN users ON plugins.owner "
         "= users.ID LEFT JOIN downloads ON plugins.ID = downloads.plugin GROUP BY plugins.ID, plugins.name, "
         "users.username, plugins.description, plugins.image");
@@ -162,17 +162,20 @@ void CPluginDatabaseHandler::GetPluginTags(int ID)
 }
 
 
-std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID)
+std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID, bool develop)
 {
     std::vector<std::string> versions;
 
     std::string currentFEBioVersion = std::to_string(FE_SDK_MAJOR_VERSION) + "." 
         + std::to_string(FE_SDK_SUB_VERSION) + "." + std::to_string(FE_SDK_SUBSUB_VERSION);
+
+    std::string pluginVersionsTable = "pluginVersions";
+    if(develop) pluginVersionsTable = "devPluginVersions";
     
-    std::string query = "SELECT v1.version FROM pluginVersions "
-        "JOIN plugins ON pluginVersions.plugin = plugins.ID "
-        "JOIN versions v1 ON pluginVersions.version = v1.ID "
-        "JOIN febioVersions v2 ON pluginVersions.febioVersion = v2.ID "
+    std::string query = "SELECT v1.version FROM " + pluginVersionsTable +
+        " JOIN plugins ON " + pluginVersionsTable + ".plugin = plugins.ID "
+        "JOIN versions v1 ON " + pluginVersionsTable + ".version = v1.ID "
+        "JOIN febioVersions v2 ON " + pluginVersionsTable + ".febioVersion = v2.ID "
         "WHERE plugins.ID = " + std::to_string(ID) +
         " AND v2.version = '" + currentFEBioVersion + "'";
 

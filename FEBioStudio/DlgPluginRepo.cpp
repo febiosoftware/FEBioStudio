@@ -639,7 +639,7 @@ public:
             tagLabel->hide();
         }
 
-        sourceButton->setVisible(!plugin->sourceURL.empty());
+        sourceButton->setVisible(!plugin->repoName.empty());
 
         downloadButton->hide();
         downloadingButton->hide();
@@ -951,7 +951,8 @@ void CDlgPluginRepo::on_sourceButton_clicked()
 
     if(plugin)
     {
-        QDesktopServices::openUrl(QUrl(plugin->sourceURL.c_str()));
+        QUrl url(QString("https://github.com/febiosoftware/") + plugin->repoName.c_str());
+        QDesktopServices::openUrl(url);
     }
 }
 
