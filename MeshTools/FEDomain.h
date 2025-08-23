@@ -51,10 +51,10 @@ class FEDEdge
 public:
     //! constructor
     FEDEdge();
-    FEDEdge(int v0, int v1);
+    FEDEdge(int v0, int v1, int v2 = -1);
 
 public:
-    int  v[2];   // vertices of edge
+    int  v[3];   // vertices of edge
     
 public:
     // meshing functions
@@ -64,6 +64,7 @@ public:
     bool CreateMesh(FSDomain* pdom);
     
     // mesh data
+    bool            quadratic;
     std::vector<int>     n;      // domain vertex list along edge
     int             nseg;   // number of segments along edge
     double          bias;   // mesh bias

@@ -988,19 +988,20 @@ FEDVertex::FEDVertex(int m, const vec3d& x)
 
 FEDEdge::FEDEdge()
 {
+    quadratic = false;
     nseg = -1;
     bias = 1;
     dble = false;
-    v[0] = v[1] = -1;
+    v[0] = v[1] = v[2] = -1;
 }
 
 //-------------------------------------------------------------------------------
-FEDEdge::FEDEdge(int v0, int v1)
+FEDEdge::FEDEdge(int v0, int v1, int v2)
 {
     nseg = -1;
     bias = 1;
     dble = false;
-    v[0] = v0; v[1] = v1;
+    v[0] = v0; v[1] = v1; v[2] = v2;
 }
 
 //-------------------------------------------------------------------------------
@@ -1009,25 +1010,27 @@ void FEDEdge::GenerateBias()
     if (nseg < 1) return;
 
     // find the normalized extrusion distances
-    rbias.resize(nseg+1);
+    int NSEG = nseg;
+    if (quadratic) NSEG = 2*nseg;
+    rbias.resize(NSEG+1);
     rbias[0] = 0;
-    rbias[nseg] = 1;
+    rbias[NSEG] = 1;
     // uniform mesh
     if (bias == 1) {
-        double dr = 1./nseg;
-        for (int i=1; i<nseg; ++i) rbias[i] = dr*i;
+        double dr = 1./NSEG;
+        for (int i=1; i<NSEG; ++i) rbias[i] = dr*i;
     }
     else if (dble)
     {
-        double dr = (bias - 1)/(pow(bias, nseg) - 1);
+        double dr = (bias - 1)/(pow(bias, NSEG) - 1);
         rbias[1] = dr;
-        for (int i=2; i<nseg; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
+        for (int i=2; i<NSEG; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
     }
     else
     {
-        double dr = (bias - 1)/(pow(bias, nseg) - 1);
+        double dr = (bias - 1)/(pow(bias, NSEG) - 1);
         rbias[1] = dr;
-        for (int i=2; i<nseg; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
+        for (int i=2; i<NSEG; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
     }
 
 }
