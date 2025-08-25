@@ -63,13 +63,16 @@ public:
     // create meshed vertices
     bool CreateMesh(FSDomain* pdom);
     
+    // evaluate shape function
+    double N(int a, double eta);
+    
     // mesh data
     bool            quadratic;
-    std::vector<int>     n;      // domain vertex list along edge
-    int             nseg;   // number of segments along edge
-    double          bias;   // mesh bias
-    bool            dble;   // flag for bias (true = double, false = single)
-    std::vector<double>  rbias;  // parametric coordinates of biased mesh
+    std::vector<int>     n;     // domain vertex list along edge
+    int             nseg;       // number of segments along edge
+    double          bias;       // mesh bias
+    bool            dble;       // flag for bias (true = double, false = single)
+    std::vector<double>  rbias; // parametric coordinates of biased mesh
 };
 
 class FEDQuad
@@ -77,22 +80,27 @@ class FEDQuad
 public:
     //! constructor
     FEDQuad();
-    FEDQuad(int v0, int v1, int v2, int v3);
+    FEDQuad(int v0, int v1, int v2, int v3,
+            int v4 = -1, int v5 = -1, int v6 = -1, int v7 = -1);
     
     // create meshed vertices
     bool CreateMesh(FSDomain* pdom);
     
+    // evaluate shape function
+    double N(int a, int b, double eta1, double eta2);
+    
 public:
     // local node numbering for edges
-    static const int m_edge[4][2];
+    static const int m_edge[4][3];
     
 public:
     int             m_ntag; // tag number
-    int             v[4];   // vertices of quad
+    int             v[8];   // vertices of quad
     int             e[4];   // edges of quad
     bool            ep[4];  // edge sense (positive = true, negative = false)
     
     // mesh data
+    bool            quadratic;
     std::vector< std::vector<int> >     n;      // domain vertex list in face
     std::vector< std::vector<double> >  eta1;   // parametric coordinates of vertices
     std::vector< std::vector<double> >  eta2;   // parametric coordinates of vertices
@@ -114,7 +122,7 @@ public:
     
 public:
     // local node numbering for edges
-    static const int m_edge[3][2];
+    static const int m_edge[3][3];
 
     // local edge numbering for apex
 	static const int m_apex[3][3];
@@ -154,7 +162,7 @@ public:
     
 public:
     // local node numbering for edges
-    static const int m_edge[12][2];
+    static const int m_edge[12][3];
     
     // local node numbering for quad faces
 	static const int m_quad[6][4];
@@ -164,7 +172,7 @@ public:
     int             m_gid;
     
 public:
-    int             v[8];       // list of vertices
+    int             v[20];       // list of vertices
     int             e[12];      // list of edges
     bool            ep[12];     // edge sense (positive = true, negative = false)
     int             q[6];       // list of faces
@@ -210,10 +218,10 @@ public:
     
 public:
     // local node numbering for edges
-    static const int m_edge[9][2];
+    static const int m_edge[9][3];
     
     // local node numbering for faces
-	static const int m_face[5][4];
+	static const int m_face[5][8];
     
 public:
     int             m_ntag;     // tag number
@@ -273,10 +281,10 @@ public:
     
 public:
     // local node numbering for edges
-    static const int m_edge[6][2];
+    static const int m_edge[6][3];
     
     // local node numbering for faces
-	static const int m_face[4][3];
+	static const int m_face[4][6];
     
 public:
     int             m_ntag;     // tag number

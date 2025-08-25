@@ -28,13 +28,13 @@ SOFTWARE.*/
 #include "FEDomain.h"
 using namespace std;
 
-const int FEDQuad::m_edge[4][2] = {
-    { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }
+const int FEDQuad::m_edge[4][3] = {
+    { 0, 1, 4 }, { 1, 2, 5 }, { 2, 3, 6 }, { 3, 0, 7 }
 };
 
 // local node numbering for edges
-const int FEDTri::m_edge[3][2] = {
-    { 0, 1 }, { 1, 2 }, { 2, 0 }
+const int FEDTri::m_edge[3][3] = {
+    { 0, 1, 3 }, { 1, 2, 4 }, { 2, 0, 5 }
 };
 // local edge numbering for apex
 const int FEDTri::m_apex[3][3] = {
@@ -42,10 +42,10 @@ const int FEDTri::m_apex[3][3] = {
 };
 
 // local node numbering for edges
-const int FEDBox::m_edge[12][2] = {
-    { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
-    { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
-    { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }
+const int FEDBox::m_edge[12][3] = {
+    { 0, 1, 8 }, { 1, 2, 9 }, { 2, 3, 10 }, { 3, 0, 11 },
+    { 4, 5, 12 }, { 5, 6, 13 }, { 6, 7, 14 }, { 7, 4, 15 },
+    { 0, 4, 16 }, { 1, 5, 17 }, { 2, 6, 18 }, { 3, 7, 19 }
 };
 
 // local node numbering for quad faces
@@ -55,27 +55,27 @@ const int FEDBox::m_quad[6][4] = {
 };
 
 // local node numbering for edges
-const int FEDWedge::m_edge[9][2] = {
-    { 0, 1 }, { 1, 2 }, { 2, 0 },
-    { 3, 4 }, { 4, 5 }, { 5, 3 },
-    { 0, 3 }, { 1, 4 }, { 2, 5 }
+const int FEDWedge::m_edge[9][3] = {
+    { 0, 1, 6}, { 1, 2, 7 }, { 2, 0, 8 },
+    { 3, 4, 9 }, { 4, 5, 10 }, { 5, 3, 11 },
+    { 0, 3, 12 }, { 1, 4, 13 }, { 2, 5, 14 }
 };
 
 // local node numbering for faces
-const int FEDWedge::m_face[5][4] = {
-    { 0, 1, 4, 3 }, { 1, 2, 5, 4 }, { 0, 3, 5, 2 },
-    { 0, 2, 1, 1 }, { 3, 4, 5, 5 }
+const int FEDWedge::m_face[5][8] = {
+    { 0, 1, 4, 3, 6, 17, 9, 12 }, { 1, 2, 5, 4, 7, 14, 10, 17 }, { 0, 3, 5, 2, 12, 11, 14, 8 },
+    { 0, 2, 1, 1, 8, 7, 6, 6 }, { 3, 4, 5, 5, 9, 10, 11, 11 }
 };
 
 // local node numbering for edges
-const int FEDTet::m_edge[6][2] = {
-	{ 0, 1 }, { 1, 2 }, { 2, 0 },
-	{ 0, 3 }, { 1, 3 }, { 2, 3 }
+const int FEDTet::m_edge[6][3] = {
+	{ 0, 1, 4 }, { 1, 2, 5 }, { 2, 0, 6 },
+	{ 0, 3, 7 }, { 1, 3, 8 }, { 2, 3, 9 }
 };
 
 // local node numbering for faces
-const int FEDTet::m_face[4][3] = {
-	{ 0, 1, 3 }, { 1, 2, 3 }, { 0, 3, 2 }, { 0, 2, 1 }
+const int FEDTet::m_face[4][6] = {
+	{ 0, 1, 3, 4, 8, 7 }, { 1, 2, 3, 5, 9, 8 }, { 0, 3, 2, 7, 9, 6 }, { 0, 2, 1, 6, 5, 4 }
 };
 
 int mod(int a, int b)
@@ -998,6 +998,7 @@ FEDEdge::FEDEdge()
 //-------------------------------------------------------------------------------
 FEDEdge::FEDEdge(int v0, int v1, int v2)
 {
+    if (v2 == -1) quadratic = false;
     nseg = -1;
     bias = 1;
     dble = false;
@@ -1017,21 +1018,23 @@ void FEDEdge::GenerateBias()
     rbias[NSEG] = 1;
     // uniform mesh
     if (bias == 1) {
-        double dr = 1./NSEG;
-        for (int i=1; i<NSEG; ++i) rbias[i] = dr*i;
+        double dr = 1./nseg;
+        for (int i=1; i<nseg; ++i) rbias[i] = dr*i;
     }
     else if (dble)
     {
-        double dr = (bias - 1)/(pow(bias, NSEG) - 1);
+        double dr = (bias - 1)/(pow(bias, nseg) - 1);
         rbias[1] = dr;
-        for (int i=2; i<NSEG; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
+        for (int i=2; i<nseg; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
     }
     else
     {
-        double dr = (bias - 1)/(pow(bias, NSEG) - 1);
+        double dr = (bias - 1)/(pow(bias, nseg) - 1);
         rbias[1] = dr;
-        for (int i=2; i<NSEG; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
+        for (int i=2; i<nseg; ++i) rbias[i] = rbias[i-1] + dr*pow(bias, i-1);
     }
+    if (quadratic)
+        for (int i=1; i<=nseg; ++i) rbias[nseg+i] = (rbias[i-1]+rbias[i])/2;
 
 }
 
@@ -1045,19 +1048,70 @@ bool FEDEdge::CreateMesh(FSDomain* pdom)
     GenerateBias();
     
     // store the start and end vertices in the vertex list
-    n.resize(nseg+1,-1);
-    n[0] = v[0];
-    n[nseg] = v[1];
+    int NSEG = nseg;
+    if (quadratic) NSEG = 2*nseg;
+    n.resize(NSEG+1,-1);
     
     // create new vertices by interpolation
     vec3d r0 = pdom->Vertex(v[0]).r;
-    vec3d dr = pdom->Vertex(v[1]).r - r0;
-    for (int i=1; i<nseg; ++i) {
-        vec3d r = r0 + dr*rbias[i];
-        n[i] = pdom->AddVertex(-1, r);
+    vec3d r1 = pdom->Vertex(v[1]).r;
+
+    if (quadratic) {
+        vec3d r2 = pdom->Vertex(v[2]).r;
+        for (int i=0; i<=NSEG+1; ++i) {
+            double eta = rbias[i];
+            vec3d r = r0*N(0,eta) + r1*N(1,eta) + r2*N(2,eta);
+            n[nseg+i] = pdom->AddVertex(-1, r);
+        }
+    }
+    else {
+        for (int i=0; i<=nseg; ++i) {
+            double eta = rbias[i];
+            vec3d r = r0*N(0,eta) + r1*N(1,eta);
+            n[i] = pdom->AddVertex(-1, r);
+        }
     }
     
     return true;
+}
+
+// Edge shape functions when 0 ≤ eta ≤ 1
+double FEDEdge::N(int a, double eta)
+{
+    if (quadratic) {
+        switch (a) {
+            case 0:
+                return 2*(1-eta)*(0.5-eta);
+                break;
+                
+            case 1:
+                return 2*eta*(eta-0.5);
+                break;
+                
+            case 2:
+                return 4*eta*(1-eta);
+                break;
+                
+            default:
+                return -1;
+                break;
+        }
+    }
+    else {
+        switch (a) {
+            case 0:
+                return 1-eta;
+                break;
+                
+            case 1:
+                return eta;
+                break;
+                
+            default:
+                return -1;
+                break;
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1066,16 +1120,20 @@ bool FEDEdge::CreateMesh(FSDomain* pdom)
 
 FEDQuad::FEDQuad()
 {
+    quadratic = false;
     m_ntag = -1;
     v[0] = v[1] = v[2] = v[3] = -1;
     e[0] = e[1] = e[2] = e[3] = -1;
 }
 
 //-------------------------------------------------------------------------------
-FEDQuad::FEDQuad(int v0, int v1, int v2, int v3)
+FEDQuad::FEDQuad(int v0, int v1, int v2, int v3,
+                 int v4, int v5, int v6, int v7)
 {
+    if (v4 == -1) quadratic = false;
     m_ntag = -1;
     v[0] = v0; v[1] = v1; v[2] = v2; v[3] = v3;
+    v[4] = v4; v[5] = v5; v[6] = v6; v[7] = v7;
     e[0] = e[1] = e[2] = e[3] = -1;
 }
 
@@ -1087,19 +1145,25 @@ bool FEDQuad::CreateMesh(FSDomain* pdom)
     // edge 3 of quad = eta2 axis (-ve)
     int mseg = pdom->Edge(e[0]).nseg;   // number of segments along eta1
     int nseg = pdom->Edge(e[3]).nseg;   // number of segments along eta2
-    
+
+    int MSEG = mseg;
+    int NSEG = nseg;
+    if ((pdom->Edge(e[0]).quadratic && pdom->Edge(e[3]).quadratic) != quadratic)
+        return false;
+    if (quadratic) { MSEG = 2*mseg; NSEG = 2*nseg; }
+
     // check if we can mesh
     if ((mseg < 1) || (nseg < 1)) return false;
     
     // allocate memory for vertex list
-    // eta1 and eta2 double arrays sized as [mseg+1][nseg+1]
-    n.resize(mseg+1);
-    eta1.resize(mseg+1);
-    eta2.resize(mseg+1);
-    for (int i=0; i<= mseg; ++i) {
-        n[i].resize(nseg+1);
-        eta1[i].resize(nseg+1);
-        eta2[i].resize(nseg+1);
+    // eta1 and eta2 double arrays sized as [MSEG+1][NSEG+1]
+    n.resize(MSEG+1);
+    eta1.resize(MSEG+1);
+    eta2.resize(MSEG+1);
+    for (int i=0; i<= MSEG; ++i) {
+        n[i].resize(NSEG+1);
+        eta1[i].resize(NSEG+1);
+        eta2[i].resize(NSEG+1);
     }
     
     // eta values are evaluated from the bias and increase from 0 to 1
@@ -1128,33 +1192,66 @@ bool FEDQuad::CreateMesh(FSDomain* pdom)
         eta2[mseg][j] = pdom->Edge(e[1]).rbias[l];
     }
     
-    // create new vertices by bilinear interpolation
-    vec3d r0 = pdom->Vertex(n[0][0]).r;
-    vec3d r1 = pdom->Vertex(n[mseg][0]).r;
-    vec3d r2 = pdom->Vertex(n[mseg][nseg]).r;
-    vec3d r3 = pdom->Vertex(n[0][nseg]).r;
-    for (i=1; i<mseg; ++i) {
-        double eta10 = eta1[i][0];
-        double eta12 = eta1[i][nseg];
-        for (j=1; j<nseg; ++j) {
-            double eta23 = eta2[0][j];
-            double eta21 = eta2[mseg][j];
-            
-            double den = (1 + eta10*eta21 - eta12*eta21 - eta10*eta23 + eta12*eta23);
-            eta1[i][j] = (eta10 - eta10*eta23 + eta12*eta23)/den;
-            eta2[i][j] = (eta10*eta21 + eta23 - eta10*eta23)/den;
-            // TODO: use a parametric vector function to evaluate surface points
-            // for any desired surface shape, using this bilinear interpolation
-            // in parametric space
-            double h1 = eta1[i][j];
-            double h2 = eta2[i][j];
-            vec3d r = r0*(1-h1)*(1-h2) +r1*h1*(1-h2) + r2*h1*h2 + r3*(1-h1)*h2;
-            n[i][j] = pdom->AddVertex(-1, r);
+    for (i=0; i<MSEG+1; ++i) {
+        k = (ep[0] ? i : (MSEG - i));
+        double h1 = pdom->Edge(e[0]).rbias[k];
+        for (j=0; j<NSEG+1; ++j) {
+            l = ep[3] ? (NSEG - j) : j;
+            eta1[i][j] = h1;
+        }
+    }
+    for (j=0; j<NSEG+1; ++j) {
+        l = ep[3] ? (NSEG - j) : j;
+        double h2 = pdom->Edge(e[3]).rbias[l];
+        for (i=0; i<MSEG+1; ++i) {
+            eta2[i][j] = h2;
+        }
+    }
+    
+    vec3d r0 = pdom->Vertex(v[0]).r;
+    vec3d r1 = pdom->Vertex(v[1]).r;
+    vec3d r2 = pdom->Vertex(v[2]).r;
+    vec3d r3 = pdom->Vertex(v[3]).r;
+    if (quadratic) {
+        vec3d r4 = pdom->Vertex(v[4]).r;
+        vec3d r5 = pdom->Vertex(v[5]).r;
+        vec3d r6 = pdom->Vertex(v[6]).r;
+        vec3d r7 = pdom->Vertex(v[7]).r;
+        // create new vertices by bilinear interpolation
+        for (i=0; i<=MSEG+1; ++i) {
+            for (j=0; j<=NSEG+1; ++j) {
+                double h1 = eta1[i][j];
+                double h2 = eta2[i][j];
+                vec3d r = r0*N(0,0,h1,h2)+r1*N(1,0,h1,h2)+r2*N(1,1,h1,h2)+r3*N(0,1,h1,h2)
+                +r4*N(2,0,h1,h2)+r5*N(1,2,h1,h2)+r6*N(2,1,h1,h2)+r7*N(0,2,h1,h2);
+                n[i][j] = pdom->AddVertex(-1, r);
+            }
+        }
+    }
+    else {
+        // create new vertices by bilinear interpolation
+        for (i=1; i<mseg; ++i) {
+            for (j=1; j<nseg; ++j) {
+                double h1 = eta1[i][j];
+                double h2 = eta2[i][j];
+                vec3d r = r0*N(0,0,h1,h2)+r1*N(1,0,h1,h2)+r2*N(1,1,h1,h2)+r3*N(0,1,h1,h2);
+                n[i][j] = pdom->AddVertex(-1, r);
+            }
         }
     }
     
     return true;
 }
+
+//-------------------------------------------------------------------------------
+// evaluate shape function
+double FEDQuad::N(int a, int b, double eta1, double eta2) {
+    FEDEdge edge;
+    double Na = edge.N(a, eta1);
+    double Nb = edge.N(b, eta2);
+    return Na*Nb;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////
 // FEDTri
