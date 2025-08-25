@@ -349,8 +349,8 @@ AbaqusModel::Tnode_itr AbaqusModel::PART::FindNode(int id)
 
 list<AbaqusModel::SPRING_ELEMENT>::iterator AbaqusModel::PART::AddSpring(AbaqusModel::SPRING_ELEMENT& s)
 {
-	m_Spring.push_back(s);
-	return --m_Spring.end();
+	m_SpringElem.push_back(s);
+	return --m_SpringElem.end();
 }
 
 //-----------------------------------------------------------------------------
