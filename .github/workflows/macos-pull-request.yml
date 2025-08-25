@@ -12,13 +12,14 @@ permissions:
   contents: read  # This is required for actions/checkout
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable-pull-request.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@develop
     with:
       package-name: febio-studio
       requires-sdk: true
-      sdk-config: |
-        {
-          "sdk_path": "develop",
-          "version": "v4.6",
-        }
+      publish: false
+      # sdk-config: |
+      #   {
+      #     "sdk_path": "develop",
+      #     "version": "v4.6",
+      #   }
     secrets: inherit

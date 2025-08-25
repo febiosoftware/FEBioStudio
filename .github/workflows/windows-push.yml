@@ -11,12 +11,9 @@ permissions:
   contents: read  # This is required for actions/checkout
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable-push.yml@develop
+    uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable.yml@develop
     with:
-      aws-ami-id: ${{ vars.WINDOWS_AMI }}
-      aws-sg-id: sg-0ca7912782cf1538b
-      aws-instance-type: c5a.8xlarge
-      runTests: false
       package-name: febio-studio
       requires-sdk: true
+      publish: true
     secrets: inherit
