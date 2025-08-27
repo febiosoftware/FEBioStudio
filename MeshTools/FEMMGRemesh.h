@@ -57,7 +57,9 @@ class MMGSurfaceRemesh : public FESurfaceModifier
 		ELEM_SIZE,
 		HMIN,
 		HAUSDORFF,
-		HGRAD
+		HGRAD,
+		ANGLE,
+		SELECTED_ONLY
 	};
 
 public:

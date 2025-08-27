@@ -609,6 +609,7 @@ MMGSurfaceRemesh::MMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 	AddDoubleParam(0.0, "hmin", "Min element size");
 	AddDoubleParam(0.05, "hv", "Global Hausdorff value");
 	AddDoubleParam(1.3, "grad", "Gradation");
+	AddDoubleParam(45, "angle", "Angle (degrees)");
 	AddBoolParam(true, "Only remesh selection");
 }
 
@@ -711,7 +712,7 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	}
 	else
 	{
-		bool remeshSelectionOnly = GetBoolValue(4);
+		bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 		if (remeshSelectionOnly)
 		{
 			for (int i = 0; i < NF; ++i)
@@ -769,6 +770,7 @@ FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hmin, GetFloatValue(HMIN));
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hausd, GetFloatValue(HAUSDORFF));
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hgrad, GetFloatValue(HGRAD));
+	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_angleDetection, GetFloatValue(ANGLE));
 
 	// run the mesher
 	int ier = MMGS_mmgslib(mmgMesh, mmgSol);
