@@ -170,7 +170,14 @@ public:
 	{
 	public:
 		std::vector<SPRING_ELEMENT> m_Elem;
+	};
+
+	class SPRING
+	{
+	public:
+		std::string elset;
 		LoadCurve m_lc;
+		bool nonlinear = false;
 	};
 
 	// part
@@ -250,7 +257,8 @@ public:
 		char m_szname[256];
 		std::vector<NODE>				m_Node;		// list of nodes
 		std::vector<ELEMENT>				m_Elem;		// list of elements
-		std::list<SPRING_ELEMENT>		m_Spring;	// list of springs
+		std::list<SPRING_ELEMENT>		m_SpringElem;	// list of spring elements
+		std::list<SPRING>				m_Spring;	// spring data
 		std::map<std::string, NODE_SET*>		m_NSet;		// node sets
 		std::map<std::string, ELEMENT_SET*>	m_ESet;		// element sets
 		std::map<std::string, SURFACE*>		m_Surf;		// surfaces
