@@ -80,6 +80,7 @@ bool CPluginXML::LoadXML()
                     {
                         plugin->localVersion = tag.AttributeValue("version", std::string());
                         plugin->localFebioVersion = tag.AttributeValue("febioVersion", std::string());
+                        plugin->localTimeStamp = std::stoull(tag.AttributeValue("timestamp", std::string("0")));
                     }
 
                     if(!tag.isleaf())
@@ -157,6 +158,7 @@ void CPluginXML::WriteXML()
             pluginElement.add_attribute("ID", plID);
             pluginElement.add_attribute("version", plugin.localVersion);
             pluginElement.add_attribute("febioVersion", plugin.localFebioVersion);
+            pluginElement.add_attribute("timestamp", std::to_string(plugin.localTimeStamp));
             xml.add_branch(pluginElement);
 
             for(int index = 0; index < plugin.files.size(); ++index)

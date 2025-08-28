@@ -285,6 +285,7 @@ public:
     QLabel* statusLabel;
     QLabel* downloadLabel;
     QLabel* downloadNumberLabel;
+    QLabel* errorLabel;
     QLabel* nameLabel;
     QLabel* byLabel;
     QLabel* ownerLabel;
@@ -432,6 +433,12 @@ public:
         pluginCardLayout->addWidget(pluginLeftWidget);
 
         QVBoxLayout* pluginRightLayout = new QVBoxLayout;
+
+        errorLabel = new QLabel;
+        errorLabel->setStyleSheet("QLabel { color: red; }");
+        errorLabel->hide();
+        errorLabel->setWordWrap(true);
+        pluginRightLayout->addWidget(errorLabel);
 
         QHBoxLayout* nameLayout = new QHBoxLayout;
         nameLayout->setContentsMargins(0, 0, 0, 0);
@@ -639,6 +646,8 @@ public:
             tagLabel->hide();
         }
 
+        errorLabel->hide();
+
         sourceButton->setVisible(!plugin->repoName.empty());
 
         downloadButton->hide();
@@ -693,6 +702,27 @@ public:
             }
 
             deleteButton->show();
+        }
+        else if(plugin->status == PLUGIN_UNAVAILABLE)
+        {
+            errorLabel->setText("There are no versions of this plugin available for download for your system.");
+            errorLabel->show();
+
+            statusLabel->setText("Unavailable");
+
+            if(plugin->localCopy)
+            {
+                if(plugin->loaded)
+                {
+                    unloadButton->show();
+                }
+                else
+                {
+                    loadButton->show();
+                }
+                
+                deleteButton->show();
+            }
         }
         else if(plugin->status == PLUGIN_LOCAL)
         {

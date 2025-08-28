@@ -254,6 +254,7 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
         QString version = r->rawHeader("version");
         QString sdk = r->rawHeader("sdk");
         int main = r->rawHeader("main").toInt();
+        uint64_t timestamp = r->rawHeader("timestamp").toULongLong();
         bool develop = r->rawHeader("develop").toInt() == 1;
 
 		QFileInfo info(filename);
@@ -269,7 +270,7 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
 		file.write(data);
 		file.commit();
 
-        manager->AddPluginFile(pluginID, filename.toStdString(), main, version.toStdString(), sdk.toStdString());
+        manager->AddPluginFile(pluginID, filename.toStdString(), main, version.toStdString(), sdk.toStdString(), timestamp);
 
         if(nextFileID > 0)
         {

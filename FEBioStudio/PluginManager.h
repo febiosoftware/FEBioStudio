@@ -34,6 +34,7 @@ SOFTWARE.*/
 enum PluginStatus
 {
     PLUGIN_NOT_INSTALLED = 0,
+    PLUGIN_UNAVAILABLE,
     PLUGIN_BROKEN,
     PLUGIN_UP_TO_DATE,
     PLUGIN_OUT_OF_DATE,
@@ -58,6 +59,7 @@ struct Plugin
     bool loaded = false;
     std::string localVersion;
     std::string localFebioVersion;
+    uint64_t localTimeStamp;
     std::vector<std::string> files; // paths to plugin files
     int mainFileIndex = 0; // index of the file that should be loaded
 
@@ -117,7 +119,8 @@ public:
     void AddRepoPlugin(char** argv);
     void AddPublication(int pluginID, const QVariantMap& data);
     void AddTag(int pluginID, const std::string& tag);
-    void AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion);
+    void AddPluginFile(int pluginID, const std::string& filePath, int main, 
+        const std::string& version, const std::string& febioVersion, uint64_t timestamp);
 
     void OnConnectionFinished();
     void OnDownloadFinished(int id);

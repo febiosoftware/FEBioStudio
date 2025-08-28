@@ -231,6 +231,7 @@ bool CPluginManager::DeletePlugin(int id)
     plugin.loaded = false;
     plugin.localVersion.clear();
     plugin.localFebioVersion.clear();
+    plugin.localTimeStamp = 0;
     plugin.files.clear();
     plugin.status = PLUGIN_NOT_INSTALLED;
 
@@ -363,7 +364,8 @@ void CPluginManager::AddPublication(int pluginID, const QVariantMap& data) {}
 void CPluginManager::AddTag(int pluginID, const std::string& tag) {}
 #endif
 
-void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, const std::string& febioVersion)
+void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, int main, const std::string& version, 
+    const std::string& febioVersion, uint64_t timestamp)
 {
     if(imp->m_plugins.count(pluginID) == 0)
     {
@@ -374,6 +376,7 @@ void CPluginManager::AddPluginFile(int pluginID, const std::string& filePath, in
     plugin.localCopy = true;
     plugin.localVersion = version;
     plugin.localFebioVersion = febioVersion;
+    plugin.localTimeStamp = timestamp;
 
     plugin.files.push_back(filePath);
 
@@ -547,6 +550,17 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
         return;
     }
 
+    std::string currentFEBioVersion = std::to_string(FE_SDK_MAJOR_VERSION) + "." 
+        + std::to_string(FE_SDK_SUB_VERSION) + "." + std::to_string(FE_SDK_SUBSUB_VERSION);
+
+    std::vector<std::pair<std::string, uint64_t>> dbVersions = imp->m_db.GetPluginVersions(plugin.id, imp->m_develop);
+
+    if(dbVersions.empty())
+    {
+        plugin.status = PLUGIN_UNAVAILABLE;
+        return;
+    }
+
     if(!plugin.localCopy)
     {
         plugin.status = PLUGIN_NOT_INSTALLED;
@@ -565,26 +579,24 @@ void CPluginManager::SetPluginStatus(Plugin& plugin)
         }
     }
 
-    std::string currentFEBioVersion = std::to_string(FE_SDK_MAJOR_VERSION) + "." 
-        + std::to_string(FE_SDK_SUB_VERSION) + "." + std::to_string(FE_SDK_SUBSUB_VERSION);
-
     if(IsVersion2Newer(plugin.localFebioVersion, currentFEBioVersion))
     {
         plugin.status = PLUGIN_OUT_OF_DATE;
         return;
     }
 
-    std::vector<std::string> dbVersions = imp->m_db.GetPluginVersions(plugin.id, imp->m_develop);
-
-    if(dbVersions.empty())
+    for(auto& version : dbVersions)
     {
-        plugin.status = PLUGIN_BROKEN;
-        return;
+        if(IsVersion2Newer(plugin.localVersion, version.first))
+        {
+            plugin.status = PLUGIN_OUT_OF_DATE; // We have a newer version of the plugin
+            return;
+        }
     }
 
     for(auto& version : dbVersions)
     {
-        if(IsVersion2Newer(plugin.localVersion, version))
+        if((plugin.localVersion == version.first) && (plugin.localTimeStamp < version.second))
         {
             plugin.status = PLUGIN_OUT_OF_DATE; // We have a newer version of the plugin
             return;

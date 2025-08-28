@@ -79,7 +79,7 @@ void CPluginDatabaseHandler::GetPlugins()
 {
     std::string query("SELECT plugins.ID, plugins.name, plugins.repoName, users.username, plugins.description, "
         "plugins.image, COALESCE(SUM(downloads.downloads), 0) AS total_downloads FROM plugins JOIN users ON plugins.owner "
-        "= users.ID LEFT JOIN downloads ON plugins.ID = downloads.plugin GROUP BY plugins.ID, plugins.name, "
+        "= users.ID LEFT JOIN downloads ON plugins.ID = downloads.plugin WHERE authorized = 1 GROUP BY plugins.ID, plugins.name, "
         "users.username, plugins.description, plugins.image");
 
 	interface.execute(query, addPluginCallback, manager);
@@ -162,9 +162,9 @@ void CPluginDatabaseHandler::GetPluginTags(int ID)
 }
 
 
-std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID, bool develop)
+std::vector<std::pair<std::string, uint64_t>> CPluginDatabaseHandler::GetPluginVersions(int ID, bool develop)
 {
-    std::vector<std::string> versions;
+    std::vector<std::pair<std::string, uint64_t>> versions;
 
     std::string currentFEBioVersion = std::to_string(FE_SDK_MAJOR_VERSION) + "." 
         + std::to_string(FE_SDK_SUB_VERSION) + "." + std::to_string(FE_SDK_SUBSUB_VERSION);
@@ -172,7 +172,7 @@ std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID, bool 
     std::string pluginVersionsTable = "pluginVersions";
     if(develop) pluginVersionsTable = "devPluginVersions";
     
-    std::string query = "SELECT v1.version FROM " + pluginVersionsTable +
+    std::string query = "SELECT v1.version, timestamp FROM " + pluginVersionsTable +
         " JOIN plugins ON " + pluginVersionsTable + ".plugin = plugins.ID "
         "JOIN versions v1 ON " + pluginVersionsTable + ".version = v1.ID "
         "JOIN febioVersions v2 ON " + pluginVersionsTable + ".febioVersion = v2.ID "
@@ -186,9 +186,10 @@ std::vector<std::string> CPluginDatabaseHandler::GetPluginVersions(int ID, bool 
 
     if(rows > 0)
     {
-        for(int row = 1; row < rows + 1; row++)
+        for(int row = 1; row <= rows; row++)
         {
-            versions.emplace_back(table[row]);
+            int rowStart = row*cols;
+            versions.emplace_back(table[rowStart], std::stoull(table[rowStart + 1]));
         }
     }
 

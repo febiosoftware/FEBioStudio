@@ -232,6 +232,11 @@ void PluginThumbnail::SetStatus(int status)
         setToolTip("This plugin is broken and cannot be used.");
         ui->statusLabel->setText("Broken");
         break;
+    case PLUGIN_UNAVAILABLE:
+        emblem = QPixmap(":/icons/emblems/warning.png").scaled(17, 17, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        setToolTip("There are no versions of this plugin available for download.");
+        ui->statusLabel->setText("Unavailable");
+        break;
     case PLUGIN_NOT_INSTALLED:
         setToolTip("This plugin is not installed.");
         ui->statusLabel->setText("Not Installed");
