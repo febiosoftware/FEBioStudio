@@ -404,6 +404,29 @@ CFEBioJob* CModelDocument::FindFEBioJob(const std::string& s)
 void CModelDocument::DeleteAllJobs()
 {
 	m_JobList.Clear();
+	SetModifiedFlag();
+}
+
+int CModelDocument::FEBioStudies() const
+{
+	return (int)m_StudyList.Size();
+}
+
+void CModelDocument::AddFEBioStudy(CFEBioStudy* study)
+{
+	m_StudyList.Add(study);
+	SetModifiedFlag();
+}
+
+CFEBioStudy* CModelDocument::GetFEBioStudy(int i)
+{
+	return m_StudyList[i];
+}
+
+void CModelDocument::DeleteAllStudies()
+{
+	m_StudyList.Clear();
+	SetModifiedFlag();
 }
 
 //-----------------------------------------------------------------------------

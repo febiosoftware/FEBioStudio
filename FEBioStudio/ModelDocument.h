@@ -27,12 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "GLDocument.h"
 #include "FEBioJob.h"
+#include "FEBioStudy.h"
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
+typedef FSObjectList<CFEBioStudy> CFEBioStudyList;
 
 //-----------------------------------------------------------------------------
 class CModelContext;
@@ -40,6 +42,7 @@ class FSObject;
 class FEModifier;
 class FESurfaceModifier;
 class GSurfaceMeshObject;
+class CFEBioStudy;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -122,6 +125,12 @@ public:
 	void DeleteAllJobs();
 
 public:
+	int FEBioStudies() const;
+	void AddFEBioStudy(CFEBioStudy* study);
+	CFEBioStudy* GetFEBioStudy(int i);
+	void DeleteAllStudies();
+
+public:
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
@@ -144,6 +153,8 @@ private:
 
 	// the job list
 	CFEBioJobList	m_JobList;
+
+	CFEBioStudyList	m_StudyList;
 
 	CModelContext*	m_context;
 

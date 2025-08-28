@@ -213,7 +213,7 @@ namespace FEBio {
 		virtual void SetProgress(double pct) = 0;
 	};
 
-	int runModel(const std::string& fileName, 
+	int runModel(const std::string& cmd, 
 		FEBioOutputHandler* outputHandler,
 		FEBioProgressTracker* progressTracker,
 		CFEBioJob* job);

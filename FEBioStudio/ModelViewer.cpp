@@ -2115,6 +2115,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Open", this, SLOT(OnOpenJob()));
 		del = true;
 		break;
+	case MT_STUDYLIST:
+	{
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllStudies()));
+	}
+	break;
+	case MT_STUDY:
+		menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
+		menu.addAction("Run ...", this, SLOT(OnRunStudy()));
+		del = true;
+		break;
 	case MT_3DIMAGE:
         {
 			CImageModel* img = dynamic_cast<CImageModel*>(data->obj);
@@ -2401,6 +2411,41 @@ void CModelViewer::OnDeleteAllJobs()
 		wnd->UpdateModel();
 		wnd->RedrawGL();
 	}
+}
+
+void CModelViewer::OnDeleteAllStudies()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all studies?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		doc->DeleteAllStudies();
+		doc->ClearCommandStack();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnRunStudy()
+{
+	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
+	if (fbs == nullptr) return;
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RunOptimizationStudy(fbs);
+}
+
+void CModelViewer::OnConfigureStudy()
+{
+	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
+	if (fbs == nullptr) return;
+	CMainWindow* wnd = GetMainWindow();
+	wnd->ConfigureOptimizationStudy(fbs);
 }
 
 void CModelViewer::OnEditMeshData()

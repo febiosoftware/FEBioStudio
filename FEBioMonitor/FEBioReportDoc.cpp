@@ -313,6 +313,9 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 		}
 	}
 
+	// if the input file name wasn't set, then this is probably not an FEBio log file. 
+	if (m_febFile.isEmpty()) return false;
+
 	m_report = report;
 
 	// calculate the remaining timing info

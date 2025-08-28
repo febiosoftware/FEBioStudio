@@ -847,7 +847,8 @@ void CModelTree::Build(CModelDocument* doc)
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
 	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
 	else if (m_nfilter == ModelTreeFilter::FILTER_JOBS     ) modelName += " > Jobs";
-    else if (m_nfilter == ModelTreeFilter::FILTER_IMAGES     ) modelName += " > Images";
+	else if (m_nfilter == ModelTreeFilter::FILTER_STUDIES  ) modelName += " > Studies";
+	else if (m_nfilter == ModelTreeFilter::FILTER_IMAGES   ) modelName += " > Images";
 
 	QTreeWidgetItem* t1 = nullptr;
 
@@ -1068,6 +1069,23 @@ void CModelTree::Build(CModelDocument* doc)
 		}
 		else
 			UpdateJobs(t1, doc);
+	}
+
+	// add the studies
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_STUDIES))
+	{
+		if ((m_nfilter == ModelTreeFilter::FILTER_NONE) && (doc->FEBioStudies() > 0))
+		{
+			t1 = AddTreeItem(nullptr, "Studies", MT_STUDYLIST, doc->FEBioStudies(), nullptr, OBJECT_NOT_EDITABLE);
+			t1->setExpanded(true);
+			QFont f = t1->font(0);
+			f.setBold(true);
+			t1->setFont(0, f);
+
+			UpdateStudies(t1, doc);
+		}
+		else
+			UpdateStudies(t1, doc);
 	}
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE || (m_nfilter == ModelTreeFilter::FILTER_IMAGES))
@@ -1740,4 +1758,15 @@ void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)
 {
 	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT_PLT, 0, nullptr, 1);
 	AddTreeItem(t1, "logfile" , MT_PROJECT_OUTPUT_LOG, 0, nullptr, 1);
+}
+
+void CModelTree::UpdateStudies(QTreeWidgetItem* t1, CModelDocument* doc)
+{
+	int nStudies = doc->FEBioStudies();
+	for (int i = 0; i < nStudies; ++i)
+	{
+		CFEBioStudy* study = doc->GetFEBioStudy(i);
+		QString name = QString::fromStdString(study->GetName());
+		AddTreeItem(t1, name, MT_STUDY, 0, study, SHOW_PROPERTY_FORM);
+	}
 }

@@ -63,6 +63,8 @@ class CFileProcessor;
 class CMainStatusBar;
 class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
+class COptimizationStudy;
+
 
 namespace Ui {
 	class CMainWindow;
@@ -403,6 +405,10 @@ public:
 	Post::CGLModel* GetCurrentModel();
 
 	QSize GetEditorSize();
+
+public:
+	bool ConfigureOptimizationStudy(COptimizationStudy* study);
+	void RunOptimizationStudy(COptimizationStudy* study);
 
 public slots:
 	void AddLogEntrySlot(const QString& txt);
