@@ -36,9 +36,6 @@ SOFTWARE.*/
 #define strnicmp strncasecmp
 #endif
 
-// in AbaqusImport.cpp
-bool szicmp(const char* sz1, const char* sz2);
-
 //-----------------------------------------------------------------------------
 AbaqusModel::ASSEMBLY::ASSEMBLY()
 {
@@ -111,7 +108,7 @@ AbaqusModel::INSTANCE* AbaqusModel::FindInstance(const char* sz)
 	for (pg = m_Assembly->m_Instance.begin(); pg != m_Assembly->m_Instance.end(); ++pg)
 	{
 		INSTANCE* pi = *pg;
-		if (szicmp(pi->GetName(), sz)) return pi;
+		if (stricmp(pi->GetName(), sz) == 0) return pi;
 	}
 	return nullptr;
 }
@@ -138,7 +135,7 @@ AbaqusModel::PART* AbaqusModel::FindPart(const char* sz)
 	for (pg = m_Part.begin(); pg != m_Part.end(); ++pg)
 	{
 		PART* part = *pg;
-		if (szicmp(part->GetName(), sz)) return part;
+		if (stricmp(part->GetName(), sz) == 0) return part;
 	}
 	return 0;
 }
@@ -225,10 +222,9 @@ AbaqusModel::SpringSet* AbaqusModel::FindSpringSet(const char* szname)
 }
 
 //-----------------------------------------------------------------------------
-AbaqusModel::PART* AbaqusModel::GetActivePart(bool bcreate)
+AbaqusModel::PART* AbaqusModel::GetActivePart()
 {
-	if ((m_currentPart == nullptr) && bcreate) m_currentPart = CreatePart();
-	return m_currentPart;
+	return (m_currentPart ? m_currentPart : &m_globalPart);
 }
 
 // Add a material
@@ -302,6 +298,7 @@ void AbaqusModel::PART::SetName(const char* sz)
 //-----------------------------------------------------------------------------
 AbaqusModel::Tnode_itr AbaqusModel::PART::AddNode(AbaqusModel::NODE& n)
 {
+	m_NLT.clear(); // invalidate the node lookup table
 	if (m_Node.size() == 0)
 	{
 		m_Node.push_back(n);
@@ -343,6 +340,7 @@ AbaqusModel::Tnode_itr AbaqusModel::PART::AddNode(AbaqusModel::NODE& n)
 //-----------------------------------------------------------------------------
 AbaqusModel::Tnode_itr AbaqusModel::PART::FindNode(int id)
 {
+	if (m_NLT.empty()) BuildNLT();
 	assert(!m_NLT.empty());
 	return m_NLT[id - m_ioff];
 }
@@ -399,8 +397,14 @@ AbaqusModel::ELEMENT_SET* AbaqusModel::PART::AddElementSet(const char* szname)
 
 AbaqusModel::NODE_SET* AbaqusModel::PART::FindNodeSet(const char* szname)
 {
-	map<string, AbaqusModel::NODE_SET*>::iterator it = m_NSet.find(szname);
-	if (it != m_NSet.end()) return it->second;
+	for (auto& it : m_NSet)
+	{
+		AbaqusModel::NODE_SET* nset = it.second;
+		if (nset)
+		{
+			if (stricmp(nset->szname, szname) == 0) return it.second;
+		}
+	}
 	return nullptr;
 }
 
@@ -464,11 +468,7 @@ bool AbaqusModel::PART::BuildNLT()
 	if (!m_NLT.empty()) m_NLT.clear();
 	m_ioff = 0;
 
-	if (m_Node.empty())
-	{
-		assert(false);
-		return false;
-	}
+	if (m_Node.empty()) return false;
 
 	// find the lowest and highest node index
 	int imin, imax;
@@ -597,7 +597,7 @@ int AbaqusModel::FindAmplitude(const char* szname) const
 {
 	for (int i = 0; i < m_Amp.size(); ++i)
 	{
-		if (szicmp(szname, m_Amp[i].m_name.c_str()))
+		if (stricmp(szname, m_Amp[i].m_name.c_str()) == 0)
 		{
 			return i;
 		}
