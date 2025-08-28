@@ -46,6 +46,7 @@ MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 	AddDoubleParam( 0.0, "hmin", "Min element size");
 	AddDoubleParam(0.05, "hv", "Global Hausdorff value");
 	AddDoubleParam(1.3, "grad", "Gradation");
+	AddDoubleParam(45, "angle", "Angle (degrees)");
 	AddBoolParam(true, "Only remesh selection");
 }
 
@@ -212,7 +213,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	}
 	else
 	{
-		bool remeshSelectionOnly = GetBoolValue(4);
+		bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 		if (remeshSelectionOnly)
 		{
 			for (int i = 0; i < NE; ++i)
@@ -270,6 +271,7 @@ FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 	MMG3D_Set_dparameter(mmgMesh, mmgSol, MMG3D_DPARAM_hmin, GetFloatValue(HMIN));
 	MMG3D_Set_dparameter(mmgMesh, mmgSol, MMG3D_DPARAM_hausd, GetFloatValue(HAUSDORFF));
 	MMG3D_Set_dparameter(mmgMesh, mmgSol, MMG3D_DPARAM_hgrad, GetFloatValue(HGRAD));
+	MMG3D_Set_dparameter(mmgMesh, mmgSol, MMG3D_DPARAM_angleDetection, GetFloatValue(ANGLE));
 
 	// run the mesher
 	int ier = MMG3D_mmg3dlib(mmgMesh, mmgSol);
@@ -459,7 +461,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	}
 	else
 	{
-		bool remeshSelectionOnly = GetBoolValue(4);
+		bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 		if (remeshSelectionOnly)
 		{
 			for (int i = 0; i < NE; ++i)
@@ -517,6 +519,7 @@ FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hmin, GetFloatValue(HMIN));
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hausd, GetFloatValue(HAUSDORFF));
 	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hgrad, GetFloatValue(HGRAD));
+	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_angleDetection, GetFloatValue(ANGLE));
 
 	// run the mesher
 	int ier = MMGS_mmgslib(mmgMesh, mmgSol);
@@ -974,7 +977,7 @@ FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 	}
 	else
 	{
-		bool remeshSelectionOnly = GetBoolValue(4);
+		bool remeshSelectionOnly = GetBoolValue(SELECTED_ONLY);
 		if (remeshSelectionOnly)
 		{
 			for (int i = 0; i < NF; ++i)
