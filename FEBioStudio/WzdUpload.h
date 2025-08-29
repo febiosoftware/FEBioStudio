@@ -102,7 +102,7 @@ public:
 
 	void setFileInfo(QList<QList<QVariant>>& fileinfo);
 
-	void setTagList(QStringList& tags);
+	void setTagCompleter(QStringList& tags);
 
 	QString getName();
 	QString getDescription();
@@ -125,9 +125,6 @@ protected:
 	void keyPressEvent(QKeyEvent* e) override;
 
 public slots:
-	void on_addTagBtn_clicked();
-	void on_delTagBtn_clicked();
-
 	void on_loadJson_triggered();
 	void on_saveJson_triggered();
 	void on_addFolder_triggered();
@@ -140,8 +137,8 @@ public slots:
 	void on_fileTree_itemClicked(QTreeWidgetItem * item, int column);
 	void fileDescriptionChanged();
 
-	void on_addFileTagBtn_clicked();
-	void on_delFileTagBtn_clicked();
+    void on_fileTags_TagAdded(QString& tag);
+    void on_fileTags_TagDeleted(QString& tag);
 
 private:
 	QTreeWidgetItem* addFileFromJson(QJsonObject& file);

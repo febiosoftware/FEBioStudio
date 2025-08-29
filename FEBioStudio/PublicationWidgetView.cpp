@@ -77,7 +77,7 @@ public:
 	void setup(::CPublicationWidgetView* parent, bool scroll, bool frame)
 	{
 		QHBoxLayout* layout = new QHBoxLayout;
-//		layout->setContentsMargins(0, 5, 0, 0);
+        layout->setContentsMargins(0,0,0,0);
 
 		pubs = new QWidget;
 		pubs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);

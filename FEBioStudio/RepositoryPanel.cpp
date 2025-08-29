@@ -565,7 +565,7 @@ void CRepositoryPanel::on_actionUpload_triggered()
 		dlg.setCategories(categories);
 
 		QStringList tags = dbHandler->GetTags();
-		dlg.setTagList(tags);
+		dlg.setTagCompleter(tags);
 
 		if(ui->projectInfo) dlg.setProjectJson(ui->projectInfo);
 
@@ -719,7 +719,7 @@ void CRepositoryPanel::on_actionModify_triggered()
 		dlg.setPublications(ui->projectPubs->getPublications());
 
 		QStringList tags = dbHandler->GetTags();
-		dlg.setTagList(tags);
+		dlg.setTagCompleter(tags);
 
 		QList<QList<QVariant>> fileInfo = dbHandler->GetProjectFileInfo(projID);
 		dlg.setFileInfo(fileInfo);
