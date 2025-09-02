@@ -36,6 +36,16 @@ SOFTWARE.*/
 #include <sstream>
 using namespace std;
 
+#ifdef LINUX // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
+
+#ifdef __APPLE__ // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
+
 AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 {
 	// default options
@@ -137,26 +147,9 @@ bool szicnt(const char* sz1, const char* sz2)
 }
 
 // compare two strings, not considering case
-bool szicmp(const char* sz1, const char* sz2)
+inline bool szicmp(const char* sz1, const char* sz2)
 {
-	int l1 = (int)strlen(sz1);
-	int l2 = (int)strlen(sz2);
-	if (l1 != l2) return false;
-	int n1 = 0, n2 = 0;
-
-	char c1, c2;
-
-	do
-	{
-		c1 = sz1[n1++];
-		c2 = sz2[n2++];
-
-		if ((c1 >= 'A') && (c1 <= 'Z')) c1 = 'a' + (c1 - 'A');
-		if ((c2 >= 'A') && (c2 <= 'Z')) c2 = 'a' + (c2 - 'A');
-		if (c1 != c2) return false;
-	} while ((n1 < l1) && (n2 < l2));
-
-	return true;
+	return (stricmp(sz1, sz2) == 0);
 }
 
 //! Load an Abaqus model file
@@ -482,7 +475,9 @@ bool AbaqusImport::read_nodes(char* szline, FILE* fp)
 	parse_line(szline, att);
 
 	// get the active part
-	AbaqusModel::PART& part = *m_inp.GetActivePart(true);
+	AbaqusModel::PART* pg = m_inp.GetActivePart();
+	if (pg == nullptr) return false;
+	AbaqusModel::PART& part = *pg;
 
 	// read the nodes
 	AbaqusModel::NODE n;
@@ -517,9 +512,6 @@ bool AbaqusImport::read_nodes(char* szline, FILE* fp)
 		// read the next line
 		read_line(szline, fp);
 	}
-
-	// build the node-look up table
-	part.BuildNLT();
 
 	return true;
 }
@@ -687,6 +679,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
             else if (szicmp(sz, "C3D8H" )) ntype = FE_HEX8;
 			else if (szicmp(sz, "C3D8I" )) ntype = FE_HEX8;
 			else if (szicmp(sz, "C3D8R" )) ntype = FE_HEX8;
+			else if (szicmp(sz, "C3D8P" )) ntype = FE_HEX8;
             else if (szicmp(sz, "C3D5"  )) ntype = FE_PYRA5;
 			else if (szicmp(sz, "C3D6"  )) ntype = FE_PENTA6;
 			else if (szicmp(sz, "C3D4"  )) ntype = FE_TET4;
@@ -2660,7 +2653,7 @@ bool AbaqusImport::read_solid_section(char* szline, FILE* fp)
 	ATTRIBUTE att[MAX_ATTRIB];
 	int n = parse_line(szline, att);
 
-	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
+	AbaqusModel::PART* pg = m_inp.GetActivePart();
 	if (pg == 0) return false;
 
 	const char* szelset = find_attribute(att, 5, "elset");
@@ -2680,7 +2673,7 @@ bool AbaqusImport::read_shell_section(char* szline, FILE* fp)
 	ATTRIBUTE att[MAX_ATTRIB];
 	int n = parse_line(szline, att);
 
-	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
+	AbaqusModel::PART* pg = m_inp.GetActivePart();
 	if (pg == 0) return false;
 
 	const char* szelset = find_attribute(att, 5, "elset");

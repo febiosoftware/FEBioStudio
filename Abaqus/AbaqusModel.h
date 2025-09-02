@@ -305,12 +305,12 @@ public:
 	// material
 	struct MATERIAL
 	{
-		char	szname[256];
-		int		mattype;
-		int		ntype;
-		int		nparam;
-		double	dens;
-		double	d[10];
+		char	szname[256] = { 0 };
+		int		mattype = -1;
+		int		ntype = -1;
+		int		nparam = -1;
+		double	dens = 0;
+		double	d[10] = { 0 };
 	};
 
 	// surface loads
@@ -413,7 +413,7 @@ public:
 	~AbaqusModel();
 
 	// get the active part
-	PART* GetActivePart(bool bcreate = false);
+	PART* GetActivePart();
 
 	// create a part
 	PART* CreatePart(const char* sz = 0);
@@ -495,6 +495,8 @@ public:
 
 private:
 	FSModel*	m_fem;		// the model
+
+	PART m_globalPart; // global definitions are added here
 
 	std::list<PART*>	m_Part;		// list of parts
 	PART*		m_currentPart;	// current part
