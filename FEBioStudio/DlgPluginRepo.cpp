@@ -23,6 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #include <FEBioLib/plugin.h>
 #include <QLabel>
 #include <QPushButton>
@@ -50,6 +51,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <FEBioLink/FEBioClass.h>
 #include "DlgPluginRepo.h"
+#include "DlgSubmitPlugin.h"
 #include "PluginListWidget.h"
 #include "IconProvider.h"
 #include "PublicationWidgetView.h"
@@ -304,7 +306,9 @@ public:
     CCollapsibleHeader* advancedHeader;
     QTreeWidget* features;
 
-    QDialogButtonBox* bb;
+    QPushButton* loadLocalButton;
+    QPushButton* submitPluginButton;
+    QPushButton* closeButton;
 
     void setupUI(::CDlgPluginRepo* dlg, CPluginManager* manager)
     {
@@ -481,7 +485,7 @@ public:
         scrollLayout->addWidget(tagLabel = new QLabel);
         tagLabel->setWordWrap(true);
 
-        advancedHeader = new CCollapsibleHeader("<b>Advanced</b>");
+        advancedHeader = new CCollapsibleHeader("<b>Details</b>");
 
         features = new QTreeWidget;
 		features->setColumnCount(5);
@@ -513,10 +517,23 @@ public:
 
         layout->addWidget(splitter);
 
-		bb = new QDialogButtonBox(QDialogButtonBox::Close);
-        bb->addButton("Load Local Plugin", QDialogButtonBox::ResetRole);
+        QToolBar* buttonBar = new QToolBar;
+        buttonBar->addWidget(loadLocalButton = new QPushButton("Load Local Plugin"));
+        loadLocalButton->setFocusPolicy(Qt::NoFocus);
+
+        buttonBar->addWidget(submitPluginButton = new QPushButton("Sumbit a Plugin to the Repository"));
+        submitPluginButton->setFocusPolicy(Qt::NoFocus);
+
+        QWidget* spacer = new QWidget();
+        spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+        buttonBar->addWidget(spacer);
         
-		layout->addWidget(bb);
+        buttonBar->addWidget(closeButton = new QPushButton("Close"));
+        closeButton->setFocusPolicy(Qt::NoFocus);
+
+        layout->addWidget(buttonBar);
+
+        dlg->setLayout(layout);
 
         QObject::connect(pluginListWidget, &::PluginListWidget::pluginThumbnailClicked, dlg, &::CDlgPluginRepo::on_pluginThumbnail_clicked);
         QObject::connect(searchLineEdit, &QLineEdit::returnPressed, dlg, &::CDlgPluginRepo::on_actionSearch_triggered);
@@ -530,10 +547,9 @@ public:
         QObject::connect(sourceButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_sourceButton_clicked);
         QObject::connect(retryButton, &CFrameButton::clicked, dlg, &::CDlgPluginRepo::on_retryButton_clicked);
 
-		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &::CDlgPluginRepo::reject);
-        QObject::connect(bb, &QDialogButtonBox::clicked, dlg, &::CDlgPluginRepo::on_bbButton_clicked);
-		
-        dlg->setLayout(layout);
+        QObject::connect(loadLocalButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_loadLocalButton_clicked);
+        QObject::connect(submitPluginButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::on_submitPluginButton_clicked);
+        QObject::connect(closeButton, &QPushButton::clicked, dlg, &::CDlgPluginRepo::reject);
     }
 
     void SetRepoStatus(QString error = "")
@@ -809,6 +825,9 @@ CDlgPluginRepo::CDlgPluginRepo(CPluginManager* manager, QWidget *parent)
     ui->m_manager->Connect(false);
 }
 
+// Prevents the enter key from closing the dialog
+void CDlgPluginRepo::accept() {}
+
 void CDlgPluginRepo::LoadLocalPlugin()
 {
     QString filter;
@@ -993,10 +1012,24 @@ void CDlgPluginRepo::on_retryButton_clicked()
     ui->SetRepoStatus();
 }
 
-void CDlgPluginRepo::on_bbButton_clicked(QAbstractButton *button)
+// void CDlgPluginRepo::on_bbButton_clicked(QAbstractButton *button)
+// {
+//     if(ui->bb->buttonRole(button) == QDialogButtonBox::ResetRole)
+//     {
+//         // 
+
+//         DlgSubmitPlugin dlg(ui->m_manager);
+//         dlg.exec();
+//     }
+// }
+
+void CDlgPluginRepo::on_loadLocalButton_clicked()
 {
-    if(ui->bb->buttonRole(button) == QDialogButtonBox::ResetRole)
-    {
-        LoadLocalPlugin();
-    }
+    LoadLocalPlugin();
+}
+    
+void CDlgPluginRepo::on_submitPluginButton_clicked()
+{
+    DlgSubmitPlugin dlg(ui->m_manager);
+    dlg.exec();
 }

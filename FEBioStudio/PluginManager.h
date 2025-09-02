@@ -98,9 +98,12 @@ public:
     void SetDevelop(bool develop);
 
     void LoadAllPlugins();
+    
+    // These functions interact with the database
     void ReadDatabase();
-
     std::unordered_set<int> SearchPlugins(const QString& searchTerm);
+    bool IsPluginNameInUse(QString& name);
+    void GetTags(QStringList& tags);
 
     const std::unordered_map<int, Plugin>& GetPlugins();
     Plugin* GetPlugin(int id);
@@ -126,11 +129,18 @@ public:
     void OnDownloadFinished(int id);
     void OnHTMLError(QString& message, int pluginID = 0);
 
+    void SumbitPlugin(QByteArray& pluginInfo);
+    void UploadImage(QByteArray& token, QString& filename);
+
 signals:
     void DownloadFinished(int id);
     void HTMLError(QString& message);
     void PluginsReady();
     void downloadProgress(qint64 bytesSent, qint64 bytesTotal, int id);
+    void ReadyForImageUpload(QByteArray& token);
+    void UploadFinished(QString& message);
+    void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
+    void CancelUpload();
 
 private:
     Plugin* AddNonRepoPlugin();

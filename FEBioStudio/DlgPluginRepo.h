@@ -86,6 +86,9 @@ class CDlgPluginRepo : public QDialog
 public:
     CDlgPluginRepo(CPluginManager* manager, QWidget *parent);
 
+protected:
+    void accept() override;
+
 private:
     void LoadLocalPlugin();
 
@@ -107,7 +110,9 @@ private slots:
     void on_unloadButton_clicked();
     void on_sourceButton_clicked();
     void on_retryButton_clicked();
-    void on_bbButton_clicked(QAbstractButton *button);
+    // void on_bbButton_clicked(QAbstractButton *button);
+    void on_loadLocalButton_clicked();
+    void on_submitPluginButton_clicked();
     
 private:
     friend class Ui::CDlgPluginRepo;

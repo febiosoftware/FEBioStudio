@@ -149,10 +149,22 @@ std::unordered_set<int> CPluginManager::SearchPlugins(const QString& searchTerm)
     return imp->m_db.GetPluginSearchResults(searchTerm);
 }
 
+bool CPluginManager::IsPluginNameInUse(QString& name)
+{
+    return imp->m_db.IsPluginNameInUse(name);
+}
+
+void CPluginManager::GetTags(QStringList& tags)
+{
+    imp->m_db.GetAllTags(tags);
+}
+
 #else
 void CPluginManager::LoadAllPlugins() {}
 void CPluginManager::ReadDatabase() {}
 std::unordered_set<int> CPluginManager::SearchPlugins(const QString& searchTerm) { return std::unordered_set<int>(); }
+bool CPluginManager::IsPluginNameInUse(QString& name) { return false; }
+void CPluginManager::GetTags(QStringList& tags) { }
 #endif
 
 const std::unordered_map<int, Plugin>& CPluginManager::GetPlugins()
@@ -423,6 +435,16 @@ void CPluginManager::OnHTMLError(QString& message, int pluginID)
     imp->m_status = ERROR;
 
     emit HTMLError(message);
+}
+
+void CPluginManager::SumbitPlugin(QByteArray& pluginInfo)
+{
+    imp->m_repo.sumbitPlugin(pluginInfo);
+}
+
+void CPluginManager::UploadImage(QByteArray& token, QString& filename)
+{
+    imp->m_repo.uploadImage(token, filename);
 }
 
 Plugin* CPluginManager::AddNonRepoPlugin()

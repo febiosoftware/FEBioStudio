@@ -161,6 +161,41 @@ void CPluginDatabaseHandler::GetPluginTags(int ID)
     interface.freeTable(table);
 }
 
+void CPluginDatabaseHandler::GetAllTags(QStringList& tags)
+{
+    tags.clear();
+
+    std::string query = "SELECT tag FROM tags";
+
+    char **table;
+    int rows, cols;
+
+    interface.getTable(query, &table, &rows, &cols);
+
+    if(rows > 0)
+    {
+        for(int row = 1; row <= rows; row++)
+        {
+            tags.append(table[row]);
+        }
+    }
+
+    interface.freeTable(table);
+}
+
+bool CPluginDatabaseHandler::IsPluginNameInUse(QString& name)
+{
+    QString temp = QString("SELECT id FROM plugins WHERE name=\"%1\"").arg(name);
+    std::string query = temp.toStdString();
+
+    char **table;
+    int rows, cols;
+
+    interface.getTable(query, &table, &rows, &cols);
+    interface.freeTable(table);
+
+    return rows > 0;
+}
 
 std::vector<std::pair<std::string, uint64_t>> CPluginDatabaseHandler::GetPluginVersions(int ID, bool develop)
 {

@@ -890,7 +890,7 @@ void CWzdUpload::accept()
 
 	if(ui->hasDuplicateNames())
 	{
-		QMessageBox::critical(this, "Upload", "You cannot have to files with the same name in the same folder.");
+		QMessageBox::critical(this, "Upload", "You cannot have two files with the same name in the same folder.");
 		return;
 	}
 

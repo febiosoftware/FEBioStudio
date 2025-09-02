@@ -48,12 +48,17 @@ public:
     void getSchema();
 	void getTables();
 
+    void sumbitPlugin(QByteArray& pluginInfo);
+    void uploadImage(QByteArray& token, QString& filename);
+
 private:
     bool NetworkAccessibleCheck();
     void outOfDate();
     void getSchemaReply(QNetworkReply *r);
 	void getTablesReply(QNetworkReply *r);
     void getPluginFilesReply(QNetworkReply *r);
+    void postPluginReply(QNetworkReply *r);
+    void uploadImageReply(QNetworkReply *r);
 
 private slots:
 	void connFinished(QNetworkReply *r);

@@ -99,6 +99,63 @@ void CPluginRepoConnectionHandler::getTables()
 
 }
 
+void CPluginRepoConnectionHandler::sumbitPlugin(QByteArray& pluginInfo)
+{
+    QUrl myurl;
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
+	myurl.setPath(QString(API_URL) + "plugin");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+
+	if(NetworkAccessibleCheck())
+	{
+		QNetworkReply* reply = restclient->post(request, pluginInfo);
+
+        QObject::connect(reply, &QNetworkReply::uploadProgress, manager, &CPluginManager::uploadProgress);
+        QObject::connect(manager, &CPluginManager::CancelUpload, reply, &QNetworkReply::abort);
+	}
+}
+
+void CPluginRepoConnectionHandler::uploadImage(QByteArray& token, QString& filename)
+{
+    QUrl myurl;
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
+	myurl.setPath(QString(API_URL) + "uploadImage");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+
+    request.setRawHeader("fileToken", token);
+
+	if(NetworkAccessibleCheck())
+	{
+        QFile* file = new QFile(filename);
+        try
+        {
+            file->open(QIODevice::ReadOnly);
+        }
+        catch(const std::exception& e)
+        {
+            QString msg = QString("Cannot open file:\n\n%1").arg(filename);
+            manager->OnHTMLError(msg);
+            return;
+        }
+
+		QNetworkReply* reply = restclient->post(request, file);
+		file->setParent(reply);
+
+        QObject::connect(reply, &QNetworkReply::uploadProgress, manager, &CPluginManager::uploadProgress);
+        QObject::connect(manager, &CPluginManager::CancelUpload, reply, &QNetworkReply::abort);
+	}
+}
+
 void CPluginRepoConnectionHandler::connFinished(QNetworkReply *r)
 {
     int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -112,17 +169,25 @@ void CPluginRepoConnectionHandler::connFinished(QNetworkReply *r)
 
 	QString URL = r->request().url().toString();
 
-	if(URL.contains("schema"))
+	if(URL.endsWith("schema"))
 	{
 		getSchemaReply(r);
 	}
-	else if(URL.contains("tables"))
+	else if(URL.endsWith("tables"))
 	{
 		getTablesReply(r);
 	}
-    else if(URL.contains("/plugin/"))
+    else if(URL.contains("/plugin/") && r->operation() == QNetworkAccessManager::GetOperation)
     {
         getPluginFilesReply(r);
+    }
+    else if(URL.endsWith("/plugin") && r->operation() == QNetworkAccessManager::PostOperation)
+    {
+        postPluginReply(r);
+    }
+    else if(URL.endsWith("/uploadImage") && r->operation() == QNetworkAccessManager::PostOperation)
+    {
+        uploadImageReply(r);
     }
 }
 
@@ -294,4 +359,63 @@ void CPluginRepoConnectionHandler::getPluginFilesReply(QNetworkReply *r)
 
 		manager->OnHTMLError(msg);
 	}
+}
+
+void CPluginRepoConnectionHandler::postPluginReply(QNetworkReply *r)
+{
+    int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(r->error() == QNetworkReply::OperationCanceledError)
+	{
+
+	}
+	else if(statusCode == 200)
+	{
+        QByteArray token = r->readAll();
+
+        manager->ReadyForImageUpload(token);
+    }
+    else
+    {
+        QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		msg += std::to_string(statusCode).c_str();
+
+		manager->HTMLError(msg);
+    }
+}
+
+void CPluginRepoConnectionHandler::uploadImageReply(QNetworkReply *r)
+{
+    int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(r->error() == QNetworkReply::OperationCanceledError)
+	{
+        return;
+	}
+
+    switch (statusCode)
+    {
+        case 200:
+        {
+            QString message = r->readAll();
+            manager->UploadFinished(message);
+            break;
+        }
+        case 401:
+        case 406:
+        case 409:
+        {
+            QString message = r->readAll();
+            manager->HTMLError(message);
+            break;
+        }
+        default:
+        {
+            QString msg = "An unknown server error has occurred.\nHTTP Staus Code: ";
+            msg += std::to_string(statusCode).c_str();
+            manager->HTMLError(msg);
+            break;
+        }
+    }
+    
 }
