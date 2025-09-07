@@ -117,7 +117,7 @@ public:
 	GMaterial* GetMaterialFromID(int id);
 
 	// find a material from its name
-	GMaterial* FindMaterial(const char* szname);
+	GMaterial* FindMaterial(const string& name);
 
 	// find a rigid connector from its ID
 	FSRigidConnector* GetRigidConnectorFromID(int id);
