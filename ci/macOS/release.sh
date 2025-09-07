@@ -135,7 +135,7 @@ done
 
 cd $RELEASE_DIR/sdk
 zip -r $UPLOAD_DIR/sdk.zip include
-zip -r $UPLOAD_DIR/sdk.zip libintel
+zip -r $UPLOAD_DIR/sdk.zip lib
 cd $GITHUB_WORKSPACE
 
 # Set FEBio and FBS versions in installBuilder.xml
