@@ -487,12 +487,6 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
 
-		CDlgEditObject dlg(abaqusReader, "Import Abaqus", this);
-		if (dlg.exec() == 0)
-		{
-			return;
-		}
-
 		// when reading an Abaqus model, we process the physics
 		abaqusReader->m_breadPhysics = true;
 		reader = abaqusReader;

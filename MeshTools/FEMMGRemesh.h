@@ -36,7 +36,9 @@ class MMGRemesh : public FEModifier
 		ELEM_SIZE,
 		HMIN,
 		HAUSDORFF,
-		HGRAD
+		HGRAD,
+		ANGLE,
+		SELECTED_ONLY
 	};
 
 public:
@@ -57,7 +59,9 @@ class MMGSurfaceRemesh : public FESurfaceModifier
 		ELEM_SIZE,
 		HMIN,
 		HAUSDORFF,
-		HGRAD
+		HGRAD,
+		ANGLE,
+		SELECTED_ONLY
 	};
 
 public:
@@ -77,7 +81,8 @@ class MMG2DRemesh : public FESurfaceModifier
 		ELEM_SIZE,
 		HMIN,
 		HAUSDORFF,
-		HGRAD
+		HGRAD,
+		SELECTED_ONLY
 	};
 
 public:
