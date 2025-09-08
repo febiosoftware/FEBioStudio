@@ -1242,17 +1242,14 @@ GMaterial* FSModel::GetMaterialFromID(int id)
 
 //-----------------------------------------------------------------------------
 // find a material from its name
-GMaterial* FSModel::FindMaterial(const char* szname)
+GMaterial* FSModel::FindMaterial(const string& name)
 {
-	if (szname == 0) return 0;
-	string sname = szname;
-
 	for (int i=0; i<Materials(); ++i)
 	{
-		if (m_pMat[i]->GetName() == sname) return m_pMat[i];
+		if (m_pMat[i]->GetName() == name) return m_pMat[i];
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void FSModel::AssignMaterial(GObject* po, GMaterial* mat)

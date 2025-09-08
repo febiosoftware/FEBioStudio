@@ -132,8 +132,8 @@ public:
 	//! Find a material from its ID
 	GMaterial* GetMaterialFromID(int id);
 
-	//! Find a material from its name
-	GMaterial* FindMaterial(const char* szname);
+	// find a material from its name
+	GMaterial* FindMaterial(const std::string& name);
 
 	//! Assign material to object
 	void AssignMaterial(GObject* po, GMaterial* mat);
