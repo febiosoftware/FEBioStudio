@@ -213,10 +213,32 @@ public:
 	}
 };
 
+class CCustomFeatureProps : public CPluginTemplate
+{
+public:
+	CCustomFeatureProps() : CPluginTemplate("Custom feature", szhdr_custom, szsrc_custom)
+	{
+		addStringProperty(&m_baseClass, "Base class: ");
+
+		SetInfo("Create a custom FEBio feature.");
+	}
+
+	QStringList GetOptions() override
+	{
+		QStringList l;
+		l << m_baseClass;
+		return l;
+	}
+
+
+public:
+	QString m_baseClass;
+};
+
 //=============================================================================
 // Try to keep this in alphabetical order
 // NOTE: remember to increase PLUGIN_TEMPLATES when adding a new template.
-const int PLUGIN_TEMPLATES = 8;
+const int PLUGIN_TEMPLATES = 9;
 CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CCallbackProps(),
 	new CElasticMaterialProps(),
@@ -225,7 +247,8 @@ CPluginTemplate* pluginTemplates[PLUGIN_TEMPLATES] = {
 	new CPlotDataProps(),
 	new CSurfaceLoadProps(),
 	new CTaskProps(),
-	new CLinearSolverProps()
+	new CLinearSolverProps(),
+	new CCustomFeatureProps()
 };
 
 CMainPage::CMainPage()
@@ -393,9 +416,14 @@ bool GeneratePluginFiles(const PluginConfig& config)
 	QString cppcomment = QString("/*%1*/\n").arg(comment);
 	QString cmakecomment = QString("# %1\n").arg(comment);
 
+	QString febioModule = config.febioModule;
+	QString febioLibName = "FECore";
+	if (febioModule == "solid") febioLibName = "FEBioMech";
+
 	// create the header file
 	QString headerText(cppcomment + config.headerTxt);
 	headerText = headerText.replace("$(CLASS_NAME)", config.className);
+	headerText = headerText.replace("$(MODULE_LIB)", febioLibName);
 	int n = 1;
 	for (QString arg : config.args)
 	{

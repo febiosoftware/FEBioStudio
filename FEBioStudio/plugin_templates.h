@@ -35,6 +35,7 @@ SOFTWARE.*/
 //
 // $(CLASS_NAME)       : the name of the plugin. Also used as the class name. 
 // $(PLUGIN_MODULE)    : the FEBio module to which the class will be added. 
+// $(MODULE_LIB)       : the name of the library that contains the module
 // $(CLASS_TYPESTRING) : the type string for the plugin class. (I.e. how the feature is referenced in the input file)
 //
 // In addition, the code snippets use additional special fields, denoted $(ARG1), $(ARG2), ...
@@ -599,5 +600,34 @@ SparseMatrix* $(CLASS_NAME)::CreateSparseMatrix(Matrix_Type ntype)
 bool $(CLASS_NAME)::SetSparseMatrix(SparseMatrix* pA)
 {
 	return false;
+}
+)delim";
+
+// ============================================================================
+// Custom class
+// ============================================================================
+const char* szhdr_custom =
+R"delim(
+#include <$(MODULE_LIB)/$(ARG1).h>
+
+class $(CLASS_NAME) : public $(ARG1)
+{
+public:
+	$(CLASS_NAME)(FEModel* fem);
+
+	~$(CLASS_NAME)();
+};
+)delim";
+
+const char* szsrc_custom =
+R"delim(
+#include "$(CLASS_NAME).h"
+
+$(CLASS_NAME)::$(CLASS_NAME)(FEModel* fem) : $(ARG1)(fem)
+{
+}
+
+$(CLASS_NAME)::~$(CLASS_NAME)()
+{
 }
 )delim";
