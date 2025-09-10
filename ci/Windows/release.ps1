@@ -1,6 +1,4 @@
 $FEBIO_REPO = $env:GITHUB_WORKSPACE + '\FEBio\'
-$CHEM_REPO = $env:GITHUB_WORKSPACE + '\FEBioChem\'
-$HEAT_REPO = $env:GITHUB_WORKSPACE + '\FEBioHeat\'
 $FBS_REPO = $env:GITHUB_WORKSPACE + '\FEBioStudio\'
 
 # Clone and build repos
@@ -9,21 +7,10 @@ cd $FEBIO_REPO
 .\ci\Windows\build.bat -d # build the debug version too
 sh --login -i -c ci/Windows/create-sdk-wrapped.sh
 
-# FEBioChem
-New-Item -Path $CHEM_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
-cd $CHEM_REPO
-.\ci\Windows\build.bat
-
-# FEBioHeat
-New-Item -Path $HEAT_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
-cd $HEAT_REPO
-.\ci\Windows\build.bat
-
 # FEBioStudio
 New-Item -Path $FBS_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
 cd $FBS_REPO
 .\ci\Windows\build.bat
-
 
 cd $env:GITHUB_WORKSPACE
 mkdir release
@@ -39,14 +26,8 @@ $febioBins = @(
     $FEBIO_REPO + 'cmbuild\bin\Release\febio4.exe'
     $FEBIO_REPO + 'cmbuild\bin\Release\*.dll'
 
-    $FBS_REPO + 'ci\Windows\febio.xml'
-
-    # Plugins
-    $CHEM_REPO + 'cmbuild\Release\FEBioChem.dll'
-    $HEAT_REPO + 'cmbuild\Release\FEBioHeat.dll'
-
     #FEBio Studio
-    $FBS_REPO + 'cmbuild\bin\Release\FEBioStudio2.exe'
+    $FBS_REPO + 'cmbuild\bin\Release\FEBioStudio.exe'
 )
 
 $updater = @(
@@ -225,3 +206,6 @@ builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GIT
 
 mkdir upload\installer
 cp C:\Users\Administrator\Documents\InstallBuilder\output\* upload\installer
+
+# make sdk visible to plugins
+"FEBIO_SDK=$env:GITHUB_WORKSPACE/FEBio/febio4-sdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

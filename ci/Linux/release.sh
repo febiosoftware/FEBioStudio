@@ -1,8 +1,6 @@
 #!/bin/bash
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
-CHEM_REPO=$GITHUB_WORKSPACE/FEBioChem
-HEAT_REPO=$GITHUB_WORKSPACE/FEBioHeat
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
 export RELEASE_DIR=$GITHUB_WORKSPACE/release
 UPLOAD_DIR=$GITHUB_WORKSPACE/upload
@@ -11,14 +9,6 @@ UPLOAD_DIR=$GITHUB_WORKSPACE/upload
 cd $FEBIO_REPO
 ./ci/Linux/build.sh
 ./ci/Linux/create-sdk.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
-cd $CHEM_REPO
-./ci/Linux/build.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $HEAT_REPO/
-cd $HEAT_REPO
-./ci/Linux/build.sh
 
 ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
 cd $FBS_REPO
@@ -39,7 +29,6 @@ mkdir $UPLOAD_DIR/updater
 bins=(
     $FEBIO_REPO/cmbuild/bin/febio4
     $FBS_REPO/cmbuild/bin/FEBioStudio
-    $FBS_REPO/ci/Linux/febio.xml
 )
 
 updater=(
@@ -58,9 +47,6 @@ febioLibs=(
     $FEBIO_REPO/cmbuild/lib/libfeimglib.so
     $FEBIO_REPO/cmbuild/lib/libfebiomix.so
     $FEBIO_REPO/cmbuild/lib/libfebiomech.so
-
-    $CHEM_REPO/cmbuild/lib/*.so
-    $HEAT_REPO/cmbuild/lib/*.so
 )
 
 libs=(
@@ -286,3 +272,6 @@ builder build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/licens
 
 mkdir $UPLOAD_DIR/installer
 cp /opt/installbuilder-23.11.0/output/*.run $UPLOAD_DIR/installer
+
+# make sdk visible to plugins
+echo "FEBIO_SDK=$GITHUB_WORKSPACE/FEBio/febio4-sdk" >> $GITHUB_ENV 

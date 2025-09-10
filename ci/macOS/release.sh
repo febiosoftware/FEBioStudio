@@ -1,8 +1,6 @@
 #!/bin/bash
 
 export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
-export CHEM_REPO=$GITHUB_WORKSPACE/FEBioChem
-export HEAT_REPO=$GITHUB_WORKSPACE/FEBioHeat
 export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
 export RELEASE_DIR=$GITHUB_WORKSPACE/release
 UPLOAD_DIR=$GITHUB_WORKSPACE/upload
@@ -13,14 +11,6 @@ APP_BUDLE=$FBS_REPO/cmbuild/bin/FEBioStudio.app
 cd $FEBIO_REPO
 ./ci/macOS/build.sh
 ./ci/macOS/create-sdk.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
-cd $CHEM_REPO
-./ci/macOS/build.sh
-
-ln -s $FEBIO_REPO/febio4-sdk $HEAT_REPO/
-cd $HEAT_REPO
-./ci/macOS/build.sh
 
 ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
 cd $FBS_REPO
@@ -41,7 +31,6 @@ mkdir $UPLOAD_DIR/updater
 bins=(
     $APP_BUDLE/Contents/MacOS/febio4
     $APP_BUDLE/Contents/MacOS/FEBioStudio
-    $APP_BUDLE/Contents/MacOS/febio.xml
 )
 
 updater=(
@@ -60,9 +49,6 @@ febioLibs=(
     $APP_BUDLE/Contents/Frameworks/libfeimglib.dylib
     $APP_BUDLE/Contents/Frameworks/libfebiomix.dylib
     $APP_BUDLE/Contents/Frameworks/libfebiomech.dylib
-
-    $APP_BUDLE/Contents/Frameworks/libFEBioChem.dylib
-    $APP_BUDLE/Contents/Frameworks/libFEBioHeat.dylib
 )
 
 for item in ${bins[@]}; do
@@ -168,3 +154,6 @@ rm $INSTALLER_NAME.zip
 zip -r $INSTALLER_NAME.zip $INSTALLER_NAME
 rm -r $INSTALLER_NAME
 cd $GITHUB_WORKSPACE
+
+# make sdk visible to plugins
+echo "FEBIO_SDK=$GITHUB_WORKSPACE/FEBio/febio4-sdk" >> $GITHUB_ENV 
