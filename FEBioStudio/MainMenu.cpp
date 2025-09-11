@@ -165,6 +165,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionUnitConverter = createAction("Unit Converter ...", "actionUnitConverter");
 	QAction* actionRotationConverter = createAction("Rotation Converter ...", "actionRotationConverter");
 	actionMaterialTest = createAction("Material test ...", "actionMaterialTest");
+	actionDistroVisual = createAction("Distribution visualizer ...", "actionDistroVisual");
 	QAction* actionKinemat = createAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = createAction("Plotmix ...", "actionPlotMix");
 	QAction* actionPython = createAction("Python editor ...", "actionEditPython");
@@ -580,6 +581,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuTools->addAction(actionUnitConverter);
 	menuTools->addAction(actionElasticityConvertor);
 	menuTools->addAction(actionMaterialTest);
+	menuTools->addAction(actionDistroVisual);
 	menuTools->addAction(actionKinemat);
 	menuTools->addAction(actionPlotMix);
 	menuTools->addAction(actionPython);

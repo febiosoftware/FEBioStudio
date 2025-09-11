@@ -96,6 +96,7 @@ public:
 	QAction* actionMeshInspector;
 	QAction* actionMeshDiagnostic;
 	QAction* actionMaterialTest;
+	QAction* actionDistroVisual;
 
 	// VIEW menu
 	QAction* actionUndoViewChange;

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "DlgSettings.h"
 #include "DlgMeshDiagnostics.h"
 #include "DlgMaterialTest.h"
+#include "DlgDistributionVisualizer.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <GeomLib/GObject.h>
@@ -81,6 +82,12 @@ void CMainWindow::on_actionElasticityConvertor_triggered()
 void CMainWindow::on_actionMaterialTest_triggered()
 {
 	CDlgMaterialTest dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionDistroVisual_triggered()
+{
+	CDlgDistributionVisualizer dlg(this);
 	dlg.exec();
 }
 

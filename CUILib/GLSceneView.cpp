@@ -53,8 +53,6 @@ CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent), m_ogl(this)
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 	setMouseTracking(true);
 
-	m_view.Defaults();
-
 	m_ox = m_oy = 1;
 }
 
