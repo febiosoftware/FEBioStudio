@@ -350,6 +350,7 @@ public:
 		propsView = new CPropertyListView;
 
 		QVBoxLayout* vl = new QVBoxLayout;
+		vl->addWidget(new QLabel("Distribution Type:"));
 		vl->addWidget(distro);
 		vl->addWidget(propsView);
 
