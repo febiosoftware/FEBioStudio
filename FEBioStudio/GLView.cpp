@@ -1370,35 +1370,35 @@ void CGLView::initializeGL()
 
 	if (m_ballocDefaultWidgets)
 	{
-		m_Widget = CGLWidgetManager::GetInstance(); assert(m_Widget);
+		m_Widget = new CGLWidgetManager();
 		m_Widget->AttachToView(this);
 
 		int Y = 0;
-		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""), 0);
+		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""));
 		m_ptitle->set_font_size(30);
 		m_ptitle->fit_to_size();
 		m_ptitle->set_label("$(filename)");
 		Y += m_ptitle->h();
 
-		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""), 0);
+		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""));
 		m_psubtitle->set_font_size(15);
 		m_psubtitle->fit_to_size();
 		m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
-		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
+		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 		
-		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 
-		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
+		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600));
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
 		m_menu = new GVContextMenu(this);
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
-		m_Widget->AddWidget(m_menu, 0);
+		m_Widget->AddWidget(m_menu);
 	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
@@ -1660,7 +1660,10 @@ void CGLView::RenderCanvas(GLContext& rc)
 			{
 				double v[2];
 				doc->GetDataRange(v);
+				m_legend->SetColorGradient(doc->GetColorGradient());
 				m_legend->SetRange((float)v[0], (float)v[1]);
+				m_legend->SetDivisions(doc->GetLegendDivisions());
+				m_legend->SetSmoothTexture(doc->GetLegendSmoothing());
 				m_legend->show();
 			}
 			else m_legend->hide();
@@ -1673,8 +1676,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 			else m_menu->hide();
 		}
 
-		int layer = doc->GetWidgetLayer();
-		m_Widget->SetRenderLayer(layer);
 		m_Widget->DrawWidgets(&painter);
 	}
 

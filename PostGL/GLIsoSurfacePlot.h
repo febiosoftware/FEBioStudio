@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class CGLIsoSurfacePlot : public CGLLegendPlot
+class CGLIsoSurfacePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, TRANSPARENCY, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
 

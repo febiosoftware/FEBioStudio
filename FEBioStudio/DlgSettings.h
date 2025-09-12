@@ -224,7 +224,6 @@ public slots:
 private:
 	void UpdateSettings();
 	void UpdateUI();
-	void UpdateColormap();
 
 protected:
 	CMainWindow*		m_pwnd;

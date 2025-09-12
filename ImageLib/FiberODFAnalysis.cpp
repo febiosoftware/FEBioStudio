@@ -449,14 +449,11 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 	m_pbar->copy_label("ODF");
 	m_pbar->ShowTitle(true);
 	m_pbar->hide();
-
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
 {
     clear();
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
     delete m_imp;
 }
 

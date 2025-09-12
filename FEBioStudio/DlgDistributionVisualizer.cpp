@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <GLWLib/GLTriad.h>
+#include <GLWLib/GLWidgetManager.h>
 
 GLMesh CreateSphere()
 {
@@ -120,9 +121,6 @@ public:
 	{
 		m_sphere = CreateSphere();
 		m_renderSphere = m_sphere;
-
-		m_ptriad = new GLTriad(10, 10, 75, 75);
-		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_TOP);
 	}
 	~CGLDistroScene() {}
 	
@@ -140,13 +138,6 @@ public:
 		if (box.Radius() < 1e-9) box = GetBoundingBox();
 
 		glx::renderBox(engine, box, GLColor::White(), false);
-	}
-
-	// Render on the 2D canvas
-	void RenderCanvas(QPainter& painter, GLContext& rc) override 
-	{
-		m_ptriad->setOrientation(rc.m_cam->GetOrientation());
-		m_ptriad->draw(&painter);
 	}
 
 	// get the bounding box of the entire scene
@@ -170,7 +161,6 @@ public:
 private:
 	GLMesh m_sphere;
 	GLMesh m_renderSphere;
-	GLTriad* m_ptriad;
 
 	bool m_recache = true;
 };
@@ -181,12 +171,33 @@ public:
 	CDistroGLWidget(QWidget* parent) : CGLManagedSceneView(new CGLDistroScene(), parent)
 	{
 		setMinimumSize(400, 400);
+		m_wm.AttachToView(this);
+
+		m_ptriad = new GLTriad(0, 0, 75, 75);
+		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+		m_wm.AddWidget(m_ptriad);
+	}
+
+	void RenderCanvas() override
+	{
+		CGLManagedSceneView::RenderCanvas();
+
+		GLCamera& cam = GetActiveScene()->GetCamera();
+		m_ptriad->setOrientation(cam.GetOrientation());
+
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		m_wm.DrawWidgets(&painter);
 	}
 
 	CGLDistroScene* GetScene()
 	{
 		return dynamic_cast<CGLDistroScene*>(GetActiveScene());
 	}
+
+private:
+	GLTriad* m_ptriad = nullptr;
+	CGLWidgetManager m_wm;
 };
 
 class FEBioPropsList : public CPropertyList

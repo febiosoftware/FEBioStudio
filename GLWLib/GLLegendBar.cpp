@@ -77,6 +77,11 @@ void GLLegendBar::draw(QPainter* painter)
 	}
 }
 
+void GLLegendBar::SetColorGradient(int n)
+{
+	m_pMap->SetColorMap(n);
+}
+
 void GLLegendBar::SetOrientation(int n)
 {
 	if (m_nrot == n) return;

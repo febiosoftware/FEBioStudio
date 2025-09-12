@@ -1121,12 +1121,7 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
-	if (dynamic_cast<Post::CGLLegendPlot*>(po))
-	{
-		Post::CGLLegendPlot* plot = dynamic_cast<Post::CGLLegendPlot*>(po); assert(plot);
-		if (plot) plot->ChangeName(name.toStdString());
-	}
-	else if (po)
+	if (po)
 	{
 		po->SetName(name.toStdString());
 	}

@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <MeshLib/FSElementData.h>
 #include <FSCore/FileReader.h>
 #include <FSCore/FileWriter.h>
+#include <FSCore/ColorMapManager.h>
 #include "FEBioJob.h"
 #include "units.h"
 #include "MainWindow.h"
@@ -79,11 +80,9 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_showSubtitle = false;
 	m_showLegend = false;
 	m_dataRange[0] = m_dataRange[1] = 0;
-
-	static int layer = 1;
-	m_widgetLayer = layer++;
-
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
+	m_colorGradient = ColorMapManager::JET;
+	m_legendDivisions = 10;
+	m_legendSmooth = true;
 }
 
 CGLDocument::~CGLDocument()
@@ -173,11 +172,6 @@ void CGLDocument::Update()
 {
 	UpdateSelection();
 	if (m_scene) m_scene->Update();
-}
-
-int CGLDocument::GetWidgetLayer()
-{
-	return m_widgetLayer;
 }
 
 std::string CGLDocument::GetTypeString(FSObject* po)

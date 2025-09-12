@@ -349,8 +349,11 @@ void CGLPlaneCutPlot::RenderSlice(GLRenderEngine& re)
 	if (m_activeMesh.Faces() > 0)
 	{
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D, false);
-		GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
-		re.setTexture(tex);
+
+		CColorTexture col;
+		col.Create(pcol->GetColorMap(), pcol->GetDivisions(), pcol->GetColorSmooth());
+
+		re.setTexture(col.GetTexture());
 		re.renderGMesh(m_activeMesh, false);
 	}
 

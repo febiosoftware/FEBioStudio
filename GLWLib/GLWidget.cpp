@@ -37,6 +37,7 @@ SOFTWARE.*/
 #endif
 
 #include "GLWidget.h"
+#include "GLWidgetManager.h"
 #include <assert.h>
 #include "convert.h"
 #include <sstream>
@@ -80,14 +81,13 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 	m_balloc = false;
 
 	m_bshow = true;
-
-	m_layer = 0;
 }
 
 GLWidget::~GLWidget(void)
 {
 	if (m_balloc) delete [] m_szlabel;
 	m_szlabel = 0;
+	if (m_parent) m_parent->RemoveWidget(this);
 }
 
 void GLWidget::set_label(const char* szlabel)

@@ -626,10 +626,7 @@ void CMainWindow::ExportPostGeometry()
 	case 3:
 	{
 		Post::PLYExport ply;
-		// we need to get the current colormap
-		Post::CGLModel* gm = doc->GetGLModel();
-		Post::CGLColorMap* cmap = (gm ? gm->GetColorMap() : nullptr);
-		if (cmap && cmap->IsActive()) ply.SetColorMap(cmap->GetColorMap()->ColorMap());
+		ply.SetColorMap(GetGLView()->GetColorMap());
 		bret = ply.Save(fem, szfilename);
 	}
 	break;

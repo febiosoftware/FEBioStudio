@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class CGLSlicePlot : public CGLLegendPlot  
+class CGLSlicePlot : public CGLPlot  
 {
 	enum { 
 		DATA_FIELD, 

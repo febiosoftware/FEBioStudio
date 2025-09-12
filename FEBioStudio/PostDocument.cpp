@@ -102,11 +102,10 @@ void ModelData::ReadData(Post::CGLModel* po)
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
 
-		CColorTexture* pcm = pglmap->GetColorMap();
-		m_cmap.m_ntype = pcm->GetColorMap();
-		m_cmap.m_ndivs = pcm->GetDivisions();
-		m_cmap.m_bsmooth = pcm->GetSmooth();
-		//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
+		m_cmap.m_ntype = pglmap->GetColorMap();
+		m_cmap.m_ndivs = pglmap->GetDivisions();
+		m_cmap.m_bsmooth = pglmap->GetColorSmooth();
+//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -150,11 +149,10 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 
-		CColorTexture* pcm = pglmap->GetColorMap();
-		pcm->SetColorMap(m_cmap.m_ntype);
-		pcm->SetDivisions(m_cmap.m_ndivs);
-		pcm->SetSmooth(m_cmap.m_bsmooth);
-		//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
+		pglmap->SetColorMap(m_cmap.m_ntype);
+		pglmap->SetDivisions(m_cmap.m_ndivs);
+		pglmap->SetColorSmooth(m_cmap.m_bsmooth);
+//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -295,9 +293,6 @@ bool CPostDocument::Initialize()
 	const CPalette& pal = CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	// make sure the correct GLWidgetManager's edit layer is active
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
-
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 
 	m_timeSettings.Defaults();
@@ -401,6 +396,17 @@ void CPostDocument::SetActiveState(int n)
 	assert(m_glm);
 	m_glm->SetCurrentTimeIndex(n);
 	m_glm->Update(false);
+	Post::CGLColorMap* pcm = m_glm->GetColorMap();
+	if (pcm && pcm->IsActive())
+	{
+		float rng[2];
+		pcm->GetRange(rng);
+		m_dataRange[0] = rng[0];
+		m_dataRange[1] = rng[1];
+		m_colorGradient = pcm->GetColorMap();
+		m_legendDivisions = pcm->GetDivisions();
+		m_legendSmooth = pcm->GetColorSmooth();
+	}
 }
 
 int CPostDocument::GetActiveState()
@@ -425,6 +431,7 @@ int CPostDocument::GetEvalField()
 void CPostDocument::ActivateColormap(bool bchecked)
 {
 	Post::CGLModel* po = m_glm;
+	m_showLegend = bchecked;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
 }
@@ -547,7 +554,22 @@ void CPostDocument::UpdateFEModel(bool breset)
 	if (!IsValid()) return;
 
 	// update the model
-	if (m_glm) m_glm->Update(breset);
+	if (m_glm)
+	{
+		m_glm->Update(breset);
+		Post::CGLColorMap* pcm = m_glm->GetColorMap();
+		if (pcm && pcm->IsActive())
+		{
+			float rng[2];
+			pcm->GetRange(rng);
+			m_dataRange[0] = rng[0];
+			m_dataRange[1] = rng[1];
+
+			m_colorGradient = pcm->GetColorMap();
+			m_legendDivisions = pcm->GetDivisions();
+			m_legendSmooth = pcm->GetColorSmooth();
+		}
+	}
 
 	m_scene->Update();
 }

@@ -1415,7 +1415,6 @@ void CDlgSettings::apply()
 	}
 
 	ui->m_map->Apply();
-	UpdateColormap();
 
 	CPaletteManager& PM = CPaletteManager::GetInstance();
 	int n = ui->m_pal->currentPalette();
@@ -1452,19 +1451,4 @@ void CDlgSettings::onReset()
 	UpdateSettings();
 	m_pwnd->RedrawGL();
 	UpdateUI();
-}
-
-void CDlgSettings::UpdateColormap()
-{
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(m_pwnd->GetGLDocument());
-	if (doc == nullptr) return;
-	if (!doc->IsValid()) return;
-
-	Post::CGLModel* gm = doc->GetGLModel();
-	if (gm == nullptr) return;
-
-	Post::CGLColorMap* colmap = gm->GetColorMap();
-	colmap->m_Col.UpdateTexture();
-
-	m_pwnd->RedrawGL();
 }

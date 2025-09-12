@@ -31,7 +31,7 @@ class GLRenderEngine;
 
 namespace Post {
 
-class CGLVectorPlot : public CGLLegendPlot 
+class CGLVectorPlot : public CGLPlot 
 {
 	enum { 
 		DATA_FIELD, 
@@ -110,8 +110,6 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 	void Update() override;
-
-	void Activate(bool b) override;
 
 private:
 	// render a vector n at position r

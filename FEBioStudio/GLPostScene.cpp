@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLModel.h>
 #include <ImageLib/ImageModel.h>
+#include <FSCore/ColorMapManager.h>
 
 using namespace Post;
 
@@ -115,6 +116,15 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	glm->m_bnorm = vs.m_bnorm;
 	glm->m_scaleNormals = vs.m_scaleNormals;
 	glm->m_doZSorting = vs.m_bzsorting;
+
+	if (glm->GetColorMap()->IsActive())
+	{
+		// create the texture
+		CGLColorMap* cm = glm->GetColorMap();
+		CColorTexture color;
+		color.Create(cm->GetColorMap(), cm->GetDivisions(), cm->GetColorSmooth());
+		m_tex = color.GetTexture();
+	}
 
 	re.disable(GLRenderEngine::CULLFACE);
 
@@ -433,7 +443,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
 				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
-				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+				re.setTexture(m_tex);
 			}
 			else
 			{
@@ -511,7 +521,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setTexture(glm.m_pcol->GetColorMap()->GetTexture());
+				re.setTexture(m_tex);
 				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
 			}
 			else
@@ -742,7 +752,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	if (colmap && colmap->IsActive())
 	{
 		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
-		re.setTexture(colmap->GetColorMap()->GetTexture());
+		re.setTexture(m_tex);
 
 		re.begin(GLRenderEngine::LINES);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
@@ -851,7 +861,7 @@ void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
 	if (colmap->IsActive())
 	{
 		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::TEXTURE_1D);
-		re.setTexture(colmap->GetColorMap()->GetTexture());
+		re.setTexture(m_tex);
 		for (int i = 0; i < gm.DiscreteEdges(); ++i)
 		{
 			GLEdge::EDGE& edge = gm.DiscreteEdge(i);
@@ -1051,11 +1061,8 @@ void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
 	vec3d rmin = pcm->GetMinPosition();
 	vec3d rmax = pcm->GetMaxPosition();
 
-	CColorTexture* tex = pcm->GetColorMap();
-	CColorMap& map = tex->ColorMap();
-
-	GLColor c0 = map.GetColor(0);
-	GLColor c1 = map.GetColor(map.Colors() - 1);
+	GLColor c0 = m_tex.sample(0.f);
+	GLColor c1 = m_tex.sample(1.f);
 
 	// TODO: Can I render this as tags instead of here
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::White());

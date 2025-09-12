@@ -105,6 +105,11 @@ CFiberGLWidget::CFiberGLWidget() : CGLManagedSceneView(new CODFScene(this)), m_O
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 }
 
+CFiberGLWidget::~CFiberGLWidget()
+{
+	delete m_ptriad;
+}
+
 void CFiberGLWidget::setAnalysis(CFiberODFAnalysis* analysis)
 {
     m_analysis = analysis;

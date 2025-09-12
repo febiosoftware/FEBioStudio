@@ -67,6 +67,8 @@ public:
 	float LineThickness() const { return m_lineWidth; }
 	void SetLineThickness(float f) { m_lineWidth = f; }
 
+	void SetColorGradient(int n);
+
 protected:
 	void draw_gradient_vert(QPainter* painter);
 	void draw_gradient_horz(QPainter* painter);

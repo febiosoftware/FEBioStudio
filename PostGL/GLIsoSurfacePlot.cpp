@@ -30,7 +30,6 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
 #include <GLLib/GLRenderEngine.h>
-
 using namespace Post;
 
 extern int LUT[256][15];
@@ -78,13 +77,6 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 	m_Col.SetDivisions(m_nslices);
 	m_Col.SetSmooth(false);
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetType(GLLegendBar::DISCRETE);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -101,8 +93,6 @@ void CGLIsoSurfacePlot::SetSlices(int nslices)
 
 bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 {
-	GLLegendBar* bar = GetLegendBar();
-
 	if (bsave)
 	{
 		bool update = false;
@@ -116,7 +106,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
-		if (GetBoolValue(LEGEND)) bar->show(); else bar->hide();
 
 		m_Col.SetDivisions(m_nslices);
 
@@ -136,7 +125,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		SetBoolValue(CLIP, AllowClipping());
 		SetBoolValue(HIDDEN, m_bcut_hidden);
 		SetIntValue(SLICES, m_nslices);
-		SetBoolValue(LEGEND, bar->visible());
 		SetBoolValue(SMOOTH, m_bsmooth);
 		SetIntValue(RANGE_TYPE, m_rangeType);
 		SetFloatValue(USER_MAX, m_userMax);
@@ -422,7 +410,6 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		vmin += d;
 		vmax -= d;
 	}
-	GetLegendBar()->SetRange(vmin, vmax);
 
 	// Update the mesh
 	UpdateMesh();

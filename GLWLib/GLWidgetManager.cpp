@@ -29,40 +29,27 @@ SOFTWARE.*/
 #include <assert.h>
 #include <QPainter>
 
-CGLWidgetManager* CGLWidgetManager::m_pmgr = 0;
-
-CGLWidgetManager* CGLWidgetManager::GetInstance()
-{
-	if (m_pmgr == 0) m_pmgr = new CGLWidgetManager;
-	return m_pmgr;
-}
-
-void CGLWidgetManager::AttachToView(QOpenGLWidget *pview)
-{
-	assert(pview);
-	m_pview = pview;
-}
-
 CGLWidgetManager::CGLWidgetManager()
 {
-	m_editLayer = 0;
-	m_renderLayer = 0;
 	m_pview = nullptr;
 }
 
 CGLWidgetManager::~CGLWidgetManager()
 {
-
+	for (int i = 0; i < (int)m_Widget.size(); ++i)
+	{
+		GLWidget* pw = m_Widget[i];
+		assert(pw->m_parent == this);
+		pw->m_parent = nullptr;
+		delete pw;
+	}
+	m_Widget.clear();
 }
 
-void CGLWidgetManager::SetRenderLayer(int l)
+void CGLWidgetManager::AttachToView(QOpenGLWidget* pview)
 {
-	m_renderLayer = l;
-}
-
-void CGLWidgetManager::SetEditLayer(int l)
-{
-	m_editLayer = l;
+	assert(pview);
+	m_pview = pview;
 }
 
 // Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
@@ -101,9 +88,10 @@ void CGLWidgetManager::CheckWidgetBounds()
 	}
 }
 
-void CGLWidgetManager::AddWidget(GLWidget* pw, int layer)
+void CGLWidgetManager::AddWidget(GLWidget* pw)
 {
-	pw->set_layer((layer < 0 ? m_editLayer : layer));
+	assert(pw->m_parent == nullptr);
+	pw->m_parent = this;
 	m_Widget.push_back(pw);
 }
 
@@ -114,6 +102,8 @@ void CGLWidgetManager::RemoveWidget(GLWidget* pw)
 	{
 		if (m_Widget[i] == pw) 
 		{
+			assert(pw->m_parent == this);
+			pw->m_parent = nullptr;
 			m_Widget.erase(it);
 			break;
 		}
@@ -135,7 +125,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 		for (int i=0; i<(int) m_Widget.size(); ++i)
 		{
 			GLWidget* pw = m_Widget[i];
-			if (((pw->layer() == 0) || (pw->layer() == m_renderLayer)) && pw->visible() && pw->is_inside(x,y))
+			if (pw->visible() && pw->is_inside(x,y))
 			{
 				m_Widget[i]->set_focus();
 				bsel = true;
@@ -251,20 +241,10 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
 	{
 		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_renderLayer)))
+		if (pw->visible())
 		{
 			DrawWidget(pw, painter);
 		}
-	}
-}
-
-void CGLWidgetManager::DrawWidgetsInLayer(QPainter* painter, int layer)
-{
-	SetRenderLayer(layer);
-	for (int i = 0; i < (int)m_Widget.size(); ++i)
-	{
-		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && pw->layer() == layer) DrawWidget(pw, painter);
 	}
 }
 

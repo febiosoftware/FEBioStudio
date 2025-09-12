@@ -34,6 +34,8 @@ public:
 	CColorTexture(const CColorTexture& col);
 	void operator = (const CColorTexture& col);
 
+	void Create(int colormap, int ndivs, bool smooth);
+
 	GLTexture1D& GetTexture() { return m_tex; }
 
 	void UpdateTexture();

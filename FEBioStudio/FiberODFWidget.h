@@ -61,6 +61,7 @@ class CFiberGLWidget : public CGLManagedSceneView
 {
 public:
     CFiberGLWidget();
+	~CFiberGLWidget();
 
     void setAnalysis(CFiberODFAnalysis* analysis);
     void setODF(CODF* odf);

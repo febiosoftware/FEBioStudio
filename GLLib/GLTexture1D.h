@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <FSCore/color.h>
+
 #pragma once
 class GLTexture1D
 {
@@ -43,6 +45,8 @@ public:
 
 	unsigned int GetID() { return m_texID; }
 	void SetID(unsigned int id) { m_texID = id; m_bupdate = true; }
+
+	GLColor sample(float w) const;
 
 protected:
 	int		m_n;

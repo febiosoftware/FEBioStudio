@@ -120,13 +120,6 @@ CGLPointPlot::CGLPointPlot()
 	m_range.min = 0.0; m_range.max = 1.0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	bar->hide();
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -212,12 +205,6 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
-
-		if (GetLegendBar())
-		{
-			bool b = (m_showLegend && (m_colorMode != 0));
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 	}
 	else
 	{
@@ -365,11 +352,6 @@ void CGLPointPlot::UpdateRange()
 
 	m_range.min = fmin;
 	m_range.max = fmax;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(fmin, fmax);
-	}
 
 	for (int i = 0; i < pd.Points(); ++i)
 	{

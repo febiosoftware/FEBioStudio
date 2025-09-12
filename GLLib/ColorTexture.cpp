@@ -53,6 +53,14 @@ void CColorTexture::operator = (const CColorTexture& col)
 	m_tex = col.m_tex;
 }
 
+void CColorTexture::Create(int colormap, int ndivs, bool smooth)
+{
+	m_colorMap = colormap;
+	m_ndivs = ndivs;
+	m_bsmooth = smooth;
+	UpdateTexture();
+}
+
 void CColorTexture::UpdateTexture()
 {
 	int n = m_tex.Size();

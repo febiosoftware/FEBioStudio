@@ -32,8 +32,6 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <GLLib/ColorTexture.h>
 
-class GLLegendBar;
-
 // used for intersection testing
 // defined in MeshLib/Intersect.h
 struct Ray;
@@ -78,26 +76,6 @@ public:
 private:
 	int	m_renderOrder;
 	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
-};
-
-class CGLLegendPlot : public CGLPlot
-{
-public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
-
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
-
-	void ChangeName(const std::string& name) override;
-
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
-
-	void Activate(bool b) override;
-
-private:
-	GLLegendBar*	m_pbar;
 };
 
 }
