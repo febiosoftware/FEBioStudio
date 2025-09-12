@@ -236,3 +236,22 @@ void GLWidget::call_event_handlers(int nevent)
 		f(this, nevent);
 	}
 }
+
+void GLWidget::draw(QPainter* painter)
+{
+	if (painter) snap_to_bounds(*painter);
+}
+
+void GLWidget::snap_to_bounds(QPainter& painter)
+{
+	int W = painter.device()->width();
+	int H = painter.device()->height();
+
+	if      (m_nsnap & GLW_ALIGN_LEFT   ) m_x = 0;
+	else if (m_nsnap & GLW_ALIGN_RIGHT  ) m_x = W - m_w - 1;
+	else if (m_nsnap & GLW_ALIGN_HCENTER) m_x = W / 2 - m_w / 2;
+
+	if      (m_nsnap & GLW_ALIGN_TOP    ) m_y = 0;
+	else if (m_nsnap & GLW_ALIGN_BOTTOM ) m_y = H - m_h - 1;
+	else if (m_nsnap & GLW_ALIGN_VCENTER) m_y = H / 2 - m_h / 2;
+}

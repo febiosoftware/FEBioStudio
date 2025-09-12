@@ -54,9 +54,6 @@ public:
 	void CheckWidgetBounds();
 
 protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
 	QOpenGLWidget*			m_pview;
 	std::vector<GLWidget*>	m_Widget;
 

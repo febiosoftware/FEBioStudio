@@ -62,7 +62,7 @@ public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
 	virtual ~GLWidget();
 
-	virtual void draw(QPainter* painter) = 0;
+	virtual void draw(QPainter* painter);
 
 	virtual int handle(int x, int y, int nevent) { return 0; }
 
@@ -132,6 +132,8 @@ public:
 
 protected:
 	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
+
+	void snap_to_bounds(QPainter& painter);
 
 public:
 	std::string processLabel() const;

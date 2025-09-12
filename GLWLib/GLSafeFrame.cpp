@@ -48,6 +48,8 @@ void GLSafeFrame::resize(int x, int y, int W, int H)
 
 void GLSafeFrame::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	painter->beginNativePainting();
 
 	glPushAttrib(GL_ENABLE_BIT);

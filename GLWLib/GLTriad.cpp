@@ -45,6 +45,8 @@ GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 
 void GLTriad::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	painter->beginNativePainting();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	GLfloat ones[] = { 1.f, 1.f, 1.f, 1.f };

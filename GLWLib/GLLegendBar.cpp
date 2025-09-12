@@ -56,6 +56,8 @@ GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orie
 
 void GLLegendBar::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	int x0 = m_x;
 	int y0 = m_y;
 	int x1 = m_x + m_w;

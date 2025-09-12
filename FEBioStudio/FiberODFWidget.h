@@ -33,6 +33,7 @@ class CMainWindow;
 class matrix;
 class GObject;
 class GLTriad;
+class GLLegendBar;
 class CFiberODFAnalysis;
 class FSMaterial;
 struct CODF;
@@ -73,6 +74,7 @@ private:
     CODF* m_ODF;
 
     GLTriad* m_ptriad;
+	GLLegendBar* m_pbar;
 
 	friend class CODFScene;
 };

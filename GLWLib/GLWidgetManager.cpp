@@ -67,9 +67,6 @@ void CGLWidgetManager::CheckWidgetBounds()
 	{
 		GLWidget* pw = m_Widget[i];
 
-		// snap the widget if any of its align flags are set
-		if (pw->GetSnap()) SnapWidget(pw);
-
 		int x0 = pw->x();
 		if (x0 < 0) x0 = 0;
 
@@ -198,8 +195,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 				}
 				else return 1;
 
-				SnapWidget(pw);
-
 				xp = x;
 				yp = y;
 			}
@@ -216,26 +211,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 	return 0;
 }
 
-void CGLWidgetManager::SnapWidget(GLWidget* pw)
-{
-	assert(m_pview);
-
-	int W = m_pview->width();
-	int H = m_pview->height();
-
-	int w = pw->w();
-	int h = pw->h();
-
-	unsigned int nflag = pw->GetSnap();
-	if      (nflag & GLW_ALIGN_LEFT   ) pw->m_x = 0;
-	else if (nflag & GLW_ALIGN_RIGHT  ) pw->m_x = W-w-1;
-	else if (nflag & GLW_ALIGN_HCENTER) pw->m_x = W/2 - w/2;
-
-	if      (nflag & GLW_ALIGN_TOP    ) pw->m_y = 0;
-	else if (nflag & GLW_ALIGN_BOTTOM ) pw->m_y = H-h-1;
-	else if (nflag & GLW_ALIGN_VCENTER) pw->m_y = H/2 - h/2;
-}
-
 void CGLWidgetManager::DrawWidgets(QPainter* painter)
 {
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
@@ -250,9 +225,6 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 
 void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
 {
-	// snap the widget if any of its align flags are set
-	if (pw->GetSnap()) SnapWidget(pw);
-
 	// now draw the widget
 	pw->draw(painter);
 

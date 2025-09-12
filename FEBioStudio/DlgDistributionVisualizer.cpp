@@ -45,7 +45,6 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <GLWLib/GLTriad.h>
-#include <GLWLib/GLWidgetManager.h>
 
 GLMesh CreateSphere()
 {
@@ -171,11 +170,9 @@ public:
 	CDistroGLWidget(QWidget* parent) : CGLManagedSceneView(new CGLDistroScene(), parent)
 	{
 		setMinimumSize(400, 400);
-		m_wm.AttachToView(this);
 
 		m_ptriad = new GLTriad(0, 0, 75, 75);
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-		m_wm.AddWidget(m_ptriad);
 	}
 
 	void RenderCanvas() override
@@ -187,7 +184,7 @@ public:
 
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		m_wm.DrawWidgets(&painter);
+		m_ptriad->draw(&painter);
 	}
 
 	CGLDistroScene* GetScene()
@@ -197,7 +194,6 @@ public:
 
 private:
 	GLTriad* m_ptriad = nullptr;
-	CGLWidgetManager m_wm;
 };
 
 class FEBioPropsList : public CPropertyList

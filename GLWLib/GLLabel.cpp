@@ -48,6 +48,8 @@ void GLLabel::fit_to_size()
 
 void GLLabel::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	int x0 = m_x;
 	int y0 = m_y;
 	int x1 = m_x + m_w;

@@ -69,6 +69,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
 #include <GLWLib/GLTriad.h>
+#include <GLWLib/GLLegendBar.h>
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
@@ -86,6 +87,19 @@ void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
 {
 	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
 	m_w->m_ptriad->draw(&painter);
+
+	if (m_w->m_analysis)
+	{
+		CFiberODFAnalysis* odf = m_w->m_analysis;
+		m_w->m_pbar->SetDivisions(odf->Divisions());
+
+		double vmin, vmax;
+		vmin = odf->RangeMax();
+		vmax = odf->RangeMin();
+		m_w->m_pbar->SetRange(vmin, vmax);
+
+		m_w->m_pbar->draw(&painter);
+	}
 }
 
 BOX CODFScene::GetBoundingBox()
@@ -103,11 +117,24 @@ CFiberGLWidget::CFiberGLWidget() : CGLManagedSceneView(new CODFScene(this)), m_O
 	setMouseTracking(true);
 	m_ptriad = new GLTriad(0, 0, 50, 50);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+
+	CColorTexture* tex = new CColorTexture;
+	tex->SetDivisions(5);
+	tex->SetSmooth(true);
+
+	m_pbar = new GLLegendBar(tex, 0, 0, 80, 300, GLLegendBar::ORIENT_VERTICAL);
+	m_pbar->align(GLW_ALIGN_RIGHT| GLW_ALIGN_VCENTER);
+	m_pbar->SetType(GLLegendBar::GRADIENT);
+	m_pbar->set_font_size(9);
+	m_pbar->copy_label("ODF");
+	m_pbar->ShowTitle(true);
+	m_pbar->hide();
 }
 
 CFiberGLWidget::~CFiberGLWidget()
 {
 	delete m_ptriad;
+	delete m_pbar;
 }
 
 void CFiberGLWidget::setAnalysis(CFiberODFAnalysis* analysis)
