@@ -78,6 +78,8 @@ public:
 
 	bool UpdateData(bool bsave = true);
 
+	LegendData GetLegendData() const override;
+
 protected:
 	void UpdateMesh();
 	void UpdateSlice(GLMesh& mesh, float ref, GLColor col);

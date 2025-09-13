@@ -83,6 +83,8 @@ public:
 
 	void ColorStreamLines();
 
+	LegendData GetLegendData() const override;
+
 public:
 	int GetVectorType() { return m_nvec; }
 	void SetVectorType(int ntype);

@@ -91,6 +91,8 @@ public:
 
 	void Update() override;
 
+	LegendData GetLegendData() const override;
+
 protected:
 	int UpdateSlice(float ref, std::vector<std::pair<int, float> >& activeElements);
 

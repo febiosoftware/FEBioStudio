@@ -401,6 +401,16 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
+	// Update the mesh
+	UpdateMesh();
+}
+
+LegendData CGLIsoSurfacePlot::GetLegendData() const
+{
+	LegendData l;
+	l.discrete = true;
+	l.ndivs = GetIntValue(SLICES);
+
 	float vmin = m_crng.x;
 	float vmax = m_crng.y;
 	if (m_nslices > 0)
@@ -411,6 +421,11 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		vmax -= d;
 	}
 
-	// Update the mesh
-	UpdateMesh();
+	l.vmin = vmin;
+	l.vmax = vmax;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

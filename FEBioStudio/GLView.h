@@ -298,7 +298,8 @@ protected:
 	GLLabel*		m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
-	GLLegendBar*	m_legend;
+	GLLegendBar*	m_legend;	// main legend bar for colormaps
+	GLLegendBar*	m_legendPlot; // secondary legend for active plot
 
 	GVContextMenu* m_menu;
 

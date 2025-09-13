@@ -531,3 +531,18 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 
 	return faceCount;
 }
+
+LegendData CGLSlicePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(RANGE_DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
+}

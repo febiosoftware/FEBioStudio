@@ -556,3 +556,18 @@ void CGLParticleFlowPlot::SeedParticles()
 		}
 	}
 }
+
+LegendData CGLParticleFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = false;
+	l.ndivs = 10;
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
+}

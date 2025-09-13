@@ -493,3 +493,21 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 	}
 	mesh.Update();
 }
+
+LegendData GLVolumeFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	if (m_range.valid)
+	{
+		l.discrete = false;
+		l.ndivs = m_nDivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
+}

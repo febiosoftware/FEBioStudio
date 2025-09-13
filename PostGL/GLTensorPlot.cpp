@@ -718,3 +718,22 @@ void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale)
 	glx::drawBox(re, 0.5, 0.5, 0.5);
 	re.popTransform();
 }
+
+LegendData GLTensorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if ((glyphCol >  0) && (m_range.valid))
+	{
+		l.discrete = false;
+		l.ndivs = m_ndivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
+}

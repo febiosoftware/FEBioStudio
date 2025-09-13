@@ -65,6 +65,8 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	LegendData GetLegendData() const override;
+
 private:
 	void CreateSlices(std::vector<Slice>& slice, const vec3d& normal);
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);

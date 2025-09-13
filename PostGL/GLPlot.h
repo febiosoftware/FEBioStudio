@@ -29,8 +29,10 @@ SOFTWARE.*/
 #include <PostLib/GLObject.h>
 #include <PostLib/DataMap.h>
 #include <FSCore/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <FSCore/box.h>
 #include <GLLib/ColorTexture.h>
+#include <string>
 
 // used for intersection testing
 // defined in MeshLib/Intersect.h
@@ -42,6 +44,16 @@ namespace Post {
 
 class CGLModel;
 class GLPlotGroup;
+
+struct LegendData
+{
+	double vmin = 0, vmax = 0;
+	int colormap = ColorMapManager::JET;
+	int ndivs = 0;
+	bool discrete = false;
+	bool smooth = true;
+	std::string title;
+};
 
 class CGLPlot : public CGLVisual
 {
@@ -72,6 +84,8 @@ public:
 	virtual FESelection* SelectComponent(int index);
 
 	virtual void ClearSelection();
+
+	virtual LegendData GetLegendData() const { LegendData l; return l; }
 
 private:
 	int	m_renderOrder;

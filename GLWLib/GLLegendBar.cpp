@@ -468,9 +468,9 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		for (i = 0; i <= nsteps; i++)
 		{
 			int xt = x0 + i * (x1 - x0) / nsteps;
-			if      (i ==      0) f = m_fmax;
-			else if (i == nsteps) f = m_fmin;
-			else f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
+			if      (i ==      0) f = m_fmin;
+			else if (i == nsteps) f = m_fmax;
+			else f = m_fmin + i * (m_fmax - m_fmin) / nsteps;
 
 			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 			QString s(str);

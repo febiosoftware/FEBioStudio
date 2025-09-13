@@ -111,6 +111,8 @@ protected:
 
 	void Update() override;
 
+	LegendData GetLegendData() const override;
+
 protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type

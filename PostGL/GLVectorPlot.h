@@ -111,6 +111,8 @@ public:
 
 	void Update() override;
 
+	LegendData GetLegendData() const override;
+
 private:
 	// render a vector n at position r
 	void RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v);

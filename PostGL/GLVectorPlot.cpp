@@ -549,3 +549,22 @@ void CGLVectorPlot::UpdateState(int nstate)
 		if (rng.y == rng.x) ++rng.y;
 	}
 }
+
+LegendData CGLVectorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if (glyphCol == 1)
+	{
+		l.discrete = false;
+		l.ndivs = 10;
+		l.vmin = m_crng.x;
+		l.vmax = m_crng.y;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
+}

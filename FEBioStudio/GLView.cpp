@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPainter>
 #include <PostGL/GLPlaneCutPlot.h>
+#include <PostGL/GLModel.h>
 #include "Commands.h"
 #include <chrono>
 #include "DlgPickColor.h"
@@ -508,6 +509,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
 	m_legend = nullptr;
+	m_legendPlot = nullptr;
 }
 
 CGLView::~CGLView()
@@ -1396,6 +1398,10 @@ void CGLView::initializeGL()
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
+		m_Widget->AddWidget(m_legendPlot = new GLLegendBar(&m_colorMap, 0, 0, 600, 120, GLLegendBar::ORIENT_HORIZONTAL));
+		m_legendPlot->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+		m_legendPlot->hide();
+
 		m_menu = new GVContextMenu(this);
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
 		m_Widget->AddWidget(m_menu);
@@ -1667,7 +1673,47 @@ void CGLView::RenderCanvas(GLContext& rc)
 				m_legend->show();
 			}
 			else m_legend->hide();
-
+		}
+		if (m_legendPlot)
+		{
+			bool bshow = false;
+			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+			if (postDoc && postDoc->IsValid())
+			{
+				Post::CGLModel* glm = postDoc->GetGLModel();
+				if (glm)
+				{
+					for (int i = 0; i < glm->Plots(); ++i)
+					{
+						Post::CGLPlot* plt = glm->Plot(i);
+						if (plt->IsActive())
+						{
+							Post::LegendData data = plt->GetLegendData();
+							if (data.ndivs > 0)
+							{
+								m_legendPlot->SetColorGradient(data.colormap);
+								m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+								m_legendPlot->SetDivisions(data.ndivs);
+								m_legendPlot->SetSmoothTexture(data.smooth);
+								m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
+								
+								if (data.title.empty()) {
+									m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
+								}
+								else {
+									m_legendPlot->copy_label(data.title.c_str());
+									m_legendPlot->ShowTitle(true);
+								}
+								
+								bshow = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (bshow) m_legendPlot->show();
+			else m_legendPlot->hide();
 		}
 		if (m_menu)
 		{
