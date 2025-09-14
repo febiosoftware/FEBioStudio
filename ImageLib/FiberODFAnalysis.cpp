@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <sstream>
 #include "SITKTools.h"
 #include <FECore/besselIK.h>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
 #include <FEBioOpt/FEBioOpt.h>

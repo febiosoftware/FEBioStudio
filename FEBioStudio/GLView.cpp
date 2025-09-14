@@ -47,7 +47,6 @@ SOFTWARE.*/
 #include <math.h>
 #include <MeshLib/MeshTools.h>
 #include "GLViewTransform.h"
-#include <GLLib/glx.h>
 #include <GLLib/GDecoration.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
@@ -467,6 +466,38 @@ private:
 	GLCheckBox* m_showNormals;
 };
 
+void renderCircle(const vec3d& c, double R, int N)
+{
+	glBegin(GL_LINE_LOOP);
+	{
+		for (int i = 0; i < N; ++i)
+		{
+			double x = c.x + R * cos(i * 2 * PI / N);
+			double y = c.y + R * sin(i * 2 * PI / N);
+			glVertex3d(x, y, c.z);
+		}
+	}
+	glEnd();
+}
+
+void RenderBrush(int x, int y, double R)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glColor3ub(255, 255, 255);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glLineStipple(1, (GLushort)0xF0F0);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_LINE_STIPPLE);
+
+	int n = (int)(R / 2);
+	if (n < 12) n = 12;
+	renderCircle(vec3d(x, y, 0), R, n);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPopAttrib();
+}
 
 //-----------------------------------------------------------------------------
 CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
@@ -1581,8 +1612,6 @@ void CGLView::RenderScene()
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
 
-	if (view.m_bselbrush) RenderBrush();
-
 	RenderDecorations();
 
 	if (view.m_show3DCursor)
@@ -1601,6 +1630,8 @@ void CGLView::RenderScene()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	if (view.m_bselbrush) RenderBrush(m_x1, m_y1, view.m_brushSize);
 
 	RenderCanvas(rc);
 
@@ -1627,12 +1658,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
 	CGLDocument* doc = m_pWnd->GetGLDocument();
-	std::string renderString = doc->GetRenderString();
-	if (!renderString.empty())
-	{
-		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-		painter.drawText(0, 15, QString::fromStdString(renderString));
-	}
 
 	// draw the GL widgets
 	if (m_Widget)
@@ -1805,20 +1830,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 	}
 
 	painter.end();
-}
-
-void renderCircle(const vec3d& c, double R, int N)
-{
-	glBegin(GL_LINE_LOOP);
-	{
-		for (int i = 0; i < N; ++i)
-		{
-			double x = c.x + R * cos(i * 2 * PI / N);
-			double y = c.y + R * sin(i * 2 * PI / N);
-			glVertex3d(x, y, c.z);
-		}
-	}
-	glEnd();
 }
 
 void CGLView::Render3DCursor()
@@ -2011,34 +2022,6 @@ void CGLView::RenderRubberBand()
 		}
 		break;
 	}
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
-}
-
-void CGLView::RenderBrush()
-{
-	// set the ortho
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
-
-	double R = GetViewSettings().m_brushSize;
-	int n = (int)(R / 2);
-	if (n < 12) n = 12;
-	renderCircle(vec3d(m_x1, m_y1, 0), R, n);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopAttrib();

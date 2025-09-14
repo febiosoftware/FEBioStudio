@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLDocument.h"
 #include <QtCore/QDir>
-#include <QFileInfo>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLScene.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveMeshObject.h>
@@ -100,11 +98,6 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
-}
-
-std::string CGLDocument::GetRenderString()
-{
-	return std::string();
 }
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }

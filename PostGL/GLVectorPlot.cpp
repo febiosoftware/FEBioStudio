@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLVectorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>

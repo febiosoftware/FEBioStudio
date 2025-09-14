@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
 #include <GLLib/glx.h>

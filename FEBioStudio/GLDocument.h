@@ -154,9 +154,6 @@ public:
 	int GetLegendDivisions() const { return m_legendDivisions; }	
 	bool GetLegendSmoothing() const { return m_legendSmooth; }	
 
-	// This string will be shown in top-left corner
-	virtual std::string GetRenderString();
-
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }

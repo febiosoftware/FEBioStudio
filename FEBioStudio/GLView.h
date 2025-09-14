@@ -178,7 +178,6 @@ signals:
 public:
 	// other rendering functions
 	void RenderRubberBand();
-	void RenderBrush();
 	void RenderPivot();
 
 	void ShowSafeFrame(bool b);
