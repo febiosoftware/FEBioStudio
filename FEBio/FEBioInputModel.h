@@ -163,14 +163,14 @@ public:
 		int		m_refs;
 	};
 
+	class Part;
+
 	// class for storing element sets
 	class ElementSet
 	{
 	public:
 		ElementSet();
-		ElementSet(const std::string& name, const std::vector<int>& elem);
-		ElementSet(const ElementSet& s);
-		void operator = (const ElementSet& s);
+		ElementSet(const std::string& name, const std::vector<int>& elem, Part* part = nullptr);
 
 		const std::string& name() const { return m_name; }
 
@@ -181,11 +181,10 @@ public:
 		void clear() { m_elem.clear(); }
 
 	public:
+		Part* m_part = nullptr;
 		std::string			m_name;
 		std::vector<int>	m_elem;
 	};
-
-	class Part;
 
 	// Class for storing domains (i.e. element sets with materials assigned)
 	class Domain
