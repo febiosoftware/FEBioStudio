@@ -332,22 +332,11 @@ FEBioInputModel::ElementSet::ElementSet()
 {
 }
 
-FEBioInputModel::ElementSet::ElementSet(const string& name, const vector<int>& elem)
+FEBioInputModel::ElementSet::ElementSet(const string& name, const vector<int>& elem, FEBioInputModel::Part* part)
 {
 	m_name = name;
 	m_elem = elem;
-}
-
-FEBioInputModel::ElementSet::ElementSet(const FEBioInputModel::ElementSet& s)
-{
-	m_name = s.m_name;
-	m_elem = s.m_elem;
-}
-
-void FEBioInputModel::ElementSet::operator = (const FEBioInputModel::ElementSet& s)
-{
-	m_name = s.m_name;
-	m_elem = s.m_elem;
+	m_part = part;
 }
 
 //=============================================================================
