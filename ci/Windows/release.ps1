@@ -7,7 +7,7 @@ $FBS_REPO = $env:GITHUB_WORKSPACE + '\FEBioStudio\'
 cd $FEBIO_REPO
 .\ci\Windows\build.bat
 .\ci\Windows\build.bat -d # build the debug version too
-sh --login -i -c ci/Windows/create-sdk-wrapped.sh
+sh --login -i -c ci/Windows/create-sdk.sh
 
 # FEBioChem
 New-Item -Path $CHEM_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
@@ -176,38 +176,8 @@ Foreach ($i in $docs)
     cp $i upload/doc
 }
 
-# Create SDK
-$sdkLibs = @(
-    'FECore'
-    'FEBioMech'
-    'FEBioMix'
-    'FEBioFluid'
-    'FEBioRVE'
-    'FEBioPlot'
-    'FEBioXML'
-    'FEBioLib'
-)
-
-mkdir release\sdk
-mkdir release\sdk\include
-mkdir release\sdk\lib\Release
-mkdir release\sdk\lib\Debug
-
-Foreach ($i in $sdkLibs)
-{
-    mkdir release\sdk\include\$i
-    cp $FEBIO_REPO\$i\*.h release\sdk\include\$i
-    cp $FEBIO_REPO\$i\*.hpp release\sdk\include\$i
-
-    cp $FEBIO_REPO\cmbuild\lib\Release\$i.lib release\sdk\lib\Release
-    cp $FEBIO_REPO\cmbuild\lib\Debug\$i.lib release\sdk\lib\Debug
-}
-
-mkdir release\sdk\bin
-mkdir release\sdk\bin\Debug
-
-cp $FEBIO_REPO\cmbuild\bin\Debug\febio4.exe release\sdk\bin\Debug
-cp $FEBIO_REPO\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
+# Copy sdk to release dir for installer
+Copy-Item -Path "$FEBIO_REPO\febio4-sdk" -Destination "release\sdk" -Recurse
 
 # zip sdk
 Compress-Archive -Path release\sdk\* -DestinationPath upload\sdk.zip
