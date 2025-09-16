@@ -504,7 +504,7 @@ else()
     
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
-	target_link_libraries(${FBS_BIN_NAME} -Wl,--start-group)
+	target_link_libraries(${FBS_BIN_NAME} -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
 if(UNIX)
