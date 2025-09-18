@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <map>
 #include <cstring>
 using namespace std;
 
@@ -2071,6 +2072,40 @@ void FSModel::RemoveUnusedLoadControllers()
 	}
 }
 
+void FSModel::RemoveUnusedMaterials()
+{
+	const int NMAT = Materials();
+	std::map<int, int> tag;
+
+	GModel& mdl = GetModel();
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			int matid = pg->GetMaterialID();
+			tag[matid] = 1;
+		}
+	}
+
+	std::vector<GMaterial*> deleteMats;
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		if (tag.find(mat->GetID()) == tag.end())
+			deleteMats.push_back(mat);
+	}
+
+	if (!deleteMats.empty())
+	{
+		for (GMaterial* pm : deleteMats)
+			delete pm;
+	}
+
+	ClearMLT();
+}
+
 //-----------------------------------------------------------------------------
 void FSModel::DeleteAllMeshDataGenerators()
 {
@@ -2162,9 +2197,17 @@ void FSModel::Purge(int ops)
 		// add an initial step
 		m_pStep.Add(new FSInitialStep(this));
 	}
-	else
+	else if (ops == 1)
 	{
 		ClearSelections();
+	}
+	else if (ops == 2)
+	{
+		RemoveUnusedItems();
+	}
+	else
+	{
+		assert(false);
 	}
 }
 
@@ -2220,6 +2263,14 @@ void FSModel::ClearSelections()
 	}
 
 	GetModel().RemoveNamedSelections();
+}
+
+void FSModel::RemoveUnusedItems()
+{
+	GModel& mdl = GetModel();
+	mdl.RemoveUnusedSelections();
+	RemoveUnusedMaterials();
+	RemoveUnusedLoadControllers();
 }
 
 //-----------------------------------------------------------------------------

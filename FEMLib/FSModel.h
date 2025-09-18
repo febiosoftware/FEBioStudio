@@ -96,8 +96,14 @@ public:
 	//! Remove unused load controllers from the model
 	void RemoveUnusedLoadControllers();
 
+	//! removed unused materials
+	void RemoveUnusedMaterials();
+
 	//! Clear the selections of all the bc, loads, etc.
 	void ClearSelections();
+
+	//! remove all unused items
+	void RemoveUnusedItems();
 
 	//! Reset model data
 	void New();
