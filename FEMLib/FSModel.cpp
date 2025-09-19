@@ -2724,7 +2724,7 @@ int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
 
 void GetAllocatorIDsRecursive(FSCoreBase* obj, std::unordered_set<int>& allocatorIDs)
 {
-    if (obj == nullptr) return;
+    if ((obj == nullptr) || (obj->GetClassID() == -1)) return;
 
     FEBio::FEBioClassInfo ci = FEBio::GetClassInfo(obj->GetClassID());
     allocatorIDs.insert(ci.allocId);
