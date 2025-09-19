@@ -927,6 +927,44 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 				return false;
 			}
 		}
+		else if (IS_FACE_FIELD(nfield) && IS_FACE_FIELD(noperand))
+		{
+			if ((d.GetType() == DATA_SCALAR) && (s.GetType() == DATA_SCALAR))
+			{
+				double (*f)(double, double) = 0;
+				if (nop == 0) f = flt_add;
+				else if (nop == 1) f = flt_sub;
+				else if (nop == 2) f = flt_mul;
+				else if (nop == 3) f = flt_div;
+				else if (nop == 4) f = flt_err;
+				else
+				{
+					return false;
+				}
+
+				if (fmt == DATA_ITEM)
+				{
+					FEFaceData<float, DATA_ITEM>* pd = dynamic_cast<FEFaceData<float, DATA_ITEM>*>(&d);
+					FEFaceData_T<float, DATA_ITEM>* ps = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&s);
+					if (pd && ps)
+					{
+						int N = mesh.Elements();
+						for (int i = 0; i < N; ++i)
+						{
+							if (pd->active(i) && ps->active(i))
+							{
+								float vs, vd;
+								pd->eval(i, &vd);
+								ps->eval(i, &vs);
+								float r = (float)f(vd, vs);
+								pd->set(i, r);
+							}
+						}
+					}
+					else return false;
+				}
+			}
+		}
 		else
 		{
 			return false;
