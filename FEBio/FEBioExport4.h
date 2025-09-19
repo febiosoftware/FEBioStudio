@@ -31,6 +31,7 @@ SOFTWARE.*/
 class FSSurfaceLoad;
 class GPartList;
 class GMaterial;
+class GDiscreteObject;
 class GPart;
 
 struct ProgressTracker
@@ -334,6 +335,9 @@ protected:
 
 	// used by the new export Part feature
 	std::vector<Part*>		m_Part;	//!< list of parts
+
+	// the discrete sets that should be exported
+	std::vector<GDiscreteObject*>	m_discreteSets;
 
 	int	m_numbl;	// number of body loads
 	int	m_nsteps;	// number of steps
