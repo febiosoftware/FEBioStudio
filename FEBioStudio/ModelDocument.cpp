@@ -1277,18 +1277,12 @@ void CModelDocument::ToggleActiveParts()
 {
 	if (GetSelectionMode() != SELECT_PART) return;
 
-	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
-
-	vector<GPart*> selectedParts;
-	for (int i = 0; i < po->Parts(); ++i)
+	GPartSelection* sel = dynamic_cast<GPartSelection*>(GetCurrentSelection());
+	if (sel && (sel->Count() > 0))
 	{
-		GPart* pg = po->Part(i);
-		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+		vector<GPart*> selectedParts = sel->GetPartList();
+		DoCommand(new CCmdToggleActiveParts(selectedParts));
 	}
-	if (selectedParts.empty()) return;
-
-	DoCommand(new CCmdToggleActiveParts(selectedParts));
 }
 
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
