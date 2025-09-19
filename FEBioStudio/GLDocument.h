@@ -146,13 +146,9 @@ public:
 	bool ShowTitle() const { return m_showTitle; }
 	bool ShowSubtitle() const { return m_showSubtitle; }
 	bool ShowLegend() const { return m_showLegend; }
-
 	void ShowLegend(bool b) { m_showLegend = b; }
-	void SetDataRange(double vmin, double vmax) { m_dataRange[0] = vmin; m_dataRange[1] = vmax; }
-	void GetDataRange(double v[2]) { v[0] = m_dataRange[0]; v[1] = m_dataRange[1]; }
-	int GetColorGradient() const { return m_colorGradient; }
-	int GetLegendDivisions() const { return m_legendDivisions; }	
-	bool GetLegendSmoothing() const { return m_legendSmooth; }	
+
+	virtual LegendData GetLegendData() { LegendData l; return l; }
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -205,8 +201,4 @@ protected:
 	bool	m_showTitle;
 	bool	m_showSubtitle;
 	bool	m_showLegend;
-	double	m_dataRange[2];
-	int		m_colorGradient;
-	int		m_legendDivisions;
-	bool	m_legendSmooth;
 };

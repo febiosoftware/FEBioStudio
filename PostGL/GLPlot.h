@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <GLLib/GLTexture1D.h>
+#include <GLLib/GView.h>
 #include <PostLib/GLObject.h>
 #include <PostLib/DataMap.h>
 #include <FSCore/ColorMap.h>
@@ -44,16 +45,6 @@ namespace Post {
 
 class CGLModel;
 class GLPlotGroup;
-
-struct LegendData
-{
-	double vmin = 0, vmax = 0;
-	int colormap = ColorMapManager::JET;
-	int ndivs = 0;
-	bool discrete = false;
-	bool smooth = true;
-	std::string title;
-};
 
 class CGLPlot : public CGLVisual
 {

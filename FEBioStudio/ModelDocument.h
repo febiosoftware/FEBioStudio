@@ -63,6 +63,8 @@ public:
 
 	bool Initialize() override;
 
+	LegendData GetLegendData() override;
+
 public:
 	//! Get the project
 	FSProject& GetProject();

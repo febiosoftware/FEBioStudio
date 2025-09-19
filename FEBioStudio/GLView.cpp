@@ -1689,12 +1689,11 @@ void CGLView::RenderCanvas(GLContext& rc)
 		{
 			if (doc->ShowLegend())
 			{
-				double v[2];
-				doc->GetDataRange(v);
-				m_legend->SetColorGradient(doc->GetColorGradient());
-				m_legend->SetRange((float)v[0], (float)v[1]);
-				m_legend->SetDivisions(doc->GetLegendDivisions());
-				m_legend->SetSmoothTexture(doc->GetLegendSmoothing());
+				LegendData l = doc->GetLegendData();
+				m_legend->SetColorGradient(l.colormap);
+				m_legend->SetRange(l.vmin, l.vmax);
+				m_legend->SetDivisions(l.ndivs);
+				m_legend->SetSmoothTexture(l.smooth);
 				m_legend->show();
 			}
 			else m_legend->hide();
@@ -1713,7 +1712,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 						Post::CGLPlot* plt = glm->Plot(i);
 						if (plt->IsActive())
 						{
-							Post::LegendData data = plt->GetLegendData();
+							LegendData data = plt->GetLegendData();
 							if (data.ndivs > 0)
 							{
 								m_legendPlot->SetColorGradient(data.colormap);

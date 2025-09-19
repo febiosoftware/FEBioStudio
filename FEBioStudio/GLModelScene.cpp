@@ -254,11 +254,6 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 		FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
 		if (pm)
 		{
-			Mesh_Data& data = pm->GetMeshData();
-			double vmin, vmax;
-			data.GetValueRange(vmin, vmax);
-			if (vmin == vmax) vmax++;
-			m_doc->SetDataRange(vmin, vmax);
 			m_doc->ShowLegend(true);
 		}
 	}

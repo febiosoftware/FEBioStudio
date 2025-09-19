@@ -391,22 +391,29 @@ Post::CGLModel* CPostDocument::GetGLModel()
 	return m_glm;
 }
 
-void CPostDocument::SetActiveState(int n)
+LegendData CPostDocument::GetLegendData()
 {
+	LegendData l;
 	assert(m_glm);
-	m_glm->SetCurrentTimeIndex(n);
-	m_glm->Update(false);
 	Post::CGLColorMap* pcm = m_glm->GetColorMap();
 	if (pcm && pcm->IsActive())
 	{
 		float rng[2];
 		pcm->GetRange(rng);
-		m_dataRange[0] = rng[0];
-		m_dataRange[1] = rng[1];
-		m_colorGradient = pcm->GetColorMap();
-		m_legendDivisions = pcm->GetDivisions();
-		m_legendSmooth = pcm->GetColorSmooth();
+		l.vmin = rng[0];
+		l.vmax = rng[1];
+		l.colormap = pcm->GetColorMap();
+		l.smooth = pcm->GetColorSmooth();
+		l.ndivs = pcm->GetDivisions();
 	}
+	return l;
+}
+
+void CPostDocument::SetActiveState(int n)
+{
+	assert(m_glm);
+	m_glm->SetCurrentTimeIndex(n);
+	m_glm->Update(false);
 }
 
 int CPostDocument::GetActiveState()
@@ -554,22 +561,7 @@ void CPostDocument::UpdateFEModel(bool breset)
 	if (!IsValid()) return;
 
 	// update the model
-	if (m_glm)
-	{
-		m_glm->Update(breset);
-		Post::CGLColorMap* pcm = m_glm->GetColorMap();
-		if (pcm && pcm->IsActive())
-		{
-			float rng[2];
-			pcm->GetRange(rng);
-			m_dataRange[0] = rng[0];
-			m_dataRange[1] = rng[1];
-
-			m_colorGradient = pcm->GetColorMap();
-			m_legendDivisions = pcm->GetDivisions();
-			m_legendSmooth = pcm->GetColorSmooth();
-		}
-	}
+	if (m_glm) m_glm->Update(breset);
 
 	m_scene->Update();
 }

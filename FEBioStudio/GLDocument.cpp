@@ -77,10 +77,6 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_showTitle = false;
 	m_showSubtitle = false;
 	m_showLegend = false;
-	m_dataRange[0] = m_dataRange[1] = 0;
-	m_colorGradient = ColorMapManager::JET;
-	m_legendDivisions = 10;
-	m_legendSmooth = true;
 }
 
 CGLDocument::~CGLDocument()
