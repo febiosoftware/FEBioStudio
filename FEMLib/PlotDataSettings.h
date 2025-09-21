@@ -62,6 +62,7 @@ public:
 	void addDomain(FEItemListBuilder* pi);
 	void removeDomain(FEItemListBuilder* pi);
 	void removeDomain(int n);
+	void removeAllDomains();
 
 private:
 	string			m_name;						// name of variable (as in FEBio file)

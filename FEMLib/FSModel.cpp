@@ -2132,34 +2132,27 @@ void FSModel::DeleteAllSteps()
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::Purge(int ops)
+void FSModel::Purge()
 {
-	if (ops == 0)
-	{
-		m_pModel->RemoveMeshData();
+	m_pModel->RemoveMeshData();
 
-		// clear all groups
-		m_pModel->RemoveNamedSelections();
+	// clear all groups
+	m_pModel->RemoveNamedSelections();
 
-		// remove discrete objects
-		m_pModel->ClearDiscrete();
+	// remove discrete objects
+	m_pModel->ClearDiscrete();
 
-		// remove all steps
-		m_pStep.Clear();
+	// remove all steps
+	m_pStep.Clear();
 
-		// remove all materials
-		DeleteAllMaterials();
+	// remove all materials
+	DeleteAllMaterials();
 
-		// remove all load controllers
-		m_LC.Clear();
+	// remove all load controllers
+	m_LC.Clear();
 
-		// add an initial step
-		m_pStep.Add(new FSInitialStep(this));
-	}
-	else
-	{
-		ClearSelections();
-	}
+	// add an initial step
+	m_pStep.Add(new FSInitialStep(this));
 }
 
 //-----------------------------------------------------------------------------

@@ -60,7 +60,7 @@ public:
 	void Clear();
 
 	// purge the model
-	void Purge(int ops);
+	void Purge();
 
 	// functions to delete all components
 	void DeleteAllMaterials();
