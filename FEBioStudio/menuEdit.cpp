@@ -1329,8 +1329,13 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
+		FSProject& prj = doc->GetProject();
 		FSModel* ps = doc->GetFSModel();
-		ps->Purge(dlg.getOption());
+		switch (dlg.getOption())
+		{
+		case 0: ps->Purge(); break;
+		case 1: prj.PurgeSelections(); break;
+		}
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);
 		UpdateModel();

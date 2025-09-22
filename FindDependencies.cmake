@@ -56,7 +56,7 @@ if(NEWPATH)
         set(FEBio_INC "${FEBio_SDK}/include" CACHE PATH "Path to FEBio include directory." FORCE)
 
         if(WIN32)
-            list(APPEND LIB_SUFFIXES "lib" "lib/Release"  "vs2017/Release" "vs2017/Debug")
+            list(APPEND LIB_SUFFIXES "lib" "lib/Release" "lib/Debug")
         else()
             list(APPEND LIB_SUFFIXES "lib")
         endif()

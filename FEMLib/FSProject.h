@@ -243,6 +243,8 @@ public:
 	void SetUnits(int units);
 	int GetUnits() const;
 
+	void PurgeSelections();
+
 public:
 	// convert the old format to the new
 	void ConvertToNewFormat(std::ostream& log);

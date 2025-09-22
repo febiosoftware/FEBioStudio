@@ -123,6 +123,11 @@ void CPlotVariable::removeDomain(int n)
 	}
 }
 
+void CPlotVariable::removeAllDomains()
+{
+	m_domains.clear();
+}
+
 //=================================================================================================
 CPlotDataSettings::CPlotDataSettings(FSProject& prj) : m_prj(prj)
 {
