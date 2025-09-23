@@ -25,61 +25,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "AverageNormalTool.h"
+#include "FaceMetricsTool.h"
 #include <GLLib/GDecoration.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 
-QVariant CAverageNormalTool::GetPropertyValue(int i)
+QVariant CFaceMetricsTool::GetPropertyValue(int i)
 {
 	switch (i)
 	{
-	case 0: return m_N.x; break;
-	case 1: return m_N.y; break;
-	case 2: return m_N.z; break;
+	case 0: return m_nsel; break;
+	case 1: return Vec3dToString(m_N); break;
+	case 2: return Vec3dToString(m_c); break;
 	}
 	return QVariant();
 }
 
-void CAverageNormalTool::SetPropertyValue(int i, const QVariant& v)
+void CFaceMetricsTool::SetPropertyValue(int i, const QVariant& v)
 {
 }
 
-CAverageNormalTool::CAverageNormalTool(CMainWindow* wnd) : CBasicTool(wnd, "Average Normal")
+CFaceMetricsTool::CFaceMetricsTool(CMainWindow* wnd) : CBasicTool(wnd, "Surface Metrics")
 {
 	m_N = vec3d(0, 0, 0);
 
-	addProperty("Nx", CProperty::Float)->setFlags(CProperty::Visible);
-	addProperty("Ny", CProperty::Float)->setFlags(CProperty::Visible);
-	addProperty("Nz", CProperty::Float)->setFlags(CProperty::Visible);
+	addProperty("faces"      , CProperty::Int )->setFlags(CProperty::Visible);
+	addProperty("avg. normal", CProperty::Vec3)->setFlags(CProperty::Visible);
+	addProperty("centroid"   , CProperty::Vec3)->setFlags(CProperty::Visible);
 
-	SetInfo("Calculates the average normal of the currently selected faces.");
+	SetInfo("Calculates some metrics of the currently selected faces.");
 }
 
-void CAverageNormalTool::Activate()
+void CFaceMetricsTool::Activate()
 {
 	CBasicTool::Activate();
 	Update();
 }
 
-void CAverageNormalTool::Update()
+void CFaceMetricsTool::Update()
 {
 	SetDecoration(nullptr);
 	m_N = vec3d(0, 0, 0);
 
+	m_c = vec3d(0, 0, 0);
+	double A = 0;
+
+	m_nsel = 0;
+
 	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;
 
-	vec3f N(0,0,0);
 	for (int i = 0; i < mesh->Faces(); ++i)
 	{
 		FSFace& face = mesh->Face(i);
 		if (face.IsSelected())
 		{
-			N += face.m_fn;
+			m_nsel++;
+
+			vec3d Ni = to_vec3d(face.m_fn);
+			m_N += Ni;
+
+			double Ai = mesh->FaceArea(face);
+			vec3d ci = mesh->FaceCenter(face);
+
+			A += Ai;
+			m_c += ci * Ai;
 		}
 	}
-	N.Normalize();
+	m_N.Normalize();
+	if (A != 0) m_c /= A;
 
-	m_N = to_vec3d(N);
+	SetDecoration(new GPointDecoration(to_vec3f(m_c)));
 }

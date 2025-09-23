@@ -28,10 +28,10 @@ SOFTWARE.*/
 #include "Tool.h"
 #include <FSCore/math3d.h>
 
-class CAverageNormalTool : public CBasicTool
+class CFaceMetricsTool : public CBasicTool
 {
 public:
-	CAverageNormalTool(CMainWindow* wnd);
+	CFaceMetricsTool(CMainWindow* wnd);
 
 	void Activate() override;
 
@@ -42,7 +42,9 @@ private:
 	void SetPropertyValue(int i, const QVariant& v) override;
 
 private:
+	int m_nsel; // selected faces
 	vec3d m_N; // average normal
+	vec3d m_c; // centroid
 
 	friend class Props;
 };
