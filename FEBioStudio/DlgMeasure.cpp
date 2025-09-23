@@ -48,6 +48,8 @@ SOFTWARE.*/
 #include "MeasureMOITool.h"
 #include "PlaneTool.h"
 #include "PointCongruencyTool.h"
+#include "FaceMetricsTool.h"
+#include "DihedralAngleTool.h"
 #include "QuadricFitTool.h"
 #include "ConchoidFitTool.h"
 #include "AreaCalculatorTool.h"
@@ -133,6 +135,8 @@ public:
 		m_tools.push_back(new CPointCongruencyTool(m_wnd));
 		m_tools.push_back(new CMeasureCOMTool(m_wnd));
 		m_tools.push_back(new CMeasureMOITool(m_wnd));
+		m_tools.push_back(new CFaceMetricsTool(m_wnd));
+		m_tools.push_back(new CDihedralAngleTool(m_wnd));
 		m_tools.push_back(new CQuadricFitTool(m_wnd));
 		m_tools.push_back(new CConchoidFitTool(m_wnd));
 		m_tools.push_back(new CAreaCalculatorTool(m_wnd));

@@ -62,6 +62,7 @@ public:
 	void addDomain(FSItemListBuilder* pi);
 	void removeDomain(FSItemListBuilder* pi);
 	void removeDomain(int n);
+	void removeAllDomains();
 
 private:
 	std::string		m_name;						// name of variable (as in FEBio file)

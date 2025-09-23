@@ -59,8 +59,8 @@ public:
 	//! Clear the model
 	void Clear();
 
-	//! Purge the model
-	void Purge(int ops);
+	// purge the model
+	void Purge();
 
 	//! Delete all materials from the model
 	void DeleteAllMaterials();

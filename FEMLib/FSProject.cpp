@@ -591,6 +591,29 @@ int FSProject::GetUnits() const
 	return m_units;
 }
 
+void FSProject::PurgeSelections()
+{
+	int nlogs = m_log.LogDataSize();
+	for (int i = 0; i < m_log.LogDataSize(); )
+	{
+		FSHasOneItemList* pl = dynamic_cast<FSHasOneItemList*>(&m_log.LogData(i));
+		if (pl) 
+		{
+			if (pl->GetItemList()) m_log.RemoveLogData(i);
+			else i++;
+		}
+		else i++;
+	}
+
+	for (int i = 0; i < m_plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& plt = m_plt.PlotVariable(i);
+		plt.removeAllDomains();
+	}
+
+	m_fem.ClearSelections();
+}
+
 //-------------------------------------------------------------------------------------------------
 void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
 {
