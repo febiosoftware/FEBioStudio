@@ -48,6 +48,8 @@ SOFTWARE.*/
 #include "MeasureMOITool.h"
 #include "PlaneTool.h"
 #include "PointCongruencyTool.h"
+#include "AverageNormalTool.h"
+#include "DihedralAngleTool.h"
 
 class Ui::CDlgMeasure
 {
@@ -130,6 +132,8 @@ public:
 		m_tools.push_back(new CPointCongruencyTool(m_wnd));
 		m_tools.push_back(new CMeasureCOMTool(m_wnd));
 		m_tools.push_back(new CMeasureMOITool(m_wnd));
+		m_tools.push_back(new CAverageNormalTool(m_wnd));
+		m_tools.push_back(new CDihedralAngleTool(m_wnd));
 	}
 
 	void clearTools()
