@@ -79,7 +79,7 @@ protected:
 
 	QPoint m_prevPos;	//!< last mouse position
 
-	OpenGLRenderer	m_ogl;
+	OpenGLRenderer*	m_ogl = nullptr;
 };
 
 // This class manages its own scene

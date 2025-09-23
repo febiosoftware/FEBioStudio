@@ -24,7 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
-#include <GL/glew.h>
 #include "GLSceneView.h"
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
@@ -32,7 +31,6 @@ SOFTWARE.*/
 #include <QTimer>
 #include <QPainter>
 
-static bool initGlew = false;
 GLViewSettings	CGLSceneView::m_view;
 
 CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
@@ -55,22 +53,13 @@ GLScene* CGLSceneView::GetActiveScene()
 
 void CGLSceneView::initializeGL()
 {
+	if (m_ogl == nullptr) m_ogl = new OpenGLRenderer;
+
 	GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
 	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
 
 	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
 	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
-
-	if (initGlew == false)
-	{
-		GLenum err = glewInit();
-		if (err != GLEW_OK)
-		{
-			const char* szerr = (const char*)glewGetErrorString(err);
-			assert(err == GLEW_OK);
-		}
-		initGlew = true;
-	}
 
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);
@@ -185,12 +174,15 @@ void CGLSceneView::RenderBackground()
 
 void CGLSceneView::paintGL()
 {
+	assert(m_ogl);
+	if (m_ogl == nullptr) return;
+
 	// Render the 3D scene
-	m_ogl.start();
+	m_ogl->start();
 	PrepScene();
 	RenderBackground();
 	RenderScene();
-	m_ogl.finish();
+	m_ogl->finish();
 
 	// render the 2D canvas
 	RenderCanvas();
@@ -210,14 +202,14 @@ void CGLSceneView::RenderScene()
 	if (scene)
 	{
 		GLCamera& cam = scene->GetCamera();
-		m_ogl.positionCamera(cam);
+		m_ogl->positionCamera(cam);
 
 		GLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
 		rc.m_w = width();
 		rc.m_h = height();
-		scene->Render(m_ogl, rc);
+		scene->Render(*m_ogl, rc);
 
 	}
 }
@@ -376,7 +368,7 @@ void CGLSceneView::PrepScene()
 
 	// position the light
 	vec3f lp = m_view.m_light; lp.Normalize();
-	m_ogl.setLightPosition(0, lp);
+	m_ogl->setLightPosition(0, lp);
 
 	GLScene* scene = GetActiveScene();
 	if (scene)

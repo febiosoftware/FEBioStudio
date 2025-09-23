@@ -1552,24 +1552,24 @@ void CGLView::RenderDecorations()
 {
 	if (m_deco.empty() == false)
 	{
-		m_ogl.pushState();
-		m_ogl.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
+		m_ogl->pushState();
+		m_ogl->setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
-			m_deco[i]->render(m_ogl);
+			m_deco[i]->render(*m_ogl);
 		}
-		m_ogl.popState();
+		m_ogl->popState();
 	}
 }
 
 void CGLView::RenderScene()
 {
-	m_ogl.start();
+	m_ogl->start();
 
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr)
 	{
-		m_ogl.finish();
+		m_ogl->finish();
 		return;
 	}
 
@@ -1589,7 +1589,7 @@ void CGLView::RenderScene()
 	if (scene)
 	{
 		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(m_ogl, rc);
+		scene->Render(*m_ogl, rc);
 		time_point<steady_clock> stopTime = steady_clock::now();
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 		double fps = (sec != 0 ? 1.0 / sec : 0);
@@ -1598,7 +1598,7 @@ void CGLView::RenderScene()
 		m_fps.push_front(fps);
 	}
 
-	m_ogl.positionCamera(cam);
+	m_ogl->positionCamera(cam);
 	RenderPivot();
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
@@ -1612,7 +1612,7 @@ void CGLView::RenderScene()
 
 	RenderTags();
 
-	m_ogl.finish();
+	m_ogl->finish();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
@@ -1771,7 +1771,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
 
-		GLRenderStats stats = m_ogl.GetRenderStats();
+		GLRenderStats stats = m_ogl->GetRenderStats();
 		int Y = rt.y() + fontSize + 5;
 		rt.setY(Y);
 		float tris = (float)stats.triangles;
@@ -1955,7 +1955,7 @@ void CGLView::RenderPivot()
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = ps->IsMovable();
-	m_pivot.Render(m_ogl, ntrans, d, bact);
+	m_pivot.Render(*m_ogl, ntrans, d, bact);
 
 	// restore the modelview matrix
 	glPopMatrix();

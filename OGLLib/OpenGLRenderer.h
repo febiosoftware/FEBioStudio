@@ -25,8 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <GLLib/GLRenderEngine.h>
+#include "OGLBase.h"
 
-class OpenGLRenderer : public GLRenderEngine
+class OGLProgram;
+
+class OpenGLRenderer : public GLRenderEngine, public OGLBase
 {
 	class Imp;
 
@@ -66,10 +69,10 @@ public:
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;
 
-	float pointSize() const override;
-	float lineWidth() const override;
+	float pointSize() override;
+	float lineWidth() override;
 
-	FrontFace frontFace() const override;
+	FrontFace frontFace() override;
 	void setFrontFace(FrontFace f) override;
 
 	void positionCamera(const GLCamera& cam) override;
@@ -112,6 +115,9 @@ public:
 	void setTexture(GLTexture1D& tex) override;
 	void setTexture(GLTexture2D& tex) override;
 	void setTexture(GLTexture3D& tex) override;
+
+private:
+	void UseProgram(OGLProgram* program);
 
 private:
 	Imp& m;

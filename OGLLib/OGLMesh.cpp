@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "OGLMesh.h"
-#include <GL/glew.h>
-#include <qopengl.h>
 #include <GLLib/GLMesh.h>
 #include <algorithm>
 #include <GLLib/GLCamera.h>
@@ -155,7 +153,7 @@ void OGLMesh::Render(unsigned int flags)
 	if (!m_bvalid) return;
 
 	m_start = 0;
-	m_count = m_vertexCount;
+	m_count = (int)m_vertexCount;
 
 	switch (m_renderMode)
 	{

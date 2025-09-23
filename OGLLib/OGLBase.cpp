@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,22 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
 #include "OGLBase.h"
 
-class GLTexture1D;
-
-class OGLShader : public OGLBase
+OGLBase::OGLBase()
 {
-public:
-	OGLShader();
-	virtual ~OGLShader();
-
-	bool IsActive() const;
-
-	virtual void Activate();
-	virtual void Deactivate();
-
-private:
-	static OGLShader* m_activeShader;
-};
+	initializeOpenGLFunctions();
+}

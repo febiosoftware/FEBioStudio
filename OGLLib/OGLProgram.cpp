@@ -25,14 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "OGLProgram.h"
 #include <FSCore/FSLogger.h>
-#include <GL/glew.h>
 
 OGLProgram::OGLProgram()
 {
 	m_progId = 0;
 }
 
-bool compileShader(unsigned int shaderid, const char* shadersrc)
+bool OGLProgram::compileShader(unsigned int shaderid, const char* shadersrc)
 {
 	// set the shader text
 	glShaderSource(shaderid, 1, &shadersrc, NULL);

@@ -24,9 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include "OGLBase.h"
 
 // Class describing an OpenGL program.
-class OGLProgram
+class OGLProgram : public OGLBase
 {
 public:
 	// constructor
@@ -43,6 +44,9 @@ public:
 	void SetInt(const char* szparam, int val);
 	void SetFloat(const char* szparam, float val);
 	void SetFloat3(const char* szparam, float v[3]);
+
+private:
+	bool compileShader(unsigned int shaderid, const char* shadersrc);
 
 private:
 	unsigned m_progId;

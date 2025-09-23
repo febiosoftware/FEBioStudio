@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
+#include "OGLBase.h"
 
 class GLMesh;
 class GLCamera;
@@ -37,7 +38,7 @@ class GLCamera;
 // Mesh class used for GL rendering using vertex arrays
 // This base class has a protected constructor, so cannot be used directly.
 // Instead, use one of the derived classes below. 
-class OGLMesh
+class OGLMesh : public OGLBase
 {
 private:
 	enum VertexBuffer
