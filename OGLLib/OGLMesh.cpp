@@ -25,16 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "OGLMesh.h"
 #include <GL/glew.h>
-#ifdef WIN32
-#include <Windows.h>
-#include <gl/GL.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#endif
-#ifdef LINUX
-#include <GL/gl.h>
-#endif
+#include <qopengl.h>
 #include <GLLib/GLMesh.h>
 #include <algorithm>
 #include <GLLib/GLCamera.h>

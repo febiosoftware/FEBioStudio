@@ -25,14 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include "GLSceneView.h"
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
@@ -43,7 +35,7 @@ SOFTWARE.*/
 static bool initGlew = false;
 GLViewSettings	CGLSceneView::m_view;
 
-CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent), m_ogl(this)
+CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
 {
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(16);
@@ -141,7 +133,7 @@ void CGLSceneView::RenderBackground()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(-1, 1, -1, 1);
+	glOrtho(-1, 1, -1, 1, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -245,7 +237,7 @@ void CGLSceneView::RenderCanvas()
 		// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluOrtho2D(0, width(), height(), 0);
+		glOrtho(0, width(), height(), 0, -1, 1);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -294,6 +286,7 @@ void CGLSceneView::SetupProjection()
 	// set up projection matrix
 	if (view.m_bortho)
 	{
+		// orthographic projection
 		GLdouble f = 0.35 * cam.GetTargetDistance();
 		m_ox = f * view.m_ar;
 		m_oy = f;
@@ -301,7 +294,13 @@ void CGLSceneView::SetupProjection()
 	}
 	else
 	{
-		gluPerspective(view.m_fov, view.m_ar, view.m_fnear, view.m_ffar);
+		// perspective projection
+		GLdouble f = 1.0 / tan(view.m_fov * M_PI / 360.0);
+		glFrustum(-view.m_fnear * tan(view.m_fov * M_PI / 360.0) * view.m_ar,
+			 view.m_fnear * tan(view.m_fov * M_PI / 360.0) * view.m_ar,
+			-view.m_fnear * tan(view.m_fov * M_PI / 360.0),
+			 view.m_fnear * tan(view.m_fov * M_PI / 360.0),
+			 view.m_fnear, view.m_ffar);
 	}
 }
 

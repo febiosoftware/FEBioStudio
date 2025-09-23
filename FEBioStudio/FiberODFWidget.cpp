@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "FiberODFWidget.h"
 #include <QDialog>
 #include <QDialogButtonBox>
-//#include <QOpenGLFunctions>
 #include <QSizePolicy>
 #include <QTabWidget>
 #include <QTableWidget>

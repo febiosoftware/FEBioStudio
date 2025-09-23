@@ -24,15 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include "GLView.h"
 #include "MainWindow.h"
 #include <QApplication>
@@ -1626,7 +1617,7 @@ void CGLView::RenderScene()
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
+	glOrtho(0, width(), height(), 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1862,7 +1853,7 @@ void CGLView::Render3DCursor()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(0, width(), 0, height());
+	glOrtho(0, width(), 0, height(), -1, 1);
 
 	glColor3ub(255, 164, 164);
 	glBegin(GL_LINES);
@@ -1981,7 +1972,7 @@ void CGLView::RenderRubberBand()
 	// set the ortho
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
+	glOrtho(0, width(), height(), 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -2686,7 +2677,7 @@ void CGLView::RenderTags()
 	glPushMatrix();
 	glLoadIdentity();
 
-	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
+	glOrtho(0, m_viewport[2], 0, m_viewport[3], -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

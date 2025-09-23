@@ -139,8 +139,6 @@ OGLProgram VRprg_rgb;
 
 class OpenGLRenderer::Imp {
 public:
-	CGLSceneView* glv;
-
 	bool useVertexColors = false;
 	bool useTexture = false;
 
@@ -176,9 +174,8 @@ void OpenGLRenderer::Imp::InitShaders()
 	shaderInit = true;
 }
 
-OpenGLRenderer::OpenGLRenderer(CGLSceneView* view) : m(*(new OpenGLRenderer::Imp))
+OpenGLRenderer::OpenGLRenderer() : m(*(new OpenGLRenderer::Imp))
 {
-	m.glv = view;
 }
 
 OpenGLRenderer::~OpenGLRenderer() 

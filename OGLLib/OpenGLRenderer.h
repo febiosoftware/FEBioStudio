@@ -26,14 +26,12 @@ SOFTWARE.*/
 #pragma once
 #include <GLLib/GLRenderEngine.h>
 
-class CGLSceneView;
-
 class OpenGLRenderer : public GLRenderEngine
 {
 	class Imp;
 
 public:
-	OpenGLRenderer(CGLSceneView* view);
+	OpenGLRenderer();
 	~OpenGLRenderer();
 
 	void start() override;
