@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FEMeshDataGenerator.h"
 #include <GeomLib/GGroup.h>
-#include <FEMLib/FSModel.h>
+#include "FSModel.h"
 
 FSMeshDataGenerator::FSMeshDataGenerator(FSModel* fem, int ntype) : FSModelComponent(fem)
 {
@@ -13,7 +13,7 @@ int FSMeshDataGenerator::Type() const { return m_ntype; }
 void FSMeshDataGenerator::Save(OArchive& ar)
 {
 	// write list ID
-	FEItemListBuilder* pl = GetItemList();
+	FSItemListBuilder* pl = GetItemList();
 	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
 
 	ar.BeginChunk(PARAMS);
@@ -39,7 +39,7 @@ void FSMeshDataGenerator::Load(IArchive& ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			FSItemListBuilder* pItem = pgm->FindNamedSelection(nid);
 			SetItemList(pItem);
 		}
 		break;

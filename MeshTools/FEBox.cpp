@@ -701,7 +701,7 @@ FSMesh* FEBoxMesher::CreateRegularTET4()
 
 				for (int l=0; l<6; ++l)
 				{
-					FEElement_* pe = pm->ElementPtr(eid++);
+					FSElement_* pe = pm->ElementPtr(eid++);
 
 					pe->m_node[0] = n[TET[l][0]];
 					pe->m_node[1] = n[TET[l][1]];

@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <FEMLib/FEMaterialFactory.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEMLib/GMaterial.h>
+#include <FEMLib/FSProject.h>
 #include <assert.h>
 
 #ifndef WIN32
@@ -95,7 +97,7 @@ void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 	}
 
 	nclass -= FE_FEBIO_MATERIAL_CLASS;
-	vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllClasses(-1, -1, nclass, true);
+	std::vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllClasses(-1, -1, nclass, true);
 
 	pc->clear();
 	int classes = classInfo.size();

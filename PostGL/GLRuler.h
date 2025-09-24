@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
-class FEMesh;
+class FSMesh;
 
 namespace Post {
 
@@ -37,7 +37,7 @@ namespace Post {
 	public:
 		GLRuler();
 
-		void Render(CGLContext& rc) override;
+		void Render(GLRenderEngine& re, GLContext& rc) override;
 
 		void Update() override;
 		void Update(int ntime, float dt, bool breset) override;

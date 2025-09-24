@@ -91,6 +91,6 @@ void CDlgPickColor::AssignColor(GPart* pg)
 	{
 		int matID = pg->GetMaterialID();
 		GMaterial* mat = doc->GetFSModel()->GetMaterialFromID(matID);
-		if (mat) mat->AmbientDiffuse(c);
+		if (mat) mat->SetColor(c);
 	}
 }

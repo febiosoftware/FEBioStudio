@@ -1,5 +1,5 @@
 #include "IHasItemList.h"
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 FSHasOneItemList::FSHasOneItemList()
 {
@@ -17,13 +17,13 @@ int FSHasOneItemList::ItemLists() const
 	return 1;
 }
 
-FEItemListBuilder* FSHasOneItemList::GetItemList(int n)
+FSItemListBuilder* FSHasOneItemList::GetItemList(int n)
 {
 	assert(n == 0);
 	return m_pItem;
 }
 
-void FSHasOneItemList::SetItemList(FEItemListBuilder* pi, int n)
+void FSHasOneItemList::SetItemList(FSItemListBuilder* pi, int n)
 {
 	assert(n == 0);
 	if (m_pItem) m_pItem->DecRef();
@@ -53,7 +53,7 @@ int FSHasTwoItemLists::ItemLists() const
 	return 2;
 }
 
-FEItemListBuilder* FSHasTwoItemLists::GetItemList(int n)
+FSItemListBuilder* FSHasTwoItemLists::GetItemList(int n)
 {
 	switch (n)
 	{
@@ -64,7 +64,7 @@ FEItemListBuilder* FSHasTwoItemLists::GetItemList(int n)
 	return nullptr;
 }
 
-void FSHasTwoItemLists::SetItemList(FEItemListBuilder* pi, int n)
+void FSHasTwoItemLists::SetItemList(FSItemListBuilder* pi, int n)
 {
 	assert((n == 0) || (n == 1));
 	if ((n == 0) || (n == 1))

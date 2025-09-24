@@ -28,9 +28,10 @@ SOFTWARE.*/
 #include "FEFileReader.h"
 #include <list>
 
+class FSMesh;
+
 namespace Post {
 
-class FEPostMesh;
 
 class FELSDYNAimport : public FEFileReader  
 {
@@ -88,7 +89,7 @@ protected:
 	std::list<ELEMENT_SHELL>		m_shell;
 	std::list<NODE>					m_node;
 
-	FEPostMesh*			m_pm;
+	FSMesh*			m_pm;
 
 	std::vector<int> m_NLT;
 	int m_nltoff;

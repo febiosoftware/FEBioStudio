@@ -25,44 +25,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GDecoration.h"
-#ifdef WIN32
-#include <Windows.h>
-#include <gl/gl.h>
-#include <gl/GLU.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/GLU.h>
-#endif
-#ifdef LINUX
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
 #include <FSCore/math3d.h>
+#include "GLRenderEngine.h"
+#include "glx.h"
 
-void GPointDecoration::render()
+void GPointDecoration::render(GLRenderEngine& re)
 {
+	vec3d p = to_vec3d(m_pos);
 	if (m_renderAura)
 	{
-		GLfloat s0;
-		glGetFloatv(GL_POINT_SIZE, &s0);
+		float s0 = re.pointSize();
 
-		glPointSize(s0 + 2);
-		glColor3ub(m_col2.r, m_col2.g, m_col2.b);
-		glBegin(GL_POINTS);
-		{
-			glVertex3f(m_pos.x, m_pos.y, m_pos.z);
-		}
-		glEnd();
-		glPointSize(s0);
+		re.setPointSize(s0 + 2);
+		re.setColor(m_col2);
+		re.renderPoint(p);
+		re.setPointSize(s0);
 	}
 
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glBegin(GL_POINTS);
-	{
-		glVertex3f(m_pos.x, m_pos.y, m_pos.z);
-	}
-	glEnd();
+	re.setColor(m_col);
+	re.renderPoint(p);
 }
 
 GLineDecoration::GLineDecoration(const vec3f& a, const vec3f& b)
@@ -81,40 +62,43 @@ GLineDecoration::~GLineDecoration()
 	}
 }
 
-void GLineDecoration::render()
+void GLineDecoration::render(GLRenderEngine& re)
 {
 	if (p1 && p2)
 	{
-		vec3f& r1 = p1->position();
-		vec3f& r2 = p2->position();
-		glColor3ub(m_col.r, m_col.g, m_col.b);
-		glBegin(GL_LINES);
-		{
-			glVertex3f(r1.x, r1.y, r1.z);
-			glVertex3f(r2.x, r2.y, r2.z);
-		}
-		glEnd();
+		vec3d r1 = to_vec3d(p1->position());
+		vec3d r2 = to_vec3d(p2->position());
+		re.setColor(m_col);
+		re.renderLine(r1, r2);
 	}
 }
 
-void GTriangleDecoration::render()
+void GTriangleDecoration::render(GLRenderEngine& re)
 {
-	vec3f& r1 = p1->position();
-	vec3f& r2 = p2->position();
-	vec3f& r3 = p3->position();
-	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
-	glEnable(GL_POLYGON_STIPPLE);
-	glBegin(GL_TRIANGLES);
-	glVertex3f(r1.x, r1.y, r1.z);
-	glVertex3f(r2.x, r2.y, r2.z);
-	glVertex3f(r3.x, r3.y, r3.z);
-	glEnd();
-	glDisable(GL_POLYGON_STIPPLE);
-	glBegin(GL_LINE_LOOP);
-	glVertex3f(r1.x, r1.y, r1.z);
-	glVertex3f(r2.x, r2.y, r2.z);
-	glVertex3f(r3.x, r3.y, r3.z);
-	glEnd();
+	vec3d r1 = to_vec3d(p1->position());
+	vec3d r2 = to_vec3d(p2->position());
+	vec3d r3 = to_vec3d(p3->position());
+
+	re.pushState();
+	re.setColor(m_col);
+	re.setMaterial(GLMaterial::GLASS, m_col, GLMaterial::NONE, false);
+	re.begin(GLRenderEngine::TRIANGLES);
+	{
+		re.vertex(r1);
+		re.vertex(r2);
+		re.vertex(r3);
+	}
+	re.end();
+
+	re.setMaterial(GLMaterial::OVERLAY, m_col, GLMaterial::NONE, false);
+	re.begin(GLRenderEngine::LINELOOP);
+	{
+		re.vertex(r1);
+		re.vertex(r2);
+		re.vertex(r3);
+	}
+	re.end();
+	re.popState();
 }
 
 GArcDecoration::GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs, double scale)
@@ -135,7 +119,7 @@ GArcDecoration::GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1,
 	else m_divs = ndivs;
 }
 
-void GArcDecoration::render()
+void GArcDecoration::render(GLRenderEngine& re)
 {
 	if (m_divs == 0) return;
 
@@ -145,8 +129,8 @@ void GArcDecoration::render()
 	vec3d c(to_vec3d(m_c));
 	vec3d p0 = c + to_vec3d(m_e0)*m_scale;
 
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glBegin(GL_LINES);
+	re.setColor(m_col);
+	re.begin(GLRenderEngine::LINES);
 	for (int i = 0; i <= m_divs; ++i)
 	{
 		double t = i / (double)m_divs;
@@ -157,12 +141,12 @@ void GArcDecoration::render()
 
 		vec3d p1 = c + rt*m_scale;
 
-		glVertex3d(p0.x, p0.y, p0.z);
-		glVertex3d(p1.x, p1.y, p1.z);
+		re.vertex(p0);
+		re.vertex(p1);
 
 		p0 = p1;
 	}
-	glEnd();
+	re.end();
 }
 
 GSphereDecoration::GSphereDecoration(const vec3f& a, double R)
@@ -172,14 +156,12 @@ GSphereDecoration::GSphereDecoration(const vec3f& a, double R)
 	m_col = GLColor(255, 255, 0, 64);
 }
 
-void GSphereDecoration::render()
+void GSphereDecoration::render(GLRenderEngine& re)
 {
-	GLUquadric* glq = gluNewQuadric();
-	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
-	glTranslatef(m_c.x, m_c.y, m_c.z);
-	gluSphere(glq, m_R, 64, 32);
-	glTranslatef(-m_c.x, -m_c.y, -m_c.z);
-	gluDeleteQuadric(glq);
+	re.setColor(m_col);
+	re.translate(m_c);
+	glx::drawSphere(re, m_R);
+	re.translate(-m_c);
 }
 
 GCompositeDecoration::GCompositeDecoration()
@@ -197,9 +179,9 @@ void GCompositeDecoration::AddDecoration(GDecoration* deco)
 	m_deco.push_back(deco);
 }
 
-void GCompositeDecoration::render()
+void GCompositeDecoration::render(GLRenderEngine& re)
 {
-	for (int i = 0; i < m_deco.size(); ++i) m_deco[i]->render();
+	for (int i = 0; i < m_deco.size(); ++i) m_deco[i]->render(re);
 }
 
 //=================================================================================================
@@ -235,9 +217,9 @@ void GPlaneCutDecoration::setPlane(double n0, double n1, double n2, double d)
 	m_a[3] = d;
 }
 
-void GPlaneCutDecoration::render()
+void GPlaneCutDecoration::render(GLRenderEngine& re)
 {
-	glEnable(GL_DEPTH_TEST);
+	re.enable(GLRenderEngine::DEPTHTEST);
 
 	// get the nodal values
 	BOX box = m_box;
@@ -254,34 +236,34 @@ void GPlaneCutDecoration::render()
 		vec3d(b.x, b.y, b.z),
 		vec3d(a.x, b.y, b.z)
 	};
-	vec3f n(m_a[0], m_a[1], m_a[2]);
+	vec3d n(m_a[0], m_a[1], m_a[2]);
 
 	float ev[8];	// element nodal values
-	vec3f ex[8];	// element nodal positions
+	vec3d ex[8];	// element nodal positions
 	for (int k = 0; k < 8; ++k)
 	{
-		ex[k] = to_vec3f(r[k]);
+		ex[k] = r[k];
 		ev[k] = ex[k]*n - m_a[3];
 	}
 
-	float ref = 0.0f;
+	double ref = 0.0;
 
 	int ncase = 0;
 	for (int k = 0; k < 8; ++k)
 		if (ev[k] <= ref) ncase |= (1 << k);
 
 	// Draw lines first
-	box.Scale(0.9999f);
+	box.Scale(0.9999);
 	int* pf = LUT[ncase];
-	glColor4ub(m_col2.r, m_col2.g, m_col2.b, m_col2.a);
-	vec3f rc(0.f, 0.f, 0.f);
+	re.setColor(m_col2);
+	vec3d rc(0, 0, 0);
 	double lc = 0;
 	for (int l = 0; l < 5; l++)
 	{
 		if (*pf == -1) break;
 
 		// calculate nodal positions
-		vec3f r[3], vn[3];
+		vec3d r[3], vn[3];
 		for (int k = 0; k < 3; k++)
 		{
 			int n1 = ET_HEX[pf[k]][0];
@@ -294,17 +276,13 @@ void GPlaneCutDecoration::render()
 		{
 			int k1 = (k + 1) % 3;
 
-			vec3f rk = (r[k] + r[k1])*0.5f;
-			if (box.IsInside(to_vec3d(rk)) == false)
+			vec3d rk = (r[k] + r[k1])*0.5;
+			if (box.IsInside(rk) == false)
 			{
-				vec3f ek = r[k1] - r[k];
+				vec3d ek = r[k1] - r[k];
 				rc += rk*ek.Length(); lc += ek.Length();
-				glBegin(GL_LINES);
-				{
-					glVertex3f(r[k].x, r[k].y, r[k].z);
-					glVertex3f(r[k1].x, r[k1].y, r[k1].z);
-				}
-				glEnd();
+
+				re.renderLine(r[k], r[k1]);
 			}
 		}
 
@@ -312,15 +290,15 @@ void GPlaneCutDecoration::render()
 	}
 
 	// next, draw faces
-	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	re.setColor(m_col);
 	pf = LUT[ncase];
-	vec3f Nc;
+	vec3d Nc;
 	for (int l = 0; l < 5; l++)
 	{
 		if (*pf == -1) break;
 
 		// calculate nodal positions
-		vec3f r[3], vn[3];
+		vec3d r[3], vn[3];
 		for (int k = 0; k < 3; k++)
 		{
 			int n1 = ET_HEX[pf[k]][0];
@@ -342,41 +320,41 @@ void GPlaneCutDecoration::render()
 		}
 
 		// render the face
-		glBegin(GL_TRIANGLES);
+		re.begin(GLRenderEngine::TRIANGLES);
 		{
-			glNormal3f(vn[0].x, vn[0].y, vn[0].z); glVertex3f(r[0].x, r[0].y, r[0].z);
-			glNormal3f(vn[1].x, vn[1].y, vn[1].z); glVertex3f(r[1].x, r[1].y, r[1].z);
-			glNormal3f(vn[2].x, vn[2].y, vn[2].z); glVertex3f(r[2].x, r[2].y, r[2].z);
+			re.normal(vn[0]); re.vertex(r[0]);
+			re.normal(vn[1]); re.vertex(r[1]);
+			re.normal(vn[2]); re.vertex(r[2]);
 		}
-		glEnd();
+		re.end();
 
 		pf += 3;
 	}
 
-	glDisable(GL_DEPTH_TEST);
+	re.disable(GLRenderEngine::DEPTHTEST);
 
 	// draw the normal
-	glColor4ub(m_col2.r, m_col2.g, m_col2.b, m_col2.a);
+	re.setColor(m_col2);
 	double R = 0.25*box.GetMaxExtent();
 	double R2 = R * 0.15;
 	if (lc > 0)
 	{
-		quatd q(vec3d(0, 0, 1), to_vec3d(Nc));
+		quatd q(vec3d(0, 0, 1), Nc);
 		vec3d e1( R2*0.6, 0, -R2);
 		vec3d e2(-R2*0.6, 0, -R2);
 		q.RotateVector(e1);
 		q.RotateVector(e2);
 
 		rc /= (float)lc;
-		vec3f r2 = rc + Nc * R;
-		vec3f a1 = r2 + to_vec3f(e1);
-		vec3f a2 = r2 + to_vec3f(e2);
-		glBegin(GL_LINES);
+		vec3d r2 = rc + Nc * R;
+		vec3d a1 = r2 + e1;
+		vec3d a2 = r2 + e2;
+		re.begin(GLRenderEngine::LINES);
 		{
-			glVertex3f(rc.x, rc.y, rc.z); glVertex3f(r2.x, r2.y, r2.z);
-			glVertex3f(r2.x, r2.y, r2.z); glVertex3f(a1.x, a1.y, a1.z);
-			glVertex3f(r2.x, r2.y, r2.z); glVertex3f(a2.x, a2.y, a2.z);
+			re.vertex(rc); re.vertex(r2);
+			re.vertex(r2); re.vertex(a1);
+			re.vertex(r2); re.vertex(a2);
 		}
-		glEnd();
+		re.end();
 	}
 }

@@ -72,7 +72,7 @@ public:
 		m_list = new QListWidget;
 		QStackedWidget* s = new QStackedWidget;
 
-		vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
+		std::vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
 		for (int i = 0; i < modules.size(); ++i)
 		{
 			FEBio::FEBioModule& modi = modules[i];

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include <vector>
 
 class GObject;
@@ -43,12 +43,9 @@ class GFaceList;
 class GEdgeList;
 class GNodeList;
 class GObjectSelection;
-class FEItemListBuilder;
+class FSItemListBuilder;
 class GDiscreteObject;
 class GDiscreteElementSet;
-class ObjectMeshList;
-class MeshLayer;
-class MeshLayerManager;
 
 //-----------------------------------------------------------------------------
 // The GModel class manages all GObjects and GGroups that are created by
@@ -94,7 +91,7 @@ public:
 	GObject* FindObject(int id);
 
 	// find an object from its name
-	GObject* FindObject(const string& name);
+	GObject* FindObject(const std::string& name);
 
 	// get the currently active object
 	GObject* GetActiveObject();
@@ -112,10 +109,10 @@ public:
 	void AddObject(GObject* po);
 
 	// remove an object from the model
-	int RemoveObject(GObject* po, bool deleteMeshList = false);
+	int RemoveObject(GObject* po);
 
 	// insert an object before the index
-	void InsertObject(GObject* po, int n, bool updateManager = true);
+	void InsertObject(GObject* po, int n);
 
 	// --- part functions ---
 
@@ -143,7 +140,7 @@ public:
 	GFace* FindSurface(int nid);
 
 	// find a surface from its name
-	GFace* FindFaceFromName(const string& name);
+	GFace* FindSurfaceFromName(const std::string& name);
 
 	// --- edge functions ---
 
@@ -157,7 +154,7 @@ public:
 	GEdge* FindEdge(int nid);
 
 	// find an edge from its name
-	GEdge* FindEdgeFromName(const string& name);
+	GEdge* FindEdgeFromName(const std::string& name);
 
 	// --- node functions ---
 	int Nodes();
@@ -182,10 +179,10 @@ public:
 
 	// count named selections
 	int CountNamedSelections() const;
-	FEItemListBuilder* FindNamedSelection(int nid);
-	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
-	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
-	void AddNamedSelection(FEItemListBuilder* itemList);
+	FSItemListBuilder* FindNamedSelection(int nid);
+	FSItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	std::vector<FSItemListBuilder*> AllNamedSelections(int ntype = 0);
+	void AddNamedSelection(FSItemListBuilder* itemList);
 
 	// --- GPartList ---
 	void AddPartList(GPartList* pg);
@@ -232,7 +229,7 @@ public:
 
 	// if match is true, the list of parts with this material is returend.
 	// if match is false, the list of parts that don't have this material is returned.
-	list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
+	std::list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
 
 public:
 	// create a clone
@@ -245,7 +242,7 @@ public:
 	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
 
 	// merge the selected objects
-	GObject* MergeSelectedObjects(GObjectSelection* sel, const string& newObjectName, bool weld, double tol);
+	GObject* MergeSelectedObjects(GObjectSelection* sel, const std::string& newObjectName, bool weld, double tol);
 
 	// detach the discrete set
 	GObject* DetachDiscreteSet(GDiscreteElementSet* set);
@@ -274,22 +271,6 @@ public:
 	bool DeleteParts(std::vector<GPart*>& partList);
 
 public:
-	int MeshLayers() const; 
-	int GetActiveMeshLayer() const;
-	void SetActiveMeshLayer(int n);
-	int FindMeshLayer(const std::string& s);
-	const std::string& GetMeshLayerName(int i) const;
-	bool AddMeshLayer(const std::string& layerName);
-	void DeleteMeshLayer(int n);
-
-	ObjectMeshList* GetObjectMeshList(GObject* po);
-	void InsertObjectMeshList(ObjectMeshList* oml);
-
-	MeshLayer* RemoveMeshLayer(int index);
-	void InsertMeshLayer(int index, MeshLayer* layer);
-
-	MeshLayerManager* GetMeshLayerManager();
-
     void SetLoadOnlyDiscreteFlag(bool flag);
 
 private:

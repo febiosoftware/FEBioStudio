@@ -140,7 +140,7 @@ bool FEASCIIExport::UpdateData(bool bsave)
 
 bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 {
-	FEPostMesh& m = *pfem->GetFEMesh(0);
+	FSMesh& m = *pfem->GetFEMesh(0);
 
 	int NN = m.Nodes();
 	int NE = m.Elements();
@@ -160,7 +160,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 	// tag all selected elements
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& el = m.ElementRef(i);
+		FSElement_& el = m.ElementRef(i);
 		if ((m_bselonly == false) || el.IsSelected()) el.m_ntag = 1;
 		else el.m_ntag = 0;
 	}
@@ -211,7 +211,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		int i, n[FSElement::MAX_NODES];
 		for (i = 0; i<NE; ++i)
 		{
-			FEElement_& e = m.ElementRef(i);
+			FSElement_& e = m.ElementRef(i);
 			if (e.m_ntag == 1)
 			{
 				int ne = e.Nodes();
@@ -308,7 +308,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 				fprintf(fp, "*ELEMENT_DATA\n");
 				for (int i = 0; i<NE; ++i)
 				{
-					FEElement_& e = m.ElementRef(i);
+					FSElement_& e = m.ElementRef(i);
 					if (e.m_ntag == 1)
 					{
 						float& d = ps->m_ELEM[i].m_val;

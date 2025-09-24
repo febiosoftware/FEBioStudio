@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
+# set the name of the executable
+set(FBS_BIN_NAME FEBioStudio)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -287,7 +290,8 @@ endif()
 if(UNIX)
     option(USE_MKL_OMP "Link to MKL OMP instead of System OMP" OFF)
     set(MKL_OMP "" CACHE PATH "Path to the MKL OMP library")
-    mark_as_advanced(USE_MKL_OMP MKL_OMP)
+    set(OMP_INC "" CACHE PATH "Path to the OMP include directory")
+    mark_as_advanced(USE_MKL_OMP MKL_OMP OMP_INC)
 endif()
 
 ##### Set appropriate defines and includes #####
@@ -326,11 +330,6 @@ if(USE_MMG)
 	include_directories(${MMG_INC})
 endif()
 
-if(USE_TETGEN)
-	add_definitions(-DTETLIBRARY)
-	include_directories(${TETGEN_INC})
-endif()
-
 if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
@@ -345,14 +344,6 @@ if(USE_SSH)
 	include_directories(${SSH_INC} ${SSL_INC})
 endif()
 
-if(MODEL_REPO)
-	add_definitions(-DHAS_LIBZIP)
-	include_directories(${LIBZIP_INC})
-
-	add_definitions(-DMODEL_REPO)
-	include_directories(${SQLITE_INC})
-endif()
-
 if(USE_FFMPEG)
 	add_definitions(-DFFMPEG)
 	include_directories(${FFMPEG_INC})
@@ -362,6 +353,10 @@ if(APPLE)
     include_directories(${GLEW_INCLUDE_DIR})
 else()
     include_directories(${GLEW_INCLUDE_DIRS})
+endif()
+
+if(USE_PYTHON)
+    include_directories(${PYBIND11_INC})
 endif()
 
 # Link ZLIB
@@ -386,7 +381,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink VTKLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -394,11 +389,9 @@ endforeach(name)
 
 ##### Add binaries #####
 
-# set the name of the executable
-if (WIN32)
-    set(FBS_BIN_NAME FEBioStudio2)
-else()
-    set(FBS_BIN_NAME FEBioStudio)
+if(USE_PYTHON)
+    add_definitions(-DHAS_PYTHON)
+    link_libraries(Python3::Python)
 endif()
 
 if(WIN32)
@@ -490,20 +483,23 @@ endif()
 
 # Linking the Qt libraries also pulls in the include files
 target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(CUILib Qt6::Widgets)
+target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(PostGL Qt6::Gui)
+target_link_libraries(PostLib Qt6::Gui)
 target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(OGLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(RTLib)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
 target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
+target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 
 if(WIN32)
 elseif(APPLE)
 else()
-    set_property(TARGET MeshTools PROPERTY CXX_STANDARD 17)
-    
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
 	target_link_libraries(${FBS_BIN_NAME} -Wl,--allow-shlib-undefined -Wl,--start-group)
@@ -512,8 +508,10 @@ endif()
 if(UNIX)
     if(${USE_MKL_OMP})
         target_link_libraries(${FBS_BIN_NAME} ${MKL_OMP})
+        target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     else()
         target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
+        target_include_directories(RTLib PRIVATE ${OpenMP_C_INCLUDE_DIRS} ${OMP_INC})
     endif()
 endif()
 
@@ -528,6 +526,9 @@ if(USE_MMG)
 endif()
 
 if(USE_TETGEN)
+    target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
+    target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
     
     if(DEFINED TETGEN_DBG_LIBS)
@@ -574,6 +575,9 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
+    target_compile_definitions(${FBS_BIN_NAME} PUBLIC "MODEL_REPO" "HAS_LIBZIP")
+    target_include_directories(${FBS_BIN_NAME} PRIVATE ${LIBZIP_INC} ${SQLITE_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${LIBZIP_LIB})
     
     if(DEFINED LIBZIP_DBG_LIB)
@@ -651,7 +655,8 @@ if(BUILD_UPDATER)
 
     set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
         Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
-        FEBioStudio/ServerSettings.cpp)
+        FEBioStudio/ServerSettings.cpp FEBioStudio/PluginManager.cpp FEBioStudio/PluginRepoConnectionHandler.cpp
+        FEBioStudio/PluginDatabaseHandler.cpp FEBioStudio/DatabaseInterface.cpp FEBioStudio/PluginXML.cpp)
 
     add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
     set_property(TARGET FEBioStudioUpdater PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudioUpdater_autogen)
@@ -666,6 +671,8 @@ if(BUILD_UPDATER)
     endif()
 
     target_include_directories(FEBioStudioUpdater PRIVATE "Updater")
+
+    target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
     findLib(FEBio_LIB_DIR XML_LIB xml)
 

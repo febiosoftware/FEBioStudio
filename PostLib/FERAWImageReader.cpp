@@ -61,7 +61,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	else { dim = 3; NE = (m_ops.nx-1)*(m_ops.ny-1)*(m_ops.nz - 1); }
 
 	// create a new mesh
-	FEPostMesh* pm = new FEPostMesh;
+	FSMesh* pm = new FSMesh;
 
 	try
 	{
@@ -131,7 +131,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	}
 
 	// update the mesh
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// Add a data field

@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QListWidget>
 #include "PropertyListForm.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <FSCore/math3d.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GCurveObject.h>
@@ -50,7 +50,7 @@ SOFTWARE.*/
 #include "ToolBox.h"
 #include <FSCore/ClassDescriptor.h>
 #include "ObjectProps.h"
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshTools/GObject2D.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/FELoftMesher.h>
@@ -62,9 +62,9 @@ SOFTWARE.*/
 #include "GLCursor.h"
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModifier.h>
+#include <FSCore/FSCore.h>
 #include <sstream>
-
-using std::stringstream;
+using namespace std;
 
 CCreateButtonPanel::CCreateButtonPanel(QWidget* parent) : QWidget(parent)
 {
@@ -83,7 +83,9 @@ void CCreateButtonPanel::AddCreateButton(const QString& txt, const QIcon& icon, 
 	tb->setIcon(icon);
 	tb->setIconSize(tb->size());
 	tb->setAutoRaise(true);
-	tb->setToolTip(QString("<font color=\"black\">") + txt);
+	std::string tmp = txt.toStdString();
+	std::string tip = FSCore::beautify_string(tmp.c_str());
+	tb->setToolTip(QString("<font color=\"black\">") + QString::fromStdString(tip));
 
 	int ncount = (int)buttonGroup->buttons().size();
 	int y = ncount % 5;
@@ -300,14 +302,14 @@ FSObject* CCreateLoftSurface::Create()
 {
 	if (m_edge.size() < 2) return 0;
 
-	vector<FECurveMesh*> curves;
+	std::vector<FSCurveMesh*> curves;
 	for (int i=0; i<(int)m_edge.size(); ++i)
 	{
 		GEdge& edge = *m_edge[i];
 		GObject* po = dynamic_cast<GObject*>(edge.Object()); assert(po);
 		if (po == 0) return 0;
 
-		FECurveMesh* c = po->GetFECurveMesh(edge.GetLocalID());
+		FSCurveMesh* c = po->GetFECurveMesh(edge.GetLocalID());
 		assert(c);
 		if (c == 0) return 0;
 		curves.push_back(c);
@@ -424,7 +426,7 @@ class Ui::CCreatePanel
 public:
 	CCreateButtonPanel*	but;
 	QStackedWidget* panes;
-	vector<CCreatePane*> page;
+	std::vector<CCreatePane*> page;
 	CCreatePane*	activePane;
 	QPushButton* createButton;
 

@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/GMesh.h>
-
+#include <MeshLib/FSMesh.h>
+#include <GLLib/GLMesh.h>
+using std::list;
 //-----------------------------------------------------------------------------
 GModifier::GModifier(void)
 {
@@ -302,9 +302,9 @@ void GTwistModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GTwistModifier::BuildGMesh(GObject* po)
+GLMesh* GTwistModifier::BuildGMesh(GObject* po)
 {
-	GMesh* pm = po->GetRenderMesh();
+	GLMesh* pm = po->GetRenderMesh();
 
 	int m = GetIntValue(ORIENT);
 	double w = GetFloatValue(TWIST);
@@ -332,7 +332,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				GMesh::NODE& n = pm->Node(i);
+				GLMesh::NODE& n = pm->Node(i);
 				t = (n.r.x - box.x0) / dx;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dx/h;
@@ -351,7 +351,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				GMesh::NODE& n = pm->Node(i);
+				GLMesh::NODE& n = pm->Node(i);
 				t = (n.r.y - box.y0) / dy;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dy/h;
@@ -370,7 +370,7 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				GMesh::NODE& n = pm->Node(i);
+				GLMesh::NODE& n = pm->Node(i);
 				t = (n.r.z - box.z0) / dz;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dz/h;
@@ -528,9 +528,9 @@ void GPinchModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GPinchModifier::BuildGMesh(GObject* po)
+GLMesh* GPinchModifier::BuildGMesh(GObject* po)
 {
-	GMesh* pm = po->GetRenderMesh();
+	GLMesh* pm = po->GetRenderMesh();
 
 	BOX box = pm->GetBoundingBox();
 	vec3d c = box.Center();
@@ -551,7 +551,7 @@ GMesh* GPinchModifier::BuildGMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		GMesh::NODE& node = pm->Node(i);
+		GLMesh::NODE& node = pm->Node(i);
 		vec3d r = to_vec3d(node.r) - c;
 		double w = fabs(r.*pa)/W;
 		if (w>1) w = 1;
@@ -699,9 +699,9 @@ void GBendModifier::Apply(GObject *po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GBendModifier::BuildGMesh(GObject *po)
+GLMesh* GBendModifier::BuildGMesh(GObject *po)
 {
-	GMesh* pm = po->GetRenderMesh();
+	GLMesh* pm = po->GetRenderMesh();
 
 	// set the bounding box
 	m_box = pm->GetBoundingBox();
@@ -713,7 +713,7 @@ GMesh* GBendModifier::BuildGMesh(GObject *po)
 	int N = pm->Nodes();
 	for (int i=0; i<N; ++i)
 	{
-		GMesh::NODE& node = pm->Node(i);
+		GLMesh::NODE& node = pm->Node(i);
 		vec3d r = to_vec3d(node.r) - m_box.Center();
 		Apply(r);
 		node.r = to_vec3f(r + m_box.Center());
@@ -832,9 +832,9 @@ void GSkewModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GSkewModifier::BuildGMesh(GObject* po)
+GLMesh* GSkewModifier::BuildGMesh(GObject* po)
 {
-	GMesh* pm = po->GetRenderMesh();
+	GLMesh* pm = po->GetRenderMesh();
 
 	// get parameters
 	int m = GetIntValue(ORIENT);
@@ -861,7 +861,7 @@ GMesh* GSkewModifier::BuildGMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		GMesh::NODE& node = pm->Node(i);
+		GLMesh::NODE& node = pm->Node(i);
 		vec3d r = to_vec3d(node.r) - rc;
 		r.*pl += a*(r.*pr)*d;
 		node.r = to_vec3f(r + rc);

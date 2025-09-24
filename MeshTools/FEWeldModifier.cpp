@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEWeldModifier.h"
-#include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMeshBuilder.h>
+#include <MeshLib/FSSurfaceMesh.h>
 using namespace std;
 
 //! constructor
@@ -57,7 +57,7 @@ FSMesh* FEWeldNodes::Apply(FSMesh* pm)
 	// now we modify the element node numbers
 	UpdateElements(pnm);
 
-	FEMeshBuilder meshBuilder(*pnm);
+	FSMeshBuilder meshBuilder(*pnm);
 
 	meshBuilder.DeleteTaggedElements(1);
 

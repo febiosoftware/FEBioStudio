@@ -25,19 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 
 class QTreeWidgetItem;
 class FSObject;
-class FEItemListBuilder;
+class FSItemListBuilder;
+class FSCoreBase;
+class Param;
 struct CModelTreeItem;
 
 namespace Ui {
 	class CModelViewer;
 }
 
-class CModelViewer : public CCommandPanel
+class CModelViewer : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -63,10 +65,10 @@ public:
 	void SelectObjects(const std::vector<FSObject*>& objList);
 
 	// select an item list
-	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
+	void SelectItemList(FSItemListBuilder*pitem, bool badd = false);
 
 	// assign the current selection to the currently selected item in the tree
-	void AssignCurrentSelection();
+	void AssignCurrentSelection(int ntarget = 0);
 
 	// set the current item
 	void SetCurrentItem(int item);
@@ -117,15 +119,15 @@ public slots:
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
 	void on_props_modelChanged();
+	void on_props_itemSelected(FSObject* il, std::vector<int>& items);
 	void on_filter_currentIndexChanged(int n);
 	void on_warnings_clicked();
+	void on_props_paramChanged(FSCoreBase* pc, Param* p);
 
 public slots:
 	// slots for model tree context menu actions
 	void OnDeleteItem();
 	void OnUnhideAllObjects();
-	void OnCreateNewMeshLayer();
-	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnHideInactiveParts();
 	void OnDeleteNamedSelection();
@@ -162,14 +164,15 @@ public slots:
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();
-	void OnRerunJob();
 	void OnOpenJob();
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
 	void OnRemoveUnusedSelections();
 	void OnRemoveUnusedLoadControllers();
+	void OnDeleteAllLoadControllers();
 	void OnRemoveAllSelections();
+	void OnDeleteAllMeshData();
 	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
 	void OnMaterialHideParts();
@@ -189,6 +192,9 @@ public slots:
 	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
+	void OnDeleteAllStudies();
+	void OnRunStudy();
+	void OnConfigureStudy();
 	void OnEditMeshData();
     void OnFindImage();
     void OnExportRawImage();

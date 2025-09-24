@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "MeasureCOMTool.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 // constructor
 CMeasureCOMTool::CMeasureCOMTool(CMainWindow* wnd) : CBasicTool(wnd, "Center of mass", CBasicTool::HAS_APPLY_BUTTON)

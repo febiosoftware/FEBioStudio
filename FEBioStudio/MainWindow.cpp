@@ -62,9 +62,7 @@ SOFTWARE.*/
 #include <QUuid>
 #include "DlgCheck.h"
 #include "IconProvider.h"
-#include "Logger.h"
 #include "SSHHandler.h"
-#include "SSHThread.h"
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
 #include "Commands.h"
@@ -88,28 +86,47 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <ImageLib/SITKImageSource.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLColorMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLWLib/convert.h>
+#include <GLWLib/GLLabel.h>
+#include <GLWLib/GLTriad.h>
+#include <GLWLib/GLSafeFrame.h>
+#include <GLWLib/GLLegendBar.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
+#include <FEBioMonitor/FEBioReportDoc.h>
+#include "RemoteJob.h"
+#include "DlgRemoteProgress.h"
+#include <FSCore/FSLogger.h>
+#include "PropertyList.h"
+#include "FileProcessor.h"
+#include "modelcheck.h"
+#include "DlgListMaterials.h"
+#include "DlgMissingPlugins.h"
 
 extern GLColor col[];
 
-CMainWindow*	CResource::m_wnd = nullptr;
-
-void CResource::Init(CMainWindow* wnd) { m_wnd = wnd; }
-
-QIcon CResource::Icon(const QString& iconName)
+class FSMainWindowOutput : public FSLogOutput
 {
-	assert(m_wnd);
-	return CIconProvider::GetIcon(iconName);
-}
+public:
+	FSMainWindowOutput(CMainWindow* w) : wnd(w) {}
+
+	void Write(const std::string& s) override
+	{
+		if (wnd) wnd->AddLogEntry(QString::fromStdString(s));
+	}
+
+private:
+	CMainWindow* wnd;
+};
 
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
@@ -130,29 +147,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	std::locale::global(std::locale::classic());
 #endif
 
-	m_DocManager = new CDocManager(this);
+	m_DocManager = new CDocManager();
 
-	m_fileThread = nullptr;
-
-	CResource::Init(this);
-
-	CActiveSelection::SetMainWindow(this);
+	m_fileProcessor = new CFileProcessor(this);
 
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
-
-	// update the Post palette to match PreView's
-	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
-
-	Post::CPalette pal("preview");
-	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
-	{
-		GLColor c = col[i];
-		GLColor glc(c.r, c.g, c.b);
-		pal.AddColor(glc);
-	}
-
-	PM.AddPalette(pal);
-	PM.SetCurrentIndex(PM.Palettes() - 1);
 
 	// Instantiate IconProvider singleton
 	CIconProvider::Instantiate(devicePixelRatio());
@@ -168,14 +167,14 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	else
 	{
 		// Add the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+		ui->m_settings.m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 	}
 
 	// allow drop events
 	setAcceptDrops(true);
 
-	// make sure the file viewer is visible
-	ui->showFileViewer();
+	// make sure the project viewer is visible
+	ui->showProjectViewer();
 
 	// show the welcome page
 	ShowWelcomePage();
@@ -185,18 +184,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// load templates
 	TemplateManager::Init();
-
-	// Instantiate Logger singleton
-	CLogger::Instantiate(this);
-
-	// configure FEBio library
-	if (ui->m_settings.loadFEBioConfigFile)
-	{
-		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
-		FSDir dir(fileName);
-		std::string filepath = dir.expandMacros();
-		FEBio::ConfigureFEBio(filepath.c_str());
-	}
 
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
@@ -212,13 +199,29 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		QObject::connect(&ui->m_updateWidget, &CUpdateWidget::ready, this, &CMainWindow::autoUpdateCheck);
 		ui->m_updateWidget.checkForUpdate();
 	}
+
+	FSLogger::SetOutput(new FSMainWindowOutput(this));
+
+    ui->m_pluginManager.LoadXML();
+    ui->m_pluginManager.LoadAllPlugins();
+    ui->m_pluginManager.ReadDatabase();
+    ui->m_pluginManager.Connect();
 }
 
 //-----------------------------------------------------------------------------
 CMainWindow::~CMainWindow()
 {
+#ifdef HAS_PYTHON
+	if (ui->m_pyThread.isRunning())
+	{
+		ui->m_pyThread.quit();
+		ui->m_pyThread.wait();
+	}
+#endif
+
 	// delete document
 	delete m_DocManager;
+	delete m_fileProcessor;
 	delete ui;
 }
 
@@ -293,7 +296,12 @@ void CMainWindow::UpdateTab(CDocument* doc)
 
 	ui->centralWidget->SetDocumentTabText(doc, tabTitle, tabTooltip);
 
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
+}
+
+bool CMainWindow::usingDarkTheme() const
+{
+	return (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
 }
 
 //-----------------------------------------------------------------------------
@@ -304,7 +312,7 @@ void CMainWindow::on_clearProject()
 	if (QMessageBox::question(this, "Clear Project", "Are you sure you want to clear the current project?\nThis cannot be undone.") == QMessageBox::Yes)
 	{
 		ui->m_project.Clear();
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		UpdateTitle();
 	}
 }
@@ -313,7 +321,7 @@ void CMainWindow::on_clearProject()
 void CMainWindow::on_closeProject()
 {
 	ui->m_project.Close();
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	UpdateTitle();
 }
 
@@ -324,7 +332,7 @@ void CMainWindow::on_closeFile(const QString& file)
 	if (doc)
 	{
 		CloseView(doc);
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 		UpdateTitle();
 	}
 }
@@ -333,14 +341,14 @@ void CMainWindow::on_closeFile(const QString& file)
 void CMainWindow::on_addToProject(const QString& file)
 {
 	ui->m_project.AddFile(file);
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	UpdateTitle();
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_xmledit_textChanged()
+void CMainWindow::on_txtedit_textChanged()
 {
-	QTextDocument* qtxt = ui->centralWidget->xmlEdit->document();
+	QTextDocument* qtxt = ui->centralWidget->txtEdit->textDocument();
 	if (qtxt == nullptr) return;
 
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
@@ -373,46 +381,6 @@ void CMainWindow::on_xmlTree_modelEdited()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
-{
-	QString ref = link.toString();
-	if      (ref == "#new") on_actionNewModel_triggered();
-	else if (ref == "#newproject") on_actionNewProject_triggered();
-	else if (ref == "#open") on_actionOpen_triggered();
-	else if (ref == "#openproject") on_actionOpenProject_triggered();
-	else if (ref == "#febio") on_actionFEBioURL_triggered();
-	else if (ref == "#help") on_actionFEBioResources_triggered();
-	else if (ref == "#forum") on_actionFEBioForum_triggered();
-	else if (ref == "#update") on_actionUpdate_triggered();
-    else if (ref.contains("#http"))
-    {
-        QString temp = link.toString().replace("#http", "https://");
-
-        QDesktopServices::openUrl(QUrl(temp));
-    }
-    else if (ref == "#bugreport") on_actionBugReport_triggered();
-	else
-	{
-		string s = ref.toStdString();
-		const char* sz = s.c_str();
-		if (strncmp(sz, "#recent_", 8) == 0)
-		{
-			int n = atoi(sz + 8);
-
-			QStringList recentFiles = GetRecentFileList();
-			OpenFile(recentFiles.at(n));
-		}
-		if (strncmp(sz, "#recentproject_", 15) == 0)
-		{
-			int n = atoi(sz + 15);
-
-			QStringList recentProjects = GetRecentProjectsList();
-			OpenFile(recentProjects.at(n));
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Read a file asynchronously
 // doc        : the document that is being modified 
 // fileName   : the file name of the file that is read
@@ -420,11 +388,11 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 // flags      : flags indicating what to do after the file is read
 void CMainWindow::ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags)
 {
-	m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, flags));
-	ReadNextFileInQueue();
+	m_fileProcessor->AddFile(QueuedFile(doc, fileName, fileReader, flags));
+	m_fileProcessor->ReadNextFileInQueue();
 }
 
-void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal)
+void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal, bool openInThread)
 {
 	// stop any animation
 	if (ui->m_isAnimating) ui->postToolBar->CheckPlayButton(false);
@@ -441,8 +409,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 
 	// check to extension to see what to do
 	QString ext = QFileInfo(fileName).suffix();
-	if ((ext.compare("fs2", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+	if ((ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("fs2", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("prv", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
 	{
@@ -451,13 +419,15 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtu" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("pvtu", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("pvd" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtm" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
-		OpenPostFile(fileName, nullptr, showLoadOptions);
+		OpenPostFile(fileName, nullptr, showLoadOptions, openInThread);
 	}
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
@@ -481,7 +451,6 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
-
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
@@ -504,55 +473,26 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		// Assume this is an LSDYNA database
 		OpenPostFile(fileName, nullptr, showLoadOptions);
 	}
+	else if (ext == "log")
+	{
+		if (!OpenFEBioLogFile(fileName))
+			OpenTextFile(fileName);
+	}
+	else if ((ext.compare("txt", Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("h"  , Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("cpp", Qt::CaseInsensitive) == 0) ||
+			 (ext.compare("hpp", Qt::CaseInsensitive) == 0))
+	{
+		OpenTextFile(fileName);
+	}
+	else if (ext == "remote")
+	{
+		OpenRemoteFile(fileName);
+	}
 	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program
 		QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-		//		assert(false);
-		//		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::ReadFile(QueuedFile& qfile)
-{
-	// if this is a reload, clear the document
-	if (qfile.m_doc && (qfile.m_flags & QueuedFile::RELOAD_DOCUMENT))
-	{
-		qfile.m_doc->Clear();
-		Update(nullptr, true);
-	}
-
-	// read the file, either threaded or directly
-	if (qfile.m_flags & QueuedFile::NO_THREAD)
-	{
-		bool bret = false;
-		QString errorString;
-		if (qfile.m_fileReader == nullptr)
-		{
-			AddLogEntry("Don't know how to read file.");
-		}
-		else
-		{
-			string sfile = qfile.m_fileName.toStdString();
-			bret = qfile.m_fileReader->Load(sfile.c_str());
-			std::string err = qfile.m_fileReader->GetErrorString();
-			errorString = QString::fromStdString(err);
-		}
-		finishedReadingFile(bret, qfile, errorString);
-	}
-	else
-	{
-		assert(m_fileThread == nullptr);
-		m_fileThread = new CFileThread(this, qfile);
-		m_fileThread->start();
-		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
-		ui->progressBar->setRange(0, 100);
-		ui->progressBar->setValue(0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
-		AddLogEntry(QString("Reading file %1 ... ").arg(qfile.m_fileName));
-		QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 	}
 }
 
@@ -588,7 +528,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 		FileReader* fileReader = CreateFileReader(fileName);
 		if (fileReader)
 		{
-			m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, 0));
+			m_fileProcessor->AddFile(QueuedFile(doc, fileName, fileReader, 0));
 		}
 		else
 		{
@@ -602,7 +542,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 	}
 
 	// start the process
-	ReadNextFileInQueue();
+	m_fileProcessor->ReadNextFileInQueue();
 
 	for (int i=0; i<files.count(); ++i)
 		ui->addToRecentGeomFiles(files[i]);
@@ -656,25 +596,6 @@ void CMainWindow::ImportProjectArchive(const QString& fileName) {}
 #endif
 
 //-----------------------------------------------------------------------------
-void CMainWindow::ReadNextFileInQueue()
-{
-	// If a file is being processed, just wait
-	if (m_fileThread) return;
-
-	// make sure we have a file
-	if (m_fileQueue.empty()) return;
-
-	// get the next file name
-	QueuedFile nextFile = m_fileQueue[0];
-
-	// remove the last file that was read
-	m_fileQueue.erase(m_fileQueue.begin());
-
-	// start reading the file
-	ReadFile(nextFile);
-}
-
-//-----------------------------------------------------------------------------
 // Open a project
 bool CMainWindow::OpenProject(const QString& projectFile)
 {
@@ -685,10 +606,10 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 		return false;
 	}
 
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 	ui->addToRecentProjects(projectFile);
-	ui->fileViewer->parentWidget()->show();
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->show();
+	ui->projectViewer->parentWidget()->raise();
 	UpdateTitle();
 
 	CloseWelcomePage();
@@ -821,7 +742,7 @@ void CMainWindow::AddDocument(CDocument* doc)
 	if (modelDoc && (modelDoc->GetDocFilePath().empty() == false))
 	{
 		ui->m_project.AddFile(QString::fromStdString(modelDoc->GetDocFilePath()));
-		ui->fileViewer->Update();
+		ui->projectViewer->Update();
 	}
 }
 
@@ -830,7 +751,7 @@ bool compare_filename(const std::string& file1, const std::string& file2)
 {
 	if (file1.size() != file2.size()) return false;
 
-	int l = file1.size();
+	int l = (int)file1.size();
 	for (int i = 0; i < l; ++i)
 	{
 		char c1 = file1[i];
@@ -869,23 +790,46 @@ bool CMainWindow::CreateNewProject(QString fileName)
 
 	if (ret) ui->addToRecentProjects(fileName);
 
-	ui->fileViewer->parentWidget()->show();
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->show();
+	ui->projectViewer->parentWidget()->raise();
 
 	return ret;
 }
 
-//-----------------------------------------------------------------------------
-CModelDocument* CMainWindow::CreateNewDocument()
+void CMainWindow::OpenRemoteFile(const QString& remoteFileName)
 {
-	CModelDocument* doc = new CModelDocument(this);
-	doc->SetUnitSystem(ui->m_settings.defaultUnits);
-	return doc;
+	// make sure this is a remote file
+	QFileInfo fi(remoteFileName);
+	if (fi.suffix() != "remote") return;
+
+	QFile f(remoteFileName);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+	QString s(f.readAll());
+	f.close();
+
+	// should be the name of a launch configuration
+	CLaunchConfig* lc = ui->findLaunchConfig(s.toStdString());
+	if (lc == nullptr) return;
+
+	// strip the ".remote" suffix
+	QString fileName = remoteFileName.chopped(7);
+	QFileInfo fi2(fileName);
+
+	// go get the file
+	std::unique_ptr<CRemoteJob> tmp(new CRemoteJob(nullptr, lc, this));
+	CDlgRemoteProgress dlg(tmp.get(), this, false, fileName);
+	dlg.exec();
+
+	// now delete the .remote file
+	QDir dir;
+	dir.remove(remoteFileName);
+
+	// and finally try to open file
+	OpenFile(fileName);
 }
 
-//-----------------------------------------------------------------------------
 //! Open a plot file
-void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
+void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions, bool openInThread)
 {
 	// see if this file is already open
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(FindDocument(fileName.toStdString()));
@@ -912,7 +856,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 				}
 			}
 			doc->SetFileReader(xplt);
-			ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
+			int flags = QueuedFile::NEW_DOCUMENT;
+			if (!openInThread) flags |= QueuedFile::NO_THREAD;
+			ReadFile(doc, fileName, doc->GetFileReader(), flags);
 
 			// add file to recent list
 			ui->addToRecentFiles(fileName);
@@ -926,6 +872,16 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			Post::VTUImport* vtu = new Post::VTUImport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtu, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("pvtu", Qt::CaseInsensitive) == 0)
+		{
+			Post::PVTUImport* pvtu = new Post::PVTUImport(doc->GetFSModel());
+			ReadFile(doc, fileName, pvtu, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("pvd", Qt::CaseInsensitive) == 0)
+		{
+			Post::PVDImport* pvd = new Post::PVDImport(doc->GetFSModel());
+			ReadFile(doc, fileName, pvd, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("vtm", Qt::CaseInsensitive) == 0)
 		{
@@ -959,6 +915,8 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 	}
 	else
 	{
+		doc->Clear();
+		Update(nullptr, true);
 		ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::RELOAD_DOCUMENT);
 	}
 }
@@ -972,36 +930,45 @@ int CMainWindow::GetMeshMode()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::checkFileProgress()
-{
-	float f = 1.f;
-	if (m_fileThread) f = m_fileThread->getFileProgress();
-	else return;
-
-	int n = (int)(100.f*f);
-	ui->progressBar->setValue(n);
-	if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_finishedReadingFile(bool success, const QString& errorString)
-{
-	assert(m_fileThread);
-	if (m_fileThread == nullptr) return;
-	QueuedFile qfile = m_fileThread->GetFile();
-	m_fileThread = nullptr;
-	finishedReadingFile(success, qfile, errorString);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QString& errorString)
+void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorString)
 {
 	ui->statusBar->clearMessage();
-	ui->statusBar->removeWidget(ui->progressBar);
+	ui->statusBar->hideProgress();
+
+	bool success = file.m_success;
 
 	if (success == false)
 	{
-		if (m_fileQueue.empty())
+        ModelFileReader* reader = dynamic_cast<ModelFileReader*>(file.m_fileReader);
+        CModelDocument* doc = dynamic_cast<CModelDocument*>(file.m_doc);
+        if (reader && doc)
+        {
+            auto missingPlugins = reader->GetMissingPlugins();
+
+            if (!missingPlugins.empty())
+            {
+                CDlgMissingPlugins dlg(this, missingPlugins);
+
+                if(dlg.exec())
+                {
+                    if(dlg.SkipPlugins())
+                    {
+                        doc->SetSkipPluginCheck(true);
+                    }
+                    else
+                    {
+                        doc->SetSkipPluginCheck(false);
+                    }
+
+                    m_fileProcessor->ReadFile(file);
+                }
+            }
+
+            return;
+        }
+
+
+		if (m_fileProcessor->IsQueueEmpty())
 		{
 			QString err = QString("Failed reading file :\n%1\n\nERROR: %2").arg(file.m_fileName).arg(errorString);
 			QMessageBox::critical(this, "FEBio Studio", err);
@@ -1025,7 +992,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	{
 		if (errorString.isEmpty() == false)
 		{
-			if (m_fileQueue.empty())
+			if (m_fileProcessor->IsQueueEmpty())
 			{
 				QStringList stringList = errorString.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 				QString err = QString("Warnings were generated while reading the file:\n%1\n\n").arg(file.m_fileName);
@@ -1120,13 +1087,14 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		}
 		else
 		{
+			if (file.m_doc) file.m_doc->Update();
 			SetActiveDocument(file.m_doc);
 		}
 	}
 
-	if (m_fileQueue.empty() == false)
+	if (m_fileProcessor->IsQueueEmpty() == false)
 	{
-		ReadNextFileInQueue();
+		m_fileProcessor->ReadNextFileInQueue();
 	}
 	else
 	{
@@ -1152,7 +1120,6 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 
 	if (breset)
 	{
-		//	m_pGLView->OnZoomExtents(0,0);
 		UpdateModel();
 	}
 
@@ -1169,9 +1136,10 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
+	if (ui->febioMonitor && ui->febioMonitor->isVisible()) ui->febioMonitor->Update(breset);
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
-    
+
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
@@ -1214,7 +1182,7 @@ void CMainWindow::UpdateUiView()
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
-	return ui->centralWidget->glw->glview;
+	return ui->centralWidget->glw->GetGLView();
 }
 
 CImageSliceView* CMainWindow::GetImageSliceView()
@@ -1227,13 +1195,26 @@ C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
     return ui->centralWidget->timeView2D;
 }
 
-//-----------------------------------------------------------------------------
+void CMainWindow::ShowImageViewer(QImage img)
+{
+	if (ui->imageView == nullptr) ui->imageView = new CDlgScreenCapture(this);
+	ui->imageView->SetImage(img);
+	if (ui->imageView->isVisible() == false)
+	{
+		ui->imageView->show();
+	}
+}
+
+CLogPanel* CMainWindow::GetLogPanel()
+{
+	return ui->logPanel;
+}
+
 CBuildPanel* CMainWindow::GetBuildPanel()
 {
 	return ui->buildPanel;
 }
 
-//-----------------------------------------------------------------------------
 CCreatePanel* CMainWindow::GetCreatePanel()
 {
 	return ui->buildPanel->CreatePanel();
@@ -1244,7 +1225,31 @@ CRepositoryPanel* CMainWindow::GetDatabasePanel()
 	return ui->databasePanel;
 }
 
-//-----------------------------------------------------------------------------
+CFEBioMonitorPanel* CMainWindow::GetFEBioMonitorPanel()
+{
+	return ui->febioMonitor;
+}
+
+CFEBioMonitorView* CMainWindow::GetFEBioMonitorView()
+{
+	return ui->febioMonitorView;
+}
+
+CModelViewer* CMainWindow::GetModelViewer()
+{
+	return ui->modelViewer;
+}
+/*
+CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
+{
+	return ui->pythonToolsPanel;
+}
+*/
+CMainStatusBar* CMainWindow::GetStatusBar()
+{
+	return ui->statusBar;
+}
+
 //! close the current open project
 void CMainWindow::CloseProject()
 {
@@ -1261,7 +1266,7 @@ void CMainWindow::Reset()
 {
 //	GetGLView()->Reset();
 	GLHighlighter::ClearHighlights();
-	GetGLView()->ZoomExtents(false);
+	on_actionZoomExtents_triggered();
 }
 
 //-----------------------------------------------------------------------------
@@ -1378,6 +1383,16 @@ void CMainWindow::ReportSelection()
 				GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
 				GPartSelection::Iterator it(&ps);
 				msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+#ifndef NDEBUG
+				GPart* pg = it;
+				msg += QString("\nnodes = (%1)[").arg(pg->m_node.size());
+				for (int i = 0; i < pg->m_node.size(); ++i)
+				{
+					if (i != 0) msg += ",";
+					msg += QString::number(pg->m_node[i]);
+				}
+				msg += "]\n";
+#endif
 			}
 			else msg = QString("%1 Parts selected").arg(N);
 		}
@@ -1469,7 +1484,7 @@ void CMainWindow::ReportSelection()
 			if (es->Size() == 1)
 			{
 				FSMesh* pm = es->GetMesh();
-				FEElement_* el = es->Element(0);
+				FSElement_* el = es->Element(0);
 				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementIndex(0) + 1);
 				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
@@ -1670,7 +1685,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() & Qt::CTRL))
 	{
-		ui->showFileViewer();
+		ui->showProjectViewer();
 		ev->accept();
 	}
 	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() & Qt::CTRL))
@@ -1690,11 +1705,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 	else if ((ev->key() == Qt::Key_R))
 	{
-		if (GetPostDocument()) ui->actionRotate->toggle();
+		if (GetPostDocument()) ui->mainMenu->actionRotate->toggle();
 	}
 	else if ((ev->key() == Qt::Key_T))
 	{
-		if (GetPostDocument()) ui->actionTranslate->toggle();
+		if (GetPostDocument()) ui->mainMenu->actionTranslate->toggle();
 	}
 	else if ((ev->key() == Qt::Key_A))
 	{
@@ -1709,7 +1724,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
 {
-	ui->m_currentPath = folder;
+	ui->m_settings.m_currentPath = folder;
 }
 
 // get the current project
@@ -1760,76 +1775,92 @@ int CMainWindow::GetDefaultUnitSystem() const
 	return ui->m_settings.defaultUnits;
 }
 
-bool CMainWindow::GetLoadConfigFlag() { return ui->m_settings.loadFEBioConfigFile; }
-QString CMainWindow::GetConfigFileName() { return ui->m_settings.febioConfigFileName; }
-
-void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_settings.loadFEBioConfigFile = b; }
-void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileName = s; }
-
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
+	FBS_SETTINGS& fbs = ui->m_settings;
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
-	QSettings settings("MRLSoftware", "FEBio Studio");
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, "MRLSoftware", "FEBioStudio");
 	settings.setValue("version", version);
 	settings.beginGroup("MainWindow");
 	{
 		settings.setValue("geometry", saveGeometry());
 		settings.setValue("state", saveState());
 
-		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
-		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
-		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
-		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
-
-		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
-		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
-		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-		settings.setValue("meshColor", vs.m_meshColor.to_uint());
-		settings.setValue("linewidth", vs.m_line_size);
-		settings.setValue("nodesize", vs.m_node_size);
-		settings.setValue("bgStyle", vs.m_nbgstyle);
-		settings.setValue("lighting", vs.m_bLighting);
-		settings.setValue("shadows", vs.m_bShadows);
-		settings.setValue("multiViewProjection", vs.m_nconv);
-		//	settings.setValue("showMaterialFibers", vs.m_bfiber);
-		settings.setValue("showMaterialAxes", vs.m_blma);
-		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
-		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
-		settings.setValue("showGrid", vs.m_bgrid);
-		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
-		settings.setValue("tagFontSize", vs.m_tagFontSize);
-		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
-		settings.setValue("environmentMap", ui->m_envMapFile);
 		QRect rt;
 		rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 		rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
 	}
 	settings.endGroup();
 
-	settings.beginGroup("PostSettings");
+	settings.beginGroup("Settings");
 	{
-		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+		// background
+		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+		settings.setValue("bgStyle", vs.m_nbgstyle);
+
+		// display
+		settings.setValue("nodeSize", vs.m_node_size);
+		settings.setValue("lineWidth", vs.m_line_size);
+		settings.setValue("meshColor", vs.m_meshColor.to_uint());
+		settings.setValue("normalsScaleFactor", vs.m_scaleNormals);
+		settings.setValue("multiViewProjection", vs.m_nconv);
+		settings.setValue("improvedTransparency", vs.m_bzsorting);
+		settings.setValue("showGrid", vs.m_bgrid);
+		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
+		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
+		settings.setValue("tagFontSize", vs.m_tagFontSize);
+		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+
+		// FEBio
+		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
+		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
+		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
+
+		// Lighting
+		settings.setValue("lighting", vs.m_bLighting);
+		settings.setValue("shadows", vs.m_bShadows);
+		settings.setValue("shadowIntensity", vs.m_shadow_intensity);
+		settings.setValue("lightDirection", Vec3fToString(vs.m_light));
+		settings.setValue("environmentMap", fbs.m_envMapFile);
+
+		// Physics
+		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
+		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+
+		// Post options
+		settings.setValue("defaultMap", ColorMapManager::GetDefaultMap());
 		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
+
+		// Selection
+		settings.setValue("respectPartitions", vs.m_bpart);
+
+		// UI
+		settings.setValue("emulateApply", vs.m_apply);
+		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
+
+		// Units
+		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
 	}
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");
 	{
-		settings.setValue("currentPath", ui->m_currentPath);
+		settings.setValue("currentPath", ui->m_settings.m_currentPath);
 
-		settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
+		settings.setValue("defaultProjectFolder", ui->m_settings.m_defaultProjectParent);
 		settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
 		settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
 
-		settings.setValue("recentFiles", ui->m_recentFiles);
-		settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
-		settings.setValue("recentProjects", ui->m_recentProjects);
-		settings.setValue("recentPlugins", ui->m_recentPlugins);
-		settings.setValue("recentImages", ui->m_recentImages);
+		settings.setValue("recentFiles", fbs.m_recentFiles);
+		settings.setValue("recentGeomFiles", fbs.m_recentGeomFiles);
+		settings.setValue("recentProjects", fbs.m_recentProjects);
+		settings.setValue("recentPlugins", fbs.m_recentPlugins);
+		settings.setValue("recentImages", fbs.m_recentImages);
 	}
 	settings.endGroup();
 
@@ -1837,43 +1868,49 @@ void CMainWindow::writeSettings()
 	{
 		// Create and save a list of launch config names
 		// NOTE: We do not save the first config, which should be the DEFAULT one
-		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
+		assert((fbs.m_launch_configs.size() > 0) && (fbs.m_launch_configs[0]->type() == CLaunchConfig::DEFAULT));
 		QStringList launch_config_names;
-		for (int i = 1; i < ui->m_launch_configs.size(); ++i)
+		for (int i = 1; i < fbs.m_launch_configs.size(); ++i)
 		{
-			CLaunchConfig& confi = ui->m_launch_configs[i];
-			launch_config_names.append(QString::fromStdString(confi.name));
+			CLaunchConfig& confi = *fbs.m_launch_configs[i];
+			launch_config_names.append(QString::fromStdString(confi.name()));
 		}
 		settings.setValue("launchConfigNames", launch_config_names);
 
 		// Save launch configs
 		for (int i = 0; i < launch_config_names.count(); i++)
 		{
-			CLaunchConfig& confi = ui->m_launch_configs[i + 1];
-
+			CLaunchConfig& confi = *fbs.m_launch_configs[i + 1];
 			QString configName = "launchConfigs/" + launch_config_names[i];
 
-			settings.setValue(configName + "/type", confi.type);
-			settings.setValue(configName + "/path", confi.path.c_str());
-			settings.setValue(configName + "/server", confi.server.c_str());
-			settings.setValue(configName + "/port", confi.port);
-			settings.setValue(configName + "/userName", confi.userName.c_str());
-			settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
-			settings.setValue(configName + "/customFile", confi.customFile.c_str());
-			settings.setValue(configName + "/text", confi.getText().c_str());
+			settings.setValue(configName + "/type", confi.type());
+			for (int n = 0; n < confi.Parameters(); ++n)
+			{
+				Param& p = confi.GetParam(n);
+				QString name = configName + "/" + QString(p.GetShortName());
+				switch (p.GetParamType())
+				{
+				case Param_URL   : settings.setValue(name, p.GetURLValue().c_str()); break;
+				case Param_STRING: settings.setValue(name, p.GetStringValue().c_str()); break;
+				case Param_INT   : settings.setValue(name, p.GetIntValue()); break;
+				case Param_BOOL  : settings.setValue(name, p.GetBoolValue()); break;
+				default:
+					assert(false);
+				}
+			}
 		}
 	}
 	settings.endGroup();
 
 	// store user colormaps
-	int n = Post::ColorMapManager::UserColorMaps();
-	settings.beginGroup("usercolormaps");
+	int n = ColorMapManager::UserColorMaps();
+	settings.beginGroup("UserColorMaps");
 	{
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			Post::CColorMap& c = Post::ColorMapManager::GetColorMap(Post::ColorMapManager::USER + i);
-			string sname = Post::ColorMapManager::GetColorMapName(Post::ColorMapManager::USER + i);
+			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
 				int m = c.Colors();
@@ -1901,52 +1938,14 @@ void CMainWindow::writeSettings()
 void CMainWindow::readSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
-	QSettings settings("MRLSoftware", "FEBio Studio");
+	FBS_SETTINGS& fbs = ui->m_settings;
+
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, "MRLSoftware", "FEBioStudio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
 	{
 		restoreGeometry(settings.value("geometry").toByteArray());
 		restoreState(settings.value("state").toByteArray());
-
-		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
-		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
-		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
-		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
-
-		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
-		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
-		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
-		// alpha component used to not be stored so set it to default if zero
-		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
-		vs.m_line_size = settings.value("linewidth", vs.m_line_size).toInt();
-		vs.m_node_size = settings.value("nodesize", vs.m_node_size).toInt();
-		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
-		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
-		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
-		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-		//	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
-		//	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
-		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
-		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
-		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
-		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
-
-		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
-
-		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
-		GLWidget::set_default_font(font);
-
-		QString envmap = settings.value("environmentMap").toString();
-		ui->m_envMapFile = envmap;
-
-		if (vs.m_defaultFGColorOption != 0)
-		{
-			GLWidget::set_base_color(vs.m_defaultFGColor);
-		}
-
-		Units::SetUnitSystem(ui->m_settings.defaultUnits);
 
 		QRect rt;
 		QRect defaultRect(geometry().center().x() - 400, geometry().center().y() - 300, 800, 600);
@@ -1957,18 +1956,77 @@ void CMainWindow::readSettings()
 	}
 	settings.endGroup();
 
-	settings.beginGroup("PostSettings");
+	settings.beginGroup("Settings");
 	{
-		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+		// background
+		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
+
+		// display
+		vs.m_node_size = settings.value("nodeSize", vs.m_node_size).toInt();
+		vs.m_line_size = settings.value("lineWidth", vs.m_line_size).toInt();
+		vs.m_meshColor = GLColor(settings.value("meshColor", vs.m_meshColor.to_uint()).toUInt());
+		// alpha component used to not be stored so set it to default if zero
+		if (vs.m_meshColor.a == 0) vs.m_meshColor.a = 64;
+		vs.m_scaleNormals = settings.value("normalsScaleFactor", vs.m_scaleNormals).toDouble();
+		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
+		vs.m_bzsorting = settings.value("improvedTransparency", vs.m_bzsorting).toBool();
+		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
+		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
+		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
+		vs.m_tagFontSize = settings.value("tagFontSize", vs.m_tagFontSize).toInt();
+		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
+		GLWidget::set_default_font(font);
+
+		// FEBio
+		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
+		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
+		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
+		ui->m_settings.createPluginPath = settings.value("createPluginPath", "").toString();
+
+		// Lighting
+		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
+		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
+		vs.m_shadow_intensity = settings.value("shadowIntensity", vs.m_shadow_intensity).toFloat();
+		vs.m_light = StringToVec3f(settings.value("lightDirection", "{0.5,0.5,1}").toString());
+		QString envmap = settings.value("environmentMap").toString();
+		fbs.m_envMapFile = envmap;
+
+		// Physics
+		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
+		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+
+		// Post options
+		ColorMapManager::SetDefaultMap(settings.value("defaultMap", ColorMapManager::JET).toInt());
 		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
+
+		// Selection
+		vs.m_bpart = settings.value("respectPartitions", vs.m_bpart).toBool();
+
+		// UI
+		vs.m_apply = settings.value("emulateApply", vs.m_apply).toBool();
+		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+
+		// Units
+		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
+
+
+		if (vs.m_defaultFGColorOption != 0)
+		{
+			GLWidget::set_base_color(vs.m_defaultFGColor);
+		}
+
+		Units::SetUnitSystem(ui->m_settings.defaultUnits);
 	}
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");
 	{
-		ui->m_currentPath = settings.value("currentPath", QDir::homePath()).toString();
+		fbs.m_currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-		ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+		fbs.m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
 		QString repositoryFolder = settings.value("repositoryFolder").toString();
 		ui->databasePanel->SetRepositoryFolder(repositoryFolder);
 		qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
@@ -1988,37 +2046,58 @@ void CMainWindow::readSettings()
 		launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
 		// clear launch configurations
-		ui->m_launch_configs.clear();
+		fbs.m_launch_configs.clear();
 
 		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+		fbs.m_launch_configs.push_back(new CDefaultLaunchConfig("Default"));
 
 		for (QString conf : launch_config_names)
 		{
 			QString configName = "launchConfigs/" + conf;
 
-			ui->m_launch_configs.push_back(CLaunchConfig());
+			CLaunchConfig* lc = nullptr;
+			int ntype = settings.value(configName + "/type").toInt();
+			switch (ntype)
+			{
+			case CLaunchConfig::LOCAL : lc = new CLocalLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::REMOTE: lc = new CRemoteLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::PBS   : lc = new CPBSLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::SLURM : lc = new CSLURMLaunchConfig(conf.toStdString()); break;
+			case CLaunchConfig::CUSTOM: lc = new CCustomLaunchConfig(conf.toStdString()); break;
+			default:
+				assert(false);
+			}
 
-			ui->m_launch_configs.back().name = conf.toStdString();
-			ui->m_launch_configs.back().type = settings.value(configName + "/type").toInt();
-			ui->m_launch_configs.back().path = settings.value(configName + "/path").toString().toStdString();
-			ui->m_launch_configs.back().server = settings.value(configName + "/server").toString().toStdString();
-			ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
-			ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
-			ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
-			ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
-			ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
+			if (lc)
+			{
+				fbs.m_launch_configs.push_back(lc);
+
+				for (int n = 0; n < lc->Parameters(); ++n)
+				{
+					Param& p = lc->GetParam(n);
+					QString name = configName + "/" + QString(p.GetShortName());
+					switch (p.GetParamType())
+					{
+					case Param_URL   : p.SetURLValue   (settings.value(name).toString().toStdString()); break;
+					case Param_STRING: p.SetStringValue(settings.value(name).toString().toStdString()); break;
+					case Param_INT   : p.SetIntValue   (settings.value(name).toInt()); break;
+					case Param_BOOL  : p.SetBoolValue  (settings.value(name).toBool()); break;
+					default:
+						assert(false);
+					}
+				}
+			}
 		}
 	}
 	settings.endGroup();
 
-	settings.beginGroup("usercolormaps");
+	settings.beginGroup("UserColorMaps");
 	{
 		QStringList l = settings.childGroups();
 		for (int i = 0; i < l.size(); ++i)
 		{
 			QString name = l.at(i);
-			Post::CColorMap c; c.SetColors(0);
+			CColorMap c; c.SetColors(0);
 			settings.beginGroup(name);
 			{
 				int m = settings.value("colors", 0).toInt();
@@ -2033,7 +2112,7 @@ void CMainWindow::readSettings()
 				}
 			}
 			settings.endGroup();
-			if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
+			if (c.Colors() > 0) ColorMapManager::AddColormap(name.toStdString(), c);
 		}
 	}
 	settings.endGroup();
@@ -2056,7 +2135,7 @@ void CMainWindow::UpdateUI()
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
 	 */
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 	RedrawGL();
 }
 
@@ -2068,13 +2147,15 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
+	CMainMenu* menu = ui->mainMenu;
+
 	GLViewSettings& view = GetGLView()->GetViewSettings();
-	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
-	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
-	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
+	if (view.m_blma   != menu->actionShowMatAxes->isChecked()) menu->actionShowMatAxes->trigger();
+	if (view.m_bmesh  != menu->actionShowMeshLines->isChecked()) menu->actionShowMeshLines->trigger();
+	if (view.m_bgrid  != menu->actionShowGrid->isChecked()) menu->actionShowGrid->trigger();
 
 	CGView& gv = *doc->GetView();
-	if (gv.m_bortho != ui->actionOrtho->isChecked()) ui->actionOrtho->trigger();
+	if (gv.m_bortho != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
 
 	if (ui->buildToolBar->isVisible())
 	{
@@ -2148,7 +2229,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 //! Updates the GLView control bar
 void CMainWindow::UpdateGLControlBar()
 {
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2177,6 +2258,14 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CXMLDocument*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::XML_CONFIG);
+	}
+	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::MONITOR_CONFIG);
+	}
+	else if (dynamic_cast<CFEBioReportDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::FEBREPORT_CONFIG);
 	}
 	else
 	{
@@ -2217,8 +2306,6 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->centralWidget->tab->setActiveView(n);
-	GetGLView()->UpdateWidgets();
-	UpdateUIConfig();
 }
 
 //-----------------------------------------------------------------
@@ -2241,7 +2328,7 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 	string docIcon = doc->GetIcon();
 	ui->centralWidget->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
-	glview->ZoomExtents(false);
+	on_actionZoomExtents_triggered();
 	glview->UpdateWidgets();
 }
 
@@ -2259,16 +2346,13 @@ void CMainWindow::on_tab_currentChanged(int n)
 	UpdateToolbar();
 	ui->updateMeshInspector();
 	RedrawGL();
-
-	if (n == 0) ui->modelViewer->parentWidget()->raise();
-	else ui->postPanel->parentWidget()->raise();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
 	CloseView(n);
-	ui->fileViewer->Update();
+	ui->projectViewer->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2339,7 +2423,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	GLHighlighter::ClearHighlights();
 
 	ui->ShowDefaultBackground();
-	ui->centralWidget->xmlEdit->setDocument(nullptr);
+	ui->centralWidget->txtEdit->setDocument(nullptr);
 
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
@@ -2373,9 +2457,15 @@ void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
-	CGLView* view = GetGLView();
-	if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
-	view->repaint();
+	if(QThread::currentThread() == this->thread())
+	{
+		CGLView* view = GetGLView();
+		view->repaint();
+	}
+	else
+	{
+		QMetaObject::invokeMethod(GetGLView(), "repaint");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2492,34 +2582,74 @@ void CMainWindow::ShowLogPanel()
 // add to the log 
 void CMainWindow::AddLogEntry(const QString& txt)
 {
+	QMetaObject::invokeMethod(this, &CMainWindow::AddLogEntrySlot, txt);
+}
+
+void CMainWindow::AddLogEntrySlot(const QString& txt)
+{
 	ui->logPanel->AddText(txt);
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::updateOutput(const QString& txt)
+// add to the output log
+void CMainWindow::AddOutputEntry(const QString& txt)
 {
-	ui->logPanel->AddText(txt, 1);
+	QMetaObject::invokeMethod(this, &CMainWindow::AddOutputEntrySlot, txt);
+}
+
+void CMainWindow::AddOutputEntrySlot(const QString& txt)
+{
+	ui->logPanel->AddText(txt, CLogPanel::FEBIO_LOG);
 }
 
 //-----------------------------------------------------------------------------
-// add to the output window
-void CMainWindow::AddOutputEntry(const QString& txt)
+// add to the build log
+void CMainWindow::AddBuildLogEntry(const QString& txt)
 {
-	ui->logPanel->AddText(txt, 1);
+	QMetaObject::invokeMethod(this, &CMainWindow::AddBuildLogEntrySlot, txt);
+}
+
+void CMainWindow::AddBuildLogEntrySlot(const QString& txt)
+{
+	ui->logPanel->AddText(txt, CLogPanel::BUILD_LOG);
+}
+
+//-----------------------------------------------------------------------------
+// add to the python log
+void CMainWindow::AddPythonLogEntry(const QString& txt)
+{
+	QMetaObject::invokeMethod(this, &CMainWindow::AddPythonLogEntrySlot, txt);
+}
+
+void CMainWindow::AddPythonLogEntrySlot(const QString& txt)
+{
+	ui->logPanel->AddText(txt, CLogPanel::PYTHON_LOG);
 }
 
 //-----------------------------------------------------------------------------
 // clear the log
 void CMainWindow::ClearLog()
 {
-	ui->logPanel->ClearLog();
+	ui->logPanel->Clear(CLogPanel::FBS_LOG);
 }
 
 //-----------------------------------------------------------------------------
 // clear the output window
 void CMainWindow::ClearOutput()
 {
-	ui->logPanel->ClearOutput();
+	ui->logPanel->Clear(CLogPanel::FEBIO_LOG);
+}
+
+void CMainWindow::ClearBuildLog()
+{
+	ui->logPanel->ShowLog(CLogPanel::BUILD_LOG);
+	ui->logPanel->Clear(CLogPanel::BUILD_LOG);
+}
+
+void CMainWindow::ClearPythonLog()
+{
+	ui->logPanel->ShowLog(CLogPanel::PYTHON_LOG);
+	ui->logPanel->Clear(CLogPanel::PYTHON_LOG);
 }
 
 //-----------------------------------------------------------------------------
@@ -2531,6 +2661,7 @@ void CMainWindow::on_glview_pointPicked(const vec3d& r)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_glview_selectionChanged()
 {
+	ReportSelection();
 }
 
 //-----------------------------------------------------------------------------
@@ -2548,39 +2679,41 @@ void CMainWindow::ClearStatusMessage()
 //-----------------------------------------------------------------------------
 void CMainWindow::BuildContextMenu(QMenu& menu)
 {
-	menu.addAction(ui->actionZoomSelect);
-	menu.addAction(ui->actionShowGrid);
-	menu.addAction(ui->actionShowMeshLines);
-	menu.addAction(ui->actionShowEdgeLines);
-	menu.addAction(ui->actionOrtho);
+	CMainMenu* mainMenu = ui->mainMenu;
+
+	menu.addAction(mainMenu->actionZoomSelect);
+	menu.addAction(mainMenu->actionShowGrid);
+	menu.addAction(mainMenu->actionShowMeshLines);
+	menu.addAction(mainMenu->actionShowEdgeLines);
+	menu.addAction(mainMenu->actionOrtho);
 	menu.addSeparator();
 
 	QMenu* view = new QMenu("Standard views");
-	view->addAction(ui->actionFront);
-	view->addAction(ui->actionBack);
-	view->addAction(ui->actionLeft);
-	view->addAction(ui->actionRight);
-	view->addAction(ui->actionTop);
-	view->addAction(ui->actionBottom);
-    view->addAction(ui->actionIsometric);
+	view->addAction(mainMenu->actionFront);
+	view->addAction(mainMenu->actionBack);
+	view->addAction(mainMenu->actionLeft);
+	view->addAction(mainMenu->actionRight);
+	view->addAction(mainMenu->actionTop);
+	view->addAction(mainMenu->actionBottom);
+    view->addAction(mainMenu->actionIsometric);
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 
-	menu.addAction(ui->actionRenderMode);
+	menu.addAction(mainMenu->actionRenderMode);
 
 	CModelDocument* doc = GetModelDocument();
 	if (doc)
 	{
-		menu.addAction(ui->actionShowNormals);
+		menu.addAction(mainMenu->actionShowNormals);
 
 		QMenu* physicsMenu = new QMenu("Physics");
 
-		physicsMenu->addAction(ui->actionShowFibers);
-		physicsMenu->addAction(ui->actionShowMatAxes);
-		physicsMenu->addAction(ui->actionShowDiscrete);
-		physicsMenu->addAction(ui->actionShowRigidBodies);
-		physicsMenu->addAction(ui->actionShowRigidJoints);
-		physicsMenu->addAction(ui->actionShowRigidLabels);
+		physicsMenu->addAction(mainMenu->actionShowFibers);
+		physicsMenu->addAction(mainMenu->actionShowMatAxes);
+		physicsMenu->addAction(mainMenu->actionShowDiscrete);
+		physicsMenu->addAction(mainMenu->actionShowRigidBodies);
+		physicsMenu->addAction(mainMenu->actionShowRigidJoints);
+		physicsMenu->addAction(mainMenu->actionShowRigidLabels);
 		menu.addMenu(physicsMenu);
 
 		menu.addSeparator();
@@ -2600,65 +2733,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		{
 			OBJECT_COLOR_MODE mode = scene->ObjectColorMode();
 			QMenu* colorMode = new QMenu("Color mode");
-			a = colorMode->addAction("Default"         ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
-			a = colorMode->addAction("By object"       ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
-			a = colorMode->addAction("By material type"); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
-			a = colorMode->addAction("By element type" ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
-			a = colorMode->addAction("By physics"      ); a->setCheckable(true); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			a = colorMode->addAction("Default"         ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::DEFAULT_COLOR ); if (mode == OBJECT_COLOR_MODE::DEFAULT_COLOR ) a->setChecked(true);
+			a = colorMode->addAction("By object"       ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::OBJECT_COLOR  ); if (mode == OBJECT_COLOR_MODE::OBJECT_COLOR  ) a->setChecked(true);
+			a = colorMode->addAction("By material type"); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::MATERIAL_TYPE ); if (mode == OBJECT_COLOR_MODE::MATERIAL_TYPE ) a->setChecked(true);
+			a = colorMode->addAction("By element type" ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::FSELEMENT_TYPE); if (mode == OBJECT_COLOR_MODE::FSELEMENT_TYPE) a->setChecked(true);
+			a = colorMode->addAction("By physics"      ); a->setCheckable(true); a->setData((int) OBJECT_COLOR_MODE::PHYSICS_TYPE  ); if (mode == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) a->setChecked(true);
+			colorMode->addSeparator();
+			a = colorMode->addAction("Identify backfacing surfaces"); a->setCheckable(true); if (vs.m_identifyBackfacing) a->setChecked(true);
+			a->setData(0xFF);
 			QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
 			menu.addAction(colorMode->menuAction());
 		}
-
-		menu.addSeparator();
-
-		GModel* gm = doc->GetGModel();
-		int layers = gm->MeshLayers();
-		if (layers > 1)
-		{
-			QMenu* sub = new QMenu("Set Active Mesh Layer");
-			int activeLayer = gm->GetActiveMeshLayer();
-			for (int i = 0; i < layers; ++i)
-			{
-				string s = gm->GetMeshLayerName(i);
-				QAction* a = sub->addAction(QString::fromStdString(s));
-				a->setCheckable(true);
-				if (i == activeLayer) a->setChecked(true);
-			}
-			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
-			menu.addAction(sub->menuAction());
-			menu.addSeparator();
-		}
 	}
-	menu.addAction(ui->actionOptions);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::OnSelectMeshLayer(QAction* ac)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-
-	string s = ac->text().toStdString();
-
-	int layer = gm->FindMeshLayer(s); assert(layer >= 0);
-
-	if (layer != gm->GetActiveMeshLayer())
-	{
-		// since objects may not have meshes in the new layer, we make sure we are 
-		// in object selection mode
-		if (doc->GetItemMode() != ITEM_MESH)
-		{
-			doc->SetItemMode(ITEM_MESH);
-			UpdateGLControlBar();
-		}
-
-		// change the mesh layer
-		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
-		UpdateModel();
-		UpdateGLControlBar();
-		ui->buildPanel->Update(true);
-		RedrawGL();
-	}
+	menu.addAction(mainMenu->actionOptions);
 }
 
 //-----------------------------------------------------------------------------
@@ -2682,11 +2769,18 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
 	if (scene == nullptr) return;
 
-	if      (ac->text() == "Default"         ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
-	else if (ac->text() == "By object"       ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
-	else if (ac->text() == "By material type") scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
-	else if (ac->text() == "By element type" ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
-	else if (ac->text() == "By physics"      ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
+	int data = ac->data().toInt();
+
+	if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
+	else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
+	else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
+	else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+	else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
+	else if (data == 0xFF)
+	{
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
+		vs.m_identifyBackfacing = !vs.m_identifyBackfacing;
+	}
 
 	RedrawGL();
 }
@@ -2765,233 +2859,41 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 		return;
 	}
 
-	QStringList items;
+	std::vector<GMaterial*> items;
 	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
 		GMaterial* gm = srcfem->GetMaterial(i);
-		items.push_back(gm->GetFullName());
+		items.push_back(gm);
 	}
 
 	FSModel* dstfem = doc->GetFSModel();
 
-	QInputDialog input;
-	input.setOption(QInputDialog::UseListViewForComboBoxItems);
-	input.setLabelText("Select material:");
-	input.setComboBoxItems(items);
+	CDlgListMaterials input(this);
+	input.SetMaterials(items);
 	if (input.exec())
 	{
-		QString item = input.textValue();
+		std::vector<GMaterial*> matList = input.GetSelectedMaterials();
 
-		for (int i = 0; i < srcfem->Materials(); ++i)
+		GMaterial* newMat = nullptr;
+		for (GMaterial* gm : matList)
 		{
-			GMaterial* gm = srcfem->GetMaterial(i);
-			QString name = gm->GetFullName();
-			if (name == item)
-			{
-				FSMaterial* pmsrc = gm->GetMaterialProperties();
-				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
-				GMaterial* newMat = new GMaterial(pmnew);
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat));
-				UpdateModel(newMat);
-				return;
-			}
+			FSMaterial* pmsrc = gm->GetMaterialProperties();
+			FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+			newMat = new GMaterial(pmnew);
+			newMat->SetName(gm->GetName());
+			newMat->SetColor(gm->GetColor());
+			doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllMaterials()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllMaterials();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllBC()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllBC();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllLoads()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllLoads();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllIC()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllIC();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllContact()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllContact();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllConstraints()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllConstraints();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllRigidBCs()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllRigidBCs();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllRigidICs()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllRigidICs();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllRigidLoads()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllRigidLoads();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllRigidConnectors()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllRigidConnectors();
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllSteps()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	QString txt("Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.");
-
-	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
-	{
-		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllSteps();
-		doc->SetModifiedFlag(true);
-		UpdateTab(doc);
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllJobs()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	QString txt("Are you sure you want to delete all jobs?\nThis cannot be undone.");
-
-	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
-	{
-		doc->DeleteAllJobs();
-		doc->SetModifiedFlag(true);
-		UpdateTab(doc);
-		UpdateModel();
-		RedrawGL();
+		UpdateModel(newMat);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::ClearRecentFilesList()
 {
-	ui->m_recentFiles.clear();
-	ui->m_recentProjects.clear();
-	ui->m_recentImages.clear();
+	ui->m_settings.m_recentFiles.clear();
+	ui->m_settings.m_recentProjects.clear();
+	ui->m_settings.m_recentImages.clear();
 }
 
 void CMainWindow::OnCameraChanged()
@@ -3094,7 +2996,7 @@ void CMainWindow::on_actionProperties_triggered()
 	if (pglw == 0) return;
 
 	// edit the properties
-	if (dynamic_cast<GLBox*>(pglw))
+	if (dynamic_cast<GLLabel*>(pglw))
 	{
 		CDlgBoxProps dlg(pglw, this);
 		dlg.exec();
@@ -3116,7 +3018,7 @@ void CMainWindow::on_actionProperties_triggered()
 	}
 	else
 	{
-		QMessageBox::information(this, "Properties", "No properties available");
+//		QMessageBox::information(this, "Properties", "No properties available");
 	}
 
 	UpdateFontToolbar();
@@ -3143,7 +3045,8 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 {
 	if (doc == nullptr) return false;
 
-	vector<MODEL_ERROR> warnings = doc->CheckModel();
+	vector<MODEL_ERROR> warnings;
+	checkModel(doc->GetProject(), warnings);
 
 	if (!askRunQuestion && warnings.empty())
 	{
@@ -3164,7 +3067,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc, bool askRunQuestion)
 	return true;
 }
 
-bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion, bool allowHybridMesh)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion, bool allowHybridMesh, ProgressTracker* prg)
 {
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
@@ -3192,6 +3095,7 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	{
 		FEBioExport4* feb = new FEBioExport4(doc->GetProject());
 		feb->SetMixedMeshFlag(allowHybridMesh);
+		feb->SetProgressTracker(prg);
 		writer = feb;
 	}
 	else
@@ -3212,7 +3116,7 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	}
 	delete writer;
 
-	if (ret == false)
+	if ((ret == false) && (prg == nullptr))
 	{
 		QString msg = QString("Failed saving FEBio file:\n%1").arg(QString::fromStdString(err));
 		QMessageBox::critical(this, "Run FEBio", msg);
@@ -3221,33 +3125,6 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	else AddLogEntry("SUCCESS!\n");
 
 	return ret;
-}
-
-void CMainWindow::RunFEBioJob(CFEBioJob* job)
-{
-	// see if we already have a job running.
-	if (CFEBioJob::GetActiveJob())
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
-		return;
-	}
-
-	// clear output for next job
-	ClearOutput();
-	ShowLogPanel();
-	ui->logPanel->ShowOutput();
-
-	UpdateTab(job->GetDocument());
-	// start the job
-	if (ui->m_jobManager->StartJob(job) == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
-	}
-
-	UpdateModel(job, false);
-
-	// start a time to measure progress
-	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
 }
 
 void CMainWindow::onShowPartViewer()
@@ -3266,78 +3143,17 @@ void CMainWindow::checkJobProgress()
 	}
 }
 
-void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
-{
-#ifdef HAS_SSH
-	if(!HandleSSHMessage(sshHandler))
-	{
-		sshHandler->EndSSHSession();
-
-		return;
-	}
-
-	CSSHThread* sshThread = new CSSHThread(sshHandler, sshHandler->GetNextFunction());
-	QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
-	sshThread->start();
-#endif// HAS_SSH
-}
-
-
-bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
-{
-#ifdef HAS_SSH
-	QString QPasswd;
-	QMessageBox::StandardButton reply;
-
-	switch(sshHandler->GetMsgCode())
-	{
-	case FAILED:
-		QMessageBox::critical(this, "FEBio Studio", sshHandler->GetMessage());
-		return false;
-	case NEEDSPSWD:
-		bool ok;
-		QPasswd = QInputDialog::getText(NULL, "Password", sshHandler->GetMessage(), QLineEdit::Password, "", &ok);
-
-		if(ok)
-		{
-			std::string password = QPasswd.toStdString();
-			sshHandler->SetPasswordLength(password.length());
-			sshHandler->SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
-		}
-		else
-		{
-			return false;
-		}
-		break;
-	case YESNODIALOG:
-		 reply = QMessageBox::question(this, "FEBio Studio", sshHandler->GetMessage(),
-				 QMessageBox::Yes|QMessageBox::No);
-
-		 return reply == QMessageBox::Yes;
-	case DONE:
-		return false;
-	}
-
-	return true;
-#else
-	return false;
-#endif // HAS_SSH
-}
-
 void CMainWindow::ShowProgress(bool show, QString message)
 {
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->progressBar->setRange(0, 100);
-		ui->progressBar->setValue(0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
+		ui->statusBar->showProgress();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->progressBar);
+		ui->statusBar->hideProgress();
 	}
 }
 
@@ -3346,20 +3162,18 @@ void CMainWindow::ShowIndeterminateProgress(bool show, QString message)
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->progressBar->setRange(0, 0);
-		ui->statusBar->addPermanentWidget(ui->progressBar);
-		ui->progressBar->show();
+		ui->statusBar->showIndeterminateProgress();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->progressBar);
+		ui->statusBar->hideProgress();
 	}
 }
 
 void CMainWindow::UpdateProgress(int n)
 {
-	ui->progressBar->setValue(n);
+	ui->statusBar->setProgress(n);
 }
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
@@ -3376,7 +3190,7 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 			for (int i = 0; i < itemLists; ++i)
 			{
 				int colorMode = (i == 0 ? 0 : 1);
-				FEItemListBuilder* pg = il->GetItemList(i);
+				FSItemListBuilder* pg = il->GetItemList(i);
 				GPartList* partList = dynamic_cast<GPartList*>(pg);
 				if (partList)
 				{
@@ -3416,9 +3230,9 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 				}
 			}
 		}
-		else if (dynamic_cast<FEItemListBuilder*>(po))
+		else if (dynamic_cast<FSItemListBuilder*>(po))
 		{
-			FEItemListBuilder* pg = dynamic_cast<FEItemListBuilder*>(po);
+			FSItemListBuilder* pg = dynamic_cast<FSItemListBuilder*>(po);
 			GPartList* partList = dynamic_cast<GPartList*>(pg);
 			if (partList)
 			{
@@ -3461,38 +3275,48 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 		{
 			GLHighlighter::PickItem(dynamic_cast<GItem*>(po));
 		}
+		else if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* mat = dynamic_cast<GMaterial*>(po);
+			FSModel* fem = mat->GetModel();
+			if (fem)
+			{
+				std::vector<GPart*> parts = fem->GetMaterialPartList(mat);
+				for (GPart* pg : parts) GLHighlighter::PickItem(pg);
+			}
+		}
 	}
 	RedrawGL();
 }
 
 void CMainWindow::toggleOrtho()
 {
-	ui->actionOrtho->trigger();
+	ui->mainMenu->actionOrtho->trigger();
 }
 
 QStringList CMainWindow::GetRecentFileList()
 {
-	return ui->m_recentFiles;
+	return ui->m_settings.m_recentFiles;
 }
 
 QString CMainWindow::GetEnvironmentMap()
 {
-	return ui->m_envMapFile;
+	return ui->m_settings.m_envMapFile;
 }
 
 void CMainWindow::SetEnvironmentMap(const QString& filename)
 {
-	ui->m_envMapFile = filename;
+	ui->m_settings.m_envMapFile = filename;
 }
 
 QStringList CMainWindow::GetRecentProjectsList()
 {
-	return ui->m_recentProjects;
+	return ui->m_settings.m_recentProjects;
 }
 
 QStringList CMainWindow::GetRecentPluginsList()
 {
-	return ui->m_recentPlugins;
+	return ui->m_settings.m_recentPlugins;
 }
 
 void CMainWindow::AddRecentPlugin(const QString& fileName)
@@ -3565,8 +3389,13 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 		{
 			ShowInModelViewer(imgModel);
 		}
-		GetGLView()->ZoomTo(imgModel->GetBoundingBox());
 
+		GLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomTo(imgModel->GetBoundingBox());
+			RedrawGL();
+		}
 		return true;
 	}
 	return false;
@@ -3592,43 +3421,6 @@ bool CMainWindow::ImportImage(CImageModel* imgModel)
 	bool CMainWindow::ProcessITKImage(const QString& fileName, int type) { return false; }
 #endif
 
-void CMainWindow::OnDeleteAllLoadControllers()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	QString txt("Are you sure you want to delete all load controllers?\nThis cannot be undone.");
-
-	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
-	{
-		FSModel* fem = doc->GetFSModel();
-		fem->DeleteAllLoadControllers();
-		doc->SetModifiedFlag(true);
-		UpdateTab(doc);
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
-void CMainWindow::OnDeleteAllMeshData()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
-
-	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
-	{
-		FSModel* fem = doc->GetFSModel();
-		fem->DeleteAllMeshDataGenerators();
-		fem->DeleteAllMeshData();
-		doc->SetModifiedFlag(true);
-		UpdateTab(doc);
-		UpdateModel();
-		RedrawGL();
-	}
-}
-
 QSize CMainWindow::GetEditorSize()
 {
 	return ui->centralWidget->stack->size();
@@ -3641,5 +3433,33 @@ void CMainWindow::on_doCommand(QString msg)
 
 void CMainWindow::on_selectionChanged()
 {
-	ReportSelection();
+//	ReportSelection();
+}
+
+CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }
+
+QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
+QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }
+QString CMainWindow::GetCreatePluginPath() const { return ui->m_settings.createPluginPath; }
+
+void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_settings.FEBioSDKInc = s; }
+void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_settings.FEBioSDKLib = s; }
+void CMainWindow::SetCreatePluginPath(const QString& s) { ui->m_settings.createPluginPath = s; }
+
+void CMainWindow::on_planecut_dataChanged()
+{
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return;
+	
+	CGLView* glview = nullptr;
+	if (doc->GetUIViewMode() == CGLDocument::MODEL_VIEW)
+	{
+		glview = GetGLView();
+	}
+	else
+	{
+		CImageSliceView* v = GetImageSliceView();
+		if (v) glview = v->GetGLView();
+	}
+	if (glview) glview->UpdateScene();
 }

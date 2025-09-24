@@ -26,14 +26,14 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEAdvancingFrontMesher2D.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include "FEMMGRemesh.h"
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/GMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <GLLib/GLMesh.h>
 #include <list>
 //using namespace std;
 
@@ -312,7 +312,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 	// get the one-and-only surface
 	FECurveMesher curveMesher;
 	curveMesher.SetElementSize(GetFloatValue(1));
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 	int NS = po->Faces();
 	if (NS > 0)
 	{
@@ -323,7 +323,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 			for (int i=0; i<surfEdges; ++i)
 			{
 				GEdge* e = po->Edge(surf->m_edge[i].nid);
-				FECurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
+				FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 				curve->Attach(*edgeMesh);
 				delete edgeMesh;
 			}
@@ -336,7 +336,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 		for (int i=0; i<NC; ++i)
 		{
 			GEdge* e = po->Edge(i);
-			FECurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
+			FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 			curve->Attach(*edgeMesh);
 			delete edgeMesh;
 		}
@@ -353,7 +353,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 	curve->Sort();
 
 	// make sure it's closed
-	if (curve->Type() != FECurveMesh::CLOSED_CURVE) return 0;
+	if (curve->Type() != FSCurveMesh::CLOSED_CURVE) return 0;
 
 	// now we can get started
 	// copy the nodes 
@@ -405,7 +405,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 }
 
 //================================================================================
-FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
+FSSurfaceMesh* GLMeshToSurfaceMesh(GLMesh& m)
 {
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -416,7 +416,7 @@ FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
 	for (int i = 0; i < NN; ++i)
 	{
 		FSNode& node = sm->Node(i);
-		GMesh::NODE& gnode = m.Node(i);
+		GLMesh::NODE& gnode = m.Node(i);
 		node.r = to_vec3d(gnode.r);
 		node.m_gid = gnode.pid;
 	}
@@ -424,7 +424,7 @@ FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
 	for (int i = 0; i < NE; ++i)
 	{
 		FSEdge& edge = sm->Edge(i);
-		GMesh::EDGE& gedge = m.Edge(i);
+		GLMesh::EDGE& gedge = m.Edge(i);
 		edge.n[0] = gedge.n[0];
 		edge.n[1] = gedge.n[1];
 		edge.m_gid = gedge.pid;
@@ -433,7 +433,7 @@ FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& face = sm->Face(i);
-		GMesh::FACE& gface = m.Face(i);
+		GLMesh::FACE& gface = m.Face(i);
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = gface.n[0];
 		face.n[1] = gface.n[1];
@@ -459,7 +459,7 @@ FSMesh* FEMMG2DMesher::BuildMesh(GObject* po)
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
 	assert(po->Faces() == 1);
 	GFace& face = *po->Face(0);
-	GMesh* gm = triangulate(face);
+	GLMesh* gm = triangulate(face);
 
 	// MMG needs a FSSurfaceMesh, so convert
 	FSSurfaceMesh* pm = GLMeshToSurfaceMesh(*gm);

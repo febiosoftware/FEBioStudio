@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <FECore/MathObject.h>
 #include <string>
-//using namespace std;
 
 //-----------------------------------------------------------------------------
 // This class defines a data variable over the volume of a domain.
@@ -51,7 +50,7 @@ private:
 	FEDataVariable(const FEDataVariable& v);
 
 protected:
-	string		m_v[3];
+	std::string	m_v[3];
 	int			m_nID;
 	MSimpleExpression	m_mth[3];
 };

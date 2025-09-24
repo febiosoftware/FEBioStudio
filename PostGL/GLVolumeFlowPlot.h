@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class GLVolumeFlowPlot : public CGLLegendPlot
+class GLVolumeFlowPlot : public CGLPlot
 {
 	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, OPACITY_STRENGTH, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
@@ -43,7 +43,7 @@ public:
 	public:
 		struct Face {
 			float	v[3];
-			vec3d	r[3];
+			vec3f	r[3];
 		};
 
 		void clear() { m_Face.clear(); }
@@ -59,18 +59,20 @@ public:
 public:
 	GLVolumeFlowPlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update(int ntime, float dt, bool breset) override;
 
 	bool UpdateData(bool bsave = true) override;
+
+	LegendData GetLegendData() const override;
 
 private:
 	void CreateSlices(std::vector<Slice>& slice, const vec3d& normal);
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void UpdateBoundingBox();
-	void UpdateMesh(std::vector<Slice>& slice, GLTriMesh& mesh);
+	void UpdateMesh(std::vector<Slice>& slice, GLMesh& mesh);
 
 private:
 	int			m_nfield;
@@ -89,6 +91,6 @@ private:
 	vector<float>	m_val;	// current nodal values
 	BOX				m_box;
 
-	GLTriMesh	m_mesh;
+	GLMesh	m_mesh;
 };
 } // namespace Post

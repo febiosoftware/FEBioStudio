@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include "FEHollowSphere.h"
 
 //=============================================================================
@@ -80,7 +80,7 @@ bool GHollowSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GHollowSphere::Create()
 {
-	SetRenderMesh(new GMesh());
+	SetRenderMesh(new GLMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<12; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -162,7 +162,7 @@ void GHollowSphere::BuildGMesh()
 	int NF = 2*(2*ND + (NZ-2)*(2*ND));
 	int NE = 2*(ND + 4*NZ);
 
-	GMesh& m = *GetRenderMesh();
+	GLMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -184,7 +184,7 @@ void GHollowSphere::BuildGMesh()
 			double sw = sin(w);
 			double d = R1*sqrt(1 - z*z);
 
-			GMesh::NODE& n = m.Node((i-1)*ND + j + 1);
+			GLMesh::NODE& n = m.Node((i-1)*ND + j + 1);
 			n.r = vec3f(d*cw, d*sw, R1*z);
 		}
 	}
@@ -199,7 +199,7 @@ void GHollowSphere::BuildGMesh()
 			double sw = sin(w);
 			double d = R0*sqrt(1 - z*z);
 
-			GMesh::NODE& n = m.Node(NN/2 + (i-1)*ND + j + 1);
+			GLMesh::NODE& n = m.Node(NN/2 + (i-1)*ND + j + 1);
 			n.r = vec3f(d*cw, d*sw, R0*z);
 		}
 	}
@@ -213,7 +213,7 @@ void GHollowSphere::BuildGMesh()
 		int n = 0;
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = 0;
 			f.n[1] = (i+1)%ND + 1;
 			f.n[2] = i + 1;
@@ -226,8 +226,8 @@ void GHollowSphere::BuildGMesh()
 		{
 			for (j=0; j<ND; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				int m[4] = {1+i*ND+j, 1+i*ND+(j+1)%ND, 1+(i+1)*ND+j, 1+(i+1)*ND+(j+1)%ND};
 
@@ -250,7 +250,7 @@ void GHollowSphere::BuildGMesh()
 		// top
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[0] = NN/2-1;
 			f.n[1] = 1 + (NZ-2)*ND + i;
 			f.n[2] = 1 + (NZ-2)*ND + (i+1)%ND;
@@ -263,7 +263,7 @@ void GHollowSphere::BuildGMesh()
 		// bottom
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[2] = NN/2 + 0;
 			f.n[1] = NN/2 + (i+1)%ND + 1;
 			f.n[0] = NN/2 + i + 1;
@@ -276,8 +276,8 @@ void GHollowSphere::BuildGMesh()
 		{
 			for (j=0; j<ND; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				int m[4] = {NN/2 + 1+i*ND+j, NN/2 + 1+i*ND+(j+1)%ND, NN/2 + 1+(i+1)*ND+j, NN/2 + 1+(i+1)*ND+(j+1)%ND};
 
@@ -300,7 +300,7 @@ void GHollowSphere::BuildGMesh()
 		// top
 		for (i=0; i<ND; ++i)
 		{
-			GMesh::FACE& f = m.Face(n++);
+			GLMesh::FACE& f = m.Face(n++);
 			f.n[2] = NN/2 + NN/2-1;
 			f.n[1] = NN/2 + 1 + (NZ-2)*ND + i;
 			f.n[0] = NN/2 + 1 + (NZ-2)*ND + (i+1)%ND;
@@ -316,7 +316,7 @@ void GHollowSphere::BuildGMesh()
 			int e0 = k*12;
 			for (i=0; i<ND; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(NZ/2, i, ND, NZ);
 				e.n[1] = n0 + NodeIndex(NZ/2, i+1, ND, NZ);
 				e.pid = e0 + 4*i/ND;
@@ -324,7 +324,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(NZ/2+i, 0, ND, NZ);
 				e.n[1] = n0 + NodeIndex(NZ/2+i+1, 0, ND, NZ);
 				e.pid = e0 + 4;
@@ -332,7 +332,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(NZ/2+i  , ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(NZ/2+i+1, ND/4, ND, NZ);
 				e.pid = e0 + 5;
@@ -340,7 +340,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(NZ/2+i  , 2*ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(NZ/2+i+1, 2*ND/4, ND, NZ);
 				e.pid = e0 + 6;
@@ -348,7 +348,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(NZ/2+i  , 3*ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(NZ/2+i+1, 3*ND/4, ND, NZ);
 				e.pid = e0 + 7;
@@ -356,7 +356,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(i  , 0, ND, NZ);
 				e.n[1] = n0 + NodeIndex(i+1, 0, ND, NZ);
 				e.pid = e0 + 8;
@@ -364,7 +364,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(i  , ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(i+1, ND/4, ND, NZ);
 				e.pid = e0 + 9;
@@ -372,7 +372,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(i  , 2*ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(i+1, 2*ND/4, ND, NZ);
 				e.pid = e0 + 10;
@@ -380,7 +380,7 @@ void GHollowSphere::BuildGMesh()
 
 			for (i=0; i<NZ/2; ++i)
 			{
-				GMesh::EDGE& e = m.Edge(n++);
+				GLMesh::EDGE& e = m.Edge(n++);
 				e.n[0] = n0 + NodeIndex(i  , 3*ND/4, ND, NZ);
 				e.n[1] = n0 + NodeIndex(i+1, 3*ND/4, ND, NZ);
 				e.pid = e0 + 11;

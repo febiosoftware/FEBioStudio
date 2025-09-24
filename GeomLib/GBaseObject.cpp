@@ -329,7 +329,6 @@ int GBaseObject::AddLine(int n1, int n2)
 	e->m_ntype = EDGE_LINE;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 
 	return AddEdge(e);
 }
@@ -344,7 +343,6 @@ int GBaseObject::AddYArc(int n1, int n2)
 	e->m_ntype = EDGE_YARC;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 	return AddEdge(e);
 }
 
@@ -358,7 +356,6 @@ int GBaseObject::AddZArc(int n1, int n2)
 	e->m_ntype = EDGE_ZARC;
 	e->m_node[0] = n1;
 	e->m_node[1] = n2;
-	e->m_cnode = -1;
 	return AddEdge(e);
 }
 
@@ -373,7 +370,7 @@ int GBaseObject::AddCircularArc(int n1, int n2, int n3)
 
 	GEdge* e = new GEdge(this);
 	e->m_ntype = EDGE_3P_CIRC_ARC;
-	e->m_cnode = n1;
+	e->m_cnode.push_back(n1);
 	e->m_node[0] = n2;
 	e->m_node[1] = n3;	
 	return AddEdge(e);
@@ -390,9 +387,21 @@ int GBaseObject::AddArcSection(int n1, int n2, int n3)
 
 	GEdge* e = new GEdge(this);
 	e->m_ntype = EDGE_3P_ARC;
-	e->m_cnode = n1;
+	e->m_cnode.push_back(n1);
 	e->m_node[0] = n2;
 	e->m_node[1] = n3;	
+	return AddEdge(e);
+}
+
+int GBaseObject::AddBezierSection(const std::vector<int>& n)
+{
+	assert(n.size() >= 2);
+	GEdge* e = new GEdge(this);
+	e->m_ntype = EDGE_BEZIER;
+	e->m_node[0] = n[0];
+	for (int i=1; i<n.size()-1; ++i)
+		e->m_cnode.push_back(n[i]);
+	e->m_node[1] = n[n.size()-1];
 	return AddEdge(e);
 }
 
@@ -481,7 +490,7 @@ void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<std::pair<int, int> >& edge, int ntype)
 {
 	GFace* f = new GFace(this);
 	f->SetID(GFace::CreateUniqueID());
@@ -582,6 +591,16 @@ void GBaseObject::UpdateNodeTypes()
 		Node(pe->m_node[0])->SetType(NODE_VERTEX);
 		Node(pe->m_node[1])->SetType(NODE_VERTEX);
 	}
+}
+
+void GBaseObject::SetPosition(const vec3d& position)
+{
+	m_transform.SetPosition(position);
+}
+
+vec3d GBaseObject::GetPosition() const
+{
+	return m_transform.GetPosition();
 }
 
 //-----------------------------------------------------------------------------

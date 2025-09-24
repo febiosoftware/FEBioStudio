@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <vector>
-//using namespace std;
 
 // selection type
 enum SelectionType
@@ -76,9 +75,9 @@ public:
 	virtual quatd GetOrientation() = 0;
 	virtual vec3d GetScale() { return vec3d(1,1,1); }
 
-	virtual FEItemListBuilder* CreateItemList() = 0;
+	virtual FSItemListBuilder* CreateItemList() = 0;
 
-	virtual string GetName() { return "current selection"; }
+	virtual std::string GetName() { return "current selection"; }
 
 protected:
 	virtual void Update() = 0;
@@ -114,15 +113,15 @@ public:
 	virtual vec3d GetPivot();
 	virtual vec3d GetScale() override;
 
-	FEItemListBuilder* CreateItemList() override;
+	FSItemListBuilder* CreateItemList() override;
 
 	GObject* Object(int i);
 
-	string GetName() override;
+	std::string GetName() override;
 
 protected:
 	GModel*		m_mdl;
-	vector<int>	m_item;
+	std::vector<int>	m_item;
 };
 
 // base class for geometry selections
@@ -171,8 +170,9 @@ public:
 
 	GPart* Part(size_t n) { return m_partList[n]; }
 
+	const std::vector<GPart*>& GetPartList() const { return m_partList; }
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
 	void UpdateBoundingBox();
 
@@ -201,7 +201,7 @@ public:
 		int		m_nsurf;
 	};
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
 public:
 	GFaceSelection(GModel* ps);
@@ -252,7 +252,7 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	FEItemListBuilder* CreateItemList() override;
+	FSItemListBuilder* CreateItemList() override;
 
 	GEdge* Edge(size_t n) { return m_edgeList[n]; }
 
@@ -293,7 +293,7 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
 	void UpdateBoundingBox();
 
@@ -338,7 +338,7 @@ public:
 
 	GModel* GetGModel() { return m_ps; }
 
-	FEItemListBuilder* CreateItemList() { return 0; }
+	FSItemListBuilder* CreateItemList() { return 0; }
 
 protected:
 	GModel*	m_ps;
@@ -360,14 +360,14 @@ public:
 	public:
 		Iterator(FEElementSelection* pm);
 
-		operator FEElement_*() { return m_pelem; }
-		FEElement_* operator -> () { return m_pelem; }
+		operator FSElement_*() { return m_pelem; }
+		FSElement_* operator -> () { return m_pelem; }
 
 		void operator ++ ();
 
 	protected:
 		FEElementSelection* m_sel;
-		FEElement_*	m_pelem;
+		FSElement_*	m_pelem;
 		size_t	m_n;
 	};
 
@@ -383,9 +383,9 @@ public:
 
 	FSMesh* GetMesh() { return m_pMesh; }
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
-	FEElement_* Element(size_t i);
+	FSElement_* Element(size_t i);
 	int ElementIndex(size_t i) const;
 
 	const std::vector<int>& ItemList() const { return m_item; }
@@ -432,7 +432,7 @@ public:
 	void Rotate(quatd q, vec3d c) override;
 	void Scale(double s, vec3d dr, vec3d c) override;
 	quatd GetOrientation() override;
-	FEItemListBuilder* CreateItemList() override;
+	FSItemListBuilder* CreateItemList() override;
 
 	const std::vector<int>& ItemList() const { return m_item; }
 
@@ -475,7 +475,7 @@ public:
 	FSEdge* Edge(size_t n) { return m_pMesh->EdgePtr(m_items[n]); }
 	int EdgeIndex(size_t n) const { return m_items[n]; }
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
 protected:
 	FSLineMesh*		m_pMesh;
@@ -514,14 +514,20 @@ public:
 	FSLineMesh* GetMesh() { return m_pMesh; }
 	const FSLineMesh* GetMesh() const { return m_pMesh; }
 
-	FEItemListBuilder* CreateItemList();
+	FSItemListBuilder* CreateItemList();
 
 	FENodeSelection::Iterator First();
 
 	FSNode* Node(size_t n);
 	int NodeIndex(size_t n) const { return m_items[n]; }
 
+	const std::vector<int>& Items() const { return m_items; }
+
 protected:
 	FSLineMesh*	m_pMesh;
 	std::vector<int>	m_items;
 };
+
+// TODO: Is this a good place to put this?
+class GLMesh;
+bool BuildSelectionMesh(FESelection* sel, GLMesh& mesh);

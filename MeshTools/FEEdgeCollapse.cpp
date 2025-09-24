@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEEdgeCollapse.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 
 FEEdgeCollapse::FEEdgeCollapse() : FESurfaceModifier("Edge Collapse")
 {

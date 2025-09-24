@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFaceEdgeList.h>
 #include "FEModifier.h"
 //using namespace std;
 
@@ -43,7 +43,7 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	if (pm->IsType(FE_TET4) == false) return 0;
 
 	// build the edge table
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 
 	// build the element-edge table
 	FSElementEdgeList EET(*pm, ET);
@@ -88,7 +88,7 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	// create the edge nodes
 	for (int i = 0; i<NC; i++)
 	{
-		pair<int, int>& edge = ET[i];
+		std::pair<int, int>& edge = ET[i];
 		FSNode& n0 = pnew->Node(NN + 2*i);
 		FSNode& n1 = pnew->Node(NN + 2*i+1);
 		vec3d& ra = pm->Node(edge.first).r;

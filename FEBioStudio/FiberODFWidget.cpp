@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "FiberODFWidget.h"
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QOpenGLFunctions>
 #include <QSizePolicy>
 #include <QTabWidget>
 #include <QTableWidget>
@@ -46,11 +45,9 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QGroupBox>
-#include <fstream>
 #include <vector>
 #include <complex>
 #include "DynamicStackedWidget.h"
-#include <PostLib/ColorMap.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include <FEMLib/FSModel.h>
@@ -58,38 +55,85 @@ SOFTWARE.*/
 #include <FEMLib/FECoreMaterial.h>
 #include <GLWLib/GLWidget.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEMLib/FECoreMaterial.h>
 #include <FECore/fecore_enum.h>
 #include <FECore/mat3d.h>
 #include <FECore/mathalg.h>
 #include <FEAMR/SpherePointsGenerator.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSElementData.h>
 #include "DlgStartThread.h"
-#include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
-
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <GLWLib/GLTriad.h>
+#include <GLWLib/GLLegendBar.h>
+#include <GLLib/GLScene.h>
+#include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 
 using std::vector;
 using std::complex;
 using sphere = SpherePointsGenerator;
 
-CFiberGLWidget::CFiberGLWidget() : m_ODF(nullptr), m_analysis(nullptr)
+void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
-    setMouseTracking(true);
+	if (m_w->m_analysis && m_w->m_ODF) m_w->m_analysis->renderODFMesh(engine, m_w->m_ODF, rc.m_cam);
+}
 
-    QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    policy.setHeightForWidth(true);
-    setSizePolicy(policy);
+void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
+{
+	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
+	m_w->m_ptriad->draw(&painter);
+
+	if (m_w->m_analysis)
+	{
+		CFiberODFAnalysis* odf = m_w->m_analysis;
+		m_w->m_pbar->SetDivisions(odf->Divisions());
+
+		double vmin, vmax;
+		vmin = odf->RangeMax();
+		vmax = odf->RangeMin();
+		m_w->m_pbar->SetRange(vmin, vmax);
+
+		m_w->m_pbar->draw(&painter);
+	}
+}
+
+BOX CODFScene::GetBoundingBox()
+{
+	return BOX(-2, -2, -2, 2, 2, 2);
+}
+
+BOX CODFScene::GetSelectionBox()
+{
+	return BOX();
+}
+
+CFiberGLWidget::CFiberGLWidget() : CGLManagedSceneView(new CODFScene(this)), m_ODF(nullptr), m_analysis(nullptr)
+{
+	setMouseTracking(true);
+	m_ptriad = new GLTriad(0, 0, 50, 50);
+	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+
+	CColorTexture* tex = new CColorTexture;
+	tex->SetDivisions(5);
+	tex->SetSmooth(true);
+
+	m_pbar = new GLLegendBar(tex, 0, 0, 80, 300, GLLegendBar::ORIENT_VERTICAL);
+	m_pbar->align(GLW_ALIGN_RIGHT| GLW_ALIGN_VCENTER);
+	m_pbar->SetType(GLLegendBar::GRADIENT);
+	m_pbar->set_font_size(9);
+	m_pbar->copy_label("ODF");
+	m_pbar->ShowTitle(true);
+	m_pbar->hide();
+}
+
+CFiberGLWidget::~CFiberGLWidget()
+{
+	delete m_ptriad;
+	delete m_pbar;
 }
 
 void CFiberGLWidget::setAnalysis(CFiberODFAnalysis* analysis)
@@ -102,151 +146,12 @@ void CFiberGLWidget::setODF(CODF* odf)
     m_ODF = odf;
 }
 
-void CFiberGLWidget::initializeGL()
+void CFiberGLWidget::RenderBackground()
 {
-    GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
-	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
-
-	glEnable(GL_DEPTH_TEST);
-	//	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
-	glDepthFunc(GL_LEQUAL);
-
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//	glShadeModel(GL_FLAT);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glLineWidth(0.5f);
-
-	// enable lighting and set default options
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
-
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-	glEnable(GL_LIGHT0);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, amb1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, dif1);
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-
-	// enable color tracking for diffuse color of materials
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	// set the texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-	glPointSize(7.0f);
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-
-
-    glClearColor(0.3, 0.3, 0.3, 1);
-
-    m_ptriad = new GLTriad(0, 0, 50, 50);
-	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void CFiberGLWidget::resizeGL(int w, int h)
-{
-    QOpenGLWidget::resizeGL(w, h);
-}
-
-void CFiberGLWidget::paintGL()
-{
-    glEnable(GL_DEPTH_TEST);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.2, 1.2, -1.2, 1.2, 0.01, 100);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-    m_cam.SetTargetDistance(50);
-    m_cam.PositionInScene();
-
-	if (m_analysis && m_ODF) m_analysis->renderODFMesh(m_ODF, &m_cam);
-
-    // render the GL widgets
-    glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-    m_ptriad->setOrientation(m_cam.GetOrientation());
-    m_ptriad->draw(&painter);
-}
-
-void CFiberGLWidget::mousePressEvent(QMouseEvent* ev)
-{
-    int x = ev->x();
-	int y = ev->y();
-
-    m_x0 = ev->pos().x();
-	m_y0 = ev->pos().y();
-
-
-    ev->accept();
-}
-
-void CFiberGLWidget::mouseMoveEvent(QMouseEvent* ev)
-{
-    bool but1 = (ev->buttons() & Qt::LeftButton);
-    if(!but1) return;
-
-    bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
-
-    int x = ev->pos().x();
-	int y = ev->pos().y();
-
-    if (balt)
-    {
-        quatd qz = quatd((y - m_y0)*0.01f, vec3d(0, 0, 1));
-        m_cam.Orbit(qz);
-    }
-    else
-    {
-        quatd qx = quatd((y - m_y0)*0.01f, vec3d(1, 0, 0));
-        quatd qy = quatd((x - m_x0)*0.01f, vec3d(0, 1, 0));
-
-        m_cam.Orbit(qx);
-        m_cam.Orbit(qy);
-    }
-
-    m_x0 = x;
-    m_y0 = y;
-
-    repaint();
-
-    m_cam.Update(true);
-
-    ev->accept();
-
-}
-
-int CFiberGLWidget::heightForWidth(int w) const 
-{
-    return w;
-}
-
-//-------------------------------------------------------------------------------
 class CODFPropertyList1 : public CPropertyList
 {
 public:
@@ -943,16 +848,16 @@ void CFiberODFWidget::on_copyEFD_triggered()
     po->AddFEPartSet(partSet);
     
 
-    FEPartData* pdata = new FEPartData(mesh);
+	FSPartData* pdata = new FSPartData(mesh);
     pdata->SetName(datamapName);
     pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
     pm->AddMeshDataField(pdata);
 
-    FEElemList* elemList = pdata->BuildElemList();
+    FSElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
     auto it = elemList->First();
 
-    std::vector<FEElement_*> elems;
+    std::vector<FSElement_*> elems;
     for(int i = 0; i < NE; ++i, ++it)
     {
         elems.push_back(it->m_pi);
@@ -961,7 +866,7 @@ void CFiberODFWidget::on_copyEFD_triggered()
     #pragma omp parallel for
     for (int i = 0; i < NE; ++i)
     {
-        FEElement_* el = elems[i];
+        FSElement_* el = elems[i];
         
         // Calculate the centroid of the element
         vec3d pos(0);

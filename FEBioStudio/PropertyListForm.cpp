@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QListWidget>
 #include <QToolButton>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
 #include "LinkPropertyEdit.h"
@@ -447,24 +447,26 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 	case CProperty::InternalLink:
 		{
 			QStringList fileNames = v.toStringList();
-			if(fileNames.empty())
+			if (fileNames.size() != 2)
 			{
+				fileNames.clear();
 				fileNames.append("(none)");
 				fileNames.append("(none)");
 			}
-			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames, true);
+			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames[0], fileNames[1], true);
 			return edit;
 		}
 		break;
 	case CProperty::ExternalLink:
 		{
 			QStringList fileNames = v.toStringList();
-			if(fileNames.empty())
+			if (fileNames.size() != 2)
 			{
+				fileNames.clear();
 				fileNames.append("(none)");
 				fileNames.append("(none)");
 			}
-			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames);
+			CLinkPropertyEdit* edit = new CLinkPropertyEdit(fileNames[0], fileNames[1]);
 			return edit;
 		}
 		break;
@@ -790,6 +792,12 @@ void CPropertyListForm::onDataChanged()
                 }
             }
             break;
+		case CProperty::Color:
+		{
+			CColorButton* cb = qobject_cast<CColorButton*>(pw);
+			if (cb) m_list->SetPropertyValue(propIndex, cb->color());
+		}
+		break;
         case CProperty::DataScalar:
             {
                 CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);

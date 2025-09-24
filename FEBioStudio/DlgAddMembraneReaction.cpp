@@ -42,7 +42,7 @@
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEBioLink/FEBioClass.h>
-using std::stringstream;
+using namespace std;
 
 //=================================================================================================
 

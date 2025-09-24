@@ -23,23 +23,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include <PostLib/FEPostModel.h>
-
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
 #include "GLPlane.h"
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 CGLPlane::CGLPlane(FEPostModel* pm)
@@ -81,45 +68,32 @@ void CGLPlane::Create(int n[3])
 	}
 }
 
-void CGLPlane::Render(CGLContext& rc)
+void CGLPlane::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glDisable(GL_TEXTURE_1D);
-	glDisable(GL_CULL_FACE);
-	GLfloat zero[4] = {0.f};
-	GLfloat one[4] = {1.f, 1.f, 1.f, 1.f};
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+	re.pushState();
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::NONE, false);
 
 	double R = m_pfem->GetBoundingBox().Radius();
 
-	glPushMatrix();
-	glTranslatef(m_rc.x, m_rc.y, m_rc.z);
-
+	re.pushTransform();
+	re.translate(m_rc);
 	quatd q(vec3d(0,0,1), m_e[2]);
-	double w = q.GetAngle();
-	if (w != 0)
+	re.rotate(q);
+
+	re.setColor(GLColor(255, 0, 0, 128));
+	re.normal(vec3d(0,0,1));
+	re.begin(GLRenderEngine::QUADS);
 	{
-		vec3d r = q.GetVector();
-		glRotated((w*RAD2DEG), r.x, r.y, r.z);
+		re.vertex(vec3d(-R, -R, 0)); 
+		re.vertex(vec3d( R, -R, 0)); 
+		re.vertex(vec3d( R,  R, 0)); 
+		re.vertex(vec3d(-R,  R, 0)); 
 	}
+	re.end();
 
-	glColor4ub(255, 0, 0, 128);
-	glNormal3d(0,0,1);
-	glBegin(GL_QUADS);
-	{
-		glVertex2d(-R, -R); 
-		glVertex2d( R, -R); 
-		glVertex2d( R,  R); 
-		glVertex2d(-R,  R); 
-	}
-	glEnd();
+	re.popTransform();
 
-	glPopMatrix();
-
-	glPopAttrib();
+	re.popState();
 }

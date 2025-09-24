@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESlice.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 FESlice::FESlice()
 {
@@ -206,7 +206,7 @@ FSMesh* FESlice::BuildMesh(GObject* po)
 		// wedge elements
 		for (k=0; k<m_nd; ++k)
 		{
-			FEElement_* ph = pm->ElementPtr(eid++);
+			FSElement_* ph = pm->ElementPtr(eid++);
 
 			ph->SetType(FE_PENTA6);
 			ph->m_gid = 0;
@@ -224,7 +224,7 @@ FSMesh* FESlice::BuildMesh(GObject* po)
 		{
 			for (k=0; k<m_nd; ++k)
 			{
-				FEElement_* ph = pm->ElementPtr(eid++);
+				FSElement_* ph = pm->ElementPtr(eid++);
 
 				ph->SetType(FE_HEX8);
 				ph->m_gid = 0;

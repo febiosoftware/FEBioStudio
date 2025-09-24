@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBoxInBox.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSElement.h>
 
 FEBoxInBox::FEBoxInBox()
 {
@@ -51,7 +51,7 @@ FEBoxInBox::FEBoxInBox()
 }
 
 //-----------------------------------------------------------------------------
-// Build the FEMesh
+// Build the mesh
 bool FEBoxInBox::BuildMultiBlock()
 {
 	assert(m_pobj);

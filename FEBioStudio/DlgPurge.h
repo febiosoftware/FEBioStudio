@@ -41,6 +41,6 @@ private:
 
 private:
 	int		m_option;
-	QRadioButton*	m_b[2];
+	QRadioButton*	m_b[3];
 };
 

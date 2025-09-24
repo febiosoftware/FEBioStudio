@@ -312,7 +312,7 @@ void CRawImageSource::Load(IArchive& ar)
     // Set location of image if it was saved
     if(foundBox)
     {
+		tempBox.m_valid = true;
         m_img->SetBoundingBox(tempBox);
     }
-
 }

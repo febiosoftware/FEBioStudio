@@ -30,7 +30,6 @@
 #include <string>
 #include "Quadric.h"
 #include "PointCloud3d.h"
-//using namespace std;
 
 class QuadricFit
 {

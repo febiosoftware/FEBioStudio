@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include "FEState.h"
 #include <VTKLib/VTKLegacyFileReader.h>
 #include <VTKLib/VTUFileReader.h>
+#include <VTKLib/PVTUFileReader.h>
+#include <VTKLib/PVDFileReader.h>
 #include <VTKLib/VTKTools.h>
 #include <XML/XMLReader.h>
 
@@ -48,18 +50,35 @@ VTKFileImport::~VTKFileImport(void)
 {
 }
 
+float VTKFileImport::GetFileProgress() const
+{
+	if (m_vtkReader) return m_vtkReader->GetFileProgress();
+	return 1.f;
+}
+
 bool VTKFileImport::Load(const char* szfile)
 {
 	VTK::vtkModel vtk;
 	if (!LoadVTKModel(szfile, vtk)) return false;
 
-	const VTK::vtkPiece& piece = vtk.Piece(0);
+	if (vtk.DataSets() == 0) return false;
+
+	const VTK::vtkDataSet& dataSet = vtk.DataSet(0);
+
+	const VTK::vtkPiece& piece = dataSet.Piece(0);
 	if (!BuildMesh(piece)) return false;
 	if (!UpdateModel(piece)) return false;
-	if (!BuildState(m_currentTime, piece)) return false;
+
+	for (int i = 0; i < vtk.DataSets(); ++i)
+	{
+		const VTK::vtkDataSet& dataSet = vtk.DataSet(i);
+		const VTK::vtkPiece& piece = dataSet.Piece(0);
+		if (!BuildState(dataSet.m_time, piece)) return false;
+	}
 
 	// This file might be part of a series, so check and try to read it in
-	if (ProcessSeries(szfile) == false) return false;
+	if (m_processSeries)
+		if (ProcessSeries(szfile) == false) return false;
 
 	return true;
 }
@@ -113,7 +132,8 @@ bool VTKFileImport::ProcessSeries(const char* szfile)
 			}
 			else
 			{
-				const VTK::vtkPiece& piece = vtk.Piece(0);
+				const VTK::vtkDataSet& dataSet = vtk.DataSet(0);
+				const VTK::vtkPiece& piece = dataSet.Piece(0);
 
 				// some sanity checks
 				FSMesh* pm = fem.GetFEMesh(0);
@@ -141,11 +161,11 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 	// create a new mesh
 	int nodes = (int)vtk.Points();
 	int elems = (int)vtk.Cells();
-	FEPostMesh* pm = new FEPostMesh;
+	FSMesh* pm = new FSMesh;
 
 	// Build the FE mesh from the VTK mesh
 	// don't split polys since otherwise this could mess up the data counts
-	if (VTKTools::BuildFEMesh(vtk, pm, false) == false)
+	if (VTKTools::BuildFEMesh(vtk, pm, m_nodeMap, false, m_bmapNodes) == false)
 	{
 		delete pm;
 		return false;
@@ -153,7 +173,7 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 
 	// We need to build the mesh before allocating a state so that we have 
 	// the faces. 
-	pm->BuildMesh();
+	pm->RebuildMesh();
 
 	FEPostModel& fem = *m_fem;
 	fem.AddMesh(pm);
@@ -204,7 +224,7 @@ bool VTKFileImport::BuildMesh(const VTK::vtkPiece& vtk)
 	}
 
 	// update the mesh
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	return true;
@@ -263,6 +283,8 @@ bool VTKFileImport::BuildState(double time, const VTK::vtkPiece& vtk)
 	int nodes = pm->Nodes();
 	int elems = pm->Elements();
 
+	int vtkNodes = vtk.Points();
+
 	int nfield = 0;
 	for (int i = 0; i < vtk.m_pointData.size(); ++i)
 	{
@@ -273,7 +295,7 @@ bool VTKFileImport::BuildState(double time, const VTK::vtkPiece& vtk)
 			{
 				const std::vector<double>& val = data.m_values_float;
 				FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[nfield++]);
-				for (int j = 0; j < pm->Nodes(); ++j) df[j] = (float)val[j];
+				for (int j = 0; j < pm->Nodes(); ++j) df[j] = (float)val[m_nodeMap[j]];
 			}
 			else if (data.m_numComps == 3)
 			{
@@ -281,10 +303,11 @@ bool VTKFileImport::BuildState(double time, const VTK::vtkPiece& vtk)
 				FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(ps->m_Data[nfield++]);
 				for (int j = 0; j < pm->Nodes(); ++j)
 				{
+					int n = m_nodeMap[j];
 					vec3f v;
-					v.x = (float)val[3*j  ];
-					v.y = (float)val[3*j+1];
-					v.z = (float)val[3*j+2];
+					v.x = (float)val[3*n  ];
+					v.y = (float)val[3*n+1];
+					v.z = (float)val[3*n+2];
 					df[j] = v;
 				}
 			}
@@ -294,10 +317,11 @@ bool VTKFileImport::BuildState(double time, const VTK::vtkPiece& vtk)
 				FENodeData<mat3f>& df = dynamic_cast<FENodeData<mat3f>&>(ps->m_Data[nfield++]);
 				for (int j = 0; j < pm->Nodes(); ++j)
 				{
+					int n = m_nodeMap[j];
 					mat3f v;
-					v[0][0] = (float)val[9*j  ]; v[0][1] = (float)val[9*j+1]; v[0][2] = (float)val[9*j+2];
-					v[1][0] = (float)val[9*j+3]; v[1][1] = (float)val[9*j+4]; v[1][2] = (float)val[9*j+5];
-					v[2][0] = (float)val[9*j+6]; v[2][1] = (float)val[9*j+7]; v[2][2] = (float)val[9*j+8];
+					v[0][0] = (float)val[9*n  ]; v[0][1] = (float)val[9*n+1]; v[0][2] = (float)val[9*n+2];
+					v[1][0] = (float)val[9*n+3]; v[1][1] = (float)val[9*n+4]; v[1][2] = (float)val[9*n+5];
+					v[2][0] = (float)val[9*n+6]; v[2][1] = (float)val[9*n+7]; v[2][2] = (float)val[9*n+8];
 					df[j] = v;
 				}
 			}
@@ -452,5 +476,41 @@ bool VTMImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
 	vtk = vtuFile.GetVTKModel();
 	m_currentTime = timeValue;
 
+	return true;
+}
+
+bool PVTUImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	VTK::PVTUFileReader pvtuReader;
+	if (!pvtuReader.Load(szfilename))
+	{
+		setErrorString(pvtuReader.GetErrorString());
+		return false;
+	}
+
+	vtk = pvtuReader.GetVTKModel();
+	return true;
+}
+
+PVDImport::PVDImport(FEPostModel* fem) : VTKFileImport(fem) 
+{ 
+	m_processSeries = false; 
+	m_bmapNodes = true; 
+}
+
+bool PVDImport::LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk)
+{
+	VTK::PVDFileReader pvdReader;
+	SetFileReader(&pvdReader);
+	bool success = pvdReader.Load(szfilename);
+	SetFileReader(nullptr);
+
+	if (!success)
+	{
+		setErrorString(pvdReader.GetErrorString());
+		return false;
+	}
+
+	vtk = pvdReader.GetVTKModel();
 	return true;
 }

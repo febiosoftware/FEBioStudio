@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ParamBlock.h"
 #include "LoadCurve.h"
 #include <assert.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! parameter constructor. Set all default values.
@@ -48,6 +49,7 @@ Param::Param()
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0; // don't care
 	m_checkable = false;
 	m_checked = false;
 	m_flags = 0;
@@ -100,10 +102,11 @@ Param* Param::CopyEnumNames(const char* sz)
 //-----------------------------------------------------------------------------
 void Param::SetFloatRange(double fmin, double fmax, double fstep)
 {
-	assert(m_ntype == Param_FLOAT);
+	assert((m_ntype == Param_FLOAT) || (m_ntype == Param_ARRAY_DOUBLE));
 	m_floatRange = true;
 	m_fmin = fmin;
 	m_fmax = fmax;
+	m_rngType = 6; // FE_CLOSED
 
 	if (fstep == 0.0) fstep = (fmax - fmin) / 100.0;
 	m_fstep = fstep;
@@ -116,6 +119,56 @@ void Param::SetIntRange(int imin, int imax, int istep)
 	m_fmin = imin;
 	m_fmax = imax;
 	m_fstep = istep;
+	m_rngType = 6; // FE_CLOSED
+}
+
+void Param::SetRangeType(int n)
+{
+	m_rngType = n;
+}
+
+bool is_value_in_range(int rng, double val, double dmin, double dmax)
+{
+	switch (rng)
+	{
+	case 0: return true; break;
+	case 1: return (val > dmin); break;
+	case 2: return (val >= dmin); break;
+	case 3: return (val < dmin); break;
+	case 4: return (val <= dmin); break;
+	case 5: return ((val > dmin) && (val < dmax)); break;
+	case 6: return ((val >= dmin) && (val <= dmax)); break;
+	case 7: return ((val > dmin) && (val <= dmax)); break;
+	case 8: return ((val >= dmin) && (val < dmax)); break;
+	case 9: return (val != dmin); break;
+	}
+	return false;
+}
+
+bool Param::IsValueValid() const
+{
+	if ((m_ntype == Param_INT) && m_floatRange)
+	{
+		int v = GetIntValue();
+		return is_value_in_range(m_rngType, (double)v, m_fmin, m_fmax);
+	}
+	if ((m_ntype == Param_FLOAT) && m_floatRange)
+	{
+		double v = GetFloatValue();
+		return is_value_in_range(m_rngType, v, m_fmin, m_fmax);
+	}
+	if ((m_ntype == Param_ARRAY_DOUBLE) && m_floatRange)
+	{
+		std::vector<double> v = val<std::vector<double> >();
+		for (double vi : v)
+		{
+			bool b = is_value_in_range(m_rngType, vi, m_fmin, m_fmax);
+			if (b == false) return false;
+		}
+		return true;
+	}
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -220,6 +273,7 @@ void Param::clear()
 		case Param_MAT3D : delete ((mat3d*)m_pd); break;
 		case Param_MAT3DS: delete ((mat3ds*)m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
+		case Param_URL   : delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		case Param_STD_VECTOR_INT   : delete ((std::vector<int>*)m_pd); break;
@@ -249,6 +303,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_MAT3D : m_pd = new mat3d; break;
 	case Param_MAT3DS: m_pd = new mat3ds; break;
 	case Param_STRING: m_pd = new std::string; break;
+	case Param_URL   : m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
 	case Param_STD_VECTOR_INT   : m_pd = new std::vector<int>(); break;
@@ -345,6 +400,7 @@ Param::Param(const Param& p)
 	m_fmin = p.m_fmin;
 	m_fmax = p.m_fmax;
 	m_fstep = p.m_fstep;
+	m_rngType = p.m_rngType;
 	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 	switch (m_ntype)
@@ -359,6 +415,7 @@ Param::Param(const Param& p)
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT   : { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
@@ -405,6 +462,7 @@ Param& Param::operator = (const Param& p)
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds*)p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_URL   : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
@@ -442,6 +500,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -470,6 +529,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -498,6 +558,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -526,6 +587,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -554,6 +616,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -582,6 +645,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -611,6 +675,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -639,6 +704,7 @@ Param::Param(vec2d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -668,6 +734,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -696,6 +763,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -723,6 +791,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -750,6 +819,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -776,6 +846,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -802,6 +873,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -829,6 +901,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -859,6 +932,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -889,6 +963,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -917,6 +992,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -945,6 +1021,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -973,6 +1050,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_rngType = 0;
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
@@ -1175,6 +1253,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
 	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
+	ar.WriteChunk(CID_PARAM_STATE, p.GetState());
 
 	switch (ntype)
 	{
@@ -1188,6 +1267,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_MAT3D : { mat3d  v = p.GetMat3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_MAT3DS: { mat3ds v = p.GetMat3dsValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
+	case Param_URL   : { std::string s = p.GetURLValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
@@ -1224,6 +1304,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	Param p;
 	int ntype = -1;
 	int lcid = -1;
+	int state = 0;
 	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1234,6 +1315,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
 		case CID_PARAM_NAME: ar.read(paramName); break;
 		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
+		case CID_PARAM_STATE: ar.read(state); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -1248,6 +1330,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_MAT3DS: p.SetParamType(Param_MAT3DS); break;
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
+			case Param_URL   : p.SetParamType(Param_URL); break;
 			case Param_MATH  : p.SetParamType(Param_MATH); break;
 			case Param_COLOR : p.SetParamType(Param_COLOR); break;
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
@@ -1271,6 +1354,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_MAT3D : { mat3d  m; ar.read(m); p.SetMat3dValue (m); } break;
 			case Param_MAT3DS: { mat3ds m; ar.read(m); p.SetMat3dsValue (m); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
+			case Param_URL   : { std::string s; ar.read(s); p.SetURLValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
@@ -1330,6 +1414,9 @@ void ParamContainer::LoadParam(IArchive& ar)
 		// if we find the parameter, let's try to process it
 		if (param)
 		{
+			// we only map the modified state
+			if (state & Param_State::Param_MODIFIED) param->SetModified(true);
+
 			// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
 			if ((p.GetParamType() == Param_BOOL) && (param->GetParamType() == Param_INT))
 			{

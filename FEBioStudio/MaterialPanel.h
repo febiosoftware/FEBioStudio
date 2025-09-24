@@ -25,18 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <FSCore/color.h>
-class CPostDocument;
 
 namespace Ui {
 	class CMaterialPanel;
 }
 
+namespace Post {
+	class CGLModel;
+}
+
 class MaterialProps;
 class QTableWidgetItem;
 
-class CMaterialPanel : public CCommandPanel
+class CMaterialPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -47,7 +50,8 @@ public:
 	void UpdateStates();
 
 private:
-	CPostDocument* GetActiveDocument();
+	// return the currently active model
+	Post::CGLModel* GetActiveModel();
 
 private:
 	void SetItemColor(int item, GLColor c);
@@ -57,6 +61,7 @@ private slots:
 	void on_materialList_itemClicked(QTableWidgetItem* item);
 	void on_matprops_dataChanged(int nprop);
 	void on_filter_textChanged(const QString& txt);
+	void on_highlightButton_toggled(bool);
 
 private:
 	Ui::CMaterialPanel*	ui;

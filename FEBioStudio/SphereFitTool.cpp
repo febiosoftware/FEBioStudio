@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "SphereFitTool.h"
 #include <MeshTools/SphereFit.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GLLib/GDecoration.h>
 
 // constructor

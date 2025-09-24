@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEMaterialFactory.h"
 #include "FECoreMaterial.h"
 #include "FEUserMaterial.h"
+using namespace std;
 
 FEMatDescriptor::FEMatDescriptor(
 	int module,

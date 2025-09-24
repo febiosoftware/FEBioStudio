@@ -28,13 +28,14 @@ SOFTWARE.*/
 #include "GLViewTransform.h"
 #include "GLView.h"
 #include <GLLib/GView.h>
+#include <GLLib/glx.h>
 
 GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PMi(4, 4), q(4, 0.0), c(4, 0.0)
 {
-	CGLCamera* cam = view->GetCamera();
+	GLCamera* cam = view->GetCamera();
 	if (cam == nullptr) return;
 	view->SetupProjection();
-	cam->PositionInScene();
+	PositionInScene(*cam);
 
 	double p[16], m[16];
 	glGetDoublev(GL_PROJECTION_MATRIX, p);
@@ -140,4 +141,38 @@ bool GLViewTransform::IsVisible(const vec3d& p)
 	double W = m_vp[2];
 	double H = m_vp[3];
 	return ((p.x > 0) && (p.x < W) && (p.y > 0) && (p.y < H) && (p.z > -1) && (p.z < 1));
+}
+
+void GLViewTransform::PositionInScene(const GLCamera& cam)
+{
+	// reset the modelview matrix mode
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// target in camera coordinates
+	vec3d r = cam.Target();
+
+	// zoom-in a little when in decal mode
+	if (cam.m_bdecal)
+		glPolygonOffset(0, 0);
+	else
+		glPolygonOffset(1, 1);
+
+	// position the target in camera coordinates
+	vec3d t = -r;
+	glTranslated(t.x, t.y, t.z);
+
+	// orient the camera
+	quatd q = cam.m_rot.Value();
+	double w = q.GetAngle();
+	if (w != 0)
+	{
+		vec3d r = q.GetVector();
+		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
+		else glRotated(w * 180 / PI, 1, 0, 0);
+	}
+
+	// translate to world coordinates
+	vec3d c = -cam.GetPosition();
+	glTranslated(c.x, c.y, c.z);
 }

@@ -49,6 +49,7 @@ bool ModelTypeInfoReader::ReadTypeInfo(std::string filename)
 
     QString ext = QFileInfo(filename.c_str()).suffix();
 	if ((ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("fs2", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("prv", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
 	{

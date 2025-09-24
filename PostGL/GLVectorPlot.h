@@ -27,11 +27,11 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
-class GLUquadric;
+class GLRenderEngine;
 
 namespace Post {
 
-class CGLVectorPlot : public CGLLegendPlot 
+class CGLVectorPlot : public CGLPlot 
 {
 	enum { 
 		DATA_FIELD, 
@@ -72,7 +72,7 @@ public:
 public:
 	CGLVectorPlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void SetScaleFactor(float g) { m_scale = g; }
 	double GetScaleFactor() { return m_scale; }
@@ -111,11 +111,11 @@ public:
 
 	void Update() override;
 
-	void Activate(bool b) override;
+	LegendData GetLegendData() const override;
 
 private:
 	// render a vector n at position r
-	void RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph);
+	void RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v);
 
 	void UpdateState(int nstate);
 
@@ -140,11 +140,11 @@ protected:
 	GLColor			m_gcl;	// glyph color (for GLYPH_COL_SOLID)
 	CColorTexture	m_Col;	// glyph color (for not GLYPH_COL_SOLID)
 
-	vector<vec2f>	m_rng;	// nodal ranges
+	std::vector<vec2f>	m_rng;	// nodal ranges
 	DataMap<vec3f>	m_map;	// nodal values map
 	
 	int				m_ntime;	// current time at which this plot is evaluated
-	vector<vec3f>	m_val;	// current values
+	std::vector<vec3f>	m_val;	// current values
 	vec2f			m_crng;	// current range
 
 	int				m_rngType;

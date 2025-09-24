@@ -818,7 +818,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 						int nf = el.Faces();
 						for (int j=0; j<nf; ++j)
 						{
-							FEElement_* pe2 = pm->ElementPtr(el.m_nbr[j]);
+							FSElement_* pe2 = pm->ElementPtr(el.m_nbr[j]);
 							if (pe2 && (pe2->m_ntag == 0)) 
 							{
 								in.tetrahedronvolumelist[el.m_nbr[j]] = a*(1.0-w) + w*evol[el.m_nbr[j]];

@@ -31,9 +31,9 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "version.h"
 #include <stdio.h>
-#include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
-#include <MeshLib/FEElementLibrary.h>
+#include <FSCore/ColorMapManager.h>
+#include <MeshLib/FSElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
 #include <QPainter>
@@ -87,10 +87,11 @@ int main(int argc, char* argv[])
 {
 	// Initialize the libraries
 	FSElementLibrary::InitLibrary();
-	Post::Initialize();
 
 	// initialize the FEBio library
 	FEBio::InitFEBioLibrary();
+
+	ColorMapManager::Initialize();
 
 	// create the application object
 	FBSApplication app(argc, argv);
@@ -159,7 +160,21 @@ int main(int argc, char* argv[])
 
 CMainWindow* FBS::getMainWindow()
 {
-	return FBSApplication::Instance()->GetMainWindow();
+	CMainWindow* wnd = FBSApplication::Instance()->GetMainWindow();
+
+	// Apparently, we can get here before the main window is fully initialized. 
+	if (wnd == nullptr)
+	{
+		for (QWidget* widget : QApplication::topLevelWidgets())
+		{
+			if (wnd = dynamic_cast<CMainWindow*>(widget))
+			{
+				break;
+			}
+		}
+	}
+	assert(wnd);
+	return wnd;
 }
 
 CDocument* FBS::getActiveDocument()

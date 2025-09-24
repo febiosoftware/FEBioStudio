@@ -25,24 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "PostLib/GLObject.h"
+#include <PostLib/GLObject.h>
 #include "GLDisplacementMap.h"
 #include "GLColorMap.h"
 #include <PostLib/FEPostModel.h>
+#include "PostObject.h"
 #include <GLLib/GDecoration.h>
-#include "GLPlotGroup.h"
+#include <PostGL/GLPlotGroup.h>
 #include <FSCore/FSObjectList.h>
-#include <GLLib/GLMeshRender.h>
 #include <MeshLib/Intersect.h>
 #include <MeshTools/FESelection.h>
 #include <vector>
 
 namespace Post {
 
-//-----------------------------------------------------------------------------
 typedef FSObjectList<Post::CGLPlot>	GPlotList;
 
-//-----------------------------------------------------------------------------
 // view conventions
 enum View_Convention {
 	CONV_FR_XZ,
@@ -101,7 +99,13 @@ public:
 	CGLModel(FEPostModel* ps);
 	~CGLModel(void);
 
+	void Clear();
+
+	bool IsValid() const;
+
 	void SetFEModel(FEPostModel* ps);
+
+	CPostObject* GetPostObject();
 
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
@@ -116,8 +120,6 @@ public:
 
 	bool HasDisplacementMap();
 
-	void SetMaterialParams(Material* pm);
-
 	//! set the smoothing angle
 	void SetSmoothingAngle(double w);
 
@@ -128,21 +130,13 @@ public:
 	double GetSmoothingAngleRadians() { return PI*m_stol/180.0; }
 
 	//! get the active mesh
-	Post::FEPostMesh* GetActiveMesh();
+	FSMesh* GetActiveMesh();
 
 	//! get the active state
 	Post::FEState* GetActiveState();
 
-	//! Reset all the states so any update will force the state to be evaluated
-	void ResetAllStates();
-
 	//! reset the mesh nodes
 	void ResetMesh();
-
-public:
-	// return internal surfaces
-	int InternalSurfaces() { return (int) m_innerSurface.size(); }
-	GLSurface& InteralSurface(int i) { return *m_innerSurface[i]; }
 
 public:
 	bool ShowNormals() { return m_bnorm; }
@@ -176,54 +170,8 @@ public:
 	void SetGhostColor(GLColor c) { m_ghost_color = c; }
 
 public:
-	// call this to render the model
-	void Render(CGLContext& rc);
-
-	void RenderPlots(CGLContext& rc, int renderOrder = 0);
-
-	void RenderObjects(CGLContext& rc);
-
-public:
-	void RenderNodes(FEPostModel* ps, CGLContext& rc);
-	void RenderEdges(FEPostModel* ps, CGLContext& rc);
-	void RenderFaces(FEPostModel* ps, CGLContext& rc);
-	void RenderElems(FEPostModel* ps, CGLContext& rc);
-	void RenderSurface(FEPostModel* ps, CGLContext& rc);
-
-public:
-	void RenderMeshLines(CGLContext& rc);
-	void RenderOutline(CGLContext& rc, int nmat = -1);
-	void RenderNormals(CGLContext& rc);
-	void RenderGhost  (CGLContext& rc);
-	void RenderDiscrete(CGLContext& rc);
-	void RenderDiscreteAsLines(CGLContext& rc);
-	void RenderDiscreteAsSolid(CGLContext& rc);
-	void RenderDiscreteElement(GLEdge::EDGE& e);
-	void RenderDiscreteElementAsSolid(GLEdge::EDGE& e, double W);
-
-	void RenderSelection(CGLContext& rc);
-
-	void RenderMinMaxMarkers(CGLContext& rc);
-
-	void RenderDecorations();
-
-	void RenderMeshLines(FEPostModel* ps, int nmat);
-	void RenderShadows(FEPostModel* ps, const vec3d& lp, float inf);
-
-	void AddDecoration(GDecoration* pd);
-	void RemoveDecoration(GDecoration* pd);
-
 	bool RenderInnerSurfaces();
 	void RenderInnerSurfaces(bool b);
-
-protected:
-	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
-	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool activeOnly);
-	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, bool benable, bool zsort, bool activeOnly);
-
-	void RenderInnerSurface(int m, bool btex = true);
-	void RenderInnerSurfaceOutline(int m, int ndivs);
 
 public:
 	float CurrentTime() const;
@@ -257,9 +205,6 @@ public: // Selection
 
 	//! update visibility of all materials
 	void UpdateMeshVisibility();
-
-	//! enable or disable mesh items based on material's state
-	void UpdateMeshState();
 
 	//! hide selected elements
 	void HideSelectedElements();
@@ -311,11 +256,11 @@ public:
 
 	void UpdateColorMaps();
 
-protected:
-	void BuildInternalSurfaces();
-	void UpdateInternalSurfaces(bool eval = true);
-	void ClearInternalSurfaces();
 	void UpdateEdge();
+
+protected:
+	void UpdateInternalSurfaces(bool eval = true);
+	void UpdateSelectionMesh();
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
@@ -333,23 +278,30 @@ public:
 	double		m_stol;			//!< smoothing threshold
 	bool		m_renderInnerSurface;	//!< render the inner surfaces
 
+	float		m_solidBeamRadius;
+	bool		m_bShell2Solid;
+	bool		m_bBeam2Solid;
+
+	int		m_nshellref;
+
 	bool		m_bshowMesh;
 	bool		m_doZSorting;
 
-protected:
-	FEPostModel*			m_ps;
-	vector<GLSurface*>		m_innerSurface;
+public:
+	FEPostModel*	m_ps;
+
+	CPostObject* m_postObj;
+
 	GLEdge					m_edge;	// all line elements from springs
 
 	CGLDisplacementMap*		m_pdis;
 	CGLColorMap*			m_pcol;
 
-	GLMeshRender	m_render;
-
-	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
+	FSMesh*	m_lastMesh;	// mesh of last evaluated state
 
 	// selected items
 	FESelection* m_selection;
+	GLMesh m_selectionMesh;
 
 	GPlotList			m_pPlot;	// list of plots
 

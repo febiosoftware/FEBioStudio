@@ -42,15 +42,15 @@ enum FEBioExportSections
 	FEBIO_GEOMETRY,
 	FEBIO_MESHDATA,			// new in FEBio 2.5
 	FEBIO_MESHADAPTOR,		// new in FEBio 4.0
+	FEBIO_INITIAL,
 	FEBIO_BOUNDARY,
 	FEBIO_LOADS,
-	FEBIO_INITIAL,
 	FEBIO_CONSTRAINTS,
 	FEBIO_CONTACT,			// new in FEBio 2.0
 	FEBIO_DISCRETE,			// new in FEBio 2.0
+	FEBIO_STEPS,
 	FEBIO_LOADDATA,
 	FEBIO_OUTPUT,
-	FEBIO_STEPS,
 	FEBIO_MAX_SECTIONS		// = max nr of sections
 };
 
@@ -61,6 +61,11 @@ public:
 
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);
+
+	void SetSectionFlags(unsigned int flags);
+	void SetSectionFlag(unsigned int n, bool bwrite);
+
+	bool WriteSection(unsigned int n);
 
 protected:
 	void WriteParam(Param& p);
@@ -83,7 +88,7 @@ public: // helper functions for writing to the xml file directly
 protected:
 	XMLWriter		m_xml;
 
-	bool	m_section[FEBIO_MAX_SECTIONS];	//!< write section flags
+	unsigned int m_section;	//!< write section flags
 
 	bool	m_compress;				//!< compress plot file
 	bool	m_exportSelections;		//!< export named selections as well

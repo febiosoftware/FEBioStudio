@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <FSCore/FSThreadedTask.h>
 class FESelection;
 class GObject;
@@ -49,12 +49,12 @@ public:
 	// (see e.g. FEDiscardMesh)
 	virtual bool AllowNullMesh() { return false; }
 
-	static bool SetError(const char* szerr, ...);
+	bool SetError(const char* szerr, ...);
 
-	static std::string GetErrorString();
+	std::string GetErrorString();
 
 protected:
-	static std::string	m_error;
+	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------

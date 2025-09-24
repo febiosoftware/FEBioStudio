@@ -30,7 +30,6 @@ using namespace Post;
 
 Material::Material()
 { 
-	m_szname[0] = 0; 
 	bclip = true; 
 	m_nrender = RENDER_MODE_DEFAULT; 
 	m_ntransmode = RENDER_TRANS_CONSTANT; 
@@ -49,5 +48,12 @@ Material::Material()
 	emission = GLColor(0,0,0);
 }
 
-const char* Material::GetName() { return m_szname; }
-void Material::SetName(const char* szname) { strcpy(m_szname, szname); }
+const std::string& Material::GetName() const
+{
+	return m_name;
+}
+
+void Material::SetName(const std::string& s)
+{
+	m_name = s;
+}

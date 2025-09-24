@@ -33,6 +33,7 @@ SOFTWARE.*/
 class GMeshObject;
 class GDiscreteElementSet;
 class GPart;
+class GPartList;
 
 //-----------------------------------------------------------------------------
 // Helper class for processing and finding mesh data 
@@ -299,7 +300,7 @@ public:
 		void Add(Domain* pg) { m_domList.push_back(pg); }
 
 	public:
-		string	m_name;
+		std::string	m_name;
 		std::vector<Domain*> m_domList;
 		Part* m_part;
 	};
@@ -326,7 +327,7 @@ public:
 		EdgeSet* FindEdgeSet(const std::string& name);
 
 	public:
-		Domain* AddDomain(const string& name, int matID);
+		Domain* AddDomain(const std::string& name, int matID);
 		int Domains() const { return (int)m_dom.size(); }
 		Domain& GetDomain(int i) { return m_dom[i]; }
 		Domain* FindDomain(const std::string& name);
@@ -382,7 +383,7 @@ public:
 
 	public:
 		FEBioMesh				m_mesh;
-		string					m_name;
+		std::string				m_name;
 
 	private:
 		std::vector<NodeSet>		m_nset;
@@ -450,7 +451,7 @@ public:
 		vec3d	m_scl;
 
 	private:
-		string			m_name;
+		std::string		m_name;
 		Part*			m_part;
 		GMeshObject*	m_po;
 
@@ -568,13 +569,13 @@ public:
 	FSElemSet* BuildFEElemSet(const char* szname);
 	FSElemSet* BuildFEElemSet(Domain* dom);
 	GPart* FindGPart(const char* szname);
-	FEItemListBuilder* BuildItemList(const char* szname);
+	FSItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	ElementSet* FindElementSet(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
 
-	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	FSItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
 	FSNodeSet* FindNamedNodeSet(const std::string& name);
 	FSSurface* FindNamedSurface(const std::string& name);
 	FSElemSet* FindNamedElementSet(const std::string& name);
@@ -582,8 +583,8 @@ public:
 	GPartList* FindNamedPartList(const std::string& name);
 
 public:
-	bool	m_shellNodalNormals;
-	string	m_plotFormat;
+	bool		m_shellNodalNormals;
+	std::string	m_plotFormat;
 
 private:
 	FSModel&					m_fem;

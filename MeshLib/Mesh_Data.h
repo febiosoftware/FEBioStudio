@@ -24,13 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "FEElement.h"
+#include "FSElement.h"
 
-//-----------------------------------------------------------------------------
 class FSMesh;
 class FSSurfaceMesh;
 
-//-----------------------------------------------------------------------------
 class Mesh_Data
 {
 	struct DATA

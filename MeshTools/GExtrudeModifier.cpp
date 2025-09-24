@@ -75,7 +75,18 @@ void GExtrudeModifier::Apply(GObject* po)
 				po->AddLine(e.m_node[0] + j*N, e.m_node[1] + j * N);
 				break;
 			case EDGE_3P_CIRC_ARC:
-				po->AddCircularArc(e.m_cnode + j * N, e.m_node[0] + j * N, e.m_node[1] + j * N);
+				po->AddCircularArc(e.m_cnode[0] + j * N, e.m_node[0] + j * N, e.m_node[1] + j * N);
+				break;
+			case EDGE_BEZIER:
+				{
+					GEdge* newEdge = new GEdge(po);
+					newEdge->m_ntype = EDGE_BEZIER;
+					newEdge->m_node[0] = e.m_node[0] + j * N;
+					newEdge->m_node[1] = e.m_node[1] + j * N;
+					newEdge->m_cnode = e.m_cnode;
+					for (int k = 0; k < e.m_cnode.size(); ++k) newEdge->m_cnode[k] = e.m_cnode[k] + j*N;
+					po->AddEdge(newEdge);
+				}
 				break;
 			default:
 				assert(false);
@@ -83,8 +94,14 @@ void GExtrudeModifier::Apply(GObject* po)
 		}
 	}
 
+	int C = 0;
+	for (int i = 0; i < N; ++i)
+	{
+		GNode& node = *po->Node(i);
+		if (node.m_ntag == 1) C++;
+	}
+
 	// add vertical edges
-	int m = (NDIV + 1)*E;
 	for (int j = 1; j <= NDIV; ++j)
 	{
 		for (int i = 0; i < N; ++i)
@@ -139,8 +156,8 @@ void GExtrudeModifier::Apply(GObject* po)
 
 			// TODO: I don't think the winding is correct
 			//       I should probably copy the winding from the bottom and top edges
-			int m0 = E * (NDIV + 1) + (j - 1)*E + i;
-			int m1 = E * (NDIV + 1) + (j - 1)*E + (i + 1) % E;
+			int m0 = E * (NDIV + 1) + (j - 1)*C + i;
+			int m1 = E * (NDIV + 1) + (j - 1)*C + (i + 1) % C;
 			
 			edge[0].first = i + (j-1)*E; edge[0].second = 1;
 			edge[1].first = m1; edge[1].second = 1;
@@ -173,29 +190,48 @@ void GExtrudeModifier::Apply(GObject* po)
 		}
 	}
 
-	// The side walls will be trickier since they can be interior faces
-	// If so, we need to find the two parts that they belong to.
-	int nf = F * (NDIV + 1);
-	for (int n = 0; n < NDIV; ++n)
+	if (F == 0)
 	{
-		for (int j = 0; j < E; ++j)
+		for (int i = 0; i < po->Faces(); ++i)
 		{
-			GEdge* pe = po->Edge(n*E + j);
-			GFace& f = *po->Face(nf++);
-			f.m_nPID[0] = -1;
+			GFace& f = *po->Face(i);
+			f.m_nPID[0] = 0;
 			f.m_nPID[1] = -1;
-			int m = 0;
-			for (int k = 0; k < F; ++k)
-			{
-				GFace& fk = *po->Face(n*F + k);
-				if (fk.HasEdge(n*E + j))
-				{
-					assert(m < 2);
-					f.m_nPID[m++] = fk.m_nPID[0];
-				}
-			}
-			assert(f.m_nPID[0] != -1);
 		}
+	}
+	else
+	{
+		// The side walls will be trickier since they can be interior faces
+		// If so, we need to find the two parts that they belong to.
+		int nf = F * (NDIV + 1);
+		for (int n = 0; n < NDIV; ++n)
+		{
+			for (int j = 0; j < E; ++j)
+			{
+				GEdge* pe = po->Edge(n * E + j);
+				GFace& f = *po->Face(nf++);
+				f.m_nPID[0] = -1;
+				f.m_nPID[1] = -1;
+				int m = 0;
+				for (int k = 0; k < F; ++k)
+				{
+					GFace& fk = *po->Face(n * F + k);
+					if (fk.HasEdge(n * E + j))
+					{
+						assert(m < 2);
+						f.m_nPID[m++] = fk.m_nPID[0];
+					}
+				}
+				assert(f.m_nPID[0] != -1);
+			}
+		}
+	}
+
+	// flip bottom faces
+	for (int i = 0; i < F; ++i)
+	{
+		GFace* face = po->Face(i);
+		face->Invert();
 	}
 
 	// find all vertices
@@ -203,7 +239,7 @@ void GExtrudeModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GExtrudeModifier::BuildGMesh(GObject* po)
+GLMesh* GExtrudeModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
 	return 0;

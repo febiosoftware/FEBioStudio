@@ -33,7 +33,7 @@ FSInitialCondition::FSInitialCondition(int ntype, FSModel* ps, int nstep) : FSDo
 	SetMeshItemType(FE_ALL_FLAGS);
 }
 
-FSInitialCondition::FSInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) 
+FSInitialCondition::FSInitialCondition(int ntype, FSModel* ps, FSItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) 
 { 
 	m_superClassID = FEIC_ID; 
 	SetMeshItemType(FE_ALL_FLAGS);
@@ -46,7 +46,7 @@ FSNodalVelocities::FSNodalVelocities(FSModel* ps) : FSInitialNodalDOF(FE_INIT_NO
 	AddVecParam(vec3d(0, 0, 0), "value", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSNodalVelocities::FSNodalVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_VELOCITIES, ps, pi, nstep)
+FSNodalVelocities::FSNodalVelocities(FSModel* ps, FSItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Nodal Velocities");
 	AddVecParam(vel, "value", "Velocity")->SetUnit(UNIT_VELOCITY);;
@@ -59,7 +59,7 @@ FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps) : FSInitialNodalDOF(
 	AddVecParam(vec3d(0, 0, 0), "value", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_SHELL_VELOCITIES, ps, pi, nstep)
+FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps, FSItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_SHELL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Shell Nodal Velocities");
 	AddVecParam(vel, "value", "Velocity")->SetUnit(UNIT_VELOCITY);
@@ -73,7 +73,7 @@ FSInitConcentration::FSInitConcentration(FSModel* ps) : FSInitialNodalDOF(FE_INI
 	AddChoiceParam(0, "dof", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
-FSInitConcentration::FSInitConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_CONCENTRATION, ps, pi, nstep)
+FSInitConcentration::FSInitConcentration(FSModel* ps, FSItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_CONCENTRATION, ps, pi, nstep)
 {
 	SetTypeString("Initial effective concentration");
 	AddDoubleParam(val, "value", "Value");
@@ -88,7 +88,7 @@ FSInitShellConcentration::FSInitShellConcentration(FSModel* ps) : FSInitialNodal
     AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
-FSInitShellConcentration::FSInitShellConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_SHELL_CONCENTRATION, ps, pi, nstep)
+FSInitShellConcentration::FSInitShellConcentration(FSModel* ps, FSItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_SHELL_CONCENTRATION, ps, pi, nstep)
 {
     SetTypeString("Initial effective shell concentration");
     AddDoubleParam(val, "value", "Value");
@@ -102,7 +102,7 @@ FSInitFluidPressure::FSInitFluidPressure(FSModel* ps) : FSInitialNodalDOF(FE_INI
 	AddDoubleParam(0, "value", "Fluid pressure")->SetUnit(UNIT_PRESSURE);
 }
 
-FSInitFluidPressure::FSInitFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_FLUID_PRESSURE, ps, pi, nstep)
+FSInitFluidPressure::FSInitFluidPressure(FSModel* ps, FSItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_FLUID_PRESSURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Fluid Pressure");
 	AddDoubleParam(val, "value", "Fluid pressure")->MakeVariable(true)->SetUnit(UNIT_PRESSURE);
@@ -115,7 +115,7 @@ FSInitShellFluidPressure::FSInitShellFluidPressure(FSModel* ps) : FSInitialNodal
     AddDoubleParam(0, "Shell fluid pressure");
 }
 
-FSInitShellFluidPressure::FSInitShellFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_SHELL_FLUID_PRESSURE, ps, pi, nstep)
+FSInitShellFluidPressure::FSInitShellFluidPressure(FSModel* ps, FSItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_SHELL_FLUID_PRESSURE, ps, pi, nstep)
 {
     SetTypeString("Initial Shell Fluid Pressure");
     AddDoubleParam(val, "Shell fluid pressure");
@@ -128,7 +128,7 @@ FSInitTemperature::FSInitTemperature(FSModel* ps) : FSInitialNodalDOF(FE_INIT_TE
 	AddDoubleParam(0, "value", "Temperature")->SetUnit(UNIT_RELATIVE_TEMPERATURE);
 }
 
-FSInitTemperature::FSInitTemperature(FSModel* ps, FEItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_TEMPERATURE, ps, pi, nstep)
+FSInitTemperature::FSInitTemperature(FSModel* ps, FSItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_TEMPERATURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Temperature");
 	AddDoubleParam(val, "value", "Temperature")->SetUnit(UNIT_RELATIVE_TEMPERATURE);
@@ -141,7 +141,7 @@ FSInitFluidDilatation::FSInitFluidDilatation(FSModel* ps) : FSInitialNodalDOF(FE
     AddDoubleParam(0, "Fluid dilatation")->SetUnit(UNIT_NONE);
 }
 
-FSInitFluidDilatation::FSInitFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_FLUID_DILATATION, ps, pi, nstep)
+FSInitFluidDilatation::FSInitFluidDilatation(FSModel* ps, FSItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_FLUID_DILATATION, ps, pi, nstep)
 {
     SetTypeString("Initial Fluid Dilatation");
     AddDoubleParam(val, "Fluid dilatation")->SetUnit(UNIT_NONE);

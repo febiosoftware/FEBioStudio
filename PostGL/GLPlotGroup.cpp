@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLPlotGroup.h"
 #include <MeshLib/Intersect.h>
-#include <PostGL/GLModel.h>
+#include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
 #include <sstream>
 using namespace std;
@@ -43,11 +43,11 @@ GLPlotGroup::GLPlotGroup()
 	SetName(ss.str());
 }
 
-void GLPlotGroup::Render(CGLContext& rc)
+void GLPlotGroup::Render(GLRenderEngine& re, GLContext& rc)
 {
 	for (int i = 0; i < m_plot.Size(); ++i)
 	{
-		if (m_plot[i]->IsActive()) m_plot[i]->Render(rc);
+		if (m_plot[i]->IsActive()) m_plot[i]->Render(re, rc);
 	}
 }
 

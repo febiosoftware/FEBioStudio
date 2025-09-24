@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QProcess>
+#include <QtCore/QString>
 
 class CMainWindow;
 class CFEBioJob;
@@ -32,11 +33,12 @@ class CFEBioJob;
 class CLocalJobProcess : public QProcess
 {
 public:
-	CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, QObject* parent);
+	CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, const QString& program, QObject* parent);
 
 	void run();
 
 private:
 	CMainWindow*	m_wnd;
 	CFEBioJob*		m_job;
+	QString			m_program;
 };

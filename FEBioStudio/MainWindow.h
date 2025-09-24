@@ -32,25 +32,19 @@ SOFTWARE.*/
 #include <FEMLib/GMaterial.h>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
-
 class FSObject;
 class CDocument;
 class CGLDocument;
 class CModelDocument;
 class CPostDocument;
-class CFileThread;
-class CPostFileThread;
 class FileReader;
 class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
+class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
-class CPostDocument;
-class CFEBioJob;
-class CSSHHandler;
-class xpltFileReader;
 class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
@@ -61,6 +55,16 @@ class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 class CDlgPickColor;
+class CFEBioMonitorPanel;
+class CFEBioMonitorView;
+class CModelViewer;
+class CLogPanel;
+class CFileProcessor;
+class CMainStatusBar;
+class CPluginManager;
+struct ProgressTracker; // in FEBio/FEBioExport4
+class COptimizationStudy;
+
 
 namespace Ui {
 	class CMainWindow;
@@ -78,6 +82,8 @@ class CMainWindow : public QMainWindow
 public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
 	~CMainWindow();
+
+	static CMainWindow* GetInstance();
 
 public:
 	//! reset window data
@@ -121,6 +127,19 @@ public:
 	// clear the output window
 	void ClearOutput();
 
+	void ClearBuildLog();
+
+	void ClearPythonLog();
+
+	CGLView* GetGLView();
+
+	CImageSliceView* GetImageSliceView();
+
+	C2DImageTimeView* GetC2DImageTimeView();
+
+	// get the log panel
+	CLogPanel* GetLogPanel();
+
 	// get the build panel
 	CBuildPanel* GetBuildPanel();
 
@@ -129,6 +148,20 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the python panel
+//	CPythonToolsPanel* GetPythonToolsPanel();
+
+	// get the febio monitor panel
+	CFEBioMonitorPanel* GetFEBioMonitorPanel();
+
+	// get the febio monitor graphs view
+	CFEBioMonitorView* GetFEBioMonitorView();
+
+	// get the model viewer
+	CModelViewer* GetModelViewer();
+
+	CMainStatusBar* GetStatusBar();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -145,6 +178,9 @@ public:
 
 	// set clear command stack on save
 	void setClearCommandStackOnSave(bool b);
+
+	// check for dark theme
+	bool usingDarkTheme() const;
 
 	//! get the mesh mode
 	int GetMeshMode();
@@ -167,13 +203,6 @@ public:
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
-
-	// febio config file
-	bool GetLoadConfigFlag();
-	QString GetConfigFileName();
-
-	void SetLoadConfigFlag(bool b);
-	void SetConfigFileName(QString s);
 
 	// --- WINDOW UPDATE ---
 
@@ -213,13 +242,22 @@ public:
 	//! Update the toolbar
 	void UpdateToolbar();
 
+	// update the font toolbar
+	// (e.g. when a GL widget gets selected)
+	void UpdateFontToolbar();
+
+	void UpdateGraphs(bool breset);
+
+public:
 	//! set the selection mode
 	void SetSelectionMode(int nselect);
 
 	//! set item selection mode
 	void SetItemSelectionMode(int nselect, int nitem);
 
-	// ----------------------
+	void CloseView(int n, bool forceClose = false);
+
+	void CloseView(CDocument* doc);
 
 	//! redraw the GLView
 	void RedrawGL();
@@ -253,6 +291,22 @@ public:
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
 
+	void ShowImageViewer(QImage img);
+
+	void SetCurrentState(int n);
+
+public:
+    CPluginManager* GetPluginManager();
+
+	QString GetSDKIncludePath() const;
+	void SetSDKIncludePath(const QString& s);
+
+	QString GetSDKLibraryPath() const;
+	void SetSDKLibraryPath(const QString& s);
+
+	QString GetCreatePluginPath() const;
+	void SetCreatePluginPath(const QString& s);
+
 	bool IsColorPickerActive() const;
 
 	CDlgPickColor* GetPickColorDialog();
@@ -267,10 +321,9 @@ public:
 
 	FileReader* CreateFileReader(const QString& fileName);
 
-	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
-	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true);
-
-	bool SaveDocument(const QString& fileName);
+	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true, bool openInThread = true);
+	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true, bool openInThread = true);
+	void OpenRemoteFile(const QString& fileName);
 
 	void ExportGeometry();
 	void ExportPostGeometry();
@@ -281,14 +334,17 @@ public:
 
 	bool CreateNewProject(QString fileName);
 
-	CModelDocument* CreateNewDocument();
+	QString CurrentWorkingDirectory();
 
 private:
-	void ReadFile(QueuedFile& qfile);
 
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
+	void OpenTextFile(const QString& fileName);
+	bool OpenFEBioLogFile(const QString& fileName);
+
+	bool SaveDocument(CDocument* doc, const QString& fileName);
 
 	void SavePostDoc();
 
@@ -300,14 +356,65 @@ private:
 	bool ImportImage(CImageModel* imgModel);
 	bool ImportImage(const QString& fileName);
 
-	QString CurrentWorkingDirectory();
+public:
+	QString GetOpenModelFilename();
+	QString GetSaveModelFilename(QString currentPath = QString(), QString fileName = QString());
+	QString GetExportGeometryFilename(QString& formatOption);
+	QString GetExportFEModelFilename(QString& formatOption);
+
+public:
+    void AddLogEntry(const QString& txt);
+	void AddOutputEntry(const QString& txt);
+	void AddBuildLogEntry(const QString& txt);
+	void AddPythonLogEntry(const QString& txt);
+
+public:
+	void ShowProgress(bool show, QString message = "");
+	void ShowIndeterminateProgress(bool show, QString message = "");
+	void UpdateProgress(int);
+
+	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
+
+	QStringList GetRecentFileList();
+	QStringList GetRecentProjectsList();
+	QStringList GetRecentPluginsList();
+
+	QString GetEnvironmentMap();
+	void SetEnvironmentMap(const QString& filename);
+
+	void AddRecentPlugin(const QString& fileName);
+
+	QString ProjectFolder();
+	QString ProjectName();
+
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false, ProgressTracker* prg = nullptr);
+
+	void StopAnimation();
+
+	void closeEvent(QCloseEvent* ev) override;
+
+	void keyPressEvent(QKeyEvent* ev) override;
+
+public:
+	int Views();
+	void SetActiveView(int n);
+	void AddView(const std::string& viewName, CDocument* doc, bool makeActive = true);
+	int FindView(CDocument* doc);
+	GObject* GetActiveObject();
+
+	Post::CGLModel* GetCurrentModel();
+
+	QSize GetEditorSize();
+
+public:
+	bool ConfigureOptimizationStudy(COptimizationStudy* study);
+	void RunOptimizationStudy(COptimizationStudy* study);
 
 public slots:
-    // add to the log 
-	void AddLogEntry(const QString& txt);
-
-	// add to the output window
-	void AddOutputEntry(const QString& txt);
+	void AddLogEntrySlot(const QString& txt);
+	void AddOutputEntrySlot(const QString& txt);
+	void AddBuildLogEntrySlot(const QString& txt);
+	void AddPythonLogEntrySlot(const QString& txt);
 
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -319,6 +426,7 @@ public slots:
 	void on_actionSaveAll_triggered();
 	void on_actionCloseAll_triggered();
 	void on_actionSnapShot_triggered();
+	void on_actionRayTrace_triggered();
 	void on_actionSaveProject_triggered();
 	void on_actionExportFEModel_triggered();
 	void on_actionImportGeometry_triggered();
@@ -344,6 +452,7 @@ public slots:
 
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
+	void on_actionChangeLog_triggered();
 	void on_actionInvertSelection_triggered();
 	void on_actionClearSelection_triggered();
 	void on_actionDeleteSelection_triggered();
@@ -416,17 +525,25 @@ public slots:
 	void on_actionMeshDiagnostic_triggered();
 	void on_actionElasticityConvertor_triggered();
 	void on_actionMaterialTest_triggered();
+	void on_actionDistroVisual_triggered();
 	void on_actionUnitConverter_triggered();
 	void on_actionRotationConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();
+	void on_actionEditPython_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
+	void on_actionFEBioPause_triggered();
+	void on_actionFEBioNext_triggered();
+	void on_actionFEBioContinue_triggered();
+	void on_actionFEBioMonitor_triggered();
+	void on_actionFEBioMonitorSettings_triggered();
 	void on_actionFEBioCheck_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
-	void on_actionFEBioPlugins_triggered();
+    void on_actionPluginRepo_triggered();
+	void on_actionCreatePlugin_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
 
@@ -441,6 +558,7 @@ public slots:
 	void on_actionStreamLinePlot_triggered();
 	void on_actionParticleFlowPlot_triggered();
 	void on_actionVolumeFlowPlot_triggered();
+	void on_actionVectorGlyph_triggered();
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
@@ -449,6 +567,7 @@ public slots:
 	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionHelicalAxis_triggered();
+	void on_actionStaticMesh_triggered();
 	void on_actionMusclePath_triggered();
 	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();
@@ -469,6 +588,7 @@ public slots:
 	// View menu actions
 	void on_actionUndoViewChange_triggered();
 	void on_actionRedoViewChange_triggered();
+	void on_actionShowGVContext_triggered();
 	void on_actionZoomSelect_triggered();
 	void on_actionZoomExtents_triggered();
 	void on_actionViewCapture_toggled(bool bchecked);
@@ -568,8 +688,7 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
-	void on_htmlview_anchorClicked(const QUrl& link);
-	void on_xmledit_textChanged();
+	void on_txtedit_textChanged();
     void on_xmlTree_modelEdited();
 
 	void on_clearProject();
@@ -593,25 +712,12 @@ public slots:
 
 	void checkJobProgress();
 
-	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
 	void OnSelectObjectColorMode(QAction* ac);
 
-	void CloseView(int n, bool forceClose = false);
-	void CloseView(CDocument* doc);
+	void on_finishedReadingFile(QueuedFile file, const QString& errorString);
 
-	void SetCurrentState(int n);
-
-	void closeEvent(QCloseEvent* ev);
-	void keyPressEvent(QKeyEvent* ev);
-
-	void on_finishedReadingFile(bool success, const QString& errorString);
-	void finishedReadingFile(bool success, QueuedFile& qfile, const QString& errorString);
-	void checkFileProgress();
-
-	void StopAnimation();
-
-	void onTimer();
+	void onTimer(); // timer slot for post side animation. 
 
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
@@ -621,101 +727,22 @@ public slots:
 	void onImportMaterials();
 	void onImportMaterialsFromModel(CModelDocument* src);
 
-	void DeleteAllMaterials();
-	void DeleteAllBC();
-	void DeleteAllLoads();
-	void DeleteAllIC();
-	void DeleteAllContact();
-	void DeleteAllConstraints();
-	void DeleteAllRigidLoads();
-	void DeleteAllRigidBCs();
-	void DeleteAllRigidICs();
-	void DeleteAllRigidConnectors();
-	void DeleteAllSteps();
-	void DeleteAllJobs();
-	void OnDeleteAllLoadControllers();
-	void OnDeleteAllMeshData();
-
-	void OnReplaceContactInterface(FSPairedInterface* pci);
-
-	CGLView* GetGLView();
-    CImageSliceView* GetImageSliceView();
-    C2DImageTimeView* GetC2DImageTimeView();
-
-	void UpdateGraphs(bool breset);
-
-	Post::CGLModel* GetCurrentModel();
-
-	// update the font toolbar
-	// (e.g. when a GL widget gets selected)
-	void UpdateFontToolbar();
-
-	void RunFEBioJob(CFEBioJob* job);
-
-	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion, bool allowHybridMesh = false);
-
-	void NextSSHFunction(CSSHHandler*);
-	void ShowProgress(bool show, QString message = "");
-	void ShowIndeterminateProgress(bool show, QString message = "");
-	void UpdateProgress(int);
-
-	bool DoModelCheck(CModelDocument* doc, bool askRunQuestion = true);
-
 	void toggleOrtho();
 
 	void autosave();
 
 	void autoUpdateCheck(bool update);
 
-	void updateOutput(const QString& txt);
-
-public:
-	QStringList GetRecentFileList();
-	QStringList GetRecentProjectsList();
-	QStringList GetRecentPluginsList();
-
-	QString GetEnvironmentMap();
-	void SetEnvironmentMap(const QString& filename);
-
-	void AddRecentPlugin(const QString& fileName);
-
-	QString ProjectFolder();
-	QString ProjectName();
-
-private:
-	void ReadNextFileInQueue();
-	bool HandleSSHMessage(CSSHHandler*);
-
-public:
-	int Views();
-	void SetActiveView(int n);
-	void AddView(const std::string& viewName, CDocument* doc, bool makeActive = true);
-	int FindView(CDocument* doc);
-	GObject* GetActiveObject();
-
-    QSize GetEditorSize();
-
-	static CMainWindow* GetInstance();
+	void on_planecut_dataChanged();
 
 private:
 	Ui::CMainWindow*	ui;
 
 	CDocManager*		m_DocManager;
 
-	CFileThread*		m_fileThread;
-	std::vector<QueuedFile>	m_fileQueue;
+	CFileProcessor*		m_fileProcessor;
 
 	static CMainWindow*		m_mainWnd;
 };
 
-class CResource
-{
-public:
-	static QIcon Icon(const QString& iconName);
-
-public:
-	static void Init(CMainWindow* wnd);
-
-private:
-	static CMainWindow*	m_wnd;
-};
+QString createFileName(const QString& fileName, const QString& dirName, const QString& ext);

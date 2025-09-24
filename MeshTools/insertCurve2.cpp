@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "insertCurve2.h"
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/MeshTools.h>
 #include "FECurveMesher.h"
@@ -61,7 +61,7 @@ FSSurfaceMesh* InsertCurves2::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList
 
 		// get a mesh for this curve
 		GObject* pco = dynamic_cast<GObject*>(pc->Object());
-		FECurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
+		FSCurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
 		if (ps == 0)
 		{
 			if (pco->GetType() == GCURVE)
@@ -115,7 +115,7 @@ FSSurfaceMesh* InsertCurves2::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList
 		}
 
 		// if the curve is closed, repeat the first node
-		if (ps->Type() == FECurveMesh::CLOSED_CURVE)
+		if (ps->Type() == FSCurveMesh::CLOSED_CURVE)
 		{
 			curve[n].push_back(curve[n][0]);
 		}

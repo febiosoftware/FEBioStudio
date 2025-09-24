@@ -30,12 +30,11 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
-#include <GeomLib/MeshLayer.h>
 #include <GeomLib/FSGroup.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFace.h>
-#include <MeshLib/FENode.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFace.h>
+#include <MeshLib/FSNode.h>
 #include <MeshTools/FESelection.h>
 #include <FECore/vec3d.h>
 #include "Commands.h"

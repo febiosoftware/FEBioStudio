@@ -27,28 +27,33 @@ SOFTWARE.*/
 #include "ui_config.h"
 #include "ui_mainwindow.h"
 #include "TextDocument.h"
+#include "../FEBioMonitor/FEBioReportDoc.h"
 
 // configuration base class
 void Ui::CUIConfig::Apply()
 {
 	// disable some File menu items
-	ui->actionImportGeom->setEnabled(false);
-	ui->actionExportGeom->setEnabled(false);
-	ui->actionExportFE->setEnabled(false);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(false);
-	ui->menuImportImage->menuAction()->setEnabled(false);
-	ui->actionSnapShot->setEnabled(false);
+	ui->mainMenu->actionImportGeom->setEnabled(false);
+	ui->mainMenu->actionExportGeom->setEnabled(false);
+	ui->mainMenu->actionExportFE->setEnabled(false);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(false);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(false);
+	ui->mainMenu->actionSnapShot->setEnabled(false);
+	ui->mainMenu->actionRayTrace->setEnabled(false);
 
 	// disable some FEBio menu items
-	ui->actionFEBioRun->setEnabled(false);
-	ui->actionFEBioStop->setEnabled(false);
-	ui->actionFEBioCheck->setEnabled(false);
+	ui->mainMenu->actionFEBioRun->setEnabled(false);
+	ui->mainMenu->actionFEBioStop->setEnabled(false);
+	ui->mainMenu->actionFEBioCheck->setEnabled(false);
 
 	// disable some Tools menu items
-	ui->actionCurveEditor->setEnabled(false);
-	ui->actionMeshInspector->setEnabled(false);
-	ui->actionMeshDiagnostic->setEnabled(false);
-	ui->actionMaterialTest->setEnabled(false);
+	ui->mainMenu->actionCurveEditor->setEnabled(false);
+	ui->mainMenu->actionMeshInspector->setEnabled(false);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(false);
+	ui->mainMenu->actionMaterialTest->setEnabled(false);
+
+	// hide some toolbars
+	ui->monitorToolBar->hide();
 }
 
 // Configure for no active document
@@ -56,14 +61,14 @@ void Ui::CEmptyConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -71,7 +76,7 @@ void Ui::CEmptyConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -80,10 +85,15 @@ void Ui::CEmptyConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->raise();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
+	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 	ui->ShowDefaultBackground();
 }
 
@@ -92,20 +102,16 @@ void Ui::CHTMLConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	::CMainWindow* wnd = ui->m_wnd;
-	CHTMLDocument* htmlDoc = dynamic_cast<CHTMLDocument*>(wnd->GetDocument()); assert(htmlDoc);
+	ui->setActiveCentralView(CMainCentralWidget::HTML_VIEWER);
 
-	if (htmlDoc) ui->centralWidget->htmlViewer->setDocument(htmlDoc->GetText());
-	ui->centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
-
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -113,7 +119,7 @@ void Ui::CHTMLConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -122,8 +128,13 @@ void Ui::CHTMLConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
-	ui->fileViewer->parentWidget()->raise();
+	ui->projectViewer->parentWidget()->raise();
 }
 
 // Configure for model document
@@ -150,32 +161,36 @@ void Ui::CModelConfig::Apply()
 			ui->modelViewer->SetFilter(FILTER_IMAGES);
 			break;
 		}
+
+        ui->imageToolBar->SetView(doc->GetUIViewMode());
 	}
 
-	ui->actionImportGeom->setEnabled(true);
-	ui->actionExportGeom->setEnabled(true);
-	ui->actionExportFE->setEnabled(true);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
-	ui->menuImportImage->menuAction()->setEnabled(true);
-	ui->actionSnapShot->setEnabled(true);
+	ui->mainMenu->actionFEBioMonitor->setEnabled(true);
+	ui->mainMenu->actionImportGeom->setEnabled(true);
+	ui->mainMenu->actionExportGeom->setEnabled(true);
+	ui->mainMenu->actionExportFE->setEnabled(true);
+	ui->mainMenu->actionSnapShot->setEnabled(true);
+	ui->mainMenu->actionRayTrace->setEnabled(true);
+	ui->mainMenu->actionFEBioRun->setEnabled(true);
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
-	ui->actionFEBioRun->setEnabled(true);
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioCheck->setEnabled(true);
+	ui->mainMenu->actionCurveEditor->setEnabled(true);
+	ui->mainMenu->actionMeshInspector->setEnabled(true);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
+	ui->mainMenu->actionMaterialTest->setEnabled(true);
 
-	ui->actionCurveEditor->setEnabled(true);
-	ui->actionMeshInspector->setEnabled(true);
-	ui->actionMeshDiagnostic->setEnabled(true);
-	ui->actionMaterialTest->setEnabled(true);
-
-	ui->menuEdit->menuAction()->setVisible(true);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(true);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(true);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(true);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(true);
+	ui->mainMenu->menuEdit->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(true);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->show();
 	ui->postToolBar->hide();
@@ -183,7 +198,7 @@ void Ui::CModelConfig::Apply()
 	ui->pFontToolBar->show();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->show();
+	ui->centralWidget->glw->ShowControlBar();
 
 	ui->modelViewer->parentWidget()->show();
 	ui->buildPanel->parentWidget()->show();
@@ -191,6 +206,11 @@ void Ui::CModelConfig::Apply()
 	ui->logPanel->parentWidget()->show();
 	ui->infoPanel->parentWidget()->show();
 	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//    ui->pythonToolsPanel->parentWidget()->show();
+#endif
 
 	wnd->UpdateUiView();
 	ui->modelViewer->parentWidget()->raise();
@@ -201,33 +221,52 @@ void Ui::CPostConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+    ::CMainWindow* wnd = ui->m_wnd;
+    CGLDocument* doc = wnd->GetGLDocument();
+	if (doc)
+	{
+		switch (doc->GetUIViewMode())
+		{
+		case CGLDocument::MODEL_VIEW:
+			ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+			break;
+		case CGLDocument::SLICE_VIEW:
+			ui->centralWidget->setActiveView(CMainCentralWidget::IMG_SLICE);
+			break;
+		case CGLDocument::TIME_VIEW_2D:
+			ui->centralWidget->setActiveView(CMainCentralWidget::TIME_VIEW_2D);
+			break;
+		}
 
-	ui->actionImportGeom->setEnabled(true);
-	ui->actionExportGeom->setEnabled(true);
-	ui->menuRecentGeomFiles->menuAction()->setEnabled(true);
-	ui->menuImportImage->menuAction()->setEnabled(true);
-	ui->actionSnapShot->setEnabled(true);
+        ui->imageToolBar->SetView(doc->GetUIViewMode());
+	}
 
-	ui->actionMeshInspector->setEnabled(true);
-	ui->actionMeshDiagnostic->setEnabled(true);
+	ui->mainMenu->actionImportGeom->setEnabled(true);
+	ui->mainMenu->actionExportGeom->setEnabled(true);
+	ui->mainMenu->menuRecentGeomFiles->menuAction()->setEnabled(true);
+	ui->mainMenu->menuImportImage->menuAction()->setEnabled(true);
+	ui->mainMenu->actionSnapShot->setEnabled(true);
+	ui->mainMenu->actionRayTrace->setEnabled(true);
 
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(true);
-	ui->menuEditTxt->menuAction()->setVisible(false);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(true);
-	ui->menuRecord->menuAction()->setVisible(true);
-	ui->menuView->menuAction()->setVisible(true);
+	ui->mainMenu->actionMeshInspector->setEnabled(true);
+	ui->mainMenu->actionMeshDiagnostic->setEnabled(true);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->show();
-	ui->imageToolBar->hide();
+	ui->imageToolBar->show();
 	ui->pFontToolBar->show();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->show();
+	ui->centralWidget->glw->ShowControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -235,11 +274,14 @@ void Ui::CPostConfig::Apply()
 	ui->timePanel->parentWidget()->show();
 	ui->logPanel->parentWidget()->show();
 	ui->infoPanel->parentWidget()->show();
-	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//    ui->pythonToolsPanel->parentWidget()->show();
+#endif
 
 	ui->showTimeline();
 
-	::CMainWindow* wnd = ui->m_wnd;
 	wnd->UpdatePostPanel();
 	CPostDocument* postDoc = wnd->GetPostDocument(); assert(postDoc);
 	if (postDoc && postDoc->IsValid()) ui->postToolBar->Update();
@@ -257,30 +299,20 @@ void Ui::CTextConfig::Apply()
 {
 	Ui::CUIConfig::Apply();
 
-	::CMainWindow* wnd = ui->m_wnd;
-	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(wnd->GetDocument()); assert(txtDoc);
+	ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
-	if (txtDoc)
-	{
-		ui->centralWidget->xmlEdit->blockSignals(true);
-		ui->centralWidget->xmlEdit->SetDocument(txtDoc->GetText());
-		ui->centralWidget->xmlEdit->blockSignals(false);
-	}
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
 
-	ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
-
-	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
-	ui->menuEditTxt->menuAction()->setVisible(true);
-	ui->menuEditXml->menuAction()->setVisible(false);
-	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
-	ui->menuRecord->menuAction()->setVisible(false);
-	ui->menuView->menuAction()->setVisible(false);
-
-	ui->actionFEBioRun->setEnabled(true);
-	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioCheck->setEnabled(true);
+	ui->mainMenu->actionFEBioRun->setEnabled(true);
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -288,15 +320,19 @@ void Ui::CTextConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
 	ui->postPanel->parentWidget()->hide();
-	ui->logPanel->parentWidget()->hide();
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//    ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 }
 
 // Configure for XML document
@@ -314,23 +350,22 @@ void Ui::CXMLConfig::Apply()
 		ui->actionEditXmlAsText->setChecked(xmlDoc->EditingText());
 		ui->actionEditXmlAsText->blockSignals(false);
 
-		ui->actionFEBioRun->setEnabled(true);
-		ui->actionFEBioStop->setEnabled(true);
-		ui->actionFEBioCheck->setEnabled(true);
+		ui->mainMenu->actionFEBioRun->setEnabled(true);
+		ui->mainMenu->actionFEBioStop->setEnabled(true);
+		ui->mainMenu->actionFEBioCheck->setEnabled(true);
 
 		if (xmlDoc->EditingText())
 		{
-			ui->centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
-			ui->centralWidget->xmlEdit->SetDocument(xmlDoc->GetTextDocument());
+			ui->setActiveCentralView(CMainCentralWidget::TEXT_VIEWER);
 
-			ui->menuEdit->menuAction()->setVisible(false);
-			ui->menuEditPost->menuAction()->setVisible(false);
-			ui->menuEditTxt->menuAction()->setVisible(true);
-			ui->menuEditXml->menuAction()->setVisible(false);
-			ui->menuPhysics->menuAction()->setVisible(false);
-			ui->menuPost->menuAction()->setVisible(false);
-			ui->menuRecord->menuAction()->setVisible(false);
-			ui->menuView->menuAction()->setVisible(false);
+			ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditTxt->menuAction()->setVisible(true);
+			ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+			ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+			ui->mainMenu->menuPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+			ui->mainMenu->menuView->menuAction()->setVisible(false);
 
 			ui->buildToolBar->hide();
 			ui->postToolBar->hide();
@@ -338,7 +373,7 @@ void Ui::CXMLConfig::Apply()
 			ui->xmlToolbar->show();
 			ui->imageToolBar->hide();
 
-			ui->centralWidget->glw->glc->hide();
+			ui->centralWidget->glw->HideControlBar();
 
 			ui->modelViewer->parentWidget()->hide();
 			ui->buildPanel->parentWidget()->hide();
@@ -347,6 +382,8 @@ void Ui::CXMLConfig::Apply()
 			ui->infoPanel->parentWidget()->hide();
 			ui->timePanel->parentWidget()->hide();
 			ui->imageSettingsPanel->parentWidget()->hide();
+			ui->febioMonitor->parentWidget()->hide();
+			ui->febioMonitorView->parentWidget()->hide();
 
 			for (int index = 1; index < ui->xmlToolbar->actions().size(); index++)
 			{
@@ -355,15 +392,15 @@ void Ui::CXMLConfig::Apply()
 		}
 		else
 		{
-			ui->centralWidget->setActiveView(CMainCentralWidget::XML_VIEWER);
+			ui->setActiveCentralView(CMainCentralWidget::XML_VIEWER);
 
-			ui->menuEdit->menuAction()->setVisible(false);
-			ui->menuEditPost->menuAction()->setVisible(false);
-			ui->menuEditTxt->menuAction()->setVisible(false);
-			ui->menuEditXml->menuAction()->setVisible(true);
-			ui->menuPhysics->menuAction()->setVisible(false);
-			ui->menuPost->menuAction()->setVisible(false);
-			ui->menuRecord->menuAction()->setVisible(false);
+			ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+			ui->mainMenu->menuEditXml->menuAction()->setVisible(true);
+			ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+			ui->mainMenu->menuPost->menuAction()->setVisible(false);
+			ui->mainMenu->menuRecord->menuAction()->setVisible(false);
 
 			ui->buildToolBar->hide();
 			ui->postToolBar->hide();
@@ -371,7 +408,7 @@ void Ui::CXMLConfig::Apply()
 			ui->xmlToolbar->show();
 			ui->imageToolBar->hide();
 
-			ui->centralWidget->glw->glc->hide();
+			ui->centralWidget->glw->HideControlBar();
 
 			ui->modelViewer->parentWidget()->hide();
 			ui->buildPanel->parentWidget()->hide();
@@ -380,6 +417,11 @@ void Ui::CXMLConfig::Apply()
 			ui->infoPanel->parentWidget()->hide();
 			ui->timePanel->parentWidget()->hide();
 			ui->imageSettingsPanel->parentWidget()->hide();
+			ui->febioMonitor->parentWidget()->hide();
+			ui->febioMonitorView->parentWidget()->hide();
+#ifdef HAS_PYTHON
+//            ui->pythonToolsPanel->parentWidget()->hide();
+#endif
 
 			for (auto action : ui->xmlToolbar->actions())
 			{
@@ -387,4 +429,87 @@ void Ui::CXMLConfig::Apply()
 			}
 		}
 	}
+}
+
+// Configure for app document
+void Ui::CMonitorConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+
+	ui->mainMenu->actionFEBioStop->setEnabled(true);
+	ui->mainMenu->actionFEBioMonitor->setEnabled(false);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(true);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(true);
+	ui->mainMenu->menuView->menuAction()->setVisible(true);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->show();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+
+	ui->febioMonitor->parentWidget()->show();
+	ui->febioMonitor->parentWidget()->raise();
+
+	ui->febioMonitorView->parentWidget()->show();
+	ui->febioMonitorView->parentWidget()->raise();
+
+	ui->m_wnd->ShowLogPanel();
+	ui->logPanel->ShowLog(::CLogPanel::FEBIO_LOG);
+}
+
+// Configure for app document
+void Ui::CFEBReportConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->setActiveCentralView(CMainCentralWidget::FEBREPORT_VIEW);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->hide();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
 }

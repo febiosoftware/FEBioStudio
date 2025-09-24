@@ -231,7 +231,7 @@ bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& 
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q)
 {
 	vec3d rn[3];
 	int faces = mesh.Faces();
@@ -243,7 +243,7 @@ bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q)
 	Intersection tmp;
 	for (int i = 0; i<faces; ++i)
 	{
-		const GMesh::FACE& face = mesh.Face(i);
+		const GLMesh::FACE& face = mesh.Face(i);
 
 		rn[0] = to_vec3d(mesh.Node(face.n[0]).r);
 		rn[1] = to_vec3d(mesh.Node(face.n[1]).r);

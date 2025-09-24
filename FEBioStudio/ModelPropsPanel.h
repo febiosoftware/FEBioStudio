@@ -28,14 +28,10 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QDialog>
 #include <vector>
-//using namespace std;
-
-using std::vector;
-using std::pair;
 
 class CMainWindow;
 class FSObject;
-class FEItemListBuilder;
+class FSItemListBuilder;
 class GMaterial;
 class CPropertyList;
 class QLineEdit;
@@ -45,6 +41,8 @@ class QComboBox;
 class QCheckBox;
 class GDiscreteElementSet;
 class QListWidget;
+class FSCoreBase;
+class Param;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -100,7 +98,7 @@ public:
 
 	void setType(const QString& name);
 
-	void setStepValues(const vector<pair<QString, int> >& l);
+	void setStepValues(const std::vector<std::pair<QString, int> >& l);
 
 	void setStepID(int n);
 
@@ -200,7 +198,7 @@ public:
 
 	void Refresh();
 
-	void AssignCurrentSelection();
+	void AssignCurrentSelection(int ntarget=0);
 
 private slots:
 	void on_select1_addButtonClicked();
@@ -217,6 +215,8 @@ private slots:
 	void on_select2_nameChanged(const QString& t);
 	void on_select1_pickClicked();
 	void on_select2_pickClicked();
+	void on_select1_currentItemChanged(int nrow);
+	void on_select2_currentItemChanged(int nrow);
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_itemInfo_nameChanged(const QString&);
@@ -235,12 +235,15 @@ private slots:
 	void on_math2_rightExtendChanged(int n);
 	void on_math2_minChanged(double vmin);
 	void on_math2_maxChanged(double vmax);
+	void on_fec_paramChanged(FSCoreBase* pc, Param* p);
+
 	void on_plt_dataChanged();
     void on_imageFilter_statusChanged(bool unapplied);
 
 private:
-	void SetSelection(int n, FEItemListBuilder* it);
-	void SetSelection(int n, FEItemListBuilder* it, bool showNameType);
+	void SetSelection(int n, FSItemListBuilder* it);
+	void SetSelection(int n, FSItemListBuilder* it, bool showNameType);
+	void SetSelection(GMaterial* mat);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);
@@ -255,6 +258,8 @@ signals:
 	void selectionChanged();
 	void dataChanged(bool b);
 	void modelChanged();
+	void paramChanged(FSCoreBase* pc, Param* p);
+	void itemSelected(FSObject* il, std::vector<int>& items);
 
 private:
 	Ui::CModelPropsPanel* ui;

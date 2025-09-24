@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GraphWindow.h"
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "DataFieldSelector.h"
 #include <QToolBar>
 #include <QStackedWidget>
@@ -1944,7 +1944,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	Post::CGLModel* po = doc->GetGLModel();
 	Post::FEPostModel& fem = *doc->GetFSModel();
 
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// get the title
 	QString xtext = GetCurrentXText();
@@ -2458,7 +2458,7 @@ void CModelGraphWindow::addSelectedNodes()
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -2604,7 +2604,7 @@ void CModelGraphWindow::addSelectedEdges()
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -2645,7 +2645,7 @@ void CModelGraphWindow::addSelectedFaces()
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -2772,7 +2772,7 @@ void CModelGraphWindow::addSelectedElems()
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -2785,7 +2785,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 0:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2803,7 +2803,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 1:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2821,7 +2821,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 2:
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -2841,7 +2841,7 @@ void CModelGraphWindow::addSelectedElems()
 		vector<int> sel;
 		for (int i = 0; i < NE; i++)
 		{
-			FEElement_& e = mesh.ElementRef(i);
+			FSElement_& e = mesh.ElementRef(i);
 			if (e.IsSelected()) sel.push_back(i);
 		}
 
@@ -2861,7 +2861,7 @@ void CModelGraphWindow::addSelectedElems()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				FEElement_& e = mesh.ElementRef(sel[i]);
+				FSElement_& e = mesh.ElementRef(sel[i]);
 				if (e.IsSelected())
 				{
 					// evaluate x-field

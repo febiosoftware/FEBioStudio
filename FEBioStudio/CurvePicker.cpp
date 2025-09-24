@@ -221,7 +221,7 @@ void CCurveListPicker::onSelButtonClicked()
 	GEdgeSelection* sel = dynamic_cast<GEdgeSelection*>(ps);
 	if (sel == 0) return;
 
-	vector<int> edges;
+	std::vector<int> edges;
 
 	GEdgeSelection::Iterator it(sel);
 	int N = sel->Size();

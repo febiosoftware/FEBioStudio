@@ -65,6 +65,7 @@ class FSMeshAdaptor;
 class FSVec3dValuator;
 class FSMat3dValuator;
 class FSProject;
+class CFEBioJob;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -109,6 +110,7 @@ namespace FEBio {
 		const char*		szclass;		// the (C++) class name
 		const char*		szmod;			// the module name
 		int				spec;			// spec ID (i.e. FEBio file version)
+        int             allocId;		// allocator ID 
 	};
 
 	enum ClassSearchFlags {
@@ -211,10 +213,10 @@ namespace FEBio {
 		virtual void SetProgress(double pct) = 0;
 	};
 
-	int runModel(const std::string& fileName, 
+	int runModel(const std::string& cmd, 
 		FEBioOutputHandler* outputHandler,
 		FEBioProgressTracker* progressTracker,
-		std::string& report);
+		CFEBioJob* job);
 
 	void TerminateRun();
 

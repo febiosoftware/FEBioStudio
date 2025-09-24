@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include <string>
 #include <vector>
 #include <cstdint>
-//using namespace std;
-
-using std::string;
-using std::vector;
 
 #ifdef WIN32
 typedef unsigned __int16 uint16;
@@ -126,8 +122,8 @@ public:
 		uint32	blockType;		// identifies the object type
 		uint32	dataSize;		// size of the data section in bytes (does not include padding)
 		uint32	metaDataSize;	// size of meta data section in bytes (does not include padding)
-		vector<uint32>	data;			// pointer to data block
-		vector<uint32>	metaData;		// pointer to meta data block (or zero)
+		std::vector<uint32>	data;			// pointer to data block
+		std::vector<uint32>	metaData;		// pointer to meta data block (or zero)
 
 	public:
 		BLOCK();
@@ -157,7 +153,7 @@ public:
 
 	struct MODIFIER_CHAIN
 	{
-		string		name;		// modifier chain name
+		std::string	name;		// modifier chain name
 		uint32		type;		// modifier chain types
 		uint32		attributes;	// modifier chain attributes. Indicate presence of bounding box information
 
@@ -182,8 +178,8 @@ public:
 
 	struct VIEW_NODE
 	{
-		string		name;			// view node name
-		string		resourceName;	// view resource name
+		std::string	name;			// view node name
+		std::string	resourceName;	// view resource name
 		uint32		attributes;		// view node attributes
 
 		float	nearClip;
@@ -194,8 +190,8 @@ public:
 
 	struct LIGHT_NODE
 	{
-		string		name;		// name of light node
-		string		resource;	// name of resource
+		std::string	name;		// name of light node
+		std::string	resource;	// name of resource
 	};
 
 	struct MAX_MESH_DESCRIPTION
@@ -258,7 +254,7 @@ private:
 	FILE*	m_fp;
 
 	MAX_MESH_DESCRIPTION			m_maxMeshDescription;
-	vector<SHADING_DESCRIPTION>		m_shading;
+	std::vector<SHADING_DESCRIPTION>		m_shading;
 };
 
 class U3DContextManager;
@@ -313,7 +309,7 @@ private:
 	bool	m_compressed;
 
 	// the data section of the data block to write
-	vector<uint32>	m_data;
+	std::vector<uint32>	m_data;
 	
 	// the position of the datablock to write
 	int32	m_dataPosition;
@@ -432,11 +428,11 @@ public:
 private:
 	// an array of arrays that stores the number 
 	// of occurrences of each symbol for each dynamic context
-	vector< vector<uint16> >	m_symbolCount;
+	std::vector< std::vector<uint16> >	m_symbolCount;
 
 	// an array of arrays that store the cumulative frequency of each symbol in each context.
 	// the value is the number of occurences of a symbol and every symbol with a large value
-	vector< vector<uint16> >	m_cumulativeCount;
+	std::vector< std::vector<uint16> >	m_cumulativeCount;
 
 	// The Elephant is a value that determines the number of symbol occurences that are stored in each
 	// dynamic histogram. Limiting the number of occurrences avoids overflow of the uin16 array elements

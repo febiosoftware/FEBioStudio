@@ -41,8 +41,11 @@ public:
 	{
 		for (size_t i = 0; i < m_obs.size(); ++i)
 		{
-			m_obs[i]->SetParent(nullptr);
-			delete m_obs[i];
+			if (m_obs[i])
+			{
+				m_obs[i]->SetParent(nullptr);
+				delete m_obs[i];
+			}
 		}
 		if (m_obs.empty()==false) m_obs.clear();
 	}
@@ -76,8 +79,8 @@ protected:
 	FSObject* replace(int i, FSObject* po)
 	{
 		FSObject* old = m_obs[i];
-		old->SetParent(nullptr);
-		po->SetParent(this);
+		if (old) old->SetParent(nullptr);
+		if (po) po->SetParent(this);
 		m_obs[i] = po;
 		return old;
 	}
@@ -108,6 +111,19 @@ public:
 		}
 		assert(false);
 		return -1;
+	}
+
+	T* Remove(size_t pos)
+	{
+		if (pos < m_obs.size())
+		{
+			T* po = static_cast<T*>(m_obs[pos]);
+			if (po) po->SetParent(nullptr);
+			m_obs.erase(m_obs.begin() + pos);
+			return po;
+		}
+		assert(false);
+		return nullptr;
 	}
 
 	void Insert(size_t pos, T* obj)

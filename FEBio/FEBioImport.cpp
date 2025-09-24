@@ -23,13 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// XmlImport.cpp: implementation of the FEBioFileImport class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FEBioImport.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEBioLink/FEBioModule.h>
@@ -45,9 +39,6 @@ SOFTWARE.*/
 #include <cstdarg>
 #include <vector>
 #include <sstream>
-//using namespace std;
-
-extern GLColor col[];
 
 //-----------------------------------------------------------------------------
 FEBioFileImport::FEBioFileImport(FSProject& prj) : FSFileImport(prj)
@@ -467,7 +458,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		if (domain.empty() == false)
 		{
 			//NOTE: This assumes the domain name is a surface
-			FEItemListBuilder* surf = m_febio->FindNamedSurface(domain);
+			FSItemListBuilder* surf = m_febio->FindNamedSurface(domain);
 			if (surf)
 			{
 				pv->addDomain(surf);
@@ -492,9 +483,6 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		// pass ownership to the model
 		fem.GetModel().AddObject(po);
 	}
-
-	// update material part lists
-	fem.UpdateMaterialSelections();
 
 	// update log variables
 	GModel& model = fem.GetModel();

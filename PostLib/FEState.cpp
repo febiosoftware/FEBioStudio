@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEState.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 #include "FEPostModel.h"
 #include "FEMeshData_T.h"
 
@@ -97,12 +97,12 @@ FERefState::FERefState(FEPostModel* fem)
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
+FEState::FEState(float time, FEPostModel* fem, FSMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
 {
 	m_id = -1;
 	m_ref = nullptr; // will be set by model
 
-	Post::FEPostMesh& mesh = *m_mesh;
+	FSMesh& mesh = *m_mesh;
 
 	int nodes = mesh.Nodes();
 	int edges = mesh.Edges();
@@ -118,7 +118,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	// allocate element data
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 	}
@@ -165,7 +165,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.m_r1 = po.m_r1;
 		di.m_r2 = po.m_r2;
 
-		int ndata = po.m_data.size();
+		int ndata = (int)po.m_data.size();
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
@@ -185,10 +185,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	m_nField = -1;
 	m_status = 0;
 
-	// get the data manager
 	FEDataManager* pdm = fem->GetDataManager();
-
-	// Nodal data
 	int N = pdm->DataFields();
 	FEDataFieldPtr it = pdm->FirstDataField();
 	for (int i=0; i<N; ++i, ++it)
@@ -212,7 +209,7 @@ void FEState::AddPointObjectData()
 
 		di.m_rt = po.m_rt;
 
-		int ndata = po.m_data.size();
+		int ndata = (int)po.m_data.size();
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
@@ -352,7 +349,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 //-----------------------------------------------------------------------------
 void FEState::RebuildData()
 {
-	FEPostMesh& mesh = *m_mesh;
+	FSMesh& mesh = *m_mesh;
 	FEPostModel& fem = *m_fem;
 
 	int nodes = mesh.Nodes();
@@ -370,7 +367,7 @@ void FEState::RebuildData()
 	m_ElemData.clear();
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 
@@ -495,8 +492,8 @@ public:
 				// if we get here, the node is in this box, 
 				// but not in the points array yet, so add it
 				points.push_back(r);
-				m_nodes.push_back(points.size() - 1);
-				return points.size() - 1;
+				m_nodes.push_back((int)points.size() - 1);
+				return (int)points.size() - 1;
 			}
 			else return -1;
 		}
@@ -517,3 +514,309 @@ private:
 	OctreeBox*	m_child[8];
 	vector<int>	m_nodes;
 };
+
+double Post::IntegrateNodes(FSMesh& mesh, const std::vector<int>& nodeList, Post::FEState* ps)
+{
+	double res = 0.0;
+	int N = (int)nodeList.size();
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = mesh.Node(nodeList[i]);
+		if (ps->m_NODE[i].m_ntag > 0)
+		{
+			res += ps->m_NODE[i].m_val;
+		}
+	}
+	return res;
+}
+
+double Post::IntegrateEdges(FSMesh& mesh, const std::vector<int>& edgeList, Post::FEState* ps)
+{
+	assert(false);
+	return 0.0;
+}
+
+// This function calculates the integral over a surface. Note that if the surface
+// is triangular, then we calculate the integral from a degenerate quad.
+double Post::IntegrateFaces(FSMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps)
+{
+	double res = 0.0;
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
+	int NF = (int)faceList.size();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = mesh.Face(faceList[i]);
+		if (f.IsActive())
+		{
+			int nn = f.Nodes();
+
+			// get the nodal values
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[f.n[j]].m_val;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				v[3] = v[2];
+				break;
+			}
+
+			// get the nodal coordinates
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateQuad(r, v);
+		}
+	}
+	return res;
+}
+
+// This function calculates the integral over a surface. Note that if the surface
+// is triangular, then we calculate the integral from a degenerate quad.
+double Post::IntegrateReferenceFaces(FSMesh& mesh, const std::vector<int>& faceList, Post::FEState* ps)
+{
+	Post::FERefState& ref = *ps->m_ref;
+	double res = 0.0;
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
+	int NF = (int)faceList.size();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = mesh.Face(faceList[i]);
+		if (f.IsActive())
+		{
+			int nn = f.Nodes();
+
+			// get the nodal values
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[f.n[j]].m_val;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				v[3] = v[2];
+				break;
+			}
+
+			// get the (reference!) nodal coordinates
+			for (int j = 0; j < nn; ++j) r[j] = ref.m_Node[f.n[j]].m_rt;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateQuad(r, v);
+		}
+	}
+	return res;
+}
+
+vec3d Post::IntegrateSurfaceNormal(FSMesh& mesh, Post::FEState* ps)
+{
+	vec3d res(0, 0, 0);
+	float vx[FSFace::MAX_NODES], vy[FSFace::MAX_NODES], vz[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FSFace& f = mesh.Face(i);
+		vec3d N = to_vec3d(f.m_fn);
+
+		if (f.IsSelected() && f.IsActive())
+		{
+			int nn = f.Nodes();
+
+			// get the nodal coordinates
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
+
+			// get the nodal values
+			for (int j = 0; j < nn; ++j)
+			{
+				double v = ps->m_NODE[f.n[j]].m_val;
+				vx[j] = (float)(N.x * v);
+				vy[j] = (float)(N.y * v);
+				vz[j] = (float)(N.z * v);
+			}
+
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				vx[3] = vx[2];
+				vy[3] = vy[2];
+				vz[3] = vz[2];
+				break;
+			}
+
+			// add to integral
+			res.x += IntegrateQuad(r, vx);
+			res.y += IntegrateQuad(r, vy);
+			res.z += IntegrateQuad(r, vz);
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
+// This function calculates the integral over a volume. Note that if the volume
+// is not hexahedral, then we calculate the integral from a degenerate hex.
+double Post::IntegrateReferenceElems(FSMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps)
+{
+	Post::FERefState& ref = *ps->m_ref;
+	double res = 0.0;
+	float v[FSElement::MAX_NODES];
+	vec3f r[FSElement::MAX_NODES];
+	int NE = (int)elemList.size();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& e = mesh.ElementRef(elemList[i]);
+		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			int nn = e.Nodes();
+
+			// get the nodal values and (reference!) coordinates
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+			for (int j = 0; j < nn; ++j) r[j] = ref.m_Node[e.m_node[j]].m_rt;
+			switch (e.Type())
+			{
+			case FE_PENTA6:
+				v[7] = v[5]; r[7] = r[5];
+				v[6] = v[5]; r[6] = r[5];
+				v[5] = v[4]; r[5] = r[4];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			case FE_TET4:
+			case FE_TET5:
+			case FE_TET10:
+			case FE_TET15:
+				v[7] = v[3]; r[7] = r[3];
+				v[6] = v[3]; r[6] = r[3];
+				v[5] = v[3]; r[5] = r[3];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateHex(r, v);
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
+// This function calculates the integral over a volume. Note that if the volume
+// is not hexahedral, then we calculate the integral from a degenerate hex.
+double Post::IntegrateElems(FSMesh& mesh, const std::vector<int>& elemList, Post::FEState* ps)
+{
+	double res = 0.0;
+	float v[FSElement::MAX_NODES] = { 0.f };
+	vec3f r[FSElement::MAX_NODES];
+	int NE = (int)elemList.size();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& e = mesh.ElementRef(elemList[i]);
+		if (e.IsSolid() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			int nn = e.Nodes();
+
+			// get the nodal values and coordinates
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_ElemData.value(i, j);
+			//			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
+			switch (e.Type())
+			{
+			case FE_PENTA6:
+				v[7] = v[5]; r[7] = r[5];
+				v[6] = v[5]; r[6] = r[5];
+				v[5] = v[4]; r[5] = r[4];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			case FE_TET4:
+			case FE_TET5:
+			case FE_TET10:
+			case FE_TET15:
+				v[7] = v[3]; r[7] = r[3];
+				v[6] = v[3]; r[6] = r[3];
+				v[5] = v[3]; r[5] = r[3];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateHex(r, v);
+		}
+		else if (e.IsShell() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			int nn = e.Nodes();
+
+			// get the nodal values and coordinates
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_ElemData.value(i, j);
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
+
+			switch (e.Type())
+			{
+			case FE_TRI3:
+				v[3] = v[2]; r[3] = r[2];
+				break;
+			}
+
+			res += IntegrateQuad(r, v);
+		}
+
+		// TODO: This was done so that discrete element variables can be added, but I don't think that makes sense
+		//       for other element types that are considered "beams", e.g. discrete elements. 
+		//       I think the solution is to distinguish between "beams" and "discrete" elements. 
+		if (e.IsBeam() && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			double v0 = ps->m_ElemData.value(i, 0);
+			double v1 = ps->m_ElemData.value(i, 1);
+			res += 0.5 * (v0 + v1);
+		}
+	}
+	return res;
+}

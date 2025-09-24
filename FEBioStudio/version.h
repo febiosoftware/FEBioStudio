@@ -28,8 +28,8 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
-#define FBS_VERSION			2
-#define FBS_SUBVERSION		10
+#define FBS_VERSION			3
+#define FBS_SUBVERSION		0
 #define FBS_SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
@@ -45,27 +45,20 @@ SOFTWARE.*/
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.
-// 3.11: changes to FEMeshData classes. 
+// 3.11: changes to FSMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
 // 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
 // 4.0: new version starting with FEBio Studio 2.
 // 4.1: Item components are no longer stored on the model components. Added FSPartSet. New mesh storage format.
-// 4.2: Node and element IDs are now stored in the fs2 file. 
+// 4.2: Node and element IDs are now stored in the fsm file. 
 // 4.3: Storing properties of domain components. Storing edgesets.
+// 5.0: new version starting with FEBio Studio 3.
 #define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
-#define SAVE_VERSION	0x00040003
+#define SAVE_VERSION	0x00050000
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D
 
 #define FBS_MAJOR_VERSION(a) ((a) >> 16)
 #define FBS_MINOR_VERSION(a) ((a) & 0x0000FFFF)
-
-//-----------------------------------------------------------------------------
-// SVN VERSION
-#ifdef SVN
-#include "svnrev.h"
-#else
-#define SVNREVISION 0
-#endif

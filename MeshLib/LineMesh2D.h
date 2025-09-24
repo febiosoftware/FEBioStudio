@@ -27,9 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <list>
-//using namespace std;
-
-using std::list;
 
 //-----------------------------------------------------------------------------
 // Class that represents a line mesh in 2D composed of linear segments
@@ -43,8 +40,8 @@ private:
 
 public:
 	// reference types for accessing mesh items
-	typedef list<NODE>::iterator Node;
-	typedef list<EDGE>::iterator Edge;
+	typedef std::list<NODE>::iterator Node;
+	typedef std::list<EDGE>::iterator Edge;
 
 private:
 	// class that represents a node
@@ -75,6 +72,6 @@ public:
 	Edge AddEdge(Node node0, Node node1);
 
 private:
-	list<NODE>	m_Node;	// list of nodes
-	list<EDGE>	m_Edge;	// list of edges
+	std::list<NODE>	m_Node;	// list of nodes
+	std::list<EDGE>	m_Edge;	// list of edges
 };

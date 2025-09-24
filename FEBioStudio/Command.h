@@ -27,12 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include <GLLib/GLViewSettings.h>
 
-class CDocument;
 class CCommandManager;
-class CGLView;
-class FSAnalysisStep;
 
 //-----------------------------------------------------------------------------
 // view state

@@ -29,7 +29,7 @@
 #include <QtCore>
 
 class ICPRegistrationToolUI;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
  //-----------------------------------------------------------------------------
 class CICPRegistrationTool : public CAbstractTool
@@ -61,7 +61,7 @@ private slots:
     void on_trg_clearButtonClicked();
 
 private:
-    FEItemListBuilder* getSelection();
+	FSItemListBuilder* getSelection();
 
 private:
     ICPRegistrationToolUI* ui;

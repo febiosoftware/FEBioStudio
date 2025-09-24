@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FoamMesh.h"
 #include <GeomLib/GMeshObject.h>
 #include "FEWeldModifier.h"
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <stdlib.h>
 
 //-----------------------------------------------------------------------------
@@ -40,7 +40,11 @@ extern int ET2D[4][2];
 
 //-----------------------------------------------------------------------------
 // return a random number between zero and one
-double frand() { return (double) rand() / (double) RAND_MAX; }
+static double frand(double vmin, double vmax) 
+{ 
+	double v = (double) rand() / (double) RAND_MAX;
+	return vmin * (1.0 - v) + vmax * v;
+}
 
 //-----------------------------------------------------------------------------
 FoamGen::FoamGen()
@@ -81,7 +85,7 @@ FSMesh* FoamGen::Create()
 	if (pm == 0) return 0;
 
 	// apply a weld modifier
-	FSMesh* pmw = WeldMesh(pm);
+/*	FSMesh* pmw = WeldMesh(pm);
 
 	// remove duplicate elements
 	int F0 = pmw->Elements();
@@ -96,6 +100,8 @@ FSMesh* FoamGen::Create()
 	SmoothMesh(pmw, 1, 0.5);
 
 	return pmw;
+*/
+	return pm;
 }
 
 //-----------------------------------------------------------------------------
@@ -225,8 +231,8 @@ void FoamGen::CreateGrid()
 			for (i=0; i<nx; ++i)
 			{
 				NODE& n = Node(i, j, k);
-				n.r.x = i*m_w/(nx-1);
-				n.r.y = j*m_h/(ny-1);
+				n.r.x = -m_w*0.5 + i*m_w/(nx-1);
+				n.r.y = -m_h*0.5 + j*m_h/(ny-1);
 				n.r.z = k*m_d/(nz-1);
 				n.v = 0.0;
 			}
@@ -238,9 +244,9 @@ void FoamGen::CreateGrid()
 	for (i=0; i<m_nseed; ++i)
 	{
 		NODE& s = m_Seed[i];
-		s.r.x = -m_w*m_ref + (frand() + m_ref)*m_w;
-		s.r.y = -m_h*m_ref + (frand() + m_ref)*m_h;
-		s.r.z = -m_d*m_ref + (frand() + m_ref)*m_d;
+		s.r.x = frand(-m_w * 0.5, m_w * 0.5);
+		s.r.y = frand(-m_h * 0.5, m_h * 0.5);
+		s.r.z = frand(0, m_d);
 		s.v = 1.0;
 	}
 

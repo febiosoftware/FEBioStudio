@@ -39,8 +39,9 @@ SOFTWARE.*/
 #include "ImageLib/3DImage.h"
 #include "IconProvider.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
+#include <ImageLib/SITKTools.h>
 
 class UIMeshToImageTool : public QWidget
 {
@@ -192,7 +193,7 @@ void CMeshToImageTool::OnCreate()
     BOX box = pm->GetBoundingBox();
     img.SetBoundingBox(box);
 
-    FEFindElement finder(*pm);
+    FSFindElement finder(*pm);
     finder.Init();
 
     size_t nx = img.Width();
@@ -234,7 +235,9 @@ void CMeshToImageTool::OnCreate()
     }
     else
     {
-        img.ExportSITK(filename.toStdString());
+#ifdef HAS_ITK
+		WriteSITKImage(&img, filename.toStdString());
+#endif
     }
 
     QMessageBox::information(GetMainWindow(), "Tool", "Image successfully created.");

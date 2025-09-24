@@ -26,17 +26,19 @@ SOFTWARE.*/
 
 #include "GMeshObject.h"
 #include "GSurfaceMeshObject.h"
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/FEElementData.h>
-#include <MeshLib/GMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSMeshBuilder.h>
+#include <MeshLib/FSElementData.h>
+#include <GLLib/GLMesh.h>
 #include <list>
 #include <stack>
+#include <set>
 #include <sstream>
 //using namespace std;
 
 using std::list;
+using std::set;
 using std::stack;
 using std::stringstream;
 
@@ -161,16 +163,16 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	FSMesh* md = GetFEMesh();
 	for (int i = 0; i < ms->MeshDataFields(); ++i)
 	{
-		FEMeshData* mds = ms->GetMeshDataField(i);
-		if (dynamic_cast<FEPartData*>(mds))
+		FSMeshData* mds = ms->GetMeshDataField(i);
+		if (dynamic_cast<FSPartData*>(mds))
 		{
-			FEPartData* pds = dynamic_cast<FEPartData*>(mds);
-			FEItemListBuilder* ls = pds->GetItemList();
+			FSPartData* pds = dynamic_cast<FSPartData*>(mds);
+			FSItemListBuilder* ls = pds->GetItemList();
 			FSPartSet* pg = FindFEPartSet(ls->GetName()); assert(pg);
 
 			if (pg)
 			{
-				FEPartData* pdd = new FEPartData(md);
+				FSPartData* pdd = new FSPartData(md);
 				pdd->Create(pg, pds->GetDataType(), pds->GetDataFormat());
 				pdd->SetData(pds->GetData());
 				pdd->SetName(pds->GetName());
@@ -179,14 +181,14 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 		}
 	}
 
-	// rebuild the GMesh
-	BuildGMesh();
+	// rebuild the GLMesh
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
 // This function updates the geometry information and takes a boolean parameter
 // (default = true) to indicate whether the mesh has to be repartitioned. This
-// function will also rebuild the GMesh for rendering.
+// function will also rebuild the GLMesh for rendering.
 bool GMeshObject::Update(bool b)
 {
 	FSMesh* pm = GetFEMesh();
@@ -196,6 +198,7 @@ bool GMeshObject::Update(bool b)
 	UpdateSurfaces();
 	UpdateNodes();
 	UpdateEdges();
+	UpdateFaceNodes();
 
 	return GObject::Update(b);
 }
@@ -409,7 +412,7 @@ void GMeshObject::UpdateSurfaces()
 	assert(m.CountFacePartitions() == Faces());
 
 	// assign part ID's
-	FEElement_* pe;
+	FSElement_* pe;
 	for (int i=0; i<m.Faces(); ++i)
 	{
 		// get the face
@@ -436,6 +439,23 @@ void GMeshObject::UpdateSurfaces()
 			if (pid[1] == -1) pid[1] = pid1;
 			if (pid[2] == -1) pid[2] = pid2;
 		}
+	}
+
+	// assign the faces to the parts
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		pg->m_face.clear();
+	}
+
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace* pf = Face(i);
+		int* pid = pf->m_nPID;
+		assert(pid[0] != -1);
+		if (pid[0] != -1) Part(pid[0])->m_face.push_back(i);
+		if (pid[1] != -1) Part(pid[1])->m_face.push_back(i);
+		if (pid[2] != -1) Part(pid[2])->m_face.push_back(i);
 	}
 }
 
@@ -582,8 +602,6 @@ void GMeshObject::UpdateEdges()
 	}
 }
 
-//-----------------------------------------------------------------------------
-
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
@@ -651,10 +669,41 @@ void GMeshObject::UpdateNodes()
 	assert(m.CountNodePartitions() == Nodes());
 }
 
-//-----------------------------------------------------------------------------
-// This function converts an FE node to a GNode and return the ID
-// of the GNode
-//
+// This function constructs the faces' nodelists, since for GMeshObject
+// they have to be constructed from the mesh. (The node lists of parts are constructed in GObject::Update
+// which uses the faces' node lists.)
+void GMeshObject::UpdateFaceNodes()
+{
+	int nfaces = Faces();
+	if (nfaces == 0) return;
+
+	FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return;
+
+	vector<set<int>> nodeLists(nfaces);
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			FSNode& node = pm->Node(face.n[j]);
+			if (node.m_gid != -1)
+			{
+				int lid = face.m_gid;
+				if ((lid >= 0) && (lid < nfaces)) nodeLists[lid].insert(node.m_gid);
+			}
+		}
+	}
+
+	for (int i = 0; i < nfaces; ++i)
+	{
+		GFace* pf = Face(i);
+		pf->m_node.clear();
+		for (int n : nodeLists[i]) pf->m_node.push_back(n);
+	}
+}
+
+// This function converts an FE node to a GNode and return the ID of the GNode
 int GMeshObject::MakeGNode(int n)
 {
 	// get the mesh
@@ -696,7 +745,7 @@ int GMeshObject::AddNode(vec3d r)
 	FSMesh& m = *GetFEMesh();
 
 	// add the node
-	FEMeshBuilder meshBuilder(m);
+	FSMeshBuilder meshBuilder(m);
 	FSNode* newNode = meshBuilder.AddNode(r);
 
 	// create a geometry node for this
@@ -711,7 +760,7 @@ int GMeshObject::AddNode(vec3d r)
 	ss << "Node" << gn->GetID();
 	gn->SetName(ss.str());
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 
 	return gn->GetID();
 }
@@ -728,7 +777,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GMesh* gmesh = new GMesh();
+	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();
@@ -788,13 +837,25 @@ void GMeshObject::BuildGMesh()
 		}
 	}
 
-	// create face data
-	for (int i=0; i<pm->Faces(); ++i)
+	std::vector<std::deque<int>> faceList(Faces());
+	int NF = pm->Faces();
+	for (int i = 0; i < NF; i++)
 	{
-		FSFace& fs = pm->Face(i);
-		int nf = fs.Nodes();
-		for (int j=0; j<nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
-		gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+		const FSFace& face = pm->Face(i);
+		assert(face.m_gid >= 0);
+		faceList[face.m_gid].push_back(i);
+	}
+
+	for (int i = 0; i < Faces(); ++i)
+	{
+		gmesh->NewPartition();
+		for (int l : faceList[i])
+		{
+			FSFace& fs = pm->Face(l);
+			int nf = fs.Nodes();
+			for (int j = 0; j < nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
+			gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+		}
 	}
 
 	gmesh->Update();
@@ -828,186 +889,6 @@ FSMeshBase* GMeshObject::GetEditableMesh() { return GetFEMesh(); }
 FSLineMesh* GMeshObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
-// Save data to file
-void GMeshObject::Save(OArchive &ar)
-{
-	// save the name
-	ar.WriteChunk(CID_OBJ_NAME, GetName());
-	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
-
-	// save the transform stuff
-	ar.BeginChunk(CID_OBJ_HEADER);
-	{
-		int nid = GetID();
-		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
-
-		int nparts = Parts();
-		int nfaces = Faces();
-		int nedges = Edges();
-		int nnodes = Nodes();
-
-		ar.WriteChunk(CID_OBJ_PARTS, nparts);
-		ar.WriteChunk(CID_OBJ_FACES, nfaces);
-		ar.WriteChunk(CID_OBJ_EDGES, nedges);
-		ar.WriteChunk(CID_OBJ_NODES, nnodes);
-	}
-	ar.EndChunk();
-
-	// save the parameters
-	if (Parameters() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PARAMS);
-		{
-			ParamContainer::Save(ar);
-		}
-		ar.EndChunk();
-	}
-
-	// save the parts
-	if (Parts() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PART_LIST);
-		{
-			for (int i = 0; i < Parts(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_PART);
-				{
-					GPart& p = *Part(i);
-					int nid = p.GetID();
-					int mid = p.GetMaterialID();
-					ar.WriteChunk(CID_OBJ_PART_ID, nid);
-					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
-
-					if (p.Parameters() > 0)
-					{
-						ar.BeginChunk(CID_OBJ_PART_PARAMS);
-						{
-							p.ParamContainer::Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GPartSection* section = p.GetSection();
-					if (section)
-					{
-						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
-						if (solid)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
-							{
-								solid->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GShellSection* shell = dynamic_cast<GShellSection*>(section);
-						if (shell)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
-							{
-								shell->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
-						if (beam)
-						{
-							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
-							{
-								beam->Save(ar);
-							}
-							ar.EndChunk();
-						}
-					}
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the surfaces
-	if (Faces() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_FACE_LIST);
-		{
-			for (int i = 0; i < Faces(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_FACE);
-				{
-					GFace& f = *Face(i);
-					int nid = f.GetID();
-					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the edges
-	if (Edges() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_EDGE_LIST);
-		{
-			for (int i = 0; i < Edges(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_EDGE);
-				{
-					GEdge& e = *Edge(i);
-					int nid = e.GetID();
-					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the nodes
-	// note that it is possible that an object doesn't have any nodes
-	// for instance, a shell disc
-	if (Nodes()>0)
-	{
-		ar.BeginChunk(CID_OBJ_NODE_LIST);
-		{
-			for (int i=0; i<Nodes(); ++i)
-			{	
-				ar.BeginChunk(CID_OBJ_NODE);
-				{
-					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the mesh
-	if (GetFEMesh())
-	{
-		ar.BeginChunk(CID_MESH);
-		{
-			GetFEMesh()->Save(ar);
-		}
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Load data from file
 void GMeshObject::Load(IArchive& ar)
 {
@@ -1023,14 +904,14 @@ void GMeshObject::Load(IArchive& ar)
 		// object name
 		case CID_OBJ_NAME: 
 			{
-				string name;
+				std::string name;
 				ar.read(name);
 				SetName(name);
 			}
 			break;
 		case CID_FEOBJ_INFO:
 		{
-			string info;
+			std::string info;
 			ar.read(info);
 			SetInfo(info);
 		}
@@ -1083,67 +964,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GMeshObject::Load)");
 
 					GPart* p = new GPart(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid, mid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
-						case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-						case CID_OBJ_PART_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								p->SetName(szname);
-							}
-							break;
-						case CID_OBJ_PART_STATUS:
-						{
-							unsigned int state = 0;
-							ar.read(state);
-							// let's make sure the part is visible
-							state |= GEO_VISIBLE;
-							p->SetState(state);
-						}
-						break;
-						case CID_OBJ_PART_PARAMS:
-						{
-							// TODO: Parts no longer have parameters, since the parameters
-							//       are now managed by for the FEElementFormulation class. 
-							//		 We need to read in the parameters, and then somehow map them to the 
-							//       FEElementFormulation class. 
-//							p->ParamContainer::Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_SOLIDSECTION:
-						{
-							GSolidSection* solid = new GSolidSection(p);
-							p->SetSection(solid);
-							solid->Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_SHELLSECTION:
-						{
-							GShellSection* shell = new GShellSection(p);
-							p->SetSection(shell);
-							shell->Load(ar);
-						}
-						break;
-						case CID_OBJ_PART_BEAMSECTION:
-						{
-							GBeamSection* beam = new GBeamSection(p);
-							p->SetSection(beam);
-							beam->Load(ar);
-						}
-						break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					p->Load(ar);
 					p->SetLocalID(n++);
-
 					m_Part.push_back(p);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Part.size() == nparts);
 			}
@@ -1158,27 +983,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GMeshObject::Load)");
 
 					GFace* f = new GFace(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
-						case CID_OBJ_FACE_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								f->SetName(szname);
-							}
-							break;					
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					f->Load(ar);
 					f->SetLocalID(n++);
-
 					m_Face.push_back(f);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Face.size() == nfaces);
 			}
@@ -1194,27 +1003,11 @@ void GMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GMeshObject::Load)");
 
 					GEdge* e = new GEdge(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-						case CID_OBJ_EDGE_NAME:
-							{
-								char szname[256]={0};
-								ar.read(szname);
-								e->SetName(szname);
-							}
-							break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					e->Load(ar);
 					e->SetLocalID(n++);
-
 					m_Edge.push_back(e);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Edge.size() == nedges);
 			}
@@ -1232,28 +1025,11 @@ void GMeshObject::Load(IArchive& ar)
 						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GMeshObject::Load)");
 
 						GNode* n = new GNode(this);
-						while (IArchive::IO_OK == ar.OpenChunk())
-						{
-							int nid;
-							switch (ar.GetChunkID())
-							{
-							case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-							case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-							case CID_OBJ_NODE_NAME:
-								{
-									char szname[256]={0};
-									ar.read(szname);
-									n->SetName(szname);
-								}
-								break;		
-							}
-							ar.CloseChunk();
-						}
-						ar.CloseChunk();
-
+						n->Load(ar);
 						n->SetLocalID(m++);
-
 						m_Node.push_back(n);
+
+						ar.CloseChunk();
 					}
 					assert((int) m_Node.size() == nnodes);
 				}
@@ -1261,10 +1037,14 @@ void GMeshObject::Load(IArchive& ar)
 			break;
 		// the mesh object
 		case CID_MESH:
+		{
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FSMesh);
-			GetFEMesh()->Load(ar);
-			break;
+			FSMesh* mesh = new FSMesh;
+			mesh->SetGObject(this);
+			mesh->Load(ar);
+			SetFEMesh(mesh);
+		}
+		break;
 		}
 		ar.CloseChunk();
 	}
@@ -1304,7 +1084,9 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 		GEdge& eo = *po->Edge(i);
 		e->m_node[0] = eo.m_node[0] + NN0;
 		e->m_node[1] = eo.m_node[1] + NN0;
-		e->m_cnode = (eo.m_cnode >= 0 ? eo.m_cnode + NN0 : -1);
+		e->m_cnode = eo.m_cnode;
+		for (int j=0; j<eo.m_cnode.size(); ++j)
+			e->m_cnode[j] = (eo.m_cnode[j] >= 0 ? eo.m_cnode[j] + NN0 : -1);
 		e->SetID(eo.GetID());
 		e->SetLocalID(i + NE0);
 		e->SetName(eo.GetName());
@@ -1349,7 +1131,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 
 	// attach to the new mesh
 	FSMesh* pm = po->GetFEMesh();
-	FEMeshBuilder meshBuilder(*GetFEMesh());
+	FSMeshBuilder meshBuilder(*GetFEMesh());
 	if (bweld)
 	{
 		meshBuilder.AttachAndWeld(*pm, tol);
@@ -1362,7 +1144,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 
 	GetFEMesh()->UpdateMesh();
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }
 
 bool GMeshObject::DeletePart(GPart* pg)
@@ -1386,7 +1168,7 @@ bool GMeshObject::DeletePart(GPart* pg)
 	try {
 
 		// delete the elements of this part
-		FEMeshBuilder meshBuilder(*pm);
+		FSMeshBuilder meshBuilder(*pm);
 		FSMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
 
 		if (newMesh)
@@ -1432,7 +1214,7 @@ bool GMeshObject::DeleteParts(std::vector<GPart*> partList)
 	try {
 
 		// delete the elements of this part
-		FEMeshBuilder meshBuilder(*pm);
+		FSMeshBuilder meshBuilder(*pm);
 		FSMesh* newMesh = meshBuilder.DeleteParts(*pm, localIDs);
 
 		if (newMesh)
@@ -1471,7 +1253,7 @@ GMeshObject* GMeshObject::DetachSelection()
 		el.m_MatID = pg->GetMaterialID();
 	}
 
-	FEMeshBuilder meshBuilder(*oldMesh);
+	FSMeshBuilder meshBuilder(*oldMesh);
 	FSMesh* newMesh = meshBuilder.DetachSelectedMesh();
 	Update(true);
 

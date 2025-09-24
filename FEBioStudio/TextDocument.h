@@ -27,8 +27,12 @@ SOFTWARE.*/
 #include "Document.h"
 #include <QTextDocument>
 
+class QFileSystemWatcher;
+
 class CTextDocument : public CDocument
 {
+	Q_OBJECT
+
 public:
 	CTextDocument(CMainWindow* wnd);
 
@@ -38,8 +42,15 @@ public:
 
 	bool SaveDocument() override;
 
+private:
+	bool LoadText(const QString& fileName);
+
+private slots:
+	void onFileChanged(const QString& fileName);
+
 protected:
 	QTextDocument	m_txt;
+	QFileSystemWatcher* m_fsw;
 };
 
 class CHTMLDocument : public CDocument

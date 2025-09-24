@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DataMap.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 #include <assert.h>
 using namespace Post;
 
@@ -41,7 +41,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	assert(m_pmesh);
 	if (m_pmesh == 0) return;
 	std::vector<vec3f>& G = m_Data[ntime];
-	FEPostMesh& mesh = *m_pmesh;
+	FSMesh& mesh = *m_pmesh;
 
 	int i, k;
 
@@ -71,7 +71,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 
 	for (i=0; i<mesh.Elements(); i++)
 	{
-		FEElement_& e = mesh.ElementRef(i);
+		FSElement_& e = mesh.ElementRef(i);
 
 		if (e.IsSolid())
 		{
@@ -158,10 +158,11 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	}
 
 	// "normalize" the gradients
+	FSNodeElementList& NEL = mesh.NodeElementList();
 	for (i=0; i<mesh.Nodes(); i++)
 	{
-		const std::vector<NodeElemRef>& nel = mesh.NodeElemList(i);
-		if (!nel.empty()) G[i] /= (float) nel.size();
+		int ne = NEL.Valence(i);
+		if (ne != 0) G[i] /= (float) ne;
 		G[i] *= -1;
 	}
 }

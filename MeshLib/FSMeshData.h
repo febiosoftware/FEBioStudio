@@ -1,0 +1,208 @@
+/*This file is part of the FEBio Studio source code and is licensed under the MIT license
+listed below.
+
+See Copyright-FEBio-Studio.txt for details.
+
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+the City of New York, and others.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+#pragma once
+#include <FSCore/FSObject.h>
+#include "IHasItemList.h"
+#include "enums.h"
+#include <string>
+
+class FSMesh;
+
+//! Class for storing mesh data with various data types and formats
+class FSMeshData : public FSObject, public FSHasOneItemList
+{
+public:
+	//! Constructor that initializes the mesh data with a given data class
+	FSMeshData(DATA_CLASS);
+	
+	//! Virtual destructor
+	virtual ~FSMeshData();
+
+	//! Get the data class of this mesh data
+	DATA_CLASS GetDataClass() const;
+
+	//! Get the data type of this mesh data
+	DATA_TYPE GetDataType() const;
+
+	//! Get the data format
+	DATA_FORMAT GetDataFormat() const;
+
+	//! Get the size of data field
+	int DataSize() const;
+
+	//! Get the number of data items
+	int DataItems() const;
+
+	//! Get the size of each data item
+	int ItemSize() const;
+
+	//! Return mesh this data field belongs to
+	FSMesh* GetMesh() const;
+
+	//! Set the mesh this data field belongs to
+	void SetMesh(FSMesh* mesh);
+
+	//! Get the data vector
+	const std::vector<double>& GetData() const { return m_data; };
+	
+	//! Set the data vector
+	void SetData(const std::vector<double>& data) { m_data = data; }
+
+	//! Access operator for data elements
+	double& operator [] (int i) { return m_data[i]; }
+
+	//! Set a double value at the specified index
+	void set(size_t i, double v);
+	
+	//! Set a vec3d value at the specified index
+	void set(size_t i, const vec3d& v);
+	
+	//! Set a mat3d value at the specified index
+	void set(size_t i, const mat3d& v);
+
+	//! Get a double value at the specified index
+	double get(size_t i) const;
+	
+	//! Get multiple values starting at the specified index
+	void get(size_t i, double* d);
+
+	//! Set a scalar value at the specified index
+	void setScalar(size_t i, double v);
+	
+	//! Set a vec3d value at the specified index
+	void setVec3d(size_t i, const vec3d& v);
+
+	//! Get a scalar value at the specified index
+	double getScalar(size_t i) const;
+	
+	//! Get a vec3d value at the specified index
+	vec3d getVec3d(size_t i) const;
+	
+	//! Get a mat3d value at the specified index
+	mat3d getMat3d(size_t i) const;
+
+protected:
+	//! Set the data type
+	void SetDataType(DATA_TYPE dataType);
+	
+	//! Set the data format
+	void SetDataFormat(DATA_FORMAT dataFormat);
+
+	//! Vector storing the actual data values
+	std::vector<double>	m_data;
+
+private:
+	//! Data class type
+	DATA_CLASS		m_dataClass;
+	
+	//! Data type (scalar, vector, matrix, etc.)
+	DATA_TYPE		m_dataType;
+	
+	//! Data format
+	DATA_FORMAT		m_dataFmt;
+	
+	//! Size of each data item
+	int				m_itemSize;
+	
+	//! Pointer to the mesh this data belongs to
+	FSMesh*			m_pMesh;
+};
+
+//! Set a double value at the specified index
+inline void FSMeshData::set(size_t i, double v)
+{
+	m_data[i] = v;
+}
+
+//! Set a vec3d value at the specified index
+inline void FSMeshData::set(size_t i, const vec3d& v)
+{
+	assert(m_dataType == DATA_VEC3);
+	m_data[3*i  ] = v.x;
+	m_data[3*i+1] = v.y;
+	m_data[3*i+2] = v.z;
+}
+
+//! Set a mat3d value at the specified index
+inline void FSMeshData::set(size_t i, const mat3d& v)
+{
+	assert(m_dataType == DATA_MAT3);
+	m_data[9 * i    ] = v(0,0); m_data[9 * i + 1] = v(0,1); m_data[9 * i + 2] = v(0,2);
+	m_data[9 * i + 3] = v(1,0); m_data[9 * i + 4] = v(1,1); m_data[9 * i + 5] = v(1,2);
+	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
+}
+
+//! Set a scalar value at the specified index
+inline void FSMeshData::setScalar(size_t i, double v)
+{
+	assert(m_dataType == DATA_SCALAR);
+	m_data[i] = v;
+}
+
+//! Set a vec3d value at the specified index
+inline void FSMeshData::setVec3d(size_t i, const vec3d& v)
+{
+	assert(m_dataType == DATA_VEC3);
+	m_data[3*i + 0] = v.x;
+	m_data[3*i + 1] = v.y;
+	m_data[3*i + 2] = v.z;
+}
+
+//! Get a scalar value at the specified index
+inline double FSMeshData::getScalar(size_t i) const 
+{
+	assert(m_dataType == DATA_SCALAR);
+	return m_data[i];
+}
+
+//! Get a vec3d value at the specified index
+inline vec3d FSMeshData::getVec3d(size_t i) const
+{
+	assert(m_dataType == DATA_VEC3);
+	return vec3d(m_data[3*i], m_data[3*i+1], m_data[3*i+2]);
+}
+
+//! Get a mat3d value at the specified index
+inline mat3d FSMeshData::getMat3d(size_t i) const
+{
+	assert(m_dataType == DATA_MAT3);
+	const double* d = &m_data[0] + 9 * i;
+	return mat3d(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8]);
+}
+
+//! Get a double value at the specified index
+inline double FSMeshData::get(size_t i) const 
+{ 
+	return m_data[i];
+}
+
+//! Get multiple values starting at the specified index
+inline void FSMeshData::get(size_t n, double* d)
+{
+	for (int i = 0; i < m_itemSize; ++i)
+		d[i] = m_data[m_itemSize * n + i];
+}

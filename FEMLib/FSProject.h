@@ -79,8 +79,8 @@ public:
 
 private:
 	int			m_type;			// type of data
-	string		m_sdata;		// data string
-	string		m_fileName;		// file name (optional)
+	std::string	m_sdata;		// data string
+	std::string	m_fileName;		// file name (optional)
 };
 
 //-----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class FSLogNodeData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogNodeData() : FSLogData(LD_NODE) { SetMeshItemType(FE_NODE_FLAG); }
-	FSLogNodeData(FEItemListBuilder* pl) : FSLogData(LD_NODE) { 
+	FSLogNodeData(FSItemListBuilder* pl) : FSLogData(LD_NODE) { 
 		SetMeshItemType(FE_NODE_FLAG); 
 		SetItemList(pl); 
 	}
@@ -99,7 +99,7 @@ class FSLogElemData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogElemData() : FSLogData(LD_ELEM) { SetMeshItemType(FE_ELEM_FLAG); }
-	FSLogElemData(FEItemListBuilder* pl) : FSLogData(LD_ELEM) {
+	FSLogElemData(FSItemListBuilder* pl) : FSLogData(LD_ELEM) {
 		SetMeshItemType(FE_ELEM_FLAG);
 		SetItemList(pl);
 	}
@@ -110,7 +110,7 @@ class FSLogFaceData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogFaceData() : FSLogData(LD_FACE) { SetMeshItemType(FE_FACE_FLAG); }
-	FSLogFaceData(FEItemListBuilder* pl) : FSLogData(LD_FACE) {
+	FSLogFaceData(FSItemListBuilder* pl) : FSLogData(LD_FACE) {
 		SetMeshItemType(FE_FACE_FLAG);
 		SetItemList(pl);
 	}
@@ -120,7 +120,7 @@ class FSLogSurfaceData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogSurfaceData() : FSLogData(LD_SURFACE) { SetMeshItemType(FE_FACE_FLAG); }
-	FSLogSurfaceData(FEItemListBuilder* pl) : FSLogData(LD_SURFACE) {
+	FSLogSurfaceData(FSItemListBuilder* pl) : FSLogData(LD_SURFACE) {
 		SetMeshItemType(FE_FACE_FLAG);
 		SetItemList(pl);
 	}
@@ -130,7 +130,7 @@ class FSLogDomainData : public FSLogData, public FSHasOneItemList
 {
 public:
 	FSLogDomainData() : FSLogData(LD_DOMAIN) { SetMeshItemType(FE_PART_FLAG); }
-	FSLogDomainData(FEItemListBuilder* pl) : FSLogData(LD_DOMAIN) {
+	FSLogDomainData(FSItemListBuilder* pl) : FSLogData(LD_DOMAIN) {
 		SetMeshItemType(FE_PART_FLAG);
 		SetItemList(pl);
 	}
@@ -213,7 +213,7 @@ public:
 	void Load(IArchive& ar);
 
 	//! Get the project title
-	const string& GetTitle() { return m_title; }
+	const std::string& GetTitle() { return m_title; }
 
 	//! set the project title
 	void SetTitle(const std::string& title);
@@ -222,7 +222,7 @@ public:
 	void Reset();
 
 	//! validate the project
-	int Validate(string& szerr);
+	int Validate(std::string& szerr);
 
 	//! Get the plot file settings
 	CPlotDataSettings& GetPlotDataSettings() { return m_plt; }
@@ -244,6 +244,8 @@ public:
 	int GetUnits() const;
 
 	void PurgeSelections();
+
+    void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
 public:
 	// convert the old format to the new
@@ -268,7 +270,7 @@ protected:
 	void ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
-	string				m_title;	// Project Title
+	std::string			m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
 	int					m_module;	// active module
 	int					m_units;	// unit system (read from feb file)

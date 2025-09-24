@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "LineDataModel.h"
-#include <MeshLib/FECurveMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSFindElement.h>
 #include <PostLib/FEPostModel.h>
 using namespace std;
 using namespace Post;
@@ -118,7 +118,7 @@ public:
 	};
 
 public:
-	Segment(FECurveMesh* mesh) : m_mesh(mesh) {}
+	Segment(FSCurveMesh* mesh) : m_mesh(mesh) {}
 	Segment(const Segment& s) { m_mesh = s.m_mesh; m_pt = s.m_pt; m_seg = s.m_seg; }
 	void operator = (const Segment& s) { m_mesh = s.m_mesh; m_pt = s.m_pt; m_seg = s.m_seg; }
 
@@ -252,7 +252,7 @@ private:
 	}
 
 private:
-	FECurveMesh* m_mesh;
+	FSCurveMesh* m_mesh;
 	vector<LINE>	m_seg;
 	vector<int>		m_pt;
 };
@@ -292,7 +292,7 @@ void LineData::processLines()
 
 	// now build a curve mesh
 	// (this is used to find the segments, i.e. the connected lines)
-	FECurveMesh mesh;
+	FSCurveMesh mesh;
 	mesh.Create((int)points.size(), lines);
 	for (int i = 0; i < points.size(); ++i)
 	{
@@ -509,13 +509,13 @@ struct FRAG
 
 vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 {
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	vec3f x[FSElement::MAX_NODES];
 
 	vec3f r0 = a.r0;
 	if (a.iel >= 0)
 	{
-		FEElement_& el = mesh.ElementRef(a.iel);
+		FSElement_& el = mesh.ElementRef(a.iel);
 		for (int i = 0; i < el.Nodes(); ++i) x[i] = fem.NodePosition(el.m_node[i], nstate);
 		r0 = el.eval(x, a.r[0], a.r[1], a.r[2]);
 	}
@@ -533,7 +533,7 @@ int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& 
 	if (fp == 0) return 0;
 
 	Post::FEPostModel& fem = *lineData.GetFEModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// read the magic number
 	unsigned int magic = 0;
@@ -594,7 +594,7 @@ int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& 
 	}
 
 	// build search tool
-	FEFindElement find(mesh);
+	FSFindElement find(mesh);
 	find.Init(flags);
 
 	int nret = 1;

@@ -34,7 +34,7 @@ class GLPlotGroup : public CGLPlot
 public:
 	GLPlotGroup();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;

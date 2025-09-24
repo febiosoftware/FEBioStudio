@@ -26,10 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
-#include <QVariantMap>
 #include <vector>
 #include <QString>
-//using namespace std;
 
 namespace Ui {
 	class CRepositoryPanel;
@@ -37,8 +35,8 @@ namespace Ui {
 }
 
 class CMainWindow;
-class CRepoConnectionHandler;
-class CLocalDatabaseHandler;
+class CModelRepoConnectionHandler;
+class CModelDatabaseHandler;
 class QTreeWidgetItem;
 class QLabel;
 class QProgressBar;
@@ -76,7 +74,7 @@ public:
 	void SetProjectData(char **argv);
 	void SetFileData(char **argv);
 	void AddCurrentTag(char **argv);
-	void AddPublication(QVariantMap data);
+	void AddPublication(QVariantMap& data);
 	void AddCurrentFileTag(char **argv);
 
 	QString GetRepositoryFolder();
@@ -149,8 +147,8 @@ private:
 private:
 	CMainWindow*		m_wnd;
 	QDockWidget* dock;
-	CRepoConnectionHandler*	repoHandler;
-	CLocalDatabaseHandler* dbHandler;
+	CModelRepoConnectionHandler*	repoHandler;
+	CModelDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
 	QString linkToOpen;
 	qint64 lastMessageTime;

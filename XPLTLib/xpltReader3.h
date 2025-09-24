@@ -26,11 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include "xpltFileReader.h"
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSElement.h>
+
+class FSMesh;
 
 namespace Post {
 	class FEState;
-	class FEPostMesh;
 	class FEMeshData;
 }
 
@@ -453,22 +454,22 @@ protected:
 	bool ReadFaceData    (Post::FEPostModel& fem, Post::FEState* pstate);
 	bool ReadEdgeData    (Post::FEPostModel& fem, Post::FEState* pstate);
 
-	bool ReadElemData_NODE(Post::FEPostMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
+	bool ReadElemData_NODE(FSMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_MULT(Domain& d, Post::FEMeshData& s, int ntype);
 
-	bool ReadFaceData_NODE(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_NODE(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype, int arrSize);
-	bool ReadFaceData_MULT(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_MULT(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 
-	bool ReadEdgeData_NODE(Post::FEPostMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
+	bool ReadEdgeData_NODE(FSMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
 	bool ReadEdgeData_ITEM(Edge& e, Post::FEMeshData& data, int ntype);
-	bool ReadEdgeData_MULT(Post::FEPostMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
+	bool ReadEdgeData_MULT(FSMesh& m, Edge& e, Post::FEMeshData& data, int ntype);
 
 	void Clear();
 
 protected:
-	Post::FEPostMesh* GetCurrentMesh() { return m_mesh; }
+	FSMesh* GetCurrentMesh() { return m_mesh; }
 
 protected:
 	Dictionary			m_dic;
@@ -490,5 +491,5 @@ protected:
 	int		m_nel;
 
 	Post::FEState*	m_pstate;	//!< last read state section
-	Post::FEPostMesh*	m_mesh;		//!< current mesh
+	FSMesh*	m_mesh;		//!< current mesh
 };

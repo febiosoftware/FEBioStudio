@@ -41,7 +41,7 @@ private:
 	{
 	public:
 		int Faces() { return (int) m_face.size(); }
-		void BuildNodeList(FEPostMesh& m);
+		void BuildNodeList(FSMesh& m);
 
 		int Nodes() { return (int) m_node.size(); }
 
@@ -78,6 +78,8 @@ public:
 	void SetSelection1(std::vector<int>& s) { m_surf1.m_face = s; }
 
 	void SetSelection2(std::vector<int>& s) { m_surf2.m_face = s; }
+
+    void SetSigned(bool sign) { m_bsigned = sign; }
 
 protected:
 	// build node normal list

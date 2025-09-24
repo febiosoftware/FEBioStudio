@@ -38,6 +38,7 @@ enum PIVOT_SELECTION_MODE {
 };
 
 class CGLView;
+class GLRenderEngine;
 
 class GManipulator
 {
@@ -47,7 +48,7 @@ public:
 
 	void SetScale(double s) { m_scale = s; }
 
-	virtual void Render(int npivot, bool bactive) = 0;
+	virtual void Render(GLRenderEngine& re, int npivot, bool bactive) = 0;
 
 	virtual int Pick(int x, int y) = 0;
 
@@ -61,7 +62,7 @@ class GTranslator : public GManipulator
 public:
 	GTranslator(CGLView* view) : GManipulator(view) {}
 
-	void Render(int npivot, bool bactive);
+	void Render(GLRenderEngine& re, int npivot, bool bactive) override;
 
 	int Pick(int x, int y);
 };
@@ -71,7 +72,7 @@ class GRotator : public GManipulator
 public:
 	GRotator(CGLView* view) : GManipulator(view) {}
 
-	void Render(int npivot, bool bactive);
+	void Render(GLRenderEngine& re, int npivot, bool bactive) override;
 
 	int Pick(int x, int y);
 };
@@ -81,7 +82,7 @@ class GScalor : public GManipulator
 public:
 	GScalor(CGLView* view) : GManipulator(view) {}
 
-	void Render(int npivot, bool bactive);
+	void Render(GLRenderEngine& re, int npivot, bool bactive) override;
 
 	int Pick(int x, int y);
 };

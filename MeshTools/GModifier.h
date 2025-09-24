@@ -30,15 +30,12 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/FSObject.h>
 #include <list>
-//using namespace std;
 
-//-----------------------------------------------------------------------------
 class GObject;
 class FSMesh;
-class GMesh;
+class GLMesh;
 class FSModel;
 
-//-----------------------------------------------------------------------------
 class GModifier : public FSObject
 {
 public:
@@ -46,7 +43,7 @@ public:
 	virtual ~GModifier(void);
 
 	virtual void Apply(GObject* po) = 0;
-	virtual GMesh* BuildGMesh(GObject* po) = 0;
+	virtual GLMesh* BuildGMesh(GObject* po) = 0;
 	virtual FSMesh* BuildFEMesh(GObject* po) = 0; 
 };
 
@@ -58,7 +55,7 @@ public:
 public:
 	GTwistModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -71,7 +68,7 @@ public:
 public:
 	GPinchModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -84,7 +81,7 @@ public:
 public:
 	GBendModifier();
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 
 protected:
@@ -109,7 +106,7 @@ public:
 public:
 	GSkewModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po);
+	virtual GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -121,7 +118,7 @@ public:
 public:
 	GWrapModifier();
 	void Apply(GObject* po);
-	virtual GMesh* BuildGMesh(GObject* po) { return 0; }
+	virtual GLMesh* BuildGMesh(GObject* po) { return 0; }
 	FSMesh* BuildFEMesh(GObject* po) { return 0; }
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
 
@@ -142,7 +139,7 @@ public:
 public:
 	GExtrudeModifier();
 	void Apply(GObject* po);
-	GMesh* BuildGMesh(GObject* po);
+	GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -156,7 +153,7 @@ public:
 public:
 	GRevolveModifier();
 	void Apply(GObject* po);
-	GMesh* BuildGMesh(GObject* po);
+	GLMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);
 };
 
@@ -181,7 +178,7 @@ public:
 
 	GModifier* Modifier(int n)
 	{
-		list<GModifier*>::iterator pi = m_Mod.begin();
+		std::list<GModifier*>::iterator pi = m_Mod.begin();
 		for (int i=0; i<n; ++i) ++pi;
 		return (*pi);
 	}
@@ -199,5 +196,5 @@ protected:
 	GObject*	m_po;		// the object that owns this stack
 	FSMesh*		m_pmesh;	// the original mesh
 
-	list<GModifier*>	m_Mod;	// the actual modifier stack
+	std::list<GModifier*>	m_Mod;	// the actual modifier stack
 };

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "Document.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/TetOverlap.h>
+#include <MeshLib/FSMesh.h>
 
 // constructor
 CTetOverlapTool::CTetOverlapTool(CMainWindow* wnd) : CBasicTool(wnd, "Tet Overlap", HAS_APPLY_BUTTON)
@@ -55,7 +56,7 @@ bool CTetOverlapTool::OnApply()
 	// do the overlap test
 	TetOverlap tetOverlap;
 
-	std::vector<pair<int, int> > tetList;
+	std::vector<std::pair<int, int> > tetList;
 	if (tetOverlap.Apply(mesh, tetList) == false)
 	{
 		return SetErrorString("The tool has failed.");

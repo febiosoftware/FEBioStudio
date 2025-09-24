@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInit.h"
 #include <FEBioLib/febio.h>
-#include <FEMLib/FSProject.h>
 #include "FEBioModule.h"
 
 namespace febio {
@@ -40,10 +39,4 @@ void FEBio::InitFEBioLibrary()
 
 	// we will process create events
 	FEBio::BlockCreateEvents(false);
-}
-
-bool FEBio::ConfigureFEBio(const char* szfilename)
-{
-	FEBioConfig config;
-	return febio::Configure(szfilename, config);
 }

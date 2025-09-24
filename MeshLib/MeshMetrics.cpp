@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "MeshMetrics.h"
 #include "triangulate.h"
 #include "MeshTools.h"
-#include "FENodeFaceList.h"
+#include "FSNodeFaceList.h"
 #include "hex.h"
 #include "tet.h"
 #include "penta.h"
@@ -113,6 +113,30 @@ int FTPYRA13[5][8] = {
     { 2, 3, 4, 7, 12, 11, -1, -1 },
     { 3, 0, 4, 8,  9, 12, -1, -1 },
     { 3, 2, 1, 0,  7,  6,  5,  8 }
+};
+
+int FTTRI3[1][3] = {
+	{0,1,2}
+};
+
+int FTTRI6[1][6] = {
+	{0,1,2,3,4,5}
+};
+
+int FTTRI7[1][7] = {
+	{0,1,2,3,4,5,6}
+};
+
+int FTQUAD4[1][4] = {
+	{0,1,2,3}
+};
+
+int FTQUAD8[1][8] = {
+	{0,1,2,3,4,5,6,7}
+};
+
+int FTQUAD9[1][9] = {
+	{0,1,2,3,4,5,6,7,8}
 };
 
 //-----------------------------------------------------------------------
@@ -354,7 +378,7 @@ double ShellArea(const FSMesh& mesh, const FSElement& el)
 	return val;
 }
 
-void ElementNodePositions(const FSMesh& mesh, const FEElement_& e, vec3d* r)
+void ElementNodePositions(const FSMesh& mesh, const FSElement_& e, vec3d* r)
 {
 	for (int i = 0; i < e.Nodes(); ++i)
 	{
@@ -854,10 +878,10 @@ vec3d GradientShell(const FSMesh& mesh, const FSElement& el, int node, double* v
 //-----------------------------------------------------------------------------
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
 
-vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int nb);
-vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int nb);
+vec3d ShapeGradientSolid(const FSMesh& mesh, const FSElement_& el, int na, int nb);
+vec3d ShapeGradientShell(const FSMesh& mesh, const FSElement_& el, int na, int nb);
 
-vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradient(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	if (el.IsSolid()) return ShapeGradientSolid(mesh, el, na, nb);
 	else if (el.IsShell()) return ShapeGradientShell(mesh, el, na, nb);
@@ -865,7 +889,7 @@ vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb)
 	return vec3d(0, 0, 0);
 }
 
-vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradientSolid(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
@@ -974,7 +998,7 @@ vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int n
 }
 
 // NOTE: This is a work in progress and was implemented to apply the scalar field tool to shells.
-vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int nb)
+vec3d ShapeGradientShell(const FSMesh& mesh, const FSElement_& el, int na, int nb)
 {
 	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
@@ -1174,14 +1198,14 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, 
 	vec3f r0 = to_vec3f(mesh.NodePosition(node));
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(node);
-	int NF = nfl.size();
+	FSNodeFaceList& NFL = mesh.NodeFaceList();
+	int NF = NFL.Valence(node);
 
 	// estimate surface normal
 	vec3f sn(0, 0, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		const FSFace& f = mesh.Face(nfl[i].fid);
+		const FSFace& f = *NFL.Face(node, i);
 		sn += f.m_fn;
 	}
 	sn.Normalize();

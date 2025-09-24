@@ -26,12 +26,12 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLSlicePLot.h"
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLRenderEngine.h>
+
 using namespace Post;
 
 extern int LUT[256][15];
@@ -84,11 +84,6 @@ CGLSlicePlot::CGLSlicePlot()
 	m_fmin = 0.f;
 	m_fmax = 0.f;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT| GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -107,11 +102,6 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		bool smooth = GetBoolValue(GRAD_SMOOTH);
 		m_Col.SetDivisions(divs);
 		m_Col.SetSmooth(smooth);
-		if (GetLegendBar())
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
 		m_slice_range = GetVec2dValue(SLICE_RANGE);
@@ -149,10 +139,6 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		SetFloatValue(NORMAL_X, m_norm.x);
 		SetFloatValue(NORMAL_Y, m_norm.y);
 		SetFloatValue(NORMAL_Z, m_norm.z);
-		if (GetLegendBar())
-		{
-			SetBoolValue(SHOW_LEGEND, GetLegendBar()->visible());
-		}
 	}
 
 	return false;
@@ -165,7 +151,7 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
-void CGLSlicePlot::Render(CGLContext& rc)
+void CGLSlicePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nfield == -1) return;
 	if (m_box.IsValid() == false) return;
@@ -173,27 +159,20 @@ void CGLSlicePlot::Render(CGLContext& rc)
 	bool showBox = GetBoolValue(SHOW_BOX);
 	if (showBox)
 	{
-		glColor3ub(200, 200, 200);
-		glx::renderBox(m_box, false, 1.0);
+		glx::renderBox(re, m_box, GLColor(200, 200, 200), false, 1.0);
 	}
 
 	GLTexture1D& tex = m_Col.GetTexture();
 
 	uint8_t a = uint8_t(255.0*GetFloatValue(TRANSPARENCY));
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_TEXTURE_1D);
-	glDisable(GL_LIGHTING);
-	tex.MakeCurrent();
+	re.pushState();
+	re.setMaterial(GLMaterial::PLASTIC, GLColor(255, 255, 255, a), GLMaterial::TEXTURE_1D, false);
+	re.setTexture(tex);
 
-	glColor4ub(255, 255, 255, a);
-
-	if (a < 255) m_mesh.ZSortFaces(*rc.m_cam);
-
-	m_mesh.Render();
-
-	glDisable(GL_TEXTURE_1D);
-	glPopAttrib();
+	// TODO: We used to z-sort the faces
+	re.renderGMesh(m_mesh, false);
+	re.popState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,7 +188,7 @@ int CGLSlicePlot::UpdateSlice(float ref, std::vector<std::pair<int, float> >& ac
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	vec3d norm = to_vec3d(m_norm);
 	norm.Normalize();
@@ -220,7 +199,7 @@ int CGLSlicePlot::UpdateSlice(float ref, std::vector<std::pair<int, float> >& ac
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible() && el.IsSolid())
 		{
@@ -289,13 +268,13 @@ void CGLSlicePlot::UpdateBoundingBox()
 {
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// only count enabled parts
 	BOX box;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible())
 		{
@@ -318,7 +297,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 
 	UpdateBoundingBox();
 
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
@@ -347,7 +326,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& el = pm->ElementRef(i);
+			FSElement_& el = pm->ElementRef(i);
 			Material* pmat = pfem->GetMaterial(el.m_MatID);
 			if (pmat->benable && el.IsVisible())
 			{
@@ -394,9 +373,6 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	GLLegendBar* bar = GetLegendBar();
-	bar->SetRange(m_crng.x, m_crng.y);
-
 	// update the mesh
 	UpdateMesh();
 }
@@ -406,13 +382,13 @@ void CGLSlicePlot::UpdateMesh()
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	vector<pair<int, float> > activeElements;
 	activeElements.reserve(pm->Faces());
 	int faces = CountFaces(activeElements);
 
-	m_mesh.Create(faces, GLMesh::FLAG_TEXTURE);
+	m_mesh.Clear();
 
 	float ev[8];	// element nodal values
 	float ex[8];	// element nodal distances
@@ -431,12 +407,11 @@ void CGLSlicePlot::UpdateMesh()
 	float f;
 
 	// loop over all elements
-	m_mesh.BeginMesh();
 	for (int i = 0; i < activeElements.size(); ++i)
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(activeElements[i].first);
+		FSElement_& el = pm->ElementRef(activeElements[i].first);
 
 		const int* nt = nullptr;
 		switch (el.Type())
@@ -501,14 +476,12 @@ void CGLSlicePlot::UpdateMesh()
 			}
 
 			// add the vertices
-			m_mesh.AddVertex(r[0], tex[0]);
-			m_mesh.AddVertex(r[1], tex[1]);
-			m_mesh.AddVertex(r[2], tex[2]);
+			m_mesh.AddFace(r, tex);
 
 			pf += 3;
 		}
 	}
-	m_mesh.EndMesh();
+	m_mesh.Update();
 }
 
 int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements)
@@ -557,4 +530,19 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 	}
 
 	return faceCount;
+}
+
+LegendData CGLSlicePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(RANGE_DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

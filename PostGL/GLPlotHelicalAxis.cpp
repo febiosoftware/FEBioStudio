@@ -117,29 +117,30 @@ bool GLPlotHelicalAxis::UpdateData(bool bsave)
 	return false;
 }
 
-void GLPlotHelicalAxis::Render(CGLContext& rc)
+void GLPlotHelicalAxis::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_mdl == nullptr) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
+	re.pushState();
+	re.disable(GLRenderEngine::StateFlag::LIGHTING);
+	re.disable(GLRenderEngine::StateFlag::DEPTHTEST);
 
 	BOX box = m_mdl->GetFSModel()->GetBoundingBox();
-	glPushMatrix();
-	glx::translate(pos);
-	glx::rotate(rot);
+	re.pushTransform();
+
+	re.translate(pos);
+	re.rotate(rot);
 
 	GLColor col = GetColorValue(COLOR);
-	glx::glcolor(col);
+	re.setColor(col);
 
 	double R = 0.05 * box.Radius();
 	double s = GetFloatValue(SCALE);
 
-	glx::renderHelicalAxis(R*s);
-	glPopMatrix();
+	glx::renderHelicalAxis(re, R*s);
 
-	glPopAttrib();
+	re.popTransform();
+	re.popState();
 }
 
 void GLPlotHelicalAxis::Update()

@@ -31,13 +31,14 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <FEBioLink/FEBioClass.h>
 #include <VTKLib/VTKLegacyFileReader.h>
+#include <FSCore/Palette.h>
 #include <QDir>
+using namespace std;
 
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
+#include <iostream>
 
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
@@ -110,7 +111,8 @@ bool CImportSpringsTool::ReadVTKFile()
 	VTK::vtkLegacyFileReader vtk;
 	if (!vtk.Load(file.c_str())) return false;
 
-	const VTK::vtkPiece& piece = vtk.GetVTKModel().Piece(0);
+	const VTK::vtkDataSet& dataSet = vtk.GetVTKModel().DataSet(0);
+	const VTK::vtkPiece& piece = dataSet.Piece(0);
 	size_t NP = piece.Points();
 	vector<vec3d> points(NP);
 	for (size_t i = 0; i < NP; ++i)
@@ -276,6 +278,8 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	// create the discrete set
 	GDiscreteSpringSet* dset = new GDiscreteSpringSet(gm);
 
+	std::cout << m_type << std::endl;
+
 	// set the spring material
 	FSModel* fem = gm->GetFSModel();
 	switch (m_type)
@@ -304,8 +308,10 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 		dset->AddElement(spring.n0, spring.n1);
 	}
 
+	const CPalette& pal = CPaletteManager::CurrentPalette();
+
 	int n = gm->DiscreteObjects();
-	dset->SetColor(col[n % GMaterial::MAX_COLORS]);
+	dset->SetColor(pal.Color(n % pal.Colors()));
 
 	return true;
 }
@@ -343,7 +349,7 @@ bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
 		el.m_node[1] = nb;
 
 		FSEdge& ed = m.Edge(NC0 + i);
-		ed.SetType(FEEdgeType::FE_EDGE2);
+		ed.SetType(FSEdgeType::FE_EDGE2);
 		ed.SetExterior(true);
 		ed.m_gid = cid++;
 		ed.n[0] = na;

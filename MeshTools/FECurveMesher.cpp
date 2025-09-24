@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECurveMesher.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 
 //-----------------------------------------------------------------------------
 // constructor
@@ -45,7 +45,7 @@ void FECurveMesher::SetElementSize(double h)
 
 //-----------------------------------------------------------------------------
 // create the mesh
-FECurveMesh* FECurveMesher::BuildMesh(GEdge* edge)
+FSCurveMesh* FECurveMesher::BuildMesh(GEdge* edge)
 {
 	// make sure this edge is not null
 	if (edge == 0) return 0;
@@ -68,7 +68,7 @@ FECurveMesh* FECurveMesher::BuildMesh(GEdge* edge)
 }
 
 //-----------------------------------------------------------------------------
-FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
+FSCurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 {
 	// get the parent object
 	// we need this for getting the nodal coordinates
@@ -85,7 +85,7 @@ FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 	if (elems < 1) elems = 1;
 
 	// generate the nodes and edges
-	FECurveMesh* edgeMesh = new FECurveMesh;
+	FSCurveMesh* edgeMesh = new FSCurveMesh;
 	int nodes = elems + 1;
 	for (int i=0; i<nodes; ++i)
 	{
@@ -103,7 +103,7 @@ FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 }
 
 //-----------------------------------------------------------------------------
-FECurveMesh* FECurveMesher::BuildEdgeMesh(GEdge* edge)
+FSCurveMesh* FECurveMesher::BuildEdgeMesh(GEdge* edge)
 {
 	// get the parent object
 	// we need this for getting the nodal coordinates
@@ -111,7 +111,7 @@ FECurveMesh* FECurveMesher::BuildEdgeMesh(GEdge* edge)
 
 	// get the curve mesh from the edge
 	// This will only work if a mesh is assigned to this object
-	FECurveMesh* curve = parentObject->GetFECurveMesh(edge->GetLocalID());
+	FSCurveMesh* curve = parentObject->GetFECurveMesh(edge->GetLocalID());
 	assert(curve);
 
 	return curve;

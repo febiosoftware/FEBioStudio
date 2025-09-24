@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FERefineSurface.h"
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 using namespace std;
 
 FERefineSurface::FERefineSurface() : FESurfaceModifier("Refine Mesh")

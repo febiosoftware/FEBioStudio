@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "insertCurve.h"
 #include <MeshLib/TriMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <GeomLib/GObject.h>
 #include "FECurveMesher.h"
 
@@ -35,7 +35,7 @@ InsertCurves::InsertCurves()
 {
 }
 
-FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
+FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, std::vector<GEdge*>& curveList, bool insertEdges, double tol)
 {
 	// make sure we have at least one curve
 	if (curveList.empty()) return 0;
@@ -54,7 +54,7 @@ FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList,
 
 		// get a mesh for this curve
 		GObject* pco = dynamic_cast<GObject*>(pc->Object());
-		FECurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
+		FSCurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
 		if (ps == 0)
 		{
 			if (pco->GetType() == GCURVE)
@@ -68,7 +68,7 @@ FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList,
 
 		// insert all the nodes
 		int N = ps->Nodes();
-		vector<TriMesh::NODEP> nodeList;
+		std::vector<TriMesh::NODEP> nodeList;
 		for (int i = 0; i<N; ++i)
 		{
 			vec3d r = ps->Node(i).r;

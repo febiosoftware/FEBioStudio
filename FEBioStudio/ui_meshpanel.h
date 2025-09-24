@@ -83,6 +83,8 @@ public:
 		if (pl) form->setPropertyList(pl);
 	}
 
+	CPropertyList* GetPropertyList() { return form->getPropertyList(); }
+
 private:
 	CPropertyListForm* form;
 };

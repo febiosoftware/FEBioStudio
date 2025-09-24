@@ -1,12 +1,9 @@
 #pragma once
 #include "FEStepComponent.h"
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include "GMaterial.h"
 #include <list>
 #include <MeshLib/IHasItemList.h>
-//using namespace std;
-
-using std::list;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces
@@ -19,8 +16,8 @@ public:
 	int Type() { return m_ntype; }
 
 protected:
-	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
-	FEItemListBuilder* LoadList(IArchive& ar);
+	void SaveList(FSItemListBuilder* pitem, OArchive& ar);
+	FSItemListBuilder* LoadList(IArchive& ar);
 
 protected:
 	int		m_ntype;
@@ -48,11 +45,11 @@ public:
 	FSPairedInterface(int ntype, FSModel* ps, int nstep);
 	~FSPairedInterface();
 
-	void SetPrimarySurface(FEItemListBuilder* pg);
-	void SetSecondarySurface(FEItemListBuilder* pg);
+	void SetPrimarySurface(FSItemListBuilder* pg);
+	void SetSecondarySurface(FSItemListBuilder* pg);
 
-	FEItemListBuilder*	GetPrimarySurface();
-	FEItemListBuilder*	GetSecondarySurface();
+	FSItemListBuilder*	GetPrimarySurface();
+	FSItemListBuilder*	GetSecondarySurface();
 
 	void SwapPrimarySecondary();
 
@@ -67,7 +64,7 @@ class FSRigidInterface : public FSSoloInterface
 {
 public:
 	FSRigidInterface(FSModel* ps, int nstep = 0);
-	FSRigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
+	FSRigidInterface(FSModel* ps, GMaterial* pm, FSItemListBuilder* pi, int nstep = 0);
 	
 	GMaterial* GetRigidBody() { return m_pmat; }
 	void SetRigidBody(GMaterial* pm) { m_pmat = pm; }
@@ -334,7 +331,7 @@ public:
 
 	double SpringConstant() const;
 
-	void BuildSpringList(std::vector<pair<int, int> >& L);
+	void BuildSpringList(std::vector<std::pair<int, int> >& L);
 };
 
 //-----------------------------------------------------------------------------

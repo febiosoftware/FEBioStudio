@@ -26,12 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLIsoSurfacePlot.h"
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
 #include <GLLib/GLContext.h>
-#include <GLLib/GLCamera.h>
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -79,13 +77,6 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 	m_Col.SetDivisions(m_nslices);
 	m_Col.SetSmooth(false);
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetType(GLLegendBar::DISCRETE);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -102,8 +93,6 @@ void CGLIsoSurfacePlot::SetSlices(int nslices)
 
 bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 {
-	GLLegendBar* bar = GetLegendBar();
-
 	if (bsave)
 	{
 		bool update = false;
@@ -117,7 +106,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
-		if (GetBoolValue(LEGEND)) bar->show(); else bar->hide();
 
 		m_Col.SetDivisions(m_nslices);
 
@@ -127,7 +115,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		{
 			// set the mesh transparency
 			m_transparency = GetFloatValue(TRANSPARENCY);
-			m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
 		}
 	}
 	else
@@ -138,7 +125,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		SetBoolValue(CLIP, AllowClipping());
 		SetBoolValue(HIDDEN, m_bcut_hidden);
 		SetIntValue(SLICES, m_nslices);
-		SetBoolValue(LEGEND, bar->visible());
 		SetBoolValue(SMOOTH, m_bsmooth);
 		SetIntValue(RANGE_TYPE, m_rangeType);
 		SetFloatValue(USER_MAX, m_userMax);
@@ -148,30 +134,13 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	return false;
 }
 
-void CGLIsoSurfacePlot::Render(CGLContext& rc)
+void CGLIsoSurfacePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nfield == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-	{
-		glColor4ub(255,255,255,255);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-		glDisable(GL_TEXTURE_1D);
-		GLfloat zero[4] = {0.f};
-		GLfloat one[4] = {1.f, 1.f, 1.f, 1.f};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-	//	glLightfv(GL_LIGHT0, GL_AMBIENT, one);
-	//	glLightfv(GL_LIGHT0, GL_DIFFUSE, one);
-
-		// z-sorting if necessary
-		if (m_transparency < 0.99) m_glmesh.ZSortFaces(*rc.m_cam);
-
-		// render the mesh
-		m_glmesh.Render();
-	}
-	glPopAttrib();
+	// TODO: We used to z-sort the faces
+	re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.renderGMesh(m_renderMesh, false);
 }
 
 void CGLIsoSurfacePlot::UpdateMesh()
@@ -182,8 +151,9 @@ void CGLIsoSurfacePlot::UpdateMesh()
 	float vmax = m_crng.y;
 	float D = vmax - vmin;
 
-	// build a GMesh
-	GMesh mesh;
+	// build a GLMesh
+	m_renderMesh.Clear();
+	GLMesh mesh;
 	for (int i = 0; i < m_nslices; ++i)
 	{
 		float ref = vmin + ((float)i + 0.5f)* D / (m_nslices);
@@ -192,19 +162,14 @@ void CGLIsoSurfacePlot::UpdateMesh()
 
 		CColorMap& map = m_Col.ColorMap();
 		GLColor col = map.map(w);
-		UpdateSlice(mesh, ref, col);
+		col.a = (unsigned char)(m_transparency * 255.0);
+		UpdateSlice(m_renderMesh, ref, col);
 	}
-
-	// create a GLVAMesh
-	m_glmesh.CreateFromGMesh(mesh);
-
-	// set the mesh transparency
-	m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLIsoSurfacePlot::UpdateSlice(GMesh& mesh, float ref, GLColor col)
+void CGLIsoSurfacePlot::UpdateSlice(GLMesh& mesh, float ref, GLColor col)
 {
 	float ev[8];	// element nodal values
 	vec3f ex[8];	// element nodal positions
@@ -219,7 +184,7 @@ void CGLIsoSurfacePlot::UpdateSlice(GMesh& mesh, float ref, GLColor col)
 	FEPostModel* ps = mdl->GetFSModel();
 
 	// get the mesh
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	const int* nt = nullptr;
 
@@ -228,7 +193,7 @@ void CGLIsoSurfacePlot::UpdateSlice(GMesh& mesh, float ref, GLColor col)
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && (el.IsVisible() || m_bcut_hidden) && el.IsSolid())
 		{
@@ -337,7 +302,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
@@ -364,7 +329,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& el = pm->ElementRef(i);
+			FSElement_& el = pm->ElementRef(i);
 			Material* pmat = pfem->GetMaterial(el.m_MatID);
 			if (pmat->benable && el.IsVisible())
 			{
@@ -436,6 +401,16 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
+	// Update the mesh
+	UpdateMesh();
+}
+
+LegendData CGLIsoSurfacePlot::GetLegendData() const
+{
+	LegendData l;
+	l.discrete = true;
+	l.ndivs = GetIntValue(SLICES);
+
 	float vmin = m_crng.x;
 	float vmax = m_crng.y;
 	if (m_nslices > 0)
@@ -445,8 +420,12 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		vmin += d;
 		vmax -= d;
 	}
-	GetLegendBar()->SetRange(vmin, vmax);
 
-	// Update the mesh
-	UpdateMesh();
+	l.vmin = vmin;
+	l.vmax = vmax;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

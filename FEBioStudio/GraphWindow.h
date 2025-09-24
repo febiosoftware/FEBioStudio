@@ -26,8 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include <QMainWindow>
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "Document.h"
+#include <FSCore/LoadCurve.h>
 
 class CMainWindow;
 class CGraphWidget;
@@ -225,7 +226,7 @@ public:
 	void Update();
 
 public:
-	vector<CPlotTool*>	m_tools;
+	std::vector<CPlotTool*>	m_tools;
 };
 
 //=================================================================================================

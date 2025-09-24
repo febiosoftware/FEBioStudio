@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "modelcheck.h"
 #include <FEMLib/FSProject.h>
-#include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -36,7 +35,7 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <sstream>
 
-using std::stringstream;
+using namespace std;
 
 class FSObjectRef
 {

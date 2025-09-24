@@ -215,8 +215,8 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	int i, j;
 
 	// get the mesh
-	FEPostMesh* pm = new FEPostMesh;
-	FEPostMesh& mesh = *pm;
+	FSMesh* pm = new FSMesh;
+	FSMesh& mesh = *pm;
 
 	// clear the state data
 	fem.ClearStates();
@@ -251,7 +251,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 		if (nread != 9)
 		{
 			Close();
-			mesh.ClearAll();
+			mesh.Clear();
 			return errf("Error while reading element connectivity");
 		}
 
@@ -290,7 +290,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 		if ((n[8] <= 0) || (n[8] > nmat))
 		{
 			Close();
-			mesh.ClearAll();
+			mesh.Clear();
 			return errf("Invalid element definition. Data may be corrupted.");
 		}
 
@@ -337,7 +337,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -345,7 +345,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).Disable();
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -361,7 +361,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	{
 		FSFace& f = mesh.Face(i);
         assert(f.m_elem[0].eid >= 0);
-		FEElement_& el = mesh.ElementRef(f.m_elem[0].eid);
+		FSElement_& el = mesh.ElementRef(f.m_elem[0].eid);
 	}
 
 	fem.UpdateBoundingBox();
@@ -388,7 +388,7 @@ bool FELSDYNAPlotImport::ReadStates(FEPostModel& fem)
 	FEState* pprev = 0;	// previously read state
 	FEState* pstate = 0;
 
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	bool bfirst = true;
 
@@ -586,7 +586,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	else
 		strcpy(plh.Title, sztitle);
 
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	plh.neips = 2000;
 	plh.flagU = (bflag[2]?1:0);
@@ -634,7 +634,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	// corresponds to the nr in the plot file
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsSolid())
 		{
 			N = el.Nodes();
@@ -671,7 +671,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	// write beam connectivity data
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsBeam())
 		{
 			N = el.Nodes();
@@ -686,7 +686,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	// write shell connectivity data
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FSElement_& el = mesh.ElementRef(i);
 		if (el.IsShell())
 		{
 			N = el.Nodes();
@@ -790,7 +790,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 		float data[FSElement::MAX_NODES] = {0.f}, val;
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 			if (el.IsSolid())
 			{
 				if (bflag[0])
@@ -818,7 +818,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 		s[0] = s[1] = s[2] = s[3] = s[4] = s[5];
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 			if (el.IsBeam())
 			{
 				fwrite(s, sizeof(float), 6, fp);
@@ -828,7 +828,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 		// write shell element data
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement_& el = mesh.ElementRef(i);
+			FSElement_& el = mesh.ElementRef(i);
 			if (el.IsShell())
 			{
 				if (bflag[0])

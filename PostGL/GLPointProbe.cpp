@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
@@ -92,36 +92,31 @@ bool GLPointProbe::UpdateData(bool bsave)
 	return false;
 }
 
-void GLPointProbe::Render(CGLContext& rc)
+void GLPointProbe::Render(GLRenderEngine& re, GLContext& rc)
 {
 	double R = m_R * m_size;
-	GLUquadricObj* pobj = gluNewQuadric();
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glPushMatrix();
+	re.setColor(m_col);
+	re.pushTransform();
 	{
-		glTranslated(m_pos.x, m_pos.y, m_pos.z);
-		gluSphere(pobj, R, 32, 32);
+		re.translate(m_pos);
+		glx::drawSphere(re, R);
 	}
-	glPopMatrix();
-
-	gluDeleteQuadric(pobj);
+	re.popTransform();
 
 	int ntime = GetModel()->CurrentTimeIndex();
 	if (m_bshowPath && (m_path.size() > ntime) && (ntime >= 1))
 	{
 		GLColor c = GetColorValue(PATH_COLOR);
-		glColor3ub(c.r, c.g, c.b);
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINE_STRIP);
+		re.pushState();
+		re.setMaterial(GLMaterial::OVERLAY, c);
+		re.begin(GLRenderEngine::LINESTRIP);
 		for (int i = 0; i <= ntime; ++i)
 		{
 			vec3d& r = m_path[i];
-			glx::vertex3d(r);
+			re.vertex(r);
 		}
-		glEnd();
-		glPopAttrib();
+		re.end();
+		re.popState();
 	}
 }
 
@@ -143,7 +138,7 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return;
 
-	FEPostMesh* mesh = mdl->GetActiveMesh();
+	FSMesh* mesh = mdl->GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	FEPostModel* fem = mdl->GetFSModel();
@@ -159,7 +154,7 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	BOX box = mdl->GetFSModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (bdisp == false) return;
@@ -259,7 +254,7 @@ public:
 
 	quatd GetOrientation() { return quatd(); }
 
-	FEItemListBuilder* CreateItemList() { return nullptr; }
+	FSItemListBuilder* CreateItemList() { return nullptr; }
 
 	void Update()
 	{

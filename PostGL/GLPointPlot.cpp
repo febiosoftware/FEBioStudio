@@ -25,9 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLPointPlot.h"
-#include <PostGL/GLModel.h>
+#include "GLModel.h"
 #include <PostLib/FEPostModel.h>
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLRenderEngine.h>
+#include <FSCore/ColorMapManager.h>
+#include <GLLib/glx.h>
+
 using namespace Post;
 
 PointDataModel::PointDataModel(FEPostModel* fem) : m_fem(fem)
@@ -74,7 +78,7 @@ void PointData::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
 	PointData::POINT p;
 	p.m_r = a;
 	p.nlabel = nlabel;
-	int n = data.size();
+	int n = (int)data.size();
 	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
 	for (int i = 0; i < n; ++i) p.val[i] = data[i];
 	m_pt.push_back(p);
@@ -116,13 +120,6 @@ CGLPointPlot::CGLPointPlot()
 	m_range.min = 0.0; m_range.max = 1.0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	bar->hide();
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -131,7 +128,7 @@ int stringlist_to_szstring(std::vector<std::string>& sl, char* sz)
 	int nsize = 0;
 	for (int i = 0; i < sl.size(); ++i)
 	{
-		nsize += sl[i].length();
+		nsize += (int)sl[i].length();
 		nsize += 1; // null character
 	}
 	nsize++; // final null character
@@ -208,12 +205,6 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
-
-		if (GetLegendBar())
-		{
-			bool b = (m_showLegend && (m_colorMode != 0));
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 	}
 	else
 	{
@@ -232,7 +223,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 }
 
 //-----------------------------------------------------------------------------
-void CGLPointPlot::Render(CGLContext& rc)
+void CGLPointPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = GetModel()->CurrentTimeIndex();
@@ -241,34 +232,26 @@ void CGLPointPlot::Render(CGLContext& rc)
 
 	switch (m_renderMode)
 	{
-	case 0: RenderPoints(); break;
-	case 1: RenderSpheres(); break;
+	case 0: RenderPoints(re); break;
+	case 1: RenderSpheres(re); break;
 	}
 }
 
-void CGLPointPlot::RenderPoints()
+void CGLPointPlot::RenderPoints(GLRenderEngine& re)
 {
-	GLfloat size_old;
-	glGetFloatv(GL_POINT_SIZE, &size_old);
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glPointSize(m_pointSize);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	float size_old = re.pointSize();
+	re.setPointSize(m_pointSize);
 
-		m_pointMesh.Render();
-	}
-	glPopAttrib();
-	glPointSize(size_old);
+	re.renderGMeshNodes(m_pointMesh, false);
+	re.setPointSize(size_old);
 }
 
-void CGLPointPlot::RenderSpheres()
+void CGLPointPlot::RenderSpheres(GLRenderEngine& re)
 {
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
-	GLUquadricObj* pobj = gluNewQuadric();
+	re.setColor(m_solidColor);
 
 	double pointSize = m_pointSize;
 
@@ -281,12 +264,12 @@ void CGLPointPlot::RenderSpheres()
 	for (int i = 0; i < pd.Points(); ++i)
 	{
 		PointData::POINT& p = pd.Point(i);
-		vec3f& c = p.m_r;
+		vec3d c = to_vec3d(p.m_r);
 
 		if (m_colorMode == 1)
 		{
 			GLColor c = map.map(p.tex);
-			glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 		}
 
 		if (pointSizeSource > 0)
@@ -296,15 +279,14 @@ void CGLPointPlot::RenderSpheres()
 
 		if (pointSize > 0)
 		{
-			glPushMatrix();
+			re.pushTransform();
 			{
-				glTranslatef(c.x, c.y, c.z);
-				gluSphere(pobj, pointSize, 32, 32);
+				re.translate(c);
+				glx::drawSphere(re, pointSize);
 			}
-			glPopMatrix();
+			re.popTransform();
 		}
 	}
-	gluDeleteQuadric(pobj);
 }
 
 void CGLPointPlot::Update(int ntime, float dt, bool breset)
@@ -371,11 +353,6 @@ void CGLPointPlot::UpdateRange()
 	m_range.min = fmin;
 	m_range.max = fmax;
 
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(fmin, fmax);
-	}
-
 	for (int i = 0; i < pd.Points(); ++i)
 	{
 		PointData::POINT& p = pd.Point(i);
@@ -392,21 +369,17 @@ void CGLPointPlot::UpdatePointMesh()
 	PointData& pd = m_pointData->GetPointData(ns);
 
 	int NP = pd.Points(); 
-	m_pointMesh.Create(NP, GLMesh::FLAG_COLOR);
+	m_pointMesh.Clear();
 
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	GLColor c = m_solidColor;
-	m_pointMesh.BeginMesh();
+	for (int i = 0; i < NP; ++i)
 	{
-		for (int i = 0; i < NP; ++i)
-		{
-			PointData::POINT& p = pd.Point(i);
-			if (m_colorMode == 1) c = map.map(p.tex);
-			m_pointMesh.AddVertex(p.m_r, c);
-		}
+		PointData::POINT& p = pd.Point(i);
+		if (m_colorMode == 1) c = map.map(p.tex);
+		m_pointMesh.AddNode(p.m_r, c);
 	}
-	m_pointMesh.EndMesh();
 }
 
 void CGLPointPlot::UpdateTriMesh()

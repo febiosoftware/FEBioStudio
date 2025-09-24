@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "3PointAngleTool.h"
 #include <GLLib/GDecoration.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 class C3PointAngleDecoration : public GDecoration
@@ -64,14 +64,14 @@ public:
 		arc = new GArcDecoration(b, a, c);
 	}
 
-	void render()
+	void render(GLRenderEngine& re) override
 	{
-		point[0]->render();
-		point[1]->render();
-		point[2]->render();
-		line[0]->render();
-		line[1]->render();
-		if (arc) arc->render();
+		point[0]->render(re);
+		point[1]->render(re);
+		point[2]->render(re);
+		line[0]->render(re);
+		line[1]->render(re);
+		if (arc) arc->render(re);
 	}
 
 private:

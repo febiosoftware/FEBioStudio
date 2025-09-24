@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 #include <vector>
-#include <MeshLib/FEMeshData.h>
+#include <MeshLib/FSMeshData.h>
 
 class CDlgAddMeshDataUI;
 class FSObject;
@@ -63,7 +63,7 @@ class CDlgEditMeshData : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditMeshData(FEMeshData* data, QWidget* parent);
+	CDlgEditMeshData(FSMeshData* data, QWidget* parent);
 	~CDlgEditMeshData();
 
 	void accept() override;

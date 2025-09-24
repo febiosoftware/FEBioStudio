@@ -35,7 +35,8 @@ public:
 	enum ProjectItemType
 	{
 		PROJECT_FILE,
-		PROJECT_GROUP
+		PROJECT_GROUP,
+		PROJECT_PLUGIN
 	};
 
 	class ProjectItem
@@ -51,6 +52,7 @@ public:
 		bool IsType(ProjectItemType type) const { return (type == m_type); }
 		bool IsFile() const { return (m_type == PROJECT_FILE); }
 		bool IsGroup() const { return (m_type == PROJECT_GROUP); }
+		bool IsPlugin() const { return (m_type == PROJECT_PLUGIN); }
 
 		int Items() const { return m_items.size(); }
 
@@ -69,6 +71,7 @@ public:
 
 		ProjectItem& AddFile(const QString& filePath);
 		ProjectItem& AddGroup(const QString& name);
+		ProjectItem& AddPlugin(const QString& name);
 
 		bool ContainsFile(const QString& fileName) const;
 
@@ -137,9 +140,13 @@ public:
 	const ProjectItem* FindFile(const QString& fileName) const;
 	ProjectItem* FindFile(const QString& fileName);
 
+	const ProjectItem* FindPlugin(const QString& pluginName) const;
+	ProjectItem* FindPlugin(const QString& pluginName);
+
 	QStringList GetFilePaths();
 
-	void AddGroup(const QString& groupName, int parentId);
+	ProjectItem* AddGroup(const QString& groupName, int parentId = -1);
+	ProjectItem* AddPlugin(const QString& groupName, int parentId = -1);
 
 	void MoveToGroup(int itemId, int groupId);
 

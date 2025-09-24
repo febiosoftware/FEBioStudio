@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ObjectPanel.h"
 #include <QPushButton>
 #include <QGridLayout>
-#include <QFormLayout>
 #include <QMenu>
 #include <QLineEdit>
 #include <QLabel>
@@ -39,7 +38,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GLWLib/convert.h>
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 
 class CObjectPanelUI
 {

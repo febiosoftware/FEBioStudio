@@ -62,7 +62,7 @@ bool FENikeImport::Load(const char *szfile)
 	Close();
 
 	// update the mesh
-	if (m_pm) m_pm->BuildMesh(); else return false;
+	if (m_pm) m_pm->RebuildMesh(); else return false;
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state
@@ -144,7 +144,7 @@ bool FENikeImport::ReadGeometrySection()
 	char szline[256];
 
 	// create the geometry
-	m_pm = new FEPostMesh;
+	m_pm = new FSMesh;
 	m_pm->Create(m_nn, m_nhel+m_nsel);	
 
 	// read the nodes

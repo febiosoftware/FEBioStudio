@@ -37,7 +37,8 @@ SOFTWARE.*/
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
-#include "PlotWidget.h"
+#include "CurveEditWidget.h"
+#include "MathEditWidget.h"
 #include "IconProvider.h"
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEBase.h>
@@ -48,6 +49,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QCheckBox>
 #include <FSCore/FSCore.h>
+#include <FEMLib/FEMaterial.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include "SelectionBox.h"
@@ -146,12 +148,12 @@ CMeshItemPropertySelector::CMeshItemPropertySelector(GModel& m, FSProperty* pp, 
 	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pp->GetComponent()); assert(pms);
 	if (pms)
 	{
-		FEItemListBuilder* pg = pms->GetItemList();
+		FSItemListBuilder* pg = pms->GetItemList();
 		m_itemList = m.AllNamedSelections(m_domainType);
 		int n = -1;
 		for (int i=0; i< m_itemList.size(); ++i)
 		{
-			FEItemListBuilder* pi = m_itemList[i];
+			FSItemListBuilder* pi = m_itemList[i];
 			addItem(QString::fromStdString(pi->GetName()));
 			if (pi == pg) n = i;
 		}
@@ -264,6 +266,24 @@ public:
 								}
 								else toolTip += QString("<p><b>load controller: </b>(none)</p>");
 							}
+
+							int rng = p.GetRangeType();
+							double vmin, vmax;
+							p.GetRange(vmin, vmax);
+							switch (rng)
+							{
+							case 0: break;
+							case 1: toolTip += QString("<p><b>range:</b> (%1, inf)</p>").arg(vmin); break;
+							case 2: toolTip += QString("<p><b>range:</b> [%1, inf)</p>").arg(vmin); break;
+							case 3: toolTip += QString("<p><b>range:</b> (-inf, %1)</p>").arg(vmin); break;
+							case 4: toolTip += QString("<p><b>range:</b> (-inf, %1]</p>").arg(vmin); break;
+							case 5: toolTip += QString("<p><b>range:</b> (%1, %2)</p>").arg(vmin).arg(vmax); break;
+							case 6: toolTip += QString("<p><b>range:</b> [%1, %2]</p>").arg(vmin).arg(vmax); break;
+							case 7: toolTip += QString("<p><b>range:</b> (%1, %2]</p>").arg(vmin).arg(vmax); break;
+							case 8: toolTip += QString("<p><b>range:</b> [%1, %2)</p>").arg(vmin).arg(vmax); break;
+							case 9: toolTip += QString("<p><b>range:</b> value != %1</p>").arg(vmin); break;
+							}
+							
 							return toolTip;
 						}
 						return QVariant();
@@ -546,7 +566,7 @@ public:
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
 						{
-							FEItemListBuilder* pi = pms->GetItemList();
+							FSItemListBuilder* pi = pms->GetItemList();
 							if (pi == nullptr) return QString("(empty)");
 							string s = pi->GetName();
 							if (s.empty()) return QString("(unnamed)");
@@ -558,7 +578,7 @@ public:
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
 						{
-							FEItemListBuilder* pi = pms->GetItemList();
+							FSItemListBuilder* pi = pms->GetItemList();
 							if (pi == nullptr) return QString("(empty)");
 							string s = pi->GetName();
 							if (s.empty()) return QString("(unnamed)");
@@ -1301,7 +1321,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						int n = pm->MeshDataFields();
 						for (int j = 0; j < n; ++j)
 						{
-							FEMeshData* md = pm->GetMeshDataField(j);
+							FSMeshData* md = pm->GetMeshDataField(j);
 							pw->addItem(QString::fromStdString(md->GetName()));
 						}
 					}
@@ -1781,11 +1801,20 @@ void FEClassPropsView::drawRow(QPainter* painter, const QStyleOptionViewItem& op
 		if (m_model->isParameter(index))
 		{
 			Param* p = m_model->GetParameter(index); assert(p);
-			if (p && p->IsModified())
+			if (p)
 			{
-				QRect rt = option.rect;
-				rt.setLeft(rt.right() - 5);
-				painter->fillRect(rt, Qt::darkCyan);
+				if (!p->IsValueValid())
+				{
+					QRect rt = option.rect;
+					rt.setLeft(rt.right() - 5);
+					painter->fillRect(rt, Qt::red);
+				}
+				else if (p->IsModified())
+				{
+					QRect rt = option.rect;
+					rt.setLeft(rt.right() - 5);
+					painter->fillRect(rt, Qt::darkCyan);
+				}
 			}
 		}
 	}
@@ -1797,6 +1826,13 @@ void FEClassPropsView::onModelDataChanged()
 	{
 		m_model->ResetModel();
 		expandAll();
+	}
+
+	QModelIndex index = currentIndex();
+	FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+	if (item && item->isParameter())
+	{
+		emit paramChanged(item->m_pc, item->parameter());
 	}
 }
 
@@ -1828,6 +1864,7 @@ FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
 	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
 	QObject::connect(m_view, SIGNAL(clicked(const QModelIndex&)), this, SLOT(on_clicked(const QModelIndex&)));
+	QObject::connect(m_view, SIGNAL(paramChanged(FSCoreBase*, Param*)), this, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 }
 
 void FEClassPropsWidget::on_clicked(const QModelIndex& index)
@@ -1840,6 +1877,11 @@ void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)
 	m_view->SetFEClass(nullptr, fem);
 	m_flt->setText("");
 	m_view->SetFEClass(pc, fem);
+}
+
+void FEClassPropsWidget::on_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
 }
 
 FSProperty* FEClassPropsWidget::getProperty(const QModelIndex& index)
@@ -1885,6 +1927,7 @@ public:
 		w->setLayout(l);
 
 		QObject::connect(feprops, SIGNAL(clicked(const QModelIndex&)), w, SLOT(onItemClicked(const QModelIndex&)));
+		QObject::connect(feprops, SIGNAL(paramChanged(FSCoreBase*, Param*)), w, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 		QObject::connect(plt, SIGNAL(dataChanged()), w, SLOT(onPlotChanged()));
 		QObject::connect(math, SIGNAL(mathChanged(QString)), w, SLOT(onMathChanged(QString)));
 	}
@@ -2003,4 +2046,9 @@ void FEClassEdit::onPlotChanged()
 
 	// Whatever is selected is not a load curve, so let's just hide the stack
 	ui->SetFunction1D(nullptr);
+}
+
+void FEClassEdit::on_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
 }

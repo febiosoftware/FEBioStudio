@@ -25,12 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 #include <MeshLib/Intersect.h>
 #include <vector>
 #include <string>
 #include "FEDataField.h"
-//using namespace std;
 
 namespace Post {
 
@@ -43,7 +42,7 @@ class FEAreaCoverage : public ModelDataField
 	public:
 		int Faces() { return (int)m_face.size(); }
 
-		void Create(FEPostMesh& m);
+		void Create(FSMesh& m);
 
 		int Nodes() { return (int)m_node.size(); }
 

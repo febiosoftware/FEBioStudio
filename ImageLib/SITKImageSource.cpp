@@ -68,7 +68,7 @@ bool CITKImageSource::Load()
         
         try {
 			// this can throw exceptions. 
-			// If this is called while loading the fs2 file, this could cause problems.
+			// If this is called while loading the fsm file, this could cause problems.
 			// Therefore, we catch the exception and just retrn false.
 			sitkImage = reader.Execute();
 
@@ -184,7 +184,7 @@ bool CITKImageSource::Load()
 
 		try {
 			// this can throw exceptions. 
-			// If this is called while loading the fs2 file, this could cause problems.
+			// If this is called while loading the fsm file, this could cause problems.
 			// Therefore, we catch the exception and just return false.
             sitkImage = reader.Execute();
 		}
@@ -302,7 +302,8 @@ void CITKImageSource::Load(IArchive& ar)
     // Set location of image if it was saved
     if(m_img && foundBox)
     {
-        m_img->SetBoundingBox(tempBox);
+		tempBox.m_valid = true;
+		m_img->SetBoundingBox(tempBox);
     }
 
 }
@@ -332,7 +333,7 @@ bool CITKSeriesImageSource::Load()
 
     try {
         // this can throw exceptions. 
-        // If this is called while loading the fs2 file, this could cause problems.
+        // If this is called while loading the fsm file, this could cause problems.
         // Therefore, we catch the exception and just return false.
         slice = reader.Execute();
     }
@@ -367,7 +368,7 @@ bool CITKSeriesImageSource::Load()
 
             try {
                 // this can throw exceptions. 
-                // If this is called while loading the fs2 file, this could cause problems.
+                // If this is called while loading the fsm file, this could cause problems.
                 // Therefore, we catch the exception and just return false.
                 slice = reader.Execute();
             }

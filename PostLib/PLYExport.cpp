@@ -70,7 +70,7 @@ bool PLYExport::Save(FEPostModel& fem, const char* szfile)
 bool PLYFile::Write(FEPostModel& fem, const CColorMap& tex)
 {
 	FEState* state = fem.CurrentState();
-	FEPostMesh* pm = state->GetFEMesh();
+	FSMesh* pm = state->GetFEMesh();
 	int verts = pm->Nodes();
 	int faces = pm->Faces();
 

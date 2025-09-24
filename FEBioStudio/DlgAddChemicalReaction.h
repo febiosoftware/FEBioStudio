@@ -30,14 +30,6 @@ SOFTWARE.*/
 #include <list>
 #include <QDialog>
 
-
-//using namespace std;
-
-using std::vector;
-using std::list;
-using std::pair;
-using std::string;
-
 class CMainWindow;
 class QListWidget;
 class QListWidgetItem;
@@ -61,9 +53,9 @@ public:
 	void addSourceItem(const QString& item, int data, int flag = 0);
 	void addTargetItem(const QString& item, int data, int flag = 0);
 
-	list<int> targetData();
+	std::list<int> targetData();
 
-	void targetData(vector<int>& sols, vector<int>& smbs);
+	void targetData(std::vector<int>& sols, std::vector<int>& smbs);
 
 private slots:
 	void on_toTarget_clicked();
@@ -133,12 +125,12 @@ private:
 	GMaterial*					m_pmp;		// parent multiphasic material
 	FEBioReactionMaterial*		m_reaction;	// active reaction
 
-	string				m_name;		// name of chemical reaction
+	std::string			m_name;		// name of chemical reaction
 	bool				m_bovrd;	// override calculated Vbar
-	vector<int>			m_solR;		// solute reactants
-	vector<int>			m_sbmR;		// solid-bound molecule reactants
-	vector<int>			m_solP;		// solute products
-	vector<int>			m_sbmP;		// solid-bound molecule products
+	std::vector<int>	m_solR;		// solute reactants
+	std::vector<int>	m_sbmR;		// solid-bound molecule reactants
+	std::vector<int>	m_solP;		// solute products
+	std::vector<int>	m_sbmP;		// solid-bound molecule products
 
 	int			m_reactionMat;		// reaction material
 	int			m_fwdMat;			// forward rate material
@@ -148,5 +140,5 @@ private:
 private:
 	CMainWindow*	m_wnd;
 	Ui::CDlgAddChemicalReaction*	ui;
-	vector<pair<string, int> >		m_species;
+	std::vector<std::pair<std::string, int> >	m_species;
 };

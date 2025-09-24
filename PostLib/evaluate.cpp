@@ -146,9 +146,9 @@ float component(const mat3fs& m, int n)
 	case 12: { float p[3]; m.DeviatoricPrincipals(p); g = p[2]; } break;
 	case 13: g = m.MaxShear(); break;
 	case 14: g = m.norm(); break;
-    case 15: g = m.tr(); break;
-    case 16: g = m.x*m.y + m.x*m.z + m.y*m.z - pow(m.xy,2) - pow(m.xz,2) - pow(m.yz,2); break;
-    case 17: g = m.det(); break;
+	case 15: g = m.tr(); break;
+	case 16: g = m.x*m.y + m.x*m.z + m.y*m.z - pow(m.xy,2) - pow(m.xz,2) - pow(m.yz,2); break;
+	case 17: g = m.det(); break;
 	default:
 		assert(false);
 	}
@@ -176,8 +176,8 @@ float component(const mat3fd& m, int n)
 float component(const tens4fs& m, int n)
 {
 	float g = 0.f;
-    assert((n >= 0) && (n<21));
-    g = m.d[n];
+	assert((n >= 0) && (n < 21));
+	g = m.d[n];
 	return g;
 }
 
@@ -207,7 +207,7 @@ bool FEPostModel::Evaluate(int nfield, int ntime, bool breset)
 {
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 	if (mesh->Nodes() == 0) return false;
 
 	// make sure that we have to reevaluate
@@ -233,50 +233,58 @@ void FEPostModel::EvalNodeField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
+	ValArray& faceData = state.m_FaceData;
+	ValArray& elemData = state.m_ElemData;
 
 	// first, we evaluate all the nodes
-	int i, j;
-	for (i=0; i<mesh->Nodes(); ++i)
+#pragma omp parallel
 	{
-		FSNode& node = mesh->Node(i);
-		NODEDATA& d = state.m_NODE[i];
-		d.m_val = 0;
-		d.m_ntag = 0;
-		if (node.IsEnabled()) EvaluateNode(i, ntime, nfield, d);
-	}
-
-	// Next, we project the nodal data onto the faces
-	ValArray& faceData = state.m_FaceData;
-	for (i=0; i<mesh->Faces(); ++i)
-	{
-		FSFace& f = mesh->Face(i);
-		FACEDATA& d = state.m_FACE[i];
-		d.m_val = 0.f;
-		d.m_ntag = 0;
-		if (f.IsEnabled())
+		int NN = mesh->Nodes();
+#pragma omp for
+		for (int i = 0; i < NN; ++i)
 		{
-			d.m_ntag = 1;
-			for (j=0; j<f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
-			d.m_val /= (float) f.Nodes();
+			FSNode& node = mesh->Node(i);
+			NODEDATA& d = state.m_NODE[i];
+			d.m_val = 0;
+			d.m_ntag = 0;
+			if (node.IsEnabled()) EvaluateNode(i, ntime, nfield, d);
 		}
-	}
 
-	// Finally, we project the nodal data onto the elements
-	ValArray& elemData = state.m_ElemData;
-	for (i=0; i<mesh->Elements(); ++i)
-	{
-		FEElement_& e = mesh->ElementRef(i);
-		ELEMDATA& d = state.m_ELEM[i];
-		d.m_val = 0.f;
-		d.m_state &= ~StatusFlags::ACTIVE;
-		e.Deactivate();
-		if (e.IsEnabled())
+		// Next, we project the nodal data onto the faces
+		int NF = mesh->Faces();
+#pragma omp for nowait
+		for (int i = 0; i < NF; ++i)
 		{
-			d.m_state |= StatusFlags::ACTIVE;
-			e.Activate();
-			for (j=0; j<e.Nodes(); ++j) { float val = state.m_NODE[e.m_node[j]].m_val; elemData.value(i,j) = val; d.m_val += val; }
-			d.m_val /= (float) e.Nodes();
+			FSFace& f = mesh->Face(i);
+			FACEDATA& d = state.m_FACE[i];
+			d.m_val = 0.f;
+			d.m_ntag = 0;
+			if (f.IsEnabled())
+			{
+				d.m_ntag = 1;
+				for (int j = 0; j < f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
+				d.m_val /= (float)f.Nodes();
+			}
+		}
+
+		// Finally, we project the nodal data onto the elements
+		int NE = mesh->Elements();
+#pragma omp for
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement_& e = mesh->ElementRef(i);
+			ELEMDATA& d = state.m_ELEM[i];
+			d.m_val = 0.f;
+			d.m_state &= ~StatusFlags::ACTIVE;
+			e.Deactivate();
+			if (e.IsEnabled())
+			{
+				d.m_state |= StatusFlags::ACTIVE;
+				e.Activate();
+				for (int j = 0; j < e.Nodes(); ++j) { float val = state.m_NODE[e.m_node[j]].m_val; elemData.value(i, j) = val; d.m_val += val; }
+				d.m_val /= (float)e.Nodes();
+			}
 		}
 	}
 }
@@ -289,7 +297,7 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// get the data ID
 	int ndata = FIELD_CODE(nfield);
@@ -300,6 +308,8 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 
 	FEMeshData& rd = state.m_Data[ndata];
 	DATA_FORMAT fmt = rd.GetFormat();
+
+	FSNodeFaceList& NFL = mesh->NodeFaceList();
 
 	// for float/node face data we evaluate the nodal values directly.
 	if ((rd.GetType() == DATA_SCALAR) && (fmt == DATA_NODE))
@@ -315,8 +325,9 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 		FEFaceData_T<float, DATA_NODE>& df = dynamic_cast<FEFaceData_T<float, DATA_NODE>&>(rd);
 
 		// evaluate nodes and faces
-		float tmp[FSElement::MAX_NODES] = {0.f};
-		for (int i=0; i<mesh->Faces(); ++i)
+		ValArray& faceData = state.m_FaceData;
+		float tmp[FSElement::MAX_NODES] = { 0.f };
+		for (int i = 0; i < mesh->Faces(); ++i)
 		{
 			FSFace& face = mesh->Face(i);
 			state.m_FACE[i].m_val = 0.f;
@@ -326,13 +337,13 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 				df.eval(i, tmp);
 
 				float avg = 0.f;
-				for (int j = 0; j<face.Nodes(); ++j)
+				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					avg += tmp[j];
 					state.m_NODE[face.n[j]].m_val = tmp[j];
 					state.m_NODE[face.n[j]].m_ntag = 1;
 
-					state.m_FaceData.value(i, j) = tmp[j];
+					faceData.value(i,j) = tmp[j];
 				}
 
 				state.m_FACE[i].m_val = avg / face.Nodes();
@@ -343,45 +354,47 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 	else
 	{
 		// first evaluate all faces
+		ValArray& faceData = state.m_FaceData;
 		float data[FSFace::MAX_NODES], val;
-		int i, j;
-		for (i=0; i<mesh->Faces(); ++i)
+		for (int i = 0; i < mesh->Faces(); ++i)
 		{
 			FSFace& f = mesh->Face(i);
 			state.m_FACE[i].m_val = 0.f;
 			state.m_FACE[i].m_ntag = 0;
-			if (f.IsEnabled()) 
+			if (f.IsEnabled())
 			{
 				if (EvaluateFace(i, ntime, nfield, data, val))
 				{
 					state.m_FACE[i].m_ntag = 1;
 					state.m_FACE[i].m_val = val;
-					for (int j=0; j<f.Nodes(); ++j) state.m_FaceData.value(i, j) = data[j];
+					for (int j=0; j<f.Nodes(); ++j)
+						faceData.value(i, j) = data[j];
 				}
 			}
 		}
 
 		// now evaluate the nodes
-		ValArray& faceData = state.m_FaceData;
-		for (i=0; i<mesh->Nodes(); ++i)
+		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			NODEDATA& node = state.m_NODE[i];
-			const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(i);
-			node.m_val = 0.f; 
+			node.m_val = 0.f;
 			node.m_ntag = 0;
 			int n = 0;
-			for (j=0; j<(int) nfl.size(); ++j)
+			int NF = NFL.Valence(i);
+			for (int j = 0; j < NF; ++j)
 			{
-				FACEDATA& f = state.m_FACE[nfl[j].fid];
+				int fid = NFL.FaceIndex(i, j);
+				int nid = NFL.FaceNodeIndex(i, j);
+				FACEDATA& f = state.m_FACE[fid];
 				if (f.m_ntag > 0)
 				{
-					node.m_val += faceData.value(nfl[j].fid, nfl[j].nid);
+					node.m_val += faceData.value(fid, nid);
 					++n;
 				}
 			}
 			if (n > 0)
 			{
-				node.m_val /= (float) n;
+				node.m_val /= (float)n;
 				node.m_ntag = 1;
 			}
 		}
@@ -389,9 +402,9 @@ void FEPostModel::EvalFaceField(int ntime, int nfield)
 
 	// evaluate the elements (to zero)
 	// Face data is not projected onto the elements
-	for (int i=0; i<mesh->Elements(); ++i) 
+	for (int i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement_& el = mesh->ElementRef(i);
+		FSElement_& el = mesh->ElementRef(i);
 		el.Deactivate();
 		state.m_ELEM[i].m_val = 0.f;
 		state.m_ELEM[i].m_state &= ~StatusFlags::ACTIVE;
@@ -404,7 +417,7 @@ void FEPostModel::EvalEdgeField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// get the data ID
 	int ndata = FIELD_CODE(nfield);
@@ -458,39 +471,31 @@ void FEPostModel::EvalEdgeField(int ntime, int nfield)
 	else
 	{
 		// first evaluate all edges
-		int i, j;
-		for (i = 0; i < mesh->Edges(); ++i)
+		for (int i = 0; i < mesh->Edges(); ++i)
 		{
-			FSEdge& f = mesh->Edge(i);
+			FSEdge& e = mesh->Edge(i);
 			state.m_EDGE[i].m_val = 0.f;
 			state.m_EDGE[i].m_ntag = 0;
-			if (f.IsEnabled())
+			if (e.IsEnabled())
 			{
-				Post::EDGEDATA ed;
-				if (EvaluateEdge(i, ntime, nfield, ed))
-				{
-					state.m_EDGE[i].m_ntag = 1;
-					state.m_EDGE[i].m_val = ed.m_val;
-					for (int j = 0; j < f.Nodes(); ++j) state.m_EdgeData.value(i, j) = ed.m_nv[j];
-				}
+				EvaluateEdge(i, ntime, nfield, state.m_EDGE[i]);
 			}
 		}
 
 		// now evaluate the nodes
-		ValArray& edgeData = state.m_EdgeData;
-		for (i = 0; i < mesh->Nodes(); ++i)
+		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			NODEDATA& node = state.m_NODE[i];
 			const vector<NodeEdgeRef>& nll = mesh->NodeEdgeList(i);
 			node.m_val = 0.f;
 			node.m_ntag = 0;
 			int n = 0;
-			for (j = 0; j < (int)nll.size(); ++j)
+			for (int j = 0; j < (int)nll.size(); ++j)
 			{
-				EDGEDATA& f = state.m_EDGE[nll[j].eid];
-				if (f.m_ntag > 0)
+				EDGEDATA& ed = state.m_EDGE[nll[j].eid];
+				if (ed.m_ntag > 0)
 				{
-					node.m_val += edgeData.value(nll[j].eid, nll[j].nid);
+					node.m_val += ed.m_nv[nll[j].nid];
 					++n;
 				}
 			}
@@ -506,7 +511,7 @@ void FEPostModel::EvalEdgeField(int ntime, int nfield)
 	// Edge data is not projected onto the elements
 	for (int i = 0; i < mesh->Elements(); ++i)
 	{
-		FEElement_& el = mesh->ElementRef(i);
+		FSElement_& el = mesh->ElementRef(i);
 		el.Deactivate();
 		state.m_ELEM[i].m_val = 0.f;
 		state.m_ELEM[i].m_state &= ~StatusFlags::ACTIVE;
@@ -521,18 +526,18 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// first evaluate all elements
 	float data[FSElement::MAX_NODES] = {0.f};
 	float val;
 	for (int i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement_& el = mesh->ElementRef(i);
+		FSElement_& el = mesh->ElementRef(i);
 		state.m_ELEM[i].m_val = 0.f;
 		state.m_ELEM[i].m_state &= ~StatusFlags::ACTIVE;
 		el.Deactivate();
-		if (el.IsEnabled()) 
+		if (el.IsEnabled())
 		{
 			if (EvaluateElement(i, ntime, nfield, data, val))
 			{
@@ -547,6 +552,7 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 
 	// now evaluate the nodes
 	ValArray& elemData = state.m_ElemData;
+	FSNodeElementList& NEL = mesh->NodeElementList();
 	for (int i=0; i<mesh->Nodes(); ++i)
 	{
 		FSNode& node = mesh->Node(i);
@@ -554,19 +560,20 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 		state.m_NODE[i].m_ntag = 0;
 		if (node.IsEnabled())
 		{
-			const vector<NodeElemRef>& nel = mesh->NodeElemList(i);
-			int m = (int) nel.size(), n=0;
+			int m = NEL.Valence(i), n=0;
 			float val = 0.f;
 			for (int j=0; j<m; ++j)
 			{
-				ELEMDATA& e = state.m_ELEM[nel[j].eid];
+				int eid = NEL.ElementIndex(i, j);
+				int nid = NEL.ElementNodeIndex(i, j);
+				ELEMDATA& e = state.m_ELEM[eid];
 				if (e.m_state & StatusFlags::ACTIVE)
 				{
-					val += elemData.value(nel[j].eid, nel[j].nid);
+					val += elemData.value(eid, nid);
 					++n;
 				}
 			}
-			if (n != 0) 
+			if (n != 0)
 			{
 				state.m_NODE[i].m_val = val / (float) n;
 				state.m_NODE[i].m_ntag = 1;
@@ -575,7 +582,6 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 	}
 
 	// evaluate faces
-	ValArray& fd = state.m_FaceData;
 	for (int i=0; i<mesh->Faces(); ++i)
 	{
 		FSFace& f = mesh->Face(i);
@@ -598,257 +604,45 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 		{
 			d.m_ntag = 1;
 
+			const int* fn = nullptr;
+			int nf = f.Nodes();
 			switch (mesh->ElementRef(eid).Type())
 			{
-			case FE_TET4:
-			case FE_TET5:
-			{
-					const int* fn = FTTET[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
-            }
-            break;
-            case FE_PYRA5:
-            {
-                const int* fn = FTPYRA5[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI3:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
-                        break;
-                    case FE_FACE_QUAD4:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        fd.value(i, 3) = elemData.value(eid, fn[3]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
-                        break;
-                    default:
-                    break;
-                }
-            }
-            break;
-			case FE_PENTA6:
-            {
-                const int* fn = FTPENTA[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI3:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
-                        break;
-                    case FE_FACE_QUAD4:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        fd.value(i, 3) = elemData.value(eid, fn[3]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
-                        break;
-                    default:
-                    break;
-                }
-            }
-            break;
-            case FE_PYRA13:
-            {
-                const int* fn = FTPYRA13[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI6:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        fd.value(i, 3) = elemData.value(eid, fn[3]);
-                        fd.value(i, 4) = elemData.value(eid, fn[4]);
-                        fd.value(i, 5) = elemData.value(eid, fn[5]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
-                        break;
-                    case FE_FACE_QUAD8:
-                        fd.value(i, 0) = elemData.value(eid, fn[0]);
-                        fd.value(i, 1) = elemData.value(eid, fn[1]);
-                        fd.value(i, 2) = elemData.value(eid, fn[2]);
-                        fd.value(i, 3) = elemData.value(eid, fn[3]);
-                        fd.value(i, 4) = elemData.value(eid, fn[4]);
-                        fd.value(i, 5) = elemData.value(eid, fn[5]);
-                        fd.value(i, 6) = elemData.value(eid, fn[6]);
-                        fd.value(i, 7) = elemData.value(eid, fn[7]);
-                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7)) * 0.125f;
-                        break;
-                    default:
-                    break;
-                }
-            }
-            break;
-            case FE_PENTA15:
-                {
-                    const int* fn = FTPENTA[lid];
-                    switch (f.m_type) {
-                        case FE_FACE_TRI6:
-                            fd.value(i, 0) = elemData.value(eid, fn[0]);
-                            fd.value(i, 1) = elemData.value(eid, fn[1]);
-                            fd.value(i, 2) = elemData.value(eid, fn[2]);
-                            fd.value(i, 3) = elemData.value(eid, fn[3]);
-                            fd.value(i, 4) = elemData.value(eid, fn[4]);
-                            fd.value(i, 5) = elemData.value(eid, fn[5]);
-                            d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
-                            break;
-                        case FE_FACE_QUAD8:
-                            fd.value(i, 0) = elemData.value(eid, fn[0]);
-                            fd.value(i, 1) = elemData.value(eid, fn[1]);
-                            fd.value(i, 2) = elemData.value(eid, fn[2]);
-                            fd.value(i, 3) = elemData.value(eid, fn[3]);
-                            fd.value(i, 4) = elemData.value(eid, fn[4]);
-                            fd.value(i, 5) = elemData.value(eid, fn[5]);
-                            fd.value(i, 6) = elemData.value(eid, fn[6]);
-                            fd.value(i, 7) = elemData.value(eid, fn[7]);
-                            d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7)) * 0.125f;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                break;
-            case FE_HEX8:
-                {
-                    const int* fn = FTHEX8[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					d.m_val = 0.25f*(fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3));
-				}
-				break;
-			case FE_TET10:
-				{
-					const int* fn = FTTET10[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					fd.value(i, 4) = elemData.value(eid, fn[4]);
-					fd.value(i, 5) = elemData.value(eid, fn[5]);
-					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
-				}
-				break;
-			case FE_TET15:
-				{
-					const int* fn = FTTET15[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					fd.value(i, 4) = elemData.value(eid, fn[4]);
-					fd.value(i, 5) = elemData.value(eid, fn[5]);
-					fd.value(i, 6) = elemData.value(eid, fn[6]);
-					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6)) / 7.f;
-				}
-				break;
-			case FE_TET20:
-				{
-					const int* fn = FTTET20[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					fd.value(i, 4) = elemData.value(eid, fn[4]);
-					fd.value(i, 5) = elemData.value(eid, fn[5]);
-					fd.value(i, 6) = elemData.value(eid, fn[6]);
-					fd.value(i, 7) = elemData.value(eid, fn[7]);
-					fd.value(i, 8) = elemData.value(eid, fn[8]);
-					fd.value(i, 9) = elemData.value(eid, fn[9]);
-					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7) + fd.value(i, 8) + fd.value(i, 9)) / 10.f;
-				}
-				break;
-			case FE_HEX20:
-				{
-					const int* fn = FTHEX20[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					fd.value(i, 4) = elemData.value(eid, fn[4]);
-					fd.value(i, 5) = elemData.value(eid, fn[5]);
-					fd.value(i, 6) = elemData.value(eid, fn[6]);
-					fd.value(i, 7) = elemData.value(eid, fn[7]);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
-				}
-				break;
-			case FE_HEX27:
-				{
-					const int* fn = FTHEX27[lid];
-					fd.value(i, 0) = elemData.value(eid, fn[0]);
-					fd.value(i, 1) = elemData.value(eid, fn[1]);
-					fd.value(i, 2) = elemData.value(eid, fn[2]);
-					fd.value(i, 3) = elemData.value(eid, fn[3]);
-					fd.value(i, 4) = elemData.value(eid, fn[4]);
-					fd.value(i, 5) = elemData.value(eid, fn[5]);
-					fd.value(i, 6) = elemData.value(eid, fn[6]);
-					fd.value(i, 7) = elemData.value(eid, fn[7]);
-					fd.value(i, 8) = elemData.value(eid, fn[8]);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7) + fd.value(i, 8))/9.f;
-				}
-				break;
-			case FE_TRI3:
-				{
-					fd.value(i, 0) = elemData.value(eid, 0);
-					fd.value(i, 1) = elemData.value(eid, 1);
-					fd.value(i, 2) = elemData.value(eid, 2);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2))/3.0f;
-				}
-				break;
-			case FE_QUAD4:
-				{
-					fd.value(i, 0) = elemData.value(eid, 0);
-					fd.value(i, 1) = elemData.value(eid, 1);
-					fd.value(i, 2) = elemData.value(eid, 2);
-					fd.value(i, 3) = elemData.value(eid, 3);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3))*0.25f;
-				}
-				break;
-            case FE_QUAD8:
-                {
-                    fd.value(i, 0) = elemData.value(eid, 0);
-                    fd.value(i, 1) = elemData.value(eid, 1);
-                    fd.value(i, 2) = elemData.value(eid, 2);
-                    fd.value(i, 3) = elemData.value(eid, 3);
-                    fd.value(i, 4) = elemData.value(eid, 4);
-                    fd.value(i, 5) = elemData.value(eid, 5);
-                    fd.value(i, 6) = elemData.value(eid, 6);
-                    fd.value(i, 7) = elemData.value(eid, 7);
- 					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
-                }
-                break;
-            case FE_QUAD9:
-                {
-                    fd.value(i, 0) = elemData.value(eid, 0);
-                    fd.value(i, 1) = elemData.value(eid, 1);
-                    fd.value(i, 2) = elemData.value(eid, 2);
-                    fd.value(i, 3) = elemData.value(eid, 3);
-                    fd.value(i, 4) = elemData.value(eid, 4);
-                    fd.value(i, 5) = elemData.value(eid, 5);
-                    fd.value(i, 6) = elemData.value(eid, 6);
-                    fd.value(i, 7) = elemData.value(eid, 7);
-                    fd.value(i, 8) = elemData.value(eid, 8);
-                    d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7)+fd.value(i, 8))/9.0f;
-                }
-                break;
-            case FE_TRI6:
-                {
-                    fd.value(i, 0) = elemData.value(eid, 0);
-                    fd.value(i, 1) = elemData.value(eid, 1);
-                    fd.value(i, 2) = elemData.value(eid, 2);
-                    fd.value(i, 3) = elemData.value(eid, 3);
-                    fd.value(i, 4) = elemData.value(eid, 4);
-                    fd.value(i, 5) = elemData.value(eid, 5);
-                    d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5))/6.0f;
-                }
-				break;
+			case FE_TET4   :
+			case FE_TET5   : fn = FTTET[lid]; break;
+			case FE_PYRA5  : fn = FTPYRA5[lid]; break;
+			case FE_PENTA6 : fn = FTPENTA[lid]; break;
+			case FE_PYRA13 : fn = FTPYRA13[lid]; break;
+			case FE_PENTA15: fn = FTPENTA[lid]; break;
+			case FE_HEX8   : fn = FTHEX8[lid]; break;
+			case FE_TET10  : fn = FTTET10[lid]; break;
+			case FE_TET15  : fn = FTTET15[lid]; break;
+			case FE_TET20  : fn = FTTET20[lid]; break;
+			case FE_HEX20  : fn = FTHEX20[lid]; break;
+			case FE_HEX27  : fn = FTHEX27[lid]; break;
+			case FE_TRI3   : fn = FTTRI3[0]; break;
+			case FE_TRI6   : fn = FTTRI6[0]; break;
+			case FE_TRI7   : fn = FTTRI7[0]; break;
+			case FE_QUAD4  : fn = FTQUAD4[0]; break;
+			case FE_QUAD8  : fn = FTQUAD8[0]; break;
+			case FE_QUAD9  : fn = FTQUAD9[0]; break;
+			break;
 			default:
 				assert(false);
+			}
+
+			if (fn && (nf > 0))
+			{
+				Post::FACEDATA& fd = state.m_FACE[i];
+				ValArray& faceData = state.m_FaceData;
+				d.m_val = 0.f;
+				for (int j = 0; j < nf; ++j)
+				{
+					float vj = elemData.value(eid, fn[j]);
+					faceData.value(i, j) = vj;
+					d.m_val += vj;
+				}
+				d.m_val /= (float)nf;
 			}
 		}
 	}
@@ -859,13 +653,13 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// the return value
 	d.m_val = 0.f;
 	d.m_ntag = 1;
 
-	if (state.m_Data.size() == 0) 
+	if (state.m_Data.size() == 0)
 	{
 		d.m_val = 0.0f;
 		return;
@@ -887,72 +681,73 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 		switch (rd.GetType())
 		{
 		case DATA_SCALAR:
-			{
-				FENodeData_T<float>& df = dynamic_cast<FENodeData_T<float>&>(rd);
-				df.eval(n, &d.m_val);
-			}
-			break;
+		{
+			FENodeData_T<float>& df = dynamic_cast<FENodeData_T<float>&>(rd);
+			df.eval(n, &d.m_val);
+		}
+		break;
 		case DATA_VEC3:
-			{
-				FENodeData_T<vec3f>& dv = dynamic_cast<FENodeData_T<vec3f>&>(rd);
-				vec3f v;
-				dv.eval(n,&v);
-				d.m_val = component(v, ncomp);
-			}
-			break;
+		{
+			FENodeData_T<vec3f>& dv = dynamic_cast<FENodeData_T<vec3f>&>(rd);
+			vec3f v;
+			dv.eval(n,&v);
+			d.m_val = component(v, ncomp);
+		}
+		break;
 		case DATA_MAT3:
-			{
-				FENodeData_T<mat3f>& dm = dynamic_cast<FENodeData_T<mat3f>&>(rd);
-				mat3f m;
-				dm.eval(n, &m);
-				d.m_val = component(m, ncomp);
-			}
-			break;
+		{
+			FENodeData_T<mat3f>& dm = dynamic_cast<FENodeData_T<mat3f>&>(rd);
+			mat3f m;
+			dm.eval(n, &m);
+			d.m_val = component(m, ncomp);
+		}
+		break;
 		case DATA_MAT3S:
-			{
-				FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
-				mat3fs m;
-				dm.eval(n, &m);
-				d.m_val = component(m, ncomp);
-			}
-			break;
+		{
+			FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
+			mat3fs m;
+			dm.eval(n, &m);
+			d.m_val = component(m, ncomp);
+		}
+		break;
 		case DATA_MAT3SD:
-			{
-				FENodeData_T<mat3fd>& dm = dynamic_cast<FENodeData_T<mat3fd>&>(rd);
-				mat3fd m;
-				dm.eval(n, &m);
-				d.m_val = component(m, ncomp);
-			}
-			break;
+		{
+			FENodeData_T<mat3fd>& dm = dynamic_cast<FENodeData_T<mat3fd>&>(rd);
+			mat3fd m;
+			dm.eval(n, &m);
+			d.m_val = component(m, ncomp);
+		}
+		break;
 		case DATA_TENS4S:
-			{
-				FENodeData_T<tens4fs>& dm = dynamic_cast<FENodeData_T<tens4fs>&>(rd);
-				tens4fs m;
-				dm.eval(n, &m);
-				d.m_val = component(m, ncomp);
-			}
-			break;
+		{
+			FENodeData_T<tens4fs>& dm = dynamic_cast<FENodeData_T<tens4fs>&>(rd);
+			tens4fs m;
+			dm.eval(n, &m);
+			d.m_val = component(m, ncomp);
+		}
+		break;
 		case DATA_ARRAY:
-			{
-				FENodeArrayData& dm = dynamic_cast<FENodeArrayData&>(rd);
-				d.m_val = dm.eval(n, ncomp); 
-			}
-			break;
+		{
+			FENodeArrayData& dm = dynamic_cast<FENodeArrayData&>(rd);
+			d.m_val = dm.eval(n, ncomp);
+		}
+		break;
 		}
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
 		// we take the average of the adjacent face values
-		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
-		if (!nfl.empty())
+		FSNodeFaceList& NFL = mesh->NodeFaceList();
+		int NF = NFL.Valence(n);
+		if (NF != 0)
 		{
-			int nf = (int)nfl.size(), n = 0;
+			int n = 0;
 			float data[FSFace::MAX_NODES], val;
-			for (int i=0; i<nf; ++i)
+			for (int i=0; i<NF; ++i)
 			{
-				if (EvaluateFace(nfl[i].fid, ntime, nfield, data, val))
+				if (EvaluateFace(NFL.FaceIndex(n, i), ntime, nfield, data, val))
 				{
-					d.m_val += data[nfl[i].nid];
+					d.m_val += data[NFL.FaceNodeIndex(n, i)];
 					++n;
 				}
 			}
@@ -962,20 +757,22 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 	else if (IS_ELEM_FIELD(nfield))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
+		FSNodeElementList& NEL = mesh->NodeElementList();
 		float data[FSElement::MAX_NODES] = {0.f}, val;
-		int ne = (int)nel.size(), n = 0;
-		if (!nel.empty())
+		int ne = NEL.Valence(n), m = 0;
+		if (ne > 0)
 		{
 			for (int i=0; i<ne; ++i)
 			{
-				if (EvaluateElement(nel[i].eid , ntime, nfield, data, val))
+				int eid = NEL.ElementIndex(n, i);
+				int nid = NEL.ElementNodeIndex(n, i);
+				if (EvaluateElement(eid, ntime, nfield, data, val))
 				{
-					d.m_val += data[nel[i].nid];
-					++n;
+					d.m_val += data[nid];
+					++m;
 				}
 			}
-			if (n != 0) d.m_val /= (float) n;
+			if (m != 0) d.m_val /= (float) m;
 		}
 	}
 	else assert(false);
@@ -985,15 +782,15 @@ void FEPostModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 void FEPostModel::EvaluateNode(const vec3f& p, int ntime, int nfield, NODEDATA& d)
 {
 	// find the element in which this point lies
-	FEPostMesh& mesh = *GetState(ntime)->GetFEMesh();
+	FSMesh& mesh = *GetState(ntime)->GetFEMesh();
 	int elid = -1;
 	double r[3];
 	if (FindElementRef(mesh, p, elid, r) == false)
 	{
-		d.m_ntag = 0; 
+		d.m_ntag = 0;
 		return;
 	}
-	FEElement_& el = mesh.ElementRef(elid);
+	FSElement_& el = mesh.ElementRef(elid);
 
 	// evaluate the nodal values
 	float v[FSElement::MAX_NODES] = { 0.f }, val = 0.f;
@@ -1013,7 +810,7 @@ bool FEPostModel::EvaluateEdge(int n, int ntime, int nfield, EDGEDATA& d)
 
 	// get the face
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	FSEdge& e = mesh->Edge(n);
 	int ne = e.Nodes();
@@ -1426,13 +1223,13 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 {
 	// get the face
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	FSFace& f = mesh->Face(n);
 	int nf = f.Nodes();
 
 	// the return value
-	for (int i=0; i<nf; ++i) data[i] = 0.f;
+	for (int i = 0; i < nf; ++i) data[i] = 0.f;
 	val = 0;
 	int ntag = 0;
 
@@ -1444,7 +1241,7 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 	{
 		// get the data ID
 		int ndata = FIELD_CODE(nfield);
-		assert ((ndata >= 0) && (ndata < s.m_Data.size()));
+		assert((ndata >= 0) && (ndata < s.m_Data.size()));
 
 		// get the component
 		int ncomp = FIELD_COMP(nfield);
@@ -1454,307 +1251,307 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 
 		switch (rd.GetType())
 		{
-		case DATA_SCALAR: 
+		case DATA_SCALAR:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEFaceData_T<float, DATA_NODE>& df = dynamic_cast<FEFaceData_T<float, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEFaceData_T<float,DATA_NODE>& df = dynamic_cast<FEFaceData_T<float,DATA_NODE>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, data);
-						val = 0.f;
-						for (int i=0; i<nf; ++i) val += data[i];
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEFaceData_T<float,DATA_ITEM>& df = dynamic_cast<FEFaceData_T<float,DATA_ITEM>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, &val);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEFaceData_T<float,DATA_MULT>& df = dynamic_cast<FEFaceData_T<float,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, data);
-						val = 0.f;
-						for (int i=0; i<nf; ++i) val += data[i];
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEFaceData_T<float,DATA_REGION>& df = dynamic_cast<FEFaceData_T<float,DATA_REGION>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, &val);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
+					df.eval(n, data);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i) val += data[i];
+					val /= (float)nf;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEFaceData_T<float, DATA_ITEM>& df = dynamic_cast<FEFaceData_T<float, DATA_ITEM>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, &val);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEFaceData_T<float, DATA_MULT>& df = dynamic_cast<FEFaceData_T<float, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, data);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i) val += data[i];
+					val /= (float)nf;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEFaceData_T<float, DATA_REGION>& df = dynamic_cast<FEFaceData_T<float, DATA_REGION>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, &val);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_VEC3:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEFaceData_T<vec3f, DATA_NODE>& df = dynamic_cast<FEFaceData_T<vec3f, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEFaceData_T<vec3f,DATA_NODE>& df = dynamic_cast<FEFaceData_T<vec3f,DATA_NODE>&>(rd);
-					if (df.active(n))
+					vec3f v[FSFace::MAX_NODES];
+					df.eval(n, v);
+					int nf = f.Nodes();
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
 					{
-						vec3f v[FSFace::MAX_NODES];
-						df.eval(n, v);
-						int nf = f.Nodes();
-						val = 0.f;
-						for (int i=0; i<nf; ++i)
-						{
-							data[i] = component(v[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
+						data[i] = component(v[i], ncomp);
+						val += data[i];
 					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEFaceData_T<vec3f,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<vec3f,DATA_ITEM>&>(rd);
-					if (dv.active(n))
-					{
-						vec3f v;
-						dv.eval(n, &v);
-						val = component(v, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEFaceData_T<vec3f,DATA_MULT>& df = dynamic_cast<FEFaceData_T<vec3f,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						vec3f v[FSFace::MAX_NODES];
-						df.eval(n, v);
-						int nf = f.Nodes();
-						val = 0.f;
-						for (int i=0; i<nf; ++i) 
-						{
-							data[i] = component(v[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEFaceData_T<vec3f,DATA_REGION>& dv = dynamic_cast<FEFaceData_T<vec3f,DATA_REGION>&>(rd);
-					if (dv.active(n))
-					{
-						vec3f v;
-						dv.eval(n, &v);
-						val = component(v, ncomp);
-						int nf = f.Nodes();
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
+					val /= (float)nf;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEFaceData_T<vec3f, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>&>(rd);
+				if (dv.active(n))
+				{
+					vec3f v;
+					dv.eval(n, &v);
+					val = component(v, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEFaceData_T<vec3f, DATA_MULT>& df = dynamic_cast<FEFaceData_T<vec3f, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					vec3f v[FSFace::MAX_NODES];
+					df.eval(n, v);
+					int nf = f.Nodes();
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
+					{
+						data[i] = component(v[i], ncomp);
+						val += data[i];
+					}
+					val /= (float)nf;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEFaceData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_REGION>&>(rd);
+				if (dv.active(n))
+				{
+					vec3f v;
+					dv.eval(n, &v);
+					val = component(v, ncomp);
+					int nf = f.Nodes();
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_MAT3:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEFaceData_T<mat3f, DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3f, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEFaceData_T<mat3f,DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3f,DATA_NODE>&>(rd);
-					if (df.active(n))
-					{
-						mat3f m[FSFace::MAX_NODES];
-						df.eval(n, m);
+					mat3f m[FSFace::MAX_NODES];
+					df.eval(n, m);
 
-						val = 0.f;
-						for (int i=0; i<nf; ++i) 
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
+					{
+						data[i] = component(m[i], ncomp);
+						val += data[i];
+					}
+					val /= (float)nf;
 
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEFaceData_T<mat3f,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3f,DATA_ITEM>&>(rd);
-					if (dv.active(n))
-					{
-						mat3f m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEFaceData_T<mat3f,DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3f,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3f m[FSFace::MAX_NODES];
-						df.eval(n, m);
-						val = 0.f;
-						for (int i=0; i<nf; ++i) 
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEFaceData_T<mat3f,DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3f,DATA_REGION>&>(rd);
-					if (dv.active(n))
-					{
-						mat3f m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEFaceData_T<mat3f, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3f, DATA_ITEM>&>(rd);
+				if (dv.active(n))
+				{
+					mat3f m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEFaceData_T<mat3f, DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3f, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3f m[FSFace::MAX_NODES];
+					df.eval(n, m);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
+					{
+						data[i] = component(m[i], ncomp);
+						val += data[i];
+					}
+					val /= (float)nf;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEFaceData_T<mat3f, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3f, DATA_REGION>&>(rd);
+				if (dv.active(n))
+				{
+					mat3f m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_MAT3S:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEFaceData_T<mat3fs, DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3fs, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEFaceData_T<mat3fs,DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3fs,DATA_NODE>&>(rd);
-					if (df.active(n))
+					mat3fs m[FSFace::MAX_NODES];
+					df.eval(n, m);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
 					{
-						mat3fs m[FSFace::MAX_NODES];
-						df.eval(n, m);
-						val = 0.f;
-						for (int i=0; i<nf; ++i)
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
+						data[i] = component(m[i], ncomp);
+						val += data[i];
 					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEFaceData_T<mat3fs,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3fs,DATA_ITEM>&>(rd);
-					if (dv.active(n))
-					{
-						mat3fs m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEFaceData_T<mat3fs,DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3fs,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3fs m[FSFace::MAX_NODES];
-						df.eval(n, m);
-						val = 0.f;
-						for (int i=0; i<nf; ++i)
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEFaceData_T<mat3fs,DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3fs,DATA_REGION>&>(rd);
-					if (dv.active(n))
-					{
-						mat3fs m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
+					val /= (float)nf;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEFaceData_T<mat3fs, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>&>(rd);
+				if (dv.active(n))
+				{
+					mat3fs m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEFaceData_T<mat3fs, DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3fs, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3fs m[FSFace::MAX_NODES];
+					df.eval(n, m);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
+					{
+						data[i] = component(m[i], ncomp);
+						val += data[i];
+					}
+					val /= (float)nf;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEFaceData_T<mat3fs, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3fs, DATA_REGION>&>(rd);
+				if (dv.active(n))
+				{
+					mat3fs m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_MAT3SD:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEFaceData_T<mat3fd, DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3fd, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEFaceData_T<mat3fd,DATA_NODE>& df = dynamic_cast<FEFaceData_T<mat3fd,DATA_NODE>&>(rd);
-					if (df.active(n))
+					mat3fd m[FSFace::MAX_NODES];
+					df.eval(n, m);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
 					{
-						mat3fd m[FSFace::MAX_NODES];
-						df.eval(n, m);
-						val = 0.f;
-						for (int i=0; i<nf; ++i)
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
+						data[i] = component(m[i], ncomp);
+						val += data[i];
 					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEFaceData_T<mat3fd,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3fd,DATA_ITEM>&>(rd);
-					if (dv.active(n))
-					{
-						mat3fd m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEFaceData_T<mat3fd,DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3fd,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3fd m[FSFace::MAX_NODES];
-						df.eval(n, m);
-						val = 0.f;
-						for (int i=0; i<nf; ++i)
-						{
-							data[i] = component(m[i], ncomp);
-							val += data[i];
-						}
-						val /= (float) nf;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEFaceData_T<mat3fd,DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3fd,DATA_REGION>&>(rd);
-					if (dv.active(n))
-					{
-						mat3fd m;
-						dv.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<nf; ++i) data[i] = val;
-						ntag = 1;
-					}
+					val /= (float)nf;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEFaceData_T<mat3fd, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<mat3fd, DATA_ITEM>&>(rd);
+				if (dv.active(n))
+				{
+					mat3fd m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEFaceData_T<mat3fd, DATA_MULT>& df = dynamic_cast<FEFaceData_T<mat3fd, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3fd m[FSFace::MAX_NODES];
+					df.eval(n, m);
+					val = 0.f;
+					for (int i = 0; i < nf; ++i)
+					{
+						data[i] = component(m[i], ncomp);
+						val += data[i];
+					}
+					val /= (float)nf;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEFaceData_T<mat3fd, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<mat3fd, DATA_REGION>&>(rd);
+				if (dv.active(n))
+				{
+					mat3fd m;
+					dv.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < nf; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_TENS4S:
 			{
 				if (fmt == DATA_NODE)
@@ -1817,7 +1614,7 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 					}
 				}
 			}
-            break;
+			break;
 		case DATA_ARRAY:
 			if (fmt == DATA_ITEM)
 			{
@@ -1836,19 +1633,19 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 	{
 		int N = f.Nodes();
 		NODEDATA n;
-		for (int i=0; i<N; ++i) 
-		{ 
-			EvaluateNode(f.n[i], ntime, nfield, n); 
+		for (int i = 0; i < N; ++i)
+		{
+			EvaluateNode(f.n[i], ntime, nfield, n);
 			data[i] = n.m_val;
-			val += data[i]; 
+			val += data[i];
 		}
-		val /= (float) N;
+		val /= (float)N;
 		ntag = 1;
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
 		assert((f.m_elem[0].eid >= 0) && (f.m_elem[0].eid < mesh->Elements()));
-		float edata[FSElement::MAX_NODES] = {0.f};
+		float edata[FSElement::MAX_NODES] = { 0.f };
 		int eid = f.m_elem[0].eid;
 		int lid = f.m_elem[0].lid;
 		if (EvaluateElement(eid, ntime, nfield, edata, val) == false)
@@ -1863,217 +1660,217 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 				}
 			}
 		}
-			
+
 		ntag = 1;
 		switch (mesh->ElementRef(eid).Type())
 		{
 		case FE_TET4:
 		case FE_TET5:
 		{
-				const int* fn = FTTET[lid];
+			const int* fn = FTTET[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			val = (data[0] + data[1] + data[2]) / 3.f;
+		}
+		break;
+		case FE_PENTA6:
+		{
+			const int* fn = FTPENTA[lid];
+			switch (f.m_type) {
+			case FE_FACE_TRI3:
 				data[0] = edata[fn[0]];
 				data[1] = edata[fn[1]];
 				data[2] = edata[fn[2]];
 				val = (data[0] + data[1] + data[2]) / 3.f;
+				break;
+			case FE_FACE_QUAD4:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				val = 0.25f * (data[0] + data[1] + data[2] + data[3]);
+				break;
+			default:
+				break;
 			}
-			break;
-        case FE_PENTA6:
-            {
-                const int* fn = FTPENTA[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI3:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        val = (data[0] + data[1] + data[2]) / 3.f;
-                        break;
-                    case FE_FACE_QUAD4:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        val = 0.25f*(data[0] + data[1] + data[2] + data[3]);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            break;
-        case FE_PENTA15:
-            {
-                const int* fn = FTPENTA[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI6:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        data[4] = edata[fn[4]];
-                        data[5] = edata[fn[5]];
-                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
-                        break;
-                    case FE_FACE_QUAD8:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        data[4] = edata[fn[4]];
-                        data[5] = edata[fn[5]];
-                        data[6] = edata[fn[6]];
-                        data[7] = edata[fn[7]];
-                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) / 8.f;
-                        break;
-                    default:
-                        break;
-                }
-            }
-            break;
-            case FE_PYRA5:
-            {
-                const int* fn = FTPYRA5[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI3:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        val = (data[0] + data[1] + data[2]) / 3.f;
-                        break;
-                    case FE_FACE_QUAD4:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        val = 0.25f*(data[0] + data[1] + data[2] + data[3]);
-                        break;
-                    default:
-                        break;
-                }
-            }
-                break;
-            case FE_PYRA13:
-            {
-                const int* fn = FTPYRA13[lid];
-                switch (f.m_type) {
-                    case FE_FACE_TRI6:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        data[4] = edata[fn[4]];
-                        data[5] = edata[fn[5]];
-                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
-                        break;
-                    case FE_FACE_QUAD8:
-                        data[0] = edata[fn[0]];
-                        data[1] = edata[fn[1]];
-                        data[2] = edata[fn[2]];
-                        data[3] = edata[fn[3]];
-                        data[4] = edata[fn[4]];
-                        data[5] = edata[fn[5]];
-                        data[6] = edata[fn[6]];
-                        data[7] = edata[fn[7]];
-                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) / 8.f;
-                        break;
-                    default:
-                        break;
-                }
-            }
-                break;
-            case FE_HEX8:
-            {
-                const int* fn = FTHEX8[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                val = 0.25f*(data[0] + data[1] + data[2] + data[3]);
-			}
-			break;
-		case FE_TET10:
-			{
-				const int* fn = FTTET10[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                data[4] = edata[fn[4]];
-                data[5] = edata[fn[5]];
+		}
+		break;
+		case FE_PENTA15:
+		{
+			const int* fn = FTPENTA[lid];
+			switch (f.m_type) {
+			case FE_FACE_TRI6:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				data[4] = edata[fn[4]];
+				data[5] = edata[fn[5]];
 				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
+				break;
+			case FE_FACE_QUAD8:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				data[4] = edata[fn[4]];
+				data[5] = edata[fn[5]];
+				data[6] = edata[fn[6]];
+				data[7] = edata[fn[7]];
+				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) / 8.f;
+				break;
+			default:
+				break;
 			}
-			break;
+		}
+		break;
+		case FE_PYRA5:
+		{
+			const int* fn = FTPYRA5[lid];
+			switch (f.m_type) {
+			case FE_FACE_TRI3:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				val = (data[0] + data[1] + data[2]) / 3.f;
+				break;
+			case FE_FACE_QUAD4:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				val = 0.25f * (data[0] + data[1] + data[2] + data[3]);
+				break;
+			default:
+				break;
+			}
+		}
+		break;
+		case FE_PYRA13:
+		{
+			const int* fn = FTPYRA13[lid];
+			switch (f.m_type) {
+			case FE_FACE_TRI6:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				data[4] = edata[fn[4]];
+				data[5] = edata[fn[5]];
+				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
+				break;
+			case FE_FACE_QUAD8:
+				data[0] = edata[fn[0]];
+				data[1] = edata[fn[1]];
+				data[2] = edata[fn[2]];
+				data[3] = edata[fn[3]];
+				data[4] = edata[fn[4]];
+				data[5] = edata[fn[5]];
+				data[6] = edata[fn[6]];
+				data[7] = edata[fn[7]];
+				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) / 8.f;
+				break;
+			default:
+				break;
+			}
+		}
+		break;
+		case FE_HEX8:
+		{
+			const int* fn = FTHEX8[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			val = 0.25f * (data[0] + data[1] + data[2] + data[3]);
+		}
+		break;
+		case FE_TET10:
+		{
+			const int* fn = FTTET10[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			data[4] = edata[fn[4]];
+			data[5] = edata[fn[5]];
+			val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
+		}
+		break;
 		case FE_TET15:
-			{
-				const int* fn = FTTET15[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                data[4] = edata[fn[4]];
-                data[5] = edata[fn[5]];
-                data[6] = edata[fn[6]];
-				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6]) / 7.f;
-			}
-			break;
+		{
+			const int* fn = FTTET15[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			data[4] = edata[fn[4]];
+			data[5] = edata[fn[5]];
+			data[6] = edata[fn[6]];
+			val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6]) / 7.f;
+		}
+		break;
 		case FE_TET20:
-			{
-				const int* fn = FTTET20[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                data[4] = edata[fn[4]];
-                data[5] = edata[fn[5]];
-                data[6] = edata[fn[6]];
-				data[7] = edata[fn[8]];
-				data[8] = edata[fn[9]];
-				data[9] = edata[fn[0]];
-				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7] + data[8] + data[9]) / 10.f;
-			}
-			break;
+		{
+			const int* fn = FTTET20[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			data[4] = edata[fn[4]];
+			data[5] = edata[fn[5]];
+			data[6] = edata[fn[6]];
+			data[7] = edata[fn[8]];
+			data[8] = edata[fn[9]];
+			data[9] = edata[fn[0]];
+			val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7] + data[8] + data[9]) / 10.f;
+		}
+		break;
 		case FE_HEX20:
-			{
-				const int* fn = FTHEX20[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                data[4] = edata[fn[4]];
-                data[5] = edata[fn[5]];
-                data[6] = edata[fn[6]];
-                data[7] = edata[fn[7]];
-				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7])*0.125f;
-			}
-			break;
+		{
+			const int* fn = FTHEX20[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			data[4] = edata[fn[4]];
+			data[5] = edata[fn[5]];
+			data[6] = edata[fn[6]];
+			data[7] = edata[fn[7]];
+			val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) * 0.125f;
+		}
+		break;
 		case FE_HEX27:
-			{
-				const int* fn = FTHEX27[lid];
-                data[0] = edata[fn[0]];
-                data[1] = edata[fn[1]];
-                data[2] = edata[fn[2]];
-                data[3] = edata[fn[3]];
-                data[4] = edata[fn[4]];
-                data[5] = edata[fn[5]];
-                data[6] = edata[fn[6]];
-                data[7] = edata[fn[7]];
-                data[8] = edata[fn[8]];
-				val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7] + data[8]) / 9.f;
-			}
-			break;
+		{
+			const int* fn = FTHEX27[lid];
+			data[0] = edata[fn[0]];
+			data[1] = edata[fn[1]];
+			data[2] = edata[fn[2]];
+			data[3] = edata[fn[3]];
+			data[4] = edata[fn[4]];
+			data[5] = edata[fn[5]];
+			data[6] = edata[fn[6]];
+			data[7] = edata[fn[7]];
+			data[8] = edata[fn[8]];
+			val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7] + data[8]) / 9.f;
+		}
+		break;
 		case FE_QUAD4:
 		case FE_QUAD8:
 		case FE_TRI3:
 		case FE_TRI6:
+		{
+			int nn = f.Nodes();
+			val = 0.0;
+			for (int i = 0; i < nn; ++i)
 			{
-				int nn = f.Nodes();
-				val = 0.0;
-				for (int i=0; i<nn; ++i)
-				{
-					data[i] = edata[i];
-					val += data[i];
-				}
-				val /= (nn);
+				data[i] = edata[i];
+				val += data[i];
 			}
-			break;
+			val /= (nn);
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -2089,10 +1886,10 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
 bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& val)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	// get the element
-	FEElement_& el = mesh->ElementRef(n);
+	FSElement_& el = mesh->ElementRef(n);
 	int ne = el.Nodes();
 
 	// make sure the element is not eroded
@@ -2103,7 +1900,7 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 
 	// the return value
 	val = 0.f;
-	for (int i=0; i<ne; ++i) data[i] = 0.f;
+	for (int i = 0; i < ne; ++i) data[i] = 0.f;
 	int ntag = 0;
 
 	if (IS_ELEM_FIELD(nfield))
@@ -2116,429 +1913,429 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 		int ncomp = FIELD_COMP(nfield);
 
 		FEMeshData& rd = state.m_Data[ndata];
-		DATA_FORMAT fmt = rd.GetFormat(); 
+		DATA_FORMAT fmt = rd.GetFormat();
 
 		switch (rd.GetType())
 		{
 		case DATA_SCALAR:
+		{
+			if (fmt == DATA_NODE)
 			{
-				if (fmt == DATA_NODE)
+				FEElemData_T<float, DATA_NODE>& df = dynamic_cast<FEElemData_T<float, DATA_NODE>&>(rd);
+				if (df.active(n))
 				{
-					FEElemData_T<float,DATA_NODE>& df = dynamic_cast<FEElemData_T<float,DATA_NODE>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, data);
-						val = 0.f;
-						for (int j=0; j<ne; ++j) val += data[j];
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_ITEM)
-				{
-					FEElemData_T<float,DATA_ITEM>& df = dynamic_cast<FEElemData_T<float,DATA_ITEM>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, &val);
-						for (int j=0; j<ne; ++j) data[j] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<float,DATA_MULT>& df = dynamic_cast<FEElemData_T<float,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, data);
-						val = 0;
-						for (int j=0; j<ne; ++j) val += data[j];
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<float,DATA_REGION>& df = dynamic_cast<FEElemData_T<float,DATA_REGION>&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, &val);
-						for (int j=0; j<ne; ++j) data[j] = val;
-						ntag = 1;
-					}
+					df.eval(n, data);
+					val = 0.f;
+					for (int j = 0; j < ne; ++j) val += data[j];
+					val /= (float)ne;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_ITEM)
+			{
+				FEElemData_T<float, DATA_ITEM>& df = dynamic_cast<FEElemData_T<float, DATA_ITEM>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, &val);
+					for (int j = 0; j < ne; ++j) data[j] = val;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<float, DATA_MULT>& df = dynamic_cast<FEElemData_T<float, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, data);
+					val = 0;
+					for (int j = 0; j < ne; ++j) val += data[j];
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<float, DATA_REGION>& df = dynamic_cast<FEElemData_T<float, DATA_REGION>&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, &val);
+					for (int j = 0; j < ne; ++j) data[j] = val;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_VEC3:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemData_T<vec3f, DATA_ITEM>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>&>(rd);
+				if (dv.active(n))
 				{
-					FEElemData_T<vec3f,DATA_ITEM>& dv = dynamic_cast<FEElemData_T<vec3f,DATA_ITEM>&>(rd);
-					if (dv.active(n))
-					{
-						vec3f v;
-						dv.eval(n, &v);
-						val = component(v, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<vec3f,DATA_MULT>& df = dynamic_cast<FEElemData_T<vec3f,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						vec3f v[FSElement::MAX_NODES];
-						df.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j) 
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemData_T<vec3f,DATA_NODE>& dm = dynamic_cast<FEElemData_T<vec3f,DATA_NODE>&>(rd);
-					if (dm.active(n))
-					{
-						vec3f v[FSElement::MAX_NODES];
-						dm.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<vec3f,DATA_REGION>& dv = dynamic_cast<FEElemData_T<vec3f,DATA_REGION>&>(rd);
-					if (dv.active(n))
-					{
-						vec3f v;
-						dv.eval(n, &v);
-						val = component(v, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else
-				{
-					assert(false);
+					vec3f v;
+					dv.eval(n, &v);
+					val = component(v, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<vec3f, DATA_MULT>& df = dynamic_cast<FEElemData_T<vec3f, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					vec3f v[FSElement::MAX_NODES];
+					df.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_NODE)
+			{
+				FEElemData_T<vec3f, DATA_NODE>& dm = dynamic_cast<FEElemData_T<vec3f, DATA_NODE>&>(rd);
+				if (dm.active(n))
+				{
+					vec3f v[FSElement::MAX_NODES];
+					dm.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>&>(rd);
+				if (dv.active(n))
+				{
+					vec3f v;
+					dv.eval(n, &v);
+					val = component(v, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		break;
 		case DATA_MAT3:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<mat3f,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f,DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						mat3f m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemData_T<mat3f,DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3f,DATA_NODE>&>(rd);
-					if (dm.active(n))
-					{
-						mat3f m[FSElement::MAX_NODES];
-						dm.eval(n, m);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(m[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<mat3f,DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3f,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3f v[FSElement::MAX_NODES];
-						df.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j) 
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<mat3f,DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3f,DATA_REGION>&>(rd);
-					if (dm.active(n))
-					{
-						mat3f m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else
-				{
-					assert(false);
+					mat3f m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_NODE)
+			{
+				FEElemData_T<mat3f, DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_NODE>&>(rd);
+				if (dm.active(n))
+				{
+					mat3f m[FSElement::MAX_NODES];
+					dm.eval(n, m);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(m[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<mat3f, DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3f, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3f v[FSElement::MAX_NODES];
+					df.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<mat3f, DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_REGION>&>(rd);
+				if (dm.active(n))
+				{
+					mat3f m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		break;
 		case DATA_MAT3S:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemData_T<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fs m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemData_T<mat3fs,DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_NODE>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fs m[FSElement::MAX_NODES];
-						dm.eval(n, m);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(m[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<mat3fs,DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3fs,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3fs v[FSElement::MAX_NODES];
-						df.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j) 
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<mat3fs,DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_REGION>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fs m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else
-				{
-					assert(false);
+					mat3fs m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_NODE)
+			{
+				FEElemData_T<mat3fs, DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_NODE>&>(rd);
+				if (dm.active(n))
+				{
+					mat3fs m[FSElement::MAX_NODES];
+					dm.eval(n, m);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(m[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<mat3fs, DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3fs v[FSElement::MAX_NODES];
+					df.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<mat3fs, DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_REGION>&>(rd);
+				if (dm.active(n))
+				{
+					mat3fs m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		break;
 		case DATA_MAT3SD:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemData_T<mat3fd, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fd, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<mat3fd,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fd,DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fd m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemData_T<mat3fd,DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3fd,DATA_NODE>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fd m[FSElement::MAX_NODES];
-						dm.eval(n, m);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(m[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<mat3fd,DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3fd,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						mat3fd v[FSElement::MAX_NODES];
-						df.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j) 
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<mat3fd,DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3fd,DATA_REGION>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fd m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else
-				{
-					assert(false);
+					mat3fd m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;		
+			else if (fmt == DATA_NODE)
+			{
+				FEElemData_T<mat3fd, DATA_NODE>& dm = dynamic_cast<FEElemData_T<mat3fd, DATA_NODE>&>(rd);
+				if (dm.active(n))
+				{
+					mat3fd m[FSElement::MAX_NODES];
+					dm.eval(n, m);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(m[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<mat3fd, DATA_MULT>& df = dynamic_cast<FEElemData_T<mat3fd, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					mat3fd v[FSElement::MAX_NODES];
+					df.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<mat3fd, DATA_REGION>& dm = dynamic_cast<FEElemData_T<mat3fd, DATA_REGION>&>(rd);
+				if (dm.active(n))
+				{
+					mat3fd m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		break;
 		case DATA_TENS4S:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemData_T<tens4fs, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<tens4fs, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<tens4fs,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<tens4fs,DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						tens4fs m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemData_T<tens4fs,DATA_NODE>& dm = dynamic_cast<FEElemData_T<tens4fs,DATA_NODE>&>(rd);
-					if (dm.active(n))
-					{
-						tens4fs m[FSElement::MAX_NODES];
-						dm.eval(n, m);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(m[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_MULT)
-				{
-					FEElemData_T<tens4fs,DATA_MULT>& df = dynamic_cast<FEElemData_T<tens4fs,DATA_MULT>&>(rd);
-					if (df.active(n))
-					{
-						tens4fs v[FSElement::MAX_NODES];
-						df.eval(n, v);
-						val = 0;
-						for (int j=0; j<ne; ++j)
-						{
-							data[j] = component(v[j], ncomp);
-							val += data[j];
-						}
-						val /= (float) ne;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_REGION)
-				{
-					FEElemData_T<tens4fs,DATA_REGION>& dm = dynamic_cast<FEElemData_T<tens4fs,DATA_REGION>&>(rd);
-					if (dm.active(n))
-					{
-						tens4fs m;
-						dm.eval(n, &m);
-						val = component(m, ncomp);
-						for (int i=0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else
-				{
-					assert(false);
+					tens4fs m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-            break;
+			else if (fmt == DATA_NODE)
+			{
+				FEElemData_T<tens4fs, DATA_NODE>& dm = dynamic_cast<FEElemData_T<tens4fs, DATA_NODE>&>(rd);
+				if (dm.active(n))
+				{
+					tens4fs m[FSElement::MAX_NODES];
+					dm.eval(n, m);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(m[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElemData_T<tens4fs, DATA_MULT>& df = dynamic_cast<FEElemData_T<tens4fs, DATA_MULT>&>(rd);
+				if (df.active(n))
+				{
+					tens4fs v[FSElement::MAX_NODES];
+					df.eval(n, v);
+					val = 0;
+					for (int j = 0; j < ne; ++j)
+					{
+						data[j] = component(v[j], ncomp);
+						val += data[j];
+					}
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElemData_T<tens4fs, DATA_REGION>& dm = dynamic_cast<FEElemData_T<tens4fs, DATA_REGION>&>(rd);
+				if (dm.active(n))
+				{
+					tens4fs m;
+					dm.eval(n, &m);
+					val = component(m, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
+				}
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		break;
 		case DATA_ARRAY:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(rd);
+				if (dm.active(n))
 				{
-					FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(rd);
-					if (dm.active(n))
-					{
-						val = dm.eval(n, ncomp);
-						for (int i = 0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
-				}
-				else if (fmt == DATA_NODE)
-				{
-					FEElemArrayDataNode& df = dynamic_cast<FEElemArrayDataNode&>(rd);
-					if (df.active(n))
-					{
-						df.eval(n, ncomp, data);
-						val = 0.f;
-						for (int j = 0; j<ne; ++j) val += data[j];
-						val /= (float)ne;
-						ntag = 1;
-					}
+					val = dm.eval(n, ncomp);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;
+			else if (fmt == DATA_NODE)
+			{
+				FEElemArrayDataNode& df = dynamic_cast<FEElemArrayDataNode&>(rd);
+				if (df.active(n))
+				{
+					df.eval(n, ncomp, data);
+					val = 0.f;
+					for (int j = 0; j < ne; ++j) val += data[j];
+					val /= (float)ne;
+					ntag = 1;
+				}
+			}
+		}
+		break;
 		case DATA_ARRAY_VEC3:
+		{
+			if (fmt == DATA_ITEM)
 			{
-				if (fmt == DATA_ITEM)
+				FEElemArrayVec3Data& dm = dynamic_cast<FEElemArrayVec3Data&>(rd);
+				if (dm.active(n))
 				{
-					FEElemArrayVec3Data& dm = dynamic_cast<FEElemArrayVec3Data&>(rd);
-					if (dm.active(n))
-					{
-						vec3f v = dm.eval(n, ncomp / 4);
-						val = component2(v, ncomp % 4);
-						for (int i = 0; i<ne; ++i) data[i] = val;
-						ntag = 1;
-					}
+					vec3f v = dm.eval(n, ncomp / 4);
+					val = component2(v, ncomp % 4);
+					for (int i = 0; i < ne; ++i) data[i] = val;
+					ntag = 1;
 				}
 			}
-			break;
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -2547,13 +2344,13 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 	{
 		// take the average of the nodal values
 		NODEDATA n;
-		for (int i=0; i<ne; ++i)
-		{ 
-			EvaluateNode(el.m_node[i], ntime, nfield, n); 
+		for (int i = 0; i < ne; ++i)
+		{
+			EvaluateNode(el.m_node[i], ntime, nfield, n);
 			data[i] = n.m_val;
-			val += data[i]; 
+			val += data[i];
 		}
-		val /= (float) ne;
+		val /= (float)ne;
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
@@ -2572,7 +2369,7 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	vec3f r;
 
@@ -2591,19 +2388,19 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 		switch (rd.GetType())
 		{
 		case DATA_VEC3:
-			{
-				FENodeData_T<vec3f>& dv = dynamic_cast<FENodeData_T<vec3f>&>(rd);
-				dv.eval(n, &r);
-			}
-			break;
+		{
+			FENodeData_T<vec3f>& dv = dynamic_cast<FENodeData_T<vec3f>&>(rd);
+			dv.eval(n, &r);
+		}
+		break;
 		case DATA_MAT3S:
-			{
-				FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
-				mat3fs m;
-				dm.eval(n, &m);
-				r = m.PrincDirection(ncomp);
-			}
-			break;
+		{
+			FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
+			mat3fs m;
+			dm.eval(n, &m);
+			r = m.PrincDirection(ncomp);
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -2611,43 +2408,45 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 	else if (IS_ELEM_FIELD(nvec))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
-		if (!nel.empty())
+		FSNodeElementList& NEL = mesh->NodeElementList();
+		int ne = NEL.Valence(n);
+		if (ne > 0)
 		{
-			int n = 0;
-			for (int i=0; i<(int) nel.size(); ++i)
+			int m = 0;
+			for (int i = 0; i < ne; ++i)
 			{
-				int iel = nel[i].eid;
-				FEElement_& el = mesh->ElementRef(iel);
+				int iel = NEL.ElementIndex(n, i);
+				FSElement_& el = mesh->ElementRef(iel);
 				Material* mat = GetMaterial(el.m_MatID);
 				if (mat->benable)
 				{
 					r += EvaluateElemVector(iel, ntime, nvec);
-					n++;
+					m++;
 				}
 			}
-			if (n != 0) r /= (float)n;
+			if (m != 0) r /= (float)m;
 		}
 	}
 	else if (IS_FACE_FIELD(nvec))
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
-		if (!nfl.empty())
+		FSNodeFaceList& NFL = mesh->NodeFaceList();
+		int NF = NFL.Valence(n);
+		if (NF > 0)
 		{
 			int n = 0;
 			vec3f fv;
-			for (int i=0; i<(int) nfl.size(); ++i) 
+			for (int i = 0; i < NF; ++i)
 			{
-				if (EvaluateFaceVector(nfl[i].fid, ntime, nvec, fv)) { r += fv; n++; }
+				if (EvaluateFaceVector(NFL.FaceIndex(n, i), ntime, nvec, fv)) { r += fv; n++; }
 			}
-			r /= (float) n;
+			r /= (float)n;
 		}
 	}
-	else 
+	else
 	{
-//		assert(false);
-		r = vec3f(0,0,0);
+		//		assert(false);
+		r = vec3f(0, 0, 0);
 	}
 
 	return r;
@@ -2659,7 +2458,7 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	FSFace& f = mesh->Face(n);
 
@@ -2673,76 +2472,76 @@ bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 		int ncomp = FIELD_COMP(nvec);
 
 		FEMeshData& rd = state.m_Data[ndata];
-		DATA_FORMAT fmt = rd.GetFormat(); 
+		DATA_FORMAT fmt = rd.GetFormat();
 
 		switch (rd.GetType())
 		{
 		case DATA_VEC3:
+		{
+			switch (fmt)
 			{
-				switch (fmt)
+			case DATA_REGION:
+			{
+				FEFaceData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_REGION>&>(rd);
+				if (dv.active(n))
 				{
-				case DATA_REGION:
-					{
-						FEFaceData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_REGION>&>(rd);
-						if (dv.active(n))
-						{
-							dv.eval(n, &r);
-							return true;
-						}
-					}
-					break;
-				case DATA_ITEM:
-					{
-						FEFaceData_T<vec3f,DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<vec3f,DATA_ITEM>&>(rd);
-						if (dv.active(n))
-						{
-							dv.eval(n, &r);
-							return true;
-						}
-					}
-					break;
-				case DATA_NODE:
-					{
-						FEFaceData_T<vec3f,DATA_NODE>& dv = dynamic_cast<FEFaceData_T<vec3f,DATA_NODE>&>(rd);
-						r = vec3f(0,0,0);
-						if (dv.active(n))
-						{
-							vec3f v[FSFace::MAX_NODES];
-							int fn = f.Nodes();
-							dv.eval(n, v);
-							for (int i=0; i<fn; ++i) r += v[i];
-							r /= (float) fn;
-						}
-						return true;
-					}
-					break;
-				case DATA_MULT:
-					{
-						vec3f rn[8];
-						FEFaceData_T<vec3f,DATA_MULT>& dv = dynamic_cast<FEFaceData_T<vec3f,DATA_MULT>&>(rd);
-						r = vec3f(0,0,0);
-						if (dv.active(n))
-						{
-							dv.eval(n, rn);
-							int ne = mesh->Face(n).Nodes();
-							for (int i=0; i<ne; ++i) r += rn[i];
-							r /= (float) ne;
-							return true;
-						}
-					}
-					break;
+					dv.eval(n, &r);
+					return true;
 				}
 			}
 			break;
-		case DATA_MAT3S:
+			case DATA_ITEM:
 			{
-				FEFaceData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3fs,DATA_ITEM>&>(rd);
-				mat3fs m;
-				dm.eval(n, &m);
-				r = m.PrincDirection(ncomp);
+				FEFaceData_T<vec3f, DATA_ITEM>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>&>(rd);
+				if (dv.active(n))
+				{
+					dv.eval(n, &r);
+					return true;
+				}
+			}
+			break;
+			case DATA_NODE:
+			{
+				FEFaceData_T<vec3f, DATA_NODE>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_NODE>&>(rd);
+				r = vec3f(0, 0, 0);
+				if (dv.active(n))
+				{
+					vec3f v[FSFace::MAX_NODES];
+					int fn = f.Nodes();
+					dv.eval(n, v);
+					for (int i = 0; i < fn; ++i) r += v[i];
+					r /= (float)fn;
+				}
 				return true;
 			}
 			break;
+			case DATA_MULT:
+			{
+				vec3f rn[8];
+				FEFaceData_T<vec3f, DATA_MULT>& dv = dynamic_cast<FEFaceData_T<vec3f, DATA_MULT>&>(rd);
+				r = vec3f(0, 0, 0);
+				if (dv.active(n))
+				{
+					dv.eval(n, rn);
+					int ne = mesh->Face(n).Nodes();
+					for (int i = 0; i < ne; ++i) r += rn[i];
+					r /= (float)ne;
+					return true;
+				}
+			}
+			break;
+			}
+		}
+		break;
+		case DATA_MAT3S:
+		{
+			FEFaceData_T<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>&>(rd);
+			mat3fs m;
+			dm.eval(n, &m);
+			r = m.PrincDirection(ncomp);
+			return true;
+		}
+		break;
 		default:
 			assert(false);
 			return false;
@@ -2752,7 +2551,7 @@ bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 	{
 		FSFace& f = mesh->Face(n);
 		// take the average of the nodal values
-		for (int i=0; i<f.Nodes(); ++i) r += EvaluateNodeVector(f.n[i], ntime, nvec);
+		for (int i = 0; i < f.Nodes(); ++i) r += EvaluateNodeVector(f.n[i], ntime, nvec);
 		r /= f.Nodes();
 		return true;
 	}
@@ -2763,7 +2562,7 @@ bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 	else
 	{
 		assert(false);
-		r = vec3f(0,0,0);
+		r = vec3f(0, 0, 0);
 	}
 
 	return false;
@@ -2774,7 +2573,7 @@ bool FEPostModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	vec3f r;
 
@@ -2789,98 +2588,98 @@ vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 
 		FEMeshData& rd = state.m_Data[ndata];
 
-		int nfmt  = rd.GetFormat();
+		int nfmt = rd.GetFormat();
 
 		switch (rd.GetType())
 		{
 		case DATA_VEC3:
+		{
+			if (nfmt == DATA_ITEM)
 			{
-				if (nfmt == DATA_ITEM)
+				FEElemData_T<vec3f, DATA_ITEM>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>&>(rd);
+				if (dv.active(n)) dv.eval(n, &r);
+			}
+			else if (nfmt == DATA_MULT)
+			{
+				FEElemData_T<vec3f, DATA_MULT>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_MULT>&>(rd);
+				vec3f v[8];
+				if (dv.active(n))
 				{
-					FEElemData_T<vec3f,DATA_ITEM>& dv = dynamic_cast<FEElemData_T<vec3f,DATA_ITEM>&>(rd);
-					if (dv.active(n)) dv.eval(n, &r);
-				}
-				else if (nfmt == DATA_MULT)
-				{
-					FEElemData_T<vec3f,DATA_MULT>& dv = dynamic_cast<FEElemData_T<vec3f,DATA_MULT>&>(rd);
-					vec3f v[8];
-					if (dv.active(n))
-					{
-						dv.eval(n, v);
-						int ne = mesh->ElementRef(n).Nodes();
-						for (int i=0; i<ne; ++i) r += v[i];
-						r /= (float) ne;
-					}
-				}
-				else if (nfmt == DATA_REGION)
-				{
-					FEElemData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>&>(rd);
-					if (dv.active(n)) dv.eval(n, &r);
+					dv.eval(n, v);
+					int ne = mesh->ElementRef(n).Nodes();
+					for (int i = 0; i < ne; ++i) r += v[i];
+					r /= (float)ne;
 				}
 			}
-			break;
+			else if (nfmt == DATA_REGION)
+			{
+				FEElemData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>&>(rd);
+				if (dv.active(n)) dv.eval(n, &r);
+			}
+		}
+		break;
 		case DATA_MAT3S:
+		{
+			if (nfmt == DATA_ITEM)
 			{
-				if (nfmt == DATA_ITEM)
+				FEElemData_T<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						mat3fs m;
-						dm.eval(n, &m);
-						r = m.PrincDirection(ncomp);
-					}
-				}
-				else if (nfmt == DATA_MULT)
-				{
-					FEElemData_T<mat3fs,DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_MULT>&>(rd);
-					mat3fs m[8];
-					r = vec3f(0,0,0);
-					if (dm.active(n))
-					{
-						dm.eval(n, m);
-						int ne = mesh->ElementRef(n).Nodes();
-						for (int i=0; i<ne; ++i) r += m[i].PrincDirection(ncomp);
-						r /= (float) ne;
-					}
+					mat3fs m;
+					dm.eval(n, &m);
+					r = m.PrincDirection(ncomp);
 				}
 			}
-			break;
+			else if (nfmt == DATA_MULT)
+			{
+				FEElemData_T<mat3fs, DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>&>(rd);
+				mat3fs m[8];
+				r = vec3f(0, 0, 0);
+				if (dm.active(n))
+				{
+					dm.eval(n, m);
+					int ne = mesh->ElementRef(n).Nodes();
+					for (int i = 0; i < ne; ++i) r += m[i].PrincDirection(ncomp);
+					r /= (float)ne;
+				}
+			}
+		}
+		break;
 		case DATA_MAT3:
+		{
+			if (nfmt == DATA_ITEM)
 			{
-				if (nfmt == DATA_ITEM)
+				FEElemData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-					FEElemData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_ITEM>&>(rd);
-					if (dm.active(n))
-					{
-						mat3f m;
-						dm.eval(n, &m);
-						r = m.col(ncomp);
-					}
+					mat3f m;
+					dm.eval(n, &m);
+					r = m.col(ncomp);
 				}
 			}
-			break;
+		}
+		break;
 		case DATA_ARRAY_VEC3:
+		{
+			if (nfmt == DATA_ITEM)
 			{
-				if (nfmt == DATA_ITEM)
+				FEElemArrayVec3Data& dm = dynamic_cast<FEElemArrayVec3Data&>(rd);
+				if (dm.active(n))
 				{
-					FEElemArrayVec3Data& dm = dynamic_cast<FEElemArrayVec3Data&>(rd);
-					if (dm.active(n))
-					{
-						r = dm.eval(n, ncomp);
-					}
+					r = dm.eval(n, ncomp);
 				}
 			}
-			break;
+		}
+		break;
 		default:
 			assert(false);
 		}
 	}
 	else if (IS_NODE_FIELD(nvec))
 	{
-		FEElement_& el = mesh->ElementRef(n);
+		FSElement_& el = mesh->ElementRef(n);
 		// take the average of the nodal values
-		for (int i=0; i<el.Nodes(); ++i) r += EvaluateNodeVector(el.m_node[i], ntime, nvec);
+		for (int i = 0; i < el.Nodes(); ++i) r += EvaluateNodeVector(el.m_node[i], ntime, nvec);
 		r /= el.Nodes();
 	}
 	else if (IS_FACE_FIELD(nvec))
@@ -2889,7 +2688,7 @@ vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 	else
 	{
 		assert(false);
-		r = vec3f(0,0,0);
+		r = vec3f(0, 0, 0);
 	}
 
 	return r;
@@ -2900,7 +2699,7 @@ vec3f FEPostModel::EvaluateElemVector(int n, int ntime, int nvec)
 mat3f FEPostModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	mat3f m;
 
@@ -2916,29 +2715,30 @@ mat3f FEPostModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 		switch (rd.GetType())
 		{
 		case DATA_MAT3S:
-			{
-				FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
-				mat3fs a;
-				dm.eval(n, &a);
-				m = a;
-			}
-			break;
+		{
+			FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
+			mat3fs a;
+			dm.eval(n, &a);
+			m = a;
+		}
+		break;
 		case DATA_MAT3:
-			{
-				FENodeData_T<mat3f>& dm = dynamic_cast<FENodeData_T<mat3f>&>(rd);
-				dm.eval(n, &m);
-			}
-			break;
+		{
+			FENodeData_T<mat3f>& dm = dynamic_cast<FENodeData_T<mat3f>&>(rd);
+			dm.eval(n, &m);
+		}
+		break;
 		}
 	}
-	else 
+	else
 	{
 		// we take the average of the elements that contain this element
-		const vector<NodeElemRef>& nel = mesh->NodeElemList(n);
-		if (!nel.empty())
+		FSNodeElementList& NEL = mesh->NodeElementList();
+		int ne = NEL.Valence(n);
+		if (ne > 0)
 		{
-			for (int i=0; i<(int) nel.size(); ++i) m += EvaluateElemTensor(nel[i].eid, ntime, nten, ntype);
-			m /= (float) nel.size();
+			for (int i = 0; i < ne; ++i) m += EvaluateElemTensor(NEL.ElementIndex(n, i), ntime, nten, ntype);
+			m /= (float)ne;
 		}
 	}
 
@@ -2965,31 +2765,31 @@ mat3f FEPostModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 		switch (rd.GetType())
 		{
 		case DATA_MAT3S:
-			{
-				mat3fs a;
-				FEFaceData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3fs,DATA_ITEM>&>(rd);
-				dm.eval(n, &a);
-				m = a;
-			}
-			break;
+		{
+			mat3fs a;
+			FEFaceData_T<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>&>(rd);
+			dm.eval(n, &a);
+			m = a;
+		}
+		break;
 		case DATA_MAT3:
-			{
-				FEFaceData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3f, DATA_ITEM>&>(rd);
-				dm.eval(n, &m);
-			}
-			break;
+		{
+			FEFaceData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3f, DATA_ITEM>&>(rd);
+			dm.eval(n, &m);
+		}
+		break;
 		}
 	}
 	else if (IS_NODE_FIELD(nten))
 	{
 		FSFace& f = mesh->Face(n);
 		// take the average of the nodal values
-		for (int i = 0; i<f.Nodes(); ++i) m += EvaluateNodeTensor(f.n[i], ntime, nten, ntype);
-		m /= (float) f.Nodes();
+		for (int i = 0; i < f.Nodes(); ++i) m += EvaluateNodeTensor(f.n[i], ntime, nten, ntype);
+		m /= (float)f.Nodes();
 	}
 	else if (IS_ELEM_FIELD(nten))
 	{
-		
+
 	}
 	else
 	{
@@ -3004,7 +2804,7 @@ mat3f FEPostModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 mat3f FEPostModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEPostMesh* mesh = state.GetFEMesh();
+	FSMesh* mesh = state.GetFEMesh();
 
 	mat3f m;
 
@@ -3014,85 +2814,85 @@ mat3f FEPostModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 		int ndata = FIELD_CODE(nten);
 		if ((ndata < 0) || (ndata >= state.m_Data.size())) return mat3f();
 		FEMeshData& rd = state.m_Data[ndata];
-		int nfmt  = rd.GetFormat();
+		int nfmt = rd.GetFormat();
 
 		if ((ntype != -1) && (rd.GetType() != ntype)) return m;
 
 		switch (nfmt)
 		{
 		case DATA_ITEM:
+		{
+			switch (rd.GetType())
 			{
-				switch (rd.GetType())
+			case DATA_MAT3S:
+			{
+				FEElemData_T<mat3fs, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>&>(rd);
+				if (dm.active(n))
 				{
-				case DATA_MAT3S:
-					{
-						FEElemData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_ITEM>&>(rd);
-						if (dm.active(n))
-						{
-							mat3fs a;
-							dm.eval(n, &a);
-							m = a;
-						}
-					}
-					break;
-				case DATA_MAT3:
-					{
-						FEElemData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_ITEM>&>(rd);
-						if (dm.active(n)) dm.eval(n, &m);
-					}
-					break;
+					mat3fs a;
+					dm.eval(n, &a);
+					m = a;
 				}
 			}
 			break;
-		case DATA_MULT:
+			case DATA_MAT3:
 			{
-				switch (rd.GetType())
-				{
-				case DATA_MAT3S:
-					{
-						FEElemData_T<mat3fs,DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_MULT>&>(rd);
-						mat3fs mi[FSElement::MAX_NODES];
-						if (dm.active(n))
-						{
-							dm.eval(n, mi);
-							int ne = mesh->ElementRef(n).Nodes();
-							mat3fs a = mi[0];
-							for (int i=1; i<ne; ++i) a += mi[i];
-							a /= (float) ne;
-
-							m = a;
-						}
-					}
-					break;
-				case DATA_MAT3:
-					{
-						FEElemData_T<mat3f, DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_MULT>&>(rd);
-						mat3f mi[FSElement::MAX_NODES];
-						if (dm.active(n))
-						{
-							dm.eval(n, mi);
-							int ne = mesh->ElementRef(n).Nodes();
-							m = mi[0];
-							for (int i = 1; i<ne; ++i) m += mi[i];
-							m /= (float)ne;
-						}
-					}
-					break;
-				}
-			};
+				FEElemData_T<mat3f, DATA_ITEM>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_ITEM>&>(rd);
+				if (dm.active(n)) dm.eval(n, &m);
+			}
 			break;
+			}
+		}
+		break;
+		case DATA_MULT:
+		{
+			switch (rd.GetType())
+			{
+			case DATA_MAT3S:
+			{
+				FEElemData_T<mat3fs, DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>&>(rd);
+				mat3fs mi[FSElement::MAX_NODES];
+				if (dm.active(n))
+				{
+					dm.eval(n, mi);
+					int ne = mesh->ElementRef(n).Nodes();
+					mat3fs a = mi[0];
+					for (int i=1; i<ne; ++i) a += mi[i];
+					a /= (float) ne;
+
+					m = a;
+				}
+			}
+			break;
+			case DATA_MAT3:
+			{
+				FEElemData_T<mat3f, DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3f, DATA_MULT>&>(rd);
+				mat3f mi[FSElement::MAX_NODES];
+				if (dm.active(n))
+				{
+					dm.eval(n, mi);
+					int ne = mesh->ElementRef(n).Nodes();
+					m = mi[0];
+					for (int i = 1; i<ne; ++i) m += mi[i];
+					m /= (float)ne;
+				}
+			}
+			break;
+			}
+		};
+		break;
 		}
 	}
 	else if (IS_NODE_FIELD(nten))
 	{
-		FEElement_& el = mesh->ElementRef(n);
+		FSElement_& el = mesh->ElementRef(n);
 		// take the average of the nodal values
 		for (int i = 0; i<el.Nodes(); ++i) m += EvaluateNodeTensor(el.m_node[i], ntime, nten, ntype);
 		m /= (float) el.Nodes();
 	}
 	else if (IS_FACE_FIELD(nten))
 	{
-		
+
 	}
 	else
 	{

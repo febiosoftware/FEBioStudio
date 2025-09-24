@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 
 class UIScalarFieldTool;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CScalarFieldTool : public CAbstractTool
 {
@@ -52,5 +52,5 @@ private:
 private:
 	UIScalarFieldTool*	ui;
 	GObject*	m_po;
-	std::vector<FEItemListBuilder*>	m_data;
+	std::vector<FSItemListBuilder*>	m_data;
 };

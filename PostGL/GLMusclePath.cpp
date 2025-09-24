@@ -28,13 +28,14 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/triangulate.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/FSTriMesh.h>
 #include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLRenderEngine.h>
 #include <sstream>
 using namespace Post;
 
@@ -168,8 +169,9 @@ void GLMusclePath::SetModel(CGLModel* pm)
 	for (int i=0; i<fem->Materials(); ++i)
 	{ 
 		Post::Material* gm = fem->GetMaterial(i);
-		const char* sn = gm->GetName();
-		int n = strlen(sn);
+		string name = gm->GetName();
+		const char* sn = name.c_str();
+		int n = (int)strlen(sn);
 		sprintf(sz, "%s", sn); sz += n; *sz++ = 0;
 	}
 	*sz = 0;
@@ -216,7 +218,7 @@ void GLMusclePath::ClearPaths()
 	m_path.clear();
 }
 
-void GLMusclePath::Render(CGLContext& rc)
+void GLMusclePath::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_path.empty()) return;
 
@@ -236,7 +238,7 @@ void GLMusclePath::Render(CGLContext& rc)
 		int n0 = GetIntValue(START_POINT) - 1;
 		int n1 = GetIntValue(END_POINT) - 1;
 
-		FEPostMesh& mesh = *glm->GetActiveMesh();
+		FSMesh& mesh = *glm->GetActiveMesh();
 		int NN = mesh.Nodes();
 		if ((n0 < 0) || (n0 >= NN)) return;
 		if ((n1 < 0) || (n1 >= NN)) return;
@@ -259,15 +261,15 @@ void GLMusclePath::Render(CGLContext& rc)
 		GLColor gray((uint8_t)r, (uint8_t)g, (uint8_t)b);
 
 		// draw the muscle path
-		glColor3ub(gray.r, gray.g, gray.b);
-		glx::drawSmoothPath(points, R);
+		re.setColor(gray);
+		glx::drawSmoothPath(re, points, R);
 
 		// draw the end points
-		glx::glcolor(col0);
-		glx::drawSphere(r0, 1.5 * R);
+		re.setColor(col0);
+		glx::drawSphere(re, r0, 1.5 * R);
 
-		glx::glcolor(col1);
-		glx::drawSphere(r1, 1.5 * R);
+		re.setColor(col1);
+		glx::drawSphere(re, r1, 1.5 * R);
 
 		return;
 	}
@@ -275,9 +277,6 @@ void GLMusclePath::Render(CGLContext& rc)
 	vector<vec3d> points = path->GetPoints();
 
 	int renderMode = GetIntValue(RENDER_MODE);
-
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	// draw the path
 	int N = (int) path->m_points.size();
@@ -287,17 +286,17 @@ void GLMusclePath::Render(CGLContext& rc)
 		vec3d r1 = path->m_points[N - 1].r;
 
 		// draw the muscle path
-		glColor3ub(c.r, c.g, c.b);
-		glx::drawSmoothPath(points, R);
+		re.setColor(c);
+		glx::drawSmoothPath(re, points, R);
 
 		if ((renderMode == 0) || (renderMode == 1))
 		{
 			// draw the end points
-			glx::glcolor(col0);
-			glx::drawSphere(r0, 1.5 * R);
+			re.setColor(col0);
+			glx::drawSphere(re, r0, 1.5 * R);
 
-			glx::glcolor(col1);
-			glx::drawSphere(r1, 1.5 * R);
+			re.setColor(col1);
+			glx::drawSphere(re, r1, 1.5 * R);
 
 			for (int i = 0; i < N; ++i)
 			{
@@ -308,21 +307,21 @@ void GLMusclePath::Render(CGLContext& rc)
 					float sphereRadius = 1.5f * R;
 					switch (ntag)
 					{
-					case 0: glColor3ub(0, 128, 0); break;
-					case 1: glColor3ub(0, 255, 0); break;
-					case 2: glColor3ub(255, 255, 0); break;
+					case 0: re.setColor(GLColor(0, 128, 0)); break;
+					case 1: re.setColor(GLColor(0, 255, 0)); break;
+					case 2: re.setColor(GLColor(255, 255, 0)); break;
 					default:
-						glColor3ub(0, 0, 0);
+						re.setColor(GLColor::Black());
 					}
 					vec3d r0 = pt.r;
 
 					if (i == m_selectedPoint)
 					{
 						sphereRadius = 2.0 * R;
-						glColor3ub(255, 255, 255);
+						re.setColor(GLColor::White());
 					}
 
-					glx::drawSphere(r0, sphereRadius);
+					glx::drawSphere(re, r0, sphereRadius);
 				}
 
 				// draw the tangent vector
@@ -333,33 +332,25 @@ void GLMusclePath::Render(CGLContext& rc)
 					vec3d r = pt.r;
 					vec3d t = path->m_data.tng;
 
-					glPushMatrix();
+					re.pushTransform();
 
-					glTranslatef(r.x, r.y, r.z);
+					re.translate(r);
 					quatd q;
 					if (t * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
 					else q = quatd(vec3d(0, 0, 1), t);
-					float w = q.GetAngle();
-					if (fabs(w) > 1e-6)
-					{
-						vec3d p = q.GetVector();
-						if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-						else glRotated(w * 180 / PI, 1, 0, 0);
-					}
+					re.rotate(q);
 
 					double D = 1.25 * R;
 
-					gluCylinder(pglyph, D, D, L, 20, 1);
-					glTranslatef(0.f, 0.f, (float)L * 0.9f);
-					gluCylinder(pglyph, 2*D, 0, 0.5*L, 20, 1);
+					glx::drawCylinder(re, D, L, 20);
+					re.translate(vec3d(0, 0, L * 0.9));
+					glx::drawCone(re, 2 * D, 0.5 * L, 20);
 
-					glPopMatrix();
+					re.popTransform();
 				}
 			}
 		}
 	}
-
-	gluDeleteQuadric(pglyph);
 }
 
 bool GLMusclePath::Intersects(Ray& ray, Intersection& q)
@@ -428,7 +419,7 @@ public:
 
 	quatd GetOrientation() { return m_rot; }
 	
-	FEItemListBuilder* CreateItemList() { return nullptr; }
+	FSItemListBuilder* CreateItemList() { return nullptr; }
 
 protected:
 	void Update()
@@ -571,7 +562,7 @@ void GLMusclePath::UpdatePath(int ntime)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -617,7 +608,7 @@ void GLMusclePath::UpdatePathData(int ntime)
 		return;
 	}
 
-	int n = path->Points();
+	int n = (int)path->Points();
 	if (n >= 2)
 	{
 		// start and end point coordinates
@@ -722,7 +713,7 @@ double GLMusclePath::DataValue(int field, int step)
 	return val;
 }
 
-void BuildFaceMesh(FSTriMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
+void BuildFaceMesh(FSTriMesh& faceMesh, Post::FEPostModel& fem, FSMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
 {
 	vec3d t = r1 - r0; t.Normalize();
 
@@ -835,7 +826,7 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	// get the nodal positions of the two end points
 	int n0 = GetIntValue(START_POINT) - 1;
@@ -941,7 +932,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -1047,7 +1038,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 	for (int i = 0; i < path->Points(); ++i)
 	{
 		PathData::Point& pt = path->m_points[i];
-		int nface = faceMesh.FindFace(pt.r, D);
+		int nface = (int)faceMesh.FindFace(pt.r, D);
 		pt.tag = (nface == -1 ? 0 : 1);
 		if ((depart == -1) && (nface >= 0))
 		{
@@ -1066,7 +1057,7 @@ void GLMusclePath::BuildGuideMesh()
 
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	FSMesh& mesh = *glm->GetActiveMesh();
 
 	int partID = m_pathGuide - 1;
 	if (partID < 0) return;
@@ -1074,7 +1065,7 @@ void GLMusclePath::BuildGuideMesh()
 	int faces = 0;
 	mesh.TagAllNodes(-1);
 	mesh.TagAllFaces(-1);
-	Post::MeshDomain& dom = mesh.Domain(partID);
+	FSMeshPartition& dom = mesh.MeshPartition(partID);
 	for (int i = 0; i < dom.Faces(); ++i)
 	{
 		FSFace& f = dom.Face(i);

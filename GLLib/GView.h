@@ -26,6 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLCamera.h"
+#include <FSCore/FSObject.h>
+#include <string>
+
+class CGViewKey : public FSObject
+{
+public:
+	GLCameraTransform transform;
+};
 
 //-----------------------------------------------------------------------------
 // This class stores viewing information
@@ -35,20 +43,20 @@ public:
 	CGView();
 	~CGView();
 
-	CGLCamera& GetCamera() { return m_cam; }
+	GLCamera& GetCamera() { return m_cam; }
 
 	void Reset();
 
 	int CameraKeys() { return (int) m_key.size(); }
 
-	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(GLCameraTransform* pkey);
+	CGViewKey& GetKey(int i) { return *m_key[i]; }
+	CGViewKey& GetCurrentKey() { return *m_key[m_nkey]; }
+	void SetCurrentKey(CGViewKey* pkey);
 	void SetCurrentKey(int i);
 
-	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
+	CGViewKey* AddCameraKey(GLCameraTransform& t, const std::string& name);
 
-	void DeleteKey(GLCameraTransform* pt);
+	void DeleteKey(CGViewKey* pt);
 
 	void DeleteAllKeys();
 
@@ -70,8 +78,18 @@ public:
 	double	m_ar;
 
 protected:
-	CGLCamera m_cam;	//!< current camera
+	GLCamera m_cam;	//!< current camera
 
-	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int								m_nkey;	//!< current key
+	std::vector<CGViewKey*>	m_key;	//!< stored camera transformations
+	int						m_nkey;	//!< current key
+};
+
+struct LegendData
+{
+	double vmin = 0, vmax = 0;
+	int colormap = 0;
+	int ndivs = 0;
+	bool discrete = false;
+	bool smooth = true;
+	std::string title;
 };

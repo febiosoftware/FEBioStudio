@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 
 namespace Ui {
 	class CBuildPanel;
@@ -33,7 +33,7 @@ namespace Ui {
 
 class CCreatePanel;
 
-class CBuildPanel : public CCommandPanel
+class CBuildPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -41,7 +41,7 @@ public:
 	CBuildPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	CCreatePanel* CreatePanel();
-	CCommandPanel* GetActivePanel();
+	CWindowPanel* GetActivePanel();
 
 	void Update(bool breset) override;
 

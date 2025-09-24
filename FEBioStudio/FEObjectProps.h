@@ -255,18 +255,6 @@ private:
 	int	m_actionIndex;
 };
 
-class CPostModelProps : public CFSObjectProps_T<Post::CGLModel>
-{
-public:
-	CPostModelProps() {}
-
-	void BuildProperties() override;
-
-	QVariant GetPropertyValue(int i) override;
-
-	void SetPropertyValue(int i, const QVariant& v) override;
-};
-
 class CDiscreteObjectProps : public CFSObjectProps_T<GDiscreteObject>
 {
 public:

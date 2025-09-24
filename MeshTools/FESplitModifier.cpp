@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESplitModifier.h"
-#include <MeshLib/FENodeElementList.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSNodeElementList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -561,7 +561,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	}
 
 	// build the element edge list
-	FSEdgeList EL(*pm);
+	EdgeList EL(*pm);
 	FSElementEdgeList EEL(*pm, EL);
 	vector<int> edgeTags(EL.size(), 0);
 

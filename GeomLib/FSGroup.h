@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 class FSNode;
 class FSEdge;
@@ -39,7 +39,7 @@ class GPart;
 //-----------------------------------------------------------------------------
 // Base class for all groups
 //
-class FSGroup : public FEItemListBuilder
+class FSGroup : public FSItemListBuilder
 {
 public:
 	FSGroup(FSMesh* pm, int ntype, unsigned int flags);
@@ -51,9 +51,9 @@ public:
 	int Type() { return m_ntype; }
 
 	FSNodeList* BuildNodeList() { return nullptr; }
-	FEEdgeList* BuildEdgeList() { return nullptr; }
-	FEFaceList* BuildFaceList() { return nullptr; }
-	FEElemList* BuildElemList() { return nullptr; }
+	FSEdgeList* BuildEdgeList() { return nullptr; }
+	FSFaceList* BuildFaceList() { return nullptr; }
+	FSElemList* BuildElemList() { return nullptr; }
 
 public:
 	void Save(OArchive& ar);
@@ -61,7 +61,8 @@ public:
 
 	// This is only used to process some older fsm files.
 	int GetMeshID() const { return m_meshID; }
-	void SetMesh(FSMesh* mesh) { assert(m_mesh == nullptr); m_mesh = mesh; }
+
+	void SetMesh(FSMesh* mesh) { m_mesh = mesh; }
 
 public:
 	int m_ntag;
@@ -84,13 +85,15 @@ public:
 
 	void CreateFromMesh();
 
-	FEElemList* BuildElemList();
+	FSElemList* BuildElemList();
 	FSNodeList* BuildNodeList();
 
-	FEElement_* GetElement(int n);
+	// TODO: Replace this will call to BuildNodeList
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
-	FEItemListBuilder* Copy();
-	void Copy(FSElemSet* pg);
+	FSElement_* GetElement(int n);
+
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -102,8 +105,7 @@ public:
 	FSPartSet(FSMesh* pm) : FSGroup(pm, FE_PARTSET, FE_PART_FLAG) {}
 	~FSPartSet() {}
 
-	FEItemListBuilder* Copy();
-	void Copy(FSPartSet* pg);
+	FSItemListBuilder* Copy() override;
 
 	GPart* GetPart(size_t n);
 
@@ -123,12 +125,14 @@ public:
 	~FSSurface(){}
 
 	FSNodeList* BuildNodeList();
-	FEFaceList* BuildFaceList();
+	FSFaceList* BuildFaceList();
+
+	// TODO: Replace with call to BuildNodeList
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
 	FSFace* GetFace(int n);
 
-	FEItemListBuilder* Copy();
-	void Copy(FSSurface* pg);
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -142,12 +146,11 @@ public:
 
 	FSNodeList* BuildNodeList();
 
-	FEEdgeList* BuildEdgeList();
+	FSEdgeList* BuildEdgeList();
 
-	FSEdge* Edge(FEItemListBuilder::Iterator it);
+	FSEdge* Edge(FSItemListBuilder::Iterator it);
 
-	FEItemListBuilder* Copy();
-	void Copy(FSEdgeSet* pg);
+	FSItemListBuilder* Copy() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -163,8 +166,7 @@ public:
 
 	void CreateFromMesh();
 
-	FEItemListBuilder* Copy();
-	void Copy(FSNodeSet* pg);
+	FSItemListBuilder* Copy() override;
 
 	FSNode* GetNode(size_t n);
 

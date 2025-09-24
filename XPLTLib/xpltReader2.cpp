@@ -25,17 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "xpltReader2.h"
-#include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FSNodeFaceList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <PostLib/FEPostModel.h>
 
 using namespace Post;
 using namespace std;
 
-template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEPostMesh& m, XpltReader2::Surface &s, Post::FEMeshData &data)
+template <class Type> void ReadFaceData_REGION(xpltArchive& ar, FSMesh& m, XpltReader2::Surface &s, Post::FEMeshData&data)
 {
 	int NF = s.nfaces;
 	vector<int> face(NF);
@@ -1049,7 +1049,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 			(domType != PLT_ELEM_PYRA5)) blinear = false;
 	}
 
-	Post::FEPostMesh* pmesh = new Post::FEPostMesh;
+	FSMesh* pmesh = new FSMesh;
 	pmesh->Create(NN, NE);
 
 	// read the element connectivity
@@ -1065,7 +1065,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 			el.m_gid = i;
 			el.SetID(E.eid);
 
-			FEElementType etype;
+			FSElementType etype;
 			switch (D.etype)
 			{
 			case PLT_ELEM_HEX8   : etype = FE_HEX8  ; break;
@@ -1107,7 +1107,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->ElementRef(i);
+		FSElement_& el = pmesh->ElementRef(i);
 		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -1115,7 +1115,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).Disable();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->ElementRef(i);
+		FSElement_& el = pmesh->ElementRef(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -1125,7 +1125,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 
 	// Update the mesh
 	// This will also build the faces
-	pmesh->BuildMesh();
+	pmesh->RebuildMesh();
 
 	// Next, we'll build a Node-Face lookup table
 	FSNodeFaceList NFT; NFT.Build(pmesh);
@@ -1147,35 +1147,32 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.nodeSets(); ++n)
 	{
 		NodeSet& s = m_xmesh.nodeSet(n);
-		Post::FSNodeSet* ps = new Post::FSNodeSet(pmesh);
+		FSNodeSet* ps = new FSNodeSet(pmesh, s.node);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
-		ps->m_Node = s.node;
-		pmesh->AddNodeSet(ps);
+		pmesh->AddFENodeSet(ps);
 	}
 
 	// let's create the FE surfaces
 	for (int n=0; n< m_xmesh.surfaces(); ++n)
 	{
 		Surface& s = m_xmesh.surface(n);
-		Post::FSSurface* ps = new Post::FSSurface(pmesh);
+		FSSurface* ps = new FSSurface(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
-		ps->m_Face.reserve(s.nfaces);
-		for (int i=0; i<s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
-		pmesh->AddSurface(ps);
+		ps->reserve(s.nfaces);
+		for (int i=0; i<s.nfaces; ++i) ps->add(s.face[i].nid);
+		pmesh->AddFESurface(ps);
 	}
 
 	// let's create the parts
 	for (int n=0; n< m_xmesh.domains(); ++n)
 	{
 		Domain& s = m_xmesh.domain(n);
-		Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+		FSElemSet* pg = new FSElemSet(pmesh, s.elist);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
-		pg->m_Elem.resize(s.ne);
-		pg->m_Elem = s.elist;
-		pmesh->AddElemSet(pg);
+		pmesh->AddFEElemSet(pg);
 	}
 
 	// store the current mesh
@@ -1191,7 +1188,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 bool XpltReader2::ReadStateSection(FEPostModel& fem)
 {
 	// get the mesh
-	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	FSMesh& mesh = *GetCurrentMesh();
 
 	// add a state
 	FEState* ps = 0;
@@ -1265,7 +1262,7 @@ bool XpltReader2::ReadStateSection(FEPostModel& fem)
 		FEDataManager& dm = *fem.GetDataManager();
 		int n = dm.FindDataField("shell thickness");
 		Post::FEElementData<float,DATA_MULT>& df = dynamic_cast<Post::FEElementData<float,DATA_MULT>&>(ps->m_Data[n]);
-		Post::FEPostMesh& mesh = *GetCurrentMesh();
+		FSMesh& mesh = *GetCurrentMesh();
 		int NE = mesh.Elements();
 		float h[FSElement::MAX_NODES] = {0.f};
 		for (int i=0; i<NE; ++i)
@@ -1299,7 +1296,7 @@ bool XpltReader2::ReadMaterialData(FEPostModel& fem, FEState* pstate)
 bool XpltReader2::ReadNodeData(FEPostModel& fem, FEState* pstate)
 {
 	FEDataManager& dm = *fem.GetDataManager();
-	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	FSMesh& mesh = *GetCurrentMesh();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
@@ -1398,7 +1395,7 @@ bool XpltReader2::ReadNodeData(FEPostModel& fem, FEState* pstate)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadElemData(FEPostModel &fem, FEState* pstate)
 {
-	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	FSMesh& mesh = *GetCurrentMesh();
 	FEDataManager& dm = *fem.GetDataManager();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -1471,7 +1468,7 @@ bool XpltReader2::ReadElemData(FEPostModel &fem, FEState* pstate)
 
 
 //-----------------------------------------------------------------------------
-bool XpltReader2::ReadElemData_NODE(Post::FEPostMesh& m, XpltReader2::Domain &d, Post::FEMeshData &data, int ntype, int arrSize)
+bool XpltReader2::ReadElemData_NODE(FSMesh& m, XpltReader2::Domain &d, Post::FEMeshData &data, int ntype, int arrSize)
 {
 	int ne = 0;
 	switch (d.etype)
@@ -1780,7 +1777,7 @@ bool XpltReader2::ReadElemData_MULT(XpltReader2::Domain& dom, Post::FEMeshData& 
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadFaceData(FEPostModel& fem, FEState* pstate)
 {
-	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	FSMesh& mesh = *GetCurrentMesh();
 	FEDataManager& dm = *fem.GetDataManager();
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -1848,7 +1845,7 @@ bool XpltReader2::ReadFaceData(FEPostModel& fem, FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader2::ReadFaceData_MULT(FSMesh& m, XpltReader2::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	// It is possible that the node ordering of the FACE's are different than the FSFace's
 	// so we setup up an array to unscramble the nodal values
@@ -1972,7 +1969,7 @@ bool XpltReader2::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader2::Surface &s
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader2::ReadFaceData_ITEM(XpltReader2::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader2::ReadFaceData_ITEM(XpltReader2::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	int NF = s.nfaces;
 	switch (ntype)
@@ -2033,7 +2030,7 @@ bool XpltReader2::ReadFaceData_ITEM(XpltReader2::Surface &s, Post::FEMeshData &d
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader2::ReadFaceData_NODE(Post::FEPostMesh& m, XpltReader2::Surface &s, Post::FEMeshData &data, int ntype)
+bool XpltReader2::ReadFaceData_NODE(FSMesh& m, XpltReader2::Surface &s, Post::FEMeshData& data, int ntype)
 {
 	// set nodal tags to local node number
 	int NN = m.Nodes();

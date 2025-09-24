@@ -150,10 +150,10 @@ void GTorus::Create()
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);
-		edge[3] = FE[i][0];
-		edge[2] = FE[i][1];
-		edge[1] = FE[i][2];
-		edge[0] = FE[i][3];
+		edge[0] = FE[i][0];
+		edge[1] = FE[i][1];
+		edge[2] = FE[i][2];
+		edge[3] = FE[i][3];
 
 		AddFacet(edge, FACE_REVOLVE);
 	}

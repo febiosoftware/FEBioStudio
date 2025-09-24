@@ -25,10 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <QDialog>
 
 class CPostDocument;
+class CGLModelDocument;
 
 namespace Ui{
 	class CStatePanel;
@@ -37,7 +38,7 @@ namespace Ui{
 
 class CMainWindow;
 
-class CStatePanel : public CCommandPanel
+class CStatePanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -46,7 +47,7 @@ public:
 
 	void Update(bool breset) override;
 
-	CPostDocument* GetActiveDocument();
+	CGLModelDocument* GetActiveDocument();
 
 private slots:
 	void on_stateList_doubleClicked(const QModelIndex& index);

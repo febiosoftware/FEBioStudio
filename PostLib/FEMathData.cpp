@@ -27,46 +27,206 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMathData.h"
 #include "FEPostModel.h"
+#include "constants.h"
 using namespace Post;
 
-FEMathDataField::FEMathDataField(Post::FEPostModel* fem, unsigned int flag) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, NODE_DATA, flag)
+FEScalarMathDataField::FEScalarMathDataField(Post::FEPostModel* fem, DATA_CLASS dataClass, unsigned int flag) : ModelDataField(fem, DATA_SCALAR, DATA_ITEM, dataClass, flag)
+{
+
+}
+
+double FEScalarMathDataField::value(const std::vector<double>& vars)
+{
+	if (!m_math.IsValid()) return 0.0;
+	double v = m_math.value_s(vars);
+	return v;
+}
+
+FEMathNodeDataField::FEMathNodeDataField(Post::FEPostModel* fem, unsigned int flag) : FEScalarMathDataField(fem, NODE_DATA, flag)
 {
 	m_eq = "";
 	m_math.AddVariable("x", 0.0);
 	m_math.AddVariable("y", 0.0);
 	m_math.AddVariable("z", 0.0);
 	m_math.AddVariable("t", 0.0);
-	BuildMath();
+	BuildMath(true);
 }
 
-void FEMathDataField::BuildMath()
+FEMeshData* FEMathNodeDataField::CreateData(FEState* pstate)
 {
-	m_math.Create(m_eq);
+	FEMathNodeData* data = new FEMathNodeData(pstate, this);
+
+	FEPostModel* fem = m_fem;
+	for (int i = 0; i < m_var.size(); ++i)
+	{
+		int nfield = m_var[i].second->GetFieldID();
+		int n = FIELD_CODE(nfield);
+		FEMeshData& d = pstate->m_Data[n];
+
+		FENodeData_T<float>* ped = dynamic_cast<FENodeData_T<float>*>(&d);
+		assert(ped);
+		data->AddVariable(ped);
+	}
+
+	return data;
 }
 
-double FEMathDataField::value(double x, double y, double z, double t)
+bool FEMathNodeDataField::BuildMath(bool updateVars)
 {
-	if (!m_math.IsValid()) return 0.0;
+	string expr = m_eq;
+	if (expr.empty()) expr = "0";
 
-	std::vector<double> vars = { x, y, z, t };
-	double v = m_math.value_s(vars);
-	return v;
+	if (updateVars)
+	{
+		m_var.clear();
+		m_math.Clear();
+		m_math.AddVariable("x", 0.0);
+		m_math.AddVariable("y", 0.0);
+		m_math.AddVariable("z", 0.0);
+		m_math.AddVariable("t", 0.0);
+		bool b = m_math.Create(expr, true); assert(b);
+
+		FEPostModel* fem = m_fem;
+		Post::FEDataManager* pDM = fem->GetDataManager();
+
+		int nvar = m_math.Variables();
+		for (int i = 4; i < nvar; ++i)
+		{
+			MVariable* pv = m_math.Variable(i);
+			const std::string& varName = pv->Name();
+			int nfield = pDM->FindDataField(varName); assert(nfield >= 0);
+			ModelDataField* pdf = *pDM->DataField(nfield);
+			if (pdf->DataClass() != NODE_DATA) return false;
+			if (pdf->Format() != DATA_ITEM) return false;
+			m_var.push_back(std::make_pair(varName, pdf));
+		}
+	}
+	else
+	{
+		bool b = m_math.Create(expr, false); assert(b);
+	}
+
+	return true;
 }
 
-FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<float>(state, pdf)
+FEMathNodeData::FEMathNodeData(FEState* state, FEMathNodeDataField* pdf) : FENodeData_T<float>(state, pdf)
 {
 	m_pdf = pdf;
 }
 
 // evaluate all the nodal data for this state
-void FEMathData::eval(int n, float* pv)
+void FEMathNodeData::eval(int n, float* pv)
 {
 	if ((m_pdf == nullptr) || (pv == nullptr)) return;
 
 	double time = m_state->m_time;
 	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, m_state->GetID());
-	double v = m_pdf->value(r.x, r.y, r.z, time);
+	std::vector<double> vars = { r.x, r.y, r.z, time };
+
+	for (int i = 0; i < m_vars.size(); ++i)
+	{
+		Post::FENodeData_T<float>* vari = m_vars[i];
+		float vi = 0.f;
+		if (vari && vari->active(n)) vari->eval(n, &vi);
+		vars.push_back(vi);
+	}
+
+	double v = m_pdf->value(vars);
+	*pv = (float)v;
+}
+
+FEMathElemDataField::FEMathElemDataField(Post::FEPostModel* fem, unsigned int flag) : FEScalarMathDataField(fem, ELEM_DATA, flag)
+{
+	m_eq = "";
+	BuildMath(false);
+}
+
+bool FEMathElemDataField::BuildMath(bool updateVars)
+{
+	string expr = m_eq;
+	if (expr.empty()) expr = "0";
+
+	if (updateVars)
+	{
+		m_var.clear();
+		m_math.Clear();
+		m_math.AddVariable("x", 0.0);
+		m_math.AddVariable("y", 0.0);
+		m_math.AddVariable("z", 0.0);
+		m_math.AddVariable("t", 0.0);
+		bool b = m_math.Create(expr, true); assert(b);
+
+		FEPostModel* fem = m_fem;
+		Post::FEDataManager* pDM = fem->GetDataManager();
+
+		int nvar = m_math.Variables();
+		for (int i = 4; i < nvar; ++i)
+		{
+			MVariable* pv = m_math.Variable(i);
+			const std::string& varName = pv->Name();
+			int nfield = pDM->FindDataField(varName); assert(nfield >= 0);
+			ModelDataField* pdf = *pDM->DataField(nfield);
+			if (pdf->DataClass() != ELEM_DATA) return false;
+			if (pdf->Format() != DATA_ITEM) return false;
+			m_var.push_back(std::make_pair(varName, pdf));
+		}
+	}
+	else
+	{
+		bool b = m_math.Create(expr, false); assert(b);
+	}
+
+	return true;
+}
+
+FEMeshData* FEMathElemDataField::CreateData(FEState* pstate)
+{
+	FEMathElemData* data = new FEMathElemData(pstate, this);
+
+	FEPostModel* fem = m_fem;
+	for (int i = 0; i < m_var.size(); ++i)
+	{
+		int nfield = m_var[i].second->GetFieldID();
+		int n = FIELD_CODE(nfield);
+		FEMeshData& d = pstate->m_Data[n];
+
+		FEElemData_T<float, DATA_ITEM>* ped = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
+		assert(ped);
+		data->AddVariable(ped);
+	}
+
+	return data;
+}
+
+FEMathElemData::FEMathElemData(FEState* state, FEMathElemDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf)
+{
+	m_pdf = pdf;
+}
+
+void FEMathElemData::eval(int n, float* pv)
+{
+	if ((m_pdf == nullptr) || (pv == nullptr)) return;
+
+	double time = m_state->m_time;
+	FEPostModel& fem = *GetFSModel();
+	vec3f r[FSElement::MAX_NODES];
+	int ne = fem.GetElementCoords(n, m_state->m_id, r);
+	vec3f c(0, 0, 0);
+	for (int i = 0; i < ne; ++i) c += r[i];
+	c /= ne;
+
+	std::vector<double> vars = { c.x, c.y, c.z, time };
+
+	for (int i = 0; i < m_vars.size(); ++i)
+	{
+		Post::FEElemData_T<float, DATA_ITEM>* vari = m_vars[i];
+		float vi = 0.f;
+		if (vari && vari->active(n)) vari->eval(n, &vi);
+		vars.push_back(vi);
+	}
+
+	double v = m_pdf->value(vars);
 	*pv = (float)v;
 }
 

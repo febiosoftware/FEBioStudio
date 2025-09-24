@@ -49,7 +49,7 @@ void CCurveIntersectProps::SetPropertyValue(int i, const QVariant& v)
 		for (int i = 0; i < curves.size(); ++i)
 		{
 			QString curvei = curves.at(i);
-			string name = curvei.toStdString();
+			std::string name = curvei.toStdString();
 			GEdge* edge = m_geo->FindEdgeFromName(name.c_str());
 			m_mod->AddCurve(edge);
 		}

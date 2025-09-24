@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLColorMap.h"
-#include "GLModel.h"
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
+#include <PostGL/GLModel.h>
+#include <PostLib/constants.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
 	AddIntParam (-1, "data_field", "Data field")->SetEnumNames("@data_scalar");
 	AddBoolParam(true, "gradient_smoothing");
-	AddIntParam (0, "color_map")->SetEnumNames("@color_map");
+	AddIntParam (ColorMapManager::JET, "gradient")->SetEnumNames("@color_map");
 	AddBoolParam(true, "nodal_smoothing");
 	AddIntParam (10, "range_divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "show_legend");
@@ -56,17 +56,11 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	m_range.mintype = m_range.maxtype = m_defaultRngType;
 	m_rmin = m_rmax = vec3d(0, 0, 0);
 
-	m_nfield = 0;
+	m_nfield = -1;
 	m_breset = true;
 	m_bDispNodeVals = true;
 
 	SetName("Color Map");
-
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 120, 600);
-	m_pbar->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
-	m_pbar->copy_label(GetName().c_str());
-	m_pbar->hide();
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
 
 	UpdateData(false);
 
@@ -77,8 +71,6 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 //-----------------------------------------------------------------------------
 CGLColorMap::~CGLColorMap()
 {
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,17 +79,9 @@ bool CGLColorMap::UpdateData(bool bsave)
 	if (bsave)
 	{
 		m_nfield = GetIntValue(DATA_FIELD);
-		m_Col.SetSmooth(GetBoolValue(DATA_SMOOTH));
-		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_bDispNodeVals = GetBoolValue(NODAL_VALS);
 		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
-		if (m_pbar)
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) m_pbar->show(); else m_pbar->hide();
-			m_pbar->SetDivisions(GetIntValue(RANGE_DIVS));
-		}
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
 
@@ -106,16 +90,9 @@ bool CGLColorMap::UpdateData(bool bsave)
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
-		SetBoolValue(DATA_SMOOTH, m_Col.GetSmooth());
-		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetBoolValue(NODAL_VALS, m_bDispNodeVals);
 		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
 		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
-		if (m_pbar)
-		{
-			SetBoolValue(SHOW_LEGEND, m_pbar->visible());
-			SetIntValue(RANGE_DIVS, m_pbar->GetDivisions());
-		}
 		SetFloatValue(USER_MAX, m_range.max);
 		SetFloatValue(USER_MIN, m_range.min);
 	}
@@ -134,24 +111,10 @@ void CGLColorMap::SetEvalField(int n)
 {
 	if (n != m_nfield)
 	{
-		if (m_nfield == 0) m_pbar->show();
 		m_nfield = n;
 		m_breset = true;
 		UpdateData(false);
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool CGLColorMap::GetColorSmooth()
-{
-	return m_Col.GetSmooth();
-}
-
-//-----------------------------------------------------------------------------
-void CGLColorMap::SetColorSmooth(bool b)
-{
-	m_Col.SetSmooth(b);
-	UpdateData(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -173,7 +136,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	CGLModel* po = GetModel();
 
 	// get the mesh
-	FEPostMesh* pm = po->GetActiveMesh();
+	FSMesh* pm = po->GetActiveMesh();
 	FEPostModel* pfem = po->GetFSModel();
 
 	int N = pfem->GetStates();
@@ -199,8 +162,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	// update the range
 	float fmin = 1e29f, fmax = -1e29f;
-	ValArray& faceData0 = s0.m_FaceData;
-	ValArray& faceData1 = s1.m_FaceData;
 	if (IS_ELEM_FIELD(m_nfield) && (m_bDispNodeVals == false))
 	{
 		int ndata = FIELD_CODE(m_nfield);
@@ -209,7 +170,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			int NE = pm->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = pm->ElementRef(i);
+				FSElement_& el = pm->ElementRef(i);
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -230,7 +191,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			int NE = pm->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = pm->ElementRef(i);
+				FSElement_& el = pm->ElementRef(i);
 				ELEMDATA& d0 = s0.m_ELEM[i];
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -314,6 +275,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	if (m_bDispNodeVals == false)
 	{
 		int NF = pm->Faces();
+		ValArray& faceData0 = s0.m_FaceData;
+		ValArray& faceData1 = s1.m_FaceData;
 		for (int i = 0; i<NF; ++i)
 		{
 			FSFace& face = pm->Face(i);
@@ -413,9 +376,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 //		}
 //	}
 
-	// set the colormap's range
-	m_pbar->SetRange(m_range.min, m_range.max);
-
 	// update mesh texture coordinates
 	float min = m_range.min;
 	float max = m_range.max;
@@ -442,7 +402,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	// update element textures
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement_& el = pm->ElementRef(i);
+		FSElement_& el = pm->ElementRef(i);
 		ELEMDATA& d0 = s0.m_ELEM[i];
 		ELEMDATA& d1 = s1.m_ELEM[i];
 		if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
@@ -470,10 +430,11 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	}
 
 	// update the internal surfaces of the model
-	int NS = po->InternalSurfaces();
+	CPostObject* obj = po->GetPostObject();
+	int NS = obj->InternalSurfaces();
 	for (int i=0; i<NS; ++i)
 	{
-		GLSurface& surf = po->InteralSurface(i);
+		GLSurface& surf = obj->InteralSurface(i);
 		int NF = surf.Faces();
 		for (int j=0; j<NF; ++j)
 		{
@@ -533,7 +494,7 @@ void CGLColorMap::UpdateState(int ntime, bool breset)
 	{
 		// This may happen after an update if fields are deleted.
 		// reset the field code
-		m_nfield = BUILD_FIELD(1, 0, 0);
+		m_nfield = -1;
 		breset = true;
 	}
 

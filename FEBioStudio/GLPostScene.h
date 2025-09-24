@@ -25,15 +25,116 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
+#include <GLLib/GLScene.h>
 
-class CPostDocument;
+class CGLModelDocument;
+class CGLPostScene;
+class CImageModel;
+class FESelection;
 
-class CGLPostScene : public CGLScene
+namespace Post {
+	class CGLPlot;
+	class FEPostModel;
+	class CGLModel;
+}
+
+class GLPostSceneItem : public GLSceneItem
 {
 public:
-	CGLPostScene(CPostDocument* doc);
+	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
 
-	void Render(CGLContext& rc) override;
+protected:
+	CGLPostScene* m_scene;
+};
+
+class GLPostModelItem : public GLPostSceneItem
+{
+public:
+	GLPostModelItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void RenderModel(GLRenderEngine& re, GLContext& rc);
+	void RenderNodes(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderFaces(GLRenderEngine& re, GLContext& rc);
+	void RenderElems(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re, GLContext& rc);
+	void RenderNormals(GLRenderEngine& re, GLContext& rc);
+	void RenderOutline(GLRenderEngine& re, GLContext& rc);
+	void RenderGhost(GLRenderEngine& re, GLContext& rc);
+	void RenderMeshLines(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc);
+	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteElement(GLRenderEngine& re, int n);
+	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
+
+private:
+	void RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId);
+	void RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh);
+
+private:
+	GLTexture1D	m_tex;
+};
+
+class GLPostPlotItem : public GLPostSceneItem
+{
+public:
+	GLPostPlotItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+};
+
+class GLPostPlaneCutItem : public GLCompositeSceneItem
+{
+public:
+	GLPostPlaneCutItem(CGLPostScene* scene) : m_scene(scene) {}
+
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	CGLPostScene* m_scene;
+};
+
+class GLPostMirrorItem : public GLCompositeSceneItem
+{
+public:
+	GLPostMirrorItem(CGLPostScene* scene) : m_scene(scene) {}
+
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	void renderMirror(GLRenderEngine& re, GLContext& rc, int start, int end);
+
+private:
+	CGLPostScene* m_scene;
+};
+
+class GLPostObjectItem : public GLPostSceneItem
+{
+public:
+	GLPostObjectItem(CGLPostScene* scene) : GLPostSceneItem(scene) {}
+	void render(GLRenderEngine& re, GLContext& rc) override;
+};
+
+class GLPost3DImageItem : public GLPostSceneItem
+{
+public:
+	GLPost3DImageItem(CImageModel* img, CGLPostScene* scene) : GLPostSceneItem(scene), m_img(img) {}
+
+	void render(GLRenderEngine& re, GLContext& rc) override;
+
+private:
+	CImageModel* m_img;
+};
+
+class CGLPostScene : public GLScene
+{
+public:
+	CGLPostScene(CGLModelDocument* doc);
+
+	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
 	BOX GetBoundingBox() override;
 
@@ -41,15 +142,26 @@ public:
 
 	void ToggleTrackSelection();
 
-private:
-	void RenderImageData(CGLContext& rc);
+	Post::CGLModel* GetGLModel();
 
-	void RenderTags(CGLContext& rc);
+	Post::FEPostModel* GetFSModel();
+
+	FESelection* GetSelection();
+
+	int GetItemMode() const;
+
+	void Update() override;
+
+private:
+	void CreateTags(GLContext& rc);
 
 	void UpdateTracking();
 
 private:
-	CPostDocument* m_doc;
+	void BuildScene(GLContext& rc);
+
+private:
+	CGLModelDocument* m_doc;
 
 	bool	m_btrack;
 	int		m_ntrack[3];	// used for tracking
@@ -58,4 +170,6 @@ private:
 	quatd	m_trgRot0;
 	quatd	m_trgRot;
 	quatd	m_trgRotDelta;
+
+	bool	m_buildScene;
 };

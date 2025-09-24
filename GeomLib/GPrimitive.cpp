@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "GPrimitive.h"
 #include <MeshTools/FEGregoryPatch.h>
 #include <MeshTools/FETetGenMesher.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //=============================================================================
 // GPrimitive

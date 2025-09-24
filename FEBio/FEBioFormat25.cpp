@@ -33,15 +33,15 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/GDiscreteObject.h>
-#include <MeshLib/FEElementData.h>
-#include <MeshLib/FESurfaceData.h>
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSElementData.h>
+#include <MeshLib/FSSurfaceData.h>
+#include <MeshLib/FSNodeData.h>
 #include <GeomLib/GModel.h>
 #include <assert.h>
 #include <sstream>
 #include <FEBioLink/FEBioModule.h>
 
-using std::stringstream;
+using namespace std;
 
 FEBioFormat25::FEBioFormat25(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -270,7 +270,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& t
 
 	// get the required type attribute
 	const char* sztype = tag.AttributeValue("type");
-	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
+	FSElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8"  ) == 0) ntype = FE_HEX8;
 	else if (strcmp(sztype, "hex20" ) == 0) ntype = FE_HEX20;
 	else if (strcmp(sztype, "hex27" ) == 0) ntype = FE_HEX27;
@@ -772,7 +772,7 @@ bool FEBioFormat25::ParseNodeData(XMLTag& tag)
 	const char* szname = tag.AttributeValue("name");
 
 	FSMesh* mesh = pg->GetMesh();
-	FENodeData* pd = mesh->AddNodeDataField(szname, pg, DATA_SCALAR);
+	FSNodeData* pd = mesh->AddNodeDataField(szname, pg, DATA_SCALAR);
 
 	double val;
 	int lid;
@@ -1024,7 +1024,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				{
 					FSMesh* mesh = pg->GetMesh();
 					pg->GetGObject()->AddFEElemSet(pg);
-					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, DATA_SCALAR);
+					FSElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, DATA_SCALAR);
 
 					double scale = tag.AttributeValue("scale", 1.0);
 					pd->SetScaleFactor(scale);
@@ -1067,7 +1067,7 @@ bool FEBioFormat25::ParseSurfaceData(XMLTag& tag)
 	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
 
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+	FSSurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
 
 	double val;
 	int lid;
@@ -1129,7 +1129,7 @@ void FEBioFormat25::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 	// get the node set
 	const char* szset = tag.AttributeValue("node_set");
-	FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+	FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", szset);
 
 	// create the constraint
@@ -1233,7 +1233,7 @@ void FEBioFormat25::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	else throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
 	XMLAtt& set = tag.Attribute("node_set");
-	FEItemListBuilder* pg = febio.FindNamedSelection(set.cvalue());
+	FSItemListBuilder* pg = febio.FindNamedSelection(set.cvalue());
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
 	// make a new boundary condition
@@ -1345,7 +1345,7 @@ void FEBioFormat25::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 	// read node set
 	const char* szset = tag.AttributeValue("node_set");
 	FEBioInputModel& febio = GetFEBioModel();
-	FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+	FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 
 	GMaterial* pmat = 0;
 	if ((nrb > 0) && (nrb <= febio.Materials())) pmat = febio.GetMaterial(nrb - 1);
@@ -1508,7 +1508,7 @@ void FEBioFormat25::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	else name = szname;
 
 	// create the node set
-	FEItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
+	FSItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
 	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FSNodalDOFLoad>(fem)+1);
@@ -2372,7 +2372,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			double val = 0.0;
 
 			const char* szset = tag.AttributeValue("node_set");
-			FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+			FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 			if (pg == 0) AddLogEntry("Missing node_set \"%s\"", szset);
 
 			++tag;

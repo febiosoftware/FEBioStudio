@@ -36,13 +36,12 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FSCore/Palette.h>
 #include <string.h>
 #include <sstream>
+using namespace std;
 
 #define ABS(x) ((x)>=0?(x):(-(x)))
-
-extern const int COLORS;
-extern GLColor col[];
 
 // error constants
 enum NIKE_ERR {
@@ -332,8 +331,6 @@ void NIKE3DImport::build_mesh(NIKE3DProject &nike)
 	}
 
 	UpdateMesh(*pm);
-
-	fem.UpdateMaterialSelections();
 }
 
 //-----------------------------------------------------------------------------
@@ -534,14 +531,16 @@ void NIKE3DImport::build_constraints(NIKE3DProject& nike)
 
 void NIKE3DImport::build_materials(NIKE3DProject& nike)
 {
-	int i;
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
 
 	FSModel& fem = *m_fem;
 	FSStep& step = *fem.GetStep(0);
 
 	// assign materials to elements
 	m_nmat = (int)nike.m_Mat.size();
-	for (i=0; i<m_nmat; ++i)
+	for (int i=0; i<m_nmat; ++i)
 	{
 		NIKE3DProject::MATERIAL& m = nike.m_Mat[i];
 
@@ -680,7 +679,7 @@ void NIKE3DImport::build_materials(NIKE3DProject& nike)
 		GMaterial* pgm = new GMaterial(pmat);
 
 		pgm->SetName(m.szname);
-		pgm->AmbientDiffuse(col[i%16]);
+		pgm->SetColor(pal.Color(i%NCOL));
 		m_pMat.push_back(pgm);
 
 		// add materials to model

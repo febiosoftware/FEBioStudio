@@ -43,13 +43,19 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GLLib/GLCamera.h>
 
-class ObjectMeshList;
-class MeshLayer;
 class CModelDocument;
 class CGLDocument;
 class CGView;
 class CImageAnalysis;
 class GMaterial;
+
+class FSRigidLoad;
+class FSRigidBC;
+class FSRigidIC;
+class FSMeshAdaptor;
+class FSLoadController;
+class FSMeshData;
+class FSMeshDataGenerator;
 
 //-----------------------------------------------------------------------------
 
@@ -134,6 +140,117 @@ protected:
 	bool				m_bdel;
 };
 
+//-----------------------------------------------------------------------------
+class CCmdAddRigidLoad : public CCommand
+{
+public:
+	CCmdAddRigidLoad(FSStep* ps, FSRigidLoad* pmc);
+	~CCmdAddRigidLoad();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*			m_ps;
+	FSRigidLoad*	m_prl;
+	bool			m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddRigidBC : public CCommand
+{
+public:
+	CCmdAddRigidBC(FSStep* ps, FSRigidBC* pmc);
+	~CCmdAddRigidBC();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*		m_ps;
+	FSRigidBC*	m_prc;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddRigidIC : public CCommand
+{
+public:
+	CCmdAddRigidIC(FSStep* ps, FSRigidIC* pmc);
+	~CCmdAddRigidIC();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep*		m_ps;
+	FSRigidIC*	m_prc;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshAdaptor : public CCommand
+{
+public:
+	CCmdAddMeshAdaptor(FSStep* ps, FSMeshAdaptor* pmc);
+	~CCmdAddMeshAdaptor();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSStep* m_ps;
+	FSMeshAdaptor* m_pma;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddLoadController : public CCommand
+{
+public:
+	CCmdAddLoadController(FSModel* fem, FSLoadController* pmc);
+	~CCmdAddLoadController();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModel*			m_fem;
+	FSLoadController*	m_plc;
+	bool				m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshDataField : public CCommand
+{
+public:
+	CCmdAddMeshDataField(FSMesh* pm, FSMeshData* pmd);
+	~CCmdAddMeshDataField();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSMesh* m_pm;
+	FSMeshData* m_pmd;
+	bool		m_bdel;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddMeshDataGenerator : public CCommand
+{
+public:
+	CCmdAddMeshDataGenerator(FSModel* fem, FSMeshDataGenerator* pmd);
+	~CCmdAddMeshDataGenerator();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModel* m_fem;
+	FSMeshDataGenerator* m_pmd;
+	bool				m_bdel;
+};
 
 //-----------------------------------------------------------------------------
 class CCmdAddPart : public CCommand
@@ -466,7 +583,7 @@ class CCmdSelectObject : public CCommand
 public:
 	CCmdSelectObject(GModel* model, GObject* po, bool badd);
 	CCmdSelectObject(GModel* model, GObject** ppo, int n, bool badd);
-	CCmdSelectObject(GModel* model, const vector<GObject*>& po, bool badd);
+	CCmdSelectObject(GModel* model, const std::vector<GObject*>& po, bool badd);
 	~CCmdSelectObject() { delete[] m_ptag; delete[] m_ppo; }
 
 	void Execute();
@@ -487,7 +604,7 @@ class CCmdUnselectObject : public CCommand
 public:
 	CCmdUnselectObject(GModel* model, GObject* po);
 	CCmdUnselectObject(GModel* model, GObject** ppo, int n);
-	CCmdUnselectObject(GModel* model, const vector<GObject*>& po);
+	CCmdUnselectObject(GModel* model, const std::vector<GObject*>& po);
 	~CCmdUnselectObject() { delete[] m_ptag; delete[] m_ppo; }
 
 	void Execute();
@@ -507,15 +624,15 @@ class CCmdSelectPart : public CCommand
 {
 public:
 	CCmdSelectPart(GModel* model, int* npart, int n, bool badd);
-	CCmdSelectPart(GModel* model, const vector<int>& part, bool badd);
+	CCmdSelectPart(GModel* model, const std::vector<int>& part, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_npart;	// list of parts to select
-	vector<bool>	m_bold;		// old selection state of parts
+	std::vector<int>		m_npart;	// list of parts to select
+	std::vector<bool>	m_bold;		// old selection state of parts
 	bool			m_badd;		// add to current selection
 };
 
@@ -525,15 +642,15 @@ class CCmdUnSelectPart : public CCommand
 {
 public:
 	CCmdUnSelectPart(GModel* model, int* npart, int n);
-	CCmdUnSelectPart(GModel* model, const vector<int>& part);
+	CCmdUnSelectPart(GModel* model, const std::vector<int>& part);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_npart;	// list of parts to select
-	vector<bool>	m_bold;		// old selection state of parts
+	std::vector<int>		m_npart;	// list of parts to select
+	std::vector<bool>	m_bold;		// old selection state of parts
 };
 
 //-----------------------------------------------------------------------------
@@ -542,15 +659,15 @@ class CCmdSelectSurface : public CCommand
 {
 public:
 	CCmdSelectSurface(GModel* model, int* nsurf, int n, bool badd);
-	CCmdSelectSurface(GModel* model, const vector<int>& surf, bool badd);
+	CCmdSelectSurface(GModel* model, const std::vector<int>& surf, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_nsurf;	// list of surfaces to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_nsurf;	// list of surfaces to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -560,15 +677,15 @@ class CCmdUnSelectSurface : public CCommand
 {
 public:
 	CCmdUnSelectSurface(GModel* ps, int* nsurf, int n);
-	CCmdUnSelectSurface(GModel* ps, const vector<int>& surf);
+	CCmdUnSelectSurface(GModel* ps, const std::vector<int>& surf);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_nsurf;	// list of surfaces to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_nsurf;	// list of surfaces to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -578,15 +695,15 @@ class CCmdSelectEdge : public CCommand
 {
 public:
 	CCmdSelectEdge(GModel* ps, int* nedge, int n, bool badd);
-	CCmdSelectEdge(GModel* ps, const vector<int>& edge, bool badd);
+	CCmdSelectEdge(GModel* ps, const std::vector<int>& edge, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_nedge;	// list of edges to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_nedge;	// list of edges to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -596,15 +713,15 @@ class CCmdUnSelectEdge : public CCommand
 {
 public:
 	CCmdUnSelectEdge(GModel* model, int* nedge, int n);
-	CCmdUnSelectEdge(GModel* model, const vector<int>& edge);
+	CCmdUnSelectEdge(GModel* model, const std::vector<int>& edge);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_nedge;	// list of edges to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_nedge;	// list of edges to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -614,15 +731,15 @@ class CCmdSelectNode : public CCommand
 {
 public:
 	CCmdSelectNode(GModel* model, int* node, int n, bool badd);
-	CCmdSelectNode(GModel* model, const vector<int>& node, bool badd);
+	CCmdSelectNode(GModel* model, const std::vector<int>& node, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_node;		// list of edges to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_node;		// list of edges to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -632,15 +749,15 @@ class CCmdUnSelectNode : public CCommand
 {
 public:
 	CCmdUnSelectNode(GModel* model, int* node, int n);
-	CCmdUnSelectNode(GModel* model, const vector<int>& node);
+	CCmdUnSelectNode(GModel* model, const std::vector<int>& node);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<int>		m_node;		// list of edges to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<int>		m_node;		// list of edges to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -649,16 +766,16 @@ class CCmdSelectDiscrete : public CCommand
 {
 public:
 	CCmdSelectDiscrete(GModel* ps, int* pobj, int n, bool badd);
-	CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool badd);
-	CCmdSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj, bool badd);
+	CCmdSelectDiscrete(GModel* ps, const std::vector<int>& obj, bool badd);
+	CCmdSelectDiscrete(GModel* ps, const std::vector<GDiscreteObject*>& obj, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*						m_pgm;		// pointer to model
-	vector<GDiscreteObject*>	m_obj;		// list of discrete objects to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<GDiscreteObject*>	m_obj;		// list of discrete objects to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
 
@@ -666,15 +783,15 @@ protected:
 class CCmdSelectDiscreteElements : public CCommand
 {
 public:
-	CCmdSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList, bool badd);
+	CCmdSelectDiscreteElements(GDiscreteElementSet* set, const std::vector<int>& elemList, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GDiscreteElementSet*	m_ps;	// pointer to discrete element set
-	vector<int>		m_elemList;		// list of discrete objects to select
-	vector<bool>	m_bold;			// old selection state of surfaces
+	std::vector<int>		m_elemList;		// list of discrete objects to select
+	std::vector<bool>	m_bold;			// old selection state of surfaces
 	bool			m_badd;			// add to current selection
 };
 
@@ -682,15 +799,15 @@ protected:
 class CCmdUnSelectDiscreteElements : public CCommand
 {
 public:
-	CCmdUnSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList);
+	CCmdUnSelectDiscreteElements(GDiscreteElementSet* set, const std::vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GDiscreteElementSet* m_ps;	// pointer to discrete element set
-	vector<int>		m_elemList;		// list of discrete objects to select
-	vector<bool>	m_bold;			// old selection state of surfaces
+	std::vector<int>		m_elemList;		// list of discrete objects to select
+	std::vector<bool>	m_bold;			// old selection state of surfaces
 };
 
 //-----------------------------------------------------------------------------
@@ -699,16 +816,16 @@ class CCmdUnSelectDiscrete : public CCommand
 {
 public:
 	CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n);
-	CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj);
-	CCmdUnSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj);
+	CCmdUnSelectDiscrete(GModel* ps, const std::vector<int>& obj);
+	CCmdUnSelectDiscrete(GModel* ps, const std::vector<GDiscreteObject*>& obj);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*			m_model;	// pointer to model
-	vector<GDiscreteObject*>		m_obj;		// list of discrete objects to select
-	vector<bool>	m_bold;		// old selection state of surfaces
+	std::vector<GDiscreteObject*>		m_obj;		// list of discrete objects to select
+	std::vector<bool>	m_bold;		// old selection state of surfaces
 };
 
 
@@ -765,7 +882,7 @@ class CCmdUnselectElements : public CCommand
 {
 public:
 	CCmdUnselectElements(FSMesh* mesh, int* pe, int N);
-	CCmdUnselectElements(FSMesh* mesh, const vector<int>& elem);
+	CCmdUnselectElements(FSMesh* mesh, const std::vector<int>& elem);
 	~CCmdUnselectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
@@ -785,7 +902,7 @@ class CCmdSelectFaces : public CCommand
 {
 public:
 	CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd);
-	CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, const std::vector<int>& fl, bool badd);
 	~CCmdSelectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
@@ -805,7 +922,7 @@ class CCmdUnselectFaces : public CCommand
 {
 public:
 	CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N);
-	CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face);
+	CCmdUnselectFaces(FSMeshBase* pm, const std::vector<int>& face);
 	~CCmdUnselectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
@@ -825,7 +942,7 @@ class CCmdSelectFEEdges : public CCommand
 {
 public:
 	CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, const std::vector<int>& el, bool badd);
 	~CCmdSelectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
@@ -845,7 +962,7 @@ class CCmdUnselectFEEdges : public CCommand
 {
 public:
 	CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N);
-	CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge);
+	CCmdUnselectFEEdges(FSLineMesh* pm, const std::vector<int>& edge);
 	~CCmdUnselectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
@@ -865,7 +982,7 @@ class CCmdSelectFENodes : public CCommand
 {
 public:
 	CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd);
-	CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, const std::vector<int>& nl, bool badd);
 	~CCmdSelectFENodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
@@ -885,7 +1002,7 @@ class CCmdUnselectNodes : public CCommand
 {
 public:
 	CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N);
-	CCmdUnselectNodes(FSLineMesh* pm, const vector<int>& node);
+	CCmdUnselectNodes(FSLineMesh* pm, const std::vector<int>& node);
 	~CCmdUnselectNodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
@@ -941,13 +1058,13 @@ class CCmdHideObject : public CCommand
 {
 public:
 	CCmdHideObject(GObject* po, bool bhide);
-	CCmdHideObject(vector<GObject*> po, bool bhide);
+	CCmdHideObject(std::vector<GObject*> po, bool bhide);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	vector<GObject*>	m_pobj;
+	std::vector<GObject*>	m_pobj;
 	bool				m_bhide;
 };
 
@@ -984,8 +1101,8 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
-	CCmdHideElements(GObject* po, const vector<int>& elemList);
-	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
+	CCmdHideElements(GObject* po, const std::vector<int>& elemList);
+	CCmdHideElements(FSMesh* mesh, const std::vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
@@ -993,21 +1110,21 @@ public:
 protected:
 	GObject*		m_po;
 	FSMesh*			m_mesh;
-	vector<int>		m_elemList;
+	std::vector<int>		m_elemList;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdHideFaces : public CCommand
 {
 public:
-	CCmdHideFaces(FSSurfaceMesh* mesh, const vector<int>& faceList);
+	CCmdHideFaces(FSSurfaceMesh* mesh, const std::vector<int>& faceList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	FSSurfaceMesh*	m_mesh;
-	vector<int>		m_faceList;
+	std::vector<int>		m_faceList;
 };
 
 //-----------------------------------------------------------------------------
@@ -1022,7 +1139,7 @@ public:
 
 protected:
 	CModelDocument*	m_doc;
-	vector<int>	m_item;
+	std::vector<int>	m_item;
 	int		m_nitem;
 	int		m_nselect;
 };
@@ -1041,7 +1158,7 @@ protected:
 	CModelDocument*	m_doc;
 	int			m_nitem;
 	int			m_nselect;
-	vector<int>	m_item;
+	std::vector<int>	m_item;
 };
 
 //-----------------------------------------------------------------------------
@@ -1056,7 +1173,7 @@ public:
 
 protected:
 	CModelDocument*	m_doc;
-	vector<int>	m_item;
+	std::vector<int>	m_item;
 	int			m_nitem;
 	int			m_nselect;
 	bool		m_bunhide;
@@ -1105,14 +1222,13 @@ protected:
 class CCmdChangeFEMesh : public CCommand
 {
 public:
-	CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool up = false);
+	CCmdChangeFEMesh(GObject* po, FSMesh* pm);
 	~CCmdChangeFEMesh() { delete m_pnew; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	bool		m_update;
 	GObject*	m_po;
 	FSMesh*		m_pnew;
 };
@@ -1151,7 +1267,7 @@ protected:
 class CCmdChangeView : public CCommand
 {
 public:
-	CCmdChangeView(CGView* pview, CGLCamera cam);
+	CCmdChangeView(CGView* pview, GLCamera cam);
 	~CCmdChangeView();
 
 	void Execute();
@@ -1159,7 +1275,7 @@ public:
 
 protected:
 	CGView*		m_pview;
-	CGLCamera	m_cam;
+	GLCamera	m_cam;
 };
 
 //-----------------------------------------------------------------------------
@@ -1219,7 +1335,6 @@ protected:
 	GModel*		m_model;
 	GObject*	m_pold;	// the original object
 	GObject*	m_pnew;	// the new mesh object
-	ObjectMeshList*	m_oml;	// old object list
 };
 
 //-----------------------------------------------------------------------------
@@ -1301,11 +1416,25 @@ protected:
 	GMaterial*	m_pm;
 };
 
-//-----------------------------------------------------------------------------
+class CCmdAssignMaterial : public CCommand
+{
+public:
+	CCmdAssignMaterial(FSModel* fem, GPart* pg, GMaterial* mat);
+	CCmdAssignMaterial(FSModel* fem, std::vector<GPart*>& partList, GMaterial* mat);
+	void Execute();
+	void UnExecute();
+
+private:
+	FSModel* m_fem;
+	GMaterial* m_newMat;
+	std::vector<GPart*> m_partList;
+	std::vector<GMaterial*> m_oldMats;
+};
+
 class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n);
+	CCmdSetItemList(IHasItemLists* pbc, FSItemListBuilder* pl, int n);
 	~CCmdSetItemList();
 
 	void Execute();
@@ -1313,7 +1442,7 @@ public:
 
 protected:
 	IHasItemLists*		m_pbc;
-	FEItemListBuilder*	m_pl;
+	FSItemListBuilder*	m_pl;
 	int					m_index;
 };
 
@@ -1321,30 +1450,30 @@ protected:
 class CCmdAddToItemListBuilder : public CCommand
 {
 public:
-	CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
+	CCmdAddToItemListBuilder(FSItemListBuilder* pold, std::vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEItemListBuilder* m_pold;
-	vector<int>	m_lnew;
-	vector<int>	m_tmp;
+	FSItemListBuilder* m_pold;
+	std::vector<int>	m_lnew;
+	std::vector<int>	m_tmp;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdRemoveFromItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
+	CCmdRemoveFromItemListBuilder(FSItemListBuilder* pold, std::vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEItemListBuilder* m_pold;
-	vector<int>	m_lnew;
-	vector<int>	m_tmp;
+	FSItemListBuilder* m_pold;
+	std::vector<int>	m_lnew;
+	std::vector<int>	m_tmp;
 };
 
 //-----------------------------------------------------------------------------
@@ -1358,7 +1487,7 @@ public:
 	void UnExecute();
 
 private:
-	FEItemListBuilder*	m_pitem;
+	FSItemListBuilder*	m_pitem;
 	IHasItemLists*		m_pmc;
 	int	m_index;
 };
@@ -1376,7 +1505,7 @@ public:
 protected:
 	GModel*			m_gm;
 	GObject*		m_po;
-	ObjectMeshList*	m_poml;
+	int m_pos = -1;
 };
 
 //-----------------------------------------------------------------------------
@@ -1391,7 +1520,7 @@ public:
 
 protected:
 	FSModelComponent* m_obj;
-	std::vector<FEItemListBuilder*> m_sel;
+	std::vector<FSItemListBuilder*> m_sel;
 };
 
 //-----------------------------------------------------------------------------
@@ -1411,63 +1540,17 @@ protected:
 	size_t		m_insertPos;
 };
 
-//-----------------------------------------------------------------------------
-class CCmdSetActiveMeshLayer : public CCommand
-{
-public:
-	CCmdSetActiveMeshLayer(GModel* mdl, int activeLayer);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_gm;
-	int			m_activeLayer;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdAddMeshLayer : public CCommand
-{
-public:
-	CCmdAddMeshLayer(GModel* mdl, const std::string& layerName);
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_gm;
-	std::string	m_layerName;
-	int			m_layerIndex;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdDeleteMeshLayer : public CCommand
-{
-public:
-	CCmdDeleteMeshLayer(GModel* mdl, int layerIndex);
-	~CCmdDeleteMeshLayer();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*	m_gm;
-	int		m_layerIndex;
-	MeshLayer*	m_layer;
-};
-
-//-----------------------------------------------------------------------------
 class CCmdRemoveMeshData : public CCommand
 {
 public:
-	CCmdRemoveMeshData(FEMeshData* meshData);
+	CCmdRemoveMeshData(FSMeshData* meshData);
 	~CCmdRemoveMeshData();
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	FEMeshData*	m_data;
+	FSMeshData*	m_data;
 	int		m_index;
 };
 
@@ -1511,4 +1594,21 @@ public:
 private:
     bool m_del;
 	CImageAnalysis*	m_analysis;
+};
+
+// this command swaps the material properties of a GMaterial
+class CCmdSwapMaterialProps : public CCommand
+{
+public:
+	CCmdSwapMaterialProps(GMaterial* gmat, FSMaterial* props);
+
+	~CCmdSwapMaterialProps();
+
+	void Execute() override;
+
+	void UnExecute() override;
+
+private:
+	GMaterial* m_gmat;
+	FSMaterial* m_props;
 };

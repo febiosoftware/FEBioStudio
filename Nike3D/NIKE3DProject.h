@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <vector>
 #include <list>
-//using namespace std;
 
 class NIKE3DProject
 {

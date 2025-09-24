@@ -105,9 +105,9 @@ void GRevolveModifier::Apply(GObject* po)
 
 				// rotate the node
 				vec3d rp;
-				rp.x = cw * r.x - sw * r.z;
+				rp.x = cw * r.x + sw * r.z;
 				rp.y = r.y;
-				rp.z = sw * r.x + cw * r.z;
+				rp.z = -sw * r.x + cw * r.z;
 
 				// add the new node
 				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type())->GetLocalID();
@@ -149,8 +149,16 @@ void GRevolveModifier::Apply(GObject* po)
 				switch (e.m_ntype)
 				{
 				case EDGE_LINE       : ne[(i + 1)*E + j] = po->AddLine(n0, n1); break;
-				case EDGE_3P_CIRC_ARC: ne[(i + 1)*E + j] = po->AddCircularArc(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
-				case EDGE_3P_ARC     : ne[(i + 1)*E + j] = po->AddArcSection(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
+				case EDGE_3P_CIRC_ARC: ne[(i + 1)*E + j] = po->AddCircularArc(nn[e.m_cnode[0] + (i + 1) * N], n0, n1); break;
+				case EDGE_3P_ARC     : ne[(i + 1)*E + j] = po->AddArcSection(nn[e.m_cnode[0] + (i + 1) * N], n0, n1); break;
+				case EDGE_BEZIER:
+				{
+					std::vector<int> n;
+					n.push_back(n0);
+					for (int k = 0; k < e.m_cnode.size(); ++k) n.push_back(nn[e.m_cnode[k]] + (i + 1) * N);
+					n.push_back(n1);
+					ne[(i + 1) * E + j] = po->AddBezierSection(n); break;
+				}
 				default:
 					assert(false);
 				}
@@ -192,7 +200,7 @@ void GRevolveModifier::Apply(GObject* po)
 			edge.resize(ef);
 			for (int k=0; k<ef; ++k) 
 			{
-				edge[k] = ne[f.m_edge[k].nid + (i+1)*E];
+				edge[ef-k-1] = ne[f.m_edge[k].nid + (i+1)*E];
 			}
 			po->AddFacet(edge, FACE_POLYGON);
 		}
@@ -213,10 +221,10 @@ void GRevolveModifier::Apply(GObject* po)
 			if ((m0 > 0)&&(m1 > 0))
 			{
 				edge.resize(4);
-				edge[0] = ne[         i*E+j];
-				edge[1] =                 m1;
-				edge[2] = ne[((i+1)*E+j)%NE];
-				edge[3] =                 m0;
+				edge[3] = ne[         i*E+j];
+				edge[2] =                 m1;
+				edge[1] = ne[((i+1)*E+j)%NE];
+				edge[0] =                 m0;
 				po->AddFacet(edge, FACE_REVOLVE);
 				e0.m_ntag = nf++;
 			}
@@ -309,7 +317,7 @@ void GRevolveModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* GRevolveModifier::BuildGMesh(GObject* po)
+GLMesh* GRevolveModifier::BuildGMesh(GObject* po)
 {
 	po->GObject::BuildGMesh();
 	return 0;

@@ -30,7 +30,7 @@ using namespace VTK;
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 
-bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt maxOutSize)
+bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt maxOutSize, uInt& outSize)
 {
 	z_stream zstrm;
 
@@ -64,7 +64,7 @@ bool decompress(unsigned char* szin, uInt bufSize, unsigned char* szout, uInt ma
 			(void)inflateEnd(&zstrm);
 			return false;
 		}
-		uInt have = maxOutSize - zstrm.avail_out;
+		outSize = zstrm.total_out;
 
 		//		buf.append(out, have);
 
@@ -254,8 +254,10 @@ bool VTKFileReader::ParseFileHeader(XMLTag& tag)
 	// read the type attribute
 	const char* sztype = tag.AttributeValue("type", true);
 	if (sztype) {
-		if (strcmp(sztype, "UnstructuredGrid") == 0) m_type = UnstructuredGrid;
-		else if (strcmp(sztype, "PolyData") == 0) m_type = PolyData;
+		if      (strcmp(sztype, "UnstructuredGrid" ) == 0) m_type = UnstructuredGrid;
+		else if (strcmp(sztype, "PolyData"         ) == 0) m_type = PolyData;
+		else if (strcmp(sztype, "PUnstructuredGrid") == 0) m_type = PUnstructuredGrid;
+		else if (strcmp(sztype, "Collection"       ) == 0) m_type = Collection;
 		else return errf("Can't read %s vtk files", sztype);
 	}
 	else return errf("Missing type attribute in vtk file.");
@@ -294,7 +296,7 @@ bool VTKFileReader::ParseFileHeader(XMLTag& tag)
 	return true;
 }
 
-bool VTKFileReader::ProcessDataArrays(vtkModel& vtk, vtkAppendedData& data)
+bool VTKFileReader::ProcessDataArrays(vtkDataSet& vtk, vtkAppendedData& data)
 {
 	for (vtkPiece& piece : vtk.m_pieces)
 	{
@@ -308,7 +310,7 @@ bool VTKFileReader::ProcessDataArrays(vtkModel& vtk, vtkAppendedData& data)
 }
 
 
-bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkDataSet& vtk)
 {
 	++tag;
 	do
@@ -324,7 +326,7 @@ bool VTKFileReader::ParseUnstructuredGrid(XMLTag& tag, vtkModel& vtk)
 	return true;
 }
 
-bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkDataSet& vtk)
 {
 	++tag;
 	do
@@ -340,7 +342,7 @@ bool VTKFileReader::ParsePolyData(XMLTag& tag, vtkModel& vtk)
 	return true;
 }
 
-bool VTKFileReader::ParsePiece(XMLTag& tag, vtkModel& vtk)
+bool VTKFileReader::ParsePiece(XMLTag& tag, vtkDataSet& vtk)
 {
 	vtkPiece piece;
 	piece.m_numPoints = tag.AttributeValue<int>("NumberOfPoints", 0);
@@ -511,7 +513,7 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 	else if (strcmp(sztype, "Int8"   ) == 0) vtkDataArray.m_type = vtkDataArray::INT8;
 	else if (strcmp(sztype, "UInt8"  ) == 0) vtkDataArray.m_type = vtkDataArray::UINT8;
 	else if (strcmp(sztype, "Int64"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
-	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT64;
+	else if (strcmp(sztype, "Int32"  ) == 0) vtkDataArray.m_type = vtkDataArray::INT32;
 	else return errf("Unknown data array type %s", sztype);
 
 	// get the number of components
@@ -565,8 +567,33 @@ bool VTKFileReader::ParseDataArray(XMLTag& tag, vtkDataArray& vtkDataArray)
 		size_t headerSize = 0;
 		if (m_headerType == UInt32) headerSize = 4;
 		if (m_headerType == UInt64) headerSize = 8;
-		d += headerSize;
-		n -= headerSize;
+
+		// check for compression
+		std::vector<unsigned char> buf2;
+
+		if (m_compressor == ZLibCompression)
+		{
+			unsigned int blocks = *((unsigned int*)d);
+			unsigned int decompressedSize = *((unsigned int*)(d + 4));
+			unsigned int not_sure_what_this_is = *((unsigned int*)(d + 8));
+			unsigned int compressedSize = *((unsigned int*)(d + 12));
+
+			d += 16;
+			n -= 16;
+
+			buf2.assign(decompressedSize, 0);
+			unsigned char* d2 = buf2.data();
+			uInt outsize = 0;
+
+			if (decompress(d, n, d2, buf2.size(), outsize) == false) return errf("Error decompressing data");
+			d = d2;
+			n = outsize;
+		}
+		else
+		{
+			d += headerSize;
+			n -= headerSize;
+		}
 
 		// process array
 		if (vtkDataArray.m_type == vtkDataArray::FLOAT32)

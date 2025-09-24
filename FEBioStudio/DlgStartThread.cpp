@@ -55,7 +55,7 @@ public:
 	QLabel*			m_time;
 	QLabel*			m_timeLeft;
 
-	time_point<steady_clock>	m_start;	//!< time at start
+	time_point<steady_clock>	m_start, m_tic;	//!< time at start
 
 public:
 	CDlgStartThreadUI()
@@ -106,16 +106,18 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
 	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
-
-	ui->m_start = steady_clock::now();
-
-	ui->m_thread->start();
-	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::setTask(const QString& taskString)
 {
 	ui->m_task->setText(taskString);
+}
+
+void CDlgStartThread::showEvent(QShowEvent* ev) 
+{
+	ui->m_start = ui->m_tic = steady_clock::now();
+	ui->m_thread->start();
+	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::closeEvent(QCloseEvent* ev)
@@ -163,25 +165,25 @@ void CDlgStartThread::checkProgress()
 
 	if (ui->m_bdone)
 	{
-		if (ui->m_breturn == false)
+		if (ui->m_thread)
 		{
-			QString err = ui->m_thread->GetErrorString();
-			if (err.isEmpty()) err = "An unknown error has occurred.";
-			QMessageBox::critical(this, "Error", err);
-		}
-		ui->m_thread->deleteLater();
+			if (ui->m_breturn == false)
+			{
+				QString err = ui->m_thread->GetErrorString();
+				if (err.isEmpty()) err = "An unknown error has occurred.";
+				QMessageBox::critical(this, "Error", err);
+			}
+			ui->m_thread->deleteLater();
+			ui->m_thread = nullptr;
 
-		if (ui->m_cancelled) ui->m_breturn = false;
-		if (ui->m_breturn) accept(); else reject();
+			if (ui->m_cancelled) ui->m_breturn = false;
+			if (ui->m_breturn) accept(); else reject();
+		}
 	}
 	else
 	{
-		if ((ui->m_cancelled == false) && (ui->m_thread->hasProgress()))
+		if ((ui->m_cancelled == false))
 		{
-			ui->m_progress->setRange(0.0, 100.0);
-			double p = ui->m_thread->progress();
-			ui->m_progress->setValue((int)p);
-
 			// NOTE: There could be a race condition here. What
 			//       if the task string is being updated while we get here? 
 			const char* sztask = ui->m_thread->currentTask();
@@ -191,15 +193,28 @@ void CDlgStartThread::checkProgress()
 				ui->m_task->setText(ui->m_currentTask);
 			}
 
-			double f = p / 100.0;
-			if (f > 0.01)
+			if (ui->m_thread->hasProgress())
 			{
-				double frem = fsec * (1.0 - f) / f;
-				ui->m_timeLeft->setText(sec2str(frem));
+				ui->m_progress->setRange(0.0, 100.0);
+				double p = ui->m_thread->progress();
+				ui->m_progress->setValue((int)p);
+
+				double f = p / 100.0;
+				if (f > 0.01)
+				{
+					double fsec = duration_cast<dseconds>(pause - ui->m_tic).count();
+					double frem = fsec * (1.0 - f) / f;
+					ui->m_timeLeft->setText(sec2str(frem));
+				}
+			}
+			else
+			{
+				ui->m_tic = pause;
+				ui->m_timeLeft->setText("");
 			}
 		}
 
-		QTimer::singleShot(500, this, SLOT(checkProgress()));
+		QTimer::singleShot(250, this, SLOT(checkProgress()));
 	}
 }
 

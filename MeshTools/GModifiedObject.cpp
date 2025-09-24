@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifiedObject.h"
 #include <FEMLib/FSModel.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifiedObject::GModifiedObject(GObject* po) : GObject(GMODIFIED_OBJECT)
@@ -153,8 +153,8 @@ void GModifiedObject::BuildGMesh()
 {
 	delete GetRenderMesh();
 	m_po->BuildGMesh();
-	GMesh* pm = m_po->GetRenderMesh();
-	GMesh* gmesh = new GMesh(*pm);
+	GLMesh* pm = m_po->GetRenderMesh();
+	GLMesh* gmesh = new GLMesh(*pm);
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{
@@ -176,7 +176,7 @@ bool GModifiedObject::Update(bool b)
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i) m_pStack->Modifier(i)->Apply(this);
 
-	// rebuild the GMesh
+	// rebuild the GLMesh
 	BuildGMesh();
 
 	// if we have an FE mesh, we should rebuild that one as well
@@ -188,117 +188,22 @@ bool GModifiedObject::Update(bool b)
 //-----------------------------------------------------------------------------
 void GModifiedObject::Save(OArchive &ar)
 {
-	// save the name
-	ar.WriteChunk(CID_OBJ_NAME, GetName());
-	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
-
-	// save the transform stuff
-	ar.BeginChunk(CID_OBJ_HEADER);
-	{
-		int nid = GetID();
-		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
-
-		int nparts = Parts();
-		int nfaces = Faces();
-		int nedges = Edges();
-		int nnodes = Nodes();
-
-		ar.WriteChunk(CID_OBJ_PARTS, nparts);
-		ar.WriteChunk(CID_OBJ_FACES, nfaces);
-		ar.WriteChunk(CID_OBJ_EDGES, nedges);
-		ar.WriteChunk(CID_OBJ_NODES, nnodes);
-	}
-	ar.EndChunk();
-
-	// save the parts
-	ar.BeginChunk(CID_OBJ_PART_LIST);
-	{
-		for (int i=0; i<Parts(); ++i)
-		{
-			ar.BeginChunk(CID_OBJ_PART);
-			{
-				GPart& p = *Part(i);
-				int nid = p.GetID();
-				int mid = p.GetMaterialID();
-				ar.WriteChunk(CID_OBJ_PART_ID, nid);
-				ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_LIST);
-	{
-		for (int i=0; i<Faces(); ++i)
-		{
-			ar.BeginChunk(CID_OBJ_FACE);
-			{
-				GFace& f = *Face(i);
-				int nid = f.GetID();
-				ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-				ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
-				ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_LIST);
-	{
-		for (int i=0; i<Edges(); ++i)
-		{
-			ar.BeginChunk(CID_OBJ_EDGE);
-			{
-				GEdge& e = *Edge(i);
-				int nid = e.GetID();
-				ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	// save the nodes
-	// note that it is possible that an object doesn't have any nodes
-	// for instance, a shell disc
-	if (Nodes()>0)
-	{
-		ar.BeginChunk(CID_OBJ_NODE_LIST);
-		{
-			for (int i=0; i<Nodes(); ++i)
-			{	
-				ar.BeginChunk(CID_OBJ_NODE);
-				{
-					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
+	GObject::Save(ar);
 
 	// save the child object
-	ar.BeginChunk(CID_OBJ_GOBJECTS);
+	if (m_po != nullptr)
 	{
-		int ntype = m_po->GetType();
-		ar.BeginChunk(ntype);
+		ar.BeginChunk(CID_OBJ_GOBJECTS);
 		{
-			m_po->Save(ar);
+			int ntype = m_po->GetType();
+			ar.BeginChunk(ntype);
+			{
+				m_po->Save(ar);
+			}
+			ar.EndChunk();
 		}
 		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the modifiers
 	if (m_pStack->Size() > 0)
@@ -329,14 +234,14 @@ void GModifiedObject::Load(IArchive &ar)
 		// object name
 		case CID_OBJ_NAME: 
 			{
-				string name;
+				std::string name;
 				ar.read(name);
 				SetName(name);
 			}
 			break;
 		case CID_FEOBJ_INFO:
 			{
-				string info;
+				std::string info;
 				ar.read(info);
 				SetInfo(info);
 			}
@@ -385,21 +290,11 @@ void GModifiedObject::Load(IArchive &ar)
 					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GModifiedObject::Load)");
 
 					GPart* p = new GPart(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid, mid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_PART_ID : ar.read(nid); p->SetID(nid); break;
-						case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					p->Load(ar);
 					p->SetLocalID(n++);
-
 					m_Part.push_back(p);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Part.size() == nparts);
 			}
@@ -415,22 +310,11 @@ void GModifiedObject::Load(IArchive &ar)
 					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GModifiedObject::Load)");
 
 					GFace* f = new GFace(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_FACE_ID  : ar.read(nid); f->SetID(nid); break;
-						case CID_OBJ_FACE_PID0: ar.read(nid); f->m_nPID[0] = nid; break;
-						case CID_OBJ_FACE_PID1: ar.read(nid); f->m_nPID[1] = nid; break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					f->Load(ar);
 					f->SetLocalID(n++);
-
 					m_Face.push_back(f);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Face.size() == nfaces);
 			}
@@ -446,20 +330,11 @@ void GModifiedObject::Load(IArchive &ar)
 					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GModifiedObject::Load)");
 
 					GEdge* e = new GEdge(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					e->Load(ar);
 					e->SetLocalID(n++);
-
 					m_Edge.push_back(e);
+
+					ar.CloseChunk();
 				}
 				assert((int) m_Edge.size() == nedges);
 			}
@@ -477,21 +352,11 @@ void GModifiedObject::Load(IArchive &ar)
 						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GModifiedObject::Load)");
 
 						GNode* n = new GNode(this);
-						while (IArchive::IO_OK == ar.OpenChunk())
-						{
-							int nid;
-							switch (ar.GetChunkID())
-							{
-							case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-							case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-							}
-							ar.CloseChunk();
-						}
-						ar.CloseChunk();
-
+						n->Load(ar);
 						n->SetLocalID(m++);
-
 						m_Node.push_back(n);
+
+						ar.CloseChunk();
 					}
 					assert((int) m_Node.size() == nnodes);
 				}

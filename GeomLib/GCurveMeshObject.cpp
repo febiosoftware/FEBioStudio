@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GCurveMeshObject.h"
-#include <MeshLib/FECurveMesh.h>
-#include <MeshLib/FEMesh.h>
-#include <MeshTools/FEAdvancingFrontMesher2D.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSMesh.h>
 
-GCurveMeshObject::GCurveMeshObject(FECurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
+GCurveMeshObject::GCurveMeshObject(FSCurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
 {
 	if (m_curve) 
 	{
@@ -39,7 +38,7 @@ GCurveMeshObject::GCurveMeshObject(FECurveMesh* pm) : m_curve(pm), GObject(GCURV
 }
 
 // return the curve mesh
-FECurveMesh* GCurveMeshObject::GetCurveMesh()
+FSCurveMesh* GCurveMeshObject::GetCurveMesh()
 {
 	return m_curve;
 }
@@ -57,11 +56,11 @@ void GCurveMeshObject::ClearMesh()
 
 void GCurveMeshObject::Update()
 {
-	if (m_curve == 0)
+	if (m_curve == nullptr)
 	{
 		m_Node.clear();
 		m_Edge.clear();
-		BuildGMesh();
+		SetRenderMesh(nullptr);
 		return;
 	}
 
@@ -143,12 +142,12 @@ void GCurveMeshObject::Update()
 		}
 	}
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
 // Return a curve mesh for edge with ID edgeId
-FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
+FSCurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 {
 	if (m_curve == 0) return 0;
 
@@ -166,7 +165,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 
 	int NN = m_curve->Nodes();
 	int nn = 0;
@@ -198,133 +197,6 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	return curve;
 }
 
-// Serialization
-void GCurveMeshObject::Save(OArchive& ar)
-{
-	// save the name
-	ar.WriteChunk(CID_OBJ_NAME, GetName());
-	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
-
-	// save the transform stuff
-	ar.BeginChunk(CID_OBJ_HEADER);
-	{
-		int nid = GetID();
-		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
-		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
-
-		int nparts = Parts();
-		int nfaces = Faces();
-		int nedges = Edges();
-		int nnodes = Nodes();
-
-		ar.WriteChunk(CID_OBJ_PARTS, nparts);
-		ar.WriteChunk(CID_OBJ_FACES, nfaces);
-		ar.WriteChunk(CID_OBJ_EDGES, nedges);
-		ar.WriteChunk(CID_OBJ_NODES, nnodes);
-	}
-	ar.EndChunk();
-
-	// save the parameters
-	if (Parameters() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PARAMS);
-		{
-			ParamContainer::Save(ar);
-		}
-		ar.EndChunk();
-	}
-
-	// save the parts
-	if (Parts() > 0)
-	{
-		ar.BeginChunk(CID_OBJ_PART_LIST);
-		{
-			for (int i = 0; i<Parts(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_PART);
-				{
-					GPart& p = *Part(i);
-					int nid = p.GetID();
-					int mid = p.GetMaterialID();
-					ar.WriteChunk(CID_OBJ_PART_ID, nid);
-					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_LIST);
-	{
-		for (int i = 0; i<Edges(); ++i)
-		{
-			ar.BeginChunk(CID_OBJ_EDGE);
-			{
-				GEdge& e = *Edge(i);
-				int nid = e.GetID();
-				ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-				ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
-				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
-				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	// save the nodes
-	// note that it is possible that an object doesn't have any nodes
-	// for instance, a shell disc
-	if (Nodes()>0)
-	{
-		ar.BeginChunk(CID_OBJ_NODE_LIST);
-		{
-			for (int i = 0; i<Nodes(); ++i)
-			{
-				ar.BeginChunk(CID_OBJ_NODE);
-				{
-					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
-				}
-				ar.EndChunk();
-			}
-		}
-		ar.EndChunk();
-	}
-
-	// save the mesh
-	if (GetFEMesh())
-	{
-		ar.BeginChunk(CID_MESH);
-		{
-			GetFEMesh()->Save(ar);
-		}
-		ar.EndChunk();
-	}
-
-	// save the surface mesh
-	if (m_curve)
-	{
-		ar.BeginChunk(CID_CURVE_MESH);
-		{
-			m_curve->Save(ar);
-		}
-		ar.EndChunk();
-	}
-}
-
 void GCurveMeshObject::Load(IArchive& ar)
 {
 	TRACE("GCurveMeshObject::Load");
@@ -339,14 +211,14 @@ void GCurveMeshObject::Load(IArchive& ar)
 			// object name
 		case CID_OBJ_NAME:
 		{
-			string name;
+			std::string name;
 			ar.read(name);
 			SetName(name);
 		}
 		break;
 		case CID_FEOBJ_INFO:
 		{
-			string info;
+			std::string info;
 			ar.read(info);
 			SetInfo(info);
 		}
@@ -398,37 +270,11 @@ void GCurveMeshObject::Load(IArchive& ar)
 				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST");
 
 				GPart* p = new GPart(this);
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid, mid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
-					case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-					case CID_OBJ_PART_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						p->SetName(szname);
-					}
-					break;
-					case CID_OBJ_PART_STATUS:
-					{
-						unsigned int state = 0;
-						ar.read(state);
-						// let's make sure the part is visible
-						state |= GEO_VISIBLE;
-						p->SetState(state);
-					}
-					break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				p->Load(ar);
 				p->SetLocalID(n++);
-
 				m_Part.push_back(p);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Part.size() == nparts);
 		}
@@ -444,31 +290,11 @@ void GCurveMeshObject::Load(IArchive& ar)
 				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST");
 
 				GEdge* e = new GEdge(this);
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
-					case CID_OBJ_EDGE_NODE0: ar.read(e->m_node[0]); break;
-					case CID_OBJ_EDGE_NODE1: ar.read(e->m_node[1]); break;
-					case CID_OBJ_EDGE_NODE2: ar.read(e->m_cnode); break;
-					case CID_OBJ_EDGE_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						e->SetName(szname);
-					}
-					break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				e->Load(ar);
 				e->SetLocalID(n++);
-
 				m_Edge.push_back(e);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Edge.size() == nedges);
 		}
@@ -486,28 +312,11 @@ void GCurveMeshObject::Load(IArchive& ar)
 					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST");
 
 					GNode* n = new GNode(this);
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-						case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-						case CID_OBJ_NODE_NAME:
-						{
-							char szname[256] = { 0 };
-							ar.read(szname);
-							n->SetName(szname);
-						}
-						break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					n->Load(ar);
 					n->SetLocalID(m++);
-
 					m_Node.push_back(n);
+
+					ar.CloseChunk();
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
@@ -521,7 +330,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 			break;
 		case CID_CURVE_MESH:
 			if (m_curve) delete m_curve;
-			m_curve = new FECurveMesh;
+			m_curve = new FSCurveMesh;
 			m_curve->SetGObject(this);
 			m_curve->Load(ar);
 			break;
@@ -529,5 +338,5 @@ void GCurveMeshObject::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	BuildGMesh();
+	SetRenderMesh(nullptr);
 }

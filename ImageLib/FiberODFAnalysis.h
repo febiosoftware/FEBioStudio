@@ -27,11 +27,13 @@ SOFTWARE.*/
 #pragma once
 
 #include "ImageAnalysis.h"
-#include <MeshLib/GMesh.h>
-#include <GLLib/GLMeshRender.h>
+#include <GLLib/GLMesh.h>
 #include <FECore/vec3d.h>
-#include <GLWLib/GLWidget.h>
-#include <PostLib/ColorMap.h>
+#include <FECore/matrix.h>
+#include <FSCore/ColorMap.h>
+#include <GLLib/ColorTexture.h>
+#include <vector>
+#include <memory>
 
 class matrix;
 
@@ -45,9 +47,9 @@ public:
 	std::vector<double> m_odf;
 	std::vector<double> m_sphHarmonics;
 	vec3d m_position;
-	GMesh m_mesh;
-	GMesh m_remesh;
-    GMesh m_smallMesh;
+	GLMesh m_mesh;
+	GLMesh m_remesh;
+    GLMesh m_smallMesh;
 	double m_radius;
     double m_meanIntensity;
 
@@ -95,7 +97,7 @@ public:
 	void GenerateSubVolumes();
 
     void run() override;
-    void render(CGLCamera* cam) override;
+    void render(GLRenderEngine& re, GLContext& rc) override;
 
 	int ODFs() const;
     CODF* GetODF(int i);
@@ -115,8 +117,13 @@ public:
 
 	void ProcessSelectedOnly(bool b) { m_processSelectedOnly = b; }
 
+	int Divisions() const { return m_ndivs; }
+
+	double RangeMax() const { return (double)m_map.RangeMax(); }
+	double RangeMin() const { return (double)m_map.RangeMin(); }
+
 public:
-	void renderODFMesh(CODF* odf, CGLCamera* cam);
+	void renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam);
 
 private:
 	// clear all ODFs
@@ -150,11 +157,10 @@ private:
 		const vector<double>& odf,
 		const vector<vec3d>& x);
 
+
 private:
     Imp* m_imp;
     std::vector<CODF*> m_ODFs;
-
-    GLMeshRender m_render;
 
     double m_lengthScale;
     double m_hausd;
@@ -186,10 +192,8 @@ private:
 	double	m_progress;
 	std::string	m_task;
 
-	Post::CColorTexture	m_tex;
-	GLLegendBar* m_pbar;
-    Post::CColorMap m_map;
-    Post::CColorMap m_remeshMap;
+	CColorMap m_map;
+	CColorMap m_remeshMap;
 
 	// temp data for calculating ODFs
 	matrix	m_A, m_B, m_T;

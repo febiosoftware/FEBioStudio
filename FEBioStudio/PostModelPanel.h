@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 
 //-----------------------------------------------------------------------------
 class QTreeWidgetItem;
-class CPostDocument;
+class CGLModelDocument;
 class FSObject;
 
 //-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ namespace Ui {
 }
 
 //-----------------------------------------------------------------------------
-class CPostModelPanel : public CCommandPanel
+class CPostModelPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -57,6 +57,9 @@ public:
 	FSObject* selectedObject();
 
 	void ShowContextMenu(QContextMenuEvent* ev);
+
+signals:
+    void currentObjectChanged(FSObject* po);
 
 private slots:
 	void on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
@@ -90,7 +93,7 @@ signals:
 	void postObjectPropsChanged(FSObject* po);
 
 private:
-	CPostDocument* GetActiveDocument();
+	CGLModelDocument* GetActiveDocument();
 
 	void BuildModelTree();
 

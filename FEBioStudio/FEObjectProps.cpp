@@ -35,16 +35,15 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include "ModelViewer.h"
 #include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
-#include "SSHThread.h"
-#include "SSHHandler.h"
+#include <FEMLib/GDiscreteObject.h>
+#include "ModelDocument.h"
+#include "Commands.h"
 #include "FEBioJob.h"
-#include <PostGL/GLModel.h>
-#include <FEMLib/PlotDataSettings.h>
+using namespace std;
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -357,16 +356,16 @@ void CMaterialProps::BuildPropertyList()
 
 			switch (pm->m_axes->m_naopt)
 			{
-			case FE_AXES_LOCAL:
+			case MaterialAxesGeneratorType::AXES_LOCAL:
 				addProperty("n0", CProperty::Int);
 				addProperty("n1", CProperty::Int);
 				addProperty("n2", CProperty::Int);
 				break;
-			case FE_AXES_VECTOR:
+			case MaterialAxesGeneratorType::AXES_VECTOR:
 				addProperty("a", CProperty::String);
 				addProperty("d", CProperty::String);
 				break;
-            case FE_AXES_ANGLES:
+            case MaterialAxesGeneratorType::AXES_ANGLES:
                 addProperty("theta", CProperty::String);
                 addProperty("phi", CProperty::String);
                 break;
@@ -427,16 +426,16 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 
 		switch (m_mat->m_axes->m_naopt)
 		{
-		case FE_AXES_LOCAL:
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			if (i == 1) return m_mat->m_axes->m_n[0] + 1;
 			if (i == 2) return m_mat->m_axes->m_n[1] + 1;
 			if (i == 3) return m_mat->m_axes->m_n[2] + 1;
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			if (i == 1) return Vec3dToString(m_mat->m_axes->m_a);
 			if (i == 2) return Vec3dToString(m_mat->m_axes->m_d);
 			break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) return m_mat->m_axes->m_theta;
             if (i == 2) return m_mat->m_axes->m_phi;
             break;
@@ -525,16 +524,16 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 
 		switch (m_mat->m_axes->m_naopt)
 		{
-		case FE_AXES_LOCAL:
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			if (i == 1) { m_mat->m_axes->m_n[0] = v.toInt() - 1; return; }
 			if (i == 2) { m_mat->m_axes->m_n[1] = v.toInt() - 1; return; }
 			if (i == 3) { m_mat->m_axes->m_n[2] = v.toInt() - 1; return; }
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString()); return; }
 			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString()); return; }
 			break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
             if (i == 1) { m_mat->m_axes->m_theta = v.toFloat(); return; }
             if (i == 2) { m_mat->m_axes->m_phi   = v.toFloat(); return; }
             break;
@@ -820,20 +819,12 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 		GPart* pg = m_pobj;
 		if (pg == nullptr) return;
 
-		GObject* po = dynamic_cast<GObject*>(pg->Object());
-		if (po)
-		{
-			int lid = v.toInt();
-			if (lid < 0)
-			{
-				m_fem->AssignMaterial(pg, nullptr);
-			}
-			else
-			{
-				GMaterial* m = m_fem->GetMaterial(lid);
-				m_fem->AssignMaterial(pg, m);
-			}
-		}
+		GMaterial* mat = nullptr;
+		int lid = v.toInt();
+		if (lid >= 0) mat = m_fem->GetMaterial(lid);
+
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(CDocument::GetActiveDocument());
+		if (doc) doc->DoCommand(new CCmdAssignMaterial(m_fem, pg, mat));
 	}
 }
 
@@ -958,20 +949,8 @@ void CFEBioJobProps::BuildProperties()
 
 	addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
 	addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
-	addProperty("Plot File", CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
-	addProperty("Log File", CProperty::ExternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
-
-	int launchType = job->GetLaunchConfig()->type;
-	if ((launchType != LOCAL) && (launchType != DEFAULT))
-	{
-		addProperty("", CProperty::Action)->info = QString("Get Remote Files");
-//		addProperty("", CProperty::Action)->info = QString("Orphan Process");
-	}
-
-	if (launchType == PBS || launchType == SLURM)
-	{
-		addProperty("", CProperty::Action)->info = QString("Get Queue Status");
-	}
+	addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
+	addProperty("Log File"  , CProperty::InternalLink)->setFlags(CProperty::Editable | CProperty::Visible);
 }
 
 QVariant CFEBioJobProps::GetPropertyValue(int i)
@@ -1012,97 +991,6 @@ void CFEBioJobProps::SetPropertyValue(int i, const QVariant& v)
 {
 	CFEBioJob* job = m_pobj;
 	if (job == nullptr) return;
-
-#ifdef HAS_SSH
-	if (i == 4)
-	{
-		if (!job->GetSSHHandler()->IsBusy())
-		{
-			// Copy remote files to local dir
-			job->GetSSHHandler()->SetTargetFunction(GETJOBFILES);
-
-			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
-	}
-//		else if (i == 6)
-//		{
-//			job->GetSSHHandler()->Orphan();
-//		}
-	else if (i == 5)
-	{
-		if (!job->GetSSHHandler()->IsBusy())
-		{
-			// Copy remote files to local dir
-			m_wnd->ClearOutput();
-
-			job->GetSSHHandler()->SetTargetFunction(GETQUEUESTATUS);
-			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
-	}
-#endif // HAS_SSH
-}
-
-void CPostModelProps::BuildProperties()
-{
-	addProperty("Element subdivisions", CProperty::Int)->setIntRange(0, 10).setAutoValue(true);
-	addProperty("Render mode", CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
-	addProperty("Render undeformed outline", CProperty::Bool);
-	addProperty("Outline color", CProperty::Color);
-	addProperty("Node color", CProperty::Color);
-	addProperty("Selection color", CProperty::Color);
-	addProperty("Render shells as solid", CProperty::Bool);
-	addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
-	addProperty("Render beams as solid", CProperty::Bool);
-	addProperty("Smoothing angle", CProperty::Float);
-	addProperty("Render internal surfaces", CProperty::Bool);
-}
-
-QVariant CPostModelProps::GetPropertyValue(int i)
-{
-	Post::CGLModel* glm = m_pobj;
-	if (glm == nullptr) return QVariant();
-
-	QVariant v;
-	switch (i)
-	{
-	case 0: v = glm->m_nDivs; break;
-	case 1: v = glm->m_nrender; break;
-	case 2: v = glm->m_bghost; break;
-	case 3: v = toQColor(glm->m_line_col); break;
-	case 4: v = toQColor(glm->m_node_col); break;
-	case 5: v = toQColor(glm->m_sel_col); break;
-	case 6: v = glm->ShowShell2Solid(); break;
-	case 7: v = glm->ShellReferenceSurface(); break;
-	case 8: v = glm->ShowBeam2Solid(); break;
-	case 9: v = glm->GetSmoothingAngle(); break;
-	case 10: v = glm->RenderInnerSurfaces(); break;
-	}
-	return v;
-}
-
-void CPostModelProps::SetPropertyValue(int i, const QVariant& v)
-{
-	Post::CGLModel* glm = m_pobj;
-	if (glm == nullptr) return;
-
-	switch (i)
-	{
-	case 0: glm->m_nDivs = v.toInt(); break;
-	case 1: glm->m_nrender = v.toInt(); break;
-	case 2: glm->m_bghost = v.toBool(); break;
-	case 3: glm->m_line_col = toGLColor(v.value<QColor>());
-	case 4: glm->m_node_col = toGLColor(v.value<QColor>());
-	case 5: glm->m_sel_col = toGLColor(v.value<QColor>());
-	case 6: glm->ShowShell2Solid(v.toBool()); break;
-	case 7: glm->ShellReferenceSurface(v.toInt()); break;
-	case 8: glm->ShowBeam2Solid(v.toBool()); break;
-	case 9: glm->SetSmoothingAngle(v.toDouble());  break;
-	case 10: glm->RenderInnerSurfaces(v.toBool()); break;
-	}
 }
 
 void CDiscreteObjectProps::BuildProperties()

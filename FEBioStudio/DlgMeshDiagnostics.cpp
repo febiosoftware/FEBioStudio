@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 using namespace std;
 
 class CDlgMeshDiagnosticsUI
@@ -334,7 +334,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
 		FSFace& face = mesh.Face(i);
-		FEElement_* pe = mesh.ElementPtr(face.m_elem[0].eid);
+		FSElement_* pe = mesh.ElementPtr(face.m_elem[0].eid);
 		if (pe && pe->IsShell())
 		{
 			if (face.m_elem[2].eid >= 0) nsss++;
@@ -754,7 +754,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 			for (int j = 0; j < nf; ++j)
 			{
 				int nfj = el.m_face[j];
-				FEElement_* pej = mesh.ElementPtr(el.m_nbr[j]);
+				FSElement_* pej = mesh.ElementPtr(el.m_nbr[j]);
 
 				// Make sure the face is valid
 				if (nfj >= NF) invalidSolidFaces++;
@@ -918,9 +918,9 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 		int fid = face.m_gid;
 		if ((fid >= 0) && (fid < obj->Faces()))
 		{
-			FEElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
-			FEElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
-			FEElement_* pe2 = mesh.ElementPtr(face.m_elem[2].eid);
+			FSElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
+			FSElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
+			FSElement_* pe2 = mesh.ElementPtr(face.m_elem[2].eid);
 
 			int pid[3];
 			pid[0] = (pe0 ? pe0->m_gid : -1);

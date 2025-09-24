@@ -50,10 +50,8 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include "MainWindow.h"
-#include "SSHThread.h"
-#include "SSHHandler.h"
-#include "Logger.h"
 #include "IconProvider.h"
+#include "LaunchConfig.h"
 
 // list of warnings generated
 #define WARNING_NONE				0
@@ -168,7 +166,7 @@ public:
 	{
 		m_err = 0;
 		if (m_po == 0) { m_err = 1; return false; }
-		FEItemListBuilder* item = m_po->GetItemList();
+		FSItemListBuilder* item = m_po->GetItemList();
 		if ((m_po->GetMeshItemType() != 0) &&
 			((item==0) || (item->size() == 0))) { m_err = 1; return false; }
 		else if (item && (item->IsValid() == false)) { m_err = 2; return false; }
@@ -271,8 +269,8 @@ public:
 	bool IsValid()
 	{
 		if (m_po == 0) return true;
-		FEItemListBuilder* surf1 = m_po->GetPrimarySurface();
-		FEItemListBuilder* surf2 = m_po->GetSecondarySurface();
+		FSItemListBuilder* surf1 = m_po->GetPrimarySurface();
+		FSItemListBuilder* surf2 = m_po->GetSecondarySurface();
 		if ((surf1 == 0) || (surf1->size() == 0)) return false;
 		if ((surf2 == 0) || (surf2->size() == 0)) return false;
 		return true;
@@ -332,7 +330,7 @@ public:
 	}
 };
 
-class CGroupValidator : public CObjectValidator_T<FEItemListBuilder>
+class CGroupValidator : public CObjectValidator_T<FSItemListBuilder>
 {
 public:
 	CGroupValidator() {}
@@ -561,7 +559,7 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 		if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, Emblem::Caution));
 		else t2->setIcon(0, QIcon(":/icons/warning.png"));
 
-		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
+		t2->setToolTip(0, val->GetErrorString());
 		if (parent) parent->setExpanded(true);
 		if (m_view) m_view->IncWarningCount();
 	}
@@ -685,7 +683,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			if (dynamic_cast<GMaterial*>(po))
 			{
 				GMaterial* m = dynamic_cast<GMaterial*>(po);
-				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24);
+				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->GetColor()), ::Shape::Circle, 24);
 				item->setIcon(0, CIconProvider::CreateIcon(icon, Emblem::Caution));
 			}
 			else
@@ -694,7 +692,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 				else item->setIcon(0, QIcon(":/icons/warning.png"));
 			}
 
-			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
+			item->setToolTip(0, val->GetErrorString());
 			return;
 		}
 	}
@@ -716,7 +714,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
-			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24));
+			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->GetColor()), ::Shape::Circle, 24));
 		}
 		else if (m_data[n].szicon)
 		{
@@ -849,7 +847,8 @@ void CModelTree::Build(CModelDocument* doc)
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
 	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
 	else if (m_nfilter == ModelTreeFilter::FILTER_JOBS     ) modelName += " > Jobs";
-    else if (m_nfilter == ModelTreeFilter::FILTER_IMAGES     ) modelName += " > Images";
+	else if (m_nfilter == ModelTreeFilter::FILTER_STUDIES  ) modelName += " > Studies";
+	else if (m_nfilter == ModelTreeFilter::FILTER_IMAGES   ) modelName += " > Images";
 
 	QTreeWidgetItem* t1 = nullptr;
 
@@ -1070,6 +1069,23 @@ void CModelTree::Build(CModelDocument* doc)
 		}
 		else
 			UpdateJobs(t1, doc);
+	}
+
+	// add the studies
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_STUDIES))
+	{
+		if ((m_nfilter == ModelTreeFilter::FILTER_NONE) && (doc->FEBioStudies() > 0))
+		{
+			t1 = AddTreeItem(nullptr, "Studies", MT_STUDYLIST, doc->FEBioStudies(), nullptr, OBJECT_NOT_EDITABLE);
+			t1->setExpanded(true);
+			QFont f = t1->font(0);
+			f.setBold(true);
+			t1->setFont(0, f);
+
+			UpdateStudies(t1, doc);
+		}
+		else
+			UpdateStudies(t1, doc);
 	}
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE || (m_nfilter == ModelTreeFilter::FILTER_IMAGES))
@@ -1441,7 +1457,7 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 		{
 			for (int j = 0; j < mesh->MeshDataFields(); ++j)
 			{
-				FEMeshData& data = *mesh->GetMeshDataField(j);
+				FSMeshData& data = *mesh->GetMeshDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 		}
@@ -1742,4 +1758,15 @@ void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)
 {
 	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT_PLT, 0, nullptr, 1);
 	AddTreeItem(t1, "logfile" , MT_PROJECT_OUTPUT_LOG, 0, nullptr, 1);
+}
+
+void CModelTree::UpdateStudies(QTreeWidgetItem* t1, CModelDocument* doc)
+{
+	int nStudies = doc->FEBioStudies();
+	for (int i = 0; i < nStudies; ++i)
+	{
+		CFEBioStudy* study = doc->GetFEBioStudy(i);
+		QString name = QString::fromStdString(study->GetName());
+		AddTreeItem(t1, name, MT_STUDY, 0, study, SHOW_PROPERTY_FORM);
+	}
 }

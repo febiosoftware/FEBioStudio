@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QStackedWidget>
 #include <QSplitter>
+#include <QGroupBox>
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEPostModel.h>
@@ -56,11 +57,16 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEMathData.h>
 #include "PostDocument.h"
+#include "GLModelDocument.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/FEAreaCoverage.h>
 #include <MeshTools/FESelection.h>
 #include "DlgAddEquation.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
+#include <FECore/fecore_enum.h>
 
 class CCurvatureProps : public CPropertyList
 {
@@ -98,12 +104,12 @@ public:
 	}
 };
 
-class CMathDataProps : public CPropertyList
+class CMathScalarDataProps : public CPropertyList
 {
 public:
-	Post::FEMathDataField*	m_pd;
+	Post::FEScalarMathDataField*	m_pd;
 
-	CMathDataProps(Post::FEMathDataField* pd) : m_pd(pd)
+	CMathScalarDataProps(Post::FEScalarMathDataField* pd) : m_pd(pd)
 	{
 		addProperty("Equation", CProperty::String);
 	}
@@ -116,6 +122,27 @@ public:
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
 		m_pd->SetEquationString((v.toString()).toStdString());
+	}
+};
+
+class CMathElemDataProps : public CPropertyList
+{
+public:
+	Post::FEMathElemDataField* m_pd;
+
+	CMathElemDataProps(Post::FEMathElemDataField* pd) : m_pd(pd)
+	{
+		addProperty("Equation", CProperty::String);
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		return QString::fromStdString(m_pd->EquationString());
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		m_pd->SetEquationString((v.toString()).toStdString(), false);
 	}
 };
 
@@ -475,8 +502,15 @@ public:
 		l->setContentsMargins(0,0,0,0);
 		w->setLayout(l);
 
-		l->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
-		l->addWidget(m_prop);
+		QHBoxLayout* nameLayout = new QHBoxLayout;
+		nameLayout->addWidget(new QLabel("name:"));
+		nameLayout->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
+		l->addLayout(nameLayout);
+		QGroupBox* propBox = new QGroupBox("Properties");
+		QVBoxLayout* propBoxLayout = new QVBoxLayout;
+		propBoxLayout->addWidget(m_prop);
+		propBox->setLayout(propBoxLayout);
+		l->addWidget(propBox);
 
 		psplitter->addWidget(w);
 
@@ -872,28 +906,34 @@ void CDlgFilter::accept()
 }
 
 //=================================================================================================
-CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostDataPanel)
+CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CPostDataPanel)
 {
 	ui->setupUi(this);
 }
 
-CPostDocument* CPostDataPanel::GetActiveDocument()
+Post::CGLModel* CPostDataPanel::GetActiveModel()
 {
-	return GetMainWindow()->GetPostDocument();
+	CGLModelDocument* gldoc = dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
+	if (gldoc == nullptr) return nullptr;
+
+	Post::CGLModel* glm = gldoc->GetGLModel();
+	if (glm && (glm->GetFSModel() == nullptr)) glm = nullptr;
+
+	return glm;
 }
 
 void CPostDataPanel::Update(bool breset)
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	if (pdoc)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm)
 	{
 		Post::FEPostModel* oldFem = ui->data->GetFSModel();
-		Post::FEPostModel* newFem = pdoc->GetFSModel();
+		Post::FEPostModel* newFem = glm->GetFSModel();
 
 		if ((oldFem != newFem) || breset)
 		{
 			ui->m_prop->setPropertyList(nullptr);
-			ui->data->SetFEModel(pdoc->GetFSModel());
+			ui->data->SetFEModel(glm->GetFSModel());
 		}
 	}
 	else
@@ -905,43 +945,77 @@ void CPostDataPanel::Update(bool breset)
 
 void CPostDataPanel::on_AddStandard_triggered()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QStringList items;
-	Post::InitStandardDataFields();
-	int stdDataFields = Post::StandardDataFields();
-	for (int i = 0; i < stdDataFields; ++i)
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetMainWindow()->GetDocument());
+	if (postDoc)
 	{
-		std::string dataFieldName = Post::GetStandarDataFieldName(i);
-		items.push_back(QString::fromStdString(dataFieldName));
+		Post::InitStandardDataFields();
+		int stdDataFields = Post::StandardDataFields();
+		for (int i = 0; i < stdDataFields; ++i)
+		{
+			std::string dataFieldName = Post::GetStandarDataFieldName(i);
+			items.push_back(QString::fromStdString(dataFieldName));
+		}
 	}
-
-	bool ok = false;
-	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
-	if (ok)
+	FEBioMonitorDoc* febDoc = dynamic_cast<FEBioMonitorDoc*>(GetMainWindow()->GetDocument());
+	if (febDoc)
 	{
-		Post::CGLModel* glm = GetActiveDocument()->GetGLModel();
-		Post::FEPostModel* fem = glm->GetFSModel();
-
-		vector<int> L;
-		if (glm->GetSelectionType() == SELECT_FE_FACES)
+		if (febDoc->IsPaused() == false)
 		{
-			glm->GetSelectionList(L, SELECT_FE_FACES);
+			QMessageBox::information(this, "FEBio Monitor", "You can only add data fields when the job is paused.");
+			return;
 		}
 
-		if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)
+		auto allPlotClasses = FEBio::FindAllClasses(FEBio::GetActiveModule(), FEPLOTDATA_ID);
+		for (auto& entry : allPlotClasses)
 		{
-			QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+			items.push_back(entry.sztype);
 		}
+	}
+	
+	if (!items.empty())
+	{
+		items.sort();
+		bool ok = false;
+		QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
+		if (ok)
+		{
+			if (postDoc)
+			{
+				Post::FEPostModel* fem = glm->GetFSModel();
+				vector<int> L;
+				if (glm->GetSelectionType() == SELECT_FE_FACES)
+				{
+					glm->GetSelectionList(L, SELECT_FE_FACES);
+				}
 
-		// update the data list
-		GetMainWindow()->UpdatePostToolbar();
-		Update(true);
+				if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)
+				{
+					QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+				}
+			}
+			if (febDoc)
+			{
+				if (febDoc->AddDataField(item.toStdString()) == false)
+				{
+					QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+				}
+			}
+
+			// update the data list
+			GetMainWindow()->UpdatePostToolbar();
+			Update(true);
+		}
 	}
 }
 
 void CPostDataPanel::on_AddFromFile_triggered()
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc->IsValid() == false)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "No model data loaded");
 		return;
@@ -950,7 +1024,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CDlgAddDataFile dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel* fem = doc->GetFSModel();
+		Post::FEPostModel* fem = glm->GetFSModel();
 		bool bret = false;
 		switch (dlg.m_nclass)
 		{
@@ -974,17 +1048,18 @@ void CPostDataPanel::on_AddFromFile_triggered()
 
 void CPostDataPanel::on_AddEquation_triggered()
 {
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
 
 	CDlgAddEquation dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 
 		QString name = dlg.GetDataName();
 
 		int type = dlg.GetDataType();
+		int classType = dlg.GetClassType();
 
 		switch (type)
 		{
@@ -996,11 +1071,23 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (name.isEmpty()) name = "(empty)";
 
 			// create new math data field
-			Post::FEMathDataField* pd = new Post::FEMathDataField(&fem);
-			pd->SetEquationString(eq.toStdString());
+			if (classType == NODE_DATA)
+			{
+				Post::FEMathNodeDataField* pd = new Post::FEMathNodeDataField(&fem);
+				pd->SetEquationString(eq.toStdString());
 
-			// add it to the model
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else if (classType == ELEM_DATA)
+			{
+				Post::FEMathElemDataField* pd = new Post::FEMathElemDataField(&fem);
+				pd->SetEquationString(eq.toStdString());
+
+				// add it to the model
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for scalar expressions.");
 		}
 		break;
 		case 1:
@@ -1014,12 +1101,16 @@ void CPostDataPanel::on_AddEquation_triggered()
 			QString z = s.at(2);
 
 			// create new math data field
-			Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
-			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
+			if (classType == NODE_DATA)
+			{
+				Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
+				pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
-			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFSModel();
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				Post::FEPostModel& fem = *glm->GetFSModel();
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for vector expressions.");
 		}
 		break;
 		case 2:
@@ -1027,13 +1118,17 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (name.isEmpty()) name = "(empty)";
 			QStringList s = dlg.GetMatrixEquations();
 
-			// create new math data field
-			Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
-			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
+			if (classType == NODE_DATA)
+			{
+				// create new math data field
+				Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
+				for (int i = 0; i < 9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
-			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFSModel();
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				Post::FEPostModel& fem = *glm->GetFSModel();
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for math expressions.");
 		}
 		};
 
@@ -1045,13 +1140,15 @@ void CPostDataPanel::on_AddEquation_triggered()
 
 void CPostDataPanel::on_CopyButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1071,13 +1168,16 @@ void CPostDataPanel::on_CopyButton_clicked()
 
 void CPostDataPanel::on_DeleteButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1095,14 +1195,16 @@ void CPostDataPanel::on_DeleteButton_clicked()
 
 void CPostDataPanel::on_AddFilter_triggered()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	CMainWindow* wnd = GetMainWindow();
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1232,7 +1334,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 
 				wnd->UpdatePostToolbar();
 				Update(true);
-				doc.UpdateFEModel(true);
+				glm->Update(true);
 				wnd->RedrawGL();
 			}
 		}
@@ -1323,13 +1425,15 @@ bool string_to_int_list(QString listString, std::vector<int>& list);
 //=============================================================================
 void CPostDataPanel::on_ExportButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1400,10 +1504,10 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 		Post::CurvatureField* pf = dynamic_cast<Post::CurvatureField*>(p);
 		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
-	else if (dynamic_cast<Post::FEMathDataField*>(p))
+	else if (dynamic_cast<Post::FEScalarMathDataField*>(p))
 	{
-		Post::FEMathDataField* pm = dynamic_cast<Post::FEMathDataField*>(p);
-		ui->m_prop->setPropertyList(new CMathDataProps(pm));
+		Post::FEScalarMathDataField* pm = dynamic_cast<Post::FEScalarMathDataField*>(p);
+		ui->m_prop->setPropertyList(new CMathScalarDataProps(pm));
 	}
 	else if (dynamic_cast<Post::FEMathVec3DataField*>(p))
 	{
@@ -1439,15 +1543,19 @@ void CPostDataPanel::on_fieldName_editingFinished()
 	{
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
-		CPostDocument& doc = *GetActiveDocument();
-		doc.GetFSModel()->UpdateDependants();
+		CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+        if(doc) doc->GetFSModel()->UpdateDependants();
 	}
 }
 
 void CPostDataPanel::on_props_dataChanged(bool b)
 {
-	CPostDocument* doc = GetActiveDocument();
-	doc->GetGLModel()->ResetAllStates();
-	doc->UpdateFEModel(true);
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+    Post::FEPostModel* fem = glm->GetFSModel();
+    if (fem == nullptr) return;
+	
+    fem->ResetAllStates();
+	glm->Update(true);
 	GetMainWindow()->RedrawGL();
 }

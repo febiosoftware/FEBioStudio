@@ -26,11 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include "xpltFileReader.h"
-#include <MeshLib/FEElement.h>
+#include <MeshLib/FSElement.h>
+
+class FSMesh;
 
 namespace Post {
 class FEState;
-class FEPostMesh;
 class FEMeshData;
 }
 
@@ -284,13 +285,13 @@ protected:
 	bool ReadElemData    (Post::FEPostModel& fem, Post::FEState* pstate);
 	bool ReadFaceData    (Post::FEPostModel& fem, Post::FEState* pstate);
 
-	bool ReadElemData_NODE(Post::FEPostMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize = 0);
+	bool ReadElemData_NODE(FSMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize = 0);
 	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize = 0);
 	bool ReadElemData_MULT(Domain& d, Post::FEMeshData& s, int ntype);
 
-	bool ReadFaceData_NODE(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_NODE(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype);
-	bool ReadFaceData_MULT(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_MULT(FSMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 
 	void Clear();
 

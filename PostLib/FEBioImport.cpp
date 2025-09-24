@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioImport.h"
 #include "FEPostModel.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 using namespace Post;
 
 FEBioFileImport::FEBioFileImport(FEPostModel* fem) : FEFileReader(fem)
@@ -63,7 +63,7 @@ bool FEBioFileImport::ParseVersion(XMLTag& tag)
 bool FEBioFileImport::Load(const char* szfile)
 {
 	m_fem->Clear();
-	m_pm = new FEPostMesh;
+	m_pm = new FSMesh;
 	m_fem->AddMesh(m_pm);
 
     SetFileName(szfile);
@@ -113,7 +113,7 @@ bool FEBioFileImport::Load(const char* szfile)
 	}
 
 	// update the mesh
-	m_pm->BuildMesh();
+	m_pm->RebuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state
@@ -197,7 +197,7 @@ void FEBioFileImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 			int nsel = 0;
 			for (i=0; i<elems; ++i)
 			{
-				FEElementType etype;
+				FSElementType etype;
 				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(i));
 				if      (tag == "hex8"   ) { etype = FE_HEX8;    ++nbel; }
 				else if (tag == "hex20"  ) { etype = FE_HEX20;   ++nbel; }
@@ -265,7 +265,7 @@ void FEBioFileImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 		{
 			// get the element type
 			const char* sztype = tag.AttributeValue("type");
-			FEElementType etype;
+			FSElementType etype;
 			if      (strcmp(sztype, "hex8"   ) == 0) etype = FE_HEX8;
 			else if (strcmp(sztype, "tet4"   ) == 0) etype = FE_TET4;
 			else if (strcmp(sztype, "penta6" ) == 0) etype = FE_PENTA6;

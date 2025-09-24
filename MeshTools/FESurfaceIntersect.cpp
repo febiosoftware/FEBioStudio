@@ -37,8 +37,8 @@ int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 	FSNodeList* pn = psrc->BuildNodeList();
 
 	// build the target facet list
-	FEFaceList* pfs = psrc->BuildFaceList();
-	FEFaceList* pft = ptrg->BuildFaceList();
+	FSFaceList* pfs = psrc->BuildFaceList();
+	FSFaceList* pft = ptrg->BuildFaceList();
 
 	// clear the tags
 	pm->TagAllNodes(0);
@@ -72,7 +72,7 @@ int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 	int NF = pm->Faces();
 	for (int i=0; i<NF; ++i) pm->Face(i).Unselect();
 
-	FEFaceList::Iterator pi;
+	FSFaceList::Iterator pi;
 	for (pi = pfs->First(); pi != pfs->End(); ++pi)
 	{
 		FSFace& f = *(pi->m_pi);
@@ -133,12 +133,12 @@ bool tri_distance(vec3d p[3], const vec3d& r, double& L)
 	return (a1>=e)&&(a1<=1-e)&&(a2>=e)&&(a2<=1-e)&&(a1+a2<=1-e);
 }
 
-double FESurfaceIntersect::Distance(FEFaceList& s, const vec3d& r)
+double FESurfaceIntersect::Distance(FSFaceList& s, const vec3d& r)
 {
 	double Dmin = 1e99, D;
 
 	// loop over all the (triangle) facets
-	FEFaceList::Iterator pf;
+	FSFaceList::Iterator pf;
 	vec3d p[3];
 	for (pf = s.First(); pf != s.End(); ++pf)
 	{

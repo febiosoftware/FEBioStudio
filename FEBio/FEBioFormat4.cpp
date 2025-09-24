@@ -33,20 +33,18 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/GDiscreteObject.h>
-#include <MeshLib/FEElementData.h>
-#include <MeshLib/FESurfaceData.h>
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSElementData.h>
+#include <MeshLib/FSSurfaceData.h>
+#include <MeshLib/FSNodeData.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FSCore/Palette.h>
 #include <assert.h>
 #include <sstream>
 using namespace std;
-
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
 
 //-----------------------------------------------------------------------------
 static vector<string> GetDOFList(string sz)
@@ -275,18 +273,23 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 				FSProperty* pc = pstep->FindProperty(sztag); assert(pc);
 
 				// see if this is a property
+				std::string typeStr;
 				const char* sztype = tag.AttributeValue("type", true);
-				if (sztype == 0)
+				if (sztype == nullptr)
 				{
-					sztype = tag.Name();
-
 					// The default solver should be the solver with the same name as the module
-					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetActiveModuleName();
+					if (tag.Name() == "solver") typeStr = FEBio::GetActiveModuleName();
+					else
+					{
+						typeStr = pc->GetDefaultType();
+						if (typeStr.empty()) typeStr = tag.Name();
+					}
 				}
+				else typeStr = sztype;
 
 				if (pc->GetComponent() == nullptr)
 				{
-					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), typeStr, &fem);
 					pc->SetComponent(psc);
 				}
 
@@ -597,10 +600,10 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 	}
 }
 
-// helper function for converting the element's type attribute to FEElementType
-FEElementType ConvertStringToElementType(const char* sztype)
+// helper function for converting the element's type attribute to FSElementType
+FSElementType ConvertStringToElementType(const char* sztype)
 {
-	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
+	FSElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8"   ) == 0) ntype = FE_HEX8;
 	else if (strcmp(sztype, "hex20"  ) == 0) ntype = FE_HEX20;
 	else if (strcmp(sztype, "hex27"  ) == 0) ntype = FE_HEX27;
@@ -666,7 +669,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 
 	// get the required type attribute
 	const char* sztype = tag.AttributeValue("type");
-	FEElementType elemType = ConvertStringToElementType(sztype);
+	FSElementType elemType = ConvertStringToElementType(sztype);
 	if (elemType == FE_INVALID_ELEMENT_TYPE) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 
 	// get the optional material attribute
@@ -1164,7 +1167,7 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 		FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
 		if (gen)
 		{
-			FEItemListBuilder* nodeSet = feb.FindNamedSelection(nset->cvalue(), MESH_ITEM_FLAGS::FE_NODE_FLAG);
+			FSItemListBuilder* nodeSet = feb.FindNamedSelection(nset->cvalue(), MESH_ITEM_FLAGS::FE_NODE_FLAG);
 
 			gen->SetName(name->cvalue());
 			gen->SetItemList(nodeSet);
@@ -1182,7 +1185,7 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 		{	
 			FSMesh* feMesh = nodeSet->GetMesh();
 
-			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+			FSNodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 			const int items = nodeData->Size();
 
 			++tag;
@@ -1289,7 +1292,7 @@ bool FEBioFormat4::ParseSurfaceDataSection(XMLTag& tag)
 		FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 		FSMesh* feMesh = feSurf->GetMesh();
 
-		FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+		FSSurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
 
 		double val;
 		int lid;
@@ -1465,7 +1468,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			const char* szset = elset->cvalue();
 			if (strncmp(szset, "@part_list:", 11) == 0)
 			{
-				FSPartSet* pg = feb.FindNamedPartSet(szset+11);
+				GPartList* pg = feb.FindNamedPartList(szset+11);
 				if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
 				else gen->SetItemList(pg);
 			}
@@ -1534,11 +1537,11 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			sname = ss.str();
 		}
 
-		FEMeshData* meshData = nullptr;
+		FSMeshData* meshData = nullptr;
 		int offset = 0;
 
 		// see if we already have this data map
-		FEPartData* partData = mesh->FindPartDataField(sname);
+		FSPartData* partData = mesh->FindPartDataField(sname);
 		if (partData)
 		{
 			GPart* pg = po->FindPartFromName(set->cvalue()); assert(pg);
@@ -1727,7 +1730,7 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	XMLAtt* asrf = tag.Attribute("surface", true);
 
 	// create the node set
-	FEItemListBuilder* pg = nullptr;
+	FSItemListBuilder* pg = nullptr;
 	if (aset)
 	{
 		pg = febio.FindNamedSelection(aset->cvalue());
@@ -1824,7 +1827,7 @@ void FEBioFormat4::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	XMLAtt& aset = tag.Attribute("node_set");
 
 	// create the node set
-	FEItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
+	FSItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 
 	// get the (optional) name
@@ -1987,7 +1990,7 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 			{
 				// get the node set
 				const char* szset = tag.AttributeValue("node_set");
-				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+				FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
 				else
 				{
@@ -2228,6 +2231,10 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 	FSModel& fem = GetFSModel();
 	GModel& gm = fem.GetModel();
 
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
+
 	vector<GDiscreteElementSet*> set;
 	++tag;
 	int nc = 0;
@@ -2242,7 +2249,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 			GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-			pg->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
+			pg->SetColor(pal.Color((nc++) % NCOL));
 			pg->SetMaterial(pdm);
 			pg->SetName(szname);
 			fem.GetModel().AddDiscreteObject(pg);

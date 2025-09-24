@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include "Document.h"
 #include "PostDocument.h"
 #include "DocManager.h"
-#include "PostObject.h"
 #include <PostGL/GLModel.h>
 #include "GLPostScene.h"
+#include <GLLib/GLScene.h>
 
 void CMainWindow::on_actionUndoViewChange_triggered()
 {
@@ -44,14 +44,37 @@ void CMainWindow::on_actionRedoViewChange_triggered()
 	GetGLView()->RedoViewChange();
 }
 
+void CMainWindow::on_actionShowGVContext_triggered()
+{
+	GetGLView()->ToggleContextMenu();
+}
+
 void CMainWindow::on_actionZoomSelect_triggered()
 {
-	GetGLView()->ZoomSelection();
+	CGLDocument* doc = GetGLDocument();
+	if (doc)
+	{
+		GLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomSelection();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::on_actionZoomExtents_triggered()
 {
-	GetGLView()->ZoomExtents();
+	CGLDocument* doc = GetGLDocument();
+	if (doc)
+	{
+		GLScene* scene = doc->GetScene();
+		if (scene)
+		{
+			scene->ZoomExtents();
+			RedrawGL();
+		}
+	}
 }
 
 void CMainWindow::on_actionViewCapture_toggled(bool bchecked)
@@ -69,9 +92,7 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bgrid = b;
+	GetGLView()->ToggleGridLines(b);
 	RedrawGL();
 }
 
@@ -79,9 +100,7 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bmesh = b;
+	GetGLView()->ToggleMeshLines(b);
 	Update(this);
 }
 
@@ -89,9 +108,7 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bfeat = b;
+	GetGLView()->ToggleFeatureEdges(b);
 	Update(this);
 }
 
@@ -126,9 +143,7 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-
-	GLViewSettings& view = GetGLView()->GetViewSettings();
-	view.m_bnorm = b;
+	GetGLView()->ToggleNormals(b);
 	RedrawGL();
 }
 
@@ -285,18 +300,16 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
-	CGLCamera& cam = view.GetCamera();
+	GLCamera& cam = view.GetCamera();
 	GLCameraTransform t;
 	cam.GetTransform(t);
 
 	static int n = 0; n++;
 	char szname[64] = { 0 };
 	snprintf(szname, sizeof szname, "ViewPoint%02d", n);
-	t.SetName(szname);
-	GLCameraTransform* vp = view.AddCameraKey(t);
+	CGViewKey* vp = view.AddCameraKey(t, szname);
 	ui->postPanel->Update();
 	ui->postPanel->SelectObject(vp);
-
 }
 
 void CMainWindow::on_actionViewVPPrev_triggered()
@@ -308,7 +321,7 @@ void CMainWindow::on_actionViewVPPrev_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.PrevKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -322,7 +335,7 @@ void CMainWindow::on_actionViewVPNext_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.NextKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -334,7 +347,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
-	CGLCamera& cam = view.GetCamera();
+	GLCamera& cam = view.GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
 	CDocManager* DM = GetDocManager();
@@ -347,7 +360,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 			CGView& viewi = *doci->GetView();
 
 			// copy the transforms
-			CGLCamera& cami = viewi.GetCamera();
+			GLCamera& cami = viewi.GetCamera();
 			cami.SetTransform(transform);
 			cami.Update(true);
 
@@ -359,7 +372,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 
 void CMainWindow::on_actionToggleConnected_triggered()
 {
-	ui->centralWidget->glw->glc->toggleSelectConnected();
+	ui->centralWidget->glw->ToggleSelectConnected();
 }
 
 void CMainWindow::on_actionToggleFPS_triggered()

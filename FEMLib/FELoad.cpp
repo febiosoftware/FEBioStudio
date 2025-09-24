@@ -39,7 +39,7 @@ FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps)
 }
 
 //-----------------------------------------------------------------------------
-FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps, pi, nstep)
+FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps, FSItemListBuilder* pi, int bc, double f, int nstep) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps, pi, nstep)
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(bc, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");

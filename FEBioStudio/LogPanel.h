@@ -37,19 +37,25 @@ class CLogPanel : public QWidget
 	Q_OBJECT
 
 public:
+	enum LogTarget {
+		FBS_LOG,
+		FEBIO_LOG,
+		BUILD_LOG,
+		PYTHON_LOG
+	};
+
+public:
 	CLogPanel(QWidget* parent = 0);
 
-	void ClearLog();
+	void Clear(LogTarget trg);
 
-	void ClearOutput();
-
-	void ShowOutput();
+	void ShowLog(LogTarget trg);
 
 	// Changed to allow for parsing of ANSI escape codes that might be
 	// returned from an ssh session
 	// Code taken from https://stackoverflow.com/questions/26500429/qtextedit-and-colored-bash-like-output-emulation
 	// Modifed to work with QRegularExpression instead of QRegEx
-	void AddText(const QString& txt, int n = 0);
+	void AddText(const QString& txt, LogTarget trg = LogTarget::FBS_LOG);
 
 private slots:
 	void on_logSave_clicked(bool b);
@@ -58,7 +64,7 @@ private slots:
 	void on_combo_currentIndexChanged(int i);
 
 private:
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
+	void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
 
 private:
 	Ui::CLogPanel*	ui;

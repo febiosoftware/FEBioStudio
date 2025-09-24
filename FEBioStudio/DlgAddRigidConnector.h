@@ -30,8 +30,6 @@ SOFTWARE.*/
 #include <vector>
 #include "HelpDialog.h"
 
-//using namespace std;
-
 class FSProject;
 
 namespace Ui {

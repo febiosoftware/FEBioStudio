@@ -23,22 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FSGroup.cpp: implementation of the FSGroup class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FSGroup.h"
-#include <MeshLib/FEMesh.h>
-#include <FEMLib/FSModel.h>
+#include <MeshLib/FSMesh.h>
 #include "GObject.h"
 using namespace std;
 
-//////////////////////////////////////////////////////////////////////
-// FSGroup
-//////////////////////////////////////////////////////////////////////
-
-FSGroup::FSGroup(FSMesh* pm, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
+FSGroup::FSGroup(FSMesh* pm, int ntype, unsigned int flags) : FSItemListBuilder(ntype, flags)
 {
 	m_mesh = pm;
 }
@@ -65,7 +55,7 @@ void FSGroup::Save(OArchive& ar)
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(SIZE, N);
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		ar.WriteChunk(ITEM, (*it));
@@ -114,13 +104,7 @@ FSElemSet::FSElemSet(FSMesh* pm, const vector<int>& elset) : FSGroup(pm, FE_ELEM
 	}
 }
 
-void FSElemSet::Copy(FSElemSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
-FEItemListBuilder* FSElemSet::Copy()
+FSItemListBuilder* FSElemSet::Copy()
 {
 	FSElemSet* pg = new FSElemSet(m_mesh);
 	pg->m_Item = m_Item;
@@ -138,7 +122,7 @@ void FSElemSet::CreateFromMesh()
 }
 
 //-----------------------------------------------------------------------------
-FEElement_* FSElemSet::GetElement(int n)
+FSElement_* FSElemSet::GetElement(int n)
 {
 	FSMesh* m = GetMesh();
 	if (m == nullptr) return nullptr;
@@ -146,17 +130,17 @@ FEElement_* FSElemSet::GetElement(int n)
 }
 
 //-----------------------------------------------------------------------------
-FEElemList* FSElemSet::BuildElemList()
+FSElemList* FSElemSet::BuildElemList()
 {
 	FSMesh* pm = m_mesh;
 	if (pm==0) return 0;
 
-	FEElemList* pg = new FEElemList();
+	FSElemList* pg = new FSElemList();
 
-	FEItemListBuilder::Iterator it;
+	FSItemListBuilder::Iterator it;
 	for (it = m_Item.begin(); it != m_Item.end(); ++it)
 	{
-		FEElement_* pe = pm->ElementPtr(*it); assert(pe);
+		FSElement_* pe = pm->ElementPtr(*it); assert(pe);
 		pg->Add(pm, pe);
 	}
 
@@ -171,10 +155,10 @@ FSNodeList* FSElemSet::BuildNodeList()
 	int N = pm->Nodes();
 	for (i=0; i<N; ++i) pm->Node(i).m_ntag = 0;
 
-	FEItemListBuilder::Iterator it;
+	FSItemListBuilder::Iterator it;
 	for (it = m_Item.begin(); it != m_Item.end(); ++it)
 	{
-		FEElement_* pe = pm->ElementPtr(*it);
+		FSElement_* pe = pm->ElementPtr(*it);
 		for (j=0; j<pe->Nodes(); ++j) pm->Node(pe->m_node[j]).m_ntag = 1;
 	}
 
@@ -187,21 +171,54 @@ FSNodeList* FSElemSet::BuildNodeList()
 	return pg;
 }
 
+void FSElemSet::GetNodeList(vector<int>& node, vector<int>& lnode)
+{
+	FSCoreMesh& mesh = *GetMesh();
+	int NN = mesh.Nodes();
+	int NE = size();
+
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+	int n = 0, nne = 0;
+	std::vector<int> elemList = CopyItems();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		nne += ne;
+		for (int j = 0; j < ne; ++j)
+		{
+			if (mesh.Node(el.m_node[j]).m_ntag == -1) mesh.Node(el.m_node[j]).m_ntag = n++;
+		}
+	}
+
+	node.resize(n);
+	for (int i = 0; i < NN; ++i)
+		if (mesh.Node(i).m_ntag >= 0) node[mesh.Node(i).m_ntag] = i;
+
+	lnode.resize(nne); nne = 0;
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			int lid = mesh.Node(el.m_node[j]).m_ntag; assert(lid >= 0);
+			lnode[nne + j] = lid;
+		}
+		nne += ne;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 // FSPartSet
 //////////////////////////////////////////////////////////////////////
 
-FEItemListBuilder* FSPartSet::Copy()
+FSItemListBuilder* FSPartSet::Copy()
 {
 	FSPartSet* pg = new FSPartSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
-}
-
-void FSPartSet::Copy(FSPartSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
 }
 
 GPart* FSPartSet::GetPart(size_t n)
@@ -282,17 +299,49 @@ FSSurface::FSSurface(FSMesh* pm, vector<int>& face) : FSGroup(pm, FE_SURFACE, FE
 	}
 }
 
-void FSSurface::Copy(FSSurface* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
-FEItemListBuilder* FSSurface::Copy()
+FSItemListBuilder* FSSurface::Copy()
 {
 	FSSurface* pg = new FSSurface(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
+}
+
+void FSSurface::GetNodeList(vector<int>& node, vector<int>& lnode)
+{
+	FSCoreMesh& mesh = *GetMesh();
+	int NN = mesh.Nodes();
+	int NF = size();
+
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+	int n = 0, nnf = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = *GetFace(i);
+		int nf = face.Nodes();
+		nnf += nf;
+		for (int j = 0; j < nf; ++j)
+		{
+			if (mesh.Node(face.n[j]).m_ntag == -1) mesh.Node(face.n[j]).m_ntag = n++;
+		}
+	}
+
+	node.resize(n);
+	for (int i = 0; i < NN; ++i)
+		if (mesh.Node(i).m_ntag >= 0) node[mesh.Node(i).m_ntag] = i;
+
+	lnode.resize(nnf); nnf = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = *GetFace(i);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			int lid = mesh.Node(face.n[j]).m_ntag; assert(lid >= 0);
+			lnode[nnf + j] = lid;
+		}
+		nnf += nf;
+	}
 }
 
 FSFace* FSSurface::GetFace(int n)
@@ -302,14 +351,14 @@ FSFace* FSSurface::GetFace(int n)
 	return pm->FacePtr(m_Item[n]);
 }
 
-FEFaceList* FSSurface::BuildFaceList()
+FSFaceList* FSSurface::BuildFaceList()
 {
 	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
-	FEFaceList* ps = new FEFaceList();
+	FSFaceList* ps = new FSFaceList();
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->FacePtr(*it));
 	return ps;
@@ -326,7 +375,7 @@ FSNodeList* FSSurface::BuildNodeList()
 	int i, j, n;
 	for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
@@ -359,20 +408,14 @@ FSEdgeSet::FSEdgeSet(FSMesh* pm, vector<int>& edge) : FSGroup(pm, FE_EDGESET, FE
 	}
 }
 
-void FSEdgeSet::Copy(FSEdgeSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
-FEItemListBuilder* FSEdgeSet::Copy()
+FSItemListBuilder* FSEdgeSet::Copy()
 {
 	FSEdgeSet* pg = new FSEdgeSet(m_mesh);
 	pg->m_Item = m_Item;
 	return pg;
 }
 
-FSEdge* FSEdgeSet::Edge(FEItemListBuilder::Iterator it)
+FSEdge* FSEdgeSet::Edge(FSItemListBuilder::Iterator it)
 {
 	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
@@ -391,7 +434,7 @@ FSNodeList* FSEdgeSet::BuildNodeList()
 	int i, j, n;
 	for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
@@ -410,14 +453,14 @@ FSNodeList* FSEdgeSet::BuildNodeList()
 	return pg;
 }
 
-FEEdgeList* FSEdgeSet::BuildEdgeList()
+FSEdgeList* FSEdgeSet::BuildEdgeList()
 {
 	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 
-	FEEdgeList* pg = new FEEdgeList();
+	FSEdgeList* pg = new FSEdgeList();
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	int N = (int)m_Item.size();
 	for (int i = 0; i < N; ++i, ++it)
 	{
@@ -441,13 +484,7 @@ FSNodeSet::FSNodeSet(FSMesh* pm, const vector<int>& node) : FSGroup(pm, FE_NODES
 	}
 }
 
-void FSNodeSet::Copy(FSNodeSet* pg)
-{
-	m_Item = pg->m_Item;
-	SetName(pg->GetName());
-}
-
-FEItemListBuilder* FSNodeSet::Copy()
+FSItemListBuilder* FSNodeSet::Copy()
 {
 	FSNodeSet* pg = new FSNodeSet(m_mesh);
 	pg->m_Item = m_Item;
@@ -468,7 +505,7 @@ FSNodeList* FSNodeSet::BuildNodeList()
 	FSMesh* pm = m_mesh;
 	if (pm == 0) return 0;
 	FSNodeList* ps = new FSNodeList();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->NodePtr(*it));
 	return ps;
 }

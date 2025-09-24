@@ -26,13 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
 #include <GLLib/GLMesh.h>
 
 namespace Post {
 
-class CGLSlicePlot : public CGLLegendPlot  
+class CGLSlicePlot : public CGLPlot  
 {
 	enum { 
 		DATA_FIELD, 
@@ -66,7 +65,7 @@ public:
 	vec3f GetPlaneNormal() { return m_norm; }
 	void SetPlaneNormal(vec3f& n) { m_norm = n; }
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	int GetEvalField() { return m_nfield; }
 	void SetEvalField(int n);
@@ -91,6 +90,8 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 	void Update() override;
+
+	LegendData GetLegendData() const override;
 
 protected:
 	int UpdateSlice(float ref, std::vector<std::pair<int, float> >& activeElements);
@@ -122,6 +123,6 @@ protected:
 	int m_lastTime;
 	float	m_lastDt;
 
-	GLTriMesh	m_mesh;
+	GLMesh	m_mesh;
 };
 }

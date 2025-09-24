@@ -38,10 +38,10 @@ SOFTWARE.*/
 #include "MeshButtonBox.h"
 #include <MeshTools/FEModifier.h>
 #include <MeshTools/FECurveIntersect.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include "MainWindow.h"
 #include "Document.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "Tool.h"
 #include "ButtonBox.h"
 #include "ToolParamsPanel.h"
@@ -114,6 +114,8 @@ public:
 		if (plold) delete plold;
 		if (pl) form->setPropertyList(pl);
 	}
+
+	CPropertyList* GetPropertyList() { return form->getPropertyList(); }
 
 	void updateData() { form->updateData(); }
 

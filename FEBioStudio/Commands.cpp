@@ -33,9 +33,11 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GModel.h>
-#include <GeomLib/MeshLayer.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 #include <ImageLib/ImageAnalysis.h>
+#include <ImageLib/ImageModel.h>
+#include <FEMLib/FERigidLoad.h>
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddObject
@@ -64,7 +66,7 @@ void CCmdAddObject::Execute()
 void CCmdAddObject::UnExecute()
 {
 	// remove the mesh from the model
-	m_model->RemoveObject(m_pobj, true);
+	m_model->RemoveObject(m_pobj);
 
 	m_bdel = true;
 }
@@ -162,6 +164,185 @@ void CCmdAddConstraint::UnExecute()
 {
 	// remove the connector from the step
 	m_ps->RemoveConstraint(m_pmc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddRigidLoad::CCmdAddRigidLoad(FSStep* ps, FSRigidLoad* prl) : CCommand("Add rigid load")
+{
+	m_ps = ps;
+	m_prl = prl;
+	m_bdel = true;
+}
+
+CCmdAddRigidLoad::~CCmdAddRigidLoad()
+{
+	if (m_bdel) delete m_prl;
+}
+
+void CCmdAddRigidLoad::Execute()
+{
+	// add the connector to the step
+	m_ps->AddRigidLoad(m_prl);
+	m_bdel = false;
+}
+
+void CCmdAddRigidLoad::UnExecute()
+{
+	// remove the connector from the step
+	m_ps->RemoveRigidLoad(m_prl);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddRigidBC::CCmdAddRigidBC(FSStep* ps, FSRigidBC* prc) : CCommand("Add rigid constraint")
+{
+	m_ps = ps;
+	m_prc = prc;
+	m_bdel = true;
+}
+
+CCmdAddRigidBC::~CCmdAddRigidBC()
+{
+	if (m_bdel) delete m_prc;
+}
+
+void CCmdAddRigidBC::Execute()
+{
+	// add the connector to the step
+	m_ps->AddRigidBC(m_prc);
+	m_bdel = false;
+}
+
+void CCmdAddRigidBC::UnExecute()
+{
+	// remove the connector from the step
+	m_ps->RemoveRigidBC(m_prc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddRigidIC::CCmdAddRigidIC(FSStep* ps, FSRigidIC* prc) : CCommand("Add rigid initial condition")
+{
+	m_ps = ps;
+	m_prc = prc;
+	m_bdel = true;
+}
+
+CCmdAddRigidIC::~CCmdAddRigidIC()
+{
+	if (m_bdel) delete m_prc;
+}
+
+void CCmdAddRigidIC::Execute()
+{
+	m_ps->AddRigidIC(m_prc);
+	m_bdel = false;
+}
+
+void CCmdAddRigidIC::UnExecute()
+{
+	m_ps->RemoveRigidIC(m_prc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshAdaptor::CCmdAddMeshAdaptor(FSStep* ps, FSMeshAdaptor* pma) : CCommand("Add mesh adaptor")
+{
+	m_ps = ps;
+	m_pma = pma;
+	m_bdel = true;
+}
+
+CCmdAddMeshAdaptor::~CCmdAddMeshAdaptor()
+{
+	if (m_bdel) delete m_pma;
+}
+
+void CCmdAddMeshAdaptor::Execute()
+{
+	m_ps->AddMeshAdaptor(m_pma);
+	m_bdel = false;
+}
+
+void CCmdAddMeshAdaptor::UnExecute()
+{
+	m_ps->RemoveMeshAdaptor(m_pma);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddLoadController::CCmdAddLoadController(FSModel* fem, FSLoadController* plc) : CCommand("Add load controller")
+{
+	m_fem = fem;
+	m_plc = plc;
+	m_bdel = true;
+}
+
+CCmdAddLoadController::~CCmdAddLoadController()
+{
+	if (m_bdel) delete m_plc;
+}
+
+void CCmdAddLoadController::Execute()
+{
+	m_fem->AddLoadController(m_plc);
+	m_bdel = false;
+}
+
+void CCmdAddLoadController::UnExecute()
+{
+	m_fem->RemoveLoadController(m_plc);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshDataField::CCmdAddMeshDataField(FSMesh* pm, FSMeshData* pmd) : CCommand("Add mesh data")
+{
+	m_pm = pm;
+	m_pmd = pmd;
+	m_bdel = true;
+}
+
+CCmdAddMeshDataField::~CCmdAddMeshDataField()
+{
+	if (m_bdel) delete m_pmd;
+}
+
+void CCmdAddMeshDataField::Execute()
+{
+	m_pm->AddMeshDataField(m_pmd);
+	m_bdel = false;
+}
+
+void CCmdAddMeshDataField::UnExecute()
+{
+	m_pm->RemoveMeshDataField(m_pmd);
+	m_bdel = true;
+}
+
+//=============================================================================
+CCmdAddMeshDataGenerator::CCmdAddMeshDataGenerator(FSModel* fem, FSMeshDataGenerator* pmd) : CCommand("Add mesh data generator")
+{
+	m_fem = fem;
+	m_pmd = pmd;
+	m_bdel = true;
+}
+
+CCmdAddMeshDataGenerator::~CCmdAddMeshDataGenerator()
+{
+	if (m_bdel) delete m_pmd;
+}
+
+void CCmdAddMeshDataGenerator::Execute()
+{
+	m_fem->AddMeshDataGenerator(m_pmd);
+	m_bdel = false;
+}
+
+void CCmdAddMeshDataGenerator::UnExecute()
+{
+	m_fem->RemoveMeshDataGenerator(m_pmd);
 	m_bdel = true;
 }
 
@@ -354,14 +535,14 @@ void CCmdAddGNodeGroup::UnExecute()
 
 void CCmdAddBC::Execute()
 {
-	// add the group to the mesh
+	// add the boundary condition to the step
 	m_ps->AddBC(m_pbc);
 	m_bdel = false;
 }
 
 void CCmdAddBC::UnExecute()
 {
-	// remove the mesh from the model
+	// remove the boundary condition from the step
 	m_ps->RemoveBC(m_pbc);
 	m_bdel = true;
 }
@@ -389,14 +570,12 @@ void CCmdAddIC::UnExecute()
 
 void CCmdAddLoad::Execute()
 {
-	// add the group to the mesh
 	m_ps->AddLoad(m_pfc);
 	m_bdel = false;
 }
 
 void CCmdAddLoad::UnExecute()
 {
-	// remove the mesh from the model
 	m_ps->RemoveLoad(m_pfc);
 	m_bdel = true;
 }
@@ -410,6 +589,7 @@ CCmdDeleteDiscreteObject::CCmdDeleteDiscreteObject(GModel* model, GDiscreteObjec
 	m_model = model;
 	m_pobj = po; 
 	m_bdel = false; 
+	m_npos = -1;
 }
 
 CCmdDeleteDiscreteObject::~CCmdDeleteDiscreteObject() 
@@ -862,7 +1042,7 @@ void CCmdSelectPart::Execute()
 
 void CCmdSelectPart::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GPart* pg = m_model->Part(i);
@@ -907,9 +1087,8 @@ CCmdUnSelectPart::CCmdUnSelectPart(GModel* model, const vector<int>& part) : CCo
 
 void CCmdUnSelectPart::Execute()
 {
-	int i, n;
-	n = m_npart.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_npart.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GPart* pg = m_model->FindPart(m_npart[i]);
 		if (pg) pg->UnSelect();
@@ -918,7 +1097,7 @@ void CCmdUnSelectPart::Execute()
 
 void CCmdUnSelectPart::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GPart* pg = m_model->Part(i);
@@ -965,15 +1144,14 @@ CCmdSelectSurface::CCmdSelectSurface(GModel* ps, const vector<int>& surf, bool b
 
 void CCmdSelectSurface::Execute()
 {
-	int i, n;
 	if (!m_badd)
 	{
-		n = m_model->Surfaces();
-		for (i = 0; i<n; ++i) m_model->Surface(i)->UnSelect();
+		int n = m_model->Surfaces();
+		for (int i = 0; i<n; ++i) m_model->Surface(i)->UnSelect();
 	}
 
-	n = m_nsurf.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_nsurf.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GFace* ps = m_model->FindSurface(m_nsurf[i]);
 		if (ps) ps->Select();
@@ -987,7 +1165,7 @@ void CCmdSelectSurface::Execute()
 
 void CCmdSelectSurface::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GFace* pg = m_model->Surface(i);
@@ -1032,9 +1210,8 @@ CCmdUnSelectSurface::CCmdUnSelectSurface(GModel* model, const vector<int>& surf)
 
 void CCmdUnSelectSurface::Execute()
 {
-	int i, n;
-	n = m_nsurf.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_nsurf.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GFace* ps = m_model->FindSurface(m_nsurf[i]);
 		if (ps) ps->UnSelect();
@@ -1043,7 +1220,7 @@ void CCmdUnSelectSurface::Execute()
 
 void CCmdUnSelectSurface::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GFace* pg = m_model->Surface(i);
@@ -1090,15 +1267,14 @@ CCmdSelectEdge::CCmdSelectEdge(GModel* model, const vector<int>& edge, bool badd
 
 void CCmdSelectEdge::Execute()
 {
-	int i, n;
 	if (!m_badd)
 	{
-		n = m_model->Edges();
-		for (i = 0; i<n; ++i) m_model->Edge(i)->UnSelect();
+		int n = m_model->Edges();
+		for (int i = 0; i<n; ++i) m_model->Edge(i)->UnSelect();
 	}
 
-	n = m_nedge.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_nedge.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GEdge* ps = m_model->FindEdge(m_nedge[i]);
 		if (ps) ps->Select();
@@ -1107,7 +1283,7 @@ void CCmdSelectEdge::Execute()
 
 void CCmdSelectEdge::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GEdge* pg = m_model->Edge(i);
@@ -1151,9 +1327,8 @@ CCmdUnSelectEdge::CCmdUnSelectEdge(GModel* model, const vector<int>& edge) : CCo
 
 void CCmdUnSelectEdge::Execute()
 {
-	int i, n;
-	n = m_nedge.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_nedge.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GEdge* ps = m_model->FindEdge(m_nedge[i]);
 		if (ps) ps->UnSelect();
@@ -1162,7 +1337,7 @@ void CCmdUnSelectEdge::Execute()
 
 void CCmdUnSelectEdge::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GEdge* pg = m_model->Edge(i);
@@ -1205,15 +1380,14 @@ CCmdSelectNode::CCmdSelectNode(GModel* model, const vector<int>& node, bool badd
 
 void CCmdSelectNode::Execute()
 {
-	int i, n;
 	if (!m_badd)
 	{
-		n = m_model->Nodes();
-		for (i = 0; i<n; ++i) m_model->Node(i)->UnSelect();
+		int n = m_model->Nodes();
+		for (int i = 0; i<n; ++i) m_model->Node(i)->UnSelect();
 	}
 
-	n = m_node.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_node.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GNode* pn = m_model->FindNode(m_node[i]);
 		if (pn) pn->Select();
@@ -1222,7 +1396,7 @@ void CCmdSelectNode::Execute()
 
 void CCmdSelectNode::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GNode* pn = m_model->Node(i);
@@ -1266,9 +1440,8 @@ CCmdUnSelectNode::CCmdUnSelectNode(GModel* model, const vector<int>& node) : CCo
 
 void CCmdUnSelectNode::Execute()
 {
-	int i, n;
-	n = m_node.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_node.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GNode* pn = m_model->FindNode(m_node[i]);
 		if (pn) pn->UnSelect();
@@ -1277,7 +1450,7 @@ void CCmdUnSelectNode::Execute()
 
 void CCmdUnSelectNode::UnExecute()
 {
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GNode* pn = m_model->Node(i);
@@ -1310,7 +1483,7 @@ CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool 
 	m_pgm = ps;
 	GModel& m = *m_pgm;
 
-	int n = obj.size();
+	int n = (int)obj.size();
 	m_obj.resize(n);
 	for (int i = 0; i<n; ++i) m_obj[i] = m.DiscreteObject(obj[i]);
 
@@ -1337,15 +1510,14 @@ void CCmdSelectDiscrete::Execute()
 {
 	GModel& m = *m_pgm;
 	int ND = m.DiscreteObjects();
-	int i, n;
 	if (!m_badd)
 	{
-		n = m.DiscreteObjects();
-		for (i = 0; i<n; ++i) m.DiscreteObject(i)->UnSelect();
+		int n = m.DiscreteObjects();
+		for (int i = 0; i<n; ++i) m.DiscreteObject(i)->UnSelect();
 	}
 
-	n = m_obj.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_obj.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GDiscreteObject* pn = m_obj[i];
 		if (pn) pn->Select();
@@ -1355,7 +1527,7 @@ void CCmdSelectDiscrete::Execute()
 void CCmdSelectDiscrete::UnExecute()
 {
 	GModel& m = *m_pgm;
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GDiscreteObject* pn = m.DiscreteObject(i);
@@ -1387,7 +1559,7 @@ void CCmdSelectDiscreteElements::Execute()
 		for (int i = 0; i<N; ++i) m_ps->element(i).UnSelect();
 	}
 
-	int N = m_elemList.size();
+	int N = (int)m_elemList.size();
 	for (int i = 0; i<N; ++i)
 	{
 		GDiscreteElement& de = m_ps->element(m_elemList[i]);
@@ -1397,7 +1569,7 @@ void CCmdSelectDiscreteElements::Execute()
 
 void CCmdSelectDiscreteElements::UnExecute()
 {
-	int N = m_bold.size();
+	int N = (int)m_bold.size();
 	for (int i = 0; i<N; ++i)
 	{
 		GDiscreteElement& de = m_ps->element(i);
@@ -1421,7 +1593,7 @@ CCmdUnSelectDiscreteElements::CCmdUnSelectDiscreteElements(GDiscreteElementSet* 
 
 void CCmdUnSelectDiscreteElements::Execute()
 {
-	int N = m_elemList.size();
+	int N = (int)m_elemList.size();
 	for (int i = 0; i < N; ++i)
 	{
 		GDiscreteElement& de = m_ps->element(m_elemList[i]);
@@ -1431,7 +1603,7 @@ void CCmdUnSelectDiscreteElements::Execute()
 
 void CCmdUnSelectDiscreteElements::UnExecute()
 {
-	int N = m_bold.size();
+	int N = (int)m_bold.size();
 	for (int i = 0; i < N; ++i)
 	{
 		GDiscreteElement& de = m_ps->element(i);
@@ -1488,9 +1660,8 @@ CCmdUnSelectDiscrete::CCmdUnSelectDiscrete(GModel* ps, const vector<GDiscreteObj
 void CCmdUnSelectDiscrete::Execute()
 {
 	int ND = m_model->DiscreteObjects();
-	int i, n;
-	n = m_obj.size();
-	for (i = 0; i<n; ++i)
+	int n = (int)m_obj.size();
+	for (int i = 0; i<n; ++i)
 	{
 		GDiscreteObject* pn = m_obj[i];
 		if (pn) pn->UnSelect();
@@ -1500,7 +1671,7 @@ void CCmdUnSelectDiscrete::Execute()
 void CCmdUnSelectDiscrete::UnExecute()
 {
 	int ND = m_model->DiscreteObjects();
-	int n = m_bold.size();
+	int n = (int)m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
 		GDiscreteObject* pn = m_model->DiscreteObject(i);
@@ -1604,7 +1775,7 @@ void CCmdSelectElements::UnExecute()
 {
 	for (int i = 0; i<m_pm->Elements(); ++i)
 	{
-		FEElement_& el = m_pm->ElementRef(i);
+		FSElement_& el = m_pm->ElementRef(i);
 		if (m_ptag[i])
 			el.Select();
 		else
@@ -2106,7 +2277,7 @@ void CCmdDeleteFESelection::Execute()
 	if (m_pnew == 0)
 	{
 		m_pnew = new FSMesh(*m_pold);
-		FEMeshBuilder meshBuilder(*m_pnew);
+		FSMeshBuilder meshBuilder(*m_pnew);
 
 		if      (m_nitem == ITEM_ELEM) meshBuilder.DeleteSelectedElements();
 		else if (m_nitem == ITEM_FACE) meshBuilder.DeleteSelectedFaces();
@@ -2117,7 +2288,7 @@ void CCmdDeleteFESelection::Execute()
 	}
 
 	// set the object's mesh
-	m_pobj->ReplaceFEMesh(m_pnew, false);
+	m_pobj->ReplaceFEMesh(m_pnew);
 
 	// swap meshes
 	FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
@@ -2377,7 +2548,7 @@ void CCmdHideSelection::Execute()
 	// get the model
 	GModel& m = m_doc->GetFSModel()->GetModel();
 	GObject* po = m_doc->GetActiveObject();
-	int N = m_item.size();
+	int N = (int)m_item.size();
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
@@ -2405,7 +2576,7 @@ void CCmdHideSelection::UnExecute()
 	GObject* po = m_doc->GetActiveObject();
 	GModel& m = m_doc->GetFSModel()->GetModel();
 	m_doc->SetItemMode(m_nitem);
-	int N = m_item.size();
+	int N = (int)m_item.size();
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
@@ -2506,7 +2677,7 @@ void CCmdHideUnselected::Execute()
 {
 	GObject* po = m_doc->GetActiveObject();
 	GModel& m = m_doc->GetFSModel()->GetModel();
-	int N = m_item.size();
+	int N = (int)m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
 	{
@@ -2535,7 +2706,7 @@ void CCmdHideUnselected::UnExecute()
 {
 	GObject* po = m_doc->GetActiveObject();
 	GModel& m = m_doc->GetFSModel()->GetModel();
-	int N = m_item.size();
+	int N = (int)m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
 	{
@@ -2641,7 +2812,7 @@ void CCmdUnhideAll::Execute()
 	if (m_item.empty()) return;
 
 	GModel& model = m_doc->GetFSModel()->GetModel();
-	int N = m_item.size();
+	int N = (int)m_item.size();
 	if (m_nitem == ITEM_MESH)
 	{
 		switch (m_nselect)
@@ -2703,7 +2874,7 @@ void CCmdUnhideAll::UnExecute()
 }
 
 //=============================================================================
-// CCmdApplyFEModifier
+// CCmdApplyFEModifier (TODO: not used anymore?)
 //-----------------------------------------------------------------------------
 
 CCmdApplyFEModifier::CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -2776,7 +2947,7 @@ void CCmdApplyFEModifier::UnExecute()
 
 
 //=============================================================================
-// CCmdApplySurfaceModifier
+// CCmdApplySurfaceModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdApplySurfaceModifier::CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -2858,20 +3029,16 @@ void CCmdApplySurfaceModifier::UnExecute()
 // CCmdChangeFEMesh
 //-----------------------------------------------------------------------------
 
-CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool bup) : CCommand("Change mesh")
+CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FSMesh* pm) : CCommand("Change mesh")
 {
 	assert(po);
-	m_update = bup;
 	m_po = po;
 	m_pnew = pm;
 }
 
 void CCmdChangeFEMesh::Execute()
 {
-	FSMesh* pm = m_po->GetFEMesh();
-	m_po->ReplaceFEMesh(m_pnew, m_update);
-
-	m_pnew = pm;
+	m_pnew = m_po->ReplaceFEMesh(m_pnew);
 }
 
 void CCmdChangeFEMesh::UnExecute()
@@ -2953,7 +3120,7 @@ void CCmdChangeFESurfaceMesh::UnExecute()
 // CCmdChangeView
 ///////////////////////////////////////////////////////////////////////////////
 
-CCmdChangeView::CCmdChangeView(CGView* pview, CGLCamera cam) : CCommand("Change View")
+CCmdChangeView::CCmdChangeView(CGView* pview, GLCamera cam) : CCommand("Change View")
 {
 	m_cam = cam;
 	m_pview = pview;
@@ -2966,8 +3133,8 @@ CCmdChangeView::~CCmdChangeView()
 
 void CCmdChangeView::Execute()
 {
-	CGLCamera& cam = m_pview->GetCamera();
-	CGLCamera old = cam;
+	GLCamera& cam = m_pview->GetCamera();
+	GLCamera old = cam;
 	cam = m_cam;
 	m_cam = old;
 }
@@ -2978,7 +3145,7 @@ void CCmdChangeView::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdInvertElements
+// CCmdInvertElements (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
@@ -2989,7 +3156,7 @@ CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
 void CCmdInvertElements::Execute()
 {
 	FSMesh* pm = m_po->GetFEMesh();
-	FEMeshBuilder meshBuilder(*pm);
+	FSMeshBuilder meshBuilder(*pm);
 	meshBuilder.InvertSelectedElements();
 	m_po->Update(false);
 }
@@ -3026,7 +3193,7 @@ void CCmdChangeObjectParams::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdChangeMesherParams
+// CCmdChangeMesherParams (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdChangeMesherParams::CCmdChangeMesherParams(GObject *po) : CCommand("Change meshing parameters")
@@ -3060,40 +3227,37 @@ CCmdSwapObjects::CCmdSwapObjects(GModel* model, GObject* pold, GObject* pnew) : 
 	m_model = model;
 	m_pold = pold;
 	m_pnew = pnew;
-	m_oml = nullptr;
 }
 
 CCmdSwapObjects::~CCmdSwapObjects()
 {
-	if (m_oml)
-	{
-		MeshLayerManager::Destroy(m_oml);
-		delete m_pold;
-	}
-	else delete m_pnew;
+	delete m_pnew;
 }
 
 void CCmdSwapObjects::Execute()
 {
-	// get the old object's meshlist
-	m_oml = m_model->GetObjectMeshList(m_pold);
+	FSMesh* oldMesh = m_pold->GetFEMesh();
+	FSMesh* newMesh = m_pnew->GetFEMesh();
+	if (oldMesh && newMesh)
+	{
+		newMesh->TakeItemLists(oldMesh);
+		newMesh->TakeMeshData(oldMesh);
+	}
 
 	// replace the old object with the new one
 	m_model->ReplaceObject(m_pold, m_pnew);
+	GObject* tmp = m_pold;
+	m_pold = m_pnew;
+	m_pnew = tmp;
 }
 
 void CCmdSwapObjects::UnExecute()
 {
-	// remove the new object
-	m_model->RemoveObject(m_pnew, true);
-
-	// add the oml back
-	m_model->InsertObjectMeshList(m_oml);
-	m_oml = nullptr;
+	Execute();
 }
 
 //-----------------------------------------------------------------------------
-// CCmdConvertToMultiBlock
+// CCmdConvertToMultiBlock (TODO: not used?)
 //-----------------------------------------------------------------------------
 
 CCmdConvertToMultiBlock::CCmdConvertToMultiBlock(GModel* model, GObject* po) : CCommand("Convert")
@@ -3145,7 +3309,7 @@ void CCmdConvertToMultiBlock::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdAddModifier
+// CCmdAddModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdAddModifier::CCmdAddModifier(GModifiedObject* po, GModifier* pm) : CCommand("Add modifier")
@@ -3264,11 +3428,38 @@ void CCmdAddMaterial::UnExecute()
 	m_fem->DeleteMaterial(m_pm);
 }
 
+CCmdAssignMaterial::CCmdAssignMaterial(FSModel* fem, GPart* pg, GMaterial* mat) : CCommand("Assign material")
+{
+	m_partList.push_back(pg);
+	m_newMat = mat;
+	m_fem = fem;
+	m_oldMats.push_back(fem->GetMaterialFromID(pg->GetMaterialID()));
+}
+
+CCmdAssignMaterial::CCmdAssignMaterial(FSModel* fem, std::vector<GPart*>& partList, GMaterial* mat) : CCommand("Assign material")
+{
+	m_partList = partList;
+	m_newMat = mat;
+	m_fem = fem;
+	for (int i=0; i<m_partList.size(); ++i)
+		m_oldMats.push_back(fem->GetMaterialFromID(m_partList[i]->GetMaterialID()));
+}
+
+void CCmdAssignMaterial::Execute()
+{
+	m_fem->AssignMaterial(m_partList, m_newMat);
+}
+
+void CCmdAssignMaterial::UnExecute()
+{
+	m_fem->AssignMaterial(m_partList, m_oldMats);
+}
+
 //-----------------------------------------------------------------------------
 // CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n) : CCommand("Assign selection")
+CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FSItemListBuilder* pl, int n) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
@@ -3282,7 +3473,7 @@ CCmdSetItemList::~CCmdSetItemList()
 
 void CCmdSetItemList::Execute()
 {
-	FEItemListBuilder* pold = m_pbc->GetItemList(m_index);
+	FSItemListBuilder* pold = m_pbc->GetItemList(m_index);
 	m_pbc->SetItemList(m_pl, m_index);
 	m_pl = pold;
 }
@@ -3296,7 +3487,7 @@ void CCmdSetItemList::UnExecute()
 // CCmdAddToItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
+CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FSItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3304,7 +3495,7 @@ CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vect
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		FEItemListBuilder::Iterator it = m_pold->begin();
+		FSItemListBuilder::Iterator it = m_pold->begin();
 		for (int i = 0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }
@@ -3325,15 +3516,17 @@ void CCmdAddToItemListBuilder::UnExecute()
 // CCmdRemoveFromItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
+CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FSItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
+	std::sort(m_lnew.begin(), m_lnew.end());
+
 	int n = m_pold->size();
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		FEItemListBuilder::Iterator it = m_pold->begin();
+		FSItemListBuilder::Iterator it = m_pold->begin();
 		for (int i = 0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }
@@ -3386,31 +3579,23 @@ CCmdDeleteGObject::CCmdDeleteGObject(GModel* gm, GObject* po) : CCommand(string(
 {
 	m_gm = gm;
 	m_po = po;
-	m_poml = nullptr;
 }
 
 CCmdDeleteGObject::~CCmdDeleteGObject()
 {
-	if (m_poml) 
-	{
-		MeshLayerManager::Destroy(m_poml);
-		delete m_po;
-	}
+	if (m_pos >= 0) delete m_po;
 }
 
 void CCmdDeleteGObject::Execute()
 {
-	m_poml = m_gm->GetObjectMeshList(m_po);
-	m_gm->RemoveObject(m_po);
+	m_pos = m_gm->RemoveObject(m_po);
 }
 
 void CCmdDeleteGObject::UnExecute()
 {
 	// re-insert the object and its mesh list
-	m_gm->InsertObjectMeshList(m_poml);
-
-	// delete the OML
-	m_poml = nullptr;
+	m_gm->InsertObject(m_po, m_pos);
+	m_pos = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -3428,7 +3613,7 @@ CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : C
 	{
 		for (int i = 0; i < pil->ItemLists(); ++i)
 		{
-			FEItemListBuilder* pl = pil->GetItemList(i);
+			FSItemListBuilder* pl = pil->GetItemList(i);
 			m_sel.push_back(pl);
 			if (pl && (pl->GetReferenceCount() == 1)) AddCommand(new CCmdDeleteFSObject(pl));
 		}
@@ -3499,83 +3684,10 @@ void CCmdDeleteFSObject::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdSetActiveMeshLayer
-//-----------------------------------------------------------------------------
-
-CCmdSetActiveMeshLayer::CCmdSetActiveMeshLayer(GModel* mdl, int activeLayer) : CCommand("Change active layer")
-{
-	m_gm = mdl;
-	m_activeLayer = activeLayer;
-}
-
-void CCmdSetActiveMeshLayer::Execute()
-{
-	int currentLayer = m_gm->GetActiveMeshLayer();
-	m_gm->SetActiveMeshLayer(m_activeLayer);
-	m_activeLayer = currentLayer;
-}
-
-void CCmdSetActiveMeshLayer::UnExecute()
-{
-	Execute();
-}
-
-//-----------------------------------------------------------------------------
-// CCmdAddMeshLayer
-//-----------------------------------------------------------------------------
-
-CCmdAddMeshLayer::CCmdAddMeshLayer(GModel* mdl, const std::string& layerName) : CCommand( string("Add Mesh Layer: ") + layerName)
-{
-	m_gm = mdl;
-	m_layerName = layerName;
-	m_layerIndex = -1;
-}
-
-void CCmdAddMeshLayer::Execute()
-{
-	m_layerIndex = m_gm->MeshLayers();
-	m_gm->AddMeshLayer(m_layerName);
-}
-
-void CCmdAddMeshLayer::UnExecute()
-{
-	m_gm->DeleteMeshLayer(m_layerIndex);
-}
-
-//-----------------------------------------------------------------------------
-// CCmdDeleteMeshLayer
-//-----------------------------------------------------------------------------
-
-
-CCmdDeleteMeshLayer::CCmdDeleteMeshLayer(GModel* mdl, int layerIndex) : CCommand("Delete mesh layer")
-{
-	m_gm = mdl;
-	m_layerIndex = layerIndex;
-	m_layer = nullptr;
-	assert(layerIndex != 0);		// make sure we are not trying to delete the default layer
-}
-
-CCmdDeleteMeshLayer::~CCmdDeleteMeshLayer()
-{
-	if (m_layer) MeshLayerManager::Destroy(m_layer);
-}
-
-void CCmdDeleteMeshLayer::Execute()
-{
-	m_layer = m_gm->RemoveMeshLayer(m_layerIndex);
-}
-
-void CCmdDeleteMeshLayer::UnExecute()
-{
-	m_gm->InsertMeshLayer(m_layerIndex, m_layer);
-	m_layer = nullptr;
-}
-
-//-----------------------------------------------------------------------------
 // CCmdRemoveMeshData
 //-----------------------------------------------------------------------------
 
-CCmdRemoveMeshData::CCmdRemoveMeshData(FEMeshData* meshData) : CCommand("Remove mesh data")
+CCmdRemoveMeshData::CCmdRemoveMeshData(FSMeshData* meshData) : CCommand("Remove mesh data")
 {
 	m_data = meshData;
 	m_index = -1;
@@ -3675,4 +3787,27 @@ void CCmdDeleteImageAnalysis::UnExecute()
 {
     m_analysis->GetImageModel()->AddImageAnalysis(m_analysis);
     m_del = false;
+}
+
+CCmdSwapMaterialProps::CCmdSwapMaterialProps(GMaterial* gmat, FSMaterial* props) : CCommand("Change materials")
+{
+	m_gmat = gmat;
+	m_props = props;
+}
+
+CCmdSwapMaterialProps::~CCmdSwapMaterialProps()
+{
+	delete m_props;
+}
+
+void CCmdSwapMaterialProps::Execute()
+{
+	FSMaterial* oldMat = m_gmat->TakeMaterialProperties();
+	m_gmat->SetMaterialProperties(m_props);
+	m_props = oldMat;
+}
+
+void CCmdSwapMaterialProps::UnExecute()
+{
+	Execute();
 }

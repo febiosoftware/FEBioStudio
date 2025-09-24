@@ -60,7 +60,7 @@ CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : 
 {
 	m_isOutputReady = false;
 
-	QObject::connect(this, SIGNAL(finished()), this, SIGNAL(QObject::deleteLater()));
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(QObject::deleteLater()));
 	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
 	QObject::connect(this, SIGNAL(outputReady()), parent, SLOT(onReadyRead()));
 }
@@ -77,7 +77,7 @@ void CFEBioThread::run()
 	m_job->SetStatus(CFEBioJob::RUNNING);
 	m_job->SetProgress(0.0);
 
-	QString Cmd = QString::fromStdString(m_job->m_cmd);
+	QString Cmd = QString::fromStdString(m_job->GetCommand());
 
 	// get the job file name (NOTE that we put quotes around it to deal with spaces)
 	QString fileName = QString("\"%1\"").arg(QString::fromStdString(m_job->GetFEBFileName()));
@@ -89,9 +89,7 @@ void CFEBioThread::run()
 	std::string report;
 	FEBioThreadOutput threadOutput(this);
 	FEBioThreadProgress progressTracker(m_job);
-	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker, report);
-
-	m_job->m_jobReport = report;
+	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker, m_job);
 
 	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
 }

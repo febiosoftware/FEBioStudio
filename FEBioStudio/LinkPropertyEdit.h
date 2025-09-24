@@ -32,14 +32,16 @@ namespace Ui {
 	class CLinkPropertyEdit;
 }
 
-//-----------------------------------------------------------------------------
-// This class can be used to access a resource (e.g. file)
+// This class can be used to open a (URL) link.
+// Links can be opened internally (i.e. in FEBio Studio), or externally (i.e. in another program)
+// The widget requires an absolute path to the file that will be opended, and a relative path, which
+// is the path that will be displayed in the widget. 
 class CLinkPropertyEdit : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CLinkPropertyEdit(QStringList& paths, bool internal=false, QWidget* parent = 0);
+	CLinkPropertyEdit(const QString& filepath, const QString& relPath, bool internal=false, QWidget* parent = 0);
 
 private slots:
 	void buttonPressed();

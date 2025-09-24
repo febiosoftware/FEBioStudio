@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "GCurveObject.h"
 #include <MeshTools/FSCurveObjectMesher.h>
 #include <MeshTools/FESelection.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <map>
 
 GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)
@@ -67,6 +67,7 @@ GCurveObject::GCurveObject(GCurveObject* po) : GObject(GCURVE_OBJECT)
 		GEdge& eo = *po->Edge(i);
 		e->m_node[0] = eo.m_node[0];
 		e->m_node[1] = eo.m_node[1];
+		e->m_cnode = eo.m_cnode;
 		e->SetID(eo.GetID());
 		e->SetLocalID(i);
 		e->SetName(eo.GetName());
@@ -177,7 +178,7 @@ void GCurveObject::MergeNodes(GNodeSelection* sel)
 	}
 
 	// remove the tagged nodes
-	vector<GNode*> newNodes;
+	std::vector<GNode*> newNodes;
 	for (int i = 0; i < Nodes(); ++i)
 	{
 		GNode* pn = Node(i);

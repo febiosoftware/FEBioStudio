@@ -25,18 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#ifdef WIN32
-#include <Windows.h>
-#include <gl/GL.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#endif
-#ifdef LINUX
-#include <GL/gl.h>
-#endif
 #include "ImageSlicer.h"
 #include <ImageLib/ImageModel.h>
+#include <FSCore/ColorMapManager.h>
 #include <assert.h>
 #include <sstream>
 
@@ -57,9 +48,6 @@ CImageSlicer::CImageSlicer(CImageModel* img) : m_imageSlice(nullptr), CGLImageRe
 	AddDoubleParam(1, "Transparency")->SetFloatRange(0.0, 1.0);
 
 	m_Col.SetColorMap(ColorMapManager::GRAY);
-
-	m_texID = 0;
-	m_reloadTexture = true;
 
 	UpdateData(false);
 }
@@ -164,7 +152,6 @@ template<class pType> void CImageSlicer::CreateCRGBAImage(CImage& slice)
             pd[3] = m_LUTC[3][val];
         }
     }
-	
 }
 
 void CImageSlicer::UpdateSlice()
@@ -288,10 +275,8 @@ void CImageSlicer::UpdateSlice()
         }
     }
 
-	m_reloadTexture = true;
+	m_tex.SetImage(&m_im);
 }
-
-
 
 void CImageSlicer::BuildLUT()
 {
@@ -312,45 +297,20 @@ void CImageSlicer::BuildLUT()
 	}
 }
 
-//-----------------------------------------------------------------------------
 //! Render textures
-void CImageSlicer::Render(CGLContext& rc)
+void CImageSlicer::Render(GLRenderEngine& re, GLContext& rc)
 {
-	if (m_texID == 0)
-	{
-		glDisable(GL_TEXTURE_2D);
-
-		glGenTextures(1, &m_texID);
-		glBindTexture(GL_TEXTURE_2D, m_texID);
-
-		// set texture parameter for 2D textures
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	}
-	else glBindTexture(GL_TEXTURE_2D, m_texID);
-
 	int nx = m_im.Width();
 	int ny = m_im.Height();
-	if (m_reloadTexture && (nx*ny > 0))
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, nx, ny, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_im.GetBytes());
-		m_reloadTexture = false;
-	}
 
 	BOX box = GetImageModel()->GetBoundingBox();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_2D, false);
+	re.setTexture(m_tex);
 
 	int nop = GetOrientation();
 	double off = GetOffset();
-
-	//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glColor4d(1, 1, 1, 1);
 
 	vec3d r0(0,0,0);
 	vec3d r1 = box.r1() - box.r0();
@@ -375,14 +335,14 @@ void CImageSlicer::Render(CGLContext& rc)
 		break;
 	}
 
-	glBegin(GL_QUADS);
+	re.begin(GLRenderEngine::QUADS);
 	{
-		glTexCoord2d(1, 0); glVertex3d(x[0], y[0], z[0]);
-		glTexCoord2d(0, 0); glVertex3d(x[1], y[1], z[1]);
-		glTexCoord2d(0, 1); glVertex3d(x[2], y[2], z[2]);
-		glTexCoord2d(1, 1); glVertex3d(x[3], y[3], z[3]);
+		re.texCoord2d(1, 0); re.vertex(vec3d(x[0], y[0], z[0]));
+		re.texCoord2d(0, 0); re.vertex(vec3d(x[1], y[1], z[1]));
+		re.texCoord2d(0, 1); re.vertex(vec3d(x[2], y[2], z[2]));
+		re.texCoord2d(1, 1); re.vertex(vec3d(x[3], y[3], z[3]));
 	}
-	glEnd();
+	re.end();
 
-	glPopAttrib();
+	re.popState();
 }

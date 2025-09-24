@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include "DlgStartThread.h"
 #include "MainWindow.h"
 #include "IconProvider.h"
+#include <ImageLib/ImageModel.h>
 
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.

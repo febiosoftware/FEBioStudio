@@ -37,6 +37,8 @@ void GLViewSettings::Defaults(int ntheme)
 
 	m_selectAndHide = false;
 
+	m_light = vec3f(0.5, 0.5, 1);
+
 	m_bjoint = true;
 	m_bwall = true;
 	m_brigid = true;
@@ -110,6 +112,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_ambient = 0.09f;
 	m_diffuse = 0.8f;
 	m_use_environment_map = false;
+
+	m_identifyBackfacing = true;
 
 	m_transparencyMode = 0; // = off
 

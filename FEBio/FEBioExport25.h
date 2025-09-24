@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
-typedef std::pair<std::string, FEItemListBuilder*> NamedList;
+typedef std::pair<std::string, FSItemListBuilder*> NamedList;
 
 //-----------------------------------------------------------------------------
 class FS1DPointFunction;
@@ -58,10 +58,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FEFaceList*		m_faceList;
+		FSFaceList*		m_faceList;
 
 	public:
-		Surface(const string& name, FEFaceList* faceList) : m_name(name), m_faceList(faceList) {}
+		Surface(const string& name, FSFaceList* faceList) : m_name(name), m_faceList(faceList) {}
 		~Surface() { delete m_faceList; }
 	};
 
@@ -70,8 +70,8 @@ private:
 	public:
 		FSCoreMesh*	mesh;
 		int			matID;
-		string		name;
-		vector<int>	elem;
+		std::string		name;
+		std::vector<int>	elem;
 
 	public:
 		ElementSet(){ mesh = 0; }
@@ -96,8 +96,8 @@ private:
 	{
 	public:
 		GObject*			m_obj;
-		vector<NodeSet*>	m_NSet;
-		vector<Surface*>	m_Surf;
+		std::vector<NodeSet*>	m_NSet;
+		std::vector<Surface*>	m_Surf;
 
 	public:
 		Part(GObject* po) : m_obj(po){}
@@ -129,8 +129,6 @@ public:
 	bool Write(const char* szfile) override;
 
 public: // set export attributes
-	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
-
 	void SetExportPartsFlag(bool b) { m_exportParts = b; }
 
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
@@ -248,8 +246,8 @@ protected:
 	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
-	void WriteElementList(FEElemList& el);
+	void WriteSurfaceSection(FSFaceList& s);
+	void WriteElementList(FSElemList& el);
 
 	void WritePointCurve(FS1DPointFunction* f1d, XMLElement& el);
 
@@ -260,12 +258,12 @@ protected:
 	bool	m_writeNotes;
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl);
-	const char* GetNodeSetName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FSItemListBuilder* pl);
+	const char* GetNodeSetName(FSItemListBuilder* pl);
 
-	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddSurface(const std::string& name, FEItemListBuilder* pl);
-	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
+	void AddNodeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddSurface(const std::string& name, FSItemListBuilder* pl);
+	void AddElemSet(const std::string& name, FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 

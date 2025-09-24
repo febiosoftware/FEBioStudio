@@ -34,7 +34,7 @@ namespace Post {
 	public:
 		C3DImageSlicer(CImageModel* img);
 
-		void Render(CGLContext& rc) override;
+		void Render(GLRenderEngine& re, GLContext& rc) override;
 
 		void SetImageModel(CImageModel* img) override;
 

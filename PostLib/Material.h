@@ -26,12 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include <string.h>
+#include <string>
 
 // rendering modes
-#define RENDER_MODE_DEFAULT	0
-#define RENDER_MODE_SOLID	1
-#define RENDER_MODE_WIRE	2
+enum MaterialRenderMode {
+	RENDER_MODE_DEFAULT = 0,
+	RENDER_MODE_SOLID = 1,
+	RENDER_MODE_WIRE = 2
+};
 
 enum TransparencyMode {
 	RENDER_TRANS_CONSTANT,
@@ -46,13 +48,10 @@ namespace Post {
 class Material
 {
 public:
-	enum {MAX_NAME = 64};
-
-public:
 	Material();
 
-	const char* GetName();
-	void SetName(const char* szname);
+	const std::string& GetName() const;
+	void SetName(const std::string& s);
 
 	bool visible() const { return bvisible; }
 	void hide() { bvisible = false; }
@@ -61,6 +60,9 @@ public:
 	bool enabled() const { return benable; }
 	void enable() { benable = true; }
 	void disable() { benable = false; }
+
+	void setColor(GLColor c) { diffuse = ambient = c; }
+	void setColor(uint8_t r, uint8_t g, uint8_t b) { diffuse = ambient = GLColor(r,g,b); }
 
 public:
 	GLColor	diffuse;		// diffuse material color
@@ -79,6 +81,6 @@ public:
 	int		m_ntransmode;	// transparency mode
 
 protected:
-	char	m_szname[MAX_NAME];		// name of material
+	std::string m_name;
 };
 }

@@ -34,8 +34,6 @@ class CDlgConvertFEBio : public QDialog
 {
 	Q_OBJECT
 
-	enum { MAX_SECTIONS = 15 };
-
 public:
 	enum FileFilters {
 		FEB_FILES,
@@ -54,7 +52,7 @@ public:
 	void SetFileFilter(int n);
 
 public:
-	bool	m_nsection[MAX_SECTIONS];
+	unsigned int m_nsection;
 	bool	m_bexportSelections;
 	bool	m_compress;
 	bool	m_writeNotes;

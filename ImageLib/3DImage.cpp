@@ -33,8 +33,6 @@ SOFTWARE.*/
 #include <string>
 #include <algorithm>
 #include <fstream>
-#include "SITKTools.h"
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -1052,12 +1050,3 @@ bool C3DImage::ExportRAW(const std::string& filename)
 
 	return true;
 }
-
-#ifdef HAS_ITK
-bool C3DImage::ExportSITK(const std::string& filename)
-{
-    return WriteSITKImage(this, filename);
-}
-#else
-bool C3DImage::ExportSITK(const std::string& filename) { return false; }
-#endif

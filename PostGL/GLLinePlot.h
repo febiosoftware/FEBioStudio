@@ -29,11 +29,12 @@ SOFTWARE.*/
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
 #include <GLLib/GLMesh.h>
+#include <GLLib/ColorTexture.h>
 namespace Post {
 
 //-----------------------------------------------------------------------------
 // Line rendering of imported line data
-class CGLLinePlot : public CGLLegendPlot
+class CGLLinePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_ALWAYS, SHOW_LEGEND };
 
@@ -48,7 +49,7 @@ public:
 	CGLLinePlot();
 	virtual ~CGLLinePlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	float GetLineWidth() { return m_line; }
 	void SetLineWidth(float f) { m_line = f; }
@@ -79,9 +80,9 @@ public:
 	LineDataModel* GetLineDataModel();
 
 protected:
-	void RenderLines();
-	void Render3DLines();
-	void Render3DSmoothLines();
+	void RenderLines(GLRenderEngine& re);
+	void Render3DLines(GLRenderEngine& re);
+	void Render3DSmoothLines(GLRenderEngine& re);
 	bool ShowLine(LINESEGMENT& l, FEState& s);
 
 	void UpdateLineMesh(FEState& s, int ntime);
@@ -101,8 +102,6 @@ private:
 
 	LineDataModel* m_lineData;
 
-	GLLineMesh	m_lineMesh;	// mesh used for line rendering
-	GLQuadMesh	m_quadMesh;	// mesh used for 3d line rendering
-	GLTriMesh	m_triMesh;	// mesh used for smooth 3d line rendering
+	GLMesh	m_mesh;
 };
 }

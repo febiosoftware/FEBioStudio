@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <FSCore/FSObject.h>
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 
 class Ui::CInfoPanel
 {

@@ -84,8 +84,8 @@ protected:
 	bool BuildMesh(FSModel& fem);
 
 protected:
-	list<GRID>		m_Node;
-	list<ELEM>		m_Elem;
-	list<PSOLID>	m_Part;
-	list<MAT1>		m_Mat;
+	std::list<GRID>		m_Node;
+	std::list<ELEM>		m_Elem;
+	std::list<PSOLID>	m_Part;
+	std::list<MAT1>		m_Mat;
 };

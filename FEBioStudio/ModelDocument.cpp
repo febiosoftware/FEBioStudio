@@ -44,6 +44,10 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "units.h"
 #include "GLHighlighter.h"
+#include <QJsonDocument>
+#include "DocManager.h"
+#include <ImageLib/ImageModel.h>
+#include "PluginManager.h"
 
 class CModelContext
 {
@@ -112,14 +116,14 @@ CModelDocument::~CModelDocument()
 	m_scene = nullptr;
 }
 
-CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
+CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd), m_skipPluginCheck(false)
 {
 	SetIcon(":/icons/FEBioStudio.png");
 
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
 
 	SetFileWriter(new CModelFileWriter(this));
 
@@ -221,21 +225,12 @@ int CModelDocument::GetMeshMode()
 void CModelDocument::Update()
 {
 	GetGModel()->UpdateBoundingBox();
-}
-
-std::string CModelDocument::GetRenderString()
-{
-	FSModel* ps = GetFSModel();
-	GModel& model = ps->GetModel();
-	int activeLayer = model.GetActiveMeshLayer();
-	string s = string("  Mesh Layer > ") + model.GetMeshLayerName(activeLayer);
-	return s;
+	CGLDocument::Update();
 }
 
 void CModelDocument::AddObject(GObject* po)
 {
-	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po));
-	GetMainWindow()->Update(0, true);
+	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po), po->GetNameAndType());
 }
 
 void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)
@@ -261,8 +256,6 @@ void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)
 	{
 		if (objList[i]) DeleteObject(objList[i]);
 	}
-
-	GetFSModel()->UpdateMaterialSelections();
 }
 
 void CModelDocument::DeleteObject(FSObject* po)
@@ -324,8 +317,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 			return;
 		}
 
-		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
-		GetFSModel()->UpdateMaterialSelections();
+		DoCommand(new CCmdDeleteGObject(GetGModel(), obj), obj->GetName());
 	}
     else if (dynamic_cast<CImageModel*>(po))
     {
@@ -359,16 +351,16 @@ void CModelDocument::DeleteObject(FSObject* po)
 			if (plc->GetReferenceCount() > 0)
 				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
 			else
-				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
-			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}
-	else if (dynamic_cast<FEMeshData*>(po))
+	else if (dynamic_cast<FSMeshData*>(po))
 	{
-		FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+		FSMeshData* pd = dynamic_cast<FSMeshData*>(po);
 		DoCommand(new CCmdRemoveMeshData(pd));
 	}
 	else
@@ -376,6 +368,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 		assert(false);
 	}
 
+	Update();
 	SetModifiedFlag(true);
 }
 
@@ -411,11 +404,37 @@ CFEBioJob* CModelDocument::FindFEBioJob(const std::string& s)
 void CModelDocument::DeleteAllJobs()
 {
 	m_JobList.Clear();
+	SetModifiedFlag();
+}
+
+int CModelDocument::FEBioStudies() const
+{
+	return (int)m_StudyList.Size();
+}
+
+void CModelDocument::AddFEBioStudy(CFEBioStudy* study)
+{
+	m_StudyList.Add(study);
+	SetModifiedFlag();
+}
+
+CFEBioStudy* CModelDocument::GetFEBioStudy(int i)
+{
+	return m_StudyList[i];
+}
+
+void CModelDocument::DeleteAllStudies()
+{
+	m_StudyList.Clear();
+	SetModifiedFlag();
 }
 
 //-----------------------------------------------------------------------------
 void CModelDocument::Save(OArchive& ar)
 {
+	std::string sfile = GetDocFileName();
+	AppendChangeLog(QString("saved model to %1").arg(QString::fromStdString(sfile)));
+
 	// save version info
 	unsigned int version = SAVE_VERSION;
 	ar.WriteChunk(CID_VERSION, version);
@@ -425,8 +444,45 @@ void CModelDocument::Save(OArchive& ar)
 	{
 		ar.WriteChunk(CID_MODELINFO_COMMENT, m_info);
 		ar.WriteChunk(CID_MODELINFO_UNITS  , m_units);
+
+		const ChangeLog& log = GetChangeLog();
+		QString txt = log.toJson();
+		string s = txt.toStdString();
+		if (s.empty() == false) ar.WriteChunk(CID_MODELINFO_CHANGELOG, s);
 	}
 	ar.EndChunk();
+
+    // Find plugin info for in-use plugins
+    std::unordered_set<int> allocatorIDs;
+    m_Project.GetActivePluginIDs(allocatorIDs);
+
+    CPluginManager* manager = m_wnd->GetPluginManager();
+
+    std::vector<Plugin*> plugins;
+    for(int id : allocatorIDs)
+    {
+        Plugin* current = manager->GetPluginFromAllocatorID(id);
+
+        if(current) plugins.push_back(current);
+    }
+
+    // Write plugin info for in-use plugins
+    if(!plugins.empty())
+    {
+        ar.BeginChunk(CID_PLUGIN_SECTION);
+        {
+            for(Plugin* plugin : plugins)
+            {
+                ar.BeginChunk(CID_PLUGIN_INFO);
+                {
+                    ar.WriteChunk(CID_PLUGIN_NAME, plugin->name);
+                    ar.WriteChunk(CID_PLUGIN_ID, plugin->id);
+                };
+                ar.EndChunk();
+            }
+        }
+        ar.EndChunk();
+    }
 
 	// save resources
 	if (ImageModels() > 0)
@@ -505,9 +561,122 @@ void CModelDocument::Load(IArchive& ar)
 				{
 					nret = ar.read(m_units);
 				}
+				else if (nid == CID_MODELINFO_CHANGELOG)
+				{
+					string s;
+					ar.read(s);
+					ChangeLog newLog;
+					newLog.fromJson(QString::fromStdString(s));
+					SetChangeLog(newLog);
+				}
+
 				ar.CloseChunk();
 			}
 		}
+        else if(nid == CID_PLUGIN_SECTION)
+        {
+            CPluginManager* pluginManager = m_wnd->GetPluginManager();
+            vector<pair<int, string>> missingPlugins;
+
+            while(ar.OpenChunk() == IArchive::IO_OK)
+            {
+                int nid = ar.GetChunkID();
+                if(nid == CID_PLUGIN_INFO)
+                {
+                    int pluginID = 0;
+                    string pluginName;
+
+                    while(ar.OpenChunk() == IArchive::IO_OK)
+                    {
+                        int nid = ar.GetChunkID();
+                        if(nid == CID_PLUGIN_NAME)
+                        {
+                            ar.read(pluginName);
+                        }
+                        else if(nid == CID_PLUGIN_ID)
+                        {
+                            ar.read(pluginID);
+                        }
+                        
+                        ar.CloseChunk();
+                    }
+
+                    if(pluginID == 0 || pluginName.empty())
+                    {
+                        // TODO: this should never happen, should we handle this?
+                    }
+                    else
+                    {
+                        bool missing = false;
+
+                        // If the plugin ID is negative, it's a non-repo plugin and we can't 
+                        // rely on the ID to find it in the manager. Instead, we check if the 
+                        // name exists in the manager. This can lead to false positives, but
+                        // it's the best we can do
+                        if(pluginID < 0)
+                        {
+                            bool found = false;
+                            for(auto& [id, plugin] : pluginManager->GetPlugins())
+                            {
+                                if(id < 0 && pluginName == plugin.name && plugin.loaded)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            missing = !found;
+
+                        }
+                        else
+                        {
+                            Plugin* plugin = pluginManager->GetPlugin(pluginID);
+
+                            // The manager doesn't know about the plugin at all
+                            if(plugin == nullptr)
+                            {
+                                missing = true;
+                            }
+                            else
+                            {
+
+                                if(!plugin->loaded)
+                                {
+                                    // We can't try to load the plugin at this point. 
+                                    // FEBio::BlockCreateEvents(true); was called 
+
+                                    // // If we have a local copy, and it's not loaded, try to load it
+                                    // // Otherwise, we consider it missing
+                                    // if(plugin->localCopy)
+                                    // {
+                                    //     if(!pluginManager->LoadPlugin(pluginID))
+                                    //     {
+                                    //         missing = true;
+                                    //     }
+                                    // }
+                                    // else
+                                    // {
+                                    //     missing = true;
+                                    // }
+
+                                    missing = true;
+                                }
+                            }
+                        }
+
+                        if(missing) missingPlugins.emplace_back(pluginID, pluginName);
+                    }
+
+                }
+
+                ar.CloseChunk();
+            }
+
+            if(!missingPlugins.empty() && !m_skipPluginCheck)
+            {
+                throw MissingPluginError(missingPlugins);
+            }
+        }
 		else if (nid == CID_RESOURCE_SECTION)
 		{
 			LoadResources(ar);
@@ -545,6 +714,31 @@ bool CModelDocument::Initialize()
 	return CGLDocument::Initialize();
 }
 
+LegendData CModelDocument::GetLegendData()
+{
+	LegendData l;
+
+	l.colormap = ColorMapManager::JET;
+	l.ndivs = 10;
+	l.smooth = true;
+	l.discrete = false;
+
+	GObject* po = GetActiveObject();
+	FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
+	if (pm)
+	{
+		Mesh_Data& data = pm->GetMeshData();
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
+		if (vmin == vmax) vmax++;
+
+		l.vmin = vmin;
+		l.vmax = vmax;
+	}
+
+	return l;
+}
+
 //-----------------------------------------------------------------------------
 bool CModelDocument::LoadTemplate(int n)
 {
@@ -552,13 +746,6 @@ bool CModelDocument::LoadTemplate(int n)
 	if ((n<0) || (n >= N)) return false;
 	DocTemplate& doc = TemplateManager::GetTemplate(n);
 	return doc.Load(this);
-}
-
-std::vector<MODEL_ERROR> CModelDocument::CheckModel()
-{
-	vector<MODEL_ERROR> errorList;
-	checkModel(GetProject(), errorList);
-	return errorList;
 }
 
 bool CModelDocument::ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList)
@@ -690,6 +877,16 @@ void CModelDocument::SetUnitSystem(int unitSystem)
 	}
 }
 
+bool CModelDocument::SkipPluginCheck()
+{
+    return m_skipPluginCheck;
+}
+
+void CModelDocument::SetSkipPluginCheck(bool skip)
+{
+    m_skipPluginCheck = skip;
+}
+
 void CModelDocument::AddImageModel(CImageModel* imgModel)
 {
 	CGLDocument::AddImageModel(imgModel);
@@ -712,7 +909,7 @@ void CModelDocument::AddImageModel(CImageModel* imgModel)
 //-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------
-void CModelDocument::UpdateSelection(bool report)
+void CModelDocument::UpdateSelection()
 {
 	// delete old selection
 	if (m_psel) delete m_psel;
@@ -766,12 +963,12 @@ void CModelDocument::UpdateSelection(bool report)
 		}
 	}
 
+	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(GetScene());
+	if (scene) scene->UpdateSelectionMesh(m_psel);
+
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	if (report)
-	{
-		emit selectionChanged();
-	}
+	emit selectionChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -819,7 +1016,7 @@ void CModelDocument::HideUnselected()
 		else if (selMode == SELECT_PART)
 		{
 			GModel* mdl = GetGModel();
-			list<GPart*> partList;
+			std::list<GPart*> partList;
 			for (int i = 0; i<mdl->Objects(); ++i)
 			{
 				GObject* po = mdl->Object(i);
@@ -873,7 +1070,7 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 	FSModel* ps = GetFSModel();
 
 	// create the selection command
-	FEItemListBuilder* pl = 0;
+	FSItemListBuilder* pl = 0;
 
 	IHasItemLists* phs = dynamic_cast<IHasItemLists*>(po);
 	if (phs) pl = phs->GetItemList(n);
@@ -997,7 +1194,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 
 	// swap the meshes
 	string ss = modifier.GetName();
-	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
+	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str());
 }
 
 bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel)
@@ -1031,7 +1228,7 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd, false);
+	return DoCommand(cmd, po->GetName());
 }
 
 template <class T> std::vector<T*> itemlist_cast(std::vector<GLHighlighter::Item>& items)
@@ -1105,16 +1302,38 @@ void CModelDocument::ToggleActiveParts()
 {
 	if (GetSelectionMode() != SELECT_PART) return;
 
-	GObject* po = GetActiveObject();
-	if (po == nullptr) return;
-
-	vector<GPart*> selectedParts;
-	for (int i = 0; i < po->Parts(); ++i)
+	GPartSelection* sel = dynamic_cast<GPartSelection*>(GetCurrentSelection());
+	if (sel && (sel->Count() > 0))
 	{
-		GPart* pg = po->Part(i);
-		if (pg && pg->IsSelected()) selectedParts.push_back(pg);
+		vector<GPart*> selectedParts = sel->GetPartList();
+		DoCommand(new CCmdToggleActiveParts(selectedParts));
 	}
-	if (selectedParts.empty()) return;
+}
 
-	DoCommand(new CCmdToggleActiveParts(selectedParts));
+CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(wnd);
+	doc->GetProject().SetModule(moduleID);
+
+	CDocManager* dm = wnd->GetDocManager();
+
+	if (name.size() == 0) name = dm->GenerateNewDocName();
+	doc->SetDocTitle(name);
+
+	if (units == -1) units = wnd->GetDefaultUnitSystem();
+	doc->SetUnitSystem(units);
+	return doc;
+}
+
+CModelDocument* CreateDocumentFromTemplate(CMainWindow* wnd, int templateID, std::string name, int units)
+{
+	CModelDocument* doc = new CModelDocument(wnd);
+	if (doc->LoadTemplate(templateID) == false)
+	{
+		delete doc;
+		return nullptr;
+	}
+	doc->SetDocTitle(name);
+	doc->SetUnitSystem(units);
+	return doc;
 }

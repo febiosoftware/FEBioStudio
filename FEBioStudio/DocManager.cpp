@@ -23,12 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "DocManager.h"
 #include "Document.h"
+#include <string>
+#include <sstream>
 
-CDocManager::CDocManager(CMainWindow* wnd) : m_wnd(wnd)
+CDocManager::CDocManager()
 {
 
 }
@@ -75,4 +76,28 @@ CDocument* CDocManager::GetDocument(int i)
 		return m_docList[i];
 	else
 		return nullptr;
+}
+
+std::string CDocManager::GenerateNewDocName()
+{
+	int n = 1;
+	std::string docTitle;
+	bool bok = true;
+	do
+	{
+		std::stringstream ss;
+		ss << "Model" << n++;
+		docTitle = ss.str();
+		bok = true;
+		for (int i = 0; i < Documents(); ++i)
+		{
+			CDocument* doci = GetDocument(i);
+			if ((doci->GetDocTitle() == docTitle) || (doci->GetDocFileBase() == docTitle))
+			{
+				bok = false;
+				break;
+			}
+		}
+	} while (bok == false);
+	return docTitle;
 }

@@ -34,12 +34,12 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QToolButton>
 #include "MainWindow.h"
-#include "Document.h"
-#include "PostDocument.h"
+#include "GLModelDocument.h"
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Material.h>
 #include <PostGL/GLModel.h>
+#include "GLHighlighter.h"
 
 class MaterialProps : public CPropertyList
 {
@@ -48,7 +48,7 @@ public:
 	MaterialProps()
 	{
 		m_mat = 0;
-		addProperty("Render mode"      , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
+		addProperty("Render mode"      , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "solid" << "wireframe");
 		addProperty("Color"            , CProperty::Color );
 //		addProperty("Ambient"          , CProperty::Color );
 		addProperty("Specular color"   , CProperty::Color );
@@ -120,6 +120,7 @@ public:
 	QTableWidget*			m_list;
 	::CPropertyListView*	m_prop;
 	QLineEdit* m_flt;
+	QToolButton* highlightButton;
 
 	bool update;
 
@@ -132,9 +133,17 @@ public:
 		pg->setContentsMargins(0,0,0,0);
 
 		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(highlightButton = new QToolButton);
 		h->addWidget(new QLabel("Filter:"));
 		h->addWidget(m_flt = new QLineEdit); m_flt->setObjectName("filter");
 		pg->addLayout(h);
+
+		highlightButton->setIcon(QIcon(":/icons/select_highlight.png"));
+		highlightButton->setObjectName("highlightButton");
+		highlightButton->setAutoRaise(true);
+		highlightButton->setToolTip("<font color=\"black\">Toggle selection highlighting");
+		highlightButton->setCheckable(true);
+		highlightButton->setChecked(false);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -202,15 +211,22 @@ public:
 	}
 };
 
-CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CMaterialPanel)
+CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CMaterialPanel)
 {
 	ui->setupUi(this);
 	m_pmat = new MaterialProps;
 }
 
-CPostDocument* CMaterialPanel::GetActiveDocument()
+Post::CGLModel* CMaterialPanel::GetActiveModel()
 {
-	return GetMainWindow()->GetPostDocument();
+	CGLModelDocument* gldoc = dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
+	if ((gldoc == nullptr) || !gldoc->IsValid()) return nullptr;
+
+	// get the model and make sure the model has a valid post model
+	Post::CGLModel* glm = gldoc->GetGLModel();
+	if (glm && (glm->GetFSModel() == nullptr)) return nullptr;
+
+	return glm;
 }
 
 void CMaterialPanel::Update(bool breset)
@@ -221,13 +237,11 @@ void CMaterialPanel::Update(bool breset)
 	ui->m_prop->Update(0);
 	m_pmat->SetMaterial(0);
 
-	CPostDocument* pdoc = GetActiveDocument();
-	if (pdoc == nullptr) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem)
-	{
-		QString flt = ui->GetFilterText();
+	QString flt = ui->GetFilterText();
 
 
 		int nmat = fem->Materials();
@@ -236,7 +250,7 @@ void CMaterialPanel::Update(bool breset)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
 
-			QString name(mat.GetName());
+			QString name = QString::fromStdString(mat.GetName());
 			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 			{
 				nrows++;
@@ -248,10 +262,10 @@ void CMaterialPanel::Update(bool breset)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
 
-			QString name(mat.GetName());
+			QString name = QString::fromStdString(mat.GetName());
 			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 			{
-				QTableWidgetItem* it = new QTableWidgetItem(mat.GetName());
+				QTableWidgetItem* it = new QTableWidgetItem(name);
 				it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
 				it->setData(Qt::UserRole, i);
 				ui->m_list->setItem(nrows, 0, it);
@@ -284,15 +298,14 @@ void CMaterialPanel::Update(bool breset)
 		if (nrows > 0)
 			ui->m_list->setCurrentItem(ui->m_list->item(0, 0));
 
-		UpdateStates();
-	}
+	UpdateStates();
 }
 
 void CMaterialPanel::UpdateStates()
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem == 0) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
 	int nmat = fem->Materials();
 	int items = ui->m_list->rowCount();
@@ -324,12 +337,12 @@ void CMaterialPanel::UpdateStates()
 
 void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* prev)
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid() && current)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm && current)
 	{
 		int imat = current->data(Qt::UserRole).toInt();
 
-		Post::FEPostModel& fem = *doc->GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		if ((imat >= 0) && (imat < fem.Materials()))
 		{
 			Post::Material* pmat = fem.GetMaterial(imat);
@@ -341,15 +354,17 @@ void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* curren
 
 void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid() && item)
+	if (ui->update == false) return;
+
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm && item)
 	{
 		int nrow = item->row();
 		int ncol = item->column();
 		int imat = ui->m_list->item(nrow, 0)->data(Qt::UserRole).toInt();
 
-		Post::CGLModel& mdl = *doc->GetGLModel();
-		Post::FEPostModel& fem = *doc->GetFSModel();
+		Post::CGLModel& mdl = *glm;
+		Post::FEPostModel& fem = *mdl.GetFSModel();
 		if ((imat >= 0) && (imat < fem.Materials()) && (ncol > 0))
 		{
 			Post::Material& mat = *fem.GetMaterial(imat);
@@ -383,16 +398,43 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 			}
 
 			UpdateStates();
-			if      (ncol == 1) mdl.UpdateMeshVisibility();
+			if (ncol == 1)
+			{
+				mdl.UpdateMeshVisibility();
+				CGLDocument* postDoc = GetDocument();
+				if (postDoc) postDoc->UpdateSelection();
+			}
 			else if (ncol == 2)
 			{
-				mdl.UpdateMeshState();
-				mdl.ResetAllStates();
-				doc->UpdateFEModel(true);
+				fem.UpdateMeshState();
+				fem.ResetAllStates();
 			}
-			doc->UpdateSelection(false);
-			GetMainWindow()->RedrawGL();
+			mdl.Update(true);
 		}
+
+		GLHighlighter::ClearHighlights();
+		if (ui->highlightButton->isChecked() && (imat >= 0))
+		{
+			// find all the parts that belong to this material
+			CPostObject* po = mdl.GetPostObject();
+			if (po)
+			{
+				vector<GPart*> parts;
+				for (int i = 0; i < po->Parts(); ++i)
+				{
+					GPart* pg = po->Part(i);
+					if (pg && pg->GetMaterialID() == imat)
+					{
+						parts.push_back(pg);
+					}
+				}
+
+				for (GPart* part : parts)
+					GLHighlighter::PickItem(part, 0);
+			}
+		}
+
+		GetMainWindow()->RedrawGL();
 	}
 }
 
@@ -407,12 +449,17 @@ void CMaterialPanel::on_filter_textChanged(const QString& txt)
 	Update(true);
 }
 
+void CMaterialPanel::on_highlightButton_toggled(bool)
+{
+	on_materialList_itemClicked(ui->m_list->currentItem());
+}
+
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
 {
 	// Get the model
-	CPostDocument& doc = *GetActiveDocument();
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	// get the current material
 	QModelIndex currentIndex = ui->m_list->currentIndex();
@@ -462,6 +509,6 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		}
 	}
 
-	mdl.Update(false);
+	glm->Update(false);
 	GetMainWindow()->RedrawGL();
 }

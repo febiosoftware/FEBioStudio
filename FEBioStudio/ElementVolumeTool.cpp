@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ElementVolumeTool.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //-----------------------------------------------------------------------------
 CElementVolumeTool::CElementVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Element Volume")

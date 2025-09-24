@@ -1,14 +1,9 @@
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
-
 #include <list>
-#include <vector>
 #include <string>
 #include <map>
-//using namespace std;
-
-using std::map;
 
 // This code imports COMSOL mesh files.
 // Developed by Michael Fernandez (mjf2152@columbia.edu) at Columbia (10/22/13)
@@ -38,14 +33,14 @@ protected:
 		int ntype;	// element type
 		int	n[8];	// node labels
 	};
-	typedef list<ELEMENT>::iterator Telem_itr;
+	typedef std::list<ELEMENT>::iterator Telem_itr;
 
 	struct ELEMENT_SET
 	{
 		char szname[16];	// element set name
-		list<Telem_itr>	elem;
+		std::list<Telem_itr>	elem;
 	};
-	typedef list<ELEMENT_SET>::iterator Telset_itr;
+	typedef std::list<ELEMENT_SET>::iterator Telset_itr;
 		
 	bool BuildMesh(FSModel& fem);
 	bool ReadHeader(char* szline);
@@ -58,13 +53,13 @@ protected:
 	Telset_itr FindElementSet(const char* szname);	// find an element set with a particular name
 	Telset_itr AddElementSet(const char* szname); 	// add an element set
 
-	list<NODE>		m_Node;
-	list<ELEMENT>	m_Elem;
+	std::list<NODE>		m_Node;
+	std::list<ELEMENT>	m_Elem;
 	string intToString(int number);
-	map<int,string> map_ElSet;     // map of element sets <int element id, string set name>
-	typedef map<int,string>::iterator Telsetmap_itr;
+	std::map<int,string> map_ElSet;     // map of element sets <int element id, string set name>
+	typedef std::map<int,string>::iterator Telsetmap_itr;
 
-	list<ELEMENT_SET>	m_ElSet;	// element sets, one per comsol domain/element type combination
+	std::list<ELEMENT_SET>	m_ElSet;	// element sets, one per comsol domain/element type combination
 	FSModel*	m_pfem;
     int m_totalelems;
     int m_node0;

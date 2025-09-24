@@ -47,7 +47,7 @@ private:
 
 	public:
 		int Faces() { return (int) m_face.size(); }
-		void BuildNodeList(FEPostMesh& m);
+		void BuildNodeList(FSMesh& m);
 
 		int Nodes() { return (int) m_node.size(); }
 

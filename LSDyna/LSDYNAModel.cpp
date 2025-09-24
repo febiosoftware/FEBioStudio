@@ -30,8 +30,10 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/GDiscreteObject.h>
+#include <FSCore/Palette.h>
 #include <sstream>
 #include <unordered_map>
+using namespace std;
 
 LSDYNAModel::LSDYNAModel()
 {
@@ -180,7 +182,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	{
 		for (int i = 0; i<solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			ELEMENT_SOLID& ih = m_solid[i];
 			ih.tag = i;
@@ -221,7 +223,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	{
 		for (int i = 0; i<shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			ELEMENT_SHELL& is = m_shell[i];
 			is.tag = solids + i;
@@ -270,7 +272,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		int eid = 0;
 		for (int i = 0; i < solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			int n = pe->m_gid - minpid;
 			if ((n < 0) || (n >= PLT.size())) return false;
 			PLT[n]++;
@@ -278,7 +280,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 
 		for (int i = 0; i < shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			int n = pe->m_gid - minpid;
 			if ((n < 0) || (n >= PLT.size())) return false;
 			PLT[n]++;
@@ -294,12 +296,12 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		eid = 0;
 		for (int i = 0; i < solids; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			pe->m_gid = PLT[pe->m_gid - minpid];
 		}
 		for (int i = 0; i < shells; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 			pe->m_gid = PLT[pe->m_gid - minpid];
 		}
 
@@ -562,7 +564,6 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			}
 		}
 	}
-	fem.UpdateMaterialSelections();
 
 	return true;
 }
@@ -634,12 +635,13 @@ bool LSDYNAModel::BuildParameters(FSModel& fem)
 	return true;
 }
 
-// in GMaterial.cpp
-extern GLColor col[GMaterial::MAX_COLORS];
-
 bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 {
 	GModel& m = fem.GetModel();
+
+	CPaletteManager& PM = CPaletteManager::GetInstance();
+	const CPalette& pal = PM.CurrentPalette();
+	int NCOL = pal.Colors();
 
 	// first, for each spring material, create a discrete spring set
 	auto it = m_Mat.begin();
@@ -651,7 +653,7 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 		if (mat)
 		{
 			GDiscreteSpringSet* ps = new GDiscreteSpringSet(&m);
-			ps->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
+			ps->SetColor(pal.Color((nc++) % NCOL));
 			
 			FSNonLinearSpringMaterial* sm = new FSNonLinearSpringMaterial(&fem);
 			Param* pF = sm->GetParam("force");

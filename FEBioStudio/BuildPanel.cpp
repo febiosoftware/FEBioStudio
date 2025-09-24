@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ui_buildpanel.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 
-CBuildPanel::CBuildPanel(::CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CBuildPanel)
+CBuildPanel::CBuildPanel(::CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CBuildPanel)
 {
 	ui->setup(this, wnd);
 }
@@ -42,13 +42,13 @@ CCreatePanel* CBuildPanel::CreatePanel()
 
 void CBuildPanel::Update(bool breset)
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Update(breset);
 	CGLDocument* doc = ui->mainWindow->GetGLDocument();
 	if (doc)
 	{
 		ui->mainWindow->UpdateGLControlBar();
-		doc->UpdateSelection(false);
+		doc->UpdateSelection();
 		ui->mainWindow->RedrawGL();
 	}
 }
@@ -58,7 +58,7 @@ void CBuildPanel::on_buildTab_currentChanged(int index)
 	Update(true);
 }
 
-CCommandPanel* CBuildPanel::GetActivePanel()
+CWindowPanel* CBuildPanel::GetActivePanel()
 {
 	if (IsEditPanelVisible()) return ui->edit;
 	if (IsMeshPanelVisible()) return ui->mesh;
@@ -89,20 +89,20 @@ bool CBuildPanel::IsToolsPanelVisible()
 
 bool CBuildPanel::OnEscapeEvent()
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) return p->OnEscapeEvent();
 	else return false;
 }
 
 bool CBuildPanel::OnDeleteEvent()
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) return p->OnDeleteEvent();
 	else return false;
 }
 
 void CBuildPanel::Apply()
 {
-	CCommandPanel* p = ui->currentPanel();
+	CWindowPanel* p = ui->currentPanel();
 	if (p) p->Apply();
 }

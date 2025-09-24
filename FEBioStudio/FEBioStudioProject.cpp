@@ -53,6 +53,11 @@ bool FEBioStudioProject::ProjectItem::ContainsFile(const QString& fileName) cons
 			bool b = item.ContainsFile(fileName);
 			if (b) return true;
 		}
+		else if (item.IsPlugin())
+		{
+			bool b = item.ContainsFile(fileName);
+			if (b) return true;
+		}
 	}
 	return false;
 }
@@ -178,6 +183,21 @@ FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddGroup(const
 }
 
 
+FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddPlugin(const QString& name)
+{
+	// see if this item already exists
+	QList<ProjectItem*>::iterator it;
+	for (it = m_items.begin(); it != m_items.end(); ++it)
+	{
+		ProjectItem& item = *(*it);
+		if (item.IsGroup() && (item.Name() == name))
+		{
+			return item;
+		}
+	}
+	m_items.push_back(new ProjectItem(PROJECT_PLUGIN, name, this)); return *m_items.last();
+}
+
 void FEBioStudioProject::ProjectItem::RemoveSelf()
 {
 	assert(m_parent);
@@ -288,6 +308,27 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(const QString& fil
 	if (item && item->IsFile()) return item; else return nullptr;
 }
 
+const FEBioStudioProject::ProjectItem* FEBioStudioProject::FindPlugin(const QString& pluginName) const
+{
+	int N = m_rootItem->Items();
+	for (int i = 0; i < N; ++i)
+	{
+		FEBioStudioProject::ProjectItem& item = m_rootItem->Item(i);
+		if (item.IsPlugin() && (item.Name() == pluginName)) return &item;
+	}
+	return nullptr;
+}
+
+FEBioStudioProject::ProjectItem* FEBioStudioProject::FindPlugin(const QString& pluginName)
+{
+	int N = m_rootItem->Items();
+	for (int i = 0; i < N; ++i)
+	{
+		FEBioStudioProject::ProjectItem& item = m_rootItem->Item(i);
+		if (item.IsPlugin() && (item.Name() == pluginName)) return &item;
+	}
+	return nullptr;
+}
 
 QStringList FEBioStudioProject::GetFilePaths()
 {
@@ -298,12 +339,30 @@ QStringList FEBioStudioProject::GetFilePaths()
 	return filePaths;
 }
 
-void FEBioStudioProject::AddGroup(const QString& groupName, int parentId)
+FEBioStudioProject::ProjectItem* FEBioStudioProject::AddGroup(const QString& groupName, int parentId)
 {
 	FEBioStudioProject::ProjectItem* grp = FindGroup(parentId);
 	assert(grp);
-	if (grp) grp->AddGroup(groupName);
-	Save();
+	if (grp)
+	{
+		FEBioStudioProject::ProjectItem* newGroup = &grp->AddGroup(groupName);
+		Save();
+		return newGroup;
+	}
+	return nullptr;
+}
+
+FEBioStudioProject::ProjectItem* FEBioStudioProject::AddPlugin(const QString& groupName, int parentId)
+{
+	FEBioStudioProject::ProjectItem* grp = FindGroup(parentId);
+	assert(grp);
+	if (grp)
+	{
+		FEBioStudioProject::ProjectItem* newGroup = &grp->AddPlugin(groupName);
+		Save();
+		return newGroup;
+	}
+	return nullptr;
 }
 
 FEBioStudioProject::ProjectItem* FEBioStudioProject::AddFile(const QString& file, int parent)
@@ -445,6 +504,16 @@ void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProje
 			}
 			xml.close_branch();
 		}
+		else if (item.IsType(FEBioStudioProject::PROJECT_PLUGIN))
+		{
+			XMLElement group("febio_plugin");
+			group.add_attribute("name", item.Name().toStdString());
+			xml.add_branch(group);
+			{
+				WriteProjectGroup(xml, prj, item);
+			}
+			xml.close_branch();
+		}
 	}
 }
 
@@ -494,6 +563,17 @@ void ParseTags(XMLTag& tag, FEBioStudioProject& prj, FEBioStudioProject::Project
 			if ((tag.isempty() == false) && (tag.isleaf() == false)) 
 			{
 				ParseTags(tag, prj, group);
+			}
+		}
+		else if (tag == "febio_plugin")
+		{
+			string pluginName = tag.AttributeValue("name");
+
+			FEBioStudioProject::ProjectItem& plugin = parent.AddPlugin(QString::fromStdString(pluginName));
+
+			if ((tag.isempty() == false) && (tag.isleaf() == false))
+			{
+				ParseTags(tag, prj, plugin);
 			}
 		}
 		else if (tag == "file")

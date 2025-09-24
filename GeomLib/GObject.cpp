@@ -25,16 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GObject.h"
-#include <GeomLib/FSGroup.h>
-#include <MeshLib/FECurveMesh.h>
+#include "FSGroup.h"
+#include <MeshLib/FSCurveMesh.h>
 #include <FSCore/FSObjectList.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <FSCore/ClassDescriptor.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include <sstream>
 
 using namespace std;
@@ -59,8 +59,6 @@ public:
 		m_col = GLColor(200, 200, 200);
 
 		m_bValid = true;
-
-		m_saveFlag = ObjectSaveFlags::ALL_FLAGS;
 	}
 
 	~Imp()
@@ -73,15 +71,15 @@ public:
 	}
 
 public:
-	int	m_ntype;	//!< object type identifier
+	int	m_ntype = -1;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
 	bool	m_bValid;
-	unsigned int m_saveFlag;
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GMesh*		m_pGMesh;	//!< the mesh for rendering geometry
-	GMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
+	GLMesh*		m_pGMesh;	//!< the mesh for rendering geometry
+	
+	GLMesh*		m_glFaceMesh;	//!< mesh for rendering FE mesh
 
 	GObjectManipulator* m_objManip;
 };
@@ -200,56 +198,85 @@ void GObject::SetFEMesh(FSMesh* pm)
 	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
 	if (pm)
 	{
+		Update();
 		UpdateFEElementMatIDs();
-		BuildFERenderMesh();
 	}
 }
 
 void GObject::BuildFERenderMesh()
 {
-	delete imp->m_glFaceMesh; imp->m_glFaceMesh = nullptr;
+	Imp& m = *imp;
+
+	if (m.m_glFaceMesh)
+	{
+		delete m.m_glFaceMesh;
+		m.m_glFaceMesh = nullptr;
+	}
+
 	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return;
 
-	imp->m_glFaceMesh = new GMesh;
-	GMesh& gm = *imp->m_glFaceMesh;
+	m.m_glFaceMesh = new GLMesh;
+	GLMesh& gm = *m.m_glFaceMesh;
 	gm.Create(pm->Nodes(), 0, 0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		gm.Node(i).r = to_vec3f(pm->Node(i).r);
+		FSNode& ni = pm->Node(i);
+		gm.Node(i).r = to_vec3f(ni.r);
+		gm.Node(i).nid = i;
+		gm.Node(i).tag = (ni.IsVisible() ? 1 : 0);
 	}
 
-	int NF = pm->Faces();
-	for (int i = 0; i < NF; i++)
+	int nsurf = Faces();
+	if (nsurf > 0)
 	{
-		const FSFace& face = pm->Face(i);
-		if (face.IsVisible())
+		int NF = pm->Faces();
+		std::vector< std::deque<int> > faceList(nsurf);
+		for (int i = 0; i < NF; i++)
 		{
-			int eid = face.m_elem[0].eid;
-			if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
-			{
-				eid = face.m_elem[1].eid;
-			}
+			const FSFace& face = pm->Face(i);
+			assert(face.m_gid >= 0);
+			faceList[face.m_gid].push_back(i);
+		}
 
-			gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), i, eid);
-
-			int ne = face.Edges();
-			int n[FSEdge::MAX_NODES] = { -1 };
-			for (int j = 0; j < ne; ++j)
+		for (int i = 0; i < nsurf; i++)
+		{
+			std::deque<int>::iterator it = faceList[i].begin();
+			gm.NewPartition();
+			for (auto n : faceList[i])
 			{
-				int j1 = (j + 1) % ne;
-				if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+				const FSFace& face = pm->Face(n);
+				assert(face.m_gid == i);
+				if (face.IsVisible())
 				{
-					int m = face.GetEdgeNodes(j, n);
-					gm.AddEdge(n, m);
+					int eid = face.m_elem[0].eid;
+					if ((eid >= 0) && (!pm->Element(eid).IsVisible()))
+					{
+						eid = face.m_elem[1].eid;
+					}
+					int mid = -1;
+					if (eid >= 0) mid = pm->Element(eid).m_MatID;
+
+					gm.AddFace(face.n, face.Nodes(), face.m_gid, face.m_sid, face.IsExterior(), n, eid, mid);
+
+					int ne = face.Edges();
+					int n[FSEdge::MAX_NODES] = { -1 };
+					for (int j = 0; j < ne; ++j)
+					{
+						int j1 = (j + 1) % ne;
+						if ((face.m_nbr[j] < 0) || (face.n[j] < face.n[j1]))
+						{
+							int m = face.GetEdgeNodes(j, n);
+							gm.AddEdge(n, m);
+						}
+					}
 				}
 			}
 		}
 	}
 
-	// add the exposed surface from hidden elements
-	int maxSurfID = Faces(); // we assign this ID to the exposed surface
-	FSFace face;
+	int nparts = Parts();
+	vector<deque<int>> partElems(nparts);
 	int NE = pm->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -262,10 +289,36 @@ void GObject::BuildFERenderMesh()
 				if (el.m_nbr[j] >= 0)
 				{
 					FSElement& elj = pm->Element(el.m_nbr[j]);
+					if ((el.m_gid == elj.m_gid) && !elj.IsVisible())
+					{
+						partElems[el.m_gid].push_back(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// add the exposed surface from hidden elements
+	int maxSurfID = Faces(); // we assign this ID to the exposed surface
+	FSFace face;
+	for (int i = 0; i < nparts; ++i)
+	{
+		int ne = (int)partElems[i].size();
+		gm.NewPartition();
+		for (auto it = partElems[i].begin(); it != partElems[i].end(); ++it)
+		{
+			FSElement& el = pm->Element(*it); assert(el.IsVisible());
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				if (el.m_nbr[j] >= 0)
+				{
+					FSElement& elj = pm->Element(el.m_nbr[j]);
 					if (!elj.IsVisible() && (el.m_gid == elj.m_gid))
 					{
 						el.GetFace(j, face);
-						gm.AddFace(face.n, face.Nodes(), maxSurfID, -1, false, -1, i);
+						gm.AddFace(face.n, face.Nodes(), maxSurfID + i, -1, false, -1, *it, el.m_MatID);
 
 						int n[FSEdge::MAX_NODES];
 						int ne = face.Edges();
@@ -280,8 +333,6 @@ void GObject::BuildFERenderMesh()
 		}
 	}
 
-	// NOTE: since we only add the visible faces, note that the partitions created in this mesh
-	// may not correspond to the surfaces of the geometry object
 	gm.Update();
 	UpdateMeshData();
 }
@@ -292,35 +343,42 @@ void GObject::UpdateFERenderMesh()
 	if (pm == nullptr) return;
 	if (imp->m_glFaceMesh == nullptr) return;
 
-	GMesh& gm = *imp->m_glFaceMesh;
+	GLMesh& gm = *imp->m_glFaceMesh;
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		gm.Node(i).r = to_vec3f(pm->Node(i).r);
 	}
 	for (int i = 0; i < gm.Faces(); ++i)
 	{
-		GMesh::FACE& face = gm.Face(i);
+		GLMesh::FACE& face = gm.Face(i);
 		face.vr[0] = gm.Node(face.n[0]).r;
 		face.vr[1] = gm.Node(face.n[1]).r;
 		face.vr[2] = gm.Node(face.n[2]).r;
 	}
 	for (int i = 0; i < gm.Edges(); ++i)
 	{
-		GMesh::EDGE& edge = gm.Edge(i);
+		GLMesh::EDGE& edge = gm.Edge(i);
 		edge.vr[0] = gm.Node(edge.n[0]).r;
 		edge.vr[1] = gm.Node(edge.n[1]).r;
 	}
 
 	gm.UpdateBoundingBox();
 	gm.UpdateNormals();
+	gm.setModified(true);
 }
 
 //-----------------------------------------------------------------------------
 // set the render mesh
-void GObject::SetRenderMesh(GMesh* mesh)
+void GObject::SetRenderMesh(GLMesh* mesh)
 {
 	delete imp->m_pGMesh;
 	imp->m_pGMesh = mesh;
+}
+
+void GObject::SetFERenderMesh(GLMesh* mesh)
+{
+	delete imp->m_glFaceMesh;
+	imp->m_glFaceMesh = mesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -445,17 +503,19 @@ void GObject::UpdateGNodes()
 		if (n.m_gid >= 0) m_Node[n.m_gid]->LocalPosition() = n.r;
 	}
 
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 }
 
-//-----------------------------------------------------------------------------
 // Replace the current mesh. Note that we don't delete the current mesh since
 // it is assumed that another class will take care of that.
-void GObject::ReplaceFEMesh(FSMesh* pm, bool bup, bool bdel)
+FSMesh* GObject::ReplaceFEMesh(FSMesh* pm)
 {
-	if (bdel) delete imp->m_pmesh;
+	FSMesh* oldMesh = GetFEMesh();
+	pm->TakeItemLists(oldMesh);
+	pm->TakeMeshData(oldMesh);
 	SetFEMesh(pm);
-	Update(bup);
+	return oldMesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -502,8 +562,9 @@ bool GObject::Update(bool b)
 	// assign part materials to element matIDs.
 	UpdateFEElementMatIDs();
 
-	BuildGMesh();
-	BuildFERenderMesh();
+	// rebuild the render meshes
+	SetRenderMesh(nullptr);
+	SetFERenderMesh(nullptr);
 	return GBaseObject::Update(b);
 }
 
@@ -600,13 +661,15 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 
 //-----------------------------------------------------------------------------
 // get the render mesh
-GMesh*	GObject::GetRenderMesh()
+GLMesh*	GObject::GetRenderMesh()
 { 
+	if (imp->m_pGMesh == nullptr) BuildGMesh();
 	return imp->m_pGMesh;
 }
 
-GMesh* GObject::GetFERenderMesh()
+GLMesh* GObject::GetFERenderMesh()
 {
+	if (imp->m_glFaceMesh == nullptr) BuildFERenderMesh();
 	return imp->m_glFaceMesh;
 }
 
@@ -621,7 +684,7 @@ void GObject::BuildGMesh()
 }
 
 // get the mesh of an edge curve
-FECurveMesh* GObject::GetFECurveMesh(int edgeId)
+FSCurveMesh* GObject::GetFECurveMesh(int edgeId)
 {
 	FSMesh* mesh = GetFEMesh();
 	if (mesh == 0) return 0;
@@ -640,7 +703,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	FECurveMesh* curve = new FECurveMesh;
+	FSCurveMesh* curve = new FSCurveMesh;
 
 	int NN = mesh->Nodes();
 	int nn = 0;
@@ -802,7 +865,7 @@ void GObject::UpdateItemVisibility()
 	}
 
 	// rebuild render meshes
-	BuildFERenderMesh();
+	SetFERenderMesh(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -815,12 +878,6 @@ GNode* GObject::FindNodeFromTag(int ntag)
 		if (ni->m_ntag == ntag) return ni;
 	}
 	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void GObject::SetSaveFlags(unsigned int flags)
-{
-	imp->m_saveFlag = flags;
 }
 
 //-----------------------------------------------------------------------------
@@ -873,60 +930,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_PART);
 				{
 					GPart& p = *Part(i);
-					int nid = p.GetID();
-					int mid = p.GetMaterialID();
-					ar.WriteChunk(CID_OBJ_PART_ID, nid);
-					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-					ar.WriteChunk(CID_OBJ_PART_MESHWEIGHT, p.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-					ar.WriteChunk(CID_OBJ_PART_STATUS, p.GetState());
-
-					if (!p.m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, p.m_node);
-					if (!p.m_edge.empty()) ar.WriteChunk(CID_OBJ_PART_EDGELIST, p.m_edge);
-					if (!p.m_face.empty()) ar.WriteChunk(CID_OBJ_PART_FACELIST, p.m_face);
-
-					if (p.Parameters() > 0)
-					{
-						ar.BeginChunk(CID_OBJ_PART_PARAMS);
-						{
-							p.ParamContainer::Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GPartSection* section = p.GetSection();
-					if (section)
-					{
-						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
-						if (solid)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
-							{
-								solid->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GShellSection* shell = dynamic_cast<GShellSection*>(section);
-						if (shell)
-						{
-							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
-							{
-								shell->Save(ar);
-							}
-							ar.EndChunk();
-						}
-
-						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
-						if (beam)
-						{
-							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
-							{
-								beam->Save(ar);
-							}
-							ar.EndChunk();
-						}
-					}
+					p.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -944,17 +948,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_FACE);
 				{
 					GFace& f = *Face(i);
-					int nid = f.GetID();
-					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-					ar.WriteChunk(CID_OBJ_FACE_TYPE, f.m_ntype);
-					ar.WriteChunk(CID_OBJ_FACE_MESHWEIGHT, f.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
-					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
-					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
-					ar.WriteChunk(CID_OBJ_FACE_PID2, f.m_nPID[2]);
-
-					if (!f.m_node.empty()) ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
-					if (!f.m_edge.empty()) ar.WriteChunk(CID_OBJ_FACE_EDGELIST, f.m_edge);
+					f.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -972,15 +966,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_EDGE);
 				{
 					GEdge& e = *Edge(i);
-					int nid = e.GetID();
-					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
-					ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
-					ar.WriteChunk(CID_OBJ_EDGE_MESHWEIGHT, e.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
-					ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
+					e.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1000,12 +986,7 @@ void GObject::Save(OArchive &ar)
 				ar.BeginChunk(CID_OBJ_NODE);
 				{
 					GNode& v = *Node(i);
-					int nid = v.GetID();
-					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
-					ar.WriteChunk(CID_OBJ_NODE_TYPE, v.Type());
-					ar.WriteChunk(CID_OBJ_NODE_MESHWEIGHT, v.GetMeshWeight());
-					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
-					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
+					v.Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1030,11 +1011,11 @@ void GObject::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (imp->m_pmesh && (imp->m_saveFlag & SAVE_MESH))
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			imp->m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -1127,65 +1108,10 @@ void GObject::Load(IArchive& ar)
 					m_Part.push_back(p);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid, mid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
-					case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
-					case CID_OBJ_PART_MESHWEIGHT: { double w = 0.0; ar.read(w); p->SetMeshWeight(w); } break;
-					case CID_OBJ_PART_NAME:
-						{
-							char szname[256] = { 0 };
-							ar.read(szname);
-							p->SetName(szname);
-						}
-						break;
-					case CID_OBJ_PART_STATUS:
-					{
-						unsigned int state = 0;
-						ar.read(state);
-						// let's make sure the part is visible
-						state |= GEO_VISIBLE;
-						p->SetState(state);
-					}
-					break;
-					case CID_OBJ_PART_PARAMS:
-						{
-							p->ParamContainer::Load(ar);
-						}
-						break;
-					case CID_OBJ_PART_SOLIDSECTION:
-					{
-						GSolidSection* solid = new GSolidSection(p);
-						p->SetSection(solid);
-						solid->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_SHELLSECTION:
-					{
-						GShellSection* shell = new GShellSection(p);
-						p->SetSection(shell);
-						shell->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_BEAMSECTION:
-					{
-						GBeamSection* beam = new GBeamSection(p);
-						p->SetSection(beam);
-						beam->Load(ar);
-					}
-					break;
-					case CID_OBJ_PART_NODELIST: ar.read(p->m_node); break;
-					case CID_OBJ_PART_EDGELIST: ar.read(p->m_edge); break;
-					case CID_OBJ_PART_FACELIST: ar.read(p->m_face); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				p->Load(ar);
 				p->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Part.size() == nparts);
 		}
@@ -1208,31 +1134,10 @@ void GObject::Load(IArchive& ar)
 					m_Face.push_back(f);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
-					case CID_OBJ_FACE_TYPE: ar.read(f->m_ntype); break;
-					case CID_OBJ_FACE_MESHWEIGHT: { double w = 0.0; ar.read(w); f->SetMeshWeight(w); } break;
-					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node); break;
-					case CID_OBJ_FACE_EDGELIST: ar.read(f->m_edge); break;
-					case CID_OBJ_FACE_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						f->SetName(szname);
-					}
-					break;
-					case CID_OBJ_FACE_PID0    : ar.read(f->m_nPID[0]); break;
-					case CID_OBJ_FACE_PID1    : ar.read(f->m_nPID[1]); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				f->Load(ar);
 				f->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Face.size() == nfaces);
 		}
@@ -1255,31 +1160,10 @@ void GObject::Load(IArchive& ar)
 					m_Edge.push_back(e);
 				}
 
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int nid;
-					switch (ar.GetChunkID())
-					{
-					case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
-					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
-					case CID_OBJ_EDGE_MESHWEIGHT: { double w = 0.0; ar.read(w); e->SetMeshWeight(w); } break;
-					case CID_OBJ_EDGE_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						e->SetName(szname);
-					}
-					break;
-					case CID_OBJ_EDGE_ORIENT: ar.read(e->m_orient); break;
-					case CID_OBJ_EDGE_NODE0 : ar.read(e->m_node[0]); break;
-					case CID_OBJ_EDGE_NODE1 : ar.read(e->m_node[1]); break;
-					case CID_OBJ_EDGE_NODE2 : ar.read(e->m_cnode); break;
-					}
-					ar.CloseChunk();
-				}
-				ar.CloseChunk();
-
+				e->Load(ar);
 				e->SetLocalID(n++);
+
+				ar.CloseChunk();
 			}
 			assert((int)m_Edge.size() == nedges);
 		}
@@ -1304,28 +1188,10 @@ void GObject::Load(IArchive& ar)
 						m_Node.push_back(n);
 					}
 
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						int nid;
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
-						case CID_OBJ_NODE_TYPE: { int ntype;  ar.read(ntype); n->SetType(ntype); } break;
-						case CID_OBJ_NODE_MESHWEIGHT: { double w = 0.0; ar.read(w); n->SetMeshWeight(w); } break;
-						case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
-						case CID_OBJ_NODE_NAME:
-						{
-							char szname[256] = { 0 };
-							ar.read(szname);
-							n->SetName(szname);
-						}
-						break;
-						}
-						ar.CloseChunk();
-					}
-					ar.CloseChunk();
-
+					n->Load(ar);
 					n->SetLocalID(m++);
+
+					ar.CloseChunk();
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
@@ -1367,8 +1233,10 @@ void GObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (imp->m_pmesh) delete imp->m_pmesh;
-			SetFEMesh(new FSMesh);
-			imp->m_pmesh->Load(ar);
+			FSMesh* mesh = new FSMesh;
+			mesh->SetGObject(this);
+			mesh->Load(ar);
+			imp->m_pmesh = mesh;
 			break;
 		}
 		ar.CloseChunk();
@@ -1416,7 +1284,7 @@ void GObject::ShowElements(vector<int>& elemList, bool show)
 	if (mesh)
 	{
 		mesh->ShowElements(elemList, show);
-		BuildFERenderMesh();
+		SetFERenderMesh(nullptr);
 	}
 }
 
@@ -1462,7 +1330,7 @@ GObject* GObjectManipulator::GetObject()
 
 void GObject::UpdateMeshData()
 {
-	GMesh* gmsh = GetFERenderMesh();
+	GLMesh* gmsh = GetFERenderMesh();
 	if (gmsh == nullptr) return;
 
 	FSMesh* pm = GetFEMesh();
@@ -1478,13 +1346,13 @@ void GObject::UpdateMeshData()
 	int NN = pm->Nodes();
 	vector<double> val(NN, 0);
 
-	Post::CColorMap map;
+	CColorMap map;
 	map.SetRange((float)vmin, (float)vmax);
 
 	int NF = gmsh->Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		GMesh::FACE& fi = gmsh->Face(i);
+		GLMesh::FACE& fi = gmsh->Face(i);
 		int fid = fi.fid;
 		FSFace* pf = pm->FacePtr(fid);
 		if (pf)

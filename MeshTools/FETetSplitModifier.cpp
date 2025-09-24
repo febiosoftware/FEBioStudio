@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESplitModifier.h"
-#include <MeshLib/FEFaceEdgeList.h>
-#include <MeshLib/FENodeElementList.h>
+#include <MeshLib/FSFaceEdgeList.h>
+#include <MeshLib/FSNodeElementList.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -178,7 +178,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	int NT0 = pm->Elements();
 
 	// build the edge table of the mesh
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 	int NE = (int) ET.size();
 
 	// build the element-edge table

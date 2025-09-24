@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/GDiscreteObject.h>
-#include <MeshLib/FEElementData.h>
-#include <MeshLib/FESurfaceData.h>
-#include <MeshLib/FENodeData.h>
+#include <MeshLib/FSElementData.h>
+#include <MeshLib/FSSurfaceData.h>
+#include <MeshLib/FSNodeData.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
@@ -790,7 +790,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	// get the required type attribute
 	const char* szshell = nullptr;
 	const char* sztype = tag.AttributeValue("type");
-	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
+	FSElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8"  ) == 0) ntype = FE_HEX8;
 	else if (strcmp(sztype, "hex20" ) == 0) ntype = FE_HEX20;
 	else if (strcmp(sztype, "hex27" ) == 0) ntype = FE_HEX27;
@@ -1303,7 +1303,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 		}
 		else
 		{
-			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+			FSNodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 			++tag;
 			do
 			{
@@ -1393,7 +1393,7 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
 
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+	FSSurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
 
 	double val;
 	int lid;
@@ -1641,7 +1641,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			sname = ss.str();
 		}
 
-		FEMeshData* meshData = nullptr;
+		FSMeshData* meshData = nullptr;
 
 		FSElemSet* pg = feb.FindNamedElementSet(set->cvalue());
 		if (pg == nullptr)
@@ -1818,7 +1818,7 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 	// get the node set
 	const char* szset = tag.AttributeValue("node_set");
-	FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+	FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", szset);
 
 	string dofList;
@@ -1972,7 +1972,7 @@ void FEBioFormat3::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	if (szname) name = szname;
 
 	XMLAtt& set = tag.Attribute("node_set");
-	FEItemListBuilder* pg = febio.FindNamedSelection(set.cvalue());
+	FSItemListBuilder* pg = febio.FindNamedSelection(set.cvalue());
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
 	string bc;
@@ -2083,7 +2083,7 @@ void FEBioFormat3::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 	// read node set
 	const char* szset = tag.AttributeValue("node_set");
 	FEBioInputModel& febio = GetFEBioModel();
-	FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+	FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 
 	GMaterial* pmat = 0;
 	++tag;
@@ -2122,7 +2122,7 @@ void FEBioFormat3::ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	XMLAtt& nodeSet = tag.Attribute("node_set");
-	FEItemListBuilder* psurf = febio.FindNamedSelection(nodeSet.cvalue());
+	FSItemListBuilder* psurf = febio.FindNamedSelection(nodeSet.cvalue());
 	if (psurf == 0)
 	{
 		AddLogEntry("Failed creating selection for fluid rotational velocity \"%s\"", name.c_str());
@@ -2176,7 +2176,7 @@ void FEBioFormat3::ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	XMLAtt& surfAtt = tag.Attribute("surface");
-	FEItemListBuilder* psurf = febio.FindNamedSurface(surfAtt.cvalue());
+	FSItemListBuilder* psurf = febio.FindNamedSurface(surfAtt.cvalue());
 	if (psurf == 0)
 	{
 		AddLogEntry("Failed creating selection for normal displacement\"%s\"", name.c_str());
@@ -2319,7 +2319,7 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	XMLAtt& aset = tag.Attribute("node_set");
 
 	// create the node set
-	FEItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
+	FSItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 
 	// get the (optional) name
@@ -2554,7 +2554,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			if (strcmp(sztype, "init_dof") == 0)
 			{
 				const char* szset = tag.AttributeValue("node_set");
-				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+				FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
 				string scaleType("");
@@ -2674,7 +2674,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			else if (strcmp(sztype, "velocity") == 0)
 			{
 				const char* szset = tag.AttributeValue("node_set");
-				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
+				FSItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
 				if (name.empty())
@@ -3190,7 +3190,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 				while (ch)
 				{
 					const char* ch2 = strchr(ch, ',');
-					int n = (ch2 ? ch2 - ch : strlen(ch));
+					int n = (int)(ch2 ? ch2 - ch : strlen(ch));
 					if (strncmp(ch, szdof[0], n) == 0) pc->SetDOF(0, true);
 					if (strncmp(ch, szdof[1], n) == 0) pc->SetDOF(1, true);
 					if (strncmp(ch, szdof[2], n) == 0) pc->SetDOF(2, true);

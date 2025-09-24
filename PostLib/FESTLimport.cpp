@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <ctype.h>
 #include <FSCore/color.h>
 
+using namespace std; 
 using namespace Post;
 
 FESTLimport::FESTLimport(FEPostModel* fem) : FEFileReader(fem)
@@ -147,7 +148,7 @@ void FESTLimport::build_mesh()
 	int NN = m_Node.size();
 
 	// create the mesh
-	FEPostMesh* pm = new FEPostMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(NN, NF);
 
 	// create nodes
@@ -173,7 +174,7 @@ void FESTLimport::build_mesh()
 	}
 
 	// update the mesh
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state

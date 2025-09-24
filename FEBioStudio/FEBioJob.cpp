@@ -27,27 +27,21 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioJob.h"
 #include "ModelDocument.h"
-#include <PostLib/FEPostModel.h>
 #include <sstream>
-#include <QtCore/QString>
-#include <QtCore/QFileInfo>
+#include <QString>
+#include <QFileInfo>
+#include <QDir>
 #include <FSCore/FSDir.h>
-#include <QtCore/QThread>
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#endif
-
 #include <iostream>
 #include <chrono>
+
 using namespace std::chrono;
 
-//-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
 CFEBioJob*	CFEBioJob::m_activeJob = nullptr;
 
 void CFEBioJob::SetActiveJob(CFEBioJob* activeJob) { m_activeJob = activeJob; }
 CFEBioJob* CFEBioJob::GetActiveJob() { return m_activeJob; }
-
 
 CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 {
@@ -57,27 +51,23 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 	SetName(ss.str());
 
 	m_status = NONE;
-
-	m_bhasProgress = false;
-	m_pct = 0.0;
-
 	m_writeNotes = true;
 	m_allowMixedMesh = false;
 
-#ifdef HAS_SSH
-	m_sshHandler = nullptr;
-#endif
+	m_bhasProgress = false;
+	m_pct = 0.0;
+	m_tic = m_toc = 0.0;
 }
 
 CFEBioJob::~CFEBioJob()
 {
-#ifdef HAS_SSH
-	delete m_sshHandler;
-#endif
+	if (m_activeJob == this)
+	{
+		m_activeJob = nullptr;
+	}
 }
 
-CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
-	: m_doc(doc), m_launchConfig(launchConfig)
+CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory) : m_doc(doc)
 {
 	// set the job's name
 	SetName(jobName);
@@ -94,8 +84,8 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 
 	m_status = NONE;
 
-	m_bhasProgress = false;
-	m_pct = 0.0;
+	m_writeNotes = true;
+	m_allowMixedMesh = false;
 
 	// set default plot file name
 	m_plotFile = m_febFile;
@@ -121,17 +111,9 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	// add the log extension
 	m_logFile += "log";
 
-#ifdef HAS_SSH
-	if(launchConfig.type == LOCAL)
-	{
-		m_sshHandler = nullptr;
-	}
-	else
-	{
-		m_sshHandler = NewHandler();
-	}
-#endif
-
+	m_bhasProgress = false;
+	m_pct = 0.0;
+	m_tic = m_toc = 0.0;
 }
 
 CDocument* CFEBioJob::GetDocument()
@@ -173,7 +155,30 @@ void CFEBioJob::ClearProgress()
 	m_pct = 0.0;
 }
 
-void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
+void CFEBioJob::SetCommand(const std::string& cmd)
+{
+	m_cmd = cmd;
+}
+
+const std::string& CFEBioJob::GetCommand() const
+{
+	return m_cmd;
+}
+
+double CFEBioJob::ElapsedTime() const
+{
+	return m_toc - m_tic;
+}
+
+std::string CFEBioJob::GetWorkingDirectory()
+{
+    QFileInfo info(m_febFile.c_str());
+    QString dir = info.absoluteDir().absolutePath();
+
+    return dir.toStdString();
+}
+
+void CFEBioJob::SetWorkingDirectory(const std::string& dir)
 {
 	QString dirName = QString::fromStdString(dir);
 
@@ -189,60 +194,6 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 	QString logName = QFileInfo(QString::fromStdString(m_logFile)).fileName();
 	m_logFile = (dirName + "/" + logName).toStdString();
 }
-
-CLaunchConfig* CFEBioJob::GetLaunchConfig()
-{
-	return &m_launchConfig;
-}
-
-void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
-{
-	CLaunchConfig oldConfig = m_launchConfig;
-
-	m_launchConfig = launchConfig;
-
-#ifdef HAS_SSH
-	if(launchConfig.type == LOCAL)
-	{
-		if(m_sshHandler)
-		{
-			delete m_sshHandler;
-		}
-
-		m_sshHandler = nullptr;
-	}
-	else
-	{
-		if(m_sshHandler)
-		{
-			m_sshHandler->Update(oldConfig);
-		}
-		else
-		{
-			m_sshHandler = NewHandler();
-		}
-	}
-#endif
-
-}
-
-#ifdef HAS_SSH
-CSSHHandler* CFEBioJob::GetSSHHandler()
-{
-	return m_sshHandler;
-}
-
-CSSHHandler* CFEBioJob::NewHandler()
-{
-	CSSHHandler* handler = new CSSHHandler(this);
-
-	QObject::connect(handler, &CSSHHandler::ShowProgress, m_doc->GetMainWindow(), &CMainWindow::ShowProgress);
-	QObject::connect(handler, &CSSHHandler::UpdateProgress, m_doc->GetMainWindow(), &CMainWindow::UpdateProgress);
-
-	return handler;
-}
-
-#endif
 
 void CFEBioJob::SetStatus(JOB_STATUS status)
 {
@@ -302,6 +253,26 @@ std::string CFEBioJob::GetConfigFileName() const
 	return m_cnfFile;
 }
 
+void CFEBioJob::SetTask(const std::string& task)
+{
+    m_task = task;
+}
+
+std::string CFEBioJob::GetTask() const
+{
+    return m_task;
+}
+
+void CFEBioJob::SetTaskFileName(const std::string& taskFile)
+{
+    m_taskFile = taskFile;
+}
+
+std::string CFEBioJob::GetTaskFileName() const
+{
+    return m_taskFile;
+}
+
 void CFEBioJob::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_FEOBJ_NAME, GetName());
@@ -309,11 +280,14 @@ void CFEBioJob::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_febFile);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
 	ar.WriteChunk(CID_FEBIOJOB_LOGFILE, m_logFile);
-
-	ar.BeginChunk(CID_FEBIOJOB_LCONFIG);
-	m_launchConfig.Save(ar);
-	ar.EndChunk();
-
+    
+    ar.WriteChunk(CID_FEBIOJOB_WRITE_NOTES, m_writeNotes);
+    ar.WriteChunk(CID_FEBIOJOB_MIXED_MESH, m_allowMixedMesh);
+    ar.WriteChunk(CID_FEBIOJOB_DEBUG, m_debug);
+    ar.WriteChunk(CID_FEBIOJOB_CONFIG_FILE, m_cnfFile);
+    ar.WriteChunk(CID_FEBIOJOB_TASK, m_task);
+    ar.WriteChunk(CID_FEBIOJOB_TASK_FILE, m_taskFile);
+    ar.WriteChunk(CID_FEBIOJOB_COMMAND, m_cmd);
 }
 
 void CFEBioJob::Load(IArchive& ar)
@@ -344,15 +318,13 @@ void CFEBioJob::Load(IArchive& ar)
 			m_logFile = QString::fromStdString(m_logFile).replace("\\","/").toStdString();
 #endif
 			break;
-		case CID_FEBIOJOB_LCONFIG: 
-		{
-			CLaunchConfig lConfig; lConfig.Load(ar); 
-#ifdef HAS_SSH
-			m_sshHandler = nullptr; 
-#endif
-			UpdateLaunchConfig(lConfig); 
-		} 
-		break;
+        case CID_FEBIOJOB_WRITE_NOTES: ar.read(m_writeNotes); break;
+        case CID_FEBIOJOB_MIXED_MESH: ar.read(m_allowMixedMesh); break;
+        case CID_FEBIOJOB_DEBUG: ar.read(m_debug); break;
+        case CID_FEBIOJOB_CONFIG_FILE: ar.read(m_cnfFile); break;
+        case CID_FEBIOJOB_TASK: ar.read(m_task); break;
+        case CID_FEBIOJOB_TASK_FILE: ar.read(m_taskFile); break;
+        case CID_FEBIOJOB_COMMAND: ar.read(m_cmd); break;
 		}
 		ar.CloseChunk();
 	}

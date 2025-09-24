@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <exception>
 #include <sstream>
+using namespace std;
 
 //=============================================================================
 // FSAxisMaterial
@@ -78,7 +79,7 @@ bool FSAxisMaterial::UpdateData(bool bsave)
 		switch (m_naopt)
 		{
 		case -1: break;
-		case FE_AXES_LOCAL: 
+		case MaterialAxesGeneratorType::AXES_LOCAL:
 			GetParam(1).SetState(Param_ALLFLAGS);
 			GetParam(2).SetState(Param_ALLFLAGS);
 			GetParam(3).SetState(Param_ALLFLAGS);
@@ -86,19 +87,19 @@ bool FSAxisMaterial::UpdateData(bool bsave)
 			m_n[1] = GetIntValue(2);
 			m_n[2] = GetIntValue(3);
 			break;
-		case FE_AXES_VECTOR:
+		case MaterialAxesGeneratorType::AXES_VECTOR:
 			GetParam(4).SetState(Param_ALLFLAGS);
 			GetParam(5).SetState(Param_ALLFLAGS);
 			m_a = GetVecValue(4);
 			m_d = GetVecValue(5);
 			break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
             GetParam(6).SetState(Param_ALLFLAGS);
             GetParam(7).SetState(Param_ALLFLAGS);
             m_theta = GetFloatValue(6);
             m_phi = GetFloatValue(7);
             break;
-		case FE_AXES_CYLINDRICAL:
+		case MaterialAxesGeneratorType::AXES_CYLINDRICAL:
 			GetParam(8).SetState(Param_ALLFLAGS);
 			GetParam(9).SetState(Param_ALLFLAGS);
 			GetParam(10).SetState(Param_ALLFLAGS);
@@ -106,7 +107,7 @@ bool FSAxisMaterial::UpdateData(bool bsave)
 			m_axis   = GetVecValue(9);
 			m_vec    = GetVecValue(10);
 			break;
-		case FE_AXES_SPHERICAL:
+		case MaterialAxesGeneratorType::AXES_SPHERICAL:
 			GetParam(8).SetState(Param_ALLFLAGS);
 			GetParam(10).SetState(Param_ALLFLAGS);
 			m_center = GetVecValue(8);
@@ -131,13 +132,13 @@ bool FSAxisMaterial::UpdateData(bool bsave)
         SetFloatValue(7, m_phi); if (m_naopt == 2) GetParam(7).SetState(Param_ALLFLAGS);
 
 		// cylindrical
-		SetVecValue(8, m_center); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(8).SetState(Param_ALLFLAGS);
-		SetVecValue(9, m_axis); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(9).SetState(Param_ALLFLAGS);
-		SetVecValue(10, m_vec); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(10).SetState(Param_ALLFLAGS);
+		SetVecValue( 8, m_center); if (m_naopt == MaterialAxesGeneratorType::AXES_CYLINDRICAL) GetParam(8).SetState(Param_ALLFLAGS);
+		SetVecValue( 9, m_axis  ); if (m_naopt == MaterialAxesGeneratorType::AXES_CYLINDRICAL) GetParam(9).SetState(Param_ALLFLAGS);
+		SetVecValue(10, m_vec   ); if (m_naopt == MaterialAxesGeneratorType::AXES_CYLINDRICAL) GetParam(10).SetState(Param_ALLFLAGS);
 
 		// spherical
-		SetVecValue(8, m_center); if (m_naopt == FE_AXES_SPHERICAL) GetParam(8).SetState(Param_ALLFLAGS);
-		SetVecValue(10, m_vec); if (m_naopt == FE_AXES_SPHERICAL) GetParam(10).SetState(Param_ALLFLAGS);
+		SetVecValue( 8, m_center); if (m_naopt == MaterialAxesGeneratorType::AXES_SPHERICAL) GetParam(8).SetState(Param_ALLFLAGS);
+		SetVecValue(10, m_vec   ); if (m_naopt == MaterialAxesGeneratorType::AXES_SPHERICAL) GetParam(10).SetState(Param_ALLFLAGS);
 
 	}
 	return false;
@@ -147,7 +148,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
 {
     switch (m_naopt)
     {
-        case FE_AXES_LOCAL:
+        case MaterialAxesGeneratorType::AXES_LOCAL:
         {
             FSCoreMesh* pm = el.m_pmesh;
             vec3d r1 = pm->Node(el->m_node[m_n[0] - 1]).r;
@@ -169,7 +170,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
             return Q;
         }
             break;
-        case FE_AXES_VECTOR:
+        case MaterialAxesGeneratorType::AXES_VECTOR:
         {
             vec3d a = m_a;
             vec3d d = m_d;
@@ -187,7 +188,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
             return Q;
         }
             break;
-        case FE_AXES_ANGLES:
+        case MaterialAxesGeneratorType::AXES_ANGLES:
         {
             double theta = m_theta*PI/180;
             double phi = m_phi*PI/180;
@@ -200,7 +201,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
             return Q;
         }
 		break;
-		case FE_AXES_CYLINDRICAL:
+		case MaterialAxesGeneratorType::AXES_CYLINDRICAL:
 		{
 			// we'll use the element center as the reference point
 			FSCoreMesh* pm = el.m_pmesh;
@@ -243,7 +244,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
 			return Q;
 		}
 		break;
-		case FE_AXES_SPHERICAL:
+		case MaterialAxesGeneratorType::AXES_SPHERICAL:
 		{
 			// we'll use the element center as the reference point
 			FSCoreMesh* pm = el.m_pmesh;

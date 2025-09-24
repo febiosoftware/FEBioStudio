@@ -73,7 +73,7 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	FSMesh* pgMesh = pgObj->GetFEMesh();
 	if (pgMesh == nullptr) return nullptr;
 	pgMesh->TagAllNodes(0);
-	vector<int> FLT(pgObj->Faces(), 0);
+	std::vector<int> FLT(pgObj->Faces(), 0);
 	for (int i = 0; i < pfs->Size(); ++i)
 	{
 		GFace* pf = pfs->Face(i);
@@ -126,7 +126,7 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	// In theory, this should be NN * (ndiv + 1), however it is possible
 	// that some source nodes coincide with target nodes, so we need to check for that.
 	int newNodes = 0, sharedNodes = 0;
-	vector<int> tag(NN, 0);
+	std::vector<int> tag(NN, 0);
 	for (int i = 0; i < NN; ++i)
 	{
 		vec3d pi = srcPoints[i];
@@ -146,7 +146,7 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	newMesh->Create(newNodes, NF * ndiv);
 
 	// create new nodes
-	vector<int> ids(NN, -1);
+	std::vector<int> ids(NN, -1);
 	newNodes = 0;
 
 	// first layer
@@ -172,7 +172,7 @@ FSMesh* FEExtrudeToSurface::Apply(GObject* po, FESelection* pg)
 	}
 
 	// build elements
-	vector<int> id2(NN, -1);
+	std::vector<int> id2(NN, -1);
 	newNodes = NN;
 	for (int l = 0; l < ndiv; ++l)
 	{

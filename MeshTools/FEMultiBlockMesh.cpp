@@ -26,14 +26,15 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMultiBlockMesh.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
 #include <algorithm>
 #include "FESelection.h"
 #include <GeomLib/GGroup.h>
+using namespace std;
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -702,7 +703,7 @@ void FEMultiBlockMesh::BuildFEElements(FSMesh* pm)
 				int ni = 0;
 				for (int i=0; i<nx; ++i)
 				{
-					FEElement_* pe = pm->ElementPtr(eid++);
+					FSElement_* pe = pm->ElementPtr(eid++);
 					pe->m_gid = b.m_gid;
 					pe->SetType(m_elemType);
 
@@ -1705,7 +1706,7 @@ bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
 //==============================================================
 FEMultiBlockMesher::FEMultiBlockMesher() : m_po(nullptr)
 {
-	AddIntParam(10, "divs", "divisions");
+	AddDoubleParam(0.1, "h", "Element size");
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
@@ -1730,7 +1731,7 @@ bool FEMultiBlockMesher::BuildMultiBlock()
 		mbEdge.m_ntype = e->m_ntype;
 		mbEdge.m_node[0] = e->m_node[0];
 		mbEdge.m_node[1] = e->m_node[1];
-		mbEdge.m_cnode = e->m_cnode;
+		mbEdge.m_cnode = (e->m_cnode.empty() ? -1 : e->m_cnode[0]);
 		mbEdge.m_orient = e->m_orient;
 		mbEdge.SetID(e->GetLocalID());
 	}
@@ -1784,18 +1785,81 @@ FSMesh* FEMultiBlockMesher::BuildMesh(GObject* po)
 	mb.ClearMeshSettings();
 
 	// assign meshing parameters
-	int nd = GetIntValue(DIVS);
+	double h = GetFloatValue(ELEM_SIZE);
+	if (h < 0) return nullptr;
 
-	// first see the edge divisions
+	// first set the edge divisions
 	for (int i = 0; i < o.Edges(); ++i)
 	{
 		GEdge* edge = o.Edge(i);
 		double w = edge->GetMeshWeight();
-		if (w > 0)
+		if (w <= 0) w = 1;
+		double L = edge->Length();
+		int nd = (int)(L / h);
+		if (nd < 1) nd = 1;
+		int nx = (int)(nd * w);
+		if (nx < 1) nx = 1;
+		mb.SetEdgeDivisions(i, nx);
+	}
+
+	bool allConstraintsSatisfied = false;
+	while (!allConstraintsSatisfied)
+	{
+		allConstraintsSatisfied = true;
+
+		// set all face divisions
+		for (int i = 0; i < mb.Faces(); ++i)
 		{
-			int nx = (int)(nd * w);
-			if (nx < 1) nx = 1;
-			mb.SetEdgeDivisions(i, nx);
+			MBFace& face = mb.GetFace(i);
+			MBEdge& e0 = mb.GetEdge(face.m_edge[0]);
+			MBEdge& e1 = mb.GetEdge(face.m_edge[1]);
+			MBEdge& e2 = mb.GetEdge(face.m_edge[2]);
+			MBEdge& e3 = mb.GetEdge(face.m_edge[3]);
+			if (e0.m_nx != e2.m_nx)
+			{
+				int n = (e0.m_nx > e2.m_nx ? e0.m_nx : e2.m_nx);
+				e0.m_nx = e2.m_nx = n;
+				allConstraintsSatisfied = false;
+			}
+			if (e1.m_nx != e3.m_nx)
+			{
+				int n = (e1.m_nx > e3.m_nx ? e1.m_nx : e3.m_nx);
+				e1.m_nx = e3.m_nx = n;
+				allConstraintsSatisfied = false;
+			}
+			face.m_nx = e0.m_nx;
+			face.m_ny = e1.m_nx;
+		}
+
+		// set all block divisions
+//		const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+		const int ELT[3][4] = { {0,2,4,6},{1,3,5,7},{8,9,10,11} };
+		for (int i = 0; i < mb.Blocks(); ++i)
+		{
+			MBBlock& b = mb.GetBlock(i);
+			for (int j = 0; j < 3; ++j)
+			{
+				int m[4];
+				for (int k = 0; k < 4; ++k)
+				{
+					m[k] = mb.GetEdge(b.m_edge[ELT[j][k]]).m_nx;
+				}
+				if ((m[0] != m[1]) || (m[0] != m[1]) || (m[0] != m[3]))
+				{
+					allConstraintsSatisfied = false;
+					int mmax = m[0];
+					if (m[1] > mmax) mmax = m[1];
+					if (m[2] > mmax) mmax = m[2];
+					if (m[3] > mmax) mmax = m[3];
+					for (int k = 0; k < 4; ++k)
+					{
+						mb.GetEdge(b.m_edge[ELT[j][k]]).m_nx = mmax;
+					}
+				}
+			}
+			b.m_nx = mb.GetEdge(b.m_edge[0]).m_nx;
+			b.m_ny = mb.GetEdge(b.m_edge[1]).m_nx;
+			b.m_nz = mb.GetEdge(b.m_edge[8]).m_nx;
 		}
 	}
 
@@ -1809,7 +1873,7 @@ FSMesh* FEMultiBlockMesher::BuildMesh(GObject* po)
 	mb.SetNodeWeights(w);
 
 	// set the divisions of the remaining items
-	mb.SetDefaultDivisions(nd);
+//	mb.SetDefaultDivisions(nd);
 
 	int elemType = GetIntValue(ELEM_TYPE);
 	switch (elemType)
@@ -1895,7 +1959,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
 	if (mb)
 	{
-		FEItemListBuilder* list = sel->CreateItemList();
+		FSItemListBuilder* list = sel->CreateItemList();
 
 		double w = GetFloatValue(0);
 
@@ -1930,7 +1994,7 @@ FSMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 	{
 		GMultiPatch* mp = dynamic_cast<GMultiPatch*>(po);
 
-		FEItemListBuilder* list = sel->CreateItemList();
+		FSItemListBuilder* list = sel->CreateItemList();
 
 		double w = GetFloatValue(0);
 

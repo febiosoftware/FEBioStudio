@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 
 class UISurfaceMeshSizeTool;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CSurfaceMeshSizeTool : public CAbstractTool
 {

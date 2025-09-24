@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <assert.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
+#include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
 
@@ -96,16 +97,16 @@ void CImageModel::ShowBox(bool b)
 	m_showBox = b;
 }
 
-void CImageModel::Render(CGLContext& rc)
+void CImageModel::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (IsActive() == false) return;
 
-	glPushMatrix();
+	re.pushTransform();
 
 	BOX box = GetBoundingBox();
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
-	glTranslated(r0.x, r0.y, r0.z);
+	re.translate(r0);
 
 	mat3d Q = GetOrientation();
 
@@ -115,11 +116,11 @@ void CImageModel::Render(CGLContext& rc)
 		Q(0,2), Q(1,2), Q(2,2), 0.0,
 		0.0, 0.0, 0.0, 1.0
 	};
-	glMultMatrixd(q);
+	re.multTransform(q);
 
     for(int j = 0; j < ImageAnalyses(); j++)
     {
-        GetImageAnalysis(j)->render(rc.m_cam);
+        GetImageAnalysis(j)->render(re, rc);
     }
 
 	if (ShowBox())
@@ -128,8 +129,7 @@ void CImageModel::Render(CGLContext& rc)
 		vec3d r0 = box.r0();
 		vec3d r1 = box.r1();
 		BOX localBox(vec3d(0, 0, 0), r1 - r0);
-		glColor3ub(255, 128, 128);
-		glx::renderBox(localBox, false);
+		glx::renderBox(re, localBox, GLColor(255, 128, 128), false);
 	}
 
 	// render the volume image data if present
@@ -138,13 +138,11 @@ void CImageModel::Render(CGLContext& rc)
 		Post::CGLImageRenderer* pir = GetImageRenderer(j);
 		if (pir && pir->IsActive())
 		{
-//			if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
-//			else CGLPlaneCutPlot::DisableClipPlanes();
-			pir->Render(rc);
+			pir->Render(re, rc);
 		}
 	}
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void CImageModel::ApplyFilters()
@@ -429,11 +427,6 @@ void CImageModel::Load(IArchive& ar)
 	}
 
     ApplyFilters();
-
-    // Create Volume Renderer
-    auto vr = new Post::CVolumeRenderer(this);
-    vr->Create();
-    m_render.Add(vr);
 }
 
 bool CImageModel::ExportRAWImage(const std::string& filename)
@@ -449,5 +442,5 @@ bool CImageModel::ExportSITKImage(const std::string& filename)
     C3DImage* im = Get3DImage();
 	if (im == nullptr) return false;
 
-	return im->ExportSITK(filename);
+	return WriteSITKImage(im, filename);
 }

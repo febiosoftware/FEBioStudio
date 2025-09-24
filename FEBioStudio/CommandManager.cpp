@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "CommandManager.h"
 #include "Command.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include <GeomLib/GObject.h>
 
 std::string CBasicCmdManager::m_err;
@@ -180,18 +180,6 @@ bool CCommandManager::DoCommand(CCommand* pcmd)
 		SetErrorString(err);
 
 		// TODO: should I clear redo stack?
-		return false;
-	}
-	catch (GObjectException e)
-	{
-		GObject* po = e.GetGObject();
-		if (po)
-		{
-			po->Update(true);
-		}
-
-		SetErrorString("Object exception has occurred");
-
 		return false;
 	}
 	catch (...)

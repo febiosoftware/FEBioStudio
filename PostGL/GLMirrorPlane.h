@@ -31,18 +31,23 @@ namespace Post {
 
 class CGLMirrorPlane : public CGLPlot
 {
+public:
+	enum { MAX_MIRROR_PLANES = 3 };
 	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET, RECURSION };
 
 public:
 	CGLMirrorPlane();
+	~CGLMirrorPlane();
 
 	// render the object to the 3D view
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	bool UpdateData(bool bsave = true) override;
 
+	static CGLMirrorPlane* GetMirrorPlane(int n);
+
 private:
-	void RenderPlane();
+	void RenderPlane(GLRenderEngine& re);
 
 public:
 	int		m_plane;
@@ -52,9 +57,12 @@ public:
 	bool	m_recursive;
 
 private:
-	vec3f	m_norm;
-
 	int		m_id;
-	static	int m_render_id;
+	int m_render_id;
+
+private:
+	void AllocRenderID();
+	void DeallocRenderID();
+	static CGLMirrorPlane* m_mirrors[MAX_MIRROR_PLANES];
 };
 }

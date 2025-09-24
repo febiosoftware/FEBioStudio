@@ -28,13 +28,12 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include "GLView.h"
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
 #include <ImageLib/ImageModel.h>
 #include "DlgPixelInspector.h"
-
 #include "ImageSliceView.h"
 #include "ImageSlice.h"
 
@@ -55,7 +54,6 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_glView = new CGLView(m_wnd);
 	m_glView->GetViewSettings().m_bgrid = false;
 	m_glView->AllocateDefaultWidgets(false);
-	m_glView->ShowContextMenu(false);
     m_layout->addWidget(m_glView, 1, 1);
 
     setLayout(m_layout);
@@ -84,9 +82,9 @@ void CImageSliceView::Update()
     }
 }
 
-void CImageSliceView::RenderSlicers(CGLContext& rc)
+void CImageSliceView::RenderSlicers(GLRenderEngine& re, GLContext& rc)
 {
-	m_slicer.Render(rc);
+	m_slicer.Render(re, rc);
 }
 
 void CImageSliceView::SetInspector(CDlgPixelInspector* inspector)
@@ -195,7 +193,7 @@ CImageSliceViewRender::CImageSliceViewRender(CImageSliceView* sliceView) : m_sli
 
 }
 
-void CImageSliceViewRender::Render(CGLContext& rc)
+void CImageSliceViewRender::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_sliceView == nullptr) return;
 	if (!m_sliceView->isVisible()) return;
@@ -205,6 +203,6 @@ void CImageSliceViewRender::Render(CGLContext& rc)
 	CImageModel* img = GetImageModel();
 	if (img && (img == m_sliceView->GetImageModel()))
 	{
-		m_sliceView->RenderSlicers(rc);
+		m_sliceView->RenderSlicers(re, rc);
 	}
 }

@@ -28,10 +28,9 @@ SOFTWARE.*/
 
 #include "FEMeshData.h"
 #include "FEState.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 #include "FEDataField.h"
 #include <set>
-//using namespace std;
 
 namespace Post {
 
@@ -422,6 +421,7 @@ public:
 			m_face.assign(state->GetFEMesh()->Faces(), -1); 
 	}
 	void eval(int n, T* pv) { (*pv) = m_data[m_face[n]]; }
+	void set(int n, const T& v) { if (active(n)) m_data[m_face[n]] = v; else add(n, v); }
 	bool active(int n) { return (m_face[n] >= 0); }
 	void copy(FEFaceData<T, DATA_ITEM>& d) { m_data = d.m_data; m_face = d.m_face; }
 	bool add(int n, const T& d)
@@ -626,7 +626,7 @@ class FEElemArrayDataNode : public FEElemItemData
 public:
 	FEElemArrayDataNode(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_NODE)
 	{
-		FEPostMesh& m = *state->GetFEMesh();
+		FSMesh& m = *state->GetFEMesh();
 		m_stride = nsize;
 		if (m_elem.empty())
 		{
@@ -819,6 +819,15 @@ public:
 		int m = m_elem[2*i+1];
 		for (int j=0; j<m; ++j) pv[j] = m_data[n + j];
 	}
+	void set(int i, T* pv)
+	{
+		if (active(i))
+		{
+			int n = m_elem[2 * i];
+			int m = m_elem[2 * i + 1];
+			for (int j = 0; j < m; ++j) m_data[n + j] = pv[j];
+		}
+	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n + 1] > 0); }
 	void copy(FEElementData<T, DATA_MULT>& d) { m_data = d.m_data; m_elem = d.m_elem; }
 	void add(int n, int m, T* d) 
@@ -850,7 +859,7 @@ template <typename T> class FEElementData<T, DATA_NODE> : public FEElemData_T<T,
 public:
 	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_NODE>(state, pdf)
 	{
-		FEPostMesh& m = *state->GetFEMesh();
+		FSMesh& m = *state->GetFEMesh();
 		if (m_elem.empty())
 		{
 			int N = m.Elements();

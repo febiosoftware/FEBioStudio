@@ -26,10 +26,11 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <map>
+using namespace std;
 
-GGroup::GGroup(GModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
+GGroup::GGroup(GModel* ps, int ntype, unsigned int flags) : FSItemListBuilder(ntype, flags)
 {
 	m_ps = ps;
 }
@@ -46,7 +47,7 @@ FSNodeList* GNodeList::BuildNodeList()
 {
 	GModel& m = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	FSNodeList* ps = new FSNodeList();
 	for (int i=0; i<N; ++i, ++it)
 	{
@@ -79,7 +80,7 @@ GNodeList::GNodeList(GModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NO
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GNodeList::Copy()
+FSItemListBuilder* GNodeList::Copy()
 {
 	GNodeList* pg = new GNodeList(m_ps);
 	pg->m_Item = m_Item;
@@ -92,7 +93,7 @@ vector<GNode*> GNodeList::GetNodeList()
 	vector<GNode*> nodeList;
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GNode* pg = model.FindNode(*it);
@@ -109,7 +110,7 @@ bool GNodeList::IsValid() const
 
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::ConstIterator it = m_Item.begin();
+	FSItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GNode* pg = model.FindNode(*it);
@@ -139,7 +140,7 @@ FSNodeList* GEdgeList::BuildNodeList()
 	GModel& model = *m_ps;
 	FSNodeList* ps = new FSNodeList();
 	int N = m_Item.size(), i, n;
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 
 	for (n=0; n<N; ++n, ++it)
 	{
@@ -192,12 +193,12 @@ FSNodeList* GEdgeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-FEEdgeList* GEdgeList::BuildEdgeList()
+FSEdgeList* GEdgeList::BuildEdgeList()
 {
 	GModel& model = *m_ps;
-	FEEdgeList* ps = new FEEdgeList();
+	FSEdgeList* ps = new FSEdgeList();
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 
 	for (int n = 0; n < N; ++n, ++it)
 	{
@@ -224,7 +225,7 @@ vector<GEdge*> GEdgeList::GetEdgeList()
 	vector<GEdge*> edgeList;
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GEdge* pg = model.FindEdge(*it);
@@ -241,14 +242,14 @@ GEdge* GEdgeList::GetEdge(int n)
 	int N = m_Item.size();
 	if ((n < 0) || (n >= N)) return nullptr;
 
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int i = 0; i < n; ++i) ++it;
 	GEdge* pg = model.FindEdge(*it);
 	return pg;
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GEdgeList::Copy()
+FSItemListBuilder* GEdgeList::Copy()
 {
 	GEdgeList* pg = new GEdgeList(m_ps);
 	pg->m_Item = m_Item;
@@ -262,7 +263,7 @@ bool GEdgeList::IsValid() const
 
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::ConstIterator it = m_Item.begin();
+	FSItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GEdge* pg = model.FindEdge(*it);
@@ -297,7 +298,7 @@ FSNodeList* GFaceList::BuildNodeList()
 {
 	GModel& model = *m_ps;
 	int N = m_Item.size(), n, i;
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 
 	// first we need to clear all tags
 	for (n=0; n<N; ++n, ++it)
@@ -360,12 +361,12 @@ FSNodeList* GFaceList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-FEFaceList* GFaceList::BuildFaceList()
+FSFaceList* GFaceList::BuildFaceList()
 {
 	GModel& m = *m_ps;
-	FEFaceList* ps = new FEFaceList();
+	FSFaceList* ps = new FSFaceList();
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n=0; n<N; ++n, ++it)
 	{
 		GFace* pf = m.FindSurface(*it);
@@ -384,7 +385,7 @@ FEFaceList* GFaceList::BuildFaceList()
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GFaceList::Copy()
+FSItemListBuilder* GFaceList::Copy()
 {
 	GFaceList* pg = new GFaceList(m_ps);
 	pg->m_Item = m_Item;
@@ -397,7 +398,7 @@ vector<GFace*> GFaceList::GetFaceList()
 	vector<GFace*> surfList;
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GFace *pg = model.FindSurface(*it);
@@ -414,7 +415,7 @@ bool GFaceList::IsValid() const
 
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::ConstIterator it = m_Item.begin();
+	FSItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GFace *pg = model.FindSurface(*it);
@@ -450,12 +451,12 @@ void GPartList::Create(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEElemList* GPartList::BuildElemList()
+FSElemList* GPartList::BuildElemList()
 {
 	GModel& model = *m_ps;
-	FEElemList* ps = new FEElemList();
+	FSElemList* ps = new FSElemList();
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n=0; n<N; ++n, ++it)
 	{
 		GPart *pg = model.FindPart(*it);
@@ -476,7 +477,7 @@ FSNodeList* GPartList::BuildNodeList()
 {
 	GModel& model = *m_ps;
 	int N = m_Item.size(), n, i, j;
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 
 	// first we need to clear all tags
 	for (n=0; n<N; ++n, ++it)
@@ -540,12 +541,12 @@ FSNodeList* GPartList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-FEFaceList*	GPartList::BuildFaceList()
+FSFaceList*	GPartList::BuildFaceList()
 {
 	GModel& m = *m_ps;
-	FEFaceList* ps = new FEFaceList();
+	FSFaceList* ps = new FSFaceList();
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n < N; ++n, ++it)
 	{
 		GPart* pg = m.FindPart(*it);
@@ -582,7 +583,7 @@ FSPartSet* GPartList::BuildPartSet()
 	// first, make sure all parts belong to the same object
 	GObject* po = nullptr;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n < N; ++n, ++it)
 	{
 		GPart* pg = model.FindPart(*it);
@@ -608,7 +609,7 @@ FSPartSet* GPartList::BuildPartSet()
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GPartList::Copy()
+FSItemListBuilder* GPartList::Copy()
 {
 	GPartList* pg = new GPartList(m_ps);
 	pg->m_Item = m_Item;
@@ -632,7 +633,7 @@ vector<GPart*> GPartList::GetPartList()
 
 	vector<GPart*> partList;
 	int N = m_Item.size();
-	FEItemListBuilder::Iterator it = m_Item.begin();
+	FSItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GPart *pg = allParts[*it];
@@ -649,7 +650,7 @@ bool GPartList::IsValid() const
 
 	GModel& model = *m_ps;
 	int N = m_Item.size();
-	FEItemListBuilder::ConstIterator it = m_Item.begin();
+	FSItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GPart* pg = model.FindPart(*it);

@@ -54,19 +54,21 @@ void CGView::Reset()
 
 void CGView::DeleteAllKeys()
 {
-	std::vector<GLCameraTransform*>::iterator it;
+	std::vector<CGViewKey*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it) delete (*it);
 	m_key.clear();
 }
 
-GLCameraTransform* CGView::AddCameraKey(GLCameraTransform& key)
+CGViewKey* CGView::AddCameraKey(GLCameraTransform& t, const std::string& name)
 {
-	m_key.push_back(new GLCameraTransform(key));
-	m_nkey = (int)m_key.size()-1;
-	return m_key[m_nkey];
+	CGViewKey* key = new CGViewKey();
+	key->transform = t;
+	key->SetName(name);
+	m_key.push_back(key);
+	return key;
 }
 
-void CGView::SetCurrentKey(GLCameraTransform* pkey)
+void CGView::SetCurrentKey(CGViewKey* pkey)
 {
 	if (m_key.empty()) return;
 	int N = CameraKeys();
@@ -86,7 +88,7 @@ void CGView::SetCurrentKey(int i)
 	int N = CameraKeys();
 	if ((i<0)||(i>=N)) return;
 	m_nkey = i;
-	m_cam.SetTransform(*m_key[m_nkey]);
+	m_cam.SetTransform((*m_key[m_nkey]).transform);
 }
 
 void CGView::NextKey()
@@ -96,7 +98,7 @@ void CGView::NextKey()
 		m_nkey++;
 		if (m_nkey >= (int)m_key.size()) m_nkey = 0;
 	}
-	m_cam.SetTransform(*m_key[m_nkey]);
+	m_cam.SetTransform((*m_key[m_nkey]).transform);
 }
 
 void CGView::PrevKey()
@@ -106,13 +108,13 @@ void CGView::PrevKey()
 		m_nkey--;
 		if (m_nkey < 0) m_nkey = (int)m_key.size() - 1;
 	}
-	m_cam.SetTransform(*m_key[m_nkey]);
+	m_cam.SetTransform((*m_key[m_nkey]).transform);
 }
 
-void CGView::DeleteKey(GLCameraTransform* pt)
+void CGView::DeleteKey(CGViewKey* pt)
 {
 	if (m_key.empty()) return;
-	std::vector<GLCameraTransform*>::iterator it;
+	std::vector<CGViewKey*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it)
 	{
 		if (*it == pt)

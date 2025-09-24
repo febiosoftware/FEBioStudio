@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <QDialog>
 #include "PropertyListForm.h"
 #include <FSCore/math3d.h>
@@ -55,7 +55,7 @@ namespace Ui {
 
 //-----------------------------------------------------------------------------
 // The Create panel allows users to create geometrical objects
-class CCreatePanel : public CCommandPanel
+class CCreatePanel : public CWindowPanel
 {
 	Q_OBJECT
 

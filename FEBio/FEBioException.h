@@ -64,3 +64,10 @@ class RigidContactException
 public:
 	RigidContactException() {}
 };
+
+// Thrown when export is cancelled
+class CancelExport
+{
+public:
+	CancelExport() {}
+};

@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 #include "DlgStartThread.h"
 
-//using namespace std;
 class CMainWindow;
 class CModelDocument;
 class FEModifier;
@@ -44,7 +43,7 @@ namespace Ui {
 	class CMeshPanel;
 };
 
-class CMeshPanel : public CCommandPanel
+class CMeshPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -66,6 +65,7 @@ private slots:
 	void on_apply_clicked(bool b);
 	void on_modParams_apply();
 	void on_menu_triggered(QAction* pa);
+	void on_form_dataChanged(bool itemModified, int index);
 
 private:
 	Ui::CMeshPanel* ui;

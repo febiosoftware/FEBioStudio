@@ -78,7 +78,7 @@ void GShellTorus::Update(bool b)
 void GShellTorus::Create()
 {
 	assert(m_pGMesh == 0);
-	m_pGMesh = new GMesh();
+	m_pGMesh = new GLMesh();
 
 	int i;
 	assert(m_Node.empty());
@@ -190,7 +190,7 @@ void GShellTorus::BuildGMesh()
 	int NF = 2*N0*N1;
 	int NE = 4*N0 + 4*N1;
 
-	GMesh& m = *m_pGMesh;
+	GLMesh& m = *m_pGMesh;
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 
@@ -203,7 +203,7 @@ void GShellTorus::BuildGMesh()
 		double cw0 = cos(w0), sw0 = sin(w0);
 		for (j=0; j<N1; ++j)
 		{
-			GMesh::NODE& n = m.Node(i*N1+j);
+			GLMesh::NODE& n = m.Node(i*N1+j);
 
 			double w1 = 2.0*PI - 2.0*j*PI/N1;
 			
@@ -225,8 +225,8 @@ void GShellTorus::BuildGMesh()
 		{
 			for (j=0; j<N1; ++j)
 			{
-				GMesh::FACE& f1 = m.Face(n++);
-				GMesh::FACE& f2 = m.Face(n++);
+				GLMesh::FACE& f1 = m.Face(n++);
+				GLMesh::FACE& f2 = m.Face(n++);
 
 				int m[4] = {
 					NodeIndex(i  ,j  , N0, N1), 
@@ -253,7 +253,7 @@ void GShellTorus::BuildGMesh()
 		n = 0;
 		for (i=0; i<N0; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 0, N0, N1);
 			e.n[1] = NodeIndex(i+1, 0, N0, N1);
 			e.pid = 4*i/N0;
@@ -261,7 +261,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N0; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 3*N1/4, N0, N1);
 			e.n[1] = NodeIndex(i+1, 3*N1/4, N0, N1);
 			e.pid = 12 + 4*i/N0;
@@ -269,7 +269,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N0; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , 2*N1/4, N0, N1);
 			e.n[1] = NodeIndex(i+1, 2*N1/4, N0, N1);
 			e.pid = 8 + 4*i/N0;
@@ -277,7 +277,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N0; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(i  , N1/4, N0, N1);
 			e.n[1] = NodeIndex(i+1, N1/4, N0, N1);
 			e.pid = 4 + 4*i/N0;
@@ -285,7 +285,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N1; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(0, i  , N0, N1);
 			e.n[1] = NodeIndex(0, i+1, N0, N1);
 			e.pid = 16 + 4*i/N1;
@@ -293,7 +293,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N1; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(N0/4, i  , N0, N1);
 			e.n[1] = NodeIndex(N0/4, i+1, N0, N1);
 			e.pid = 20 + 4*i/N1;
@@ -301,7 +301,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N1; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(2*N0/4, i  , N0, N1);
 			e.n[1] = NodeIndex(2*N0/4, i+1, N0, N1);
 			e.pid = 24 + 4*i/N1;
@@ -309,7 +309,7 @@ void GShellTorus::BuildGMesh()
 
 		for (i=0; i<N1; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(n++);
+			GLMesh::EDGE& e = m.Edge(n++);
 			e.n[0] = NodeIndex(3*N0/4, i  , N0, N1);
 			e.n[1] = NodeIndex(3*N0/4, i+1, N0, N1);
 			e.pid = 28 + 4*i/N1;

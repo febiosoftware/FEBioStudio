@@ -26,10 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLStreamLinePlot.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
+#include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
 //=================================================================================================
@@ -74,13 +75,6 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 	m_lastdt = 1.f;
 
 	m_Col.SetDivisions(10);
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetType(GLLegendBar::GRADIENT);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -128,18 +122,13 @@ void CGLStreamLinePlot::SetVectorType(int ntype)
 	Update();
 }
 
-void CGLStreamLinePlot::Render(CGLContext& rc)
+void CGLStreamLinePlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	int NSL = (int)m_streamLines.size();
 	if (NSL == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
-
-	m_mesh.Render();
-
-	glPopAttrib();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR, false);
+	re.renderGMeshEdges(m_mesh, false);
 }
 
 static float frand()
@@ -158,12 +147,12 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); m_prob.clear(); }
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
-		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
+		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
@@ -238,8 +227,6 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 
-	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
-
 	// update stream lines
 	UpdateStreamLines();
 
@@ -251,13 +238,13 @@ vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
 	vec3f ve[FSElement::MAX_NODES];
-	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
+	FSMesh& mesh = *GetModel()->GetActiveMesh();
 	int nelem;
 	double q[3];
 	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.ElementRef(nelem);
+		FSElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i=0; i<ne; ++i) ve[i] = m_val[el.m_node[i]];
@@ -290,7 +277,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	float vtol = fabs(m_vtol);
 
 	// get the mesh
-	FEPostMesh& mesh = *mdl->GetActiveMesh();
+	FSMesh& mesh = *mdl->GetActiveMesh();
 
 	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
@@ -328,7 +315,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 
 			// project the seed into the adjacent solid element
 			int nelem = f.m_elem[0].eid;
-			FEElement_* el = &mesh.ElementRef(nelem);
+			FSElement_* el = &mesh.ElementRef(nelem);
 			el->m_ntag = 1;
 			ProjectInsideReferenceElement(mesh, *el, cf, q);
 
@@ -442,11 +429,11 @@ void CGLStreamLinePlot::UpdateMesh()
 			verts += 2*(sl.Points() - 2) + 2;
 	}
 
-	// allocate mesh
-	m_mesh.Create(verts / 2, GLMesh::FLAG_COLOR);
+	m_mesh.Clear();
 
 	// build mesh
-	m_mesh.BeginMesh();
+	vec3f vr[2];
+	GLColor vc[2];
 	for (int i = 0; i < NSL; ++i)
 	{
 		StreamLine& sl = m_streamLines[i];
@@ -457,10 +444,26 @@ void CGLStreamLinePlot::UpdateMesh()
 			{
 				StreamPoint& p0 = sl[j];
 				StreamPoint& p1 = sl[j+1];
-				m_mesh.AddVertex(p0.r, p0.c);
-				m_mesh.AddVertex(p1.r, p1.c);
+
+				vr[0] = p0.r; vc[0] = p0.c;
+				vr[1] = p1.r; vc[1] = p1.c;
+				m_mesh.AddEdge(vr, vc);
 			}
 		}
 	}
-	m_mesh.EndMesh();
+}
+
+LegendData CGLStreamLinePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+	
+	return l;
 }

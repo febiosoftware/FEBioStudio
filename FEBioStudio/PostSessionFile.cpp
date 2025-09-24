@@ -6,7 +6,7 @@
 #include <PostGL/GLModel.h>
 #include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
-#include <PostLib/FEPostMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FELSDYNAimport.h>
 #include <PostLib/FEKinemat.h>
@@ -598,11 +598,12 @@ bool PostSessionFileReader::parse_view(XMLTag& tag)
 			float d = vp.trg.z;
 
 			const char* szname = tag.AttributeValue("name", true);
-			if (szname) vp.SetName(szname);
+			string name;
+			if (szname) name = szname;
 			else
 			{
 				std::stringstream ss; ss << "ViewPoint" << view.CameraKeys();
-				vp.SetName(ss.str());
+				name = ss.str();
 			}
 
 			++tag;
@@ -624,7 +625,7 @@ bool PostSessionFileReader::parse_view(XMLTag& tag)
 			vp.pos = r;
 			vp.trg.z = d;
 
-			view.AddCameraKey(vp);
+			view.AddCameraKey(vp, name);
 		}
 		else return false;
 		++tag;
@@ -1096,13 +1097,13 @@ void PostSessionFileWriter::WriteView()
 		{
 			for (int i = 0; i < view.CameraKeys(); ++i)
 			{
-				GLCameraTransform& vp = view.GetKey(i);
+				CGViewKey& vp = view.GetKey(i);
 
-				quatd q = vp.rot;
+				quatd q = vp.transform.rot;
 				float w = q.GetAngle() * 180.f / PI;
 				vec3d v = q.GetVector() * w;
-				vec3d r = vp.pos;
-				float d = vp.trg.z;
+				vec3d r = vp.transform.pos;
+				float d = vp.transform.trg.z;
 
 				XMLElement el("viewpoint");
 				el.add_attribute("name", vp.GetName());

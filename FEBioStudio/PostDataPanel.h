@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <QDialog>
 #include <string>
 #include <vector>
@@ -37,6 +37,7 @@ class CPostDocument;
 
 namespace Post {
 	class ModelDataField;
+	class CGLModel;
 }
 
 namespace Ui {
@@ -62,7 +63,7 @@ private:
 	Ui::CDlgExportData* ui;
 };
 
-class CPostDataPanel : public CCommandPanel
+class CPostDataPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -84,7 +85,7 @@ public:
 	void on_props_dataChanged(bool b);
 
 private:
-	CPostDocument* GetActiveDocument();
+	Post::CGLModel* GetActiveModel();
 
 private:
 	Ui::CPostDataPanel* ui;

@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "AnsysImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
+using namespace std;
 
 AnsysImport::AnsysImport(FSProject& prj) : FSFileImport(prj)
 {
@@ -199,7 +200,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 	list<ELEM>::iterator ih = m_Elem.begin();
 	for (i=0; i<elems; ++i, ++ih)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		pe->m_gid = ih->mid;
 		ih->tag = i;

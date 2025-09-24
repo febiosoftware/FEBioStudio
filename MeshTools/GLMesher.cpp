@@ -24,10 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLMesher.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/triangulate.h>
 
 GLMesher::GLMesher(GObject* po) : m_po(po)
@@ -35,7 +35,7 @@ GLMesher::GLMesher(GObject* po) : m_po(po)
 
 }
 
-GMesh* GLMesher::CreateMesh()
+GLMesh* GLMesher::CreateMesh()
 {
 	assert(m_po);
 	if (m_po == nullptr) return nullptr;
@@ -43,7 +43,7 @@ GMesh* GLMesher::CreateMesh()
 	GObject& o = *m_po;
 
 	// create a new mesh
-	GMesh* gmesh = new GMesh;
+	GLMesh* gmesh = new GLMesh;
 
 	// the render mesh is created based of the faces (if there are any)
 	int NF = o.Faces();
@@ -53,9 +53,11 @@ GMesh* GLMesher::CreateMesh()
 		for (int j = 0; j < NF; ++j)
 		{
 			GFace& f = *o.Face(j);
+			gmesh->NewPartition();
 
 			switch (f.m_ntype)
 			{
+			case FACE_UNKNOWN      : break;
 			case FACE_POLYGON      : BuildFacePolygon(gmesh, f); break;
 			case FACE_EXTRUDE      : BuildFaceExtrude(gmesh, f); break;
 			case FACE_QUAD         : BuildFaceQuad(gmesh, f); break;
@@ -67,6 +69,7 @@ GMesh* GLMesher::CreateMesh()
 		}
 
 		gmesh->Update();
+		assert(gmesh->Partitions() == NF);
 	}
 	else
 	{
@@ -81,6 +84,7 @@ GMesh* GLMesher::CreateMesh()
 				{
 				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;
 				case EDGE_MESH: BuildEdgeMesh(gmesh, e); break;
+				case EDGE_BEZIER: BuildEdgeBezier(gmesh, e); break;
 				default:
 					assert(false);
 				}
@@ -104,7 +108,7 @@ GMesh* GLMesher::CreateMesh()
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildEdgeLine(GMesh* glmsh, GEdge& e)
+void GLMesher::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
 {
 	GObject& o = *m_po;
 	vec3d y[2];
@@ -117,13 +121,51 @@ void GLMesher::BuildEdgeLine(GMesh* glmsh, GEdge& e)
 	glmsh->Update();
 }
 
+void GLMesher::BuildEdgeBezier(GLMesh* glmesh, GEdge& edge)
+{
+	GObject& o = *m_po;
+	vector<vec3d> P;
+	P.push_back(o.Node(edge.m_node[0])->LocalPosition());
+	for (int i=0; i<edge.m_cnode.size(); ++i)
+		P.push_back(o.Node(edge.m_cnode[i])->LocalPosition());
+	P.push_back(o.Node(edge.m_node[1])->LocalPosition());
+
+	int n = P.size() - 1;
+
+	int N = 50;
+	if (n <= 1) N = 2;
+	else N = 25 * n;
+
+	GM_BEZIER gm(P);
+
+	GLMesh m;
+	m.Create(N, 0, N - 1);
+	for (int i = 0; i < N; ++i)
+	{
+		double u = (double)i / (double)(N - 1);
+		vec3d p = gm.Point(u);
+		m.Node(i).r = to_vec3f(p);
+	}
+
+	for (int i = 0; i < N - 1; ++i)
+	{
+		GLMesh::EDGE& e = m.Edge(i);
+		e.n[0] = i;
+		e.n[1] = i+1;
+		e.pid = edge.GetLocalID();
+	}
+	m.Update();
+
+	glmesh->Attach(m);
+}
+
 //-----------------------------------------------------------------------------
-void GLMesher::BuildEdgeMesh(GMesh* glmsh, GEdge& e)
+void GLMesher::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 {
 	GObject& o = *m_po;
 
 	// This assumes there is a mesh
-	FECurveMesh* mesh = o.GetFECurveMesh(e.GetLocalID());
+	FSCurveMesh* mesh = o.GetFECurveMesh(e.GetLocalID());
 	assert(mesh);
 	if (mesh == 0) return;
 
@@ -144,14 +186,14 @@ void GLMesher::BuildEdgeMesh(GMesh* glmsh, GEdge& e)
 	for (int i = 0; i < mesh->Nodes(); ++i)
 		if (mesh->Node(i).m_ntag != -1) mesh->Node(i).m_ntag = NN++;
 
-	GMesh glMesh;
+	GLMesh glMesh;
 	glMesh.Create(NN, 0);
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
 		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1)
 		{
-			GMesh::NODE& gnode = glMesh.Node(node.m_ntag);
+			GLMesh::NODE& gnode = glMesh.Node(node.m_ntag);
 			gnode.r = to_vec3f(node.pos());
 		}
 	}
@@ -177,10 +219,10 @@ void GLMesher::BuildEdgeMesh(GMesh* glmsh, GEdge& e)
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildFacePolygon(GMesh* glmesh, GFace& f)
+void GLMesher::BuildFacePolygon(GLMesh* glmesh, GFace& f)
 {
 	// triangulate the face
-	GMesh* pm = triangulate(f);
+	GLMesh* pm = triangulate(f);
 
 	// attach this mesh to our mesh
 	glmesh->Attach(*pm, false);
@@ -194,11 +236,15 @@ void GLMesher::BuildFacePolygon(GMesh* glmesh, GFace& f)
 // It must be true that the face has four nodes and four edges.
 // Edges 0 and 2 must be of the same type and edges 1 and 3 must be
 // straight lines.
-void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// get number of nodes and edges
 	int NN = f.Nodes();
@@ -216,58 +262,37 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 	assert(e3.m_ntype == EDGE_LINE);
 
 	// this is the mesh we'll be building
-	GMesh m;
+	GLMesh m;
 
-	// build the face
+	int n0 = 0, n1 = 1;
+	if (f.m_edge[0].nwn == -1) { n0 = 1; n1 = 0; }
+
+	// get the extrusion direction
+	vec3d t;
+	if (f.m_edge[1].nwn == 1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
+	else t = o.Node(e1.m_node[0])->LocalPosition() - o.Node(e1.m_node[1])->LocalPosition();
+
+	// sample points of bottom edge
+	vector<vec3f> points(M+1);
 	switch (e0.m_ntype)
 	{
-	case EDGE_LINE: // TODO: create a finer mesh
+	case EDGE_LINE:
 	{
-		m.Create(4, 2, 4);
-		for (int i = 0; i < 4; ++i)
+		vec3d r0 = o.Node(e0.m_node[n0])->LocalPosition();
+		vec3d r1 = o.Node(e0.m_node[n1])->LocalPosition();
+		for (int i = 0; i <= M; ++i)
 		{
-			GMesh::NODE& ni = m.Node(i);
-			ni.r = to_vec3f(o.Node(f.m_node[i])->LocalPosition());
-			ni.pid = o.Node(f.m_node[i])->GetLocalID();
+			double w = (double)i / (double)M;
+			points[i] = to_vec3f(r0 * (1.0 - w) + r1 * w);
 		}
-
-		for (int i = 0; i < 4; ++i)
-		{
-			GMesh::EDGE& ei = m.Edge(i);
-			ei.n[0] = i;
-			ei.n[1] = (i + 1) % 4;
-			ei.pid = o.Edge(f.m_edge[i].nid)->GetLocalID();
-		}
-
-		GMesh::FACE& f0 = m.Face(0);
-		GMesh::FACE& f1 = m.Face(1);
-
-		f0.n[0] = 0;
-		f0.n[1] = 1;
-		f0.n[2] = 2;
-		f0.pid = f.GetLocalID();
-
-		f1.n[0] = 2;
-		f1.n[1] = 3;
-		f1.n[2] = 0;
-		f1.pid = f.GetLocalID();
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
 		// get the nodes of the bottom edge
-		vec3d r0 = o.Node(e0.m_cnode)->LocalPosition();
-		int n0 = 0, n1 = 1;
-		if (f.m_edge[0].nwn == -1) { n0 = 1; n1 = 0; }
-		int en0 = e0.m_node[n0];
-		int en1 = e0.m_node[n1];
-		vec3d r1 = o.Node(en0)->LocalPosition();
-		vec3d r2 = o.Node(en1)->LocalPosition();
-
-		// get the extrusion direction
-		vec3d t;
-		if (e1.m_node[0] == en1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
-		else  t = o.Node(e1.m_node[0])->LocalPosition() - o.Node(e1.m_node[1])->LocalPosition();
+		vec3d r0 = o.Node(e0.m_cnode[0])->LocalPosition();
+		vec3d r1 = o.Node(e0.m_node[n0])->LocalPosition();
+		vec3d r2 = o.Node(e0.m_node[n1])->LocalPosition();
 
 		// project the points on a plane
 		// NOTE: This assume the arc is on a plane!
@@ -279,89 +304,20 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 		// create an arc object
 		GM_CIRCLE_ARC ca(a0, a1, a2, f.m_edge[0].nwn);
 
-		// allocate the mesh
-		m.Create(2 * (M + 1), 2 * M, 2 * M + 2);
-
 		// create nodes
 		for (int i = 0; i <= M; ++i)
 		{
-			GMesh::NODE& ni = m.Node(i);
-			GMesh::NODE& nj = m.Node(i + (M + 1));
-
 			vec2d q = ca.Point(i / (double)M);
-			ni.r = vec3f(q.x(), q.y(), z0);
-			nj.r = ni.r + to_vec3f(t);
-			ni.pid = -1;
-			nj.pid = -1;
+			points[i] = vec3f(q.x(), q.y(), z0);
 		}
-
-		// mark the corner nodes
-		m.Node(0).pid = o.Node(e0.m_node[n0])->GetLocalID();
-		m.Node(M).pid = o.Node(e0.m_node[n1])->GetLocalID();
-
-		int m0 = 0, m1 = 1;
-		if (f.m_edge[2].nwn == -1) { m0 = 1; m1 = 0; }
-
-		m.Node(M + 1).pid = o.Node(e2.m_node[m1])->GetLocalID();
-		m.Node(2 * M + 1).pid = o.Node(e2.m_node[m0])->GetLocalID();
-
-		// create the faces
-		for (int i = 0; i < M; ++i)
-		{
-			GMesh::FACE& f0 = m.Face(2 * i);
-			GMesh::FACE& f1 = m.Face(2 * i + 1);
-
-			f0.n[0] = i;
-			f0.n[1] = i + 1;
-			f0.n[2] = (M + 1) + i + 1;
-			f0.pid = f.GetLocalID();
-
-			f1.n[0] = (M + 1) + i + 1;
-			f1.n[1] = (M + 1) + i;
-			f1.n[2] = i;
-			f1.pid = f.GetLocalID();
-		}
-
-		// create the edges
-		for (int i = 0; i < M; ++i)
-		{
-			GMesh::EDGE& e0 = m.Edge(2 * i);
-			GMesh::EDGE& e1 = m.Edge(2 * i + 1);
-
-			e0.n[0] = i;
-			e0.n[1] = i + 1;
-			e0.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
-
-			e1.n[0] = (M + 1) + i;
-			e1.n[1] = (M + 1) + i + 1;
-			e1.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
-		}
-
-		GMesh::EDGE& e0 = m.Edge(2 * M);
-		GMesh::EDGE& e1 = m.Edge(2 * M + 1);
-
-		e0.n[0] = 0;
-		e0.n[1] = M + 1;
-		e0.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();
-
-		e1.n[0] = M;
-		e1.n[1] = 2 * M + 1;
-		e1.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
 	}
 	break;
 	case EDGE_3P_ARC:
 	{
 		// get the nodes of the bottom edge
-		vec3d r0 = o.Node(e0.m_cnode)->LocalPosition();
-		int n0 = 0, n1 = 1;
-		if (f.m_edge[0].nwn == -1) { n0 = 1; n1 = 0; }
+		vec3d r0 = o.Node(e0.m_cnode[0])->LocalPosition();
 		vec3d r1 = o.Node(e0.m_node[n0])->LocalPosition();
 		vec3d r2 = o.Node(e0.m_node[n1])->LocalPosition();
-
-		// get the extrusion direction
-		vec3d t;
-		if (f.m_edge[1].nwn == 1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
-		else  t = o.Node(e1.m_node[0])->LocalPosition() - o.Node(e1.m_node[1])->LocalPosition();
 
 		// project the points on a plane
 		vec2d a0(r0.x, r0.y);
@@ -371,88 +327,19 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 		// create an arc object
 		GM_ARC ca(a0, a1, a2, f.m_edge[0].nwn);
 
-		// allocate the mesh
-		m.Create(2 * (M + 1), 2 * M, 2 * M + 2);
-
 		// create nodes
 		for (int i = 0; i <= M; ++i)
 		{
-			GMesh::NODE& ni = m.Node(i);
-			GMesh::NODE& nj = m.Node(i + (M + 1));
-
-			ni.r = to_vec3f(ca.Point(i / (double)M));
-			nj.r = ni.r + to_vec3f(t);
-			ni.pid = -1;
-			nj.pid = -1;
+			points[i] = to_vec3f(ca.Point(i / (double)M));
 		}
-
-		// mark the corner nodes
-		m.Node(0).pid = o.Node(e0.m_node[n0])->GetLocalID();
-		m.Node(M).pid = o.Node(e0.m_node[n1])->GetLocalID();
-
-		int m0 = 0, m1 = 1;
-		if (f.m_edge[2].nwn == -1) { m0 = 1; m1 = 0; }
-
-		m.Node(M + 1).pid = o.Node(e2.m_node[m1])->GetLocalID();
-		m.Node(2 * M + 1).pid = o.Node(e2.m_node[m0])->GetLocalID();
-
-		// create the faces
-		for (int i = 0; i < M; ++i)
-		{
-			GMesh::FACE& f0 = m.Face(2 * i);
-			GMesh::FACE& f1 = m.Face(2 * i + 1);
-
-			f0.n[0] = i;
-			f0.n[1] = i + 1;
-			f0.n[2] = (M + 1) + i + 1;
-			f0.pid = f.GetLocalID();
-
-			f1.n[0] = (M + 1) + i + 1;
-			f1.n[1] = (M + 1) + i;
-			f1.n[2] = i;
-			f1.pid = f.GetLocalID();
-		}
-
-		// create the edges
-		for (int i = 0; i < M; ++i)
-		{
-			GMesh::EDGE& e0 = m.Edge(2 * i);
-			GMesh::EDGE& e1 = m.Edge(2 * i + 1);
-
-			e0.n[0] = i;
-			e0.n[1] = i + 1;
-			e0.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
-
-			e1.n[0] = (M + 1) + i;
-			e1.n[1] = (M + 1) + i + 1;
-			e1.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
-		}
-
-		GMesh::EDGE& e0 = m.Edge(2 * M);
-		GMesh::EDGE& e1 = m.Edge(2 * M + 1);
-
-		e0.n[0] = 0;
-		e0.n[1] = M + 1;
-		e0.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();
-
-		e1.n[0] = M;
-		e1.n[1] = 2 * M + 1;
-		e1.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
 	}
 	break;
 	case EDGE_ZARC:
 	{
 		// get the nodes of the bottom edge
 		vec3d r0 = vec3d(0, 0, 0);
-		int n0 = 0, n1 = 1;
-		if (f.m_edge[0].nwn == -1) { n0 = 1; n1 = 0; }
 		vec3d r1 = o.Node(e0.m_node[n0])->LocalPosition();
 		vec3d r2 = o.Node(e0.m_node[n1])->LocalPosition();
-
-		// get the extrusion direction
-		vec3d t;
-		if (f.m_edge[1].nwn == 1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
-		else  t = o.Node(e1.m_node[0])->LocalPosition() - o.Node(e1.m_node[1])->LocalPosition();
 
 		// project the points on a plane
 		vec2d a0(r0.x, r0.y);
@@ -462,78 +349,110 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 		// create an arc object
 		GM_CIRCLE_ARC ca(a0, a1, a2, f.m_edge[0].nwn);
 
-		// allocate the mesh
-		m.Create(2 * (M + 1), 2 * M, 2 * M + 2);
-
 		// create nodes
 		for (int i = 0; i <= M; ++i)
 		{
-			GMesh::NODE& ni = m.Node(i);
-			GMesh::NODE& nj = m.Node(i + (M + 1));
-
-			ni.r = to_vec3f(ca.Point(i / (double)M));
-			nj.r = ni.r + to_vec3f(t);
-			ni.pid = -1;
-			nj.pid = -1;
+			points[i] = to_vec3f(ca.Point(i / (double)M));
 		}
-
-		// mark the corner nodes
-		m.Node(0).pid = o.Node(e0.m_node[n0])->GetLocalID();
-		m.Node(M).pid = o.Node(e0.m_node[n1])->GetLocalID();
-
-		int m0 = 0, m1 = 1;
-		if (f.m_edge[2].nwn == -1) { m0 = 1; m1 = 0; }
-
-		m.Node(M + 1).pid = o.Node(e2.m_node[m1])->GetLocalID();
-		m.Node(2 * M + 1).pid = o.Node(e2.m_node[m0])->GetLocalID();
-
-		// create the faces
-		for (int i = 0; i < M; ++i)
+	}
+	break;
+	case EDGE_BEZIER:
+	{
+		vector<vec3d> P;
+		if (f.m_edge[0].nwn == 1)
 		{
-			GMesh::FACE& f0 = m.Face(2 * i);
-			GMesh::FACE& f1 = m.Face(2 * i + 1);
-
-			f0.n[0] = i;
-			f0.n[1] = i + 1;
-			f0.n[2] = (M + 1) + i + 1;
-			f0.pid = f.GetLocalID();
-
-			f1.n[0] = (M + 1) + i + 1;
-			f1.n[1] = (M + 1) + i;
-			f1.n[2] = i;
-			f1.pid = f.GetLocalID();
+			P.push_back(o.Node(e0.m_node[0])->LocalPosition());
+			for (int i = 0; i < e0.m_cnode.size(); ++i)
+				P.push_back(o.Node(e0.m_cnode[i])->LocalPosition());
+			P.push_back(o.Node(e0.m_node[1])->LocalPosition());
 		}
-
-		// create the edges
-		for (int i = 0; i < M; ++i)
+		else
 		{
-			GMesh::EDGE& e0 = m.Edge(2 * i);
-			GMesh::EDGE& e1 = m.Edge(2 * i + 1);
-
-			e0.n[0] = i;
-			e0.n[1] = i + 1;
-			e0.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
-
-			e1.n[0] = (M + 1) + i;
-			e1.n[1] = (M + 1) + i + 1;
-			e1.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
+			P.push_back(o.Node(e0.m_node[1])->LocalPosition());
+			int n = e0.m_cnode.size();
+			for (int i = 0; i < n; ++i)
+				P.push_back(o.Node(e0.m_cnode[n - i - 1])->LocalPosition());
+			P.push_back(o.Node(e0.m_node[0])->LocalPosition());
 		}
+		GM_BEZIER gm(P);
 
-		GMesh::EDGE& e0 = m.Edge(2 * M);
-		GMesh::EDGE& e1 = m.Edge(2 * M + 1);
-
-		e0.n[0] = 0;
-		e0.n[1] = M + 1;
-		e0.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();
-
-		e1.n[0] = M;
-		e1.n[1] = 2 * M + 1;
-		e1.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
+		for (int i = 0; i <= M; ++i)
+		{
+			points[i] = to_vec3f(gm.Point(i / (double)M));
+		}
 	}
 	break;
 	default:
 		assert(false);
 	}
+
+	// allocate the mesh
+	m.Create(2 * (M + 1), 2 * M, 2 * M + 2);
+
+	// create nodes
+	for (int i = 0; i <= M; ++i)
+	{
+		GLMesh::NODE& ni = m.Node(i);
+		GLMesh::NODE& nj = m.Node(i + (M + 1));
+
+		ni.r = points[i];
+		nj.r = ni.r + to_vec3f(t);
+		ni.pid = -1;
+		nj.pid = -1;
+	}
+
+	// mark the corner nodes
+	m.Node(0).pid = o.Node(e0.m_node[n0])->GetLocalID();
+	m.Node(M).pid = o.Node(e0.m_node[n1])->GetLocalID();
+
+	int m0 = 0, m1 = 1;
+	if (f.m_edge[2].nwn == -1) { m0 = 1; m1 = 0; }
+
+	m.Node(M + 1).pid = o.Node(e2.m_node[m1])->GetLocalID();
+	m.Node(2 * M + 1).pid = o.Node(e2.m_node[m0])->GetLocalID();
+
+	// create the faces
+	for (int i = 0; i < M; ++i)
+	{
+		GLMesh::FACE& f0 = m.Face(2 * i);
+		GLMesh::FACE& f1 = m.Face(2 * i + 1);
+
+		f0.n[0] = i;
+		f0.n[1] = i + 1;
+		f0.n[2] = (M + 1) + i + 1;
+		f0.pid = f.GetLocalID();
+
+		f1.n[0] = (M + 1) + i + 1;
+		f1.n[1] = (M + 1) + i;
+		f1.n[2] = i;
+		f1.pid = f.GetLocalID();
+	}
+
+	// create the edges
+	for (int i = 0; i < M; ++i)
+	{
+		GLMesh::EDGE& e0 = m.Edge(2 * i);
+		GLMesh::EDGE& e1 = m.Edge(2 * i + 1);
+
+		e0.n[0] = i;
+		e0.n[1] = i + 1;
+		e0.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
+
+		e1.n[0] = (M + 1) + i;
+		e1.n[1] = (M + 1) + i + 1;
+		e1.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
+	}
+
+	GLMesh::EDGE& me0 = m.Edge(2 * M);
+	GLMesh::EDGE& me1 = m.Edge(2 * M + 1);
+
+	me0.n[0] = 0;
+	me0.n[1] = M + 1;
+	me0.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();
+
+	me1.n[0] = M;
+	me1.n[1] = 2 * M + 1;
+	me1.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
 
 	glmesh->Attach(m, false);
 }
@@ -541,11 +460,15 @@ void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 //-----------------------------------------------------------------------------
 // Build a revolved surface
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
-void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	int NN = f.Nodes();
 	int NE = f.Edges();
@@ -569,13 +492,21 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 	}
 
 	// determine which edge is getting revolved.
+	int axis = EDGE_YARC;
 	int revolvedEdge = -1;
-	if      (e[0]->m_ntype == EDGE_ZARC) revolvedEdge = 1;
-	else if (e[1]->m_ntype == EDGE_ZARC) revolvedEdge = 0;
-	else assert(false);
+	if      (e[0]->m_ntype == EDGE_YARC) revolvedEdge = 1;
+	else if (e[1]->m_ntype == EDGE_YARC) revolvedEdge = 0;
+	else
+	{
+		// hmm, maybe revolve around Z? 
+		axis = EDGE_ZARC;
+		if      (e[0]->m_ntype == EDGE_ZARC) revolvedEdge = 1;
+		else if (e[1]->m_ntype == EDGE_ZARC) revolvedEdge = 0;
+		else assert(false);
+	}
 
 	// allocate mesh
-	GMesh m;
+	GLMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
 	// build nodes
@@ -602,17 +533,32 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 
 			// the transfinite interpolation doesn't quite project correctly
 			// to a revolved surface, so we need to make a small adjustment.
-			vec2d c(q[revolvedEdge].x, q[revolvedEdge].y);
-			double R = c.norm();
+			if (axis == EDGE_YARC)
+			{
+				vec2d c(q[revolvedEdge].x, q[revolvedEdge].z);
+				double R = c.norm();
 
-			double z = p.z;
-			p.z = 0;
-			p.Normalize();
-			p.x *= R;
-			p.y *= R;
-			p.z = z;
+				double y = p.y;
+				p.y = 0;
+				p.Normalize();
+				p.x *= R;
+				p.z *= R;
+				p.y = y;
+			}
+			else
+			{
+				vec2d c(q[revolvedEdge].x, q[revolvedEdge].y);
+				double R = c.norm();
 
-			GMesh::NODE& n = m.Node(j * (M + 1) + i);
+				double z = p.z;
+				p.z = 0;
+				p.Normalize();
+				p.x *= R;
+				p.y *= R;
+				p.z = z;
+			}
+
+			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = to_vec3f(p);
 			n.pid = -1;
 		}
@@ -626,24 +572,24 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 	for (int j = 0; j < M; ++j)
 		for (int i = 0; i < M; ++i)
 		{
-			GMesh::FACE& f0 = m.Face(j * (2 * M) + 2 * i);
-			GMesh::FACE& f1 = m.Face(j * (2 * M) + 2 * i + 1);
+			GLMesh::FACE& f0 = m.Face(j * (2 * M) + 2 * i);
+			GLMesh::FACE& f1 = m.Face(j * (2 * M) + 2 * i + 1);
 
-			f0.n[0] = i * (M + 1) + j;
-			f0.n[1] = (i + 1) * (M + 1) + j;
-			f0.n[2] = (i + 1) * (M + 1) + j + 1;
-			f0.pid = f.GetLocalID();
-
-			f1.n[0] = (i + 1) * (M + 1) + j + 1;
-			f1.n[1] = i * (M + 1) + j + 1;
-			f1.n[2] = i * (M + 1) + j;
+			f1.n[0] = j * (M + 1) + i;
+			f1.n[1] = j * (M + 1) + i + 1;
+			f1.n[2] = (j + 1) * (M + 1) + i + 1;
 			f1.pid = f.GetLocalID();
+
+			f0.n[0] = (j + 1) * (M + 1) + i + 1;
+			f0.n[1] = (j + 1) * (M + 1) + i;
+			f0.n[2] = j * (M + 1) + i;
+			f0.pid = f.GetLocalID();
 		}
 
 	// build the edges
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(i);
+		GLMesh::EDGE& e = m.Edge(i);
 		e.n[0] = i;
 		e.n[1] = i + 1;
 		e.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
@@ -651,7 +597,7 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(M + i);
+		GLMesh::EDGE& e = m.Edge(M + i);
 		e.n[0] = (i + 1) * (M + 1) - 1;
 		e.n[1] = (i + 2) * (M + 1) - 1;
 		e.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
@@ -659,7 +605,7 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(2 * M + i);
+		GLMesh::EDGE& e = m.Edge(2 * M + i);
 		e.n[0] = (M + 1) * (M + 1) - 1 - i;
 		e.n[1] = (M + 1) * (M + 1) - 1 - i - 1;
 		e.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
@@ -667,7 +613,7 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(3 * M + i);
+		GLMesh::EDGE& e = m.Edge(3 * M + i);
 		e.n[0] = (M - i) * (M + 1);
 		e.n[1] = (M - i - 1) * (M + 1);
 		e.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();
@@ -678,7 +624,7 @@ void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 //-----------------------------------------------------------------------------
 // Build a revolved wedge surface
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
-void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -702,7 +648,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 	assert((e1.m_ntype == EDGE_YARC) || (e1.m_ntype == EDGE_ZARC));
 
 	// this is the mesh we'll be building
-	GMesh m;
+	GLMesh m;
 
 	// build the mesh
 	switch (e0.m_ntype)
@@ -725,7 +671,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 			GM_CIRCLE_ARC c0(vec2d(0, 0), a, b, f.m_edge[1].nwn);
 
 			// position the center point
-			GMesh::NODE& n0 = m.Node(0);
+			GLMesh::NODE& n0 = m.Node(0);
 			n0.r = to_vec3f(r0);
 			n0.pid = -1;
 
@@ -734,7 +680,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 			{
 				double t = (double)i / (double)M;
 
-				GMesh::NODE& n0 = m.Node(i + 1);
+				GLMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
 				n0.r = vec3f(p0.x(), y1, p0.y());
 				n0.pid = -1;
@@ -751,7 +697,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 			GM_CIRCLE_ARC c0(vec2d(0, 0), a, b, f.m_edge[1].nwn);
 
 			// position the center point
-			GMesh::NODE& n0 = m.Node(0);
+			GLMesh::NODE& n0 = m.Node(0);
 			n0.r = to_vec3f(r0);
 			n0.pid = -1;
 
@@ -760,32 +706,33 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 			{
 				double t = (double)i / (double)M;
 
-				GMesh::NODE& n0 = m.Node(i + 1);
+				GLMesh::NODE& n0 = m.Node(i + 1);
 				vec2d p0 = c0.Point(t);
 				n0.r = vec3f(p0.x(), p0.y(), z1);
 				n0.pid = -1;
 			}
 		}
+		else (assert(false));
 
 		m.Node(0).pid = o.Node(f.m_node[0])->GetLocalID();
 		m.Node(1).pid = o.Node(f.m_node[1])->GetLocalID();
 		m.Node(M + 1).pid = o.Node(f.m_node[2])->GetLocalID();
 
 		// add edges
-		GMesh::EDGE& e0 = m.Edge(0);
-		GMesh::EDGE& e1 = m.Edge(1);
+		GLMesh::EDGE& e0 = m.Edge(0);
+		GLMesh::EDGE& e1 = m.Edge(1);
 		e0.n[0] = 0; e0.n[1] = 1; e0.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
 		e1.n[0] = 0; e1.n[1] = M + 1; e1.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
 
 		for (int i = 0; i < M; ++i)
 		{
-			GMesh::EDGE& e = m.Edge(2 + i);
+			GLMesh::EDGE& e = m.Edge(2 + i);
 			e.n[0] = i + 1; e.n[1] = i + 2; e.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
 		}
 
 		for (int i = 0; i < M; ++i)
 		{
-			GMesh::FACE& f0 = m.Face(i);
+			GLMesh::FACE& f0 = m.Face(i);
 
 			f0.n[0] = 0;
 			f0.n[1] = i + 1;
@@ -813,6 +760,18 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 	case EDGE_LINE:
 		p = r0 * (1.0 - r) + r1 * r;
 		break;
+	case EDGE_YARC:
+	{
+		vec2d c(0, 0);
+		vec2d a(r0.x, r0.z);
+		vec2d b(r1.x, r1.z);
+
+		// create an arc object
+		GM_CIRCLE_ARC ca(c, a, b, -edge.m_orient);
+		vec2d q = ca.Point(r);
+		p = vec3d(q.x(), r1.y, q.y());
+	}
+	break;
 	case EDGE_ZARC:
 	{
 		vec2d c(0, 0);
@@ -827,11 +786,16 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
-		vec3d rc = o.Node(edge.m_cnode)->LocalPosition();
+		vec3d rc = o.Node(edge.m_cnode[0])->LocalPosition();
 		GM_CIRCLE_3P_ARC c(rc, r0, r1, edge.m_orient);
 		p = c.Point(r);
 	}
-	break;	
+	break;
+	case EDGE_BEZIER:
+	{
+		p = edge.Point(r);
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -839,7 +803,7 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -867,7 +831,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 	}
 
 	// allocate mesh
-	GMesh m;
+	GLMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
 	// see if this face is a sphere
@@ -875,10 +839,10 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 	bool isSphere = true;
 	double sphereRadius = 0;
 	vec3d sphereCenter(0, 0, 0);
-	int c0 = e[0]->m_cnode;
+	int c0 = (e[0]->m_cnode.empty() ? -1 : e[0]->m_cnode[0]);
 	for (int j = 0; j < 4; ++j)
 	{
-		if ((e[j]->m_ntype != EDGE_3P_CIRC_ARC) || (e[j]->m_cnode != c0))
+		if ((e[j]->m_ntype != EDGE_3P_CIRC_ARC) || (e[j]->m_cnode[0] != c0))
 		{
 			isSphere = false;
 			break;
@@ -922,7 +886,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 				p = sphereCenter + t * sphereRadius;
 			}
 
-			GMesh::NODE& n = m.Node(j * (M + 1) + i);
+			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = to_vec3f(p);
 			n.pid = -1;
 		}
@@ -936,8 +900,8 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 	for (int j = 0; j < M; ++j)
 		for (int i = 0; i < M; ++i)
 		{
-			GMesh::FACE& f0 = m.Face(j * (2 * M) + 2 * i);
-			GMesh::FACE& f1 = m.Face(j * (2 * M) + 2 * i + 1);
+			GLMesh::FACE& f0 = m.Face(j * (2 * M) + 2 * i);
+			GLMesh::FACE& f1 = m.Face(j * (2 * M) + 2 * i + 1);
 
 			f0.n[0] = i * (M + 1) + j;
 			f0.n[1] = (i + 1) * (M + 1) + j + 1;
@@ -953,7 +917,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 	// build the edges
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(i);
+		GLMesh::EDGE& e = m.Edge(i);
 		e.n[0] = i;
 		e.n[1] = i + 1;
 		e.pid = o.Edge(f.m_edge[0].nid)->GetLocalID();
@@ -961,7 +925,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(M + i);
+		GLMesh::EDGE& e = m.Edge(M + i);
 		e.n[0] = (i + 1) * (M + 1) - 1;
 		e.n[1] = (i + 2) * (M + 1) - 1;
 		e.pid = o.Edge(f.m_edge[1].nid)->GetLocalID();
@@ -969,7 +933,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(2 * M + i);
+		GLMesh::EDGE& e = m.Edge(2 * M + i);
 		e.n[0] = (M + 1) * (M + 1) - 1 - i;
 		e.n[1] = (M + 1) * (M + 1) - 1 - i - 1;
 		e.pid = o.Edge(f.m_edge[2].nid)->GetLocalID();
@@ -977,7 +941,7 @@ void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 
 	for (int i = 0; i < M; ++i)
 	{
-		GMesh::EDGE& e = m.Edge(3 * M + i);
+		GLMesh::EDGE& e = m.Edge(3 * M + i);
 		e.n[0] = (M - i) * (M + 1);
 		e.n[1] = (M - i - 1) * (M + 1);
 		e.pid = o.Edge(f.m_edge[3].nid)->GetLocalID();

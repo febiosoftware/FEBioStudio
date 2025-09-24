@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FESurfaceModifier.h"
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSFaceEdgeList.h>
 
 class FEEdgeFlip : public FESurfaceModifier
 {
@@ -44,7 +44,7 @@ private:
 	void DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FSSurfaceMesh* mesh);
 
 private:
-	FSEdgeList*			m_EL;
+	EdgeList*			m_EL;
 	FSFaceEdgeList*		m_FEL;
 	FSEdgeFaceList*		m_EFL;
 	std::vector<int>	m_tag;

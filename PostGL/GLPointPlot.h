@@ -106,7 +106,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // point cloud rendering of imported point data
-class CGLPointPlot : public CGLLegendPlot
+class CGLPointPlot : public CGLPlot
 {
 	enum { POINT_SIZE, POINT_SIZE_SOURCE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
@@ -114,7 +114,7 @@ public:
 	CGLPointPlot();
 	virtual ~CGLPointPlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	float GetPointSize() { return m_pointSize; }
 	void SetPointSize(float f) { m_pointSize = f; }
@@ -132,8 +132,8 @@ public:
 	void Reload() override;
 
 private:
-	void RenderPoints();
-	void RenderSpheres();
+	void RenderPoints(GLRenderEngine& re);
+	void RenderSpheres(GLRenderEngine& re);
 
 	void UpdateRange();
 	void UpdatePointMesh();
@@ -150,6 +150,6 @@ private:
 
 	PointDataModel* m_pointData;
 
-	GLPointMesh	m_pointMesh;	// mesh used for rendering points
+	GLMesh	m_pointMesh;	// mesh used for rendering points
 };
 } // namespace Post

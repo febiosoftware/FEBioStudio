@@ -52,6 +52,8 @@ public:
 	void SetName(const std::string& name);
 	const std::string& GetName() const;
 
+	std::string GetNameAndType() const;
+
 	void SetInfo(const std::string& info);
 	const std::string& GetInfo() const;
 

@@ -91,7 +91,7 @@ public:
 
 	void Create();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 
@@ -119,7 +119,7 @@ private:
 	double	m_shininess;
 	uint8_t m_ref;
 
-	GLTriMesh	m_mesh;
+	GLMesh*	m_mesh = nullptr;
 
     C3DImage* m_8bitImage;
     bool m_del8BitImage;

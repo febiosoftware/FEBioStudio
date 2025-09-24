@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <QFileInfo>
 
-CLocalJobProcess::CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
+CLocalJobProcess::CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, const QString& program, QObject* parent) : m_wnd(wnd), m_job(job), m_program(program)
 {
 	setProcessChannelMode(QProcess::MergedChannels);
 
@@ -54,15 +54,15 @@ void CLocalJobProcess::run()
 		m_wnd->AddLogEntry(QString("Setting current working directory to: %1\n").arg(workingDir));
 		setWorkingDirectory(workingDir);
 	}
-	QString program = QString::fromStdString(m_job->GetLaunchConfig()->path);
 
 	// do string substitution
+	QString program = m_program;
 	string sprogram = program.toStdString();
 	sprogram = FSDir::expandMacros(sprogram);
 	program = QString::fromStdString(sprogram);
 
 	// extract the arguments
-	QString cmd = QString::fromStdString(m_job->m_cmd);
+	QString cmd = QString::fromStdString(m_job->GetCommand());
 	QStringList args = cmd.split(" ", Qt::SkipEmptyParts);
 
 	std::string configFile = m_job->GetConfigFileName();

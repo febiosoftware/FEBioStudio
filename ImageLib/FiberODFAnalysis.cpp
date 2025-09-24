@@ -25,20 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FiberODFAnalysis.h"
-#include <qopengl.h>
 #include "ImageModel.h"
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/SpherePointsGenerator.h>
 #include <MeshTools/FENNQuery.h>
-#include <PostLib/ColorMap.h>
-#include <MeshLib/GMesh.h>
+#include <FSCore/ColorMap.h>
+#include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
 #include "SITKTools.h"
 #include <FECore/besselIK.h>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLContext.h>
 #include <FEBioOpt/FEBioOpt.h>
 
 #ifdef min
@@ -46,13 +45,6 @@ SOFTWARE.*/
 #endif
 #ifdef max
 #undef max
-#endif
-#include <algorithm>
-
-#ifdef __APPLE__
-#include <OpenGL/GLU.h>
-#else
-#include <GL/glu.h>
 #endif
 
 #ifndef M_PI
@@ -445,25 +437,13 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 	AddDoubleParam(0.2, "Butterworth fraction")->SetState(Param_HIDDEN);
 	AddDoubleParam(10., "Butterworth steepness")->SetState(Param_HIDDEN);
 
-	m_tex.SetDivisions(10);
-	m_tex.SetSmooth(true);
-
     m_map.jet();
     m_remeshMap.jet();
-	m_pbar = new GLLegendBar(&m_tex, 0, 0, 120, 600, GLLegendBar::ORIENT_VERTICAL);
-	m_pbar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	m_pbar->SetType(GLLegendBar::GRADIENT);
-	m_pbar->copy_label("ODF");
-	m_pbar->ShowTitle(true);
-	m_pbar->hide();
-
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
 {
     clear();
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
     delete m_imp;
 }
 
@@ -474,7 +454,6 @@ void CFiberODFAnalysis::clear()
         delete odf;
     }
     m_ODFs.clear();
-	if (m_pbar) m_pbar->hide();
 }
 
 #ifdef HAS_ITK
@@ -694,7 +673,6 @@ void CFiberODFAnalysis::run()
 	UpdateStats();
     UpdateColorBar();
 	UpdateAllMeshes();
-	m_pbar->show();
 }
 #else
 void CFiberODFAnalysis::run() {}
@@ -743,7 +721,6 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 		if (m_ndivs != GetIntValue(DIVS))
 		{
 			m_ndivs = GetIntValue(DIVS);
-			m_pbar->SetDivisions(m_ndivs);
 		}
 
         if (m_overlapFraction != GetFloatValue(OVERLAP))
@@ -901,9 +878,6 @@ void CFiberODFAnalysis::UpdateColorBar()
             m_remeshMap.SetRange(m_remeshMin, m_remeshMax);
         }
 
-		m_pbar->SetRange(vmin, vmax);
-		m_pbar->copy_label(szlabel);
-
         m_map.SetRange(vmin, vmax);
 	}
 	else
@@ -916,9 +890,6 @@ void CFiberODFAnalysis::UpdateColorBar()
 			vmin = m_userMin;
 			vmax = m_userMax;
 		}
-
-		m_pbar->SetRange(vmin, vmax);
-		m_pbar->copy_label("FA");
 
         m_map.SetRange(vmin, vmax);
 	}
@@ -948,7 +919,7 @@ void CFiberODFAnalysis::normalizeODF(std::vector<double>& odf)
 	}
 }
 
-void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
+void RenderEllipsoid(GLRenderEngine& re, float* l, vec3f* e)
 {
 	float smax = 0.f;
 	float sx = fabs(l[0]); if (sx > smax) smax = sx;
@@ -960,37 +931,29 @@ void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
 	if (sy < 0.01 * smax) sy = 0.01f * smax;
 	if (sz < 0.01 * smax) sz = 0.01f * smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f n = e[0] ^ e[1];
 	if (n * e[2] < 0) e[2] = -e[2];
-	GLfloat m[4][4] = { 0 };
-	m[3][3] = 1.f;
+	double m[4][4] = { 0 };
+	m[3][3] = 1.0;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(sx, sy, sz);
-	gluSphere(po, 1.f, 32, 32);
-	glPopMatrix();
+	re.scale(sx, sy, sz);
+	glx::drawSphere(re, 1.f);
+	re.popTransform();
 }
 
-void CFiberODFAnalysis::render(CGLCamera* cam)
+void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (IsActive() == false)
 	{
-		m_pbar->hide();
 		return;
 	}
-	else if (m_ODFs.empty() == false)
-	{
-		m_pbar->show();
-	}
 
-    glPushAttrib(GL_ENABLE_BIT);
-    glEnable(GL_COLOR_MATERIAL);
-    GLfloat spc[4] = { 0, 0, 0, 1.f };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+	re.pushState();
 
 	// render the meshes (and selection box)
     bool showBoundingBoxes = GetBoolValue(SHOW_BOUND_BOX);
@@ -1000,43 +963,41 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 
     for (auto odf : m_ODFs)
     {
-        glPushMatrix();
-        glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+		re.pushTransform();
+		re.translate(odf->m_position);
 
         if (odf->m_selected) sel = odf;
 
         if (odf->m_active && odf->IsValid())
         {
-            glPushMatrix();
-            glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
-            renderODFMesh(odf, cam);
-            glPopMatrix();
+			re.pushTransform();
+            re.scale(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
+            renderODFMesh(re, odf, rc.m_cam);
+			re.popTransform();
         }
 
         if(showBoundingBoxes)
         {
-            glColor3ub(255, 128, 128);
-            glx::renderBox(odf->m_box, false, 1);
+            glx::renderBox(re, odf->m_box, GLColor(255, 128, 128), false, 1);
         }
         
-        glPopMatrix();
+		re.popTransform();
     }
 
     // show selected box
 	if (sel && showSelBox)
 	{
-		glColor3ub(255, 255, 0);
-		glDisable(GL_DEPTH_TEST);
-		glPushMatrix();
-		glTranslated(sel->m_position.x, sel->m_position.y, sel->m_position.z);
-		glx::renderBox(sel->m_box, false, 1);
-		glPopMatrix();
+		re.disable(GLRenderEngine::DEPTHTEST);
+		re.pushTransform();
+		re.translate(sel->m_position);
+		glx::renderBox(re, sel->m_box, GLColor(255, 255, 0), false, 1);
+		re.popTransform();
 	}
 
-    glPopAttrib();
+	re.popState();
 }
 
-void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
+void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
     bool radial = GetBoolValue(RADIAL);
@@ -1046,15 +1007,12 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	
     if (showMesh == 2 && radial)
     {
-        glEnable(GL_COLOR_MATERIAL);
-
-		GLUquadricObj* pglyph = gluNewQuadric();
-		gluQuadricNormals(pglyph, GLU_SMOOTH);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White());
 
         if (odf->m_active && odf->IsValid())
         {
             GLColor c = m_map.map(odf->m_FA);
-            glColor3ub(c.r, c.g, c.b);
+			re.setColor(c);
 
             float l[3] = { 0.f }, lmax = -1e34;
             vec3f e[3];
@@ -1069,16 +1027,14 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
                 l[0] /= lmax;
                 l[1] /= lmax;
                 l[2] /= lmax;
-                RenderEllipsoid(pglyph, l, e);
+                RenderEllipsoid(re, l, e);
             }
         }
-
-		gluDeleteQuadric(pglyph);
 
         return;
     }
 
-    GMesh* mesh = nullptr;
+    GLMesh* mesh = nullptr;
 	if(showMesh == 2 || showMesh == 3)
     {
         mesh = &odf->m_smallMesh;
@@ -1091,33 +1047,27 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 
 	if (ncolor == 0)
     {
-        glEnable(GL_COLOR_MATERIAL);
-        m_render.SetFaceColor(true);
+		re.setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMesh(*mesh, false);
     }
 	else
 	{
 		GLColor c = m_map.map(odf->m_FA);
 
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(c.r, c.g, c.b);
-		glDisable(GL_COLOR_MATERIAL);
+		re.setMaterial(GLMaterial::PLASTIC, c);
+		re.renderGMesh(*mesh, false);
 	}
-
-	m_render.RenderGLMesh(mesh);
 
 	if (meshLines)
 	{
-        glEnable(GL_BLEND);
-		glColor4f(0, 0, 0, 0.5);
-
-        glLineWidth(1.5f);
-		m_render.RenderGMeshLines(mesh);
+		re.setMaterial(GLMaterial::CONSTANT, GLColor(0,0,0,128));
+		re.renderGMeshEdges(*mesh, false);
 	}
 }
 
 void CFiberODFAnalysis::OnDelete()
 {
-    m_pbar->hide();
+
 }
 
 int CFiberODFAnalysis:: ODFs() const 
@@ -1212,7 +1162,7 @@ void CFiberODFAnalysis::buildMesh(CODF* odf)
     auto& nodes = sphere::GetNodes(FULL);
     auto& faces = sphere::GetFaces(FULL);
 
-	GMesh& mesh = odf->m_mesh;
+	GLMesh& mesh = odf->m_mesh;
 	odf->m_mesh.Create(nodes.size(), faces.size());
 
 	// create nodes
@@ -1238,7 +1188,7 @@ void CFiberODFAnalysis::buildMesh(CODF* odf)
     auto& vm3Nodes = sphere::GetNodes(SMALL);
     auto& vm3Faces = sphere::GetFaces(SMALL);
 
-    GMesh& m_vm3Mesh = odf->m_smallMesh;
+	GLMesh& m_vm3Mesh = odf->m_smallMesh;
 	odf->m_smallMesh.Create(vm3Nodes.size(), vm3Faces.size());
 
 	// create nodes
@@ -1275,7 +1225,7 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 	if (rmax == 0.0) rmax = 1.0;
 
 	// udpate nodes
-	GMesh& mesh = odf->m_mesh;
+	GLMesh& mesh = odf->m_mesh;
     auto& nodes = sphere::GetNodes(FULL);
 	for (int i = 0; i < nodes.size(); ++i)
 	{
@@ -1307,7 +1257,7 @@ void CFiberODFAnalysis::UpdateSmallMesh(CODF* odf, const vector<double>& val, bo
 	if (rmax == 0.0) rmax = 1.0;
 
 	// update nodes
-	GMesh& mesh = odf->m_smallMesh;
+	GLMesh& mesh = odf->m_smallMesh;
     auto& nodes = sphere::GetNodes(SMALL);
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
@@ -1347,7 +1297,7 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
     remeshFull(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
 
 	// get the new mesh sizes
-	GMesh& mesh = odf->m_remesh;
+	GLMesh& mesh = odf->m_remesh;
     int NN = (int)nodePos.size();
     int NF = (int)elems.size();
 	mesh.Create(NN, NF);
@@ -1399,7 +1349,7 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	double scale = (min == max ? 1.0 : 1.0 / (max - min));
 
 	// create nodes
-	GMesh& mesh = odf->m_remesh;
+	GLMesh& mesh = odf->m_remesh;
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		auto& node = mesh.Node(i);

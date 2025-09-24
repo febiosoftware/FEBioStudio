@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <vector>
-//using namespace std;
+using namespace std;
 
 COMSOLimport::COMSOLimport(FSProject& prj) : FSFileImport(prj)
 {
@@ -439,7 +439,7 @@ bool COMSOLimport::BuildMesh(FSModel& fem)
 	int ne;
 	for (i=0; i<elems; ++i, ++ie)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		switch (ie->ntype)
 		{

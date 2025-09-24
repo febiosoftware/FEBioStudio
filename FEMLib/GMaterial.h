@@ -26,24 +26,15 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <FSCore/color.h>
-#include <MeshLib/IHasItemList.h>
+#include <GLLib/GLMaterial.h>
 
-//-----------------------------------------------------------------------------
-class FSModel;
 class FSMaterial;
-class GPartList;
-class GPart;
+class FSModel;
 
-//-----------------------------------------------------------------------------
 // This class defines a material. It stores the material properties (as a 
 // FSMaterial class), the material name and other attributes, mostly used for rendering
-//
-class GMaterial : public FSObject, public FSHasOneItemList
+class GMaterial : public FSObject
 {
-public:
-	enum {MAX_COLORS = 16};
-
 public:
 	GMaterial(FSMaterial* pm = 0);
 	~GMaterial(void);
@@ -54,13 +45,6 @@ public:
 	FSMaterial* GetMaterialProperties();
 	FSMaterial* TakeMaterialProperties();
 
-	void SetModel(FSModel* ps);
-	FSModel* GetModel() { return m_ps; }
-
-	void AddPart(GPart* pg);
-	void UpdateParts();
-	void ClearParts();
-
 	int GetID() { return m_nID; }
 	void SetID(int nid)
 	{
@@ -68,28 +52,25 @@ public:
 		m_nref = (nid >= m_nref ? nid+1:m_nref);
 	}
 
+	void SetModel(FSModel* fem) { m_fem = fem; }
+	FSModel* GetModel() { return m_fem; }
+
 	GMaterial* Clone();
 
-	const char* GetFullName();
+	const char* GetFullName() const;
+
+	const char* GetTypeString() const;
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	GLColor Ambient() { return m_ambient; }
-	GLColor Diffuse() { return m_diffuse; }
-	GLColor Emission() { return m_emission; }
-	GLColor Specular() { return m_specular; }
-
-	void Ambient(GLColor c) { m_ambient = c; }
-	void Diffuse(GLColor c) { m_diffuse = c; }
-	void Emission(GLColor c) { m_emission = c; }
-	void Specular(GLColor c) { m_specular = c; }
-	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
+	void SetColor(GLColor c) { m_glmat.AmbientDiffuse(c); }
+	GLColor GetColor() const { return m_glmat.diffuse; }
+	GLMaterial& GetGLMaterial() { return m_glmat; }
 
 	// location where glyph will be rendered (e.g. for rigid bodies)
-	vec3d GetPosition();
-
-	void UpdatePosition();
+	vec3d GetPosition() const { return m_pos; }
+	void SetPosition(const vec3d& v) { m_pos = v; }
 
 public:
 	static void ResetCounter() { m_nref = 1; }
@@ -98,25 +79,19 @@ public:
 
 public:
 	// appearance
-	double	m_shininess;	// shininess factor
 	int			m_nrender;		// rendering mode
 
 	int		m_ntag;	// used for I/O
 	vec3d	m_pos;	// location where glyph will be rendered (e.g. for rigid bodies)
 
 protected:
-	GLColor		m_diffuse;	// diffuse color of material
-	GLColor		m_ambient;	// ambient color of material
-	GLColor		m_specular;	// specular color of material
-	GLColor		m_emission;	// emission color of material
+	GLMaterial	m_glmat;
 
 protected:
 	int			m_nID;	//!< unique material ID
 	FSMaterial*	m_pm;	//!< the material properties
-	FSModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
+	FSModel* m_fem = nullptr;
 
 private:
-	GPartList* m_partList;
-
 	static	int	m_nref;
 };

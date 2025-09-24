@@ -36,6 +36,8 @@ namespace Ui {
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
 		XML_CONFIG,			// text document	(i.e. feb file)
+		MONITOR_CONFIG,		// febio monitor document
+		FEBREPORT_CONFIG,	// febio report document
 	};
 
 	// Protected base class for configurations
@@ -102,6 +104,22 @@ namespace Ui {
 	{
 	public:
 		CXMLConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::XML_CONFIG) {}
+		void Apply() override;
+	};
+
+	// Configuration for running the febio monitor
+	class CMonitorConfig : public CUIConfig
+	{
+	public:
+		CMonitorConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::MONITOR_CONFIG) {}
+		void Apply() override;
+	};
+
+	// Configuration for viewing an febio report
+	class CFEBReportConfig : public CUIConfig
+	{
+	public:
+		CFEBReportConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::FEBREPORT_CONFIG) {}
 		void Apply() override;
 	};
 

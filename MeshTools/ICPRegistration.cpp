@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ICPRegistration.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <FECore/matrix.h>
 #include <MeshTools/FENNQuery.h>
 using namespace std;

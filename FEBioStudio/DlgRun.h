@@ -27,7 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 #include <vector>
-#include "LaunchConfig.h"
+
+class CLaunchConfig;
+class CFEBioJob;
 
 namespace Ui {
 	class CDlgRun;
@@ -38,45 +40,45 @@ class CDlgRun : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgRun(QWidget* parent);
+	CDlgRun(QWidget* parent, std::vector<CFEBioJob*>& jobs);
 
+    // For setting the default job name and working directory
 	void SetWorkingDirectory(const QString& wd);
 	void SetJobName(const QString& fn);
-	void SetJobNames(QStringList& jobNames);
-	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
-	void SetFEBioFileVersion(int fileVersion);
+	void SetLaunchConfig(std::vector<CLaunchConfig*>& launchConfigs, int ndefault = 0);
 
 	void ShowFEBioSaveOptions(bool b);
 	void EnableJobSettings(bool b);
 
 	QString GetWorkingDirectory();
 	QString GetJobName();
-	QString GetConfigFileName();
+    void SetCurrentJob(const QString& jobName);
 	int GetLaunchConfig();
-	int GetFEBioFileVersion();
-	bool WriteNotes();
-	bool AllowMixedMesh();
-	bool UseSubDir();
-	void SetConfigFileName(const QString& configFile);
+    void GetJobInfo(CFEBioJob* job);
 	bool DoAutoSave();
 
 	void ShowAdvancedSettings(bool b);
 	bool AdvancedSettingsShown();
 
-	void SetDebugFlag(bool b);
-	bool HasDebugFlag();
-
-	QString CommandLine();
+	void SetGenerateReport(bool b) const;
+	bool GenerateReport() const;
 
 	void accept() override;
 
 protected slots:
+    void on_jobName_currentIndexChanged(int index);
 	void updateDefaultCommand();
 	void on_setCWDBtn_Clicked();
 	void on_editLCBtn_Clicked();
 	void on_selectConfigFile();
 
 private:
-	Ui::CDlgRun*	ui;
-	void UpdateLaunchConfigBox(int index);
+    void UpdateLaunchConfigBox(int index);
+
+private:
+    friend class Ui::CDlgRun;
+
+    Ui::CDlgRun*	ui;
+    std::vector<CFEBioJob*>& m_jobs;
+
 };

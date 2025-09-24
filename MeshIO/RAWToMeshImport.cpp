@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "RAWToMeshImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 
 //-----------------------------------------------------------------------------
 RAWToMeshImport::RAWToMeshImport(FSProject& prj) : FSFileImport(prj)
@@ -179,7 +179,7 @@ bool RAWToMeshImport::Load(const char* szfile)
 
 	// NOTE: we don't crease the internal surfaces. 
 	// For raw images this could otherwise result in a very large number of surfaces!
-	FEMeshBuilder meshBuilder(*pm);
+	FSMeshBuilder meshBuilder(*pm);
 	meshBuilder.RebuildMesh(60.0, false, false);
 
 	GMeshObject* po = new GMeshObject(pm);

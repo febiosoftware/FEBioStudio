@@ -703,7 +703,7 @@ public:
 	double	m_R0, m_R1;
 
 	// used by map
-	string	m_map;
+	std::string	m_map;
 
 public:
 	void Save(OArchive& ar) override;

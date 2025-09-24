@@ -27,15 +27,12 @@ SOFTWARE.*/
 #pragma
 #include "FEMesher.h"
 
-//-----------------------------------------------------------------------------
 class FSMesh;
 class GObject;
 
 
-//-----------------------------------------------------------------------------
 // Class that implements an advancing front mesh generation algorithm in 2D.
 // This algorithm generates triangular meshes.
-//
 class FEAdvancingFrontMesher2D : public FEMesher
 {
 public:

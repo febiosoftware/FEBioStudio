@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include <QWidget>
 #include <vector>
 #include <list>
-//using namespace std;
-
-using std::vector;
-using std::list;
 
 class QListWidgetItem;
 
@@ -64,17 +60,17 @@ public:
 
 	void clearData();
 	void addData(const QString& item, int data, int fmt = 0, bool checkForDuplicates = true);
-	void addData(const vector<int>& data);
+	void addData(const std::vector<int>& data);
 
 	void removeData(int ndata);
-	void removeData(const vector<int>& data);
+	void removeData(const std::vector<int>& data);
 
-	void getSelectedItems(vector<int>& sel);
-	void getSelectedItems(list<int>& sel);
+	void getSelectedItems(std::vector<int>& sel);
+	void getSelectedItems(std::list<int>& sel);
 
 	void removeSelectedItems();
 
-	void getAllItems(vector<int>& data);
+	void getAllItems(std::vector<int>& data);
 	void getAllNames(QStringList& names);
 
 	void showNameType(bool b);
@@ -86,6 +82,7 @@ public:
 	void enableAllButtons(bool b);
 
 	void setCollapsed(bool b);
+	bool isCollapsed() const;
 
 signals:
 	void addButtonClicked();
@@ -95,6 +92,7 @@ signals:
 	void clearButtonClicked();
 	void nameChanged(const QString& t);
 	void pickClicked();
+	void currentItemChanged(int item);
 
 private slots:
 	void on_addButton_clicked();
@@ -103,51 +101,28 @@ private slots:
 	void on_selButton_clicked();
 	void on_name_textEdited(const QString& t);
 	void on_list_itemDoubleClicked(QListWidgetItem *item);
+	void on_list_currentRowChanged(int nrow);
 	void on_clearSelection_clicked();
 	void on_toggleCollapse_toggled(bool b);
 	void on_pick_clicked(bool b);
 
 private:
 	Ui::CSelectionBox*	ui;
-	vector<Item>		m_items;
+	std::vector<Item>		m_items;
 };
 
 //-----------------------------------------------------------------------------
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CItemListSelectionBox : public CSelectionBox
 {
 public:
 	CItemListSelectionBox(QWidget* parent = nullptr);
 
-	void SetItemList(FEItemListBuilder* pItem);
-};
+	void SetItemList(FSItemListBuilder* pItem);
 
-class CMainWindow;
-class FSMeshSelection;
-
-class CMeshSelectionBox : public CItemListSelectionBox
-{
-	Q_OBJECT
-
-public:
-	CMeshSelectionBox(CMainWindow* wnd, QWidget* parent = nullptr);
-
-	void SetSelection(FSMeshSelection* pms);
-
-private slots:
-	void onAddButtonClicked();
-	void onSubButtonClicked();
-	void onDelButtonClicked();
-	void onSelButtonClicked();
-	void onClearButtonClicked();
-	void onPickButtonClicked();
-	void onNameChanged(const QString& t);
-
-signals:
-	void selectionChanged();
+	FSItemListBuilder* GetItemList() { return itemList; }
 
 private:
-	CMainWindow* m_wnd;
-	FSMeshSelection* m_pms;
+	FSItemListBuilder* itemList;
 };

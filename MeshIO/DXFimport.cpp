@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "DXFimport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
+using namespace std;
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 
@@ -108,7 +109,7 @@ bool DXFimport::Load(const char* szfile)
 		list<FACE>::iterator is = (*pi)->m_Face.begin();
 		for (i=0; i<elems; ++i, ++is)
 		{
-			FEElement_* pe = pm->ElementPtr(i);
+			FSElement_* pe = pm->ElementPtr(i);
 
 			pe->SetType(is->nodes == 3 ? FE_TRI3 : FE_QUAD4);
 			pe->m_node[0] = is->a;

@@ -29,7 +29,8 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include "GLImageRenderer.h"
 #include <ImageLib/RGBAImage.h>
-#include "ColorMap.h"
+#include <GLLib/ColorTexture.h>
+#include <GLLib/GLTexture2D.h>
 
 class CImageModel;
 class CImage;
@@ -48,7 +49,7 @@ public:
 
 	void Update() override;
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	int GetOrientation() const;
 	void SetOrientation(int n);
@@ -74,12 +75,11 @@ private:
 private:
 	CRGBAImage		m_im;	// 2D image that will be displayed
 	int				m_LUTC[4][256];	// color lookup table
-	bool			m_reloadTexture;
 
-    CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
+	CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
 
-	Post::CColorTexture	m_Col;
+	CColorTexture	m_Col;
 
-	unsigned int m_texID;
+	GLTexture2D m_tex;
 };
 }

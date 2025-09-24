@@ -26,14 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
-#include <MeshLib/GMesh.h>
 #include <GLLib/GLMesh.h>
 
 namespace Post {
 
-class CGLIsoSurfacePlot : public CGLLegendPlot
+class CGLIsoSurfacePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, TRANSPARENCY, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
 
@@ -50,7 +48,7 @@ public:
 	int GetSlices();
 	void SetSlices(int nslices);
 
-	void Render(CGLContext& rc);
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update(int ntime, float dt, bool breset);
 
@@ -80,9 +78,11 @@ public:
 
 	bool UpdateData(bool bsave = true);
 
+	LegendData GetLegendData() const override;
+
 protected:
 	void UpdateMesh();
-	void UpdateSlice(GMesh& mesh, float ref, GLColor col);
+	void UpdateSlice(GLMesh& mesh, float ref, GLColor col);
 
 protected:
 	int		m_nslices;		// nr. of iso surface slices
@@ -106,7 +106,7 @@ protected:
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
 
-	GLTriMesh	m_glmesh; // the mesh to render
+	GLMesh	m_renderMesh; // the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;

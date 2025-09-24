@@ -37,7 +37,9 @@ namespace VTK {
 	enum vtkDataFileType {
 		Invalid,
 		UnstructuredGrid,
-		PolyData
+		PolyData,
+		PUnstructuredGrid,
+		Collection
 	};
 
 	class vtkDataArray
@@ -114,7 +116,10 @@ namespace VTK {
 			VTK_VOXEL = 11,
 			VTK_HEXAHEDRON = 12,
 			VTK_WEDGE = 13,
-			VTK_PYRAMID = 14
+			VTK_PYRAMID = 14,
+
+			// Arbitrary order Lagrange elements
+			VTK_LAGRANGE_HEXAHEDRON = 72
 		};
 
 		vtkCell()
@@ -149,6 +154,8 @@ namespace VTK {
 
 		std::string name() const { return m_name; }
 
+		void Merge(const vtkPiece& piece);
+
 	public:
 		int m_numPoints;
 		int m_numCells;
@@ -181,9 +188,11 @@ namespace VTK {
 		std::string	m_data;
 	};
 
-	class vtkModel
+	class vtkDataSet
 	{
 	public:
+		vtkDataSet() {}
+
 		void AddPiece(const vtkPiece& piece) { m_pieces.push_back(piece); }
 
 		size_t Pieces() const { return m_pieces.size(); }
@@ -194,7 +203,29 @@ namespace VTK {
 		void Clear() { m_pieces.clear(); }
 
 	public:
-		std::string m_title;
+		double	m_time = 0;
+		std::string m_name;
 		std::vector<vtkPiece>	m_pieces;
+	};
+
+	class vtkModel
+	{
+	public:
+		vtkModel() {}
+
+		void Clear() { m_datasets.clear(); }
+
+		size_t DataSets() const { return m_datasets.size(); }
+		const vtkDataSet& DataSet(int n) const { return m_datasets[n]; }
+		
+		void AddDataSet(const vtkDataSet& dataset, double timeStamp = 0.0) 
+		{ 
+			m_datasets.push_back(dataset);
+			m_datasets.back().m_time = timeStamp;
+		}
+
+	public:
+		std::string m_title;
+		std::vector<vtkDataSet>	m_datasets;
 	};
 }

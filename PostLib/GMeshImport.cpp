@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GMeshImport.h"
 #include <FSCore/color.h>
 #include "FEPostModel.h"
-#include "FEPostMesh.h"
+#include <MeshLib/FSMesh.h>
 using namespace Post;
 
 GMeshImport::GMeshImport(FEPostModel* fem) : FEFileReader(fem)
@@ -168,7 +168,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	fem.AddMaterial(mat);
 
 	// build the mesh
-	FEPostMesh* pm = new FEPostMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// create nodes
@@ -210,7 +210,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 
 	// update the mesh
 	fem.AddMesh(pm);
-	pm->BuildMesh();
+	pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	// we need a single state

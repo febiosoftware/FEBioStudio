@@ -27,19 +27,11 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include "Interpolator.h"
-#include <PostLib/GLObject.h>
-#include <string>
 
-//-----------------------------------------------------------------------------
-// TODO: We need to inherit this from CGLObject because it is used in the modeltree
-// in PostView. Fix this.
-class GLCameraTransform : public Post::CGLObject
+class GLCameraTransform
 {
 public:
 	GLCameraTransform() {}
-	GLCameraTransform(const GLCameraTransform& key);
-	GLCameraTransform& operator = (const GLCameraTransform& key);
-
 public:
 	vec3d		pos;	// position
 	vec3d		trg;	// target
@@ -47,10 +39,10 @@ public:
 };
 
 // Base class for camera tracking targets
-class CTrackingTarget
+class GLTrackingTarget
 {
 public:
-	CTrackingTarget() {}
+	GLTrackingTarget() {}
 
 	bool IsActive() const { return m_btrack; }
 
@@ -62,26 +54,22 @@ public:
 	quatd	m_trgRot;
 };
 
-//=============================================================================
 // This class implements a camera that can be used to navigate a 3D world.
 // It uses the interpolater class to allow animatable transistions between
 // two viewpoints.
-class CGLCamera  
+class GLCamera  
 {
 public:
 	// constructor/destructor
-	CGLCamera();
+	GLCamera();
 
 	//! destructor
-	virtual ~CGLCamera();
+	virtual ~GLCamera();
 
 	// reset the camera
 	void Reset();
 
 	void MakeActive();
-
-	// set the GL transformation matrix
-	void PositionInScene();
 
 	// update camera position (for animations)
 	void Update(bool bhit = false);

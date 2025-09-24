@@ -26,12 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include <GLLib/GLTexture1D.h>
+#include <GLLib/GView.h>
 #include <PostLib/GLObject.h>
 #include <PostLib/DataMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <FSCore/box.h>
-
-class GLLegendBar;
+#include <GLLib/ColorTexture.h>
+#include <string>
 
 // used for intersection testing
 // defined in MeshLib/Intersect.h
@@ -74,29 +76,11 @@ public:
 
 	virtual void ClearSelection();
 
+	virtual LegendData GetLegendData() const { LegendData l; return l; }
+
 private:
 	int	m_renderOrder;
 	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
-};
-
-class CGLLegendPlot : public CGLPlot
-{
-public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
-
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
-
-	void ChangeName(const std::string& name) override;
-
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
-
-	void Activate(bool b) override;
-
-private:
-	GLLegendBar*	m_pbar;
 };
 
 }

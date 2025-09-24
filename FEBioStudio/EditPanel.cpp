@@ -45,6 +45,9 @@ SOFTWARE.*/
 #include <MeshTools/FEFillHole.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GPrimitive.h>
+#include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
 #include <GeomLib/GOCCObject.h>
 #include <QMessageBox>
 #include "Commands.h"
@@ -124,7 +127,7 @@ REGISTER_CLASS(FEFixJaggedEdges           , CLASS_SURFACE_MODIFIER, "Fix Jagged 
 REGISTER_CLASS(FEExtrudeEdges             , CLASS_SURFACE_MODIFIER, "Extrude Edges"   , 0xFF);
 REGISTER_CLASS(FEFillHole                 , CLASS_SURFACE_MODIFIER, "Fill Holes"      , 0xFF);
 
-CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CEditPanel)
+CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
 	ui->setupUi(this, wnd);
 }
@@ -247,7 +250,7 @@ void CEditPanel::on_modParams_apply()
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FESelection* sel = doc->GetCurrentSelection();
-	FEItemListBuilder* list = sel->CreateItemList();
+	FSItemListBuilder* list = sel->CreateItemList();
 	FSGroup* g = 0;
 	if (sel->Size() > 0)
 	{
@@ -281,7 +284,7 @@ void CEditPanel::on_modParams_apply()
 			CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
 			cmdg->AddCommand(new CCmdChangeFEMesh(surfaceObject, nullptr));
 			cmdg->AddCommand(new CCmdChangeFESurfaceMesh(surfaceObject, thread->newMesh()));
-			doc->DoCommand(cmdg, false);
+			doc->DoCommand(cmdg);
 		}
 		GetMainWindow()->RedrawGL();
 		GetMainWindow()->UpdateModel(activeObject, true);
@@ -332,6 +335,22 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIBLOCK)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
+
+		GMultiBox* newObject = new GMultiBox(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIPATCH)
+	{
+		GShellPrimitive* primitive = dynamic_cast<GShellPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
+
+		GMultiPatch* newObject = new GMultiPatch(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+	}
 	else
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
@@ -351,7 +370,7 @@ void CEditPanel::updateObjectPosition()
 	Transform t = po->GetTransform();
 	t.SetPosition(r);
 
-	pdoc->DoCommand(new CCmdTransformObject(po, t));
+	pdoc->DoCommand(new CCmdTransformObject(po, t), po->GetName());
 	
 	GetMainWindow()->RedrawGL();
 }
@@ -374,4 +393,24 @@ void CEditPanel::on_posZ_editingFinished()
 void CEditPanel::on_buttons_idClicked(int id)
 {
 	ui->activateTool(id);
+}
+
+void CEditPanel::on_form_dataChanged(bool itemModified, int index)
+{
+	CPropertyList* pl = ui->editParams->GetPropertyList();
+	if (pl == nullptr) return;
+	if ((index >= 0) && (index < pl->Properties()))
+	{
+		CProperty& p = pl->Property(index);
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc)
+		{
+			GObject* poa = doc->GetActiveObject(); assert(poa);
+			if (poa == nullptr) return;
+
+			QVariant v = pl->GetPropertyValue(index);
+			QString msg = QString("Object parameter %1 changed to %2 (%3)").arg(p.name).arg(v.toString()).arg(QString::fromStdString(poa->GetName()));
+			doc->AppendChangeLog(msg);
+		}
+	}
 }

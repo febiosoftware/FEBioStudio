@@ -25,20 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "GLSceneView.h"
+#include <CUILib/GLSceneView.h>
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
+#include <FSCore/ColorMap.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
-#include "GTriad.h"
-#include "GGrid.h"
-#include "GLPlaneCut.h"
 #include <GLWLib/GLWidgetManager.h>
-#include "Animation.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
+#include <GLLib/ColorTexture.h>
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
+#include <list>
 
 class CMainWindow;
 class CGLDocument;
@@ -46,24 +45,20 @@ class GDecoration;
 class CGView;
 class FSModel;
 class CGLView;
-class CGLScene;
+class GLScene;
+class GPart;
+
+class GLLabel;
+class GLTriad;
+class GLSafeFrame;
+class GLLegendBar;
+class GVContextMenu;
+class GLRenderEngine;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
-
-// preset views
-enum View_Mode {
-	VIEW_USER,
-	VIEW_TOP,
-	VIEW_BOTTOM,
-	VIEW_LEFT,
-	VIEW_RIGHT,
-	VIEW_FRONT,
-	VIEW_BACK,
-	VIEW_ISOMETRIC
-};
 
 // view conventions
 enum View_Convention {
@@ -79,12 +74,6 @@ enum Snap_Mode
 	SNAP_GRID
 };
 
-enum Planecut_Mode
-{
-	PLANECUT,
-	HIDE_ELEMENTS
-};
-
 class CGLPivot
 {
 public:
@@ -96,7 +85,7 @@ public:
 
 	vec3d GetPosition() const { return m_pos; }
 
-	void Render(int ntrans, double scale, bool bact);
+	void Render(GLRenderEngine& re, int ntrans, double scale, bool bact);
 
 	int Pick(int ntrans, int x, int y);
 
@@ -107,15 +96,6 @@ public:
 
 	int		m_mode;		// pivot selection mode
 	vec3d	m_pos;		// pivot point
-};
-
-// tag structure
-struct GLTAG
-{
-	char	sztag[64];	// name of tag
-	float	wx, wy;		// window coordinates for tag
-	vec3d	r;			// world coordinates of tag
-	GLColor	c;			// tag color
 };
 
 //===================================================================
@@ -130,7 +110,9 @@ public:
 public:
 	CGLDocument* GetDocument();
 
-	CGLScene* GetActiveScene() override;
+	GLScene* GetActiveScene() override;
+
+	void UpdateScene();
 
 	GObject* GetActiveObject();
 
@@ -158,7 +140,7 @@ public:
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
-	View_Mode GetViewMode() { return m_nview; }
+	View_Mode GetViewMode() { return m_view.m_nview; }
 
 	void TogglePerspective(bool b);
 
@@ -170,6 +152,11 @@ public:
 	std::string GetOGLVersionString();
 
 	void ToggleFPS();
+
+	void ToggleMeshLines(bool b);
+	void ToggleGridLines(bool b);
+	void ToggleFeatureEdges(bool b);
+	void ToggleNormals(bool b);
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev) override;
@@ -187,29 +174,11 @@ signals:
 	void pointPicked(const vec3d& p);
 	void selectionChanged();
 
-public:
-	//! Zoom out on current selection
-	void ZoomSelection(bool forceZoom = true);
-
-	//! zoom in on a box
-	void ZoomTo(const BOX& box);
-
-	//! Zoom in on an object
-	void ZoomToObject(GObject* po);
-
-	// zoom to the models extents
-	void ZoomExtents(bool banimate = true);
-
 	// render functions
 public:
 	// other rendering functions
 	void RenderRubberBand();
-	void RenderBrush();
 	void RenderPivot();
-
-	void Render3DCursor();
-	void RenderTags(std::vector<GLTAG>& tags);
-	void RenderDecorations();
 
 	void ShowSafeFrame(bool b);
 
@@ -227,10 +196,10 @@ public:
 public:
 	void changeViewMode(View_Mode vm);
 
-	void ShowContextMenu(bool b);
-
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
 	void AllocateDefaultWidgets(bool b);
+
+	void ToggleContextMenu();
 
 protected:
 	void initializeGL() override;
@@ -238,7 +207,12 @@ protected:
 
 	void RenderScene() override;
 
-	void RenderCanvas(CGLContext& rc);
+	void RenderCanvas(GLContext& rc);
+
+private:
+	void Render3DCursor();
+	void RenderTags();
+	void RenderDecorations();
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -258,17 +232,9 @@ public:
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
 
-	void setLegendRange(float vmin, float vmax);
-
 public:
 	void AddDecoration(GDecoration* deco);
 	void RemoveDecoration(GDecoration* deco);
-
-	void ShowPlaneCut(bool b);
-	bool ShowPlaneCut() const;
-	void SetPlaneCut(double d[4]);
-	void SetPlaneCutMode(int nmode);
-	void UpdatePlaneCut(bool breset = false);
 
 	GLScreenRecorder& GetScreenRecorder() { return m_recorder; }
 
@@ -280,40 +246,26 @@ public:
 public:
 	void SetColorMap(unsigned int n);
 
-	Post::CColorMap& GetColorMap();
+	CColorMap& GetColorMap();
 
 	void AddRegionPoint(int x, int y);
 
-public:
-	void RenderPlaneCut(CGLContext& rc);
-
-	bool ShowPlaneCut();
-
-	GLPlaneCut& GetPlaneCut();
-
-	void DeletePlaneCutMesh();
-
-	int PlaneCutMode();
-
-	double* PlaneCoordinates();
-
-protected slots:
-	void repaintEvent();
+public slots:
+	void updateView();
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
 
 	CBasicCmdManager m_Cmd;	// view command history
 
-	vector<pair<int, int> >		m_pl;
+	std::vector<std::pair<int, int> >		m_pl;
 	int			m_x0, m_y0, m_x1, m_y1;
 	int			m_xp, m_yp;
 	int			m_dxp, m_dyp;
-	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
 
 	bool	m_showFPS;
-	double	m_fps;
+	std::list<double>	m_fps;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;
@@ -340,39 +292,35 @@ protected:
 	CGLPivot m_pivot;
 	bool	m_userPivot;
 
-	// triad
-	GLBox*			m_ptitle;
-	GLBox*			m_psubtitle;
+	// GL widgets
+	GLLabel*		m_ptitle;
+	GLLabel*		m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
-	GLLegendBar*	m_legend;
+	GLLegendBar*	m_legend;	// main legend bar for colormaps
+	GLLegendBar*	m_legendPlot; // secondary legend for active plot
+
+	GVContextMenu* m_menu;
 
 	CGLWidgetManager*	m_Widget;
 	bool	m_ballocDefaultWidgets;
 
-	bool	m_showContextMenu;
-
 private:
-	vector<GDecoration*>	m_deco;
+	std::vector<GDecoration*>	m_deco;
 
 public:
-	CGLContext	m_rc;
+	GLContext	m_rc;
 
 private:
 	GLViewSelector	m_select;
 
 	GLScreenRecorder	m_recorder;
 
-	CGLCamera	m_oldCam;
+	GLCamera	m_oldCam;
 
-	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
-
-	bool		m_showPlaneCut;
-	int			m_planeCutMode;
-	GLPlaneCut	m_planeCut;
+	CColorTexture m_colorMap;	// color map used for rendering mesh data
 
 	std::string		m_oglVersionString;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
-void SetModelView(GObject* po);

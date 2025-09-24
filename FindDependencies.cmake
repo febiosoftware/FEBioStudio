@@ -517,6 +517,42 @@ else()
   find_package(GLEW REQUIRED)
 endif()
 
+# Python
+find_package(Python3 COMPONENTS Development)
+
+if(WIN32)
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "pybind11/include"
+        DOC "pybind11 include directory")
+elseif(APPLE)
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS /usr/include/ /opt/pybind11 $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "pybind11/include"
+		DOC "pybind11 include directory"
+		NO_DEFAULT_PATH)
+else()
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS /usr/include/ /opt/pybind11 $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "pybind11/include" 
+		DOC "pybind11 include directory")
+endif()
+
+if(PYBIND11_INC)
+    mark_as_advanced(PYBIND11_INC)
+else()
+    option(USE_PYTHON "Required for Python plugins." OFF)
+endif()
+
+if(Python3_Development_FOUND)
+    if(PYBIND11_INC)
+        option(USE_PYTHON "Required for Python plugins." ON)
+    endif()
+else()
+    option(USE_PYTHON "Required for Python plugins." OFF)
+    set(Python_ROOT_DIR "" CACHE PATH "Path to the root of a Python installation")
+endif()
+
 # ZLIB
 find_package(ZLIB)
 if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)

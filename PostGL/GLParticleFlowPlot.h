@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <PostLib/FEPostMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
 
 namespace Post {
 
@@ -66,8 +66,8 @@ class CGLParticleFlowPlot : public CGLPlot
 		GLColor			m_col;		// particles color
 		bool			m_balive;	// is particle alive at current position?
 		int				m_ndeath;	// time of death
-		vector<vec3f>	m_pos;		// particle position at various times
-		vector<vec3f>	m_vel;		// particle velocity at various times
+		std::vector<vec3f>	m_pos;		// particle position at various times
+		std::vector<vec3f>	m_vel;		// particle velocity at various times
 	};
 
 public:
@@ -75,7 +75,7 @@ public:
 
 	void Update(int ntime, float dt, bool breset) override;
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	bool UpdateData(bool bsave = true) override;
 
@@ -111,6 +111,8 @@ protected:
 
 	void UpdateParticleState(int ntime);
 
+	LegendData GetLegendData() const override;
+
 public:
 	void UpdateParticleColors();
 
@@ -124,7 +126,7 @@ private:
 	bool	m_showPath;
 	int		m_pathLength;
 
-	vector<vec2f>	m_rng;	// nodal ranges
+	std::vector<vec2f>	m_rng;	// nodal ranges
 	DataMap<vec3f>	m_map;	// nodal values map
 	vec2f			m_crng;	// current range
 
@@ -134,8 +136,8 @@ private:
 	float	m_lastTime;
 	float	m_lastDt;
 
-	FEFindElement*	m_find;
+	FSFindElement*	m_find;
 
-	vector<FlowParticle>	m_particles;
+	std::vector<FlowParticle>	m_particles;
 };
 }

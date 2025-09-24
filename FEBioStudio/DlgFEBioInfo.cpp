@@ -54,14 +54,11 @@ public:
 	QTreeWidget* params;
 	QComboBox* pc;
 	QComboBox* modules;
-	FECoreBase* m_pcb;
 	QLineEdit* search;
 
 public:
 	void setup(QDialog* dlg)
 	{
-		m_pcb = nullptr;
-
 		QSplitter* split = new QSplitter;
 		split->setOrientation(Qt::Vertical);
 
@@ -122,95 +119,94 @@ public:
 
 void CDlgFEBioInfo::onTreeChanged()
 {
-	delete ui->m_pcb;
 	ui->params->clear();
 
 	QTreeWidgetItem* it = ui->pw->currentItem();
-	if (it == nullptr)
+	if (it == nullptr) return;
+	FECoreKernel& febio = FECoreKernel::GetInstance();
+
+	int sid = it->data(1, Qt::UserRole).toInt();
+	string stype = it->text(0).toStdString();
+
+	int index = it->data(0, Qt::UserRole).toInt();
+	if ((index < 0) || (index >= febio.FactoryClasses())) return;
+
+	FECoreBase* pcb = nullptr;
+	const FECoreFactory* fac = febio.GetFactoryClass(index);
+	if (fac)
 	{
-		ui->m_pcb = nullptr;
+		try {
+			pcb = fac->Create(&febioModel);
+		}
+		catch (...)
+		{
+			pcb = nullptr;
+		}
 	}
-	else
+
+	if (pcb)
 	{
-		FECoreKernel& febio = FECoreKernel::GetInstance();
-
-		int sid = it->data(1, Qt::UserRole).toInt();
-		string stype = it->text(0).toStdString();
-
-		FECoreFactory* fac = febio.FindFactoryClass(sid, stype.c_str());
-		if (fac)
+		FEParameterList& pl = pcb->GetParameterList();
+		int N = pl.Parameters();
+		auto it = pl.first();
+		for (int i=0; i<N; ++i, ++it)
 		{
-			try {
-				ui->m_pcb = fac->Create(&febioModel);
-			}
-			catch (...)
+			FEParam& pi = *it;
+
+			int dim = pi.dim();
+
+			QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
+			twi->setText(0, pi.name());
+
+			QString stype = "(unknown)";
+			switch (pi.type())
 			{
-				ui->m_pcb = nullptr;
+			case FE_PARAM_INVALID          : stype = "invalid"; break;
+			case FE_PARAM_INT: {
+				if (dim > 1) stype = QString("int[%1]").arg(dim);
+				else stype = "int";
 			}
-		}
-
-		if (ui->m_pcb)
-		{
-			FEParameterList& pl = ui->m_pcb->GetParameterList();
-			int N = pl.Parameters();
-			auto it = pl.first();
-			for (int i=0; i<N; ++i, ++it)
-			{
-				FEParam& pi = *it;
-
-				int dim = pi.dim();
-
-				QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
-				twi->setText(0, pi.name());
-
-				QString stype = "(unknown)";
-				switch (pi.type())
-				{
-				case FE_PARAM_INVALID          : stype = "invalid"; break;
-				case FE_PARAM_INT: {
-					if (dim > 1) stype = QString("int[%1]").arg(dim);
-					else stype = "int";
-				}
-				break;
-				case FE_PARAM_BOOL             : stype = "bool"; break;
-				case FE_PARAM_DOUBLE           : {
-					if (dim > 1) stype = QString("double[%1]").arg(dim);
-					else stype = "double";
-				}
-			    break;
-				case FE_PARAM_VEC2D            : stype = "vec2d"; break;
-				case FE_PARAM_VEC3D            : stype = "vec3d"; break;
-				case FE_PARAM_MAT3D            : stype = "mat3d"; break;
-				case FE_PARAM_MAT3DS           : stype = "mat3ds"; break;
-				case FE_PARAM_STRING           : stype = "string"; break;
-				case FE_PARAM_DATA_ARRAY       : stype = "data_array"; break;
-				case FE_PARAM_TENS3DRS         : stype = "tens3drs"; break;
-				case FE_PARAM_STD_STRING       : stype = "std::string"; break;
-				case FE_PARAM_STD_VECTOR_INT   : stype = "std::vector<int>"; break;
-				case FE_PARAM_STD_VECTOR_DOUBLE: stype = "std::vector<double>"; break;
-				case FE_PARAM_STD_VECTOR_VEC2D : stype = "std::vector<vec2d>"; break;
-				case FE_PARAM_STD_VECTOR_STRING: stype = "std::vector<string>"; break;
-				case FE_PARAM_DOUBLE_MAPPED    : stype = "FEParamDouble"; break;
-				case FE_PARAM_VEC3D_MAPPED     : stype = "FEParamVec3d"; break;
-				case FE_PARAM_MAT3D_MAPPED     : stype = "FEParamMat3d"; break;
-				case FE_PARAM_MAT3DS_MAPPED    : stype = "FEParamMat3ds"; break;
-				case FE_PARAM_MATERIALPOINT    : stype = "FEMaterialPoint"; break;
-				}
+			break;
+			case FE_PARAM_BOOL             : stype = "bool"; break;
+			case FE_PARAM_DOUBLE           : {
+				if (dim > 1) stype = QString("double[%1]").arg(dim);
+				else stype = "double";
+			}
+			break;
+			case FE_PARAM_VEC2D            : stype = "vec2d"; break;
+			case FE_PARAM_VEC3D            : stype = "vec3d"; break;
+			case FE_PARAM_MAT3D            : stype = "mat3d"; break;
+			case FE_PARAM_MAT3DS           : stype = "mat3ds"; break;
+			case FE_PARAM_STRING           : stype = "string"; break;
+			case FE_PARAM_DATA_ARRAY       : stype = "data_array"; break;
+			case FE_PARAM_TENS3DRS         : stype = "tens3drs"; break;
+			case FE_PARAM_STD_STRING       : stype = "std::string"; break;
+			case FE_PARAM_STD_VECTOR_INT   : stype = "std::vector<int>"; break;
+			case FE_PARAM_STD_VECTOR_DOUBLE: stype = "std::vector<double>"; break;
+			case FE_PARAM_STD_VECTOR_VEC2D : stype = "std::vector<vec2d>"; break;
+			case FE_PARAM_STD_VECTOR_STRING: stype = "std::vector<string>"; break;
+			case FE_PARAM_DOUBLE_MAPPED    : stype = "FEParamDouble"; break;
+			case FE_PARAM_VEC3D_MAPPED     : stype = "FEParamVec3d"; break;
+			case FE_PARAM_MAT3D_MAPPED     : stype = "FEParamMat3d"; break;
+			case FE_PARAM_MAT3DS_MAPPED    : stype = "FEParamMat3ds"; break;
+			case FE_PARAM_MATERIALPOINT    : stype = "FEMaterialPoint"; break;
+			}
 				
-				twi->setText(1, stype);
-			}
-
-			int Props = ui->m_pcb->PropertyClasses();
-			for (int i = 0; i < Props; ++i)
-			{
-				FEProperty* prop = ui->m_pcb->PropertyClass(i);
-				const char* szclass = prop->GetClassName();
-				if (szclass == nullptr) szclass = "(unknown)";
-				QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
-				twi->setText(0, prop->GetName());
-				twi->setText(1, szclass);
-			}
+			twi->setText(1, stype);
 		}
+
+		int Props = pcb->PropertyClasses();
+		for (int i = 0; i < Props; ++i)
+		{
+			FEProperty* prop = pcb->PropertyClass(i);
+			const char* szclass = prop->GetClassName();
+			if (szclass == nullptr) szclass = "(unknown)";
+			QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
+			twi->setText(0, prop->GetName());
+			twi->setText(1, szclass);
+		}
+
+		delete pcb;
 	}
 }
 
@@ -330,7 +326,7 @@ void CDlgFEBioInfo::Update()
 					allocStr.contains(searchString, Qt::CaseInsensitive))
 				{
 					QTreeWidgetItem* it = new QTreeWidgetItem(ui->pw);
-					it->setText(0, typeStr);
+					it->setText(0, typeStr); it->setData(0, Qt::UserRole, i);
 					it->setText(1, idStr); it->setData(1, Qt::UserRole, sid);
 					it->setText(2, classStr);
 					it->setText(3, baseStr);

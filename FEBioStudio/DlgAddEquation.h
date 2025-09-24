@@ -40,9 +40,14 @@ public:
 
 	int GetDataType();
 
+	int GetClassType();
+
 	QString GetScalarEquation();
 	QStringList GetVectorEquations();
 	QStringList GetMatrixEquations();
+
+private:
+	void accept() override;
 
 private:
 	CDlgAddEquation_UI*	ui;

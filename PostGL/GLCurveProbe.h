@@ -35,7 +35,7 @@ class GLCurveProbe : public CGLPlot
 public:
 	GLCurveProbe();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;
@@ -49,7 +49,7 @@ public:
 	double GetPointValue(int i);
 	double GetPointValue(int i, int nstep);
 
-	vector<double> SectionLenghts(bool normalized);
+	std::vector<double> SectionLenghts(bool normalized);
 
 public:
 	GLColor GetColor() const;

@@ -38,9 +38,17 @@ class CResourceEdit : public QWidget
 	Q_OBJECT
 
 public:
+	enum ResourceType {
+		FILE_RESOURCE,
+		FOLDER_RESOURCE
+	};
+
+public:
 	CResourceEdit(QWidget* parent = 0);
 
 	void setResourceFilter(const QStringList& flt);
+
+	void setResourceType(ResourceType resourceType);
 
 	QString resourceName() const;
 	void setResourceName(const QString& t);

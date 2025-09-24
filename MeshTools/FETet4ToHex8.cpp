@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFaceEdgeList.h>
 #include "FEModifier.h"
-//using namespace std;
+
 
 //-----------------------------------------------------------------------------
 FETet4ToHex8::FETet4ToHex8(bool bsmooth) : FEModifier("Tet4-to-Hex8")

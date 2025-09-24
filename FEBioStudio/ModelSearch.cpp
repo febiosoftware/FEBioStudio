@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QContextMenuEvent>
 #include <QHeaderView>
-#include "Document.h"
+#include "GLDocument.h"
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FELoad.h>
 #include "ModelViewer.h"
@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <GeomLib/FSGroup.h>
 #include "FEBioJob.h"
+#include <ImageLib/ImageModel.h>
 
 CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent) : QWidget(parent), m_view(view), m_tree(tree)
 {
@@ -132,7 +133,7 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 		if (ntype == 0) return;
 
 		// only show the context menu if all objects are the same
-		vector<FSObject*> objList;
+		std::vector<FSObject*> objList;
 		QList<QTableWidgetItem*>::iterator it = sel.begin();
 		while (it != sel.end())
 		{
@@ -296,7 +297,7 @@ void CModelSearch::UpdateList()
 
 		// column 1
 		it = new QTableWidgetItem;
-		string typeStr = CGLDocument::GetTypeString(o);
+		std::string typeStr = CGLDocument::GetTypeString(o);
 		s = "";
 		if (!typeStr.empty())
 		{

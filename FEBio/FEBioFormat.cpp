@@ -23,9 +23,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-#include <cstring>
 #include "stdafx.h"
+#include <cstring>
 #include "FEBioFormat.h"
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
@@ -33,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
+using namespace std;
 
 #ifndef WIN32
 #define stricmp strcmp
@@ -694,6 +694,10 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 
 	FSModel& fem = GetFSModel();
 
+	// clear solutes and sbms (TODO: I don't think this is necessary)
+	fem.ClearSolutes();
+	fem.ClearSBMs();
+
 	++tag;
 	do
 	{
@@ -731,11 +735,8 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (tag == "Solutes")
+		else if ((tag == "Solutes") || (tag == "SolidBoundMolecules"))
 		{
-			// clear solutes (TODO: I don't think this is necessary)
-			fem.ClearSolutes();
-
 			++tag;
 			do
 			{
@@ -760,19 +761,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 					}
 					fem.AddSolute(name, z, M, d);
 				}
-				else ParseUnknownTag(tag);
-				++tag;
-			} while (!tag.isend());
-		}
-		else if (tag == "SolidBoundMolecules")
-		{
-			// clear solid-bound molecules (TODO: I don't think this is necessary)
-			fem.ClearSBMs();
-
-			++tag;
-			do
-			{
-				if (tag == "solid_bound")
+				else if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
 					string name = tag.Attribute("name").cvalue();
@@ -790,8 +779,8 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							else ParseUnknownTag(tag);
 							++tag;
 						} while (!tag.isend());
-						fem.AddSBM(name, z, M, d);
 					}
+					fem.AddSBM(name, z, M, d);
 				}
 				else ParseUnknownTag(tag);
 				++tag;
@@ -889,12 +878,12 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		axes->m_naopt = FE_AXES_LOCAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 	}
 	else if (atype == "vector")
 	{
-		axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_VECTOR;
 		vec3d a(1, 0, 0), d(0, 1, 0);
 		++tag;
 		do
@@ -909,7 +898,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	}
     else if (atype == "angles")
     {
-        axes->m_naopt = FE_AXES_ANGLES;
+        axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
         ++tag;
         do
         {
@@ -924,7 +913,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "cylindrical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_CYLINDRICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);
@@ -938,7 +927,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "spherical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_SPHERICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_SPHERICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);
@@ -964,21 +953,21 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	if (atype == "local")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_LOCAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "vector")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_VECTOR;
 		tag.value(axes->m_a);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "angles")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_ANGLES;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_ANGLES;
 
 		++tag;
 		do
@@ -995,7 +984,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "cylindrical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_CYLINDRICAL;
 		++tag;
 		do {
 			if (tag == "center") tag.value(axes->m_center);
@@ -1009,7 +998,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	else if (atype == "spherical")
 	{
 		FSAxisMaterial* axes = new FSAxisMaterial(fem);
-		axes->m_naopt = FE_AXES_SPHERICAL;
+		axes->m_naopt = MaterialAxesGeneratorType::AXES_SPHERICAL;
 		++tag;
 		do {
 			if      (tag == "center") tag.value(axes->m_center);
@@ -2852,7 +2841,10 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						// some classes allow names for their properties (e.g. chemical reactions)
 						const char* szname = tag.AttributeValue("name", true);
 
-						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem, 0);
+						int flags = 0;
+						if (prop->IsTopLevel()) flags |= FSProperty::TOPLEVEL;
+
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem, flags);
 						if (pc)
 						{
 							assert(pc->GetSuperClassID() == prop->GetSuperClassID());

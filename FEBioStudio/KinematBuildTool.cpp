@@ -124,7 +124,7 @@ bool CKinematBuildTool::OnApply()
 	// generate load curves from the kine data
 	int nstates = kine.States();
 	int nmat = fem.Materials();
-	vector<LoadCurve> LC(nmat * 6);
+	std::vector<LoadCurve> LC(nmat * 6);
 	for (LoadCurve& lc : LC) lc.Clear();
 	for (int i = 0; i < nstates; ++i)
 	{

@@ -26,16 +26,10 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <PostLib/FEFileReader.h>
-#include "LaunchConfig.h"
+#include <FEBioLib/febiolib_types.h>
 
 class CDocument;
-#ifdef HAS_SSH
-class CSSHHandler;
-#endif
-class xpltFileReader;
 
-//-----------------------------------------------------------------------------
 class CFEBioJob : public FSObject
 {
 public:
@@ -50,7 +44,7 @@ public:
 public:
 	CFEBioJob(CDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
+	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
@@ -67,14 +61,19 @@ public:
 	void SetConfigFileName(const std::string& configFile);
 	std::string GetConfigFileName() const;
 
-	void UpdateWorkingDirectory(const std::string& dir);
+    void SetTask(const std::string& task);
+    std::string GetTask() const;
 
-	CLaunchConfig* GetLaunchConfig();
-	void UpdateLaunchConfig(CLaunchConfig launchConfig);
+    void SetTaskFileName(const std::string& taskFile);
+    std::string GetTaskFileName() const;
 
-#ifdef HAS_SSH
-	CSSHHandler* GetSSHHandler();
-#endif
+    void SetWorkingDirectory(const std::string& dir);
+    std::string GetWorkingDirectory();
+
+	void SetCommand(const std::string& cmd);
+	const std::string& GetCommand() const;
+
+	double ElapsedTime() const;
 
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
@@ -90,40 +89,43 @@ public:
 	bool HasProgress() const;
 	void ClearProgress();
 
+public: // FEBio output
+	std::string m_jobReport;
+	TimingInfo m_timingInfo;
+	ModelStats m_modelStats;
+	std::vector<ModelStats> m_stepStats;
+	std::vector<TimeStepStats> m_timestepStats;
+
+	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
+	bool m_writeNotes;	// write notes to .feb file
+	bool m_allowMixedMesh;	// allow mixed mesh on export
+    bool m_debug;	// debug mode
+
+	// progress management
+	std::string	m_cmd;			// command line options
+	bool	m_bhasProgress;
+	double	m_pct;
+	double	m_tic, m_toc;
+
+	bool m_generateReport = false;
+
 private:
 	std::string		m_febFile;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
 	std::string		m_logFile;	// the .log file name
 	std::string		m_cnfFile;	// the config file
+    std::string     m_task;	    // the task name
+    std::string     m_taskFile;	// the take control file
 	int				m_status;	// return status
 
-	CLaunchConfig 	m_launchConfig;
-#ifdef HAS_SSH
-	CSSHHandler*	m_sshHandler;
-	CSSHHandler* 	NewHandler();
-#endif
-
-public:
-	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
-	int			m_febVersion;	// the .feb file version
-	bool		m_writeNotes;	// write notes to .feb file
-	bool		m_allowMixedMesh;	// allow mixed mesh on export
-	std::string	m_cmd;			// command line options
-
-	// progress management
-	bool	m_bhasProgress;
-	double	m_pct;
-
-	std::string	m_jobReport;
-
-	double	m_tic, m_toc;
-
-public:
+private:
 	CDocument*	m_doc;
 
-	static CFEBioJob*	m_activeJob;
+public:
 	static void SetActiveJob(CFEBioJob* activeJob);
 	static CFEBioJob* GetActiveJob();
 
+private:
+	static CFEBioJob*	m_activeJob;
 	static int	m_count;
 };

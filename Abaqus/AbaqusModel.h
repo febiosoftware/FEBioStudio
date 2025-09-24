@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <map>
 
 using std::vector;
+using std::pair;
 using std::list;
 using std::map;
 using std::string;

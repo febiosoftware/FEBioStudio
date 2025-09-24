@@ -43,7 +43,7 @@ public:
 
 public slots:
 //	void GetOutput(const QString&);
-	void SendFinishedPart();
+
 signals:
 	void AddLogEntry(const QString&);
 	void AddOutputEntry(const QString&);

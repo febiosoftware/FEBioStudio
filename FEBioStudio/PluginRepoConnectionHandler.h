@@ -1,0 +1,71 @@
+/*This file is part of the FEBio Studio source code and is licensed under the MIT license
+listed below.
+
+See Copyright-FEBio-Studio.txt for details.
+
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
+the City of New York, and others.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+#pragma once
+
+#include <QObject>
+#include <QSslError>
+
+class CPluginManager;
+class QNetworkReply;
+class QNetworkAccessManager;
+class CRepositoryPanel;
+class CPluginDatabaseHandler;
+class CPluginManager;
+
+class CPluginRepoConnectionHandler : public QObject
+{
+	Q_OBJECT
+
+public:
+	CPluginRepoConnectionHandler(CPluginManager* manager, CPluginDatabaseHandler* dbHandler);
+
+    void getPluginFiles(int pluginID, int fileNumber, bool develop);
+
+    void getSchema();
+	void getTables();
+
+    void sumbitPlugin(QByteArray& pluginInfo);
+    void uploadImage(QByteArray& token, QString& filename);
+
+private:
+    bool NetworkAccessibleCheck();
+    void outOfDate();
+    void getSchemaReply(QNetworkReply *r);
+	void getTablesReply(QNetworkReply *r);
+    void getPluginFilesReply(QNetworkReply *r);
+    void postPluginReply(QNetworkReply *r);
+    void uploadImageReply(QNetworkReply *r);
+
+private slots:
+	void connFinished(QNetworkReply *r);
+	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
+
+private:
+    CPluginManager* manager;
+    CPluginDatabaseHandler* dbHandler;
+	QNetworkAccessManager* restclient;
+};

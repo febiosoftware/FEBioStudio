@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FETorus.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <vector>
 //using namespace std;
 
@@ -410,7 +410,7 @@ FSMesh* FETorus::BuildMeshLegacy()
 		for (i=0; i<nd; ++i)
 			for (j=0; j<nd; ++j)
 			{
-				FEElement_* pe = pm->ElementPtr(eid++);
+				FSElement_* pe = pm->ElementPtr(eid++);
 
 				int* n = pe->m_node;
 
@@ -433,7 +433,7 @@ FSMesh* FETorus::BuildMeshLegacy()
 			int* n;
 			for (i=0; i<4*nd; ++i)
 			{
-				FEElement_* pe = pm->ElementPtr(eid++);
+				FSElement_* pe = pm->ElementPtr(eid++);
 
 				n = pe->m_node;
 

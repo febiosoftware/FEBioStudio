@@ -68,7 +68,7 @@ void CTimelinePanel::Update(bool reset)
 			{
 				ui->timeline->clearData();
 				FEPostModel& fem = *doc->GetFSModel();
-				vector< pair<double, int> > data(fem.GetStates());
+				std::vector< std::pair<double, int> > data(fem.GetStates());
 				int nstates = fem.GetStates();
 				for (int i = 0; i < nstates; ++i)
 				{

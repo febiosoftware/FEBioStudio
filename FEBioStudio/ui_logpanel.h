@@ -38,25 +38,21 @@ class Ui::CLogPanel
 public:
 	QComboBox* combo;
 	QStackedWidget* stack;
-	QPlainTextEdit*	txt[2];
+	QPlainTextEdit*	txt[4];
 	QTextCharFormat defaultTextCharFormat;
 
 public:
 	void setupUi(QWidget* parent)
 	{
-		txt[0] = new QPlainTextEdit;
-		txt[0]->setReadOnly(true);
-		txt[0]->setFont(QFont("Courier", 11));
-		txt[0]->setWordWrapMode(QTextOption::NoWrap);
-
-		txt[1] = new QPlainTextEdit;
-		txt[1]->setReadOnly(true);
-		txt[1]->setFont(QFont("Courier", 11));
-		txt[1]->setWordWrapMode(QTextOption::NoWrap);
-
 		stack = new QStackedWidget;
-		stack->addWidget(txt[0]);
-		stack->addWidget(txt[1]);
+		for (int i = 0; i < 4; ++i)
+		{
+			txt[i] = new QPlainTextEdit;
+			txt[i]->setReadOnly(true);
+			txt[i]->setFont(QFont("Courier", 11));
+			txt[i]->setWordWrapMode(QTextOption::NoWrap);
+			stack->addWidget(txt[i]);
+		}
 
 		QVBoxLayout* pl = new QVBoxLayout;
 		pl->setContentsMargins(0,0,0,0);
@@ -66,6 +62,8 @@ public:
 		combo->setMinimumWidth(200);
 		combo->addItem("Log");
 		combo->addItem("FEBio");
+		combo->addItem("Build");
+		combo->addItem("Python");
 		combo->setObjectName("combo");
 
 		QToolButton* b1 = new QToolButton; b1->setIcon(QIcon(":/icons/save.png")); b1->setAutoRaise(true); b1->setObjectName("logSave"); b1->setToolTip("<font color=\"black\">Save log");
@@ -108,6 +106,6 @@ public:
 
 	void showTxt(int n)
 	{
-		if (combo->currentIndex() != 1) combo->setCurrentIndex(1);
+		if (combo->currentIndex() != n) combo->setCurrentIndex(n);
 	}
 };

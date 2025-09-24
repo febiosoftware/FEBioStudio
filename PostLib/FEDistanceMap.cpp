@@ -55,7 +55,7 @@ Post::ModelDataField* Post::FEDistanceMap::Clone() const
 //-----------------------------------------------------------------------------
 void Post::FEDistanceMap::InitSurface(int n)
 {
-	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vector<int> L;
 	for (int i = 0; i<mesh.Faces(); ++i) if (mesh.Face(i).IsSelected()) L.push_back(i);
@@ -71,7 +71,7 @@ int Post::FEDistanceMap::GetSurfaceSize(int i)
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
+void Post::FEDistanceMap::Surface::BuildNodeList(FSMesh& mesh)
 {
 	// tag all nodes that belong to this surface
 	int N = mesh.Nodes();
@@ -124,7 +124,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
 {
 	// get the mesh
-	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	int NF = s.Faces();
 	int NN = s.Nodes();
@@ -156,7 +156,7 @@ void Post::FEDistanceMap::Apply()
 	Post::FEPostModel& fem = *m_fem;
 
 	// get the mesh
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	const int MN = FSFace::MAX_NODES;
 
@@ -181,7 +181,7 @@ void Post::FEDistanceMap::Apply()
 
 		// loop over all nodes of surface 1
 		vector<float> a(m_surf1.Nodes());
-		#pragma omp parallel for
+        #pragma omp parallel for
 		for (int i = 0; i < m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i];
@@ -201,7 +201,7 @@ void Post::FEDistanceMap::Apply()
 
 		// loop over all nodes of surface 2
 		vector<float> b(m_surf2.Nodes());
-		#pragma omp parallel for
+        #pragma omp parallel for
 		for (int i = 0; i < m_surf2.Nodes(); ++i)
 		{
 			int inode = m_surf2.m_node[i];
@@ -225,7 +225,7 @@ void Post::FEDistanceMap::Apply()
 Post::FEDistanceMap::Projection Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 {
 	Post::FEPostModel& fem = *GetModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	Post::FEDistanceMap::Projection P;
 
@@ -303,7 +303,7 @@ bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, Project
 	Post::FEPostModel& fem = *GetModel();
 
 	// get the mesh to which this surface belongs
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	
 	// number of element nodes
 	int nf = f.Nodes();

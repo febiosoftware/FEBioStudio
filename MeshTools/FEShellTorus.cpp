@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEShellTorus.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -111,7 +111,7 @@ FSMesh* FEShellTorus::BuildMesh(GObject* po)
 	{
 		for (int j=0; j<ns; ++j)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			int* n = pe->m_node;
 
@@ -128,7 +128,7 @@ FSMesh* FEShellTorus::BuildMesh(GObject* po)
 	// assign shell thickness
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		pe->m_h[0] = t;
 		pe->m_h[1] = t;
@@ -176,7 +176,7 @@ void FEShellTorus::BuildFaces(FSMesh* pm)
 	FSFace* pf = pm->FacePtr();
 	for (i=0; i<nfaces; ++i, ++pf)
 	{
-		FEElement_* pe = pm->ElementPtr(i);
+		FSElement_* pe = pm->ElementPtr(i);
 
 		int i1 = i/(4*m_ns);
 		int i2 = i%(4*m_ns);

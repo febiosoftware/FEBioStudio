@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 class CMainWindow;
 class CFEBioJob;
+class CLaunchConfig;
 
 class CFEBioJobManager : public QObject
 {
@@ -39,31 +40,37 @@ class CFEBioJobManager : public QObject
 public:
 	CFEBioJobManager(CMainWindow* wnd);
 
-	bool StartJob(CFEBioJob* job);
+	bool StartJob(CFEBioJob* job, CLaunchConfig* lc);
 
 	bool IsJobRunning() const;
 
 	void KillJob();
 
+protected:
+	bool startDefaultJob(CFEBioJob* job, CLaunchConfig* lc);
+	bool startLocalJob(CFEBioJob* job, CLaunchConfig* lc);
+	bool startRemoteJob(CFEBioJob* job, CLaunchConfig* lc);
+
 public slots:
 	void onRunFinished(int exitCode, QProcess::ExitStatus es);
 	void onReadyRead();
 	void onErrorOccurred(QProcess::ProcessError err);
+	void remoteJobFinished();
 
 private:
 	Impl* im;
 };
 
 namespace Ui {
-	class CDlgJobMonitor;
+	class CDlgJobReport;
 }
 
-class CDlgJobMonitor : public QDialog
+class CDlgJobReport : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgJobMonitor(CMainWindow* wnd);
+	CDlgJobReport(CMainWindow* wnd);
 
 	void SetFEBioJob(CFEBioJob* job);
 
@@ -71,5 +78,5 @@ public slots:
 	void UpdateReport();
 
 private:
-	Ui::CDlgJobMonitor* ui;
+	Ui::CDlgJobReport* ui;
 };

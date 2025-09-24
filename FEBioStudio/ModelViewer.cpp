@@ -37,33 +37,30 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgEditOutput.h"
 #include "DlgAddMeshData.h"
-#include "MaterialEditor.h"
-#include <FEMLib/FEMultiMaterial.h>
-#include <FEMLib/FEMKernel.h>
-#include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
-#include <GeomLib/MeshLayer.h>
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
 #include <FSCore/FSDir.h>
 #include <ImageLib/ImageModel.h>
-#include <ImageLib/ImageFilter.h>
 #include <ImageLib/ImageSource.h>
 #include <ImageLib/SITKImageSource.h>
 #include <ImageLib/TiffReader.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
-#include <PostGL/GLModel.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
 #include <MeshIO/STLExport.h>
 #include "FEObjectProps.h"
+#include "GLHighlighter.h"
+#include "Command.h"
+using namespace std;
 
 class CDlgWarnings : public QDialog
 {
@@ -109,7 +106,7 @@ private:
 	QPlainTextEdit* m_out = nullptr;
 };
 
-CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
+CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
 	ui->setupUi(wnd, this);
 	m_currentObject = 0;
@@ -433,20 +430,20 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
-		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		FSItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FSItemListBuilder* ps2 = pci->GetSecondarySurface();
 		if (ps1) SelectItemList(ps1);
 		if (ps2) SelectItemList(ps2);
 	}
 	else if (dynamic_cast<IHasItemLists*>(po))
 	{
 		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList(0);
+		FSItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
-	else if (dynamic_cast<FEItemListBuilder*>(po))
+	else if (dynamic_cast<FSItemListBuilder*>(po))
 	{
-		FEItemListBuilder* pi = dynamic_cast<FEItemListBuilder*>(po);
+		FSItemListBuilder* pi = dynamic_cast<FSItemListBuilder*>(po);
 		SelectItemList(pi);
 	}
 	else if (dynamic_cast<GPart*>(po))
@@ -494,7 +491,7 @@ void CModelViewer::on_selectButton_clicked()
 	GetMainWindow()->Update(this);
 }
 
-void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
+void CModelViewer::SelectItemList(FSItemListBuilder *pitem, bool badd)
 {
 	CCommand* pcmd = 0;
 
@@ -502,7 +499,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	if (n == 0) return;
 
 	int* pi = new int[n];
-	FEItemListBuilder::Iterator it = pitem->begin();
+	FSItemListBuilder::Iterator it = pitem->begin();
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -563,9 +560,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	delete[] pi;
 }
 
-void CModelViewer::AssignCurrentSelection()
+void CModelViewer::AssignCurrentSelection(int ntarget)
 {
-	ui->props->AssignCurrentSelection();
+	ui->props->AssignCurrentSelection(ntarget);
 }
 
 void CModelViewer::UpdateSelection()
@@ -605,6 +602,52 @@ void CModelViewer::on_warnings_clicked()
 	dlg.exec();
 }
 
+void CModelViewer::on_props_paramChanged(FSCoreBase* pc, Param* p)
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	if (p == nullptr) return;
+
+	FSObject* po = pc;
+	if (dynamic_cast<FSMaterial*>(po))
+	{
+		FSMaterial* mat = dynamic_cast<FSMaterial*>(po);
+		GMaterial* gm = mat->GetOwner();
+		po = gm;
+	}
+
+	QString sp;
+	if (po) sp = QString("\"%1.%2\"").arg(QString::fromStdString(po->GetName())).arg(p->GetLongName());
+	else sp = QString("\"%1\"").arg(p->GetLongName());
+
+	QString sv;
+	switch (p->GetParamType())
+	{
+	case Param_INT   : sv = QString::number(p->GetIntValue()); break;
+	case Param_FLOAT : sv = QString::number(p->GetFloatValue()); break;
+	case Param_BOOL  : sv = (p->GetBoolValue()?"Yes":"No"); break;
+	case Param_VEC3D : sv = Vec3dToString(p->GetVec3dValue()); break;
+	case Param_STRING: sv = QString("\"%1\"").arg(QString::fromStdString(p->GetStringValue())); break;
+	case Param_MATH  : sv = QString("\"%1\"").arg(QString::fromStdString(p->GetMathString())); break;
+	case Param_COLOR : break;
+	case Param_MAT3D : sv = Mat3dToString(p->GetMat3dValue()); break;
+	case Param_MAT3DS: sv = Mat3dsToString(p->GetMat3dsValue()); break;
+	case Param_VEC2I : sv = Vec2iToString(p->GetVec2iValue()); break;
+	case Param_STD_VECTOR_INT   : sv = VectorIntToString(p->GetVectorIntValue());  break;
+	case Param_STD_VECTOR_DOUBLE: sv = VectorDoubleToString(p->GetVectorDoubleValue());  break;
+	case Param_STD_VECTOR_VEC2D: break;
+	case Param_ARRAY_INT: break;			// fixed size array of int
+	case Param_ARRAY_DOUBLE: break;			// fixed size array of double
+	default:
+		break;
+	}
+
+	QString msg;
+	if (sv.isEmpty()) msg = QString("parameter %1 changed.").arg(sp);
+	else msg = QString("parameter %1 changed to %2").arg(sp).arg(sv);
+	doc->AppendChangeLog(msg);
+}
+
 void CModelViewer::on_props_nameChanged(const QString& txt)
 {
 	QTreeWidgetItem* item = ui->tree->currentItem();
@@ -615,12 +658,9 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	FSObject* po = ui->props->GetCurrentObject();
-	if (dynamic_cast<GMaterial*>(po))
-	{
-		GMaterial* gm = dynamic_cast<GMaterial*>(po);
-		gm->UpdateParts();
-	}
 	ui->tree->UpdateObject(po);
+	CDocument* doc = GetDocument();
+	if (doc) doc->Update();
 	GetMainWindow()->RedrawGL();
 }
 
@@ -643,6 +683,73 @@ void CModelViewer::on_props_dataChanged(bool b)
 void CModelViewer::on_props_modelChanged()
 {
 	Update();
+}
+
+void CModelViewer::on_props_itemSelected(FSObject* il, std::vector<int>& items)
+{
+	if (IsHighlightSelectionEnabled())
+	{
+		GLHighlighter::ClearHighlights();
+		GNodeList* nl = dynamic_cast<GNodeList*>(il);
+		if (nl) {
+			std::vector<GNode*> nodes = nl->GetNodeList();
+			for (int i : items) {
+				for (GNode* pn : nodes) {
+					if (pn->GetID() == i)
+						GLHighlighter::PickItem(pn);
+				}
+			}
+		}
+
+		GEdgeList* el = dynamic_cast<GEdgeList*>(il);
+		if (el) {
+			std::vector<GEdge*> edges = el->GetEdgeList();
+			for (int i : items) {
+				for (GEdge * pe : edges) {
+					if (pe->GetID() == i)
+						GLHighlighter::PickItem(pe);
+				}
+			}
+		}
+
+		GFaceList* fl = dynamic_cast<GFaceList*>(il);
+		if (fl) {
+			std::vector<GFace*> surfaces = fl->GetFaceList();
+			for (int i : items) {
+				for (GFace* pf : surfaces) {
+					if (pf->GetID() == i)
+						GLHighlighter::PickItem(pf);
+				}
+			}
+		}
+
+		GPartList* pl = dynamic_cast<GPartList*>(il);
+		if (pl) {
+			std::vector<GPart*> parts = pl->GetPartList();
+			for (int i : items) {
+				for (GPart* pg : parts) {
+					if (pg->GetID() == i)
+						GLHighlighter::PickItem(pg);
+				}
+			}
+		}
+
+		GMaterial* mat = dynamic_cast<GMaterial*>(il);
+		if (mat)
+		{
+			FSModel* fem = mat->GetModel();
+			if (fem)
+			{
+				std::vector<GPart*> parts = fem->GetMaterialPartList(mat);
+				for (int i : items) {
+					for (GPart* pg : parts) {
+						if (pg->GetID() == i)
+							GLHighlighter::PickItem(pg);
+					}
+				}
+			}
+		}
+	}
 }
 
 void CModelViewer::on_filter_currentIndexChanged(int n)
@@ -671,59 +778,6 @@ void CModelViewer::OnUnhideAllObjects()
 	m->ShowAllObjects();
 	Update();
 	GetMainWindow()->RedrawGL();
-}
-
-void CModelViewer::OnCreateNewMeshLayer()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-	int layers = gm->MeshLayers();
-	QString s = QString("Layer") + QString::number(layers + 1);
-	QString newLayer = QInputDialog::getText(this, "New Layer", "Layer name:", QLineEdit::Normal, s);
-	if (newLayer.isEmpty() == false)
-	{
-		string layerName = newLayer.toStdString();
-		int n = gm->FindMeshLayer(layerName);
-		if (n >= 0)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Failed creating layer. Layer name already taken.");
-		}
-		else
-		{
-			CCmdGroup* cmd = new CCmdGroup(string("Add mesh layer: ") + layerName);
-			cmd->AddCommand(new CCmdAddMeshLayer(gm, layerName));
-			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, layers));
-			doc->DoCommand(cmd);
-			Update();
-			GetMainWindow()->RedrawGL();
-		}
-	}
-}
-
-void CModelViewer::OnDeleteMeshLayer()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel* gm = doc->GetGModel();
-	int layers = gm->MeshLayers();
-	int activeLayer = gm->GetActiveMeshLayer();
-	if ((activeLayer == 0) || (layers == 1))
-	{
-		QMessageBox::warning(this, "FEBio Studio", "You cannot delete the Default mesh layer.");
-		return;
-	}
-	else
-	{
-		if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete the current mesh layer?"))
-		{
-			// to delete the active mesh layer, we must first select a different layer as the active layer.
-			// We'll choose the default layer
-			string s = gm->GetMeshLayerName(activeLayer);
-			CCmdGroup* cmd = new CCmdGroup(string("Delete mesh layer: " + s));
-			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, 0));
-			cmd->AddCommand(new CCmdDeleteMeshLayer(gm, activeLayer));
-			doc->DoCommand(cmd);
-		}
-	}
 }
 
 void CModelViewer::OnUnhideAllParts()
@@ -819,9 +873,10 @@ void CModelViewer::OnShowObject()
 			m.ShowObject(po, true);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
-			if (item) item->setForeground(0, Qt::black);
+			if (item) item->setForeground(0, QBrush());
 		}
 	}
+	doc->Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
@@ -1031,7 +1086,7 @@ void CModelViewer::OnSelectPartElements()
 	doc->SetItemMode(ITEM_ELEM);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the elements
 	int lid = pg->GetLocalID();
@@ -1069,7 +1124,7 @@ void CModelViewer::OnSelectSurfaceFaces()
 	doc->SetItemMode(ITEM_FACE);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the faces
 	int lid = pf->GetLocalID();
@@ -1198,7 +1253,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2));
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2), pmat2->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1225,14 +1280,21 @@ void CModelViewer::OnChangeMaterial()
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
-			FSMaterial* oldMat = gmat->TakeMaterialProperties();
+			FSMaterial* oldMat = gmat->GetMaterialProperties();
 			if (oldMat)
 			{
+				// Copy this material to a property if applicable
 				FSProperty* prop = pmat->FindProperty("elastic");
-				if (prop) prop->SetComponent(oldMat);
-				else delete oldMat;
+				if (prop)
+				{
+					FSMaterial* copyMat = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(oldMat, &fem));
+					assert(copyMat);
+					prop->SetComponent(copyMat);
+				}
 			}
-			gmat->SetMaterialProperties(pmat);
+
+			doc->DoCommand(new CCmdSwapMaterialProps(gmat, pmat));
+
 			Update();
 			Select(gmat);
 		}
@@ -1324,7 +1386,7 @@ void CModelViewer::OnCopyInterface()
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddInterface(step, piCopy));
+	pdoc->DoCommand(new CCmdAddInterface(step, piCopy), piCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1349,7 +1411,7 @@ void CModelViewer::OnCopyBC()
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
-	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy));
+	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy), pbcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1374,7 +1436,7 @@ void CModelViewer::OnCopyIC()
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddIC(step, picCopy));
+	pdoc->DoCommand(new CCmdAddIC(step, picCopy), picCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1399,7 +1461,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1424,7 +1486,7 @@ void CModelViewer::OnCopyConstraint()
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1449,7 +1511,7 @@ void CModelViewer::OnCopyLoad()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
-	pdoc->DoCommand(new CCmdAddLoad(step, plCopy));
+	pdoc->DoCommand(new CCmdAddLoad(step, plCopy), plCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1575,7 +1637,11 @@ void CModelViewer::OnStepMoveUp()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n > 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n - 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n - 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}
@@ -1592,19 +1658,14 @@ void CModelViewer::OnStepMoveDown()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n < fem->Steps() - 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n + 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n + 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}
-}
-
-void CModelViewer::OnRerunJob()
-{
-	CFEBioJob* job = dynamic_cast<CFEBioJob*>(m_currentObject); assert(job);
-	if (job == 0) return;
-
-	CMainWindow* wnd = GetMainWindow();
-	wnd->RunFEBioJob(job);
 }
 
 void CModelViewer::OnOpenJob()
@@ -1690,6 +1751,47 @@ void CModelViewer::OnRemoveUnusedLoadControllers()
 	Update();
 }
 
+void CModelViewer::OnDeleteAllLoadControllers()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all load controllers?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllLoadControllers();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnDeleteAllMeshData()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllMeshDataGenerators();
+		fem->DeleteAllMeshData();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1748,28 +1850,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	{
 		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
 		menu.addAction("Part Viewer ...", GetMainWindow(), SLOT(onShowPartViewer()));
-		menu.addSeparator();
-
-		QMenu* sub = new QMenu("Set Active Mesh Layer");
-		int layers = gm->MeshLayers();
-		int activeLayer = gm->GetActiveMeshLayer();
-		for (int i = 0; i < layers; ++i)
-		{
-			string s = gm->GetMeshLayerName(i);
-			QAction* a = sub->addAction(QString::fromStdString(s));
-			a->setCheckable(true);
-			if (i == activeLayer) a->setChecked(true);
-		}
-
-		QObject::connect(sub, SIGNAL(triggered(QAction*)), GetMainWindow(), SLOT(OnSelectMeshLayer(QAction*)));
-
-		menu.addAction(sub->menuAction());
-		menu.addAction("New Mesh Layer ...", this, SLOT(OnCreateNewMeshLayer()));
-
-		if (layers > 1)
-		{
-			menu.addAction("Delete Active Mesh Layer", this, SLOT(OnDeleteMeshLayer()));
-		}
 	}
 	break;
 	case MT_PART_LIST:
@@ -2012,7 +2092,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_LOAD_CONTROLLERS:
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
 		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
-		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_LOAD_CONTROLLER:
 		del = true;
@@ -2020,7 +2100,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MESH_DATA_LIST:
 		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
 		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
-		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
 		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
@@ -2033,7 +2113,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_JOB:
 		menu.addAction("Open", this, SLOT(OnOpenJob()));
-		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
+		del = true;
+		break;
+	case MT_STUDYLIST:
+	{
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllStudies()));
+	}
+	break;
+	case MT_STUDY:
+		menu.addAction("Configure ...", this, SLOT(OnConfigureStudy()));
+		menu.addAction("Run ...", this, SLOT(OnRunStudy()));
 		del = true;
 		break;
 	case MT_3DIMAGE:
@@ -2113,7 +2202,18 @@ void CModelViewer::OnImportMaterials(QAction* action)
 
 void CModelViewer::OnDeleteAllMaterials()
 {
-	GetMainWindow()->DeleteAllMaterials();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllMaterials();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnSwapContactSurfaces()
@@ -2129,59 +2229,228 @@ void CModelViewer::OnSwapContactSurfaces()
 void CModelViewer::OnReplaceContactInterface()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pci)
+	if (pci == nullptr) return;
+
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	if (dlg.exec())
 	{
-		GetMainWindow()->OnReplaceContactInterface(pci);
+		int id = dlg.GetClassID();
+		if (id == -1) return;
+
+		FSPairedInterface* pi = FEBio::CreateFEBioClass<FSPairedInterface>(id, &fem); assert(pi);
+		if (pi)
+		{
+			FEBio::InitDefaultProps(pi);
+
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = pci->GetName();
+			pi->SetName(name);
+
+			// swap the surfaces
+			pi->SetPrimarySurface(pci->GetPrimarySurface()); pci->SetPrimarySurface(nullptr);
+			pi->SetSecondarySurface(pci->GetSecondarySurface()); pci->SetSecondarySurface(nullptr);
+
+			// try to map parameters
+			pi->MapParams(*pci);
+
+			// assign it to the correct step
+			FSStep* step = fem.FindStep(pci->GetStep()); assert(step);
+			if (step)
+			{
+				pi->SetStep(step->GetID());
+				step->ReplaceInterface(pci, pi);
+			}
+			
+			CMainWindow* wnd = GetMainWindow();
+			wnd->UpdateModel(pi);
+		}
 	}
 }
 
 
 void CModelViewer::OnDeleteAllBC()
 {
-	GetMainWindow()->DeleteAllBC();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllBC();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+
 }
 
 void CModelViewer::OnDeleteAllLoads()
 {
-	GetMainWindow()->DeleteAllLoads();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllLoads();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllIC()
 {
-	GetMainWindow()->DeleteAllIC();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllIC();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllContact()
 {
-	GetMainWindow()->DeleteAllContact();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllContact();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllConstraints()
 {
-	GetMainWindow()->DeleteAllConstraints();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllConstraints();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllRigidComponents()
 {
-	GetMainWindow()->DeleteAllRigidBCs();
-	GetMainWindow()->DeleteAllRigidICs();
-	GetMainWindow()->DeleteAllRigidLoads();
-	GetMainWindow()->DeleteAllRigidConnectors();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid components?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllRigidBCs();
+		fem.DeleteAllRigidICs();
+		fem.DeleteAllRigidLoads();
+		fem.DeleteAllRigidConnectors();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllSteps()
 {
-	GetMainWindow()->DeleteAllSteps();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllSteps();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDeleteAllJobs()
 {
-	GetMainWindow()->DeleteAllJobs();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all jobs?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		doc->DeleteAllJobs();
+		doc->SetModifiedFlag(true);
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnDeleteAllStudies()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all studies?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		doc->DeleteAllStudies();
+		doc->ClearCommandStack();
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->UpdateTab(doc);
+		wnd->UpdateModel();
+		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnRunStudy()
+{
+	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
+	if (fbs == nullptr) return;
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RunOptimizationStudy(fbs);
+}
+
+void CModelViewer::OnConfigureStudy()
+{
+	COptimizationStudy* fbs = dynamic_cast<COptimizationStudy*>(m_currentObject);
+	if (fbs == nullptr) return;
+	CMainWindow* wnd = GetMainWindow();
+	wnd->ConfigureOptimizationStudy(fbs);
 }
 
 void CModelViewer::OnEditMeshData()
 {
-	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	FSMeshData* data = dynamic_cast<FSMeshData*>(m_currentObject);
 	if (data == nullptr) return;
 
 	CDlgEditMeshData dlg(data, this);

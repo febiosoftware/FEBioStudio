@@ -28,10 +28,11 @@ SOFTWARE.*/
 #include <vector>
 #include <FSCore/math3d.h>
 
+class FSMesh;
+
 namespace Post {
 
 class FEPostModel;
-class FEPostMesh;
 
 class FEStrainMap
 {
@@ -39,7 +40,7 @@ class FEStrainMap
 	{
 	public:
 		int Faces() { return (int)m_face.size(); }
-		void BuildNodeList(FEPostMesh& m);
+		void BuildNodeList(FSMesh& m);
 
 		int Nodes() { return (int)m_node.size(); }
 

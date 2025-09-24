@@ -44,12 +44,17 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveObject.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSFindElement.h>
 #include "TextDocument.h"
+#include <GLLib/GLScene.h>
 #include <sstream>
 
 using std::stringstream;
@@ -59,7 +64,7 @@ void CMainWindow::on_actionUndo_triggered()
 	CBuildPanel* buildPanel = GetBuildPanel();
 	if (buildPanel && buildPanel->isVisible())
 	{
-		CCommandPanel* panel = buildPanel->GetActivePanel();
+		CWindowPanel* panel = buildPanel->GetActivePanel();
 		if (panel && panel->OnUndo()) return;
 	}
 
@@ -84,6 +89,115 @@ void CMainWindow::on_actionRedo_triggered()
 		doc->RedoCommand();
 		UpdateModel();
 		Update();
+	}
+}
+
+class CDlgChangeLog : public QDialog
+{
+private:
+	QLineEdit* m_flt;
+	QPlainTextEdit* m_txt;
+	QStringList m_lines;
+
+public:
+	CDlgChangeLog(QWidget* w) : QDialog(w)
+	{
+		setWindowTitle("Changelog");
+
+		setMinimumSize(1024, 600);
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("filter:"));
+		h->addWidget(m_flt = new QLineEdit);
+
+		m_txt = new QPlainTextEdit;
+		m_txt->setReadOnly(true);
+		m_txt->setFont(QFont("Courier", 11));
+		m_txt->setWordWrapMode(QTextOption::NoWrap);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(h);
+		l->addWidget(m_txt);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::Save);
+		bb->button(QDialogButtonBox::Close)->setDefault(true);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+
+		QObject::connect(m_flt, &QLineEdit::textChanged, this, &CDlgChangeLog::updateText);
+	}
+
+	void updateText()
+	{
+		QString flt = m_flt->text();
+		QString txt;
+		for (QString& line : m_lines)
+		{
+			if (flt.isEmpty() || line.contains(flt, Qt::CaseInsensitive))
+			{
+				txt += line;
+				txt += "\n";
+			}
+		}
+		m_txt->setPlainText(txt);
+	}
+
+	void SetText(const QString& title, const QStringList& txt)
+	{
+		setWindowTitle(QString("Changelog [%1]").arg(title));
+		m_lines = txt;
+		updateText();
+	}
+};
+
+void CMainWindow::on_actionChangeLog_triggered()
+{
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QStringList txt;
+	const ChangeLog& log = doc->GetChangeLog();
+	int n = log.size();
+	int m = (int) log10(n) + 1;
+	for (int i = 0; i < n; ++i)
+	{
+		const ChangeLog::Entry& v = log.entry(i);
+		QString line;
+		line += QString("%1: (").arg(i + 1, m);
+		line += v.time.toString() + ") ";
+		line += v.txt;
+		txt.push_back(line);
+	}
+
+	CDlgChangeLog dlg(this);
+	dlg.SetText(QString::fromStdString(doc->GetDocFileName()), txt);
+	if (dlg.exec())
+	{
+		// this assumes the "Save" button was pressed
+		QString fileName = QFileDialog::getSaveFileName(this, "Save changelog");
+		if (fileName.isEmpty() == false)
+		{
+			QFile file(fileName);
+			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			{
+				QMessageBox::critical(this, "Save changelog", "Failed to save changelog.");
+			}
+			else
+			{
+				QTextStream out(&file);
+				for (QString& line : txt)
+				{
+					out << line << "\n";
+				}
+				file.close();
+
+				QMessageBox::information(this, "Save changelog", QString("Changelog saved successfully to:\n%1").arg(fileName));
+			}
+		}
 	}
 }
 
@@ -124,19 +238,19 @@ void CMainWindow::on_actionClearSelection_triggered()
 		{
 			switch (nsel)
 			{
-			case SELECT_OBJECT: doc->DoCommand(new CCmdSelectObject(mdl, 0, false)); break;
-			case SELECT_PART: doc->DoCommand(new CCmdSelectPart(mdl, 0, 0, false)); break;
-			case SELECT_FACE: doc->DoCommand(new CCmdSelectSurface(mdl, 0, 0, false)); break;
-			case SELECT_EDGE: doc->DoCommand(new CCmdSelectEdge(mdl, 0, 0, false)); break;
-			case SELECT_NODE: doc->DoCommand(new CCmdSelectNode(mdl, 0, 0, false)); break;
-			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false)); break;
+			case SELECT_OBJECT  : doc->DoCommand(new CCmdSelectObject  (mdl, 0,    false), "<empty>"); break;
+			case SELECT_PART    : doc->DoCommand(new CCmdSelectPart    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_FACE    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_EDGE    : doc->DoCommand(new CCmdSelectEdge    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_NODE    : doc->DoCommand(new CCmdSelectNode    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false), "<empty>"); break;
 			}
 		}
 		break;
-		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, 0, 0, false)); break;
-		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pmb, 0, 0, false)); break;
-		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
-		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm , 0, 0, false), "<empty>"); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces   (pmb, 0, 0, false), "<empty>"); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges (pml, 0, 0, false), "<empty>"); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes (pml, 0, 0, false), "<empty>"); break;
 		}
 	}
 
@@ -273,7 +387,6 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 						pcmd->AddCommand(new CCmdDeleteGObject(&model, po));
 				}
 				doc->DoCommand(pcmd);
-				ps->UpdateMaterialSelections();
 			}
 			else
 			{
@@ -305,7 +418,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			}
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()));
+			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()), pso->GetName());
 
 			GPrimitive* pp = dynamic_cast<GPrimitive*>(po);
 			if (pp)
@@ -332,7 +445,7 @@ void CMainWindow::on_actionHideSelection_triggered()
 		case SELECT_FE_ELEMS: mdl.HideSelectedElements(); break;
 		}
 		mdl.UpdateMeshVisibility();
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -355,7 +468,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
 	}
@@ -413,7 +526,7 @@ vector<int> findNodesByCoordinates(FSMesh* pm, const vec3d& p)
 vector<int> findElementsByCoordinates(FSMesh* pm, const vec3d& p)
 {
 	vector<int> items;
-	FEFindElement FE(*pm);
+	FSFindElement FE(*pm);
 	FE.Init();
 	int nelem = -1;
 	double r[3] = { 0 };
@@ -583,12 +696,16 @@ void CMainWindow::on_actionFind_triggered()
 			case ITEM_ELEM: items = findElementsByCoordinates(pm, dlg.m_coord); break;
 			}
 		}
-		else
+		else if (dlg.m_method == 2)
 		{
 			switch (nitem)
 			{
 			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
 			}
+		}
+		else if (dlg.m_method == 3)
+		{
+			items = dlg.m_item;
 		}
 
 		if (items.empty() == false)
@@ -602,7 +719,11 @@ void CMainWindow::on_actionFind_triggered()
 			}
 
 			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-			if (postDoc) postDoc->UpdateSelection(true);
+			if (postDoc)
+			{
+				postDoc->UpdateSelection();
+				ReportSelection();
+			}
 
 			ReportSelection();
 			RedrawGL();
@@ -644,7 +765,7 @@ void CMainWindow::on_actionSelectRange_triggered()
 		case SELECT_FE_ELEMS: doc->SetItemMode(ITEM_ELEM); model->SelectElemsInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
 		}
 
-		postDoc->UpdateSelection(false);
+		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		ReportSelection();
 		UpdateGLControlBar();
@@ -769,7 +890,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddPart(po, pg));
+				doc->DoCommand(new CCmdAddPart(po, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -784,7 +905,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddSurface(po, pg));
+				doc->DoCommand(new CCmdAddSurface(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -799,7 +920,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
+				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -814,7 +935,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddNodeSet(po, pg));
+				doc->DoCommand(new CCmdAddNodeSet(po, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -832,7 +953,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GPartList* pg = new GPartList(mdl, dynamic_cast<GPartSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -841,7 +962,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -850,7 +971,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GEdgeList* pg = new GEdgeList(mdl, dynamic_cast<GEdgeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg), pg->GetName());
 				++nedges;
 				UpdateModel(pg);
 			}
@@ -859,7 +980,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GNodeList* pg = new GNodeList(mdl, dynamic_cast<GNodeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -914,8 +1035,6 @@ void CMainWindow::on_actionTransform_triggered()
 			w = PI*r.Length() / 180;
 			r.Normalize();
 			rot = quatd(w, r)*rot;
-
-			CGLView* glview = GetGLView();
 
 			pos += dr;
 			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, pos));
@@ -997,7 +1116,6 @@ void CMainWindow::on_actionClone_triggered()
 
 		// add and select the new object
 		doc->DoCommand(new CCmdAddAndSelectObject(&m, pco));
-		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update windows
 		Update(0, true);
@@ -1075,9 +1193,21 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
-	GetGLView()->ZoomToObject(copyObject);
+	GLScene* scene = doc->GetScene();
+	if (scene)
+	{
+		BOX box = copyObject->GetGlobalBox();
+
+		double f = box.GetMaxExtent();
+		if (f == 0) f = 1;
+
+		GLCamera& cam = scene->GetCamera();
+
+		cam.SetTarget(box.Center());
+		cam.SetTargetDistance(2.0 * f);
+		cam.SetOrientation(copyObject->GetRenderTransform().GetRotationInverse());
+	}
 	copyObject = nullptr;
-	doc->GetFSModel()->UpdateMaterialSelections();
 
 	// update windows
 	Update(0, true);
@@ -1116,7 +1246,6 @@ void CMainWindow::on_actionCloneGrid_triggered()
 			cmd->AddCommand(new CCmdAddObject(&m, newObjects[i]));
 		}
 		doc->DoCommand(cmd);
-		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1155,7 +1284,6 @@ void CMainWindow::on_actionCloneRevolve_triggered()
 			cmd->AddCommand(new CCmdAddObject(&m, newObjects[i]));
 		}
 		doc->DoCommand(cmd);
-		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1210,7 +1338,6 @@ void CMainWindow::on_actionMerge_triggered()
 
 		// perform the operation
 		doc->DoCommand(pcmd);
-		doc->GetFSModel()->UpdateMaterialSelections();
 
 		// update UI
 		Update(0, true);
@@ -1273,6 +1400,8 @@ void CMainWindow::on_actionDetach_triggered()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(doc->GetActiveObject()); assert(po);
 		if (po == 0) return;
 
+		doc->SetCurrentSelection(nullptr);
+
 		// create a new object for this mesh
 		GMeshObject* newObject = po->DetachSelection();
 
@@ -1281,8 +1410,7 @@ void CMainWindow::on_actionDetach_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
-		doc->GetFSModel()->UpdateMaterialSelections();
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}
@@ -1315,7 +1443,7 @@ void CMainWindow::on_actionExtract_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}
@@ -1335,6 +1463,7 @@ void CMainWindow::on_actionPurge_triggered()
 		{
 		case 0: ps->Purge(); break;
 		case 1: prj.PurgeSelections(); break;
+		case 2: ps->RemoveUnusedItems(); break;
 		}
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);
@@ -1696,13 +1825,7 @@ void CMainWindow::on_actionFindTxt_triggered()
 	QString txt = QInputDialog::getText(this, "FEBio Studio", "Text:");
 	if (txt.isEmpty() == false)
 	{
-		ui->m_lastFindText = txt;
-
-		if (ui->centralWidget->xmlEdit->find(txt) == false)
-		{
-			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
-		}
-		else ui->centralWidget->xmlEdit->centerCursor();
+		ui->centralWidget->txtEdit->find(txt);
 	}
 }
 
@@ -1710,34 +1833,26 @@ void CMainWindow::on_actionFindAgain_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-
-	if (ui->m_lastFindText.isEmpty() == false)
-	{
-		if (ui->centralWidget->xmlEdit->find(ui->m_lastFindText) == false)
-		{
-			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
-		}
-		else ui->centralWidget->xmlEdit->centerCursor();
-	}
+	ui->centralWidget->txtEdit->findAgain();
 }
 
 void CMainWindow::on_actionToggleComment_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->centralWidget->xmlEdit->toggleLineComment();
+	ui->centralWidget->txtEdit->toggleLineComment();
 }
 
 void CMainWindow::on_actionDuplicateLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->centralWidget->xmlEdit->duplicateLine();
+	ui->centralWidget->txtEdit->duplicateLine();
 }
 
 void CMainWindow::on_actionDeleteLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->centralWidget->xmlEdit->deleteLine();
+	ui->centralWidget->txtEdit->deleteLine();
 }

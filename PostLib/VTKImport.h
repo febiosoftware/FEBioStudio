@@ -41,8 +41,12 @@ public:
 
 	bool Load(const char* szfile) override;
 
+	virtual float GetFileProgress() const override;
+
 protected:
 	virtual bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) = 0;
+
+	void SetFileReader(FileReader* reader) { m_vtkReader = reader; }
 
 private:
 	bool BuildMesh(const VTK::vtkPiece& piece);
@@ -51,9 +55,13 @@ private:
 	bool ProcessSeries(const char* szfile);
 
 protected:
+	FileReader* m_vtkReader = nullptr;
 	FEState*	m_ps;
+	bool		m_bmapNodes = false;
+	std::vector<int> m_nodeMap;
 	double	m_currentTime;
 	int		m_fileCount;
+	bool	m_processSeries = true;
 };
 
 class VTKImport : public VTKFileImport
@@ -82,4 +90,20 @@ public:
 	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
 };
 
+class PVTUImport : public VTKFileImport
+{
+public:
+	PVTUImport(FEPostModel* fem) : VTKFileImport(fem) { m_bmapNodes = true; }
+
+private:
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
+
+class PVDImport : public VTKFileImport
+{
+public:
+	PVDImport(FEPostModel* fem);
+
+	bool LoadVTKModel(const char* szfilename, VTK::vtkModel& vtk) override;
+};
 }

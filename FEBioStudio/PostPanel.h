@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 
 namespace Ui {
 	class CPostPanel;
@@ -33,7 +33,7 @@ namespace Ui {
 
 class FSObject;
 
-class CPostPanel : public CCommandPanel
+class CPostPanel : public CWindowPanel
 {
 	Q_OBJECT
 
@@ -54,6 +54,9 @@ public:
 
 public slots:
 	void on_postTab_currentChanged(int index);
+
+signals:
+    void postTree_currentObjectChanged(FSObject* po);
 
 private:
 	Ui::CPostPanel*	ui;

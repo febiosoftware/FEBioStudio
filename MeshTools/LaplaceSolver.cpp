@@ -26,16 +26,18 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "LaplaceSolver.h"
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FENodeNodeList.h>
-#include <MeshLib/FENodeElementList.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSNodeNodeList.h>
+#include <MeshLib/FSNodeElementList.h>
 #include <MeshLib/MeshMetrics.h>
+using namespace std;
 
 LaplaceSolver::LaplaceSolver()
 {
 	m_maxIters = 1000;
 	m_tol = 1e-4;
 	m_w = 1.0;
+	m_relNorm = 0;
 
 	m_niters = 0;
 }
@@ -183,7 +185,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, cons
 			for (int j=0; j<eval; ++j)
 			{
 				int iel = NEL.ElementIndex(i, j);
-				FEElement_& ej = *NEL.Element(i, j);
+				FSElement_& ej = *NEL.Element(i, j);
 
 				if (ej.m_ntag == elemTag)
 				{
@@ -226,7 +228,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, cons
 				int kel = NEL.ElementIndex(ni, k);
 				if (NEL.HasElement(nj, kel))
 				{
-					FEElement_& ek = *NEL.Element(ni, k);
+					FSElement_& ek = *NEL.Element(ni, k);
 
 					if (ek.m_ntag == elemTag)
 					{

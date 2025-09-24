@@ -26,13 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "AreaCalculatorTool.h"
-#include <QWidget>
-#include <QBoxLayout>
-#include <QCheckBox>
-#include <QPushButton>
-#include <QFormLayout>
-#include <QLineEdit>
-#include "ModelDocument.h"
+#include "GLDocument.h"
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GObject.h>
 
 // constructor
@@ -51,7 +46,7 @@ CAreaCalculatorTool::CAreaCalculatorTool(CMainWindow* wnd) : CBasicTool(wnd, "Ar
 bool CAreaCalculatorTool::OnApply()
 {
     // get the nodal coordinates (surface only)
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc && doc->IsValid())
     {
         GObject* po = doc->GetActiveObject();
@@ -76,7 +71,7 @@ bool CAreaCalculatorTool::OnApply()
         }
 
         // transform nodal coordinates
-        vector<vec3d> y(N);
+        std::vector<vec3d> y(N);
         for (int i=0; i<N; ++i)
             y[i] = po->GetTransform().LocalToGlobal(mesh.Node(i).r);
 

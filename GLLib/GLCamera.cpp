@@ -26,50 +26,18 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLCamera.h"
-#ifdef WIN32
-#include <Windows.h>
-#include <GL/gl.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#endif
-#ifdef LINUX
-#include <GL/gl.h>
-#endif
-#include "glx.h"
 
-//=============================================================================
-GLCameraTransform::GLCameraTransform(const GLCameraTransform& key)
-{
-	pos = key.pos;
-	trg = key.trg;
-	rot = key.rot;
-	SetName(key.GetName());
-}
-
-GLCameraTransform& GLCameraTransform::operator = (const GLCameraTransform& key)
-{
-	pos = key.pos;
-	trg = key.trg;
-	rot = key.rot;
-	SetName(key.GetName());
-	return *this;
-}
-
-//=============================================================================
-CGLCamera::CGLCamera()
+GLCamera::GLCamera()
 {
 	Reset();
 }
 
-//-----------------------------------------------------------------------------
-CGLCamera::~CGLCamera()
+GLCamera::~GLCamera()
 {
 
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::Reset()
+void GLCamera::Reset()
 {
 	SetCameraSpeed(0.8f);
 	SetCameraBias(0.8f);
@@ -84,35 +52,31 @@ void CGLCamera::Reset()
 	m_isMoving = false;
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::SetOrthoProjection(bool b) { m_bortho = b; }
+void GLCamera::SetOrthoProjection(bool b) { m_bortho = b; }
 
-bool CGLCamera::IsOrtho() const { return m_bortho; }
+bool GLCamera::IsOrtho() const { return m_bortho; }
 
-void CGLCamera::MakeActive()
+void GLCamera::MakeActive()
 {
 	Interpolator::m_smooth = 0.5f + m_bias * 0.45f;
 	Interpolator::m_nsteps = 5 + (int)((1.0 - m_speed) * 60.0);
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::SetCameraSpeed(double f)
+void GLCamera::SetCameraSpeed(double f)
 {
 	if (f > 1.0) f = 1.0;
 	if (f < 0.0) f = 0.0;
 	m_speed = f;
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::SetCameraBias(double f)
+void GLCamera::SetCameraBias(double f)
 {
 	if (f > 1.f) f = 1.f;
 	if (f < 0.f) f = 0.f;
 	m_bias = f;
 }
 
-//-----------------------------------------------------------------------------
-bool CGLCamera::IsAnimating()
+bool GLCamera::IsAnimating()
 {
 	bool banim = false;
 	banim |= m_pos.m_banim;
@@ -121,8 +85,7 @@ bool CGLCamera::IsAnimating()
 	return banim;
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::Update(bool bhit)
+void GLCamera::Update(bool bhit)
 {
 	if (bhit == false)
 	{
@@ -138,46 +101,13 @@ void CGLCamera::Update(bool bhit)
 	}
 }
 
-//-----------------------------------------------------------------------------
 // set line-draw or decal mode
-void CGLCamera::LineDrawMode(bool b)
+void GLCamera::LineDrawMode(bool b)
 { 
 	m_bdecal = b;
-	if (m_bdecal)
-		glPolygonOffset(0, 0);
-	else
-		glPolygonOffset(1, 1);
 }
 
-//-----------------------------------------------------------------------------
-// This sets up the GL matrix transformation for rendering
-void CGLCamera::PositionInScene()
-{
-	// reset the modelview matrix mode
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// target in camera coordinates
-	vec3d r = Target();
-	
-	// zoom-in a little when in decal mode
-	if (m_bdecal)
-		glPolygonOffset(0, 0);
-	else
-		glPolygonOffset(1, 1);
-
-	// position the target in camera coordinates
-	glx::translate(-r);
-
-	// orient the camera
-	glx::rotate(m_rot.Value());
-
-	// translate to world coordinates
-	glx::translate(-GetPosition());
-}
-
-//-----------------------------------------------------------------------------
-void CGLCamera::Pan(const quatd& q)
+void GLCamera::Pan(const quatd& q)
 {
 	vec3d p = GetPosition();
 	quatd Q = m_rot.Target();
@@ -196,53 +126,50 @@ void CGLCamera::Pan(const quatd& q)
 	SetOrientation(Q);
 }
 
-void CGLCamera::PanView(const vec3d& r)
+void GLCamera::PanView(const vec3d& r)
 {
 	double f = 0.001f * (double)GetFinalTargetDistance();
 	Truck(r*f);
 }
 
-void CGLCamera::Dolly(double f)
+void GLCamera::Dolly(double f)
 {
 	vec3d dr(0, 0, -f);
 	m_rot.Target().Inverse().RotateVector(dr);
 	SetTarget(FinalPosition() + dr);
 }
 
-void CGLCamera::Truck(const vec3d& v)
+void GLCamera::Truck(const vec3d& v)
 {
 	vec3d dr(v);
 	m_rot.Target().Inverse().RotateVector(dr);
 	SetTarget(FinalPosition() + dr);
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::Orbit(quatd& q)
+void GLCamera::Orbit(quatd& q)
 {
 	quatd o = q*m_rot.Target();
 	o.MakeUnit();
 	m_rot.Target(o);
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::Zoom(double f)
+void GLCamera::Zoom(double f)
 {
 	SetTargetDistance(GetFinalTargetDistance() * f);
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::SetTarget(const vec3d& r)
+void GLCamera::SetTarget(const vec3d& r)
 {
 	m_pos.Target(r);
 }
 
 // set the target in local coordinates
-void CGLCamera::SetLocalTarget(const vec3d& r)
+void GLCamera::SetLocalTarget(const vec3d& r)
 {
 	m_trg.Target(r);
 }
 
-void CGLCamera::SetViewDirection(const vec3d &r)
+void GLCamera::SetViewDirection(const vec3d &r)
 {
 	if (r.Length() != 0.f)
 	{
@@ -250,22 +177,21 @@ void CGLCamera::SetViewDirection(const vec3d &r)
 	}
 }
 
-void CGLCamera::SetTransform(GLCameraTransform& t)
+void GLCamera::SetTransform(GLCameraTransform& t)
 {
 	m_pos.Target(t.pos);
 	m_trg.Target(t.trg);
 	m_rot.Target(t.rot);
 }
 
-void CGLCamera::GetTransform(GLCameraTransform& t)
+void GLCamera::GetTransform(GLCameraTransform& t)
 {
 	t.pos = m_pos.Value();
 	t.trg = m_trg.Value();
 	t.rot = m_rot.Value();
 }
 
-//-----------------------------------------------------------------------------
-vec3d CGLCamera::WorldToCam(vec3d r) const
+vec3d GLCamera::WorldToCam(vec3d r) const
 {
 	r -= Target();
 	quatd q = m_rot.Value();
@@ -275,8 +201,7 @@ vec3d CGLCamera::WorldToCam(vec3d r) const
 	return r;
 }
 
-//-----------------------------------------------------------------------------
-vec3d CGLCamera::CamToWorld(vec3d r) const
+vec3d GLCamera::CamToWorld(vec3d r) const
 {
 	r -= GetPosition();
 	m_rot.Value().RotateVector(r);
@@ -285,9 +210,8 @@ vec3d CGLCamera::CamToWorld(vec3d r) const
 	return r;
 }
 
-//-----------------------------------------------------------------------------
 // get the position in global coordinates
-vec3d CGLCamera::GlobalPosition() const
+vec3d GLCamera::GlobalPosition() const
 {
 	vec3d r = Target();
 	m_rot.Value().Inverse().RotateVector(r);

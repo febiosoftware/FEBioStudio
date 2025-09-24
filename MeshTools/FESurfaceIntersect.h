@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 class FESurfaceIntersect
 {
@@ -33,5 +33,5 @@ public:
 	int Apply(FSSurface* psrc, FSSurface* ptrg, double mindist);
 
 private:
-	double Distance(FEFaceList& s, const vec3d& r);
+	double Distance(FSFaceList& s, const vec3d& r);
 };

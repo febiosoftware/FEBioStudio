@@ -32,13 +32,11 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-#include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
 #include <QComboBox>
 #include <QBoxLayout>
 #include <QSpinBox>
-#include <QTextBrowser>
 #include <QStackedWidget>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -46,8 +44,9 @@ SOFTWARE.*/
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QLabel>
 #include "XMLTreeView.h"
-#include "FileViewer.h"
+#include "ProjectViewer.h"
 #include "ModelViewer.h"
 #include "ModelTree.h"
 #include "CurveEditor.h"
@@ -62,6 +61,7 @@ SOFTWARE.*/
 #include "InfoPanel.h"
 #include "LaunchConfig.h"
 #include "MainTabBar.h"
+#include "MainStatusBar.h"
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "DlgPickColor.h"
@@ -71,7 +71,7 @@ SOFTWARE.*/
 #include "FEBioStudioProject.h"
 #include "TimelinePanel.h"
 #include "UpdateChecker.h"
-#include "XMLEditor.h"
+#include "TextEditor.h"
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
 #include "PostDocument.h"
@@ -79,7 +79,19 @@ SOFTWARE.*/
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
 #include "DlgPartViewer.h"
+#include "DlgScreenCapture.h"
+#include <PyLib/PythonToolsPanel.h>
+#include "DlgPartViewer.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
+#include <FEBioMonitor/FEBioMonitorPanel.h>
+#include <FEBioMonitor/FEBioMonitorView.h>
+#include <FEBioMonitor/FEBioReportView.h>
 #include <vector>
+#include "HTMLBrowser.h"
+#include "PythonEditor.h"
+#include "MainMenu.h"
+#include "PluginManager.h"
+#include <PyLib/PythonRunner.h>
 
 class QProcess;
 
@@ -143,7 +155,8 @@ public:
 		XML_VIEWER,
 		IMG_SLICE,
 		TIME_VIEW_2D,
-		GL_VIEWER
+		GL_VIEWER,
+		FEBREPORT_VIEW
 	};
 
 public:
@@ -151,11 +164,12 @@ public:
 
 	CentralStackedWidget* stack;
 	CGLViewer* glw;
-	QTextBrowser* htmlViewer;
-	XMLEditor* xmlEdit;
+	CHTMLBrowser* htmlViewer;
+	CTextEditView* txtEdit;
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
+	CFEBioReportView* febReportView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -169,15 +183,12 @@ public:
 
 		stack = new CentralStackedWidget(wnd);
 
-		htmlViewer = new QTextBrowser;
-		htmlViewer->setObjectName("htmlview");
-		htmlViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+		htmlViewer = new CHTMLBrowser(wnd);
 
 		stack->addWidget(htmlViewer);
 
-		xmlEdit = new XMLEditor(wnd);
-		xmlEdit->setObjectName("xmledit");
-		stack->addWidget(xmlEdit);
+		txtEdit = new CTextEditView(wnd);
+		stack->addWidget(txtEdit);
 
 		xmlTree = new ::XMLTreeView(wnd);
 		xmlTree->setObjectName("xmlTree");
@@ -194,6 +205,10 @@ public:
 		glw = new CGLViewer(wnd);
 		stack->addWidget(glw);
 
+		febReportView = new CFEBioReportView(wnd);
+		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(febReportView);
+
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
 		setLayout(centralLayout);
@@ -202,6 +217,11 @@ public:
 	void setActiveView(Viewer viewer)
 	{
 		stack->setCurrentIndex(viewer);
+	}
+
+	QWidget* activeView()
+	{
+		return stack->currentWidget();
 	}
 
 	void SetDocumentTabText(CDocument* doc, QString text, QString tooltip)
@@ -223,10 +243,24 @@ struct FBS_SETTINGS
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
 
-	bool	loadFEBioConfigFile;	// load the FEBio config file on startup
-	QString	febioConfigFileName;	// the path to the default FEBio config file
+	QString FEBioSDKInc;	// path to FEBio SDK includes
+	QString FEBioSDKLib;	// path to FEBio SDK libraries
+	QString createPluginPath;	// default path to FEBio plugins
 
 	bool	clearUndoOnSave;	// clear the undo stack on save
+
+	// folder settings
+	QString		m_defaultProjectParent;
+	QString		m_currentPath;
+	QStringList	m_recentFiles;
+	QStringList	m_recentGeomFiles;
+	QStringList m_recentProjects;
+	QStringList m_recentPlugins;
+	QStringList m_recentImages;
+
+	QString m_envMapFile;
+
+	vector<CLaunchConfig*> m_launch_configs;
 };
 
 class Ui::CMainWindow
@@ -241,36 +275,19 @@ public:
 
 	CMainCentralWidget* centralWidget;
 
-	QMenu* menuFile;
-	QMenu* menuEdit;
-	QMenu* menuEditPost;
-	QMenu* menuEditTxt;
-	QMenu* menuEditXml;
-	QMenu* menuPhysics;
-	QMenu* menuTools;
-	QMenu* menuPost;
-	QMenu* menuFEBio;
-	QMenu* menuRecord;
-	QMenu* menuView;
-	QMenu* menuHelp;
-	QMenu* menuRecentFiles;
-	QMenu* menuRecentProjects;
-	QMenu* menuRecentGeomFiles;
-	QMenu* menuImportImage;
-	QMenu* menuRecentImages;
-	QMenu* menuWindows;
-	QMenu* menuViews;
-
 	// dockable widgets
-	::CFileViewer* fileViewer;
+	::CProjectViewer* projectViewer;
 	::CModelViewer* modelViewer;
 	::CBuildPanel* buildPanel;
 	::CLogPanel* logPanel;
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
+//    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
+	CFEBioMonitorPanel* febioMonitor;
+	CFEBioMonitorView* febioMonitorView;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;
@@ -280,11 +297,12 @@ public:
 	::CDlgExplodedView* explodeTool = nullptr;
 	::CCurveEditor* curveWnd = nullptr;
 	::CMeshInspector* meshWnd = nullptr;
+	::CDlgScreenCapture* imageView = nullptr;
+	::CPythonEditor* pythonEditor = nullptr;
 
 	CDlgPartViewer* partViewer = nullptr;
 
-	QStatusBar* statusBar;
-	QProgressBar* progressBar;
+	CMainStatusBar* statusBar;
 
 	// toolbars
 	QToolBar* mainToolBar;
@@ -305,100 +323,17 @@ public:
 	QToolBar* xmlToolbar;
 	QAction* actionEditXmlAsText;
 
-public:
-	QActionGroup* recentFilesActionGroup;
-	QActionGroup* recentProjectsActionGroup;
-	QActionGroup* recentFEFilesActionGroup;
-	QActionGroup* recentGeomFilesActionGroup;
-	QActionGroup* recentImageFilesActionGroup;
+	QToolBar* monitorToolBar;
 
-	// --- menu actions ---
-
-	// FILE menu
-	QAction* actionExportFE;
-	QAction* actionImportGeom;
-	QAction* actionExportGeom;
-	QAction* actionSnapShot;
-
-	// FEBIO menu
-	QAction* actionFEBioRun;
-	QAction* actionFEBioStop;
-	QAction* actionFEBioCheck;
-
-	// PHYSICS menu
-	QAction* actionAddRigidConnector;
-	QAction* actionSoluteTable;
-	QAction* actionSBMTable;
-	QAction* actionAddReaction;
-	QAction* actionAddMembraneReaction;
-
-	// TOOLS menu
-	QAction* actionCurveEditor;
-	QAction* actionMeshInspector;
-	QAction* actionMeshDiagnostic;
-	QAction* actionMaterialTest;
-
-	// VIEW menu
-	QAction* actionUndoViewChange;
-	QAction* actionRedoViewChange;
-	QAction* actionZoomSelect;
-	QAction* actionZoomExtents;
-	QAction* actionViewCapture;
-	QAction* actionShowGrid;
-	QAction* actionShowMeshLines;
-	QAction* actionShowEdgeLines;
-	QAction* actionBackfaceCulling;
-	QAction* actionViewSmooth;
-	QAction* actionShowNormals;
-	QAction* actionOrtho;
-	QAction* actionFront;
-	QAction* actionBack;
-	QAction* actionRight;
-	QAction* actionLeft;
-	QAction* actionTop;
-	QAction* actionBottom;
-	QAction* actionIsometric;
-	QAction* actionOptions;
-	QAction* actionRenderMode;
-	QAction* actionShowFibers;
-	QAction* actionShowMatAxes;
-	QAction* actionShowDiscrete;
-	QAction* actionShowRigidBodies;
-	QAction* actionShowRigidJoints;
-	QAction* actionShowRigidLabels;
-	QAction* actionToggleLight;
-	QAction* actionToggleTagInfo;
-
-	// other actions
-	QAction* actionSelectObjects;
-	QAction* actionSelectParts;
-	QAction* actionSelectSurfaces;
-	QAction* actionSelectCurves;
-	QAction* actionSelectNodes;
-	QAction* actionSelectDiscrete;
-	QAction* actionMeasureTool;
-	QAction* actionPlaneCutTool;
-	QAction* actionPickColor;
-	QAction* actionExplodedView;
-	QAction* actionRotate;
-	QAction* actionTranslate;
-	QAction* selectRect;
-	QAction* selectCircle;
-	QAction* selectFree;
+	// Python stuff
+	QThread m_pyThread;
+	CPythonRunner* m_pyRunner = nullptr;
 
 public:
-	// folder settings
-	QString		m_defaultProjectParent;
-	QString		m_currentPath;
-	QStringList	m_recentFiles;
-	QStringList	m_recentGeomFiles;
-	QStringList m_recentProjects;
-	QStringList m_recentPlugins;
-	QStringList m_recentImages;
+	CMainMenu* mainMenu;
 
-	QString m_envMapFile;
-
-	vector<CLaunchConfig>		m_launch_configs;
+public:
+	FBS_SETTINGS m_settings;
 
 	CFEBioJobManager* m_jobManager;
 
@@ -410,8 +345,6 @@ public:
 
 	QTimer* m_autoSaveTimer = nullptr;
 
-	FBS_SETTINGS m_settings;
-
 	CUpdateWidget m_updateWidget; // TODO: Why is this a widget? It is not used as a widget.
 	QString m_serverMessage;
 	bool m_updaterPresent;
@@ -419,7 +352,7 @@ public:
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
 
-	QString m_lastFindText;
+    CPluginManager m_pluginManager;
 
 public:
 	CGLDocument* m_copySrc = nullptr; // source for copy selection operation
@@ -433,11 +366,22 @@ public:
 
 	void setupUi(::CMainWindow* wnd);
 
+	void setActiveCentralView(CMainCentralWidget::Viewer viewer);
+
+	CLaunchConfig* findLaunchConfig(const std::string& name)
+	{
+		for (auto lc : m_settings.m_launch_configs)
+		{
+			if (lc->name() == name) return lc;
+		}
+		return nullptr;
+	}
+
 private:
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false);
 
-	// create actions and menu
-	void buildMenu(::CMainWindow* mainWindow);
+	// create toolbars
+	void buildToolbars(::CMainWindow* mainWindow);
 
 	// build the dockable windows
 	// Note that this must be called after the menu is created.
@@ -474,7 +418,7 @@ public:
 
 	void addToRecentImageFiles(const QString& file);
 
-	void showFileViewer();
+	void showProjectViewer();
 
 	void showModelViewer();
 

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <vector>
 
 class UIEditDataFieldTool;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 class CEditDataFieldTool : public CAbstractTool
 {

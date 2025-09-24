@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "ImageToolBar.h"
 #include <GLLib/GView.h> 
-#include "Document.h"
+#include "GLDocument.h"
 #include "DlgPixelInspector.h"
 #include "ImageSliceView.h"
 #include "2DImageTimeView.h"
@@ -68,6 +68,29 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
 void CImageToolBar::InspectorClosed()
 {
     m_pixelInspector = nullptr;
+}
+
+void CImageToolBar::SetView(int view)
+{
+    switch (view)
+    {
+    case CGLDocument::MODEL_VIEW:
+        m_showModelView->setChecked(true);
+        break;
+
+    case CGLDocument::SLICE_VIEW:
+        m_showSliceView->setChecked(true);
+        break;
+
+    case CGLDocument::TIME_VIEW_2D:
+        m_show2dImageView->setChecked(true);
+        break;
+    
+    default:
+        break;
+    }
+
+    UpdateToolbar(view);
 }
 
 void CImageToolBar::on_viewAction_triggered(QAction* action)
@@ -121,17 +144,14 @@ void CImageToolBar::UpdateToolbar(int view)
     switch (view)
     {
     case CGLDocument::MODEL_VIEW:
-        // widgetForAction(m_showPixelInspector)->setVisible(false);
         if(m_pixelInspector) m_pixelInspector->close();
         break;
 
     case CGLDocument::SLICE_VIEW:
-        // widgetForAction(m_showPixelInspector)->setVisible(true);
         if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetImageSliceView());
         break;
 
     case CGLDocument::TIME_VIEW_2D:
-        // widgetForAction(m_showPixelInspector)->setVisible(true);
         if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetC2DImageTimeView());
         break;
     

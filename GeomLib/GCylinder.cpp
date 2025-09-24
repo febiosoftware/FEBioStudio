@@ -283,8 +283,8 @@ bool GCylinder2::Update(bool b)
 		n.LocalPosition() = vec3d(x[i], y[i], z[i]);
 	}
 
-	// rebuild the GMesh
-	BuildGMesh();
+	// rebuild the GLMesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }

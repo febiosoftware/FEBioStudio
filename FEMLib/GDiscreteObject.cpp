@@ -29,7 +29,9 @@ SOFTWARE.*/
 #include <FSCore/Archive.h>
 #include <GeomLib/GModel.h>
 #include "GMaterial.h"
+#include <FSCore/Palette.h>
 #include <sstream>
+using std::string;
 
 GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
 {
@@ -382,13 +384,12 @@ void GDiscreteElementSet::Load(IArchive& ar)
 
 //=============================================================================
 
-extern GLColor col[GMaterial::MAX_COLORS]; // in GMaterial.cpp
-
 GDiscreteSpringSet::GDiscreteSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_DISCRETE_SPRING_SET)
 {
 	m_mat = nullptr;
 	static int n = 0;
-	SetColor(col[n % GMaterial::MAX_COLORS]);
+	const CPalette& pal = CPaletteManager::CurrentPalette();
+	SetColor(pal.Color(n % pal.Colors()));
 	n++;
 }
 

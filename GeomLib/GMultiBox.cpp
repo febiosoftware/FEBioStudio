@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GMultiBox.h"
 #include <MeshTools/FEMultiBlockMesh.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <algorithm>
 
 class GMultiBoxManipulator : public GObjectManipulator
@@ -66,9 +66,6 @@ private:
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 {
 	SetFEMesher(new FEMultiBlockMesher());
-
-	SetSaveFlags(0);	// this prevents the mesh from getting serialized
-
 	SetManipulator(new GMultiBoxManipulator(*this));
 }
 
@@ -79,8 +76,6 @@ GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 // a GMultiBox
 GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 {
-	SetSaveFlags(0);	// this prevents the mesh from getting serialized
-
 	// copy to old object's ID
 	SetID(po->GetID());
 
@@ -107,8 +102,8 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	// build the object data from the multi-block
 	BuildObject(*mb);
 
-	// rebuild the GMesh
-	BuildGMesh();
+	// rebuild the GLMesh
+	SetRenderMesh(nullptr);
 
 	SetManipulator(new GMultiBoxManipulator(*this));
 }
@@ -138,7 +133,7 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 		MBEdge& eo = mb.GetEdge(i);
 		e->m_node[0] = eo.m_node[0];
 		e->m_node[1] = eo.m_node[1];
-		e->m_cnode = eo.m_cnode;
+		if (eo.m_cnode >= 0) e->m_cnode.push_back(eo.m_cnode);
 		e->m_ntype = eo.m_ntype;
 		e->m_orient = eo.m_orient;
 	}
@@ -331,9 +326,9 @@ bool GMultiBox::DeletePart(GPart* pg)
 	{
 		m_Node[edge->m_node[0]]->m_ntag = 1;
 		m_Node[edge->m_node[1]]->m_ntag = 1;
-		if (edge->m_cnode >= 0)
+		if (!edge->m_cnode.empty())
 		{
-			m_Node[edge->m_cnode]->m_ntag = 1;
+			m_Node[edge->m_cnode[0]]->m_ntag = 1;
 		}
 	}
 
@@ -364,10 +359,10 @@ bool GMultiBox::DeletePart(GPart* pg)
 	for (GEdge* e : m_Edge) {
 		e->m_node[0] = m_Node[e->m_node[0]]->m_ntag; assert(e->m_node[0] >= 0);
 		e->m_node[1] = m_Node[e->m_node[1]]->m_ntag; assert(e->m_node[1] >= 0);
-		if (e->m_cnode >= 0)
+		if (!e->m_cnode.empty())
 		{
-			e->m_cnode = m_Node[e->m_cnode]->m_ntag;
-			assert(e->m_cnode >= 0);
+			e->m_cnode[0] = m_Node[e->m_cnode[0]]->m_ntag;
+			assert(e->m_cnode[0] >= 0);
 		}
 	}
 
@@ -384,8 +379,8 @@ bool GMultiBox::DeletePart(GPart* pg)
 		else m_Node[i]->SetLocalID(n++);
 	}
 
-	// rebuild the GMesh
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }
@@ -510,8 +505,8 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		GEdge& ei = *mb.Edge(i);
 		int n0 = mb.Node(ei.m_node[0])->m_ntag; assert(n0 >= 0);
 		int n1 = mb.Node(ei.m_node[1])->m_ntag; assert(n1 >= 0);
-		int n2 = (ei.m_cnode < 0 ? -1 : mb.Node(ei.m_cnode)->m_ntag);
-		assert((ei.m_cnode < 0) || (n2 >= 0));
+		int n2 = (ei.m_cnode.empty() ? -1 : mb.Node(ei.m_cnode[0])->m_ntag);
+		assert((ei.m_cnode.empty()) || (n2 >= 0));
 
 		// see if we already have this edge
 		ei.m_ntag = -1;
@@ -520,7 +515,6 @@ bool GMultiBox::Merge(GMultiBox& mb)
 			GEdge& ej = *Edge(j);
 			int m0 = ej.m_node[0];
 			int m1 = ej.m_node[1];
-			int m2 = ej.m_cnode;
 
 			if ((n0 == m0) && (n1 == m1))
 			{
@@ -542,7 +536,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 			GEdge* newEdge = AddEdge();
 			newEdge->m_node[0] = n0;
 			newEdge->m_node[1] = n1;
-			newEdge->m_cnode = n2;
+			if (n2 >= 0) newEdge->m_cnode.push_back(n2);
 			newEdge->m_ntype = ei.m_ntype;
 			newEdge->m_orient = ei.m_orient;
 			newEdge->SetMeshWeight(ei.GetMeshWeight());
@@ -617,8 +611,8 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		for (int l = 0; l < 12; ++l) newPart.m_edge[l] = mb.Edge(bi.m_edge[l])->m_ntag;
 	}
 
-	// rebuild the GMesh
-	BuildGMesh();
+	// rebuild the render mesh
+	SetRenderMesh(nullptr);
 
 	return true;
 }

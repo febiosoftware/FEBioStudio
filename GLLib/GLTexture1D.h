@@ -24,12 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <FSCore/color.h>
+
 #pragma once
-/*
-#ifdef WIN32
-  #define _HAS_STD_BYTE 0
-#endif
-*/
 class GLTexture1D
 {
 public:
@@ -38,13 +35,18 @@ public:
 
 	void SetTexture(unsigned char* pb);
 
-	void MakeCurrent();
-
 	int Size();
 
 	unsigned char* GetBytes();
 
-	void Update();
+	void Update(bool b = true);
+
+	bool DoUpdate() const { return m_bupdate; }
+
+	unsigned int GetID() { return m_texID; }
+	void SetID(unsigned int id) { m_texID = id; m_bupdate = true; }
+
+	GLColor sample(float w) const;
 
 protected:
 	int		m_n;

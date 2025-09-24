@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "MeasureMOITool.h"
 #include "MeasureCOMTool.h" // for center of mass calculation
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 mat3d CalculateMOI(FSMesh& mesh);
 

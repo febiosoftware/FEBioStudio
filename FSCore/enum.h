@@ -134,6 +134,7 @@ SOFTWARE.*/
 #define CID_MODELINFO				0x00030000
 #define CID_MODELINFO_COMMENT		0x00030001
 #define CID_MODELINFO_UNITS			0x00030002
+#define CID_MODELINFO_CHANGELOG		0x00030003
 
 // FSModel Data
 #define CID_FEM						0x00040000
@@ -257,6 +258,7 @@ SOFTWARE.*/
 #define CID_OBJ_EDGE_NODE2			0x00080307	// version 2.0
 #define CID_OBJ_EDGE_ORIENT			0x00080308	// as of version FB 1.7
 #define CID_OBJ_EDGE_MESHWEIGHT		0x00080309	// as of version FB 1.7
+#define CID_OBJ_EDGE_CNODE			0x0008030A	// as of version FB 3.0
 
 #define CID_OBJ_NODE_LIST			0x00080400
 #define CID_OBJ_NODE				0x00080401
@@ -376,6 +378,7 @@ SOFTWARE.*/
 #define CID_PARAM_CHECKED			0x000C0004
 #define CID_PARAM_NAME				0x000C0005
 #define CID_PARAM_LC				0x000C0006	// new in FBS 2.0
+#define CID_PARAM_STATE				0x000C0007	// new in FBS 3.0
 
 // --- properties ---
 // (only used by febio classes)
@@ -554,6 +557,13 @@ SOFTWARE.*/
 #define CID_FEBIOJOB_PLOTFILE		0x000F0002
 #define CID_FEBIOJOB_LCONFIG		0x000F0003
 #define CID_FEBIOJOB_LOGFILE		0x000F0004
+#define CID_FEBIOJOB_WRITE_NOTES    0x000F0005 
+#define CID_FEBIOJOB_MIXED_MESH     0x000F0006
+#define CID_FEBIOJOB_DEBUG          0x000F0007
+#define CID_FEBIOJOB_CONFIG_FILE    0x000F0008
+#define CID_FEBIOJOB_TASK           0x000F0009
+#define CID_FEBIOJOB_TASK_FILE      0x000F000A
+#define CID_FEBIOJOB_COMMAND        0x000F000B
 
 // --- Launch Configs
 #define CID_LCONFIG_TYPE			0x000F1000
@@ -579,6 +589,12 @@ SOFTWARE.*/
 #define CID_FEBIO_TYPE_STRING		0x00200003
 
 #define CID_MESH_ADAPTOR_SECTION	0x00300000
+
+// --- plugin section
+#define CID_PLUGIN_SECTION			0x00400000
+#define CID_PLUGIN_INFO 			0x00400100
+#define CID_PLUGIN_NAME 			0x00400101
+#define CID_PLUGIN_ID 	    		0x00400102
 
 //--------------------------------------------------------
 // Mesh type
@@ -646,6 +662,7 @@ SOFTWARE.*/
 #define GBOX_IN_BOX			0x0028	// from FS 1.0
 #define GMULTI_PATCH		0x0029	// from FS 1.7
 #define GCURVE_OBJECT		0x002A	// from FS 2.5
+#define GFOAM_OBJECT		0x002B	// from FS 3.0
 
 //--------------------------------------------------------
 // Modifier types

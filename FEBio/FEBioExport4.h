@@ -31,7 +31,15 @@ SOFTWARE.*/
 class FSSurfaceLoad;
 class GPartList;
 class GMaterial;
+class GDiscreteObject;
 class GPart;
+
+struct ProgressTracker
+{
+	double pct = 0;
+	const char* sztask = nullptr;
+	bool cancel = false;
+};
 
 //-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.5
@@ -43,7 +51,7 @@ private:
 	public:
 		std::string			m_name;
 		std::string			m_extName;
-		FEItemListBuilder* m_list;
+		FSItemListBuilder* m_list;
 		FSObject* m_parent;
 		bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
 
@@ -54,7 +62,7 @@ private:
 			m_duplicate = false;
 		}
 
-		NamedItemList(const std::string& name, FEItemListBuilder* itemList, bool duplicate = false)
+		NamedItemList(const std::string& name, FSItemListBuilder* itemList, bool duplicate = false)
 		{
 			m_name = name;
 			m_parent = nullptr;
@@ -62,7 +70,7 @@ private:
 			m_duplicate = duplicate;
 		}
 
-		NamedItemList(const std::string& name, FSObject* parent, FEItemListBuilder* itemList, bool duplicate = false)
+		NamedItemList(const std::string& name, FSObject* parent, FSItemListBuilder* itemList, bool duplicate = false)
 		{
 			m_name = name;
 			m_parent = parent;
@@ -100,10 +108,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FEFaceList* m_faceList;
+		FSFaceList* m_faceList;
 
 	public:
-		Surface(const string& name, FEFaceList* faceList) : m_name(name), m_faceList(faceList) {}
+		Surface(const string& name, FSFaceList* faceList) : m_name(name), m_faceList(faceList) {}
 		~Surface() { delete m_faceList; }
 	};
 
@@ -111,10 +119,10 @@ private:
 	{
 	public:
 		string		m_name;
-		FEElemList* m_elemList;
+		FSElemList* m_elemList;
 
 	public:
-		ElementList(const string& name, FEElemList* elemList) : m_name(name), m_elemList(elemList) {}
+		ElementList(const string& name, FSElemList* elemList) : m_name(name), m_elemList(elemList) {}
 		~ElementList() { delete m_elemList; }
 	};
 
@@ -135,10 +143,10 @@ private:
 	{
 	public:
 		GObject* m_obj;
-		vector<NodeSet*>		m_NSet;
-		vector<Surface*>		m_Surf;
-		vector<ElementList*>	m_ELst;
-		vector<Domain*>			m_Dom;
+		std::vector<NodeSet*>		m_NSet;
+		std::vector<Surface*>		m_Surf;
+		std::vector<ElementList*>	m_ELst;
+		std::vector<Domain*>			m_Dom;
 
 	public:
 		Part(GObject* po) : m_obj(po) {}
@@ -176,8 +184,8 @@ private:
 	public:
 		FSCoreMesh* m_mesh;
 		int			m_matID;
-		string		m_name;
-		vector<int>	m_elem;
+		std::string		m_name;
+		std::vector<int>	m_elem;
 
 	public:
 		ElementSet() { m_mesh = 0; }
@@ -202,13 +210,13 @@ public:
 	FEBioExport4(FSProject& prj);
 	virtual ~FEBioExport4();
 
+	void SetProgressTracker(ProgressTracker* prg);
+
 	void Clear();
 
 	bool Write(const char* szfile);
 
 public: // set export attributes
-	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
-
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 	void SetMixedMeshFlag(bool b) { m_allowMixedParts = b; }
@@ -224,8 +232,8 @@ protected:
 	void WriteMeshElements();
 	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
-	void WriteMixedElementsPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
+	void WriteMixedElementsPart(Part* part, GPart* pg, std::vector<int>& elemList, bool writeMats = true, bool useMatNames = false);
+	void WriteGeometryPart(Part* part, GPart* pg, std::vector<int>& elemList, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
@@ -254,7 +262,6 @@ protected:
 	void WriteBodyLoads(FSStep& s);
 
 	// Used by new Part export feature
-	void WriteGeometryObject(Part* po);
 	void WriteGeometryNodeSetsNew();
 	void WriteGeometrySurfacesNew();
 	void WriteGeometryElementSetsNew();
@@ -283,27 +290,32 @@ protected:
 
 	void WriteModelComponent(FSModelComponent* pmat, XMLElement& el);
 
-	void WriteSurfaceSection(FEFaceList& s);
+	void WriteSurfaceSection(FSFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
 	void WriteEdgeSection(NamedItemList& l);
-	void WriteElementList(FEElemList& el);
+	void WriteElementList(FSElemList& el);
 
 protected:
 	FSModel* m_pfem;
 
 	bool	m_writeControlSection;	// write Control section for single step analysis
+	ProgressTracker* m_prg;
+
+	void setProgress(double v);
+	void setProgress(double v, const char* sztask);
+	void setProgressTask(const char* sztask);
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists = false);
-	string GetNodeSetName(FEItemListBuilder* pl);
-	const char* GetEdgeSetName(FEItemListBuilder* pl);
-	string GetElementSetName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FSItemListBuilder* pl, bool allowPartLists = false);
+	string GetNodeSetName(FSItemListBuilder* pl);
+	const char* GetEdgeSetName(FSItemListBuilder* pl);
+	string GetElementSetName(FSItemListBuilder* pl);
 
-	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddEdgeSet(const std::string& name, FEItemListBuilder* pl);
-	void AddSurface(const std::string& name, FEItemListBuilder* pl);
-	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
-	void AddPartList(const std::string& name, FEItemListBuilder* pl);
+	void AddNodeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddEdgeSet(const std::string& name, FSItemListBuilder* pl);
+	void AddSurface(const std::string& name, FSItemListBuilder* pl);
+	void AddElemSet(const std::string& name, FSItemListBuilder* pl);
+	void AddPartList(const std::string& name, FSItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
@@ -323,6 +335,9 @@ protected:
 
 	// used by the new export Part feature
 	std::vector<Part*>		m_Part;	//!< list of parts
+
+	// the discrete sets that should be exported
+	std::vector<GDiscreteObject*>	m_discreteSets;
 
 	int	m_numbl;	// number of body loads
 	int	m_nsteps;	// number of steps

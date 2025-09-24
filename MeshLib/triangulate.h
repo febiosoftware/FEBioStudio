@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <vector>
 
-class GMesh;
+class GLMesh;
 class GFace;
 
 class GTriangulate
@@ -123,8 +123,8 @@ inline bool Intersect(const vec2d& a, const vec2d& b, const vec2d& c, const vec2
 }
 
 //-----------------------------------------------------------------------------
-GMesh* triangulate(GTriangulate& c);
-GMesh* triangulate(GFace& face);
+GLMesh* triangulate(GTriangulate& c);
+GLMesh* triangulate(GFace& face);
 
 //-----------------------------------------------------------------------------
 std::vector<vec3d> convex_hull2d(const std::vector<vec3d>& p);

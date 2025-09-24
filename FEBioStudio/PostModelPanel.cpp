@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "PostModelPanel.h"
 #include <QBoxLayout>
 #include <QTreeWidget>
@@ -55,6 +54,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <PostGL/GLPlotHelicalAxis.h>
+#include <PostGL/GLPlotStaticMesh.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
@@ -70,14 +70,17 @@ SOFTWARE.*/
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLPlotGroup.h>
 #include "ObjectProps.h"
-#include <CUILib/ImageViewer.h>
-#include <CUILib/HistogramViewer.h>
+#include "ImageViewer.h"
+#include "HistogramViewer.h"
+#include "ImageFilterWidget.h"
 #include "GLView.h"
 #include "PostDocument.h"
+#include "GLModelDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
 #include <QFileDialog>
 #include "DlgImportData.h"
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -149,7 +152,7 @@ class CMeshProps : public CPropertyList
 public:
 	CMeshProps(Post::FEPostModel* fem) : m_fem(fem)
 	{
-		Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
+		FSMesh& mesh = *fem->GetFEMesh(0);
 		addProperty("Nodes"         , CProperty::Int, "Number of nodes"         )->setFlags(CProperty::Visible);
 		addProperty("Faces"         , CProperty::Int, "Number of faces"         )->setFlags(CProperty::Visible);
 		addProperty("Solid Elements", CProperty::Int, "Number of solid elements")->setFlags(CProperty::Visible);
@@ -162,7 +165,7 @@ public:
 		QVariant v;
 		if (m_fem)
 		{
-			Post::FEPostMesh& mesh = *m_fem->CurrentState()->GetFEMesh();
+			FSMesh& mesh = *m_fem->CurrentState()->GetFEMesh();
 			switch (i)
 			{
 			case 0: v = mesh.Nodes(); break;
@@ -200,7 +203,7 @@ public:
 
 	QVariant GetPropertyValue(int i)
 	{
-		CGLCamera* cam = m_view.GetCamera();
+		GLCamera* cam = m_view.GetCamera();
 		if (cam == nullptr) return QVariant();
 
 		quatd q = cam->GetOrientation();
@@ -228,7 +231,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& val)
 	{
-		CGLCamera* cam = m_view.GetCamera();
+		GLCamera* cam = m_view.GetCamera();
 		if (cam == nullptr) return;
 
 		quatd q = cam->GetOrientation();
@@ -497,7 +500,7 @@ public:
 	::CPropertyListView*	m_props;
 
 	CImageViewer*	m_imgView;
-
+    CImageFilterWidget* m_imgFilters;
 	CHistogramViewer* m_histo;
 
 	QTabWidget*	m_tab;
@@ -510,7 +513,7 @@ public:
 	QPushButton* delButton;
 
 public:
-	void setupUi(::CPostModelPanel* parent)
+	void setupUi(::CMainWindow* wnd, ::CPostModelPanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setContentsMargins(0,0,0,0);
@@ -535,7 +538,7 @@ public:
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
 		
-    pvl->setContentsMargins(0,0,0,0);
+        pvl->setContentsMargins(0,0,0,0);
 		
 		QHBoxLayout* phl = new QHBoxLayout;
 		phl->addWidget(new QLabel("name:"));
@@ -565,14 +568,13 @@ public:
 		m_props = new ::CPropertyListView;
 		m_props->setObjectName("props");
 		m_tab->addTab(m_props, "Properties");
-		//		tab->setTabPosition(QTabWidget::West);
 
 		m_imgView = new CImageViewer;
-		//		m_tab->addTab(m_imgView, "Image Viewer");
-
+        m_imgFilters = new CImageFilterWidget(wnd);
 		m_histo = new CHistogramViewer;
 
 		m_imgView->hide();
+        m_imgFilters->hide();
 		m_histo->hide();
 
 		pvl->addWidget(m_tab);
@@ -604,9 +606,11 @@ public:
 	{
 		if (m_tab->count() == 1)
 		{
+            m_tab->addTab(m_imgFilters, "Filters");
 			m_tab->addTab(m_imgView, "Image Viewer");
 			m_tab->addTab(m_histo, "Histogram");
 		}
+        m_imgFilters->SetImageModel(img);
 		m_imgView->SetImageModel(img);
 		m_histo->SetImageModel(img);
 	}
@@ -615,9 +619,11 @@ public:
 	{
 		if (m_tab->count() != 1)
 		{
-			m_tab->removeTab(2);
+			m_tab->removeTab(3);
+            m_tab->removeTab(2);
 			m_tab->removeTab(1);
 		}
+        m_imgFilters->SetImageModel(nullptr);
 		m_imgView->SetImageModel(nullptr);
 		m_histo->SetImageModel(nullptr);
 	}
@@ -714,17 +720,17 @@ public:
 	}
 };
 
-CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
+CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
 {
-	ui->setupUi(this);
+	ui->setupUi(pwnd, this);
 
 	QObject::connect(this, SIGNAL(postObjectStateChanged()), pwnd, SLOT(OnPostObjectStateChanged()));
 	QObject::connect(this, SIGNAL(postObjectPropsChanged(FSObject*)), pwnd, SLOT(OnPostObjectPropsChanged(FSObject*)));
 }
 
-CPostDocument* CPostModelPanel::GetActiveDocument()
+CGLModelDocument* CPostModelPanel::GetActiveDocument()
 {
-	return GetMainWindow()->GetPostDocument();
+	return dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
 }
 
 void CPostModelPanel::selectObject(FSObject* po)
@@ -776,45 +782,41 @@ void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
 	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
 	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
 	else if (dynamic_cast<Post::GLPlotHelicalAxis  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/helix.png")));
+	else if (dynamic_cast<Post::GLPlotStaticMesh   *>(plot)) it->setIcon(0, QIcon(QString(":/icons/mesh.png")));
 }
 
 void CPostModelPanel::BuildModelTree()
 {
 	ui->clear();
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if (pdoc && pdoc->IsValid())
 	{
-		Post::FEPostModel* fem = pdoc->GetFSModel();
 		Post::CGLModel* mdl = pdoc->GetGLModel();
+		Post::FEPostModel* fem = mdl->GetFSModel();
 		GObject* po = pdoc->GetActiveObject();
 
 		CModelTreeItem* pi1 = nullptr;
 		if (mdl)
 		{
-			pi1 = ui->AddItem(nullptr, nullptr, QString::fromStdString(pdoc->GetDocFileName()), "PostView", new CModelProps(mdl), CModelTreeItem::ALL_FLAGS);
+			std::string title = pdoc->GetDocFileName();
+			if (title.empty()) title = pdoc->GetDocTitle();
+			if (title.empty()) title = "<untitled>";
+			pi1 = ui->AddItem(nullptr, nullptr, QString::fromStdString(title), "PostView", new CModelProps(mdl), CModelTreeItem::ALL_FLAGS);
 			pi1->setExpanded(true);
 
 			// add the mesh
 			if (fem)
 			{
-				Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
+				FSMesh& mesh = *fem->GetFEMesh(0);
 				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
 
 				// add node sets
-				int nsets = mesh.NodeSets() + (po ? po->FENodeSets() : 0);
+				int nsets = mesh.FENodeSets();
 				CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, QString("Node Sets (%1)").arg(nsets), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.NodeSets(); ++i)
+				for (int i = 0; i < mesh.FENodeSets(); ++i)
 				{
-					Post::FSNodeSet& nset = mesh.NodeSet(i);
-					ui->AddItem(pi3, &nset, QString::fromStdString(nset.GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FENodeSets(); ++i)
-					{
-						FSNodeSet* pg = po->GetFENodeSet(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
+					FSNodeSet* nset = mesh.GetFENodeSet(i);
+					ui->AddItem(pi3, nset, QString::fromStdString(nset->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
 
 				// add edges
@@ -830,37 +832,21 @@ void CPostModelPanel::BuildModelTree()
 				}
 
 				// add surfaces
-				int nsurf = mesh.Surfaces() + (po ? po->FESurfaces() : 0);
+				int nsurf = mesh.FESurfaces();
 				pi3 = ui->AddItem(pi2, nullptr, QString("Surfaces (%1)").arg(nsurf), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.Surfaces(); ++i)
+				for (int i = 0; i < mesh.FESurfaces(); ++i)
 				{
-					Post::FSSurface& surf = mesh.Surface(i);
+					FSSurface& surf = *mesh.GetFESurface(i);
 					ui->AddItem(pi3, &surf, QString::fromStdString(surf.GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FESurfaces(); ++i)
-					{
-						FSSurface* pg = po->GetFESurface(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
 				}
 
 				// add element sets
-				int eset = mesh.ElemSets() + (po ? po->FEElemSets() : 0);
+				int eset = mesh.FEElemSets();
 				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.ElemSets(); ++i)
+				for (int i = 0; i < mesh.FEElemSets(); ++i)
 				{
-					Post::FSElemSet& part = mesh.ElemSet(i);
+					FSElemSet& part = *mesh.GetFEElemSet(i);
 					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
-				}
-				if (po)
-				{
-					for (int i = 0; i < po->FEElemSets(); ++i)
-					{
-						FSElemSet* pg = po->GetFEElemSet(i);
-						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
 				}
 			}
 
@@ -962,26 +948,31 @@ void CPostModelPanel::BuildModelTree()
 
 		for (int i=0; i<view.CameraKeys(); ++i)
 		{
-			GLCameraTransform& key = view.GetKey(i);
+			CGViewKey& key = view.GetKey(i);
 			string name = key.GetName();
-			ui->AddItem(pi1, &key, QString::fromStdString(name), "view", new CCameraTransformProps(key));
+			ui->AddItem(pi1, &key, QString::fromStdString(name), "view", new CCameraTransformProps(key.transform));
 		}
 
 		// saved graphs
-		int n = pdoc->Graphs();
-		if (n > 0)
+		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+		if (postDoc)
 		{
-			pi1 = ui->AddItem(nullptr, nullptr, "Saved Graphs", "chart", nullptr, CModelTreeItem::ALL_FLAGS);
-			for (int i = 0; i < n; ++i)
+			int n = postDoc->Graphs();
+			if (n > 0)
 			{
-				CGraphData* gd = const_cast<CGraphData*>(pdoc->GetGraphData(i));
-				ui->AddItem(pi1, gd, QString::fromStdString(gd->GetName()));
+				pi1 = ui->AddItem(nullptr, nullptr, "Saved Graphs", "chart", nullptr, CModelTreeItem::ALL_FLAGS);
+				for (int i = 0; i < n; ++i)
+				{
+					CGraphData* gd = const_cast<CGraphData*>(postDoc->GetGraphData(i));
+					ui->AddItem(pi1, gd, QString::fromStdString(gd->GetName()));
+				}
 			}
 		}
 	}
 
 	// This can crash if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
+	selectObject(nullptr);
 }
 
 void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
@@ -1005,6 +996,8 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 			ui->HideImageViewer();
 			ui->delButton->setEnabled(false);
 		}
+
+        emit currentObjectChanged(po);
 
 		ui->name->setText(item->text(0));
 		ui->name->setEnabled(item->CanRename());
@@ -1047,7 +1040,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(treeItem);
 	FSObject* po = item->Object();
 
-	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(po);
+	CGViewKey* pkey = dynamic_cast<CGViewKey*>(po);
 	if (pkey)
 	{
 		CGView* view = GetActiveDocument()->GetView();
@@ -1055,17 +1048,18 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		GetMainWindow()->RedrawGL();
 	}
 
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	CGraphData* graph = dynamic_cast<CGraphData*>(po);
 	if (graph)
 	{
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(graph->GetName()));
 		w->show();
 	}
-
-	CGLDocument* doc = GetDocument();
 
 	FSNodeSet* pn = dynamic_cast<FSNodeSet*>(po);
 	if (pn)
@@ -1074,27 +1068,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_NODE);
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
-	}
-
-	Post::FSNodeSet* pn2 = dynamic_cast<Post::FSNodeSet*>(po);
-	if (pn2)
-	{
-		// the tree is populated from the initial mesh
-		// but if the initial mesh is remeshed, we need to find the mesh
-		// of the active time step
-		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-		if (postDoc)
-		{
-			Post::FEPostModel* mdl = postDoc->GetFSModel();
-			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
-
-			Post::FSNodeSet* pn3 = pm->FindNodeSet(pn2->GetName());
-			if (pn3) pn2 = pn3;
-
-			std::vector<int> items = pn2->GetNodeList();
-			doc->SetItemMode(ITEM_NODE);
-			doc->DoCommand(new CCmdSelectFENodes(pn2->GetMesh(), items, false));
-		}
 	}
 
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);
@@ -1109,14 +1082,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
-		std::vector<int> items = ps->CopyItems();
-		std::vector<int> vitems(items.begin(), items.end());
-		doc->SetItemMode(ITEM_FACE);
-		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
-	}
-	Post::FSSurface* ps2 = dynamic_cast<Post::FSSurface*>(po);
-	if (ps2)
-	{
 		// the tree is populated from the initial mesh
 		// but if the initial mesh is remeshed, we need to find the mesh
 		// of the active time step
@@ -1124,14 +1089,14 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		if (postDoc)
 		{
 			Post::FEPostModel* mdl = postDoc->GetFSModel();
-			Post::FEPostMesh* pm = mdl->CurrentState()->GetFEMesh();
+			FSMesh* pm = mdl->CurrentState()->GetFEMesh();
 
-			Post::FSSurface* ps3 = pm->FindSurface(ps2->GetName());
-			if (ps3) ps2 = ps3;
+			FSSurface* ps2 = pm->FindFESurface(ps->GetName());
+			if (ps2) ps = ps2;
 
-			std::vector<int> items = ps2->GetFaceList();
+			std::vector<int> items = ps->CopyItems();
 			doc->SetItemMode(ITEM_FACE);
-			doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
+			doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), items, false));
 		}
 	}
 
@@ -1142,13 +1107,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
-	}
-	Post::FSElemSet* pg2 = dynamic_cast<Post::FSElemSet*>(po);
-	if (pg2)
-	{
-		std::vector<int> items = pg2->GetElementList();
-		doc->SetItemMode(ITEM_ELEM);
-		doc->DoCommand(new CCmdSelectElements(pg2->GetMesh(), items, false));
 	}
 
 	GetMainWindow()->UpdateGLControlBar();
@@ -1163,12 +1121,7 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
-	if (dynamic_cast<Post::CGLLegendPlot*>(po))
-	{
-		Post::CGLLegendPlot* plot = dynamic_cast<Post::CGLLegendPlot*>(po); assert(plot);
-		if (plot) plot->ChangeName(name.toStdString());
-	}
-	else if (po)
+	if (po)
 	{
 		po->SetName(name.toStdString());
 	}
@@ -1182,7 +1135,10 @@ void CPostModelPanel::on_deleteButton_clicked()
 
 	FSObject* pobj = item->Object();
 
-	CPostDocument* doc = GetActiveDocument();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	emit currentObjectChanged(nullptr);
 
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(pobj);
 	CGraphData* graph = dynamic_cast<CGraphData*>(pobj);
@@ -1193,7 +1149,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 		ui->HideImageViewer();
 		
 		doc->DeleteObject(po);
-		item->SetObject(0);
+		item->SetObject(nullptr);
 		Update(true);
 		GetMainWindow()->RedrawGL();
 	}
@@ -1273,7 +1229,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::FSNodeSet* ns = dynamic_cast<Post::FSNodeSet*>(po);
+	FSNodeSet* ns = dynamic_cast<FSNodeSet*>(po);
 	if (ns)
 	{
 		QMenu menu(this);
@@ -1281,16 +1237,8 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSNodeSet* ns2 = dynamic_cast<::FSNodeSet*>(po);
-	if (ns2)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Nodes", this, SLOT(OnSelectNodes()));
-		menu.exec(ev->globalPos());
-		return;
-	}
 
-	Post::FSSurface* ps = dynamic_cast<Post::FSSurface*>(po);
+	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
 		QMenu menu(this);
@@ -1298,26 +1246,9 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSSurface* ps2 = dynamic_cast<::FSSurface*>(po);
-	if (ps2)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Faces", this, SLOT(OnSelectFaces()));
-		menu.exec(ev->globalPos());
-		return;
-	}
 
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
-	{
-		QMenu menu(this);
-		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
-		menu.addAction("Hide Elements", this, SLOT(OnHideElements()));
-		menu.exec(ev->globalPos());
-		return;
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
 	{
 		QMenu menu(this);
 		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
@@ -1436,23 +1367,13 @@ void CPostModelPanel::OnSelectNodes()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	Post::FSNodeSet* pg = dynamic_cast<Post::FSNodeSet*>(po);
+	FSNodeSet* pg = dynamic_cast<FSNodeSet*>(po);
 	if (pg)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
-		vector<int>pgl = pg->GetNodeList();
-		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
-	}
-
-	::FSNodeSet* pg2 = dynamic_cast<::FSNodeSet*>(po);
-	if (pg2)
-	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-		pdoc->SetItemMode(ITEM_NODE);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1467,22 +1388,13 @@ void CPostModelPanel::OnSelectFaces()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	Post::FSSurface* pg = dynamic_cast<Post::FSSurface*>(po);
-	if (pg)
+	FSSurface* ps = dynamic_cast<::FSSurface*>(po);
+	if (ps)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		CGLModelDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
-		vector<int>pgl = pg->GetFaceList();
-		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
-	}
-	::FSSurface* pg2 = dynamic_cast<::FSSurface*>(po);
-	if (pg2)
-	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-		pdoc->SetItemMode(ITEM_FACE);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = ps->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1497,20 +1409,13 @@ void CPostModelPanel::OnSelectElements()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	CGLModelDocument* pdoc = GetActiveDocument();
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
+	FSElemSet* pg = dynamic_cast<::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
-        vector<int>pgl = pg->GetElementList();
-		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
-	{
-		pdoc->SetItemMode(ITEM_ELEM);
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1524,18 +1429,13 @@ void CPostModelPanel::OnHideElements()
 {
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
-	CPostDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+	CGLModelDocument* pdoc = GetActiveDocument();
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 
-	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
-		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
-	}
-	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
-	if (pg2)
-	{
-		vector<int> items = pg2->CopyItems();
+		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
@@ -1546,13 +1446,13 @@ void CPostModelPanel::OnHideElements()
 
 void CPostModelPanel::OnShowAllElements()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
 	if (mesh)
 	{
-		ForAllElements(*mesh, [](FEElement_& el) {
+		ForAllElements(*mesh, [](FSElement_& el) {
 			el.Unhide();
 		});
 		mesh->UpdateItemVisibility();
@@ -1611,7 +1511,7 @@ void CPostModelPanel::OnMoveUpInRenderingQueue()
 	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
 	if (plt)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
+		CGLModelDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 		Post::GLPlotGroup* pg = plt->GetGroup();
@@ -1637,7 +1537,7 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
 	if (plt)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
+		CGLModelDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 		Post::GLPlotGroup* pg = plt->GetGroup(); 
@@ -1705,7 +1605,7 @@ void CPostModelPanel::OnExportImage()
 
 void CPostModelPanel::OnLoadTransform()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = dynamic_cast<CPostDocument*>(GetActiveDocument());
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1789,7 +1689,7 @@ void CPostModelPanel::OnExportProbeData()
 	Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(ui->currentObject());
 	if (probe == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1858,7 +1758,7 @@ void CPostModelPanel::OnExportProbeData()
 
 void CPostModelPanel::OnImportCurveProbePoints()
 {
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1908,7 +1808,7 @@ void CPostModelPanel::OnExportMusclePathData()
 	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
 	if (po == nullptr) return;
 
-	CPostDocument* pdoc = GetActiveDocument();
+	CGLModelDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	Post::CGLModel* glm = pdoc->GetGLModel();
@@ -1994,10 +1894,13 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 
 void CPostModelPanel::OnCurveProbePlotData()
 {
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
-		int N = po->Points();
+		int N = (int)po->Points();
 		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
@@ -2018,7 +1921,7 @@ void CPostModelPanel::OnCurveProbePlotData()
 		CGraphData* graph = new CGraphData;
 		graph->m_data.push_back(data);
 
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));
@@ -2039,7 +1942,7 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 
 		TIMESETTINGS& time = doc->GetTimeSettings();
 
-		int N = po->Points();
+		int N = (int)po->Points();
 		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
@@ -2067,7 +1970,7 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 		CGraphData* graph = new CGraphData;
 		graph->m_data.push_back(data);
 
-		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), doc);
 		w->SetData(graph);
 		GetMainWindow()->AddGraph(w);
 		w->setWindowTitle(QString::fromStdString(po->GetName()));

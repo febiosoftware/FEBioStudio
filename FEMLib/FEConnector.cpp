@@ -27,9 +27,7 @@ SOFTWARE.*/
 #include "FEConnector.h"
 #include "FSModel.h"
 #include <GeomLib/GGroup.h>
-#include <set>
-#include <memory>
-//using namespace std;
+using namespace std;
 
 //=============================================================================
 // FSRigidConnector
@@ -62,7 +60,7 @@ int FSRigidConnector::Type()
 }
 
 //-----------------------------------------------------------------------------
-void FSRigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FSRigidConnector::SaveList(FSItemListBuilder* pitem, OArchive& ar)
 {
     if (pitem)
     {
@@ -73,9 +71,9 @@ void FSRigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
+FSItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
 {
-    FEItemListBuilder* pitem = 0;
+	FSItemListBuilder* pitem = 0;
 
     FSModel* fem = GetFSModel();
 	GModel* gm = &fem->GetModel();

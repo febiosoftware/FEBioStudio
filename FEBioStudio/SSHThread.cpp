@@ -26,19 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "SSHThread.h"
-#include "Logger.h"
 #include "SSHHandler.h"
+#include "MainWindow.h"
 
-#ifdef HAS_SSH
 CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) : sshHandler(sshHandler), func(func)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
-	QObject::connect(this, &CSSHThread::finished, this, &CSSHThread::SendFinishedPart);
-
-	QObject::connect(sshHandler, &CSSHHandler::AddLogEntry, this, &CSSHThread::AddLogEntry);
-	QObject::connect(sshHandler, &CSSHHandler::AddOutputEntry, this, &CSSHThread::AddOutputEntry);
-	QObject::connect(this, &CSSHThread::AddLogEntry, &CLogger::AddLogEntry);
-	QObject::connect(this, &CSSHThread::AddOutputEntry, &CLogger::AddOutputEntry);
+	QObject::connect(this, &CSSHThread::finished, sshHandler, &CSSHHandler::NextSSHFunction);
 }
 
 void CSSHThread::SetFuncName(int func)
@@ -76,23 +70,17 @@ void CSSHThread::run()
 	case GETJOBFILES:
 		sshHandler->GetJobFiles();
 		break;
+	case GETREMOTEFILE:
+		sshHandler->GetRemoteFile();
+		break;
 	case GETQUEUESTATUS:
 		sshHandler->GetQueueStatus();
 		break;
 	case CREATEREMOTEDIR:
 		sshHandler->CreateRemoteDir();
 		break;
+	case SENDFILE:
+		sshHandler->SendLocalFile();
+		break;
 	}
 }
-
-void CSSHThread::SendFinishedPart()
-{
-	emit FinishedPart(sshHandler);
-}
-
-#else
-CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) {}
-void CSSHThread::run() {}
-void CSSHThread::SetFuncName(int func) {}
-void CSSHThread::SendFinishedPart() {}
-#endif

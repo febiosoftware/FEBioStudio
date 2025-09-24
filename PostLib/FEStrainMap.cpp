@@ -34,7 +34,7 @@ using namespace Post;
 using namespace std;
 
 //-----------------------------------------------------------------------------
-void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
+void FEStrainMap::Surface::BuildNodeList(FSMesh& mesh)
 {
 	// tag all nodes that belong to this surface
 	int N = mesh.Nodes();
@@ -143,7 +143,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 	int NDATA = fem.GetDataManager()->DataFields() - 1;
 
 	// get the mesh
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	// build the node lists
 	m_front1.BuildNodeList(mesh);
@@ -288,7 +288,7 @@ void FEStrainMap::UpdateNodePositions(FEStrainMap::Surface& s, int ntime)
 void FEStrainMap::BuildNormalList(FEStrainMap::Surface& s)
 {
 	// get the mesh
-	FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	int NF = s.Faces();
 	int NN = s.Nodes();
@@ -318,7 +318,7 @@ void FEStrainMap::BuildNormalList(FEStrainMap::Surface& s)
 //-----------------------------------------------------------------------------
 bool FEStrainMap::project(FEStrainMap::Surface& surf, vec3f& r, vec3f& t, vec3f& q)
 {
-	FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	// loop over all facets
 	float Dmin = 0.f;
@@ -355,7 +355,7 @@ bool FEStrainMap::project(FEStrainMap::Surface& surf, vec3f& r, vec3f& t, vec3f&
 bool FEStrainMap::ProjectToFacet(vec3f* y, int nf, vec3f& x, vec3f& t, vec3f& q)
 {
 	// get the mesh to which this surface belongs
-	FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+	FSMesh& mesh = *m_fem->GetFEMesh(0);
 
 	// calculate normal projection of x onto element
 	switch (nf)

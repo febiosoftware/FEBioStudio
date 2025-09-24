@@ -24,14 +24,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
+#ifdef WIN32
+#include <Windows.h>
+#endif
 #include "FEBioJobManager.h"
 #include "FEBioThread.h"
 #include "FEBioJob.h"
+#include "RemoteJob.h"
 #include "LocalJobProcess.h"
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#include "SSHThread.h"
-#endif
 #include <QProcess>
 #include <QMessageBox>
 #include <QToolButton>
@@ -41,10 +41,13 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <QFormLayout>
 #include "MainWindow.h"
+#include "ModelDocument.h"
+#include "../FEBioMonitor/FEBioReportDoc.h"
+#include "LaunchConfig.h"
+#include <QProgressBar>
+#include <fstream>
+#include "DlgRemoteProgress.h"
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 class CFEBioJobManager::Impl
 {
@@ -52,6 +55,8 @@ public:
 	CMainWindow*	wnd;
 	QProcess*		process;
 	CFEBioThread*	febThread;
+	CRemoteJob*		remoteJob;
+	CLaunchConfig*	launchConfig;
 	bool			bkillJob;
 };
 
@@ -61,17 +66,15 @@ CFEBioJobManager::CFEBioJobManager(CMainWindow* wnd) : im(new CFEBioJobManager::
 	im->process = nullptr;
 	im->bkillJob = false;
 	im->febThread = nullptr;
+	im->remoteJob = nullptr;
 }
 
-bool CFEBioJobManager::StartJob(CFEBioJob* job)
+bool CFEBioJobManager::StartJob(CFEBioJob* job, CLaunchConfig* lc)
 {
 	// make sure no model is running
 	if (CFEBioJob::GetActiveJob() != nullptr) return false;
-
-	// set this as the active job
-	CFEBioJob::SetActiveJob(job);
-
 	if (job == nullptr) return true;
+	if (lc == nullptr) return false;
 
 	// don't forget to reset the kill flag
 	im->bkillJob = false;
@@ -79,41 +82,74 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 	job->ClearProgress();
 	job->StartTimer();
 
-	// launch the job
-	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+	im->launchConfig = lc;
+
+	switch (lc->type())
 	{
-		if (im->febThread) return false;
-		im->febThread = new CFEBioThread(im->wnd, job, this);
-		im->febThread->start();
+	case CLaunchConfig::DEFAULT: return startDefaultJob(job, lc); break;
+	case CLaunchConfig::LOCAL  : return startLocalJob(job, lc); break;
+	case CLaunchConfig::REMOTE:
+	case CLaunchConfig::PBS:
+	case CLaunchConfig::SLURM:
+	case CLaunchConfig::CUSTOM:
+		return startRemoteJob(job, lc);
+		break;
+	default:
+		assert(false);
 	}
-	else if (job->GetLaunchConfig()->type == LOCAL)
-	{
-		if (im->process) return false;
-		// create new process
-		CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, this);
-		im->process = process;
 
-		// go! 
-		process->run();
-	}
-	else
-	{
-#ifdef HAS_SSH
-		CSSHHandler* handler = job->GetSSHHandler();
+	return false;
+}
 
-		if (!handler->IsBusy())
-		{
-			handler->SetTargetFunction(STARTREMOTEJOB);
+bool CFEBioJobManager::startDefaultJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->febThread) return false;
+	CFEBioJob::SetActiveJob(job);
+	im->febThread = new CFEBioThread(im->wnd, job, this);
+	im->febThread->start();
+	return true;
+}
 
-			CSSHThread* sshThread = new CSSHThread(handler, STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, im->wnd, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
+bool CFEBioJobManager::startLocalJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->process) return false;
+	// create new process
+	QString program = QString::fromStdString(lc->path());
+	CLocalJobProcess* process = new CLocalJobProcess(im->wnd, job, program, this);
+	im->process = process;
 
-		// NOTE: Why are we doing this?
-		CFEBioJob::SetActiveJob(nullptr);
-#endif
-	}
+	// go! 
+	CFEBioJob::SetActiveJob(job);
+	process->run();
+
+	return true;
+}
+
+bool CFEBioJobManager::startRemoteJob(CFEBioJob* job, CLaunchConfig* lc)
+{
+	if (im->remoteJob) return false;
+
+	CFEBioJob::SetActiveJob(job);
+	im->remoteJob = new CRemoteJob(job, lc, im->wnd);
+
+	CDlgRemoteProgress dlg(im->remoteJob, im->wnd, true);
+	dlg.exec();
+
+	// create placeholder files for plot and log files
+	std::string pltFile = job->GetPlotFileName();
+	pltFile.append(".remote");
+	std::ofstream plt(pltFile);
+	plt << lc->name();
+	plt.close();
+
+	std::string logFile = job->GetLogFileName();
+	logFile.append(".remote");
+	std::ofstream log(logFile);
+	log << lc->name();
+	log.close();
+
+	QObject::connect(im->remoteJob, &CRemoteJob::jobFinished, this, &CFEBioJobManager::remoteJobFinished);
+	im->remoteJob->StartRemoteJob();
 
 	return true;
 }
@@ -151,6 +187,47 @@ void CFEBioJobManager::KillJob()
 	}
 }
 
+void CFEBioJobManager::remoteJobFinished()
+{
+	if (im->remoteJob == nullptr) return;
+	CFEBioJob* job = im->remoteJob->GetFEBioJob();
+	if (job)
+	{
+		job->StopTimer();
+		job->SetStatus(CFEBioJob::COMPLETED);
+		QString jobName = QString::fromStdString(job->GetName());
+		CFEBioJob::SetActiveJob(nullptr);
+		QString logmsg = QString("FEBio job \"%1 \" has finished.\n").arg(jobName);
+		im->wnd->AddLogEntry(logmsg);
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
+		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
+
+		CDlgJobReport dlg(im->wnd);
+		dlg.SetFEBioJob(job);
+		if (dlg.exec())
+		{
+			CDlgRemoteProgress fetchFiles(im->remoteJob, im->wnd, false);
+			fetchFiles.exec();
+
+			// delete place holder files
+			QDir dir;
+			QString pltFile = QString("%1.remote").arg(QString::fromStdString(job->GetPlotFileName()));
+			QString logFile = QString("%1.remote").arg(QString::fromStdString(job->GetLogFileName()));
+			dir.remove(pltFile);
+			dir.remove(logFile);
+
+			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
+		}
+	}
+	else
+	{
+		// Not sure if we should ever get here.
+		QMessageBox::information(im->wnd, "FEBio Studio", "FEBio is done.");
+	}
+	delete im->remoteJob;
+	im->remoteJob = nullptr;
+}
+
 void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 {
 	CFEBioJob* job = CFEBioJob::GetActiveJob();
@@ -165,14 +242,31 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
 		im->wnd->AddLogEntry(logmsg);
 
-		CDlgJobMonitor dlg(im->wnd);
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
+		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
+		CDlgJobReport dlg(im->wnd);
 		dlg.SetFEBioJob(job);
 		if (dlg.exec())
 		{
-			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
+			im->wnd->OpenPostFile(QString::fromStdString(job->GetPlotFileName()), dynamic_cast<CModelDocument*>(job->GetDocument()), false, true);
 		}
 
 		im->wnd->UpdateTab(job->GetDocument());
+
+		// generate detailed report (for local jobs)
+		if (im->launchConfig && 
+			((im->launchConfig->type() == CLaunchConfig::DEFAULT) ||
+			  (im->launchConfig->type() == CLaunchConfig::LOCAL)))
+		{
+			if (job->m_generateReport)
+			{
+				CMainWindow* wnd = im->wnd;
+				CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
+				if (im->launchConfig->type() == CLaunchConfig::DEFAULT) doc->setJob(job);
+				else doc->LoadFromLogFile(QString::fromStdString(job->GetLogFileName()));
+				wnd->AddDocument(doc);
+			}
+		}
 	}
 	else
 	{
@@ -251,7 +345,7 @@ QString FormatTimeString(double sec)
 	return QString("%1:%2:%3").arg(nhr).arg(nmin, 2, 10, QChar('0')).arg(nsec, 2, 10, QChar('0'));
 }
 
-class Ui::CDlgJobMonitor
+class Ui::CDlgJobReport
 {
 public:
 	QLabel* jobName;
@@ -275,7 +369,7 @@ public:
 	QList<LogEntry> m_log;
 
 public:
-	void setup(::CDlgJobMonitor* dlg)
+	void setup(::CDlgJobReport* dlg)
 	{
 		QGridLayout* g = new QGridLayout;
 		g->addWidget(new QLabel("Job:"), 0, 0);
@@ -334,7 +428,6 @@ public:
 		l->addWidget(log);
 		l->addWidget(openPlt);
 
-		l->addStretch();
 		QHBoxLayout* hc = new QHBoxLayout;
 		hc->addStretch();
 		hc->addWidget(close = new QPushButton("Close"));
@@ -344,8 +437,8 @@ public:
 
 		QObject::connect(openPlt, &QPushButton::clicked, dlg, &QDialog::accept);
 		QObject::connect(close, &QPushButton::clicked, dlg, &QDialog::reject);
-		QObject::connect(showWarnings, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
-		QObject::connect(showErrors, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
+		QObject::connect(showWarnings, &QPushButton::toggled, dlg, &::CDlgJobReport::UpdateReport);
+		QObject::connect(showErrors, &QPushButton::toggled, dlg, &::CDlgJobReport::UpdateReport);
 
 #ifdef WIN32
 		MessageBeep(MB_ICONASTERISK);
@@ -375,7 +468,7 @@ public:
 		default: jobStatus->setText("(Unknown)"); break;
 		}
 
-		double elapsedTime = job->m_toc - job->m_tic;
+		double elapsedTime = job->ElapsedTime();
 		QString timeStr = FormatTimeString(elapsedTime);
 		runTime->setText(timeStr);
 
@@ -460,18 +553,18 @@ public:
 	}
 };
 
-CDlgJobMonitor::CDlgJobMonitor(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlgJobMonitor())
+CDlgJobReport::CDlgJobReport(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlgJobReport())
 {
-	setWindowTitle("Job Monitor");
+	setWindowTitle("Job Summary");
 	ui->setup(this);
 }
 
-void CDlgJobMonitor::SetFEBioJob(CFEBioJob* job)
+void CDlgJobReport::SetFEBioJob(CFEBioJob* job)
 {
 	ui->setJob(job);
 }
 
-void CDlgJobMonitor::UpdateReport()
+void CDlgJobReport::UpdateReport()
 {
 	ui->UpdateLog();
 }

@@ -44,3 +44,11 @@ public:
 	VTPimport(FSProject& prj);
 	bool Load(const char* szfile) override;
 };
+
+// reader for parallel unstructured grid files
+class PVTUimport : public FSFileImport
+{
+public:
+	PVTUimport(FSProject& prj);
+	bool Load(const char* szfile) override;
+};

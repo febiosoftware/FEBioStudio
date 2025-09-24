@@ -26,36 +26,40 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FileThread.h"
-#include "MainWindow.h"
 #include <FSCore/FileReader.h>
 
-CFileThread::CFileThread(CMainWindow* wnd, const QueuedFile& file) : m_wnd(wnd), m_file(file)
+CFileThread::CFileThread()
 {
-	m_success = false;
-	QObject::connect(this, SIGNAL(resultReady(bool, const QString&)), wnd, SLOT(on_finishedReadingFile(bool, const QString&)));
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+}
+
+void CFileThread::readFile(const QueuedFile& file)
+{
+	m_file = file;
+	start();
 }
 
 void CFileThread::run()
 {
 	std::string sfile = m_file.m_fileName.toStdString();
 	const char* szfile = sfile.c_str();
-	if (m_file.m_fileReader == 0)
+	if (m_file.m_fileReader == nullptr)
 	{
-		emit resultReady(false, QString("Don't know how to read this file!"));
+		m_file.m_success = false;
+		emit resultReady(m_file, QString("Don't know how to read this file!"));
 	}
 	else
 	{
-		m_success = m_file.m_fileReader->Load(szfile);
+		m_file.m_success = m_file.m_fileReader->Load(szfile);
 		std::string err = m_file.m_fileReader->GetErrorString();
-		emit resultReady(m_success, QString(err.c_str()));
+		emit resultReady(m_file, QString(err.c_str()));
 	}
 }
 
 float CFileThread::getFileProgress() const
 {
 	if (m_file.m_fileReader) return m_file.m_fileReader->GetFileProgress();
-	return (m_success ? 1.f : 0.f);
+	return (m_file.m_success ? 1.f : 0.f);
 }
 
 QueuedFile CFileThread::GetFile()

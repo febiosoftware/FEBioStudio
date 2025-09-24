@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "Archive.h"
 #include "enum.h"
 #include "CallTracer.h"
+#include <string>
+#include <vector>
 
 class InvalidVersion {};
 
@@ -37,6 +39,15 @@ public:
 	ReadError(const char* szmsg = 0) : m_szmsg(szmsg) { CCallStack::FlagError(); }
 public:
 	const char* m_szmsg;
+};
+
+class MissingPluginError
+{
+public:
+    MissingPluginError(std::vector<std::pair<int, std::string>> plugins) : m_plugins(plugins) { CCallStack::FlagError(); }
+
+public:
+	std::vector<std::pair<int, std::string>> m_plugins; // plugin ID and name
 };
 
 class CSerializable  

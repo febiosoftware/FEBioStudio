@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLControlBar.h"
 #include "MainWindow.h"
 #include "Document.h"
+#include "GLModelDocument.h"
 #include "GLView.h"
 #include <QBoxLayout>
 #include <QLineEdit>
@@ -38,7 +39,6 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include "Logger.h"
 
 class CGLControlBar_UI
 {
@@ -189,7 +189,7 @@ public:
 		b->setIcon(icon);
 		b->setCheckable(isCheckable);
 		b->setAutoRaise(true);
-		b->setToolTip(QString("<font color=\"black\">") + toolTip);
+		b->setToolTip(toolTip);
 		return b;
 	}
 
@@ -282,7 +282,7 @@ void CGLControlBar::Update()
 	int meshMode = ui->m_wnd->GetMeshMode();
 
 	// for post-docs we always use mesh_mode_volume
-	if (ui->m_wnd->GetPostDocument()) meshMode = MESH_MODE_VOLUME;
+	if (dynamic_cast<CGLModelDocument*>(ui->m_wnd->GetDocument())) meshMode = MESH_MODE_VOLUME;
 
 	if (meshMode == MESH_MODE_VOLUME)
 	{

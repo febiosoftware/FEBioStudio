@@ -28,6 +28,10 @@ SOFTWARE.*/
 #include "GLParticleFlowPlot.h"
 #include "GLModel.h"
 #include <FSCore/ClassDescriptor.h>
+#include <GLLib/GLMesh.h>
+#include <GLLib/GLRenderEngine.h>
+#include <FSCore/ColorMapManager.h>
+
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
@@ -149,27 +153,25 @@ void CGLParticleFlowPlot::SetDensity(float v)
 	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
-void CGLParticleFlowPlot::Render(CGLContext& rc)
+void CGLParticleFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	int NP = (int) m_particles.size();
 	if (NP == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
+	re.pushState();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	// build a point mesh
-	GLPointMesh mesh(NP, GLMesh::FLAG_COLOR);
-	mesh.BeginMesh();
+	GLMesh mesh;
 	for (int i=0; i<NP; ++i)
 	{
 		FlowParticle& p = m_particles[i];
-		if (p.m_balive) mesh.AddVertex(p.m_r, p.m_col);
+		if (p.m_balive) mesh.AddNode(p.m_r, p.m_col);
 	}
-	mesh.EndMesh();
 
 	// render the points
-	mesh.Render();
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+	re.renderGMeshNodes(mesh, false);
 
 	if (m_showPath)
 	{
@@ -197,10 +199,9 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 			}
 
 			// allocate line mesh
-			GLLineMesh lineMesh(lines);
+			GLMesh lineMesh;
 
-			glColor3ub(0,0,255);
-			lineMesh.BeginMesh();
+			re.setColor(GLColor::Blue());
 			for (int i = 0; i<NP; ++i)
 			{
 				FlowParticle& p = m_particles[i];
@@ -216,22 +217,22 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 					if (n0 > tend) n0 = tend;
 				}
 
+				vec3f vr[2];
 				for (int n=n0; n<tend; ++n)
 				{
-					vec3f& r0 = p.m_pos[n];
-					vec3f& r1 = p.m_pos[n+1];
-					lineMesh.AddVertex(r0);
-					lineMesh.AddVertex(r1);
+					vr[0] = p.m_pos[n];
+					vr[1] = p.m_pos[n + 1];
+					lineMesh.AddEdge(vr, 2);
 				}					
 			}
-			lineMesh.EndMesh();
 
 			// render the lines
-			lineMesh.Render();
+			re.setMaterial(GLMaterial::CONSTANT, GLColor::Black());
+			re.renderGMeshEdges(lineMesh, false);
 		}
 	}
 
-	glPopAttrib();
+	re.popState();
 }
 
 void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
@@ -244,12 +245,12 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 
-	// see if we need to revaluate the FEFindElement object
+	// see if we need to revaluate the FSFindElement object
 	// We evaluate it when the plot needs to be reset, or when the model has a displacement map
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
-		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
+		if (m_find == nullptr) m_find = new FSFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
 		m_find->Init(bdisp ? 1 : 0);
 	}
@@ -385,7 +386,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 	vec3f v(0.f, 0.f, 0.f);
 	vec3f ve0[FSElement::MAX_NODES];
 	vec3f ve1[FSElement::MAX_NODES];
-	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
+	FSMesh& mesh = *GetModel()->GetActiveMesh();
 
 	vector<vec3f>& val0 = m_map.State(ntime    );
 	vector<vec3f>& val1 = m_map.State(ntime + 1);
@@ -395,7 +396,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.ElementRef(nelem);
+		FSElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i = 0; i<ne; ++i)
@@ -554,4 +555,19 @@ void CGLParticleFlowPlot::SeedParticles()
             }
 		}
 	}
+}
+
+LegendData CGLParticleFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = false;
+	l.ndivs = 10;
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

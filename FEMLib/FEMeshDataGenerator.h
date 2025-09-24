@@ -1,9 +1,9 @@
 #pragma once
 #include "FEModelComponent.h"
 #include <MeshLib/IHasItemList.h>
-#include <MeshLib/FEMeshData.h>
+#include <MeshLib/FSMeshData.h>
 
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 enum MeshDataGeneratorType
 {

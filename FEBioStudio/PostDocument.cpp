@@ -27,10 +27,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
-#include "PostObject.h"
+#include <PostGL/PostObject.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/Palette.h>
+#include <FSCore/Palette.h>
 #include <PostGL/GLModel.h>
+#include <GLLib/ColorTexture.h>
 #include <GeomLib/GModel.h>
 #include <GLWLib/GLWidgetManager.h>
 //---------------------------------------
@@ -39,6 +40,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioFormat.h>
 #include <FEBio/FEBioExport.h>
 //---------------------------------------
+#include <ImageLib/ImageModel.h>
 #include <XPLTLib/xpltFileReader.h>
 #include "PostSessionFile.h"
 #include "units.h"
@@ -100,11 +102,10 @@ void ModelData::ReadData(Post::CGLModel* po)
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
-		m_cmap.m_ntype = pcm->GetColorMap();
-		m_cmap.m_ndivs = pcm->GetDivisions();
-		m_cmap.m_bsmooth = pcm->GetSmooth();
-		//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
+		m_cmap.m_ntype = pglmap->GetColorMap();
+		m_cmap.m_ndivs = pglmap->GetDivisions();
+		m_cmap.m_bsmooth = pglmap->GetColorSmooth();
+//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -148,11 +149,10 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
-		pcm->SetColorMap(m_cmap.m_ntype);
-		pcm->SetDivisions(m_cmap.m_ndivs);
-		pcm->SetSmooth(m_cmap.m_bsmooth);
-		//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
+		pglmap->SetColorMap(m_cmap.m_ntype);
+		pglmap->SetDivisions(m_cmap.m_ndivs);
+		pglmap->SetColorSmooth(m_cmap.m_bsmooth);
+//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -168,7 +168,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		for (int i = 0; i<N; ++i) *ps->GetMaterial(i) = m_mat[i];
 
 		// update the mesh state
-		Post::FEPostMesh* pmesh = po->GetActiveMesh();
+		FSMesh* pmesh = po->GetActiveMesh();
 		for (int i = 0; i<N; ++i)
 		{
 			Post::Material* pm = ps->GetMaterial(i);
@@ -211,7 +211,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		}
 	}
 
-	po->UpdateMeshState();
+	ps->UpdateMeshState();
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;
 	po->SetCurrentTimeIndex(ntime);
@@ -227,18 +227,17 @@ void ModelData::WriteData(Post::CGLModel* po)
 }
 
 
-CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocument(wnd), m_doc(doc)
+CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLModelDocument(wnd), m_doc(doc)
 {
 	SetIcon(":/icons/PostView.png");
 
 	m_fem = new Post::FEPostModel;
-	m_postObj = nullptr;
 	m_glm = nullptr;
 
 	m_binit = false;
 
 	m_scene = new CGLPostScene(this);
-	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap());
+	m_scene->SetEnvironmentMap(wnd->GetEnvironmentMap().toStdString());
 
 	SetItemMode(ITEM_ELEM);
 
@@ -272,9 +271,7 @@ void CPostDocument::Clear()
 
 	m_MD.ReadData(m_glm);
 
-	if (m_glm) m_glm->SetFEModel(nullptr);
-
-	delete m_postObj; m_postObj = nullptr;
+	if (m_glm) m_glm->Clear();
 }
 
 bool CPostDocument::Initialize()
@@ -293,14 +290,10 @@ bool CPostDocument::Initialize()
 	SetCurrentSelection(nullptr);
 
 	// assign default material attributes
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	const CPalette& pal = CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	// make sure the correct GLWidgetManager's edit layer is active
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
-
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
-	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
 
 	m_timeSettings.Defaults();
 	m_timeSettings.m_start = 0;
@@ -309,7 +302,7 @@ bool CPostDocument::Initialize()
 	if (m_MD.IsValid())
 	{
 		m_MD.WriteData(m_glm);
-		m_postObj->Update();
+		m_glm->GetPostObject()->Update();
 	}
 	else
 	{
@@ -319,7 +312,7 @@ bool CPostDocument::Initialize()
 		// reset the camera
 		CGView& view = *GetView();
 		view.Reset();
-		CGLCamera& cam = view.GetCamera();
+		GLCamera& cam = view.GetCamera();
 		cam.Reset();
 		cam.SetTargetDistance(box.Radius() * 3);
 		cam.SetTarget(box.Center());
@@ -341,7 +334,7 @@ bool CPostDocument::Initialize()
 			{
 				for (int i = 0; i < mats; ++i)
 				{
-					GLColor c = docfem.GetMaterial(i)->Diffuse();
+					GLColor c = docfem.GetMaterial(i)->GetColor();
 
 					Post::Material* mat = m_fem->GetMaterial(i);
 					mat->ambient = c;
@@ -398,12 +391,29 @@ Post::CGLModel* CPostDocument::GetGLModel()
 	return m_glm;
 }
 
+LegendData CPostDocument::GetLegendData()
+{
+	LegendData l;
+	assert(m_glm);
+	Post::CGLColorMap* pcm = m_glm->GetColorMap();
+	if (pcm && pcm->IsActive())
+	{
+		float rng[2];
+		pcm->GetRange(rng);
+		l.vmin = rng[0];
+		l.vmax = rng[1];
+		l.colormap = pcm->GetColorMap();
+		l.smooth = pcm->GetColorSmooth();
+		l.ndivs = pcm->GetDivisions();
+	}
+	return l;
+}
+
 void CPostDocument::SetActiveState(int n)
 {
 	assert(m_glm);
 	m_glm->SetCurrentTimeIndex(n);
 	m_glm->Update(false);
-	m_postObj->UpdateMesh();
 }
 
 int CPostDocument::GetActiveState()
@@ -428,6 +438,7 @@ int CPostDocument::GetEvalField()
 void CPostDocument::ActivateColormap(bool bchecked)
 {
 	Post::CGLModel* po = m_glm;
+	m_showLegend = bchecked;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
 }
@@ -447,7 +458,7 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	else if (dynamic_cast<GLCameraTransform*>(po))
 	{
-		GLCameraTransform* pt = dynamic_cast<GLCameraTransform*>(po);
+		CGViewKey* pt = dynamic_cast<CGViewKey*>(po);
 		CGView* pview = GetView();
 		pview->DeleteKey(pt);
 	}
@@ -486,6 +497,7 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	}
 	*/
+	CGLDocument::Update();
 }
 
 std::string CPostDocument::GetFieldString()
@@ -550,6 +562,8 @@ void CPostDocument::UpdateFEModel(bool breset)
 
 	// update the model
 	if (m_glm) m_glm->Update(breset);
+
+	m_scene->Update();
 }
 
 void CPostDocument::SetDataField(int n)
@@ -565,26 +579,6 @@ BOX CPostDocument::GetBoundingBox()
 	return b;
 }
 
-BOX CPostDocument::GetSelectionBox()
-{
-	if (!IsValid()) return BOX(-1, -1, -1, 1, 1, 1);
-
-	BOX box;
-	FESelection* currentSelection = GetCurrentSelection();
-	if (currentSelection && currentSelection->Size())
-	{
-		box = currentSelection->GetBoundingBox();
-	}
-
-	if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
-	{
-		float R = box.Radius();
-		box.InflateTo(R, R, R);
-	}
-
-	return box;
-}
-
 std::string CPostDocument::GetFileName()
 {
 	return m_fileName;
@@ -593,7 +587,7 @@ std::string CPostDocument::GetFileName()
 
 bool CPostDocument::IsValid()
 {
-	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
+	return (m_glm && m_glm->IsValid());
 }
 
 void CPostDocument::SetModifiedFlag(bool bset)
@@ -606,7 +600,7 @@ void CPostDocument::SetInitFlag(bool b)
 	m_binit = b;
 }
 
-void CPostDocument::UpdateSelection(bool report)
+void CPostDocument::UpdateSelection()
 {
 	Post::CGLModel* mdl = GetGLModel();
 
@@ -633,13 +627,10 @@ void CPostDocument::UpdateSelection(bool report)
 
 	if (mdl) mdl->SetSelection(m_psel);
 
-	if (report)
-	{
-		emit selectionChanged();
-	}
+	emit selectionChanged();
 }
 
-void CPostDocument::ApplyPalette(const Post::CPalette& pal)
+void CPostDocument::ApplyPalette(const CPalette& pal)
 {
 	int NCOL = pal.Colors();
 	int nmat = m_fem->Materials();
@@ -659,7 +650,7 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 
 CPostObject* CPostDocument::GetPostObject()
 {
-	return m_postObj;
+	return m_glm->GetPostObject();
 }
 
 int CPostDocument::Graphs() const

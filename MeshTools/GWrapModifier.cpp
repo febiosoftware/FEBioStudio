@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/FENodeFaceList.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeFaceList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <MeshLib/MeshTools.h>
 using namespace std;
 

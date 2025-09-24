@@ -28,8 +28,8 @@ SOFTWARE.*/
 #include "MeshInfoPanel.h"
 #include <QLabel>
 #include <QFormLayout>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include "units.h"
 #include <FECore/units.h>

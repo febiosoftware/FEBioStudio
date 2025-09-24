@@ -51,7 +51,7 @@ FSMesh* FEPenta6ToTet4::Apply(FSMesh* pm)
             // make sure this is not connected to a hex
             for (int j = 0; j < el.Faces(); ++j)
             {
-                FEElement_* pne = pm->ElementPtr(el.m_nbr[j]);
+                FSElement_* pne = pm->ElementPtr(el.m_nbr[j]);
                 if ((pne != nullptr) && (pne->Type() == FE_PENTA6)) return nullptr;
             }
         }

@@ -29,9 +29,10 @@ SOFTWARE.*/
 #include "FSModel.h"
 #include "FECoreMaterial.h"	// for FEElementRef
 #include "FEMaterial.h" // for fiber generator defines
-#include <MeshLib/FEElementData.h>
+#include <MeshLib/FSElementData.h>
 #include <exception>
 #include <sstream>
+using namespace std;
 
 FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 {
@@ -415,11 +416,11 @@ vec3d FSVec3dValuator::GetFiberVector(const FEElementRef& el)
 		FSMesh* pm = dynamic_cast<FSMesh*>(el.m_pmesh);
 		if (pm)
 		{
-			FEMeshData* pmd = pm->FindMeshDataField(m_map);
+			FSMeshData* pmd = pm->FindMeshDataField(m_map);
 			if (pmd)
 			{
-				FEElementData* ped = dynamic_cast<FEElementData*>(pmd);
-				FEPartData* ppd = dynamic_cast<FEPartData*>(pmd);
+				FSElementData* ped = dynamic_cast<FSElementData*>(pmd);
+				FSPartData* ppd = dynamic_cast<FSPartData*>(pmd);
 				if (ped)
 				{
 					double d[3];
@@ -460,7 +461,7 @@ bool FSMat3dValuator::UpdateData(bool bsave)
 	const char* sztype = GetTypeString();
 	if (sztype && (strcmp(sztype, "local") == 0))
 	{
-		m_naopt = FE_AXES_LOCAL;
+		m_naopt = MaterialAxesGeneratorType::AXES_LOCAL;
 		Param* p = GetParam("local"); assert(p);
 		if (p)
 		{
@@ -483,7 +484,7 @@ mat3d FSMat3dValuator::GetMatAxis(const FEElementRef& el) const
 	FSCoreMesh* mesh = el.m_pmesh;
 	switch (m_naopt)
 	{
-	case FE_AXES_LOCAL:
+	case MaterialAxesGeneratorType::AXES_LOCAL:
 	{
 		vec3d r0[FSElement::MAX_NODES];
 		for (int i = 0; i < el->Nodes(); ++i) r0[i] = mesh->Node(el->m_node[i]).pos();

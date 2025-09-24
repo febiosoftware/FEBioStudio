@@ -126,7 +126,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 	// tag all the elements and nodes that should be exported
 	// TODO: This assumes there is only one mesh
-	FEPostMesh* pm = fem.GetFEMesh(0);
+	FSMesh* pm = fem.GetFEMesh(0);
 	if (pm == 0) return false;
 
 	if (m_bselElemsOnly == false)
@@ -222,7 +222,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 bool FEVTKExport::WriteState(const char* szname, FEState* ps)
 {
-	FEPostMesh* pm = ps->GetFEMesh();
+	FSMesh* pm = ps->GetFEMesh();
 	if (pm == 0) return false;
 
 	m_fp = fopen(szname, "wt");
@@ -261,7 +261,7 @@ void FEVTKExport::WriteHeader(FEState* ps)
 //-----------------------------------------------------------------------------
 void FEVTKExport::WritePoints(FEState* ps)
 {
-	FEPostMesh& m = *ps->GetFEMesh();
+	FSMesh& m = *ps->GetFEMesh();
 	fprintf(m_fp, "POINTS %d float\n", m_nodes);
 	int nodes = m.Nodes();
 	for (int j=0, k = 0; j<nodes; j++)
@@ -280,7 +280,7 @@ void FEVTKExport::WritePoints(FEState* ps)
 //-----------------------------------------------------------------------------
 void FEVTKExport::WriteCells(FEState* ps)
 {
-	FEPostMesh&m = *ps->GetFEMesh();
+	FSMesh&m = *ps->GetFEMesh();
 	int NE = m.Elements();
     int nsize = 0;
 	for (int j = 0; j < NE; ++j)
@@ -348,7 +348,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 	int NDATA = ps->m_Data.size();
 	if (NDATA == 0) return;
 
-	FEPostMesh& mesh = *ps->GetFEMesh();
+	FSMesh& mesh = *ps->GetFEMesh();
 	int nodes = mesh.Nodes();
 	vector<int> tag(nodes, 0);
 	for (int i = 0; i < nodes; ++i) tag[i] = (mesh.Node(i).m_ntag >= 0 ? 1 : 0);
@@ -485,7 +485,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
     FEDataManager& DM = *fem.GetDataManager();
     FEDataFieldPtr pd = DM.FirstDataField();
 
-	FEPostMesh& mesh = *ps->GetFEMesh();
+	FSMesh& mesh = *ps->GetFEMesh();
 	int NE = mesh.Elements();
 	vector<int> tag(NE, 0);
 	for (int i = 0; i < NE; ++i) tag[i] = (mesh.Element(i).m_ntag >= 0 ? 1 : 0);
@@ -506,7 +506,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
         ModelDataField& data = *(*pd);
         if ((data.DataClass() == ELEM_DATA))// && (data.Flags() & EXPORT_DATA))
         {
-            FEMeshData& meshData = ps->m_Data[n];
+			FEMeshData& meshData = ps->m_Data[n];
             DATA_FORMAT dfmt = meshData.GetFormat();
             if (dfmt == DATA_ITEM) {
                 ModelDataField& data = *(*pd);
@@ -624,7 +624,7 @@ inline void write_data(vector<float>& val, int index, const mat3fd& v)
 bool FEVTKExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshData)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
 	int NN = mesh.Nodes();
@@ -677,7 +677,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 
 	if ((nfmt != DATA_NODE) && (nfmt != DATA_MULT)) return false;
 
-	FEPostMesh& mesh = *meshData.GetFEMesh();
+	FSMesh& mesh = *meshData.GetFEMesh();
 	int NN = mesh.Nodes();
 	int nstride = 0;
 	switch (ntype)
@@ -703,7 +703,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			float v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -718,7 +718,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			vec3f v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -735,7 +735,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -752,7 +752,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -771,7 +771,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			float v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -786,7 +786,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			vec3f v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -803,7 +803,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -820,7 +820,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement_& el = mesh.ElementRef(i);
+				FSElement_& el = mesh.ElementRef(i);
 				if (data.active(i))
 				{
 					data.eval(i, v);
@@ -839,7 +839,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();

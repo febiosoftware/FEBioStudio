@@ -3,7 +3,7 @@
 #include <MeshLib/IHasItemList.h>
 
 class FSModel;
-class FEItemListBuilder;
+class FSItemListBuilder;
 
 //-----------------------------------------------------------------------------
 // Base class for anything applied to a partition of the model's geometry.
@@ -16,7 +16,7 @@ public:
 
 public:
 	FSDomainComponent(int ntype, FSModel* ps, int nstep = 0);
-	FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
+	FSDomainComponent(int ntype, FSModel* ps, FSItemListBuilder* pi, int nstep = 0);
 
 	virtual ~FSDomainComponent(void);
 

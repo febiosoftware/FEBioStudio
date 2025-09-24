@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2023 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,315 +23,160 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include <FSCore/math3d.h>
+#include <FSCore/box.h>
 #include <FSCore/color.h>
+#include <vector>
 
-class GMesh;
-class CGLCamera;
+using std::vector;
+using std::pair;
 
-#ifndef ubyte
-#define ubyte unsigned char
-#endif
-
-// Mesh class used for GL rendering using vertex arrays
-// This base class has a protected constructor, so cannot be used directly.
-// Instead, use one of the derived classes below. 
+// The GLMesh class defines a triangulated surface. GLMesh classes are used to
+// represent the surface of a geometry object. The pid members of the mesh
+// item classes refer to the corresponding item in the parent object.
+//
 class GLMesh
 {
-private:
-	enum VertexBuffer
+public:
+	struct NODE
 	{
-		VERTEX_DATA,
-		NORMAL_DATA,
-		TEXTURE_DATA,
-		COLOR_DATA,
-		INDEX_DATA
+		vec3f	r;		// nodal position
+		vec3f	n;		// normal (but not really)
+		GLColor c;
+		int		tag = 0;	// multipurpose tag
+		int		pid = 0;	// GNode parent local ID
+		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GLMesh)
+	};
+
+	struct EDGE
+	{
+		int		pid = 0;	// GEdge parent local id
+		int		n[2];	// nodes
+		vec3f	vr[2];	// nodal coordinates
+		GLColor	c[2];	// node colors
+	};
+
+	struct FACE
+	{
+		int		pid = 0;	// GFace parent local id
+		int		fid = 0;	// face ID of FSace in parent mesh (or -1 if not applicable)
+		int		eid = 0;	// element ID (used by planecut algorithm)
+		int		sid = 0;	// smoothing group ID
+		int		mid = 0;	// material ID
+		bool	bext = true;	// external flag
+		int		tag = 0;	// multipurpose tag
+		int		n[3];	// nodes
+		int		nbr[3];	// neighbor faces
+		vec3f	fn;		// face normal
+		vec3f	vn[3];	// node normals
+		vec3f	vr[3];	// nodal coordinates
+		GLColor	c[3];	// node colors
+		vec3f	t[3];	// texture coordinates
+	};
+
+	struct PARTITION
+	{
+		int n0 = 0; // start index into face list
+		int nf = 0; // nr of faces in partition
+		int tag = 0; // used to define partition attributes such as whether it's internal/external
 	};
 
 public:
-	enum Flags {
-		FLAG_NORMAL  = 1,
-		FLAG_TEXTURE = 2,
-		FLAG_COLOR   = 4,
-		FLAG_ALL = 15
-	};
+	GLMesh(void);
+	virtual ~GLMesh(void);
 
-	enum RenderMode
-	{
-		ImmediateMode,
-		VertexArrayMode,
-		VBOMode
-	};
-
-	struct Vertex
-	{
-		vec3f	r;
-		vec3f	n;
-		vec3f	t;
-		GLColor	c;
-	};
-
-public:
-	// clear all mesh data
+	void Create(int nodes, int faces, int edges = 0);
 	void Clear();
 
-	// set the render mode
-	void SetRenderMode(RenderMode mode);
+	void NewPartition(int tag = 0);
 
-	// call this to start building the mesh
-	void BeginMesh();
+	void AutoPartition();
 
-	// add a vertex to the mesh
-	void AddVertex(double* r, double* n, double* t);
-	void AddVertex(const vec3f& r);
-	void AddVertex(const vec3d& r);
-	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
-	void AddVertex(const vec3f& r, const vec3f& n, const GLColor& c);
-	void AddVertex(const vec3d& r, const vec3d& n);
-	void AddVertex(const vec3f& r, const vec3f& n);
-	void AddVertex(const vec3f& r, float tex);
-	void AddVertex(const vec3d& r, float tex);
-	void AddVertex(const vec3f& r, const GLColor& c);
-	void AddVertex(const vec3d& r, const GLColor& c);
-	void AddVertex(const vec3d& r, float tex, const GLColor& c);
-	void AddVertex(const Vertex& v);
+	virtual void Update();
 
-	// this when done building the mesh
-	void EndMesh();
+	bool IsModified() const { return m_isModified; }
 
-	// create from a GMesh
-	void CreateFromGMesh(const GMesh& gmsh);
-	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
+	int Nodes() const { return (int) m_Node.size(); }
+	int Edges() const { return (int)m_Edge.size(); }
+	int Faces() const { return (int)m_Face.size(); }
 
-	// render the mesh
-	void Render();
+	NODE& Node(int i) { return m_Node[i]; }
+	EDGE& Edge(int i) { return m_Edge[i]; }
+	FACE& Face(int i) { return m_Face[i]; }
 
-	// set the transparency of the mesh
-	void SetTransparency(ubyte a);
+	const NODE& Node(int i) const { return m_Node[i]; }
+	const EDGE& Edge(int i) const { return m_Edge[i]; }
+	const FACE& Face(int i) const { return m_Face[i]; }
 
-	// is the mesh valid
-	bool IsValid() const { return m_bvalid; }
+	bool IsEmpty() const { return m_Node.empty(); }
 
-	// return the number of vertices in the mesh
-	size_t Vertices() const { return m_vertexCount; }
+	BOX GetBoundingBox() { return m_box; }
 
-	// return vertex data
-	Vertex GetVertex(size_t i) const;
+	void Attach(GLMesh& m, bool bupdate = true);
+
+	void AutoSmooth(double angleDegrees);
+
+public:
+	size_t Partitions() const { return m_FIL.size(); }
+	const PARTITION& Partition(size_t n) const { return m_FIL[n]; }
+
+	size_t EILs() const { return m_EIL.size(); }
+	const std::pair<int, int>& EIL(size_t n) const { return m_EIL[n]; }
+
+public:
+	int	AddNode(const vec3f& r, int groupID = 0);
+	int	AddNode(const vec3f& r, int nodeID, int groupID);
+
+	int	AddNode(const vec3f& r, GLColor c);
+
+public:
+	void AddEdge(int* n, int nodes, int groupID = 0);
+	void AddEdge(vec3f* r, int nodes, int groupID = 0);
+
+	void AddEdge(vec3f r[2], GLColor c);
+	void AddEdge(vec3f r[2], GLColor c[2]);
+
+	void AddEdge(const vec3f& a, const vec3f& b);
+
+public:
+	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
+	void AddFace(const int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true, int faceId = -1, int elemId = -1, int mat = 0);
+	void AddFace(vec3f* r, int gid = 0, int smoothId = 0, bool bext = true);
+	
+	void AddFace(vec3f r[3], GLColor c);
+	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
+	void AddFace(vec3f r[3], vec3f n[3], float tex, GLColor c);
+	void AddFace(vec3f r[3], vec3f n[3], float tex[3], GLColor c);
+	void AddFace(vec3f r[3], GLColor c[3]);
+	void AddFace(vec3f r[3], float t[3]);
+	void AddFace(vec3f r[3], vec3f t[3]);
+	void AddFace(vec3f r[3], float t[3], GLColor c[3]);
+
+	int SetFaceTex(int f0, float* t, int n);
 
 protected:
-	GLMesh(unsigned int mode);
-	virtual ~GLMesh();
+	void FindNeighbors();
 
-	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
+public:
+	void UpdateBoundingBox();
+	void UpdateNormals();
+
+	void setModified(bool b) { m_isModified = b; }
 
 private:
-	void RenderImmediate();
-	void RenderVertexArrays();
-	void RenderVBO();
-
-	void InitVBO();
+	int AddFace(const FACE& face);
 
 protected:
-	float* m_vr = nullptr;	// vertex coordinates
-	float* m_vn = nullptr;	// vertex normals
-	float* m_vt = nullptr;	// vertex texture coordinates
-	ubyte* m_vc = nullptr; // vertex color (4 x unsigned byte)
+	BOX				m_box;
+	vector<NODE>	m_Node;
+	vector<EDGE>	m_Edge;
+	vector<FACE>	m_Face;
 
-	unsigned int* m_ind = nullptr; // vertex indices (used for z-sorting)
-	bool m_useIndices;
-	
-	size_t m_vertexCount = 0;	// number of vertices
-	size_t m_maxVertexCount = 0;	// max number of vertices
-	unsigned int m_flags;
-	bool	m_bvalid;	// is the mesh valid and ready for rendering?
+private:
+	vector<PARTITION>		m_FIL;
+	vector<pair<int, int> >	m_EIL;
 
-	unsigned int	m_vbo[5];
-
-	unsigned int m_mode;	// primitive type to render (set by derived classes)
-	RenderMode	m_renderMode;
-	bool	m_initVBO;
-};
-
-inline void GLMesh::AddVertex(double* r, double* n, double* t)
-{
-	size_t i = m_vertexCount++;
-	if (r && m_vr) { m_vr[3 * i] = (float)r[0]; m_vr[3 * i + 1] = (float)r[1]; m_vr[3 * i + 2] = (float)r[2]; }
-	if (n && m_vn) { m_vn[3 * i] = (float)n[0]; m_vn[3 * i + 1] = (float)n[1]; m_vn[3 * i + 2] = (float)n[2]; }
-	if (r && m_vt) { m_vt[3 * i] = (float)t[0]; m_vt[3 * i + 1] = (float)t[1]; m_vt[3 * i + 2] = (float)t[2]; }
-}
-
-inline void GLMesh::AddVertex(const vec3f& r)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
-	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-}
-
-inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n, const GLColor& c)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
-	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
-}
-
-inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
-}
-
-inline void GLMesh::AddVertex(const vec3f& r, float tex)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r, float tex)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
-}
-
-inline void GLMesh::AddVertex(const vec3f& r, const GLColor& c)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-}
-
-inline void GLMesh::AddVertex(const vec3d& r, const GLColor& c)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
-	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-}
-
-inline void GLMesh::AddVertex(const Vertex& v)
-{
-	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = v.r.x; m_vr[3 * i + 1] = v.r.y; m_vr[3 * i + 2] = v.r.z; }
-	if (m_vn) { m_vn[3 * i] = v.n.x; m_vn[3 * i + 1] = v.n.y; m_vn[3 * i + 2] = v.n.z; }
-	if (m_vt) { m_vt[3 * i] = v.t.x; m_vt[3 * i + 1] = v.t.y; m_vt[3 * i + 2] = v.t.z; }
-	if (m_vc) { m_vc[4 * i] = v.c.r; m_vc[4 * i + 1] = v.c.g; m_vc[4 * i + 2] = v.c.b; m_vc[4 * i + 3] = v.c.a; }
-}
-
-inline GLMesh::Vertex GLMesh::GetVertex(size_t i) const
-{
-	Vertex v;
-	if (m_vr) { float* r = m_vr + (3 * i); v.r = vec3f(r[0], r[1], r[2]); }
-	if (m_vn) { float* n = m_vn + (3 * i); v.n = vec3f(n[0], n[1], n[2]); }
-	if (m_vt) { float* t = m_vt + (3 * i); v.t = vec3f(t[0], t[1], t[2]); }
-	if (m_vc) { ubyte* c = m_vc + (4 * i); v.c = GLColor(c[0], c[1], c[2], c[3]); }
-	return v;
-}
-
-// Triangle mesh
-class GLTriMesh : public GLMesh
-{
-public:
-	GLTriMesh();
-
-	void Create(size_t maxTriangles, unsigned int flags = 0);
-
-	void AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2);
-
-	// z-sort the faces
-	void ZSortFaces(const CGLCamera& cam);
-
-	// sort backwards/forwards
-	void SortBackwards();
-	void SortForwards();
-};
-
-inline void GLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
-{
-	AddVertex(r0);
-	AddVertex(r1);
-	AddVertex(r2);
-}
-
-// quad mesh
-class GLQuadMesh : public GLMesh
-{
-public:
-	GLQuadMesh();
-
-	void Create(int maxQuads, unsigned int flags = 0);
-};
-
-//=============================================================================
-// line mesh
-class GLLineMesh : public GLMesh
-{
-public:
-	GLLineMesh();
-	GLLineMesh(int maxLines, unsigned int flags = 0);
-
-	void Create(int maxLines, unsigned int flags = 0);
-
-	void AddLine(const vec3f& r0, const vec3f& r1);
-	void AddLine(const vec3d& r0, const vec3d& r1);
-	void AddLine(const vec3f& r0, const vec3f& r1, GLColor& c);
-};
-
-inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)
-{
-	AddVertex(r0);
-	AddVertex(r1);
-}
-
-inline void GLLineMesh::AddLine(const vec3d& r0, const vec3d& r1)
-{
-	AddVertex(r0);
-	AddVertex(r1);
-}
-
-inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1, GLColor& c)
-{
-	AddVertex(r0, c);
-	AddVertex(r1, c);
-}
-
-//=============================================================================
-// point mesh
-class GLPointMesh : public GLMesh
-{
-public:
-	GLPointMesh();
-	GLPointMesh(int maxVertices, unsigned int flags = 0);
-
-	void Create(int maxVertices, unsigned int flags = 0);
+	bool m_isModified = false;
+	bool m_hasNeighborList = false;
 };

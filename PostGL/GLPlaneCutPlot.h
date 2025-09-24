@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <GLLib/GLMesh.h>
 #include <vector>
 
+class FSMeshPartition;
+
 namespace Post {
 
 	class FEState;
@@ -44,7 +46,7 @@ class CGLPlaneCutPlot : public CGLPlot
 		struct FACE
 		{
 			int		mat;
-			vec3d	r[3];
+			vec3f	r[3];
 			float	tex[3];
 			bool	bactive;
 		};
@@ -90,14 +92,14 @@ public:
 	float GetOffsetScale() const;
 	vec3d GetPlanePosition() const;
 
-	void Render(CGLContext& rc) override;
-	void RenderPlane();
+	void Render(GLRenderEngine& re, GLContext& rc) override;
+	void RenderPlane(GLRenderEngine& re);
 	float Integrate(FEState* ps);
 
 	static void InitClipPlanes();
-	static void DisableClipPlanes();
-	static void ClearClipPlanes();
-	static void EnableClipPlanes();
+	static void DisableClipPlanes(GLRenderEngine& re);
+	static void ClearClipPlanes(GLRenderEngine& re);
+	static void EnableClipPlanes(GLRenderEngine& re);
 
 	void Activate(bool bact) override;
 
@@ -113,16 +115,15 @@ public:
 	void ClearSelection() override;
 
 protected:
-	void RenderSlice();
-	void RenderMesh();
-	void RenderOutline();
-	vec3d WorldToPlane(const vec3d& r);
+	void RenderSlice(GLRenderEngine& re);
+	void RenderMeshLines(GLRenderEngine& re);
+	void RenderOutline(GLRenderEngine& re);
 
 	void ReleasePlane();
 	static int GetFreePlane();
 
-	void AddDomain(FEPostMesh* pm, int n);
-	void AddFaces(FEPostMesh* pm);
+	void AddDomain(FSMeshPartition& dom);
+	void AddFaces(FSMesh* pm);
 
 	void UpdateTriMesh();
 	void UpdateLineMesh();
@@ -163,10 +164,10 @@ protected:
 	static	std::vector<int>				m_clip;	// avaialabe clip planes
 	static	std::vector<CGLPlaneCutPlot*>	m_pcp;
 
-	GLTriMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
-	GLTriMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
-	GLLineMesh	m_lineMesh;	// for rendering mesh lines
-	GLLineMesh	m_outlineMesh;	// for rendering the outline
+	GLMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
+	GLMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
+	GLMesh	m_lineMesh;	// for rendering mesh lines
+	GLMesh	m_outlineMesh;	// for rendering the outline
 
 	bool	m_bupdateSlice; // update slice before rendering
 };

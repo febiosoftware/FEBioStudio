@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModelConstraint.h"
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 FSModelConstraint::FSModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
 {

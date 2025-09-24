@@ -29,60 +29,81 @@ SOFTWARE.*/
 #include <string>
 #include <FSCore/FSObject.h>
 
-enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM, DEFAULT};
+class CFEBioJob;
 
 class CLaunchConfig : public FSObject
 {
+public:
+	enum LaunchType {
+		LOCAL = 0,
+		REMOTE,
+		PBS,
+		SLURM,
+		CUSTOM,
+		DEFAULT
+	};
+
+protected:
+	CLaunchConfig();
+	CLaunchConfig(LaunchType launchType, const std::string& configName);
+	~CLaunchConfig();
 
 public:
-	CLaunchConfig();
-	CLaunchConfig(launchTypes launchType, const std::string& configName);
-
-	~CLaunchConfig();
-	CLaunchConfig(const CLaunchConfig &old);
-	void operator=(const CLaunchConfig &old);
-
-	bool operator!=(const CLaunchConfig &b);
-	bool operator==(const CLaunchConfig &b);
-
-	bool SameServer(const CLaunchConfig &b);
-
-	void Load(IArchive& ar) override;
-	void Save(OArchive& ar) override;
-
-	const std::string& getCustomFile() const;
-	void setCustomFile(const std::string &customFile);
-	const std::string& getName() const;
-	void setName(const std::string &name);
-	const std::string& getPath() const;
-	void setPath(const std::string &path);
-	int getPort() const;
-	void setPort(int port = 22);
-	const std::string& getRemoteDir() const;
-	void setRemoteDir(const std::string &remoteDir);
-	const std::string& getServer() const;
-	void setServer(const std::string &server);
-	int getType() const;
-	void setType(int type = 0);
-	const std::string& getUserName() const;
-	void setUserName(const std::string &userName);
-	void setText(const std::string &text);
-	const std::string& getText() const;
-
-	int type = 0;
-	std::string name;
-	std::string path;
-	std::string server;
-	int port = 22;
-	std::string userName;
-	std::string remoteDir;
-//	std::string jobName;
-//	std::string walltime;
-	std::string customFile;
-//	int procNum = 0;
-//	int ram = 0;
+	std::string path() const;
+	std::string server() const;
+	std::string userName() const;
+	std::string remoteDir() const;
+	std::string text() const;
+	int port() const;
 
 private:
-	std::string text;
+	CLaunchConfig(const CLaunchConfig& old) = delete;
+	void operator=(const CLaunchConfig& old) = delete;
 
+public:
+	int type() const { return m_type; }
+	std::string typeString() const;
+
+	void setName(const std::string& name) { m_name = name; }
+	std::string name() const { return m_name; }
+
+private:
+	int m_type = 0;
+	std::string m_name;
+};
+
+class CLocalLaunchConfig : public CLaunchConfig
+{
+public:
+	CLocalLaunchConfig(const std::string& configname);
+};
+
+class CRemoteLaunchConfig : public CLaunchConfig
+{
+public:
+	CRemoteLaunchConfig(const std::string& configname);
+};
+
+class CPBSLaunchConfig : public CLaunchConfig
+{
+public:
+	CPBSLaunchConfig(const std::string& configname);
+};
+
+class CSLURMLaunchConfig : public CLaunchConfig
+{
+public:
+	CSLURMLaunchConfig(const std::string& configname);
+};
+
+class CCustomLaunchConfig : public CLaunchConfig
+{
+public:
+	CCustomLaunchConfig(const std::string& configname);
+};
+
+class CDefaultLaunchConfig : public CLaunchConfig
+{
+public:
+	CDefaultLaunchConfig(const std::string& configname);
 };

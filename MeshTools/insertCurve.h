@@ -26,9 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-//using namespace std;
-
-using std::vector;
 
 class FSSurfaceMesh;
 class GEdge;
@@ -38,5 +35,5 @@ class InsertCurves
 public:
 	InsertCurves();
 
-	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh, vector<GEdge*>& curveList, bool insertEdges, double tol);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh, std::vector<GEdge*>& curveList, bool insertEdges, double tol);
 };

@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "VTKModel.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 namespace VTKTools {
 
 	FSMesh* BuildFEMesh(const VTK::vtkPiece& vtkMesh, bool splitPolys = true);
-	bool BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, bool splitPolys = true);
+	bool BuildFEMesh(const VTK::vtkPiece& vtkMesh, FSMesh* pm, std::vector<int>& nodeMap, bool splitPolys = true, bool mapNodes = false);
 }

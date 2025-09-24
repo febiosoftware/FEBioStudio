@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QGroupBox>
 #include <QGridLayout>
+#include <FEBio/FEBioExport.h>
 
 CFEBioFormatSelector::CFEBioFormatSelector(QWidget* pw) : QComboBox(pw)
 {
@@ -176,13 +177,14 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 	m_compress = false;
 	m_bexportSelections = false;
 	m_allowHybrids = false;
+	m_writeNotes = true;
 
 	if (m_nindex == -1) m_nindex = 0;
 	ui->combo->setCurrentIndex(m_nindex);
 
-	for (int i=0; i<MAX_SECTIONS; ++i) 
+	m_nsection = 0xFFFF;
+	for (int i=0; i<FEBIO_MAX_SECTIONS; ++i) 
 	{
-		m_nsection[i] = true;
 		ui->pc[i]->setChecked(true);
 	}
 }
@@ -195,19 +197,24 @@ void CDlgExportFEBio::accept()
 	m_writeNotes = ui->notes->isChecked();
 	m_allowHybrids = ui->hybrid->isChecked();
 
-	for (int i=0; i<MAX_SECTIONS; ++i) m_nsection[i] = ui->pc[i]->isChecked();
+	m_nsection = 0;
+	for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i)
+	{
+		if (ui->pc[i]->isChecked())
+			m_nsection |= (1 << i);
+	}
 
 	QDialog::accept();
 }
 
 void CDlgExportFEBio::OnAllClicked()
 {
-	for (int i=0; i<MAX_SECTIONS; ++i) ui->pc[i]->setChecked(true);
+	for (int i=0; i<FEBIO_MAX_SECTIONS; ++i) ui->pc[i]->setChecked(true);
 }
 
 void CDlgExportFEBio::OnNoneClicked()
 {
-	for (int i = 0; i<MAX_SECTIONS; ++i) ui->pc[i]->setChecked(false);
+	for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) ui->pc[i]->setChecked(false);
 }
 
 int CDlgExportFEBio::FEBioFormat() const

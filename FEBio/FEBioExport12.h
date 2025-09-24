@@ -134,17 +134,17 @@ protected:
 	void WriteMaterialParams(FSMaterial* pm);
 	void WriteFiberMaterial(FSOldFiberMaterial& f);
 
-	void WriteSurfaceSection(FEFaceList& s);
-	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);
+	void WriteSurfaceSection(FSFaceList& s);
+	void WriteSurface(XMLElement& el, FSItemListBuilder* pl);
 
 protected:
 	FSModel*		m_pfem;
 
 protected:
-	bool HasSurface(FEItemListBuilder* pl);
+	bool HasSurface(FSItemListBuilder* pl);
 
 protected:
-	std::vector<FEItemListBuilder*>	m_pSurf;	//!< list of named surfaces
+	std::vector<FSItemListBuilder*>	m_pSurf;	//!< list of named surfaces
 
 	bool	m_section[MAX_SECTIONS];	//!< write section flags
 

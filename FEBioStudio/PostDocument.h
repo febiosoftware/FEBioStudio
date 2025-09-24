@@ -25,17 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "Document.h"
+#include "GLModelDocument.h"
 #include <PostLib/Material.h>
-#include "GraphData.h"
+#include <CUILib/GraphData.h>
 
 class CModelDocument;
 class CPostObject;
+class CPalette;
 
 namespace Post {
 	class FEPostModel;
-	class CPalette;
 	class FEFileReader;
+	class CGLModel;
+	class CGLObject;
 }
 
 // Timer modes
@@ -115,7 +117,7 @@ protected:
 };
 
 
-class CPostDocument : public CGLDocument
+class CPostDocument : public CGLModelDocument
 {
 	Q_OBJECT
 
@@ -135,7 +137,13 @@ public:
 
 	void SetInitFlag(bool b);
 
-	void UpdateSelection(bool report) override;
+	void UpdateSelection() override;
+
+public: // overrides for CGLModelDocument
+
+	Post::CGLModel* GetGLModel() override;
+
+	Post::FEPostModel* GetFSModel() override;
 
 public:
 	int GetStates();
@@ -145,10 +153,6 @@ public:
 	int GetActiveState();
 
 	void SetDataField(int n);
-
-	Post::FEPostModel* GetFSModel();
-
-	Post::CGLModel* GetGLModel();
 
 	bool MergeFEModel(Post::FEPostModel* fem);
 
@@ -182,10 +186,9 @@ public:
 	// get the model's bounding box
 	BOX GetBoundingBox();
 
-	// get the selection bounding box
-	BOX GetSelectionBox();
-
 	void SetGLModel(Post::CGLModel* glm);
+
+	LegendData GetLegendData() override;
 
 public:
 	//! save to session file
@@ -200,7 +203,7 @@ public:
 	void DeleteGraph(const CGraphData* data);
 
 private:
-	void ApplyPalette(const Post::CPalette& pal);
+	void ApplyPalette(const CPalette& pal);
 
 signals:
 	void selectionChanged();
@@ -216,8 +219,6 @@ private:
 	std::vector<CGraphData*>	m_graphs;
 
 	ModelData	m_MD;
-
-	CPostObject*	m_postObj;
 
 	TIMESETTINGS m_timeSettings;
 

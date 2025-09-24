@@ -28,10 +28,12 @@ SOFTWARE.*/
 #include "ui_meshinspector.h"
 #include "MainWindow.h"
 #include "GLView.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include <MeshTools/FEMeshValuator.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include "Commands.h"
+#include <GLLib/GLScene.h>
+using namespace std;
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {
@@ -39,7 +41,7 @@ CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd),
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
 
-	ui->m_map = Post::ColorMapManager::GetDefaultMap();
+	ui->m_map = ColorMapManager::GetDefaultMap();
 }
 
 void CMeshInspector::Update(bool reset)
@@ -75,9 +77,9 @@ void CMeshInspector::showEvent(QShowEvent* ev)
 {
 	ui->col->blockSignals(true);
 	ui->col->clear();
-	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	for (int i = 0; i < ColorMapManager::ColorMaps(); ++i)
 	{
-		string name = Post::ColorMapManager::GetColorMapName(i);
+		string name = ColorMapManager::GetColorMapName(i);
 		ui->col->addItem(QString::fromStdString(name));
 	}
 	ui->col->setCurrentIndex(ui->m_map);
@@ -129,6 +131,7 @@ void CMeshInspector::UpdateData(int ndata)
 			if (psm == nullptr) return;
 
 			UpdateSurfaceMeshData(psm, ndata);
+			pso->UpdateSurfaceMeshData();
 		}
 		else return;
 	}
@@ -430,7 +433,7 @@ void CMeshInspector::on_select_clicked()
 void CMeshInspector::UpdateUI()
 {
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
-	CGLScene* scene = m_wnd->GetGLView()->GetActiveScene();
+	GLScene* scene = m_wnd->GetGLView()->GetActiveScene();
 	if (scene) scene->Update();
 	m_wnd->RedrawGL();
 }

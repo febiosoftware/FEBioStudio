@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <QDialog>
 #include <QStringList>
 #include <vector>
-#include "LaunchConfig.h"
 
 namespace Ui {
 	class CDlgAddPublication;

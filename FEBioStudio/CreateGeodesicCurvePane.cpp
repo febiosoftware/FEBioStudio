@@ -35,10 +35,10 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QSpinBox>
 #include <GeomLib/GCurveMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include "GLHighlighter.h"
 #include <MeshTools/FEGeodesic.h>
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include "PropertyList.h" // for Vec3dToString
 #include "ModelDocument.h"
 
@@ -169,7 +169,7 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* po = mdl.Object(i);
-		GMesh* pm = po->GetRenderMesh();
+		GLMesh* pm = po->GetRenderMesh();
 		if (pm) nfaces += pm->Faces();
 	}
 	if (nfaces == 0) return;
@@ -180,14 +180,14 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* po = mdl.Object(i);
-		GMesh* pm = po->GetRenderMesh();
+		GLMesh* pm = po->GetRenderMesh();
 		if (pm)
 		{
 			Transform& T = po->GetTransform();
 			for (int j = 0; j < pm->Faces(); ++j)
 			{
 				FSTriMesh::FACE& face = triMesh.Face(nfaces++);
-				GMesh::FACE& fj = pm->Face(j);
+				GLMesh::FACE& fj = pm->Face(j);
 				face.r[0] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[0]).r));
 				face.r[1] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[1]).r));
 				face.r[2] = T.LocalToGlobal(to_vec3d(pm->Node(fj.n[2]).r));
@@ -216,7 +216,7 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	PathOnMesh path = ProjectToGeodesic(triMesh, pt, 100, 1e-6);
 
 	// create the curve mesh
-	FECurveMesh* pc = new FECurveMesh;
+	FSCurveMesh* pc = new FSCurveMesh;
 	pc->Create(path.Points(), path.Points() - 1);
 	for (int i = 0; i < path.Points(); ++i)
 	{

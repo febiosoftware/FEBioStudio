@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECurveIntersect2D.h"
 #include <GeomLib/GCurveMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
-#include <MeshLib/FEFaceEdgeList.h>
+#include <MeshLib/FSCurveMesh.h>
+#include <MeshLib/FSFaceEdgeList.h>
 using namespace std;
 
 class DynamicMesh2D
@@ -671,7 +671,7 @@ FSMesh* FECurveIntersect2D::Apply(FSMesh* pm)
 
 	GObject* pd = pm->GetGObject();
 
-	FECurveMesh* ps = m_pc->GetCurveMesh();
+	FSCurveMesh* ps = m_pc->GetCurveMesh();
 
 	// insert all the nodes
 	int N = ps->Nodes();
@@ -765,7 +765,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 	}
 
 	// build the edges
-	FSEdgeList ET(*pm);
+	EdgeList ET(*pm);
 	int NE = ET.size();
 	vector<DynamicMesh2D::EDGEP> edgePtr;
 	for (int i = 0; i<NE; ++i)

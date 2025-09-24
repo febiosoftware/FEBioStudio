@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEGregoryPatch.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 FEGregoryPatch::FEGregoryPatch(void)
 {
@@ -113,7 +113,7 @@ FSMesh* FEGregoryPatch::BuildFEMesh()
 	for (j=0; j<m_ny*m_my; ++j)
 		for (i=0; i<m_nx*m_mx; ++i)
 		{
-			FEElement_* pe = pm->ElementPtr(eid++);
+			FSElement_* pe = pm->ElementPtr(eid++);
 
 			pe->m_node[0] = NodeIndex(i  ,j);
 			pe->m_node[1] = NodeIndex(i+1,j);

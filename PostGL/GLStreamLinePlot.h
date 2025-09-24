@@ -26,14 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include "GLWLib/GLWidget.h"
-#include <PostLib/FEPostMesh.h>
-#include <MeshLib/FEFindElement.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSFindElement.h>
 #include <GLLib/GLMesh.h>
 
 namespace Post {
 
-class CGLStreamLinePlot : public CGLLegendPlot
+class CGLStreamLinePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, CLIP, STEP_SIZE, DENSITY, THRESHOLD, RANGE, DIVS, USER_MAX, USER_MIN };
 
@@ -75,7 +74,7 @@ public:
 public:
 	CGLStreamLinePlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;
@@ -83,6 +82,8 @@ public:
 	void UpdateStreamLines();
 
 	void ColorStreamLines();
+
+	LegendData GetLegendData() const override;
 
 public:
 	int GetVectorType() { return m_nvec; }
@@ -138,12 +139,12 @@ private:
 	vector<StreamLine>	m_streamLines;
 	vector<float>		m_prob;
 
-	FEFindElement*	m_find;
+	FSFindElement*	m_find;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range
 	double	m_rngMin, m_rngMax;
 
-	GLLineMesh	m_mesh;
+	GLMesh	m_mesh;
 };
 }

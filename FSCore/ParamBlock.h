@@ -52,7 +52,8 @@ enum Param_Type {
 	Param_ARRAY_DOUBLE,			// fixed size array of double
 	Param_CURVE_OBSOLETE,		// obsolete
 	Param_VEC2D,
-	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
+	Param_CHOICE = 0x0020,		// like INT but imported/exported as one-based numbers
+	Param_URL
 };
 
 // parameter states
@@ -166,6 +167,7 @@ public:
 	void SetMat3dValue (const mat3d& v) { assert(m_ntype == Param_MAT3D); val<mat3d>() = v; }
 	void SetMat3dsValue(const mat3ds& v){ assert(m_ntype == Param_MAT3DS); val<mat3ds>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
+	void SetURLValue(const std::string& v) {assert(m_ntype == Param_URL); val<std::string>() = v; }
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
 	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
 	void SetVectorIntValue(const std::vector<int>& v) { assert(m_ntype == Param_STD_VECTOR_INT); val<std::vector<int> >() = v; }
@@ -185,6 +187,7 @@ public:
 	mat3d  GetMat3dValue () const {assert(m_ntype == Param_MAT3D); return val<mat3d>(); }
 	mat3ds GetMat3dsValue () const {assert(m_ntype == Param_MAT3DS); return val<mat3ds>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
+	std::string GetURLValue() const { assert(m_ntype == Param_URL); return val<std::string>(); }
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 	std::vector<int> GetVectorIntValue() const { assert(m_ntype == Param_STD_VECTOR_INT); return val<std::vector<int> >(); }
@@ -233,6 +236,12 @@ public:
 
 	void SetFloatRange(double fmin, double fmax, double fstep = 0.0);
 	void SetIntRange(int imin, int imax, int istep = 1);
+	void SetRangeType(int n); // see FECore/FEParamValidator.h
+
+	int GetRangeType() const { return m_rngType; }
+	void GetRange(double& vmin, double& vmax) const { vmin = m_fmin; vmax = m_fmax; }
+
+	bool IsValueValid() const;
 
 	void SetCheckable(bool b);
 	bool IsCheckable() const;
@@ -276,6 +285,7 @@ protected:
 
 	bool		m_floatRange;
 	double		m_fmin, m_fmax, m_fstep;
+	int			m_rngType;
 
 	const char*	m_szbrev;	// short name of parameter
 	const char*	m_szname;	// long name of parameter
@@ -431,6 +441,17 @@ public:
 	{
 		int np = (int)m_Param.size();
 		Param* p = new Param(s, szb, szn);
+		p->m_nID = np;
+		p->SetParameterGroup(m_currentGroup);
+		m_Param.push_back(p);
+		return p;
+	}
+
+	Param* AddURLParam(const std::string& s, const char* szb, const char* szn = 0)
+	{
+		int np = (int)m_Param.size();
+		Param* p = new Param(s, szb, szn);
+		p->m_ntype = Param_URL;
 		p->m_nID = np;
 		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
@@ -637,6 +658,7 @@ public:
 	Param* AddIndxIntParam(int n, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxIntParam(n, szi, idx, szb, szn); }
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxDoubleParam(d, szi, idx, szb, szn); }
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
+	Param* AddURLParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddURLParam(s, szb, szn); }
 	Param* AddColorParam(GLColor c, const char* szb = 0, const char* szn = 0) { return m_Param.AddColorParam(c, szb, szn); }
 	Param* AddMat3dParam(mat3d v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dParam(v, szb, szn); }
 	Param* AddMat3dsParam(mat3ds v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dsParam(v, szb, szn); }
@@ -673,6 +695,7 @@ public:
 	vec2d GetVec2dValue(int n) const { return m_Param[n].GetVec2dValue(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
+	std::string GetURLValue(int n) const { return m_Param[n].GetURLValue(); }
 	GLColor GetColorValue(int n) const { return m_Param[n].GetColorValue(); }
 	std::vector<double> GetParamVectorDouble(int n) { return m_Param[n].GetVectorDoubleValue(); }
 
@@ -682,6 +705,7 @@ public:
 	void SetVecValue   (int n, const vec3d& v) { m_Param[n].SetVec3dValue(v); }
 	void SetVec2dValue (int n, const vec2d& v) { m_Param[n].SetVec2dValue(v); }
 	void SetStringValue(int n, const std::string& s) { m_Param[n].SetStringValue(s); }
+	void SetURLValue   (int n, const std::string& s) { m_Param[n].SetURLValue(s); }
 	void SetColorValue (int n, const GLColor& c) { m_Param[n].SetColorValue(c); }
 	void SetParamVectorDouble(int n, const std::vector<double>& a) { m_Param[n].SetVectorDoubleValue(a); }
 	void Clear() { m_Param.clear(); }

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "triangulate.h"
-#include <MeshLib/GMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
 
@@ -93,19 +93,19 @@ inline bool LeftOn   (vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) >= 0
 inline bool Collinear(vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) == 0; }
 
 //-----------------------------------------------------------------------------
-GMesh* triangulate(GTriangulate& c)
+GLMesh* triangulate(GTriangulate& c)
 {
 	assert(c.Nodes() == c.Edges());
 
 	int N = c.Nodes();
 
-	GMesh* pm = new GMesh;
+	GLMesh* pm = new GLMesh;
 	pm->Create(N, N-2, N);
 
 	// create the Nodes
 	for (int i=0; i<N; ++i)
 	{
-		GMesh::NODE& n = pm->Node(i);
+		GLMesh::NODE& n = pm->Node(i);
 		n.r = to_vec3f(c.Node(i).r);
 		n.pid = c.Node(i).nid;
 		c.Node(i).ntag = i+1;
@@ -115,7 +115,7 @@ GMesh* triangulate(GTriangulate& c)
 	int NE = pm->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		GMesh::EDGE& e = pm->Edge(i);
+		GLMesh::EDGE& e = pm->Edge(i);
 		e.pid = c.Edge(i).nid;
 		e.n[0] = i;
 		e.n[1] = (i+1)%NE;
@@ -138,7 +138,7 @@ GMesh* triangulate(GTriangulate& c)
 			  GTriangulate::NODE& v1 = c.NodeCycle(i-1); //GTriangulate::NODE& v0 = c.NodeCycle(i-2); 
 
 				// add a triangle to the mesh
-				GMesh::FACE& f = pm->Face(NF++);
+				GLMesh::FACE& f = pm->Face(NF++);
 				f.n[0] = abs(v1.ntag)-1;
 				f.n[1] = abs(v2.ntag)-1;
 				f.n[2] = abs(v3.ntag)-1;
@@ -169,7 +169,7 @@ GMesh* triangulate(GTriangulate& c)
 	GTriangulate::NODE& v2 = c.Node(1);
 	GTriangulate::NODE& v3 = c.Node(2);
 
-	GMesh::FACE& f = pm->Face(NF++);
+	GLMesh::FACE& f = pm->Face(NF++);
 	f.n[0] = abs(v1.ntag)-1;
 	f.n[1] = abs(v2.ntag)-1;
 	f.n[2] = abs(v3.ntag)-1;
@@ -258,7 +258,7 @@ double Area2(vec3d& a, vec3d& b, vec3d& c)
 }
 
 //-----------------------------------------------------------------------------
-GMesh* triangulate(GFace& face)
+GLMesh* triangulate(GFace& face)
 {
 	assert(face.m_ntype == FACE_POLYGON);
 
@@ -267,23 +267,27 @@ GMesh* triangulate(GFace& face)
 	GTriangulate c;
 	c.Clear();
 
+#ifndef NDEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// find the (approximate) face normal
-	vec3d fn(0, 0, 0);
-	int ne = face.Edges();
-	for (int i = 0; i < ne - 1; ++i)
+	vec3d fc(0, 0, 0);
+	for (int i = 0; i < face.Nodes(); ++i)
 	{
-		GEdge& e0 = *obj.Edge(face.m_edge[i].nid);
-		int w0 = face.m_edge[i].nwn;
+		GNode& node = *obj.Node(face.m_node[i]);
+		fc += node.LocalPosition();
+	}
+	fc /= face.Nodes();
 
-		GEdge& e1 = *obj.Edge(face.m_edge[i + 1].nid);
-		int w1 = face.m_edge[i + 1].nwn;
-
-		vec3d t0 = (w0 > 0 ? e0.Tangent(1) : -e0.Tangent(0));
-		vec3d t1 = (w1 > 0 ? e1.Tangent(0) : -e1.Tangent(1));
-
-		fn += (t0 ^ t1);
+	vec3d fn(0, 0, 0);
+	for (int i = 0; i < face.Nodes() - 1; ++i)
+	{
+		vec3d r0 = obj.Node(face.m_node[i  ])->LocalPosition();
+		vec3d r1 = obj.Node(face.m_node[i+1])->LocalPosition();
+		fn += (r0 - fc) ^ (r1 - fc);
 	}
 	fn.Normalize();
 
@@ -298,6 +302,7 @@ GMesh* triangulate(GFace& face)
 	vec3d rc = obj.Node(face.m_node[0])->LocalPosition();
 
 	// create all nodes
+	int ne = face.Edges();
 	for (int i = 0; i < ne; ++i)
 	{
 		GEdge& e = *obj.Edge(face.m_edge[i].nid);
@@ -321,7 +326,7 @@ GMesh* triangulate(GFace& face)
 		break;
 		case EDGE_3P_CIRC_ARC:
 		{
-			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r0 = obj.Node(e.m_cnode[0])->LocalPosition() - rc;
 			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
 			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
 			q.RotateVector(r0);
@@ -348,7 +353,7 @@ GMesh* triangulate(GFace& face)
 		break;
 		case EDGE_3P_ARC:
 		{
-			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r0 = obj.Node(e.m_cnode[0])->LocalPosition() - rc;
 			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
 			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
 			q.RotateVector(r0);
@@ -370,6 +375,41 @@ GMesh* triangulate(GFace& face)
 			{
 				double l = (double)j / (double)M;
 				c.AddNode(ca.Point(l), -1);
+			}
+		}
+		break;
+		case EDGE_BEZIER:
+		{
+			vector<vec3d> P;
+			if (ew == 1)
+			{
+				P.push_back(obj.Node(e.m_node[0])->LocalPosition());
+				for (int i = 0; i < e.m_cnode.size(); ++i)
+					P.push_back(obj.Node(e.m_cnode[i])->LocalPosition());
+				P.push_back(obj.Node(e.m_node[1])->LocalPosition());
+			}
+			else
+			{
+				P.push_back(obj.Node(e.m_node[1])->LocalPosition());
+				int n = e.m_cnode.size();
+				for (int i = 0; i < n; ++i)
+					P.push_back(obj.Node(e.m_cnode[n - i - 1])->LocalPosition());
+				P.push_back(obj.Node(e.m_node[0])->LocalPosition());
+			}
+
+			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
+			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
+			q.RotateVector(r1);
+			q.RotateVector(r2);
+			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
+
+			GM_BEZIER gm(P);
+			for (int i = 1; i < M; ++i)
+			{
+				double l = i / (double)M;
+				vec3d p = gm.Point(l) - rc;
+				q.RotateVector(p);
+				c.AddNode(p, -1);
 			}
 		}
 		break;
@@ -395,14 +435,8 @@ GMesh* triangulate(GFace& face)
 		}
 		break;
 		case EDGE_3P_CIRC_ARC:
-			for (int j = 0; j < M; ++j)
-			{
-				int n0 = m++;
-				int n1 = (n0 + 1) % NN;
-				c.AddEdge(n0, n1, eid);
-			}
-			break;
 		case EDGE_3P_ARC:
+		case EDGE_BEZIER:
 			for (int j = 0; j < M; ++j)
 			{
 				int n0 = m++;
@@ -415,7 +449,7 @@ GMesh* triangulate(GFace& face)
 		}
 	}
 
-	GMesh* pm = triangulate(c);
+	GLMesh* pm = triangulate(c);
 
 	// Position the face at the correct position
 	for (int i = 0; i < pm->Nodes(); ++i)

@@ -43,8 +43,8 @@ SOFTWARE.*/
 #include <FSCore/ParamBlock.h>
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
-#include <PostLib/ColorMap.h>
-#include "InputWidgets.h"
+#include <FSCore/ColorMapManager.h>
+#include <CUILib/InputWidgets.h>
 #include "DragBox.h"
 #include "units.h"
 
@@ -214,7 +214,7 @@ public:
 				if (role == Qt::DisplayRole)
 				{
 					int n = v.toInt();
-					std::string mapName = Post::ColorMapManager::GetColorMapName(n);
+					std::string mapName = ColorMapManager::GetColorMapName(n);
 					return QString::fromStdString(mapName);
 				}
 				else if (role == Qt::EditRole) return v;
@@ -530,7 +530,9 @@ public:
 		{
 			const CProperty& prop = model->getPropertyList().Property(index.row());
 			if ((prop.type == CProperty::Std_Vector_Double) ||
-				(prop.type == CProperty::Vec2d))
+				(prop.type == CProperty::Vec2d) ||
+				(prop.type == CProperty::Vec3) ||
+				(prop.type == CProperty::Mat3s))
 			{
 				QLineEdit* w = new QLineEdit(parent);
 				QObject::connect(w, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));

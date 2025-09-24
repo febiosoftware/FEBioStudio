@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);
@@ -95,12 +95,6 @@ GLTensorPlot::GLTensorPlot()
 	m_range.maxtype = RANGE_DYNAMIC;
 	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -209,7 +203,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
@@ -424,30 +418,12 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 
 static double frand() { return (double)rand() / (double)RAND_MAX; }
 
-void GLTensorPlot::Render(CGLContext& rc)
+void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
-	GetLegendBar()->SetDivisions(m_ndivs);
-
 	if (m_ntensor == 0) return;
 
-	GLfloat ambient[] = { 0.1f,0.1f,0.1f,1.f };
-	GLfloat specular[] = { 0.0f,0.0f,0.0f,1 };
-	GLfloat emission[] = { 0,0,0,1 };
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-	//	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
-
 	// store attributes
-	glPushAttrib(GL_LIGHTING_BIT);
-
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
+	re.pushState();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -455,23 +431,17 @@ void GLTensorPlot::Render(CGLContext& rc)
 	srand(m_seed);
 
 	FEPostModel* pfem = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	float scale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
 
-	if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
+	if (m_nglyph == Glyph_Line)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, m_gcl);
+	}
 	else
 	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
-
-		GLfloat dif[] = { 1.f, 1.f, 1.f, 1.f };
-		GLfloat amb[] = { 0.1f, 0.1f, 0.1f, 1.f };
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
+		re.setMaterial(GLMaterial::PLASTIC, m_gcl);
 	}
 
 	if (IS_ELEM_FIELD(m_ntensor))
@@ -479,7 +449,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		pm->TagAllElements(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -492,7 +462,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden elements
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
-				FEElement_& elem = pm->ElementRef(i);
+				FSElement_& elem = pm->ElementRef(i);
 				if (elem.IsVisible() == false) elem.m_ntag = 0;
 			}
 		}
@@ -521,13 +491,11 @@ void GLTensorPlot::Render(CGLContext& rc)
 			fmin = m_range.min;
 		}
 
-		GetLegendBar()->SetRange(fmin, fmax);
-
 		if (fmax == fmin) fmax++;
 
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& elem = pm->ElementRef(i);
+			FSElement_& elem = pm->ElementRef(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
 				vec3d r = pm->ElementCenter(elem);
@@ -538,12 +506,12 @@ void GLTensorPlot::Render(CGLContext& rc)
 				{
 					float w = (t.f - fmin) / (fmax - fmin);
 					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
+					re.setColor(c);
 				}
 
-				glTranslatef(r.x, r.y, r.z);
-				RenderGlyphs(t, scale*auto_scale, pglyph);
-				glTranslatef(-r.x, -r.y, -r.z);
+				re.translate(r);
+				RenderGlyphs(re, t, scale*auto_scale);
+				re.translate(-r);
 			}
 		}
 	}
@@ -552,7 +520,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -594,13 +562,10 @@ void GLTensorPlot::Render(CGLContext& rc)
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
-		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
-
-		glx::glcolor(m_gcl);
+		re.setColor(m_gcl);
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
@@ -614,37 +579,32 @@ void GLTensorPlot::Render(CGLContext& rc)
 				if (m_ncol != Glyph_Col_Solid)
 				{
 					float w = (t.f  - fmin)/ (fmax - fmin);
-					GLColor c = map.map(w);
-					glx::glcolor(c);
+					re.setColor(map.map(w));
 				}
 
-				glx::translate(r);
-				RenderGlyphs(t, scale*auto_scale, pglyph);
-				glx::translate(-r);
+				re.translate(r);
+				RenderGlyphs(re, t, scale*auto_scale);
+				re.translate(-r);
 			}
 		}
 	}
 
-	gluDeleteQuadric(pglyph);
-
 	// restore attributes
-	glPopAttrib();
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	re.popState();
 }
 
-void GLTensorPlot::RenderGlyphs(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	switch (m_nglyph)
 	{
-	case Glyph_Arrow : RenderArrows(t, scale, glyph); break;
-	case Glyph_Line  : RenderLines (t, scale, glyph); break;
-	case Glyph_Sphere: RenderSphere(t, scale, glyph); break;
-	case Glyph_Box   : RenderBox   (t, scale, glyph); break;
+	case Glyph_Arrow : RenderArrows(re, t, scale); break;
+	case Glyph_Line  : RenderLines (re, t, scale); break;
+	case Glyph_Sphere: RenderSphere(re, t, scale); break;
+	case Glyph_Box   : RenderBox   (re, t, scale); break;
 	}
 }
 
-void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderArrows(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -653,7 +613,7 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 
 	for (int i = 0; i<3; ++i)
 	{
-		glPushMatrix();
+		re.pushTransform();
 
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 		vec3f v = t.r[i];
@@ -665,23 +625,18 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 		float r1 = L * 0.15;
 
 		quatd q = quatd(vec3d(0,0,1), to_vec3d(v));
-		float w = q.GetAngle();
-		if (fabs(w) > 1e-6)
-		{
-			vec3d p = q.GetVector();
-			if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-		}
+		re.rotate(q);
 
-		glColor3ub(c[i].r, c[i].g, c[i].b);
-		gluCylinder(pglyph, r0, r0, l0, 5, 1);
-		glTranslatef(0.f, 0.f, (float)l0*0.9f);
-		gluCylinder(pglyph, r1, 0, l1, 10, 1);
+		re.setColor(c[i]);
+		glx::drawCylinder(re, r0, l0, 5);
+		re.translate(vec3d(0, 0, l0*0.9));
+		glx::drawCone(re, r1, l1, 10);
 
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 
-void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricObj* pglyph)
+void GLTensorPlot::RenderLines(GLRenderEngine& re, GLTensorPlot::TENSOR& t, float scale)
 {
 	GLColor c[3];
 	c[0] = GLColor(255, 0, 0);
@@ -690,27 +645,22 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 
 	for (int i = 0; i<3; ++i)
 	{
-		glPushMatrix();
+		re.pushTransform();
 
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 
 		vec3f v = t.r[i];
 		quatd q = quatd(vec3d(0, 0, 1), to_vec3d(v));
-		float w = q.GetAngle();
-		if (fabs(w) > 1e-6)
-		{
-			vec3d p = q.GetVector();
-			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
-		}
+		re.rotate(q);
 
-		glx::glcolor(c[i]);
-		glx::drawLine(0, 0, 0, 0, 0, L);
+		re.setColor(c[i]);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, L));
 
-		glPopMatrix();
+		re.popTransform();
 	}
 }
 
-void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderSphere(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	if (scale <= 0.f) return;
 
@@ -724,23 +674,23 @@ void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
 	if (sy < 0.1*smax) sy = 0.1f*smax;
 	if (sz < 0.1*smax) sz = 0.1f*smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f* e = t.r;
 	vec3f n = e[0] ^ e[1];
 	if (n*e[2] < 0) e[2] = -e[2];
-	GLfloat m[4][4] = {0};
+	double m[4][4] = {0};
 	m[3][3] = 1.f;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(scale*sx, scale*sy, scale*sz);
-	gluSphere(glyph, 1.f, 16, 16);
-	glPopMatrix();
+	re.scale(scale*sx, scale*sy, scale*sz);
+	glx::drawSphere(re, 1.f);
+	re.popTransform();
 }
 
-void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
+void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale)
 {
 	if (scale <= 0.f) return;
 
@@ -754,16 +704,35 @@ void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
 	if (sy < 0.1*smax) sy = 0.1f*smax;
 	if (sz < 0.1*smax) sz = 0.1f*smax;
 
-	glPushMatrix();
+	re.pushTransform();
 	vec3f* e = t.r;
-	GLfloat m[4][4] = { 0 };
+	double m[4][4] = { 0 };
 	m[3][3] = 1.f;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
 	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
-	glMultMatrixf(&m[0][0]);
+	re.multTransform(&m[0][0]);
 
-	glScalef(scale*sx, scale*sy, scale*sz);
-	glx::drawBox(0.5, 0.5, 0.5);
-	glPopMatrix();
+	re.scale(scale*sx, scale*sy, scale*sz);
+	glx::drawBox(re, 0.5, 0.5, 0.5);
+	re.popTransform();
+}
+
+LegendData GLTensorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if ((glyphCol >  0) && (m_range.valid))
+	{
+		l.discrete = false;
+		l.ndivs = m_ndivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

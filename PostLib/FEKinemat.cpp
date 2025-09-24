@@ -137,7 +137,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 	Post::FEPostModel& fem = *pfem;
 
 	// add the first state
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FSMesh& mesh = *fem.GetFEMesh(0);
 	int NMAT = fem.Materials();
 	int NN = mesh.Nodes();
 	int NE = mesh.Elements();
@@ -224,7 +224,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 			for (int i=0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
 			for (int i=0; i<NE; ++i)
 			{
-				FEElement_& e = mesh.ElementRef(i);
+				FSElement_& e = mesh.ElementRef(i);
 				if (e.m_MatID == n)
 				{
 					int ne = e.Nodes();

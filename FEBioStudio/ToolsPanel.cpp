@@ -28,11 +28,6 @@ SOFTWARE.*/
 #include "ToolsPanel.h"
 #include "ui_toolspanel.h"
 #include "MainWindow.h"
-#include "ConchoidFitTool.h"
-#include "QuadricFitTool.h"
-#include "ReadCurveTool.h"
-#include "FoamGeneratorTool.h"
-#include "MaterialMapTool.h"
 #include "ScalarFieldTool.h"
 #include "SurfaceMeshSizeTool.h"
 #include "EditDataFieldTool.h"
@@ -51,7 +46,7 @@ SOFTWARE.*/
 #include "CurveToBeamTool.h"
 #include <ImageLib/FiberODF.h>
 
-CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
+CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
 	m_activeTool = 0;
 	initTools();
@@ -69,17 +64,11 @@ void CToolsPanel::Update(bool breset)
 void CToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
-	tools.push_back(new CConchoidFitTool   (wnd));
-	tools.push_back(new CReadCurveTool     (wnd));
-	tools.push_back(new CFoamGeneratorTool (wnd));
-	tools.push_back(new CMaterialMapTool   (wnd));
 	tools.push_back(new CScalarFieldTool   (wnd));
 	tools.push_back(new CEditDataFieldTool (wnd));
 	tools.push_back(new CPlaneCutTool      (wnd));
 	tools.push_back(new CFiberGeneratorTool(wnd));
-    tools.push_back(new CAreaCalculatorTool(wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
-    tools.push_back(new CQuadricFitTool    (wnd));
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CMeshToImageTool   (wnd));

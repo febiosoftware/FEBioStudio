@@ -26,12 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLVectorPlot.h"
-#include "PostLib/ColorMap.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
-#include <PostGL/GLModel.h>
+#include "GLModel.h"
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////
@@ -94,15 +93,6 @@ CGLVectorPlot::CGLVectorPlot()
 	m_usr[0] = 0.0;
 	m_usr[1] = 1.0;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetOrientation(GLLegendBar::ORIENT_HORIZONTAL);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
-	bar->hide();
-	bar->ShowTitle(true);
-
 	UpdateData(false);
 }
 
@@ -126,14 +116,6 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 		m_rngType = GetIntValue(RANGE_TYPE);
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
-
-		GLLegendBar* bar = GetLegendBar();
-		if ((m_ncol == 0) || !IsActive()) bar->hide();
-		else
-		{
-			bar->SetRange(m_crng.x, m_crng.y);
-			bar->show();
-		}
 
 		Update();
 	}
@@ -161,28 +143,12 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 
 static double frand() { return (double) rand() / (double) RAND_MAX; }
 
-void CGLVectorPlot::Render(CGLContext& rc)
+void CGLVectorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if (m_nvec == -1) return;
 
-	GLfloat ambient[] = {0.1f,0.1f,0.1f,1.f};
-	GLfloat specular[] = {0.0f,0.0f,0.0f,1};
-	GLfloat emission[] = {0,0,0,1};
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-//	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
-
 	// store attributes
-	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
-
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	GLUquadricObj* pglyph = gluNewQuadric();
-	gluQuadricNormals(pglyph, GLU_SMOOTH);
+	re.pushState();
 
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
@@ -190,7 +156,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 	srand(m_seed);
 
 	FEPostModel* pfem = mdl->GetFSModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 
 	// calculate scale factor for rendering
 	m_fscale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
@@ -211,16 +177,13 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		m_fscale *= autoscale;
 	}
 
-	if (m_nglyph == GLYPH_LINE) glDisable(GL_LIGHTING);
+	if (m_nglyph == GLYPH_LINE)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, m_gcl);
+	}
 	else
 	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-
-		GLfloat dif[] = {1.f, 1.f, 1.f, 1.f};
-
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, dif);
+		re.setMaterial(GLMaterial::PLASTIC, m_gcl);
 	}
 
 	if (IS_ELEM_FIELD(m_nvec))
@@ -228,7 +191,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		pm->TagAllElements(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -241,7 +204,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden elements
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
-				FEElement_& elem = pm->ElementRef(i);
+				FSElement_& elem = pm->ElementRef(i);
 				if (elem.IsVisible() == false) elem.m_ntag = 0;
 			}
 		}
@@ -249,12 +212,12 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		// render the vectors at the elements' centers
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& elem = pm->ElementRef(i);
+			FSElement_& elem = pm->ElementRef(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
 				vec3f r = to_vec3f(pm->ElementCenter(elem));
 				vec3f v = m_val[i];
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
@@ -264,7 +227,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
 			FSFace& f = pm->Face(i);
-			FEElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
+			FSElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
 			if (pe)
 			{
 				Material* mat = ps->GetMaterial(pe->m_MatID);
@@ -293,7 +256,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			{
 				vec3f r = to_vec3f(pm->FaceCenter(face));
 				vec3f v = m_val[i];
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
@@ -302,7 +265,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement_& e = pm->ElementRef(i);
+			FSElement_& e = pm->ElementRef(i);
 			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -330,20 +293,16 @@ void CGLVectorPlot::Render(CGLContext& rc)
 
 				vec3f v = m_val[i];
 
-				RenderVector(r, v, pglyph);
+				RenderVector(re, r, v);
 			}
 		}
 	}
 
-	gluDeleteQuadric(pglyph);
-
 	// restore attributes
-	glPopAttrib();
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	re.popState();
 }
 
-void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
+void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
 {
 	float L = v.Length();
 	if (L == 0.f) return;
@@ -360,19 +319,19 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	switch (m_ncol)
 	{
 	case GLYPH_COL_LENGTH:
-		glColor3ub(col.r, col.g, col.b);
+		re.setColor(col);
 		break;
 	case GLYPH_COL_ORIENT:
 	{
-		GLdouble r = fabs(v.x);
-		GLdouble g = fabs(v.y);
-		GLdouble b = fabs(v.z);
-		glColor3d(r, g, b);
+		double r = fabs(v.x);
+		double g = fabs(v.y);
+		double b = fabs(v.z);
+		re.setColor(GLColor::FromRGBf(r,g,b));
 	}
 	break;
 	case GLYPH_COL_SOLID:
 	default:
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
+		re.setColor(m_gcl);
 	}
 
 	if (m_bnorm) L = 1;
@@ -383,45 +342,39 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	float r0 = L*0.05*m_ar;
 	float r1 = L*0.15*m_ar;
 
-	glPushMatrix();
+	re.pushTransform();
 
-	glTranslatef(r.x, r.y, r.z);
+	re.translate(to_vec3d(r));
 	quatd q;
 	vec3d V = to_vec3d(v);
 	if (V * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
 	else q = quatd(vec3d(0, 0, 1), to_vec3d(v));
-	float w = q.GetAngle();
-	if (fabs(w) > 1e-6)
-	{
-		vec3d p = q.GetVector();
-		if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
-		else glRotated(w * 180 / PI, 1, 0, 0);
-	}
+	re.rotate(q);
 
 	switch (m_nglyph)
 	{
 	case GLYPH_ARROW:
-		gluCylinder(pglyph, r0, r0, l0, 5, 1);
-		glTranslatef(0.f, 0.f, (float)l0*0.9f);
-		gluCylinder(pglyph, r1, 0, l1, 10, 1);
+		glx::drawCylinder(re, r0, l0, 5);
+		re.translate(vec3d(0, 0, l0*0.9));
+		glx::drawCone(re, r1, l1, 10);
 		break;
 	case GLYPH_CONE:
-		gluCylinder(pglyph, r1, 0, l0, 10, 1);
+		glx::drawCone(re, r1, l0, 10);
 		break;
 	case GLYPH_CYLINDER:
-		gluCylinder(pglyph, r1, r1, l0, 10, 1);
+		glx::drawCylinder(re, r1, l0, 10);
 		break;
 	case GLYPH_SPHERE:
-		gluSphere(pglyph, r1, 10, 5);
+		glx::drawSphere(re, r1);
 		break;
 	case GLYPH_BOX:
-		glx::drawBox(r0, r0, r0);
+		glx::drawBox(re, r0, r0, r0);
 		break;
 	case GLYPH_LINE:
-		glx::drawLine(0, 0, 0, 0, 0, L);
+		re.renderLine(vec3d(0, 0, 0), vec3d(0, 0, L));
 	}
 
-	glPopMatrix();
+	re.popTransform();
 }
 
 void CGLVectorPlot::SetVectorField(int ntype) 
@@ -435,18 +388,6 @@ void CGLVectorPlot::Update()
 	Update(m_lastTime, m_lastDt, false);
 }
 
-void CGLVectorPlot::Activate(bool b)
-{
-	CGLLegendPlot::Activate(b);
-	GLLegendBar* bar = GetLegendBar();
-	if ((m_ncol == 0) || !IsActive()) bar->hide();
-	else
-	{
-		bar->SetRange(m_crng.x, m_crng.y);
-		bar->show();
-	}
-}
-
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 {
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
@@ -455,7 +396,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int N = pfem->GetStates();
@@ -471,7 +412,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		int NM = 0;
 		for (int i = 0; i < NS; ++i)
 		{
-			FEPostMesh* pmi = pfem->GetState(i)->GetFEMesh();
+			FSMesh* pmi = pfem->GetState(i)->GetFEMesh();
 			int NN = pmi->Nodes();
 			int NE = pmi->Elements();
 			if (NN > NM) NM = NN;
@@ -554,16 +495,12 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
-
-	// update the color bar's range
-	GLLegendBar* bar = GetLegendBar();
-	bar->SetRange(m_crng.x, m_crng.y);
 }
 
 void CGLVectorPlot::UpdateState(int nstate)
 {
 	CGLModel* mdl = GetModel();
-	FEPostMesh* pm = mdl->GetActiveMesh();
+	FSMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	// check the tag
@@ -610,4 +547,23 @@ void CGLVectorPlot::UpdateState(int nstate)
 
 		if (rng.y == rng.x) ++rng.y;
 	}
+}
+
+LegendData CGLVectorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if (glyphCol == 1)
+	{
+		l.discrete = false;
+		l.ndivs = 10;
+		l.vmin = m_crng.x;
+		l.vmax = m_crng.y;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

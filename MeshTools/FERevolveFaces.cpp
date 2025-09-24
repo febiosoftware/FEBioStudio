@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FERevolveFaces.h"
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
 FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
@@ -65,7 +65,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
     int NE = pm->Elements();
     for (int i=0; i<NE; ++i)
     {
-        const FEElement_& el = pm->ElementRef(i);
+        const FSElement_& el = pm->ElementRef(i);
         if ((el.Type() == FE_HEX20) || (el.Type() == FE_PENTA15) || (el.Type() == FE_PYRA13) || (el.Type() == FE_QUAD8) || (el.Type()==FE_TRI6))
         {
             isQuad = true;
@@ -630,7 +630,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
     pmnew->ClearFaceSelection();
     
     // gets rid of nodes that are not used in any elements (mainly for quadratic meshes)
-	FEMeshBuilder meshBuilder(*pmnew);
+	FSMeshBuilder meshBuilder(*pmnew);
 	meshBuilder.RemoveIsolatedNodes();
     
     // rebuild the object
@@ -812,7 +812,7 @@ FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
     }
     
     // rebuild the object
-	FEMeshBuilder meshBuilder(*pmnew);
+	FSMeshBuilder meshBuilder(*pmnew);
 	meshBuilder.RebuildMesh();
 	meshBuilder.RemoveIsolatedNodes();
     

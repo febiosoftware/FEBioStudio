@@ -26,39 +26,33 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <QDialog>
-#include "LaunchConfig.h"
+
+class CLaunchConfig;
 
 namespace Ui
 {
-	class CDlgEditPath;
+	class CDlgEditLaunchConfigs;
 }
 
 class QListWidgetItem;
 
-class CDlgEditPath : public QDialog
+class CDlgEditLaunchConfigs : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgEditPath(QWidget* parent, std::vector<CLaunchConfig>* launchConfigs);
-	~CDlgEditPath() {}
+	CDlgEditLaunchConfigs(QWidget* parent, std::vector<CLaunchConfig*>* launchConfigs, int select = -1);
+	~CDlgEditLaunchConfigs() {}
 
 	int GetLCIndex();
 
-	void accept() override;
-
 public slots:
 	void on_selection_change(QListWidgetItem* current, QListWidgetItem* previous);
-	void on_dblClick(QListWidgetItem* item);
 	void on_addConfigBtn_Clicked();
 	void on_delConfigBtn_Clicked();
-	void on_editLocalPath_clicked();
+	void on_textChanged();
+	void on_nameChanged(QListWidgetItem* item);
 
 private:
-	Ui::CDlgEditPath* ui;
-
-	bool ErrorCheck(int index);
-	void UpdateConfig(QListWidgetItem* item);
-	void ChangeToConfig(QListWidgetItem* item);
-
+	Ui::CDlgEditLaunchConfigs* ui;
 };

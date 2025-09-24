@@ -714,7 +714,6 @@ void ModelBuilder::build_materials(AbaqusModel& inp, FSModel& fem)
 			GMaterial* pmat = fem.FindMaterial(mat);
 			if (pmat) po->Part(i)->SetMaterialID(pmat->GetID());
 		}
-		fem.UpdateMaterialSelections();
 	}
 }
 

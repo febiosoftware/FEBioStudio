@@ -28,8 +28,9 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 
 class FSModel;
-class GMesh;
-class CGLContext;
+class GLMesh;
+class GLContext;
+class GLRenderEngine;
 
 // class that creates and renders the plane cut in the CGLView.
 class GLPlaneCut
@@ -41,7 +42,7 @@ public:
 
 	bool IsValid() const;
 
-	void BuildPlaneCut(FSModel& fem, bool showMeshData);
+	void Create(FSModel& fem, bool showMeshData, int mode);
 
 	void SetPlaneCoordinates(double d0, double d1, double d2, double d3)
 	{
@@ -54,11 +55,15 @@ public:
 
 	double* GetPlaneCoordinates() { return m_plane; }
 
-	void Render(CGLContext& rc);
+	void Render(GLRenderEngine& re, GLContext& rc);
 
 	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
 
 private:
-	GMesh* m_planeCut = nullptr;
+	void CreatePlaneCut(FSModel& fem, bool showMeshData);
+	void CreateHideElements(FSModel& fem, bool showMeshData);
+
+private:
+	GLMesh* m_planeCut = nullptr;
 	double	m_plane[4] = { 1.0, 0.0, 0.0, 0.0 };
 };

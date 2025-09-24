@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 #include "FSGroup.h"
 #include <MeshTools/FESelection.h>
 
@@ -40,16 +40,16 @@ class GNodeSelection;
 // The GGroup performs the same function for GObjects as the FSGroup is for
 // meshes. Its main purpose is to convert groups into FEItemList.
 //
-class GGroup : public FEItemListBuilder
+class GGroup : public FSItemListBuilder
 {
 public:
 	GGroup(GModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
 	FSNodeList*	BuildNodeList() override { return 0; }
-	FEEdgeList*	BuildEdgeList() override { return 0; }
-	FEFaceList*	BuildFaceList() override { return 0; }
-	FEElemList*	BuildElemList() override { return 0; }
+	FSEdgeList*	BuildEdgeList() override { return 0; }
+	FSFaceList*	BuildFaceList() override { return 0; }
+	FSElemList*	BuildElemList() override { return 0; }
 
 protected:
 	GModel*	m_ps;
@@ -63,9 +63,9 @@ public:
 	GNodeList(GModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
 	GNodeList(GModel* ps, GNodeSelection* pn);
 
-	vector<GNode*>	GetNodeList();
+	std::vector<GNode*>	GetNodeList();
 
-	FEItemListBuilder* Copy() override;
+	FSItemListBuilder* Copy() override;
 
 	FSNodeList* BuildNodeList() override;
 
@@ -81,12 +81,12 @@ public:
 	GFaceList(GModel* ps, GFaceSelection* pf);
 	GFaceList(GModel* ps, GFace* pf);
 
-	vector<GFace*>	GetFaceList();
+	std::vector<GFace*>	GetFaceList();
 
-	FEItemListBuilder* Copy() override;
+	FSItemListBuilder* Copy() override;
 
 	FSNodeList* BuildNodeList() override;
-	FEFaceList*	BuildFaceList() override;
+	FSFaceList*	BuildFaceList() override;
 
 	bool IsValid() const override;
 };
@@ -99,15 +99,15 @@ public:
 	GEdgeList(GModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
 	GEdgeList(GModel* ps, GEdgeSelection* pe);
 
-	vector<GEdge*>	GetEdgeList();
+	std::vector<GEdge*>	GetEdgeList();
 
 	GEdge* GetEdge(int n);
 
-	FEItemListBuilder* Copy() override;
+	FSItemListBuilder* Copy() override;
 
 	FSNodeList* BuildNodeList() override;
 
-	FEEdgeList* BuildEdgeList() override;
+	FSEdgeList* BuildEdgeList() override;
 
 	bool IsValid() const override;
 };
@@ -122,13 +122,13 @@ public:
 
 	void Create(GObject* po);
 
-	vector<GPart*>	GetPartList();
+	std::vector<GPart*>	GetPartList();
 
-	FEItemListBuilder* Copy() override;
+	FSItemListBuilder* Copy() override;
 
 	FSNodeList* BuildNodeList() override;
-	FEElemList* BuildElemList() override;
-	FEFaceList*	BuildFaceList() override;
+	FSElemList* BuildElemList() override;
+	FSFaceList*	BuildFaceList() override;
 
 	FSPartSet* BuildPartSet();
 

@@ -33,18 +33,10 @@ class QOpenGLWidget;
 class CGLWidgetManager
 {
 public:
-	enum Event {
-		PUSH,
-		DRAG,
-		RELEASE
-	};
-
-public:
+	CGLWidgetManager();
 	~CGLWidgetManager();
 
-	static CGLWidgetManager* GetInstance();
-
-	void AddWidget(GLWidget* pw, int layer = -1);
+	void AddWidget(GLWidget* pw);
 	void RemoveWidget(GLWidget* pw);
 	int Widgets() { return (int)m_Widget.size(); }
 
@@ -56,28 +48,16 @@ public:
 	int handle(int x, int y, int nevent);
 
 	void DrawWidgets(QPainter* painter);
-	void DrawWidgetsInLayer(QPainter* painter, int layer);
 	void DrawWidget(GLWidget* widget, QPainter* painter);
-
-	void SetRenderLayer(int l);
-	void SetEditLayer(int l);
 
 	// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
 	void CheckWidgetBounds();
 
 protected:
-	void SnapWidget(GLWidget* pw);
-
-protected:
 	QOpenGLWidget*			m_pview;
 	std::vector<GLWidget*>	m_Widget;
 
-	unsigned int			m_renderLayer;	// layer used for rendering
-	unsigned int			m_editLayer;	// default layer used when adding widgets
-
 private:
-	CGLWidgetManager();
-	CGLWidgetManager(const CGLWidgetManager& m);
-
-	static CGLWidgetManager*	m_pmgr;
+	CGLWidgetManager(const CGLWidgetManager& m) = delete;
+	CGLWidgetManager& operator = (const CGLWidgetManager& m) = delete;
 };

@@ -27,16 +27,26 @@ SOFTWARE.*/
 #pragma once
 
 #include "FEBioJob.h"
-#include "LaunchConfig.h"
-#include "MainWindow.h"
 #include <QtCore/QObject>
 
-class QSemaphore;
+class CSSHThread;
 
-enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET,
-		STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS, CREATEREMOTEDIR};
+enum SSHTask {
+	ENDSSHSESSION = -1, 
+	STARTSSHSESSION, 
+	VERIFYSERVER, 
+	ADDTRUSETEDSERVER, 
+	AUTHENTICATE, 
+	TARGET,
+	STARTREMOTEJOB, 
+	GETJOBFILES, 
+	GETQUEUESTATUS, 
+	CREATEREMOTEDIR,
+	SENDFILE,
+	GETREMOTEFILE
+};
 
-enum msgCode{FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
+enum msgCode {FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
 
 class CSSHHandler : public QObject
 {
@@ -45,19 +55,40 @@ class CSSHHandler : public QObject
 	class SSHData;
 
 public:
-	CSSHHandler (CFEBioJob* job);
-	~CSSHHandler();
-	void Update(CLaunchConfig& oldConfig);
+	enum SchedulerType {
+		NO_SCHEDULER,
+		PBS_SCHEDULER,
+		SLURM_SCHEDULER,
+		CUSTOM_SCHEDULER
+	};
 
+public:
+	CSSHHandler ();
+	~CSSHHandler();
+
+	void setPort(int port);
+	void setServerName(const std::string& server);
+	void setUserName(const std::string& userName);
+	void setRemoteDir(const std::string& remoteDir);
+
+	void SendFileToServer(const std::string& localFile);
+	void RunRemoteJob(SchedulerType scheduler, const std::string& runScript);
+	void RequestRemoteFiles(const std::string& localFile);
+	void RequestRemoteFile(const std::string& localFile);
+	void RequestQueueStatus();
+
+private:
 	void StartSSHSession();
 	void VerifyKnownHost();
 	void AddTrustedServer();
 	void Authenticate();
 	void CreateRemoteDir();
 	void EndSSHSession();
+	void SendLocalFile();
 
 	void StartRemoteJob();
 	void GetJobFiles();
+	void GetRemoteFile();
 	void GetQueueStatus();
 
 	void SetPasswordLength(int l);
@@ -80,11 +111,16 @@ public:
 
 	bool IsBusy();
 
+	bool HandleSSHMessage();
+
+public slots:
+	void NextSSHFunction();
+
 signals:
 	void AddLogEntry(const QString&);
 	void AddOutputEntry(const QString&);
-	void ShowProgress(bool, QString message = "");
 	void UpdateProgress(int);
+	void sessionFinished(int nfunc);
 
 private:
 	int RunCommand(std::string command);
@@ -107,8 +143,10 @@ private:
 	int CreateBashFile();
 	int ParseCustomFile(std::vector<std::string>& commands);
 
-	void ReplaceMacros(QString& string);
+	void setError(const QString& msg);
 
 private:
 	SSHData*	m_data;
+
+	friend class CSSHThread;
 };

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
 #include <sstream>
@@ -91,7 +91,7 @@ bool GLRuler::UpdateData(bool bsave)
 	return false;
 }
 
-void GLRuler::Render(CGLContext& rc)
+void GLRuler::Render(GLRenderEngine& re, GLContext& rc)
 {
 	if ((m_node[0] <= 0) || (m_node[1] <= 0)) return;
 
@@ -102,44 +102,30 @@ void GLRuler::Render(CGLContext& rc)
 	double H = t.Length(); t.Normalize();
 	double R = m_R * m_size;
 
-	glColor3ub(m_col.r, m_col.g, m_col.b);
-	GLUquadricObj* pobj = gluNewQuadric();
-	glPushMatrix();
+	re.setMaterial(GLMaterial::PLASTIC, m_col);
+	re.pushTransform();
 	{
-		glTranslated(ra.x, ra.y, ra.z);
 		quatd q(vec3d(0, 0, 1), t);
-		if (q.GetAngle() != 0)
-		{
-			double w = q.GetAngle() * RAD2DEG;
-			vec3d v = q.GetVector();
-			glRotated(w, v.x, v.y, v.z);
-		}
-		gluCylinder(pobj, R, R, H, 12, 1);
+		re.transform(ra, q);
+		glx::drawCylinder(re, R, H, 12);
 	}
-	glPopMatrix();
+	re.popTransform();
 
-	glPushMatrix();
+	re.pushTransform();
 	{
-		glTranslated(ra.x, ra.y, ra.z);
-		gluSphere(pobj, R, 12, 12);
-		glTranslated(-ra.x, -ra.y, -ra.z);
-		glTranslated(rb.x, rb.y, rb.z);
-		gluSphere(pobj, R, 12, 12);
+		re.translate(ra);
+		glx::drawSphere(re, R);
+		re.translate(-ra);
+		re.translate(rb);
+		glx::drawSphere(re, R);
 	}
-	glPopMatrix();
-	gluDeleteQuadric(pobj);
+	re.popTransform();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glBegin(GL_LINES);
-	{
-		glVertex3d(ra.x, ra.y, ra.z);
-		glVertex3d(rb.x, rb.y, rb.z);
-	}
-	glEnd();
-	glPopAttrib();
+	re.pushState();
 
+	re.setMaterial(GLMaterial::OVERLAY, m_col);
+	re.renderLine(ra, rb);
+	re.popState();
 }
 
 void GLRuler::Update()

@@ -54,6 +54,8 @@ SOFTWARE.*/
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
+#include "Tool.h"
+#include <GLLib/GDecoration.h>
 
 class CPrimitiveMesherProps : public CObjectProps
 {
@@ -299,9 +301,9 @@ REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDI
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
 REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
 REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
-REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDIT_MESH | EDIT_SAFE);
+//REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDIT_MESH | EDIT_SAFE);
 
-CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
+CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
 	ui->setupUi(this, wnd);
 }
@@ -340,14 +342,7 @@ void CMeshPanel::Update(bool breset)
 	if (dynamic_cast<GMeshObject*>(activeObject))
 	{
 		GMeshObject*  meshObject = dynamic_cast<GMeshObject*>(activeObject);
-
-		// show the modifiers for editable meshes
-		// only for the default mesh layer, otherwise
-		// we show only the non-editable mesh modifiers
-		if (gm->GetActiveMeshLayer() == 0)
-			ui->showButtonsPanel(true);
-		else
-			ui->showButtonsPanel2(true);
+		ui->showButtonsPanel(true);
 	}
 	else
 	{
@@ -450,7 +445,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (mesh)
 	{
 		mesh->ClearSelections();
-		doc->UpdateSelection(false);
+		doc->UpdateSelection();
 	}
 
 	MeshingThread* thread = new MeshingThread(activeObject);
@@ -465,7 +460,9 @@ void CMeshPanel::on_apply_clicked(bool b)
 			QString error = QString("Meshing Failed:\n") + errMsg;
 			QMessageBox::critical(this, "Meshing", error);
 		}
+		else doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
 
+		doc->Update();
 		Update();
 		CMainWindow* w = GetMainWindow();
 		w->UpdateModel(activeObject, false);
@@ -518,7 +515,7 @@ void CMeshPanel::on_modParams_apply()
 	}
 
 	FESelection* sel = doc->GetCurrentSelection();
-	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
+	FSItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
 	FSGroup* g = dynamic_cast<FSGroup*>(list);
 	if (g == 0) 
 	{ 
@@ -548,10 +545,17 @@ void CMeshPanel::on_modParams_apply()
 			{
 				newMesh->ClearFaceSelection();
 			}
+			else
+			{
+				// If there is no mesh we need to make sure that we are not in a mesh selection mode
+				// otherwise we'll crash.
+				doc->SetSelectionMode(SELECT_OBJECT);
+			}
 
 			// swap the meshes
 			string ss = mod->GetName();
-			doc->DoCommand(new CCmdChangeFEMesh(activeObject, newMesh), ss.c_str(), false);
+			doc->DoCommand(new CCmdChangeFEMesh(activeObject, newMesh), ss.c_str());
+			Update();
 
 			std::string err = mod->GetErrorString();
 			if (err.empty() == false)
@@ -575,7 +579,6 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* po = pdoc->GetActiveObject();
-	GModel* mdl = pdoc->GetGModel();
 
 	// Make sure that this object is not the active item 
 	if (pdoc->GetActiveItem() == po) pdoc->SetActiveItem(nullptr);
@@ -638,4 +641,24 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 
 	Update();
 	GetMainWindow()->Update(this, true);
+}
+
+void CMeshPanel::on_form_dataChanged(bool itemModified, int index)
+{
+	CPropertyList* pl = ui->mesherParams->GetPropertyList();
+	if (pl == nullptr) return;
+	if ((index >= 0) && (index < pl->Properties()))
+	{
+		CProperty& p = pl->Property(index);
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc)
+		{
+			GObject* poa = doc->GetActiveObject(); assert(poa);
+			if (poa == nullptr) return;
+
+			QVariant v = pl->GetPropertyValue(index);
+			QString msg = QString("Mesher parameter %1 changed to %2 (%3)").arg(p.name).arg(v.toString()).arg(QString::fromStdString(poa->GetName()));
+			doc->AppendChangeLog(msg);
+		}
+	}
 }

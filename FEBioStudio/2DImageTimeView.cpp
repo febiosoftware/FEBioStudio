@@ -32,12 +32,13 @@ SOFTWARE.*/
 #include <QTimer>
 #include <QSpinBox>
 #include "MainWindow.h"
-#include "Document.h"
+#include "GLDocument.h"
 #include "IconProvider.h"
 #include "ImageSlice.h"
 #include <ImageLib/3DImage.h>
 #include "2DImageTimeView.h"
 #include "DlgPixelInspector.h"
+#include <ImageLib/ImageModel.h>
 
 class Ui::C2DImageTimeView
 {

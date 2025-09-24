@@ -39,6 +39,8 @@ public:
 
 	QStringList		m_resFlt;
 
+	::CResourceEdit::ResourceType m_resType = ::CResourceEdit::FILE_RESOURCE;
+
 public:
 	void setup(QWidget* w)
 	{
@@ -73,6 +75,11 @@ void CResourceEdit::setResourceFilter(const QStringList& flt)
 	ui->m_resFlt = flt;
 }
 
+void CResourceEdit::setResourceType(ResourceType resourceType)
+{
+	ui->m_resType = resourceType;
+}
+
 QString CResourceEdit::resourceName() const
 {
 	return ui->m_name->text();
@@ -80,7 +87,10 @@ QString CResourceEdit::resourceName() const
 
 void CResourceEdit::setResourceName(const QString& t)
 {
-	ui->m_name->setText(t);
+	QDir d(t);
+	QString s = d.cleanPath(t);
+	s = d.toNativeSeparators(s);
+	ui->m_name->setText(s);
 }
 
 void CResourceEdit::nameChanged()
@@ -90,16 +100,28 @@ void CResourceEdit::nameChanged()
 
 void CResourceEdit::buttonPressed()
 {
-	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFile);
-	dlg.setNameFilters(ui->m_resFlt);
-	if (dlg.exec())
+	if (ui->m_resType == FILE_RESOURCE)
 	{
-		QStringList files = dlg.selectedFiles();
-		if (files.size() == 1)
+		QFileDialog dlg(this);
+		dlg.setFileMode(QFileDialog::ExistingFile);
+		dlg.setNameFilters(ui->m_resFlt);
+		if (dlg.exec())
 		{
-			QString fileName = files.at(0);
-			ui->m_name->setText(fileName);
+			QStringList files = dlg.selectedFiles();
+			if (files.size() == 1)
+			{
+				QString fileName = files.at(0);
+				setResourceName(fileName);
+				emit resourceChanged();
+			}
+		}
+	}
+	else if (ui->m_resType == FOLDER_RESOURCE)
+	{
+		QString folderName = QFileDialog::getExistingDirectory(this);
+		if (folderName.isEmpty() == false)
+		{
+			setResourceName(folderName);
 			emit resourceChanged();
 		}
 	}

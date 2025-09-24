@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 #include "NIKE3DExport.h"
 #include <FEMLib/FSProject.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // NIKE3DExport

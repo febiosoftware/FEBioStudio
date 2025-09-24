@@ -59,6 +59,15 @@ const std::string& FSObject::GetName() const
 	return m_name;
 }
 
+std::string FSObject::GetNameAndType() const
+{
+	std::string s = GetName();
+	s += " [";
+	s += (GetTypeString() ? GetTypeString() : "<unknown>");
+	s += "]";
+	return s;
+}
+
 void FSObject::SetInfo(const std::string& info)
 {
 	m_info = info;

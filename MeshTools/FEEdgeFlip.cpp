@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEEdgeFlip.h"
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 using namespace std;
 
 FEEdgeFlip::FEEdgeFlip() : FESurfaceModifier("Flip Edges")
@@ -59,7 +59,7 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 
 	// allocate the data structures we'll need
 	// create the edge list
-	m_EL = new FSEdgeList(*newMesh);
+	m_EL = new EdgeList(*newMesh);
 	int NE = m_EL->size();
 	m_tag.assign(NE, 1);
 
@@ -143,7 +143,7 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 // This means don't flip feature edges.
 void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly)
 {
-	FSEdgeList& EL = *m_EL;
+	EdgeList& EL = *m_EL;
 	FSFaceEdgeList& FEL = *m_FEL;
 	FSEdgeFaceList& EFL = *m_EFL;
 
@@ -205,7 +205,7 @@ bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh, bool forceFlip)
 	int a[3], b[3];
 	vec3d ra[3], rb[3];
 
-	FSEdgeList& EL = *m_EL;
+	EdgeList& EL = *m_EL;
 	FSFaceEdgeList& FEL = *m_FEL;
 	FSEdgeFaceList& EFL = *m_EFL;
 
@@ -283,7 +283,7 @@ bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh, bool forceFlip)
 // Do the actual edge flipping
 void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FSSurfaceMesh* mesh)
 {
-	FSEdgeList& EL = *m_EL;
+	EdgeList& EL = *m_EL;
 	FSFaceEdgeList& FEL = *m_FEL;
 	FSEdgeFaceList& EFL = *m_EFL;
 	vector<int> tmp0(3), tmp1(3);

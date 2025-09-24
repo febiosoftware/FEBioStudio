@@ -49,6 +49,8 @@ bool vtkLegacyFileReader::Load(const char* szfilename)
 	// we need one piece in the model
 	vtkPiece piece;
 
+	vtkDataSet dataSet;
+
 	// start parsing keywords
 	if (nextLine() == false) return errf("Unexpected end of file.");
 	do
@@ -110,7 +112,9 @@ bool vtkLegacyFileReader::Load(const char* szfilename)
 
 	Close();
 
-	m_vtk.AddPiece(piece);
+	dataSet.AddPiece(piece);
+
+	m_vtk.AddDataSet(dataSet);
 
 	return true;
 }

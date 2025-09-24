@@ -94,14 +94,14 @@ public:
 	Param*		param;
 
 public:
-	CProperty() { param = nullptr; brange = false; }
+	CProperty() { param = nullptr; brange = false; pdata = nullptr; }
 	CProperty(const CProperty& p) { *this = p; }
 	CProperty& operator = (const CProperty& p);
 
 	CProperty& setIntRange(int Min, int Max) { brange = true;  imin = Min; imax = Max; return *this; }
 	CProperty& setFloatRange(double Min, double Max) { brange = true;  fmin = Min; fmax = Max; return *this; }
 	CProperty& setFloatStep(double fStep) { fstep = fStep; return *this; }
-	CProperty& setEnumValues(QStringList& val) { values = val; return *this; }
+	CProperty& setEnumValues(const QStringList& val) { values = val; return *this; }
 	CProperty& setAutoValue(bool b) { bauto = b; return *this; }
 
 	CProperty* setData(void* pd) { pdata = pd; return this; }
@@ -142,6 +142,8 @@ public:
 
 	virtual void Update() {}
 
+	int FindPropertyIndex(const QString& propName) const;
+
 public:
 	bool IsModified() const { return m_bmodified; }
 	void SetModified(bool b) { m_bmodified = b; }
@@ -180,10 +182,44 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 };
 
+// Property list that manages its own data
+class CCachedPropertyList : public CPropertyList
+{
+public:
+	CCachedPropertyList();
+	~CCachedPropertyList();
+
+	CProperty* addBoolProperty(bool pd, const QString& name);
+	CProperty* addIntProperty(int pd, const QString& name);
+	CProperty* addEnumProperty(int pd, const QString& name);
+	CProperty* addDoubleProperty(double pd, const QString& name);
+	CProperty* addColorProperty(QColor pd, const QString& name);
+	CProperty* addStringProperty(QString pd, const QString& name);
+	CProperty* addCurveProperty(QString pd, const QString& name);
+	CProperty* addCurveListProperty(QStringList pd, const QString& name);
+	CProperty* addResourceProperty(QString pd, const QString& name);
+	CProperty* addInternalLinkProperty(QStringList pd, const QString& name);
+	CProperty* addExternalLinkProperty(QStringList pd, const QString& name);
+	CProperty* addVec3Property(vec3d pd, const QString& name);
+	CProperty* addVec2iProperty(vec2i pd, const QString& name);
+	CProperty* addMat3Property(mat3d pd, const QString& name);
+
+	QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+
+	QVariant GetPropertyValue(const QString& propName);
+
+protected:
+	template <class T>
+	T& value(int n) { return *((T*)Property(n).data()); }
+};
+
 QString Vec2dToString(const vec2d& r);
 QString Vec3dToString(const vec3d& r);
+QString Vec3fToString(const vec3f& r);
 vec2d StringToVec2d(const QString& s);
 vec3d StringToVec3d(const QString& s);
+vec3f StringToVec3f(const QString& s);
 mat3d StringToMat3d(const QString& s);
 mat3ds StringToMat3ds(const QString& s);
 QString Mat3dToString(const mat3d& a);

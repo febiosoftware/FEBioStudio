@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECurveIntersect.h"
 #include <GeomLib/GCurveMeshObject.h>
-#include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FSCurveMesh.h>
 #include <MeshLib/TriMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include "insertCurve.h"
 #include "insertCurve2.h"
 

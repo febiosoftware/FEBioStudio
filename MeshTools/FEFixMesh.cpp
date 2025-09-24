@@ -26,11 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEFixMesh.h"
-#include "FEFillHole.h"
-#include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FENodeFaceList.h>
-#include <MeshLib/FEMeshBuilder.h>
+#include <MeshLib/FSMeshBuilder.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -173,7 +169,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 //-----------------------------------------------------------------------------
 bool FEFixMesh::RemoveIsolatedVertices(FSMesh* pm)
 {
-	FEMeshBuilder mb(*pm);
+	FSMeshBuilder mb(*pm);
 	int n = mb.RemoveIsolatedNodes();
 	SetError("%d vertices removed.", n);
 	return true;

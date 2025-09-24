@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "TetOverlap.h"
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 using namespace std;
 
 struct TET

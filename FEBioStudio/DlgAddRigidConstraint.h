@@ -30,10 +30,6 @@ SOFTWARE.*/
 
 #include "HelpDialog.h"
 
-using std::string;
-using std::vector;
-//using namespace std;
-
 class FSProject;
 class GMaterial;
 
@@ -60,6 +56,6 @@ protected:
 
 private:
 	Ui::CDlgAddRigidConstraint* ui;
-	vector<GMaterial*>	m_mat;
+	std::vector<GMaterial*>	m_mat;
 	GMaterial*			m_selMat;
 };

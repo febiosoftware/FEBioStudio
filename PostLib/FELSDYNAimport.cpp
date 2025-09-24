@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 #include "constants.h"
 
+using namespace std;
 using namespace Post;
 
 FELSDYNAimport::FELSDYNAimport(FEPostModel* fem) : FEFileReader(fem)
@@ -223,8 +224,8 @@ bool FELSDYNAimport::Read_Nodal_Results()
 
 void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 {
-	int shells = m_shell.size();
-	int solids = m_solid.size();
+	int shells = (int)m_shell.size();
+	int solids = (int)m_solid.size();
 	int i;
 
 	int nm0 = 9999, nm1 = -9999;
@@ -256,9 +257,9 @@ void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 
 bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 {
-	int nodes  = m_node.size();
-	int shells = m_shell.size();
-	int solids = m_solid.size();
+	int nodes  = (int)m_node.size();
+	int shells = (int)m_shell.size();
+	int solids = (int)m_solid.size();
 
 	int elems = shells + solids;
 
@@ -271,7 +272,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	BuildMaterials(fem);
 
 	// build the mesh
-	FEPostMesh* pm = m_pm = new FEPostMesh;
+	FSMesh* pm = m_pm = new FSMesh;
 	pm->Create(nodes, elems);
 	BuildNLT();
 
@@ -343,7 +344,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	}
 
 	// update the mesh
-	m_pm->BuildMesh();
+	m_pm->RebuildMesh();
 	fem.UpdateBoundingBox();
 
 	// add some data
@@ -382,7 +383,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 
 	if (m_bshellthick)
 	{
-		int nel8 = m_solid.size();
+		int nel8 = (int) m_solid.size();
 		int nel2 = 0;	// we don't read beams yet
 		ELEMDATA* pd = &ps->m_ELEM[0] + (nel8 + nel2);
 

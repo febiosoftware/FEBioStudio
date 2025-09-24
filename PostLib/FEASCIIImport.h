@@ -28,10 +28,6 @@ SOFTWARE.*/
 #include "FEFileReader.h"
 #include <list>
 #include <vector>
-//using namespace std;
-
-using std::list;
-using std::vector;
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -67,8 +63,8 @@ private:
 		int		m_ntype;		// element type
 		double	m_ftime;		// solution time
 
-		vector<NODE>	m_Node;
-		vector<ELEM>	m_Elem;
+		std::vector<NODE>	m_Node;
+		std::vector<ELEM>	m_Elem;
 
 	public:
 		ZONE();
@@ -96,8 +92,8 @@ protected:
 
 protected:
 	char				m_sztitle[256];
-	list<VARIABLE>		m_Var;
-	vector<ZONE>		m_Zone;
+	std::list<VARIABLE>	m_Var;
+	std::vector<ZONE>	m_Zone;
 
 private:
 	char	m_szline[256];

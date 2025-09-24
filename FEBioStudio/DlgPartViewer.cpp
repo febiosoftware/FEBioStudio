@@ -182,9 +182,9 @@ public:
 		return nullptr;
 	}
 
-	vector<GPart*> getPartList()
+	std::vector<GPart*> getPartList()
 	{
-		vector<GPart*> parts(partList.size());
+		std::vector<GPart*> parts(partList.size());
 		for (size_t i = 0; i < partList.size(); ++i) parts[i] = partList[i].pg;
 		return parts;
 	}
@@ -211,10 +211,10 @@ public:
 
 	void updateSelection()
 	{
-		vector<GPart*> allParts = getPartList();
+		std::vector<GPart*> allParts = getPartList();
 		gm->ShowParts(allParts, false);
 
-		vector<GPart*> parts;
+		std::vector<GPart*> parts;
 		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
 		for (auto it : selectedItems)
 		{

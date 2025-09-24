@@ -33,13 +33,13 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QComboBox>
 #include <QPushButton>
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include <QGroupBox>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QCheckBox>
-#include <MeshLib/FEMesh.h>
-#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FSMesh.h>
+#include <MeshLib/FSSurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/FEMeshValuator.h>
@@ -362,7 +362,7 @@ public:
 		// build variables list
 		std::vector< std::string> names = FEMeshValuator::GetDataFieldNames();
 		QStringList items;
-		for (string& s : names) items << QString::fromStdString(s);
+		for (std::string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 
@@ -373,7 +373,7 @@ public:
 
 			for (int i = 0; i < pm->MeshDataFields(); ++i)
 			{
-				FEMeshData& di = *pm->GetMeshDataField(i);
+				FSMeshData& di = *pm->GetMeshDataField(i);
 				var->addItem(QString::fromStdString(di.GetName()));
 			}
 		}
@@ -398,7 +398,7 @@ public:
 
 		std::vector< std::string> names = FESurfaceMeshValuator::GetDataFieldNames();
 		QStringList items;
-		for (string& s : names) items << QString::fromStdString(s);
+		for (std::string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 

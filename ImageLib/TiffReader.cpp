@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <sstream>
 #include <iostream>
 #include <filesystem>
+using std::string;
 
 namespace fs = std::filesystem;
 
@@ -813,6 +814,7 @@ void CTiffImageSource::Load(IArchive& ar)
     // Set location of image if it was saved
     if(m_img && foundBox)
     {
+		tempBox.m_valid = true;
         m_img->SetBoundingBox(tempBox);
     }
 }

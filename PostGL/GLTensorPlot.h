@@ -23,19 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include "stdafx.h"
 #include "GLPlot.h"
-#include <GLWLib/GLWidget.h>
-#ifdef __APPLE__
-    #include <OpenGL/GLU.h>
-#else
-    #include <GL/glu.h>
-#endif
 
 namespace Post {
 
-class GLTensorPlot : public CGLLegendPlot
+class GLTensorPlot : public CGLPlot
 {
 	enum { DATA_FIELD, METHOD, COLOR_MAP, RANGE_DIVS, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
@@ -69,7 +63,7 @@ private:
 public:
 	GLTensorPlot();
 
-	void Render(CGLContext& rc) override;
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
 	CColorTexture* GetColorMap();
 
@@ -109,13 +103,15 @@ public:
 	void SetNormalize(bool b) { m_bnormalize = b; }
 
 protected:
-	void RenderGlyphs(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderArrows(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderLines(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph);
-	void RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph);
+	void RenderGlyphs(GLRenderEngine& re, TENSOR& t, float scale);
+	void RenderArrows(GLRenderEngine& re, TENSOR& t, float scale);
+	void RenderLines(GLRenderEngine& re, TENSOR& t, float scale);
+	void RenderSphere(GLRenderEngine& re, TENSOR& t, float scale);
+	void RenderBox(GLRenderEngine& re, TENSOR& t, float scale);
 
 	void Update() override;
+
+	LegendData GetLegendData() const override;
 
 protected:
 	int		m_ntensor;	// tensor field
@@ -134,7 +130,7 @@ protected:
 
 	int				m_ntime;
 	DataMap<TENSOR>	m_map;	// nodal values map
-	vector<TENSOR>	m_val;	// current nodal values
+	std::vector<TENSOR>	m_val;	// current nodal values
 
 	GLColor			m_gcl;	// glyph color (for GLYPH_COL_SOLID)
 	CColorTexture	m_Col;	// glyph color (for not GLYPH_COL_SOLID)

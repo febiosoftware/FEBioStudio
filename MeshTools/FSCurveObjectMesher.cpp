@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FSCurveObjectMesher.h"
 #include <GeomLib/GCurveObject.h>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 
 FSCurveObjectMesher::FSCurveObjectMesher() : m_po(nullptr)
 {
@@ -44,18 +44,20 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 
 	// calculate mesh size
 	int totalElems = 0;
-	int totalNodes = m_po->Nodes();
+	int totalNodes = 0;
+	for (int i = 0; i < m_po->Nodes(); ++i)
+	{
+		GNode* gn = m_po->Node(i);
+		if (gn->Type() != NODE_SHAPE) totalNodes++;
+	}
+
 	std::vector<int> elemsPerEdge(m_po->Edges(), 0);
 	for (int n = 0; n < m_po->Edges(); ++n)
 	{
 		GEdge* edge = m_po->Edge(n);
 
-		// get the position of the edge nodes
-		vec3d ra = edge->Node(0)->LocalPosition();
-		vec3d rb = edge->Node(1)->LocalPosition();
-
 		// get the number of elements, based on element size
-		double L = (rb - ra).Length();
+		double L = edge->Length();
 		int elems = 1;
 		if (elemSize > 0) elems = (int)(L / elemSize + 0.5);
 		if (elems < 1) elems = 1;
@@ -76,10 +78,15 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 	for (int i = 0; i < m_po->Nodes(); ++i)
 	{
 		GNode* gn = m_po->Node(i);
-		FSNode& node = mesh->Node(nodeIndex++);
-		node.r = gn->LocalPosition();
-		gn->SetNodeIndex(i);
-		node.m_gid = i;
+		if (gn->Type() != NODE_SHAPE)
+		{
+			FSNode& node = mesh->Node(nodeIndex);
+			node.r = gn->LocalPosition();
+			gn->SetNodeIndex(nodeIndex);
+			node.m_gid = i;
+			nodeIndex++;
+		}
+		else gn->SetNodeIndex(-1);
 	}
 
 	// process geometry edges
@@ -88,13 +95,8 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 	{
 		GEdge* edge = m_po->Edge(n);
 
-		// get the position of the edge nodes
-		vec3d ra = edge->Node(0)->LocalPosition();
-		vec3d rb = edge->Node(1)->LocalPosition();
-
-		int na = edge->Node(0)->GetNodeIndex();
-		int nb = edge->Node(1)->GetNodeIndex();
-		
+		int na = edge->Node(0)->GetNodeIndex(); assert(na >= 0);
+		int nb = edge->Node(1)->GetNodeIndex(); assert(nb >= 0);
 
 		int m0 = na, m1 = nb;
 		int elems = elemsPerEdge[n];
@@ -102,8 +104,9 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 		{
 			if (i < (elems - 1))
 			{
+				double w = (double)(i + 1) / (double)(elems);
 				m1 = nodeIndex;
-				vec3d ri = ra + (rb - ra) * ((i + 1.0) / elems);
+				vec3d ri = edge->Point(w);
 				FSNode& node = mesh->Node(nodeIndex++);
 				node.r = ri;
 			}
@@ -121,7 +124,9 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 			{
 				// add middle node
 				int m2 = nodeIndex;
-				vec3d ri = ra + (rb - ra) * ((i + 0.5) / elems);
+				double w = (double)(i + 0.5) / (double)(elems);
+
+				vec3d ri = edge->Point(w);
 				FSNode& node = mesh->Node(nodeIndex++);
 				node.r = ri;
 
@@ -143,9 +148,10 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 	{
 		FSElement& el = mesh->Element(i);
 		FSEdge& ed = mesh->Edge(i);
+		ed.SetExterior(true);
 		if (el.Type() == FE_BEAM2)
 		{
-			ed.SetType(FEEdgeType::FE_EDGE2);
+			ed.SetType(FSEdgeType::FE_EDGE2);
 			ed.n[0] = el.m_node[0];
 			ed.n[1] = el.m_node[1];
 			ed.n[2] = ed.n[3] = -1;
@@ -153,7 +159,7 @@ FSMesh* FSCurveObjectMesher::BuildMesh(GObject* po)
 		}
 		else if (el.Type() == FE_BEAM3)
 		{
-			ed.SetType(FEEdgeType::FE_EDGE3);
+			ed.SetType(FSEdgeType::FE_EDGE3);
 			ed.n[0] = el.m_node[0];
 			ed.n[1] = el.m_node[1];
 			ed.n[2] = el.m_node[2];

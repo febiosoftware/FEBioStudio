@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FECore/FETimeStepController.h>
 #include <FECore/FENewtonStrategy.h>
 #include <FECore/FENewtonSolver.h>
+#include <FECore/FEParamValidator.h>
 #include <FEBioFluid/FEFluidAnalysis.h>
 #include <FEBioFluid/FEFluidSolutesAnalysis.h>
 #include <FEBioFluid/FEFluidFSIAnalysis.h>
@@ -64,6 +65,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FSProject.h>
+#include "../FEBioStudio/FEBioJob.h"
 #include <sstream>
 using namespace FEBio;
 using namespace std;
@@ -366,6 +368,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
 	ci.spec = fac->GetSpecID();
+    ci.allocId = fac->GetAllocatorID();
 
 	return ci;
 }
@@ -722,6 +725,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 					}
 					else p = po->AddIntParam(n, szname, szlongname);
 				}
+
+				FEIntValidator* validator = dynamic_cast<FEIntValidator*>(param.GetValidator());
+				if (validator)
+				{
+					RANGE rng = validator->GetRange();
+					p->SetIntRange(rng.m_fmin, rng.m_fmax);
+					p->SetRangeType(rng.m_rt);
+				}
 			}
 			break;
 			case FEBio::FEBIO_PARAM_BOOL: p = po->AddBoolParam(param.value<bool>(), szname, szlongname); break;
@@ -733,6 +744,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 				}
 				else
 					p = po->AddDoubleParam(param.value<double>(), szname, szlongname); 
+
+				FEDoubleValidator* validator = dynamic_cast<FEDoubleValidator*>(param.GetValidator());
+				if (validator)
+				{
+					RANGE rng = validator->GetRange();
+					p->SetFloatRange(rng.m_fmin, rng.m_fmax);
+					p->SetRangeType(rng.m_rt);
+				}
 			}
 			break;
 			case FEBio::FEBIO_PARAM_VEC3D: p = po->AddVecParam(param.value<vec3d>(), szname, szlongname); break;
@@ -781,6 +800,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 					p = po->AddArrayDoubleParam(v, 3, szname, szlongname)->MakeVariable(true);;
 				}
 				else assert(false);
+
+				FEParamDoubleValidator* validator = dynamic_cast<FEParamDoubleValidator*>(param.GetValidator());
+				if (validator)
+				{
+					RANGE rng = validator->GetRange();
+					p->SetFloatRange(rng.m_fmin, rng.m_fmax);
+					p->SetRangeType(rng.m_rt);
+				}
 			}
 			break;
 			case FEBio::FEBIO_PARAM_VEC3D_MAPPED:
@@ -855,6 +882,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
 		if (prop.IsPreferred())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
+		if (prop.IsTopLevel())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::TOPLEVEL);
 
 		// set the (optional) default type
 		if (prop.GetDefaultType())
@@ -983,10 +1012,17 @@ int FEBio::GetModuleId(const std::string& moduleName)
 	return -1;
 }
 
+int FEBio::GetModuleAllocatorID(int moduleId)
+{
+    FECoreKernel& fecore = FECoreKernel::GetInstance();
+    return fecore.GetModuleAllocatorID(moduleId - 1);
+}
+
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
 	delete febioModel; febioModel = nullptr;
+	if (moduleID < 0) return;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
@@ -1124,7 +1160,7 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, std::string& report)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker, CFEBioJob* job)
 {
 	terminateRun = false;
 
@@ -1155,7 +1191,14 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, F
 		}
 
 		int returnCode = febio::RunModel(fem, &ops);
-		report = fem.GetReport();
+		if (job)
+		{
+			job->m_jobReport = fem.GetReport();
+			job->m_timingInfo = fem.GetTimingInfo();
+			job->m_modelStats = fem.GetModelStats();
+			job->m_stepStats = fem.GetStepStats();
+			job->m_timestepStats = fem.GetTimeStepStats();
+		}
 		return returnCode;
 	}
 	catch (...)

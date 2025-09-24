@@ -26,22 +26,18 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "PlaneTool.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <QApplication>
 #include <QClipboard>
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
-#include <QRadioButton>
-#include <QButtonGroup>
 #include <QComboBox>
 #include <QStackedWidget>
-#include "Document.h"
+#include "GLDocument.h"
 #include <PostGL/GLModel.h>
-#include <PostLib/FEPostMesh.h>
 #include "MainWindow.h"
-#include "GLView.h"
 #include "DragBox.h"
 using namespace Post;
 
@@ -394,7 +390,7 @@ void CPlaneTool::onAlignView()
 
 	vec3d r = ui->GetNormal();
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	GLCamera& cam = doc->GetView()->GetCamera();
 	cam.SetViewDirection(r);
 
 	GetMainWindow()->RedrawGL();

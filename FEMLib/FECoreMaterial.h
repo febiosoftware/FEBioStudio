@@ -1,14 +1,15 @@
 #pragma once
 #include <FSCore/FSObject.h>
-#include <MeshLib/FECoreMesh.h>
+#include <MeshLib/FSCoreMesh.h>
 #include "FEModelComponent.h"
 
-// material axes generators
-#define FE_AXES_LOCAL			0
-#define FE_AXES_VECTOR			1
-#define FE_AXES_ANGLES          2
-#define FE_AXES_CYLINDRICAL		3
-#define FE_AXES_SPHERICAL		4
+enum MaterialAxesGeneratorType {
+	AXES_LOCAL,
+	AXES_VECTOR,
+	AXES_ANGLES,
+	AXES_CYLINDRICAL,
+	AXES_SPHERICAL
+};
 
 //-----------------------------------------------------------------------------
 //! Reference to an element of a mesh
@@ -20,14 +21,14 @@ public:
 
 	vec3d center() const 
 	{
-		const FEElement_* pe = m_pmesh->ElementPtr(m_nelem);
+		const FSElement_* pe = m_pmesh->ElementPtr(m_nelem);
 		return m_pmesh->ElementCenter(*pe);
 	}
 
-	FEElement_* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
-	const FEElement_* operator -> () const {return m_pmesh->ElementPtr(m_nelem);}
+	FSElement_* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
+	const FSElement_* operator -> () const {return m_pmesh->ElementPtr(m_nelem);}
 
-	operator FEElement_*(){ return m_pmesh->ElementPtr(m_nelem); }
+	operator FSElement_*(){ return m_pmesh->ElementPtr(m_nelem); }
 };
 
 //-----------------------------------------------------------------------------

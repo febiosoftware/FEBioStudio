@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FEBioExport12.cpp: implementation of the FEBioExport12 class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "FEBioExport12.h"
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GModel.h>
@@ -36,12 +31,11 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <MeshLib/FEMesh.h>
-#include <GeomLib/GGroup.h>
+#include <MeshLib/FSMesh.h>
 #include <memory>
 #include <FECore/FETransform.h>
 
-using std::unique_ptr;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEBioExport12::FEBioExport12(FSProject& prj) : FEBioExport(prj)
@@ -65,7 +59,7 @@ void FEBioExport12::Clear()
 
 //----------------------------------------------------------------------------
 //! See if the pl has been added to the named surface list
-bool FEBioExport12::HasSurface(FEItemListBuilder* pl)
+bool FEBioExport12::HasSurface(FSItemListBuilder* pl)
 {
 	int N = (int)m_pSurf.size();
 	for (int i = 0; i<N; ++i)
@@ -94,7 +88,7 @@ bool FEBioExport12::PrepareExport(FSProject& prj)
 			FSLoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
+				FSItemListBuilder* ps = pl->GetItemList();
 				if (ps)
 				{
 					const string& name = ps->GetName();
@@ -113,14 +107,14 @@ bool FEBioExport12::PrepareExport(FSProject& prj)
 			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pstep->Interface(j));
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetSecondarySurface();
+				FSItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms)
 				{
 					const string& name = pms->GetName();
 					if (name.empty() == false) m_pSurf.push_back(pms);
 				}
 
-				FEItemListBuilder* pss = pi->GetPrimarySurface();
+				FSItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss)
 				{
 					const string& name = pss->GetName();
@@ -900,13 +894,13 @@ void FEBioExport12::WriteMaterial(FSMaterial *pm, XMLElement& el)
 	{
 		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
-			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
+			if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
 				el.value(pm->m_axes->m_n, 3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);
@@ -1093,13 +1087,13 @@ void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		// write the material axes (if any)
 		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
-			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
+			if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
 				el.value(pm->m_axes->m_n, 3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == MaterialAxesGeneratorType::AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);
@@ -1115,7 +1109,7 @@ void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		if (pm->Parameters()) WriteMaterialParams(pm);
 
 		// write the components
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
@@ -1185,7 +1179,7 @@ void FEBioExport12::WriteGeometrySection()
 
 		for (int j = 0; j<pm->Elements(); ++j)
 		{
-			FEElement_& e = pm->ElementRef(j);
+			FSElement_& e = pm->ElementRef(j);
 			if (e.m_Qactive) {
 				bdata = true;
 				break;
@@ -1310,7 +1304,7 @@ void FEBioExport12::WriteGeometryElements()
 
 			for (j = 0; j<pm->Elements(); ++j)
 			{
-				FEElement_& e = pm->ElementRef(j);
+				FSElement_& e = pm->ElementRef(j);
 				nmat = 0;
 				assert(e.m_gid >= 0);
 				GMaterial* pmat = s.GetMaterialFromID(po->Part(e.m_gid)->GetMaterialID());
@@ -1414,7 +1408,7 @@ void FEBioExport12::WriteGeometryElements()
 			// next we write all shell elements
 			for (j = 0; j<pm->Elements(); ++j)
 			{
-				FEElement_& e = pm->ElementRef(j);
+				FSElement_& e = pm->ElementRef(j);
 				nmat = 0;
 				assert(e.m_gid >= 0);
 				GMaterial* pmat = s.GetMaterialFromID(po->Part(e.m_gid)->GetMaterialID());
@@ -1469,7 +1463,7 @@ void FEBioExport12::WriteGeometryElementData()
 
 		for (int j = 0; j<pm->Elements(); ++j)
 		{
-			FEElement_& e = pm->ElementRef(j);
+			FSElement_& e = pm->ElementRef(j);
 			GMaterial* pmat = s.GetMaterialFromID(po->Part(e.m_gid)->GetMaterialID());
 			FSTransverselyIsotropic* ptiso = 0;
 			if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
@@ -1758,10 +1752,10 @@ void FEBioExport12::WriteContactWall(FSStep& s)
 				m_xml.add_branch(el, false);
 				{
 					XMLElement ef;
-					FEItemListBuilder* pitem = pw->GetItemList();
+					FSItemListBuilder* pitem = pw->GetItemList();
 					if (pitem == 0) throw InvalidItemListBuilder(pw);
-					unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-					FEFaceList::Iterator pf = pg->First();
+					unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+					FSFaceList::Iterator pf = pg->First();
 					for (j = 0; j<pg->Size(); ++j, ++pf)
 					{
 						FSFace& face = *(pf->m_pi);
@@ -1815,7 +1809,7 @@ void FEBioExport12::WriteContactPoro(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetSecondarySurface();
+				FSItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1824,7 +1818,7 @@ void FEBioExport12::WriteContactPoro(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetPrimarySurface();
+				FSItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1857,7 +1851,7 @@ void FEBioExport12::WriteContactPoroSolute(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetSecondarySurface();
+				FSItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1866,7 +1860,7 @@ void FEBioExport12::WriteContactPoroSolute(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetPrimarySurface();
+				FSItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1899,7 +1893,7 @@ void FEBioExport12::WriteContactMultiphasic(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetSecondarySurface();
+				FSItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1908,7 +1902,7 @@ void FEBioExport12::WriteContactMultiphasic(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetPrimarySurface();
+				FSItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1941,7 +1935,7 @@ void FEBioExport12::WriteContactTC(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetSecondarySurface();
+				FSItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1950,7 +1944,7 @@ void FEBioExport12::WriteContactTC(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetPrimarySurface();
+				FSItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1983,7 +1977,7 @@ void FEBioExport12::WriteContactTiedPoro(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetSecondarySurface();
+				FSItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1992,7 +1986,7 @@ void FEBioExport12::WriteContactTiedPoro(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetPrimarySurface();
+				FSItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2024,7 +2018,7 @@ void FEBioExport12::WriteContactRigid(FSStep& s)
 			vector<int> RC; RC.resize(m_nodes);
 			for (i = 0; i<m_nodes; ++i) RC[i] = 0;
 
-			FEItemListBuilder* pitem = pr->GetItemList();
+			FSItemListBuilder* pitem = pr->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pr);
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
 			FSNodeList::Iterator pn = pg->First();
@@ -2072,7 +2066,7 @@ void FEBioExport12::WriteContactTied(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetSecondarySurface();
+				FSItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2081,7 +2075,7 @@ void FEBioExport12::WriteContactTied(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetPrimarySurface();
+				FSItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2113,7 +2107,7 @@ void FEBioExport12::WriteContactSticky(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetSecondarySurface();
+				FSItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2122,7 +2116,7 @@ void FEBioExport12::WriteContactSticky(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetPrimarySurface();
+				FSItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2156,7 +2150,7 @@ void FEBioExport12::WriteContactPeriodic(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetSecondarySurface();
+				FSItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2165,7 +2159,7 @@ void FEBioExport12::WriteContactPeriodic(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetPrimarySurface();
+				FSItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2207,7 +2201,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				}
 
 				// master surface
-				FEItemListBuilder* pms = ps->GetSecondarySurface();
+				FSItemListBuilder* pms = ps->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2216,7 +2210,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = ps->GetPrimarySurface();
+				FSItemListBuilder* pss = ps->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2242,7 +2236,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pswg->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pswg->GetSecondarySurface();
+				FSItemListBuilder* pms = pswg->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2251,7 +2245,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pswg->GetPrimarySurface();
+				FSItemListBuilder* pss = pswg->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2277,7 +2271,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pf2f->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pf2f->GetSecondarySurface();
+				FSItemListBuilder* pms = pf2f->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2286,7 +2280,7 @@ void FEBioExport12::WriteContactSliding(FSStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pf2f->GetPrimarySurface();
+				FSItemListBuilder* pss = pf2f->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2355,7 +2349,7 @@ void FEBioExport12::WriteBCFixedDisplacement(FSFixedDisplacement& rbc, FSStep& s
 	const char* xyz[] = { "x", "y", "xy", "z", "xz", "yz", "xyz" };
 
 	// build the node list
-	FEItemListBuilder* pItem = rbc.GetItemList();
+	FSItemListBuilder* pItem = rbc.GetItemList();
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 	FSNodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
@@ -2405,7 +2399,7 @@ void FEBioExport12::WriteBCFixedRotation(FSFixedRotation& rbc, FSStep& s)
 	const char* uvw[] = { "u", "v", "uv", "w", "uw", "vw", "uvw" };
 
 	// build the node list
-	FEItemListBuilder* pItem = rbc.GetItemList();
+	FSItemListBuilder* pItem = rbc.GetItemList();
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 	FSNodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
@@ -2470,7 +2464,7 @@ void FEBioExport12::WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FSStep&
 		for (int k = 0; k<m_nodes; ++k) BC[k] = 0;
 
 		// build the node list
-		FEItemListBuilder* pItem = rbc.GetItemList();
+		FSItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
 		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
@@ -2520,7 +2514,7 @@ void FEBioExport12::WriteBCFixedTemperature(FSFixedTemperature& rbc, FSStep& s)
 		for (int k = 0; k<m_nodes; ++k) BC[k] = 0;
 
 		// build the node list
-		FEItemListBuilder* pItem = rbc.GetItemList();
+		FSItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
 		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
@@ -2570,7 +2564,7 @@ void FEBioExport12::WriteBCFixedConcentration(FSFixedConcentration& rbc, FSStep&
 		for (int k = 0; k<m_nodes; ++k) BC[k] = 0;
 
 		// build the node list
-		FEItemListBuilder* pItem = rbc.GetItemList();
+		FSItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
 		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
@@ -2658,7 +2652,7 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FSPrescribedDisplacement& rbc,
 		{
 			for (k = 0; k<m_nodes; ++k) DC[k] = 0;
 
-			FEItemListBuilder* pitem = rbc.GetItemList();
+			FSItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -2722,7 +2716,7 @@ void FEBioExport12::WriteBCPrescribedRotation(FSPrescribedRotation& rbc, FSStep&
 		{
 			for (k = 0; k<m_nodes; ++k) DC[k] = 0;
 
-			FEItemListBuilder* pitem = rbc.GetItemList();
+			FSItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -2784,7 +2778,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure& rb
 		{
 			for (k = 0; k<m_nodes; ++k) DC[k] = 0;
 
-			FEItemListBuilder* pitem = rbc.GetItemList();
+			FSItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -2846,7 +2840,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FSPrescribedTemperature& rbc, F
 		{
 			for (k = 0; k<m_nodes; ++k) DC[k] = 0;
 
-			FEItemListBuilder* pitem = rbc.GetItemList();
+			FSItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -2910,7 +2904,7 @@ void FEBioExport12::WriteBCPrescribedConcentration(FSPrescribedConcentration& rb
 		{
 			for (k = 0; k<m_nodes; ++k) DC[k] = 0;
 
-			FEItemListBuilder* pitem = rbc.GetItemList();
+			FSItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
 			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -2973,7 +2967,7 @@ void FEBioExport12::WriteLoadNodal(FSStep& s)
 				{
 					for (int k = 0; k<m_nodes; ++k) FC[k] = 0;
 
-					FEItemListBuilder* pitem = pbc->GetItemList();
+					FSItemListBuilder* pitem = pbc->GetItemList();
 					if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 					unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -3053,15 +3047,15 @@ void FEBioExport12::WriteLoadPressure(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSPressureLoad::LOAD));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				FEFaceList* pfl = pitem->BuildFaceList();
+				FSFaceList* pfl = pitem->BuildFaceList();
 				if (pfl == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pfl);
+				unique_ptr<FSFaceList> pg(pfl);
 
-				FEFaceList::Iterator pf = pg->First();
+				FSFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3171,11 +3165,11 @@ void FEBioExport12::WriteFluidFlux(FSStep& s)
 				int n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSFluidFlux::LOAD));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 
 				for (int k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3247,11 +3241,11 @@ void FEBioExport12::WriteBPNormalTraction(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSBPNormalTraction::LOAD));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3317,11 +3311,11 @@ void FEBioExport12::WriteHeatFlux(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSHeatFlux::FLUX));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3389,11 +3383,11 @@ void FEBioExport12::WriteConvectiveHeatFlux(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSConvectiveHeatFlux::TREF));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3465,11 +3459,11 @@ void FEBioExport12::WriteSoluteFlux(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&pbc->GetParam(FSSoluteFlux::LOAD));
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
@@ -3566,11 +3560,11 @@ void FEBioExport12::WriteLoadTraction(FSStep& s)
 				n = 1;
 
 				int lc = GetLC(&ptc->GetParam(FSSurfaceTraction::LOAD));
-				FEItemListBuilder* pitem = ptc->GetItemList();
+				FSItemListBuilder* pitem = ptc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
-				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
-				FEFaceList::Iterator pf = pg->First();
+				unique_ptr<FSFaceList> pg(pitem->BuildFaceList());
+				FSFaceList::Iterator pf = pg->First();
 				vec3d t = ptc->GetTraction();
 
 				if (pg->Size() == 0)
@@ -3686,7 +3680,7 @@ void FEBioExport12::WriteInitialSection()
 
 				for (int k = 0; k<m_nodes; ++k) VC[k] = 0;
 
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -3730,7 +3724,7 @@ void FEBioExport12::WriteInitialSection()
 
 				for (int k = 0; k<m_nodes; ++k) VC[k] = 0;
 
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -3769,7 +3763,7 @@ void FEBioExport12::WriteInitialSection()
 
 				for (int k = 0; k<m_nodes; ++k) VC[k] = 0;
 
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -3808,7 +3802,7 @@ void FEBioExport12::WriteInitialSection()
 
 				for (int k = 0; k<m_nodes; ++k) VC[k] = 0;
 
-				FEItemListBuilder* pitem = pbc->GetItemList();
+				FSItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
@@ -3999,13 +3993,13 @@ void FEBioExport12::WriteLoadDataSection()
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport12::WriteSurfaceSection(FEFaceList& s)
+void FEBioExport12::WriteSurfaceSection(FSFaceList& s)
 {
 	XMLElement ef;
 	int n = 1, nn[8];
 
 	int NF = s.Size();
-	FEFaceList::Iterator pf = s.First();
+	FSFaceList::Iterator pf = s.First();
 
 	/*
 	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pfem->GetStep(1));
@@ -4056,11 +4050,11 @@ void FEBioExport12::WriteSurfaceSection(FEFaceList& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteSurface(XMLElement& el, FEItemListBuilder* pl)
+void FEBioExport12::WriteSurface(XMLElement& el, FSItemListBuilder* pl)
 {
 	const string& name = pl->GetName();
 	if (name.empty() == false) el.add_attribute("name", name.c_str());
-	unique_ptr<FEFaceList> ps(pl->BuildFaceList());
+	unique_ptr<FSFaceList> ps(pl->BuildFaceList());
 	if (ps.get() == 0) throw InvalidItemListBuilder(pl);
 	m_xml.add_branch(el);
 	{
@@ -4126,7 +4120,7 @@ void FEBioExport12::WriteOutputSection()
 						e.add_attribute("data", d.GetDataString());
 
 						FSLogNodeData& nd = dynamic_cast<FSLogNodeData&>(d);
-						FEItemListBuilder* pg = nd.GetItemList();
+						FSItemListBuilder* pg = nd.GetItemList();
 						if (pg)
 						{
 							vector<int> L;
@@ -4146,12 +4140,12 @@ void FEBioExport12::WriteOutputSection()
 						e.add_attribute("data", d.GetDataString());
 
 						FSLogElemData& ed = dynamic_cast<FSLogElemData&>(d);
-						FEItemListBuilder* pg = ed.GetItemList();
+						FSItemListBuilder* pg = ed.GetItemList();
 						if (pg)
 						{
 							vector<int> L;
-							FEElemList* pl = pg->BuildElemList();
-							FEElemList::Iterator pi = pl->First();
+							FSElemList* pl = pg->BuildElemList();
+							FSElemList::Iterator pi = pl->First();
 							int M = pl->Size();
 							for (int i=0; i<M; ++i, ++pi) L.push_back(pi->m_pi->m_ntag);
 							m_xml.add_leaf(e, L);

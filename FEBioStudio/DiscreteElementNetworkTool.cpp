@@ -29,11 +29,11 @@
 #include <QPushButton>
 #include <QBoxLayout>
 #include <QMessageBox>
-#include <MeshLib/FEMesh.h>
+#include <MeshLib/FSMesh.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
-#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FSNodeNodeList.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "Commands.h"

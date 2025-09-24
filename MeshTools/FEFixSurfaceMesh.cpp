@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include "FEFillHole.h"
 #include "FEFillQuadHole.h"
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FSSurfaceMesh.h>
+#include <MeshLib/FSNodeFaceList.h>
 
 //-----------------------------------------------------------------------------
 FEFixSurfaceMesh::FEFixSurfaceMesh() : FESurfaceModifier("Fix mesh")
@@ -236,7 +236,7 @@ bool FEFixSurfaceMesh::FixElementWinding(FSSurfaceMesh* pm)
 			// all elements connected to this element will now be wound
 			// in the same direction.
 			f0.m_ntag = 1;
-			stack<FSFace*> S;
+			std::stack<FSFace*> S;
 			S.push(&f0);
 			while (S.empty() == false)
 			{
@@ -331,7 +331,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 		fill.FillAllHoles(pm);
 
 		// copy the error string
-		string err = fill.GetErrorString();
+		std::string err = fill.GetErrorString();
 		if (err.empty() == false) SetError(err.c_str());
 		m_mod = nullptr;
 	}
@@ -342,7 +342,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 		fill.FillAllHoles(pm);
 
 		// copy the error string
-		string err = fill.GetErrorString();
+		std::string err = fill.GetErrorString();
 		if (err.empty() == false) SetError(err.c_str());
 		m_mod = nullptr;
 	}

@@ -34,9 +34,27 @@ SOFTWARE.*/
 #include <QGuiApplication>
 #include "DlgScreenCapture.h"
 #include "MainWindow.h"
+#include <algorithm>
 
-CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
-    : m_wnd(wnd), m_img(img)
+QPixmap makeCheckerboard(int tileSize = 8) {
+	int size = tileSize * 2;
+	QPixmap pm(size, size);
+	pm.fill(Qt::transparent);
+
+	QPainter p(&pm);
+	QColor light(200, 200, 200);
+	QColor dark(150, 150, 150);
+
+	p.fillRect(0, 0, tileSize, tileSize, light);
+	p.fillRect(tileSize, tileSize, tileSize, tileSize, light);
+	p.fillRect(tileSize, 0, tileSize, tileSize, dark);
+	p.fillRect(0, tileSize, tileSize, tileSize, dark);
+	p.end();
+
+	return pm;
+}
+
+CDlgScreenCapture::CDlgScreenCapture(CMainWindow* wnd) : m_wnd(wnd), QDialog(wnd)
 {
     QVBoxLayout* layout = new QVBoxLayout;
 
@@ -44,7 +62,9 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
     m_view = new QGraphicsView;
     m_view->setScene(m_scene);
 
-    QGraphicsPixmapItem* item = m_scene->addPixmap(QPixmap::fromImage(*img));
+	m_scene->setBackgroundBrush(QBrush(makeCheckerboard(20)));
+
+	m_imgItem = nullptr;
 
     layout->addWidget(m_view);
 
@@ -65,14 +85,22 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
     connect(copyButton, &QPushButton::clicked, this, &CDlgScreenCapture::on_copyButton_clicked);
 }
 
+void CDlgScreenCapture::SetImage(const QImage& img)
+{
+	m_img = img;
+	if (m_imgItem) delete m_imgItem;
+	m_imgItem = m_scene->addPixmap(QPixmap::fromImage(m_img));
+	m_scene->setSceneRect(m_imgItem->boundingRect());
+}
+
 void CDlgScreenCapture::on_saveButton_clicked()
 {
-    m_wnd->SaveImage(*m_img);
+    m_wnd->SaveImage(m_img);
 }
 
 void CDlgScreenCapture::on_copyButton_clicked()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
 
-    clipboard->setImage(*m_img);
+    clipboard->setImage(m_img);
 }

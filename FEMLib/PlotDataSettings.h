@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
-#include <MeshLib/FEItemListBuilder.h>
+#include <MeshLib/FSItemListBuilder.h>
 
 class FSProject;
 
@@ -36,12 +36,12 @@ class FSProject;
 class CPlotVariable
 {
 public:
-	CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	CPlotVariable(const std::string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
 	~CPlotVariable();
 	CPlotVariable(const CPlotVariable& v);
 	void operator = (const CPlotVariable& v);
 
-	const string& name() const { return m_name; }
+	const std::string& name() const { return m_name; }
 	void setName(const std::string& s) { m_name = s; }
 
 	bool isActive() const { return m_bactive; }
@@ -56,21 +56,21 @@ public:
 	void setDomainType(DOMAIN_TYPE domainType) { m_domainType = domainType; }
 
 	int Domains() const;
-	FEItemListBuilder* GetDomain(int i);
-	const FEItemListBuilder* GetDomain(int i) const;
+	FSItemListBuilder* GetDomain(int i);
+	const FSItemListBuilder* GetDomain(int i) const;
 
-	void addDomain(FEItemListBuilder* pi);
-	void removeDomain(FEItemListBuilder* pi);
+	void addDomain(FSItemListBuilder* pi);
+	void removeDomain(FSItemListBuilder* pi);
 	void removeDomain(int n);
 	void removeAllDomains();
 
 private:
-	string			m_name;						// name of variable (as in FEBio file)
+	std::string		m_name;						// name of variable (as in FEBio file)
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
 	bool			m_bcustom;					// user defined
 	unsigned int	m_domainType;				// domain type for variable
-	std::vector<FEItemListBuilder*>		m_domains;	// domains 
+	std::vector<FSItemListBuilder*>		m_domains;	// domains 
 };
 
 //-----------------------------------------------------------------------------

@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "DlgStartThread.h"
@@ -37,6 +36,7 @@ SOFTWARE.*/
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostGL/GLPlotHelicalAxis.h>
+#include <PostGL/GLPlotObjectGlyph.h>
 #include <ImageLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolumeRenderer.h>
@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
 #include <PostGL/GLPlotGroup.h>
+#include <PostGL/GLPlotStaticMesh.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -63,12 +64,15 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "DlgWarpImage.h"
 #include <ImageLib/ImageFilter.h>
+#include <sstream>
+#include <QFileDialog>
+#include <MeshIO/STLimport.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CPostDocument* doc = GetPostDocument();
+	CGLModelDocument* doc = dynamic_cast<CGLModelDocument*>(GetDocument());
 	if (doc== nullptr) return nullptr;
 	return doc->GetGLModel();
 }
@@ -85,7 +89,8 @@ void CMainWindow::on_actionPlaneCut_triggered()
 	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -101,7 +106,8 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -117,7 +123,8 @@ void CMainWindow::on_actionVectorPlot_triggered()
 	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -133,7 +140,8 @@ void CMainWindow::on_actionTensorPlot_triggered()
 	Post::GLTensorPlot* pp = new Post::GLTensorPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -149,7 +157,8 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -165,7 +174,8 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -181,10 +191,35 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
+
+void CMainWindow::on_actionVectorGlyph_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::FEPostModel::PointObject* pointObj = dynamic_cast<Post::FEPostModel::PointObject*>(ui->postPanel->GetSelectedObject());
+	if (pointObj == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select a valid object first in the model tree.");
+		return;
+	}
+
+	Post::GLPlotObjectVector* vectorGlyph = new Post::GLPlotObjectVector(pointObj);
+	glm->AddPlot(vectorGlyph);
+
+	if (GetPostDocument()) UpdatePostPanel(true, vectorGlyph);
+	else Update(nullptr, true);
+	RedrawGL();
+}
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {
@@ -352,7 +387,8 @@ void CMainWindow::on_actionAddProbe_triggered()
 	if (pg) pg->AddPlot(probe);
 	else glm->AddPlot(probe);
 
-	UpdatePostPanel(true, probe);
+	if (GetPostDocument()) UpdatePostPanel(true, probe);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -368,7 +404,8 @@ void CMainWindow::on_actionAddCurveProbe_triggered()
 	Post::GLCurveProbe* probe = new Post::GLCurveProbe();
 	glm->AddPlot(probe);
 
-	UpdatePostPanel(true, probe);
+	if (GetPostDocument()) UpdatePostPanel(true, probe);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -384,7 +421,8 @@ void CMainWindow::on_actionAddRuler_triggered()
 	Post::GLRuler* ruler = new Post::GLRuler();
 	glm->AddPlot(ruler);
 
-	UpdatePostPanel(true, ruler);
+	if (GetPostDocument()) UpdatePostPanel(true, ruler);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -399,6 +437,39 @@ void CMainWindow::on_actionHelicalAxis_triggered()
 	glm->AddPlot(plot);
 	UpdatePostPanel(true, plot);
 	RedrawGL();
+}
+
+void CMainWindow::on_actionStaticMesh_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return;
+
+	QString filter = "STL Files (*.stl)";
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", filter);
+	if (fileNames.isEmpty() == false)
+	{
+		for (int i = 0; i < fileNames.size(); ++i)
+		{
+			QString fileName = fileNames[i];
+
+			string sfile = fileName.toStdString();
+
+			FSProject dummy;
+			STLimport stl(dummy);
+			if (stl.Load(sfile.c_str()))
+			{
+				GObject* po = dummy.GetFSModel().GetModel().Object(0);
+				GLMesh* pm = po->GetRenderMesh();
+
+				Post::GLPlotStaticMesh* plt = new Post::GLPlotStaticMesh;
+				plt->SetMesh(*pm);
+
+				glm->AddPlot(plt);
+				UpdatePostPanel(true, plt);
+			}
+		}
+		RedrawGL();
+	}
 }
 
 void CMainWindow::on_actionMusclePath_triggered()
@@ -426,7 +497,8 @@ void CMainWindow::on_actionMusclePath_triggered()
 		glm->AddPlot(musclePath);
 	}
 
-	UpdatePostPanel(true, musclePath);
+	if (GetPostDocument()) UpdatePostPanel(true, musclePath);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -442,7 +514,8 @@ void CMainWindow::on_actionPlotGroup_triggered()
 	Post::GLPlotGroup* mpg = new Post::GLPlotGroup();
 	glm->AddPlot(mpg);
 
-	UpdatePostPanel(true, mpg);
+	if (GetPostDocument()) UpdatePostPanel(true, mpg);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -454,7 +527,8 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 	RedrawGL();
 }
 
@@ -466,7 +540,8 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot();
 	glm->AddPlot(pp);
 
-	UpdatePostPanel(true, pp);
+	if (GetPostDocument()) UpdatePostPanel(true, pp);
+	else Update(nullptr, true);
 
 	RedrawGL();
 }
@@ -989,8 +1064,15 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 void CMainWindow::SetCurrentState(int n)
 {
 	CPostDocument* doc = GetPostDocument();
-	if (doc == nullptr) return;
-	ui->postToolBar->SetSpinValue(n + 1);
+	if (doc)
+		ui->postToolBar->SetSpinValue(n + 1);
+
+	FEBioMonitorDoc* mdoc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+	if (mdoc && (mdoc->IsPaused() || !mdoc->IsRunning()))
+	{
+		mdoc->SetCurrentState(n);
+		RedrawGL();
+	}
 }
 
 //-----------------------------------------------------------------------------
