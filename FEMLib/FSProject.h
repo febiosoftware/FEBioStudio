@@ -243,6 +243,8 @@ public:
 	void SetUnits(int units);
 	int GetUnits() const;
 
+	void PurgeSelections();
+
     void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
 
 public:
