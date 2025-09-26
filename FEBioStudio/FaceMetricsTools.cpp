@@ -72,9 +72,14 @@ void CFaceMetricsTool::Update()
 
 	m_nsel = 0;
 
-	FSMeshBase* mesh = GetActiveEditMesh();
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	FSMeshBase* mesh = po->GetEditableMesh();
 	if (mesh == nullptr) return;
 
+	Transform T = po->GetTransform();
+	vec3d c(0,0,0), N(0,0,0);
 	for (int i = 0; i < mesh->Faces(); ++i)
 	{
 		FSFace& face = mesh->Face(i);
@@ -83,17 +88,20 @@ void CFaceMetricsTool::Update()
 			m_nsel++;
 
 			vec3d Ni = to_vec3d(face.m_fn);
-			m_N += Ni;
+			N += Ni;
 
 			double Ai = mesh->FaceArea(face);
 			vec3d ci = mesh->FaceCenter(face);
 
 			A += Ai;
-			m_c += ci * Ai;
+			c += ci * Ai;
 		}
 	}
-	m_N.Normalize();
-	if (A != 0) m_c /= A;
+	N.Normalize();
+	if (A != 0) c /= A;
+
+	m_c = T.LocalToGlobal(c);
+	m_N = T.LocalToGlobalNormal(N);
 
 	SetDecoration(new GPointDecoration(to_vec3f(m_c)));
 }
