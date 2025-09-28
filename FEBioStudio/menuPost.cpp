@@ -810,7 +810,7 @@ void CMainWindow::onTimer()
 		float f0 = doc->GetTimeValue(N0);
 		float f1 = doc->GetTimeValue(N1);
 
-		float ftime = doc->GetTimeValue();
+		float ftime = doc->GetCurrentTimeValue();
 
 		if (time.m_mode == MODE_FORWARD)
 		{
