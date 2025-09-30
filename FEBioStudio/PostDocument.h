@@ -160,11 +160,6 @@ public:
 
 	TIMESETTINGS& GetTimeSettings();
 
-	std::string GetFieldString();
-	std::string GetFieldUnits();
-
-	float GetTimeValue();
-
 	float GetTimeValue(int n);
 
 	void SetCurrentTimeValue(float ftime);

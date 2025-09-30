@@ -211,6 +211,8 @@ public:
 
 	void GenerateReport(bool b);
 
+	LegendData GetLegendData() override;
+
 private:
 	void updateWindowTitle();
 

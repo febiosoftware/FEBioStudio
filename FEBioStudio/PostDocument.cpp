@@ -500,38 +500,6 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	CGLDocument::Update();
 }
 
-std::string CPostDocument::GetFieldString()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
-	}
-	else return "";
-}
-
-std::string CPostDocument::GetFieldUnits()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		const char* szunits = GetFSModel()->GetDataManager()->getDataUnits(nfield);
-		if (szunits)
-		{
-			QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
-			return s.toStdString();
-		}
-		else return "";
-	}
-	else return "";
-}
-
-float CPostDocument::GetTimeValue()
-{
-	if (m_glm) return m_glm->CurrentTime();
-	else return 0.f;
-}
-
 float CPostDocument::GetTimeValue(int n)
 {
 	if (m_glm) return m_glm->GetFSModel()->GetTimeValue(n);

@@ -23,26 +23,51 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "GLDocument.h"
+#include "GLModelDocument.h"
+#include <PostGL/GLModel.h>
+#include "units.h"
 
-namespace Post {
-	class CGLModel;
-	class FEPostModel;
+CGLModelDocument::CGLModelDocument(CMainWindow* wnd) : CGLDocument(wnd) {}
+
+float CGLModelDocument::GetCurrentTimeValue()
+{
+	Post::CGLModel* glm = GetGLModel();
+	if (glm) return glm->CurrentTime();
+	else return 0.f;
+
 }
 
-// A document that holds on to a Post::CGLModel
-class CGLModelDocument : public CGLDocument
+std::string CGLModelDocument::GetFieldString()
 {
-public:
-	CGLModelDocument(CMainWindow* wnd);
+	if (IsValid())
+	{
+		Post::CGLModel* glm = GetGLModel();
+		Post::FEPostModel* fem = GetFSModel();
+		if (glm && fem)
+		{
+			int nfield = glm->GetColorMap()->GetEvalField();
+			return fem->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
+		}
+	}
+	return "";
+}
 
-	virtual Post::CGLModel* GetGLModel() = 0;
-
-	virtual Post::FEPostModel* GetFSModel() = 0;
-
-public: // fields for displaying in GLView
-	float GetCurrentTimeValue();
-	std::string GetFieldString();
-	std::string GetFieldUnits();
-};
+std::string CGLModelDocument::GetFieldUnits()
+{
+	if (IsValid())
+	{
+		Post::CGLModel* glm = GetGLModel();
+		Post::FEPostModel* fem = GetFSModel();
+		if (glm && fem)
+		{
+			int nfield = glm->GetColorMap()->GetEvalField();
+			const char* szunits = fem->GetDataManager()->getDataUnits(nfield);
+			if (szunits)
+			{
+				QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
+				return s.toStdString();
+			}
+		}
+	}
+	return "";
+}

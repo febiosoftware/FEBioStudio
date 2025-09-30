@@ -1654,15 +1654,13 @@ void CGLView::RenderCanvas(GLContext& rc)
 	if (m_Widget)
 	{
 		// Update GLWidget string table for post rendering
-		// TODO: Query the doc for the values:
-		//       GLWidget::addToStringTable("$(filename)", m_doc->GetVariable("filename"));
-		CPostDocument* postDoc = m_pWnd->GetPostDocument();
-		if (postDoc)
+		CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
+		if (glDoc)
 		{
-			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
+			GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
+			GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
+			GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
+			GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
 		}
 
 		// update the triad

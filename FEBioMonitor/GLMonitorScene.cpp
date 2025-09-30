@@ -82,6 +82,10 @@ void CGLMonitorScene::Render(GLRenderEngine& engine, GLContext& rc)
 	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
 	GLWidget::addToStringTable("$(time)", m_postModel->CurrentTime());
 */
+	Post::CGLColorMap* clm = m_glm->GetColorMap();
+	if (clm && clm->IsActive()) m_fmdoc->ShowLegend(true);
+	else m_fmdoc->ShowLegend(false);
+
 	CGLPostScene::Render(engine, rc);
 }
 
@@ -784,6 +788,7 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 				}
 				else assert(false);
 			}
+			else elementCounter += NE;
 		}
 		else elementCounter += NE;
 	}
