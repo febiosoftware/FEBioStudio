@@ -202,8 +202,12 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	FSLogger::SetOutput(new FSMainWindowOutput(this));
 
+	// Don't load plugins in Debug mode since plugins are usually built in Release mode
+	// and mixing Debug and Release code can lead to all kinds of problems.
+#ifdef NDEBUG
     ui->m_pluginManager.LoadXML();
     ui->m_pluginManager.LoadAllPlugins();
+#endif
     ui->m_pluginManager.ReadDatabase();
     ui->m_pluginManager.Connect();
 }
