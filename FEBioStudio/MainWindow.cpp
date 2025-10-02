@@ -130,6 +130,12 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	std::locale::global(std::locale::classic());
 #endif
 
+    // Preserve user's language and territory but use the C locale for everything else
+    // this standardizes number formatting. 
+    QLocale locale;
+    QLocale forcedLocale(locale.language(), locale.territory());
+    QLocale::setDefault(forcedLocale);
+
 	m_DocManager = new CDocManager(this);
 
 	m_fileThread = nullptr;
