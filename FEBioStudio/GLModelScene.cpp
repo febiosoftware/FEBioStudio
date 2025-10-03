@@ -317,10 +317,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 		for (int i = 0; i < m_doc->ImageModels(); ++i)
 		{
 			CImageModel* img = m_doc->GetImageModel(i);
-			if (img->IsActive())
-			{
-				addItem(new GL3DImageItem(this, img));
-			}
+			addItem(new GL3DImageItem(this, img));
 		}
 	}
 }
