@@ -62,6 +62,9 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionConvertFsm2Feb = createAction("FSM to FEB ...", "actionConvertFsm2Feb");
 	QAction* actionConvertGeo = createAction("Geometry Files ...", "actionConvertGeo");
 	QAction* actionExit = createAction("Exit", "actionExit");
+	
+	QAction* actionNewBatch  = createAction("New Batch ...", "actionNewBatch");
+	QAction* actionOpenBatch = createAction("Open Batch File ...", "actionOpenBatch");
 
 	// --- Edit menu actions ---
 	actionUndo = createAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
@@ -412,6 +415,13 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 
 	menuFile->addAction(ConvertMenu->menuAction());
 	menuFile->addSeparator();
+
+	QMenu* BatchMenu = new QMenu("Batch Run");
+	BatchMenu->addAction(actionNewBatch);
+	BatchMenu->addAction(actionOpenBatch);
+	menuFile->addAction(BatchMenu->menuAction());
+	menuFile->addSeparator();
+
 	menuFile->addAction(actionExit);
 
 	QMenu* moreSelection = new QMenu("More selection options");

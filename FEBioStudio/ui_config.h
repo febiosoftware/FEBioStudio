@@ -38,6 +38,7 @@ namespace Ui {
 		XML_CONFIG,			// text document	(i.e. feb file)
 		MONITOR_CONFIG,		// febio monitor document
 		FEBREPORT_CONFIG,	// febio report document
+		BATCHRUN_CONFIG,	// febio batch run document
 	};
 
 	// Protected base class for configurations
@@ -123,4 +124,11 @@ namespace Ui {
 		void Apply() override;
 	};
 
+	// Configuration for running a batch of febio jobs
+	class CBatchRunConfig : public CUIConfig
+	{
+	public:
+		CBatchRunConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::BATCHRUN_CONFIG) {}
+		void Apply() override;
+	};
 } // namespace Ui

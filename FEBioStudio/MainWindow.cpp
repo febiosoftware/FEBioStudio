@@ -111,6 +111,7 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include "DlgListMaterials.h"
 #include "DlgMissingPlugins.h"
+#include "FEBioBatchDoc.h"
 
 extern GLColor col[];
 
@@ -2270,6 +2271,10 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CFEBioReportDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::FEBREPORT_CONFIG);
+	}
+	else if (dynamic_cast<FEBioBatchDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::BATCHRUN_CONFIG);
 	}
 	else
 	{

@@ -513,3 +513,41 @@ void Ui::CFEBReportConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 }
+
+// Configure for app document
+void Ui::CBatchRunConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->setActiveCentralView(CMainCentralWidget::BATCHRUN_VIEW);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->hide();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+	ui->logPanel->parentWidget()->show();
+}

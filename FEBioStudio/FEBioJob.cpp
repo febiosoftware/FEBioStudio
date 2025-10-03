@@ -212,7 +212,7 @@ void CFEBioJob::SetFEBFileName(const std::string& fileName)
 
 std::string CFEBioJob::GetFEBFileName(bool relative) const
 {
-	if(relative) return m_febFile;
+	if(relative || (m_doc == nullptr)) return m_febFile;
 	else
 	{
 		// do string substitution
@@ -228,7 +228,7 @@ void CFEBioJob::SetPlotFileName(const std::string& plotFile)
 
 std::string CFEBioJob::GetPlotFileName(bool relative) const
 {
-	if(relative) return m_plotFile;
+	if(relative || (m_doc == nullptr)) return m_plotFile;
 	else return m_doc->ToAbsolutePath(m_plotFile).toStdString();
 }
 
@@ -239,7 +239,7 @@ void CFEBioJob::SetLogFileName(const std::string& logFile)
 
 std::string CFEBioJob::GetLogFileName(bool relative) const
 {
-	if(relative) return m_logFile;
+	if(relative || (m_doc == nullptr)) return m_logFile;
 	else return m_doc->ToAbsolutePath(m_logFile).toStdString();
 }
 

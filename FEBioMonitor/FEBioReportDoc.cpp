@@ -127,6 +127,9 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 	int reforms = 0;
 	m_timestepStats.clear();
 
+	bool read_solution_norm = false;
+	m_modelStats.solutionNorm = 0.0;
+
 	bool processInfoBox = false;
 
 	QString report;
@@ -172,6 +175,22 @@ bool CFEBioReportDoc::LoadFromLogFile(const QString& logFile)
 		{
 			processInfoBox = true;
 			match = true;
+		}
+
+		if (read_solution_norm)
+		{
+			QStringList vals = line.split(' ');
+			if (vals.size() == 2)
+			{
+				m_modelStats.solutionNorm = vals.at(1).toDouble();
+			}
+			read_solution_norm = false;
+		}
+
+		if (!match)
+		{
+			match = line.contains("solution_norm");
+			if (match) read_solution_norm = true;
 		}
 
 		if (!match) match = extractInt(line, "right hand side evaluations", rhsEvals, '=');

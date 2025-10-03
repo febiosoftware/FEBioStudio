@@ -544,6 +544,8 @@ public slots:
 	void on_actionFEBioInfo_triggered();
     void on_actionPluginRepo_triggered();
 	void on_actionCreatePlugin_triggered();
+	void on_actionNewBatch_triggered();
+	void on_actionOpenBatch_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
 
