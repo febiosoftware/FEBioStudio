@@ -92,7 +92,6 @@ FEBioBatchDoc::FEBioBatchDoc(CMainWindow* wnd) : CDocument(wnd), m(*new Impl)
 {
 	static int n = 1;
 	SetDocTitle(QString::asprintf("Batch%d", n++).toStdString());
-	SetModifiedFlag(true);
 }
 
 FEBioBatchDoc::~FEBioBatchDoc()
@@ -113,6 +112,7 @@ void FEBioBatchDoc::SetFileList(const QStringList& fileList)
 		di.jobId = (int)m.fileList.size();
 		m.fileList.push_back(di);
 	}
+	SetModifiedFlag(true);
 }
 
 int FEBioBatchDoc::Files() const
@@ -348,6 +348,8 @@ bool FEBioBatchDoc::LoadDocument(const QString& fileName)
 		xml.Close();
 		return false;
 	}
+
+	SetDocFilePath(sfile);
 
 	m.fileList.clear();
 
