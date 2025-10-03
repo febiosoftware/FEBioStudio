@@ -232,6 +232,32 @@ void FEBioBatchDoc::StartNextJob()
 	}
 }
 
+void FEBioBatchDoc::CancelAll()
+{
+	// first, cancel all pending jobs
+	CancelPending();
+
+	// now, let's terminate any remaining jobs
+	for (int i = 0; i < Impl::MAX_PROCESSES; ++i)
+	{
+		FEBioBatchProcess* p = m.processes[i];
+		if (p && (p->state() == QProcess::Running))
+		{
+			p->kill();
+		}
+	}
+}
+
+void FEBioBatchDoc::CancelPending()
+{
+	while (!m.jobQueue.empty())
+	{
+		JobInfo* di = m.jobQueue.front(); m.jobQueue.pop();
+		if (di->status == PENDING) di->status = CANCELLED;
+		di->stats = di->oldStats;
+	}
+}
+
 void FEBioBatchDoc::onRunFinished(int returnCode, QProcess::ExitStatus status)
 {
 	FEBioBatchProcess* p = dynamic_cast<FEBioBatchProcess*>(QObject::sender());
@@ -273,30 +299,7 @@ void FEBioBatchDoc::onReadyRead()
 
 void FEBioBatchDoc::onErrorOccurred(QProcess::ProcessError error)
 {
-	FEBioBatchProcess* p = dynamic_cast<FEBioBatchProcess*>(QObject::sender());
-	if (p == nullptr) return;
-
-	assert(p->jobId >= 0);
-	if (p->jobId >= 0)
-	{
-		CFEBioJob& job = p->job;
-
-		job.StopTimer();
-		JobInfo& di = m.fileList[p->jobId];
-		di.status = FEBioBatchDoc::FAILED;
-		di.stats.elapsedTime = job.ElapsedTime();
-
-		di.stats.timeSteps    = job.m_modelStats.ntimeSteps;
-		di.stats.iterations   = job.m_modelStats.ntotalIters;
-		di.stats.nrhs         = job.m_modelStats.ntotalRHS;
-		di.stats.reformations = job.m_modelStats.ntotalReforms;
-
-		emit jobStatusChanged(p->jobId);
-
-		m.deleteProcess(p);
-	}
-
-	StartNextJob();
+	// No need to do anything here, since we can check the exit status of the process in finished.
 }
 
 bool FEBioBatchDoc::SaveDocument()

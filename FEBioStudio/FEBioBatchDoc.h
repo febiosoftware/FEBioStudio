@@ -92,6 +92,10 @@ public:
 	void StartBatch();
 	void StartBatch(const std::vector<int>& jobIDs);
 
+	void CancelPending();
+
+	void CancelAll();
+
 	bool SaveDocument() override;
 
 	bool LoadDocument(const QString& fileName);

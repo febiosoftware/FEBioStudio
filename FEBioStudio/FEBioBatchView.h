@@ -49,6 +49,8 @@ private:
 public slots:
 	void on_runAll();
 	void on_runSelected();
+	void on_cancelAll();
+	void on_cancelPending();
 	void on_options();
 	void on_filter();
 	void on_batchFinished();

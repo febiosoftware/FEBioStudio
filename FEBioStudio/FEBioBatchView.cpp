@@ -45,6 +45,7 @@ class FEBioBatchViewUI
 {
 public:
 	QPushButton* start = nullptr;
+	QPushButton* cancel = nullptr;
 	QPushButton* ops = nullptr;
 	QTableWidget* table = nullptr;
 	QLineEdit* filter = nullptr;
@@ -62,6 +63,14 @@ public:
 		QAction* runSel = menu->addAction("Run selected");
 		start->setMenu(menu);
 		h->addWidget(start);
+
+		cancel = new QPushButton("Cancel");
+		menu = new QMenu(cancel);
+		QAction* cancelAll = menu->addAction("Cancel all");
+		QAction* cancelPen = menu->addAction("Cancel pending");
+		cancel->setMenu(menu);
+		cancel->setEnabled(false);
+		h->addWidget(cancel);
 
 		ops = new QPushButton("Options ...");
 		h->addWidget(ops);
@@ -102,6 +111,8 @@ public:
 
 		QObject::connect(runAll, &QAction::triggered, w, &FEBioBatchView::on_runAll);
 		QObject::connect(runSel, &QAction::triggered, w, &FEBioBatchView::on_runSelected);
+		QObject::connect(cancelAll, &QAction::triggered, w, &FEBioBatchView::on_cancelAll);
+		QObject::connect(cancelPen, &QAction::triggered, w, &FEBioBatchView::on_cancelPending);
 		QObject::connect(table, &QTableWidget::customContextMenuRequested, w, &FEBioBatchView::showContextMenu);
 		QObject::connect(ops, &QPushButton::clicked, w, &FEBioBatchView::on_options);
 		QObject::connect(filter, &QLineEdit::textChanged, w, &FEBioBatchView::on_filter);
@@ -112,6 +123,7 @@ public:
 		start->setEnabled(b);
 		ops->setEnabled(b);
 		filter->setEnabled(b);
+		cancel->setEnabled(!b);
 	}
 };
 
@@ -181,6 +193,23 @@ void FEBioBatchView::on_runSelected()
 		m_doc->StartBatch(jobs);
 		UpdateView();
 	}
+}
+
+void FEBioBatchView::on_cancelAll()
+{
+	if (m_doc == nullptr) return;
+	if (QMessageBox::question(this, "Cancel all", "Are you sure you want to cancel all running and pending jobs?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+	{
+		m_doc->CancelAll();
+		UpdateView();
+	}
+}
+
+void FEBioBatchView::on_cancelPending()
+{
+	if (m_doc == nullptr) return;
+	m_doc->CancelPending();
+	UpdateView();
 }
 
 void FEBioBatchView::on_filter()
