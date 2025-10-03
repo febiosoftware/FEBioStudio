@@ -94,6 +94,12 @@ void init_FSMesh(py::module_& m)
 
         .def("MeshPartitions", &FSMesh::MeshPartitions, DOC(FSMesh, MeshPartitions))
         .def("MeshPartition", &FSMesh::MeshPartition, py::return_value_policy::reference, DOC(FSMesh, MeshPartition))
+
+        .def("ElemSets", &FSMesh::FEElemSets, DOC(FSMesh, FEElemSets))
+        .def("ElemSet", &FSMesh::GetFEElemSet, py::return_value_policy::reference, DOC(FSMesh, GetFEElemSet))
+
+        .def("NodeSets", &FSMesh::FENodeSets, DOC(FSMesh, FENodeSets))
+        .def("NodeSet", &FSMesh::GetFENodeSet, py::return_value_policy::reference, DOC(FSMesh, GetFENodeSet))
         ;
 
 	py::class_<FSCurveMesh, FSLineMesh, std::unique_ptr<FSCurveMesh, py::nodelete>>(mesh, "CurveMesh", DOC(FSCurveMesh))
