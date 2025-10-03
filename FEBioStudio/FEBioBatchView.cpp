@@ -242,8 +242,8 @@ void updateTableItemInt(QTableWidgetItem* it, int n0, int n1)
 void updateTableItemFloat(QTableWidgetItem* it, double n0, double n1)
 {
 	it->setBackground(QBrush());
-	if (n0 < 0) it->setText("");
-	else if ((n1 < 0) || (n0 == n1)) it->setText(QString::asprintf("%.2f", n0));
+	if (n0 <= 0) it->setText("");
+	else if ((n1 <= 0) || (n0 == n1)) it->setText(QString::asprintf("%.2f", n0));
 	else
 	{
 		QString s0 = QString::asprintf("%.2f", n0);
