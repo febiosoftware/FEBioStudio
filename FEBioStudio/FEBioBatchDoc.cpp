@@ -339,10 +339,10 @@ bool FEBioBatchDoc::SaveDocument()
 		xml.add_branch(file);
 		{
 			xml.add_leaf("timesteps" , job.stats.timeSteps);
-			xml.add_leaf("iterations", job.stats.iterations);
-			xml.add_leaf("rhs_evals" , job.stats.nrhs);
+			xml.add_leaf("iters"     , job.stats.iterations);
+			xml.add_leaf("nrhs"      , job.stats.nrhs);
 			xml.add_leaf("reforms"   , job.stats.reformations);
-			xml.add_leaf("solution"  , job.stats.solutionNorm);
+			xml.add_leaf("norm"      , job.stats.solutionNorm);
 			xml.add_leaf("runtime"   , job.stats.elapsedTime);
 		}
 		xml.close_branch();
@@ -386,10 +386,10 @@ bool FEBioBatchDoc::LoadDocument(const QString& fileName)
 				++tag;
 				do {
 					if      (tag == "timesteps" ) tag.value(di.stats.timeSteps);
-					else if (tag == "iterations") tag.value(di.stats.iterations);
-					else if (tag == "rhs_evals" ) tag.value(di.stats.nrhs);
+					else if (tag == "iters"     ) tag.value(di.stats.iterations);
+					else if (tag == "nrhs"      ) tag.value(di.stats.nrhs);
 					else if (tag == "reforms"   ) tag.value(di.stats.reformations);
-					else if (tag == "solution"  ) tag.value(di.stats.solutionNorm);
+					else if (tag == "norm"      ) tag.value(di.stats.solutionNorm);
 					else if (tag == "runtime"   ) tag.value(di.stats.elapsedTime);
 					++tag;
 				} while (!tag.isend());

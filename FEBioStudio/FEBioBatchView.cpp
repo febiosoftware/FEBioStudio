@@ -40,6 +40,166 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QLabel>
 #include <map>
+#include <QRegularExpression>
+
+class BatchRunFilter
+{
+	enum FltType {
+		INVALID,
+		STRING,
+		REGEX,
+		CONDITION
+	};
+
+	enum CondOp {
+		LESS,
+		LESS_EQUAL,
+		GREATER,
+		GREATER_EQUAL,
+		EQUAL,
+		NOT_EQUAL
+	};
+
+	enum Variable {
+		TIMESTEPS,
+		ITERS,
+		REFORMS,
+		NRHS,
+		RUNTIME,
+		NORM,
+		STATUS
+	};
+
+	struct Condition {
+		Variable var = TIMESTEPS;
+		int op = 0;
+		double val = 0;
+	};
+
+public:
+	BatchRunFilter() {}
+
+	bool isValid() const { return (m_type != INVALID); }
+
+	void SetFilter(const QString& flt)
+	{
+		m_filter = flt;
+		process();
+	}
+
+private:
+	void process()
+	{
+		m_type = INVALID;
+		if (!m_filter.isEmpty())
+		{
+			QChar c = m_filter[0];
+			if (c == '/')
+			{
+				m_regex.setPattern(m_filter.mid(1));
+				if (m_regex.isValid()) m_type = REGEX;
+			}
+			else if (c == '=')
+			{
+				QString s = m_filter.mid(1);
+				QRegularExpression re("[<>!=]");
+				int n = s.indexOf(re);
+				if (n > 0)
+				{
+					QString var = s.left(n);
+
+					if      (var == "timesteps") m_cond.var = TIMESTEPS;
+					else if (var == "iters"    ) m_cond.var = ITERS;
+					else if (var == "reforms"  ) m_cond.var = REFORMS;
+					else if (var == "nrhs"     ) m_cond.var = NRHS;
+					else if (var == "runtime"  ) m_cond.var = RUNTIME;
+					else if (var == "norm"     ) m_cond.var = NORM;
+					else if (var == "status"   ) m_cond.var = STATUS;
+					else return;
+
+					QString op(s[n]);
+					if (n < s.length() - 1)
+					{
+						QChar c1 = s[n+1];
+						if (c1 == '=') {
+							op += c1; n++;
+						}
+					}
+					else return;
+
+					if      (op == "<" ) m_cond.op = LESS;
+					else if (op == "<=") m_cond.op = LESS_EQUAL;
+					else if (op == "=" ) m_cond.op = EQUAL;
+					else if (op == "==") m_cond.op = EQUAL;
+					else if (op == "!=") m_cond.op = NOT_EQUAL;
+					else if (op == ">" ) m_cond.op = GREATER;
+					else if (op == ">=") m_cond.op = GREATER_EQUAL;
+
+					if (n < s.length() - 1)
+					{
+						QString val = s.mid(n + 1);
+						bool ok = false;
+						m_cond.val = val.toDouble(&ok);
+
+						if (ok) m_type = CONDITION;
+					}
+				}
+			}
+			else m_type = STRING;
+		}
+	}
+
+public:
+	bool matches(const FEBioBatchDoc::JobInfo& d)
+	{
+		if (m_type == INVALID) return false;
+
+		if (m_type == STRING) return d.fileName.contains(m_filter);
+		else if (m_type == REGEX)
+		{
+			QRegularExpressionMatch m = m_regex.match(d.fileName);
+			return m.hasMatch();
+		}
+		else if (m_type == CONDITION)
+		{
+			double val = 0;
+			switch (m_cond.var)
+			{
+			case TIMESTEPS: val = d.stats.timeSteps; break;
+			case ITERS    : val = d.stats.iterations; break;
+			case REFORMS  : val = d.stats.reformations; break;
+			case NRHS     : val = d.stats.nrhs; break;
+			case RUNTIME  : val = d.stats.elapsedTime; break;
+			case NORM     : val = d.stats.solutionNorm; break;
+			case STATUS   : val = (d.status == FEBioBatchDoc::FINISHED); break;
+			default:
+				assert(false);
+				return false;
+			}
+
+			switch (m_cond.op)
+			{
+			case LESS         : return (val <  m_cond.val); break;
+			case LESS_EQUAL   : return (val <= m_cond.val); break;
+			case GREATER      : return (val >  m_cond.val); break;
+			case GREATER_EQUAL: return (val >= m_cond.val); break;
+			case EQUAL        : return (val == m_cond.val); break;
+			case NOT_EQUAL    : return (val != m_cond.val); break;
+			default:
+				assert(false);
+				return false;
+			}
+		}
+
+		return false;
+	}
+
+private:
+	QString m_filter;
+	QRegularExpression m_regex;
+	Condition m_cond;
+	FltType m_type = INVALID;
+};
 
 class FEBioBatchViewUI
 {
@@ -51,6 +211,8 @@ public:
 	QLineEdit* filter = nullptr;
 
 	std::map<int, int> rowmap;
+
+	BatchRunFilter m_flt;
 
 public:
 	void setup(FEBioBatchView* w)
@@ -77,6 +239,7 @@ public:
 
 		h->addWidget(new QLabel("filter:"));
 		filter = new QLineEdit;
+		filter->setPlaceholderText("string, /regex, =condition");
 		filter->setToolTip("Filter the list of files");
 		h->addWidget(filter);
 
@@ -85,7 +248,7 @@ public:
 		table = new QTableWidget(w);
 		table->setColumnCount(8);
 		QStringList headers;
-		headers << "File" << "Status" << "Timesteps" << "Iters." << "RHS evals." << "Reforms." << "Solution" << "Runtime (sec.)";
+		headers << "file" << "status" << "timesteps" << "iters" << "nrhs" << "reforms" << "norm" << "runtime (sec.)";
 		table->setHorizontalHeaderLabels(headers);
 		table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -217,8 +380,13 @@ void FEBioBatchView::on_cancelPending()
 
 void FEBioBatchView::on_filter()
 {
-	UpdateTable();
-	UpdateView();
+	QString txt = ui->filter->text();
+	ui->m_flt.SetFilter(txt);
+	if (ui->m_flt.isValid() || txt.isEmpty())
+	{
+		UpdateTable();
+		UpdateView();
+	}
 }
 
 void FEBioBatchView::on_batchFinished()
@@ -343,10 +511,10 @@ void FEBioBatchView::UpdateTable()
 	QTableWidget* table = ui->table;
 	table->setRowCount(0);
 	ui->rowmap.clear();
-	QString filter = ui->filter->text();
+	BatchRunFilter& flt = ui->m_flt;
 	for (const FEBioBatchDoc::JobInfo& file : m_doc->GetFileList())
 	{
-		if (filter.isEmpty() || (file.fileName.contains(filter)))
+		if (!flt.isValid() || (flt.matches(file)))
 		{
 			int row = table->rowCount();
 			ui->rowmap[file.jobId] = row;
