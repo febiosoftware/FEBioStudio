@@ -39,8 +39,11 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QToolButton>
 #include <map>
 #include <QRegularExpression>
+#include <QApplication>
+#include <QClipBoard>
 
 class BatchRunFilter
 {
@@ -219,6 +222,10 @@ public:
 	{
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
+
+		ops = new QPushButton("Options ...");
+		h->addWidget(ops);
+
 		start = new QPushButton("Start");
 		QMenu* menu = new QMenu(start);
 		QAction* runAll = menu->addAction("Run all");
@@ -234,9 +241,6 @@ public:
 		cancel->setEnabled(false);
 		h->addWidget(cancel);
 
-		ops = new QPushButton("Options ...");
-		h->addWidget(ops);
-
 		h->addWidget(new QLabel("filter:"));
 		filter = new QLineEdit;
 		filter->setPlaceholderText("string, /regex, =condition");
@@ -244,6 +248,11 @@ public:
 		h->addWidget(filter);
 
 		h->addStretch();
+
+		QToolButton* copy = new QToolButton; 
+		copy->setIcon(QIcon(":/icons/clipboard.png")); 
+		copy->setToolTip("Copy to clipboard");
+		h->addWidget(copy);
 
 		table = new QTableWidget(w);
 		table->setColumnCount(8);
@@ -279,6 +288,7 @@ public:
 		QObject::connect(table, &QTableWidget::customContextMenuRequested, w, &FEBioBatchView::showContextMenu);
 		QObject::connect(ops, &QPushButton::clicked, w, &FEBioBatchView::on_options);
 		QObject::connect(filter, &QLineEdit::textChanged, w, &FEBioBatchView::on_filter);
+		QObject::connect(copy, &QToolButton::clicked, w, &FEBioBatchView::on_clipboard);
 	}
 
 	void enableButtons(bool b)
@@ -387,6 +397,30 @@ void FEBioBatchView::on_filter()
 		UpdateTable();
 		UpdateView();
 	}
+}
+
+void FEBioBatchView::on_clipboard()
+{
+	if (m_doc == nullptr) return;
+	QTableWidget* table = ui->table;
+	if (table->rowCount() == 0) return;
+	QString s;
+	for (int i = 0; i < table->columnCount(); ++i)
+	{
+		s += table->horizontalHeaderItem(i)->text();
+		if (i < table->columnCount() - 1) s += "\t";
+	}
+	s += "\n";
+	for (int i = 0; i < table->rowCount(); ++i)
+	{
+		for (int j = 0; j < table->columnCount(); ++j)
+		{
+			s += table->item(i, j)->text();
+			if (j < table->columnCount() - 1) s += "\t";
+		}
+		s += "\n";
+	}
+	QApplication::clipboard()->setText(s);
 }
 
 void FEBioBatchView::on_batchFinished()

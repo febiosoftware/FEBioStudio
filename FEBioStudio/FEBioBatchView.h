@@ -53,6 +53,7 @@ public slots:
 	void on_cancelPending();
 	void on_options();
 	void on_filter();
+	void on_clipboard();
 	void on_batchFinished();
 	void UpdateJobStatus(int nrow);
 	void showContextMenu(const QPoint& pos);
