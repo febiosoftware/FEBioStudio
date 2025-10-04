@@ -38,7 +38,7 @@ using namespace std::chrono;
 class FEBioBatchProcess : public CLocalJobProcess
 {
 public:
-	FEBioBatchProcess(CMainWindow* wnd, QObject* parent) : CLocalJobProcess(wnd, &job, "febio4", parent), job(nullptr) {}
+	FEBioBatchProcess(CMainWindow* wnd, const QString& program, QObject* parent) : CLocalJobProcess(wnd, &job, program, parent), job(nullptr) {}
 	CFEBioJob job;
 	int jobId = -1;
 };
@@ -92,6 +92,8 @@ FEBioBatchDoc::FEBioBatchDoc(CMainWindow* wnd) : CDocument(wnd), m(*new Impl)
 {
 	static int n = 1;
 	SetDocTitle(QString::asprintf("Batch%d", n++).toStdString());
+
+	m.options.febioPath = "febio4";
 }
 
 FEBioBatchDoc::~FEBioBatchDoc()
@@ -158,7 +160,14 @@ void FEBioBatchDoc::StartBatch(const std::vector<int>& jobIDs)
 	}
 
 	CMainWindow* wnd = GetMainWindow();
-	if (wnd) wnd->AddLogEntry(QString(">>> Starting batch run ...\n"));
+	if (wnd)
+	{
+		FEBioBatchDoc::Options& o = m.options;
+		wnd->AddLogEntry(QString(">>> Starting batch run ...\n"));
+		wnd->AddLogEntry(QString("    FEBio path ........... : %1\n").arg(o.febioPath));
+		wnd->AddLogEntry(QString("    Nr. of processes ..... : %1\n").arg(o.nprocs));
+		wnd->AddLogEntry(QString("    Nr. of threads/process : %1\n").arg(o.nthreads == 0 ? "default" : QString::number(o.nthreads)));
+	}
 
 	m.StartTimer();
 
@@ -204,7 +213,7 @@ void FEBioBatchDoc::StartNextJob()
 
 				QString logName = baseName + ".log";
 
-				p = new FEBioBatchProcess(m_wnd, this);
+				p = new FEBioBatchProcess(m_wnd, m.options.febioPath, this);
 				m.processes[l] = p;
 
 				p->job.SetFEBFileName(di.fileName.toStdString());
@@ -299,7 +308,20 @@ void FEBioBatchDoc::onReadyRead()
 
 void FEBioBatchDoc::onErrorOccurred(QProcess::ProcessError error)
 {
-	// No need to do anything here, since we can check the exit status of the process in finished.
+	if (error == QProcess::FailedToStart)
+	{
+		FEBioBatchProcess* p = dynamic_cast<FEBioBatchProcess*>(QObject::sender());
+		if (p == nullptr) return;
+		assert(p->jobId >= 0);
+		if (p->jobId >= 0)
+		{
+			JobInfo& di = m.fileList[p->jobId];
+			di.status = FEBioBatchDoc::FAILED;
+			emit jobStatusChanged(p->jobId);
+			m.deleteProcess(p);
+		}
+		StartNextJob();
+	}
 }
 
 bool FEBioBatchDoc::SaveDocument()

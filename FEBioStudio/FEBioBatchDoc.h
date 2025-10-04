@@ -75,8 +75,9 @@ public:
 	};
 
 	struct Options {
-		int nthreads = 0;	// number of threads (0 = auto)
+		int nthreads = 0;	// number of threads (0 = default)
 		int nprocs = 1;	// number of concurrent processes
+		QString febioPath; // path to FEBio executable
 	};
 
 public:

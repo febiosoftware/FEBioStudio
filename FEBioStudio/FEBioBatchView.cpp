@@ -183,8 +183,11 @@ void FEBioBatchView::on_runSelected()
 	std::vector<int> jobs;
 	for (QTableWidgetItem* it : sel)
 	{
-		int row = it->row();
-		jobs.push_back(row);
+		if (it->column() == 0)
+		{
+			int row = it->row();
+			jobs.push_back(row);
+		}
 	}
 
 	if (!jobs.empty())
@@ -457,6 +460,7 @@ class CDlgBatchOptions::UI {
 public:
 	QSpinBox* nthreads = nullptr;
 	QSpinBox* nprocs   = nullptr;
+	QLineEdit* febioPath = nullptr;
 	FEBioBatchDoc::Options ops;
 
 public:
@@ -472,6 +476,8 @@ public:
 		nthreads->setRange(0, 32);
 		nthreads->setValue(1);
 		nthreads->setSpecialValueText("(default)");
+
+		form->addRow("FEBio executable:", febioPath = new QLineEdit);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -489,12 +495,14 @@ public:
 		ops = opt;
 		nthreads->setValue(opt.nthreads);
 		nprocs->setValue(opt.nprocs);
+		febioPath->setText(opt.febioPath);
 	}
 
 	FEBioBatchDoc::Options options()
 	{
 		ops.nthreads = nthreads->value();
 		ops.nprocs = nprocs->value();
+		ops.febioPath = febioPath->text();
 		return ops;
 	}
 };
