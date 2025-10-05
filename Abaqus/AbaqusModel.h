@@ -30,105 +30,108 @@ SOFTWARE.*/
 #include <vector>
 #include <map>
 
+using std::vector;
+using std::pair;
+using std::list;
+using std::map;
+using std::string;
+
 class AbaqusModel
 {
 public:
 	enum { Max_Nodes = 20 };	// max nodes per element
-	enum { Max_Name = 256 };	// 
-	enum { Max_Title = 256 };
 	enum { C3D8 } ElementTypes;
 
 	// surface types
-	enum { ST_ELEMENT };
+	enum { 
+		ST_ELEMENT,
+		ST_NODE
+	};
 
 public:
 
 	// Node
 	struct NODE
 	{
-		int	id;				// nodal ID
-		int n;				// node index
+		int	id;				// nodal ID (as read from file)
+		int lid;			// local index into FSMesh
 		double x, y, z;		// nodal coordinates
 	};
-
-	typedef std::vector<NODE>::iterator Tnode_itr;
+	typedef vector<NODE>::iterator Tnode_itr;
 
 	// Element
 	struct ELEMENT
 	{
-		int id;		// Global ID (as read from file)
-		int lid;	// local ID (index into part's element list)
+		int id;		// element ID (as read from file)
+		int lid;	// local index into FSMesh
 		int type;
 		int n[Max_Nodes];
 	};
-	typedef std::vector<ELEMENT>::iterator Telem_itr;
+	typedef vector<ELEMENT>::iterator Telem_itr;
 
 	// Spring element
 	struct SPRING_ELEMENT
 	{
 		int	id;
-		int	n[2];
+		string	n[2];
 	};
-	typedef std::list<SPRING_ELEMENT>::iterator Tspring_itr;
-
-	// Face
-	struct FACE
-	{
-		int	eid;		// element ID pointer
-		int nf;			// face number
-	};
+	typedef list<SPRING_ELEMENT>::iterator Tspring_itr;
 
 	class PART;
 
 	// node set
 	struct NODE_SET
 	{
-		char		szname[Max_Name + 1];
-		PART*		part;
-		std::list<Tnode_itr>	node;
+		string		name;
+		string		instance;
+		bool		binternal;
+		PART*		part = nullptr;
+		vector<int>	node;
 	};
 
 	// Element set
 	struct ELEMENT_SET
 	{
-		char szname[Max_Name + 1] = { 0 };	// element set name
-		PART*			part = nullptr;
-		std::vector<int>		elem;
+		string		name;
+		string		instance;
+		bool		binternal;
+		PART* part = nullptr;
+		vector<int>	elem;
 	};
 
 	// Surface
 	struct SURFACE
 	{
-		char szname[Max_Name + 1];	// surface name
-		std::list<FACE> face;			// face list
-		PART*		part;
+		string		name;
+		string		instance;
+		int			type = -1;
+		PART* part = nullptr;
+		vector<pair<string, int> >  set;
 	};
 
 	// Solid section
 	struct SOLID_SECTION
 	{
-		char	szelset[Max_Name + 1];
-		char	szmat[Max_Name + 1];
-		char	szorient[Max_Name + 1];
-		PART*	part;
-		int		m_pid = -1;
+		string  elset;
+		string	mat;
+		string	orient;
+		PART*	part = nullptr;
 	};
 
 	// Shell section
 	struct SHELL_SECTION
 	{
-		char	szelset[Max_Name + 1];
-		char	szmat[Max_Name + 1];
-		char	szorient[Max_Name + 1];
+		string	elset;
+		string	mat;
+		string	orient;
 		PART*	part = nullptr;
 		double	m_shellThickness = 0.0;
-		int		m_pid = -1;
 	};
 
 	struct Orientation
 	{
-		char	szname[Max_Name + 1];
-		char	szdist[Max_Name + 1];
+		string	name;
+		string	dist;
 	};
 
 	class Distribution
@@ -136,17 +139,13 @@ public:
 	public:
 		struct ENTRY
 		{
-			int		elem;
-			double	val[6];
+			int		elem = -1;
+			double	val[6] = { 0 };
 		};
 
-		Distribution() {}
-		Distribution(const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
-		void operator = (const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
-
 	public:
-		char			m_szname[Max_Name + 1];
-		std::vector<ENTRY>	m_data;
+		string			name;
+		vector<ENTRY>	m_data;
 	};
 
 	class Amplitude
@@ -161,17 +160,28 @@ public:
 		Amplitude() { m_type = 0; }
 
 	public:
-		std::string	m_name;
+		string	m_name;
 		int		m_type;
-		std::vector<vec2d>	m_points;
+		vector<vec2d>	m_points;
 	};
 
 	class SpringSet
 	{
 	public:
-		std::vector<SPRING_ELEMENT> m_Elem;
-		LoadCurve m_lc;
+		string name;
+		vector<SPRING_ELEMENT> m_Elem;
 	};
+
+	class SPRING
+	{
+	public:
+		string elset;
+		double k;	// spring stiffness for linear spring
+		LoadCurve m_lc; // for nonlinear springs
+		bool nonlinear = false;
+	};
+
+	class INSTANCE;
 
 	// part
 	class PART
@@ -182,11 +192,7 @@ public:
 
 		~PART();
 
-		// return the part's name
-		const char* GetName() { return m_szname; }
-
-		// set the part's name
-		void SetName(const char* sz);
+		PART* Clone();
 
 	public:
 		// find a node
@@ -199,34 +205,41 @@ public:
 		void AddElement(ELEMENT& n);
 
 		// add a spring
-		Tspring_itr AddSpring(SPRING_ELEMENT& n);
+		void AddSpring(SPRING& spring);
+
+		void AddSpringSet(SpringSet& springs);
+
+		SpringSet* FindSpringSet(const std::string& s);
 
 		// finds a element with a particular id
 		Telem_itr FindElement(int id);
 
 		// find an element set with a particular name
-		ELEMENT_SET* FindElementSet(const char* szname);
+		ELEMENT_SET* FindElementSet(const string& name);
+
+		// find all element sets with a particular name
+		vector<ELEMENT_SET*> FindElementSets(const string& name);
 
 		// adds an element set
-		ELEMENT_SET* AddElementSet(const char* szname);
+		ELEMENT_SET* AddElementSet(const string& name);
 
 		// find a node set with a particular name
-		NODE_SET* FindNodeSet(const char* szname);
+		NODE_SET* FindNodeSet(const string& name);
 
 		// adds a node set
-		NODE_SET* AddNodeSet(const char* szname);
+		NODE_SET* AddNodeSet(const string& name);
 
 		// find a surface with a particular name
-		SURFACE* FindSurface(const char* szname);
+		SURFACE* FindSurface(const string& name);
 
 		// add a surface
-		SURFACE* AddSurface(const char* szname);
+		SURFACE* AddSurface(const string& name);
 
 		// add a solid section
-		void AddSolidSection(const char* szset, const char* szmat, const char* szorient);
+		void AddSolidSection(const string& set, const string& mat, const string& orient);
 
 		// add a solid section
-		SHELL_SECTION& AddShellSection(const char* szset, const char* szmat, const char* szorient);
+		SHELL_SECTION& AddShellSection(const string& set, const string& mat, const string& orient);
 
 		// number of nodes
 		int Nodes() { return (int)m_Node.size(); }
@@ -234,36 +247,38 @@ public:
 		// number of elements
 		int Elements() { return (int)m_Elem.size(); }
 
+		int CountElements();
+
 		// number of springs
 		int Springs() { return (int)m_Spring.size(); }
 
 		// build the node-look-up table
 		bool BuildNLT();
 
-		void AddOrientation(const char* szname, const char* szdist);
+		void AddOrientation(const string& name, const string& szdist);
 
-		Orientation* FindOrientation(const char* szname);
+		Orientation* FindOrientation(const string& name);
 
-		Distribution* FindDistribution(const char* szname);
+		Distribution* FindDistribution(const string& name);
 
 	public:
-		char m_szname[256];
-		std::vector<NODE>				m_Node;		// list of nodes
-		std::vector<ELEMENT>				m_Elem;		// list of elements
-		std::list<SPRING_ELEMENT>		m_Spring;	// list of springs
-		std::map<std::string, NODE_SET*>		m_NSet;		// node sets
-		std::map<std::string, ELEMENT_SET*>	m_ESet;		// element sets
-		std::map<std::string, SURFACE*>		m_Surf;		// surfaces
-		std::map<std::string, SpringSet>		m_SpringSet; // set of springs
-		std::map<std::string, SOLID_SECTION>	m_Solid;	// solid sections
-		std::map<std::string, SHELL_SECTION>	m_Shell;	// shell sections
-		std::list<Orientation>			m_Orient;
-		std::list<Distribution>			m_Distr;
+		string						m_name;
+		vector<NODE>				m_Node;		// list of nodes
+		vector<ELEMENT>				m_Elem;		// list of elements
+		list<SPRING>				m_Spring;	// spring data
+		list<NODE_SET>				m_NSet;		// node sets
+		list<ELEMENT_SET>			m_ESet;		// element sets
+		list<SURFACE>				m_Surf;		// surfaces
+		list<SpringSet>				m_SpringSet; // set of springs
+		list<SOLID_SECTION>			m_Solid;	// solid sections
+		list<SHELL_SECTION>			m_Shell;	// shell sections
+		list<Orientation>			m_Orient;
+		list<Distribution>			m_Distr;
 
-		std::vector<Tnode_itr>	m_NLT;	// Node look-up table
+		vector<Tnode_itr>	m_NLT;	// Node look-up table
 		int					m_ioff;	// node id offset (min node id)
 
-		GObject*			m_po;	// object created based on this part
+		INSTANCE* m_instance = nullptr;
 	};
 
 	// an instance of a part
@@ -272,11 +287,14 @@ public:
 	public:
 		INSTANCE();
 
-		void SetName(const char* sz);
-		const char* GetName() { return m_szname; }
+		void SetName(const string& name) { m_name = name; }
+		const string& GetName() { return m_name; }
 
-		void SetPart(PART* pg) { m_pPart = pg; }
-		PART* GetPart() { return m_pPart; }
+		void SetPartName(const string& name) { m_partName = name; }
+		const string& GetPartName() { return m_partName; }
+
+		void SetPart(PART* pg);
+		PART* GetPart() { return m_part; }
 
 		void GetTranslation(double t[3]);
 		void SetTranslation(double t[3]);
@@ -285,10 +303,11 @@ public:
 		void SetRotation(double t[7]);
 
 	private:
-		char	m_szname[256];	// name of instance
-		PART*	m_pPart;		// the part this instances
-		double	m_trans[3];		// translation
-		double	m_rot[7];		// rotation
+		string	m_name;			// name of instance
+		string	m_partName;		// the part this instances
+		PART*	m_part = nullptr;
+		double	m_trans[3] = { 0 };		// translation
+		double	m_rot[7] = { 0 };		// rotation
 	};
 
 	// material types
@@ -297,12 +316,26 @@ public:
 	// material
 	struct MATERIAL
 	{
-		char	szname[256];
-		int		mattype;
-		int		ntype;
-		int		nparam;
-		double	dens;
-		double	d[10];
+		string  name;
+		int		mattype = -1;
+		int		ntype = -1;
+		int		nparam = -1;
+		double	dens = 0;
+		double	d[10] = { 0 };
+	};
+
+	class CLOAD
+	{
+	public:
+		struct NSET
+		{
+			int ndof = -1;
+			double val = 0;
+			string nset;
+		};
+
+		string ampl;
+		vector<NSET> nset;
 	};
 
 	// surface loads
@@ -312,20 +345,20 @@ public:
 		struct SURF
 		{
 			double		load;
-			SURFACE*	surf;
+			string		surf;
 		};
 
 	public:
 		DSLOAD(){}
 
-		void add(SURFACE* s, double p)
+		void add(const string& surf, double p)
 		{
-			SURF surf = {p, s};
-			m_surf.push_back(surf);
+			SURF s = {p, surf};
+			m_surf.push_back(s);
 		}
 
 	public:
-		std::vector<SURF>	m_surf;
+		vector<SURF>	m_surf;
 		int				m_ampl = -1;
 	};
 
@@ -335,42 +368,41 @@ public:
 	public:
 		struct NSET
 		{
-			double		load = 0.0;
-			int			ndof = -1;
-			NODE_SET*	nodeSet = nullptr;
+			int		ndof[2] = { -1, -1 }; // min, max dof numbers
+			double	val = 0.0;
+			string	nset;
 		};
 
 	public:
 		BOUNDARY(){}
 
-		void add(NODE_SET* ns, int ndof, double v)
+		void add(NSET& ns)
 		{
-			NSET nset = { v, ndof, ns };
-			m_nodeSet.push_back(nset);
+			m_nodeSet.push_back(ns);
 		}
 
 	public:
-		std::vector<NSET>	m_nodeSet;
-		int				m_ampl = -1;
+		vector<NSET>	m_nodeSet;
+		string			m_ampl;
 	};
 
 	struct CONTACT_PAIR
 	{
-		std::string	name;
-		std::string surf1;
-		std::string surf2;
+		string	name;
+		string surf1;
+		string surf2;
 
 		double friction = 0.0;
 	};
 
-	// Steps
-	struct STEP
+	struct TIE
 	{
-		char	szname[Max_Name + 1];
-
-		double	dt0;
-		double	time;
+		string	name;
+		bool	adjust = false;
+		string surf1;
+		string surf2;
 	};
+
 
 	class ASSEMBLY
 	{
@@ -389,12 +421,57 @@ public:
 		void ClearCurrentInstance();
 
 		// get instance list
-		std::list<INSTANCE*>& InstanceList() { return m_Instance; }
+		list<INSTANCE*>& InstanceList() { return m_Instance; }
 
 	public:
 		std::string	m_name;
-		std::list<INSTANCE*>	m_Instance;		// list of instances
+		list<INSTANCE*>	m_Instance;		// list of instances
 		INSTANCE*	m_currentInstance;	// current active instance
+	};
+
+	// Steps
+	class STEP
+	{
+	public:
+		string	name;
+
+		double	dt0;
+		double	time;
+
+		// add a pressure load
+		DSLOAD* AddPressureLoad(DSLOAD& p);
+
+		// list of pressure loads
+		list<DSLOAD>& SurfaceLoadList() { return m_SLoads; }
+
+		// add a concentrated load
+		void AddCLoad(CLOAD& l) { m_CLoads.push_back(l); }
+
+		// list of concentrated loads
+		list<CLOAD>& CLoadList() { return m_CLoads; }
+
+		// add a boundary condition
+		BOUNDARY* AddBoundaryCondition(BOUNDARY& p);
+
+		// list of boundary conditions
+		list<BOUNDARY>& BoundaryConditionList() { return m_Boundary; }
+
+	public:
+		void AddContactPair(CONTACT_PAIR& cp);
+		int ContactPairs() const;
+		const CONTACT_PAIR& GetContactPair(int n) const;
+
+		void AddTie(TIE& tie) { m_Tie.push_back(tie); }
+		int Ties() const { return (int)m_Tie.size(); }
+		const TIE& GetTie(int n) const { return m_Tie[n]; }
+
+
+	private:
+		list<DSLOAD>		m_SLoads;		// surface loads
+		list<CLOAD>			m_CLoads;		// concentrated loads
+		list<BOUNDARY>		m_Boundary;		// boundary conditions
+		vector<CONTACT_PAIR>	m_ContactPair;	// contact pairs
+		vector<TIE>				m_Tie;			// ties
 	};
 
 public:
@@ -404,63 +481,47 @@ public:
 	// destructor
 	~AbaqusModel();
 
-	// get the active part
-	PART* GetActivePart(bool bcreate = false);
+	void SetName(const string& name) { m_name = name; }	
+
+	const string& GetName() const { return m_name; }
 
 	// create a part
-	PART* CreatePart(const char* sz = 0);
+	PART* CreatePart(const string& name = "");
 
 	// find a part
-	PART* FindPart(const char* sz);
+	PART* FindPart(const string& name);
+
+	// add a part
+	void AddPart(PART* pg) { m_Part.push_back(pg); }
 
 	// find a node set based on a name
-	NODE_SET* FindNodeSet(const char* sznset);
+	NODE_SET* FindNodeSet(const string& name);
 
 	// find a part with a particular element set
-	ELEMENT_SET* FindElementSet(const char* szelemset);
-
-	// get the current part
-	PART* CurrentPart() { return m_currentPart; }
-
-	// set the current part
-	void SetCurrentPart(PART* part) { m_currentPart = part; }
+	ELEMENT_SET* FindElementSet(const string& name);
 
 	// get part list
-	std::list<PART*>&	PartList() { return m_Part; }
+	list<PART*>&	PartList() { return m_Part; }
 
-	SURFACE* FindSurface(const char* szname);
+	PART& GlobalPart() { return m_globalPart; }
 
-	SpringSet* FindSpringSet(const char* szname);
+	SURFACE* FindSurface(const string& name);
+
+	SpringSet* FindSpringSet(const string& name);
 
 public:
 	// Add a material
-	MATERIAL* AddMaterial(const char* szname);
+	MATERIAL* AddMaterial(const string& name);
 
 	// get material list
-	std::list<MATERIAL>& MaterialList() { return m_Mat; }
-
-	// add a pressure load
-	DSLOAD*	AddPressureLoad(DSLOAD& p);
-
-	// list of pressure loads
-	std::list<DSLOAD>& SurfaceLoadList() { return m_SLoads; }
-
-	// add a boundary condition
-	BOUNDARY* AddBoundaryCondition(BOUNDARY& p);
-
-	// list of boundary conditions
-	std::list<BOUNDARY>& BoundaryConditionList() { return m_Boundary; }
+	list<MATERIAL>& MaterialList() { return m_Mat; }
 
 	// add a step
-	STEP* AddStep(const char* szname);
+	STEP* AddStep(const string& name);
 
-	// set the current step
-	void SetCurrentStep(STEP* p);
+	STEP& GetInitStep() { return m_initStep; }
 
-	// get the current step
-	STEP* CurrentStep() { return m_currentStep; }
-
-	std::list<STEP>& StepList() { return m_Step; }
+	list<STEP>& StepList() { return m_Step; }
 
 	// get the Assembly
 	ASSEMBLY* GetAssembly() { return m_Assembly; }
@@ -468,38 +529,26 @@ public:
 	// add an assembly
 	ASSEMBLY* CreateAssembly();
 
-	void SetCurrentAssembly(ASSEMBLY* a) { m_currentAssembly = a; }
-	ASSEMBLY* GetCurrentAssembly() { return m_currentAssembly; }
-
 	// find the instance
-	INSTANCE* FindInstance(const char* sz);
+	INSTANCE* FindInstance(const string& name);
 
 public:
 	void AddAmplitude(const Amplitude& a);
 	int Amplitudes() const;
 	const Amplitude& GetAmplitude(int n) const;
-	int FindAmplitude(const char* szname) const;
-
-public:
-	void AddContactPair(CONTACT_PAIR& cp);
-	int ContactPairs() const;
-	const CONTACT_PAIR& GetContactPair(int n) const;
+	int FindAmplitude(const string& name) const;
 
 private:
-	FSModel*	m_fem;		// the model
+	string m_name; // model name
 
-	std::list<PART*>	m_Part;		// list of parts
-	PART*		m_currentPart;	// current part
+	PART m_globalPart; // global definitions are added here
+	list<PART*>	m_Part;		// list of parts
 
-	ASSEMBLY*	m_Assembly;	// the assembly
-	ASSEMBLY*	m_currentAssembly;	// the current assembly (is not nullptr between ASSEMBLY and END ASSEMBLY
+	ASSEMBLY*	m_Assembly = nullptr;	// the assembly
 
 private:	// physics
-	std::list<MATERIAL>		m_Mat;			// materials
-	std::list<DSLOAD>		m_SLoads;		// surface loads
-	std::list<BOUNDARY>		m_Boundary;		// boundary conditions
-	std::list<STEP>			m_Step;			// steps
-	STEP*				m_currentStep;	// current step
+	list<MATERIAL>		m_Mat;			// materials
+	STEP				m_initStep;		// the initial step
+	list<STEP>			m_Step;			// analysis steps
 	std::vector<Amplitude>		m_Amp;
-	std::vector<CONTACT_PAIR>	m_ContactPair;
 };

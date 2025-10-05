@@ -23,15 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 #include "GLSafeFrame.h"
 #include <QPainter>
 
@@ -48,35 +39,17 @@ void GLSafeFrame::resize(int x, int y, int W, int H)
 
 void GLSafeFrame::draw(QPainter* painter)
 {
-	painter->beginNativePainting();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	GLWidget::draw(painter);
 
 	switch (m_state)
 	{
-	case FREE: glColor3ub(255, 255, 0); break;
-	case FIXED_SIZE: glColor3ub(255, 128, 0); break;
-	case LOCKED: glColor3ub(255, 0, 0); break;
+	case FREE      : painter->setPen(QColor::fromRgb(255, 255, 0)); break;
+	case FIXED_SIZE: painter->setPen(QColor::fromRgb(255, 128, 0)); break;
+	case LOCKED    : painter->setPen(QColor::fromRgb(255,   0, 0)); break;
+	default:
+		painter->setPen(Qt::black); break;
 	}
-
-	glLineWidth(2.f);
-	int x0 = x() - 1;
-	int y0 = y() - 1;
-	int x1 = x() + w() + 1;
-	int y1 = y() + h() + 1;
-	glBegin(GL_LINE_LOOP);
-	{
-		glVertex2i(x0, y0);
-		glVertex2i(x1, y0);
-		glVertex2i(x1, y1);
-		glVertex2i(x0, y1);
-	}
-	glEnd();
-
-	glPopAttrib();
-	painter->endNativePainting();
+	painter->drawRect(x()-1, y()-1, w()+2, h()+2);
 }
 
 bool GLSafeFrame::is_inside(int x, int y)

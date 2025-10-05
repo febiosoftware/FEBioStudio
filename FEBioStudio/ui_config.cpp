@@ -88,7 +88,7 @@ void Ui::CEmptyConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 	ui->projectViewer->parentWidget()->raise();
@@ -131,7 +131,7 @@ void Ui::CHTMLConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 	ui->projectViewer->parentWidget()->raise();
@@ -209,7 +209,7 @@ void Ui::CModelConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->show();
+//    ui->pythonToolsPanel->parentWidget()->show();
 #endif
 
 	wnd->UpdateUiView();
@@ -277,7 +277,7 @@ void Ui::CPostConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->show();
+//    ui->pythonToolsPanel->parentWidget()->show();
 #endif
 
 	ui->showTimeline();
@@ -331,7 +331,7 @@ void Ui::CTextConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-    ui->pythonToolsPanel->parentWidget()->hide();
+//    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 }
 
@@ -420,7 +420,7 @@ void Ui::CXMLConfig::Apply()
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
 #ifdef HAS_PYTHON
-            ui->pythonToolsPanel->parentWidget()->hide();
+//            ui->pythonToolsPanel->parentWidget()->hide();
 #endif
 
 			for (auto action : ui->xmlToolbar->actions())
@@ -429,43 +429,6 @@ void Ui::CXMLConfig::Apply()
 			}
 		}
 	}
-}
-
-// Configure for app document
-void Ui::CAPPConfig::Apply()
-{
-	CUIConfig::Apply();
-
-	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
-	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
-	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
-	ui->mainMenu->menuPost->menuAction()->setVisible(false);
-	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
-	ui->mainMenu->menuView->menuAction()->setVisible(false);
-
-	ui->buildToolBar->hide();
-	ui->postToolBar->hide();
-	ui->imageToolBar->hide();
-	ui->pFontToolBar->hide();
-	ui->xmlToolbar->hide();
-
-	ui->centralWidget->glw->HideControlBar();
-
-	ui->modelViewer->parentWidget()->hide();
-	ui->buildPanel->parentWidget()->hide();
-	ui->postPanel->parentWidget()->hide();
-	ui->timePanel->parentWidget()->hide();
-	ui->logPanel->parentWidget()->hide();
-	ui->infoPanel->parentWidget()->hide();
-	ui->imageSettingsPanel->parentWidget()->hide();
-	ui->timePanel->parentWidget()->hide();
-	ui->febioMonitor->parentWidget()->hide();
-	ui->febioMonitorView->parentWidget()->hide();
-
-	ui->setActiveCentralView(CMainCentralWidget::APP_VIEWER);
-	ui->projectViewer->parentWidget()->raise();
 }
 
 // Configure for app document
@@ -549,4 +512,42 @@ void Ui::CFEBReportConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+}
+
+// Configure for app document
+void Ui::CBatchRunConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->setActiveCentralView(CMainCentralWidget::BATCHRUN_VIEW);
+
+	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
+	ui->mainMenu->menuEditXml->menuAction()->setVisible(false);
+	ui->mainMenu->menuPhysics->menuAction()->setVisible(false);
+	ui->mainMenu->menuPost->menuAction()->setVisible(false);
+	ui->mainMenu->menuRecord->menuAction()->setVisible(false);
+	ui->mainMenu->menuView->menuAction()->setVisible(false);
+	ui->mainMenu->menuFEBio->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+	ui->monitorToolBar->hide();
+
+	ui->centralWidget->glw->ShowControlBar();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
+	ui->febioMonitorView->parentWidget()->hide();
+	ui->logPanel->parentWidget()->show();
 }

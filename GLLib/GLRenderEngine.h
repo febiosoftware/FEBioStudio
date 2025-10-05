@@ -107,10 +107,10 @@ public:
 	virtual void setPointSize(float f) {}
 	virtual void setLineWidth(float f) {}
 
-	virtual float pointSize() const { return 0.f; }
-	virtual float lineWidth() const { return 0.f; }
+	virtual float pointSize() { return 0.f; }
+	virtual float lineWidth() { return 0.f; }
 
-	virtual FrontFace frontFace() const { return FrontFace::COUNTER_CLOCKWISE; }
+	virtual FrontFace frontFace() { return FrontFace::COUNTER_CLOCKWISE; }
 	virtual void setFrontFace(FrontFace f) {}
 
 	virtual void positionCamera(const GLCamera& cam) {}

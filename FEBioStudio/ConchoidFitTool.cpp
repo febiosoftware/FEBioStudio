@@ -59,7 +59,7 @@ CConchoidFitTool::CConchoidFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Conchoid
 bool CConchoidFitTool::OnApply()
 {
 	// get the nodal coordinates (surface only)
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc && doc->IsValid())
 	{
 		GObject* po = doc->GetActiveObject();

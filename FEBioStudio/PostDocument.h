@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLModelDocument.h"
 #include <PostLib/Material.h>
-#include "GraphData.h"
+#include <CUILib/GraphData.h>
 
 class CModelDocument;
 class CPostObject;
@@ -37,6 +37,7 @@ namespace Post {
 	class FEPostModel;
 	class FEFileReader;
 	class CGLModel;
+	class CGLObject;
 }
 
 // Timer modes
@@ -159,11 +160,6 @@ public:
 
 	TIMESETTINGS& GetTimeSettings();
 
-	std::string GetFieldString();
-	std::string GetFieldUnits();
-
-	float GetTimeValue();
-
 	float GetTimeValue(int n);
 
 	void SetCurrentTimeValue(float ftime);
@@ -186,6 +182,8 @@ public:
 	BOX GetBoundingBox();
 
 	void SetGLModel(Post::CGLModel* glm);
+
+	LegendData GetLegendData() override;
 
 public:
 	//! save to session file

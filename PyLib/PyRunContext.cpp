@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "PyRunContext.h"
 #include <FEBioStudio/GLDocument.h>
+#include <FEBioStudio/FEBioStudio.h>
 #include <assert.h>
 
 PyRunContext* PyRunContext::This = nullptr;
@@ -61,4 +62,10 @@ GObject* PyRunContext::GetActiveObject()
 {
 	PyRunContext* pc = Instance(); assert(pc);
 	return pc->obj;
+}
+
+void PyRunContext::Init()
+{
+	CDocument* doc = FBS::getActiveDocument();
+	SetDocument(doc);
 }

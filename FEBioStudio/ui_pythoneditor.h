@@ -30,16 +30,18 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFileDialog>
 #include "IconProvider.h"
-#include <PyLib/PythonThread.h>
 #include <QMenuBar>
 #include <QMenu>
+#include <QLineEdit>
 
 class Ui::CPythonEditor
 {
 public:
 	CTextEditor* edit = nullptr;
-	CPyThread* pythread = nullptr;
 	bool isModified = false;
+	QAction* actionRun = nullptr;
+	QAction* actionStop = nullptr;
+	QLineEdit* editCwd = nullptr;
 
 public:
 	void setup(QMainWindow* wnd, bool darkTheme)
@@ -68,10 +70,13 @@ public:
 
 		QAction* actionNew    = new QAction("New" , wnd); actionNew ->setObjectName("actionNew" ); actionNew ->setIcon(CIconProvider::GetIcon("new"));
 		QAction* actionOpen   = new QAction("Open ...", wnd); actionOpen->setObjectName("actionOpen"); actionOpen->setIcon(CIconProvider::GetIcon("open"));
-		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save"));
+		QAction* actionSave   = new QAction("Save ...", wnd); actionSave->setObjectName("actionSave"); actionSave->setIcon(CIconProvider::GetIcon("save")); actionSave->setShortcut(Qt::Key_S | Qt::ControlModifier);
 		QAction* actionSaveAs = new QAction("Save as ...", wnd); actionSaveAs->setObjectName("actionSaveAs");
 		QAction* actionClose  = new QAction("Close", wnd); actionClose->setObjectName("actionClose");
-		QAction* actionRun    = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
+		actionRun  = new QAction("Run script" , wnd); actionRun ->setObjectName("actionRun" ); actionRun ->setIcon(CIconProvider::GetIcon("play"));
+		actionStop = new QAction("Stop script" , wnd); actionStop->setObjectName("actionStop" ); actionStop->setIcon(CIconProvider::GetIcon("stop"));
+
+		actionStop->setEnabled(false);
 
 		QMenuBar* menuBar = wnd->menuBar();
 		QMenu* menuFile = new QMenu("File", menuBar);
@@ -86,6 +91,7 @@ public:
 		QMenu* menuPython = new QMenu("Python", menuBar);
 		menuBar->addAction(menuPython->menuAction());
 		menuPython->addAction(actionRun);
+		menuPython->addAction(actionStop);
 
 		QToolBar* mainToolBar = wnd->addToolBar("mainToolBar");
 		mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -93,6 +99,9 @@ public:
 		mainToolBar->addAction(actionOpen);
 		mainToolBar->addAction(actionSave);
 		mainToolBar->addAction(actionRun);
+		mainToolBar->addAction(actionStop);
+		mainToolBar->addWidget(editCwd = new QLineEdit);
+		editCwd->setPlaceholderText("set working directory");
 
 		QMetaObject::connectSlotsByName(wnd);
 	}

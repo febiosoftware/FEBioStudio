@@ -30,7 +30,9 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLLib/GLRenderEngine.h>
+
 using namespace Post;
 
 REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);
@@ -71,13 +73,6 @@ CGLLinePlot::CGLLinePlot()
 
 	m_lineData = nullptr;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	bar->hide();
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -116,12 +111,6 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
-
-		if (GetLegendBar())
-		{
-			bool b = (m_showLegend && (m_ncolor != 0));
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 
 		Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 	}
@@ -330,11 +319,6 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 
 	m_range.min = vmin;
 	m_range.max = vmax;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(m_range.min, m_range.max);
-	}
 
 	// update the meshes
 	switch (m_nmode)

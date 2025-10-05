@@ -36,24 +36,11 @@ SOFTWARE.*/
 #include "FSSurfaceData.h"
 #include "FSElementData.h"
 #include "FSMeshBuilder.h"
+#include <FSCore/util.h>
 #include <algorithm>
 #include <unordered_set>
 #include <map>
 using namespace std;
-
-double bias(double b, double x)
-{
-	const double f = 1.f / (double) log(0.5);
-	return (double) pow(x, log(b)*f);
-}
-
-double gain(double g, double x)
-{
-	if (x < 0.5f)
-		return bias(1.f-g, 2.f*x)*0.5f;
-	else
-		return 1.f - bias(1.f-g, 2.f - 2.f*x)*0.5f;
-}
 
 //-----------------------------------------------------------------------------
 // default constructor

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgTransform.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <QGroupBox>
 #include <QFormLayout>
 #include <QLabel>

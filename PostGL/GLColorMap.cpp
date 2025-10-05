@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLColorMap.h"
 #include <PostGL/GLModel.h>
-#include "GLWLib/GLWidgetManager.h"
-#include "PostLib/constants.h"
+#include <PostLib/constants.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
 	AddIntParam (-1, "data_field", "Data field")->SetEnumNames("@data_scalar");
 	AddBoolParam(true, "gradient_smoothing");
-	AddIntParam (0, "color_map")->SetEnumNames("@color_map");
+	AddIntParam (ColorMapManager::JET, "gradient")->SetEnumNames("@color_map");
 	AddBoolParam(true, "nodal_smoothing");
 	AddIntParam (10, "range_divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "show_legend");
@@ -62,12 +62,6 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 
 	SetName("Color Map");
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 120, 600);
-	m_pbar->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
-	m_pbar->copy_label(GetName().c_str());
-	m_pbar->hide();
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
-
 	UpdateData(false);
 
 	// we start the colormap as inactive
@@ -77,8 +71,6 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 //-----------------------------------------------------------------------------
 CGLColorMap::~CGLColorMap()
 {
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,17 +79,9 @@ bool CGLColorMap::UpdateData(bool bsave)
 	if (bsave)
 	{
 		m_nfield = GetIntValue(DATA_FIELD);
-		m_Col.SetSmooth(GetBoolValue(DATA_SMOOTH));
-		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_bDispNodeVals = GetBoolValue(NODAL_VALS);
 		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
-		if (m_pbar)
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) m_pbar->show(); else m_pbar->hide();
-			m_pbar->SetDivisions(GetIntValue(RANGE_DIVS));
-		}
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
 		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
 
@@ -106,16 +90,9 @@ bool CGLColorMap::UpdateData(bool bsave)
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
-		SetBoolValue(DATA_SMOOTH, m_Col.GetSmooth());
-		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetBoolValue(NODAL_VALS, m_bDispNodeVals);
 		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
 		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
-		if (m_pbar)
-		{
-			SetBoolValue(SHOW_LEGEND, m_pbar->visible());
-			SetIntValue(RANGE_DIVS, m_pbar->GetDivisions());
-		}
 		SetFloatValue(USER_MAX, m_range.max);
 		SetFloatValue(USER_MIN, m_range.min);
 	}
@@ -136,23 +113,8 @@ void CGLColorMap::SetEvalField(int n)
 	{
 		m_nfield = n;
 		m_breset = true;
-		if (m_nfield == -1) m_pbar->hide();
-		else m_pbar->show();
 		UpdateData(false);
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool CGLColorMap::GetColorSmooth()
-{
-	return m_Col.GetSmooth();
-}
-
-//-----------------------------------------------------------------------------
-void CGLColorMap::SetColorSmooth(bool b)
-{
-	m_Col.SetSmooth(b);
-	UpdateData(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -413,9 +375,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 //			}
 //		}
 //	}
-
-	// set the colormap's range
-	m_pbar->SetRange(m_range.min, m_range.max);
 
 	// update mesh texture coordinates
 	float min = m_range.min;

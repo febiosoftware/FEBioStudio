@@ -35,6 +35,7 @@ class FESelection;
 namespace Post {
 	class CGLPlot;
 	class FEPostModel;
+	class CGLModel;
 }
 
 class GLPostSceneItem : public GLSceneItem
@@ -73,6 +74,9 @@ private:
 private:
 	void RenderMesh(GLRenderEngine& re, GLMesh& mesh, int surfId);
 	void RenderMeshEdges(GLRenderEngine& re, GLMesh& mesh);
+
+private:
+	GLTexture1D	m_tex;
 };
 
 class GLPostPlotItem : public GLPostSceneItem

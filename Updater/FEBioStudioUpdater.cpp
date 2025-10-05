@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 
 		// set the display name (this will be displayed on all windows and dialogs)
 		app.setApplicationVersion("1.0.0");
-		app.setApplicationName("FEBio Studio Updater");
+		app.setApplicationName("FEBio Studio");
 		app.setApplicationDisplayName("FEBio Studio Updater");
 		app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 

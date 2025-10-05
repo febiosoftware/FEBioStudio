@@ -27,11 +27,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);
@@ -95,12 +95,6 @@ GLTensorPlot::GLTensorPlot()
 	m_range.maxtype = RANGE_DYNAMIC;
 	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -426,8 +420,6 @@ static double frand() { return (double)rand() / (double)RAND_MAX; }
 
 void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 {
-	GetLegendBar()->SetDivisions(m_ndivs);
-
 	if (m_ntensor == 0) return;
 
 	// store attributes
@@ -498,8 +490,6 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-
-		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
@@ -572,7 +562,6 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
@@ -727,4 +716,23 @@ void GLTensorPlot::RenderBox(GLRenderEngine& re, TENSOR& t, float scale)
 	re.scale(scale*sx, scale*sy, scale*sz);
 	glx::drawBox(re, 0.5, 0.5, 0.5);
 	re.popTransform();
+}
+
+LegendData GLTensorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if ((glyphCol >  0) && (m_range.valid))
+	{
+		l.discrete = false;
+		l.ndivs = m_ndivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

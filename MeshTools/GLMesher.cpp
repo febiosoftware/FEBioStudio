@@ -57,6 +57,7 @@ GLMesh* GLMesher::CreateMesh()
 
 			switch (f.m_ntype)
 			{
+			case FACE_UNKNOWN      : break;
 			case FACE_POLYGON      : BuildFacePolygon(gmesh, f); break;
 			case FACE_EXTRUDE      : BuildFaceExtrude(gmesh, f); break;
 			case FACE_QUAD         : BuildFaceQuad(gmesh, f); break;

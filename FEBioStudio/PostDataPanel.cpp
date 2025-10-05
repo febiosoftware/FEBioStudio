@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QStackedWidget>
 #include <QSplitter>
+#include <QGroupBox>
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEPostModel.h>
@@ -103,12 +104,12 @@ public:
 	}
 };
 
-class CMathDataProps : public CPropertyList
+class CMathScalarDataProps : public CPropertyList
 {
 public:
-	Post::FEMathDataField*	m_pd;
+	Post::FEScalarMathDataField*	m_pd;
 
-	CMathDataProps(Post::FEMathDataField* pd) : m_pd(pd)
+	CMathScalarDataProps(Post::FEScalarMathDataField* pd) : m_pd(pd)
 	{
 		addProperty("Equation", CProperty::String);
 	}
@@ -121,6 +122,27 @@ public:
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
 		m_pd->SetEquationString((v.toString()).toStdString());
+	}
+};
+
+class CMathElemDataProps : public CPropertyList
+{
+public:
+	Post::FEMathElemDataField* m_pd;
+
+	CMathElemDataProps(Post::FEMathElemDataField* pd) : m_pd(pd)
+	{
+		addProperty("Equation", CProperty::String);
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		return QString::fromStdString(m_pd->EquationString());
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		m_pd->SetEquationString((v.toString()).toStdString(), false);
 	}
 };
 
@@ -480,8 +502,15 @@ public:
 		l->setContentsMargins(0,0,0,0);
 		w->setLayout(l);
 
-		l->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
-		l->addWidget(m_prop);
+		QHBoxLayout* nameLayout = new QHBoxLayout;
+		nameLayout->addWidget(new QLabel("name:"));
+		nameLayout->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
+		l->addLayout(nameLayout);
+		QGroupBox* propBox = new QGroupBox("Properties");
+		QVBoxLayout* propBoxLayout = new QVBoxLayout;
+		propBoxLayout->addWidget(m_prop);
+		propBox->setLayout(propBoxLayout);
+		l->addWidget(propBox);
 
 		psplitter->addWidget(w);
 
@@ -1030,6 +1059,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 		QString name = dlg.GetDataName();
 
 		int type = dlg.GetDataType();
+		int classType = dlg.GetClassType();
 
 		switch (type)
 		{
@@ -1041,11 +1071,23 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (name.isEmpty()) name = "(empty)";
 
 			// create new math data field
-			Post::FEMathDataField* pd = new Post::FEMathDataField(&fem);
-			pd->SetEquationString(eq.toStdString());
+			if (classType == NODE_DATA)
+			{
+				Post::FEMathNodeDataField* pd = new Post::FEMathNodeDataField(&fem);
+				pd->SetEquationString(eq.toStdString());
 
-			// add it to the model
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else if (classType == ELEM_DATA)
+			{
+				Post::FEMathElemDataField* pd = new Post::FEMathElemDataField(&fem);
+				pd->SetEquationString(eq.toStdString());
+
+				// add it to the model
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for scalar expressions.");
 		}
 		break;
 		case 1:
@@ -1059,12 +1101,16 @@ void CPostDataPanel::on_AddEquation_triggered()
 			QString z = s.at(2);
 
 			// create new math data field
-			Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
-			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
+			if (classType == NODE_DATA)
+			{
+				Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
+				pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
-			// add it to the model
-			Post::FEPostModel& fem = *glm->GetFSModel();
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				Post::FEPostModel& fem = *glm->GetFSModel();
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for vector expressions.");
 		}
 		break;
 		case 2:
@@ -1072,13 +1118,17 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (name.isEmpty()) name = "(empty)";
 			QStringList s = dlg.GetMatrixEquations();
 
-			// create new math data field
-			Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
-			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
+			if (classType == NODE_DATA)
+			{
+				// create new math data field
+				Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
+				for (int i = 0; i < 9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
-			// add it to the model
-			Post::FEPostModel& fem = *glm->GetFSModel();
-			fem.AddDataField(pd, name.toStdString());
+				// add it to the model
+				Post::FEPostModel& fem = *glm->GetFSModel();
+				fem.AddDataField(pd, name.toStdString());
+			}
+			else QMessageBox::critical(this, "FEBio Studio", "The selected class is not support for math expressions.");
 		}
 		};
 
@@ -1428,6 +1478,10 @@ void CPostDataPanel::on_ExportButton_clicked()
 					{
 						QMessageBox::critical(this, "Export Data", "Export Failed!");
 					}
+					else
+					{
+						QMessageBox::information(this, "Export Data", QString("Data successfully exported to:\n%1").arg(file));
+					}
 				}
 			}
 		}
@@ -1450,10 +1504,10 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 		Post::CurvatureField* pf = dynamic_cast<Post::CurvatureField*>(p);
 		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
-	else if (dynamic_cast<Post::FEMathDataField*>(p))
+	else if (dynamic_cast<Post::FEScalarMathDataField*>(p))
 	{
-		Post::FEMathDataField* pm = dynamic_cast<Post::FEMathDataField*>(p);
-		ui->m_prop->setPropertyList(new CMathDataProps(pm));
+		Post::FEScalarMathDataField* pm = dynamic_cast<Post::FEScalarMathDataField*>(p);
+		ui->m_prop->setPropertyList(new CMathScalarDataProps(pm));
 	}
 	else if (dynamic_cast<Post::FEMathVec3DataField*>(p))
 	{

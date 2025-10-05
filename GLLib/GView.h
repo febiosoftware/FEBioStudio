@@ -26,9 +26,10 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLCamera.h"
-#include <PostLib/GLObject.h>
+#include <FSCore/FSObject.h>
+#include <string>
 
-class CGViewKey : public Post::CGLObject
+class CGViewKey : public FSObject
 {
 public:
 	GLCameraTransform transform;
@@ -81,4 +82,14 @@ protected:
 
 	std::vector<CGViewKey*>	m_key;	//!< stored camera transformations
 	int						m_nkey;	//!< current key
+};
+
+struct LegendData
+{
+	double vmin = 0, vmax = 0;
+	int colormap = 0;
+	int ndivs = 0;
+	bool discrete = false;
+	bool smooth = true;
+	std::string title;
 };

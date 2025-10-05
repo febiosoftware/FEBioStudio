@@ -142,6 +142,8 @@ public:
 
 	virtual void Update() {}
 
+	int FindPropertyIndex(const QString& propName) const;
+
 public:
 	bool IsModified() const { return m_bmodified; }
 	void SetModified(bool b) { m_bmodified = b; }
@@ -204,6 +206,8 @@ public:
 
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+
+	QVariant GetPropertyValue(const QString& propName);
 
 protected:
 	template <class T>

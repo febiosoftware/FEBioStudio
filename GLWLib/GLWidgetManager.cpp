@@ -29,40 +29,27 @@ SOFTWARE.*/
 #include <assert.h>
 #include <QPainter>
 
-CGLWidgetManager* CGLWidgetManager::m_pmgr = 0;
-
-CGLWidgetManager* CGLWidgetManager::GetInstance()
-{
-	if (m_pmgr == 0) m_pmgr = new CGLWidgetManager;
-	return m_pmgr;
-}
-
-void CGLWidgetManager::AttachToView(QOpenGLWidget *pview)
-{
-	assert(pview);
-	m_pview = pview;
-}
-
 CGLWidgetManager::CGLWidgetManager()
 {
-	m_editLayer = 0;
-	m_renderLayer = 0;
 	m_pview = nullptr;
 }
 
 CGLWidgetManager::~CGLWidgetManager()
 {
-
+	for (int i = 0; i < (int)m_Widget.size(); ++i)
+	{
+		GLWidget* pw = m_Widget[i];
+		assert(pw->m_parent == this);
+		pw->m_parent = nullptr;
+		delete pw;
+	}
+	m_Widget.clear();
 }
 
-void CGLWidgetManager::SetRenderLayer(int l)
+void CGLWidgetManager::AttachToView(QOpenGLWidget* pview)
 {
-	m_renderLayer = l;
-}
-
-void CGLWidgetManager::SetEditLayer(int l)
-{
-	m_editLayer = l;
+	assert(pview);
+	m_pview = pview;
 }
 
 // Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
@@ -79,9 +66,6 @@ void CGLWidgetManager::CheckWidgetBounds()
 	for (int i = 0; i<Widgets(); ++i)
 	{
 		GLWidget* pw = m_Widget[i];
-
-		// snap the widget if any of its align flags are set
-		if (pw->GetSnap()) SnapWidget(pw);
 
 		int x0 = pw->x();
 		if (x0 < 0) x0 = 0;
@@ -101,9 +85,10 @@ void CGLWidgetManager::CheckWidgetBounds()
 	}
 }
 
-void CGLWidgetManager::AddWidget(GLWidget* pw, int layer)
+void CGLWidgetManager::AddWidget(GLWidget* pw)
 {
-	pw->set_layer((layer < 0 ? m_editLayer : layer));
+	assert(pw->m_parent == nullptr);
+	pw->m_parent = this;
 	m_Widget.push_back(pw);
 }
 
@@ -114,6 +99,8 @@ void CGLWidgetManager::RemoveWidget(GLWidget* pw)
 	{
 		if (m_Widget[i] == pw) 
 		{
+			assert(pw->m_parent == this);
+			pw->m_parent = nullptr;
 			m_Widget.erase(it);
 			break;
 		}
@@ -135,7 +122,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 		for (int i=0; i<(int) m_Widget.size(); ++i)
 		{
 			GLWidget* pw = m_Widget[i];
-			if (((pw->layer() == 0) || (pw->layer() == m_renderLayer)) && pw->visible() && pw->is_inside(x,y))
+			if (pw->visible() && pw->is_inside(x,y))
 			{
 				m_Widget[i]->set_focus();
 				bsel = true;
@@ -208,8 +195,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 				}
 				else return 1;
 
-				SnapWidget(pw);
-
 				xp = x;
 				yp = y;
 			}
@@ -226,53 +211,20 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 	return 0;
 }
 
-void CGLWidgetManager::SnapWidget(GLWidget* pw)
-{
-	assert(m_pview);
-
-	int W = m_pview->width();
-	int H = m_pview->height();
-
-	int w = pw->w();
-	int h = pw->h();
-
-	unsigned int nflag = pw->GetSnap();
-	if      (nflag & GLW_ALIGN_LEFT   ) pw->m_x = 0;
-	else if (nflag & GLW_ALIGN_RIGHT  ) pw->m_x = W-w-1;
-	else if (nflag & GLW_ALIGN_HCENTER) pw->m_x = W/2 - w/2;
-
-	if      (nflag & GLW_ALIGN_TOP    ) pw->m_y = 0;
-	else if (nflag & GLW_ALIGN_BOTTOM ) pw->m_y = H-h-1;
-	else if (nflag & GLW_ALIGN_VCENTER) pw->m_y = H/2 - h/2;
-}
-
 void CGLWidgetManager::DrawWidgets(QPainter* painter)
 {
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
 	{
 		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_renderLayer)))
+		if (pw->visible())
 		{
 			DrawWidget(pw, painter);
 		}
 	}
 }
 
-void CGLWidgetManager::DrawWidgetsInLayer(QPainter* painter, int layer)
-{
-	SetRenderLayer(layer);
-	for (int i = 0; i < (int)m_Widget.size(); ++i)
-	{
-		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && pw->layer() == layer) DrawWidget(pw, painter);
-	}
-}
-
 void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
 {
-	// snap the widget if any of its align flags are set
-	if (pw->GetSnap()) SnapWidget(pw);
-
 	// now draw the widget
 	pw->draw(painter);
 

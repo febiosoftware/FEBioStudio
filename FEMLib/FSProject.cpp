@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
+#include <unordered_set>
 using namespace std;
 
 //=================================================================================================
@@ -588,6 +589,41 @@ void FSProject::SetUnits(int units)
 int FSProject::GetUnits() const
 {
 	return m_units;
+}
+
+void FSProject::PurgeSelections()
+{
+	int nlogs = m_log.LogDataSize();
+	for (int i = 0; i < m_log.LogDataSize(); )
+	{
+		FSHasOneItemList* pl = dynamic_cast<FSHasOneItemList*>(&m_log.LogData(i));
+		if (pl) 
+		{
+			if (pl->GetItemList()) m_log.RemoveLogData(i);
+			else i++;
+		}
+		else i++;
+	}
+
+	for (int i = 0; i < m_plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& plt = m_plt.PlotVariable(i);
+		plt.removeAllDomains();
+	}
+
+	m_fem.ClearSelections();
+}
+
+//-------------------------------------------------------------------------------------------------
+void FSProject::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
+{
+    // Get the module allocator ID
+    allocatorIDs.insert(FEBio::GetModuleAllocatorID(m_module));
+
+    m_fem.GetActivePluginIDs(allocatorIDs);
+
+    // Remove the FEBio allocator ID
+    allocatorIDs.erase(0);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1882,7 +1918,11 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 					// No need to do anything
 					break;
 				case FE_FIXED_CONCENTRATION:
-					febbc->SetParamInt("c_dof", bc - 1);
+					{
+						Param* p = febbc->GetParam("c_dof");
+						if (p) p->SetIntValue(bc - 1);
+						else log << "Error setting parameter \"c_dof\" in BC " << pb->GetName() << std::endl;
+					}
 					break;
 				default:
 					log << "Unable to map degrees of freedom for " << pb->GetName() << std::endl;

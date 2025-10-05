@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLDocument.h"
 #include <QtCore/QDir>
-#include <QFileInfo>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLScene.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveMeshObject.h>
@@ -49,6 +47,7 @@ SOFTWARE.*/
 #include <MeshLib/FSElementData.h>
 #include <FSCore/FileReader.h>
 #include <FSCore/FileWriter.h>
+#include <FSCore/ColorMapManager.h>
 #include "FEBioJob.h"
 #include "units.h"
 #include "MainWindow.h"
@@ -78,12 +77,6 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_showTitle = false;
 	m_showSubtitle = false;
 	m_showLegend = false;
-	m_dataRange[0] = m_dataRange[1] = 0;
-
-	static int layer = 1;
-	m_widgetLayer = layer++;
-
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
 }
 
 CGLDocument::~CGLDocument()
@@ -101,11 +94,6 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
-}
-
-std::string CGLDocument::GetRenderString()
-{
-	return std::string();
 }
 
 FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
@@ -173,11 +161,6 @@ void CGLDocument::Update()
 {
 	UpdateSelection();
 	if (m_scene) m_scene->Update();
-}
-
-int CGLDocument::GetWidgetLayer()
-{
-	return m_widgetLayer;
 }
 
 std::string CGLDocument::GetTypeString(FSObject* po)

@@ -61,8 +61,9 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "FocusWatcher.h"
 #include "PublicationWidgetView.h"
-#include "LocalDatabaseHandler.h"
-#include "RepoConnectionHandler.h"
+#include "ModelDatabaseHandler.h"
+#include "ModelRepoConnectionHandler.h"
+#include "TagWidget.h"
 
 using std::unordered_map;
 using std::out_of_range;
@@ -80,8 +81,7 @@ public:
 	QLabel* categoryLabel;
 	QComboBox* categoryBox;
 
-	QLineEdit* newTag;
-	QListWidget* tags;
+    ::TagWidget* tags;
 	::CPublicationWidgetView* pubs;
 
 	QWizardPage* filesPage;
@@ -98,11 +98,7 @@ public:
 	QLabel* fileDescriptionLabel;
 	QPlainTextEdit* fileDescription;
 
-	QLabel* fileTagsLabel;
-	QListWidget* fileTags;
-	QLineEdit* newFileTag;
-	QToolButton* addFileTagBtn;
-	QToolButton* delFileTagBtn;
+    ::TagWidget* fileTags;
 
 	QWizardPage* summaryPage;
 
@@ -157,41 +153,9 @@ public:
 
 		QVBoxLayout* rightLayout = new QVBoxLayout;
 
-		QHBoxLayout* tagsLayout = new QHBoxLayout;
-		QVBoxLayout* tagsV1 = new QVBoxLayout;
-		QVBoxLayout* tagsV2 = new QVBoxLayout;
-		tagsV2->setAlignment(Qt::AlignTop);
-
-		QHBoxLayout* tagsH1 = new QHBoxLayout;
-		tagsH1->addWidget(new QLabel("Tags: "));
-		tagsH1->addWidget(newTag = new QLineEdit);
-		tagsV1->addLayout(tagsH1);
-
-		tags = new QListWidget;
-		tags->setSelectionMode(QAbstractItemView::ExtendedSelection);
-		tagsV1->addWidget(tags);
-
-		QAction* addTag = new QAction;
-		addTag->setIcon(QIcon(":/icons/selectAdd.png"));
-		QToolButton* addTagBtn = new QToolButton;
-		addTagBtn->setDefaultAction(addTag);
-		addTagBtn->setObjectName("addTagBtn");
-		tagsV2->addWidget(addTagBtn);
-
-		QAction* delTag= new QAction;
-		delTag->setIcon(QIcon(":/icons/selectSub.png"));
-		QToolButton* delTagBtn = new QToolButton;
-		delTagBtn->setDefaultAction(delTag);
-		delTagBtn->setObjectName("delTagBtn");
-		tagsV2->addWidget(delTagBtn);
-
-		tagsLayout->addLayout(tagsV1);
-		tagsLayout->addLayout(tagsV2);
-
-		rightLayout->addLayout(tagsLayout);
+        rightLayout->addWidget(tags = new ::TagWidget);
 
 		rightLayout->addWidget(new QLabel("Publications:"));
-
 		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE, true, true);
 		rightLayout->addWidget(pubs);
 
@@ -262,39 +226,7 @@ public:
 		descLayout->addWidget(fileDescription = new QPlainTextEdit);
 		filesSubLayout->addLayout(descLayout);
 
-		QHBoxLayout* fileTagsLayout = new QHBoxLayout;
-		QVBoxLayout* fileTagsV1 = new QVBoxLayout;
-		QVBoxLayout* fileTagsV2 = new QVBoxLayout;
-		fileTagsV2->setAlignment(Qt::AlignTop);
-
-		QHBoxLayout* fileTagsH1 = new QHBoxLayout;
-		fileTagsH1->addWidget(fileTagsLabel = new QLabel("Tags: "));
-		fileTagsH1->addWidget(newFileTag = new QLineEdit);
-
-		fileTagsV1->addLayout(fileTagsH1);
-
-		fileTags = new QListWidget;
-		fileTags->setSelectionMode(QAbstractItemView::ExtendedSelection);
-		fileTagsV1->addWidget(fileTags);
-
-		QAction* addFileTag = new QAction;
-		addFileTag->setIcon(QIcon(":/icons/selectAdd.png"));
-		addFileTagBtn = new QToolButton;
-		addFileTagBtn->setDefaultAction(addFileTag);
-		addFileTagBtn->setObjectName("addFileTagBtn");
-		fileTagsV2->addWidget(addFileTagBtn);
-
-		QAction* delFileTag= new QAction;
-		delFileTag->setIcon(QIcon(":/icons/selectSub.png"));
-		delFileTagBtn = new QToolButton;
-		delFileTagBtn->setDefaultAction(delFileTag);
-		delFileTagBtn->setObjectName("delFileTagBtn");
-		fileTagsV2->addWidget(delFileTagBtn);
-
-		fileTagsLayout->addLayout(fileTagsV1);
-		fileTagsLayout->addLayout(fileTagsV2);
-
-		filesSubLayout->addLayout(fileTagsLayout);
+        filesSubLayout->addWidget(fileTags = new ::TagWidget);
 
 		filesLayout->addLayout(filesSubLayout);
 
@@ -324,6 +256,9 @@ public:
 
 		fileTree->setColumnWidth(0, 350);
 		fileTree->setColumnWidth(1, 310);
+
+        QObject::connect(fileTags, &::TagWidget::TagAdded, wzd, &::CWzdUpload::on_fileTags_TagAdded);
+        QObject::connect(fileTags, &::TagWidget::TagDeleted, wzd, &::CWzdUpload::on_fileTags_TagDeleted);
 	}
 
 	QTreeWidgetItem* NewFile(QString path, QString description = "", qint64 size = -1, QStringList tags = QStringList(), QString filename = "")
@@ -401,11 +336,7 @@ public:
 		fileDescriptionLabel->setEnabled(enabled);
 		fileDescription->setEnabled(enabled);
 
-		fileTagsLabel->setEnabled(enabled);
 		fileTags->setEnabled(enabled);
-		newFileTag->setEnabled(enabled);
-		addFileTagBtn->setEnabled(enabled);
-		delFileTagBtn->setEnabled(enabled);
 	}
 
 	bool invalidNames(QTreeWidgetItem* item = nullptr)
@@ -624,7 +555,8 @@ public:
 	{
 		name->setText("");
 		description->setPlainText("");
-		tags->clear();
+		tags->Clear();
+        fileTags->Clear();
 		pubs->clear();
 
 		delete projectItem;
@@ -646,7 +578,7 @@ public:
 
 		edited |= !name->text().isEmpty();
 		edited |= !description->toPlainText().isEmpty();
-		edited |= tags->count() != 0;
+		edited |= tags->Count() != 0;
 		edited |= pubs->count() != 0;
 		edited |= projectItem->childCount() !=0;
 
@@ -655,7 +587,7 @@ public:
 
 };
 
-CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
+CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CModelDatabaseHandler* dbHandler, CModelRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
 	: QWizard(parent), ui(new Ui::CWzdUpload), dbHandler(dbHandler), repoHandler(repoHandler)
 {
 #ifdef WIN32
@@ -718,10 +650,7 @@ void CWzdUpload::setOwner(QString owner)
 
 void CWzdUpload::setTags(QStringList& tags)
 {
-	for(auto tag : tags)
-	{
-		ui->tags->addItem(tag);
-	}
+	ui->tags->SetTags(tags);
 }
 
 void CWzdUpload::setPublications(const std::vector<CPublicationWidget*>& pubs)
@@ -750,16 +679,10 @@ void CWzdUpload::setFileInfo(QList<QList<QVariant>>& fileinfo)
 	ui->updateSizes();
 }
 
-void CWzdUpload::setTagList(QStringList& tags)
+void CWzdUpload::setTagCompleter(QStringList& tags)
 {
-	if(ui->newTag->completer()) delete ui->newTag->completer();
-	if(ui->newFileTag->completer()) delete ui->newFileTag->completer();
-
-	ui->newTag->setCompleter(new QCompleter(tags));
-	ui->newTag->completer()->setCaseSensitivity(Qt::CaseInsensitive);
-
-	ui->newFileTag->setCompleter(new QCompleter(tags));
-	ui->newFileTag->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    ui->tags->SetTagCompleter(tags);
+    ui->fileTags->SetTagCompleter(tags);
 }
 
 QString CWzdUpload::getName()
@@ -791,22 +714,7 @@ QString CWzdUpload::getOwner()
 
 QStringList CWzdUpload::getTags()
 {
-	QStringList tagList;
-
-	for(int tag = 0; tag < ui->tags->count(); ++tag)
-	{
-		QString tagText = ui->tags->item(tag)->text().trimmed();
-
-		if(!tagText.isEmpty())
-		{
-			if(tagList.filter(tagText, Qt::CaseInsensitive).count() == 0)
-			{
-				tagList.append(tagText);
-			}
-		}
-	}
-
-	return tagList;
+	return ui->tags->GetTags();
 }
 
 QList<QVariant> CWzdUpload::getPublicationInfo()
@@ -962,7 +870,7 @@ void CWzdUpload::accept()
 		return;
 	}
 
-	if(ui->tags->count() == 0)
+	if(ui->tags->Count() == 0)
 	{
 		QMessageBox::critical(this, "Upload", "Please add at least one tag to your project.");
 
@@ -982,7 +890,7 @@ void CWzdUpload::accept()
 
 	if(ui->hasDuplicateNames())
 	{
-		QMessageBox::critical(this, "Upload", "You cannot have to files with the same name in the same folder.");
+		QMessageBox::critical(this, "Upload", "You cannot have two files with the same name in the same folder.");
 		return;
 	}
 
@@ -1133,26 +1041,6 @@ void CWzdUpload::keyPressEvent(QKeyEvent* e)
 	if(e->key() != Qt::Key_Enter)
 	{
 		QWizard::keyPressEvent(e);
-	}
-}
-
-void CWzdUpload::on_addTagBtn_clicked()
-{
-	if(!ui->newTag->text().isEmpty())
-	{
-		ui->tags->addItem(ui->newTag->text());
-	}
-	ui->newTag->clear();
-
-}
-
-void CWzdUpload::on_delTagBtn_clicked()
-{
-	QList<QListWidgetItem*> items = ui->tags->selectedItems();
-
-	for(QListWidgetItem* item : items)
-	{
-		delete item;
 	}
 }
 
@@ -1310,16 +1198,14 @@ void CWzdUpload::on_fileTree_currentItemChanged(QTreeWidgetItem *current)
 
 			ui->fileDescription->setPlainText(current->data(0, DESCRIPTION).toString());
 
-			ui->fileTags->clear();
-			for(auto tag : current->data(0, TAGS).toStringList())
-			{
-				ui->fileTags->addItem(tag);
-			}
+			ui->fileTags->Clear();
+            QStringList tags = current->data(0, TAGS).toStringList();
+            ui->fileTags->SetTags(tags);
 		}
 		else
 		{
 			ui->fileDescription->clear();
-			ui->fileTags->clear();
+			ui->fileTags->Clear();
 
 			ui->fileInfoEnabled(false);
 		}
@@ -1384,41 +1270,24 @@ void CWzdUpload::fileDescriptionChanged()
 	}
 }
 
-void CWzdUpload::on_addFileTagBtn_clicked()
+void CWzdUpload::on_fileTags_TagAdded(QString& tag)
 {
-	QString tag = ui->newFileTag->text();
-
-	if(!tag.isEmpty())
-	{
-		ui->fileTags->addItem(tag);
-
-		for(auto item : ui->fileTree->selectedItems())
-		{
-			item->setData(0, TAGS, item->data(0, TAGS).toStringList() << tag);
-		}
-
-	}
-
-	ui->newFileTag->clear();
+    for(auto item : ui->fileTree->selectedItems())
+    {
+        item->setData(0, TAGS, item->data(0, TAGS).toStringList() << tag);
+    }
 }
 
-void CWzdUpload::on_delFileTagBtn_clicked()
+void CWzdUpload::on_fileTags_TagDeleted(QString& tag)
 {
-	for(auto item : ui->fileTags->selectedItems())
-	{
-		QString tag = item->text();
+    for(auto treeItem : ui->fileTree->selectedItems())
+    {
+        QStringList tags = treeItem->data(0, TAGS).toStringList();
 
-		for(auto treeItem : ui->fileTree->selectedItems())
-		{
-			QStringList tags = treeItem->data(0, TAGS).toStringList();
+        tags.removeAll(tag);
 
-			tags.removeAll(tag);
-
-			treeItem->setData(0, TAGS, tags);
-		}
-
-		delete item;
-	}
+        treeItem->setData(0, TAGS, tags);
+    }
 }
 
 void CWzdUpload::setProjectJson(QByteArray* json)

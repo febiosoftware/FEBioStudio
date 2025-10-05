@@ -39,7 +39,8 @@ SOFTWARE.*/
 #include <FEBioStudio/Tool.h>
 #include <FEBioStudio/ToolBox.h>
 #include "PythonTool.h"
-#include "PythonThread.h"
+#include <QThread>
+#include "PythonRunner.h"
 
 class CPythonToolBar : public QToolBar
 {
@@ -56,10 +57,10 @@ public:
 		empty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 		addWidget(empty);
 
-		QAction* refresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
-		refresh->setObjectName("refresh");
-		refresh->setIconVisibleInMenu(false);
-		addAction(refresh);
+//		QAction* refresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
+//		refresh->setObjectName("refresh");
+//		refresh->setIconVisibleInMenu(false);
+//		addAction(refresh);
 	}
 };
 
@@ -128,69 +129,16 @@ public:
 	}
 };
 
-class CPythonRunningPane : public QStackedWidget
-{
-private:
-	QLabel* m_text;
-	QProgressBar* m_progress;
-
-public:
-	CPythonRunningPane(QWidget* parent = nullptr) : QStackedWidget(parent)
-	{
-		QWidget* w1 = new QWidget;
-		QVBoxLayout* l1 = new QVBoxLayout(w1);
-		QPushButton* runButton = new QPushButton("run");
-		runButton->setObjectName("run");
-		l1->addWidget(runButton);
-		l1->addStretch();
-		addWidget(w1);
-
-		QWidget* w2 = new QWidget;
-		QVBoxLayout* l2 = new QVBoxLayout(w2);
-		l2->addWidget(m_text = new QLabel());
-		l2->addWidget(m_progress = new QProgressBar());
-		l2->addStretch();
-		addWidget(w2);
-
-		m_progress->setMinimum(0);
-		m_progress->setMaximum(100);
-	}
-
-	void startRunning(const QString& msg)
-	{
-		setCurrentIndex(1);
-		m_text->setText(msg);
-		m_progress->setValue(0);
-	}
-
-	void stopRunning()
-	{
-		setCurrentIndex(0);
-	}
-
-	void setProgressText(const QString& txt)
-	{
-		m_text->setText(txt);
-	}
-
-	void setProgress(int n)
-	{
-		m_progress->setValue(n);
-	}
-};
 
 class Ui::CPythonToolsPanel
 {
 public:
 	CPythonButtonBox* buttons = nullptr;
 	CPythonParameterPanel* paramStack = nullptr;
-	CPythonRunningPane* runPane = nullptr;
 
 	::CPythonToolsPanel* parent = nullptr;
 
 public:
-	CPyThread* m_pythonThread = nullptr;
-
 	CPythonTool* m_activeTool = nullptr;
 	std::vector<CPythonTool*>	tools;
 
@@ -210,11 +158,6 @@ public:
 		QVBoxLayout* paramLayout = new QVBoxLayout(paramWidget);
 		paramStack = new CPythonParameterPanel();
 		paramLayout->addWidget(paramStack);
-
-		// create the running page (shown when a tool is running)
-		runPane = new CPythonRunningPane();
-		runPane->hide();
-		paramLayout->addWidget(runPane);
 
 		// create the toolbox
 		CToolBox* tool = new CToolBox;
@@ -238,27 +181,5 @@ public:
 		tools.push_back(tool);
 		// trigger a button push so the new button becomes the active tool.
 		buttons->pushButton(tool->GetID() + 1);
-	}
-
-	CPythonTool* findTool(const QString& filepath)
-	{
-		for (auto tool : tools)
-		{
-			if (tool->GetFilePath() == filepath) return tool;
-		}
-		return nullptr;
-	}
-
-	void setToolName(CPythonTool* tool, const QString& toolName)
-	{
-		tool->setName(toolName);
-		for (int i = 0; i < (int)tools.size(); ++i)
-		{
-			if (tools[i] == tool)
-			{
-				buttons->setButtonText(i + 1, toolName);
-				return;
-			}
-		}
 	}
 };

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <FSCore/Palette.h>
 #include <PostGL/GLModel.h>
-#include <PostGL/ColorTexture.h>
+#include <GLLib/ColorTexture.h>
 #include <GeomLib/GModel.h>
 #include <GLWLib/GLWidgetManager.h>
 //---------------------------------------
@@ -102,11 +102,10 @@ void ModelData::ReadData(Post::CGLModel* po)
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
-		m_cmap.m_ntype = pcm->GetColorMap();
-		m_cmap.m_ndivs = pcm->GetDivisions();
-		m_cmap.m_bsmooth = pcm->GetSmooth();
-		//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
+		m_cmap.m_ntype = pglmap->GetColorMap();
+		m_cmap.m_ndivs = pglmap->GetDivisions();
+		m_cmap.m_bsmooth = pglmap->GetColorSmooth();
+//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -150,11 +149,10 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 
-		Post::CColorTexture* pcm = pglmap->GetColorMap();
-		pcm->SetColorMap(m_cmap.m_ntype);
-		pcm->SetDivisions(m_cmap.m_ndivs);
-		pcm->SetSmooth(m_cmap.m_bsmooth);
-		//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
+		pglmap->SetColorMap(m_cmap.m_ntype);
+		pglmap->SetDivisions(m_cmap.m_ndivs);
+		pglmap->SetColorSmooth(m_cmap.m_bsmooth);
+//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
 	}
 
 	// displacement map
@@ -295,9 +293,6 @@ bool CPostDocument::Initialize()
 	const CPalette& pal = CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	// make sure the correct GLWidgetManager's edit layer is active
-	CGLWidgetManager::GetInstance()->SetEditLayer(m_widgetLayer);
-
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 
 	m_timeSettings.Defaults();
@@ -396,6 +391,24 @@ Post::CGLModel* CPostDocument::GetGLModel()
 	return m_glm;
 }
 
+LegendData CPostDocument::GetLegendData()
+{
+	LegendData l;
+	assert(m_glm);
+	Post::CGLColorMap* pcm = m_glm->GetColorMap();
+	if (pcm && pcm->IsActive())
+	{
+		float rng[2];
+		pcm->GetRange(rng);
+		l.vmin = rng[0];
+		l.vmax = rng[1];
+		l.colormap = pcm->GetColorMap();
+		l.smooth = pcm->GetColorSmooth();
+		l.ndivs = pcm->GetDivisions();
+	}
+	return l;
+}
+
 void CPostDocument::SetActiveState(int n)
 {
 	assert(m_glm);
@@ -425,6 +438,7 @@ int CPostDocument::GetEvalField()
 void CPostDocument::ActivateColormap(bool bchecked)
 {
 	Post::CGLModel* po = m_glm;
+	m_showLegend = bchecked;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
 }
@@ -484,38 +498,6 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 	}
 	*/
 	CGLDocument::Update();
-}
-
-std::string CPostDocument::GetFieldString()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::TENSOR_SCALAR);
-	}
-	else return "";
-}
-
-std::string CPostDocument::GetFieldUnits()
-{
-	if (IsValid())
-	{
-		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		const char* szunits = GetFSModel()->GetDataManager()->getDataUnits(nfield);
-		if (szunits)
-		{
-			QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
-			return s.toStdString();
-		}
-		else return "";
-	}
-	else return "";
-}
-
-float CPostDocument::GetTimeValue()
-{
-	if (m_glm) return m_glm->CurrentTime();
-	else return 0.f;
 }
 
 float CPostDocument::GetTimeValue(int n)

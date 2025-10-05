@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLStreamLinePlot.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLLib/GLRenderEngine.h>
 using namespace Post;
 
@@ -75,13 +75,6 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 	m_lastdt = 1.f;
 
 	m_Col.SetDivisions(10);
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetType(GLLegendBar::GRADIENT);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -233,8 +226,6 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 		m_crng = vec2f((float)m_userMin, (float)m_userMax);
 		break;
 	}
-
-	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
 
 	// update stream lines
 	UpdateStreamLines();
@@ -460,4 +451,19 @@ void CGLStreamLinePlot::UpdateMesh()
 			}
 		}
 	}
+}
+
+LegendData CGLStreamLinePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+	
+	return l;
 }

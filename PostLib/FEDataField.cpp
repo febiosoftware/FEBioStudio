@@ -476,7 +476,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 		if ((selOnly == false) || node.IsSelected())
 		{
 			// write the node ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", node.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)
@@ -546,7 +546,8 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				int nf = face.Nodes();
 				for (int j = 0; j < nf; ++j)
 				{
-					fprintf(fp, " %d", face.n[j] + 1);
+					FSNode& node = mesh.Node(face.n[j]);
+					fprintf(fp, " %d", node.GetID());
 					if (j != nf - 1) fprintf(fp, ",");
 				}
 				fprintf(fp, "\n");
@@ -554,7 +555,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 		}
 	}
 
-	// loop over all elements
+	// loop over all faces
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -562,7 +563,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 
 		if ((selOnly == false) || face.IsSelected())
 		{
-			// write the element ID
+			// write the face ID
 			char* sz = buf;
 			sprintf(sz, "%d,", i + 1); sz += strlen(sz);
 
@@ -745,11 +746,12 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 			if ((selOnly == false) || el.IsSelected())
 			{
 				// write the element ID
-				fprintf(fp, "%d,", i + 1);
+				fprintf(fp, "%d,", el.GetID());
 				int ne = el.Nodes();
 				for (int j = 0; j < ne; ++j)
 				{
-					fprintf(fp, " %d", el.m_node[j] + 1);
+					FSNode& node = mesh.Node(el.m_node[j]);
+					fprintf(fp, " %d", node.GetID());
 					if (j != ne - 1) fprintf(fp, ",");
 				}
 				fprintf(fp, "\n");
@@ -766,7 +768,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 		if ((selOnly == false) || el.IsSelected())
 		{
 			// write the element ID
-			fprintf(fp, "%d,", i + 1);
+			fprintf(fp, "%d,", el.GetID());
 
 			// loop over all states
 			for (int n = 0; n < nstates; ++n)
@@ -782,22 +784,31 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					case DATA_SCALAR:
 					{
 						FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
-						float f; pf->eval(i, &f);
-						fprintf(fp, "%g", f);
+						if (pf->active(i))
+						{
+							float f; pf->eval(i, &f);
+							fprintf(fp, "%g", f);
+						}
 					}
 					break;
 					case DATA_VEC3:
 					{
 						FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
-						vec3f f; pf->eval(i, &f);
-						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						if (pf->active(i))
+						{
+							vec3f f; pf->eval(i, &f);
+							fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						}
 					}
 					break;
 					case DATA_MAT3S:
 					{
 						FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
-						mat3fs f; pf->eval(i, &f);
-						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						if (pf->active(i))
+						{
+							mat3fs f; pf->eval(i, &f);
+							fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						}
 					}
 					break;
 					case DATA_ARRAY:
@@ -829,28 +840,49 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					case DATA_SCALAR:
 					{
 						FEElemData_T<float, DATA_MULT>* pf = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&d);
-						float v[FSElement::MAX_NODES]; pf->eval(i, v);
-						float f = 0.0f;
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g", f);
+						if (pf->active(i))
+						{
+							float v[FSElement::MAX_NODES]; pf->eval(i, v);
+							float f = 0.0f;
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g", f);
+						}
 					}
 					break;
 					case DATA_VEC3:
 					{
 						FEElemData_T<vec3f, DATA_MULT>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_MULT>*>(&d);
-						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
-						vec3f f(0.f, 0.f, 0.f);
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						if (pf->active(i))
+						{
+							vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+							vec3f f(0.f, 0.f, 0.f);
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						}
 					}
 					break;
 					case DATA_MAT3S:
 					{
 						FEElemData_T<mat3fs, DATA_MULT>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>*>(&d);
-						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
-						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						if (pf->active(i))
+						{
+							mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
+							mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						}
+					}
+					break;
+					case DATA_MAT3:
+					{
+						FEElemData_T<mat3f, DATA_MULT>* pf = dynamic_cast<FEElemData_T<mat3f, DATA_MULT>*>(&d);
+						if (pf->active(i))
+						{
+							mat3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+							mat3f f; f.zero();
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g,%g,%g,%g,%g,%g,%g", f(0,0), f(0,1), f(0,2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
+						}
 					}
 					break;
 					}
@@ -864,45 +896,57 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					case DATA_SCALAR:
 					{
 						FEElemData_T<float, DATA_NODE>* pf = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&d);
-						float v[FSElement::MAX_NODES]; pf->eval(i, v);
-						float f = 0.0f;
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g", f);
+						if (pf->active(i))
+						{
+							float v[FSElement::MAX_NODES]; pf->eval(i, v);
+							float f = 0.0f;
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g", f);
+						}
 					}
 					break;
 					case DATA_VEC3:
 					{
 						FEElemData_T<vec3f, DATA_NODE>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_NODE>*>(&d);
-						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
-						vec3f f(0.f, 0.f, 0.f);
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						if (pf->active(i))
+						{
+							vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+							vec3f f(0.f, 0.f, 0.f);
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+						}
 					}
 					break;
 					case DATA_MAT3S:
 					{
 						FEElemData_T<mat3fs, DATA_NODE>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_NODE>*>(&d);
-						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
-						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
-						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						if (pf->active(i))
+						{
+							mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
+							mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+							for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+							fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+						}
 					}
 					break;
 					case DATA_ARRAY:
 					{
 						FEElemArrayDataNode* pd = dynamic_cast<FEElemArrayDataNode*>(&d);
-						int arraySize = pd->arraySize();
-						float d[FSElement::MAX_NODES] = { 0.0f };
-						for (int j = 0; j < arraySize; ++j)
+						if (pd->active(i))
 						{
-							pd->eval(i, j, d);
-							float dj = 0.f;
-							for (int k = 0; k < nn; ++k) dj += d[k];
-							dj /= nn;
-							if (j != arraySize - 1)
-								fprintf(fp, "%g,", dj);
-							else
-								fprintf(fp, "%g", dj);
+							int arraySize = pd->arraySize();
+							float d[FSElement::MAX_NODES] = { 0.0f };
+							for (int j = 0; j < arraySize; ++j)
+							{
+								pd->eval(i, j, d);
+								float dj = 0.f;
+								for (int k = 0; k < nn; ++k) dj += d[k];
+								dj /= nn;
+								if (j != arraySize - 1)
+									fprintf(fp, "%g,", dj);
+								else
+									fprintf(fp, "%g", dj);
+							}
 						}
 					}
 					break;
@@ -915,15 +959,21 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					case DATA_SCALAR:
 					{
 						FEElemData_T<float, DATA_REGION>* pf = dynamic_cast<FEElemData_T<float, DATA_REGION>*>(&d);
-						float v; pf->eval(i, &v);
-						fprintf(fp, "%g", v);
+						if (pf->active(i))
+						{
+							float v; pf->eval(i, &v);
+							fprintf(fp, "%g", v);
+						}
 					}
 					break;
 					case DATA_VEC3:
 					{
 						FEElemData_T<vec3f, DATA_REGION>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>*>(&d);
-						vec3f v; pf->eval(i, &v);
-						fprintf(fp, "%g,%g,%g", v.x, v.y, v.z);
+						if (pf->active(i))
+						{
+							vec3f v; pf->eval(i, &v);
+							fprintf(fp, "%g,%g,%g", v.x, v.y, v.z);
+						}
 					}
 					break;
 					}

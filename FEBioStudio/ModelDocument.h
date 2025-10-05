@@ -27,12 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "GLDocument.h"
 #include "FEBioJob.h"
+#include "FEBioStudy.h"
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
+typedef FSObjectList<CFEBioStudy> CFEBioStudyList;
 
 //-----------------------------------------------------------------------------
 class CModelContext;
@@ -40,6 +42,7 @@ class FSObject;
 class FEModifier;
 class FESurfaceModifier;
 class GSurfaceMeshObject;
+class CFEBioStudy;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -59,6 +62,8 @@ public:
 	void Save(OArchive& ar) override;
 
 	bool Initialize() override;
+
+	LegendData GetLegendData() override;
 
 public:
 	//! Get the project
@@ -122,6 +127,12 @@ public:
 	void DeleteAllJobs();
 
 public:
+	int FEBioStudies() const;
+	void AddFEBioStudy(CFEBioStudy* study);
+	CFEBioStudy* GetFEBioStudy(int i);
+	void DeleteAllStudies();
+
+public:
 	// import geometry (geometry is added to current project)
 	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
@@ -131,6 +142,9 @@ public:
 	bool ImportFEBioMaterials(const std::string& fileName);
 
 	void SetUnitSystem(int unitSystem) override;
+
+    bool SkipPluginCheck();
+    void SetSkipPluginCheck(bool skip);
 
 signals:
 	void selectionChanged();
@@ -142,7 +156,11 @@ private:
 	// the job list
 	CFEBioJobList	m_JobList;
 
+	CFEBioStudyList	m_StudyList;
+
 	CModelContext*	m_context;
+
+    bool m_skipPluginCheck;
 };
 
 CModelDocument* CreateNewModelDocument(CMainWindow* wnd, int moduleID, std::string name = "", int units = -1);

@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QPushButton>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "CColorButton.h"
 #include "GLWLib/convert.h"
 #include <GLWLib/GLLabel.h>

@@ -47,8 +47,8 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QDirIterator>
 #include "IconProvider.h"
-#include "DlgFEBioPlugins.h" // for LoadFEBioPlugin
 #include "DlgCreatePlugin.h"
+#include "PluginManager.h"
 
 enum FileItemType {
 	OPEN_FILES,
@@ -782,7 +782,9 @@ void CProjectViewer::onLoadPlugin()
 	dllpath = prj->ToAbsolutePath(dllpath);
 
 	ui->m_wnd->AddLogEntry(QString("Loading %1 ... ").arg(dllpath));
-	bool b = LoadFEBioPlugin(dllpath);
+
+    std::string stdPath = dllpath.toStdString();
+	bool b = ui->m_wnd->GetPluginManager()->LoadNonRepoPlugin(stdPath);
 	if (b)
 	{
 		ui->m_wnd->AddLogEntry(QString("success\n"));

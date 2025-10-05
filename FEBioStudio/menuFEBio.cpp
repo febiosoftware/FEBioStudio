@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QtCore/QTimer>
 #include "DlgFEBioInfo.h"
-#include "DlgFEBioPlugins.h"
+#include "DlgPluginRepo.h"
 #include <FEBioMonitor/DlgMonitorSettings.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include "DlgCreatePlugin.h"
@@ -106,11 +106,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
     static bool showAdvancedSettings = false;
+	static bool generateReport = false;
 
 	// setup the run dialog
 	CDlgRun dlg(this, jobs);
 	dlg.SetLaunchConfig(ui->m_settings.m_launch_configs, lastLaunchConfigIndex);
     dlg.ShowAdvancedSettings(showAdvancedSettings);
+	dlg.SetGenerateReport(generateReport);
     
     if(jobs.empty())
     {
@@ -137,6 +139,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
         // store the name of the job
         lastJobName = jobName.c_str();
 
+		generateReport = dlg.GenerateReport();
+
         if(modelDoc)
         {
             // see if a job with this name already exists
@@ -156,6 +160,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 				modelDoc->AddFEbioJob(job);
 			}
         }
+
+		job->m_generateReport = dlg.GenerateReport();
 
         dlg.GetJobInfo(job);
 
@@ -534,35 +540,97 @@ void CMainWindow::on_actionFEBioCheck_triggered()
 	if (modelDoc) DoModelCheck(modelDoc, false);
 }
 
+class RunStudyThread : public CustomThread
+{
+public:
+	RunStudyThread(CFEBioStudy* study) : m_study(study) {}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		bool b = false;
+		if (m_study) b = m_study->Run();
+		emit resultReady(b);
+	}
+
+private:
+	CFEBioStudy* m_study;
+};
+
+void CMainWindow::RunOptimizationStudy(COptimizationStudy* study)
+{
+	// let's do some sanity checks
+	if (study == nullptr) return;
+	CModelDocument* modelDoc = GetModelDocument();
+	if (modelDoc == nullptr) return;
+	assert(study->GetDocument() == modelDoc);
+
+	std::string filepath = modelDoc->GetDocFilePath();
+	if (filepath.empty())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "You must save the model first before you can run the study.");
+		return;
+	}
+
+	QString name = QString::fromStdString(study->GetName());
+	if (name.isEmpty())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "Please give the study a valid name.");
+		return;
+	}
+
+	QFileInfo fi(QString::fromStdString(filepath));
+	if (!fi.exists() || !fi.isFile())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "The model's file path is not valid. Please save the model in accessible location.");
+		return;
+	}
+
+	// run the study
+	CDlgStartThread dlg(this, new RunStudyThread(study));
+	if (dlg.exec())
+	{
+		QMessageBox::warning(this, "FEBio Studio", "The study completed successfully.");
+
+		QString outfile = study->GetOutputFileName();
+		if (!outfile.isEmpty())
+		{
+			OpenFile(outfile);
+		}
+	}
+}
+
+bool CMainWindow::ConfigureOptimizationStudy(COptimizationStudy* study)
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return false;
+
+	CDlgFEBioOptimize dlg(this);
+	dlg.SetFEBioOpt(study->Options());
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		FEBioOpt opt = dlg.GetFEBioOpt();
+		study->SetOptions(opt);
+		return true;
+	}
+	else
+		return false;
+}
+
 void CMainWindow::on_actionFEBioOptimize_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	CDlgFEBioOptimize dlg(this);
-	if (dlg.exec() == QDialog::Accepted)
-	{
-		QString fileName = QFileDialog::getSaveFileName(this, "Save", "", "*.feb");
-		if (fileName.isEmpty() == false)
-		{
-			try {
-				FEBioOpt opt = dlg.GetFEBioOpt();
+	COptimizationStudy* study = new COptimizationStudy(doc);
+	QString Name = QString("Study%1").arg(doc->FEBioStudies() + 1);
+	study->SetName(Name.toStdString());
 
-				if (GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
-				{
-					QMessageBox::critical(this, "Generate FEBio Optimization file", "Something went terribly wrong!");
-				}
-				else
-				{
-					QMessageBox::information(this, "Generate FEBio Optimization file", "Success writing FEBio optimization file!");
-				}
-			}
-			catch (...)
-			{
-				QMessageBox::critical(this, "Generate FEBio Optimization file", "Exception detection. Optimization file might be incorrect.");
-			}
-		}
+	if (ConfigureOptimizationStudy(study))
+	{
+		doc->AddFEBioStudy(study);
+		UpdateModel(study);
 	}
+	else delete study;
 }
 
 void CMainWindow::on_actionFEBioInfo_triggered()
@@ -571,9 +639,9 @@ void CMainWindow::on_actionFEBioInfo_triggered()
 	dlg.exec();
 }
 
-void CMainWindow::on_actionFEBioPlugins_triggered()
+void CMainWindow::on_actionPluginRepo_triggered()
 {
-	CDlgFEBioPlugins dlg(this);
+	CDlgPluginRepo dlg(&ui->m_pluginManager, this);
 	dlg.exec();
 }
 

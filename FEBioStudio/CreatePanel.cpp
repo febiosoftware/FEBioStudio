@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_createpanel.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GPrimitive.h>
+#include <GeomLib/GFoamObject.h>
 #include <QMessageBox>
 #include "Commands.h"
 #include "MainWindow.h"
@@ -37,7 +38,6 @@ SOFTWARE.*/
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
-#include "CommandWindow.h"
 #include <GLLib/GLScene.h>
 
 //------------------------------------------------------------------------------------------------------------
@@ -60,6 +60,11 @@ REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "thin_tube"      , ":/icons/t
 REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "patch"          , ":/icons/square.png"       , 0);
 REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "disc"           , ":/icons/disc.png"         , 0);
 REGISTER_CLASS2(GRing              , CLASS_OBJECT, "ring"           , ":/icons/ring.png"         , 0);
+
+#ifndef NDEBUG
+REGISTER_CLASS2(GFoamObject, CLASS_OBJECT, "foam", ":icons/foam.png", 0);
+#endif
+
 REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "extrude", ":/icons/extrude.png", 0);
 REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "revolve", ":/icons/revolve.png", 0);
 REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "bend"   , ":/icons/bend.png"   , 0);
@@ -196,9 +201,6 @@ void CCreatePanel::on_create_clicked()
 				scene->ZoomSelection(false);
 				wnd->RedrawGL();
 			}
-
-			CCommandLine cmd("create");
-			CCommandLogger::Log(cmd << po->GetTypeString() << Stringify(*po));
 		}
 		else if (dynamic_cast<GDiscreteElement*>(po))
 		{

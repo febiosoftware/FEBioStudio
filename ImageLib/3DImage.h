@@ -80,7 +80,6 @@ public:
 
 public:
     bool ExportRAW(const std::string& filename);
-    bool ExportSITK(const std::string& filename);
 
 private:
     template <class pType> 

@@ -24,17 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLTriad.h"
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <qopengl.h>
 #include <QPainter>
+#include <OGLLib/OpenGLRenderer.h>
+#include <GLLib/glx.h>
 #include "convert.h"
 
 GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
@@ -45,6 +38,8 @@ GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 
 void GLTriad::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	painter->beginNativePainting();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	GLfloat ones[] = { 1.f, 1.f, 1.f, 1.f };
@@ -74,7 +69,7 @@ void GLTriad::draw(QPainter* painter)
 	glPushMatrix();
 	glLoadIdentity();
 	float d = 1.2f;
-	if (ar >= 1.f)	gluOrtho2D(-d * ar, d * ar, -d, d); else gluOrtho2D(-d, d, -d / ar, d / ar);
+	if (ar >= 1.f)	glOrtho(-d * ar, d * ar, -d, d, -1, 1); else glOrtho(-d, d, -d / ar, d / ar, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -108,35 +103,34 @@ void GLTriad::draw(QPainter* painter)
 	// create the cylinder object
 	glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
-	GLUquadricObj* pcyl = gluNewQuadric();
 
 	const GLdouble r0 = .05;
 	const GLdouble r1 = .15;
 
-	glPushMatrix();
+	OpenGLRenderer ogl;
+
+	ogl.pushTransform();
 	glRotatef(90, 0, 1, 0);
 	glColor3ub(255, 0, 0);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
+	glx::drawCylinder(ogl, r0, .9, 5);
 	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
+	glx::drawCone(ogl, r1, 0.2, 10);
+	ogl.popTransform();
 
-	glPushMatrix();
+	ogl.pushTransform();
 	glRotatef(-90, 1, 0, 0);
 	glColor3ub(0, 255, 0);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
+	glx::drawCylinder(ogl, r0, .9, 5);
 	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
+	glx::drawCone(ogl, r1, 0.2, 10);
+	ogl.popTransform();
 
-	glPushMatrix();
+	ogl.pushTransform();
 	glColor3ub(0, 0, 255);
-	gluCylinder(pcyl, r0, r0, .9, 5, 1);
+	glx::drawCylinder(ogl, r0, .9, 5);
 	glTranslatef(0, 0, .8f);
-	gluCylinder(pcyl, r1, 0, 0.2, 10, 1);
-	glPopMatrix();
-
-	gluDeleteQuadric(pcyl);
+	glx::drawCone(ogl, r1, 0.2, 10);
+	ogl.popTransform();
 
 	// restore project matrix
 	glMatrixMode(GL_PROJECTION);

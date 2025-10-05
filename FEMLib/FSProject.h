@@ -243,6 +243,10 @@ public:
 	void SetUnits(int units);
 	int GetUnits() const;
 
+	void PurgeSelections();
+
+    void GetActivePluginIDs(std::unordered_set<int>& allocatorIDs);
+
 public:
 	// convert the old format to the new
 	void ConvertToNewFormat(std::ostream& log);

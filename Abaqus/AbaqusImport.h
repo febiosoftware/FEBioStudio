@@ -32,25 +32,28 @@ SOFTWARE.*/
 // Implements a class to import ABAQUS files
 class AbaqusImport : public FSFileImport
 {
+public:
 	enum {MAX_ATTRIB = 16};
+	enum {MAX_STRING = 256};
 
 	// attributes
 	struct ATTRIBUTE
 	{
-		char szatt[AbaqusModel::Max_Name];	// name of attribute
-		char szval[AbaqusModel::Max_Name];	// value of attribute
+		char szatt[MAX_STRING] = { 0 };	// name of attribute
+		char szval[MAX_STRING] = { 0 };	// value of attribute
+	};
+
+	enum SCOPE {
+		GLOBAL_SCOPE,
+		ASSEMBLY_SCOPE,
+		INSTANCE_SCOPE,
+		PART_SCOPE
 	};
 
 public:
 	class Exception{};
 
 public:	// import options
-	bool	m_bnodesets;	// read node sets
-	bool	m_belemsets;	// read element sets
-	bool	m_bfacesets;	// read the surfaces
-	bool	m_bautopart;	// auto-partition parts
-	bool	m_bautosurf;	// auto-partition surfaces
-	bool	m_bssection;	// process solid-sections
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:
@@ -59,31 +62,12 @@ public:
 
 	bool Load(const char* szfile);
 
-	bool UpdateData(bool bsave) override;
-
 protected:
 	// read a line and increment line counter
 	bool read_line(char* szline, FILE* fp);
 
 	// build the model
 	bool build_model();
-
-	// build a mesh
-	bool build_mesh();
-
-	// build all physics
-	bool build_physics();
-
-	// build a part
-	GObject* build_part(AbaqusModel::PART* pg);
-
-	// build a surface
-	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
-	FSSurface* find_surface(AbaqusModel::SURFACE* ps);
-
-	// build a nodeset
-	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
-	FSNodeSet* find_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);
@@ -103,9 +87,11 @@ protected:
 	bool read_assembly           (char* szline, FILE* fp);
 	bool read_end_assembly       (char* szline, FILE* fp);
 	bool read_spring_elements    (char* szline, FILE* fp);
-	bool read_step				 (char* szline, FILE* fp);
+	bool read_step               (char* szline, FILE* fp);
+	bool read_end_step           (char* szline, FILE* fp);
 	bool read_boundary           (char* szline, FILE* fp);
 	bool read_dsload             (char* szline, FILE* fp);
+	bool read_cload              (char* szline, FILE* fp);
 	bool read_solid_section      (char* szline, FILE* fp);
 	bool read_shell_section      (char* szline, FILE* fp);
 	bool read_static             (char* szline, FILE* fp);
@@ -113,7 +99,9 @@ protected:
 	bool read_distribution       (char* szline, FILE* fp);
 	bool read_amplitude          (char* szline, FILE* fp);
 	bool read_contact_pair       (char* szline, FILE* fp);
+	bool read_tie                (char* szline, FILE* fp);
 	bool read_spring             (char* szline, FILE* fp);
+	bool read_include            (char* szline, FILE* fp);
 
 	// skip until we find the next keyword
 	bool skip_keyword(char* szline, FILE* fp);
@@ -122,19 +110,19 @@ protected:
 	// parse a file for keywords
 	bool parse_file(FILE* fp);
 
-	// parse the line for attributes
-	int parse_line(const char* szline, ATTRIBUTE* pa);
-
-	// find an attribute in a list
-	const char* find_attribute(ATTRIBUTE* pa, int nmax, const char* szatt);
+	AbaqusModel::PART* GetActivePart();
 
 private:
-	char		m_szTitle[AbaqusModel::Max_Title + 1];
+	string		m_title;
 	FSProject*	m_pprj;
 
 	FSModel*	m_pfem;
 
 	AbaqusModel		m_inp;
+
+	SCOPE m_scope = SCOPE::GLOBAL_SCOPE;
+	AbaqusModel::PART* m_currentPart = nullptr;
+	AbaqusModel::STEP* m_currentStep = nullptr;
 
 	int	m_nline;	// current line number
 };

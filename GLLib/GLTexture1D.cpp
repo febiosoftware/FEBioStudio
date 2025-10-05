@@ -62,3 +62,16 @@ unsigned char* GLTexture1D::GetBytes()
 { 
 	return m_pb; 
 }
+
+GLColor GLTexture1D::sample(float w) const
+{
+	if (m_pb)
+	{
+		int n = (int)(w * m_n);
+		if (n < 0) n = 0;
+		if (n >= m_n) n = m_n - 1;
+		const unsigned char* b = m_pb + 3 * n;
+		return GLColor(b[0], b[1], b[2]);
+	}
+	else return GLColor(0, 0, 0);
+}

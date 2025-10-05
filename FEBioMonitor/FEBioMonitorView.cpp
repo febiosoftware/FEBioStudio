@@ -23,9 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#ifdef WIN32
+#include <windows.h>
+#include <psapi.h>
+#endif
 #include "FEBioMonitorView.h"
 #include <QBoxLayout>
-#include "../FEBioStudio/PlotWidget.h"
+#include "../CUILib/PlotWidget.h"
 #include "FEBioMonitorDoc.h"
 #include <FECore/Callback.h>
 #include <QSplitter>
@@ -33,10 +37,6 @@ SOFTWARE.*/
 #include <QMutex>
 #include <QMutexLocker>
 #include <QTabWidget>
-#ifdef WIN32
-#include <windows.h>
-#include <psapi.h>
-#endif
 
 struct MemInfo
 {
@@ -279,7 +279,7 @@ void CFEBioMonitorView::onUpdate()
 		}
 	}
 
-	int NP = info.Ut.size();
+	int NP = (int)info.Ut.size();
 	for (int i = 0; i < 2; ++i)
 	{
 		ui->plot[i]->OnZoomToHeight();

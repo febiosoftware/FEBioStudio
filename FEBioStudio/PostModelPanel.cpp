@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <PostGL/GLPlotHelicalAxis.h>
+#include <PostGL/GLPlotStaticMesh.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
@@ -69,8 +70,8 @@ SOFTWARE.*/
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLPlotGroup.h>
 #include "ObjectProps.h"
-#include <CUILib/ImageViewer.h>
-#include <CUILib/HistogramViewer.h>
+#include "ImageViewer.h"
+#include "HistogramViewer.h"
 #include "ImageFilterWidget.h"
 #include "GLView.h"
 #include "PostDocument.h"
@@ -781,6 +782,7 @@ void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
 	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
 	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
 	else if (dynamic_cast<Post::GLPlotHelicalAxis  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/helix.png")));
+	else if (dynamic_cast<Post::GLPlotStaticMesh   *>(plot)) it->setIcon(0, QIcon(QString(":/icons/mesh.png")));
 }
 
 void CPostModelPanel::BuildModelTree()
@@ -1119,12 +1121,7 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
-	if (dynamic_cast<Post::CGLLegendPlot*>(po))
-	{
-		Post::CGLLegendPlot* plot = dynamic_cast<Post::CGLLegendPlot*>(po); assert(plot);
-		if (plot) plot->ChangeName(name.toStdString());
-	}
-	else if (po)
+	if (po)
 	{
 		po->SetName(name.toStdString());
 	}

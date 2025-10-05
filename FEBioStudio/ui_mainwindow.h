@@ -55,10 +55,8 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ImageSettingsPanel.h"
 #include "2DImageTimeView.h"
-#include "CommandWindow.h"
 #include "GLControlBar.h"
 #include "Document.h"
-#include <FEBioApp/FEBioAppDocument.h>
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include "LaunchConfig.h"
@@ -84,7 +82,6 @@ SOFTWARE.*/
 #include "DlgScreenCapture.h"
 #include <PyLib/PythonToolsPanel.h>
 #include "DlgPartViewer.h"
-#include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
 #include <FEBioMonitor/FEBioMonitorView.h>
@@ -93,6 +90,9 @@ SOFTWARE.*/
 #include "HTMLBrowser.h"
 #include "PythonEditor.h"
 #include "MainMenu.h"
+#include "PluginManager.h"
+#include <PyLib/PythonRunner.h>
+#include "FEBioBatchView.h"
 
 class QProcess;
 
@@ -157,8 +157,8 @@ public:
 		IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		APP_VIEWER,
-		FEBREPORT_VIEW
+		FEBREPORT_VIEW,
+		BATCHRUN_VIEW
 	};
 
 public:
@@ -171,8 +171,8 @@ public:
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
-	FEBioAppView* appView;
 	CFEBioReportView* febReportView;
+	FEBioBatchView* batchView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -208,14 +208,13 @@ public:
 		glw = new CGLViewer(wnd);
 		stack->addWidget(glw);
 
-		appView = new FEBioAppView(wnd);
-		appView->setObjectName("appview");
-		appView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		stack->addWidget(appView);
-
 		febReportView = new CFEBioReportView(wnd);
 		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(febReportView);
+
+		batchView = new FEBioBatchView(wnd);
+		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(batchView);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
@@ -250,9 +249,6 @@ struct FBS_SETTINGS
 {
 	int		defaultUnits;	// default units used for new model and post documents
 	int		autoSaveInterval; // interval (in seconds) between autosaves
-
-	bool	loadFEBioConfigFile;	// load the FEBio config file on startup
-	QString	febioConfigFileName;	// the path to the default FEBio config file
 
 	QString FEBioSDKInc;	// path to FEBio SDK includes
 	QString FEBioSDKLib;	// path to FEBio SDK libraries
@@ -294,12 +290,11 @@ public:
 	::CPostPanel* postPanel;
 	::CInfoPanel* infoPanel;
 	::CRepositoryPanel* databasePanel;
-    ::CPythonToolsPanel*	pythonToolsPanel;
+//    ::CPythonToolsPanel*	pythonToolsPanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
 	CFEBioMonitorView* febioMonitorView;
-	::CCommandWindow* commandWnd;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;
@@ -337,6 +332,10 @@ public:
 
 	QToolBar* monitorToolBar;
 
+	// Python stuff
+	QThread m_pyThread;
+	CPythonRunner* m_pyRunner = nullptr;
+
 public:
 	CMainMenu* mainMenu;
 
@@ -359,6 +358,8 @@ public:
 	bool m_updateAvailable;
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
+
+    CPluginManager m_pluginManager;
 
 public:
 	CGLDocument* m_copySrc = nullptr; // source for copy selection operation

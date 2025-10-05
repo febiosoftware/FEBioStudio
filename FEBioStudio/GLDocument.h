@@ -143,17 +143,12 @@ public:
 	void Update() override;
 
 public:
-	int GetWidgetLayer();
 	bool ShowTitle() const { return m_showTitle; }
 	bool ShowSubtitle() const { return m_showSubtitle; }
 	bool ShowLegend() const { return m_showLegend; }
-
 	void ShowLegend(bool b) { m_showLegend = b; }
-	void SetDataRange(double vmin, double vmax) { m_dataRange[0] = vmin; m_dataRange[1] = vmax; }
-	void GetDataRange(double v[2]) { v[0] = m_dataRange[0]; v[1] = m_dataRange[1]; }
 
-	// This string will be shown in top-left corner
-	virtual std::string GetRenderString();
+	virtual LegendData GetLegendData() { LegendData l; return l; }
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -203,10 +198,7 @@ protected:
 	FileWriter* m_fileWriter;
 
 	// GL widget parameters
-	unsigned int	m_widgetLayer;
 	bool	m_showTitle;
 	bool	m_showSubtitle;
 	bool	m_showLegend;
-	double	m_dataRange[2];
 };
-

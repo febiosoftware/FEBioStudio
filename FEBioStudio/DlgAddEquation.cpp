@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QGridLayout>
+#include <QMessageBox>
+#include <MeshLib/enums.h>
 
 class CDlgAddEquation_UI
 {
@@ -43,6 +45,7 @@ public:
 	QLineEdit*	vec[3];
 	QLineEdit*	mat[9];
 	QComboBox*	type;
+	QComboBox* classType;
 	QLabel*	lbl[3];
 
 public:
@@ -53,6 +56,9 @@ public:
 		f->addRow("Name:", name = new QLineEdit);
 		f->addRow("Type:", type = new QComboBox);
 		type->addItems(QStringList() << "FLOAT" << "VEC3F" << "MAT3F");
+
+		f->addRow("Class:", classType = new QComboBox);
+		classType->addItems(QStringList() << "NODE" << "ELEM");
 
 		// scalar equation input
 		QHBoxLayout* hs = new QHBoxLayout;
@@ -131,6 +137,17 @@ int CDlgAddEquation::GetDataType()
 	return ui->type->currentIndex();
 }
 
+int CDlgAddEquation::GetClassType()
+{
+	switch (ui->classType->currentIndex())
+	{
+	case 0: return NODE_DATA; break;
+	case 1: return ELEM_DATA; break;
+	}
+	assert(false);
+	return -1;
+}
+
 QString CDlgAddEquation::GetScalarEquation()
 {
 	return ui->scl->text();
@@ -152,3 +169,14 @@ QStringList CDlgAddEquation::GetMatrixEquations()
 	return s;
 }
 
+void CDlgAddEquation::accept()
+{
+	QString name = ui->name->text();
+	if (name.isEmpty())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please enter a name for the datafield.");
+		return;
+	}
+
+	QDialog::accept();
+}

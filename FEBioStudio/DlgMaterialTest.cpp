@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "DlgMaterialTest.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FSCore/FSCore.h>
-#include "PlotWidget.h"
+#include <CUILib/PlotWidget.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "FEClassPropsView.h"

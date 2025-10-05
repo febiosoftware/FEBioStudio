@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLabel>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 
 class CMainWindow;
 class QAbstractButton;
@@ -51,10 +51,10 @@ public:
 
 	void paintEvent(QPaintEvent* ev) override;
 
-	void setColorMap(const Post::CColorMap& m);
+	void setColorMap(const CColorMap& m);
 
 private:
-	Post::CColorMap	m_map;
+	CColorMap	m_map;
 };
 
 class CColormapWidget : public QWidget
@@ -64,7 +64,7 @@ class CColormapWidget : public QWidget
 public:
 	CColormapWidget(QWidget* parent = 0);
 
-	void updateColorMap(const Post::CColorMap& map);
+	void updateColorMap(const CColorMap& map);
 
 	void clearGrid();
 
@@ -93,9 +93,9 @@ private:
 	ColorGradient*	m_grad;
 	QCheckBox*		m_default;
 
-	int				m_currentMap;
-	Post::CColorMap	m_map;
-	bool	m_changed;
+	int			m_currentMap;
+	CColorMap	m_map;
+	bool		m_changed;
 };
 
 class CUnitWidget : public QWidget
@@ -167,12 +167,6 @@ public:
 	CFEBioSettingsWidget(QWidget* parent = nullptr);
 
 public:
-	bool GetLoadConfigFlag();
-	QString GetConfigFileName();
-
-	void SetLoadConfigFlag(bool b);
-	void SetConfigFileName(QString s);
-
 	QString GetSDKIncludePath() const;
 	void SetSDKIncludePath(const QString& s);
 
@@ -182,12 +176,7 @@ public:
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
 
-protected slots:
-	void editConfigFilePath();
-
 private:
-	QCheckBox* m_loadConfig = nullptr;
-	QLineEdit* m_configEdit = nullptr;
 	QLineEdit* m_sdkInc = nullptr;
 	QLineEdit* m_sdkLib = nullptr;
 	QLineEdit* m_pluginPath = nullptr;
@@ -235,7 +224,6 @@ public slots:
 private:
 	void UpdateSettings();
 	void UpdateUI();
-	void UpdateColormap();
 
 protected:
 	CMainWindow*		m_pwnd;

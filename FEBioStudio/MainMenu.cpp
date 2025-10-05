@@ -62,12 +62,14 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	QAction* actionConvertFsm2Feb = createAction("FSM to FEB ...", "actionConvertFsm2Feb");
 	QAction* actionConvertGeo = createAction("Geometry Files ...", "actionConvertGeo");
 	QAction* actionExit = createAction("Exit", "actionExit");
+	
+	QAction* actionNewBatch  = createAction("New Batch ...", "actionNewBatch");
+	QAction* actionOpenBatch = createAction("Open Batch File ...", "actionOpenBatch");
 
 	// --- Edit menu actions ---
 	actionUndo = createAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 	actionRedo = createAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
 	QAction* actionChangeLog = createAction("Change log ...", "actionChangeLog");
-	QAction* actionShowCmdWnd = createAction("Command Window", "actionShowCmdWnd"); actionShowCmdWnd->setShortcut(Qt::Key_F1);
 	QAction* actionInvertSelection = createAction("Invert Selection", "actionInvertSelection"); actionInvertSelection->setShortcut(Qt::AltModifier | Qt::Key_I);
 	QAction* actionClearSelection = createAction("Clear Selection", "actionClearSelection");
 	QAction* actionDeleteSelection = createAction("Delete Selection", "actionDeleteSelection"); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
@@ -152,10 +154,10 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionFEBioContinue = createAction("Pause FEBio", "actionFEBioContinue", "play"); actionFEBioContinue->setShortcut(Qt::ControlModifier | Qt::Key_F5);
 	actionFEBioPause = createAction("Pause FEBio", "actionFEBioPause", "pause"); actionFEBioPause->setShortcut(Qt::ShiftModifier | Qt::Key_F5);
 	actionFEBioNext = createAction("Advance FEBio", "actionFEBioNext", "next"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
-	QAction* actionFEBioOptimize = createAction("Generate optimization file ...", "actionFEBioOptimize");
+	QAction* actionFEBioOptimize = createAction("Create optimization Study ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = createAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = createAction("FEBio Info ...", "actionFEBioInfo");
-	QAction* actionFEBioPlugins = createAction("Manage FEBio plugins ...", "actionFEBioPlugins");
+    QAction* actionPluginRepo = createAction("Plugin Repository ...", "actionPluginRepo");
 	QAction* actionCreatePlugin = createAction("Create FEBio plugin ...", "actionCreatePlugin");
 
 	// --- Tools menu ---
@@ -164,7 +166,9 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionMeshDiagnostic = createAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 	QAction* actionElasticityConvertor = createAction("Elasticity Converter ...", "actionElasticityConvertor");
 	QAction* actionUnitConverter = createAction("Unit Converter ...", "actionUnitConverter");
+	QAction* actionRotationConverter = createAction("Rotation Converter ...", "actionRotationConverter");
 	actionMaterialTest = createAction("Material test ...", "actionMaterialTest");
+	actionDistroVisual = createAction("Distribution visualizer ...", "actionDistroVisual");
 	QAction* actionKinemat = createAction("Kinemat ...", "actionKinemat");
 	QAction* actionPlotMix = createAction("Plotmix ...", "actionPlotMix");
 	QAction* actionPython = createAction("Python editor ...", "actionEditPython");
@@ -185,6 +189,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	actionVolumeFlowPlot = createAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
 	actionVectorGlyph = createAction("Vector Glyph", "actionVectorGlyph");
 	actionHelicalAxis = createAction("Helical Axis", "actionHelicalAxis", "helix");
+	actionStaticMesh = createAction("Static Mesh", "actionStaticMesh", "mesh");
 
 	actionImageSlicer = createAction("Image Slicer", "actionImageSlicer", "imageslice");
 	actionVolumeRender = createAction("Volume Render", "actionVolumeRender", "volrender");
@@ -410,6 +415,13 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 
 	menuFile->addAction(ConvertMenu->menuAction());
 	menuFile->addSeparator();
+
+	QMenu* BatchMenu = new QMenu("Batch Run");
+	BatchMenu->addAction(actionNewBatch);
+	BatchMenu->addAction(actionOpenBatch);
+	menuFile->addAction(BatchMenu->menuAction());
+	menuFile->addSeparator();
+
 	menuFile->addAction(actionExit);
 
 	QMenu* moreSelection = new QMenu("More selection options");
@@ -428,7 +440,6 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuEdit->addAction(actionUndo);
 	menuEdit->addAction(actionRedo);
 	menuEdit->addAction(actionChangeLog);
-	menuEdit->addAction(actionShowCmdWnd);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionInvertSelection);
 	menuEdit->addAction(actionClearSelection);
@@ -525,7 +536,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
-	menuFEBio->addAction(actionFEBioPlugins);
+    menuFEBio->addAction(actionPluginRepo);
 	menuFEBio->addAction(actionCreatePlugin);
 
 	// Post menu
@@ -546,6 +557,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuPost->addAction(actionMusclePath);
 	menuPost->addAction(actionVectorGlyph);
 	menuPost->addAction(actionHelicalAxis);
+	menuPost->addAction(actionStaticMesh);
 	menuPost->addAction(actionPlotGroup);
 	menuPost->addSeparator();
 	menuPost->addAction(actionImageSlicer);
@@ -579,6 +591,7 @@ CMainMenu::CMainMenu(CMainWindow* wnd) : m_wnd(wnd)
 	menuTools->addAction(actionUnitConverter);
 	menuTools->addAction(actionElasticityConvertor);
 	menuTools->addAction(actionMaterialTest);
+	menuTools->addAction(actionDistroVisual);
 	menuTools->addAction(actionKinemat);
 	menuTools->addAction(actionPlotMix);
 	menuTools->addAction(actionPython);

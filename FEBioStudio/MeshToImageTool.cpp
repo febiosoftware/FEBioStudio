@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSMesh.h>
 #include <MeshLib/FSFindElement.h>
+#include <ImageLib/SITKTools.h>
 
 class UIMeshToImageTool : public QWidget
 {
@@ -234,7 +235,9 @@ void CMeshToImageTool::OnCreate()
     }
     else
     {
-        img.ExportSITK(filename.toStdString());
+#ifdef HAS_ITK
+		WriteSITKImage(&img, filename.toStdString());
+#endif
     }
 
     QMessageBox::information(GetMainWindow(), "Tool", "Image successfully created.");

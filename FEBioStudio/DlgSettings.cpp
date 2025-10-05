@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <QFileDialog>
 #include "PaletteViewer.h"
+#include <FSCore/ColorMapManager.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -359,7 +360,7 @@ QSize ColorGradient::sizeHint() const
 	return QSize(20, 20);
 }
 
-void ColorGradient::setColorMap(const Post::CColorMap& m)
+void ColorGradient::setColorMap(const CColorMap& m)
 {
 	m_map = m;
 	repaint();
@@ -654,9 +655,9 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 void CColormapWidget::updateMaps()
 {
 	m_maps->clear();
-	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	for (int i = 0; i < ColorMapManager::ColorMaps(); ++i)
 	{
-		string name = Post::ColorMapManager::GetColorMapName(i);
+		string name = ColorMapManager::GetColorMapName(i);
 		m_maps->addItem(QString(name.c_str()));
 	}
 }
@@ -666,7 +667,7 @@ void CColormapWidget::onSetDefault(int nstate)
 	if (nstate == Qt::Checked)
 	{
 		int n = m_maps->currentIndex();
-		Post::ColorMapManager::SetDefaultMap(n);
+		ColorMapManager::SetDefaultMap(n);
 		m_default->setDisabled(true);
 	}
 	else
@@ -675,24 +676,24 @@ void CColormapWidget::onSetDefault(int nstate)
 
 void CColormapWidget::onNew()
 {
-	int n = Post::ColorMapManager::UserColorMaps() + 1;
+	int n = ColorMapManager::UserColorMaps() + 1;
 	QString name = QString("user%1").arg(n);
 	bool bok = true;
 	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+		CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
 		string sname = newName.toStdString();
-		Post::ColorMapManager::AddColormap(sname, map);
+		ColorMapManager::AddColormap(sname, map);
 
 		updateMaps();
-		m_maps->setCurrentIndex(Post::ColorMapManager::ColorMaps() - 1);
+		m_maps->setCurrentIndex(ColorMapManager::ColorMaps() - 1);
 	}
 }
 
 void CColormapWidget::onDelete()
 {
-	if (Post::ColorMapManager::RemoveColormap(m_currentMap) == false)
+	if (ColorMapManager::RemoveColormap(m_currentMap) == false)
 	{
 		QMessageBox::critical(this, "Delete Colormap", "Cannot delete default color maps.");
 	}
@@ -704,13 +705,13 @@ void CColormapWidget::onDelete()
 
 void CColormapWidget::onEdit()
 {
-	string sname = Post::ColorMapManager::GetColorMapName(m_currentMap);
+	string sname = ColorMapManager::GetColorMapName(m_currentMap);
 	QString name = QString::fromStdString(sname);
 	bool bok = true;
 	QString newName = QInputDialog::getText(this, "Edit color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		Post::ColorMapManager::SetColorMapName(m_currentMap, newName.toStdString());
+		ColorMapManager::SetColorMapName(m_currentMap, newName.toStdString());
 		m_maps->setItemText(m_currentMap, newName);
 	}
 }
@@ -722,7 +723,7 @@ void CColormapWidget::onInvert()
 	m_changed = true;
 }
 
-void CColormapWidget::updateColorMap(const Post::CColorMap& map)
+void CColormapWidget::updateColorMap(const CColorMap& map)
 {
 	clearGrid();
 
@@ -758,7 +759,7 @@ void CColormapWidget::clearGrid()
 
 void CColormapWidget::Apply()
 {
-	Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+	CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 	tex = m_map;
 }
 
@@ -768,7 +769,7 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
-			Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+			CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 			tex = m_map;
 			emit colormapChanged(m_currentMap);
 		}
@@ -779,12 +780,12 @@ void CColormapWidget::currentMapChanged(int n)
 	if (n != -1)
 	{
 		m_currentMap = n;
-		Post::CColorMap& tex = Post::ColorMapManager::GetColorMap(m_currentMap);
+		CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 		m_map = tex;
 
-		updateColorMap(Post::ColorMapManager::GetColorMap(n));
+		updateColorMap(ColorMapManager::GetColorMap(n));
 
-		int defaultMap = Post::ColorMapManager::GetDefaultMap();
+		int defaultMap = ColorMapManager::GetDefaultMap();
 		if (n == defaultMap)
 		{
 			m_default->setChecked(true);
@@ -801,7 +802,7 @@ void CColormapWidget::currentMapChanged(int n)
 
 void CColormapWidget::onDataChanged()
 {
-	Post::CColorMap& map = m_map;
+	CColorMap& map = m_map;
 	for (int i = 0; i<map.Colors(); ++i)
 	{
 		QLineEdit* pos = dynamic_cast<QLineEdit*>(m_grid->itemAtPosition(i, 1)->widget()); assert(pos);
@@ -1056,20 +1057,6 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->setAlignment(Qt::AlignTop);
 
-	m_loadConfig = new QCheckBox("Load FEBio config file on startup.");
-	layout->addWidget(m_loadConfig);
-
-	QHBoxLayout* pathLayout = new QHBoxLayout;
-	pathLayout->addWidget(new QLabel("Config file: "));
-	m_configEdit = new QLineEdit;
-	pathLayout->addWidget(m_configEdit);
-
-	QToolButton* pathButton = new QToolButton;
-	pathButton->setIcon(CIconProvider::GetIcon("open"));
-	pathLayout->addWidget(pathButton);
-
-	layout->addLayout(pathLayout);
-
 	QFormLayout* f = new QFormLayout;
 	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
 	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
@@ -1077,15 +1064,7 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	layout->addLayout(f);
 	 
 	this->setLayout(layout);
-
-	QObject::connect(pathButton, SIGNAL(clicked()), this, SLOT(editConfigFilePath()));
 }
-
-bool CFEBioSettingsWidget::GetLoadConfigFlag() { return m_loadConfig->isChecked(); }
-QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text(); }
-
-void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
-void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
 
 QString CFEBioSettingsWidget::GetSDKIncludePath() const { return m_sdkInc->text(); }
 void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setText(s); }
@@ -1095,19 +1074,6 @@ void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setTe
 
 QString CFEBioSettingsWidget::GetCreatePluginPath() const { return m_pluginPath->text(); }
 void CFEBioSettingsWidget::SetCreatePluginPath(const QString& s) { m_pluginPath->setText(s); }
-
-void CFEBioSettingsWidget::editConfigFilePath()
-{
-	QFileDialog dlg(this);
-	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setDirectory(m_configEdit->text());
-	if (dlg.exec())
-	{
-		QStringList files = dlg.selectedFiles();
-		QString fileName = files.first();
-		m_configEdit->setText(fileName);
-	}
-}
 
 //-----------------------------------------------------------------------------
 class Ui::CDlgSettings
@@ -1313,8 +1279,6 @@ void CDlgSettings::UpdateSettings()
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
 
-	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
-	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
 	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
 	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
 	ui->m_febio->SetCreatePluginPath(m_pwnd->GetCreatePluginPath());
@@ -1451,7 +1415,6 @@ void CDlgSettings::apply()
 	}
 
 	ui->m_map->Apply();
-	UpdateColormap();
 
 	CPaletteManager& PM = CPaletteManager::GetInstance();
 	int n = ui->m_pal->currentPalette();
@@ -1459,8 +1422,6 @@ void CDlgSettings::apply()
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
-	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
-	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
 	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
 	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
 	m_pwnd->SetCreatePluginPath(ui->m_febio->GetCreatePluginPath());
@@ -1490,19 +1451,4 @@ void CDlgSettings::onReset()
 	UpdateSettings();
 	m_pwnd->RedrawGL();
 	UpdateUI();
-}
-
-void CDlgSettings::UpdateColormap()
-{
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(m_pwnd->GetGLDocument());
-	if (doc == nullptr) return;
-	if (!doc->IsValid()) return;
-
-	Post::CGLModel* gm = doc->GetGLModel();
-	if (gm == nullptr) return;
-
-	Post::CGLColorMap* colmap = gm->GetColorMap();
-	colmap->m_Col.UpdateTexture();
-
-	m_pwnd->RedrawGL();
 }

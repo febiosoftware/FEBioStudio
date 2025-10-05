@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include <QMenuBar>
+#include <QThread>
+
 #include "IconProvider.h"
 
 Ui::CMainWindow::CMainWindow()
@@ -32,8 +34,6 @@ Ui::CMainWindow::CMainWindow()
 	m_settings.defaultUnits = 0;
 	m_settings.clearUndoOnSave = true;
 	m_settings.autoSaveInterval = 600;
-	m_settings.loadFEBioConfigFile = true;
-	m_settings.febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
 }
 
 void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
@@ -64,6 +64,14 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 		// build the central widget
 	centralWidget = new CMainCentralWidget(wnd);
 	wnd->setCentralWidget(centralWidget);
+
+	// init Python stuff
+#ifdef HAS_PYTHON
+	m_pyRunner = new CPythonRunner;
+	m_pyRunner->moveToThread(&m_pyThread);
+	QObject::connect(&m_pyThread, &QThread::finished, m_pyRunner, &QObject::deleteLater);
+	m_pyThread.start();
+#endif
 
 	// build the menu
 	mainMenu = new CMainMenu(wnd);
@@ -313,18 +321,12 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	mainMenu->menuWindows->addAction(dock11->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock11);
 
-	QDockWidget* dock12 = new QDockWidget("Command Window", m_wnd); dock12->setObjectName("dockCommandWindow");
-	commandWnd = new ::CCommandWindow(wnd, dock12);
-	dock12->setWidget(commandWnd);
-	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
-	m_wnd->tabifyDockWidget(dock4, dock12);
-
 #ifdef HAS_PYTHON
-		QDockWidget* dock13 = new QDockWidget("Python", m_wnd); dock13->setObjectName("dockPython");
-		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock13);
-		dock13->setWidget(pythonToolsPanel);
-		mainMenu->menuWindows->addAction(dock13->toggleViewAction());
-		m_wnd->tabifyDockWidget(dock3, dock13);
+//	QDockWidget* dock12 = new QDockWidget("Python", m_wnd); dock12->setObjectName("dockPython");
+//	pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock12);
+//	dock12->setWidget(pythonToolsPanel);
+//	mainMenu->menuWindows->addAction(dock12->toggleViewAction());
+//	m_wnd->tabifyDockWidget(dock3, dock12);
 #endif
 
 	// make sure the file viewer is the visible tab
@@ -340,9 +342,9 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CPostConfig(this));
 	m_configs.push_back(new CTextConfig(this));
 	m_configs.push_back(new CXMLConfig(this));
-	m_configs.push_back(new CAPPConfig(this));
 	m_configs.push_back(new CMonitorConfig(this));
 	m_configs.push_back(new CFEBReportConfig(this));
+	m_configs.push_back(new CBatchRunConfig(this));
 
 	setUIConfig(Ui::Config::EMPTY_CONFIG);
 }

@@ -32,75 +32,113 @@ SOFTWARE.*/
 
 class FSMesh;
 
+//! Class for storing mesh data with various data types and formats
 class FSMeshData : public FSObject, public FSHasOneItemList
 {
 public:
+	//! Constructor that initializes the mesh data with a given data class
 	FSMeshData(DATA_CLASS);
+	
+	//! Virtual destructor
 	virtual ~FSMeshData();
 
-	// get the data class of this mesh data
+	//! Get the data class of this mesh data
 	DATA_CLASS GetDataClass() const;
 
-	// get the data type of this mesh data
+	//! Get the data type of this mesh data
 	DATA_TYPE GetDataType() const;
 
-	// get the data format
+	//! Get the data format
 	DATA_FORMAT GetDataFormat() const;
 
-	// size of data field
+	//! Get the size of data field
 	int DataSize() const;
 
-	// nr of data items
+	//! Get the number of data items
 	int DataItems() const;
 
-	// size of each data item
+	//! Get the size of each data item
 	int ItemSize() const;
 
-	// return mesh this data field belongs to
+	//! Return mesh this data field belongs to
 	FSMesh* GetMesh() const;
 
+	//! Set the mesh this data field belongs to
 	void SetMesh(FSMesh* mesh);
 
-	// get the data
+	//! Get the data vector
 	const std::vector<double>& GetData() const { return m_data; };
+	
+	//! Set the data vector
 	void SetData(const std::vector<double>& data) { m_data = data; }
 
-	// access operator
+	//! Access operator for data elements
 	double& operator [] (int i) { return m_data[i]; }
 
+	//! Set a double value at the specified index
 	void set(size_t i, double v);
+	
+	//! Set a vec3d value at the specified index
 	void set(size_t i, const vec3d& v);
+	
+	//! Set a mat3d value at the specified index
 	void set(size_t i, const mat3d& v);
 
+	//! Get a double value at the specified index
 	double get(size_t i) const;
+	
+	//! Get multiple values starting at the specified index
 	void get(size_t i, double* d);
 
+	//! Set a scalar value at the specified index
 	void setScalar(size_t i, double v);
+	
+	//! Set a vec3d value at the specified index
 	void setVec3d(size_t i, const vec3d& v);
 
+	//! Get a scalar value at the specified index
 	double getScalar(size_t i) const;
+	
+	//! Get a vec3d value at the specified index
 	vec3d getVec3d(size_t i) const;
+	
+	//! Get a mat3d value at the specified index
 	mat3d getMat3d(size_t i) const;
 
 protected:
+	//! Set the data type
 	void SetDataType(DATA_TYPE dataType);
+	
+	//! Set the data format
 	void SetDataFormat(DATA_FORMAT dataFormat);
 
+	//! Vector storing the actual data values
 	std::vector<double>	m_data;
 
 private:
+	//! Data class type
 	DATA_CLASS		m_dataClass;
+	
+	//! Data type (scalar, vector, matrix, etc.)
 	DATA_TYPE		m_dataType;
+	
+	//! Data format
 	DATA_FORMAT		m_dataFmt;
-	int				m_itemSize;	// size of each data item
+	
+	//! Size of each data item
+	int				m_itemSize;
+	
+	//! Pointer to the mesh this data belongs to
 	FSMesh*			m_pMesh;
 };
 
+//! Set a double value at the specified index
 inline void FSMeshData::set(size_t i, double v)
 {
 	m_data[i] = v;
 }
 
+//! Set a vec3d value at the specified index
 inline void FSMeshData::set(size_t i, const vec3d& v)
 {
 	assert(m_dataType == DATA_VEC3);
@@ -109,6 +147,7 @@ inline void FSMeshData::set(size_t i, const vec3d& v)
 	m_data[3*i+2] = v.z;
 }
 
+//! Set a mat3d value at the specified index
 inline void FSMeshData::set(size_t i, const mat3d& v)
 {
 	assert(m_dataType == DATA_MAT3);
@@ -117,12 +156,14 @@ inline void FSMeshData::set(size_t i, const mat3d& v)
 	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
 }
 
+//! Set a scalar value at the specified index
 inline void FSMeshData::setScalar(size_t i, double v)
 {
 	assert(m_dataType == DATA_SCALAR);
 	m_data[i] = v;
 }
 
+//! Set a vec3d value at the specified index
 inline void FSMeshData::setVec3d(size_t i, const vec3d& v)
 {
 	assert(m_dataType == DATA_VEC3);
@@ -131,18 +172,21 @@ inline void FSMeshData::setVec3d(size_t i, const vec3d& v)
 	m_data[3*i + 2] = v.z;
 }
 
+//! Get a scalar value at the specified index
 inline double FSMeshData::getScalar(size_t i) const 
 {
 	assert(m_dataType == DATA_SCALAR);
 	return m_data[i];
 }
 
+//! Get a vec3d value at the specified index
 inline vec3d FSMeshData::getVec3d(size_t i) const
 {
 	assert(m_dataType == DATA_VEC3);
 	return vec3d(m_data[3*i], m_data[3*i+1], m_data[3*i+2]);
 }
 
+//! Get a mat3d value at the specified index
 inline mat3d FSMeshData::getMat3d(size_t i) const
 {
 	assert(m_dataType == DATA_MAT3);
@@ -150,11 +194,13 @@ inline mat3d FSMeshData::getMat3d(size_t i) const
 	return mat3d(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8]);
 }
 
+//! Get a double value at the specified index
 inline double FSMeshData::get(size_t i) const 
 { 
 	return m_data[i];
 }
 
+//! Get multiple values starting at the specified index
 inline void FSMeshData::get(size_t n, double* d)
 {
 	for (int i = 0; i < m_itemSize; ++i)

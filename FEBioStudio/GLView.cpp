@@ -24,15 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#elif WIN32
-#include <Windows.h>
-#include <GL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include "GLView.h"
 #include "MainWindow.h"
 #include <QApplication>
@@ -47,15 +38,14 @@ SOFTWARE.*/
 #include <math.h>
 #include <MeshLib/MeshTools.h>
 #include "GLViewTransform.h"
-#include <GLLib/glx.h>
 #include <GLLib/GDecoration.h>
-#include <PostLib/ColorMap.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
 #include <PostGL/GLPlaneCutPlot.h>
+#include <PostGL/GLModel.h>
 #include "Commands.h"
 #include <chrono>
 #include "DlgPickColor.h"
@@ -467,6 +457,38 @@ private:
 	GLCheckBox* m_showNormals;
 };
 
+void renderCircle(const vec3d& c, double R, int N)
+{
+	glBegin(GL_LINE_LOOP);
+	{
+		for (int i = 0; i < N; ++i)
+		{
+			double x = c.x + R * cos(i * 2 * PI / N);
+			double y = c.y + R * sin(i * 2 * PI / N);
+			glVertex3d(x, y, c.z);
+		}
+	}
+	glEnd();
+}
+
+void RenderBrush(int x, int y, double R)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glColor3ub(255, 255, 255);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glLineStipple(1, (GLushort)0xF0F0);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_LINE_STIPPLE);
+
+	int n = (int)(R / 2);
+	if (n < 12) n = 12;
+	renderCircle(vec3d(x, y, 0), R, n);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPopAttrib();
+}
 
 //-----------------------------------------------------------------------------
 CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
@@ -509,6 +531,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
 	m_legend = nullptr;
+	m_legendPlot = nullptr;
 }
 
 CGLView::~CGLView()
@@ -568,7 +591,7 @@ void CGLView::SetColorMap(unsigned int n)
 	m_colorMap.SetColorMap(n);
 }
 
-Post::CColorMap& CGLView::GetColorMap()
+CColorMap& CGLView::GetColorMap()
 {
 	return m_colorMap.ColorMap();
 }
@@ -1371,35 +1394,39 @@ void CGLView::initializeGL()
 
 	if (m_ballocDefaultWidgets)
 	{
-		m_Widget = CGLWidgetManager::GetInstance(); assert(m_Widget);
+		m_Widget = new CGLWidgetManager();
 		m_Widget->AttachToView(this);
 
 		int Y = 0;
-		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""), 0);
+		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""));
 		m_ptitle->set_font_size(30);
 		m_ptitle->fit_to_size();
 		m_ptitle->set_label("$(filename)");
 		Y += m_ptitle->h();
 
-		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""), 0);
+		m_Widget->AddWidget(m_psubtitle = new GLLabel(Y, 70, 300, 60, ""));
 		m_psubtitle->set_font_size(15);
 		m_psubtitle->fit_to_size();
 		m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
-		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
+		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
 		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 		
-		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600), 0);
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 
-		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
+		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600));
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
+		m_Widget->AddWidget(m_legendPlot = new GLLegendBar(&m_colorMap, 0, 0, 600, 120, GLLegendBar::ORIENT_HORIZONTAL));
+		m_legendPlot->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+		m_legendPlot->hide();
+
 		m_menu = new GVContextMenu(this);
 		m_menu->align(GLW_ALIGN_RIGHT | GLW_ALIGN_TOP);
-		m_Widget->AddWidget(m_menu, 0);
+		m_Widget->AddWidget(m_menu);
 	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
@@ -1525,24 +1552,24 @@ void CGLView::RenderDecorations()
 {
 	if (m_deco.empty() == false)
 	{
-		m_ogl.pushState();
-		m_ogl.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
+		m_ogl->pushState();
+		m_ogl->setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
-			m_deco[i]->render(m_ogl);
+			m_deco[i]->render(*m_ogl);
 		}
-		m_ogl.popState();
+		m_ogl->popState();
 	}
 }
 
 void CGLView::RenderScene()
 {
-	m_ogl.start();
+	m_ogl->start();
 
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr)
 	{
-		m_ogl.finish();
+		m_ogl->finish();
 		return;
 	}
 
@@ -1562,7 +1589,7 @@ void CGLView::RenderScene()
 	if (scene)
 	{
 		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(m_ogl, rc);
+		scene->Render(*m_ogl, rc);
 		time_point<steady_clock> stopTime = steady_clock::now();
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 		double fps = (sec != 0 ? 1.0 / sec : 0);
@@ -1571,12 +1598,10 @@ void CGLView::RenderScene()
 		m_fps.push_front(fps);
 	}
 
-	m_ogl.positionCamera(cam);
+	m_ogl->positionCamera(cam);
 	RenderPivot();
 
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
-
-	if (view.m_bselbrush) RenderBrush();
 
 	RenderDecorations();
 
@@ -1587,15 +1612,17 @@ void CGLView::RenderScene()
 
 	RenderTags();
 
-	m_ogl.finish();
+	m_ogl->finish();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
+	glOrtho(0, width(), height(), 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	if (view.m_bselbrush) RenderBrush(m_x1, m_y1, view.m_brushSize);
 
 	RenderCanvas(rc);
 
@@ -1622,26 +1649,18 @@ void CGLView::RenderCanvas(GLContext& rc)
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
 	CGLDocument* doc = m_pWnd->GetGLDocument();
-	std::string renderString = doc->GetRenderString();
-	if (!renderString.empty())
-	{
-		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-		painter.drawText(0, 15, QString::fromStdString(renderString));
-	}
 
 	// draw the GL widgets
 	if (m_Widget)
 	{
 		// Update GLWidget string table for post rendering
-		// TODO: Query the doc for the values:
-		//       GLWidget::addToStringTable("$(filename)", m_doc->GetVariable("filename"));
-		CPostDocument* postDoc = m_pWnd->GetPostDocument();
-		if (postDoc)
+		CGLModelDocument* glDoc = dynamic_cast<CGLModelDocument*>(m_pWnd->GetDocument());
+		if (glDoc)
 		{
-			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
+			GLWidget::addToStringTable("$(filename)", glDoc->GetDocFileName());
+			GLWidget::addToStringTable("$(datafield)", glDoc->GetFieldString());
+			GLWidget::addToStringTable("$(units)", glDoc->GetFieldUnits());
+			GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
 		}
 
 		// update the triad
@@ -1659,13 +1678,55 @@ void CGLView::RenderCanvas(GLContext& rc)
 		{
 			if (doc->ShowLegend())
 			{
-				double v[2];
-				doc->GetDataRange(v);
-				m_legend->SetRange((float)v[0], (float)v[1]);
+				LegendData l = doc->GetLegendData();
+				m_legend->SetColorGradient(l.colormap);
+				m_legend->SetRange(l.vmin, l.vmax);
+				m_legend->SetDivisions(l.ndivs);
+				m_legend->SetSmoothTexture(l.smooth);
 				m_legend->show();
 			}
 			else m_legend->hide();
-
+		}
+		if (m_legendPlot)
+		{
+			bool bshow = false;
+			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+			if (postDoc && postDoc->IsValid())
+			{
+				Post::CGLModel* glm = postDoc->GetGLModel();
+				if (glm)
+				{
+					for (int i = 0; i < glm->Plots(); ++i)
+					{
+						Post::CGLPlot* plt = glm->Plot(i);
+						if (plt->IsActive())
+						{
+							LegendData data = plt->GetLegendData();
+							if (data.ndivs > 0)
+							{
+								m_legendPlot->SetColorGradient(data.colormap);
+								m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+								m_legendPlot->SetDivisions(data.ndivs);
+								m_legendPlot->SetSmoothTexture(data.smooth);
+								m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
+								
+								if (data.title.empty()) {
+									m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
+								}
+								else {
+									m_legendPlot->copy_label(data.title.c_str());
+									m_legendPlot->ShowTitle(true);
+								}
+								
+								bshow = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (bshow) m_legendPlot->show();
+			else m_legendPlot->hide();
 		}
 		if (m_menu)
 		{
@@ -1674,8 +1735,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 			else m_menu->hide();
 		}
 
-		int layer = doc->GetWidgetLayer();
-		m_Widget->SetRenderLayer(layer);
 		m_Widget->DrawWidgets(&painter);
 	}
 
@@ -1710,7 +1769,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
 
-		GLRenderStats stats = m_ogl.GetRenderStats();
+		GLRenderStats stats = m_ogl->GetRenderStats();
 		int Y = rt.y() + fontSize + 5;
 		rt.setY(Y);
 		float tris = (float)stats.triangles;
@@ -1761,20 +1820,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 	painter.end();
 }
 
-void renderCircle(const vec3d& c, double R, int N)
-{
-	glBegin(GL_LINE_LOOP);
-	{
-		for (int i = 0; i < N; ++i)
-		{
-			double x = c.x + R * cos(i * 2 * PI / N);
-			double y = c.y + R * sin(i * 2 * PI / N);
-			glVertex3d(x, y, c.z);
-		}
-	}
-	glEnd();
-}
-
 void CGLView::Render3DCursor()
 {
 	// only render if the 3D cursor is valid
@@ -1806,7 +1851,7 @@ void CGLView::Render3DCursor()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(0, width(), 0, height());
+	glOrtho(0, width(), 0, height(), -1, 1);
 
 	glColor3ub(255, 164, 164);
 	glBegin(GL_LINES);
@@ -1908,7 +1953,7 @@ void CGLView::RenderPivot()
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = ps->IsMovable();
-	m_pivot.Render(m_ogl, ntrans, d, bact);
+	m_pivot.Render(*m_ogl, ntrans, d, bact);
 
 	// restore the modelview matrix
 	glPopMatrix();
@@ -1925,7 +1970,7 @@ void CGLView::RenderRubberBand()
 	// set the ortho
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
+	glOrtho(0, width(), height(), 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1965,34 +2010,6 @@ void CGLView::RenderRubberBand()
 		}
 		break;
 	}
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
-}
-
-void CGLView::RenderBrush()
-{
-	// set the ortho
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
-
-	double R = GetViewSettings().m_brushSize;
-	int n = (int)(R / 2);
-	if (n < 12) n = 12;
-	renderCircle(vec3d(m_x1, m_y1, 0), R, n);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopAttrib();
@@ -2658,7 +2675,7 @@ void CGLView::RenderTags()
 	glPushMatrix();
 	glLoadIdentity();
 
-	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
+	glOrtho(0, m_viewport[2], 0, m_viewport[3], -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

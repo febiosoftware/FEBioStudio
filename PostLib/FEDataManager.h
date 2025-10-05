@@ -34,8 +34,8 @@ namespace Post {
 class FEPostModel;
 
 //-----------------------------------------------------------------------------
-// The data manager stores the attributes (name and type) of the different
-// data fields.
+//! The data manager stores the attributes (name and type) of the different
+//! data fields.
 class FEDataManager
 {
 public:

@@ -36,6 +36,24 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include <algorithm>
 
+QPixmap makeCheckerboard(int tileSize = 8) {
+	int size = tileSize * 2;
+	QPixmap pm(size, size);
+	pm.fill(Qt::transparent);
+
+	QPainter p(&pm);
+	QColor light(200, 200, 200);
+	QColor dark(150, 150, 150);
+
+	p.fillRect(0, 0, tileSize, tileSize, light);
+	p.fillRect(tileSize, tileSize, tileSize, tileSize, light);
+	p.fillRect(tileSize, 0, tileSize, tileSize, dark);
+	p.fillRect(0, tileSize, tileSize, tileSize, dark);
+	p.end();
+
+	return pm;
+}
+
 CDlgScreenCapture::CDlgScreenCapture(CMainWindow* wnd) : m_wnd(wnd), QDialog(wnd)
 {
     QVBoxLayout* layout = new QVBoxLayout;
@@ -44,8 +62,7 @@ CDlgScreenCapture::CDlgScreenCapture(CMainWindow* wnd) : m_wnd(wnd), QDialog(wnd
     m_view = new QGraphicsView;
     m_view->setScene(m_scene);
 
-	m_scene->setBackgroundBrush(Qt::NoBrush);
-	m_view->setBackgroundBrush(Qt::NoBrush);
+	m_scene->setBackgroundBrush(QBrush(makeCheckerboard(20)));
 
 	m_imgItem = nullptr;
 

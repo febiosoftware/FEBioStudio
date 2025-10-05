@@ -84,11 +84,6 @@ CGLSlicePlot::CGLSlicePlot()
 	m_fmin = 0.f;
 	m_fmax = 0.f;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT| GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -107,11 +102,6 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		bool smooth = GetBoolValue(GRAD_SMOOTH);
 		m_Col.SetDivisions(divs);
 		m_Col.SetSmooth(smooth);
-		if (GetLegendBar())
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
 		m_slice_range = GetVec2dValue(SLICE_RANGE);
@@ -149,10 +139,6 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		SetFloatValue(NORMAL_X, m_norm.x);
 		SetFloatValue(NORMAL_Y, m_norm.y);
 		SetFloatValue(NORMAL_Z, m_norm.z);
-		if (GetLegendBar())
-		{
-			SetBoolValue(SHOW_LEGEND, GetLegendBar()->visible());
-		}
 	}
 
 	return false;
@@ -387,9 +373,6 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	GLLegendBar* bar = GetLegendBar();
-	bar->SetRange(m_crng.x, m_crng.y);
-
 	// update the mesh
 	UpdateMesh();
 }
@@ -547,4 +530,19 @@ int CGLSlicePlot::CountFaces(std::vector<std::pair<int, float> >& activeElements
 	}
 
 	return faceCount;
+}
+
+LegendData CGLSlicePlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = true;
+	l.ndivs = GetIntValue(RANGE_DIVS);
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

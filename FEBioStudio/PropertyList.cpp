@@ -266,6 +266,16 @@ CProperty::CProperty(const QString& sname, CProperty::Type itype, const QString&
 	param = nullptr;
 }
 
+int CPropertyList::FindPropertyIndex(const QString& propName) const
+{
+	for (int i = 0; i < Properties(); ++i)
+	{
+		const CProperty& p = Property(i);
+		if (p.name == propName) return i;
+	}
+	return -1;
+}
+
 //-----------------------------------------------------------------------------
 CDataPropertyList::CDataPropertyList()
 {
@@ -523,6 +533,13 @@ QVariant CCachedPropertyList::GetPropertyValue(int i)
 		default:
 			assert(false);
 	}
+	return QVariant();
+}
+
+QVariant CCachedPropertyList::GetPropertyValue(const QString& propName)
+{
+	int n = FindPropertyIndex(propName);
+	if (n >= 0) return GetPropertyValue(n);
 	return QVariant();
 }
 

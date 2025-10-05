@@ -90,7 +90,7 @@ SOFTWARE.*/
 #include <ImageLib/SITKImageSource.h>
 #include <ImageLib/ImageModel.h>
 #include <PostGL/GLColorMap.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <GLWLib/convert.h>
 #include <GLWLib/GLLabel.h>
 #include <GLWLib/GLTriad.h>
@@ -101,7 +101,6 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLModelScene.h"
-#include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioReportDoc.h>
 #include "RemoteJob.h"
@@ -110,6 +109,9 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "FileProcessor.h"
 #include "modelcheck.h"
+#include "DlgListMaterials.h"
+#include "DlgMissingPlugins.h"
+#include "FEBioBatchDoc.h"
 
 extern GLColor col[];
 
@@ -184,15 +186,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// load templates
 	TemplateManager::Init();
 
-	// configure FEBio library
-	if (ui->m_settings.loadFEBioConfigFile)
-	{
-		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
-		FSDir dir(fileName);
-		std::string filepath = dir.expandMacros();
-		FEBio::ConfigureFEBio(filepath.c_str());
-	}
-
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
@@ -209,11 +202,28 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	}
 
 	FSLogger::SetOutput(new FSMainWindowOutput(this));
+
+	// Don't load plugins in Debug mode since plugins are usually built in Release mode
+	// and mixing Debug and Release code can lead to all kinds of problems.
+#ifdef NDEBUG
+    ui->m_pluginManager.LoadXML();
+    ui->m_pluginManager.LoadAllPlugins();
+#endif
+    ui->m_pluginManager.ReadDatabase();
+    ui->m_pluginManager.Connect();
 }
 
 //-----------------------------------------------------------------------------
 CMainWindow::~CMainWindow()
 {
+#ifdef HAS_PYTHON
+	if (ui->m_pyThread.isRunning())
+	{
+		ui->m_pyThread.quit();
+		ui->m_pyThread.wait();
+	}
+#endif
+
 	// delete document
 	delete m_DocManager;
 	delete m_fileProcessor;
@@ -447,10 +457,6 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			OpenFEBioFile(fileName);
 		}
 	}
-	else if (ext.compare("fex", Qt::CaseInsensitive) == 0)
-	{
-		OpenFEBioAppFile(fileName);
-	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("dyn", Qt::CaseInsensitive) == 0) ||
@@ -472,8 +478,12 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		// Assume this is an LSDYNA database
 		OpenPostFile(fileName, nullptr, showLoadOptions);
 	}
+	else if (ext == "log")
+	{
+		if (!OpenFEBioLogFile(fileName))
+			OpenTextFile(fileName);
+	}
 	else if ((ext.compare("txt", Qt::CaseInsensitive) == 0) ||
-			 (ext.compare("log", Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("h"  , Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("cpp", Qt::CaseInsensitive) == 0) ||
 			 (ext.compare("hpp", Qt::CaseInsensitive) == 0))
@@ -934,6 +944,35 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 
 	if (success == false)
 	{
+        ModelFileReader* reader = dynamic_cast<ModelFileReader*>(file.m_fileReader);
+        CModelDocument* doc = dynamic_cast<CModelDocument*>(file.m_doc);
+        if (reader && doc)
+        {
+            auto missingPlugins = reader->GetMissingPlugins();
+
+            if (!missingPlugins.empty())
+            {
+                CDlgMissingPlugins dlg(this, missingPlugins);
+
+                if(dlg.exec())
+                {
+                    if(dlg.SkipPlugins())
+                    {
+                        doc->SetSkipPluginCheck(true);
+                    }
+                    else
+                    {
+                        doc->SetSkipPluginCheck(false);
+                    }
+
+                    m_fileProcessor->ReadFile(file);
+                }
+            }
+
+            return;
+        }
+
+
 		if (m_fileProcessor->IsQueueEmpty())
 		{
 			QString err = QString("Failed reading file :\n%1\n\nERROR: %2").arg(file.m_fileName).arg(errorString);
@@ -1019,8 +1058,6 @@ void CMainWindow::on_finishedReadingFile(QueuedFile file, const QString& errorSt
 				FSDir::setMacro("ProjectDir", ".");
 			}
 			else ui->addToRecentFiles(file.m_fileName);
-
-			CCommandLogger::Log({ "open", file.m_fileName });
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
@@ -1207,12 +1244,12 @@ CModelViewer* CMainWindow::GetModelViewer()
 {
 	return ui->modelViewer;
 }
-
+/*
 CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
 {
 	return ui->pythonToolsPanel;
 }
-
+*/
 CMainStatusBar* CMainWindow::GetStatusBar()
 {
 	return ui->statusBar;
@@ -1743,12 +1780,6 @@ int CMainWindow::GetDefaultUnitSystem() const
 	return ui->m_settings.defaultUnits;
 }
 
-bool CMainWindow::GetLoadConfigFlag() { return ui->m_settings.loadFEBioConfigFile; }
-QString CMainWindow::GetConfigFileName() { return ui->m_settings.febioConfigFileName; }
-
-void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_settings.loadFEBioConfigFile = b; }
-void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileName = s; }
-
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
@@ -1791,8 +1822,6 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 
 		// FEBio
-		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
-		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
 		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
 		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
 		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
@@ -1809,7 +1838,7 @@ void CMainWindow::writeSettings()
 		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 
 		// Post options
-		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+		settings.setValue("defaultMap", ColorMapManager::GetDefaultMap());
 		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
 
 		// Selection
@@ -1879,14 +1908,14 @@ void CMainWindow::writeSettings()
 	settings.endGroup();
 
 	// store user colormaps
-	int n = Post::ColorMapManager::UserColorMaps();
+	int n = ColorMapManager::UserColorMaps();
 	settings.beginGroup("UserColorMaps");
 	{
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			Post::CColorMap& c = Post::ColorMapManager::GetColorMap(Post::ColorMapManager::USER + i);
-			string sname = Post::ColorMapManager::GetColorMapName(Post::ColorMapManager::USER + i);
+			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
 				int m = c.Colors();
@@ -1957,8 +1986,6 @@ void CMainWindow::readSettings()
 		GLWidget::set_default_font(font);
 
 		// FEBio
-		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
-		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
 		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
 		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
 		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
@@ -1977,7 +2004,7 @@ void CMainWindow::readSettings()
 		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 
 		// Post options
-		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+		ColorMapManager::SetDefaultMap(settings.value("defaultMap", ColorMapManager::JET).toInt());
 		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
 
 		// Selection
@@ -2075,7 +2102,7 @@ void CMainWindow::readSettings()
 		for (int i = 0; i < l.size(); ++i)
 		{
 			QString name = l.at(i);
-			Post::CColorMap c; c.SetColors(0);
+			CColorMap c; c.SetColors(0);
 			settings.beginGroup(name);
 			{
 				int m = settings.value("colors", 0).toInt();
@@ -2090,7 +2117,7 @@ void CMainWindow::readSettings()
 				}
 			}
 			settings.endGroup();
-			if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
+			if (c.Colors() > 0) ColorMapManager::AddColormap(name.toStdString(), c);
 		}
 	}
 	settings.endGroup();
@@ -2237,10 +2264,6 @@ void CMainWindow::UpdateUIConfig()
 	{
 		ui->setUIConfig(Ui::Config::XML_CONFIG);
 	}
-	else if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->setUIConfig(Ui::Config::APP_CONFIG);
-	}
 	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::MONITOR_CONFIG);
@@ -2248,6 +2271,10 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CFEBioReportDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::FEBREPORT_CONFIG);
+	}
+	else if (dynamic_cast<FEBioBatchDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::BATCHRUN_CONFIG);
 	}
 	else
 	{
@@ -2410,11 +2437,6 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
 		ui->modelViewer->Clear();
-	}
-
-	if (dynamic_cast<FEBioAppDocument*>(doc))
-	{
-		ui->centralWidget->appView->removeDocument(dynamic_cast<FEBioAppDocument*>(doc));
 	}
 
 	// now, remove from the doc manager
@@ -2846,37 +2868,32 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 		return;
 	}
 
-	QStringList items;
+	std::vector<GMaterial*> items;
 	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
 		GMaterial* gm = srcfem->GetMaterial(i);
-		items.push_back(gm->GetFullName());
+		items.push_back(gm);
 	}
 
 	FSModel* dstfem = doc->GetFSModel();
 
-	QInputDialog input;
-	input.setOption(QInputDialog::UseListViewForComboBoxItems);
-	input.setLabelText("Select material:");
-	input.setComboBoxItems(items);
+	CDlgListMaterials input(this);
+	input.SetMaterials(items);
 	if (input.exec())
 	{
-		QString item = input.textValue();
+		std::vector<GMaterial*> matList = input.GetSelectedMaterials();
 
-		for (int i = 0; i < srcfem->Materials(); ++i)
+		GMaterial* newMat = nullptr;
+		for (GMaterial* gm : matList)
 		{
-			GMaterial* gm = srcfem->GetMaterial(i);
-			QString name = gm->GetFullName();
-			if (name == item)
-			{
-				FSMaterial* pmsrc = gm->GetMaterialProperties();
-				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
-				GMaterial* newMat = new GMaterial(pmnew);
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
-				UpdateModel(newMat);
-				return;
-			}
+			FSMaterial* pmsrc = gm->GetMaterialProperties();
+			FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+			newMat = new GMaterial(pmnew);
+			newMat->SetName(gm->GetName());
+			newMat->SetColor(gm->GetColor());
+			doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 		}
+		UpdateModel(newMat);
 	}
 }
 
@@ -2916,11 +2933,6 @@ CDlgPickColor* CMainWindow::GetPickColorDialog()
 {
 	if (IsColorPickerActive()) return ui->pickColorTool;
 	return nullptr;
-}
-
-CCommandWindow* CMainWindow::GetCommandWindow()
-{
-	return ui->commandWnd;
 }
 
 // remove a graph from the list
@@ -3432,6 +3444,8 @@ void CMainWindow::on_selectionChanged()
 {
 //	ReportSelection();
 }
+
+CPluginManager* CMainWindow::GetPluginManager() { return &ui->m_pluginManager; }
 
 QString CMainWindow::GetSDKIncludePath() const { return ui->m_settings.FEBioSDKInc; }
 QString CMainWindow::GetSDKLibraryPath() const { return ui->m_settings.FEBioSDKLib; }

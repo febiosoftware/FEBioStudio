@@ -34,6 +34,8 @@ GLComposite::GLComposite(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 
 void GLComposite::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	int y = m_y;
 	for (GLWidget* w : m_children)
 	{

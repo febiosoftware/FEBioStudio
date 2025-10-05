@@ -47,7 +47,6 @@ public:
 	double RelativeError() const { return m_err; }
 
 private:
-	void ClosestPointSet(const std::vector<vec3d>& X, const std::vector<vec3d>& P, std::vector<vec3d>& Y);
 	Transform Register(const std::vector<vec3d>& P0, const std::vector<vec3d>& Y, double* err);
 	void ApplyTransform(const std::vector<vec3d>& P0, const Transform& Q, std::vector<vec3d>& P);
 

@@ -28,7 +28,8 @@ SOFTWARE.*/
 #include "CurveEditor.h"
 #include <QTreeWidget>
 #include <QBoxLayout>
-#include "PlotWidget.h"
+#include "CurveEditWidget.h"
+#include "MathEditWidget.h"
 #include <FSCore/LoadCurve.h>
 #include <QHeaderView>
 #include <QComboBox>

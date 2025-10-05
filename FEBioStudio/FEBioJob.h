@@ -94,6 +94,7 @@ public: // FEBio output
 	TimingInfo m_timingInfo;
 	ModelStats m_modelStats;
 	std::vector<ModelStats> m_stepStats;
+	std::vector<TimeStepStats> m_timestepStats;
 
 	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
 	bool m_writeNotes;	// write notes to .feb file
@@ -105,6 +106,8 @@ public: // FEBio output
 	bool	m_bhasProgress;
 	double	m_pct;
 	double	m_tic, m_toc;
+
+	bool m_generateReport = false;
 
 private:
 	std::string		m_febFile;	// the .feb file name

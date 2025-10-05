@@ -26,12 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLVectorPlot.h"
-#include "PostLib/ColorMap.h"
 #include "PostLib/constants.h"
-#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <GLLib/glx.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/ColorMapManager.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////
@@ -94,15 +93,6 @@ CGLVectorPlot::CGLVectorPlot()
 	m_usr[0] = 0.0;
 	m_usr[1] = 1.0;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetOrientation(GLLegendBar::ORIENT_HORIZONTAL);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
-	bar->hide();
-	bar->ShowTitle(true);
-
 	UpdateData(false);
 }
 
@@ -126,14 +116,6 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 		m_rngType = GetIntValue(RANGE_TYPE);
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
-
-		GLLegendBar* bar = GetLegendBar();
-		if ((m_ncol == 0) || !IsActive()) bar->hide();
-		else
-		{
-			bar->SetRange(m_crng.x, m_crng.y);
-			bar->show();
-		}
 
 		Update();
 	}
@@ -406,18 +388,6 @@ void CGLVectorPlot::Update()
 	Update(m_lastTime, m_lastDt, false);
 }
 
-void CGLVectorPlot::Activate(bool b)
-{
-	CGLLegendPlot::Activate(b);
-	GLLegendBar* bar = GetLegendBar();
-	if ((m_ncol == 0) || !IsActive()) bar->hide();
-	else
-	{
-		bar->SetRange(m_crng.x, m_crng.y);
-		bar->show();
-	}
-}
-
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 {
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
@@ -525,10 +495,6 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
-
-	// update the color bar's range
-	GLLegendBar* bar = GetLegendBar();
-	bar->SetRange(m_crng.x, m_crng.y);
 }
 
 void CGLVectorPlot::UpdateState(int nstate)
@@ -581,4 +547,23 @@ void CGLVectorPlot::UpdateState(int nstate)
 
 		if (rng.y == rng.x) ++rng.y;
 	}
+}
+
+LegendData CGLVectorPlot::GetLegendData() const
+{
+	LegendData l;
+
+	int glyphCol = GetIntValue(GLYPH_COLOR);
+	if (glyphCol == 1)
+	{
+		l.discrete = false;
+		l.ndivs = 10;
+		l.vmin = m_crng.x;
+		l.vmax = m_crng.y;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

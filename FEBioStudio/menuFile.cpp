@@ -113,17 +113,19 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
 #include <ImageLib/TiffReader.h>
+#include <FEBioMonitor/FEBioReportDoc.h>
 #include <sstream>
 #include <PostGL/PostObject.h>
 #include "DlgScreenCapture.h"
 #include "DlgStartThread.h"
 #include "units.h"
 #include <FSCore/ClassDescriptor.h>
-#include <FEBioApp/FEBioAppDocument.h>
 #include <FEBioLink/FEBioModule.h>
 #include "BatchConverter.h"
 #include <GLLib/GLScene.h>
 #include <RTLib/RayTracer.h>
+#include "FEBioBatchDoc.h"
+#include "DlgBatchRun.h"
 
 // register file reader classes
 REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
@@ -205,13 +207,6 @@ void CMainWindow::on_actionNewModel_triggered()
 			int units = doc->GetUnitSystem();
 			Units::SetUnitSystem(units);
 			AddDocument(doc);
-
-			if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
-			{
-				QString modulename(FEBio::GetModuleName(dlg.GetSelection()));
-				QString documentName = QString::fromStdString(docName);
-				CCommandLogger::Log({ "new", modulename, documentName });
-			}
 		}
 	}
 }
@@ -376,8 +371,15 @@ bool CMainWindow::SaveDocument(CDocument* doc, const QString& fileName)
 	if (success)
 	{
 		UpdateTab(doc);
-		ui->addToRecentFiles(fileName);
-		ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+
+		QString ext;
+		int n = fileName.lastIndexOf('.');
+		if (n >= 0) ext = fileName.right(fileName.length() - n - 1);
+		if (ext == "fsm")
+		{
+			ui->addToRecentFiles(fileName);
+			ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+		}
 		ui->projectViewer->Update();
 	}
 	else
@@ -471,12 +473,6 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
 
-		CDlgEditObject dlg(abaqusReader, "Import Abaqus", this);
-		if (dlg.exec() == 0)
-		{
-			return;
-		}
-
 		// when reading an Abaqus model, we process the physics
 		abaqusReader->m_breadPhysics = true;
 		reader = abaqusReader;
@@ -524,6 +520,18 @@ void CMainWindow::OpenTextFile(const QString& fileName)
 	AddDocument(txt);
 }
 
+bool CMainWindow::OpenFEBioLogFile(const QString& fileName)
+{
+	CFEBioReportDoc* doc = new CFEBioReportDoc(this);
+	if (doc->LoadFromLogFile(fileName) == false)
+	{
+		delete doc;
+		return false;
+	}
+	AddDocument(doc);
+	return true;
+}
+
 QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 {
 	QStringList filters;
@@ -557,13 +565,6 @@ QString CMainWindow::GetExportGeometryFilename(QString& formatOption)
 		formatOption.clear();
 	}
 	return fileName;
-}
-
-void CMainWindow::OpenFEBioAppFile(const QString& fileName)
-{
-	FEBioAppDocument* feapp = new FEBioAppDocument(this);
-	feapp->SetDocFilePath(fileName.toStdString());
-	AddDocument(feapp);
 }
 
 void CMainWindow::ExportPostGeometry()
@@ -634,10 +635,7 @@ void CMainWindow::ExportPostGeometry()
 	case 3:
 	{
 		Post::PLYExport ply;
-		// we need to get the current colormap
-		Post::CGLModel* gm = doc->GetGLModel();
-		Post::CGLColorMap* cmap = (gm ? gm->GetColorMap() : nullptr);
-		if (cmap && cmap->IsActive()) ply.SetColorMap(cmap->GetColorMap()->ColorMap());
+		ply.SetColorMap(GetGLView()->GetColorMap());
 		bret = ply.Save(fem, szfilename);
 	}
 	break;
@@ -1179,26 +1177,47 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			SavePostDoc();
 		}
+		else
+		{
+			CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+			if (xmlDoc)
+			{
+				QFileDialog dlg;
+				dlg.setDirectory(CurrentWorkingDirectory());
+				dlg.setFileMode(QFileDialog::AnyFile);
+				dlg.setNameFilter("FEBio Input files (*.feb)");
+				dlg.setDefaultSuffix("feb");
+				dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
+				dlg.setAcceptMode(QFileDialog::AcceptSave);
+				if (dlg.exec())
+				{
+					QStringList fileNames = dlg.selectedFiles();
+					QString fileName = QDir::toNativeSeparators(fileNames[0]);
+					if (!fileName.isEmpty())
+						SaveDocument(xmlDoc, fileName);
+				}
+			}
 
-        CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
-        if(xmlDoc)
-        {
-            QFileDialog dlg;
-            dlg.setDirectory(CurrentWorkingDirectory());
-            dlg.setFileMode(QFileDialog::AnyFile);
-            dlg.setNameFilter("FEBio Input files (*.feb)");
-            dlg.setDefaultSuffix("feb");
-            dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
-            dlg.setAcceptMode(QFileDialog::AcceptSave);
-            if (dlg.exec())
-            {
-                QStringList fileNames = dlg.selectedFiles();
-				QString fileName = QDir::toNativeSeparators(fileNames[0]);
-				if (!fileName.isEmpty())
-					SaveDocument(xmlDoc, fileName);
-            }
-        }
-		return;
+			FEBioBatchDoc* batchDoc = dynamic_cast<FEBioBatchDoc*>(GetDocument());
+			if (batchDoc)
+			{
+				QFileDialog dlg;
+				dlg.setDirectory(CurrentWorkingDirectory());
+				dlg.setFileMode(QFileDialog::AnyFile);
+				dlg.setNameFilter("FBS Batch files (*.fsbatch)");
+				dlg.setDefaultSuffix("fsbatch");
+				dlg.selectFile(QString::fromStdString(batchDoc->GetDocTitle()));
+				dlg.setAcceptMode(QFileDialog::AcceptSave);
+				if (dlg.exec())
+				{
+					QStringList fileNames = dlg.selectedFiles();
+					QString fileName = QDir::toNativeSeparators(fileNames[0]);
+					if (!fileName.isEmpty())
+						SaveDocument(batchDoc, fileName);
+				}
+			}
+			return;
+		}
 	}
 
 	string fileName = doc->GetDocTitle();
@@ -1316,7 +1335,7 @@ public:
 			for (size_t i = 0; i < W; ++i)
 			{
 				GLColor c = trg.colorValue(i, j);
-				QRgb rgb = qRgb(c.r, c.g, c.b);
+				QRgb rgb = qRgba(c.r, c.g, c.b, c.a);
 				m_img->setPixel((int)i, (int)j, rgb);
 			}
 		emit resultReady(true);
@@ -1372,7 +1391,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		rc.m_h = H;
 		rc.m_settings = GetGLView()->GetViewSettings();
 		rc.m_cam = &scene->GetCamera();
-		QImage img(W, H, QImage::Format_RGB32);
+		QImage img(W, H, QImage::Format_ARGB32);
 
 		CGView& view = scene->GetView();
 		rayTracer->setupProjection(view.m_fov, view.m_fnear);
@@ -2065,4 +2084,33 @@ void CMainWindow::on_actionConvertGeo_triggered()
 void CMainWindow::on_actionExit_triggered()
 {
 	QApplication::closeAllWindows();
+}
+
+void CMainWindow::on_actionNewBatch_triggered()
+{
+	CDlgBatchRun dlg(this);
+	if (dlg.exec())
+	{
+		FEBioBatchDoc* doc = new FEBioBatchDoc(this);
+		doc->SetFileList(dlg.GetFileList());
+		AddDocument(doc);
+	}
+}
+
+void CMainWindow::on_actionOpenBatch_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, "Open FEBio Batch File", CurrentWorkingDirectory(), "FEBio Studio Batch files (*.fsbatch)");
+	if (!fileName.isEmpty())
+	{
+		FEBioBatchDoc* doc = new FEBioBatchDoc(this);
+		if (doc->LoadDocument(fileName) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to open FEBio batch file.");
+			delete doc;
+		}
+		else
+		{
+			AddDocument(doc);
+		}
+	}
 }

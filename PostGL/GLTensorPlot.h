@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 namespace Post {
 
-class GLTensorPlot : public CGLLegendPlot
+class GLTensorPlot : public CGLPlot
 {
 	enum { DATA_FIELD, METHOD, COLOR_MAP, RANGE_DIVS, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
@@ -110,6 +110,8 @@ protected:
 	void RenderBox(GLRenderEngine& re, TENSOR& t, float scale);
 
 	void Update() override;
+
+	LegendData GetLegendData() const override;
 
 protected:
 	int		m_ntensor;	// tensor field

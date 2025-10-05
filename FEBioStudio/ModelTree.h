@@ -105,6 +105,8 @@ enum ModelTreeType
 	MT_DATAMAP,
 	MT_JOBLIST,
 	MT_JOB,
+	MT_STUDYLIST,
+	MT_STUDY,
 	MT_POST_MODEL,
 	MT_POST_PLOT,
 	MT_3DIMAGE,
@@ -124,6 +126,7 @@ enum ModelTreeFilter
 	FILTER_PHYSICS,
 	FILTER_STEPS,
 	FILTER_JOBS,
+	FILTER_STUDIES,
     FILTER_IMAGES
 };
 
@@ -204,6 +207,7 @@ protected:
 	void UpdateImages         (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateMeshData       (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateMeshAdaptors   (QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep);
+	void UpdateStudies        (QTreeWidgetItem* t1, CModelDocument* doc);
 
 	CModelTreeItem* GetCurrentData();
 

@@ -163,10 +163,5 @@ CCustomLaunchConfig::CCustomLaunchConfig(const std::string& configname) : CLaunc
 
 CDefaultLaunchConfig::CDefaultLaunchConfig(const std::string& configname) : CLaunchConfig(DEFAULT, configname) 
 {
-	AddBoolParam(false, "generateReport", "generate job report");
-}
 
-bool CDefaultLaunchConfig::GenerateJobReport()
-{
-	return GetBoolValue(0);
 }

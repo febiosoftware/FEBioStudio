@@ -770,6 +770,51 @@ vec3d projectToSurfaceEdges(const FSMeshBase& m, const vec3d& p, int gid, int* f
 	return rmin;
 }
 
+vec3d projectToSurfaceNodes(const FSMeshBase& m, const vec3d& p, int gid, int* faceID, Intersection* intersect)
+{
+	const double eps = 1e-5;
+	double Dmin = 1e99;
+	vec3d rmin = p;
+	vec3d r[4];
+	if (faceID) *faceID = -1;
+	if (intersect) intersect->m_faceIndex = -1;
+	for (int i = 0; i < m.Faces(); ++i)
+	{
+		const FSFace& face = m.Face(i);
+		if ((face.m_gid == gid) || (gid == -1))
+		{
+			int nf = face.Nodes();
+			for (int j = 0; j < nf; ++j) r[j] = m.Node(face.n[j]).r;
+
+			for (int j = 0; j < nf; ++j)
+			{
+				vec3d q = r[j];
+
+				double dj = (p - q).SqrLength();
+				if (dj < Dmin)
+				{
+					Dmin = dj;
+					rmin = q;
+					if (faceID) *faceID = i;
+
+					if (intersect)
+					{
+						vec3d qtmp;
+						Intersection is;
+						if (nf == 3) projectToTriangle(q, r[0], r[1], r[2], qtmp, &is);
+						else if (nf == 4) projectToQuad(q, r, qtmp, &is);
+
+						*intersect = is;
+						intersect->m_faceIndex = i;
+					}
+				}
+			}
+		}
+	}
+
+	return rmin;
+}
+
 vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l)
 {
 	double Dmin = 1e99;

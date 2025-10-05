@@ -113,10 +113,6 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
-
-			CCommandLine cmd("addbc", pbc->GetTypeString());
-			if (psel) cmd.AddCommand("assign");
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -169,10 +165,6 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
-
-			CCommandLine cmd("addbc", pbc->GetTypeString());
-			if (psel) cmd.AddCommand("assign");
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -202,8 +194,6 @@ void CMainWindow::on_actionAddGeneralBC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
-
-			CCommandLogger::Log(CCommandLine("addbc", pbc->GetTypeString()));
 		}
 	}
 }
@@ -261,10 +251,6 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddLoad(step, pnl), pnl->GetNameAndType());
 			UpdateModel(pnl);
-
-			CCommandLine cmd("addnl", pnl->GetTypeString());
-			if (psel) cmd.AddCommand("assign");
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -317,10 +303,6 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddLoad(step, psl), psl->GetNameAndType());
 			UpdateModel(psl);
-
-			CCommandLine cmd("addsl", psl->GetTypeString());
-			if (psel) cmd.AddCommand("assign");
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -350,9 +332,6 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddLoad(step, pbl), pbl->GetNameAndType());
 			UpdateModel(pbl);
-
-			CCommandLine cmd("addbl", pbl->GetTypeString());
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -429,10 +408,6 @@ void CMainWindow::on_actionAddIC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddIC(step, pic), pic->GetNameAndType());
 			UpdateModel(pic);
-
-			CCommandLine cmd("addic", pic->GetTypeString());
-			if (psel) cmd.AddCommand("assign");
-			CCommandLogger::Log(cmd);
 		}
 	}
 }
@@ -489,8 +464,6 @@ void CMainWindow::on_actionAddContact_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddInterface(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-
-			CCommandLogger::Log({ "addci", pi->GetTypeString()});
 		}
 	}
 }
@@ -521,7 +494,6 @@ void CMainWindow::on_actionAddGenericNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }
@@ -572,7 +544,6 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }
@@ -603,7 +574,6 @@ void CMainWindow::on_actionAddBodyNLC_triggered()
 			FSStep* step = fem.GetStep(dlg.GetStep());
 			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
-			CCommandLogger::Log({ "addnlc", pi->GetTypeString() });
 		}
 	}
 }

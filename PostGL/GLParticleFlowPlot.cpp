@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLRenderEngine.h>
+#include <FSCore/ColorMapManager.h>
+
 using namespace Post;
 
 REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
@@ -553,4 +555,19 @@ void CGLParticleFlowPlot::SeedParticles()
             }
 		}
 	}
+}
+
+LegendData CGLParticleFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	l.discrete = false;
+	l.ndivs = 10;
+	l.vmin = m_crng.x;
+	l.vmax = m_crng.y;
+	l.smooth = false;
+	l.colormap = GetIntValue(COLOR_MAP);
+	l.title = GetName();
+
+	return l;
 }

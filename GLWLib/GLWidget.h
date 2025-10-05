@@ -62,7 +62,7 @@ public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
 	virtual ~GLWidget();
 
-	virtual void draw(QPainter* painter) = 0;
+	virtual void draw(QPainter* painter);
 
 	virtual int handle(int x, int y, int nevent) { return 0; }
 
@@ -133,10 +133,9 @@ public:
 protected:
 	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
 
-public:
-	unsigned int layer() const { return m_layer; }
-	void set_layer(unsigned int l) { m_layer = l; }
+	void snap_to_bounds(QPainter& painter);
 
+public:
 	std::string processLabel() const;
 
 public:
@@ -166,8 +165,6 @@ protected:
 	
 	unsigned int	m_nsnap;	// alignment flag
 
-	unsigned int m_layer;
-
 	GLColor	m_fgc;
 	GLColor m_bgFillColor[2], m_bgLineColor;
 	int		m_bgFillMode;	// background fille style
@@ -186,5 +183,6 @@ protected:
 
 	std::vector<glw_event_handler> m_eventHandlers;
 
+	CGLWidgetManager* m_parent = nullptr;
 	friend class CGLWidgetManager;
 };

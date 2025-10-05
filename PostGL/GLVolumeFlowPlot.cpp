@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <FSCore/ClassDescriptor.h>
+#include <FSCore/util.h>
 #include <GLLib/GLRenderEngine.h>
 
 using namespace Post;
@@ -70,11 +71,6 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	SetLegendBar(bar);
-
 	UpdateData(false);
 }
 
@@ -90,11 +86,6 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		if (m_alpha != GetFloatValue(OPACITY_SCALE)) { m_alpha = GetFloatValue(OPACITY_SCALE); update = true; };
 		if (m_gain != GetFloatValue(OPACITY_STRENGTH)) { m_gain = GetFloatValue(OPACITY_STRENGTH); update = true; };
 		if (m_meshDivs != GetIntValue(MESH_DIVISIONS)) { m_meshDivs = GetIntValue(MESH_DIVISIONS); update = true; };
-		if (GetLegendBar())
-		{
-			bool b = GetBoolValue(SHOW_LEGEND);
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
-		}
 		if (m_range.maxtype != GetIntValue(MAX_RANGE_TYPE)) { m_range.maxtype = GetIntValue(MAX_RANGE_TYPE); update = true; }
 		if (m_range.mintype != GetIntValue(MIN_RANGE_TYPE)) { m_range.mintype = GetIntValue(MIN_RANGE_TYPE); update = true; }
 		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
@@ -114,10 +105,6 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		SetFloatValue(OPACITY_SCALE, m_alpha);
 		SetFloatValue(OPACITY_STRENGTH, m_gain);
 		SetIntValue(MESH_DIVISIONS, m_meshDivs);
-		if (GetLegendBar())
-		{
-			SetBoolValue(SHOW_LEGEND, GetLegendBar()->visible());
-		}
 		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
 		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
 		SetFloatValue(USER_MAX, m_range.max);
@@ -308,11 +295,6 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	m_range.min = fmin;
 	m_range.max = fmax;
 	if (fmax == fmin) m_range.max += 1;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(m_range.min, m_range.max);
-	}
 }
 
 void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
@@ -458,9 +440,6 @@ void GLVolumeFlowPlot::Render(GLRenderEngine& re, GLContext& rc)
 	re.popState();
 }
 
-// in FSMesh.cpp
-double gain(double g, double x);
-
 void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)
 {
 	// count the faces
@@ -475,7 +454,7 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 	// allocate the mesh
 	mesh.Clear();
 
-	Post::CColorMap& col = m_Col.ColorMap();
+	CColorMap& col = m_Col.ColorMap();
 
 	// build the mesh
 	for (int i = 0; i < n; i++)
@@ -513,4 +492,22 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 		}
 	}
 	mesh.Update();
+}
+
+LegendData GLVolumeFlowPlot::GetLegendData() const
+{
+	LegendData l;
+
+	if (m_range.valid)
+	{
+		l.discrete = false;
+		l.ndivs = m_nDivs;
+		l.vmin = m_range.min;
+		l.vmax = m_range.max;
+		l.smooth = true;
+		l.colormap = GetIntValue(COLOR_MAP);
+		l.title = GetName();
+	}
+
+	return l;
 }

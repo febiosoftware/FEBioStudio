@@ -936,7 +936,7 @@ void FEBioFormat4::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& 
 		} while (!tag.isend());
 	}
 
-	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
+	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem, part));
 }
 
 //-----------------------------------------------------------------------------
@@ -1186,26 +1186,30 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 			FSMesh* feMesh = nodeSet->GetMesh();
 
 			FSNodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+			const int items = nodeData->Size();
 
 			++tag;
 			do
 			{
 				int lid = -1;
 				tag.AttributePtr("lid")->value(lid);
+				int index = lid - 1;
+				if ((index < 0) || (index >= items)) throw XMLReader::InvalidAttributeValue(tag, "lid");
+
 				switch (dataType)
 				{
 				case DATA_SCALAR:
 				{
 					double val = 0.0;
 					tag.value(val);
-					nodeData->setScalar(lid - 1, val);
+					nodeData->setScalar(index, val);
 				}
 				break;
 				case DATA_VEC3:
 				{
 					vec3d val;
 					tag.value(val);
-					nodeData->setVec3d(lid - 1, val);
+					nodeData->setVec3d(index, val);
 				}
 				break;
 				default:
@@ -1340,7 +1344,35 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else ParseUnknownTag(tag);
+		else
+		{
+			FEBioInputModel::ElementSet* eset = feb.FindElementSet(szset);
+			if (eset && eset->m_part)
+			{
+				FSMesh* mesh = eset->m_part->GetFEMesh();
+
+				double h[FSElement::MAX_NODES] = { 0 };
+				++tag;
+				do
+				{
+					int m = tag.value(h, FSElement::MAX_NODES);
+					int lid = tag.AttributeValue<int>("lid", 0) - 1;
+					if (lid >= 0)
+					{
+						int id = mesh->ElementIndexFromID(eset->element(lid));
+						FSElement& el = mesh->Element(id);
+
+						if (el.IsShell() && (m == el.Nodes()))
+						{
+							for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
+						}
+						else throw XMLReader::InvalidValue(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else ParseUnknownAttribute(tag, "elem_set");
+		}
 	}
 	else if (type && (*type == "fiber"))
 	{

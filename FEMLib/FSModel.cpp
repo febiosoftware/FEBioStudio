@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <map>
 #include <cstring>
 using namespace std;
 
@@ -1242,17 +1243,14 @@ GMaterial* FSModel::GetMaterialFromID(int id)
 
 //-----------------------------------------------------------------------------
 // find a material from its name
-GMaterial* FSModel::FindMaterial(const char* szname)
+GMaterial* FSModel::FindMaterial(const string& name)
 {
-	if (szname == 0) return 0;
-	string sname = szname;
-
 	for (int i=0; i<Materials(); ++i)
 	{
-		if (m_pMat[i]->GetName() == sname) return m_pMat[i];
+		if (m_pMat[i]->GetName() == name) return m_pMat[i];
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void FSModel::AssignMaterial(GObject* po, GMaterial* mat)
@@ -2074,6 +2072,40 @@ void FSModel::RemoveUnusedLoadControllers()
 	}
 }
 
+void FSModel::RemoveUnusedMaterials()
+{
+	const int NMAT = Materials();
+	std::map<int, int> tag;
+
+	GModel& mdl = GetModel();
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			int matid = pg->GetMaterialID();
+			tag[matid] = 1;
+		}
+	}
+
+	std::vector<GMaterial*> deleteMats;
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		if (tag.find(mat->GetID()) == tag.end())
+			deleteMats.push_back(mat);
+	}
+
+	if (!deleteMats.empty())
+	{
+		for (GMaterial* pm : deleteMats)
+			delete pm;
+	}
+
+	ClearMLT();
+}
+
 //-----------------------------------------------------------------------------
 void FSModel::DeleteAllMeshDataGenerators()
 {
@@ -2141,34 +2173,27 @@ void FSModel::DeleteAllSteps()
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::Purge(int ops)
+void FSModel::Purge()
 {
-	if (ops == 0)
-	{
-		m_pModel->RemoveMeshData();
+	m_pModel->RemoveMeshData();
 
-		// clear all groups
-		m_pModel->RemoveNamedSelections();
+	// clear all groups
+	m_pModel->RemoveNamedSelections();
 
-		// remove discrete objects
-		m_pModel->ClearDiscrete();
+	// remove discrete objects
+	m_pModel->ClearDiscrete();
 
-		// remove all steps
-		m_pStep.Clear();
+	// remove all steps
+	m_pStep.Clear();
 
-		// remove all materials
-		DeleteAllMaterials();
+	// remove all materials
+	DeleteAllMaterials();
 
-		// remove all load controllers
-		m_LC.Clear();
+	// remove all load controllers
+	m_LC.Clear();
 
-		// add an initial step
-		m_pStep.Add(new FSInitialStep(this));
-	}
-	else
-	{
-		ClearSelections();
-	}
+	// add an initial step
+	m_pStep.Add(new FSInitialStep(this));
 }
 
 //-----------------------------------------------------------------------------
@@ -2223,6 +2248,14 @@ void FSModel::ClearSelections()
 	}
 
 	GetModel().RemoveNamedSelections();
+}
+
+void FSModel::RemoveUnusedItems()
+{
+	GModel& mdl = GetModel();
+	mdl.RemoveUnusedSelections();
+	RemoveUnusedMaterials();
+	RemoveUnusedLoadControllers();
 }
 
 //-----------------------------------------------------------------------------
@@ -2672,6 +2705,136 @@ void FSModel::AddMeshDataGenerator(FSMeshDataGenerator* pmd)
 int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
 {
 	return (int)m_MD.Remove(pmd);
+}
+
+void GetAllocatorIDsRecursive(FSCoreBase* obj, std::unordered_set<int>& allocatorIDs)
+{
+    if ((obj == nullptr) || (obj->GetClassID() == -1)) return;
+
+    FEBio::FEBioClassInfo ci = FEBio::GetClassInfo(obj->GetClassID());
+    allocatorIDs.insert(ci.allocId);
+
+    // check properties
+    for (int i = 0; i < obj->Properties(); ++i)
+    {
+        FSProperty& prop = obj->GetProperty(i);
+        for (int j = 0; j < prop.Size(); ++j)
+        {
+            GetAllocatorIDsRecursive(prop.GetComponent(j), allocatorIDs);
+        }
+    }
+}
+
+void FSModel::GetActivePluginIDs(std::unordered_set<int>& allocatorIDs)
+{
+    // Materials
+    for(int index = 0; index < m_pMat.Size(); index++)
+    {
+        GMaterial* pgm = m_pMat[index];
+        FSMaterial* pmat = pgm->GetMaterialProperties();
+        if (pmat)
+        {
+            GetAllocatorIDsRecursive(pmat, allocatorIDs);
+        }
+    }
+
+    // Steps
+    for (int index = 0; index < Steps(); ++index)
+    {
+        FSStep* ps = GetStep(index);
+        // GetAllocatorIDsRecursive(ps, allocatorIDs);
+
+        // Boundary Conditions
+        for (int j = 0; j < ps->BCs(); ++j)
+        {
+            FSBoundaryCondition* pbc = ps->BC(j);
+            GetAllocatorIDsRecursive(pbc, allocatorIDs);
+        }
+
+        // Loads
+        for (int j = 0; j < ps->Loads(); ++j)
+        {
+            FSLoad* pl = ps->Load(j);
+            GetAllocatorIDsRecursive(pl, allocatorIDs);
+        }
+
+        // Initial Conditions
+        for (int j = 0; j < ps->ICs(); ++j)
+        {
+            FSInitialCondition* pic = ps->IC(j);
+            GetAllocatorIDsRecursive(pic, allocatorIDs);
+        }
+
+        // Contact Interfaces
+        for (int j = 0; j < ps->Interfaces(); ++j)
+        {
+            FSInterface* pi = ps->Interface(j);
+            GetAllocatorIDsRecursive(pi, allocatorIDs);
+        }
+
+        // Non-linear Constraints
+        for (int j = 0; j < ps->Constraints(); ++j)
+        {
+            FSModelConstraint* pmc = ps->Constraint(j);
+            GetAllocatorIDsRecursive(pmc, allocatorIDs);
+        }
+
+        // Rigid Constraints
+        for (int j = 0; j < ps->RigidConstraints(); ++j)
+        {
+            FSRigidConstraint* prc = ps->RigidConstraint(j);
+            GetAllocatorIDsRecursive(prc, allocatorIDs);
+        }
+
+        // Rigid Loads
+        for (int j = 0; j < ps->RigidLoads(); ++j)
+        {
+            FSRigidLoad* prl = ps->RigidLoad(j);
+            GetAllocatorIDsRecursive(prl, allocatorIDs);
+        }
+
+        // Rigid Boundary Conditions
+        for (int j = 0; j < ps->RigidBCs(); ++j)
+        {
+            FSRigidBC* prb = ps->RigidBC(j);
+            GetAllocatorIDsRecursive(prb, allocatorIDs);
+        }   
+
+        // Rigid Initial Conditions
+        for (int j = 0; j < ps->RigidICs(); ++j)
+        {
+            FSRigidIC* pic = ps->RigidIC(j);
+            GetAllocatorIDsRecursive(pic, allocatorIDs);
+        }
+
+        // Rigid Connectors
+        for (int j = 0; j < ps->RigidConnectors(); ++j)
+        {
+            FSRigidConnector* prc = ps->RigidConnector(j);
+            GetAllocatorIDsRecursive(prc, allocatorIDs);
+        }
+
+        // Mesh Adaptors
+        for (int j = 0; j < ps->MeshAdaptors(); ++j)
+        {
+            FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+            GetAllocatorIDsRecursive(pma, allocatorIDs);
+        }
+    }
+
+    // FSLoadControllers
+    for (int index = 0; index < LoadControllers(); ++index)
+    {
+        FSLoadController* plc = GetLoadController(index);
+        GetAllocatorIDsRecursive(plc, allocatorIDs);
+    }
+
+    // FSMeshDataGenerators
+    for (int index = 0; index < MeshDataGenerators(); ++index)
+    {
+        FSMeshDataGenerator* pmd = GetMeshDataGenerator(index);
+        GetAllocatorIDsRecursive(pmd, allocatorIDs);
+    }
 }
 
 //----------------------------------------------------------------------------------------

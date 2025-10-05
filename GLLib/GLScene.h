@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include "GLRenderEngine.h"
 
 class GLContext;
-class GObject;
 class GLScene;
 class QPainter;
 
@@ -115,9 +114,6 @@ public:
 	void ZoomExtents(bool banimate = true);
 
 	void ZoomTo(const BOX& box);
-
-	//! Zoom in on an object
-	void ZoomToObject(GObject* po);
 
 public:
 	void AddTag(const GLTAG& tag) { m_tags.push_back(tag); }

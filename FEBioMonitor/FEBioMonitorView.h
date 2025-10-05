@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/WindowPanel.h"
-#include "../FEBioStudio/PlotWidget.h"
+#include "../CUILib/PlotWidget.h"
 
 class CMemoryWidget : public CPlotWidget
 {

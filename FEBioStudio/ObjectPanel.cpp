@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "ObjectPanel.h"
 #include <QPushButton>
 #include <QGridLayout>
-#include <QFormLayout>
 #include <QMenu>
 #include <QLineEdit>
 #include <QLabel>

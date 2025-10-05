@@ -58,11 +58,13 @@ class CDlgPickColor;
 class CFEBioMonitorPanel;
 class CFEBioMonitorView;
 class CModelViewer;
-class CCommandWindow;
 class CLogPanel;
 class CFileProcessor;
 class CMainStatusBar;
+class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
+class COptimizationStudy;
+
 
 namespace Ui {
 	class CMainWindow;
@@ -148,7 +150,7 @@ public:
 	CRepositoryPanel* GetDatabasePanel();
 
 	// get the python panel
-	CPythonToolsPanel* GetPythonToolsPanel();
+//	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();
@@ -201,13 +203,6 @@ public:
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
-
-	// febio config file
-	bool GetLoadConfigFlag();
-	QString GetConfigFileName();
-
-	void SetLoadConfigFlag(bool b);
-	void SetConfigFileName(QString s);
 
 	// --- WINDOW UPDATE ---
 
@@ -301,6 +296,8 @@ public:
 	void SetCurrentState(int n);
 
 public:
+    CPluginManager* GetPluginManager();
+
 	QString GetSDKIncludePath() const;
 	void SetSDKIncludePath(const QString& s);
 
@@ -309,8 +306,6 @@ public:
 
 	QString GetCreatePluginPath() const;
 	void SetCreatePluginPath(const QString& s);
-
-	CCommandWindow* GetCommandWindow();
 
 	bool IsColorPickerActive() const;
 
@@ -347,7 +342,7 @@ private:
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
 	void OpenTextFile(const QString& fileName);
-	void OpenFEBioAppFile(const QString& fileName);
+	bool OpenFEBioLogFile(const QString& fileName);
 
 	bool SaveDocument(CDocument* doc, const QString& fileName);
 
@@ -411,6 +406,10 @@ public:
 
 	QSize GetEditorSize();
 
+public:
+	bool ConfigureOptimizationStudy(COptimizationStudy* study);
+	void RunOptimizationStudy(COptimizationStudy* study);
+
 public slots:
 	void AddLogEntrySlot(const QString& txt);
 	void AddOutputEntrySlot(const QString& txt);
@@ -454,7 +453,6 @@ public slots:
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
 	void on_actionChangeLog_triggered();
-	void on_actionShowCmdWnd_triggered();
 	void on_actionInvertSelection_triggered();
 	void on_actionClearSelection_triggered();
 	void on_actionDeleteSelection_triggered();
@@ -527,7 +525,9 @@ public slots:
 	void on_actionMeshDiagnostic_triggered();
 	void on_actionElasticityConvertor_triggered();
 	void on_actionMaterialTest_triggered();
+	void on_actionDistroVisual_triggered();
 	void on_actionUnitConverter_triggered();
+	void on_actionRotationConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();
 	void on_actionEditPython_triggered();
@@ -542,8 +542,10 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
-	void on_actionFEBioPlugins_triggered();
+    void on_actionPluginRepo_triggered();
 	void on_actionCreatePlugin_triggered();
+	void on_actionNewBatch_triggered();
+	void on_actionOpenBatch_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
 
@@ -567,6 +569,7 @@ public slots:
 	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionHelicalAxis_triggered();
+	void on_actionStaticMesh_triggered();
 	void on_actionMusclePath_triggered();
 	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();

@@ -42,6 +42,24 @@ void FSCurveMesh::Create(int nodes, int edges)
 	if (edges > 0) m_Edge.resize(edges);
 }
 
+void FSCurveMesh::CreateFromPoints(const std::vector<vec3d>& points, bool isClosed)
+{
+	size_t n = points.size();
+	size_t ne = (isClosed ? n : n - 1);
+	Create(n, ne);
+	for (int i = 0; i < n; ++i)
+		Node(i).r = points[i];
+
+	for (int i = 0; i < ne; ++i)
+	{
+		FSEdge& e = Edge(i);
+		e.n[0] = i;
+		e.n[1] = (i + 1)%n;
+	}
+
+	BuildMesh();
+}
+
 //-----------------------------------------------------------------------------
 FSCurveMesh::CurveType FSCurveMesh::Type() const { return m_type; }
 

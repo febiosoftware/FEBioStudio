@@ -111,6 +111,8 @@ protected:
 
 	void UpdateParticleState(int ntime);
 
+	LegendData GetLegendData() const override;
+
 public:
 	void UpdateParticleColors();
 

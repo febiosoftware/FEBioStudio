@@ -368,6 +368,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
 	ci.spec = fac->GetSpecID();
+    ci.allocId = fac->GetAllocatorID();
 
 	return ci;
 }
@@ -1011,10 +1012,17 @@ int FEBio::GetModuleId(const std::string& moduleName)
 	return -1;
 }
 
+int FEBio::GetModuleAllocatorID(int moduleId)
+{
+    FECoreKernel& fecore = FECoreKernel::GetInstance();
+    return fecore.GetModuleAllocatorID(moduleId - 1);
+}
+
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
 	delete febioModel; febioModel = nullptr;
+	if (moduleID < 0) return;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
@@ -1189,6 +1197,7 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, F
 			job->m_timingInfo = fem.GetTimingInfo();
 			job->m_modelStats = fem.GetModelStats();
 			job->m_stepStats = fem.GetStepStats();
+			job->m_timestepStats = fem.GetTimeStepStats();
 		}
 		return returnCode;
 	}

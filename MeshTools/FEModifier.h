@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FSCore/FSThreadedTask.h>
 class FESelection;
 class GObject;
+class GFace;
 
 //-----------------------------------------------------------------------------
 
@@ -124,6 +125,23 @@ class FEAlignNodes : public FEModifier
 public:
 	FEAlignNodes();
 	FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
+class FEProjectNodes : public FEModifier
+{
+public:
+    FEProjectNodes();
+    FSMesh* Apply(FSMesh* pm) override;
+	FSMesh* Apply(GObject* po, FESelection* pg) override;
+	FSMesh* ProjectToSurface(GObject* po, GFace* pg);
+};
+
+class FEExtrudeToSurface : public FEModifier
+{
+public:
+	FEExtrudeToSurface();
+	FSMesh* Apply(GObject* po, FESelection* pg) override;
 };
 
 //-----------------------------------------------------------------------------

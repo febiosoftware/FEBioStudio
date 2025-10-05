@@ -29,14 +29,13 @@ SOFTWARE.*/
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/SpherePointsGenerator.h>
 #include <MeshTools/FENNQuery.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
 #include "SITKTools.h"
 #include <FECore/besselIK.h>
-#include <GLWLib/GLWidgetManager.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
 #include <FEBioOpt/FEBioOpt.h>
@@ -333,7 +332,7 @@ public:
 
         #pragma omp parallel shared(img)
         {
-            FSNNQuery query(&points);
+            FSNNQuery query(points);
             query.Init();
             
             std::vector<double> tmp(points.size(), 0.0);
@@ -361,7 +360,7 @@ public:
                         
                         if(rad == 0) continue;
 
-                        int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
+                        int closestIndex = query.FindIndex(vec3d(realX/rad, realY/rad, realZ/rad));
                         
                         int index = x + y*nx + z*nx*ny;
                         
@@ -438,25 +437,13 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
 	AddDoubleParam(0.2, "Butterworth fraction")->SetState(Param_HIDDEN);
 	AddDoubleParam(10., "Butterworth steepness")->SetState(Param_HIDDEN);
 
-	m_tex.SetDivisions(10);
-	m_tex.SetSmooth(true);
-
     m_map.jet();
     m_remeshMap.jet();
-	m_pbar = new GLLegendBar(&m_tex, 0, 0, 120, 600, GLLegendBar::ORIENT_VERTICAL);
-	m_pbar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	m_pbar->SetType(GLLegendBar::GRADIENT);
-	m_pbar->copy_label("ODF");
-	m_pbar->ShowTitle(true);
-	m_pbar->hide();
-
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
 {
     clear();
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
     delete m_imp;
 }
 
@@ -467,7 +454,6 @@ void CFiberODFAnalysis::clear()
         delete odf;
     }
     m_ODFs.clear();
-	if (m_pbar) m_pbar->hide();
 }
 
 #ifdef HAS_ITK
@@ -687,7 +673,6 @@ void CFiberODFAnalysis::run()
 	UpdateStats();
     UpdateColorBar();
 	UpdateAllMeshes();
-	m_pbar->show();
 }
 #else
 void CFiberODFAnalysis::run() {}
@@ -736,7 +721,6 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 		if (m_ndivs != GetIntValue(DIVS))
 		{
 			m_ndivs = GetIntValue(DIVS);
-			m_pbar->SetDivisions(m_ndivs);
 		}
 
         if (m_overlapFraction != GetFloatValue(OVERLAP))
@@ -894,9 +878,6 @@ void CFiberODFAnalysis::UpdateColorBar()
             m_remeshMap.SetRange(m_remeshMin, m_remeshMax);
         }
 
-		m_pbar->SetRange(vmin, vmax);
-		m_pbar->copy_label(szlabel);
-
         m_map.SetRange(vmin, vmax);
 	}
 	else
@@ -909,9 +890,6 @@ void CFiberODFAnalysis::UpdateColorBar()
 			vmin = m_userMin;
 			vmax = m_userMax;
 		}
-
-		m_pbar->SetRange(vmin, vmax);
-		m_pbar->copy_label("FA");
 
         m_map.SetRange(vmin, vmax);
 	}
@@ -972,12 +950,7 @@ void CFiberODFAnalysis::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (IsActive() == false)
 	{
-		m_pbar->hide();
 		return;
-	}
-	else if (m_ODFs.empty() == false)
-	{
-		m_pbar->show();
 	}
 
 	re.pushState();
@@ -1094,7 +1067,7 @@ void CFiberODFAnalysis::renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* c
 
 void CFiberODFAnalysis::OnDelete()
 {
-    m_pbar->hide();
+
 }
 
 int CFiberODFAnalysis:: ODFs() const 

@@ -11,7 +11,6 @@ set(FBS_BIN_NAME FEBioStudio)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
@@ -331,11 +330,6 @@ if(USE_MMG)
 	include_directories(${MMG_INC})
 endif()
 
-if(USE_TETGEN)
-	add_definitions(-DTETLIBRARY)
-	include_directories(${TETGEN_INC})
-endif()
-
 if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
@@ -348,14 +342,6 @@ endif()
 if(USE_SSH)
 	add_definitions(-DHAS_SSH)
 	include_directories(${SSH_INC} ${SSL_INC})
-endif()
-
-if(MODEL_REPO)
-	add_definitions(-DHAS_LIBZIP)
-	include_directories(${LIBZIP_INC})
-
-	add_definitions(-DMODEL_REPO)
-	include_directories(${SQLITE_INC})
 endif()
 
 if(USE_FFMPEG)
@@ -395,7 +381,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioApp FEBioMonitor VTKLib PyLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -458,7 +444,8 @@ macro(crossExecProcess OUT)
 endmacro()
 
 # Check for git and give warning if not available
-if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
+option(SET_DEVCOMMIT "Set the DEVCOMMIT macro with git commit hash" ON)
+if(${SET_DEVCOMMIT} AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
     if(WIN32)
         set(CMD where git)
     else()
@@ -493,7 +480,7 @@ endif()
 
 # Linking the Qt libraries also pulls in the include files
 target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(CUILib Qt6::Widgets)
+target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(PostGL Qt6::Gui)
 target_link_libraries(PostLib Qt6::Gui)
@@ -505,7 +492,6 @@ target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
 target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
 target_link_libraries(PyLib Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
-target_link_libraries(FEBioApp Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(FEBioMonitor Qt6::Core Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 
 if(WIN32)
@@ -513,7 +499,7 @@ elseif(APPLE)
 else()
     target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
-	target_link_libraries(${FBS_BIN_NAME} -Wl,--start-group)
+	target_link_libraries(${FBS_BIN_NAME} -Wl,--allow-shlib-undefined -Wl,--start-group)
 endif()
 
 if(UNIX)
@@ -537,6 +523,9 @@ if(USE_MMG)
 endif()
 
 if(USE_TETGEN)
+    target_compile_definitions(MeshTools PRIVATE TETLIBRARY)
+    target_include_directories(MeshTools PRIVATE ${TETGEN_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
     
     if(DEFINED TETGEN_DBG_LIBS)
@@ -583,6 +572,9 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
+    target_compile_definitions(${FBS_BIN_NAME} PUBLIC "MODEL_REPO" "HAS_LIBZIP")
+    target_include_directories(${FBS_BIN_NAME} PRIVATE ${LIBZIP_INC} ${SQLITE_INC})
+
 	target_link_libraries(${FBS_BIN_NAME} optimized ${LIBZIP_LIB})
     
     if(DEFINED LIBZIP_DBG_LIB)
@@ -660,7 +652,8 @@ if(BUILD_UPDATER)
 
     set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
         Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
-        FEBioStudio/ServerSettings.cpp)
+        FEBioStudio/ServerSettings.cpp FEBioStudio/PluginManager.cpp FEBioStudio/PluginRepoConnectionHandler.cpp
+        FEBioStudio/PluginDatabaseHandler.cpp FEBioStudio/DatabaseInterface.cpp FEBioStudio/PluginXML.cpp)
 
     add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
     set_property(TARGET FEBioStudioUpdater PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudioUpdater_autogen)
@@ -675,6 +668,8 @@ if(BUILD_UPDATER)
     endif()
 
     target_include_directories(FEBioStudioUpdater PRIVATE "Updater")
+
+    target_compile_definitions(FEBioStudioUpdater PUBLIC "UPDATER")
 
     findLib(FEBio_LIB_DIR XML_LIB xml)
 

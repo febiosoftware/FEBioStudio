@@ -46,7 +46,12 @@ RayTracer::RayTracer()
 	AddIntParam(0, "Height");
 	AddBoolParam(true, "Shadows");
 	AddChoiceParam(0, "Multisample")->SetEnumNames(" Off\0 2x2\0 3x3\0 4x4\0");
-	AddIntParam(-1, "BHV Levels")->SetIntRange(-1, 32);
+	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0");
+#ifndef NDEBUG
+	Param* p = AddIntParam(-1, "BHV Levels");
+	p->SetIntRange(-1, 32);
+	p->SetVisible(false);
+#endif
 }
 
 RayTracer::~RayTracer()
@@ -550,7 +555,7 @@ void RayTracer::render()
 	double fh = nearPlane * tan(0.5 * fieldOfView * DEG2RAD);
 	double fw = fh * ar;
 
-	int samples = GetIntValue(MULTI_SAMPLE);
+	int samples = GetIntValue(MULTI_SAMPLE) + 1;
 	if (samples < 1) samples = 1;
 	if (samples > 4) samples = 4;
 
@@ -608,7 +613,19 @@ void RayTracer::render()
 rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 {
 	rt::Point q;
-	Color fragCol(backgroundCol);
+
+	int bgOption = GetIntValue(BACKGROUND);
+
+	Color fragCol;
+	switch (bgOption)
+	{
+	case 0: // default
+		fragCol = backgroundCol;
+		break;
+	case 1: // transparent
+		fragCol = Color(0, 0, 0, 0);
+		break;
+	}
 	bool intersectMesh = (bhv.intersect(ray, q));
 	bool renderShadows = GetBoolValue(SHADOWS);
 

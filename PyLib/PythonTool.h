@@ -33,6 +33,8 @@ class QLabel;
 // to the Python panel. It manages a CPythonToolProps that contains the properties of the tool.
 class CPythonTool : public CAbstractTool
 {
+	Q_OBJECT
+
 public:
 	CPythonTool(CMainWindow* wnd, const QString& name);
 	~CPythonTool();
@@ -46,6 +48,12 @@ public:
 	void SetToolInfo(const QString& info);
 
 	QWidget* createUi();
+
+public slots:
+	void onRun();
+
+signals:
+	void runTool(CCachedPropertyList* props);
 
 private:
 	CCachedPropertyList* m_props;

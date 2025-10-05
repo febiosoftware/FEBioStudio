@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
-#include "GLSceneView.h"
+#include <CUILib/GLSceneView.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLScene.h>
 
@@ -33,6 +33,7 @@ class CMainWindow;
 class matrix;
 class GObject;
 class GLTriad;
+class GLLegendBar;
 class CFiberODFAnalysis;
 class FSMaterial;
 struct CODF;
@@ -61,6 +62,7 @@ class CFiberGLWidget : public CGLManagedSceneView
 {
 public:
     CFiberGLWidget();
+	~CFiberGLWidget();
 
     void setAnalysis(CFiberODFAnalysis* analysis);
     void setODF(CODF* odf);
@@ -72,6 +74,7 @@ private:
     CODF* m_ODF;
 
     GLTriad* m_ptriad;
+	GLLegendBar* m_pbar;
 
 	friend class CODFScene;
 };

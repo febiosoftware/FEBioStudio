@@ -201,11 +201,6 @@ void CMainWindow::on_actionChangeLog_triggered()
 	}
 }
 
-void CMainWindow::on_actionShowCmdWnd_triggered()
-{
-	ui->commandWnd->Show();
-}
-
 void CMainWindow::on_actionInvertSelection_triggered()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
@@ -1199,7 +1194,19 @@ void CMainWindow::on_actionPasteObject_triggered()
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
 	GLScene* scene = doc->GetScene();
-	if (scene) scene->ZoomToObject(copyObject);
+	if (scene)
+	{
+		BOX box = copyObject->GetGlobalBox();
+
+		double f = box.GetMaxExtent();
+		if (f == 0) f = 1;
+
+		GLCamera& cam = scene->GetCamera();
+
+		cam.SetTarget(box.Center());
+		cam.SetTargetDistance(2.0 * f);
+		cam.SetOrientation(copyObject->GetRenderTransform().GetRotationInverse());
+	}
 	copyObject = nullptr;
 
 	// update windows
@@ -1450,8 +1457,14 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
+		FSProject& prj = doc->GetProject();
 		FSModel* ps = doc->GetFSModel();
-		ps->Purge(dlg.getOption());
+		switch (dlg.getOption())
+		{
+		case 0: ps->Purge(); break;
+		case 1: prj.PurgeSelections(); break;
+		case 2: ps->RemoveUnusedItems(); break;
+		}
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);
 		UpdateModel();

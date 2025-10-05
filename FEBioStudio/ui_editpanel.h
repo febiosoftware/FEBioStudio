@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <MeshLib/FSSurfaceMesh.h>
 #include "MainWindow.h"
 #include "Document.h"
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include "Tool.h"
 #include "ButtonBox.h"
 #include "ToolParamsPanel.h"

@@ -56,7 +56,6 @@ SOFTWARE.*/
 #include "Commands.h"
 #include "Tool.h"
 #include <GLLib/GDecoration.h>
-#include "CommandWindow.h"
 
 class CPrimitiveMesherProps : public CObjectProps
 {
@@ -281,6 +280,7 @@ REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Fa
 REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach Elements", EDIT_ELEMENT);
 REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
+REGISTER_CLASS(FEExtrudeToSurface     , CLASS_FEMODIFIER, "Extrude To Surface", EDIT_FACE);
 REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
 REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDIT_FACE);
 REGISTER_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
@@ -289,6 +289,7 @@ REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDI
 REGISTER_CLASS(MMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
 #endif
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
+REGISTER_CLASS(FEProjectNodes         , CLASS_FEMODIFIER, "Project Nodes"  , EDIT_NODE);
 REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
 REGISTER_CLASS(RefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
@@ -480,7 +481,6 @@ void CMeshPanel::on_apply_clicked(bool b)
 			report += QString("- Elements = %1\n").arg(mesh->Elements());
 			QMessageBox::information(this, "FEBio Studio", report);
 			w->AddLogEntry(report);
-			CCommandLogger::Log("genmesh");
 		}
 	}
 }

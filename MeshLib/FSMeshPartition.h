@@ -52,6 +52,7 @@ public:
 	void AddFace(int n) { m_Face.push_back(n); }
 
 	const std::vector<int>& FaceList() { return m_Face; }
+    const std::vector<int>& ElementList() { return m_Elem; }
 
 	FSMesh* GetMesh() { return m_pm; }
 

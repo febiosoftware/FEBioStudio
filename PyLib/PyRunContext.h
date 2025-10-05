@@ -37,6 +37,8 @@ public:
 
 	static GObject* GetActiveObject();
 
+	static void Init();
+
 private:
 	static PyRunContext* Instance();
 	PyRunContext();

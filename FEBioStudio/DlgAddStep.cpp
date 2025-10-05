@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QMessageBox>
 #include <FEMLib/FSModel.h>
-#include "InputWidgets.h"
+#include <CUILib/InputWidgets.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FSProject.h>
 

@@ -24,19 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
 #include "GLWidget.h"
+#include "GLWidgetManager.h"
 #include <assert.h>
 #include "convert.h"
 #include <sstream>
@@ -80,14 +69,13 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 	m_balloc = false;
 
 	m_bshow = true;
-
-	m_layer = 0;
 }
 
 GLWidget::~GLWidget(void)
 {
 	if (m_balloc) delete [] m_szlabel;
 	m_szlabel = 0;
+	if (m_parent) m_parent->RemoveWidget(this);
 }
 
 void GLWidget::set_label(const char* szlabel)
@@ -235,4 +223,23 @@ void GLWidget::call_event_handlers(int nevent)
 	{
 		f(this, nevent);
 	}
+}
+
+void GLWidget::draw(QPainter* painter)
+{
+	if (painter) snap_to_bounds(*painter);
+}
+
+void GLWidget::snap_to_bounds(QPainter& painter)
+{
+	int W = painter.device()->width();
+	int H = painter.device()->height();
+
+	if      (m_nsnap & GLW_ALIGN_LEFT   ) m_x = 0;
+	else if (m_nsnap & GLW_ALIGN_RIGHT  ) m_x = W - m_w - 1;
+	else if (m_nsnap & GLW_ALIGN_HCENTER) m_x = W / 2 - m_w / 2;
+
+	if      (m_nsnap & GLW_ALIGN_TOP    ) m_y = 0;
+	else if (m_nsnap & GLW_ALIGN_BOTTOM ) m_y = H - m_h - 1;
+	else if (m_nsnap & GLW_ALIGN_VCENTER) m_y = H / 2 - m_h / 2;
 }

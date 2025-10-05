@@ -82,6 +82,7 @@
 		<file>icons/detach.png</file>
 		<file>icons/extract.png</file>
 		<file>icons/febio.png</file>
+        <file>icons/febio_large.png</file>
 		<file>icons/zoom_x.png</file>
 		<file>icons/zoom_y.png</file>
 		<file>icons/sphereinbox.png</file>
@@ -160,6 +161,7 @@
         <file>icons/emblems/caution.png</file>
         <file>icons/emblems/check.png</file>
         <file>icons/emblems/error.png</file>
+        <file>icons/emblems/greenCheck.png</file>
         <file>icons/emblems/minus.png</file>
         <file>icons/emblems/missing.png</file>
         <file>icons/emblems/plus.png</file>
@@ -209,5 +211,6 @@
         <file>icons/scroll_down.png</file>
         <file>icons/helix.png</file>
         <file>icons/teapot.png</file>
+        <file>icons/foam.png</file>
 	</qresource>
 </RCC>

@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "OpenGLRenderer.h"
 #include <GLLib/GLMesh.h>
-#include <GL/glew.h>
-#include <qopengl.h>
 #include <QImage>
 #include "OGLMesh.h"
 #include "OGLProgram.h"
@@ -134,13 +132,11 @@ const char* vertex_shader = \
 "}                                                        \n"\
 "";
 
-OGLProgram VRprg_8bit;
-OGLProgram VRprg_rgb;
+OGLProgram* VRprg_8bit = nullptr;
+OGLProgram* VRprg_rgb = nullptr;
 
 class OpenGLRenderer::Imp {
 public:
-	CGLSceneView* glv;
-
 	bool useVertexColors = false;
 	bool useTexture = false;
 
@@ -154,31 +150,23 @@ public:
 	size_t cachedObjects() { return triMesh.size() + lineMesh.size(); }
 
 	void InitShaders();
-
-	void UseProgram(OGLProgram* prg)
-	{
-		if (prg)
-		{
-			prg->Use();
-		}
-		else glUseProgram(0);
-		activeProgram = prg;
-	}
 };
 
 void OpenGLRenderer::Imp::InitShaders()
 {
 	if (shaderInit) return;
 
-	VRprg_8bit.Create(nullptr, shadertxt_8bit);
-	VRprg_rgb.Create(nullptr, shadertxt_rgb);
+	if (VRprg_8bit == nullptr) VRprg_8bit = new OGLProgram;
+	VRprg_8bit->Create(nullptr, shadertxt_8bit);
+
+	if (VRprg_rgb == nullptr) VRprg_rgb = new OGLProgram;
+	VRprg_rgb->Create(nullptr, shadertxt_rgb);
 
 	shaderInit = true;
 }
 
-OpenGLRenderer::OpenGLRenderer(CGLSceneView* view) : m(*(new OpenGLRenderer::Imp))
+OpenGLRenderer::OpenGLRenderer() : m(*(new OpenGLRenderer::Imp))
 {
-	m.glv = view;
 }
 
 OpenGLRenderer::~OpenGLRenderer() 
@@ -346,7 +334,7 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 	switch (mat)
 	{
 	case GLMaterial::INVALID:
-		m.UseProgram(nullptr);
+		UseProgram(nullptr);
 		break;
 	case GLMaterial::PLASTIC:
 	case GLMaterial::GLASS:
@@ -413,19 +401,29 @@ void OpenGLRenderer::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Di
 	}
 }
 
+void OpenGLRenderer::UseProgram(OGLProgram* prg)
+{
+	if (prg)
+	{
+		prg->Use();
+	}
+	else glUseProgram(0);
+	m.activeProgram = prg;
+}
+
 void OpenGLRenderer::setPointSize(float f)
 {
 	glPointSize(f);
 }
 
-float OpenGLRenderer::pointSize() const
+float OpenGLRenderer::pointSize()
 {
 	float pointSize;
 	glGetFloatv(GL_POINT_SIZE, &pointSize);
 	return pointSize;
 }
 
-float OpenGLRenderer::lineWidth() const
+float OpenGLRenderer::lineWidth()
 {
 	float lineWidth;
 	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
@@ -437,7 +435,7 @@ void OpenGLRenderer::setLineWidth(float f)
 	glLineWidth(f);
 }
 
-GLRenderEngine::FrontFace OpenGLRenderer::frontFace() const
+GLRenderEngine::FrontFace OpenGLRenderer::frontFace()
 {
 	int frontFace;
 	glGetIntegerv(GL_FRONT_FACE, &frontFace);
@@ -1202,19 +1200,19 @@ void OpenGLRenderer::setTexture(GLTexture3D& tex)
 	case CImage::INT_32 :
 	case CImage::REAL_32:
 	case CImage::REAL_64:
-		prg = &VRprg_8bit; break;
+		prg = VRprg_8bit; break;
 		break;
 	case CImage::UINT_RGB8 :
 	case CImage::INT_RGB8  :
 	case CImage::UINT_RGB16:
 	case CImage::INT_RGB16 :
-		prg = &VRprg_rgb;
+		prg = VRprg_rgb;
 		break;
 	default:
 		return;
 	}
 
-	m.UseProgram(prg);
+	UseProgram(prg);
 
 	if (prg)
 	{

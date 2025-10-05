@@ -34,6 +34,7 @@
 #include <QLineEdit>
 #include <QDoubleValidator>
 #include <QGroupBox>
+#include <QMessageBox>
 #include "ModelDocument.h"
 #include "SelectionBox.h"
 #include <GeomLib/GObject.h>
@@ -68,7 +69,7 @@ public:
 
         f->setAlignment(Qt::AlignRight);
 
-        m_tol->setText(QString::number(0.01));
+        m_tol->setText(QString::number(1e-5));
         m_maxiter->setText(QString::number(100));
 
         QGroupBox* pg1 = new QGroupBox("Source");
@@ -347,6 +348,229 @@ vector<vec3d> extractSurfaceNodes(GObject* po, vector<GPart*> partList)
 	return points;
 }
 
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GFace*> faceList)
+{
+	vector<vec3d> points;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return points;
+
+	pm->TagAllNodes(0);
+
+	for (GFace* pg : faceList)
+	{
+		int pid = pg->GetLocalID();
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if (face.m_gid == pid)
+			{
+				int nn = face.Nodes();
+				for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
+			}
+		}
+	}
+
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		if (face.IsExternal())
+		{
+			int nn = face.Nodes();
+			for (int j = 0; j < nn; ++j)
+			{
+				FSNode& nj = pm->Node(face.n[j]);
+				if (nj.m_ntag == 1) nj.m_ntag = 2;
+			}
+		}
+	}
+
+	const Transform& Q = po->GetTransform();
+	points.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& ni = pm->Node(i);
+		if (ni.m_ntag == 2)
+		{
+			vec3d r = ni.pos();
+			vec3d p = Q.LocalToGlobal(r);
+			points.push_back(p);
+		}
+	}
+
+	return points;
+}
+
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GEdge*> edgeList)
+{
+	vector<vec3d> points;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return points;
+
+	pm->TagAllNodes(0);
+
+	for (GEdge* pg : edgeList)
+	{
+		int pid = pg->GetLocalID();
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FSEdge& edge = pm->Edge(i);
+			if (edge.m_gid == pid)
+			{
+				int nn = edge.Nodes();
+				for (int j = 0; j < nn; ++j) pm->Node(edge.n[j]).m_ntag = 2;
+			}
+		}
+	}
+
+	const Transform& Q = po->GetTransform();
+	points.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& ni = pm->Node(i);
+		if (ni.m_ntag == 2)
+		{
+			vec3d r = ni.pos();
+			vec3d p = Q.LocalToGlobal(r);
+			points.push_back(p);
+		}
+	}
+
+	return points;
+}
+
+vector<vec3d> extractSurfaceNodes(GObject* po, FSSurface* surface)
+{
+	vector<vec3d> points;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return points;
+
+	pm->TagAllNodes(0);
+
+	for (int i = 0; i < surface->size(); ++i)
+	{
+		FSFace& face = *surface->GetFace(i);
+
+		int nn = face.Nodes();
+		for (int j = 0; j < nn; ++j)
+		{
+			FSNode& nj = pm->Node(face.n[j]);
+			nj.m_ntag = 2;
+		}
+	}
+
+	const Transform& Q = po->GetTransform();
+	points.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& ni = pm->Node(i);
+		if (ni.m_ntag == 2)
+		{
+			vec3d r = ni.pos();
+			vec3d p = Q.LocalToGlobal(r);
+			points.push_back(p);
+		}
+	}
+
+	return points;
+}
+
+vector<vec3d> extractSurfaceNodes(GObject* po, FSNodeSet* nodeSet)
+{
+	vector<vec3d> points;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return points;
+
+	pm->TagAllNodes(0);
+
+	for (int i = 0; i < nodeSet->size(); ++i)
+	{
+		FSNode& node = *nodeSet->GetNode(i);
+		node.m_ntag = 2;
+	}
+
+	const Transform& Q = po->GetTransform();
+	points.reserve(pm->Nodes());
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FSNode& ni = pm->Node(i);
+		if (ni.m_ntag == 2)
+		{
+			vec3d r = ni.pos();
+			vec3d p = Q.LocalToGlobal(r);
+			points.push_back(p);
+		}
+	}
+
+	return points;
+}
+
+GObject* GetSelectionNodes(FSItemListBuilder* sel, std::vector<vec3d>& nodes)
+{
+	GObject* po = nullptr;
+	if (dynamic_cast<GPartList*>(sel))
+	{
+		GPartList* partList = dynamic_cast<GPartList*>(sel);
+		vector<GPart*> parts = partList->GetPartList();
+		if (parts.empty()) return nullptr;
+
+		// make sure all parts belong to the same object
+		po = dynamic_cast<GObject*>(parts[0]->Object());
+		if (po == nullptr) return nullptr;
+		for (int i = 1; i < parts.size(); ++i)
+		{
+			GObject* poi = dynamic_cast<GObject*>(parts[i]->Object());
+			if (poi != po) return nullptr;
+		}
+		nodes = extractSurfaceNodes(po, parts);
+	}
+	else if (dynamic_cast<GFaceList*>(sel))
+	{
+		GFaceList* faceList = dynamic_cast<GFaceList*>(sel);
+		vector<GFace*> surfs = faceList->GetFaceList();
+		if (surfs.empty()) return nullptr;
+
+		// make sure all parts belong to the same object
+		po = dynamic_cast<GObject*>(surfs[0]->Object());
+		if (po == nullptr) return nullptr;
+		for (int i = 1; i < surfs.size(); ++i)
+		{
+			GObject* poi = dynamic_cast<GObject*>(surfs[i]->Object());
+			if (poi != po) return nullptr;
+		}
+		nodes = extractSurfaceNodes(po, surfs);
+	}
+	else if (dynamic_cast<GEdgeList*>(sel))
+	{
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(sel);
+		vector<GEdge*> edges = edgeList->GetEdgeList();
+		if (edges.empty()) return nullptr;
+
+		// make sure all parts belong to the same object
+		po = dynamic_cast<GObject*>(edges[0]->Object());
+		if (po == nullptr) return nullptr;
+		for (int i = 1; i < edges.size(); ++i)
+		{
+			GObject* poi = dynamic_cast<GObject*>(edges[i]->Object());
+			if (poi != po) return nullptr;
+		}
+		nodes = extractSurfaceNodes(po, edges);
+	}
+	else if (dynamic_cast<FSSurface*>(sel))
+	{
+		FSSurface* surf = dynamic_cast<FSSurface*>(sel);
+		po = surf->GetGObject();
+		nodes = extractSurfaceNodes(po, surf);
+	}
+	else if (dynamic_cast<FSNodeSet*>(sel))
+	{
+		FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(sel);
+		po = nodeSet->GetGObject();
+		nodes = extractSurfaceNodes(po, nodeSet);
+	}
+	
+	return po;
+}
+
 void CICPRegistrationTool::OnApply()
 {
     CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -355,34 +579,16 @@ void CICPRegistrationTool::OnApply()
 	FSItemListBuilder* src = ui->sourceList();
 	FSItemListBuilder* trg = ui->targetList();
 
-	// get the part list
-	GPartList* psrc = dynamic_cast<GPartList*>(src);
-	GPartList* ptrg = dynamic_cast<GPartList*>(trg);
-	if ((psrc == nullptr) || (ptrg == nullptr)) return;
+	vector<vec3d> srcNodes;
+	vector<vec3d> trgNodes;
+	GObject* srcObj = GetSelectionNodes(src, srcNodes);
+	GObject* trgObj = GetSelectionNodes(trg, trgNodes);
 
-	// get the object
-	vector<GPart*> srcParts = psrc->GetPartList();
-	vector<GPart*> trgParts = ptrg->GetPartList();
-	if ((srcParts.size() < 1) || (trgParts.size() < 1)) return;
-
-	// make sure all parts belong to the same object
-	GObject* srcObj = dynamic_cast<GObject*>(srcParts[0]->Object());
-	for (int i = 1; i < srcParts.size(); ++i)
+	if ((srcObj == nullptr) || (trgObj == nullptr)) 
 	{
-		GObject* poi = dynamic_cast<GObject*>(srcParts[i]->Object());
-		if (poi != srcObj) return;
+		QMessageBox::critical(GetMainWindow(), "ICP Registration", "Invalid selection.");
+		return;
 	}
-
-	GObject* trgObj = dynamic_cast<GObject*>(trgParts[0]->Object());
-	for (int i = 1; i < trgParts.size(); ++i)
-	{
-		GObject* poi = dynamic_cast<GObject*>(trgParts[i]->Object());
-		if (poi != trgObj) return;
-	}
-
-	// extract all the surface nodes from the parts 
-	vector<vec3d> srcNodes = extractSurfaceNodes(srcObj, srcParts);
-	vector<vec3d> trgNodes = extractSurfaceNodes(trgObj, trgParts);
 
 	GICPRegistration icp;
 	icp.SetTolerance(ui->tolerance());

@@ -40,6 +40,8 @@ public:
 
 	int GetFileVersion() const;
 
+    const std::vector<std::pair<int, std::string>>& GetMissingPlugins() const;
+
 private:
 	bool ReadFile(const char* szfile);
 
@@ -47,4 +49,6 @@ private:
 	CModelDocument*	m_doc;
 
 	int	m_fileVersion;
+
+    std::vector<std::pair<int, std::string>> m_missingPlugins;
 };

@@ -25,16 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "GLSceneView.h"
+#include <CUILib/GLSceneView.h>
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMap.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
-#include <PostGL/ColorTexture.h>
+#include <GLLib/ColorTexture.h>
 #include "GLViewSelector.h"
 #include "GLScreenRecorder.h"
 #include <list>
@@ -178,7 +178,6 @@ signals:
 public:
 	// other rendering functions
 	void RenderRubberBand();
-	void RenderBrush();
 	void RenderPivot();
 
 	void ShowSafeFrame(bool b);
@@ -247,7 +246,7 @@ public:
 public:
 	void SetColorMap(unsigned int n);
 
-	Post::CColorMap& GetColorMap();
+	CColorMap& GetColorMap();
 
 	void AddRegionPoint(int x, int y);
 
@@ -298,7 +297,8 @@ protected:
 	GLLabel*		m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
-	GLLegendBar*	m_legend;
+	GLLegendBar*	m_legend;	// main legend bar for colormaps
+	GLLegendBar*	m_legendPlot; // secondary legend for active plot
 
 	GVContextMenu* m_menu;
 
@@ -318,7 +318,7 @@ private:
 
 	GLCamera	m_oldCam;
 
-	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
+	CColorTexture m_colorMap;	// color map used for rendering mesh data
 
 	std::string		m_oglVersionString;
 };

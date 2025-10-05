@@ -23,22 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
+#include <qopengl.h>
 #include "GLLegendBar.h"
 #include "convert.h"
-#include <PostLib/ColorMap.h>
+#include <FSCore/ColorMapManager.h>
 #include <QPainter>
 
-GLLegendBar::GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
+GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
 {
 	m_pMap = pm;
 	m_ntype = GRADIENT;
@@ -56,6 +47,8 @@ GLLegendBar::GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, in
 
 void GLLegendBar::draw(QPainter* painter)
 {
+	GLWidget::draw(painter);
+
 	int x0 = m_x;
 	int y0 = m_y;
 	int x1 = m_x + m_w;
@@ -75,6 +68,11 @@ void GLLegendBar::draw(QPainter* painter)
 	default:
 		assert(false);
 	}
+}
+
+void GLLegendBar::SetColorGradient(int n)
+{
+	m_pMap->SetColorMap(n);
 }
 
 void GLLegendBar::SetOrientation(int n)
@@ -461,9 +459,9 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		for (i = 0; i <= nsteps; i++)
 		{
 			int xt = x0 + i * (x1 - x0) / nsteps;
-			if      (i ==      0) f = m_fmax;
-			else if (i == nsteps) f = m_fmin;
-			else f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
+			if      (i ==      0) f = m_fmin;
+			else if (i == nsteps) f = m_fmax;
+			else f = m_fmin + i * (m_fmax - m_fmin) / nsteps;
 
 			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 			QString s(str);
@@ -572,7 +570,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		//		char szfmt[16]={0};
 		//		sprintf(szfmt, "%%.%dg", m_nprec);
 
-		Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_pMap->GetColorMap());
+		CColorMap& map = ColorMapManager::GetColorMap(m_pMap->GetColorMap());
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 

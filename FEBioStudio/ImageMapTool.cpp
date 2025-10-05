@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "IconProvider.h"
-#include "PlotWidget.h"
+#include "CurveEditWidget.h"
 #include <ImageLib/ImageModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FSElementData.h>

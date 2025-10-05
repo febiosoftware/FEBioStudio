@@ -24,6 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
+#ifdef WIN32
+#include <Windows.h>
+#endif
 #include "FEBioJobManager.h"
 #include "FEBioThread.h"
 #include "FEBioJob.h"
@@ -45,9 +48,6 @@ SOFTWARE.*/
 #include <fstream>
 #include "DlgRemoteProgress.h"
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 class CFEBioJobManager::Impl
 {
@@ -254,14 +254,16 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		im->wnd->UpdateTab(job->GetDocument());
 
 		// generate detailed report (for local jobs)
-		if (im->launchConfig && (im->launchConfig->type() == CLaunchConfig::DEFAULT))
+		if (im->launchConfig && 
+			((im->launchConfig->type() == CLaunchConfig::DEFAULT) ||
+			  (im->launchConfig->type() == CLaunchConfig::LOCAL)))
 		{
-			CDefaultLaunchConfig* defaultConfig = dynamic_cast<CDefaultLaunchConfig*>(im->launchConfig);
-			if (defaultConfig && defaultConfig->GenerateJobReport())
+			if (job->m_generateReport)
 			{
 				CMainWindow* wnd = im->wnd;
 				CFEBioReportDoc* doc = new CFEBioReportDoc(wnd);
-				doc->setJob(job);
+				if (im->launchConfig->type() == CLaunchConfig::DEFAULT) doc->setJob(job);
+				else doc->LoadFromLogFile(QString::fromStdString(job->GetLogFileName()));
 				wnd->AddDocument(doc);
 			}
 		}

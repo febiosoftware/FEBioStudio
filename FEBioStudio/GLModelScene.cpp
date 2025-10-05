@@ -254,11 +254,6 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 		FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
 		if (pm)
 		{
-			Mesh_Data& data = pm->GetMeshData();
-			double vmin, vmax;
-			data.GetValueRange(vmin, vmax);
-			if (vmin == vmax) vmax++;
-			m_doc->SetDataRange(vmin, vmax);
 			m_doc->ShowLegend(true);
 		}
 	}
@@ -322,10 +317,7 @@ void CGLModelScene::BuildScene(GLContext& rc)
 		for (int i = 0; i < m_doc->ImageModels(); ++i)
 		{
 			CImageModel* img = m_doc->GetImageModel(i);
-			if (img->IsActive())
-			{
-				addItem(new GL3DImageItem(this, img));
-			}
+			addItem(new GL3DImageItem(this, img));
 		}
 	}
 }

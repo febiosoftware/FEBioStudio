@@ -48,6 +48,7 @@ private slots:
 	void progress(qint64 bytesReceived, qint64 bytesTotal);
     void unzipFinished();
     void unzipSDKFinished();
+    void pluginDownloadFinished();
 
 private:
     bool checkBinaries();
@@ -63,6 +64,9 @@ private:
 
 	void deleteFiles();
 	void downloadsFinished();
+
+    void updatePlugins();
+    void getNextPlugin();
 
 private:
 	Ui::CMainWindow* ui;

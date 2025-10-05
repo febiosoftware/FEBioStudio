@@ -96,6 +96,7 @@ public:
 	QAction* actionMeshInspector;
 	QAction* actionMeshDiagnostic;
 	QAction* actionMaterialTest;
+	QAction* actionDistroVisual;
 
 	// VIEW menu
 	QAction* actionUndoViewChange;
@@ -182,6 +183,7 @@ public:
 	QAction* actionVolumeFlowPlot;
 	QAction* actionVectorGlyph;
 	QAction* actionHelicalAxis;
+	QAction* actionStaticMesh;
 
 	QAction* actionImageSlicer;
 	QAction* actionVolumeRender;

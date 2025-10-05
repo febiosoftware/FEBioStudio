@@ -1301,14 +1301,17 @@ vec3f FEPostModel::FaceNormal(FSFace& f, int ntime)
 
 //-----------------------------------------------------------------------------
 // get the nodal coordinates of an element at time n
-void FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
+int FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 {
 	FSMesh* mesh = GetState(ntime)->GetFEMesh();
 	FSElement_& elem = mesh->ElementRef(iel);
 	NODEDATA* pn = &m_State[ntime]->m_NODE[0];
 
+	int ne = elem.Nodes();
 	for (int i=0; i<elem.Nodes(); i++)
 		r[i] = pn[ elem.m_node[i] ].m_rt;
+
+	return ne;
 }
 
 //-----------------------------------------------------------------------------

@@ -66,6 +66,11 @@ int ModelFileReader::GetFileVersion() const
 	return m_fileVersion;
 }
 
+const std::vector<std::pair<int, std::string>>& ModelFileReader::GetMissingPlugins() const
+{
+    return m_missingPlugins;
+}
+
 bool ModelFileReader::Load(const char* szfile)
 {
 	FEBio::BlockCreateEvents(true);
@@ -123,6 +128,19 @@ bool ModelFileReader::ReadFile(const char* szfile)
 		Close();
 		return errf(errMsg.c_str());
 	}
+    catch (MissingPluginError& e)
+    {
+        m_missingPlugins = e.m_plugins;
+
+        std::string errMsg = "The following plugins are missing:\n";
+        for (const auto& plugin : m_missingPlugins)
+        {
+            errMsg += "ID: " + std::to_string(plugin.first) + ", Name: " + plugin.second + "\n";
+        }
+
+        Close();
+        return errf(errMsg.c_str());
+    }
 	catch (std::exception e)
 	{
 		Close();
