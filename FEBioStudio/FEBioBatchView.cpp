@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include <set>
 #include <QRegularExpression>
 #include <QApplication>
-#include <QClipBoard>
+#include <QClipboard>
 #include <QFileDialog>
 
 class BatchRunFilter
