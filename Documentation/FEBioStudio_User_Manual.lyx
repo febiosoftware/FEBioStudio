@@ -15168,6 +15168,403 @@ shows the current and maximum allocated memory.
  not of FEBio.) 
 \end_layout
 
+\begin_layout Section
+Running Batch Jobs
+\end_layout
+
+\begin_layout Standard
+FEBio Studio has the option to manage and run several FEBio jobs at the same time.
+ These are referred to as batch jobs.
+ In addition to running multiple jobs simultaneously,
+ the batch feature also offers the ability to compare the results between different batch runs.
+ 
+\end_layout
+
+\begin_layout Subsection
+Create a new batch job
+\end_layout
+
+\begin_layout Standard
+To create a new batch job,
+ use the menu 
+\series bold
+File
+\backslash
+Batch Run
+\backslash
+New Batch ...
+\series default
+.
+ A dialog box appears where users can add files from different sources.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files from the current project
+\emph default
+:
+ this will add all the feb files from the current project file.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files from folder
+\emph default
+:
+ this will prompt the user to select a folder on their system.
+ All feb files from the folder will be added.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Add files
+\emph default
+:
+ this will give users the option to select individual files from the file system.
+\end_layout
+
+\begin_layout Standard
+After adding files,
+ the files are displayed in the dialog box.
+ Additional files can be added or files can be selected and removed using the corresponding buttons at the top of the dialog box.
+ Finally,
+ click OK to create the batch job.
+ The batch job will be displayed in the batch job view,
+ as described below.
+\end_layout
+
+\begin_layout Subsection
+Open/Save a batch file
+\end_layout
+
+\begin_layout Standard
+An existing batch file can be loaded directly from the file system using the menu 
+\series bold
+File
+\backslash
+Batch Run
+\backslash
+Open Batch File
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+A standard file open dialog will be presented where the user can select a batch job file (extension 
+\series bold
+.fsbatch
+\series default
+).
+ Click OK to load the batch file.
+ The batch job will be displayed in the batch job view,
+ as described below.
+\end_layout
+
+\begin_layout Standard
+To save a batch job,
+ simply use the menu 
+\series bold
+File
+\backslash
+Save
+\series default
+ or 
+\series bold
+File
+\backslash
+Save as
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+The Batch Job View
+\end_layout
+
+\begin_layout Standard
+After a new batch job is created or a batch file was loaded,
+ the contents of the batch job is displayed in a special window called the 
+\series bold
+batch job view
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+The view shows a table that lists all the FEBio files in the batch job,
+ as well as several columns with metrics that were collected the last time the batch job was run.
+ (For a new batch job,
+ the columns will be empty.) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/batch_view.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Batch Job View shows the list of files that are part of the batch,
+ as well various metrics that can be used to compare runs.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At the top of the view,
+ a toolbar shows several buttons that allow you to manage various aspects of the batch job.
+ From left to right:
+\end_layout
+
+\begin_layout Description
+Options The options button opens a dialog box where you can set several settings for running the batch job,
+ such as the number of concurrent processes,
+ the number of threads per process,
+ and the path to the FEBio executable.
+ 
+\end_layout
+
+\begin_layout Description
+Start The start button is used to start the batch job.
+ You can either choose to run all the files or just the selected ones.
+ 
+\end_layout
+
+\begin_layout Description
+Cancel Once the batch runs,
+ this button can be used to cancel either all pending jobs or all running and pending jobs.
+ 
+\end_layout
+
+\begin_layout Description
+filter The filter option allows users to limit the files that are shown based on certain criteria.
+ The criteria can be either a string or regex expression to filter the file list,
+ or a condition to filter based on the metrics.
+ To enter a regex start the filter text with a slash ('/').
+ To define a condition,
+ start with an equal sign ('=').
+ The condition is formed as follows:
+ 
+\emph on
+metric operator value
+\emph default
+.
+ The 
+\emph on
+metric 
+\emph default
+can be any of the names listed on the column headers.
+ The operator is any of <,
+ <=,
+ >,
+ >=,
+ =,
+ ==,
+ != ('=' and '==' are both for 
+\emph on
+equal than
+\emph default
+ and '!=' means 
+\emph on
+not equal
+\emph default
+).
+ The 
+\emph on
+value
+\emph default
+ is any valid numeric value for the corresponding metric.
+ For example,
+ to list only jobs that ran for more than a minute,
+ set the filter to '=runtime>60' (don't include quote symbols).
+ 
+\end_layout
+
+\begin_layout Description
+add This button can be used to add additional files to the batch job.
+\end_layout
+
+\begin_layout Description
+remove This button can be used to remove the currently selected files.
+ 
+\end_layout
+
+\begin_layout Description
+copy This button can be used to copy the batch jobs and metric to the clipboard as a tab-separated list.
+ 
+\end_layout
+
+\begin_layout Standard
+Right-clicking on any batch file prompts a popup menu from which additional actions can be selected.
+ These actions allow you to open the feb file or the corresponding log or plot file in FEBio Studio.
+ 
+\end_layout
+
+\begin_layout Subsection
+Running the batch job
+\end_layout
+
+\begin_layout Standard
+To run the batch job,
+ click the Start button in the toolbar at the top of the batch view window.
+ Two options are listed:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Run all
+\series default
+:
+ select this option to run all the currently visible files in the batch view.
+ If no filter criteria are active,
+ this will run all the files in the batch.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Run selected
+\series default
+:
+ only run the files that are currently selected
+\end_layout
+
+\begin_layout Standard
+Before a batch job is run,
+ several options can be set that will affect the batch job.
+ To change these settings,
+ click the 
+\series bold
+Options
+\series default
+ button on the batch view's toolbar.
+ A dialog opens where you can edit the following settings:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ of processes
+\series default
+:
+ This is the max number of concurrent processes that will be started when you run the batch job.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ threads/process
+\series default
+:
+ This is the number of threads that will be used for each process.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio executable
+\series default
+:
+ sets the path of the FEBio executable that you want to use.
+ 
+\end_layout
+
+\begin_layout Standard
+Before starting a batch job,
+ it's important to choose these settings wisely.
+ This means that you must know the system resources that you have available.
+ There is often nothing to gain by starting up more processes or choosing more threads than you have processors on your computer.
+ For instance,
+ if you only have 4 cpus,
+ then the product of the number of processes and threads per process should not exceed 4.
+ The default value is 1 for the number of processes,
+ and (default) for the number of threads per process.
+ This usually means that the number of threads is determined by the OS and the applicable environment variables (e.g.
+ OMP_NUM_THREADS).
+ 
+\end_layout
+
+\begin_layout Standard
+When the batch job is started,
+ all files that will be run change their status to PENDING (shown in the first column next to the file name).
+ When a job is picked up by a process,
+ it changes its status to RUNNING.
+ Files that complete normally will have their status changed to FINISHED.
+ If the file failed to start or error terminated,
+ the status is set to FAILED.
+ Running and pending jobs can be canceled from the toolbar.
+ Pending jobs that were canceled will set their status to CANCELED.
+ Jobs that were already running when canceled will be set to FAILED.
+ 
+\end_layout
+
+\begin_layout Standard
+As the individual jobs are run,
+ the columns containing various metrics will be populated.
+ If the batch job was loaded from an existing file,
+ and if the new metrics are different,
+ both the new and the old values are shown,
+ using the format 
+\begin_inset Quotes eld
+\end_inset
+
+new value (old value)
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The background color will also change.
+ It will be red if the new value is higher than the old value,
+ and it will be yellow if the new value is less than the old value.
+ This makes it easy to compare different runs.
+ Keep in mind that the runtimes will often be different,
+ and some metrics may also show small differences when the jobs were run with multiple threads per process.
+ These are often expected changes and not an indication of a problem.
+ However,
+ if there are more significant changes or the changes occurred when running on a single thread,
+ then that could be a sign of a deeper problem.
+ 
+\end_layout
+
 \begin_layout Chapter
 The Post Environment
 \end_layout
