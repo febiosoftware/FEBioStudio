@@ -57,6 +57,8 @@ public slots:
 	void on_batchFinished();
 	void UpdateJobStatus(int nrow);
 	void showContextMenu(const QPoint& pos);
+	void on_addBatchFiles();
+	void on_removeSelectedFiles();
 
 private:
 	FEBioBatchDoc* m_doc = nullptr;

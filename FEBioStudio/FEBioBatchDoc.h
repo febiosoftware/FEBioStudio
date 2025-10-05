@@ -85,6 +85,9 @@ public:
 	~FEBioBatchDoc();
 
 	void SetFileList(const QStringList& fileList);
+	void AddFile(const QString& fileName, bool checkForDuplicates = true);
+
+	bool RemoveFile(int jobId);
 
 	int Files() const;
 	std::vector<JobInfo> GetFileList() const;

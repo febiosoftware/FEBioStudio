@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <chrono>
 #include <queue>
 #include "MainWindow.h"
+#include <QDir>
 using namespace std::chrono;
 
 class FEBioBatchProcess : public CLocalJobProcess
@@ -108,13 +109,45 @@ void FEBioBatchDoc::SetFileList(const QStringList& fileList)
 	m.fileList.clear();
 	for (const QString& s : fileList)
 	{
-		JobInfo di;
-		di.fileName = s;
-		di.status = IDLE;
-		di.jobId = (int)m.fileList.size();
-		m.fileList.push_back(di);
+		AddFile(s, false);
 	}
+}
+
+void FEBioBatchDoc::AddFile(const QString& fileName, bool checkForDuplicates)
+{
+	QString file = QDir::toNativeSeparators(fileName);
+
+	if (checkForDuplicates)
+	{
+		for (const JobInfo& di : m.fileList)
+			if (di.fileName == file) return;
+	}
+
+	JobInfo di;
+	di.fileName = file;
+	di.status = IDLE;
+	di.jobId = (int)m.fileList.size();
+	m.fileList.push_back(di);
 	SetModifiedFlag(true);
+}
+
+bool FEBioBatchDoc::RemoveFile(int jobId)
+{
+	if ((jobId < 0) || (jobId >= m.fileList.size())) return false;
+
+	FEBioBatchDoc::JobInfo& di = m.fileList[jobId];
+	// if this job is running, we cannot remove it
+	if ((di.status == RUNNING) || (di.status == PENDING)) return false;
+
+	// remove it from the list
+	m.fileList.erase(m.fileList.begin() + jobId);
+
+	// reset the job IDs
+	for (int i = 0; i < m.fileList.size(); ++i) m.fileList[i].jobId = i;
+
+	SetModifiedFlag(true);
+
+	return true;
 }
 
 int FEBioBatchDoc::Files() const
@@ -382,7 +415,7 @@ bool FEBioBatchDoc::LoadDocument(const QString& fileName)
 			{
 				JobInfo di;
 				const char* szpath = tag.AttributeValue("path");
-				di.fileName = szpath;
+				di.fileName = QDir::toNativeSeparators(szpath);
 				++tag;
 				do {
 					if      (tag == "timesteps" ) tag.value(di.stats.timeSteps);

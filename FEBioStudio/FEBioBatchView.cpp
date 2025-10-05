@@ -41,9 +41,11 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QToolButton>
 #include <map>
+#include <set>
 #include <QRegularExpression>
 #include <QApplication>
 #include <QClipBoard>
+#include <QFileDialog>
 
 class BatchRunFilter
 {
@@ -212,6 +214,9 @@ public:
 	QPushButton* ops = nullptr;
 	QTableWidget* table = nullptr;
 	QLineEdit* filter = nullptr;
+	QToolButton* add = nullptr;
+	QToolButton* del = nullptr;
+	QToolButton* copy = nullptr;
 
 	std::map<int, int> rowmap;
 
@@ -249,7 +254,17 @@ public:
 
 		h->addStretch();
 
-		QToolButton* copy = new QToolButton; 
+		add = new QToolButton;
+		add->setIcon(QIcon(":/icons/selectAdd.png"));
+		add->setToolTip("Add files");
+		h->addWidget(add);
+
+		del = new QToolButton;
+		del->setIcon(QIcon(":/icons/selectSub.png"));
+		del->setToolTip("Remove selected files");
+		h->addWidget(del);
+
+		copy = new QToolButton; 
 		copy->setIcon(QIcon(":/icons/clipboard.png")); 
 		copy->setToolTip("Copy to clipboard");
 		h->addWidget(copy);
@@ -289,6 +304,8 @@ public:
 		QObject::connect(ops, &QPushButton::clicked, w, &FEBioBatchView::on_options);
 		QObject::connect(filter, &QLineEdit::textChanged, w, &FEBioBatchView::on_filter);
 		QObject::connect(copy, &QToolButton::clicked, w, &FEBioBatchView::on_clipboard);
+		QObject::connect(add, &QToolButton::clicked, w, &FEBioBatchView::on_addBatchFiles);
+		QObject::connect(del, &QToolButton::clicked, w, &FEBioBatchView::on_removeSelectedFiles);
 	}
 
 	void enableButtons(bool b)
@@ -296,6 +313,10 @@ public:
 		start->setEnabled(b);
 		ops->setEnabled(b);
 		filter->setEnabled(b);
+		add->setEnabled(b);
+		del->setEnabled(b);
+		copy->setEnabled(b);
+
 		cancel->setEnabled(!b);
 	}
 };
@@ -658,6 +679,51 @@ void FEBioBatchView::on_options()
 	}
 }
 
+void FEBioBatchView::on_addBatchFiles()
+{
+	if (m_doc == nullptr) return;
+
+	QStringList files = QFileDialog::getOpenFileNames(this, "Add FEBio files to batch", QString(), "FEBio files (*.feb)");
+	if (files.empty()) return;
+
+	for (const QString& file : files)
+	{
+		m_doc->AddFile(file);
+	}
+	
+	UpdateTable();
+	UpdateView();
+}
+
+void FEBioBatchView::on_removeSelectedFiles()
+{
+	if (m_doc == nullptr) return;
+	QTableWidget* table = ui->table;
+	QList<QTableWidgetItem*> sel = table->selectedItems();
+	if (sel.empty()) return;
+	std::set<int> jobs;
+	for (QTableWidgetItem* it : sel)
+	{
+		if (it->column() == 0)
+		{
+			int row = it->row();
+			int jobId = table->item(row, 0)->data(Qt::UserRole).toInt();
+			jobs.insert(jobId);
+		}
+	}
+	if (!jobs.empty())
+	{
+		int N = (int)jobs.size();
+		QString msg = QString::asprintf("Are you sure you want to remove the %d selected file%s?", N, (N == 1) ? "" : "s");
+		if (QMessageBox::question(this, "Remove selected files", msg, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+		{
+			for (int jobId : jobs) m_doc->RemoveFile(jobId);
+			UpdateTable();
+			UpdateView();
+		}
+	}
+}
+
 class CDlgBatchOptions::UI {
 public:
 	QSpinBox* nthreads = nullptr;
@@ -720,3 +786,4 @@ FEBioBatchDoc::Options CDlgBatchOptions::GetOptions() const
 {
 	return ui->options();
 }
+
