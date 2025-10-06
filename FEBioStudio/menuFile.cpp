@@ -128,36 +128,36 @@ SOFTWARE.*/
 #include "DlgBatchRun.h"
 
 // register file reader classes
-REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
-REGISTER_CLASS4(PLYImport          , CLASS_FILE_READER, "ply"    , FSProject);
-REGISTER_CLASS4(BREPImport         , CLASS_FILE_READER, "brep"   , FSProject);
-REGISTER_CLASS4(BRPImport          , CLASS_FILE_READER, "brp"    , FSProject);
-REGISTER_CLASS4(STEPImport         , CLASS_FILE_READER, "step"   , FSProject);
-REGISTER_CLASS4(STPImport          , CLASS_FILE_READER, "stp"    , FSProject);
-REGISTER_CLASS4(IGESImport         , CLASS_FILE_READER, "iges"   , FSProject);
-REGISTER_CLASS4(IGSImport          , CLASS_FILE_READER, "igs"    , FSProject);
-REGISTER_CLASS4(AnsysImport        , CLASS_FILE_READER, "cdb"    , FSProject);
-REGISTER_CLASS4(LSDYNAimport       , CLASS_FILE_READER, "k"      , FSProject);
-REGISTER_CLASS4(LSDYNAimport_dyn   , CLASS_FILE_READER, "dyn"    , FSProject);
-REGISTER_CLASS4(IDEASimport        , CLASS_FILE_READER, "unv"    , FSProject);
-REGISTER_CLASS4(NASTRANimport      , CLASS_FILE_READER, "nas"    , FSProject);
-REGISTER_CLASS4(DXFimport          , CLASS_FILE_READER, "dxf"    , FSProject);
-REGISTER_CLASS4(STLimport          , CLASS_FILE_READER, "stl"    , FSProject);
-REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, "hmascii", FSProject);
-REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, "surf"   , FSProject);
-REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
-REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
-REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, "obj"    , FSProject);
-REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
-REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
-REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, "elem"   , FSProject);
-REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, "vtk"    , FSProject);
-REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, "vtu"    , FSProject);
-REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, "vtp"    , FSProject);
-REGISTER_CLASS4(FEBioGeometryImport, CLASS_FILE_READER, "feb"    , FSProject);
-REGISTER_CLASS4(AbaqusImport       , CLASS_FILE_READER, "inp"    , FSProject);
-REGISTER_CLASS4(RAWToMeshImport    , CLASS_FILE_READER, "raw"    , FSProject);
-REGISTER_CLASS4(COMSOLimport       , CLASS_FILE_READER, "mphtxt" , FSProject);
+REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, -1, "pvo"    , FSProject);
+REGISTER_CLASS4(PLYImport          , CLASS_FILE_READER, -1, "ply"    , FSProject);
+REGISTER_CLASS4(BREPImport         , CLASS_FILE_READER, -1, "brep"   , FSProject);
+REGISTER_CLASS4(BRPImport          , CLASS_FILE_READER, -1, "brp"    , FSProject);
+REGISTER_CLASS4(STEPImport         , CLASS_FILE_READER, -1, "step"   , FSProject);
+REGISTER_CLASS4(STPImport          , CLASS_FILE_READER, -1, "stp"    , FSProject);
+REGISTER_CLASS4(IGESImport         , CLASS_FILE_READER, -1, "iges"   , FSProject);
+REGISTER_CLASS4(IGSImport          , CLASS_FILE_READER, -1, "igs"    , FSProject);
+REGISTER_CLASS4(AnsysImport        , CLASS_FILE_READER, -1, "cdb"    , FSProject);
+REGISTER_CLASS4(LSDYNAimport       , CLASS_FILE_READER, -1, "k"      , FSProject);
+REGISTER_CLASS4(LSDYNAimport_dyn   , CLASS_FILE_READER, -1, "dyn"    , FSProject);
+REGISTER_CLASS4(IDEASimport        , CLASS_FILE_READER, -1, "unv"    , FSProject);
+REGISTER_CLASS4(NASTRANimport      , CLASS_FILE_READER, -1, "nas"    , FSProject);
+REGISTER_CLASS4(DXFimport          , CLASS_FILE_READER, -1, "dxf"    , FSProject);
+REGISTER_CLASS4(STLimport          , CLASS_FILE_READER, -1, "stl"    , FSProject);
+REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, -1, "hmascii", FSProject);
+REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, -1, "surf"   , FSProject);
+REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, -1, "msh"    , FSProject);
+REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, -1, "byu"    , FSProject);
+REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, -1, "obj"    , FSProject);
+REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, -1, "mesh"   , FSProject);
+REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, -1, "ele"    , FSProject);
+REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, -1, "elem"   , FSProject);
+REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, -1, "vtk"    , FSProject);
+REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, -1, "vtu"    , FSProject);
+REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, -1, "vtp"    , FSProject);
+REGISTER_CLASS4(FEBioGeometryImport, CLASS_FILE_READER, -1, "feb"    , FSProject);
+REGISTER_CLASS4(AbaqusImport       , CLASS_FILE_READER, -1, "inp"    , FSProject);
+REGISTER_CLASS4(RAWToMeshImport    , CLASS_FILE_READER, -1, "raw"    , FSProject);
+REGISTER_CLASS4(COMSOLimport       , CLASS_FILE_READER, -1, "mphtxt" , FSProject);
 
 using std::stringstream;
 

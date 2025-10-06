@@ -596,7 +596,7 @@ FSMesh* GObject::BuildMesh()
 		// keep a pointer to the old mesh since some mesher use the old
 		// mesh to create a new mesh
 		FSMesh* pold = imp->m_pmesh;
-		SetFEMesh(imp->m_pMesher->BuildMesh(this));
+		SetFEMesh(imp->m_pMesher->BuildMesh());
 
 		// now it is safe to delete the old mesh
 		if (pold) delete pold;
@@ -1212,7 +1212,7 @@ void GObject::Load(IArchive& ar)
 				case 0: break;	// use default mesher
 				case 1:
 				{
-					FEMesher* mesher = new FETetGenMesher();
+					FEMesher* mesher = new FETetGenMesher(*this);
 					SetFEMesher(mesher);
 				}
 				break;

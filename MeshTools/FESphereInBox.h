@@ -35,13 +35,10 @@ public:
 	enum {NX, NY, NZ, NR, GR, BR, ELEM_TYPE};
 
 public:
-	FESphereInBox();
+	FESphereInBox(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	bool BuildMultiBlock() override;
-
-protected:
-	GSphereInBox*	m_po;
 };

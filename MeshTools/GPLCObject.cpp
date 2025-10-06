@@ -35,7 +35,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 {
-	SetFEMesher(new FETetGenMesher());
+	SetFEMesher(new FETetGenMesher(*this));
 }
 
 //-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ FSMeshBase* GPLCObject::GetEditableMesh()
 //-----------------------------------------------------------------------------
 FSMesh* GPLCObject::BuildMesh()
 {
-	SetFEMesh(GetFEMesher()->BuildMesh(this));
+	SetFEMesh(GetFEMesher()->BuildMesh());
 	return GetFEMesh();
 }
 

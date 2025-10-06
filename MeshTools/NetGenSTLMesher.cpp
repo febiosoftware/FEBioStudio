@@ -43,21 +43,20 @@ using namespace netgen;
 
 #include <FSCore/ClassDescriptor.h>
 
-REGISTER_CLASS3(NetGenSTLMesher, CLASS_MESHER, NetGen_STL_Mesher, "ng_stl_mesher", 0, 0);
+REGISTER_CLASS4(NetGenSTLMesher, CLASS_MESHER, NetGen_STL_Mesher, "ng_stl_mesher", GObject);
 
-NetGenSTLMesher::NetGenSTLMesher() 
+NetGenSTLMesher::NetGenSTLMesher(GObject& o) : NetGenMesher(o)
 {
-	m_pso = nullptr;
 	SetType(NetGen_STL_Mesher);
 }
 
-FSMesh* NetGenSTLMesher::BuildMesh(GObject* po)
+FSMesh* NetGenSTLMesher::BuildMesh()
 {
 #ifdef HAS_NETGEN
-	m_pso = dynamic_cast<GSurfaceMeshObject*>(po);
-	if (m_pso == nullptr) return nullptr;
+	GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(&m_o);
+	if (pso == nullptr) return nullptr;
 
-	FSSurfaceMesh* surfMesh = m_pso->GetSurfaceMesh();
+	FSSurfaceMesh* surfMesh = pso->GetSurfaceMesh();
 	int NN = surfMesh->Nodes();
 	if (NN == 0) return nullptr;
 	int NF = surfMesh->Faces();
@@ -83,7 +82,7 @@ FSMesh* NetGenSTLMesher::BuildMesh(GObject* po)
 	// so we only add additional ones if necessary. 
 	// Also note that surface numbers are one-based
 	netgen::Mesh& mesh = *((netgen::Mesh*)ngmesh);
-	for (int i = 1; i < m_pso->Faces(); ++i)
+	for (int i = 1; i < pso->Faces(); ++i)
 	{
 		FaceDescriptor fd;
 		fd.SetSurfNr(i + 1);
@@ -138,7 +137,7 @@ FSMesh* NetGenSTLMesher::BuildMesh(GObject* po)
 		return nullptr;
 	}
 
-	FSMesh* femesh = NGMeshToFEMesh(m_pso, (Mesh*)ngmesh, GetBoolValue(SECONDORDER));
+	FSMesh* femesh = NGMeshToFEMesh(pso, (Mesh*)ngmesh, GetBoolValue(SECONDORDER));
 
 	Ng_DeleteMesh(ngmesh);
 	Ng_Exit();

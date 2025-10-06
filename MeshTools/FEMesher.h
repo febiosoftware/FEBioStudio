@@ -51,13 +51,13 @@ class FEMesher : public FSThreadedTask
 
 public:
 	// constructor
-	FEMesher();
+	FEMesher(GObject& o);
 
 	// desctructor
 	virtual ~FEMesher();
 
 	// build the mesh
-	virtual FSMesh*	BuildMesh(GObject* po) = 0;
+	virtual FSMesh*	BuildMesh() = 0;
 
 	// save/load
 	void Save(OArchive& ar);
@@ -77,6 +77,7 @@ public:
 
 protected:
 	std::string		m_error;
+	GObject&		m_o;
 
 	int	m_ntype;
 };

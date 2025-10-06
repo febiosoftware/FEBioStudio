@@ -37,10 +37,8 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEShellTorus::FEShellTorus()
+FEShellTorus::FEShellTorus(GObject& o) : FEMesher(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_nd = 6;
 	m_ns = 12;
@@ -50,13 +48,13 @@ FEShellTorus::FEShellTorus()
 	AddIntParam(m_ns, "ns", "Segments");
 }
 
-FSMesh* FEShellTorus::BuildMesh(GObject* po)
+FSMesh* FEShellTorus::BuildMesh()
 {
-	m_pobj = dynamic_cast<GTorus*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GTorus* torus = dynamic_cast<GTorus*>(&m_o);
+	if (torus == nullptr) return nullptr;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = torus->GetParamBlock();
 	double R0 = param.GetFloatValue(GTorus::RIN);
 	double R1 = param.GetFloatValue(GTorus::ROUT);
 

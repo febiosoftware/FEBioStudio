@@ -32,9 +32,9 @@ class GOCCObject;
 class NetGenOCCMesher : public NetGenMesher
 {
 public:
-	NetGenOCCMesher();
+	NetGenOCCMesher(GObject& o);
 
-	FSMesh*	BuildMesh(GObject* po) override;
+	FSMesh*	BuildMesh() override;
 
 public:
 	int GetMeshSizes() const { return (int)m_msize.size(); }

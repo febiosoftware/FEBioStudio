@@ -248,7 +248,7 @@ GLMesh* GExtrudeModifier::BuildGMesh(GObject* po)
 //-----------------------------------------------------------------------------
 FSMesh* GExtrudeModifier::BuildFEMesh(GObject* po)
 {
-	FETetGenMesher tet;
+	FETetGenMesher tet(*po);
 	tet.SetFloatValue(FETetGenMesher::ELSIZE, 0.2);
-	return tet.BuildMesh(po);
+	return tet.BuildMesh();
 }

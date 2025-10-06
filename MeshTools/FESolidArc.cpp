@@ -29,14 +29,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSMesh.h>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FESolidArc::FESolidArc()
+FESolidArc::FESolidArc(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_nd = 8;
 	m_ns = 4;
 	m_nz = 8;
@@ -59,21 +53,21 @@ FESolidArc::FESolidArc()
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FSMesh* FESolidArc::BuildMesh(GObject* po)
+FSMesh* FESolidArc::BuildMesh()
 {
-	m_pobj = dynamic_cast<GSolidArc*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
 bool FESolidArc::BuildMultiBlock()
 {
-	double R0 = m_pobj->GetFloatValue(GSolidArc::RIN);
-	double R1 = m_pobj->GetFloatValue(GSolidArc::ROUT);
-	double H = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
-	double w = m_pobj->GetFloatValue(GSolidArc::ARC);
+	GSolidArc* po = dynamic_cast<GSolidArc*>(&m_o);
+	if (po == nullptr) return false;
+
+	double R0 = po->GetFloatValue(GSolidArc::RIN);
+	double R1 = po->GetFloatValue(GSolidArc::ROUT);
+	double H = po->GetFloatValue(GSolidArc::HEIGHT);
+	double w = po->GetFloatValue(GSolidArc::ARC);
 
 	// get mesh parameters
 	m_nd = GetIntValue(NDIV);
@@ -96,14 +90,14 @@ bool FESolidArc::BuildMultiBlock()
 
 	// build nodes
 	m_MBNode.clear();
-	AddNode(m_pobj->Node(0)->LocalPosition()).SetID(0);
-	AddNode(m_pobj->Node(1)->LocalPosition()).SetID(1);
-	AddNode(m_pobj->Node(2)->LocalPosition()).SetID(2);
-	AddNode(m_pobj->Node(3)->LocalPosition()).SetID(3);
-	AddNode(m_pobj->Node(4)->LocalPosition()).SetID(4);
-	AddNode(m_pobj->Node(5)->LocalPosition()).SetID(5);
-	AddNode(m_pobj->Node(6)->LocalPosition()).SetID(6);
-	AddNode(m_pobj->Node(7)->LocalPosition()).SetID(7);
+	AddNode(po->Node(0)->LocalPosition()).SetID(0);
+	AddNode(po->Node(1)->LocalPosition()).SetID(1);
+	AddNode(po->Node(2)->LocalPosition()).SetID(2);
+	AddNode(po->Node(3)->LocalPosition()).SetID(3);
+	AddNode(po->Node(4)->LocalPosition()).SetID(4);
+	AddNode(po->Node(5)->LocalPosition()).SetID(5);
+	AddNode(po->Node(6)->LocalPosition()).SetID(6);
+	AddNode(po->Node(7)->LocalPosition()).SetID(7);
 
 	// build block
 	m_MBlock.resize(1);
@@ -139,7 +133,7 @@ bool FESolidArc::BuildMultiBlock()
 
 FSMesh* FESolidArc::BuildMultiBlockMesh()
 {
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -156,12 +150,13 @@ FSMesh* FESolidArc::BuildMultiBlockMesh()
 
 FSMesh* FESolidArc::BuildMeshLegacy()
 {
-	assert(m_pobj);
+	GSolidArc* po = dynamic_cast<GSolidArc*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k, n;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R0 = param.GetFloatValue(GSolidArc::RIN);
 	double R1 = param.GetFloatValue(GSolidArc::ROUT);
 	double h  = param.GetFloatValue(GSolidArc::HEIGHT);

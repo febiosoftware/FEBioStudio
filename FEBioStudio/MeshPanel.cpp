@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMultiBlockMesh.h>
 #include <MeshTools/FESelection.h>
 #include <MeshTools/NetGenSTLMesher.h>
+#include <MeshTools/FEMultiQuadMesh.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GMultiPatch.h>
@@ -99,7 +100,7 @@ public:
 			}
 			else if ((val == 1) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_po->SetFEMesher(new FETetGenMesher());
+				m_po->SetFEMesher(new FETetGenMesher(*m_po));
 				BuildParameterList();
 				SetModified(true);
 			}
@@ -149,19 +150,19 @@ public:
 			int val = v.toInt();
 			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
 			{
-				m_pso->SetFEMesher(new FETetGenMesher());
+				m_pso->SetFEMesher(new FETetGenMesher(*m_pso));
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if ((val == 1) && (dynamic_cast<NetGenSTLMesher*>(mesher) == nullptr))
 			{
-				m_pso->SetFEMesher(new NetGenSTLMesher());
+				m_pso->SetFEMesher(new NetGenSTLMesher(*m_pso));
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
 			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
 			{
-				m_pso->SetFEMesher(new FEShellMesher());
+				m_pso->SetFEMesher(new FEShellMesher(*m_pso));
 				BuildParamList(m_pso->GetFEMesher());
 				SetModified(true);
 			}
@@ -623,16 +624,26 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
 		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
 
-		GMultiBox* newObject = new GMultiBox(primitive);
-		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+		FEMultiBlockMesh* mb = dynamic_cast<FEMultiBlockMesh*>(primitive->GetFEMesher());
+		if (mb)
+		{
+			GMultiBox* newObject = new GMultiBox(primitive);
+			pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+		}
+		else QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
 	}
 	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIPATCH)
 	{
 		GShellPrimitive* primitive = dynamic_cast<GShellPrimitive*>(po);
 		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
 
-		GMultiPatch* newObject = new GMultiPatch(primitive);
-		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+		FEMultiQuadMesh* mq = dynamic_cast<FEMultiQuadMesh*>(primitive->GetFEMesher());
+		if (mq)
+		{
+			GMultiPatch* newObject = new GMultiPatch(primitive);
+			pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+		}
+		else QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
 	}
 	else
 	{

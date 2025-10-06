@@ -49,7 +49,7 @@ GHollowSphere::GHollowSphere() : GPrimitive(GHOLLOW_SPHERE)
 //-----------------------------------------------------------------------------
 FEMesher* GHollowSphere::CreateDefaultMesher()
 {
-	return new FEHollowSphere();
+	return new FEHollowSphere(*this);
 }
 
 //-----------------------------------------------------------------------------

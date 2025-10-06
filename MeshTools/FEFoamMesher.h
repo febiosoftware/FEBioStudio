@@ -31,7 +31,7 @@ class GFoamObject;
 class FEFoamMesher : public FEMesher
 {
 public:
-	FEFoamMesher();
+	FEFoamMesher(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 };
