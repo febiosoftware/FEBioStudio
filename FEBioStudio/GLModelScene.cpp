@@ -2678,7 +2678,7 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const
 		for (int i = 0; i < s.Constraints(); ++i)
 		{
 			FSModelConstraint* pw = s.Constraint(i);
-			if (pw->IsType("rigid_wall"))
+			if (pw->IsType("rigid_wall") && pw->IsActive())
 			{
 				// get the plane equation
 				vector<double> a = pw->GetParamArrayDouble("plane");
