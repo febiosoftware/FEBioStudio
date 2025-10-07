@@ -531,33 +531,53 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool GObject::Update(bool b)
 {
+	// see if we need to update the parts
+	bool bupdateParts = false;
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		pg->m_face.clear();
-		pg->m_node.clear();
-	}
-
-	for (int i = 0; i < Faces(); ++i)
-	{
-		GFace* pf = Face(i);
-		if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
-		if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
-		if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
-	}
-
-	for (int i = 0; i < Parts(); ++i)
-	{
-		std::set<int> nodes;
-		GPart* pg = Part(i);
-		for (int j = 0; j < pg->Faces(); ++j)
+		if (pg->m_node.empty() || pg->m_face.empty())
 		{
-			GFace* pf = Face(pg->m_face[j]);
-			nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			bupdateParts = true;
+			break;
+		}
+	}
+
+	if (bupdateParts)
+	{
+		for (int i = 0; i < Parts(); ++i)
+		{
+			GPart* pg = Part(i);
+			pg->m_face.clear();
+			pg->m_node.clear();
 		}
 
-		pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		for (int i = 0; i < Faces(); ++i)
+		{
+			GFace* pf = Face(i);
+			if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
+			if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
+			if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
+		}
 
+		for (int i = 0; i < Parts(); ++i)
+		{
+			std::set<int> nodes;
+			GPart* pg = Part(i);
+			for (int j = 0; j < pg->Faces(); ++j)
+			{
+				GFace* pf = Face(pg->m_face[j]);
+				nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			}
+
+			pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		}
+	}
+
+	// this just updates the bounding box of each part
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
 		pg->Update(false);
 	}
 
