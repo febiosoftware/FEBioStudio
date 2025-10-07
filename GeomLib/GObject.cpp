@@ -334,7 +334,6 @@ void GObject::BuildFERenderMesh()
 	}
 
 	gm.Update();
-	UpdateMeshData();
 }
 
 void GObject::UpdateFERenderMesh()
@@ -1329,97 +1328,4 @@ GObjectManipulator::~GObjectManipulator()
 GObject* GObjectManipulator::GetObject()
 {
 	return m_po;
-}
-
-void GObject::UpdateMeshData()
-{
-	GLMesh* gmsh = GetFERenderMesh();
-	if (gmsh == nullptr) return;
-
-	FSMesh* pm = GetFEMesh();
-	if (pm == nullptr) return;
-
-	Mesh_Data& data = pm->GetMeshData();
-	if (!data.IsValid()) return;
-
-	double vmin, vmax;
-	data.GetValueRange(vmin, vmax);
-	if (vmax == vmin) vmax++;
-
-	int NN = pm->Nodes();
-	vector<double> val(NN, 0);
-
-	CColorMap map;
-	map.SetRange((float)vmin, (float)vmax);
-
-	int NF = gmsh->Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		GLMesh::FACE& fi = gmsh->Face(i);
-		int fid = fi.fid;
-		FSFace* pf = pm->FacePtr(fid);
-		if (pf)
-		{
-			FSFace& face = *pf;
-			FSElement& el = pm->Element(face.m_elem[0].eid);
-			GPart* pg = Part(el.m_gid);
-			if (pg && (pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-			{
-				FSElement& el1 = pm->Element(face.m_elem[1].eid);
-				pg = Part(el1.m_gid);
-			}
-
-			if (pg && pg->IsVisible())
-			{
-				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
-					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
-					}
-
-					for (int j = 0; j < 3; ++j)
-					{
-						double vj = val[fi.n[j]];
-						fi.c[j] = map.map(vj);
-					}
-				}
-				else
-				{
-					GLColor col(212, 212, 212);
-					for (int j = 0; j < 3; ++j) fi.c[j] = col;
-				}
-			}
-		}
-		else if (fi.eid >= 0)
-		{
-			FSElement& el = pm->Element(fi.eid);
-			if (data.GetElementDataTag(fi.eid) > 0)
-			{
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j)
-				{
-					double vj = data.GetElementValue(fi.eid, j);
-					val[el.m_node[j]] = vj;
-				}
-
-				for (int j = 0; j < 3; ++j)
-				{
-					double vj = val[fi.n[j]];
-					fi.c[j] = map.map(vj);
-				}
-			}
-			else
-			{
-				GLColor col(212, 212, 212);
-				for (int j = 0; j < 3; ++j) fi.c[j] = col;
-			}
-		}
-	}
 }

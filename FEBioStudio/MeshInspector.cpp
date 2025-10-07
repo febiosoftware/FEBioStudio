@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "GLDocument.h"
 #include <MeshTools/FEMeshValuator.h>
 #include <FSCore/ColorMapManager.h>
+#include "GLModelScene.h"
 #include "Commands.h"
 #include <GLLib/GLScene.h>
 using namespace std;
@@ -107,8 +108,13 @@ void CMeshInspector::on_var_currentIndexChanged(int n)
 
 void CMeshInspector::on_col_currentIndexChanged(int n)
 {
-	m_wnd->GetGLView()->SetColorMap(n);
-	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+	CGLView* glv = m_wnd->GetGLView();
+	if (glv)
+	{
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(glv->GetActiveScene());
+		if (scene) scene->SetColorMap(n);
+		glv->ShowMeshData(true); // this is called so the planecut gets updated
+	}
 	m_wnd->RedrawGL();
 }
 
@@ -137,7 +143,14 @@ void CMeshInspector::UpdateData(int ndata)
 	}
 	else {
 		UpdateFEMeshData(pm, ndata);
-		po->UpdateMeshData();
+
+		CGLView* glv = m_wnd->GetGLView();
+		if (glv)
+		{
+			CGLModelScene* scene = dynamic_cast<CGLModelScene*>(glv->GetActiveScene());
+			if (scene) scene->Update();
+			m_wnd->RedrawGL();
+		}
 	}
 }
 

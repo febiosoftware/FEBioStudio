@@ -1621,3 +1621,39 @@ void CGLPostScene::ToggleTrackSelection()
 		}
 	}
 }
+
+LegendData CGLPostScene::GetLegendData(int n)
+{
+	LegendData l;
+	Post::CGLModel* glm = GetGLModel();
+	if (glm)
+	{
+		if (n == 0)
+		{
+			Post::CGLColorMap* pcm = glm->GetColorMap();
+			if (pcm && pcm->IsActive())
+			{
+				float rng[2];
+				pcm->GetRange(rng);
+				l.vmin = rng[0];
+				l.vmax = rng[1];
+				l.colormap = pcm->GetColorMap();
+				l.smooth = pcm->GetColorSmooth();
+				l.ndivs = pcm->GetDivisions();
+			}
+		}
+		else if (n == 1)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::CGLPlot* plt = glm->Plot(i);
+				if (plt->IsActive())
+				{
+					l = plt->GetLegendData();
+					break;
+				}
+			}
+		}
+	}
+	return l;
+}

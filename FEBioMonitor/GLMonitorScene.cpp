@@ -66,26 +66,6 @@ void CGLMonitorScene::Clear()
 void CGLMonitorScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
-
-/*
-	// TODO: This was moved to CGLView and will be handled differently 
-	int nfield = m_glm->GetColorMap()->GetEvalField();
-	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::Data_Tensor_Type::TENSOR_SCALAR);
-
-
-	// Update GLWidget string table for post rendering
-	QString febFile = QString::fromStdString(m_doc->GetFEBioInputFile());
-	QFileInfo fi(febFile);
-	QString filename = fi.fileName();
-	GLWidget::addToStringTable("$(filename)", filename.toStdString());
-	GLWidget::addToStringTable("$(datafield)", dataFieldName);
-	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
-	GLWidget::addToStringTable("$(time)", m_postModel->CurrentTime());
-*/
-	Post::CGLColorMap* clm = m_glm->GetColorMap();
-	if (clm && clm->IsActive()) m_fmdoc->ShowLegend(true);
-	else m_fmdoc->ShowLegend(false);
-
 	CGLPostScene::Render(engine, rc);
 }
 
@@ -908,4 +888,26 @@ BOX CGLMonitorScene::GetSelectionBox()
 	if (sel) return sel->GetBoundingBox();
 
 	return BOX();
+}
+
+LegendData CGLMonitorScene::GetLegendData(int n)
+{
+	LegendData l;
+
+	if (n == 0)
+	{
+		Post::CGLColorMap* pcm = GetGLModel()->GetColorMap();
+		if (pcm && pcm->IsActive())
+		{
+			float rng[2];
+			pcm->GetRange(rng);
+			l.vmin = rng[0];
+			l.vmax = rng[1];
+			l.colormap = pcm->GetColorMap();
+			l.smooth = pcm->GetColorSmooth();
+			l.ndivs = pcm->GetDivisions();
+		}
+	}
+
+	return l;
 }

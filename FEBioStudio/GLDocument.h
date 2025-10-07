@@ -145,10 +145,6 @@ public:
 public:
 	bool ShowTitle() const { return m_showTitle; }
 	bool ShowSubtitle() const { return m_showSubtitle; }
-	bool ShowLegend() const { return m_showLegend; }
-	void ShowLegend(bool b) { m_showLegend = b; }
-
-	virtual LegendData GetLegendData() { LegendData l; return l; }
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }

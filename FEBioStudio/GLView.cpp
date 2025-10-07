@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLComposite.h>
 #include "GLModelScene.h"
+#include "GLViewScene.h"
 
 using namespace std::chrono;
 
@@ -1663,6 +1664,8 @@ void CGLView::RenderCanvas(GLContext& rc)
 			GLWidget::addToStringTable("$(time)", glDoc->GetCurrentTimeValue());
 		}
 
+		GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
+
 		// update the triad
 		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
 
@@ -1676,53 +1679,46 @@ void CGLView::RenderCanvas(GLContext& rc)
 		}
 		if (m_legend)
 		{
-			if (doc->ShowLegend())
+			bool bshow = false;
+			if (scene)
 			{
-				LegendData l = doc->GetLegendData();
-				m_legend->SetColorGradient(l.colormap);
-				m_legend->SetRange(l.vmin, l.vmax);
-				m_legend->SetDivisions(l.ndivs);
-				m_legend->SetSmoothTexture(l.smooth);
-				m_legend->show();
+				LegendData l = scene->GetLegendData(0);
+				if (l.isValid())
+				{
+					m_legend->SetColorGradient(l.colormap);
+					m_legend->SetRange(l.vmin, l.vmax);
+					m_legend->SetDivisions(l.ndivs);
+					m_legend->SetSmoothTexture(l.smooth);
+					bshow = true;
+				}
 			}
+
+			if (bshow) m_legend->show();
 			else m_legend->hide();
 		}
 		if (m_legendPlot)
 		{
 			bool bshow = false;
-			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-			if (postDoc && postDoc->IsValid())
+			if (scene)
 			{
-				Post::CGLModel* glm = postDoc->GetGLModel();
-				if (glm)
+				LegendData data = scene->GetLegendData(1);
+				if (data.isValid())
 				{
-					for (int i = 0; i < glm->Plots(); ++i)
-					{
-						Post::CGLPlot* plt = glm->Plot(i);
-						if (plt->IsActive())
-						{
-							LegendData data = plt->GetLegendData();
-							if (data.ndivs > 0)
-							{
-								m_legendPlot->SetColorGradient(data.colormap);
-								m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
-								m_legendPlot->SetDivisions(data.ndivs);
-								m_legendPlot->SetSmoothTexture(data.smooth);
-								m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
+					m_legendPlot->SetColorGradient(data.colormap);
+					m_legendPlot->SetRange((float)data.vmin, (float)data.vmax);
+					m_legendPlot->SetDivisions(data.ndivs);
+					m_legendPlot->SetSmoothTexture(data.smooth);
+					m_legendPlot->SetType(data.discrete ? GLLegendBar::DISCRETE : GLLegendBar::GRADIENT);
 								
-								if (data.title.empty()) {
-									m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
-								}
-								else {
-									m_legendPlot->copy_label(data.title.c_str());
-									m_legendPlot->ShowTitle(true);
-								}
-								
-								bshow = true;
-								break;
-							}
-						}
+					if (data.title.empty()) {
+						m_legendPlot->set_label(nullptr); m_legendPlot->ShowTitle(false);
 					}
+					else {
+						m_legendPlot->copy_label(data.title.c_str());
+						m_legendPlot->ShowTitle(true);
+					}
+								
+					bshow = true;
 				}
 			}
 			if (bshow) m_legendPlot->show();
