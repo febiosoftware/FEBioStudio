@@ -56,7 +56,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	AddDoubleParam(0.2, "opacity_scale")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "opacity_strength")->SetFloatRange(0.001, 0.999);
 	AddIntParam(1, "mesh_subdivisions")->SetIntRange(1, MAX_MESH_DIVS);
-	AddBoolParam(false, "show_legend");
+	AddBoolParam(true, "show_legend");
 	AddIntParam(0, "max_range_type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "user_max");
 	AddIntParam(0, "min_range_type")->SetEnumNames("dynamic\0static\0user\0");
@@ -497,8 +497,8 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 LegendData GLVolumeFlowPlot::GetLegendData() const
 {
 	LegendData l;
-
-	if (m_range.valid)
+	bool showLegend = GetBoolValue(SHOW_LEGEND);
+	if (m_range.valid && showLegend)
 	{
 		l.discrete = false;
 		l.ndivs = m_nDivs;
