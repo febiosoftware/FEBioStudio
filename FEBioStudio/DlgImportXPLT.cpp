@@ -128,7 +128,7 @@ public:
 
 		QObject::connect(bb, SIGNAL(accepted()), parent, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), parent, SLOT(reject()));
-		QObject::connect(pitems, SIGNAL(textEdited(const QString&)), pb3, SLOT(click()));
+		QObject::connect(pitems, SIGNAL(textEdited(const QString&)), pb4, SLOT(click()));
 	}
 };
 
