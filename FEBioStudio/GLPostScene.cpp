@@ -401,6 +401,8 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
 
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
 	CPostObject* po = glm.GetPostObject();
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
@@ -442,7 +444,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
 				re.setTexture(m_tex);
 			}
 			else
@@ -450,7 +452,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = glm.m_pcol->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -458,7 +460,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -474,6 +476,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
 
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
@@ -522,14 +525,14 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
 				re.setTexture(m_tex);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
 			}
 			else
 			{
 				float alpha = mat.transparency;
 				GLColor c = glm.m_pcol->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -537,7 +540,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 		}
 
 		RenderMesh(re, *mesh, i);

@@ -2754,6 +2754,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 			menu.addAction(colorMode->menuAction());
 		}
 	}
+
+	CPostDocument* pdoc = GetPostDocument();
+	if (pdoc)
+	{
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
+		QMenu* colorMode = new QMenu("Color mode");
+		QAction* a;
+		a = colorMode->addAction("Identify backfacing surfaces"); a->setCheckable(true); if (vs.m_identifyBackfacing) a->setChecked(true);
+		a->setData(0xFF);
+		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+		menu.addAction(colorMode->menuAction());
+	}
+
 	menu.addAction(mainMenu->actionOptions);
 }
 
@@ -2772,20 +2785,22 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
-
-	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
-	if (scene == nullptr) return;
-
 	int data = ac->data().toInt();
 
-	if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
-	else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
-	else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
-	else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
-	else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
-	else if (data == 0xFF)
+	CModelDocument* doc = GetModelDocument();
+	if (doc)
+	{
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene == nullptr) return;
+
+		if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE);
+		else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+		else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE);
+	}
+
+	if (data == 0xFF)
 	{
 		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		vs.m_identifyBackfacing = !vs.m_identifyBackfacing;

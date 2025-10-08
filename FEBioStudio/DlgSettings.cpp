@@ -101,6 +101,7 @@ public:
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
 		addBoolProperty(&m_showHighlights, "Enable highlighting");
+		addBoolProperty(&m_identifyBackfacing, "Identify backfacing faces");
 		QStringList vconv;
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
@@ -124,6 +125,7 @@ public:
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
 	bool	m_showHighlights;
+	bool	m_identifyBackfacing;
 	int		m_tagFontSize;
 };
 
@@ -1235,6 +1237,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
 	ui->m_display->m_showHighlights = view.m_showHighlights;
+	ui->m_display->m_identifyBackfacing = view.m_identifyBackfacing;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
@@ -1321,6 +1324,7 @@ void CDlgSettings::apply()
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
 	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_identifyBackfacing = ui->m_display->m_identifyBackfacing;
 	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
