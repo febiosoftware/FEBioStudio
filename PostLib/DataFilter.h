@@ -42,8 +42,11 @@ bool DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale);
 // Apply a smoothing operation on data
 bool DataSmooth(FEPostModel& fem, int nfield, double theta, int niters);
 
-// Apply a smoothing operation on data
+// Apply an arithmic operation on data
 bool DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand);
+
+// Apply an math operation on data
+bool DataMath(FEPostModel& fem, int nfield, int nop);
 
 // Calculate the gradient of a scale field
 // (set config to 0 for material, to 1 for spatial gradient)

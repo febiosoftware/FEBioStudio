@@ -974,6 +974,155 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 	return true;
 }
 
+// functions used in math filter
+double math_invert(double v) { return -v; }
+double math_abs(double v) { return fabs(v); }
+double math_ramp(double v) { return (v > 0 ? v : 0.0); }
+
+bool Post::DataMath(FEPostModel& fem, int nfield, int nop)
+{
+	int ndst = FIELD_CODE(nfield);
+
+	FSMesh& mesh = *fem.GetFEMesh(0);
+
+	double (*f)(double) = 0;
+	switch (nop)
+	{
+	case 0: f = math_invert; break;
+	case 1: f = math_abs; break;
+	case 2: f = math_ramp; break;
+		default:
+		return false;
+	}
+
+	// loop over all states
+	for (int n = 0; n < fem.GetStates(); ++n)
+	{
+		FEState& state = *fem.GetState(n);
+		FEMeshData& d = state.m_Data[ndst];
+		if (d.GetType() != DATA_SCALAR) return false;
+
+		DATA_FORMAT fmt = d.GetFormat();
+		if (IS_NODE_FIELD(nfield))
+		{
+			FENodeData<float>* pd = dynamic_cast<FENodeData  <float>*>(&d); assert(pd);
+			if (pd == 0) return false;
+			int N = pd->size();
+			for (int i = 0; i < N; ++i) { (*pd)[i] = (float)f((*pd)[i]); }
+		}
+		else if (IS_ELEM_FIELD(nfield))
+		{
+			if (fmt == DATA_ITEM)
+			{
+				FEElementData<float, DATA_ITEM>* pd = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&d); assert(pd);
+				if (pd == 0) return false;
+				int N = mesh.Elements();
+				for (int i = 0; i < N; ++i)
+				{
+					if (pd->active(i))
+					{
+						float vd;
+						pd->eval(i, &vd);
+						float r = (float)f(vd);
+						pd->set(i, r);
+					}
+				}
+			}
+			else if (fmt == DATA_NODE)
+			{
+				FEElementData<float, DATA_NODE>* pd = dynamic_cast<FEElementData<float, DATA_NODE>*>(&d); assert(pd);
+				if (pd == 0) return false;
+				int N = mesh.Elements();
+				float vd[FSElement::MAX_NODES];
+				for (int i = 0; i < N; ++i)
+				{
+					FSElement& el = mesh.Element(i);
+					if (pd->active(i))
+					{
+						pd->eval(i, vd);
+						for (int j = 0; j < el.Nodes(); ++j)
+						{
+							float r = (float)f(vd[j]);
+							pd->set(i, j, r);
+						}
+					}
+				}
+			}
+			else if (fmt == DATA_MULT)
+			{
+				FEElementData<float, DATA_MULT>* pd = dynamic_cast<FEElementData<float, DATA_MULT>*>(&d); assert(pd);
+				if (pd == 0) return false;
+				int N = mesh.Elements();
+				for (int i = 0; i < N; ++i)
+				{
+					FSElement& el = mesh.Element(i);
+					float vd[FSElement::MAX_NODES] = { 0.f }, vr[FSElement::MAX_NODES] = { 0.f };
+					if (pd->active(i))
+					{
+						pd->eval(i, vd);
+						for (int j = 0; j < el.Nodes(); ++j)
+						{
+							vr[j] = (float)f(vd[j]);
+						}
+						pd->add(i, el.Nodes(), vr);
+					}
+				}
+			}
+			else if (fmt == DATA_REGION)
+			{
+				FEElementData<float, DATA_REGION>* pd = dynamic_cast<FEElementData<float, DATA_REGION>*>(&d); assert(pd);
+				if (pd == 0) return false;
+				int N = mesh.Elements();
+				for (int i = 0; i < N; ++i)
+				{
+					FSElement& el = mesh.Element(i);
+					float vd = 0.f;
+					if (pd->active(i))
+					{
+						pd->eval(i, &vd);
+						float vr = (float)f(vd);
+						pd->add(i, vr);
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if (IS_FACE_FIELD(nfield))
+		{
+			if (fmt == DATA_ITEM)
+			{
+				FEFaceData<float, DATA_ITEM>* pd = dynamic_cast<FEFaceData<float, DATA_ITEM>*>(&d); assert(pd);
+				if (pd == 0) return false;
+				int N = mesh.Elements();
+				for (int i = 0; i < N; ++i)
+				{
+					if (pd->active(i))
+					{
+						float vd;
+						pd->eval(i, &vd);
+						float r = (float)f(vd);
+						pd->set(i, r);
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 //-----------------------------------------------------------------------------
 bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config)
 {
