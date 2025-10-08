@@ -635,7 +635,6 @@ void CMainWindow::ExportPostGeometry()
 	case 3:
 	{
 		Post::PLYExport ply;
-		ply.SetColorMap(GetGLView()->GetColorMap());
 		bret = ply.Save(fem, szfilename);
 	}
 	break;

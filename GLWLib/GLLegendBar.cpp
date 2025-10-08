@@ -27,11 +27,12 @@ SOFTWARE.*/
 #include "GLLegendBar.h"
 #include "convert.h"
 #include <FSCore/ColorMapManager.h>
+#include <GLLib/ColorTexture.h>
 #include <QPainter>
 
-GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
+GLLegendBar::GLLegendBar(int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
 {
-	m_pMap = pm;
+	m_pMap = new CColorTexture;
 	m_ntype = GRADIENT;
 	m_nrot = orientation;
 	m_btitle = false;

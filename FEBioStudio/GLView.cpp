@@ -589,12 +589,7 @@ void CGLView::changeViewMode(View_Mode vm)
 
 void CGLView::SetColorMap(unsigned int n)
 {
-	m_colorMap.SetColorMap(n);
-}
-
-CColorMap& CGLView::GetColorMap()
-{
-	return m_colorMap.ColorMap();
+	if (m_legend) m_legend->SetColorGradient(n);
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -1417,11 +1412,11 @@ void CGLView::initializeGL()
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 
-		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600));
+		m_Widget->AddWidget(m_legend = new GLLegendBar(0, 0, 120, 600));
 		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
 		m_legend->hide();
 
-		m_Widget->AddWidget(m_legendPlot = new GLLegendBar(&m_colorMap, 0, 0, 600, 120, GLLegendBar::ORIENT_HORIZONTAL));
+		m_Widget->AddWidget(m_legendPlot = new GLLegendBar(0, 0, 600, 120, GLLegendBar::ORIENT_HORIZONTAL));
 		m_legendPlot->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 		m_legendPlot->hide();
 

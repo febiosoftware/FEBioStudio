@@ -117,11 +117,10 @@ CFiberGLWidget::CFiberGLWidget() : CGLManagedSceneView(new CODFScene(this)), m_O
 	m_ptriad = new GLTriad(0, 0, 50, 50);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 
-	CColorTexture* tex = new CColorTexture;
-	tex->SetDivisions(5);
-	tex->SetSmooth(true);
+	m_pbar = new GLLegendBar(0, 0, 80, 300, GLLegendBar::ORIENT_VERTICAL);
+	m_pbar->SetDivisions(5);
+	m_pbar->SetSmoothTexture(true);
 
-	m_pbar = new GLLegendBar(tex, 0, 0, 80, 300, GLLegendBar::ORIENT_VERTICAL);
 	m_pbar->align(GLW_ALIGN_RIGHT| GLW_ALIGN_VCENTER);
 	m_pbar->SetType(GLLegendBar::GRADIENT);
 	m_pbar->set_font_size(9);
