@@ -100,12 +100,18 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 	ui->setup(this);
 	
 	ui->m_thread = thread;
-	parent->ShowLogPanel();
+
+	if (parent)
+		parent->ShowLogPanel();
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
-	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
+	
+	if (parent)
+	{
+		QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
+	}
 }
 
 void CDlgStartThread::setTask(const QString& taskString)

@@ -67,6 +67,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FECore/fecore_enum.h>
+#include "DlgStartThread.h"
 
 class CCurvatureProps : public CPropertyList
 {
@@ -211,6 +212,40 @@ public:
 	}
 };
 
+class DistanceMapThread : public CustomThread
+{
+public:
+	DistanceMapThread(Post::FEDistanceMap* map) : m_map(map) {}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		m_map->Init();
+
+		m_bstop = false;
+		m_progress = 0.0;
+		Post::FEPostModel& fem = *m_map->GetModel();
+		for (int n = 0; n < fem.GetStates(); ++n)
+		{
+			m_map->ApplyState(n);
+			if (m_bstop) break;
+
+			m_progress = 100.0*(double)(n + 1) / (double)fem.GetStates();
+		}
+		emit resultReady(true);
+	}
+
+	bool hasProgress() override { return true; }
+
+	double progress() override { return m_progress; }
+
+	void stop() override { m_bstop = true; }
+
+private:
+	Post::FEDistanceMap* m_map;
+	double m_progress = 0.0;
+	bool m_bstop = false;
+};
+
 class CDistanceMapProps : public CPropertyList
 {
 public:
@@ -260,7 +295,8 @@ public:
 		}
 		else if (i == 3)
 		{
-			m_map->Apply();
+			CDlgStartThread dlg(nullptr, new DistanceMapThread(m_map));
+			dlg.exec();
 		}
 	}
 
