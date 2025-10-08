@@ -187,10 +187,10 @@ void CVolumeRenderer::Render(GLRenderEngine& re, GLContext& rc)
 	m_tex.gamma = (float) vs->GetFloatValue(CImageViewSettings::GAMMA);
 	m_tex.hue = (float) vs->GetFloatValue(CImageViewSettings::HUE);
 	m_tex.sat = (float) vs->GetFloatValue(CImageViewSettings::SAT);
-	m_tex.lum = (float) vs->GetFloatValue(CImageViewSettings::LUM);
+	m_tex.val = (float) vs->GetFloatValue(CImageViewSettings::VAL);
 	m_tex.cmap = (int) GetIntValue(COLOR_MAP);
 
-	GLColor col = HSV2RGB(360.0*m_tex.hue, m_tex.sat, m_tex.lum);
+	GLColor col = HSV2RGB(360.0*m_tex.hue, m_tex.sat, m_tex.val);
 
 	if ((im3d.PixelType() == CImage::INT_RGB8) || (im3d.PixelType() == CImage::UINT_RGB8) 
         || (im3d.PixelType() == CImage::INT_RGB16) || (im3d.PixelType() == CImage::UINT_RGB16))

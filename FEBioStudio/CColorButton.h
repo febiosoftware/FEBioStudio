@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QWidget>
+#include <QFrame>
 #include <QPainter>
 #include <QColorDialog>
 
 //-----------------------------------------------------------------------------
-class CColorButton : public QWidget
+class CColorButton : public QFrame
 {
 	Q_OBJECT
 

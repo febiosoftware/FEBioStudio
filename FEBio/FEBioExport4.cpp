@@ -3083,6 +3083,12 @@ void FEBioExport4::WriteConstraints(FSStep& s)
 				ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			}
 
+			FSBodyConstraint* pv = dynamic_cast<FSBodyConstraint*>(pw);
+			if (pv && pw->GetItemList())
+			{
+				ec.add_attribute("elem_set", GetElementSetName(pw->GetItemList()));
+			}
+
 			// write the constraint
 			WriteModelComponent(pw, ec);
 		}
