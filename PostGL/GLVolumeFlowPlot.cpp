@@ -70,6 +70,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	m_meshDivs = 1;
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
+	m_range.valid = true;
 
 	UpdateData(false);
 }
