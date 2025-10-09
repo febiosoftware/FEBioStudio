@@ -36,6 +36,8 @@ class CDlgRAWImport : public QDialog
 public:
 	CDlgRAWImport(QWidget* parent);
 
+	void setFileName(const QString& fileName);
+
 	void accept();
 
 public:

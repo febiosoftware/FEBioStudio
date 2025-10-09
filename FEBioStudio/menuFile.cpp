@@ -1747,6 +1747,7 @@ bool CMainWindow::ImportImage(const QString& fileName)
 	else if (ext.compare("raw", Qt::CaseInsensitive)==0)
 	{
 		CDlgRAWImport dlg(this);
+		dlg.setFileName(fi.fileName());
 		if (dlg.exec())
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
@@ -1795,7 +1796,9 @@ void CMainWindow::on_actionImportRawImage_triggered()
 	{
         for(auto filename : filedlg.selectedFiles())
         {
+			QString fileTitle = QFileInfo(filename).fileName();
             CDlgRAWImport dlg(this);
+			dlg.setFileName(fileTitle);
             if (dlg.exec())
             {
                 BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);

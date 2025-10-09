@@ -40,6 +40,7 @@ SOFTWARE.*/
 class Ui::CDlgRAWImport
 {
 public:
+	QLabel* file;
 	QComboBox* im;
 	QLineEdit*	nx;
 	QLineEdit*	ny;
@@ -60,6 +61,9 @@ public:
 		QVBoxLayout* lo = new QVBoxLayout;
         // enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
 
+		file = new QLabel;
+		file->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
 		im = new QComboBox; im->addItems(QStringList() << "8-bit unsigned" << "8-bit signed" << "16-bit unsigned" 
             << "16-bit signed" << "8-bit unsigned RGB" << "8-bit signed RGB" << "16-bit unsigned RGB" 
             << "16-bit signed RGB" << "32-bit real" << "64-bit real");
@@ -78,6 +82,11 @@ public:
 
         swap = new QCheckBox;
         swap->setChecked(false);
+
+		QHBoxLayout* hl = new QHBoxLayout;
+		hl->addWidget(new QLabel("<b>File:</b>"));
+		hl->addWidget(file);
+		lo->addLayout(hl);
 
 		int row = 0;
 		QGridLayout* grid = new QGridLayout;
@@ -110,7 +119,13 @@ public:
 
 CDlgRAWImport::CDlgRAWImport(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRAWImport)
 {
+	setWindowTitle("Import RAW Image");
 	ui->setupUi(this);
+}
+
+void CDlgRAWImport::setFileName(const QString& fileName)
+{
+	ui->file->setText(fileName);
 }
 
 void CDlgRAWImport::accept()
