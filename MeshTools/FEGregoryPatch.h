@@ -48,10 +48,10 @@ public:
 	};
 
 public:
-	FEGregoryPatch(void);
-	~FEGregoryPatch(void);
+	FEGregoryPatch(GObject& o);
+	~FEGregoryPatch();
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 	GNode&  GetNode(int i) { return m_GNode[i]; }
 	FSMesh* BuildFEMesh();

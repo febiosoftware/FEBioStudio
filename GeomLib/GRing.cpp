@@ -81,7 +81,7 @@ void GRing::SetOuterRadius(double ro) { SetFloatValue(ROUT, ro); }
 //-----------------------------------------------------------------------------
 FEMesher* GRing::CreateDefaultMesher()
 {
-	return new FEShellRing();
+	return new FEShellRing(*this);
 }
 
 //-----------------------------------------------------------------------------

@@ -237,6 +237,7 @@ void CRawImageSource::Save(OArchive& ar)
     ar.WriteChunk(2, m_ny);
     ar.WriteChunk(3, m_nz);
 
+	// TODO: This BOX is not really used. delete?
     ar.WriteChunk(4, m_box.x0);
     ar.WriteChunk(5, m_box.y0);
     ar.WriteChunk(6, m_box.z0);
@@ -247,6 +248,18 @@ void CRawImageSource::Save(OArchive& ar)
     ar.WriteChunk(10, m_byteSwap);
 
 	ar.WriteChunk(11, m_type);
+
+	C3DImage* im = m_originalImage;
+	if (im)
+	{
+		BOX box = im->GetBoundingBox();
+		ar.WriteChunk(100, box.x0);
+		ar.WriteChunk(101, box.y0);
+		ar.WriteChunk(102, box.z0);
+		ar.WriteChunk(103, box.x1);
+		ar.WriteChunk(104, box.y1);
+		ar.WriteChunk(105, box.z1);
+	}
 }
 
 void CRawImageSource::Load(IArchive& ar)
@@ -272,7 +285,6 @@ void CRawImageSource::Load(IArchive& ar)
 		case 10: ar.read(m_byteSwap); break;
 		case 11: ar.read(m_type); break;
 
-		// TODO: The data below does not appear to be saved in the Save function. Does this do anything then?
         case 100:
 			ar.read(tempBox.x0);
             foundBox = true;
@@ -310,7 +322,7 @@ void CRawImageSource::Load(IArchive& ar)
     Load();
 
     // Set location of image if it was saved
-    if(foundBox)
+    if(foundBox && m_img)
     {
 		tempBox.m_valid = true;
         m_img->SetBoundingBox(tempBox);

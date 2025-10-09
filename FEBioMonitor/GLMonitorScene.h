@@ -72,6 +72,8 @@ public:
 
 	CPostObject* GetPostObject() { return m_glm->GetPostObject(); }
 
+	LegendData GetLegendData(int n) override;
+
 private:
 	void Clear();
 

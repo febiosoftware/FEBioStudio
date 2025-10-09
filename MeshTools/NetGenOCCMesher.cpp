@@ -62,10 +62,10 @@ namespace nglib {
 
 #include <FSCore/ClassDescriptor.h>
 
-REGISTER_CLASS3(NetGenOCCMesher, CLASS_MESHER, NetGen_OCC_Mesher, "ng_occ_mesher", 0, 0);
+REGISTER_CLASS4(NetGenOCCMesher, CLASS_MESHER, NetGen_OCC_Mesher, "ng_occ_mesher", GObject);
 
 
-NetGenOCCMesher::NetGenOCCMesher() : m_occ(nullptr)
+NetGenOCCMesher::NetGenOCCMesher(GObject& o) : NetGenMesher(o), m_occ(nullptr)
 {
 	SetType(NetGen_OCC_Mesher);
 }
@@ -89,10 +89,10 @@ public:
 };
 #endif
 
-FSMesh*	NetGenOCCMesher::BuildMesh(GObject* po)
+FSMesh*	NetGenOCCMesher::BuildMesh()
 {
 #ifdef HAS_NETGEN
-	m_occ = dynamic_cast<GOCCObject*>(po);
+	m_occ = dynamic_cast<GOCCObject*>(&m_o);
 	if (m_occ == nullptr) return nullptr;
     
     // Define pointer to OCC Geometry

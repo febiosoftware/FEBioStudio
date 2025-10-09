@@ -37,8 +37,8 @@ public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FETube();
-	FSMesh* BuildMesh(GObject* po) override;
+	FETube(GObject& o);
+	FSMesh* BuildMesh() override;
 
 	FSMesh* BuildMeshLegacy();
 	FSMesh* BuildMultiBlockMesh();
@@ -56,8 +56,6 @@ protected:
 	bool BuildMultiBlock() override;
 
 protected:
-	GTube*	m_pobj;
-
 	int	m_nd, m_ns, m_nz;
 	double	m_gz, m_gr;
 	bool	m_bz, m_br; // double rezoning
@@ -70,8 +68,8 @@ public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2 };
 
 public:
-	FETube2();
-	FSMesh* BuildMesh(GObject* po) override;
+	FETube2(GObject& o);
+	FSMesh* BuildMesh() override;
 
 protected:
 	void BuildFaces(FSMesh* pm);
@@ -84,8 +82,6 @@ protected:
 	}
 
 protected:
-	GTube2*	m_pobj;
-
 	int	m_nd, m_ns, m_nz;
 	double	m_gz, m_gr;
 	bool	m_bz, m_br; // double rezoning

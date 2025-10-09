@@ -217,9 +217,7 @@ class FEMultiBlockMesh : public FEMesher
 {
 public:
 	// constructor
-	FEMultiBlockMesh();
-	FEMultiBlockMesh(const FEMultiBlockMesh& mb);
-	void operator = (const FEMultiBlockMesh& mb);
+	FEMultiBlockMesh(GObject& o);
 
 	void CopyFrom(const FEMultiBlockMesh& mb);
 
@@ -298,10 +296,6 @@ protected:
 
 	int GetBlockFaceNodeIndex(MBBlock& b, int nf, int i, int j);
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
-
-private:
-	// build the mesh
-	FSMesh* BuildMesh(GObject* po) override { return nullptr; }
 
 protected:
 	class MQPoint
@@ -412,19 +406,16 @@ class FEMultiBlockMesher : public FEMultiBlockMesh
 	enum { ELEM_SIZE, ELEM_TYPE };
 
 public:
-	FEMultiBlockMesher();
+	FEMultiBlockMesher(GObject& o);
 
 	// build the mesh
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 	bool BuildMultiBlock() override;
 
 private:
 	// rebuild MB after loading
 	void RebuildMB();
-
-private:
-	GMultiBox* m_po;
 };
 
 class FESetMBWeight : public FEModifier

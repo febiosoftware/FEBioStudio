@@ -334,7 +334,6 @@ void GObject::BuildFERenderMesh()
 	}
 
 	gm.Update();
-	UpdateMeshData();
 }
 
 void GObject::UpdateFERenderMesh()
@@ -532,33 +531,53 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool GObject::Update(bool b)
 {
+	// see if we need to update the parts
+	bool bupdateParts = false;
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		pg->m_face.clear();
-		pg->m_node.clear();
-	}
-
-	for (int i = 0; i < Faces(); ++i)
-	{
-		GFace* pf = Face(i);
-		if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
-		if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
-		if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
-	}
-
-	for (int i = 0; i < Parts(); ++i)
-	{
-		std::set<int> nodes;
-		GPart* pg = Part(i);
-		for (int j = 0; j < pg->Faces(); ++j)
+		if (pg->m_node.empty() || pg->m_face.empty())
 		{
-			GFace* pf = Face(pg->m_face[j]);
-			nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			bupdateParts = true;
+			break;
+		}
+	}
+
+	if (bupdateParts)
+	{
+		for (int i = 0; i < Parts(); ++i)
+		{
+			GPart* pg = Part(i);
+			pg->m_face.clear();
+			pg->m_node.clear();
 		}
 
-		pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		for (int i = 0; i < Faces(); ++i)
+		{
+			GFace* pf = Face(i);
+			if (pf->m_nPID[0] >= 0) Part(pf->m_nPID[0])->m_face.push_back(i);
+			if (pf->m_nPID[1] >= 0) Part(pf->m_nPID[1])->m_face.push_back(i);
+			if (pf->m_nPID[2] >= 0) Part(pf->m_nPID[2])->m_face.push_back(i);
+		}
 
+		for (int i = 0; i < Parts(); ++i)
+		{
+			std::set<int> nodes;
+			GPart* pg = Part(i);
+			for (int j = 0; j < pg->Faces(); ++j)
+			{
+				GFace* pf = Face(pg->m_face[j]);
+				nodes.insert(pf->m_node.begin(), pf->m_node.end());
+			}
+
+			pg->m_node.insert(pg->m_node.end(), nodes.begin(), nodes.end());
+		}
+	}
+
+	// this just updates the bounding box of each part
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
 		pg->Update(false);
 	}
 
@@ -596,7 +615,7 @@ FSMesh* GObject::BuildMesh()
 		// keep a pointer to the old mesh since some mesher use the old
 		// mesh to create a new mesh
 		FSMesh* pold = imp->m_pmesh;
-		SetFEMesh(imp->m_pMesher->BuildMesh(this));
+		SetFEMesh(imp->m_pMesher->BuildMesh());
 
 		// now it is safe to delete the old mesh
 		if (pold) delete pold;
@@ -1212,7 +1231,7 @@ void GObject::Load(IArchive& ar)
 				case 0: break;	// use default mesher
 				case 1:
 				{
-					FEMesher* mesher = new FETetGenMesher();
+					FEMesher* mesher = new FETetGenMesher(*this);
 					SetFEMesher(mesher);
 				}
 				break;
@@ -1329,97 +1348,4 @@ GObjectManipulator::~GObjectManipulator()
 GObject* GObjectManipulator::GetObject()
 {
 	return m_po;
-}
-
-void GObject::UpdateMeshData()
-{
-	GLMesh* gmsh = GetFERenderMesh();
-	if (gmsh == nullptr) return;
-
-	FSMesh* pm = GetFEMesh();
-	if (pm == nullptr) return;
-
-	Mesh_Data& data = pm->GetMeshData();
-	if (!data.IsValid()) return;
-
-	double vmin, vmax;
-	data.GetValueRange(vmin, vmax);
-	if (vmax == vmin) vmax++;
-
-	int NN = pm->Nodes();
-	vector<double> val(NN, 0);
-
-	CColorMap map;
-	map.SetRange((float)vmin, (float)vmax);
-
-	int NF = gmsh->Faces();
-	for (int i = 0; i < NF; ++i)
-	{
-		GLMesh::FACE& fi = gmsh->Face(i);
-		int fid = fi.fid;
-		FSFace* pf = pm->FacePtr(fid);
-		if (pf)
-		{
-			FSFace& face = *pf;
-			FSElement& el = pm->Element(face.m_elem[0].eid);
-			GPart* pg = Part(el.m_gid);
-			if (pg && (pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-			{
-				FSElement& el1 = pm->Element(face.m_elem[1].eid);
-				pg = Part(el1.m_gid);
-			}
-
-			if (pg && pg->IsVisible())
-			{
-				if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-				{
-					int fnl[FSElement::MAX_NODES];
-					int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-					assert(nn == face.Nodes());
-
-					int nf = face.Nodes();
-					for (int j = 0; j < nf; ++j)
-					{
-						double vj = data.GetElementValue(face.m_elem[0].eid, fnl[j]);
-						val[face.n[j]] = vj;
-					}
-
-					for (int j = 0; j < 3; ++j)
-					{
-						double vj = val[fi.n[j]];
-						fi.c[j] = map.map(vj);
-					}
-				}
-				else
-				{
-					GLColor col(212, 212, 212);
-					for (int j = 0; j < 3; ++j) fi.c[j] = col;
-				}
-			}
-		}
-		else if (fi.eid >= 0)
-		{
-			FSElement& el = pm->Element(fi.eid);
-			if (data.GetElementDataTag(fi.eid) > 0)
-			{
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j)
-				{
-					double vj = data.GetElementValue(fi.eid, j);
-					val[el.m_node[j]] = vj;
-				}
-
-				for (int j = 0; j < 3; ++j)
-				{
-					double vj = val[fi.n[j]];
-					fi.c[j] = map.map(vj);
-				}
-			}
-			else
-			{
-				GLColor col(212, 212, 212);
-				for (int j = 0; j < 3; ++j) fi.c[j] = col;
-			}
-		}
-	}
 }

@@ -101,7 +101,7 @@ public:
 	virtual void disable(StateFlag flag) {}
 
 	virtual void setColor(GLColor c) {}
-	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) {}
+	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = false) {}
 	virtual void setMaterial(const GLMaterial& mat) {}
 
 	virtual void setPointSize(float f) {}

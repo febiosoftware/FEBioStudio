@@ -34,9 +34,9 @@ public:
 	enum {N_X, N_Y, N_Z, R_BIAS, Z_BIAS, BZ, ELEM_TYPE};
 
 public:
-	FEQuartDogBone();
+	FEQuartDogBone(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	FSMesh* BuildMeshLegacy();
@@ -44,7 +44,4 @@ protected:
 	bool BuildMultiBlock() override;
 	bool BuildMultiBlockMesh6();
 	bool BuildMultiBlockMesh4();
-
-protected:
-	GQuartDogBone* m_pobj;
 };

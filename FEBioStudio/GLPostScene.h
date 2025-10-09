@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
-#include <GLLib/GLScene.h>
+#include "GLViewScene.h"
 
 class CGLModelDocument;
 class CGLPostScene;
@@ -129,7 +129,7 @@ private:
 	CImageModel* m_img;
 };
 
-class CGLPostScene : public GLScene
+class CGLPostScene : public GLViewScene
 {
 public:
 	CGLPostScene(CGLModelDocument* doc);
@@ -151,6 +151,8 @@ public:
 	int GetItemMode() const;
 
 	void Update() override;
+
+	LegendData GetLegendData(int n) override;
 
 private:
 	void CreateTags(GLContext& rc);

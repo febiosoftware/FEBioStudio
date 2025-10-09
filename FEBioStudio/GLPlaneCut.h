@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <MeshLib/Intersect.h>
+#include <FSCore/ColorMap.h>
 
 class FSModel;
 class GLMesh;
@@ -59,6 +60,8 @@ public:
 
 	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
 
+	void SetColorMap(const CColorMap& map) { m_col = map; }
+
 private:
 	void CreatePlaneCut(FSModel& fem, bool showMeshData);
 	void CreateHideElements(FSModel& fem, bool showMeshData);
@@ -66,4 +69,5 @@ private:
 private:
 	GLMesh* m_planeCut = nullptr;
 	double	m_plane[4] = { 1.0, 0.0, 0.0, 0.0 };
+	CColorMap m_col;
 };

@@ -74,6 +74,11 @@ public:
 	int GetSurfaceSize(int i);
 
 public:
+	void Init();
+
+	void ApplyState(int ntime);
+
+public:
 	// assign selections
 	void SetSelection1(std::vector<int>& s) { m_surf1.m_face = s; }
 

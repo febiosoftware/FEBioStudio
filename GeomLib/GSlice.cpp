@@ -95,7 +95,7 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 //-----------------------------------------------------------------------------
 FEMesher* GSlice::CreateDefaultMesher()
 {
-	return new FESlice();
+	return new FESlice(*this);
 }
 
 //-----------------------------------------------------------------------------

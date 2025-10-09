@@ -115,7 +115,7 @@ GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
 //-----------------------------------------------------------------------------
 FEMesher* GCylinderInBox::CreateDefaultMesher()
 {
-	return new FECylinderInBox();
+	return new FECylinderInBox(*this);
 }
 
 //-----------------------------------------------------------------------------

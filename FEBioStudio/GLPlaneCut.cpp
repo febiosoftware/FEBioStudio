@@ -88,9 +88,6 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 	m_planeCut = new GLMesh;
 	GLMesh* planeCut = m_planeCut;
 
-	// TODO: swith to texture
-	CColorMap colormap;
-
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* po = mdl.Object(i);
@@ -121,7 +118,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 			if ((po == poa) && (showMeshData))
 			{
 				showContour = (showMeshData && data.IsValid());
-				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
+				if (showContour) { data.GetValueRange(vmin, vmax); m_col.SetRange((float)vmin, (float)vmax); }
 			}
 
 			// repeat over all elements
@@ -184,7 +181,7 @@ void GLPlaneCut::CreatePlaneCut(FSModel& fem, bool showMeshData)
 						for (int k = 0; k < 8; ++k)
 						{
 							if (data.GetElementDataTag(i) > 0)
-								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
+								ec[k] = m_col.map(data.GetElementValue(i, nt[k]));
 							else
 								ec[k] = inactiveColor;
 						}

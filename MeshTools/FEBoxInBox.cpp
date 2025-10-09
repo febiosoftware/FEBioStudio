@@ -28,10 +28,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSElement.h>
 
-FEBoxInBox::FEBoxInBox()
+FEBoxInBox::FEBoxInBox(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	AddIntParam(10, "nx", "Nx");
 	AddIntParam(10, "ny", "Ny");
 	AddIntParam(10, "nz", "Nz");
@@ -50,20 +48,19 @@ FEBoxInBox::FEBoxInBox()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
-//-----------------------------------------------------------------------------
 // Build the mesh
 bool FEBoxInBox::BuildMultiBlock()
 {
-	assert(m_pobj);
-	if (m_pobj == nullptr) return false;
+	GBoxInBox* po = dynamic_cast<GBoxInBox*>(&m_o);
+	if (po == nullptr) return false;
 
 	// get object parameters
-	double W0 = m_pobj->OuterWidth();
-	double H0 = m_pobj->OuterHeight();
-	double D0 = m_pobj->OuterDepth();
-	double W1 = m_pobj->InnerWidth();
-	double H1 = m_pobj->InnerHeight();
-	double D1 = m_pobj->InnerDepth();
+	double W0 = po->OuterWidth();
+	double H0 = po->OuterHeight();
+	double D0 = po->OuterDepth();
+	double W1 = po->InnerWidth();
+	double H1 = po->InnerHeight();
+	double D1 = po->InnerDepth();
 
 	int nx = GetIntValue(NX);
 	int ny = GetIntValue(NY);
@@ -223,11 +220,8 @@ bool FEBoxInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FEBoxInBox::BuildMesh(GObject* po)
+FSMesh* FEBoxInBox::BuildMesh()
 {
-	m_pobj = dynamic_cast<GBoxInBox*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	BuildMultiBlock();
 
 	// set element type

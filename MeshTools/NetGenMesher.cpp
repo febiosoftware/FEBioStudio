@@ -41,7 +41,7 @@ namespace nglib {
 using namespace nglib;
 #endif
 
-NetGenMesher::NetGenMesher()
+NetGenMesher::NetGenMesher(GObject& o) : FEMesher(o)
 {
 	m_meshGranularity = Moderate;
 	m_grading = 0.3;

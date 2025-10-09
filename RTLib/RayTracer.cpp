@@ -559,6 +559,8 @@ void RayTracer::render()
 	if (samples < 1) samples = 1;
 	if (samples > 4) samples = 4;
 
+	int bgOption = GetIntValue(BACKGROUND);
+
 	renderStarted = true;
 #pragma omp parallel
 	for (size_t j = 0; j < H; ++j)
@@ -603,7 +605,7 @@ void RayTracer::render()
 				v[0] = (float)c.r();
 				v[1] = (float)c.g();
 				v[2] = (float)c.b();
-				v[3] = (float)c.a();
+				v[3] = (bgOption ? (float)c.a() : 1.f);
 			}
 		}
 	}

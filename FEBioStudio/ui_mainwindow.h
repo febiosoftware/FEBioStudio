@@ -92,6 +92,7 @@ SOFTWARE.*/
 #include "MainMenu.h"
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
+#include "FEBioBatchView.h"
 
 class QProcess;
 
@@ -156,7 +157,8 @@ public:
 		IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		FEBREPORT_VIEW
+		FEBREPORT_VIEW,
+		BATCHRUN_VIEW
 	};
 
 public:
@@ -170,6 +172,7 @@ public:
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
 	CFEBioReportView* febReportView;
+	FEBioBatchView* batchView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -208,6 +211,10 @@ public:
 		febReportView = new CFEBioReportView(wnd);
 		febReportView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(febReportView);
+
+		batchView = new FEBioBatchView(wnd);
+		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(batchView);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

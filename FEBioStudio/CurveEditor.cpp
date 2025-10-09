@@ -729,11 +729,12 @@ void CCurveEditor::on_newLC_clicked(bool b)
 
 			plc->SetName(name);
 			fem->AddLoadController(plc);
-			m_wnd->UpdateModel();
 
 			// add it to the list
 			ui->selectLC->addItem(QString::fromStdString(plc->GetName()), plc->GetID());
 			ui->setCurrentLC(plc->GetID());
+
+			m_wnd->UpdateModel();
 		}
 	}
 }

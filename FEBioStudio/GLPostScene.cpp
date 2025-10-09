@@ -401,6 +401,8 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
 
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
+
 	CPostObject* po = glm.GetPostObject();
 	GLMesh* mesh = po->GetFERenderMesh();
 	if (mesh == nullptr) return;
@@ -442,7 +444,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
 				re.setTexture(m_tex);
 			}
 			else
@@ -450,7 +452,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 				float alpha = mat.transparency;
 				GLColor c = glm.m_pcol->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -458,7 +460,7 @@ void GLPostModelItem::RenderFaces(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -474,6 +476,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	bool colorMapEnabled = glm.GetColorMap()->IsActive();
 
 	int defaultRenderMode = rc.m_settings.m_nrender;
+	bool frontOnly = rc.m_settings.m_identifyBackfacing;
 
 	CPostObject* po = glm.GetPostObject();
 	if (po == nullptr) return;
@@ -522,14 +525,14 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 				GLColor c = GLColor::White();
 				c.a = (uint8_t)(255.f * alpha);
 				re.setTexture(m_tex);
-				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::TEXTURE_1D, frontOnly);
 			}
 			else
 			{
 				float alpha = mat.transparency;
 				GLColor c = glm.m_pcol->GetInactiveColor();
 				c.a = (uint8_t)(255.f * alpha);
-				re.setMaterial(GLMaterial::PLASTIC, c);
+				re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 			}
 		}
 		else
@@ -537,7 +540,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 			float alpha = mat.transparency;
 			GLColor c = mat.diffuse;
 			c.a = (uint8_t)(255.f * alpha);
-			re.setMaterial(GLMaterial::PLASTIC, c);
+			re.setMaterial(GLMaterial::PLASTIC, c, GLMaterial::NONE, frontOnly);
 		}
 
 		RenderMesh(re, *mesh, i);
@@ -571,32 +574,37 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		const FSFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			vec3f p[2];
+			p[0] = vec3f(0, 0, 0);
+			vec3f fn = face.m_fn;
 
-		vec3f p[2];
-		p[0] = vec3f(0, 0, 0);
-		vec3f fn = face.m_fn;
+			vec3d c(0, 0, 0);
+			int nf = face.Nodes();
+			for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
+			c /= nf;
 
-		vec3d c(0, 0, 0);
-		int nf = face.Nodes();
-		for (int j = 0; j < nf; ++j) c += pm->Node(face.n[j]).r;
-		c /= nf;
+			p[0] = to_vec3f(c);
+			p[1] = p[0] + fn * R;
 
-		p[0] = to_vec3f(c);
-		p[1] = p[0] + fn * R;
+			lineMesh.AddEdge(p, 2);
 
-		lineMesh.AddEdge(p, 2);
+			float r = fabs(fn.x);
+			float g = fabs(fn.y);
+			float b = fabs(fn.z);
 
-		float r = fabs(fn.x);
-		float g = fabs(fn.y);
-		float b = fabs(fn.z);
-
-		GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
-		edge.c[0] = GLColor::White();
-		edge.c[1] = GLColor::FromRGBf(r, g, b);
+			GLMesh::EDGE& edge = lineMesh.Edge(lineMesh.Edges() - 1);
+			edge.c[0] = GLColor::White();
+			edge.c[1] = GLColor::FromRGBf(r, g, b);
+		}
 	}
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-	re.renderGMeshEdges(lineMesh, false);
+	if (lineMesh.Edges() > 0)
+	{
+		re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
+		re.renderGMeshEdges(lineMesh, false);
+	}
 }
 
 void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
@@ -1620,4 +1628,40 @@ void CGLPostScene::ToggleTrackSelection()
 			m_trgRotDelta = quatd(0, vec3d(0, 0, 1));
 		}
 	}
+}
+
+LegendData CGLPostScene::GetLegendData(int n)
+{
+	LegendData l;
+	Post::CGLModel* glm = GetGLModel();
+	if (glm)
+	{
+		if (n == 0)
+		{
+			Post::CGLColorMap* pcm = glm->GetColorMap();
+			if (pcm && pcm->IsActive())
+			{
+				float rng[2];
+				pcm->GetRange(rng);
+				l.vmin = rng[0];
+				l.vmax = rng[1];
+				l.colormap = pcm->GetColorMap();
+				l.smooth = pcm->GetColorSmooth();
+				l.ndivs = pcm->GetDivisions();
+			}
+		}
+		else if (n == 1)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::CGLPlot* plt = glm->Plot(i);
+				if (plt->IsActive())
+				{
+					l = plt->GetLegendData();
+					break;
+				}
+			}
+		}
+	}
+	return l;
 }

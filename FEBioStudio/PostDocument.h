@@ -183,8 +183,6 @@ public:
 
 	void SetGLModel(Post::CGLModel* glm);
 
-	LegendData GetLegendData() override;
-
 public:
 	//! save to session file
 	bool SavePostSession(const std::string& fileName);

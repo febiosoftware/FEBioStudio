@@ -94,7 +94,7 @@ void GCone::SetHeight(double h) { SetFloatValue(H, h); }
 //-----------------------------------------------------------------------------
 FEMesher* GCone::CreateDefaultMesher()
 {
-	return new FECone();
+	return new FECone(*this);
 }
 
 //-----------------------------------------------------------------------------

@@ -111,6 +111,7 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include "DlgListMaterials.h"
 #include "DlgMissingPlugins.h"
+#include "FEBioBatchDoc.h"
 
 extern GLColor col[];
 
@@ -202,8 +203,12 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	FSLogger::SetOutput(new FSMainWindowOutput(this));
 
+	// Don't load plugins in Debug mode since plugins are usually built in Release mode
+	// and mixing Debug and Release code can lead to all kinds of problems.
+#ifdef NDEBUG
     ui->m_pluginManager.LoadXML();
     ui->m_pluginManager.LoadAllPlugins();
+#endif
     ui->m_pluginManager.ReadDatabase();
     ui->m_pluginManager.Connect();
 }
@@ -1909,7 +1914,7 @@ void CMainWindow::writeSettings()
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			const CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
 			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{
@@ -2266,6 +2271,10 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<CFEBioReportDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::FEBREPORT_CONFIG);
+	}
+	else if (dynamic_cast<FEBioBatchDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::BATCHRUN_CONFIG);
 	}
 	else
 	{
@@ -2745,6 +2754,19 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 			menu.addAction(colorMode->menuAction());
 		}
 	}
+
+	CPostDocument* pdoc = GetPostDocument();
+	if (pdoc)
+	{
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
+		QMenu* colorMode = new QMenu("Color mode");
+		QAction* a;
+		a = colorMode->addAction("Identify backfacing surfaces"); a->setCheckable(true); if (vs.m_identifyBackfacing) a->setChecked(true);
+		a->setData(0xFF);
+		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+		menu.addAction(colorMode->menuAction());
+	}
+
 	menu.addAction(mainMenu->actionOptions);
 }
 
@@ -2763,20 +2785,22 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
-
-	CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
-	if (scene == nullptr) return;
-
 	int data = ac->data().toInt();
 
-	if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR );
-	else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR  );
-	else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE );
-	else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
-	else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE  );
-	else if (data == 0xFF)
+	CModelDocument* doc = GetModelDocument();
+	if (doc)
+	{
+		CGLModelScene* scene = dynamic_cast<CGLModelScene*>(doc->GetScene());
+		if (scene == nullptr) return;
+
+		if      (data == OBJECT_COLOR_MODE::DEFAULT_COLOR ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::DEFAULT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::OBJECT_COLOR  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::OBJECT_COLOR);
+		else if (data == OBJECT_COLOR_MODE::MATERIAL_TYPE ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::MATERIAL_TYPE);
+		else if (data == OBJECT_COLOR_MODE::FSELEMENT_TYPE) scene->SetObjectColorMode(OBJECT_COLOR_MODE::FSELEMENT_TYPE);
+		else if (data == OBJECT_COLOR_MODE::PHYSICS_TYPE  ) scene->SetObjectColorMode(OBJECT_COLOR_MODE::PHYSICS_TYPE);
+	}
+
+	if (data == 0xFF)
 	{
 		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		vs.m_identifyBackfacing = !vs.m_identifyBackfacing;

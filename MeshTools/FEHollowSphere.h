@@ -27,23 +27,20 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 
-class GHollowSphere;
-
 class FEHollowSphere : public FEMultiBlockMesh
 {
 public:
 	enum { NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
-	FEHollowSphere();
+	FEHollowSphere(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	bool BuildMultiBlock() override;
 
 protected:
-	GHollowSphere*	m_pobj;
 	int	m_nd, m_ns;
 	double	m_gr;
 	bool	m_br;

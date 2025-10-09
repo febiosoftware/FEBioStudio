@@ -37,10 +37,8 @@ extern double gain2(double x, double r, double n);
 
 //-----------------------------------------------------------------------------
 // Constructor
-FECylinder::FECylinder()
+FECylinder::FECylinder(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 	m_nd = m_ns = 4;
 	m_nz = 8;
@@ -68,11 +66,8 @@ FECylinder::FECylinder()
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder::BuildMesh(GObject* po)
+FSMesh* FECylinder::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCylinder*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -88,10 +83,11 @@ FSMesh* FECylinder::BuildMesh(GObject* po)
 //-----------------------------------------------------------------------------
 bool FECylinder::BuildMultiBlock()
 {
-	assert(m_pobj);
+	GCylinder* po = dynamic_cast<GCylinder*>(&m_o);
+	if (po == nullptr) return false;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double h = param.GetFloatValue(GCylinder::HEIGHT);
 
 	// get the mesh parameters
@@ -344,12 +340,13 @@ FSMesh* FECylinder::BuildButterfly()
 // Build a wedged mesh
 FSMesh* FECylinder::BuildWedged()
 {
-	assert(m_pobj);
+	GCylinder* po = dynamic_cast<GCylinder*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R1 = param.GetFloatValue(GCylinder::RADIUS);
 	double h = param.GetFloatValue(GCylinder::HEIGHT);
 
@@ -631,10 +628,8 @@ FSMesh* FECylinder::BuildWedged()
 // C Y L I N D E R 2
 //=============================================================================
 // Constructor
-FECylinder2::FECylinder2()
+FECylinder2::FECylinder2(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 	m_nd = m_ns = 4;
 	m_nz = 8;
@@ -658,13 +653,9 @@ FECylinder2::FECylinder2()
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-//-----------------------------------------------------------------------------
 // Build the mesh
-FSMesh* FECylinder2::BuildMesh(GObject* po)
+FSMesh* FECylinder2::BuildMesh()
 {
-	m_pobj = dynamic_cast<GCylinder2*>(po);
-	if (m_pobj == nullptr) return nullptr;
-
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
 	{
@@ -681,10 +672,11 @@ FSMesh* FECylinder2::BuildMesh(GObject* po)
 // Build a butterfly mesh
 FSMesh* FECylinder2::BuildButterfly()
 {
-	assert(m_pobj);
+	GCylinder2* po = dynamic_cast<GCylinder2*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double Rx = param.GetFloatValue(GCylinder2::RADIUSX);
 	double Ry = param.GetFloatValue(GCylinder2::RADIUSY);
 	double h  = param.GetFloatValue(GCylinder2::HEIGHT );
@@ -939,12 +931,13 @@ FSMesh* FECylinder2::BuildButterfly()
 // Build a wedged mesh
 FSMesh* FECylinder2::BuildWedged()
 {
-	assert(m_pobj);
+	GCylinder2* po = dynamic_cast<GCylinder2*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double Rx = param.GetFloatValue(GCylinder2::RADIUSX);
 	double Ry = param.GetFloatValue(GCylinder2::RADIUSY);
 	double h  = param.GetFloatValue(GCylinder2::HEIGHT );

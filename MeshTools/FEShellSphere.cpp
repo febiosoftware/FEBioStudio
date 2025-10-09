@@ -37,10 +37,8 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEShellSphere::FEShellSphere()
+FEShellSphere::FEShellSphere(GObject& o) : FEMesher(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_nd = 6;
 
@@ -53,13 +51,13 @@ FEShellSphere::~FEShellSphere()
 
 }
 
-FSMesh* FEShellSphere::BuildMesh(GObject* po)
+FSMesh* FEShellSphere::BuildMesh()
 {
-	m_pobj = dynamic_cast<GSphere*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GSphere* sphere = dynamic_cast<GSphere*>(&m_o);
+	if (sphere == nullptr) return nullptr;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = sphere->GetParamBlock();
 	double R = param.GetFloatValue(GSphere::RADIUS);
 
 	// get parameters

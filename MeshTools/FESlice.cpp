@@ -29,10 +29,8 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FSMesh.h>
 
-FESlice::FESlice()
+FESlice::FESlice(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_nd = m_ns = 4;
 	m_nz = 8;
 	m_gz = 1;
@@ -63,15 +61,15 @@ int FESlice::NodeIndex(int i, int j, int k)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FESlice::BuildMesh(GObject* po)
+FSMesh* FESlice::BuildMesh()
 {
-	m_pobj = dynamic_cast<GSlice*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GSlice* po = dynamic_cast<GSlice*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	int i, j, k;
 
 	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double R1 = param.GetFloatValue(GSlice::RADIUS);
 	double h  = param.GetFloatValue(GSlice::HEIGHT);
 	double w  = param.GetFloatValue(GSlice::ANGLE );

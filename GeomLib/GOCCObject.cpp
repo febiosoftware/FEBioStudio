@@ -72,12 +72,12 @@ public:
 GOCCObject::GOCCObject(int type) : GObject(type)
 {
 	m_occ = new OCC_Data;
-	SetFEMesher(new NetGenOCCMesher());
+	SetFEMesher(new NetGenOCCMesher(*this));
 }
 
 FEMesher* GOCCObject::CreateDefaultMesher()
 {
-	return new NetGenOCCMesher();
+	return new NetGenOCCMesher(*this);
 }
 
 void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)

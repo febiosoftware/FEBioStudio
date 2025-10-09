@@ -30,10 +30,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 
 
-FESphereInBox::FESphereInBox()
+FESphereInBox::FESphereInBox(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_po = nullptr;
-
 	// define the tube parameters
 	AddIntParam(5, "nx", "Nx");
 	AddIntParam(5, "ny", "Ny");
@@ -49,10 +47,11 @@ FESphereInBox::FESphereInBox()
 //-----------------------------------------------------------------------------
 bool FESphereInBox::BuildMultiBlock()
 {
-	assert(m_po);
+	GSphereInBox* po = dynamic_cast<GSphereInBox*>(&m_o);
+	if (po == 0) return false;
 
 	// get the object parameters
-	ParamBlock& param = m_po->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double W = param.GetFloatValue(GCylinderInBox::WIDTH);
 	double H = param.GetFloatValue(GCylinderInBox::HEIGHT);
 	double D = param.GetFloatValue(GCylinderInBox::DEPTH);
@@ -523,12 +522,9 @@ bool FESphereInBox::BuildMultiBlock()
 	return true;
 }
 
-FSMesh* FESphereInBox::BuildMesh(GObject* po)
+FSMesh* FESphereInBox::BuildMesh()
 {
-	m_po = dynamic_cast<GSphereInBox*>(po);
-	if (m_po == nullptr) return nullptr;
-
-	BuildMultiBlock();
+	if (!BuildMultiBlock()) return nullptr;
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
@@ -541,15 +537,17 @@ FSMesh* FESphereInBox::BuildMesh(GObject* po)
 
 	// create the MB
 	FSMesh* pm = FEMultiBlockMesh::BuildMBMesh();
+	if (pm)
+	{
+		// update the mesh
+		pm->UpdateMesh();
 
-	// update the mesh
-	pm->UpdateMesh();
-
-	// the Multi-block mesher will assign a different smoothing ID
-	// to each face, but we don't want that here. 
-	// For now, we autosmooth the mesh although we should think of a 
-	// better way
-	pm->AutoSmooth(60);
+		// the Multi-block mesher will assign a different smoothing ID
+		// to each face, but we don't want that here. 
+		// For now, we autosmooth the mesh although we should think of a 
+		// better way
+		pm->AutoSmooth(60);
+	}
 
 	return pm;
 }

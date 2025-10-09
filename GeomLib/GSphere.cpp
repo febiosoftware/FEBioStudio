@@ -72,7 +72,7 @@ void GSphere::SetRadius(double R) { SetFloatValue(RADIUS, R); }
 //-----------------------------------------------------------------------------
 FEMesher* GSphere::CreateDefaultMesher()
 {
-	return new FESphere();
+	return new FESphere(*this);
 }
 
 //-----------------------------------------------------------------------------

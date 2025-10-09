@@ -483,7 +483,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			auto_scale = 1.f / Lmax;
 		}
 
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{
@@ -555,7 +555,7 @@ void GLTensorPlot::Render(GLRenderEngine& re, GLContext& rc)
 			auto_scale = 1.f / Lmax;
 		}
 
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{

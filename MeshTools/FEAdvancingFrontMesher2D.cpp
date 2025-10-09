@@ -100,7 +100,7 @@ int findClosestNode(const vec2d& ra, const vec2d& rb, vector<int>& front, vector
 }
 
 //-----------------------------------------------------------------------------
-FEAdvancingFrontMesher2D::FEAdvancingFrontMesher2D()
+FEAdvancingFrontMesher2D::FEAdvancingFrontMesher2D(GObject& o) : FEMesher(o)
 {
 	AddBoolParam(false, "insert new nodes", "insert new nodes");
 	AddDoubleParam(0.1, "Element size", "Element size");
@@ -303,26 +303,25 @@ void BuildFrontMesh(vector<int> front, vector<FRONT_NODE>& nodeList, vector<FRON
 
 //-----------------------------------------------------------------------------
 // generate the mesh
-FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
+FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 {
-	// make sure we a valid object
-	if (po == nullptr) return nullptr;
+	GObject& o = m_o;
 
 //---> HACK:
 	// get the one-and-only surface
 	FECurveMesher curveMesher;
 	curveMesher.SetElementSize(GetFloatValue(1));
 	FSCurveMesh* curve = new FSCurveMesh;
-	int NS = po->Faces();
+	int NS = o.Faces();
 	if (NS > 0)
 	{
 		for (int n=0; n<NS; ++n)
 		{
-			GFace* surf = po->Face(n);
+			GFace* surf = o.Face(n);
 			int surfEdges = surf->Edges();
 			for (int i=0; i<surfEdges; ++i)
 			{
-				GEdge* e = po->Edge(surf->m_edge[i].nid);
+				GEdge* e = o.Edge(surf->m_edge[i].nid);
 				FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 				curve->Attach(*edgeMesh);
 				delete edgeMesh;
@@ -332,10 +331,10 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh(GObject* po)
 	else
 	{
 		// this is for curve mesh objects
-		int NC = po->Edges();
+		int NC = o.Edges();
 		for (int i=0; i<NC; ++i)
 		{
-			GEdge* e = po->Edge(i);
+			GEdge* e = o.Edge(i);
 			FSCurveMesh* edgeMesh = curveMesher.BuildMesh(e); assert(edgeMesh);
 			curve->Attach(*edgeMesh);
 			delete edgeMesh;
@@ -447,18 +446,18 @@ FSSurfaceMesh* GLMeshToSurfaceMesh(GLMesh& m)
 }
 
 //================================================================================
-FEMMG2DMesher::FEMMG2DMesher()
+FEMMG2DMesher::FEMMG2DMesher(GObject& o) : FEMesher(o)
 {
 	AddDoubleParam(0.1, "Element size", "Element size");
 }
 
-FSMesh* FEMMG2DMesher::BuildMesh(GObject* po)
+FSMesh* FEMMG2DMesher::BuildMesh()
 {
-	if (po == nullptr) return nullptr;
+	GObject& o = m_o;
 
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
-	assert(po->Faces() == 1);
-	GFace& face = *po->Face(0);
+	assert(o.Faces() == 1);
+	GFace& face = *o.Face(0);
 	GLMesh* gm = triangulate(face);
 
 	// MMG needs a FSSurfaceMesh, so convert

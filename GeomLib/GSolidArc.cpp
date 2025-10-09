@@ -106,7 +106,7 @@ GSolidArc::GSolidArc() : GPrimitive(GSOLIDARC)
 //-----------------------------------------------------------------------------
 FEMesher* GSolidArc::CreateDefaultMesher()
 {
-	return new FESolidArc();
+	return new FESolidArc(*this);
 }
 
 //-----------------------------------------------------------------------------

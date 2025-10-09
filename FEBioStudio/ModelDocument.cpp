@@ -714,31 +714,6 @@ bool CModelDocument::Initialize()
 	return CGLDocument::Initialize();
 }
 
-LegendData CModelDocument::GetLegendData()
-{
-	LegendData l;
-
-	l.colormap = ColorMapManager::JET;
-	l.ndivs = 10;
-	l.smooth = true;
-	l.discrete = false;
-
-	GObject* po = GetActiveObject();
-	FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
-	if (pm)
-	{
-		Mesh_Data& data = pm->GetMeshData();
-		double vmin, vmax;
-		data.GetValueRange(vmin, vmax);
-		if (vmin == vmax) vmax++;
-
-		l.vmin = vmin;
-		l.vmax = vmax;
-	}
-
-	return l;
-}
-
 //-----------------------------------------------------------------------------
 bool CModelDocument::LoadTemplate(int n)
 {

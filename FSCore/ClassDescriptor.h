@@ -165,8 +165,8 @@ public:
 #define REGISTER_CLASS3(theClass, theType, theClassId, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theClassId, theName, theResource, theFlag));
 
-#define REGISTER_CLASS4(theClass, theType, theName, theCtorArg) \
-	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T2<theClass, theCtorArg>(theType, -1, theName, 0, 0));
+#define REGISTER_CLASS4(theClass, theType, theClassId, theName, theCtorArg) \
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T2<theClass, theCtorArg>(theType, theClassId, theName, 0, 0));
 
 namespace FSCore {
 
