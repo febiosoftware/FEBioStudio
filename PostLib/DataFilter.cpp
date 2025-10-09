@@ -975,7 +975,7 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 }
 
 // functions used in math filter
-double math_invert(double v) { return -v; }
+double math_neg(double v) { return -v; }
 double math_abs(double v) { return fabs(v); }
 double math_ramp(double v) { return (v > 0 ? v : 0.0); }
 
@@ -988,7 +988,7 @@ bool Post::DataMath(FEPostModel& fem, int nfield, int nop)
 	double (*f)(double) = 0;
 	switch (nop)
 	{
-	case 0: f = math_invert; break;
+	case 0: f = math_neg; break;
 	case 1: f = math_abs; break;
 	case 2: f = math_ramp; break;
 		default:

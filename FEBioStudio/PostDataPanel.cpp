@@ -761,7 +761,7 @@ public:
 		pform->addRow("Function:", mathFunction = new QComboBox);
 		mathPage->setLayout(pform);
 
-		mathFunction->addItem("invert");
+		mathFunction->addItem("negate");
 		mathFunction->addItem("abs");
 		mathFunction->addItem("ramp");
 
