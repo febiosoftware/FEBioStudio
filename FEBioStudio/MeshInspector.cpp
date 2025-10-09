@@ -101,13 +101,13 @@ void CMeshInspector::on_var_currentIndexChanged(int n)
 {
 	if ((n == FEMeshValuator::PRINC_CURVE_1) || (n == FEMeshValuator::PRINC_CURVE_2)) ui->propsWidget->show();
 	else ui->propsWidget->hide();
-
 	UpdateData(n);
 	UpdateUI();
 }
 
 void CMeshInspector::on_col_currentIndexChanged(int n)
 {
+	ui->m_map = n;
 	CGLView* glv = m_wnd->GetGLView();
 	if (glv)
 	{

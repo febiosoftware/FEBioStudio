@@ -1291,6 +1291,12 @@ void GLPlaneCutItem::UpdatePlaneCut(GLContext& rc, bool reset)
 	double* d = rc.m_settings.m_planeCut;
 	m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], d[3]);
 
+	if (m_scene)
+	{
+		int nmap = m_scene->GetColorMap();
+		m_planeCut.SetColorMap(ColorMapManager::GetColorMap(nmap));
+	}
+
 	GLViewSettings& vs = rc.m_settings;
 	m_planeCut.Create(fem, vs.m_bcontour, vs.m_planeCutMode);
 }
@@ -3570,7 +3576,7 @@ void CGLModelScene::ColorizeMesh(GObject* po)
 	int cmap = m_colormap;
 	if (cmap == -1) cmap = ColorMapManager::JET;
 
-	CColorMap& map = ColorMapManager::GetColorMap(cmap);
+	CColorMap map = ColorMapManager::GetColorMap(cmap);
 	map.SetRange((float)vmin, (float)vmax);
 
 	int NF = gmsh->Faces();

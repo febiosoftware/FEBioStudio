@@ -571,7 +571,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		//		char szfmt[16]={0};
 		//		sprintf(szfmt, "%%.%dg", m_nprec);
 
-		CColorMap& map = ColorMapManager::GetColorMap(m_pMap->GetColorMap());
+		const CColorMap& map = m_pMap->ColorMap();
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 

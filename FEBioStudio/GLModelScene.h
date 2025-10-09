@@ -290,7 +290,7 @@ private:
 	CModelDocument* m_doc;
 	GLMesh			m_selectionMesh;
 
-	int m_colormap = -1;
+	int m_colormap = 6; // = JET
 	bool m_showLegend = false;
 	
 	OBJECT_COLOR_MODE	m_objectColor;

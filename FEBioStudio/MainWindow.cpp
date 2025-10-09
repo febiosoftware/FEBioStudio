@@ -1914,7 +1914,7 @@ void CMainWindow::writeSettings()
 		settings.remove("");
 		for (int i = 0; i < n; ++i)
 		{
-			CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
+			const CColorMap& c = ColorMapManager::GetColorMap(ColorMapManager::USER + i);
 			string sname = ColorMapManager::GetColorMapName(ColorMapManager::USER + i);
 			settings.beginGroup(QString::fromStdString(sname));
 			{

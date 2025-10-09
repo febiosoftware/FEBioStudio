@@ -76,7 +76,10 @@ public:
 	static void AddColormap(const std::string& name, const CColorMap& map);
 
 	// get a reference to the color map template
-	static CColorMap& GetColorMap(int n);
+	static const CColorMap& GetColorMap(int n);
+
+	// replace a colormap template
+	static void SetColormap(int n, const CColorMap& map);
 
 	// remove a color map template (can't delete default templates)
 	static bool RemoveColormap(int n);

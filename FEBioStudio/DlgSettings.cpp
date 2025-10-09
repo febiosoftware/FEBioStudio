@@ -684,7 +684,7 @@ void CColormapWidget::onNew()
 	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
 		string sname = newName.toStdString();
 		ColorMapManager::AddColormap(sname, map);
 
@@ -761,8 +761,7 @@ void CColormapWidget::clearGrid()
 
 void CColormapWidget::Apply()
 {
-	CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-	tex = m_map;
+	ColorMapManager::SetColormap(m_currentMap, m_map);
 }
 
 void CColormapWidget::currentMapChanged(int n)
@@ -771,8 +770,7 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
-			CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-			tex = m_map;
+			ColorMapManager::SetColormap(m_currentMap, m_map);
 			emit colormapChanged(m_currentMap);
 		}
 	}
@@ -782,7 +780,7 @@ void CColormapWidget::currentMapChanged(int n)
 	if (n != -1)
 	{
 		m_currentMap = n;
-		CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 		m_map = tex;
 
 		updateColorMap(ColorMapManager::GetColorMap(n));
