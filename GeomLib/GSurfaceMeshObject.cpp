@@ -952,3 +952,10 @@ void GSurfaceMeshObject::UpdateSurfaceMeshData()
 		}
 	}
 }
+
+BOX GSurfaceMeshObject::GetLocalBox() const
+{
+	BOX box;
+	if (m_surfmesh) box = m_surfmesh->GetBoundingBox();
+	return box;
+}
