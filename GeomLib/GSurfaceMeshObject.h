@@ -77,6 +77,8 @@ public:
 
 	void UpdateSurfaceMeshData();
 
+	BOX GetLocalBox() const override;
+
 private:
 	// Move this elsewhere or refactor
 	bool build_tetgen_plc(FSMesh* pm, tetgenio& in);

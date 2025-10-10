@@ -61,6 +61,7 @@ public:
 		DataScalar,
 		DataVec3,
 		DataMat3,
+		DataVec3Exp, // explicit vector data (e.g. displacements)
 
 		// types for selecting mesh items
 		Curve,

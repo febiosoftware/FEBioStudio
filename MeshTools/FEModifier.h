@@ -134,7 +134,15 @@ public:
     FEProjectNodes();
     FSMesh* Apply(FSMesh* pm) override;
 	FSMesh* Apply(GObject* po, FESelection* pg) override;
+
+private:
 	FSMesh* ProjectToSurface(GObject* po, GFace* pg);
+	FSMesh* ProjectToUserPlane(GObject* po);
+
+	bool UpdateData(bool bsave) override;
+
+private:
+	int m_method = 0;
 };
 
 class FEExtrudeToSurface : public FEModifier

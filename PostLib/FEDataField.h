@@ -41,7 +41,7 @@ class FEPostModel;
 //-----------------------------------------------------------------------------
 // data field flags
 enum DataFieldFlags {
-	EXPORT_DATA = 1			// data field can be exported
+	IMPLICIT_DATA = 1			// data field depends on other data fields. This may cause circular dependencies.
 };
 
 //-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ enum DataFieldFlags {
 class ModelDataField : public FSObject
 {
 public:
-	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, DATA_FORMAT nfmt, DATA_CLASS ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, DATA_FORMAT nfmt, DATA_CLASS ncls, unsigned int flag = 0);
 
 	virtual ~ModelDataField();
 
@@ -141,7 +141,7 @@ typedef std::vector<ModelDataField*>::iterator FEDataFieldPtr;
 class FEArrayDataField : public ModelDataField
 {
 public:
-	FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f, unsigned int flag = 0);
+	FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f);
 
 	ModelDataField* Clone() const override;
 
@@ -152,7 +152,7 @@ public:
 class FEArrayVec3DataField : public ModelDataField
 {
 public:
-	FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c, unsigned int flag = 0);
+	FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c);
 
 	ModelDataField* Clone() const override;
 

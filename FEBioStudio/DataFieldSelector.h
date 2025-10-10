@@ -98,7 +98,7 @@ public:
 class CModelDataSelector : public CDataSelector, public Post::FEModelDependant
 {
 public:
-	CModelDataSelector(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
+	CModelDataSelector(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool explicitOnly = false);
 	~CModelDataSelector();
 
 	void BuildMenu(QMenu* menu) override;
@@ -110,7 +110,7 @@ public:
 private:
 	Post::FEPostModel*		m_fem;
 	Post::Data_Tensor_Type	m_class;
-	bool m_bvec;
+	bool m_explicitOnly = false;
 };
 
 // Button with a menu for selecting data fields. 
@@ -153,7 +153,7 @@ class CDataFieldSelector : public CDataSelectorButton
 public:
 	CDataFieldSelector(QWidget* parent = nullptr);
 
-	void BuildMenu(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
+	void BuildMenu(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool explicitOnly = false);
 };
 
 class CColorMapSelector : public QComboBox

@@ -234,7 +234,7 @@ public:
 				}
 				else if (role == Qt::EditRole) return v;
 			}
-			if (prop.type == CProperty::DataVec3)
+			if ((prop.type == CProperty::DataVec3) || (prop.type == CProperty::DataVec3Exp))
 			{
 				if (role == Qt::DisplayRole)
 				{
@@ -478,6 +478,16 @@ public:
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
 				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
 				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR);
+				int nfield = data.toInt();
+				pc->setCurrentValue(nfield);
+				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::DataVec3Exp)
+			{
+				CDataFieldSelector* pc = new CDataFieldSelector(parent);
+				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				if (fem) pc->BuildMenu(fem, Post::TENSOR_VECTOR, true);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));

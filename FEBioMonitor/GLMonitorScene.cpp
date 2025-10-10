@@ -353,15 +353,15 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem); break;
 		case PLT_ARRAY:
 		{
-			Post::FEArrayDataField* data = new Post::FEArrayDataField(fem, NODE_DATA, DATA_ITEM, Post::EXPORT_DATA);
+			Post::FEArrayDataField* data = new Post::FEArrayDataField(fem, NODE_DATA, DATA_ITEM);
 			data->SetArraySize(ps->GetArraysize());
 			data->SetArrayNames(ps->GetArrayNames());
 			pdf = data;
@@ -376,12 +376,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_ITEM> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_ITEM> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_ITEM> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_ITEM> >(fem); break;
 		default:
 			assert(false);
 			break;
@@ -391,12 +391,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_MULT> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_MULT> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  , DATA_MULT> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  , DATA_MULT> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs , DATA_MULT> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd , DATA_MULT> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs, DATA_MULT> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  , DATA_MULT> >(fem); break;
 		default:
 			assert(false);
 			break;
@@ -406,12 +406,12 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	{
 		switch (dataType)
 		{
-		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs, DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
-		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  , DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  , DATA_ITEM> >(fem); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs , DATA_ITEM> >(fem); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd , DATA_ITEM> >(fem); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs, DATA_ITEM> >(fem); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  , DATA_ITEM> >(fem); break;
 		default:
 			assert(false);
 			break;

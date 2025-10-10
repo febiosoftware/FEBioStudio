@@ -154,7 +154,7 @@ public:
 	GLMesh* GetFERenderMesh();
 
 	//! Get the local bounding box 
-	BOX GetLocalBox() const;
+	virtual BOX GetLocalBox() const;
 
 	//! Get the global bounding box
 	BOX GetGlobalBox() const;
