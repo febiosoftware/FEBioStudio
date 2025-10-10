@@ -480,15 +480,9 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 FEProjectNodes::FEProjectNodes() : FEModifier("Project Nodes")
 {
-<<<<<<< HEAD
-    AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0User-plane\0Surface\0");
-    AddVecParam(vec3d(0,0,0),"Plane point");
-    AddVecParam(vec3d(0,0,1),"Plane normal");
-=======
     AddChoiceParam(0, "project", "project")->SetEnumNames("X-plane\0Y-plane\0Z-Plane\0Surface\0User Plane");
 	AddVecParam(vec3d(0, 0, 0), "point", "point on plane")->SetState(0);
 	AddVecParam(vec3d(0, 0, 1), "normal", "normal of plane")->SetState(0);
->>>>>>> febiostudio3
 }
 
 bool FEProjectNodes::UpdateData(bool bsave)
@@ -521,10 +515,7 @@ bool FEProjectNodes::UpdateData(bool bsave)
 FSMesh* FEProjectNodes::Apply(FSMesh* pm)
 {
     int nplane = GetIntValue(0);
-	if (nplane < 0 || nplane > 3) return nullptr;
-    vec3d pp = GetVecValue(1);
-    vec3d pn = GetVecValue(2);
-    pn.Normalize();
+	if (nplane < 0 || nplane > 2) return nullptr;
     
     FSMesh* pnm = new FSMesh(*pm);
 
@@ -545,13 +536,6 @@ FSMesh* FEProjectNodes::Apply(FSMesh* pm)
                 case 0: ri.x = 0; break;
                 case 1: ri.y = 0; break;
                 case 2: ri.z = 0; break;
-                case 3:
-                {
-                    vec3d x = ri - pp;
-                    vec3d y = (mat3dd(1) - dyad(pn))*x;
-                    ri = pp + y;
-                }
-                break;
             }
             node.pos(T.GlobalToLocal(ri));
         }
@@ -569,14 +553,14 @@ FSMesh* FEProjectNodes::Apply(GObject* po, FESelection* pg)
 {
 	int nplane = GetIntValue(0);
 
-	if ((nplane >= 0) && (nplane <= 3))
+	if ((nplane >= 0) && (nplane <= 2))
 	{
 		// make surface we only have a node selection on the current mesh
 		FSMesh* pm = po->GetFEMesh();
 		FENodeSelection* sel = dynamic_cast<FENodeSelection*>(pg);
 		if (sel && (sel->GetMesh() == pm)) return Apply(pm);
 	}
-	else if (nplane == 4)
+	else if (nplane == 3)
 	{
 		// make sure we have a surface selection
 		GFaceSelection* sel = dynamic_cast<GFaceSelection*>(pg);
