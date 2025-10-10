@@ -230,11 +230,8 @@ void Post::FEDistanceMap::Init()
 	m_surf2.BuildNodeList(mesh);
 	int N = mesh.Nodes();
 
-	if (m_bsigned)
-	{
-		BuildNormalList(m_surf1);
-		BuildNormalList(m_surf2);
-	}
+	BuildNormalList(m_surf1);
+	BuildNormalList(m_surf2);
 }
 
 //-----------------------------------------------------------------------------
