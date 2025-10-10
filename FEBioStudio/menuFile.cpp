@@ -1175,6 +1175,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 		if (postDoc)
 		{
 			SavePostDoc();
+			return;
 		}
 		else
 		{

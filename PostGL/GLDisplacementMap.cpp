@@ -32,7 +32,7 @@ using namespace Post;
 //-----------------------------------------------------------------------------
 CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 {
-	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3_exp");
 	AddVecParam(vec3d(1,1,1), "scale_factor");
 
 	char szname[128] = { 0 };
