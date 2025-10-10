@@ -27,23 +27,19 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 
-class GCone;
-
 class FECone : public FEMultiBlockMesh
 {
 public:
 	enum { RB, NDIV, NSEG, NSTACK, GZ, GR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FECone();
-	FSMesh* BuildMesh(GObject* po) override;
+	FECone(GObject& o);
+	FSMesh* BuildMesh() override;
 
 protected:
 	bool BuildMultiBlock() override;
 
 protected:
-	GCone*	m_pobj;
-
 	double	m_Rb;
 	int		m_nd, m_ns, m_nz;
 	double	m_gz, m_gr;

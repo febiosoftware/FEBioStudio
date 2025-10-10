@@ -246,8 +246,6 @@ public:
 public:
 	void SetColorMap(unsigned int n);
 
-	CColorMap& GetColorMap();
-
 	void AddRegionPoint(int x, int y);
 
 public slots:
@@ -317,8 +315,6 @@ private:
 	GLScreenRecorder	m_recorder;
 
 	GLCamera	m_oldCam;
-
-	CColorTexture m_colorMap;	// color map used for rendering mesh data
 
 	std::string		m_oglVersionString;
 };

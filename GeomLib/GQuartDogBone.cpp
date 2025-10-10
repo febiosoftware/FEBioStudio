@@ -45,7 +45,7 @@ GQuartDogBone::GQuartDogBone() : GPrimitive(GQUART_DOG_BONE)
 //-----------------------------------------------------------------------------
 FEMesher* GQuartDogBone::CreateDefaultMesher()
 {
-	return new FEQuartDogBone();
+	return new FEQuartDogBone(*this);
 }
 
 //-----------------------------------------------------------------------------

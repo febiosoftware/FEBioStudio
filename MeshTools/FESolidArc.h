@@ -27,17 +27,15 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 
-class GSolidArc;
-
 class FESolidArc : public FEMultiBlockMesh
 {
 public:
 	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
-	FESolidArc();
+	FESolidArc(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	FSMesh* BuildMeshLegacy();
@@ -56,8 +54,6 @@ protected:
 	}
 
 protected:
-	GSolidArc*	m_pobj;
-
 	int	m_nd, m_ns, m_nz;
 	double	m_gz, m_gr;
 	bool	m_bz, m_br; // double rezoning

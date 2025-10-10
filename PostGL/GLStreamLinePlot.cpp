@@ -398,7 +398,7 @@ void CGLStreamLinePlot::ColorStreamLines()
 	if (Vmax == Vmin) Vmax++;
 
 	int ncol = m_Col.GetColorMap();
-	CColorMap& col = ColorMapManager::GetColorMap(ncol);
+	const CColorMap& col = ColorMapManager::GetColorMap(ncol);
 
 	int NSL = (int)m_streamLines.size();
 	for (int i=0; i<NSL; ++i)

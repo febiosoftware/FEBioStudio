@@ -307,7 +307,7 @@ void CGLVectorPlot::RenderVector(GLRenderEngine& re, const vec3f& r, vec3f v)
 	float L = v.Length();
 	if (L == 0.f) return;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	float fmin = m_crng.x;
 	float fmax = m_crng.y;

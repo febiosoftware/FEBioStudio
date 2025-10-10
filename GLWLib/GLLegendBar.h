@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLWidget.h"
-#include <GLLib/ColorTexture.h>
+
+class CColorTexture;
 
 class GLLegendBar : public GLWidget
 {
@@ -34,7 +35,7 @@ public:
 	enum { ORIENT_HORIZONTAL, ORIENT_VERTICAL };
 
 public:
-	GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
+	GLLegendBar(int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
 
 	void draw(QPainter* painter);
 
@@ -88,5 +89,5 @@ protected:
 	float	m_fmax;		// max of range
 	float	m_lineWidth;	// line width
 
-	CColorTexture* m_pMap;
+	CColorTexture* m_pMap = nullptr;
 };

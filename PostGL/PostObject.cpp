@@ -211,7 +211,6 @@ void CPostObject::BuildFERenderMesh()
 
 	gm.Update();
 	SetFERenderMesh(&gm);
-	UpdateMeshData();
 }
 
 void CPostObject::BuildInternalSurfaces()

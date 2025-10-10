@@ -391,24 +391,6 @@ Post::CGLModel* CPostDocument::GetGLModel()
 	return m_glm;
 }
 
-LegendData CPostDocument::GetLegendData()
-{
-	LegendData l;
-	assert(m_glm);
-	Post::CGLColorMap* pcm = m_glm->GetColorMap();
-	if (pcm && pcm->IsActive())
-	{
-		float rng[2];
-		pcm->GetRange(rng);
-		l.vmin = rng[0];
-		l.vmax = rng[1];
-		l.colormap = pcm->GetColorMap();
-		l.smooth = pcm->GetColorSmooth();
-		l.ndivs = pcm->GetDivisions();
-	}
-	return l;
-}
-
 void CPostDocument::SetActiveState(int n)
 {
 	assert(m_glm);

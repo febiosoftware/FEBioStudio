@@ -41,7 +41,7 @@ GFoamObject::GFoamObject() : GObject(GFOAM_OBJECT)
 
 FEMesher* GFoamObject::CreateDefaultMesher()
 {
-	return new FEFoamMesher();
+	return new FEFoamMesher(*this);
 }
 
 bool GFoamObject::Update(bool b)

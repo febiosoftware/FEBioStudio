@@ -35,15 +35,13 @@ public:
 	enum {RATIO, T, NDIV, NSEG, ELEM_TYPE };
 
 public:
-	FEShellDisc();
+	FEShellDisc(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 	bool BuildMultiQuad() override;
 
 protected:
-	GDisc*	m_pobj;
-
 	double	m_r, m_t;
 	int		m_nd, m_nr;
 };

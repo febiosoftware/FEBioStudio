@@ -30,17 +30,17 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include <FSCore/ClassDescriptor.h>
 
-REGISTER_CLASS3(FEShellMesher, CLASS_MESHER, Shell_Mesher, "shell_mesher", 0, 0);
+REGISTER_CLASS4(FEShellMesher, CLASS_MESHER, Shell_Mesher, "shell_mesher", GObject);
 
-FEShellMesher::FEShellMesher()
+FEShellMesher::FEShellMesher(GObject& o) : FEMesher(o)
 {
 	AddDoubleParam(0.01, "shell thickness");
 }
 
 // build the mesh
-FSMesh*	FEShellMesher::BuildMesh(GObject* po)
+FSMesh*	FEShellMesher::BuildMesh()
 {
-	GSurfaceMeshObject* psmo = dynamic_cast<GSurfaceMeshObject*>(po);
+	GSurfaceMeshObject* psmo = dynamic_cast<GSurfaceMeshObject*>(&m_o);
 	if (psmo == nullptr) return nullptr;
 
 	FSSurfaceMesh* surfaceMesh = psmo->GetSurfaceMesh();

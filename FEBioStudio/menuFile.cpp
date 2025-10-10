@@ -124,38 +124,40 @@ SOFTWARE.*/
 #include "BatchConverter.h"
 #include <GLLib/GLScene.h>
 #include <RTLib/RayTracer.h>
+#include "FEBioBatchDoc.h"
+#include "DlgBatchRun.h"
 
 // register file reader classes
-REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, "pvo"    , FSProject);
-REGISTER_CLASS4(PLYImport          , CLASS_FILE_READER, "ply"    , FSProject);
-REGISTER_CLASS4(BREPImport         , CLASS_FILE_READER, "brep"   , FSProject);
-REGISTER_CLASS4(BRPImport          , CLASS_FILE_READER, "brp"    , FSProject);
-REGISTER_CLASS4(STEPImport         , CLASS_FILE_READER, "step"   , FSProject);
-REGISTER_CLASS4(STPImport          , CLASS_FILE_READER, "stp"    , FSProject);
-REGISTER_CLASS4(IGESImport         , CLASS_FILE_READER, "iges"   , FSProject);
-REGISTER_CLASS4(IGSImport          , CLASS_FILE_READER, "igs"    , FSProject);
-REGISTER_CLASS4(AnsysImport        , CLASS_FILE_READER, "cdb"    , FSProject);
-REGISTER_CLASS4(LSDYNAimport       , CLASS_FILE_READER, "k"      , FSProject);
-REGISTER_CLASS4(LSDYNAimport_dyn   , CLASS_FILE_READER, "dyn"    , FSProject);
-REGISTER_CLASS4(IDEASimport        , CLASS_FILE_READER, "unv"    , FSProject);
-REGISTER_CLASS4(NASTRANimport      , CLASS_FILE_READER, "nas"    , FSProject);
-REGISTER_CLASS4(DXFimport          , CLASS_FILE_READER, "dxf"    , FSProject);
-REGISTER_CLASS4(STLimport          , CLASS_FILE_READER, "stl"    , FSProject);
-REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, "hmascii", FSProject);
-REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, "surf"   , FSProject);
-REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, "msh"    , FSProject);
-REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, "byu"    , FSProject);
-REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, "obj"    , FSProject);
-REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, "mesh"   , FSProject);
-REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, "ele"    , FSProject);
-REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, "elem"   , FSProject);
-REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, "vtk"    , FSProject);
-REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, "vtu"    , FSProject);
-REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, "vtp"    , FSProject);
-REGISTER_CLASS4(FEBioGeometryImport, CLASS_FILE_READER, "feb"    , FSProject);
-REGISTER_CLASS4(AbaqusImport       , CLASS_FILE_READER, "inp"    , FSProject);
-REGISTER_CLASS4(RAWToMeshImport    , CLASS_FILE_READER, "raw"    , FSProject);
-REGISTER_CLASS4(COMSOLimport       , CLASS_FILE_READER, "mphtxt" , FSProject);
+REGISTER_CLASS4(PRVObjectImport    , CLASS_FILE_READER, -1, "pvo"    , FSProject);
+REGISTER_CLASS4(PLYImport          , CLASS_FILE_READER, -1, "ply"    , FSProject);
+REGISTER_CLASS4(BREPImport         , CLASS_FILE_READER, -1, "brep"   , FSProject);
+REGISTER_CLASS4(BRPImport          , CLASS_FILE_READER, -1, "brp"    , FSProject);
+REGISTER_CLASS4(STEPImport         , CLASS_FILE_READER, -1, "step"   , FSProject);
+REGISTER_CLASS4(STPImport          , CLASS_FILE_READER, -1, "stp"    , FSProject);
+REGISTER_CLASS4(IGESImport         , CLASS_FILE_READER, -1, "iges"   , FSProject);
+REGISTER_CLASS4(IGSImport          , CLASS_FILE_READER, -1, "igs"    , FSProject);
+REGISTER_CLASS4(AnsysImport        , CLASS_FILE_READER, -1, "cdb"    , FSProject);
+REGISTER_CLASS4(LSDYNAimport       , CLASS_FILE_READER, -1, "k"      , FSProject);
+REGISTER_CLASS4(LSDYNAimport_dyn   , CLASS_FILE_READER, -1, "dyn"    , FSProject);
+REGISTER_CLASS4(IDEASimport        , CLASS_FILE_READER, -1, "unv"    , FSProject);
+REGISTER_CLASS4(NASTRANimport      , CLASS_FILE_READER, -1, "nas"    , FSProject);
+REGISTER_CLASS4(DXFimport          , CLASS_FILE_READER, -1, "dxf"    , FSProject);
+REGISTER_CLASS4(STLimport          , CLASS_FILE_READER, -1, "stl"    , FSProject);
+REGISTER_CLASS4(HMASCIIimport      , CLASS_FILE_READER, -1, "hmascii", FSProject);
+REGISTER_CLASS4(HyperSurfaceImport , CLASS_FILE_READER, -1, "surf"   , FSProject);
+REGISTER_CLASS4(GMshImport         , CLASS_FILE_READER, -1, "msh"    , FSProject);
+REGISTER_CLASS4(BYUimport          , CLASS_FILE_READER, -1, "byu"    , FSProject);
+REGISTER_CLASS4(ObjImport          , CLASS_FILE_READER, -1, "obj"    , FSProject);
+REGISTER_CLASS4(MeshImport         , CLASS_FILE_READER, -1, "mesh"   , FSProject);
+REGISTER_CLASS4(TetGenImport       , CLASS_FILE_READER, -1, "ele"    , FSProject);
+REGISTER_CLASS4(ArtiSynthImport    , CLASS_FILE_READER, -1, "elem"   , FSProject);
+REGISTER_CLASS4(VTKimport          , CLASS_FILE_READER, -1, "vtk"    , FSProject);
+REGISTER_CLASS4(VTUimport          , CLASS_FILE_READER, -1, "vtu"    , FSProject);
+REGISTER_CLASS4(VTPimport          , CLASS_FILE_READER, -1, "vtp"    , FSProject);
+REGISTER_CLASS4(FEBioGeometryImport, CLASS_FILE_READER, -1, "feb"    , FSProject);
+REGISTER_CLASS4(AbaqusImport       , CLASS_FILE_READER, -1, "inp"    , FSProject);
+REGISTER_CLASS4(RAWToMeshImport    , CLASS_FILE_READER, -1, "raw"    , FSProject);
+REGISTER_CLASS4(COMSOLimport       , CLASS_FILE_READER, -1, "mphtxt" , FSProject);
 
 using std::stringstream;
 
@@ -369,8 +371,15 @@ bool CMainWindow::SaveDocument(CDocument* doc, const QString& fileName)
 	if (success)
 	{
 		UpdateTab(doc);
-		ui->addToRecentFiles(fileName);
-		ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+
+		QString ext;
+		int n = fileName.lastIndexOf('.');
+		if (n >= 0) ext = fileName.right(fileName.length() - n - 1);
+		if (ext == "fsm")
+		{
+			ui->addToRecentFiles(fileName);
+			ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+		}
 		ui->projectViewer->Update();
 	}
 	else
@@ -626,7 +635,6 @@ void CMainWindow::ExportPostGeometry()
 	case 3:
 	{
 		Post::PLYExport ply;
-		ply.SetColorMap(GetGLView()->GetColorMap());
 		bret = ply.Save(fem, szfilename);
 	}
 	break;
@@ -1168,26 +1176,47 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			SavePostDoc();
 		}
+		else
+		{
+			CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+			if (xmlDoc)
+			{
+				QFileDialog dlg;
+				dlg.setDirectory(CurrentWorkingDirectory());
+				dlg.setFileMode(QFileDialog::AnyFile);
+				dlg.setNameFilter("FEBio Input files (*.feb)");
+				dlg.setDefaultSuffix("feb");
+				dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
+				dlg.setAcceptMode(QFileDialog::AcceptSave);
+				if (dlg.exec())
+				{
+					QStringList fileNames = dlg.selectedFiles();
+					QString fileName = QDir::toNativeSeparators(fileNames[0]);
+					if (!fileName.isEmpty())
+						SaveDocument(xmlDoc, fileName);
+				}
+			}
 
-        CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
-        if(xmlDoc)
-        {
-            QFileDialog dlg;
-            dlg.setDirectory(CurrentWorkingDirectory());
-            dlg.setFileMode(QFileDialog::AnyFile);
-            dlg.setNameFilter("FEBio Input files (*.feb)");
-            dlg.setDefaultSuffix("feb");
-            dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
-            dlg.setAcceptMode(QFileDialog::AcceptSave);
-            if (dlg.exec())
-            {
-                QStringList fileNames = dlg.selectedFiles();
-				QString fileName = QDir::toNativeSeparators(fileNames[0]);
-				if (!fileName.isEmpty())
-					SaveDocument(xmlDoc, fileName);
-            }
-        }
-		return;
+			FEBioBatchDoc* batchDoc = dynamic_cast<FEBioBatchDoc*>(GetDocument());
+			if (batchDoc)
+			{
+				QFileDialog dlg;
+				dlg.setDirectory(CurrentWorkingDirectory());
+				dlg.setFileMode(QFileDialog::AnyFile);
+				dlg.setNameFilter("FBS Batch files (*.fsbatch)");
+				dlg.setDefaultSuffix("fsbatch");
+				dlg.selectFile(QString::fromStdString(batchDoc->GetDocTitle()));
+				dlg.setAcceptMode(QFileDialog::AcceptSave);
+				if (dlg.exec())
+				{
+					QStringList fileNames = dlg.selectedFiles();
+					QString fileName = QDir::toNativeSeparators(fileNames[0]);
+					if (!fileName.isEmpty())
+						SaveDocument(batchDoc, fileName);
+				}
+			}
+			return;
+		}
 	}
 
 	string fileName = doc->GetDocTitle();
@@ -1718,6 +1747,7 @@ bool CMainWindow::ImportImage(const QString& fileName)
 	else if (ext.compare("raw", Qt::CaseInsensitive)==0)
 	{
 		CDlgRAWImport dlg(this);
+		dlg.setFileName(fi.fileName());
 		if (dlg.exec())
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
@@ -1766,7 +1796,9 @@ void CMainWindow::on_actionImportRawImage_triggered()
 	{
         for(auto filename : filedlg.selectedFiles())
         {
+			QString fileTitle = QFileInfo(filename).fileName();
             CDlgRAWImport dlg(this);
+			dlg.setFileName(fileTitle);
             if (dlg.exec())
             {
                 BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
@@ -2054,4 +2086,33 @@ void CMainWindow::on_actionConvertGeo_triggered()
 void CMainWindow::on_actionExit_triggered()
 {
 	QApplication::closeAllWindows();
+}
+
+void CMainWindow::on_actionNewBatch_triggered()
+{
+	CDlgBatchRun dlg(this);
+	if (dlg.exec())
+	{
+		FEBioBatchDoc* doc = new FEBioBatchDoc(this);
+		doc->SetFileList(dlg.GetFileList());
+		AddDocument(doc);
+	}
+}
+
+void CMainWindow::on_actionOpenBatch_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, "Open FEBio Batch File", CurrentWorkingDirectory(), "FEBio Studio Batch files (*.fsbatch)");
+	if (!fileName.isEmpty())
+	{
+		FEBioBatchDoc* doc = new FEBioBatchDoc(this);
+		if (doc->LoadDocument(fileName) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to open FEBio batch file.");
+			delete doc;
+		}
+		else
+		{
+			AddDocument(doc);
+		}
+	}
 }

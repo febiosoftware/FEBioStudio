@@ -34,10 +34,8 @@ SOFTWARE.*/
 #include <MeshLib/FSMesh.h>
 #include "FEMultiQuadMesh.h"
 
-FEShellTube::FEShellTube()
+FEShellTube::FEShellTube(GObject& o) : FEMultiQuadMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_t = 0.01;
 	m_nd = 16;
 	m_nz = 16;
@@ -48,10 +46,10 @@ FEShellTube::FEShellTube()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellTube::BuildMesh(GObject* po)
+FSMesh* FEShellTube::BuildMesh()
 {
-	m_pobj = dynamic_cast<GThinTube*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GThinTube* po = dynamic_cast<GThinTube*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	if (BuildMultiQuad() == false) return nullptr;
 
@@ -70,7 +68,7 @@ FSMesh* FEShellTube::BuildMesh(GObject* po)
 
 	// assign shell thickness to section
 	double t = GetFloatValue(T);
-	GPart* part = m_pobj->Part(0); assert(part);
+	GPart* part = po->Part(0); assert(part);
 	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
 	if (shellSection) shellSection->SetShellThickness(t);
 	else pm->SetUniformShellThickness(t);
@@ -81,7 +79,7 @@ FSMesh* FEShellTube::BuildMesh(GObject* po)
 bool FEShellTube::BuildMultiQuad()
 {
 	// build the multi patch 
-	Build(m_pobj);
+	if (!Build()) return false;
 
 	// get discretization parameters
 	int nd = GetIntValue(NDIV);

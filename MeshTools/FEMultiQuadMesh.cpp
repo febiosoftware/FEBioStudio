@@ -32,9 +32,8 @@ SOFTWARE.*/
 #include <GeomLib/GMultiPatch.h>
 
 //-----------------------------------------------------------------------------
-FEMultiQuadMesh::FEMultiQuadMesh()
+FEMultiQuadMesh::FEMultiQuadMesh(GObject& o) : FEMesher(o)
 {
-	m_po = nullptr;
 	m_pm = nullptr;
 	m_elemType = FE_QUAD4;
 	m_bquadMesh = false;
@@ -167,10 +166,9 @@ bool FEMultiQuadMesh::BuildMultiQuad()
 
 //-----------------------------------------------------------------------------
 // build the mesh from the object
-bool FEMultiQuadMesh::Build(GObject* po)
+bool FEMultiQuadMesh::Build()
 {
-	m_po = po;
-	if (po == nullptr) return false;
+	GObject* po = &m_o;
 
 	ClearMQ();
 	
@@ -924,18 +922,18 @@ int FEMultiQuadMesh::GetFENode(MBNode& node)
 }
 
 //==================================================================================
-FEMultiQuadMesher::FEMultiQuadMesher() : m_po(nullptr)
+FEMultiQuadMesher::FEMultiQuadMesher(GObject& o) : FEMultiQuadMesh(o)
 {
 	AddIntParam(10, "divs", "divisions");
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Quad4\0");
 }
 
 // build the mesh
-FSMesh* FEMultiQuadMesher::BuildMesh(GObject* po)
+FSMesh* FEMultiQuadMesher::BuildMesh()
 {
-	m_po = dynamic_cast<GMultiPatch*>(po);
-	if (m_po == nullptr) return nullptr;
-	GMultiPatch& o = *m_po;
+	GMultiPatch* po = dynamic_cast<GMultiPatch*>(&m_o);
+	if (po == nullptr) return nullptr;
+	GMultiPatch& o = *po;
 
 	// rebuild the multiblock data
 	BuildMultiQuad();

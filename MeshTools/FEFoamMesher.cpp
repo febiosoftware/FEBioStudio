@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GFoamObject.h>
 #include "FoamMesh.h"
 
-FEFoamMesher::FEFoamMesher()
+FEFoamMesher::FEFoamMesher(GObject& o) : FEMesher(o)
 {
 	AddIntParam(5, "seeds");
 	AddIntParam(10, "nx");
@@ -37,9 +37,9 @@ FEFoamMesher::FEFoamMesher()
 	AddDoubleParam(0.5, "ref")->SetFloatRange(0, 1);
 }
 
-FSMesh* FEFoamMesher::BuildMesh(GObject* po)
+FSMesh* FEFoamMesher::BuildMesh()
 {
-	GFoamObject* foamObj = dynamic_cast<GFoamObject*>(po);
+	GFoamObject* foamObj = dynamic_cast<GFoamObject*>(&m_o);
 	if (foamObj == nullptr) return nullptr;
 
 	FoamGen foam;

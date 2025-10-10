@@ -57,4 +57,5 @@ private:
 	bool	m_bsmooth;		// smooth interpolation or not
 
 	GLTexture1D m_tex;	// the actual texture
+	CColorMap m_map;
 };

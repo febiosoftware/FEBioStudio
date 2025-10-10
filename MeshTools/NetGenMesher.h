@@ -68,7 +68,7 @@ public:
 	};
 
 public:
-	NetGenMesher();
+	NetGenMesher(GObject& o);
 
 	bool UpdateData(bool bsave) override;
 

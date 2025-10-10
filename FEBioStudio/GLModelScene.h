@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "GLPlaneCut.h"
-#include <GLLib/GLScene.h>
+#include "GLViewScene.h"
 
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
@@ -222,7 +222,7 @@ private:
 	CImageModel* m_img;
 };
 
-class CGLModelScene : public GLScene
+class CGLModelScene : public GLViewScene
 {
 public:
 	CGLModelScene(CModelDocument* doc);
@@ -279,9 +279,19 @@ public:
 
 	void UpdateRenderTransforms(GLContext& rc);
 
+	LegendData GetLegendData(int n) override;
+
+	void SetColorMap(int map) { m_colormap = map; Update(); }
+	int GetColorMap() const { return m_colormap; }
+
+	void ColorizeMesh(GObject* po);
+
 private:
 	CModelDocument* m_doc;
 	GLMesh			m_selectionMesh;
+
+	int m_colormap = 6; // = JET
+	bool m_showLegend = false;
 	
 	OBJECT_COLOR_MODE	m_objectColor;
 

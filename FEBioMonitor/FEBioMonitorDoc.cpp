@@ -548,29 +548,6 @@ void FEBioMonitorDoc::GenerateReport(bool b)
 	m->generateReport = b;
 }
 
-LegendData FEBioMonitorDoc::GetLegendData()
-{
-	LegendData l;
-
-	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
-	if (scene)
-	{
-		Post::CGLColorMap* pcm = scene->GetGLModel()->GetColorMap();
-		if (pcm && pcm->IsActive())
-		{
-			float rng[2];
-			pcm->GetRange(rng);
-			l.vmin = rng[0];
-			l.vmax = rng[1];
-			l.colormap = pcm->GetColorMap();
-			l.smooth = pcm->GetColorSmooth();
-			l.ndivs = pcm->GetDivisions();
-		}
-	}
-
-	return l;
-}
-
 QString eventToString(int nevent)
 {
 	QString s;

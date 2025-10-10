@@ -30,8 +30,8 @@ SOFTWARE.*/
 class FEShellMesher : public FEMesher
 {
 public:
-	FEShellMesher();
+	FEShellMesher(GObject& o);
 
 	// build the mesh
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 };

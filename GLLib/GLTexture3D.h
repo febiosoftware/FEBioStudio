@@ -49,7 +49,7 @@ public:
 	float gamma;
 	float hue;
 	float sat;
-	float lum;
+	float val;
 	int cmap;
 	float IscaleMin;
 	float Iscale;

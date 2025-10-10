@@ -65,7 +65,7 @@ private:
 //! Constructor
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 {
-	SetFEMesher(new FEMultiBlockMesher());
+	SetFEMesher(new FEMultiBlockMesher(*this));
 	SetManipulator(new GMultiBoxManipulator(*this));
 }
 
@@ -90,7 +90,7 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	GItem_T<GBaseObject>::DecreaseCounter();
 
 	// define the default mesher
-	FEMultiBlockMesher* mbMesher = new FEMultiBlockMesher();
+	FEMultiBlockMesher* mbMesher = new FEMultiBlockMesher(*this);
 	SetFEMesher(mbMesher);
 
 	// we need the multi block mesher to pull out the multiblock geometry
@@ -388,6 +388,8 @@ bool GMultiBox::DeletePart(GPart* pg)
 GObject* GMultiBox::Clone()
 {
 	GMultiBox* clone = new GMultiBox();
+
+	clone->CopyTransform(this);
 
 	// copy nodes
 	for (int i = 0; i < Nodes(); ++i)

@@ -42,7 +42,8 @@ GBoxInBox::GBoxInBox() : GPrimitive(GBOX_IN_BOX)
 
 FEMesher* GBoxInBox::CreateDefaultMesher()
 {
-	return new FEBoxInBox();
+	FEBoxInBox* mesher = new FEBoxInBox(*this);
+	return mesher;
 }
 
 double GBoxInBox::OuterWidth () const { return GetFloatValue(0); }

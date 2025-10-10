@@ -365,7 +365,7 @@ void CGLParticleFlowPlot::UpdateParticleColors()
 	if (vmax == vmin) vmax++;
 
 	int ncol = m_Col.GetColorMap();
-	CColorMap& col = ColorMapManager::GetColorMap(ncol);
+	const CColorMap& col = ColorMapManager::GetColorMap(ncol);
 
 	int NP = (int)m_particles.size();
 	for (int i = 0; i<NP; ++i)

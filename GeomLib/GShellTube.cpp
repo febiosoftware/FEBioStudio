@@ -87,7 +87,7 @@ void GThinTube::SetHeight(double h) { SetFloatValue(H, h); }
 //-----------------------------------------------------------------------------
 FEMesher* GThinTube::CreateDefaultMesher()
 {
-	return new FEShellTube();
+	return new FEShellTube(*this);
 }
 
 //-----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ GCylindricalPatch::GCylindricalPatch() : GShellPrimitive(GCYLINDRICAL_PATCH)
 //-----------------------------------------------------------------------------
 FEMesher* GCylindricalPatch::CreateDefaultMesher()
 {
-	return new FECylndricalPatch();
+	return new FECylndricalPatch(*this);
 }
 
 double GCylindricalPatch::Width() const { return GetFloatValue(W); }

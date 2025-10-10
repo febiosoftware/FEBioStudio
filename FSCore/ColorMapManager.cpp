@@ -130,10 +130,20 @@ void ColorMapManager::SetColorMapName(int n, const std::string& newName)
 	m_map[n].setName(newName);
 }
 
-CColorMap& ColorMapManager::GetColorMap(int n)
+const CColorMap& ColorMapManager::GetColorMap(int n)
 {
 	if ((n < 0) || (n >= m_map.size())) n = 0;
 	return m_map[n].colormap();
+}
+
+void ColorMapManager::SetColormap(int n, const CColorMap& map)
+{
+	if ((n >= 0) || (n < m_map.size()))
+	{
+		CColorMap& trg = m_map[n].colormap();
+		trg = map;
+		trg.SetRange(0.f, 1.f); // make sure the range is not altered
+	}
 }
 
 void ColorMapManager::AddColormap(const string& name, const CColorMap& map)

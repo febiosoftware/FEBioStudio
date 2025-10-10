@@ -1429,16 +1429,22 @@ void CPostModelPanel::OnHideElements()
 {
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
+	
 	CGLModelDocument* pdoc = GetActiveDocument();
-	FSMesh* mesh = pdoc->GetGLModel()->GetFSModel()->GetFEMesh(0);
+	if (pdoc == nullptr) return;
+
+	GObject* pgo = pdoc->GetActiveObject();
+	if ((pgo == nullptr) || (pgo->GetFEMesh() == nullptr)) return;
 
 	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
-	if (pg)
+	if (pg && (pg->size() > 0))
 	{
 		vector<int> items = pg->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
-		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
+
+		assert(pg->GetMesh() == pgo->GetFEMesh());
+		pdoc->DoCommand(new CCmdHideElements(pgo, pgl));
 	}
 
 	GetMainWindow()->RedrawGL();

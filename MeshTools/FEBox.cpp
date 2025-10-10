@@ -35,10 +35,8 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Class constructor
-FEBoxMesher::FEBoxMesher()
+FEBoxMesher::FEBoxMesher(GObject& o) : FEMultiBlockMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_ctype = SIMPLE;
 	m_nelem = 0;
 
@@ -78,12 +76,12 @@ void FEBoxMesher::SetResolution(int nx, int ny, int nz)
 
 //-----------------------------------------------------------------------------
 // Build the FSMesh
-FSMesh* FEBoxMesher::BuildMesh(GObject* po)
+FSMesh* FEBoxMesher::BuildMesh()
 {
-	m_pobj = dynamic_cast<GBox*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GBox* po = dynamic_cast<GBox*>(&m_o);
+	if (po == nullptr) return nullptr;
 
-	FSMesh* pm = 0;
+	FSMesh* pm = nullptr;
 
 	m_ctype = GetIntValue(CTYPE);
 	m_nelem = GetIntValue(NELEM);
@@ -117,8 +115,11 @@ bool FEBoxMesher::BuildMultiBlock()
 
 bool FEBoxMesher::CreateRegularBoxMesh()
 {
+	GBox* po = dynamic_cast<GBox*>(&m_o);
+	if (po == nullptr) return false;
+
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double w = 0.5 * param[GBox::WIDTH].GetFloatValue();
 	double h = 0.5 * param[GBox::HEIGHT].GetFloatValue();
 	double d = param[GBox::DEPTH].GetFloatValue();
@@ -183,8 +184,11 @@ bool FEBoxMesher::CreateRegularBoxMesh()
 
 bool FEBoxMesher::CreateButterfly3DMesh()
 {
+	GBox* po = dynamic_cast<GBox*>(&m_o);
+	if (po == nullptr) return false;
+
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double w = param[GBox::WIDTH].GetFloatValue();
 	double h = param[GBox::HEIGHT].GetFloatValue();
 	double d = param[GBox::DEPTH].GetFloatValue();
@@ -325,8 +329,11 @@ bool FEBoxMesher::CreateButterfly3DMesh()
 // Build a 2D butterfly mesh
 bool FEBoxMesher::CreateButterfly2DMesh()
 {
+	GBox* po = dynamic_cast<GBox*>(&m_o);
+	if (po == nullptr) return false;
+
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double w = param[GBox::WIDTH].GetFloatValue();
 	double h = param[GBox::HEIGHT].GetFloatValue();
 	double d = param[GBox::DEPTH].GetFloatValue();
@@ -542,10 +549,13 @@ FSMesh* FEBoxMesher::CreateRegularHEX()
 // Create a regular mesh
 FSMesh* FEBoxMesher::CreateRegularTET4()
 {
+	GBox* po = dynamic_cast<GBox*>(&m_o);
+	if (po == nullptr) return nullptr;
+
 	int i, j, k;
 
 	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
+	ParamBlock& param = po->GetParamBlock();
 	double w = param[GBox::WIDTH ].GetFloatValue();
 	double h = param[GBox::HEIGHT].GetFloatValue();
 	double d = param[GBox::DEPTH ].GetFloatValue();

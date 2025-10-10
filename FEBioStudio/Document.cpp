@@ -280,7 +280,7 @@ bool CDocument::SaveDocument()
 //-----------------------------------------------------------------------------
 bool CDocument::AutoSaveDocument()
 {
-	return true;
+	return false;
 }
 
 bool CDocument::loadPriorAutoSave()

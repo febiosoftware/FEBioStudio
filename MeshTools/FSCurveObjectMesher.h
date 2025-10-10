@@ -26,8 +26,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEMesher.h"
 
-class GCurveObject;
-
 class FSCurveObjectMesher : public FEMesher
 {
 	enum ElemType {
@@ -36,10 +34,7 @@ class FSCurveObjectMesher : public FEMesher
 	};
 
 public:
-	FSCurveObjectMesher();
+	FSCurveObjectMesher(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
-
-private:
-	GCurveObject* m_po;
+	FSMesh* BuildMesh() override;
 };

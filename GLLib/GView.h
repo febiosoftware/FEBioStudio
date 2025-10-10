@@ -92,4 +92,6 @@ struct LegendData
 	bool discrete = false;
 	bool smooth = true;
 	std::string title;
+
+	bool isValid() const { return (ndivs > 0); }
 };

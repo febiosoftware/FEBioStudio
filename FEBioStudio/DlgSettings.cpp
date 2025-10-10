@@ -101,6 +101,7 @@ public:
 		addBoolProperty  (&m_bnormal, "Show normals"  );
 		addDoubleProperty(&m_scaleNormal, "Normals scale factor");
 		addBoolProperty(&m_showHighlights, "Enable highlighting");
+		addBoolProperty(&m_identifyBackfacing, "Identify backfacing faces");
 		QStringList vconv;
 		vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
 		addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
@@ -124,6 +125,7 @@ public:
 	int		m_defaultFGColorOption;
 	QColor	m_defaultFGColor;
 	bool	m_showHighlights;
+	bool	m_identifyBackfacing;
 	int		m_tagFontSize;
 };
 
@@ -682,7 +684,7 @@ void CColormapWidget::onNew()
 	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
 	if (bok && (newName.isEmpty() == false))
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& map = ColorMapManager::GetColorMap(m_currentMap);
 		string sname = newName.toStdString();
 		ColorMapManager::AddColormap(sname, map);
 
@@ -759,8 +761,7 @@ void CColormapWidget::clearGrid()
 
 void CColormapWidget::Apply()
 {
-	CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-	tex = m_map;
+	ColorMapManager::SetColormap(m_currentMap, m_map);
 }
 
 void CColormapWidget::currentMapChanged(int n)
@@ -769,8 +770,7 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		if (QMessageBox::question(this, "FEBio Studio", "The current map was changed. Do you want to keep the changes?") == QMessageBox::Yes)
 		{
-			CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
-			tex = m_map;
+			ColorMapManager::SetColormap(m_currentMap, m_map);
 			emit colormapChanged(m_currentMap);
 		}
 	}
@@ -780,7 +780,7 @@ void CColormapWidget::currentMapChanged(int n)
 	if (n != -1)
 	{
 		m_currentMap = n;
-		CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
+		const CColorMap& tex = ColorMapManager::GetColorMap(m_currentMap);
 		m_map = tex;
 
 		updateColorMap(ColorMapManager::GetColorMap(n));
@@ -1235,6 +1235,7 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
 	ui->m_display->m_showHighlights = view.m_showHighlights;
+	ui->m_display->m_identifyBackfacing = view.m_identifyBackfacing;
 	ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
@@ -1321,6 +1322,7 @@ void CDlgSettings::apply()
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
 	view.m_showHighlights = ui->m_display->m_showHighlights;
+	view.m_identifyBackfacing = ui->m_display->m_identifyBackfacing;
 	view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_bzsorting = ui->m_display->m_dozsorting;

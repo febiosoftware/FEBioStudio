@@ -27,17 +27,15 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 
-class GTorus;
-
 class FETorus : public FEMultiBlockMesh
 {
 public:
 	enum { NDIV, NSEG, ELEM_TYPE };
 
 public:
-	FETorus();
+	FETorus(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	FSMesh* BuildMeshLegacy();
@@ -59,6 +57,5 @@ protected:
 	}
 
 protected:
-	GTorus* m_pobj;
 	int	m_nd, m_ns;
 };

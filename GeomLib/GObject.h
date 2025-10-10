@@ -299,9 +299,6 @@ public:
 	//! Set the object manipulator
 	void SetManipulator(GObjectManipulator* om);
 
-	//! Update mesh data
-	void UpdateMeshData();
-
 public:
 	//! Set the active object
 	static void SetActiveObject(GObject* po);

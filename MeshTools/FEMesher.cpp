@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-FEMesher::FEMesher()
+FEMesher::FEMesher(GObject& o) : m_o(o)
 {
 	m_ntype = 0;
 }
@@ -84,11 +84,14 @@ void FEMesher::Load(IArchive& ar)
 
 FEMesher* FEMesher::Create(GObject* po, int classType)
 {
+	assert(po);
+	if (po == nullptr) return nullptr;
+
 	FEMesher* mesher = nullptr;
 	switch (classType)
 	{
 	case 0: mesher = po->CreateDefaultMesher(); break;
-	case 1: mesher = new FETetGenMesher(); break;
+	case 1: mesher = new FETetGenMesher(*po); break;
 	default:
 		assert(false);
 	}

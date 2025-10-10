@@ -361,7 +361,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	else if (m_ncolor == COLOR_SEGMENT)
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 		for (int i = 0; i < NL; ++i)
 		{
@@ -382,7 +382,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	else
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+		const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 		float vmin = m_range.min;
 		float vmax = m_range.max;
@@ -669,7 +669,7 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	float vmax = m_range.max;
 	if (vmin == vmax) vmax++;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	const int NSEG = 12; // length segments of smooth path
 	const int NDIV = 8; // radial divisions

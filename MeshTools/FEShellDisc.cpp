@@ -38,10 +38,8 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEShellDisc::FEShellDisc()
+FEShellDisc::FEShellDisc(GObject& o) : FEMultiQuadMesh(o)
 {
-	m_pobj = nullptr;
-
 	m_r = 0.5;
 	m_t = 0.01;
 	m_nd = m_nr = 6;
@@ -53,10 +51,10 @@ FEShellDisc::FEShellDisc()
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FSMesh* FEShellDisc::BuildMesh(GObject* po)
+FSMesh* FEShellDisc::BuildMesh()
 {
-	m_pobj = dynamic_cast<GDisc*>(po);
-	if (m_pobj == nullptr) return nullptr;
+	GDisc* po = dynamic_cast<GDisc*>(&m_o);
+	if (po == nullptr) return nullptr;
 
 	if (BuildMultiQuad() == false) return nullptr;
 
@@ -77,7 +75,7 @@ FSMesh* FEShellDisc::BuildMesh(GObject* po)
 
 	// assign shell thickness to section
 	double h = GetFloatValue(T);
-	GPart* part = m_pobj->Part(0); assert(part);
+	GPart* part = po->Part(0); assert(part);
 	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
 	if (shellSection) shellSection->SetShellThickness(h);
 	else pm->SetUniformShellThickness(h);
@@ -89,7 +87,10 @@ bool FEShellDisc::BuildMultiQuad()
 {
 	ClearMQ();
 
-	double r = m_pobj->GetFloatValue(GDisc::RADIUS);
+	GDisc* po = dynamic_cast<GDisc*>(&m_o);
+	if (po == nullptr) return false;
+
+	double r = po->GetFloatValue(GDisc::RADIUS);
 	double f = GetFloatValue(RATIO);
 	int nd = GetIntValue(NDIV);
 	int ns = GetIntValue(NSEG);

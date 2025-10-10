@@ -67,6 +67,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FECore/fecore_enum.h>
+#include "DlgStartThread.h"
 
 class CCurvatureProps : public CPropertyList
 {
@@ -211,6 +212,40 @@ public:
 	}
 };
 
+class DistanceMapThread : public CustomThread
+{
+public:
+	DistanceMapThread(Post::FEDistanceMap* map) : m_map(map) {}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		m_map->Init();
+
+		m_bstop = false;
+		m_progress = 0.0;
+		Post::FEPostModel& fem = *m_map->GetModel();
+		for (int n = 0; n < fem.GetStates(); ++n)
+		{
+			m_map->ApplyState(n);
+			if (m_bstop) break;
+
+			m_progress = 100.0*(double)(n + 1) / (double)fem.GetStates();
+		}
+		emit resultReady(true);
+	}
+
+	bool hasProgress() override { return true; }
+
+	double progress() override { return m_progress; }
+
+	void stop() override { m_bstop = true; }
+
+private:
+	Post::FEDistanceMap* m_map;
+	double m_progress = 0.0;
+	bool m_bstop = false;
+};
+
 class CDistanceMapProps : public CPropertyList
 {
 public:
@@ -260,7 +295,8 @@ public:
 		}
 		else if (i == 3)
 		{
-			m_map->Apply();
+			CDlgStartThread dlg(nullptr, new DistanceMapThread(m_map));
+			dlg.exec();
 		}
 	}
 
@@ -434,6 +470,21 @@ public:
 	QLineEdit*	name;
 
 	Post::ModelDataField*	m_activeField;
+
+public:
+	enum FilterType { 
+		FILTER_SCALE,
+		FILTER_SMOOTH,
+		FILTER_ARITHMETIC,
+		FILTER_MATHFNC,
+		FILTER_GRADIENT,
+		FILTER_COMPONENT,
+		FILTER_FRACT_ISO,
+		FILTER_CONVERT,
+		FILTER_EIGEN,
+		FILTER_TIME_RATE,
+		FILTER_NORM_PROJ,
+	};
 
 public:
 	void setupUi(::CPostDataPanel* parent)
@@ -622,11 +673,14 @@ public:
 	QLineEdit* ptheta;
 	QLineEdit* piters;
 
-	// math page
+	// arithmetic page
 	QComboBox* poperation;
 	QComboBox* poperand;
 
 	QComboBox*	comp;
+
+	// math function page
+	QComboBox* mathFunction;
 
 	// convert page
 	QComboBox*	convClass;
@@ -653,6 +707,7 @@ public:
 		pselect->addItem("Scale");
 		pselect->addItem("Smooth");
 		pselect->addItem("Arithmetic");
+		pselect->addItem("Math Function");
 		pselect->addItem("Gradient");
 		pselect->addItem("Component");
 		pselect->addItem("Fraction Anisotropy");
@@ -687,18 +742,28 @@ public:
 		pform->addRow("iterations:", piters = new QLineEdit); piters->setValidator(new QIntValidator(1, 1000));
 		smoothPage->setLayout(pform);
 
-		// math filter
-		QWidget* mathPage = new QWidget;
+		// arithmetic filter
+		QWidget* arithmPage = new QWidget;
 		pform = new QFormLayout;
 		pform->addRow("Operation:", poperation = new QComboBox);
 		pform->addRow("Operand:", poperand = new QComboBox);
-		mathPage->setLayout(pform);
+		arithmPage->setLayout(pform);
 
 		poperation->addItem("add");
 		poperation->addItem("subtract");
 		poperation->addItem("multiply");
 		poperation->addItem("divide");
 		poperation->addItem("least-square difference");
+
+		// math function filter
+		QWidget* mathPage = new QWidget;
+		pform = new QFormLayout;
+		pform->addRow("Function:", mathFunction = new QComboBox);
+		mathPage->setLayout(pform);
+
+		mathFunction->addItem("negate");
+		mathFunction->addItem("abs");
+		mathFunction->addItem("ramp");
 
 		// gradient page
 		QWidget* gradPage = new QWidget;
@@ -742,6 +807,7 @@ public:
 		QStackedWidget* stack = new QStackedWidget;
 		stack->addWidget(scalePage);
 		stack->addWidget(smoothPage);
+		stack->addWidget(arithmPage);
 		stack->addWidget(mathPage);
 		stack->addWidget(gradPage);
 		stack->addWidget(compPage);
@@ -897,6 +963,8 @@ void CDlgFilter::accept()
 
 	m_nop = ui->poperation->currentIndex();
 	m_ndata = ui->poperand->currentIndex();
+
+	m_fnc = ui->mathFunction->currentIndex();
 
 	if ((m_nflt == 2) && (m_ndata < 0))
 	{
@@ -1244,7 +1312,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				int nfield = pdf->GetFieldID();
 				switch (dlg.m_nflt)
 				{
-				case 0:
+				case Ui::CPostDataPanel::FILTER_SCALE:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
 					if (pdf->Type() == DATA_VEC3)
@@ -1253,20 +1321,26 @@ void CPostDataPanel::on_AddFilter_triggered()
 						bret = DataScale(fem, newData->GetFieldID(), dlg.GetScaleFactor());
 				}
 				break;
-				case 1:
+				case Ui::CPostDataPanel::FILTER_SMOOTH:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
 					bret = DataSmooth(fem, newData->GetFieldID(), dlg.m_theta, dlg.m_iters);
 				}
 				break;
-				case 2:
+				case Ui::CPostDataPanel::FILTER_ARITHMETIC:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
 					Post::FEDataFieldPtr p = fem.GetDataManager()->DataField(dataIds[dlg.m_ndata]);
 					bret = DataArithmetic(fem, newData->GetFieldID(), dlg.m_nop, (*p)->GetFieldID());
 				}
 				break;
-				case 3:
+				case Ui::CPostDataPanel::FILTER_MATHFNC:
+				{
+					newData = fem.CreateCachedCopy(pdf, sname.c_str());
+					bret = DataMath(fem, newData->GetFieldID(), dlg.m_fnc);
+				}
+				break;
+				case Ui::CPostDataPanel::FILTER_GRADIENT:
 				{
 					// create new vector field for storing the gradient
 					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem, Post::EXPORT_DATA);
@@ -1279,14 +1353,14 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = DataGradient(fem, newData->GetFieldID(), nfield, config);
 				}
 				break;
-				case 4:
+				case Ui::CPostDataPanel::FILTER_COMPONENT:
 				{
 					// create new field for storing the component
 					newData = DataComponent(fem, pdf, dlg.getArrayComponent(), sname);
 					bret = (newData != nullptr);
 				}
 				break;
-				case 5:
+				case Ui::CPostDataPanel::FILTER_FRACT_ISO:
 				{
 					newData = new Post::FEDataField_T<Post::FEElementData<float, DATA_ITEM> >(&fem, Post::EXPORT_DATA);
 					newData->SetName(sname);
@@ -1296,7 +1370,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = DataFractionalAnsisotropy(fem, newData->GetFieldID(), nfield);
 				}
 				break;
-				case 6: // convert format
+				case Ui::CPostDataPanel::FILTER_CONVERT:
 				{
 					int newformat = dlg.getNewDataFormat();
 					int newClass  = dlg.getNewDataClass();
@@ -1304,19 +1378,19 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = (newData != nullptr);
 				}
 				break;
-				case 7: // eigen tensor
+				case Ui::CPostDataPanel::FILTER_EIGEN:
 				{
 					newData = DataEigenTensor(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;
-				case 8: // time derivative
+				case Ui::CPostDataPanel::FILTER_TIME_RATE:
 				{
 					newData = DataTimeRate(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;
-				case 9: // surface normal projection
+				case Ui::CPostDataPanel::FILTER_NORM_PROJ:
 				{
 					newData = SurfaceNormalProjection(fem, pdf, sname);
 					bret = (newData != nullptr);

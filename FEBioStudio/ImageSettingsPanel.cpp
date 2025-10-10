@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageAnalysis.h>
 #include <CUILib/InputWidgets.h>
 #include "RangeSlider.h"
+#include "CColorButton.h"
 #include <vector>
 
 class Ui::CImageParam
@@ -99,6 +100,19 @@ void CImageParam::updateParam()
     ui->m_param->SetFloatValue(ui->slider->getValue());
     emit paramChanged();
 }
+
+double CImageParam::currentValue()
+{
+	return ui->slider->getValue();
+}
+
+void CImageParam::setValue(double v)
+{
+	ui->slider->setValue(v);
+	if (ui->m_param == nullptr) return;
+	ui->m_param->SetFloatValue(v);
+}
+
 //=======================================================================================
 
 class Ui::CImageParam2
@@ -223,13 +237,13 @@ class Ui::CImageSettingsWidget
 public:
 	QLabel*		name;
 	QWidget*	w[3];
-	QFormLayout* panel[3];
+	QFormLayout* panel[4];
 
 	::CImageParam* scale;
 	::CImageParam* gamma;
 	::CImageParam* hue;
 	::CImageParam* sat;
-	::CImageParam* lum;
+	::CImageParam* val;
 
 	::CImageParam2* intensity;
 	::CImageParam2* alphaRng;
@@ -240,6 +254,8 @@ public:
 	::CImageParam* chue1;
 	::CImageParam* chue2;
 	::CImageParam* chue3;
+
+	CColorButton* colorBtn;
 
 public:
     void setup(::CImageSettingsWidget* parent)
@@ -255,13 +271,28 @@ public:
         panel[0] = new QFormLayout;
         panel[1] = new QFormLayout;
         panel[2] = new QFormLayout;
+        panel[3] = new QFormLayout;
+
+		colorBtn = new CColorButton;
+		colorBtn->setMinimumWidth(100);
+		colorBtn->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+		colorBtn->setLineWidth(2);
+
+		QHBoxLayout* h0 = new QHBoxLayout;
+		h0->addWidget(colorBtn);
+		h0->addLayout(panel[1]);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setContentsMargins(0, 0, 0, 0);
+		l->addLayout(panel[0]);
+		l->addLayout(h0);
 
 		w[0] = new QWidget;
 		w[1] = new QWidget;
 		w[2] = new QWidget;
-		w[0]->setLayout(panel[0]);
-		w[1]->setLayout(panel[1]);
-		w[2]->setLayout(panel[2]);
+		w[0]->setLayout(l);
+		w[1]->setLayout(panel[2]);
+		w[2]->setLayout(panel[3]);
 
 		QHBoxLayout* layout = new QHBoxLayout;
 		layout->addWidget(w[0]);
@@ -272,7 +303,7 @@ public:
 		gamma = new ::CImageParam();
 		hue   = new ::CImageParam();
 		sat   = new ::CImageParam();
-		lum   = new ::CImageParam();
+		val   = new ::CImageParam();
 
 		intensity = new ::CImageParam2();
 		alphaRng = new ::CImageParam2();
@@ -290,24 +321,27 @@ public:
 
 		addWidget(scale, "Alpha scale", 0);
 		addWidget(gamma, "Gamma correction", 0);
-		addWidget(hue, "Hue", 0);
-		addWidget(sat, "Saturation", 0);
-		addWidget(lum, "Luminance", 0);
 
-		addWidget(intensity, "Intensity", 1);
-		addWidget(alphaRng, "Alpha range", 1);
-		addWidget(clipx, "Clip X", 1);
-		addWidget(clipy, "Clip Y", 1);
-		addWidget(clipz, "Clip Z", 1);
+		addWidget(hue, "Hue", 1);
+		addWidget(sat, "Saturation", 1);
+		addWidget(val, "Value", 1);
 
-		addWidget(chue1, "Channel1 Hue", 2);
-		addWidget(chue2, "Channel2 Hue", 2);
-		addWidget(chue3, "Channel3 Hue", 2);
+		addWidget(intensity, "Intensity", 2);
+		addWidget(alphaRng, "Alpha range", 2);
+		addWidget(clipx, "Clip X", 2);
+		addWidget(clipy, "Clip Y", 2);
+		addWidget(clipz, "Clip Z", 2);
+
+		addWidget(chue1, "Channel1 Hue", 3);
+		addWidget(chue2, "Channel2 Hue", 3);
+		addWidget(chue3, "Channel3 Hue", 3);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addLayout(h);
 		mainLayout->addLayout(layout);
 		parent->setLayout(mainLayout);
+
+		QObject::connect(colorBtn, &CColorButton::colorChanged, m_parent, &::CImageSettingsWidget::on_colorChanged);
     }
 
     void setImageModel(CImageModel* img)
@@ -322,7 +356,7 @@ public:
 			gamma->setParam(&settings->GetParam(CImageViewSettings::GAMMA));
 			hue  ->setParam(&settings->GetParam(CImageViewSettings::HUE));
 			sat  ->setParam(&settings->GetParam(CImageViewSettings::SAT));
-			lum  ->setParam(&settings->GetParam(CImageViewSettings::LUM));
+			val  ->setParam(&settings->GetParam(CImageViewSettings::VAL));
 
 			intensity->setParams(&settings->GetParam(CImageViewSettings::MIN_INTENSITY), &settings->GetParam(CImageViewSettings::MAX_INTENSITY));
 			alphaRng ->setParams(&settings->GetParam(CImageViewSettings::MIN_ALPHA), &settings->GetParam(CImageViewSettings::MAX_ALPHA));
@@ -345,6 +379,8 @@ public:
 				chue3->setParam(nullptr);
 				w[2]->hide();
 			}
+
+			updateColorButton();
 		}
 		else
 		{
@@ -354,7 +390,7 @@ public:
 			gamma->setParam(nullptr);
 			hue->setParam(nullptr);
 			sat->setParam(nullptr);
-			lum->setParam(nullptr);
+			val->setParam(nullptr);
 			intensity->setParams(nullptr, nullptr);
 			alphaRng->setParams(nullptr, nullptr);
 			clipx->setParams(nullptr, nullptr);
@@ -369,13 +405,23 @@ public:
 	void addWidget(::CImageParam* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
-		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
+		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsWidget::on_ParamChanged);
 	}
 
 	void addWidget(::CImageParam2* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
 		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
+	}
+
+	void updateColorButton()
+	{
+		if (colorBtn == nullptr) return;
+		double H = hue->currentValue();
+		double S = sat->currentValue();
+		double V = val->currentValue();
+		QColor c = QColor::fromHsvF(H, S, V);
+		colorBtn->setColor(c);
 	}
 
 private:
@@ -393,6 +439,20 @@ CImageSettingsWidget::CImageSettingsWidget(QWidget* parent)
     ui->setImageModel(model);
  }
 
+ void CImageSettingsWidget::on_ParamChanged()
+ {
+	 ui->updateColorButton();
+	 emit ParamChanged();
+ }
+
+ void CImageSettingsWidget::on_colorChanged(QColor c)
+ {
+	 float h, s, l;
+	 c.getHsvF(&h, &s, &l);
+	 ui->hue->setValue(h);
+	 ui->sat->setValue(s);
+	 ui->val->setValue(l);
+ }
 
 //=======================================================================================
 class Ui::CImageSettingsPanel

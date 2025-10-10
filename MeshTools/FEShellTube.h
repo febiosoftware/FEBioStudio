@@ -35,15 +35,13 @@ public:
 	enum {T, NDIV, NSTACK, ELEM_TYPE};
 
 public:
-	FEShellTube();
+	FEShellTube(GObject& o);
 
-	FSMesh* BuildMesh(GObject* po) override;
+	FSMesh* BuildMesh() override;
 
 	bool BuildMultiQuad() override;
 
 protected:
-	GThinTube* m_pobj;
-
 	double	m_t;
 	int		m_nd, m_nz;
 };
