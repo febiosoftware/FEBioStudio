@@ -483,7 +483,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	std::list<VARIABLE>::iterator pv = m_Var.begin();
 	for (int i=0; i<(int) m_Var.size(); ++i, ++pv)
 	{
-		pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem), pv->szname);
+		pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), pv->szname);
 	}
 
 	// create states

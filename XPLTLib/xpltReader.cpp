@@ -288,15 +288,15 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 		Post::ModelDataField* pdf = nullptr;
 		switch (it.ntype)
 		{
-		case FLOAT  : pdf = new FEDataField_T<Post::FENodeData<float  > >(&fem); break;
-		case VEC3F  : pdf = new FEDataField_T<Post::FENodeData<vec3f  > >(&fem); break;
-		case MAT3FS : pdf = new FEDataField_T<Post::FENodeData<mat3fs > >(&fem); break;
-		case MAT3FD : pdf = new FEDataField_T<Post::FENodeData<mat3fd > >(&fem); break;
-        case TENS4FS: pdf = new FEDataField_T<Post::FENodeData<tens4fs> >(&fem); break;
-		case MAT3F  : pdf = new FEDataField_T<Post::FENodeData<mat3f  > >(&fem); break;
+		case FLOAT  : pdf = new FEDataField_T<Post::FENodeData<float  > >(&fem, EXPORT_DATA); break;
+		case VEC3F  : pdf = new FEDataField_T<Post::FENodeData<vec3f  > >(&fem, EXPORT_DATA); break;
+		case MAT3FS : pdf = new FEDataField_T<Post::FENodeData<mat3fs > >(&fem, EXPORT_DATA); break;
+		case MAT3FD : pdf = new FEDataField_T<Post::FENodeData<mat3fd > >(&fem, EXPORT_DATA); break;
+        case TENS4FS: pdf = new FEDataField_T<Post::FENodeData<tens4fs> >(&fem, EXPORT_DATA); break;
+		case MAT3F  : pdf = new FEDataField_T<Post::FENodeData<mat3f  > >(&fem, EXPORT_DATA); break;
 		case ARRAY  : 
 			{
-				FEArrayDataField* data = new FEArrayDataField(&fem, NODE_DATA, DATA_ITEM);
+				FEArrayDataField* data = new FEArrayDataField(&fem, NODE_DATA, DATA_ITEM, EXPORT_DATA);
 				data->SetArraySize(it.arraySize);
 				data->SetArrayNames(it.arrayNames);
 				pdf = data;
@@ -323,15 +323,15 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_NODE> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_NODE> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_NODE> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_NODE> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_NODE> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_NODE> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
 				case ARRAY  :
 					{
-						FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_NODE);
+						FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_NODE, EXPORT_DATA);
 						data->SetArraySize(it.arraySize);
 						data->SetArrayNames(it.arrayNames);
 						pdf = data;
@@ -347,15 +347,15 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_ITEM> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_ITEM> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_ITEM> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_ITEM> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_ITEM> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_ITEM> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				case ARRAY  :
 					{
-						FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_ITEM);
+						FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_ITEM, EXPORT_DATA);
 						data->SetArraySize(it.arraySize);
 						data->SetArrayNames(it.arrayNames);
 						pdf = data;
@@ -363,7 +363,7 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 					break;
 				case ARRAY_VEC3F:
 					{
-						FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, ELEM_DATA);
+						FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, ELEM_DATA, EXPORT_DATA);
 						data->SetArraySize(it.arraySize);
 						data->SetArrayNames(it.arrayNames);
 						pdf = data;
@@ -379,12 +379,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_MULT> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_MULT> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_MULT> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_MULT> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_MULT> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_MULT> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 					return false;
@@ -395,12 +395,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_REGION> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_REGION> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_REGION> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_REGION> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_REGION> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_REGION> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<Post::FEElementData<float  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<Post::FEElementData<vec3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<Post::FEElementData<mat3fs ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<Post::FEElementData<mat3fd ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<Post::FEElementData<tens4fs,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 					return false;
@@ -430,12 +430,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_NODE> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_NODE> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_NODE> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_NODE> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_NODE> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_NODE> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_NODE> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_NODE> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -445,12 +445,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_ITEM> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_ITEM> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_ITEM> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_ITEM> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_ITEM> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_ITEM> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_ITEM> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -460,12 +460,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_MULT> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_MULT> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_MULT> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_MULT> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_MULT> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_MULT> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_MULT> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_MULT> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_MULT> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -475,12 +475,12 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 			{
 				switch (it.ntype)
 				{
-				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_REGION> >(&fem); break;
-				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_REGION> >(&fem); break;
-				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_REGION> >(&fem); break;
-				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_REGION> >(&fem); break;
-                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_REGION> >(&fem); break;
-				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_REGION> >(&fem); break;
+				case FLOAT  : pdf = new FEDataField_T<FEFaceData<float  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd ,DATA_REGION> >(&fem, EXPORT_DATA); break;
+                case TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs,DATA_REGION> >(&fem, EXPORT_DATA); break;
+				case MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  ,DATA_REGION> >(&fem, EXPORT_DATA); break;
 				default:
 					assert(false);
 				}
@@ -498,26 +498,26 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 	if (m_bHasDispl) 
 	{
 		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
-		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem, IMPLICIT_DATA), "position");
-		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem, IMPLICIT_DATA), "initial position" );
+		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         );
+		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" );
 	}
 
 	// add additional stress fields
 	if (m_bHasStress)
 	{
-		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem, IMPLICIT_DATA), "pressure");
+		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
 
 		if (m_bHasFluidPressure) {
 			// make sure the "solid stress" field was not added to the plot file
 			if (pdm->FindDataField("solid stress") == -1)
-				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem, IMPLICIT_DATA), "solid stress");
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
 		}
 	}
 
 	// add additional stress fields
 	if (m_bHasNodalStress)
 	{
-		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem, IMPLICIT_DATA), "nodal pressure");
+		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem), "nodal pressure");
 	}
 
 	return true;

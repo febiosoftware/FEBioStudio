@@ -135,7 +135,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	m_fem->UpdateBoundingBox();
 
 	// Add a data field
-	m_fem->AddDataField(new FEDataField_T<FENodeData<float> >(m_fem), "Image");
+	m_fem->AddDataField(new FEDataField_T<FENodeData<float> >(m_fem, EXPORT_DATA), "Image");
 
 	// we need a single state
 	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));

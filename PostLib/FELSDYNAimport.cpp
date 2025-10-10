@@ -352,13 +352,13 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	int ndata[2] = {-1, -1}, nd=0;
 	if (m_bnresults)
 	{
-		pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem), "Nodal Results");
+		pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "Nodal Results");
 		ndata[0] = nd;	nd++;
 	}
 
 	if (m_bdispl)
 	{
-		pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem), "Displacement");
+		pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "Displacement");
 		ndata[1] = nd; 
 		fem.SetDisplacementField(BUILD_FIELD(DATA_CLASS::NODE_DATA, nd, 0));
 		nd++;
@@ -366,7 +366,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 
 	if (m_bshellthick)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElementData<float ,DATA_MULT> >(&fem), "shell thickness");
+		pdm->AddDataField(new FEDataField_T<FEElementData<float ,DATA_MULT> >(&fem, EXPORT_DATA), "shell thickness");
 	}
 
 	// we need a single state

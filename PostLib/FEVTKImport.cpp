@@ -241,9 +241,9 @@ bool VTKFileImport::UpdateModel(const VTK::vtkPiece& vtk)
 
 			switch (data.m_numComps)
 			{
-			case 1: fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem), data.m_name); break;
-			case 3: fem.AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem), data.m_name); break;
-			case 9: fem.AddDataField(new FEDataField_T<FENodeData<mat3f> >(&fem), data.m_name); break;
+			case 1: fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), data.m_name); break;
+			case 3: fem.AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), data.m_name); break;
+			case 9: fem.AddDataField(new FEDataField_T<FENodeData<mat3f> >(&fem, EXPORT_DATA), data.m_name); break;
 			default:
 				assert(false);
 				return false;
@@ -257,9 +257,9 @@ bool VTKFileImport::UpdateModel(const VTK::vtkPiece& vtk)
 		{
 			switch (data.m_numComps)
 			{
-			case 1: fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem), data.m_name); break;
-			case 3: fem.AddDataField(new FEDataField_T<FEElementData<vec3f, DATA_ITEM> >(&fem), data.m_name); break;
-			case 9: fem.AddDataField(new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem), data.m_name); break;
+			case 1: fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name); break;
+			case 3: fem.AddDataField(new FEDataField_T<FEElementData<vec3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name); break;
+			case 9: fem.AddDataField(new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name); break;
 			default:
 				assert(false);
 				return false;

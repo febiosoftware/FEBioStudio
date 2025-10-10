@@ -107,10 +107,6 @@ void CObjectProps::AddParameter(Param& p)
 				{
 					prop = addProperty(paramName, CProperty::DataVec3);
 				}
-				else if (strcmp(ch, "@data_vec3_exp") == 0)
-				{
-					prop = addProperty(paramName, CProperty::DataVec3Exp);
-				}
 				else if (strcmp(ch, "@data_mat3") == 0)
 				{
 					prop = addProperty(paramName, CProperty::DataMat3);

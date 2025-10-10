@@ -368,13 +368,13 @@ const char* ModelDataField::GetUnits() const
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f) : ModelDataField(fem, DATA_ARRAY, f, c)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
 ModelDataField* FEArrayDataField::Clone() const
 {
-	FEArrayDataField* newData = new FEArrayDataField(m_fem, DataClass(), Format());
+	FEArrayDataField* newData = new FEArrayDataField(m_fem, DataClass(), Format(), m_flag);
 	newData->SetName(GetName());
 	newData->SetArraySize(GetArraySize());
     vector<string> arrnames = GetArrayNames();
@@ -407,13 +407,13 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c) : ModelDataField(fem, DATA_ARRAY_VEC3, DATA_ITEM, c)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3, DATA_ITEM, c, flag)
 {
 }
 
 ModelDataField* FEArrayVec3DataField::Clone() const
 {
-	FEArrayVec3DataField* newData = new FEArrayVec3DataField(m_fem, DataClass());
+	FEArrayVec3DataField* newData = new FEArrayVec3DataField(m_fem, DataClass(), m_flag);
 	newData->SetName(GetName());
 	newData->SetArraySize(GetArraySize());
     vector<string> arrnames = GetArrayNames();
@@ -1063,9 +1063,9 @@ void StandardDataFieldManager::Init()
 {
 	if (m_stdDataFields.empty() == false) return;
 
-	Add<FEDataField_T<NodePosition> >("Position", IMPLICIT_DATA);
-	Add<FEDataField_T<NodeInitPos > >("Initial Position", IMPLICIT_DATA);
-	Add<FEDataField_T<DeformationGradient> >("Deformation gradient", IMPLICIT_DATA);
+	Add<FEDataField_T<NodePosition> >("Position");
+	Add<FEDataField_T<NodeInitPos > >("Initial Position");
+	Add<FEDataField_T<DeformationGradient> >("Deformation gradient");
 	Add<StrainDataField >("Infinitesimal strain", StrainDataField::INF_STRAIN);
 	Add<StrainDataField >("Lagrange strain"     , StrainDataField::LAGRANGE          );
 	Add<StrainDataField >("Right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
@@ -1076,26 +1076,26 @@ void StandardDataFieldManager::Init()
 	Add<StrainDataField >("Left stretch"        , StrainDataField::LEFT_STRETCH      );
 	Add<StrainDataField >("Left Hencky"         , StrainDataField::LEFT_HENCKY       );
 	Add<StrainDataField >("Almansi strain"      , StrainDataField::ALMANSI           );
-	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D"        , IMPLICIT_DATA);
-	Add<FEDataField_T<InfStrain2D          > >("Infinitesimal Strain 2D"   , IMPLICIT_DATA);
-	Add<FEDataField_T<ElementVolume        > >("Volume"                    , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              , IMPLICIT_DATA);
-	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             , IMPLICIT_DATA);
-	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              , IMPLICIT_DATA);
+	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D");
+	Add<FEDataField_T<InfStrain2D          > >("Infinitesimal Strain 2D");
+	Add<FEDataField_T<ElementVolume        > >("Volume"                    );
+	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              );
+	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             );
+	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              );
 	Add<CurvatureField >("1-Princ curvature"         , CurvatureField::PRINC1_CURVATURE);
 	Add<CurvatureField >("2-Princ curvature"         , CurvatureField::PRINC2_CURVATURE);
 	Add<CurvatureField >("Gaussian curvature"        , CurvatureField::GAUSS_CURVATURE );
 	Add<CurvatureField >("Mean curvature"            , CurvatureField::MEAN_CURVATURE  );
 	Add<CurvatureField >("RMS curvature"             , CurvatureField::RMS_CURVATURE   );
 	Add<CurvatureField >("Princ curvature difference", CurvatureField::DIFF_CURVATURE  );
-	Add<FEDataField_T<SurfaceCongruency           > >("Congruency", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector1> >("1-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector", IMPLICIT_DATA);
-	Add<FEDistanceMap >("Distance map", IMPLICIT_DATA);
-	Add<FEAreaCoverage>("Area coverage", IMPLICIT_DATA);
-	Add<FEDataField_T<FEFacetArea> >("Facet area", IMPLICIT_DATA);
+	Add<FEDataField_T<SurfaceCongruency           > >("Congruency"              );
+	Add<FEDataField_T<PrincCurvatureVector1> >("1-Princ curvature vector");
+	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector");
+	Add<FEDistanceMap >("Distance map");
+	Add<FEAreaCoverage>("Area coverage");
+	Add<FEDataField_T<FEFacetArea> >("Facet area");
 	Add<FEDataField_T<FEElementMaterial> >("Material ID");
-	Add<FEDataField_T<FESurfaceNormal> >("Surface normal", IMPLICIT_DATA);
+	Add<FEDataField_T<FESurfaceNormal> >("Surface normal");
 }
 
 void Post::InitStandardDataFields()
@@ -1151,12 +1151,12 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_SCALAR : pdf = new FEDataField_T<FENodeData<float  > >(&fem); ND =  1; break;
-	case DATA_VEC3   : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem); ND =  3; break;
-	case DATA_MAT3   : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem); ND =  9; break;
-	case DATA_MAT3S  : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem); ND =  6; break;
-	case DATA_MAT3SD : pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem); ND =  3; break;
-	case DATA_TENS4S : pdf = new FEDataField_T<FENodeData<tens4fs> >(&fem); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem, EXPORT_DATA); ND =  9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem, EXPORT_DATA); ND =  6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FENodeData<tens4fs> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)
@@ -1270,12 +1270,12 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_SCALAR : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem); ND = 1; break;
-	case DATA_VEC3   : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem); ND = 3; break;
-	case DATA_MAT3   : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem); ND = 9; break;
-	case DATA_MAT3S  : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem); ND = 6; break;
-	case DATA_MAT3SD : pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem); ND = 3; break;
-	case DATA_TENS4S : pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)
@@ -1389,12 +1389,12 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_SCALAR : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem); ND = 1; break;
-	case DATA_VEC3   : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem); ND = 3; break;
-	case DATA_MAT3   : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem); ND = 9; break;
-	case DATA_MAT3S  : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem); ND = 6; break;
-	case DATA_MAT3SD : pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem); ND = 3; break;
-	case DATA_TENS4S : pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem); ND = 21; break;
+	case DATA_SCALAR : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3  : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3  : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3S : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3SD: pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4S: pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
 	}
 	assert(pdf);
 	if (pdf == nullptr)

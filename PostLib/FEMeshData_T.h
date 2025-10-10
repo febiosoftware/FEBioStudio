@@ -963,7 +963,7 @@ public:
 	};
 
 public:
-	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, IMPLICIT_DATA)
+	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, 0)
 	{
 		m_measure = measure;
 		m_nlevels = 1;
@@ -1103,7 +1103,7 @@ public:
 	enum { MP_REF_STATE };
 
 public:
-	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3S, DATA_ITEM, ELEM_DATA, DataFieldFlags::IMPLICIT_DATA)
+	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3S, DATA_ITEM, ELEM_DATA, 0)
 	{
 		m_measure = measure;
 

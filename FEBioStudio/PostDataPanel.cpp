@@ -1343,7 +1343,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case Ui::CPostDataPanel::FILTER_GRADIENT:
 				{
 					// create new vector field for storing the gradient
-					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem);
+					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem, Post::EXPORT_DATA);
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 
@@ -1362,7 +1362,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				break;
 				case Ui::CPostDataPanel::FILTER_FRACT_ISO:
 				{
-					newData = new Post::FEDataField_T<Post::FEElementData<float, DATA_ITEM> >(&fem);
+					newData = new Post::FEDataField_T<Post::FEElementData<float, DATA_ITEM> >(&fem, Post::EXPORT_DATA);
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 

@@ -126,11 +126,11 @@ void CRulerDataSelector::BuildMenu(QMenu* menu)
 }
 
 //=============================================================================
-CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool explicitOnly)
+CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
 	m_fem = fem;
 	m_class = ntype;
-	m_explicitOnly = explicitOnly;
+	m_bvec = btvec;
 	m_fem->AddDependant(this);
 }
 
@@ -160,28 +160,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
-		int dataType = d.Type();
-
-		bool ok = true;
-		if (m_explicitOnly)
-		{
-			if (d.Flags() == IMPLICIT_DATA) ok = false;
-			else
-			{
-				switch (m_class)
-				{
-				case TENSOR_SCALAR: if ((dataType != DATA_SCALAR) && (dataType != DATA_ARRAY)) ok = false; break;
-				case TENSOR_VECTOR: if ((dataType != DATA_VEC3) && (dataType != DATA_ARRAY_VEC3)) ok = false; break;
-				case TENSOR_TENSOR2: if ((dataType != DATA_MAT3) && (dataType != DATA_MAT3S) && (dataType != DATA_MAT3SD)) ok = false; break;
-				default:
-					ok = false;
-					assert(false);
-					break;
-				}
-			}
-		}
-
-		if ((dataClass != OBJECT_DATA) && (dataComponents > 0) && ok)
+		if ((dataClass != OBJECT_DATA) && (dataComponents > 0))
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
 			{
@@ -463,9 +442,9 @@ CDataFieldSelector::CDataFieldSelector(QWidget* parent) : CDataSelectorButton(pa
 {
 }
 
-void CDataFieldSelector::BuildMenu(FEPostModel* fem, Data_Tensor_Type ntype, bool explicitOnly)
+void CDataFieldSelector::BuildMenu(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
-	SetDataSelector(new CModelDataSelector(fem, ntype, explicitOnly));
+	SetDataSelector(new CModelDataSelector(fem, ntype, btvec));
 }
 
 //=============================================================================
