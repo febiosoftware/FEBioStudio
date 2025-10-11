@@ -162,21 +162,33 @@ double FSCoreMesh::ElementVolume(int iel)
 
 double FSCoreMesh::ElementVolume(const FEElement_& el)
 {
-	switch (el.Type())
-	{
-	case FE_HEX8   : return HexVolume(el); break;
-	case FE_HEX20  : return HexVolume(el); break;
-	case FE_HEX27  : return HexVolume(el); break;
-	case FE_TET4   : return TetVolume(el); break;
-	case FE_TET10  : return TetVolume(el); break;
-	case FE_TET15  : return TetVolume(el); break;
-	case FE_TET20  : return TetVolume(el); break;
-	case FE_PENTA6 : return PentaVolume(el); break;
-	case FE_PENTA15: return PentaVolume(el); break;
-	case FE_PYRA5  : return PyramidVolume(el); break;
-    case FE_PYRA13 : return PyramidVolume(el); break;
-    case FE_QUAD4  : return QuadVolume(el); break;
-	}
+    if (el.IsSolid()) {
+        switch (el.Type())
+        {
+            case FE_HEX8   : return HexVolume(el); break;
+            case FE_HEX20  : return HexVolume(el); break;
+            case FE_HEX27  : return HexVolume(el); break;
+            case FE_TET4   : return TetVolume(el); break;
+            case FE_TET10  : return TetVolume(el); break;
+            case FE_TET15  : return TetVolume(el); break;
+            case FE_TET20  : return TetVolume(el); break;
+            case FE_PENTA6 : return PentaVolume(el); break;
+            case FE_PENTA15: return PentaVolume(el); break;
+            case FE_PYRA5  : return PyramidVolume(el); break;
+            case FE_PYRA13 : return PyramidVolume(el); break;
+            case FE_QUAD4  : return QuadVolume(el); break;
+        }
+    }
+    else if (el.IsShell()) {
+        FSFace f;
+        el.GetShellFace(f);
+        double havg = 0;
+        for (int i=0; i<f.Nodes(); ++i)
+            havg += el.m_h[i];
+        havg /= f.Nodes();
+        if (havg == 0) havg = 1;
+        return FaceArea(f)*havg;
+    }
 
 	return 0.0;
 }

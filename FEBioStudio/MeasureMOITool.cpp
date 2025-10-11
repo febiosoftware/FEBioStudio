@@ -33,7 +33,12 @@ mat3d CalculateMOI(FSMesh& mesh);
 CMeasureMOITool::CMeasureMOITool(CMainWindow* wnd) : CBasicTool(wnd, "Moment of inertia", CBasicTool::HAS_APPLY_BUTTON)
 {
 	m_moi.zero();
+    m_evec.zero();
+    m_eval = vec3d(0,0,0);
 	addMat3Property(&m_moi, "moment of inertia:")->setFlags(CProperty::Visible);
+    
+    addMat3Property(&m_evec, "eigenvectors:")->setFlags(CProperty::Visible);
+    addVec3Property(&m_eval, "eigenvalues:")->setFlags(CProperty::Visible);
 
 	SetInfo("Calculates the moment of inertia of a meshed object or element selection. The MOI is calculated with respect to the center of mass of the selection.");
 }
@@ -44,6 +49,14 @@ bool CMeasureMOITool::OnApply()
 	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return false;
 	m_moi = CalculateMOI(*mesh);
+    mat3ds mois = m_moi.sym();
+    double eval[3];
+    vec3d evec[3];
+    mois.eigen2(eval,evec);
+    m_evec = mat3d(evec[0].x,evec[1].x,evec[2].x,
+                   evec[0].y,evec[1].y,evec[2].y,
+                   evec[0].z,evec[1].z,evec[2].z);
+    m_eval = vec3d(eval[0],eval[1],eval[2]);
 	return true;
 }
 
