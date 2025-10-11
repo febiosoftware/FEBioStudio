@@ -524,6 +524,7 @@ bool FEBioStudioProject::Save(const QString& file)
 	QDir dir = fi.absoluteDir();
 
 	XMLWriter xml;
+	xml.SetEncodeControlChars(true);
 	std::string fileName = file.toStdString();
 	if (xml.open(fileName.c_str()) == false) return false;
 
