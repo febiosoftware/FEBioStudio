@@ -40,4 +40,6 @@ public:
 
 private:
 	mat3d	m_moi;	// center of mass
+    mat3d   m_evec; // eigenvectors of MOI
+    vec3d   m_eval; // eigenvalues of MOI
 };
