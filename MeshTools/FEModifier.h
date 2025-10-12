@@ -551,9 +551,19 @@ public:
 	FSMesh* Apply(FSMesh* pm);
 };
 
+//-----------------------------------------------------------------------------
 class FEDeleteElements : public FEModifier
 {
 public:
 	FEDeleteElements();
 	FSMesh* Apply(FSMesh* pm);
 };
+
+//-----------------------------------------------------------------------------
+class FEAlignMeshMOI: public FEModifier
+{
+public:
+    FEAlignMeshMOI();
+    FSMesh* Apply(FSMesh* pm);
+};
+

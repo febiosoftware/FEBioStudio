@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <GeomLib/GGroup.h>
 #include <MeshTools/LaplaceSolver.h>
+#include <FEBioStudio/MeasureTools.h>
+#include <numeric>
 
 FEModifier::FEModifier(const char* sz) { SetName(sz); }
 FEModifier::~FEModifier() {}
@@ -2047,4 +2049,57 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 	newMesh->RebuildMesh();
 	
 	return newMesh;		
+}
+
+//=============================================================================
+// FEAlignMesh
+//-----------------------------------------------------------------------------
+
+FEAlignMeshMOI::FEAlignMeshMOI() : FEModifier("Align Mesh MOI")
+{
+    AddBoolParam(true, "Use area MOI");
+}
+
+FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
+{
+    GObject* po = GObject::GetActiveObject();
+    if (po == nullptr) return nullptr;
+
+    bool use_area = GetBoolValue(0);
+    mat3d moi = (use_area) ? CalculateAreaMOI(*pm) : CalculateMOI(*pm);
+    double eval[3];
+    vec3d evec[3];
+    mat3ds mois = moi.sym();
+    mois.eigen2(eval,evec);
+    // sort eigenvalues in ascending order
+    std::vector<int> indices(3);
+    std::iota(indices.begin(), indices.end(),0);
+    std::vector<double> ev(eval,eval+3);
+    std::sort(indices.begin(), indices.end(), [&](int A, int B)->bool {return ev[A] < ev[B];});
+    // check handedness of eigenvectors and swap if needed
+    if (((evec[indices[0]] ^ evec[indices[1]])*evec[indices[2]]) < 0)
+        evec[indices[2]] = -evec[indices[2]];
+        
+        
+    mat3d fevec = mat3d(evec[indices[0]].x, evec[indices[0]].y, evec[indices[0]].z,
+                        evec[indices[1]].x, evec[indices[1]].y, evec[indices[1]].z,
+                        evec[indices[2]].x, evec[indices[2]].y, evec[indices[2]].z);
+    vec3d feval = vec3d(eval[indices[0]],eval[indices[1]],eval[indices[2]]);
+
+    // roundoff small numbers
+    const double eps = 1e-12;
+    fevec = CleanUp(fevec, eps);
+
+    // create a quaternion from the matrix of eigenvectors
+    quatd q(fevec);
+    q.MakeUnit();
+    
+    po->GetTransform().Rotate(q,vec3d(0,0,0));
+    vec3d com = use_area ? CalculateAreaCOM(*pm) : CalculateCOM(*pm);
+    po->GetTransform().Translate(-com);
+
+    FSMesh* newMesh = new FSMesh(*pm);
+    FSMeshBuilder meshBuilder(*newMesh);
+    
+    return newMesh;
 }
