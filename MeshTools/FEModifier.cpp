@@ -2065,8 +2065,9 @@ FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
     GObject* po = GObject::GetActiveObject();
     if (po == nullptr) return nullptr;
 
+    FSMesh* newMesh = new FSMesh(*pm);
     bool use_area = GetBoolValue(0);
-    mat3d moi = (use_area) ? CalculateAreaMOI(*pm) : CalculateMOI(*pm);
+    mat3d moi = (use_area) ? CalculateAreaMOI(*newMesh) : CalculateMOI(*newMesh);
     double eval[3];
     vec3d evec[3];
     mat3ds mois = moi.sym();
@@ -2095,11 +2096,10 @@ FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
     q.MakeUnit();
     
     po->GetTransform().Rotate(q,vec3d(0,0,0));
-    vec3d com = use_area ? CalculateAreaCOM(*pm) : CalculateCOM(*pm);
+    vec3d com = use_area ? CalculateAreaCOM(*newMesh) : CalculateCOM(*newMesh);
     po->GetTransform().Translate(-com);
     po->CollapseTransform();
 
-    FSMesh* newMesh = new FSMesh(*pm);
     FSMeshBuilder meshBuilder(*newMesh);
     
     return newMesh;
