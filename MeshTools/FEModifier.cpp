@@ -2066,6 +2066,8 @@ FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
     if (po == nullptr) return nullptr;
 
     FSMesh* newMesh = new FSMesh(*pm);
+    newMesh->SetGObject(po);
+
     bool use_area = GetBoolValue(0);
     mat3d moi = (use_area) ? CalculateAreaMOI(*newMesh) : CalculateMOI(*newMesh);
     double eval[3];
@@ -2098,9 +2100,9 @@ FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
     po->GetTransform().Rotate(q,vec3d(0,0,0));
     vec3d com = use_area ? CalculateAreaCOM(*newMesh) : CalculateCOM(*newMesh);
     po->GetTransform().Translate(-com);
-    po->CollapseTransform();
-
+//    po->CollapseTransform();
+//    newMesh->UpdateBoundingBox();
     FSMeshBuilder meshBuilder(*newMesh);
-    
+
     return newMesh;
 }
