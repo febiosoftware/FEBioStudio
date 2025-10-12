@@ -2097,6 +2097,7 @@ FSMesh* FEAlignMeshMOI::Apply(FSMesh* pm)
     po->GetTransform().Rotate(q,vec3d(0,0,0));
     vec3d com = use_area ? CalculateAreaCOM(*pm) : CalculateCOM(*pm);
     po->GetTransform().Translate(-com);
+    po->CollapseTransform();
 
     FSMesh* newMesh = new FSMesh(*pm);
     FSMeshBuilder meshBuilder(*newMesh);
