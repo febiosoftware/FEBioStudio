@@ -558,12 +558,3 @@ public:
 	FEDeleteElements();
 	FSMesh* Apply(FSMesh* pm);
 };
-
-//-----------------------------------------------------------------------------
-class FEAlignMeshMOI: public FEModifier
-{
-public:
-    FEAlignMeshMOI();
-    FSMesh* Apply(FSMesh* pm);
-};
-
