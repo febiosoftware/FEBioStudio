@@ -381,7 +381,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib OGLLib GLWLib RTLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioMonitor VTKLib PyLib RHILib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -479,7 +479,7 @@ endif()
 ##### Link Libraries #####
 
 # Linking the Qt libraries also pulls in the include files
-target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets Qt6::GuiPrivate)
 target_link_libraries(CUILib Qt6::Widgets Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
 target_link_libraries(PostGL Qt6::Gui)
@@ -487,6 +487,7 @@ target_link_libraries(PostLib Qt6::Gui)
 target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(OGLLib Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(RTLib)
+target_link_libraries(RHILib Qt6::Core Qt6::Widgets Qt6::Gui Qt6::GuiPrivate)
 target_link_libraries(FSCore Qt6::Core)
 target_link_libraries(MeshIO Qt6::Core)
 target_link_libraries(MeshTools Qt6::Core)
@@ -635,6 +636,15 @@ elseif(APPLE)
 else()
     target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
+
+set(SHADER_FILES
+    RHILib/shaders/color.vert
+    RHILib/shaders/color.frag
+)
+
+qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"
+    FILES ${SHADER_FILES}
+)
 
 option(BUILD_UPDATER "Build updater" OFF)
 if(BUILD_UPDATER)

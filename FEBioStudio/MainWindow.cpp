@@ -112,6 +112,7 @@ SOFTWARE.*/
 #include "DlgListMaterials.h"
 #include "DlgMissingPlugins.h"
 #include "FEBioBatchDoc.h"
+#include <RHILib/rhiDocument.h>
 
 extern GLColor col[];
 
@@ -420,6 +421,19 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
 	{
 		OpenDocument(fileName);
+	}
+	else if (((ext.compare(".stl"), Qt::CaseInsensitive) == 0) ||
+		     ((ext.compare(".ply"), Qt::CaseInsensitive) == 0))
+	{
+		// NOTE: Temporary construct to create rhi window
+		rhiDocument* rhiDoc = new rhiDocument(this);
+		if (rhiDoc->ImportFile(fileName) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+			return;
+		}
+
+		AddDocument(rhiDoc);
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
@@ -2275,6 +2289,10 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<FEBioBatchDoc*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::BATCHRUN_CONFIG);
+	}
+	else if (dynamic_cast<rhiDocument*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::RHI_CONFIG);
 	}
 	else
 	{

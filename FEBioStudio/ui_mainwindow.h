@@ -93,6 +93,7 @@ SOFTWARE.*/
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
 #include "FEBioBatchView.h"
+#include <RHILib/rhiSceneView.h>
 
 class QProcess;
 
@@ -158,7 +159,8 @@ public:
 		TIME_VIEW_2D,
 		GL_VIEWER,
 		FEBREPORT_VIEW,
-		BATCHRUN_VIEW
+		BATCHRUN_VIEW,
+		RHI_VIEW
 	};
 
 public:
@@ -173,6 +175,7 @@ public:
 	::C2DImageTimeView* timeView2D;
 	CFEBioReportView* febReportView;
 	FEBioBatchView* batchView;
+	QWidget* rhiView;
 
 public:
 	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
@@ -215,6 +218,21 @@ public:
 		batchView = new FEBioBatchView(wnd);
 		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(batchView);
+
+		// Use platform-specific defaults
+#if defined(Q_OS_WIN)
+		QRhi::Implementation graphicsApi = QRhi::D3D11;
+//		QRhi::Implementation graphicsApi = QRhi::OpenGLES2;
+#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+		QRhi::Implementation graphicsApi = QRhi::Metal;
+#elif QT_CONFIG(vulkan)
+		QRhi::Implementation graphicsApi = QRhi::Vulkan;
+#else
+		QRhi::Implementation graphicsApi = QRhi::OpenGLES2;
+#endif
+
+		rhiView = createRHIWidget(wnd, graphicsApi);
+		stack->addWidget(rhiView);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

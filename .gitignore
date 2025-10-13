@@ -19,6 +19,9 @@ cmbuild*/
 # Mono auto generated files
 mono_crash.*
 
+# Qt binary shaders
+*.qsb
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

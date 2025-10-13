@@ -629,10 +629,24 @@ void GLMesh::UpdateNormals()
 		}
 	}
 
-	//calculate the node normals
+	// calculate average node normals
 	int NN = Nodes();
-	vector<vec3f> norm(NN, vec3f(0,0,0));
+	vector<vec3f> norm(NN, vec3f(0, 0, 0));
+	for (int i = 0; i < NF; ++i)
+	{
+		FACE& f = m_Face[i];
+		for (int j = 0; j < 3; ++j)
+		{
+			norm[f.n[j]] += f.fn;
+		}
+	}
+	for (int i = 0; i < NN; ++i)
+	{
+		m_Node[i].n = norm[i].Normalize();
+	}
 
+	//calculate the face-node normals
+	norm.assign(NN, vec3f(0, 0, 0));
 	vector<FACE*> F(NF);
 	int FC = 0;
 
