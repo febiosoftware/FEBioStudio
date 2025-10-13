@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "ExtrudeMapTool.h"
 #include "CurveToBeamTool.h"
 #include <ImageLib/FiberODF.h>
+#include "AlignMeshMOI.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -79,6 +80,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CExtrudeMapTool     (wnd));
 	tools.push_back(new CSurfaceMeshSizeTool(wnd));
 	tools.push_back(new CCurveToBeamTool    (wnd));
+	tools.push_back(new CAlignMeshMOITool   (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

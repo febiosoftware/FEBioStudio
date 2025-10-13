@@ -274,7 +274,6 @@ void ModifierThread::stop()
 REGISTER_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
 REGISTER_CLASS(FEAddTriangle          , CLASS_FEMODIFIER, "Add Triangle"   , EDIT_MESH);
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
-REGISTER_CLASS(FEAlignMeshMOI         , CLASS_FEMODIFIER, "Align MOI to CS", EDIT_MESH);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "Boundary Layer" , EDIT_FACE | EDIT_SAFE);
 REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert Mesh"   , EDIT_MESH | EDIT_SAFE);
