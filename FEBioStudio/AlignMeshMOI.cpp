@@ -79,8 +79,8 @@ bool CAlignMeshMOITool::OnApply()
 
 	Transform T = po->GetTransform();
 
-	T.Rotate(q, vec3d(0, 0, 0));
-	vec3d com = (m_useArea ? CalculateAreaCOM(*pm) : CalculateCOM(*pm));
+    vec3d com = (m_useArea ? CalculateAreaCOM(*pm) : CalculateCOM(*pm));
+	T.Rotate(q, com);
 	T.Translate(-com);
 
 	CGLDocument* doc = GetDocument();
