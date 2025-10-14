@@ -37,7 +37,9 @@ using namespace std;
 Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, 0)
 { 
 	m_tol = 0.01; 
-	m_bsigned = false; 
+	m_bsigned = false;
+	m_flipPrimary = false;
+	m_flipSecondary = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -121,7 +123,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(FSMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
+void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s, bool flip)
 {
 	// get the mesh
 	FSMesh& mesh = *m_fem->GetFEMesh(0);
@@ -142,6 +144,11 @@ void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
 		}
 	}
 	for (int i = 0; i < NN; ++i) s.m_norm[i].Normalize();
+
+	if (flip)
+	{
+		for (int i = 0; i < NN; ++i) s.m_norm[i] = -s.m_norm[i];
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -230,8 +237,8 @@ void Post::FEDistanceMap::Init()
 	m_surf2.BuildNodeList(mesh);
 	int N = mesh.Nodes();
 
-	BuildNormalList(m_surf1);
-	BuildNormalList(m_surf2);
+	BuildNormalList(m_surf1, m_flipPrimary);
+	BuildNormalList(m_surf2, m_flipSecondary);
 }
 
 //-----------------------------------------------------------------------------
