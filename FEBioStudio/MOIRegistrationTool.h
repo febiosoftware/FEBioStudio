@@ -29,17 +29,17 @@
 #include "RegistrationTool.h"
 #include <QtCore>
 
-class ICPRegistrationToolUI;
+class MOIRegistrationToolUI;
 class FSItemListBuilder;
 
  //-----------------------------------------------------------------------------
-class CICPRegistrationTool : public CAbstractTool
+class CMOIRegistrationTool : public CAbstractTool
 {
     Q_OBJECT
 
 public:
     // constructor
-    CICPRegistrationTool(CMainWindow* wnd);
+    CMOIRegistrationTool(CMainWindow* wnd);
 
     QWidget* createUi() override;
 
@@ -65,5 +65,5 @@ private:
 	FSItemListBuilder* getSelection();
 
 private:
-    ICPRegistrationToolUI* ui;
+    MOIRegistrationToolUI* ui;
 };

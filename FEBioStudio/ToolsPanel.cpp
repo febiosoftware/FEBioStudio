@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "ICPRegistrationTool.h"
 #include "ImageMapTool.h"
 #include "MeshToImageTool.h"
+#include "MOIRegistrationTool.h"
 #include "DiscreteElementNetworkTool.h"
 #include "SelectNearPlaneTool.h"
 #include "KinematBuildTool.h"
@@ -73,6 +74,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CMeshToImageTool   (wnd));
+    tools.push_back(new CMOIRegistrationTool(wnd));
     tools.push_back(new CDiscreteElementNetworkTool(wnd));
     tools.push_back(new CSelectNearPlaneTool(wnd));
 	tools.push_back(new CKinematBuildTool   (wnd));

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include "GLDocument.h"
 
-CAlignMeshMOITool::CAlignMeshMOITool(CMainWindow* wnd) : CBasicTool(wnd, "Align Mesh MOI", HAS_APPLY_BUTTON)
+CAlignMeshMOITool::CAlignMeshMOITool(CMainWindow* wnd) : CBasicTool(wnd, "Align Mesh MOI with CS", HAS_APPLY_BUTTON)
 {
 	addBoolProperty(&m_useArea, "Use area MOI");
 }
