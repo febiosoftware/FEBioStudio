@@ -22,6 +22,8 @@ public:
 
 	void setRenderMode(RenderMode rm);
 
+	void setSampleCount(unsigned int count) { sampleCount = count; }
+
 protected:
     virtual void customInit() = 0;
     virtual void customRender() = 0;
@@ -37,6 +39,7 @@ protected:
     std::unique_ptr<QRhiRenderBuffer> m_ds;
     std::unique_ptr<QRhiRenderPassDescriptor> m_rp;
     bool m_hasSwapChain = false;
+	unsigned int sampleCount = 4;
     QMatrix4x4 m_proj;
 
 private:

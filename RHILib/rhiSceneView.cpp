@@ -50,7 +50,31 @@ QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 	}
 #endif
 
+	// choose sample count for MSAA
+	unsigned int sampleCount = 4;
+
+	// For OpenGL, to ensure there is a depth/stencil buffer for the window.
+	 // With other APIs this is under the application's control (QRhiRenderBuffer etc.)
+	 // and so no special setup is needed for those.
+	if (api == QRhi::OpenGLES2)
+	{
+		QSurfaceFormat fmt;
+		fmt.setDepthBufferSize(24);
+		fmt.setStencilBufferSize(8);
+		fmt.setSamples(4);
+		// Special case macOS to allow using OpenGL there.
+		// (the default Metal is the recommended approach, though)
+		// gl_VertexID is a GLSL 130 feature, and so the default OpenGL 2.1 context
+		// we get on macOS is not sufficient.
+#ifdef Q_OS_MACOS
+		fmt.setVersion(4, 1);
+		fmt.setProfile(QSurfaceFormat::CoreProfile);
+#endif
+		QSurfaceFormat::setDefaultFormat(fmt);
+	}
+
 	RhiWindow* rhiWnd = new rhiSceneView(wnd, api);
+	rhiWnd->setSampleCount(sampleCount);
 
 #if QT_CONFIG(vulkan)
 	if (api == QRhi::Vulkan)
@@ -103,7 +127,9 @@ void flipX(GLMesh* pm)
 void rhiSceneView::customInit()
 {
 	QString msg;
-	msg += QString(m_rhi->backendName()) + ", " + QString(m_rhi->driverInfo().deviceName);
+	msg += QString("backend = %1\n").arg(m_rhi->backendName());
+	msg += QString("driver  = %1\n").arg(QString(m_rhi->driverInfo().deviceName));
+	msg += QString("sample count = %1\n").arg(m_sc->sampleCount());
 	m_wnd->AddLogEntry(msg);
 
 	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
@@ -121,6 +147,7 @@ void rhiSceneView::customInit()
 	m_colorTriSrb->create();
 
 	m_colorPipeline.reset(m_rhi->newGraphicsPipeline());
+	m_colorPipeline->setSampleCount(m_sc->sampleCount());
 	m_colorPipeline->setDepthTest(true);
 	m_colorPipeline->setDepthWrite(true);
 	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
