@@ -70,7 +70,7 @@ ThresholdImageFilter::ThresholdImageFilter()
     AddDoubleParam(0, "min");
 }
 
-template<class pType> void ThresholdImageFilter::FitlerTemplate()
+template<class pType> void ThresholdImageFilter::FilterTemplate()
 {
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
@@ -115,40 +115,40 @@ void ThresholdImageFilter::ApplyFilter()
     switch (image->PixelType())
     {
     case CImage::UINT_8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::UINT_32:
-        FitlerTemplate<uint32_t>();
+        FilterTemplate<uint32_t>();
         break;
     case CImage::INT_32:
-        FitlerTemplate<int32_t>();
+        FilterTemplate<int32_t>();
         break;
     case CImage::UINT_RGB8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_RGB8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_RGB16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_RGB16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::REAL_32:
-        FitlerTemplate<float>();
+        FilterTemplate<float>();
         break;
     case CImage::REAL_64:
-        FitlerTemplate<double>();
+        FilterTemplate<double>();
         break;
     default:
         assert(false);
@@ -187,7 +187,7 @@ PadImageFilter::PadImageFilter()
     AddChoiceParam(0, "scale", "Image Scaling")->SetEnumNames("Maintain Size\0Maintain Spacing\0");
 }
 
-template<class pType> void PadImageFilter::FitlerTemplate()
+template<class pType> void PadImageFilter::FilterTemplate()
 {
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
@@ -290,40 +290,40 @@ void PadImageFilter::ApplyFilter()
     switch (image->PixelType())
     {
     case CImage::UINT_8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::UINT_32:
-        FitlerTemplate<uint32_t>();
+        FilterTemplate<uint32_t>();
         break;
     case CImage::INT_32:
-        FitlerTemplate<int32_t>();
+        FilterTemplate<int32_t>();
         break;
     case CImage::UINT_RGB8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_RGB8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_RGB16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_RGB16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::REAL_32:
-        FitlerTemplate<float>();
+        FilterTemplate<float>();
         break;
     case CImage::REAL_64:
-        FitlerTemplate<double>();
+        FilterTemplate<double>();
         break;
     default:
         assert(false);
@@ -342,7 +342,7 @@ WarpImageFilter::WarpImageFilter(Post::CGLModel* glm)
 	AddBoolParam(true, "scale_dim", "Scale dimensions");
 }
 
-template<class pType> void WarpImageFilter::FitlerTemplate()
+template<class pType> void WarpImageFilter::FilterTemplate()
 {
     if ((m_model == nullptr) || (m_glm == nullptr)) return;
 	CImageModel* mdl = m_model;
@@ -492,40 +492,40 @@ void WarpImageFilter::ApplyFilter()
     switch (image->PixelType())
     {
     case CImage::UINT_8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::UINT_32:
-        FitlerTemplate<uint32_t>();
+        FilterTemplate<uint32_t>();
         break;
     case CImage::INT_32:
-        FitlerTemplate<int32_t>();
+        FilterTemplate<int32_t>();
         break;
     case CImage::UINT_RGB8:
-        FitlerTemplate<uint8_t>();
+        FilterTemplate<uint8_t>();
         break;
     case CImage::INT_RGB8:
-        FitlerTemplate<int8_t>();
+        FilterTemplate<int8_t>();
         break;
     case CImage::UINT_RGB16:
-        FitlerTemplate<uint16_t>();
+        FilterTemplate<uint16_t>();
         break;
     case CImage::INT_RGB16:
-        FitlerTemplate<int16_t>();
+        FilterTemplate<int16_t>();
         break;
     case CImage::REAL_32:
-        FitlerTemplate<float>();
+        FilterTemplate<float>();
         break;
     case CImage::REAL_64:
-        FitlerTemplate<double>();
+        FilterTemplate<double>();
         break;
     default:
         assert(false);
