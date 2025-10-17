@@ -33,6 +33,8 @@ SOFTWARE.*/
 #include "rhiDocument.h"
 #include <FEBioStudio/MainWindow.h>
 #include <GLLib/GLContext.h>
+#include <QMimeData>
+#include <QFileInfo>
 
 QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 {
@@ -94,6 +96,34 @@ rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 rhiSceneView::~rhiSceneView()
 {
 	delete m_rhiRender;
+}
+
+bool rhiSceneView::event(QEvent* event)
+{
+	if (m_doc && (event->type()==QEvent::Drop))
+	{
+		QDropEvent* ev = dynamic_cast<QDropEvent*>(event);
+		if (ev)
+		{
+			foreach(const QUrl& url, ev->mimeData()->urls()) {
+				QString fileName = url.toLocalFile();
+
+				FileReader* fileReader = nullptr;
+
+				QFileInfo file(fileName);
+
+				if ((file.suffix() == "stl") || (file.suffix() == "ply"))
+				{
+					m_doc->ImportFile(fileName);
+				}
+			}
+
+			m_doc->GetScene()->ZoomExtents(false);
+			requestUpdate();
+		}
+	}
+
+	return RhiWindow::event(event);
 }
 
 void flipX(GLMesh* pm)
@@ -159,7 +189,6 @@ void rhiSceneView::customRender()
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
 	m_prevPos = ev->pos();
-
 	setRenderMode(RenderMode::DYNAMIC);
 }
 

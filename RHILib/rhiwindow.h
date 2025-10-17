@@ -42,7 +42,7 @@ protected:
 	unsigned int sampleCount = 4;
     QMatrix4x4 m_proj;
 
-private:
+protected:
     void init();
     void resizeSwapChain();
     void render();
@@ -50,6 +50,7 @@ private:
     void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *) override;
 
+private:
     QRhi::Implementation m_graphicsApi;
     bool m_initialized = false;
     bool m_notExposed = false;

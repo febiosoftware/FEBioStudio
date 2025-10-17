@@ -44,6 +44,8 @@ public:
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
+	bool event(QEvent* event) override;
+
 private:
 	CMainWindow* m_wnd = nullptr;
 	rhiDocument* m_doc = nullptr;
