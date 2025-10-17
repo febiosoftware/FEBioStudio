@@ -423,7 +423,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		OpenDocument(fileName);
 	}
 	else if (((ext.compare(".stl"), Qt::CaseInsensitive) == 0) ||
-		     ((ext.compare(".ply"), Qt::CaseInsensitive) == 0))
+		     ((ext.compare(".ply"), Qt::CaseInsensitive) == 0) ||
+		     ((ext.compare(".vtp"), Qt::CaseInsensitive) == 0))
 	{
 		// NOTE: Temporary construct to create rhi window
 		rhiDocument* rhiDoc = new rhiDocument(this);

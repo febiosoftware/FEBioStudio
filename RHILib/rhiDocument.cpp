@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "rhiDocument.h"
 #include <MeshIO/STLimport.h>
 #include <MeshIO/PLYImport.h>
+#include <MeshIO/VTUImport.h>
 #include <FEMLib/FSProject.h>
 #include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
@@ -57,6 +58,12 @@ bool rhiDocument::ImportFile(const QString& fileName)
 		PLYImport ply(dummy);
 		if (ply.Load(sfile.c_str()) == false) return false;
 	}
+	else if (ext == "vtp")
+	{
+		VTPimport vtp(dummy);
+		if (vtp.Load(sfile.c_str()) == false) return false;
+	}
+	else return false;
 
 	GModel& gm = dummy.GetFSModel().GetModel();
 	if (gm.Objects() > 0)

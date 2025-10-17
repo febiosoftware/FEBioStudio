@@ -111,11 +111,7 @@ bool rhiSceneView::event(QEvent* event)
 				FileReader* fileReader = nullptr;
 
 				QFileInfo file(fileName);
-
-				if ((file.suffix() == "stl") || (file.suffix() == "ply"))
-				{
-					m_doc->ImportFile(fileName);
-				}
+				m_doc->ImportFile(fileName);
 			}
 
 			m_doc->GetScene()->ZoomExtents(false);
