@@ -49,7 +49,7 @@ RayTracer::RayTracer()
 	AddChoiceParam(0, "Background")->SetEnumNames("Default\0Transparent\0");
 #ifndef NDEBUG
 	Param* p = AddIntParam(-1, "BHV Levels");
-	p->SetIntRange(-1, 32);
+	p->SetIntRange(-1, 20);
 	p->SetVisible(false);
 #endif
 }
@@ -63,13 +63,13 @@ RayTracer::~RayTracer()
 	tex3d.clear();
 }
 
-void RayTracer::setupProjection(double fov, double fnear)
+void RayTracer::setProjection(double fov, double fnear)
 {
 	fieldOfView = fov;
 	nearPlane = fnear;
 }
 
-void RayTracer::setBackgroundColor(GLColor c)
+void RayTracer::setBackgroundColor(const GLColor& c)
 {
 	backgroundCol = c;
 }
@@ -529,7 +529,10 @@ void RayTracer::preprocess()
 	size_t triangles = mesh.triangles();
 	for (size_t i = 0; i < triangles; ++i) mesh.triangle(i).id = (int) i;
 
-	int levels = GetIntValue(BHV_LEVELS);
+	int levels = -1;
+#ifndef NDEBUG
+	levels = GetIntValue(BHV_LEVELS);
+#endif
 	if (levels < 0)
 	{
 		levels = (int)log2((double)triangles);
@@ -723,14 +726,12 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		}
 
 		// add specular component
-		Color spec(0, 0, 0);
 		if (!isOccluded && (mat.shininess > 0) && mat.lighting)
 		{
 			Vec3 H = t - N * (2 * (t * N));
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			spec = Color(s, s, s);
-			fragCol += spec * 0.8;
+			fragCol += Color(0.8, 0.8, 0.8) * s;
 		}
 		fragCol.a() = c.a();
 	}

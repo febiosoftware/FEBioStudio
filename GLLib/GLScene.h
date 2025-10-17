@@ -83,7 +83,7 @@ public:
 	virtual void Update();
 
 	// Render the 3D scene
-	virtual void Render(GLRenderEngine& engine, GLContext& rc) = 0;
+	virtual void Render(GLRenderEngine& engine, GLContext& rc);
 
 	// Render on the 2D canvas
 	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}

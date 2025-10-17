@@ -23,56 +23,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "rhiDocument.h"
-#include <MeshIO/STLimport.h>
-#include <MeshIO/PLYImport.h>
-#include <FEMLib/FSProject.h>
-#include <FEMLib/FSModel.h>
-#include <GeomLib/GModel.h>
-#include <GeomLib/GObject.h>
-#include <QFileInfo>
+#pragma once
+#include <GLLib/GLMesh.h>
+#include <GLLib/GLScene.h>
 
-rhiDocument::rhiDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
+class rhiScene : public GLScene
 {
-	m_scene = new rhiScene();
-}
+public:
+	rhiScene() {}
 
-bool rhiDocument::ImportFile(const QString& fileName)
-{
-	QFileInfo fi(fileName);
+	void addMesh(GLMesh* pm);
 
-	QString ext = fi.suffix();
+	void Render(GLRenderEngine& re, GLContext& rc) override;
 
-	// read STL from file.
-	std::string sfile = fileName.toStdString();
-	FSProject dummy;
+	// get the bounding box of the entire scene
+	BOX GetBoundingBox() override { return m_box; }
 
-	if (ext == "stl")
-	{
-		STLimport stl(dummy);
-		if (stl.Load(sfile.c_str()) == false) return false;
-	}
-	else if (ext == "ply")
-	{
-		PLYImport ply(dummy);
-		if (ply.Load(sfile.c_str()) == false) return false;
-	}
+	// get the bounding box of the current selection
+	BOX GetSelectionBox() override { return m_box; }
 
-	GModel& gm = dummy.GetFSModel().GetModel();
-	if (gm.Objects() > 0)
-	{
-		GObject * po = gm.Object(0);
-		GLMesh* pm = po->GetRenderMesh();
+private:
+	BOX m_box;
+};
 
-		SetDocTitle(fi.baseName().toStdString());
-
-		// add a copy since scene will take ownership
-		GLMesh* copy = new GLMesh(*pm);
-
-		GetRhiScene()->addMesh(copy);
-
-		return true;
-	}
-
-	return false;
-}

@@ -75,8 +75,24 @@ enum MeshSelectionMode {
 	MESH_MODE_SURFACE = 1
 };
 
+// Base class for documents that manage a GLScene
+class CGLSceneDocument : public CUndoDocument
+{
+public:
+	CGLSceneDocument(CMainWindow* wnd);
+
+	GLScene* GetScene();
+
+	CGView* GetView();
+
+	void Update() override;
+
+protected:
+	GLScene* m_scene = nullptr;
+};
+
 // Base class for documents that require visualization
-class CGLDocument : public CUndoDocument
+class CGLDocument : public CGLSceneDocument
 {
 public:
 	enum UI_VIEW_MODE
@@ -136,10 +152,6 @@ public:
 
 	virtual GObject* GetActiveObject();
 
-	CGView* GetView();
-
-	GLScene* GetScene();
-
 	void Update() override;
 
 public:
@@ -176,8 +188,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	GLScene* m_scene;
-
 	VIEW_STATE	m_vs;	// the view state
 
 	UI_VIEW_MODE m_uiMode;

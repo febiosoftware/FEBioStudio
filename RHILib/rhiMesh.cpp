@@ -25,21 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiMesh.h"
 
-rhi::Mesh::Mesh(QRhi* rhi) : m_rhi(rhi) 
+void rhi::ShaderResource::create(QRhi* rhi, QRhiBuffer* sharedBuffer)
 {
-	// create the uniform buffer
-	static const quint32 UBUF_SIZE = 128; // PV, Q
-	ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, UBUF_SIZE));
+	// create the buffer
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 128));
 	ubuf->create();
 
-	// create shader bindings
-	srb.reset(m_rhi->newShaderResourceBindings());
+	// create resource binding
 	static const QRhiShaderResourceBinding::StageFlags visibility =
 		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+	srb.reset(rhi->newShaderResourceBindings());
 	srb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ubuf.get())
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedBuffer),
+			QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
 		});
 	srb->create();
+}
+
+void rhi::ShaderResource::update(QRhiResourceUpdateBatch* u, const QMatrix4x4& mvp, const QMatrix4x4& mv)
+{
+	u->updateDynamicBuffer(ubuf.get(),  0, 64, mvp.constData());
+	u->updateDynamicBuffer(ubuf.get(), 64, 64, mv.constData());
+}
+
+rhi::Mesh::Mesh(QRhi* rhi, rhi::ShaderResource* srb) : m_rhi(rhi)
+{
+	sr.reset(srb);
 }
 
 bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
@@ -57,7 +69,10 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 		{
 			v->r = f.vr[j];
 			v->n = f.vn[j];
-			v->c = vec3f(0.7f, 0.7f, 0.7f);
+
+			float c[4] = { 0.f };
+			f.c[j].toFloat(c);
+			v->c = vec3f(c[0], c[1], c[2]);
 		}
 	}
 
@@ -66,6 +81,18 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 	vbuf->create();
 
 	return true;
+}
+
+void rhi::Mesh::SetVertexColor(const vec3f& c)
+{
+	if (!vertexData.empty())
+	{
+		Vertex* v = vertexData.data();
+		for (int i = 0; i < vertexCount; ++i, v++)
+		{
+			v->c = c;
+		}
+	}
 }
 
 void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
@@ -79,15 +106,14 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj*mv;
 
-	u->updateDynamicBuffer(ubuf.get(), 0, 64, mvp.constData());
-	u->updateDynamicBuffer(ubuf.get(), 64, 64, mv.constData());
+	sr->update(u, mvp, mv);
 }
 
 void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
 {
 	if (vertexCount > 0)
 	{
-		cb->setShaderResources(srb.get());
+		cb->setShaderResources(sr->get());
 		const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
 		cb->setVertexInput(0, 1, &vbufBinding);
 		cb->draw(vertexCount);

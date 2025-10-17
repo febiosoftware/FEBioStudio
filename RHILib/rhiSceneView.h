@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "rhiwindow.h"
 #include "rhiDocument.h"
+#include "rhiRenderer.h"
 
 class CMainWindow;
 
@@ -47,19 +48,12 @@ private:
 	CMainWindow* m_wnd = nullptr;
 	rhiDocument* m_doc = nullptr;
 
-	std::unique_ptr<QRhiBuffer> m_ubuf;
-	std::unique_ptr<QRhiShaderResourceBindings> m_colorTriSrb;
-	std::unique_ptr<QRhiGraphicsPipeline> m_colorPipeline;
-
-	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
+	rhiRenderer* m_rhiRender = nullptr;
 
 	float m_opacity = 1;
 	int m_opacityDir = -1;
 
-	GLCamera m_cam;
 	QPoint m_prevPos;	//!< last mouse position
-
-	std::vector<std::unique_ptr<rhi::Mesh>> m_meshList;
 };
 
 // helper function for creating a RhiWindow inside a QWidget

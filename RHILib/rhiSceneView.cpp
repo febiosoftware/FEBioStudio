@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <rhi/qshader.h>
 #include "rhiDocument.h"
 #include <FEBioStudio/MainWindow.h>
+#include <GLLib/GLContext.h>
 
 QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 {
@@ -84,15 +85,6 @@ QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 	return QWidget::createWindowContainer(rhiWnd);
 }
 
-static QShader getShader(const QString& name)
-{
-	QFile f(name);
-	if (f.open(QIODevice::ReadOnly))
-		return QShader::fromSerialized(f.readAll());
-
-	return QShader();
-}
-
 rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 	: RhiWindow(graphicsApi)
 {
@@ -101,6 +93,7 @@ rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 
 rhiSceneView::~rhiSceneView()
 {
+	delete m_rhiRender;
 }
 
 void flipX(GLMesh* pm)
@@ -132,112 +125,35 @@ void rhiSceneView::customInit()
 	msg += QString("sample count = %1\n").arg(m_sc->sampleCount());
 	m_wnd->AddLogEntry(msg);
 
-	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
-
-	static const quint32 UBUF_SIZE = 128; // PV, Q
-	m_ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, UBUF_SIZE));
-	m_ubuf->create();
-
-	m_colorTriSrb.reset(m_rhi->newShaderResourceBindings());
-	static const QRhiShaderResourceBinding::StageFlags visibility =
-		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
-	m_colorTriSrb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, m_ubuf.get())
-		});
-	m_colorTriSrb->create();
-
-	m_colorPipeline.reset(m_rhi->newGraphicsPipeline());
-	m_colorPipeline->setSampleCount(m_sc->sampleCount());
-	m_colorPipeline->setDepthTest(true);
-	m_colorPipeline->setDepthWrite(true);
-	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
-	QRhiGraphicsPipeline::TargetBlend premulAlphaBlend;
-	premulAlphaBlend.enable = true;
-	m_colorPipeline->setTargetBlends({ premulAlphaBlend });
-	m_colorPipeline->setShaderStages({
-		{ QRhiShaderStage::Vertex, getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) }
-		});
-	// Draw triangles
-	m_colorPipeline->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	// set the layout of the vertex data buffer.
-	QRhiVertexInputLayout inputLayout;
-	inputLayout.setBindings({
-		{ 9 * sizeof(float) }
-		});
-	inputLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 },
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) },
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }
-		});
-	m_colorPipeline->setVertexInputLayout(inputLayout);
-	m_colorPipeline->setShaderResourceBindings(m_colorTriSrb.get());
-	m_colorPipeline->setRenderPassDescriptor(m_rp.get());
-	m_colorPipeline->create();
+	m_rhiRender = new rhiRenderer(m_rhi.get(), m_sc.get(), m_rp.get());
+	m_rhiRender->init();
 }
 
 void rhiSceneView::customRender()
 {
 	rhiDocument* doc = dynamic_cast<rhiDocument*>(m_wnd->GetDocument());
+
+	// TODO: This doesn't always work! It is possible for a new document to have the same pointer
+	// than the old one!
 	if (doc != m_doc)
 	{
+		m_rhiRender->clearCache();
 		m_doc = doc;
-		GLMesh* gmsh = doc->GetMesh();
-
-		// see if we need to update meshes
-		if (m_meshList.empty())
-		{
-			m_meshList.resize(1);
-			m_meshList[0].reset(new rhi::Mesh(m_rhi.get()));
-		}
-
-		bool b = m_meshList[0]->CreateFromGLMesh(gmsh); assert(b);
-
-		BOX box = gmsh->GetBoundingBox();
-
-		m_cam.SetTargetDistance(2.0*box.Radius());
-		m_cam.Update(true);
 	}
 
-	QRhiResourceUpdateBatch* resourceUpdates = m_rhi->nextResourceUpdateBatch();
+	rhiScene* scene = m_doc->GetRhiScene();
+	GLCamera& cam = scene->GetCamera();
 
-	if (m_initialUpdates) {
-		resourceUpdates->merge(m_initialUpdates);
-		m_initialUpdates->release();
-		m_initialUpdates = nullptr;
-	}
+	m_rhiRender->setViewProjection(m_proj);
 
-	QMatrix4x4 Q;
-	quatd q = m_cam.GetOrientation();
-	QQuaternion qt(q.w, q.x, q.y, q.z);
-	Q.rotate(qt);
+	GLContext rc;
+	rc.m_x = rc.m_y = 0;
+	rc.m_w = width();
+	rc.m_h = height();
+	rc.m_cam = &cam;
+	scene->Render(*m_rhiRender, rc);
 
-	QMatrix4x4 view;
-	vec3d t = m_cam.Target();
-	vec3d p = m_cam.GetPosition();
-	view.translate(-t.x, -t.y, -t.z);
-	view *= Q;
-	view.translate(-p.x, -p.y, -p.z);
-
-	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
-	const QSize outputSizeInPixels = m_sc->currentPixelSize();
-
-	// update mesh data
-	for (auto& mesh : m_meshList) 
-		mesh->Update(resourceUpdates, m_proj, view);
-
-	// start the rendering pass
-	cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.8f, 0.8f, 1.f), { 1.0f, 0 }, resourceUpdates);
-
-	cb->setGraphicsPipeline(m_colorPipeline.get());
-	cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
-	cb->setShaderResources();
-
-	for (auto& mesh : m_meshList)
-		mesh->Draw(cb);
-
-	cb->endPass();
+	m_rhiRender->finish();
 }
 
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
@@ -249,7 +165,8 @@ void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
-	GLCamera& cam = m_cam;
+	if (m_doc == nullptr) return;
+	GLCamera& cam = m_doc->GetScene()->GetCamera();
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
 	bool bctrl = (ev->modifiers() & Qt::ControlModifier ? true : false);

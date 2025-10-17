@@ -29,6 +29,18 @@ SOFTWARE.*/
 
 namespace rhi {
 
+	struct ShaderResource
+	{
+		std::unique_ptr<QRhiBuffer> ubuf;
+		std::unique_ptr<QRhiShaderResourceBindings> srb;
+
+		void create(QRhi* rhi, QRhiBuffer* sharedBuffer);
+
+		QRhiShaderResourceBindings* get() { return srb.get(); }
+
+		void update(QRhiResourceUpdateBatch* u, const QMatrix4x4& mvp, const QMatrix4x4& mv);
+	};
+
 	class Mesh
 	{
 		struct Vertex {
@@ -38,9 +50,11 @@ namespace rhi {
 		};
 
 	public:
-		Mesh(QRhi* rhi);
+		Mesh(QRhi* rhi, rhi::ShaderResource* srb);
 
 		bool CreateFromGLMesh(const GLMesh* gmsh);
+
+		void SetVertexColor(const vec3f& c);
 
 		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
 
@@ -51,11 +65,16 @@ namespace rhi {
 	private:
 		std::vector<Vertex> vertexData;
 		std::unique_ptr<QRhiBuffer> vbuf;
-		std::unique_ptr<QRhiBuffer> ubuf;
-		std::unique_ptr<QRhiShaderResourceBindings> srb;
-		QRhi* m_rhi = nullptr;
 		unsigned int vertexCount = 0;
 
+		std::unique_ptr<ShaderResource> sr;
+
+		QRhi* m_rhi = nullptr;
+
 		QMatrix4x4 modelMatrix;
+
+	private:
+		Mesh(const Mesh&) = delete;
+		void operator = (const Mesh&) = delete;
 	};
 } // rhi

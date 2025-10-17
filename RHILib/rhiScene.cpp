@@ -23,56 +23,42 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "rhiDocument.h"
-#include <MeshIO/STLimport.h>
-#include <MeshIO/PLYImport.h>
-#include <FEMLib/FSProject.h>
-#include <FEMLib/FSModel.h>
-#include <GeomLib/GModel.h>
-#include <GeomLib/GObject.h>
-#include <QFileInfo>
+#include "rhiScene.h"
 
-rhiDocument::rhiDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
+class GLMeshItem : public GLSceneItem
 {
-	m_scene = new rhiScene();
+public:
+	GLMeshItem(GLMesh* pm) : m_pm(pm) {}
+	~GLMeshItem() { delete m_pm; }
+
+	void render(GLRenderEngine& re, GLContext& rc) override
+	{
+		if (m_pm)
+		{
+			re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 180, 160));
+			re.renderGMesh(*m_pm);
+		}
+	}
+
+private:
+	GLMesh* m_pm;
+};
+
+void rhiScene::addMesh(GLMesh* pm)
+{
+	if (pm == nullptr) return;
+	BOX box = pm->GetBoundingBox();
+	m_box += box;
+	addItem(new GLMeshItem(pm));
+	ZoomExtents(false);
 }
 
-bool rhiDocument::ImportFile(const QString& fileName)
+void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 {
-	QFileInfo fi(fileName);
-
-	QString ext = fi.suffix();
-
-	// read STL from file.
-	std::string sfile = fileName.toStdString();
-	FSProject dummy;
-
-	if (ext == "stl")
-	{
-		STLimport stl(dummy);
-		if (stl.Load(sfile.c_str()) == false) return false;
-	}
-	else if (ext == "ply")
-	{
-		PLYImport ply(dummy);
-		if (ply.Load(sfile.c_str()) == false) return false;
-	}
-
-	GModel& gm = dummy.GetFSModel().GetModel();
-	if (gm.Objects() > 0)
-	{
-		GObject * po = gm.Object(0);
-		GLMesh* pm = po->GetRenderMesh();
-
-		SetDocTitle(fi.baseName().toStdString());
-
-		// add a copy since scene will take ownership
-		GLMesh* copy = new GLMesh(*pm);
-
-		GetRhiScene()->addMesh(copy);
-
-		return true;
-	}
-
-	return false;
+	GLCamera& cam = GetCamera();
+	re.setProjection(45.0f, 0.1f);
+	re.positionCamera(cam);
+	re.setBackgroundColor(GLColor(200, 200, 255));
+	re.setLightPosition(0, vec3f(1, 1, 1));
+	GLScene::Render(re, rc);
 }

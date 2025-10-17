@@ -113,10 +113,13 @@ public:
 	virtual FrontFace frontFace() { return FrontFace::COUNTER_CLOCKWISE; }
 	virtual void setFrontFace(FrontFace f) {}
 
+	virtual void setProjection(double fov, double near) {}
 	virtual void positionCamera(const GLCamera& cam) {}
 
 public:
 	virtual void setLightPosition(unsigned int lightIndex, const vec3f& p) {}
+
+	virtual void setBackgroundColor(const GLColor& c) {}
 
 public: // immediate mode rendering
 	virtual void begin(PrimitiveType prim) {}

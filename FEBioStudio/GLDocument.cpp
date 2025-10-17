@@ -54,7 +54,27 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <sstream>
 
-CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
+CGLSceneDocument::CGLSceneDocument(CMainWindow* wnd) : CUndoDocument(wnd)
+{
+	m_scene = nullptr;
+}
+
+CGView* CGLSceneDocument::GetView()
+{
+	return &m_scene->GetView();
+}
+
+GLScene* CGLSceneDocument::GetScene()
+{
+	return m_scene;
+}
+
+void CGLSceneDocument::Update()
+{
+	if (m_scene) m_scene->Update();
+}
+
+CGLDocument::CGLDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
 {
 	m_fileWriter = nullptr;
 	m_fileReader = nullptr;
@@ -71,8 +91,6 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_units = 0;
 
 	m_psel = nullptr;
-
-	m_scene = nullptr;
 
 	m_showTitle = false;
 	m_showSubtitle = false;
@@ -147,20 +165,10 @@ GObject* CGLDocument::GetActiveObject()
 	return nullptr;
 }
 
-CGView* CGLDocument::GetView()
-{
-	return &m_scene->GetView();
-}
-
-GLScene* CGLDocument::GetScene()
-{
-	return m_scene;
-}
-
 void CGLDocument::Update()
 {
 	UpdateSelection();
-	if (m_scene) m_scene->Update();
+	CGLSceneDocument::Update();
 }
 
 std::string CGLDocument::GetTypeString(FSObject* po)

@@ -1365,14 +1365,24 @@ private:
 
 void CMainWindow::on_actionRayTrace_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CGLSceneDocument* doc = dynamic_cast<CGLSceneDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	GLScene* scene = doc->GetScene();
 	if (scene == nullptr) return;
 
-	int W = GetGLView()->width();
-	int H = GetGLView()->height();
+	int W = 0, H = 0;
+	if (ui->m_activeConfig == Ui::Config::RHI_CONFIG)
+	{
+		W = ui->centralWidget->rhiView->width();
+		H = ui->centralWidget->rhiView->height();
+	}
+	else
+	{
+		W = GetGLView()->width();
+		H = GetGLView()->height();
+	}
+	if ((W == 0) || (H == 0)) return;
 
 	RayTracer* rayTracer = new RayTracer;
 	rayTracer->setWidth(W);
@@ -1394,7 +1404,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		QImage img(W, H, QImage::Format_ARGB32);
 
 		CGView& view = scene->GetView();
-		rayTracer->setupProjection(view.m_fov, view.m_fnear);
+		rayTracer->setProjection(view.m_fov, view.m_fnear);
 		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);

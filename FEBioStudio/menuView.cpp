@@ -90,7 +90,7 @@ void CMainWindow::on_actionOrtho_toggled(bool b)
 
 void CMainWindow::on_actionShowGrid_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleGridLines(b);
 	RedrawGL();
@@ -98,7 +98,7 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 
 void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleMeshLines(b);
 	Update(this);
@@ -106,7 +106,7 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 
 void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	GetGLView()->ToggleFeatureEdges(b);
 	Update(this);
@@ -114,7 +114,7 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 
 void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	GLViewSettings& view = GetGLView()->GetViewSettings();

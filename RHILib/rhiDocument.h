@@ -24,18 +24,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FEBioStudio/Document.h>
-#include <GLLib/GLMesh.h>
+#include <FEBioStudio/GLDocument.h>
+#include "rhiScene.h"
 
-class rhiDocument : public CDocument
+class rhiDocument : public CGLSceneDocument
 {
 public:
 	rhiDocument(CMainWindow* wnd);
 
 	bool ImportFile(const QString& fileName);
 
-	GLMesh* GetMesh() { return m_obj.get(); }
-
-private:
-	std::unique_ptr<GLMesh> m_obj;
+	rhiScene* GetRhiScene() {
+		return dynamic_cast<rhiScene*>(GetScene());
+	}
 };

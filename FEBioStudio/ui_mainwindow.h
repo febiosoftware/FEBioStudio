@@ -221,8 +221,9 @@ public:
 
 		// Use platform-specific defaults
 #if defined(Q_OS_WIN)
-		QRhi::Implementation graphicsApi = QRhi::D3D11;
-//		QRhi::Implementation graphicsApi = QRhi::OpenGLES2;
+//		QRhi::Implementation graphicsApi = QRhi::D3D11;
+		QRhi::Implementation graphicsApi = QRhi::OpenGLES2;
+//		QRhi::Implementation graphicsApi = QRhi::Vulkan;
 #elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 		QRhi::Implementation graphicsApi = QRhi::Metal;
 #elif QT_CONFIG(vulkan)

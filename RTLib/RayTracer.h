@@ -50,9 +50,9 @@ public:
 	RayTracer();
 	~RayTracer();
 
-	void setupProjection(double fov, double fnear);
+	void setProjection(double fov, double fnear) override;
 
-	void setBackgroundColor(GLColor c);
+	void setBackgroundColor(const GLColor& c) override;
 
 	void setWidth (size_t W) { SetIntValue(WIDTH , (int) W); }
 	void setHeight(size_t H) { SetIntValue(HEIGHT, (int) H); }

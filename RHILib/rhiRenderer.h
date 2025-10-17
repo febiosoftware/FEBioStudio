@@ -23,56 +23,54 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "rhiDocument.h"
-#include <MeshIO/STLimport.h>
-#include <MeshIO/PLYImport.h>
-#include <FEMLib/FSProject.h>
-#include <FEMLib/FSModel.h>
-#include <GeomLib/GModel.h>
-#include <GeomLib/GObject.h>
-#include <QFileInfo>
+#pragma once
+#include <GLLib/GLRenderEngine.h>
+#include <rhi/qrhi.h>
+#include "rhiMesh.h"
 
-rhiDocument::rhiDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
+class rhiRenderer : public GLRenderEngine
 {
-	m_scene = new rhiScene();
-}
+public:
+	rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp);
+	~rhiRenderer();
 
-bool rhiDocument::ImportFile(const QString& fileName)
-{
-	QFileInfo fi(fileName);
+	void init();
 
-	QString ext = fi.suffix();
+	void finish() override;
 
-	// read STL from file.
-	std::string sfile = fileName.toStdString();
-	FSProject dummy;
+	void setViewProjection(const QMatrix4x4& proj);
 
-	if (ext == "stl")
-	{
-		STLimport stl(dummy);
-		if (stl.Load(sfile.c_str()) == false) return false;
-	}
-	else if (ext == "ply")
-	{
-		PLYImport ply(dummy);
-		if (ply.Load(sfile.c_str()) == false) return false;
-	}
+	void clearCache();
 
-	GModel& gm = dummy.GetFSModel().GetModel();
-	if (gm.Objects() > 0)
-	{
-		GObject * po = gm.Object(0);
-		GLMesh* pm = po->GetRenderMesh();
+public:
 
-		SetDocTitle(fi.baseName().toStdString());
+	void positionCamera(const GLCamera& cam) override;
 
-		// add a copy since scene will take ownership
-		GLMesh* copy = new GLMesh(*pm);
+	void setLightPosition(unsigned int n, const vec3f& lp) override;
 
-		GetRhiScene()->addMesh(copy);
+	void setBackgroundColor(const GLColor& c) override;
 
-		return true;
-	}
+	void setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly) override;
 
-	return false;
-}
+	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+
+private:
+	QRhi* m_rhi;
+	QRhiSwapChain* m_sc;
+	QRhiRenderPassDescriptor* m_rp;
+
+	std::unique_ptr<QRhiBuffer> globalBuf;
+	std::unique_ptr<QRhiGraphicsPipeline> m_colorPipeline;
+	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
+
+	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
+
+	QMatrix4x4 m_proj;
+	QMatrix4x4 m_view;
+	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
+
+private:
+	vec3f m_light;
+	QColor m_bgColor;
+	vec3f m_currentColor;
+};

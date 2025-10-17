@@ -559,6 +559,8 @@ void Ui::CRHIConfig::Apply()
 
 	ui->setActiveCentralView(CMainCentralWidget::RHI_VIEW);
 
+	ui->mainMenu->actionRayTrace->setEnabled(true);
+
 	ui->mainMenu->menuEdit->menuAction()->setVisible(false);
 	ui->mainMenu->menuEditPost->menuAction()->setVisible(false);
 	ui->mainMenu->menuEditTxt->menuAction()->setVisible(false);
