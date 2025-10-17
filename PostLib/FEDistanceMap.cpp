@@ -40,6 +40,7 @@ Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::Mo
 	m_bsigned = false;
 	m_flipPrimary = false;
 	m_flipSecondary = false;
+	m_nopt = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -51,6 +52,7 @@ Post::ModelDataField* Post::FEDistanceMap::Clone() const
 	pd->m_surf2 = m_surf2;
 	pd->m_tol = m_tol;
 	pd->m_bsigned = m_bsigned;
+	pd->m_nopt = m_nopt;
 	return pd;
 }
 
@@ -195,8 +197,16 @@ void Post::FEDistanceMap::ApplyState(int n)
 		a[i] = (P.q - r).Length();
 		if (m_bsigned)
 		{
-			double s = (P.q - r)*P.n;
-			if (s > 0) a[i] = -a[i];
+			if (m_nopt == 0) // new approach
+			{
+				double s = (P.q - r) * P.n;
+				if (s > 0) a[i] = -a[i];
+			}
+			else // old approach
+			{
+				double s = (P.q - r) * m_surf1.m_norm[i];
+				if (s < 0) a[i] = -a[i];
+			}
 		}
 	}
 	vector<int> nf1(m_surf1.Faces());
@@ -215,8 +225,16 @@ void Post::FEDistanceMap::ApplyState(int n)
 		b[i] = (P.q - r).Length();
 		if (m_bsigned)
 		{
-			double s = (P.q - r)*P.n;
-			if (s > 0) b[i] = -b[i];
+			if (m_nopt == 0) // new approach
+			{
+				double s = (P.q - r) * P.n;
+				if (s > 0) b[i] = -b[i];
+			}
+			else
+			{
+				double s = (P.q - r) * m_surf2.m_norm[i];
+				if (s < 0) b[i] = -b[i];
+			}
 		}
 	}
 	vector<int> nf2(m_surf2.Faces());

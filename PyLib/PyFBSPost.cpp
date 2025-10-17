@@ -198,6 +198,7 @@ void init_FBSPost(py::module& m)
 		.def("SetSigned", &FEDistanceMap::SetSigned)
 		.def("FlipPrimary", &FEDistanceMap::FlipPrimary)
 		.def("FlipSecondary", &FEDistanceMap::FlipSecondary)
+		.def("SetMethod", &FEDistanceMap::SetMethod)
 		.def("Apply", &FEDistanceMap::Apply)
 		;
 }

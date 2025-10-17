@@ -86,6 +86,8 @@ public:
 
     void SetSigned(bool sign) { m_bsigned = sign; }
 
+	void SetMethod(int nopt) { m_nopt = nopt; }
+
 	void FlipPrimary(bool b) { m_flipPrimary = b; }
 	void FlipSecondary(bool b) { m_flipSecondary = b; }
 
@@ -108,5 +110,6 @@ public:
 	bool	m_bsigned;		//!< signed or non-signed distance
 	bool	m_flipPrimary;
 	bool	m_flipSecondary;
+	int		m_nopt;
 };
 }

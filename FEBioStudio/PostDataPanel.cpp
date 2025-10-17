@@ -256,6 +256,7 @@ public:
 		addProperty("Signed distance", CProperty::Bool);
 		addProperty("Flip Primary", CProperty::Bool);
 		addProperty("Flip Secondary", CProperty::Bool);
+		addProperty("Method", CProperty::Enum)->setEnumValues(QStringList() << "new" << "old");
 		addProperty("", CProperty::Action, "Apply");
 	}
 
@@ -276,6 +277,7 @@ public:
 		case 2: return m_map->m_bsigned; break;
 		case 3: return m_map->m_flipPrimary; break;
 		case 4: return m_map->m_flipSecondary; break;
+		case 5: return m_map->m_nopt;
 		}
 		return QVariant();
 	}
@@ -297,7 +299,8 @@ public:
 		case 2: m_map->m_bsigned = v.toBool(); break;
 		case 3: m_map->m_flipPrimary = v.toBool(); break;
 		case 4: m_map->m_flipSecondary = v.toBool(); break;
-		case 5:
+		case 5: m_map->m_nopt = v.toInt(); break;
+		case 6:
 		{
 			CDlgStartThread dlg(nullptr, new DistanceMapThread(m_map));
 			dlg.exec();
