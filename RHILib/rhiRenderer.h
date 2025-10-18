@@ -47,6 +47,7 @@ public:
 	void positionCamera(const GLCamera& cam) override;
 
 	void setLightPosition(unsigned int n, const vec3f& lp) override;
+	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col);
 
 	void setBackgroundColor(const GLColor& c) override;
 
@@ -57,12 +58,16 @@ public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 
 private:
+	QRhiGraphicsPipeline* createPipeline(QVector<QRhiShaderStage>& shaders, QRhiGraphicsPipeline::CullMode cullMode);
+
+private:
 	QRhi* m_rhi;
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
 	std::unique_ptr<QRhiBuffer> globalBuf;
-	std::unique_ptr<QRhiGraphicsPipeline> m_colorPipeline;
+	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
+	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
 	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
 
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
@@ -73,6 +78,7 @@ private:
 
 private:
 	vec3f m_light;
+	GLColor m_lightSpecular;
 	QColor m_bgColor;
 	GLMaterial m_currentMat;
 };

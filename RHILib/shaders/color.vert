@@ -13,6 +13,7 @@ layout(location = 2) out vec3 v_color;
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
+    vec4 specColor;
 } glob;
 
 // mesh-specific block
@@ -20,7 +21,9 @@ layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
     vec4 col;
-    float spec;
+    float specExp;
+    float specStrength;
+    float opacity;
 } mesh;
 
 void main()

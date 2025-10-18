@@ -38,6 +38,8 @@ public:
 
 	void SetObjectColor(GLColor col);
 	void SetObjectShininess(float f);
+	void SetObjectReflectivity(float f);
+	void SetObjectOpacity(float f);
 
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override { return m_box; }
@@ -48,6 +50,7 @@ public:
 public:
 	GLColor bgcol = GLColor(200, 200, 255);
 	vec3f light = vec3f(1, 1, 1);
+	GLColor specColor = GLColor::White();
 
 private:
 	BOX m_box;

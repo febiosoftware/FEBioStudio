@@ -28,7 +28,7 @@ SOFTWARE.*/
 void rhi::ShaderResource::create(QRhi* rhi, QRhiBuffer* sharedBuffer)
 {
 	// create the buffer
-	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 148));
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 156));
 	ubuf->create();
 
 	// create resource binding
@@ -45,7 +45,7 @@ void rhi::ShaderResource::create(QRhi* rhi, QRhiBuffer* sharedBuffer)
 
 void rhi::ShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
 {
-	u->updateDynamicBuffer(ubuf.get(), 0, 148, f);
+	u->updateDynamicBuffer(ubuf.get(), 0, 156, f);
 }
 
 rhi::Mesh::Mesh(QRhi* rhi, rhi::ShaderResource* srb) : m_rhi(rhi)
@@ -99,10 +99,14 @@ void rhi::Mesh::SetColor(const vec3f& c)
 	color = c;
 }
 
-void rhi::Mesh::SetMaterial(const vec3f& c, float f)
+void rhi::Mesh::SetMaterial(GLMaterial mat)
 {
-	color = c;
-	shininess = f;
+	float f[4] = { 0.f };
+	mat.diffuse.toFloat(f);
+	color = vec3f(f[0], f[1], f[2]);
+	shininess = mat.shininess;
+	reflectivity = mat.reflectivity;
+	opacity = mat.opacity;
 }
 
 void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
@@ -116,11 +120,13 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj*mv;
 
-	float f[37] = { 0.f };
+	float f[39] = { 0.f };
 	memcpy(f, mvp.constData(), 64);
 	memcpy(f + 16, mv.constData(), 64);
 	memcpy(f + 32, &color, 16);
 	f[36] = shininess;
+	f[37] = reflectivity;
+	f[38] = opacity;
 	sr->update(u, f);
 }
 

@@ -1,5 +1,4 @@
 #version 440
-precision highp float;
 
 // input
 layout(location = 0) in vec3 v_pos;
@@ -12,6 +11,7 @@ layout(location = 0) out vec4 fragColor;
 // global (shared) block
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
+    vec4 specColor;
 } glob;
 
 // mesh-specific block
@@ -19,7 +19,9 @@ layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
     vec4 col;
-    float spec;
+    float specExp;
+    float specStrength;
+    float opacity;
 } mesh;
 
 void main()
@@ -44,12 +46,14 @@ void main()
         f_col += v_color*a;
 
         // specular component
-        vec3 R = normalize(reflect(V, N));
-        float c = clamp(dot(R, L), 1e-4, 0.99999);
-        float se = clamp(64.0 * mesh.spec, 0.0, 64.0);
-        float s = pow(c, se);
-        s = clamp(s, 0, 1);
-        f_col += vec3(0.8)*s;   
+        if (mesh.specStrength > 1e-4) {
+            vec3 R = normalize(reflect(V, N));
+            float c = clamp(dot(R, L), 1e-4, 0.99999);
+            float se = clamp(64.0 * mesh.specExp, 0.0, 64.0);
+            float s = pow(c, se);
+            s = clamp(s, 0, 1);
+            f_col += glob.specColor.xyz*(s*mesh.specStrength);
+        }
     }
     else {
         // only diffuse for backfacing triangles
@@ -58,5 +62,6 @@ void main()
     }
 
     // return final color
-    fragColor = vec4(f_col, 1);
+    float a = clamp(mesh.opacity, 0.0, 1.0);
+    fragColor = vec4(f_col, a);
 }

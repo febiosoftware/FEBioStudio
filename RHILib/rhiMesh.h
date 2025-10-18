@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <rhi/qrhi.h>
 #include <GLLib/GLMesh.h>
+#include <GLLib/GLMaterial.h>
 
 namespace rhi {
 
@@ -57,7 +58,7 @@ namespace rhi {
 		void SetVertexColor(const vec3f& c);
 
 		void SetColor(const vec3f& c);
-		void SetMaterial(const vec3f& c, float shininess);
+		void SetMaterial(GLMaterial mat);
 
 		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
 
@@ -77,6 +78,8 @@ namespace rhi {
 		QMatrix4x4 modelMatrix;
 		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
 		float shininess = 0.8f;
+		float reflectivity = 0.8f;
+		float opacity = 1.0f;
 
 	private:
 		Mesh(const Mesh&) = delete;

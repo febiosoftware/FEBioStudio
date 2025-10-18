@@ -44,30 +44,29 @@ rhiRenderer::~rhiRenderer()
 	clearCache();
 }
 
-void rhiRenderer::init()
+QRhiGraphicsPipeline* rhiRenderer::createPipeline(QVector<QRhiShaderStage>& shaders, QRhiGraphicsPipeline::CullMode cullMode)
 {
-	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
+	QRhiGraphicsPipeline* pl = m_rhi->newGraphicsPipeline();
 
-	globalBuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 16));
-	globalBuf->create();
+	pl->setSampleCount(m_sc->sampleCount());
+	pl->setDepthTest(true);
+	pl->setDepthWrite(true);
 
-	m_colorSrb.reset(new rhi::ShaderResource());
-	m_colorSrb->create(m_rhi, globalBuf.get());
-
-	m_colorPipeline.reset(m_rhi->newGraphicsPipeline());
-	m_colorPipeline->setSampleCount(m_sc->sampleCount());
-	m_colorPipeline->setDepthTest(true);
-	m_colorPipeline->setDepthWrite(true);
 	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
-	QRhiGraphicsPipeline::TargetBlend premulAlphaBlend;
-	premulAlphaBlend.enable = true;
-	m_colorPipeline->setTargetBlends({ premulAlphaBlend });
-	m_colorPipeline->setShaderStages({
-		{ QRhiShaderStage::Vertex, getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) }
-		});
-	// Draw triangles
-	m_colorPipeline->setTopology(QRhiGraphicsPipeline::Triangles);
+	QRhiGraphicsPipeline::TargetBlend blendState;
+	blendState.enable = true;
+	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
+	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opColor = QRhiGraphicsPipeline::Add;
+
+	blendState.srcAlpha = QRhiGraphicsPipeline::One;
+	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opAlpha = QRhiGraphicsPipeline::Add;
+
+
+	pl->setTargetBlends({ blendState });
+	pl->setShaderStages(shaders.begin(), shaders.end());
+	pl->setTopology(QRhiGraphicsPipeline::Triangles);
 
 	// set the layout of the vertex data buffer.
 	QRhiVertexInputLayout inputLayout;
@@ -79,10 +78,36 @@ void rhiRenderer::init()
 		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) },
 		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }
 		});
-	m_colorPipeline->setVertexInputLayout(inputLayout);
-	m_colorPipeline->setShaderResourceBindings(m_colorSrb->get());
-	m_colorPipeline->setRenderPassDescriptor(m_rp);
-	m_colorPipeline->create();
+	pl->setVertexInputLayout(inputLayout);
+	pl->setShaderResourceBindings(m_colorSrb->get());
+	pl->setRenderPassDescriptor(m_rp);
+
+	pl->setCullMode(cullMode);
+	pl->setFrontFace(QRhiGraphicsPipeline::CCW);
+	pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+
+	pl->create();
+
+	return pl;
+}
+
+void rhiRenderer::init()
+{
+	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
+
+	globalBuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 32));
+	globalBuf->create();
+
+	m_colorSrb.reset(new rhi::ShaderResource());
+	m_colorSrb->create(m_rhi, globalBuf.get());
+
+	// Load shaders
+	QVector<QRhiGraphicsShaderStage> shaders= {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
+
+	m_frontRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Back));
+	m_backRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Front));
 }
 
 void rhiRenderer::clearCache()
@@ -99,6 +124,11 @@ void rhiRenderer::setBackgroundColor(const GLColor& c)
 void rhiRenderer::setLightPosition(unsigned int n, const vec3f& lp)
 {
 	m_light = lp;
+}
+
+void rhiRenderer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)
+{
+	m_lightSpecular = col;
 }
 
 void rhiRenderer::positionCamera(const GLCamera& cam)
@@ -144,7 +174,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 			it->second->CreateFromGLMesh(&mesh);
 			it->second->SetVertexColor(col);
 		}
-		it->second->SetMaterial(col, m_currentMat.shininess);
+		it->second->SetMaterial(m_currentMat);
 	}
 	else
 	{
@@ -153,7 +183,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		rhi::Mesh* rm = new rhi::Mesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetVertexColor(col);
-		rm->SetMaterial(col, m_currentMat.shininess);
+		rm->SetMaterial(m_currentMat);
 		m_meshList[&mesh] = rm;
 	}
 }
@@ -177,8 +207,14 @@ void rhiRenderer::finish()
 	const QSize outputSizeInPixels = m_sc->currentPixelSize();
 
 	// set light properties
-	float lp[4] = { m_light.x, m_light.y, m_light.z, 0.f };
-	resourceUpdates->updateDynamicBuffer(globalBuf.get(), 0, 16, lp);
+	float s[4] = { 0.f };
+	m_lightSpecular.toFloat(s);
+
+	float lp[8] = { 
+		m_light.x, m_light.y, m_light.z, 0.f,
+		s[0], s[1], s[2], 1.f
+	};
+	resourceUpdates->updateDynamicBuffer(globalBuf.get(), 0, 32, lp);
 
 	// update mesh data
 	for (auto& it : m_meshList)
@@ -187,8 +223,16 @@ void rhiRenderer::finish()
 	// start the rendering pass
 	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
 
-	cb->setGraphicsPipeline(m_colorPipeline.get());
+	// render back faces first
+	cb->setGraphicsPipeline(m_backRender.get());
 	cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
+	cb->setShaderResources();
+
+	for (auto& it : m_meshList)
+		it.second->Draw(cb);
+
+	// render front faces next
+	cb->setGraphicsPipeline(m_frontRender.get());
 	cb->setShaderResources();
 
 	for (auto& it : m_meshList)

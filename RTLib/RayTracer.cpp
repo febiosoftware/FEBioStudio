@@ -224,6 +224,8 @@ void RayTracer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::Dif
 void RayTracer::setMaterial(const GLMaterial& glmat)
 {
 	currentColor = glmat.diffuse;
+	currentColor.a = (uint8_t)(255.f*glmat.opacity);
+
 	useVertexColor = false;
 	useTexture1D = false;
 
@@ -234,6 +236,8 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 		if (mat.shininess < 0) mat.shininess = 0;
 		if (mat.shininess > 128) mat.shininess = 128;
 		mat.reflection = glmat.reflection;
+
+		mat.reflectivity = glmat.reflectivity;
 	}
 
 	matList.push_back(mat);
@@ -243,7 +247,12 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 void RayTracer::setLightPosition(unsigned int lightIndex, const vec3f& p)
 {
 	Vec4 r(p, 0);
-	lightPos = modelView * r;
+	lightPos = r;// modelView* r;
+}
+
+void RayTracer::setLightSpecularColor(unsigned int lightIndex, const GLColor& col)
+{
+	lightSpecular = Color(col);
 }
 
 void RayTracer::begin(PrimitiveType prim)
@@ -731,7 +740,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 			Vec3 H = t - N * (2 * (t * N));
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
-			fragCol += Color(0.8, 0.8, 0.8) * s;
+			fragCol += lightSpecular * (s * mat.reflectivity);
 		}
 		fragCol.a() = c.a();
 	}

@@ -92,8 +92,11 @@ public:
 	{
 		addProperty("object color", CProperty::Color);
 		addProperty("object shininess", CProperty::Float)->setFloatRange(0, 1);
+		addProperty("object reflectivity", CProperty::Float)->setFloatRange(0, 1);
+		addProperty("object opacity", CProperty::Float)->setFloatRange(0, 1);
 		addProperty("background color", CProperty::Color);
 		addProperty("light position", CProperty::Vec3);
+		addProperty("specular color", CProperty::Color);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -103,8 +106,11 @@ public:
 		{
 		case 0: return color; break;
 		case 1: return shininess; break;
-		case 2: return toQColor(s->bgcol); break;
-		case 3: return Vec3fToString(s->light); break;
+		case 2: return reflectivity; break;
+		case 3: return opacity; break;
+		case 4: return toQColor(s->bgcol); break;
+		case 5: return Vec3fToString(s->light); break;
+		case 6: return toQColor(s->specColor); break;
 		}
 
 		return QVariant();
@@ -117,14 +123,19 @@ public:
 		{
 		case 0: s->SetObjectColor(toGLColor(color = v.value<QColor>())); break;
 		case 1: s->SetObjectShininess(shininess = v.toFloat()); break;
-		case 2: s->bgcol = toGLColor(v.value<QColor>()); break;
-		case 3: s->light = StringToVec3f(v.toString()); break;
+		case 2: s->SetObjectReflectivity(reflectivity = v.toFloat()); break;
+		case 3: s->SetObjectOpacity(opacity = v.toFloat()); break;
+		case 4: s->bgcol = toGLColor(v.value<QColor>()); break;
+		case 5: s->light = StringToVec3f(v.toString()); break;
+		case 6: s->specColor = toGLColor(v.value<QColor>()); break;
 		}
 	}
 
 private:
 	QColor color = QColor::fromRgb(200, 180, 160);
 	float shininess = 0.8f;
+	float reflectivity = 0.8f;
+	float opacity = 1.0f;
 	rhiDocument* m_doc;
 };
 

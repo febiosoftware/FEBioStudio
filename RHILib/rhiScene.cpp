@@ -39,6 +39,8 @@ public:
 			mat.type = GLMaterial::PLASTIC;
 			mat.ambient = mat.diffuse = color;
 			mat.shininess = shininess;
+			mat.reflectivity = reflectivity;
+			mat.opacity = opacity;
 			re.setMaterial(mat);
 			re.renderGMesh(*m_pm);
 		}
@@ -47,6 +49,8 @@ public:
 public:
 	GLColor color = GLColor(200, 180, 160);
 	float shininess = 0.8f;
+	float reflectivity = 0.8f;
+	float opacity = 1.0f;
 
 private:
 	GLMesh* m_pm;
@@ -68,6 +72,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	re.positionCamera(cam);
 	re.setBackgroundColor(bgcol);
 	re.setLightPosition(0, light);
+	re.setLightSpecularColor(0, specColor);
 	GLScene::Render(re, rc);
 }
 
@@ -88,5 +93,25 @@ void rhiScene::SetObjectShininess(float f)
 	{
 		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
 		if (m) m->shininess = f;
+	}
+}
+
+void rhiScene::SetObjectReflectivity(float f)
+{
+	GLItemIterator it = begin();
+	for (int i = 0; i < items(); ++i, ++it)
+	{
+		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		if (m) m->reflectivity = f;
+	}
+}
+
+void rhiScene::SetObjectOpacity(float f)
+{
+	GLItemIterator it = begin();
+	for (int i = 0; i < items(); ++i, ++it)
+	{
+		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		if (m) m->opacity = f;
 	}
 }

@@ -36,6 +36,7 @@ namespace rt {
 	{
 		bool lighting = true;
 		int shininess = 0;
+		double reflectivity = 0.8;
 		int tex1d = -1;
 		int tex3d = -1;
 		double reflection = 0;
@@ -90,6 +91,7 @@ public:
 	void setMaterial(const GLMaterial& mat) override;
 
 	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
+	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col) override;
 
 public: // immediate mode rendering
 	void begin(PrimitiveType prim) override;
@@ -140,6 +142,7 @@ private:
 	std::vector<rt::Material> matList;
 
 	rt::Vec4 lightPos;
+	rt::Color lightSpecular = rt::Color(0.8f, 0.8f, 0.8f);
 
 	double fieldOfView;
 	double nearPlane;
