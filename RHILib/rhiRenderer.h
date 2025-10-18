@@ -65,10 +65,16 @@ private:
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
+	QRhiVertexInputLayout m_inputLayout;
+
 	std::unique_ptr<QRhiBuffer> globalBuf;
 	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
 	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
+	std::unique_ptr<QRhiSampler> m_sampler;
+	std::unique_ptr<QRhiTexture> m_texture;
+
+	rhi::SharedResources m_sharedResources;
 
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
 

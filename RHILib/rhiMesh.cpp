@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiMesh.h"
 
-void rhi::ShaderResource::create(QRhi* rhi, QRhiBuffer* sharedBuffer)
+void rhi::ShaderResource::create(QRhi* rhi, SharedResources* sr)
 {
 	// create the buffer
-	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 156));
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 160));
 	ubuf->create();
 
 	// create resource binding
@@ -37,15 +37,16 @@ void rhi::ShaderResource::create(QRhi* rhi, QRhiBuffer* sharedBuffer)
 
 	srb.reset(rhi->newShaderResourceBindings());
 	srb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedBuffer),
-			QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, sr->globalbuf),
+			QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get()),
+			QRhiShaderResourceBinding::sampledTexture(2, visibility, sr->texture, sr->sampler)
 		});
 	srb->create();
 }
 
 void rhi::ShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
 {
-	u->updateDynamicBuffer(ubuf.get(), 0, 156, f);
+	u->updateDynamicBuffer(ubuf.get(), 0, 160, f);
 }
 
 rhi::Mesh::Mesh(QRhi* rhi, rhi::ShaderResource* srb) : m_rhi(rhi)
@@ -61,6 +62,8 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 	vertexCount = 3 * NF;
 	vertexData.resize(vertexCount);
 	Vertex* v = vertexData.data();
+	BOX box = gmsh->GetBoundingBox();
+
 	for (int i = 0; i < NF; ++i)
 	{
 		const GLMesh::FACE& f = gmsh->Face(i);
@@ -72,6 +75,12 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 			float c[4] = { 0.f };
 			f.c[j].toFloat(c);
 			v->c = vec3f(c[0], c[1], c[2]);
+
+			vec3f& r = v->r;
+			float t_u = (r.x - box.x0) / box.Width();
+//			float t_v = (r.y - box.y0) / box.Height();
+
+			v->t = vec3f(t_u, 0.f, 0.f);
 		}
 	}
 
@@ -107,6 +116,7 @@ void rhi::Mesh::SetMaterial(GLMaterial mat)
 	shininess = mat.shininess;
 	reflectivity = mat.reflectivity;
 	opacity = mat.opacity;
+	useTexture = mat.useTexture;
 }
 
 void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
@@ -120,13 +130,14 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj*mv;
 
-	float f[39] = { 0.f };
+	float f[40] = { 0.f };
 	memcpy(f, mvp.constData(), 64);
 	memcpy(f + 16, mv.constData(), 64);
 	memcpy(f + 32, &color, 16);
 	f[36] = shininess;
 	f[37] = reflectivity;
 	f[38] = opacity;
+	f[39] = (useTexture ? 1.f : 0.f);
 	sr->update(u, f);
 }
 

@@ -57,6 +57,9 @@ public:
 	double		reflection = 0; // reflection factor
 	double		opacity = 1.0;	// opacity (1.0 = opaque, 0.0 = transparent)
 
+	// temporary
+	bool useTexture = false;
+
 public:
 	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }
 };

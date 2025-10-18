@@ -111,7 +111,7 @@ public:
 
 	bool IsEmpty() const { return m_Node.empty(); }
 
-	BOX GetBoundingBox() { return m_box; }
+	BOX GetBoundingBox() const { return m_box; }
 
 	void Attach(GLMesh& m, bool bupdate = true);
 

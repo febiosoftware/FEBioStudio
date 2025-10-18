@@ -30,12 +30,19 @@ SOFTWARE.*/
 
 namespace rhi {
 
+	struct SharedResources
+	{
+		QRhiBuffer* globalbuf = nullptr;
+		QRhiTexture* texture = nullptr;
+		QRhiSampler* sampler = nullptr;
+	};
+
 	struct ShaderResource
 	{
 		std::unique_ptr<QRhiBuffer> ubuf;
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
 
-		void create(QRhi* rhi, QRhiBuffer* sharedBuffer);
+		void create(QRhi* rhi, SharedResources* sharedResources);
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
@@ -48,6 +55,7 @@ namespace rhi {
 			vec3f r; // coordinate
 			vec3f n; // normal
 			vec3f c; // color
+			vec3f t; // texture coordinate
 		};
 
 	public:
@@ -80,6 +88,7 @@ namespace rhi {
 		float shininess = 0.8f;
 		float reflectivity = 0.8f;
 		float opacity = 1.0f;
+		bool useTexture = false;
 
 	private:
 		Mesh(const Mesh&) = delete;

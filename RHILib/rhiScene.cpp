@@ -41,6 +41,7 @@ public:
 			mat.shininess = shininess;
 			mat.reflectivity = reflectivity;
 			mat.opacity = opacity;
+			mat.useTexture = useTexture;
 			re.setMaterial(mat);
 			re.renderGMesh(*m_pm);
 		}
@@ -51,6 +52,7 @@ public:
 	float shininess = 0.8f;
 	float reflectivity = 0.8f;
 	float opacity = 1.0f;
+	bool useTexture = false;
 
 private:
 	GLMesh* m_pm;
@@ -73,6 +75,14 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	re.setBackgroundColor(bgcol);
 	re.setLightPosition(0, light);
 	re.setLightSpecularColor(0, specColor);
+
+	GLItemIterator it = begin();
+	for (int i = 0; i < items(); ++i, ++it)
+	{
+		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		if (m) m->useTexture = useTexture;
+	}
+
 	GLScene::Render(re, rc);
 }
 

@@ -4,6 +4,7 @@
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_normal;
 layout(location = 2) in vec3 v_color;
+layout(location = 3) in vec3 v_tex;
 
 // output
 layout(location = 0) out vec4 fragColor;
@@ -22,7 +23,11 @@ layout(std140, binding = 1) uniform MeshBlock {
     float specExp;
     float specStrength;
     float opacity;
+    float useTexture;
 } mesh;
+
+// texture sampler
+layout(binding = 2) uniform sampler2D smp;
 
 void main()
 {
@@ -32,18 +37,23 @@ void main()
 
     vec3 f_col = vec3(0,0,0);
 
+
+    vec3 col = v_color;
+    if (mesh.useTexture > 0)
+        col = texture(smp, v_tex.xy).xyz;
+
     // ambient value
-    f_col += v_color*0.2;
+    f_col += col*0.2;
 
     if (gl_FrontFacing) {
 
         // front-lit
         float b = max(dot(N, vec3(0,0,1)),0);
-        f_col += v_color*(b*0.2);
+        f_col += col*(b*0.2);
 
         // diffuse component
         float a = max(dot(N, L),0);
-        f_col += v_color*a;
+        f_col += col*a;
 
         // specular component
         if (mesh.specStrength > 1e-4) {

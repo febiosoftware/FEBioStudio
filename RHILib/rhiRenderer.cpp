@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiRenderer.h"
 #include <QFile>
+#include <QPainter>
+#include <FSCore/ColorMap.h>
 
 static QShader getShader(const QString& name)
 {
@@ -68,17 +70,7 @@ QRhiGraphicsPipeline* rhiRenderer::createPipeline(QVector<QRhiShaderStage>& shad
 	pl->setShaderStages(shaders.begin(), shaders.end());
 	pl->setTopology(QRhiGraphicsPipeline::Triangles);
 
-	// set the layout of the vertex data buffer.
-	QRhiVertexInputLayout inputLayout;
-	inputLayout.setBindings({
-		{ 9 * sizeof(float) }
-		});
-	inputLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 },
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) },
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }
-		});
-	pl->setVertexInputLayout(inputLayout);
+	pl->setVertexInputLayout(m_inputLayout);
 	pl->setShaderResourceBindings(m_colorSrb->get());
 	pl->setRenderPassDescriptor(m_rp);
 
@@ -91,6 +83,26 @@ QRhiGraphicsPipeline* rhiRenderer::createPipeline(QVector<QRhiShaderStage>& shad
 	return pl;
 }
 
+QImage createTextureImage(QSize size)
+{
+	QImage img(size, QImage::Format_RGBA8888);
+	img.fill(Qt::white);
+
+	CColorMap map;
+	map.jet();
+	for (int i=0; i<size.width(); ++i)
+	{
+		float r = (float) i/ (size.width() - 1.f);
+		GLColor c = map.map((float)r);
+		QColor qc(c.r, c.g, c.b, c.a);
+		for (int j = 0; j < size.height(); ++j)
+		{
+			img.setPixelColor(i, j, qc);
+		}
+	}
+	return img;
+}
+
 void rhiRenderer::init()
 {
 	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
@@ -98,14 +110,38 @@ void rhiRenderer::init()
 	globalBuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 32));
 	globalBuf->create();
 
+	// prep texture
+	m_sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+	m_sampler->create();
+
+	m_texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 1)));
+	m_texture->create();
+
+	m_initialUpdates->uploadTexture(m_texture.get(), createTextureImage(m_texture->pixelSize()));
+
+	m_sharedResources = { globalBuf.get(), m_texture.get(), m_sampler.get()};
+
 	m_colorSrb.reset(new rhi::ShaderResource());
-	m_colorSrb->create(m_rhi, globalBuf.get());
+	m_colorSrb->create(m_rhi, &m_sharedResources);
+
+	// set the layout of the vertex data buffer.
+	m_inputLayout.setBindings({
+		{ 12 * sizeof(float) }
+		});
+	m_inputLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
+		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		});
 
 	// Load shaders
 	QVector<QRhiGraphicsShaderStage> shaders= {
 		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
 		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
 
+	// create front and back face pipelines
 	m_frontRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Back));
 	m_backRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Front));
 }
@@ -179,7 +215,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	else
 	{
 		rhi::ShaderResource* sr = new rhi::ShaderResource();
-		sr->create(m_rhi, globalBuf.get());
+		sr->create(m_rhi, &m_sharedResources);
 		rhi::Mesh* rm = new rhi::Mesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetVertexColor(col);

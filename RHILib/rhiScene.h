@@ -51,6 +51,7 @@ public:
 	GLColor bgcol = GLColor(200, 200, 255);
 	vec3f light = vec3f(1, 1, 1);
 	GLColor specColor = GLColor::White();
+	bool useTexture = false;
 
 private:
 	BOX m_box;
