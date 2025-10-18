@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,55 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <GLLib/GLRenderEngine.h>
-#include <rhi/qrhi.h>
-#include "rhiMesh.h"
+#include "WindowPanel.h"
 
-class rhiRenderer : public GLRenderEngine
+namespace Ui {
+	class CDocPropsPanel;
+}
+
+class CDocPropsPanel : public CWindowPanel
 {
-public:
-	rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp);
-	~rhiRenderer();
-
-	void init();
-
-	void finish() override;
-
-	void setViewProjection(const QMatrix4x4& proj);
-
-	void clearCache();
+	Q_OBJECT
 
 public:
+	CDocPropsPanel(CMainWindow* pwnd, QWidget* parent = 0);
 
-	void positionCamera(const GLCamera& cam) override;
+public:
+	void Update(bool breset) override;
 
-	void setLightPosition(unsigned int n, const vec3f& lp) override;
-
-	void setBackgroundColor(const GLColor& c) override;
-
-	void setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly) override;
-
-	void setMaterial(const GLMaterial& mat) override;
-
-	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+	void Clear();
 
 private:
-	QRhi* m_rhi;
-	QRhiSwapChain* m_sc;
-	QRhiRenderPassDescriptor* m_rp;
-
-	std::unique_ptr<QRhiBuffer> globalBuf;
-	std::unique_ptr<QRhiGraphicsPipeline> m_colorPipeline;
-	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
-
-	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
-
-	QMatrix4x4 m_proj;
-	QMatrix4x4 m_view;
-	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
-
-private:
-	vec3f m_light;
-	QColor m_bgColor;
-	GLMaterial m_currentMat;
+	Ui::CDocPropsPanel* ui;
 };

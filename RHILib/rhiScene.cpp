@@ -35,16 +35,24 @@ public:
 	{
 		if (m_pm)
 		{
-			re.setMaterial(GLMaterial::PLASTIC, GLColor(200, 180, 160));
+			GLMaterial mat;
+			mat.type = GLMaterial::PLASTIC;
+			mat.ambient = mat.diffuse = color;
+			mat.shininess = shininess;
+			re.setMaterial(mat);
 			re.renderGMesh(*m_pm);
 		}
 	}
+
+public:
+	GLColor color = GLColor(200, 180, 160);
+	float shininess = 0.8f;
 
 private:
 	GLMesh* m_pm;
 };
 
-void rhiScene::addMesh(GLMesh* pm)
+void rhiScene::AddMesh(GLMesh* pm)
 {
 	if (pm == nullptr) return;
 	BOX box = pm->GetBoundingBox();
@@ -58,7 +66,27 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	GLCamera& cam = GetCamera();
 	re.setProjection(45.0f, 0.1f);
 	re.positionCamera(cam);
-	re.setBackgroundColor(GLColor(200, 200, 255));
-	re.setLightPosition(0, vec3f(1, 1, 1));
+	re.setBackgroundColor(bgcol);
+	re.setLightPosition(0, light);
 	GLScene::Render(re, rc);
+}
+
+void rhiScene::SetObjectColor(GLColor col)
+{
+	GLItemIterator it = begin();
+	for (int i = 0; i < items(); ++i, ++it)
+	{
+		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		if (m) m->color = col;
+	}
+}
+
+void rhiScene::SetObjectShininess(float f)
+{
+	GLItemIterator it = begin();
+	for (int i = 0; i < items(); ++i, ++it)
+	{
+		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		if (m) m->shininess = f;
+	}
 }

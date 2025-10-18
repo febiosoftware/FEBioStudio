@@ -1,4 +1,5 @@
 #version 440
+precision highp float;
 
 // input
 layout(location = 0) in vec3 v_pos;
@@ -17,12 +18,15 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
+    vec4 col;
+    float spec;
 } mesh;
 
 void main()
 {
-    vec3 eye   = normalize(v_pos);
-    vec3 light = normalize(glob.lightPos.xyz);
+    vec3 V = normalize(v_pos);
+    vec3 L = normalize(glob.lightPos.xyz);
+    vec3 N = normalize(v_normal);
 
     vec3 f_col = vec3(0,0,0);
 
@@ -32,24 +36,24 @@ void main()
     if (gl_FrontFacing) {
 
         // front-lit
-        float b = max(dot(v_normal, vec3(0,0,1)),0);
+        float b = max(dot(N, vec3(0,0,1)),0);
         f_col += v_color*(b*0.2);
 
         // diffuse component
-        float a = max(dot(v_normal, light),0);
+        float a = max(dot(N, L),0);
         f_col += v_color*a;
 
         // specular component
-        vec3 r = normalize(eye - v_normal*(2.0*dot(v_normal,eye)));
-        float c = dot(r,light);
-        if (c > 0) {
-            float s = pow(c, 64);
-            f_col += vec3(0.8,0.8,0.8)*s;   
-        }
+        vec3 R = normalize(reflect(V, N));
+        float c = clamp(dot(R, L), 1e-4, 0.99999);
+        float se = clamp(64.0 * mesh.spec, 0.0, 64.0);
+        float s = pow(c, se);
+        s = clamp(s, 0, 1);
+        f_col += vec3(0.8)*s;   
     }
     else {
         // only diffuse for backfacing triangles
-        float a = max(dot(-v_normal, light),0);
+        float a = max(dot(-N, L),0);
         f_col += vec3(1, 0.7, 0.7)*a;
     }
 

@@ -93,6 +93,7 @@ SOFTWARE.*/
 #include "PluginManager.h"
 #include <PyLib/PythonRunner.h>
 #include "FEBioBatchView.h"
+#include "DocPropsPanel.h"
 #include <RHILib/rhiSceneView.h>
 
 class QProcess;
@@ -314,6 +315,7 @@ public:
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
 	CFEBioMonitorView* febioMonitorView;
+	::CDocPropsPanel* docProps;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

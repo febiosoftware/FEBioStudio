@@ -1,7 +1,7 @@
 #version 440
 
 // input
-layout(location = 0) in vec4 position;
+layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec3 color;
 
@@ -19,12 +19,14 @@ layout(std140, binding = 0) uniform GlobalBlock {
 layout(std140, binding = 1) uniform MeshBlock {
     mat4 mvp;
     mat4 mv;
+    vec4 col;
+    float spec;
 } mesh;
 
 void main()
 {
-    v_color = color;
-    v_normal = (mesh.mv*vec4(normal, 0)).xyz;
-    v_pos = (mesh.mv*position).xyz;
-    gl_Position = mesh.mvp * position;
+    v_color = mesh.col.xyz; //color;
+    v_normal = normalize((mesh.mv*vec4(normal, 0)).xyz);
+    v_pos = (mesh.mv*vec4(position,1)).xyz;
+    gl_Position = mesh.mvp * vec4(position, 1);
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,20 +23,49 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <FEBioStudio/GLDocument.h>
-#include "rhiScene.h"
+#include "DocPropsPanel.h"
+#include <QBoxLayout>
+#include "PropertyListView.h"
+#include "MainWindow.h"
+#include "Document.h"
 
-class rhiDocument : public CGLSceneDocument
+class Ui::CDocPropsPanel
 {
 public:
-	rhiDocument(CMainWindow* wnd);
+	CDocument* doc = nullptr;
+	::CPropertyListView* props;
 
-	bool ImportFile(const QString& fileName);
+public:
+	void setup(::CDocPropsPanel* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
 
-	rhiScene* GetRhiScene() {
-		return dynamic_cast<rhiScene*>(GetScene());
+		props = new ::CPropertyListView();
+		l->addWidget(props);
+
+		w->setLayout(l);
 	}
-
-	CPropertyList* GetDocProperties() override;
 };
+
+CDocPropsPanel::CDocPropsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CDocPropsPanel)
+{
+	ui->setup(this);
+}
+
+void CDocPropsPanel::Update(bool breset)
+{
+	CDocument* doc = GetMainWindow()->GetDocument();
+	if ((doc != ui->doc) || breset)
+	{
+		ui->doc = doc;
+		CPropertyList* plOld = ui->props->GetPropertyList();
+		CPropertyList* pl = (doc ? doc->GetDocProperties() : nullptr);
+		ui->props->Update(pl);
+		delete plOld;
+	}
+}
+
+void CDocPropsPanel::Clear()
+{
+
+}

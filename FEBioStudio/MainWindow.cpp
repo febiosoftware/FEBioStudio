@@ -1163,6 +1163,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
+	if (ui->docProps->isVisible() && (psend != ui->docProps)) ui->docProps->Update(breset);
+
 	UpdateGraphs(breset);
 }
 
@@ -2299,6 +2301,8 @@ void CMainWindow::UpdateUIConfig()
 	{
 		ui->setUIConfig(Ui::Config::EMPTY_CONFIG);
 	}
+
+	Update(0, true);
 }
 
 //-----------------------------------------------------------------------------

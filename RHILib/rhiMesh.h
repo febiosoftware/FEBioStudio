@@ -38,7 +38,7 @@ namespace rhi {
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
-		void update(QRhiResourceUpdateBatch* u, const QMatrix4x4& mvp, const QMatrix4x4& mv);
+		void update(QRhiResourceUpdateBatch* u, float* f);
 	};
 
 	class Mesh
@@ -56,6 +56,9 @@ namespace rhi {
 
 		void SetVertexColor(const vec3f& c);
 
+		void SetColor(const vec3f& c);
+		void SetMaterial(const vec3f& c, float shininess);
+
 		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
 
 		void Draw(QRhiCommandBuffer* cb);
@@ -72,6 +75,8 @@ namespace rhi {
 		QRhi* m_rhi = nullptr;
 
 		QMatrix4x4 modelMatrix;
+		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
+		float shininess = 0.8f;
 
 	private:
 		Mesh(const Mesh&) = delete;

@@ -87,6 +87,8 @@ void Ui::CEmptyConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -130,6 +132,8 @@ void Ui::CHTMLConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -208,6 +212,8 @@ void Ui::CModelConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->show();
 #endif
@@ -276,6 +282,8 @@ void Ui::CPostConfig::Apply()
 	ui->infoPanel->parentWidget()->show();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->show();
 #endif
@@ -330,6 +338,8 @@ void Ui::CTextConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //    ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -384,6 +394,7 @@ void Ui::CXMLConfig::Apply()
 			ui->imageSettingsPanel->parentWidget()->hide();
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
+			ui->docProps->parentWidget()->hide();
 
 			for (int index = 1; index < ui->xmlToolbar->actions().size(); index++)
 			{
@@ -419,6 +430,8 @@ void Ui::CXMLConfig::Apply()
 			ui->imageSettingsPanel->parentWidget()->hide();
 			ui->febioMonitor->parentWidget()->hide();
 			ui->febioMonitorView->parentWidget()->hide();
+			ui->docProps->parentWidget()->hide();
+
 #ifdef HAS_PYTHON
 //            ui->pythonToolsPanel->parentWidget()->hide();
 #endif
@@ -472,6 +485,7 @@ void Ui::CMonitorConfig::Apply()
 
 	ui->febioMonitorView->parentWidget()->show();
 	ui->febioMonitorView->parentWidget()->raise();
+	ui->docProps->parentWidget()->hide();
 
 	ui->m_wnd->ShowLogPanel();
 	ui->logPanel->ShowLog(::CLogPanel::FEBIO_LOG);
@@ -512,6 +526,7 @@ void Ui::CFEBReportConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
+	ui->docProps->parentWidget()->hide();
 }
 
 // Configure for app document
@@ -550,6 +565,7 @@ void Ui::CBatchRunConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 	ui->logPanel->parentWidget()->show();
+	ui->docProps->parentWidget()->hide();
 }
 
 // Configure for app document
@@ -590,4 +606,7 @@ void Ui::CRHIConfig::Apply()
 	ui->febioMonitor->parentWidget()->hide();
 	ui->febioMonitorView->parentWidget()->hide();
 	ui->logPanel->parentWidget()->show();
+
+	ui->docProps->parentWidget()->show();
+	ui->docProps->parentWidget()->raise();
 }

@@ -32,9 +32,12 @@ class rhiScene : public GLScene
 public:
 	rhiScene() {}
 
-	void addMesh(GLMesh* pm);
+	void AddMesh(GLMesh* pm);
 
 	void Render(GLRenderEngine& re, GLContext& rc) override;
+
+	void SetObjectColor(GLColor col);
+	void SetObjectShininess(float f);
 
 	// get the bounding box of the entire scene
 	BOX GetBoundingBox() override { return m_box; }
@@ -42,7 +45,10 @@ public:
 	// get the bounding box of the current selection
 	BOX GetSelectionBox() override { return m_box; }
 
+public:
+	GLColor bgcol = GLColor(200, 200, 255);
+	vec3f light = vec3f(1, 1, 1);
+
 private:
 	BOX m_box;
 };
-

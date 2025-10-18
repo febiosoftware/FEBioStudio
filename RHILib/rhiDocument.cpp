@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <QFileInfo>
+#include "../FEBioStudio/PropertyList.h"
 
 rhiDocument::rhiDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
 {
@@ -76,10 +77,58 @@ bool rhiDocument::ImportFile(const QString& fileName)
 		// add a copy since scene will take ownership
 		GLMesh* copy = new GLMesh(*pm);
 
-		GetRhiScene()->addMesh(copy);
+		GetRhiScene()->AddMesh(copy);
 
 		return true;
 	}
 
 	return false;
+}
+
+class CRhiDocProps : public CPropertyList
+{
+public:
+	CRhiDocProps(rhiDocument* doc) : m_doc(doc)
+	{
+		addProperty("object color", CProperty::Color);
+		addProperty("object shininess", CProperty::Float)->setFloatRange(0, 1);
+		addProperty("background color", CProperty::Color);
+		addProperty("light position", CProperty::Vec3);
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		rhiScene* s = m_doc->GetRhiScene();
+		switch (i)
+		{
+		case 0: return color; break;
+		case 1: return shininess; break;
+		case 2: return toQColor(s->bgcol); break;
+		case 3: return Vec3fToString(s->light); break;
+		}
+
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		rhiScene* s = m_doc->GetRhiScene();
+		switch (i)
+		{
+		case 0: s->SetObjectColor(toGLColor(color = v.value<QColor>())); break;
+		case 1: s->SetObjectShininess(shininess = v.toFloat()); break;
+		case 2: s->bgcol = toGLColor(v.value<QColor>()); break;
+		case 3: s->light = StringToVec3f(v.toString()); break;
+		}
+	}
+
+private:
+	QColor color = QColor::fromRgb(200, 180, 160);
+	float shininess = 0.8f;
+	rhiDocument* m_doc;
+};
+
+CPropertyList* rhiDocument::GetDocProperties()
+{
+	return new CRhiDocProps(this);
 }

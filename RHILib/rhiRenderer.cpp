@@ -122,21 +122,29 @@ void rhiRenderer::positionCamera(const GLCamera& cam)
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
-	float f[4] = { 0.f };
-	c.toFloat(f);
-	m_currentColor = vec3f(f[0], f[1], f[2]);
+	m_currentMat.diffuse = m_currentMat.ambient = c;
+}
+
+void rhiRenderer::setMaterial(const GLMaterial& mat)
+{
+	m_currentMat = mat;
 }
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
+	float f[4] = { 0.f };
+	m_currentMat.diffuse.toFloat(f);
+	vec3f col(f[0], f[1], f[2]);
+
 	auto it = m_meshList.find(&mesh);
 	if (it != m_meshList.end())
 	{
 		if (cacheMesh == false)
 		{
 			it->second->CreateFromGLMesh(&mesh);
-			it->second->SetVertexColor(m_currentColor);
+			it->second->SetVertexColor(col);
 		}
+		it->second->SetMaterial(col, m_currentMat.shininess);
 	}
 	else
 	{
@@ -144,7 +152,8 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		sr->create(m_rhi, globalBuf.get());
 		rhi::Mesh* rm = new rhi::Mesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
-		rm->SetVertexColor(m_currentColor);
+		rm->SetVertexColor(col);
+		rm->SetMaterial(col, m_currentMat.shininess);
 		m_meshList[&mesh] = rm;
 	}
 }
@@ -167,7 +176,7 @@ void rhiRenderer::finish()
 	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
 	const QSize outputSizeInPixels = m_sc->currentPixelSize();
 
-	// set light position
+	// set light properties
 	float lp[4] = { m_light.x, m_light.y, m_light.z, 0.f };
 	resourceUpdates->updateDynamicBuffer(globalBuf.get(), 0, 16, lp);
 
