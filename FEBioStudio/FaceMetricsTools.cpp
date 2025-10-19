@@ -37,6 +37,7 @@ QVariant CFaceMetricsTool::GetPropertyValue(int i)
 	case 0: return m_nsel; break;
 	case 1: return Vec3dToString(m_N); break;
 	case 2: return Vec3dToString(m_c); break;
+    case 3: return (float)m_rms; break;
 	}
 	return QVariant();
 }
@@ -52,6 +53,7 @@ CFaceMetricsTool::CFaceMetricsTool(CMainWindow* wnd) : CBasicTool(wnd, "Surface 
 	addProperty("faces"      , CProperty::Int )->setFlags(CProperty::Visible);
 	addProperty("avg. normal", CProperty::Vec3)->setFlags(CProperty::Visible);
 	addProperty("centroid"   , CProperty::Vec3)->setFlags(CProperty::Visible);
+    addProperty("rms"        , CProperty::Float)->setFlags(CProperty::Visible);
 
 	SetInfo("Calculates some metrics of the currently selected faces.");
 }
@@ -69,7 +71,7 @@ void CFaceMetricsTool::Update()
 
 	m_c = vec3d(0, 0, 0);
 	double A = 0;
-
+    m_rms = 0;
 	m_nsel = 0;
 
 	GObject* po = GetActiveObject();
@@ -99,6 +101,17 @@ void CFaceMetricsTool::Update()
 	}
 	N.Normalize();
 	if (A != 0) c /= A;
+
+    for (int i = 0; i < mesh->Faces(); ++i)
+    {
+        FSFace& face = mesh->Face(i);
+        if (face.IsSelected())
+        {
+            vec3d ci = mesh->FaceCenter(face);
+            m_rms += pow((ci - c)*N,2);
+        }
+    }
+    m_rms = (m_nsel > 0) ? sqrt(m_rms/m_nsel) : 0;
 
 	m_c = T.LocalToGlobal(c);
 	m_N = T.LocalToGlobalNormal(N);
