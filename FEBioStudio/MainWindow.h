@@ -65,6 +65,14 @@ class CPluginManager;
 struct ProgressTracker; // in FEBio/FEBioExport4
 class COptimizationStudy;
 
+enum class GraphicsAPI {
+	API_NULL,
+	API_OPENGL,
+	API_VULKAN,
+	API_METAL,
+	API_DIRECT3D11,
+	API_DIRECT3D12
+};
 
 namespace Ui {
 	class CMainWindow;
@@ -80,7 +88,7 @@ class CMainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
+	explicit CMainWindow(bool reset, GraphicsAPI api, QWidget* parent = 0);
 	~CMainWindow();
 
 	static CMainWindow* GetInstance();

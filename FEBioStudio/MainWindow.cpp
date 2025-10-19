@@ -140,7 +140,7 @@ CMainWindow* CMainWindow::GetInstance()
 }
 
 //-----------------------------------------------------------------------------
-CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
+CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
 
@@ -159,6 +159,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	CIconProvider::Instantiate(devicePixelRatio());
 
 	// setup the GUI
+	ui->m_graphicsApi = api;
 	ui->setupUi(this);
 
 	// read the settings

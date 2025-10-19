@@ -62,7 +62,7 @@ void Ui::CMainWindow::setupUi(::CMainWindow* wnd)
 //		wnd->resize(800, 600);
 
 		// build the central widget
-	centralWidget = new CMainCentralWidget(wnd);
+	centralWidget = new CMainCentralWidget(wnd, m_graphicsApi);
 	wnd->setCentralWidget(centralWidget);
 
 	// init Python stuff

@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <QPainter>
 #include <FEBioLink/FEBioInit.h>
 #include "FBSApplication.h"
+#include <rhi/qrhi.h>
 
 class FBSSplashScreen : public QSplashScreen
 {
@@ -126,6 +127,8 @@ int main(int argc, char* argv[])
 	// see if the reset flag was defined
 	// the reset flag can be used to restore the UI, i.e.
 	// when reset is true, the CMainWindow class will not read the settings.
+
+	GraphicsAPI defaultRhiApi = GraphicsAPI::API_NULL;
 	bool breset = false;
 	for (int i = 0; i < argc; ++i)
 	{
@@ -134,10 +137,34 @@ int main(int argc, char* argv[])
 			breset = true;
 			break;
 		}
+		else if (strcmp(argv[i], "-gl") == 0)
+		{
+			defaultRhiApi = GraphicsAPI::API_OPENGL;
+		}
+		else if (strcmp(argv[i], "-vulkan") == 0)
+		{
+			defaultRhiApi = GraphicsAPI::API_VULKAN;
+		}
+		else if (strcmp(argv[i], "-d3d11") == 0)
+		{
+			defaultRhiApi = GraphicsAPI::API_DIRECT3D11;
+		}
+		else if (strcmp(argv[i], "-d3d12") == 0)
+		{
+			defaultRhiApi = GraphicsAPI::API_DIRECT3D12;
+		}
+		else if (strcmp(argv[i], "-metal") == 0)
+		{
+			defaultRhiApi = GraphicsAPI::API_METAL;
+		}
+		else
+		{
+			qDebug() << "Unknown command line argument: " << argv[i];
+		}
 	}
 
 	// create the main window
-	CMainWindow wnd(breset);
+	CMainWindow wnd(breset, defaultRhiApi);
 
 	app.SetMainWindow(&wnd);
 
@@ -150,7 +177,7 @@ int main(int argc, char* argv[])
 #endif
 
 
-	if ((argc == 2) && (breset == false))
+	if ((argc == 2) && (breset == false) && (argv[1][0] != '-'))
 	{
 		wnd.OpenFile(argv[1], false);
 	}
