@@ -65,7 +65,7 @@ public:
 
 			if (renderMesh)
 			{
-				re.setColor(GLColor::Black());
+				re.setColor(meshColor);
 				re.renderGMeshEdges(*m_pm);
 			}
 		}
@@ -78,6 +78,7 @@ public:
 	float opacity = 1.0f;
 	bool useTexture = false;
 	bool renderMesh = false;
+	GLColor meshColor = GLColor(0, 0, 0);
 
 private:
 	GLMesh* m_pm;
@@ -115,6 +116,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 		{
 			m->useTexture = useTexture;
 			m->renderMesh = renderMesh;
+			m->meshColor = meshColor;
 		}
 	}
 

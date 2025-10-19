@@ -97,8 +97,9 @@ public:
 		addProperty("background color", CProperty::Color);
 		addProperty("light position", CProperty::Vec3);
 		addProperty("specular color", CProperty::Color);
-		addProperty("Use Texture", CProperty::Bool);
-		addProperty("Render mesh lines", CProperty::Bool);
+		addProperty("use texture", CProperty::Bool);
+		addProperty("render mesh lines", CProperty::Bool);
+		addProperty("mesh color", CProperty::Color);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -115,6 +116,7 @@ public:
 		case 6: return toQColor(s->specColor); break;
 		case 7: return s->useTexture; break;
 		case 8: return s->renderMesh; break;
+		case 9: return toQColor(s->meshColor); break;
 		}
 
 		return QVariant();
@@ -134,6 +136,7 @@ public:
 		case 6: s->specColor = toGLColor(v.value<QColor>()); break;
 		case 7: s->useTexture = v.toBool(); break;
 		case 8: s->renderMesh = v.toBool(); break;
+		case 9: s->meshColor = toGLColor(v.value<QColor>()); break;
 		}
 	}
 

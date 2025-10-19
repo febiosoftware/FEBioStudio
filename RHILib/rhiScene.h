@@ -55,6 +55,7 @@ public:
 	bool useTexture = false;
 	bool renderMesh = false;
 	CColorTexture tex1d;
+	GLColor meshColor = GLColor(0, 0, 0);
 
 private:
 	BOX m_box;
