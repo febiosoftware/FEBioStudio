@@ -45,6 +45,7 @@ private:
 	int m_nsel; // selected faces
 	vec3d m_N; // average normal
 	vec3d m_c; // centroid
+    double  m_rms;  // rms distance from selected faces to plane passing through centroid
 
 	friend class Props;
 };
