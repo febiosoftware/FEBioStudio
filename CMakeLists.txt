@@ -640,6 +640,8 @@ endif()
 set(SHADER_FILES
     RHILib/shaders/color.vert
     RHILib/shaders/color.frag
+    RHILib/shaders/lines.vert
+    RHILib/shaders/lines.frag
 )
 
 qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"

@@ -37,12 +37,24 @@ namespace rhi {
 		QRhiSampler* sampler = nullptr;
 	};
 
-	struct ShaderResource
+	struct ColorShaderResource
 	{
 		std::unique_ptr<QRhiBuffer> ubuf;
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
 
 		void create(QRhi* rhi, SharedResources* sharedResources);
+
+		QRhiShaderResourceBindings* get() { return srb.get(); }
+
+		void update(QRhiResourceUpdateBatch* u, float* f);
+	};
+
+	struct LineShaderResource
+	{
+		std::unique_ptr<QRhiBuffer> ubuf;
+		std::unique_ptr<QRhiShaderResourceBindings> srb;
+
+		void create(QRhi* rhi);
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
@@ -59,7 +71,7 @@ namespace rhi {
 		};
 
 	public:
-		Mesh(QRhi* rhi, rhi::ShaderResource* srb);
+		Mesh(QRhi* rhi, rhi::ColorShaderResource* srb);
 
 		bool CreateFromGLMesh(const GLMesh* gmsh);
 
@@ -74,12 +86,15 @@ namespace rhi {
 
 		void SetModelMatrix(const QMatrix4x4& Q) { modelMatrix = Q; }
 
+		void setActive(bool b) { active = b; }
+		bool isActive() const { return active; }
+
 	private:
 		std::vector<Vertex> vertexData;
 		std::unique_ptr<QRhiBuffer> vbuf;
 		unsigned int vertexCount = 0;
 
-		std::unique_ptr<ShaderResource> sr;
+		std::unique_ptr<ColorShaderResource> sr;
 
 		QRhi* m_rhi = nullptr;
 
@@ -89,9 +104,51 @@ namespace rhi {
 		float reflectivity = 0.8f;
 		float opacity = 1.0f;
 		bool useTexture = false;
+		bool active = false;
 
 	private:
 		Mesh(const Mesh&) = delete;
 		void operator = (const Mesh&) = delete;
 	};
+
+	class LineMesh
+	{
+		struct Vertex {
+			vec3f r; // coordinate
+		};
+
+	public:
+		LineMesh(QRhi* rhi, rhi::LineShaderResource* srb);
+
+		bool CreateFromGLMesh(const GLMesh* gmsh);
+
+		void SetColor(const vec3f& c);
+
+		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
+
+		void Draw(QRhiCommandBuffer* cb);
+
+		void SetModelMatrix(const QMatrix4x4& Q) { modelMatrix = Q; }
+
+		void setActive(bool b) { active = b; }
+		bool isActive() const { return active; }
+
+	private:
+		std::vector<Vertex> vertexData;
+		std::unique_ptr<QRhiBuffer> vbuf;
+		unsigned int vertexCount = 0;
+
+		std::unique_ptr<LineShaderResource> sr;
+
+		QRhi* m_rhi = nullptr;
+
+		bool active = false;
+		QMatrix4x4 modelMatrix;
+		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
+
+	private:
+		LineMesh(const LineMesh&) = delete;
+		void operator = (const LineMesh&) = delete;
+	};
+
 } // rhi

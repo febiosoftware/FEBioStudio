@@ -172,6 +172,8 @@ void rhiSceneView::customRender()
 
 	m_rhiRender->setViewProjection(m_proj);
 
+	m_rhiRender->start();
+
 	GLContext rc;
 	rc.m_x = rc.m_y = 0;
 	rc.m_w = width();

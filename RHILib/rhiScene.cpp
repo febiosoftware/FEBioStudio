@@ -62,6 +62,12 @@ public:
 			mat.diffuseMap = (useTexture ? GLMaterial::TEXTURE_1D : GLMaterial::NONE);
 			re.setMaterial(mat);
 			re.renderGMesh(*m_pm);
+
+			if (renderMesh)
+			{
+				re.setColor(GLColor::Black());
+				re.renderGMeshEdges(*m_pm);
+			}
 		}
 	}
 
@@ -71,6 +77,7 @@ public:
 	float reflectivity = 0.8f;
 	float opacity = 1.0f;
 	bool useTexture = false;
+	bool renderMesh = false;
 
 private:
 	GLMesh* m_pm;
@@ -104,7 +111,11 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	for (int i = 0; i < items(); ++i, ++it)
 	{
 		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
-		if (m) m->useTexture = useTexture;
+		if (m)
+		{
+			m->useTexture = useTexture;
+			m->renderMesh = renderMesh;
+		}
 	}
 
 	GLScene::Render(re, rc);

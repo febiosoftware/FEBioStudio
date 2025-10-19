@@ -53,6 +53,7 @@ public:
 	vec3f light = vec3f(1, 1, 1);
 	GLColor specColor = GLColor::White();
 	bool useTexture = false;
+	bool renderMesh = false;
 	CColorTexture tex1d;
 
 private:

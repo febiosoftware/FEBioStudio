@@ -51,6 +51,7 @@ public:
 
 	void init();
 
+	void start() override;
 	void finish() override;
 
 	void setViewProjection(const QMatrix4x4& proj);
@@ -68,9 +69,12 @@ public:
 
 	void setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly) override;
 
+	void setColor(GLColor c) override;
 	void setMaterial(const GLMaterial& mat) override;
 
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
+
+	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
 
 	void setTexture(GLTexture1D& tex);
 
@@ -87,7 +91,9 @@ private:
 	std::unique_ptr<QRhiBuffer> globalBuf;
 	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
-	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
+	std::unique_ptr<QRhiGraphicsPipeline> m_lineRender;
+	std::unique_ptr<rhi::ColorShaderResource> m_colorSrb;
+	std::unique_ptr<rhi::LineShaderResource> m_lineSrb;
 
 	rhi::Texture m_texture;
 
@@ -98,6 +104,7 @@ private:
 	QMatrix4x4 m_proj;
 	QMatrix4x4 m_view;
 	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
+	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
 
 private:
 	vec3f m_light;

@@ -98,6 +98,7 @@ public:
 		addProperty("light position", CProperty::Vec3);
 		addProperty("specular color", CProperty::Color);
 		addProperty("Use Texture", CProperty::Bool);
+		addProperty("Render mesh lines", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -113,6 +114,7 @@ public:
 		case 5: return Vec3fToString(s->light); break;
 		case 6: return toQColor(s->specColor); break;
 		case 7: return s->useTexture; break;
+		case 8: return s->renderMesh; break;
 		}
 
 		return QVariant();
@@ -131,6 +133,7 @@ public:
 		case 5: s->light = StringToVec3f(v.toString()); break;
 		case 6: s->specColor = toGLColor(v.value<QColor>()); break;
 		case 7: s->useTexture = v.toBool(); break;
+		case 8: s->renderMesh = v.toBool(); break;
 		}
 	}
 

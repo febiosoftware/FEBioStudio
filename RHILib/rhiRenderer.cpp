@@ -115,14 +115,15 @@ void rhiRenderer::init()
 		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
 	m_texture.sampler->create();
 
-	m_texture.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 1)));
+	// For Vulkan it looks like we can't change the texture size after creation, so be careful!
+	m_texture.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(1024, 1)));
 	m_texture.texture->create();
 	m_texture.image = createTextureImage(m_texture.texture->pixelSize());
 	m_texture.upload(m_initialUpdates);
 
 	m_sharedResources = { globalBuf.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
-	m_colorSrb.reset(new rhi::ShaderResource());
+	m_colorSrb.reset(new rhi::ColorShaderResource());
 	m_colorSrb->create(m_rhi, &m_sharedResources);
 
 	// set the layout of the vertex data buffer.
@@ -144,12 +145,58 @@ void rhiRenderer::init()
 	// create front and back face pipelines
 	m_frontRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Back));
 	m_backRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Front));
+
+	// create line render pipeline
+	QRhiVertexInputLayout lineMeshLayout;
+	lineMeshLayout.setBindings({
+		{ 3 * sizeof(float) }
+		});
+	lineMeshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		});
+
+	shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/lines.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/lines.frag.qsb")) } };
+
+	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
+	QRhiGraphicsPipeline::TargetBlend blendState;
+	blendState.enable = true;
+	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
+	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opColor = QRhiGraphicsPipeline::Add;
+
+	blendState.srcAlpha = QRhiGraphicsPipeline::One;
+	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opAlpha = QRhiGraphicsPipeline::Add;
+
+	m_lineSrb.reset(new rhi::LineShaderResource());
+	m_lineSrb->create(m_rhi);
+
+	m_lineRender.reset(m_rhi->newGraphicsPipeline());
+
+	m_lineRender->setSampleCount(m_sc->sampleCount());
+	m_lineRender->setDepthTest(true);
+	m_lineRender->setDepthWrite(false);
+	m_lineRender->setTargetBlends({ blendState });
+
+	m_lineRender->setShaderStages(shaders.begin(), shaders.end());
+	m_lineRender->setTopology(QRhiGraphicsPipeline::Lines);
+
+	m_lineRender->setVertexInputLayout(lineMeshLayout);
+	m_lineRender->setShaderResourceBindings(m_lineSrb->get());
+	m_lineRender->setRenderPassDescriptor(m_rp);
+	m_lineRender->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_lineRender->create();
 }
 
 void rhiRenderer::clearCache()
 {
 	for (auto& it : m_meshList) delete it.second;
 	m_meshList.clear();
+
+	for (auto& it : m_lineMeshList) delete it.second;
+	m_lineMeshList.clear();
 }
 
 void rhiRenderer::setBackgroundColor(const GLColor& c)
@@ -191,6 +238,11 @@ void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::D
 	m_currentMat.diffuse = m_currentMat.ambient = c;
 }
 
+void rhiRenderer::setColor(GLColor c)
+{
+	m_currentMat.diffuse = m_currentMat.ambient = c;
+}
+
 void rhiRenderer::setMaterial(const GLMaterial& mat)
 {
 	m_currentMat = mat;
@@ -211,16 +263,46 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 			it->second->SetVertexColor(col);
 		}
 		it->second->SetMaterial(m_currentMat);
+		it->second->setActive(true);
 	}
 	else
 	{
-		rhi::ShaderResource* sr = new rhi::ShaderResource();
+		rhi::ColorShaderResource* sr = new rhi::ColorShaderResource();
 		sr->create(m_rhi, &m_sharedResources);
 		rhi::Mesh* rm = new rhi::Mesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetVertexColor(col);
 		rm->SetMaterial(m_currentMat);
+		rm->setActive(true);
 		m_meshList[&mesh] = rm;
+	}
+}
+
+void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
+{
+	float f[4] = { 0.f };
+	m_currentMat.diffuse.toFloat(f);
+	vec3f col(f[0], f[1], f[2]);
+
+	auto it = m_lineMeshList.find(&mesh);
+	if (it != m_lineMeshList.end())
+	{
+		if (cacheMesh == false)
+		{
+			it->second->CreateFromGLMesh(&mesh);
+		}
+		it->second->SetColor(col);
+		it->second->setActive(true);
+	}
+	else
+	{
+		rhi::LineShaderResource* sr = new rhi::LineShaderResource();
+		sr->create(m_rhi);
+		rhi::LineMesh* rm = new rhi::LineMesh(m_rhi, sr);
+		rm->CreateFromGLMesh(&mesh);
+		rm->SetColor(col);
+		rm->setActive(true);
+		m_lineMeshList[&mesh] = rm;
 	}
 }
 
@@ -244,6 +326,15 @@ void rhiRenderer::setTexture(GLTexture1D& tex)
 void rhiRenderer::setViewProjection(const QMatrix4x4& proj)
 {
 	m_proj = proj;
+}
+
+void rhiRenderer::start()
+{
+	ResetStats();
+
+	// start by setting all meshes as inactive
+	for (auto& it : m_meshList) it.second->setActive(false);
+	for (auto& it : m_lineMeshList) it.second->setActive(false);
 }
 
 void rhiRenderer::finish()
@@ -277,7 +368,19 @@ void rhiRenderer::finish()
 
 	// update mesh data
 	for (auto& it : m_meshList)
-		it.second->Update(resourceUpdates, m_proj, m_view);
+	{
+		rhi::Mesh& m = *it.second;
+		if (m.isActive())
+			m.Update(resourceUpdates, m_proj, m_view);
+	}
+
+	// update mesh data
+	for (auto& it : m_lineMeshList)
+	{
+		rhi::LineMesh& m = *it.second;
+		if (m.isActive())
+			m.Update(resourceUpdates, m_proj, m_view);
+	}
 
 	// start the rendering pass
 	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
@@ -288,14 +391,35 @@ void rhiRenderer::finish()
 	cb->setShaderResources();
 
 	for (auto& it : m_meshList)
-		it.second->Draw(cb);
+	{
+		rhi::Mesh& m = *it.second;
+		if (m.isActive())
+			m.Draw(cb);
+	}
 
 	// render front faces next
 	cb->setGraphicsPipeline(m_frontRender.get());
 	cb->setShaderResources();
 
 	for (auto& it : m_meshList)
-		it.second->Draw(cb);
+	{
+		rhi::Mesh& m = *it.second;
+		if (m.isActive())
+			m.Draw(cb);
+	}
+
+	// render line meshes
+	if (!m_lineMeshList.empty())
+	{
+		cb->setGraphicsPipeline(m_lineRender.get());
+		cb->setShaderResources();
+		for (auto& it : m_lineMeshList)
+		{
+			rhi::LineMesh& m = *it.second;
+			if (m.isActive())
+				m.Draw(cb);
+		}
+	}
 
 	cb->endPass();
 }

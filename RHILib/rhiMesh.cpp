@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiMesh.h"
 
-void rhi::ShaderResource::create(QRhi* rhi, SharedResources* sr)
+void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 {
 	// create the buffer
 	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 160));
@@ -44,12 +44,34 @@ void rhi::ShaderResource::create(QRhi* rhi, SharedResources* sr)
 	srb->create();
 }
 
-void rhi::ShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
+void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
 {
 	u->updateDynamicBuffer(ubuf.get(), 0, 160, f);
 }
 
-rhi::Mesh::Mesh(QRhi* rhi, rhi::ShaderResource* srb) : m_rhi(rhi)
+void rhi::LineShaderResource::create(QRhi* rhi)
+{
+	// create the buffer
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 144));
+	ubuf->create();
+
+	// create resource binding
+	static const QRhiShaderResourceBinding::StageFlags visibility =
+		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+	srb.reset(rhi->newShaderResourceBindings());
+	srb->setBindings({
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ubuf.get())
+		});
+	srb->create();
+}
+
+void rhi::LineShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
+{
+	u->updateDynamicBuffer(ubuf.get(), 0, 144, f);
+}
+
+rhi::Mesh::Mesh(QRhi* rhi, rhi::ColorShaderResource* srb) : m_rhi(rhi)
 {
 	sr.reset(srb);
 }
@@ -138,6 +160,76 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const
 }
 
 void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
+{
+	if (vertexCount > 0)
+	{
+		cb->setShaderResources(sr->get());
+		const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
+		cb->setVertexInput(0, 1, &vbufBinding);
+		cb->draw(vertexCount);
+	}
+}
+
+rhi::LineMesh::LineMesh(QRhi* rhi, rhi::LineShaderResource* srb) : m_rhi(rhi)
+{
+	sr.reset(srb);
+}
+
+bool rhi::LineMesh::CreateFromGLMesh(const GLMesh* gmsh)
+{
+	if (gmsh == nullptr) return false;
+
+	int NE = gmsh->Edges();
+	vertexCount = 2 * NE;
+	vertexData.resize(vertexCount);
+	Vertex* v = vertexData.data();
+	BOX box = gmsh->GetBoundingBox();
+
+	for (int i = 0; i < NE; ++i)
+	{
+		const GLMesh::EDGE& e = gmsh->Edge(i);
+		for (int j = 0; j < 2; ++j, ++v)
+		{
+			v->r = gmsh->Node(e.n[j]).r;// e.vr[j];
+
+			float c[4] = { 0.f };
+			e.c[j].toFloat(c);
+		}
+	}
+
+	// create the vertex buffer
+	vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(Vertex) * vertexCount));
+	vbuf->create();
+
+	return true;
+}
+
+void rhi::LineMesh::SetColor(const vec3f& c)
+{
+	color = c;
+}
+
+void rhi::LineMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
+{
+	if (!vertexData.empty())
+	{
+		u->uploadStaticBuffer(vbuf.get(), vertexData.data());
+		vertexData.clear();
+	}
+
+	QMatrix4x4 mv = view * modelMatrix;
+	QMatrix4x4 mvp = proj * mv;
+
+	float c[4] = { color.x, color.y, color.z, 1.f };
+
+	float f[40] = { 0.f };
+	memcpy(f, mvp.constData(), 64);
+	memcpy(f + 16, mv.constData(), 64);
+	memcpy(f + 32, c, 16);
+	sr->update(u, f);
+}
+
+void rhi::LineMesh::Draw(QRhiCommandBuffer* cb)
 {
 	if (vertexCount > 0)
 	{
