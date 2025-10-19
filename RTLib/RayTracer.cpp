@@ -227,7 +227,7 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	currentColor.a = (uint8_t)(255.f*glmat.opacity);
 
 	useVertexColor = false;
-	useTexture1D = false;
+	useTexture1D = (glmat.diffuseMap == GLMaterial::TEXTURE_1D);
 
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
@@ -238,6 +238,11 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 		mat.reflection = glmat.reflection;
 
 		mat.reflectivity = glmat.reflectivity;
+	}
+
+	if (useTexture1D)
+	{
+		mat.tex1d = currentTexture1D;
 	}
 
 	matList.push_back(mat);

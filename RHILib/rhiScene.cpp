@@ -24,11 +24,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiScene.h"
+#include <FSCore/ColorMapManager.h>
 
 class GLMeshItem : public GLSceneItem
 {
 public:
-	GLMeshItem(GLMesh* pm) : m_pm(pm) {}
+	GLMeshItem(GLMesh* pm) : m_pm(pm) 
+	{
+		// set some texture coordinates
+		if (m_pm)
+		{
+			BOX box = m_pm->GetBoundingBox();
+			for (int i = 0; i < m_pm->Faces(); ++i)
+			{
+				GLMesh::FACE& face = m_pm->Face(i);
+				for (int j = 0; j < 3; ++j)
+				{
+					face.t[j].x = (face.vr[j].x - box.x0)/box.Width();
+					face.t[j].y = 0;
+					face.t[j].z = 0;
+				}
+			}
+		}
+	}
 	~GLMeshItem() { delete m_pm; }
 
 	void render(GLRenderEngine& re, GLContext& rc) override
@@ -41,7 +59,7 @@ public:
 			mat.shininess = shininess;
 			mat.reflectivity = reflectivity;
 			mat.opacity = opacity;
-			mat.useTexture = useTexture;
+			mat.diffuseMap = (useTexture ? GLMaterial::TEXTURE_1D : GLMaterial::NONE);
 			re.setMaterial(mat);
 			re.renderGMesh(*m_pm);
 		}
@@ -57,6 +75,11 @@ public:
 private:
 	GLMesh* m_pm;
 };
+
+rhiScene::rhiScene()
+{
+	tex1d.Create(ColorMapManager::JET, 256, true);
+}
 
 void rhiScene::AddMesh(GLMesh* pm)
 {
@@ -75,6 +98,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	re.setBackgroundColor(bgcol);
 	re.setLightPosition(0, light);
 	re.setLightSpecularColor(0, specColor);
+	re.setTexture(tex1d.GetTexture());
 
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)

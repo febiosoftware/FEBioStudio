@@ -111,16 +111,16 @@ void rhiRenderer::init()
 	globalBuf->create();
 
 	// prep texture
-	m_sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+	m_texture.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
 		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
-	m_sampler->create();
+	m_texture.sampler->create();
 
-	m_texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 1)));
-	m_texture->create();
+	m_texture.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 1)));
+	m_texture.texture->create();
+	m_texture.image = createTextureImage(m_texture.texture->pixelSize());
+	m_texture.upload(m_initialUpdates);
 
-	m_initialUpdates->uploadTexture(m_texture.get(), createTextureImage(m_texture->pixelSize()));
-
-	m_sharedResources = { globalBuf.get(), m_texture.get(), m_sampler.get()};
+	m_sharedResources = { globalBuf.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
 	m_colorSrb.reset(new rhi::ShaderResource());
 	m_colorSrb->create(m_rhi, &m_sharedResources);
@@ -224,6 +224,23 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	}
 }
 
+void rhiRenderer::setTexture(GLTexture1D& tex)
+{
+	if (tex.DoUpdate())
+	{
+		// update texture data
+		QImage img(tex.Size(), 1, QImage::Format_RGBA8888);
+		for (int i = 0; i < tex.Size(); ++i)
+		{
+			GLColor c = tex.sample((float)i / (tex.Size() - 1.f));
+			img.setPixelColor(i, 0, QColor(c.r, c.g, c.b, c.a));
+		}
+		m_texture.image = img;
+		m_texture.needsUpload = true;
+		tex.Update(false);
+	}
+}
+
 void rhiRenderer::setViewProjection(const QMatrix4x4& proj)
 {
 	m_proj = proj;
@@ -251,6 +268,12 @@ void rhiRenderer::finish()
 		s[0], s[1], s[2], 1.f
 	};
 	resourceUpdates->updateDynamicBuffer(globalBuf.get(), 0, 32, lp);
+
+	if (m_texture.needsUpload)
+	{
+		m_texture.upload(resourceUpdates);
+		m_texture.needsUpload = false;
+	}
 
 	// update mesh data
 	for (auto& it : m_meshList)

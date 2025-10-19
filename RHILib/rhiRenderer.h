@@ -28,6 +28,21 @@ SOFTWARE.*/
 #include <rhi/qrhi.h>
 #include "rhiMesh.h"
 
+namespace rhi {
+	struct Texture
+	{
+		std::unique_ptr<QRhiTexture> texture;
+		std::unique_ptr<QRhiSampler> sampler;
+		QImage image;
+		bool needsUpload = false;
+
+		void upload(QRhiResourceUpdateBatch* u)
+		{
+			u->uploadTexture(texture.get(), image);
+		}
+	};
+}
+
 class rhiRenderer : public GLRenderEngine
 {
 public:
@@ -57,6 +72,8 @@ public:
 
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 
+	void setTexture(GLTexture1D& tex);
+
 private:
 	QRhiGraphicsPipeline* createPipeline(QVector<QRhiShaderStage>& shaders, QRhiGraphicsPipeline::CullMode cullMode);
 
@@ -71,8 +88,8 @@ private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
 	std::unique_ptr<rhi::ShaderResource> m_colorSrb;
-	std::unique_ptr<QRhiSampler> m_sampler;
-	std::unique_ptr<QRhiTexture> m_texture;
+
+	rhi::Texture m_texture;
 
 	rhi::SharedResources m_sharedResources;
 

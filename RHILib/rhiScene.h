@@ -26,11 +26,12 @@ SOFTWARE.*/
 #pragma once
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLScene.h>
+#include <GLLib/ColorTexture.h>
 
 class rhiScene : public GLScene
 {
 public:
-	rhiScene() {}
+	rhiScene();
 
 	void AddMesh(GLMesh* pm);
 
@@ -52,6 +53,7 @@ public:
 	vec3f light = vec3f(1, 1, 1);
 	GLColor specColor = GLColor::White();
 	bool useTexture = false;
+	CColorTexture tex1d;
 
 private:
 	BOX m_box;

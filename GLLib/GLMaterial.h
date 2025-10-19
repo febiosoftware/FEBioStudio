@@ -48,6 +48,7 @@ public:
 
 public:
 	Type type = INVALID;
+	DiffuseMap	diffuseMap = NONE;
 	GLColor		diffuse;	// diffuse color of material
 	GLColor		ambient;	// ambient color of material
 	GLColor		specular;	// specular color of material
@@ -56,9 +57,6 @@ public:
 	double		reflectivity = 0; // reflectivity factor (specular intensity)
 	double		reflection = 0; // reflection factor
 	double		opacity = 1.0;	// opacity (1.0 = opaque, 0.0 = transparent)
-
-	// temporary
-	bool useTexture = false;
 
 public:
 	void AmbientDiffuse(const GLColor& c) { ambient = diffuse = c; }

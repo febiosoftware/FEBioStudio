@@ -76,11 +76,7 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 			f.c[j].toFloat(c);
 			v->c = vec3f(c[0], c[1], c[2]);
 
-			vec3f& r = v->r;
-			float t_u = (r.x - box.x0) / box.Width();
-//			float t_v = (r.y - box.y0) / box.Height();
-
-			v->t = vec3f(t_u, 0.f, 0.f);
+			v->t = f.t[j];
 		}
 	}
 
@@ -116,7 +112,7 @@ void rhi::Mesh::SetMaterial(GLMaterial mat)
 	shininess = mat.shininess;
 	reflectivity = mat.reflectivity;
 	opacity = mat.opacity;
-	useTexture = mat.useTexture;
+	useTexture = (mat.diffuseMap == GLMaterial::TEXTURE_1D);
 }
 
 void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
