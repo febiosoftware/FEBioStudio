@@ -232,9 +232,9 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
 	{
-		mat.shininess = (int)(128* glmat.shininess);
+		mat.shininess = (int)(64* glmat.shininess);
 		if (mat.shininess < 0) mat.shininess = 0;
-		if (mat.shininess > 128) mat.shininess = 128;
+		if (mat.shininess > 64) mat.shininess = 64;
 		mat.reflection = glmat.reflection;
 
 		mat.reflectivity = glmat.reflectivity;
@@ -668,6 +668,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 			if ((mat.reflection > 0) && (ray.bounce < 2))
 			{
 				Vec3 H = t - N * (2 * (t * N));
+				H.normalize();
 				Ray ray2(q.r, H, q.tri_id);
 				ray2.bounce = ray.bounce + 1;
 				c = c * (1 - mat.reflection) + castRay(bhv, ray2) * mat.reflection;
@@ -743,6 +744,7 @@ rt::Color RayTracer::castRay(rt::Btree& bhv, rt::Ray& ray)
 		if (!isOccluded && (mat.shininess > 0) && mat.lighting)
 		{
 			Vec3 H = t - N * (2 * (t * N));
+			H.normalize();
 			double f = H * L;
 			double s = (f > 0 ? pow(f, mat.shininess) : 0);
 			fragCol += lightSpecular * (s * mat.reflectivity);

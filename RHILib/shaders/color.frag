@@ -40,7 +40,7 @@ void main()
 
     vec3 col = v_color;
     if (mesh.useTexture > 0)
-        col = texture(smp, v_tex.xy).xyz;
+        col *= texture(smp, v_tex.xy).xyz;
 
     // ambient value
     f_col += col*0.2;
