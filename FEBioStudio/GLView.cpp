@@ -809,7 +809,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				}
 				update();
 			}
-			else m_view.m_nview = VIEW_USER;
+			else SetViewMode(VIEW_USER);
 		}
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{

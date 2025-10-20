@@ -92,16 +92,48 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	// determine the colors for the major axis
 	GLColor cx, cy;
 	View_Mode view = renderContext.m_settings.m_nview;
-	switch (view)
+	int conv = renderContext.m_settings.m_nconv;
+	if (conv == CONV_FR_XZ)
 	{
-	case VIEW_USER:
-    case VIEW_ISOMETRIC:
-	case VIEW_TOP: 
-	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
-	case VIEW_RIGHT: 
-	case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
-	case VIEW_FRONT:
-	case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+		switch (view)
+		{
+		case VIEW_USER:
+		case VIEW_ISOMETRIC:
+		case VIEW_TOP:
+		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
+		case VIEW_RIGHT:
+		case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
+		case VIEW_FRONT:
+		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+		}
+	}
+	else if (conv == CONV_FR_XY)
+	{
+		switch (view)
+		{
+		case VIEW_USER:
+		case VIEW_ISOMETRIC:
+		case VIEW_FRONT:
+		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
+		case VIEW_RIGHT:
+		case VIEW_LEFT:  cx = GLColor(0, 0, 255); cy = GLColor(0, 200, 0); break;
+		case VIEW_TOP:
+		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+		}
+	}
+	else // US_XY
+	{
+		switch (view)
+		{
+		case VIEW_USER:
+		case VIEW_ISOMETRIC:
+		case VIEW_FRONT:
+		case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
+		case VIEW_RIGHT:
+		case VIEW_LEFT:  cx = GLColor(0, 0, 255); cy = GLColor(0, 200, 0); break;
+		case VIEW_TOP:
+		case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+		}
 	}
 
 	// get the camera position

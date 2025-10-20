@@ -60,13 +60,6 @@ class GLRenderEngine;
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
 
-// view conventions
-enum View_Convention {
-	CONV_FR_XZ,
-	CONV_FR_XY,
-	CONV_US_XY
-};
-
 // snap modes
 enum Snap_Mode
 {
