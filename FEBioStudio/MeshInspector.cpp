@@ -93,6 +93,7 @@ void CMeshInspector::showEvent(QShowEvent* ev)
 
 void CMeshInspector::hideEvent(QHideEvent* ev)
 {
+	ui->setFEMesh(nullptr);
 	m_wnd->GetGLView()->ShowMeshData(false);
 	m_wnd->RedrawGL();
 }

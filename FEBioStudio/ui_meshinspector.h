@@ -296,6 +296,8 @@ public:
 			return;
 		}
 
+		var->clear();
+
 		// We get ever when the selection has changed, but we don't
 		// want to update when the mesh hasn't changed.
 		if (m_pm == pm) return;
