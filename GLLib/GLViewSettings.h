@@ -68,6 +68,13 @@ enum View_Mode {
 	VIEW_ISOMETRIC
 };
 
+// view conventions
+enum View_Convention {
+	CONV_FR_XZ,
+	CONV_FR_XY,
+	CONV_US_XY
+};
+
 enum Planecut_Mode
 {
 	PLANECUT,
