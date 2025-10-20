@@ -493,7 +493,7 @@ void CMarchingCubes::CreateSurface()
 		Post::TriMesh::TRI& face = mesh.Face(i);
 		m_mesh->AddFace(face.m_node, face.m_norm, m_col);
 	}
-	m_mesh->Update();
+	m_mesh->Update(false);
 }
 
 void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, uint8_t val[4], vec3f r[4], const vec3f& faceNormal)
