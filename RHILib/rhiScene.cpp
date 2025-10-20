@@ -106,7 +106,19 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	re.setBackgroundColor(bgcol);
 	re.setLightPosition(0, light);
 	re.setLightSpecularColor(0, specColor);
-	re.setTexture(tex1d.GetTexture());
+
+	if (oldTexture != texture)
+	{
+		oldTexture = texture;
+		switch (texture)
+		{
+		case 1: tex1d.Create(ColorMapManager::JET   , 1024, true); break;
+		case 2: tex1d.Create(ColorMapManager::PARULA, 1024, true); break;
+		case 3: tex1d.Create(ColorMapManager::GRAY  , 1024, true); break;
+			break;
+		}
+		if (texture > 0) re.setTexture(tex1d.GetTexture());
+	}
 
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)
@@ -114,7 +126,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
 		if (m)
 		{
-			m->useTexture = useTexture;
+			m->useTexture = (texture > 0);
 			m->renderMesh = renderMesh;
 			m->meshColor = meshColor;
 		}

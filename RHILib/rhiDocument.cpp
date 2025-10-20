@@ -97,7 +97,7 @@ public:
 		addProperty("background color", CProperty::Color);
 		addProperty("light position", CProperty::Vec3);
 		addProperty("specular color", CProperty::Color);
-		addProperty("use texture", CProperty::Bool);
+		addProperty("use texture", CProperty::Enum)->setEnumValues(QStringList() << "(none)" << "jet" << "parula" << "gray");
 		addProperty("render mesh lines", CProperty::Bool);
 		addProperty("mesh color", CProperty::Color);
 	}
@@ -114,7 +114,7 @@ public:
 		case 4: return toQColor(s->bgcol); break;
 		case 5: return Vec3fToString(s->light); break;
 		case 6: return toQColor(s->specColor); break;
-		case 7: return s->useTexture; break;
+		case 7: return s->texture; break;
 		case 8: return s->renderMesh; break;
 		case 9: return toQColor(s->meshColor); break;
 		}
@@ -134,7 +134,7 @@ public:
 		case 4: s->bgcol = toGLColor(v.value<QColor>()); break;
 		case 5: s->light = StringToVec3f(v.toString()); break;
 		case 6: s->specColor = toGLColor(v.value<QColor>()); break;
-		case 7: s->useTexture = v.toBool(); break;
+		case 7: s->texture = v.toInt(); break;
 		case 8: s->renderMesh = v.toBool(); break;
 		case 9: s->meshColor = toGLColor(v.value<QColor>()); break;
 		}
