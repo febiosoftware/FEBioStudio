@@ -86,8 +86,6 @@ private:
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
-	QRhiVertexInputLayout m_inputLayout;
-
 	std::unique_ptr<QRhiBuffer> globalBuf;
 	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;

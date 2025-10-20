@@ -35,7 +35,7 @@ namespace rt {
 	struct Material 
 	{
 		bool lighting = true;
-		int shininess = 0;
+		double shininess = 0;
 		double reflectivity = 0.8;
 		int tex1d = -1;
 		int tex3d = -1;

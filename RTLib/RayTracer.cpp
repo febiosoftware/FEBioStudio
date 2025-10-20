@@ -232,7 +232,7 @@ void RayTracer::setMaterial(const GLMaterial& glmat)
 	rt::Material mat;
 	if ((glmat.type == GLMaterial::PLASTIC) || (glmat.type == GLMaterial::GLASS))
 	{
-		mat.shininess = (int)(64* glmat.shininess);
+		mat.shininess = 64* glmat.shininess;
 		if (mat.shininess < 0) mat.shininess = 0;
 		if (mat.shininess > 64) mat.shininess = 64;
 		mat.reflection = glmat.reflection;

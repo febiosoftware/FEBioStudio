@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiRenderer.h"
 #include <QFile>
-#include <QPainter>
-#include <FSCore/ColorMap.h>
 
 static QShader getShader(const QString& name)
 {
@@ -65,12 +63,24 @@ QRhiGraphicsPipeline* rhiRenderer::createPipeline(QVector<QRhiShaderStage>& shad
 	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
 	blendState.opAlpha = QRhiGraphicsPipeline::Add;
 
+	// set the layout of the vertex data buffer.
+	QRhiVertexInputLayout inputLayout;
+	inputLayout.setBindings({
+		{ 12 * sizeof(float) }
+		});
+	inputLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
+		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		});
+
 
 	pl->setTargetBlends({ blendState });
 	pl->setShaderStages(shaders.begin(), shaders.end());
 	pl->setTopology(QRhiGraphicsPipeline::Triangles);
 
-	pl->setVertexInputLayout(m_inputLayout);
+	pl->setVertexInputLayout(inputLayout);
 	pl->setShaderResourceBindings(m_colorSrb->get());
 	pl->setRenderPassDescriptor(m_rp);
 
@@ -87,19 +97,6 @@ QImage createTextureImage(QSize size)
 {
 	QImage img(size, QImage::Format_RGBA8888);
 	img.fill(Qt::white);
-
-	CColorMap map;
-	map.jet();
-	for (int i=0; i<size.width(); ++i)
-	{
-		float r = (float) i/ (size.width() - 1.f);
-		GLColor c = map.map((float)r);
-		QColor qc(c.r, c.g, c.b, c.a);
-		for (int j = 0; j < size.height(); ++j)
-		{
-			img.setPixelColor(i, j, qc);
-		}
-	}
 	return img;
 }
 
@@ -125,17 +122,6 @@ void rhiRenderer::init()
 
 	m_colorSrb.reset(new rhi::ColorShaderResource());
 	m_colorSrb->create(m_rhi, &m_sharedResources);
-
-	// set the layout of the vertex data buffer.
-	m_inputLayout.setBindings({
-		{ 12 * sizeof(float) }
-		});
-	m_inputLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
-		});
 
 	// Load shaders
 	QVector<QRhiGraphicsShaderStage> shaders= {
