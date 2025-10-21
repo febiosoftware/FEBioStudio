@@ -68,6 +68,12 @@ public:
 				re.setColor(meshColor);
 				re.renderGMeshEdges(*m_pm);
 			}
+
+			if (renderNodes)
+			{
+				re.setColor(nodeColor);
+				re.renderGMeshNodes(*m_pm);
+			}
 		}
 	}
 
@@ -79,6 +85,8 @@ public:
 	bool useTexture = false;
 	bool renderMesh = false;
 	GLColor meshColor = GLColor(0, 0, 0);
+	bool renderNodes = false;
+	GLColor nodeColor = GLColor(0, 0, 0);
 
 private:
 	GLMesh* m_pm;
@@ -129,6 +137,8 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 			m->useTexture = (texture > 0);
 			m->renderMesh = renderMesh;
 			m->meshColor = meshColor;
+			m->renderNodes = renderNodes;
+			m->nodeColor = nodeColor;
 		}
 	}
 

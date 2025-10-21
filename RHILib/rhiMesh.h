@@ -151,4 +151,44 @@ namespace rhi {
 		void operator = (const LineMesh&) = delete;
 	};
 
+	class PointMesh
+	{
+		struct Vertex {
+			vec3f r; // coordinate
+		};
+
+	public:
+		PointMesh(QRhi* rhi, rhi::LineShaderResource* srb);
+
+		bool CreateFromGLMesh(const GLMesh* gmsh);
+
+		void SetColor(const vec3f& c);
+
+		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
+
+		void Draw(QRhiCommandBuffer* cb);
+
+		void SetModelMatrix(const QMatrix4x4& Q) { modelMatrix = Q; }
+
+		void setActive(bool b) { active = b; }
+		bool isActive() const { return active; }
+
+	private:
+		std::vector<Vertex> vertexData;
+		std::unique_ptr<QRhiBuffer> vbuf;
+		unsigned int vertexCount = 0;
+
+		std::unique_ptr<LineShaderResource> sr;
+
+		QRhi* m_rhi = nullptr;
+
+		bool active = false;
+		QMatrix4x4 modelMatrix;
+		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
+
+	private:
+		PointMesh(const PointMesh&) = delete;
+		void operator = (const PointMesh&) = delete;
+	};
+
 } // rhi

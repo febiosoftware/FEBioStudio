@@ -100,6 +100,8 @@ public:
 		addProperty("use texture", CProperty::Enum)->setEnumValues(QStringList() << "(none)" << "jet" << "parula" << "gray");
 		addProperty("render mesh lines", CProperty::Bool);
 		addProperty("mesh color", CProperty::Color);
+		addProperty("render mesh nodes", CProperty::Bool);
+		addProperty("nodes color", CProperty::Color);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -117,6 +119,8 @@ public:
 		case 7: return s->texture; break;
 		case 8: return s->renderMesh; break;
 		case 9: return toQColor(s->meshColor); break;
+		case 10: return s->renderNodes; break;
+		case 11: return toQColor(s->nodeColor); break;
 		}
 
 		return QVariant();
@@ -137,6 +141,8 @@ public:
 		case 7: s->texture = v.toInt(); break;
 		case 8: s->renderMesh = v.toBool(); break;
 		case 9: s->meshColor = toGLColor(v.value<QColor>()); break;
+		case 10: s->renderNodes = v.toBool(); break;
+		case 11: s->nodeColor = toGLColor(v.value<QColor>()); break;
 		}
 	}
 

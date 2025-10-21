@@ -174,6 +174,38 @@ void rhiRenderer::init()
 	m_lineRender->setRenderPassDescriptor(m_rp);
 	m_lineRender->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
 	m_lineRender->create();
+
+	// create point render pipeline
+	QRhiVertexInputLayout pointMeshLayout;
+	pointMeshLayout.setBindings({
+		{ 3 * sizeof(float) }
+		});
+	pointMeshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		});
+
+	shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/point.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
+
+	m_pointSrb.reset(new rhi::LineShaderResource());
+	m_pointSrb->create(m_rhi);
+
+	m_pointRender.reset(m_rhi->newGraphicsPipeline());
+
+	m_pointRender->setSampleCount(m_sc->sampleCount());
+	m_pointRender->setDepthTest(true);
+	m_pointRender->setDepthWrite(false);
+	m_pointRender->setTargetBlends({ blendState });
+
+	m_pointRender->setShaderStages(shaders.begin(), shaders.end());
+	m_pointRender->setTopology(QRhiGraphicsPipeline::Points);
+
+	m_pointRender->setVertexInputLayout(pointMeshLayout);
+	m_pointRender->setShaderResourceBindings(m_pointSrb->get());
+	m_pointRender->setRenderPassDescriptor(m_rp);
+	m_pointRender->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pointRender->create();
 }
 
 void rhiRenderer::clearCache()
@@ -183,6 +215,9 @@ void rhiRenderer::clearCache()
 
 	for (auto& it : m_lineMeshList) delete it.second;
 	m_lineMeshList.clear();
+
+	for (auto& it : m_pointMeshList) delete it.second;
+	m_pointMeshList.clear();
 }
 
 void rhiRenderer::clearUnusedCache()
@@ -202,6 +237,16 @@ void rhiRenderer::clearUnusedCache()
 		{
 			delete it->second;
 			it = m_lineMeshList.erase(it);
+		}
+		else
+			++it;
+	}
+
+	for (auto it = m_pointMeshList.begin(); it != m_pointMeshList.end(); ) {
+		if (it->second->isActive() == false)
+		{
+			delete it->second;
+			it = m_pointMeshList.erase(it);
 		}
 		else
 			++it;
@@ -315,6 +360,34 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	}
 }
 
+void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
+{
+	float f[4] = { 0.f };
+	m_currentMat.diffuse.toFloat(f);
+	vec3f col(f[0], f[1], f[2]);
+
+	auto it = m_pointMeshList.find(&mesh);
+	if (it != m_pointMeshList.end())
+	{
+		if (cacheMesh == false)
+		{
+			it->second->CreateFromGLMesh(&mesh);
+		}
+		it->second->SetColor(col);
+		it->second->setActive(true);
+	}
+	else
+	{
+		rhi::LineShaderResource* sr = new rhi::LineShaderResource();
+		sr->create(m_rhi);
+		rhi::PointMesh* rm = new rhi::PointMesh(m_rhi, sr);
+		rm->CreateFromGLMesh(&mesh);
+		rm->SetColor(col);
+		rm->setActive(true);
+		m_pointMeshList[&mesh] = rm;
+	}
+}
+
 void rhiRenderer::setTexture(GLTexture1D& tex)
 {
 	if (tex.DoUpdate())
@@ -344,6 +417,7 @@ void rhiRenderer::start()
 	// start by setting all meshes as inactive
 	for (auto& it : m_meshList) it.second->setActive(false);
 	for (auto& it : m_lineMeshList) it.second->setActive(false);
+	for (auto& it : m_pointMeshList) it.second->setActive(false);
 }
 
 void rhiRenderer::finish()
@@ -391,6 +465,14 @@ void rhiRenderer::finish()
 			m.Update(resourceUpdates, m_proj, m_view);
 	}
 
+	// update point mesh data
+	for (auto& it : m_pointMeshList)
+	{
+		rhi::PointMesh& m = *it.second;
+		if (m.isActive())
+			m.Update(resourceUpdates, m_proj, m_view);
+	}
+
 	// start the rendering pass
 	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
 
@@ -425,6 +507,19 @@ void rhiRenderer::finish()
 		for (auto& it : m_lineMeshList)
 		{
 			rhi::LineMesh& m = *it.second;
+			if (m.isActive())
+				m.Draw(cb);
+		}
+	}
+
+	// render point meshes
+	if (!m_pointMeshList.empty())
+	{
+		cb->setGraphicsPipeline(m_pointRender.get());
+		cb->setShaderResources();
+		for (auto& it : m_pointMeshList)
+		{
+			rhi::PointMesh& m = *it.second;
 			if (m.isActive())
 				m.Draw(cb);
 		}

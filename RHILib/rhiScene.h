@@ -55,8 +55,10 @@ public:
 	int texture = 0;
 	int oldTexture = 0;
 	bool renderMesh = false;
+	bool renderNodes = false;
 	CColorTexture tex1d;
 	GLColor meshColor = GLColor(0, 0, 0);
+	GLColor nodeColor = GLColor(0, 0, 0);
 
 private:
 	BOX m_box;

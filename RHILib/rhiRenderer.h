@@ -79,6 +79,7 @@ public:
 	void renderGMesh(const GLMesh& mesh, bool cacheMesh = true) override;
 
 	void renderGMeshEdges(const GLMesh& mesh, bool cacheMesh = true) override;
+	void renderGMeshNodes(const GLMesh& mesh, bool cacheMesh = true) override;
 
 	void setTexture(GLTexture1D& tex);
 
@@ -94,8 +95,10 @@ private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
 	std::unique_ptr<QRhiGraphicsPipeline> m_lineRender;
+	std::unique_ptr<QRhiGraphicsPipeline> m_pointRender;
 	std::unique_ptr<rhi::ColorShaderResource> m_colorSrb;
 	std::unique_ptr<rhi::LineShaderResource> m_lineSrb;
+	std::unique_ptr<rhi::LineShaderResource> m_pointSrb;
 
 	rhi::Texture m_texture;
 
@@ -107,6 +110,7 @@ private:
 	QMatrix4x4 m_view;
 	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
 	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
+	std::map<const GLMesh*, rhi::PointMesh*> m_pointMeshList;
 
 private:
 	vec3f m_light;
