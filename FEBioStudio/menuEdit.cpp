@@ -468,6 +468,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
+		mdl.UpdateMeshVisibility();
 		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
