@@ -18,7 +18,10 @@ cmake -L . -B cmbuild ^
   -DUSE_PYTHON=ON ^
   -DPython3_INCLUDE_DIR="C:\Program Files\Python313\include" ^
   -DPython3_LIBRARY="C:\Program Files\Python313\libs\python313.lib" ^
-  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe"
+  -DPython3_EXECUTABLE="C:\Program Files\Python313\python.exe" ^
+  -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" ^
+  -DVulkan_INCLUDE_DIR="C:/vcpkg/installed/x64-windows/include" ^
+  -DVulkan_LIBRARY="C:/vcpkg/installed/x64-windows/lib/vulkan-1.lib"
 
 cd cmbuild
 msbuild /v:m /P:Configuration=Release  /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
