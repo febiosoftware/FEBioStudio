@@ -38,6 +38,7 @@ public:
 
 	void customInit() override;
 	void customRender() override;
+	void onFrameFinished() override;
 
 public:
 	void mousePressEvent(QMouseEvent* event) override;

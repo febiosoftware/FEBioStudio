@@ -28,6 +28,10 @@ protected:
     virtual void customInit() = 0;
     virtual void customRender() = 0;
 
+	// This is called after each frame is finished (i.e. after called QRhi::endFrame)
+	// Use this to update dynamic data for the next frame
+	virtual void onFrameFinished() {}
+
     // destruction order matters to a certain degree: the fallbackSurface must
     // outlive the rhi, the rhi must outlive all other resources.  The resources
     // need no special order when destroying.

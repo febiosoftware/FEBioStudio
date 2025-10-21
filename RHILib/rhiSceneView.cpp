@@ -265,3 +265,9 @@ void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
 	setRenderMode(RenderMode::STATIC);
 }
+
+void rhiSceneView::onFrameFinished()
+{
+	// release any resources that are no longer needed
+	m_rhiRender->clearUnusedCache();
+}

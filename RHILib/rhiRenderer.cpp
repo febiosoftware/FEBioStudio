@@ -185,6 +185,29 @@ void rhiRenderer::clearCache()
 	m_lineMeshList.clear();
 }
 
+void rhiRenderer::clearUnusedCache()
+{
+	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
+		if (it->second->isActive() == false)
+		{
+			delete it->second;
+			it = m_meshList.erase(it);
+		}
+		else
+			++it;
+	}
+
+	for (auto it = m_lineMeshList.begin(); it != m_lineMeshList.end(); ) {
+		if (it->second->isActive() == false)
+		{
+			delete it->second;
+			it = m_lineMeshList.erase(it);
+		}
+		else
+			++it;
+	}
+}
+
 void rhiRenderer::setBackgroundColor(const GLColor& c)
 {
 	m_bgColor = QColor(c.r, c.g, c.b, c.a);

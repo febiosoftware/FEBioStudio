@@ -56,7 +56,11 @@ public:
 
 	void setViewProjection(const QMatrix4x4& proj);
 
+	// clear all cached resources
 	void clearCache();
+
+	// clear cached resources that were not used in the last frame
+	void clearUnusedCache();
 
 public:
 
