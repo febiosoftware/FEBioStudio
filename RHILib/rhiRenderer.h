@@ -41,6 +41,71 @@ namespace rhi {
 			u->uploadTexture(texture.get(), image);
 		}
 	};
+
+	class RenderPass
+	{
+	public:
+		RenderPass(QRhi* rhi) : m_rhi(rhi) {}
+
+	protected:
+		QRhi* m_rhi;
+	};
+
+	class PointRenderPass : public RenderPass
+	{
+	public:
+		PointRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount);
+
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<rhi::PointShaderResource> m_sr;
+	};
+
+	class LineRenderPass : public RenderPass
+	{
+	public:
+		LineRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount);
+
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<rhi::LineShaderResource> m_sr;
+	};
+
+	class FrontFaceRenderPass : public RenderPass
+	{
+	public:
+		FrontFaceRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
+
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<rhi::ColorShaderResource> m_sr;
+	};
+
+	class BackFaceRenderPass : public RenderPass
+	{
+	public:
+		BackFaceRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
+
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<rhi::ColorShaderResource> m_sr;
+	};
 }
 
 class rhiRenderer : public GLRenderEngine
@@ -84,21 +149,15 @@ public:
 	void setTexture(GLTexture1D& tex);
 
 private:
-	QRhiGraphicsPipeline* createPipeline(QVector<QRhiShaderStage>& shaders, QRhiGraphicsPipeline::CullMode cullMode);
-
-private:
 	QRhi* m_rhi;
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
 	std::unique_ptr<QRhiBuffer> globalBuf;
-	std::unique_ptr<QRhiGraphicsPipeline> m_backRender;
-	std::unique_ptr<QRhiGraphicsPipeline> m_frontRender;
-	std::unique_ptr<QRhiGraphicsPipeline> m_lineRender;
-	std::unique_ptr<QRhiGraphicsPipeline> m_pointRender;
-	std::unique_ptr<rhi::ColorShaderResource> m_colorSrb;
-	std::unique_ptr<rhi::LineShaderResource> m_lineSrb;
-	std::unique_ptr<rhi::PointShaderResource> m_pointSrb;
+	std::unique_ptr<rhi::BackFaceRenderPass> m_backPass;
+	std::unique_ptr<rhi::FrontFaceRenderPass> m_frontPass;
+	std::unique_ptr<rhi::LineRenderPass> m_linePass;
+	std::unique_ptr<rhi::PointRenderPass> m_pointPass;
 
 	rhi::Texture m_texture;
 

@@ -35,6 +35,169 @@ static QShader getShader(const QString& name)
 	return QShader();
 }
 
+static QRhiGraphicsPipeline::TargetBlend defaultBlendState()
+{
+	QRhiGraphicsPipeline::TargetBlend blendState;
+	blendState.enable = true;
+	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
+	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opColor = QRhiGraphicsPipeline::Add;
+	blendState.srcAlpha = QRhiGraphicsPipeline::One;
+	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+	blendState.opAlpha = QRhiGraphicsPipeline::Add;
+	return blendState;
+}
+
+void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
+{
+	// create point render pipeline
+	QRhiVertexInputLayout pointMeshLayout;
+	pointMeshLayout.setBindings({
+		{ 3 * sizeof(float) }
+		});
+	pointMeshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		});
+
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/point.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
+
+	m_sr.reset(new rhi::PointShaderResource());
+	m_sr->create(m_rhi);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(true);
+	m_pl->setDepthWrite(false);
+	m_pl->setTargetBlends({ defaultBlendState()});
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Points);
+
+	m_pl->setVertexInputLayout(pointMeshLayout);
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
+void rhi::LineRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
+{
+	// create point render pipeline
+	QRhiVertexInputLayout lineMeshLayout;
+	lineMeshLayout.setBindings({
+		{ 3 * sizeof(float) }
+		});
+	lineMeshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		});
+
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/lines.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/lines.frag.qsb")) } };
+
+	m_sr.reset(new rhi::LineShaderResource());
+	m_sr->create(m_rhi);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(true);
+	m_pl->setDepthWrite(false);
+	m_pl->setTargetBlends({ defaultBlendState()});
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Lines);
+
+	m_pl->setVertexInputLayout(lineMeshLayout);
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
+void rhi::FrontFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 12 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
+		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		});
+
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
+
+	m_sr.reset(new rhi::ColorShaderResource());
+	m_sr->create(m_rhi, sr);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(true);
+	m_pl->setDepthWrite(true);
+	m_pl->setTargetBlends({ defaultBlendState() });
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+
+	m_pl->setCullMode(QRhiGraphicsPipeline::Back);
+	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
+
+	m_pl->setVertexInputLayout(meshLayout);
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
+void rhi::BackFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 12 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
+		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		});
+
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
+
+	m_sr.reset(new rhi::ColorShaderResource());
+	m_sr->create(m_rhi, sr);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(true);
+	m_pl->setDepthWrite(true);
+	m_pl->setTargetBlends({ defaultBlendState() });
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+
+	m_pl->setCullMode(QRhiGraphicsPipeline::Front);
+	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
+
+	m_pl->setVertexInputLayout(meshLayout);
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
 rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp)
 {
 }
@@ -42,55 +205,6 @@ rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor*
 rhiRenderer::~rhiRenderer()
 {
 	clearCache();
-}
-
-QRhiGraphicsPipeline* rhiRenderer::createPipeline(QVector<QRhiShaderStage>& shaders, QRhiGraphicsPipeline::CullMode cullMode)
-{
-	QRhiGraphicsPipeline* pl = m_rhi->newGraphicsPipeline();
-
-	pl->setSampleCount(m_sc->sampleCount());
-	pl->setDepthTest(true);
-	pl->setDepthWrite(true);
-
-	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
-	QRhiGraphicsPipeline::TargetBlend blendState;
-	blendState.enable = true;
-	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
-	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opColor = QRhiGraphicsPipeline::Add;
-
-	blendState.srcAlpha = QRhiGraphicsPipeline::One;
-	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opAlpha = QRhiGraphicsPipeline::Add;
-
-	// set the layout of the vertex data buffer.
-	QRhiVertexInputLayout inputLayout;
-	inputLayout.setBindings({
-		{ 12 * sizeof(float) }
-		});
-	inputLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
-		});
-
-
-	pl->setTargetBlends({ blendState });
-	pl->setShaderStages(shaders.begin(), shaders.end());
-	pl->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	pl->setVertexInputLayout(inputLayout);
-	pl->setShaderResourceBindings(m_colorSrb->get());
-	pl->setRenderPassDescriptor(m_rp);
-
-	pl->setCullMode(cullMode);
-	pl->setFrontFace(QRhiGraphicsPipeline::CCW);
-	pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-
-	pl->create();
-
-	return pl;
 }
 
 QImage createTextureImage(QSize size)
@@ -120,92 +234,17 @@ void rhiRenderer::init()
 
 	m_sharedResources = { globalBuf.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
-	m_colorSrb.reset(new rhi::ColorShaderResource());
-	m_colorSrb->create(m_rhi, &m_sharedResources);
+	m_backPass.reset(new rhi::BackFaceRenderPass(m_rhi));
+	m_backPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
 
-	// Load shaders
-	QVector<QRhiGraphicsShaderStage> shaders= {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
+	m_frontPass.reset(new rhi::FrontFaceRenderPass(m_rhi));
+	m_frontPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
 
-	// create front and back face pipelines
-	m_frontRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Back));
-	m_backRender.reset(createPipeline(shaders, QRhiGraphicsPipeline::Front));
+	m_linePass.reset(new rhi::LineRenderPass(m_rhi));
+	m_linePass->create(m_rp, m_sc->sampleCount());
 
-	// create line render pipeline
-	QRhiVertexInputLayout lineMeshLayout;
-	lineMeshLayout.setBindings({
-		{ 3 * sizeof(float) }
-		});
-	lineMeshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
-		});
-
-	shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/lines.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/lines.frag.qsb")) } };
-
-	// Blend factors default to One, OneOneMinusSrcAlpha, which is convenient.
-	QRhiGraphicsPipeline::TargetBlend blendState;
-	blendState.enable = true;
-	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
-	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opColor = QRhiGraphicsPipeline::Add;
-
-	blendState.srcAlpha = QRhiGraphicsPipeline::One;
-	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opAlpha = QRhiGraphicsPipeline::Add;
-
-	m_lineSrb.reset(new rhi::LineShaderResource());
-	m_lineSrb->create(m_rhi);
-
-	m_lineRender.reset(m_rhi->newGraphicsPipeline());
-
-	m_lineRender->setSampleCount(m_sc->sampleCount());
-	m_lineRender->setDepthTest(true);
-	m_lineRender->setDepthWrite(false);
-	m_lineRender->setTargetBlends({ blendState });
-
-	m_lineRender->setShaderStages(shaders.begin(), shaders.end());
-	m_lineRender->setTopology(QRhiGraphicsPipeline::Lines);
-
-	m_lineRender->setVertexInputLayout(lineMeshLayout);
-	m_lineRender->setShaderResourceBindings(m_lineSrb->get());
-	m_lineRender->setRenderPassDescriptor(m_rp);
-	m_lineRender->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_lineRender->create();
-
-	// create point render pipeline
-	QRhiVertexInputLayout pointMeshLayout;
-	pointMeshLayout.setBindings({
-		{ 3 * sizeof(float) }
-		});
-	pointMeshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
-		});
-
-	shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/point.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
-
-	m_pointSrb.reset(new rhi::PointShaderResource());
-	m_pointSrb->create(m_rhi);
-
-	m_pointRender.reset(m_rhi->newGraphicsPipeline());
-
-	m_pointRender->setSampleCount(m_sc->sampleCount());
-	m_pointRender->setDepthTest(true);
-	m_pointRender->setDepthWrite(false);
-	m_pointRender->setTargetBlends({ blendState });
-
-	m_pointRender->setShaderStages(shaders.begin(), shaders.end());
-	m_pointRender->setTopology(QRhiGraphicsPipeline::Points);
-
-	m_pointRender->setVertexInputLayout(pointMeshLayout);
-	m_pointRender->setShaderResourceBindings(m_pointSrb->get());
-	m_pointRender->setRenderPassDescriptor(m_rp);
-	m_pointRender->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pointRender->create();
+	m_pointPass.reset(new rhi::PointRenderPass(m_rhi));
+	m_pointPass->create(m_rp, m_sc->sampleCount());
 }
 
 void rhiRenderer::clearCache()
@@ -477,7 +516,7 @@ void rhiRenderer::finish()
 	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
 
 	// render back faces first
-	cb->setGraphicsPipeline(m_backRender.get());
+	cb->setGraphicsPipeline(m_backPass->pipeline());
 	cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
 	cb->setShaderResources();
 
@@ -489,7 +528,7 @@ void rhiRenderer::finish()
 	}
 
 	// render front faces next
-	cb->setGraphicsPipeline(m_frontRender.get());
+	cb->setGraphicsPipeline(m_frontPass->pipeline());
 	cb->setShaderResources();
 
 	for (auto& it : m_meshList)
@@ -502,7 +541,7 @@ void rhiRenderer::finish()
 	// render line meshes
 	if (!m_lineMeshList.empty())
 	{
-		cb->setGraphicsPipeline(m_lineRender.get());
+		cb->setGraphicsPipeline(m_linePass->pipeline());
 		cb->setShaderResources();
 		for (auto& it : m_lineMeshList)
 		{
@@ -515,7 +554,7 @@ void rhiRenderer::finish()
 	// render point meshes
 	if (!m_pointMeshList.empty())
 	{
-		cb->setGraphicsPipeline(m_pointRender.get());
+		cb->setGraphicsPipeline(m_pointPass->pipeline());
 		cb->setShaderResources();
 		for (auto& it : m_pointMeshList)
 		{
