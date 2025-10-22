@@ -131,6 +131,13 @@ public:
 
 	void positionCamera(const GLCamera& cam) override;
 
+	void pushTransform() override;
+	void popTransform() override;
+	void translate(const vec3d& r) override;
+	void rotate(const quatd& rot) override;
+	void rotate(double deg, double x, double y, double z) override;
+	void scale(double x, double, double z) override;
+
 	void setLightPosition(unsigned int n, const vec3f& lp) override;
 	void setLightSpecularColor(unsigned int lightIndex, const GLColor& col);
 
@@ -165,8 +172,10 @@ private:
 
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
 
-	QMatrix4x4 m_proj;
-	QMatrix4x4 m_view;
+	QMatrix4x4 m_projMatrix;
+	QMatrix4x4 m_viewMatrix;
+	QMatrix4x4 m_modelMatrix;
+	std::stack<QMatrix4x4> m_transformStack;
 	std::map<const GLMesh*, rhi::TriMesh*> m_meshList;
 	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
 	std::map<const GLMesh*, rhi::PointMesh*> m_pointMeshList;

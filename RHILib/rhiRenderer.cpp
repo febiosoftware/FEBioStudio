@@ -309,21 +309,61 @@ void rhiRenderer::setLightSpecularColor(unsigned int lightIndex, const GLColor& 
 
 void rhiRenderer::positionCamera(const GLCamera& cam)
 {
-	m_view.setToIdentity();
+	m_viewMatrix.setToIdentity();
 
 	// target in camera coordinates
 	vec3d r = cam.Target();
 
 	// position the target in camera coordinates
-	m_view.translate(-r.x, -r.y, -r.z);
+	m_viewMatrix.translate(-r.x, -r.y, -r.z);
 
 	// orient the camera
 	quatd q = cam.m_rot.Value();
-	m_view.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+	m_viewMatrix.rotate(QQuaternion(q.w, q.x, q.y, q.z));
 
 	// translate to world coordinates
 	vec3d p = cam.GetPosition();
-	m_view.translate(-p.x, -p.y, -p.z);
+	m_viewMatrix.translate(-p.x, -p.y, -p.z);
+}
+
+void rhiRenderer::pushTransform()
+{
+	m_transformStack.push(m_modelMatrix);
+}
+
+void rhiRenderer::popTransform()
+{
+	assert(!m_transformStack.empty());
+	if (m_transformStack.empty()) return;
+	m_modelMatrix = m_transformStack.top();
+	m_transformStack.pop();
+}
+
+void rhiRenderer::translate(const vec3d& r)
+{
+	QMatrix4x4 T;
+	T.translate(QVector3D(r.x, r.y, r.z));
+	m_modelMatrix *= T;
+}
+
+void rhiRenderer::rotate(const quatd& rot)
+{
+	QMatrix4x4 R;
+	R.rotate(QQuaternion(rot.w, rot.x, rot.y, rot.z));
+	m_modelMatrix *= R;
+}
+
+void rhiRenderer::rotate(double deg, double x, double y, double z)
+{
+	quatd q(deg * DEG2RAD, vec3d(x, y, z));
+	rotate(q);
+}
+
+void rhiRenderer::scale(double x, double y, double z)
+{
+	QMatrix4x4 S;
+	S.scale(x, y, z);
+	m_modelMatrix *= S;
 }
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -356,6 +396,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 			it->second->SetVertexColor(col);
 		}
 		it->second->SetMaterial(m_currentMat);
+		it->second->SetModelMatrix(m_modelMatrix);
 		it->second->setActive(true);
 	}
 	else
@@ -366,6 +407,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetVertexColor(col);
 		rm->SetMaterial(m_currentMat);
+		rm->SetModelMatrix(m_modelMatrix);
 		rm->setActive(true);
 		m_meshList[&mesh] = rm;
 	}
@@ -385,6 +427,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 			it->second->CreateFromGLMesh(&mesh);
 		}
 		it->second->SetColor(col);
+		it->second->SetModelMatrix(m_modelMatrix);
 		it->second->setActive(true);
 	}
 	else
@@ -394,6 +437,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		rhi::LineMesh* rm = new rhi::LineMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetColor(col);
+		rm->SetModelMatrix(m_modelMatrix);
 		rm->setActive(true);
 		m_lineMeshList[&mesh] = rm;
 	}
@@ -413,6 +457,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 			it->second->CreateFromGLMesh(&mesh);
 		}
 		it->second->SetColor(col);
+		it->second->SetModelMatrix(m_modelMatrix);
 		it->second->setActive(true);
 	}
 	else
@@ -422,6 +467,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 		rhi::PointMesh* rm = new rhi::PointMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetColor(col);
+		rm->SetModelMatrix(m_modelMatrix);
 		rm->setActive(true);
 		m_pointMeshList[&mesh] = rm;
 	}
@@ -446,7 +492,7 @@ void rhiRenderer::setTexture(GLTexture1D& tex)
 
 void rhiRenderer::setViewProjection(const QMatrix4x4& proj)
 {
-	m_proj = proj;
+	m_projMatrix = proj;
 }
 
 void rhiRenderer::start()
@@ -457,6 +503,10 @@ void rhiRenderer::start()
 	for (auto& it : m_meshList) it.second->setActive(false);
 	for (auto& it : m_lineMeshList) it.second->setActive(false);
 	for (auto& it : m_pointMeshList) it.second->setActive(false);
+
+	// reset model and view matrices
+	m_viewMatrix.setToIdentity();
+	m_modelMatrix.setToIdentity();
 }
 
 void rhiRenderer::finish()
@@ -493,7 +543,7 @@ void rhiRenderer::finish()
 	{
 		rhi::TriMesh& m = *it.second;
 		if (m.isActive())
-			m.Update(resourceUpdates, m_proj, m_view);
+			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
 	}
 
 	// update mesh data
@@ -501,7 +551,7 @@ void rhiRenderer::finish()
 	{
 		rhi::LineMesh& m = *it.second;
 		if (m.isActive())
-			m.Update(resourceUpdates, m_proj, m_view);
+			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
 	}
 
 	// update point mesh data
@@ -509,7 +559,7 @@ void rhiRenderer::finish()
 	{
 		rhi::PointMesh& m = *it.second;
 		if (m.isActive())
-			m.Update(resourceUpdates, m_proj, m_view);
+			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
 	}
 
 	// start the rendering pass

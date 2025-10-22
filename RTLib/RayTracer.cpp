@@ -143,7 +143,7 @@ void RayTracer::rotate(const quatd& rot)
 
 void RayTracer::rotate(double deg, double x, double y, double z)
 {
-	quatd q(deg * DEG2RAD, x, y, z);
+	quatd q(deg * DEG2RAD, vec3d(x, y, z));
 	rotate(q);
 }
 
