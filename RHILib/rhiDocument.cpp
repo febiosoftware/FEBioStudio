@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <QFileInfo>
 #include "../FEBioStudio/PropertyList.h"
+#include "../FEBioStudio/MainWindow.h"
 
 rhiDocument::rhiDocument(CMainWindow* wnd) : CGLSceneDocument(wnd)
 {
@@ -78,6 +79,14 @@ bool rhiDocument::ImportFile(const QString& fileName)
 		GLMesh* copy = new GLMesh(*pm);
 
 		GetRhiScene()->AddMesh(copy);
+
+		BOX box = pm->GetBoundingBox();
+		GetMainWindow()->AddLogEntry("Success reading file '" + fi.fileName() + "'.\n");
+		GetMainWindow()->AddLogEntry(QString("Mesh info: %1 nodes, %2 elements\nbounding box: [%3,%4] x [%5,%6] x [%7,%8]\n")
+			.arg(pm->Nodes()).arg(pm->Faces())
+			.arg(box.x0).arg(box.x1)
+			.arg(box.y0).arg(box.y1)
+			.arg(box.z0).arg(box.z1));
 
 		return true;
 	}
