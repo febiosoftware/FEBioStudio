@@ -98,7 +98,7 @@ private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_pointRender;
 	std::unique_ptr<rhi::ColorShaderResource> m_colorSrb;
 	std::unique_ptr<rhi::LineShaderResource> m_lineSrb;
-	std::unique_ptr<rhi::LineShaderResource> m_pointSrb;
+	std::unique_ptr<rhi::PointShaderResource> m_pointSrb;
 
 	rhi::Texture m_texture;
 
@@ -108,7 +108,7 @@ private:
 
 	QMatrix4x4 m_proj;
 	QMatrix4x4 m_view;
-	std::map<const GLMesh*, rhi::Mesh*> m_meshList;
+	std::map<const GLMesh*, rhi::TriMesh*> m_meshList;
 	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
 	std::map<const GLMesh*, rhi::PointMesh*> m_pointMeshList;
 

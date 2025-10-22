@@ -85,7 +85,7 @@ rt::Color rt::Texture3D::sample(float r, float s, float t)
 {
 	if (img == nullptr) return rt::Color(0, 0, 0);
 
-	double v = img->Value(r, s, t);
+	double v = img->Peek(r, s, t);
 	double vmin, vmax;
 	img->GetMinMax(vmin, vmax, false);
 	if (vmax == vmin) vmax++;

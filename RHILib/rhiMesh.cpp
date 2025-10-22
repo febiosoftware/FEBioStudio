@@ -27,8 +27,18 @@ SOFTWARE.*/
 
 void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 {
+	m_data.create({
+		{UniformBlock::MAT4, "mvp"},
+		{UniformBlock::MAT4, "mv"},
+		{UniformBlock::VEC4, "col"},
+		{UniformBlock::FLOAT, "specExp"},
+		{UniformBlock::FLOAT, "specStrength"},
+		{UniformBlock::FLOAT, "opacity"},
+		{UniformBlock::FLOAT, "useTexture"}
+	});
+
 	// create the buffer
-	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 160));
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
 	ubuf->create();
 
 	// create resource binding
@@ -44,15 +54,32 @@ void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 	srb->create();
 }
 
-void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
+void rhi::ColorShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::TriMesh& m)
 {
-	u->updateDynamicBuffer(ubuf.get(), 0, 160, f);
+	m_data.setMat4(0, mvp);
+	m_data.setMat4(1, mv);
+	m_data.setVec4(2, m.color);
+	m_data.setFloat(3, m.shininess);
+	m_data.setFloat(4, m.reflectivity);
+	m_data.setFloat(5, m.opacity);
+	m_data.setFloat(6, (m.useTexture ? 1.f : 0.f));
+}
+
+void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u)
+{
+	u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
 }
 
 void rhi::LineShaderResource::create(QRhi* rhi)
 {
+	m_data.create({
+		{UniformBlock::MAT4, "mvp"},
+		{UniformBlock::MAT4, "mv"},
+		{UniformBlock::VEC4, "col"}
+	});
+
 	// create the buffer
-	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 144));
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
 	ubuf->create();
 
 	// create resource binding
@@ -66,17 +93,59 @@ void rhi::LineShaderResource::create(QRhi* rhi)
 	srb->create();
 }
 
-void rhi::LineShaderResource::update(QRhiResourceUpdateBatch* u, float* f)
+void rhi::LineShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col)
 {
-	u->updateDynamicBuffer(ubuf.get(), 0, 144, f);
+	m_data.setMat4(MVP, mvp);
+	m_data.setMat4(MV , mv);
+	m_data.setVec4(COL, col);
 }
 
-rhi::Mesh::Mesh(QRhi* rhi, rhi::ColorShaderResource* srb) : m_rhi(rhi)
+void rhi::LineShaderResource::update(QRhiResourceUpdateBatch* u)
+{
+	u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
+}
+
+void rhi::PointShaderResource::create(QRhi* rhi)
+{
+	m_data.create({
+		{UniformBlock::MAT4, "mvp"},
+		{UniformBlock::MAT4, "mv"},
+		{UniformBlock::VEC4, "col"}
+		});
+
+	// create the buffer
+	ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_data.size()));
+	ubuf->create();
+
+	// create resource binding
+	static const QRhiShaderResourceBinding::StageFlags visibility =
+		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+	srb.reset(rhi->newShaderResourceBindings());
+	srb->setBindings({
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ubuf.get())
+		});
+	srb->create();
+}
+
+void rhi::PointShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col)
+{
+	m_data.setMat4(MVP, mvp);
+	m_data.setMat4(MV , mv);
+	m_data.setVec4(COL, col);
+}
+
+void rhi::PointShaderResource::update(QRhiResourceUpdateBatch* u)
+{
+	u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
+}
+
+rhi::TriMesh::TriMesh(QRhi* rhi, rhi::ColorShaderResource* srb) : rhi::Mesh(rhi)
 {
 	sr.reset(srb);
 }
 
-bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
+bool rhi::TriMesh::CreateFromGLMesh(const GLMesh* gmsh)
 {
 	if (gmsh == nullptr) return false;
 
@@ -109,24 +178,19 @@ bool rhi::Mesh::CreateFromGLMesh(const GLMesh* gmsh)
 	return true;
 }
 
-void rhi::Mesh::SetVertexColor(const vec3f& c)
+void rhi::TriMesh::SetVertexColor(const vec3f& c)
 {
 	if (!vertexData.empty())
 	{
 		Vertex* v = vertexData.data();
-		for (int i = 0; i < vertexCount; ++i, v++)
+		for (unsigned int i = 0; i < vertexCount; ++i, v++)
 		{
 			v->c = c;
 		}
 	}
 }
 
-void rhi::Mesh::SetColor(const vec3f& c)
-{
-	color = c;
-}
-
-void rhi::Mesh::SetMaterial(GLMaterial mat)
+void rhi::TriMesh::SetMaterial(GLMaterial mat)
 {
 	float f[4] = { 0.f };
 	mat.diffuse.toFloat(f);
@@ -137,7 +201,7 @@ void rhi::Mesh::SetMaterial(GLMaterial mat)
 	useTexture = (mat.diffuseMap == GLMaterial::TEXTURE_1D);
 }
 
-void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
+void rhi::TriMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
 {
 	if (!vertexData.empty())
 	{
@@ -148,18 +212,11 @@ void rhi::Mesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj*mv;
 
-	float f[40] = { 0.f };
-	memcpy(f, mvp.constData(), 64);
-	memcpy(f + 16, mv.constData(), 64);
-	memcpy(f + 32, &color, 16);
-	f[36] = shininess;
-	f[37] = reflectivity;
-	f[38] = opacity;
-	f[39] = (useTexture ? 1.f : 0.f);
-	sr->update(u, f);
+	sr->setData(mvp, mv, *this);
+	sr->update(u);
 }
 
-void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
+void rhi::TriMesh::Draw(QRhiCommandBuffer* cb)
 {
 	if (vertexCount > 0)
 	{
@@ -170,7 +227,7 @@ void rhi::Mesh::Draw(QRhiCommandBuffer* cb)
 	}
 }
 
-rhi::LineMesh::LineMesh(QRhi* rhi, rhi::LineShaderResource* srb) : m_rhi(rhi)
+rhi::LineMesh::LineMesh(QRhi* rhi, rhi::LineShaderResource* srb) : rhi::Mesh(rhi)
 {
 	sr.reset(srb);
 }
@@ -204,11 +261,6 @@ bool rhi::LineMesh::CreateFromGLMesh(const GLMesh* gmsh)
 	return true;
 }
 
-void rhi::LineMesh::SetColor(const vec3f& c)
-{
-	color = c;
-}
-
 void rhi::LineMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
 {
 	if (!vertexData.empty())
@@ -220,13 +272,8 @@ void rhi::LineMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, c
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj * mv;
 
-	float c[4] = { color.x, color.y, color.z, 1.f };
-
-	float f[40] = { 0.f };
-	memcpy(f, mvp.constData(), 64);
-	memcpy(f + 16, mv.constData(), 64);
-	memcpy(f + 32, c, 16);
-	sr->update(u, f);
+	sr->setData(mvp, mv, color);
+	sr->update(u);
 }
 
 void rhi::LineMesh::Draw(QRhiCommandBuffer* cb)
@@ -240,7 +287,7 @@ void rhi::LineMesh::Draw(QRhiCommandBuffer* cb)
 	}
 }
 
-rhi::PointMesh::PointMesh(QRhi* rhi, rhi::LineShaderResource* srb) : m_rhi(rhi)
+rhi::PointMesh::PointMesh(QRhi* rhi, rhi::PointShaderResource* srb) : rhi::Mesh(rhi)
 {
 	sr.reset(srb);
 }
@@ -268,11 +315,6 @@ bool rhi::PointMesh::CreateFromGLMesh(const GLMesh* gmsh)
 	return true;
 }
 
-void rhi::PointMesh::SetColor(const vec3f& c)
-{
-	color = c;
-}
-
 void rhi::PointMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)
 {
 	if (!vertexData.empty())
@@ -284,13 +326,8 @@ void rhi::PointMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, 
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj * mv;
 
-	float c[4] = { color.x, color.y, color.z, 1.f };
-
-	float f[40] = { 0.f };
-	memcpy(f, mvp.constData(), 64);
-	memcpy(f + 16, mv.constData(), 64);
-	memcpy(f + 32, c, 16);
-	sr->update(u, f);
+	sr->setData(mvp, mv, color);
+	sr->update(u);
 }
 
 void rhi::PointMesh::Draw(QRhiCommandBuffer* cb)

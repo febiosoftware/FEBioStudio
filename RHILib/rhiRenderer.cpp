@@ -188,7 +188,7 @@ void rhiRenderer::init()
 		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/point.vert.qsb")) },
 		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
 
-	m_pointSrb.reset(new rhi::LineShaderResource());
+	m_pointSrb.reset(new rhi::PointShaderResource());
 	m_pointSrb->create(m_rhi);
 
 	m_pointRender.reset(m_rhi->newGraphicsPipeline());
@@ -323,7 +323,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	{
 		rhi::ColorShaderResource* sr = new rhi::ColorShaderResource();
 		sr->create(m_rhi, &m_sharedResources);
-		rhi::Mesh* rm = new rhi::Mesh(m_rhi, sr);
+		rhi::TriMesh* rm = new rhi::TriMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetVertexColor(col);
 		rm->SetMaterial(m_currentMat);
@@ -378,7 +378,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	}
 	else
 	{
-		rhi::LineShaderResource* sr = new rhi::LineShaderResource();
+		rhi::PointShaderResource* sr = new rhi::PointShaderResource();
 		sr->create(m_rhi);
 		rhi::PointMesh* rm = new rhi::PointMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
@@ -452,7 +452,7 @@ void rhiRenderer::finish()
 	// update mesh data
 	for (auto& it : m_meshList)
 	{
-		rhi::Mesh& m = *it.second;
+		rhi::TriMesh& m = *it.second;
 		if (m.isActive())
 			m.Update(resourceUpdates, m_proj, m_view);
 	}
@@ -483,7 +483,7 @@ void rhiRenderer::finish()
 
 	for (auto& it : m_meshList)
 	{
-		rhi::Mesh& m = *it.second;
+		rhi::TriMesh& m = *it.second;
 		if (m.isActive())
 			m.Draw(cb);
 	}
@@ -494,7 +494,7 @@ void rhiRenderer::finish()
 
 	for (auto& it : m_meshList)
 	{
-		rhi::Mesh& m = *it.second;
+		rhi::TriMesh& m = *it.second;
 		if (m.isActive())
 			m.Draw(cb);
 	}
