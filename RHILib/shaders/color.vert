@@ -27,6 +27,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float specStrength;
     float opacity;
     float useTexture;
+    float useStipple;
 } mesh;
 
 // texture sampler

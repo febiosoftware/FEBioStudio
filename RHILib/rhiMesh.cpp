@@ -34,7 +34,8 @@ void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 		{UniformBlock::FLOAT, "specExp"},
 		{UniformBlock::FLOAT, "specStrength"},
 		{UniformBlock::FLOAT, "opacity"},
-		{UniformBlock::FLOAT, "useTexture"}
+		{UniformBlock::FLOAT, "useTexture"},
+		{UniformBlock::FLOAT, "useStipple"}
 	});
 
 	// create the buffer
@@ -63,6 +64,7 @@ void rhi::ColorShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& 
 	m_data.setFloat(4, m.reflectivity);
 	m_data.setFloat(5, m.opacity);
 	m_data.setFloat(6, (m.useTexture ? 1.f : 0.f));
+	m_data.setFloat(7, (m.useStipple ? 1.f : 0.f));
 }
 
 void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u)
@@ -199,6 +201,7 @@ void rhi::TriMesh::SetMaterial(GLMaterial mat)
 	reflectivity = mat.reflectivity;
 	opacity = mat.opacity;
 	useTexture = (mat.diffuseMap == GLMaterial::TEXTURE_1D);
+	useStipple = (mat.type == GLMaterial::HIGHLIGHT);
 }
 
 void rhi::TriMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view)

@@ -59,6 +59,7 @@ public:
 	CColorTexture tex1d;
 	GLColor meshColor = GLColor(0, 0, 0);
 	GLColor nodeColor = GLColor(0, 0, 0);
+	bool useStipple = false;
 
 private:
 	BOX m_box;

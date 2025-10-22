@@ -233,6 +233,7 @@ namespace rhi {
 		float reflectivity = 0.8f;
 		float opacity = 1.0f;
 		bool useTexture = false;
+		bool useStipple = false;
 
 	private:
 		std::vector<Vertex> vertexData;

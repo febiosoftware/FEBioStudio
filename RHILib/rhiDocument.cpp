@@ -102,6 +102,7 @@ public:
 		addProperty("mesh color", CProperty::Color);
 		addProperty("render mesh nodes", CProperty::Bool);
 		addProperty("nodes color", CProperty::Color);
+		addProperty("use stipple", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -121,6 +122,7 @@ public:
 		case 9: return toQColor(s->meshColor); break;
 		case 10: return s->renderNodes; break;
 		case 11: return toQColor(s->nodeColor); break;
+		case 12: return s->useStipple; break;
 		}
 
 		return QVariant();
@@ -143,6 +145,7 @@ public:
 		case 9: s->meshColor = toGLColor(v.value<QColor>()); break;
 		case 10: s->renderNodes = v.toBool(); break;
 		case 11: s->nodeColor = toGLColor(v.value<QColor>()); break;
+		case 12: s->useStipple = v.toBool(); break;
 		}
 	}
 

@@ -24,6 +24,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float specStrength;
     float opacity;
     float useTexture;
+    float useStipple;
 } mesh;
 
 // texture sampler
@@ -31,6 +32,14 @@ layout(binding = 2) uniform sampler2D smp;
 
 void main()
 {
+    if (mesh.useStipple > 0)
+    {
+        ivec2 p = ivec2(mod(gl_FragCoord.xy, 8.0)); // 8x8 pattern
+        bool visible = ((p.x + p.y) % 2) == 0;  // checker pattern
+        if (!visible)
+            discard;
+    }
+        
     vec3 V = normalize(v_pos);
     vec3 L = normalize(glob.lightPos.xyz);
     vec3 N = normalize(v_normal);

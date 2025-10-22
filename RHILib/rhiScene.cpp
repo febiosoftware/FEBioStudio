@@ -54,7 +54,7 @@ public:
 		if (m_pm)
 		{
 			GLMaterial mat;
-			mat.type = GLMaterial::PLASTIC;
+			mat.type = (useStipple ? GLMaterial::HIGHLIGHT : GLMaterial::PLASTIC);
 			mat.ambient = mat.diffuse = color;
 			mat.shininess = shininess;
 			mat.reflectivity = reflectivity;
@@ -87,6 +87,7 @@ public:
 	GLColor meshColor = GLColor(0, 0, 0);
 	bool renderNodes = false;
 	GLColor nodeColor = GLColor(0, 0, 0);
+	bool useStipple = false;
 
 private:
 	GLMesh* m_pm;
@@ -139,6 +140,7 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 			m->meshColor = meshColor;
 			m->renderNodes = renderNodes;
 			m->nodeColor = nodeColor;
+			m->useStipple = useStipple;
 		}
 	}
 
