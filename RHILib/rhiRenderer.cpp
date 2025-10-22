@@ -48,7 +48,33 @@ static QRhiGraphicsPipeline::TargetBlend defaultBlendState()
 	return blendState;
 }
 
-void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
+void GlobalUniformBlock::create(QRhi* rhi)
+{
+	m_ub.create({
+		{ rhi::UniformBlock::VEC4, "lightPos" },
+		{ rhi::UniformBlock::VEC4, "specColor"},
+		{ rhi::UniformBlock::VEC4, "clipPlane"}
+	});
+
+	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
+	m_ubuf->create();
+}
+
+void GlobalUniformBlock::setLightPosition(const vec3f& lp) { m_ub.setVec4(0, lp); }
+void GlobalUniformBlock::setSpecularColor(GLColor c) 
+{ 
+	float f[4] = { 0.f };
+	c.toFloat(f);
+	m_ub.setVec4(1, f[0], f[1], f[2], f[3]); 
+}
+void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(2, f[0], f[1], f[2], f[3]); }
+
+void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
+{
+	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
+}
+
+void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
 {
 	// create point render pipeline
 	QRhiVertexInputLayout pointMeshLayout;
@@ -64,7 +90,7 @@ void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
 		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
 
 	m_sr.reset(new rhi::PointShaderResource());
-	m_sr->create(m_rhi);
+	m_sr->create(m_rhi, sr);
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -83,7 +109,7 @@ void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
 	m_pl->create();
 }
 
-void rhi::LineRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
+void rhi::LineRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
 {
 	// create point render pipeline
 	QRhiVertexInputLayout lineMeshLayout;
@@ -99,7 +125,7 @@ void rhi::LineRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount)
 		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/lines.frag.qsb")) } };
 
 	m_sr.reset(new rhi::LineShaderResource());
-	m_sr->create(m_rhi);
+	m_sr->create(m_rhi, sr);
 
 	m_pl.reset(m_rhi->newGraphicsPipeline());
 	m_pl->setRenderPassDescriptor(rp);
@@ -218,8 +244,7 @@ void rhiRenderer::init()
 {
 	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
 
-	globalBuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 32));
-	globalBuf->create();
+	m_global.create(m_rhi);
 
 	// prep texture
 	m_texture.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
@@ -232,7 +257,7 @@ void rhiRenderer::init()
 	m_texture.image = createTextureImage(m_texture.texture->pixelSize());
 	m_texture.upload(m_initialUpdates);
 
-	m_sharedResources = { globalBuf.get(), m_texture.texture.get(), m_texture.sampler.get()};
+	m_sharedResources = { m_global.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
 	m_backPass.reset(new rhi::BackFaceRenderPass(m_rhi));
 	m_backPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
@@ -241,10 +266,10 @@ void rhiRenderer::init()
 	m_frontPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
 
 	m_linePass.reset(new rhi::LineRenderPass(m_rhi));
-	m_linePass->create(m_rp, m_sc->sampleCount());
+	m_linePass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
 
 	m_pointPass.reset(new rhi::PointRenderPass(m_rhi));
-	m_pointPass->create(m_rp, m_sc->sampleCount());
+	m_pointPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
 }
 
 void rhiRenderer::clearCache()
@@ -397,6 +422,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		}
 		it->second->SetMaterial(m_currentMat);
 		it->second->SetModelMatrix(m_modelMatrix);
+		it->second->doClipping = m_clipEnabled;
 		it->second->setActive(true);
 	}
 	else
@@ -408,6 +434,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		rm->SetVertexColor(col);
 		rm->SetMaterial(m_currentMat);
 		rm->SetModelMatrix(m_modelMatrix);
+		rm->doClipping = m_clipEnabled;
 		rm->setActive(true);
 		m_meshList[&mesh] = rm;
 	}
@@ -428,16 +455,18 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		}
 		it->second->SetColor(col);
 		it->second->SetModelMatrix(m_modelMatrix);
+		it->second->doClipping = m_clipEnabled;
 		it->second->setActive(true);
 	}
 	else
 	{
 		rhi::LineShaderResource* sr = new rhi::LineShaderResource();
-		sr->create(m_rhi);
+		sr->create(m_rhi, &m_sharedResources);
 		rhi::LineMesh* rm = new rhi::LineMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetColor(col);
 		rm->SetModelMatrix(m_modelMatrix);
+		rm->doClipping = m_clipEnabled;
 		rm->setActive(true);
 		m_lineMeshList[&mesh] = rm;
 	}
@@ -458,16 +487,18 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 		}
 		it->second->SetColor(col);
 		it->second->SetModelMatrix(m_modelMatrix);
+		it->second->doClipping = m_clipEnabled;
 		it->second->setActive(true);
 	}
 	else
 	{
 		rhi::PointShaderResource* sr = new rhi::PointShaderResource();
-		sr->create(m_rhi);
+		sr->create(m_rhi, &m_sharedResources);
 		rhi::PointMesh* rm = new rhi::PointMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
 		rm->SetColor(col);
 		rm->SetModelMatrix(m_modelMatrix);
+		rm->doClipping = m_clipEnabled;
 		rm->setActive(true);
 		m_pointMeshList[&mesh] = rm;
 	}
@@ -487,6 +518,40 @@ void rhiRenderer::setTexture(GLTexture1D& tex)
 		m_texture.image = img;
 		m_texture.needsUpload = true;
 		tex.Update(false);
+	}
+}
+
+void rhiRenderer::setClipPlane(unsigned int n, const double* v)
+{
+	if (n == 0)
+	{
+		// Transform to eye coordinates
+		QVector4D N(v[0], v[1], v[2], 0);
+		QMatrix4x4 modelView = m_viewMatrix * m_modelMatrix;
+		QVector4D Np = modelView * N;
+		// TODO: Do I need transpose of modelView?
+		double v3 = v[3] - (modelView(0,3) * Np[0] + modelView(1,3) * Np[1] + modelView(2,3) * Np[2]);
+
+		clipPlane[0] = Np[0];
+		clipPlane[1] = Np[1];
+		clipPlane[2] = Np[2];
+		clipPlane[3] = v3;
+	}
+}
+
+void rhiRenderer::enableClipPlane(unsigned int n)
+{
+	if (n == 0)
+	{
+		m_clipEnabled = true;
+	}
+}
+
+void rhiRenderer::disableClipPlane(unsigned int n)
+{
+	if (n == 0)
+	{
+		m_clipEnabled = false;
 	}
 }
 
@@ -522,15 +587,11 @@ void rhiRenderer::finish()
 	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
 	const QSize outputSizeInPixels = m_sc->currentPixelSize();
 
-	// set light properties
-	float s[4] = { 0.f };
-	m_lightSpecular.toFloat(s);
-
-	float lp[8] = { 
-		m_light.x, m_light.y, m_light.z, 0.f,
-		s[0], s[1], s[2], 1.f
-	};
-	resourceUpdates->updateDynamicBuffer(globalBuf.get(), 0, 32, lp);
+	// set global properties
+	m_global.setLightPosition(m_light);
+	m_global.setSpecularColor(m_lightSpecular);
+	m_global.setClipPlane(clipPlane);
+	m_global.update(resourceUpdates);
 
 	if (m_texture.needsUpload)
 	{

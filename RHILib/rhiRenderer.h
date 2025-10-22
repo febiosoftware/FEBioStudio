@@ -56,7 +56,7 @@ namespace rhi {
 	public:
 		PointRenderPass(QRhi* rhi) : RenderPass(rhi) {}
 
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount);
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
 
 		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
@@ -70,7 +70,7 @@ namespace rhi {
 	public:
 		LineRenderPass(QRhi* rhi) : RenderPass(rhi) {}
 
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount);
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
 
 		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
 
@@ -107,6 +107,26 @@ namespace rhi {
 		std::unique_ptr<rhi::ColorShaderResource> m_sr;
 	};
 }
+
+class GlobalUniformBlock
+{
+public:
+	GlobalUniformBlock() {}
+	void create(QRhi* rhi);
+
+	QRhiBuffer* get() { return m_ubuf.get(); }
+
+	void update(QRhiResourceUpdateBatch* u);
+
+public:
+	void setLightPosition(const vec3f& lp);
+	void setSpecularColor(GLColor c);
+	void setClipPlane(const float f[4]);
+
+private:
+	rhi::UniformBlock m_ub;
+	std::unique_ptr<QRhiBuffer> m_ubuf;
+};
 
 class rhiRenderer : public GLRenderEngine
 {
@@ -155,12 +175,16 @@ public:
 
 	void setTexture(GLTexture1D& tex);
 
+	void setClipPlane(unsigned int n, const double* v) override;
+	void enableClipPlane(unsigned int n) override;
+	void disableClipPlane(unsigned int n) override;
+
 private:
 	QRhi* m_rhi;
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
-	std::unique_ptr<QRhiBuffer> globalBuf;
+	GlobalUniformBlock m_global;
 	std::unique_ptr<rhi::BackFaceRenderPass> m_backPass;
 	std::unique_ptr<rhi::FrontFaceRenderPass> m_frontPass;
 	std::unique_ptr<rhi::LineRenderPass> m_linePass;
@@ -179,6 +203,9 @@ private:
 	std::map<const GLMesh*, rhi::TriMesh*> m_meshList;
 	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
 	std::map<const GLMesh*, rhi::PointMesh*> m_pointMeshList;
+
+	bool m_clipEnabled = false;
+	float clipPlane[4];
 
 private:
 	vec3f m_light;

@@ -112,6 +112,11 @@ public:
 		addProperty("render mesh nodes", CProperty::Bool);
 		addProperty("nodes color", CProperty::Color);
 		addProperty("use stipple", CProperty::Bool);
+		addProperty("do clipping", CProperty::Bool);
+		addProperty("clip X", CProperty::Float)->setFloatRange(-1, 1);
+		addProperty("clip Y", CProperty::Float)->setFloatRange(-1, 1);
+		addProperty("clip Z", CProperty::Float)->setFloatRange(-1, 1);
+		addProperty("clip W", CProperty::Float);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -132,6 +137,11 @@ public:
 		case 10: return s->renderNodes; break;
 		case 11: return toQColor(s->nodeColor); break;
 		case 12: return s->useStipple; break;
+		case 13: return s->doClipping; break;
+		case 14: return s->clipPlane[0]; break;
+		case 15: return s->clipPlane[1]; break;
+		case 16: return s->clipPlane[2]; break;
+		case 17: return s->clipPlane[3]; break;
 		}
 
 		return QVariant();
@@ -155,6 +165,11 @@ public:
 		case 10: s->renderNodes = v.toBool(); break;
 		case 11: s->nodeColor = toGLColor(v.value<QColor>()); break;
 		case 12: s->useStipple = v.toBool(); break;
+		case 13: s->doClipping = v.toBool(); break;
+		case 14: s->clipPlane[0] = v.toFloat(); break;
+		case 15: s->clipPlane[1] = v.toFloat(); break;
+		case 16: s->clipPlane[2] = v.toFloat(); break;
+		case 17: s->clipPlane[3] = v.toFloat(); break;
 		}
 	}
 

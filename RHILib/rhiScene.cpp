@@ -144,7 +144,15 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
+	if (doClipping)
+	{
+		re.enableClipPlane(0);
+		re.setClipPlane(0, clipPlane);
+	}
+
 	GLScene::Render(re, rc);
+
+	if (doClipping) re.disableClipPlane(0);
 }
 
 void rhiScene::SetObjectColor(GLColor col)

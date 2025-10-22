@@ -87,6 +87,14 @@ namespace rhi {
 			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 4);
 		}
 
+		void setVec4(unsigned int index, float x, float y, float z, float w)
+		{
+			auto& it = m_items[index];
+			assert(it.type == VEC4);
+			float tmp[4] = { x, y, z, w };
+			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 4);
+		}
+
 		void setMat4(unsigned int index, const QMatrix4x4& m)
 		{
 			auto& it = m_items[index];
@@ -141,21 +149,23 @@ namespace rhi {
 		UniformBlock	m_data;
 	};
 
+	class LineMesh;
+
 	struct LineShaderResource
 	{
 	public:
-		enum { MVP, MV, COL };
+		enum { MVP, MV, COL, CLIP };
 
 	public:
 
 		std::unique_ptr<QRhiBuffer> ubuf;
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
 
-		void create(QRhi* rhi);
+		void create(QRhi* rhi, SharedResources* sharedResources);
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
-		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col);
+		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::LineMesh& m);
 
 		void update(QRhiResourceUpdateBatch* u);
 
@@ -163,22 +173,24 @@ namespace rhi {
 		UniformBlock m_data;
 	};
 
+	class PointMesh;
+
 	struct PointShaderResource
 	{
 	public:
-		enum { MVP, MV, COL };
+		enum { MVP, MV, COL, CLIP };
 
 	public:
 		std::unique_ptr<QRhiBuffer> ubuf;
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
 
-		void create(QRhi* rhi);
+		void create(QRhi* rhi, SharedResources* sharedResources);
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
 		void update(QRhiResourceUpdateBatch* u);
 
-		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col);
+		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const PointMesh& m);
 
 	private:
 		UniformBlock m_data;
@@ -198,6 +210,7 @@ namespace rhi {
 
 	public:
 		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
+		bool doClipping = false;
 
 	protected:
 		QRhi* m_rhi = nullptr;

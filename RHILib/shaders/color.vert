@@ -16,6 +16,7 @@ layout(location = 3) out vec3 v_tex;
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
     vec4 specColor;
+    vec4 clipPlane;
 } glob;
 
 // mesh-specific block
@@ -28,6 +29,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float opacity;
     float useTexture;
     float useStipple;
+    float useClipping;
 } mesh;
 
 // texture sampler

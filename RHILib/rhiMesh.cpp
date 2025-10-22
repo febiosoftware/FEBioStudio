@@ -35,7 +35,8 @@ void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 		{UniformBlock::FLOAT, "specStrength"},
 		{UniformBlock::FLOAT, "opacity"},
 		{UniformBlock::FLOAT, "useTexture"},
-		{UniformBlock::FLOAT, "useStipple"}
+		{UniformBlock::FLOAT, "useStipple"},
+		{UniformBlock::FLOAT, "useClipping"}
 	});
 
 	// create the buffer
@@ -65,6 +66,7 @@ void rhi::ColorShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& 
 	m_data.setFloat(5, m.opacity);
 	m_data.setFloat(6, (m.useTexture ? 1.f : 0.f));
 	m_data.setFloat(7, (m.useStipple ? 1.f : 0.f));
+	m_data.setFloat(8, (m.doClipping ? 1.f : 0.f));
 }
 
 void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u)
@@ -72,12 +74,13 @@ void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
 }
 
-void rhi::LineShaderResource::create(QRhi* rhi)
+void rhi::LineShaderResource::create(QRhi* rhi, SharedResources* sharedResources)
 {
 	m_data.create({
 		{UniformBlock::MAT4, "mvp"},
 		{UniformBlock::MAT4, "mv"},
-		{UniformBlock::VEC4, "col"}
+		{UniformBlock::VEC4, "col"},
+		{UniformBlock::FLOAT, "useClipping" }
 	});
 
 	// create the buffer
@@ -90,16 +93,18 @@ void rhi::LineShaderResource::create(QRhi* rhi)
 
 	srb.reset(rhi->newShaderResourceBindings());
 	srb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ubuf.get())
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+			QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
 		});
 	srb->create();
 }
 
-void rhi::LineShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col)
+void rhi::LineShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::LineMesh& m)
 {
 	m_data.setMat4(MVP, mvp);
 	m_data.setMat4(MV , mv);
-	m_data.setVec4(COL, col);
+	m_data.setVec4(COL, m.color);
+	m_data.setFloat(CLIP, (m.doClipping ? 1.f : 0.f));
 }
 
 void rhi::LineShaderResource::update(QRhiResourceUpdateBatch* u)
@@ -107,12 +112,13 @@ void rhi::LineShaderResource::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(ubuf.get(), 0, m_data.size(), m_data.data());
 }
 
-void rhi::PointShaderResource::create(QRhi* rhi)
+void rhi::PointShaderResource::create(QRhi* rhi, SharedResources* sharedResources)
 {
 	m_data.create({
 		{UniformBlock::MAT4, "mvp"},
 		{UniformBlock::MAT4, "mv"},
-		{UniformBlock::VEC4, "col"}
+		{UniformBlock::VEC4, "col"},
+		{UniformBlock::FLOAT, "useClipping"}
 		});
 
 	// create the buffer
@@ -125,16 +131,18 @@ void rhi::PointShaderResource::create(QRhi* rhi)
 
 	srb.reset(rhi->newShaderResourceBindings());
 	srb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ubuf.get())
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, sharedResources->globalbuf),
+			QRhiShaderResourceBinding::uniformBuffer(1, visibility, ubuf.get())
 		});
 	srb->create();
 }
 
-void rhi::PointShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const vec3f& col)
+void rhi::PointShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const PointMesh& m)
 {
 	m_data.setMat4(MVP, mvp);
 	m_data.setMat4(MV , mv);
-	m_data.setVec4(COL, col);
+	m_data.setVec4(COL, m.color);
+	m_data.setFloat(CLIP, m.doClipping);
 }
 
 void rhi::PointShaderResource::update(QRhiResourceUpdateBatch* u)
@@ -275,7 +283,7 @@ void rhi::LineMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, c
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj * mv;
 
-	sr->setData(mvp, mv, color);
+	sr->setData(mvp, mv, *this);
 	sr->update(u);
 }
 
@@ -329,7 +337,7 @@ void rhi::PointMesh::Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, 
 	QMatrix4x4 mv = view * modelMatrix;
 	QMatrix4x4 mvp = proj * mv;
 
-	sr->setData(mvp, mv, color);
+	sr->setData(mvp, mv, *this);
 	sr->update(u);
 }
 

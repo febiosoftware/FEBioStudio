@@ -13,6 +13,7 @@ layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform GlobalBlock {
     vec4 lightPos;
     vec4 specColor;
+    vec4 clipPlane;
 } glob;
 
 // mesh-specific block
@@ -25,6 +26,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float opacity;
     float useTexture;
     float useStipple;
+    float useClipping;
 } mesh;
 
 // texture sampler
@@ -32,6 +34,7 @@ layout(binding = 2) uniform sampler2D smp;
 
 void main()
 {
+    // check stippling
     if (mesh.useStipple > 0)
     {
         ivec2 p = ivec2(mod(gl_FragCoord.xy, 8.0)); // 8x8 pattern
@@ -39,7 +42,15 @@ void main()
         if (!visible)
             discard;
     }
-        
+
+    // clip-plane
+    if (mesh.useClipping > 0)
+    {
+        float d = glob.clipPlane[0]*v_pos.x + glob.clipPlane[1]*v_pos.y + glob.clipPlane[2]*v_pos.z + glob.clipPlane[3];
+        if (d < 0) discard;
+    }
+
+    // do lighting calculation
     vec3 V = normalize(v_pos);
     vec3 L = normalize(glob.lightPos.xyz);
     vec3 N = normalize(v_normal);
