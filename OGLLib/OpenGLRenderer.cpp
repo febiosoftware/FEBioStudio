@@ -224,7 +224,7 @@ void OpenGLRenderer::deleteCachedMesh(GLMesh* gm)
 
 void OpenGLRenderer::pushState()
 {
-	glPushAttrib(GL_ENABLE_BIT);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 }
 
 void OpenGLRenderer::popState()
@@ -232,16 +232,54 @@ void OpenGLRenderer::popState()
 	glPopAttrib();
 }
 
+void OpenGLRenderer::viewport(int vp[4])
+{
+	glGetIntegerv(GL_VIEWPORT, vp);
+}
+
+void OpenGLRenderer::setViewport(int vp[4])
+{
+	glViewport(vp[0], vp[1], vp[2], vp[3]);
+}
+
+void OpenGLRenderer::setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(left, right, bottom, top, zNear, zFar);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void OpenGLRenderer::resetTransform()
+{
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
 void OpenGLRenderer::pushTransform()
 {
-	// This assumes that the matrix mode is MODELVIEW
+	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 }
 
 void OpenGLRenderer::popTransform()
 {
-	// This assumes that the matrix mode is MODELVIEW
+	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+}
+
+void OpenGLRenderer::pushProjection()
+{
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void OpenGLRenderer::popProjection()
+{
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void OpenGLRenderer::translate(const vec3d& r)
@@ -300,6 +338,11 @@ void OpenGLRenderer::disable(GLRenderEngine::StateFlag flag)
 	case GLRenderEngine::CULLFACE  : glDisable(GL_CULL_FACE); break;
 	case GLRenderEngine::BLENDING  : glDisable(GL_BLEND); break;
 	}
+}
+
+void OpenGLRenderer::clearDepthBuffer()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRenderer::setColor(GLColor c)

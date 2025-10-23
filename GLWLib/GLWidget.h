@@ -26,12 +26,12 @@ SOFTWARE.*/
 #pragma once
 #include <functional>
 #include <FSCore/color.h>
-#include <QFont>
+#include "GLPainter.h"
 #include <map>
 
 class CGLView;
 class CGLWidgetManager;
-class QPainter;
+
 
 enum GLWAlign {
 	GLW_ALIGN_LEFT		= 0x0001,
@@ -62,7 +62,7 @@ public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
 	virtual ~GLWidget();
 
-	virtual void draw(QPainter* painter);
+	virtual void draw(GLPainter* painter);
 
 	virtual int handle(int x, int y, int nevent) { return 0; }
 
@@ -131,9 +131,9 @@ public:
 	void add_event_handler(glw_event_handler f) { m_eventHandlers.push_back(f); }
 
 protected:
-	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
+	void draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter);
 
-	void snap_to_bounds(QPainter& painter);
+	void snap_to_bounds(GLPainter& painter);
 
 public:
 	std::string processLabel() const;

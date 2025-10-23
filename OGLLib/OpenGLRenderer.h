@@ -45,8 +45,17 @@ public:
 	void deleteCachedMesh(GLMesh* gm) override;
 
 public:
+	void viewport(int vp[4]) override;
+	void setViewport(int v[4]) override;
+
+	void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) override;
+
+	void resetTransform() override;
 	void pushTransform() override;
 	void popTransform() override;
+
+	void pushProjection() override;
+	void popProjection() override;
 
 	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
@@ -61,6 +70,8 @@ public:
 
 	void enable(StateFlag flag) override;
 	void disable(StateFlag flag) override;
+
+	void clearDepthBuffer() override;
 
 	void setColor(GLColor c) override;
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;

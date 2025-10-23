@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/glx.h>
 #include <GLWLib/GLTriad.h>
+#include <OGLLib/OpenGLRenderer.h>
 
 GLMesh CreateSphere()
 {
@@ -184,7 +185,11 @@ public:
 
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		m_ptriad->draw(&painter);
+
+		OpenGLRenderer ogl;
+
+		GLPainter glpainter(&painter, &ogl);
+		m_ptriad->draw(&glpainter);
 	}
 
 	CGLDistroScene* GetScene()

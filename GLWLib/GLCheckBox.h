@@ -32,9 +32,9 @@ class GLCheckBox : public GLWidget
 public:
 	GLCheckBox(int x, int y, int w, int h, const char* szlabel = 0);
 
-	void draw(QPainter* painter);
+	void draw(GLPainter* painter) override;
 
-	int handle(int x, int y, int nevent);
+	int handle(int x, int y, int nevent) override;
 
 public:
 	bool m_checked;

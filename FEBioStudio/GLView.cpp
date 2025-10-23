@@ -1390,8 +1390,7 @@ void CGLView::initializeGL()
 
 	if (m_ballocDefaultWidgets)
 	{
-		m_Widget = new CGLWidgetManager();
-		m_Widget->AttachToView(this);
+		m_Widget = new CGLWidgetManager(this);
 
 		int Y = 0;
 		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""));
@@ -1726,7 +1725,9 @@ void CGLView::RenderCanvas(GLContext& rc)
 			else m_menu->hide();
 		}
 
-		m_Widget->DrawWidgets(&painter);
+		GLPainter glpainter(&painter, m_ogl);
+
+		m_Widget->DrawWidgets(&glpainter);
 	}
 
 	if (m_recorder.IsPaused())

@@ -23,39 +23,54 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include <QRect>
+#include <QPen>
+#include <QFont>
+#include <QLinearGradient>
+#include <FSCore/color.h>
+#include <GLLib/GLRenderEngine.h>
 
-class QWidget;
-#include "GLWidget.h"
-#include <vector>
+class QPainter;
 
-class CGLWidgetManager
+// The GL Painter provides similar functionality to QPainter, but is designed
+// to work with a GLRenderEngine. That is, the render engine does the actual rendering
+class GLPainter
 {
 public:
-	CGLWidgetManager(QWidget* parent);
-	~CGLWidgetManager();
+	GLPainter(QPainter* painter, GLRenderEngine* re);
 
-	void AddWidget(GLWidget* pw);
-	void RemoveWidget(GLWidget* pw);
-	int Widgets() { return (int)m_Widget.size(); }
+public:
+	int deviceWidth() const;
+	int deviceHeight() const;
+	double devicePixelRatio() const;
 
-	GLWidget* operator [] (int i) { return m_Widget[i]; }
-	GLWidget* get(int i) { return m_Widget[i]; }
+	GLRenderEngine* renderEngine() const;
 
-	int handle(int x, int y, int nevent);
+public:
+	const QPen& pen() const;
+	void setPen(const QPen& pen);
+	void setPen(const QColor& col);
 
-	void DrawWidgets(GLPainter* painter);
-	void DrawWidget(GLWidget* widget, GLPainter* painter);
+	void drawLine(int x1, int y1, int x2, int y2);
 
-	// Make sure widget are within bounds.
-	void CheckWidgetBounds();
+	void drawRect(int x, int y, int w, int h);
+	void drawRect(const QRect& rt);
+	void fillRect(const QRect& rt, const QColor& col);
+	void fillRect(int x, int y, int w, int h, const QColor& col);
+	void fillRect(const QRect& rt, const QLinearGradient& col);
+	void drawRoundedRect(int x, int y, double w, double h, int xrad, int yrad);
 
-protected:
-	QWidget* m_pw;
-	std::vector<GLWidget*>	m_Widget;
+	void setFont(const QFont& font);
+	QFontMetrics fontMetrics() const;
+
+	void drawText(int x, int y, const QString& txt);
+	void drawText(int x, int y, int w, int h, int flags, const QString& txt);
+
+	void beginNativePainting();
+	void endNativePainting();
 
 private:
-	CGLWidgetManager(const CGLWidgetManager& m) = delete;
-	CGLWidgetManager& operator = (const CGLWidgetManager& m) = delete;
+	QPainter* m_painter;
+	GLRenderEngine* m_re;
 };

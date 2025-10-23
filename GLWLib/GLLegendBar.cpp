@@ -23,12 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include <qopengl.h>
 #include "GLLegendBar.h"
 #include "convert.h"
 #include <FSCore/ColorMapManager.h>
 #include <GLLib/ColorTexture.h>
-#include <QPainter>
+#include <GLLib/GLRenderEngine.h>
+#include <QFontMetrics>
 
 GLLegendBar::GLLegendBar(int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
 {
@@ -46,7 +46,7 @@ GLLegendBar::GLLegendBar(int x, int y, int w, int h, int orientation) : GLWidget
 	m_lineWidth = 1.f;
 }
 
-void GLLegendBar::draw(QPainter* painter)
+void GLLegendBar::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);
 
@@ -119,7 +119,7 @@ void GLLegendBar::SetSmoothTexture(bool b)
 	m_pMap->SetSmooth(b);
 }
 
-void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
+void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter)
 {
 	QColor c1 = toQColor(m_bgFillColor[0]);
 	QColor c2 = toQColor(m_bgFillColor[1]);
@@ -165,51 +165,22 @@ void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 	}
 }
 
-void setCurrentTexture(GLTexture1D& tex)
+void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 {
-	unsigned int texID = tex.GetID();
-	if (texID == 0)
-	{
-		glGenTextures(1, &texID);
-		glBindTexture(GL_TEXTURE_1D, texID);
+	GLRenderEngine* re = painter->renderEngine();
+	if (re == nullptr) return;
 
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //(m_bsmooth ? GL_LINEAR : GL_NEAREST));
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //(m_bsmooth ? GL_LINEAR : GL_NEAREST));
-
-		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-
-		tex.SetID(texID);
-	}
-	else glBindTexture(GL_TEXTURE_1D, texID);
-
-	if (tex.DoUpdate())
-	{
-		glTexImage1D(GL_TEXTURE_1D, 0, 3, tex.Size(), 0, GL_RGB, GL_UNSIGNED_BYTE, tex.GetBytes());
-		tex.Update(false);
-	}
-}
-
-void GLLegendBar::draw_gradient_vert(QPainter* painter)
-{
 	painter->beginNativePainting();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	re->pushState();
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
 
-	glDisable(GL_CULL_FACE);
+	re->disable(GLRenderEngine::BLENDING);
+	re->disable(GLRenderEngine::CULLFACE);
 
-	glEnable(GL_TEXTURE_1D);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-
-	setCurrentTexture(m_pMap->GetTexture());
-
-	GLint dfnc;
-	glGetIntegerv(GL_DEPTH_FUNC, &dfnc);
-	glDepthFunc(GL_ALWAYS);
-
-	glDisable(GL_BLEND);
+	re->setTexture(m_pMap->GetTexture());
 
 	// provide some room for the title
 	int titleHeight = 0;
@@ -230,20 +201,16 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 		x1 = x0 + 25;
 	}
 
-	glColor3ub(255, 255, 255);
-	glBegin(GL_QUADS);
+	re->setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
+	re->begin(GLRenderEngine::QUADS);
 	{
-		glTexCoord1d(0); glVertex2i(x0, y1);
-		glTexCoord1d(0); glVertex2i(x1, y1);
-		glTexCoord1d(1); glVertex2i(x1, y0);
-		glTexCoord1d(1); glVertex2i(x0, y0);
+		re->texCoord1d(0); re->vertex(vec3d(x0, y1, 0));
+		re->texCoord1d(0); re->vertex(vec3d(x1, y1, 0));
+		re->texCoord1d(1); re->vertex(vec3d(x1, y0, 0));
+		re->texCoord1d(1); re->vertex(vec3d(x0, y0, 0));
 	}
-	glEnd();
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glDisable(GL_TEXTURE_1D);
-
-	glDisable(GL_LIGHTING);
+	re->end();
+	re->setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	int i, yt, ipow;
 	double f, p = 1;
@@ -259,23 +226,21 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 
 	if (m_lineWidth > 0.f)
 	{
-		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-		glLineWidth(m_lineWidth);
-		glBegin(GL_LINES);
+		re->setColor(m_fgc);
+		re->setLineWidth(m_lineWidth);
+		re->begin(GLRenderEngine::LINES);
 		{
 			for (i = 0; i <= nsteps; i++)
 			{
 				yt = y0 + i * (y1 - y0) / nsteps;
-				glVertex2i(x0 + 1, yt);
-				glVertex2i(x1 - 1, yt);
+				re->vertex(vec3d(x0 + 1, yt, 0));
+				re->vertex(vec3d(x1 - 1, yt, 0));
 			}
 		}
-		glEnd();
+		re->end();
 	}
 
-	glDepthFunc(dfnc);
-
-	glPopAttrib();
+	re->popState();
 	painter->endNativePainting();
 
 	if (m_blabels)
@@ -345,27 +310,23 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	}
 }
 
-void GLLegendBar::draw_gradient_horz(QPainter* painter)
+void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 {
+	GLRenderEngine* re = painter->renderEngine();
+	if (re == nullptr) return;
+
 	painter->beginNativePainting();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	re->pushState();
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
 
-	glDisable(GL_CULL_FACE);
+	re->setTexture(m_pMap->GetTexture());
 
-	glEnable(GL_TEXTURE_1D);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-
-	setCurrentTexture(m_pMap->GetTexture());
-
-	GLint dfnc;
-	glGetIntegerv(GL_DEPTH_FUNC, &dfnc);
-	glDepthFunc(GL_ALWAYS);
-
-	glDisable(GL_BLEND);
+	re->disable(GLRenderEngine::BLENDING);
+	re->disable(GLRenderEngine::CULLFACE);
 
 	int x0 = x() + 10;
 	int y0 = y() + h() - 50;
@@ -378,20 +339,16 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		y1 = y0 + 25;
 	}
 
-	glColor3ub(255, 255, 255);
-	glBegin(GL_QUADS);
+	re->setMaterial(GLMaterial::Type::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
+	re->begin(GLRenderEngine::QUADS);
 	{
-		glTexCoord1d(0); glVertex2i(x0, y0);
-		glTexCoord1d(0); glVertex2i(x0, y1);
-		glTexCoord1d(1); glVertex2i(x1, y1);
-		glTexCoord1d(1); glVertex2i(x1, y0);
+		re->texCoord1d(0); re->vertex(vec3d(x0, y0, 0));
+		re->texCoord1d(0); re->vertex(vec3d(x0, y1, 0));
+		re->texCoord1d(1); re->vertex(vec3d(x1, y1, 0));
+		re->texCoord1d(1); re->vertex(vec3d(x1, y0, 0));
 	}
-	glEnd();
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glDisable(GL_TEXTURE_1D);
-
-	glDisable(GL_LIGHTING);
+	re->end();
+	re->setMaterial(GLMaterial::CONSTANT, GLColor::White());
 
 	int i, ipow;
 	double p = 1;
@@ -407,23 +364,21 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 
 	if (m_lineWidth > 0.f)
 	{
-		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-		glLineWidth(m_lineWidth);
-		glBegin(GL_LINES);
+		re->setColor(m_fgc);
+		re->setLineWidth(m_lineWidth);
+		re->begin(GLRenderEngine::LINES);
 		{
 			for (i = 0; i <= nsteps; i++)
 			{
 				int xt = x0 + i * (x1 - x0) / nsteps;
-				glVertex2i(xt, y0 + 1);
-				glVertex2i(xt, y1 - 1);
+				re->vertex(vec3d(xt, y0 + 1, 0));
+				re->vertex(vec3d(xt, y1 - 1, 0));
 			}
 		}
-		glEnd();
+		re->end();
 	}
 
-	glDepthFunc(dfnc);
-
-	glPopAttrib();
+	re->popState();
 	painter->endNativePainting();
 
 	if (m_blabels)
@@ -496,28 +451,28 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 	}
 }
 
-void GLLegendBar::draw_discrete_vert(QPainter* painter)
+void GLLegendBar::draw_discrete_vert(GLPainter* painter)
 {
 	// TODO: implement this
 	assert(false);
 }
 
-void GLLegendBar::draw_discrete_horz(QPainter* painter)
+void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 {
+	GLRenderEngine* re = painter->renderEngine();
+	if (re == 0) return;
+
 	painter->beginNativePainting();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	re->pushState();
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	glDisable(GL_LIGHTING);
-
-	GLint dfnc;
-	glGetIntegerv(GL_DEPTH_FUNC, &dfnc);
-	glDepthFunc(GL_ALWAYS);
+	re->disable(GLRenderEngine::BLENDING);
+	re->disable(GLRenderEngine::DEPTHTEST);
+	re->disable(GLRenderEngine::LIGHTING);
+	re->disable(GLRenderEngine::CULLFACE);
 
 	int x0, y0, x1, y1;
 	if (m_nrot == ORIENT_VERTICAL)
@@ -535,7 +490,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		y1 = y0 + 25;
 	}
 
-	glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
+	re->setColor(m_fgc);
 
 	int i, yt, ipow;
 	double f, p = 1;
@@ -548,29 +503,8 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 	}
 	else ipow = 0;
 
-	//	gl_font(m_font, m_font_size);
-
-	/*	if((abs(ipow)>2) && m_blabels)
-		{
-			sprintf(pstr, "x10");
-			gl_draw(pstr, x1+10, y1, 28, 20, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE));
-			// change font size and draw superscript
-			sprintf(pstr, "%d", ipow);
-			int l = (int) fl_width("x10");
-			gl_font(m_font, m_font_size-2);
-			gl_draw(pstr, x1+10+l, y1, 28, 20, (Fl_Align) (FL_ALIGN_LEFT | FL_ALIGN_INSIDE));
-			// reset font size
-			gl_font(m_font, m_font_size);
-			p = pow(10.0, ipow);
-		}
-
-	*/
-
 	if (m_blabels)
 	{
-		//		char szfmt[16]={0};
-		//		sprintf(szfmt, "%%.%dg", m_nprec);
-
 		const CColorMap& map = m_pMap->ColorMap();
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
@@ -586,43 +520,37 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 				yt = y0 + i * (y1 - y0) / (nsteps + 1);
 				f = 1.f - (i - 1) / denom;
 
-				glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-
 				GLColor c = map.map((float)f);
-				glColor3ub(c.r, c.g, c.b);
+				re->setColor(c);
 
-				glLineWidth(lineWidth);
-				glBegin(GL_LINES);
+				re->setLineWidth(lineWidth);
+				re->begin(GLRenderEngine::LINES);
 				{
-					glVertex2i(x0 + 1, yt);
-					glVertex2i(x1 - 1, yt);
+					re->vertex(vec3d(x0 + 1, yt, 0));
+					re->vertex(vec3d(x1 - 1, yt, 0));
 				}
-				glEnd();
+				re->end();
 			}
 			else
 			{
 				int xt = x0 + i * (x1 - x0) / (nsteps + 1);
 				f = (i - 1) / denom;
 
-				glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-
 				GLColor c = map.map((float)f);
-				glColor3ub(c.r, c.g, c.b);
+				re->setColor(c);
 
-				glLineWidth(lineWidth);
-				glBegin(GL_LINES);
+				re->setLineWidth(lineWidth);
+				re->begin(GLRenderEngine::LINES);
 				{
-					glVertex2i(xt, y0 + 1);
-					glVertex2i(xt, y1 - 1);
+					re->vertex(vec3d(xt, y0 + 1, 0));
+					re->vertex(vec3d(xt, y1 - 1, 0));
 				}
-				glEnd();
+				re->end();
 			}
 		}
 	}
 
-	glDepthFunc(dfnc);
-
-	glPopAttrib();
+	re->popState();
 	painter->endNativePainting();
 
 	// render the title

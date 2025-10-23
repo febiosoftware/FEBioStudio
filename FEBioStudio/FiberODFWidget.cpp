@@ -72,6 +72,7 @@ SOFTWARE.*/
 #include <GLLib/GLScene.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <GLLib/GLRenderEngine.h>
 
 using std::vector;
 using std::complex;
@@ -84,8 +85,12 @@ void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
 {
+	OpenGLRenderer ogl;
+
+	GLPainter glpainter(&painter, &ogl);
+
 	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
-	m_w->m_ptriad->draw(&painter);
+	m_w->m_ptriad->draw(&glpainter);
 
 	if (m_w->m_analysis)
 	{
@@ -97,7 +102,7 @@ void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
 		vmax = odf->RangeMin();
 		m_w->m_pbar->SetRange(vmin, vmax);
 
-		m_w->m_pbar->draw(&painter);
+		m_w->m_pbar->draw(&glpainter);
 	}
 }
 

@@ -32,7 +32,7 @@ class GLTriad : public GLWidget
 public:
 	GLTriad(int x, int y, int w, int h);
 
-	void draw(QPainter* painter);
+	void draw(GLPainter* painter) override;
 
 	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
 	bool show_coord_labels() { return m_bcoord_labels; }

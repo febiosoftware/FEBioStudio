@@ -24,9 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLTriad.h"
-#include <qopengl.h>
-#include <QPainter>
-#include <OGLLib/OpenGLRenderer.h>
 #include <GLLib/glx.h>
 #include "convert.h"
 
@@ -36,115 +33,97 @@ GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 	m_bcoord_labels = true;
 }
 
-void GLTriad::draw(QPainter* painter)
+void GLTriad::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);
 
+	GLRenderEngine* re = painter->renderEngine();
+	if (re == nullptr) return;
+
 	painter->beginNativePainting();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	GLfloat ones[] = { 1.f, 1.f, 1.f, 1.f };
-	GLfloat ambient[] = { 0.0f,0.0f,0.0f,1.f };
-	GLfloat specular[] = { 0.5f,0.5f,0.5f,1 };
-	GLfloat emission[] = { 0,0,0,1 };
-	GLfloat	light[] = { 0, 0, -1, 0 };
 
-	int view[4];
-	glGetIntegerv(GL_VIEWPORT, view);
+	int oldView[4];
+	re->viewport(oldView);
 
-	double DPR = painter->device()->devicePixelRatio();
+	re->pushState();
+
+	re->setLightPosition(0, vec3f(0,0,-1));
+
+	// set the new viewport based on widget position and size
+	double DPR = painter->devicePixelRatio();
 
 	int x0 = (int)(DPR * x());
-	int y0 = view[3] - (int)(DPR * (y() + h()));
+	int y0 = oldView[3] - (int)(DPR * (y() + h()));
 	int x1 = x0 + (int)(DPR * w());
-	int y1 = view[3] - (int)(DPR * y());
+	int y1 = oldView[3] - (int)(DPR * y());
 	if (x1 < x0) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }
 	if (y1 < y0) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }
 
-	glViewport(x0, y0, x1 - x0, y1 - y0);
+	int vp[4] = { x0, y0, x1 - x0, y1 - y0 };
+	re->setViewport(vp);
 
+	// set up the projection and modelview matrices
 	float ar = 1.f;
 	if (h() != 0) ar = fabs((float)w() / (float)h());
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
+	re->pushProjection();
 	float d = 1.2f;
-	if (ar >= 1.f)	glOrtho(-d * ar, d * ar, -d, d, -1, 1); else glOrtho(-d, d, -d / ar, d / ar, -1, 1);
+	if (ar >= 1.f)	re->setOrthoProjection(-d * ar, d * ar, -d, d, -1, 1); else re->setOrthoProjection(-d, d, -d / ar, d / ar, -1, 1);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	re->pushTransform();
+	re->resetTransform();
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	re->clearDepthBuffer();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	re->enable(GLRenderEngine::StateFlag::DEPTHTEST);
 
-	glDisable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
-
-	glLightfv(GL_LIGHT0, GL_POSITION, light);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ones);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, ones);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
+	re->disable(GLRenderEngine::StateFlag::CULLFACE);
+	re->setFrontFace(GLRenderEngine::FrontFace::CLOCKWISE);
 
 	quatd q = m_rot;
 	vec3d r = q.GetVector();
 	float a = 180 * q.GetAngle() / PI;
 
 	if ((a > 0) && (r.Length() > 0))
-		glRotatef(a, r.x, r.y, r.z);
+		re->rotate(a, r.x, r.y, r.z);
 
-	// create the cylinder object
-	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
+	const double r0 = .05;
+	const double r1 = .15;
 
-	const GLdouble r0 = .05;
-	const GLdouble r1 = .15;
+	re->setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
+	re->pushTransform();
+	re->rotate(90, 0, 1, 0);
+	glx::drawCylinder(*re, r0, .9, 5);
+	re->translate(vec3d(0, 0, .8f));
+	glx::drawCone(*re, r1, 0.2, 10);
+	re->popTransform();
 
-	OpenGLRenderer ogl;
+	re->setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
+	re->pushTransform();
+	re->rotate(-90, 1, 0, 0);
+	glx::drawCylinder(*re, r0, .9, 5);
+	re->translate(vec3d(0, 0, .8f));
+	glx::drawCone(*re, r1, 0.2, 10);
+	re->popTransform();
 
-	ogl.pushTransform();
-	glRotatef(90, 0, 1, 0);
-	glColor3ub(255, 0, 0);
-	glx::drawCylinder(ogl, r0, .9, 5);
-	glTranslatef(0, 0, .8f);
-	glx::drawCone(ogl, r1, 0.2, 10);
-	ogl.popTransform();
-
-	ogl.pushTransform();
-	glRotatef(-90, 1, 0, 0);
-	glColor3ub(0, 255, 0);
-	glx::drawCylinder(ogl, r0, .9, 5);
-	glTranslatef(0, 0, .8f);
-	glx::drawCone(ogl, r1, 0.2, 10);
-	ogl.popTransform();
-
-	ogl.pushTransform();
-	glColor3ub(0, 0, 255);
-	glx::drawCylinder(ogl, r0, .9, 5);
-	glTranslatef(0, 0, .8f);
-	glx::drawCone(ogl, r1, 0.2, 10);
-	ogl.popTransform();
+	re->setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
+	re->pushTransform();
+	glx::drawCylinder(*re, r0, .9, 5);
+	re->translate(vec3d(0, 0, .8f));
+	glx::drawCone(*re, r1, 0.2, 10);
+	re->popTransform();
 
 	// restore project matrix
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
+	re->popProjection();
 
 	// restore modelview matrix
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	re->popTransform();
 
 	// restore attributes
-	glPopAttrib();
+	re->popState();
 
 	// restore viewport
-	glViewport(view[0], view[1], view[2], view[3]);
+	re->setViewport(oldView);
 
 	painter->endNativePainting();
 
@@ -161,8 +140,8 @@ void GLTriad::draw(QPainter* painter)
 
 		x0 /= DPR;
 		x1 /= DPR;
-		y0 = (view[3] - y0) / DPR;
-		y1 = (view[3] - y1) / DPR;
+		y0 = (oldView[3] - y0) / DPR;
+		y1 = (oldView[3] - y1) / DPR;
 
 		ex.x = x0 + (x1 - x0) * (ex.x + 1) * 0.5; ex.y = y0 + (y1 - y0) * (ex.y + 1) * 0.5;
 		ey.x = x0 + (x1 - x0) * (ey.x + 1) * 0.5; ey.y = y0 + (y1 - y0) * (ey.y + 1) * 0.5;

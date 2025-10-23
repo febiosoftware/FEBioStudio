@@ -80,8 +80,15 @@ public:
 	virtual void deleteCachedMesh(GLMesh* gm) {}
 	 
 public:
+	virtual void viewport(int vp[4]) {}
+	virtual void setViewport(int v[4]) {}
+
+	virtual void resetTransform() {}
 	virtual void pushTransform() {}
 	virtual void popTransform() {}
+
+	virtual void pushProjection() {}
+	virtual void popProjection() {}
 
 	virtual void translate(const vec3d& r) {}
 	virtual void rotate(const quatd& rot) {}
@@ -100,6 +107,8 @@ public:
 	virtual void enable(StateFlag flag) {}
 	virtual void disable(StateFlag flag) {}
 
+	virtual void clearDepthBuffer() {}
+
 	virtual void setColor(GLColor c) {}
 	virtual void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = false) {}
 	virtual void setMaterial(const GLMaterial& mat) {}
@@ -114,6 +123,7 @@ public:
 	virtual void setFrontFace(FrontFace f) {}
 
 	virtual void setProjection(double fov, double near) {}
+	virtual void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) {}
 	virtual void positionCamera(const GLCamera& cam) {}
 
 public:

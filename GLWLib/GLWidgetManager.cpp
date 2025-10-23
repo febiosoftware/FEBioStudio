@@ -23,15 +23,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
+#include <QWidget>
 #include "GLWidgetManager.h"
-#include <QOpenGLWidget>
 #include <assert.h>
 #include <QPainter>
 
-CGLWidgetManager::CGLWidgetManager()
+CGLWidgetManager::CGLWidgetManager(QWidget* parent)
 {
-	m_pview = nullptr;
+	m_pw = parent;
 }
 
 CGLWidgetManager::~CGLWidgetManager()
@@ -46,21 +45,15 @@ CGLWidgetManager::~CGLWidgetManager()
 	m_Widget.clear();
 }
 
-void CGLWidgetManager::AttachToView(QOpenGLWidget* pview)
-{
-	assert(pview);
-	m_pview = pview;
-}
-
-// Make sure widget are within bounds. (Call when parent QOpenGLWidget changes size)
+// Make sure widget are within bounds.
 void CGLWidgetManager::CheckWidgetBounds()
 {
 	// make sure we have a view
-	if (m_pview == nullptr) return;
+	if (m_pw == nullptr) return;
 
 	// get the view's dimensions
-	int w = m_pview->width();
-	int h = m_pview->height();
+	int w = m_pw->width();
+	int h = m_pw->height();
 
 	// resize widgets
 	for (int i = 0; i<Widgets(); ++i)
@@ -169,10 +162,10 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 
 				if (bresize && pw->resizable())
 				{
-					if (x0 + w0 + (x - xp) >= m_pview->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
+					if (x0 + w0 + (x - xp) >= m_pw->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
 
 					unsigned int n = pw->GetSnap();
-					if (y0 + h0 + (y - yp) >= m_pview->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
+					if (y0 + h0 + (y - yp) >= m_pw->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
 
 					pw->resize(x0, y0, w0 + (x - xp), h0 + (y - yp));
 
@@ -187,11 +180,11 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 					pw->resize(x0 + (x - xp), y0 + (y - yp), w0, h0);
 
 					if (pw->x() <= 0) { pw->align(GLW_ALIGN_LEFT); x = xp; }
-					else if (pw->x() + pw->w() >= m_pview->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
+					else if (pw->x() + pw->w() >= m_pw->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
 
 					unsigned int n = pw->GetSnap();
 					if (pw->y() <= 0) { pw->align(n | GLW_ALIGN_TOP); y = yp; }
-					else if (pw->y() + pw->h() >= m_pview->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
+					else if (pw->y() + pw->h() >= m_pw->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
 				}
 				else return 1;
 
@@ -211,7 +204,7 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 	return 0;
 }
 
-void CGLWidgetManager::DrawWidgets(QPainter* painter)
+void CGLWidgetManager::DrawWidgets(GLPainter* painter)
 {
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
 	{
@@ -223,7 +216,7 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 	}
 }
 
-void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
+void CGLWidgetManager::DrawWidget(GLWidget* pw, GLPainter* painter)
 {
 	// now draw the widget
 	pw->draw(painter);
@@ -237,7 +230,7 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
 		int y1 = (pw->m_y + pw->m_h);
 
 		painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
-		painter->fillRect(x0, y0, pw->m_w, pw->m_h, QBrush(QColor::fromRgb(200, 200, 200, 64)));
+		painter->fillRect(x0, y0, pw->m_w, pw->m_h, QColor::fromRgb(200, 200, 200, 64));
 
 		if (pw->resizable())
 		{

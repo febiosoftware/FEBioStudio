@@ -29,7 +29,7 @@ SOFTWARE.*/
 class GLSafeFrame : public GLWidget
 {
 public:
-	// tODO: move to GLWidget?
+	// TODO: move to GLWidget?
 	enum STATE {
 		FREE,
 		FIXED_SIZE,
@@ -43,7 +43,7 @@ public:
 
 	bool is_inside(int x, int y) override;
 
-	void draw(QPainter* painter) override;
+	void draw(GLPainter* painter) override;
 
 	void SetState(STATE state) { m_state = state; }
 	int GetState() { return m_state; }

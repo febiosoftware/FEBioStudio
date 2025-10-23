@@ -24,8 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLLabel.h"
-#include <QPainter>
-#include "convert.h"
+#include <QFontMetrics>
 
 GLLabel::GLLabel(int x, int y, int w, int h, const char* szlabel) : GLWidget(x, y, w, h, szlabel)
 {
@@ -46,7 +45,7 @@ void GLLabel::fit_to_size()
 	}
 }
 
-void GLLabel::draw(QPainter* painter)
+void GLLabel::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);
 

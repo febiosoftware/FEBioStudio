@@ -38,7 +38,7 @@ public:
 public:
 	GLLabel(int x, int y, int w, int h, const char* szlabel = 0);
 
-	void draw(QPainter* painter);
+	void draw(GLPainter* painter) override;
 
 	void fit_to_size();
 

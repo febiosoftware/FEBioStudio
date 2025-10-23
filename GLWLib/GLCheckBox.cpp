@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLCheckBox.h"
-#include <QPainter>
-#include "convert.h"
 
 GLCheckBox::GLCheckBox(int x, int y, int w, int h, const char* szlabel) : GLWidget(x, y, w, h, szlabel)
 {
@@ -33,7 +31,7 @@ GLCheckBox::GLCheckBox(int x, int y, int w, int h, const char* szlabel) : GLWidg
 	m_checkRect[0] = m_checkRect[1] = m_checkRect[2] = m_checkRect[3] = 0;
 }
 
-void GLCheckBox::draw(QPainter* painter)
+void GLCheckBox::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);
 

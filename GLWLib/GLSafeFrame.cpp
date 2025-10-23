@@ -37,7 +37,7 @@ void GLSafeFrame::resize(int x, int y, int W, int H)
 	else if (m_state == FIXED_SIZE) GLWidget::resize(x, y, w(), h());
 }
 
-void GLSafeFrame::draw(QPainter* painter)
+void GLSafeFrame::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);
 
