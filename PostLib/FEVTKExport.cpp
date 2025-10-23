@@ -631,37 +631,42 @@ bool FEVTKExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshDa
 
 	if (ntype == DATA_SCALAR)
 	{
-		FENodeData<float>& data = dynamic_cast<FENodeData<float>&>(meshData);
+		FENodeData<float>* data = dynamic_cast<FENodeData<float>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN, 0.f);
-		for (int i=0; i<NN; ++i) val[i] = data[i];
+		for (int i=0; i<NN; ++i) val[i] = (*data)[i];
 	}
 	else if (ntype == DATA_VEC3)
 	{
-		FENodeData<vec3f>& data = dynamic_cast<FENodeData<vec3f>&>(meshData);
+		FENodeData<vec3f>* data = dynamic_cast<FENodeData<vec3f>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*3, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_MAT3S)
 	{
-		FENodeData<mat3fs>& data = dynamic_cast<FENodeData<mat3fs>&>(meshData);
+		FENodeData<mat3fs>* data = dynamic_cast<FENodeData<mat3fs>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*6, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_MAT3SD)
 	{
-		FENodeData<mat3fd>& data = dynamic_cast<FENodeData<mat3fd>&>(meshData);
+		FENodeData<mat3fd>* data = dynamic_cast<FENodeData<mat3fd>*>(&meshData);
+		if (data == nullptr) return false;
 		val.assign(NN*3, 0.f);
-		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
+		for (int i=0; i<NN; ++i) write_data(val, i, (*data)[i]);
 	}
 	else if (ntype == DATA_ARRAY)
 	{
-		FENodeArrayData& data = dynamic_cast<FENodeArrayData&>(meshData);
-		int nc = data.components();
+		FENodeArrayData* data = dynamic_cast<FENodeArrayData*>(&meshData);
+		if (data == nullptr) return false;
+		int nc = data->components();
 		val.assign(NN * nc, 0.f);
 		int m = 0;
 		for (int n = 0; n < nc; ++n)
 		{
-			for (int i = 0; i < NN; ++i) val[m++] = data.eval(i, n);
+			for (int i = 0; i < NN; ++i) val[m++] = (*data).eval(i, n);
 		}
 	}
 	else return false;
