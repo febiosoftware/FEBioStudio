@@ -37,6 +37,8 @@ public:
 	OpenGLRenderer();
 	~OpenGLRenderer();
 
+	void init() override;
+
 	void start() override;
 
 	void finish() override;

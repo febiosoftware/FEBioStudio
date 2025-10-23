@@ -186,9 +186,7 @@ public:
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-		OpenGLRenderer ogl;
-
-		GLPainter glpainter(&painter, &ogl);
+		GLPainter glpainter(&painter, m_ogl);
 		m_ptriad->draw(&glpainter);
 	}
 

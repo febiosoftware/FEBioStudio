@@ -73,6 +73,7 @@ public:
 	GLRenderStats GetRenderStats();
 
 public:
+	virtual void init() {}
 	virtual void start() { ResetStats(); }
 	virtual void finish() {}
 

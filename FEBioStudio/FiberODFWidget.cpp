@@ -86,6 +86,7 @@ void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
 {
 	OpenGLRenderer ogl;
+	ogl.init();
 
 	GLPainter glpainter(&painter, &ogl);
 

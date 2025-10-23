@@ -54,58 +54,7 @@ GLScene* CGLSceneView::GetActiveScene()
 void CGLSceneView::initializeGL()
 {
 	if (m_ogl == nullptr) m_ogl = new OpenGLRenderer;
-
-	GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
-	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
-
-	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
-	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
-
-	glEnable(GL_DEPTH_TEST);
-	//	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
-	glDepthFunc(GL_LEQUAL);
-
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//	glShadeModel(GL_FLAT);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glLineWidth(1.5f);
-
-	// enable lighting and set default options
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
-
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-	glEnable(GL_LIGHT0);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, amb1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, dif1);
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-
-	//	glEnable(GL_LIGHT1);
-	//	glLightfv(GL_LIGHT1, GL_AMBIENT, amb2);
-	//	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif2);
-
-	// enable color tracking for diffuse color of materials
-//	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	// set the texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-	glPointSize(7.0f);
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	m_ogl->init();
 }
 
 void CGLSceneView::RenderBackground()
@@ -119,19 +68,16 @@ void CGLSceneView::RenderBackground()
 	}
 
 	// set up the viewport
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(-1, 1, -1, 1, -1, 1);
+	m_ogl->pushProjection();
+	m_ogl->setOrthoProjection(-1, 1, -1, 1, -1, 1);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	m_ogl->pushTransform();
+	m_ogl->resetTransform();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_CULL_FACE);
+	m_ogl->pushState();
+	m_ogl->disable(GLRenderEngine::DEPTHTEST);
+	m_ogl->disable(GLRenderEngine::LIGHTING);
+	m_ogl->disable(GLRenderEngine::CULLFACE);
 
 	GLViewSettings& view = GetViewSettings();
 
@@ -153,23 +99,18 @@ void CGLSceneView::RenderBackground()
 		break;
 	}
 
-	glBegin(GL_QUADS);
+	m_ogl->begin(GLRenderEngine::QUADS);
 	{
-		glColor3ub(c[0].r, c[0].g, c[0].b); glVertex2f(-1, -1);
-		glColor3ub(c[1].r, c[1].g, c[1].b); glVertex2f(1, -1);
-		glColor3ub(c[2].r, c[2].g, c[2].b); glVertex2f(1, 1);
-		glColor3ub(c[3].r, c[3].g, c[3].b); glVertex2f(-1, 1);
+		m_ogl->setColor(c[0]); m_ogl->vertex(vec3d(-1, -1, 0));
+		m_ogl->setColor(c[1]); m_ogl->vertex(vec3d( 1, -1, 0));
+		m_ogl->setColor(c[2]); m_ogl->vertex(vec3d( 1,  1, 0));
+		m_ogl->setColor(c[3]); m_ogl->vertex(vec3d(-1,  1, 0));
 	}
-	glEnd();
+	m_ogl->end();
 
-	glPopAttrib();
-
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
+	m_ogl->popState();
+	m_ogl->popTransform();
+	m_ogl->popProjection();
 }
 
 void CGLSceneView::paintGL()

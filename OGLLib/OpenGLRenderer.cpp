@@ -173,6 +173,63 @@ OpenGLRenderer::~OpenGLRenderer()
 {
 }
 
+void OpenGLRenderer::init()
+{
+	GLRenderEngine::init();
+
+	GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
+	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
+
+	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
+	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
+
+	glEnable(GL_DEPTH_TEST);
+	//	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glDepthFunc(GL_LEQUAL);
+
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//	glShadeModel(GL_FLAT);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glLineWidth(1.5f);
+
+	// enable lighting and set default options
+	glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+
+	glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, amb1);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, dif1);
+
+	glEnable(GL_POLYGON_OFFSET_FILL);
+
+	//	glEnable(GL_LIGHT1);
+	//	glLightfv(GL_LIGHT1, GL_AMBIENT, amb2);
+	//	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif2);
+
+	// enable color tracking for diffuse color of materials
+//	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	// set the texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+	glPointSize(7.0f);
+	glEnable(GL_POINT_SMOOTH);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+}
+
 void OpenGLRenderer::start()
 {
 	for (auto it : m.triMesh) it.second->resetRef();
