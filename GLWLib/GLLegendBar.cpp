@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "convert.h"
 #include <FSCore/ColorMapManager.h>
 #include <GLLib/ColorTexture.h>
-#include <GLLib/GLRenderEngine.h>
 #include <QFontMetrics>
 
 GLLegendBar::GLLegendBar(int x, int y, int w, int h, int orientation) : GLWidget(x, y, w, h, 0)
@@ -167,28 +166,8 @@ void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, GLPainter* painter)
 
 void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 {
-	GLRenderEngine* re = painter->renderEngine();
-	if (re == nullptr) return;
-
-	painter->beginNativePainting();
-	re->pushState();
-
-	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
-
-	re->disable(GLRenderEngine::BLENDING);
-	re->disable(GLRenderEngine::CULLFACE);
-
-	re->setTexture(m_pMap->GetTexture());
-
-	// provide some room for the title
-	int titleHeight = 0;
-	if (m_btitle && m_szlabel)
-	{
-		QFontMetrics fm(m_font);
-		titleHeight = fm.height() + 2;
-	}
 
 	int x0 = x() + w() - 50;
 	int y0 = y() + 30;
@@ -201,21 +180,8 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 		x1 = x0 + 25;
 	}
 
-	re->setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
-	re->begin(GLRenderEngine::QUADS);
-	{
-		re->texCoord1d(0); re->vertex(vec3d(x0, y1, 0));
-		re->texCoord1d(0); re->vertex(vec3d(x1, y1, 0));
-		re->texCoord1d(1); re->vertex(vec3d(x1, y0, 0));
-		re->texCoord1d(1); re->vertex(vec3d(x0, y0, 0));
-	}
-	re->end();
-	re->setMaterial(GLMaterial::CONSTANT, GLColor::White());
-
-	int i, yt, ipow;
-	double f, p = 1;
-	char str[256], pstr[256];
-
+	int ipow;
+	double p = 1;
 	double a = fmax(fabs(m_fmin), fabs(m_fmax));
 	if (a > 0)
 	{
@@ -224,25 +190,40 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 	}
 	else ipow = 0;
 
-	if (m_lineWidth > 0.f)
+	// draw colored bar
+	int W = x1 - x0;
+	int H = y1 - y0;
+	if ((W > 1) && (H > 1))
 	{
-		re->setColor(m_fgc);
-		re->setLineWidth(m_lineWidth);
-		re->begin(GLRenderEngine::LINES);
+		QImage img(QSize(W, H), QImage::Format_RGB888);
+		GLTexture1D& tex = m_pMap->GetTexture();
+
+		for (int j = 0; j < H; ++j)
 		{
-			for (i = 0; i <= nsteps; i++)
+			float w = 1.f - (float)j / (float)(H - 1.f);
+			QColor c = toQColor(tex.sample(w));
+			for (int i = 0; i < W; ++i)
 			{
-				yt = y0 + i * (y1 - y0) / nsteps;
-				re->vertex(vec3d(x0 + 1, yt, 0));
-				re->vertex(vec3d(x1 - 1, yt, 0));
+				img.setPixelColor(i, j, c);
 			}
 		}
-		re->end();
+
+		painter->drawImage(x0, y0, img);
 	}
 
-	re->popState();
-	painter->endNativePainting();
+	// lines
+	if (m_lineWidth > 0.f)
+	{
+		QPen pen(toQColor(m_fgc), m_lineWidth);
+		painter->setPen(pen);
+		for (int i = 0; i <= nsteps; i++)
+		{
+			int yt = y0 + i * (y1 - y0) / nsteps;
+			painter->drawLine(x0, yt, x1, yt);
+		}
+	}
 
+	// labels
 	if (m_blabels)
 	{
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
@@ -251,6 +232,7 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 
 		if ((abs(ipow) > 2))
 		{
+			char pstr[256];
 			sprintf(pstr, "x10");
 			painter->drawText(x0, y0 - 5, QString(pstr));
 
@@ -271,13 +253,16 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 		char szfmt[16] = { 0 };
 		sprintf(szfmt, "%%.%dg", m_nprec);
 
-		for (i = 0; i <= nsteps; i++)
+		for (int i = 0; i <= nsteps; i++)
 		{
-			yt = y0 + i * (y1 - y0) / nsteps;
+			int yt = y0 + i * (y1 - y0) / nsteps;
+
+			double f;
 			if      (i ==      0) f = m_fmax;
 			else if (i == nsteps) f = m_fmin;
 			else f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
 
+			char str[256];
 			sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 			QString s(str);
 
@@ -312,21 +297,8 @@ void GLLegendBar::draw_gradient_vert(GLPainter* painter)
 
 void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 {
-	GLRenderEngine* re = painter->renderEngine();
-	if (re == nullptr) return;
-
-	painter->beginNativePainting();
-
-	re->pushState();
-
-	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
-
-	re->setTexture(m_pMap->GetTexture());
-
-	re->disable(GLRenderEngine::BLENDING);
-	re->disable(GLRenderEngine::CULLFACE);
 
 	int x0 = x() + 10;
 	int y0 = y() + h() - 50;
@@ -339,48 +311,49 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 		y1 = y0 + 25;
 	}
 
-	re->setMaterial(GLMaterial::Type::CONSTANT, GLColor::White(), GLMaterial::TEXTURE_1D);
-	re->begin(GLRenderEngine::QUADS);
-	{
-		re->texCoord1d(0); re->vertex(vec3d(x0, y0, 0));
-		re->texCoord1d(0); re->vertex(vec3d(x0, y1, 0));
-		re->texCoord1d(1); re->vertex(vec3d(x1, y1, 0));
-		re->texCoord1d(1); re->vertex(vec3d(x1, y0, 0));
-	}
-	re->end();
-	re->setMaterial(GLMaterial::CONSTANT, GLColor::White());
-
-	int i, ipow;
-	double p = 1;
-	char str[256], pstr[256];
-
 	double a = fmax(fabs(m_fmin), fabs(m_fmax));
+	int ipow;
 	if (a > 0)
 	{
 		double g = log10(a);
 		ipow = (int)floor(g);
 	}
 	else ipow = 0;
+	double p = pow(10.0, ipow);
 
-	if (m_lineWidth > 0.f)
+	int W = x1 - x0;
+	int H = y1 - y0;
+	if ((W > 1) && (H > 1))
 	{
-		re->setColor(m_fgc);
-		re->setLineWidth(m_lineWidth);
-		re->begin(GLRenderEngine::LINES);
+		QImage img(QSize(W, H), QImage::Format_RGB888);
+		GLTexture1D& tex = m_pMap->GetTexture();
+
+		for (int i = 0; i < W; ++i)
 		{
-			for (i = 0; i <= nsteps; i++)
+			float w = (float)i / (float)(W - 1.f);
+			QColor c = toQColor(tex.sample(w));
+			for (int j = 0; j < H; ++j)
 			{
-				int xt = x0 + i * (x1 - x0) / nsteps;
-				re->vertex(vec3d(xt, y0 + 1, 0));
-				re->vertex(vec3d(xt, y1 - 1, 0));
+				img.setPixelColor(i, j, c);
 			}
 		}
-		re->end();
+
+		painter->drawImage(x0, y0, img);
 	}
 
-	re->popState();
-	painter->endNativePainting();
+	// lines
+	if (m_lineWidth > 0.f)
+	{
+		QPen pen(toQColor(m_fgc), m_lineWidth);
+		painter->setPen(pen);
+		for (int i = 0; i <= nsteps; i++)
+		{
+			int xt = x0 + i * (x1 - x0) / nsteps;
+			painter->drawLine(xt, y0, xt, y1);
+		}
+	}
 
+	// labels
 	if (m_blabels)
 	{
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
@@ -389,6 +362,7 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 
 		if ((abs(ipow) > 2))
 		{
+			char pstr[256];
 			sprintf(pstr, "x10");
 			int x = x1 + 5;
 			int y = y1 - 5;
@@ -405,14 +379,14 @@ void GLLegendBar::draw_gradient_horz(GLPainter* painter)
 
 			// reset font size
 			painter->setFont(m_font);
-			p = pow(10.0, ipow);
 		}
 
 		char szfmt[16] = { 0 };
 		sprintf(szfmt, "%%.%dg", m_nprec);
 
 		double f = 0;
-		for (i = 0; i <= nsteps; i++)
+		char str[256];
+		for (int i = 0; i <= nsteps; i++)
 		{
 			int xt = x0 + i * (x1 - x0) / nsteps;
 			if      (i ==      0) f = m_fmin;
@@ -459,20 +433,8 @@ void GLLegendBar::draw_discrete_vert(GLPainter* painter)
 
 void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 {
-	GLRenderEngine* re = painter->renderEngine();
-	if (re == 0) return;
-
-	painter->beginNativePainting();
-	re->pushState();
-
-	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
 	if (nsteps < 1) nsteps = 1;
-
-	re->disable(GLRenderEngine::BLENDING);
-	re->disable(GLRenderEngine::DEPTHTEST);
-	re->disable(GLRenderEngine::LIGHTING);
-	re->disable(GLRenderEngine::CULLFACE);
 
 	int x0, y0, x1, y1;
 	if (m_nrot == ORIENT_VERTICAL)
@@ -490,68 +452,51 @@ void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 		y1 = y0 + 25;
 	}
 
-	re->setColor(m_fgc);
-
-	int i, yt, ipow;
-	double f, p = 1;
-
 	double a = fmax(fabs(m_fmin), fabs(m_fmax));
+	int ipow;
 	if (a > 0)
 	{
 		double g = log10(a);
 		ipow = (int)floor(g);
 	}
 	else ipow = 0;
+	double p = 1;
 
-	if (m_blabels)
+	float lineWidth = m_lineWidth;
+	if (lineWidth <= 0.f) lineWidth = 1.f;
+
+	QPen pen(toQColor(m_fgc), m_lineWidth);
+	painter->setPen(pen);
+
+	const CColorMap& map = m_pMap->ColorMap();
+
+	float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
+
+	// render the lines
+	for (int i = 1; i < nsteps + 1; i++)
 	{
-		const CColorMap& map = m_pMap->ColorMap();
-
-		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
-
-		float lineWidth = m_lineWidth;
-		if (lineWidth <= 0.f) lineWidth = 1.f;
-
-		// render the lines and text
-		for (i = 1; i < nsteps + 1; i++)
+		if (m_nrot == ORIENT_VERTICAL)
 		{
-			if (m_nrot == ORIENT_VERTICAL)
-			{
-				yt = y0 + i * (y1 - y0) / (nsteps + 1);
-				f = 1.f - (i - 1) / denom;
+			double yt = y0 + i * (y1 - y0) / (nsteps + 1);
+			double f = 1.f - (i - 1) / denom;
 
-				GLColor c = map.map((float)f);
-				re->setColor(c);
+			GLColor c = map.map((float)f);
+			pen.setColor(toQColor(c));
+			painter->setPen(pen);
+			painter->drawLine(x0 + 1, yt, x1 - 1, yt);
+		}
+		else
+		{
+			int xt = x0 + i * (x1 - x0) / (nsteps + 1);
+			double f = (i - 1) / denom;
 
-				re->setLineWidth(lineWidth);
-				re->begin(GLRenderEngine::LINES);
-				{
-					re->vertex(vec3d(x0 + 1, yt, 0));
-					re->vertex(vec3d(x1 - 1, yt, 0));
-				}
-				re->end();
-			}
-			else
-			{
-				int xt = x0 + i * (x1 - x0) / (nsteps + 1);
-				f = (i - 1) / denom;
+			GLColor c = map.map((float)f);
+			pen.setColor(toQColor(c));
+			painter->setPen(pen);
 
-				GLColor c = map.map((float)f);
-				re->setColor(c);
-
-				re->setLineWidth(lineWidth);
-				re->begin(GLRenderEngine::LINES);
-				{
-					re->vertex(vec3d(xt, y0 + 1, 0));
-					re->vertex(vec3d(xt, y1 - 1, 0));
-				}
-				re->end();
-			}
+			painter->drawLine(xt, y0 + 1, xt, y1 - 1);
 		}
 	}
-
-	re->popState();
-	painter->endNativePainting();
 
 	// render the title
 	if (m_btitle && m_szlabel)
@@ -578,12 +523,12 @@ void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 
 		// render the lines and text
-		for (i = 1; i < nsteps + 1; i++)
+		for (int i = 1; i < nsteps + 1; i++)
 		{
 			if (m_nrot == ORIENT_VERTICAL)
 			{
-				yt = y0 + i * (y1 - y0) / (nsteps + 1);
-				f = m_fmax + (i - 1) * (m_fmin - m_fmax) / denom;
+				double yt = y0 + i * (y1 - y0) / (nsteps + 1);
+				double f = m_fmax + (i - 1) * (m_fmin - m_fmax) / denom;
 
 				sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 
@@ -592,7 +537,7 @@ void GLLegendBar::draw_discrete_horz(GLPainter* painter)
 			else
 			{
 				int xt = x0 + i * (x1 - x0) / (nsteps + 1);
-				f = m_fmin + (i - 1) * (m_fmax - m_fmin) / denom;
+				double f = m_fmin + (i - 1) * (m_fmax - m_fmin) / denom;
 
 				sprintf(str, szfmt, (fabs(f / p) < 1e-5 ? 0 : f / p));
 

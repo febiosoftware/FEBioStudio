@@ -67,6 +67,8 @@ public:
 	void drawText(int x, int y, const QString& txt);
 	void drawText(int x, int y, int w, int h, int flags, const QString& txt);
 
+	void drawImage(int x, int y, const QImage& img);
+
 	void beginNativePainting();
 	void endNativePainting();
 

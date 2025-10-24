@@ -119,6 +119,11 @@ void GLPainter::drawText(int x, int y, int w, int h, int flags, const QString& t
 	m_painter->drawText(x, y, w, h, flags, txt);
 }
 
+void GLPainter::drawImage(int x, int y, const QImage& img)
+{
+	m_painter->drawImage(x, y, img);
+}
+
 void GLPainter::beginNativePainting()
 {
 	m_painter->beginNativePainting();
