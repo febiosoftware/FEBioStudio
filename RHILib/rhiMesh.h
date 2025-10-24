@@ -30,6 +30,19 @@ SOFTWARE.*/
 
 namespace rhi {
 
+	struct Texture
+	{
+		std::unique_ptr<QRhiTexture> texture;
+		std::unique_ptr<QRhiSampler> sampler;
+		QImage image;
+		bool needsUpload = false;
+
+		void upload(QRhiResourceUpdateBatch* u)
+		{
+			u->uploadTexture(texture.get(), image);
+		}
+	};
+
 	struct SharedResources
 	{
 		QRhiBuffer* globalbuf = nullptr;
@@ -43,8 +56,9 @@ namespace rhi {
 		enum ItemType
 		{
 			FLOAT,
+			VEC2,
 			VEC4,
-			MAT4
+			MAT4,
 		};
 
 		struct Item
@@ -65,6 +79,7 @@ namespace rhi {
 				switch (it.first)
 				{
 				case FLOAT: addFloat(it.second); break;
+				case VEC2 : addVec2 (it.second);  break;
 				case VEC4 : addVec4 (it.second);  break;
 				case MAT4 : addMat4 (it.second);  break;
 				}
@@ -77,6 +92,14 @@ namespace rhi {
 			auto& it = m_items[index];
 			assert(it.type == FLOAT);
 			memcpy(&m_data[it.offset], &v, sizeof(float));
+		}
+
+		void setVec2(unsigned int index, const vec2f& v)
+		{
+			auto& it = m_items[index];
+			assert(it.type == VEC2);
+			float tmp[2] = { v.x, v.y };
+			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 2);
 		}
 
 		void setVec4(unsigned int index, const vec3f& v)
@@ -108,6 +131,7 @@ namespace rhi {
 
 	private:
 		void addFloat(const char* name = nullptr) { m_items.push_back({ FLOAT, sizeof(float)     , 0, name }); }
+		void addVec2 (const char* name = nullptr) { m_items.push_back({ VEC2 , sizeof(float) *  2, 0, name }); }
 		void addVec4 (const char* name = nullptr) { m_items.push_back({ VEC4 , sizeof(float) *  4, 0, name }); }
 		void addMat4 (const char* name = nullptr) { m_items.push_back({ MAT4 , sizeof(float) * 16, 0, name }); }
 
@@ -312,6 +336,41 @@ namespace rhi {
 	private:
 		PointMesh(const PointMesh&) = delete;
 		void operator = (const PointMesh&) = delete;
+	};
+
+	struct CanvasShaderResource
+	{
+		std::unique_ptr<QRhiShaderResourceBindings> srb;
+		void create(QRhi* rhi, rhi::Texture& tex, QRhiBuffer* ub);
+		QRhiShaderResourceBindings* get() { return srb.get(); }
+	};
+
+	class Tri2DMesh : public Mesh
+	{
+		struct Vertex {
+			vec2f r; // coordinate
+			vec2f t; // texture coordinate
+		};
+
+	public:
+		Tri2DMesh(QRhi* rhi, rhi::CanvasShaderResource* srb);
+
+		void create(QSize size);
+
+		void Update(QRhiResourceUpdateBatch* u);
+
+		void Draw(QRhiCommandBuffer* cb);
+
+	private:
+		std::vector<Vertex> vertexData;
+		std::unique_ptr<QRhiBuffer> vbuf;
+		unsigned int vertexCount = 0;
+
+		std::unique_ptr<CanvasShaderResource> sr;
+
+	private:
+		Tri2DMesh(const Tri2DMesh&) = delete;
+		void operator = (const Tri2DMesh&) = delete;
 	};
 
 } // rhi

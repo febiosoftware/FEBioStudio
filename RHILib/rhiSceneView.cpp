@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <QMimeData>
 #include <QFileInfo>
+#include <QPainter>
 
 QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 {
@@ -152,6 +153,7 @@ void rhiSceneView::customInit()
 	m_wnd->AddLogEntry(msg);
 
 	m_rhiRender = new rhiRenderer(m_rhi.get(), m_sc.get(), m_rp.get());
+	m_rhiRender->setDPR(devicePixelRatio());
 	m_rhiRender->init();
 }
 
@@ -180,6 +182,21 @@ void rhiSceneView::customRender()
 	rc.m_h = height();
 	rc.m_cam = &cam;
 	scene->Render(*m_rhiRender, rc);
+
+	m_rhiRender->useOverlayImage(m_doc->m_renderOverlay);
+	if (m_doc->m_renderOverlay)
+	{
+		QImage img(m_rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
+		img.fill(Qt::transparent);
+		QPainter painter(&img);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		QFont font("Helvetica", 24);
+		font.setPixelSize(0.05 * qMin(width(), height()));
+		painter.setFont(font);
+		painter.drawText(10, 100, QString("Welcome to RHI!"));
+		painter.end();
+		m_rhiRender->setOverlayImage(img);
+	}
 
 	m_rhiRender->finish();
 }

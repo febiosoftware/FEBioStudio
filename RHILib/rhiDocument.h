@@ -39,4 +39,7 @@ public:
 	}
 
 	CPropertyList* GetDocProperties() override;
+
+public:
+	bool m_renderOverlay = false;
 };

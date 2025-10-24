@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiRenderer.h"
 #include <QFile>
+#include <QPainter>
 
 static QShader getShader(const QString& name)
 {
@@ -70,6 +71,26 @@ void GlobalUniformBlock::setSpecularColor(GLColor c)
 void GlobalUniformBlock::setClipPlane(const float f[4]) { m_ub.setVec4(2, f[0], f[1], f[2], f[3]); }
 
 void GlobalUniformBlock::update(QRhiResourceUpdateBatch* u)
+{
+	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
+}
+
+void CanvasUniformBlock::create(QRhi* rhi)
+{
+	m_ub.create({
+		{ rhi::UniformBlock::VEC2, "viewport" }
+		});
+
+	m_ubuf.reset(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, m_ub.size()));
+	m_ubuf->create();
+}
+
+void CanvasUniformBlock::setViewPort(const vec2f& vp)
+{
+	m_ub.setVec2(0, vp);
+}
+
+void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 {
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
@@ -224,6 +245,86 @@ void rhi::BackFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCou
 	m_pl->create();
 }
 
+void rhi::OverlayShaderResource::create(QRhi* rhi, rhi::Texture& tex)
+{
+	srb.reset(rhi->newShaderResourceBindings());
+	srb->setBindings({
+			QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage,
+									   tex.texture.get(), tex.sampler.get())
+		});
+	srb->create();
+}
+
+void rhi::OverlayRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex)
+{
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/overlay.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/overlay.frag.qsb")) } };
+
+	m_sr.reset(new rhi::OverlayShaderResource());
+	m_sr->create(m_rhi, tex);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(false);
+	m_pl->setDepthWrite(false);
+	m_pl->setTargetBlends({ defaultBlendState() });
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+	m_pl->setVertexInputLayout({});
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->create();
+}
+
+void rhi::CanvasShaderResource::create(QRhi* rhi, rhi::Texture& tex, QRhiBuffer* ub)
+{
+	static const QRhiShaderResourceBinding::StageFlags visibility =
+		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+
+	srb.reset(rhi->newShaderResourceBindings());
+	srb->setBindings({
+			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ub),
+			QRhiShaderResourceBinding::sampledTexture(1, visibility, tex.texture.get(), tex.sampler.get())
+		});
+	srb->create();
+}
+
+void rhi::CanvasRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex, QRhiBuffer* ub)
+{
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/canvas.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/canvas.frag.qsb")) } };
+
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 4 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float2, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }, // tex coord
+		});
+
+	m_sr.reset(new rhi::CanvasShaderResource());
+	m_sr->create(m_rhi, tex, ub);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(false);
+	m_pl->setDepthWrite(false);
+	m_pl->setTargetBlends({ defaultBlendState() });
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+	m_pl->setVertexInputLayout({ meshLayout });
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->create();
+}
+
 rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp)
 {
 }
@@ -270,6 +371,41 @@ void rhiRenderer::init()
 
 	m_pointPass.reset(new rhi::PointRenderPass(m_rhi));
 	m_pointPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
+
+	// prep overlay
+	m_overlay.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+	m_overlay.sampler->create();
+
+	m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, m_sc->surfacePixelSize()));
+	m_overlay.texture->create();
+
+	m_overlayPass.reset(new rhi::OverlayRenderPass(m_rhi));
+	m_overlayPass->create(m_rp, m_sc->sampleCount(), m_overlay);
+
+	// fps indicator
+	m_fpsTex.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+	m_fpsTex.sampler->create();
+
+	QSize size(250, 30);
+	m_fpsTex.image = QImage(size, QImage::Format_RGBA8888_Premultiplied);
+	m_fpsTex.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, size));
+	m_fpsTex.texture->create();
+	m_fpsTex.upload(m_initialUpdates);
+
+	m_fpsub.create(m_rhi);
+
+	m_canvasPass.reset(new rhi::CanvasRenderPass(m_rhi));
+	m_canvasPass->create(m_rp, m_sc->sampleCount(), m_fpsTex, m_fpsub.get());
+
+	rhi::CanvasShaderResource* sr = new rhi::CanvasShaderResource();
+	sr->create(m_rhi, m_fpsTex, m_fpsub.get());
+
+	m_fpsMesh.reset(new rhi::Tri2DMesh(m_rhi, sr));
+	m_fpsMesh->create(size);
+
+	m_tic = m_toc = steady_clock::now();
 }
 
 void rhiRenderer::clearCache()
@@ -282,6 +418,11 @@ void rhiRenderer::clearCache()
 
 	for (auto& it : m_pointMeshList) delete it.second;
 	m_pointMeshList.clear();
+}
+
+QSize rhiRenderer::pixelSize() const
+{
+	return m_sc->surfacePixelSize();
 }
 
 void rhiRenderer::clearUnusedCache()
@@ -560,6 +701,19 @@ void rhiRenderer::setViewProjection(const QMatrix4x4& proj)
 	m_projMatrix = proj;
 }
 
+void rhiRenderer::useOverlayImage(bool b)
+{
+	m_useOverlay = b;
+}
+
+void rhiRenderer::setOverlayImage(const QImage& img)
+{
+	if (m_rhi->isYUpInNDC())
+		m_overlay.image = img.mirrored();
+	else
+		m_overlay.image = img;
+}
+
 void rhiRenderer::start()
 {
 	ResetStats();
@@ -576,6 +730,25 @@ void rhiRenderer::start()
 
 void rhiRenderer::finish()
 {
+	m_toc = steady_clock::now();
+	time_point<steady_clock> toc = steady_clock::now();
+	double sec = duration_cast<dseconds>(m_toc - m_tic).count();
+	if (sec > 0)
+	{
+		m_fps = 1.0 / sec;
+		if ((m_frame%50) == 0)
+		{
+			m_fpsMin = m_fpsMax = m_fps;
+		}
+		else
+		{
+			if (m_fps < m_fpsMin) m_fpsMin = m_fps;
+			if (m_fps > m_fpsMax) m_fpsMax = m_fps;
+		}
+	}
+	m_tic = m_toc;
+	m_frame++;
+
 	QRhiResourceUpdateBatch* resourceUpdates = m_rhi->nextResourceUpdateBatch();
 
 	if (m_initialUpdates) {
@@ -621,6 +794,49 @@ void rhiRenderer::finish()
 		rhi::PointMesh& m = *it.second;
 		if (m.isActive())
 			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
+	}
+
+	// update viewport size for canvas uniform block
+	QSize pixelSize = m_sc->surfacePixelSize();
+	vec2f vp;
+	vp.x = pixelSize.width();
+	vp.y = pixelSize.height();
+	m_fpsub.setViewPort(vp);
+	m_fpsub.update(resourceUpdates);
+
+	// update fps indicator
+	QSize size = m_fpsTex.image.size();
+	QImage img(size, QImage::Format_RGBA8888_Premultiplied);
+	img.setDevicePixelRatio(m_dpr);
+	img.fill(Qt::transparent);
+	QPainter painter(&img);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	QFont font("Monospace", 16);
+	painter.setFont(font);
+	painter.setPen(Qt::red);
+	painter.drawText(QRectF(10,0,size.width()-10, size.height()), QString("fps: %1 [%2,%3]").arg(m_fps, 0, 'f', 1).arg(m_fpsMin, 0, 'f', 1).arg(m_fpsMax, 0, 'f', 1));
+	if (m_rhi->isYUpInNDC())
+		m_fpsTex.image = img.mirrored();
+	else
+		m_fpsTex.image = img;
+	m_fpsTex.upload(resourceUpdates);
+
+	m_fpsMesh->Update(resourceUpdates);
+
+	// overlay stuff
+	if (m_useOverlay)
+	{
+		if (!m_overlay.texture || (m_overlay.texture->pixelSize() != pixelSize))
+		{
+			if (!m_overlay.texture)
+				m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, pixelSize));
+			else
+				m_overlay.texture->setPixelSize(pixelSize);
+
+			m_overlay.texture->create();
+		}
+
+		m_overlay.upload(resourceUpdates);
 	}
 
 	// start the rendering pass
@@ -673,6 +889,19 @@ void rhiRenderer::finish()
 			if (m.isActive())
 				m.Draw(cb);
 		}
+	}
+
+	// render fps indicator
+	cb->setGraphicsPipeline(m_canvasPass->pipeline());
+	cb->setShaderResources();
+	m_fpsMesh->Draw(cb);
+
+	// render overlay
+	if (m_useOverlay && !m_overlay.image.isNull())
+	{
+		cb->setGraphicsPipeline(m_overlayPass->pipeline());
+		cb->setShaderResources();
+		cb->draw(3);
 	}
 
 	cb->endPass();

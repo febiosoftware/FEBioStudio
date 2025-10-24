@@ -27,20 +27,11 @@ SOFTWARE.*/
 #include <GLLib/GLRenderEngine.h>
 #include <rhi/qrhi.h>
 #include "rhiMesh.h"
+#include <chrono>
+using namespace std::chrono;
+using dseconds = duration<double>;
 
 namespace rhi {
-	struct Texture
-	{
-		std::unique_ptr<QRhiTexture> texture;
-		std::unique_ptr<QRhiSampler> sampler;
-		QImage image;
-		bool needsUpload = false;
-
-		void upload(QRhiResourceUpdateBatch* u)
-		{
-			u->uploadTexture(texture.get(), image);
-		}
-	};
 
 	class RenderPass
 	{
@@ -106,6 +97,37 @@ namespace rhi {
 		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 		std::unique_ptr<rhi::ColorShaderResource> m_sr;
 	};
+
+	struct OverlayShaderResource
+	{
+		std::unique_ptr<QRhiShaderResourceBindings> srb;
+		void create(QRhi* rhi, rhi::Texture& tex);
+		QRhiShaderResourceBindings* get() { return srb.get(); }
+	};
+
+	class OverlayRenderPass : public RenderPass
+	{
+	public:
+		OverlayRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex);
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<OverlayShaderResource> m_sr;
+	};
+
+	class CanvasRenderPass : public RenderPass
+	{
+	public:
+		CanvasRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex, QRhiBuffer* ub);
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<CanvasShaderResource> m_sr;
+	};
 }
 
 class GlobalUniformBlock
@@ -122,6 +144,24 @@ public:
 	void setLightPosition(const vec3f& lp);
 	void setSpecularColor(GLColor c);
 	void setClipPlane(const float f[4]);
+
+private:
+	rhi::UniformBlock m_ub;
+	std::unique_ptr<QRhiBuffer> m_ubuf;
+};
+
+class CanvasUniformBlock
+{
+public:
+	CanvasUniformBlock() {}
+	void create(QRhi* rhi);
+
+	QRhiBuffer* get() { return m_ubuf.get(); }
+
+	void update(QRhiResourceUpdateBatch* u);
+
+public:
+	void setViewPort(const vec2f& vp);
 
 private:
 	rhi::UniformBlock m_ub;
@@ -146,6 +186,8 @@ public:
 
 	// clear cached resources that were not used in the last frame
 	void clearUnusedCache();
+
+	QSize pixelSize() const;
 
 public:
 
@@ -179,16 +221,32 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
+public:
+	void setOverlayImage(const QImage& img);
+	void useOverlayImage(bool b);
+
+	double getFPS() const { return m_fps; }
+
+	void setDPR(double dpr) { m_dpr = dpr; }
+
 private:
 	QRhi* m_rhi;
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
+
+
+	time_point<steady_clock> m_tic;
+	time_point<steady_clock> m_toc;
+	double m_fps = 0, m_fpsMin = 0, m_fpsMax = 0;
+	unsigned int m_frame = 0;
 
 	GlobalUniformBlock m_global;
 	std::unique_ptr<rhi::BackFaceRenderPass> m_backPass;
 	std::unique_ptr<rhi::FrontFaceRenderPass> m_frontPass;
 	std::unique_ptr<rhi::LineRenderPass> m_linePass;
 	std::unique_ptr<rhi::PointRenderPass> m_pointPass;
+	std::unique_ptr<rhi::OverlayRenderPass> m_overlayPass;
+	std::unique_ptr<rhi::CanvasRenderPass> m_canvasPass;
 
 	rhi::Texture m_texture;
 
@@ -206,6 +264,17 @@ private:
 
 	bool m_clipEnabled = false;
 	float clipPlane[4];
+
+	// overlay image
+	bool m_useOverlay = false;
+	rhi::Texture m_overlay;
+
+	// fps indicator
+	CanvasUniformBlock m_fpsub;
+	std::unique_ptr<rhi::Tri2DMesh> m_fpsMesh;
+	rhi::Texture m_fpsTex;
+
+	double m_dpr = 1;
 
 private:
 	vec3f m_light;

@@ -644,6 +644,10 @@ set(SHADER_FILES
     RHILib/shaders/lines.frag
     RHILib/shaders/point.vert
     RHILib/shaders/point.frag
+    RHILib/shaders/overlay.vert
+    RHILib/shaders/overlay.frag
+    RHILib/shaders/canvas.vert
+    RHILib/shaders/canvas.frag
 )
 
 qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"

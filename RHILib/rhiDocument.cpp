@@ -117,6 +117,7 @@ public:
 		addProperty("clip Y", CProperty::Float)->setFloatRange(-1, 1);
 		addProperty("clip Z", CProperty::Float)->setFloatRange(-1, 1);
 		addProperty("clip W", CProperty::Float);
+		addProperty("render overlay", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -142,6 +143,7 @@ public:
 		case 15: return s->clipPlane[1]; break;
 		case 16: return s->clipPlane[2]; break;
 		case 17: return s->clipPlane[3]; break;
+		case 18: return m_doc->m_renderOverlay; break;
 		}
 
 		return QVariant();
@@ -170,6 +172,7 @@ public:
 		case 15: s->clipPlane[1] = v.toFloat(); break;
 		case 16: s->clipPlane[2] = v.toFloat(); break;
 		case 17: s->clipPlane[3] = v.toFloat(); break;
+		case 18: m_doc->m_renderOverlay = v.toBool(); break;
 		}
 	}
 

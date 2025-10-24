@@ -351,3 +351,49 @@ void rhi::PointMesh::Draw(QRhiCommandBuffer* cb)
 		cb->draw(vertexCount);
 	}
 }
+
+rhi::Tri2DMesh::Tri2DMesh(QRhi* rhi, rhi::CanvasShaderResource* srb) : rhi::Mesh(rhi), sr(srb)
+{
+}
+
+void rhi::Tri2DMesh::create(QSize size)
+{
+	float W = (float)size.width();
+	float H = (float)size.height();
+	vec2f p[4] = { {0,0}, {W, 0}, {W, H}, {0,H} };
+	vec2f t[4] = { {0,1}, {1, 1}, {1, 0}, {0,0} };
+
+	vertexCount = 6;
+	vertexData.resize(vertexCount);
+	Vertex* v = vertexData.data();
+	v[0].r = p[0]; v[0].t = t[0];
+	v[1].r = p[1]; v[1].t = t[1];
+	v[2].r = p[2]; v[2].t = t[2];
+	v[3].r = p[2]; v[3].t = t[2];
+	v[4].r = p[3]; v[4].t = t[3];
+	v[5].r = p[0]; v[5].t = t[0];
+
+	// create the vertex buffer
+	vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(Vertex) * vertexCount));
+	vbuf->create();
+}
+
+void rhi::Tri2DMesh::Update(QRhiResourceUpdateBatch* u)
+{
+	if (!vertexData.empty())
+	{
+		u->uploadStaticBuffer(vbuf.get(), vertexData.data());
+		vertexData.clear();
+	}
+}
+
+void rhi::Tri2DMesh::Draw(QRhiCommandBuffer* cb)
+{
+	if (vertexCount > 0)
+	{
+		cb->setShaderResources(sr->get());
+		const QRhiCommandBuffer::VertexInput vbufBinding(vbuf.get(), 0);
+		cb->setVertexInput(0, 1, &vbufBinding);
+		cb->draw(vertexCount);
+	}
+}
