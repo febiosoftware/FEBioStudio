@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "rhiDocument.h"
 #include "rhiRenderer.h"
 #include <GLWLib/GLWidgetManager.h>
+#include <GLWLib/GLTriad.h>
 
 class CMainWindow;
 
@@ -60,6 +61,7 @@ private:
 	QPoint m_prevPos;	//!< last mouse position
 
 	CGLWidgetManager m_Widget;
+	GLTriad* triad;
 };
 
 // helper function for creating a RhiWindow inside a QWidget

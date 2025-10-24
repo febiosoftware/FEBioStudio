@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <GLWLib/GLLabel.h>
 #include <GLWLib/GLCheckBox.h>
 #include <GLWLib/GLComposite.h>
+#include <GLWLib/GLLegendBar.h>
+#include <GLWLib/GLTriad.h>
 
 QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 {
@@ -119,8 +121,15 @@ rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 		if (s) s->renderNodes = b->m_checked;
 		});
 	menu->add_widget(meshNodes);
-
 	m_Widget.AddWidget(menu);
+
+	GLLegendBar* legend = new GLLegendBar(0, 0, 100, 400);
+	legend->align(GLWAlign::GLW_ALIGN_RIGHT | GLWAlign::GLW_ALIGN_VCENTER);
+	m_Widget.AddWidget(legend);
+
+	triad = new GLTriad(0, 0, 100, 100);
+	triad->align(GLWAlign::GLW_ALIGN_BOTTOM | GLWAlign::GLW_ALIGN_LEFT);
+	m_Widget.AddWidget(triad);
 
 	m_wnd = wnd;
 }
@@ -213,6 +222,8 @@ void rhiSceneView::customRender()
 	rc.m_h = height();
 	rc.m_cam = &cam;
 	scene->Render(*m_rhiRender, rc);
+
+	triad->setOrientation(cam.GetOrientation());
 
 	m_rhiRender->useOverlayImage(m_doc->m_renderOverlay);
 	if (m_doc->m_renderOverlay)
