@@ -246,7 +246,11 @@ public:
 
 		// Always use Metal on Apple platforms
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
-		api = QRhi::Metal;
+		if ((api == QRhi::Null) ||
+			((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
+		{
+			api = QRhi::Metal;
+		}
 #endif
 
 		// On Linux, prefer Vulkan if available
