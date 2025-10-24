@@ -235,6 +235,13 @@ void GLWidget::snap_to_bounds(GLPainter& painter)
 	int W = painter.deviceWidth();
 	int H = painter.deviceHeight();
 
+	// make sure coordinates are in bounds
+	if (m_x < 0) m_x = 0;
+	if (m_y < 0) m_y = 0;
+	if (m_x + m_w > W) m_x = W - m_w;
+	if (m_y + m_h > H) m_y = H - m_h;
+
+	// check snap
 	if      (m_nsnap & GLW_ALIGN_LEFT   ) m_x = 0;
 	else if (m_nsnap & GLW_ALIGN_RIGHT  ) m_x = W - m_w - 1;
 	else if (m_nsnap & GLW_ALIGN_HCENTER) m_x = W / 2 - m_w / 2;

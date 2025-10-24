@@ -564,12 +564,6 @@ void CGLView::UpdateCamera(bool hitCameraTarget)
 	}
 }
 
-void CGLView::resizeGL(int w, int h)
-{
-	QOpenGLWidget::resizeGL(w, h);
-	if (m_Widget) m_Widget->CheckWidgetBounds();
-}
-
 void CGLView::changeViewMode(View_Mode vm)
 {
 	GLScene* scene = GetActiveScene();
@@ -1390,7 +1384,7 @@ void CGLView::initializeGL()
 
 	if (m_ballocDefaultWidgets)
 	{
-		m_Widget = new CGLWidgetManager(this);
+		m_Widget = new CGLWidgetManager();
 
 		int Y = 0;
 		m_Widget->AddWidget(m_ptitle = new GLLabel(20, 20, 300, 50, ""));

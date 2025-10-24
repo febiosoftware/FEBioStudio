@@ -33,7 +33,7 @@ class QWidget;
 class CGLWidgetManager
 {
 public:
-	CGLWidgetManager(QWidget* parent);
+	CGLWidgetManager();
 	~CGLWidgetManager();
 
 	void AddWidget(GLWidget* pw);
@@ -48,11 +48,7 @@ public:
 	void DrawWidgets(GLPainter* painter);
 	void DrawWidget(GLWidget* widget, GLPainter* painter);
 
-	// Make sure widget are within bounds.
-	void CheckWidgetBounds();
-
 protected:
-	QWidget* m_pw;
 	std::vector<GLWidget*>	m_Widget;
 
 private:

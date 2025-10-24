@@ -32,6 +32,12 @@ GLComposite::GLComposite(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 	m_bgFillColor[0] = GLColor(255, 255, 255, 50);
 }
 
+GLComposite::~GLComposite()
+{
+	for (auto it : m_children) delete it;
+	m_children.clear();
+}
+
 void GLComposite::draw(GLPainter* painter)
 {
 	GLWidget::draw(painter);

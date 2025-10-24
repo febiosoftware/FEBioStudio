@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "rhiwindow.h"
 #include "rhiDocument.h"
 #include "rhiRenderer.h"
+#include <GLWLib/GLWidgetManager.h>
 
 class CMainWindow;
 
@@ -57,6 +58,8 @@ private:
 	int m_opacityDir = -1;
 
 	QPoint m_prevPos;	//!< last mouse position
+
+	CGLWidgetManager m_Widget;
 };
 
 // helper function for creating a RhiWindow inside a QWidget

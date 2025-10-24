@@ -36,6 +36,9 @@ SOFTWARE.*/
 #include <QMimeData>
 #include <QFileInfo>
 #include <QPainter>
+#include <GLWLib/GLLabel.h>
+#include <GLWLib/GLCheckBox.h>
+#include <GLWLib/GLComposite.h>
 
 QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 {
@@ -91,6 +94,34 @@ QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 	: RhiWindow(graphicsApi)
 {
+	GLLabel* label = new GLLabel(0, 50, 450, 100, "Welcome to RHI!");
+	label->set_font_size(40);
+	m_Widget.AddWidget(label);
+
+	const int W = 200;
+	const int H = 30;
+
+	GLComposite* menu = new GLComposite(0, 0, W, H);
+	menu->align(GLWAlign::GLW_ALIGN_RIGHT | GLWAlign::GLW_ALIGN_TOP);
+
+	GLCheckBox* meshLines = new GLCheckBox(0, 0, W, H, "mesh lines");
+	meshLines->add_event_handler([=](GLWidget* w, int nevent) {
+		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+		rhiScene* s = dynamic_cast<rhiScene*>(m_doc->GetScene());
+		if (s) s->renderMesh = b->m_checked;
+		});
+	menu->add_widget(meshLines);
+
+	GLCheckBox* meshNodes = new GLCheckBox(0, 0, W, H, "mesh nodes");
+	meshNodes->add_event_handler([=](GLWidget* w, int nevent) {
+		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
+		rhiScene* s = dynamic_cast<rhiScene*>(m_doc->GetScene());
+		if (s) s->renderNodes = b->m_checked;
+		});
+	menu->add_widget(meshNodes);
+
+	m_Widget.AddWidget(menu);
+
 	m_wnd = wnd;
 }
 
@@ -190,10 +221,10 @@ void rhiSceneView::customRender()
 		img.fill(Qt::transparent);
 		QPainter painter(&img);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		QFont font("Helvetica", 24);
-		font.setPixelSize(0.05 * qMin(width(), height()));
-		painter.setFont(font);
-		painter.drawText(10, 100, QString("Welcome to RHI!"));
+
+		GLPainter glpainter(&painter, nullptr);
+
+		m_Widget.DrawWidgets(&glpainter);
 		painter.end();
 		m_rhiRender->setOverlayImage(img);
 	}
@@ -204,13 +235,23 @@ void rhiSceneView::customRender()
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
 	m_prevPos = ev->pos();
+
+	// let the widget manager handle it first
+	int x = m_prevPos.x();
+	int y = m_prevPos.y();
+	GLWidget* pw = GLWidget::get_focus();
+	if (m_Widget.handle(x, y, GLWEvent::GLW_PUSH) == 1)
+	{
+		requestUpdate();
+		return;
+	}
+
 	setRenderMode(RenderMode::DYNAMIC);
 }
 
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
 	if (m_doc == nullptr) return;
-	GLCamera& cam = m_doc->GetScene()->GetCamera();
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
 	bool bctrl = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -225,6 +266,15 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 	int y1 = ev->pos().y();
 	int x0 = m_prevPos.x();
 	int y0 = m_prevPos.y();
+
+	// let the widget manager handle it first
+	if (but1 && (m_Widget.handle(x1, y1, GLWEvent::GLW_DRAG) == 1))
+	{
+		requestUpdate();
+		return;
+	}
+
+	GLCamera& cam = m_doc->GetScene()->GetCamera();
 
 	if (but1)
 	{
@@ -280,6 +330,16 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
+	int x = (int)event->position().x();
+	int y = (int)event->position().y();
+
+	// let the widget manager handle it first
+	if (m_Widget.handle(x, y, GLWEvent::GLW_RELEASE) == 1)
+	{
+		requestUpdate();
+		return;
+	}
+
 	setRenderMode(RenderMode::STATIC);
 }
 

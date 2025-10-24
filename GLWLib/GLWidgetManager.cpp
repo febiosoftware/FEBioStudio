@@ -28,9 +28,8 @@ SOFTWARE.*/
 #include <assert.h>
 #include <QPainter>
 
-CGLWidgetManager::CGLWidgetManager(QWidget* parent)
+CGLWidgetManager::CGLWidgetManager()
 {
-	m_pw = parent;
 }
 
 CGLWidgetManager::~CGLWidgetManager()
@@ -43,39 +42,6 @@ CGLWidgetManager::~CGLWidgetManager()
 		delete pw;
 	}
 	m_Widget.clear();
-}
-
-// Make sure widget are within bounds.
-void CGLWidgetManager::CheckWidgetBounds()
-{
-	// make sure we have a view
-	if (m_pw == nullptr) return;
-
-	// get the view's dimensions
-	int w = m_pw->width();
-	int h = m_pw->height();
-
-	// resize widgets
-	for (int i = 0; i<Widgets(); ++i)
-	{
-		GLWidget* pw = m_Widget[i];
-
-		int x0 = pw->x();
-		if (x0 < 0) x0 = 0;
-
-		int y0 = pw->y();
-		if (y0 < 0) y0 = 0;
-
-		int x1 = x0 + pw->w();
-		if (x1 >= w) { x1 = w - 1; x0 = x1 - pw->w(); }
-		if (x0 < 0) x0 = 0;
-
-		int y1 = y0 + pw->h();
-		if (y1 >= h) { y1 = h - 1; y0 = y1 - pw->h(); }
-		if (y0 < 0) y0 = 0;
-
-		pw->resize(x0, y0, x1 - x0, y1 - y0);
-	}
 }
 
 void CGLWidgetManager::AddWidget(GLWidget* pw)
@@ -162,11 +128,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 
 				if (bresize && pw->resizable())
 				{
-					if (x0 + w0 + (x - xp) >= m_pw->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
-
-					unsigned int n = pw->GetSnap();
-					if (y0 + h0 + (y - yp) >= m_pw->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
-
 					pw->resize(x0, y0, w0 + (x - xp), h0 + (y - yp));
 
 					int hn = pw->h();
@@ -178,13 +139,6 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 				else if (bdrag)
 				{
 					pw->resize(x0 + (x - xp), y0 + (y - yp), w0, h0);
-
-					if (pw->x() <= 0) { pw->align(GLW_ALIGN_LEFT); x = xp; }
-					else if (pw->x() + pw->w() >= m_pw->width()) { pw->align(GLW_ALIGN_RIGHT); x = xp; }
-
-					unsigned int n = pw->GetSnap();
-					if (pw->y() <= 0) { pw->align(n | GLW_ALIGN_TOP); y = yp; }
-					else if (pw->y() + pw->h() >= m_pw->height()) { pw->align(n | GLW_ALIGN_BOTTOM); y = yp; }
 				}
 				else return 1;
 
