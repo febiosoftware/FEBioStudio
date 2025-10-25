@@ -179,8 +179,6 @@ public:
 	void start() override;
 	void finish() override;
 
-	void setViewProjection(const QMatrix4x4& proj);
-
 	// clear all cached resources
 	void clearCache();
 
@@ -192,6 +190,8 @@ public:
 public:
 
 	void positionCamera(const GLCamera& cam) override;
+	void setProjection(double fov, double fnear, double ffar) override;
+	void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) override;
 
 	void pushTransform() override;
 	void popTransform() override;

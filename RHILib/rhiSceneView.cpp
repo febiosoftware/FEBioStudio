@@ -212,8 +212,6 @@ void rhiSceneView::customRender()
 	rhiScene* scene = m_doc->GetRhiScene();
 	GLCamera& cam = scene->GetCamera();
 
-	m_rhiRender->setViewProjection(m_proj);
-
 	m_rhiRender->start();
 
 	GLContext rc;

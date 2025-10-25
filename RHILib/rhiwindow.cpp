@@ -165,10 +165,6 @@ void RhiWindow::init()
 void RhiWindow::resizeSwapChain()
 {
     m_hasSwapChain = m_sc->createOrResize(); // also handles m_ds
-
-    const QSize outputSize = m_sc->currentPixelSize();
-    m_proj = m_rhi->clipSpaceCorrMatrix();
-	m_proj.perspective(45.0f, outputSize.width() / (float) outputSize.height(), 0.01f, 2000.0f);
 }
 
 void RhiWindow::releaseSwapChain()

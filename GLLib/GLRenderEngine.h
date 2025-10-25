@@ -123,7 +123,7 @@ public:
 	virtual FrontFace frontFace() { return FrontFace::COUNTER_CLOCKWISE; }
 	virtual void setFrontFace(FrontFace f) {}
 
-	virtual void setProjection(double fov, double near) {}
+	virtual void setProjection(double fov, double near, double far) {}
 	virtual void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) {}
 	virtual void positionCamera(const GLCamera& cam) {}
 

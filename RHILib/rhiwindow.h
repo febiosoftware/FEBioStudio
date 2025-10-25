@@ -44,7 +44,6 @@ protected:
     std::unique_ptr<QRhiRenderPassDescriptor> m_rp;
     bool m_hasSwapChain = false;
 	unsigned int sampleCount = 4;
-    QMatrix4x4 m_proj;
 
 protected:
     void init();

@@ -110,7 +110,7 @@ void rhiScene::AddMesh(GLMesh* pm)
 void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 {
 	GLCamera& cam = GetCamera();
-	re.setProjection(45.0f, 0.01f);
+	re.setProjection(45.0f, 0.01f, 2000.f);
 	re.positionCamera(cam);
 	re.setBackgroundColor(bgcol);
 	re.setLightPosition(0, light);

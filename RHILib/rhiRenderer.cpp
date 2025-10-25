@@ -492,6 +492,22 @@ void rhiRenderer::positionCamera(const GLCamera& cam)
 	m_viewMatrix.translate(-p.x, -p.y, -p.z);
 }
 
+void rhiRenderer::setProjection(double fov, double fnear, double far)
+{
+	const QSize outputSize = m_sc->currentPixelSize();
+	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
+	double W = (double)outputSize.width();
+	double H = (double)outputSize.height();
+	double ar = (H == 0 ? 1 : W / H);
+	m_projMatrix.perspective(fov, ar, fnear, far);
+}
+
+void rhiRenderer::setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar)
+{
+	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
+	m_projMatrix.ortho(left, right, bottom, top, zNear, zFar);
+}
+
 void rhiRenderer::pushTransform()
 {
 	m_transformStack.push(m_modelMatrix);
@@ -696,11 +712,6 @@ void rhiRenderer::disableClipPlane(unsigned int n)
 	}
 }
 
-void rhiRenderer::setViewProjection(const QMatrix4x4& proj)
-{
-	m_projMatrix = proj;
-}
-
 void rhiRenderer::useOverlayImage(bool b)
 {
 	m_useOverlay = b;
@@ -723,9 +734,10 @@ void rhiRenderer::start()
 	for (auto& it : m_lineMeshList) it.second->setActive(false);
 	for (auto& it : m_pointMeshList) it.second->setActive(false);
 
-	// reset model and view matrices
+	// reset matrices
 	m_viewMatrix.setToIdentity();
 	m_modelMatrix.setToIdentity();
+	m_projMatrix.setToIdentity();
 }
 
 void rhiRenderer::finish()

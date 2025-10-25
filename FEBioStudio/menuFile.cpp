@@ -1404,7 +1404,7 @@ void CMainWindow::on_actionRayTrace_triggered()
 		QImage img(W, H, QImage::Format_ARGB32);
 
 		CGView& view = scene->GetView();
-		rayTracer->setProjection(view.m_fov, view.m_fnear);
+		rayTracer->setProjection(view.m_fov, view.m_fnear, view.m_ffar);
 		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);

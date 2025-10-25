@@ -63,7 +63,7 @@ RayTracer::~RayTracer()
 	tex3d.clear();
 }
 
-void RayTracer::setProjection(double fov, double fnear)
+void RayTracer::setProjection(double fov, double fnear, double far)
 {
 	fieldOfView = fov;
 	nearPlane = fnear;
