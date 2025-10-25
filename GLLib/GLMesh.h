@@ -130,7 +130,10 @@ public:
 
 	int	AddNode(const vec3f& r, GLColor c);
 
+	int AddNode(const NODE& nd);
+
 public:
+	void AddEdge(int n0, int n1, int groupID = 0);
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	void AddEdge(vec3f* r, int nodes, int groupID = 0);
 

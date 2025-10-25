@@ -1553,14 +1553,8 @@ void CGLView::RenderDecorations()
 
 void CGLView::RenderScene()
 {
-	m_ogl->start();
-
 	GLScene* scene = GetActiveScene();
-	if (scene == nullptr)
-	{
-		m_ogl->finish();
-		return;
-	}
+	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
 
@@ -1600,8 +1594,6 @@ void CGLView::RenderScene()
 	}
 
 	RenderTags();
-
-	m_ogl->finish();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);

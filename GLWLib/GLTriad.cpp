@@ -25,12 +25,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLTriad.h"
 #include <GLLib/glx.h>
+#include <GLLib/GLMeshBuilder.h>
 #include "convert.h"
 
 GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 {
 	m_rot = quatd(0.f, vec3d(1.f, 0.f, 0.f));
 	m_bcoord_labels = true;
+}
+
+GLTriad::~GLTriad()
+{
+	delete m_pm;
+}
+
+void GLTriad::buildMesh()
+{
+	const double r0 = .05;
+	const double r1 = .15;
+
+	GLMeshBuilder mb;
+	mb.start();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
+	mb.pushTransform();
+	mb.rotate(90, 0, 1, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
+	mb.pushTransform();
+	mb.rotate(-90, 1, 0, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
+	mb.pushTransform();
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.finish();
+	m_pm = mb.takeMesh(); assert(m_pm);
 }
 
 void GLTriad::draw(GLPainter* painter)
@@ -89,31 +130,12 @@ void GLTriad::draw(GLPainter* painter)
 		if ((a > 0) && (r.Length() > 0))
 			re->rotate(a, r.x, r.y, r.z);
 
-		const double r0 = .05;
-		const double r1 = .15;
-
-		re->setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
-		re->pushTransform();
-		re->rotate(90, 0, 1, 0);
-		glx::drawCylinder(*re, r0, .9, 5);
-		re->translate(vec3d(0, 0, .8f));
-		glx::drawCone(*re, r1, 0.2, 10);
-		re->popTransform();
-
-		re->setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
-		re->pushTransform();
-		re->rotate(-90, 1, 0, 0);
-		glx::drawCylinder(*re, r0, .9, 5);
-		re->translate(vec3d(0, 0, .8f));
-		glx::drawCone(*re, r1, 0.2, 10);
-		re->popTransform();
-
-		re->setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
-		re->pushTransform();
-		glx::drawCylinder(*re, r0, .9, 5);
-		re->translate(vec3d(0, 0, .8f));
-		glx::drawCone(*re, r1, 0.2, 10);
-		re->popTransform();
+		if (m_pm == nullptr) buildMesh();
+		if (m_pm)
+		{
+			re->setMaterial(GLMaterial::PLASTIC, GLColor::White(), GLMaterial::VERTEX_COLOR);
+			re->renderGMesh(*m_pm);
+		}
 
 		// restore project matrix
 		re->popProjection();

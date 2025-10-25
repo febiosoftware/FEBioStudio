@@ -24,30 +24,54 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLWidget.h"
-#include <FSCore/math3d.h>
+#include "GLMesh.h"
+#include "GLRenderEngine.h"
+#include "glmath.h"
+#include <stack>
 
-class GLMesh;
-
-class GLTriad : public GLWidget
+// Helper class for generating a GLMesh through render commands
+class GLMeshBuilder : public GLRenderEngine
 {
 public:
-	GLTriad(int x, int y, int w, int h);
-	~GLTriad();
+	GLMeshBuilder();
 
-	void draw(GLPainter* painter) override;
+	void start() override;
+	void finish() override;
 
-	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
-	bool show_coord_labels() { return m_bcoord_labels; }
+	GLMesh* takeMesh();
 
-	void setOrientation(const quatd& q) { m_rot = q; }
+public:
+	void pushTransform() override;
+	void popTransform() override;
+	void translate(const vec3d& r) override;
+	void rotate(const quatd& rot) override;
+	void rotate(double deg, double x, double y, double z) override;
+	void scale(double x, double, double z) override;
+
+	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;
+
+	void begin(PrimitiveType prim) override;
+	void end() override;
+
+	void vertex(const vec3d& r) override;
+	void normal(const vec3d& r) override;
 
 private:
-	void buildMesh();
+	void buildPoints();
+	void buildLines();
+	void buildLineStrip();
+	void buildLineLoop();
+	void buildTriangles();
+	void buildQuadStrip();
 
-protected:
+private:
 	GLMesh* m_pm = nullptr;
-	quatd	m_rot;
-	bool	m_bcoord_labels;
-};
 
+	mat4d modelView;
+	std::stack<mat4d> mvStack;
+
+	std::vector<GLMesh::NODE> vertList;
+	GLColor currentColor;
+	vec3d currentNormal;
+	PrimitiveType currentPrimitive;
+};

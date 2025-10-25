@@ -99,6 +99,23 @@ int	GLMesh::AddNode(const vec3f& r, GLColor c)
 	return ((int)m_Node.size() - 1);
 }
 
+int	GLMesh::AddNode(const GLMesh::NODE& nd)
+{
+	m_Node.push_back(nd);
+	setModified(true);
+	m_hasNeighborList = false;
+	return ((int)m_Node.size() - 1);
+}
+
+void GLMesh::AddEdge(int n0, int n1, int groupID)
+{
+	EDGE e;
+	e.n[0] = n0;
+	e.n[1] = n1;
+	e.pid = groupID;
+	m_Edge.push_back(e);
+}
+
 void GLMesh::AddEdge(int* n, int nodes, int gid)
 {
 	EDGE e;
@@ -267,9 +284,12 @@ int GLMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext
 	f.n[0] = n0;
 	f.n[1] = n1;
 	f.n[2] = n2;
-	f.c[0] = GLColor(0, 0, 0);
-	f.c[1] = GLColor(0, 0, 0);
-	f.c[2] = GLColor(0, 0, 0);
+	f.c[0] = GLColor(0, 0, 0); if ((n0 >= 0) && (n0 < m_Node.size())) f.c[0] = m_Node[n0].c;
+	f.c[1] = GLColor(0, 0, 0); if ((n1 >= 0) && (n1 < m_Node.size())) f.c[1] = m_Node[n1].c;
+	f.c[2] = GLColor(0, 0, 0); if ((n2 >= 0) && (n2 < m_Node.size())) f.c[2] = m_Node[n2].c;
+	if ((n0 >= 0) && (n0 < m_Node.size())) f.vn[0] = m_Node[n0].n;
+	if ((n1 >= 0) && (n1 < m_Node.size())) f.vn[1] = m_Node[n1].n;
+	if ((n2 >= 0) && (n2 < m_Node.size())) f.vn[2] = m_Node[n2].n;
 	f.pid = groupID;
 	f.sid = smoothID;
 	f.bext = bext;

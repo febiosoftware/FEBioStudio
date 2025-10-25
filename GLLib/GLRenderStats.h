@@ -37,6 +37,6 @@ struct GLRenderStats
 		triangles = 0;
 		lines = 0;
 		points = 0;
-		cachedObjects = 0;
+//		cachedObjects = 0;
 	}
 };
