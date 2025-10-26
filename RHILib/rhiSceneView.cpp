@@ -235,6 +235,14 @@ void rhiSceneView::customRender()
 
 		m_Widget.DrawWidgets(&glpainter);
 		painter.end();
+
+		float H = (float)img.height();
+		float h = (float)triad->h();
+		QRhiViewport vp = { (float)triad->x(), H - (float)triad->y() - h, (float)triad->w(), h };
+		quatd q = cam.GetOrientation();
+		QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
+		m_rhiRender->setTriadInfo(Q, vp);
+
 		m_rhiRender->setOverlayImage(img);
 	}
 

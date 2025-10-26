@@ -36,7 +36,8 @@ void rhi::ColorShaderResource::create(QRhi* rhi, SharedResources* sr)
 		{UniformBlock::FLOAT, "opacity"},
 		{UniformBlock::FLOAT, "useTexture"},
 		{UniformBlock::FLOAT, "useStipple"},
-		{UniformBlock::FLOAT, "useClipping"}
+		{UniformBlock::FLOAT, "useClipping"},
+		{UniformBlock::FLOAT, "useVertexColor"}
 	});
 
 	// create the buffer
@@ -67,6 +68,7 @@ void rhi::ColorShaderResource::setData(const QMatrix4x4& mvp, const QMatrix4x4& 
 	m_data.setFloat(6, (m.useTexture ? 1.f : 0.f));
 	m_data.setFloat(7, (m.useStipple ? 1.f : 0.f));
 	m_data.setFloat(8, (m.doClipping ? 1.f : 0.f));
+	m_data.setFloat(9, (m.useVertexColor ? 1.f : 0.f));
 }
 
 void rhi::ColorShaderResource::update(QRhiResourceUpdateBatch* u)

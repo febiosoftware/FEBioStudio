@@ -128,6 +128,20 @@ namespace rhi {
 		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 		std::unique_ptr<CanvasShaderResource> m_sr;
 	};
+
+	class TriadRenderPass : public RenderPass
+	{
+	public:
+		TriadRenderPass(QRhi* rhi) : RenderPass(rhi) {}
+
+		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
+
+		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
+
+	private:
+		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
+		std::unique_ptr<rhi::ColorShaderResource> m_sr;
+	};
 }
 
 class GlobalUniformBlock
@@ -221,6 +235,8 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
+	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
+
 public:
 	void setOverlayImage(const QImage& img);
 	void useOverlayImage(bool b);
@@ -254,6 +270,7 @@ private:
 
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
 
+	std::array<float, 4> m_viewport{ 0.f };
 	QMatrix4x4 m_projMatrix;
 	QMatrix4x4 m_viewMatrix;
 	QMatrix4x4 m_modelMatrix;
@@ -268,6 +285,13 @@ private:
 	// overlay image
 	bool m_useOverlay = false;
 	rhi::Texture m_overlay;
+	std::unique_ptr<QRhiTextureRenderTarget> m_overlayRT;
+	std::unique_ptr<QRhiRenderPassDescriptor> m_overlayRPD;
+	std::unique_ptr<QRhiRenderBuffer> m_overlayDepth;
+	std::unique_ptr<rhi::TriMesh> triadMesh;
+	std::unique_ptr<rhi::TriadRenderPass> m_triadPass;
+	QRhiViewport m_overlayVP = { 0,0,100,100 };
+	QMatrix4x4 m_overlayVM;
 
 	// fps indicator
 	CanvasUniformBlock m_fpsub;
@@ -281,4 +305,5 @@ private:
 	GLColor m_lightSpecular;
 	QColor m_bgColor;
 	GLMaterial m_currentMat;
+	bool m_useVertexColor = false;
 };

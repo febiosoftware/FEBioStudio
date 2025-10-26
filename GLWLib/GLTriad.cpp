@@ -159,9 +159,9 @@ void GLTriad::draw(GLPainter* painter)
 	else
 	{
 		x0 = x();
-		y0 = y();
 		x1 = x() + w();
-		y1 = y() + h();
+		y1 = y();
+		y0 = y() + h();
 	}
 
 	// restore identity matrix

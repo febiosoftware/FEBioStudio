@@ -290,6 +290,9 @@ int GLMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext
 	if ((n0 >= 0) && (n0 < m_Node.size())) f.vn[0] = m_Node[n0].n;
 	if ((n1 >= 0) && (n1 < m_Node.size())) f.vn[1] = m_Node[n1].n;
 	if ((n2 >= 0) && (n2 < m_Node.size())) f.vn[2] = m_Node[n2].n;
+	if ((n0 >= 0) && (n0 < m_Node.size())) f.vr[0] = m_Node[n0].r;
+	if ((n1 >= 0) && (n1 < m_Node.size())) f.vr[1] = m_Node[n1].r;
+	if ((n2 >= 0) && (n2 < m_Node.size())) f.vr[2] = m_Node[n2].r;
 	f.pid = groupID;
 	f.sid = smoothID;
 	f.bext = bext;

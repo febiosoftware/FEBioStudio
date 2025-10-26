@@ -30,6 +30,7 @@ layout(std140, binding = 1) uniform MeshBlock {
     float useTexture;
     float useStipple;
     float useClipping;
+    float useVertexColor;
 } mesh;
 
 // texture sampler
@@ -38,6 +39,8 @@ layout(binding = 2) uniform sampler2D smp;
 void main()
 {
     v_color = mesh.col.xyz; //color;
+    if (mesh.useVertexColor > 0) v_color = color;
+
     v_normal = normalize((mesh.mv*vec4(normal, 0)).xyz);
     v_pos = (mesh.mv*vec4(position,1)).xyz;
     v_tex = tex;

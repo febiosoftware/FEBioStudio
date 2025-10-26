@@ -26,6 +26,8 @@ SOFTWARE.*/
 #include "rhiRenderer.h"
 #include <QFile>
 #include <QPainter>
+#include <GLLib/GLMeshBuilder.h>
+#include <GLLib/glx.h>
 
 static QShader getShader(const QString& name)
 {
@@ -47,6 +49,42 @@ static QRhiGraphicsPipeline::TargetBlend defaultBlendState()
 	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
 	blendState.opAlpha = QRhiGraphicsPipeline::Add;
 	return blendState;
+}
+
+static GLMesh* buildTriadMesh()
+{
+	const double r0 = .05;
+	const double r1 = .15;
+
+	GLMeshBuilder mb;
+	mb.start();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
+	mb.pushTransform();
+	mb.rotate(90, 0, 1, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
+	mb.pushTransform();
+	mb.rotate(-90, 1, 0, 0);
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
+	mb.pushTransform();
+	glx::drawCylinder(mb, r0, .9, 5);
+	mb.translate(vec3d(0, 0, .8f));
+	glx::drawCone(mb, r1, 0.2, 10);
+	mb.popTransform();
+
+	mb.finish();
+
+	return mb.takeMesh();
 }
 
 void GlobalUniformBlock::create(QRhi* rhi)
@@ -279,6 +317,46 @@ void rhi::OverlayRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCoun
 	m_pl->create();
 }
 
+void rhi::TriadRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
+{
+	QRhiVertexInputLayout meshLayout;
+	meshLayout.setBindings({
+		{ 12 * sizeof(float) }
+		});
+	meshLayout.setAttributes({
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
+		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
+		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
+		});
+
+	QVector<QRhiShaderStage> shaders = {
+		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
+		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
+
+	m_sr.reset(new rhi::ColorShaderResource());
+	m_sr->create(m_rhi, sr);
+
+	m_pl.reset(m_rhi->newGraphicsPipeline());
+	m_pl->setRenderPassDescriptor(rp);
+	m_pl->setSampleCount(sampleCount);
+
+	m_pl->setDepthTest(true);
+	m_pl->setDepthWrite(true);
+	m_pl->setTargetBlends({ defaultBlendState() });
+
+	m_pl->setShaderStages(shaders.begin(), shaders.end());
+	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
+
+	m_pl->setCullMode(QRhiGraphicsPipeline::None);
+	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
+
+	m_pl->setVertexInputLayout(meshLayout);
+	m_pl->setShaderResourceBindings(m_sr->get());
+	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
+	m_pl->create();
+}
+
 void rhi::CanvasShaderResource::create(QRhi* rhi, rhi::Texture& tex, QRhiBuffer* ub)
 {
 	static const QRhiShaderResourceBinding::StageFlags visibility =
@@ -377,11 +455,35 @@ void rhiRenderer::init()
 		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
 	m_overlay.sampler->create();
 
-	m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, m_sc->surfacePixelSize()));
+	m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, m_sc->surfacePixelSize(), 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
 	m_overlay.texture->create();
+
+	// create a depth-stencil render buffer that matches overlay size & sample count
+	m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, m_sc->surfacePixelSize(), 1));
+	m_overlayDepth->create();
+
+	QRhiColorAttachment colorAttachment(m_overlay.texture.get());
+	QRhiTextureRenderTargetDescription rtDesc(colorAttachment, m_overlayDepth.get());
+
+	m_overlayRT.reset(m_rhi->newTextureRenderTarget(rtDesc, QRhiTextureRenderTarget::PreserveColorContents));
+	m_overlayRPD.reset(m_overlayRT->newCompatibleRenderPassDescriptor());
+	m_overlayRT->setRenderPassDescriptor(m_overlayRPD.get());
+	m_overlayRT->create();
 
 	m_overlayPass.reset(new rhi::OverlayRenderPass(m_rhi));
 	m_overlayPass->create(m_rp, m_sc->sampleCount(), m_overlay);
+
+	m_triadPass.reset(new rhi::TriadRenderPass(m_rhi));
+	m_triadPass->create(m_overlayRPD.get(), 1, &m_sharedResources);
+
+	rhi::ColorShaderResource* triadResources = new rhi::ColorShaderResource();
+	triadResources->create(m_rhi, &m_sharedResources);
+	triadMesh.reset(new rhi::TriMesh(m_rhi, triadResources));
+	GLMesh* gltriad = buildTriadMesh();
+	triadMesh->CreateFromGLMesh(gltriad);
+	triadMesh->useVertexColor = true;
+	triadMesh->reflectivity = 0.f;
+	delete gltriad;
 
 	// fps indicator
 	m_fpsTex.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
@@ -494,10 +596,9 @@ void rhiRenderer::positionCamera(const GLCamera& cam)
 
 void rhiRenderer::setProjection(double fov, double fnear, double far)
 {
-	const QSize outputSize = m_sc->currentPixelSize();
 	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
-	double W = (double)outputSize.width();
-	double H = (double)outputSize.height();
+	double W = m_viewport[2];
+	double H = m_viewport[3];
 	double ar = (H == 0 ? 1 : W / H);
 	m_projMatrix.perspective(fov, ar, fnear, far);
 }
@@ -551,6 +652,8 @@ void rhiRenderer::scale(double x, double y, double z)
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	m_currentMat.diffuse = m_currentMat.ambient = c;
+	if (map == GLMaterial::VERTEX_COLOR) m_useVertexColor = true;
+	else m_useVertexColor = false;
 }
 
 void rhiRenderer::setColor(GLColor c)
@@ -575,7 +678,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		if (cacheMesh == false)
 		{
 			it->second->CreateFromGLMesh(&mesh);
-			it->second->SetVertexColor(col);
+			if (!m_useVertexColor) it->second->SetVertexColor(col);
 		}
 		it->second->SetMaterial(m_currentMat);
 		it->second->SetModelMatrix(m_modelMatrix);
@@ -588,7 +691,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 		sr->create(m_rhi, &m_sharedResources);
 		rhi::TriMesh* rm = new rhi::TriMesh(m_rhi, sr);
 		rm->CreateFromGLMesh(&mesh);
-		rm->SetVertexColor(col);
+		if (!m_useVertexColor) rm->SetVertexColor(col);
 		rm->SetMaterial(m_currentMat);
 		rm->SetModelMatrix(m_modelMatrix);
 		rm->doClipping = m_clipEnabled;
@@ -725,6 +828,12 @@ void rhiRenderer::setOverlayImage(const QImage& img)
 		m_overlay.image = img;
 }
 
+void rhiRenderer::setTriadInfo(const QMatrix4x4& m, QRhiViewport vp)
+{
+	m_overlayVP = vp;
+	m_overlayVM = m;
+}
+
 void rhiRenderer::start()
 {
 	ResetStats();
@@ -738,6 +847,10 @@ void rhiRenderer::start()
 	m_viewMatrix.setToIdentity();
 	m_modelMatrix.setToIdentity();
 	m_projMatrix.setToIdentity();
+
+	// default viewport is entire view
+	QSize size = m_sc->currentPixelSize();
+	m_viewport = { 0, 0, float(size.width()), float(size.height()) };
 }
 
 void rhiRenderer::finish()
@@ -770,7 +883,6 @@ void rhiRenderer::finish()
 	}
 
 	QRhiCommandBuffer* cb = m_sc->currentFrameCommandBuffer();
-	const QSize outputSizeInPixels = m_sc->currentPixelSize();
 
 	// set global properties
 	m_global.setLightPosition(m_light);
@@ -841,14 +953,55 @@ void rhiRenderer::finish()
 		if (!m_overlay.texture || (m_overlay.texture->pixelSize() != pixelSize))
 		{
 			if (!m_overlay.texture)
-				m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, pixelSize));
+			{
+				m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, pixelSize, 1,
+					QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+				m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, pixelSize, 1));
+			}
 			else
+			{
 				m_overlay.texture->setPixelSize(pixelSize);
-
+				m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, pixelSize, 1));
+			}
 			m_overlay.texture->create();
+			m_overlayDepth->create();
+
+			QRhiColorAttachment colorAttachment(m_overlay.texture.get());
+			QRhiTextureRenderTargetDescription rtDesc(colorAttachment, m_overlayDepth.get());
+
+			m_overlayRT.reset(m_rhi->newTextureRenderTarget(rtDesc, QRhiTextureRenderTarget::PreserveColorContents));
+			m_overlayRPD.reset(m_overlayRT->newCompatibleRenderPassDescriptor());
+			m_overlayRT->setRenderPassDescriptor(m_overlayRPD.get());
+			m_overlayRT->create();
 		}
 
+		QMatrix4x4 proj = m_rhi->clipSpaceCorrMatrix();
+		auto vp = m_overlayVP.viewport();
+		double W = vp[2];
+		double H = vp[3];
+		double ar = (H == 0 ? 1 : W / H);
+		float d = 1.2f;
+		proj.ortho(-d * ar, d* ar, -d, d, -1, 1);
+
+		QMatrix4x4 view; view.setToIdentity();
+		view *= m_overlayVM;
+
+		triadMesh->Update(resourceUpdates, proj, view);
+
 		m_overlay.upload(resourceUpdates);
+
+		// render into overlay
+		cb->beginPass(m_overlayRT.get(), Qt::red, {1.0f, 0}, resourceUpdates); // Clear or keep depending on blending
+		{
+			// Draw the triad
+			cb->setGraphicsPipeline(m_triadPass->pipeline());
+			cb->setShaderResources();
+			cb->setViewport({ vp[0], vp[1], (float)W, (float)H});
+			triadMesh->Draw(cb);
+		}
+		cb->endPass();
+
+		resourceUpdates = m_rhi->nextResourceUpdateBatch();
 	}
 
 	// start the rendering pass
@@ -856,7 +1009,7 @@ void rhiRenderer::finish()
 
 	// render back faces first
 	cb->setGraphicsPipeline(m_backPass->pipeline());
-	cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
+	cb->setViewport({ m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]});
 	cb->setShaderResources();
 
 	for (auto& it : m_meshList)

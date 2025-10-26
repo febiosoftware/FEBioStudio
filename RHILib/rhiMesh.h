@@ -235,6 +235,7 @@ namespace rhi {
 	public:
 		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
 		bool doClipping = false;
+		bool useVertexColor = false;
 
 	protected:
 		QRhi* m_rhi = nullptr;
