@@ -268,7 +268,7 @@ void FEVTKExport::WritePoints(FEState* ps)
 	{
 		if (m.Node(j).m_ntag != -1)
 		{
-			vec3f& r = ps->m_NODE[j].m_rt;
+			vec3f r = ps->NodePosition(j);
 			fprintf(m_fp, "%g %g %g ", r.x, r.y, r.z);
 			k++;
 		}
