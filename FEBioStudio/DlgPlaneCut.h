@@ -26,10 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <GLLib/GLViewSettings.h>
 
 class UIDlgPlaneCut;
 
 class CMainWindow;
+class GLScene;
 
 class CDlgPlaneCut : public QDialog
 {
@@ -44,6 +46,8 @@ public:
 	void showEvent(QShowEvent* ev) override;
 	void closeEvent(QCloseEvent* ev) override;
 	void reject() override;
+
+	void setData(GLViewSettings* vs, GLScene* scene);
 
 public slots:
 	void onDataChanged();

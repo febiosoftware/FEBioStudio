@@ -1800,8 +1800,13 @@ void CMainWindow::on_actionMeasureTool_triggered()
 
 void CMainWindow::on_actionPlaneCutTool_triggered()
 {
-	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
-	ui->planeCutTool->show();
+	CGLView* glv = GetGLView();
+	if (glv)
+	{
+		if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
+		ui->planeCutTool->setData(&glv->GetViewSettings(), glv->GetActiveScene());
+		ui->planeCutTool->show();
+	}
 }
 
 void CMainWindow::on_actionPickColor_triggered()
