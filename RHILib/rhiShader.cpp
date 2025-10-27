@@ -106,7 +106,7 @@ rhi::MeshShaderResource* PointShader::createShaderResource(QRhi* rhi, rhi::Share
 class LineShaderResource : public rhi::MeshShaderResource
 {
 public:
-	enum { MVP, MV, COL, CLIP };
+	enum { MVP, MV, COL, CLIP, VCOL };
 
 public:
 	LineShaderResource(QRhi* rhi, rhi::SharedResources* sharedResources) : rhi::MeshShaderResource(rhi)
@@ -115,7 +115,8 @@ public:
 			{rhi::UniformBlock::MAT4, "mvp"},
 			{rhi::UniformBlock::MAT4, "mv"},
 			{rhi::UniformBlock::VEC4, "col"},
-			{rhi::UniformBlock::FLOAT, "useClipping" }
+			{rhi::UniformBlock::FLOAT, "useClipping" },
+			{rhi::UniformBlock::FLOAT, "useVertexColor" }
 			});
 
 		// create the buffer
@@ -143,6 +144,7 @@ public:
 		m_data.setMat4(MV, mv);
 		m_data.setVec4(COL, diffuse);
 		m_data.setFloat(CLIP, (m.doClipping ? 1.f : 0.f));
+		m_data.setFloat(VCOL, (m.mat.diffuseMap == GLMaterial::VERTEX_COLOR ? 1.f : 0.f));
 	}
 };
 
@@ -158,10 +160,11 @@ QRhiVertexInputLayout LineShader::meshLayout()
 {
 	QRhiVertexInputLayout meshLayout;
 	meshLayout.setBindings({
-		{ 3 * sizeof(float) }
+		{ 7 * sizeof(float) }
 		});
 	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
+		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
+		{ 0, 1, QRhiVertexInputAttribute::Float4, 3 * sizeof(float) } // color
 		});
 	return meshLayout;
 }

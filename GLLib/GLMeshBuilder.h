@@ -59,6 +59,7 @@ public:
 
 	void vertex(const vec3d& r) override;
 	void normal(const vec3d& r) override;
+	void setColor(GLColor c) override;
 
 private:
 	void buildPoints();

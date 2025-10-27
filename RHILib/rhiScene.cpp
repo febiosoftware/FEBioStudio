@@ -66,7 +66,9 @@ public:
 
 			if (renderMesh)
 			{
-				re.setColor(meshColor);
+				GLColor c = meshColor;
+				c.a = 64;
+				re.setColor(c);
 				re.renderGMeshEdges(*m_pm);
 			}
 
@@ -97,7 +99,7 @@ private:
 class rhiGridItem : public GLSceneItem
 {
 public:
-	rhiGridItem() { m_grid.m_ndiv = 1; }
+	rhiGridItem() { m_grid.m_ndiv = 2; }
 	void render(GLRenderEngine& re, GLContext& rc) override
 	{
 		if (showGrid) m_grid.Render(re, rc);

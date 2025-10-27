@@ -73,7 +73,7 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	// store attributes
 	re.pushState();
 
-	re.setMaterial(GLMaterial::CONSTANT, GLColor::White());
+	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
 
 	// get the camera
 	GLCamera& cam = *renderContext.m_cam;
@@ -115,7 +115,7 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	int i0 = -n+nx;
 	int i1 =  n+nx;
 
-	int ndiv = m_ndiv;
+	int ndiv = 2*m_ndiv;
 	if (ndiv <= 0) ndiv = 2 * n + 1;
 
 	// render the major axis

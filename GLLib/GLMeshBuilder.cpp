@@ -136,6 +136,11 @@ void GLMeshBuilder::normal(const vec3d& r)
 	currentNormal = r; currentNormal.Normalize();
 }
 
+void GLMeshBuilder::setColor(GLColor c)
+{
+	currentColor = c;
+}
+
 void GLMeshBuilder::begin(PrimitiveType prim)
 {
 	currentPrimitive = prim;

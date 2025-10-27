@@ -75,9 +75,14 @@ class LineShader : public rhi::Shader
 {
 public:
 	struct Vertex {
-		vec3f r; // coordinate
+		vec3f r; // position
+		float c[4] = { 0.f }; // color
 
-		void operator = (const GLMesh::NODE& nd) { r = nd.r; }
+		void operator = (const GLMesh::NODE& nd)
+		{ 
+			r = nd.r; 
+			nd.c.toFloat(c);
+		}
 	};
 
 public:

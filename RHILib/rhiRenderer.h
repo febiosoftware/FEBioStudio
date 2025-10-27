@@ -186,7 +186,6 @@ private:
 	GLColor m_lightSpecular;
 	QColor m_bgColor;
 	GLMaterial m_currentMat;
-	bool m_useVertexColor = false;
 	bool m_clipEnabled = false;
 	float clipPlane[4];
 };

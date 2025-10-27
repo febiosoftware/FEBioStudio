@@ -232,13 +232,14 @@ void rhiRenderer::scale(double x, double y, double z)
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
 {
 	m_currentMat.diffuse = m_currentMat.ambient = c;
-	if (map == GLMaterial::VERTEX_COLOR) m_useVertexColor = true;
-	else m_useVertexColor = false;
+	m_currentMat.type = matType;
+	m_currentMat.diffuseMap = map;
 }
 
 void rhiRenderer::setColor(GLColor c)
 {
 	m_currentMat.diffuse = m_currentMat.ambient = c;
+	mb.setColor(c);
 }
 
 void rhiRenderer::setMaterial(const GLMaterial& mat)
