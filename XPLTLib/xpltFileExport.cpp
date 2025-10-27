@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "xpltFileExport.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEMeshData_T.h>
+#include <memory>
 using namespace Post;
 using namespace std;
 
@@ -616,10 +617,10 @@ bool xpltFileExport::WriteElemData(FEPostModel& fem, FEState& state)
 				vector<float> val;
 				m_ar.BeginChunk(PLT_STATE_VAR_DATA);
 				{
-					int ND = mesh.FEElemSets();
+					int ND = mesh.MeshPartitions();
 					for (int i=0; i<ND; ++i)
 					{
-						FSElemSet& part = *mesh.GetFEElemSet(i);
+						FSMeshPartition& part = mesh.MeshPartition(i);
 
 						if (FillElemDataArray(val, data, part) == false) return false;
 
@@ -760,7 +761,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, FSElemSet& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, FSMeshPartition& part)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FSMesh& mesh = *fem.GetFEMesh(0);
@@ -768,7 +769,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();
 
-	int NE = part.size();
+	int NE = part.Elements();
 	if (NE == 0) return false;
 
 	// number of nodes per element
@@ -1032,6 +1033,65 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 					for (int j = 0; j < ne; ++j) write_data(val, lnode[i * ne + j], v[j]);
 					nval++;
 				}
+			}
+		}
+		else return error("Unknown data type in FillElemDataArray");
+	}
+	else if (nfmt == DATA_REGION)
+	{
+		if (ntype == DATA_SCALAR)
+		{
+			FEElementData<float, DATA_REGION>& data = dynamic_cast<FEElementData<float, DATA_REGION>&>(meshData);
+			val.assign(1, 0.f);
+			int eid = part[0];
+			if (data.active(eid)) { data.eval(eid, &val[0]); nval++; }
+		}
+		else if (ntype == DATA_VEC3)
+		{
+			FEElementData<vec3f, DATA_REGION>& data = dynamic_cast<FEElementData<vec3f, DATA_REGION>&>(meshData);
+			val.assign(3, 0.f);
+			int eid = part[0];
+			if (data.active(eid)) { 
+				vec3f v(0.f, 0.f, 0.f);
+				data.eval(eid, &v);
+				write_data(val, 0, v);
+				nval++; 
+			}
+		}
+		else if (ntype == DATA_MAT3)
+		{
+			FEElementData<mat3f, DATA_REGION>& data = dynamic_cast<FEElementData<mat3f, DATA_REGION>&>(meshData);
+			val.assign(9, 0.f);
+			int eid = part[0];
+			if (data.active(eid)) {
+				mat3f v;
+				data.eval(eid, &v);
+				write_data(val, 0, v);
+				nval++;
+			}
+		}
+		else if (ntype == DATA_MAT3S)
+		{
+			FEElementData<mat3fs, DATA_REGION>& data = dynamic_cast<FEElementData<mat3fs, DATA_REGION>&>(meshData);
+			val.assign(6, 0.f);
+			int eid = part[0];
+			if (data.active(eid)) {
+				mat3fs v;
+				data.eval(eid, &v);
+				write_data(val, 0, v);
+				nval++;
+			}
+		}
+		else if (ntype == DATA_MAT3SD)
+		{
+			FEElementData<mat3fd, DATA_REGION>& data = dynamic_cast<FEElementData<mat3fd, DATA_REGION>&>(meshData);
+			val.assign(3, 0.f);
+			int eid = part[0];
+			if (data.active(eid)) {
+				mat3fd v;
+				data.eval(eid, &v);
+				write_data(val, 0, v);
+				nval++;
 			}
 		}
 		else return error("Unknown data type in FillElemDataArray");
