@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,122 +27,15 @@ SOFTWARE.*/
 #include <GLLib/GLRenderEngine.h>
 #include <rhi/qrhi.h>
 #include "rhiMesh.h"
+#include "rhiRenderPass.h"
+#include "rhiPointRenderPass.h"
+#include "rhiLineRenderPass.h"
+#include "rhiSolidRenderPass.h"
+#include "rhiOverlay.h"
+#include "rhiCanvas.h"
 #include <chrono>
 using namespace std::chrono;
 using dseconds = duration<double>;
-
-namespace rhi {
-
-	class RenderPass
-	{
-	public:
-		RenderPass(QRhi* rhi) : m_rhi(rhi) {}
-
-	protected:
-		QRhi* m_rhi;
-	};
-
-	class PointRenderPass : public RenderPass
-	{
-	public:
-		PointRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
-
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<rhi::PointShaderResource> m_sr;
-	};
-
-	class LineRenderPass : public RenderPass
-	{
-	public:
-		LineRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
-
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<rhi::LineShaderResource> m_sr;
-	};
-
-	class FrontFaceRenderPass : public RenderPass
-	{
-	public:
-		FrontFaceRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
-
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<rhi::ColorShaderResource> m_sr;
-	};
-
-	class BackFaceRenderPass : public RenderPass
-	{
-	public:
-		BackFaceRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
-
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<rhi::ColorShaderResource> m_sr;
-	};
-
-	struct OverlayShaderResource
-	{
-		std::unique_ptr<QRhiShaderResourceBindings> srb;
-		void create(QRhi* rhi, rhi::Texture& tex);
-		QRhiShaderResourceBindings* get() { return srb.get(); }
-	};
-
-	class OverlayRenderPass : public RenderPass
-	{
-	public:
-		OverlayRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex);
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<OverlayShaderResource> m_sr;
-	};
-
-	class CanvasRenderPass : public RenderPass
-	{
-	public:
-		CanvasRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex, QRhiBuffer* ub);
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<CanvasShaderResource> m_sr;
-	};
-
-	class TriadRenderPass : public RenderPass
-	{
-	public:
-		TriadRenderPass(QRhi* rhi) : RenderPass(rhi) {}
-
-		void create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr);
-
-		QRhiGraphicsPipeline* pipeline() { return m_pl.get(); }
-
-	private:
-		std::unique_ptr<QRhiGraphicsPipeline> m_pl;
-		std::unique_ptr<rhi::ColorShaderResource> m_sr;
-	};
-}
 
 class GlobalUniformBlock
 {
@@ -164,26 +57,18 @@ private:
 	std::unique_ptr<QRhiBuffer> m_ubuf;
 };
 
-class CanvasUniformBlock
-{
-public:
-	CanvasUniformBlock() {}
-	void create(QRhi* rhi);
-
-	QRhiBuffer* get() { return m_ubuf.get(); }
-
-	void update(QRhiResourceUpdateBatch* u);
-
-public:
-	void setViewPort(const vec2f& vp);
-
-private:
-	rhi::UniformBlock m_ub;
-	std::unique_ptr<QRhiBuffer> m_ubuf;
-};
-
 class rhiRenderer : public GLRenderEngine
 {
+	struct TimingInfo
+	{
+		time_point<steady_clock> m_tic;
+		time_point<steady_clock> m_toc;
+		double m_fps = 0, m_fpsMin = 0, m_fpsMax = 0;
+		unsigned int m_frame = 0;
+
+		void update();
+	};
+
 public:
 	rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp);
 	~rhiRenderer();
@@ -241,7 +126,7 @@ public:
 	void setOverlayImage(const QImage& img);
 	void useOverlayImage(bool b);
 
-	double getFPS() const { return m_fps; }
+	double getFPS() const { return timing.m_fps; }
 
 	void setDPR(double dpr) { m_dpr = dpr; }
 
@@ -250,60 +135,42 @@ private:
 	QRhiSwapChain* m_sc;
 	QRhiRenderPassDescriptor* m_rp;
 
+	// timing info
+	TimingInfo timing;
 
-	time_point<steady_clock> m_tic;
-	time_point<steady_clock> m_toc;
-	double m_fps = 0, m_fpsMin = 0, m_fpsMax = 0;
-	unsigned int m_frame = 0;
+	std::unique_ptr<LineRenderPass> m_linePass;
+	std::unique_ptr<PointRenderPass> m_pointPass;
+	std::unique_ptr<SolidRenderPass> m_solidPass;
+	std::unique_ptr<OverlayRenderPass> m_overlayPass;
+	std::unique_ptr<CanvasRenderPass> m_canvasPass;
 
+	// global resources
 	GlobalUniformBlock m_global;
-	std::unique_ptr<rhi::BackFaceRenderPass> m_backPass;
-	std::unique_ptr<rhi::FrontFaceRenderPass> m_frontPass;
-	std::unique_ptr<rhi::LineRenderPass> m_linePass;
-	std::unique_ptr<rhi::PointRenderPass> m_pointPass;
-	std::unique_ptr<rhi::OverlayRenderPass> m_overlayPass;
-	std::unique_ptr<rhi::CanvasRenderPass> m_canvasPass;
-
 	rhi::Texture m_texture;
-
 	rhi::SharedResources m_sharedResources;
 
+	// used for submitting updates in init.
 	QRhiResourceUpdateBatch* m_initialUpdates = nullptr;
 
+	// matrix stuff
 	std::array<float, 4> m_viewport{ 0.f };
 	QMatrix4x4 m_projMatrix;
 	QMatrix4x4 m_viewMatrix;
 	QMatrix4x4 m_modelMatrix;
 	std::stack<QMatrix4x4> m_transformStack;
-	std::map<const GLMesh*, rhi::TriMesh*> m_meshList;
-	std::map<const GLMesh*, rhi::LineMesh*> m_lineMeshList;
-	std::map<const GLMesh*, rhi::PointMesh*> m_pointMeshList;
 
-	bool m_clipEnabled = false;
-	float clipPlane[4];
-
-	// overlay image
+	// overlay flag
 	bool m_useOverlay = false;
-	rhi::Texture m_overlay;
-	std::unique_ptr<QRhiTextureRenderTarget> m_overlayRT;
-	std::unique_ptr<QRhiRenderPassDescriptor> m_overlayRPD;
-	std::unique_ptr<QRhiRenderBuffer> m_overlayDepth;
-	std::unique_ptr<rhi::TriMesh> triadMesh;
-	std::unique_ptr<rhi::TriadRenderPass> m_triadPass;
-	QRhiViewport m_overlayVP = { 0,0,100,100 };
-	QMatrix4x4 m_overlayVM;
-
-	// fps indicator
-	CanvasUniformBlock m_fpsub;
-	std::unique_ptr<rhi::Tri2DMesh> m_fpsMesh;
-	rhi::Texture m_fpsTex;
 
 	double m_dpr = 1;
 
 private:
+	// variables used when creating meshes
 	vec3f m_light;
 	GLColor m_lightSpecular;
 	QColor m_bgColor;
 	GLMaterial m_currentMat;
 	bool m_useVertexColor = false;
+	bool m_clipEnabled = false;
+	float clipPlane[4];
 };

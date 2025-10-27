@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,68 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiRenderer.h"
-#include <QFile>
-#include <QPainter>
-#include <GLLib/GLMeshBuilder.h>
-#include <GLLib/glx.h>
+#include "rhiUtil.h"
+#include "rhiTriMesh.h"
+#include "rhiShader.h"
 
-static QShader getShader(const QString& name)
-{
-	QFile f(name);
-	if (f.open(QIODevice::ReadOnly))
-		return QShader::fromSerialized(f.readAll());
-
-	return QShader();
-}
-
-static QRhiGraphicsPipeline::TargetBlend defaultBlendState()
-{
-	QRhiGraphicsPipeline::TargetBlend blendState;
-	blendState.enable = true;
-	blendState.srcColor = QRhiGraphicsPipeline::SrcAlpha;
-	blendState.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opColor = QRhiGraphicsPipeline::Add;
-	blendState.srcAlpha = QRhiGraphicsPipeline::One;
-	blendState.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-	blendState.opAlpha = QRhiGraphicsPipeline::Add;
-	return blendState;
-}
-
-static GLMesh* buildTriadMesh()
-{
-	const double r0 = .05;
-	const double r1 = .15;
-
-	GLMeshBuilder mb;
-	mb.start();
-
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(255, 0, 0));
-	mb.pushTransform();
-	mb.rotate(90, 0, 1, 0);
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
-
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 255, 0));
-	mb.pushTransform();
-	mb.rotate(-90, 1, 0, 0);
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
-
-	mb.setMaterial(GLMaterial::PLASTIC, GLColor(0, 0, 255));
-	mb.pushTransform();
-	glx::drawCylinder(mb, r0, .9, 5);
-	mb.translate(vec3d(0, 0, .8f));
-	glx::drawCone(mb, r1, 0.2, 10);
-	mb.popTransform();
-
-	mb.finish();
-
-	return mb.takeMesh();
-}
 
 void GlobalUniformBlock::create(QRhi* rhi)
 {
@@ -133,277 +75,7 @@ void CanvasUniformBlock::update(QRhiResourceUpdateBatch* u)
 	u->updateDynamicBuffer(m_ubuf.get(), 0, m_ub.size(), m_ub.data());
 }
 
-void rhi::PointRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
-{
-	// create point render pipeline
-	QRhiVertexInputLayout pointMeshLayout;
-	pointMeshLayout.setBindings({
-		{ 3 * sizeof(float) }
-		});
-	pointMeshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
-		});
-
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/point.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/point.frag.qsb")) } };
-
-	m_sr.reset(new rhi::PointShaderResource());
-	m_sr->create(m_rhi, sr);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(false);
-	m_pl->setTargetBlends({ defaultBlendState()});
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Points);
-
-	m_pl->setVertexInputLayout(pointMeshLayout);
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void rhi::LineRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
-{
-	// create point render pipeline
-	QRhiVertexInputLayout lineMeshLayout;
-	lineMeshLayout.setBindings({
-		{ 3 * sizeof(float) }
-		});
-	lineMeshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 } // position
-		});
-
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/lines.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/lines.frag.qsb")) } };
-
-	m_sr.reset(new rhi::LineShaderResource());
-	m_sr->create(m_rhi, sr);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(false);
-	m_pl->setTargetBlends({ defaultBlendState()});
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Lines);
-
-	m_pl->setVertexInputLayout(lineMeshLayout);
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void rhi::FrontFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
-{
-	QRhiVertexInputLayout meshLayout;
-	meshLayout.setBindings({
-		{ 12 * sizeof(float) }
-		});
-	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
-		});
-
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
-
-	m_sr.reset(new rhi::ColorShaderResource());
-	m_sr->create(m_rhi, sr);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(true);
-	m_pl->setTargetBlends({ defaultBlendState() });
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	m_pl->setCullMode(QRhiGraphicsPipeline::Back);
-	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
-
-	m_pl->setVertexInputLayout(meshLayout);
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void rhi::BackFaceRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
-{
-	QRhiVertexInputLayout meshLayout;
-	meshLayout.setBindings({
-		{ 12 * sizeof(float) }
-		});
-	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
-		});
-
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
-
-	m_sr.reset(new rhi::ColorShaderResource());
-	m_sr->create(m_rhi, sr);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(true);
-	m_pl->setTargetBlends({ defaultBlendState() });
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	m_pl->setCullMode(QRhiGraphicsPipeline::Front);
-	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
-
-	m_pl->setVertexInputLayout(meshLayout);
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void rhi::OverlayShaderResource::create(QRhi* rhi, rhi::Texture& tex)
-{
-	srb.reset(rhi->newShaderResourceBindings());
-	srb->setBindings({
-			QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage,
-									   tex.texture.get(), tex.sampler.get())
-		});
-	srb->create();
-}
-
-void rhi::OverlayRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex)
-{
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/overlay.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/overlay.frag.qsb")) } };
-
-	m_sr.reset(new rhi::OverlayShaderResource());
-	m_sr->create(m_rhi, tex);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(false);
-	m_pl->setDepthWrite(false);
-	m_pl->setTargetBlends({ defaultBlendState() });
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-	m_pl->setVertexInputLayout({});
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->create();
-}
-
-void rhi::TriadRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, SharedResources* sr)
-{
-	QRhiVertexInputLayout meshLayout;
-	meshLayout.setBindings({
-		{ 12 * sizeof(float) }
-		});
-	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float3, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }, // normal 
-		{ 0, 2, QRhiVertexInputAttribute::Float3, 6 * sizeof(float) }, // color
-		{ 0, 3, QRhiVertexInputAttribute::Float3, 9 * sizeof(float) }, // texcoord
-		});
-
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/color.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/color.frag.qsb")) } };
-
-	m_sr.reset(new rhi::ColorShaderResource());
-	m_sr->create(m_rhi, sr);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(true);
-	m_pl->setDepthWrite(true);
-	m_pl->setTargetBlends({ defaultBlendState() });
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-
-	m_pl->setCullMode(QRhiGraphicsPipeline::None);
-	m_pl->setFrontFace(QRhiGraphicsPipeline::CCW);
-
-	m_pl->setVertexInputLayout(meshLayout);
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
-	m_pl->create();
-}
-
-void rhi::CanvasShaderResource::create(QRhi* rhi, rhi::Texture& tex, QRhiBuffer* ub)
-{
-	static const QRhiShaderResourceBinding::StageFlags visibility =
-		QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
-
-	srb.reset(rhi->newShaderResourceBindings());
-	srb->setBindings({
-			QRhiShaderResourceBinding::uniformBuffer(0, visibility, ub),
-			QRhiShaderResourceBinding::sampledTexture(1, visibility, tex.texture.get(), tex.sampler.get())
-		});
-	srb->create();
-}
-
-void rhi::CanvasRenderPass::create(QRhiRenderPassDescriptor* rp, int sampleCount, rhi::Texture& tex, QRhiBuffer* ub)
-{
-	QVector<QRhiShaderStage> shaders = {
-		{ QRhiShaderStage::Vertex  , getShader(QLatin1String(":/RHILib/shaders/canvas.vert.qsb")) },
-		{ QRhiShaderStage::Fragment, getShader(QLatin1String(":/RHILib/shaders/canvas.frag.qsb")) } };
-
-	QRhiVertexInputLayout meshLayout;
-	meshLayout.setBindings({
-		{ 4 * sizeof(float) }
-		});
-	meshLayout.setAttributes({
-		{ 0, 0, QRhiVertexInputAttribute::Float2, 0 }, // position
-		{ 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }, // tex coord
-		});
-
-	m_sr.reset(new rhi::CanvasShaderResource());
-	m_sr->create(m_rhi, tex, ub);
-
-	m_pl.reset(m_rhi->newGraphicsPipeline());
-	m_pl->setRenderPassDescriptor(rp);
-	m_pl->setSampleCount(sampleCount);
-
-	m_pl->setDepthTest(false);
-	m_pl->setDepthWrite(false);
-	m_pl->setTargetBlends({ defaultBlendState() });
-
-	m_pl->setShaderStages(shaders.begin(), shaders.end());
-	m_pl->setTopology(QRhiGraphicsPipeline::Triangles);
-	m_pl->setVertexInputLayout({ meshLayout });
-	m_pl->setShaderResourceBindings(m_sr->get());
-	m_pl->create();
-}
-
-rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp)
+rhiRenderer::rhiRenderer(QRhi* rhi, QRhiSwapChain* sc, QRhiRenderPassDescriptor* rp) : m_rhi(rhi), m_sc(sc), m_rp(rp), m_texture(rhi)
 {
 }
 
@@ -412,114 +84,48 @@ rhiRenderer::~rhiRenderer()
 	clearCache();
 }
 
-QImage createTextureImage(QSize size)
-{
-	QImage img(size, QImage::Format_RGBA8888);
-	img.fill(Qt::white);
-	return img;
-}
-
 void rhiRenderer::init()
 {
 	m_initialUpdates = m_rhi->nextResourceUpdateBatch();
 
+	// create global uniform (used by several shaders)
 	m_global.create(m_rhi);
 
-	// prep texture
-	m_texture.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
-		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
-	m_texture.sampler->create();
-
-	// For Vulkan it looks like we can't change the texture size after creation, so be careful!
-	m_texture.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, QSize(1024, 1)));
-	m_texture.texture->create();
-	m_texture.image = createTextureImage(m_texture.texture->pixelSize());
+	// prep 1D texture
+	QImage img(QSize(1024, 1), QImage::Format_RGBA8888);
+	img.fill(Qt::white);
+	m_texture.create(img);
 	m_texture.upload(m_initialUpdates);
 
+	// convenience class for passing around all the resources that are shared between shaders
 	m_sharedResources = { m_global.get(), m_texture.texture.get(), m_texture.sampler.get()};
 
-	m_backPass.reset(new rhi::BackFaceRenderPass(m_rhi));
-	m_backPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
+	// create all render passes
+	m_solidPass.reset(new SolidRenderPass(m_rhi));
+	m_solidPass->create(m_sc, &m_sharedResources);
 
-	m_frontPass.reset(new rhi::FrontFaceRenderPass(m_rhi));
-	m_frontPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
+	m_linePass.reset(new LineRenderPass(m_rhi));
+	m_linePass->create(m_sc, &m_sharedResources);
 
-	m_linePass.reset(new rhi::LineRenderPass(m_rhi));
-	m_linePass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
+	m_pointPass.reset(new PointRenderPass(m_rhi));
+	m_pointPass->create(m_sc, &m_sharedResources);
 
-	m_pointPass.reset(new rhi::PointRenderPass(m_rhi));
-	m_pointPass->create(m_rp, m_sc->sampleCount(), &m_sharedResources);
+	m_overlayPass.reset(new OverlayRenderPass(m_rhi));
+	m_overlayPass->create(m_sc, &m_sharedResources);
 
-	// prep overlay
-	m_overlay.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
-		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
-	m_overlay.sampler->create();
+	// create the canvas pass (for rendering fps)
+	m_canvasPass.reset(new CanvasRenderPass(m_rhi));
+	m_canvasPass->create(m_sc);
 
-	m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, m_sc->surfacePixelSize(), 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
-	m_overlay.texture->create();
-
-	// create a depth-stencil render buffer that matches overlay size & sample count
-	m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, m_sc->surfacePixelSize(), 1));
-	m_overlayDepth->create();
-
-	QRhiColorAttachment colorAttachment(m_overlay.texture.get());
-	QRhiTextureRenderTargetDescription rtDesc(colorAttachment, m_overlayDepth.get());
-
-	m_overlayRT.reset(m_rhi->newTextureRenderTarget(rtDesc, QRhiTextureRenderTarget::PreserveColorContents));
-	m_overlayRPD.reset(m_overlayRT->newCompatibleRenderPassDescriptor());
-	m_overlayRT->setRenderPassDescriptor(m_overlayRPD.get());
-	m_overlayRT->create();
-
-	m_overlayPass.reset(new rhi::OverlayRenderPass(m_rhi));
-	m_overlayPass->create(m_rp, m_sc->sampleCount(), m_overlay);
-
-	m_triadPass.reset(new rhi::TriadRenderPass(m_rhi));
-	m_triadPass->create(m_overlayRPD.get(), 1, &m_sharedResources);
-
-	rhi::ColorShaderResource* triadResources = new rhi::ColorShaderResource();
-	triadResources->create(m_rhi, &m_sharedResources);
-	triadMesh.reset(new rhi::TriMesh(m_rhi, triadResources));
-	GLMesh* gltriad = buildTriadMesh();
-	triadMesh->CreateFromGLMesh(gltriad);
-	triadMesh->useVertexColor = true;
-	triadMesh->reflectivity = 0.f;
-	delete gltriad;
-
-	// fps indicator
-	m_fpsTex.sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
-		QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
-	m_fpsTex.sampler->create();
-
-	QSize size(250, 30);
-	m_fpsTex.image = QImage(size, QImage::Format_RGBA8888_Premultiplied);
-	m_fpsTex.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, size));
-	m_fpsTex.texture->create();
-	m_fpsTex.upload(m_initialUpdates);
-
-	m_fpsub.create(m_rhi);
-
-	m_canvasPass.reset(new rhi::CanvasRenderPass(m_rhi));
-	m_canvasPass->create(m_rp, m_sc->sampleCount(), m_fpsTex, m_fpsub.get());
-
-	rhi::CanvasShaderResource* sr = new rhi::CanvasShaderResource();
-	sr->create(m_rhi, m_fpsTex, m_fpsub.get());
-
-	m_fpsMesh.reset(new rhi::Tri2DMesh(m_rhi, sr));
-	m_fpsMesh->create(size);
-
-	m_tic = m_toc = steady_clock::now();
+	// reset timing
+	timing.m_tic = timing.m_toc = high_resolution_clock::now();
 }
 
 void rhiRenderer::clearCache()
 {
-	for (auto& it : m_meshList) delete it.second;
-	m_meshList.clear();
-
-	for (auto& it : m_lineMeshList) delete it.second;
-	m_lineMeshList.clear();
-
-	for (auto& it : m_pointMeshList) delete it.second;
-	m_pointMeshList.clear();
+	m_solidPass->clearCache();
+	m_linePass->clearCache();
+	m_pointPass->clearCache();
 }
 
 QSize rhiRenderer::pixelSize() const
@@ -529,35 +135,9 @@ QSize rhiRenderer::pixelSize() const
 
 void rhiRenderer::clearUnusedCache()
 {
-	for (auto it = m_meshList.begin(); it != m_meshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_meshList.erase(it);
-		}
-		else
-			++it;
-	}
-
-	for (auto it = m_lineMeshList.begin(); it != m_lineMeshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_lineMeshList.erase(it);
-		}
-		else
-			++it;
-	}
-
-	for (auto it = m_pointMeshList.begin(); it != m_pointMeshList.end(); ) {
-		if (it->second->isActive() == false)
-		{
-			delete it->second;
-			it = m_pointMeshList.erase(it);
-		}
-		else
-			++it;
-	}
+	m_solidPass->clearUnusedCache();
+	m_linePass->clearUnusedCache();
+	m_pointPass->clearUnusedCache();
 }
 
 void rhiRenderer::setBackgroundColor(const GLColor& c)
@@ -668,99 +248,37 @@ void rhiRenderer::setMaterial(const GLMaterial& mat)
 
 void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	float f[4] = { 0.f };
-	m_currentMat.diffuse.toFloat(f);
-	vec3f col(f[0], f[1], f[2]);
-
-	auto it = m_meshList.find(&mesh);
-	if (it != m_meshList.end())
+	rhi::Mesh* pm = m_solidPass->addGLMesh(mesh, cacheMesh);
+	if (pm)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-			if (!m_useVertexColor) it->second->SetVertexColor(col);
-		}
-		it->second->SetMaterial(m_currentMat);
-		it->second->SetModelMatrix(m_modelMatrix);
-		it->second->doClipping = m_clipEnabled;
-		it->second->setActive(true);
-	}
-	else
-	{
-		rhi::ColorShaderResource* sr = new rhi::ColorShaderResource();
-		sr->create(m_rhi, &m_sharedResources);
-		rhi::TriMesh* rm = new rhi::TriMesh(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		if (!m_useVertexColor) rm->SetVertexColor(col);
-		rm->SetMaterial(m_currentMat);
-		rm->SetModelMatrix(m_modelMatrix);
-		rm->doClipping = m_clipEnabled;
-		rm->setActive(true);
-		m_meshList[&mesh] = rm;
+		pm->SetMaterial(m_currentMat);
+		pm->SetModelMatrix(m_modelMatrix);
+		pm->doClipping = m_clipEnabled;
+		pm->setActive(true);
 	}
 }
 
 void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
-	float f[4] = { 0.f };
-	m_currentMat.diffuse.toFloat(f);
-	vec3f col(f[0], f[1], f[2]);
-
-	auto it = m_lineMeshList.find(&mesh);
-	if (it != m_lineMeshList.end())
+	rhi::Mesh* lineMesh = m_linePass->addGLMesh(mesh, cacheMesh);
+	if (lineMesh)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-		}
-		it->second->SetColor(col);
-		it->second->SetModelMatrix(m_modelMatrix);
-		it->second->doClipping = m_clipEnabled;
-		it->second->setActive(true);
-	}
-	else
-	{
-		rhi::LineShaderResource* sr = new rhi::LineShaderResource();
-		sr->create(m_rhi, &m_sharedResources);
-		rhi::LineMesh* rm = new rhi::LineMesh(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		rm->SetColor(col);
-		rm->SetModelMatrix(m_modelMatrix);
-		rm->doClipping = m_clipEnabled;
-		rm->setActive(true);
-		m_lineMeshList[&mesh] = rm;
+		lineMesh->SetMaterial(m_currentMat);
+		lineMesh->SetModelMatrix(m_modelMatrix);
+		lineMesh->doClipping = m_clipEnabled;
+		lineMesh->setActive(true);
 	}
 }
 
 void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 {
-	float f[4] = { 0.f };
-	m_currentMat.diffuse.toFloat(f);
-	vec3f col(f[0], f[1], f[2]);
-
-	auto it = m_pointMeshList.find(&mesh);
-	if (it != m_pointMeshList.end())
+	rhi::Mesh* pointMesh = m_pointPass->addGLMesh(mesh, cacheMesh);
+	if (pointMesh)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-		}
-		it->second->SetColor(col);
-		it->second->SetModelMatrix(m_modelMatrix);
-		it->second->doClipping = m_clipEnabled;
-		it->second->setActive(true);
-	}
-	else
-	{
-		rhi::PointShaderResource* sr = new rhi::PointShaderResource();
-		sr->create(m_rhi, &m_sharedResources);
-		rhi::PointMesh* rm = new rhi::PointMesh(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		rm->SetColor(col);
-		rm->SetModelMatrix(m_modelMatrix);
-		rm->doClipping = m_clipEnabled;
-		rm->setActive(true);
-		m_pointMeshList[&mesh] = rm;
+		pointMesh->SetMaterial(m_currentMat);
+		pointMesh->SetModelMatrix(m_modelMatrix);
+		pointMesh->doClipping = m_clipEnabled;
+		pointMesh->setActive(true);
 	}
 }
 
@@ -823,15 +341,15 @@ void rhiRenderer::useOverlayImage(bool b)
 void rhiRenderer::setOverlayImage(const QImage& img)
 {
 	if (m_rhi->isYUpInNDC())
-		m_overlay.image = img.mirrored();
+		m_overlayPass->setImage(img.mirrored());
 	else
-		m_overlay.image = img;
+		m_overlayPass->setImage(img);
 }
 
 void rhiRenderer::setTriadInfo(const QMatrix4x4& m, QRhiViewport vp)
 {
-	m_overlayVP = vp;
-	m_overlayVM = m;
+	m_overlayPass->m_overlayVP = vp;
+	m_overlayPass->m_overlayVM = m;
 }
 
 void rhiRenderer::start()
@@ -839,9 +357,9 @@ void rhiRenderer::start()
 	ResetStats();
 
 	// start by setting all meshes as inactive
-	for (auto& it : m_meshList) it.second->setActive(false);
-	for (auto& it : m_lineMeshList) it.second->setActive(false);
-	for (auto& it : m_pointMeshList) it.second->setActive(false);
+	m_solidPass->reset();
+	m_linePass->reset();
+	m_pointPass->reset();
 
 	// reset matrices
 	m_viewMatrix.setToIdentity();
@@ -853,15 +371,15 @@ void rhiRenderer::start()
 	m_viewport = { 0, 0, float(size.width()), float(size.height()) };
 }
 
-void rhiRenderer::finish()
+void rhiRenderer::TimingInfo::update()
 {
-	m_toc = steady_clock::now();
-	time_point<steady_clock> toc = steady_clock::now();
+	m_toc = high_resolution_clock::now();
+	time_point<high_resolution_clock> toc = high_resolution_clock::now();
 	double sec = duration_cast<dseconds>(m_toc - m_tic).count();
 	if (sec > 0)
 	{
 		m_fps = 1.0 / sec;
-		if ((m_frame%50) == 0)
+		if ((m_frame % 50) == 0)
 		{
 			m_fpsMin = m_fpsMax = m_fps;
 		}
@@ -873,6 +391,11 @@ void rhiRenderer::finish()
 	}
 	m_tic = m_toc;
 	m_frame++;
+}
+
+void rhiRenderer::finish()
+{
+	timing.update();
 
 	QRhiResourceUpdateBatch* resourceUpdates = m_rhi->nextResourceUpdateBatch();
 
@@ -896,178 +419,65 @@ void rhiRenderer::finish()
 		m_texture.needsUpload = false;
 	}
 
-	// update mesh data
-	for (auto& it : m_meshList)
-	{
-		rhi::TriMesh& m = *it.second;
-		if (m.isActive())
-			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
-	}
+	// update solid mesh data
+	m_solidPass->m_proj = m_projMatrix;
+	m_solidPass->m_view = m_viewMatrix;
+	m_solidPass->update(resourceUpdates);
 
-	// update mesh data
-	for (auto& it : m_lineMeshList)
-	{
-		rhi::LineMesh& m = *it.second;
-		if (m.isActive())
-			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
-	}
+	// update line mesh data
+	m_linePass->m_proj = m_projMatrix;
+	m_linePass->m_view = m_viewMatrix;
+	m_linePass->update(resourceUpdates);
 
 	// update point mesh data
-	for (auto& it : m_pointMeshList)
-	{
-		rhi::PointMesh& m = *it.second;
-		if (m.isActive())
-			m.Update(resourceUpdates, m_projMatrix, m_viewMatrix);
-	}
-
-	// update viewport size for canvas uniform block
-	QSize pixelSize = m_sc->surfacePixelSize();
-	vec2f vp;
-	vp.x = pixelSize.width();
-	vp.y = pixelSize.height();
-	m_fpsub.setViewPort(vp);
-	m_fpsub.update(resourceUpdates);
+	m_pointPass->m_proj = m_projMatrix;
+	m_pointPass->m_view = m_viewMatrix;
+	m_pointPass->update(resourceUpdates);
 
 	// update fps indicator
-	QSize size = m_fpsTex.image.size();
-	QImage img(size, QImage::Format_RGBA8888_Premultiplied);
-	img.setDevicePixelRatio(m_dpr);
-	img.fill(Qt::transparent);
-	QPainter painter(&img);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	QFont font("Monospace", 16);
-	painter.setFont(font);
-	painter.setPen(Qt::red);
-	painter.drawText(QRectF(10,0,size.width()-10, size.height()), QString("fps: %1 [%2,%3]").arg(m_fps, 0, 'f', 1).arg(m_fpsMin, 0, 'f', 1).arg(m_fpsMax, 0, 'f', 1));
-	if (m_rhi->isYUpInNDC())
-		m_fpsTex.image = img.mirrored();
-	else
-		m_fpsTex.image = img;
-	m_fpsTex.upload(resourceUpdates);
-
-	m_fpsMesh->Update(resourceUpdates);
+	m_canvasPass->setFPS(timing.m_fps, timing.m_fpsMin, timing.m_fpsMax);
+	m_canvasPass->update(resourceUpdates);
 
 	// overlay stuff
 	if (m_useOverlay)
 	{
-		if (!m_overlay.texture || (m_overlay.texture->pixelSize() != pixelSize))
-		{
-			if (!m_overlay.texture)
-			{
-				m_overlay.texture.reset(m_rhi->newTexture(QRhiTexture::RGBA8, pixelSize, 1,
-					QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
-				m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, pixelSize, 1));
-			}
-			else
-			{
-				m_overlay.texture->setPixelSize(pixelSize);
-				m_overlayDepth.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, pixelSize, 1));
-			}
-			m_overlay.texture->create();
-			m_overlayDepth->create();
-
-			QRhiColorAttachment colorAttachment(m_overlay.texture.get());
-			QRhiTextureRenderTargetDescription rtDesc(colorAttachment, m_overlayDepth.get());
-
-			m_overlayRT.reset(m_rhi->newTextureRenderTarget(rtDesc, QRhiTextureRenderTarget::PreserveColorContents));
-			m_overlayRPD.reset(m_overlayRT->newCompatibleRenderPassDescriptor());
-			m_overlayRT->setRenderPassDescriptor(m_overlayRPD.get());
-			m_overlayRT->create();
-		}
-
-		QMatrix4x4 proj = m_rhi->clipSpaceCorrMatrix();
-		auto vp = m_overlayVP.viewport();
-		double W = vp[2];
-		double H = vp[3];
-		double ar = (H == 0 ? 1 : W / H);
-		float d = 1.2f;
-		proj.ortho(-d * ar, d* ar, -d, d, -1, 1);
-
-		QMatrix4x4 view; view.setToIdentity();
-		view *= m_overlayVM;
-
-		triadMesh->Update(resourceUpdates, proj, view);
-
-		m_overlay.upload(resourceUpdates);
+		m_overlayPass->update(resourceUpdates);
 
 		// render into overlay
-		cb->beginPass(m_overlayRT.get(), Qt::red, {1.0f, 0}, resourceUpdates); // Clear or keep depending on blending
+		cb->beginPass(m_overlayPass->renderTarget(), Qt::red, {1.0f, 0}, resourceUpdates);
 		{
 			// Draw the triad
-			cb->setGraphicsPipeline(m_triadPass->pipeline());
-			cb->setShaderResources();
-			cb->setViewport({ vp[0], vp[1], (float)W, (float)H});
-			triadMesh->Draw(cb);
+			m_overlayPass->drawTriad(cb);
 		}
 		cb->endPass();
 
+		// resourceUpdates is automatically released by beginPass, so allocate a new one
 		resourceUpdates = m_rhi->nextResourceUpdateBatch();
 	}
 
 	// start the rendering pass
 	cb->beginPass(m_sc->currentFrameRenderTarget(), m_bgColor, { 1.0f, 0 }, resourceUpdates);
-
-	// render back faces first
-	cb->setGraphicsPipeline(m_backPass->pipeline());
-	cb->setViewport({ m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]});
-	cb->setShaderResources();
-
-	for (auto& it : m_meshList)
 	{
-		rhi::TriMesh& m = *it.second;
-		if (m.isActive())
-			m.Draw(cb);
-	}
+		// set the viewport 
+		cb->setViewport({ m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3] });
 
-	// render front faces next
-	cb->setGraphicsPipeline(m_frontPass->pipeline());
-	cb->setShaderResources();
+		// render solid meshes
+		m_solidPass->draw(cb);
 
-	for (auto& it : m_meshList)
-	{
-		rhi::TriMesh& m = *it.second;
-		if (m.isActive())
-			m.Draw(cb);
-	}
+		// render line meshes
+		m_linePass->draw(cb);
 
-	// render line meshes
-	if (!m_lineMeshList.empty())
-	{
-		cb->setGraphicsPipeline(m_linePass->pipeline());
-		cb->setShaderResources();
-		for (auto& it : m_lineMeshList)
+		// render point meshes
+		m_pointPass->draw(cb);
+
+		// render fps indicator
+		m_canvasPass->draw(cb);
+
+		// render overlay
+		if (m_useOverlay)
 		{
-			rhi::LineMesh& m = *it.second;
-			if (m.isActive())
-				m.Draw(cb);
+			m_overlayPass->draw(cb);
 		}
 	}
-
-	// render point meshes
-	if (!m_pointMeshList.empty())
-	{
-		cb->setGraphicsPipeline(m_pointPass->pipeline());
-		cb->setShaderResources();
-		for (auto& it : m_pointMeshList)
-		{
-			rhi::PointMesh& m = *it.second;
-			if (m.isActive())
-				m.Draw(cb);
-		}
-	}
-
-	// render fps indicator
-	cb->setGraphicsPipeline(m_canvasPass->pipeline());
-	cb->setShaderResources();
-	m_fpsMesh->Draw(cb);
-
-	// render overlay
-	if (m_useOverlay && !m_overlay.image.isNull())
-	{
-		cb->setGraphicsPipeline(m_overlayPass->pipeline());
-		cb->setShaderResources();
-		cb->draw(3);
-	}
-
 	cb->endPass();
 }

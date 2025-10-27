@@ -43,6 +43,7 @@ public:
 	{
 		vec3f	r;		// nodal position
 		vec3f	n;		// normal (but not really)
+		vec3f	t;		// texture coordinate
 		GLColor c;
 		int		tag = 0;	// multipurpose tag
 		int		pid = 0;	// GNode parent local ID

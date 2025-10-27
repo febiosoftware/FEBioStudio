@@ -648,6 +648,8 @@ set(SHADER_FILES
     RHILib/shaders/overlay.frag
     RHILib/shaders/canvas.vert
     RHILib/shaders/canvas.frag
+    RHILib/shaders/triad.vert
+    RHILib/shaders/triad.frag
 )
 
 qt_add_shaders(${FBS_BIN_NAME} "rhi_shaders"

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,21 +27,10 @@ SOFTWARE.*/
 #include <rhi/qrhi.h>
 #include <GLLib/GLMesh.h>
 #include <GLLib/GLMaterial.h>
+#include "rhiTexture.h"
+#include "rhiUtil.h"
 
 namespace rhi {
-
-	struct Texture
-	{
-		std::unique_ptr<QRhiTexture> texture;
-		std::unique_ptr<QRhiSampler> sampler;
-		QImage image;
-		bool needsUpload = false;
-
-		void upload(QRhiResourceUpdateBatch* u)
-		{
-			u->uploadTexture(texture.get(), image);
-		}
-	};
 
 	struct SharedResources
 	{
@@ -50,328 +39,70 @@ namespace rhi {
 		QRhiSampler* sampler = nullptr;
 	};
 
-	class UniformBlock
+	class Mesh;
+
+	// base class for mesh shaders resources
+	class MeshShaderResource
 	{
 	public:
-		enum ItemType
-		{
-			FLOAT,
-			VEC2,
-			VEC4,
-			MAT4,
-		};
+		MeshShaderResource(QRhi* rhi) : m_rhi(rhi) {}
+		virtual ~MeshShaderResource() {}
 
-		struct Item
-		{
-			ItemType type = FLOAT;
-			unsigned int size = 0;
-			unsigned int offset = 0;
-			const char* szname = nullptr;
-		};
-
-	public:
-		UniformBlock() {}
-
-		void create(std::vector<std::pair<ItemType, const char*> > items)
-		{
-			for (auto& it : items)
-			{
-				switch (it.first)
-				{
-				case FLOAT: addFloat(it.second); break;
-				case VEC2 : addVec2 (it.second);  break;
-				case VEC4 : addVec4 (it.second);  break;
-				case MAT4 : addMat4 (it.second);  break;
-				}
-			}
-			create();
-		}
-
-		void setFloat(unsigned int index, float v)
-		{
-			auto& it = m_items[index];
-			assert(it.type == FLOAT);
-			memcpy(&m_data[it.offset], &v, sizeof(float));
-		}
-
-		void setVec2(unsigned int index, const vec2f& v)
-		{
-			auto& it = m_items[index];
-			assert(it.type == VEC2);
-			float tmp[2] = { v.x, v.y };
-			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 2);
-		}
-
-		void setVec4(unsigned int index, const vec3f& v)
-		{
-			auto& it = m_items[index];
-			assert(it.type == VEC4);
-			float tmp[4] = { v.x, v.y, v.z, 1.0f };
-			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 4);
-		}
-
-		void setVec4(unsigned int index, float x, float y, float z, float w)
-		{
-			auto& it = m_items[index];
-			assert(it.type == VEC4);
-			float tmp[4] = { x, y, z, w };
-			memcpy(&m_data[it.offset], &tmp, sizeof(float) * 4);
-		}
-
-		void setMat4(unsigned int index, const QMatrix4x4& m)
-		{
-			auto& it = m_items[index];
-			assert(it.type == MAT4);
-			memcpy(&m_data[it.offset], m.constData(), sizeof(float) * 16);
-		}
-
-		size_t size() const { return m_data.size(); }
-
-		const void* data() const { return m_data.data(); }
-
-	private:
-		void addFloat(const char* name = nullptr) { m_items.push_back({ FLOAT, sizeof(float)     , 0, name }); }
-		void addVec2 (const char* name = nullptr) { m_items.push_back({ VEC2 , sizeof(float) *  2, 0, name }); }
-		void addVec4 (const char* name = nullptr) { m_items.push_back({ VEC4 , sizeof(float) *  4, 0, name }); }
-		void addMat4 (const char* name = nullptr) { m_items.push_back({ MAT4 , sizeof(float) * 16, 0, name }); }
-
-		void create()
-		{
-			unsigned int size = 0;
-			unsigned int offset = 0;
-			for (auto& it : m_items)
-			{
-				it.offset = offset;
-				offset += it.size;
-				size += it.size;
-			}
-
-			m_data.resize(size);
-		}
-
-	private:
-		std::vector<Item>	m_items;
-		std::vector<unsigned char>	m_data;
-	};
-
-	class TriMesh;
-
-	struct ColorShaderResource
-	{
-		std::unique_ptr<QRhiBuffer> ubuf;
-		std::unique_ptr<QRhiShaderResourceBindings> srb;
-
-		void create(QRhi* rhi, SharedResources* sharedResources);
+		virtual void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const Mesh& m) {}
 
 		QRhiShaderResourceBindings* get() { return srb.get(); }
 
-		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const TriMesh& m);
-
 		void update(QRhiResourceUpdateBatch* u);
 
-	private:
+	protected:
+		QRhi* m_rhi = nullptr;
 		UniformBlock	m_data;
-	};
-
-	class LineMesh;
-
-	struct LineShaderResource
-	{
-	public:
-		enum { MVP, MV, COL, CLIP };
-
-	public:
-
 		std::unique_ptr<QRhiBuffer> ubuf;
 		std::unique_ptr<QRhiShaderResourceBindings> srb;
-
-		void create(QRhi* rhi, SharedResources* sharedResources);
-
-		QRhiShaderResourceBindings* get() { return srb.get(); }
-
-		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const rhi::LineMesh& m);
-
-		void update(QRhiResourceUpdateBatch* u);
-
-	private:
-		UniformBlock m_data;
 	};
 
-	class PointMesh;
-
-	struct PointShaderResource
-	{
-	public:
-		enum { MVP, MV, COL, CLIP };
-
-	public:
-		std::unique_ptr<QRhiBuffer> ubuf;
-		std::unique_ptr<QRhiShaderResourceBindings> srb;
-
-		void create(QRhi* rhi, SharedResources* sharedResources);
-
-		QRhiShaderResourceBindings* get() { return srb.get(); }
-
-		void update(QRhiResourceUpdateBatch* u);
-
-		void setData(const QMatrix4x4& mvp, const QMatrix4x4& mv, const PointMesh& m);
-
-	private:
-		UniformBlock m_data;
-	};
-
+	// base class for meshes.
+	// Don't use this class directly. Instead, use one of the derived classes
 	class Mesh
 	{
 	public:
-		Mesh(QRhi* rhi) : m_rhi(rhi) {}
+		Mesh(QRhi* rhi, rhi::MeshShaderResource* shaderResource = nullptr) : m_rhi(rhi), sr(shaderResource) {}
+		virtual ~Mesh();
 
 		void setActive(bool b) { active = b; }
 		bool isActive() const { return active; }
 
-		void SetColor(const vec3f& c) { color = c; }
+		void SetMaterial(const GLMaterial& m) { mat = m; }
 
 		void SetModelMatrix(const QMatrix4x4& Q) { modelMatrix = Q; }
 
+		virtual bool CreateFromGLMesh(const GLMesh* gmsh) { return false; }
+
+		virtual void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
+
+		virtual void Draw(QRhiCommandBuffer* cb);
+
+	protected:
+		void create(unsigned int vertices, unsigned int sizeOfVertex, const void* data);
+
+		int vertexCount() const { return (int)nvertexCount; }
+
 	public:
-		vec3f color = vec3f(0.7f, 0.7f, 0.7f);
+		GLMaterial mat;
 		bool doClipping = false;
-		bool useVertexColor = false;
 
 	protected:
 		QRhi* m_rhi = nullptr;
 
 		QMatrix4x4 modelMatrix;
 		bool active = false;
+
+	private:
+		std::unique_ptr<QRhiBuffer> vbuf; // vertex buffer
+		std::unique_ptr<MeshShaderResource> sr; // shader resources
+
+		unsigned int nvertexCount = 0;
+		unsigned int vbufSize = 0;
+		unsigned char* vertexData = nullptr;
 	};
-
-	class TriMesh : public Mesh
-	{
-		struct Vertex {
-			vec3f r; // coordinate
-			vec3f n; // normal
-			vec3f c; // color
-			vec3f t; // texture coordinate
-		};
-
-	public:
-		TriMesh(QRhi* rhi, rhi::ColorShaderResource* srb);
-
-		bool CreateFromGLMesh(const GLMesh* gmsh);
-
-		void SetVertexColor(const vec3f& c);
-
-		void SetMaterial(GLMaterial mat);
-
-		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
-
-		void Draw(QRhiCommandBuffer* cb);
-
-	public:
-		float shininess = 0.8f;
-		float reflectivity = 0.8f;
-		float opacity = 1.0f;
-		bool useTexture = false;
-		bool useStipple = false;
-
-	private:
-		std::vector<Vertex> vertexData;
-		std::unique_ptr<QRhiBuffer> vbuf;
-		unsigned int vertexCount = 0;
-
-		std::unique_ptr<ColorShaderResource> sr;
-
-	private:
-		TriMesh(const TriMesh&) = delete;
-		void operator = (const TriMesh&) = delete;
-	};
-
-	class LineMesh : public Mesh
-	{
-		struct Vertex {
-			vec3f r; // coordinate
-		};
-
-	public:
-		LineMesh(QRhi* rhi, rhi::LineShaderResource* srb);
-
-		bool CreateFromGLMesh(const GLMesh* gmsh);
-
-		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
-
-		void Draw(QRhiCommandBuffer* cb);
-
-	private:
-		std::vector<Vertex> vertexData;
-		std::unique_ptr<QRhiBuffer> vbuf;
-		unsigned int vertexCount = 0;
-
-		std::unique_ptr<LineShaderResource> sr;
-
-	private:
-		LineMesh(const LineMesh&) = delete;
-		void operator = (const LineMesh&) = delete;
-	};
-
-	class PointMesh : public Mesh
-	{
-		struct Vertex {
-			vec3f r; // coordinate
-		};
-
-	public:
-		PointMesh(QRhi* rhi, rhi::PointShaderResource* srb);
-
-		bool CreateFromGLMesh(const GLMesh* gmsh);
-
-		void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
-
-		void Draw(QRhiCommandBuffer* cb);
-
-	private:
-		std::vector<Vertex> vertexData;
-		std::unique_ptr<QRhiBuffer> vbuf;
-		unsigned int vertexCount = 0;
-
-		std::unique_ptr<PointShaderResource> sr;
-
-	private:
-		PointMesh(const PointMesh&) = delete;
-		void operator = (const PointMesh&) = delete;
-	};
-
-	struct CanvasShaderResource
-	{
-		std::unique_ptr<QRhiShaderResourceBindings> srb;
-		void create(QRhi* rhi, rhi::Texture& tex, QRhiBuffer* ub);
-		QRhiShaderResourceBindings* get() { return srb.get(); }
-	};
-
-	class Tri2DMesh : public Mesh
-	{
-		struct Vertex {
-			vec2f r; // coordinate
-			vec2f t; // texture coordinate
-		};
-
-	public:
-		Tri2DMesh(QRhi* rhi, rhi::CanvasShaderResource* srb);
-
-		void create(QSize size);
-
-		void Update(QRhiResourceUpdateBatch* u);
-
-		void Draw(QRhiCommandBuffer* cb);
-
-	private:
-		std::vector<Vertex> vertexData;
-		std::unique_ptr<QRhiBuffer> vbuf;
-		unsigned int vertexCount = 0;
-
-		std::unique_ptr<CanvasShaderResource> sr;
-
-	private:
-		Tri2DMesh(const Tri2DMesh&) = delete;
-		void operator = (const Tri2DMesh&) = delete;
-	};
-
 } // rhi
