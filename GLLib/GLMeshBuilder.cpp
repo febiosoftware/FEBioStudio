@@ -27,21 +27,38 @@ SOFTWARE.*/
 
 GLMeshBuilder::GLMeshBuilder()
 {
+	m_pm = nullptr;
+	vertList.reserve(1024);
+}
 
+GLMeshBuilder::~GLMeshBuilder()
+{
+	if (m_pm) delete m_pm;
 }
 
 void GLMeshBuilder::start()
+{
+	beginShape();
+}
+
+void GLMeshBuilder::finish()
+{
+	if (m_pm) endShape();
+}
+
+void GLMeshBuilder::beginShape()
 {
 	if (m_pm) delete m_pm;
 	m_pm = new GLMesh();
 
 	modelView.makeIdentity();
+	isMVIdentity = true;
 	while (!mvStack.empty()) mvStack.pop();
 }
 
-void GLMeshBuilder::finish()
+void GLMeshBuilder::endShape()
 {
-	m_pm->UpdateBoundingBox();
+	if (m_pm) m_pm->UpdateBoundingBox();
 }
 
 GLMesh* GLMeshBuilder::takeMesh()
@@ -67,12 +84,14 @@ void GLMeshBuilder::translate(const vec3d& r)
 {
 	mat4d T = mat4d::translate(vec3d(r));
 	modelView *= T;
+	isMVIdentity = false;
 }
 
 void GLMeshBuilder::rotate(const quatd& rot)
 {
 	mat4d R = mat4d::rotate(rot);
 	modelView *= R;
+	isMVIdentity = false;
 }
 
 void GLMeshBuilder::rotate(double deg, double x, double y, double z)
@@ -85,6 +104,7 @@ void GLMeshBuilder::scale(double x, double y, double z)
 {
 	mat4d S = mat4d::scale(x, y, z);
 	modelView *= S;
+	isMVIdentity = false;
 }
 
 void GLMeshBuilder::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -95,17 +115,25 @@ void GLMeshBuilder::setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::Dif
 void GLMeshBuilder::vertex(const vec3d& r)
 {
 	GLMesh::NODE p;
-	vec4d q = modelView * vec4d(r);
-	vec4d N = modelView * vec4d(currentNormal, 0);
-	p.r = vec3f(q[0], q[1], q[2]);
-	p.n = vec3f(N[0], N[1], N[2]); p.n.Normalize();
+	if (isMVIdentity)
+	{
+		p.r = to_vec3f(r);
+		p.n = to_vec3f(currentNormal);
+	}
+	else
+	{
+		vec4d q = modelView * vec4d(r);
+		vec4d N = modelView * vec4d(currentNormal, 0);
+		p.r = vec3f(q[0], q[1], q[2]);
+		p.n = vec3f(N[0], N[1], N[2]); p.n.Normalize();
+	}
 	p.c = currentColor;
 	vertList.push_back(p);
 }
 
 void GLMeshBuilder::normal(const vec3d& r)
 {
-	currentNormal = r;
+	currentNormal = r; currentNormal.Normalize();
 }
 
 void GLMeshBuilder::begin(PrimitiveType prim)

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "rhiSolidRenderPass.h"
 #include "rhiOverlay.h"
 #include "rhiCanvas.h"
+#include <GLLib/GLMeshBuilder.h>
 #include <chrono>
 using namespace std::chrono;
 using dseconds = duration<double>;
@@ -120,7 +121,17 @@ public:
 	void enableClipPlane(unsigned int n) override;
 	void disableClipPlane(unsigned int n) override;
 
-	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
+public: // immediate mode rendering
+	void beginShape() override;
+	void endShape() override;
+
+	void begin(PrimitiveType prim) override;
+	void end() override;
+
+	void vertex(const vec3d& r) override;
+	void normal(const vec3d& n) override;
+	void texCoord1d(double t) override;
+	void texCoord2d(double r, double s) override;
 
 public:
 	void setOverlayImage(const QImage& img);
@@ -129,6 +140,8 @@ public:
 	double getFPS() const { return timing.m_fps; }
 
 	void setDPR(double dpr) { m_dpr = dpr; }
+
+	void setTriadInfo(const QMatrix4x4& m, QRhiViewport vp);
 
 private:
 	QRhi* m_rhi;
@@ -163,6 +176,9 @@ private:
 	bool m_useOverlay = false;
 
 	double m_dpr = 1;
+
+private:
+	GLMeshBuilder mb;
 
 private:
 	// variables used when creating meshes

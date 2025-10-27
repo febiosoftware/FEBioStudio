@@ -134,6 +134,9 @@ public:
 	virtual void setBackgroundColor(const GLColor& c) {}
 
 public: // immediate mode rendering
+	virtual void beginShape() {}
+	virtual void endShape() {}
+
 	virtual void begin(PrimitiveType prim) {}
 	virtual void end() {}
 

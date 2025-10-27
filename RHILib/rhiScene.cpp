@@ -25,11 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "rhiScene.h"
 #include <FSCore/ColorMapManager.h>
+#include <GLLib/GLGrid.h>
 
-class GLMeshItem : public GLSceneItem
+class rhiMeshItem : public GLSceneItem
 {
 public:
-	GLMeshItem(GLMesh* pm) : m_pm(pm) 
+	rhiMeshItem(GLMesh* pm) : m_pm(pm) 
 	{
 		// set some texture coordinates
 		if (m_pm)
@@ -47,7 +48,7 @@ public:
 			}
 		}
 	}
-	~GLMeshItem() { delete m_pm; }
+	~rhiMeshItem() { delete m_pm; }
 
 	void render(GLRenderEngine& re, GLContext& rc) override
 	{
@@ -93,9 +94,25 @@ private:
 	GLMesh* m_pm;
 };
 
+class rhiGridItem : public GLSceneItem
+{
+public:
+	rhiGridItem() { m_grid.m_ndiv = 1; }
+	void render(GLRenderEngine& re, GLContext& rc) override
+	{
+		if (showGrid) m_grid.Render(re, rc);
+	}
+
+public:
+	GLGrid m_grid;
+	bool showGrid = false;
+};
+
 rhiScene::rhiScene()
 {
 	tex1d.Create(ColorMapManager::JET, 256, true);
+
+	addItem(new rhiGridItem());
 }
 
 void rhiScene::AddMesh(GLMesh* pm)
@@ -103,7 +120,7 @@ void rhiScene::AddMesh(GLMesh* pm)
 	if (pm == nullptr) return;
 	BOX box = pm->GetBoundingBox();
 	m_box += box;
-	addItem(new GLMeshItem(pm));
+	addItem(new rhiMeshItem(pm));
 	ZoomExtents(false);
 }
 
@@ -130,9 +147,13 @@ void rhiScene::Render(GLRenderEngine& re, GLContext& rc)
 	}
 
 	GLItemIterator it = begin();
+
+	rhiGridItem* grid = dynamic_cast<rhiGridItem*>(*it);
+	if (grid) grid->showGrid = showGrid;
+
 	for (int i = 0; i < items(); ++i, ++it)
 	{
-		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m)
 		{
 			m->useTexture = (texture > 0);
@@ -160,7 +181,7 @@ void rhiScene::SetObjectColor(GLColor col)
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)
 	{
-		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m) m->color = col;
 	}
 }
@@ -170,7 +191,7 @@ void rhiScene::SetObjectShininess(float f)
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)
 	{
-		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m) m->shininess = f;
 	}
 }
@@ -180,7 +201,7 @@ void rhiScene::SetObjectReflectivity(float f)
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)
 	{
-		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m) m->reflectivity = f;
 	}
 }
@@ -190,7 +211,7 @@ void rhiScene::SetObjectOpacity(float f)
 	GLItemIterator it = begin();
 	for (int i = 0; i < items(); ++i, ++it)
 	{
-		GLMeshItem* m = dynamic_cast<GLMeshItem*>(*it);
+		rhiMeshItem* m = dynamic_cast<rhiMeshItem*>(*it);
 		if (m) m->opacity = f;
 	}
 }

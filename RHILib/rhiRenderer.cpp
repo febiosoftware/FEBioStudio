@@ -481,3 +481,52 @@ void rhiRenderer::finish()
 	}
 	cb->endPass();
 }
+
+void rhiRenderer::beginShape()
+{
+	mb.beginShape();
+}
+
+void rhiRenderer::endShape()
+{
+	mb.endShape();
+	GLMesh* pm = mb.takeMesh();
+	if (pm)
+	{
+		if ((pm->Faces() == 0) && (pm->Edges() > 0))
+		{
+			renderGMeshEdges(*pm, false);
+		}
+		delete pm;
+	}
+}
+
+void rhiRenderer::begin(PrimitiveType prim)
+{
+	mb.begin(prim);
+}
+
+void rhiRenderer::end()
+{
+	mb.end();
+}
+
+void rhiRenderer::vertex(const vec3d& r)
+{
+	mb.vertex(r);
+}
+
+void rhiRenderer::normal(const vec3d& n)
+{
+	mb.normal(n);
+}
+
+void rhiRenderer::texCoord1d(double t)
+{
+	mb.texCoord1d(t);
+}
+
+void rhiRenderer::texCoord2d(double r, double s)
+{
+	mb.texCoord2d(r, s);
+}

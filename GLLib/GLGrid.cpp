@@ -112,47 +112,49 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	int nx = (int)(rc.x/s);
 	int ny = (int)(rc.y/s);
 
-	int i;
-
 	int i0 = -n+nx;
 	int i1 =  n+nx;
 
+	int ndiv = m_ndiv;
+	if (ndiv <= 0) ndiv = 2 * n + 1;
+
 	// render the major axis
-	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
-	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
+	re.beginShape();
+	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, ndiv);
+	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, ndiv);
 
 	// grid lines color
 	GLColor c1(0,0,0);
 
 	// render the x-lines
-	double f, g, a;
-	for (i=i0; i<=i1; ++i)
+	for (int i=i0; i<=i1; ++i)
 	{
-		f = (double) (i-i0) / (double) (i1 - i0);
-		g = 1.0 - f;
-		a = 4.0*f*g;
+		double f = (double) (i-i0) / (double) (i1 - i0);
+		double g = 1.0 - f;
+		double a = 4.0*f*g;
 
 		a = 0.35*a*a;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine(re, i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, ndiv);
 	}
 
 	// render the y-lines
 	i0 = -n+ny;
 	i1 = n+ny;
-	for (i=i0; i<=i1; ++i)
+	for (int i=i0; i<=i1; ++i)
 	{
-		f = (double) (i-i0) / (double) (i1 - i0);
-		g = 1.0 - f;
-		a = 4.0*f*g;
+		double f = (double) (i-i0) / (double) (i1 - i0);
+		double g = 1.0 - f;
+		double a = 4.0*f*g;
 
 		a = 0.35*a*a;
 		if (i != 0) a *= 0.25;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) glx::drawLine(re, (-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(re, (-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, ndiv);
 	}
+	re.endShape();
 
 	// restore modelview matrix
 	re.popTransform();

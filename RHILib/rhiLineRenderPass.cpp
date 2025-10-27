@@ -58,23 +58,27 @@ void LineRenderPass::create(QRhiSwapChain* sc, rhi::SharedResources* sr)
 
 rhi::Mesh* LineRenderPass::addGLMesh(const GLMesh& mesh, bool cacheMesh)
 {
-	auto it = m_lineMeshList.find(&mesh);
-	if (it != m_lineMeshList.end())
+	auto it = m_lineMeshList.end();
+	if (cacheMesh)
 	{
-		if (cacheMesh == false)
-		{
-			it->second->CreateFromGLMesh(&mesh);
-		}
-		return it->second;
+		auto it = m_lineMeshList.find(&mesh);
+		if (it != m_lineMeshList.end())
+			return it->second;
+	}
+
+	rhi::MeshShaderResource* sr = LineShader::createShaderResource(m_rhi, m_sharedResource);
+	rhi::LineMesh<LineShader::Vertex>* rm = new rhi::LineMesh<LineShader::Vertex>(m_rhi, sr);
+	rm->CreateFromGLMesh(&mesh);
+
+	if (cacheMesh)
+	{
+		m_lineMeshList.push_back(&mesh, rm);
 	}
 	else
 	{
-		rhi::MeshShaderResource* sr = LineShader::createShaderResource(m_rhi, m_sharedResource);
-		rhi::LineMesh<LineShader::Vertex>* rm = new rhi::LineMesh<LineShader::Vertex>(m_rhi, sr);
-		rm->CreateFromGLMesh(&mesh);
-		m_lineMeshList[&mesh] = rm;
-		return rm;
+		m_lineMeshList.push_back(nullptr, rm);
 	}
+	return rm;
 }
 
 void LineRenderPass::reset()

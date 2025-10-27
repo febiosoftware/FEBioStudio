@@ -34,6 +34,7 @@ class GLMeshBuilder : public GLRenderEngine
 {
 public:
 	GLMeshBuilder();
+	~GLMeshBuilder();
 
 	void start() override;
 	void finish() override;
@@ -49,6 +50,9 @@ public:
 	void scale(double x, double, double z) override;
 
 	void setMaterial(GLMaterial::Type mat, GLColor c, GLMaterial::DiffuseMap map = GLMaterial::DiffuseMap::NONE, bool frontOnly = true) override;
+
+	void beginShape();
+	void endShape();
 
 	void begin(PrimitiveType prim) override;
 	void end() override;
@@ -68,6 +72,7 @@ private:
 	GLMesh* m_pm = nullptr;
 
 	mat4d modelView;
+	bool isMVIdentity = true;
 	std::stack<mat4d> mvStack;
 
 	std::vector<GLMesh::NODE> vertList;

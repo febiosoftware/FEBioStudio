@@ -52,6 +52,7 @@ protected:
 public:
 	vec3d	m_o;	// plane origin
 	quatd	m_q;	// plane orientation
+	int m_ndiv = 0;
 
 	double	m_scale;	// scale of grid (ie. distance between lines)
 };

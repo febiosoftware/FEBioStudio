@@ -26,6 +26,40 @@ SOFTWARE.*/
 #pragma once
 #include "rhiRenderPass.h"
 #include "rhiMesh.h"
+#include <list>
+#include <vector>
+#include <algorithm>
+
+class MeshList
+{
+public:
+	using Container = std::list<std::pair<const GLMesh*, rhi::Mesh*>>;
+
+public:
+	MeshList() {}
+
+	Container::iterator begin() { return meshList.begin(); }
+	Container::iterator end() { return meshList.end(); }
+
+	Container::iterator find(const GLMesh* m)
+	{
+		return std::find_if(begin(), end(), [=](const auto& item) { return (item.first == m); });
+	}
+
+	void push_back(const GLMesh* gm, rhi::Mesh* rm)
+	{
+		meshList.push_back({ gm, rm });
+	}
+
+	bool empty() const { return meshList.empty(); }
+
+	void clear() { meshList.clear(); }
+
+	Container::iterator erase(Container::iterator it) { return meshList.erase(it); }
+
+private:
+	Container meshList;
+};
 
 class LineRenderPass : public rhi::RenderPass
 {
@@ -54,7 +88,6 @@ private:
 	std::unique_ptr<QRhiGraphicsPipeline> m_pl;
 	std::unique_ptr<rhi::MeshShaderResource> m_sr;
 
-	std::map<const GLMesh*, rhi::Mesh*> m_lineMeshList;
-
+	MeshList m_lineMeshList;
 	rhi::SharedResources* m_sharedResource = nullptr;
 };
