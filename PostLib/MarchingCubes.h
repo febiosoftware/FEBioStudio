@@ -119,6 +119,8 @@ private:
 	double	m_shininess;
 	uint8_t m_ref;
 
+	BOX m_box;
+
 	GLMesh*	m_mesh = nullptr;
 
     C3DImage* m_8bitImage;

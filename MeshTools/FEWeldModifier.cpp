@@ -59,7 +59,11 @@ FSMesh* FEWeldNodes::Apply(FSMesh* pm)
 
 	FSMeshBuilder meshBuilder(*pnm);
 
-	meshBuilder.DeleteTaggedElements(1);
+	if (meshBuilder.DeleteTaggedElements(1) == 0)
+	{
+		pnm->RebuildMesh();
+		meshBuilder.RemoveIsolatedNodes();
+	}
 
 	return pnm;
 }

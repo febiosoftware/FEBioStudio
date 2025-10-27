@@ -92,6 +92,18 @@ public:
 	// get the coordinates of the box
 	vec3d r0() const;
 	vec3d r1() const;
+
+	bool operator == (const BOX& b) const
+	{
+		return (m_valid == b.m_valid) &&
+			   (x0 == b.x0) && (y0 == b.y0) && (z0 == b.z0) &&
+			   (x1 == b.x1) && (y1 == b.y1) && (z1 == b.z1);
+	}
+
+	bool operator != (const BOX& b) const
+	{
+		return !(*this == b);
+	}
 };
 
 inline bool BOX::Intersects(const BOX& b) const
