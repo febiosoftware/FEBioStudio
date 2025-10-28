@@ -26,9 +26,10 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
+#include <FSCore/color.h>
 
-class GLContext;
 class GLRenderEngine;
+class GLCamera;
 
 class GLGrid
 {
@@ -39,12 +40,16 @@ public:
 
 	double GetScale() { return m_scale; }
 
-	void Render(GLRenderEngine& re, GLContext& rc);
+	void Render(GLRenderEngine& re, const GLCamera& cam);
 
 	vec3d WorldToPlane(const vec3d& r) const
 	{
 		return m_q.Inverse() * (r - m_o);
 	}
+
+	void SetAxesColors(GLColor cx, GLColor cy) { m_colx = cx; m_coly = cy; }
+
+	void SetOrientation(const quatd& q) { m_q = q; }
 
 protected:
 	vec3d Snap(vec3d r);
@@ -55,4 +60,6 @@ public:
 	int m_ndiv = 2;
 
 	double	m_scale;	// scale of grid (ie. distance between lines)
+
+	GLColor m_colx, m_coly;
 };

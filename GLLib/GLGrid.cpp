@@ -27,13 +27,15 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLGrid.h"
 #include "GLCamera.h"
-#include "GLContext.h"
 #include "glx.h"
 #include "GLRenderEngine.h"
 
 GLGrid::GLGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {
-	m_scale = .1f; 
+	m_scale = .1f;
+
+	m_colx = GLColor::Red();
+	m_coly = GLColor::Green();
 }
 
 vec3d GLGrid::Intersect(vec3d r, vec3d t, bool bsnap)
@@ -68,15 +70,12 @@ vec3d GLGrid::Snap(vec3d r)
 	return r;
 }
 
-void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
+void GLGrid::Render(GLRenderEngine& re, const GLCamera& cam)
 {
 	// store attributes
 	re.pushState();
 
 	re.setMaterial(GLMaterial::CONSTANT, GLColor::White(), GLMaterial::VERTEX_COLOR);
-
-	// get the camera
-	GLCamera& cam = *renderContext.m_cam;
 
 	// store modelview matrix
 	re.pushTransform();
@@ -85,24 +84,9 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 	re.rotate(m_q);
 
 	// determine the scale
-	double scale = 1.f*(double) cam.GetTargetDistance();
+	double scale = cam.GetTargetDistance();
 	double l = (double)((int) log10(scale));
 	double s = m_scale = (double) pow(10, l-1);
-
-	// determine the colors for the major axis
-	GLColor cx, cy;
-	View_Mode view = renderContext.m_settings.m_nview;
-	switch (view)
-	{
-	case VIEW_USER:
-    case VIEW_ISOMETRIC:
-	case VIEW_TOP: 
-	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
-	case VIEW_RIGHT: 
-	case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
-	case VIEW_FRONT:
-	case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
-	}
 
 	// get the camera position
 	vec3d rc = cam.GlobalPosition();
@@ -120,8 +104,8 @@ void GLGrid::Render(GLRenderEngine& re, GLContext& renderContext)
 
 	// render the major axis
 	re.beginShape();
-	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, ndiv);
-	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, ndiv);
+	glx::drawLine(re, 0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, m_colx, ndiv);
+	glx::drawLine(re, (-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, m_coly, ndiv);
 
 	// grid lines color
 	GLColor c1(0,0,0);

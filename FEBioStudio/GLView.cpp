@@ -1984,6 +1984,8 @@ void CGLView::SetViewMode(View_Mode n)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
+	GLGrid& grid = scene->GetGrid();
+
 	GLViewSettings& view = GetViewSettings();
 	int c = view.m_nconv;
 	quatd q;
@@ -2007,7 +2009,7 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
             view.m_nview = n;
-            scene->SetGridOrientation(q);
+            grid.SetOrientation(q);
             
             // set the camera orientation
             switch (n)
@@ -2041,8 +2043,8 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
 			view.m_nview = n;
-			scene->SetGridOrientation(q);
-            
+			grid.SetOrientation(q);
+
             // set the camera orientation
             switch (n)
             {
@@ -2075,8 +2077,8 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
 			view.m_nview = n;
-			scene->SetGridOrientation(q);
-            
+			grid.SetOrientation(q);
+
             // set the camera orientation
             switch (n)
             {
@@ -2094,6 +2096,21 @@ void CGLView::SetViewMode(View_Mode n)
 	}
 
 	scene->GetCamera().SetOrientation(q);
+
+	// determine the colors for the major axis
+	GLColor cx, cy;
+	switch (n)
+	{
+	case VIEW_USER:
+	case VIEW_ISOMETRIC:
+	case VIEW_TOP:
+	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
+	case VIEW_RIGHT:
+	case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
+	case VIEW_FRONT:
+	case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
+	}
+	scene->GetGrid().SetAxesColors(cx, cy);
 
 	// set the camera target
 	//	m_Cam.SetTarget(vec3d(0,0,0));

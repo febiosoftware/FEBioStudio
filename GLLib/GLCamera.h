@@ -105,7 +105,7 @@ public:
 	void SetTargetDistance(double z) { vec3d r = m_trg.Target(); r.z = z; m_trg.Target(r); }
 
 	// gets the distance to the target
-	double GetTargetDistance() { return m_trg.Value().z; }
+	double GetTargetDistance() const { return m_trg.Value().z; }
 
 	// gets the distance to the target
 	double GetFinalTargetDistance() { return m_trg.Target().z; }

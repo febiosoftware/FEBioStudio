@@ -99,8 +99,6 @@ public:
 public:
 	GLGrid& GetGrid() { return m_grid; }
 	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
 
 	void SetEnvironmentMap(const std::string& filename) { m_envMap = filename; }
 

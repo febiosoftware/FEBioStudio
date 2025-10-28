@@ -3474,7 +3474,7 @@ void GLGridItem::render(GLRenderEngine& re, GLContext& rc)
 	if (rc.m_settings.m_bgrid)
 	{
 		GLGrid& grid = m_scene->GetGrid();
-		grid.Render(re, rc);
+		grid.Render(re, *rc.m_cam);
 	}
 }
 

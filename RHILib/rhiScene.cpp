@@ -26,6 +26,8 @@ SOFTWARE.*/
 #include "rhiScene.h"
 #include <FSCore/ColorMapManager.h>
 #include <GLLib/GLGrid.h>
+#include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 
 class rhiMeshItem : public GLSceneItem
 {
@@ -102,7 +104,7 @@ public:
 	rhiGridItem() { m_grid.m_ndiv = 2; }
 	void render(GLRenderEngine& re, GLContext& rc) override
 	{
-		if (showGrid) m_grid.Render(re, rc);
+		if (showGrid) m_grid.Render(re, *rc.m_cam);
 	}
 
 public:

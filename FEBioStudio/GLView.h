@@ -140,7 +140,6 @@ public:
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
-	View_Mode GetViewMode() { return m_view.m_nview; }
 
 	void TogglePerspective(bool b);
 
