@@ -141,9 +141,6 @@ public:
 
 	// --- G E O M E T R Y ---
 
-	// render the geometry of the object (not the FE mesh)
-//	virtual void Render(GLCanvas* pc);
-
 	//! Build the render mesh
 	virtual void BuildGMesh();
 

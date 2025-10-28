@@ -145,6 +145,8 @@ public: // immediate mode rendering
 	virtual void texCoord1d(double t) {}
 	virtual void texCoord2d(double r, double s) {}
 
+	void vertex(double x, double y, double z = 0.0) { vertex(vec3d(x, y, z)); }
+
 public: // uses immediate mode
 	void renderPoint(const vec3d& r);
 	void renderLine(const vec3d& a, const vec3d& b);

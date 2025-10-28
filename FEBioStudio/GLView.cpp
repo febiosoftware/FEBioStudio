@@ -45,7 +45,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPainter>
 #include <PostGL/GLPlaneCutPlot.h>
-#include <PostGL/GLModel.h>
 #include "Commands.h"
 #include <chrono>
 #include "DlgPickColor.h"
@@ -57,6 +56,7 @@ SOFTWARE.*/
 #include <GLWLib/GLComposite.h>
 #include "GLModelScene.h"
 #include "GLViewScene.h"
+#include <GLLib/glx.h>
 
 using namespace std::chrono;
 
@@ -458,21 +458,7 @@ private:
 	GLCheckBox* m_showNormals;
 };
 
-void renderCircle(const vec3d& c, double R, int N)
-{
-	glBegin(GL_LINE_LOOP);
-	{
-		for (int i = 0; i < N; ++i)
-		{
-			double x = c.x + R * cos(i * 2 * PI / N);
-			double y = c.y + R * sin(i * 2 * PI / N);
-			glVertex3d(x, y, c.z);
-		}
-	}
-	glEnd();
-}
-
-void RenderBrush(int x, int y, double R)
+void RenderBrush(GLRenderEngine& re, int x, int y, double R)
 {
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
@@ -485,7 +471,7 @@ void RenderBrush(int x, int y, double R)
 
 	int n = (int)(R / 2);
 	if (n < 12) n = 12;
-	renderCircle(vec3d(x, y, 0), R, n);
+	glx::drawCircle(re, vec3d(x, y, 0), R, n);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopAttrib();
@@ -1335,7 +1321,7 @@ bool CGLView::event(QEvent* event)
 {
     if (event->type() == QEvent::NativeGesture)
         return gestureEvent(static_cast<QNativeGestureEvent*>(event));
-    return QOpenGLWidget::event(event);
+    return CGLSceneView::event(event);
 }
 
 void CGLView::keyPressEvent(QKeyEvent* ev)
@@ -1603,7 +1589,7 @@ void CGLView::RenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (view.m_bselbrush) RenderBrush(m_x1, m_y1, view.m_brushSize);
+	if (view.m_bselbrush) RenderBrush(*m_ogl, m_x1, m_y1, view.m_brushSize);
 
 	RenderCanvas(rc);
 
@@ -1831,14 +1817,16 @@ void CGLView::Render3DCursor()
 	glLoadIdentity();
 	glOrtho(0, width(), 0, height(), -1, 1);
 
-	glColor3ub(255, 164, 164);
-	glBegin(GL_LINES);
-	glVertex2d(p.x - R, p.y); glVertex2d(p.x - R + c, p.y);
-	glVertex2d(p.x + R, p.y); glVertex2d(p.x + R - c, p.y);
-	glVertex2d(p.x, p.y - R); glVertex2d(p.x, p.y - R + c);
-	glVertex2d(p.x, p.y + R); glVertex2d(p.x, p.y + R - c);
-	renderCircle(p, R, 36);
-	glEnd();
+	GLRenderEngine& re = *m_ogl;
+
+	re.setColor(GLColor(255, 164, 164));
+	re.begin(GLRenderEngine::LINES);
+	re.vertex(p.x - R, p.y); re.vertex(p.x - R + c, p.y);
+	re.vertex(p.x + R, p.y); re.vertex(p.x + R - c, p.y);
+	re.vertex(p.x, p.y - R); re.vertex(p.x, p.y - R + c);
+	re.vertex(p.x, p.y + R); re.vertex(p.x, p.y + R - c);
+	glx::drawCircle(*m_ogl, p, R, 36);
+	re.end();
 
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
@@ -1970,21 +1958,12 @@ void CGLView::RenderRubberBand()
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
 			double R = sqrt(dx*dx + dy*dy);
-			renderCircle(vec3d(m_x0, m_y0, 0), R, 24);
+			glx::drawCircle(*m_ogl, vec3d(m_x0, m_y0, 0), R, 24);
 		}
 		break;
 	case REGION_SELECT_FREE:
 		{
-			glBegin(GL_LINE_STRIP);
-			{
-				for (int i = 0; i<(int)m_pl.size(); ++i)
-				{
-					int x = m_pl[i].first;
-					int y = m_pl[i].second;
-					glVertex2i(x, y);
-				}
-			}
-			glEnd();
+			glx::drawPath2D(*m_ogl, m_pl);
 		}
 		break;
 	}
@@ -2664,20 +2643,21 @@ void CGLView::RenderTags()
 	glDisable(GL_DEPTH_TEST);
 
 	double dpr = devicePixelRatio();
-	glBegin(GL_POINTS);
+	GLRenderEngine& re = *m_ogl;
+	re.begin(GLRenderEngine::POINTS);
 	{
 		for (int i = 0; i< ntags; i++)
 		{
 			GLTAG& tag = scene->Tag(i);
 			int x = (int)(tag.wx * dpr);
 			int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - tag.wy));
-			glColor3ub(0, 0, 0);
-			glVertex2f(x, y);
-			glColor3ub(tag.c.r, tag.c.g, tag.c.b);
-			glVertex2f(x - 1, y + 1);
+			re.setColor(GLColor(0, 0, 0));
+			re.vertex(x, y);
+			re.setColor(tag.c);
+			re.vertex(x - 1, y + 1);
 		}
 	}
-	glEnd();
+	re.end();
 
 	GLViewSettings& vs = GetViewSettings();
 

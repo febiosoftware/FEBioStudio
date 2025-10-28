@@ -48,6 +48,7 @@ namespace glx {
 
 
 void drawLine(GLRenderEngine& re, double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n);
+void drawPath2D(GLRenderEngine& re, const std::vector<std::pair<int, int>>& points);
 
 void drawCircle(GLRenderEngine& re, double R, int N);
 void drawCircle(GLRenderEngine& re, const vec3d& c, double R, int N);

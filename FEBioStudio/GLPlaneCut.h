@@ -33,7 +33,7 @@ class GLMesh;
 class GLContext;
 class GLRenderEngine;
 
-// class that creates and renders the plane cut in the CGLView.
+// class that creates and renders the plane cut.
 class GLPlaneCut
 {
 public:
