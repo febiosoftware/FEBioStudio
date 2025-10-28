@@ -651,6 +651,11 @@ BOX GObject::GetLocalBox() const
 		b = BOX(m_Node[0]->LocalPosition(), m_Node[0]->LocalPosition());
 		for (int i = 1; i<N; ++i) b += m_Node[i]->LocalPosition();
 	}
+	else if (GetFEMesh())
+	{
+		const FSMesh* pm = GetFEMesh();
+		b = pm->GetBoundingBox();
+	}
 	return b;
 }
 
