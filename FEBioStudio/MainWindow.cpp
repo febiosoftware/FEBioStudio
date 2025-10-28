@@ -192,6 +192,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// load templates
 	TemplateManager::Init();
 
+	// configure FEBio library
+	if (ui->m_settings.loadFEBioConfigFile)
+	{
+		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
+		FSDir dir(fileName);
+		std::string filepath = dir.expandMacros();
+		FEBio::ConfigureFEBio(filepath.c_str());
+	}
+
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
@@ -1786,6 +1795,12 @@ int CMainWindow::GetDefaultUnitSystem() const
 	return ui->m_settings.defaultUnits;
 }
 
+bool CMainWindow::GetLoadConfigFlag() { return ui->m_settings.loadFEBioConfigFile; }
+QString CMainWindow::GetConfigFileName() { return ui->m_settings.febioConfigFileName; }
+
+void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_settings.loadFEBioConfigFile = b; }
+void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileName = s; }
+
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
@@ -1828,6 +1843,8 @@ void CMainWindow::writeSettings()
 		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 
 		// FEBio
+		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
+		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
 		settings.setValue("FEBioSDKInclude", ui->m_settings.FEBioSDKInc);
 		settings.setValue("FEBioSDKLibrary", ui->m_settings.FEBioSDKLib);
 		settings.setValue("createPluginPath", ui->m_settings.createPluginPath);
@@ -1992,6 +2009,8 @@ void CMainWindow::readSettings()
 		GLWidget::set_default_font(font);
 
 		// FEBio
+		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
 		QString defaultSDK = QFileInfo(QApplication::applicationDirPath() + QString(REL_ROOT) + "sdk/").absoluteFilePath();
 		ui->m_settings.FEBioSDKInc = settings.value("FEBioSDKInclude", defaultSDK + "include").toString();
 		ui->m_settings.FEBioSDKLib = settings.value("FEBioSDKLibrary", defaultSDK + "lib").toString();
