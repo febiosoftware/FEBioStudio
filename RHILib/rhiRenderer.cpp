@@ -377,21 +377,25 @@ void rhiRenderer::TimingInfo::update()
 	m_toc = high_resolution_clock::now();
 	time_point<high_resolution_clock> toc = high_resolution_clock::now();
 	double sec = duration_cast<dseconds>(m_toc - m_tic).count();
-	if (sec > 0)
+	totalSec += sec;
+	if (totalSec > 0)
 	{
-		m_fps = 1.0 / sec;
-		if ((m_frame % 50) == 0)
+		m_frame++;
+		double fps = 1.0 / sec; // instanteneous FPS
+		m_fps = m_frame / totalSec; // average FPS
+		if (m_frame  >= 50)
 		{
-			m_fpsMin = m_fpsMax = m_fps;
+			m_fpsMin = m_fpsMax = fps;
+			m_frame = 0;
+			totalSec = 0;
 		}
 		else
 		{
-			if (m_fps < m_fpsMin) m_fpsMin = m_fps;
-			if (m_fps > m_fpsMax) m_fpsMax = m_fps;
+			if (fps < m_fpsMin) m_fpsMin = fps;
+			if (fps > m_fpsMax) m_fpsMax = fps;
 		}
 	}
 	m_tic = m_toc;
-	m_frame++;
 }
 
 void rhiRenderer::finish()

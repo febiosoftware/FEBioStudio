@@ -66,6 +66,7 @@ class rhiRenderer : public GLRenderEngine
 		time_point<steady_clock> m_toc;
 		double m_fps = 0, m_fpsMin = 0, m_fpsMax = 0;
 		unsigned int m_frame = 0;
+		double totalSec = 0;
 
 		void update();
 	};
