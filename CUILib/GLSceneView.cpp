@@ -118,15 +118,17 @@ void CGLSceneView::paintGL()
 	assert(m_ogl);
 	if (m_ogl == nullptr) return;
 
-	// Render the 3D scene
+	// start rendering
 	m_ogl->start();
+
+	// Render the 3D scene
 	PrepScene();
 	RenderBackground();
 	RenderScene();
-	m_ogl->finish();
-
-	// render the 2D canvas
 	RenderCanvas();
+
+	// finish up
+	m_ogl->finish();
 
 	// if the camera is animating, we need to redraw
 	GLScene* scene = GetActiveScene();
@@ -148,10 +150,7 @@ void CGLSceneView::RenderScene()
 		GLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
-		rc.m_w = width();
-		rc.m_h = height();
 		scene->Render(*m_ogl, rc);
-
 	}
 }
 
@@ -164,8 +163,6 @@ void CGLSceneView::RenderCanvas()
 		GLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
-		rc.m_w = width();
-		rc.m_h = height();
 
 		// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 		glMatrixMode(GL_PROJECTION);

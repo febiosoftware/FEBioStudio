@@ -235,7 +235,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 	ClearTags();
 
 	// show the labels on rigid bodies
-	if (view.m_showRigidLabels) RenderRigidLabels(rc);
+	if (view.m_showRigidLabels) RenderRigidLabels();
 
 	// render the tags
 	if (view.m_bTags) RenderTags(rc);
@@ -886,12 +886,10 @@ void CGLModelScene::RenderTags(GLContext& rc)
 	}
 }
 
-void CGLModelScene::RenderRigidLabels(GLContext& rc)
+void CGLModelScene::RenderRigidLabels()
 {
 	FSModel* fem = m_doc->GetFSModel();
 	if (fem == nullptr) return;
-
-	GLViewSettings& view = rc.m_settings;
 
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
@@ -938,7 +936,7 @@ void CGLModelScene::Update()
 	GLScene::Update();
 }
 
-void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& box)
+void GLPlaneCutItem::RenderBoxCut(GLRenderEngine& re, const BOX& box)
 {
 	vec3d a = box.r0();
 	vec3d b = box.r1();
@@ -1261,8 +1259,11 @@ void GLPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 			UpdatePlaneCut(rc, true);
 		}
 
-		RenderBoxCut(re, rc, box);
-		m_planeCut.Render(re, rc);
+		RenderBoxCut(re, box);
+
+		m_planeCut.RenderMesh(rc.m_settings.m_bmesh);
+		m_planeCut.SetMeshColor(rc.m_settings.m_meshColor);
+		m_planeCut.Render(re);
 
 		// then turn on the clipping plane before rendering the other geometry
 		re.setClipPlane(0, rc.m_settings.m_planeCut);
@@ -1478,8 +1479,6 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
 
-	GLCamera& cam = *rc.m_cam;
-
 	int item = m_scene->GetItemMode();
 	int objectColor = m_scene->GetObjectColorMode();
 
@@ -1527,24 +1526,16 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 		case SELECT_EDGE:
 		{
 			RenderObject(re, rc);
-			cam.LineDrawMode(true);
-			re.positionCamera(cam);
 			SetModelView(re, po);
-			RenderEdges(re, rc);
-			cam.LineDrawMode(false);
-			re.positionCamera(cam);
+			RenderEdges(re);
 			SetModelView(re, po);
 		}
 		break;
 		case SELECT_NODE:
 		{
 			RenderObject(re, rc);
-			cam.LineDrawMode(true);
-			re.positionCamera(cam);
 			SetModelView(re, po);
-			RenderNodes(re, rc);
-			cam.LineDrawMode(false);
-			re.positionCamera(cam);
+			RenderNodes(re);
 			SetModelView(re, po);
 		}
 		break;
@@ -1565,8 +1556,8 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			if (item == ITEM_ELEM)
 			{
 				RenderFEFacesFromGMesh(re, rc);
-				RenderUnselectedBeamElements(re, rc);
-				RenderSelectedFEElements(re, rc);
+				RenderUnselectedBeamElements(re);
+				RenderSelectedFEElements(re);
 			}
 			else if (item == ITEM_FACE)
 			{
@@ -1574,20 +1565,16 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 				if (gm)
 				{
 					RenderFEFacesFromGMesh(re, rc);
-					RenderAllBeamElements(re, rc);
-					RenderSelectedFEFaces(re, rc);
+					RenderAllBeamElements(re);
+					RenderSelectedFEFaces(re);
 				}
 			}
 			else if (item == ITEM_EDGE)
 			{
 				GLMesh* gm = po->GetFERenderMesh(); assert(gm);
 				if (gm) RenderFEFacesFromGMesh(re, rc);
-				cam.LineDrawMode(true);
-				re.positionCamera(cam);
 				SetModelView(re, po);
-				RenderFEEdges(re, rc);
-				cam.LineDrawMode(false);
-				re.positionCamera(cam);
+				RenderFEEdges(re);
 			}
 			else if (item == ITEM_NODE)
 			{
@@ -1605,12 +1592,8 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 			else if (item == ITEM_EDGE)
 			{
 				RenderSurfaceMeshFaces(re, rc);
-				cam.LineDrawMode(true);
-				re.positionCamera(cam);
 				SetModelView(re, po);
-				RenderSurfaceMeshEdges(re, rc);
-				cam.LineDrawMode(false);
-				re.positionCamera(cam);
+				RenderSurfaceMeshEdges(re);
 			}
 			else if (item == ITEM_NODE)
 			{
@@ -1621,7 +1604,7 @@ void GLObjectItem::RenderGObject(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// render normals if requested
-	if (view.m_bnorm) RenderNormals(re, rc, view.m_scaleNormals);
+	if (view.m_bnorm) RenderNormals(re, view.m_scaleNormals);
 }
 
 // render non-selected parts
@@ -1673,7 +1656,7 @@ void GLObjectItem::RenderParts(GLRenderEngine& re, GLContext& rc)
 		}
 	}
 
-	RenderBeamParts(re, rc);
+	RenderBeamParts(re);
 }
 
 // Render non-selected surfaces
@@ -1718,7 +1701,7 @@ void GLObjectItem::RenderSurfaces(GLRenderEngine& re, GLContext& rc)
 }
 
 // Render non-selected nodes
-void GLObjectItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderNodes(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 	if ((po == nullptr) || (po->Nodes() == 0)) return;
@@ -1742,7 +1725,7 @@ void GLObjectItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 }
 
 // render non-selected edges
-void GLObjectItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderEdges(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 	GLMesh* m = po->GetRenderMesh();
@@ -1906,7 +1889,6 @@ void GLObjectItem::RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GL
 void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 {
 	GObject* po = m_po;
-	GLViewSettings& view = rc.m_settings;
 
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
@@ -1934,7 +1916,7 @@ void GLObjectItem::RenderFENodes(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 
@@ -1951,7 +1933,7 @@ void GLObjectItem::RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc)
 	re.renderGMeshEdges(selMesh, false);
 }
 
-void GLObjectItem::RenderSelectedFEElements(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderSelectedFEElements(GLRenderEngine& re)
 {
 	FEElementSelection* sel = dynamic_cast<FEElementSelection*>(m_scene->GetCurrentSelection());
 	if ((sel == nullptr) || (sel->Count() == 0)) return;
@@ -2014,7 +1996,7 @@ void GLObjectItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc)
 
 //-----------------------------------------------------------------------------
 // Render the FE Edges
-void GLObjectItem::RenderFEEdges(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderFEEdges(GLRenderEngine& re)
 {
 	// render the unselected edges
 	GLMesh* mesh = m_po->GetFERenderMesh();
@@ -2033,7 +2015,7 @@ void GLObjectItem::RenderFEEdges(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLObjectItem::RenderAllBeamElements(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderAllBeamElements(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 	if (po == nullptr) return;
@@ -2067,7 +2049,7 @@ void GLObjectItem::RenderAllBeamElements(GLRenderEngine& re, GLContext& rc)
 	re.renderGMeshEdges(beamMesh, false);
 }
 
-void GLObjectItem::RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderUnselectedBeamElements(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 	if (po == nullptr) return;
@@ -2101,7 +2083,7 @@ void GLObjectItem::RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& r
 	re.renderGMeshEdges(beamMesh, false);
 }
 
-void GLObjectItem::RenderNormals(GLRenderEngine& re, GLContext& rc, double scale)
+void GLObjectItem::RenderNormals(GLRenderEngine& re, double scale)
 {
 	if (m_po->IsVisible() == false) return;
 
@@ -2143,15 +2125,13 @@ void GLObjectItem::RenderNormals(GLRenderEngine& re, GLContext& rc, double scale
 	re.renderGMeshEdges(lineMesh, false);
 }
 
-void GLObjectItem::RenderBeamParts(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderBeamParts(GLRenderEngine& re)
 {
 	GObject* po = m_po;
 	if (!po->IsVisible()) return;
 
 	int nitem = m_scene->GetItemMode();
 	int nsel = m_scene->GetSelectionMode();
-
-	GLViewSettings& vs = rc.m_settings;
 
 	// get the GLMesh
 	FSModel& fem = *m_scene->GetFSModel();
@@ -2174,7 +2154,7 @@ void GLObjectItem::RenderBeamParts(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLObjectItem::RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderSurfaceMeshEdges(GLRenderEngine& re)
 {
 	GLMesh* mesh = m_po->GetRenderMesh();
 	if (mesh == nullptr) return;
@@ -2188,7 +2168,7 @@ void GLObjectItem::RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc)
 	re.renderGMeshEdges(m_scene->GetSelectionMesh(), false);
 }
 
-void GLObjectItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
+void GLObjectItem::RenderSelection(GLRenderEngine& re)
 {
 	GLMesh& selectionMesh = m_scene->GetSelectionMesh();
 	if (selectionMesh.Faces() > 0)
@@ -2261,7 +2241,7 @@ void GLObjectItem::RenderObject(GLRenderEngine& re, GLContext& rc)
 	// render beam sections if feature edges are not rendered. 
 	if (rc.m_settings.m_bfeat == false)
 	{
-		RenderBeamParts(re, rc);
+		RenderBeamParts(re);
 	}
 }
 
@@ -2300,7 +2280,7 @@ void GLObjectItem::RenderSurfaceMeshFaces(GLRenderEngine& re, GLContext& rc)
 		RenderObject(re, rc);
 	}
 
-	RenderSelection(re, rc);
+	RenderSelection(re);
 }
 
 void RenderLine(GLRenderEngine& re, GNode& n0, GNode& n1)
@@ -2462,8 +2442,6 @@ void GLDiscreteItem::render(GLRenderEngine& re, GLContext& rc)
 
 void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 {
-	GLViewSettings& view = rc.m_settings;
-
 	// get the model
 	FSModel* ps = m_scene->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -2475,9 +2453,6 @@ void GLSelectionBox::render(GLRenderEngine& re, GLContext& rc)
 	int nsel = m_scene->GetSelectionMode();
 
 	GObject* poa = m_scene->GetActiveObject();
-
-	bool bnorm = view.m_bnorm;
-	double scale = view.m_scaleNormals;
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_POLYGON_STIPPLE);
@@ -2521,11 +2496,6 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	if (rc.m_settings.m_bmesh == false) return;
 
-	GLCamera& cam = *rc.m_cam;
-
-	cam.LineDrawMode(true);
-	re.positionCamera(cam);
-
 	GModel& model = *m_scene->GetGModel();
 	int nitem = m_scene->GetItemMode();
 
@@ -2565,9 +2535,6 @@ void GLMeshLinesItem::render(GLRenderEngine& re, GLContext& rc)
 			}
 		}
 	}
-
-	cam.LineDrawMode(false);
-	re.positionCamera(cam);
 }
 
 void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
@@ -2581,11 +2548,6 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 		int nitem = m_scene->GetItemMode();
 		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE))
 		{
-			GLCamera& cam = *rc.m_cam;
-
-			cam.LineDrawMode(true);
-			re.positionCamera(cam);
-
 			FSModel* ps = m_scene->GetFSModel();
 			GModel& model = ps->GetModel();
 
@@ -2615,9 +2577,6 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 					re.popTransform();
 				}
 			}
-
-			cam.LineDrawMode(false);
-			re.positionCamera(cam);
 		}
 	}
 }
@@ -2626,10 +2585,13 @@ void GLPhysicsItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	GLViewSettings& vs = rc.m_settings;
 
+	GLCamera& cam = *rc.m_cam;
+	double scale = 0.05 * (double)cam.GetTargetDistance();
+
 	// render physics
 	if (vs.m_brigid) RenderRigidBodies(re, rc);
-	if (vs.m_bjoint) { RenderRigidJoints(re, rc); RenderRigidConnectors(re, rc); }
-	if (vs.m_bwall) RenderRigidWalls(re, rc);
+	if (vs.m_bjoint) { RenderRigidJoints(re, scale); RenderRigidConnectors(re, scale); }
+	if (vs.m_bwall) RenderRigidWalls(re);
 	if (vs.m_bfiber) RenderMaterialFibers(re, rc);
 	if (vs.m_blma) RenderLocalMaterialAxes(re, rc);
 }
@@ -2671,7 +2633,7 @@ void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const
 	}
 }
 
-void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const
+void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re) const
 {
 	FSModel* ps = m_scene->GetFSModel();
 	BOX box = ps->GetModel().GetBoundingBox();
@@ -2708,13 +2670,10 @@ void GLPhysicsItem::RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const
 	}
 }
 
-void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, GLContext& rc) const
+void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, double scale) const
 {
-	GLCamera& cam = *rc.m_cam;
-
 	FSModel* ps = m_scene->GetFSModel();
 
-	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
 	for (int n = 0; n < ps->Steps(); ++n)
@@ -2735,13 +2694,10 @@ void GLPhysicsItem::RenderRigidJoints(GLRenderEngine& re, GLContext& rc) const
 	}
 }
 
-void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, GLContext& rc) const
+void GLPhysicsItem::RenderRigidConnectors(GLRenderEngine& re, double scale) const
 {
-	GLCamera& cam = *rc.m_cam;
-
 	FSModel* ps = m_scene->GetFSModel();
 
-	double scale = 0.05 * (double)cam.GetTargetDistance();
 	double R = 0.5 * scale;
 
 	for (int n = 0; n < ps->Steps(); ++n)
@@ -3312,7 +3268,7 @@ void GLHighlighterItem::render(GLRenderEngine& re, GLContext& rc)
 		GLColor c = m_pickColor[item.color];
 
 		GEdge* edge = dynamic_cast<GEdge*>(it);
-		if (edge) drawEdge(re, rc, edge, c);
+		if (edge) drawEdge(re, edge, c);
 
 		GNode* node = dynamic_cast<GNode*>(it);
 		if (node) drawNode(re, rc, node, c);
@@ -3324,17 +3280,17 @@ void GLHighlighterItem::render(GLRenderEngine& re, GLContext& rc)
 		if (part) drawPart(re, rc, part, c);
 
 		FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(it);
-		if (nodeSet) drawFENodeSet(re, rc, nodeSet, c);
+		if (nodeSet) drawFENodeSet(re, nodeSet, c);
 
 		FSSurface* surf = dynamic_cast<FSSurface*>(it);
-		if (surf) drawFESurface(re, rc, surf, c);
+		if (surf) drawFESurface(re, surf, c);
 	}
 
 	if (activeItem)
 	{
 		GLColor c = m_activeColor;
 		GEdge* edge = dynamic_cast<GEdge*>(activeItem);
-		if (edge) drawEdge(re, rc, edge, c);
+		if (edge) drawEdge(re, edge, c);
 
 		GNode* node = dynamic_cast<GNode*>(activeItem);
 		if (node) drawNode(re, rc, node, c);
@@ -3347,7 +3303,7 @@ void GLHighlighterItem::render(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLHighlighterItem::drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge, GLColor c)
+void GLHighlighterItem::drawEdge(GLRenderEngine& re, GEdge* edge, GLColor c)
 {
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;
@@ -3447,7 +3403,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, GLContext& rc, GPart* part,
 	re.popTransform();
 }
 
-void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeSet* nodeSet, GLColor c)
+void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, FSNodeSet* nodeSet, GLColor c)
 {
 	if ((nodeSet == nullptr) || (nodeSet->size() == 0)) return;
 
@@ -3475,7 +3431,7 @@ void GLHighlighterItem::drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeS
 	re.popTransform();
 }
 
-void GLHighlighterItem::drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurface* surf, GLColor c)
+void GLHighlighterItem::drawFESurface(GLRenderEngine& re, FSSurface* surf, GLColor c)
 {
 	FSMesh* mesh = surf->GetMesh();
 	if (mesh == nullptr) return;

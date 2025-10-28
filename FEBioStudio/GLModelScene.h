@@ -65,7 +65,7 @@ public:
 
 private:
 	void UpdatePlaneCut(GLContext& rc, bool reset);
-	void RenderBoxCut(GLRenderEngine& re, GLContext& rc, const BOX& box);
+	void RenderBoxCut(GLRenderEngine& re, const BOX& box);
 
 private:
 	CGLModelScene* m_scene;
@@ -86,26 +86,26 @@ private:
 
 	void RenderParts(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaces(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re, GLContext& rc);
-	void RenderNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderBeamParts(GLRenderEngine& re, GLContext& rc);
-	void RenderSurfaceMeshEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re);
+	void RenderNodes(GLRenderEngine& re);
+	void RenderBeamParts(GLRenderEngine& re);
+	void RenderSurfaceMeshEdges(GLRenderEngine& re);
 
 	void RenderFEFacesFromGMesh(GLRenderEngine& re, GLContext& rc);
 	void RenderMeshByDefault(GLRenderEngine& re, GLContext& rc);
 	void RenderMeshByObjectColor(GLRenderEngine& re, GLContext& rc);
 	void RenderMeshByElementType(GLRenderEngine& re, GLContext& rc, GLMesh& mesh);
 
-	void RenderUnselectedBeamElements(GLRenderEngine& re, GLContext& rc);
-	void RenderSelectedFEElements(GLRenderEngine& re, GLContext& rc);
-	void RenderAllBeamElements(GLRenderEngine& re, GLContext& rc);
-	void RenderSelectedFEFaces(GLRenderEngine& re, GLContext& rc);
-	void RenderFEEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderUnselectedBeamElements(GLRenderEngine& re);
+	void RenderSelectedFEElements(GLRenderEngine& re);
+	void RenderAllBeamElements(GLRenderEngine& re);
+	void RenderSelectedFEFaces(GLRenderEngine& re);
+	void RenderFEEdges(GLRenderEngine& re);
 	void RenderFENodes(GLRenderEngine& re, GLContext& rc);
 	void RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, GLContext& rc, double scale);
+	void RenderNormals(GLRenderEngine& re, double scale);
 
-	void RenderSelection(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re);
 
 private:
 	void UpdateGMeshColor(GLMesh& msh);
@@ -165,9 +165,9 @@ public:
 
 private:
 	void RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidJoints(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidConnectors(GLRenderEngine& re, GLContext& rc) const;
-	void RenderRigidWalls(GLRenderEngine& re, GLContext& rc) const;
+	void RenderRigidJoints(GLRenderEngine& re, double scale) const;
+	void RenderRigidConnectors(GLRenderEngine& re, double scale) const;
+	void RenderRigidWalls(GLRenderEngine& re) const;
 	void RenderMaterialFibers(GLRenderEngine& re, GLContext& rc) const;
 	void RenderLocalMaterialAxes(GLRenderEngine& re, GLContext& rc) const;
 };
@@ -193,12 +193,12 @@ public:
 
 private:
 	void drawNode(GLRenderEngine& re, GLContext& rc, GNode* node, GLColor c);
-	void drawEdge(GLRenderEngine& re, GLContext& rc, GEdge* edge, GLColor c);
+	void drawEdge(GLRenderEngine& re, GEdge* edge, GLColor c);
 	void drawFace(GLRenderEngine& re, GLContext& rc, GFace* face, GLColor c);
 	void drawPart(GLRenderEngine& re, GLContext& rc, GPart* part, GLColor c);
 
-	void drawFENodeSet(GLRenderEngine& re, GLContext& rc, FSNodeSet* nodeSet, GLColor c);
-	void drawFESurface(GLRenderEngine& re, GLContext& rc, FSSurface* surf, GLColor c);
+	void drawFENodeSet(GLRenderEngine& re, FSNodeSet* nodeSet, GLColor c);
+	void drawFESurface(GLRenderEngine& re, FSSurface* surf, GLColor c);
 
 private:
 	GLColor			m_activeColor;		// color of active item
@@ -267,7 +267,7 @@ private:
 	void BuildScene(GLContext& rc);
 
 public:
-	void RenderRigidLabels(GLContext& rc);
+	void RenderRigidLabels();
 
 	void RenderTags(GLContext& rc);
 

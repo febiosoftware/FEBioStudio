@@ -264,10 +264,8 @@ void CGLPlaneCutPlot::Render(GLRenderEngine& re, GLContext& rc)
 	// render the mesh
 	if (m_bshow_mesh)
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderMeshLines(re);
 		RenderOutline(re);
-		rc.m_cam->LineDrawMode(false);
 	}
 
 	if (rc.m_settings.m_bfeat)

@@ -131,6 +131,7 @@ public:
 
 private:
 	void UseProgram(OGLProgram* program);
+	void enableLineMode(bool b);
 
 private:
 	Imp& m;

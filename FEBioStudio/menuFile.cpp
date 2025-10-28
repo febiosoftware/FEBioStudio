@@ -1395,10 +1395,6 @@ void CMainWindow::on_actionRayTrace_triggered()
 		H = rayTracer->height();
 
 		GLContext rc;
-		rc.m_x = 0;
-		rc.m_y = 0;
-		rc.m_w = W;
-		rc.m_h = H;
 		rc.m_settings = GetGLView()->GetViewSettings();
 		rc.m_cam = &scene->GetCamera();
 		QImage img(W, H, QImage::Format_ARGB32);

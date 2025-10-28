@@ -74,9 +74,6 @@ public:
 	// update camera position (for animations)
 	void Update(bool bhit = false);
 
-	// set line-draw or decal mode
-	void LineDrawMode(bool b);
-
 public:
 	void SetCameraSpeed(double f);
 	double GetCameraSpeed() { return m_speed; }
@@ -165,7 +162,6 @@ public:
 	VecInterpolator		m_pos;	// position of target in global coordinates
 	VecInterpolator		m_trg;	// position of target in local coordinates
 	QuatInterpolator	m_rot;	// orientation of camera
-	bool	m_bdecal;			// decal or line draw mode
 
 private:
 	double	m_speed;

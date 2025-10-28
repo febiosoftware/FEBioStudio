@@ -29,8 +29,6 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSModel.h>
 #include <GLLib/GLMesh.h>
-#include <GLLib/GLCamera.h>
-#include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include <GLLib/GLRenderEngine.h>
 #include <FSCore/ColorMap.h>
@@ -528,7 +526,7 @@ void GLPlaneCut::CreateHideElements(FSModel& fem, bool showMeshData)
 	planeCut->Update();
 }
 
-void GLPlaneCut::Render(GLRenderEngine& re, GLContext& rc)
+void GLPlaneCut::Render(GLRenderEngine& re)
 {
 	if (m_planeCut == nullptr) return;
 
@@ -540,22 +538,14 @@ void GLPlaneCut::Render(GLRenderEngine& re, GLContext& rc)
 	re.setColor(GLColor(255, 64, 0));
 	re.renderGMesh(*m_planeCut, 1, false);
 
-	if (rc.m_settings.m_bmesh)
+	if (m_renderMesh)
 	{
-		GLCamera& cam = *rc.m_cam;
-		cam.LineDrawMode(true);
-		re.positionCamera(cam);
-
-		GLColor c = rc.m_settings.m_meshColor;
-		re.setMaterial(GLMaterial::CONSTANT, c);
+		re.setMaterial(GLMaterial::CONSTANT, m_meshColor);
 		re.renderGMeshEdges(*m_planeCut, 0, false);
 
 		// TODO: This used to be drawn with depthtest off
 		re.setColor(GLColor::Yellow());
 		re.renderGMeshEdges(*m_planeCut, 1, false);
-
-		cam.LineDrawMode(false);
-		re.positionCamera(cam);
 	}
 }
 

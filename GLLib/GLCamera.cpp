@@ -45,10 +45,7 @@ void GLCamera::Reset()
 	m_pos.Target(vec3d(0,0,0));
 	m_trg.Target(vec3d(0,0,0));
 	Update(true);
-
-	m_bdecal = false;
 	m_bortho = false;
-
 	m_isMoving = false;
 }
 
@@ -99,12 +96,6 @@ void GLCamera::Update(bool bhit)
 		m_trg.HitTarget();
 		m_rot.HitTarget();
 	}
-}
-
-// set line-draw or decal mode
-void GLCamera::LineDrawMode(bool b)
-{ 
-	m_bdecal = b;
 }
 
 void GLCamera::Pan(const quatd& q)

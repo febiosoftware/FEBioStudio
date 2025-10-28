@@ -215,9 +215,6 @@ void rhiSceneView::customRender()
 	m_rhiRender->start();
 
 	GLContext rc;
-	rc.m_x = rc.m_y = 0;
-	rc.m_w = width();
-	rc.m_h = height();
 	rc.m_cam = &cam;
 	scene->Render(*m_rhiRender, rc);
 

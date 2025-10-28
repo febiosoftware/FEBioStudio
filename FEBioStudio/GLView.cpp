@@ -1550,8 +1550,6 @@ void CGLView::RenderScene()
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
 	GLContext& rc = m_rc;
-	rc.m_w = width();
-	rc.m_h = height();
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 

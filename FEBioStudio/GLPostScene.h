@@ -56,18 +56,18 @@ public:
 private:
 	void RenderModel(GLRenderEngine& re, GLContext& rc);
 	void RenderNodes(GLRenderEngine& re, GLContext& rc);
-	void RenderEdges(GLRenderEngine& re, GLContext& rc);
+	void RenderEdges(GLRenderEngine& re);
 	void RenderFaces(GLRenderEngine& re, GLContext& rc);
 	void RenderElems(GLRenderEngine& re, GLContext& rc);
-	void RenderSelection(GLRenderEngine& re, GLContext& rc);
-	void RenderNormals(GLRenderEngine& re, GLContext& rc);
+	void RenderSelection(GLRenderEngine& re);
+	void RenderNormals(GLRenderEngine& re);
 	void RenderOutline(GLRenderEngine& re, GLContext& rc);
-	void RenderGhost(GLRenderEngine& re, GLContext& rc);
+	void RenderGhost(GLRenderEngine& re);
 	void RenderMeshLines(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscrete(GLRenderEngine& re, GLContext& rc);
 	void RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc);
-	void RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc);
-	void RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc);
+	void RenderDiscreteAsSolid(GLRenderEngine& re);
+	void RenderMinMaxMarkers(GLRenderEngine& re);
 	void RenderDiscreteElement(GLRenderEngine& re, int n);
 	void RenderDiscreteElementAsSolid(GLRenderEngine& re, int n, double W);
 
@@ -160,7 +160,7 @@ private:
 	void UpdateTracking();
 
 private:
-	void BuildScene(GLContext& rc);
+	void BuildScene();
 
 private:
 	CGLModelDocument* m_doc;

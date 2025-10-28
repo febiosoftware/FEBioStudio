@@ -80,7 +80,7 @@ using sphere = SpherePointsGenerator;
 
 void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
-	if (m_w->m_analysis && m_w->m_ODF) m_w->m_analysis->renderODFMesh(engine, m_w->m_ODF, rc.m_cam);
+	if (m_w->m_analysis && m_w->m_ODF) m_w->m_analysis->renderODFMesh(engine, m_w->m_ODF, rc.m_cam->IsMoving());
 }
 
 void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)

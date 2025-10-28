@@ -151,7 +151,7 @@ void GLPostModelItem::render(GLRenderEngine& re, GLContext& rc)
 	Post::CGLColorMap* pcm = glm->GetColorMap();
 	if (pcm && pcm->ShowMinMaxMarkers())
 	{
-		RenderMinMaxMarkers(re, rc);
+		RenderMinMaxMarkers(re);
 	}
 
 	CGLPlaneCutPlot::DisableClipPlanes(re);
@@ -189,9 +189,7 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 	// render outline
 	if (rc.m_settings.m_bfeat || (rc.m_settings.m_nrender == RENDER_WIREFRAME))
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderOutline(re, rc);
-		rc.m_cam->LineDrawMode(false);
 	}
 
 	// render mesh lines
@@ -201,28 +199,24 @@ void GLPostModelItem::RenderModel(GLRenderEngine& re, GLContext& rc)
 	}
 
 	// render the selected elements and faces
-	RenderSelection(re, rc);
+	RenderSelection(re);
 
 	// render the normals
-	if (glm.m_bnorm) RenderNormals(re, rc);
+	if (glm.m_bnorm) RenderNormals(re);
 
 	// render the ghost
-	if (glm.m_bghost) RenderGhost(re, rc);
+	if (glm.m_bghost) RenderGhost(re);
 
 	// render the edges
 	if (mode == SELECT_FE_EDGES)
 	{
-		rc.m_cam->LineDrawMode(true);
-		RenderEdges(re, rc);
-		rc.m_cam->LineDrawMode(false);
+		RenderEdges(re);
 	}
 
 	// render the nodes
 	if (mode == SELECT_FE_NODES)
 	{
-		rc.m_cam->LineDrawMode(true);
 		RenderNodes(re, rc);
-		rc.m_cam->LineDrawMode(false);
 	}
 }
 
@@ -325,7 +319,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderEdges(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderEdges(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -547,7 +541,7 @@ void GLPostModelItem::RenderElems(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderSelection(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -560,7 +554,7 @@ void GLPostModelItem::RenderSelection(GLRenderEngine& re, GLContext& rc)
 	re.renderGMeshEdges(glm.m_selectionMesh, false);
 }
 
-void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderNormals(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
@@ -607,15 +601,13 @@ void GLPostModelItem::RenderNormals(GLRenderEngine& re, GLContext& rc)
 	}
 }
 
-void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderGhost(GLRenderEngine& re)
 {
 	Post::CGLModel& glm = *m_scene->GetGLModel();
 
 	FEPostModel* ps = m_scene->GetFSModel();
 	FSMeshBase* pm = glm.GetActiveMesh();
 	Post::FERefState* ref = glm.GetActiveState()->m_ref;
-
-	quatd q = rc.m_cam->GetOrientation();
 
 	double eps = cos(glm.GetSmoothingAngleRadians());
 
@@ -649,8 +641,6 @@ void GLPostModelItem::RenderGhost(GLRenderEngine& re, GLContext& rc)
 					{
 						vec3d n1 = to_vec3d(f.m_fn);
 						vec3d n2 = to_vec3d(f2.m_fn);
-						q.RotateVector(n1);
-						q.RotateVector(n2);
 						if (n1.z * n2.z <= 0)
 						{
 							bdraw = true;
@@ -729,7 +719,7 @@ void GLPostModelItem::RenderDiscrete(GLRenderEngine& re, GLContext& rc)
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 	if (gm.ShowBeam2Solid())
 	{
-		RenderDiscreteAsSolid(re, rc);
+		RenderDiscreteAsSolid(re);
 	}
 	else
 	{
@@ -829,7 +819,7 @@ void GLPostModelItem::RenderDiscreteAsLines(GLRenderEngine& re, GLContext& rc)
 	re.setLineWidth(lineWidth);
 }
 
-void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderDiscreteAsSolid(GLRenderEngine& re)
 {
 	Post::FEPostModel* ps = m_scene->GetFSModel();
 	if (ps == nullptr) return;
@@ -1059,7 +1049,7 @@ void GLPostModelItem::RenderDiscreteElementAsSolid(GLRenderEngine& re, int i, do
 	}
 }
 
-void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re, GLContext& rc)
+void GLPostModelItem::RenderMinMaxMarkers(GLRenderEngine& re)
 {
 	Post::CGLModel& gm = *m_scene->GetGLModel();
 
@@ -1266,7 +1256,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// build the scene
 	if (m_buildScene)
 	{
-		BuildScene(rc);
+		BuildScene();
 		m_buildScene = false;
 	}
 
@@ -1298,7 +1288,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 	if (rc.m_settings.m_bTags) CreateTags(rc);
 }
 
-void CGLPostScene::BuildScene(GLContext& rc)
+void CGLPostScene::BuildScene()
 {
 	clear();
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;

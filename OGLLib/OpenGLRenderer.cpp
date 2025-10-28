@@ -141,6 +141,9 @@ public:
 	bool useTexture = false;
 
 	bool shaderInit = false;
+	const GLCamera* cam = nullptr;
+
+	bool lineMode = false; // set to true when rendering lines
 
 	OGLProgram* activeProgram = nullptr;
 
@@ -552,6 +555,8 @@ void OpenGLRenderer::setFrontFace(GLRenderEngine::FrontFace f)
 
 void OpenGLRenderer::positionCamera(const GLCamera& cam)
 {
+	m.cam = &cam;
+
 	// reset the modelview matrix mode
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -559,8 +564,8 @@ void OpenGLRenderer::positionCamera(const GLCamera& cam)
 	// target in camera coordinates
 	vec3d r = cam.Target();
 
-	// zoom-in a little when in decal mode
-	if (cam.m_bdecal)
+	// zoom-in a little when in line rendering mode
+	if (m.lineMode)
 		glPolygonOffset(0, 0);
 	else
 		glPolygonOffset(1, 1);
@@ -735,6 +740,23 @@ void OpenGLRenderer::renderTaggedGMeshNodes(const GLMesh& mesh, int tag)
 	m_stats.points += points.Vertices();
 }
 
+void OpenGLRenderer::enableLineMode(bool b)
+{
+	if (m.cam == nullptr) return;
+
+	if (b && (m.lineMode == false))
+	{
+		m.lineMode = true;
+		positionCamera(*m.cam);
+	}
+
+	if (!b && (m.lineMode == true))
+	{
+		m.lineMode = false;
+		positionCamera(*m.cam);
+	}
+}
+
 void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 {
 	OGLLineMesh* glm = nullptr;
@@ -765,7 +787,10 @@ void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 		unsigned int flags = 0;
 		if (m.useVertexColors) flags = OGLMesh::FLAG_COLOR;
 
+		enableLineMode(true);
 		glm->Render(flags);
+		enableLineMode(false);
+
 		m_stats.lines += glm->Vertices() / 2;
 
 		glm->incRef();
@@ -806,7 +831,9 @@ void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, int edgeId, bool cache
 		if (m.useVertexColors) flags = OGLMesh::FLAG_COLOR;
 
 		const auto& p = mesh.EIL(edgeId);
+		enableLineMode(true);
 		glm->Render(2 * p.first, 2 * p.second, flags);
+		enableLineMode(false);
 		m_stats.lines += p.second;
 
 		glm->incRef();
@@ -909,7 +936,7 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const
 			{
 				bool bdraw = false;
 
-				if (f.nbr[j] >= 0)
+				if (f.nbr[j] > i)
 				{
 					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 					vec3d n1 = T.LocalToGlobalNormal(to_vec3d(f.fn));
@@ -950,21 +977,15 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const
 	if (points.empty()) return;
 
 	// build the line mesh
-	GLMesh lineMesh;
-	int NN = (int)points.size();
-	int NE = (int)points.size() / 2;
-	lineMesh.Create(NN, 0, NE);
-	for (int i = 0; i < NE; ++i)
-	{
-		lineMesh.Node(2 * i).r = points[2 * i];
-		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
-		lineMesh.Edge(i).n[0] = 2 * i;
-		lineMesh.Edge(i).n[1] = 2 * i + 1;
-	}
-	lineMesh.Update();
+	int edges = points.size() / 2;
+	OGLLineMesh lineMesh(edges);
+	lineMesh.SetRenderMode(OGLMesh::VertexArrayMode);
+	lineMesh.BeginMesh();
+	for (auto& pt : points) lineMesh.AddVertex(pt);
+	lineMesh.EndMesh();
 
-	// render the active edges
-	renderGMeshEdges(lineMesh, false);
+	// render it
+	lineMesh.Render();
 }
 
 void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
@@ -992,7 +1013,7 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const
 				{
 					bdraw = true;
 				}
-				else
+				else if (f.nbr[j] > i)
 				{
 					const GLMesh::FACE& f2 = gmsh.Face(f.nbr[j]);
 
@@ -1041,21 +1062,15 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const
 	if (points.empty()) return;
 
 	// build the line mesh
-	GLMesh lineMesh;
-	int NN = (int)points.size();
-	int NE = (int)points.size() / 2;
-	lineMesh.Create(NN, 0, NE);
-	for (int i = 0; i < NE; ++i)
-	{
-		lineMesh.Node(2 * i).r = points[2 * i];
-		lineMesh.Node(2 * i + 1).r = points[2 * i + 1];
-		lineMesh.Edge(i).n[0] = 2 * i;
-		lineMesh.Edge(i).n[1] = 2 * i + 1;
-	}
-	lineMesh.Update();
+	int edges = points.size() / 2;
+	OGLLineMesh lineMesh(edges);
+	lineMesh.SetRenderMode(OGLMesh::VertexArrayMode);
+	lineMesh.BeginMesh();
+	for (auto& pt : points) lineMesh.AddVertex(pt);
+	lineMesh.EndMesh();
 
-	// render the active edges
-	renderGMeshEdges(lineMesh, false);
+	// render it
+	lineMesh.Render();
 }
 
 void OpenGLRenderer::setTexture(GLTexture1D& tex)

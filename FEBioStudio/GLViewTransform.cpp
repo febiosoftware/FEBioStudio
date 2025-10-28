@@ -152,12 +152,6 @@ void GLViewTransform::PositionInScene(const GLCamera& cam)
 	// target in camera coordinates
 	vec3d r = cam.Target();
 
-	// zoom-in a little when in decal mode
-	if (cam.m_bdecal)
-		glPolygonOffset(0, 0);
-	else
-		glPolygonOffset(1, 1);
-
 	// position the target in camera coordinates
 	vec3d t = -r;
 	glTranslated(t.x, t.y, t.z);

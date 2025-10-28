@@ -89,6 +89,13 @@ public:
 		DIVS, RANGE, USERMIN, USERMAX, BW_FRACTION, BW_STEEPNESS
 	};
 
+	enum MeshOption {
+		ODF_MESH,
+		ODF_REMESH,
+		EFD_MESH,
+		VM3_MESH
+	};
+
 public:
     CFiberODFAnalysis(CImageModel* img);
     ~CFiberODFAnalysis();
@@ -123,7 +130,7 @@ public:
 	double RangeMin() const { return (double)m_map.RangeMin(); }
 
 public:
-	void renderODFMesh(GLRenderEngine& re, CODF* odf, GLCamera* cam);
+	void renderODFMesh(GLRenderEngine& re, CODF* odf, bool remeshOnly);
 
 private:
 	// clear all ODFs
