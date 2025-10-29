@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QMouseEvent>
 #include <GLLib/GLMesh.h>
-#include <rhi/qshader.h>
+#include "rhiScene.h"
 #include "rhiDocument.h"
 #include <FEBioStudio/MainWindow.h>
 #include <GLLib/GLContext.h>
@@ -42,8 +42,57 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLTriad.h>
 
-QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
+RhiWidget createRHIWidget(CMainWindow* wnd)
 {
+	GraphicsAPI graphicsApi = wnd->GetRhiImplementation();
+
+	// map to RHI implementation
+	QRhi::Implementation api = QRhi::Null;
+	switch (graphicsApi)
+	{
+	case GraphicsAPI::API_OPENGL    : api = QRhi::OpenGLES2; break;
+	case GraphicsAPI::API_VULKAN    : api = QRhi::Vulkan; break;
+	case GraphicsAPI::API_METAL     : api = QRhi::Metal; break;
+	case GraphicsAPI::API_DIRECT3D11: api = QRhi::D3D11; break;
+	case GraphicsAPI::API_DIRECT3D12: api = QRhi::D3D12; break;
+	default:
+		break;
+	}
+
+	// Use platform-specific defaults
+#if defined(Q_OS_WIN)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		//	api = QRhi::D3D11;
+		api = QRhi::OpenGLES2;
+		//	api = QRhi::Vulkan;
+	}
+#endif
+
+	// Always use Metal on Apple platforms
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::Metal;
+	}
+#endif
+
+	// On Linux, prefer Vulkan if available
+#if defined(Q_OS_LINUX)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+#ifdef QT_CONFIG(vulkan)
+		api = QRhi::Vulkan;
+#else
+		api = QRhi::OpenGLES2;
+#endif
+	}
+#endif
+
+
 #if QT_CONFIG(vulkan)
 	static QVulkanInstance inst;
 	if (api == QRhi::Vulkan) {
@@ -82,7 +131,7 @@ QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 		QSurfaceFormat::setDefaultFormat(fmt);
 	}
 
-	RhiWindow* rhiWnd = new rhiSceneView(wnd, api);
+	rhiSceneView* rhiWnd = new rhiSceneView(wnd, api);
 	rhiWnd->setSampleCount(sampleCount);
 
 #if QT_CONFIG(vulkan)
@@ -90,7 +139,11 @@ QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api)
 		rhiWnd->setVulkanInstance(&inst);
 #endif
 
-	return QWidget::createWindowContainer(rhiWnd);
+	RhiWidget w;
+	w.rhiWidget = QWidget::createWindowContainer(rhiWnd);
+	w.rhiView = rhiWnd;
+
+	return w;
 }
 
 rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
@@ -107,17 +160,17 @@ rhiSceneView::rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi)
 	menu->align(GLWAlign::GLW_ALIGN_RIGHT | GLWAlign::GLW_ALIGN_TOP);
 
 	GLCheckBox* meshLines = new GLCheckBox(0, 0, W, H, "mesh lines");
-	meshLines->add_event_handler([=](GLWidget* w, int nevent) {
+	meshLines->add_event_handler([this](GLWidget* w, int nevent) {
 		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(m_doc->GetScene());
+		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
 		if (s) s->renderMesh = b->m_checked;
 		});
 	menu->add_widget(meshLines);
 
 	GLCheckBox* meshNodes = new GLCheckBox(0, 0, W, H, "mesh nodes");
-	meshNodes->add_event_handler([=](GLWidget* w, int nevent) {
+	meshNodes->add_event_handler([this](GLWidget* w, int nevent) {
 		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(m_doc->GetScene());
+		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
 		if (s) s->renderNodes = b->m_checked;
 		});
 	menu->add_widget(meshNodes);
@@ -139,8 +192,16 @@ rhiSceneView::~rhiSceneView()
 	delete m_rhiRender;
 }
 
+void rhiSceneView::SetScene(GLScene* scene)
+{
+	m_scene = scene;
+	if (m_rhiRender) m_rhiRender->clearCache();
+	requestUpdate();
+}
+
 bool rhiSceneView::event(QEvent* event)
 {
+	/*
 	if (m_doc && (event->type()==QEvent::Drop))
 	{
 		QDropEvent* ev = dynamic_cast<QDropEvent*>(event);
@@ -159,7 +220,7 @@ bool rhiSceneView::event(QEvent* event)
 			requestUpdate();
 		}
 	}
-
+	*/
 	return RhiWindow::event(event);
 }
 
@@ -199,29 +260,24 @@ void rhiSceneView::customInit()
 
 void rhiSceneView::customRender()
 {
-	rhiDocument* doc = dynamic_cast<rhiDocument*>(m_wnd->GetDocument());
+	if (m_scene == nullptr) return;
 
-	// TODO: This doesn't always work! It is possible for a new document to have the same pointer
-	// than the old one!
-	if (doc != m_doc)
-	{
-		m_rhiRender->clearCache();
-		m_doc = doc;
-	}
-
-	rhiScene* scene = m_doc->GetRhiScene();
-	GLCamera& cam = scene->GetCamera();
+	GLCamera& cam = m_scene->GetCamera();
 
 	m_rhiRender->start();
 
 	GLContext rc;
 	rc.m_cam = &cam;
-	scene->Render(*m_rhiRender, rc);
+	m_scene->Render(*m_rhiRender, rc);
 
 	triad->setOrientation(cam.GetOrientation());
 
-	m_rhiRender->useOverlayImage(m_doc->m_renderOverlay);
-	if (m_doc->m_renderOverlay)
+	bool renderOverlay = false;
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	if (RhiScene) renderOverlay = RhiScene->renderOverlay;
+
+	m_rhiRender->useOverlayImage(renderOverlay);
+	if (renderOverlay)
 	{
 		QImage img(m_rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
 		img.fill(Qt::transparent);
@@ -265,7 +321,7 @@ void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
-	if (m_doc == nullptr) return;
+	if (m_scene == nullptr) return;
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
 	bool bctrl = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -288,7 +344,7 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 		return;
 	}
 
-	GLCamera& cam = m_doc->GetScene()->GetCamera();
+	GLCamera& cam = m_scene->GetCamera();
 
 	if (but1)
 	{

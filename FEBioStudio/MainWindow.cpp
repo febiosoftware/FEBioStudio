@@ -1292,6 +1292,11 @@ void CMainWindow::Reset()
 	on_actionZoomExtents_triggered();
 }
 
+GraphicsAPI CMainWindow::GetRhiImplementation() const
+{
+	return ui->m_graphicsApi;
+}
+
 //-----------------------------------------------------------------------------
 //! Get the active document
 CDocument* CMainWindow::GetDocument() 

@@ -63,6 +63,7 @@ public:
 	bool doClipping = false;
 	double clipPlane[4] = { 0,0,1,0 }; // plane equation coefficients
 	bool showGrid = false;
+	bool renderOverlay = false;
 
 private:
 	BOX m_box;

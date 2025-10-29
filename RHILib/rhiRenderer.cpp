@@ -123,9 +123,9 @@ void rhiRenderer::init()
 
 void rhiRenderer::clearCache()
 {
-	m_solidPass->clearCache();
-	m_linePass->clearCache();
-	m_pointPass->clearCache();
+	if (m_solidPass) m_solidPass->clearCache();
+	if (m_linePass ) m_linePass ->clearCache();
+	if (m_pointPass) m_pointPass->clearCache();
 }
 
 QSize rhiRenderer::pixelSize() const

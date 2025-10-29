@@ -144,7 +144,7 @@ public:
 		case 15: return s->clipPlane[1]; break;
 		case 16: return s->clipPlane[2]; break;
 		case 17: return s->clipPlane[3]; break;
-		case 18: return m_doc->m_renderOverlay; break;
+		case 18: return s->renderOverlay; break;
 		case 19: return s->showGrid; break;
 		}
 
@@ -174,7 +174,7 @@ public:
 		case 15: s->clipPlane[1] = v.toFloat(); break;
 		case 16: s->clipPlane[2] = v.toFloat(); break;
 		case 17: s->clipPlane[3] = v.toFloat(); break;
-		case 18: m_doc->m_renderOverlay = v.toBool(); break;
+		case 18: s->renderOverlay = v.toBool(); break;
 		case 19: s->showGrid = v.toBool(); break;
 		}
 	}

@@ -176,10 +176,10 @@ public:
 	::C2DImageTimeView* timeView2D;
 	CFEBioReportView* febReportView;
 	FEBioBatchView* batchView;
-	QWidget* rhiView;
+	rhiSceneView* rhiView;
 
 public:
-	CMainCentralWidget(CMainWindow* wnd, GraphicsAPI graphicsApi) : m_wnd(wnd)
+	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
 	{
 		QVBoxLayout* centralLayout = new QVBoxLayout;
 		centralLayout->setContentsMargins(0, 0, 0, 0);
@@ -220,54 +220,9 @@ public:
 		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(batchView);
 
-		// map to RHI implementation
-		QRhi::Implementation api = QRhi::Null;
-		switch (graphicsApi)
-		{
-		case GraphicsAPI::API_OPENGL: api = QRhi::OpenGLES2; break;
-		case GraphicsAPI::API_VULKAN: api = QRhi::Vulkan; break;
-		case GraphicsAPI::API_METAL: api = QRhi::Metal; break;
-		case GraphicsAPI::API_DIRECT3D11: api = QRhi::D3D11; break;
-		case GraphicsAPI::API_DIRECT3D12: api = QRhi::D3D12; break;
-		default:
-			break;
-		}
-
-		// Use platform-specific defaults
-#if defined(Q_OS_WIN)
-		if ((api == QRhi::Null) || 
-			((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
-		{
-		//	api = QRhi::D3D11;
-			api = QRhi::OpenGLES2;
-		//	api = QRhi::Vulkan;
-		}
-#endif
-
-		// Always use Metal on Apple platforms
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
-		if ((api == QRhi::Null) ||
-			((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
-		{
-			api = QRhi::Metal;
-		}
-#endif
-
-		// On Linux, prefer Vulkan if available
-#if defined(Q_OS_LINUX)
-		if ((api == QRhi::Null) ||
-			((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
-		{
-		#ifdef QT_CONFIG(vulkan)
-			api = QRhi::Vulkan;
-		#else
-			api = QRhi::OpenGLES2;
-		#endif
-		}
-#endif
-
-		rhiView = createRHIWidget(wnd, api);
-		stack->addWidget(rhiView);
+		RhiWidget w = createRHIWidget(wnd);
+		rhiView = w.rhiView;
+		stack->addWidget(w.rhiWidget);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

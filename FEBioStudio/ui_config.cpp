@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "TextDocument.h"
 #include "../FEBioMonitor/FEBioReportDoc.h"
+#include <RHILib/rhiDocument.h>
 
 // configuration base class
 void Ui::CUIConfig::Apply()
@@ -609,4 +610,11 @@ void Ui::CRHIConfig::Apply()
 
 	ui->docProps->parentWidget()->show();
 	ui->docProps->parentWidget()->raise();
+
+	::CMainWindow* wnd = ui->m_wnd;
+	rhiDocument* doc = dynamic_cast<rhiDocument*>(wnd->GetDocument());
+	if (doc)
+		ui->centralWidget->rhiView->SetScene(doc->GetScene());
+	else
+		ui->centralWidget->rhiView->SetScene(nullptr);
 }

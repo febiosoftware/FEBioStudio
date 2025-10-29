@@ -42,6 +42,9 @@ public:
 	void customRender() override;
 	void onFrameFinished() override;
 
+	void SetScene(GLScene* scene);
+	GLScene* GetScene() { return m_scene; }
+
 public:
 	void mousePressEvent(QMouseEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
@@ -51,7 +54,8 @@ public:
 
 private:
 	CMainWindow* m_wnd = nullptr;
-	rhiDocument* m_doc = nullptr;
+
+	GLScene* m_scene = nullptr;
 
 	rhiRenderer* m_rhiRender = nullptr;
 
@@ -64,5 +68,13 @@ private:
 	GLTriad* triad;
 };
 
-// helper function for creating a RhiWindow inside a QWidget
-QWidget* createRHIWidget(CMainWindow* wnd, QRhi::Implementation api);
+// helper struct and function for creating a RhiWindow inside a QWidget.
+// To use this, add the rhiWidget to your layout, but use the rhiView to interact
+// with the rhi view. 
+struct RhiWidget 
+{
+	QWidget* rhiWidget = nullptr;
+	rhiSceneView* rhiView = nullptr;
+};
+
+RhiWidget createRHIWidget(CMainWindow* wnd);
