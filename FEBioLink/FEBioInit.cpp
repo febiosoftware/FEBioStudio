@@ -40,3 +40,10 @@ void FEBio::InitFEBioLibrary()
 	// we will process create events
 	FEBio::BlockCreateEvents(false);
 }
+
+bool FEBio::ConfigureFEBio(const char* szfilename)
+{
+	FEBioConfig config;
+	config.readPlugins = false; // don't read the plugins from the config file
+	return febio::Configure(szfilename, config);
+}

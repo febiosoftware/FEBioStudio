@@ -1057,6 +1057,20 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->setAlignment(Qt::AlignTop);
 
+	m_loadConfig = new QCheckBox("Load FEBio config file on startup.");
+	layout->addWidget(m_loadConfig);
+
+	QHBoxLayout* pathLayout = new QHBoxLayout;
+	pathLayout->addWidget(new QLabel("Config file: "));
+	m_configEdit = new QLineEdit;
+	pathLayout->addWidget(m_configEdit);
+
+	QToolButton* pathButton = new QToolButton;
+	pathButton->setIcon(CIconProvider::GetIcon("open"));
+	pathLayout->addWidget(pathButton);
+
+	layout->addLayout(pathLayout);
+
 	QFormLayout* f = new QFormLayout;
 	f->addRow("FEBio SDK Include path: ", m_sdkInc = new QLineEdit);
 	f->addRow("FEBio SDK Library path: ", m_sdkLib = new QLineEdit);
@@ -1064,7 +1078,15 @@ CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
 	layout->addLayout(f);
 	 
 	this->setLayout(layout);
+
+	QObject::connect(pathButton, SIGNAL(clicked()), this, SLOT(editConfigFilePath()));
 }
+
+bool CFEBioSettingsWidget::GetLoadConfigFlag() { return m_loadConfig->isChecked(); }
+QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text(); }
+
+void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
+void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
 
 QString CFEBioSettingsWidget::GetSDKIncludePath() const { return m_sdkInc->text(); }
 void CFEBioSettingsWidget::SetSDKIncludePath(const QString& s) { m_sdkInc->setText(s); }
@@ -1074,6 +1096,19 @@ void CFEBioSettingsWidget::SetSDKLibraryPath(const QString& s) { m_sdkLib->setTe
 
 QString CFEBioSettingsWidget::GetCreatePluginPath() const { return m_pluginPath->text(); }
 void CFEBioSettingsWidget::SetCreatePluginPath(const QString& s) { m_pluginPath->setText(s); }
+
+void CFEBioSettingsWidget::editConfigFilePath()
+{
+	QFileDialog dlg(this);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(m_configEdit->text());
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+		m_configEdit->setText(fileName);
+	}
+}
 
 //-----------------------------------------------------------------------------
 class Ui::CDlgSettings
@@ -1280,6 +1315,9 @@ void CDlgSettings::UpdateSettings()
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
 
+	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
+	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
+
 	ui->m_febio->SetSDKIncludePath(m_pwnd->GetSDKIncludePath());
 	ui->m_febio->SetSDKLibraryPath(m_pwnd->GetSDKLibraryPath());
 	ui->m_febio->SetCreatePluginPath(m_pwnd->GetCreatePluginPath());
@@ -1424,6 +1462,8 @@ void CDlgSettings::apply()
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
+	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
+	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
 	m_pwnd->SetSDKIncludePath(ui->m_febio->GetSDKIncludePath());
 	m_pwnd->SetSDKLibraryPath(ui->m_febio->GetSDKLibraryPath());
 	m_pwnd->SetCreatePluginPath(ui->m_febio->GetCreatePluginPath());
