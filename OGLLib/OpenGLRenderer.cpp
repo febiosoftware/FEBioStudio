@@ -742,19 +742,7 @@ void OpenGLRenderer::renderTaggedGMeshNodes(const GLMesh& mesh, int tag)
 
 void OpenGLRenderer::enableLineMode(bool b)
 {
-	if (m.cam == nullptr) return;
-
-	if (b && (m.lineMode == false))
-	{
-		m.lineMode = true;
-		positionCamera(*m.cam);
-	}
-
-	if (!b && (m.lineMode == true))
-	{
-		m.lineMode = false;
-		positionCamera(*m.cam);
-	}
+	m.lineMode = b;
 }
 
 void OpenGLRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
@@ -916,7 +904,7 @@ void OpenGLRenderer::disableClipPlane(unsigned int n)
 	glDisable(GL_CLIP_PLANE0 + n);
 }
 
-void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T)
+void OpenGLRenderer::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh, const Transform& T)
 {
 	// get some settings
 	quatd q = cam.GetOrientation();
@@ -988,7 +976,7 @@ void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const
 	lineMesh.Render();
 }
 
-void OpenGLRenderer::renderGMeshOutline(GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
+void OpenGLRenderer::renderGMeshOutline(const GLCamera& cam, const GLMesh& gmsh, const Transform& T, int surfID)
 {
 	// get some settings
 	quatd q = cam.GetOrientation();

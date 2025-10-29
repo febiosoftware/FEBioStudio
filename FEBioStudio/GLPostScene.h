@@ -43,6 +43,8 @@ class GLPostSceneItem : public GLSceneItem
 public:
 	GLPostSceneItem(CGLPostScene* scene) : m_scene(scene) {}
 
+	const GLCamera& GetCamera() const;
+
 protected:
 	CGLPostScene* m_scene;
 };

@@ -162,6 +162,8 @@ void TagFacesByPhysics(FSModel& fem)
 	}
 }
 
+const GLCamera& GLModelSceneItem::GetCamera() const { return m_scene->GetCamera(); }
+
 CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 {
 	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
@@ -203,7 +205,7 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// set the object's render transforms
 	UpdateRenderTransforms(rc);
 
-	GLCamera& cam = *rc.m_cam;
+	GLCamera& cam = GetCamera();
 	engine.positionCamera(cam);
 
 	int nitem = m_doc->GetItemMode();
@@ -1950,7 +1952,7 @@ void GLObjectItem::RenderSelectedFEElements(GLRenderEngine& re)
 void GLObjectItem::RenderSurfaceMeshNodes(GLRenderEngine& re, GLContext& rc)
 {
 	GLViewSettings& view = rc.m_settings;
-	quatd q = rc.m_cam->GetOrientation();
+	quatd q = GetCamera().GetOrientation();
 
 	// set the point size
 	float fsize = view.m_node_size;
@@ -2571,7 +2573,7 @@ void GLFeatureEdgesItem::render(GLRenderEngine& re, GLContext& rc)
 						if (vs.m_nrender == RENDER_WIREFRAME)
 						{
 							re.setColor(GLColor(32, 0, 0));
-							re.renderGMeshOutline(*rc.m_cam, *m, po->GetRenderTransform());
+							re.renderGMeshOutline(GetCamera(), *m, po->GetRenderTransform());
 						}
 					}
 					re.popTransform();
@@ -2585,7 +2587,7 @@ void GLPhysicsItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	GLViewSettings& vs = rc.m_settings;
 
-	GLCamera& cam = *rc.m_cam;
+	const GLCamera& cam = GetCamera();
 	double scale = 0.05 * (double)cam.GetTargetDistance();
 
 	// render physics
@@ -2598,7 +2600,7 @@ void GLPhysicsItem::render(GLRenderEngine& re, GLContext& rc)
 
 void GLPhysicsItem::RenderRigidBodies(GLRenderEngine& re, GLContext& rc) const
 {
-	GLCamera& cam = *rc.m_cam;
+	const GLCamera& cam = GetCamera();
 
 	FSModel* ps = m_scene->GetFSModel();
 
@@ -3206,7 +3208,7 @@ void GLSelectionItem::RenderSelectedSurfaces(GLRenderEngine& re, GLContext& rc, 
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());
 	for (int surfId : selectedSurfaces)
 	{
-		re.renderGMeshOutline(*rc.m_cam, *pm, po->GetRenderTransform(), surfId);
+		re.renderGMeshOutline(GetCamera(), *pm, po->GetRenderTransform(), surfId);
 	}
 }
 
@@ -3244,7 +3246,7 @@ void GLSelectionItem::RenderSelectedParts(GLRenderEngine& re, GLContext& rc, GOb
 	re.setMaterial(GLMaterial::OVERLAY, GLColor::Blue());
 	for (int surfId : facesToRender)
 	{
-		re.renderGMeshOutline(*rc.m_cam, *m, po->GetRenderTransform(), surfId);
+		re.renderGMeshOutline(GetCamera(), *m, po->GetRenderTransform(), surfId);
 	}
 }
 
@@ -3361,7 +3363,7 @@ void GLHighlighterItem::drawFace(GLRenderEngine& re, GLContext& rc, GFace* face,
 	re.renderGMesh(*mesh, face->GetLocalID());
 
 	re.setMaterial(GLMaterial::OVERLAY, c);
-	re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), face->GetLocalID());
+	re.renderGMeshOutline(GetCamera(), *mesh, po->GetRenderTransform(), face->GetLocalID());
 
 	re.popTransform();
 }
@@ -3397,7 +3399,7 @@ void GLHighlighterItem::drawPart(GLRenderEngine& re, GLContext& rc, GPart* part,
 	re.setMaterial(GLMaterial::OVERLAY, c);
 	for (int surfID : faceList)
 	{
-		re.renderGMeshOutline(*rc.m_cam, *mesh, po->GetRenderTransform(), surfID);
+		re.renderGMeshOutline(GetCamera(), *mesh, po->GetRenderTransform(), surfID);
 	}
 
 	re.popTransform();
@@ -3474,7 +3476,7 @@ void GLGridItem::render(GLRenderEngine& re, GLContext& rc)
 	if (rc.m_settings.m_bgrid)
 	{
 		GLGrid& grid = m_scene->GetGrid();
-		grid.Render(re, *rc.m_cam);
+		grid.Render(re, m_scene->GetCamera());
 	}
 }
 

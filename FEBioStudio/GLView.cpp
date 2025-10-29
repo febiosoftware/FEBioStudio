@@ -1631,7 +1631,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 		GLViewScene* scene = dynamic_cast<GLViewScene*>(GetActiveScene());
 
 		// update the triad
-		if (m_ptriad) m_ptriad->setOrientation(rc.m_cam->GetOrientation());
+		if (m_ptriad) m_ptriad->setOrientation(scene->GetCamera().GetOrientation());
 
 		if (m_ptitle)
 		{

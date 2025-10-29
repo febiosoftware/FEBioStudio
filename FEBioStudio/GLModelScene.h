@@ -53,6 +53,8 @@ class GLModelSceneItem : public GLSceneItem
 public:
 	GLModelSceneItem(CGLModelScene* scene) : m_scene(scene) {}
 
+	const GLCamera& GetCamera() const;
+
 protected:
 	CGLModelScene* m_scene;
 };

@@ -101,13 +101,14 @@ private:
 class rhiGridItem : public GLSceneItem
 {
 public:
-	rhiGridItem() { m_grid.m_ndiv = 2; }
+	rhiGridItem(GLScene* scene) : m_scene(scene) { m_grid.m_ndiv = 2; }
 	void render(GLRenderEngine& re, GLContext& rc) override
 	{
-		if (showGrid) m_grid.Render(re, *rc.m_cam);
+		if (showGrid) m_grid.Render(re, m_scene->GetCamera());
 	}
 
 public:
+	GLScene* m_scene;
 	GLGrid m_grid;
 	bool showGrid = false;
 };
@@ -116,7 +117,7 @@ rhiScene::rhiScene()
 {
 	tex1d.Create(ColorMapManager::JET, 256, true);
 
-	addItem(new rhiGridItem());
+	addItem(new rhiGridItem(this));
 }
 
 void rhiScene::AddMesh(GLMesh* pm)

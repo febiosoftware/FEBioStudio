@@ -120,7 +120,7 @@ public:
 	void SetOrientation(quatd q) { m_rot.Target(q); }
 
 	// get the camera's orientation
-	quatd GetOrientation() { return m_rot.Value(); }
+	quatd GetOrientation() const { return m_rot.Value(); }
 
 	// get the target position
 	vec3d GetPosition() const { return m_pos.Value(); }

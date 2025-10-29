@@ -39,6 +39,8 @@ SOFTWARE.*/
 
 using namespace Post;
 
+const GLCamera& GLPostSceneItem::GetCamera() const { return m_scene->GetCamera(); }
+
 void GLPostPlaneCutItem::render(GLRenderEngine& re, GLContext& rc)
 {
 	CGLModel& gm = *m_scene->GetGLModel();
@@ -267,7 +269,7 @@ void GLPostModelItem::RenderNodes(GLRenderEngine& re, GLContext& rc)
 	// see if backface-culling is enabled or not
 	if (rc.m_settings.m_bcull)
 	{
-		quatd q = rc.m_cam->GetOrientation();
+		quatd q = GetCamera().GetOrientation();
 		vec3f f;
 		int NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
@@ -694,7 +696,7 @@ void GLPostModelItem::RenderOutline(GLRenderEngine& re, GLContext& rc)
 	{
 		Transform T;
 		re.setColor(GLColor(32, 0, 0));
-		re.renderGMeshOutline(*rc.m_cam, *pm, T);
+		re.renderGMeshOutline(GetCamera(), *pm, T);
 	}
 }
 
@@ -1110,7 +1112,7 @@ void GLPostObjectItem::render(GLRenderEngine& re, GLContext& rc)
 
 	if ((fem->PointObjects() == 0) && (fem->LineObjects() == 0)) return;
 
-	double scale = 0.05 * (double)rc.m_cam->GetTargetDistance();
+	double scale = 0.05 * (double)GetCamera().GetTargetDistance();
 	double R = 0.5 * scale;
 
 	re.pushState();
@@ -1267,7 +1269,7 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
-	GLCamera& cam = *rc.m_cam;
+	GLCamera& cam = GetCamera();
 	engine.positionCamera(cam);
 
 	// now render it
