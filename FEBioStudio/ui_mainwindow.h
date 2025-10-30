@@ -220,9 +220,8 @@ public:
 		batchView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		stack->addWidget(batchView);
 
-		RhiWidget w = createRHIWidget(wnd);
-		rhiView = w.rhiView;
-		stack->addWidget(w.rhiWidget);
+		rhiView = new rhiSceneView(wnd);
+		stack->addWidget(QWidget::createWindowContainer(rhiView));
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
@@ -352,8 +351,6 @@ public:
 	CMainMenu* mainMenu;
 
 public:
-	GraphicsAPI m_graphicsApi = GraphicsAPI::API_NULL;
-
 	FBS_SETTINGS m_settings;
 
 	CFEBioJobManager* m_jobManager;

@@ -336,15 +336,15 @@ public:
 		vl->addWidget(distro);
 		vl->addWidget(propsView);
 
-		RhiWidget w = createRHIWidget(CMainWindow::GetInstance());
-		glw = w.rhiView;
-		w.rhiWidget->setMinimumSize(QSize(400, 400));
+		glw = new rhiSceneView(CMainWindow::GetInstance());
+		QWidget* rhiw = QWidget::createWindowContainer(glw);
+		rhiw->setMinimumSize(QSize(400, 400));
 
 		glw->SetScene(scene);
 
 		QHBoxLayout* hl = new QHBoxLayout;
 		hl->addLayout(vl);
-		hl->addWidget(w.rhiWidget);
+		hl->addWidget(rhiw);
 
 		QVBoxLayout* l = new QVBoxLayout;
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);

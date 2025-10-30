@@ -93,8 +93,6 @@ public:
 
 	static CMainWindow* GetInstance();
 
-	GraphicsAPI GetRhiImplementation() const;
-
 public:
 	//! reset window data
 	void Reset();

@@ -16,13 +16,13 @@ public:
 	};
 
 public:
-    RhiWindow(QRhi::Implementation graphicsApi);
+    RhiWindow();
     QString graphicsApiName() const;
     void releaseSwapChain();
 
 	void setRenderMode(RenderMode rm);
 
-	void setSampleCount(unsigned int count) { sampleCount = count; }
+	static void InitRHI(QRhi::Implementation graphicsApi);
 
 protected:
     virtual void customInit() = 0;
@@ -54,11 +54,12 @@ protected:
     bool event(QEvent *) override;
 
 private:
-    QRhi::Implementation m_graphicsApi;
     bool m_initialized = false;
     bool m_notExposed = false;
     bool m_newlyExposed = false;
 
 	RenderMode m_renderMode = RenderMode::STATIC;
-};
 
+    static QRhi::Implementation m_graphicsApi;
+	static bool rhi_initialized;
+};

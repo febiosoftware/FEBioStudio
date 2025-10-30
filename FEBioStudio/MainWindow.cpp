@@ -130,6 +130,57 @@ private:
 	CMainWindow* wnd;
 };
 
+static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
+{
+	// map to RHI implementation
+	QRhi::Implementation api = QRhi::Null;
+	switch (graphicsApi)
+	{
+	case GraphicsAPI::API_OPENGL: api = QRhi::OpenGLES2; break;
+	case GraphicsAPI::API_VULKAN: api = QRhi::Vulkan; break;
+	case GraphicsAPI::API_METAL: api = QRhi::Metal; break;
+	case GraphicsAPI::API_DIRECT3D11: api = QRhi::D3D11; break;
+	case GraphicsAPI::API_DIRECT3D12: api = QRhi::D3D12; break;
+	default:
+		break;
+	}
+
+	// Use platform-specific defaults
+#if defined(Q_OS_WIN)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::D3D11) && (api != QRhi::D3D12) && (api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+		//	api = QRhi::D3D11;
+		api = QRhi::OpenGLES2;
+		//	api = QRhi::Vulkan;
+	}
+#endif
+
+	// Always use Metal on Apple platforms
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Metal) && (api != QRhi::OpenGLES2)))
+	{
+		api = QRhi::Metal;
+	}
+#endif
+
+	// On Linux, prefer Vulkan if available
+#if defined(Q_OS_LINUX)
+	if ((api == QRhi::Null) ||
+		((api != QRhi::Vulkan) && (api != QRhi::OpenGLES2)))
+	{
+#ifdef QT_CONFIG(vulkan)
+		api = QRhi::Vulkan;
+#else
+		api = QRhi::OpenGLES2;
+#endif
+	}
+#endif
+
+	return api;
+}
+
 //-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
@@ -164,8 +215,11 @@ CMainWindow::CMainWindow(bool reset, GraphicsAPI api, QWidget* parent) : QMainWi
 	// Instantiate IconProvider singleton
 	CIconProvider::Instantiate(devicePixelRatio());
 
+	// initialize RHI
+	QRhi::Implementation rhiAPI = MapToValidAPI(api);
+	RhiWindow::InitRHI(rhiAPI);
+	
 	// setup the GUI
-	ui->m_graphicsApi = api;
 	ui->setupUi(this);
 
 	// read the settings
@@ -1305,11 +1359,6 @@ void CMainWindow::Reset()
 //	GetGLView()->Reset();
 	GLHighlighter::ClearHighlights();
 	on_actionZoomExtents_triggered();
-}
-
-GraphicsAPI CMainWindow::GetRhiImplementation() const
-{
-	return ui->m_graphicsApi;
 }
 
 //-----------------------------------------------------------------------------

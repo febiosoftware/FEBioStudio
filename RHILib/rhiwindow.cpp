@@ -4,10 +4,61 @@
 #include "rhiwindow.h"
 #include <QPlatformSurfaceEvent>
 
-RhiWindow::RhiWindow(QRhi::Implementation graphicsApi)
-    : m_graphicsApi(graphicsApi)
+bool RhiWindow::rhi_initialized = false;
+
+QRhi::Implementation RhiWindow::m_graphicsApi = QRhi::Null;
+
+#if QT_CONFIG(vulkan)
+static QVulkanInstance vulkanInst;
+#endif
+
+void RhiWindow::InitRHI(QRhi::Implementation api)
 {
-    switch (graphicsApi) {
+	// see if we're already initialized
+	if (rhi_initialized) return;
+
+#if QT_CONFIG(vulkan)
+	if (api == QRhi::Vulkan) {
+		// Request validation, if available. This is completely optional
+		// and has a performance impact, and should be avoided in production use.
+		vulkanInst.setLayers({ "VK_LAYER_KHRONOS_validation" });
+		// Play nice with QRhi.
+		vulkanInst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
+		if (!vulkanInst.create()) {
+			qWarning("Failed to create Vulkan instance, switching to OpenGL");
+			api = QRhi::OpenGLES2;
+		}
+	}
+#endif
+
+	// For OpenGL, to ensure there is a depth/stencil buffer for the window.
+	 // With other APIs this is under the application's control (QRhiRenderBuffer etc.)
+	 // and so no special setup is needed for those.
+	if (api == QRhi::OpenGLES2)
+	{
+		QSurfaceFormat fmt;
+		fmt.setDepthBufferSize(24);
+		fmt.setStencilBufferSize(8);
+		fmt.setSamples(4);
+		// Special case macOS to allow using OpenGL there.
+		// (the default Metal is the recommended approach, though)
+		// gl_VertexID is a GLSL 130 feature, and so the default OpenGL 2.1 context
+		// we get on macOS is not sufficient.
+#ifdef Q_OS_MACOS
+		fmt.setVersion(4, 1);
+		fmt.setProfile(QSurfaceFormat::CoreProfile);
+#endif
+		QSurfaceFormat::setDefaultFormat(fmt);
+	}
+
+	// done with initialization
+	rhi_initialized = true;
+	m_graphicsApi = api;
+}
+
+RhiWindow::RhiWindow()
+{
+    switch (m_graphicsApi) {
     case QRhi::OpenGLES2:
         setSurfaceType(OpenGLSurface);
         break;
@@ -24,6 +75,14 @@ RhiWindow::RhiWindow(QRhi::Implementation graphicsApi)
     case QRhi::Null:
         break; // RasterSurface
     }
+
+#if QT_CONFIG(vulkan)
+	if (m_graphicsApi == QRhi::Vulkan)
+		setVulkanInstance(&vulkanInst);
+#endif
+
+	// choose sample count for MSAA
+	sampleCount = 4;
 }
 
 QString RhiWindow::graphicsApiName() const

@@ -35,7 +35,7 @@ class CMainWindow;
 class rhiSceneView : public RhiWindow
 {
 public:
-	rhiSceneView(CMainWindow* wnd, QRhi::Implementation graphicsApi);
+	rhiSceneView(CMainWindow* wnd);
 	~rhiSceneView();
 
 	void customInit() override;
@@ -64,14 +64,3 @@ private:
 	CGLWidgetManager m_Widget;
 	GLTriad* triad;
 };
-
-// helper struct and function for creating a RhiWindow inside a QWidget.
-// To use this, add the rhiWidget to your layout, but use the rhiView to interact
-// with the rhi view. 
-struct RhiWidget 
-{
-	QWidget* rhiWidget = nullptr;
-	rhiSceneView* rhiView = nullptr;
-};
-
-RhiWidget createRHIWidget(CMainWindow* wnd);

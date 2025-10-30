@@ -388,11 +388,11 @@ public:
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
 
-		RhiWidget rhi = createRHIWidget(wnd);
-		glWidget = rhi.rhiView;
+		glWidget = new rhiSceneView(wnd);
 		glWidget->SetScene(m_scene);
-		rhi.rhiWidget->setMinimumSize(300, 300);
-        odfTabLayout->addWidget(rhi.rhiWidget);
+		QWidget* rhiw = QWidget::createWindowContainer(glWidget);
+		rhiw->setMinimumSize(QSize(300, 300));
+        odfTabLayout->addWidget(rhiw);
 
         odfTab->setLayout(odfTabLayout);
 //        tabs->addTab(odfTab, "ODF");
