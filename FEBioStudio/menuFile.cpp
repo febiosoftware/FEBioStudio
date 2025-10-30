@@ -1394,13 +1394,14 @@ void CMainWindow::on_actionRayTrace_triggered()
 		W = rayTracer->width();
 		H = rayTracer->height();
 
+		GLCamera& cam = scene->GetCamera();
+
 		GLContext rc;
 		rc.m_settings = GetGLView()->GetViewSettings();
-		rc.m_cam = &scene->GetCamera();
+		rc.m_cam = &cam;
 		QImage img(W, H, QImage::Format_ARGB32);
 
-		CGView& view = scene->GetView();
-		rayTracer->setProjection(view.m_fov, view.m_fnear, view.m_ffar);
+		rayTracer->setProjection(cam.GetFOV(), cam.GetNearPlane(), cam.GetFarPlane());
 		rayTracer->setBackgroundColor(rc.m_settings.m_col1);
 
 		CRayTracerThread* render_thread = new CRayTracerThread(scene, rc, &img, rayTracer);

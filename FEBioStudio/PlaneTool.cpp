@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include "GLDocument.h"
 #include <PostGL/GLModel.h>
+#include <GLLib/GLScene.h>
 #include "MainWindow.h"
 #include "DragBox.h"
 using namespace Post;
@@ -390,7 +391,9 @@ void CPlaneTool::onAlignView()
 
 	vec3d r = ui->GetNormal();
 
-	GLCamera& cam = doc->GetView()->GetCamera();
+	GLScene* scene = doc->GetScene();
+
+	GLCamera& cam = scene->GetCamera();
 	cam.SetViewDirection(r);
 
 	GetMainWindow()->RedrawGL();

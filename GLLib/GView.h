@@ -43,16 +43,12 @@ public:
 	CGView();
 	~CGView();
 
-	GLCamera& GetCamera() { return m_cam; }
-
 	void Reset();
 
 	int CameraKeys() { return (int) m_key.size(); }
 
 	CGViewKey& GetKey(int i) { return *m_key[i]; }
 	CGViewKey& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(CGViewKey* pkey);
-	void SetCurrentKey(int i);
 
 	CGViewKey* AddCameraKey(GLCameraTransform& t, const std::string& name);
 
@@ -63,23 +59,7 @@ public:
 	void PrevKey();
 	void NextKey();
 
-	bool OrhographicProjection() { return m_bortho; }
-
-	double GetFOV() { return m_fov; }
-	double GetAspectRatio() { return m_ar; }
-	double GetNearPlane() { return m_fnear; }
-	double GetFarPlane() { return m_ffar; }
-
-public:
-	bool	m_bortho;		// orthographic mode
-	double	m_fnear;
-	double	m_ffar;
-	double	m_fov;
-	double	m_ar;
-
 protected:
-	GLCamera m_cam;	//!< current camera
-
 	std::vector<CGViewKey*>	m_key;	//!< stored camera transformations
 	int						m_nkey;	//!< current key
 };

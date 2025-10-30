@@ -61,7 +61,7 @@ CGLSceneDocument::CGLSceneDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 
 CGView* CGLSceneDocument::GetView()
 {
-	return &m_scene->GetView();
+	return &m_view;
 }
 
 GLScene* CGLSceneDocument::GetScene()

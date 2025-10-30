@@ -299,8 +299,10 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 
+	GLScene* scene = doc->GetScene();
+
 	CGView& view = *doc->GetView();
-	GLCamera& cam = view.GetCamera();
+	GLCamera& cam = scene->GetCamera();
 	GLCameraTransform t;
 	cam.GetTransform(t);
 
@@ -317,11 +319,12 @@ void CMainWindow::on_actionViewVPPrev_triggered()
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 
+	GLScene* scene = doc->GetScene();
 	CGView& view = *doc->GetView();
 	if (view.CameraKeys() > 0)
 	{
 		view.PrevKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
+		scene->GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -330,12 +333,12 @@ void CMainWindow::on_actionViewVPNext_triggered()
 {
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
-
+	GLScene* scene = doc->GetScene();
 	CGView& view = *doc->GetView();
 	if (view.CameraKeys() > 0)
 	{
 		view.NextKey();
-		view.GetCamera().SetTransform(view.GetCurrentKey().transform);
+		scene->GetCamera().SetTransform(view.GetCurrentKey().transform);
 		RedrawGL();
 	}
 }
@@ -345,9 +348,10 @@ void CMainWindow::on_actionSyncViews_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
+	GLScene* scene = doc->GetScene();
 
 	CGView& view = *doc->GetView();
-	GLCamera& cam = view.GetCamera();
+	GLCamera& cam = scene->GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
 	CDocManager* DM = GetDocManager();
@@ -357,15 +361,13 @@ void CMainWindow::on_actionSyncViews_triggered()
 		CGLDocument* doci = dynamic_cast<CGLDocument*>(DM->GetDocument(i));
 		if (doci && (doci != doc))
 		{
-			CGView& viewi = *doci->GetView();
+			GLScene& scenei = *doci->GetScene();
 
 			// copy the transforms
-			GLCamera& cami = viewi.GetCamera();
+			GLCamera& cami = scenei.GetCamera();
 			cami.SetTransform(transform);
 			cami.Update(true);
-
-			// copy view parameters
-			viewi.m_bortho = view.m_bortho;
+			cami.SetOrthoProjection(cami.IsOrtho());
 		}
 	}
 }

@@ -154,6 +154,16 @@ public:
 	bool IsOrtho() const; 
 	void SetOrthoProjection(bool b);
 
+	// getter/setter
+	void SetNearPlane(double fnear) { m_fnear = fnear; }
+	double GetNearPlane() const { return m_fnear; }
+
+	void SetFarPlane(double ffar) { m_fnear = ffar; }
+	double GetFarPlane() const { return m_ffar; }
+
+	void SetFOV(double fov) { m_fov = fov; }
+	double GetFOV() const { return m_fov; }
+
 public:
 	bool IsMoving() const { return m_isMoving; }
 	void SetMoving(bool b) { m_isMoving = b; }
@@ -166,7 +176,11 @@ public:
 private:
 	double	m_speed;
 	double	m_bias;
+
 	bool	m_bortho;
+	double	m_fnear;
+	double	m_ffar;
+	double	m_fov;
 
 	bool	m_isMoving;	// camera is moving when user is moving mouse with depressed button
 };

@@ -1267,15 +1267,15 @@ protected:
 class CCmdChangeView : public CCommand
 {
 public:
-	CCmdChangeView(CGView* pview, GLCamera cam);
+	CCmdChangeView(GLCamera* oldCam, const GLCamera& newCam);
 	~CCmdChangeView();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CGView*		m_pview;
-	GLCamera	m_cam;
+	GLCamera* m_cam = nullptr;
+	GLCamera  m_newCam;
 };
 
 //-----------------------------------------------------------------------------

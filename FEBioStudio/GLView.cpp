@@ -405,8 +405,10 @@ void CGLView::changeViewMode(View_Mode vm)
 
 	m_view.m_nview = vm;
 
+	GLCamera& cam = scene->GetCamera();
+
 	// switch to ortho view if we're not in it
-	bool bortho = scene->GetView().OrhographicProjection();
+	bool bortho = cam.IsOrtho();
 	if (bortho == false)
 	{
 		m_pWnd->toggleOrtho();
@@ -494,7 +496,10 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		return;
 	}
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	GLScene* scene = pdoc->GetScene();
+
+	GLCamera& cam = scene->GetCamera();
+	m_oldCam = cam;
 	cam.SetMoving(true);
 
 	if (ntrans == TRANSFORM_MOVE)
@@ -606,7 +611,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	View_Mode viewMode = m_view.m_nview;
 
@@ -865,7 +870,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	GLCamera& cam = pdoc->GetView()->GetCamera();
+	GLScene* scene = pdoc->GetScene();
+	GLCamera& cam = scene->GetCamera();
 	cam.SetMoving(false);
 
 	int pivotMode = m_pivot.GetSelectionMode();
@@ -980,7 +986,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -997,7 +1003,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -1012,7 +1018,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				CCmdChangeView* pcmd = new CCmdChangeView(&cam, cam);
 				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 			}
@@ -1079,7 +1085,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	GLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	int pivotMode = m_pivot.GetSelectionMode();
 
@@ -1144,7 +1150,7 @@ bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return true;
 
-	GLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
     if (ev->gestureType() == Qt::ZoomNativeGesture) {
         if (ev->value() < 0) {
@@ -1390,8 +1396,8 @@ void CGLView::RenderScene()
 
 	GLViewSettings& view = GetViewSettings();
 
-	GLCamera& cam = scene->GetView().GetCamera();
-	cam.SetOrthoProjection(GetView()->OrhographicProjection());
+	GLCamera& cam = scene->GetCamera();
+	cam.SetOrthoProjection(cam.IsOrtho());
 
 	GLContext& rc = m_rc;
 	rc.m_cam = &cam;
@@ -1905,8 +1911,8 @@ void CGLView::TogglePerspective(bool b)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	CGView& view = scene->GetView();
-	view.m_bortho = b;
+	GLCamera& cam = scene->GetCamera();
+	cam.SetOrthoProjection(b);
 	repaint();
 }
 

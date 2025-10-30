@@ -2246,7 +2246,6 @@ void CMainWindow::UpdateToolbar()
 {
 	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
-
 	if (doc->IsValid() == false) return;
 
 	CMainMenu* menu = ui->mainMenu;
@@ -2256,8 +2255,12 @@ void CMainWindow::UpdateToolbar()
 	if (view.m_bmesh  != menu->actionShowMeshLines->isChecked()) menu->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != menu->actionShowGrid->isChecked()) menu->actionShowGrid->trigger();
 
-	CGView& gv = *doc->GetView();
-	if (gv.m_bortho != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	GLScene* scene = doc->GetScene();
+	if (scene)
+	{
+		GLCamera& cam = scene->GetCamera();
+		if (cam.IsOrtho() != menu->actionOrtho->isChecked()) menu->actionOrtho->trigger();
+	}
 
 	if (ui->buildToolBar->isVisible())
 	{

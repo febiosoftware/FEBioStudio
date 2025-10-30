@@ -25,9 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <FSCore/box.h>
-#include "GView.h"
 #include "GLRenderStats.h"
-
 #include "GLGrid.h"
 #include "GLRenderEngine.h"
 
@@ -78,8 +76,6 @@ public:
 	GLScene();
 	virtual ~GLScene();
 
-	CGView& GetView();
-
 	virtual void Update();
 
 	// Render the 3D scene
@@ -94,7 +90,7 @@ public:
 	// get the bounding box of the current selection
 	virtual BOX GetSelectionBox() = 0;
 
-	GLCamera& GetCamera() { return m_view.GetCamera(); }
+	GLCamera& GetCamera() { return m_cam; }
 
 public:
 	GLGrid& GetGrid() { return m_grid; }
@@ -135,8 +131,8 @@ public:
 	void clear();
 
 protected:
-	CGView	m_view;
-	GLGrid	m_grid;		// the grid object
+	GLCamera m_cam;	//!< camera
+	GLGrid	m_grid;	//!< the grid object
 
 	unsigned int	m_envtex;	// enironment texture ID
 	std::string		m_envMap; // file name used for environment mapping 

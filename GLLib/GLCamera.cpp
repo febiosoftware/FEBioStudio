@@ -46,6 +46,9 @@ void GLCamera::Reset()
 	m_trg.Target(vec3d(0,0,0));
 	Update(true);
 	m_bortho = false;
+	m_fnear = 1.f;
+	m_ffar = 50000.f;
+	m_fov = 45.f;
 	m_isMoving = false;
 }
 

@@ -48,7 +48,6 @@ public:
 	virtual void RenderCanvas();
 	virtual void RenderBackground();
 
-	CGView* GetView();
 	GLCamera* GetCamera();
 
 	//! Setup the projection matrix
@@ -80,17 +79,4 @@ protected:
 	QPoint m_prevPos;	//!< last mouse position
 
 	OpenGLRenderer*	m_ogl = nullptr;
-};
-
-// This class manages its own scene
-class CGLManagedSceneView : public CGLSceneView
-{
-public:
-	CGLManagedSceneView(GLScene* scene, QWidget* parent = nullptr);
-	~CGLManagedSceneView();
-
-	GLScene* GetActiveScene() override { return m_scene; }
-
-private:
-	GLScene* m_scene;
 };

@@ -35,8 +35,6 @@ GLScene::~GLScene()
 	clear();
 }
 
-CGView& GLScene::GetView() { return m_view; }
-
 void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	engine.pushState();

@@ -81,6 +81,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgImportData.h"
 #include <FEMLib/FSProject.h>
+#include <GLLib/GLScene.h>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1043,8 +1044,9 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	CGViewKey* pkey = dynamic_cast<CGViewKey*>(po);
 	if (pkey)
 	{
-		CGView* view = GetActiveDocument()->GetView();
-		view->SetCurrentKey(pkey);
+		GLScene* scene = GetActiveDocument()->GetScene();
+		GLCamera& cam = scene->GetCamera();
+		cam.SetTransform(pkey->transform);
 		GetMainWindow()->RedrawGL();
 	}
 

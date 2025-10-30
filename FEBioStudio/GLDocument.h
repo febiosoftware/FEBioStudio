@@ -89,6 +89,7 @@ public:
 
 protected:
 	GLScene* m_scene = nullptr;
+	CGView m_view;
 };
 
 // Base class for documents that require visualization

@@ -101,14 +101,12 @@ Ray GLViewTransform::PointToRay(int x, int y)
 	double xd = 2.0* x / W - 1.0;
 	double yd = 2.0* y / H - 1.0;
 
-	CGView* view = m_view->GetView();
-	if (view == nullptr) return Ray();
-
 	// get the projection mode
-	bool ortho = view->OrhographicProjection();
+	GLCamera* cam = m_view->GetCamera();
+	bool ortho = (cam ? cam->IsOrtho() : false);
 
-	double fnear = view->GetNearPlane();
-	double ffar = view->GetFarPlane();
+	double fnear = cam->GetNearPlane();
+	double ffar = cam->GetFarPlane();
 
 	// convert to clip coordinates
 	vector<double> c(4);

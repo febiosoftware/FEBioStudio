@@ -195,42 +195,45 @@ void CGLSceneView::SetupProjection()
 
 	BOX box = scene->GetBoundingBox();
 
-	CGView& view = scene->GetView();
-	GLCamera& cam = view.GetCamera();
-
 	double R = box.Radius();
 	GLViewSettings& vs = GetViewSettings();
 
+	GLCamera& cam = scene->GetCamera();
 	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
 	double L = (c - p).Length();
 
-	view.m_ffar = (L + R) * 2;
-	view.m_fnear = 0.01f * view.m_ffar;
+	double ffar = (L + R) * 2;
+	double fnear = 0.01 * ffar;
+	double fov = cam.GetFOV();
 
 	double D = 0.5 * cam.GetFinalTargetDistance();
-	if ((D > 0) && (D < view.m_fnear)) view.m_fnear = D;
+	if ((D > 0) && (D < fnear)) fnear = D;
 
-	if (height() == 0) view.m_ar = 1; view.m_ar = (GLfloat)width() / (GLfloat)height();
+	cam.SetNearPlane(fnear);
+	cam.SetFarPlane(ffar);
+
+	double ar = 1;
+	if (height() == 0) ar = 1; ar = (GLfloat)width() / (GLfloat)height();
 
 	// set up projection matrix
-	if (view.m_bortho)
+	if (cam.IsOrtho())
 	{
 		// orthographic projection
 		GLdouble f = 0.35 * cam.GetTargetDistance();
-		m_ox = f * view.m_ar;
+		m_ox = f * ar;
 		m_oy = f;
-		glOrtho(-m_ox, m_ox, -m_oy, m_oy, view.m_fnear, view.m_ffar);
+		glOrtho(-m_ox, m_ox, -m_oy, m_oy, fnear, ffar);
 	}
 	else
 	{
 		// perspective projection
-		GLdouble f = 1.0 / tan(view.m_fov * M_PI / 360.0);
-		glFrustum(-view.m_fnear * tan(view.m_fov * M_PI / 360.0) * view.m_ar,
-			 view.m_fnear * tan(view.m_fov * M_PI / 360.0) * view.m_ar,
-			-view.m_fnear * tan(view.m_fov * M_PI / 360.0),
-			 view.m_fnear * tan(view.m_fov * M_PI / 360.0),
-			 view.m_fnear, view.m_ffar);
+		GLdouble f = 1.0 / tan(fov * M_PI / 360.0);
+		glFrustum(-fnear * tan(fov * M_PI / 360.0) * ar,
+			 fnear * tan(fov * M_PI / 360.0) * ar,
+			-fnear * tan(fov * M_PI / 360.0),
+			 fnear * tan(fov * M_PI / 360.0),
+			 fnear, ffar);
 	}
 }
 
@@ -242,17 +245,10 @@ void CGLSceneView::GetViewport(int vp[4]) const
 	vp[3] = m_viewport[3];
 }
 
-CGView* CGLSceneView::GetView()
-{
-	GLScene* scene = GetActiveScene();
-	if (scene) return &(scene->GetView());
-	else return nullptr;
-}
-
 GLCamera* CGLSceneView::GetCamera()
 {
 	GLScene* scene = GetActiveScene();
-	if (scene) return &(scene->GetView().GetCamera());
+	if (scene) return &(scene->GetCamera());
 	else return nullptr;
 }
 
@@ -411,7 +407,7 @@ void CGLSceneView::wheelEvent(QWheelEvent* ev)
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
-	GLCamera& cam = scene->GetView().GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	Qt::KeyboardModifiers key = ev->modifiers();
 	bool balt = (key & Qt::AltModifier);
@@ -466,24 +462,17 @@ void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
 
 	if (H == 0.f) H = 0.001f;
 
-	CGView& view = scene->GetView();
+	GLCamera& cam = scene->GetCamera();
+
+	double fnear = cam.GetNearPlane();
+	double fov = cam.GetFOV();
+
 
 	double ar = W / H;
 
-	double fh = 2.f * view.m_fnear * (double)tan(0.5 * view.m_fov * PI / 180);
+	double fh = 2.f * fnear * (double)tan(0.5 * fov * PI / 180);
 	double fw = fh * ar;
 
 	fx = -fw / 2 + x * fw / W;
 	fy = fh / 2 - y * fh / H;
 }
-
-CGLManagedSceneView::CGLManagedSceneView(GLScene* scene, QWidget* parent) : CGLSceneView(parent), m_scene(scene) 
-{
-	if (scene)
-	{
-		BOX box = scene->GetBoundingBox();
-		GetCamera()->SetTargetDistance(box.GetMaxExtent()*1.5);
-	}
-}
-
-CGLManagedSceneView::~CGLManagedSceneView() { delete m_scene; }

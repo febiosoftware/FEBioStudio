@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <GLLib/GLScene.h>
+#include <GLLib/GView.h> // for LegendData
 
 //! base class for scenes that will be shown in a CGLView
 class GLViewScene : public GLScene
