@@ -25,7 +25,7 @@
  SOFTWARE.*/
 
 #include "stdafx.h"
-#include "ICPRegistrationTool.h"
+#include "MOIRegistrationTool.h"
 #include <QWidget>
 #include <QBoxLayout>
 #include <QCheckBox>
@@ -38,17 +38,16 @@
 #include "ModelDocument.h"
 #include "SelectionBox.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/ICPRegistration.h>
+#include <MeshTools/MOIRegistration.h>
 #include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "Commands.h"
 using namespace std;
 
-class ICPRegistrationToolUI : public QWidget
+class MOIRegistrationToolUI : public QWidget
 {
 private:
-    QLineEdit* m_tol;
-    QLineEdit* m_maxiter;
+    QCheckBox* m_area;
     CSelectionBox* m_src;
     CSelectionBox* m_trg;
 
@@ -57,20 +56,16 @@ private:
 	FSItemListBuilder* m_trgList;
 
 public:
-    ICPRegistrationToolUI(CICPRegistrationTool* w)
+    MOIRegistrationToolUI(CMOIRegistrationTool* w)
     {
         m_srcList = nullptr;
         m_trgList = nullptr;
 
         QFormLayout* f = new QFormLayout;
-        f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setValidator(new QDoubleValidator());
-        f->addRow("Max. iterations:", m_maxiter = new QLineEdit); m_maxiter->setValidator(new QIntValidator(1, 10000));
+        f->addRow("Use area MOI:", m_area = new QCheckBox); m_area->checkState();
         QPushButton* apply = new QPushButton("Apply");
 
         f->setAlignment(Qt::AlignRight);
-
-        m_tol->setText(QString::number(1e-5));
-        m_maxiter->setText(QString::number(100));
 
         QGroupBox* pg1 = new QGroupBox("Source");
         QVBoxLayout* l1 = new QVBoxLayout;
@@ -112,8 +107,7 @@ public:
         QObject::connect(m_trg, SIGNAL(clearButtonClicked()), w, SLOT(on_trg_clearButtonClicked()));
     }
 
-    double tolerance() { return m_tol->text().toDouble(); }
-    int maxIterations() { return m_maxiter->text().toInt(); }
+    bool useArea() { return m_area->isChecked(); }
 
 	bool UpdateSelectionList(FSItemListBuilder*& pl, FSItemListBuilder* items)
 	{
@@ -285,18 +279,18 @@ public:
 };
 
 // constructor
-CICPRegistrationTool::CICPRegistrationTool(CMainWindow* wnd) : CAbstractTool(wnd, "ICP Registration")
+CMOIRegistrationTool::CMOIRegistrationTool(CMainWindow* wnd) : CAbstractTool(wnd, "MOI Registration")
 {
     ui = nullptr;
 }
 
-QWidget* CICPRegistrationTool::createUi()
+QWidget* CMOIRegistrationTool::createUi()
 {
-    if (ui == nullptr) ui = new ICPRegistrationToolUI(this);
+    if (ui == nullptr) ui = new MOIRegistrationToolUI(this);
     return ui;
 }
 
-void CICPRegistrationTool::OnApply()
+void CMOIRegistrationTool::OnApply()
 {
     CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
     if ((doc == nullptr) || (!doc->IsValid())) return;
@@ -311,14 +305,13 @@ void CICPRegistrationTool::OnApply()
 
 	if ((srcObj == nullptr) || (trgObj == nullptr)) 
 	{
-		QMessageBox::critical(GetMainWindow(), "ICP Registration", "Invalid selection.");
+		QMessageBox::critical(GetMainWindow(), "MOI Registration", "Invalid selection.");
 		return;
 	}
 
-	GICPRegistration icp;
-	icp.SetTolerance(ui->tolerance());
-	icp.SetMaxIterations(ui->maxIterations());
-	Transform Q = icp.Register(trgNodes, srcNodes);
+	GMOIRegistration moi;
+    moi.SetUseArea(ui->useArea());
+	Transform Q = moi.Register(trgObj, srcObj);
 
 	vec3d t = Q.GetPosition();
 	quatd q = Q.GetRotation();
@@ -328,9 +321,7 @@ void CICPRegistrationTool::OnApply()
 	Qs.Translate(t);
 //	Qs.Scale(Q.GetScale());
 
-	GetMainWindow()->AddLogEntry(QString("ICP Registration:\n"));
-	GetMainWindow()->AddLogEntry(QString("  Iterations    : %1\n").arg(icp.Iterations()));
-	GetMainWindow()->AddLogEntry(QString("  Relative error: %1\n").arg(icp.RelativeError()));
+	GetMainWindow()->AddLogEntry(QString("MOI Registration:\n"));
 	GetMainWindow()->AddLogEntry(QString("  Translation   : %1, %2, %3\n").arg(t.x).arg(t.y).arg(t.z));
 	GetMainWindow()->AddLogEntry(QString("  Rotation      : %1, %2, %3, %4\n").arg(q.x).arg(q.y).arg(q.z).arg(q.w));
 
@@ -339,17 +330,17 @@ void CICPRegistrationTool::OnApply()
 	GetMainWindow()->RedrawGL();
 }
 
-void CICPRegistrationTool::Activate()
+void CMOIRegistrationTool::Activate()
 {
 	ui->clearSelections();
 }
 
-void CICPRegistrationTool::Deactivate()
+void CMOIRegistrationTool::Deactivate()
 {
 	ui->clearSelections();
 }
 
-FSItemListBuilder* CICPRegistrationTool::getSelection()
+FSItemListBuilder* CMOIRegistrationTool::getSelection()
 {
 	// get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -363,24 +354,24 @@ FSItemListBuilder* CICPRegistrationTool::getSelection()
 	return item;
 }
 
-void CICPRegistrationTool::on_src_addButtonClicked()
+void CMOIRegistrationTool::on_src_addButtonClicked()
 {
 	FSItemListBuilder* item = getSelection();
     if (item) ui->SetSourceList(item);
 }
 
-void CICPRegistrationTool::on_src_subButtonClicked() {}
-void CICPRegistrationTool::on_src_delButtonClicked() {}
-void CICPRegistrationTool::on_src_selButtonClicked() {}
-void CICPRegistrationTool::on_src_clearButtonClicked() {}
+void CMOIRegistrationTool::on_src_subButtonClicked() {}
+void CMOIRegistrationTool::on_src_delButtonClicked() {}
+void CMOIRegistrationTool::on_src_selButtonClicked() {}
+void CMOIRegistrationTool::on_src_clearButtonClicked() {}
 
-void CICPRegistrationTool::on_trg_addButtonClicked() 
+void CMOIRegistrationTool::on_trg_addButtonClicked() 
 {
 	FSItemListBuilder* item = getSelection();
 	if (item) ui->SetTargetList(item);
 }
 
-void CICPRegistrationTool::on_trg_subButtonClicked() {}
-void CICPRegistrationTool::on_trg_delButtonClicked() {}
-void CICPRegistrationTool::on_trg_selButtonClicked() {}
-void CICPRegistrationTool::on_trg_clearButtonClicked() {}
+void CMOIRegistrationTool::on_trg_subButtonClicked() {}
+void CMOIRegistrationTool::on_trg_delButtonClicked() {}
+void CMOIRegistrationTool::on_trg_selButtonClicked() {}
+void CMOIRegistrationTool::on_trg_clearButtonClicked() {}

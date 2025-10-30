@@ -24,24 +24,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "Tool.h"
-#include "MeasureTools.h"
+#pragma once
+#include <FECore/FETransform.h>
+#include <vector>
 
-class CMainWindow;
+class GObject;
 
-//! This tool calculates the moment of inertia of an element selection
-class CMeasureMOITool : public CBasicTool
+
+class GMOIRegistration
 {
 public:
-	// constructor
-	CMeasureMOITool(CMainWindow* wnd);
+	GMOIRegistration();
 
-	// Apply button
-	bool OnApply() override;
+	// returns the transform from registring source to target
+	Transform Register(GObject* ptrg, GObject* psrc);
+    
+    void SetUseArea(const bool ua) { m_useArea = ua; }
+    bool GetUseArea() { return m_useArea; }
 
 private:
-	mat3d	m_moi;	// center of mass
-    mat3d   m_evec; // eigenvectors of MOI
-    vec3d   m_eval; // eigenvalues of MOI
-    bool    m_area; // boolean flag to report area MOI
+	Transform Register(const std::vector<vec3d>& P0, const std::vector<vec3d>& Y, double* err);
+	void ApplyTransform(const std::vector<vec3d>& P0, const Transform& Q, std::vector<vec3d>& P);
+
+private:
+	double	m_err;
+    bool    m_useArea;
 };

@@ -468,6 +468,7 @@ void CMainWindow::on_actionHideUnselected_triggered()
 	{
 		Post::CGLModel& mdl = *postDoc->GetGLModel();
 		mdl.HideUnselectedElements();
+		mdl.UpdateMeshVisibility();
 		postDoc->UpdateSelection();
 		postDoc->UpdateFEModel();
 		RedrawGL();
@@ -552,6 +553,72 @@ vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
 		if (box.IsInside(ri))
 		{
 			items.push_back(i);
+		}
+	}
+
+	return items;
+}
+
+vector<int> findEdgesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		for (int j = 0; j < edge.Nodes(); ++j)
+		{
+			int nj = edge.n[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
+		}
+	}
+
+	return items;
+}
+
+vector<int> findFacesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			int nj = face.n[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
+		}
+	}
+
+	return items;
+}
+
+vector<int> findElemsByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	vector<int> items;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FSElement& el = pm->Element(i);
+		for (int j=0; j < el.Nodes(); ++j)
+		{
+			int nj = el.m_node[j];
+			vec3d rj = pm->NodePosition(nj);
+			if (box.IsInside(rj))
+			{
+				items.push_back(i);
+				break;
+			}
 		}
 	}
 
@@ -701,6 +768,9 @@ void CMainWindow::on_actionFind_triggered()
 			switch (nitem)
 			{
 			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_EDGE: items = findEdgesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_FACE: items = findFacesByRange(pm, dlg.m_min, dlg.m_max); break;
+			case ITEM_ELEM: items = findElemsByRange(pm, dlg.m_min, dlg.m_max); break;
 			}
 		}
 		else if (dlg.m_method == 3)
@@ -1074,11 +1144,23 @@ void CMainWindow::on_actionCollapseTransform_triggered()
 		return;
 	}
 
+	// make sure the objects are all editable meshes
+	std::vector<GMeshObject*> objList;
 	for (int i = 0; i < sel->Size(); ++i)
 	{
-		GObject* po = sel->Object(i);
-		po->CollapseTransform();
+		GMeshObject* po = dynamic_cast<GMeshObject*>(sel->Object(i));
+		if (po == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Collapsing transforms can only be done on editable meshes.");
+			return;
+		}
+		objList.push_back(po);
 	}
+
+	// apply the collapse
+	// TODO: put this is a command
+	for (auto po : objList) po->CollapseTransform();
+
 	RedrawGL();
 }
 

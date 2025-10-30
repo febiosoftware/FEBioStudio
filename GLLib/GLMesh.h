@@ -94,7 +94,7 @@ public:
 
 	void AutoPartition();
 
-	virtual void Update();
+	void Update(bool updateNormals = true);
 
 	bool IsModified() const { return m_isModified; }
 

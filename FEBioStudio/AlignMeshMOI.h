@@ -23,25 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
+#pragma once
 #include "Tool.h"
-#include "MeasureTools.h"
 
-class CMainWindow;
-
-//! This tool calculates the moment of inertia of an element selection
-class CMeasureMOITool : public CBasicTool
+class CAlignMeshMOITool : public CBasicTool
 {
-public:
-	// constructor
-	CMeasureMOITool(CMainWindow* wnd);
+	Q_OBJECT
 
-	// Apply button
-	bool OnApply() override;
+public:
+	CAlignMeshMOITool(CMainWindow* wnd);
+
+	bool OnApply();
 
 private:
-	mat3d	m_moi;	// center of mass
-    mat3d   m_evec; // eigenvectors of MOI
-    vec3d   m_eval; // eigenvalues of MOI
-    bool    m_area; // boolean flag to report area MOI
+	bool m_useArea = true;
 };
+

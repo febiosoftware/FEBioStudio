@@ -54,3 +54,43 @@ FSElement_& FSMeshPartition::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }
+
+
+void FSMeshPartition::GetNodeList(vector<int>& node, vector<int>& lnode)
+{
+	FSCoreMesh& mesh = *GetMesh();
+	int NN = mesh.Nodes();
+	int NE = Elements();
+
+	for (int i = 0; i < NN; ++i) mesh.Node(i).m_ntag = -1;
+
+	int n = 0, nne = 0;
+	std::vector<int> elemList = m_Elem;
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		nne += ne;
+		for (int j = 0; j < ne; ++j)
+		{
+			if (mesh.Node(el.m_node[j]).m_ntag == -1) mesh.Node(el.m_node[j]).m_ntag = n++;
+		}
+	}
+
+	node.resize(n);
+	for (int i = 0; i < NN; ++i)
+		if (mesh.Node(i).m_ntag >= 0) node[mesh.Node(i).m_ntag] = i;
+
+	lnode.resize(nne); nne = 0;
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement_& el = mesh.ElementRef(elemList[i]);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			int lid = mesh.Node(el.m_node[j]).m_ntag; assert(lid >= 0);
+			lnode[nne + j] = lid;
+		}
+		nne += ne;
+	}
+}

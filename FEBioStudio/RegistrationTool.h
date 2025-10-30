@@ -1,21 +1,21 @@
 /*This file is part of the FEBio Studio source code and is licensed under the MIT license
  listed below.
-
+ 
  See Copyright-FEBio-Studio.txt for details.
-
+ 
  Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
  the City of New York, and others.
-
+ 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
-
+ 
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
-
+ 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,45 +25,15 @@
  SOFTWARE.*/
 
 #pragma once
-#include "Tool.h"
-#include "RegistrationTool.h"
-#include <QtCore>
+#include <GeomLib/GObject.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FSMesh.h>
 
-class ICPRegistrationToolUI;
-class FSItemListBuilder;
+using namespace std;
 
- //-----------------------------------------------------------------------------
-class CICPRegistrationTool : public CAbstractTool
-{
-    Q_OBJECT
-
-public:
-    // constructor
-    CICPRegistrationTool(CMainWindow* wnd);
-
-    QWidget* createUi() override;
-
-    void Activate() override;
-    void Deactivate() override;
-
-private slots:
-    void OnApply();
-
-    void on_src_addButtonClicked();
-    void on_src_subButtonClicked();
-    void on_src_delButtonClicked();
-    void on_src_selButtonClicked();
-    void on_src_clearButtonClicked();
-
-    void on_trg_addButtonClicked();
-    void on_trg_subButtonClicked();
-    void on_trg_delButtonClicked();
-    void on_trg_selButtonClicked();
-    void on_trg_clearButtonClicked();
-
-private:
-	FSItemListBuilder* getSelection();
-
-private:
-    ICPRegistrationToolUI* ui;
-};
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GPart*> partList);
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GFace*> faceList);
+vector<vec3d> extractSurfaceNodes(GObject* po, vector<GEdge*> edgeList);
+vector<vec3d> extractSurfaceNodes(GObject* po, FSSurface* surface);
+vector<vec3d> extractSurfaceNodes(GObject* po, FSNodeSet* nodeSet);
+GObject* GetSelectionNodes(FSItemListBuilder* sel, std::vector<vec3d>& nodes);

@@ -127,7 +127,11 @@ bool HypersurfaceExport::Write(const char* szfile)
 			for (j=0; j<m.Faces(); ++j)
 			{
 				FSFace& f = m.Face(j);
-				if (f.Nodes() == 3)
+				switch (f.Type())
+				{
+				case FE_FACE_TRI3:
+				case FE_FACE_TRI6:
+				case FE_FACE_TRI7:
 				{
 					nf[0] = m.Node(f.n[0]).m_ntag;
 					nf[1] = m.Node(f.n[1]).m_ntag;
@@ -135,7 +139,10 @@ bool HypersurfaceExport::Write(const char* szfile)
 
 					fprintf(fp, "%d %d %d\n", nf[0], nf[1], nf[2]);
 				}
-				else
+				break;
+				case FE_FACE_QUAD4:
+				case FE_FACE_QUAD8:
+				case FE_FACE_QUAD9:
 				{
 					nf[0] = m.Node(f.n[0]).m_ntag;
 					nf[1] = m.Node(f.n[1]).m_ntag;
@@ -144,6 +151,8 @@ bool HypersurfaceExport::Write(const char* szfile)
 
 					fprintf(fp, "%d %d %d\n", nf[0], nf[1], nf[2]);
 					fprintf(fp, "%d %d %d\n", nf[2], nf[3], nf[0]);
+				}
+				break;
 				}
 			}
 		}

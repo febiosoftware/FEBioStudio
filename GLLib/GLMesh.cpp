@@ -786,7 +786,7 @@ void GLMesh::AutoPartition()
 	setModified(true);
 }
 
-void GLMesh::Update()
+void GLMesh::Update(bool updateNormals)
 {
 	if (m_FIL.empty()) AutoPartition();
 
@@ -836,7 +836,7 @@ void GLMesh::Update()
 
 	UpdateBoundingBox();
 	if (!m_hasNeighborList) FindNeighbors();
-	UpdateNormals();
+	if (updateNormals) UpdateNormals();
 }
 
 /*

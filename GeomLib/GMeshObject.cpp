@@ -610,6 +610,9 @@ void GMeshObject::UpdateNodes()
 	// count how many nodes there are
 	int nodes = m.CountNodePartitions();
 
+	// see if the nr of nodes has changed
+	bool numberOfNodesChanged = (nodes != m_Node.size());
+
 	// figure out which node are still used
 	vector<int> tag(nodes, 0);
 	for (int i = 0; i < m.Nodes(); ++i)
@@ -667,6 +670,23 @@ void GMeshObject::UpdateNodes()
 
 	// sanity check
 	assert(m.CountNodePartitions() == Nodes());
+
+	// we need to clear the node lists of the parts and faces since there is no 
+	// way of knowing if they are still valid
+	if (numberOfNodesChanged)
+	{
+		for (int i = 0; i < Parts(); ++i)
+		{
+			GPart* pg = Part(i);
+			pg->m_node.clear();
+		}
+
+		for (int i = 0; i < Faces(); ++i)
+		{
+			GFace* pf = Face(i);
+			pf->m_node.clear();
+		}
+	}
 }
 
 // This function constructs the faces' nodelists, since for GMeshObject

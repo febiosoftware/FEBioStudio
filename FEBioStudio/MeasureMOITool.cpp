@@ -32,8 +32,14 @@ mat3d CalculateMOI(FSMesh& mesh);
 // constructor
 CMeasureMOITool::CMeasureMOITool(CMainWindow* wnd) : CBasicTool(wnd, "Moment of inertia", CBasicTool::HAS_APPLY_BUTTON)
 {
+    m_area = false;
 	m_moi.zero();
+    m_evec.zero();
+    m_eval = vec3d(0,0,0);
 	addMat3Property(&m_moi, "moment of inertia:")->setFlags(CProperty::Visible);
+    addMat3Property(&m_evec, "eigenvectors of MOI:")->setFlags(CProperty::Visible);
+    addVec3Property(&m_eval, "eigenvalues of MOI:")->setFlags(CProperty::Visible);
+    addBoolProperty(&m_area, "area");
 
 	SetInfo("Calculates the moment of inertia of a meshed object or element selection. The MOI is calculated with respect to the center of mass of the selection.");
 }
@@ -43,46 +49,16 @@ bool CMeasureMOITool::OnApply()
 {
 	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return false;
-	m_moi = CalculateMOI(*mesh);
+    m_moi = (m_area) ? CalculateAreaMOI(*mesh) : CalculateMOI(*mesh);
+    double eval[3];
+    vec3d evec[3];
+    mat3ds mois = m_moi.sym();
+    mois.eigen2(eval,evec);
+    for (int i=0; i<3; ++i) evec[i].Normalize();
+    m_evec = mat3d(evec[0].x, evec[0].y, evec[0].z,
+                   evec[1].x, evec[1].y, evec[1].z,
+                   evec[2].x, evec[2].y, evec[2].z);
+    m_eval = vec3d(eval[0],eval[1],eval[2]);
+    m_evec = CleanUp(m_evec, 1e-12);
 	return true;
-}
-
-// This calculates the moment of inertia, but only approximately!
-// Requires a fine mesh for accurate results. 
-mat3d CalculateMOI(FSMesh& mesh)
-{
-	mat3dd I(1);        // identity tensor
-
-	mat3d moi; moi.zero();
-
-	// calculate the COM
-	vec3d com = CalculateCOM(mesh);
-
-	// loop over all elements
-	int NE = mesh.Elements();
-	for (int iel = 0; iel < NE; ++iel)
-	{
-		FSElement& el = mesh.Element(iel);
-
-		// ElementCenter is calculated in local frame
-		vec3d c_local = mesh.ElementCenter(el);
-		vec3d c_global = mesh.LocalToGlobal(c_local);
-
-		// Element volume is calculated in global frame
-		double V0 = mesh.ElementVolume(el);
-
-		vec3d r = c_global - com;
-		mat3d Iij = (r * r) * I - (r & r);
-		moi += Iij * V0;
-	}
-
-	const double eps = 1e-12;
-	double L = moi.norm();
-	if (L > eps)
-	{
-		for (int i = 0; i < 3; ++i)
-			for (int j = 0; j < 3; ++j)
-				if (fabs(moi[i][j]) < eps) moi[i][j] = 0.0;
-	}
-	return moi;
 }

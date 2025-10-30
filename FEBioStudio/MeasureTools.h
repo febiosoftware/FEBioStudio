@@ -1,21 +1,21 @@
 /*This file is part of the FEBio Studio source code and is licensed under the MIT license
  listed below.
-
+ 
  See Copyright-FEBio-Studio.txt for details.
-
- Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+ 
+ Copyright (c) 2025 University of Utah, The Trustees of Columbia University in
  the City of New York, and others.
-
+ 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
-
+ 
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
-
+ 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,47 +23,11 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.*/
-
 #pragma once
-#include "Tool.h"
-#include "RegistrationTool.h"
-#include <QtCore>
 
-class ICPRegistrationToolUI;
-class FSItemListBuilder;
+vec3d CalculateCOM(FSMesh& mesh);
+vec3d CalculateAreaCOM(FSMesh& mesh);
+mat3d CalculateMOI(FSMesh& mesh);
+mat3d CalculateAreaMOI(FSMesh& mesh);
+mat3d CleanUp(mat3d& m, const double eps);
 
- //-----------------------------------------------------------------------------
-class CICPRegistrationTool : public CAbstractTool
-{
-    Q_OBJECT
-
-public:
-    // constructor
-    CICPRegistrationTool(CMainWindow* wnd);
-
-    QWidget* createUi() override;
-
-    void Activate() override;
-    void Deactivate() override;
-
-private slots:
-    void OnApply();
-
-    void on_src_addButtonClicked();
-    void on_src_subButtonClicked();
-    void on_src_delButtonClicked();
-    void on_src_selButtonClicked();
-    void on_src_clearButtonClicked();
-
-    void on_trg_addButtonClicked();
-    void on_trg_subButtonClicked();
-    void on_trg_delButtonClicked();
-    void on_trg_selButtonClicked();
-    void on_trg_clearButtonClicked();
-
-private:
-	FSItemListBuilder* getSelection();
-
-private:
-    ICPRegistrationToolUI* ui;
-};

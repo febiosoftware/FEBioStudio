@@ -90,7 +90,7 @@ public:
 	void DeleteTaggedFaces(int tag);
 
 	// Delete tagged elements
-	void DeleteTaggedElements(int tag);
+	int DeleteTaggedElements(int tag);
 
 	// delete all elements of a part
 	FSMesh* DeletePart(FSMesh& mesh, int partId);

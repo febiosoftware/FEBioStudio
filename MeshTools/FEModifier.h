@@ -551,6 +551,7 @@ public:
 	FSMesh* Apply(FSMesh* pm);
 };
 
+//-----------------------------------------------------------------------------
 class FEDeleteElements : public FEModifier
 {
 public:

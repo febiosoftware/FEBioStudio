@@ -254,49 +254,58 @@ public:
 		addProperty("Assign to surface1", CProperty::Action, "");
 		addProperty("Assign to surface2", CProperty::Action, "");
 		addProperty("Signed distance", CProperty::Bool);
+		addProperty("Flip Primary", CProperty::Bool);
+		addProperty("Flip Secondary", CProperty::Bool);
+		addProperty("Method", CProperty::Enum)->setEnumValues(QStringList() << "new" << "old");
 		addProperty("", CProperty::Action, "Apply");
 	}
 
 	QVariant GetPropertyValue(int i) override
 	{
-		if (i == 0)
+		switch (i)
 		{
+		case 0: {
 			int n = m_map->GetSurfaceSize(0);
 			return QString("(%1 Faces)").arg(n);
 		}
-		if (i == 1)
-		{
+		break;
+		case 1: {
 			int n = m_map->GetSurfaceSize(1);
 			return QString("(%1 Faces)").arg(n);
 		}
-		if (i == 2)
-		{
-			return m_map->m_bsigned;
+		break;
+		case 2: return m_map->m_bsigned; break;
+		case 3: return m_map->m_flipPrimary; break;
+		case 4: return m_map->m_flipSecondary; break;
+		case 5: return m_map->m_nopt;
 		}
 		return QVariant();
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 0)
+		switch (i)
 		{
+		case 0: {
 			m_map->InitSurface(0);
 			SetModified(true);
 		}
-		else if (i == 1)
-		{
+		break;
+		case 1: {
 			m_map->InitSurface(1);
 			SetModified(true);
 		}
-		else if (i == 2)
-		{
-			bool b = v.toBool();
-			m_map->m_bsigned = b;
-		}
-		else if (i == 3)
+		break;
+		case 2: m_map->m_bsigned = v.toBool(); break;
+		case 3: m_map->m_flipPrimary = v.toBool(); break;
+		case 4: m_map->m_flipSecondary = v.toBool(); break;
+		case 5: m_map->m_nopt = v.toInt(); break;
+		case 6:
 		{
 			CDlgStartThread dlg(nullptr, new DistanceMapThread(m_map));
 			dlg.exec();
+		}
+		break;
 		}
 	}
 

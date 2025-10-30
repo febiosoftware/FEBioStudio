@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <MeshLib/Intersect.h>
 #include <GeomLib/GGroup.h>
 #include <MeshTools/LaplaceSolver.h>
+#include <FEBioStudio/MeasureTools.h>
+#include <numeric>
 
 FEModifier::FEModifier(const char* sz) { SetName(sz); }
 FEModifier::~FEModifier() {}

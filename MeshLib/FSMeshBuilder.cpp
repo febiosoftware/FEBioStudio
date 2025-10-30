@@ -309,10 +309,11 @@ void FSMeshBuilder::DeleteSelectedElements()
 
 //-----------------------------------------------------------------------------
 // Delete tagged elements
-void FSMeshBuilder::DeleteTaggedElements(int tag)
+int FSMeshBuilder::DeleteTaggedElements(int tag)
 {
 	// Let's go ahead and remove all tagged elements
-	if (m_mesh.RemoveElements(tag) > 0)
+	int removedElems = m_mesh.RemoveElements(tag);
+	if (removedElems > 0)
 	{
 		m_mesh.UpdateElementPartitions();
 
@@ -322,6 +323,7 @@ void FSMeshBuilder::DeleteTaggedElements(int tag)
 		// rebuild mesh
 		m_mesh.RebuildMesh();
 	}
+	return removedElems;
 }
 
 FSMesh* FSMeshBuilder::DeleteParts(FSMesh& mesh, std::vector<int> partIds)

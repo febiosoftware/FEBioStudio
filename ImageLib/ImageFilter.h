@@ -60,7 +60,7 @@ public:
 
 private:
     template<class pType>
-    void FitlerTemplate();
+    void FilterTemplate();
 };
 
 class PadImageFilter : public CImageFilter
@@ -72,7 +72,7 @@ public:
 
 private:
     template<class pType>
-    void FitlerTemplate();
+    void FilterTemplate();
 };
 
 
@@ -86,7 +86,7 @@ public:
 
 private:
     template<class pType>
-    void FitlerTemplate();
+    void FilterTemplate();
 
 private:
 	Post::CGLModel* m_glm;

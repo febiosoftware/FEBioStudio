@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "ICPRegistrationTool.h"
 #include "ImageMapTool.h"
 #include "MeshToImageTool.h"
+#include "MOIRegistrationTool.h"
 #include "DiscreteElementNetworkTool.h"
 #include "SelectNearPlaneTool.h"
 #include "KinematBuildTool.h"
@@ -45,6 +46,7 @@ SOFTWARE.*/
 #include "ExtrudeMapTool.h"
 #include "CurveToBeamTool.h"
 #include <ImageLib/FiberODF.h>
+#include "AlignMeshMOI.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -72,6 +74,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CMeshToImageTool   (wnd));
+    tools.push_back(new CMOIRegistrationTool(wnd));
     tools.push_back(new CDiscreteElementNetworkTool(wnd));
     tools.push_back(new CSelectNearPlaneTool(wnd));
 	tools.push_back(new CKinematBuildTool   (wnd));
@@ -79,6 +82,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CExtrudeMapTool     (wnd));
 	tools.push_back(new CSurfaceMeshSizeTool(wnd));
 	tools.push_back(new CCurveToBeamTool    (wnd));
+	tools.push_back(new CAlignMeshMOITool   (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)
