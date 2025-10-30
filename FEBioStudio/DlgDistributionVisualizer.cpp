@@ -121,6 +121,7 @@ public:
 		m_sphere = CreateSphere();
 		m_renderSphere = m_sphere;
 		GetCamera().SetTargetDistance(5);
+		GetCamera().Update(true);
 	}
 	~CGLDistroScene() {}
 	

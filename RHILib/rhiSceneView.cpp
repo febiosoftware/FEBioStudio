@@ -304,13 +304,17 @@ void rhiSceneView::customRender()
 
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	bool useOverlay = false;
+	if (RhiScene) useOverlay = RhiScene->renderOverlay;
+
 	m_prevPos = ev->pos();
 
 	// let the widget manager handle it first
 	int x = m_prevPos.x();
 	int y = m_prevPos.y();
 	GLWidget* pw = GLWidget::get_focus();
-	if (m_Widget.handle(x, y, GLWEvent::GLW_PUSH) == 1)
+	if (useOverlay && m_Widget.handle(x, y, GLWEvent::GLW_PUSH) == 1)
 	{
 		requestUpdate();
 		return;
@@ -322,6 +326,9 @@ void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
 	if (m_scene == nullptr) return;
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	bool useOverlay = false;
+	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
 	bool bctrl = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -338,7 +345,7 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 	int y0 = m_prevPos.y();
 
 	// let the widget manager handle it first
-	if (but1 && (m_Widget.handle(x1, y1, GLWEvent::GLW_DRAG) == 1))
+	if (but1 && useOverlay && (m_Widget.handle(x1, y1, GLWEvent::GLW_DRAG) == 1))
 	{
 		requestUpdate();
 		return;
@@ -400,11 +407,15 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	bool useOverlay = false;
+	if (RhiScene) useOverlay = RhiScene->renderOverlay;
+
 	int x = (int)event->position().x();
 	int y = (int)event->position().y();
 
 	// let the widget manager handle it first
-	if (m_Widget.handle(x, y, GLWEvent::GLW_RELEASE) == 1)
+	if (useOverlay && m_Widget.handle(x, y, GLWEvent::GLW_RELEASE) == 1)
 	{
 		requestUpdate();
 		return;
