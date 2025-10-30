@@ -42,10 +42,8 @@ SOFTWARE.*/
 #include <GLWLib/GLLegendBar.h>
 #include <GLWLib/GLTriad.h>
 
-RhiWidget createRHIWidget(CMainWindow* wnd)
+static QRhi::Implementation MapToValidAPI(GraphicsAPI graphicsApi)
 {
-	GraphicsAPI graphicsApi = wnd->GetRhiImplementation();
-
 	// map to RHI implementation
 	QRhi::Implementation api = QRhi::Null;
 	switch (graphicsApi)
@@ -92,10 +90,21 @@ RhiWidget createRHIWidget(CMainWindow* wnd)
 	}
 #endif
 
+	return api;
+}
+
+RhiWidget createRHIWidget(CMainWindow* wnd)
+{
+	// get a valid implementation api
+	GraphicsAPI graphicsApi = wnd->GetRhiImplementation();
+	QRhi::Implementation api = MapToValidAPI(graphicsApi);
+
+	// do one-time initialization stuff
+	static bool rhiInit = false;
 
 #if QT_CONFIG(vulkan)
 	static QVulkanInstance inst;
-	if (api == QRhi::Vulkan) {
+	if ((rhiInit==false) && (api == QRhi::Vulkan)) {
 		// Request validation, if available. This is completely optional
 		// and has a performance impact, and should be avoided in production use.
 		inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
@@ -108,13 +117,10 @@ RhiWidget createRHIWidget(CMainWindow* wnd)
 	}
 #endif
 
-	// choose sample count for MSAA
-	unsigned int sampleCount = 4;
-
 	// For OpenGL, to ensure there is a depth/stencil buffer for the window.
 	 // With other APIs this is under the application's control (QRhiRenderBuffer etc.)
 	 // and so no special setup is needed for those.
-	if (api == QRhi::OpenGLES2)
+	if ((rhiInit==false) && (api == QRhi::OpenGLES2))
 	{
 		QSurfaceFormat fmt;
 		fmt.setDepthBufferSize(24);
@@ -131,6 +137,13 @@ RhiWidget createRHIWidget(CMainWindow* wnd)
 		QSurfaceFormat::setDefaultFormat(fmt);
 	}
 
+	// done with initialization
+	rhiInit = true;
+
+	// choose sample count for MSAA
+	unsigned int sampleCount = 4;
+
+	// create the view class
 	rhiSceneView* rhiWnd = new rhiSceneView(wnd, api);
 	rhiWnd->setSampleCount(sampleCount);
 
