@@ -37,6 +37,121 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include "GLHighlighter.h"
 
+//=============================================================================
+bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
+{
+	return (IsInside(x0, y0) || IsInside(x1, y1));
+}
+
+bool SelectRegion::TriangleIntersect(int x0, int y0, int x1, int y1, int x2, int y2) const
+{
+	return (LineIntersects(x0, y0, x1, y1) || LineIntersects(x1, y1, x2, y2) || LineIntersects(x2, y2, x0, y0));
+}
+
+//=============================================================================
+BoxRegion::BoxRegion(int x0, int x1, int y0, int y1)
+{
+	m_x0 = (x0 < x1 ? x0 : x1); m_x1 = (x0 < x1 ? x1 : x0);
+	m_y0 = (y0 < y1 ? y0 : y1); m_y1 = (y0 < y1 ? y1 : y0);
+}
+
+bool BoxRegion::IsInside(int x, int y) const
+{
+	return ((x >= m_x0) && (x <= m_x1) && (y >= m_y0) && (y <= m_y1));
+}
+
+bool BoxRegion::LineIntersects(int x0, int y0, int x1, int y1) const
+{
+	return intersectsRect(QPoint(x0, y0), QPoint(x1, y1), QRect(m_x0, m_y0, m_x1 - m_x0, m_y1 - m_y0));
+}
+
+CircleRegion::CircleRegion(int x0, int x1, int y0, int y1)
+{
+	m_xc = x0;
+	m_yc = y0;
+
+	double dx = (x1 - x0);
+	double dy = (y1 - y0);
+	m_R = (int)sqrt(dx * dx + dy * dy);
+}
+
+bool CircleRegion::IsInside(int x, int y) const
+{
+	double rx = x - m_xc;
+	double ry = y - m_yc;
+	int r = rx * rx + ry * ry;
+	return (r <= m_R * m_R);
+}
+
+bool CircleRegion::LineIntersects(int x0, int y0, int x1, int y1) const
+{
+	if (IsInside(x0, y0) || IsInside(x1, y1)) return true;
+
+	int tx = x1 - x0;
+	int ty = y1 - y0;
+
+	int D = tx * (m_xc - x0) + ty * (m_yc - y0);
+	int N = tx * tx + ty * ty;
+	if (N == 0) return false;
+
+	if ((D >= 0) && (D <= N))
+	{
+		int px = x0 + D * tx / N - m_xc;
+		int py = y0 + D * ty / N - m_yc;
+
+		if (px * px + py * py <= m_R * m_R) return true;
+	}
+	else return false;
+
+	return false;
+}
+
+FreeRegion::FreeRegion(vector<pair<int, int> >& pl) : m_pl(pl)
+{
+	if (m_pl.empty() == false)
+	{
+		vector<pair<int, int> >::iterator pi = m_pl.begin();
+		m_x0 = m_x1 = pi->first;
+		m_y0 = m_y1 = pi->second;
+		for (pi = m_pl.begin(); pi != m_pl.end(); ++pi)
+		{
+			int x = pi->first;
+			int y = pi->second;
+			if (x < m_x0) m_x0 = x; if (x > m_x1) m_x1 = x;
+			if (y < m_y0) m_y0 = y; if (y > m_y1) m_y1 = y;
+		}
+	}
+}
+
+bool FreeRegion::IsInside(int x, int y) const
+{
+	if (m_pl.empty()) return false;
+	if ((x < m_x0) || (x > m_x1) || (y < m_y0) || (y > m_y1))
+	{
+		return false;
+	}
+
+	int nint = 0;
+	int N = (int)m_pl.size();
+	for (int i = 0; i < N; ++i)
+	{
+		int ip1 = (i + 1) % N;
+		double x0 = (double)m_pl[i].first;
+		double y0 = (double)m_pl[i].second;
+		double x1 = (double)m_pl[ip1].first;
+		double y1 = (double)m_pl[ip1].second;
+
+		double yc = (double)y + 0.0001;
+
+		if (((y1 > yc) && (y0 < yc)) || ((y0 > yc) && (y1 < yc)))
+		{
+			double xi = x1 + ((x0 - x1) * (y1 - yc)) / (y1 - y0);
+			if (xi > (double)x) nint++;
+		}
+	}
+	return ((nint > 0) && (nint % 2));
+}
+
 //-----------------------------------------------------------------------------
 GLViewSelector::GLViewSelector(CGLView* glview) : m_glv(glview) 
 {
@@ -2774,3 +2889,4 @@ void GLViewSelector::SelectFENodes(int x, int y)
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
+

@@ -242,14 +242,6 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// render the tags
 	if (view.m_bTags) RenderTags(rc);
 
-	// render 3D cursor
-	if (m_doc->GetItemMode() == ITEM_MESH)
-	{
-		view.m_show3DCursor = true;
-	}
-	else
-		view.m_show3DCursor = false;
-
 	// see if we need to draw the legend bar for the mesh inspector
 	m_showLegend = false;
 	if (view.m_bcontour)

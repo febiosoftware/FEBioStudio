@@ -59,9 +59,6 @@ private:
 
 	rhiRenderer* m_rhiRender = nullptr;
 
-	float m_opacity = 1;
-	int m_opacityDir = -1;
-
 	QPoint m_prevPos;	//!< last mouse position
 
 	CGLWidgetManager m_Widget;

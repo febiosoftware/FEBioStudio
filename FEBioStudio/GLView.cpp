@@ -60,41 +60,6 @@ SOFTWARE.*/
 
 using namespace std::chrono;
 
-static GLubyte poly_mask[128] = {
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170,
-	85, 85, 85, 85,
-	170, 170, 170, 170
-};
-
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
 	// see if either point lies inside the rectangle
@@ -177,121 +142,6 @@ bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 	}
 
 	return false;
-}
-
-//=============================================================================
-bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	return (IsInside(x0, y0) || IsInside(x1, y1));
-}
-
-bool SelectRegion::TriangleIntersect(int x0, int y0, int x1, int y1, int x2, int y2) const
-{
-	return (LineIntersects(x0, y0, x1, y1) || LineIntersects(x1, y1, x2, y2) || LineIntersects(x2, y2, x0, y0));
-}
-
-//=============================================================================
-BoxRegion::BoxRegion(int x0, int x1, int y0, int y1)
-{
-	m_x0 = (x0<x1 ? x0 : x1); m_x1 = (x0<x1 ? x1 : x0);
-	m_y0 = (y0<y1 ? y0 : y1); m_y1 = (y0<y1 ? y1 : y0);
-}
-
-bool BoxRegion::IsInside(int x, int y) const
-{
-	return ((x >= m_x0) && (x <= m_x1) && (y >= m_y0) && (y <= m_y1));
-}
-
-bool BoxRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	return intersectsRect(QPoint(x0, y0), QPoint(x1, y1), QRect(m_x0, m_y0, m_x1 - m_x0, m_y1 - m_y0));
-}
-
-CircleRegion::CircleRegion(int x0, int x1, int y0, int y1)
-{
-	m_xc = x0;
-	m_yc = y0;
-
-	double dx = (x1 - x0);
-	double dy = (y1 - y0);
-	m_R = (int)sqrt(dx*dx + dy*dy);
-}
-
-bool CircleRegion::IsInside(int x, int y) const
-{
-	double rx = x - m_xc;
-	double ry = y - m_yc;
-	int r = rx*rx + ry*ry;
-	return (r <= m_R*m_R);
-}
-
-bool CircleRegion::LineIntersects(int x0, int y0, int x1, int y1) const
-{
-	if (IsInside(x0, y0) || IsInside(x1, y1)) return true;
-
-	int tx = x1 - x0;
-	int ty = y1 - y0;
-
-	int D = tx*(m_xc - x0) + ty*(m_yc - y0);
-	int N = tx*tx + ty*ty;
-	if (N == 0) return false;
-
-	if ((D >= 0) && (D <= N))
-	{
-		int px = x0 + D*tx / N - m_xc;
-		int py = y0 + D*ty / N - m_yc;
-
-		if (px*px + py*py <= m_R*m_R) return true;
-	}
-	else return false;
-
-	return false;
-}
-
-FreeRegion::FreeRegion(vector<pair<int, int> >& pl) : m_pl(pl)
-{
-	if (m_pl.empty() == false)
-	{
-		vector<pair<int, int> >::iterator pi = m_pl.begin();
-		m_x0 = m_x1 = pi->first;
-		m_y0 = m_y1 = pi->second;
-		for (pi = m_pl.begin(); pi != m_pl.end(); ++pi)
-		{
-			int x = pi->first;
-			int y = pi->second;
-			if (x < m_x0) m_x0 = x; if (x > m_x1) m_x1 = x;
-			if (y < m_y0) m_y0 = y; if (y > m_y1) m_y1 = y;
-		}
-	}
-}
-
-bool FreeRegion::IsInside(int x, int y) const
-{
-	if (m_pl.empty()) return false;
-	if ((x < m_x0) || (x > m_x1) || (y < m_y0) || (y > m_y1))
-	{
-		return false;
-	}
-
-	int nint = 0;
-	int N = (int)m_pl.size();
-	for (int i = 0; i<N; ++i)
-	{
-		int ip1 = (i + 1) % N;
-		double x0 = (double)m_pl[i].first;
-		double y0 = (double)m_pl[i].second;
-		double x1 = (double)m_pl[ip1].first;
-		double y1 = (double)m_pl[ip1].second;
-
-		double yc = (double)y + 0.0001;
-
-		if (((y1>yc) && (y0<yc)) || ((y0>yc) && (y1<yc)))
-		{
-			double xi = x1 + ((x0 - x1)*(y1 - yc)) / (y1 - y0);
-			if (xi >(double)x) nint++;
-		}
-	}
-	return ((nint>0) && (nint % 2));
 }
 
 CGLPivot::CGLPivot(CGLView* view) : m_Ttor(view), m_Rtor(view), m_Stor(view)
@@ -460,21 +310,19 @@ private:
 
 void RenderBrush(GLRenderEngine& re, int x, int y, double R)
 {
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
+	re.pushState();
+	re.disable(GLRenderEngine::LIGHTING);
+	re.disable(GLRenderEngine::DEPTHTEST);
+	re.disable(GLRenderEngine::CULLFACE);
+	re.enable(GLRenderEngine::LINESTIPPLE);
+	re.setColor(GLColor::White());
+	re.setLineStipple(1, 0xF0F0);
 
 	int n = (int)(R / 2);
 	if (n < 12) n = 12;
 	glx::drawCircle(re, vec3d(x, y, 0), R, n);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
+	re.popState();
 }
 
 //-----------------------------------------------------------------------------
@@ -1366,8 +1214,6 @@ void CGLView::initializeGL()
 {
 	CGLSceneView::initializeGL();
 
-	glPolygonStipple(poly_mask);
-
 	if (m_ballocDefaultWidgets)
 	{
 		m_Widget = new CGLWidgetManager();
@@ -1544,8 +1390,6 @@ void CGLView::RenderScene()
 
 	GLViewSettings& view = GetViewSettings();
 
-	view.m_show3DCursor = false;
-
 	GLCamera& cam = scene->GetView().GetCamera();
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
@@ -1566,20 +1410,16 @@ void CGLView::RenderScene()
 	}
 
 	m_ogl->positionCamera(cam);
-	RenderPivot();
-
-	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
+	RenderPivot(*m_ogl);
 
 	RenderDecorations();
 
-	if (view.m_show3DCursor)
-	{
-		Render3DCursor();
-	}
-
-	RenderTags();
+	// get the transform before we switch to 2D rendering
+	// (This is because the transform grabs the current projection and modelview matrices)
+	GLViewTransform transform(this);
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
+	// Note that Y is flipped?
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, width(), height(), 0, -1, 1);
@@ -1587,13 +1427,13 @@ void CGLView::RenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (view.m_bselbrush) RenderBrush(*m_ogl, m_x1, m_y1, view.m_brushSize);
+	RenderTags(*m_ogl, transform);
 
 	RenderCanvas(rc);
 
 	if (m_recorder.IsRecording())
 	{
-		glFlush();
+		m_ogl->flush();
 		QImage im = CaptureScreen();
 		if (m_recorder.AddFrame(im) == false)
 		{
@@ -1605,6 +1445,10 @@ void CGLView::RenderScene()
 
 void CGLView::RenderCanvas(GLContext& rc)
 {
+	if (rc.m_settings.m_bselbrush) RenderBrush(*m_ogl, m_x1, m_y1, rc.m_settings.m_brushSize);
+
+	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(*m_ogl);
+
 	// We must turn off culling before we use the QPainter, otherwise
 	// drawing using QPainter doesn't work correctly.
 	glDisable(GL_CULL_FACE);
@@ -1782,57 +1626,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 	painter.end();
 }
 
-void CGLView::Render3DCursor()
-{
-	// only render if the 3D cursor is valid
-	// (i.e. the user picked something on the screen)
-	if (m_bpick == false) return;
-
-	vec3d r = Get3DCursor();
-	constexpr double R = 10.0;
-
-	GLViewTransform transform(this);
-
-	const int W = width();
-	const int H = height();
-	const int c = R*0.5;
-
-	vec3d p = transform.WorldToScreen(r);
-	p.y = H - p.y;
-	p.z = 1;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-//	glEnable(GL_LINE_STIPPLE);
-//	glLineStipple(1, 0xAAAA);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, width(), 0, height(), -1, 1);
-
-	GLRenderEngine& re = *m_ogl;
-
-	re.setColor(GLColor(255, 164, 164));
-	re.begin(GLRenderEngine::LINES);
-	re.vertex(p.x - R, p.y); re.vertex(p.x - R + c, p.y);
-	re.vertex(p.x + R, p.y); re.vertex(p.x + R - c, p.y);
-	re.vertex(p.x, p.y - R); re.vertex(p.x, p.y - R + c);
-	re.vertex(p.x, p.y + R); re.vertex(p.x, p.y + R - c);
-	glx::drawCircle(*m_ogl, p, R, 36);
-	re.end();
-
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	glPopAttrib();
-}
-
 QPoint CGLView::DeviceToPhysical(int x, int y)
 {
 	double dpr = devicePixelRatio();
@@ -1871,7 +1664,7 @@ void CGLView::ClearCommandStack()
 //-----------------------------------------------------------------------------
 // This function renders the manipulator at the current pivot
 //
-void CGLView::RenderPivot()
+void CGLView::RenderPivot(GLRenderEngine& re)
 {
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
@@ -1897,10 +1690,10 @@ void CGLView::RenderPivot()
 	double d = 0.1*cam.GetTargetDistance();
 
 	// push the modelview matrix
-	glPushMatrix();
+	re.pushTransform();
 
 	// position the manipulator
-	glTranslatef((float)rp.x, (float)rp.y, (float)rp.z);
+	re.translate(rp);
 
 	// orient the manipulator
 	// (we always use local for post docs)
@@ -1908,22 +1701,20 @@ void CGLView::RenderPivot()
 	if (orient == COORD_LOCAL)
 	{
 		quatd q = ps->GetOrientation();
-		double w = 180.0*q.GetAngle() / PI;
-		vec3d r = q.GetVector();
-		if (w != 0) glRotated(w, r.x, r.y, r.z);
+		re.rotate(q);
 	}
 
 	// render the manipulator
 	int nitem = pdoc->GetItemMode();
 	int nsel = pdoc->GetSelectionMode();
 	bool bact = ps->IsMovable();
-	m_pivot.Render(*m_ogl, ntrans, d, bact);
+	m_pivot.Render(re, ntrans, d, bact);
 
 	// restore the modelview matrix
-	glPopMatrix();
+	re.popTransform();
 }
 
-void CGLView::RenderRubberBand()
+void CGLView::RenderRubberBand(GLRenderEngine& re)
 {
 	// Get the document
 	CGLDocument* pdoc = GetDocument();
@@ -1931,43 +1722,34 @@ void CGLView::RenderRubberBand()
 
 	int nstyle = pdoc->GetSelectionStyle();
 
-	// set the ortho
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width(), height(), 0, -1, 1);
+	re.pushState();
+	re.disable(GLRenderEngine::LIGHTING);
+	re.disable(GLRenderEngine::DEPTHTEST);
+	re.disable(GLRenderEngine::CULLFACE);
+	
+	re.enable(GLRenderEngine::LINESTIPPLE);
+	re.setLineStipple(1, (unsigned short)0xF0F0);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 255);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineStipple(1, (GLushort)0xF0F0);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_LINE_STIPPLE);
-
+	re.setColor(GLColor::White());
 	switch (nstyle)
 	{
-	case REGION_SELECT_BOX: glRecti(m_x0, m_y0, m_x1, m_y1); break;
+	case REGION_SELECT_BOX: glx::drawRect(re, m_x0, m_y0, m_x1, m_y1); break;
 	case REGION_SELECT_CIRCLE:
 		{
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
 			double R = sqrt(dx*dx + dy*dy);
-			glx::drawCircle(*m_ogl, vec3d(m_x0, m_y0, 0), R, 24);
+			glx::drawCircle(re, vec3d(m_x0, m_y0, 0), R, 64);
 		}
 		break;
 	case REGION_SELECT_FREE:
 		{
-			glx::drawPath2D(*m_ogl, m_pl);
+			glx::drawPath2D(re, m_pl);
 		}
 		break;
 	}
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
+	re.popState();
 }
 
 void CGLView::ShowSafeFrame(bool b)
@@ -2623,7 +2405,7 @@ quatd CGLView::GetPivotRotation()
 bool CGLView::GetPivotUserMode() const { return m_userPivot; }
 void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
-void CGLView::RenderTags()
+void CGLView::RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -2632,33 +2414,20 @@ void CGLView::RenderTags()
 	size_t ntags = scene->Tags();
 	if (ntags > MAX_TAGS) return;
 
-	// find out where the tags are on the screen
-	GLViewTransform transform(this);
-	for (int i = 0; i<ntags; i++)
+	for (int i = 0; i < ntags; i++)
 	{
 		GLTAG& tag = scene->Tag(i);
-		vec3d p = transform.WorldToScreen(tag.r);
+		vec3d p = viewTransform.WorldToScreen(tag.r);
 		tag.wx = p.x;
-		tag.wy = m_viewport[3] - p.y;
+		tag.wy = p.y;
 	}
 
-	// render the tags
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
+	re.pushState();
 
-	glOrtho(0, m_viewport[2], 0, m_viewport[3], -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
+	re.disable(GLRenderEngine::LIGHTING);
+	re.disable(GLRenderEngine::DEPTHTEST);
 
 	double dpr = devicePixelRatio();
-	GLRenderEngine& re = *m_ogl;
 	re.begin(GLRenderEngine::POINTS);
 	{
 		for (int i = 0; i< ntags; i++)
@@ -2684,7 +2453,7 @@ void CGLView::RenderTags()
 		GLTAG& tag = scene->Tag(i);
 
 		int x = tag.wx;
-		int y = height()*dpr - tag.wy;
+		int y = tag.wy;
 		painter.setPen(Qt::black);
 
 		painter.drawText(x + 3, y - 2, tag.sztag);
@@ -2697,15 +2466,10 @@ void CGLView::RenderTags()
 
 	painter.end();
 
-	glPopAttrib();
+	re.popState();
 
 	// QPainter messes this up so reset it
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
 }
 
 QSize CGLView::GetSafeFrameSize() const

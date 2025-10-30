@@ -46,7 +46,8 @@ public:
 		LIGHTING = 1,
 		DEPTHTEST,
 		CULLFACE,
-		BLENDING
+		BLENDING,
+		LINESTIPPLE
 	};
 
 	enum PrimitiveType {
@@ -76,6 +77,8 @@ public:
 	virtual void init() {}
 	virtual void start() { ResetStats(); }
 	virtual void finish() {}
+
+	virtual void flush() {}
 
 public:
 	virtual void deleteCachedMesh(GLMesh* gm) {}
@@ -116,6 +119,7 @@ public:
 
 	virtual void setPointSize(float f) {}
 	virtual void setLineWidth(float f) {}
+	virtual void setLineStipple(int factor, unsigned short pattern) {}
 
 	virtual float pointSize() { return 0.f; }
 	virtual float lineWidth() { return 0.f; }

@@ -71,6 +71,18 @@ void glx::drawPath2D(GLRenderEngine& re, const std::vector<std::pair<int, int>>&
 	re.end();
 }
 
+void glx::drawRect(GLRenderEngine& re, double x0, double y0, double x1, double y1)
+{
+	re.begin(GLRenderEngine::LINELOOP);
+	{
+		re.vertex(x0, y0);
+		re.vertex(x1, y0);
+		re.vertex(x1, y1);
+		re.vertex(x0, y1);
+	}
+	re.end();
+}
+
 void glx::drawCircle(GLRenderEngine& re, double R, int N)
 {
 	double x, y;

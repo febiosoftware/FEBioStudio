@@ -106,7 +106,6 @@ struct GLViewSettings
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
 	int		m_tagFontSize;	// font size used for tags
-	bool	m_show3DCursor = false;
 	vec3d	m_pos3d;	// The location of the 3D cursor
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 	bool	m_showHighlights;

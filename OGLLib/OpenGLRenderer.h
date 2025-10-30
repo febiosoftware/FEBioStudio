@@ -43,6 +43,8 @@ public:
 
 	void finish() override;
 
+	void flush() override;
+
 public:
 	void deleteCachedMesh(GLMesh* gm) override;
 
@@ -81,6 +83,7 @@ public:
 
 	void setPointSize(float f) override;
 	void setLineWidth(float f) override;
+	void setLineStipple(int factor, unsigned short pattern) override;
 
 	float pointSize() override;
 	float lineWidth() override;

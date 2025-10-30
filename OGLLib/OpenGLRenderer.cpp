@@ -30,6 +30,41 @@ SOFTWARE.*/
 #include "OGLProgram.h"
 #include <map>
 
+static GLubyte poly_mask[128] = {
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170,
+	85, 85, 85, 85,
+	170, 170, 170, 170
+};
+
 const char* shadertxt_8bit = \
 "#version 120\n"\
 "uniform sampler3D sampler;                               \n"\
@@ -194,6 +229,8 @@ void OpenGLRenderer::init()
 	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//	glShadeModel(GL_FLAT);
 
+	glPolygonStipple(poly_mask);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.5f);
@@ -263,6 +300,11 @@ void OpenGLRenderer::finish()
 		else it++;
 	}
 	m_stats.cachedObjects = m.cachedObjects();
+}
+
+void OpenGLRenderer::flush()
+{
+	glFlush();
 }
 
 void OpenGLRenderer::deleteCachedMesh(GLMesh* gm)
@@ -382,10 +424,11 @@ void OpenGLRenderer::enable(GLRenderEngine::StateFlag flag)
 {
 	switch (flag)
 	{
-	case GLRenderEngine::LIGHTING  : glEnable(GL_LIGHTING); break;
-	case GLRenderEngine::DEPTHTEST : glEnable(GL_DEPTH_TEST); break;
-	case GLRenderEngine::CULLFACE  : glEnable(GL_CULL_FACE); break;
-	case GLRenderEngine::BLENDING  : glEnable(GL_BLEND); break;
+	case GLRenderEngine::LIGHTING   : glEnable(GL_LIGHTING); break;
+	case GLRenderEngine::DEPTHTEST  : glEnable(GL_DEPTH_TEST); break;
+	case GLRenderEngine::CULLFACE   : glEnable(GL_CULL_FACE); break;
+	case GLRenderEngine::BLENDING   : glEnable(GL_BLEND); break;
+	case GLRenderEngine::LINESTIPPLE: glEnable(GL_LINE_STIPPLE); break;
 	}
 }
 
@@ -536,6 +579,11 @@ float OpenGLRenderer::lineWidth()
 void OpenGLRenderer::setLineWidth(float f)
 {
 	glLineWidth(f);
+}
+
+void OpenGLRenderer::setLineStipple(int factor, unsigned short pattern)
+{
+	glLineStipple(factor, pattern);
 }
 
 GLRenderEngine::FrontFace OpenGLRenderer::frontFace()

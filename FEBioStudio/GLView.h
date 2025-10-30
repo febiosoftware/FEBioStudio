@@ -47,6 +47,7 @@ class FSModel;
 class CGLView;
 class GLScene;
 class GPart;
+class GLViewTransform;
 
 class GLLabel;
 class GLTriad;
@@ -176,8 +177,8 @@ signals:
 	// render functions
 public:
 	// other rendering functions
-	void RenderRubberBand();
-	void RenderPivot();
+	void RenderRubberBand(GLRenderEngine& re);
+	void RenderPivot(GLRenderEngine& re);
 
 	void ShowSafeFrame(bool b);
 
@@ -208,8 +209,7 @@ protected:
 	void RenderCanvas(GLContext& rc);
 
 private:
-	void Render3DCursor();
-	void RenderTags();
+	void RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform);
 	void RenderDecorations();
 
 private:
