@@ -29,7 +29,6 @@ SOFTWARE.*/
 
 GLScreenRecorder::GLScreenRecorder() : m_glview(nullptr), m_video(nullptr)
 {
-	m_videoFormat = GL_RGB;
 	m_state = RECORDING_STATE::STOPPED;
 }
 
@@ -46,11 +45,6 @@ RECORDING_STATE GLScreenRecorder::GetRecordingState() const
 bool GLScreenRecorder::HasRecording() const
 {
 	return (m_video != nullptr);
-}
-
-void GLScreenRecorder::SetVideoFormat(unsigned int fmt) 
-{
-	m_videoFormat = fmt; 
 }
 
 bool GLScreenRecorder::SetVideoStream(CAnimation* video)
