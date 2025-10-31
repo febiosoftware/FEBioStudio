@@ -21,6 +21,7 @@ public:
     void releaseSwapChain();
 
 	void setRenderMode(RenderMode rm);
+	RenderMode renderMode() const { return m_renderMode; }
 
 	static void InitRHI(QRhi::Implementation graphicsApi);
 

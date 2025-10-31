@@ -44,18 +44,10 @@ public:
 	GLViewSettings& GetViewSettings() { return m_view; }
 
 	virtual GLScene* GetActiveScene();
-	virtual void RenderScene();
-	virtual void RenderCanvas();
+	virtual void RenderScene(GLRenderEngine& re);
 	virtual void RenderBackground();
 
 	GLCamera* GetCamera();
-
-	//! Setup the projection matrix
-	void SetupProjection();
-
-	void GetViewport(int vp[4]) const;
-
-	void ScreenToView(int x, int y, double& fx, double& fy);
 
 protected:
 	void initializeGL() override;
@@ -63,20 +55,9 @@ protected:
 
 	void PrepScene();
 
-private:
-	void mousePressEvent(QMouseEvent* ev) override;
-	void mouseMoveEvent(QMouseEvent* ev) override;
-	void mouseReleaseEvent(QMouseEvent* ev) override;
-	void wheelEvent(QWheelEvent* ev) override;
-
 protected:
 	static GLViewSettings	m_view;
 
-	int	m_viewport[4];		//!< store viewport coordinates
-	double	m_ox;
-	double	m_oy;
-
-	QPoint m_prevPos;	//!< last mouse position
-
+private:
 	OpenGLRenderer*	m_ogl = nullptr;
 };

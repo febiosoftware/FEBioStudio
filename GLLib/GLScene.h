@@ -83,7 +83,7 @@ public:
 	virtual void Render(GLRenderEngine& engine, GLContext& rc);
 
 	// Render on the 2D canvas
-	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}
+//	virtual void RenderCanvas(QPainter& painter, GLContext& rc) {}
 
 	virtual BOX GetBoundingBox() { return BOX(); }
 

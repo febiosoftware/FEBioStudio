@@ -38,18 +38,22 @@ public:
 	rhiSceneView(CMainWindow* wnd);
 	~rhiSceneView();
 
+	void SetScene(GLScene* scene);
+	GLScene* GetScene() { return m_scene; }
+
+	virtual void RenderScene(rhiRenderer& re);
+
+private:
 	void customInit() override;
 	void customRender() override;
 	void onFrameFinished() override;
 
-	void SetScene(GLScene* scene);
-	GLScene* GetScene() { return m_scene; }
-
-public:
+protected:
 	void mousePressEvent(QMouseEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
+public:
 	bool event(QEvent* event) override;
 
 private:
@@ -60,7 +64,4 @@ private:
 	rhiRenderer* m_rhiRender = nullptr;
 
 	QPoint m_prevPos;	//!< last mouse position
-
-	CGLWidgetManager m_Widget;
-	GLTriad* triad;
 };

@@ -197,20 +197,19 @@ public:
 protected:
 	void initializeGL() override;
 
-	void RenderScene() override;
+	void SetupProjection(GLRenderEngine& re);
 
-	void RenderCanvas(GLContext& rc);
+	void RenderScene(GLRenderEngine& re) override;
+
+	void RenderCanvas(GLRenderEngine& re, GLContext& rc);
 
 private:
-	void RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform);
-	void RenderDecorations();
+	void RenderTags(GLRenderEngine& re);
+	void RenderDecorations(GLRenderEngine& re);
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
 	Snap_Mode GetSnapMode() { return m_nsnap; }
-
-	// convert from device pixel to physical pixel
-	QPoint DeviceToPhysical(int x, int y);
 
 public:
 	QImage CaptureScreen();

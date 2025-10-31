@@ -27,59 +27,19 @@ SOFTWARE.*/
 #include <QPainter>
 #include <QFile>
 #include <QWidget>
-#include <QMouseEvent>
 #include <GLLib/GLMesh.h>
 #include "rhiScene.h"
 #include "rhiDocument.h"
 #include <FEBioStudio/MainWindow.h>
 #include <GLLib/GLContext.h>
+#include <QMouseEvent>
 #include <QMimeData>
 #include <QFileInfo>
 #include <QPainter>
-#include <GLWLib/GLLabel.h>
-#include <GLWLib/GLCheckBox.h>
-#include <GLWLib/GLComposite.h>
-#include <GLWLib/GLLegendBar.h>
-#include <GLWLib/GLTriad.h>
+#include <QTimer>
 
-rhiSceneView::rhiSceneView(CMainWindow* wnd)
+rhiSceneView::rhiSceneView(CMainWindow* wnd) : m_wnd(wnd)
 {
-	GLLabel* label = new GLLabel(0, 50, 450, 100, "Welcome to RHI!");
-	label->set_font_size(40);
-	m_Widget.AddWidget(label);
-
-	const int W = 200;
-	const int H = 30;
-
-	GLComposite* menu = new GLComposite(0, 0, W, H);
-	menu->align(GLWAlign::GLW_ALIGN_RIGHT | GLWAlign::GLW_ALIGN_TOP);
-
-	GLCheckBox* meshLines = new GLCheckBox(0, 0, W, H, "mesh lines");
-	meshLines->add_event_handler([this](GLWidget* w, int nevent) {
-		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
-		if (s) s->renderMesh = b->m_checked;
-		});
-	menu->add_widget(meshLines);
-
-	GLCheckBox* meshNodes = new GLCheckBox(0, 0, W, H, "mesh nodes");
-	meshNodes->add_event_handler([this](GLWidget* w, int nevent) {
-		GLCheckBox* b = dynamic_cast<GLCheckBox*>(w);
-		rhiScene* s = dynamic_cast<rhiScene*>(this->GetScene());
-		if (s) s->renderNodes = b->m_checked;
-		});
-	menu->add_widget(meshNodes);
-	m_Widget.AddWidget(menu);
-
-	GLLegendBar* legend = new GLLegendBar(0, 0, 100, 400);
-	legend->align(GLWAlign::GLW_ALIGN_RIGHT | GLWAlign::GLW_ALIGN_VCENTER);
-	m_Widget.AddWidget(legend);
-
-	triad = new GLTriad(0, 0, 100, 100);
-	triad->align(GLWAlign::GLW_ALIGN_BOTTOM | GLWAlign::GLW_ALIGN_LEFT);
-	m_Widget.AddWidget(triad);
-
-	m_wnd = wnd;
 }
 
 rhiSceneView::~rhiSceneView()
@@ -157,71 +117,53 @@ void rhiSceneView::customRender()
 {
 	if (m_scene == nullptr) return;
 
-	GLCamera& cam = m_scene->GetCamera();
-
 	m_rhiRender->start();
+	m_rhiRender->useOverlayImage(false);
 
-	GLContext rc;
-	rc.m_cam = &cam;
-	m_scene->Render(*m_rhiRender, rc);
-
-	triad->setOrientation(cam.GetOrientation());
-
-	bool renderOverlay = false;
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
-	if (RhiScene) renderOverlay = RhiScene->renderOverlay;
-
-	m_rhiRender->useOverlayImage(renderOverlay);
-	if (renderOverlay)
-	{
-		QImage img(m_rhiRender->pixelSize(), QImage::Format_RGBA8888_Premultiplied);
-		img.fill(Qt::transparent);
-		QPainter painter(&img);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-		GLPainter glpainter(&painter, nullptr);
-
-		m_Widget.DrawWidgets(&glpainter);
-		painter.end();
-
-		float H = (float)img.height();
-		float h = (float)triad->h();
-		QRhiViewport vp = { (float)triad->x(), H - (float)triad->y() - h, (float)triad->w(), h };
-		quatd q = cam.GetOrientation();
-		QMatrix4x4 Q; Q.rotate(QQuaternion(q.w, q.x, q.y, q.z));
-		m_rhiRender->setTriadInfo(Q, vp);
-
-		m_rhiRender->setOverlayImage(img);
-	}
+	RenderScene(*m_rhiRender);
 
 	m_rhiRender->finish();
 }
 
+void rhiSceneView::onFrameFinished()
+{
+	// release any resources that are no longer needed
+	m_rhiRender->clearUnusedCache();
+
+	// if the camera is animating, we need to redraw
+	if ((renderMode() == RenderMode::STATIC) && m_scene && m_scene->GetCamera().IsAnimating())
+	{
+		m_scene->GetCamera().Update();
+		QTimer::singleShot(50, this, &rhiSceneView::requestUpdate);
+	}
+}
+
+void rhiSceneView::RenderScene(rhiRenderer& re)
+{
+	GLContext rc;
+	rc.m_cam = &m_scene->GetCamera();
+	m_scene->Render(*m_rhiRender, rc);
+}
+
 void rhiSceneView::mousePressEvent(QMouseEvent* ev)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
 	m_prevPos = ev->pos();
 
-	// let the widget manager handle it first
-	int x = m_prevPos.x();
-	int y = m_prevPos.y();
-	GLWidget* pw = GLWidget::get_focus();
-	if (useOverlay && m_Widget.handle(x, y, GLWEvent::GLW_PUSH) == 1)
-	{
-		requestUpdate();
-		return;
-	}
-
 	setRenderMode(RenderMode::DYNAMIC);
+
+	ev->accept();
 }
 
 void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 {
-	if (m_scene == nullptr) return;
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	GLScene* scene = GetScene();
+
+	if (scene == nullptr) return;
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(scene);
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
@@ -239,14 +181,7 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 	int x0 = m_prevPos.x();
 	int y0 = m_prevPos.y();
 
-	// let the widget manager handle it first
-	if (but1 && useOverlay && (m_Widget.handle(x1, y1, GLWEvent::GLW_DRAG) == 1))
-	{
-		requestUpdate();
-		return;
-	}
-
-	GLCamera& cam = m_scene->GetCamera();
+	GLCamera& cam = scene->GetCamera();
 
 	if (but1)
 	{
@@ -302,25 +237,14 @@ void rhiSceneView::mouseMoveEvent(QMouseEvent* ev)
 
 void rhiSceneView::mouseReleaseEvent(QMouseEvent* event)
 {
-	rhiScene* RhiScene = dynamic_cast<rhiScene*>(m_scene);
+	rhiScene* RhiScene = dynamic_cast<rhiScene*>(GetScene());
 	bool useOverlay = false;
 	if (RhiScene) useOverlay = RhiScene->renderOverlay;
 
 	int x = (int)event->position().x();
 	int y = (int)event->position().y();
 
-	// let the widget manager handle it first
-	if (useOverlay && m_Widget.handle(x, y, GLWEvent::GLW_RELEASE) == 1)
-	{
-		requestUpdate();
-		return;
-	}
-
 	setRenderMode(RenderMode::STATIC);
-}
 
-void rhiSceneView::onFrameFinished()
-{
-	// release any resources that are no longer needed
-	m_rhiRender->clearUnusedCache();
+	event->accept();
 }

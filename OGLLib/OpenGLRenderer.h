@@ -52,6 +52,8 @@ public:
 	void viewport(int vp[4]) override;
 	void setViewport(int v[4]) override;
 
+	void setProjection(double fov, double fnear, double ffar) override;
+
 	void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) override;
 
 	void resetTransform() override;

@@ -1375,29 +1375,79 @@ void CGLView::updateView()
 	repaint();
 }
 
-void CGLView::RenderDecorations()
+void CGLView::RenderDecorations(GLRenderEngine& re)
 {
 	if (m_deco.empty() == false)
 	{
-		m_ogl->pushState();
-		m_ogl->setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
+		re.pushState();
+		re.setMaterial(GLMaterial::OVERLAY, GLColor::Yellow(), GLMaterial::NONE, false);
 		for (int i = 0; i < m_deco.size(); ++i)
 		{
-			m_deco[i]->render(*m_ogl);
+			m_deco[i]->render(re);
 		}
-		m_ogl->popState();
+		re.popState();
 	}
 }
 
-void CGLView::RenderScene()
+void CGLView::SetupProjection(GLRenderEngine& re)
+{
+	GLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	BOX box = scene->GetBoundingBox();
+
+	double R = box.Radius();
+	GLViewSettings& vs = GetViewSettings();
+
+	GLCamera& cam = scene->GetCamera();
+	vec3d p = cam.GlobalPosition();
+	vec3d c = box.Center();
+	double L = (c - p).Length();
+
+	double ffar = (L + R) * 2;
+	double fnear = 0.01 * ffar;
+	double fov = cam.GetFOV();
+
+	double D = 0.5 * cam.GetFinalTargetDistance();
+	if ((D > 0) && (D < fnear)) fnear = D;
+
+	cam.SetNearPlane(fnear);
+	cam.SetFarPlane(ffar);
+
+	double ar = 1;
+	if (height() == 0) ar = 1; ar = (GLfloat)width() / (GLfloat)height();
+
+	// set up projection matrix
+	if (cam.IsOrtho())
+	{
+		// orthographic projection
+		GLdouble f = 0.35 * cam.GetTargetDistance();
+		double ox = f * ar;
+		double oy = f;
+		re.setOrthoProjection(-ox, ox, -oy, oy, fnear, ffar);
+	}
+	else
+	{
+		re.setProjection(fov, fnear, ffar);
+	}
+}
+
+void CGLView::RenderScene(GLRenderEngine& re)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
 
+	// position the light
+	vec3f lp = m_view.m_light; lp.Normalize();
+	re.setLightPosition(0, lp);
+
 	GLCamera& cam = scene->GetCamera();
+	cam.MakeActive();
 	cam.SetOrthoProjection(cam.IsOrtho());
+
+	SetupProjection(re);
 
 	GLContext& rc = m_rc;
 	rc.m_cam = &cam;
@@ -1406,7 +1456,7 @@ void CGLView::RenderScene()
 	if (scene)
 	{
 		time_point<steady_clock> startTime = steady_clock::now();
-		scene->Render(*m_ogl, rc);
+		scene->Render(re, rc);
 		time_point<steady_clock> stopTime = steady_clock::now();
 		double sec = duration_cast<duration<double>>(stopTime - startTime).count();
 		double fps = (sec != 0 ? 1.0 / sec : 0);
@@ -1415,28 +1465,22 @@ void CGLView::RenderScene()
 		m_fps.push_front(fps);
 	}
 
-	scene->PositionCameraInScene(*m_ogl);
+	scene->PositionCameraInScene(re);
 
-	RenderPivot(*m_ogl);
+	RenderPivot(re);
 
-	RenderDecorations();
-
-	// get the transform before we switch to 2D rendering
-	// (This is because the transform grabs the current projection and modelview matrices)
-	GLViewTransform transform(this);
+	RenderDecorations(re);
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	// Note that Y is flipped?
-	m_ogl->setOrthoProjection(0, width(), height(), 0, -1, 1);
-	m_ogl->resetTransform();
+	re.setOrthoProjection(0, width(), height(), 0, -1, 1);
+	re.resetTransform();
 
-	RenderTags(*m_ogl, transform);
-
-	RenderCanvas(rc);
+	RenderCanvas(re, rc);
 
 	if (m_recorder.IsRecording())
 	{
-		m_ogl->flush();
+		re.flush();
 		QImage im = CaptureScreen();
 		if (m_recorder.AddFrame(im) == false)
 		{
@@ -1446,15 +1490,17 @@ void CGLView::RenderScene()
 	}
 }
 
-void CGLView::RenderCanvas(GLContext& rc)
+void CGLView::RenderCanvas(GLRenderEngine& re, GLContext& rc)
 {
-	if (rc.m_settings.m_bselbrush) RenderBrush(*m_ogl, m_x1, m_y1, rc.m_settings.m_brushSize);
+	if (rc.m_settings.m_bselbrush) RenderBrush(re, m_x1, m_y1, rc.m_settings.m_brushSize);
 
-	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(*m_ogl);
+	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand(re);
+
+	RenderTags(re);
 
 	// We must turn off culling before we use the QPainter, otherwise
 	// drawing using QPainter doesn't work correctly.
-	glDisable(GL_CULL_FACE);
+	re.disable(GLRenderEngine::CULLFACE);
 
 	// render the GL widgets
 	QPainter painter(this);
@@ -1542,7 +1588,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 			else m_menu->hide();
 		}
 
-		GLPainter glpainter(&painter, m_ogl);
+		GLPainter glpainter(&painter, &re);
 
 		m_Widget->DrawWidgets(&glpainter);
 	}
@@ -1578,7 +1624,7 @@ void CGLView::RenderCanvas(GLContext& rc)
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rt, QString("FPS: %1").arg(fps, 0, 'f', 2), to);
 
-		GLRenderStats stats = m_ogl->GetRenderStats();
+		GLRenderStats stats = re.GetRenderStats();
 		int Y = rt.y() + fontSize + 5;
 		rt.setY(Y);
 		float tris = (float)stats.triangles;
@@ -1627,12 +1673,6 @@ void CGLView::RenderCanvas(GLContext& rc)
 	}
 
 	painter.end();
-}
-
-QPoint CGLView::DeviceToPhysical(int x, int y)
-{
-	double dpr = devicePixelRatio();
-	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
 }
 
 void CGLView::ShowMeshData(bool b)
@@ -2401,10 +2441,12 @@ quatd CGLView::GetPivotRotation()
 bool CGLView::GetPivotUserMode() const { return m_userPivot; }
 void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
-void CGLView::RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform)
+void CGLView::RenderTags(GLRenderEngine& re)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
+
+	GLViewTransform viewTransform(this);
 
 	const int MAX_TAGS = 100;
 	size_t ntags = scene->Tags();
@@ -2423,6 +2465,8 @@ void CGLView::RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform)
 	re.disable(GLRenderEngine::LIGHTING);
 	re.disable(GLRenderEngine::DEPTHTEST);
 
+	int H = height();
+
 	double dpr = devicePixelRatio();
 	re.begin(GLRenderEngine::POINTS);
 	{
@@ -2430,7 +2474,7 @@ void CGLView::RenderTags(GLRenderEngine& re, GLViewTransform& viewTransform)
 		{
 			GLTAG& tag = scene->Tag(i);
 			int x = (int)(tag.wx * dpr);
-			int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - tag.wy));
+			int y = (int)(H - dpr*(H - tag.wy));
 			re.setColor(GLColor(0, 0, 0));
 			re.vertex(x, y);
 			re.setColor(tag.c);

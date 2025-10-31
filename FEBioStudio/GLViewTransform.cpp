@@ -51,8 +51,7 @@ GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PM
 	m_PMi = m_PM.inverse();
 
 	// store the viewport
-	m_vp = { 0,0,0,0 };
-	view->GetViewport(m_vp.data());
+	m_vp = { 0,0, view->width(), view->height()};
 }
 
 vec3d GLViewTransform::WorldToScreen(const vec3d& r)

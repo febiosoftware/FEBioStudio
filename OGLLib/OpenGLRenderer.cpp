@@ -343,6 +343,26 @@ void OpenGLRenderer::setViewport(int vp[4])
 	glViewport(vp[0], vp[1], vp[2], vp[3]);
 }
 
+void OpenGLRenderer::setProjection(double fov, double fnear, double ffar)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	int vp[4];
+	viewport(vp);
+	double ar = 1;
+	if (vp[3] == 0) ar = 1; ar = (GLfloat)vp[2] / (GLfloat)vp[3];
+
+	GLdouble f = 1.0 / tan(fov * M_PI / 360.0);
+	glFrustum(-fnear * tan(fov * M_PI / 360.0) * ar,
+		fnear * tan(fov * M_PI / 360.0) * ar,
+		-fnear * tan(fov * M_PI / 360.0),
+		fnear * tan(fov * M_PI / 360.0),
+		fnear, ffar);
+
+	glMatrixMode(GL_MODELVIEW);
+}
+
 void OpenGLRenderer::setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar)
 {
 	glMatrixMode(GL_PROJECTION);

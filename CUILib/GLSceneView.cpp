@@ -42,8 +42,6 @@ CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
 	setFocusPolicy(Qt::StrongFocus);
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 	setMouseTracking(true);
-
-	m_ox = m_oy = 1;
 }
 
 GLScene* CGLSceneView::GetActiveScene()
@@ -121,17 +119,17 @@ void CGLSceneView::paintGL()
 	// start rendering
 	m_ogl->start();
 
+	GLScene* scene = GetActiveScene();
+
 	// Render the 3D scene
 	PrepScene();
 	RenderBackground();
-	RenderScene();
-	RenderCanvas();
+	RenderScene(*m_ogl);
 
 	// finish up
 	m_ogl->finish();
 
 	// if the camera is animating, we need to redraw
-	GLScene* scene = GetActiveScene();
 	if (scene && scene->GetCamera().IsAnimating())
 	{
 		scene->GetCamera().Update();
@@ -139,7 +137,7 @@ void CGLSceneView::paintGL()
 	}
 }
 
-void CGLSceneView::RenderScene()
+void CGLSceneView::RenderScene(GLRenderEngine& re)
 {
 	GLScene* scene = GetActiveScene();
 	if (scene)
@@ -147,99 +145,8 @@ void CGLSceneView::RenderScene()
 		GLContext rc;
 		rc.m_cam = &scene->GetCamera();
 		rc.m_settings = GetViewSettings();
-		scene->Render(*m_ogl, rc);
+		scene->Render(re, rc);
 	}
-}
-
-void CGLSceneView::RenderCanvas()
-{
-	GLScene* scene = GetActiveScene();
-	if (scene)
-	{
-		GLCamera& cam = scene->GetCamera();
-		GLContext rc;
-		rc.m_cam = &cam;
-		rc.m_settings = GetViewSettings();
-
-		// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, width(), height(), 0, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// We must turn off culling before we use the QPainter, otherwise
-		// drawing using QPainter doesn't work correctly.
-		glDisable(GL_CULL_FACE);
-
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		scene->RenderCanvas(painter, rc);
-		painter.end();
-	}
-}
-
-// setup the projection matrix
-void CGLSceneView::SetupProjection()
-{
-	// set up the projection matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	BOX box = scene->GetBoundingBox();
-
-	double R = box.Radius();
-	GLViewSettings& vs = GetViewSettings();
-
-	GLCamera& cam = scene->GetCamera();
-	vec3d p = cam.GlobalPosition();
-	vec3d c = box.Center();
-	double L = (c - p).Length();
-
-	double ffar = (L + R) * 2;
-	double fnear = 0.01 * ffar;
-	double fov = cam.GetFOV();
-
-	double D = 0.5 * cam.GetFinalTargetDistance();
-	if ((D > 0) && (D < fnear)) fnear = D;
-
-	cam.SetNearPlane(fnear);
-	cam.SetFarPlane(ffar);
-
-	double ar = 1;
-	if (height() == 0) ar = 1; ar = (GLfloat)width() / (GLfloat)height();
-
-	// set up projection matrix
-	if (cam.IsOrtho())
-	{
-		// orthographic projection
-		GLdouble f = 0.35 * cam.GetTargetDistance();
-		m_ox = f * ar;
-		m_oy = f;
-		glOrtho(-m_ox, m_ox, -m_oy, m_oy, fnear, ffar);
-	}
-	else
-	{
-		// perspective projection
-		GLdouble f = 1.0 / tan(fov * M_PI / 360.0);
-		glFrustum(-fnear * tan(fov * M_PI / 360.0) * ar,
-			 fnear * tan(fov * M_PI / 360.0) * ar,
-			-fnear * tan(fov * M_PI / 360.0),
-			 fnear * tan(fov * M_PI / 360.0),
-			 fnear, ffar);
-	}
-}
-
-void CGLSceneView::GetViewport(int vp[4]) const
-{
-	vp[0] = m_viewport[0];
-	vp[1] = m_viewport[1];
-	vp[2] = m_viewport[2];
-	vp[3] = m_viewport[3];
 }
 
 GLCamera* CGLSceneView::GetCamera()
@@ -253,15 +160,12 @@ void CGLSceneView::PrepScene()
 {
 	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
 
-	// store the viewport dimensions
-	glGetIntegerv(GL_VIEWPORT, m_viewport);
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// setup projection
-	SetupProjection();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 
 	// reset the modelview matrix mode
 	glMatrixMode(GL_MODELVIEW);
@@ -307,169 +211,4 @@ void CGLSceneView::PrepScene()
 		GLCamera& cam = scene->GetCamera();
 		cam.MakeActive();
 	}
-}
-
-void CGLSceneView::mousePressEvent(QMouseEvent* ev)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	m_prevPos = ev->pos();
-}
-
-void CGLSceneView::mouseMoveEvent(QMouseEvent* ev)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	GLCamera& cam = scene->GetCamera();
-
-	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
-	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
-	bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
-
-	bool but1 = (ev->buttons() & Qt::LeftButton);
-	bool but2 = (ev->buttons() & Qt::MiddleButton);
-	bool but3 = (ev->buttons() & Qt::RightButton);
-
-	// get the mouse position
-	int x1 = ev->pos().x();
-	int y1 = ev->pos().y();
-	int x0 = m_prevPos.x();
-	int y0 = m_prevPos.y();
-
-	if (but1)
-	{
-		if (balt)
-		{
-			quatd qz = quatd((y1 - y0) * 0.01f, vec3d(0, 0, 1));
-			cam.Orbit(qz);
-		}
-		else
-		{
-			quatd qx = quatd((y1 - y0) * 0.01f, vec3d(1, 0, 0));
-			quatd qy = quatd((x1 - x0) * 0.01f, vec3d(0, 1, 0));
-
-			cam.Orbit(qx);
-			cam.Orbit(qy);
-		}
-	}
-	else if (but2 || (but3 && balt))
-	{
-		vec3d r = vec3d(-(double)(x1 - x0), (double)(y1 - y0), 0.f);
-		cam.PanView(r);
-	}
-	else if (but3)
-	{
-		if (bshift)
-		{
-			double D = (double)y0 - y1;
-			double s = cam.GetFinalTargetDistance() * 1e-2;
-			if (D < 0) s = -s;
-			cam.Dolly(s);
-		}
-		else if (bctrl)
-		{
-			quatd qx = quatd((y0 - y1) * 0.001f, vec3d(1, 0, 0));
-			quatd qy = quatd((x0 - x1) * 0.001f, vec3d(0, 1, 0));
-			quatd q = qy * qx;
-			cam.Pan(q);
-		}
-		else
-		{
-			if (y0 > y1) cam.Zoom(0.95f);
-			if (y0 < y1) cam.Zoom(1.0f / 0.95f);
-		}
-	}
-	else return;
-
-	repaint();
-
-	m_prevPos = ev->pos();
-
-	cam.Update(true);
-
-	ev->accept();
-}
-
-void CGLSceneView::mouseReleaseEvent(QMouseEvent* ev)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-}
-
-void CGLSceneView::wheelEvent(QWheelEvent* ev)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	GLCamera& cam = scene->GetCamera();
-
-	Qt::KeyboardModifiers key = ev->modifiers();
-	bool balt = (key & Qt::AltModifier);
-	Qt::MouseEventSource eventSource = ev->source();
-	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
-	{
-		int y = ev->angleDelta().y();
-		if (y == 0) y = ev->angleDelta().x();
-		if (balt && GetViewSettings().m_bselbrush)
-		{
-			float& R = GetViewSettings().m_brushSize;
-			if (y < 0) R -= 2.f;
-			if (y > 0) R += 2.f;
-			if (R < 2.f) R = 1.f;
-			if (R > 500.f) R = 500.f;
-		}
-		else
-		{
-			if (y > 0) cam.Zoom(0.95f);
-			if (y < 0) cam.Zoom(1.0f / 0.95f);
-		}
-	}
-	else
-	{
-		if (balt) 
-		{
-			int y = ev->angleDelta().y();
-			if (y > 0) cam.Zoom(0.95f);
-			if (y < 0) cam.Zoom(1.0f / 0.95f);
-		}
-		else 
-		{
-			int dx = ev->pixelDelta().x();
-			int dy = ev->pixelDelta().y();
-			vec3d r = vec3d(-dx, dy, 0.f);
-			cam.PanView(r);
-		}
-	}
-
-	cam.Update(true);
-	ev->accept();
-	repaint();
-}
-
-void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
-{
-	GLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	double W = (double)width();
-	double H = (double)height();
-
-	if (H == 0.f) H = 0.001f;
-
-	GLCamera& cam = scene->GetCamera();
-
-	double fnear = cam.GetNearPlane();
-	double fov = cam.GetFOV();
-
-
-	double ar = W / H;
-
-	double fh = 2.f * fnear * (double)tan(0.5 * fov * PI / 180);
-	double fw = fh * ar;
-
-	fx = -fw / 2 + x * fw / W;
-	fy = fh / 2 - y * fh / H;
 }

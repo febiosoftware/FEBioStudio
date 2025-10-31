@@ -94,31 +94,6 @@ void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 	if (m_analysis && m_ODF) m_analysis->renderODFMesh(engine, m_ODF, rc.m_cam->IsMoving());
 }
 
-void CODFScene::RenderCanvas(QPainter& painter, GLContext& rc)
-{
-/*	OpenGLRenderer ogl;
-	ogl.init();
-
-	GLPainter glpainter(&painter, &ogl);
-
-	m_w->m_ptriad->setOrientation(rc.m_cam->GetOrientation());
-	m_w->m_ptriad->draw(&glpainter);
-
-	if (m_w->m_analysis)
-	{
-		CFiberODFAnalysis* odf = m_w->m_analysis;
-		m_w->m_pbar->SetDivisions(odf->Divisions());
-
-		double vmin, vmax;
-		vmin = odf->RangeMax();
-		vmax = odf->RangeMin();
-		m_w->m_pbar->SetRange(vmin, vmax);
-
-		m_w->m_pbar->draw(&glpainter);
-	}
-*/
-}
-
 BOX CODFScene::GetBoundingBox()
 {
 	return BOX(-2, -2, -2, 2, 2, 2);

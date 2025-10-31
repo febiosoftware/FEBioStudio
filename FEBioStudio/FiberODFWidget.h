@@ -46,8 +46,6 @@ public:
 	CODFScene();
 	void Render(GLRenderEngine& engine, GLContext& rc) override;
 
-	void RenderCanvas(QPainter& painter, GLContext& rc) override;
-
 	BOX GetBoundingBox() override;
 
 	void setAnalysis(CFiberODFAnalysis* a) { m_analysis = a; }
