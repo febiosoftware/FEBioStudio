@@ -27,12 +27,13 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/math3d.h>
 #include <MeshLib/Intersect.h>
+#include <QMatrix4x4>
+#include <array>
 
 class CGLView;
 class GLCamera;
 
 // class that can be used to map screen to world and vice versa
-// NOTE: make sure to call makeCurrent before using this class!
 class GLViewTransform
 {
 public:
@@ -50,11 +51,12 @@ public:
 	bool IsVisible(const vec3d& p);
 
 private:
-	void PositionInScene(const GLCamera& cam);
+	QMatrix4x4 SetupProjection();
+	QMatrix4x4 SetupModelMatrix(const GLCamera& cam);
 
 private:
 	CGLView*	m_view;	
 	matrix		m_PM, m_PMi;
-	int			m_vp[4];
+	std::array<int, 4> m_vp;
 	vector<double>	c, q;
 };

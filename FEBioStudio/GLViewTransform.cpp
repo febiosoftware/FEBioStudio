@@ -23,33 +23,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
 #include "GLViewTransform.h"
 #include "GLView.h"
-#include <GLLib/GView.h>
-#include <GLLib/glx.h>
+#include <GLLib/GLScene.h>
 
 GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PMi(4, 4), q(4, 0.0), c(4, 0.0)
 {
-	GLCamera* cam = view->GetCamera();
-	if (cam == nullptr) return;
-	view->SetupProjection();
-	PositionInScene(*cam);
-
-	double p[16], m[16];
-	glGetDoublev(GL_PROJECTION_MATRIX, p);
-	glGetDoublev(GL_MODELVIEW_MATRIX, m);
+	GLCamera* cam = view->GetCamera(); assert(cam);
 
 	// calculate projection matrix
+	QMatrix4x4 p = SetupProjection();
 	matrix P(4, 4);
 	for (int i = 0; i<4; ++i)
-		for (int j = 0; j<4; ++j) P(i, j) = p[j * 4 + i];
+		for (int j = 0; j<4; ++j) P(i, j) = p(i,j);
 
 	// calculate modelview matrix
+	QMatrix4x4 m = SetupModelMatrix(*cam);
 	matrix M(4, 4);
-	for (int i = 0; i<4; ++i)
-		for (int j = 0; j<4; ++j) M(i, j) = m[j * 4 + i];
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < 4; ++j) M(i, j) = m(i, j);
 
 	// multiply them together
 	m_PM = P*M;
@@ -58,7 +51,8 @@ GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PM
 	m_PMi = m_PM.inverse();
 
 	// store the viewport
-	view->GetViewport(m_vp);
+	m_vp = { 0,0,0,0 };
+	view->GetViewport(m_vp.data());
 }
 
 vec3d GLViewTransform::WorldToScreen(const vec3d& r)
@@ -141,18 +135,16 @@ bool GLViewTransform::IsVisible(const vec3d& p)
 	return ((p.x > 0) && (p.x < W) && (p.y > 0) && (p.y < H) && (p.z > -1) && (p.z < 1));
 }
 
-void GLViewTransform::PositionInScene(const GLCamera& cam)
+QMatrix4x4 GLViewTransform::SetupModelMatrix(const GLCamera& cam)
 {
-	// reset the modelview matrix mode
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	QMatrix4x4 m;
 
 	// target in camera coordinates
 	vec3d r = cam.Target();
 
 	// position the target in camera coordinates
 	vec3d t = -r;
-	glTranslated(t.x, t.y, t.z);
+	m.translate(t.x, t.y, t.z);
 
 	// orient the camera
 	quatd q = cam.m_rot.Value();
@@ -160,11 +152,48 @@ void GLViewTransform::PositionInScene(const GLCamera& cam)
 	if (w != 0)
 	{
 		vec3d r = q.GetVector();
-		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
-		else glRotated(w * 180 / PI, 1, 0, 0);
+		if (r.Length() > 1e-6) m.rotate(w * 180 / PI, r.x, r.y, r.z);
+		else m.rotate(w * 180 / PI, 1, 0, 0);
 	}
 
 	// translate to world coordinates
 	vec3d c = -cam.GetPosition();
-	glTranslated(c.x, c.y, c.z);
+	m.translate(c.x, c.y, c.z);
+
+	return m;
+}
+
+QMatrix4x4 GLViewTransform::SetupProjection()
+{
+	QMatrix4x4 P;
+
+	GLScene* scene = m_view->GetActiveScene();
+	if (scene == nullptr) return P;
+
+	BOX box = scene->GetBoundingBox();
+
+	GLCamera& cam = scene->GetCamera();
+	double ffar = cam.GetFarPlane();
+	double fnear = cam.GetNearPlane();
+	double fov = cam.GetFOV();
+
+	double ar = 1;
+	if (m_view->height() == 0) ar = 1; ar = (GLfloat)m_view->width() / (GLfloat)m_view->height();
+
+	// set up projection matrix
+	if (cam.IsOrtho())
+	{
+		// orthographic projection
+		GLdouble f = 0.35 * cam.GetTargetDistance();
+		double ox = f * ar;
+		double oy = f;
+		P.ortho(-ox, ox, -oy, oy, fnear, ffar);
+	}
+	else
+	{
+		// perspective projection
+		P.perspective(fov, ar, fnear, ffar);
+	}
+
+	return P;
 }

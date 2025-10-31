@@ -276,7 +276,6 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	}
 	if (pm == nullptr) return;
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	// ignore exterior option for surface meshes
@@ -485,8 +484,6 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 
 	FSMesh* pm = po->GetFEMesh();
 
-	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	if (view.m_bcullSel)
@@ -636,8 +633,6 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 	}
 	if (pm == nullptr) return;
 
-	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	// tag back facing items so they won't get selected.
@@ -745,8 +740,6 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	}
 	if (pm == nullptr) return;
 
-	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	if (view.m_bcullSel)
@@ -810,8 +803,6 @@ void GLViewSelector::BrushSelectFaces(int x, int y, bool badd, bool binit)
 	if (pm == 0) return;
 	FSMeshBase& mesh = *pm;
 
-	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	Ray ray = transform.PointToRay(x, y);
@@ -1047,7 +1038,6 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	if (pm == nullptr) return;
 
 	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -1174,7 +1164,6 @@ void GLViewSelector::SelectFEFaces(int x, int y)
 	if (pm == 0) return;
 
 	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -1291,7 +1280,6 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 	int S = 6;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vec3d o(0, 0, 0);
@@ -1490,8 +1478,6 @@ void GLViewSelector::SelectObjects(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_glv->GetDocument());
 	if (pdoc == nullptr) return;
 
-	m_glv->makeCurrent();
-
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
@@ -1582,7 +1568,6 @@ void GLViewSelector::SelectParts(int x, int y)
 	if (model.Parts() == 0) return;
 
 	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -1696,7 +1681,6 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	if (model.Surfaces() == 0) return;
 
 	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -1822,7 +1806,6 @@ void GLViewSelector::SelectEdges(int x, int y)
 	int NE = model.Edges();
 	if (NE == 0) return;
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	int X = x;
@@ -1887,7 +1870,6 @@ void GLViewSelector::SelectNodes(int x, int y)
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	int NN = model.Nodes();
@@ -1969,7 +1951,6 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	int index = -1;
@@ -2104,7 +2085,6 @@ void GLViewSelector::SelectSurfaceFaces(int x, int y)
 	if (pm == 0) return;
 
 	// convert the point to a ray
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -2160,7 +2140,6 @@ void GLViewSelector::SelectSurfaceEdges(int x, int y)
 	int S = 6;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vec3d o(0, 0, 0);
@@ -2262,7 +2241,6 @@ void GLViewSelector::SelectSurfaceNodes(int x, int y)
 	int S = 6;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	int index = -1;
@@ -2354,7 +2332,6 @@ void GLViewSelector::RegionSelectObjects(const SelectRegion& region)
 	if (model.Objects() == 0) return;
 
 	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vector<GObject*> selectedObjects;
@@ -2428,7 +2405,6 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 	if (model.Parts() == 0) return;
 
 	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	std::list<GPart*> selectedParts;
@@ -2516,7 +2492,6 @@ void GLViewSelector::RegionSelectSurfaces(const SelectRegion& region)
 	if (nSurfaces == 0) return;
 
 	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vector<int> selectedSurfaces;
@@ -2581,7 +2556,6 @@ void GLViewSelector::RegionSelectEdges(const SelectRegion& region)
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vector<int> selectedEdges;
@@ -2639,8 +2613,6 @@ void GLViewSelector::RegionSelectNodes(const SelectRegion& region)
 	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
-	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 //	double* a = m_glv->PlaneCoordinates();
 
@@ -2693,8 +2665,6 @@ void GLViewSelector::RegionSelectDiscrete(const SelectRegion& region)
 	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
-	// activate the gl rendercontext
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 	vector<GDiscreteObject*> selectedObjects;
@@ -2778,7 +2748,6 @@ void GLViewSelector::SelectFENodes(int x, int y)
 	int S = 6;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
-	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
 //	double* a = m_glv->PlaneCoordinates();

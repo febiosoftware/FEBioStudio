@@ -1427,12 +1427,8 @@ void CGLView::RenderScene()
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	// Note that Y is flipped?
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width(), height(), 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	m_ogl->setOrthoProjection(0, width(), height(), 0, -1, 1);
+	m_ogl->resetTransform();
 
 	RenderTags(*m_ogl, transform);
 
@@ -1960,8 +1956,6 @@ bool CGLView::SelectPivot(int x, int y)
 	// get the transformation mode
 	int ntrans = GetDocument()->GetTransformMode();
 
-	makeCurrent();
-
 	// get a new pivot mode
 	int newMode = m_pivot.Pick(ntrans, x, y);
 	return (newMode != oldMode);
@@ -1984,7 +1978,6 @@ void CGLView::HighlightEdge(int x, int y)
 	int nsize = 5 * model.Edges();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2051,7 +2044,6 @@ void CGLView::HighlightNode(int x, int y)
 	int nsize = 5 * model.Nodes();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2106,7 +2098,6 @@ void CGLView::HighlightSurface(int x, int y)
 	int nsize = 5 * model.Edges();
 	if (nsize == 0) return;
 
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	int X = x;
@@ -2190,7 +2181,6 @@ GPart* CGLView::PickPart(int x, int y)
 	if (model.Parts() == 0) return nullptr;
 
 	// convert the point to a ray
-	makeCurrent();
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
@@ -2291,7 +2281,6 @@ GObject* CGLView::GetActiveObject()
 
 vec3d CGLView::PickPoint(int x, int y, bool* success)
 {
-	makeCurrent();
 	GLViewTransform transform(this);
 
 	if (success) *success = false;
