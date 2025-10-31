@@ -1269,9 +1269,6 @@ void CGLPostScene::Render(GLRenderEngine& engine, GLContext& rc)
 
 	if (vs.m_use_environment_map) ActivateEnvironmentMap(engine);
 
-	GLCamera& cam = GetCamera();
-	engine.positionCamera(cam);
-
 	// now render it
 	GLScene::Render(engine, rc);
 

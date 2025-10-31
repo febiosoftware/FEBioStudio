@@ -144,11 +144,8 @@ void CGLSceneView::RenderScene()
 	GLScene* scene = GetActiveScene();
 	if (scene)
 	{
-		GLCamera& cam = scene->GetCamera();
-		m_ogl->positionCamera(cam);
-
 		GLContext rc;
-		rc.m_cam = &cam;
+		rc.m_cam = &scene->GetCamera();
 		rc.m_settings = GetViewSettings();
 		scene->Render(*m_ogl, rc);
 	}

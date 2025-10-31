@@ -1415,7 +1415,8 @@ void CGLView::RenderScene()
 		m_fps.push_front(fps);
 	}
 
-	m_ogl->positionCamera(cam);
+	scene->PositionCameraInScene(*m_ogl);
+
 	RenderPivot(*m_ogl);
 
 	RenderDecorations();

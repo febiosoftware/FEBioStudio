@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FECore/besselIK.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 #include <FEBioOpt/FEBioOpt.h>
 
 #ifdef min

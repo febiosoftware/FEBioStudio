@@ -94,7 +94,7 @@ void CanvasRenderPass::update(QRhiResourceUpdateBatch* u)
 		m_fpsTex.image = img;
 	m_fpsTex.upload(u);
 
-	m_fpsMesh->Update(u, QMatrix4x4(), QMatrix4x4());
+	m_fpsMesh->Update(u, QMatrix4x4());
 }
 
 void CanvasRenderPass::draw(QRhiCommandBuffer* cb)

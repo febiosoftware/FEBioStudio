@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "GLScene.h"
+#include "GLCamera.h"
+
 GLScene::GLScene() 
 {
 	m_envtex = 0;
@@ -39,6 +41,8 @@ void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
 	engine.pushState();
 
+	PositionCameraInScene(engine);
+
 	GLScene& scene = *this;
 	for (GLSceneItem* item : scene)
 	{
@@ -52,6 +56,25 @@ void GLScene::Render(GLRenderEngine& engine, GLContext& rc)
 void GLScene::Update()
 {
 
+}
+
+void GLScene::PositionCameraInScene(GLRenderEngine& re)
+{
+	GLCamera& cam = m_cam;
+
+	re.resetTransform();
+
+	// target in camera coordinates
+	vec3d r = cam.Target();
+
+	// position the target in camera coordinates
+	re.translate(-r);
+
+	// orient the camera
+	re.rotate(cam.m_rot.Value());
+
+	// translate to world coordinates
+	re.translate(-cam.GetPosition());
 }
 
 void GLScene::ActivateEnvironmentMap(GLRenderEngine& re)

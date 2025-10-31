@@ -90,10 +90,10 @@ public:
 
 public:
 
-	void positionCamera(const GLCamera& cam) override;
 	void setProjection(double fov, double fnear, double ffar) override;
 	void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) override;
 
+	void resetTransform() override;
 	void pushTransform() override;
 	void popTransform() override;
 	void translate(const vec3d& r) override;
@@ -169,8 +169,7 @@ private:
 	// matrix stuff
 	std::array<float, 4> m_viewport{ 0.f };
 	QMatrix4x4 m_projMatrix;
-	QMatrix4x4 m_viewMatrix;
-	QMatrix4x4 m_modelMatrix;
+	QMatrix4x4 m_modelViewMatrix;
 	std::stack<QMatrix4x4> m_transformStack;
 
 	// overlay flag

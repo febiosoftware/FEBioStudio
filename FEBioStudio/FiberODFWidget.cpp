@@ -87,7 +87,7 @@ CODFScene::CODFScene()
 
 void CODFScene::Render(GLRenderEngine& engine, GLContext& rc)
 {
-	engine.positionCamera(GetCamera());
+	PositionCameraInScene(engine);
 	engine.setProjection(45, 0.01, 100);
 	engine.setLightPosition(0, vec3f(1, 1, 1));
 

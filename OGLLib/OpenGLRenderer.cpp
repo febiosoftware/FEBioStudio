@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QImage>
 #include "OGLMesh.h"
 #include "OGLProgram.h"
+#include <GLLib/GLCamera.h>
 #include <map>
 
 static GLubyte poly_mask[128] = {
@@ -176,7 +177,6 @@ public:
 	bool useTexture = false;
 
 	bool shaderInit = false;
-	const GLCamera* cam = nullptr;
 
 	bool lineMode = false; // set to true when rendering lines
 
@@ -599,33 +599,6 @@ void OpenGLRenderer::setFrontFace(GLRenderEngine::FrontFace f)
 	int frontFace = GL_CCW;
 	if (f == GLRenderEngine::CLOCKWISE) frontFace = GL_CW;
 	glFrontFace(frontFace);
-}
-
-void OpenGLRenderer::positionCamera(const GLCamera& cam)
-{
-	m.cam = &cam;
-
-	// reset the modelview matrix mode
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// target in camera coordinates
-	vec3d r = cam.Target();
-
-	// zoom-in a little when in line rendering mode
-	if (m.lineMode)
-		glPolygonOffset(0, 0);
-	else
-		glPolygonOffset(1, 1);
-
-	// position the target in camera coordinates
-	translate(-r);
-
-	// orient the camera
-	rotate(cam.m_rot.Value());
-
-	// translate to world coordinates
-	translate(-cam.GetPosition());
 }
 
 void OpenGLRenderer::setLightPosition(unsigned int lightIndex, const vec3f& p)

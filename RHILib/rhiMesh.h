@@ -74,11 +74,11 @@ namespace rhi {
 
 		void SetMaterial(const GLMaterial& m) { mat = m; }
 
-		void SetModelMatrix(const QMatrix4x4& Q) { modelMatrix = Q; }
+		void SetModelMatrix(const QMatrix4x4& Q) { mvMatrix = Q; }
 
 		virtual bool CreateFromGLMesh(const GLMesh* gmsh) { return false; }
 
-		virtual void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj, const QMatrix4x4& view);
+		virtual void Update(QRhiResourceUpdateBatch* u, const QMatrix4x4& proj);
 
 		virtual void Draw(QRhiCommandBuffer* cb);
 
@@ -94,7 +94,7 @@ namespace rhi {
 	protected:
 		QRhi* m_rhi = nullptr;
 
-		QMatrix4x4 modelMatrix;
+		QMatrix4x4 mvMatrix;
 		bool active = false;
 
 	private:

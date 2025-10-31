@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include "GLRenderStats.h"
 #include "GLGrid.h"
+#include "GLCamera.h"
 #include "GLRenderEngine.h"
 
 class GLContext;
@@ -91,6 +92,8 @@ public:
 	virtual BOX GetSelectionBox() = 0;
 
 	GLCamera& GetCamera() { return m_cam; }
+
+	void PositionCameraInScene(GLRenderEngine& re);
 
 public:
 	GLGrid& GetGrid() { return m_grid; }

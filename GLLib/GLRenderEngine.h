@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <string>
 #include "GLRenderStats.h"
 #include "GLMaterial.h"
-#include "GLCamera.h"
 #include "GLTexture1D.h"
 #include "GLTexture2D.h"
 #include "GLTexture3D.h"
@@ -129,7 +128,6 @@ public:
 
 	virtual void setProjection(double fov, double near, double far) {}
 	virtual void setOrthoProjection(double left, double right, double bottom, double top, double zNear, double zFar) {}
-	virtual void positionCamera(const GLCamera& cam) {}
 
 public:
 	virtual void setLightPosition(unsigned int lightIndex, const vec3f& p) {}

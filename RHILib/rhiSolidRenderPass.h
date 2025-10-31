@@ -76,7 +76,6 @@ public:
 
 public:
 	QMatrix4x4 m_proj;
-	QMatrix4x4 m_view;
 
 private:
 	std::unique_ptr<BackFaceRenderPass> m_backPass;

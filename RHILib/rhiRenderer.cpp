@@ -155,25 +155,6 @@ void rhiRenderer::setLightSpecularColor(unsigned int lightIndex, const GLColor& 
 	m_lightSpecular = col;
 }
 
-void rhiRenderer::positionCamera(const GLCamera& cam)
-{
-	m_viewMatrix.setToIdentity();
-
-	// target in camera coordinates
-	vec3d r = cam.Target();
-
-	// position the target in camera coordinates
-	m_viewMatrix.translate(-r.x, -r.y, -r.z);
-
-	// orient the camera
-	quatd q = cam.m_rot.Value();
-	m_viewMatrix.rotate(QQuaternion(q.w, q.x, q.y, q.z));
-
-	// translate to world coordinates
-	vec3d p = cam.GetPosition();
-	m_viewMatrix.translate(-p.x, -p.y, -p.z);
-}
-
 void rhiRenderer::setProjection(double fov, double fnear, double far)
 {
 	m_projMatrix = m_rhi->clipSpaceCorrMatrix();
@@ -189,31 +170,32 @@ void rhiRenderer::setOrthoProjection(double left, double right, double bottom, d
 	m_projMatrix.ortho(left, right, bottom, top, zNear, zFar);
 }
 
+void rhiRenderer::resetTransform()
+{
+	m_modelViewMatrix.setToIdentity();
+}
+
 void rhiRenderer::pushTransform()
 {
-	m_transformStack.push(m_modelMatrix);
+	m_transformStack.push(m_modelViewMatrix);
 }
 
 void rhiRenderer::popTransform()
 {
 	assert(!m_transformStack.empty());
 	if (m_transformStack.empty()) return;
-	m_modelMatrix = m_transformStack.top();
+	m_modelViewMatrix = m_transformStack.top();
 	m_transformStack.pop();
 }
 
 void rhiRenderer::translate(const vec3d& r)
 {
-	QMatrix4x4 T;
-	T.translate(QVector3D(r.x, r.y, r.z));
-	m_modelMatrix *= T;
+	m_modelViewMatrix.translate(QVector3D(r.x, r.y, r.z));
 }
 
 void rhiRenderer::rotate(const quatd& rot)
 {
-	QMatrix4x4 R;
-	R.rotate(QQuaternion(rot.w, rot.x, rot.y, rot.z));
-	m_modelMatrix *= R;
+	m_modelViewMatrix.rotate(QQuaternion(rot.w, rot.x, rot.y, rot.z));
 }
 
 void rhiRenderer::rotate(double deg, double x, double y, double z)
@@ -224,9 +206,7 @@ void rhiRenderer::rotate(double deg, double x, double y, double z)
 
 void rhiRenderer::scale(double x, double y, double z)
 {
-	QMatrix4x4 S;
-	S.scale(x, y, z);
-	m_modelMatrix *= S;
+	m_modelViewMatrix.scale(x, y, z);
 }
 
 void rhiRenderer::setMaterial(GLMaterial::Type matType, GLColor c, GLMaterial::DiffuseMap map, bool frontOnly)
@@ -253,7 +233,7 @@ void rhiRenderer::renderGMesh(const GLMesh& mesh, bool cacheMesh)
 	if (pm)
 	{
 		pm->SetMaterial(m_currentMat);
-		pm->SetModelMatrix(m_modelMatrix);
+		pm->SetModelMatrix(m_modelViewMatrix);
 		pm->doClipping = m_clipEnabled;
 		pm->setActive(true);
 	}
@@ -265,7 +245,7 @@ void rhiRenderer::renderGMeshEdges(const GLMesh& mesh, bool cacheMesh)
 	if (lineMesh)
 	{
 		lineMesh->SetMaterial(m_currentMat);
-		lineMesh->SetModelMatrix(m_modelMatrix);
+		lineMesh->SetModelMatrix(m_modelViewMatrix);
 		lineMesh->doClipping = m_clipEnabled;
 		lineMesh->setActive(true);
 	}
@@ -277,7 +257,7 @@ void rhiRenderer::renderGMeshNodes(const GLMesh& mesh, bool cacheMesh)
 	if (pointMesh)
 	{
 		pointMesh->SetMaterial(m_currentMat);
-		pointMesh->SetModelMatrix(m_modelMatrix);
+		pointMesh->SetModelMatrix(m_modelViewMatrix);
 		pointMesh->doClipping = m_clipEnabled;
 		pointMesh->setActive(true);
 	}
@@ -306,7 +286,7 @@ void rhiRenderer::setClipPlane(unsigned int n, const double* v)
 	{
 		// Transform to eye coordinates
 		QVector4D N(v[0], v[1], v[2], 0);
-		QMatrix4x4 modelView = m_viewMatrix * m_modelMatrix;
+		QMatrix4x4 modelView = m_modelViewMatrix;
 		QVector4D Np = modelView * N;
 		// TODO: Do I need transpose of modelView?
 		double v3 = v[3] - (modelView(0,3) * Np[0] + modelView(1,3) * Np[1] + modelView(2,3) * Np[2]);
@@ -363,8 +343,7 @@ void rhiRenderer::start()
 	m_pointPass->reset();
 
 	// reset matrices
-	m_viewMatrix.setToIdentity();
-	m_modelMatrix.setToIdentity();
+	m_modelViewMatrix.setToIdentity();
 	m_projMatrix.setToIdentity();
 
 	// default viewport is entire view
@@ -426,17 +405,14 @@ void rhiRenderer::finish()
 
 	// update solid mesh data
 	m_solidPass->m_proj = m_projMatrix;
-	m_solidPass->m_view = m_viewMatrix;
 	m_solidPass->update(resourceUpdates);
 
 	// update line mesh data
 	m_linePass->m_proj = m_projMatrix;
-	m_linePass->m_view = m_viewMatrix;
 	m_linePass->update(resourceUpdates);
 
 	// update point mesh data
 	m_pointPass->m_proj = m_projMatrix;
-	m_pointPass->m_view = m_viewMatrix;
 	m_pointPass->update(resourceUpdates);
 
 	// update fps indicator

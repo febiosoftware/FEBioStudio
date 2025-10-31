@@ -92,7 +92,7 @@ void LineRenderPass::update(QRhiResourceUpdateBatch* u)
 	{
 		rhi::Mesh& m = *it.second;
 		if (m.isActive())
-			m.Update(u, m_proj, m_view);
+			m.Update(u, m_proj);
 	}
 }
 

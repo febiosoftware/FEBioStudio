@@ -205,9 +205,6 @@ void CGLModelScene::Render(GLRenderEngine& engine, GLContext& rc)
 	// set the object's render transforms
 	UpdateRenderTransforms(rc);
 
-	GLCamera& cam = GetCamera();
-	engine.positionCamera(cam);
-
 	int nitem = m_doc->GetItemMode();
 	if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH))
 	{

@@ -74,6 +74,8 @@ public:
 public:
 	void pushTransform() override;
 	void popTransform() override;
+	void resetTransform() override;
+
 	void translate(const vec3d& r) override;
 	void rotate(const quatd& rot) override;
 	void rotate(double deg, double x, double y, double z) override;
@@ -82,8 +84,6 @@ public:
 public:
 	GLRenderEngine::FrontFace frontFace() const;
 	void setFrontFace(FrontFace f);
-
-	void positionCamera(const GLCamera& cam) override;
 
 public:
 	void setColor(GLColor c) override;

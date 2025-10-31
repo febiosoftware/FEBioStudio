@@ -158,7 +158,7 @@ public:
 	void SetNearPlane(double fnear) { m_fnear = fnear; }
 	double GetNearPlane() const { return m_fnear; }
 
-	void SetFarPlane(double ffar) { m_fnear = ffar; }
+	void SetFarPlane(double ffar) { m_ffar = ffar; }
 	double GetFarPlane() const { return m_ffar; }
 
 	void SetFOV(double fov) { m_fov = fov; }

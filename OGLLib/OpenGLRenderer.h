@@ -91,8 +91,6 @@ public:
 	FrontFace frontFace() override;
 	void setFrontFace(FrontFace f) override;
 
-	void positionCamera(const GLCamera& cam) override;
-
 public:
 	void setLightPosition(unsigned int lightIndex, const vec3f& p) override;
 

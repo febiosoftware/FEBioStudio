@@ -129,6 +129,11 @@ void RayTracer::popTransform()
 	mvStack.pop();
 }
 
+void RayTracer::resetTransform()
+{
+	modelView.makeIdentity();
+}
+
 void RayTracer::translate(const vec3d& r)
 {
 	Matrix4 T = Matrix4::translate(Vec3(r));
@@ -161,24 +166,6 @@ GLRenderEngine::FrontFace RayTracer::frontFace() const
 void RayTracer::setFrontFace(GLRenderEngine::FrontFace f)
 {
 	front = f;
-}
-
-void RayTracer::positionCamera(const GLCamera& cam)
-{
-	// reset the modelview matrix mode
-	modelView.makeIdentity();
-
-	// target in camera coordinates
-	vec3d r = cam.Target();
-
-	// position the target in camera coordinates
-	translate(-r);
-
-	// orient the camera
-	rotate(cam.m_rot.Value());
-
-	// translate to world coordinates
-	translate(-cam.GetPosition());
 }
 
 void RayTracer::setColor(GLColor c)
