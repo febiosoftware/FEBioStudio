@@ -177,13 +177,13 @@ QMatrix4x4 GLViewTransform::SetupProjection()
 	double fov = cam.GetFOV();
 
 	double ar = 1;
-	if (m_view->height() == 0) ar = 1; ar = (GLfloat)m_view->width() / (GLfloat)m_view->height();
+	if (m_view->height() == 0) ar = 1; ar = (double)m_view->width() / (double)m_view->height();
 
 	// set up projection matrix
 	if (cam.IsOrtho())
 	{
 		// orthographic projection
-		GLdouble f = 0.35 * cam.GetTargetDistance();
+		double f = 0.35 * cam.GetTargetDistance();
 		double ox = f * ar;
 		double oy = f;
 		P.ortho(-ox, ox, -oy, oy, fnear, ffar);
